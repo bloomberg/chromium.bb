@@ -5027,81 +5027,72 @@ static void select_inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
                                    int64_t ref_best_rd,
                                    FAST_TX_SEARCH_MODE ftxs_mode,
                                    TXB_RD_INFO_NODE *rd_info_tree) {
-  MACROBLOCKD *const xd = &x->e_mbd;
-  int is_cost_valid = 1;
-  int64_t this_rd = 0, skip_rd = 0;
+  if (ref_best_rd < 0) {
+    av1_invalid_rd_stats(rd_stats);
+    return;
+  }
 
-  if (ref_best_rd < 0) is_cost_valid = 0;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  const struct macroblockd_plane *const pd = &xd->plane[0];
+  const BLOCK_SIZE plane_bsize =
+      get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
+  const int mi_width = mi_size_wide[plane_bsize];
+  const int mi_height = mi_size_high[plane_bsize];
+  ENTROPY_CONTEXT ctxa[MAX_MIB_SIZE];
+  ENTROPY_CONTEXT ctxl[MAX_MIB_SIZE];
+  TXFM_CONTEXT tx_above[MAX_MIB_SIZE];
+  TXFM_CONTEXT tx_left[MAX_MIB_SIZE];
+  av1_get_entropy_contexts(bsize, pd, ctxa, ctxl);
+  memcpy(tx_above, xd->above_txfm_context, sizeof(TXFM_CONTEXT) * mi_width);
+  memcpy(tx_left, xd->left_txfm_context, sizeof(TXFM_CONTEXT) * mi_height);
+
+  const int skip_ctx = av1_get_skip_context(xd);
+  const int s0 = x->skip_cost[skip_ctx][0];
+  const int s1 = x->skip_cost[skip_ctx][1];
+  const int init_depth =
+      get_search_init_depth(mi_width, mi_height, 1, &cpi->sf);
+  const TX_SIZE max_tx_size = max_txsize_rect_lookup[plane_bsize];
+  const int bh = tx_size_high_unit[max_tx_size];
+  const int bw = tx_size_wide_unit[max_tx_size];
+  const int step = bw * bh;
+  int64_t skip_rd = RDCOST(x->rdmult, s1, 0);
+  int64_t this_rd = RDCOST(x->rdmult, s0, 0);
+  int block = 0;
 
   av1_init_rd_stats(rd_stats);
-
-  if (is_cost_valid) {
-    const struct macroblockd_plane *const pd = &xd->plane[0];
-    const BLOCK_SIZE plane_bsize =
-        get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
-    const int mi_width = mi_size_wide[plane_bsize];
-    const int mi_height = mi_size_high[plane_bsize];
-    const TX_SIZE max_tx_size = max_txsize_rect_lookup[plane_bsize];
-    const int bh = tx_size_high_unit[max_tx_size];
-    const int bw = tx_size_wide_unit[max_tx_size];
-    int idx, idy;
-    int block = 0;
-    int step = tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
-    ENTROPY_CONTEXT ctxa[MAX_MIB_SIZE];
-    ENTROPY_CONTEXT ctxl[MAX_MIB_SIZE];
-    TXFM_CONTEXT tx_above[MAX_MIB_SIZE];
-    TXFM_CONTEXT tx_left[MAX_MIB_SIZE];
-
-    RD_STATS pn_rd_stats;
-    const int init_depth =
-        get_search_init_depth(mi_width, mi_height, 1, &cpi->sf);
-    av1_init_rd_stats(&pn_rd_stats);
-
-    av1_get_entropy_contexts(bsize, pd, ctxa, ctxl);
-    memcpy(tx_above, xd->above_txfm_context, sizeof(TXFM_CONTEXT) * mi_width);
-    memcpy(tx_left, xd->left_txfm_context, sizeof(TXFM_CONTEXT) * mi_height);
-    const int skip_ctx = av1_get_skip_context(xd);
-    const int s0 = x->skip_cost[skip_ctx][0];
-    const int s1 = x->skip_cost[skip_ctx][1];
-
-    skip_rd = RDCOST(x->rdmult, s1, 0);
-    this_rd = RDCOST(x->rdmult, s0, 0);
-    for (idy = 0; idy < mi_height; idy += bh) {
-      for (idx = 0; idx < mi_width; idx += bw) {
-        int64_t best_rd_sofar =
-            (ref_best_rd == INT64_MAX)
-                ? INT64_MAX
-                : (ref_best_rd - (AOMMIN(skip_rd, this_rd)));
-        select_tx_block(cpi, x, idy, idx, block, max_tx_size, init_depth,
-                        plane_bsize, ctxa, ctxl, tx_above, tx_left,
-                        &pn_rd_stats, INT64_MAX, best_rd_sofar, &is_cost_valid,
-                        ftxs_mode, rd_info_tree);
-        if (!is_cost_valid || pn_rd_stats.rate == INT_MAX) {
-          av1_invalid_rd_stats(rd_stats);
-          return;
-        }
-        av1_merge_rd_stats(rd_stats, &pn_rd_stats);
-        skip_rd = RDCOST(x->rdmult, s1, rd_stats->sse);
-        this_rd = RDCOST(x->rdmult, rd_stats->rate + s0, rd_stats->dist);
-        block += step;
-        if (rd_info_tree != NULL) rd_info_tree += 1;
+  for (int idy = 0; idy < mi_height; idy += bh) {
+    for (int idx = 0; idx < mi_width; idx += bw) {
+      const int64_t best_rd_sofar =
+          (ref_best_rd == INT64_MAX)
+              ? INT64_MAX
+              : (ref_best_rd - (AOMMIN(skip_rd, this_rd)));
+      int is_cost_valid = 1;
+      RD_STATS pn_rd_stats;
+      select_tx_block(cpi, x, idy, idx, block, max_tx_size, init_depth,
+                      plane_bsize, ctxa, ctxl, tx_above, tx_left, &pn_rd_stats,
+                      INT64_MAX, best_rd_sofar, &is_cost_valid, ftxs_mode,
+                      rd_info_tree);
+      if (!is_cost_valid || pn_rd_stats.rate == INT_MAX) {
+        av1_invalid_rd_stats(rd_stats);
+        return;
       }
-    }
-    if (skip_rd <= this_rd) {
-      rd_stats->rate = 0;
-      rd_stats->dist = rd_stats->sse;
-      rd_stats->skip = 1;
-#if CONFIG_ONE_PASS_SVM
-      av1_reg_stat_skipmode_update(rd_stats, x->rdmult);
-#endif
-    } else {
-      rd_stats->skip = 0;
+      av1_merge_rd_stats(rd_stats, &pn_rd_stats);
+      skip_rd = RDCOST(x->rdmult, s1, rd_stats->sse);
+      this_rd = RDCOST(x->rdmult, rd_stats->rate + s0, rd_stats->dist);
+      block += step;
+      if (rd_info_tree != NULL) rd_info_tree += 1;
     }
   }
 
-  if (!is_cost_valid) {
-    // reset cost value
-    av1_invalid_rd_stats(rd_stats);
+  if (skip_rd <= this_rd) {
+    rd_stats->rate = 0;
+    rd_stats->dist = rd_stats->sse;
+    rd_stats->skip = 1;
+#if CONFIG_ONE_PASS_SVM
+    av1_reg_stat_skipmode_update(rd_stats, x->rdmult);
+#endif
+  } else {
+    rd_stats->skip = 0;
   }
 }
 
