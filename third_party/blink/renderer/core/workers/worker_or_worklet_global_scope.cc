@@ -131,10 +131,14 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::EnsureFetcher() {
 ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
     FetchClientSettingsObject* fetch_client_settings_object) {
   DCHECK(IsContextThread());
+  DCHECK(fetch_client_settings_object);
   InitializeWebFetchContextIfNeeded();
-  WorkerFetchContext* fetch_context = WorkerFetchContext::Create(
-      *this, web_worker_fetch_context_, subresource_filter_,
-      fetch_client_settings_object);
+  WorkerFetchContext* fetch_context =
+      web_worker_fetch_context_
+          ? MakeGarbageCollected<WorkerFetchContext>(
+                *this, web_worker_fetch_context_, subresource_filter_,
+                *fetch_client_settings_object)
+          : nullptr;
   ResourceFetcher* resource_fetcher =
       MakeGarbageCollected<ResourceFetcher>(fetch_context);
   if (IsContextPaused())

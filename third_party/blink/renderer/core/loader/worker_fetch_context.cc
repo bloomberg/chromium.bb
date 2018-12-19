@@ -35,26 +35,13 @@ namespace blink {
 
 WorkerFetchContext::~WorkerFetchContext() = default;
 
-WorkerFetchContext* WorkerFetchContext::Create(
-    WorkerOrWorkletGlobalScope& global_scope,
-    scoped_refptr<WebWorkerFetchContext> web_context,
-    SubresourceFilter* subresource_filter,
-    FetchClientSettingsObject* fetch_client_settings_object) {
-  if (!web_context)
-    return nullptr;
-  DCHECK(fetch_client_settings_object);
-  return MakeGarbageCollected<WorkerFetchContext>(
-      global_scope, std::move(web_context), subresource_filter,
-      fetch_client_settings_object);
-}
-
 WorkerFetchContext::WorkerFetchContext(
     WorkerOrWorkletGlobalScope& global_scope,
     scoped_refptr<WebWorkerFetchContext> web_context,
     SubresourceFilter* subresource_filter,
-    FetchClientSettingsObject* fetch_client_settings_object)
+    FetchClientSettingsObject& fetch_client_settings_object)
     : BaseFetchContext(global_scope.GetTaskRunner(TaskType::kInternalLoading),
-                       *fetch_client_settings_object),
+                       fetch_client_settings_object),
       global_scope_(global_scope),
       web_context_(std::move(web_context)),
       subresource_filter_(subresource_filter),
