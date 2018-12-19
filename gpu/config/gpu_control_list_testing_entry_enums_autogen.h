@@ -80,6 +80,7 @@ enum GpuControlListTestingEntryEnum {
   kGpuControlListEntryTest_GpuSeriesSecondary = 64,
   kGpuControlListEntryTest_GpuSeriesInException = 65,
   kGpuControlListEntryTest_MultipleDrivers = 66,
+  kGpuControlListEntryTest_HardwareOverlay = 67,
 };
 }  // namespace gpu
 

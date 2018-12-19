@@ -2036,6 +2036,36 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
         0,        // exceptions count
         nullptr,  // exceptions
     },
+    {
+        68,  // id
+        "GpuControlListEntryTest.HardwareOverlay",
+        base::size(kFeatureListForGpuControlTestingEntry68),  // features size
+        kFeatureListForGpuControlTestingEntry68,              // features
+        0,        // DisabledExtensions size
+        nullptr,  // DisabledExtensions
+        0,        // DisabledWebGLExtensions size
+        nullptr,  // DisabledWebGLExtensions
+        0,        // CrBugs size
+        nullptr,  // CrBugs
+        {
+            GpuControlList::kOsAny,  // os_type
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},                     // os_version
+            0x8086,                                 // vendor_id
+            0,                                      // DeviceIDs size
+            nullptr,                                // DeviceIDs
+            GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
+            GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
+            nullptr,                                // driver info
+            nullptr,                                // GL strings
+            nullptr,                                // machine model info
+            0,                                      // gpu_series size
+            nullptr,                                // gpu_series
+            &kMoreForEntry68,                       // more data
+        },
+        0,        // exceptions count
+        nullptr,  // exceptions
+    },
 };
-const size_t kGpuControlListTestingEntryCount = 67;
+const size_t kGpuControlListTestingEntryCount = 68;
 }  // namespace gpu

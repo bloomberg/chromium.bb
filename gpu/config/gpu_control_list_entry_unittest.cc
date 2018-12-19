@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "build/build_config.h"
 #include "gpu/config/gpu_control_list.h"
 #include "gpu/config/gpu_control_list_testing_data.h"
 #include "gpu/config/gpu_info.h"
@@ -867,5 +868,18 @@ TEST_F(GpuControlListEntryTest, MultipleDrivers) {
   gpu_info.secondary_gpus[0].active = true;
   EXPECT_TRUE(entry.Contains(kOsWin, "10.0", gpu_info));
 }
+
+#if defined(OS_WIN)
+TEST_F(GpuControlListEntryTest, HardwareOverlay) {
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_HardwareOverlay);
+  GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x8086;
+  gpu_info.supports_overlays = true;
+  EXPECT_FALSE(entry.Contains(kOsWin, "10.0", gpu_info));
+
+  gpu_info.supports_overlays = false;
+  EXPECT_TRUE(entry.Contains(kOsWin, "10.0", gpu_info));
+}
+#endif  // OS_WIN
 
 }  // namespace gpu

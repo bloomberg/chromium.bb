@@ -19,11 +19,13 @@ const int kFeatureListForGpuControlTestingEntry1[1] = {
 };
 
 const char* const kDisabledExtensionsForEntry1[2] = {
-    "test_extension1", "test_extension2",
+    "test_extension1",
+    "test_extension2",
 };
 
 const uint32_t kCrBugsForGpuControlTestingEntry1[2] = {
-    1024, 678,
+    1024,
+    678,
 };
 
 const uint32_t kDeviceIDsForGpuControlTestingEntry1[1] = {
@@ -71,7 +73,8 @@ const int kFeatureListForGpuControlTestingEntry7[1] = {
 };
 
 const uint32_t kDeviceIDsForGpuControlTestingEntry7[2] = {
-    0x1023, 0x0640,
+    0x1023,
+    0x0640,
 };
 
 const int kFeatureListForGpuControlTestingEntry8[1] = {
@@ -92,8 +95,9 @@ const GpuControlList::More kMoreForEntry9 = {
     0,          // gl_reset_notification_strategy
     true,       // direct_rendering
     {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},  // gpu_count
-    0,          // test_group
+     nullptr},                  // gpu_count
+    GpuControlList::kDontCare,  // hardware_overlay
+    0,                          // test_group
 };
 
 const int kFeatureListForGpuControlTestingEntry10[1] = {
@@ -110,8 +114,9 @@ const GpuControlList::More kMoreForEntry10 = {
     0,          // gl_reset_notification_strategy
     true,       // direct_rendering
     {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},  // gpu_count
-    0,          // test_group
+     nullptr},                  // gpu_count
+    GpuControlList::kDontCare,  // hardware_overlay
+    0,                          // test_group
 };
 
 const int kFeatureListForGpuControlTestingEntry11[1] = {
@@ -128,8 +133,9 @@ const GpuControlList::More kMoreForEntry11 = {
     0,          // gl_reset_notification_strategy
     true,       // direct_rendering
     {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},  // gpu_count
-    0,          // test_group
+     nullptr},                  // gpu_count
+    GpuControlList::kDontCare,  // hardware_overlay
+    0,                          // test_group
 };
 
 const int kFeatureListForGpuControlTestingEntry12[1] = {
@@ -137,7 +143,10 @@ const int kFeatureListForGpuControlTestingEntry12[1] = {
 };
 
 const GpuControlList::GLStrings kGLStringsForGpuControlTestingEntry12 = {
-    "NVIDIA", nullptr, nullptr, nullptr,
+    "NVIDIA",
+    nullptr,
+    nullptr,
+    nullptr,
 };
 
 const int kFeatureListForGpuControlTestingEntry13[1] = {
@@ -145,7 +154,10 @@ const int kFeatureListForGpuControlTestingEntry13[1] = {
 };
 
 const GpuControlList::GLStrings kGLStringsForGpuControlTestingEntry13 = {
-    "X\\.Org.*", nullptr, nullptr, nullptr,
+    "X\\.Org.*",
+    nullptr,
+    nullptr,
+    nullptr,
 };
 
 const int kFeatureListForGpuControlTestingEntry14[1] = {
@@ -153,7 +165,10 @@ const int kFeatureListForGpuControlTestingEntry14[1] = {
 };
 
 const GpuControlList::GLStrings kGLStringsForGpuControlTestingEntry14 = {
-    nullptr, ".*GeForce.*", nullptr, nullptr,
+    nullptr,
+    ".*GeForce.*",
+    nullptr,
+    nullptr,
 };
 
 const int kFeatureListForGpuControlTestingEntry15[1] = {
@@ -161,7 +176,10 @@ const int kFeatureListForGpuControlTestingEntry15[1] = {
 };
 
 const GpuControlList::GLStrings kGLStringsForGpuControlTestingEntry15 = {
-    nullptr, "(?i).*software.*", nullptr, nullptr,
+    nullptr,
+    "(?i).*software.*",
+    nullptr,
+    nullptr,
 };
 
 const int kFeatureListForGpuControlTestingEntry16[1] = {
@@ -169,7 +187,10 @@ const int kFeatureListForGpuControlTestingEntry16[1] = {
 };
 
 const GpuControlList::GLStrings kGLStringsForGpuControlTestingEntry16 = {
-    nullptr, nullptr, ".*GL_SUN_slice_accum", nullptr,
+    nullptr,
+    nullptr,
+    ".*GL_SUN_slice_accum",
+    nullptr,
 };
 
 const int kFeatureListForGpuControlTestingEntry17[1] = {
@@ -222,7 +243,10 @@ const int kFeatureListForGpuControlTestingEntry22[1] = {
 
 const GpuControlList::GLStrings
     kGLStringsForGpuControlTestingEntry22Exception0 = {
-        nullptr, ".*mesa.*", nullptr, nullptr,
+        nullptr,
+        ".*mesa.*",
+        nullptr,
+        nullptr,
 };
 
 const int kFeatureListForGpuControlTestingEntry23[1] = {
@@ -239,16 +263,20 @@ const GpuControlList::More kMoreForEntry23 = {
     0,          // gl_reset_notification_strategy
     true,       // direct_rendering
     {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},  // gpu_count
-    0,          // test_group
+     nullptr},                  // gpu_count
+    GpuControlList::kDontCare,  // hardware_overlay
+    0,                          // test_group
 };
 
 const int kFeatureListForGpuControlTestingEntry24[3] = {
-    TEST_FEATURE_0, TEST_FEATURE_1, TEST_FEATURE_2,
+    TEST_FEATURE_0,
+    TEST_FEATURE_1,
+    TEST_FEATURE_2,
 };
 
 const int kFeatureListForGpuControlTestingEntry25[2] = {
-    TEST_FEATURE_1, TEST_FEATURE_2,
+    TEST_FEATURE_1,
+    TEST_FEATURE_2,
 };
 
 const int kFeatureListForGpuControlTestingEntry26[1] = {
@@ -264,7 +292,10 @@ const int kFeatureListForGpuControlTestingEntry27[1] = {
 };
 
 const char* const kMachineModelNameForEntry27[4] = {
-    "Nexus 4", "XT1032", "GT-.*", "SCH-.*",
+    "Nexus 4",
+    "XT1032",
+    "GT-.*",
+    "SCH-.*",
 };
 
 const GpuControlList::MachineModelInfo kMachineModelInfoForEntry27 = {
@@ -372,7 +403,8 @@ const int kFeatureListForGpuControlTestingEntry36[1] = {
 };
 
 const uint32_t kDeviceIDsForGpuControlTestingEntry36[2] = {
-    0x0166, 0x0168,
+    0x0166,
+    0x0168,
 };
 
 const int kFeatureListForGpuControlTestingEntry37[1] = {
@@ -405,8 +437,9 @@ const GpuControlList::More kMoreForEntry40 = {
     0,          // gl_reset_notification_strategy
     true,       // direct_rendering
     {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},  // gpu_count
-    0,          // test_group
+     nullptr},                  // gpu_count
+    GpuControlList::kDontCare,  // hardware_overlay
+    0,                          // test_group
 };
 
 const int kFeatureListForGpuControlTestingEntry41[1] = {
@@ -477,8 +510,9 @@ const GpuControlList::More kMoreForEntry48 = {
     0,          // gl_reset_notification_strategy
     true,       // direct_rendering
     {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},  // gpu_count
-    0,          // test_group
+     nullptr},                  // gpu_count
+    GpuControlList::kDontCare,  // hardware_overlay
+    0,                          // test_group
 };
 
 const int kFeatureListForGpuControlTestingEntry49[1] = {
@@ -515,7 +549,10 @@ const int kFeatureListForGpuControlTestingEntry52[1] = {
 
 const GpuControlList::GLStrings
     kGLStringsForGpuControlTestingEntry52Exception0 = {
-        nullptr, ".*mesa.*", nullptr, nullptr,
+        nullptr,
+        ".*mesa.*",
+        nullptr,
+        nullptr,
 };
 
 const int kFeatureListForGpuControlTestingEntry53[1] = {
@@ -535,11 +572,13 @@ const GpuControlList::DriverInfo kDriverInfoForGpuControlTestingEntry54 = {
 };
 
 const char* const kDisabledExtensionsForEntry55[2] = {
-    "test_extension2", "test_extension1",
+    "test_extension2",
+    "test_extension1",
 };
 
 const char* const kDisabledExtensionsForEntry56[2] = {
-    "test_extension3", "test_extension2",
+    "test_extension3",
+    "test_extension2",
 };
 
 const int kFeatureListForGpuControlTestingEntry57[1] = {
@@ -556,8 +595,9 @@ const GpuControlList::More kMoreForEntry57 = {
     0,          // gl_reset_notification_strategy
     false,      // direct_rendering
     {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},  // gpu_count
-    0,          // test_group
+     nullptr},                  // gpu_count
+    GpuControlList::kDontCare,  // hardware_overlay
+    0,                          // test_group
 };
 
 const int kFeatureListForGpuControlTestingEntry58[1] = {
@@ -578,8 +618,9 @@ const GpuControlList::More kMoreForEntry59 = {
     0,          // gl_reset_notification_strategy
     true,       // direct_rendering
     {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},  // gpu_count
-    1,          // test_group
+     nullptr},                  // gpu_count
+    GpuControlList::kDontCare,  // hardware_overlay
+    1,                          // test_group
 };
 
 const int kFeatureListForGpuControlTestingEntry60[1] = {
@@ -596,8 +637,9 @@ const GpuControlList::More kMoreForEntry60 = {
     0,          // gl_reset_notification_strategy
     true,       // direct_rendering
     {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},  // gpu_count
-    2,          // test_group
+     nullptr},                  // gpu_count
+    GpuControlList::kDontCare,  // hardware_overlay
+    2,                          // test_group
 };
 
 const int kFeatureListForGpuControlTestingEntry61[1] = {
@@ -605,7 +647,8 @@ const int kFeatureListForGpuControlTestingEntry61[1] = {
 };
 
 const GpuSeriesType kGpuSeriesForEntry61[2] = {
-    GpuSeriesType::kIntelSkyLake, GpuSeriesType::kIntelKabyLake,
+    GpuSeriesType::kIntelSkyLake,
+    GpuSeriesType::kIntelKabyLake,
 };
 
 const int kFeatureListForGpuControlTestingEntry62[1] = {
@@ -658,6 +701,25 @@ const GpuControlList::DriverInfo kDriverInfoForGpuControlTestingEntry67 = {
      "8.15.10.2702", nullptr},  // driver_version
     {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
      nullptr},  // driver_date
+};
+
+const int kFeatureListForGpuControlTestingEntry68[1] = {
+    TEST_FEATURE_0,
+};
+
+const GpuControlList::More kMoreForEntry68 = {
+    GpuControlList::kGLTypeNone,  // gl_type
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // gl_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // pixel_shader_version
+    false,      // in_process_gpu
+    0,          // gl_reset_notification_strategy
+    true,       // direct_rendering
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},                     // gpu_count
+    GpuControlList::kUnsupported,  // hardware_overlay
+    0,                             // test_group
 };
 
 }  // namespace gpu
