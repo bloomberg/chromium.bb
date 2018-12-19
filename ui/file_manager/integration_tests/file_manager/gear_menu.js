@@ -5,6 +5,20 @@
 'use strict';
 
 /**
+ * Expected files shown in Downloads with hidden disabled
+ *
+ * @type {!Array<!TestEntryInfo>}
+ */
+const BASIC_LOCAL_ENTRY_SET_WITHOUT_HIDDEN = [
+  ENTRIES.hello,
+  ENTRIES.world,
+  ENTRIES.desktop,
+  ENTRIES.beautiful,
+  ENTRIES.photos,
+  ENTRIES.crdownload,
+];
+
+/**
  * Expected files shown in Downloads with hidden enabled
  *
  * @type {!Array<!TestEntryInfo>}
@@ -15,6 +29,7 @@ const BASIC_LOCAL_ENTRY_SET_WITH_HIDDEN = [
   ENTRIES.desktop,
   ENTRIES.beautiful,
   ENTRIES.photos,
+  ENTRIES.crdownload,
   ENTRIES.hiddenFile,
 ];
 
@@ -155,7 +170,8 @@ testcase.showHiddenFilesDownloads = async function() {
       RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET_WITH_HIDDEN, []);
 
   await runHiddenFilesTest(
-      appId, BASIC_LOCAL_ENTRY_SET, BASIC_LOCAL_ENTRY_SET_WITH_HIDDEN);
+      appId, BASIC_LOCAL_ENTRY_SET_WITHOUT_HIDDEN,
+      BASIC_LOCAL_ENTRY_SET_WITH_HIDDEN);
 };
 
 /**

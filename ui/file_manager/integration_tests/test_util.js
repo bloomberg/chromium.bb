@@ -1094,4 +1094,15 @@ var ENTRIES = {
     sizeText: '51 bytes',
     typeText: 'Plain text'
   }),
+
+  crdownload: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'text.txt',
+    targetPath: 'hello.crdownload',
+    mimeType: 'application/octet-stream',
+    lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
+    nameText: 'hello.crdownload',
+    sizeText: '51 bytes',
+    typeText: 'CRDOWNLOAD file'
+  }),
 };
