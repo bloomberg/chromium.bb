@@ -276,11 +276,7 @@ void AppListItemView::SetIcon(const gfx::ImageSkia& icon) {
       icon, skia::ImageOperations::RESIZE_BEST,
       is_folder_ ? AppListConfig::instance().folder_unclipped_icon_size()
                  : AppListConfig::instance().grid_icon_size());
-
-  if (shadow_animator_)
-    shadow_animator_->SetOriginalImage(resized);
-  else
-    icon_->SetImage(resized);
+  icon_->SetImage(resized);
 
   if (icon_shadow_) {
     // Create a shadow for the shown icon.
@@ -516,15 +512,11 @@ void AppListItemView::ExecuteCommand(int command_id, int event_flags) {
 
 void AppListItemView::StateChanged(ButtonState old_state) {
   if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
-    if (shadow_animator_)
-      shadow_animator_->animation()->Show();
     // Show the hover/tap highlight: for tap, lighter highlight replaces darker
     // keyboard selection; for mouse hover, keyboard selection takes precedence.
     if (!apps_grid_view_->IsSelectedView(this) || state() == STATE_PRESSED)
       SetItemIsHighlighted(true);
   } else {
-    if (shadow_animator_)
-      shadow_animator_->animation()->Hide();
     SetItemIsHighlighted(false);
     if (item_weak_)
       item_weak_->set_highlighted(false);
@@ -749,12 +741,6 @@ bool AppListItemView::GetTooltipText(const gfx::Point& p,
   bool handled = title_->GetTooltipText(p, tooltip);
   title_->SetHandlesTooltips(false);
   return handled;
-}
-
-void AppListItemView::ImageShadowAnimationProgressed(
-    ImageShadowAnimator* animator) {
-  icon_->SetImage(animator->shadow_image());
-  Layout();
 }
 
 void AppListItemView::OnDraggedViewEnter() {
