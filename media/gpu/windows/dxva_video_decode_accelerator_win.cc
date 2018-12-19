@@ -270,27 +270,27 @@ bool IsLegacyGPU(ID3D11Device* device) {
 bool IsResolutionSupportedForDevice(const gfx::Size& resolution_to_test,
                                     const GUID& decoder_guid,
                                     ID3D11VideoDevice* video_device) {
-  D3D11_VIDEO_DECODER_DESC desc = {};
-  desc.Guid = decoder_guid;
-  desc.SampleWidth = resolution_to_test.width();
-  desc.SampleHeight = resolution_to_test.height();
-  desc.OutputFormat = DXGI_FORMAT_NV12;
-  UINT config_count = 0;
-  HRESULT hr = video_device->GetVideoDecoderConfigCount(&desc, &config_count);
-  if (FAILED(hr) || config_count == 0)
-    return false;
+  D3D11_VIDEO_DECODER_DESC desc = {
+      decoder_guid,                 // Guid
+      resolution_to_test.width(),   // SampleWidth
+      resolution_to_test.height(),  // SampleHeight
+      DXGI_FORMAT_NV12              // OutputFormat
+  };
 
-  D3D11_VIDEO_DECODER_CONFIG config = {};
-  hr = video_device->GetVideoDecoderConfig(&desc, 0, &config);
-  UMA_HISTOGRAM_BOOLEAN("Media.DXVAVDA.GetDecoderConfigStatus", SUCCEEDED(hr));
-  if (FAILED(hr))
-    return false;
-
-  Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder;
-  hr = video_device->CreateVideoDecoder(&desc, &config,
-                                        video_decoder.GetAddressOf());
-  UMA_HISTOGRAM_BOOLEAN("Media.DXVAVDA.CreateDecoderStatus", !!video_decoder);
-  return !!video_decoder;
+  // We've chosen the least expensive test for identifying if a given resolution
+  // is supported. Actually creating the VideoDecoder instance only fails ~0.4%
+  // of the time and the outcome is that we will offer support and then
+  // immediately fall back to software; e.g., playback still works. Since these
+  // calls can take hundreds of milliseconds to complete and are often executed
+  // during startup, this seems a reasonably trade off.
+  //
+  // See the deprecated histograms Media.DXVAVDA.GetDecoderConfigStatus which
+  // succeeds 100% of the time and Media.DXVAVDA.CreateDecoderStatus which
+  // only succeeds 99.6% of the time (in a 28 day aggregation).
+  UINT config_count;
+  return SUCCEEDED(
+             video_device->GetVideoDecoderConfigCount(&desc, &config_count)) &&
+         config_count > 0;
 }
 
 // Returns a tuple of (LandscapeMax, PortraitMax). If landscape maximum can not
