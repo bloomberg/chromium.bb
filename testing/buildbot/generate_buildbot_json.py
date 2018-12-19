@@ -848,6 +848,12 @@ class BBJSONGenerator(object):
 
   def get_valid_bot_names(self):
     # Extract bot names from infra/config/global/luci-milo.cfg.
+    # NOTE: This reference can cause issues; if a file changes there, the
+    # presubmit here won't be run by default. A manually maintained list there
+    # tries to run presubmit here when luci-milo.cfg is changed. If any other
+    # references to configs outside of this directory are added, please change
+    # their presubmit to run `generate_buildbot_json.py -c`, so that the tree
+    # never ends up in an invalid state.
     bot_names = set()
     infra_config_dir = os.path.abspath(
         os.path.join(os.path.dirname(__file__),
