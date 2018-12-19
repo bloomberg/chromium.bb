@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_table_view_controller.h"
 
 #import <UIKit/UIKit.h>
 
@@ -20,7 +20,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
 #import "ios/chrome/browser/ui/settings/cells/byo_textfield_item.h"
 #import "ios/chrome/browser/ui/settings/cells/card_multiline_item.h"
-#import "ios/chrome/browser/ui/settings/passphrase_collection_view_controller_test.h"
+#import "ios/chrome/browser/ui/settings/passphrase_table_view_controller_test.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -38,10 +38,10 @@ using testing::AtLeast;
 using testing::NiceMock;
 using testing::Return;
 
-class SyncEncryptionPassphraseCollectionViewControllerTest
-    : public PassphraseCollectionViewControllerTest {
+class SyncEncryptionPassphraseTableViewControllerTest
+    : public PassphraseTableViewControllerTest {
  public:
-  SyncEncryptionPassphraseCollectionViewControllerTest() {}
+  SyncEncryptionPassphraseTableViewControllerTest() {}
 
   static std::unique_ptr<KeyedService> CreateSyncSetupService(
       web::BrowserState* context) {
@@ -69,7 +69,7 @@ class SyncEncryptionPassphraseCollectionViewControllerTest
 
  protected:
   void SetUp() override {
-    PassphraseCollectionViewControllerTest::SetUp();
+    PassphraseTableViewControllerTest::SetUp();
     mock_sync_setup_service_ = static_cast<NiceMock<SyncSetupServiceMock>*>(
         SyncSetupServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             chrome_browser_state_.get(),
@@ -82,16 +82,16 @@ class SyncEncryptionPassphraseCollectionViewControllerTest
 
   void TearDown() override {
     [SyncController() stopObserving];
-    PassphraseCollectionViewControllerTest::TearDown();
+    PassphraseTableViewControllerTest::TearDown();
   }
 
-  CollectionViewController* InstantiateController() override {
-    return [[SyncEncryptionPassphraseCollectionViewController alloc]
+  ChromeTableViewController* InstantiateController() override {
+    return [[SyncEncryptionPassphraseTableViewController alloc]
         initWithBrowserState:chrome_browser_state_.get()];
   }
 
-  SyncEncryptionPassphraseCollectionViewController* SyncController() {
-    return static_cast<SyncEncryptionPassphraseCollectionViewController*>(
+  SyncEncryptionPassphraseTableViewController* SyncController() {
+    return static_cast<SyncEncryptionPassphraseTableViewController*>(
         controller());
   }
 
@@ -99,21 +99,20 @@ class SyncEncryptionPassphraseCollectionViewControllerTest
   NiceMock<SyncSetupServiceMock>* mock_sync_setup_service_;
 };
 
-TEST_F(SyncEncryptionPassphraseCollectionViewControllerTest, TestModel) {
-  SyncEncryptionPassphraseCollectionViewController* controller =
-      SyncController();
-  EXPECT_EQ(2, NumberOfSections());
+TEST_F(SyncEncryptionPassphraseTableViewControllerTest, TestModel) {
+  SyncEncryptionPassphraseTableViewController* controller = SyncController();
+  EXPECT_EQ(1, NumberOfSections());
   EXPECT_EQ(2, NumberOfItemsInSection(0));
   // Passphrase message item.
-  CardMultilineItem* item = GetCollectionViewItem(0, 0);
+  CardMultilineItem* item = GetTableViewItem(0, 0);
   EXPECT_NSEQ(l10n_util::GetNSString(IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY),
               item.text);
   // Passphrase items.
-  BYOTextFieldItem* passphraseItem = GetCollectionViewItem(0, 1);
+  BYOTextFieldItem* passphraseItem = GetTableViewItem(0, 1);
   EXPECT_NSEQ(controller.passphrase, passphraseItem.textField);
 }
 
-TEST_F(SyncEncryptionPassphraseCollectionViewControllerTest,
+TEST_F(SyncEncryptionPassphraseTableViewControllerTest,
        TestConstructorDestructor) {
   CreateController();
   CheckController();
@@ -125,9 +124,8 @@ TEST_F(SyncEncryptionPassphraseCollectionViewControllerTest,
   [controller() viewDidAppear:YES];
 }
 
-TEST_F(SyncEncryptionPassphraseCollectionViewControllerTest,
-       TestDecryptButton) {
-  SyncEncryptionPassphraseCollectionViewController* sync_controller =
+TEST_F(SyncEncryptionPassphraseTableViewControllerTest, TestDecryptButton) {
+  SyncEncryptionPassphraseTableViewController* sync_controller =
       SyncController();
   [sync_controller textFieldDidChange:[sync_controller passphrase]];
   EXPECT_FALSE([[sync_controller navigationItem].rightBarButtonItem isEnabled]);
@@ -136,9 +134,9 @@ TEST_F(SyncEncryptionPassphraseCollectionViewControllerTest,
   EXPECT_TRUE([[sync_controller navigationItem].rightBarButtonItem isEnabled]);
 }
 
-TEST_F(SyncEncryptionPassphraseCollectionViewControllerTest,
+TEST_F(SyncEncryptionPassphraseTableViewControllerTest,
        TestDecryptWrongPassphrase) {
-  SyncEncryptionPassphraseCollectionViewController* sync_controller =
+  SyncEncryptionPassphraseTableViewController* sync_controller =
       SyncController();
   EXPECT_CALL(*fake_sync_service_, AddObserver(_)).Times(AtLeast(1));
   EXPECT_CALL(*fake_sync_service_, RemoveObserver(_)).Times(AtLeast(1));
@@ -152,9 +150,9 @@ TEST_F(SyncEncryptionPassphraseCollectionViewControllerTest,
   [sync_controller signInPressed];
 }
 
-TEST_F(SyncEncryptionPassphraseCollectionViewControllerTest,
+TEST_F(SyncEncryptionPassphraseTableViewControllerTest,
        TestDecryptCorrectPassphrase) {
-  SyncEncryptionPassphraseCollectionViewController* sync_controller =
+  SyncEncryptionPassphraseTableViewController* sync_controller =
       SyncController();
   EXPECT_CALL(*fake_sync_service_, AddObserver(_)).Times(AtLeast(1));
   EXPECT_CALL(*fake_sync_service_, RemoveObserver(_)).Times(AtLeast(1));
@@ -168,9 +166,9 @@ TEST_F(SyncEncryptionPassphraseCollectionViewControllerTest,
   [sync_controller signInPressed];
 }
 
-TEST_F(SyncEncryptionPassphraseCollectionViewControllerTest,
+TEST_F(SyncEncryptionPassphraseTableViewControllerTest,
        TestOnStateChangedWrongPassphrase) {
-  SyncEncryptionPassphraseCollectionViewController* sync_controller =
+  SyncEncryptionPassphraseTableViewController* sync_controller =
       SyncController();
   // Sets up a UINavigationController that has |controller_| as the second view
   // controller on the navigation stack.
@@ -186,9 +184,9 @@ TEST_F(SyncEncryptionPassphraseCollectionViewControllerTest,
   EXPECT_EQ([nav_controller_ topViewController], sync_controller);
 }
 
-TEST_F(SyncEncryptionPassphraseCollectionViewControllerTest,
+TEST_F(SyncEncryptionPassphraseTableViewControllerTest,
        TestOnStateChangedCorrectPassphrase) {
-  SyncEncryptionPassphraseCollectionViewController* sync_controller =
+  SyncEncryptionPassphraseTableViewController* sync_controller =
       SyncController();
   // Sets up a UINavigationController that has |controller_| as the second view
   // controller on the navigation stack.
@@ -210,8 +208,8 @@ TEST_F(SyncEncryptionPassphraseCollectionViewControllerTest,
       }));
 }
 
-TEST_F(SyncEncryptionPassphraseCollectionViewControllerTest, TestMessage) {
-  SyncEncryptionPassphraseCollectionViewController* sync_controller =
+TEST_F(SyncEncryptionPassphraseTableViewControllerTest, TestMessage) {
+  SyncEncryptionPassphraseTableViewController* sync_controller =
       SyncController();
   // Default.
   EXPECT_FALSE([sync_controller syncErrorMessage]);

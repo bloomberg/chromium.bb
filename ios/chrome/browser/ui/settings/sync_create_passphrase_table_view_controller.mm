@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/sync_create_passphrase_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync_create_passphrase_table_view_controller.h"
 
 #import <UIKit/UIKit.h>
 
@@ -10,11 +10,8 @@
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/settings/cells/byo_textfield_item.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -23,14 +20,14 @@
 
 using namespace sync_encryption_passphrase;
 
-@interface SyncCreatePassphraseCollectionViewController () {
+@interface SyncCreatePassphraseTableViewController () {
   UITextField* confirmPassphrase_;
 }
 // Returns a confirm passphrase item.
-- (CollectionViewItem*)confirmPassphraseItem;
+- (TableViewItem*)confirmPassphraseItem;
 @end
 
-@implementation SyncCreatePassphraseCollectionViewController
+@implementation SyncCreatePassphraseTableViewController
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
   self = [super initWithBrowserState:browserState];
@@ -50,7 +47,7 @@ using namespace sync_encryption_passphrase;
   return self;
 }
 
-#pragma mark - View lifecycle
+#pragma mark - UIViewController
 
 - (void)didReceiveMemoryWarning {
   [super didReceiveMemoryWarning];
@@ -66,11 +63,11 @@ using namespace sync_encryption_passphrase;
   }
 }
 
-#pragma mark - SettingsRootCollectionViewController
+#pragma mark - SettingsRootTableViewController
 
 - (void)loadModel {
   [super loadModel];
-  CollectionViewModel* model = self.collectionViewModel;
+  TableViewModel* model = self.tableViewModel;
 
   NSInteger enterPassphraseIndex =
       [model indexPathForItemType:ItemTypeEnterPassphrase
@@ -83,16 +80,17 @@ using namespace sync_encryption_passphrase;
 
 #pragma mark - Items
 
-- (CollectionViewItem*)confirmPassphraseItem {
+- (TableViewItem*)confirmPassphraseItem {
   if (!confirmPassphrase_) {
     confirmPassphrase_ = [[UITextField alloc] init];
-    [confirmPassphrase_ setSecureTextEntry:YES];
-    [confirmPassphrase_ setBackgroundColor:[UIColor clearColor]];
-    [confirmPassphrase_ setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
-    [confirmPassphrase_ setAutocorrectionType:UITextAutocorrectionTypeNo];
-    [confirmPassphrase_
-        setPlaceholder:l10n_util::GetNSString(
-                           IDS_IOS_SYNC_CONFIRM_PASSPHRASE_LABEL)];
+    confirmPassphrase_.secureTextEntry = YES;
+    confirmPassphrase_.backgroundColor = UIColor.clearColor;
+    confirmPassphrase_.autocorrectionType = UITextAutocorrectionTypeNo;
+    confirmPassphrase_.font =
+        [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+    confirmPassphrase_.adjustsFontForContentSizeCategory = YES;
+    confirmPassphrase_.placeholder =
+        l10n_util::GetNSString(IDS_IOS_SYNC_CONFIRM_PASSPHRASE_LABEL);
     [self registerTextField:confirmPassphrase_];
   }
 
@@ -102,19 +100,18 @@ using namespace sync_encryption_passphrase;
   return item;
 }
 
-#pragma mark UICollectionViewDelegate
+#pragma mark UITableViewDelegate
 
-- (void)collectionView:(UICollectionView*)collectionView
-    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
-  NSInteger itemType =
-      [self.collectionViewModel itemTypeForIndexPath:indexPath];
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  [super tableView:tableView didSelectRowAtIndexPath:indexPath];
+  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
   if (itemType == ItemTypeConfirmPassphrase) {
     [confirmPassphrase_ becomeFirstResponder];
   }
 }
 
-#pragma mark SyncEncryptionPassphraseCollectionViewController
+#pragma mark SyncEncryptionPassphraseTableViewController
 
 - (BOOL)forDecryption {
   return NO;
@@ -168,7 +165,7 @@ using namespace sync_encryption_passphrase;
 
 @end
 
-@implementation SyncCreatePassphraseCollectionViewController (UsedForTesting)
+@implementation SyncCreatePassphraseTableViewController (UsedForTesting)
 
 - (UITextField*)confirmPassphrase {
   return confirmPassphrase_;

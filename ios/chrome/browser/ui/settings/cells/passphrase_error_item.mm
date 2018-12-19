@@ -4,13 +4,6 @@
 
 #import "ios/chrome/browser/ui/settings/cells/passphrase_error_item.h"
 
-#import <UIKit/UIKit.h>
-
-#include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
-
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -32,9 +25,11 @@ const CGFloat kHorizontalPadding = 16;
   return self;
 }
 
-- (void)configureCell:(PassphraseErrorCell*)cell {
-  [super configureCell:cell];
+- (void)configureCell:(UITableViewCell*)cell
+           withStyler:(ChromeTableViewStyler*)styler {
+  [super configureCell:cell withStyler:styler];
   cell.textLabel.text = self.text;
+  cell.selectionStyle = UITableViewCellSelectionStyleNone;
 }
 
 @end
@@ -48,15 +43,17 @@ const CGFloat kHorizontalPadding = 16;
 @synthesize textLabel = _textLabel;
 @synthesize errorImageView = _errorImageView;
 
-- (instancetype)initWithFrame:(CGRect)frame {
-  self = [super initWithFrame:frame];
+- (instancetype)initWithStyle:(UITableViewCellStyle)style
+              reuseIdentifier:(NSString*)reuseIdentifier {
+  self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
     UIView* contentView = self.contentView;
 
     _textLabel = [[UILabel alloc] init];
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    _textLabel.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
-    _textLabel.textColor = [[MDCPalette cr_redPalette] tint500];
+    _textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+    _textLabel.adjustsFontForContentSizeCategory = YES;
+    _textLabel.textColor = UIColor.redColor;
     [contentView addSubview:_textLabel];
 
     _errorImageView = [[UIImageView alloc] init];

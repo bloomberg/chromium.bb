@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_PASSPHRASE_COLLECTION_VIEW_CONTROLLER_TEST_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_PASSPHRASE_COLLECTION_VIEW_CONTROLLER_TEST_H_
+#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_PASSPHRASE_TABLE_VIEW_CONTROLLER_TEST_H_
+#define IOS_CHROME_BROWSER_UI_SETTINGS_PASSPHRASE_TABLE_VIEW_CONTROLLER_TEST_H_
 
-#include <memory>
+#include "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 
 #include "base/compiler_specific.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/platform_test.h"
 
@@ -27,17 +26,16 @@ class TestChromeBrowserState;
 @class UINavigationController;
 @class UIViewController;
 
-// Base class for PassphraseCollectionViewController tests.
+// Base class for PassphraseTableViewController tests.
 // Sets up a testing profile and a mock profile sync service, along with the
 // supporting structure they require.
-class PassphraseCollectionViewControllerTest
-    : public CollectionViewControllerTest {
+class PassphraseTableViewControllerTest : public ChromeTableViewControllerTest {
  public:
   static std::unique_ptr<KeyedService> CreateNiceProfileSyncServiceMock(
       web::BrowserState* context);
 
-  PassphraseCollectionViewControllerTest();
-  ~PassphraseCollectionViewControllerTest() override;
+  PassphraseTableViewControllerTest();
+  ~PassphraseTableViewControllerTest() override;
 
  protected:
   void SetUp() override;
@@ -60,4 +58,4 @@ class PassphraseCollectionViewControllerTest
   UINavigationController* nav_controller_;
 };
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_PASSPHRASE_COLLECTION_VIEW_CONTROLLER_TEST_H_
+#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_PASSPHRASE_TABLE_VIEW_CONTROLLER_TEST_H_

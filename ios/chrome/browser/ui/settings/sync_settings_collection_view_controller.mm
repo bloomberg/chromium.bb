@@ -43,7 +43,7 @@
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/text_and_error_item.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
-#import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_encryption_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -766,7 +766,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // If there was a sync error, prompt the user to enter the passphrase.
   // Otherwise, show the full encryption options.
   if (syncService->IsPassphraseRequired()) {
-    controllerToPush = [[SyncEncryptionPassphraseCollectionViewController alloc]
+    controllerToPush = [[SyncEncryptionPassphraseTableViewController alloc]
         initWithBrowserState:_browserState];
   } else {
     controllerToPush = [[SyncEncryptionTableViewController alloc]

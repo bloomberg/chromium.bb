@@ -13,6 +13,8 @@
 namespace {
 // Padding used on the leading and trailing edges of the cell.
 const CGFloat kHorizontalPadding = 16;
+// Padding used on the top and bottom edges of the cell.
+const CGFloat kVerticalPadding = 14;
 }  // namespace
 
 @interface BYOTextFieldCell ()
@@ -40,8 +42,9 @@ const CGFloat kHorizontalPadding = 16;
   return self;
 }
 
-- (void)configureCell:(BYOTextFieldCell*)cell {
-  [super configureCell:cell];
+- (void)configureCell:(BYOTextFieldCell*)cell
+           withStyler:(ChromeTableViewStyler*)styler {
+  [super configureCell:cell withStyler:styler];
   [cell installTextField:self.textField];
 }
 
@@ -71,8 +74,10 @@ const CGFloat kHorizontalPadding = 16;
 
   // Store the constraints.
   self.textFieldConstraints = @[
-    [textField.topAnchor constraintEqualToAnchor:contentView.topAnchor],
-    [textField.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor],
+    [textField.topAnchor constraintEqualToAnchor:contentView.topAnchor
+                                        constant:kVerticalPadding],
+    [textField.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor
+                                           constant:-kVerticalPadding],
     [textField.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor
                                             constant:kHorizontalPadding],
     [textField.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor

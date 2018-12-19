@@ -23,7 +23,7 @@
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_root_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
-#import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_settings_collection_view_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -182,8 +182,8 @@ newUserFeedbackController:(ios::ChromeBrowserState*)browserState
 newSyncEncryptionPassphraseController:(ios::ChromeBrowserState*)browserState
                              delegate:(id<SettingsNavigationControllerDelegate>)
                                           delegate {
-  SyncEncryptionPassphraseCollectionViewController* controller =
-      [[SyncEncryptionPassphraseCollectionViewController alloc]
+  SyncEncryptionPassphraseTableViewController* controller =
+      [[SyncEncryptionPassphraseTableViewController alloc]
           initWithBrowserState:browserState];
   controller.dispatcher = [delegate dispatcherForSettings];
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
@@ -540,8 +540,8 @@ initWithRootViewController:(UIViewController*)rootViewController
 // TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
 - (void)showSyncPassphraseSettingsFromViewController:
     (UIViewController*)baseViewController {
-  SyncEncryptionPassphraseCollectionViewController* controller =
-      [[SyncEncryptionPassphraseCollectionViewController alloc]
+  SyncEncryptionPassphraseTableViewController* controller =
+      [[SyncEncryptionPassphraseTableViewController alloc]
           initWithBrowserState:mainBrowserState_];
   controller.dispatcher = [delegate_ dispatcherForSettings];
   [self pushViewController:controller animated:YES];
