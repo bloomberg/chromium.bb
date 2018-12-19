@@ -276,7 +276,8 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
       AddChildView(content_view);
       ExcludeCardFromEventHandling(contents_->GetView()->native_view());
 
-      if (search_result_->equivalent_result_id().has_value()) {
+      if (search_result_ &&
+          search_result_->equivalent_result_id().has_value()) {
         view_delegate_->GetSearchModel()->DeleteResultById(
             search_result_->equivalent_result_id().value());
       }
