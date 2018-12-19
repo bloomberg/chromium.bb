@@ -255,7 +255,6 @@
 <translation id="2587841377698384444">ID rozhraní Directory API:</translation>
 <translation id="2597378329261239068">Tento dokument je chráněn heslem. Zadejte prosím heslo.</translation>
 <translation id="2609632851001447353">Varianty</translation>
-<translation id="262424810616849754">{COUNT,plural, =0{Žádné}=1{1 aplikace ($1)}=2{2 aplikace ($1, $2)}few{# aplikace ($1, $2 $3)}many{# aplikace ($1, $2 $3)}other{# aplikací ($1, $2 $3)}}</translation>
 <translation id="2625385379895617796">Vaše hodiny jdou napřed</translation>
 <translation id="2634124572758952069">IP adresa serveru <ph name="HOST_NAME" /> nebyla nalezena.</translation>
 <translation id="2639739919103226564">Stav:</translation>

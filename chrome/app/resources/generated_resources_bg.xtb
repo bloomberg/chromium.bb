@@ -69,7 +69,6 @@
 <translation id="1091767800771861448">Натиснете „ESCAPE“ за пропускане (само в неофициалните версии).</translation>
 <translation id="1093457606523402488">Видими мрежи:</translation>
 <translation id="1094607894174825014">Операция за четене или запис с невалидно отместване бе заявена на: <ph name="DEVICE_NAME" />.</translation>
-<translation id="109758035718544977">Включване на звука за сайтовете</translation>
 <translation id="1097658378307015415">Преди да влезете в профила си, моля, влезте като гост, за да активирате мрежата <ph name="NETWORK_ID" /></translation>
 <translation id="1103523840287552314">Винаги да се превежда от <ph name="LANGUAGE" /></translation>
 <translation id="1108600514891325577">&amp;Стоп</translation>
@@ -156,7 +155,6 @@
 <translation id="1211364473545090084">Отворете прозорец в режим „инкогнито“, за да използвате мрежата, без да се запазва история на сърфирането ви</translation>
 <translation id="1213037489357051291">Настроени са <ph name="NUM_FINGERPRINTS" /> отпечатъка</translation>
 <translation id="1215411991991485844">Добавено е ново приложение на заден план</translation>
-<translation id="1216654534877302979">Заглушаване на сайтовете</translation>
 <translation id="1216659994753476700">За съжаление, не можем да осъществим достъп до потребителския ви профил. Възможно е съхраняваните на това устройство файлове и данни да са заличени.<ph name="BR" />
 <ph name="BR" />
 Ще се наложи да настроите отново потребителския си профил.<ph name="BR" />
@@ -206,7 +204,6 @@
 <translation id="1285484354230578868">Съхраняване на данните в профила ви в Google Диск</translation>
 <translation id="1288037062697528143">Нощното осветление ще се включи автоматично по залез</translation>
 <translation id="1288300545283011870">Свойства на говора</translation>
-<translation id="1293177648337752319">Включване на звука за сайта</translation>
 <translation id="1293264513303784526">USB-C устройство (левият порт)</translation>
 <translation id="1293556467332435079">Файлове</translation>
 <translation id="1296497012903089238">Тип сертификат</translation>
@@ -305,7 +302,6 @@
 <translation id="1434886155212424586">Началната страница е новият раздел</translation>
 <translation id="1436671784520050284">Продължаване с настройването</translation>
 <translation id="1436784010935106834">Премахнато</translation>
-<translation id="1438632560381091872">Включване отново на звука на разделите</translation>
 <translation id="1442392616396121389">Префикс за маршрутизиране</translation>
 <translation id="144283815522798837">Избрахте <ph name="NUMBER_OF_ITEMS_SELECTED" /></translation>
 <translation id="1444628761356461360">Тази настройка се управлява от собственика на устройството – <ph name="OWNER_EMAIL" />.</translation>
@@ -385,7 +381,6 @@
 <translation id="1567387640189251553">Свързана е различна клавиатура, откакто последно въведохте паролата си. Тя може да се опитва да записва кои клавиши натискате.</translation>
 <translation id="1567750922576943685">Потвърждаването на самоличността ви спомага за защитата на личната ви информация</translation>
 <translation id="1567993339577891801">Конзола на JavaScript</translation>
-<translation id="1568067597247500137">Заглушаване на сайта</translation>
 <translation id="1568323446248056064">Отваряне на настройките за дисплея</translation>
 <translation id="1572266655485775982">Активиране на Wi-Fi</translation>
 <translation id="1572585716423026576">Задаване като тапет</translation>
@@ -437,7 +432,6 @@
 <translation id="1643072738649235303">Подпис по X9.62 ECDSA с SHA-1</translation>
 <translation id="1644574205037202324">История</translation>
 <translation id="1645516838734033527">За да бъде защитен вашият <ph name="DEVICE_TYPE" />, Smart Lock изисква опция за заключване на екрана на телефона ви.</translation>
-<translation id="1646102270785326155">След като този потребител бъде премахнат, всички свързани с него файлове и локални данни ще се изтрият за постоянно. $1 пак ще може да влезе в профила си по-късно.</translation>
 <translation id="1646982517418478057">Моля, въведете парола за шифроване на този сертификат</translation>
 <translation id="164814987133974965">Контролираният потребител може да изследва мрежата с ваше напътствие. Като негов мениджър сте в състояние:
 <ph name="BEGIN_BOLD" />да разрешавате или забранявате<ph name="END_BOLD" /> определени уебсайтове;
@@ -496,7 +490,6 @@
 <translation id="1729533290416704613">То също контролира коя страница се показва при търсене от полето за всичко.</translation>
 <translation id="1730917990259790240"><ph name="BEGIN_PARAGRAPH1" />За да премахнете приложения, отворете „Настройки“ &gt; „Google Play Магазин“ &gt; „Управление на предпочитанията за Android“ &gt; „Приложения“ или мениджъра на приложенията. Докоснете това, което искате да деинсталирате (може да се наложи да прекарате пръст надясно или наляво, за да го намерите). Докоснете „Деинсталиране“ или „Деактивиране“.<ph name="END_PARAGRAPH1" /></translation>
 <translation id="1731911755844941020">Заявката се изпраща...</translation>
-<translation id="1732215134274276513">Освобождаване на разделите</translation>
 <translation id="1733383495376208985">Шифроване на синхронизираните данни със собствения ви <ph name="BEGIN_LINK" />пропуск за синхронизиране<ph name="END_LINK" />. Това не включва начините на плащане и адресите от Google Pay.</translation>
 <translation id="1734824808160898225">Възможно е <ph name="PRODUCT_NAME" /> да не може да се поддържа актуален</translation>
 <translation id="1736419249208073774">Разглеждане</translation>
@@ -548,7 +541,6 @@
 <translation id="1807938677607439181">Всички файлове</translation>
 <translation id="1809734401532861917">Добавяне на моите отметки, история, пароли и други настройки към <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1810764548349082891">Няма налична визуализация</translation>
-<translation id="1812631533912615985">Освобождаване на разделите</translation>
 <translation id="1813278315230285598">Услуги</translation>
 <translation id="18139523105317219">Име на EDI страна</translation>
 <translation id="1815083418640426271">Поставяне като неформатиран текст</translation>
@@ -707,7 +699,6 @@
 <translation id="2065405795449409761">Chrome се контролира от автоматизиран софтуер за тестване.</translation>
 <translation id="2070909990982335904">Имената, започващи с точка, са запазени за системата. Моля, изберете друго име.</translation>
 <translation id="2071393345806050157">Няма локален регистрационен файл.</translation>
-<translation id="2074527029802029717">Освобождаване на раздела</translation>
 <translation id="2075474481720804517"><ph name="BATTERY_PERCENTAGE" />% батерия</translation>
 <translation id="2075959085554270910">Позволява ви да активирате/деактивирате кликването с докосване и преместването чрез докосване</translation>
 <translation id="2076269580855484719">Скриване на тази приставка</translation>
@@ -1349,7 +1340,6 @@
 <translation id="3045447014237878114">Този сайт е изтеглил автоматично няколко файла</translation>
 <translation id="3046910703532196514">Уеб страница, цялата</translation>
 <translation id="304747341537320566">Машини за синтезиран говор</translation>
-<translation id="304826556400666995">Включване отново на звука на разделите</translation>
 <translation id="3053013834507634016">Използване на ключа на сертификата</translation>
 <translation id="3057861065630527966">Създаване на резервни копия на снимките и видеоклиповете ви</translation>
 <translation id="3060379269883947824">Активиране на функцията Прочитане на глас</translation>
@@ -2334,7 +2324,6 @@
 <translation id="4628762811416793313">Настройването на контейнера за Linux не завърши. Моля, опитайте отново.</translation>
 <translation id="4628948037717959914">Снимка</translation>
 <translation id="4631887759990505102">Изпълнител</translation>
-<translation id="4632483769545853758">Включване отново на звука на раздела</translation>
 <translation id="4633003931260532286">Разширението изисква <ph name="IMPORT_VERSION" /> или по-нова версия на <ph name="IMPORT_NAME" />, но само <ph name="INSTALLED_VERSION" /> е инсталирана</translation>
 <translation id="4634771451598206121">Влизане отново...</translation>
 <translation id="4635398712689569051">Страницата „<ph name="PAGE_NAME" />“ не е достъпна за гости.</translation>
@@ -2398,7 +2387,6 @@
 <translation id="4735803855089279419">Системата не успя да определи идентификаторите за това устройство.</translation>
 <translation id="4737715515457435632">Моля, установете връзка с мрежа</translation>
 <translation id="473775607612524610">Актуализиране</translation>
-<translation id="474217410105706308">Спиране на звука на раздела</translation>
 <translation id="4742746985488890273">Фиксиране в лавицата</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Научете как да актуализирате приложения<ph name="END_LINK" /></translation>
 <translation id="4746351372139058112">Messages</translation>
@@ -2623,7 +2611,6 @@
 <translation id="5094721898978802975">Комуникация със съдействащи директно изпълнявани приложения</translation>
 <translation id="5097002363526479830">Свързването с мрежата „<ph name="NAME" />“ не бе успешно: <ph name="DETAILS" /></translation>
 <translation id="5101042277149003567">Отваряне на всички отметки</translation>
-<translation id="5105855035535475848">Фиксиране на разделите</translation>
 <translation id="5108967062857032718">Настройки – Премахване на приложенията за Android</translation>
 <translation id="5109044022078737958">Мия</translation>
 <translation id="5111692334209731439">&amp;Диспечер на отметките</translation>
@@ -2688,7 +2675,6 @@
 <translation id="520621735928254154">Грешка при импортирането на сертификата</translation>
 <translation id="5209320130288484488">Няма намерени устройства</translation>
 <translation id="5209518306177824490">Пръстов отпечатък SHA-1</translation>
-<translation id="5210365745912300556">Затваряне на раздела</translation>
 <translation id="5213481667492808996">Услугата ви за данни „<ph name="NAME" />“ е готова за използване</translation>
 <translation id="5213891612754844763">Показване на настройките за прокси сървъра</translation>
 <translation id="521582610500777512">Снимката бе отхвърлена</translation>
@@ -2739,7 +2725,6 @@
 <translation id="5270167208902136840">Показване на още <ph name="NUMBER_OF_MORE_APPS" /> приложения</translation>
 <translation id="5275352920323889391">Куче</translation>
 <translation id="5275973617553375938">Възстановени от Google Диск файлове</translation>
-<translation id="527605719918376753">Спиране на звука на раздела</translation>
 <translation id="527605982717517565">Да се разреши на <ph name="HOST" /> винаги да изпълнява JavaScript</translation>
 <translation id="5280426389926346830">Да се създаде ли пряк път?</translation>
 <translation id="528208740344463258">За да изтеглите и използвате приложения за Android, трябва първо да инсталирате тази задължителна актуализация. Докато устройството ви <ph name="DEVICE_TYPE" /> се актуализира, няма да можете да го използвате. След като процесът приключи, <ph name="DEVICE_TYPE" /> ще се рестартира.</translation>
@@ -2862,7 +2847,6 @@
 <translation id="5449551289610225147">Паролата е невалидна</translation>
 <translation id="5449588825071916739">Запазване на отметки към всички раздели</translation>
 <translation id="5449716055534515760">Затваряне на &amp;прозореца</translation>
-<translation id="5453029940327926427">Затваряне на разделите</translation>
 <translation id="5454166040603940656">с/ъс <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">Невалидно</translation>
 <translation id="5457459357461771897">Четене и изтриване на снимки, музика и друга мултимедия от компютъра ви</translation>
@@ -3328,7 +3312,6 @@
 <translation id="6122875415561139701">Операцията за запис не е разрешена на: <ph name="DEVICE_NAME" />.</translation>
 <translation id="6124650939968185064">От това разширение зависят следните разширения:</translation>
 <translation id="6125479973208104919">За съжаление, трябва отново да добавите профила си към това устройство <ph name="DEVICE_TYPE" />.</translation>
-<translation id="612596694132302162">Включване на звука за сайта</translation>
 <translation id="6129691635767514872">Избраните данни са премахнати от Chrome и синхронизираните устройства. Възможно е в профила ви в Google да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> – например търсения и активност от други наши услуги.</translation>
 <translation id="6129938384427316298">Коментар на сертификат на Netscape</translation>
 <translation id="6129953537138746214">Интервал</translation>
@@ -3531,7 +3514,6 @@
 <translation id="6436164536244065364">Преглед в уеб магазина</translation>
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> – възпроизвежда се звук</translation>
 <translation id="6442187272350399447">Щастливец</translation>
-<translation id="6442697326824312960">Освобождаване на раздела</translation>
 <translation id="6444070574980481588">Задаване на датата и часа</translation>
 <translation id="6445450263907939268">Ако не сте искали тези промени, можете да възстановите предишните си настройки.</translation>
 <translation id="6447842834002726250">„Бисквитки“</translation>
@@ -3734,7 +3716,6 @@
 <translation id="6770664076092644100">Потвърждаване чрез КБП</translation>
 <translation id="6771503742377376720">Е сертифициращ орган</translation>
 <translation id="6777817260680419853">Блокирано бе пренасочване</translation>
-<translation id="6778959797435875428">Включване на звука за сайтовете</translation>
 <translation id="677965093459947883">Много малък</translation>
 <translation id="6780439250949340171">да управлявате други настройки.</translation>
 <translation id="6781284683813954823">Връзка към драскулката</translation>
@@ -4051,7 +4032,6 @@
 <translation id="7257666756905341374">Четене на данните, които копирате и поставяте</translation>
 <translation id="7258697411818564379">ПИН кодът ви е добавен</translation>
 <translation id="7262004276116528033">Тази услуга за вход се хоства от <ph name="SAML_DOMAIN" /></translation>
-<translation id="7268365133021434339">Затваряне на разделите</translation>
 <translation id="7268659760406822741">Налични услуги</translation>
 <translation id="7270858098575133036">Получаване на запитване, когато сайт иска да използва специални системни съобщения за достъп до MIDI устройствата</translation>
 <translation id="7272674038937250585">Няма описание</translation>
@@ -4241,7 +4221,6 @@
 <translation id="7576032389798113292">6 x 4</translation>
 <translation id="7576690715254076113">Комплектуване</translation>
 <translation id="7576976045740938453">Възникна проблем с профила за демонстрационен режим.</translation>
-<translation id="7579149537961810247">Заглушаване на сайтовете</translation>
 <translation id="7580671184200851182">Възпроизвеждане на един и същ звук през всички високоговорители (моно)</translation>
 <translation id="7581462281756524039">Инструмент за почистване</translation>
 <translation id="7582582252461552277">Да се предпочита тази мрежа</translation>
@@ -4595,7 +4574,6 @@
 <translation id="8068253693380742035">Докоснете за вход в профила си</translation>
 <translation id="8069615408251337349">Google Отпечатване в облак</translation>
 <translation id="8071432093239591881">Отпечатване като изображение</translation>
-<translation id="8072988827236813198">Фиксиране на разделите</translation>
 <translation id="8073499153683482226"><ph name="BEGIN_PARAGRAPH1" />Данните на приложенията могат да бъдат всяка запазена от тях информация (въз основа на настройките за програмисти), включително контакти, съобщения и снимки.<ph name="END_PARAGRAPH1" />
 <ph name="BEGIN_PARAGRAPH2" />Данните в резервното копие не заемат от квотата на използваното от детето ви хранилище на Диск.<ph name="END_PARAGRAPH2" />
 <ph name="BEGIN_PARAGRAPH3" />Можете да изключите тази услуга от настройките.<ph name="END_PARAGRAPH3" /></translation>
@@ -4781,7 +4759,6 @@
 <translation id="8368859634510605990">&amp;Отваряне на всички отметки</translation>
 <translation id="8371695176452482769">Говорете сега</translation>
 <translation id="8372369524088641025">Ключът за WEP е неправилен</translation>
-<translation id="8373553483208508744">Спиране на звука на разделите</translation>
 <translation id="8378714024927312812">Управлява се от организацията ви</translation>
 <translation id="8379878387931047019">Устройството не поддържа типа ключ за сигурност, заявен от този уебсайт</translation>
 <translation id="8382913212082956454">Копиране на име&amp;йл адреса</translation>
@@ -4889,7 +4866,6 @@
 <translation id="8546930481464505581">Персонализиране на лентата за докосване</translation>
 <translation id="8547013269961688403">Активиране на лупата за увеличаване на целия екран</translation>
 <translation id="85486688517848470">Задръжте клавиша „търсене“, за да промените поведението на клавишите от най-горния ред</translation>
-<translation id="855081842937141170">Фиксиране на раздела</translation>
 <translation id="8551388862522347954">Лицензи</translation>
 <translation id="8553342806078037065">Управление на другите хора</translation>
 <translation id="8554899698005018844">Без език</translation>
@@ -5203,7 +5179,6 @@
 <translation id="9038430547971207796">Следващия път телефонът ви ще отключи вашия <ph name="DEVICE_TYPE" />. Можете да изключите Smart Lock от настройките.</translation>
 <translation id="9038649477754266430">Използване на услуга за предвиждане с цел по-бързо зареждане на страниците</translation>
 <translation id="9039663905644212491">PEAP</translation>
-<translation id="9039890312082871605">Спиране на звука на разделите</translation>
 <translation id="9040661932550800571">Да се актуализира ли паролата за <ph name="ORIGIN" />?</translation>
 <translation id="9041692268811217999">Достъпът до локални файлове на компютъра ви е деактивиран от администратора ви</translation>
 <translation id="9042893549633094279">Поверителност и сигурност</translation>
@@ -5301,7 +5276,6 @@
 <translation id="920045321358709304">Търсене с/ъс <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201220332032049474">Опции за заключване на екрана</translation>
 <translation id="9203398526606335860">&amp;Профилирането е активирано</translation>
-<translation id="9203478404496196495">Включване отново на звука на раздела</translation>
 <translation id="9203904171912129171">Избор на устройство</translation>
 <translation id="9203962528777363226">Администраторът на това устройство е деактивирал добавянето на нови потребители</translation>
 <translation id="9213073329713032541">Инсталирането стартира успешно.</translation>

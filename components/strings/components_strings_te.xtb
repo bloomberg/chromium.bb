@@ -255,7 +255,6 @@
 <translation id="2587841377698384444">డైరెక్టరీ API ID:</translation>
 <translation id="2597378329261239068">ఈ పత్రం అనుమతి పదంచే రక్షించబడింది. దయచేసి అనుమతి పదాన్ని నమోదు చేయండి.</translation>
 <translation id="2609632851001447353">వ్యత్యాసాలు</translation>
-<translation id="262424810616849754">{COUNT,plural, =0{ఏమీ లేవు}=1{1 అనువర్తనం ($1)}=2{2 అనువర్తనాలు ($1, $2)}other{# అనువర్తనాలు ($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">మీ గడియారం సమయం భవిష్యత్తులో ఉంది</translation>
 <translation id="2634124572758952069"><ph name="HOST_NAME" /> యొక్క సర్వర్ IP చిరునామా కనుగొనబడలేదు.</translation>
 <translation id="2639739919103226564">స్థితి: </translation>

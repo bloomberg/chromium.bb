@@ -255,7 +255,6 @@
 <translation id="2587841377698384444">Идентификатор Directory API:</translation>
 <translation id="2597378329261239068">Документ защищен паролем. Введите пароль.</translation>
 <translation id="2609632851001447353">Варианты</translation>
-<translation id="262424810616849754">{COUNT,plural, =0{Нет}=1{1 приложение ($1)}=2{2 приложения ($1 и $2)}one{# приложение ($1, $2 $3)}few{# приложения ($1, $2 $3)}many{# приложений ($1, $2 $3)}other{# приложения ($1, $2 $3)}}</translation>
 <translation id="2625385379895617796">Часы спешат</translation>
 <translation id="2634124572758952069">Не удалось найти IP-адрес сервера <ph name="HOST_NAME" />.</translation>
 <translation id="2639739919103226564">Состояние:</translation>

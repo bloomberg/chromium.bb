@@ -255,7 +255,6 @@
 <translation id="2587841377698384444">Id for Directory API:</translation>
 <translation id="2597378329261239068">Dette dokument er adgangskodebeskyttet. Angiv en adgangskode.</translation>
 <translation id="2609632851001447353">Varianter</translation>
-<translation id="262424810616849754">{COUNT,plural, =0{Ingen}=1{1 app ($1)}=2{2 apps ($1, $2)}one{# app ($1, $2, $3)}other{# apps ($1, $2 $3)}}</translation>
 <translation id="2625385379895617796">Dit ur er foran</translation>
 <translation id="2634124572758952069">IP-adressen på serveren for <ph name="HOST_NAME" /> kunne ikke findes.</translation>
 <translation id="2639739919103226564">Status:</translation>

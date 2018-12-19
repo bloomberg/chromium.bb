@@ -255,7 +255,6 @@
 <translation id="2587841377698384444">Directory API ID：</translation>
 <translation id="2597378329261239068">本文档设置了密码保护，请输入密码。</translation>
 <translation id="2609632851001447353">其他变体</translation>
-<translation id="262424810616849754">{COUNT,plural, =0{无}=1{1 个应用（$1）}=2{2 个应用（$1、$2）}other{# 个应用（$1、$2，$3）}}</translation>
 <translation id="2625385379895617796">您的时钟快了</translation>
 <translation id="2634124572758952069">找不到 <ph name="HOST_NAME" /> 的服务器 IP 地址。</translation>
 <translation id="2639739919103226564">状态：</translation>

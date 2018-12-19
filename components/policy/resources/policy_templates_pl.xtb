@@ -2557,7 +2557,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Konfiguracji |old_configs| należy używać do weryfikacji kodu dostępu tylko wtedy, gdy nie można tego zrobić przy użyciu konfiguracji |future_config| ani |current_config|.
 
       Przeznaczeniem tej zasady jest stopniowa rotacja konfiguracji kodu dostępu. Nowa konfiguracja jest zawsze zapisywana w elemencie |future_config|, a istniejąca wartość
-      jest przenoszona do elementu |current_config|. Wcześniejsze wartości zapisane w konfiguracji |current_config| są przenoszone konfiguracji |old_configs| i usuwane po zakończeniu cyklu rotacji.
+      jest przenoszona do elementu |current_config|. Wcześniejsze wartości zapisane w konfiguracji |current_config| są przenoszone do konfiguracji |old_configs| i usuwane po zakończeniu cyklu rotacji.
 
       Ta zasada dotyczy tylko dzieci.
       Jeśli ta zasada jest ustawiona, kod dostępu rodzica można zweryfikować na urządzeniu dziecka.

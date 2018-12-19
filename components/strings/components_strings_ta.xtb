@@ -255,7 +255,6 @@
 <translation id="2587841377698384444">கோப்பக API ஐடி:</translation>
 <translation id="2597378329261239068">இந்த ஆவணம் கடவுச்சொல் பாதுகாக்கப்பட்ட ஒன்று. தயவுசெய்து ஒரு கடவுச்சொல்லை உள்ளிடுக.</translation>
 <translation id="2609632851001447353">வேறுபாடுகள்</translation>
-<translation id="262424810616849754">{COUNT,plural, =0{ஏதுமில்லை}=1{1 பயன்பாடு ($1)}=2{2 பயன்பாடுகள் ($1, $2)}other{# பயன்பாடுகள் ($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">உங்கள் கடிகாரம் மிகவும் முன்னோக்கி இருக்கிறது</translation>
 <translation id="2634124572758952069"><ph name="HOST_NAME" /> இன் சேவையக IP முகவரியைக் கண்டறிய முடியவில்லை.</translation>
 <translation id="2639739919103226564">நிலை:</translation>
