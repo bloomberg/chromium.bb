@@ -25,10 +25,6 @@ extern bool g_app_shims_allow_update_and_launch_in_tests;
 
 namespace web_app {
 
-// Returns the full path of the .app shim that would be created by
-// CreateShortcuts().
-base::FilePath GetAppInstallPath(const ShortcutInfo& shortcut_info);
-
 // Callback type for MaybeLaunchShortcut. If |shim_process| is valid then the
 // app shim was launched.
 using LaunchAppCallback = base::OnceCallback<void(base::Process shim_process)>;
@@ -63,7 +59,7 @@ class WebAppShortcutCreator {
   virtual ~WebAppShortcutCreator();
 
   // Returns the base name for the shortcut.
-  base::FilePath GetShortcutBasename() const;
+  virtual base::FilePath GetShortcutBasename() const;
 
   // Returns a path to the Chrome Apps folder in the relevant applications
   // folder. E.g. ~/Applications or /Applications.
@@ -71,6 +67,10 @@ class WebAppShortcutCreator {
 
   // The full path to the app bundle under the relevant Applications folder.
   base::FilePath GetApplicationsShortcutPath() const;
+
+  // Returns the paths to app bundles with the given id as found by launch
+  // services, sorted by preference.
+  std::vector<base::FilePath> GetAppBundlesById() const;
 
   // The full path to the app bundle under the profile folder.
   base::FilePath GetInternalShortcutPath() const;
@@ -84,10 +84,7 @@ class WebAppShortcutCreator {
   virtual void RevealAppShimInFinder() const;
 
  protected:
-  // Returns a path to an app bundle with the given id. Or an empty path if no
-  // matching bundle was found.
-  // Protected and virtual so it can be mocked out for testing.
-  virtual base::FilePath GetAppBundleById(const std::string& bundle_id) const;
+  virtual std::vector<base::FilePath> GetAppBundlesByIdUnsorted() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebAppShortcutCreatorTest, DeleteShortcuts);
