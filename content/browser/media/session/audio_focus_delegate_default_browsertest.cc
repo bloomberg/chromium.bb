@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/unguessable_token.h"
+#include "build/build_config.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/media/session/mock_media_session_player_observer.h"
 #include "content/public/common/service_manager_connection.h"
@@ -24,6 +25,14 @@ using media_session::test::TestAudioFocusObserver;
 namespace {
 
 const char kExpectedSourceName[] = "web";
+
+bool IsBrowserAudioFocusGroupingEnabled() {
+#if defined(OS_CHROMEOS)
+  return true;
+#else
+  return false;
+#endif
+}
 
 }  // namespace
 
@@ -106,7 +115,7 @@ class AudioFocusDelegateDefaultBrowserTest : public ContentBrowserTest {
       media_session::test::MockMediaSessionMojoObserver observer(
           *media_session);
       observer.WaitForState(
-          use_separate_group_id
+          use_separate_group_id || !IsBrowserAudioFocusGroupingEnabled()
               ? media_session::mojom::MediaSessionInfo::SessionState::kSuspended
               : media_session::mojom::MediaSessionInfo::SessionState::kActive);
     }
