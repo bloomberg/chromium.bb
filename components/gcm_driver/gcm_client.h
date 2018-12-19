@@ -12,28 +12,26 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_refptr.h"
 #include "components/gcm_driver/common/gcm_messages.h"
 #include "components/gcm_driver/gcm_activity.h"
 #include "components/gcm_driver/registration_info.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 
-template <class T> class scoped_refptr;
-
 namespace base {
 class FilePath;
 class RetainingOneShotTimer;
 class SequencedTaskRunner;
-}
+}  // namespace base
 
 namespace net {
 class IPEndPoint;
-}
+}  // namespace net
 
 namespace network {
 class NetworkConnectionTracker;
 class SharedURLLoaderFactory;
-}
+}  // namespace network
 
 namespace gcm {
 
@@ -159,7 +157,7 @@ class GCMClient {
     // |registration_id|: non-empty if the registration completed successfully.
     // |result|: the type of the error if an error occured, success otherwise.
     virtual void OnRegisterFinished(
-        const linked_ptr<RegistrationInfo>& registration_info,
+        scoped_refptr<RegistrationInfo> registration_info,
         const std::string& registration_id,
         Result result) = 0;
 
@@ -168,7 +166,7 @@ class GCMClient {
     //                      registration.
     // |result|: result of the unregistration.
     virtual void OnUnregisterFinished(
-        const linked_ptr<RegistrationInfo>& registration_info,
+        scoped_refptr<RegistrationInfo> registration_info,
         GCMClient::Result result) = 0;
 
     // Called when the message is scheduled to send successfully or an error
@@ -268,14 +266,13 @@ class GCMClient {
   //                      registration. For GCM, it will contain app id and
   //                      sender IDs. For InstanceID, it will contain app_id,
   //                      authorized entity and scope.
-  virtual void Register(
-      const linked_ptr<RegistrationInfo>& registration_info) = 0;
+  virtual void Register(scoped_refptr<RegistrationInfo> registration_info) = 0;
 
   // Checks that the provided |registration_id| (aka token for Instance ID
   // registrations) matches the stored registration info. Also checks sender IDs
   // match for GCM registrations.
   virtual bool ValidateRegistration(
-      const linked_ptr<RegistrationInfo>& registration_info,
+      scoped_refptr<RegistrationInfo> registration_info,
       const std::string& registration_id) = 0;
 
   // Unregisters from the server to stop accessing the provided service.
@@ -286,7 +283,7 @@ class GCMClient {
   //                      IDs can be ingored). For InstanceID, it will contain
   //                      app id, authorized entity and scope.
   virtual void Unregister(
-      const linked_ptr<RegistrationInfo>& registration_info) = 0;
+      scoped_refptr<RegistrationInfo> registration_info) = 0;
 
   // Sends a message to a given receiver. Delegate::OnSendFinished will be
   // called asynchronously upon completion.

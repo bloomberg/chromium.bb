@@ -15,25 +15,26 @@
 namespace gcm {
 
 namespace {
-const char kInstanceIDSerializationPrefix[] = "iid-";
-const char kSerializedValidationTimeSeparator = '#';
-const char kSerializedKeySeparator = ',';
-const int kInstanceIDSerializationPrefixLength =
+constexpr char kInstanceIDSerializationPrefix[] = "iid-";
+constexpr char kSerializedValidationTimeSeparator = '#';
+constexpr char kSerializedKeySeparator = ',';
+constexpr int kInstanceIDSerializationPrefixLength =
     sizeof(kInstanceIDSerializationPrefix) / sizeof(char) - 1;
 }  // namespace
 
 // static
-std::unique_ptr<RegistrationInfo> RegistrationInfo::BuildFromString(
+scoped_refptr<RegistrationInfo> RegistrationInfo::BuildFromString(
     const std::string& serialized_key,
     const std::string& serialized_value,
     std::string* registration_id) {
-  std::unique_ptr<RegistrationInfo> registration;
+  scoped_refptr<RegistrationInfo> registration;
 
   if (base::StartsWith(serialized_key, kInstanceIDSerializationPrefix,
-                       base::CompareCase::SENSITIVE))
-    registration.reset(new InstanceIDTokenInfo);
-  else
-    registration.reset(new GCMRegistrationInfo);
+                       base::CompareCase::SENSITIVE)) {
+    registration = base::MakeRefCounted<InstanceIDTokenInfo>();
+  } else {
+    registration = base::MakeRefCounted<GCMRegistrationInfo>();
+  }
 
   if (!registration->Deserialize(serialized_key, serialized_value,
                                  registration_id)) {
@@ -42,11 +43,9 @@ std::unique_ptr<RegistrationInfo> RegistrationInfo::BuildFromString(
   return registration;
 }
 
-RegistrationInfo::RegistrationInfo() {
-}
+RegistrationInfo::RegistrationInfo() = default;
 
-RegistrationInfo::~RegistrationInfo() {
-}
+RegistrationInfo::~RegistrationInfo() = default;
 
 // static
 const GCMRegistrationInfo* GCMRegistrationInfo::FromRegistrationInfo(
@@ -64,11 +63,9 @@ GCMRegistrationInfo* GCMRegistrationInfo::FromRegistrationInfo(
   return static_cast<GCMRegistrationInfo*>(registration_info);
 }
 
-GCMRegistrationInfo::GCMRegistrationInfo() {
-}
+GCMRegistrationInfo::GCMRegistrationInfo() = default;
 
-GCMRegistrationInfo::~GCMRegistrationInfo() {
-}
+GCMRegistrationInfo::~GCMRegistrationInfo() = default;
 
 RegistrationInfo::RegistrationType GCMRegistrationInfo::GetType() const {
   return GCM_REGISTRATION;
@@ -167,11 +164,9 @@ InstanceIDTokenInfo* InstanceIDTokenInfo::FromRegistrationInfo(
   return static_cast<InstanceIDTokenInfo*>(registration_info);
 }
 
-InstanceIDTokenInfo::InstanceIDTokenInfo() {
-}
+InstanceIDTokenInfo::InstanceIDTokenInfo() = default;
 
-InstanceIDTokenInfo::~InstanceIDTokenInfo() {
-}
+InstanceIDTokenInfo::~InstanceIDTokenInfo() = default;
 
 RegistrationInfo::RegistrationType InstanceIDTokenInfo::GetType() const {
   return INSTANCE_ID_TOKEN;
@@ -246,8 +241,8 @@ bool InstanceIDTokenInfo::Deserialize(const std::string& serialized_key,
 }
 
 bool RegistrationInfoComparer::operator()(
-    const linked_ptr<RegistrationInfo>& a,
-    const linked_ptr<RegistrationInfo>& b) const {
+    const scoped_refptr<RegistrationInfo>& a,
+    const scoped_refptr<RegistrationInfo>& b) const {
   DCHECK(a.get() && b.get());
 
   // For GCMRegistrationInfo, the comparison is based on app_id only.
@@ -283,11 +278,10 @@ bool RegistrationInfoComparer::operator()(
 
 bool ExistsGCMRegistrationInMap(const RegistrationInfoMap& map,
                                 const std::string& app_id) {
-  std::unique_ptr<GCMRegistrationInfo> gcm_registration(
-      new GCMRegistrationInfo);
+  scoped_refptr<RegistrationInfo> gcm_registration =
+      base::MakeRefCounted<GCMRegistrationInfo>();
   gcm_registration->app_id = app_id;
-  return map.count(
-             make_linked_ptr<RegistrationInfo>(gcm_registration.release())) > 0;
+  return map.find(gcm_registration) != map.end();
 }
 
 }  // namespace gcm

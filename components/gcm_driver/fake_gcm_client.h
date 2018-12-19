@@ -55,12 +55,10 @@ class FakeGCMClient : public GCMClient {
       Delegate* delegate) override;
   void Start(StartMode start_mode) override;
   void Stop() override;
-  void Register(const linked_ptr<RegistrationInfo>& registration_info) override;
-  bool ValidateRegistration(
-      const linked_ptr<RegistrationInfo>& registration_info,
-      const std::string& registration_id) override;
-  void Unregister(
-      const linked_ptr<RegistrationInfo>& registration_info) override;
+  void Register(scoped_refptr<RegistrationInfo> registration_info) override;
+  bool ValidateRegistration(scoped_refptr<RegistrationInfo> registration_info,
+                            const std::string& registration_id) override;
+  void Unregister(scoped_refptr<RegistrationInfo> registration_info) override;
   void Send(const std::string& app_id,
             const std::string& receiver_id,
             const OutgoingMessage& message) override;
@@ -104,11 +102,9 @@ class FakeGCMClient : public GCMClient {
   // Called on IO thread.
   void DoStart();
   void Started();
-  void RegisterFinished(
-      const linked_ptr<RegistrationInfo>& registration_info,
-      const std::string& registrion_id);
-  void UnregisterFinished(
-      const linked_ptr<RegistrationInfo>& registration_info);
+  void RegisterFinished(scoped_refptr<RegistrationInfo> registration_info,
+                        const std::string& registrion_id);
+  void UnregisterFinished(scoped_refptr<RegistrationInfo> registration_info);
   void SendFinished(const std::string& app_id, const OutgoingMessage& message);
   void MessageReceived(const std::string& app_id,
                        const IncomingMessage& message);
