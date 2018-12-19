@@ -14,22 +14,6 @@
 
 namespace cc {
 
-bool ElementId::operator==(const ElementId& o) const {
-  return id_ == o.id_;
-}
-
-bool ElementId::operator!=(const ElementId& o) const {
-  return !(*this == o);
-}
-
-bool ElementId::operator<(const ElementId& o) const {
-  return id_ < o.id_;
-}
-
-ElementId::operator bool() const {
-  return !!id_;
-}
-
 ElementId LayerIdToElementIdForTesting(int layer_id) {
   return ElementId(std::numeric_limits<int>::max() - layer_id);
 }
