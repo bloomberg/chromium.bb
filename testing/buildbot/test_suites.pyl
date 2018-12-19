@@ -3550,8 +3550,7 @@
       'single_process_mash_unit_tests': {
         'test': 'unit_tests',
         'args': [
-          '--enable-features=SingleProcessMash',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.unit_tests.filter',
+          '--enable-features=SingleProcessMash'
         ],
       },
       'ui_chromeos_unittests': {},
