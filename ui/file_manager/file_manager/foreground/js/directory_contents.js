@@ -439,16 +439,13 @@ FileFilter.prototype.removeFilter = function(name) {
 };
 
 /**
- * Show/Hide hidden files (i.e. files starting with '.' or ending with
- * '.crdownload').
+ * Show/Hide hidden files (i.e. files starting with '.').
  * @param {boolean} visible True if hidden files should be visible to the user.
  */
 FileFilter.prototype.setHiddenFilesVisible = function(visible) {
-  var regexpCrdownloadExtension = /\.crdownload$/i;
   if (!visible) {
     this.addFilter('hidden', entry => {
-      return entry.name.substr(0, 1) !== '.' &&
-          !regexpCrdownloadExtension.test(entry.name);
+      return entry.name.substr(0, 1) !== '.';
     });
   } else {
     this.removeFilter('hidden');
