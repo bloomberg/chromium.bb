@@ -55,6 +55,7 @@ struct OmniboxResult {
 interface OmniboxPageHandler {
   SetClientPage(OmniboxPage page);
   StartOmniboxQuery(string input_string,
+                    bool reset_autocomplete_controller,
                     int32 cursor_position,
                     bool prevent_inline_autocomplete,
                     bool prefer_keyword,

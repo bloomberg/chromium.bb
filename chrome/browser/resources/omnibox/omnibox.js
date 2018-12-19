@@ -33,27 +33,9 @@
       /** @private {!mojom.OmniboxPageHandlerProxy} */
       this.handler_ = mojom.OmniboxPageHandler.getProxy();
       this.handler_.setClientPage(this.callbackRouter_.createProxy());
-    }
 
-    /**
-     * Extracts the input text from the text field and sends it to the
-     * C++ portion of chrome to handle.  The C++ code will iteratively
-     * call handleNewAutocompleteResult as results come in.
-     */
-    makeRequest(inputString,
-                cursorPosition,
-                preventInlineAutocomplete,
-                preferKeyword,
-                pageClassification) {
-      // Then, call chrome with a five-element list:
-      // - first element: the value in the text box
-      // - second element: the location of the cursor in the text box
-      // - third element: the value of prevent-inline-autocomplete
-      // - forth element: the value of prefer-keyword
-      // - fifth element: the value of page-classification
-      this.handler_.startOmniboxQuery(
-          inputString, cursorPosition, preventInlineAutocomplete, preferKeyword,
-          pageClassification);
+      /** @type {function(string, boolean, number, boolean, boolean, number)} */
+      this.makeRequest = this.handler_.startOmniboxQuery.bind(this.handler_);
     }
   }
 
@@ -74,6 +56,7 @@
       omniboxOutput.updateQueryInputs(event.detail);
       browserProxy.makeRequest(
           event.detail.inputText,
+          event.detail.resetAutocompleteController,
           event.detail.cursorPosition,
           event.detail.preventInlineAutocomplete,
           event.detail.preferKeyword,

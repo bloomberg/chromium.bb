@@ -189,6 +189,7 @@ void OmniboxPageHandler::SetClientPage(mojom::OmniboxPagePtr page) {
 }
 
 void OmniboxPageHandler::StartOmniboxQuery(const std::string& input_string,
+                                           bool reset_autocomplete_controller,
                                            int32_t cursor_position,
                                            bool prevent_inline_autocomplete,
                                            bool prefer_keyword,
@@ -198,7 +199,8 @@ void OmniboxPageHandler::StartOmniboxQuery(const std::string& input_string,
   // variable (or something else) and some providers will short-circuit
   // important logic and return stale results.  In short, we want the
   // actual results to not depend on the state of the previous request.
-  ResetController();
+  if (reset_autocomplete_controller)
+    ResetController();
   time_omnibox_started_ = base::Time::Now();
   input_ = AutocompleteInput(
       base::UTF8ToUTF16(input_string), cursor_position,
