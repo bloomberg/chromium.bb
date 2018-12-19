@@ -276,7 +276,7 @@ function processPartialMatchesInCurrentSection() {
 
 /**
  * The list of frame documents.
- * TODO(justincohen): x-domain frames won't work.
+ * TODO(crbug.com/895529): x-domain frames won't work.
  * @type {Array<Document>}
  */
 let frameDocs_ = [];
@@ -447,7 +447,7 @@ __gCrWeb.findInPage.highlightWord = function(findText, timeout) {
                     whether the text was found and int idicates text position.
  */
 __gCrWeb.findInPage.pumpSearch = function(timeout) {
-  // TODO(justincohen): It would be better if this DCHECKed.
+  // TODO(crbug.com/895531): It would be better if this DCHECKed.
   if (searchInProgress_ == false)
     return NO_RESULTS;
 
@@ -884,7 +884,7 @@ function isElementVisible_(elem) {
   // only scroll the window, not any scrollable containers in the DOM itself. So
   // for now this function returns false if the element is scrolled outside the
   // viewable area of its ancestors.
-  // TODO(justincohen): handle scrolling within the DOM.
+  // TODO(crbug.com/915357): handle scrolling within the DOM.
   let bodyHeight = getBodyHeight_();
   let bodyWidth = getBodyWidth_();
 
