@@ -276,6 +276,9 @@ bool VADisplayState::Initialize() {
 }
 
 bool VADisplayState::InitializeOnce() {
+  static_assert(VA_MAJOR_VERSION >= 1 && VA_MINOR_VERSION >= 1,
+                "Requires VA-API >= 1.1.0");
+
   switch (gl::GetGLImplementation()) {
     case gl::kGLImplementationEGLGLES2:
       va_display_ = vaGetDisplayDRM(drm_fd_.get());
