@@ -79,6 +79,11 @@ class MockNavigationManagerDelegate : public NavigationManagerDelegate {
   MOCK_METHOD0(Reload, void());
   MOCK_METHOD1(OnNavigationItemsPruned, void(size_t));
   MOCK_METHOD1(OnNavigationItemCommitted, void(const LoadCommittedDetails&));
+  MOCK_METHOD4(GoToBackForwardListItem,
+               void(WKBackForwardListItem*,
+                    NavigationItem*,
+                    NavigationInitiationType,
+                    bool));
 
  private:
   WebState* GetWebState() override { return nullptr; }
@@ -386,11 +391,11 @@ TEST_F(WKBasedNavigationManagerTest, GoBackWithoutTransientItem) {
 
   ASSERT_TRUE(manager_->CanGoBack());
 
-  // The cast is necessary because without it, compiler cannot disambiguate
-  // between UIWebView's goBack and WKWebView's goBack. Not using C++ style cast
-  // because it doesn't work on id type.
-  [(WKWebView*)[mock_web_view_ expect]
-      goToBackForwardListItem:mock_wk_list_.backList[0]];
+  EXPECT_CALL(delegate_,
+              GoToBackForwardListItem(
+                  mock_wk_list_.backList[0], manager_->GetItemAtIndex(0),
+                  NavigationInitiationType::BROWSER_INITIATED,
+                  /*has_user_gesture=*/true));
   manager_->GoBack();
   [mock_web_view_ verify];
 }
@@ -412,8 +417,11 @@ TEST_F(WKBasedNavigationManagerTest, GoBackFromTransientItem) {
   manager_->AddTransientItem(GURL("http://www.1.com/transient"));
 
   ASSERT_TRUE(manager_->CanGoBack());
-  [(WKWebView*)[mock_web_view_ expect]
-      goToBackForwardListItem:mock_wk_list_.currentItem];
+  EXPECT_CALL(delegate_,
+              GoToBackForwardListItem(
+                  mock_wk_list_.currentItem, manager_->GetItemAtIndex(0),
+                  NavigationInitiationType::BROWSER_INITIATED,
+                  /*has_user_gesture=*/true));
   manager_->GoBack();
   [mock_web_view_ verify];
 
@@ -442,8 +450,11 @@ TEST_F(WKBasedNavigationManagerTest, GoForward) {
   [mock_wk_list_ moveCurrentToIndex:0];
   ASSERT_TRUE(manager_->CanGoForward());
 
-  [(WKWebView*)[mock_web_view_ expect]
-      goToBackForwardListItem:mock_wk_list_.forwardList[0]];
+  EXPECT_CALL(delegate_,
+              GoToBackForwardListItem(
+                  mock_wk_list_.forwardList[0], manager_->GetItemAtIndex(1),
+                  NavigationInitiationType::BROWSER_INITIATED,
+                  /*has_user_gesture=*/true));
   manager_->GoForward();
   [mock_web_view_ verify];
 }
@@ -477,8 +488,11 @@ TEST_F(WKBasedNavigationManagerTest, GoForwardShouldDiscardsUncommittedItems) {
   EXPECT_NE(nullptr, manager_->GetPendingItem());
   EXPECT_NE(nullptr, manager_->GetTransientItem());
 
-  [(WKWebView*)[mock_web_view_ expect]
-      goToBackForwardListItem:mock_wk_list_.forwardList[0]];
+  EXPECT_CALL(delegate_,
+              GoToBackForwardListItem(
+                  mock_wk_list_.forwardList[0], manager_->GetItemAtIndex(1),
+                  NavigationInitiationType::BROWSER_INITIATED,
+                  /*has_user_gesture=*/true));
   manager_->GoForward();
   [mock_web_view_ verify];
 
