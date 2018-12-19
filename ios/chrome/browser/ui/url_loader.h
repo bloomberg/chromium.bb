@@ -38,9 +38,6 @@ struct SessionTab;
 // Restores a closed tab with |sessionID|.
 - (void)restoreTabWithSessionID:(const SessionID)sessionID;
 
-// Loads the text entered in the location bar as javascript.
-- (void)loadJavaScriptFromLocationBar:(NSString*)script;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_URL_LOADER_H_

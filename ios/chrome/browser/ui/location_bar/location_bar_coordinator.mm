@@ -37,6 +37,7 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
@@ -226,10 +227,8 @@ const int kLocationAuthorizationStatusCount = 4;
                      transition:(ui::PageTransition)transition
                     disposition:(WindowOpenDisposition)disposition {
   if (url.SchemeIs(url::kJavaScriptScheme)) {
-    // Evaluate the URL as JavaScript if its scheme is JavaScript.
-    NSString* jsToEval = [base::SysUTF8ToNSString(url.GetContent())
-        stringByRemovingPercentEncoding];
-    [self.URLLoader loadJavaScriptFromLocationBar:jsToEval];
+    LoadJavaScriptURL(url, self.browserState,
+                      self.webStateList->GetActiveWebState());
   } else {
     // When opening a URL, force the omnibox to resign first responder.  This
     // will also close the popup.

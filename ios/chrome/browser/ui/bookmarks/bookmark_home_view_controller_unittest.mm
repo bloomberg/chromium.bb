@@ -23,7 +23,8 @@ TEST_F(BookmarkHomeViewControllerTest,
     BookmarkHomeViewController* controller = [[BookmarkHomeViewController alloc]
         initWithLoader:nil
           browserState:chrome_browser_state_.get()
-            dispatcher:nil];
+            dispatcher:nil
+          webStateList:nullptr];
 
     [controller setRootNode:_bookmarkModel->mobile_node()];
     // Two sections: Messages and Bookmarks.

@@ -10,7 +10,6 @@
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -37,6 +36,8 @@
 #import "ios/chrome/browser/ui/table_view/table_view_presentation_controller_delegate.h"
 #include "ios/chrome/browser/ui/url_loader.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_util.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #import "ios/web/public/navigation_manager.h"
@@ -79,6 +80,9 @@ enum class PresentedState {
 
   // The parent controller on top of which the UI needs to be presented.
   __weak UIViewController* _parentController;
+
+  // The web state list currently in use.
+  WebStateList* _webStateList;
 }
 
 // The type of view controller that is being presented.
@@ -153,7 +157,8 @@ enum class PresentedState {
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                               loader:(id<UrlLoader>)loader
                     parentController:(UIViewController*)parentController
-                          dispatcher:(id<ApplicationCommands>)dispatcher {
+                          dispatcher:(id<ApplicationCommands>)dispatcher
+                        webStateList:(WebStateList*)webStateList {
   self = [super init];
   if (self) {
     // Bookmarks are always opened with the main browser state, even in
@@ -163,6 +168,7 @@ enum class PresentedState {
     _loader = loader;
     _parentController = parentController;
     _dispatcher = dispatcher;
+    _webStateList = webStateList;
     _bookmarkModel =
         ios::BookmarkModelFactory::GetForBrowserState(_browserState);
     _mediator = [[BookmarkMediator alloc] initWithBrowserState:_browserState];
@@ -220,7 +226,8 @@ enum class PresentedState {
   self.bookmarkBrowser =
       [[BookmarkHomeViewController alloc] initWithLoader:_loader
                                             browserState:_currentBrowserState
-                                              dispatcher:self.dispatcher];
+                                              dispatcher:self.dispatcher
+                                            webStateList:_webStateList];
   self.bookmarkBrowser.homeDelegate = self;
 
   NSArray<BookmarkHomeViewController*>* replacementViewControllers = nil;
@@ -532,10 +539,8 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
 }
 
 - (void)openURLInCurrentTab:(const GURL&)url {
-  if (url.SchemeIs(url::kJavaScriptScheme)) {  // bookmarklet
-    NSString* jsToEval = [base::SysUTF8ToNSString(url.GetContent())
-        stringByRemovingPercentEncoding];
-    [_loader loadJavaScriptFromLocationBar:jsToEval];
+  if (url.SchemeIs(url::kJavaScriptScheme) && _webStateList) {  // bookmarklet
+    LoadJavaScriptURL(url, _browserState, _webStateList->GetActiveWebState());
     return;
   }
   web::NavigationManager::WebLoadParams params(url);
