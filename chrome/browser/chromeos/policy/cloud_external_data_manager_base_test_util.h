@@ -14,6 +14,12 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace net {
+namespace test_server {
+class EmbeddedTestServer;
+}
+}  // namespace net
+
 namespace policy {
 
 class CloudPolicyCore;
@@ -31,6 +37,12 @@ void ExternalDataFetchCallback(std::unique_ptr<std::string>* destination,
 std::unique_ptr<base::DictionaryValue> ConstructExternalDataReference(
     const std::string& url,
     const std::string& data);
+
+// Constructs the external data policy from the content of the file located on
+// |external_data_path|.
+std::string ConstructExternalDataPolicy(
+    const net::test_server::EmbeddedTestServer& test_server,
+    const std::string& external_data_path);
 
 // TODO(bartfab): Makes an arbitrary |policy| in |core| reference external data
 // as specified in |metadata|. This is only done because there are no policies

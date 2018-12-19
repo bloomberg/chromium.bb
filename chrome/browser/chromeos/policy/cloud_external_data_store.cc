@@ -37,7 +37,13 @@ CloudExternalDataStore::CloudExternalDataStore(
 }
 
 CloudExternalDataStore::~CloudExternalDataStore() {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  // No RunsTasksInCurrentSequence() check to avoid unit tests failures.
+  // In unit tests the browser process instance is deleted only after test ends
+  // and test task scheduler is shutted down. Therefore we need to delete some
+  // components of BrowserPolicyConnector (ResourceCache and
+  // CloudExternalDataManagerBase::Backend) manually when task runner doesn't
+  // accept new tasks (DeleteSoon in this case). This leads to the situation
+  // when this destructor is called not on |task_runner|.
 }
 
 void CloudExternalDataStore::Prune(
