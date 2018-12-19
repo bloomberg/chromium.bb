@@ -3441,10 +3441,6 @@ def ApplyCustomOverrides(site_config):
           'hw_tests_override': [],
       },
 
-      'grunt-no-vmtest-pre-cq': {
-          'unittests': False,
-      },
-
       # TODO(crbug/884613) Remove these once the board compiler flags for grunt
       # are changed.
       'grunt-release': {
