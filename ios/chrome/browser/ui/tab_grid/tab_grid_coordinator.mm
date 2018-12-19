@@ -208,6 +208,8 @@
             incognitoBrowserState:self.incognitoTabModel.browserState];
   self.adaptor.loader = self.URLLoader;
   baseViewController.remoteTabsViewController.loader = self.URLLoader;
+  baseViewController.remoteTabsViewController.restoredTabDisposition =
+      WindowOpenDisposition::NEW_FOREGROUND_TAB;
   baseViewController.remoteTabsViewController.presentationDelegate = self;
 
   // Insert the launch screen view in front of this view to hide it until after

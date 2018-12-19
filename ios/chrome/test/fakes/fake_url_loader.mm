@@ -48,9 +48,6 @@
 - (void)loadSessionTab:(const sessions::SessionTab*)sessionTab {
 }
 
-- (void)restoreTabWithSessionID:(const SessionID)sessionID {
-}
-
 - (const GURL&)url {
   return _url;
 }

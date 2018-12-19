@@ -5,8 +5,13 @@
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "components/sessions/core/tab_restore_service_helper.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
+#include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
+#include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
+#include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios_factory.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
 
@@ -28,4 +33,15 @@ void LoadJavaScriptURL(const GURL& url,
       stringByRemovingPercentEncoding];
   if (webState)
     webState->ExecuteUserJavaScript(jsToEval);
+}
+
+void RestoreTab(const SessionID sessionID,
+                WindowOpenDisposition disposition,
+                ios::ChromeBrowserState* browserState) {
+  TabRestoreServiceDelegateImplIOS* delegate =
+      TabRestoreServiceDelegateImplIOSFactory::GetForBrowserState(browserState);
+  sessions::TabRestoreService* restoreService =
+      IOSChromeTabRestoreServiceFactory::GetForBrowserState(
+          browserState->GetOriginalChromeBrowserState());
+  restoreService->RestoreEntryById(delegate, sessionID, disposition);
 }

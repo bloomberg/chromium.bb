@@ -5,12 +5,8 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_url_loader.h"
 
 #include "components/sessions/core/session_types.h"
-#include "components/sessions/core/tab_restore_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #include "ios/chrome/browser/sessions/session_util.h"
-#include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
-#include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios_factory.h"
 #include "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/browser/web_state_list/web_state_opener.h"
@@ -103,19 +99,6 @@ initWithRegularWebStateList:(WebStateList*)regularWebStateList
   std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
   webState->GetNavigationManager()->LoadURLWithParams(loadParams.web_params);
   AppendAndActivateWebState(self.regularWebStateList, std::move(webState));
-}
-
-// Restores |sessionID| in a new foreground tab, instead of replacing the active
-// tab.
-- (void)restoreTabWithSessionID:(const SessionID)sessionID {
-  TabRestoreServiceDelegateImplIOS* delegate =
-      TabRestoreServiceDelegateImplIOSFactory::GetForBrowserState(
-          self.regularBrowserState);
-  sessions::TabRestoreService* restoreService =
-      IOSChromeTabRestoreServiceFactory::GetForBrowserState(
-          self.regularBrowserState);
-  restoreService->RestoreEntryById(delegate, sessionID,
-                                   WindowOpenDisposition::NEW_FOREGROUND_TAB);
 }
 
 @end

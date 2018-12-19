@@ -5,10 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_UI_URL_LOADER_H_
 #define IOS_CHROME_BROWSER_UI_URL_LOADER_H_
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
-#include "base/strings/string16.h"
-#include "components/sessions/core/session_id.h"
 #import "ios/chrome/browser/ui/chrome_load_params.h"
 
 @class OpenNewTabCommand;
@@ -17,7 +15,7 @@ namespace sessions {
 struct SessionTab;
 }
 
-@protocol UrlLoader<NSObject>
+@protocol UrlLoader
 
 // Load a new request.
 // TODO(crbug.com/907527): Check if it is possible to merge with the other way
@@ -34,9 +32,6 @@ struct SessionTab;
 
 // Load a tab with the given session.
 - (void)loadSessionTab:(const sessions::SessionTab*)sessionTab;
-
-// Restores a closed tab with |sessionID|.
-- (void)restoreTabWithSessionID:(const SessionID)sessionID;
 
 @end
 

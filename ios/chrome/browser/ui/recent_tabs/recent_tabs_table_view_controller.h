@@ -7,6 +7,7 @@
 
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_consumer.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace ios {
 class ChromeBrowserState;
@@ -26,7 +27,8 @@ class ChromeBrowserState;
 @property(nonatomic, weak) id<ApplicationCommands> dispatcher;
 // UrlLoader used by this ViewController.
 @property(nonatomic, weak) id<UrlLoader> loader;
-
+// Disposition for tabs restored by this object. Defaults to CURRENT_TAB.
+@property(nonatomic, assign) WindowOpenDisposition restoredTabDisposition;
 // RecentTabsTableViewControllerDelegate delegate.
 @property(nonatomic, weak) id<RecentTabsTableViewControllerDelegate> delegate;
 
