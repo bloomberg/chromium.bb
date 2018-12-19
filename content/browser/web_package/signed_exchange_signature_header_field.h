@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
+#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/common/content_export.h"
 #include "net/base/hash_value.h"
 #include "url/gurl.h"
@@ -38,7 +39,7 @@ class CONTENT_EXPORT SignedExchangeSignatureHeaderField {
     base::Optional<net::SHA256HashValue> cert_sha256;
     // TODO(https://crbug.com/819467): Support ed25519key.
     // std::string ed25519_key;
-    GURL validity_url;
+    signed_exchange_utils::URLWithRawString validity_url;
     uint64_t date;
     uint64_t expires;
   };

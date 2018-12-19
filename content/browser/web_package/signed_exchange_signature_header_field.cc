@@ -250,18 +250,19 @@ SignedExchangeSignatureHeaderField::ParseSignature(
     sig.cert_sha256 = std::move(cert_sha256);
     // TODO(https://crbug.com/819467): Support ed25519key.
     // sig.ed25519_key = value.params["ed25519Key"];
-    sig.validity_url = GURL(value.params[kValidityUrlKey]);
-    if (!sig.validity_url.is_valid()) {
+    sig.validity_url =
+        signed_exchange_utils::URLWithRawString(value.params[kValidityUrlKey]);
+    if (!sig.validity_url.url.is_valid()) {
       signed_exchange_utils::ReportErrorAndTraceEvent(
           devtools_proxy, "'validity-url' parameter is not a valid URL.");
       return base::nullopt;
     }
-    if (sig.validity_url.has_ref()) {
+    if (sig.validity_url.url.has_ref()) {
       signed_exchange_utils::ReportErrorAndTraceEvent(
           devtools_proxy, "'validity-url' parameter can't have a fragment.");
       return base::nullopt;
     }
-    if (!sig.validity_url.SchemeIs("https")) {
+    if (!sig.validity_url.url.SchemeIs("https")) {
       signed_exchange_utils::ReportErrorAndTraceEvent(
           devtools_proxy, "'validity-url' should have 'https' scheme.");
       return base::nullopt;

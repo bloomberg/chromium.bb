@@ -10,6 +10,7 @@
 #include "base/containers/span.h"
 #include "base/gtest_prod_util.h"
 #include "base/optional.h"
+#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
@@ -93,7 +94,9 @@ class CONTENT_EXPORT FallbackUrlAndAfter {
 
   // Note: fallback_url() may still be called even if |!is_valid()|,
   //       for trigering fallback redirect.
-  const GURL& fallback_url() const { return fallback_url_; }
+  const signed_exchange_utils::URLWithRawString& fallback_url() const {
+    return fallback_url_;
+  }
 
   size_t signature_header_field_length() const;
   size_t cbor_header_length() const;
@@ -102,14 +105,15 @@ class CONTENT_EXPORT FallbackUrlAndAfter {
 
  private:
   static FallbackUrlAndAfter ParseFailedButFallbackUrlAvailable(
-      GURL fallback_url);
+      const signed_exchange_utils::URLWithRawString& fallback_url);
 
-  FallbackUrlAndAfter(bool is_valid,
-                      GURL fallback_url,
-                      size_t signature_header_field_length,
-                      size_t cbor_header_length)
+  FallbackUrlAndAfter(
+      bool is_valid,
+      const signed_exchange_utils::URLWithRawString& fallback_url,
+      size_t signature_header_field_length,
+      size_t cbor_header_length)
       : is_valid_(is_valid),
-        fallback_url_(std::move(fallback_url)),
+        fallback_url_(fallback_url),
         signature_header_field_length_(signature_header_field_length),
         cbor_header_length_(cbor_header_length) {}
 
@@ -119,7 +123,7 @@ class CONTENT_EXPORT FallbackUrlAndAfter {
   // The URL to redirect navigation to when the signed exchange processing steps
   // has failed.
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#application-signed-exchange
-  GURL fallback_url_;
+  signed_exchange_utils::URLWithRawString fallback_url_;
 
   // Corresponds to `sigLength` in the spec text.
   // Encoded length of the Signature header field's value.

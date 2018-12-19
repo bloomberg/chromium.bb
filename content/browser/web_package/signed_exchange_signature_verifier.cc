@@ -161,10 +161,10 @@ base::Optional<std::vector<uint8_t>> GenerateSignedMessage(
 
   // Step 5.5. "The 8-byte big-endian encoding of the length in bytes of
   // validity-url, followed by the bytes of validity-url." [spec text]
-  const auto& validity_url_spec = signature.validity_url.spec();
-  AppendToBuf8BytesBigEndian(&message, validity_url_spec.size());
-  message.insert(message.end(), std::begin(validity_url_spec),
-                 std::end(validity_url_spec));
+  const auto& validity_url_bytes = signature.validity_url.raw_string;
+  AppendToBuf8BytesBigEndian(&message, validity_url_bytes.size());
+  message.insert(message.end(), std::begin(validity_url_bytes),
+                 std::end(validity_url_bytes));
 
   // Step 5.6. "The 8-byte big-endian encoding of date." [spec text]
   AppendToBuf8BytesBigEndian(&message, signature.date);
@@ -174,11 +174,11 @@ base::Optional<std::vector<uint8_t>> GenerateSignedMessage(
 
   // Step 5.8. "The 8-byte big-endian encoding of the length in bytes of
   // requestUrl, followed by the bytes of requestUrl." [spec text]
-  const auto& request_url_spec = envelope.request_url().spec();
+  const auto& request_url_bytes = envelope.request_url().raw_string;
 
-  AppendToBuf8BytesBigEndian(&message, request_url_spec.size());
-  message.insert(message.end(), std::begin(request_url_spec),
-                 std::end(request_url_spec));
+  AppendToBuf8BytesBigEndian(&message, request_url_bytes.size());
+  message.insert(message.end(), std::begin(request_url_bytes),
+                 std::end(request_url_bytes));
 
   // Step 5.9. "The 8-byte big-endian encoding of the length in bytes of
   // headers, followed by the bytes of headers." [spec text]

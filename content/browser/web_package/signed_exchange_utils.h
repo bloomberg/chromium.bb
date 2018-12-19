@@ -12,8 +12,7 @@
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/common/content_export.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace url {
 class Origin;
@@ -28,6 +27,15 @@ namespace content {
 class SignedExchangeDevToolsProxy;
 
 namespace signed_exchange_utils {
+
+// URLWithRawString holds a parsed URL along with its raw bytes.
+struct URLWithRawString {
+  GURL url;
+  std::string raw_string;
+  URLWithRawString() = default;
+  URLWithRawString(base::StringPiece url_string)
+      : url(url_string), raw_string(url_string.as_string()) {}
+};
 
 // Utility method to call SignedExchangeDevToolsProxy::ReportError() and
 // TRACE_EVENT_INSTANT1 to report the error to both DevTools and about:tracing.

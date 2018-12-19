@@ -36,7 +36,7 @@ class CONTENT_EXPORT SignedExchangeEnvelope {
   // This also performs the steps 1, 3 and 4 of "Cross-origin trust" validation.
   // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#cross-origin-trust
   static base::Optional<SignedExchangeEnvelope> Parse(
-      const GURL& fallback_url,
+      const signed_exchange_utils::URLWithRawString& fallback_url,
       base::StringPiece signature_header_field,
       base::span<const uint8_t> cbor_header,
       SignedExchangeDevToolsProxy* devtools_proxy);
@@ -56,8 +56,12 @@ class CONTENT_EXPORT SignedExchangeEnvelope {
   }
   void set_cbor_header(base::span<const uint8_t> data);
 
-  const GURL& request_url() const { return request_url_; };
-  void set_request_url(GURL url) { request_url_ = std::move(url); }
+  const signed_exchange_utils::URLWithRawString& request_url() const {
+    return request_url_;
+  };
+  void set_request_url(const signed_exchange_utils::URLWithRawString& url) {
+    request_url_ = url;
+  }
 
   const std::string& request_method() const { return request_method_; }
   void set_request_method(base::StringPiece s) {
@@ -80,7 +84,7 @@ class CONTENT_EXPORT SignedExchangeEnvelope {
  private:
   std::vector<uint8_t> cbor_header_;
 
-  GURL request_url_;
+  signed_exchange_utils::URLWithRawString request_url_;
   std::string request_method_;
 
   net::HttpStatusCode response_code_;

@@ -190,7 +190,8 @@ class SignedExchangeSignatureVerifierTest : public ::testing::Test {
                   ));
 
     SignedExchangeEnvelope corrupted_envelope(envelope);
-    corrupted_envelope.set_request_url(GURL("https://example.com/bad.html"));
+    corrupted_envelope.set_request_url(signed_exchange_utils::URLWithRawString(
+        "https://example.com/bad.html"));
     EXPECT_EQ(SignedExchangeSignatureVerifier::Result::
                   kErrSignatureVerificationFailed,
               SignedExchangeSignatureVerifier::Verify(
@@ -237,7 +238,8 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP256) {
 
   SignedExchangeEnvelope envelope;
   envelope.set_request_method("GET");
-  envelope.set_request_url(GURL("https://test.example.org/test/"));
+  envelope.set_request_url(signed_exchange_utils::URLWithRawString(
+      "https://test.example.org/test/"));
   envelope.set_response_code(net::HTTP_OK);
   envelope.AddResponseHeader("content-type", "text/html; charset=utf-8");
   envelope.AddResponseHeader("content-encoding", "mi-sha256-03");
@@ -264,7 +266,8 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP384) {
 
   SignedExchangeEnvelope envelope;
   envelope.set_request_method("GET");
-  envelope.set_request_url(GURL("https://test.example.org/test/"));
+  envelope.set_request_url(signed_exchange_utils::URLWithRawString(
+      "https://test.example.org/test/"));
   envelope.set_response_code(net::HTTP_OK);
   envelope.AddResponseHeader("content-type", "text/html; charset=utf-8");
   envelope.AddResponseHeader("content-encoding", "mi-sha256-03");
