@@ -1460,11 +1460,6 @@
           'scripts': 'test_traffic_annotation_auditor_script',
         }
       },
-      'linux-autofill-captured-sites-rel': {
-        'test_suites': {
-          'gtest_tests': 'autofill_captured_sites_gtests',
-        },
-      },
       'linux-blink-animation-use-time-delta': {
         'additional_compile_targets': [
           'all',
@@ -1547,11 +1542,6 @@
           'gtest_tests': 'chromium_linux_gtests',
           'isolated_scripts': 'chromium_linux_rel_isolated_scripts',
           'scripts': 'chromium_linux_scripts',
-        },
-      },
-      'mac-autofill-captured-sites-rel': {
-        'test_suites': {
-          'gtest_tests': 'autofill_captured_sites_gtests',
         },
       },
       'mac-hermetic-upgrade-rel': {
@@ -1662,11 +1652,6 @@
         'test_suites': {
           'scripts': 'test_traffic_annotation_auditor_script',
         }
-      },
-      'win-autofill-captured-sites-rel': {
-        'test_suites': {
-          'gtest_tests': 'autofill_captured_sites_gtests',
-        },
       },
       'win10-blink-rel-dummy': {
         'swarming': {
