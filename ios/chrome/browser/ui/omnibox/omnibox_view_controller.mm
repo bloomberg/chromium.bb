@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_container_view.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -77,10 +78,20 @@ const CGFloat kClearButtonSize = 28.0f;
 
   // Add Paste and Go option to the editing menu
   UIMenuController* menu = [UIMenuController sharedMenuController];
-  UIMenuItem* pasteAndGo = [[UIMenuItem alloc]
-      initWithTitle:l10n_util::GetNSString(IDS_IOS_PASTE_AND_GO)
-             action:NSSelectorFromString(@"pasteAndGo:")];
-  [menu setMenuItems:@[ pasteAndGo ]];
+  if (base::FeatureList::IsEnabled(kCopiedTextBehavior)) {
+    UIMenuItem* visitCopiedLink = [[UIMenuItem alloc]
+        initWithTitle:l10n_util::GetNSString(IDS_IOS_VISIT_COPIED_LINK)
+               action:@selector(visitCopiedLink:)];
+    UIMenuItem* searchCopiedText = [[UIMenuItem alloc]
+        initWithTitle:l10n_util::GetNSString(IDS_IOS_SEARCH_COPIED_TEXT)
+               action:@selector(searchCopiedText:)];
+    [menu setMenuItems:@[ visitCopiedLink, searchCopiedText ]];
+  } else {
+    UIMenuItem* pasteAndGo = [[UIMenuItem alloc]
+        initWithTitle:l10n_util::GetNSString(IDS_IOS_PASTE_AND_GO)
+               action:NSSelectorFromString(@"pasteAndGo:")];
+    [menu setMenuItems:@[ pasteAndGo ]];
+  }
 
   self.textField.placeholderTextColor = [self placeholderAndClearButtonColor];
   self.textField.placeholder = l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
@@ -229,17 +240,37 @@ const CGFloat kClearButtonSize = 28.0f;
 #pragma mark - UIMenuItem
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
-  if (UIPasteboard.generalPasteboard.string.length > 0 && action == @selector
-                                                              (pasteAndGo:)) {
-    return YES;
+  UIPasteboard* pasteboard = UIPasteboard.generalPasteboard;
+  // remove with flag kCopiedTextBehavior
+  if (action == @selector(pasteAndGo:)) {
+    DCHECK(!base::FeatureList::IsEnabled(kCopiedTextBehavior));
+    return UIPasteboard.generalPasteboard.string.length > 0;
   }
-
+  if (action == @selector(visitCopiedLink:)) {
+    DCHECK(base::FeatureList::IsEnabled(kCopiedTextBehavior));
+    return pasteboard.hasURLs;
+  }
+  if (action == @selector(searchCopiedText:)) {
+    DCHECK(base::FeatureList::IsEnabled(kCopiedTextBehavior));
+    return !pasteboard.hasURLs && pasteboard.hasStrings;
+  }
   return NO;
 }
 
+- (void)visitCopiedLink:(id)sender {
+  [self pasteAndGo:sender];
+}
+
+- (void)searchCopiedText:(id)sender {
+  [self pasteAndGo:sender];
+}
+
+// Both actions are performed the same, but need to be enabled differently,
+// so we need two different selectors.
 - (void)pasteAndGo:(id)sender {
-  [self.dispatcher loadQuery:UIPasteboard.generalPasteboard.string
-                 immediately:YES];
+  UIPasteboard* pasteboard = UIPasteboard.generalPasteboard;
+  NSString* query = pasteboard.URL.absoluteString ?: pasteboard.string;
+  [self.dispatcher loadQuery:query immediately:YES];
   [self.dispatcher cancelOmniboxEdit];
 }
 

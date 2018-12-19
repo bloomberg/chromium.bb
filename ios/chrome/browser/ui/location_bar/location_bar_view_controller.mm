@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 #import "ios/chrome/browser/ui/orchestrator/location_bar_offset_provider.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -428,10 +429,20 @@ typedef NS_ENUM(int, TrailingButtonState) {
     // when it's the first time setting the first responder.
     dispatch_async(dispatch_get_main_queue(), ^{
       UIMenuController* menu = [UIMenuController sharedMenuController];
-      UIMenuItem* pasteAndGo = [[UIMenuItem alloc]
-          initWithTitle:l10n_util::GetNSString(IDS_IOS_PASTE_AND_GO)
-                 action:@selector(pasteAndGo:)];
-      [menu setMenuItems:@[ pasteAndGo ]];
+      if (base::FeatureList::IsEnabled(kCopiedTextBehavior)) {
+        UIMenuItem* visitCopiedLink = [[UIMenuItem alloc]
+            initWithTitle:l10n_util::GetNSString(IDS_IOS_VISIT_COPIED_LINK)
+                   action:@selector(visitCopiedLink:)];
+        UIMenuItem* searchCopiedText = [[UIMenuItem alloc]
+            initWithTitle:l10n_util::GetNSString(IDS_IOS_SEARCH_COPIED_TEXT)
+                   action:@selector(searchCopiedText:)];
+        [menu setMenuItems:@[ visitCopiedLink, searchCopiedText ]];
+      } else {
+        UIMenuItem* pasteAndGo = [[UIMenuItem alloc]
+            initWithTitle:l10n_util::GetNSString(IDS_IOS_PASTE_AND_GO)
+                   action:@selector(pasteAndGo:)];
+        [menu setMenuItems:@[ pasteAndGo ]];
+      }
 
       [menu setTargetRect:self.locationBarSteadyView.frame inView:self.view];
       [menu setMenuVisible:YES animated:YES];
@@ -440,18 +451,45 @@ typedef NS_ENUM(int, TrailingButtonState) {
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
-  return action == @selector(copy:) ||
-         (action == @selector(pasteAndGo:) &&
-          UIPasteboard.generalPasteboard.string.length > 0);
+  if (action == @selector(copy:)) {
+    return true;
+  }
+
+  UIPasteboard* pasteboard = UIPasteboard.generalPasteboard;
+  // remove along with flag kCopiedTextBehavior
+  if (action == @selector(pasteAndGo:)) {
+    DCHECK(!base::FeatureList::IsEnabled(kCopiedTextBehavior));
+    return UIPasteboard.generalPasteboard.string.length > 0;
+  }
+  if (action == @selector(visitCopiedLink:)) {
+    DCHECK(base::FeatureList::IsEnabled(kCopiedTextBehavior));
+    return pasteboard.hasURLs;
+  }
+  if (action == @selector(searchCopiedText:)) {
+    DCHECK(base::FeatureList::IsEnabled(kCopiedTextBehavior));
+    return !pasteboard.hasURLs && pasteboard.hasStrings;
+  }
+  return NO;
 }
 
 - (void)copy:(id)sender {
   [self.delegate locationBarCopyTapped];
 }
 
+- (void)visitCopiedLink:(id)sender {
+  [self pasteAndGo:sender];
+}
+
+- (void)searchCopiedText:(id)sender {
+  [self pasteAndGo:sender];
+}
+
+// Both actions are performed the same, but need to be enabled differently,
+// so we need two different selectors.
 - (void)pasteAndGo:(id)sender {
-  [self.dispatcher loadQuery:UIPasteboard.generalPasteboard.string
-                 immediately:YES];
+  UIPasteboard* pasteboard = UIPasteboard.generalPasteboard;
+  NSString* query = pasteboard.URL.absoluteString ?: pasteboard.string;
+  [self.dispatcher loadQuery:query immediately:YES];
 }
 
 @end
