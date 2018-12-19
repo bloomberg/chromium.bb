@@ -85,9 +85,6 @@ class XMLHttpRequestProgressEventThrottle final
   // depending on the value of the ProgressEventAction argument.
   void DispatchReadyStateChangeEvent(Event*, DeferredEventAction);
 
-  void Pause();
-  void Unpause();
-
   // Need to promptly stop this timer when it is deemed finalizable.
   EAGERLY_FINALIZE();
   void Trace(blink::Visitor*);
