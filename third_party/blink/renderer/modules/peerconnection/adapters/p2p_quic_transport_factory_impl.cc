@@ -13,6 +13,11 @@ namespace blink {
 
 namespace {
 
+// QUIC's default is 100. Setting this value to 10000 allows room for QUIC to
+// not refuse new incoming streams in the case that an application wants to send
+// a small chunk of data per stream (and immediately close) unreliably.
+uint32_t kMaxIncomingDynamicStreams = 10000;
+
 // The P2PQuicPacketWriter is a private helper class that implements the
 // QuicPacketWriter using a P2PQuicPacketTransport. This allows us to
 // connect our own packet transport for writing into the QuicConnection.
@@ -190,6 +195,7 @@ P2PQuicTransportFactoryImpl::CreateQuicTransport(
 
   // QUIC configurations for the session are specified here.
   quic::QuicConfig quic_config;
+  quic_config.SetMaxIncomingDynamicStreamsToSend(kMaxIncomingDynamicStreams);
   return std::make_unique<P2PQuicTransportImpl>(
       delegate, packet_transport, std::move(config), std::move(helper),
       std::move(quic_connection), quic_config, clock_);
