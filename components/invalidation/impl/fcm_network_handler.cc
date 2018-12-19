@@ -115,6 +115,7 @@ void FCMNetworkHandler::DidRetrieveToken(const std::string& subscription_token,
       // validation.
       DeliverToken(subscription_token);
       token_ = subscription_token;
+      UpdateGcmChannelState(/* online */ true);
       break;
     case InstanceID::INVALID_PARAMETER:
     case InstanceID::DISABLED:
@@ -124,7 +125,7 @@ void FCMNetworkHandler::DidRetrieveToken(const std::string& subscription_token,
     case InstanceID::NETWORK_ERROR:
       DLOG(WARNING) << "Messaging subscription failed; InstanceID::Result = "
                     << result;
-      UpdateGcmChannelState(false);
+      UpdateGcmChannelState(/* online */ false);
       break;
   }
   ScheduleNextTokenValidation();
@@ -193,8 +194,6 @@ void FCMNetworkHandler::OnMessage(const std::string& app_id,
   InvalidationParsingStatus status = ParseIncommingMessage(
       message, &payload, &private_topic, &public_topic, &version);
   UMA_HISTOGRAM_ENUMERATION("FCMInvalidations.FCMMessageStatus", status);
-
-  UpdateGcmChannelState(true);
 
   if (status == InvalidationParsingStatus::kSuccess)
     DeliverIncomingMessage(payload, private_topic, public_topic, version);
