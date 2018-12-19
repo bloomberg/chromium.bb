@@ -353,9 +353,9 @@ AudioDecoderAndroid::RenderingDelay AudioDecoderAndroid::GetRenderingDelay() {
     }
   }
 
-  LOG(INFO) << __func__ << ":"
-            << " delay=" << delay.delay_microseconds
-            << " ts=" << delay.timestamp_microseconds;
+  DVLOG(2) << __func__ << ":"
+           << " delay=" << delay.delay_microseconds
+           << " ts=" << delay.timestamp_microseconds;
 
   return delay;
 }
