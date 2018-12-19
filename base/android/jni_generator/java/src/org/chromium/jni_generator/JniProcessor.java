@@ -71,21 +71,11 @@ public class JniProcessor extends AbstractProcessor {
     static final String NATIVE_TEST_FIELD_NAME = "TESTING_ENABLED";
     static final String NATIVE_REQUIRE_MOCK_FIELD_NAME = "REQUIRE_MOCK";
 
-    // Lets mocks of the Native impl to be set.
-    static final boolean TESTING_ENABLED = false;
-
-    // If true, throw an exception if no mock is provided.
-    private static final boolean REQUIRE_MOCK = false;
-
     // Builder for NativeClass which will hold all our native method declarations.
     private TypeSpec.Builder mNativesBuilder;
 
     // Hash function for native method names.
     private static MessageDigest sNativeMethodHashFunction;
-
-    // If true, native methods in GEN_JNI will be named as a hash of their descriptor.
-    private static final boolean USE_HASH_FOR_METHODS = !ProcessorArgs.IS_JAVA_DEBUG;
-    private static final boolean USE_SHORTENED_NATIVE_CLASS = !ProcessorArgs.IS_JAVA_DEBUG;
 
     // Limits the number characters of the Base64 encoded hash
     // of the method descriptor used as name of the generated
@@ -113,7 +103,7 @@ public class JniProcessor extends AbstractProcessor {
 
     public JniProcessor() {
         // If non-debug we use shorter names to save space.
-        if (USE_SHORTENED_NATIVE_CLASS) {
+        if (ProcessorArgs.HASH_JNI_NAMES) {
             // J.N
             mNativeClassPackage = "J";
             mNativeClassStr = "N";
@@ -126,14 +116,6 @@ public class JniProcessor extends AbstractProcessor {
         FieldSpec.Builder throwFlagBuilder =
                 FieldSpec.builder(TypeName.BOOLEAN, NATIVE_REQUIRE_MOCK_FIELD_NAME)
                         .addModifiers(Modifier.STATIC, Modifier.PUBLIC);
-
-        // Initialize only if true to avoid NoRedundantFieldInit.
-        if (TESTING_ENABLED) {
-            testingFlagBuilder.initializer("true");
-        }
-        if (REQUIRE_MOCK) {
-            throwFlagBuilder.initializer("true");
-        }
 
         // State of mNativesBuilder needs to be preserved between processing rounds.
         mNativesBuilder = TypeSpec.classBuilder(mNativeClassName)
@@ -255,7 +237,7 @@ public class JniProcessor extends AbstractProcessor {
         String descriptor = String.format("%s.%s.%s", packageName, className, oldMethodName)
                                     .replaceAll("_", "_1")
                                     .replaceAll("\\.", "_");
-        if (USE_HASH_FOR_METHODS) {
+        if (ProcessorArgs.HASH_JNI_NAMES) {
             // Must start with a character.
             byte[] hash = sNativeMethodHashFunction.digest(descriptor.getBytes(Charsets.UTF_8));
 

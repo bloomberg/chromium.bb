@@ -87,7 +87,7 @@ java_cpp_template("processor_args_java") {
   sources = [
     "ProcessorArgs.template",
   ]
-  defines = [ "IS_JAVA_DEBUG_VALUE=$is_java_debug" ]
+  defines = [ "HASH_JNI_NAMES_VALUE=$use_hashed_jni_names" ]
 }
 
 java_annotation_processor("jni_processor") {
