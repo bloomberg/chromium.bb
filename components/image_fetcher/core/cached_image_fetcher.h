@@ -9,11 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/post_task.h"
-#include "base/timer/timer.h"
-#include "components/image_fetcher/core/cache/cached_image_fetcher_metrics_reporter.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/image_fetcher_types.h"
@@ -21,18 +17,15 @@
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
-namespace gfx {
-class Image;
-class Size;
-}  // namespace gfx
-
 namespace image_fetcher {
 
 class ImageCache;
 class ImageFetcher;
 struct RequestMetadata;
 
-// TODO(wylieb): Consider creating a struct to encapsulate the request.
+// Encapsulates a request to simplify argument lists.
+struct CachedImageFetcherRequest;
+
 // CachedImageFetcher takes care of fetching images from the network and caching
 // them. Has a read-only mode which doesn't perform write operations on the
 // cache.
@@ -59,58 +52,36 @@ class CachedImageFetcher : public ImageFetcher {
  private:
   // Cache
   void OnImageFetchedFromCache(
-      base::Time start_time,
-      const gfx::Size& size,
-      const std::string& id,
-      const GURL& image_url,
+      CachedImageFetcherRequest request,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
       ImageDataFetcherCallback image_data_callback,
       ImageFetcherCallback image_callback,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation,
       std::string image_data);
   void OnImageDecodedFromCache(
-      base::Time start_time,
-      const gfx::Size& size,
-      const std::string& id,
-      const GURL& image_url,
+      CachedImageFetcherRequest request,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
       ImageDataFetcherCallback image_data_callback,
       ImageFetcherCallback image_callback,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation,
       const std::string& image_data,
       const gfx::Image& image);
 
   // Network
   void EnqueueFetchImageFromNetwork(
-      bool cache_hit,
-      base::Time start_time,
-      const gfx::Size& size,
-      const std::string& id,
-      const GURL& image_url,
+      CachedImageFetcherRequest request,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
       ImageDataFetcherCallback image_data_callback,
-      ImageFetcherCallback image_callback,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation);
+      ImageFetcherCallback image_callback);
   void FetchImageFromNetwork(
-      bool cache_hit,
-      base::Time start_time,
-      const gfx::Size& size,
-      const std::string& id,
-      const GURL& image_url,
+      CachedImageFetcherRequest request,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
       ImageDataFetcherCallback image_data_callback,
-      ImageFetcherCallback image_callback,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation);
-  void OnImageFetchedFromNetwork(bool cache_hit,
-                                 base::Time start_time,
+      ImageFetcherCallback image_callback);
+  void OnImageFetchedFromNetwork(CachedImageFetcherRequest request,
                                  ImageFetcherCallback image_callback,
-                                 const GURL& image_url,
                                  const std::string& id,
                                  const gfx::Image& image,
                                  const RequestMetadata& request_metadata);
-  void DecodeDataForCaching(ImageDataFetcherCallback image_data_callback,
-                            const GURL& image_url,
-                            const std::string& image_data,
-                            const RequestMetadata& request_metadata);
-  void StartEncodingDataAndCache(const GURL& image_url,
-                                 const gfx::Image& image);
-  void StoreEncodedData(const GURL& image_url, std::string image_data);
+  void StoreEncodedData(const GURL& url, std::string image_data);
 
   // Whether the ImageChache is allowed to be modified in any way from requests
   // made by this CachedImageFetcher. This includes updating last used times,
@@ -124,7 +95,10 @@ class CachedImageFetcher : public ImageFetcher {
   // When true, operations won't affect the longeivity of valid cache items.
   bool read_only_;
 
-  gfx::Size desired_image_frame_size_;
+  // Capture parameters when ImageFetcher Set* methods are called.
+  gfx::Size desired_frame_size_;
+  DataUseServiceName data_use_service_name_;
+  base::Optional<int64_t> image_download_limit_bytes_;
 
   base::WeakPtrFactory<CachedImageFetcher> weak_ptr_factory_;
 
