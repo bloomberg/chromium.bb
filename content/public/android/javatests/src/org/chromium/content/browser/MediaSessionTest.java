@@ -189,6 +189,7 @@ public class MediaSessionTest {
     @Test
     @MediumTest
     @Feature({"MediaSession"})
+    @DisabledTest(message = "crbug.com/916535")
     public void testShortAudioIsTransient() throws Exception {
         Assert.assertEquals(
                 AudioManager.AUDIOFOCUS_LOSS, mAudioFocusChangeListener.getAudioFocusState());
