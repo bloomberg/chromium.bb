@@ -25,7 +25,7 @@ def _CheckLuciMiloCfg(input_api, output_api):
       input_api.Command(
         name='testing/buildbot config checks',
         cmd=[input_api.python_executable, input_api.os_path.join(
-                '..', '..', 'testing', 'buildbot',
+                '..', '..', '..', 'testing', 'buildbot',
                 'generate_buildbot_json.py',),
             '--check'],
         kwargs={}, message=output_api.PresubmitError)])
