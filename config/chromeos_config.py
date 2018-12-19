@@ -1679,7 +1679,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'cave',
       'chell',
       'cheza',
-      'coral',
       'cyan',
       'daisy',
       'daisy_skate',
@@ -1784,6 +1783,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'whirlwind', # contact:mxt@ (crbug.com/794242, crbug.com/819287)
       'wooten', # contact:icoolidge@
       'nyan_blaze', # contact: xixuan@
+      'coral', # contact: xixuan@
   ])
 
   assert not (_paladin_experimental_boards & _paladin_important_boards), (
