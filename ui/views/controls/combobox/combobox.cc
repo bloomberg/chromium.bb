@@ -521,7 +521,7 @@ void Combobox::ButtonPressed(Button* sender, const ui::Event& event) {
 
   // TODO(hajimehoshi): Fix the problem that the arrow button blinks when
   // cliking this while the dropdown menu is opened.
-  const base::TimeDelta delta = base::Time::Now() - closed_time_;
+  const base::TimeDelta delta = base::TimeTicks::Now() - closed_time_;
   if (delta.InMilliseconds() <= kMinimumMsBetweenButtonClicks)
     return;
 
@@ -644,7 +644,7 @@ void Combobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
 void Combobox::OnMenuClosed(Button::ButtonState original_button_state) {
   menu_runner_.reset();
   arrow_button_->SetState(original_button_state);
-  closed_time_ = base::Time::Now();
+  closed_time_ = base::TimeTicks::Now();
 }
 
 void Combobox::OnPerformAction() {
