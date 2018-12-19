@@ -1260,6 +1260,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_PluginActionAt, OnPluginActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_AnimateDoubleTapZoom,
                         OnAnimateDoubleTapZoomInMainFrame)
+    IPC_MESSAGE_HANDLER(ViewMsg_ZoomToFindInPageRect, OnZoomToFindInPageRect)
 
     // Page messages.
     IPC_MESSAGE_HANDLER(PageMsg_UpdateWindowScreenRect,
@@ -2138,6 +2139,11 @@ void RenderViewImpl::OnAnimateDoubleTapZoomInMainFrame(
     const blink::WebPoint& point,
     const blink::WebRect& bound) {
   webview()->AnimateDoubleTapZoom(point, bound);
+}
+
+void RenderViewImpl::OnZoomToFindInPageRect(
+    const blink::WebRect& rect_to_zoom) {
+  webview()->ZoomToFindInPageRect(rect_to_zoom);
 }
 
 }  // namespace content

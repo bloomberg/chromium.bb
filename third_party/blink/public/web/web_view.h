@@ -259,6 +259,9 @@ class WebView {
   // Requests a page-scale animation based on the specified point/rect.
   virtual void AnimateDoubleTapZoom(const gfx::Point&, const WebRect&) = 0;
 
+  // Requests a page-scale animation based on the specified rect.
+  virtual void ZoomToFindInPageRect(const WebRect&) = 0;
+
   // Sets the display mode of the web app.
   virtual void SetDisplayMode(WebDisplayMode) = 0;
 

@@ -299,8 +299,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
     return renderer_wide_named_frame_lookup_;
   }
   void UpdateZoomLevel(double zoom_level);
-  void OnAnimateDoubleTapZoomInMainFrame(const blink::WebPoint& point,
-                                         const blink::WebRect& rect_to_zoom);
 
  protected:
   RenderViewImpl(CompositorDependencies* compositor_deps,
@@ -448,6 +446,9 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void OnEnablePreferredSizeChangedMode();
   void OnPluginActionAt(const gfx::Point& location,
                         const blink::WebPluginAction& action);
+  void OnAnimateDoubleTapZoomInMainFrame(const blink::WebPoint& point,
+                                         const blink::WebRect& rect_to_zoom);
+  void OnZoomToFindInPageRect(const blink::WebRect& rect_to_zoom);
   void OnMoveOrResizeStarted();
   void OnExitFullscreen();
   void OnSetHistoryOffsetAndLength(int history_offset, int history_length);

@@ -849,6 +849,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnIntrinsicSizingInfoChanged(blink::WebIntrinsicSizingInfo info);
   void OnAnimateDoubleTapZoomInMainFrame(const gfx::Point& point,
                                          const gfx::Rect& rect_to_zoom);
+  void OnZoomToFindInPageRectInMainFrame(const gfx::Rect& rect_to_zoom);
 
   // Called when visual properties have changed in the renderer.
   void DidUpdateVisualProperties(const cc::RenderFrameMetadata& metadata);
