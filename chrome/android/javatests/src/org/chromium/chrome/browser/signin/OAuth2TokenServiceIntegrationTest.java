@@ -18,12 +18,12 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.util.ApplicationData;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
@@ -74,7 +74,7 @@ public class OAuth2TokenServiceIntegrationTest {
             seedAccountTrackerService();
 
             // Get a reference to the service.
-            mOAuth2TokenService = OAuth2TokenService.getForProfile(Profile.getLastUsedProfile());
+            mOAuth2TokenService = IdentityServicesProvider.getOAuth2TokenService();
 
             // Set up observer.
             mObserver = new TestObserver();

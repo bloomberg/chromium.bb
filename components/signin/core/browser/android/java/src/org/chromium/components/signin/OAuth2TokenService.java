@@ -2,23 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.signin;
+package org.chromium.components.signin;
 
 import android.accounts.Account;
 import android.content.Context;
 import android.support.annotation.MainThread;
-import android.util.Log;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.components.signin.AccountManagerFacade;
-import org.chromium.components.signin.AccountTrackerService;
-import org.chromium.components.signin.ChromeSigninController;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -54,31 +50,26 @@ public final class OAuth2TokenService
 
     private static final String OAUTH2_SCOPE_PREFIX = "oauth2:";
 
+    private final long mNativeOAuth2TokenServiceDelegate;
+    private final AccountTrackerService mAccountTrackerService;
+    private final ObserverList<OAuth2TokenServiceObserver> mObservers = new ObserverList<>();
+
     private boolean mPendingValidation;
     private boolean mPendingValidationForceNotifications;
 
-    private final long mNativeOAuth2TokenServiceDelegateAndroid;
-    private final ObserverList<OAuth2TokenServiceObserver> mObservers = new ObserverList<>();
-    private final AccountTrackerService mAccountTrackerService;
-
     private OAuth2TokenService(
-            long nativeOAuth2Service, AccountTrackerService accountTrackerService) {
-        mNativeOAuth2TokenServiceDelegateAndroid = nativeOAuth2Service;
+            long nativeOAuth2TokenServiceDelegate, AccountTrackerService accountTrackerService) {
+        mNativeOAuth2TokenServiceDelegate = nativeOAuth2TokenServiceDelegate;
         mAccountTrackerService = accountTrackerService;
 
         mAccountTrackerService.addSystemAccountsSeededListener(this);
     }
 
-    public static OAuth2TokenService getForProfile(Profile profile) {
-        ThreadUtils.assertOnUiThread();
-        return (OAuth2TokenService) nativeGetForProfile(profile);
-    }
-
     @CalledByNative
     private static OAuth2TokenService create(
-            long nativeOAuth2Service, AccountTrackerService accountTrackerService) {
+            long nativeOAuth2TokenServiceDelegate, AccountTrackerService accountTrackerService) {
         ThreadUtils.assertOnUiThread();
-        return new OAuth2TokenService(nativeOAuth2Service, accountTrackerService);
+        return new OAuth2TokenService(nativeOAuth2TokenServiceDelegate, accountTrackerService);
     }
 
     @VisibleForTesting
@@ -214,8 +205,7 @@ public final class OAuth2TokenService
             if (semaphore.tryAcquire(timeout, unit)) {
                 return result.get();
             } else {
-                Log.d(TAG, "Failed to retrieve auth token within timeout ("
-                        + timeout + " + " + unit.name() + ")");
+                Log.d(TAG, "Failed to retrieve auth token within timeout (%s %s)", timeout, unit);
                 return null;
             }
         } catch (InterruptedException e) {
@@ -242,8 +232,8 @@ public final class OAuth2TokenService
     }
 
     /**
-    * Called by native to invalidate an OAuth2 token.
-    */
+     * Called by native to invalidate an OAuth2 token.
+     */
     @CalledByNative
     public static void invalidateOAuth2AuthToken(String accessToken) {
         if (accessToken != null) {
@@ -252,9 +242,9 @@ public final class OAuth2TokenService
     }
 
     /**
-    * Continue pending accounts validation after system accounts have been seeded into
-    * AccountTrackerService.
-    */
+     * Continue pending accounts validation after system accounts have been seeded into
+     * AccountTrackerService.
+     */
     @Override
     public void onSystemAccountsSeedingComplete() {
         if (mPendingValidation) {
@@ -265,9 +255,9 @@ public final class OAuth2TokenService
     }
 
     /**
-    * Clear pending accounts validation when system accounts in AccountTrackerService were
-    * refreshed.
-    */
+     * Clear pending accounts validation when system accounts in AccountTrackerService were
+     * refreshed.
+     */
     @Override
     public void onSystemAccountsChanged() {
         mPendingValidationForceNotifications = false;
@@ -297,8 +287,8 @@ public final class OAuth2TokenService
             // change (re-signin or sign out signed-in account).
             currentlySignedInAccount = null;
         }
-        nativeValidateAccounts(mNativeOAuth2TokenServiceDelegateAndroid, currentlySignedInAccount,
-                forceNotifications);
+        nativeValidateAccounts(
+                mNativeOAuth2TokenServiceDelegate, currentlySignedInAccount, forceNotifications);
     }
 
     private boolean isSignedInAccountChanged(String signedInAccountName) {
@@ -337,17 +327,18 @@ public final class OAuth2TokenService
     private static String[] getStoredAccounts() {
         Set<String> accounts =
                 ContextUtils.getAppSharedPreferences().getStringSet(STORED_ACCOUNTS_KEY, null);
-        return accounts == null ? new String[]{} : accounts.toArray(new String[accounts.size()]);
+        return accounts == null ? new String[] {} : accounts.toArray(new String[0]);
     }
 
     @CalledByNative
     private static void saveStoredAccounts(String[] accounts) {
         Set<String> set = new HashSet<>(Arrays.asList(accounts));
-        ContextUtils.getAppSharedPreferences().edit()
-                .putStringSet(STORED_ACCOUNTS_KEY, set).apply();
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putStringSet(STORED_ACCOUNTS_KEY, set)
+                .apply();
     }
 
-    private static native Object nativeGetForProfile(Profile profile);
     private static native void nativeOAuth2TokenFetched(
             String authToken, boolean isTransientError, long nativeCallback);
     private native void nativeValidateAccounts(long nativeOAuth2TokenServiceDelegateAndroid,

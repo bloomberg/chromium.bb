@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.signin;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.signin.AccountTrackerService;
+import org.chromium.components.signin.OAuth2TokenService;
 
 /**
  * Provides access to sign-in related services that are profile-keyed on the native side. Java
@@ -21,5 +22,13 @@ public final class IdentityServicesProvider {
         return result;
     }
 
+    public static OAuth2TokenService getOAuth2TokenService() {
+        ThreadUtils.assertOnUiThread();
+        OAuth2TokenService result = nativeGetOAuth2TokenService(Profile.getLastUsedProfile());
+        assert result != null;
+        return result;
+    }
+
     private static native AccountTrackerService nativeGetAccountTrackerService(Profile profile);
+    private static native OAuth2TokenService nativeGetOAuth2TokenService(Profile profile);
 }

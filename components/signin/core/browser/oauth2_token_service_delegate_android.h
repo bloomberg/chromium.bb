@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_OAUTH2_TOKEN_SERVICE_DELEGATE_ANDROID_H_
-#define CHROME_BROWSER_SIGNIN_OAUTH2_TOKEN_SERVICE_DELEGATE_ANDROID_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_OAUTH2_TOKEN_SERVICE_DELEGATE_ANDROID_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_OAUTH2_TOKEN_SERVICE_DELEGATE_ANDROID_H_
 
 #include <map>
 #include <memory>
@@ -36,10 +36,8 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
   // Creates a new instance of the OAuth2TokenServiceDelegateAndroid.
   static OAuth2TokenServiceDelegateAndroid* Create();
 
-  // Returns a reference to the Java instance of this service.
-  static base::android::ScopedJavaLocalRef<jobject> GetForProfile(
-      JNIEnv* env,
-      const base::android::JavaRef<jobject>& j_profile_android);
+  // Returns a reference to the corresponding Java OAuth2TokenService object.
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
   // Called by the TestingProfile class to disable account validation in
   // tests.  This prevents the token service from trying to look up system

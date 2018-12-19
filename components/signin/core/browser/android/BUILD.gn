@@ -8,6 +8,7 @@ generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/components/signin/AccountTrackerService.java",
     "java/src/org/chromium/components/signin/ChildAccountInfoFetcher.java",
+    "java/src/org/chromium/components/signin/OAuth2TokenService.java",
   ]
   jni_package = "components/signin"
 }
@@ -37,6 +38,7 @@ android_library("java") {
     "java/src/org/chromium/components/signin/GmsAvailabilityException.java",
     "java/src/org/chromium/components/signin/GmsJustUpdatedException.java",
     "java/src/org/chromium/components/signin/util/PatternMatcher.java",
+    "java/src/org/chromium/components/signin/OAuth2TokenService.java",
     "java/src/org/chromium/components/signin/ProfileDataSource.java",
     "java/src/org/chromium/components/signin/SystemAccountManagerDelegate.java",
   ]
