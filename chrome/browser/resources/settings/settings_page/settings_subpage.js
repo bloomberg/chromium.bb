@@ -52,12 +52,9 @@ Polymer({
     active_: {
       type: Boolean,
       value: false,
+      observer: 'onActiveChanged_',
     },
   },
-
-  observers: [
-    'onActiveChanged_(active_, searchLabel)',
-  ],
 
   /** @private {boolean} */
   lastActiveValue_: false,
@@ -91,9 +88,17 @@ Polymer({
 
   /** @private */
   onActiveChanged_: function() {
-    if (!this.searchLabel || this.lastActiveValue_ == this.active_)
+    if (this.lastActiveValue_ == this.active_)
       return;
     this.lastActiveValue_ = this.active_;
+
+    if (this.active_ && this.pageTitle) {
+      document.title =
+          loadTimeData.getStringF('settingsAltPageTitle', this.pageTitle);
+    }
+
+    if (!this.searchLabel)
+      return;
 
     if (this.active_)
       this.becomeActiveFindShortcutListener();

@@ -322,5 +322,17 @@ cr.define('settings_main_page', function() {
       assertFalse(basicPage.showChangePassword);
       assertFalse(!!basicPage.$$('settings-change-password-page'));
     });
+
+    test('updates the title based on current route', function() {
+      settings.navigateTo(settings.routes.BASIC);
+      assertEquals(document.title, loadTimeData.getString('settings'));
+
+      settings.navigateTo(settings.routes.ABOUT);
+      assertEquals(
+          document.title,
+          loadTimeData.getStringF(
+              'settingsAltPageTitle',
+              loadTimeData.getString('aboutPageTitle')));
+    });
   });
 });

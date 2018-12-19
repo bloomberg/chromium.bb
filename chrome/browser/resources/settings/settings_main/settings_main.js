@@ -127,10 +127,12 @@ Polymer({
     const inAbout = settings.routes.ABOUT.contains(settings.getCurrentRoute());
     this.showPages_ = {about: inAbout, settings: !inAbout};
 
-    document.title = inAbout ?
-        loadTimeData.getStringF(
-            'settingsAltPageTitle', loadTimeData.getString('aboutPageTitle')) :
-        loadTimeData.getString('settings');
+    if (!newRoute.isSubpage()) {
+      document.title = inAbout ? loadTimeData.getStringF(
+                                     'settingsAltPageTitle',
+                                     loadTimeData.getString('aboutPageTitle')) :
+                                 loadTimeData.getString('settings');
+    }
   },
 
   /** @private */
