@@ -365,6 +365,11 @@ const char kUseMultiloginEndpointName[] = "Use Multilogin endpoint.";
 const char kUseMultiloginEndpointDescription[] =
     "Use Gaia OAuth multilogin for identity consistency.";
 
+const char kUseNSURLSessionForGaiaSigninRequestsName[] =
+    "Use NSURLSession for sign-in requests";
+const char kUseNSURLSessionForGaiaSigninRequestsDescription[] =
+    "Use NSURLSession to make sign-in requests to Gaia";
+
 const char kUsdzPreviewName[] = "Preview USDZ format 3D models";
 const char kUsdzPreviewDescription[] =
     "Enables previewing USDZ format 3D models in AR Quick Look.";

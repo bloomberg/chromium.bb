@@ -299,6 +299,11 @@ extern const char kUnifiedConsentDescription[];
 extern const char kUseMultiloginEndpointName[];
 extern const char kUseMultiloginEndpointDescription[];
 
+// Title and description for the flag to switch from WKWebView to NSURLSession
+// to make sign-in requests to Gaia with attached cookies.
+extern const char kUseNSURLSessionForGaiaSigninRequestsName[];
+extern const char kUseNSURLSessionForGaiaSigninRequestsDescription[];
+
 // Title and description for the flag to enable previewing USDZ 3 model files.
 extern const char kUsdzPreviewName[];
 extern const char kUsdzPreviewDescription[];

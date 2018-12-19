@@ -8,8 +8,11 @@
 
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
+#include "ios/chrome/browser/signin/feature_flags.h"
+#import "ios/chrome/browser/signin/gaia_auth_fetcher_ios_ns_url_session_bridge.h"
 #include "ios/chrome/browser/signin/gaia_auth_fetcher_ios_wk_webview_bridge.h"
 #include "ios/web/public/browser_state.h"
+#include "ios/web/public/features.h"
 #include "net/base/load_flags.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -30,8 +33,18 @@ GaiaAuthFetcherIOS::GaiaAuthFetcherIOS(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     web::BrowserState* browser_state)
     : GaiaAuthFetcher(consumer, source, url_loader_factory),
-      bridge_(new GaiaAuthFetcherIOSWKWebViewBridge(this, browser_state)),
-      browser_state_(browser_state) {}
+      browser_state_(browser_state) {
+  if (base::FeatureList::IsEnabled(web::features::kWKHTTPSystemCookieStore) &&
+      base::FeatureList::IsEnabled(kUseNSURLSessionForGaiaSigninRequests)) {
+    // GaiaAuthFetcherIOSNSURLSessionBridge can only work with
+    // kWKHTTPSystemCookieStore is enabled.
+    // See http://crbug.com/902584
+    bridge_.reset(
+        new GaiaAuthFetcherIOSNSURLSessionBridge(this, browser_state));
+  } else {
+    bridge_.reset(new GaiaAuthFetcherIOSWKWebViewBridge(this, browser_state));
+  }
+}
 
 GaiaAuthFetcherIOS::~GaiaAuthFetcherIOS() {}
 

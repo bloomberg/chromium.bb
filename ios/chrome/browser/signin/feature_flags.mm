@@ -13,6 +13,9 @@
 const base::Feature kSSOWithWKWebView{"SSOWithWKWebView",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kUseNSURLSessionForGaiaSigninRequests{
+    "UseNSURLSessionForGaiaSigninRequests", base::FEATURE_ENABLED_BY_DEFAULT};
+
 bool ShouldEnableWKWebViewWithSSO() {
   if (!base::ios::IsRunningOnIOS12OrLater())
     return false;
