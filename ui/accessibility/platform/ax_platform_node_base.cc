@@ -17,6 +17,7 @@
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
+#include "ui/accessibility/platform/compute_attributes.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace ui {
@@ -914,9 +915,9 @@ void AXPlatformNodeBase::AddAttributeToList(
     const char* name,
     PlatformAttributeList* attributes) {
   DCHECK(attributes);
-  int value;
-  if (GetIntAttribute(attribute, &value)) {
-    std::string str_value = base::IntToString(value);
+  auto maybe_value = ComputeAttribute(delegate_, attribute);
+  if (maybe_value.has_value()) {
+    std::string str_value = base::IntToString(maybe_value.value());
     AddAttributeToList(name, str_value, attributes);
   }
 }
