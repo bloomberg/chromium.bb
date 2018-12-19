@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 
+#include "base/cfi_buildflags.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -1128,7 +1129,15 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, DeleteFrameBeforeSubmit) {
+// https://crbug.com/916413 tracks test flakiness on chromium.memory/Linux CFI
+#if BUILDFLAG(CFI_CAST_CHECK) || BUILDFLAG(CFI_ICALL_CHECK) || \
+    BUILDFLAG(CFI_ENFORCEMENT_DIAGNOSTIC) || BUILDFLAG(CFI_ENFORCEMENT_TRAP)
+#define MAYBE_DeleteFrameBeforeSubmit DISABLED_DeleteFrameBeforeSubmit
+#else
+#define MAYBE_DeleteFrameBeforeSubmit DeleteFrameBeforeSubmit
+#endif
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       MAYBE_DeleteFrameBeforeSubmit) {
   NavigateToFile("/password/multi_frames.html");
 
   NavigationObserver observer(WebContents());
