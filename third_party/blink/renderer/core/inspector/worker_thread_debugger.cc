@@ -172,6 +172,7 @@ void WorkerThreadDebugger::runMessageLoopOnPause(int context_group_id) {
   DCHECK(!thread->GlobalScope()->IsClosing());
   thread->GetWorkerInspectorController()->FlushProtocolNotifications();
   thread->GlobalScope()->PauseScheduledTasks();
+  auto pause_handle = thread->GetScheduler()->Pause();
   if (!nested_runner_)
     nested_runner_ = Platform::Current()->CreateNestedMessageLoopRunner();
   nested_runner_->Run();

@@ -35,5 +35,11 @@ void NonMainThreadTaskQueue::OnTaskCompleted(
   }
 }
 
+void NonMainThreadTaskQueue::SetPaused(bool paused) {
+  if (!task_queue_voter_)
+    task_queue_voter_ = CreateQueueEnabledVoter();
+  task_queue_voter_->SetQueueEnabled(!paused);
+}
+
 }  // namespace scheduler
 }  // namespace blink
