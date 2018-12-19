@@ -200,9 +200,8 @@ bool ServiceWorkerTaskQueue::ShouldEnqueueTask(BrowserContext* context,
   return true;
 }
 
-void ServiceWorkerTaskQueue::AddPendingTaskToDispatchEvent(
-    const LazyContextId& context_id,
-    PendingTask task) {
+void ServiceWorkerTaskQueue::AddPendingTask(const LazyContextId& context_id,
+                                            PendingTask task) {
   DCHECK(context_id.is_for_service_worker());
 
   // TODO(lazyboy): Do we need to handle incognito context?

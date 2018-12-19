@@ -38,6 +38,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/lazy_background_task_queue.h"
+#include "extensions/browser/lazy_context_id.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/url_pattern.h"
@@ -356,7 +357,7 @@ void FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread(
       return;
     }
     queue->AddPendingTask(
-        profile_, extension_->id(),
+        extensions::LazyContextId(profile_, extension_->id()),
         base::BindOnce(
             &FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent,
             weak_ptr_factory_.GetWeakPtr(),
