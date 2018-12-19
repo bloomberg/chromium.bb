@@ -509,6 +509,18 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, views::View overrides:
 
+gfx::Size ToolbarView::CalculatePreferredSize() const {
+  gfx::Size size = View::CalculatePreferredSize();
+  size.set_height(size.height() * size_animation_.GetCurrentValue());
+  return size;
+}
+
+gfx::Size ToolbarView::GetMinimumSize() const {
+  gfx::Size size = View::GetMinimumSize();
+  size.set_height(size.height() * size_animation_.GetCurrentValue());
+  return size;
+}
+
 void ToolbarView::Layout() {
   // If we have not been initialized yet just do nothing.
   if (!initialized_)
