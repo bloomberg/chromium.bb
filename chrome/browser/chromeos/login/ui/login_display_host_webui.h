@@ -29,6 +29,7 @@
 #include "ui/display/display_observer.h"
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/widget/widget_observer.h"
 #include "ui/views/widget/widget_removals_observer.h"
 
 namespace ash {
@@ -50,6 +51,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
                               public display::DisplayObserver,
                               public ui::InputDeviceEventObserver,
                               public views::WidgetRemovalsObserver,
+                              public views::WidgetObserver,
                               public MultiUserWindowManagerClient::Observer {
  public:
   LoginDisplayHostWebUI();
@@ -128,6 +130,9 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
 
   // views::WidgetRemovalsObserver:
   void OnWillRemoveView(views::Widget* widget, views::View* view) override;
+
+  // views::WidgetObserver:
+  void OnWidgetDestroying(views::Widget* widget) override;
 
   // MultiUserWindowManagerClient::Observer:
   void OnUserSwitchAnimationFinished() override;
