@@ -84,7 +84,7 @@ scoped_refptr<EncodedFormData> XSSAuditorDelegate::GenerateViolationReport(
   String http_body;
   if (frame_loader.GetDocumentLoader()) {
     if (EncodedFormData* form_data =
-            frame_loader.GetDocumentLoader()->OriginalRequest().HttpBody())
+            frame_loader.GetDocumentLoader()->HttpBody())
       http_body = form_data->FlattenToString();
   }
 
