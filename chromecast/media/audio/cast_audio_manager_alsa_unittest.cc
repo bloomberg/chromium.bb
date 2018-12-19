@@ -35,7 +35,7 @@ std::unique_ptr<service_manager::Connector> CreateConnector() {
   return service_manager::Connector::Create(&request);
 }
 
-std::string DummyGetSessionId(base::UnguessableToken /* audio_group_id */) {
+std::string DummyGetSessionId(std::string /* audio_group_id */) {
   return "";
 }
 
