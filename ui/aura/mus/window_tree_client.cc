@@ -1500,15 +1500,17 @@ void WindowTreeClient::GetScreenProviderObserver(
   screen_provider_observer_binding_.Bind(std::move(observer));
 }
 
-void WindowTreeClient::OnOcclusionStateChanged(
-    ws::Id window_id,
-    ws::mojom::OcclusionState occlusion_state) {
-  WindowMus* window = GetWindowByServerId(window_id);
-  if (!window)
-    return;
+void WindowTreeClient::OnOcclusionStatesChanged(
+    const base::flat_map<ws::Id, ws::mojom::OcclusionState>&
+        occlusion_changes) {
+  for (const auto& change : occlusion_changes) {
+    WindowMus* window = GetWindowByServerId(change.first);
+    if (!window)
+      continue;
 
-  WindowPortMus::Get(window->GetWindow())
-      ->SetOcclusionStateFromServer(occlusion_state);
+    WindowPortMus::Get(window->GetWindow())
+        ->SetOcclusionStateFromServer(change.second);
+  }
 }
 
 void WindowTreeClient::OnDisplaysChanged(

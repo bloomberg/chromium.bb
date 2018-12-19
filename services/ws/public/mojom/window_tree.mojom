@@ -633,9 +633,10 @@ interface WindowTreeClient {
   // ScreenProviderObserver for details.
   GetScreenProviderObserver(associated ScreenProviderObserver& observer);
 
-  // Called when the occlusion state changes for a window. See also
-  // TrackOcclusionState on WindowTree.
-  OnOcclusionStateChanged(uint64 window_id, OcclusionState occlusion_state);
+  // Called to send occlusion changes to client. |occlusion_changes| contains
+  // the changed info, with window id as its key and new occlusion state as its
+  // data. See also TrackOcclusionState on WindowTree.
+  OnOcclusionStatesChanged(map<uint64, OcclusionState> occlusion_changes);
 };
 
 // Mus provides this interface as a way for clients to connect and obtain a

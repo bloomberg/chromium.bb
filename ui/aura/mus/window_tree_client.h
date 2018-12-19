@@ -459,9 +459,9 @@ class AURA_EXPORT WindowTreeClient
   void RequestClose(ws::Id window_id) override;
   void GetScreenProviderObserver(
       ws::mojom::ScreenProviderObserverAssociatedRequest observer) override;
-  void OnOcclusionStateChanged(
-      ws::Id window_id,
-      ws::mojom::OcclusionState occlusion_state) override;
+  void OnOcclusionStatesChanged(
+      const base::flat_map<ws::Id, ws::mojom::OcclusionState>&
+          occlusion_changes) override;
 
   // ws::mojom::ScreenProviderObserver:
   void OnDisplaysChanged(std::vector<ws::mojom::WsDisplayPtr> ws_displays,

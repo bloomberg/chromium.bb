@@ -379,8 +379,8 @@ void RendererWindowTreeClient::RequestClose(ws::Id window_id) {}
 void RendererWindowTreeClient::GetScreenProviderObserver(
     ws::mojom::ScreenProviderObserverAssociatedRequest observer) {}
 
-void RendererWindowTreeClient::OnOcclusionStateChanged(
-    ws::Id window_id,
-    ws::mojom::OcclusionState occlusion_state) {}
+void RendererWindowTreeClient::OnOcclusionStatesChanged(
+    const base::flat_map<ws::Id, ws::mojom::OcclusionState>&
+        occlusion_changes) {}
 
 }  // namespace content
