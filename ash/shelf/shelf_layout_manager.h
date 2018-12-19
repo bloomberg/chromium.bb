@@ -285,6 +285,9 @@ class ASH_EXPORT ShelfLayoutManager
                               bool animate,
                               ui::ImplicitAnimationObserver* observer);
 
+  // Returns whether the virtual keyboard is currently being shown.
+  bool IsKeyboardShown() const;
+
   // Stops any animations and progresses them to the end.
   void StopAnimating();
 
