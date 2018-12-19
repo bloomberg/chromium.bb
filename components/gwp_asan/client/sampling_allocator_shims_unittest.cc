@@ -203,6 +203,9 @@ TEST_F(SamplingAllocatorShimsTest, Calloc) {
   runTest("Calloc");
 }
 
+// GetCrashKeyValue() operates on a per-component basis, can't read the crash
+// key from the gwp_asan_client component in a component build.
+#if !defined(COMPONENT_BUILD)
 MULTIPROCESS_TEST_MAIN(CrashKey) {
   InstallAllocatorHooks(AllocatorState::kGpaMaxPages,
                         AllocatorState::kGpaMaxPages, kSamplingFrequency);
@@ -222,6 +225,7 @@ MULTIPROCESS_TEST_MAIN(CrashKey) {
 TEST_F(SamplingAllocatorShimsTest, CrashKey) {
   runTest("CrashKey");
 }
+#endif  // !defined(COMPONENT_BUILD)
 
 MULTIPROCESS_TEST_MAIN(GetSizeEstimate) {
   InstallAllocatorHooks(AllocatorState::kGpaMaxPages,
