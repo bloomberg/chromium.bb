@@ -116,7 +116,7 @@ class WebContentsVideoCaptureDevice::FrameTracker
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     WebContents* const contents = web_contents();
-    if (!contents || contents->IsCrashed()) {
+    if (!contents) {
       return nullptr;
     }
 
