@@ -36,12 +36,6 @@
 #include "components/search_provider_logos/google_logo_api.h"
 #include "components/search_provider_logos/logo_cache.h"
 #include "components/search_provider_logos/logo_observer.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
-#include "components/signin/core/browser/test_signin_client.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -291,57 +285,27 @@ class SigninHelper {
  public:
   explicit SigninHelper(base::test::ScopedTaskEnvironment* task_environment)
       : task_environment_(task_environment),
-        signin_client_(&pref_service_),
-        token_service_(&pref_service_),
-        cookie_service_(&token_service_,
-                        &signin_client_,
-                        &test_url_loader_factory_),
-#if defined(OS_CHROMEOS)
-        signin_manager_(&signin_client_,
-                        &token_service_,
-                        &account_tracker_service_),
-#else
-        signin_manager_(&signin_client_,
-                        &token_service_,
-                        &account_tracker_service_,
-                        &cookie_service_),
-#endif
-        identity_test_env_(&account_tracker_service_,
-                           &token_service_,
-                           &signin_manager_,
-                           &cookie_service_) {
-    // GaiaCookieManagerService calls static methods of AccountTrackerService
-    // which access prefs.
-    AccountTrackerService::RegisterPrefs(pref_service_.registry());
-  }
+        identity_test_env_(&test_url_loader_factory_) {}
 
   identity::IdentityManager* identity_manager() {
     return identity_test_env_.identity_manager();
   }
 
   void SignIn() {
-    cookie_service_.SetListAccountsResponseOneAccount("user@gmail.com",
-                                                      "gaia_id");
-    cookie_service_.TriggerListAccounts();
+    std::string email("user@gmail.com");
+    identity_test_env_.SetCookieAccounts(
+        {{email, identity::GetTestGaiaIdForEmail(email)}});
     task_environment_->RunUntilIdle();
   }
 
   void SignOut() {
-    cookie_service_.SetListAccountsResponseNoAccounts();
-    cookie_service_.TriggerListAccounts();
+    identity_test_env_.SetCookieAccounts({});
     task_environment_->RunUntilIdle();
   }
 
  private:
   base::test::ScopedTaskEnvironment* task_environment_;
-
-  TestingPrefServiceSyncable pref_service_;
-  TestSigninClient signin_client_;
-  FakeProfileOAuth2TokenService token_service_;
-  AccountTrackerService account_tracker_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  FakeGaiaCookieManagerService cookie_service_;
-  SigninManagerForTest signin_manager_;
   identity::IdentityTestEnvironment identity_test_env_;
 };
 
