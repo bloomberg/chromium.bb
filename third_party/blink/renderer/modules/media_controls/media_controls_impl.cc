@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_animated_arrow_container_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_button_panel_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_cast_button_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_consts.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_current_time_display_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_display_cutout_fullscreen_button_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_download_button_element.h"
@@ -694,8 +695,14 @@ void MediaControlsImpl::PopulatePanel() {
 
   // On modern controls, the volume slider is to the left of the mute button.
   if (IsModern()) {
-    MaybeParserAppendChild(button_panel, volume_slider_);
-    button_panel->ParserAppendChild(mute_button_);
+    volume_control_container_ = MediaControlElementsHelper::CreateDiv(
+        "-webkit-media-controls-volume-control-container", button_panel);
+    MediaControlElementsHelper::CreateDiv(
+        "-webkit-media-controls-volume-control-hover-background",
+        volume_control_container_);
+    MaybeParserAppendChild(volume_control_container_, volume_slider_);
+    volume_control_container_->ParserAppendChild(mute_button_);
+    HideVolumeControlHoverBackground();
   } else {
     button_panel->ParserAppendChild(mute_button_);
     MaybeParserAppendChild(button_panel, volume_slider_);
@@ -714,6 +721,19 @@ void MediaControlsImpl::PopulatePanel() {
   }
 
   button_panel->ParserAppendChild(overflow_menu_);
+
+  // Attach hover background div to modern controls
+  if (IsModern()) {
+    AttachHoverBackground(play_button_);
+    AttachHoverBackground(fullscreen_button_);
+    AttachHoverBackground(overflow_menu_);
+  }
+}
+
+void MediaControlsImpl::AttachHoverBackground(Element* element) {
+  MediaControlElementsHelper::CreateDiv(
+      "-internal-media-controls-button-hover-background",
+      element->GetShadowRoot());
 }
 
 Node::InsertionNotificationRequest MediaControlsImpl::InsertedInto(
@@ -1380,6 +1400,9 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
                     ((controls_size.width - element_size.width) >= 0);
     element->SetDoesFit(does_fit);
 
+    if (element == mute_button_.Get() && IsModern())
+      SetVolumeControlContainerIsWanted(does_fit);
+
     // The element does fit and is sticky so we should allocate space for it. If
     // we cannot fit this element we should stop allocating space for other
     // elements.
@@ -1408,6 +1431,9 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
       controls_size.width < overflow_icon_width) {
     last_element->SetDoesFit(false);
     last_element->SetOverflowElementIsWanted(true);
+
+    if (last_element == mute_button_.Get() && IsModern())
+      SetVolumeControlContainerIsWanted(false);
   }
 
   MaybeRecordElementsDisplayed();
@@ -2273,6 +2299,7 @@ void MediaControlsImpl::StartHideMediaControlsIfNecessary() {
 
 void MediaControlsImpl::VolumeSliderWantedTimerFired(TimerBase*) {
   volume_slider_->OpenSlider();
+  ShowVolumeControlHoverBackground();
 }
 
 void MediaControlsImpl::OpenVolumeSliderIfNecessary() {
@@ -2292,9 +2319,28 @@ void MediaControlsImpl::OpenVolumeSliderIfNecessary() {
 void MediaControlsImpl::CloseVolumeSliderIfNecessary() {
   if (ShouldCloseVolumeSlider()) {
     volume_slider_->CloseSlider();
+    HideVolumeControlHoverBackground();
 
     if (volume_slider_wanted_timer_.IsActive())
       volume_slider_wanted_timer_.Stop();
+  }
+}
+
+void MediaControlsImpl::ShowVolumeControlHoverBackground() {
+  volume_control_container_->classList().Remove(kClosedCSSClass);
+}
+
+void MediaControlsImpl::HideVolumeControlHoverBackground() {
+  volume_control_container_->classList().Add(kClosedCSSClass);
+}
+
+void MediaControlsImpl::SetVolumeControlContainerIsWanted(
+    bool is_wanted) const {
+  if (is_wanted) {
+    volume_control_container_->RemoveInlineStyleProperty(CSSPropertyDisplay);
+  } else {
+    volume_control_container_->SetInlineStyleProperty(CSSPropertyDisplay,
+                                                      CSSValueNone);
   }
 }
 
@@ -2380,6 +2426,7 @@ void MediaControlsImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(media_button_panel_);
   visitor->Trace(loading_panel_);
   visitor->Trace(display_cutout_fullscreen_button_);
+  visitor->Trace(volume_control_container_);
   MediaControls::Trace(visitor);
   HTMLDivElement::Trace(visitor);
 }

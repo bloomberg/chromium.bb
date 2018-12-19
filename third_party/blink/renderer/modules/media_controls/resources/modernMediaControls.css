@@ -170,7 +170,6 @@ video::-webkit-media-controls-timeline {
 /**
  * Media Buttons
  */
-
 audio::-webkit-media-controls-play-button,
 video::-webkit-media-controls-play-button,
 audio::-webkit-media-controls-mute-button,
@@ -191,14 +190,107 @@ video::-internal-media-controls-picture-in-picture-button {
   background-size: 24px;
   background-repeat: no-repeat;
   background-position: center center;
+
+  /*
+   * Width should change to 48px when we have new audio
+   * control specs. Button tap target in audio and video
+   * controls should be same.
+   */
   width: 32px;
-  height: 32px;
+  height: 48px;
   min-width: 32px;
   padding: 0;
   border-width: 0;
   background-color: initial;
   color: inherit;
   cursor: pointer;
+}
+
+/*
+ * Each hover background div's positioning rules
+ * are relative to their parent.
+ */
+video::-webkit-media-controls-play-button,
+audio::-webkit-media-controls-play-button,
+video::-webkit-media-controls-fullscreen-button,
+audio::-webkit-media-controls-fullscreen-button,
+video::-internal-media-controls-overflow-button,
+audio::-internal-media-controls-overflow-button {
+  position: relative;
+}
+
+video::-webkit-media-controls input[pseudo="-webkit-media-controls-play-button" i]::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-play-button" i]::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls input[pseudo="-webkit-media-controls-fullscreen-button" i]::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-fullscreen-button" i]::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls input[pseudo="-internal-media-controls-overflow-button" i]::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-internal-media-controls-overflow-button" i]::-internal-media-controls-button-hover-background {
+  background-color: rgba(32, 33, 36, 0);
+  background-size: 24px;
+  background-repeat: no-repeat;
+  background-position: center center;
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  left: 6px;
+  top: 6px;
+  transition: background-color .25s;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/*
+ * Audio control hover circle size should be same as video controls'. Due to increase of audio control tap target
+ * will break the layout when width is 300. We'll shrink the hover circle here. Should remove this rule once the new
+ * audio control layout specs are out
+ */
+video::-webkit-media-controls.audio-only input[pseudo="-webkit-media-controls-play-button" i]::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.audio-only input[pseudo="-webkit-media-controls-fullscreen-button" i]::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.audio-only input[pseudo="-internal-media-controls-overflow-button" i]::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-play-button" i]::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-fullscreen-button" i]::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-internal-media-controls-overflow-button" i]::-internal-media-controls-button-hover-background {
+  width: 32px;
+  height: 32px;
+  left: 0;
+  top: 8px;
+  border-radius: 16px;
+}
+
+video::-webkit-media-controls input[pseudo="-webkit-media-controls-play-button" i]:enabled:hover::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls input[pseudo="-webkit-media-controls-play-button" i]:enabled:focus::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls input[pseudo="-webkit-media-controls-fullscreen-button" i]:enabled:hover::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls input[pseudo="-webkit-media-controls-fullscreen-button" i]:enabled:focus::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls input[pseudo="-internal-media-controls-overflow-button" i]:enabled:hover::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls input[pseudo="-internal-media-controls-overflow-button" i]:enabled:focus::-internal-media-controls-button-hover-background {
+  background-color: rgba(32, 33, 36, 0.71);
+}
+
+video::-webkit-media-controls.audio-only input[pseudo="-webkit-media-controls-play-button" i]:enabled:hover::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.audio-only input[pseudo="-webkit-media-controls-play-button" i]:enabled:focus::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.audio-only input[pseudo="-webkit-media-controls-fullscreen-button" i]:enabled:hover::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.audio-only input[pseudo="-webkit-media-controls-fullscreen-button" i]:enabled:focus::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.audio-only input[pseudo="-internal-media-controls-overflow-button" i]:enabled:hover::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.audio-only input[pseudo="-internal-media-controls-overflow-button" i]:enabled:focus::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-play-button" i]:enabled:hover::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-play-button" i]:enabled:focus::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-fullscreen-button" i]:enabled:hover::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-fullscreen-button" i]:enabled:focus::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-internal-media-controls-overflow-button" i]:enabled:hover::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-internal-media-controls-overflow-button" i]:enabled:focus::-internal-media-controls-button-hover-background {
+  background-color: rgba(32, 33, 36, 0.06);
+}
+
+video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-play-button" i]::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-fullscreen-button" i]::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.sizing-medium input[pseudo="-internal-media-controls-overflow-button" i]::-internal-media-controls-button-hover-background {
+  background-size: 32px;
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  left: 10px;
+  top: 10px;
 }
 
 video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-play-button" i],
@@ -353,6 +445,97 @@ video::-webkit-media-controls-overlay-play-button {
   transition: opacity 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
   padding: 20px;
   border: 0;
+}
+
+/*
+ * Volume control container
+ */
+audio::-webkit-media-controls-volume-control-container,
+video::-webkit-media-controls-volume-control-container {
+  display: flex;
+  justify-content: flex-end;
+  position: relative;
+  height: 48px;
+
+  /* 48(Mute button) + 52(Slider) + 16(Left padding) */
+  min-width: 116px;
+  transition: min-width .3s;
+}
+
+audio::-webkit-media-controls-volume-control-container.closed,
+video::-webkit-media-controls-volume-control-container.closed {
+  min-width: 48px;
+}
+
+/*
+ * Audio control hover container size should be same as video controls'. Due to increase of audio control tap target
+ * will break the layout when width is 300. We'll shrink the hover container here. Should remove the min-width rule
+ * once the new audio control layout specs are out.
+ */
+video::-webkit-media-controls.audio-only div[pseudo="-webkit-media-controls-volume-control-container" i],
+audio::-webkit-media-controls-volume-control-container {
+  min-width: 100px;
+}
+
+video::-webkit-media-controls.audio-only div[pseudo="-webkit-media-controls-volume-control-container" i].closed,
+audio::-webkit-media-controls-volume-control-container.closed {
+  min-width: 32px;
+}
+
+audio::-webkit-media-controls-volume-control-hover-background,
+video::-webkit-media-controls-volume-control-hover-background {
+  position: absolute;
+  z-index: -1;
+  background-color: #202124;
+  opacity: .71;
+  height: 36px;
+  width: 112px;
+  border-radius: 18px;
+  top: 6px;
+  right: 4px;
+  transition: width .3s ease, opacity .25s ease;
+}
+
+/*
+ * Audio control hover size should be same as video controls'. Due to increase of audio control tap target
+ * will break the layout when width is 300. We'll shrink the hover size here. Should remove this rule once the new
+ * audio control layout specs are out. (Don't remove the opacity rule)
+ */
+video::-webkit-media-controls.audio-only div[pseudo="-webkit-media-controls-volume-control-hover-background" i],
+audio::-webkit-media-controls-volume-control-hover-background {
+  height: 32px;
+  width: 100px;
+  border-radius: 16px;
+  top: 8px;
+  right: 0;
+  opacity: .06;
+}
+
+audio::-webkit-media-controls [pseudo="-webkit-media-controls-volume-control-container"].closed [pseudo="-webkit-media-controls-volume-control-hover-background"],
+video::-webkit-media-controls [pseudo="-webkit-media-controls-volume-control-container"].closed [pseudo="-webkit-media-controls-volume-control-hover-background"] {
+  width: 36px;
+  opacity: 0;
+}
+
+video::-webkit-media-controls.sizing-medium div[pseudo="-webkit-media-controls-volume-control-container" i] {
+  height: 64px;
+  min-width: 132px;
+}
+
+video::-webkit-media-controls.sizing-medium div[pseudo="-webkit-media-controls-volume-control-container" i].closed {
+  min-width: 64px;
+}
+
+video::-webkit-media-controls.sizing-medium div[pseudo="-webkit-media-controls-volume-control-hover-background" i] {
+  height: 44px;
+  width: 124px;
+  border-radius: 22px;
+  top: 10px;
+  right: 8px;
+}
+
+video::-webkit-media-controls.sizing-medum [pseudo="-webkit-media-controls-volume-control-container"].closed [pseudo="-webkit-media-controls-volume-control-hover-background"] {
+  width: 44px;
 }
 
 /**
