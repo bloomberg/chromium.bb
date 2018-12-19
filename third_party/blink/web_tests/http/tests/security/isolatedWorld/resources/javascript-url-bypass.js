@@ -28,7 +28,9 @@ function setup() {
 function test() {
     function setIframeSrcToJavaScript(num) {
         var iframe = document.getElementById('testiframe');
-        iframe.src = "javascript:alert('iframe javascript: src running')";
+        // Provide a body in the iframe src to trigger an onload event once
+        // execution has finished.
+        iframe.src = "javascript:alert('iframe javascript: src running') || 'alerted'";
     }
 
     alert("Running test #" + tests + "\n");

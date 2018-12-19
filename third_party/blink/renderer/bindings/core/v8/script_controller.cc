@@ -211,8 +211,10 @@ void ScriptController::UpdateDocument() {
   EnableEval();
 }
 
-bool ScriptController::ExecuteScriptIfJavaScriptURL(const KURL& url,
-                                                    Element* element) {
+bool ScriptController::ExecuteScriptIfJavaScriptURL(
+    const KURL& url,
+    Element* element,
+    ContentSecurityPolicyDisposition check_main_world_csp) {
   if (!url.ProtocolIsJavaScript())
     return false;
 
@@ -221,6 +223,7 @@ bool ScriptController::ExecuteScriptIfJavaScriptURL(const KURL& url,
       url.GetString(), DecodeURLMode::kUTF8OrIsomorphic);
 
   bool should_bypass_main_world_content_security_policy =
+      check_main_world_csp == kDoNotCheckContentSecurityPolicy ||
       ContentSecurityPolicy::ShouldBypassMainWorld(GetFrame()->GetDocument());
   if (!GetFrame()->GetPage() ||
       (!should_bypass_main_world_content_security_policy &&
