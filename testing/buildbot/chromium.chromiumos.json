@@ -633,8 +633,7 @@
       {
         "args": [
           "--enable-features=SingleProcessMash",
-          "--override-use-software-gl-for-tests",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.content_browsertests.filter"
+          "--override-use-software-gl-for-tests"
         ],
         "name": "single_process_mash_content_browsertests",
         "swarming": {
@@ -1342,8 +1341,7 @@
       {
         "args": [
           "--enable-features=SingleProcessMash",
-          "--override-use-software-gl-for-tests",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.content_browsertests.filter"
+          "--override-use-software-gl-for-tests"
         ],
         "name": "single_process_mash_content_browsertests",
         "swarming": {
