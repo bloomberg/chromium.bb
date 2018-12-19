@@ -27,7 +27,8 @@ class InputMethodBridge : public ws::mojom::InputMethod {
   ~InputMethodBridge() override;
 
   // ws::mojom::InputMethod:
-  void OnTextInputTypeChanged(ui::TextInputType text_input_type) override;
+  void OnTextInputStateChanged(
+      ws::mojom::TextInputStatePtr text_input_state) override;
   void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override;
   void ProcessKeyEvent(std::unique_ptr<ui::Event> key_event,
                        ProcessKeyEventCallback callback) override;

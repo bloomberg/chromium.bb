@@ -18,14 +18,11 @@ class RemoteTextInputClient : public ui::TextInputClient,
                               public ui::internal::InputMethodDelegate {
  public:
   RemoteTextInputClient(ws::mojom::TextInputClientPtr remote_client,
-                        ui::TextInputType text_input_type,
-                        ui::TextInputMode text_input_mode,
-                        base::i18n::TextDirection text_direction,
-                        int text_input_flags,
+                        ws::mojom::TextInputStatePtr text_input_state,
                         gfx::Rect caret_bounds);
   ~RemoteTextInputClient() override;
 
-  void SetTextInputType(ui::TextInputType text_input_type);
+  void SetTextInputState(ws::mojom::TextInputStatePtr text_input_state);
   void SetCaretBounds(const gfx::Rect& caret_bounds);
 
  private:
@@ -75,10 +72,7 @@ class RemoteTextInputClient : public ui::TextInputClient,
   void RunNextPendingCallback(bool completed);
 
   ws::mojom::TextInputClientPtr remote_client_;
-  ui::TextInputType text_input_type_;
-  ui::TextInputMode text_input_mode_;
-  base::i18n::TextDirection text_direction_;
-  int text_input_flags_;
+  ws::mojom::TextInputStatePtr text_input_state_;
   gfx::Rect caret_bounds_;
 
   // Callbacks supplied to DispatchKeyEventPostIME() are added here. When the

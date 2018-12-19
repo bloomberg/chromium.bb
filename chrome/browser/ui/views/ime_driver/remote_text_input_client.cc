@@ -10,16 +10,10 @@
 
 RemoteTextInputClient::RemoteTextInputClient(
     ws::mojom::TextInputClientPtr remote_client,
-    ui::TextInputType text_input_type,
-    ui::TextInputMode text_input_mode,
-    base::i18n::TextDirection text_direction,
-    int text_input_flags,
+    ws::mojom::TextInputStatePtr text_input_state,
     gfx::Rect caret_bounds)
     : remote_client_(std::move(remote_client)),
-      text_input_type_(text_input_type),
-      text_input_mode_(text_input_mode),
-      text_direction_(text_direction),
-      text_input_flags_(text_input_flags),
+      text_input_state_(std::move(text_input_state)),
       caret_bounds_(caret_bounds) {}
 
 RemoteTextInputClient::~RemoteTextInputClient() {
@@ -27,9 +21,9 @@ RemoteTextInputClient::~RemoteTextInputClient() {
     RunNextPendingCallback(false);
 }
 
-void RemoteTextInputClient::SetTextInputType(
-    ui::TextInputType text_input_type) {
-  text_input_type_ = text_input_type;
+void RemoteTextInputClient::SetTextInputState(
+    ws::mojom::TextInputStatePtr text_input_state) {
+  text_input_state_ = std::move(text_input_state);
 }
 
 void RemoteTextInputClient::SetCaretBounds(const gfx::Rect& caret_bounds) {
@@ -62,19 +56,19 @@ void RemoteTextInputClient::InsertChar(const ui::KeyEvent& event) {
 }
 
 ui::TextInputType RemoteTextInputClient::GetTextInputType() const {
-  return text_input_type_;
+  return text_input_state_->text_input_type;
 }
 
 ui::TextInputMode RemoteTextInputClient::GetTextInputMode() const {
-  return text_input_mode_;
+  return text_input_state_->text_input_mode;
 }
 
 base::i18n::TextDirection RemoteTextInputClient::GetTextDirection() const {
-  return text_direction_;
+  return text_input_state_->text_direction;
 }
 
 int RemoteTextInputClient::GetTextInputFlags() const {
-  return text_input_flags_;
+  return text_input_state_->text_input_flags;
 }
 
 bool RemoteTextInputClient::CanComposeInline() const {

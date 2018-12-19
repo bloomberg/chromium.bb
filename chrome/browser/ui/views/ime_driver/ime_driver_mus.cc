@@ -46,9 +46,7 @@ void IMEDriver::StartSession(ws::mojom::StartSessionDetailsPtr details) {
   std::unique_ptr<RemoteTextInputClient> remote_client =
       std::make_unique<RemoteTextInputClient>(
           ws::mojom::TextInputClientPtr(std::move(details->client)),
-          details->text_input_type, details->text_input_mode,
-          details->text_direction, details->text_input_flags,
-          details->caret_bounds);
+          std::move(details->state), details->caret_bounds);
   mojo::MakeStrongBinding(
       std::make_unique<InputMethodBridge>(std::move(remote_client)),
       std::move(details->input_method_request));
