@@ -37,18 +37,18 @@ class OmniboxInputs extends OmniboxElement {
     const onQueryInputsChanged = this.onQueryInputsChanged_.bind(this);
     const onDisplayInputsChanged = this.onDisplayInputsChanged_.bind(this);
 
-    this.$$('input-text').addEventListener('input', onQueryInputsChanged);
-
-    [this.$$('lock-cursor-position'),
+    [this.$$('input-text'),
+     this.$$('reset-autocomplete-controller'),
+     this.$$('lock-cursor-position'),
      this.$$('prevent-inline-autocomplete'),
      this.$$('prefer-keyword'),
      this.$$('page-classification'),
-    ].forEach(elem => elem.addEventListener('change', onQueryInputsChanged));
+    ].forEach(elem => elem.addEventListener('input', onQueryInputsChanged));
 
     [this.$$('show-incomplete-results'),
      this.$$('show-details'),
      this.$$('show-all-providers'),
-    ].forEach(elem => elem.addEventListener('change', onDisplayInputsChanged));
+    ].forEach(elem => elem.addEventListener('input', onDisplayInputsChanged));
 
     this.$$('copy-text')
         .addEventListener('click', () => this.onCopyOutput_('text'));
@@ -64,6 +64,8 @@ class OmniboxInputs extends OmniboxElement {
     /** @type {!QueryInputs} */
     const queryInputs = {
       inputText: this.$$('input-text').value,
+      resetAutocompleteController:
+          this.$$('reset-autocomplete-controller').checked,
       cursorPosition: this.cursorPosition_,
       preventInlineAutocomplete: this.$$('prevent-inline-autocomplete').checked,
       preferKeyword: this.$$('prefer-keyword').checked,

@@ -39,6 +39,7 @@ class OmniboxPageHandler : public AutocompleteControllerDelegate,
   // mojom::OmniboxPageHandler overrides:
   void SetClientPage(mojom::OmniboxPagePtr page) override;
   void StartOmniboxQuery(const std::string& input_string,
+                         bool reset_autocomplete_controller,
                          int32_t cursor_position,
                          bool prevent_inline_autocomplete,
                          bool prefer_keyword,
