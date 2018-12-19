@@ -28,15 +28,10 @@ enum class ResourceType : uint8_t;
 // service workers) and threaded worklets (animation and audio worklets).
 class WorkerFetchContext final : public BaseFetchContext {
  public:
-  static WorkerFetchContext* Create(WorkerOrWorkletGlobalScope&,
-                                    scoped_refptr<WebWorkerFetchContext>,
-                                    SubresourceFilter*,
-                                    FetchClientSettingsObject*);
-
   WorkerFetchContext(WorkerOrWorkletGlobalScope&,
                      scoped_refptr<WebWorkerFetchContext>,
                      SubresourceFilter*,
-                     FetchClientSettingsObject*);
+                     FetchClientSettingsObject&);
   ~WorkerFetchContext() override;
 
   // BaseFetchContext implementation:
