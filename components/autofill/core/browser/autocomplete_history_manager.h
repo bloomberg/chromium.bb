@@ -39,6 +39,7 @@ class AutocompleteHistoryManager : public KeyedService,
     // |suggestions| is the list of fetched autocomplete suggestions.
     virtual void OnSuggestionsReturned(
         int query_id,
+        bool autoselect_first_suggestion,
         const std::vector<Suggestion>& suggestions) = 0;
   };
 
@@ -70,6 +71,7 @@ class AutocompleteHistoryManager : public KeyedService,
   virtual void OnGetAutocompleteSuggestions(
       int query_id,
       bool is_autocomplete_enabled,
+      bool autoselect_first_suggestion,
       const base::string16& name,
       const base::string16& prefix,
       const std::string& form_control_type,
@@ -131,6 +133,7 @@ class AutocompleteHistoryManager : public KeyedService,
   // with the appropriate response.
   struct QueryHandler {
     QueryHandler(int client_query_id,
+                 bool autoselect_first_suggestion,
                  base::string16 prefix,
                  base::WeakPtr<SuggestionsHandler> handler);
     QueryHandler(const QueryHandler& original);
@@ -139,6 +142,11 @@ class AutocompleteHistoryManager : public KeyedService,
     // Query ID living in the handler's scope, which is NOT the same as the
     // database query ID. This ID is unique per frame, but not per profile.
     int client_query_id_;
+
+    // Determines whether we should auto-select the first suggestion when
+    // returning. This value was given by the handler when requesting
+    // suggestions.
+    bool autoselect_first_suggestion_;
 
     // Prefix used to search suggestions, submitted by the handler.
     base::string16 prefix_;
