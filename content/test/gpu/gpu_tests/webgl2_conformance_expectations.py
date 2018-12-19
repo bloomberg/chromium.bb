@@ -136,6 +136,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/' +
         'framebuffer-texture-changing-base-level.html',
         ['win'], bug=2291) # angle bug ID
+    self.Fail('conformance2/textures/misc/' +
+        'generate-mipmap-with-large-base-level.html',
+        ['win', 'no_passthrough'], bug=3033) # angle bug ID
 
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
