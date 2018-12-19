@@ -20,7 +20,7 @@ MediaSessionService::MediaSessionService(
       base::BindRepeating(&AudioFocusManager::BindToDebugInterface,
                           base::Unretained(audio_focus_manager_.get())));
   registry_.AddInterface(
-      base::BindRepeating(&AudioFocusManager::BindToActiveControllerInterface,
+      base::BindRepeating(&AudioFocusManager::BindToControllerManagerInterface,
                           base::Unretained(audio_focus_manager_.get())));
 }
 

@@ -5,11 +5,24 @@
 module media_session.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/media_session/public/mojom/media_session.mojom";
 
-// Controls a MediaSession. This will automatically route commands to the
-// correct session if the audio focus changes. If the media session is
-// not controllable then the commands will be no-ops.
+interface MediaControllerManager {
+  // Creates a MediaController linked to a specific session with |request_id|.
+  // This should match the |request_id| from the AudioFocusRequestState.
+  CreateMediaControllerForSession(
+      MediaController& request,
+      mojo_base.mojom.UnguessableToken request_id);
+
+  // Creates a MediaController linked to the active session. This will
+  // automatically route commands to the correct session if the active session
+  // changes. If there is no active session then commands will be no-ops.
+  CreateActiveMediaController(MediaController& request);
+};
+
+// Controls a MediaSession. If the media session is not controllable then the
+// commands will be no-ops.
 interface MediaController {
   // Suspend the media session.
   Suspend();
