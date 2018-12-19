@@ -8790,6 +8790,29 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
   return 0;
 }
 
+// If number of valid neighbours is 1,
+// 1) ROTZOOM parameters can be obtained reliably (2 parameters from
+// one neighbouring MV)
+// 2) For IDENTITY/TRANSLATION cases, warp can perform better due to
+// a different interpolation filter being used. However the quality
+// gains (due to the same) may not be much
+// For above 2 cases warp evaluation is skipped
+
+static int check_if_optimal_warp(const AV1_COMP *cpi,
+                                 WarpedMotionParams *wm_params,
+                                 int num_proj_ref) {
+  int is_valid_warp = 1;
+  if (cpi->sf.prune_warp_using_wmtype) {
+    TransformationType wmtype = get_wmtype(wm_params);
+    if (num_proj_ref == 1) {
+      if (wmtype != ROTZOOM) is_valid_warp = 0;
+    } else {
+      if (wmtype < ROTZOOM) is_valid_warp = 0;
+    }
+  }
+  return is_valid_warp;
+}
+
 // TODO(afergs): Refactor the MBMI references in here - there's four
 // TODO(afergs): Refactor optional args - add them to a struct or remove
 static int64_t motion_mode_rd(
@@ -8949,6 +8972,11 @@ static int64_t motion_mode_rd(
           const WarpedMotionParams wm_params0 = mbmi->wm_params;
           const int num_proj_ref0 = mbmi->num_proj_ref;
 
+          if (cpi->sf.prune_warp_using_wmtype) {
+            TransformationType wmtype = get_wmtype(&mbmi->wm_params);
+            if (wmtype < ROTZOOM) continue;
+          }
+
           // Refine MV in a small range.
           av1_refine_warped_mv(cpi, x, bsize, mi_row, mi_col, pts0, pts_inref0,
                                total_samples);
@@ -8977,22 +9005,8 @@ static int64_t motion_mode_rd(
             mbmi->num_proj_ref = num_proj_ref0;
           }
         } else {
-          if (cpi->sf.prune_warp_using_wmtype) {
-            TransformationType wmtype = get_wmtype(&mbmi->wm_params);
-            // If number of valid neighbours is 1,
-            // 1) ROTZOOM parameters can be obtained reliably (2 parameters from
-            // one neighbouring MV)
-            // 2) For IDENTITY/TRANSLATION cases, warp can perform better due to
-            // a different interpolation filter being used. However the quality
-            // gains (due to the same) may not be much
-            // For above 2 cases warp evaluation is skipped
-            // TODO(any) : Extend this logic for NEWMV case
-            if (mbmi->num_proj_ref == 1) {
-              if (wmtype != ROTZOOM) continue;
-            } else {
-              if (wmtype < ROTZOOM) continue;
-            }
-          }
+          if (!check_if_optimal_warp(cpi, &mbmi->wm_params, mbmi->num_proj_ref))
+            continue;
         }
 
         av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
