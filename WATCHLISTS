@@ -1179,6 +1179,7 @@
     },
     'multidevice': {
       'filepath': 'ash/multi_device_setup/'\
+                  '|chrome/browser/chromeos/cryptauth/'\
                   '|chrome/browser/chromeos/device_sync/'\
                   '|chrome/browser/chromeos/multidevice_setup/'\
                   '|chrome/browser/chromeos/secure_channel/'\
@@ -1186,11 +1187,13 @@
                   '|chrome/browser/resources/settings/multidevice_page/'\
                   '|chrome/browser/ui/webui/chromeos/multidevice_setup/'\
                   '|chrome/browser/ui/webui/settings/chromeos/multidevice'\
+                  '|chrome/test/data/webui/multidevice_setup/'\
+                  '|chromeos/components/multidevice/'\
                   '|chromeos/components/proximity_auth/'\
+                  '|chromeos/resources/multidevice_resources.grdp'\
                   '|chromeos/services/device_sync/'\
                   '|chromeos/services/multidevice_setup/'\
                   '|chromeos/services/secure_channel/'\
-                  '|components/cryptauth/'\
                   '|ui/webui/resources/cr_components/chromeos/multidevice_setup/'
     },
     'mus': {
