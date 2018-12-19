@@ -720,6 +720,14 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
         textfield_->GetSelectedRange().length() == text.length();
 
     int menu_index = 0;
+
+#if defined(OS_MACOSX)
+    if (textfield_has_selection) {
+      EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* Look Up "Selection" */));
+      EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* Separator */));
+    }
+#endif
+
     if (ui::IsEmojiPanelSupported()) {
       EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* EMOJI */));
       EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* Separator */));
