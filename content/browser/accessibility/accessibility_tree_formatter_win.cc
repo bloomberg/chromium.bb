@@ -441,10 +441,7 @@ void AccessibilityTreeFormatterWin::AddMSAAProperties(
   // If S_FALSE it means there is no name
   if (S_OK == node->get_accName(variant_self, temp_bstr.Receive())) {
     base::string16 name = base::string16(temp_bstr, temp_bstr.Length());
-
-    // Ignore a JAWS workaround where the name of a document is " ".
-    if (name != L" " || ia_role != ROLE_SYSTEM_DOCUMENT)
-      dict->SetString("name", name);
+    dict->SetString("name", name);
   }
   temp_bstr.Reset();
 
