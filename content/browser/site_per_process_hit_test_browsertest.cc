@@ -3310,7 +3310,7 @@ void CursorUpdateReceivedFromCrossSiteIframeHelper(
 
 }  // namespace
 
-#if defined(OS_WIN)
+#if defined(USE_AURA)
 // https://crbug.com/882458
 #define MAYBE_CursorUpdateReceivedFromCrossSiteIframe \
   DISABLED_CursorUpdateReceivedFromCrossSiteIframe

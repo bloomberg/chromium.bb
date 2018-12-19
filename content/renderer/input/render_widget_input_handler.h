@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "content/common/cursors/webcursor.h"
 #include "content/common/input/input_event_ack.h"
 #include "content/common/input/input_event_dispatch_type.h"
 #include "content/renderer/input/main_thread_event_queue.h"
@@ -74,6 +75,10 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
   // to the browser.
   bool ProcessTouchAction(cc::TouchAction touch_action);
 
+  // Process the new cursor and returns true if it has changed from the last
+  // cursor.
+  bool DidChangeCursor(const WebCursor& cursor);
+
  private:
   blink::WebInputEventResult HandleTouchEvent(
       const blink::WebCoalescedInputEvent& coalesced_event);
@@ -84,6 +89,10 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
 
   // Are we currently handling an input event?
   bool handling_input_event_;
+
+  // We store the current cursor object so we can avoid spamming SetCursor
+  // messages.
+  base::Optional<WebCursor> current_cursor_;
 
   // Used to intercept overscroll notifications while an event is being
   // handled. If the event causes overscroll, the overscroll metadata can be

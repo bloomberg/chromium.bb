@@ -46,9 +46,11 @@ MouseEventWithHitTestResults PerformMouseEventHitTest(LocalFrame*,
                                                       const HitTestRequest&,
                                                       const WebMouseEvent&);
 
-LocalFrame* SubframeForHitTestResult(const MouseEventWithHitTestResults&);
+LocalFrame* GetTargetSubframe(const MouseEventWithHitTestResults&,
+                              Node* capturing_node = nullptr,
+                              bool* is_remote_frame = nullptr);
 
-LocalFrame* SubframeForTargetNode(Node*);
+LocalFrame* SubframeForTargetNode(Node*, bool* is_remote_frame = nullptr);
 
 class PointerEventTarget {
   DISALLOW_NEW();

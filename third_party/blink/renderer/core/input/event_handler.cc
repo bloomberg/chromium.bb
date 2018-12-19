@@ -632,7 +632,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   frame_->GetDocument()->SetSequentialFocusNavigationStartingPoint(
       mev.InnerNode());
 
-  LocalFrame* subframe = event_handling_util::SubframeForHitTestResult(mev);
+  LocalFrame* subframe = event_handling_util::GetTargetSubframe(mev);
   if (subframe) {
     WebInputEventResult result = PassMousePressEventToSubframe(mev, subframe);
     // Start capturing future events for this frame.  We only do this if we
@@ -824,7 +824,6 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
     bool force_leave) {
   DCHECK(frame_);
   DCHECK(frame_->View());
-
   mouse_event_manager_->SetLastKnownMousePosition(mouse_event);
 
   hover_timer_.Stop();
@@ -924,11 +923,9 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
   }
 
   WebInputEventResult event_result = WebInputEventResult::kNotHandled;
-  LocalFrame* new_subframe =
-      capturing_mouse_events_node_.Get()
-          ? event_handling_util::SubframeForTargetNode(
-                capturing_mouse_events_node_.Get())
-          : event_handling_util::SubframeForHitTestResult(mev);
+  bool is_remote_frame = false;
+  LocalFrame* new_subframe = event_handling_util::GetTargetSubframe(
+      mev, capturing_mouse_events_node_.Get(), &is_remote_frame);
 
   // We want mouseouts to happen first, from the inside out.  First send a
   // move event to the last subframe so that it will fire mouseouts.
@@ -961,7 +958,8 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
       // scrollbar hovering.
       scrollbar->MouseMoved(mev.Event());
     }
-    if (LocalFrameView* view = frame_->View()) {
+    LocalFrameView* view = frame_->View();
+    if (!is_remote_frame && view) {
       EventHandler::OptionalCursor optional_cursor =
           SelectCursor(mev.GetHitTestLocation(), mev.GetHitTestResult());
       if (optional_cursor.IsCursorChange()) {
@@ -1040,11 +1038,8 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
       event_handling_util::PerformMouseEventHitTest(frame_, request,
                                                     mouse_event);
   Element* mouse_release_target = mev.InnerElement();
-  LocalFrame* subframe =
-      capturing_mouse_events_node_.Get()
-          ? event_handling_util::SubframeForTargetNode(
-                capturing_mouse_events_node_.Get())
-          : event_handling_util::SubframeForHitTestResult(mev);
+  LocalFrame* subframe = event_handling_util::GetTargetSubframe(
+      mev, capturing_mouse_events_node_.Get());
   if (event_handler_will_reset_capturing_mouse_events_node_)
     capturing_mouse_events_node_ = nullptr;
   if (subframe)

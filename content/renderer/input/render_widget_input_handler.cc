@@ -350,6 +350,11 @@ void RenderWidgetInputHandler::HandleInputEvent(
                  mouse_event.PositionInWidget().x, "y",
                  mouse_event.PositionInWidget().y);
     prevent_default = delegate_->WillHandleMouseEvent(mouse_event);
+
+    // Reset the last known cursor if mouse has left this widget. So next
+    // time that the mouse enters we always set the cursor accordingly.
+    if (mouse_event.GetType() == WebInputEvent::kMouseLeave)
+      current_cursor_.reset();
   }
 
   if (WebInputEvent::IsKeyboardEventType(input_event.GetType())) {
@@ -493,6 +498,14 @@ void RenderWidgetInputHandler::DidOverscrollFromBlink(
   }
 
   delegate_->OnDidOverscroll(*params);
+}
+
+bool RenderWidgetInputHandler::DidChangeCursor(const WebCursor& cursor) {
+  if (!current_cursor_ || !current_cursor_->IsEqual(cursor)) {
+    current_cursor_ = cursor;
+    return true;
+  }
+  return false;
 }
 
 bool RenderWidgetInputHandler::ProcessTouchAction(

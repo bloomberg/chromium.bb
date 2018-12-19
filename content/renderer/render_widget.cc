@@ -1505,10 +1505,8 @@ void RenderWidget::DidChangeCursor(const WebCursorInfo& cursor_info) {
   WebCursor cursor;
   InitializeCursorFromWebCursorInfo(&cursor, cursor_info);
   // Only send a SetCursor message if we need to make a change.
-  if (!current_cursor_.IsEqual(cursor)) {
-    current_cursor_ = cursor;
+  if (input_handler_->DidChangeCursor(cursor))
     Send(new WidgetHostMsg_SetCursor(routing_id_, cursor));
-  }
 }
 
 void RenderWidget::AutoscrollStart(const blink::WebFloatPoint& point) {

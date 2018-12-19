@@ -21,6 +21,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/visual_properties.h"
+#include "content/common/widget_messages.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/devtools/render_widget_screen_metrics_emulator.h"
@@ -265,6 +266,30 @@ class RenderWidgetUnittest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetUnittest);
 };
+
+TEST_F(RenderWidgetUnittest, CursorChange) {
+  blink::WebCursorInfo cursor_info;
+  cursor_info.type = blink::WebCursorInfo::Type::kTypePointer;
+
+  widget()->DidChangeCursor(cursor_info);
+  EXPECT_EQ(widget()->sink()->message_count(), 1U);
+  EXPECT_EQ(widget()->sink()->GetMessageAt(0)->type(),
+            WidgetHostMsg_SetCursor::ID);
+  widget()->sink()->ClearMessages();
+
+  widget()->DidChangeCursor(cursor_info);
+  EXPECT_EQ(widget()->sink()->message_count(), 0U);
+
+  widget()->SendInputEvent(SyntheticWebMouseEventBuilder::Build(
+                               blink::WebInputEvent::Type::kMouseLeave),
+                           HandledEventCallback());
+  EXPECT_EQ(widget()->sink()->message_count(), 0U);
+
+  widget()->DidChangeCursor(cursor_info);
+  EXPECT_EQ(widget()->sink()->message_count(), 1U);
+  EXPECT_EQ(widget()->sink()->GetMessageAt(0)->type(),
+            WidgetHostMsg_SetCursor::ID);
+}
 
 TEST_F(RenderWidgetUnittest, EventOverscroll) {
   widget()->set_always_overscroll(true);

@@ -799,10 +799,6 @@ class CONTENT_EXPORT RenderWidget
   // The rect where this view should be initially shown.
   gfx::Rect initial_rect_;
 
-  // We store the current cursor object so we can avoid spamming SetCursor
-  // messages.
-  WebCursor current_cursor_;
-
   base::Optional<float> device_scale_factor_for_testing_;
 
   // The size of the RenderWidget in DIPs. This may differ from
