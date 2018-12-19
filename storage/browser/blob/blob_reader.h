@@ -46,6 +46,9 @@ class FileStreamReader;
 //  * If a status of Status::NET_ERROR is returned, that means there was an
 //    error and the net_error() variable contains the error code.
 // Use a BlobDataHandle to create an instance.
+//
+// For more information on how to read Blobs in your specific situation, see:
+// https://chromium.googlesource.com/chromium/src/+/HEAD/storage/browser/blob/README.md#accessing-reading
 class STORAGE_EXPORT BlobReader {
  public:
   class STORAGE_EXPORT FileStreamReaderProvider {
