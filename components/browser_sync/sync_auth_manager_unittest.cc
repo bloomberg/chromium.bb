@@ -31,8 +31,7 @@ class SyncAuthManagerTest : public testing::Test {
   using CredentialsChangedCallback =
       SyncAuthManager::CredentialsChangedCallback;
 
-  SyncAuthManagerTest()
-      : identity_env_(/*use_fake_url_loader_for_gaia_cookie_manager=*/true) {
+  SyncAuthManagerTest() : identity_env_(&test_url_loader_factory_) {
     syncer::SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
     sync_prefs_ = std::make_unique<syncer::SyncPrefs>(&pref_service_);
   }
@@ -60,6 +59,7 @@ class SyncAuthManagerTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   identity::IdentityTestEnvironment identity_env_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   std::unique_ptr<syncer::SyncPrefs> sync_prefs_;

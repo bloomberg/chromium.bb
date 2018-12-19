@@ -210,7 +210,7 @@ ProfileSyncServiceBundle::SyncClientBuilder::Build() {
 
 ProfileSyncServiceBundle::ProfileSyncServiceBundle()
     : db_thread_(base::SequencedTaskRunnerHandle::Get()),
-      identity_test_env_(true) {
+      identity_test_env_(&test_url_loader_factory_) {
   RegisterPrefsForProfileSyncService(pref_service_.registry());
   identity_test_env_.SetAutomaticIssueOfAccessTokens(true);
   identity_provider_ = std::make_unique<invalidation::ProfileIdentityProvider>(

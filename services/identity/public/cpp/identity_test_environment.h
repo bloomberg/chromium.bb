@@ -29,7 +29,7 @@ using SigninManagerForTest = FakeSigninManagerBase;
 #else
 using SigninManagerForTest = FakeSigninManager;
 #endif  // OS_CHROMEOS
-}
+}  // namespace
 
 // Internal class that creates and owns dependencies of IdentityManager
 // when those dependencies are not passed in externally.
@@ -52,6 +52,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // a test). In that case, use the below constructor and switch to this
   // constructor once the conversion is complete.
   //
+  // This constructor takes an optional parameter |test_url_loader_factory| to
+  // use for cookie-related network requests.
+  //
   // This constructor also takes an optional PrefService instance as parameter,
   // which allows tests to move away from referencing IdentityManager's
   // dependencies directly (namely AccountTrackerService, PO2TS, SigninManager
@@ -61,7 +64,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // Last, this constructor can take an optional parameter |account_consistency|
   // as parameter, to specify the account consistency policy that will be used.
   IdentityTestEnvironment(
-      bool use_fake_url_loader_for_gaia_cookie_manager = false,
+      network::TestURLLoaderFactory* test_url_loader_factory = nullptr,
       sync_preferences::TestingPrefServiceSyncable* pref_service = nullptr,
       signin::AccountConsistencyMethod account_consistency =
           signin::AccountConsistencyMethod::kDisabled);

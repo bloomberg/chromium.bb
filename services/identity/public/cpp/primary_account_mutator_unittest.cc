@@ -115,8 +115,8 @@ void RunClearPrimaryAccountTest(
     AuthExpectation auth_expection = AuthExpectation::kAuthNormal) {
   base::test::ScopedTaskEnvironment task_environment;
   identity::IdentityTestEnvironment environment(
-      /*use_fake_url_loader_for_gaia_cookie_manager=*/false,
-      /*pref_service=*/nullptr, account_consistency_method);
+      /*test_url_loader_factory=*/nullptr, /*pref_service=*/nullptr,
+      account_consistency_method);
 
   identity::IdentityManager* identity_manager = environment.identity_manager();
   identity::PrimaryAccountMutator* primary_account_mutator =

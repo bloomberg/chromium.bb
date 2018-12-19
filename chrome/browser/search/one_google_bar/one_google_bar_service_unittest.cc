@@ -57,7 +57,7 @@ class OneGoogleBarServiceTest : public testing::Test {
  public:
   OneGoogleBarServiceTest()
       : signin_client_(&pref_service_),
-        identity_env_(/*use_fake_url_loader_for_gaia_cookie_manager=*/true) {
+        identity_env_(&test_url_loader_factory_) {
     // GaiaCookieManagerService calls static methods of AccountTrackerService
     // which access prefs.
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
@@ -87,6 +87,7 @@ class OneGoogleBarServiceTest : public testing::Test {
   base::test::ScopedTaskEnvironment task_environment_;
 
   sync_preferences::TestingPrefServiceSyncable pref_service_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   TestSigninClient signin_client_;
   FakeOAuth2TokenService token_service_;
   identity::IdentityTestEnvironment identity_env_;
