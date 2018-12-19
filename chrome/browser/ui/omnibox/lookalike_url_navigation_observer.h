@@ -27,10 +27,11 @@ class LookalikeUrlNavigationObserver
     kLinkClicked = 2,
     kMatchTopSite = 3,
     kMatchSiteEngagement = 4,
+    kMatchEditDistance = 5,
 
     // Append new items to the end of the list above; do not modify or
     // replace existing values. Comment out obsolete items.
-    kMaxValue = kMatchSiteEngagement,
+    kMaxValue = kMatchEditDistance,
   };
 
   // Used for UKM. There is only a single MatchType per navigation.
@@ -38,10 +39,11 @@ class LookalikeUrlNavigationObserver
     kNone = 0,
     kTopSite = 1,
     kSiteEngagement = 2,
+    kEditDistance = 3,
 
     // Append new items to the end of the list above; do not modify or replace
     // existing values. Comment out obsolete items.
-    kMaxValue = kSiteEngagement,
+    kMaxValue = kEditDistance,
   };
 
   static const char kHistogramName[];
@@ -57,10 +59,30 @@ class LookalikeUrlNavigationObserver
 
  private:
   friend class content::WebContentsUserData<LookalikeUrlNavigationObserver>;
-  // Returns a site that the user has used before that |url| may be attempting
-  // to spoof, based on skeleton comparison.
-  std::string GetMatchingSiteEngagementDomain(SiteEngagementService* service,
-                                              const GURL& url);
+  FRIEND_TEST_ALL_PREFIXES(LookalikeUrlNavigationObserverTest,
+                           IsEditDistanceAtMostOne);
+
+  // Returns true if a domain is visually similar to the hostname of |url|. The
+  // matching domain can be a top domain or an engaged site. Similarity check
+  // is made using both visual skeleton and edit distance comparison. If this
+  // returns true, match details will be written into |matched_domain| and
+  // |match_type|. They cannot be nullptr.
+  bool GetMatchingDomain(const GURL& url,
+                         SiteEngagementService* service,
+                         std::string* matched_domain,
+                         MatchType* match_type);
+
+  // Returns if the Levenshtein distance between |str1| and |str2| is at most 1.
+  // This has O(max(n,m)) complexity as opposed to O(n*m) of the usual edit
+  // distance computation.
+  static bool IsEditDistanceAtMostOne(const base::string16& str1,
+                                      const base::string16& str2);
+
+  // Returns the first matching top domain with an edit distance of at most one
+  // to |domain_and_registry|.
+  static std::string GetSimilarDomainFromTop500(
+      const std::string& domain_and_registry);
+
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 

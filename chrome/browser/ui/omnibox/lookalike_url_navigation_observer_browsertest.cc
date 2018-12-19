@@ -134,7 +134,6 @@ class LookalikeUrlNavigationObserverBrowserTest
     // Sanity check navigated_url.
     url_formatter::IDNConversionResult result =
         url_formatter::IDNToUnicodeWithDetails(navigated_url.host_piece());
-    ASSERT_TRUE(result.has_idn_component);
 
     history::HistoryService* const history_service =
         HistoryServiceFactory::GetForProfile(
@@ -257,6 +256,57 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
 
   CheckUkm({kNavigatedUrl},
            LookalikeUrlNavigationObserver::MatchType::kTopSite);
+}
+
+// Navigate to a domain within an edit distance of 1 to a top domain.
+// This should record metrics. It should also show a "Did you mean to go to ..."
+// infobar if configured via a feature param.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
+                       Idn_TopDomainEditDistance_Match) {
+  base::HistogramTester histograms;
+
+  // The skeleton of this domain, gooogle.corn, is one 1 edit away from
+  // google.corn, the skeleton of google.com.
+  const GURL kNavigatedUrl =
+      embedded_test_server()->GetURL("goooglé.com", "/title1.html");
+
+  if (GetParam() == FeatureTestState::kEnabled) {
+    // Even if the navigated site has a low engagement score, it should be
+    // considered for lookalike suggestions.
+    SetSiteEngagementScore(kNavigatedUrl, kLowEngagement);
+    // If the feature is enabled, the UI will be displayed. Expect extra
+    // histogram entries for kInfobarShown and kLinkClicked events.
+    TestInfobarShown(kNavigatedUrl,
+                     embedded_test_server()->GetURL(
+                         "google.com", "/title1.html") /* suggested */);
+    histograms.ExpectTotalCount(LookalikeUrlNavigationObserver::kHistogramName,
+                                3);
+    histograms.ExpectBucketCount(LookalikeUrlNavigationObserver::kHistogramName,
+                                 LookalikeUrlNavigationObserver::
+                                     NavigationSuggestionEvent::kInfobarShown,
+                                 1);
+    histograms.ExpectBucketCount(
+        LookalikeUrlNavigationObserver::kHistogramName,
+        LookalikeUrlNavigationObserver::NavigationSuggestionEvent::kLinkClicked,
+        1);
+    histograms.ExpectBucketCount(
+        LookalikeUrlNavigationObserver::kHistogramName,
+        LookalikeUrlNavigationObserver::NavigationSuggestionEvent::
+            kMatchEditDistance,
+        1);
+  } else {
+    TestInfobarNotShown(kNavigatedUrl);
+    histograms.ExpectTotalCount(LookalikeUrlNavigationObserver::kHistogramName,
+                                1);
+    histograms.ExpectBucketCount(
+        LookalikeUrlNavigationObserver::kHistogramName,
+        LookalikeUrlNavigationObserver::NavigationSuggestionEvent::
+            kMatchEditDistance,
+        1);
+  }
+
+  CheckUkm({kNavigatedUrl},
+           LookalikeUrlNavigationObserver::MatchType::kEditDistance);
 }
 
 // Navigate to a domain whose visual representation looks like a domain with a

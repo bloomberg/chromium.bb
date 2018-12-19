@@ -16,6 +16,7 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/url_formatter/idn_spoof_checker.h"
+#include "components/url_formatter/top_domains/top_domain_util.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/navigation_handle.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -23,6 +24,12 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace {
+
+#include "components/url_formatter/top_domains/top500-domains-inc.cc"
+
+using MatchType = LookalikeUrlNavigationObserver::MatchType;
+using NavigationSuggestionEvent =
+    LookalikeUrlNavigationObserver::NavigationSuggestionEvent;
 
 void RecordEvent(
     LookalikeUrlNavigationObserver::NavigationSuggestionEvent event) {
@@ -41,102 +48,13 @@ bool SkeletonsMatch(const url_formatter::Skeletons& skeletons1,
   return false;
 }
 
-}  // namespace
-
-// static
-const char LookalikeUrlNavigationObserver::kHistogramName[] =
-    "NavigationSuggestion.Event";
-
-LookalikeUrlNavigationObserver::LookalikeUrlNavigationObserver(
-    content::WebContents* web_contents)
-    : WebContentsObserver(web_contents) {}
-
-LookalikeUrlNavigationObserver::~LookalikeUrlNavigationObserver() {}
-
-void LookalikeUrlNavigationObserver::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  // Ignore subframe and same document navigations.
-  if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument())
-    return;
-
-  // If the navigation was not committed, it means either the page was a
-  // download or error 204/205, or the navigation never left the previous
-  // URL. Basically, this isn't a problem since we stayed at the existing URL.
-  if (!navigation_handle->HasCommitted())
-    return;
-
-  const GURL url = navigation_handle->GetURL();
-
-  // If the user has engaged with this site, don't show any lookalike
-  // navigation suggestions.
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  SiteEngagementService* service = SiteEngagementService::Get(profile);
-  if (service->IsEngagementAtLeast(url, blink::mojom::EngagementLevel::MEDIUM))
-    return;
-
-  const base::StringPiece host = url.host_piece();
-  url_formatter::IDNConversionResult result =
-      url_formatter::IDNToUnicodeWithDetails(host);
-  if (!result.has_idn_component)
-    return;
-
-  std::string matched_domain;
-  MatchType match_type;
-  if (result.matching_top_domain.empty()) {
-    matched_domain = GetMatchingSiteEngagementDomain(service, url);
-    if (matched_domain.empty())
-      return;
-    RecordEvent(NavigationSuggestionEvent::kMatchSiteEngagement);
-    match_type = MatchType::kSiteEngagement;
-  } else {
-    matched_domain = result.matching_top_domain;
-    RecordEvent(NavigationSuggestionEvent::kMatchTopSite);
-    match_type = MatchType::kTopSite;
-  }
-
-  DCHECK(!matched_domain.empty());
-
-  GURL::Replacements replace_host;
-  replace_host.SetHostStr(matched_domain);
-  const GURL suggested_url = url.ReplaceComponents(replace_host);
-
-  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-  CHECK(ukm_recorder);
-  ukm::SourceId source_id =
-      ukm::GetSourceIdForWebContentsDocument(web_contents());
-  ukm::builders::LookalikeUrl_NavigationSuggestion(source_id)
-      .SetMatchType(static_cast<int>(match_type))
-      .Record(ukm_recorder);
-
-  if (base::FeatureList::IsEnabled(
-          features::kLookalikeUrlNavigationSuggestionsUI)) {
-    RecordEvent(NavigationSuggestionEvent::kInfobarShown);
-    AlternateNavInfoBarDelegate::CreateForLookalikeUrlNavigation(
-        web_contents(), base::UTF8ToUTF16(matched_domain), suggested_url, url,
-        base::BindOnce(RecordEvent, NavigationSuggestionEvent::kLinkClicked));
-  }
-}
-
-// static
-void LookalikeUrlNavigationObserver::CreateForWebContents(
-    content::WebContents* web_contents) {
-  DCHECK(web_contents);
-  if (!FromWebContents(web_contents)) {
-    web_contents->SetUserData(
-        UserDataKey(),
-        std::make_unique<LookalikeUrlNavigationObserver>(web_contents));
-  }
-}
-
-std::string LookalikeUrlNavigationObserver::GetMatchingSiteEngagementDomain(
+// Returns a site that the user has used before that the eTLD+1 in
+// |domain_and_registry| may be attempting to spoof, based on skeleton
+// comparison.
+std::string GetMatchingSiteEngagementDomain(
     SiteEngagementService* service,
-    const GURL& url) {
+    const std::string& domain_and_registry) {
   // Compute skeletons using eTLD+1.
-  const std::string domain_and_registry =
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   // eTLD+1 can be empty for private domains.
   if (domain_and_registry.empty())
     return std::string();
@@ -193,6 +111,188 @@ std::string LookalikeUrlNavigationObserver::GetMatchingSiteEngagementDomain(
       return detail.origin.host();
   }
   return std::string();
+}
+
+}  // namespace
+
+// static
+const char LookalikeUrlNavigationObserver::kHistogramName[] =
+    "NavigationSuggestion.Event";
+
+LookalikeUrlNavigationObserver::LookalikeUrlNavigationObserver(
+    content::WebContents* web_contents)
+    : WebContentsObserver(web_contents) {}
+
+LookalikeUrlNavigationObserver::~LookalikeUrlNavigationObserver() {}
+
+void LookalikeUrlNavigationObserver::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // Ignore subframe and same document navigations.
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument())
+    return;
+
+  // If the navigation was not committed, it means either the page was a
+  // download or error 204/205, or the navigation never left the previous
+  // URL. Basically, this isn't a problem since we stayed at the existing URL.
+  if (!navigation_handle->HasCommitted())
+    return;
+
+  const GURL url = navigation_handle->GetURL();
+
+  // If the user has engaged with this site, don't show any lookalike
+  // navigation suggestions.
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  SiteEngagementService* service = SiteEngagementService::Get(profile);
+  if (service->IsEngagementAtLeast(url, blink::mojom::EngagementLevel::MEDIUM))
+    return;
+
+  std::string matched_domain;
+  MatchType match_type;
+  if (!GetMatchingDomain(url, service, &matched_domain, &match_type))
+    return;
+
+  DCHECK(!matched_domain.empty());
+
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr(matched_domain);
+  const GURL suggested_url = url.ReplaceComponents(replace_host);
+
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
+  CHECK(ukm_recorder);
+  ukm::SourceId source_id =
+      ukm::GetSourceIdForWebContentsDocument(web_contents());
+  ukm::builders::LookalikeUrl_NavigationSuggestion(source_id)
+      .SetMatchType(static_cast<int>(match_type))
+      .Record(ukm_recorder);
+
+  if (base::FeatureList::IsEnabled(
+          features::kLookalikeUrlNavigationSuggestionsUI)) {
+    RecordEvent(NavigationSuggestionEvent::kInfobarShown);
+    AlternateNavInfoBarDelegate::CreateForLookalikeUrlNavigation(
+        web_contents(), base::UTF8ToUTF16(matched_domain), suggested_url, url,
+        base::BindOnce(RecordEvent, NavigationSuggestionEvent::kLinkClicked));
+  }
+}
+
+bool LookalikeUrlNavigationObserver::GetMatchingDomain(
+    const GURL& url,
+    SiteEngagementService* service,
+    std::string* matched_domain,
+    MatchType* match_type) {
+  // Perform all computations on eTLD+1.
+  const std::string domain_and_registry =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+
+  url_formatter::IDNConversionResult result =
+      url_formatter::IDNToUnicodeWithDetails(domain_and_registry);
+  if (result.has_idn_component) {
+    // If the navigated domain is IDN, check its skeleton against top domains
+    // and engaged sites.
+    if (!result.matching_top_domain.empty()) {
+      RecordEvent(NavigationSuggestionEvent::kMatchTopSite);
+      *matched_domain = result.matching_top_domain;
+      *match_type = MatchType::kTopSite;
+      return true;
+    }
+
+    const std::string matched_engaged_domain =
+        GetMatchingSiteEngagementDomain(service, domain_and_registry);
+    if (!matched_engaged_domain.empty()) {
+      RecordEvent(NavigationSuggestionEvent::kMatchSiteEngagement);
+      *matched_domain = matched_engaged_domain;
+      *match_type = MatchType::kSiteEngagement;
+      return true;
+    }
+  }
+
+  // If we can't find an exact top domain or an engaged site, try to find a top
+  // domain within an edit distance of one.
+  const std::string similar_domain =
+      GetSimilarDomainFromTop500(base::UTF16ToUTF8(result.result));
+  if (!similar_domain.empty() && domain_and_registry != similar_domain) {
+    RecordEvent(NavigationSuggestionEvent::kMatchEditDistance);
+    *matched_domain = similar_domain;
+    *match_type = MatchType::kEditDistance;
+    return true;
+  }
+  return false;
+}
+
+// static
+bool LookalikeUrlNavigationObserver::IsEditDistanceAtMostOne(
+    const base::string16& str1,
+    const base::string16& str2) {
+  if (str1.size() > str2.size() + 1 || str2.size() > str1.size() + 1) {
+    return false;
+  }
+  base::string16::const_iterator i = str1.begin();
+  base::string16::const_iterator j = str2.begin();
+  size_t edit_count = 0;
+  while (i != str1.end() && j != str2.end()) {
+    if (*i == *j) {
+      i++;
+      j++;
+    } else {
+      edit_count++;
+      if (edit_count > 1) {
+        return false;
+      }
+
+      if (str1.size() > str2.size()) {
+        // First string is longer than the second. This can only happen if the
+        // first string has an extra character.
+        i++;
+      } else if (str2.size() > str1.size()) {
+        // Second string is longer than the first. This can only happen if the
+        // second string has an extra character.
+        j++;
+      } else {
+        // Both strings are the same length. This can only happen if the two
+        // strings differ by a single character.
+        i++;
+        j++;
+      }
+    }
+  }
+  if (i != str1.end() || j != str2.end()) {
+    // A character at the end did not match.
+    edit_count++;
+  }
+  return edit_count <= 1;
+}
+
+// static
+std::string LookalikeUrlNavigationObserver::GetSimilarDomainFromTop500(
+    const std::string& domain_and_registry) {
+  if (!url_formatter::top_domains::IsEditDistanceCandidate(
+          domain_and_registry)) {
+    return std::string();
+  }
+
+  for (const std::string& skeleton :
+       url_formatter::GetSkeletons(base::UTF8ToUTF16(domain_and_registry))) {
+    for (const char* const top_domain_skeleton : kTop500) {
+      if (IsEditDistanceAtMostOne(base::UTF8ToUTF16(skeleton),
+                                  base::UTF8ToUTF16(top_domain_skeleton))) {
+        return url_formatter::LookupSkeletonInTopDomains(top_domain_skeleton);
+      }
+    }
+  }
+  return std::string();
+}
+
+// static
+void LookalikeUrlNavigationObserver::CreateForWebContents(
+    content::WebContents* web_contents) {
+  DCHECK(web_contents);
+  if (!FromWebContents(web_contents)) {
+    web_contents->SetUserData(
+        UserDataKey(),
+        std::make_unique<LookalikeUrlNavigationObserver>(web_contents));
+  }
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(LookalikeUrlNavigationObserver)
