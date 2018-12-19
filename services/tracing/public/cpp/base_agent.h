@@ -21,12 +21,15 @@ class Connector;
 // and StopAndFlush.
 namespace tracing {
 class COMPONENT_EXPORT(TRACING_CPP) BaseAgent : public mojom::Agent {
+ public:
+  ~BaseAgent() override;
+
+  virtual void Connect(service_manager::Connector* connector);
+
  protected:
-  BaseAgent(service_manager::Connector* connector,
-            const std::string& label,
+  BaseAgent(const std::string& label,
             mojom::TraceDataType type,
             base::ProcessId pid);
-  ~BaseAgent() override;
 
  private:
   // tracing::mojom::Agent:
@@ -39,6 +42,10 @@ class COMPONENT_EXPORT(TRACING_CPP) BaseAgent : public mojom::Agent {
       Agent::RequestBufferStatusCallback callback) override;
 
   mojo::Binding<tracing::mojom::Agent> binding_;
+
+  const std::string label_;
+  const mojom::TraceDataType type_;
+  const base::ProcessId pid_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseAgent);
 };

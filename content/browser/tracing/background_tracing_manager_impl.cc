@@ -115,11 +115,9 @@ BackgroundTracingManagerImpl::~BackgroundTracingManagerImpl() {
 }
 
 void BackgroundTracingManagerImpl::AddMetadataGeneratorFunction() {
-  TracingControllerImpl::GetInstance()
-      ->GetTraceEventAgent()
-      ->AddMetadataGeneratorFunction(base::BindRepeating(
-          &BackgroundTracingManagerImpl::GenerateMetadataDict,
-          base::Unretained(this)));
+  tracing::TraceEventAgent::GetInstance()->AddMetadataGeneratorFunction(
+      base::BindRepeating(&BackgroundTracingManagerImpl::GenerateMetadataDict,
+                          base::Unretained(this)));
 }
 
 void BackgroundTracingManagerImpl::WhenIdle(
@@ -491,7 +489,7 @@ void BackgroundTracingManagerImpl::InvalidateTriggerHandlesForTesting() {
 void BackgroundTracingManagerImpl::SetRuleTriggeredCallbackForTesting(
     const base::Closure& callback) {
   rule_triggered_callback_for_testing_ = callback;
-};
+}
 
 void BackgroundTracingManagerImpl::FireTimerForTesting() {
   DCHECK(tracing_timer_);

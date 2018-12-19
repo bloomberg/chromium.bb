@@ -8,7 +8,9 @@
 
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
+#include "services/tracing/public/mojom/constants.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/commit_data_request.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/shared_memory_arbiter.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_writer.h"
@@ -79,6 +81,20 @@ void ProducerClient::ResetTaskRunnerForTesting() {
   GetPerfettoTaskRunner()->ResetTaskRunnerForTesting(CreateTaskRunner());
 }
 
+void ProducerClient::Connect(service_manager::Connector* connector) {
+  mojom::PerfettoServicePtr perfetto_service;
+  connector->BindInterface(mojom::kServiceName, &perfetto_service);
+
+  CreateMojoMessagepipes(base::BindOnce(
+      [](mojom::PerfettoServicePtr perfetto_service,
+         mojom::ProducerClientPtr producer_client_pipe,
+         mojom::ProducerHostRequest producer_host_pipe) {
+        perfetto_service->ConnectToProducerHost(std::move(producer_client_pipe),
+                                                std::move(producer_host_pipe));
+      },
+      std::move(perfetto_service)));
+}
+
 void ProducerClient::CreateMojoMessagepipes(
     MessagepipesReadyCallback callback) {
   auto origin_task_runner = base::SequencedTaskRunnerHandle::Get();
@@ -100,6 +116,7 @@ void ProducerClient::CreateMojoMessagepipesOnSequence(
     mojom::ProducerClientRequest producer_client_request,
     mojom::ProducerClientPtr producer_client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!binding_ || !binding_->is_bound());
 
   binding_ = std::make_unique<mojo::Binding<mojom::ProducerClient>>(
       this, std::move(producer_client_request));

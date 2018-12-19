@@ -8,6 +8,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
@@ -27,7 +28,7 @@ class RefCountedString;
 }  // namespace base
 
 namespace tracing {
-class TraceEventAgent;
+class BaseAgent;
 }  // namespace tracing
 
 namespace content {
@@ -65,8 +66,6 @@ class TracingControllerImpl : public TracingController,
   void RegisterTracingUI(TracingUI* tracing_ui);
   void UnregisterTracingUI(TracingUI* tracing_ui);
 
-  CONTENT_EXPORT tracing::TraceEventAgent* GetTraceEventAgent() const;
-
   // For unittests.
   CONTENT_EXPORT void SetTracingDelegateForTesting(
       std::unique_ptr<TracingDelegate> delegate);
@@ -88,8 +87,7 @@ class TracingControllerImpl : public TracingController,
 
   tracing::mojom::AgentRegistryPtr agent_registry_;
   tracing::mojom::CoordinatorPtr coordinator_;
-  std::vector<std::unique_ptr<tracing::mojom::Agent>> agents_;
-  std::unique_ptr<tracing::TraceEventAgent> trace_event_agent_;
+  std::vector<std::unique_ptr<tracing::BaseAgent>> agents_;
   std::unique_ptr<TracingDelegate> delegate_;
   std::unique_ptr<base::trace_event::TraceConfig> trace_config_;
   std::unique_ptr<mojo::DataPipeDrainer> drainer_;

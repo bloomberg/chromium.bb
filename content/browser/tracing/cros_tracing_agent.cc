@@ -217,9 +217,8 @@ class CrOSDataSource : public tracing::ProducerClient::DataSourceBase {
 
 }  // namespace
 
-CrOSTracingAgent::CrOSTracingAgent(service_manager::Connector* connector)
-    : BaseAgent(connector,
-                tracing::mojom::kSystemTraceEventLabel,
+CrOSTracingAgent::CrOSTracingAgent()
+    : BaseAgent(tracing::mojom::kSystemTraceEventLabel,
                 tracing::mojom::TraceDataType::STRING,
                 base::kNullProcessId) {
   tracing::ProducerClient::Get()->AddDataSource(CrOSDataSource::GetInstance());
