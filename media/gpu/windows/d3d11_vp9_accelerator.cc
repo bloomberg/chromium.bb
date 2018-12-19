@@ -47,7 +47,12 @@ D3D11VP9Accelerator::D3D11VP9Accelerator(
       status_feedback_(0),
       video_decoder_(std::move(video_decoder)),
       video_device_(std::move(video_device)),
-      video_context_(std::move(video_context)) {}
+      video_context_(std::move(video_context)) {
+  DCHECK(client);
+  DCHECK(media_log_);
+  // |cdm_proxy_context_| is non-null for encrypted content but can be null for
+  // clear content.
+}
 
 D3D11VP9Accelerator::~D3D11VP9Accelerator() {}
 
@@ -81,6 +86,7 @@ bool D3D11VP9Accelerator::BeginFrame(D3D11VP9Picture* pic) {
   base::Optional<CdmProxyContext::D3D11DecryptContext> decrypt_context;
   std::unique_ptr<D3D11_VIDEO_DECODER_BEGIN_FRAME_CRYPTO_SESSION> content_key;
   if (const DecryptConfig* config = pic->decrypt_config()) {
+    DCHECK(cdm_proxy_context_) << "No CdmProxyContext but picture is encrypted";
     decrypt_context = cdm_proxy_context_->GetD3D11DecryptContext(
         CdmProxy::KeyType::kDecryptAndDecode, config->key_id());
     if (!decrypt_context) {

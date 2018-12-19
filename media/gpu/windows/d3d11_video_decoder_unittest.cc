@@ -18,6 +18,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
+#include "media/base/media_util.h"
 #include "media/base/test_helpers.h"
 #include "media/gpu/windows/d3d11_mocks.h"
 #include "media/gpu/windows/d3d11_video_decoder_impl.h"
@@ -72,8 +73,8 @@ class D3D11VideoDecoderTest : public ::testing::Test {
     // deleter works.  The dtor is protected.
     decoder_ = base::WrapUnique<VideoDecoder>(
         d3d11_decoder_raw_ = new D3D11VideoDecoder(
-            gpu_task_runner_, nullptr /* MediaLog */, gpu_preferences_,
-            gpu_workarounds_, std::move(impl),
+            gpu_task_runner_, std::make_unique<NullMediaLog>(),
+            gpu_preferences_, gpu_workarounds_, std::move(impl),
             base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()>()));
     d3d11_decoder_raw_->SetCreateDeviceCallbackForTesting(
         base::BindRepeating(&D3D11CreateDeviceMock::Create,

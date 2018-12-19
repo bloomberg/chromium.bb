@@ -125,6 +125,7 @@ D3D11VideoDecoder::D3D11VideoDecoder(
       get_helper_cb_(std::move(get_helper_cb)),
       weak_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(media_log_);
 
   impl_weak_ = impl_->GetWeakPtr();
 }
@@ -656,10 +657,8 @@ void D3D11VideoDecoder::NotifyNewKey() {
 void D3D11VideoDecoder::NotifyError(const char* reason) {
   state_ = State::kError;
   DLOG(ERROR) << reason;
-  if (media_log_) {
-    media_log_->AddEvent(media_log_->CreateStringEvent(
-        MediaLogEvent::MEDIA_ERROR_LOG_ENTRY, "error", reason));
-  }
+  media_log_->AddEvent(media_log_->CreateStringEvent(
+      MediaLogEvent::MEDIA_ERROR_LOG_ENTRY, "error", reason));
 
   if (init_cb_)
     std::move(init_cb_).Run(false);
@@ -709,10 +708,8 @@ void D3D11VideoDecoder::SetWasSupportedReason(
   }
 
   DVLOG(2) << reason;
-  if (media_log_) {
-    media_log_->AddEvent(media_log_->CreateStringEvent(
-        MediaLogEvent::MEDIA_INFO_LOG_ENTRY, "info", reason));
-  }
+  media_log_->AddEvent(media_log_->CreateStringEvent(
+      MediaLogEvent::MEDIA_INFO_LOG_ENTRY, "info", reason));
 }
 
 bool D3D11VideoDecoder::IsPotentiallySupported(
