@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service_executable.gni")
 import("//testing/test.gni")
 
@@ -66,20 +65,4 @@ source_set("util") {
     "//services/service_manager/public/mojom",
     "//services/service_manager/runner/common",
   ]
-}
-
-catalog("catalog") {
-  testonly = true
-  catalog_deps = [
-    "//services/service_manager/background/tests:catalog",
-    "//services/service_manager/tests/connect:catalog",
-    "//services/service_manager/tests/service_manager:catalog",
-    "//services/service_manager/tests/shutdown:catalog",
-  ]
-}
-
-catalog_cpp_source("catalog_source") {
-  testonly = true
-  catalog = ":catalog"
-  generated_function_name = "service_manager::test::CreateTestCatalog"
 }

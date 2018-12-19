@@ -4,7 +4,6 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//services/service_manager/public/cpp/service_executable.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 source_set("lib") {
@@ -74,10 +73,5 @@ if (!is_ios) {
     sources = [
       "host_test_service_main.cc",
     ]
-  }
-
-  service_manifest("host_test_service_manifest") {
-    name = "host_test_service"
-    source = "host_test_service_manifest.json"
   }
 }
