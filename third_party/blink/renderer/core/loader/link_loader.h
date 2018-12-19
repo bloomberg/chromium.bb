@@ -144,6 +144,9 @@ class CORE_EXPORT LinkLoader final : public SingleModuleClient,
                                   CanLoadResources,
                                   MediaPreloadPolicy,
                                   ViewportDescriptionWrapper*);
+  static Resource* StartPreload(ResourceType,
+                                FetchParameters&,
+                                ResourceFetcher*);
   static base::Optional<ResourceType> GetResourceTypeFromAsAttribute(
       const String& as);
 

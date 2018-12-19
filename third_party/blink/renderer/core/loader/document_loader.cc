@@ -55,7 +55,6 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
-#include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
@@ -67,10 +66,6 @@
 #include "third_party/blink/renderer/core/loader/link_loader.h"
 #include "third_party/blink/renderer/core/loader/network_hints_interface.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
-#include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
-#include "third_party/blink/renderer/core/loader/resource/font_resource.h"
-#include "third_party/blink/renderer/core/loader/resource/image_resource.h"
-#include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
@@ -264,44 +259,6 @@ void DocumentLoader::SetSubresourceFilter(
 
 const KURL& DocumentLoader::Url() const {
   return request_.Url();
-}
-
-Resource* DocumentLoader::StartPreload(ResourceType type,
-                                       FetchParameters& params) {
-  Resource* resource = nullptr;
-  switch (type) {
-    case ResourceType::kImage:
-      resource = ImageResource::Fetch(params, Fetcher());
-      break;
-    case ResourceType::kScript:
-      params.SetRequestContext(mojom::RequestContextType::SCRIPT);
-      resource = ScriptResource::Fetch(params, Fetcher(), nullptr,
-                                       ScriptResource::kAllowStreaming);
-      break;
-    case ResourceType::kCSSStyleSheet:
-      resource = CSSStyleSheetResource::Fetch(params, Fetcher(), nullptr);
-      break;
-    case ResourceType::kFont:
-      resource = FontResource::Fetch(params, Fetcher(), nullptr);
-      break;
-    case ResourceType::kAudio:
-    case ResourceType::kVideo:
-      resource = RawResource::FetchMedia(params, Fetcher(), nullptr);
-      break;
-    case ResourceType::kTextTrack:
-      resource = RawResource::FetchTextTrack(params, Fetcher(), nullptr);
-      break;
-    case ResourceType::kImportResource:
-      resource = RawResource::FetchImport(params, Fetcher(), nullptr);
-      break;
-    case ResourceType::kRaw:
-      resource = RawResource::Fetch(params, Fetcher(), nullptr);
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  return resource;
 }
 
 void DocumentLoader::SetServiceWorkerNetworkProvider(

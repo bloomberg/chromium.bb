@@ -53,7 +53,10 @@
 #include "third_party/blink/renderer/core/loader/network_hints_interface.h"
 #include "third_party/blink/renderer/core/loader/private/prerender_handle.h"
 #include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
+#include "third_party/blink/renderer/core/loader/resource/font_resource.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource.h"
 #include "third_party/blink/renderer/core/loader/resource/link_fetch_resource.h"
+#include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
@@ -438,8 +441,8 @@ static Resource* PreloadIfNeeded(const LinkLoadParameters& params,
         String("Preload triggered for " + url.Host() + url.GetPath())));
   }
   link_fetch_params.SetLinkPreload(true);
-  return document.Loader()->StartPreload(resource_type.value(),
-                                         link_fetch_params);
+  return LinkLoader::StartPreload(resource_type.value(), link_fetch_params,
+                                  document.Fetcher());
 }
 
 // https://html.spec.whatwg.org/multipage/links.html#link-type-modulepreload
@@ -640,6 +643,46 @@ void LinkLoader::LoadLinksFromHeader(
     }
     // TODO(yoav): Add more supported headers as needed.
   }
+}
+
+Resource* LinkLoader::StartPreload(ResourceType type,
+                                   FetchParameters& params,
+                                   ResourceFetcher* resource_fetcher) {
+  Resource* resource = nullptr;
+  switch (type) {
+    case ResourceType::kImage:
+      resource = ImageResource::Fetch(params, resource_fetcher);
+      break;
+    case ResourceType::kScript:
+      params.SetRequestContext(mojom::RequestContextType::SCRIPT);
+      resource = ScriptResource::Fetch(params, resource_fetcher, nullptr,
+                                       ScriptResource::kAllowStreaming);
+      break;
+    case ResourceType::kCSSStyleSheet:
+      resource =
+          CSSStyleSheetResource::Fetch(params, resource_fetcher, nullptr);
+      break;
+    case ResourceType::kFont:
+      resource = FontResource::Fetch(params, resource_fetcher, nullptr);
+      break;
+    case ResourceType::kAudio:
+    case ResourceType::kVideo:
+      resource = RawResource::FetchMedia(params, resource_fetcher, nullptr);
+      break;
+    case ResourceType::kTextTrack:
+      resource = RawResource::FetchTextTrack(params, resource_fetcher, nullptr);
+      break;
+    case ResourceType::kImportResource:
+      resource = RawResource::FetchImport(params, resource_fetcher, nullptr);
+      break;
+    case ResourceType::kRaw:
+      resource = RawResource::Fetch(params, resource_fetcher, nullptr);
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  return resource;
 }
 
 bool LinkLoader::LoadLink(
