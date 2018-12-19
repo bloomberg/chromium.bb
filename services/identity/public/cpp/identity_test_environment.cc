@@ -23,7 +23,7 @@ namespace identity {
 class IdentityManagerDependenciesOwner {
  public:
   IdentityManagerDependenciesOwner(
-      bool use_fake_url_loader_for_gaia_cookie_manager,
+      network::TestURLLoaderFactory* test_url_loader_factory,
       sync_preferences::TestingPrefServiceSyncable* pref_service,
       signin::AccountConsistencyMethod account_consistency);
   ~IdentityManagerDependenciesOwner();
@@ -49,13 +49,13 @@ class IdentityManagerDependenciesOwner {
   TestSigninClient signin_client_;
   FakeProfileOAuth2TokenService token_service_;
   SigninManagerForTest signin_manager_;
-  FakeGaiaCookieManagerService gaia_cookie_manager_service_;
+  std::unique_ptr<FakeGaiaCookieManagerService> gaia_cookie_manager_service_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManagerDependenciesOwner);
 };
 
 IdentityManagerDependenciesOwner::IdentityManagerDependenciesOwner(
-    bool use_fake_url_loader_for_gaia_cookie_manager,
+    network::TestURLLoaderFactory* test_url_loader_factory,
     sync_preferences::TestingPrefServiceSyncable* pref_service_param,
     signin::AccountConsistencyMethod account_consistency)
     : owned_pref_service_(
@@ -67,28 +67,24 @@ IdentityManagerDependenciesOwner::IdentityManagerDependenciesOwner(
       signin_client_(pref_service()),
       token_service_(pref_service()),
 #if defined(OS_CHROMEOS)
-      signin_manager_(&signin_client_, &account_tracker_),
+      signin_manager_(&signin_client_, &account_tracker_) {
 #else
       signin_manager_(&signin_client_,
                       &token_service_,
                       &account_tracker_,
                       nullptr,
                       nullptr,
-                      account_consistency),
+                      account_consistency) {
 #endif
-      // NOTE: Some unittests set up their own TestURLFetcherFactory. In these
-      // contexts FakeGaiaCookieManagerService can't set up its own
-      // FakeURLFetcherFactory, as {Test, Fake}URLFetcherFactory allow only one
-      // instance to be alive at a time. If some users require that
-      // GaiaCookieManagerService have a FakeURLFetcherFactory while *also*
-      // having their own FakeURLFetcherFactory, we'll need to pass the actual
-      // object in and have GaiaCookieManagerService have a reference to the
-      // object (or figure out the sharing some other way). Contact
-      // blundell@chromium.org if you come up against this issue.
-      gaia_cookie_manager_service_(
-          &token_service_,
-          &signin_client_,
-          use_fake_url_loader_for_gaia_cookie_manager) {
+  if (test_url_loader_factory != nullptr) {
+    gaia_cookie_manager_service_ =
+        std::make_unique<FakeGaiaCookieManagerService>(
+            &token_service_, &signin_client_, test_url_loader_factory);
+  } else {
+    gaia_cookie_manager_service_ =
+        std::make_unique<FakeGaiaCookieManagerService>(&token_service_,
+                                                       &signin_client_);
+  }
   AccountTrackerService::RegisterPrefs(pref_service()->registry());
   ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service()->registry());
   SigninManagerBase::RegisterProfilePrefs(pref_service()->registry());
@@ -116,7 +112,7 @@ IdentityManagerDependenciesOwner::token_service() {
 
 FakeGaiaCookieManagerService*
 IdentityManagerDependenciesOwner::gaia_cookie_manager_service() {
-  return &gaia_cookie_manager_service_;
+  return gaia_cookie_manager_service_.get();
 }
 
 sync_preferences::TestingPrefServiceSyncable*
@@ -128,7 +124,7 @@ IdentityManagerDependenciesOwner::pref_service() {
 }
 
 IdentityTestEnvironment::IdentityTestEnvironment(
-    bool use_fake_url_loader_for_gaia_cookie_manager,
+    network::TestURLLoaderFactory* test_url_loader_factory,
     sync_preferences::TestingPrefServiceSyncable* pref_service,
     signin::AccountConsistencyMethod account_consistency)
     : IdentityTestEnvironment(
@@ -137,7 +133,7 @@ IdentityTestEnvironment::IdentityTestEnvironment(
           /*signin_manager=*/nullptr,
           /*gaia_cookie_manager_service=*/nullptr,
           std::make_unique<IdentityManagerDependenciesOwner>(
-              use_fake_url_loader_for_gaia_cookie_manager,
+              test_url_loader_factory,
               pref_service,
               account_consistency),
           /*identity_manager=*/nullptr) {}
