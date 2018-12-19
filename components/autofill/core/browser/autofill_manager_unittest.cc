@@ -427,7 +427,8 @@ class AutofillManagerTest : public testing::Test {
                    std::back_inserter(suggestions),
                    [](auto result) { return Suggestion(result); });
 
-    autofill_manager_->OnSuggestionsReturned(query_id, suggestions);
+    autofill_manager_->OnSuggestionsReturned(
+        query_id, /*autoselect_first_suggestion=*/false, suggestions);
   }
 
   void FormsSeen(const std::vector<FormData>& forms) {
@@ -1124,9 +1125,21 @@ TEST_F(AutofillManagerTest, OnSuggestionsReturned_CallsExternalDelegate) {
   std::vector<Suggestion> suggestions = {
       Suggestion("Charles", "123 Apple St.", "", 1),
       Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2)};
-  autofill_manager_->OnSuggestionsReturned(kDefaultPageID, suggestions);
 
-  CheckSuggestions(kDefaultPageID, suggestions[0], suggestions[1]);
+  {
+    autofill_manager_->OnSuggestionsReturned(
+        kDefaultPageID, /*autoselect_first_suggestion=*/false, suggestions);
+
+    EXPECT_FALSE(external_delegate_->autoselect_first_suggestion());
+    CheckSuggestions(kDefaultPageID, suggestions[0], suggestions[1]);
+  }
+  {
+    autofill_manager_->OnSuggestionsReturned(
+        kDefaultPageID, /*autoselect_first_suggestion=*/true, suggestions);
+
+    EXPECT_TRUE(external_delegate_->autoselect_first_suggestion());
+    CheckSuggestions(kDefaultPageID, suggestions[0], suggestions[1]);
+  }
 }
 
 // Test that we return all credit card profile suggestions when all form fields

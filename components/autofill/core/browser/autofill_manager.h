@@ -203,6 +203,7 @@ class AutofillManager : public AutofillHandler,
   // AutocompleteHistoryManager::SuggestionsHandler:
   void OnSuggestionsReturned(
       int query_id,
+      bool autoselect_first_suggestion,
       const std::vector<Suggestion>& suggestions) override;
 
   // Returns the value of AutofillEnabled pref.

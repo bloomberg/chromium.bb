@@ -17,10 +17,11 @@ class MockAutocompleteHistoryManager : public AutocompleteHistoryManager {
   ~MockAutocompleteHistoryManager();
 
   MOCK_METHOD2(Init, void(scoped_refptr<AutofillWebDataService>, bool));
-  MOCK_METHOD6(
+  MOCK_METHOD7(
       OnGetAutocompleteSuggestions,
       void(int query_id,
            bool is_autocomplete_enabled,
+           bool autoselect_first_suggestion,
            const base::string16& name,
            const base::string16& prefix,
            const std::string& form_control_type,

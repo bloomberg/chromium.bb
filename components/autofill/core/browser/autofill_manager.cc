@@ -653,8 +653,9 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
     // Suggestions come back asynchronously, so the Autocomplete manager will
     // handle sending the results back to the renderer.
     autocomplete_history_manager_->OnGetAutocompleteSuggestions(
-        query_id, client_->IsAutocompleteEnabled(), field.name, field.value,
-        field.form_control_type, weak_ptr_factory_.GetWeakPtr());
+        query_id, client_->IsAutocompleteEnabled(), autoselect_first_suggestion,
+        field.name, field.value, field.form_control_type,
+        weak_ptr_factory_.GetWeakPtr());
     return;
   }
 
@@ -1162,10 +1163,13 @@ bool AutofillManager::ShouldUploadForm(const FormStructure& form) {
          form.ShouldBeUploaded();
 }
 
+// AutocompleteHistoryManager::SuggestionsHandler implementation
 void AutofillManager::OnSuggestionsReturned(
     int query_id,
+    bool autoselect_first_suggestion,
     const std::vector<Suggestion>& suggestions) {
-  external_delegate_->OnSuggestionsReturned(query_id, suggestions, false);
+  external_delegate_->OnSuggestionsReturned(query_id, suggestions,
+                                            autoselect_first_suggestion);
 }
 
 // Note that |submitted_form| is passed as a pointer rather than as a reference

@@ -73,9 +73,11 @@ void AutocompleteHistoryManager::UMARecorder::OnWebDataServiceRequestDone(
 
 AutocompleteHistoryManager::QueryHandler::QueryHandler(
     int client_query_id,
+    bool autoselect_first_suggestion,
     base::string16 prefix,
     base::WeakPtr<SuggestionsHandler> handler)
     : client_query_id_(client_query_id),
+      autoselect_first_suggestion_(autoselect_first_suggestion),
       prefix_(prefix),
       handler_(std::move(handler)) {}
 
@@ -106,6 +108,7 @@ AutocompleteHistoryManager::GetWeakPtr() {
 void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
     int query_id,
     bool is_autocomplete_enabled,
+    bool autoselect_first_suggestion,
     const base::string16& name,
     const base::string16& prefix,
     const std::string& form_control_type,
@@ -114,7 +117,8 @@ void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
 
   if (!is_autocomplete_enabled || form_control_type == "textarea" ||
       IsInAutofillSuggestionsDisabledExperiment()) {
-    SendSuggestions({}, QueryHandler(query_id, prefix, handler));
+    SendSuggestions({}, QueryHandler(query_id, autoselect_first_suggestion,
+                                     prefix, handler));
     uma_recorder_.OnGetAutocompleteSuggestions(name,
                                                0 /* pending_query_handle */);
     return;
@@ -127,7 +131,8 @@ void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
 
     // We can simply insert, since |query_handle| is always unique.
     pending_queries_.insert(
-        {query_handle, QueryHandler(query_id, prefix, handler)});
+        {query_handle,
+         QueryHandler(query_id, autoselect_first_suggestion, prefix, handler)});
   }
 }
 
@@ -207,8 +212,9 @@ void AutocompleteHistoryManager::SendSuggestions(
         [](const base::string16& result) { return Suggestion(result); });
   }
 
-  query_handler.handler_->OnSuggestionsReturned(query_handler.client_query_id_,
-                                                suggestions);
+  query_handler.handler_->OnSuggestionsReturned(
+      query_handler.client_query_id_,
+      query_handler.autoselect_first_suggestion_, suggestions);
 }
 
 void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
