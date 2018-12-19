@@ -17,6 +17,13 @@
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_surface.h"
 
+namespace gpu {
+class DecoderContext;
+namespace gles2 {
+class AbstractTexture;
+}  // namespace gles2
+}  // namespace gpu
+
 namespace media {
 
 // A Texture wrapper interface that creates and maintains ownership of the
@@ -30,16 +37,21 @@ class MEDIA_GPU_EXPORT TextureOwner
  public:
   // Creates a GL texture using the current platform GL context and returns a
   // new TextureOwner attached to it. Returns null on failure.
-  static scoped_refptr<TextureOwner> Create();
+  // |texture| should be either from CreateAbstractTexture() or a mock.  The
+  // corresponding GL context must be current.
+  static scoped_refptr<TextureOwner> Create(
+      std::unique_ptr<gpu::gles2::AbstractTexture> texture);
 
-  TextureOwner();
+  // Create a texture that's appropriate for a TextureOwner.
+  static std::unique_ptr<gpu::gles2::AbstractTexture> CreateTexture(
+      gpu::DecoderContext* decoder);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
     return task_runner_;
   }
 
   // Returns the GL texture id that the TextureOwner is attached to.
-  virtual GLuint GetTextureId() const = 0;
+  GLuint GetTextureId() const;
   virtual gl::GLContext* GetContext() const = 0;
   virtual gl::GLSurface* GetSurface() const = 0;
 
@@ -81,9 +93,26 @@ class MEDIA_GPU_EXPORT TextureOwner
  protected:
   friend class base::RefCountedDeleteOnSequence<TextureOwner>;
   friend class base::DeleteHelper<TextureOwner>;
+
+  // |texture| is the texture that we'll own.
+  TextureOwner(std::unique_ptr<gpu::gles2::AbstractTexture> texture);
   virtual ~TextureOwner();
 
+  // Drop |texture_| immediately.  Will call OnTextureDestroyed immediately if
+  // it hasn't been called before (e.g., due to lost context).
+  // Subclasses must call this before they complete destruction, else
+  // OnTextureDestroyed might be called when we drop |texture_|, which is not
+  // defined once subclass destruction has completed.
+  void ClearAbstractTexture();
+
+  // Called when |texture_| signals that the platform texture will be destroyed.
+  // See AbstractTexture::SetCleanupCallback.
+  virtual void OnTextureDestroyed(gpu::gles2::AbstractTexture*) = 0;
+
+  gpu::gles2::AbstractTexture* texture() const { return texture_.get(); }
+
  private:
+  std::unique_ptr<gpu::gles2::AbstractTexture> texture_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureOwner);

@@ -4,6 +4,8 @@
 
 #include "media/gpu/android/mock_texture_owner.h"
 
+#include "media/gpu/android/mock_abstract_texture.h"
+
 namespace media {
 
 using testing::Invoke;
@@ -12,7 +14,7 @@ using testing::Return;
 MockTextureOwner::MockTextureOwner(GLuint fake_texture_id,
                                    gl::GLContext* fake_context,
                                    gl::GLSurface* fake_surface)
-    : fake_texture_id(fake_texture_id),
+    : TextureOwner(std::make_unique<MockAbstractTexture>(fake_texture_id)),
       fake_context(fake_context),
       fake_surface(fake_surface),
       expecting_frame_available(false) {
@@ -31,6 +33,9 @@ MockTextureOwner::MockTextureOwner(GLuint fake_texture_id,
           Invoke(this, &MockTextureOwner::FakeWaitForFrameAvailable));
 }
 
-MockTextureOwner::~MockTextureOwner() = default;
+MockTextureOwner::~MockTextureOwner() {
+  // TextureOwner requires this.
+  ClearAbstractTexture();
+}
 
 }  // namespace media

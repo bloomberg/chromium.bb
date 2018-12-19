@@ -145,7 +145,9 @@ scoped_refptr<TextureOwner> GpuVideoFrameFactory::Initialize(
   texture_pool_ = new TexturePool(CommandBufferHelper::Create(stub_));
 
   decoder_helper_ = GLES2DecoderHelper::Create(stub_->decoder_context());
-  return TextureOwner::Create();
+
+  return TextureOwner::Create(
+      TextureOwner::CreateTexture(stub_->decoder_context()));
 }
 
 void GpuVideoFrameFactory::CreateVideoFrame(

@@ -15,6 +15,7 @@ class GLImage;
 
 namespace gpu {
 namespace gles2 {
+class AbstractTexture;
 class ContextGroup;
 }
 }
@@ -50,6 +51,18 @@ using BindGLImageCallback =
 // Return a ContextGroup*, if one is available.
 using GetContextGroupCallback =
     base::RepeatingCallback<gpu::gles2::ContextGroup*(void)>;
+
+// Create and return an AbstractTexture, if possible.
+using CreateAbstractTextureCallback =
+    base::RepeatingCallback<std::unique_ptr<gpu::gles2::AbstractTexture>(
+        unsigned /* GLenum */ target,
+        unsigned /* GLenum */ internal_format,
+        int /* GLsizei */ width,
+        int /* GLsizei */ height,
+        int /* GLsizei */ depth,
+        int /* GLint */ border,
+        unsigned /* GLenum */ format,
+        unsigned /* GLenum */ type)>;
 
 }  // namespace media
 
