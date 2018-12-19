@@ -16,8 +16,9 @@
   padding-top: 48px;
 }
 
-#voice-match-img {
-  padding: 48px 0 0 48px;
+#voice-match-video {
+  padding-top: 100px;
+  text-align: center;
 }
 
 #intro-container,
