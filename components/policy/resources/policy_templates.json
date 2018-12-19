@@ -709,6 +709,7 @@
       'policies': [
         'AlternativeBrowserPath',
         'AlternativeBrowserParameters',
+        'BrowserSwitcherExternalSitelistUrl',
         'BrowserSwitcherUrlList',
         'BrowserSwitcherUrlGreylist',
         'BrowserSwitcherUseIeSitelist',
