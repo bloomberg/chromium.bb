@@ -151,6 +151,13 @@ const base::Feature kCertDualVerificationTrialFeature{
 const base::Feature kChangePictureVideoMode{"ChangePictureVideoMode",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+#if defined(OS_CHROMEOS)
+// Enables passing additional user authentication in requests to DMServer
+// (policy fetch, status report upload).
+const base::Feature kDMServerOAuthForChildUser{
+    "DMServerOAuthForChildUser", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if defined(OS_ANDROID)
 // Enables clearing of browsing data which is older than given time period.
 const base::Feature kClearOldBrowsingData{"ClearOldBrowsingData",

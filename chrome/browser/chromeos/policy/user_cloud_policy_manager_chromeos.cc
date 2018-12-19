@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_functions.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/policy/cloud/remote_commands_invalidator_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_content_client.h"
+#include "chrome/common/chrome_features.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
@@ -94,6 +96,14 @@ enum class RegistrationResult {
 
 void RegistrationResultUMA(RegistrationResult registration_result) {
   UMA_HISTOGRAM_ENUMERATION(kUMAReregistrationResult, registration_result);
+}
+
+// Returns whether user with |account_id| is a child. Returns false if user with
+// |account_id| is not found.
+bool IsChildUser(const AccountId& account_id) {
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->FindUser(account_id);
+  return user && user->GetType() == user_manager::USER_TYPE_CHILD;
 }
 
 // This class is used to subscribe for notifications that the current profile is
@@ -296,6 +306,11 @@ void UserCloudPolicyManagerChromeOS::OnAccessTokenAvailable(
     OnOAuth2PolicyTokenFetched(
         access_token, GoogleServiceAuthError(GoogleServiceAuthError::NONE));
   }
+}
+
+bool UserCloudPolicyManagerChromeOS::RequiresOAuthTokenForChildUser() const {
+  return IsChildUser(account_id_) &&
+         base::FeatureList::IsEnabled(features::kDMServerOAuthForChildUser);
 }
 
 void UserCloudPolicyManagerChromeOS::OnWildcardCheckCompleted(
@@ -547,9 +562,7 @@ void UserCloudPolicyManagerChromeOS::GetChromePolicy(PolicyMap* policy_map) {
     return;
 
   // Don't apply enterprise defaults for Child user.
-  const user_manager::User* const user =
-      user_manager::UserManager::Get()->FindUser(account_id_);
-  if (user && user->GetType() == user_manager::USER_TYPE_CHILD)
+  if (IsChildUser(account_id_))
     return;
 
   SetEnterpriseUsersDefaults(policy_map);

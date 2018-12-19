@@ -109,6 +109,15 @@ void CloudPolicyCore::RemoveObserver(CloudPolicyCore::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void CloudPolicyCore::ConnectForTesting(
+    std::unique_ptr<CloudPolicyService> service,
+    std::unique_ptr<CloudPolicyClient> client) {
+  service_ = std::move(service);
+  client_ = std::move(client);
+  for (auto& observer : observers_)
+    observer.OnCoreConnected(this);
+}
+
 void CloudPolicyCore::UpdateRefreshDelayFromPref() {
   if (refresh_scheduler_ && refresh_delay_)
     refresh_scheduler_->SetDesiredRefreshDelay(refresh_delay_->GetValue());
