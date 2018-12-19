@@ -363,6 +363,9 @@ unsigned Internals::hitTestCount(Document* doc,
     return 0;
   }
 
+  if (!doc->GetLayoutView())
+    return 0;
+
   return doc->GetLayoutView()->HitTestCount();
 }
 
@@ -373,6 +376,9 @@ unsigned Internals::hitTestCacheHits(Document* doc,
                                       "Must supply document to check");
     return 0;
   }
+
+  if (!doc->GetLayoutView())
+    return 0;
 
   return doc->GetLayoutView()->HitTestCacheHits();
 }
