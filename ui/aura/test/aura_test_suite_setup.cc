@@ -16,10 +16,22 @@
 #endif
 
 namespace aura {
+namespace {
+
+#if BUILDFLAG(ENABLE_MUS)
+bool g_disable_mus_features = false;
+#endif
+
+}  // namespace
 
 AuraTestSuiteSetup::AuraTestSuiteSetup() {
   DCHECK(!Env::HasInstance());
 #if BUILDFLAG(ENABLE_MUS)
+  if (g_disable_mus_features) {
+    scoped_feature_list_.InitWithFeatures(
+        {} /* enabled */,
+        {features::kMash, features::kSingleProcessMash} /* disabled */);
+  }
   const Env::Mode env_mode =
       features::IsUsingWindowService() ? Env::Mode::MUS : Env::Mode::LOCAL;
   env_ = Env::CreateInstance(env_mode);
@@ -31,6 +43,13 @@ AuraTestSuiteSetup::AuraTestSuiteSetup() {
 }
 
 AuraTestSuiteSetup::~AuraTestSuiteSetup() = default;
+
+#if BUILDFLAG(ENABLE_MUS)
+// static
+void AuraTestSuiteSetup::DisableMusFeatures() {
+  g_disable_mus_features = true;
+}
+#endif
 
 #if BUILDFLAG(ENABLE_MUS)
 void AuraTestSuiteSetup::ConfigureMus() {
