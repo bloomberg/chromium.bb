@@ -157,10 +157,10 @@ static INLINE int is_masked_compound_type(COMPOUND_TYPE type) {
    is a single probability table. */
 
 typedef struct {
-  // Number of base colors for Y (0) and UV (1)
-  uint8_t palette_size[2];
   // Value of base colors for Y, U, and V
   uint16_t palette_colors[3 * PALETTE_MAX_SIZE];
+  // Number of base colors for Y (0) and UV (1)
+  uint8_t palette_size[2];
 } PALETTE_MODE_INFO;
 
 typedef struct {
@@ -205,42 +205,29 @@ typedef struct RD_STATS {
 // This struct is used to group function args that are commonly
 // sent together in functions related to interinter compound modes
 typedef struct {
+  uint8_t *seg_mask;
   int wedge_index;
   int wedge_sign;
   DIFFWTD_MASK_TYPE mask_type;
   COMPOUND_TYPE type;
-  uint8_t *seg_mask;
 } INTERINTER_COMPOUND_DATA;
 
 #define INTER_TX_SIZE_BUF_LEN 16
 #define TXK_TYPE_BUF_LEN 64
 // This structure now relates to 4x4 block regions.
 typedef struct MB_MODE_INFO {
-  // Common for both INTER and INTRA blocks
-  BLOCK_SIZE sb_type;
-  PREDICTION_MODE mode;
-  // Only for INTRA blocks
-  UV_PREDICTION_MODE uv_mode;
-
-  // Only for INTER blocks
-  InterpFilters interp_filters;
-
-  TX_TYPE txk_type[TXK_TYPE_BUF_LEN];
-
-  FILTER_INTRA_MODE_INFO filter_intra_mode_info;
-
-  // interintra members
-  INTERINTRA_MODE interintra_mode;
-  // TODO(debargha): Consolidate these flags
-  int use_wedge_interintra;
-  int interintra_wedge_index;
-  int interintra_wedge_sign;
+  PALETTE_MODE_INFO palette_mode_info;
+  WarpedMotionParams wm_params;
   // interinter members
   INTERINTER_COMPOUND_DATA interinter_comp;
-  MOTION_MODE motion_mode;
-  int overlappable_neighbors[2];
+  FILTER_INTRA_MODE_INFO filter_intra_mode_info;
   int_mv mv[2];
-  PARTITION_TYPE partition;
+  // Only for INTER blocks
+  InterpFilters interp_filters;
+  // TODO(debargha): Consolidate these flags
+  int interintra_wedge_index;
+  int interintra_wedge_sign;
+  int overlappable_neighbors[2];
   int current_qindex;
   int delta_lf_from_base;
   int delta_lf[FRAME_LF_COUNT];
@@ -250,7 +237,6 @@ typedef struct MB_MODE_INFO {
   int mi_col;
 #endif
   int num_proj_ref;
-  WarpedMotionParams wm_params;
 
   // Index of the alpha Cb and alpha Cr combination
   int cfl_alpha_idx;
@@ -259,8 +245,18 @@ typedef struct MB_MODE_INFO {
 
   int compound_idx;
   int comp_group_idx;
-  PALETTE_MODE_INFO palette_mode_info;
+  // Common for both INTER and INTRA blocks
+  BLOCK_SIZE sb_type;
+  PREDICTION_MODE mode;
+  // Only for INTRA blocks
+  UV_PREDICTION_MODE uv_mode;
+  // interintra members
+  INTERINTRA_MODE interintra_mode;
+  MOTION_MODE motion_mode;
+  PARTITION_TYPE partition;
+  TX_TYPE txk_type[TXK_TYPE_BUF_LEN];
   MV_REFERENCE_FRAME ref_frame[2];
+  int8_t use_wedge_interintra;
   int8_t skip;
   int8_t skip_mode;
   uint8_t inter_tx_size[INTER_TX_SIZE_BUF_LEN];

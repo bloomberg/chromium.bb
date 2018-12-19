@@ -1082,12 +1082,13 @@ static void build_smooth_interintra_mask(uint8_t *mask, int stride,
   }
 }
 
-static void combine_interintra(INTERINTRA_MODE mode, int use_wedge_interintra,
-                               int wedge_index, int wedge_sign,
-                               BLOCK_SIZE bsize, BLOCK_SIZE plane_bsize,
-                               uint8_t *comppred, int compstride,
-                               const uint8_t *interpred, int interstride,
-                               const uint8_t *intrapred, int intrastride) {
+static void combine_interintra(INTERINTRA_MODE mode,
+                               int8_t use_wedge_interintra, int wedge_index,
+                               int wedge_sign, BLOCK_SIZE bsize,
+                               BLOCK_SIZE plane_bsize, uint8_t *comppred,
+                               int compstride, const uint8_t *interpred,
+                               int interstride, const uint8_t *intrapred,
+                               int intrastride) {
   const int bw = block_size_wide[plane_bsize];
   const int bh = block_size_high[plane_bsize];
 
@@ -1111,7 +1112,7 @@ static void combine_interintra(INTERINTRA_MODE mode, int use_wedge_interintra,
 }
 
 static void combine_interintra_highbd(
-    INTERINTRA_MODE mode, int use_wedge_interintra, int wedge_index,
+    INTERINTRA_MODE mode, int8_t use_wedge_interintra, int wedge_index,
     int wedge_sign, BLOCK_SIZE bsize, BLOCK_SIZE plane_bsize,
     uint8_t *comppred8, int compstride, const uint8_t *interpred8,
     int interstride, const uint8_t *intrapred8, int intrastride, int bd) {
