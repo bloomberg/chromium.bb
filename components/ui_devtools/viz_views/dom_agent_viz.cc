@@ -361,7 +361,10 @@ void DOMAgentViz::DestroyElementAndRemoveSubtree(UIElement* element) {
   // root surface, and then delete the node we were asked for.
   UIElement* new_parent =
       (element->type() == SURFACE ? GetRootSurfaceElement() : element_root());
-  for (auto* child : element->children())
+  // Make a copy of the list of children, so that it isn't affected when
+  // elements are moved.
+  std::vector<UIElement*> children(element->children());
+  for (auto* child : children)
     Reparent(new_parent, child);
 
   element->parent()->RemoveChild(element);
@@ -369,6 +372,9 @@ void DOMAgentViz::DestroyElementAndRemoveSubtree(UIElement* element) {
 }
 
 void DOMAgentViz::Reparent(UIElement* new_parent, UIElement* child) {
+  if (new_parent == child->parent())
+    return;
+
   DestroySubtree(child);
 
   // This removes the child element from the Node map. It has to be added with

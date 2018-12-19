@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 declare_args() {
-  # Indicates if the Viz Devtools server is enabled. This is disabled on
-  # official Android and iOS builds to reduce binary size.
-  use_viz_devtools = !((is_android || is_ios) && is_official_build)
+  # Indicates if the Viz Devtools server is enabled. This is disabled on iOS,
+  # and on official Android builds to reduce binary size.
+  use_viz_devtools = !(is_ios || (is_android && is_official_build))
 }

@@ -20,6 +20,10 @@ class FakeFrontendChannel : public protocol::FrontendChannel {
 
   int CountProtocolNotificationMessage(const std::string& message);
 
+  void SetAllowNotifications(bool allow_notifications) {
+    allow_notifications_ = allow_notifications;
+  }
+
   // FrontendChannel:
   void sendProtocolResponse(
       int callId,
@@ -33,6 +37,7 @@ class FakeFrontendChannel : public protocol::FrontendChannel {
 
  private:
   std::vector<std::string> protocol_notification_messages_;
+  bool allow_notifications_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(FakeFrontendChannel);
 };

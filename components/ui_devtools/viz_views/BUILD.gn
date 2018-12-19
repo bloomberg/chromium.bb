@@ -21,3 +21,22 @@ source_set("viz_views") {
     "//components/viz/service",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "viz_devtools_unittest.cc",
+  ]
+
+  deps = [
+    ":viz_views",
+    "//components/ui_devtools",
+    "//components/ui_devtools:test_support",
+    "//components/viz/service",
+    "//components/viz/test:test_support",
+    "//testing/gtest",
+  ]
+
+  configs += [ "//build/config:precompiled_headers" ]
+}
