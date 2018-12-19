@@ -13,6 +13,7 @@
 #include "base/test/test_file_util.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -76,7 +77,7 @@ class NetworkServiceClientTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  TestBrowserThreadBundle scoped_task_environment_;
   network::mojom::NetworkServiceClientPtr client_ptr_;
   NetworkServiceClient client_;
   base::ScopedTempDir temp_dir_;
