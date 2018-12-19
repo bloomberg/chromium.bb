@@ -1271,7 +1271,7 @@ TEST_P(
                 base::MakeRefCounted<network::ResourceResponse>()));
 
   ASSERT_FALSE(url_loader_client_.has_received_response());
-  url_loader_client_.RunUntilResponseReceived();
+  url_loader_client_.RunUntilResponseBodyArrived();
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 
@@ -1328,7 +1328,7 @@ TEST_P(
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted("B"));
 
-  ASSERT_TRUE(url_loader_client_.response_body().is_valid());
+  ASSERT_TRUE(url_loader_client_.has_received_response());
   url_loader_client_.RunUntilResponseBodyArrived();
   ASSERT_TRUE(url_loader_client_.response_body().is_valid());
 
