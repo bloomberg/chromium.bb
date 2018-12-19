@@ -20,7 +20,7 @@ BleAdvertisementGenerator* BleAdvertisementGenerator::instance_ = nullptr;
 // static
 std::unique_ptr<DataWithTimestamp>
 BleAdvertisementGenerator::GenerateBleAdvertisement(
-    chromeos::multidevice::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     const std::string& local_device_public_key) {
   if (!instance_)
     instance_ = new BleAdvertisementGenerator();
@@ -42,7 +42,7 @@ BleAdvertisementGenerator::~BleAdvertisementGenerator() {}
 
 std::unique_ptr<DataWithTimestamp>
 BleAdvertisementGenerator::GenerateBleAdvertisementInternal(
-    chromeos::multidevice::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     const std::string& local_device_public_key) {
   if (local_device_public_key.empty()) {
     PA_LOG(WARNING) << "Local device's public key is empty. Cannot advertise "
@@ -59,8 +59,8 @@ BleAdvertisementGenerator::GenerateBleAdvertisementInternal(
 
   std::unique_ptr<DataWithTimestamp> service_data =
       eid_generator_->GenerateAdvertisement(
-          local_device_public_key, chromeos::multidevice::ToCryptAuthSeedList(
-                                       remote_device.beacon_seeds()));
+          local_device_public_key,
+          multidevice::ToCryptAuthSeedList(remote_device.beacon_seeds()));
   if (!service_data) {
     PA_LOG(WARNING) << "Error generating advertisement for device with ID "
                     << remote_device.GetTruncatedDeviceIdForLogs() << ". "

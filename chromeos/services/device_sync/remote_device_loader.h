@@ -22,10 +22,9 @@ class SecureMessageDelegate;
 
 namespace device_sync {
 
-// Loads a collection of chromeos::multidevice::RemoteDevice objects from the
-// given cryptauth::ExternalDeviceInfo protos that were synced from CryptAuth.
-// We need to derive the PSK, which is a symmetric key used to authenticate each
-// remote device.
+// Loads a collection of RemoteDevice objects from the given ExternalDeviceInfo
+// protos that were synced from CryptAuth. We need to derive the PSK, which is a
+// symmetric key used to authenticate each remote device.
 class RemoteDeviceLoader {
  public:
   class Factory {
@@ -52,8 +51,8 @@ class RemoteDeviceLoader {
   };
 
   // Creates the instance:
-  // |device_info_list|: The cryptauth::ExternalDeviceInfo objects to convert to
-  //                     chromeos::multidevice::RemoteDevice.
+  // |device_info_list|: The ExternalDeviceInfo objects to convert to
+  //                     RemoteDevice.
   // |user_private_key|: The private key of the user's local device. Used to
   //                     derive the PSK.
   // |secure_message_delegate|: Used to derive each persistent symmetric key.
@@ -66,9 +65,8 @@ class RemoteDeviceLoader {
 
   virtual ~RemoteDeviceLoader();
 
-  // Loads the chromeos::multidevice::RemoteDevice objects. |callback| will be
-  // invoked upon completion.
-  typedef base::Callback<void(const chromeos::multidevice::RemoteDeviceList&)>
+  // Loads the RemoteDevice objects. |callback| will be invoked upon completion.
+  typedef base::Callback<void(const multidevice::RemoteDeviceList&)>
       RemoteDeviceCallback;
   virtual void Load(const RemoteDeviceCallback& callback);
 
@@ -90,11 +88,11 @@ class RemoteDeviceLoader {
   // Performs the PSK key derivation.
   std::unique_ptr<multidevice::SecureMessageDelegate> secure_message_delegate_;
 
-  // Invoked when the chromeos::multidevice::RemoteDevices are loaded.
+  // Invoked when the RemoteDevices are loaded.
   RemoteDeviceCallback callback_;
 
-  // The collection of chromeos::multidevice::RemoteDevices to return.
-  chromeos::multidevice::RemoteDeviceList remote_devices_;
+  // The collection of RemoteDevices to return.
+  multidevice::RemoteDeviceList remote_devices_;
 
   base::WeakPtrFactory<RemoteDeviceLoader> weak_ptr_factory_;
 

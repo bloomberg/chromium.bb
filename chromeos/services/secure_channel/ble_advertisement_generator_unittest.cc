@@ -49,8 +49,8 @@ class SecureChannelBleAdvertisementGeneratorTest : public testing::Test {
  protected:
   SecureChannelBleAdvertisementGeneratorTest()
       : test_remote_device_(
-            chromeos::multidevice::RemoteDeviceRefBuilder()
-                .SetBeaconSeeds(chromeos::multidevice::FromCryptAuthSeedList(
+            multidevice::RemoteDeviceRefBuilder()
+                .SetBeaconSeeds(multidevice::FromCryptAuthSeedList(
                     CreateBeaconSeedsForDevice("remote device id")))
                 .Build()),
         fake_advertisement_("advertisement1", 1000L, 2000L) {}
@@ -66,13 +66,13 @@ class SecureChannelBleAdvertisementGeneratorTest : public testing::Test {
   void TearDown() override { generator_.reset(); }
 
   std::unique_ptr<DataWithTimestamp> CallGenerateBleAdvertisement(
-      chromeos::multidevice::RemoteDeviceRef remote_device,
+      multidevice::RemoteDeviceRef remote_device,
       const std::string& local_device_public_key) {
     return generator_->GenerateBleAdvertisementInternal(
         remote_device, local_device_public_key);
   }
 
-  const chromeos::multidevice::RemoteDeviceRef test_remote_device_;
+  const multidevice::RemoteDeviceRef test_remote_device_;
   const DataWithTimestamp fake_advertisement_;
 
   MockForegroundEidGenerator* mock_eid_generator_;
@@ -90,8 +90,7 @@ TEST_F(SecureChannelBleAdvertisementGeneratorTest, EmptyPublicKey) {
 
 TEST_F(SecureChannelBleAdvertisementGeneratorTest, EmptyBeaconSeeds) {
   EXPECT_FALSE(CallGenerateBleAdvertisement(
-      chromeos::multidevice::CreateRemoteDeviceRefForTest(),
-      kLocalDevicePublicKey));
+      multidevice::CreateRemoteDeviceRefForTest(), kLocalDevicePublicKey));
 }
 
 TEST_F(SecureChannelBleAdvertisementGeneratorTest,

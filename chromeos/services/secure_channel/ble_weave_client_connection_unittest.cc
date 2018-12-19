@@ -214,7 +214,7 @@ class TestBluetoothLowEnergyWeaveClientConnection
     : public BluetoothLowEnergyWeaveClientConnection {
  public:
   TestBluetoothLowEnergyWeaveClientConnection(
-      chromeos::multidevice::RemoteDeviceRef remote_device,
+      multidevice::RemoteDeviceRef remote_device,
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID remote_service_uuid,
       device::MockBluetoothDevice* mock_bluetooth_device,
@@ -328,7 +328,7 @@ class SecureChannelBluetoothLowEnergyWeaveClientConnectionTest
     : public testing::Test {
  public:
   SecureChannelBluetoothLowEnergyWeaveClientConnectionTest()
-      : remote_device_(chromeos::multidevice::CreateRemoteDeviceRefForTest()),
+      : remote_device_(multidevice::CreateRemoteDeviceRefForTest()),
         service_uuid_(device::BluetoothUUID(kServiceUUID)),
         tx_characteristic_uuid_(device::BluetoothUUID(kTXCharacteristicUUID)),
         rx_characteristic_uuid_(device::BluetoothUUID(kRXCharacteristicUUID)) {}
@@ -346,7 +346,7 @@ class SecureChannelBluetoothLowEnergyWeaveClientConnectionTest
 
     mock_bluetooth_device_ =
         std::make_unique<NiceMock<device::MockBluetoothDevice>>(
-            adapter_.get(), 0, chromeos::multidevice::kTestRemoteDeviceName,
+            adapter_.get(), 0, multidevice::kTestRemoteDeviceName,
             kTestRemoteDeviceBluetoothAddress, false, false);
     service_ = std::make_unique<NiceMock<device::MockBluetoothGattService>>(
         mock_bluetooth_device_.get(), kServiceID, service_uuid_, true, false);
@@ -646,7 +646,7 @@ class SecureChannelBluetoothLowEnergyWeaveClientConnectionTest
   }
 
  protected:
-  const chromeos::multidevice::RemoteDeviceRef remote_device_;
+  const multidevice::RemoteDeviceRef remote_device_;
   const device::BluetoothUUID service_uuid_;
   const device::BluetoothUUID tx_characteristic_uuid_;
   const device::BluetoothUUID rx_characteristic_uuid_;

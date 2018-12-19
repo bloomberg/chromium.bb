@@ -18,18 +18,17 @@ class FakeRemoteDeviceProvider : public RemoteDeviceProvider {
   ~FakeRemoteDeviceProvider() override;
 
   void set_synced_remote_devices(
-      const chromeos::multidevice::RemoteDeviceList& synced_remote_devices) {
+      const multidevice::RemoteDeviceList& synced_remote_devices) {
     synced_remote_devices_ = synced_remote_devices;
   }
 
   void NotifyObserversDeviceListChanged();
 
   // RemoteDeviceProvider:
-  const chromeos::multidevice::RemoteDeviceList& GetSyncedDevices()
-      const override;
+  const multidevice::RemoteDeviceList& GetSyncedDevices() const override;
 
  private:
-  chromeos::multidevice::RemoteDeviceList synced_remote_devices_;
+  multidevice::RemoteDeviceList synced_remote_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeRemoteDeviceProvider);
 };

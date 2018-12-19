@@ -31,8 +31,7 @@ namespace {
 
 class MockConnection : public Connection {
  public:
-  MockConnection()
-      : Connection(chromeos::multidevice::CreateRemoteDeviceRefForTest()) {}
+  MockConnection() : Connection(multidevice::CreateRemoteDeviceRefForTest()) {}
   ~MockConnection() {}
 
   MOCK_METHOD1(SetPaused, void(bool paused));

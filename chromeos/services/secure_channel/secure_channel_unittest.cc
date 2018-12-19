@@ -147,9 +147,9 @@ class TestAuthenticatorFactory final
   Authenticator* last_instance_;
 };
 
-chromeos::multidevice::RemoteDeviceRef CreateTestRemoteDevice() {
-  chromeos::multidevice::RemoteDeviceRef remote_device =
-      chromeos::multidevice::CreateRemoteDeviceRefListForTest(1)[0];
+multidevice::RemoteDeviceRef CreateTestRemoteDevice() {
+  multidevice::RemoteDeviceRef remote_device =
+      multidevice::CreateRemoteDeviceRefListForTest(1)[0];
   return remote_device;
 }
 
@@ -357,7 +357,7 @@ class SecureChannelConnectionTest : public testing::Test {
 
   std::unique_ptr<TestAuthenticatorFactory> test_authenticator_factory_;
 
-  const chromeos::multidevice::RemoteDeviceRef test_device_;
+  const multidevice::RemoteDeviceRef test_device_;
 
   base::Optional<int32_t> rssi_;
 

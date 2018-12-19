@@ -32,9 +32,8 @@ namespace device_sync {
 class DeviceSyncBase;
 class GcmDeviceInfoProvider;
 
-// Service which provides an implementation for
-// device_sync::mojom::DeviceSync. This service creates one
-// implementation and shares it among all connection requests.
+// Service which provides an implementation for DeviceSync. This service creates
+// one implementation and shares it among all connection requests.
 class DeviceSyncService : public service_manager::Service {
  public:
   DeviceSyncService(

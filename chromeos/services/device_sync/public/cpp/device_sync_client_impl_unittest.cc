@@ -144,8 +144,7 @@ class DeviceSyncClientImplTest : public testing::Test {
   void SetUp() override {
     fake_gcm_driver_ = std::make_unique<gcm::FakeGCMDriver>();
     fake_gcm_device_info_provider_ =
-        std::make_unique<device_sync::FakeGcmDeviceInfoProvider>(
-            GetTestGcmDeviceInfo());
+        std::make_unique<FakeGcmDeviceInfoProvider>(GetTestGcmDeviceInfo());
 
     identity_test_environment_ =
         std::make_unique<identity::IdentityTestEnvironment>();
@@ -169,8 +168,7 @@ class DeviceSyncClientImplTest : public testing::Test {
     service_ = std::make_unique<DeviceSyncService>(
         identity_test_environment_->identity_manager(), fake_gcm_driver_.get(),
         fake_gcm_device_info_provider_.get(), shared_url_loader_factory,
-        connector_factory_.RegisterInstance(
-            chromeos::device_sync::mojom::kServiceName));
+        connector_factory_.RegisterInstance(mojom::kServiceName));
 
     test_observer_ = std::make_unique<TestDeviceSyncClientObserver>();
 
@@ -421,8 +419,7 @@ class DeviceSyncClientImplTest : public testing::Test {
 
   std::unique_ptr<identity::IdentityTestEnvironment> identity_test_environment_;
   std::unique_ptr<gcm::FakeGCMDriver> fake_gcm_driver_;
-  std::unique_ptr<device_sync::FakeGcmDeviceInfoProvider>
-      fake_gcm_device_info_provider_;
+  std::unique_ptr<FakeGcmDeviceInfoProvider> fake_gcm_device_info_provider_;
   FakeDeviceSync* fake_device_sync_;
   std::unique_ptr<FakeDeviceSyncImplFactory> fake_device_sync_impl_factory_;
   service_manager::TestConnectorFactory connector_factory_;

@@ -58,7 +58,7 @@ BluetoothLowEnergyWeaveClientConnection::Factory*
 // static
 std::unique_ptr<Connection>
 BluetoothLowEnergyWeaveClientConnection::Factory::NewInstance(
-    chromeos::multidevice::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     scoped_refptr<device::BluetoothAdapter> adapter,
     const device::BluetoothUUID remote_service_uuid,
     device::BluetoothDevice* bluetooth_device,
@@ -79,7 +79,7 @@ void BluetoothLowEnergyWeaveClientConnection::Factory::SetInstanceForTesting(
 
 std::unique_ptr<Connection>
 BluetoothLowEnergyWeaveClientConnection::Factory::BuildInstance(
-    chromeos::multidevice::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     scoped_refptr<device::BluetoothAdapter> adapter,
     const device::BluetoothUUID remote_service_uuid,
     device::BluetoothDevice* bluetooth_device,
@@ -142,7 +142,7 @@ std::string BluetoothLowEnergyWeaveClientConnection::SubStatusToString(
 
 BluetoothLowEnergyWeaveClientConnection::
     BluetoothLowEnergyWeaveClientConnection(
-        chromeos::multidevice::RemoteDeviceRef device,
+        multidevice::RemoteDeviceRef device,
         scoped_refptr<device::BluetoothAdapter> adapter,
         const device::BluetoothUUID remote_service_uuid,
         device::BluetoothDevice* bluetooth_device,

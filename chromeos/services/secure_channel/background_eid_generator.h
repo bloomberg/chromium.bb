@@ -54,7 +54,7 @@ class BackgroundEidGenerator {
   // device can be identified, returns an empty string.
   virtual std::string IdentifyRemoteDeviceByAdvertisement(
       const std::string& advertisement_service_data,
-      const chromeos::multidevice::RemoteDeviceRefList& remote_devices) const;
+      const multidevice::RemoteDeviceRefList& remote_devices) const;
 
  private:
   friend class SecureChannelBackgroundEidGeneratorTest;

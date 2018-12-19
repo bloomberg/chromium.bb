@@ -44,10 +44,8 @@ class RemoteDeviceProviderImpl : public RemoteDeviceProvider,
 
   ~RemoteDeviceProviderImpl() override;
 
-  // Returns a list of all chromeos::multidevice::RemoteDevices that have been
-  // synced.
-  const chromeos::multidevice::RemoteDeviceList& GetSyncedDevices()
-      const override;
+  // RemoteDeviceProvider:
+  const multidevice::RemoteDeviceList& GetSyncedDevices() const override;
 
   // CryptAuthDeviceManager::Observer:
   void OnSyncFinished(
@@ -56,20 +54,19 @@ class RemoteDeviceProviderImpl : public RemoteDeviceProvider,
 
  private:
   void OnRemoteDevicesLoaded(
-      const chromeos::multidevice::RemoteDeviceList& synced_remote_devices);
+      const multidevice::RemoteDeviceList& synced_remote_devices);
 
-  // To get cryptauth::ExternalDeviceInfo needed to retrieve
-  // chromeos::multidevice::RemoteDevices.
+  // To get cryptauth::ExternalDeviceInfo needed to retrieve RemoteDevices.
   CryptAuthDeviceManager* device_manager_;
 
   // The account ID of the current user.
   const std::string user_id_;
 
-  // The private key used to generate chromeos::multidevice::RemoteDevices.
+  // The private key used to generate RemoteDevices.
   const std::string user_private_key_;
 
   std::unique_ptr<RemoteDeviceLoader> remote_device_loader_;
-  chromeos::multidevice::RemoteDeviceList synced_remote_devices_;
+  multidevice::RemoteDeviceList synced_remote_devices_;
   base::WeakPtrFactory<RemoteDeviceProviderImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteDeviceProviderImpl);

@@ -29,7 +29,7 @@ class SoftwareFeatureManager {
   // ignored.
   virtual void SetSoftwareFeatureState(
       const std::string& public_key,
-      chromeos::multidevice::SoftwareFeature software_feature,
+      multidevice::SoftwareFeature software_feature,
       bool enabled,
       const base::Closure& success_callback,
       const base::Callback<void(NetworkRequestError)>& error_callback,
@@ -38,7 +38,7 @@ class SoftwareFeatureManager {
   // Finds eligible devices associated with the logged-in account which support
   // |software_feature|.
   virtual void FindEligibleDevices(
-      chromeos::multidevice::SoftwareFeature software_feature,
+      multidevice::SoftwareFeature software_feature,
       const base::Callback<void(
           const std::vector<cryptauth::ExternalDeviceInfo>&,
           const std::vector<cryptauth::IneligibleDevice>&)>& success_callback,

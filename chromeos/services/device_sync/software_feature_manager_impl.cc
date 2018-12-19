@@ -74,7 +74,7 @@ SoftwareFeatureManagerImpl::~SoftwareFeatureManagerImpl() = default;
 
 void SoftwareFeatureManagerImpl::SetSoftwareFeatureState(
     const std::string& public_key,
-    chromeos::multidevice::SoftwareFeature software_feature,
+    multidevice::SoftwareFeature software_feature,
     bool enabled,
     const base::Closure& success_callback,
     const base::Callback<void(NetworkRequestError)>& error_callback,
@@ -83,15 +83,15 @@ void SoftwareFeatureManagerImpl::SetSoftwareFeatureState(
   // instead of "SetSoftwareFeature" in its name.
   auto request = std::make_unique<cryptauth::ToggleEasyUnlockRequest>();
   request->set_feature(SoftwareFeatureEnumToString(
-      chromeos::multidevice::ToCryptAuthFeature(software_feature)));
+      multidevice::ToCryptAuthFeature(software_feature)));
   request->set_enable(enabled);
   request->set_is_exclusive(enabled && is_exclusive);
 
   // Special case for EasyUnlock: if EasyUnlock is being disabled, set the
   // apply_to_all property to true, and do not set the public_key field.
   bool turn_off_easy_unlock_special_case =
-      !enabled && software_feature ==
-                      chromeos::multidevice::SoftwareFeature::kSmartLockHost;
+      !enabled &&
+      software_feature == multidevice::SoftwareFeature::kSmartLockHost;
   request->set_apply_to_all(turn_off_easy_unlock_special_case);
   if (!turn_off_easy_unlock_special_case)
     request->set_public_key(public_key);
@@ -102,7 +102,7 @@ void SoftwareFeatureManagerImpl::SetSoftwareFeatureState(
 }
 
 void SoftwareFeatureManagerImpl::FindEligibleDevices(
-    chromeos::multidevice::SoftwareFeature software_feature,
+    multidevice::SoftwareFeature software_feature,
     const base::Callback<void(const std::vector<cryptauth::ExternalDeviceInfo>&,
                               const std::vector<cryptauth::IneligibleDevice>&)>&
         success_callback,
@@ -112,13 +112,13 @@ void SoftwareFeatureManagerImpl::FindEligibleDevices(
   auto request =
       std::make_unique<cryptauth::FindEligibleUnlockDevicesRequest>();
   request->set_feature(SoftwareFeatureEnumToString(
-      chromeos::multidevice::ToCryptAuthFeature(software_feature)));
+      multidevice::ToCryptAuthFeature(software_feature)));
 
   // For historical reasons, the Bluetooth address is abused to mark a which
   // feature should receive a GCM callback. Read more at
   // https://crbug.com/883915.
   request->set_callback_bluetooth_address(SoftwareFeatureEnumToStringAllCaps(
-      chromeos::multidevice::ToCryptAuthFeature(software_feature)));
+      multidevice::ToCryptAuthFeature(software_feature)));
 
   pending_requests_.emplace(std::make_unique<Request>(
       std::move(request), success_callback, error_callback));

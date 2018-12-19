@@ -38,7 +38,7 @@ namespace device_sync {
 
 // Concrete implementation of DeviceSyncClient.
 class DeviceSyncClientImpl : public DeviceSyncClient,
-                             public device_sync::mojom::DeviceSyncObserver {
+                             public mojom::DeviceSyncObserver {
  public:
   class Factory {
    public:
@@ -72,7 +72,7 @@ class DeviceSyncClientImpl : public DeviceSyncClient,
                            FindEligibleDevicesCallback callback) override;
   void GetDebugInfo(mojom::DeviceSync::GetDebugInfoCallback callback) override;
 
-  // device_sync::mojom::DeviceSyncObserver:
+  // mojom::DeviceSyncObserver:
   void OnEnrollmentFinished() override;
   void OnNewDevicesSynced() override;
 

@@ -85,7 +85,7 @@ void RemoteDeviceProviderImpl::OnSyncFinished(
 }
 
 void RemoteDeviceProviderImpl::OnRemoteDevicesLoaded(
-    const chromeos::multidevice::RemoteDeviceList& synced_remote_devices) {
+    const multidevice::RemoteDeviceList& synced_remote_devices) {
   synced_remote_devices_ = synced_remote_devices;
   remote_device_loader_.reset();
 
@@ -95,7 +95,7 @@ void RemoteDeviceProviderImpl::OnRemoteDevicesLoaded(
   RemoteDeviceProvider::NotifyObserversDeviceListChanged();
 }
 
-const chromeos::multidevice::RemoteDeviceList&
+const multidevice::RemoteDeviceList&
 RemoteDeviceProviderImpl::GetSyncedDevices() const {
   return synced_remote_devices_;
 }

@@ -326,12 +326,12 @@ void ExpectSyncedDevicesAndPrefAreEqual(
 
         cryptauth::SoftwareFeature software_feature =
             SoftwareFeatureStringToEnum(it.first);
-        switch (static_cast<chromeos::multidevice::SoftwareFeatureState>(
+        switch (static_cast<multidevice::SoftwareFeatureState>(
             software_feature_state)) {
-          case chromeos::multidevice::SoftwareFeatureState::kEnabled:
+          case multidevice::SoftwareFeatureState::kEnabled:
             enabled_software_features.push_back(software_feature);
             FALLTHROUGH;
-          case chromeos::multidevice::SoftwareFeatureState::kSupported:
+          case multidevice::SoftwareFeatureState::kSupported:
             supported_software_features.push_back(software_feature);
             break;
           default:

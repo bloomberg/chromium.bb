@@ -18,8 +18,8 @@ class ConnectionObserver;
 // A fake implementation of Connection to use in tests.
 class FakeConnection : public Connection {
  public:
-  FakeConnection(chromeos::multidevice::RemoteDeviceRef remote_device);
-  FakeConnection(chromeos::multidevice::RemoteDeviceRef remote_device,
+  FakeConnection(multidevice::RemoteDeviceRef remote_device);
+  FakeConnection(multidevice::RemoteDeviceRef remote_device,
                  bool should_auto_connect);
   ~FakeConnection() override;
 
