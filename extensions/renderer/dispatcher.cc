@@ -432,8 +432,10 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
   base::StringPiece script_resource =
       ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_SERVICE_WORKER_BINDINGS_JS);
-  v8::Local<v8::String> script = v8::String::NewExternal(
-      isolate, new StaticV8ExternalOneByteStringResource(script_resource));
+  v8::Local<v8::String> script =
+      v8::String::NewExternalOneByte(
+          isolate, new StaticV8ExternalOneByteStringResource(script_resource))
+          .ToLocalChecked();
 
   // Run service_worker.js to get the main function.
   v8::Local<v8::Function> main_function;

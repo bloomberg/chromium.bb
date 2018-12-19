@@ -18,9 +18,10 @@ namespace {
 v8::Local<v8::String> ConvertString(v8::Isolate* isolate,
                                     const base::StringPiece& string) {
   // v8 takes ownership of the StaticV8ExternalOneByteStringResource (see
-  // v8::String::NewExternal()).
-  return v8::String::NewExternal(
-      isolate, new StaticV8ExternalOneByteStringResource(string));
+  // v8::String::NewExternalOneByte()).
+  return v8::String::NewExternalOneByte(
+             isolate, new StaticV8ExternalOneByteStringResource(string))
+      .FromMaybe(v8::Local<v8::String>());
 }
 
 }  // namespace
