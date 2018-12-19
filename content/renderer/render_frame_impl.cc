@@ -6107,12 +6107,6 @@ void RenderFrameImpl::BeginNavigation(
     }
   }
 
-  // When an MHTML Archive is present, it should be used to serve iframe content
-  // instead of doing a network request.
-  bool use_archive = (info->archive_status ==
-                      blink::WebNavigationInfo::ArchiveStatus::Present) &&
-                     !url.SchemeIs(url::kDataScheme);
-
   if (info->navigation_policy == blink::kWebNavigationPolicyCurrentTab) {
     if (!info->form.IsNull()) {
       for (auto& observer : observers_)
@@ -6121,20 +6115,35 @@ void RenderFrameImpl::BeginNavigation(
 
     sync_navigation_callback_.Cancel();
 
-    // If the navigation is not synchronous, send it to the browser.  This
-    // includes navigations with no request being sent to the network stack.
+    // When an MHTML Archive is present, it should be used to serve iframe
+    // content instead of doing a network request.
+    bool use_archive = (info->archive_status ==
+                        blink::WebNavigationInfo::ArchiveStatus::Present) &&
+                       !url.SchemeIs(url::kDataScheme);
+
+    // Navigations which require network request should be sent to the browser.
     if (!use_archive && IsURLHandledByNetworkStack(url)) {
       BeginNavigationInternal(std::move(info));
-    } else if (WebDocumentLoader::WillLoadUrlAsEmpty(url) &&
-               frame_->HasCommittedFirstRealLoad()) {
-      sync_navigation_callback_.Reset(
-          base::BindOnce(&RenderFrameImpl::CommitSyncNavigation,
-                         weak_factory_.GetWeakPtr(), base::Passed(&info)));
-      frame_->GetTaskRunner(blink::TaskType::kInternalLoading)
-          ->PostTask(FROM_HERE, sync_navigation_callback_.callback());
-    } else {
-      CommitSyncNavigation(std::move(info));
+      return;
     }
+
+    // First navigaiton in a frame to an empty document must be handled
+    // synchronously.
+    if (WebDocumentLoader::WillLoadUrlAsEmpty(url) &&
+        !frame_->HasCommittedFirstRealLoad()) {
+      CommitSyncNavigation(std::move(info));
+      return;
+    }
+
+    // Everything else (does not require networking, not an empty document)
+    // will be committed asynchronously in the renderer.
+    if (!CreatePlaceholderDocumentLoader(*info))
+      return;
+    sync_navigation_callback_.Reset(
+        base::BindOnce(&RenderFrameImpl::CommitSyncNavigation,
+                       weak_factory_.GetWeakPtr(), base::Passed(&info)));
+    frame_->GetTaskRunner(blink::TaskType::kInternalLoading)
+        ->PostTask(FROM_HERE, sync_navigation_callback_.callback());
     return;
   }
 
@@ -6676,20 +6685,23 @@ std::unique_ptr<base::DictionaryValue> GetDevToolsInitiator(
 }
 }  // namespace
 
-void RenderFrameImpl::BeginNavigationInternal(
-    std::unique_ptr<blink::WebNavigationInfo> info) {
-  auto navigation_params = blink::WebNavigationParams::CreateFromInfo(*info);
+bool RenderFrameImpl::CreatePlaceholderDocumentLoader(
+    const blink::WebNavigationInfo& info) {
+  auto navigation_params = blink::WebNavigationParams::CreateFromInfo(info);
   // We need the provider to be non-null, otherwise Blink crashes, even though
   // the provider should not be used for any actual networking.
   navigation_params->service_worker_network_provider =
       BuildServiceWorkerNetworkProviderForNavigation(
           nullptr /* request_params */,
           nullptr /* controller_service_worker_info */);
-  if (!frame_->CreatePlaceholderDocumentLoader(std::move(navigation_params),
-                                               info->navigation_type,
-                                               BuildDocumentState())) {
+  return frame_->CreatePlaceholderDocumentLoader(
+      std::move(navigation_params), info.navigation_type, BuildDocumentState());
+}
+
+void RenderFrameImpl::BeginNavigationInternal(
+    std::unique_ptr<blink::WebNavigationInfo> info) {
+  if (!CreatePlaceholderDocumentLoader(*info))
     return;
-  }
 
   WebDocumentLoader* document_loader = frame_->GetProvisionalDocumentLoader();
   NavigationState* navigation_state =
