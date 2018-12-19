@@ -129,6 +129,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
                            MessageLevel,
                            const String&,
                            unsigned,
+                           unsigned,
                            const String&,
                            const String&) override {}
 

@@ -90,7 +90,8 @@ void FrameConsole::ReportMessageToClient(MessageSource source,
   if (source == kConsoleAPIMessageSource) {
     if (!frame_->GetPage())
       return;
-    if (frame_->GetChromeClient().ShouldReportDetailedMessageForSource(*frame_,
+    if (level >= kErrorMessageLevel ||
+        frame_->GetChromeClient().ShouldReportDetailedMessageForSource(*frame_,
                                                                        url)) {
       std::unique_ptr<SourceLocation> full_location =
           SourceLocation::CaptureWithFullStackTrace();
@@ -99,13 +100,14 @@ void FrameConsole::ReportMessageToClient(MessageSource source,
     }
   } else {
     if (!location->IsUnknown() &&
+        (level >= kErrorMessageLevel ||
         frame_->GetChromeClient().ShouldReportDetailedMessageForSource(*frame_,
-                                                                       url))
+                                                                       url)))
       stack_trace = location->ToString();
   }
 
   frame_->GetChromeClient().AddMessageToConsole(
-      frame_, source, level, message, location->LineNumber(), url, stack_trace);
+      frame_, source, level, message, location->LineNumber(), location->ColumnNumber(), url, stack_trace);
 }
 
 void FrameConsole::ReportResourceResponseReceived(
