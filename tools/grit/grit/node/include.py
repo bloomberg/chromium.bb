@@ -30,12 +30,13 @@ class IncludeNode(base.Node):
   def _IsValidChild(self, child):
     return False
 
-  def _GetFlattenedData(self, allow_external_script=False):
+  def _GetFlattenedData(
+      self, allow_external_script=False, preprocess_only=False):
     if not self._flattened_data:
       filename = self.ToRealPath(self.GetInputPath())
       self._flattened_data = (
           grit.format.html_inline.InlineToString(filename, self,
-              preprocess_only=False,
+              preprocess_only=preprocess_only,
               allow_external_script=allow_external_script))
     return self._flattened_data
   def MandatoryAttributes(self):
@@ -95,6 +96,8 @@ class IncludeNode(base.Node):
     if self.attrs['flattenhtml'] == 'true':
       allow_external_script = self.attrs['allowexternalscript'] == 'true'
       data = self._GetFlattenedData(allow_external_script=allow_external_script)
+    elif self.attrs['preprocess'] == 'true':
+      data = self._GetFlattenedData(preprocess_only=True)
     else:
       data = util.ReadFile(filename, util.BINARY)
 
