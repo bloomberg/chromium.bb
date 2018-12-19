@@ -13,7 +13,6 @@
 #include "ash/app_list/app_list_export.h"
 #include "ash/app_list/model/app_list_item_observer.h"
 #include "ash/app_list/views/app_list_menu_model_adapter.h"
-#include "ash/app_list/views/image_shadow_animator.h"
 #include "ash/public/interfaces/menu.mojom.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -38,7 +37,6 @@ class APP_LIST_EXPORT AppListItemView
     : public views::Button,
       public views::ContextMenuController,
       public AppListItemObserver,
-      public ImageShadowAnimator::Delegate,
       public AppListMenuModelAdapter::Delegate {
  public:
   // Internal class name.
@@ -121,9 +119,6 @@ class APP_LIST_EXPORT AppListItemView
   // views::View overrides:
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;
-
-  // ImageShadowAnimator::Delegate overrides:
-  void ImageShadowAnimationProgressed(ImageShadowAnimator* animator) override;
 
   // When a dragged view enters this view, a preview circle is shown for
   // non-folder item while the icon is enlarged for folder item. When a
@@ -248,8 +243,6 @@ class APP_LIST_EXPORT AppListItemView
   bool mouse_dragging_ = false;
   // True if the drag host proxy is crated for mouse dragging.
   bool mouse_drag_proxy_created_ = false;
-
-  std::unique_ptr<ImageShadowAnimator> shadow_animator_;
 
   // The animation that runs when dragged view enters or exits this view.
   std::unique_ptr<gfx::SlideAnimation> dragged_view_hover_animation_;
