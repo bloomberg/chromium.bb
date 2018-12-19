@@ -96,9 +96,8 @@
 
 class BrowserProcessImpl;
 class HistogramSynchronizer;
-class KeyStorageLinux;
 class NativeBackendKWallet;
-class StartupTimeBomb;
+class KeyStorageLinux;
 
 namespace android_webview {
 class AwFormDatabaseService;
@@ -133,11 +132,10 @@ class BrowserTestBase;
 class CategorizedWorkerPool;
 class GpuProcessTransportFactory;
 class NestedMessagePumpAndroid;
-class SandboxHostLinux;
 class ScopedAllowWaitForDebugURL;
-class ServiceWorkerSubresourceLoader;
 class SessionStorageDatabase;
 class SoftwareOutputDeviceMus;
+class ServiceWorkerSubresourceLoader;
 class SynchronousCompositor;
 class SynchronousCompositorHost;
 class SynchronousCompositorSyncCallBridge;
@@ -177,9 +175,6 @@ namespace core {
 class ScopedIPCSupport;
 }
 }
-namespace printing {
-class PrinterQuery;
-}
 namespace rlz_lib {
 class FinancialPing;
 }
@@ -191,9 +186,7 @@ class MaterialDesignController;
 }
 namespace net {
 class MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives;
-class MultiThreadedProxyResolverScopedAllowJoinOnIO;
 class NetworkChangeNotifierMac;
-class NetworkConfigWatcherMacThread;
 namespace internal {
 class AddressTrackerLinux;
 }
@@ -398,18 +391,15 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   // Allowed usage:
   friend class ::BrowserProcessImpl;  // http://crbug.com/125207
   friend class ::KeyStorageLinux;
-  friend class ::StartupTimeBomb;
   friend class Thread;
   friend class android::JavaHandlerThread;
   friend class base::MessageLoopImpl;
   friend class base::StackSamplingProfiler;
-  friend class content::SandboxHostLinux;
   friend class content::ScopedAllowWaitForDebugURL;
   friend class content::SynchronousCompositor;
   friend class content::SynchronousCompositorHost;
   friend class content::SynchronousCompositorSyncCallBridge;
   friend class mojo::SyncCallRestrictions;
-  friend class net::NetworkConfigWatcherMacThread;
   friend class viz::HostGpuMemoryBufferManager;
 
   // Usage that should be fixed:
@@ -424,11 +414,8 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class disk_cache::InFlightIO;              // http://crbug.com/74623
   friend class gpu::GpuChannelHost;                 // http://crbug.com/125264
   friend class midi::TaskService;                   // https://crbug.com/796830
+  friend class net::NetworkChangeNotifierMac;       // http://crbug.com/125097
   friend class net::internal::AddressTrackerLinux;  // http://crbug.com/125097
-  friend class net::
-      MultiThreadedProxyResolverScopedAllowJoinOnIO;  // http://crbug.com/69710
-  friend class net::NetworkChangeNotifierMac;         // http://crbug.com/125097
-  friend class printing::PrinterQuery;                // http://crbug.com/66082
   // Not used in production yet, https://crbug.com/844078.
   friend class service_manager::ServiceProcessLauncher;
   friend class ui::WindowResizeHelperMac;  // http://crbug.com/902829

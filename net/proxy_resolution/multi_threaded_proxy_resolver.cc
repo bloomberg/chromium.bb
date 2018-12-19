@@ -28,11 +28,6 @@
 #include "net/proxy_resolution/proxy_resolver.h"
 
 namespace net {
-
-// http://crbug.com/69710
-class MultiThreadedProxyResolverScopedAllowJoinOnIO
-    : public base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {};
-
 namespace {
 class Job;
 
@@ -375,9 +370,8 @@ void Executor::Destroy() {
   DCHECK(coordinator_);
 
   {
-    // TODO(http://crbug.com/69710): Use TaskScheduler instead of creating a
-    // base::Thread.
-    MultiThreadedProxyResolverScopedAllowJoinOnIO allow_thread_join;
+    // See http://crbug.com/69710.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
 
     // Join the worker thread.
     thread_.reset();

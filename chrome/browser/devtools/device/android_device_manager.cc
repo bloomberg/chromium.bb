@@ -540,10 +540,9 @@ AndroidDeviceManager::HandlerThread::~HandlerThread() {
   if (!thread_)
     return;
   // Shut down thread on a thread other than UI so it can join a thread.
-  base::PostTaskWithTraits(
-      FROM_HERE,
-      {base::WithBaseSyncPrimitives(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&HandlerThread::StopThread, thread_));
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+                           base::BindOnce(&HandlerThread::StopThread, thread_));
 }
 
 // static
