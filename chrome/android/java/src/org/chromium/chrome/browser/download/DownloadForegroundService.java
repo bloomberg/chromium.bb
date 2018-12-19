@@ -184,7 +184,7 @@ public class DownloadForegroundService extends Service {
                 stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_REMOVE);
             }
         }
-
+        stopSelf();
         return notificationHandledProperly;
     }
 
