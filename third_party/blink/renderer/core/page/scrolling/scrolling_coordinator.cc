@@ -246,8 +246,10 @@ void ScrollingCoordinator::UpdateAfterPaint(LocalFrameView* frame_view) {
   }
   frame_view->ClearFrameIsScrollableDidChange();
 
-  // TODO(pdr): Skip this callsite when blink generates property trees.
-  UpdateUserInputScrollable(&page_->GetVisualViewport());
+  // When blink generates property trees, the user input scrollable bits are
+  // stored on scroll nodes instead of layers.
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    UpdateUserInputScrollable(&page_->GetVisualViewport());
 }
 
 template <typename Function>
@@ -527,7 +529,8 @@ void ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
   if (!page_ || !page_->MainFrame())
     return;
 
-  UpdateUserInputScrollable(scrollable_area);
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    UpdateUserInputScrollable(scrollable_area);
 
   cc::Layer* cc_layer =
       GraphicsLayerToCcLayer(scrollable_area->LayerForScrolling());
@@ -808,10 +811,11 @@ void ScrollingCoordinator::UpdateTouchEventTargetRectsIfNeeded(
   }
 }
 
-// TODO(pdr): When blink generates property trees, the user input scrollable
-// bits are stored on scroll nodes instead of layers so this should be removed.
 void ScrollingCoordinator::UpdateUserInputScrollable(
     ScrollableArea* scrollable_area) {
+  // When blink generates property trees, the user input scrollable bits are
+  // stored on scroll nodes instead of layers so this is not needed.
+  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
   cc::Layer* cc_layer =
       GraphicsLayerToCcLayer(scrollable_area->LayerForScrolling());
   if (cc_layer) {

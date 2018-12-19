@@ -967,6 +967,28 @@ void Layer::SetUserScrollable(bool horizontal, bool vertical) {
   SetNeedsCommit();
 }
 
+bool Layer::GetUserScrollableHorizontal() const {
+  // When using layer lists, horizontal scrollability is stored in scroll nodes.
+  if (layer_tree_host() && layer_tree_host()->IsUsingLayerLists()) {
+    auto& scroll_tree = layer_tree_host()->property_trees()->scroll_tree;
+    if (auto* scroll_node = scroll_tree.Node(scroll_tree_index_))
+      return scroll_node->user_scrollable_horizontal;
+    return false;
+  }
+  return inputs_.user_scrollable_horizontal;
+}
+
+bool Layer::GetUserScrollableVertical() const {
+  // When using layer lists, vertical scrollability is stored in scroll nodes.
+  if (layer_tree_host() && layer_tree_host()->IsUsingLayerLists()) {
+    auto& scroll_tree = layer_tree_host()->property_trees()->scroll_tree;
+    if (auto* scroll_node = scroll_tree.Node(scroll_tree_index_))
+      return scroll_node->user_scrollable_vertical;
+    return false;
+  }
+  return inputs_.user_scrollable_vertical;
+}
+
 uint32_t Layer::GetMainThreadScrollingReasons() const {
   // When using layer lists, main thread scrolling reasons are stored in scroll
   // nodes.

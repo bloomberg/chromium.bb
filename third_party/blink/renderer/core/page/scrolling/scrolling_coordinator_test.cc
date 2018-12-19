@@ -1127,8 +1127,8 @@ TEST_P(ScrollingCoordinatorTest, overflowScrolling) {
   cc::Layer* cc_scroll_layer =
       composited_layer_mapping->ScrollingContentsLayer()->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
-  ASSERT_TRUE(cc_scroll_layer->user_scrollable_horizontal());
-  ASSERT_TRUE(cc_scroll_layer->user_scrollable_vertical());
+  ASSERT_TRUE(cc_scroll_layer->GetUserScrollableHorizontal());
+  ASSERT_TRUE(cc_scroll_layer->GetUserScrollableVertical());
 
 #if defined(OS_ANDROID)
   // Now verify we've attached impl-side scrollbars onto the scrollbar layers
@@ -1168,8 +1168,8 @@ TEST_P(ScrollingCoordinatorTest, overflowHidden) {
   cc::Layer* cc_scroll_layer =
       composited_layer_mapping->ScrollingContentsLayer()->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
-  ASSERT_TRUE(cc_scroll_layer->user_scrollable_horizontal());
-  ASSERT_FALSE(cc_scroll_layer->user_scrollable_vertical());
+  ASSERT_TRUE(cc_scroll_layer->GetUserScrollableHorizontal());
+  ASSERT_FALSE(cc_scroll_layer->GetUserScrollableVertical());
 
   overflow_element =
       GetFrame()->GetDocument()->getElementById("unscrollable-x");
@@ -1190,8 +1190,8 @@ TEST_P(ScrollingCoordinatorTest, overflowHidden) {
   cc_scroll_layer =
       composited_layer_mapping->ScrollingContentsLayer()->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
-  ASSERT_FALSE(cc_scroll_layer->user_scrollable_horizontal());
-  ASSERT_TRUE(cc_scroll_layer->user_scrollable_vertical());
+  ASSERT_FALSE(cc_scroll_layer->GetUserScrollableHorizontal());
+  ASSERT_TRUE(cc_scroll_layer->GetUserScrollableVertical());
 }
 
 TEST_P(ScrollingCoordinatorTest, iframeScrolling) {

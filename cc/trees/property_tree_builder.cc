@@ -1070,7 +1070,7 @@ bool PropertyTreeBuilderContext<LayerType>::AddEffectNodeIfNeeded(
 }
 
 static inline bool UserScrollableHorizontal(Layer* layer) {
-  return layer->user_scrollable_horizontal();
+  return layer->GetUserScrollableHorizontal();
 }
 
 static inline bool UserScrollableHorizontal(LayerImpl* layer) {
@@ -1078,7 +1078,7 @@ static inline bool UserScrollableHorizontal(LayerImpl* layer) {
 }
 
 static inline bool UserScrollableVertical(Layer* layer) {
-  return layer->user_scrollable_vertical();
+  return layer->GetUserScrollableVertical();
 }
 
 static inline bool UserScrollableVertical(LayerImpl* layer) {

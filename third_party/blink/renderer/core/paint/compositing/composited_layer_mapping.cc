@@ -2433,7 +2433,11 @@ bool CompositedLayerMapping::UpdateScrollingLayers(
   bool layer_changed = false;
   if (needs_scrolling_layers) {
     if (scrolling_layer_) {
-      if (scrolling_coordinator) {
+      // When blink generates property trees, the user input scrollable bits are
+      // stored on scroll nodes instead of layers so there is no need to update
+      // them here.
+      if (scrolling_coordinator &&
+          !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
         scrolling_coordinator->UpdateUserInputScrollable(
             owning_layer_.GetScrollableArea());
       }

@@ -8010,8 +8010,8 @@ TEST_F(WebFrameTest, overflowHiddenRewrite) {
   cc::Layer* cc_scroll_layer = scroll_layer->CcLayer();
 
   // Verify that the cc::Layer is not scrollable initially.
-  ASSERT_FALSE(cc_scroll_layer->user_scrollable_horizontal());
-  ASSERT_FALSE(cc_scroll_layer->user_scrollable_vertical());
+  ASSERT_FALSE(cc_scroll_layer->GetUserScrollableHorizontal());
+  ASSERT_FALSE(cc_scroll_layer->GetUserScrollableVertical());
 
   // Call javascript to make the layer scrollable, and verify it.
   WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
@@ -8020,8 +8020,8 @@ TEST_F(WebFrameTest, overflowHiddenRewrite) {
 
   scroll_layer = compositor->ScrollLayer();
   cc_scroll_layer = scroll_layer->CcLayer();
-  ASSERT_TRUE(cc_scroll_layer->user_scrollable_horizontal());
-  ASSERT_TRUE(cc_scroll_layer->user_scrollable_vertical());
+  ASSERT_TRUE(cc_scroll_layer->GetUserScrollableHorizontal());
+  ASSERT_TRUE(cc_scroll_layer->GetUserScrollableVertical());
 }
 
 // Test that currentHistoryItem reflects the current page, not the provisional
@@ -8311,13 +8311,13 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
       frame_view->GetPage()->GetVisualViewport().ScrollLayer();
 
   ASSERT_FALSE(
-      layout_viewport_scroll_layer->CcLayer()->user_scrollable_horizontal());
+      layout_viewport_scroll_layer->CcLayer()->GetUserScrollableHorizontal());
   ASSERT_FALSE(
-      layout_viewport_scroll_layer->CcLayer()->user_scrollable_vertical());
+      layout_viewport_scroll_layer->CcLayer()->GetUserScrollableVertical());
   ASSERT_FALSE(
-      visual_viewport_scroll_layer->CcLayer()->user_scrollable_horizontal());
+      visual_viewport_scroll_layer->CcLayer()->GetUserScrollableHorizontal());
   ASSERT_FALSE(
-      visual_viewport_scroll_layer->CcLayer()->user_scrollable_vertical());
+      visual_viewport_scroll_layer->CcLayer()->GetUserScrollableVertical());
 
   // Verify that the viewports are scrollable upon exiting fullscreen.
   EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
@@ -8329,13 +8329,13 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
   visual_viewport_scroll_layer =
       frame_view->GetPage()->GetVisualViewport().ScrollLayer();
   ASSERT_TRUE(
-      layout_viewport_scroll_layer->CcLayer()->user_scrollable_horizontal());
+      layout_viewport_scroll_layer->CcLayer()->GetUserScrollableHorizontal());
   ASSERT_TRUE(
-      layout_viewport_scroll_layer->CcLayer()->user_scrollable_vertical());
+      layout_viewport_scroll_layer->CcLayer()->GetUserScrollableVertical());
   ASSERT_TRUE(
-      visual_viewport_scroll_layer->CcLayer()->user_scrollable_horizontal());
+      visual_viewport_scroll_layer->CcLayer()->GetUserScrollableHorizontal());
   ASSERT_TRUE(
-      visual_viewport_scroll_layer->CcLayer()->user_scrollable_vertical());
+      visual_viewport_scroll_layer->CcLayer()->GetUserScrollableVertical());
 }
 
 TEST_F(WebFrameTest, FullscreenMainFrame) {
@@ -8356,8 +8356,8 @@ TEST_F(WebFrameTest, FullscreenMainFrame) {
                                    ->LayerForScrolling()
                                    ->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
-  ASSERT_TRUE(cc_scroll_layer->user_scrollable_horizontal());
-  ASSERT_TRUE(cc_scroll_layer->user_scrollable_vertical());
+  ASSERT_TRUE(cc_scroll_layer->GetUserScrollableHorizontal());
+  ASSERT_TRUE(cc_scroll_layer->GetUserScrollableVertical());
 
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   Document* document = frame->GetDocument();
@@ -8381,14 +8381,14 @@ TEST_F(WebFrameTest, FullscreenMainFrame) {
                         ->LayerForScrolling()
                         ->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
-  ASSERT_TRUE(cc_scroll_layer->user_scrollable_horizontal());
-  ASSERT_TRUE(cc_scroll_layer->user_scrollable_vertical());
+  ASSERT_TRUE(cc_scroll_layer->GetUserScrollableHorizontal());
+  ASSERT_TRUE(cc_scroll_layer->GetUserScrollableVertical());
 
   // Verify the main frame still behaves correctly after a resize.
   web_view_helper.Resize(WebSize(viewport_height, viewport_width));
   ASSERT_TRUE(cc_scroll_layer->scrollable());
-  ASSERT_TRUE(cc_scroll_layer->user_scrollable_horizontal());
-  ASSERT_TRUE(cc_scroll_layer->user_scrollable_vertical());
+  ASSERT_TRUE(cc_scroll_layer->GetUserScrollableHorizontal());
+  ASSERT_TRUE(cc_scroll_layer->GetUserScrollableVertical());
 }
 
 TEST_F(WebFrameTest, FullscreenSubframe) {
