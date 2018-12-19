@@ -26,6 +26,7 @@ namespace media {
 // the completion callback as the series progresses.
 class MEDIA_EXPORT SerialRunner {
  public:
+  // TODO(dalecurtis): Change SerialRunner to use OnceCallback.
   typedef base::Callback<void(const base::Closure&)> BoundClosure;
   typedef base::Callback<void(const PipelineStatusCB&)> BoundPipelineStatusCB;
 
