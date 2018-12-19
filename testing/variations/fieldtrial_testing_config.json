@@ -2483,6 +2483,25 @@
             ]
         }
     ],
+    "LevelDBPerformRewrite": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "LevelDBPerformRewrite"
+                    ]
+                }
+            ]
+        }
+    ],
     "LocalScreenCasting": [
         {
             "platforms": [
@@ -3849,25 +3868,6 @@
                     "name": "RemoveRestriction",
                     "disable_features": [
                         "EnableGpuRasterizationViewportRestriction"
-                    ]
-                }
-            ]
-        }
-    ],
-    "RemoveNavigationHistory": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "RemoveNavigationHistory"
                     ]
                 }
             ]
