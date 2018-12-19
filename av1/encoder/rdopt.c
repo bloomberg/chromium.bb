@@ -4868,6 +4868,7 @@ static void try_tx_block_split(
     int txfm_partition_ctx, int64_t no_split_rd, int64_t ref_best_rd,
     FAST_TX_SEARCH_MODE ftxs_mode, TXB_RD_INFO_NODE *rd_info_node,
     RD_STATS *split_rd_stats, int64_t *split_rd) {
+  assert(tx_size < TX_SIZES_ALL);
   MACROBLOCKD *const xd = &x->e_mbd;
   const int max_blocks_high = max_block_high(xd, plane_bsize, 0);
   const int max_blocks_wide = max_block_wide(xd, plane_bsize, 0);
@@ -4875,38 +4876,31 @@ static void try_tx_block_split(
   const int bsw = tx_size_wide_unit[sub_txs];
   const int bsh = tx_size_high_unit[sub_txs];
   const int sub_step = bsw * bsh;
-  RD_STATS this_rd_stats;
-  int this_cost_valid = 1;
-  int64_t tmp_rd = 0;
-  *split_rd = INT64_MAX;
-
-  split_rd_stats->rate = x->txfm_partition_cost[txfm_partition_ctx][1];
-
-  assert(tx_size < TX_SIZES_ALL);
-
   const int nblks =
       (tx_size_high_unit[tx_size] / bsh) * (tx_size_wide_unit[tx_size] / bsw);
   assert(nblks > 0);
-
   int blk_idx = 0;
+  int64_t tmp_rd = 0;
+  *split_rd = INT64_MAX;
+  split_rd_stats->rate = x->txfm_partition_cost[txfm_partition_ctx][1];
+
   for (int r = 0; r < tx_size_high_unit[tx_size]; r += bsh) {
     for (int c = 0; c < tx_size_wide_unit[tx_size]; c += bsw, ++blk_idx) {
+      assert(blk_idx < 4);
       const int offsetr = blk_row + r;
       const int offsetc = blk_col + c;
       if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
-      assert(blk_idx < 4);
+
+      RD_STATS this_rd_stats;
+      int this_cost_valid = 1;
       select_tx_block(
           cpi, x, offsetr, offsetc, block, sub_txs, depth + 1, plane_bsize, ta,
           tl, tx_above, tx_left, &this_rd_stats, no_split_rd / nblks,
           ref_best_rd - tmp_rd, &this_cost_valid, ftxs_mode,
           (rd_info_node != NULL) ? rd_info_node->children[blk_idx] : NULL);
-
       if (!this_cost_valid) return;
-
       av1_merge_rd_stats(split_rd_stats, &this_rd_stats);
-
       tmp_rd = RDCOST(x->rdmult, split_rd_stats->rate, split_rd_stats->dist);
-
       if (no_split_rd < tmp_rd) return;
       block += sub_step;
     }
