@@ -86,86 +86,82 @@
     </div>
     <div id="settings">
       <div class="menu">
-        <div class="menu-header buttons circle">
+        <div class="menu-header circle">
           <button class="icon" tabindex="0" i18n-aria="backButton"></button>
           <div role="menu" i18n-content="settingsButton"></div>
         </div>
-        <div class="menu-item buttons circle" id="settings-gridtype">
+        <button class="menu-item circle" id="settings-gridtype" tabindex="0"
+                aria-describedby="gridtype-desc">
           <div class="icon"></div>
-          <div aria-hidden="true">
+          <div>
             <div i18n-content="gridTypeButton"></div>
-            <div class="description" id="gridtype-desc">
+            <div class="description" id="gridtype-desc" aria-hidden="true">
               <span i18n-content="labelGrid3x3" i18n-aria="ariaGrid3x3"></span>
               <span i18n-content="labelGrid4x4" i18n-aria="ariaGrid4x4"></span>
               <span i18n-content="labelGridGolden"></span>
             </div>
           </div>
-          <button tabindex="0" i18n-aria="gridTypeButton"
-                  aria-describedby="gridtype-desc"></button>
-        </div>
-        <div class="menu-item buttons circle" id="settings-timerdur">
+          <div class="icon end"></div>
+        </button>
+        <button class="menu-item circle" id="settings-timerdur" tabindex="0"
+                aria-describedby="timerdur-desc">
           <div class="icon"></div>
-          <div aria-hidden="true">
+          <div>
             <div i18n-content="timerDurationButton"></div>
-            <div class="description" id="timerdur-desc">
+            <div class="description" id="timerdur-desc" aria-hidden="true">
               <span i18n-content="labelTimer3s"></span>
               <span i18n-content="labelTimer10s"></span>
             </div>
           </div>
-          <button tabindex="0" i18n-aria="timerDurationButton"
-                  aria-describedby="timerdur-desc"></button>
-        </div>
-        <div class="menu-item buttons circle" id="settings-feedback">
+          <div class="icon end"></div>
+        </button>
+        <button class="menu-item circle" id="settings-feedback" tabindex="0">
           <div class="icon"></div>
-          <div i18n-content="feedbackButton" aria-hidden="true"></div>
-          <button tabindex="0" i18n-aria="feedbackButton"></button>
-        </div>
-        <div class="menu-item buttons circle" id="settings-help">
+          <div i18n-content="feedbackButton"></div>
+        </button>
+        <button class="menu-item circle" id="settings-help" tabindex="0">
           <div class="icon"></div>
-          <div i18n-content="helpButton" aria-hidden="true"></div>
-          <button tabindex="0" i18n-aria="helpButton"></button>
-        </div>
+          <div i18n-content="helpButton"></div>
+        </button>
       </div>
     </div>
     <div id="gridsettings">
       <div class="menu">
-        <div class="menu-header buttons circle">
-          <button class="icon" tabindex="0" i18n-aria="backButton">
-          </button>
+        <div class="menu-header circle">
+          <button class="icon" tabindex="0" i18n-aria="backButton"></button>
           <div role="menu" i18n-content="gridTypeButton"></div>
         </div>
-        <label class="menu-item buttons circle" for="grid-3x3">
-          <input id="grid-3x3" type="radio" tabindex="0" name="gridtype"
-                 data-css="_3x3" data-key="toggle3x3" checked>
+        <label class="menu-item circle" for="grid-3x3">
+          <input class="icon" id="grid-3x3" type="radio" tabindex="0"
+                 name="gridtype" data-css="_3x3" data-key="toggle3x3" checked>
           <span i18n-content="labelGrid3x3" i18n-aria="ariaGrid3x3"></span>
         </label>
-        <label class="menu-item buttons circle" for="grid-4x4">
-          <input id="grid-4x4" type="radio" tabindex="0" name="gridtype"
-                 data-css="_4x4" data-key="toggle4x4">
+        <label class="menu-item circle" for="grid-4x4">
+          <input class="icon" id="grid-4x4" type="radio" tabindex="0"
+                 name="gridtype" data-css="_4x4" data-key="toggle4x4">
           <span i18n-content="labelGrid4x4" i18n-aria="ariaGrid4x4"></span>
         </label>
-        <label class="menu-item buttons circle" for="grid-golden">
-          <input id="grid-golden" type="radio" tabindex="0" name="gridtype"
-                 data-css="golden" data-key="toggleGolden">
+        <label class="menu-item circle" for="grid-golden">
+          <input class="icon" id="grid-golden" type="radio" tabindex="0"
+                 name="gridtype" data-css="golden" data-key="toggleGolden">
           <span i18n-content="labelGridGolden"></span>
         </label>
       </div>
     </div>
     <div id="timersettings">
       <div class="menu">
-        <div class="menu-header buttons circle">
-          <button class="icon" tabindex="0" i18n-aria="backButton">
-          </button>
+        <div class="menu-header circle">
+          <button class="icon" tabindex="0" i18n-aria="backButton"></button>
           <div role="menu" i18n-content="timerDurationButton"></div>
         </div>
-        <label class="menu-item buttons circle" for="timer-3s">
-          <input id="timer-3s" type="radio" tabindex="0" name="timerdur"
-                 data-css="_3sec" data-key="toggle3sec" checked>
+        <label class="menu-item circle" for="timer-3s">
+          <input class="icon" id="timer-3s" type="radio" tabindex="0"
+                 name="timerdur" data-css="_3sec" data-key="toggle3sec" checked>
           <span i18n-content="labelTimer3s"></span>
         </label>
-        <label class="menu-item buttons circle" for="timer-10s">
-          <input id="timer-10s" type="radio" tabindex="0" name="timerdur"
-                 data-css="_10sec" data-key="toggle10sec">
+        <label class="menu-item circle" for="timer-10s">
+          <input class="icon" id="timer-10s" type="radio" tabindex="0"
+                 name="timerdur" data-css="_10sec" data-key="toggle10sec">
           <span i18n-content="labelTimer10s"></span>
         </label>
       </div>
