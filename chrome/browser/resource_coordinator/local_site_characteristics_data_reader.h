@@ -31,6 +31,8 @@ class LocalSiteCharacteristicsDataReader
   SiteFeatureUsage UpdatesTitleInBackground() const override;
   SiteFeatureUsage UsesAudioInBackground() const override;
   SiteFeatureUsage UsesNotificationsInBackground() const override;
+  bool DataLoaded() const override;
+  void RegisterDataLoadedCallback(base::OnceClosure&& callback) override;
 
   const internal::LocalSiteCharacteristicsDataImpl* impl_for_testing() const {
     return impl_.get();

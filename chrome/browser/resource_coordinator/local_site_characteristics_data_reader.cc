@@ -34,4 +34,13 @@ LocalSiteCharacteristicsDataReader::UsesNotificationsInBackground() const {
   return impl_->UsesNotificationsInBackground();
 }
 
+bool LocalSiteCharacteristicsDataReader::DataLoaded() const {
+  return impl_->DataLoaded();
+}
+
+void LocalSiteCharacteristicsDataReader::RegisterDataLoadedCallback(
+    base::OnceClosure&& callback) {
+  impl_->RegisterDataLoadedCallback(std::move(callback));
+}
+
 }  // namespace resource_coordinator

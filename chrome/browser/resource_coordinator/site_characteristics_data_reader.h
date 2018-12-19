@@ -7,6 +7,8 @@
 
 #include "chrome/browser/resource_coordinator/local_site_characteristics_feature_usage.h"
 
+#include "base/callback_forward.h"
+
 namespace resource_coordinator {
 
 // Pure virtual interface to read the characteristics of an origin. This is a
@@ -21,6 +23,16 @@ class SiteCharacteristicsDataReader {
   virtual SiteFeatureUsage UpdatesTitleInBackground() const = 0;
   virtual SiteFeatureUsage UsesAudioInBackground() const = 0;
   virtual SiteFeatureUsage UsesNotificationsInBackground() const = 0;
+
+  // Returns true if this reader is fully initialized and serving the most
+  // authoritative data. This can initially return false as the backing store is
+  // loaded asynchronously.
+  virtual bool DataLoaded() const = 0;
+
+  // Registers a callback that will be invoked when the data backing this object
+  // has been loaded. Note that if "DataLoaded" is true at the time this is
+  // called it may immediately invoke the callback.
+  virtual void RegisterDataLoadedCallback(base::OnceClosure&& callback) = 0;
 };
 
 }  // namespace resource_coordinator
