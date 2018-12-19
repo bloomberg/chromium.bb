@@ -46,6 +46,7 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
   enum ResponseProduceFlags : uint32_t {
     kResponseDefault = 0,
     kResponseOnlyRedirectsNoDestination = 0x1,
+    kSendHeadersOnNetworkError = 0x2,
   };
 
   TestURLLoaderFactory();
