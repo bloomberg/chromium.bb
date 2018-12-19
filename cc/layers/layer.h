@@ -404,7 +404,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool is_scrollbar() const { return inputs_.is_scrollbar; }
 
   // Set or get if this layer is able to be scrolled along each axis. These are
-  // independant of the scrollable state, or size of the scrollable area
+  // independent of the scrollable state, or size of the scrollable area
   // specified in SetScrollable(), as these may be enabled or disabled
   // dynamically, while SetScrollable() defines what would be possible if these
   // are enabled.
@@ -413,12 +413,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // the scrollbars will be shown when the scroll offset changes if these are
   // set to true.
   void SetUserScrollable(bool horizontal, bool vertical);
-  bool user_scrollable_horizontal() const {
-    return inputs_.user_scrollable_horizontal;
-  }
-  bool user_scrollable_vertical() const {
-    return inputs_.user_scrollable_vertical;
-  }
+  bool GetUserScrollableHorizontal() const;
+  bool GetUserScrollableVertical() const;
 
   // Set or get if this layer is able to be scrolled on the compositor thread.
   // This only applies for layers that are marked as scrollable, not for layers
