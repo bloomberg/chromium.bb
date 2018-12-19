@@ -868,7 +868,7 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
           &cpi->trial_frame_rst, cm->superres_upscaled_width,
           cm->superres_upscaled_height, seq_params->subsampling_x,
           seq_params->subsampling_y, seq_params->use_highbitdepth,
-          AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL, NULL, NULL))
+          AOM_RESTORATION_FRAME_BORDER, cm->byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate trial restored frame buffer");
 
