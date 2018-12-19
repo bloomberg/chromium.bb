@@ -830,7 +830,7 @@ body.grid._4x4 #preview-grid-vertical:before {
 #timersettings .menu,
 body.settings.gridsettings #settings .menu,
 body.settings.timersettings #settings .menu {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.75);
   display: flex;
   flex-direction: column;
   position: absolute;
@@ -889,7 +889,7 @@ body.timersettings #timersettings .menu {
 
 .buttons.menu-item .description {
   margin-top: 5px;
-  color: #9aa0a6;
+  color: #bdc1c6;
 }
 
 .description span {
