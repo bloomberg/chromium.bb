@@ -33,13 +33,13 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * Authenticate the source of Intents to launch web apps (see e.g. {@link #FullScreenActivity}).
+ * Authenticate the source of Intents to launch web apps (see {@link #WebappLauncherActivity}).
  *
  * Chrome does not keep a store of valid URLs for installed web apps (because it cannot know when
  * any have been uninstalled). Therefore, upon installation, it tells the Launcher a message
  * authentication code (MAC) along with the URL for the web app, and then Chrome can verify the MAC
- * when starting e.g. {@link #FullScreenActivity}. Chrome can thus distinguish between legitimate,
- * installed web apps and arbitrary other URLs.
+ * when starting e.g. {@link #WebappLauncherActivity}. Chrome can thus distinguish between
+ * legitimate, installed web apps and arbitrary other URLs.
  */
 public class WebappAuthenticator {
     private static final String TAG = "WebappAuthenticator";

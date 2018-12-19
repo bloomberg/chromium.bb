@@ -111,7 +111,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kDownloadHomeShowStorageInfo,
     &kEphemeralTab,
     &kExploreSites,
-    &kFullscreenActivity,
     &kGestureNavigation,
     &kHandleMediaIntents,
     &kHideUserDataFromIncognitoNotifications,
@@ -302,9 +301,6 @@ const base::Feature kEphemeralTab{"EphemeralTab",
 
 const base::Feature kExploreSites{"ExploreSites",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kFullscreenActivity{"FullscreenActivity",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kGestureNavigation{"GestureNavigation",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

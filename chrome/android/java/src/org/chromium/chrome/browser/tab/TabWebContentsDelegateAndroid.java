@@ -28,7 +28,6 @@ import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.FullscreenActivity;
 import org.chromium.chrome.browser.RepostFormWarningDialog;
 import org.chromium.chrome.browser.SwipeRefreshHandler;
 import org.chromium.chrome.browser.document.DocumentUtils;
@@ -228,21 +227,12 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
 
     @Override
     public void enterFullscreenModeForTab(boolean prefersNavigationBar) {
-        FullscreenOptions options = new FullscreenOptions(prefersNavigationBar);
-        if (FullscreenActivity.shouldUseFullscreenActivity(mTab)) {
-            FullscreenActivity.enterFullscreenMode(mTab, options);
-        } else {
-            mTab.enterFullscreenMode(options);
-        }
+        mTab.enterFullscreenMode(new FullscreenOptions(prefersNavigationBar));
     }
 
     @Override
     public void exitFullscreenModeForTab() {
-        if (FullscreenActivity.shouldUseFullscreenActivity(mTab)) {
-            FullscreenActivity.exitFullscreenMode(mTab);
-        } else {
-            mTab.exitFullscreenMode();
-        }
+        mTab.exitFullscreenMode();
     }
 
     @Override
