@@ -53,6 +53,9 @@ class WebContentRunner : public fuchsia::sys::Runner {
                       fidl::InterfaceRequest<fuchsia::sys::ComponentController>
                           controller_request) override;
 
+  // Used by tests to asynchronously access the first WebComponent.
+  void GetWebComponentForTest(base::OnceCallback<void(WebComponent*)> callback);
+
  protected:
   // Registers a WebComponent, or specialization, with this Runner.
   void RegisterComponent(std::unique_ptr<WebComponent> component);
@@ -70,6 +73,9 @@ class WebContentRunner : public fuchsia::sys::Runner {
   // Run when no components remain, or the last |service_binding_| client
   // disconnects, to quit the Runner.
   base::OnceClosure on_idle_closure_;
+
+  // Test-only callback for GetWebComponentForTest.
+  base::OnceCallback<void(WebComponent*)> web_component_test_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentRunner);
 };

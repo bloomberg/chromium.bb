@@ -48,51 +48,6 @@ class MockNavigationObserver : public chromium::web::NavigationEventObserver,
   DISALLOW_COPY_AND_ASSIGN(MockNavigationObserver);
 };
 
-// Stores an asynchronously generated value for later retrieval, optionally
-// invoking a callback on value receipt for controlling test flow.
-//
-// The value can be read by using the dereference (*) or arrow (->) operators.
-// Values must first be received before they can be accessed. Dereferencing a
-// value before it is set will produce a CHECK violation.
-template <typename T>
-class Promise {
- public:
-  explicit Promise(base::RepeatingClosure on_capture = base::DoNothing())
-      : on_capture_(std::move(on_capture)) {}
-
-  Promise(Promise&& other) = default;
-
-  ~Promise() = default;
-
-  // Returns a fit::function<> which will receive and store a value T.
-  fit::function<void(T)> GetReceiveCallback() {
-    return [this](T value) { ReceiveValue(std::move(value)); };
-  }
-
-  void ReceiveValue(T value) {
-    captured_ = std::move(value);
-    on_capture_.Run();
-  }
-
-  bool has_value() const { return captured_.has_value(); }
-
-  T& operator*() {
-    CHECK(captured_.has_value());
-    return *captured_;
-  }
-
-  T* operator->() {
-    CHECK(captured_.has_value());
-    return &*captured_;
-  }
-
- private:
-  base::Optional<T> captured_;
-  base::RepeatingClosure on_capture_;
-
-  DISALLOW_COPY_AND_ASSIGN(Promise<T>);
-};
-
 // Reads the contents of |buffer| in a std::string.
 std::string StringFromMemBufferOrDie(const fuchsia::mem::Buffer& buffer);
 

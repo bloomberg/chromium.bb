@@ -117,15 +117,17 @@ executable("castrunner_exe") {
   ]
 }
 
-# TODO(crbug.com/901955): This target is to be used for both unit tests and
-# integration tests.
 test("castrunner_tests") {
   sources = [
+    "app/cast/cast_runner_integration_test.cc",
     "app/cast/cast_runner_unittest.cc",
+    "app/cast/test_common.cc",
+    "app/cast/test_common.h",
   ]
   deps = [
     ":app_config_manager_test_support",
     ":castrunner_common",
+    ":test_common",
     ":test_support",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
@@ -218,6 +220,7 @@ source_set("test_support") {
   sources = [
     "test/fake_context.cc",
     "test/fake_context.h",
+    "test/promise.h",
   ]
   deps = [
     "//base",
@@ -429,6 +432,7 @@ test("webrunner_browsertests") {
     ":named_message_port_connector",
     ":service_lib",
     ":test_common",
+    ":test_support",
     ":web_fidl",
     "//base/test:test_support",
     "//content/public/browser",

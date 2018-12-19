@@ -11,6 +11,7 @@
 #include "base/files/file.h"
 #include "base/fuchsia/component_context.h"
 #include "base/fuchsia/file_utils.h"
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
 #include "base/logging.h"
@@ -40,7 +41,7 @@ chromium::web::ContextPtr WebContentRunner::CreateDefaultWebContext() {
   web_context.set_error_handler([](zx_status_t status) {
     // If the browser instance died, then exit everything and do not attempt
     // to recover. appmgr will relaunch the runner when it is needed again.
-    LOG(ERROR) << "Connection to Context lost.";
+    ZX_LOG(ERROR, status) << "Connection to Context lost.";
     exit(1);
   });
   return web_context;
@@ -79,6 +80,15 @@ void WebContentRunner::StartComponent(
                                                 std::move(controller_request)));
 }
 
+void WebContentRunner::GetWebComponentForTest(
+    base::OnceCallback<void(WebComponent*)> callback) {
+  if (!components_.empty()) {
+    std::move(callback).Run(components_.begin()->get());
+    return;
+  }
+  web_component_test_callback_ = std::move(callback);
+}
+
 void WebContentRunner::DestroyComponent(WebComponent* component) {
   components_.erase(components_.find(component));
 
@@ -88,8 +98,12 @@ void WebContentRunner::DestroyComponent(WebComponent* component) {
 
 void WebContentRunner::RegisterComponent(
     std::unique_ptr<WebComponent> component) {
-  if (component)
+  if (web_component_test_callback_) {
+    std::move(web_component_test_callback_).Run(component.get());
+  }
+  if (component) {
     components_.insert(std::move(component));
+  }
 }
 
 void WebContentRunner::RunOnIdleClosureIfValid() {

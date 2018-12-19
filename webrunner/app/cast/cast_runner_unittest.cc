@@ -12,17 +12,17 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/service_directory.h"
 #include "base/message_loop/message_loop.h"
-#include "base/strings/string_piece.h"
+#include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webrunner/app/cast/application_config_manager/test/fake_application_config_manager.h"
-#include "webrunner/fidl/chromium/web/cpp/fidl.h"
+#include "webrunner/app/cast/test_common.h"
 #include "webrunner/test/fake_context.h"
 
 namespace castrunner {
 
-class CastRunnerTest : public testing::Test {
+class CastRunnerUnitTest : public testing::Test {
  public:
-  CastRunnerTest()
+  CastRunnerUnitTest()
       : fake_context_binding_(&fake_context_, fake_context_ptr_.NewRequest()) {
     // Create a new ServiceDirectory, and a scoped default ComponentContext
     // connected to it, for the test to use to drive the CastRunner.
@@ -64,36 +64,6 @@ class CastRunnerTest : public testing::Test {
 
   void SetUp() override { ASSERT_TRUE(test_server_.Start()); }
 
-  zx::channel StartCastComponent(
-      const base::StringPiece& cast_url,
-      fidl::InterfaceRequest<fuchsia::sys::ComponentController>
-          component_controller_request) {
-    fuchsia::sys::LaunchInfo launch_info;
-    launch_info.url.reset(cast_url.as_string());
-
-    // Create a channel to pass to the Runner, through which to expose the new
-    // component's ServiceDirectory.
-    zx::channel service_directory_client;
-    zx_status_t status = zx::channel::create(0, &service_directory_client,
-                                             &launch_info.directory_request);
-    ZX_CHECK(status == ZX_OK, status) << "zx_channel_create";
-
-    fuchsia::sys::StartupInfo startup_info;
-    startup_info.launch_info = std::move(launch_info);
-
-    // The FlatNamespace vectors must be non-null, but may be empty.
-    startup_info.flat_namespace.paths.resize(0);
-    startup_info.flat_namespace.directories.resize(0);
-
-    fuchsia::sys::Package package;
-    package.resolved_url.reset(cast_url.as_string());
-
-    cast_runner_ptr_->StartComponent(std::move(package),
-                                     std::move(startup_info),
-                                     std::move(component_controller_request));
-    return service_directory_client;
-  }
-
   void RunUntilCastRunnerIsIdle() { until_runner_idle_loop_.Run(); }
 
  protected:
@@ -125,30 +95,32 @@ class CastRunnerTest : public testing::Test {
   std::unique_ptr<CastRunner> cast_runner_;
   fuchsia::sys::RunnerPtr cast_runner_ptr_;
 
-  DISALLOW_COPY_AND_ASSIGN(CastRunnerTest);
+  DISALLOW_COPY_AND_ASSIGN(CastRunnerUnitTest);
 };
 
-TEST_F(CastRunnerTest, TeardownOnClientUnbind) {
+TEST_F(CastRunnerUnitTest, TeardownOnClientUnbind) {
   // Disconnect from the CastRunner and wait for it to terminate.
   cast_runner_ptr_.Unbind();
   RunUntilCastRunnerIsIdle();
 }
 
-TEST_F(CastRunnerTest, TeardownOnComponentControllerUnbind) {
+TEST_F(CastRunnerUnitTest, TeardownOnComponentControllerUnbind) {
   // Create a ComponentController pointer, to manage the component lifetime.
   fuchsia::sys::ComponentControllerPtr component_controller_ptr;
 
   // Launch the test-app component, passing a ComponentController request.
-  std::string url("cast:");
-  url += castrunner::test::FakeApplicationConfigManager::kTestCastAppId;
-  base::fuchsia::ComponentContext component_services(
-      StartCastComponent(url, component_controller_ptr.NewRequest()));
+  base::fuchsia::ComponentContext component_services(StartCastComponent(
+      base::StringPrintf(
+          "cast:%s",
+          castrunner::test::FakeApplicationConfigManager::kTestCastAppId),
+      &cast_runner_ptr_, component_controller_ptr.NewRequest()));
 
   // Pump the message-loop to process StartComponent(). If the call is rejected
   // then the ComponentControllerPtr's error-handler will be invoked at this
   // point.
   component_controller_ptr.set_error_handler([](zx_status_t status) {
-    ZX_LOG(FATAL, status) << "Component launch failed";
+    ZX_LOG(ERROR, status) << "Component launch failed";
+    ADD_FAILURE();
   });
   base::RunLoop().RunUntilIdle();
 

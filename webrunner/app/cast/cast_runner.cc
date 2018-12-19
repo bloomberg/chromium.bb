@@ -25,21 +25,6 @@ CastRunner::CastRunner(
 
 CastRunner::~CastRunner() = default;
 
-void CastRunner::GetConfigCallback(
-    fuchsia::sys::StartupInfo startup_info,
-    fidl::InterfaceRequest<fuchsia::sys::ComponentController>
-        controller_request,
-    chromium::cast::ApplicationConfigPtr app_config) {
-  // If a config was returned then use it to launch a component.
-  if (!app_config)
-    return;
-
-  GURL cast_app_url(*app_config->web_url);
-  RegisterComponent(webrunner::WebComponent::ForUrlRequest(
-      this, std::move(cast_app_url), std::move(startup_info),
-      std::move(controller_request)));
-}
-
 void CastRunner::StartComponent(
     fuchsia::sys::Package package,
     fuchsia::sys::StartupInfo startup_info,
@@ -68,6 +53,27 @@ void CastRunner::StartComponent(
         GetConfigCallback(std::move(startup_info),
                           std::move(controller_request), std::move(app_config));
       });
+}
+
+void CastRunner::GetConfigCallback(
+    fuchsia::sys::StartupInfo startup_info,
+    fidl::InterfaceRequest<fuchsia::sys::ComponentController>
+        controller_request,
+    chromium::cast::ApplicationConfigPtr app_config) {
+  if (!app_config) {
+    DLOG(WARNING) << "No ApplicationConfig was found.";
+
+    // For test purposes, we need to call RegisterComponent even if there is no
+    // URL to launch.
+    RegisterComponent(std::unique_ptr<webrunner::WebComponent>(nullptr));
+    return;
+  }
+
+  // If a config was returned then use it to launch a component.
+  GURL cast_app_url(*app_config->web_url);
+  RegisterComponent(webrunner::WebComponent::ForUrlRequest(
+      this, std::move(cast_app_url), std::move(startup_info),
+      std::move(controller_request)));
 }
 
 }  // namespace castrunner
