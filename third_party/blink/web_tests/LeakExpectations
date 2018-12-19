@@ -67,6 +67,9 @@ crbug.com/809609 [ Linux ] editing/inserting/insert_div_with_style.html [ Pass L
 crbug.com/836278 [ Linux ] external/wpt/offscreen-canvas/convert-to-blob/offscreencanvas.convert.to.blob.html [ Pass Leak ]
 crbug.com/836278 [ Linux ] virtual/threaded/external/wpt/offscreen-canvas/convert-to-blob/offscreencanvas.convert.to.blob.html [ Pass Leak ]
 
+# Moved from TestExpectations (Sheriff 2018-05-31)
+crbug.com/848354 [ Linux ] plugins/fullscreen-plugins-dont-reload.html [ Pass Leak ]
+
 # Sheriff 2018-07-10
 # Test flaking on Linux Trusty Leak
 crbug.com/862029 [ Linux ] http/tests/devtools/tracing/timeline-misc/timeline-window-filter.js [ Pass Leak ]

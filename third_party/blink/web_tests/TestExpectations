@@ -4572,13 +4572,8 @@ crbug.com/181374 external/wpt/css/css-display/display-contents-dynamic-table-001
 
 # ====== End of display: contents tests ======
 
-crbug.com/676229 [ Win ] plugins/mouse-click-plugin-clears-selection.html [ Failure Pass ]
-crbug.com/676229 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ Failure Pass ]
-crbug.com/676229 [ Mac ] plugins/mouse-click-plugin-clears-selection.html [ Failure Pass ]
-crbug.com/736333 [ Win ] plugins/iframe-plugin-bgcolor.html [ Failure Pass ]
-crbug.com/736333 [ Linux ] plugins/iframe-plugin-bgcolor.html [ Failure Pass ]
-crbug.com/742670 [ Mac ] plugins/iframe-plugin-bgcolor.html [ Failure Pass ]
-
+crbug.com/676229 plugins/mouse-click-plugin-clears-selection.html [ Failure Pass ]
+crbug.com/742670 plugins/iframe-plugin-bgcolor.html [ Failure Pass ]
 crbug.com/780398 [ Mac ] plugins/mouse-capture-inside-shadow.html [ Failure Pass ]
 
 crbug.com/678346 [ Debug ] fast/dom/shadow/selections-in-shadow.html [ Pass Timeout ]
@@ -5359,7 +5354,6 @@ crbug.com/846981 fast/webgl/texImage-imageBitmap-from-imageData-resize.html [ Pa
 crbug.com/843135 virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ Pass Failure ]
 
 # Sheriff 2018-05-31
-crbug.com/848354 [ Linux ] plugins/fullscreen-plugins-dont-reload.html [ Skip ]
 crbug.com/848398 http/tests/devtools/oopif/oopif-performance-cpu-profiles.js [ Pass Timeout Failure ]
 
 # Sheriff 2018-06-01
