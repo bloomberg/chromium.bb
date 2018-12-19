@@ -27,15 +27,15 @@ class ProxyServiceFactory {
   // profile. On ChromeOS it additionaly tracks local state for shared proxy
   // settings. This tracker should be used if the profile's preferences should
   // be respected. On ChromeOS's signin screen this is for example not the case.
-  static PrefProxyConfigTracker* CreatePrefProxyConfigTrackerOfProfile(
-      PrefService* profile_prefs,
-      PrefService* local_state_prefs);
+  static std::unique_ptr<PrefProxyConfigTracker>
+  CreatePrefProxyConfigTrackerOfProfile(PrefService* profile_prefs,
+                                        PrefService* local_state_prefs);
 
   // Creates a PrefProxyConfigTracker that tracks local state only. This tracker
   // should be used for the system request context and the signin screen
   // (ChromeOS only).
-  static PrefProxyConfigTracker* CreatePrefProxyConfigTrackerOfLocalState(
-      PrefService* local_state_prefs);
+  static std::unique_ptr<PrefProxyConfigTracker>
+  CreatePrefProxyConfigTrackerOfLocalState(PrefService* local_state_prefs);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ProxyServiceFactory);
