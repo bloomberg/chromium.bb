@@ -21,7 +21,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/signin/oauth2_token_service_delegate_android.h"
+#include "components/signin/core/browser/oauth2_token_service_delegate_android.h"
 #else
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/signin/mutable_profile_oauth2_token_service_delegate.h"

@@ -1445,7 +1445,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/signin/ConsentTextTracker.java",
   "java/src/org/chromium/chrome/browser/signin/DisplayableProfileData.java",
   "java/src/org/chromium/chrome/browser/signin/GoogleActivityController.java",
-  "java/src/org/chromium/chrome/browser/signin/OAuth2TokenService.java",
   "java/src/org/chromium/chrome/browser/signin/PersonalizedSigninPromoView.java",
   "java/src/org/chromium/chrome/browser/signin/ProfileDataCache.java",
   "java/src/org/chromium/chrome/browser/signin/SignOutDialogFragment.java",

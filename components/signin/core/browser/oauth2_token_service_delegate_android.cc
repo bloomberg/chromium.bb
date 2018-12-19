@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/oauth2_token_service_delegate_android.h"
+#include "components/signin/core/browser/oauth2_token_service_delegate_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
@@ -12,8 +12,6 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "chrome/browser/profiles/profile_android.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "components/signin/core/browser/account_info.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
@@ -34,9 +32,9 @@ namespace {
 // - the OAuth2 access token.
 // - the expiry time of the token (may be null, indicating that the expiry
 //   time is unknown.
-typedef base::Callback<void(const GoogleServiceAuthError&,
-                            const std::string&,
-                            const base::Time&)> FetchOAuth2TokenCallback;
+typedef base::Callback<
+    void(const GoogleServiceAuthError&, const std::string&, const base::Time&)>
+    FetchOAuth2TokenCallback;
 
 class AndroidAccessTokenFetcher : public OAuth2AccessTokenFetcher {
  public:
@@ -71,11 +69,9 @@ AndroidAccessTokenFetcher::AndroidAccessTokenFetcher(
     : OAuth2AccessTokenFetcher(consumer),
       account_id_(account_id),
       request_was_cancelled_(false),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
-AndroidAccessTokenFetcher::~AndroidAccessTokenFetcher() {
-}
+AndroidAccessTokenFetcher::~AndroidAccessTokenFetcher() {}
 
 void AndroidAccessTokenFetcher::Start(const std::string& client_id,
                                       const std::string& client_secret,
@@ -168,26 +164,10 @@ OAuth2TokenServiceDelegateAndroid::OAuth2TokenServiceDelegateAndroid(
   }
 }
 
-OAuth2TokenServiceDelegateAndroid::~OAuth2TokenServiceDelegateAndroid() {
-}
+OAuth2TokenServiceDelegateAndroid::~OAuth2TokenServiceDelegateAndroid() {}
 
-// static
-ScopedJavaLocalRef<jobject> OAuth2TokenServiceDelegateAndroid::GetForProfile(
-    JNIEnv* env,
-    const JavaRef<jobject>& j_profile_android) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile_android);
-  ProfileOAuth2TokenService* service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  OAuth2TokenServiceDelegate* delegate = service->GetDelegate();
-  return ScopedJavaLocalRef<jobject>(
-      static_cast<OAuth2TokenServiceDelegateAndroid*>(delegate)->java_ref_);
-}
-
-static ScopedJavaLocalRef<jobject> JNI_OAuth2TokenService_GetForProfile(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& j_profile_android) {
-  return OAuth2TokenServiceDelegateAndroid::GetForProfile(env,
-                                                          j_profile_android);
+ScopedJavaLocalRef<jobject> OAuth2TokenServiceDelegateAndroid::GetJavaObject() {
+  return ScopedJavaLocalRef<jobject>(java_ref_);
 }
 
 bool OAuth2TokenServiceDelegateAndroid::RefreshTokenIsAvailable(
@@ -221,8 +201,7 @@ void OAuth2TokenServiceDelegateAndroid::UpdateAuthError(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::UpdateAuthError"
-           << " account=" << account_id
-           << " error=" << error.ToString();
+           << " account=" << account_id << " error=" << error.ToString();
 
   if (error.IsTransientError())
     return;

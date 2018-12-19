@@ -207,6 +207,10 @@ static_library("browser") {
       "child_account_info_fetcher_impl.cc",
       "child_account_info_fetcher_impl.h",
     ]
+    sources += [
+      "oauth2_token_service_delegate_android.cc",
+      "oauth2_token_service_delegate_android.h",
+    ]
     deps += [ "android:jni_headers" ]
   }
 }

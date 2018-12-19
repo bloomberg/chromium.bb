@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.components.sync.AndroidSyncSettings;
 
 import java.io.IOException;
@@ -116,7 +117,7 @@ public class SigninHelper {
         mProfileSyncService = ProfileSyncService.get();
         mSigninManager = SigninManager.get();
         mAccountTrackerService = IdentityServicesProvider.getAccountTrackerService();
-        mOAuth2TokenService = OAuth2TokenService.getForProfile(Profile.getLastUsedProfile());
+        mOAuth2TokenService = IdentityServicesProvider.getOAuth2TokenService();
         mChromeSigninController = ChromeSigninController.get();
     }
 
