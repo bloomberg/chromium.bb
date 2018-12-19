@@ -119,7 +119,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
     ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
     // Always clear the referrer regardless of the request destination.
     NO_REFERRER,
-    MAX_REFERRER_POLICY
+    MAX_REFERRER_POLICY = NO_REFERRER
   };
 
   // First-party URL redirect policy: During server redirects, the first-party
