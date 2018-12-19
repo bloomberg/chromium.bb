@@ -5,6 +5,7 @@
 #include "content/browser/web_package/signed_exchange_prologue.h"
 
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
@@ -100,8 +101,13 @@ FallbackUrlAndAfter FallbackUrlAndAfter::Parse(
   base::StringPiece fallback_url_str(
       reinterpret_cast<const char*>(input.data()),
       before_fallback_url.fallback_url_length());
-  signed_exchange_utils::URLWithRawString fallback_url(fallback_url_str);
+  if (!base::IsStringUTF8(fallback_url_str)) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy, "`fallbackUrl` is not a valid UTF-8 sequence.");
+    return FallbackUrlAndAfter();
+  }
 
+  signed_exchange_utils::URLWithRawString fallback_url(fallback_url_str);
   if (!fallback_url.url.is_valid()) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy, "Failed to parse `fallbackUrl`.");
@@ -114,7 +120,7 @@ FallbackUrlAndAfter FallbackUrlAndAfter::Parse(
   }
   if (fallback_url.url.has_ref()) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy, ":url can't have a fragment.");
+        devtools_proxy, "`fallbackUrl` can't have a fragment.");
     return FallbackUrlAndAfter();
   }
 
