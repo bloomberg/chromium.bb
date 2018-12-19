@@ -31,12 +31,13 @@ cr.define('app_management', function() {
      * @return {!appManagement.mojom.App}
      */
     static createApp(id, config) {
-      const app = /** @type {!appManagement.mojom.App} */ ({
+      const app = {
         id: id,
         type: apps.mojom.AppType.kUnknown,
         title: 'App Title',
         isPinned: apps.mojom.OptionalBool.kUnknown,
-      });
+      };
+
       if (config)
         Object.assign(app, config);
 
