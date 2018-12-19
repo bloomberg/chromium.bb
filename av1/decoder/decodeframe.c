@@ -4719,9 +4719,17 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       cm->lf.filter_level[1] = 0;
       cm->show_frame = 1;
 
+      // Section 6.8.2: It is a requirement of bitstream conformance that when
+      // show_existing_frame is used to show a previous frame, that the value
+      // of showable_frame for the previous frame was equal to 1.
       if (!frame_to_show->showable_frame) {
-        aom_merge_corrupted_flag(&xd->corrupted, 1);
+        aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+                           "Buffer does not contain a showable frame");
       }
+      // Section 6.8.2: It is a requirement of bitstream conformance that when
+      // show_existing_frame is used to show a previous frame with
+      // RefFrameType[ frame_to_show_map_idx ] equal to KEY_FRAME, that the
+      // frame is output via the show_existing_frame mechanism at most once.
       if (pbi->reset_decoder_state) frame_to_show->showable_frame = 0;
 
       cm->film_grain_params = frame_to_show->film_grain_params;
