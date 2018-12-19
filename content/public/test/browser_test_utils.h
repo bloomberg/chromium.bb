@@ -818,7 +818,7 @@ void WaitForInterstitialDetach(content::WebContents* web_contents);
 // destroyed by the time WaitForInterstitialDetach is called (e.g. when waiting
 // for an interstitial detach after closing a tab).
 void RunTaskAndWaitForInterstitialDetach(content::WebContents* web_contents,
-                                         const base::Closure& task);
+                                         base::OnceClosure task);
 
 // Waits until all resources have loaded in the given RenderFrameHost.
 // When the load completes, this function sends a "pageLoadComplete" message

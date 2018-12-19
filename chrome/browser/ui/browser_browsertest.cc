@@ -1766,7 +1766,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCloseTab) {
 
   // Close the tab and wait for interstitial detach. This destroys |contents|.
   content::RunTaskAndWaitForInterstitialDetach(
-      contents, base::Bind(&chrome::CloseTab, browser()));
+      contents, base::BindOnce(&chrome::CloseTab, browser()));
   // interstitial is deleted now.
 }
 
