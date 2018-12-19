@@ -1952,17 +1952,14 @@ ScriptPromise RTCPeerConnection::getStats(
   // Custom binding for spec-compliant "getStats(MediaStreamTrack? selector)".
   // null is a valid selector value, but value of wrong type isn't. |selector|
   // set to no value means type error.
-  base::Optional<MediaStreamTrack*> selector;
-  if (argument->IsNull()) {
-    selector = base::Optional<MediaStreamTrack*>(nullptr);
-  } else {
-    MediaStreamTrack* track =
-        V8MediaStreamTrack::ToImplWithTypeCheck(isolate, argument);
-    if (track)
-      selector = base::Optional<MediaStreamTrack*>(track);
-  }
-  if (selector.has_value())
-    return PromiseBasedGetStats(script_state, *selector);
+  if (argument->IsNull())
+    return PromiseBasedGetStats(script_state, nullptr);
+
+  MediaStreamTrack* track =
+      V8MediaStreamTrack::ToImplWithTypeCheck(isolate, argument);
+  if (track)
+    return PromiseBasedGetStats(script_state, track);
+
   ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
                                  "RTCPeerConnection", "getStats");
   exception_state.ThrowTypeError(
