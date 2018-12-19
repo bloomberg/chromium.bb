@@ -6,6 +6,7 @@
   "jsRules": {},
   "rules": {
     "no-empty": false,
+    "max-classes-per-file": false,
     "no-implicit-dependencies": [true, ["framework"]]
   },
   "rulesDirectory": [],

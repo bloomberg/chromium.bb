@@ -4,6 +4,7 @@ Unit tests for parameterization system.
 `;
 
 import {
+  Logger,
   ParamIterable,
   pcombine,
   poptions,
@@ -12,22 +13,20 @@ import {
 } from "framework";
 
 export function add(tree: TestTree) {
-  tree.test("test_sync", () => {
+  tree.test("test_sync", (log) => {
   });
-  tree.test("test_async", async () => {
+  tree.test("test_async", async (log) => {
   });
-  tree.ptest("ptest_sync", punit(), (p: object) => {
-    // tslint:disable-next-line:no-console
-    console.log(p);
+  tree.ptest("ptest_sync", punit(), (log, p) => {
+    log.log(JSON.stringify(p));
   });
-  tree.ptest("ptest_async", punit(), async (p: object) => {
-    // tslint:disable-next-line:no-console
-    console.log(p);
+  tree.ptest("ptest_async", punit(), async (log, p) => {
+    log.log(JSON.stringify(p));
   });
 
   function ptestSimple(n: string, params: ParamIterable) {
     // tslint:disable-next-line:no-console
-    tree.ptest(n, params, console.log);
+    tree.ptest(n, params, (log, p) => log.log(JSON.stringify(p)));
   }
 
   ptestSimple("list", poptions("hello", [1, 2, 3]));

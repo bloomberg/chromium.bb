@@ -1,21 +1,23 @@
-import { TestTree } from "framework";
+import { ConsoleLogger, TestTree } from "framework";
 
+// tslint:disable:no-console
 (async () => {
   const trunk = await TestTree.trunk([
     import("./unittests"),
   ]);
 
-  // Print test listing
-  for await (const {path, run} of trunk.iterate()) {
-    console.log("*", path.join("/"));
+  const log = new ConsoleLogger();
+
+  console.log("Test listing");
+  for await (const t of trunk.iterate(log)) {
   }
 
-  // tslint:disable-next-line:no-console
   console.log("");
-
-  // Actually run tests
-  for await (const {path, run} of trunk.iterate()) {
-    console.log("*", path.join("/"));
-    await run();
+  console.log("Test results:");
+  for await (const t of trunk.iterate(log)) {
+    await t();
   }
+
+  console.log("");
+  console.log("Done.");
 })();

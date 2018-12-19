@@ -1,3 +1,4 @@
+import { Logger } from "./logger";
 import { ParamIterable } from "./params";
 
 interface ITestTreeModule {
@@ -7,20 +8,15 @@ interface ITestTreeModule {
   add?: (tree: TestTree) => void;
 }
 
-type PTestFn = (param: object) => (Promise<void> | void);
-type TestFn = () => (Promise<void> | void);
+type PTestFn = (log: Logger, param: object) => (Promise<void> | void);
+type TestFn = (log: Logger) => (Promise<void> | void);
 type Test = () => Promise<void>;
 interface ILeaf {
   name: string;
-  run: Test;
-}
-interface ITestWithPath {
-  path: string[];
-  run: Test;
+  run: (log: Logger) => Promise<void>;
 }
 
 export class TestTree {
-
   public static async trunk(modules: Array<Promise<ITestTreeModule>>): Promise<TestTree> {
     const trunk = new TestTree("", "");
     for (const m of modules) {
@@ -28,6 +24,7 @@ export class TestTree {
     }
     return trunk;
   }
+
   public name: string;
   public description: string;
   public subtrees: TestTree[];
@@ -41,34 +38,33 @@ export class TestTree {
   }
 
   public ptest(name: string, params: ParamIterable, fn: PTestFn): void {
-    this.tests.push({name, run: async () => {
+    this.tests.push({name, run: async (log: Logger) => {
       for (const p of params) {
-        // tslint:disable-next-line:no-console
-        console.log("  * " + name + "/" + JSON.stringify(p));
-        await fn(p);
+        log.push(JSON.stringify(p));
+        await fn(log, p);
+        log.pop();
       }
     }});
   }
 
   public test(name: string, fn: TestFn): void {
-    this.tests.push({name, run: async () => {
-      // tslint:disable-next-line:no-console
-      fn();
+    this.tests.push({name, run: async (log: Logger) => {
+      await fn(log);
     }});
   }
 
-  public async * iterate(path: string[] = []): AsyncIterable<ITestWithPath> {
+  public async * iterate(log: Logger): AsyncIterable<Test> {
     const subtrees = await Promise.all(this.subtrees);
     for (const t of this.tests) {
-      yield {
-        path: path.concat([t.name]),
-        run: t.run,
-      };
+      log.push(t.name);
+      yield () => t.run(log);
+      log.pop();
     }
     for (const st of subtrees) {
-      const subpath = path.concat([st.name]);
+      log.push(st.name);
       // tslint:disable-next-line:no-console
-      yield* st.iterate(subpath);
+      yield* st.iterate(log);
+      log.pop();
     }
   }
 
