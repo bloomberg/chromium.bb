@@ -814,6 +814,15 @@
       "features": [
         "test_feature_0"
       ]
+    },
+    {
+      "id": 68,
+      "description": "GpuControlListEntryTest.HardwareOverlay",
+      "vendor_id": "0x8086",
+      "hardware_overlay": "unsupported",
+      "features": [
+        "test_feature_0"
+      ]
     }
   ]
 }

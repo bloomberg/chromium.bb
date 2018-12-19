@@ -3065,6 +3065,24 @@
       "features": [
         "use_virtualized_gl_contexts"
       ]
+    },
+    {
+      "id": 286,
+      "cr_bugs": [908069],
+      "description": "Video corruption on Intel HD 530 without hardware overlay support",
+      "vendor_id": "0x8086",
+      "device_id": ["0x1912"],
+      "os": {
+        "type": "win"
+      },
+      "driver_version": {
+        "op": ">=",
+        "value": "24"
+      },
+      "hardware_overlay": "unsupported",
+      "features": [
+        "disable_direct_composition"
+      ]
     }
   ]
 }

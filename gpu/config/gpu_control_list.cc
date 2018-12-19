@@ -310,6 +310,22 @@ bool GpuControlList::More::Contains(const GPUInfo& gpu_info) const {
       !pixel_shader_version.Contains(gpu_info.pixel_shader_version)) {
     return false;
   }
+  switch (hardware_overlay) {
+    case kDontCare:
+      break;
+    case kSupported:
+#if defined(OS_WIN)
+      if (!gpu_info.supports_overlays)
+        return false;
+#endif  // OS_WIN
+      break;
+    case kUnsupported:
+#if defined(OS_WIN)
+      if (gpu_info.supports_overlays)
+        return false;
+#endif  // OS_WIN
+      break;
+  }
   return true;
 }
 

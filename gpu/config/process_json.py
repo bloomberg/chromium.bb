@@ -343,6 +343,19 @@ def write_gl_type(gl_type, data_file):
   data_file.write('GpuControlList::kGLType%s,  // gl_type\n' % map[gl_type])
 
 
+def write_supported_or_not(feature_value, feature_name, data_file):
+  if feature_value is None:
+    feature_value = 'dont_care'
+  map = {
+    'supported': 'Supported',
+    'unsupported': 'Unsupported',
+    'dont_care': 'DontCare',
+  }
+  assert map.has_key(feature_value)
+  data_file.write('GpuControlList::k%s,  // %s\n' %
+                  (map[feature_value], feature_name))
+
+
 def write_conditions(entry_id, is_exception, exception_id, entry,
                      unique_symbol_id, data_file, data_helper_file,
                      _data_exception_file):
@@ -367,6 +380,7 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
   gl_reset_notification_strategy = None
   direct_rendering = True
   gpu_count = None
+  hardware_overlay = None
   test_group = 0
   machine_model_name = None
   machine_model_version = None
@@ -442,6 +456,8 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
       direct_rendering = False
     elif key == 'gpu_count':
       gpu_count = entry[key]
+    elif key == 'hardware_overlay':
+      hardware_overlay = entry[key]
     elif key == 'test_group':
       assert entry[key] > 0
       test_group = entry[key]
@@ -487,11 +503,12 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
   # group a bunch of less used conditions
   if (gl_version != None or pixel_shader_version != None or in_process_gpu or
       gl_reset_notification_strategy != None or (not direct_rendering) or
-      gpu_count != None or test_group != 0):
+      gpu_count != None or hardware_overlay != None or test_group != 0):
     write_entry_more_data(entry_id, is_exception, exception_id, gl_type,
                           gl_version, pixel_shader_version, in_process_gpu,
                           gl_reset_notification_strategy, direct_rendering,
-                          gpu_count, test_group, data_file, data_helper_file)
+                          gpu_count, hardware_overlay, test_group, data_file,
+                          data_helper_file)
   else:
     data_file.write('nullptr,  // more conditions\n')
 
@@ -533,7 +550,8 @@ def write_gpu_series_list(entry_id, is_exception, exception_id, gpu_series_list,
 def write_entry_more_data(entry_id, is_exception, exception_id, gl_type,
                           gl_version, pixel_shader_version, in_process_gpu,
                           gl_reset_notification_strategy, direct_rendering,
-                          gpu_count, test_group, data_file, data_helper_file):
+                          gpu_count, hardware_overlay, test_group, data_file,
+                          data_helper_file):
   # write more data
   var_name = 'kMoreForEntry' + str(entry_id)
   if is_exception:
@@ -549,6 +567,7 @@ def write_entry_more_data(entry_id, is_exception, exception_id, gl_type,
                          gl_reset_notification_strategy)
   write_boolean_value(direct_rendering, 'direct_rendering', data_helper_file)
   write_version(gpu_count, 'gpu_count', data_helper_file)
+  write_supported_or_not(hardware_overlay, 'hardware_overlay', data_helper_file)
   write_integer_value(test_group, 'test_group', data_helper_file)
   data_helper_file.write('};\n\n')
   # reference more data in entry

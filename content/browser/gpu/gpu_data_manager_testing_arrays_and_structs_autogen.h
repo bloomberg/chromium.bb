@@ -23,7 +23,10 @@ const int kFeatureListForGpuManagerTestingEntry2[1] = {
 };
 
 const GpuControlList::GLStrings kGLStringsForGpuManagerTestingEntry2 = {
-    nullptr, ".*GeForce.*", nullptr, nullptr,
+    nullptr,
+    ".*GeForce.*",
+    nullptr,
+    nullptr,
 };
 
 const int kFeatureListForGpuManagerTestingEntry3[1] = {
@@ -31,11 +34,15 @@ const int kFeatureListForGpuManagerTestingEntry3[1] = {
 };
 
 const int kFeatureListForGpuManagerTestingEntry4[2] = {
-    GPU_FEATURE_TYPE_ACCELERATED_WEBGL2, GPU_FEATURE_TYPE_ACCELERATED_WEBGL,
+    GPU_FEATURE_TYPE_ACCELERATED_WEBGL2,
+    GPU_FEATURE_TYPE_ACCELERATED_WEBGL,
 };
 
 const GpuControlList::GLStrings kGLStringsForGpuManagerTestingEntry4 = {
-    nullptr, ".*GeForce.*", nullptr, nullptr,
+    nullptr,
+    ".*GeForce.*",
+    nullptr,
+    nullptr,
 };
 
 const int kFeatureListForGpuManagerTestingEntry5[1] = {
@@ -44,7 +51,10 @@ const int kFeatureListForGpuManagerTestingEntry5[1] = {
 
 const GpuControlList::GLStrings kGLStringsForGpuManagerTestingEntry5Exception0 =
     {
-        nullptr, ".*GeForce.*", nullptr, nullptr,
+        nullptr,
+        ".*GeForce.*",
+        nullptr,
+        nullptr,
 };
 
 const int kFeatureListForGpuManagerTestingEntry6[12] = {

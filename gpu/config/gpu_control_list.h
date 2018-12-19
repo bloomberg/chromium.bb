@@ -85,6 +85,12 @@ class GPU_EXPORT GpuControlList {
     kVersionStyleUnknown
   };
 
+  enum SupportedOrNot {
+    kSupported,
+    kUnsupported,
+    kDontCare,
+  };
+
   struct GPU_EXPORT Version {
     NumericOp op;
     VersionStyle style;
@@ -149,6 +155,7 @@ class GPU_EXPORT GpuControlList {
     uint32_t gl_reset_notification_strategy;
     bool direct_rendering;
     Version gpu_count;
+    SupportedOrNot hardware_overlay;
 
     uint32_t test_group;
 
