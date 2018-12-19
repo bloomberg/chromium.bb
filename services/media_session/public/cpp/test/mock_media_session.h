@@ -42,6 +42,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
   void WaitForState(mojom::MediaSessionInfo::SessionState wanted_state);
   void WaitForPlaybackState(mojom::MediaPlaybackState wanted_state);
   const base::Optional<MediaMetadata>& WaitForMetadata();
+  const MediaMetadata& WaitForNonEmptyMetadata();
 
   const mojom::MediaSessionInfoPtr& session_info() const {
     return session_info_;
@@ -57,6 +58,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
   base::Optional<base::Optional<MediaMetadata>> session_metadata_;
 
   bool waiting_for_metadata_ = false;
+  bool waiting_for_non_empty_metadata_ = false;
   base::Optional<mojom::MediaSessionInfo::SessionState> wanted_state_;
   base::Optional<mojom::MediaPlaybackState> wanted_playback_state_;
   base::RunLoop run_loop_;

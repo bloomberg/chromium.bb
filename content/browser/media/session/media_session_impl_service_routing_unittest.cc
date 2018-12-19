@@ -565,7 +565,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
     media_session::test::MockMediaSessionMojoObserver observer(
         *GetMediaSession());
     services_[main_frame_]->SetMetadata(expected_metadata);
-    EXPECT_EQ(expected_metadata, *observer.WaitForMetadata());
+    EXPECT_EQ(expected_metadata, observer.WaitForNonEmptyMetadata());
   }
 }
 
