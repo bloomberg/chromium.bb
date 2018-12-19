@@ -148,8 +148,10 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
 #endif
       has3d_transformed_descendant_(false),
       contains_dirty_overlay_scrollbars_(false),
-      needs_ancestor_dependent_compositing_inputs_update_(true),
-      child_needs_compositing_inputs_update_(true),
+      needs_ancestor_dependent_compositing_inputs_update_(
+          !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()),
+      child_needs_compositing_inputs_update_(
+          !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()),
       has_compositing_descendant_(false),
       should_isolate_composited_descendants_(false),
       lost_grouped_mapping_(false),
@@ -167,7 +169,8 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       filter_on_effect_node_dirty_(false),
       is_under_svg_hidden_container_(false),
       descendant_has_direct_or_scrolling_compositing_reason_(false),
-      needs_compositing_reasons_update_(true),
+      needs_compositing_reasons_update_(
+          !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()),
       descendant_may_need_compositing_requirements_update_(false),
       needs_compositing_layer_assignment_(false),
       descendant_needs_compositing_layer_assignment_(false),
@@ -1054,12 +1057,15 @@ void PaintLayer::SetNeedsCompositingInputsUpdate() {
 
   // TODO(chrishtr): These are a bit of a heavy hammer, because not all
   // things which require compositing inputs update require a descendant-
-  // dependent flags udpate. Reduce call sites after CAP launch allows
+  // dependent flags update. Reduce call sites after CAP launch allows
   /// removal of CompositingInputsUpdater.
   MarkAncestorChainForDescendantDependentFlagsUpdate();
 }
 
 void PaintLayer::SetNeedsCompositingInputsUpdateInternal() {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
   needs_ancestor_dependent_compositing_inputs_update_ = true;
 
   for (PaintLayer* current = this;
@@ -1075,11 +1081,13 @@ void PaintLayer::SetNeedsCompositingInputsUpdateInternal() {
 
 void PaintLayer::UpdateAncestorDependentCompositingInputs(
     const AncestorDependentCompositingInputs& compositing_inputs) {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   EnsureAncestorDependentCompositingInputs() = compositing_inputs;
   needs_ancestor_dependent_compositing_inputs_update_ = false;
 }
 
 void PaintLayer::ClearChildNeedsCompositingInputsUpdate() {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   DCHECK(!NeedsCompositingInputsUpdate());
   child_needs_compositing_inputs_update_ = false;
 }

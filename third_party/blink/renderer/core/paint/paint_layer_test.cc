@@ -1742,7 +1742,8 @@ TEST_P(PaintLayerTest, BackgroundIsKnownToBeOpaqueInRectChildren) {
       LayoutRect(0, 0, 100, 100), false));
 }
 
-TEST_P(PaintLayerTest, ChangeAlphaNeedsCompositingInputs) {
+TEST_P(PaintLayerTest,
+       ChangeAlphaNeedsCompositingInputsAndPaintPropertyUpdate) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #target {
@@ -1756,10 +1757,20 @@ TEST_P(PaintLayerTest, ChangeAlphaNeedsCompositingInputs) {
     </div>
   )HTML");
   PaintLayer* target = GetPaintLayerByElementId("target");
+  EXPECT_FALSE(target->NeedsCompositingInputsUpdate());
+  EXPECT_FALSE(target->GetLayoutObject().NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(target->Parent()->GetLayoutObject().NeedsPaintPropertyUpdate());
+
   StyleDifference diff;
   diff.SetHasAlphaChanged();
   target->StyleDidChange(diff, target->GetLayoutObject().Style());
-  EXPECT_TRUE(target->NeedsCompositingInputsUpdate());
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    EXPECT_FALSE(target->NeedsCompositingInputsUpdate());
+  else
+    EXPECT_TRUE(target->NeedsCompositingInputsUpdate());
+  EXPECT_TRUE(target->GetLayoutObject().NeedsPaintPropertyUpdate());
+  // See the TODO in PaintLayer::SetNeedsCompositingInputsUpdate().
+  EXPECT_TRUE(target->Parent()->GetLayoutObject().NeedsPaintPropertyUpdate());
 }
 
 }  // namespace blink
