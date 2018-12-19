@@ -241,3 +241,8 @@ class Project(_ManifestElement):
     return (self.revision or
             self.Remote().revision or
             self._manifest.Default().revision)
+
+  def Annotations(self):
+    """Return a dictionary from annotation key to annotation value."""
+    return {child.get('name'): child.get('value') for child in self._el
+            if child.tag == 'annotation'}

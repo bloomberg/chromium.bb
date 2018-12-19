@@ -259,3 +259,8 @@ class ProjectTest(cros_test_lib.TestCase):
     """Test Project.Revision."""
     self.assertIsNone(self.simple.Revision())
     self.assertEqual(self.complex.Revision(), 'cafe')
+
+  def testAnnotations(self):
+    """Test Project.Annotations."""
+    self.assertEqual(self.simple.Annotations(), {})
+    self.assertEqual(self.complex.Annotations(), {'branch-mode': 'pin'})
