@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -418,13 +419,20 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureActive());
 
   // Now start full Sync again.
+  base::HistogramTester histogram_tester;
   GetClient(0)->StartSyncService();
   ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
 
   // The bookmark should still be there, *without* having been redownloaded.
+  ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(bookmarks_helper::GetBookmarkModel(0)->IsBookmarked(
       GURL(kSyncedBookmarkURL)));
-  EXPECT_EQ(0, GetNumUpdatesDownloadedInLastCycle());
+  EXPECT_EQ(
+      0, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.BOOKMARK",
+                                         /*REMOTE_NON_INITIAL_UPDATE=*/4));
+  EXPECT_EQ(
+      0, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.BOOKMARK",
+                                         /*REMOTE_INITIAL_UPDATE=*/5));
 }
 
 }  // namespace

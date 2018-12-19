@@ -4566,6 +4566,36 @@
             ]
         }
     ],
+    "SyncPseudoUss'": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SyncPseudoUSSAppList",
+                        "SyncPseudoUSSApps",
+                        "SyncPseudoUSSDictionary",
+                        "SyncPseudoUSSExtensions",
+                        "SyncPseudoUSSFavicons",
+                        "SyncPseudoUSSHistoryDeleteDirectives",
+                        "SyncPseudoUSSPreferences",
+                        "SyncPseudoUSSPriorityPreferences",
+                        "SyncPseudoUSSSearchEngines",
+                        "SyncPseudoUSSSupervisedUsers",
+                        "SyncPseudoUSSThemes"
+                    ]
+                }
+            ]
+        }
+    ],
     "SyncStandaloneTransport": [
         {
             "platforms": [
