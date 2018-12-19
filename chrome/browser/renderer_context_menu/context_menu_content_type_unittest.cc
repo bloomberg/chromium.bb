@@ -16,11 +16,14 @@ using extensions::MenuItem;
 
 class ContextMenuContentTypeTest : public ChromeRenderViewHostTestHarness {
  public:
-  static ContextMenuContentType* Create(
+  static std::unique_ptr<ContextMenuContentType> Create(
       content::WebContents* web_contents,
-      content::ContextMenuParams& params) {
-    return ContextMenuContentTypeFactory::SetInternalResourcesURLChecker(
-        new ContextMenuContentType(web_contents, params, true));
+      const content::ContextMenuParams& params) {
+    auto content_type =
+        std::make_unique<ContextMenuContentType>(web_contents, params, true);
+    ContextMenuContentTypeFactory::SetInternalResourcesURLChecker(
+        content_type.get());
+    return content_type;
   }
 };
 

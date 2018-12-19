@@ -115,8 +115,8 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
   friend class RenderViewContextMenuTest;
   friend class RenderViewContextMenuPrefsTest;
 
-  void set_content_type(ContextMenuContentType* content_type) {
-    content_type_.reset(content_type);
+  void set_content_type(std::unique_ptr<ContextMenuContentType> content_type) {
+    content_type_ = std::move(content_type);
   }
 
   void set_toolkit_delegate(std::unique_ptr<ToolkitDelegate> delegate) {
