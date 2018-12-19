@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+#include "ui/views/controls/button/button.h"
 
 class CustomTabBarTitleOriginView;
 class BrowserView;
@@ -20,7 +21,8 @@ class BrowserView;
 // scope.
 class CustomTabBarView : public views::View,
                          public TabStripModelObserver,
-                         public LocationIconView::Delegate {
+                         public LocationIconView::Delegate,
+                         public views::ButtonListener {
  public:
   static const char kViewClassName[];
 
@@ -48,6 +50,9 @@ class CustomTabBarView : public views::View,
                                      on_icon_fetched) const override;
   SkColor GetLocationIconInkDropColor() const override;
 
+  // ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
   // Methods for testing.
   base::string16 title_for_testing() const { return last_title_; }
   base::string16 location_for_testing() const { return last_location_; }
@@ -59,6 +64,7 @@ class CustomTabBarView : public views::View,
   base::string16 last_title_;
   base::string16 last_location_;
 
+  views::Button* close_button_ = nullptr;
   LocationBarView::Delegate* delegate_ = nullptr;
   LocationIconView* location_icon_view_ = nullptr;
   CustomTabBarTitleOriginView* title_origin_view_ = nullptr;
