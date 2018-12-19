@@ -42,27 +42,28 @@ void CreateContentFaviconDriverForWebContents(
 }
 
 bool ShouldDisplayFavicon(content::WebContents* web_contents) {
-  // No favicon on interstitials. This check must be done first since
-  // interstitial navigations don't commit and always have a pending entry.
+  // No favicon on interstitials.
   if (web_contents->ShowingInterstitialPage())
     return false;
 
-  // Always display a throbber during pending loads.
-  const content::NavigationController& controller =
-      web_contents->GetController();
-  if (controller.GetLastCommittedEntry() && controller.GetPendingEntry())
-    return true;
-
-  GURL url = web_contents->GetURL();
+  // Suppress the icon for the new-tab page, even if a navigation to it is
+  // not committed yet. Note that we're looking at the visible URL, so
+  // navigations from NTP generally don't hit this case and still show an icon.
+  GURL url = web_contents->GetVisibleURL();
   if (url.SchemeIs(content::kChromeUIScheme) &&
       url.host_piece() == chrome::kChromeUINewTabHost) {
     return false;
   }
 
-  // No favicon on Instant New Tab Pages.
-  if (search::IsInstantNTP(web_contents))
+  // Also suppress instant-NTP. This does not use search::IsInstantNTP since
+  // it looks at the last-committed entry and we need to show icons for pending
+  // navigations away from it.
+  if (search::IsInstantNTPURL(url, Profile::FromBrowserContext(
+                                       web_contents->GetBrowserContext()))) {
     return false;
+  }
 
+  // Otherwise, always display the favicon.
   return true;
 }
 
