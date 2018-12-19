@@ -125,12 +125,12 @@
      =1 {1 item}
      other {# items}}
   </message>
-  <message name="IDS_DEL_HOSTED_APPS_COUNTER" desc="A counter showing how many hosted apps the user has. We show the number of apps, and in the cases where there is one or two apps, we will also give two example app names, denoted as placeholders $1 and $2. If there are more than two apps, we will give two examples and say 'and X more'. The 'and X more' string, denoted by the placeholder $3, will be supplied from another message.">
+  <message name="IDS_DEL_HOSTED_APPS_COUNTER" desc="A counter showing how many hosted apps the user has. We show the number of apps, and in the cases where there is one or two apps, we will also give two example app names, denoted as placeholders EXAMPLE_APP_1 and EXAMPLE_APP_2. If there are more than two apps, we will give two examples and say 'and X more'. The 'and X more' string, denoted by the placeholder AND_MORE, will be supplied from another message.">
     {COUNT, plural,
      =0 {None}
-     =1 {1 app ($1)}
-     =2 {2 apps ($1, $2)}
-     other {# apps ($1, $2, $3)}}
+     =1 {1 app (<ph name="EXAMPLE_APP_1">$1<ex>Gmail</ex></ph>)}
+     =2 {2 apps (<ph name="EXAMPLE_APP_1">$1<ex>Gmail</ex></ph>, <ph name="EXAMPLE_APP_2">$2<ex>Youtube</ex></ph>)}
+     other {# apps (<ph name="EXAMPLE_APP_1">$1<ex>Gmail</ex></ph>, <ph name="EXAMPLE_APP_2">$2<ex>Youtube</ex></ph>, <ph name="AND_MORE">$3<ex>and 9 more</ex></ph>)}}
   </message>
   <message name="IDS_DEL_HOSTED_APPS_COUNTER_AND_X_MORE" desc="This message stands at the end of a sentence enumerating hosted apps the user has installed, e.g.: 'App1, App2, and 5 more'">
     {COUNT, plural,
