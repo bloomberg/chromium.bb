@@ -5105,18 +5105,12 @@ static void select_inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   }
 }
 
-static int64_t select_tx_size_fix_type(const AV1_COMP *cpi, MACROBLOCK *x,
+static int64_t select_tx_size_and_type(const AV1_COMP *cpi, MACROBLOCK *x,
                                        RD_STATS *rd_stats, BLOCK_SIZE bsize,
                                        int64_t ref_best_rd,
                                        TXB_RD_INFO_NODE *rd_info_tree) {
-  const int fast_tx_search = cpi->sf.tx_size_search_method > USE_FULL_RD;
   MACROBLOCKD *const xd = &x->e_mbd;
-  MB_MODE_INFO *const mbmi = xd->mi[0];
-  const int is_inter = is_inter_block(mbmi);
-  const int skip_ctx = av1_get_skip_context(xd);
-  int s0 = x->skip_cost[skip_ctx][0];
-  int s1 = x->skip_cost[skip_ctx][1];
-  int64_t rd;
+  assert(is_inter_block(xd->mi[0]));
 
   // TODO(debargha): enable this as a speed feature where the
   // select_inter_block_yrd() function above will use a simplified search
@@ -5124,6 +5118,7 @@ static int64_t select_tx_size_fix_type(const AV1_COMP *cpi, MACROBLOCK *x,
   // will use more complex search given that the transform partitions have
   // already been decided.
 
+  const int fast_tx_search = cpi->sf.tx_size_search_method > USE_FULL_RD;
   int64_t rd_thresh = ref_best_rd;
   if (fast_tx_search && rd_thresh < INT64_MAX) {
     if (INT64_MAX - rd_thresh > (rd_thresh >> 3)) rd_thresh += (rd_thresh >> 3);
@@ -5144,6 +5139,10 @@ static int64_t select_tx_size_fix_type(const AV1_COMP *cpi, MACROBLOCK *x,
       return INT64_MAX;
   }
 
+  int64_t rd;
+  const int skip_ctx = av1_get_skip_context(xd);
+  const int s0 = x->skip_cost[skip_ctx][0];
+  const int s1 = x->skip_cost[skip_ctx][1];
   if (rd_stats->skip) {
     rd = RDCOST(x->rdmult, s1, rd_stats->sse);
 #if CONFIG_ONE_PASS_SVM
@@ -5153,10 +5152,9 @@ static int64_t select_tx_size_fix_type(const AV1_COMP *cpi, MACROBLOCK *x,
 #endif
   } else {
     rd = RDCOST(x->rdmult, rd_stats->rate + s0, rd_stats->dist);
+    if (!xd->lossless[xd->mi[0]->segment_id])
+      rd = AOMMIN(rd, RDCOST(x->rdmult, s1, rd_stats->sse));
   }
-
-  if (is_inter && !xd->lossless[xd->mi[0]->segment_id] && !(rd_stats->skip))
-    rd = AOMMIN(rd, RDCOST(x->rdmult, s1, rd_stats->sse));
 
   return rd;
 }
@@ -5775,7 +5773,7 @@ static void set_skip_flag(MACROBLOCK *x, RD_STATS *rd_stats, int bsize,
   rd_stats->dist = rd_stats->sse = (dist << 4);
 }
 
-// Search for best transform size and type for inter blocks.
+// Search for best transform size and type for luma inter blocks.
 static void pick_tx_size_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
                                   RD_STATS *rd_stats, BLOCK_SIZE bsize,
                                   int mi_row, int mi_col, int64_t ref_best_rd) {
@@ -5871,7 +5869,7 @@ static void pick_tx_size_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   RD_STATS this_rd_stats;
   av1_init_rd_stats(&this_rd_stats);
   const int64_t rd =
-      select_tx_size_fix_type(cpi, x, &this_rd_stats, bsize, ref_best_rd,
+      select_tx_size_and_type(cpi, x, &this_rd_stats, bsize, ref_best_rd,
                               found_rd_info ? matched_rd_info : NULL);
   assert(IMPLIES(this_rd_stats.skip && !this_rd_stats.invalid_rate,
                  this_rd_stats.rate == 0));
