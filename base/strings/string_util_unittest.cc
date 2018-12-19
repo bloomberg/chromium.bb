@@ -10,10 +10,12 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <type_traits>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -227,6 +229,33 @@ TEST(StringUtilTest, TruncateUTF8ToByteSize) {
   EXPECT_TRUE(Truncated("\xe3\xe5\xe9\xdC", 4, &output));
   EXPECT_EQ(output.compare(""), 0);
 }
+
+#if defined(WCHAR_T_IS_UTF16)
+TEST(StringUtilTest, wdata) {
+  char16 rw_buffer[10] = {};
+  static_assert(std::is_same<wchar_t*, decltype(wdata(rw_buffer))>::value, "");
+  EXPECT_EQ(rw_buffer, wdata(rw_buffer));
+
+  string16 rw_str(10, '\0');
+  static_assert(std::is_same<wchar_t*, decltype(wdata(rw_str))>::value, "");
+  EXPECT_EQ(rw_str.data(), wdata(rw_str));
+
+  const char16 ro_buffer[10] = {};
+  static_assert(std::is_same<const wchar_t*, decltype(wdata(ro_buffer))>::value,
+                "");
+  EXPECT_EQ(ro_buffer, wdata(ro_buffer));
+
+  const string16 ro_str(10, '\0');
+  static_assert(std::is_same<const wchar_t*, decltype(wdata(ro_str))>::value,
+                "");
+  EXPECT_EQ(ro_str.data(), wdata(ro_str));
+
+  StringPiece16 piece = ro_buffer;
+  static_assert(std::is_same<const wchar_t*, decltype(wdata(piece))>::value,
+                "");
+  EXPECT_EQ(piece.data(), wdata(piece));
+}
+#endif  // defined(WCHAR_T_IS_UTF16)
 
 TEST(StringUtilTest, TrimWhitespace) {
   string16 output;  // Allow contents to carry over to next testcase
