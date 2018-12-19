@@ -425,18 +425,23 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                     frameID:(NSString*)frameID
           completionHandler:(SuggestionHandledCompletion)completion {
   switch (suggestion.identifier) {
-    case autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY:
+    case autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY: {
       // Navigate to the settings list.
       [self.delegate displaySavedPasswordList];
       completion();
       LogSuggestionClicked(PasswordSuggestionType::SHOW_ALL);
       return;
-    case autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY:
+    }
+    case autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY: {
       [self generatePasswordForForm:formName
-                    fieldIdentifier:fieldIdentifier
-                  completionHandler:completion];
+                  completionHandler:^(BOOL injected) {
+                    if (injected)
+                      completion();
+                  }];
+      // TODO(crbug.com/886583): add metrics.
       return;
-    default:
+    }
+    default: {
       LogSuggestionClicked(PasswordSuggestionType::CREDENTIALS);
       DCHECK([suggestion.value hasSuffix:kSuggestionSuffix]);
       NSString* username = [suggestion.value
@@ -454,6 +459,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                                     completion();
                                   }];
       break;
+    }
   }
 }
 
@@ -665,15 +671,13 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 }
 
 - (void)generatePasswordForForm:(NSString*)formName
-                fieldIdentifier:(NSString*)fieldIdentifier
-              completionHandler:(SuggestionHandledCompletion)completion {
+              completionHandler:(void (^)(BOOL))completionHandler {
   // TODO(crbug.com/886583): form_signature, field_signature, max_length and
   // spec_priority in PGM::GeneratePassword are being refactored, passing 0 for
   // now to get a generic random password.
   base::string16 generatedPassword =
-      _passwordGenerationManager->GeneratePassword(
-          _passwordManager->client()->GetLastCommittedEntryURL(), 0, 0, 0,
-          nullptr);
+      _passwordGenerationManager->GeneratePassword([self lastCommittedURL], 0,
+                                                   0, 0, nullptr);
 
   NSString* displayPassword = base::SysUTF16ToNSString(generatedPassword);
 
@@ -698,12 +702,17 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       addItemWithTitle:l10n_util::GetNSString(IDS_IOS_SUGGEST_PASSWORD)
                 action:^{
                   // TODO(crbug.com/886583): inject in password form
+                  if (completionHandler)
+                    completionHandler(YES);
                 }
                  style:UIAlertActionStyleDefault];
 
   [self.actionSheetCoordinator
       addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                action:nil
+                action:^{
+                  if (completionHandler)
+                    completionHandler(NO);
+                }
                  style:UIAlertActionStyleCancel];
 
   [self.actionSheetCoordinator start];
