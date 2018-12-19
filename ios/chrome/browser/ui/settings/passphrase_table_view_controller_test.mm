@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/passphrase_collection_view_controller_test.h"
+#import "ios/chrome/browser/ui/settings/passphrase_table_view_controller_test.h"
 
 #import <UIKit/UIKit.h>
 
@@ -46,7 +46,7 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreatePrefService() {
 }
 
 std::unique_ptr<KeyedService>
-PassphraseCollectionViewControllerTest::CreateNiceProfileSyncServiceMock(
+PassphraseTableViewControllerTest::CreateNiceProfileSyncServiceMock(
     web::BrowserState* context) {
   browser_sync::ProfileSyncService::InitParams init_params =
       CreateProfileSyncServiceParamsForTest(
@@ -55,16 +55,15 @@ PassphraseCollectionViewControllerTest::CreateNiceProfileSyncServiceMock(
       std::move(init_params));
 }
 
-PassphraseCollectionViewControllerTest::PassphraseCollectionViewControllerTest()
-    : CollectionViewControllerTest(),
+PassphraseTableViewControllerTest::PassphraseTableViewControllerTest()
+    : ChromeTableViewControllerTest(),
       fake_sync_service_(NULL),
       default_auth_error_(GoogleServiceAuthError::NONE) {}
 
-PassphraseCollectionViewControllerTest::
-    ~PassphraseCollectionViewControllerTest() {}
+PassphraseTableViewControllerTest::~PassphraseTableViewControllerTest() {}
 
-void PassphraseCollectionViewControllerTest::SetUp() {
-  CollectionViewControllerTest::SetUp();
+void PassphraseTableViewControllerTest::SetUp() {
+  ChromeTableViewControllerTest::SetUp();
 
   // Set up the default return values for non-trivial return types.
   DefaultValue<const GoogleServiceAuthError&>::Set(default_auth_error_);
@@ -101,7 +100,7 @@ void PassphraseCollectionViewControllerTest::SetUp() {
       ->SignIn(identity, "");
 }
 
-void PassphraseCollectionViewControllerTest::SetUpNavigationController(
+void PassphraseTableViewControllerTest::SetUpNavigationController(
     UIViewController* test_controller) {
   dummy_controller_ = [[UIViewController alloc] init];
   nav_controller_ = [[SettingsNavigationController alloc]

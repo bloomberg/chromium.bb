@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/cells/card_multiline_item.h"
 
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -29,7 +30,7 @@ TEST_F(CardMultilineItemTest, ConfigureCell) {
   CardMultilineCell* disclaimerCell = static_cast<CardMultilineCell*>(cell);
   EXPECT_FALSE(disclaimerCell.textLabel.text);
 
-  [item configureCell:cell];
+  [item configureCell:cell withStyler:[[ChromeTableViewStyler alloc] init]];
   EXPECT_NSEQ(text, disclaimerCell.textLabel.text);
 }
 

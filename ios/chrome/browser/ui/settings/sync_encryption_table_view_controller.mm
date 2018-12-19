@@ -19,8 +19,8 @@
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/ui/settings/cells/encryption_item.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
-#import "ios/chrome/browser/ui/settings/sync_create_passphrase_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync_create_passphrase_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_table_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
@@ -180,10 +180,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
           ProfileSyncServiceFactory::GetForBrowserState(_browserState);
       if (service->IsEngineInitialized() &&
           !service->IsUsingSecondaryPassphrase()) {
-        SyncCreatePassphraseCollectionViewController* controller =
-            [[SyncCreatePassphraseCollectionViewController alloc]
+        SyncCreatePassphraseTableViewController* controller =
+            [[SyncCreatePassphraseTableViewController alloc]
                 initWithBrowserState:_browserState];
-        [self.navigationController pushViewController:controller animated:YES];
+        if (controller) {
+          controller.dispatcher = self.dispatcher;
+          [self.navigationController pushViewController:controller
+                                               animated:YES];
+        }
       }
       break;
     }

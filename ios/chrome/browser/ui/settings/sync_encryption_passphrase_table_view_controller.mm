@@ -2,13 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_collection_view_controller.h"
-
-#include <memory>
+#import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_table_view_controller.h"
 
 #include "base/i18n/time_formatting.h"
 #include "base/mac/foundation_util.h"
-
 #include "base/strings/sys_string_conversions.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/google/core/common/google_util.h"
@@ -24,22 +21,16 @@
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
-#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/settings/cells/byo_textfield_item.h"
 #import "ios/chrome/browser/ui/settings/cells/card_multiline_item.h"
 #import "ios/chrome/browser/ui/settings/cells/passphrase_error_item.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
@@ -57,7 +48,7 @@ const CGFloat kSpinnerButtonPadding = 18;
 
 }  // namespace
 
-@interface SyncEncryptionPassphraseCollectionViewController ()<
+@interface SyncEncryptionPassphraseTableViewController () <
     OAuth2TokenServiceObserverBridgeDelegate,
     SettingsControllerProtocol> {
   ios::ChromeBrowserState* browserState_;
@@ -70,46 +61,15 @@ const CGFloat kSpinnerButtonPadding = 18;
   UITextField* passphrase_;
 }
 
-// Sets up the navigation bar's right button. The button will be enabled iff
-// |-areAllFieldsFilled| returns YES.
-- (void)setRightNavBarItem;
-
-// Returns a passphrase message item.
-- (CollectionViewItem*)passphraseMessageItem;
-
-// Returns a passphrase item.
-- (CollectionViewItem*)passphraseItem;
-
-// Returns a passphrase error item having |errorMessage| as title.
-- (CollectionViewItem*)passphraseErrorItemWithMessage:(NSString*)errorMessage;
-
-// Shows the UI to indicate the decryption is being attempted.
-- (void)showDecryptionProgress;
-
-// Hides the UI to indicate decryption is in process.
-- (void)hideDecryptionProgress;
-
-// Returns a transparent content view object to be used as a footer, or nil
-// for no footer.
-- (CollectionViewItem*)footerItem;
-
-// Creates a new UIBarButtonItem with a spinner.
-- (UIBarButtonItem*)spinnerButton;
-
 @end
 
-@implementation SyncEncryptionPassphraseCollectionViewController
-
-@synthesize headerMessage = headerMessage_;
-@synthesize footerMessage = footerMessage_;
-@synthesize processingMessage = processingMessage_;
-@synthesize syncErrorMessage = syncErrorMessage_;
+@implementation SyncEncryptionPassphraseTableViewController
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
   DCHECK(browserState);
-  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
   self =
-      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
+      [super initWithTableViewStyle:UITableViewStyleGrouped
+                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
   if (self) {
     self.title = l10n_util::GetNSString(IDS_IOS_SYNC_ENTER_PASSPHRASE_TITLE);
     self.shouldHideDoneButton = YES;
@@ -126,28 +86,24 @@ const CGFloat kSpinnerButtonPadding = 18;
       if (!passphrase_time.is_null()) {
         base::string16 passphrase_time_str =
             base::TimeFormatShortDate(passphrase_time);
-        self.headerMessage = l10n_util::GetNSStringF(
+        _headerMessage = l10n_util::GetNSStringF(
             IDS_IOS_SYNC_ENTER_PASSPHRASE_BODY_WITH_EMAIL_AND_DATE,
             base::SysNSStringToUTF16(userEmail), passphrase_time_str);
       } else {
-        self.headerMessage = l10n_util::GetNSStringF(
+        _headerMessage = l10n_util::GetNSStringF(
             IDS_IOS_SYNC_ENTER_PASSPHRASE_BODY_WITH_EMAIL,
             base::SysNSStringToUTF16(userEmail));
       }
     } else {
-      self.headerMessage =
+      _headerMessage =
           l10n_util::GetNSString(IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY);
     }
-    self.processingMessage = l10n_util::GetNSString(IDS_SYNC_LOGIN_SETTING_UP);
-    footerMessage_ = l10n_util::GetNSString(IDS_IOS_SYNC_PASSPHRASE_RECOVER);
+    _processingMessage = l10n_util::GetNSString(IDS_SYNC_LOGIN_SETTING_UP);
+    _footerMessage = l10n_util::GetNSString(IDS_IOS_SYNC_PASSPHRASE_RECOVER);
 
     tokenServiceObserver_.reset(new OAuth2TokenServiceObserverBridge(
         ProfileOAuth2TokenServiceFactory::GetForBrowserState(browserState_),
         self));
-
-    // TODO(crbug.com/764578): -loadModel should not be called from
-    // initializer. A possible fix is to move this call to -viewDidLoad.
-    [self loadModel];
   }
   return self;
 }
@@ -157,15 +113,15 @@ const CGFloat kSpinnerButtonPadding = 18;
 }
 
 - (NSString*)syncErrorMessage {
-  if (syncErrorMessage_)
-    return syncErrorMessage_;
+  if (_syncErrorMessage)
+    return _syncErrorMessage;
   SyncSetupService* service =
       SyncSetupServiceFactory::GetForBrowserState(browserState_);
   DCHECK(service);
   SyncSetupService::SyncServiceState syncServiceState =
       service->GetSyncServiceState();
 
-  // Passphrase error directly set |syncErrorMessage_|.
+  // Passphrase error directly set |_syncErrorMessage|.
   if (syncServiceState == SyncSetupService::kSyncServiceNeedsPassphrase)
     return nil;
 
@@ -176,6 +132,7 @@ const CGFloat kSpinnerButtonPadding = 18;
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+  [self loadModel];
   [self setRightNavBarItem];
 }
 
@@ -198,11 +155,11 @@ const CGFloat kSpinnerButtonPadding = 18;
   }
 }
 
-#pragma mark - SettingsRootCollectionViewController
+#pragma mark - SettingsRootTableViewController
 
 - (void)loadModel {
   [super loadModel];
-  CollectionViewModel* model = self.collectionViewModel;
+  TableViewModel* model = self.tableViewModel;
 
   [model addSectionWithIdentifier:SectionIdentifierPassphrase];
   if (self.headerMessage) {
@@ -217,33 +174,32 @@ const CGFloat kSpinnerButtonPadding = 18;
     [model addItem:[self passphraseErrorItemWithMessage:errorMessage]
         toSectionWithIdentifier:SectionIdentifierPassphrase];
   }
-  // TODO(crbug.com/650424): Footer items must currently go into a separate
-  // section, to work around a drawing bug in MDC.
-  [model addSectionWithIdentifier:SectionIdentifierFooter];
-  [model addItem:[self footerItem]
-      toSectionWithIdentifier:SectionIdentifierFooter];
+  [model setFooter:[self footerItem]
+      forSectionWithIdentifier:SectionIdentifierPassphrase];
 }
 
 #pragma mark - Items
 
-- (CollectionViewItem*)passphraseMessageItem {
+// Returns a passphrase message item.
+- (TableViewItem*)passphraseMessageItem {
   CardMultilineItem* item =
       [[CardMultilineItem alloc] initWithType:ItemTypeMessage];
-  item.text = headerMessage_;
+  item.text = self.headerMessage;
   return item;
 }
 
-- (CollectionViewItem*)passphraseItem {
+// Returns a passphrase item.
+- (TableViewItem*)passphraseItem {
   if (passphrase_) {
     [self unregisterTextField:passphrase_];
   }
   passphrase_ = [[UITextField alloc] init];
-  [passphrase_ setSecureTextEntry:YES];
-  [passphrase_ setBackgroundColor:[UIColor clearColor]];
-  [passphrase_ setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
-  [passphrase_ setAutocorrectionType:UITextAutocorrectionTypeNo];
-  [passphrase_
-      setPlaceholder:l10n_util::GetNSString(IDS_SYNC_PASSPHRASE_LABEL)];
+  passphrase_.secureTextEntry = YES;
+  passphrase_.backgroundColor = UIColor.clearColor;
+  passphrase_.autocorrectionType = UITextAutocorrectionTypeNo;
+  passphrase_.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  passphrase_.adjustsFontForContentSizeCategory = YES;
+  passphrase_.placeholder = l10n_util::GetNSString(IDS_SYNC_PASSPHRASE_LABEL);
   [self registerTextField:passphrase_];
 
   BYOTextFieldItem* item =
@@ -252,77 +208,47 @@ const CGFloat kSpinnerButtonPadding = 18;
   return item;
 }
 
-- (CollectionViewItem*)passphraseErrorItemWithMessage:(NSString*)errorMessage {
+// Returns a passphrase error item having |errorMessage| as title.
+- (TableViewItem*)passphraseErrorItemWithMessage:(NSString*)errorMessage {
   PassphraseErrorItem* item =
       [[PassphraseErrorItem alloc] initWithType:ItemTypeError];
   item.text = errorMessage;
   return item;
 }
 
-- (CollectionViewItem*)footerItem {
-  CollectionViewFooterItem* footerItem =
-      [[CollectionViewFooterItem alloc] initWithType:ItemTypeFooter];
-  footerItem.cellStyle = CollectionViewCellStyle::kUIKit;
+// Returns the footer item for passphrase section.
+- (TableViewHeaderFooterItem*)footerItem {
+  TableViewLinkHeaderFooterItem* footerItem =
+      [[TableViewLinkHeaderFooterItem alloc] initWithType:ItemTypeFooter];
   footerItem.text = self.footerMessage;
   footerItem.linkURL = google_util::AppendGoogleLocaleParam(
       GURL(kSyncGoogleDashboardURL),
       GetApplicationContext()->GetApplicationLocale());
-  footerItem.linkDelegate = self;
   return footerItem;
 }
 
-#pragma mark - MDCCollectionViewStylingDelegate
+#pragma mark - UITableViewDelegate
 
-- (MDCCollectionViewCellStyle)collectionView:(UICollectionView*)collectionView
-                         cellStyleForSection:(NSInteger)section {
-  NSInteger sectionIdentifier =
-      [self.collectionViewModel sectionIdentifierForSection:section];
-  switch (sectionIdentifier) {
-    case SectionIdentifierFooter:
-      // Display the Learn More footer in the default style with no "card" UI
-      // and no section padding.
-      return MDCCollectionViewCellStyleDefault;
-    default:
-      return self.styler.cellStyle;
-  }
-}
-
-- (BOOL)collectionView:(UICollectionView*)collectionView
-    shouldHideItemBackgroundAtIndexPath:(NSIndexPath*)indexPath {
-  NSInteger sectionIdentifier =
-      [self.collectionViewModel sectionIdentifierForSection:indexPath.section];
-  switch (sectionIdentifier) {
-    case SectionIdentifierFooter:
-      // Display the Learn More footer without any background image or
-      // shadowing.
-      return YES;
-    default:
-      return NO;
-  }
-}
-
-- (CGFloat)collectionView:(UICollectionView*)collectionView
-    cellHeightAtIndexPath:(NSIndexPath*)indexPath {
-  CollectionViewItem* item =
-      [self.collectionViewModel itemAtIndexPath:indexPath];
-  if (item.type == ItemTypeMessage || item.type == ItemTypeFooter) {
-    return [MDCCollectionViewCell
-        cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
-                           forItem:item];
-  }
-  return MDCCellDefaultOneLineHeight;
-}
-
-#pragma mark - UICollectionViewDelegate
-
-- (void)collectionView:(UICollectionView*)collectionView
-    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
-  NSInteger itemType =
-      [self.collectionViewModel itemTypeForIndexPath:indexPath];
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  [super tableView:tableView didSelectRowAtIndexPath:indexPath];
+  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
   if (itemType == ItemTypeEnterPassphrase) {
     [passphrase_ becomeFirstResponder];
   }
+  [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+- (UIView*)tableView:(UITableView*)tableView
+    viewForFooterInSection:(NSInteger)section {
+  UIView* view = [super tableView:tableView viewForFooterInSection:section];
+  if (SectionIdentifierPassphrase ==
+      [self.tableViewModel sectionIdentifierForSection:section]) {
+    TableViewLinkHeaderFooterView* linkView =
+        base::mac::ObjCCastStrict<TableViewLinkHeaderFooterView>(view);
+    linkView.delegate = self;
+  }
+  return view;
 }
 
 #pragma mark - Behavior
@@ -370,6 +296,8 @@ const CGFloat kSpinnerButtonPadding = 18;
   [self reloadData];
 }
 
+// Sets up the navigation bar's right button. The button will be enabled iff
+// |-areAllFieldsFilled| returns YES.
 - (void)setRightNavBarItem {
   UIBarButtonItem* submitButtonItem = self.navigationItem.rightBarButtonItem;
   if (!submitButtonItem) {
@@ -395,6 +323,7 @@ const CGFloat kSpinnerButtonPadding = 18;
   [self.passphrase setText:@""];
 }
 
+// Shows the UI to indicate the decryption is being attempted.
 - (void)showDecryptionProgress {
   if (isDecryptionProgressShown_)
     return;
@@ -409,9 +338,10 @@ const CGFloat kSpinnerButtonPadding = 18;
   savedLeftButton_ = self.navigationItem.leftBarButtonItem;
   self.navigationItem.leftBarButtonItem = [self spinnerButton];
   savedTitle_ = [self.title copy];
-  self.title = processingMessage_;
+  self.title = self.processingMessage;
 }
 
+// Hides the UI to indicate decryption is in process.
 - (void)hideDecryptionProgress {
   if (!isDecryptionProgressShown_)
     return;
@@ -448,6 +378,7 @@ const CGFloat kSpinnerButtonPadding = 18;
          forControlEvents:UIControlEventEditingDidEndOnExit];
 }
 
+// Creates a new UIBarButtonItem with a spinner.
 - (UIBarButtonItem*)spinnerButton {
   CGRect customViewFrame = CGRectMake(0, 0, kSpinnerButtonCustomViewSize,
                                       kSpinnerButtonCustomViewSize);
@@ -483,17 +414,17 @@ const CGFloat kSpinnerButtonPadding = 18;
 
 - (void)textFieldDidBeginEditing:(id)sender {
   // Remove the error cell if there is one.
-  CollectionViewModel* model = self.collectionViewModel;
-  NSInteger section =
-      [model sectionForSectionIdentifier:SectionIdentifierPassphrase];
-  NSIndexPath* errorIndexPath =
-      [NSIndexPath indexPathForItem:ItemTypeError inSection:section];
-  if ([model hasItemAtIndexPath:errorIndexPath] &&
-      [model itemTypeForIndexPath:errorIndexPath] == ItemTypeError) {
+  TableViewModel* model = self.tableViewModel;
+  if ([model hasItemForItemType:ItemTypeError
+              sectionIdentifier:SectionIdentifierPassphrase]) {
     DCHECK(self.syncErrorMessage);
+    NSIndexPath* path =
+        [model indexPathForItemType:ItemTypeError
+                  sectionIdentifier:SectionIdentifierPassphrase];
     [model removeItemWithType:ItemTypeError
         fromSectionWithIdentifier:SectionIdentifierPassphrase];
-    [self.collectionView deleteItemsAtIndexPaths:@[ errorIndexPath ]];
+    [self.tableView deleteRowsAtIndexPaths:@[ path ]
+                          withRowAnimation:UITableViewRowAnimationAutomatic];
     self.syncErrorMessage = nil;
   }
 }

@@ -24,7 +24,7 @@
 #import "ios/chrome/browser/ui/settings/google_services_settings_local_commands.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller.h"
-#import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_encryption_table_view_controller.h"
 #include "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -172,7 +172,7 @@
   // If there was a sync error, prompt the user to enter the passphrase.
   // Otherwise, show the full encryption options.
   if (syncService->IsPassphraseRequired()) {
-    controllerToPush = [[SyncEncryptionPassphraseCollectionViewController alloc]
+    controllerToPush = [[SyncEncryptionPassphraseTableViewController alloc]
         initWithBrowserState:self.browserState];
   } else {
     controllerToPush = [[SyncEncryptionTableViewController alloc]

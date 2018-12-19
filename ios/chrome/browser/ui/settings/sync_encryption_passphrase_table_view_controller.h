@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_SYNC_ENCRYPTION_PASSPHRASE_COLLECTION_VIEW_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_SYNC_ENCRYPTION_PASSPHRASE_COLLECTION_VIEW_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_SYNC_ENCRYPTION_PASSPHRASE_TABLE_VIEW_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_SETTINGS_SYNC_ENCRYPTION_PASSPHRASE_TABLE_VIEW_CONTROLLER_H_
 
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/settings/settings_root_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
 namespace ios {
 class ChromeBrowserState;
@@ -18,7 +17,6 @@ class ChromeBrowserState;
 namespace sync_encryption_passphrase {
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierPassphrase = kSectionIdentifierEnumZero,
-  SectionIdentifierFooter,
 };
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeMessage = kItemTypeEnumZero,
@@ -30,8 +28,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }  // namespace sync_encryption_passphrase
 
 // Controller to allow user to specify encryption passphrase for Sync.
-@interface SyncEncryptionPassphraseCollectionViewController
-    : SettingsRootCollectionViewController<SyncObserverModelBridge>
+@interface SyncEncryptionPassphraseTableViewController
+    : SettingsRootTableViewController <SyncObserverModelBridge>
 
 @property(weak, nonatomic, readonly) UITextField* passphrase;
 @property(nonatomic, copy) NSString* headerMessage;
@@ -42,14 +40,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // |browserState| must not be nil.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithLayout:(UICollectionViewLayout*)layout
-                         style:(CollectionViewControllerStyle)style
+- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
+                           appBarStyle:
+                               (ChromeTableViewControllerStyle)appBarStyle
     NS_UNAVAILABLE;
 
 @end
 
-@interface SyncEncryptionPassphraseCollectionViewController (
-    Subclassing)<UITextFieldDelegate>
+@interface SyncEncryptionPassphraseTableViewController (Subclassing) <
+    UITextFieldDelegate>
 
 // Whether this controller is for encryption or decryption. Returns |YES|, if
 // the used for the user to enter an existing passphrase that is not yet
@@ -87,4 +86,4 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SYNC_ENCRYPTION_PASSPHRASE_COLLECTION_VIEW_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SYNC_ENCRYPTION_PASSPHRASE_TABLE_VIEW_CONTROLLER_H_
