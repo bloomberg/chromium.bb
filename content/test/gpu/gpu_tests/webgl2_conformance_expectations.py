@@ -316,11 +316,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance/misc/webgl-specific-stencil-settings.html',
         ['passthrough'], bug=844349)
 
-    # TODO(jmadill): Re-enable after fix. http://anglebug.com/3012
-    self.Fail('conformance2/extensions/' +
-        'webgl_multiview_transform_feedback.html',
-        ['passthrough'], bug=3012) # ANGLE bug ID
-
     # Passthrough command decoder / OpenGL
     self.Fail('conformance2/misc/uninitialized-test-2.html',
         ['passthrough', 'opengl'], bug=602688)
