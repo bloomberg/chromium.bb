@@ -26,7 +26,7 @@ class MarkRequestCompleteTask : public DatabaseTask {
 
   MarkRequestCompleteTask(
       DatabaseTaskHost* host,
-      BackgroundFetchRegistrationId registration_id,
+      const BackgroundFetchRegistrationId& registration_id,
       scoped_refptr<BackgroundFetchRequestInfo> request_info,
       MarkRequestCompleteCallback callback);
 

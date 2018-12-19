@@ -19,7 +19,7 @@ namespace background_fetch {
 
 MatchRequestsTask::MatchRequestsTask(
     DatabaseTaskHost* host,
-    BackgroundFetchRegistrationId registration_id,
+    const BackgroundFetchRegistrationId& registration_id,
     std::unique_ptr<BackgroundFetchRequestMatchParams> match_params,
     SettledFetchesCallback callback)
     : DatabaseTask(host),
@@ -48,10 +48,12 @@ void MatchRequestsTask::DidOpenCache(CacheStorageCacheHandle handle,
   handle_ = std::move(handle);
   DCHECK(handle_.value());
 
-  auto request = blink::mojom::FetchAPIRequest::New();
+  blink::mojom::FetchAPIRequestPtr request;
   if (match_params_->FilterByRequest()) {
     request = BackgroundFetchSettledFetch::CloneRequest(
         match_params_->request_to_match());
+  } else {
+    request = blink::mojom::FetchAPIRequest::New();
   }
 
   handle_.value()->GetAllMatchedEntries(
