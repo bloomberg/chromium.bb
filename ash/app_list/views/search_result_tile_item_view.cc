@@ -116,7 +116,7 @@ SearchResultTileItemView::SearchResultTileItemView(
     rating_star_->set_can_process_events_within_subtree(false);
     rating_star_->SetVerticalAlignment(views::ImageView::LEADING);
     rating_star_->SetImage(gfx::CreateVectorIcon(
-        kIcBadgeRatingIcon, kSearchRatingStarSize, kSearchRatingStarColor));
+        kBadgeRatingIcon, kSearchRatingStarSize, kSearchRatingStarColor));
     rating_star_->SetVisible(false);
     AddChildView(rating_star_);
 
