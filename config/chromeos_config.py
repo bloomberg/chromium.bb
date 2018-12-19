@@ -876,6 +876,8 @@ def CreateBoardConfigs(site_config, boards_dict, ge_build_config):
       board_config.apply(disk_layout='base')
     if board in chromeos_boards.beaglebone_boards:
       board_config.apply(site_config.templates.beaglebone)
+    if board in chromeos_boards.builder_incompatible_binaries_boards:
+      board_config.apply(unittests=False)
     if board == 'moblab-generic-vm':
       board_config.apply(site_config.templates.moblab_vm_tests)
 
@@ -2111,6 +2113,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           board_configs,
           site_config.templates.unittest_only_paladin,
           site_config.templates.cq_luci_slave,
+          unittests=True,
       )
   )
   site_config.Add(
@@ -3608,6 +3611,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       board_configs,
       site_config.templates.unittest_stress,
       luci_builder=config_lib.LUCI_BUILDER_TRY,
+      unittests=True,
   )
 
   site_config.AddGroup(
