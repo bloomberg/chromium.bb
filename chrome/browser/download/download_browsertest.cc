@@ -1228,7 +1228,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadMimeType) {
   CheckDownload(browser(), file, file);
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // Download a file and confirm that the file is correctly quarantined.
 //
 // TODO(asanka): We should enable the test on Mac as well, but currently
