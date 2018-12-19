@@ -249,7 +249,7 @@ if (enable_java_templates) {
         rebase_path(_jni_generator_include, _jni_output_dir),
       ]
 
-      if (!is_java_debug) {
+      if (use_hashed_jni_names) {
         args += [ "--use_proxy_hash" ]
       }
 
