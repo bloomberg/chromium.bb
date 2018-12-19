@@ -103,13 +103,13 @@ class XCodebuildRunnerTest(test_runner_test.TestCase):
     type(mock_egtest).egtests_path = mock.PropertyMock(
         return_value=_EGTESTS_APP_PATH)
     cmd = xcodebuild_runner.LaunchCommand(
-        mock_egtest, destination, shards=1, retries=1, out_dir=_OUT_DIR)
+        mock_egtest, destination, shards=3, retries=1, out_dir=_OUT_DIR)
     self.assertEqual(['xcodebuild', 'test-without-building',
                       '-xctestrun', '/tmp/temp_file.xctestrun',
-                      '-resultBundlePath', 'out/dir',
-                      '-parallel-testing-enabled', 'YES',
                       '-destination',
                       'platform=iOS Simulator,OS=12.0,name=iPhone X',
+                      '-resultBundlePath', 'out/dir',
+                      '-parallel-testing-enabled', 'YES',
                       '-parallel-testing-worker-count', '3'],
                      cmd.command(egtests_app=mock_egtest,
                                  out_dir=_OUT_DIR,
