@@ -457,10 +457,13 @@ void Geolocation::UpdateGeolocationConnection() {
   if (geolocation_)
     return;
 
+  // See https://bit.ly/2S0zRAS for task types.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
   InterfaceInvalidator* invalidator =
       GetExecutionContext()->GetInterfaceInvalidator();
   GetFrame()->GetInterfaceProvider().GetInterface(&geolocation_service_,
-                                                  invalidator);
+                                                  invalidator, task_runner);
   geolocation_service_->CreateGeolocation(
       MakeRequest(&geolocation_, invalidator),
       LocalFrame::HasTransientUserActivation(GetFrame()));
