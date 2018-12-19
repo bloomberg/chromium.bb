@@ -14,7 +14,7 @@
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/service_executable/service_main.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
-#include "services/service_manager/tests/lifecycle/lifecycle_unittest.mojom.h"
+#include "services/service_manager/tests/lifecycle/lifecycle.test-mojom.h"
 
 namespace {
 

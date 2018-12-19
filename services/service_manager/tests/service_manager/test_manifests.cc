@@ -8,7 +8,7 @@
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
-#include "services/service_manager/tests/service_manager/service_manager_unittest.mojom.h"
+#include "services/service_manager/tests/service_manager/service_manager.test-mojom.h"
 
 namespace service_manager {
 

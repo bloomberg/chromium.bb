@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
-#include "services/service_manager/background/tests/test.mojom.h"
+#include "services/service_manager/background/tests/background.test-mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/manifest.h"

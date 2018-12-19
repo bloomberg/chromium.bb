@@ -14,7 +14,7 @@
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "services/service_manager/public/mojom/constants.mojom.h"
-#include "services/service_manager/tests/shutdown/shutdown_unittest.mojom.h"
+#include "services/service_manager/tests/shutdown/shutdown.test-mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace service_manager {
