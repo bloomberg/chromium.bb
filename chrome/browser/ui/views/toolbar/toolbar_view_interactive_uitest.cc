@@ -125,7 +125,7 @@ void ToolbarViewInteractiveUITest::TestWhileInDragOperation() {
 
 void ToolbarViewInteractiveUITest::FinishDragAndDrop(
     base::Closure quit_closure) {
-  base::ScopedAllowBaseSyncPrimitivesForTesting allow_thread_join;
+  base::ScopedAllowBlockingForTesting allow_thread_join;
   dnd_thread_.reset();
   TestWhileInDragOperation();
   ui_controls::SendMouseEventsNotifyWhenDone(ui_controls::LEFT, ui_controls::UP,
