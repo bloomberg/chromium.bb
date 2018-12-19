@@ -805,7 +805,7 @@ void DesktopWindowTreeHostWin::HandleAccelerator(
 }
 
 void DesktopWindowTreeHostWin::HandleCreate() {
-  native_widget_delegate_->OnNativeWidgetCreated(true);
+  native_widget_delegate_->OnNativeWidgetCreated();
 }
 
 void DesktopWindowTreeHostWin::HandleDestroying() {
