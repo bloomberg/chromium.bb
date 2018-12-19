@@ -209,8 +209,6 @@ class CORE_EXPORT DocumentLoader
   void DispatchLinkHeaderPreloads(ViewportDescriptionWrapper*,
                                   LinkLoader::MediaPreloadPolicy);
 
-  Resource* StartPreload(ResourceType, FetchParameters&);
-
   void SetServiceWorkerNetworkProvider(
       std::unique_ptr<WebServiceWorkerNetworkProvider>);
 
