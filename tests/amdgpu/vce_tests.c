@@ -648,12 +648,10 @@ static void check_mv_result(struct amdgpu_vce_encode *enc)
 {
 	uint64_t sum;
 	uint32_t s = 140790;
-	uint32_t *ptr, size;
-	int i, j, r;
+	int j, r;
 
 	r = amdgpu_bo_cpu_map(enc->fb[0].handle, (void **)&enc->fb[0].ptr);
 	CU_ASSERT_EQUAL(r, 0);
-	ptr = (uint32_t *)enc->fb[0].ptr;
 	r = amdgpu_bo_cpu_unmap(enc->fb[0].handle);
 	CU_ASSERT_EQUAL(r, 0);
 	r = amdgpu_bo_cpu_map(enc->mvb.handle, (void **)&enc->mvb.ptr);
