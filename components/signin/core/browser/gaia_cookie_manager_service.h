@@ -35,7 +35,7 @@ class OAuth2TokenService;
 namespace network {
 class SharedURLLoaderFactory;
 class SimpleURLLoader;
-}
+}  // namespace network
 
 namespace signin {
 // The maximum number of retries for a fetcher used in this class.
@@ -286,9 +286,7 @@ class GaiaCookieManagerService : public KeyedService,
   }
 
   // Returns a non-NULL pointer to its instance of net::BackoffEntry
-  const net::BackoffEntry* GetBackoffEntry() {
-    return &fetcher_backoff_;
-  }
+  const net::BackoffEntry* GetBackoffEntry() { return &fetcher_backoff_; }
 
   // Can be overridden by tests.
   virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
