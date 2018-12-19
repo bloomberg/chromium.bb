@@ -10,8 +10,11 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/timer/timer.h"
+#include "content/common/content_export.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/renderer/loader/resource_dispatcher.h"
+#include "mojo/public/cpp/system/data_pipe.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
@@ -30,7 +33,15 @@ struct SyncLoadResponse;
 
 // This class owns the context necessary to perform an asynchronous request
 // while the main thread is blocked so that it appears to be synchronous.
-class SyncLoadContext : public RequestPeer {
+// There are a few mode to load a request:
+//   1) kNonDataPipe: body is received on OnReceivedData(), and the body is set
+//      to response_.data.
+//   2) kDataPipe; body is received on a data pipe passed on
+//      OnStartLoadingResponseBody(), and the body is set to response_.data.
+//   3) kBlob: body is received on a data pipe passed on
+//      OnStartLoadingResponseBody(), and wraps the data pipe with a
+//      SerializedBlobPtr.
+class CONTENT_EXPORT SyncLoadContext : public RequestPeer {
  public:
   // Begins a new asynchronous request on whatever sequence this method is
   // called on. |completed_event| will be signalled when the request is complete
@@ -59,6 +70,8 @@ class SyncLoadContext : public RequestPeer {
   void CancelRedirect();
 
  private:
+  friend class SyncLoadContextTest;
+
   SyncLoadContext(
       network::ResourceRequest* request,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory,
@@ -83,6 +96,8 @@ class SyncLoadContext : public RequestPeer {
 
   void OnFinishCreatingBlob(blink::mojom::SerializedBlobPtr blob);
 
+  void OnBodyReadable(MojoResult, const mojo::HandleSignalsState&);
+
   void OnAbort(base::WaitableEvent* event);
   void OnTimeout();
 
@@ -93,6 +108,13 @@ class SyncLoadContext : public RequestPeer {
   // it remains on the stack until |event_| is signaled.
   // Set to null after CompleteRequest() is called.
   SyncLoadResponse* response_;
+
+  enum class Mode { kInitial, kNonDataPipe, kDataPipe, kBlob };
+  Mode mode_ = Mode::kInitial;
+
+  // Used when Mode::kDataPipe.
+  mojo::ScopedDataPipeConsumerHandle body_handle_;
+  mojo::SimpleWatcher body_watcher_;
 
   // State necessary to run a request on an independent thread.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
