@@ -200,6 +200,7 @@
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller_factory.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
+#import "ios/chrome/browser/url_loading/url_loading_util.h"
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
 #import "ios/chrome/browser/web/image_fetch_tab_helper.h"
@@ -2449,7 +2450,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       initWithBrowserState:_browserState
                     loader:self
           parentController:self
-                dispatcher:self.dispatcher];
+                dispatcher:self.dispatcher
+              webStateList:self.tabModel.webStateList];
 }
 
 - (void)setOverScrollActionControllerToStaticNativeContent:
@@ -4244,17 +4246,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       NTPHelper->Deactivate();
     }
   }
-}
-
-- (void)loadJavaScriptFromLocationBar:(NSString*)script {
-  PrerenderService* prerenderService =
-      PrerenderServiceFactory::GetForBrowserState(self.browserState);
-  if (prerenderService) {
-    prerenderService->CancelPrerender();
-  }
-  DCHECK(self.tabModel.currentTab);
-  if (self.currentWebState)
-    self.currentWebState->ExecuteUserJavaScript(script);
 }
 
 - (void)webPageOrderedOpen:(OpenNewTabCommand*)command {

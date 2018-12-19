@@ -51,9 +51,6 @@
 - (void)restoreTabWithSessionID:(const SessionID)sessionID {
 }
 
-- (void)loadJavaScriptFromLocationBar:(NSString*)script {
-}
-
 - (const GURL&)url {
   return _url;
 }

@@ -118,8 +118,4 @@ initWithRegularWebStateList:(WebStateList*)regularWebStateList
                                    WindowOpenDisposition::NEW_FOREGROUND_TAB);
 }
 
-- (void)loadJavaScriptFromLocationBar:(NSString*)script {
-  NOTREACHED() << "This is intentionally NO-OP in TabGridURLLoader.";
-}
-
 @end

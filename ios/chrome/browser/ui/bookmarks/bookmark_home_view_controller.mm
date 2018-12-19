@@ -190,30 +190,11 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 @property(nonatomic, strong)
     BookmarkInteractionController* bookmarkInteractionController;
 
+@property(nonatomic, assign) WebStateList* webStateList;
+
 @end
 
 @implementation BookmarkHomeViewController
-
-@synthesize bookmarks = _bookmarks;
-@synthesize browserState = _browserState;
-@synthesize folderSelector = _folderSelector;
-@synthesize loader = _loader;
-@synthesize homeDelegate = _homeDelegate;
-@synthesize contextBarState = _contextBarState;
-@synthesize dispatcher = _dispatcher;
-@synthesize cachedIndexPathRow = _cachedIndexPathRow;
-@synthesize isReconstructingFromCache = _isReconstructingFromCache;
-@synthesize sharedState = _sharedState;
-@synthesize mediator = _mediator;
-@synthesize searchController = _searchController;
-@synthesize searchTerm = _searchTerm;
-@synthesize deleteButton = _deleteButton;
-@synthesize moreButton = _moreButton;
-@synthesize scrimView = _scrimView;
-@synthesize spinnerView = _spinnerView;
-@synthesize emptyTableBackgroundView = _emptyTableBackgroundView;
-@synthesize actionSheetCoordinator = _actionSheetCoordinator;
-@synthesize bookmarkInteractionController = _bookmarkInteractionController;
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -223,7 +204,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
                   browserState:(ios::ChromeBrowserState*)browserState
-                    dispatcher:(id<ApplicationCommands>)dispatcher {
+                    dispatcher:(id<ApplicationCommands>)dispatcher
+                  webStateList:(WebStateList*)webStateList {
   DCHECK(browserState);
   self = [super initWithTableViewStyle:UITableViewStylePlain
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
@@ -231,6 +213,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     _browserState = browserState->GetOriginalChromeBrowserState();
     _loader = loader;
     _dispatcher = dispatcher;
+    _webStateList = webStateList;
 
     _faviconLoader =
         IOSChromeFaviconLoaderFactory::GetForBrowserState(_browserState);
@@ -663,7 +646,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
         initWithBrowserState:self.browserState
                       loader:self.loader
             parentController:self
-                  dispatcher:self.dispatcher];
+                  dispatcher:self.dispatcher
+                webStateList:self.webStateList];
     self.bookmarkInteractionController.delegate = self;
   }
 
@@ -1126,7 +1110,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   BookmarkHomeViewController* controller =
       [[BookmarkHomeViewController alloc] initWithLoader:_loader
                                             browserState:self.browserState
-                                              dispatcher:self.dispatcher];
+                                              dispatcher:self.dispatcher
+                                            webStateList:self.webStateList];
   [controller setRootNode:folder];
   controller.homeDelegate = self.homeDelegate;
   return controller;
