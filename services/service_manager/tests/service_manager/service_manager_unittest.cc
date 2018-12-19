@@ -34,7 +34,7 @@
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/service_manager/runner/common/client_util.h"
-#include "services/service_manager/tests/service_manager/service_manager_unittest.mojom.h"
+#include "services/service_manager/tests/service_manager/service_manager.test-mojom.h"
 #include "services/service_manager/tests/service_manager/test_manifests.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

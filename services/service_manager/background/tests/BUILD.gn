@@ -28,12 +28,14 @@ source_set("unittests") {
 }
 
 mojom("test_service_interfaces") {
+  testonly = true
   sources = [
-    "test.mojom",
+    "background.test-mojom",
   ]
 }
 
 service_executable("background_service_manager_test_service") {
+  testonly = true
   sources = [
     "test_service.cc",
   ]

@@ -32,8 +32,9 @@ source_set("shutdown") {
 }
 
 mojom("interfaces") {
+  testonly = true
   sources = [
-    "shutdown_unittest.mojom",
+    "shutdown.test-mojom",
   ]
 }
 

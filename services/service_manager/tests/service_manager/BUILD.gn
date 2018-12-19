@@ -36,8 +36,9 @@ source_set("service_manager") {
 }
 
 mojom("interfaces") {
+  testonly = true
   sources = [
-    "service_manager_unittest.mojom",
+    "service_manager.test-mojom",
   ]
 
   deps = [

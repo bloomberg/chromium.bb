@@ -17,7 +17,7 @@
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
-#include "services/service_manager/tests/connect/connect_test.mojom.h"
+#include "services/service_manager/tests/connect/connect.test-mojom.h"
 
 namespace service_manager {
 

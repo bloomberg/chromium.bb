@@ -27,7 +27,7 @@
 #include "services/service_manager/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
-#include "services/service_manager/tests/lifecycle/lifecycle_unittest.mojom.h"
+#include "services/service_manager/tests/lifecycle/lifecycle.test-mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace service_manager {

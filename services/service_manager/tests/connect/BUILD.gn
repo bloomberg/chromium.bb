@@ -32,8 +32,9 @@ source_set("connect") {
 }
 
 mojom("interfaces") {
+  testonly = true
   sources = [
-    "connect_test.mojom",
+    "connect.test-mojom",
   ]
   deps = [
     "//mojo/public/mojom/base",

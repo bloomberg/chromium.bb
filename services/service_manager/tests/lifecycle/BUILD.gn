@@ -30,12 +30,14 @@ source_set("lifecycle") {
 }
 
 mojom("interfaces") {
+  testonly = true
   sources = [
-    "lifecycle_unittest.mojom",
+    "lifecycle.test-mojom",
   ]
 }
 
 source_set("app_client") {
+  testonly = true
   sources = [
     "app_client.cc",
     "app_client.h",

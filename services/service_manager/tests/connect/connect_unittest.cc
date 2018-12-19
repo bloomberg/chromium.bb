@@ -32,7 +32,7 @@
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
-#include "services/service_manager/tests/connect/connect_test.mojom.h"
+#include "services/service_manager/tests/connect/connect.test-mojom.h"
 #include "services/service_manager/tests/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
