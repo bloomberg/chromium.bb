@@ -129,6 +129,8 @@ class TouchEventAckQueue {
 
   void UpdateQueueAfterTargetDestroyed(RenderWidgetHostViewBase* target_view);
 
+  size_t length_for_testing() { return ack_queue_.size(); }
+
  private:
   void ProcessAckedTouchEvents();
   void ReportTouchEventAckQueueUmaStats();
@@ -230,7 +232,7 @@ void TouchEventAckQueue::UpdateQueueAfterTargetDestroyed(
                    ack_queue_.end());
 
   // Otherwise, mark its status accordingly.
-  for_each(ack_queue_.begin(), ack_queue_.end(), [target_view](AckData data) {
+  for_each(ack_queue_.begin(), ack_queue_.end(), [target_view](AckData& data) {
     if (data.target_view == target_view) {
       data.touch_event_ack_status = TouchEventAckStatus::TouchEventAcked;
       data.ack_result = INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
@@ -238,6 +240,11 @@ void TouchEventAckQueue::UpdateQueueAfterTargetDestroyed(
   });
 
   ProcessAckedTouchEvents();
+}
+
+size_t RenderWidgetHostInputEventRouter::TouchEventAckQueueLengthForTesting()
+    const {
+  return touch_event_ack_queue_->length_for_testing();
 }
 
 void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(

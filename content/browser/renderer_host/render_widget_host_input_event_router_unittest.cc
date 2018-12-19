@@ -395,6 +395,48 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
             view_root_->last_gesture_seen());
 }
 
+TEST_F(RenderWidgetHostInputEventRouterTest,
+       EnsureRendererDestroyedHandlesUnAckedTouchEvents) {
+  // Tell the child that it has event handlers, to prevent the touch event
+  // queue in the renderer host from acking the touch events immediately.
+  widget_host2_->OnHasTouchEventHandlers(true);
+
+  // Make sure we route touch events to child. This will cause the RWH's
+  // InputRouter to IPC the event into the ether, from which it will never
+  // return, which is perfect for this test.
+  view_root_->SetHittestResult(view_other_.get(), false);
+
+  // Send a TouchStart/End sequence.
+  blink::WebTouchEvent touch_start_event(
+      blink::WebInputEvent::kTouchStart, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  touch_start_event.touches_length = 1;
+  touch_start_event.touches[0].state = blink::WebTouchPoint::kStatePressed;
+  touch_start_event.unique_touch_event_id = 1;
+
+  rwhier_.RouteTouchEvent(view_root_.get(), &touch_start_event,
+                          ui::LatencyInfo(ui::SourceEventType::TOUCH));
+
+  blink::WebTouchEvent touch_end_event(
+      blink::WebInputEvent::kTouchEnd, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  touch_end_event.touches_length = 1;
+  touch_end_event.touches[0].state = blink::WebTouchPoint::kStateReleased;
+  touch_end_event.unique_touch_event_id = 2;
+
+  rwhier_.RouteTouchEvent(view_root_.get(), &touch_end_event,
+                          ui::LatencyInfo(ui::SourceEventType::TOUCH));
+
+  // Make sure both touch events were added to the TEAQ.
+  EXPECT_EQ(2u, rwhier_.TouchEventAckQueueLengthForTesting());
+
+  // Now, tell the router that the child view was destroyed, and verify the
+  // acks.
+  rwhier_.OnRenderWidgetHostViewBaseDestroyed(view_other_.get());
+  EXPECT_EQ(view_root_->last_id_for_touch_ack(), 2lu);
+  EXPECT_EQ(0u, rwhier_.TouchEventAckQueueLengthForTesting());
+}
+
 // Ensure that when RenderWidgetHostInputEventRouter receives an unexpected
 // touch event, it calls the root view's method to Ack the event before
 // dropping it.

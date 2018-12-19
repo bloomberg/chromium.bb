@@ -787,6 +787,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                            ConflictingAllocationsResolve);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            ResizeAndCrossProcessPostMessagePreserveOrder);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostInputEventRouterTest,
+                           EnsureRendererDestroyedHandlesUnAckedTouchEvents);
   friend class MockRenderWidgetHost;
   friend class OverscrollNavigationOverlayTest;
   friend class RenderViewHostTester;

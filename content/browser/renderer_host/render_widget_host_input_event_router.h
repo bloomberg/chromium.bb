@@ -162,6 +162,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   void ShowContextMenuAtPoint(const gfx::Point& point,
                               const ui::MenuSourceType source_type) override;
 
+  size_t TouchEventAckQueueLengthForTesting() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserSideFlingBrowserTest,
                            InertialGSUBubblingStopsWhenParentCannotScroll);
