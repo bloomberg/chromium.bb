@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <syscall.h>
+#include <unistd.h>
 #include "link.h"
 
 #include <algorithm>
@@ -524,7 +525,13 @@ bool StackUnwinderAndroid::SuspendThreadAndRecordStack(
   // SIGURG is chosen here because we observe no crashes with this signal and
   // neither Chrome or the AOSP sets up a special handler for this signal.
   if (!sigaction(SIGURG, &act, &oact)) {
-    kill(tid, SIGURG);
+    // Android renderer process knows the pid of the process. This might need to
+    // be fixed for use on Linux.
+    static const int kPid = getpid();
+    if (tgkill(kPid, tid, SIGURG) != 0) {
+      NOTREACHED();
+      return false;
+    }
     bool finished_waiting = wait_event.Wait();
 
     bool changed = sigaction(SIGURG, &oact, &act) == 0;
