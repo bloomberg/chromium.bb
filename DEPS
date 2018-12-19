@@ -864,7 +864,7 @@ deps = {
     Var('chromium_git') + '/external/libaddressinput.git' + '@' + 'd7ed8e2f3f35ce9a3aafdfdc48745ceab66e7229',
 
   'src/third_party/libaom/source/libaom':
-    Var('aomedia_git') + '/aom.git' + '@' +  '67223a304e098da309776bac253456f75f613fc2',
+    Var('aomedia_git') + '/aom.git' + '@' +  'f751e8fc56c467f4812fd7d67f15499a5d8a7318',
 
   # Userspace interface to kernel DRM services.
   'src/third_party/libdrm/src': {
