@@ -16,6 +16,7 @@
 #include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user.h"
+#include "ui/base/ui_base_features.h"
 
 namespace test {
 
@@ -106,6 +107,9 @@ TEST_F(BrowserFinderChromeOSTest, IncognitoBrowserMatchTest) {
 }
 
 TEST_F(BrowserFinderChromeOSTest, FindBrowserOwnedByAnotherProfile) {
+  // TODO(crbug.com/910241): fix for mash.
+  if (features::IsSingleProcessMash())
+    return;
   set_browser(nullptr);
 
   Browser::CreateParams params(profile()->GetOriginalProfile(), true);

@@ -31,6 +31,7 @@
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_edit_commands.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/geometry/rect.h"
@@ -664,6 +665,9 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideOnHomeKey) {
 }
 
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, GestureTaps) {
+  // TODO(crbug.com/916256): fix for mash.
+  if (features::IsSingleProcessMash())
+    return;
   ui::GestureEvent tap_down(0, 0, 0, ui::EventTimeForNow(),
                             ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN));
   omnibox_textfield_view()->OnGestureEvent(&tap_down);

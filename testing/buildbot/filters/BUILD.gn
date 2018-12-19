@@ -82,14 +82,6 @@ source_set("interactive_ui_tests_filters") {
   ]
 }
 
-source_set("unit_tests_filters") {
-  testonly = true
-
-  data = [
-    "//testing/buildbot/filters/chromeos.single_process_mash.unit_tests.filter",
-  ]
-}
-
 source_set("webview_instrumentation_test_apk_filters") {
   testonly = true
 
