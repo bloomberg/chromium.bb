@@ -36,4 +36,9 @@ AppId WebAppTabHelper::GetAppId(const GURL& url) {
   return AppId();
 }
 
+bool WebAppTabHelper::IsInAppWindow() const {
+  // TODO(beccahughes): Implement.
+  return false;
+}
+
 }  // namespace web_app

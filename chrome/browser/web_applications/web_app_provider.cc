@@ -12,6 +12,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/bookmark_apps/bookmark_app_install_manager.h"
+#include "chrome/browser/web_applications/components/web_app_audio_focus_id_map.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_tab_helper.h"
@@ -51,6 +52,8 @@ WebAppProvider* WebAppProvider::GetForWebContents(
 }
 
 WebAppProvider::WebAppProvider(Profile* profile) {
+  audio_focus_id_map_ = std::make_unique<WebAppAudioFocusIdMap>();
+
   if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions))
     CreateWebAppsSubsystems(profile);
   else
@@ -114,7 +117,20 @@ WebAppTabHelperBase* WebAppProvider::CreateTabHelper(
   else
     extensions::BookmarkAppTabHelper::CreateForWebContents(web_contents);
 
-  return WebAppTabHelperBase::FromWebContents(web_contents);
+  WebAppTabHelperBase* helper =
+      WebAppTabHelperBase::FromWebContents(web_contents);
+
+  WebAppProvider* provider = WebAppProvider::GetForWebContents(web_contents);
+  if (provider) {
+    // In some tests where Reset() has been called |audio_focus_id_map_| will be
+    // a nullptr. Therefore, we should recreate it.
+    if (!provider->audio_focus_id_map_)
+      provider->audio_focus_id_map_ = std::make_unique<WebAppAudioFocusIdMap>();
+
+    helper->SetAudioFocusIdMap(provider->audio_focus_id_map_.get());
+  }
+
+  return helper;
 }
 
 // static
@@ -152,6 +168,7 @@ void WebAppProvider::Reset() {
   registrar_.reset();
   database_.reset();
   database_factory_.reset();
+  audio_focus_id_map_.reset();
 }
 
 void WebAppProvider::Observe(int type,
