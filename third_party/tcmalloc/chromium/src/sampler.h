@@ -38,6 +38,7 @@
 
 #include "config.h"
 #include <stddef.h>                     // for size_t
+#include <atomic>
 #ifdef HAVE_STDINT_H
 #include <stdint.h>                     // for uint64_t, uint32_t, int32_t
 #endif
@@ -122,11 +123,14 @@ class PERFTOOLS_DLL_DECL Sampler {
   // "escalate" to fuller and slower logic only if necessary.
   bool TryRecordAllocationFast(size_t k);
 
-  // Generate a geometric with mean 512K (or FLAG_tcmalloc_sample_parameter)
+  // Generate a geometric with mean tcmalloc_sample_parameter_.
   ssize_t PickNextSamplingPoint();
 
-  // Returns the current sample period
-  static int GetSamplePeriod();
+  // Returns the current sample period.
+  static size_t GetSamplePeriod();
+
+  // Updates the sample period.
+  static void SetSamplePeriod(size_t period);
 
   // The following are public for the purposes of testing
   static uint64_t NextRandom(uint64_t rnd_);  // Returns the next prng value
@@ -151,6 +155,7 @@ class PERFTOOLS_DLL_DECL Sampler {
  private:
   friend class SamplerTest;
   bool RecordAllocationSlow(size_t k);
+  static std::atomic<size_t> tcmalloc_sample_parameter_;
 };
 
 inline bool Sampler::RecordAllocation(size_t k) {
