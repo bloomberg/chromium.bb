@@ -533,25 +533,39 @@ TEST_F(AllocatorShimTest, NewHandlerConcurrency) {
 TEST_F(AllocatorShimTest, ShimReplacesCRTHeapWhenEnabled) {
   ASSERT_NE(::GetProcessHeap(), reinterpret_cast<HANDLE>(_get_heap_handle()));
 }
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_ALLOCATOR_SHIM)
 
-TEST_F(AllocatorShimTest, ShimReplacesMsizeWhenEnabled) {
+#if defined(OS_WIN)
+static size_t GetAllocatedSize(void* ptr) {
+  return _msize(ptr);
+}
+#elif defined(OS_MACOSX)
+static size_t GetAllocatedSize(void* ptr) {
+  return malloc_size(ptr);
+}
+#else
+#define NO_MALLOC_SIZE
+#endif
+
+#if !defined(NO_MALLOC_SIZE) && BUILDFLAG(USE_ALLOCATOR_SHIM)
+TEST_F(AllocatorShimTest, ShimReplacesMallocSizeWhenEnabled) {
   InsertAllocatorDispatch(&g_mock_dispatch);
-  EXPECT_EQ(_msize(kTestSizeEstimateAddress), kTestSizeEstimate);
+  EXPECT_EQ(GetAllocatedSize(kTestSizeEstimateAddress), kTestSizeEstimate);
   RemoveAllocatorDispatchForTesting(&g_mock_dispatch);
 }
 
-TEST_F(AllocatorShimTest, ShimDoesntChangeMsizeWhenEnabled) {
+TEST_F(AllocatorShimTest, ShimDoesntChangeMallocSizeWhenEnabled) {
   void* alloc = malloc(16);
-  size_t sz = _msize(alloc);
+  size_t sz = GetAllocatedSize(alloc);
   EXPECT_GE(sz, 16U);
 
   InsertAllocatorDispatch(&g_mock_dispatch);
-  EXPECT_EQ(_msize(alloc), sz);
+  EXPECT_EQ(GetAllocatedSize(alloc), sz);
   RemoveAllocatorDispatchForTesting(&g_mock_dispatch);
 
   free(alloc);
 }
-#endif  // defined(OS_WIN) && BUILDFLAG(USE_ALLOCATOR_SHIM)
+#endif  // !defined(NO_MALLOC_SIZE) && BUILDFLAG(USE_ALLOCATOR_SHIM)
 
 }  // namespace
 }  // namespace allocator
