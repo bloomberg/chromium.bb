@@ -160,7 +160,8 @@ def main():
     test_target = 'cronet_test_instrumentation_apk'
     unit_target = 'cronet_unittests_android'
     gn_args = get_mobile_gn_args('android', options.release) + \
-              'use_errorprone_java_compiler=true enable_reporting=true '
+              'use_errorprone_java_compiler=true enable_reporting=true ' + \
+              'use_hashed_jni_names=true '
     gn_extra = ''
     out_dir_suffix = ''
     if options.x86:
