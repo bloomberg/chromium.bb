@@ -236,7 +236,14 @@ class ProfileChooserViewExtensionsTest
   DISALLOW_COPY_AND_ASSIGN(ProfileChooserViewExtensionsTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, SigninButtonHasFocus) {
+// TODO(https://crbug.com/855867): This test is flaky on Windows.
+#if defined(OS_WIN)
+#define MAYBE_SigninButtonHasFocus DISABLED_SigninButtonHasFocus
+#else
+#define MAYBE_SigninButtonHasFocus SigninButtonHasFocus
+#endif
+IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
+                       MAYBE_SigninButtonHasFocus) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
   ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
 
