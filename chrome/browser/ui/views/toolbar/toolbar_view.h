@@ -242,6 +242,7 @@ class ToolbarView : public views::AccessiblePaneView,
   void ShowOutdatedInstallNotification(bool auto_update_enabled);
 
   void OnShowHomeButtonChanged();
+  void UpdateHomeButtonVisibility();
 
   gfx::SlideAnimation size_animation_{this};
 

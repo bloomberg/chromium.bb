@@ -220,6 +220,7 @@ void ToolbarView::Init() {
   home_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_HOME));
   home_->set_id(VIEW_ID_HOME_BUTTON);
   home_->Init();
+  home_->SizeToPreferredSize();
 
   // No master container for this one (it is master).
   BrowserActionsContainer* main_container = nullptr;
@@ -282,6 +283,7 @@ void ToolbarView::Init() {
       prefs::kShowHomeButton, browser_->profile()->GetPrefs(),
       base::BindRepeating(&ToolbarView::OnShowHomeButtonChanged,
                           base::Unretained(this)));
+  UpdateHomeButtonVisibility();
 
   InitLayout();
 
@@ -685,11 +687,6 @@ void ToolbarView::LayoutCommon() {
   back_->SetLeadingMargin(maximized ? interior_margin.left() : 0);
   app_menu_button_->SetTrailingMargin(maximized ? interior_margin.right() : 0);
 
-  const bool show_home_button =
-      show_home_button_.GetValue() ||
-      (browser_->is_app() && extensions::util::IsNewBookmarkAppsEnabled());
-  home_->SetVisible(show_home_button);
-
   // Cast button visibility is controlled externally.
 }
 
@@ -817,6 +814,14 @@ void ToolbarView::ShowOutdatedInstallNotification(bool auto_update_enabled) {
 }
 
 void ToolbarView::OnShowHomeButtonChanged() {
+  UpdateHomeButtonVisibility();
   Layout();
   SchedulePaint();
+}
+
+void ToolbarView::UpdateHomeButtonVisibility() {
+  const bool show_home_button =
+      show_home_button_.GetValue() ||
+      (browser_->is_app() && extensions::util::IsNewBookmarkAppsEnabled());
+  home_->SetVisible(show_home_button);
 }
