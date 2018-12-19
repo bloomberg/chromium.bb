@@ -5,7 +5,6 @@
 #ifndef MEDIA_LEARNING_COMMON_TRAINING_EXAMPLE_H_
 #define MEDIA_LEARNING_COMMON_TRAINING_EXAMPLE_H_
 
-#include <deque>
 #include <initializer_list>
 #include <ostream>
 #include <vector>
@@ -57,8 +56,6 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) TrainingExample {
   // Copy / assignment is allowed.
 };
 
-// Collection of pointers to training data.  References would be more convenient
-// but they're not allowed.
 // TODO(liberato): This should probably move to impl/ .
 class COMPONENT_EXPORT(LEARNING_COMMON) TrainingData {
  public:
@@ -73,6 +70,7 @@ class COMPONENT_EXPORT(LEARNING_COMMON) TrainingData {
 
   // Add |example| with weight |weight|.
   void push_back(const TrainingExample& example) {
+    DCHECK_GT(example.weight, 0u);
     examples_.push_back(example);
     total_weight_ += example.weight;
   }
@@ -93,6 +91,10 @@ class COMPONENT_EXPORT(LEARNING_COMMON) TrainingData {
 
   // Provide the |i|-th example, over [0, size()).
   const TrainingExample& operator[](size_t i) const { return examples_[i]; }
+
+  // Return a copy of this data with duplicate entries merged.  Example weights
+  // will be summed.
+  TrainingData DeDuplicate() const;
 
  private:
   ExampleVector examples_;
