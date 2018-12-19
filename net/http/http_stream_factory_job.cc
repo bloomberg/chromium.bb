@@ -1325,13 +1325,16 @@ int HttpStreamFactory::Job::DoRestartTunnelAuthComplete(int result) {
   if (result == ERR_PROXY_AUTH_REQUESTED)
     return result;
 
-  if (result == OK) {
+  if (result == OK || result == ERR_SPDY_SESSION_ALREADY_EXISTS) {
     // Now that we've got the HttpProxyClientSocket connected.  We have
     // to release it as an idle socket into the pool and start the connection
     // process from the beginning.  Trying to pass it in with the
     // SSLSocketParams might cause a deadlock since params are dispatched
     // interchangeably.  This request won't necessarily get this http proxy
     // socket, but there will be forward progress.
+    //
+    // Alernatively, if there's an existing H2 session that can be reused,
+    // also go back to the init connection state to reuse it.
     establishing_tunnel_ = false;
     ReturnToStateInitConnection(false /* do not close connection */);
     return OK;
