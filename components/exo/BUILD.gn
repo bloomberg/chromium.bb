@@ -163,7 +163,7 @@ source_set("test_support") {
       "test/test_client_controlled_state_delegate.h",
     ]
     deps += [
-      "//ash:test_support_without_content",
+      "//ash:test_support",
       "//ash/public/cpp",
     ]
   }
@@ -227,7 +227,7 @@ source_set("unit_tests") {
 
     deps += [
       "//ash",
-      "//ash:test_support_without_content",
+      "//ash:test_support",
       "//ash/public/cpp",
       "//ui/keyboard",
     ]
@@ -276,7 +276,7 @@ test("exo_unittests") {
     ]
 
     deps += [
-      "//ash:test_support_without_content",
+      "//ash:test_support",
       "//ash/public/cpp",
     ]
 

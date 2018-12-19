@@ -20,7 +20,7 @@ class Profile;
 // Tests must include a content::TestServiceManagerContext instance.
 class ChromeKeyboardControllerClientTestHelper {
  public:
-  // Use this for tests using AshTestBase. TODO(stevenjb): Update tests to
+  // Use this for tests using ChromeAshTestBase. TODO(stevenjb): Update tests to
   // rely on the fake behavior instead.
   static std::unique_ptr<ChromeKeyboardControllerClientTestHelper>
   InitializeForAsh();

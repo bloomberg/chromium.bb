@@ -4,7 +4,6 @@
 
 #include <memory>
 
-#include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client_impl.h"
+#include "chrome/test/base/chrome_ash_test_base.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "ui/aura/window.h"
@@ -25,7 +25,7 @@
 namespace ash {
 
 // A test class for preparing the MultiUserContextMenu.
-class MultiUserContextMenuChromeOSTest : public AshTestBase {
+class MultiUserContextMenuChromeOSTest : public ChromeAshTestBase {
  public:
   MultiUserContextMenuChromeOSTest()
       : fake_user_manager_(new chromeos::FakeChromeUserManager),
@@ -69,7 +69,7 @@ class MultiUserContextMenuChromeOSTest : public AshTestBase {
 };
 
 void MultiUserContextMenuChromeOSTest::SetUp() {
-  AshTestBase::SetUp();
+  ChromeAshTestBase::SetUp();
 
   // MultiUserWindowManager assumes there is a MusClient in single-process mash
   // mode.
@@ -91,7 +91,7 @@ void MultiUserContextMenuChromeOSTest::TearDown() {
   delete window_;
 
   ::MultiUserWindowManagerClient::DeleteInstance();
-  AshTestBase::TearDown();
+  ChromeAshTestBase::TearDown();
 }
 
 // Check that an unowned window will never create a menu.

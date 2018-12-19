@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/test/ash_test_base.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -17,6 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/test/base/chrome_ash_test_base.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -188,7 +188,7 @@ std::unique_ptr<UploadJob> MockScreenshotDelegate::CreateUploadJob(
 
 }  // namespace
 
-class DeviceCommandScreenshotTest : public ash::AshTestBase {
+class DeviceCommandScreenshotTest : public ChromeAshTestBase {
  public:
   void VerifyResults(RemoteCommandJob* job,
                      RemoteCommandJob::Status expected_status,
@@ -197,7 +197,7 @@ class DeviceCommandScreenshotTest : public ash::AshTestBase {
  protected:
   DeviceCommandScreenshotTest();
 
-  // ash::AshTestBase:
+  // ChromeAshTestBase:
   void SetUp() override;
 
   void InitializeScreenshotJob(RemoteCommandJob* job,
@@ -222,7 +222,7 @@ DeviceCommandScreenshotTest::DeviceCommandScreenshotTest()
 }
 
 void DeviceCommandScreenshotTest::SetUp() {
-  ash::AshTestBase::SetUp();
+  ChromeAshTestBase::SetUp();
   test_start_time_ = base::TimeTicks::Now();
 }
 

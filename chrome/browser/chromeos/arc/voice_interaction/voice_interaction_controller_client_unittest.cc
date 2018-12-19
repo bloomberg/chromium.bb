@@ -5,12 +5,12 @@
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 
 #include "ash/shell.h"
-#include "ash/test/ash_test_base.h"
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/fake_voice_interaction_controller.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
@@ -22,7 +22,7 @@
 
 namespace arc {
 
-class VoiceInteractionControllerClientTest : public ash::AshTestBase {
+class VoiceInteractionControllerClientTest : public ChromeAshTestBase {
  public:
   VoiceInteractionControllerClientTest()
       : fake_user_manager_(
@@ -30,7 +30,7 @@ class VoiceInteractionControllerClientTest : public ash::AshTestBase {
   ~VoiceInteractionControllerClientTest() override = default;
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    ChromeAshTestBase::SetUp();
 
     // Setup test profile.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -64,7 +64,7 @@ class VoiceInteractionControllerClientTest : public ash::AshTestBase {
     voice_interaction_controller_.reset();
     voice_interaction_controller_client_.reset();
     profile_.reset();
-    AshTestBase::TearDown();
+    ChromeAshTestBase::TearDown();
   }
 
   FakeVoiceInteractionController* voice_interaction_controller() {

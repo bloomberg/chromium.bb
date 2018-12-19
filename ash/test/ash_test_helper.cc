@@ -20,7 +20,6 @@
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "ash/system/screen_layout_observer.h"
-#include "ash/test/ash_test_environment.h"
 #include "ash/test/ash_test_views_delegate.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/ws/window_service_owner.h"
@@ -108,9 +107,8 @@ class TestGpuInterfaceProvider : public ws::GpuInterfaceProvider {
   DISALLOW_COPY_AND_ASSIGN(TestGpuInterfaceProvider);
 };
 
-AshTestHelper::AshTestHelper(AshTestEnvironment* ash_test_environment)
-    : ash_test_environment_(ash_test_environment),
-      command_line_(std::make_unique<base::test::ScopedCommandLine>()) {
+AshTestHelper::AshTestHelper()
+    : command_line_(std::make_unique<base::test::ScopedCommandLine>()) {
   ui::test::EnableTestConfigForPlatformWindows();
 }
 
@@ -145,7 +143,9 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
 
   display::ResetDisplayIdForTest();
   wm_state_ = std::make_unique<::wm::WMState>();
-  test_views_delegate_ = ash_test_environment_->CreateViewsDelegate();
+  // Only create a ViewsDelegate if the test didn't create one already.
+  if (!views::ViewsDelegate::GetInstance())
+    test_views_delegate_ = std::make_unique<AshTestViewsDelegate>();
 
   // Disable animations during tests.
   zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
@@ -178,7 +178,6 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   chromeos::CrasAudioHandler::InitializeForTesting();
   chromeos::SystemSaltGetter::Initialize();
 
-  ash_test_environment_->SetUp();
   // Reset the global state for the cursor manager. This includes the
   // last cursor visibility state, etc.
   ::wm::CursorManager::ResetCursorVisibilityStateForTest();
@@ -254,7 +253,6 @@ void AshTestHelper::TearDown() {
   // Suspend the tear down until all resources are returned via
   // CompositorFrameSinkClient::ReclaimResources()
   base::RunLoop().RunUntilIdle();
-  ash_test_environment_->TearDown();
 
   chromeos::SystemSaltGetter::Shutdown();
   chromeos::CrasAudioHandler::Shutdown();

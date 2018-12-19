@@ -26,6 +26,12 @@ class Window;
 class WindowDelegate;
 }  // namespace aura
 
+namespace base {
+namespace test {
+class ScopedTaskEnvironment;
+}
+}  // namespace base
+
 namespace display {
 class Display;
 class DisplayManager;
@@ -59,7 +65,6 @@ class WindowTreeTestHelper;
 namespace ash {
 
 class AppListTestHelper;
-class AshTestEnvironment;
 class AshTestHelper;
 class Shelf;
 class TestScreenshotDelegate;
@@ -80,6 +85,10 @@ class AshTestBase : public testing::Test {
 
   // Returns the unified system tray on the primary display.
   static UnifiedSystemTray* GetPrimaryUnifiedSystemTray();
+
+  // AshTestBase creates a ScopedTaskEnvironment. This may not be appropriate in
+  // some environments. Use this to destroy it.
+  void DestroyScopedTaskEnvironment();
 
   // Call this only if this code is being run outside of ash, for example, in
   // browser tests that use AshTestBase. This disables CHECKs that are
@@ -244,14 +253,14 @@ class AshTestBase : public testing::Test {
  private:
   void CreateWindowTreeIfNecessary();
 
-  bool setup_called_;
-  bool teardown_called_;
+  bool setup_called_ = false;
+  bool teardown_called_ = false;
   // |SetUp()| doesn't activate session if this is set to false.
-  bool start_session_;
+  bool start_session_ = true;
   // |SetUp()| doesn't inject local-state PrefService into Shell if this is
   // set to false.
   bool provide_local_state_ = true;
-  std::unique_ptr<AshTestEnvironment> ash_test_environment_;
+  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
   std::unique_ptr<AshTestHelper> ash_test_helper_;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
 

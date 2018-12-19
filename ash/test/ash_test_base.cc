@@ -24,7 +24,6 @@
 #include "ash/shell.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/test/ash_test_environment.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_screenshot_delegate.h"
 #include "ash/test_shell_delegate.h"
@@ -35,6 +34,7 @@
 #include "ash/ws/window_service_owner.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
 #include "mojo/public/cpp/bindings/map.h"
@@ -127,12 +127,12 @@ ws::mojom::WindowType MusWindowTypeFromWindowType(
 /////////////////////////////////////////////////////////////////////////////
 
 AshTestBase::AshTestBase()
-    : setup_called_(false), teardown_called_(false), start_session_(true) {
-  ash_test_environment_ = AshTestEnvironment::Create();
-
+    : scoped_task_environment_(
+          std::make_unique<base::test::ScopedTaskEnvironment>(
+              base::test::ScopedTaskEnvironment::MainThreadType::UI)) {
   // Must initialize |ash_test_helper_| here because some tests rely on
   // AshTestBase methods before they call AshTestBase::SetUp().
-  ash_test_helper_.reset(new AshTestHelper(ash_test_environment_.get()));
+  ash_test_helper_ = std::make_unique<AshTestHelper>();
 }
 
 AshTestBase::~AshTestBase() {
@@ -191,6 +191,10 @@ void AshTestBase::TearDown() {
 // static
 Shelf* AshTestBase::GetPrimaryShelf() {
   return Shell::GetPrimaryRootWindowController()->shelf();
+}
+
+void AshTestBase::DestroyScopedTaskEnvironment() {
+  scoped_task_environment_.reset();
 }
 
 // static

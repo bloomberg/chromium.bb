@@ -1494,7 +1494,7 @@ static_library("ash_shell_lib") {
 
   deps = [
     ":ash",
-    ":test_support_without_content",
+    ":test_support",
     "//ash/app_list/presenter",
     "//ash/public/cpp",
     "//base",
@@ -1526,7 +1526,7 @@ static_library("ash_shell_lib_with_content") {
 
   deps = [
     ":ash_shell_lib",
-    ":test_support_without_content",
+    ":test_support",
     "//ash/components/quick_launch:lib",
     "//ash/components/quick_launch/public/mojom",
     "//ash/components/shortcut_viewer:lib",
@@ -1886,7 +1886,7 @@ test("ash_unittests") {
     ":ash",
     ":ash_service_resources",
     ":ash_unittests_catalog_source",
-    ":test_support_without_content",
+    ":test_support",
     "//ash/app_list:test_support",
     "//ash/app_list/presenter",
     "//ash/app_menu",
@@ -2006,7 +2006,7 @@ test("ash_perftests") {
   ]
 
   deps = [
-    ":test_support_without_content",
+    ":test_support",
     "//ash/public/cpp",
     "//base/test:test_support",
     "//cc/base",
@@ -2041,49 +2041,8 @@ executable("ash_shell_with_content") {
   ]
 }
 
-static_library("test_support_without_content") {
+static_library("test_support") {
   testonly = true
-  sources = [
-    "test/ash_test_environment_default.cc",
-  ]
-
-  public_deps = [
-    ":test_support_common",
-  ]
-
-  deps = [
-    "//base",
-    "//base/test:test_support",
-    "//skia",
-  ]
-}
-
-static_library("test_support_with_content") {
-  testonly = true
-  sources = [
-    "test/ash_test_environment_content.cc",
-    "test/ash_test_environment_content.h",
-  ]
-  configs += [ "//build/config:precompiled_headers" ]
-
-  public_deps = [
-    ":test_support_common",
-    "//content/public/browser",
-    "//content/test:test_support",
-    "//services/network:test_support",
-    "//skia",
-    "//ui/views/controls/webview",
-  ]
-}
-
-# Internal target consumed by |test_support_with_content| and
-# |test_support_without_content|. This target contains all the test support
-# files, with the exception of an implementation of AshTestEnvironment.
-# Consumers of ash should use one of |test_support_with_content| or
-# |test_support_without_content|.
-static_library("test_support_common") {
-  testonly = true
-  visibility = [ ":*" ]
   sources = [
     "accessibility/test_accessibility_controller_client.cc",
     "accessibility/test_accessibility_controller_client.h",
@@ -2156,7 +2115,6 @@ static_library("test_support_common") {
     "system/unified/unified_system_tray_test_api.h",
     "test/ash_test_base.cc",
     "test/ash_test_base.h",
-    "test/ash_test_environment.h",
     "test/ash_test_helper.cc",
     "test/ash_test_helper.h",
     "test/ash_test_suite.cc",
@@ -2267,7 +2225,7 @@ static_library("interactive_ui_test_support") {
   testonly = true
   configs += [ "//build/config:precompiled_headers" ]
   public_deps = [
-    ":test_support_without_content",
+    ":test_support",
     "//ash",
   ]
   sources = [
@@ -2275,7 +2233,7 @@ static_library("interactive_ui_test_support") {
     "test/ash_interactive_ui_test_base.h",
   ]
   deps = [
-    ":test_support_with_content",
+    ":test_support",
     "//base",
     "//mojo/core/embedder",
     "//skia",
