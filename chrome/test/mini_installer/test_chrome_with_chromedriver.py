@@ -114,6 +114,8 @@ def CreateChromedriver(args):
       driver.quit()
     chrome_helper.WaitForChromeExit(args.chrome_path)
     report_count = CollectCrashReports(user_data_dir, args.output_dir)
+    if report_count:
+      emit_log = True
     try:
       DeleteWithRetry(user_data_dir, shutil.rmtree)
     except:
@@ -123,6 +125,10 @@ def CreateChromedriver(args):
       if emit_log:
         with open(log_file) as fh:
           logging.error(fh.read())
+        if args.output_dir:
+          target = os.path.join(args.output_dir, os.path.basename(log_file))
+          shutil.copyfile(log_file, target)
+          logging.error('Saved Chrome log to %s', target)
       DeleteWithRetry(log_file, os.remove)
     if report_count:
       raise Exception('Failing test due to %s crash reports found' %
