@@ -11,23 +11,22 @@
 
 namespace tracing {
 
-BaseAgent::BaseAgent(service_manager::Connector* connector,
-                     const std::string& label,
+BaseAgent::BaseAgent(const std::string& label,
                      mojom::TraceDataType type,
                      base::ProcessId pid)
-    : binding_(this) {
-  // |connector| can be null in tests.
-  if (!connector)
-    return;
+    : binding_(this), label_(label), type_(type), pid_(pid) {}
+
+BaseAgent::~BaseAgent() = default;
+
+void BaseAgent::Connect(service_manager::Connector* connector) {
+  DCHECK(!binding_ || !binding_.is_bound());
   tracing::mojom::AgentRegistryPtr agent_registry;
   connector->BindInterface(tracing::mojom::kServiceName, &agent_registry);
 
   tracing::mojom::AgentPtr agent;
   binding_.Bind(mojo::MakeRequest(&agent));
-  agent_registry->RegisterAgent(std::move(agent), label, type, pid);
+  agent_registry->RegisterAgent(std::move(agent), label_, type_, pid_);
 }
-
-BaseAgent::~BaseAgent() = default;
 
 void BaseAgent::StartTracing(const std::string& config,
                              base::TimeTicks coordinator_time,

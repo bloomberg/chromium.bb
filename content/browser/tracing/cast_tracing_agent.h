@@ -12,10 +12,6 @@
 #include "services/tracing/public/cpp/base_agent.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace chromecast {
 class SystemTracer;
 }
@@ -28,7 +24,7 @@ class CastSystemTracingSession;
 // service with perfetto.
 class CastTracingAgent : public tracing::BaseAgent {
  public:
-  explicit CastTracingAgent(service_manager::Connector* connector);
+  CastTracingAgent();
   ~CastTracingAgent() override;
 
  private:

@@ -82,16 +82,13 @@ class MockRecorder : public mojom::Recorder {
 
 class TraceEventAgentTest : public testing::Test {
  public:
-  void SetUp() override { agent_.reset(new TraceEventAgent(nullptr, false)); }
-
   void TearDown() override {
     base::trace_event::TraceLog::GetInstance()->SetDisabled();
     recorder_.reset();
-    agent_.reset();
   }
 
   void StartTracing(const std::string& categories) {
-    agent_->StartTracing(
+    TraceEventAgent::GetInstance()->StartTracing(
         base::trace_event::TraceConfig(categories, "").ToString(),
         base::TimeTicks::Now(),
         base::BindRepeating([](bool success) { EXPECT_TRUE(success); }));
@@ -101,17 +98,17 @@ class TraceEventAgentTest : public testing::Test {
     mojom::RecorderPtr recorder_ptr;
     recorder_.reset(new MockRecorder(MakeRequest(&recorder_ptr)));
     recorder_->set_quit_closure(quit_closure);
-    agent_->StopAndFlush(std::move(recorder_ptr));
+    TraceEventAgent::GetInstance()->StopAndFlush(std::move(recorder_ptr));
   }
 
   void AddMetadataGeneratorFunction(
       TraceEventAgent::MetadataGeneratorFunction generator) {
-    agent_->AddMetadataGeneratorFunction(generator);
+    TraceEventAgent::GetInstance()->AddMetadataGeneratorFunction(generator);
   }
 
   void GetCategories(const std::string& expected_category,
                      base::Closure quit_closure) {
-    agent_->GetCategories(base::BindRepeating(
+    TraceEventAgent::GetInstance()->GetCategories(base::BindRepeating(
         &TraceEventAgentTest::OnGetCategoriesReply, base::Unretained(this),
         expected_category, quit_closure));
   }
@@ -127,7 +124,6 @@ class TraceEventAgentTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  std::unique_ptr<TraceEventAgent> agent_;
   std::unique_ptr<MockRecorder> recorder_;
 };
 

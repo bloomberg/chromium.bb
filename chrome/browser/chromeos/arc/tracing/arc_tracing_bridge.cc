@@ -441,11 +441,13 @@ void ArcTracingBridge::OnTracingReaderStopped(
 
 ArcTracingBridge::ArcTracingAgent::ArcTracingAgent(ArcTracingBridge* bridge)
     : BaseAgent(
-          content::ServiceManagerConnection::GetForProcess()->GetConnector(),
+
           kChromeTraceEventLabel,
           tracing::mojom::TraceDataType::ARRAY,
           base::kNullProcessId),
-      bridge_(bridge) {}
+      bridge_(bridge) {
+  Connect(content::ServiceManagerConnection::GetForProcess()->GetConnector());
+}
 
 ArcTracingBridge::ArcTracingAgent::~ArcTracingAgent() = default;
 

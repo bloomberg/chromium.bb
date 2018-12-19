@@ -132,13 +132,16 @@ void TracingControllerImpl::AddAgents() {
   connector->BindInterface(tracing::mojom::kServiceName, &coordinator_);
 
 #if defined(OS_CHROMEOS)
-  agents_.push_back(std::make_unique<CrOSTracingAgent>(connector));
+  agents_.push_back(std::make_unique<CrOSTracingAgent>());
 #elif defined(CAST_TRACING_AGENT)
-  agents_.push_back(std::make_unique<CastTracingAgent>(connector));
+  agents_.push_back(std::make_unique<CastTracingAgent>());
 #endif
 
-  auto trace_event_agent = tracing::TraceEventAgent::Create(
-      connector, true /* request_clock_sync_marker_on_android */);
+  for (auto& agent : agents_)
+    agent->Connect(connector);
+
+  auto* trace_event_agent = tracing::TraceEventAgent::GetInstance();
+  trace_event_agent->Connect(connector);
 
   // For adding general CPU, network, OS, and other system information to the
   // metadata.
@@ -149,12 +152,6 @@ void TracingControllerImpl::AddAgents() {
         base::BindRepeating(&TracingDelegate::GenerateMetadataDict,
                             base::Unretained(delegate_.get())));
   }
-  trace_event_agent_ = std::move(trace_event_agent);
-}
-
-tracing::TraceEventAgent* TracingControllerImpl::GetTraceEventAgent() const {
-  DCHECK(trace_event_agent_);
-  return trace_event_agent_.get();
 }
 
 std::unique_ptr<base::DictionaryValue>
@@ -355,6 +352,10 @@ bool TracingControllerImpl::StopTracing(
     return false;
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+#if defined(OS_ANDROID)
+  base::trace_event::TraceLog::GetInstance()->AddClockSyncMetadataEvent();
+#endif
+
   tracing::TraceStartupConfig::GetInstance()->SetDisabled();
   trace_data_endpoint_ = std::move(trace_data_endpoint);
   is_data_complete_ = false;
@@ -462,9 +463,9 @@ void TracingControllerImpl::OnMetadataAvailable(base::Value metadata) {
 
 void TracingControllerImpl::SetTracingDelegateForTesting(
     std::unique_ptr<TracingDelegate> delegate) {
-  if (!delegate)
+  if (!delegate) {
     delegate_.reset(GetContentClient()->browser()->GetTracingDelegate());
-  else {
+  } else {
     delegate_ = std::move(delegate);
   }
 }

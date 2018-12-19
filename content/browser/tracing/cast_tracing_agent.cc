@@ -274,9 +274,8 @@ class CastDataSource : public tracing::ProducerClient::DataSourceBase {
 
 }  // namespace
 
-CastTracingAgent::CastTracingAgent(service_manager::Connector* connector)
-    : BaseAgent(connector,
-                "systemTraceEvents",
+CastTracingAgent::CastTracingAgent()
+    : BaseAgent("systemTraceEvents",
                 tracing::mojom::TraceDataType::STRING,
                 base::kNullProcessId),
       worker_task_runner_(base::CreateSequencedTaskRunnerWithTraits(

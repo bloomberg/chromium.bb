@@ -253,8 +253,9 @@ class TracingControllerTest : public ContentBrowserTest {
         base::Bind(&IsTraceEventArgsWhitelisted));
 
     TracingControllerImpl* controller = TracingControllerImpl::GetInstance();
-    controller->GetTraceEventAgent()->AddMetadataGeneratorFunction(base::Bind(
-        &TracingControllerTest::GenerateMetadataDict, base::Unretained(this)));
+    tracing::TraceEventAgent::GetInstance()->AddMetadataGeneratorFunction(
+        base::Bind(&TracingControllerTest::GenerateMetadataDict,
+                   base::Unretained(this)));
 
     {
       base::RunLoop run_loop;

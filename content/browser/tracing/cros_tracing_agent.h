@@ -15,10 +15,6 @@ namespace base {
 class RefCountedString;
 }  // namespace base
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace content {
 
 class CrOSSystemTracingSession;
@@ -27,7 +23,7 @@ class CrOSSystemTracingSession;
 // service with perfetto.
 class CrOSTracingAgent : public tracing::BaseAgent {
  public:
-  explicit CrOSTracingAgent(service_manager::Connector* connector);
+  CrOSTracingAgent();
 
  private:
   friend std::default_delete<CrOSTracingAgent>;
