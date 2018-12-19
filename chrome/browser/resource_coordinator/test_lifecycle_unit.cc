@@ -33,7 +33,7 @@ TabLifecycleUnitExternal* TestLifecycleUnit::AsTabLifecycleUnitExternal() {
 }
 
 base::string16 TestLifecycleUnit::GetTitle() const {
-  return base::string16();
+  return title_;
 }
 
 base::TimeTicks TestLifecycleUnit::GetLastFocusedTime() const {

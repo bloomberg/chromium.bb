@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_TEST_LIFECYCLE_UNIT_H_
 
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_base.h"
 
 namespace resource_coordinator {
@@ -28,6 +29,8 @@ class TestLifecycleUnit : public LifecycleUnitBase {
     last_focused_time_ = last_focused_time;
   }
 
+  void SetTitle(base::StringPiece16 title) { title_ = title.as_string(); }
+
   // LifecycleUnit:
   TabLifecycleUnitExternal* AsTabLifecycleUnitExternal() override;
   base::string16 GetTitle() const override;
@@ -47,6 +50,7 @@ class TestLifecycleUnit : public LifecycleUnitBase {
   bool Discard(LifecycleUnitDiscardReason discard_reason) override;
 
  private:
+  base::string16 title_;
   base::TimeTicks last_focused_time_;
   base::ProcessHandle process_handle_;
   bool can_discard_ = true;

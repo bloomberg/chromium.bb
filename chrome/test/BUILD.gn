@@ -3135,6 +3135,7 @@ test("unit_tests") {
       "../browser/resource_coordinator/tab_ranker/tab_score_predictor_unittest.cc",
       "../browser/resource_coordinator/test_lifecycle_unit.cc",
       "../browser/resource_coordinator/test_lifecycle_unit.h",
+      "../browser/resource_coordinator/tracing_lifecycle_unit_observer_unittest.cc",
       "../browser/resource_coordinator/usage_clock_unittest.cc",
 
       # Android does not use the Message Center notification system.
