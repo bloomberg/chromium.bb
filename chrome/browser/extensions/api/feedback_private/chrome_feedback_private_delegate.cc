@@ -172,10 +172,12 @@ void ChromeFeedbackPrivateDelegate::FetchAndMergeIwlwifiDumpLogsIfPresent(
     system_logs::SysLogsFetcherCallback callback) const {
   if (!original_sys_logs ||
       !system_logs::ContainsIwlwifiLogs(original_sys_logs.get())) {
+    VLOG(1) << "WiFi dump logs are not present.";
     std::move(callback).Run(std::move(original_sys_logs));
     return;
   }
 
+  VLOG(1) << "Fetching WiFi dump logs.";
   system_logs::SystemLogsFetcher* fetcher =
       new system_logs::SystemLogsFetcher(true /* scrub_data */);
   fetcher->AddSource(std::make_unique<system_logs::IwlwifiDumpLogSource>());
