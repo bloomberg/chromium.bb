@@ -20,8 +20,7 @@ class AshFocusManagerFactory : public views::FocusManagerFactory {
  protected:
   // views::FocusManagerFactory overrides:
   std::unique_ptr<views::FocusManager> CreateFocusManager(
-      views::Widget* widget,
-      bool desktop_widget) override;
+      views::Widget* widget) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AshFocusManagerFactory);

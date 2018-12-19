@@ -158,7 +158,7 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   if (params.keep_on_top)
     SetAlwaysOnTop(true);
 
-  delegate_->OnNativeWidgetCreated(true);
+  delegate_->OnNativeWidgetCreated();
 
   DCHECK(GetWidget()->GetRootView());
   bridge_host_->SetRootView(GetWidget()->GetRootView());

@@ -320,7 +320,7 @@ class MockNativeWidgetMac : public NativeWidgetMac {
 
     // Usually the bridge gets initialized here. It is skipped to run extra
     // checks in tests, and so that a second window isn't created.
-    delegate()->OnNativeWidgetCreated(true);
+    delegate()->OnNativeWidgetCreated();
 
     // To allow events to dispatch to a view, it needs a way to get focus.
     bridge_host()->SetFocusManager(GetWidget()->GetFocusManager());

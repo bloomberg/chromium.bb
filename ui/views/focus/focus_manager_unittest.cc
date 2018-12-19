@@ -437,9 +437,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
         : dtor_tracker_(dtor_tracker) {}
     ~TestFocusManagerFactory() override {}
 
-    std::unique_ptr<FocusManager> CreateFocusManager(
-        Widget* widget,
-        bool desktop_widget) override {
+    std::unique_ptr<FocusManager> CreateFocusManager(Widget* widget) override {
       return std::make_unique<FocusManagerDtorTracked>(widget, dtor_tracker_);
     }
 

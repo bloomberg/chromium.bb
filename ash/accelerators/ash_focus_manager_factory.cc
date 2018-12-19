@@ -101,12 +101,9 @@ AshFocusManagerFactory::AshFocusManagerFactory() = default;
 AshFocusManagerFactory::~AshFocusManagerFactory() = default;
 
 std::unique_ptr<views::FocusManager> AshFocusManagerFactory::CreateFocusManager(
-    views::Widget* widget,
-    bool desktop_widget) {
+    views::Widget* widget) {
   return std::make_unique<views::FocusManager>(
-      widget, desktop_widget
-                  ? nullptr
-                  : std::make_unique<PostTargetAcceleratorHandler>());
+      widget, std::make_unique<PostTargetAcceleratorHandler>());
 }
 
 }  // namespace ash

@@ -179,7 +179,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   if (params.type == Widget::InitParams::TYPE_CONTROL)
     window_->Show();
 
-  delegate_->OnNativeWidgetCreated(false);
+  delegate_->OnNativeWidgetCreated();
 
   gfx::Rect window_bounds = params.bounds;
   gfx::NativeView parent = params.parent;

@@ -429,7 +429,7 @@ void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
 
   SetWindowTransparency();
 
-  native_widget_delegate_->OnNativeWidgetCreated(true);
+  native_widget_delegate_->OnNativeWidgetCreated();
 }
 
 void DesktopWindowTreeHostX11::OnWidgetInitDone() {}

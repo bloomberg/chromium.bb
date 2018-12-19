@@ -518,7 +518,7 @@ void DesktopWindowTreeHostMus::OnNativeWidgetCreated(
     parent_ = static_cast<DesktopWindowTreeHostMus*>(params.parent->GetHost());
     parent_->children_.insert(this);
   }
-  native_widget_delegate_->OnNativeWidgetCreated(true);
+  native_widget_delegate_->OnNativeWidgetCreated();
 }
 
 void DesktopWindowTreeHostMus::OnActiveWindowChanged(bool active) {
