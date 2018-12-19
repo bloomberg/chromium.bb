@@ -112,16 +112,21 @@ enum TextInputMode {
   kSearch,
 };
 
+// Represents the text input state of a client.
+struct TextInputState {
+  ui.mojom.TextInputType text_input_type;
+  TextInputMode text_input_mode;
+  mojo_base.mojom.TextDirection text_direction;
+  int32 text_input_flags;  // A bitfield of ui::TextInputFlags.
+};
+
 // Parameters needed to start an IME session.
 struct StartSessionDetails {
   TextInputClient client;
   InputMethod& input_method_request;
 
   // Initial details about |client| required by IMEDriver.
-  ui.mojom.TextInputType text_input_type;
-  TextInputMode text_input_mode;
-  mojo_base.mojom.TextDirection text_direction;
-  int32 text_input_flags;
+  TextInputState state;
   gfx.mojom.Rect caret_bounds;
 };
 
@@ -143,7 +148,8 @@ interface IMERegistrar {
 // This interface is provided by IME drivers, and also by Mus as a lightweight
 // proxy between IME drivers and clients.
 interface InputMethod {
-  OnTextInputTypeChanged(ui.mojom.TextInputType text_input_type);
+  // Called when the text input state of client is changed.
+  OnTextInputStateChanged(TextInputState text_input_state);
 
   // Client sends |caret_bounds| in focused window coordinates,
   // Mus translates it to global coordinates and sends it to IME app.

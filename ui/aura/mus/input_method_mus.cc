@@ -102,8 +102,15 @@ void InputMethodMus::OnTextInputTypeChanged(const ui::TextInputClient* client) {
 
   UpdateTextInputType();
 
-  if (input_method_)
-    input_method_->OnTextInputTypeChanged(client->GetTextInputType());
+  if (!input_method_)
+    return;
+
+  auto text_input_state = ws::mojom::TextInputState::New();
+  text_input_state->text_input_type = client->GetTextInputType();
+  text_input_state->text_input_mode = client->GetTextInputMode();
+  text_input_state->text_direction = client->GetTextDirection();
+  text_input_state->text_input_flags = client->GetTextInputFlags();
+  input_method_->OnTextInputStateChanged(std::move(text_input_state));
 }
 
 void InputMethodMus::OnCaretBoundsChanged(const ui::TextInputClient* client) {
@@ -194,10 +201,11 @@ void InputMethodMus::OnDidChangeFocusedClient(
         text_input_client_->CreateInterfacePtrAndBind().PassInterface();
     details->input_method_request = MakeRequest(&input_method_ptr_);
     input_method_ = input_method_ptr_.get();
-    details->text_input_type = focused->GetTextInputType();
-    details->text_input_mode = focused->GetTextInputMode();
-    details->text_direction = focused->GetTextDirection();
-    details->text_input_flags = focused->GetTextInputFlags();
+    details->state = ws::mojom::TextInputState::New();
+    details->state->text_input_type = focused->GetTextInputType();
+    details->state->text_input_mode = focused->GetTextInputMode();
+    details->state->text_direction = focused->GetTextDirection();
+    details->state->text_input_flags = focused->GetTextInputFlags();
     details->caret_bounds = focused->GetCaretBounds();
     ime_driver_->StartSession(std::move(details));
   }

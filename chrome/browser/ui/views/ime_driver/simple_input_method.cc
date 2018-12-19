@@ -10,8 +10,8 @@ SimpleInputMethod::SimpleInputMethod() {}
 
 SimpleInputMethod::~SimpleInputMethod() {}
 
-void SimpleInputMethod::OnTextInputTypeChanged(
-    ui::TextInputType text_input_type) {
+void SimpleInputMethod::OnTextInputStateChanged(
+    ws::mojom::TextInputStatePtr text_input_state) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 

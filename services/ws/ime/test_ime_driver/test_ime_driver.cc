@@ -20,7 +20,8 @@ class TestInputMethod : public mojom::InputMethod {
 
  private:
   // mojom::InputMethod:
-  void OnTextInputTypeChanged(ui::TextInputType text_input_type) override {
+  void OnTextInputStateChanged(
+      ws::mojom::TextInputStatePtr text_input_state) override {
     NOTIMPLEMENTED();
   }
   void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override {

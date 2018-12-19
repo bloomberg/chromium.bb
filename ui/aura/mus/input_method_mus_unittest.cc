@@ -56,8 +56,9 @@ class TestInputMethod : public ws::mojom::InputMethod {
   }
 
   // ui::ime::InputMethod:
-  void OnTextInputTypeChanged(ui::TextInputType text_input_type) override {
-    was_on_text_input_type_changed_called_ = true;
+  void OnTextInputStateChanged(
+      ws::mojom::TextInputStatePtr text_input_state) override {
+    was_on_text_input_state_changed_called_ = true;
   }
   void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override {
     was_on_caret_bounds_changed_called_ = true;
@@ -71,8 +72,8 @@ class TestInputMethod : public ws::mojom::InputMethod {
     was_show_virtual_keyboard_if_enabled_called_ = true;
   }
 
-  bool was_on_text_input_type_changed_called() {
-    return was_on_text_input_type_changed_called_;
+  bool was_on_text_input_state_changed_called() {
+    return was_on_text_input_state_changed_called_;
   }
 
   bool was_on_caret_bounds_changed_called() {
@@ -88,7 +89,7 @@ class TestInputMethod : public ws::mojom::InputMethod {
   }
 
  private:
-  bool was_on_text_input_type_changed_called_ = false;
+  bool was_on_text_input_state_changed_called_ = false;
   bool was_on_caret_bounds_changed_called_ = false;
   bool was_cancel_composition_called_ = false;
   bool was_show_virtual_keyboard_if_enabled_called_ = false;
@@ -294,7 +295,7 @@ TEST_F(InputMethodMusTest, ChangeTextInputTypeFromUnfocusedClient) {
   InputMethodMusTestApi::CallOnTextInputTypeChanged(&input_method_mus,
                                                     &unfocused_input_client);
 
-  EXPECT_FALSE(test_input_method.was_on_text_input_type_changed_called());
+  EXPECT_FALSE(test_input_method.was_on_text_input_state_changed_called());
 }
 
 // Calling OnCaretBoundsChanged from unfocused client should

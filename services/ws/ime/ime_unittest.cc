@@ -118,6 +118,11 @@ TEST_F(IMEAppTest, ProcessKeyEvent) {
       ws::mojom::StartSessionDetails::New();
   TestTextInputClient client(MakeRequest(&details->client));
   details->input_method_request = MakeRequest(&input_method);
+  details->state = ws::mojom::TextInputState::New();
+  details->state->text_input_type = ui::TEXT_INPUT_TYPE_TEXT;
+  details->state->text_input_mode = ui::TEXT_INPUT_MODE_DEFAULT;
+  details->state->text_direction = base::i18n::LEFT_TO_RIGHT;
+  details->state->text_input_flags = 0;
   ime_driver_->StartSession(std::move(details));
 
   // Send character key event.

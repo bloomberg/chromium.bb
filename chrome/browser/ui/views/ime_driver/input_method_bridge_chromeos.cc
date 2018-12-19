@@ -38,9 +38,9 @@ InputMethodBridge::~InputMethodBridge() {
     accessibility_input_method_observer_->ResetCaretBounds();
 }
 
-void InputMethodBridge::OnTextInputTypeChanged(
-    ui::TextInputType text_input_type) {
-  client_->SetTextInputType(text_input_type);
+void InputMethodBridge::OnTextInputStateChanged(
+    ws::mojom::TextInputStatePtr text_input_state) {
+  client_->SetTextInputState(std::move(text_input_state));
 
   if (IsActiveInputContextHandler(input_method_chromeos_.get()))
     input_method_chromeos_->OnTextInputTypeChanged(client_.get());
