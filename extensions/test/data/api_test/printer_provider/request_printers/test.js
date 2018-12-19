@@ -38,9 +38,7 @@ chrome.test.sendMessage('loaded', function(test) {
             var jsBindingsError =
                 'Invalid value for argument 1. ' +
                 'Expected \'array\' but got \'string\'.'
-            var nativeBindingsError =
-                'Error at parameter \'printerInfo\': ' +
-                'Invalid type: expected array, found string.'
+            var nativeBindingsError = 'No matching signature';
             chrome.test.assertThrows(
                 callback, ['XXX'],
                 eitherError(jsBindingsError, nativeBindingsError));
