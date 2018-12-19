@@ -11,12 +11,142 @@ frequency, naming conventions, etc.
 
 from __future__ import print_function
 
+from chromite.cbuildbot import manifest_version
 from chromite.cli import command
+from chromite.lib import config_lib
+from chromite.lib import constants
+from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
+from chromite.lib import git
+from chromite.lib import repo_util
+from collections import namedtuple
 
-RELEASE = 'release'
-FACTORY = 'factory'
-FIRMWARE = 'firmware'
-STABILIZE = 'stabilize'
+import os
+import re
+
+# For the purposes of branching, Chrome OS version is completely defined by
+# release milestone and build number.
+Version = namedtuple('Version', ['milestone', 'build_number'])
+
+
+class BranchError(Exception):
+  """Raised whenever any branch operation fails."""
+
+
+class Branch(object):
+  """Represents a branch of chromiumos, which may or may not exist yet."""
+
+  def __init__(self, kind, name=None):
+    """Cache various configuration used by all branch operations.
+
+    Args:
+      kind: A tag that describes the branch (e.g. 'release').
+      name: The name of the branch. If not provided, it will be generated.
+    """
+    self._kind = kind
+    self._name = name or self.GenerateName()
+    self._repo = repo_util.Repository(constants.SOURCE_ROOT)
+
+    site_params = config_lib.DefaultSiteParameters()
+    self._manifest_versions_root = os.path.join(
+        constants.SOURCE_ROOT, site_params['INTERNAL_MANIFEST_VERSIONS_PATH'])
+    self._cros_remotes = site_params['CROS_REMOTES']
+    self._branchable_project_patterns = site_params['BRANCHABLE_PROJECTS']
+
+  def _CanBranchProject(self, project):
+    """Determines if the given project is branchable.
+
+    Args:
+      project: A repo_manifest.Project.
+
+    Returns:
+      True if the project should branch.
+    """
+    remote = project.Remote().GitName()
+    # The preferred way to specify branchability is by adding a "branch-mode"
+    # annotation on the project in the manifest. Of course, only one project
+    # in the manifest actually does this. ¯\_(ツ)_/¯
+    explicit_mode = project.Annotations().get('branch-mode', None)
+    if not explicit_mode:
+      # The legacy method is to peek at the project's remote.
+      return (remote in self._cros_remotes and
+              remote in self._branchable_project_patterns and
+              re.match(self._branchable_project_patterns[remote], project.name))
+    return explicit_mode == constants.MANIFEST_ATTR_BRANCHING_CREATE
+
+  @staticmethod
+  def Version():
+    """Returns the synced milestone."""
+    vinfo = manifest_version.VersionInfo.from_repo(constants.SOURCE_ROOT)
+    return Version(vinfo.chrome_branch, vinfo.build_number)
+
+  def GenerateName(self):
+    return '%s-%s.B' % (self._kind, self.Version().build_number)
+
+  def Create(self, version, push=False, force=False):
+    """Creates a new branch from the given version.
+
+    Args:
+      kind: The kind of branch to create (e.g., firmware).
+      version: The manifest version off which to branch.
+      push: Whether to push the new branch to remote.
+      force: Whether or not to overwrite an existing branch.
+    """
+    if push or force:
+      raise NotImplementedError('--push and --force unavailable.')
+
+    # Sync to the manifest version.
+    logging.info('Syncing to manifest version %s', version)
+    cros_build_lib.RunCommand(
+        [
+            os.path.join(constants.CHROMITE_DIR, 'scripts/repo_sync_manifest'),
+            '--repo-root', constants.SOURCE_ROOT, '--manifest-versions-int',
+            self._manifest_versions_root, '--version', version
+        ],
+        quiet=True)
+
+    # Create local git branches. If a local branch with the same name exists
+    # in any project, it is overwritten.
+    logging.info('Will create branch %s for all viable projects.', self._name)
+    projects = [
+        project for project in self._repo.Manifest().Projects()
+        if self._CanBranchProject(project)
+    ]
+    for project in projects:
+      git.CreateBranch(
+          os.path.join(constants.SOURCE_ROOT, project.Path()), self._name,
+          project.Revision())
+
+
+class ReleaseBranch(Branch):
+  """Represents a release branch."""
+
+  def __init__(self, name=None):
+    super(ReleaseBranch, self).__init__('release', name)
+
+  def GenerateName(self):
+    return '%s-R%s-%s.B' % ((self._kind,) + self.Version())
+
+
+class FactoryBranch(Branch):
+  """Represents a factory branch."""
+
+  def __init__(self, name=None):
+    super(FactoryBranch, self).__init__('factory', name)
+
+
+class FirmwareBranch(Branch):
+  """Represents a firmware branch."""
+
+  def __init__(self, name=None):
+    super(FirmwareBranch, self).__init__('firmware', name)
+
+
+class StabilizeBranch(Branch):
+  """Represents a factory branch."""
+
+  def __init__(self, name=None):
+    super(StabilizeBranch, self).__init__('stabilize', name)
 
 
 @command.CommandDecorator('branch')
@@ -90,30 +220,30 @@ Delete Examples:
     create_ex_group = create_group.add_mutually_exclusive_group(required=True)
     create_ex_group.add_argument(
         '--release',
-        dest='kind',
+        dest='cls',
         action='store_const',
-        const=RELEASE,
+        const=ReleaseBranch,
         help='The new branch is a release branch. '
         "Named as 'release-R<Milestone>-<Major Version>.B'.")
     create_ex_group.add_argument(
         '--factory',
-        dest='kind',
+        dest='cls',
         action='store_const',
-        const=FACTORY,
+        const=FactoryBranch,
         help='The new branch is a factory branch. '
         "Named as 'factory-<Major Version>.B'.")
     create_ex_group.add_argument(
         '--firmware',
-        dest='kind',
+        dest='cls',
         action='store_const',
-        const=FIRMWARE,
+        const=FirmwareBranch,
         help='The new branch is a firmware branch. '
         "Named as 'firmware-<Major Version>.B'.")
     create_ex_group.add_argument(
         '--stabilize',
-        dest='kind',
+        dest='cls',
         action='store_const',
-        const=STABILIZE,
+        const=StabilizeBranch,
         help='The new branch is a minibranch. '
         "Named as 'stabilize-<Major Version>.B'.")
 
@@ -127,5 +257,16 @@ Delete Examples:
     delete_parser.add_argument('branch', help='Name of the branch to delete.')
 
   def Run(self):
-    raise NotImplementedError(
-        'This command is not yet implemented. See chromium:825241.')
+    if self.options.subcommand == 'create':
+      # TODO(evanhernandez): If branch creation is interrupted, some artifacts
+      # might be left over. We should check for this.
+      self.options.cls(self.options.name).Create(
+          version=self.options.version,
+          push=self.options.push,
+          force=self.options.force)
+    elif self.options.subcommand == 'rename':
+      raise NotImplementedError('Branch renaming is not yet implemented.')
+    elif self.options.subcommand == 'delete':
+      raise NotImplementedError('Branch deletion is not yet implemented.')
+    else:
+      raise BranchError('Unrecognized option.')
