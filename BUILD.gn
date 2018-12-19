@@ -8,6 +8,7 @@ group("all") {
   deps = [
     ":system_api-protos",
     ":system_api-power_manager-protos",
+    ":system_api-power_manager-goprotos",
     ":system_api-cryptohome-protos",
     ":system_api-authpolicy-protos",
     ":system_api-biod-protos",
@@ -56,6 +57,21 @@ proto_library("system_api-power_manager-protos") {
     "${proto_in_dir}/switch_states.proto",
   ]
   standalone = true
+}
+
+goproto_library("system_api-power_manager-goprotos") {
+  proto_in_dir = "dbus/power_manager"
+  proto_out_dir = "go/src/chromiumos/system_api/power_manager_proto"
+  sources = [
+    "${proto_in_dir}/backlight.proto",
+    "${proto_in_dir}/idle.proto",
+    "${proto_in_dir}/input_event.proto",
+    "${proto_in_dir}/peripheral_battery_status.proto",
+    "${proto_in_dir}/policy.proto",
+    "${proto_in_dir}/power_supply_properties.proto",
+    "${proto_in_dir}/suspend.proto",
+    "${proto_in_dir}/switch_states.proto",
+  ]
 }
 
 proto_library("system_api-cryptohome-protos") {

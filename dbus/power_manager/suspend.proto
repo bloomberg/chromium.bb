@@ -7,6 +7,7 @@ syntax = "proto2";
 option optimize_for = LITE_RUNTIME;
 
 package power_manager;
+option go_package = "power_manager_proto";
 
 // Included in powerd's SuspendImminent signal, sent when the system is about to
 // suspend.  If any clients previously called RegisterSuspendDelay, suspending

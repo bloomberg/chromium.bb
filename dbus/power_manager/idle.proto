@@ -7,6 +7,7 @@ syntax = "proto2";
 option optimize_for = LITE_RUNTIME;
 
 package power_manager;
+option go_package = "power_manager_proto";
 
 // Included in powerd's ScreenIdleStateChanged signal, emitted when the screen's
 // dimming or on/off state changes in response to user activity or inactivity.
