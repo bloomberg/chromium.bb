@@ -21,6 +21,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string_util.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/disks/disk.h"
@@ -94,8 +95,11 @@ class DiskMountManagerImpl : public DiskMountManager,
         return;
       }
     }
+    std::vector<std::string> options = mount_options;
+    if (base::FeatureList::IsEnabled(chromeos::features::kFsNosymfollow))
+      options.push_back("nosymfollow");
     cros_disks_client_->Mount(
-        source_path, source_format, mount_label, mount_options, access_mode,
+        source_path, source_format, mount_label, options, access_mode,
         REMOUNT_OPTION_MOUNT_NEW_DEVICE,
         base::BindOnce(&DiskMountManagerImpl::OnMount,
                        weak_ptr_factory_.GetWeakPtr(), source_path, type));
