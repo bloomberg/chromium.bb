@@ -173,7 +173,7 @@ class VIEWS_EXPORT Combobox : public View,
   // menu. There is no clean way to get the second click event because the
   // menu is displayed using a modal loop and, unlike regular menus in Windows,
   // the button is not part of the displayed menu.
-  base::Time closed_time_;
+  base::TimeTicks closed_time_;
 
   // The maximum dimensions of the content in the dropdown.
   gfx::Size content_size_;
