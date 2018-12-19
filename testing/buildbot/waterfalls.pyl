@@ -1531,12 +1531,6 @@
           'isolated_scripts': 'chromium_code_coverage_isolated_scripts_and_fuzzers',
         }
       },
-      'linux-gtest-hackathon-dbg': {
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_gtests',
-          'isolated_scripts': 'chromium_linux_dbg_isolated_scripts',
-        }
-      },
       'linux-tcmalloc-rel': {
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',

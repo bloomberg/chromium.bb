@@ -264,7 +264,6 @@
       'Linux Viz': 'release_trybot',
       'linux-annotator-rel': 'release_bot',
       'linux-autofill-captured-sites-rel': 'release_bot',
-      'linux-gtest-hackathon-dbg': 'debug_bot',
       'linux-blink-animation-use-time-delta': 'debug_bot_enable_blink_animation_use_time_delta',
       'linux-blink-heap-incremental-marking': 'debug_bot_enable_blink_heap_incremental_marking',
       'linux-blink-heap-verification': 'release_bot_enable_blink_heap_verification_dcheck_always_on',
