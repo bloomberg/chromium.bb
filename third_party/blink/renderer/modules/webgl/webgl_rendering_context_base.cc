@@ -2072,6 +2072,15 @@ void WebGLRenderingContextBase::clear(GLbitfield mask) {
     return;
   }
 
+  if (!mask) {
+    // Use OnErrorMessage because it's both rate-limited and obeys the
+    // webGLErrorsToConsole setting.
+    OnErrorMessage(
+        "Performance warning: clear() called with no buffers in bitmask", 0);
+    // Don't skip the call to ClearIfComposited below; it has side
+    // effects even without the user requesting to clear any buffers.
+  }
+
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
                                                    drawing_buffer_.get());
 
