@@ -66,6 +66,17 @@ unsigned __stdcall RolloverTestThreadMain(void* param) {
   return 0;
 }
 
+// Measure the performance of __rdtsc so that we can compare it to the overhead
+// of QueryPerformanceCounter. A hard-coded frequency is used because we don't
+// care about the accuracy of the results, we just need to do the work.
+// The amount of work is not exactly the same as in TimeTicks::Now (some steps
+// are skipped) but that doesn't seem to materially affect the results.
+TimeTicks GetTSC() {
+  // Using a fake QPC frequency for test purposes.
+  return TimeTicks() + TimeDelta::FromMicroseconds(
+                           __rdtsc() * Time::kMicrosecondsPerSecond / 10000000);
+}
+
 }  // namespace
 
 // This test spawns many threads, and can occasionally fail due to resource
@@ -177,7 +188,7 @@ TEST(TimeTicks, QueryPerformanceFrequency) {
 TEST(TimeTicks, TimerPerformance) {
   // Verify that various timer mechanisms can always complete quickly.
   // Note:  This is a somewhat arbitrary test.
-  const int kLoops = 10000;
+  const int kLoops = 500000;
 
   typedef TimeTicks (*TestFunc)();
   struct TestCase {
@@ -191,11 +202,22 @@ TEST(TimeTicks, TimerPerformance) {
   std::vector<TestCase> cases;
   cases.push_back({reinterpret_cast<TestFunc>(&Time::Now), "Time::Now"});
   cases.push_back({&TimeTicks::Now, "TimeTicks::Now"});
+  cases.push_back({&GetTSC, "rdtsc"});
 
   if (ThreadTicks::IsSupported()) {
     ThreadTicks::WaitUntilInitialized();
     cases.push_back(
         {reinterpret_cast<TestFunc>(&ThreadTicks::Now), "ThreadTicks::Now"});
+  }
+
+  // Warm up the CPU to its full clock rate so that we get accurate timing
+  // information.
+  DWORD start_tick = GetTickCount();
+  const DWORD kWarmupMs = 50;
+  for (;;) {
+    DWORD elapsed = GetTickCount() - start_tick;
+    if (elapsed > kWarmupMs)
+      break;
   }
 
   for (const auto& test_case : cases) {
