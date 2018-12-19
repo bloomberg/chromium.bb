@@ -1384,33 +1384,32 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
 
   UpdateZoom(params.zoom_level);
 
-  if (params.auto_resize_enabled)
-    return;
+  if (!params.auto_resize_enabled) {
+    visible_viewport_size_ = params.visible_viewport_size;
 
-  visible_viewport_size_ = params.visible_viewport_size;
+    // NOTE: We may have entered fullscreen mode without changing our size.
+    bool fullscreen_change =
+        is_fullscreen_granted_ != params.is_fullscreen_granted;
+    is_fullscreen_granted_ = params.is_fullscreen_granted;
+    display_mode_ = params.display_mode;
 
-  // NOTE: We may have entered fullscreen mode without changing our size.
-  bool fullscreen_change =
-      is_fullscreen_granted_ != params.is_fullscreen_granted;
-  is_fullscreen_granted_ = params.is_fullscreen_granted;
-  display_mode_ = params.display_mode;
+    size_ = params.new_size;
 
-  size_ = params.new_size;
+    ResizeWebWidget();
 
-  ResizeWebWidget();
+    WebSize visual_viewport_size;
+    if (compositor_deps_->IsUseZoomForDSFEnabled()) {
+      visual_viewport_size =
+          gfx::ScaleToCeiledSize(params.visible_viewport_size,
+                                 GetOriginalScreenInfo().device_scale_factor);
+    } else {
+      visual_viewport_size = visible_viewport_size_;
+    }
+    GetWebWidget()->ResizeVisualViewport(visual_viewport_size);
 
-  WebSize visual_viewport_size;
-  if (compositor_deps_->IsUseZoomForDSFEnabled()) {
-    visual_viewport_size =
-        gfx::ScaleToCeiledSize(params.visible_viewport_size,
-                               GetOriginalScreenInfo().device_scale_factor);
-  } else {
-    visual_viewport_size = visible_viewport_size_;
+    if (fullscreen_change)
+      DidToggleFullscreen();
   }
-  GetWebWidget()->ResizeVisualViewport(visual_viewport_size);
-
-  if (fullscreen_change)
-    DidToggleFullscreen();
 
   if (!owner_delegate_) {
     // Make sure that page scale factor changes propagating down from the main
