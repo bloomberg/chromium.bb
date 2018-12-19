@@ -5016,17 +5016,28 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
   }
 }
 
-static void select_inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
-                                   RD_STATS *rd_stats, BLOCK_SIZE bsize,
-                                   int64_t ref_best_rd,
-                                   FAST_TX_SEARCH_MODE ftxs_mode,
-                                   TXB_RD_INFO_NODE *rd_info_tree) {
-  if (ref_best_rd < 0) {
-    av1_invalid_rd_stats(rd_stats);
-    return;
-  }
-
+static int64_t select_tx_size_and_type(const AV1_COMP *cpi, MACROBLOCK *x,
+                                       RD_STATS *rd_stats, BLOCK_SIZE bsize,
+                                       int64_t ref_best_rd,
+                                       TXB_RD_INFO_NODE *rd_info_tree) {
   MACROBLOCKD *const xd = &x->e_mbd;
+  assert(is_inter_block(xd->mi[0]));
+
+  // TODO(debargha): enable this as a speed feature where the
+  // select_inter_block_yrd() function above will use a simplified search
+  // such as not using full optimize, but the inter_block_yrd() function
+  // will use more complex search given that the transform partitions have
+  // already been decided.
+
+  const int fast_tx_search = cpi->sf.tx_size_search_method > USE_FULL_RD;
+  int64_t rd_thresh = ref_best_rd;
+  if (fast_tx_search && rd_thresh < INT64_MAX) {
+    if (INT64_MAX - rd_thresh > (rd_thresh >> 3)) rd_thresh += (rd_thresh >> 3);
+  }
+  assert(rd_thresh > 0);
+
+  const FAST_TX_SEARCH_MODE ftxs_mode =
+      fast_tx_search ? FTXS_DCT_AND_1D_DCT_ONLY : FTXS_NONE;
   const struct macroblockd_plane *const pd = &xd->plane[0];
   const BLOCK_SIZE plane_bsize =
       get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
@@ -5057,9 +5068,8 @@ static void select_inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   for (int idy = 0; idy < mi_height; idy += bh) {
     for (int idx = 0; idx < mi_width; idx += bw) {
       const int64_t best_rd_sofar =
-          (ref_best_rd == INT64_MAX)
-              ? INT64_MAX
-              : (ref_best_rd - (AOMMIN(skip_rd, this_rd)));
+          (rd_thresh == INT64_MAX) ? INT64_MAX
+                                   : (rd_thresh - (AOMMIN(skip_rd, this_rd)));
       int is_cost_valid = 1;
       RD_STATS pn_rd_stats;
       select_tx_block(cpi, x, idy, idx, block, max_tx_size, init_depth,
@@ -5068,7 +5078,7 @@ static void select_inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
                       rd_info_tree);
       if (!is_cost_valid || pn_rd_stats.rate == INT_MAX) {
         av1_invalid_rd_stats(rd_stats);
-        return;
+        return INT64_MAX;
       }
       av1_merge_rd_stats(rd_stats, &pn_rd_stats);
       skip_rd = RDCOST(x->rdmult, s1, rd_stats->sse);
@@ -5088,32 +5098,7 @@ static void select_inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   } else {
     rd_stats->skip = 0;
   }
-}
 
-static int64_t select_tx_size_and_type(const AV1_COMP *cpi, MACROBLOCK *x,
-                                       RD_STATS *rd_stats, BLOCK_SIZE bsize,
-                                       int64_t ref_best_rd,
-                                       TXB_RD_INFO_NODE *rd_info_tree) {
-  MACROBLOCKD *const xd = &x->e_mbd;
-  assert(is_inter_block(xd->mi[0]));
-
-  // TODO(debargha): enable this as a speed feature where the
-  // select_inter_block_yrd() function above will use a simplified search
-  // such as not using full optimize, but the inter_block_yrd() function
-  // will use more complex search given that the transform partitions have
-  // already been decided.
-
-  const int fast_tx_search = cpi->sf.tx_size_search_method > USE_FULL_RD;
-  int64_t rd_thresh = ref_best_rd;
-  if (fast_tx_search && rd_thresh < INT64_MAX) {
-    if (INT64_MAX - rd_thresh > (rd_thresh >> 3)) rd_thresh += (rd_thresh >> 3);
-  }
-  assert(rd_thresh > 0);
-
-  FAST_TX_SEARCH_MODE ftxs_mode =
-      fast_tx_search ? FTXS_DCT_AND_1D_DCT_ONLY : FTXS_NONE;
-  select_inter_block_yrd(cpi, x, rd_stats, bsize, rd_thresh, ftxs_mode,
-                         rd_info_tree);
   if (rd_stats->rate == INT_MAX) return INT64_MAX;
 
   // If fast_tx_search is true, only DCT and 1D DCT were tested in
@@ -5125,9 +5110,6 @@ static int64_t select_tx_size_and_type(const AV1_COMP *cpi, MACROBLOCK *x,
   }
 
   int64_t rd;
-  const int skip_ctx = av1_get_skip_context(xd);
-  const int s0 = x->skip_cost[skip_ctx][0];
-  const int s1 = x->skip_cost[skip_ctx][1];
   if (rd_stats->skip) {
     rd = RDCOST(x->rdmult, s1, rd_stats->sse);
 #if CONFIG_ONE_PASS_SVM
