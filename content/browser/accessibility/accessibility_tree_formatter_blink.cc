@@ -19,6 +19,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
+#include "ui/accessibility/platform/compute_attributes.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
 
@@ -46,81 +47,6 @@ base::Optional<std::string> GetStringAttribute(
     return value;
   }
   return base::nullopt;
-}
-
-base::Optional<int32_t> GetCellAttribute(
-    const ui::AXPlatformNodeDelegate* delegate,
-    ax::mojom::IntAttribute attribute) {
-  switch (attribute) {
-    case ax::mojom::IntAttribute::kAriaCellColumnIndex:
-      return delegate->GetTableCellAriaColIndex();
-    case ax::mojom::IntAttribute::kAriaCellRowIndex:
-      return delegate->GetTableCellAriaRowIndex();
-    case ax::mojom::IntAttribute::kTableCellColumnIndex:
-      return delegate->GetTableCellColIndex();
-    case ax::mojom::IntAttribute::kTableCellRowIndex:
-      return delegate->GetTableCellRowIndex();
-    case ax::mojom::IntAttribute::kTableCellColumnSpan:
-      return delegate->GetTableCellColSpan();
-    case ax::mojom::IntAttribute::kTableCellRowSpan:
-      return delegate->GetTableCellRowSpan();
-    default:
-      return base::nullopt;
-  }
-}
-
-base::Optional<int32_t> GetRowAttribute(
-    const ui::AXPlatformNodeDelegate* delegate,
-    ax::mojom::IntAttribute attribute) {
-  if (attribute == ax::mojom::IntAttribute::kTableRowIndex) {
-    return delegate->GetTableRowRowIndex();
-  }
-  return base::nullopt;
-}
-
-base::Optional<int32_t> GetTableAttribute(
-    const ui::AXPlatformNodeDelegate* delegate,
-    ax::mojom::IntAttribute attribute) {
-  switch (attribute) {
-    case ax::mojom::IntAttribute::kTableColumnCount:
-      return delegate->GetTableColCount();
-    case ax::mojom::IntAttribute::kTableRowCount:
-      return delegate->GetTableRowCount();
-    case ax::mojom::IntAttribute::kAriaColumnCount:
-      return delegate->GetTableAriaColCount();
-    case ax::mojom::IntAttribute::kAriaRowCount:
-      return delegate->GetTableAriaRowCount();
-    default:
-      return base::nullopt;
-  }
-}
-
-base::Optional<int32_t> GetFromData(const ui::AXPlatformNodeDelegate* delegate,
-                                    ax::mojom::IntAttribute attribute) {
-  int32_t value;
-  if (delegate->GetData().GetIntAttribute(attribute, &value)) {
-    return value;
-  }
-  return base::nullopt;
-}
-
-// Compute the attribute value instead of returning the "raw" attribute value
-// for those attributes that have computation methods.
-base::Optional<int32_t> GetIntAttribute(
-    const ui::AXPlatformNodeDelegate* delegate,
-    ax::mojom::IntAttribute attribute) {
-  base::Optional<int32_t> maybe_value = base::nullopt;
-  if (delegate->IsTableCellOrHeader())
-    maybe_value = GetCellAttribute(delegate, attribute);
-  else if (delegate->IsTableRow())
-    maybe_value = GetRowAttribute(delegate, attribute);
-  else if (delegate->IsTable())
-    maybe_value = GetTableAttribute(delegate, attribute);
-
-  if (!maybe_value.has_value()) {
-    return GetFromData(delegate, attribute);
-  }
-  return maybe_value;
 }
 
 std::string IntAttrToString(const BrowserAccessibility& node,
@@ -292,7 +218,7 @@ void AccessibilityTreeFormatterBlink::AddProperties(
        attr_index <= static_cast<int32_t>(ax::mojom::IntAttribute::kMaxValue);
        ++attr_index) {
     auto attr = static_cast<ax::mojom::IntAttribute>(attr_index);
-    auto maybe_value = GetIntAttribute(&node, attr);
+    auto maybe_value = ui::ComputeAttribute(&node, attr);
     if (maybe_value.has_value()) {
       dict->SetString(ui::ToString(attr),
                       IntAttrToString(node, attr, maybe_value.value()));
