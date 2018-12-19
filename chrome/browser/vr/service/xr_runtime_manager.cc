@@ -381,7 +381,7 @@ void XRRuntimeManager::RemoveRuntime(device::mojom::XRDeviceId id) {
   DCHECK(it != runtimes_.end());
 
   // Remove the device from runtimes_ before notifying services that it was
-  // removed, since they will query for devices in RemoveRuntime.
+  // removed, since they will query for devices in RuntimesChanged.
   std::unique_ptr<BrowserXRRuntime> removed_device = std::move(it->second);
   runtimes_.erase(it);
 
