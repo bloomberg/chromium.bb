@@ -56,9 +56,6 @@ namespace {
 // |request|.
 bool ContentTypeIsRequested(ContentSettingsType type,
                             const content::MediaStreamRequest& request) {
-  if (request.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY)
-    return true;
-
   if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)
     return request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE;
 

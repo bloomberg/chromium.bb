@@ -898,3 +898,35 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   EXPECT_EQ(TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED,
             GetContentSettings()->GetMicrophoneCameraState());
 }
+
+IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
+                       PepperAudioRequestNoCamera) {
+  MediaCaptureDevicesDispatcher::GetInstance()->SetTestVideoCaptureDevices({});
+  InitWithUrl(GURL("chrome://version"));
+  RequestPermissions(
+      GetWebContents(),
+      CreateRequestWithType(example_audio_id(), std::string(),
+                            content::MEDIA_OPEN_DEVICE_PEPPER_ONLY),
+      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                     base::Unretained(this)));
+
+  EXPECT_EQ(content::MEDIA_DEVICE_OK, media_stream_result());
+  EXPECT_TRUE(CheckDevicesListContains(content::MEDIA_DEVICE_AUDIO_CAPTURE));
+  EXPECT_FALSE(CheckDevicesListContains(content::MEDIA_DEVICE_VIDEO_CAPTURE));
+}
+
+IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
+                       PepperVideoRequestNoMic) {
+  MediaCaptureDevicesDispatcher::GetInstance()->SetTestAudioCaptureDevices({});
+  InitWithUrl(GURL("chrome://version"));
+  RequestPermissions(
+      GetWebContents(),
+      CreateRequestWithType(std::string(), example_video_id(),
+                            content::MEDIA_OPEN_DEVICE_PEPPER_ONLY),
+      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                     base::Unretained(this)));
+
+  EXPECT_EQ(content::MEDIA_DEVICE_OK, media_stream_result());
+  EXPECT_FALSE(CheckDevicesListContains(content::MEDIA_DEVICE_AUDIO_CAPTURE));
+  EXPECT_TRUE(CheckDevicesListContains(content::MEDIA_DEVICE_VIDEO_CAPTURE));
+}
