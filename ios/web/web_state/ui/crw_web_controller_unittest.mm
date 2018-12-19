@@ -214,6 +214,7 @@ class CRWWebControllerTest : public WebTestWithWebController,
     [[result stub] evaluateJavaScript:OCMOCK_ANY completionHandler:OCMOCK_ANY];
     [[result stub] setAllowsBackForwardNavigationGestures:YES];
     [[result stub] setAllowsBackForwardNavigationGestures:NO];
+    [[result stub] isLoading];
 
     return result;
   }

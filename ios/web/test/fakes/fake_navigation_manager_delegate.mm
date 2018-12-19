@@ -32,6 +32,11 @@ id<CRWWebViewNavigationProxy>
 FakeNavigationManagerDelegate::GetWebViewNavigationProxy() const {
   return test_web_view_;
 }
+void FakeNavigationManagerDelegate::GoToBackForwardListItem(
+    WKBackForwardListItem* wk_item,
+    NavigationItem* item,
+    NavigationInitiationType type,
+    bool has_user_gesture) {}
 void FakeNavigationManagerDelegate::RemoveWebView() {}
 
 void FakeNavigationManagerDelegate::SetWebViewNavigationProxy(id web_view) {
