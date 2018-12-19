@@ -75,7 +75,6 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "media/audio/mock_audio_manager.h"
 #include "media/audio/sounds/audio_stream_handler.h"
 #include "media/audio/sounds/sounds_manager.h"
 #include "media/audio/test_audio_thread.h"
@@ -84,7 +83,6 @@
 #include "services/audio/public/cpp/fake_system_info.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/keyboard/public/keyboard_switches.h"
 
 namespace em = enterprise_management;
@@ -2357,11 +2355,6 @@ class KioskVirtualKeyboardTest : public KioskTest,
     std::move(callback).Run(true);
   }
 
-  // Use class variable for sane lifetime.
-  // TODO(https://crbug.com/812170): Remove it when media::AudioSystem becomes
-  // service-based.
-  std::unique_ptr<media::MockAudioManager> mock_audio_manager_;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(KioskVirtualKeyboardTest);
 };
@@ -2369,16 +2362,6 @@ class KioskVirtualKeyboardTest : public KioskTest,
 // Verifies that chrome.virtualKeyboard.restrictFeatures and related private
 // APIs work.
 IN_PROC_BROWSER_TEST_F(KioskVirtualKeyboardTest, RestrictFeatures) {
-  // TODO(crbug.com/916221): Crash in media::AudioOutputController::Create().
-  if (features::IsSingleProcessMash())
-    return;
-
-  // Mock existence of audio input.
-  // We cannot do this in SetUp because it's overriden in RunTestOnMainThread.
-  mock_audio_manager_ = std::make_unique<media::MockAudioManager>(
-      std::make_unique<media::TestAudioThread>());
-  mock_audio_manager_->SetHasInputDevices(true);
-
   set_test_app_id(kTestVirtualKeyboardKioskApp);
   set_test_app_version("0.1");
   set_test_crx_file(test_app_id() + ".crx");
@@ -2386,9 +2369,6 @@ IN_PROC_BROWSER_TEST_F(KioskVirtualKeyboardTest, RestrictFeatures) {
   extensions::ResultCatcher catcher;
   StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-
-  // Shutdown should be done in the same thread, thus not in the destructor.
-  mock_audio_manager_->Shutdown();
 }
 
 // Specialized test fixture for testing kiosk mode on the
