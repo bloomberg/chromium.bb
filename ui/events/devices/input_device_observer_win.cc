@@ -12,12 +12,12 @@
 #include <windows.h>
 
 // This macro provides the implementation for the observer notification methods.
-#define NOTIFY_OBSERVERS(method_decl, input_device_types)    \
-  void InputDeviceObserverWin::method_decl {                 \
-    for (InputDeviceEventObserver & observer : observers_) { \
-      observer.OnInputDeviceConfigurationChanged(            \
-          InputDeviceEventObserver::input_device_types);     \
-    }                                                        \
+#define WIN_NOTIFY_OBSERVERS(method_decl, input_device_types) \
+  void InputDeviceObserverWin::method_decl {                  \
+    for (InputDeviceEventObserver & observer : observers_) {  \
+      observer.OnInputDeviceConfigurationChanged(             \
+          InputDeviceEventObserver::input_device_types);      \
+    }                                                         \
   }
 
 namespace ui {
@@ -27,7 +27,7 @@ namespace {
 // The registry subkey that contains information about the state of the
 // detachable/convertible laptop, it tells if the device has an accessible
 // keyboard.
-// OEMs are expected to follow this guidelines to report docked/undocked state
+// OEMs are expected to follow these guidelines to report docked/undocked state
 // https://msdn.microsoft.com/en-us/windows/hardware/commercialize/customize/desktop/unattend/microsoft-windows-gpiobuttons-convertibleslatemode
 const base::char16 kRegistryPriorityControl[] =
     L"System\\CurrentControlSet\\Control\\PriorityControl";
@@ -94,10 +94,10 @@ void InputDeviceObserverWin::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-NOTIFY_OBSERVERS(NotifyObserversKeyboardDeviceConfigurationChanged(),
-                 kKeyboard);
+WIN_NOTIFY_OBSERVERS(NotifyObserversKeyboardDeviceConfigurationChanged(),
+                     kKeyboard);
 
-NOTIFY_OBSERVERS(NotifyObserversTouchpadDeviceConfigurationChanged(),
-                 kTouchpad);
+WIN_NOTIFY_OBSERVERS(NotifyObserversTouchpadDeviceConfigurationChanged(),
+                     kTouchpad);
 
 }  // namespace ui
