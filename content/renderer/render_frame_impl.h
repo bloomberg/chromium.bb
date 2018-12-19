@@ -1150,6 +1150,10 @@ class CONTENT_EXPORT RenderFrameImpl
       const GURL& url,
       const RequestNavigationParams& request_params);
 
+  // Creates a placeholder document loader, while navigation is taking place,
+  // either in the browser or in the renderer.
+  bool CreatePlaceholderDocumentLoader(const blink::WebNavigationInfo& info);
+
   // Sends a FrameHostMsg_BeginNavigation to the browser
   void BeginNavigationInternal(std::unique_ptr<blink::WebNavigationInfo> info);
 
