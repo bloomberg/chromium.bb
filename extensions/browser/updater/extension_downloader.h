@@ -21,9 +21,15 @@
 #include "extensions/browser/updater/request_queue.h"
 #include "extensions/browser/updater/safe_manifest_parser.h"
 #include "extensions/common/extension.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "net/http/http_request_headers.h"
 #include "url/gurl.h"
+
+namespace identity {
+class PrimaryAccountAccessTokenFetcher;
+class IdentityManager;
+struct AccessTokenInfo;
+}  // namespace identity
 
 namespace net {
 class URLRequestStatus;
@@ -60,17 +66,12 @@ class ExtensionUpdaterTest;
 // the crx file when updates are found. It uses a |ExtensionDownloaderDelegate|
 // that takes ownership of the downloaded crx files, and handles events during
 // the update check.
-class ExtensionDownloader : public OAuth2TokenService::Consumer {
+class ExtensionDownloader {
  public:
   // A closure which constructs a new ExtensionDownloader to be owned by the
   // caller.
   using Factory = base::RepeatingCallback<std::unique_ptr<ExtensionDownloader>(
       ExtensionDownloaderDelegate* delegate)>;
-
-  // A closure that returns the account to use for authentication to the
-  // webstore.
-  using GetWebstoreAccountCallback =
-      base::RepeatingCallback<const std::string&()>;
 
   // |delegate| is stored as a raw pointer and must outlive the
   // ExtensionDownloader.
@@ -79,7 +80,7 @@ class ExtensionDownloader : public OAuth2TokenService::Consumer {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       service_manager::Connector* connector,
       const base::FilePath& profile_path = base::FilePath());
-  ~ExtensionDownloader() override;
+  ~ExtensionDownloader();
 
   // Adds |extension| to the list of extensions to check for updates.
   // Returns false if the |extension| can't be updated due to invalid details.
@@ -114,12 +115,10 @@ class ExtensionDownloader : public OAuth2TokenService::Consumer {
   // AddExtension() and AddPendingExtension().
   void StartAllPending(ExtensionCache* cache);
 
-  // Sets GetWebstoreAccountCallback and TokenService instances to be used for
-  // OAuth2 authentication on protected Webstore downloads. Both objects must be
-  // valid to use for the lifetime of this object.
-  void SetWebstoreAuthenticationCapabilities(
-      const GetWebstoreAccountCallback& webstore_account_callback,
-      OAuth2TokenService* token_service);
+  // Sets the IdentityManager instance to be used for OAuth2 authentication on
+  // protected Webstore downloads. The IdentityManager instance must be valid to
+  // use for the lifetime of this object.
+  void SetIdentityManager(identity::IdentityManager* identity_manager);
 
   void set_brand_code(const std::string& brand_code) {
     brand_code_ = brand_code;
@@ -312,12 +311,8 @@ class ExtensionDownloader : public OAuth2TokenService::Consumer {
                                            const net::URLRequestStatus& status,
                                            int response_code);
 
-  // OAuth2TokenService::Consumer implementation.
-  void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
-      const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                         const GoogleServiceAuthError& error) override;
+  void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
+                                  identity::AccessTokenInfo token_info);
 
   ManifestFetchData* CreateManifestFetchData(
       const GURL& update_url,
@@ -377,20 +372,17 @@ class ExtensionDownloader : public OAuth2TokenService::Consumer {
   // Cache for .crx files.
   ExtensionCache* extension_cache_;
 
-  // Gets the account to use for protected download requests. May be null. If
-  // non-null, valid to call for the lifetime of this object.
-  GetWebstoreAccountCallback webstore_account_callback_;
-
   // May be used to fetch access tokens for protected download requests. May be
   // null. If non-null, guaranteed to outlive this object.
-  OAuth2TokenService* token_service_;
+  identity::IdentityManager* identity_manager_;
 
   // A Webstore download-scoped access token for the |identity_provider_|'s
   // active account, if any.
   std::string access_token_;
 
-  // A pending token fetch request.
-  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
+  // A pending access token fetcher.
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+      access_token_fetcher_;
 
   // Brand code to include with manifest fetch queries if sending ping data.
   std::string brand_code_;

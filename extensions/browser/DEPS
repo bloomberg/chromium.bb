@@ -25,6 +25,7 @@ include_rules = [
   # This directory contains build flags and does not pull all of PPAPI in.
   "+ppapi/buildflags",
   "+services/data_decoder/public",
+  "+services/identity/public/cpp",
   "+services/network/public/cpp",
   "+services/network/public/mojom",
   "+services/network",
