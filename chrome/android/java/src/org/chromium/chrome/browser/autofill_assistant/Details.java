@@ -35,6 +35,7 @@ class Details {
         int DESCRIPTION = 3;
         int MID = 4;
         int IS_FINAL = 5;
+        int PRICE = 6;
     }
 
     private final String mTitle;
@@ -44,22 +45,30 @@ class Details {
     private final String mDescription;
     private final String mMid;
     private final boolean mIsFinal;
+    /**
+     * The correctly formatted price for the client locale, including the currency.
+     * Example: '$20.50' or '20.50 €'.
+     */
+    @Nullable
+    private final String mPrice;
+
     /** Contains the fields that have changed when merging with other Details object. */
     private final Set<Integer> mFieldsChanged;
     // NOTE: When adding a new field, update the isEmpty and toJSONObject methods.
 
     static final Details EMPTY_DETAILS =
-            new Details("", "", null, "", "", false, Collections.emptySet());
+            new Details("", "", null, "", "", null, false, Collections.emptySet());
 
     private static final String RFC_3339_FORMAT_WITHOUT_TIMEZONE = "yyyy'-'MM'-'dd'T'HH':'mm':'ss";
 
     Details(String title, String url, @Nullable Date date, String description, String mId,
-            boolean isFinal, Set<Integer> fieldsChanged) {
+            @Nullable String price, boolean isFinal, Set<Integer> fieldsChanged) {
         this.mTitle = title;
         this.mUrl = url;
         this.mDate = date;
         this.mDescription = description;
         this.mMid = mId;
+        this.mPrice = price;
         this.mIsFinal = isFinal;
         this.mFieldsChanged = fieldsChanged;
     }
@@ -85,12 +94,18 @@ class Details {
         return mMid;
     }
 
+    @Nullable
+    String getPrice() {
+        return mPrice;
+    }
+
     JSONObject toJSONObject() {
         // Details are part of the feedback form, hence they need a JSON representation.
         Map<String, String> movieDetails = new HashMap<>();
         movieDetails.put("title", mTitle);
         movieDetails.put("url", mUrl);
         movieDetails.put("mId", mMid);
+        if (mPrice != null) movieDetails.put("price", mPrice);
         if (mDate != null) movieDetails.put("date", mDate.toString());
         movieDetails.put("description", mDescription);
         return new JSONObject(movieDetails);
@@ -147,7 +162,8 @@ class Details {
             }
         }
 
-        return new Details(title, /* url= */ "", date, description, mId, /* isFinal= */ false,
+        return new Details(title, /* url= */ "", date, description, mId, /* price= */ null,
+                /* isFinal= */ false,
                 /* fieldsChanged= */ Collections.emptySet());
     }
 
@@ -163,8 +179,8 @@ class Details {
     static Details merge(Details oldDetails, Details newDetails) {
         if (oldDetails.isEmpty()) {
             return new Details(newDetails.getTitle(), newDetails.getUrl(), newDetails.getDate(),
-                    newDetails.getDescription(), newDetails.getMid(), newDetails.isFinal(),
-                    Collections.emptySet());
+                    newDetails.getDescription(), newDetails.getMid(), newDetails.getPrice(),
+                    newDetails.isFinal(), Collections.emptySet());
         }
 
         Set<Integer> changedFields = new HashSet<>();
@@ -196,7 +212,15 @@ class Details {
         String description = oldDetails.getDescription().isEmpty() ? newDetails.getDescription()
                                                                    : oldDetails.getDescription();
 
+        String price = oldDetails.getPrice();
+        if (price == null) {
+            price = newDetails.getPrice();
+        } else if (newDetails.getPrice() != null && !newDetails.getPrice().equals(price)) {
+            price = newDetails.getPrice();
+            changedFields.add(DetailsField.PRICE);
+        }
+
         boolean isFinal = newDetails.isFinal();
-        return new Details(title, url, date, description, mId, isFinal, changedFields);
+        return new Details(title, url, date, description, mId, price, isFinal, changedFields);
     }
 }

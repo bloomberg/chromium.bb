@@ -427,8 +427,9 @@ void UiControllerAndroid::ShowDetails(const DetailsProto& details,
       base::android::ConvertUTF8ToJavaString(env, details.title()),
       base::android::ConvertUTF8ToJavaString(env, details.url()),
       base::android::ConvertUTF8ToJavaString(env, details.description()),
-      base::android::ConvertUTF8ToJavaString(env, details.m_id()), year, month,
-      day, hour, minute, second);
+      base::android::ConvertUTF8ToJavaString(env, details.m_id()),
+      base::android::ConvertUTF8ToJavaString(env, details.total_price()), year,
+      month, day, hour, minute, second);
 }
 
 void UiControllerAndroid::ShowProgressBar(int progress,

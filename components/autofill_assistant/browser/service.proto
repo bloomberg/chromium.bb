@@ -627,6 +627,10 @@ message DetailsProto {
   // Mid that comes from Knowledge Graph. Uniquely identify the object that this
   // proto describes.
   optional string m_id = 5;
+
+  // Price label containing the total amount and the currency to pay, formatted
+  // in the client's locale (e.g., $123.00).
+  optional string total_price = 6;
 }
 
 // Show contextual information.
