@@ -208,6 +208,11 @@ void MediaControlInputElement::DefaultEventHandler(Event& event) {
     MaybeRecordInteracted();
   }
 
+  // Unhover the element if the hover is triggered by a tap on
+  // a touch screen device to avoid showing hover circle indefinitely.
+  if (event.IsGestureEvent() && IsHovered())
+    SetHovered(false);
+
   HTMLInputElement::DefaultEventHandler(event);
 }
 

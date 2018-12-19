@@ -8,4 +8,6 @@
 ++++++++++++[text] name='0:00'
 ++++++++++++[text] name='/ 0:00'
 ++++++++++++[slider] description='audio time scrubber' focusable horizontal
-++++++++++++[push button] name='mute'
+++++++++++++[section]
+++++++++++++++[section]
+++++++++++++++[push button] name='mute'

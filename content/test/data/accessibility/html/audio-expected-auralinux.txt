@@ -8,4 +8,6 @@
 ++++++++++++[text] name='0:00'
 ++++++++++++[text] name='/ 0:00'
 ++++++++++++[slider] description='audio time scrubber' horizontal xml-roles:slider
-++++++++++++[push button] name='mute' xml-roles:button
+++++++++++++[section]
+++++++++++++++[section]
+++++++++++++++[push button] name='mute' xml-roles:button
