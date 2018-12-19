@@ -366,7 +366,13 @@ CloudExternalDataManagerBase::CloudExternalDataManagerBase(
 
 CloudExternalDataManagerBase::~CloudExternalDataManagerBase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  backend_task_runner_->DeleteSoon(FROM_HERE, backend_.release());
+  Backend* backend_to_delete = backend_.release();
+  if (!backend_task_runner_->DeleteSoon(FROM_HERE, backend_to_delete)) {
+    // If the task runner is no longer running, it's safe to just delete the
+    // object, since no further events will be delivered by external data
+    // manager.
+    delete backend_to_delete;
+  }
 }
 
 void CloudExternalDataManagerBase::SetExternalDataStore(
