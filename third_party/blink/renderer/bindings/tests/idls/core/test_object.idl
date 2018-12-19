@@ -486,6 +486,16 @@ interface TestObject {
     [MeasureAs=TestFeature] void measureAsSameValueOverloadedMethod();
     [MeasureAs=TestFeature] void measureAsSameValueOverloadedMethod(long arg);
 
+    // [HighEntropy]
+    [HighEntropy,Measure] const DOMString highEntropyConstant = 1;
+    [HighEntropy,MeasureAs=TestFeatureHighEntropyConstant] const DOMString highEntropyConstant = 1;
+    [HighEntropy,Measure] void highEntropyMethodWithMeasure();
+    [HighEntropy,MeasureAs=TestFeatureHighEntropy] void highEntropyMethodWithMeasureAs();
+    [HighEntropy,Measure] attribute DOMString highEntropyAttributeWithMeasure;
+    [HighEntropy,Measure] readonly attribute DOMString highEntropyReadonlyAttributeWithMeasure;
+    [HighEntropy,MeasureAs=TestAttributeHighEntropy] attribute DOMString highEntropyAttributeWithMeasureAs;
+    [HighEntropy,MeasureAs=TestAttributeHighEntropy] readonly attribute DOMString highEntropyReadonlyAttributeWithMeasureAs;
+
     // with [CEReactions] for not overloaded method
     [CEReactions] void ceReactionsNotOverloadedMethod(boolean arg);
     // with and without [CEReactions] for overloaded method

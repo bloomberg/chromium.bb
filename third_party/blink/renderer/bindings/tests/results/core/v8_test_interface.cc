@@ -2607,7 +2607,8 @@ static void IndexedPropertyDeleter(
 void V8TestInterface::TestInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_testInterfaceAttribute_Getter");
 
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kV8TestInterface_TestInterfaceAttribute_AttributeGetter);
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::kV8TestInterface_TestInterfaceAttribute_AttributeGetter);
 
   test_interface_implementation_v8_internal::TestInterfaceAttributeAttributeGetter(info);
 }

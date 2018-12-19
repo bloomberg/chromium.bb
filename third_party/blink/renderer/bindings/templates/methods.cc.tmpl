@@ -472,7 +472,11 @@ static void {{overloads.camel_case_name}}Method{{world_suffix}}(const v8::Functi
 {% macro test_and_call_overloaded_method(test, method, overloads, world_suffix) %}
 if ({{test}}) {
   {% if method.measure_as and not overloads.measure_all_as %}
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{method.measure_as('Method')}});
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::k{{method.measure_as('Method')}});
+  {% if method.high_entropy %}
+  Dactyloscoper::Record(execution_context_for_measurement, WebFeature::k{{method.measure_as('Method')}});
+  {% endif %}
   {% endif %}
   {% if method.deprecate_as and not overloads.deprecate_all_as %}
   Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{method.deprecate_as}});
@@ -494,7 +498,11 @@ void {{v8_class_or_partial}}::{{method.camel_case_name}}MethodCallback{{world_su
   {% endif %}
   {% if not method.overloads %}{# Overloaded methods are measured in overload_resolution_method() #}
   {% if method.measure_as %}
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{method.measure_as('Method')}});
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::k{{method.measure_as('Method')}});
+  {% if method.high_entropy %}
+  Dactyloscoper::Record(execution_context_for_measurement, WebFeature::k{{method.measure_as('Method')}});
+  {% endif %}
   {% endif %}
   {% if method.deprecate_as %}
   Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{method.deprecate_as}});

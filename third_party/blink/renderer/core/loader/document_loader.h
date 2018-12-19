@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/dactyloscoper.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
@@ -260,6 +261,7 @@ class CORE_EXPORT DocumentLoader
   bool IsListingFtpDirectory() const { return listing_ftp_directory_; }
 
   UseCounter& GetUseCounter() { return use_counter_; }
+  Dactyloscoper& GetDactyloscoper() { return dactyloscoper_; }
 
  protected:
   static bool ShouldClearWindowName(
@@ -425,6 +427,8 @@ class CORE_EXPORT DocumentLoader
   // metrics that aggregates usage from frames to one page load and report
   // feature usage to UMA histograms per page load.
   UseCounter use_counter_;
+
+  Dactyloscoper dactyloscoper_;
 };
 
 DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);

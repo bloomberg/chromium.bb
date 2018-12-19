@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/dom/class_collection.h"
 #include "third_party/blink/renderer/core/dom/tag_collection.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/dactyloscoper.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h"
@@ -4360,6 +4361,74 @@ static void UnscopableRuntimeEnabledLongAttributeAttributeSetter(
   impl->setUnscopableRuntimeEnabledLongAttribute(cpp_value);
 }
 
+static void HighEntropyAttributeWithMeasureAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestObject* impl = V8TestObject::ToImpl(holder);
+
+  V8SetReturnValueString(info, impl->highEntropyAttributeWithMeasure(), info.GetIsolate());
+}
+
+static void HighEntropyAttributeWithMeasureAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestObject* impl = V8TestObject::ToImpl(holder);
+
+  // Prepare the value to be set.
+  V8StringResource<> cpp_value = v8_value;
+  if (!cpp_value.Prepare())
+    return;
+
+  impl->setHighEntropyAttributeWithMeasure(cpp_value);
+}
+
+static void HighEntropyReadonlyAttributeWithMeasureAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestObject* impl = V8TestObject::ToImpl(holder);
+
+  V8SetReturnValueString(info, impl->highEntropyReadonlyAttributeWithMeasure(), info.GetIsolate());
+}
+
+static void HighEntropyAttributeWithMeasureAsAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestObject* impl = V8TestObject::ToImpl(holder);
+
+  V8SetReturnValueString(info, impl->highEntropyAttributeWithMeasureAs(), info.GetIsolate());
+}
+
+static void HighEntropyAttributeWithMeasureAsAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestObject* impl = V8TestObject::ToImpl(holder);
+
+  // Prepare the value to be set.
+  V8StringResource<> cpp_value = v8_value;
+  if (!cpp_value.Prepare())
+    return;
+
+  impl->setHighEntropyAttributeWithMeasureAs(cpp_value);
+}
+
+static void HighEntropyReadonlyAttributeWithMeasureAsAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestObject* impl = V8TestObject::ToImpl(holder);
+
+  V8SetReturnValueString(info, impl->highEntropyReadonlyAttributeWithMeasureAs(), info.GetIsolate());
+}
+
 static void TestInterfaceAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
@@ -8047,14 +8116,16 @@ static void MeasureOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Val
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kV8TestObject_MeasureOverloadedMethod_Method);
+        ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+        UseCounter::Count(execution_context_for_measurement, WebFeature::kV8TestObject_MeasureOverloadedMethod_Method);
         MeasureOverloadedMethod1Method(info);
         return;
       }
       break;
     case 1:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kV8TestObject_MeasureOverloadedMethod_Method);
+        ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+        UseCounter::Count(execution_context_for_measurement, WebFeature::kV8TestObject_MeasureOverloadedMethod_Method);
         MeasureOverloadedMethod2Method(info);
         return;
       }
@@ -8188,14 +8259,16 @@ static void MeasureAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::V
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeatureA);
+        ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+        UseCounter::Count(execution_context_for_measurement, WebFeature::kTestFeatureA);
         MeasureAsOverloadedMethod1Method(info);
         return;
       }
       break;
     case 1:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeatureB);
+        ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+        UseCounter::Count(execution_context_for_measurement, WebFeature::kTestFeatureB);
         MeasureAsOverloadedMethod2Method(info);
         return;
       }
@@ -8235,14 +8308,16 @@ static void MeasureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackI
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeature);
+        ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+        UseCounter::Count(execution_context_for_measurement, WebFeature::kTestFeature);
         MeasureAsSameValueOverloadedMethod1Method(info);
         return;
       }
       break;
     case 1:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeature);
+        ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+        UseCounter::Count(execution_context_for_measurement, WebFeature::kTestFeature);
         MeasureAsSameValueOverloadedMethod2Method(info);
         return;
       }
@@ -8255,6 +8330,18 @@ static void MeasureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackI
   if (is_arity_error) {
   }
   exception_state.ThrowTypeError("No function was found that matched the signature provided.");
+}
+
+static void HighEntropyMethodWithMeasureMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestObject* impl = V8TestObject::ToImpl(info.Holder());
+
+  impl->highEntropyMethodWithMeasure();
+}
+
+static void HighEntropyMethodWithMeasureAsMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestObject* impl = V8TestObject::ToImpl(info.Holder());
+
+  impl->highEntropyMethodWithMeasureAs();
 }
 
 static void CeReactionsNotOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -8347,7 +8434,8 @@ static void DeprecateAsMeasureAsSameValueOverloadedMethodMethod(const v8::Functi
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeature);
+        ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+        UseCounter::Count(execution_context_for_measurement, WebFeature::kTestFeature);
         Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeatureA);
         DeprecateAsMeasureAsSameValueOverloadedMethod1Method(info);
         return;
@@ -8355,7 +8443,8 @@ static void DeprecateAsMeasureAsSameValueOverloadedMethodMethod(const v8::Functi
       break;
     case 1:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeature);
+        ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+        UseCounter::Count(execution_context_for_measurement, WebFeature::kTestFeature);
         Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeatureB);
         DeprecateAsMeasureAsSameValueOverloadedMethod2Method(info);
         return;
@@ -8398,14 +8487,16 @@ static void DeprecateAsSameValueMeasureAsOverloadedMethodMethod(const v8::Functi
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeatureA);
+        ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+        UseCounter::Count(execution_context_for_measurement, WebFeature::kTestFeatureA);
         DeprecateAsSameValueMeasureAsOverloadedMethod1Method(info);
         return;
       }
       break;
     case 1:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeatureB);
+        ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+        UseCounter::Count(execution_context_for_measurement, WebFeature::kTestFeatureB);
         DeprecateAsSameValueMeasureAsOverloadedMethod2Method(info);
         return;
       }
@@ -8447,14 +8538,16 @@ static void DeprecateAsSameValueMeasureAsSameValueOverloadedMethodMethod(const v
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeatureB);
+        ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+        UseCounter::Count(execution_context_for_measurement, WebFeature::kTestFeatureB);
         DeprecateAsSameValueMeasureAsSameValueOverloadedMethod1Method(info);
         return;
       }
       break;
     case 1:
       if (true) {
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeatureB);
+        ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+        UseCounter::Count(execution_context_for_measurement, WebFeature::kTestFeatureB);
         DeprecateAsSameValueMeasureAsSameValueOverloadedMethod2Method(info);
         return;
       }
@@ -9422,6 +9515,24 @@ static void IndexedPropertyDeleter(
 }
 
 }  // namespace test_object_v8_internal
+
+void V8TestObject::HighEntropyConstantConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_highEntropyConstant_ConstantGetter");
+
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::kV8TestObject_HighEntropyConstant_ConstantGetter);
+  Dactyloscoper::Record(execution_context_for_measurement, WebFeature::kV8TestObject_HighEntropyConstant_ConstantGetter);
+  V8SetReturnValueString(info, "1");
+}
+
+void V8TestObject::HighEntropyConstantConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_highEntropyConstant_ConstantGetter");
+
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::kTestFeatureHighEntropyConstant);
+  Dactyloscoper::Record(execution_context_for_measurement, WebFeature::kTestFeatureHighEntropyConstant);
+  V8SetReturnValueString(info, "1");
+}
 
 void V8TestObject::StringifierAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_stringifierAttribute_Getter");
@@ -10508,7 +10619,8 @@ void V8TestObject::MeasureAsFeatureNameTestInterfaceEmptyConstructorAttributeCon
     v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_measureAsFeatureNameTestInterfaceEmptyConstructorAttribute_ConstructorGetterCallback");
 
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kFeatureName);
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::kFeatureName);
 
   V8ConstructorAttributeGetter(property, info, V8TestInterfaceEmpty::GetWrapperTypeInfo());
 }
@@ -10661,7 +10773,8 @@ void V8TestObject::CustomSetterImplementedAsLongAttributeAttributeSetterCallback
 void V8TestObject::MeasureAsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_measureAsLongAttribute_Getter");
 
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeature);
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::kTestFeature);
 
   test_object_v8_internal::MeasureAsLongAttributeAttributeGetter(info);
 }
@@ -11544,7 +11657,8 @@ void V8TestObject::UnforgeableLongAttributeAttributeSetterCallback(
 void V8TestObject::MeasuredLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_measuredLongAttribute_Getter");
 
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kV8TestObject_MeasuredLongAttribute_AttributeGetter);
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::kV8TestObject_MeasuredLongAttribute_AttributeGetter);
 
   test_object_v8_internal::MeasuredLongAttributeAttributeGetter(info);
 }
@@ -11621,6 +11735,68 @@ void V8TestObject::UnscopableRuntimeEnabledLongAttributeAttributeSetterCallback(
   v8::Local<v8::Value> v8_value = info[0];
 
   test_object_v8_internal::UnscopableRuntimeEnabledLongAttributeAttributeSetter(v8_value, info);
+}
+
+void V8TestObject::HighEntropyAttributeWithMeasureAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_highEntropyAttributeWithMeasure_Getter");
+
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::kV8TestObject_HighEntropyAttributeWithMeasure_AttributeGetter);
+  Dactyloscoper::Record(execution_context_for_measurement, WebFeature::kV8TestObject_HighEntropyAttributeWithMeasure_AttributeGetter);
+
+  test_object_v8_internal::HighEntropyAttributeWithMeasureAttributeGetter(info);
+}
+
+void V8TestObject::HighEntropyAttributeWithMeasureAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_highEntropyAttributeWithMeasure_Setter");
+
+  v8::Local<v8::Value> v8_value = info[0];
+
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kV8TestObject_HighEntropyAttributeWithMeasure_AttributeSetter);
+
+  test_object_v8_internal::HighEntropyAttributeWithMeasureAttributeSetter(v8_value, info);
+}
+
+void V8TestObject::HighEntropyReadonlyAttributeWithMeasureAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_highEntropyReadonlyAttributeWithMeasure_Getter");
+
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::kV8TestObject_HighEntropyReadonlyAttributeWithMeasure_AttributeGetter);
+  Dactyloscoper::Record(execution_context_for_measurement, WebFeature::kV8TestObject_HighEntropyReadonlyAttributeWithMeasure_AttributeGetter);
+
+  test_object_v8_internal::HighEntropyReadonlyAttributeWithMeasureAttributeGetter(info);
+}
+
+void V8TestObject::HighEntropyAttributeWithMeasureAsAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_highEntropyAttributeWithMeasureAs_Getter");
+
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::kTestAttributeHighEntropy);
+  Dactyloscoper::Record(execution_context_for_measurement, WebFeature::kTestAttributeHighEntropy);
+
+  test_object_v8_internal::HighEntropyAttributeWithMeasureAsAttributeGetter(info);
+}
+
+void V8TestObject::HighEntropyAttributeWithMeasureAsAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_highEntropyAttributeWithMeasureAs_Setter");
+
+  v8::Local<v8::Value> v8_value = info[0];
+
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestAttributeHighEntropy);
+
+  test_object_v8_internal::HighEntropyAttributeWithMeasureAsAttributeSetter(v8_value, info);
+}
+
+void V8TestObject::HighEntropyReadonlyAttributeWithMeasureAsAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_highEntropyReadonlyAttributeWithMeasureAs_Getter");
+
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::kTestAttributeHighEntropy);
+  Dactyloscoper::Record(execution_context_for_measurement, WebFeature::kTestAttributeHighEntropy);
+
+  test_object_v8_internal::HighEntropyReadonlyAttributeWithMeasureAsAttributeGetter(info);
 }
 
 void V8TestObject::TestInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -12751,14 +12927,16 @@ void V8TestObject::ImplementedAsVoidMethodMethodCallback(const v8::FunctionCallb
 void V8TestObject::MeasureAsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_measureAsVoidMethod");
 
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeature);
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::kTestFeature);
   test_object_v8_internal::MeasureAsVoidMethodMethod(info);
 }
 
 void V8TestObject::MeasureMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_measureMethod");
 
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kV8TestObject_MeasureMethod_Method);
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::kV8TestObject_MeasureMethod_Method);
   test_object_v8_internal::MeasureMethodMethod(info);
 }
 
@@ -12790,6 +12968,24 @@ void V8TestObject::MeasureAsSameValueOverloadedMethodMethodCallback(const v8::Fu
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_measureAsSameValueOverloadedMethod");
 
   test_object_v8_internal::MeasureAsSameValueOverloadedMethodMethod(info);
+}
+
+void V8TestObject::HighEntropyMethodWithMeasureMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_highEntropyMethodWithMeasure");
+
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::kV8TestObject_HighEntropyMethodWithMeasure_Method);
+  Dactyloscoper::Record(execution_context_for_measurement, WebFeature::kV8TestObject_HighEntropyMethodWithMeasure_Method);
+  test_object_v8_internal::HighEntropyMethodWithMeasureMethod(info);
+}
+
+void V8TestObject::HighEntropyMethodWithMeasureAsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_highEntropyMethodWithMeasureAs");
+
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::kTestFeatureHighEntropy);
+  Dactyloscoper::Record(execution_context_for_measurement, WebFeature::kTestFeatureHighEntropy);
+  test_object_v8_internal::HighEntropyMethodWithMeasureAsMethod(info);
 }
 
 void V8TestObject::CeReactionsNotOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -13364,6 +13560,10 @@ static constexpr V8DOMConfiguration::AccessorConfiguration kV8TestObjectAccessor
     { "saveSameObjectAttribute", V8TestObject::SaveSameObjectAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     { "staticSaveSameObjectAttribute", V8TestObject::StaticSaveSameObjectAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     { "unscopableLongAttribute", V8TestObject::UnscopableLongAttributeAttributeGetterCallback, V8TestObject::UnscopableLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "highEntropyAttributeWithMeasure", V8TestObject::HighEntropyAttributeWithMeasureAttributeGetterCallback, V8TestObject::HighEntropyAttributeWithMeasureAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "highEntropyReadonlyAttributeWithMeasure", V8TestObject::HighEntropyReadonlyAttributeWithMeasureAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "highEntropyAttributeWithMeasureAs", V8TestObject::HighEntropyAttributeWithMeasureAsAttributeGetterCallback, V8TestObject::HighEntropyAttributeWithMeasureAsAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+    { "highEntropyReadonlyAttributeWithMeasureAs", V8TestObject::HighEntropyReadonlyAttributeWithMeasureAsAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     { "testInterfaceAttribute", V8TestObject::TestInterfaceAttributeAttributeGetterCallback, V8TestObject::TestInterfaceAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     { "size", V8TestObject::SizeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::DontEnum | v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
 };
@@ -13558,6 +13758,8 @@ static constexpr V8DOMConfiguration::MethodConfiguration kV8TestObjectMethods[] 
     {"DeprecateAsSameValueOverloadedMethod", V8TestObject::DeprecateAsSameValueOverloadedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"measureAsOverloadedMethod", V8TestObject::MeasureAsOverloadedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"measureAsSameValueOverloadedMethod", V8TestObject::MeasureAsSameValueOverloadedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"highEntropyMethodWithMeasure", V8TestObject::HighEntropyMethodWithMeasureMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"highEntropyMethodWithMeasureAs", V8TestObject::HighEntropyMethodWithMeasureAsMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"ceReactionsNotOverloadedMethod", V8TestObject::CeReactionsNotOverloadedMethodMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"ceReactionsOverloadedMethod", V8TestObject::CeReactionsOverloadedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"deprecateAsMeasureAsSameValueOverloadedMethod", V8TestObject::DeprecateAsMeasureAsSameValueOverloadedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
@@ -13615,6 +13817,12 @@ static void InstallV8TestObjectTemplate(
   ALLOW_UNUSED_LOCAL(prototype_template);
 
   // Register IDL constants, attributes and operations.
+  V8DOMConfiguration::InstallConstantWithGetter(
+      isolate, interface_template, prototype_template,
+      "highEntropyConstant", V8TestObject::HighEntropyConstantConstantGetterCallback);
+  V8DOMConfiguration::InstallConstantWithGetter(
+      isolate, interface_template, prototype_template,
+      "highEntropyConstant", V8TestObject::HighEntropyConstantConstantGetterCallback);
   V8DOMConfiguration::InstallAttributes(
       isolate, world, instance_template, prototype_template,
       kV8TestObjectAttributes, base::size(kV8TestObjectAttributes));

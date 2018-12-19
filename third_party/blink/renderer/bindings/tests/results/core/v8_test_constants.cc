@@ -78,7 +78,8 @@ void V8TestConstants::DEPRECATEDCONSTANTConstantGetterCallback(v8::Local<v8::Nam
 void V8TestConstants::MEASUREDCONSTANTConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestConstants_MEASURED_CONSTANT_ConstantGetter");
 
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kConstant);
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::kConstant);
   V8SetReturnValueInt(info, 1);
 }
 

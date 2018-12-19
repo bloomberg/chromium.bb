@@ -8,6 +8,6 @@
     NoInterfaceObject,
     Exposed=(Window,Worker)
 ] interface NavigatorLanguage {
-    readonly attribute DOMString language;
-    [CachedAttribute=IsLanguagesDirty] readonly attribute FrozenArray<DOMString> languages;
+    [HighEntropy, MeasureAs=NavigatorLanguage] readonly attribute DOMString language;
+    [CachedAttribute=IsLanguagesDirty, HighEntropy, MeasureAs=NavigatorLanguages] readonly attribute FrozenArray<DOMString> languages;
 };

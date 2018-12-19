@@ -915,7 +915,11 @@ static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 {{exported}}void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   {{ runtime_timer_scope_disabled_by_default(runtime_call_stats.constructor_counter) }}
   {% if measure_as %}
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{measure_as('Constructor')}});
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::k{{measure_as('Constructor')}});
+  {% if high_entropy %}
+  Dactyloscoper::Record(execution_context_for_measurement, WebFeature::k{{measure_as('Constructor')}});
+  {% endif %}
   {% endif %}
   if (!info.IsConstructCall()) {
     V8ThrowException::ThrowTypeError(

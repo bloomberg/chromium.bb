@@ -2092,6 +2092,16 @@ enum WebFeature {
   kV8RegExpMatchIsFalseishOnJSRegExp = 2651,
   kDownloadInAdFrameWithUserGesture = 2652,
   kDownloadInAdFrameWithoutUserGesture = 2653,
+  kNavigatorAppVersion = 2654,
+  kNavigatorDoNotTrack = 2655,
+  kNavigatorHardwareConcurrency = 2656,
+  kNavigatorLanguage = 2657,
+  kNavigatorLanguages = 2658,
+  kNavigatorMaxTouchPoints = 2659,
+  kNavigatorMimeTypes = 2660,
+  kNavigatorPlatform = 2661,
+  kNavigatorPlugins = 2662,
+  kNavigatorUserAgent = 2663,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

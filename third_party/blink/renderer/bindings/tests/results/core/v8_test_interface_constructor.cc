@@ -342,7 +342,8 @@ static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 CORE_EXPORT void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceConstructor_Constructor");
 
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeature);
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::kTestFeature);
   if (!info.IsConstructCall()) {
     V8ThrowException::ThrowTypeError(
         info.GetIsolate(),
