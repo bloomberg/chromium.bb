@@ -870,6 +870,17 @@ void LoginDisplayHostWebUI::OnWillRemoveView(views::Widget* widget,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// LoginDisplayHostWebUI, views::WidgetObserver:
+void LoginDisplayHostWebUI::OnWidgetDestroying(views::Widget* widget) {
+  DCHECK_EQ(login_window_, widget);
+  login_window_->RemoveRemovalsObserver(this);
+  login_window_->RemoveObserver(this);
+
+  login_window_ = nullptr;
+  login_view_ = nullptr;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostWebUI, MultiUserWindowManagerClient::Observer:
 void LoginDisplayHostWebUI::OnUserSwitchAnimationFinished() {
   ShutdownDisplayHost();
@@ -1014,6 +1025,7 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
         views::Widget::ANIMATE_HIDE);
   }
 
+  login_window_->AddObserver(this);
   login_window_->AddRemovalsObserver(this);
   login_window_->SetContentsView(login_view_);
 
@@ -1051,6 +1063,7 @@ void LoginDisplayHostWebUI::ResetLoginWindowAndView() {
       new CloseAfterCommit(login_window_);
     }
     login_window_->RemoveRemovalsObserver(this);
+    login_window_->RemoveObserver(this);
     login_window_ = nullptr;
   }
 
