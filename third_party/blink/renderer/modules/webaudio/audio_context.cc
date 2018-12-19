@@ -363,14 +363,18 @@ MediaStreamAudioDestinationNode* AudioContext::createMediaStreamDestination(
 }
 
 void AudioContext::NotifySourceNodeStart() {
+  DCHECK(IsMainThread());
+
   source_node_started_ = true;
   if (!user_gesture_required_)
     return;
 
   MaybeAllowAutoplayWithUnlockType(AutoplayUnlockType::kSourceNodeStart);
 
-  if (IsAllowedToStart())
+  if (IsAllowedToStart()) {
     StartRendering();
+    SetContextState(kRunning);
+  }
 }
 
 AutoplayPolicy::Type AudioContext::GetAutoplayPolicy() const {
