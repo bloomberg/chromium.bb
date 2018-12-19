@@ -476,6 +476,14 @@ void SyncBackendHostImpl::SetInvalidationsForSessionsEnabled(bool enabled) {
   DCHECK(success);
 }
 
+void SyncBackendHostImpl::OnInvalidatorClientIdChange(
+    const std::string& client_id) {
+  sync_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SyncBackendHostCore::DoOnInvalidatorClientIdChange, core_,
+                     client_id));
+}
+
 void SyncBackendHostImpl::ClearServerDataDoneOnFrontendLoop(
     const base::Closure& frontend_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

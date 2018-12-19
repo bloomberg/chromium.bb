@@ -397,6 +397,9 @@ class SyncManager {
 
   // Adds memory usage statistics to |pmd| for chrome://tracing.
   virtual void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) = 0;
+
+  // Updates invalidation client id.
+  virtual void UpdateInvalidationClientId(const std::string& client_id) = 0;
 };
 
 }  // namespace syncer

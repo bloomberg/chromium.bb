@@ -270,4 +270,8 @@ void FakeSyncManager::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
   NOTIMPLEMENTED();
 }
 
+void FakeSyncManager::UpdateInvalidationClientId(const std::string&) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace syncer

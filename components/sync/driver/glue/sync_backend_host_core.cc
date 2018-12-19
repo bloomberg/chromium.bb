@@ -601,6 +601,11 @@ void SyncBackendHostCore::DoOnCookieJarChanged(bool account_mismatch,
   }
 }
 
+void SyncBackendHostCore::DoOnInvalidatorClientIdChange(
+    const std::string& client_id) {
+  sync_manager_->UpdateInvalidationClientId(client_id);
+}
+
 bool SyncBackendHostCore::HasUnsyncedItemsForTest() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sync_manager_);

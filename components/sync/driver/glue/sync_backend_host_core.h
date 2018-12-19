@@ -171,6 +171,9 @@ class SyncBackendHostCore
                             bool empty_jar,
                             const base::Closure& callback);
 
+  // Notify about change in client id.
+  void DoOnInvalidatorClientIdChange(const std::string& client_id);
+
   bool HasUnsyncedItemsForTest() const;
 
  private:

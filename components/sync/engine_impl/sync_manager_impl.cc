@@ -979,4 +979,10 @@ void SyncManagerImpl::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
   directory()->OnMemoryDump(pmd);
 }
 
+void SyncManagerImpl::UpdateInvalidationClientId(const std::string& client_id) {
+  DVLOG(1) << "Setting invalidator client ID: " << client_id;
+  allstatus_.SetInvalidatorClientId(client_id);
+  cycle_context_->set_invalidator_client_id(client_id);
+}
+
 }  // namespace syncer

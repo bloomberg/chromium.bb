@@ -72,6 +72,8 @@ void FCMInvalidationService::RegisterInvalidationHandler(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << "Registering an invalidation handler";
   invalidator_registrar_.RegisterHandler(handler);
+  // Populate the id for newly registered handlers.
+  handler->OnInvalidatorClientIdChange(client_id_);
   logger_.OnRegistration(handler->GetOwnerName());
 }
 
@@ -223,9 +225,8 @@ void FCMInvalidationService::OnInstanceIdRecieved(const std::string& id) {
   if (client_id_ != id) {
     client_id_ = id;
     pref_service_->SetString(prefs::kFCMInvalidationClientIDCache, id);
+    invalidator_registrar_.UpdateInvalidatorId(id);
   }
-  // TODO(melandory): Notify profile sync service that the invalidator
-  // id has changed;
 }
 
 void FCMInvalidationService::OnDeleteIDCompleted(

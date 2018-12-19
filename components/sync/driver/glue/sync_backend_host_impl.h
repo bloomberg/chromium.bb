@@ -100,6 +100,7 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
   void OnIncomingInvalidation(
       const ObjectIdInvalidationMap& invalidation_map) override;
   std::string GetOwnerName() const override;
+  void OnInvalidatorClientIdChange(const std::string& client_id) override;
 
  protected:
   // The types and functions below are protected so that test
