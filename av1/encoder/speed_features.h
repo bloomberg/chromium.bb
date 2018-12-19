@@ -619,6 +619,8 @@ typedef struct SPEED_FEATURES {
   // Perform simple_motion_search on each possible subblock and use it to prune
   // PARTITION_HORZ and PARTITION_VERT.
   int simple_motion_search_prune_rect;
+
+  int cb_pred_filter_search;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

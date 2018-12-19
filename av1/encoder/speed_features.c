@@ -218,6 +218,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->disable_wedge_search_var_thresh = 0;
   sf->disable_wedge_search_edge_thresh = 0;
   sf->prune_motion_mode_level = 1;
+  sf->cb_pred_filter_search = 0;
 
   if (speed >= 1) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_1;
@@ -261,6 +262,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->prune_comp_type_by_comp_avg = 1;
     sf->prune_motion_mode_level = 2;
     sf->gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3_ARF2;
+    sf->cb_pred_filter_search = 1;
   }
 
   if (speed >= 2) {
@@ -286,6 +288,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->disable_dual_filter = 1;
     sf->use_dist_wtd_comp_flag = DIST_WTD_COMP_DISABLED;
     sf->prune_comp_type_by_comp_avg = 2;
+    sf->cb_pred_filter_search = 0;
   }
 
   if (speed >= 3) {
