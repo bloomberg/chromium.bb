@@ -251,10 +251,16 @@ void TranslateController::OnRequestFetchComplete(
     std::unique_ptr<std::string> response_body) {
   const std::unique_ptr<network::SimpleURLLoader>& url_loader = *it;
 
-  std::string response_url = url_loader->GetFinalURL().spec();
-  net::HttpResponseHeaders* headers = url_loader->ResponseInfo()->headers.get();
-  int response_code = headers->response_code();
-  const std::string& status_text = headers->GetStatusText();
+  // |ResponseInfo()| may be a nullptr if response is incomplete.
+  int response_code = 0;
+  std::string status_text;
+  const network::ResourceResponseHead* response_head =
+      url_loader->ResponseInfo();
+  if (response_head && response_head->headers) {
+    net::HttpResponseHeaders* headers = response_head->headers.get();
+    response_code = headers->response_code();
+    status_text = headers->GetStatusText();
+  }
 
   // Escape the returned string so it can be parsed by JSON.parse.
   std::string response_text = response_body ? *response_body : "";
@@ -266,7 +272,7 @@ void TranslateController::OnRequestFetchComplete(
   std::string script = base::StringPrintf(
       "__gCrWeb.translate.handleResponse('%s', %d, %d, '%s', '%s', '%s')",
       url.c_str(), request_id, response_code, status_text.c_str(),
-      response_url.c_str(), escaped_response_text.c_str());
+      url_loader->GetFinalURL().spec().c_str(), escaped_response_text.c_str());
   web_state_->ExecuteJavaScript(base::UTF8ToUTF16(script));
 
   request_fetchers_.erase(it);
