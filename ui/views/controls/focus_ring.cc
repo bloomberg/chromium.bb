@@ -54,6 +54,11 @@ void FocusRing::SetHasFocusPredicate(const ViewPredicate& predicate) {
   SchedulePaint();
 }
 
+void FocusRing::SetColor(base::Optional<SkColor> color) {
+  color_ = color;
+  SchedulePaint();
+}
+
 const char* FocusRing::GetClassName() const {
   return kViewClassName;
 }
@@ -70,12 +75,10 @@ void FocusRing::OnPaint(gfx::Canvas* canvas) {
   if (!has_focus_predicate_(parent()))
     return;
 
-  SkColor base_color =
-      GetNativeTheme()->GetSystemColor(ColorIdForValidity(!invalid_));
-
   cc::PaintFlags paint;
   paint.setAntiAlias(true);
-  paint.setColor(is_opaque_ ? base_color : SkColorSetA(base_color, 0x66));
+  paint.setColor(color_.value_or(SkColorSetA(
+      GetNativeTheme()->GetSystemColor(ColorIdForValidity(!invalid_)), 0x66)));
   paint.setStyle(cc::PaintFlags::kStroke_Style);
   paint.setStrokeWidth(PlatformStyle::kFocusHaloThickness);
 

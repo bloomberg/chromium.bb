@@ -41,6 +41,7 @@
 #include "ui/views/background.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/painter.h"
+#include "ui/views/view_properties.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace {
@@ -166,6 +167,9 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBackground(std::unique_ptr<views::Background>(background_));
+  SetInstallFocusRingOnFocus(true);
+  focus_ring()->SetColor(kFocusBorderColor);
+  SetFocusPainter(nullptr);
 
   AddChildView(tray_container_);
 
@@ -258,19 +262,6 @@ void TrayBackgroundView::SetVisible(bool visible) {
     layer()->SetVisible(false);
     HideTransformation();
   }
-}
-
-void TrayBackgroundView::Layout() {
-  ActionableView::Layout();
-
-  // The tray itself expands to the right and bottom edge of the screen to make
-  // sure clicking on the edges brings up the popup. However, the focus border
-  // should be only around the container.
-  gfx::Rect paint_bounds(GetBackgroundBounds());
-  paint_bounds.Inset(gfx::Insets(-kFocusBorderThickness));
-  SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-      kFocusBorderColor, kFocusBorderThickness,
-      GetLocalBounds().InsetsFrom(paint_bounds)));
 }
 
 const char* TrayBackgroundView::GetClassName() const {
@@ -461,17 +452,25 @@ aura::Window* TrayBackgroundView::GetBubbleWindowContainer() {
 }
 
 gfx::Rect TrayBackgroundView::GetBackgroundBounds() const {
-  gfx::Insets insets = GetBackgroundInsets();
   gfx::Rect bounds = GetLocalBounds();
-  bounds.Inset(insets);
+  bounds.Inset(GetBackgroundInsets());
   return bounds;
+}
+
+void TrayBackgroundView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  const int border_radius = ShelfConstants::control_border_radius();
+  auto path = std::make_unique<SkPath>();
+  path->addRoundRect(gfx::RectToSkRect(GetBackgroundBounds()), border_radius,
+                     border_radius);
+  SetProperty(views::kHighlightPathKey, path.release());
+  ActionableView::OnBoundsChanged(previous_bounds);
 }
 
 std::unique_ptr<views::InkDropMask> TrayBackgroundView::CreateInkDropMask()
     const {
-  const int border_radius = ShelfConstants::control_border_radius();
-  return std::make_unique<views::RoundRectInkDropMask>(
-      size(), GetBackgroundInsets(), border_radius);
+  // Bypass ActionableView to use the default ink-drop mask created from the
+  // highlight path.
+  return Button::CreateInkDropMask();
 }
 
 bool TrayBackgroundView::ShouldEnterPushedState(const ui::Event& event) {

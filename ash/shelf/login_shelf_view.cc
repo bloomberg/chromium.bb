@@ -140,7 +140,7 @@ class LoginShelfButton : public views::LabelButton,
                                    login_constants::kButtonDisabledAlpha)));
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetInstallFocusRingOnFocus(true);
-    focus_ring()->set_is_opaque();
+    focus_ring()->SetColor(kFocusBorderColor);
     SetFocusPainter(nullptr);
     SetInkDropMode(InkDropMode::ON);
     set_has_ink_drop_action_on_click(true);
@@ -228,7 +228,7 @@ class KioskAppsButton : public views::MenuButton,
       : MenuButton(text, this), ui::SimpleMenuModel(this) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetInstallFocusRingOnFocus(true);
-    focus_ring()->set_is_opaque();
+    focus_ring()->SetColor(kFocusBorderColor);
     SetFocusPainter(nullptr);
     SetInkDropMode(InkDropMode::ON);
     set_has_ink_drop_action_on_click(true);
