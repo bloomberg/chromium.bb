@@ -40,7 +40,7 @@ class BrowsingModeBottomToolbarMediator
                    OverlayPanelManagerObserver, OverviewModeObserver, SceneChangeObserver,
                    ThemeColorObserver {
     /** The amount of time to show the Duet help bubble for. */
-    private static final int DUET_IPH_BUBBLE_SHOW_DURATION_MS = 6000;
+    private static final int DUET_IPH_BUBBLE_SHOW_DURATION_MS = 10000;
 
     /** The transparency fraction of the IPH bubble. */
     private static final float DUET_IPH_BUBBLE_ALPHA_FRACTION = 0.9f;
