@@ -782,18 +782,20 @@ cr.define('omnibox_output', function() {
             'of the result.',
         ['contents', 'description'], OutputPairProperty),
     new Column(
-        ['Can Be Default'], '', 'allowedToBeDefaultMatch', true,
-        'A green checkmark indicates that the result can be the default ' +
-            'match(i.e., can be the match that pressing enter in the ' +
-            'omniboxnavigates to).',
+        ['D'], '', 'allowedToBeDefaultMatch', true,
+        'Can Be Default\nA green checkmark indicates that the result can be ' +
+            'the default match (i.e., can be the match that pressing enter ' +
+            'in the omnibox navigates to).',
         ['allowedToBeDefaultMatch'], OutputBooleanProperty),
     new Column(
-        ['Starred'], '', 'starred', false,
-        'A green checkmark indicates that the result has been bookmarked.',
+        ['S'], '', 'starred', false,
+        'Starred\nA green checkmark indicates that the result has been ' +
+            'bookmarked.',
         ['starred'], OutputBooleanProperty),
     new Column(
-        ['Has Tab Match'], '', 'hasTabMatch', false,
-        'A green checkmark indicates that the result URL matches an opentab.',
+        ['T'], '', 'hasTabMatch', false,
+        'Has Tab Match\nA green checkmark indicates that the result URL ' +
+            'matches an open tab.',
         ['hasTabMatch'], OutputBooleanProperty),
     new Column(
         ['URL'], '', 'destinationUrl', true, 'The URL for the result.',
@@ -806,13 +808,14 @@ cr.define('omnibox_output', function() {
         ['fillIntoEdit', 'inlineAutocompletion'],
         OutputOverlappingPairProperty),
     new Column(
-        ['Del'], '', 'deletable', false,
-        'A green checkmark indicates that the result can be deleted from the ' +
-            'visit history.',
+        ['D'], '', 'deletable', false,
+        'Deletable\nA green checkmark indicates that the result can be ' +
+            'deleted from the visit history.',
         ['deletable'], OutputBooleanProperty),
     new Column(
-        ['Prev'], '', 'fromPrevious', false, '', ['fromPrevious'],
-        OutputBooleanProperty),
+        ['P'], '', 'fromPrevious', false,
+        'From Previous\nTrue if this match is from a previous result.',
+        ['fromPrevious'], OutputBooleanProperty),
     new Column(
         ['Tran'],
         'https://cs.chromium.org/chromium/src/ui/base/page_transition_types.h' +
@@ -820,9 +823,9 @@ cr.define('omnibox_output', function() {
         'transition', false, 'How the user got to the result.', ['transition'],
         OutputTextProperty),
     new Column(
-        ['Done'], '', 'providerDone', false,
-        'A green checkmark indicates that the provider is done looking for ' +
-            'more results.',
+        ['D'], '', 'providerDone', false,
+        'Done\nA green checkmark indicates that the provider is done looking ' +
+            'for more results.',
         ['providerDone'], OutputBooleanProperty),
     new Column(
         ['Associated Keyword'], '', 'associatedKeyword', false,
@@ -834,9 +837,9 @@ cr.define('omnibox_output', function() {
         'The keyword of the search engine to be used.', ['keyword'],
         OutputTextProperty),
     new Column(
-        ['Duplicates'], '', 'duplicates', false,
-        'The number of matches that have been marked as duplicates of this ' +
-            'match.',
+        ['D'], '', 'duplicates', false,
+        'Duplicates\nThe number of matches that have been marked as ' +
+            'duplicates of this match.',
         ['duplicates'], OutputTextProperty),
     new Column(
         ['Additional Info'], '', 'additionalInfo', false,
