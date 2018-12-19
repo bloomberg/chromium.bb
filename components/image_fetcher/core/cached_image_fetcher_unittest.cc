@@ -18,6 +18,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/image_fetcher/core/cache/cached_image_fetcher_metrics_reporter.h"
 #include "components/image_fetcher/core/cache/image_cache.h"
 #include "components/image_fetcher/core/cache/image_data_store_disk.h"
 #include "components/image_fetcher/core/cache/image_metadata_store_leveldb.h"

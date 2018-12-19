@@ -14,6 +14,7 @@
 #include "chrome/browser/cached_image_fetcher/cached_image_fetcher_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "components/image_fetcher/core/cache/cached_image_fetcher_metrics_reporter.h"
 #include "components/image_fetcher/core/cache/image_cache.h"
 #include "components/image_fetcher/core/cached_image_fetcher.h"
 #include "components/image_fetcher/core/cached_image_fetcher_service.h"
