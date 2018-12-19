@@ -190,9 +190,10 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   gpu::GpuDriverBugWorkarounds gpu_workarounds_;
 
   // During init, these will be set.
+  VideoDecoderConfig config_;
   InitCB init_cb_;
   OutputCB output_cb_;
-  VideoDecoderConfig config_;
+  WaitingCB waiting_cb_;
 
   D3D11CreateDeviceCB create_device_func_;
 

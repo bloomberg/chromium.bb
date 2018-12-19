@@ -247,7 +247,7 @@ class AudioDecoderTest
     decoder_->Initialize(
         config, nullptr, NewExpectedBoolCB(success),
         base::Bind(&AudioDecoderTest::OnDecoderOutput, base::Unretained(this)),
-        base::NullCallback());
+        base::DoNothing());
     base::RunLoop().RunUntilIdle();
   }
 

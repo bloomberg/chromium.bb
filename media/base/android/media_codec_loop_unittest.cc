@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/mock_media_codec_bridge.h"
+#include "media/base/waiting.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,6 +36,7 @@ class MockMediaCodecLoopClient : public StrictMock<MediaCodecLoop::Client> {
   MOCK_METHOD1(OnInputDataQueued, void(bool));
   MOCK_METHOD1(OnDecodedEos, bool(const MediaCodecLoop::OutputBuffer&));
   MOCK_METHOD1(OnDecodedFrame, bool(const MediaCodecLoop::OutputBuffer&));
+  MOCK_METHOD1(OnWaiting, void(WaitingReason reason));
   MOCK_METHOD0(OnOutputFormatChanged, bool());
   MOCK_METHOD0(OnCodecLoopError, void());
 };
@@ -448,6 +450,8 @@ TEST_F(MediaCodecLoopTest, TestOnKeyAdded) {
 
     // Notify MCL that it's missing the key.
     ExpectQueueInputBuffer(input_buffer_index, data, MEDIA_CODEC_NO_KEY);
+
+    EXPECT_CALL(*client_, OnWaiting(WaitingReason::kNoDecryptionKey)).Times(1);
 
     // MCL should now try for output buffers.
     ExpectDequeueOutputBuffer(MEDIA_CODEC_TRY_AGAIN_LATER);

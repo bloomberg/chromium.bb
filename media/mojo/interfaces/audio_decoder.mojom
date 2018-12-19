@@ -42,4 +42,8 @@ interface AudioDecoder {
 interface AudioDecoderClient {
   // Sends the decoded audio buffer back to the proxy.
   OnBufferDecoded(AudioBuffer buffer);
+
+  // Called when the remote decoder is waiting because of |reason|, e.g. waiting
+  // for decryption key.
+  OnWaiting(WaitingReason reason);
 };

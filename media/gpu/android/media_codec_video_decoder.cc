@@ -188,7 +188,10 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                         CdmContext* cdm_context,
                                         const InitCB& init_cb,
                                         const OutputCB& output_cb,
-                                        const WaitingCB& /* waiting_cb */) {
+                                        const WaitingCB& waiting_cb) {
+  DCHECK(output_cb);
+  DCHECK(waiting_cb);
+
   const bool first_init = !decoder_config_.IsValidConfig();
   DVLOG(1) << (first_init ? "Initializing" : "Reinitializing")
            << " MCVD with config: " << config.AsHumanReadableString()
@@ -211,6 +214,7 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
   surface_chooser_helper_.SetVideoRotation(decoder_config_.video_rotation());
 
   output_cb_ = output_cb;
+  waiting_cb_ = waiting_cb;
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
   if (config.codec() == kCodecH264)
@@ -657,6 +661,7 @@ bool MediaCodecVideoDecoder::QueueInput() {
     case CodecWrapper::QueueStatus::kNoKey:
       // Retry when a key is added.
       waiting_for_key_ = true;
+      waiting_cb_.Run(WaitingReason::kNoDecryptionKey);
       return false;
     case CodecWrapper::QueueStatus::kError:
       EnterTerminalState(State::kError);

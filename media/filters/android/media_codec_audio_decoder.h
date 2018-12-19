@@ -100,6 +100,7 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder,
   void OnInputDataQueued(bool) override;
   bool OnDecodedEos(const MediaCodecLoop::OutputBuffer& out) override;
   bool OnDecodedFrame(const MediaCodecLoop::OutputBuffer& out) override;
+  void OnWaiting(WaitingReason reason) override;
   bool OnOutputFormatChanged() override;
   void OnCodecLoopError() override;
 
@@ -186,6 +187,8 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder,
 
   // Callback that delivers output frames.
   OutputCB output_cb_;
+
+  WaitingCB waiting_cb_;
 
   std::unique_ptr<MediaCodecLoop> codec_loop_;
 

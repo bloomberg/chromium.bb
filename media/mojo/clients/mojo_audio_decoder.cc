@@ -46,7 +46,7 @@ void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
                                   CdmContext* cdm_context,
                                   const InitCB& init_cb,
                                   const OutputCB& output_cb,
-                                  const WaitingCB& /* waiting_cb */) {
+                                  const WaitingCB& waiting_cb) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -73,6 +73,7 @@ void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
 
   init_cb_ = init_cb;
   output_cb_ = output_cb;
+  waiting_cb_ = waiting_cb;
 
   // Using base::Unretained(this) is safe because |this| owns |remote_decoder_|,
   // and the callback won't be dispatched if |remote_decoder_| is destroyed.
@@ -158,6 +159,13 @@ void MojoAudioDecoder::OnBufferDecoded(mojom::AudioBufferPtr buffer) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   output_cb_.Run(buffer.To<scoped_refptr<AudioBuffer>>());
+}
+
+void MojoAudioDecoder::OnWaiting(WaitingReason reason) {
+  DVLOG(1) << __func__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  waiting_cb_.Run(reason);
 }
 
 void MojoAudioDecoder::OnConnectionError() {

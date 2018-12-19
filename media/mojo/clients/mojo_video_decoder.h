@@ -63,6 +63,7 @@ class MojoVideoDecoder final : public VideoDecoder,
       const scoped_refptr<VideoFrame>& frame,
       bool can_read_without_stalling,
       const base::Optional<base::UnguessableToken>& release_token) final;
+  void OnWaiting(WaitingReason reason) final;
   void RequestOverlayInfo(bool restart_for_transitions) final;
 
   void set_writer_capacity_for_testing(uint32_t capacity) {
@@ -98,6 +99,7 @@ class MojoVideoDecoder final : public VideoDecoder,
 
   InitCB init_cb_;
   OutputCB output_cb_;
+  WaitingCB waiting_cb_;
   uint64_t decode_counter_ = 0;
   std::map<uint64_t, DecodeCB> pending_decodes_;
   base::Closure reset_cb_;

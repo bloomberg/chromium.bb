@@ -225,9 +225,10 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder,
 
   // The EOS decode cb for an EOS currently being processed by the codec. Called
   // when the EOS is output.
-  VideoDecoder::DecodeCB eos_decode_cb_;
+  DecodeCB eos_decode_cb_;
 
-  VideoDecoder::OutputCB output_cb_;
+  OutputCB output_cb_;
+  WaitingCB waiting_cb_;
   VideoDecoderConfig decoder_config_;
 
   // Codec specific data (SPS and PPS for H264). Some MediaCodecs initialize
