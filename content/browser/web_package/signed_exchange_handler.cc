@@ -230,7 +230,7 @@ SignedExchangeHandler::SignedExchangeHandler()
       weak_factory_(this) {}
 
 const GURL& SignedExchangeHandler::GetFallbackUrl() const {
-  return prologue_fallback_url_and_after_.fallback_url();
+  return prologue_fallback_url_and_after_.fallback_url().url;
 }
 
 void SignedExchangeHandler::SetupBuffers(size_t size) {
@@ -390,9 +390,9 @@ SignedExchangeHandler::ParseHeadersAndFetchCertificate() {
       base::as_bytes(base::make_span(data.substr(
           prologue_fallback_url_and_after_.signature_header_field_length(),
           prologue_fallback_url_and_after_.cbor_header_length())));
-  envelope_ =
-      SignedExchangeEnvelope::Parse(GetFallbackUrl(), signature_header_field,
-                                    cbor_header, devtools_proxy_.get());
+  envelope_ = SignedExchangeEnvelope::Parse(
+      prologue_fallback_url_and_after_.fallback_url(), signature_header_field,
+      cbor_header, devtools_proxy_.get());
   header_read_buf_ = nullptr;
   header_buf_ = nullptr;
   if (!envelope_) {
@@ -483,7 +483,7 @@ void SignedExchangeHandler::OnCertReceived(
   }
 
   auto certificate = unverified_cert_chain_->cert();
-  auto url = envelope_->request_url();
+  auto url = envelope_->request_url().url;
 
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cross-origin-trust
   // Step 6.4 Validate that valid SCTs from trusted logs are available from any
@@ -652,8 +652,8 @@ void SignedExchangeHandler::OnVerifyCert(
   response_head.ssl_info = std::move(ssl_info);
   std::move(headers_callback_)
       .Run(SignedExchangeLoadResult::kSuccess, net::OK,
-           envelope_->request_url(), envelope_->request_method(), response_head,
-           std::move(mi_stream));
+           envelope_->request_url().url, envelope_->request_method(),
+           response_head, std::move(mi_stream));
   state_ = State::kHeadersCallbackCalled;
 }
 

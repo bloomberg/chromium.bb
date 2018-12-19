@@ -1770,7 +1770,7 @@ void NetworkHandler::OnSignedExchangeReceived(
             .SetSignature(base::HexEncode(sig.sig.data(), sig.sig.size()))
             .SetIntegrity(sig.integrity)
             .SetCertUrl(sig.cert_url.spec())
-            .SetValidityUrl(sig.validity_url.spec())
+            .SetValidityUrl(sig.validity_url.url.spec())
             .SetDate(sig.date)
             .SetExpires(sig.expires)
             .Build();
@@ -1797,7 +1797,7 @@ void NetworkHandler::OnSignedExchangeReceived(
 
     signed_exchange_info->SetHeader(
         Network::SignedExchangeHeader::Create()
-            .SetRequestUrl(envelope->request_url().spec())
+            .SetRequestUrl(envelope->request_url().url.spec())
             .SetRequestMethod(envelope->request_method())
             .SetResponseCode(envelope->response_code())
             .SetResponseHeaders(Object::fromValue(headers_dict.get(), nullptr))

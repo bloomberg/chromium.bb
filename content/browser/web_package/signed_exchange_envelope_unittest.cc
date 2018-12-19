@@ -34,7 +34,7 @@ cbor::Value CBORByteString(const char* str) {
 }
 
 base::Optional<SignedExchangeEnvelope> GenerateHeaderAndParse(
-    const GURL& fallback_url,
+    base::StringPiece fallback_url,
     base::StringPiece signature,
     const std::map<const char*, const char*>& request_map,
     const std::map<const char*, const char*>& response_map) {
@@ -51,7 +51,7 @@ base::Optional<SignedExchangeEnvelope> GenerateHeaderAndParse(
 
   auto serialized = cbor::Writer::Write(cbor::Value(std::move(array)));
   return SignedExchangeEnvelope::Parse(
-      fallback_url, signature,
+      signed_exchange_utils::URLWithRawString(fallback_url), signature,
       base::make_span(serialized->data(), serialized->size()),
       nullptr /* devtools_proxy */);
 }
@@ -102,7 +102,8 @@ TEST(SignedExchangeEnvelopeTest, ParseGoldenFile) {
                                     signature_header_field, cbor_bytes,
                                     nullptr /* devtools_proxy */);
   ASSERT_TRUE(envelope.has_value());
-  EXPECT_EQ(envelope->request_url(), GURL("https://test.example.org/test/"));
+  EXPECT_EQ(envelope->request_url().url,
+            GURL("https://test.example.org/test/"));
   EXPECT_EQ(envelope->request_method(), "GET");
   EXPECT_EQ(envelope->response_code(), static_cast<net::HttpStatusCode>(200u));
   EXPECT_EQ(envelope->response_headers().size(), 3u);
@@ -112,44 +113,44 @@ TEST(SignedExchangeEnvelopeTest, ParseGoldenFile) {
 
 TEST(SignedExchangeEnvelopeTest, ValidHeader) {
   auto header = GenerateHeaderAndParse(
-      GURL("https://test.example.org/test/"), kSignatureString,
+      "https://test.example.org/test/", kSignatureString,
       {
           {kMethodKey, "GET"},
       },
       {{kStatusKey, "200"}, {"content-type", "text/html"}});
   ASSERT_TRUE(header.has_value());
-  EXPECT_EQ(header->request_url(), GURL("https://test.example.org/test/"));
+  EXPECT_EQ(header->request_url().url, GURL("https://test.example.org/test/"));
   EXPECT_EQ(header->request_method(), "GET");
   EXPECT_EQ(header->response_code(), static_cast<net::HttpStatusCode>(200u));
   EXPECT_EQ(header->response_headers().size(), 1u);
 }
 
 TEST(SignedExchangeEnvelopeTest, UnsafeMethod) {
-  auto header = GenerateHeaderAndParse(GURL("https://test.example.org/test/"),
-                                       kSignatureString,
-                                       {
-                                           {kMethodKey, "POST"},
-                                       },
-                                       {
-                                           {kStatusKey, "200"},
-                                       });
+  auto header =
+      GenerateHeaderAndParse("https://test.example.org/test/", kSignatureString,
+                             {
+                                 {kMethodKey, "POST"},
+                             },
+                             {
+                                 {kStatusKey, "200"},
+                             });
   ASSERT_FALSE(header.has_value());
 }
 
 TEST(SignedExchangeEnvelopeTest, InformationalResponseCode) {
-  auto header = GenerateHeaderAndParse(GURL("https://test.example.org/test/"),
-                                       kSignatureString,
-                                       {
-                                           {kMethodKey, "GET"},
-                                       },
-                                       {
-                                           {kStatusKey, "100"},
-                                       });
+  auto header =
+      GenerateHeaderAndParse("https://test.example.org/test/", kSignatureString,
+                             {
+                                 {kMethodKey, "GET"},
+                             },
+                             {
+                                 {kStatusKey, "100"},
+                             });
   ASSERT_FALSE(header.has_value());
 }
 
 TEST(SignedExchangeEnvelopeTest, RelativeURL) {
-  auto header = GenerateHeaderAndParse(GURL("test/"), kSignatureString,
+  auto header = GenerateHeaderAndParse("test/", kSignatureString,
                                        {
                                            {kMethodKey, "GET"},
                                        },
@@ -160,59 +161,60 @@ TEST(SignedExchangeEnvelopeTest, RelativeURL) {
 }
 
 TEST(SignedExchangeEnvelopeTest, HttpURLShouldFail) {
-  auto header = GenerateHeaderAndParse(GURL("http://test.example.org/test/"),
-                                       kSignatureString,
-                                       {
-                                           {kMethodKey, "GET"},
-                                       },
-                                       {
-                                           {kStatusKey, "200"},
-                                       });
+  auto header =
+      GenerateHeaderAndParse("http://test.example.org/test/", kSignatureString,
+                             {
+                                 {kMethodKey, "GET"},
+                             },
+                             {
+                                 {kStatusKey, "200"},
+                             });
   ASSERT_FALSE(header.has_value());
 }
 
 TEST(SignedExchangeEnvelopeTest, RedirectStatusShouldFail) {
-  auto header = GenerateHeaderAndParse(GURL("https://test.example.org/test/"),
-                                       kSignatureString, {{kMethodKey, "GET"}},
-                                       {{kStatusKey, "302"}});
+  auto header =
+      GenerateHeaderAndParse("https://test.example.org/test/", kSignatureString,
+                             {{kMethodKey, "GET"}}, {{kStatusKey, "302"}});
   ASSERT_FALSE(header.has_value());
 }
 
 TEST(SignedExchangeEnvelopeTest, Status300ShouldFail) {
   auto header = GenerateHeaderAndParse(
-      GURL("https://test.example.org/test/"), kSignatureString,
-      {{kMethodKey, "GET"}},
+      "https://test.example.org/test/", kSignatureString, {{kMethodKey, "GET"}},
       {{kStatusKey, "300"}});  // 300 is not a redirect status.
   ASSERT_FALSE(header.has_value());
 }
 
 TEST(SignedExchangeEnvelopeTest, StatefulRequestHeader) {
-  auto header = GenerateHeaderAndParse(
-      GURL("https://test.example.org/test/"), kSignatureString,
-      {
-          {kMethodKey, "GET"}, {"authorization", "Basic Zm9vOmJhcg=="},
-      },
-      {
-          {kStatusKey, "200"},
-      });
+  auto header =
+      GenerateHeaderAndParse("https://test.example.org/test/", kSignatureString,
+                             {
+                                 {kMethodKey, "GET"},
+                                 {"authorization", "Basic Zm9vOmJhcg=="},
+                             },
+                             {
+                                 {kStatusKey, "200"},
+                             });
   ASSERT_FALSE(header.has_value());
 }
 
 TEST(SignedExchangeEnvelopeTest, StatefulResponseHeader) {
-  auto header = GenerateHeaderAndParse(
-      GURL("https://test.example.org/test/"), kSignatureString,
-      {
-          {kMethodKey, "GET"},
-      },
-      {
-          {kStatusKey, "200"}, {"set-cookie", "foo=bar"},
-      });
+  auto header =
+      GenerateHeaderAndParse("https://test.example.org/test/", kSignatureString,
+                             {
+                                 {kMethodKey, "GET"},
+                             },
+                             {
+                                 {kStatusKey, "200"},
+                                 {"set-cookie", "foo=bar"},
+                             });
   ASSERT_FALSE(header.has_value());
 }
 
 TEST(SignedExchangeEnvelopeTest, UppercaseRequestMap) {
   auto header = GenerateHeaderAndParse(
-      GURL("https://test.example.org/test/"), kSignatureString,
+      "https://test.example.org/test/", kSignatureString,
       {{kMethodKey, "GET"}, {"Accept-Language", "en-us"}},
       {
           {kStatusKey, "200"},
@@ -221,18 +223,18 @@ TEST(SignedExchangeEnvelopeTest, UppercaseRequestMap) {
 }
 
 TEST(SignedExchangeEnvelopeTest, UppercaseResponseMap) {
-  auto header = GenerateHeaderAndParse(
-      GURL("https://test.example.org/test/"), kSignatureString,
-      {
-          {kMethodKey, "GET"},
-      },
-      {{kStatusKey, "200"}, {"Content-Length", "123"}});
+  auto header =
+      GenerateHeaderAndParse("https://test.example.org/test/", kSignatureString,
+                             {
+                                 {kMethodKey, "GET"},
+                             },
+                             {{kStatusKey, "200"}, {"Content-Length", "123"}});
   ASSERT_FALSE(header.has_value());
 }
 
 TEST(SignedExchangeEnvelopeTest, InvalidValidityURLHeader) {
   auto header = GenerateHeaderAndParse(
-      GURL("https://test2.example.org/test/"), kSignatureString,
+      "https://test2.example.org/test/", kSignatureString,
       {
           {kMethodKey, "GET"},
       },
@@ -242,7 +244,7 @@ TEST(SignedExchangeEnvelopeTest, InvalidValidityURLHeader) {
 
 TEST(SignedExchangeEnvelopeTest, InnerResponseIsSXG) {
   auto header = GenerateHeaderAndParse(
-      GURL("https://test.example.org/test/"), kSignatureString,
+      "https://test.example.org/test/", kSignatureString,
       {
           {kMethodKey, "GET"},
       },

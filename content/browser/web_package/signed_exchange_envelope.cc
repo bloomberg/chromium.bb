@@ -282,14 +282,14 @@ bool ParseResponseMap(const cbor::Value& value,
 
 // static
 base::Optional<SignedExchangeEnvelope> SignedExchangeEnvelope::Parse(
-    const GURL& fallback_url,
+    const signed_exchange_utils::URLWithRawString& fallback_url,
     base::StringPiece signature_header_field,
     base::span<const uint8_t> cbor_header,
     SignedExchangeDevToolsProxy* devtools_proxy) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeEnvelope::Parse");
 
-  const GURL& request_url = fallback_url;
+  const auto& request_url = fallback_url;
 
   cbor::Reader::DecoderError error;
   base::Optional<cbor::Value> value = cbor::Reader::Read(cbor_header, &error);
@@ -351,8 +351,8 @@ base::Optional<SignedExchangeEnvelope> SignedExchangeEnvelope::Parse(
   // If the signature’s “validity-url” parameter is not same-origin with
   // exchange’s effective request URI (Section 5.5 of [RFC7230]), return
   // “invalid” [spec text]
-  const GURL validity_url = ret.signature().validity_url;
-  if (!url::IsSameOriginWith(request_url, validity_url)) {
+  const GURL validity_url = ret.signature().validity_url.url;
+  if (!url::IsSameOriginWith(request_url.url, validity_url)) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy, "Validity URL must be same-origin with request URL.");
     return base::nullopt;

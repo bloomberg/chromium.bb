@@ -76,8 +76,8 @@ size_t BeforeFallbackUrl::ComputeFallbackUrlAndAfterLength() const {
 
 // static
 FallbackUrlAndAfter FallbackUrlAndAfter::ParseFailedButFallbackUrlAvailable(
-    GURL fallback_url) {
-  return FallbackUrlAndAfter(/*is_valid=*/false, std::move(fallback_url),
+    const signed_exchange_utils::URLWithRawString& fallback_url) {
+  return FallbackUrlAndAfter(/*is_valid=*/false, fallback_url,
                              /*signature_header_field_length=*/0,
                              /*cbor_header_length=*/0);
 }
@@ -100,19 +100,19 @@ FallbackUrlAndAfter FallbackUrlAndAfter::Parse(
   base::StringPiece fallback_url_str(
       reinterpret_cast<const char*>(input.data()),
       before_fallback_url.fallback_url_length());
-  GURL fallback_url(fallback_url_str);
+  signed_exchange_utils::URLWithRawString fallback_url(fallback_url_str);
 
-  if (!fallback_url.is_valid()) {
+  if (!fallback_url.url.is_valid()) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy, "Failed to parse `fallbackUrl`.");
     return FallbackUrlAndAfter();
   }
-  if (!fallback_url.SchemeIs(url::kHttpsScheme)) {
+  if (!fallback_url.url.SchemeIs(url::kHttpsScheme)) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy, "`fallbackUrl` in non-https scheme.");
     return FallbackUrlAndAfter();
   }
-  if (fallback_url.has_ref()) {
+  if (fallback_url.url.has_ref()) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy, ":url can't have a fragment.");
     return FallbackUrlAndAfter();
