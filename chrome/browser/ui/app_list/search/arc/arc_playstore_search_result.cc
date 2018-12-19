@@ -114,7 +114,7 @@ ArcPlayStoreSearchResult::ArcPlayStoreSearchResult(
          crx_file::id_util::GenerateId(install_intent_uri().value()));
   SetDisplayType(ash::SearchResultDisplayType::kTile);
   SetBadgeIcon(CreateBadgeIcon(
-      is_instant_app() ? kIcBadgeInstantIcon : kIcBadgePlayIcon,
+      is_instant_app() ? kBadgeInstantIcon : kBadgePlayIcon,
       app_list::AppListConfig::instance().search_tile_badge_icon_dimension(),
       kBadgePadding, kBadgeIconSize, kBadgeColor));
   SetFormattedPrice(base::UTF8ToUTF16(formatted_price().value()));

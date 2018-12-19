@@ -90,7 +90,7 @@ const gfx::VectorIcon& TypeToVectorIcon(AutocompleteMatchType::Type type) {
     case AutocompleteMatchType::TAB_SEARCH_DEPRECATED:
     case AutocompleteMatchType::DOCUMENT_SUGGESTION:
     case AutocompleteMatchType::PEDAL:
-      return kIcDomainIcon;
+      return kDomainIcon;
 
     case AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED:
     case AutocompleteMatchType::SEARCH_SUGGEST:
@@ -100,14 +100,14 @@ const gfx::VectorIcon& TypeToVectorIcon(AutocompleteMatchType::Type type) {
     case AutocompleteMatchType::SEARCH_OTHER_ENGINE:
     case AutocompleteMatchType::CONTACT_DEPRECATED:
     case AutocompleteMatchType::VOICE_SUGGEST:
-      return kIcSearchIcon;
+      return kSearchIcon;
 
     case AutocompleteMatchType::SEARCH_HISTORY:
     case AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED:
-      return kIcHistoryIcon;
+      return kHistoryIcon;
 
     case AutocompleteMatchType::CALCULATOR:
-      return kIcEqualIcon;
+      return kEqualIcon;
 
     case AutocompleteMatchType::EXTENSION_APP_DEPRECATED:
     case AutocompleteMatchType::NUM_TYPES:
@@ -115,7 +115,7 @@ const gfx::VectorIcon& TypeToVectorIcon(AutocompleteMatchType::Type type) {
       break;
   }
   NOTREACHED();
-  return kIcDomainIcon;
+  return kDomainIcon;
 }
 
 }  // namespace
@@ -163,7 +163,7 @@ void OmniboxResult::UpdateIcon() {
       bookmark_model && bookmark_model->IsBookmarked(match_.destination_url);
 
   const gfx::VectorIcon& icon =
-      is_bookmarked ? kIcBookmarkIcon : TypeToVectorIcon(match_.type);
+      is_bookmarked ? kBookmarkIcon : TypeToVectorIcon(match_.type);
   SetIcon(gfx::CreateVectorIcon(
       icon, AppListConfig::instance().search_list_icon_dimension(),
       kListIconColor));

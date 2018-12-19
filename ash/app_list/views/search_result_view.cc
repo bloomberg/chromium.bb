@@ -32,7 +32,7 @@ namespace {
 
 constexpr int kPreferredWidth = 640;
 constexpr int kPreferredHeight = 48;
-constexpr int kIconLeftRightPadding = 19;
+constexpr int kIconLeftRightPadding = 18;
 constexpr int kTextTrailPadding = 16;
 // Extra margin at the right of the rightmost action icon.
 constexpr int kActionButtonRightMargin = 8;
