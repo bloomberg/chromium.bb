@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_METRICS_ANDROID_PROFILE_SESSION_DURATIONS_SERVICE_FACTORY_H_
 #define CHROME_BROWSER_ANDROID_METRICS_ANDROID_PROFILE_SESSION_DURATIONS_SERVICE_FACTORY_H_
 
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class AndroidProfileSessionDurationsService;
@@ -33,6 +33,8 @@ class AndroidProfileSessionDurationsServiceFactory
 
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
+      content::BrowserContext* context) const override;
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
   bool ServiceIsNULLWhileTesting() const override;
 
