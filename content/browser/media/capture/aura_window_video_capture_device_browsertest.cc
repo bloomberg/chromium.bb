@@ -23,6 +23,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -223,6 +224,9 @@ IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
 // stopped.
 IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
                        ErrorsOutWhenWindowIsDestroyed) {
+  // TODO(crbug.com/877172): CopyOutputRequests not allowed.
+  if (features::IsSingleProcessMash())
+    return;
   NavigateToInitialDocument();
   AllocateAndStartAndWaitForFirstFrame();
 
@@ -245,6 +249,9 @@ IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
 // to be delivered, to ensure the client is up-to-date.
 IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
                        SuspendsAndResumes) {
+  // TODO(crbug.com/877172): CopyOutputRequests not allowed.
+  if (features::IsSingleProcessMash())
+    return;
   NavigateToInitialDocument();
   AllocateAndStartAndWaitForFirstFrame();
 
@@ -279,6 +286,9 @@ IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
 // content is not changing.
 IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
                        DeliversRefreshFramesUponRequest) {
+  // TODO(crbug.com/877172): CopyOutputRequests not allowed.
+  if (features::IsSingleProcessMash())
+    return;
   NavigateToInitialDocument();
   AllocateAndStartAndWaitForFirstFrame();
 
@@ -333,6 +343,9 @@ INSTANTIATE_TEST_CASE_P(
 // compositing.
 IN_PROC_BROWSER_TEST_P(AuraWindowVideoCaptureDeviceBrowserTestP,
                        CapturesContentChanges) {
+  // TODO(crbug.com/877172): CopyOutputRequests not allowed.
+  if (features::IsSingleProcessMash())
+    return;
   SCOPED_TRACE(testing::Message()
                << "Test parameters: "
                << (IsSoftwareCompositingTest() ? "Software Compositing"

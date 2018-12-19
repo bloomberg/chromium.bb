@@ -56,6 +56,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/layout.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -501,6 +502,9 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
 };
 
 IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, CaptureScreenshot) {
+  // TODO(crbug.com/877172): CopyOutputRequests not allowed.
+  if (features::IsSingleProcessMash())
+    return;
   // This test fails consistently on low-end Android devices.
   // See crbug.com/653637.
   // TODO(eseckler): Reenable with error limit if necessary.
@@ -523,6 +527,9 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, CaptureScreenshot) {
 }
 
 IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, CaptureScreenshotJpeg) {
+  // TODO(crbug.com/877172): CopyOutputRequests not allowed.
+  if (features::IsSingleProcessMash())
+    return;
   // This test fails consistently on low-end Android devices.
   // See crbug.com/653637.
   // TODO(eseckler): Reenable with error limit if necessary.
@@ -577,6 +584,9 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest,
 // of a page that does not specify one.
 IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest,
                        SetDefaultBackgroundColorOverride) {
+  // TODO(crbug.com/877172): CopyOutputRequests not allowed.
+  if (features::IsSingleProcessMash())
+    return;
   if (base::SysInfo::IsLowEndDevice())
     return;
 
@@ -617,6 +627,9 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest,
 // and semi-transparent background, and that setDeviceMetricsOverride doesn't
 // affect it.
 IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, TransparentScreenshots) {
+  // TODO(crbug.com/877172): CopyOutputRequests not allowed.
+  if (features::IsSingleProcessMash())
+    return;
   if (base::SysInfo::IsLowEndDevice())
     return;
 
