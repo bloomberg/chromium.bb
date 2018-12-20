@@ -446,7 +446,7 @@ void BubbleDialogDelegateView::UpdateAnchorWidgetRenderState(bool visible) {
 void BubbleDialogDelegateView::UpdateHighlightedButton(bool highlighted) {
   Button* button = Button::AsButton(highlighted_button_tracker_.view());
   button = button ? button : Button::AsButton(anchor_view_tracker_->view());
-  if (button)
+  if (button && highlight_button_when_shown_)
     button->SetHighlighted(highlighted);
 }
 
