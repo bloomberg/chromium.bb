@@ -45,9 +45,6 @@
   self.inIncognito = command.inIncognito;
 }
 
-- (void)loadSessionTab:(const sessions::SessionTab*)sessionTab {
-}
-
 - (const GURL&)url {
   return _url;
 }

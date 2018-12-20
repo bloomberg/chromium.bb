@@ -210,6 +210,8 @@
   baseViewController.remoteTabsViewController.loader = self.URLLoader;
   baseViewController.remoteTabsViewController.restoredTabDisposition =
       WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  baseViewController.remoteTabsViewController.webStateList =
+      self.regularTabModel.webStateList;
   baseViewController.remoteTabsViewController.presentationDelegate = self;
 
   // Insert the launch screen view in front of this view to hide it until after

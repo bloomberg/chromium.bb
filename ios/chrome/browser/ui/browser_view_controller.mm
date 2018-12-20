@@ -57,9 +57,6 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
-#include "ios/chrome/browser/sessions/session_util.h"
-#include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
-#include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios_factory.h"
 #import "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #include "ios/chrome/browser/signin/account_reconcilor_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_generator_delegate.h"
@@ -4213,15 +4210,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // parameter.
   command.appendTo = kLastTab;
   [self.dispatcher openURLInNewTab:command];
-}
-
-- (void)loadSessionTab:(const sessions::SessionTab*)sessionTab {
-  WebStateList* webStateList = self.tabModel.webStateList;
-  webStateList->ReplaceWebStateAt(
-      webStateList->active_index(),
-      session_util::CreateWebStateWithNavigationEntries(
-          [self.tabModel browserState], sessionTab->current_navigation_index,
-          sessionTab->navigations));
 }
 
 #pragma mark - UrlLoader helpers
