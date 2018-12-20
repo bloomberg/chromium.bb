@@ -27,16 +27,25 @@ class MockContentBrowserClient final : public ContentBrowserClient {
  public:
   void UpdateRendererPreferencesForWorker(BrowserContext*,
                                           RendererPreferences* prefs) override {
-    prefs->enable_do_not_track = true;
-    prefs->enable_referrers = true;
+    if (do_not_track_enabled_) {
+      prefs->enable_do_not_track = true;
+      prefs->enable_referrers = true;
+    }
   }
+
+  void EnableDoNotTrack() { do_not_track_enabled_ = true; }
+
+ private:
+  bool do_not_track_enabled_ = false;
 };
 
 class DoNotTrackTest : public ContentBrowserTest {
  protected:
+  void SetUpOnMainThread() override {
+    original_client_ = SetBrowserClientForTesting(&client_);
+  }
   void TearDownOnMainThread() override {
-    if (original_client_)
-      SetBrowserClientForTesting(original_client_);
+    SetBrowserClientForTesting(original_client_);
   }
 
   // Returns false if we cannot enable do not track. It happens only when
@@ -52,7 +61,7 @@ class DoNotTrackTest : public ContentBrowserTest {
     if (major_version < 5)
       return false;
 #endif
-    original_client_ = SetBrowserClientForTesting(&client_);
+    client_.EnableDoNotTrack();
     RendererPreferences* prefs =
         shell()->web_contents()->GetMutableRendererPrefs();
     EXPECT_FALSE(prefs->enable_do_not_track);
