@@ -160,6 +160,9 @@ bool GzipCompress(base::StringPiece input, std::string* output) {
 bool GzipUncompress(const std::string& input, std::string* output) {
   std::string uncompressed_output;
   uLongf uncompressed_size = static_cast<uLongf>(GetUncompressedSize(input));
+  if (uncompressed_size > uncompressed_output.max_size())
+    return false;
+
   uncompressed_output.resize(uncompressed_size);
   if (GzipUncompressHelper(bit_cast<Bytef*>(uncompressed_output.data()),
                            &uncompressed_size,
