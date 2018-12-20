@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -280,6 +281,32 @@ TEST(MessagePumpMacTest, DontInvalidateTimerInNativeRunLoop) {
           },
           &run_loop, menu),
       base::TimeDelta::FromMilliseconds(100));
+
+  EXPECT_NO_FATAL_FAILURE(run_loop.Run());
+}
+
+TEST(MessagePumpMacTest, QuitWithModalWindow) {
+  MessageLoopForUI message_loop;
+  NSWindow* window =
+      [[[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 100, 100)
+                                   styleMask:NSBorderlessWindowMask
+                                     backing:NSBackingStoreBuffered
+                                       defer:NO] autorelease];
+
+  // Check that quitting the run loop while a modal window is shown applies to
+  // |run_loop| rather than the internal NSApplication modal run loop.
+  RunLoop run_loop;
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&] {
+        MessageLoopCurrent::ScopedNestableTaskAllower allow;
+        ScopedPumpMessagesInPrivateModes pump_private;
+        [NSApp runModalForWindow:window];
+      }));
+  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                          base::BindLambdaForTesting([&] {
+                                            [NSApp stopModal];
+                                            run_loop.Quit();
+                                          }));
 
   EXPECT_NO_FATAL_FAILURE(run_loop.Run());
 }
