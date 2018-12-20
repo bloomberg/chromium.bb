@@ -428,16 +428,14 @@ if (is_cros_chrome_sdk) {
   # Tast test sources live in the Chromium OS repository.
   # To diagnose tast failures or disable tests, see go/tast-failures
   tast_test("chrome_all_tast_tests") {
-    disabled_tests = [
+    tast_disabled_tests = [
       # Disabled due to flake. https://crbug.com/909736
       "ui.MashLogin",
     ]
-    tast_conditional = "!disabled && !\"group:*\" && !informational" +
-                       " && (\"dep:chrome\" || \"dep:chrome_login\")"
-    foreach(test, disabled_tests) {
-      tast_conditional += " && !\"name:${test}\""
-    }
-    tast_conditional = "( " + tast_conditional + " )"
+  }
+  tast_test("chrome_kevin_tast_tests") {
+    # Tests that fail on Kevin devices.
+    tast_disabled_tests = [ "arc.Boot" ]  # crbug.com/916367
   }
 
   group("cros_chrome_deploy") {

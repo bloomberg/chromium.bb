@@ -3894,7 +3894,7 @@
             }
           ]
         },
-        "test": "chrome_all_tast_tests"
+        "test": "chrome_kevin_tast_tests"
       },
       {
         "swarming": {

@@ -53,7 +53,7 @@ def main(args):
   parser.add_argument('--use-vm', action='store_true')
   parser.add_argument('--deploy-chrome', action='store_true')
   parser.add_argument('--suite-name')
-  parser.add_argument('--tast-conditional')
+  parser.add_argument('--tast-attr-expr')
   parser.add_argument('--tast-tests', action='append')
   args = parser.parse_args(args)
 
@@ -76,16 +76,16 @@ def main(args):
         '--test-exe',
         args.test_exe,
     ])
-  elif args.tast_conditional or args.tast_tests:
+  elif args.tast_attr_expr or args.tast_tests:
     vm_test_args.extend([
         'tast',
         '--suite-name',
         args.suite_name,
     ])
-    if args.tast_conditional:
+    if args.tast_attr_expr:
       vm_test_args.extend([
-          '--conditional',
-          args.tast_conditional,
+          '--attr-expr',
+          args.tast_attr_expr,
       ])
     else:
       for t in args.tast_tests:
