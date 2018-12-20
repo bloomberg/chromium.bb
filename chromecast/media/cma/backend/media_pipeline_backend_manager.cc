@@ -86,10 +86,11 @@ std::unique_ptr<CmaBackend> MediaPipelineBackendManager::CreateCmaBackend(
     const media::MediaPipelineDeviceParams& params) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  if (active_backend_wrapper_) {
-    active_backend_wrapper_->Revoke();
-    active_backend_wrapper_ = nullptr;
-  }
+  // TODO(guohuideng): Because we now allow multiple CmaBackends to exist,
+  // we can no longer revoke |active_backend_wrapper_| here unconditionally.
+  // We will need to only revoke the old |backend_wrapper| if it has active
+  // video decoder and it has a different |session_id| within its
+  // MediaPipelineDeviceParams.
 
   std::unique_ptr<MediaPipelineBackendWrapper> backend_wrapper =
       std::make_unique<MediaPipelineBackendWrapper>(params, this);
