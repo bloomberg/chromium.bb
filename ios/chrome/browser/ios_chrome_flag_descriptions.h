@@ -138,11 +138,6 @@ extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[];
 extern const char kAutofillRichMetadataQueriesName[];
 extern const char kAutofillRichMetadataQueriesDescription[];
 
-// Title and description for the flag to control GPay branding in credit card
-// upstream infobar.
-extern const char kAutofillUpstreamUseGooglePayBrandingOnMobileName[];
-extern const char kAutofillUpstreamUseGooglePayBrandingOnMobileDescription[];
-
 // Title and description for the flag to make browser container fullscreen.
 extern const char kBrowserContainerFullscreenName[];
 extern const char kBrowserContainerFullscreenDescription[];

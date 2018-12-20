@@ -260,11 +260,6 @@ extern const char kEnableAutofillCreditCardUploadEditableExpirationDateName[];
 extern const char
     kEnableAutofillCreditCardUploadEditableExpirationDateDescription[];
 
-extern const char
-    kEnableAutofillCreditCardUploadGooglePayOnAndroidBrandingName[];
-extern const char
-    kEnableAutofillCreditCardUploadGooglePayOnAndroidBrandingDescription[];
-
 extern const char kEnableAutofillLocalCardMigrationShowFeedbackName[];
 extern const char kEnableAutofillLocalCardMigrationShowFeedbackDescription[];
 

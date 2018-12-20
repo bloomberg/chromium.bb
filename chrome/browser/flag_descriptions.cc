@@ -383,13 +383,6 @@ const char kEnableAutofillCreditCardUploadEditableExpirationDateDescription[] =
     "offering card upload to Google Payments, the offer-to-save dialog "
     "displays an expiration date selector.";
 
-const char kEnableAutofillCreditCardUploadGooglePayOnAndroidBrandingName[] =
-    "Enable Google Pay branding when offering credit card upload on Android";
-const char
-    kEnableAutofillCreditCardUploadGooglePayOnAndroidBrandingDescription[] =
-        "If enabled, shows the Google Pay logo and a shorter header message "
-        "when credit card upload to Google Payments is offered on Android.";
-
 const char kEnableAutofillLocalCardMigrationShowFeedbackName[] =
     "Show the upload results dialog after local card migration";
 const char kEnableAutofillLocalCardMigrationShowFeedbackDescription[] =

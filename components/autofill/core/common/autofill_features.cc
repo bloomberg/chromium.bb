@@ -284,12 +284,6 @@ const base::Feature kAutofillUpstreamEditableExpirationDate{
     "AutofillUpstreamEditableExpirationDate",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether the credit card upload bubble shows the Google Pay logo and
-// a shorter "Save card?" header message on mobile.
-const base::Feature kAutofillUpstreamUseGooglePayBrandingOnMobile{
-    "AutofillUpstreamUseGooglePayOnAndroidBranding",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether to use the API or use the legacy server.
 const base::Feature kAutofillUseApi{"AutofillUseApi",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
