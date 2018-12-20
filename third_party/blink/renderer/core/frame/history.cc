@@ -213,7 +213,6 @@ void History::pushState(scoped_refptr<SerializedScriptValue> data,
                         ExceptionState& exception_state) {
   StateObjectAdded(std::move(data), title, url, ScrollRestorationInternal(),
                    WebFrameLoadType::kStandard, exception_state);
-  UseCounter::Count(GetFrame(), WebFeature::kHistoryPushState);
 }
 
 void History::replaceState(scoped_refptr<SerializedScriptValue> data,
@@ -222,7 +221,6 @@ void History::replaceState(scoped_refptr<SerializedScriptValue> data,
                            ExceptionState& exception_state) {
   StateObjectAdded(std::move(data), title, url, ScrollRestorationInternal(),
                    WebFrameLoadType::kReplaceCurrentItem, exception_state);
-  UseCounter::Count(GetFrame(), WebFeature::kHistoryReplaceState);
 }
 
 KURL History::UrlForState(const String& url_string) {

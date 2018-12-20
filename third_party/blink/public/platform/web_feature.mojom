@@ -2156,6 +2156,8 @@ enum WebFeature {
   kWindowOuterWidth = 2715,
   kWindowDevicePixelRatio = 2716,
   kCanvasCaptureStream = 2717,
+  kV8HTMLMediaElement_CanPlayType_Method = 2718,
+  kHistoryLength = 2719,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
