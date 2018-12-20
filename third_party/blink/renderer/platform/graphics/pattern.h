@@ -71,7 +71,6 @@ class PLATFORM_EXPORT Pattern : public RefCounted<Pattern> {
 
  protected:
   virtual sk_sp<PaintShader> CreateShader(const SkMatrix&) = 0;
-  virtual bool IsLocalMatrixChanged(const SkMatrix&) const;
 
   RepeatMode repeat_mode_;
 
