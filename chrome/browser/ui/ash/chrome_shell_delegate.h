@@ -15,7 +15,6 @@ class ChromeShellDelegate : public ash::ShellDelegate {
 
   // ash::ShellDelegate:
   bool CanShowWindowForUser(aura::Window* window) const override;
-  std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() override;
   std::unique_ptr<ash::ScreenshotDelegate> CreateScreenshotDelegate() override;
   ash::AccessibilityDelegate* CreateAccessibilityDelegate() override;
   void OpenKeyboardShortcutHelpPage() const override;

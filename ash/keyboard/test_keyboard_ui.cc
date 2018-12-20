@@ -49,4 +49,12 @@ ui::InputMethod* TestKeyboardUI::GetInputMethod() {
 
 void TestKeyboardUI::ReloadKeyboardIfNeeded() {}
 
+TestKeyboardUIFactory::TestKeyboardUIFactory() = default;
+TestKeyboardUIFactory::~TestKeyboardUIFactory() = default;
+
+std::unique_ptr<keyboard::KeyboardUI>
+TestKeyboardUIFactory::CreateKeyboardUI() {
+  return std::make_unique<TestKeyboardUI>();
+}
+
 }  // namespace ash

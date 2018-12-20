@@ -116,18 +116,6 @@ AshKeyboardUI::~AshKeyboardUI() {
   }
 }
 
-void AshKeyboardUI::KeyboardContentsLoaded(const base::UnguessableToken& token,
-                                           const gfx::Size& size) {
-  DVLOG(1) << "KeyboardContentsLoaded. Token: " << token
-           << " Size: " << size.ToString();
-  if (token == contents_window_token_ && size == contents_window_size_)
-    return;
-  contents_window_token_ = token;
-  contents_window_size_ = size;
-  if (ash_keyboard_view_)
-    EmbedContents();
-}
-
 // keyboard::KeyboardUI:
 
 aura::Window* AshKeyboardUI::LoadKeyboardWindow(LoadCallback callback) {
@@ -167,6 +155,18 @@ ui::InputMethod* AshKeyboardUI::GetInputMethod() {
 void AshKeyboardUI::ReloadKeyboardIfNeeded() {
   DVLOG(1) << "ReloadKeyboardIfNeeded";
   ash_keyboard_controller_->SendOnLoadKeyboardContentsRequested();
+}
+
+void AshKeyboardUI::KeyboardContentsLoaded(const base::UnguessableToken& token,
+                                           const gfx::Size& size) {
+  DVLOG(1) << "KeyboardContentsLoaded. Token: " << token
+           << " Size: " << size.ToString();
+  if (token == contents_window_token_ && size == contents_window_size_)
+    return;
+  contents_window_token_ = token;
+  contents_window_size_ = size;
+  if (ash_keyboard_view_)
+    EmbedContents();
 }
 
 // aura::WindowObserver:

@@ -14,7 +14,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_ui.h"
+#include "ui/keyboard/keyboard_ui_factory.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 using keyboard::mojom::KeyboardConfig;
@@ -52,21 +52,10 @@ void AshKeyboardController::EnableKeyboard() {
   // reloading the keyboard.
   DeactivateKeyboard();
 
-  std::unique_ptr<keyboard::KeyboardUI> keyboard_ui;
-  if (::features::IsUsingWindowService()) {
-    // TODO(stevenjb): The AshKeyboardController/KeyboardController/KeyboardUI
-    // relationship is awkward. KeyboardController should maybe use a delegate
-    // instead. For now, keep a pointer to AshKeyboardUI which is owned by
-    // |keyboard_controller_| which is owned by this.
-    auto ash_keyboard_ui = std::make_unique<AshKeyboardUI>(this);
-    ash_keyboard_ui_ = ash_keyboard_ui.get();
-    keyboard_ui = std::move(ash_keyboard_ui);
-  } else {
-    keyboard_ui = Shell::Get()->shell_delegate()->CreateKeyboardUI();
-  }
-  DCHECK(keyboard_ui);
-  keyboard_controller_->EnableKeyboard(std::move(keyboard_ui),
-                                       virtual_keyboard_controller_.get());
+  keyboard_controller_->EnableKeyboard(
+      keyboard_ui_factory_ ? keyboard_ui_factory_->CreateKeyboardUI()
+                           : std::make_unique<AshKeyboardUI>(this),
+      virtual_keyboard_controller_.get());
   ActivateKeyboard();
 }
 
@@ -75,7 +64,11 @@ void AshKeyboardController::DisableKeyboard() {
   keyboard_controller_->DisableKeyboard();
 }
 
-void AshKeyboardController::CreateVirtualKeyboard() {
+void AshKeyboardController::CreateVirtualKeyboard(
+    std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory) {
+  DCHECK(keyboard_ui_factory || features::IsUsingWindowService())
+      << "keyboard_ui_factory can be null only when window service is used.";
+  keyboard_ui_factory_ = std::move(keyboard_ui_factory);
   virtual_keyboard_controller_ = std::make_unique<VirtualKeyboardController>();
 }
 
@@ -111,10 +104,7 @@ void AshKeyboardController::SendOnKeyboardUIDestroyed() {
 void AshKeyboardController::KeyboardContentsLoaded(
     const base::UnguessableToken& token,
     const gfx::Size& size) {
-  // Make sure KeyboardController hasn't destroyed the keyboard UI.
-  if (!keyboard_controller()->IsEnabled())
-    return;
-  ash_keyboard_ui_->KeyboardContentsLoaded(token, size);
+  keyboard_controller()->KeyboardContentsLoaded(token, size);
 }
 
 void AshKeyboardController::GetKeyboardConfig(

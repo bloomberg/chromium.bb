@@ -1348,6 +1348,8 @@ jumbo_split_static_library("ui") {
       "ash/keyboard/chrome_keyboard_controller_client.h",
       "ash/keyboard/chrome_keyboard_ui.cc",
       "ash/keyboard/chrome_keyboard_ui.h",
+      "ash/keyboard/chrome_keyboard_ui_factory.cc",
+      "ash/keyboard/chrome_keyboard_ui_factory.h",
       "ash/keyboard/chrome_keyboard_web_contents.cc",
       "ash/keyboard/chrome_keyboard_web_contents.h",
       "ash/ksv/keyboard_shortcut_viewer_util.cc",

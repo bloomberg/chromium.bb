@@ -7,6 +7,7 @@
 #include "ash/shell_delegate.h"
 #include "base/values.h"
 #include "services/ws/public/cpp/host/gpu_interface_provider.h"
+#include "ui/keyboard/keyboard_ui_factory.h"
 
 namespace ash {
 

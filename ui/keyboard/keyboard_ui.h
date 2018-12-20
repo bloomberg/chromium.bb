@@ -13,6 +13,12 @@
 namespace aura {
 class Window;
 }
+namespace base {
+class UnguessableToken;
+}
+namespace gfx {
+class Size;
+}
 namespace ui {
 class InputMethod;
 }
@@ -66,6 +72,11 @@ class KEYBOARD_EXPORT KeyboardUI {
   // provide one.
   // TODO(https://crbug.com/845780): Change this to accept a callback.
   virtual void ReloadKeyboardIfNeeded() = 0;
+
+  // When the window service is running, this will be called with |token| for
+  // embedding the window and the initial window size.
+  virtual void KeyboardContentsLoaded(const base::UnguessableToken& token,
+                                      const gfx::Size& size);
 
   // |controller| may be null when KeyboardController is being destroyed.
   void SetController(KeyboardController* controller);

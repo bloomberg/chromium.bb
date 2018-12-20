@@ -21,11 +21,11 @@ class Rect;
 
 namespace keyboard {
 class KeyboardController;
+class KeyboardUIFactory;
 }
 
 namespace ash {
 
-class AshKeyboardUI;
 class RootWindowController;
 class SessionController;
 class VirtualKeyboardController;
@@ -56,7 +56,8 @@ class ASH_EXPORT AshKeyboardController
   // Create or destroy the virtual keyboard. Called from Shell. TODO(stevenjb):
   // Fix dependencies so that the virtual keyboard can be created with the
   // keyboard controller.
-  void CreateVirtualKeyboard();
+  void CreateVirtualKeyboard(
+      std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory);
   void DestroyVirtualKeyboard();
 
   // Forwards events to mojo observers.
@@ -128,8 +129,8 @@ class ASH_EXPORT AshKeyboardController
   gfx::Rect BoundsToScreen(const gfx::Rect& bounds);
 
   SessionController* session_controller_;  // unowned
+  std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory_;
   std::unique_ptr<keyboard::KeyboardController> keyboard_controller_;
-  AshKeyboardUI* ash_keyboard_ui_ = nullptr;  // Owned by keyboard_controller_.
   std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
   mojo::BindingSet<mojom::KeyboardController> bindings_;
   mojo::AssociatedInterfacePtrSet<mojom::KeyboardControllerObserver> observers_;

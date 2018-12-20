@@ -14,6 +14,7 @@
 #include "ash/test_shell_delegate.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_ui_factory.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
@@ -69,6 +70,10 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
   init_params.context_factory = context_factory;
   init_params.context_factory_private = context_factory_private;
   init_params.gpu_interface_provider = content::CreateGpuInterfaceProvider();
+  if (!features::IsUsingWindowService()) {
+    init_params.keyboard_ui_factory =
+        std::make_unique<ChromeKeyboardUIFactory>();
+  }
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kHostWindowBounds, "0+0-1280x800");
   ash::Shell::CreateInstance(std::move(init_params));
