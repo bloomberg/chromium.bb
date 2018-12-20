@@ -13,6 +13,7 @@
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/view_properties.h"
 
 namespace ash {
 
@@ -31,48 +32,33 @@ TopShortcutButton::TopShortcutButton(views::ButtonListener* listener,
 TopShortcutButton::TopShortcutButton(views::ButtonListener* listener,
                                      int accessible_name_id)
     : views::ImageButton(listener) {
-  SetPreferredSize(gfx::Size(kTrayItemSize, kTrayItemSize));
-
+  const gfx::Size size(kTrayItemSize, kTrayItemSize);
+  SetPreferredSize(size);
   SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
   SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
 
   TrayPopupUtils::ConfigureTrayPopupButton(this);
+  set_ink_drop_base_color(kUnifiedMenuIconColor);
+
+  auto path = std::make_unique<SkPath>();
+  path->addOval(gfx::RectToSkRect(gfx::Rect(size)));
+  SetProperty(views::kHighlightPathKey, path.release());
 }
 
 TopShortcutButton::~TopShortcutButton() = default;
 
 void TopShortcutButton::PaintButtonContents(gfx::Canvas* canvas) {
-  gfx::Rect rect(GetContentsBounds());
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
   flags.setColor(kUnifiedMenuButtonColor);
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), kTrayItemSize / 2, flags);
+  canvas->DrawPath(*GetProperty(views::kHighlightPathKey), flags);
 
   views::ImageButton::PaintButtonContents(canvas);
 }
 
 std::unique_ptr<views::InkDrop> TopShortcutButton::CreateInkDrop() {
   return TrayPopupUtils::CreateInkDrop(this);
-}
-
-std::unique_ptr<views::InkDropRipple> TopShortcutButton::CreateInkDropRipple()
-    const {
-  return TrayPopupUtils::CreateInkDropRipple(
-      TrayPopupInkDropStyle::FILL_BOUNDS, this,
-      GetInkDropCenterBasedOnLastEvent(), kUnifiedMenuIconColor);
-}
-
-std::unique_ptr<views::InkDropHighlight>
-TopShortcutButton::CreateInkDropHighlight() const {
-  return TrayPopupUtils::CreateInkDropHighlight(
-      TrayPopupInkDropStyle::FILL_BOUNDS, this, kUnifiedMenuIconColor);
-}
-
-std::unique_ptr<views::InkDropMask> TopShortcutButton::CreateInkDropMask()
-    const {
-  return std::make_unique<views::CircleInkDropMask>(
-      size(), GetContentsBounds().CenterPoint(), kTrayItemSize / 2);
 }
 
 }  // namespace ash

@@ -95,6 +95,10 @@ class VIEWS_EXPORT InkDropHostView : public View {
   }
   float ink_drop_visible_opacity() const { return ink_drop_visible_opacity_; }
 
+  void set_ink_drop_highlight_opacity(base::Optional<float> opacity) {
+    ink_drop_highlight_opacity_ = opacity;
+  }
+
   void set_ink_drop_corner_radii(int small_radius, int large_radius) {
     ink_drop_small_corner_radius_ = small_radius;
     ink_drop_large_corner_radius_ = large_radius;
@@ -190,6 +194,10 @@ class VIEWS_EXPORT InkDropHostView : public View {
   const std::unique_ptr<InkDropEventHandler> ink_drop_event_handler_;
 
   float ink_drop_visible_opacity_ = 0.175f;
+
+  // TODO(pbos): Audit call sites to make sure highlight opacity is either
+  // always set or using the default value. Then make this a non-optional float.
+  base::Optional<float> ink_drop_highlight_opacity_;
 
   // Radii used for the SquareInkDropRipple.
   int ink_drop_small_corner_radius_ = 2;
