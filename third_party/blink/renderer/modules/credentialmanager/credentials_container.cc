@@ -622,7 +622,16 @@ ScriptPromise CredentialsContainer::create(
 
     auto mojo_options =
         MojoPublicKeyCredentialCreationOptions::From(options->publicKey());
-    if (mojo_options) {
+    if (!mojo_options) {
+      resolver->Reject(DOMException::Create(
+          DOMExceptionCode::kNotSupportedError,
+          "Required parameters missing in `options.publicKey`."));
+    } else if (mojo_options->user->id.size() > 64) {
+      // https://www.w3.org/TR/webauthn/#user-handle
+      v8::Isolate* isolate = resolver->GetScriptState()->GetIsolate();
+      resolver->Reject(V8ThrowException::CreateTypeError(
+          isolate, "User handle exceeds 64 bytes."));
+    } else {
       if (!mojo_options->relying_party->id) {
         mojo_options->relying_party->id = resolver->GetFrame()
                                               ->GetSecurityContext()
@@ -636,10 +645,6 @@ ScriptPromise CredentialsContainer::create(
           WTF::Bind(
               &OnMakePublicKeyCredentialComplete,
               WTF::Passed(std::make_unique<ScopedPromiseResolver>(resolver))));
-    } else {
-      resolver->Reject(DOMException::Create(
-          DOMExceptionCode::kNotSupportedError,
-          "Required parameters missing in `options.publicKey`."));
     }
   }
 
