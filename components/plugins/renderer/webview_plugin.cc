@@ -373,14 +373,6 @@ void WebViewPlugin::WebViewHelper::FrameDetached(DetachType type) {
   frame_ = nullptr;
 }
 
-void WebViewPlugin::WebViewHelper::BeginNavigation(
-    std::unique_ptr<blink::WebNavigationInfo> info) {
-  // TODO(dgozman): remove this method and effectively disallow
-  // content-inititated navigations in WebViewPlugin.
-  frame_->CommitNavigation(blink::WebNavigationParams::CreateFromInfo(*info),
-                           nullptr /* extra_data */);
-}
-
 void WebViewPlugin::OnZoomLevelChanged() {
   if (container_) {
     web_view()->SetZoomLevel(

@@ -185,8 +185,6 @@ class WebViewPlugin : public blink::WebPlugin,
     void BindToFrame(blink::WebNavigationControl* frame) override;
     void DidClearWindowObject() override;
     void FrameDetached(DetachType) override;
-    void BeginNavigation(
-        std::unique_ptr<blink::WebNavigationInfo> info) override;
 
    private:
     WebViewPlugin* plugin_;
