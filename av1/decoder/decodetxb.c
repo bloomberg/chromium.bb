@@ -136,6 +136,15 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   uint16_t *const max_scan_line = &(eob_data->max_scan_line);
   *max_scan_line = 0;
   *eob = 0;
+
+#if CONFIG_INSPECTION
+  if (plane == 0) {
+    const int txk_type_idx =
+        av1_get_txk_type_index(mbmi->sb_type, blk_row, blk_col);
+    mbmi->tx_skip[txk_type_idx] = all_zero;
+  }
+#endif
+
   if (all_zero) {
     *max_scan_line = 0;
     if (plane == 0) {

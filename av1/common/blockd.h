@@ -245,6 +245,9 @@ typedef struct MB_MODE_INFO {
 
   int compound_idx;
   int comp_group_idx;
+#if CONFIG_INSPECTION
+  int16_t tx_skip[TXK_TYPE_BUF_LEN];
+#endif
   // Common for both INTER and INTRA blocks
   BLOCK_SIZE sb_type;
   PREDICTION_MODE mode;

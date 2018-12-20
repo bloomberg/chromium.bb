@@ -107,6 +107,8 @@ static const arg_def_t dump_delta_q_arg =
 static const arg_def_t dump_seg_id_arg =
     ARG_DEF("si", "seg_id", 0, "Dump Segment ID");
 static const arg_def_t usage_arg = ARG_DEF("h", "help", 0, "Help");
+static const arg_def_t skip_non_transform_arg = ARG_DEF(
+    "snt", "skip_non_transform", 1, "Skip is counted as a non transform.");
 
 static const arg_def_t *main_args[] = { &limit_arg,
                                         &dump_all_arg,
@@ -131,6 +133,7 @@ static const arg_def_t *main_args[] = { &limit_arg,
                                         &dump_delta_q_arg,
                                         &dump_seg_id_arg,
                                         &usage_arg,
+                                        &skip_non_transform_arg,
                                         NULL };
 #define ENUM(name) \
   { #name, name }
@@ -157,6 +160,8 @@ const map_entry block_size_map[] = {
   ENUM(BLOCK_8X32),    ENUM(BLOCK_32X8),   ENUM(BLOCK_16X64),
   ENUM(BLOCK_64X16),   LAST_ENUM
 };
+
+#define TX_SKIP -1
 
 const map_entry tx_size_map[] = {
   ENUM(TX_4X4),   ENUM(TX_8X8),   ENUM(TX_16X16), ENUM(TX_32X32),
@@ -507,9 +512,11 @@ int put_accounting(char *buffer) {
 }
 #endif
 
+int skip_non_transform = 0;
+
 void inspect(void *pbi, void *data) {
   /* Fetch frame data. */
-  ifd_inspect(&frame_data, pbi);
+  ifd_inspect(&frame_data, pbi, skip_non_transform);
 
   // Show existing frames just show a reference buffer we've already decoded.
   // There's no information to show.
@@ -783,6 +790,9 @@ static void parse_args(char **argv) {
       usage_exit();
     else if (arg_match(&arg, &limit_arg, argi))
       stop_after = arg_parse_uint(&arg);
+    else if (arg_match(&arg, &skip_non_transform_arg, argi))
+      skip_non_transform = arg_parse_uint(&arg);
+
     else
       argj++;
   }
