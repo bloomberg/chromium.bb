@@ -42,6 +42,7 @@ namespace chromeos {
 namespace assistant {
 
 class Service;
+class AssistantMediaSession;
 
 // Enumeration of Assistant query response type, also recorded in histograms.
 // These values are persisted to logs. Entries should not be renumbered and
@@ -237,6 +238,7 @@ class AssistantManagerServiceImpl
   void RecordQueryResponseTypeUMA();
 
   State state_ = State::STOPPED;
+  std::unique_ptr<AssistantMediaSession> media_session_;
   std::unique_ptr<PlatformApiImpl> platform_api_;
   std::unique_ptr<action::CrosActionModule> action_module_;
   ChromiumApiDelegate chromium_api_delegate_;
