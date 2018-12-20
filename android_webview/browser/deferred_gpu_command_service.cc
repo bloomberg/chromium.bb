@@ -5,11 +5,11 @@
 #include "android_webview/browser/deferred_gpu_command_service.h"
 
 #include "android_webview/browser/render_thread_manager.h"
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/synchronization/lock.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_utils.h"
@@ -38,7 +38,7 @@ ScopedAllowGL::ScopedAllowGL() {
 
   DeferredGpuCommandService* service = DeferredGpuCommandService::GetInstance();
   DCHECK(service);
-  service->RunTasks();
+  DCHECK(!service->HasMoreTasks());
 }
 
 ScopedAllowGL::~ScopedAllowGL() {
@@ -46,6 +46,7 @@ ScopedAllowGL::~ScopedAllowGL() {
   DCHECK(service);
   service->RunTasks();
   service->PerformAllIdleWork();
+  DCHECK(!service->HasMoreTasks());
   allow_gl.Get().Set(false);
 }
 
@@ -155,28 +156,25 @@ DeferredGpuCommandService::DeferredGpuCommandService(
                                      nullptr,
                                      gl::GLSurfaceFormat()),
       sync_point_manager_(std::move(sync_point_manager)),
-      gpu_info_(gpu_info) {}
+      gpu_info_(gpu_info) {
+  DETACH_FROM_THREAD(task_queue_thread_checker_);
+}
 
 DeferredGpuCommandService::~DeferredGpuCommandService() {
-  base::AutoLock lock(tasks_lock_);
   DCHECK(tasks_.empty());
 }
 
 // Called from different threads!
 void DeferredGpuCommandService::ScheduleTask(base::OnceClosure task,
                                              bool out_of_order) {
-  {
-    base::AutoLock lock(tasks_lock_);
-    if (out_of_order)
-      tasks_.emplace_front(std::move(task));
-    else
-      tasks_.emplace_back(std::move(task));
-  }
-  if (ScopedAllowGL::IsAllowed()) {
-    RunTasks();
-  } else {
-    LOG(FATAL) << "ScheduleTask outside ScopedAllowGL";
-  }
+  DCHECK_CALLED_ON_VALID_THREAD(task_queue_thread_checker_);
+  LOG_IF(FATAL, !ScopedAllowGL::IsAllowed())
+      << "ScheduleTask outside of ScopedAllowGL";
+  if (out_of_order)
+    tasks_.emplace_front(std::move(task));
+  else
+    tasks_.emplace_back(std::move(task));
+  RunTasks();
 }
 
 std::unique_ptr<gpu::CommandBufferTaskExecutor::Sequence>
@@ -192,18 +190,20 @@ void DeferredGpuCommandService::ScheduleDelayedWork(
     base::OnceClosure callback) {
   LOG_IF(FATAL, !ScopedAllowGL::IsAllowed())
       << "ScheduleDelayedWork outside of ScopedAllowGL";
-  base::AutoLock lock(tasks_lock_);
+  DCHECK_CALLED_ON_VALID_THREAD(task_queue_thread_checker_);
   idle_tasks_.push(std::make_pair(base::Time::Now(), std::move(callback)));
 }
 
 void DeferredGpuCommandService::PerformAllIdleWork() {
   TRACE_EVENT0("android_webview",
                "DeferredGpuCommandService::PerformAllIdleWork");
-  base::AutoLock lock(tasks_lock_);
+  DCHECK_CALLED_ON_VALID_THREAD(task_queue_thread_checker_);
+  if (inside_run_idle_tasks_)
+    return;
+  base::AutoReset<bool> inside(&inside_run_idle_tasks_, true);
   while (idle_tasks_.size()) {
     base::OnceClosure task = std::move(idle_tasks_.front().second);
     idle_tasks_.pop();
-    base::AutoUnlock unlock(tasks_lock_);
     std::move(task).Run();
   }
 }
@@ -218,25 +218,19 @@ bool DeferredGpuCommandService::ShouldCreateMemoryTracker() const {
 
 void DeferredGpuCommandService::RunTasks() {
   TRACE_EVENT0("android_webview", "DeferredGpuCommandService::RunTasks");
-  bool has_more_tasks;
-  {
-    base::AutoLock lock(tasks_lock_);
-    has_more_tasks = tasks_.size() > 0;
+  DCHECK_CALLED_ON_VALID_THREAD(task_queue_thread_checker_);
+  if (inside_run_tasks_)
+    return;
+  base::AutoReset<bool> inside(&inside_run_tasks_, true);
+  while (tasks_.size()) {
+    std::move(tasks_.front()).Run();
+    tasks_.pop_front();
   }
+}
 
-  while (has_more_tasks) {
-    base::OnceClosure task;
-    {
-      base::AutoLock lock(tasks_lock_);
-      task = std::move(tasks_.front());
-      tasks_.pop_front();
-    }
-    std::move(task).Run();
-    {
-      base::AutoLock lock(tasks_lock_);
-      has_more_tasks = tasks_.size() > 0;
-    }
-  }
+bool DeferredGpuCommandService::HasMoreTasks() {
+  DCHECK_CALLED_ON_VALID_THREAD(task_queue_thread_checker_);
+  return tasks_.size() || idle_tasks_.size();
 }
 
 bool DeferredGpuCommandService::CanSupportThreadedTextureMailbox() const {
