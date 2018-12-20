@@ -61,7 +61,7 @@ class FeedLoggingBridge {
 
   void OnOpenedWithContent(JNIEnv* j_env,
                            const base::android::JavaRef<jobject>& j_this,
-                           const jint j_time_to_Populate,
+                           const jlong j_time_to_populate,
                            const jint j_content_count);
 
   void OnOpenedWithNoImmediateContent(

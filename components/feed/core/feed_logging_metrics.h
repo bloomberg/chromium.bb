@@ -42,6 +42,10 @@ class FeedLoggingMetrics {
   // depend on whether the user actually saw the cards.
   void OnPageShown(const int suggestions_count);
 
+  // The amount of time for the Feed to populate articles. This does not include
+  // time to render but time to populate data in the UI.
+  void OnPagePopulated(base::TimeDelta timeToPopulate);
+
   // Should only be called once per NTP for each suggestion.
   void OnSuggestionShown(int position,
                          base::Time publish_date,

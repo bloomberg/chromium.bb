@@ -93,6 +93,11 @@ void FeedLoggingMetrics::OnPageShown(const int suggestions_count) {
       suggestions_count, kMaxSuggestionsTotal);
 }
 
+void FeedLoggingMetrics::OnPagePopulated(base::TimeDelta timeToPopulate) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("ContentSuggestions.Feed.PagePopulatingTime",
+                             timeToPopulate);
+}
+
 void FeedLoggingMetrics::OnSuggestionShown(int position,
                                            base::Time publish_date,
                                            float score,

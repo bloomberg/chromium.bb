@@ -344,6 +344,7 @@ public class NewTabPage
         RecordHistogram.recordBooleanHistogram(
                 "NewTabPage.MobileIsUserOnline", NetworkChangeNotifier.isOnline());
         NewTabPageUma.recordLoadType(activity);
+        NewTabPageUma.recordContentSuggestionsDisplayStatus();
         TraceEvent.end(TAG);
     }
 

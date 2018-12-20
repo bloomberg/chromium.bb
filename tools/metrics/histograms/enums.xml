@@ -8004,6 +8004,12 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="Articles"/>
 </enum>
 
+<enum name="ContentSuggestionsDisplayStatus">
+  <int value="0" label="Visible"/>
+  <int value="1" label="Collapsed"/>
+  <int value="2" label="Disabled by policy"/>
+</enum>
+
 <enum name="ContentSuggestionsNotificationsAction">
   <int value="0" label="Tap"/>
   <int value="1" label="Dismissal"/>
