@@ -296,13 +296,6 @@ const SystemProfileProto& MetricsLog::RecordEnvironment(
   if (client_->GetBrand(&brand_code))
     system_profile->set_brand_code(brand_code);
 
-  SystemProfileProto::Hardware::CPU* cpu =
-      system_profile->mutable_hardware()->mutable_cpu();
-  base::CPU cpu_info;
-  cpu->set_vendor_name(cpu_info.vendor_name());
-  cpu->set_signature(cpu_info.signature());
-  cpu->set_num_cores(base::SysInfo::NumberOfProcessors());
-
   delegating_provider->ProvideSystemProfileMetrics(system_profile);
 
   return *system_profile;
