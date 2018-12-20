@@ -678,12 +678,6 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
       frame_->Close();
       frame_ = nullptr;
     }
-    void BeginNavigation(
-        std::unique_ptr<blink::WebNavigationInfo> info) override {
-      frame_->CommitNavigation(
-          blink::WebNavigationParams::CreateFromInfo(*info),
-          nullptr /* extra_data */);
-    }
 
    private:
     blink::WebNavigationControl* frame_ = nullptr;
@@ -792,7 +786,6 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
       const blink::WebFrameOwnerProperties& frame_owner_properties,
       blink::FrameOwnerElementType owner_type) override;
   void FrameDetached(DetachType detach_type) override;
-  void BeginNavigation(std::unique_ptr<blink::WebNavigationInfo> info) override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
 
   void CallOnReady();
@@ -982,15 +975,6 @@ void PrepareFrameAndViewForPrint::FrameDetached(DetachType detach_type) {
   frame->Close();
   navigation_control_ = nullptr;
   frame_.Reset(nullptr);
-}
-
-void PrepareFrameAndViewForPrint::BeginNavigation(
-    std::unique_ptr<blink::WebNavigationInfo> info) {
-  // TODO(dgozman): We disable javascript through WebPreferences, so perhaps
-  // we want to disallow any navigations here by just removing this method?
-  navigation_control_->CommitNavigation(
-      blink::WebNavigationParams::CreateFromInfo(*info),
-      nullptr /* extra_data */);
 }
 
 std::unique_ptr<blink::WebURLLoaderFactory>
