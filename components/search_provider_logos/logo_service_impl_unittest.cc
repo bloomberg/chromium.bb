@@ -283,9 +283,7 @@ class FakeImageDecoder : public image_fetcher::ImageDecoder {
 // signing in/out.
 class SigninHelper {
  public:
-  explicit SigninHelper(base::test::ScopedTaskEnvironment* task_environment)
-      : task_environment_(task_environment),
-        identity_test_env_(&test_url_loader_factory_) {}
+  explicit SigninHelper() : identity_test_env_(&test_url_loader_factory_) {}
 
   identity::IdentityManager* identity_manager() {
     return identity_test_env_.identity_manager();
@@ -295,16 +293,13 @@ class SigninHelper {
     std::string email("user@gmail.com");
     identity_test_env_.SetCookieAccounts(
         {{email, identity::GetTestGaiaIdForEmail(email)}});
-    task_environment_->RunUntilIdle();
   }
 
   void SignOut() {
     identity_test_env_.SetCookieAccounts({});
-    task_environment_->RunUntilIdle();
   }
 
  private:
-  base::test::ScopedTaskEnvironment* task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   identity::IdentityTestEnvironment identity_test_env_;
 };
@@ -317,7 +312,6 @@ class LogoServiceImplTest : public ::testing::Test {
         shared_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)),
-        signin_helper_(&task_environment_),
         use_gray_background_(false) {
     test_url_loader_factory_.SetInterceptor(base::BindRepeating(
         &LogoServiceImplTest::CapturingInterceptor, base::Unretained(this)));
