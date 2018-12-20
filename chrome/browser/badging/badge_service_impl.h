@@ -17,15 +17,12 @@ class WebContents;
 
 namespace extensions {
 class Extension;
-class HostedAppBrowserController;
 }
 
 #if defined(OS_CHROMEOS)
 namespace badging {
 class BadgeManager;
 }
-#else
-class BadgeServiceDelegate;
 #endif
 
 // Desktop implementation of the BadgeService mojo service.
@@ -52,11 +49,8 @@ class BadgeServiceImpl
   content::RenderFrameHost* render_frame_host_;
   content::BrowserContext* browser_context_;
   content::WebContents* web_contents_;
-  extensions::HostedAppBrowserController* hosted_app_controller_;
 #if defined(OS_CHROMEOS)
   badging::BadgeManager* badge_manager_;
-#else
-  BadgeServiceDelegate* delegate_;
 #endif
 };
 
