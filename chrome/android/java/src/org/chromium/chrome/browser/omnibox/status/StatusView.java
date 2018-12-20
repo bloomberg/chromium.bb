@@ -11,10 +11,13 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.ColorRes;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
 import android.support.annotation.StringRes;
+import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageButton;
@@ -58,17 +61,20 @@ public class StatusView extends LinearLayout {
         int NAVIGATION_ICON = 2;
     }
 
+    private View mLocationBarIcon;
     private ImageView mNavigationButton;
     private ImageButton mSecurityButton;
     private TextView mVerboseStatusTextView;
     private View mSeparatorView;
     private View mStatusExtraSpace;
+    private View mLocationBarButtonContainer;
 
     private boolean mAnimationsEnabled;
 
     private StatusViewAnimator mLocationBarIconActiveAnimator;
     private StatusViewAnimator mLocationBarSecurityButtonShowAnimator;
     private StatusViewAnimator mLocationBarNavigationIconShowAnimator;
+    private StatusViewAnimator mLocationBarClearAnimator;
 
     /**
      * Class animating transition between FrameLayout children.
@@ -79,7 +85,7 @@ public class StatusView extends LinearLayout {
     private final class StatusViewAnimator {
         private final AnimatorSet mAnimator;
         // Target view that will be displayed at the end of animation.
-        private final View mTargetView;
+        private final View[] mTargetViews;
         // Set of source views that should be made invisible at the end.
         private final View[] mSourceViews;
 
@@ -98,20 +104,35 @@ public class StatusView extends LinearLayout {
 
             @Override
             public void onAnimationStart(Animator animation) {
-                mTargetView.setVisibility(View.VISIBLE);
+                for (View target : mTargetViews) {
+                    target.setVisibility(View.VISIBLE);
+                }
             }
         }
 
-        public StatusViewAnimator(View target, View... sources) {
+        public StatusViewAnimator(View[] targets, View[] sources) {
             mAnimator = new AnimatorSet();
-            mTargetView = target;
+            mTargetViews = targets;
             mSourceViews = sources;
 
-            AnimatorSet.Builder b =
-                    mAnimator.play(ObjectAnimator.ofFloat(mTargetView, View.ALPHA, 1));
+            AnimatorSet.Builder b = null;
 
+            // Phase in these objects
+            for (View view : targets) {
+                if (b == null) {
+                    b = mAnimator.play(ObjectAnimator.ofFloat(view, View.ALPHA, 1));
+                } else {
+                    b.with(ObjectAnimator.ofFloat(view, View.ALPHA, 1));
+                }
+            }
+
+            // Phase out these objects
             for (View view : sources) {
-                b.with(ObjectAnimator.ofFloat(view, View.ALPHA, 0));
+                if (b == null) {
+                    b = mAnimator.play(ObjectAnimator.ofFloat(view, View.ALPHA, 0));
+                } else {
+                    b.with(ObjectAnimator.ofFloat(view, View.ALPHA, 0));
+                }
             }
             mAnimator.addListener(new StatusViewAnimatorAdapter());
         }
@@ -139,6 +160,7 @@ public class StatusView extends LinearLayout {
         mVerboseStatusTextView = findViewById(R.id.location_bar_verbose_status);
         mSeparatorView = findViewById(R.id.location_bar_verbose_status_separator);
         mStatusExtraSpace = findViewById(R.id.location_bar_verbose_status_extra_space);
+        mLocationBarIcon = findViewById(R.id.location_bar_icon);
         assert mNavigationButton != null : "Missing navigation type view.";
 
         configureLocationBarIconAnimations();
@@ -146,12 +168,16 @@ public class StatusView extends LinearLayout {
 
     void configureLocationBarIconAnimations() {
         // Animation presenting Security button and hiding all others.
-        mLocationBarSecurityButtonShowAnimator =
-                new StatusViewAnimator(mSecurityButton, mNavigationButton);
+        mLocationBarSecurityButtonShowAnimator = new StatusViewAnimator(
+                new View[] {mSecurityButton}, new View[] {mNavigationButton});
 
         // Animation presenting Navigation button and hiding all others.
-        mLocationBarNavigationIconShowAnimator =
-                new StatusViewAnimator(mNavigationButton, mSecurityButton);
+        mLocationBarNavigationIconShowAnimator = new StatusViewAnimator(
+                new View[] {mNavigationButton}, new View[] {mSecurityButton});
+
+        // Animation clearing up all location bar icons.
+        mLocationBarClearAnimator = new StatusViewAnimator(
+                new View[] {}, new View[] {mNavigationButton, mSecurityButton});
     }
 
     /**
@@ -175,15 +201,18 @@ public class StatusView extends LinearLayout {
         switch (type) {
             case StatusButtonType.SECURITY_ICON:
                 mLocationBarIconActiveAnimator = mLocationBarSecurityButtonShowAnimator;
+                mLocationBarIcon.setVisibility(View.VISIBLE);
                 break;
             case StatusButtonType.NAVIGATION_ICON:
                 mLocationBarIconActiveAnimator = mLocationBarNavigationIconShowAnimator;
+                mLocationBarIcon.setVisibility(View.VISIBLE);
                 break;
             case StatusButtonType.NONE:
             default:
-                mLocationBarIconActiveAnimator = null;
-                mNavigationButton.setVisibility(View.INVISIBLE);
-                mSecurityButton.setVisibility(View.INVISIBLE);
+                mLocationBarIconActiveAnimator = mLocationBarClearAnimator;
+                // TODO(ender): This call should only be invoked once animation completes. Fix
+                // animation system and hide the view once icons are invisible.
+                mLocationBarIcon.setVisibility(View.GONE);
                 return;
         }
 
@@ -196,6 +225,42 @@ public class StatusView extends LinearLayout {
      */
     void setNavigationIcon(Drawable image) {
         mNavigationButton.setImageDrawable(image);
+    }
+
+    /**
+     * Specify security icon image.
+     */
+    public void setSecurityIcon(@DrawableRes int imageRes) {
+        if (imageRes != 0) {
+            mSecurityButton.setImageResource(imageRes);
+        } else {
+            mSecurityButton.setImageDrawable(null);
+        }
+    }
+
+    /**
+     * Specify security icon tint color.
+     */
+    public void setSecurityIconTint(@ColorRes int colorRes) {
+        // Note: There's no need to apply this each time icon changes:
+        // Subsequent calls to setImageDrawable will automatically
+        // mutate the drawable and apply the specified tint and tint mode.
+        ColorStateList list = null;
+        if (colorRes != 0) {
+            list = AppCompatResources.getColorStateList(getContext(), colorRes);
+        }
+        ApiCompatibilityUtils.setImageTintList(mSecurityButton, list);
+    }
+
+    /**
+     * Specify content description for security icon.
+     */
+    public void setSecurityIconDescription(@StringRes int descriptionRes) {
+        String description = null;
+        if (descriptionRes != 0) {
+            description = getResources().getString(descriptionRes);
+        }
+        mSecurityButton.setContentDescription(description);
     }
 
     /**

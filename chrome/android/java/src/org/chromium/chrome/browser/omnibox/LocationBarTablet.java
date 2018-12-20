@@ -198,7 +198,8 @@ public class LocationBarTablet extends LocationBarLayout {
     }
 
     private void finishUrlFocusChange(boolean hasFocus) {
-        mStatusViewCoordinator.setSecurityButtonVisibility(!hasFocus);
+        // Report focus change early to trigger animations.
+        mStatusViewCoordinator.onUrlFocusChange(hasFocus);
         if (hasFocus) {
             if (getWindowDelegate().getWindowSoftInputMode()
                     != WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN) {

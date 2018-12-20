@@ -30,6 +30,13 @@ class StatusViewBinder implements ViewBinder<PropertyModel, StatusView, Property
                 || StatusProperties.ICON_TINT_COLOR_RES.equals(propertyKey)) {
             updateNavigationButtonType(view, model.get(StatusProperties.NAVIGATION_BUTTON_TYPE),
                     model.get(StatusProperties.ICON_TINT_COLOR_RES));
+        } else if (StatusProperties.SECURITY_ICON_RES.equals(propertyKey)) {
+            view.setSecurityIcon(model.get(StatusProperties.SECURITY_ICON_RES));
+        } else if (StatusProperties.SECURITY_ICON_TINT_RES.equals(propertyKey)) {
+            view.setSecurityIconTint(model.get(StatusProperties.SECURITY_ICON_TINT_RES));
+        } else if (StatusProperties.SECURITY_ICON_DESCRIPTION_RES.equals(propertyKey)) {
+            view.setSecurityIconDescription(
+                    model.get(StatusProperties.SECURITY_ICON_DESCRIPTION_RES));
         } else if (StatusProperties.SEPARATOR_COLOR_RES.equals(propertyKey)) {
             view.setSeparatorColor(model.get(StatusProperties.SEPARATOR_COLOR_RES));
         } else if (StatusProperties.VERBOSE_STATUS_TEXT_COLOR_RES.equals(propertyKey)) {

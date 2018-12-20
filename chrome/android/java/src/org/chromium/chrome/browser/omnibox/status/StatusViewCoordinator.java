@@ -8,10 +8,8 @@ import android.app.Activity;
 import android.content.res.Resources;
 import android.support.annotation.DrawableRes;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
@@ -30,16 +28,11 @@ public class StatusViewCoordinator implements View.OnClickListener {
     private final boolean mIsTablet;
     private final StatusView mStatusView;
     private final StatusMediator mMediator;
+    private final PropertyModel mModel;
 
     private ToolbarDataProvider mToolbarDataProvider;
     private WindowAndroid mWindowAndroid;
 
-    // The type of the security icon currently active.
-    @DrawableRes
-    private int mSecurityIconResource;
-
-    @StatusButtonType
-    private int mStatusButtonType;
     private boolean mUrlHasFocus;
 
     /**
@@ -51,15 +44,14 @@ public class StatusViewCoordinator implements View.OnClickListener {
         mIsTablet = isTablet;
         mStatusView = statusView;
 
-        PropertyModel model =
-                new PropertyModel.Builder(StatusProperties.ALL_KEYS)
-                        .with(StatusProperties.ICON_TINT_COLOR_RES,
-                                R.color.locationbar_status_separator_color)
-                        .with(StatusProperties.STATUS_BUTTON_TYPE, StatusButtonType.NONE)
-                        .build();
+        mModel = new PropertyModel.Builder(StatusProperties.ALL_KEYS)
+                         .with(StatusProperties.ICON_TINT_COLOR_RES,
+                                 R.color.locationbar_status_separator_color)
+                         .with(StatusProperties.STATUS_BUTTON_TYPE, StatusButtonType.NONE)
+                         .build();
 
-        PropertyModelChangeProcessor.create(model, mStatusView, new StatusViewBinder());
-        mMediator = new StatusMediator(model);
+        PropertyModelChangeProcessor.create(mModel, mStatusView, new StatusViewBinder());
+        mMediator = new StatusMediator(mModel);
 
         Resources res = mStatusView.getResources();
         mMediator.setUrlMinWidth(res.getDimensionPixelSize(R.dimen.location_bar_min_url_width)
@@ -73,11 +65,8 @@ public class StatusViewCoordinator implements View.OnClickListener {
         mMediator.setVerboseStatusTextMinWidth(
                 res.getDimensionPixelSize(R.dimen.location_bar_min_verbose_status_text_width));
 
-        if (mIsTablet) {
-            mMediator.setNavigationButtonType(NavigationButtonType.PAGE);
-        }
-
-        mSecurityIconResource = 0;
+        mMediator.setTabletMode(mIsTablet);
+        mMediator.setNavigationButtonType(NavigationButtonType.PAGE);
     }
 
     /**
@@ -112,9 +101,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
     public void onUrlFocusChange(boolean urlHasFocus) {
         mMediator.setUrlHasFocus(urlHasFocus);
         mUrlHasFocus = urlHasFocus;
-        changeLocationBarIcon();
         updateVerboseStatusVisibility();
-        updateLocationBarIconContainerVisibility();
     }
 
     /**
@@ -128,52 +115,17 @@ public class StatusViewCoordinator implements View.OnClickListener {
         updateSecurityIcon();
     }
 
-    @StatusButtonType
-    private int getLocationBarButtonToShow() {
-        // The navigation icon type is only applicable on tablets.  While smaller form factors do
-        // not have an icon visible to the user when the URL is focused, BUTTON_TYPE_NONE is not
-        // returned as it will trigger an undesired jump during the animation as it attempts to
-        // hide the icon.
-        if (mUrlHasFocus && mIsTablet) return StatusButtonType.NAVIGATION_ICON;
-
-        return mToolbarDataProvider.getSecurityIconResource(mIsTablet) != 0
-                ? StatusButtonType.SECURITY_ICON
-                : StatusButtonType.NONE;
-    }
-
-    private void changeLocationBarIcon() {
-        mStatusButtonType = getLocationBarButtonToShow();
-        mMediator.setStatusButtonType(mStatusButtonType);
-    }
-
     /**
      * Updates the security icon displayed in the LocationBar.
      */
     public void updateSecurityIcon() {
-        @DrawableRes
-        int id = mToolbarDataProvider.getSecurityIconResource(mIsTablet);
-        if (id == 0) {
-            mStatusView.getSecurityButton().setImageDrawable(null);
-        } else {
-            // ImageView#setImageResource is no-op if given resource is the current one.
-            mStatusView.getSecurityButton().setImageResource(id);
-            ApiCompatibilityUtils.setImageTintList(mStatusView.getSecurityButton(),
-                    mToolbarDataProvider.getSecurityIconColorStateList());
-        }
+        mMediator.setSecurityIconResource(mToolbarDataProvider.getSecurityIconResource(mIsTablet));
+        mMediator.setSecurityIconTint(mToolbarDataProvider.getSecurityIconColorStateList());
+        mMediator.setSecurityIconDescription(
+                mToolbarDataProvider.getSecurityIconContentDescription());
 
-        int contentDescriptionId = mToolbarDataProvider.getSecurityIconContentDescription();
-        String contentDescription = mStatusView.getContext().getString(contentDescriptionId);
-        mStatusView.getSecurityButton().setContentDescription(contentDescription);
-
+        // TODO(ender): drop these during final cleanup round.
         updateVerboseStatusVisibility();
-
-        if (mSecurityIconResource == id && mStatusButtonType == getLocationBarButtonToShow()) {
-            return;
-        }
-        mSecurityIconResource = id;
-
-        changeLocationBarIcon();
-        updateLocationBarIconContainerVisibility();
     }
 
     /**
@@ -188,7 +140,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
      */
     @VisibleForTesting
     public boolean isSecurityButtonShown() {
-        return mStatusButtonType == StatusButtonType.SECURITY_ICON;
+        return mModel.get(StatusProperties.STATUS_BUTTON_TYPE) == StatusButtonType.SECURITY_ICON;
     }
 
     /**
@@ -197,7 +149,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
     @VisibleForTesting
     @DrawableRes
     public int getSecurityIconResourceId() {
-        return mSecurityIconResource;
+        return mModel.get(StatusProperties.SECURITY_ICON_RES);
     }
 
     /**
@@ -205,31 +157,14 @@ public class StatusViewCoordinator implements View.OnClickListener {
      * @param buttonType The type of navigation button to be shown.
      */
     public void setNavigationButtonType(@NavigationButtonType int buttonType) {
-        ImageView navigationButton = mStatusView.getNavigationButton();
         // TODO(twellington): Return early if the navigation button type and tint hasn't changed.
         if (!mIsTablet) return;
 
         mMediator.setNavigationButtonType(buttonType);
 
+        ImageView navigationButton = mStatusView.getNavigationButton();
         if (navigationButton.getVisibility() != View.VISIBLE) {
             navigationButton.setVisibility(View.VISIBLE);
-        }
-
-        updateLocationBarIconContainerVisibility();
-    }
-
-    /**
-     * @param visible Whether the navigation button should be visible.
-     */
-    public void setSecurityButtonVisibility(boolean visible) {
-        ImageButton securityButton = mStatusView.getSecurityButton();
-        if (!visible && securityButton.getVisibility() == View.VISIBLE) {
-            securityButton.setVisibility(View.GONE);
-        } else if (visible && securityButton.getVisibility() == View.GONE
-                && securityButton.getDrawable() != null
-                && securityButton.getDrawable().getIntrinsicWidth() > 0
-                && securityButton.getDrawable().getIntrinsicHeight() > 0) {
-            securityButton.setVisibility(View.VISIBLE);
         }
     }
 
@@ -243,17 +178,6 @@ public class StatusViewCoordinator implements View.OnClickListener {
         mMediator.setVerboseStatusTextAllowed(mToolbarDataProvider.shouldShowVerboseStatus());
         mMediator.setPageIsOffline(mToolbarDataProvider.isOfflinePage());
         mMediator.setPageIsPreview(mToolbarDataProvider.isPreview());
-    }
-
-    /**
-     * Update the visibility of the location bar icon container based on the state of the
-     * security and navigation icons.
-     */
-    protected void updateLocationBarIconContainerVisibility() {
-        @StatusButtonType
-        int buttonToShow = getLocationBarButtonToShow();
-        mStatusView.findViewById(R.id.location_bar_icon)
-                .setVisibility(buttonToShow != StatusButtonType.NONE ? View.VISIBLE : View.GONE);
     }
 
     /**

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.omnibox.status;
 
 import android.support.annotation.ColorRes;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.StringRes;
 
 import org.chromium.chrome.R;
@@ -23,20 +24,23 @@ class StatusMediator {
     private boolean mVerboseStatusSpaceAvailable;
     private boolean mPageIsPreview;
     private boolean mPageIsOffline;
+    private boolean mTabletMode;
 
     private int mUrlMinWidth;
     private int mSeparatorMinWidth;
     private int mVerboseStatusTextMinWidth;
+
+    private @DrawableRes int mSecurityIconRes;
 
     public StatusMediator(PropertyModel model) {
         mModel = model;
     }
 
     /**
-     * Specify type of displayed location bar button.
+     * Toggle animations of icon changes.
      */
-    public void setStatusButtonType(@StatusButtonType int type) {
-        mModel.set(StatusProperties.STATUS_BUTTON_TYPE, type);
+    public void setAnimationsEnabled(boolean enabled) {
+        mModel.set(StatusProperties.ANIMATIONS_ENABLED, enabled);
     }
 
     /**
@@ -69,10 +73,26 @@ class StatusMediator {
     }
 
     /**
-     * Toggle animations of icon changes.
+     * Specify icon displayed by the security chip.
      */
-    public void setAnimationsEnabled(boolean enabled) {
-        mModel.set(StatusProperties.ANIMATIONS_ENABLED, enabled);
+    public void setSecurityIconResource(@DrawableRes int securityIcon) {
+        if (mSecurityIconRes == securityIcon) return;
+        mSecurityIconRes = securityIcon;
+        updateLocationBarIcon();
+    }
+
+    /**
+     * Specify tint of icon displayed by the security chip.
+     */
+    public void setSecurityIconTint(@ColorRes int tintList) {
+        mModel.set(StatusProperties.SECURITY_ICON_TINT_RES, tintList);
+    }
+
+    /**
+     * Specify tint of icon displayed by the security chip.
+     */
+    public void setSecurityIconDescription(@StringRes int desc) {
+        mModel.set(StatusProperties.SECURITY_ICON_DESCRIPTION_RES, desc);
     }
 
     /**
@@ -80,6 +100,13 @@ class StatusMediator {
      */
     public void setSeparatorFieldMinWidth(int width) {
         mSeparatorMinWidth = width;
+    }
+
+    /**
+     * Toggle tablet mode.
+     */
+    public void setTabletMode(boolean isTablet) {
+        mTabletMode = isTablet;
     }
 
     /**
@@ -108,8 +135,11 @@ class StatusMediator {
      * Report URL focus change.
      */
     public void setUrlHasFocus(boolean urlHasFocus) {
+        if (mUrlHasFocus == urlHasFocus) return;
+
         mUrlHasFocus = urlHasFocus;
         updateStatusVisibility();
+        updateLocationBarIcon();
     }
 
     /**
@@ -197,5 +227,31 @@ class StatusMediator {
         mModel.set(StatusProperties.SEPARATOR_COLOR_RES, separatorColor);
 
         if (textColor != 0) mModel.set(StatusProperties.VERBOSE_STATUS_TEXT_COLOR_RES, textColor);
+    }
+
+    /**
+     * Update selection of icon presented on the location bar.
+     *
+     * - Navigation button is:
+     *     - shown only on large form factor devices (tablets and up),
+     *     - shown only if URL is focused.
+     *
+     * - Security icon is:
+     *     - shown only if specified,
+     *     - not shown if URL is focused.
+     */
+    private void updateLocationBarIcon() {
+        if (mUrlHasFocus && mTabletMode) {
+            mModel.set(StatusProperties.STATUS_BUTTON_TYPE, StatusButtonType.NAVIGATION_ICON);
+            return;
+        }
+
+        if (!mUrlHasFocus && mSecurityIconRes != 0) {
+            mModel.set(StatusProperties.SECURITY_ICON_RES, mSecurityIconRes);
+            mModel.set(StatusProperties.STATUS_BUTTON_TYPE, StatusButtonType.SECURITY_ICON);
+            return;
+        }
+
+        mModel.set(StatusProperties.STATUS_BUTTON_TYPE, StatusButtonType.NONE);
     }
 }

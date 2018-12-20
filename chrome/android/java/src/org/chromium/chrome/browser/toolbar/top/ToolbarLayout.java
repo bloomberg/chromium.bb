@@ -13,6 +13,7 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
+import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
@@ -263,8 +264,8 @@ public abstract class ToolbarLayout extends FrameLayout {
             }
 
             @Override
-            public ColorStateList getSecurityIconColorStateList() {
-                return null;
+            public @ColorRes int getSecurityIconColorStateList() {
+                return 0;
             }
 
             @Override
