@@ -50,6 +50,11 @@
     "args": ["--enable-threaded-compositing"]
   },
   {
+    "prefix": "threaded",
+    "base": "external/wpt/requestidlecallback",
+    "args": ["--enable-threaded-compositing"]
+  },
+  {
     "prefix": "prefer_compositing_to_lcd_text",
     "base": "compositing/overflow",
     "args": ["--enable-prefer-compositing-to-lcd-text"]

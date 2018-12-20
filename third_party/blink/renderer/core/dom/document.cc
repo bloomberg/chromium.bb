@@ -6964,8 +6964,13 @@ void Document::ServiceScriptedAnimations(
 }
 
 ScriptedIdleTaskController& Document::EnsureScriptedIdleTaskController() {
-  if (!scripted_idle_task_controller_)
+  if (!scripted_idle_task_controller_) {
     scripted_idle_task_controller_ = ScriptedIdleTaskController::Create(this);
+    // We need to make sure that we don't start up the idle controller if we
+    // don't have an attached frame.
+    if (!frame_ || !frame_->IsAttached())
+      scripted_idle_task_controller_->Pause();
+  }
   return *scripted_idle_task_controller_;
 }
 
