@@ -1700,4 +1700,11 @@ void LocalFrame::PaintFrameColorOverlay(GraphicsContext& context) {
     frame_color_overlay_->Paint(context);
 }
 
+void LocalFrame::ForciblyPurgeV8Memory() {
+  // TODO(yuzus): Implement ContextMummified callback and call from here.
+  WindowProxyManager* window_proxy_manager = GetWindowProxyManager();
+  window_proxy_manager->ClearForV8MemoryPurge();
+  Loader().StopAllLoaders();
+}
+
 }  // namespace blink

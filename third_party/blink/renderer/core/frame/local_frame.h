@@ -425,6 +425,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // For CompositeAfterPaint.
   void PaintFrameColorOverlay(GraphicsContext&);
 
+  // To be called from OomInterventionImpl.
+  void ForciblyPurgeV8Memory();
+
  private:
   friend class FrameNavigationDisabler;
 
