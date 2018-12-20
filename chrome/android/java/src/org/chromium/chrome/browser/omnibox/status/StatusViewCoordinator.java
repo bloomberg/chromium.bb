@@ -143,15 +143,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
      * @param buttonType The type of navigation button to be shown.
      */
     public void setNavigationButtonType(@NavigationButtonType int buttonType) {
-        // TODO(twellington): Return early if the navigation button type and tint hasn't changed.
-        if (!mIsTablet) return;
-
         mMediator.setNavigationButtonType(buttonType);
-
-        View navigationButton = mStatusView.getNavigationButton();
-        if (navigationButton.getVisibility() != View.VISIBLE) {
-            navigationButton.setVisibility(View.VISIBLE);
-        }
     }
 
     /**

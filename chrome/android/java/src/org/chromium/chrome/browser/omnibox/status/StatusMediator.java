@@ -64,6 +64,7 @@ class StatusMediator {
                 assert false : "Invalid navigation button type";
         }
         mModel.set(StatusProperties.NAVIGATION_ICON_RES, imageRes);
+        updateLocationBarIcon();
     }
 
     /**
