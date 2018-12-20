@@ -239,6 +239,12 @@ class IntegerContainer {
 // echoCancellation, googEchoCancellation and echoCancellationType.
 class EchoCancellationContainer {
  public:
+  // Default constructor intended to temporarily create an empty object.
+  EchoCancellationContainer()
+      : ec_mode_allowed_values_(EchoCancellationTypeSet::EmptySet()),
+        device_parameters_(media::AudioParameters::UnavailableDeviceParams()),
+        is_device_capture_(true) {}
+
   EchoCancellationContainer(std::vector<EchoCancellationType> allowed_values,
                             bool has_active_source,
                             bool is_device_capture,
@@ -360,11 +366,12 @@ class EchoCancellationContainer {
 
   static base::Optional<EchoCancellationType> ToEchoCancellationType(
       const char* blink_type) {
-    if (strcmp(blink_type, blink::kEchoCancellationTypeBrowser) == 0) {
+    std::string blink_type_str = std::string(blink_type);
+    if (blink_type_str == blink::kEchoCancellationTypeBrowser) {
       return EchoCancellationType::kEchoCancellationAec2;
-    } else if (strcmp(blink_type, blink::kEchoCancellationTypeAec3) == 0) {
+    } else if (blink_type_str == blink::kEchoCancellationTypeAec3) {
       return EchoCancellationType::kEchoCancellationAec3;
-    } else if (strcmp(blink_type, blink::kEchoCancellationTypeSystem) == 0) {
+    } else if (blink_type_str == blink::kEchoCancellationTypeSystem) {
       return EchoCancellationType::kEchoCancellationSystem;
     } else {
       return base::nullopt;
@@ -650,7 +657,7 @@ class ProcessingBasedContainer {
     const char* failed_constraint_name = nullptr;
 
     failed_constraint_name =
-        echo_cancellation_container_->ApplyConstraintSet(constraint_set);
+        echo_cancellation_container_.ApplyConstraintSet(constraint_set);
     if (failed_constraint_name != nullptr)
       return failed_constraint_name;
 
@@ -685,13 +692,13 @@ class ProcessingBasedContainer {
     AudioProcessingProperties properties;
     Score ec_score(0.0);
     std::tie(ec_score, properties.echo_cancellation_type) =
-        echo_cancellation_container_->SelectSettingsAndScore(constraint_set);
+        echo_cancellation_container_.SelectSettingsAndScore(constraint_set);
     score += ec_score;
 
     // Update the default settings for each audio-processing properties
     // according to |echo_cancellation| and whether the source considered is
     // device capture.
-    echo_cancellation_container_->UpdateDefaultValues(
+    echo_cancellation_container_.UpdateDefaultValues(
         constraint_set.echo_cancellation, &properties);
 
     for (size_t i = 0; i < kNumBooleanContainerIds; ++i) {
@@ -717,7 +724,7 @@ class ProcessingBasedContainer {
       if (container.IsEmpty())
         return true;
     }
-    return echo_cancellation_container_->IsEmpty() ||
+    return echo_cancellation_container_.IsEmpty() ||
            sample_size_container_.IsEmpty();
   }
 
@@ -837,7 +844,7 @@ class ProcessingBasedContainer {
   // the option without processing.
   int GetProcessingPriority(const BooleanConstraint& ec_constraint) const {
     bool use_processing_by_default =
-        echo_cancellation_container_->GetDefaultValueForAudioProperties(
+        echo_cancellation_container_.GetDefaultValueForAudioProperties(
             ec_constraint);
 
     switch (processing_type_) {
@@ -852,7 +859,7 @@ class ProcessingBasedContainer {
 
   ProcessingType processing_type_;
   std::array<BooleanContainer, kNumBooleanContainerIds> boolean_containers_;
-  base::Optional<EchoCancellationContainer> echo_cancellation_container_;
+  EchoCancellationContainer echo_cancellation_container_;
   IntegerContainer sample_size_container_;
 };
 
