@@ -340,7 +340,7 @@
       </template>
 
       <template is="dom-if" if="[[unifiedConsentEnabled_]]">
-        <template is="dom-if" route-path="/syncSetup/advanced">
+        <template is="dom-if" route-path="/syncSetup/advanced" no-search>
           <settings-subpage page-title="$i18n{syncAdvancedPageTitle}"
               learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}">
             <settings-sync-controls sync-status="[[syncStatus]]"
