@@ -12047,7 +12047,10 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     search_state.best_rd = INT64_MAX;
 
     int64_t top_est_rd =
-        inter_modes_info->est_rd_arr[inter_modes_info->rd_idx_pair_arr[0].idx];
+        inter_modes_info->num > 0
+            ? inter_modes_info
+                  ->est_rd_arr[inter_modes_info->rd_idx_pair_arr[0].idx]
+            : INT64_MAX;
     for (int j = 0; j < inter_modes_info->num; ++j) {
       const int data_idx = inter_modes_info->rd_idx_pair_arr[j].idx;
       *mbmi = inter_modes_info->mbmi_arr[data_idx];
