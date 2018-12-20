@@ -33,6 +33,7 @@
 #include "third_party/crashpad/crashpad/snapshot/sanitized/sanitization_information.h"
 #include "third_party/crashpad/crashpad/util/linux/exception_handler_client.h"
 #include "third_party/crashpad/crashpad/util/linux/exception_information.h"
+#include "third_party/crashpad/crashpad/util/linux/scoped_pr_set_dumpable.h"
 #include "third_party/crashpad/crashpad/util/misc/from_pointer_cast.h"
 #include "third_party/crashpad/crashpad/util/posix/signals.h"
 
@@ -108,6 +109,8 @@ class SandboxedHandler {
 
       ClientInformation info;
       SetClientInformation(&exception_information, &sanitization_, &info);
+
+      ScopedPrSetDumpable set_dumpable(/* may_log= */ false);
 
       ExceptionHandlerClient handler_client(connection.get());
       handler_client.SetCanSetPtracer(false);
@@ -547,6 +550,8 @@ bool DumpWithoutCrashingForClient(CrashReporterClient* client) {
 
   crashpad::ClientInformation info;
   crashpad::SetClientInformation(&exception, &sanitization, &info);
+
+  crashpad::ScopedPrSetDumpable set_dumpable(/* may_log= */ false);
 
   crashpad::ExceptionHandlerClient handler_client(connection.get());
   return handler_client.RequestCrashDump(info) == 0;
