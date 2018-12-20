@@ -357,6 +357,12 @@ static_library("test_support") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+  if (use_alsa) {
+    sources += [
+      "alsa/mock_alsa_wrapper.cc",
+      "alsa/mock_alsa_wrapper.h",
+    ]
+  }
 }
 
 source_set("unit_tests") {
@@ -450,6 +456,7 @@ source_set("unit_tests") {
   if (use_alsa) {
     sources += [
       "alsa/alsa_output_unittest.cc",
+      "alsa/alsa_util_unittest.cc",
       "audio_low_latency_input_output_unittest.cc",
     ]
   }
