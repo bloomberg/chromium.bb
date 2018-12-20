@@ -19,6 +19,18 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
 
+namespace {
+
+#if !defined(OS_CHROMEOS)
+BadgeServiceDelegate* GetDelegate(content::WebContents* web_contents) {
+  return chrome::FindBrowserWithWebContents(web_contents)
+      ->window()
+      ->GetBadgeServiceDelegate();
+}
+#endif
+
+}  // namespace
+
 // static
 void BadgeServiceImpl::Create(blink::mojom::BadgeServiceRequest request,
                               content::RenderFrameHost* render_frame_host) {
@@ -48,7 +60,7 @@ void BadgeServiceImpl::SetBadge(base::Optional<uint64_t> content) {
   if (!IsInApp())
     return;
 
-  delegate_->SetBadge(web_contents_, content);
+  GetDelegate(web_contents_)->SetBadge(web_contents_, content);
 #endif
 }
 
@@ -64,7 +76,7 @@ void BadgeServiceImpl::ClearBadge() {
   if (!IsInApp())
     return;
 
-  delegate_->ClearBadge(web_contents_);
+  GetDelegate(web_contents_)->ClearBadge(web_contents_);
 #endif
 }
 
@@ -75,14 +87,9 @@ BadgeServiceImpl::BadgeServiceImpl(content::RenderFrameHost* render_frame_host,
       render_frame_host_(render_frame_host) {
   web_contents_ = content::WebContents::FromRenderFrameHost(render_frame_host_);
   browser_context_ = web_contents_->GetBrowserContext();
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
-  hosted_app_controller_ = browser->hosted_app_controller();
-
 #if defined(OS_CHROMEOS)
   badge_manager_ = badging::BadgeManagerFactory::GetInstance()->GetForProfile(
       Profile::FromBrowserContext(browser_context_));
-#else
-  delegate_ = browser->window()->GetBadgeServiceDelegate();
 #endif
 }
 
@@ -96,8 +103,11 @@ const extensions::Extension* BadgeServiceImpl::ExtensionFromLastUrl() {
 }
 
 bool BadgeServiceImpl::IsInApp() {
-  return hosted_app_controller_ &&
-         extensions::IsSameScope(hosted_app_controller_->GetAppLaunchURL(),
+  extensions::HostedAppBrowserController* hosted_app_controller =
+      chrome::FindBrowserWithWebContents(web_contents_)
+          ->hosted_app_controller();
+  return hosted_app_controller &&
+         extensions::IsSameScope(hosted_app_controller->GetAppLaunchURL(),
                                  web_contents_->GetLastCommittedURL(),
                                  web_contents_->GetBrowserContext());
 }
