@@ -21139,6 +21139,8 @@ Called by update_net_error_codes.py.-->
   <int value="2715" label="WindowOuterWidth"/>
   <int value="2716" label="WindowDevicePixelRatio"/>
   <int value="2717" label="CanvasCaptureStream"/>
+  <int value="2718" label="V8HTMLMediaElement_CanPlayType_Method"/>
+  <int value="2719" label="HistoryLength"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
