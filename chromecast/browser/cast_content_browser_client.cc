@@ -73,6 +73,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "media/audio/audio_thread_impl.h"
+#include "media/base/media_switches.h"
 #include "media/mojo/buildflags.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -186,6 +187,12 @@ CastContentBrowserClient::CastContentBrowserClient(
       std::string();
 #endif
   cast_feature_list_creator_->SetExtraEnableFeatures(extra_enable_features);
+  // TODO(mdellaquila): This feature has to be disabled because it causes
+  // significantly higher power consumption while flinging media files.
+  // Remove this after fixing the bug: b/111363899
+  const std::string extra_disable_features =
+      ::media::kUseModernMediaControls.name;
+  cast_feature_list_creator_->SetExtraDisableFeatures(extra_disable_features);
 }
 
 CastContentBrowserClient::~CastContentBrowserClient() {

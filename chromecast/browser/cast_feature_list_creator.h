@@ -30,12 +30,17 @@ class CastFeatureListCreator {
   // Sets the extra features to be enabled.
   void SetExtraEnableFeatures(std::string extra_enable_features);
 
+  // Sets the extra features to be disabled.
+  void SetExtraDisableFeatures(std::string extra_disable_features);
+
  private:
   // Holds the |PrefService| until TakePrefService() is called and ownership
   // is taken away.
   std::unique_ptr<PrefService> pref_service_;
   // Extra features that can be enabled at run time.
   std::string extra_enable_features_;
+  // Extra features that can be disabled at run time.
+  std::string extra_disable_features_;
 };
 
 }  // namespace chromecast

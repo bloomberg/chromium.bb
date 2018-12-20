@@ -63,7 +63,7 @@ TEST_F(CastFeaturesTest, EnableDisableMultipleBooleanFeatures) {
   features->SetBoolean(kTestBooleanFeatureName3, true);
   features->SetBoolean(kTestBooleanFeatureName4, true);
 
-  InitializeFeatureList(*features, *experiments, "", "", "");
+  InitializeFeatureList(*features, *experiments, "", "", "", "");
 
   // Test that features are properly enabled (they should match the
   // DCS config).
@@ -91,7 +91,7 @@ TEST_F(CastFeaturesTest, EnableSingleFeatureWithParams) {
   params->SetString("bool_key", "true");
   features->Set(kTestParamsFeatureName, std::move(params));
 
-  InitializeFeatureList(*features, *experiments, "", "", "");
+  InitializeFeatureList(*features, *experiments, "", "", "", "");
 
   // Test that this feature is enabled, and params are correct.
   ASSERT_TRUE(chromecast::IsFeatureEnabled(test_feature));
@@ -150,7 +150,7 @@ TEST_F(CastFeaturesTest, CommandLineOverridesDcsAndDefault) {
                                       .append(kTestParamsFeatureName);
 
   InitializeFeatureList(*features, *experiments, enabled_features,
-                        disabled_features, "");
+                        disabled_features, "", "");
 
   // Test that features are properly enabled (they should match the
   // DCS config).
@@ -170,7 +170,7 @@ TEST_F(CastFeaturesTest, SetEmptyExperiments) {
   auto experiments = std::make_unique<base::ListValue>();
   auto features = std::make_unique<base::DictionaryValue>();
 
-  InitializeFeatureList(*features, *experiments, "", "", "");
+  InitializeFeatureList(*features, *experiments, "", "", "", "");
   ASSERT_EQ(0u, GetDCSExperimentIds().size());
 }
 
@@ -186,7 +186,7 @@ TEST_F(CastFeaturesTest, SetGoodExperiments) {
     expected.insert(id);
   }
 
-  InitializeFeatureList(*features, *experiments, "", "", "");
+  InitializeFeatureList(*features, *experiments, "", "", "", "");
   ASSERT_EQ(expected, GetDCSExperimentIds());
 }
 
@@ -204,7 +204,7 @@ TEST_F(CastFeaturesTest, SetSomeGoodExperiments) {
   expected.insert(1234);
   expected.insert(1);
 
-  InitializeFeatureList(*features, *experiments, "", "", "");
+  InitializeFeatureList(*features, *experiments, "", "", "", "");
   ASSERT_EQ(expected, GetDCSExperimentIds());
 }
 
@@ -218,7 +218,7 @@ TEST_F(CastFeaturesTest, SetAllBadExperiments) {
 
   std::unordered_set<int32_t> expected;
 
-  InitializeFeatureList(*features, *experiments, "", "", "");
+  InitializeFeatureList(*features, *experiments, "", "", "", "");
   ASSERT_EQ(expected, GetDCSExperimentIds());
 }
 

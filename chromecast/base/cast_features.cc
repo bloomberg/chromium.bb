@@ -181,7 +181,8 @@ void InitializeFeatureList(const base::DictionaryValue& dcs_features,
                            const base::ListValue& dcs_experiment_ids,
                            const std::string& cmd_line_enable_features,
                            const std::string& cmd_line_disable_features,
-                           const std::string& extra_enable_features) {
+                           const std::string& extra_enable_features,
+                           const std::string& extra_disable_features) {
   DCHECK(!base::FeatureList::GetInstance());
 
   // Set the experiments.
@@ -189,11 +190,13 @@ void InitializeFeatureList(const base::DictionaryValue& dcs_features,
 
   std::string all_enable_features =
       cmd_line_enable_features + "," + extra_enable_features;
+  std::string all_disable_features =
+      cmd_line_disable_features + "," + extra_disable_features;
 
   // Initialize the FeatureList from the command line.
   auto feature_list = std::make_unique<base::FeatureList>();
   feature_list->InitializeFromCommandLine(all_enable_features,
-                                          cmd_line_disable_features);
+                                          all_disable_features);
 
   // Override defaults from the DCS config.
   for (Iterator it(dcs_features); !it.IsAtEnd(); it.Advance()) {
