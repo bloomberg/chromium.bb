@@ -9,6 +9,7 @@
 #include "base/ios/ios_util.h"
 #include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/ui/omnibox/image_retriever.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
 #import "ios/chrome/browser/ui/omnibox/popup/self_sizing_table_view.h"
@@ -258,6 +259,7 @@ UIColor* BackgroundColorIncognito() {
   DCHECK(self.shortcutsViewController);
 
   UITableViewCell* cell = [[UITableViewCell alloc] init];
+  _shortcutsCell = cell;
   cell.backgroundColor = [UIColor clearColor];
   [self.shortcutsViewController willMoveToParentViewController:self];
   [self addChildViewController:self.shortcutsViewController];
@@ -266,6 +268,7 @@ UIColor* BackgroundColorIncognito() {
       NO;
   AddSameConstraints(self.shortcutsViewController.view, cell.contentView);
   [self.shortcutsViewController didMoveToParentViewController:self];
+  cell.accessibilityIdentifier = kShortcutsAccessibilityIdentifier;
   return cell;
 }
 

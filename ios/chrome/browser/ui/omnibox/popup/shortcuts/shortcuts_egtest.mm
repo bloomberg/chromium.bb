@@ -8,6 +8,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -229,6 +231,29 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // Verify that after tapping Done the omnibox is defocused.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
       assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that on the NTP the shortcuts don't show up.
+- (void)testNTPShortcutsDontShowUp {
+  [[self class] closeAllTabs];
+  [ChromeEarlGrey openNewTab];
+
+  // Tap the fake omnibox.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   ntp_home::FakeOmniboxAccessibilityID())]
+      performAction:grey_tap()];
+  // Wait for the real omnibox to be visible.
+  [ChromeEarlGrey
+      waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];
+
+  // The shortcuts should not show up here.
+  // The shortcuts are similar to the NTP tiles, so in this test it's necessary
+  // to differentiate where the tile is actually coming from; therefore check
+  // the a11y identifier of the shortcuts.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kShortcutsAccessibilityIdentifier)]
+      assertWithMatcher:grey_nil()];
 }
 
 #pragma mark - helpers
