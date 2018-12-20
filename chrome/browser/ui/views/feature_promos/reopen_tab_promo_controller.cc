@@ -43,8 +43,11 @@ void ReopenTabPromoController::ShowPromo() {
 }
 
 void ReopenTabPromoController::OnMenuOpened() {
-  // The user followed the promo and opened the menu. Now, we highlight the
-  // history item and observe for the history submenu opening.
+  // The user followed the promo and opened the menu. First, we close the promo
+  // bubble since it doesn't automatically close on click. Then, we highlight
+  // the history item and observe for the history submenu opening.
+  promo_bubble_->GetWidget()->Close();
+
   BrowserAppMenuButton* app_menu_button =
       browser_view_->toolbar()->app_menu_button();
   app_menu_button->RemoveMenuListener(this);
@@ -59,6 +62,7 @@ void ReopenTabPromoController::OnMenuOpened() {
 
 void ReopenTabPromoController::OnWidgetDestroying(views::Widget* widget) {
   DCHECK(promo_bubble_);
+  promo_bubble_ = nullptr;
 
   // If the menu isn't showing, that means the promo bubble timed out. We should
   // notify our IPH service that help was dismissed.
