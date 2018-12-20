@@ -7,7 +7,7 @@
 
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
-#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
+#include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
 #include "content/public/browser/web_contents.h"
 
 namespace content {

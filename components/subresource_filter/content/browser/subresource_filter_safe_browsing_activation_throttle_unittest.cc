@@ -32,7 +32,7 @@
 #include "components/subresource_filter/core/common/activation_list.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
-#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
+#include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/url_pattern_index/proto/rules.pb.h"

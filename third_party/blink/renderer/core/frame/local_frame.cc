@@ -293,7 +293,7 @@ LocalFrame::~LocalFrame() {
   // Verify that the LocalFrameView has been cleared as part of detaching
   // the frame owner.
   DCHECK(!view_);
-  if (is_ad_subframe_)
+  if (IsAdSubframe())
     InstanceCounters::DecrementCounter(InstanceCounters::kAdSubframeCounter);
 }
 
@@ -1051,7 +1051,7 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
     if (has_user_gesture)
       framebust_params |= kUserGestureBit;
 
-    if (is_ad_subframe_)
+    if (IsAdSubframe())
       framebust_params |= kAdBit;
 
     UseCounter::Count(this, WebFeature::kTopNavigationFromSubFrame);
@@ -1277,8 +1277,10 @@ void LocalFrame::SetIsAdSubframeIfNecessary() {
   bool parent_is_ad =
       parent->IsLocalFrame() && ToLocalFrame(parent)->IsAdSubframe();
 
-  if (parent_is_ad || ad_tracker_->IsAdScriptInStack())
-    SetIsAdSubframe();
+  if (parent_is_ad || ad_tracker_->IsAdScriptInStack()) {
+    SetIsAdSubframe(parent_is_ad ? blink::mojom::AdFrameType::kChildAd
+                                 : blink::mojom::AdFrameType::kRootAd);
+  }
 }
 
 service_manager::InterfaceProvider& LocalFrame::GetInterfaceProvider() {
@@ -1481,6 +1483,25 @@ ComputedAccessibleNode* LocalFrame::GetOrCreateComputedAccessibleNode(
     computed_node_mapping_.insert(ax_id, node);
   }
   return computed_node_mapping_.at(ax_id);
+}
+
+bool LocalFrame::IsAdSubframe() const {
+  return ad_frame_type_ != blink::mojom::AdFrameType::kNonAd;
+}
+
+bool LocalFrame::IsAdRoot() const {
+  return ad_frame_type_ == blink::mojom::AdFrameType::kRootAd;
+}
+
+void LocalFrame::SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type) {
+  DCHECK(!IsMainFrame());
+  if (ad_frame_type == blink::mojom::AdFrameType::kNonAd)
+    return;
+  if (ad_frame_type_ != blink::mojom::AdFrameType::kNonAd)
+    return;
+  ad_frame_type_ = ad_frame_type;
+  frame_scheduler_->SetIsAdFrame();
+  InstanceCounters::IncrementCounter(InstanceCounters::kAdSubframeCounter);
 }
 
 void LocalFrame::PauseSubresourceLoading(

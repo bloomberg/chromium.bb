@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
 #include "components/subresource_filter/core/common/load_policy.h"
-#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
+#include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
 
 class GURL;

@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
@@ -718,7 +719,7 @@ class WebLocalFrame : public WebFrame {
 
   // This setter is available in case the embedder has more information about
   // whether or not the frame is an ad.
-  virtual void SetIsAdSubframe() = 0;
+  virtual void SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type) = 0;
 
   // Testing ------------------------------------------------------------------
 

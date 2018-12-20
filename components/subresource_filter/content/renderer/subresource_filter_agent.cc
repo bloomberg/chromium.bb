@@ -91,8 +91,9 @@ bool SubresourceFilterAgent::IsAdSubframe() {
   return render_frame()->GetWebFrame()->IsAdSubframe();
 }
 
-void SubresourceFilterAgent::SetIsAdSubframe() {
-  render_frame()->GetWebFrame()->SetIsAdSubframe();
+void SubresourceFilterAgent::SetIsAdSubframe(
+    blink::mojom::AdFrameType ad_frame_type) {
+  render_frame()->GetWebFrame()->SetIsAdSubframe(ad_frame_type);
 }
 
 // static
@@ -186,10 +187,11 @@ void SubresourceFilterAgent::OnSubresourceFilterAgentRequest(
 
 void SubresourceFilterAgent::ActivateForNextCommittedLoad(
     mojom::ActivationStatePtr activation_state,
-    bool is_ad_subframe) {
+    blink::mojom::AdFrameType ad_frame_type) {
   activation_state_for_next_commit_ = *activation_state;
-  if (is_ad_subframe)
-    SetIsAdSubframe();
+  if (ad_frame_type != blink::mojom::AdFrameType::kNonAd) {
+    SetIsAdSubframe(ad_frame_type);
+  }
 }
 
 void SubresourceFilterAgent::OnDestruct() {

@@ -9,6 +9,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 # are typemapped to a type in renderer/core.
 mojom("mojom_platform") {
   sources = [
+    "ad_tagging/ad_frame.mojom",
     "array_buffer/array_buffer_contents.mojom",
     "associated_interfaces/associated_interfaces.mojom",
     "background_fetch/background_fetch.mojom",
