@@ -66,20 +66,25 @@ class DefaultRuleIterator : public RuleIterator {
  public:
   explicit DefaultRuleIterator(const base::Value* value) {
     if (value)
-      value_.reset(value->DeepCopy());
+      value_ = value->Clone();
+    else
+      is_done_ = true;
   }
 
-  bool HasNext() const override { return !!value_; }
+  bool HasNext() const override { return !is_done_; }
 
   Rule Next() override {
     DCHECK(HasNext());
+    is_done_ = true;
     return Rule(ContentSettingsPattern::Wildcard(),
-                ContentSettingsPattern::Wildcard(),
-                value_.release());
+                ContentSettingsPattern::Wildcard(), std::move(value_));
   }
 
  private:
-  std::unique_ptr<base::Value> value_;
+  bool is_done_ = false;
+  base::Value value_;
+
+  DISALLOW_COPY_AND_ASSIGN(DefaultRuleIterator);
 };
 
 }  // namespace

@@ -133,7 +133,7 @@ bool ContentSettingsPref::SetWebsiteSetting(
     if (value) {
       map_to_modify->SetValue(primary_pattern, secondary_pattern, content_type_,
                               resource_identifier, modified_time,
-                              value->DeepCopy());
+                              value->Clone());
     } else {
       map_to_modify->DeleteValue(
           primary_pattern,
@@ -283,7 +283,7 @@ void ContentSettingsPref::ReadContentSettingsFromPref() {
           // Per resource settings store a single timestamps for all resources.
           value_map_.SetValue(pattern_pair.first, pattern_pair.second,
                               content_type_, resource_identifier, last_modified,
-                              setting_ptr->DeepCopy());
+                              setting_ptr->Clone());
         }
       }
     }
@@ -295,7 +295,7 @@ void ContentSettingsPref::ReadContentSettingsFromPref() {
       DCHECK(IsValueAllowedForType(value, content_type_));
       value_map_.SetValue(pattern_pair.first, pattern_pair.second,
                           content_type_, ResourceIdentifier(), last_modified,
-                          value->DeepCopy());
+                          value->Clone());
     }
   }
 }

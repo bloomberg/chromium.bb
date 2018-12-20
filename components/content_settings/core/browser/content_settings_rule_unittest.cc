@@ -16,8 +16,7 @@ namespace {
 
 class ListIterator : public RuleIterator {
  public:
-  explicit ListIterator(const std::list<Rule>& rules)
-      : rules_(rules) {}
+  explicit ListIterator(std::list<Rule> rules) : rules_(std::move(rules)) {}
 
   ~ListIterator() override {}
 
@@ -25,9 +24,7 @@ class ListIterator : public RuleIterator {
 
   Rule Next() override {
     EXPECT_FALSE(rules_.empty());
-    // |front()| returns a reference but we're going to discard the object
-    // referred to; force copying here.
-    Rule rule = rules_.front();
+    Rule rule = std::move(rules_.front());
     rules_.pop_front();
     return rule;
   }
@@ -41,22 +38,18 @@ class ListIterator : public RuleIterator {
 TEST(RuleTest, ConcatenationIterator) {
   std::list<Rule> rules1;
   rules1.push_back(Rule(ContentSettingsPattern::FromString("a"),
-                        ContentSettingsPattern::Wildcard(),
-                        new base::Value(0)));
+                        ContentSettingsPattern::Wildcard(), base::Value(0)));
   rules1.push_back(Rule(ContentSettingsPattern::FromString("b"),
-                        ContentSettingsPattern::Wildcard(),
-                        new base::Value(0)));
+                        ContentSettingsPattern::Wildcard(), base::Value(0)));
   std::list<Rule> rules2;
   rules2.push_back(Rule(ContentSettingsPattern::FromString("c"),
-                        ContentSettingsPattern::Wildcard(),
-                        new base::Value(0)));
+                        ContentSettingsPattern::Wildcard(), base::Value(0)));
   rules2.push_back(Rule(ContentSettingsPattern::FromString("d"),
-                        ContentSettingsPattern::Wildcard(),
-                        new base::Value(0)));
+                        ContentSettingsPattern::Wildcard(), base::Value(0)));
 
   std::vector<std::unique_ptr<RuleIterator>> iterators;
-  iterators.push_back(std::unique_ptr<RuleIterator>(new ListIterator(rules1)));
-  iterators.push_back(std::unique_ptr<RuleIterator>(new ListIterator(rules2)));
+  iterators.push_back(std::make_unique<ListIterator>(std::move(rules1)));
+  iterators.push_back(std::make_unique<ListIterator>(std::move(rules2)));
   ConcatenationIterator concatenation_iterator(std::move(iterators), nullptr);
 
   Rule rule;

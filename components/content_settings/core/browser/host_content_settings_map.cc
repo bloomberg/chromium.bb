@@ -340,7 +340,7 @@ ContentSetting HostContentSettingsMap::GetDefaultContentSettingFromProvider(
       content_settings::Rule rule = rule_iterator->Next();
       if (rule.primary_pattern == wildcard &&
           rule.secondary_pattern == wildcard) {
-        return content_settings::ValueToContentSetting(rule.value.get());
+        return content_settings::ValueToContentSetting(&rule.value);
       }
     }
   }
@@ -812,9 +812,9 @@ void HostContentSettingsMap::AddSettingsForOneType(
     return;
 
   while (rule_iterator->HasNext()) {
-    const content_settings::Rule& rule = rule_iterator->Next();
+    content_settings::Rule rule = rule_iterator->Next();
     settings->emplace_back(
-        rule.primary_pattern, rule.secondary_pattern, rule.value->Clone(),
+        rule.primary_pattern, rule.secondary_pattern, std::move(rule.value),
         kProviderNamesSourceMap[provider_type].provider_name, incognito);
   }
 }
@@ -967,7 +967,7 @@ HostContentSettingsMap::GetContentSettingValueAndPatterns(
           *primary_pattern = rule.primary_pattern;
         if (secondary_pattern)
           *secondary_pattern = rule.secondary_pattern;
-        return base::WrapUnique(rule.value->DeepCopy());
+        return rule.value.CreateDeepCopy();
       }
     }
   }

@@ -69,7 +69,7 @@ TEST_F(SupervisedUserProviderTest, GeolocationTest) {
 
   EXPECT_EQ(ContentSettingsPattern::Wildcard(), rule.primary_pattern);
   EXPECT_EQ(ContentSettingsPattern::Wildcard(), rule.secondary_pattern);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, ValueToContentSetting(rule.value.get()));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, ValueToContentSetting(&rule.value));
 
   // Re-enable the default geolocation setting.
   EXPECT_CALL(mock_observer_,
@@ -103,7 +103,7 @@ TEST_F(SupervisedUserProviderTest, CookiesTest) {
 
   EXPECT_EQ(ContentSettingsPattern::Wildcard(), rule.primary_pattern);
   EXPECT_EQ(ContentSettingsPattern::Wildcard(), rule.secondary_pattern);
-  EXPECT_EQ(CONTENT_SETTING_ALLOW, ValueToContentSetting(rule.value.get()));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, ValueToContentSetting(&rule.value));
 
   // Re-enable the default cookie setting.
   EXPECT_CALL(mock_observer_,
@@ -144,7 +144,7 @@ TEST_F(SupervisedUserProviderTest, CameraMicTest) {
 
   EXPECT_EQ(ContentSettingsPattern::Wildcard(), rule.primary_pattern);
   EXPECT_EQ(ContentSettingsPattern::Wildcard(), rule.secondary_pattern);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, ValueToContentSetting(rule.value.get()));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, ValueToContentSetting(&rule.value));
 
   rule_iterator = provider_->GetRuleIterator(
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string(), false);
@@ -154,7 +154,7 @@ TEST_F(SupervisedUserProviderTest, CameraMicTest) {
 
   EXPECT_EQ(ContentSettingsPattern::Wildcard(), rule.primary_pattern);
   EXPECT_EQ(ContentSettingsPattern::Wildcard(), rule.secondary_pattern);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, ValueToContentSetting(rule.value.get()));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, ValueToContentSetting(&rule.value));
 
   // Re-enable the default camera and microphone setting.
   EXPECT_CALL(
