@@ -327,9 +327,9 @@ void ArcNotificationContentView::UpdateControlButtonsVisibility() {
   DCHECK(floating_control_buttons_widget_);
 
   const bool target_visibility =
-      (IsMouseHovered() || (control_buttons_view_.IsCloseButtonFocused()) ||
-       (control_buttons_view_.IsSettingsButtonFocused())) &&
-      (message_view_->GetMode() != message_center::MessageView::Mode::SETTING);
+      control_buttons_view_.IsAnyButtonFocused() ||
+      (message_view_->GetMode() != message_center::MessageView::Mode::SETTING &&
+       IsMouseHovered());
 
   if (target_visibility == floating_control_buttons_widget_->IsVisible())
     return;

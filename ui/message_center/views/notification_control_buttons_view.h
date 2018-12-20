@@ -42,16 +42,12 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
   // Change the visibility of the settings button. True to show, false to hide.
   // Default: hidden.
   void ShowSnoozeButton(bool show);
+  // Change the visibility of all buttons. True to show, false to hide.
+  void ShowButtons(bool show);
 
-  // Request the focus on the close button.
-  void RequestFocusOnCloseButton();
-
-  // Return the focus status of the close button. True if the focus is on the
-  // close button, false otherwise.
-  bool IsCloseButtonFocused() const;
-  // Return the focus status of the settings button. True if the focus is on the
-  // close button, false otherwise.
-  bool IsSettingsButtonFocused() const;
+  // Return the focus status of any button. True if the focus is on any button,
+  // false otherwise.
+  bool IsAnyButtonFocused() const;
 
   // Methods for retrieving the control buttons directly.
   views::Button* close_button() const;
@@ -60,7 +56,6 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
 
   // views::View
   const char* GetClassName() const override;
-  void SetVisible(bool visible) override;
 
   // views::ButtonListener
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

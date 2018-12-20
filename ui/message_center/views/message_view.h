@@ -83,9 +83,6 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   // Creates a shadow around the notification and changes slide-out behavior.
   void SetIsNested();
 
-  bool IsCloseButtonFocused() const;
-  void RequestFocusOnCloseButton();
-
   virtual NotificationControlButtonsView* GetControlButtonsView() const = 0;
 
   virtual void SetExpanded(bool expanded);
@@ -159,7 +156,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   std::string notification_id() const { return notification_id_; }
 
  protected:
-  virtual void UpdateControlButtonsVisibility() = 0;
+  virtual void UpdateControlButtonsVisibility();
 
   // Changes the background color and schedules a paint.
   virtual void SetDrawBackgroundAsActive(bool active);
@@ -173,6 +170,9 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
 
   // Returns the ideal slide mode by calculating the current status.
   SlideOutController::SlideMode CalculateSlideMode() const;
+
+  // Returns if the control buttons should be shown.
+  bool ShouldShowControlButtons() const;
 
   std::string notification_id_;
   views::ScrollView* scroller_ = nullptr;
