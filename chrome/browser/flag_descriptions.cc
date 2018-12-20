@@ -123,11 +123,6 @@ const char kAutofillPreviewStyleExperimentName[] =
 const char kAutofillPreviewStyleExperimentDescription[] =
     "Allows experimentation with the Autofill field preview's style.";
 
-const char kAutofillRationalizeRepeatedServerPredictionsName[] =
-    "Autofill Rationalization of Repeated Server Field Type Predictions";
-const char kAutofillRationalizeRepeatedServerPredictionsDescription[] =
-    "Allows autofill to rationalize repeated server field type predictions.";
-
 const char kAutofillEnforceMinRequiredFieldsForHeuristicsName[] =
     "Autofill Enforce Min Required Fields For Heuristics";
 const char kAutofillEnforceMinRequiredFieldsForHeuristicsDescription[] =
