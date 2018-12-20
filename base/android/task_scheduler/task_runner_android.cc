@@ -45,4 +45,10 @@ void TaskRunnerAndroid::PostTask(JNIEnv* env,
                      base::android::ScopedJavaGlobalRef<jobject>(task)));
 }
 
+bool TaskRunnerAndroid::BelongsToCurrentThread(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& caller) {
+  return task_runner_->RunsTasksInCurrentSequence();
+}
+
 }  // namespace base

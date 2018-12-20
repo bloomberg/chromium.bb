@@ -15,6 +15,7 @@ import android.os.Looper;
 import android.support.test.filters.SmallTest;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -69,5 +70,20 @@ public class SingleThreadTaskRunnerImplTest {
 
         SchedulerTestHelpers.preNativeRunUntilIdle(mHandlerThread);
         assertThat(orderList, contains(1, 2, 3));
+    }
+
+    @Test
+    @SmallTest
+    public void testBelongsToCurrentThread() {
+        // The handler created during test setup belongs to a different thread.
+        SingleThreadTaskRunner taskQueue =
+                new SingleThreadTaskRunnerImpl(mHandler, new TaskTraits());
+        Assert.assertFalse(taskQueue.belongsToCurrentThread());
+
+        // We create a handler belonging to current thread.
+        Looper.prepare();
+        SingleThreadTaskRunner taskQueueCurrentThread =
+                new SingleThreadTaskRunnerImpl(new Handler(), new TaskTraits());
+        Assert.assertTrue(taskQueueCurrentThread.belongsToCurrentThread());
     }
 }

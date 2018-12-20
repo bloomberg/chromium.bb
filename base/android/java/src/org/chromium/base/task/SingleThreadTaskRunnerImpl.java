@@ -67,6 +67,15 @@ public class SingleThreadTaskRunnerImpl implements SingleThreadTaskRunner {
         }
     }
 
+    @Override
+    public boolean belongsToCurrentThread() {
+        if (mNativeTaskRunnerAndroid != 0)
+            return nativeBelongsToCurrentThread(mNativeTaskRunnerAndroid);
+        if (mHandler != null) return mHandler.getLooper().getThread() == Thread.currentThread();
+        assert (false);
+        return false;
+    }
+
     private class PreNativeImpl extends PreNativeSequence {
         PreNativeImpl() {
             super("SingleThreadTaskRunnerImpl.PreNativeImpl.run");
@@ -97,4 +106,5 @@ public class SingleThreadTaskRunnerImpl implements SingleThreadTaskRunner {
             boolean mayBlock, byte extensionId, byte[] extensionData);
     private native void nativeFinalize(long nativeTaskRunnerAndroid);
     private native void nativePostTask(long nativeTaskRunnerAndroid, Runnable task);
+    private native boolean nativeBelongsToCurrentThread(long nativeTaskRunnerAndroid);
 }

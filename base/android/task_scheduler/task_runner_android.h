@@ -23,6 +23,9 @@ class TaskRunnerAndroid {
                 const base::android::JavaRef<jobject>& caller,
                 const base::android::JavaRef<jobject>& task);
 
+  bool BelongsToCurrentThread(JNIEnv* env,
+                              const base::android::JavaRef<jobject>& caller);
+
  private:
   const scoped_refptr<TaskRunner> task_runner_;
 
