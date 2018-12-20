@@ -635,9 +635,9 @@ crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-justify-self-vertWM-004.html [ Failure ]
 
 crbug.com/855009 external/wpt/workers/semantics/structured-clone/dedicated.html [ Skip ]
-crbug.com/855009 external/wpt/workers/semantics/structured-clone/shared.htm [ Skip ]
+crbug.com/855009 external/wpt/workers/semantics/structured-clone/shared.html [ Skip ]
 crbug.com/855009 virtual/omt-worker-fetch/external/wpt/workers/semantics/structured-clone/dedicated.html [ Skip ]
-crbug.com/855009 virtual/omt-worker-fetch/external/wpt/workers/semantics/structured-clone/shared.htm [ Skip ]
+crbug.com/855009 virtual/omt-worker-fetch/external/wpt/workers/semantics/structured-clone/shared.html [ Skip ]
 
 # ====== Layout team owned tests to here ======
 
@@ -4612,15 +4612,11 @@ crbug.com/681468 [ Win ] virtual/scalefactor200/fast/hidpi/static/data-suggestio
 crbug.com/683800 [ Win7 Debug ] external/wpt/selection/ [ Failure Pass ]
 
 # Arrow function name inferring
-crbug.com/916975 external/wpt/workers/semantics/structured-clone/dedicated.html [ Pass Failure ]
-crbug.com/916975 external/wpt/workers/semantics/structured-clone/shared.html [ Pass Failure ]
 crbug.com/916975 http/tests/devtools/console/console-repeat-count.js [ Pass Failure ]
 crbug.com/916975 http/tests/devtools/service-workers/lazy-addeventlisteners.js [ Pass Failure ]
 crbug.com/916975 http/tests/devtools/sources/debugger-ui/call-stack-show-more.js [ Pass Failure ]
 crbug.com/916975 http/tests/devtools/tracing/timeline-misc/timeline-event-causes.js [ Pass Failure ]
 crbug.com/916975 inspector-protocol/css/media-query-listener-exception.js [ Pass Failure ]
-crbug.com/916975 virtual/omt-worker-fetch/external/wpt/workers/semantics/structured-clone/dedicated.html [ Pass Failure ]
-crbug.com/916975 virtual/omt-worker-fetch/external/wpt/workers/semantics/structured-clone/shared.html [ Pass Failure ]
 crbug.com/916975 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-event-causes.js [ Pass Failure ]
 
 # Importing 'fetch' tests from WPT.
