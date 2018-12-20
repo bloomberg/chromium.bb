@@ -447,10 +447,6 @@ void EasyUnlockService::FinalizeSignin(const std::string& key) {
 }
 
 void EasyUnlockService::HandleAuthFailure(const AccountId& account_id) {
-  SmartLockMetricsRecorder::RecordAuthResultSignInFailure(
-      SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
-          kUserControllerSignInFailure);
-
   if (account_id != GetAccountId())
     return;
 
