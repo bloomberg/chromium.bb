@@ -108,6 +108,7 @@ public abstract class ToolbarLayout extends FrameLayout {
                 if (isNativeLibraryReady() && mProgressBar.getParent() != null) {
                     mProgressBar.initializeAnimation();
                 }
+                mProgressBar.setTopMargin(getProgressBarTopMargin());
 
                 // Since this only needs to happen once, remove this listener from the view.
                 removeOnLayoutChangeListener(this);
@@ -140,6 +141,16 @@ public abstract class ToolbarLayout extends FrameLayout {
     void destroy() {}
 
     /**
+     * Get the top margin of the progress bar relative to the toolbar layout. This is used to set
+     * the position of the progress bar (either top or bottom of the toolbar).
+     * @return The top margin of the progress bar.
+     */
+    int getProgressBarTopMargin() {
+        return getHeight()
+                - getResources().getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
+    }
+
+    /**
      * Set the height that the progress bar should be.
      * @return The progress bar height in px.
      */
@@ -151,7 +162,8 @@ public abstract class ToolbarLayout extends FrameLayout {
      * @return A progress bar for Chrome to use.
      */
     ToolbarProgressBar createProgressBar() {
-        return new ToolbarProgressBar(getContext(), getProgressBarHeight(), this, false);
+        return new ToolbarProgressBar(
+                getContext(), getProgressBarHeight(), getProgressBarTopMargin(), false);
     }
 
     /**

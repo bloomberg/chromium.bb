@@ -67,14 +67,6 @@ public class CustomTabTopBarDelegate {
     }
 
     /**
-     * Gets the top bar content view, or null if it is not specified.
-     */
-    @Nullable
-    public View getTopBarContentView() {
-        return mTopBarContentView;
-    }
-
-    /**
      * Gets the {@link ViewGroup} of the top bar. If it has not been inflated, inflate it first.
      */
     private ViewGroup getTopBarView() {
