@@ -395,8 +395,6 @@ class CORE_EXPORT WebLocalFrameImpl final
     return content_settings_client_;
   }
 
-  void SetInputEventsScaleForEmulation(float);
-
   WebTextCheckClient* GetTextCheckerClient() const {
     return text_check_client_;
   }
@@ -473,10 +471,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   // Valid between calls to BeginPrint() and EndPrint(). Containts the print
   // information. Is used by PrintPage().
   Member<ChromePrintContext> print_context_;
-
-  // Stores the additional input events scale when device metrics
-  // emulation is enabled.
-  float input_events_scale_factor_for_emulation_;
 
   // Borrowed pointers to Mojo objects.
   blink::InterfaceRegistry* interface_registry_;

@@ -462,6 +462,10 @@ base::Optional<IntRect> ChromeClientImpl::VisibleContentRectForPainting()
   return web_view_->GetDevToolsEmulator()->VisibleContentRectForPainting();
 }
 
+float ChromeClientImpl::InputEventsScaleForEmulation() const {
+  return web_view_->GetDevToolsEmulator()->InputEventsScaleForEmulation();
+}
+
 void ChromeClientImpl::ContentsSizeChanged(LocalFrame* frame,
                                            const IntSize& size) const {
   web_view_->DidChangeContentsSize();

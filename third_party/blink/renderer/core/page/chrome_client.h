@@ -216,6 +216,10 @@ class CORE_EXPORT ChromeClient
     return base::nullopt;
   }
 
+  // Returns the scale used to convert incoming input events while emulating
+  // device metics.
+  virtual float InputEventsScaleForEmulation() const { return 1; }
+
   virtual void DispatchViewportPropertiesDidChange(
       const ViewportDescription&) const {}
 

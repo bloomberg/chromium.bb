@@ -1733,7 +1733,6 @@ WebLocalFrameImpl::WebLocalFrameImpl(
       local_frame_client_(LocalFrameClientImpl::Create(this)),
       autofill_client_(nullptr),
       find_in_page_(FindInPage::Create(*this, interface_registry)),
-      input_events_scale_factor_for_emulation_(1),
       interface_registry_(interface_registry),
       input_method_controller_(*this),
       spell_check_panel_host_client_(nullptr),
@@ -1877,8 +1876,6 @@ void WebLocalFrameImpl::CreateFrameView() {
                                            web_view->MaxAutoSize());
   }
 
-  GetFrame()->View()->SetInputEventsScaleForEmulation(
-      input_events_scale_factor_for_emulation_);
   GetFrame()->View()->SetDisplayMode(web_view->DisplayMode());
 
   if (frame_widget_)
@@ -1935,15 +1932,6 @@ void WebLocalFrameImpl::DidFinish() {
     plugin->DidFinishLoading();
 
   Client()->DidFinishLoad();
-}
-
-void WebLocalFrameImpl::SetInputEventsScaleForEmulation(
-    float content_scale_factor) {
-  input_events_scale_factor_for_emulation_ = content_scale_factor;
-  if (GetFrame()->View()) {
-    GetFrame()->View()->SetInputEventsScaleForEmulation(
-        input_events_scale_factor_for_emulation_);
-  }
 }
 
 HitTestResult WebLocalFrameImpl::HitTestResultForVisualViewportPos(

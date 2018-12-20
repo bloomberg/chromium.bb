@@ -113,6 +113,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   float WindowToViewportScalar(const float) const override;
   WebScreenInfo GetScreenInfo() const override;
   base::Optional<IntRect> VisibleContentRectForPainting() const override;
+  float InputEventsScaleForEmulation() const override;
   void ContentsSizeChanged(LocalFrame*, const IntSize&) const override;
   bool DoubleTapToZoomEnabled() const override;
   void PageScaleFactorChanged() const override;

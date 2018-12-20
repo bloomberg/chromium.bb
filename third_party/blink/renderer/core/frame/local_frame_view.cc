@@ -222,7 +222,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       is_visually_non_empty_(false),
       fragment_anchor_(nullptr),
       sticky_position_object_count_(0),
-      input_events_scale_factor_for_emulation_(1),
       layout_size_fixed_to_frame_size_(true),
       needs_update_geometries_(false),
       root_layer_did_scroll_(false),
@@ -1990,14 +1989,10 @@ void LocalFrameView::SendResizeEventIfNeeded() {
     probe::didResizeMainFrame(frame_.Get());
 }
 
-void LocalFrameView::SetInputEventsScaleForEmulation(
-    float content_scale_factor) {
-  input_events_scale_factor_for_emulation_ = content_scale_factor;
-}
-
 float LocalFrameView::InputEventsScaleFactor() const {
   float page_scale = frame_->GetPage()->GetVisualViewport().Scale();
-  return page_scale * input_events_scale_factor_for_emulation_;
+  return page_scale *
+         frame_->GetPage()->GetChromeClient().InputEventsScaleForEmulation();
 }
 
 void LocalFrameView::NotifyPageThatContentAreaWillPaint() const {

@@ -342,7 +342,6 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
       WebWidget::LifecycleUpdateReason::kTest);
 
   web_view->SetPageScaleFactor(2);
-  web_view->MainFrameImpl()->SetInputEventsScaleForEmulation(1.5);
 
   LocalFrameView* view = ToLocalFrame(web_view->GetPage()->MainFrame())->View();
 
@@ -359,8 +358,8 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
         TransformWebMouseEvent(view, web_mouse_event);
     FloatPoint position = transformed_event.PositionInRootFrame();
 
-    EXPECT_FLOAT_EQ(30, position.X());
-    EXPECT_FLOAT_EQ(30, position.Y());
+    EXPECT_FLOAT_EQ(45, position.X());
+    EXPECT_FLOAT_EQ(45, position.Y());
     EXPECT_EQ(90, transformed_event.PositionInScreen().x);
     EXPECT_EQ(90, transformed_event.PositionInScreen().y);
     EXPECT_EQ(60, transformed_event.movement_x);
@@ -392,8 +391,8 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
     EXPECT_EQ(events.size(), coalescedevents.size());
 
     FloatPoint position = coalescedevents[0].PositionInRootFrame();
-    EXPECT_FLOAT_EQ(30, position.X());
-    EXPECT_FLOAT_EQ(30, position.Y());
+    EXPECT_FLOAT_EQ(45, position.X());
+    EXPECT_FLOAT_EQ(45, position.Y());
     EXPECT_EQ(90, coalescedevents[0].PositionInScreen().x);
     EXPECT_EQ(90, coalescedevents[0].PositionInScreen().y);
 
@@ -401,8 +400,8 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
     EXPECT_EQ(60, coalescedevents[0].movement_y);
 
     position = coalescedevents[1].PositionInRootFrame();
-    EXPECT_FLOAT_EQ(30, position.X());
-    EXPECT_FLOAT_EQ(40, position.Y());
+    EXPECT_FLOAT_EQ(45, position.X());
+    EXPECT_FLOAT_EQ(60, position.Y());
     EXPECT_EQ(90, coalescedevents[1].PositionInScreen().x);
     EXPECT_EQ(120, coalescedevents[1].PositionInScreen().y);
 
@@ -424,12 +423,12 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
         TransformWebGestureEvent(view, web_gesture_event);
     FloatPoint position = scaled_gesture_event.PositionInRootFrame();
 
-    EXPECT_FLOAT_EQ(30, position.X());
-    EXPECT_FLOAT_EQ(30, position.Y());
+    EXPECT_FLOAT_EQ(45, position.X());
+    EXPECT_FLOAT_EQ(45, position.Y());
     EXPECT_EQ(90, scaled_gesture_event.PositionInScreen().x);
     EXPECT_EQ(90, scaled_gesture_event.PositionInScreen().y);
-    EXPECT_EQ(20, scaled_gesture_event.DeltaXInRootFrame());
-    EXPECT_EQ(20, scaled_gesture_event.DeltaYInRootFrame());
+    EXPECT_EQ(30, scaled_gesture_event.DeltaXInRootFrame());
+    EXPECT_EQ(30, scaled_gesture_event.DeltaYInRootFrame());
   }
 
   {
@@ -443,8 +442,8 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
     WebGestureEvent scaled_gesture_event =
         TransformWebGestureEvent(view, web_gesture_event);
     IntSize area = FlooredIntSize(scaled_gesture_event.TapAreaInRootFrame());
-    EXPECT_EQ(10, area.Width());
-    EXPECT_EQ(10, area.Height());
+    EXPECT_EQ(15, area.Width());
+    EXPECT_EQ(15, area.Height());
   }
 
   {
@@ -458,8 +457,8 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
     WebGestureEvent scaled_gesture_event =
         TransformWebGestureEvent(view, web_gesture_event);
     IntSize area = FlooredIntSize(scaled_gesture_event.TapAreaInRootFrame());
-    EXPECT_EQ(10, area.Width());
-    EXPECT_EQ(10, area.Height());
+    EXPECT_EQ(15, area.Width());
+    EXPECT_EQ(15, area.Height());
   }
 
   {
@@ -473,8 +472,8 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
     WebGestureEvent scaled_gesture_event =
         TransformWebGestureEvent(view, web_gesture_event);
     IntSize area = FlooredIntSize(scaled_gesture_event.TapAreaInRootFrame());
-    EXPECT_EQ(10, area.Width());
-    EXPECT_EQ(10, area.Height());
+    EXPECT_EQ(15, area.Width());
+    EXPECT_EQ(15, area.Height());
   }
 
   {
@@ -488,8 +487,8 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
     WebGestureEvent scaled_gesture_event =
         TransformWebGestureEvent(view, web_gesture_event);
     IntSize area = FlooredIntSize(scaled_gesture_event.TapAreaInRootFrame());
-    EXPECT_EQ(10, area.Width());
-    EXPECT_EQ(10, area.Height());
+    EXPECT_EQ(15, area.Width());
+    EXPECT_EQ(15, area.Height());
   }
 
   {
@@ -503,8 +502,8 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
     WebGestureEvent scaled_gesture_event =
         TransformWebGestureEvent(view, web_gesture_event);
     IntSize area = FlooredIntSize(scaled_gesture_event.TapAreaInRootFrame());
-    EXPECT_EQ(10, area.Width());
-    EXPECT_EQ(10, area.Height());
+    EXPECT_EQ(15, area.Width());
+    EXPECT_EQ(15, area.Height());
   }
 
   {
@@ -518,8 +517,8 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
     WebGestureEvent scaled_gesture_event =
         TransformWebGestureEvent(view, web_gesture_event);
     IntSize area = FlooredIntSize(scaled_gesture_event.TapAreaInRootFrame());
-    EXPECT_EQ(10, area.Width());
-    EXPECT_EQ(10, area.Height());
+    EXPECT_EQ(15, area.Width());
+    EXPECT_EQ(15, area.Height());
   }
 
   {
@@ -536,10 +535,10 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
 
     EXPECT_FLOAT_EQ(90, transformed_event.PositionInScreen().x);
     EXPECT_FLOAT_EQ(90, transformed_event.PositionInScreen().y);
-    EXPECT_FLOAT_EQ(30, transformed_event.PositionInWidget().x);
-    EXPECT_FLOAT_EQ(30, transformed_event.PositionInWidget().y);
-    EXPECT_FLOAT_EQ(10, transformed_event.width);
-    EXPECT_FLOAT_EQ(10, transformed_event.height);
+    EXPECT_FLOAT_EQ(45, transformed_event.PositionInWidget().x);
+    EXPECT_FLOAT_EQ(45, transformed_event.PositionInWidget().y);
+    EXPECT_FLOAT_EQ(15, transformed_event.width);
+    EXPECT_FLOAT_EQ(15, transformed_event.height);
   }
 
   {
@@ -569,18 +568,18 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
         coalescedevents[0].WebPointerEventInRootFrame();
     EXPECT_FLOAT_EQ(90, transformed_event.PositionInScreen().x);
     EXPECT_FLOAT_EQ(90, transformed_event.PositionInScreen().y);
-    EXPECT_FLOAT_EQ(30, transformed_event.PositionInWidget().x);
-    EXPECT_FLOAT_EQ(30, transformed_event.PositionInWidget().y);
-    EXPECT_FLOAT_EQ(10, transformed_event.width);
-    EXPECT_FLOAT_EQ(10, transformed_event.height);
+    EXPECT_FLOAT_EQ(45, transformed_event.PositionInWidget().x);
+    EXPECT_FLOAT_EQ(45, transformed_event.PositionInWidget().y);
+    EXPECT_FLOAT_EQ(15, transformed_event.width);
+    EXPECT_FLOAT_EQ(15, transformed_event.height);
 
     transformed_event = coalescedevents[1].WebPointerEventInRootFrame();
     EXPECT_FLOAT_EQ(120, transformed_event.PositionInScreen().x);
     EXPECT_FLOAT_EQ(90, transformed_event.PositionInScreen().y);
-    EXPECT_FLOAT_EQ(40, transformed_event.PositionInWidget().x);
-    EXPECT_FLOAT_EQ(30, transformed_event.PositionInWidget().y);
-    EXPECT_FLOAT_EQ(20, transformed_event.width);
-    EXPECT_FLOAT_EQ(10, transformed_event.height);
+    EXPECT_FLOAT_EQ(60, transformed_event.PositionInWidget().x);
+    EXPECT_FLOAT_EQ(45, transformed_event.PositionInWidget().y);
+    EXPECT_FLOAT_EQ(30, transformed_event.width);
+    EXPECT_FLOAT_EQ(15, transformed_event.height);
   }
 }
 

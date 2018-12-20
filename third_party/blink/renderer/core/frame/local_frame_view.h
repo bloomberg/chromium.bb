@@ -260,9 +260,6 @@ class CORE_EXPORT LocalFrameView final
   // Scale used to convert incoming input events.
   float InputEventsScaleFactor() const;
 
-  // Scale used to convert incoming input events while emulating device metics.
-  void SetInputEventsScaleForEmulation(float);
-
   void DidChangeScrollOffset();
 
   void ViewportSizeChanged(bool width_changed, bool height_changed);
@@ -911,8 +908,6 @@ class CORE_EXPORT LocalFrameView final
   unsigned sticky_position_object_count_;
   ObjectSet background_attachment_fixed_objects_;
   Member<FrameViewAutoSizeInfo> auto_size_info_;
-
-  float input_events_scale_factor_for_emulation_;
 
   IntSize layout_size_;
   IntSize initial_viewport_size_;
