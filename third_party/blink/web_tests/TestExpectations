@@ -3235,7 +3235,6 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/elementTiming.ht
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCTrackEvent-fire.html [ Timeout ]
 crbug.com/626703 external/wpt/css/filter-effects/filter-subregion-01.html [ Failure ]
 crbug.com/626703 external/wpt/webrtc/RTCTrackEvent-fire.html [ Timeout ]
 crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-005.html [ Failure ]
