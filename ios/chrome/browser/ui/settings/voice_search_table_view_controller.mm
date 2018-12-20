@@ -9,6 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #include "ios/chrome/browser/voice/speech_input_locale_config.h"

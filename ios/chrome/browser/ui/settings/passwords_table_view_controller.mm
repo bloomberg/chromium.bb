@@ -32,6 +32,7 @@
 #import "ios/chrome/browser/passwords/save_passwords_consumer.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_search_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/password_details_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password_details_table_view_controller_delegate.h"
