@@ -1020,14 +1020,14 @@ void InspectorPageAgent::WindowOpen(Document* document,
 std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
     LocalFrame* frame) {
   DocumentLoader* loader = frame->Loader().GetDocumentLoader();
-  KURL url = loader->GetRequest().Url();
   std::unique_ptr<protocol::Page::Frame> frame_object =
       protocol::Page::Frame::create()
           .setId(IdentifiersFactory::FrameId(frame))
           .setLoaderId(IdentifiersFactory::LoaderId(loader))
-          .setUrl(UrlWithoutFragment(url).GetString())
+          .setUrl(UrlWithoutFragment(loader->Url()).GetString())
           .setMimeType(frame->Loader().GetDocumentLoader()->MimeType())
-          .setSecurityOrigin(SecurityOrigin::Create(url)->ToRawString())
+          .setSecurityOrigin(
+              SecurityOrigin::Create(loader->Url())->ToRawString())
           .build();
   Frame* parent_frame = frame->Tree().Parent();
   if (parent_frame) {
