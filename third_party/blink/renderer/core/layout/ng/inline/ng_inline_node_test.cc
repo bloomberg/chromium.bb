@@ -22,6 +22,11 @@
 
 namespace blink {
 
+// The spec turned into a discussion that may change. Put this logic on hold
+// until CSSWG resolves the issue.
+// https://github.com/w3c/csswg-drafts/issues/337
+#define SEGMENT_BREAK_TRANSFORMATION_FOR_EAST_ASIAN_WIDTH 0
+
 using ::testing::ElementsAre;
 
 class NGInlineNodeForTest : public NGInlineNode {
@@ -945,6 +950,7 @@ TEST_F(NGInlineNodeTest, PreservedNewlineWithBidiAndRelayout) {
   EXPECT_EQ(String(u"foo\u2066\u2069\n\u2066\u2069bar\nbaz"), GetText());
 }
 
+#if SEGMENT_BREAK_TRANSFORMATION_FOR_EAST_ASIAN_WIDTH
 // https://crbug.com/879088
 TEST_F(NGInlineNodeTest, RemoveSegmentBreakFromJapaneseInRelayout) {
   SetupHtml("container",
@@ -978,6 +984,7 @@ TEST_F(NGInlineNodeTest, RemoveSegmentBreakFromJapaneseInRelayout2) {
 
   EXPECT_EQ(String(u"\u30ED\u30B0\u30A4\u30F3\u767B\u9332\nfoo"), GetText());
 }
+#endif
 
 TEST_F(NGInlineNodeTest, SegmentRanges) {
   SetupHtml("container",

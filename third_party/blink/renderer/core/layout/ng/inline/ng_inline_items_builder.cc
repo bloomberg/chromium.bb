@@ -34,6 +34,12 @@ String NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::ToString() {
 }
 
 namespace {
+// The spec turned into a discussion that may change. Put this logic on hold
+// until CSSWG resolves the issue.
+// https://github.com/w3c/csswg-drafts/issues/337
+#define SEGMENT_BREAK_TRANSFORMATION_FOR_EAST_ASIAN_WIDTH 0
+
+#if SEGMENT_BREAK_TRANSFORMATION_FOR_EAST_ASIAN_WIDTH
 // Determine "Ambiguous" East Asian Width is Wide or Narrow.
 // Unicode East Asian Width
 // http://unicode.org/reports/tr11/
@@ -51,6 +57,7 @@ bool IsEastAsianWidthWide(UChar32 c, const ComputedStyle* style) {
          (eaw == U_EA_AMBIGUOUS && style &&
           IsAmbiguosEastAsianWidthWide(style));
 }
+#endif
 
 // Determine whether a newline should be removed or not.
 // CSS Text, Segment Break Transformation Rules
@@ -76,6 +83,7 @@ bool ShouldRemoveNewlineSlow(const StringBuilder& before,
       return true;
   }
 
+#if SEGMENT_BREAK_TRANSFORMATION_FOR_EAST_ASIAN_WIDTH
   // Logic below this point requires both before and after be 16 bits.
   if (before.Is8Bit() || after.Is8Bit())
     return false;
@@ -97,6 +105,7 @@ bool ShouldRemoveNewlineSlow(const StringBuilder& before,
     if (!Character::IsHangul(next) && IsEastAsianWidthWide(next, after_style))
       return true;
   }
+#endif
 
   return false;
 }
