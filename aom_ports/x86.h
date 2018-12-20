@@ -288,6 +288,9 @@ static INLINE unsigned int x86_readtscp(void) {
   unsigned int tscp;
   asm volatile("rdtscp\n\t" : "=a"(tscp) :);
   return tscp;
+#elif defined(_MSC_VER)
+  unsigned int ui;
+  return (unsigned int)__rdtscp(&ui);
 #else
 #if ARCH_X86_64
   return (unsigned int)__rdtscp();
