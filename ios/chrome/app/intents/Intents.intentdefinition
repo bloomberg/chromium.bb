@@ -7,18 +7,18 @@
 	<key>INIntentDefinitionModelVersion</key>
 	<string>1.0</string>
 	<key>INIntentDefinitionSystemVersion</key>
-	<string>17G65</string>
+	<string>18A391</string>
 	<key>INIntentDefinitionToolsBuildVersion</key>
-	<string>10A254a</string>
+	<string>10B61</string>
 	<key>INIntentDefinitionToolsVersion</key>
-	<string>10.0</string>
+	<string>10.1</string>
 	<key>INIntents</key>
 	<array>
 		<dict>
 			<key>INIntentCategory</key>
 			<string>information</string>
-			<key>INIntentDescription</key>
-			<string></string>
+			<key>INIntentDefaultImageName</key>
+			<string>AppIcon</string>
 			<key>INIntentDescriptionID</key>
 			<string>k0Ho6W</string>
 			<key>INIntentLastParameterTag</key>
