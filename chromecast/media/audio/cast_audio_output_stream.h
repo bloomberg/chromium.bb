@@ -102,11 +102,18 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
  public:
   // When nullptr is passed as |mixer_service_connection_factory|, CmaWrapper
   // will be used for audio playback.
+  // |device_id_or_group_id| describes either the |device_id_| or |group_id_|.
+  // If the |device_id_or_group_id| matches a valid device_id then the
+  // |group_id_| is filled in empty. If the |device_id_or_group_id_| does not
+  // match a valid |device_id|, then the |group_id_| is set to that value, and
+  // the |device_id_| is set to kDefaultDeviceId. Valid device_id's are either
+  // ::media::AudioDeviceDescription::kDefaultDeviceId or
+  // ::media::AudioDeviceDescription::kCommunicationsId.
   CastAudioOutputStream(
       CastAudioManager* audio_manager,
       service_manager::Connector* connector,
       const ::media::AudioParameters& audio_params,
-      const std::string& group_id,
+      const std::string& device_id_or_group_id,
       MixerServiceConnectionFactory* mixer_service_connection_factory);
   ~CastAudioOutputStream() override;
 
@@ -133,6 +140,10 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
   CastAudioManager* const audio_manager_;
   service_manager::Connector* connector_;
   const ::media::AudioParameters audio_params_;
+  // Valid |device_id_| are kDefaultDeviceId, and kCommunicationsDeviceId
+  const std::string device_id_;
+  // |group_id_|s are uuids mapped to session_ids for multizone. Should be an
+  // empty string if group_id is unused.
   const std::string group_id_;
   MixerServiceConnectionFactory* mixer_service_connection_factory_;
   chromecast::mojom::MultiroomManagerPtr multiroom_manager_;

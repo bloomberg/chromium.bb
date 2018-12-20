@@ -274,5 +274,26 @@ TEST_F(CastAudioManagerTest, CanMakeMixerStream) {
   stream->Close();
 }
 
+TEST_F(CastAudioManagerTest, CanMakeCommunicationsStream) {
+  CreateAudioManagerForTesting();
+  SetUpBackendAndDecoder();
+
+  ::media::AudioOutputStream* stream = audio_manager_->MakeAudioOutputStream(
+      kDefaultAudioParams,
+      ::media::AudioDeviceDescription::kCommunicationsDeviceId,
+      ::media::AudioManager::LogCallback());
+  EXPECT_TRUE(stream->Open());
+
+  EXPECT_CALL(mock_source_callback_, OnMoreData(_, _, _, _))
+      .WillRepeatedly(Invoke(OnMoreData));
+  EXPECT_CALL(mock_source_callback_, OnError()).Times(0);
+  scoped_task_environment_.RunUntilIdle();
+
+  stream->Stop();
+  scoped_task_environment_.RunUntilIdle();
+
+  stream->Close();
+}
+
 }  // namespace media
 }  // namespace chromecast
