@@ -87,7 +87,6 @@ class StylePropertyMap;
 class StylePropertyMapReadOnly;
 class USVStringOrTrustedURL;
 class V0CustomElementDefinition;
-class V8DisplayLockCallback;
 
 enum SpellcheckAttributeState {
   kSpellcheckAttributeTrue,
@@ -898,7 +897,7 @@ class CORE_EXPORT Element : public ContainerNode {
   EnsureResizeObserverData();
   void SetNeedsResizeObserverUpdate();
 
-  ScriptPromise acquireDisplayLock(ScriptState*, V8DisplayLockCallback*);
+  DisplayLockContext* getDisplayLockForBindings();
   DisplayLockContext* GetDisplayLockContext() const;
 
   bool StyleRecalcBlockedByDisplayLock() const;

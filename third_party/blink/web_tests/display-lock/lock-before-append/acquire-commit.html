@@ -1,7 +1,7 @@
 <!doctype HTML>
 
 <!--
-Runs an acquireDisplayLock, which appends a child.
+Runs an acquire, appends a child, and calls commit.
 -->
 
 <style>
@@ -21,14 +21,9 @@ Runs an acquireDisplayLock, which appends a child.
 <div id="log"></div>
 
 <script>
+// TODO(vmpstr): In WPT this needs to be replaced with reftest-wait.
 if (window.testRunner)
   window.testRunner.waitUntilDone();
-
-function modifyDom(context) {
-  let child = document.createElement("div");
-  child.id = "child";
-  context.lockedElement.appendChild(child);
-}
 
 function finishTest(status_string) {
   if (document.getElementById("log").innerHTML === "")
@@ -37,14 +32,21 @@ function finishTest(status_string) {
     window.testRunner.notifyDone();
 }
 
-function acquire() {
+function runTest() {
   let container = document.createElement("div");
-  container.id = "container";
-  container.acquireDisplayLock(modifyDom).then(
-    () => { finishTest("PASS"); },
-    () => { finishTest("FAIL"); });
-  document.body.appendChild(container);
+  container.getDisplayLock().acquire().then(() => {
+    let child = document.createElement("div");
+    child.id = "child";
+    container.appendChild(child);
+
+    container.id = "container";
+    document.body.appendChild(container);
+
+    container.getDisplayLock().commit().then(
+      () => { finishTest("PASS"); },
+      () => { finishTest("FAIL"); });
+  });
 }
 
-window.onload = acquire;
+window.onload = runTest;
 </script>

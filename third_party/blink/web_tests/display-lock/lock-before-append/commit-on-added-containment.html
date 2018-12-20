@@ -1,45 +1,44 @@
 <!doctype HTML>
 
 <!--
-Runs an acquireDisplayLock, the callback throws.
+Runs an acquire on a container with no containment, then adds
+containment and commits.
 -->
 
 <style>
-#container {
+.contained {
   contain: content;
   width: 100px;
   height: 100px;
   background: lightblue;
 }
 </style>
-
 <div id="log"></div>
 
 <script>
+// TODO(vmpstr): In WPT this needs to be replaced with reftest-wait.
 if (window.testRunner)
   window.testRunner.waitUntilDone();
 
-function throwingFunction(context) {
-  throw "Expected Exception";
-}
-
-function finishTest(status_string, to_remove) {
+function finishTest(status_string) {
   if (document.getElementById("log").innerHTML === "")
     document.getElementById("log").innerHTML = status_string;
-  if (to_remove)
-    to_remove.remove();
   if (window.testRunner)
     window.testRunner.notifyDone();
 }
 
-function acquire() {
+async function runTest() {
   let container = document.createElement("div");
-  container.id = "container";
-  container.acquireDisplayLock(throwingFunction).then(
-    () => { finishTest("FAIL"); },
-    () => { finishTest("PASS", container); });
+  await container.getDisplayLock().acquire();
+
+  container.classList = "contained";
   document.body.appendChild(container);
+
+  container.getDisplayLock().commit().then(
+    () => { finishTest("PASS"); },
+    () => { finishTest("FAIL"); });
 }
 
-window.onload = acquire;
+window.onload = runTest;
 </script>
+

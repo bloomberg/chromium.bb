@@ -1,8 +1,8 @@
 <!doctype HTML>
 
 <!--
-Runs an acquireDisplayLock which constructs a subtree, and measures it in
-the promise resolution.
+Runs acquire, constructs a subtree, calls update and measures it in
+the promise resolotion, which also removes the element from the DOM.
 -->
 
 <style>
@@ -58,19 +58,22 @@ function createChild(id) {
   return child;
 }
 
-function construct(context) {
-  context.lockedElement.appendChild(createChild("0"));
-  context.lockedElement.appendChild(createChild("1"));
-  context.lockedElement.appendChild(createChild("2"));
+function construct(container) {
+  container.appendChild(createChild("0"));
+  container.appendChild(createChild("1"));
+  container.appendChild(createChild("2"));
 }
 
-function acquire() {
+function runTest() {
   let container = document.createElement("div");
   container.id = "container";
-  container.acquireDisplayLock(construct).then(measureAndRemove).then(finish);
-  document.getElementById("empty").appendChild(container);
+  container.getDisplayLock().acquire().then(() => {
+    construct(container);
+    document.getElementById("empty").appendChild(container);
+    container.getDisplayLock().update().then(measureAndRemove).then(finish);
+  });
 }
 
-window.onload = acquire;
+window.onload = runTest;
 </script>
 

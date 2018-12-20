@@ -17,7 +17,7 @@ namespace blink {
 
 class DisplayLockSuspendedHandle;
 class Element;
-class V8DisplayLockCallback;
+class DisplayLockOptions;
 class DisplayLockScopedLogger;
 class CORE_EXPORT DisplayLockContext final
     : public ScriptWrappable,
@@ -45,19 +45,7 @@ class CORE_EXPORT DisplayLockContext final
     kDoNotYield,
     kStrictYieldBetweenLifecyclePhases,
     kYieldBetweenLifecyclePhases,
-    kDefault = kStrictYieldBetweenLifecyclePhases
-  };
-
-  // Conceptually the states are private, but made public for testing.
-  // TODO(vmpstr): Make this private and update the tests.
-  enum State {
-    kUninitialized,
-    kSuspended,
-    kCallbacksPending,
-    kDisconnected,
-    kCommitting,
-    kResolving,
-    kResolved
+    kDefault = kDoNotYield
   };
 
   // See GetScopedPendingFrameRect() for description.
@@ -97,39 +85,15 @@ class CORE_EXPORT DisplayLockContext final
 
   // ContextLifecycleObserver overrides.
   void ContextDestroyed(ExecutionContext*) override;
-  // ActiveScriptWrappable overrides. If there is an outstanding task scheduled
-  // to process the callback queue, then this return true.
-  // TODO(vmpstr): In the future this would also be true while we're doing
-  // co-operative work.
+  // ActiveScriptWrappable overrides. This keeps the context alive as long as we
+  // have an element and we're not unlocked.
   bool HasPendingActivity() const final;
 
-  // Notify that the lock was requested. Note that for a new context, this has
-  // to be called first. For an existing lock, this will either extend the
-  // lifetime of the current lock, or start acquiring a new lock (depending on
-  // whether this lock is active or passive).
-  void RequestLock(V8DisplayLockCallback*, ScriptState*);
-
-  // Returns true if the promise associated with this context was already
-  // resolved (or rejected).
-  bool IsResolved() const { return state_ == kResolved; }
-
-  // Returns a ScriptPromise associated with this context.
-  ScriptPromise Promise() const {
-    DCHECK(resolver_);
-    return resolver_->Promise();
-  }
-
-  // Called when the connected state may have changed.
-  void NotifyConnectedMayHaveChanged();
-
-  // Rejects the associated promise if one exists, and clears the current queue.
-  // This effectively makes the context finalized.
-  void RejectAndCleanUp();
-
-  // JavaScript interface implementation.
-  void schedule(V8DisplayLockCallback*);
-  DisplayLockSuspendedHandle* suspend();
-  Element* lockedElement() const;
+  // JavaScript interface implementation. See display_lock_context.idl for
+  // description.
+  ScriptPromise acquire(ScriptState*, DisplayLockOptions*);
+  ScriptPromise update(ScriptState*);
+  ScriptPromise commit(ScriptState*);
 
   // Lifecycle observation / state functions.
   bool ShouldStyle() const;
@@ -141,6 +105,8 @@ class CORE_EXPORT DisplayLockContext final
   bool ShouldPaint() const;
   void DidPaint();
 
+  // Called when the layout tree is attached. This is used to verify
+  // containment.
   void DidAttachLayoutTree();
 
   // Returns a ScopedPendingFrameRect object which exposes the pending layout
@@ -153,13 +119,13 @@ class CORE_EXPORT DisplayLockContext final
   // Returns a ScopedForcedUpdate object which for the duration of its lifetime
   // will allow updates to happen on this element's subtree. For the element
   // itself, the frame rect will still be the same as at the time the lock was
-  // acquired.
-  // Only one ScopedForcedUpdate can be retrieved from the same context at a
-  // time.
+  // acquired. Only one ScopedForcedUpdate can be retrieved from the same
+  // context at a time.
   ScopedForcedUpdate GetScopedForcedUpdate();
 
   // This is called when the element with which this context is associated is
-  // moved to a new document.
+  // moved to a new document. Used to listen to the lifecycle update from the
+  // right document's view.
   void DidMoveToNewDocument(Document& old_document);
 
   // LifecycleNotificationObserver overrides.
@@ -171,48 +137,18 @@ class CORE_EXPORT DisplayLockContext final
   friend class DisplayLockSuspendedHandle;
   friend class DisplayLockBudget;
 
-  // Sets a new budget type. Note that since this is static, all of the existing
-  // locks will be affected as well (unless they already have a budget). This is
-  // meant to be used to set the budget type once (such as in a test), but
-  // technically could be used outside of tests as well to force a certain
-  // budget type. Use with caution. Note that if a budget already exists on the
-  // lock, then it will continue to use the existing budget until a new budget
-  // is requested.
-  static void SetBudgetType(BudgetType type) {
-    if (s_budget_type_ == type)
-      return;
-    s_budget_type_ = type;
-  }
-
-  // Schedules a new callback. If this is the first callback to be scheduled,
-  // then a valid ScriptState must be provided, which will be used to create a
-  // new ScriptPromiseResolver. In other cases, the ScriptState is ignored.
-  void ScheduleCallback(V8DisplayLockCallback*);
-
-  // Processes the current queue of callbacks.
-  void ProcessQueue();
-
-  // Called by the suspended handle in order to resume context operations.
-  void Resume();
-
-  // Called by the suspended handle informing us that it was disposed without
-  // resuming, meaning it will never resume.
-  void NotifyWillNotResume();
-
-  // Schedule a task if one is required. Specifically, this would schedule a
-  // task if one was not already scheduled and if we need to either process
-  // callbacks or to resolve the associated promise.
-  void ScheduleTaskIfNeeded();
-
-  // A function that finishes resolving the promise by establishing a microtask
-  // checkpoint. Note that this should be scheduled after entering the
-  // kResolving state. If the state is still kResolving after the microtask
-  // checkpoint finishes (ie, the lock was not re-acquired), we enter the final
-  // kResolved state.
-  void FinishResolution();
+  // The current state of the lock. Note that the order of these matters.
+  enum State {
+    kLocked,
+    kUpdating,
+    kCommitting,
+    kUnlocked,
+  };
 
   // Initiate a commit.
   void StartCommit();
+  // Initiate an update.
+  void StartUpdate();
 
   // The following functions propagate dirty bits from the locked element up to
   // the ancestors in order to be reached. They return true if the element or
@@ -222,18 +158,6 @@ class CORE_EXPORT DisplayLockContext final
   bool MarkAncestorsForPaintInvalidationCheckIfNeeded();
   bool MarkPaintLayerNeedsRepaint();
 
-  // Marks the display lock as being disconnected. Note that this removes the
-  // strong reference to the element in case the element is deleted. Once we're
-  // disconnected, there are will be no calls to the context until we reconnect,
-  // so we should allow for the element to get GCed meanwhile.
-  void MarkAsDisconnected();
-
-  // Returns the element asserting that it exists.
-  ALWAYS_INLINE Element* GetElement() const {
-    DCHECK(weak_element_handle_);
-    return weak_element_handle_;
-  }
-
   // When ScopedPendingFrameRect is destroyed, it calls this function. See
   // GetScopedPendingFrameRect() for more information.
   void NotifyPendingFrameRectScopeEnded();
@@ -242,52 +166,44 @@ class CORE_EXPORT DisplayLockContext final
   // GetScopedForcedUpdate() for more information.
   void NotifyForcedUpdateScopeEnded();
 
-  // This resets the existing budget (if any) and establishes a new budget
-  // starting "now".
-  void ResetNewBudget();
+  // Creates a new update budget based on the BudgetType::kDefault enum. In
+  // other words, it will create a budget of that type.
+  // TODO(vmpstr): In tests, we will probably switch the value to test other
+  // budgets. As well, this makes it easier to change the budget right in the
+  // enum definitions.
+  std::unique_ptr<DisplayLockBudget> CreateNewBudget();
 
   // Helper to schedule an animation to delay lifecycle updates for the next
   // frame.
   void ScheduleAnimation();
 
-  static BudgetType s_budget_type_;
-  std::unique_ptr<DisplayLockBudget> budget_;
+  // Timeout implementation. When the lock is acquired, we kick off a timeout
+  // task that will trigger a commit (which can be canceled by other calls to
+  // schedule or by a call to commit). Note that calling RescheduleTimeoutTask()
+  // will cancel any previously scheduled task.
+  void RescheduleTimeoutTask(double delay);
+  void CancelTimeoutTask();
+  void TriggerTimeout();
 
-  HeapVector<Member<V8DisplayLockCallback>> callbacks_;
-  Member<ScriptPromiseResolver> resolver_;
+  // Helper functions to resolve the update/commit promises.
+  enum ResolverState { kResolve, kReject, kDetach };
+  void FinishUpdateResolver(ResolverState);
+  void FinishCommitResolver(ResolverState);
 
-  // Note that we hold both a weak and a strong reference to the element. The
-  // strong reference is sometimes set to nullptr, meaning that we can GC it if
-  // nothing else is holding a strong reference. We use weak_element_handle_ to
-  // detect such a case so that we don't also keep the context alive needlessly.
-  //
-  // We need a strong reference, since the element can be accessed from script
-  // via this context. Specifically DisplayLockContext::lockedElement() returns
-  // the element to script. This means that callbacks pending in the context can
-  // actually append the element to the tree. This means a strong reference is
-  // needed to prevent GC from destroying the element.
-  //
-  // However, once we're in kDisconnected state, it means that we have no
-  // callbacks pending and we haven't been connected to the DOM tree. It's also
-  // possible that the script has lost the reference to the locked element. This
-  // means the element should be GCed, so we need to let go of the strong
-  // reference. If we don't, we can cause a leak of an element and a display
-  // lock context.
-  //
-  // In case the script did not lose the element handle and will connect it in
-  // the future, we do retain a weak handle. We also use the weak handle to
-  // check if the element was destroyed for the purposes of allowing this
-  // context to be GCed as well.
-  Member<Element> element_;
-  WeakMember<Element> weak_element_handle_;
+  std::unique_ptr<DisplayLockBudget> update_budget_;
 
-  unsigned suspended_count_ = 0;
-  State state_ = kUninitialized;
+  Member<ScriptPromiseResolver> commit_resolver_;
+  Member<ScriptPromiseResolver> update_resolver_;
+  WeakMember<Element> element_;
+
+  State state_ = kUnlocked;
   LayoutRect pending_frame_rect_;
   base::Optional<LayoutRect> locked_frame_rect_;
 
-  bool process_queue_task_scheduled_ = false;
   bool update_forced_ = false;
+  bool timeout_task_is_scheduled_ = false;
+
+  base::WeakPtrFactory<DisplayLockContext> weak_factory_;
 };
 
 }  // namespace blink

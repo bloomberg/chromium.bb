@@ -194,7 +194,7 @@ class ElementRareData : public NodeRareData {
 
   DisplayLockContext* EnsureDisplayLockContext(Element* element,
                                                ExecutionContext* context) {
-    if (!display_lock_context_ || display_lock_context_->IsResolved()) {
+    if (!display_lock_context_) {
       display_lock_context_ =
           MakeGarbageCollected<DisplayLockContext>(element, context);
     }

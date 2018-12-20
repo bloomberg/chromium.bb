@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_budget.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_display_lock_callback.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/display_lock/strict_yielding_display_lock_budget.h"
 #include "third_party/blink/renderer/core/display_lock/unyielding_display_lock_budget.h"
@@ -33,29 +32,13 @@ class DisplayLockBudgetTest : public RenderingTest {
   base::Optional<RuntimeEnabledFeatures::Backup> features_backup_;
 };
 
-class BudgetTestEmptyFunction : public ScriptFunction {
- public:
-  static v8::Local<v8::Function> Create(ScriptState* script_state) {
-    auto* callback =
-        MakeGarbageCollected<BudgetTestEmptyFunction>(script_state);
-    return callback->BindToV8Function();
-  }
-
-  BudgetTestEmptyFunction(ScriptState* script_state)
-      : ScriptFunction(script_state) {}
-
-  ScriptValue Call(ScriptValue value) final { return value; }
-};
-
 TEST_F(DisplayLockBudgetTest, UnyieldingBudget) {
   WeakPersistent<Element> element =
       GetDocument().CreateRawElement(html_names::kDivTag);
   {
     auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
     ScriptState::Scope scope(script_state);
-    element->acquireDisplayLock(
-        script_state, V8DisplayLockCallback::Create(
-                          BudgetTestEmptyFunction::Create(script_state)));
+    element->getDisplayLockForBindings()->acquire(script_state, nullptr);
   }
 
   ASSERT_TRUE(element->GetDisplayLockContext());
@@ -82,9 +65,7 @@ TEST_F(DisplayLockBudgetTest, StrictYieldingBudget) {
   {
     auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
     ScriptState::Scope scope(script_state);
-    element->acquireDisplayLock(
-        script_state, V8DisplayLockCallback::Create(
-                          BudgetTestEmptyFunction::Create(script_state)));
+    element->getDisplayLockForBindings()->acquire(script_state, nullptr);
   }
 
   ASSERT_TRUE(element->GetDisplayLockContext());

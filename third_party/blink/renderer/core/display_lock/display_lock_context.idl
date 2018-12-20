@@ -2,20 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-[RuntimeEnabled=DisplayLocking]
-callback DisplayLockCallback = void(DisplayLockContext context);
-
 [RuntimeEnabled=DisplayLocking, ActiveScriptWrappable]
 interface DisplayLockContext {
-  // Schedule continuation work for this context. Multiple calls are allowed and
-  // will run in the order scheduled.
-  void schedule(DisplayLockCallback callback);
+  // Acquires a display lock (possibly asynchronously) with the given options.
+  // Returns a promise that resolves when the lock is acquired.
+  [CallWith=ScriptState] Promise<any> acquire(optional DisplayLockOptions options);
 
-  // Suspend the context, preventing the lock from being released. Multiple
-  // calls to suspend are allowed: in order to resume the context, resume() must
-  // be called on each of the returned DisplayLockSuspendedHandles.
-  DisplayLockSuspendedHandle suspend();
+  // Causes co-operative updates to happen on the locked subtree.
+  // Returns a promise that resolves when the update is finished.
+  [CallWith=ScriptState] Promise<any> update();
 
-  // Represents the element on which this locked has been acquired.
-  [SameObject, Affects=Nothing] readonly attribute Element lockedElement;
+  // Commits the locked subtree, which releases the lock and updates any
+  // necessary lifecycle phases.
+  // Returns a promise that resolves when the commit is finished.
+  [CallWith=ScriptState] Promise<any> commit();
 };

@@ -1,13 +1,14 @@
 <!doctype HTML>
 
 <!--
-Runs an acquireDisplayLock on an element that doesn't have containment.
+Runs acquire and commit on an element that doesn't have containment.
 This rejects the promise.
 -->
 
 <div id="log"></div>
 
 <script>
+// TODO(vmpstr): This can be a testharness test.
 if (window.testRunner)
   window.testRunner.waitUntilDone();
 
@@ -18,12 +19,13 @@ function finishTest(status_string) {
     window.testRunner.notifyDone();
 }
 
-function acquire() {
+async function acquire() {
   let container = document.createElement("div");
-  container.acquireDisplayLock((context) => {}).then(
+  await container.getDisplayLock().acquire();
+  document.body.appendChild(container);
+  container.getDisplayLock().commit().then(
     () => { finishTest("FAIL"); },
     () => { finishTest("PASS"); });
-  document.body.appendChild(container);
 }
 
 window.onload = acquire;

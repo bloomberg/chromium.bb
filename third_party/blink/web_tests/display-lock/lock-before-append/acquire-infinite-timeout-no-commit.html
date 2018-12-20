@@ -16,6 +16,7 @@ The associated promise should never resolve.
 <div id="log"></div>
 
 <script>
+// TODO(vmpstr): In WPT this needs to be replaced with reftest-wait.
 if (window.testRunner)
   window.testRunner.waitUntilDone();
 
@@ -26,17 +27,16 @@ function finishTest(status_string) {
     window.testRunner.notifyDone();
 }
 
-function acquire() {
+function runTest() {
   let container = document.createElement("div");
   container.id = "container";
-  container.acquireDisplayLock((context) => { context.suspend(); }).then(
-    () => { finishTest("FAIL"); },
-    () => { finishTest("FAIL"); });
-  document.body.appendChild(container);
-  setTimeout(() => { finishTest("PASS"); }, 100);
+  container.getDisplayLock().acquire({ timeout: Infinity }).then(() => {
+    document.body.appendChild(container);
+    setTimeout(() => { finishTest("PASS"); }, 100);
+  });
 }
 
-window.onload = acquire;
+window.onload = runTest;
 </script>
 
 
