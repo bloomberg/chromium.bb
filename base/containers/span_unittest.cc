@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/checked_iterators.h"
 #include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1089,6 +1090,43 @@ TEST(SpanTest, OutOfBoundsDeath) {
   ASSERT_DEATH_IF_SUPPORTED(kEmptySpan.last(1), "");
 
   ASSERT_DEATH_IF_SUPPORTED(kEmptySpan.subspan(1), "");
+}
+
+TEST(SpanTest, IteratorRangesOverlap) {
+  static constexpr int kArray[] = {1, 6, 1, 8, 0};
+  const size_t kNumElements = 5;
+  constexpr span<const int> span(kArray);
+
+  static constexpr int kOverlappingStartIndexes[] = {-4, 0, 3, 4};
+  static constexpr int kNonOverlappingStartIndexes[] = {-7, -5, 5, 7};
+
+  // Overlapping ranges.
+  for (const int dest_start_index : kOverlappingStartIndexes) {
+    EXPECT_TRUE(CheckedRandomAccessIterator<const int>::RangesOverlap(
+        span.begin(), span.end(),
+        CheckedRandomAccessIterator<const int>(
+            span.data() + dest_start_index,
+            span.data() + dest_start_index + kNumElements)));
+    EXPECT_TRUE(CheckedRandomAccessConstIterator<const int>::RangesOverlap(
+        span.cbegin(), span.cend(),
+        CheckedRandomAccessConstIterator<const int>(
+            span.data() + dest_start_index,
+            span.data() + dest_start_index + kNumElements)));
+  }
+
+  // Non-overlapping ranges.
+  for (const int dest_start_index : kNonOverlappingStartIndexes) {
+    EXPECT_FALSE(CheckedRandomAccessIterator<const int>::RangesOverlap(
+        span.begin(), span.end(),
+        CheckedRandomAccessIterator<const int>(
+            span.data() + dest_start_index,
+            span.data() + dest_start_index + kNumElements)));
+    EXPECT_FALSE(CheckedRandomAccessConstIterator<const int>::RangesOverlap(
+        span.cbegin(), span.cend(),
+        CheckedRandomAccessConstIterator<const int>(
+            span.data() + dest_start_index,
+            span.data() + dest_start_index + kNumElements)));
+  }
 }
 
 }  // namespace base

@@ -8,6 +8,7 @@
 #include <iterator>
 #include <memory>
 
+#include "base/containers/util.h"
 #include "base/logging.h"
 
 namespace base {
@@ -127,6 +128,20 @@ class CheckedRandomAccessIterator {
   pointer operator->() const {
     CHECK(current_ != end_);
     return current_;
+  }
+
+  static bool RangesOverlap(const CheckedRandomAccessIterator& from_begin,
+                            const CheckedRandomAccessIterator& from_end,
+                            const CheckedRandomAccessIterator& to) {
+    CHECK(from_begin < from_end);
+    const auto from_begin_uintptr = get_uintptr(from_begin.current_);
+    const auto from_end_uintptr = get_uintptr(from_end.current_);
+    const auto to_begin_uintptr = get_uintptr(to.current_);
+    const auto to_end_uintptr =
+        get_uintptr((to + std::distance(from_begin, from_end)).current_);
+
+    return !(to_begin_uintptr >= from_end_uintptr ||
+             to_end_uintptr <= from_begin_uintptr);
   }
 
  private:
@@ -262,6 +277,20 @@ class CheckedRandomAccessConstIterator {
   pointer operator->() const {
     CHECK(current_ != end_);
     return current_;
+  }
+
+  static bool RangesOverlap(const CheckedRandomAccessConstIterator& from_begin,
+                            const CheckedRandomAccessConstIterator& from_end,
+                            const CheckedRandomAccessConstIterator& to) {
+    CHECK(from_begin < from_end);
+    const auto from_begin_uintptr = get_uintptr(from_begin.current_);
+    const auto from_end_uintptr = get_uintptr(from_end.current_);
+    const auto to_begin_uintptr = get_uintptr(to.current_);
+    const auto to_end_uintptr =
+        get_uintptr((to + std::distance(from_begin, from_end)).current_);
+
+    return !(to_begin_uintptr >= from_end_uintptr ||
+             to_end_uintptr <= from_begin_uintptr);
   }
 
  private:
