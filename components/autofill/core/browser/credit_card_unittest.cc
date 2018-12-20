@@ -15,7 +15,9 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/grit/components_scaled_resources.h"
@@ -1020,6 +1022,41 @@ TEST(CreditCardTest, CreditCardVerificationCode) {
   // The verification code cannot be set, as Chrome does not store this data.
   card.SetRawInfo(CREDIT_CARD_VERIFICATION_CODE, ASCIIToUTF16("999"));
   EXPECT_EQ(base::string16(), card.GetRawInfo(CREDIT_CARD_VERIFICATION_CODE));
+}
+
+// Tests that the card in only deletable if it is expired before the threshold.
+TEST(CreditCardTest, IsDeletable) {
+  // Set up an arbitrary time, as setup the current time to just above the
+  // threshold later than that time. This sets the year to 2007. The code
+  // expects valid expiration years to be between 2000 and 2999. However,
+  // because of the year 2018 problem, we need to pick an earlier year.
+  const base::Time kArbitraryTime = base::Time::FromDoubleT(1000000000);
+  TestAutofillClock test_clock;
+  test_clock.SetNow(kArbitraryTime + kDisusedDataModelDeletionTimeDelta +
+                    base::TimeDelta::FromDays(1));
+
+  // Created a card that has not been used since over the deletion threshold.
+  CreditCard card(base::GenerateGUID(), "https://www.example.com/");
+  card.set_use_date(kArbitraryTime);
+
+  // Set the card to be expired before the threshold.
+  base::Time::Exploded now_exploded;
+  AutofillClock::Now().LocalExplode(&now_exploded);
+  card.SetExpirationYear(now_exploded.year - 5);
+  card.SetExpirationMonth(1);
+  ASSERT_TRUE(card.IsExpired(AutofillClock::Now() -
+                             kDisusedDataModelDeletionTimeDelta));
+
+  // Make sure the card is deletable.
+  EXPECT_TRUE(card.IsDeletable());
+
+  // Set the card to not be expired.
+  card.SetExpirationYear(now_exploded.year + 5);
+  ASSERT_FALSE(card.IsExpired(AutofillClock::Now() -
+                              kDisusedDataModelDeletionTimeDelta));
+
+  // Make sure the card is not deletable.
+  EXPECT_FALSE(card.IsDeletable());
 }
 
 struct CreditCardMatchingTypesCase {

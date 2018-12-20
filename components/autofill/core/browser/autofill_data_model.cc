@@ -9,6 +9,7 @@
 #include "components/autofill/core/browser/autofill_metadata.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "url/gurl.h"
 
 namespace autofill {
@@ -68,6 +69,10 @@ double AutofillDataModel::GetFrecencyScore(base::Time time) const {
   // Please update getFrecencyScore in PaymentRequestImpl.java as well if below
   // formula needs update.
   return -log((time - use_date_).InDays() + 2) / log(use_count_ + 1);
+}
+
+bool AutofillDataModel::IsDeletable() const {
+  return use_date_ < AutofillClock::Now() - kDisusedDataModelDeletionTimeDelta;
 }
 
 }  // namespace autofill

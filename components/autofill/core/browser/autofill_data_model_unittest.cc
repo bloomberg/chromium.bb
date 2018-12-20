@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_metadata.h"
+#include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -93,6 +94,19 @@ TEST(AutofillDataModelTest, SetMetadata) {
   EXPECT_TRUE(model.SetMetadata(metadata));
   EXPECT_EQ(metadata.use_count, model.use_count());
   EXPECT_EQ(metadata.use_date, model.use_date());
+}
+
+TEST(AutofillDataModelTest, IsDeletable) {
+  TestAutofillDataModel model("guid", std::string());
+  model.set_use_date(kArbitraryTime);
+
+  TestAutofillClock test_clock;
+  test_clock.SetNow(kArbitraryTime);
+  EXPECT_FALSE(model.IsDeletable());
+
+  test_clock.SetNow(kArbitraryTime + kDisusedDataModelDeletionTimeDelta +
+                    base::TimeDelta::FromDays(1));
+  EXPECT_TRUE(model.IsDeletable());
 }
 
 enum Expectation { GREATER, LESS };
