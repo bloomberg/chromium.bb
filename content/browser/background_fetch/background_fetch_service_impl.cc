@@ -12,6 +12,7 @@
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/background_fetch/background_fetch_metrics.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
+#include "content/browser/background_fetch/background_fetch_registration_notifier.h"
 #include "content/browser/background_fetch/background_fetch_request_match_params.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/storage_partition_impl.h"

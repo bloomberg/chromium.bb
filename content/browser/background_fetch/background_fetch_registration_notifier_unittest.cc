@@ -12,6 +12,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/common/background_fetch/background_fetch_types.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -139,6 +140,11 @@ class BackgroundFetchRegistrationNotifierTest : public ::testing::Test {
                               blink::mojom::FetchAPIResponsePtr response) {
     notifier_->NotifyRequestCompleted(unique_id, std::move(request),
                                       std::move(response));
+    task_runner_->RunUntilIdle();
+  }
+
+  void AddObservedUrl(const std::string& unique_id, const GURL& url) {
+    notifier_->AddObservedUrl(unique_id, url);
     task_runner_->RunUntilIdle();
   }
 
@@ -281,18 +287,27 @@ TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyRequestCompleted) {
   ASSERT_TRUE(base::FeatureList::IsEnabled(
       features::kBackgroundFetchAccessActiveFetches));
   auto observer = std::make_unique<TestRegistrationObserver>();
+
   notifier_->AddObserver(kPrimaryUniqueId, observer->GetPtr());
 
+  // No observed URLs. Observers shouldn't have been notified.
   ASSERT_EQ(observer->completed_requests().size(), 0u);
 
   auto request = blink::mojom::FetchAPIRequest::New();
   request->url = GURL(kURL);
 
+  NotifyRequestCompleted(kPrimaryUniqueId,
+                         BackgroundFetchSettledFetch::CloneRequest(request),
+                         /* response */ nullptr);
+
+  ASSERT_EQ(observer->completed_requests().size(), 0u);
+
+  // Add observed URL. NotifyRequestCompleted() should now notify the observer.
+  AddObservedUrl(kPrimaryUniqueId, request->url);
   NotifyRequestCompleted(kPrimaryUniqueId, std::move(request),
                          /* response */ nullptr);
 
   ASSERT_EQ(observer->completed_requests().size(), 1u);
-
   auto& received_pair = observer->completed_requests()[0];
   EXPECT_EQ(received_pair.first->url, GURL(kURL));
   EXPECT_TRUE(received_pair.second.is_null());
