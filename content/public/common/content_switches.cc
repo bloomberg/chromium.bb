@@ -96,6 +96,11 @@ const char kDisableBackgroundTimerThrottling[] =
 // features.
 const char kDisableBlinkFeatures[]          = "disable-blink-features";
 
+// Enable Web Bluetooth Scanning
+// This switch enables Web Bluetooth Scanning without any
+// permission prompt for testing.
+const char kEnableWebBluetoothScanning[] = "enable-web-bluetooth-scanning";
+
 // Disables compositor Ukm recording in browser tests.
 // TODO(khushalsagar): Remove once crbug.com/761524 is resolved.
 const char kDisableCompositorUkmForTests[] = "disable-compositor-ukm-for-tests";

@@ -30,15 +30,6 @@ BluetoothDevice::BluetoothDevice(ExecutionContext* context,
       gatt_(BluetoothRemoteGATTServer::Create(context, this)),
       bluetooth_(bluetooth) {}
 
-// static
-BluetoothDevice* BluetoothDevice::Take(
-    ScriptPromiseResolver* resolver,
-    mojom::blink::WebBluetoothDevicePtr device,
-    Bluetooth* bluetooth) {
-  return MakeGarbageCollected<BluetoothDevice>(resolver->GetExecutionContext(),
-                                               std::move(device), bluetooth);
-}
-
 BluetoothRemoteGATTService* BluetoothDevice::GetOrCreateRemoteGATTService(
     mojom::blink::WebBluetoothRemoteGATTServicePtr service,
     bool is_primary,

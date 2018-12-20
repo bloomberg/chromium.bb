@@ -16,17 +16,18 @@ enum { kDeviceIdLength = 16 /* 128 bits */ };
 
 }  // namespace
 
-WebBluetoothDeviceId::WebBluetoothDeviceId() {}
+WebBluetoothDeviceId::WebBluetoothDeviceId() : is_mac_address_(false) {}
 
-WebBluetoothDeviceId::WebBluetoothDeviceId(std::string device_id)
-    : device_id_(std::move(device_id)) {
-  CHECK(IsValid(device_id_));
+WebBluetoothDeviceId::WebBluetoothDeviceId(std::string device_id,
+                                           bool is_mac_address)
+    : device_id_(std::move(device_id)), is_mac_address_(is_mac_address) {
+  CHECK(IsValid());
 }
 
 WebBluetoothDeviceId::~WebBluetoothDeviceId() {}
 
 const std::string& WebBluetoothDeviceId::str() const {
-  CHECK(IsValid(device_id_));
+  CHECK(IsValid());
   return device_id_;
 }
 
@@ -42,11 +43,17 @@ WebBluetoothDeviceId WebBluetoothDeviceId::Create() {
 
   base::Base64Encode(bytes, &bytes);
 
-  return WebBluetoothDeviceId(std::move(bytes));
+  return WebBluetoothDeviceId(std::move(bytes), false);
 }
 
 // static
-bool WebBluetoothDeviceId::IsValid(const std::string& device_id) {
+bool WebBluetoothDeviceId::IsValid(const std::string& device_id,
+                                   bool is_mac_address) {
+  if (is_mac_address) {
+    // TODO(dougt) We should validate this as a MAC address.
+    return true;
+  }
+
   std::string decoded;
   if (!base::Base64Decode(device_id, &decoded)) {
     return false;
@@ -67,6 +74,10 @@ bool WebBluetoothDeviceId::IsValid(const std::string& device_id) {
   }
 
   return true;
+}
+
+bool WebBluetoothDeviceId::IsValid() const {
+  return WebBluetoothDeviceId::IsValid(device_id_, is_mac_address_);
 }
 
 bool WebBluetoothDeviceId::operator==(

@@ -589,6 +589,44 @@ TEST_F(BluetoothTest, MAYBE_AdvertisementData_Discovery) {
   EXPECT_EQ(ToInt8(TestTxPower::LOWEST), device->GetInquiryTxPower().value());
 }
 
+#if defined(OS_MACOSX)
+// TODO(dougt) As I turn on new platforms for WebBluetooth Scanning,
+// I will relax this #ifdef
+TEST_F(BluetoothTest, DeviceAdvertisementReceived) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+
+  InitWithFakeAdapter();
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  StartLowEnergyDiscoverySession();
+  SimulateLowEnergyDevice(1);
+
+  EXPECT_EQ(1, observer.device_advertisement_raw_received_count());
+  EXPECT_EQ(kTestDeviceAddress1,
+            observer.device_last_device_name().value_or(""));
+  EXPECT_EQ(kTestDeviceName,
+            observer.device_last_advertisement_name().value_or(""));
+
+  // TestRSSI::LOWEST
+  EXPECT_EQ(-81, observer.device_last_rssi().value_or(-1));
+
+  // TestTxPower::LOWEST
+  EXPECT_EQ(-40, observer.device_last_tx_power().value_or(-1));
+
+  // TODO(crbug.com/588083)
+  // EXPECT_EQ(0x04, observer.device_last_appearance());
+
+  // TODO(dougt): Service Data, ManufacturerData, Advertised UUID
+
+  // Double check that we can receive another advertisement.
+  SimulateLowEnergyDevice(2);
+  EXPECT_EQ(2, observer.device_advertisement_raw_received_count());
+}
+#endif
+
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
 #define MAYBE_GetUUIDs_Connection GetUUIDs_Connection
 #else

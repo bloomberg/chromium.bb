@@ -140,6 +140,19 @@ struct WebBluetoothRemoteGATTCharacteristic {
   uint32 properties;
 };
 
+struct WebBluetoothScanResult {
+  WebBluetoothDevice device;
+  string? name;
+  array<bluetooth.mojom.UUID> uuids;
+  uint16 appearance;
+
+  // TODO(dougt): Make tx_power and rssi optional.
+  uint8 tx_power;
+  uint8 rssi;
+  map<uint16, array<uint8>> manufacturer_data;
+  map<string, array<uint8>> service_data;
+};
+
 struct WebBluetoothRemoteGATTDescriptor {
   string instance_id; // See Instance ID Note above.
   bluetooth.mojom.UUID uuid;
@@ -250,6 +263,10 @@ interface WebBluetoothService {
   RemoteDescriptorWriteValue(
     string descriptor_instance_id,
     array<uint8> value) => (WebBluetoothResult result);
+
+  // Starts scanning for low energy devices.
+  RequestScanningStart(associated WebBluetoothScanClient client) => (
+      WebBluetoothResult result);
 };
 
 // Classes that implement this interface will be notified of device events.
@@ -263,4 +280,11 @@ interface WebBluetoothServerClient {
 interface WebBluetoothCharacteristicClient {
   // Called when we receive a notification for the characteristic.
   RemoteCharacteristicValueChanged(array<uint8> value);
+};
+
+// Classes that implement this interface will be notified of scan
+// events.
+interface WebBluetoothScanClient {
+  // Called when we receive a notification for the characteristic.
+  ScanEvent(WebBluetoothScanResult result);
 };

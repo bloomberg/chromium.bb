@@ -21072,6 +21072,7 @@ Called by update_net_error_codes.py.-->
   <int value="2661" label="NavigatorPlatform"/>
   <int value="2662" label="NavigatorPlugins"/>
   <int value="2663" label="NavigatorUserAgent"/>
+  <int value="2664" label="WebBluetoothRequestScan"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

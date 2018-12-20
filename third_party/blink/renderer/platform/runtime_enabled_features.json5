@@ -1366,6 +1366,10 @@
       status: "experimental",
     },
     {
+      name: "WebBluetoothScanning",
+      status: "test",
+    },
+    {
       name: "WebFontsCacheAwareTimeoutAdaptation",
       status: "experimental",
     },
