@@ -421,7 +421,7 @@ void PasswordManager::SetGenerationElementAndReasonForForm(
     bool is_manually_triggered) {
   DCHECK(client_->IsSavingAndFillingEnabledForCurrentPage());
 
-  PasswordFormManager* form_manager = GetMatchingPendingManager(form);
+  PasswordFormManagerInterface* form_manager = GetMatchedManager(driver, form);
   if (form_manager) {
     form_manager->SetGenerationElement(generation_element);
     form_manager->SetGenerationPopupWasShown(true, is_manually_triggered);
@@ -430,12 +430,14 @@ void PasswordManager::SetGenerationElementAndReasonForForm(
 
   // If there is no corresponding PasswordFormManager, we create one. This is
   // not the common case, and should only happen when there is a bug in our
-  // ability to detect forms.
-  auto manager = std::make_unique<PasswordFormManager>(
-      this, client_, driver->AsWeakPtr(), form,
-      std::make_unique<FormSaverImpl>(client_->GetPasswordStore()), nullptr);
-  manager->Init(nullptr);
-  pending_login_managers_.push_back(std::move(manager));
+  // ability to detect forms. No matched |NewPasswordFormManager| is unlikely.
+  if (!is_new_form_parsing_for_saving_enabled_) {
+    auto manager = std::make_unique<PasswordFormManager>(
+        this, client_, driver->AsWeakPtr(), form,
+        std::make_unique<FormSaverImpl>(client_->GetPasswordStore()), nullptr);
+    manager->Init(nullptr);
+    pending_login_managers_.push_back(std::move(manager));
+  }
 }
 
 void PasswordManager::ProvisionallySavePassword(
