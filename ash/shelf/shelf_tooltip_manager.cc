@@ -101,6 +101,8 @@ void ShelfTooltipManager::ShowTooltip(views::View* view) {
   ::wm::SetWindowVisibilityAnimationType(
       window, ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
   ::wm::SetWindowVisibilityAnimationTransition(window, ::wm::ANIMATE_HIDE);
+  // Do not trigger a highlight when hovering over shelf items.
+  bubble_->set_highlight_button_when_shown(false);
   bubble_->GetWidget()->Show();
 }
 
