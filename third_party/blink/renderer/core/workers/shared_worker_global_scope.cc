@@ -72,13 +72,8 @@ void SharedWorkerGlobalScope::ImportModuleScript(
   NOTREACHED();
 }
 
-void SharedWorkerGlobalScope::ConnectPausable(MessagePortChannel channel) {
-  if (IsContextPaused()) {
-    AddPausedCall(WTF::Bind(&SharedWorkerGlobalScope::ConnectPausable,
-                            WrapWeakPersistent(this), std::move(channel)));
-    return;
-  }
-
+void SharedWorkerGlobalScope::Connect(MessagePortChannel channel) {
+  DCHECK(!IsContextPaused());
   MessagePort* port = MessagePort::Create(*this);
   port->Entangle(std::move(channel));
   MessageEvent* event =

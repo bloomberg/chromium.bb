@@ -189,7 +189,7 @@ void WebSharedWorkerImpl::ConnectTaskOnWorkerThread(
   // event.
   DCHECK(worker_thread_->IsCurrentThread());
   auto* scope = To<SharedWorkerGlobalScope>(worker_thread_->GlobalScope());
-  scope->ConnectPausable(std::move(channel));
+  scope->Connect(std::move(channel));
 }
 
 void WebSharedWorkerImpl::StartWorkerContext(

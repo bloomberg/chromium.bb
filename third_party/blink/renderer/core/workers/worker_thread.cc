@@ -500,8 +500,8 @@ void WorkerThread::EvaluateClassicScriptOnWorkerThread(
     std::unique_ptr<Vector<char>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
   To<WorkerGlobalScope>(GlobalScope())
-      ->EvaluateClassicScriptPausable(script_url, std::move(source_code),
-                                      std::move(cached_meta_data), stack_id);
+      ->EvaluateClassicScript(script_url, std::move(source_code),
+                              std::move(cached_meta_data), stack_id);
 }
 
 void WorkerThread::ImportClassicScriptOnWorkerThread(
@@ -510,7 +510,7 @@ void WorkerThread::ImportClassicScriptOnWorkerThread(
         outside_settings_object,
     const v8_inspector::V8StackTraceId& stack_id) {
   To<WorkerGlobalScope>(GlobalScope())
-      ->ImportClassicScriptPausable(
+      ->ImportClassicScript(
           script_url,
           MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
               std::move(outside_settings_object)),
@@ -526,7 +526,7 @@ void WorkerThread::ImportModuleScriptOnWorkerThread(
   // TODO(nhiroki): Consider excluding this code path from WorkerThread like
   // Worklets.
   To<WorkerGlobalScope>(GlobalScope())
-      ->ImportModuleScriptPausable(
+      ->ImportModuleScript(
           script_url,
           MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
               std::move(outside_settings_object)),

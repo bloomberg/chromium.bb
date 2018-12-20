@@ -67,7 +67,7 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect);
   String name() const { return name_; }
 
-  void ConnectPausable(MessagePortChannel channel);
+  void Connect(MessagePortChannel channel);
 
   void Trace(blink::Visitor*) override;
 
