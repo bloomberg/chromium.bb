@@ -230,14 +230,6 @@ FilteredURL::~FilteredURL() {}
 
 FilteredURL::ExtendedInfo::ExtendedInfo() = default;
 
-// Images ---------------------------------------------------------------------
-
-Images::Images() {}
-
-Images::Images(const Images& other) = default;
-
-Images::~Images() {}
-
 // TopSitesDelta --------------------------------------------------------------
 
 TopSitesDelta::TopSitesDelta() {}
@@ -291,12 +283,6 @@ HistoryAddPageArgs::HistoryAddPageArgs(const HistoryAddPageArgs& other) =
     default;
 
 HistoryAddPageArgs::~HistoryAddPageArgs() {}
-
-// MostVisitedThumbnails ------------------------------------------------------
-
-MostVisitedThumbnails::MostVisitedThumbnails() {}
-
-MostVisitedThumbnails::~MostVisitedThumbnails() {}
 
 // IconMapping ----------------------------------------------------------------
 

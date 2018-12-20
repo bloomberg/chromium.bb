@@ -59,6 +59,13 @@ void VerifyDatabaseEmpty(sql::Database* db) {
   EXPECT_EQ(0u, rows);
 }
 
+void VerifyURLsEqual(const std::vector<GURL>& expected,
+                     const history::MostVisitedURLList& actual) {
+  EXPECT_EQ(expected.size(), actual.size());
+  for (size_t i = 0; i < expected.size(); i++)
+    EXPECT_EQ(expected[i], actual[i].url) << " for i = " << i;
+}
+
 }  // namespace
 
 namespace history {
@@ -107,25 +114,17 @@ TEST_F(TopSitesDatabaseTest, Version3) {
 
   // Basic operational check.
   MostVisitedURLList urls;
-  std::map<GURL, Images> thumbnails;
-  db.GetPageThumbnails(&urls, &thumbnails);
+  db.GetSites(&urls);
   ASSERT_EQ(3u, urls.size());
-  ASSERT_EQ(3u, thumbnails.size());
   EXPECT_EQ(kUrl0, urls[0].url);  // [0] because of url_rank.
-  // kGoogleThumbnail includes nul terminator.
-  ASSERT_EQ(sizeof(kGoogleThumbnail) - 1,
-            thumbnails[urls[0].url].thumbnail->size());
-  EXPECT_TRUE(!memcmp(thumbnails[urls[0].url].thumbnail->front(),
-                      kGoogleThumbnail, sizeof(kGoogleThumbnail) - 1));
 
   sql::Transaction transaction(db.db_.get());
   transaction.Begin();
   ASSERT_TRUE(db.RemoveURLNoTransaction(urls[1]));
   transaction.Commit();
 
-  db.GetPageThumbnails(&urls, &thumbnails);
+  db.GetSites(&urls);
   ASSERT_EQ(2u, urls.size());
-  ASSERT_EQ(2u, thumbnails.size());
 }
 
 // Version 1 is deprecated, the resulting schema should be current,
@@ -218,16 +217,9 @@ TEST_F(TopSitesDatabaseTest, Recovery3) {
     ASSERT_TRUE(db.Init(file_name_));
 
     MostVisitedURLList urls;
-    std::map<GURL, Images> thumbnails;
-    db.GetPageThumbnails(&urls, &thumbnails);
+    db.GetSites(&urls);
     ASSERT_EQ(3u, urls.size());
-    ASSERT_EQ(3u, thumbnails.size());
     EXPECT_EQ(kUrl0, urls[0].url);  // [0] because of url_rank.
-    // kGoogleThumbnail includes nul terminator.
-    ASSERT_EQ(sizeof(kGoogleThumbnail) - 1,
-              thumbnails[urls[0].url].thumbnail->size());
-    EXPECT_TRUE(!memcmp(thumbnails[urls[0].url].thumbnail->front(),
-                        kGoogleThumbnail, sizeof(kGoogleThumbnail) - 1));
 
     ASSERT_TRUE(expecter.SawExpectedErrors());
   }
@@ -295,151 +287,80 @@ TEST_F(TopSitesDatabaseTest, Recovery3) {
               db.GetURLRank(MostVisitedURL(kUrl1, base::string16())));
 
     MostVisitedURLList urls;
-    std::map<GURL, Images> thumbnails;
-    db.GetPageThumbnails(&urls, &thumbnails);
+    db.GetSites(&urls);
     ASSERT_EQ(2u, urls.size());
-    ASSERT_EQ(2u, thumbnails.size());
     EXPECT_EQ(kUrl0, urls[0].url);  // [0] because of url_rank.
     EXPECT_EQ(kUrl2, urls[1].url);  // [1] because of url_rank.
   }
 }
 
-TEST_F(TopSitesDatabaseTest, AddRemoveEditThumbnails) {
+TEST_F(TopSitesDatabaseTest, ApplyDelta_Delete) {
   ASSERT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v3.sql"));
 
   TopSitesDatabase db;
   ASSERT_TRUE(db.Init(file_name_));
 
-  // Add a new URL, not forced, rank = 1.
-  GURL mapsUrl = GURL("http://maps.google.com/");
-  MostVisitedURL url1(mapsUrl, base::ASCIIToUTF16("Google Maps"));
-  db.SetPageThumbnail(url1, 1, Images());
+  TopSitesDelta delta;
+  // Delete kUrl0. Now db has kUrl1 and kUrl2.
+  MostVisitedURL url_to_delete(kUrl0, base::ASCIIToUTF16("Google"));
+  delta.deleted.push_back(url_to_delete);
 
+  // Update db.
+  db.ApplyDelta(delta);
+
+  // Read db and verify.
   MostVisitedURLList urls;
-  std::map<GURL, Images> thumbnails;
-  db.GetPageThumbnails(&urls, &thumbnails);
-  ASSERT_EQ(4u, urls.size());
-  ASSERT_EQ(4u, thumbnails.size());
-  EXPECT_EQ(kUrl0, urls[0].url);
-  EXPECT_EQ(mapsUrl, urls[1].url);
-
-  // Add a new URL, forced.
-  GURL driveUrl = GURL("http://drive.google.com/");
-  MostVisitedURL url2(driveUrl, base::ASCIIToUTF16("Google Drive"));
-  url2.last_forced_time = base::Time::FromJsTime(789714000000);  // 10/1/1995
-  db.SetPageThumbnail(url2, TopSitesDatabase::kRankOfForcedURL, Images());
-
-  db.GetPageThumbnails(&urls, &thumbnails);
-  ASSERT_EQ(5u, urls.size());
-  ASSERT_EQ(5u, thumbnails.size());
-  EXPECT_EQ(driveUrl, urls[0].url);  // Forced URLs always appear first.
-  EXPECT_EQ(kUrl0, urls[1].url);
-  EXPECT_EQ(mapsUrl, urls[2].url);
-
-  // Add a new URL, forced (earlier).
-  GURL plusUrl = GURL("http://plus.google.com/");
-  MostVisitedURL url3(plusUrl, base::ASCIIToUTF16("Google Plus"));
-  url3.last_forced_time = base::Time::FromJsTime(787035600000);  // 10/12/1994
-  db.SetPageThumbnail(url3, TopSitesDatabase::kRankOfForcedURL, Images());
-
-  db.GetPageThumbnails(&urls, &thumbnails);
-  ASSERT_EQ(6u, urls.size());
-  ASSERT_EQ(6u, thumbnails.size());
-  EXPECT_EQ(plusUrl, urls[0].url);  // New forced URL should appear first.
-  EXPECT_EQ(driveUrl, urls[1].url);
-  EXPECT_EQ(kUrl0, urls[2].url);
-  EXPECT_EQ(mapsUrl, urls[3].url);
-
-  // Change the last_forced_time of a forced URL.
-  url3.last_forced_time = base::Time::FromJsTime(792392400000);  // 10/2/1995
-  db.SetPageThumbnail(url3, TopSitesDatabase::kRankOfForcedURL, Images());
-
-  db.GetPageThumbnails(&urls, &thumbnails);
-  ASSERT_EQ(6u, urls.size());
-  ASSERT_EQ(6u, thumbnails.size());
-  EXPECT_EQ(driveUrl, urls[0].url);
-  EXPECT_EQ(plusUrl, urls[1].url);  // Forced URL should have moved second.
-  EXPECT_EQ(kUrl0, urls[2].url);
-  EXPECT_EQ(mapsUrl, urls[3].url);
-
-  sql::Transaction transaction(db.db_.get());
-
-  // Change a non-forced URL to forced using UpdatePageRankNoTransaction.
-  url1.last_forced_time = base::Time::FromJsTime(792219600000);  // 8/2/1995
-  transaction.Begin();
-  db.UpdatePageRankNoTransaction(url1, TopSitesDatabase::kRankOfForcedURL);
-  transaction.Commit();
-
-  db.GetPageThumbnails(&urls, &thumbnails);
-  ASSERT_EQ(6u, urls.size());
-  ASSERT_EQ(6u, thumbnails.size());
-  EXPECT_EQ(driveUrl, urls[0].url);
-  EXPECT_EQ(mapsUrl, urls[1].url);  // Maps moves to second forced URL.
-  EXPECT_EQ(plusUrl, urls[2].url);
-  EXPECT_EQ(kUrl0, urls[3].url);
-
-  // Change a forced URL to non-forced using SetPageThumbnail.
-  url3.last_forced_time = base::Time();
-  db.SetPageThumbnail(url3, 1, Images());
-
-  db.GetPageThumbnails(&urls, &thumbnails);
-  ASSERT_EQ(6u, urls.size());
-  ASSERT_EQ(6u, thumbnails.size());
-  EXPECT_EQ(driveUrl, urls[0].url);
-  EXPECT_EQ(mapsUrl, urls[1].url);
-  EXPECT_EQ(kUrl0, urls[2].url);
-  EXPECT_EQ(plusUrl, urls[3].url);  // Plus moves to second non-forced URL.
-
-  // Change a non-forced URL to earlier non-forced using
-  // UpdatePageRankNoTransaction.
-  transaction.Begin();
-  db.UpdatePageRankNoTransaction(url3, 0);
-  transaction.Commit();
-
-  db.GetPageThumbnails(&urls, &thumbnails);
-  ASSERT_EQ(6u, urls.size());
-  ASSERT_EQ(6u, thumbnails.size());
-  EXPECT_EQ(driveUrl, urls[0].url);
-  EXPECT_EQ(mapsUrl, urls[1].url);
-  EXPECT_EQ(plusUrl, urls[2].url);  // Plus moves to first non-forced URL.
-  EXPECT_EQ(kUrl0, urls[3].url);
-
-  // Change a non-forced URL to later non-forced using SetPageThumbnail.
-  db.SetPageThumbnail(url3, 2, Images());
-
-  db.GetPageThumbnails(&urls, &thumbnails);
-  ASSERT_EQ(6u, urls.size());
-  ASSERT_EQ(6u, thumbnails.size());
-  EXPECT_EQ(driveUrl, urls[0].url);
-  EXPECT_EQ(mapsUrl, urls[1].url);
-  EXPECT_EQ(kUrl0, urls[2].url);
-  EXPECT_EQ(plusUrl, urls[4].url);  // Plus moves to third non-forced URL.
-
-  // Remove a non-forced URL.
-  transaction.Begin();
-  ASSERT_TRUE(db.RemoveURLNoTransaction(url3));
-  transaction.Commit();
-
-  db.GetPageThumbnails(&urls, &thumbnails);
-  ASSERT_EQ(5u, urls.size());
-  ASSERT_EQ(5u, thumbnails.size());
-  EXPECT_EQ(driveUrl, urls[0].url);
-  EXPECT_EQ(mapsUrl, urls[1].url);
-  EXPECT_EQ(kUrl0, urls[2].url);
-
-  // Remove a forced URL.
-  transaction.Begin();
-  ASSERT_TRUE(db.RemoveURLNoTransaction(url2));
-  transaction.Commit();
-
-  db.GetPageThumbnails(&urls, &thumbnails);
-  ASSERT_EQ(4u, urls.size());
-  ASSERT_EQ(4u, thumbnails.size());
-  EXPECT_EQ(mapsUrl, urls[0].url);
-  EXPECT_EQ(kUrl0, urls[1].url);
+  db.GetSites(&urls);
+  VerifyURLsEqual(std::vector<GURL>({kUrl1, kUrl2}), urls);
 }
 
-TEST_F(TopSitesDatabaseTest, ApplyDelta) {
+TEST_F(TopSitesDatabaseTest, ApplyDelta_Add) {
+  ASSERT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v3.sql"));
+
+  TopSitesDatabase db;
+  ASSERT_TRUE(db.Init(file_name_));
+
+  GURL mapsUrl = GURL("http://maps.google.com/");
+
+  // Add a new URL, rank = 0. Now db has mapsUrl, kUrl0, kUrl1, and kUrl2.
+  TopSitesDelta delta;
+  MostVisitedURLWithRank url_to_add;
+  url_to_add.url = MostVisitedURL(mapsUrl, base::ASCIIToUTF16("Google Maps"));
+  url_to_add.rank = 0;
+  delta.added.push_back(url_to_add);
+
+  // Update db.
+  db.ApplyDelta(delta);
+
+  // Read db and verify.
+  MostVisitedURLList urls;
+  db.GetSites(&urls);
+  VerifyURLsEqual(std::vector<GURL>({mapsUrl, kUrl0, kUrl1, kUrl2}), urls);
+}
+
+TEST_F(TopSitesDatabaseTest, ApplyDelta_Move) {
+  ASSERT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v3.sql"));
+
+  TopSitesDatabase db;
+  ASSERT_TRUE(db.Init(file_name_));
+
+  // Move kUrl1 by updating its rank to 2. Now db has kUrl0, kUrl2, and kUrl1.
+  TopSitesDelta delta;
+  MostVisitedURLWithRank url_to_move;
+  url_to_move.url = MostVisitedURL(kUrl1, base::ASCIIToUTF16("Google Chrome"));
+  url_to_move.rank = 2;
+  delta.moved.push_back(url_to_move);
+
+  // Update db.
+  db.ApplyDelta(delta);
+
+  // Read db and verify.
+  MostVisitedURLList urls;
+  db.GetSites(&urls);
+  VerifyURLsEqual(std::vector<GURL>({kUrl0, kUrl2, kUrl1}), urls);
+}
+
+TEST_F(TopSitesDatabaseTest, ApplyDelta_All) {
   ASSERT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v3.sql"));
 
   TopSitesDatabase db;
@@ -469,13 +390,8 @@ TEST_F(TopSitesDatabaseTest, ApplyDelta) {
 
   // Read db and verify.
   MostVisitedURLList urls;
-  std::map<GURL, Images> thumbnails;
-  db.GetPageThumbnails(&urls, &thumbnails);
-  ASSERT_EQ(3u, urls.size());
-  ASSERT_EQ(3u, thumbnails.size());
-  EXPECT_EQ(mapsUrl, urls[0].url);
-  EXPECT_EQ(kUrl2, urls[1].url);
-  EXPECT_EQ(kUrl1, urls[2].url);
+  db.GetSites(&urls);
+  VerifyURLsEqual(std::vector<GURL>({mapsUrl, kUrl2, kUrl1}), urls);
 }
 
 }  // namespace history

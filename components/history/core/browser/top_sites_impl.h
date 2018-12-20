@@ -168,8 +168,7 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
 
   // Callback from TopSites with the list of top sites. Should be called from
   // the UI thread.
-  void OnGotMostVisitedURLs(
-      const scoped_refptr<MostVisitedThumbnails>& thumbnails);
+  void OnGotMostVisitedURLs(const scoped_refptr<MostVisitedThreadSafe>& sites);
 
   // Called when history service returns a list of top URLs.
   void OnTopSitesAvailableFromHistory(const MostVisitedURLList* data);
