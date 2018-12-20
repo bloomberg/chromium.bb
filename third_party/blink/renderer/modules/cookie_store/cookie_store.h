@@ -81,7 +81,7 @@ class CookieStore final : public EventTargetWithInlineData,
     ContextLifecycleObserver::Trace(visitor);
   }
 
-  // ActiveScriptWrappable
+  // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;
 
   // EventTargetWithInlineData
