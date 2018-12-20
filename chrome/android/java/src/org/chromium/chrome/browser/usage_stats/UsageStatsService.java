@@ -49,7 +49,7 @@ public class UsageStatsService {
     public PageViewObserver createPageViewObserver(
             TabModelSelector tabModelSelector, Activity activity) {
         ThreadUtils.assertOnUiThread();
-        return new PageViewObserver(tabModelSelector, mEventTracker);
+        return new PageViewObserver(activity, tabModelSelector, mEventTracker);
     }
 
     /** @return Whether the user has authorized DW to access usage stats data. */
