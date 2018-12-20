@@ -230,8 +230,10 @@ MetadataBoxController.prototype.setDirectorySize_ = function(
   this.isDirectorySizeLoading_ = true;
   chrome.fileManagerPrivate.getDirectorySize(entry, function(size) {
     this.isDirectorySizeLoading_ = false;
-    if (this.onDirectorySizeLoaded_)
+    if (this.onDirectorySizeLoaded_) {
       setTimeout(this.onDirectorySizeLoaded_.bind(null, entry));
+      this.onDirectorySizeLoaded_ = null;
+    }
 
     if (this.quickViewModel_.getSelectedEntry() != entry)
       return;
