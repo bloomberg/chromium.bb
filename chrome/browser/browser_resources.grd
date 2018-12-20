@@ -264,16 +264,16 @@
         <include name="IDR_MD_BOOKMARKS_IMAGES_FOLDER_SVG" file="resources\md_bookmarks\images\folder.svg" type="BINDATA" />
         <if expr="optimize_webui">
           <then>
-            <include name="IDR_MD_BOOKMARKS_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\md_bookmarks\vulcanized.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
-            <include name="IDR_MD_BOOKMARKS_VULCANIZED_P2_HTML" file="${root_gen_dir}\chrome\browser\resources\md_bookmarks\vulcanized.p2.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
-            <include name="IDR_MD_BOOKMARKS_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\md_bookmarks\crisper.js" use_base_dir="false" flattenhtml="true" type="BINDATA" compress="gzip" />
+            <include name="IDR_MD_BOOKMARKS_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\md_bookmarks\vulcanized.html" use_base_dir="false" preprocess="true" type="BINDATA" compress="gzip" />
+            <include name="IDR_MD_BOOKMARKS_VULCANIZED_P2_HTML" file="${root_gen_dir}\chrome\browser\resources\md_bookmarks\vulcanized.p2.html" use_base_dir="false" preprocess="true" type="BINDATA" compress="gzip" />
+            <include name="IDR_MD_BOOKMARKS_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\md_bookmarks\crisper.js" use_base_dir="false" preprocess="true" type="BINDATA" compress="gzip" />
           </then>
           <else>
             <include name="IDR_MD_BOOKMARKS_ACTIONS_HTML" file="resources\md_bookmarks\actions.html" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_ACTIONS_JS" file="resources\md_bookmarks\actions.js" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_API_LISTENER_HTML" file="resources\md_bookmarks\api_listener.html" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_API_LISTENER_JS" file="resources\md_bookmarks\api_listener.js" type="BINDATA" />
-            <include name="IDR_MD_BOOKMARKS_APP_HTML" file="resources\md_bookmarks\app.html" type="BINDATA" flattenhtml="true" />
+            <include name="IDR_MD_BOOKMARKS_APP_HTML" file="resources\md_bookmarks\app.html" type="BINDATA" preprocess="true" />
             <include name="IDR_MD_BOOKMARKS_APP_JS" file="resources\md_bookmarks\app.js" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_BOOKMARKS_HTML" file="resources\md_bookmarks\bookmarks.html" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_COMMAND_MANAGER_HTML" file="resources\md_bookmarks\command_manager.html" type="BINDATA" />
