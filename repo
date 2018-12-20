@@ -23,7 +23,7 @@ REPO_REV = 'stable'
 # limitations under the License.
 
 # increment this whenever we make important changes to this script
-VERSION = (1, 24)
+VERSION = (1, 25)
 
 # increment this if the MAINTAINER_KEYS block is modified
 KEYRING_VERSION = (1, 5)
@@ -240,7 +240,7 @@ repodir = '.repo'                # name of repo's private directory
 S_repo = 'repo'                  # special repo repository
 S_manifests = 'manifests'        # special manifest repository
 REPO_MAIN = S_repo + '/main.py'  # main script
-MIN_PYTHON_VERSION = (2, 6)      # minimum supported python version
+MIN_PYTHON_VERSION = (2, 7)      # minimum supported python version
 GITC_CONFIG_FILE = '/gitc/.config'
 GITC_FS_ROOT_DIR = '/gitc/manifest-rw/'
 
@@ -275,9 +275,12 @@ def _print(*objects, **kwargs):
 # Python version check
 ver = sys.version_info
 if (ver[0], ver[1]) < MIN_PYTHON_VERSION:
-  _print('error: Python version %s unsupported.\n'
-         'Please use Python 2.6 - 2.7 instead.'
-         % sys.version.split(' ')[0], file=sys.stderr)
+  _print('error: Python version {} unsupported.\n'
+         'Please use Python {}.{} instead.'.format(
+             sys.version.split(' ')[0],
+             MIN_PYTHON_VERSION[0],
+             MIN_PYTHON_VERSION[1],
+         ), file=sys.stderr)
   sys.exit(1)
 
 home_dot_repo = os.path.expanduser('~/.repoconfig')
@@ -303,7 +306,7 @@ group.add_option('-b', '--manifest-branch',
 group.add_option('-m', '--manifest-name',
                  dest='manifest_name',
                  help='initial manifest file', metavar='NAME.xml')
-group.add_option('-c', '--current-branch',
+group.add_option('--current-branch',
                  dest='current_branch_only', action='store_true',
                  help='fetch only current manifest branch from server')
 group.add_option('--mirror',
@@ -1028,6 +1031,6 @@ def main(orig_args):
 if __name__ == '__main__':
   if ver[0] == 3:
     _print('warning: Python 3 support is currently experimental. YMMV.\n'
-           'Please use Python 2.6 - 2.7 instead.',
+           'Please use Python 2.7 instead.',
            file=sys.stderr)
   main(sys.argv[1:])
