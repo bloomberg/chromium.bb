@@ -2,9 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//buildtools/deps_revisions.gni")
-import("//build/config/chrome_build.gni")
 import("//build/config/c++/c++.gni")
+import("//build/config/chrome_build.gni")
 import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/sanitizers/sanitizers.gni")
@@ -12,6 +11,7 @@ import("//build/config/win/visual_studio_version.gni")
 import("//build/timestamp.gni")
 import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
+import("//buildtools/deps_revisions.gni")
 
 assert(is_win)
 
@@ -270,6 +270,7 @@ config("runtime_library") {
     defines += [
       "CR_LIBCXX_REVISION=$libcxx_svn_revision",
       "CR_LIBCXXABI_REVISION=$libcxxabi_svn_revision",
+      "_LIBCPP_ABI_UNSTABLE",
       "_LIBCPP_ENABLE_NODISCARD",
 
       # Prevent libc++ from embedding linker flags to try to automatically link
