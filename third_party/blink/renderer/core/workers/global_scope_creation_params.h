@@ -7,7 +7,6 @@
 
 #include <memory>
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
@@ -18,14 +17,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
-#include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_settings.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/platform/graphics/begin_frame_provider.h"
 #include "third_party/blink/renderer/platform/loader/fetch/https_state.h"
-#include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
-#include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -82,13 +78,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
 
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context;
 
-  // |content_security_policy_parsed_headers| and
-  // |content_security_policy_raw_headers| are mutually exclusive.
-  // |content_security_policy_parsed_headers| is an empty vector
-  // when |content_security_policy_raw_headers| is set.
   Vector<CSPHeaderAndType> content_security_policy_parsed_headers;
-  base::Optional<ContentSecurityPolicyResponseHeaders>
-      content_security_policy_raw_headers;
 
   network::mojom::ReferrerPolicy referrer_policy;
   std::unique_ptr<Vector<String>> origin_trial_tokens;
