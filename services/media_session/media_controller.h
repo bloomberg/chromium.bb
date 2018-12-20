@@ -43,6 +43,8 @@ class MediaController : public mojom::MediaController,
       mojom::MediaSessionInfoPtr session_info) override;
   void MediaSessionMetadataChanged(
       const base::Optional<MediaMetadata>&) override;
+  void MediaSessionActionsChanged(
+      const std::vector<mojom::MediaSessionAction>& action) override;
 
   // Sets the media session that the controller should be bound to. If the
   // session is already bound to the same session then we will return false.
@@ -60,6 +62,9 @@ class MediaController : public mojom::MediaController,
 
   // The current metadata for |session_|.
   base::Optional<MediaMetadata> session_metadata_;
+
+  // The current actions for |session_|.
+  std::vector<mojom::MediaSessionAction> session_actions_;
 
   // Raw pointer to the local proxy. This is used for sending control events to
   // the underlying MediaSession.

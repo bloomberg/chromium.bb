@@ -100,6 +100,10 @@ interface MediaSessionObserver {
   // can be null to be reset, e.g. the media that was being played has been
   // stopped.
   MediaSessionMetadataChanged@1(MediaMetadata? metadata);
+
+  // Called when the media session action list has changed. This tells the
+  // observer which actions can be used to control the session.
+  MediaSessionActionsChanged@2(array<MediaSessionAction> action);
 };
 
 // A MediaSession manages the media session and audio focus for a given

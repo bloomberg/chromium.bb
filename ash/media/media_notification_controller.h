@@ -44,6 +44,9 @@ class ASH_EXPORT MediaNotificationController
       media_session::mojom::MediaSessionInfoPtr session_info) override;
   void MediaSessionMetadataChanged(
       const base::Optional<media_session::MediaMetadata>& metadata) override;
+  void MediaSessionActionsChanged(
+      const std::vector<media_session::mojom::MediaSessionAction>& actions)
+      override {}
 
   void FlushForTesting();
   void SetMediaControllerForTesting(
