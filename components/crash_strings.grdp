@@ -8,10 +8,10 @@
     Crashes (<ph name="CRASH_COUNT">$1<ex>3</ex></ph>)
   </message>
   <message name="IDS_CRASH_CRASH_HEADER_FORMAT" desc="Format for crash entry headings on chrome://crashes">
-    Uploaded Crash Report ID <ph name="CRASH_ID">$1<ex>8fa95dbb6f2ec862</ex></ph> (Local Crash ID: <ph name="CRASH_LOCAL_ID">$2<ex>123456-789789</ex></ph>)
+    Uploaded Crash Report ID <ph name="CRASH_ID">$1<ex>8fa95dbb6f2ec862</ex></ph> (Local Context: <ph name="CRASH_LOCAL_ID">$2<ex>123456-789789</ex></ph>)
   </message>
   <message name="IDS_CRASH_CRASH_HEADER_FORMAT_LOCAL_ONLY" desc="Format for crash entry headings on chrome://crashes that have not been uploaded">
-    Local Crash ID <ph name="CRASH_LOCAL_ID">$1<ex>123456-789789</ex></ph>
+    Local Context <ph name="CRASH_LOCAL_ID">$1<ex>123456-789789</ex></ph>
   </message>
   <message name="IDS_CRASH_UPLOAD_TIME_FORMAT" desc="Format for crash report upload time displayed on chrome://crashes">
     Crash report uploaded on <ph name="UPLOAD_TIME">$1<ex>Tuesday, January 25, 2011 2:58:02 PM</ex></ph>
