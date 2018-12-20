@@ -30,9 +30,6 @@ struct SessionTab;
 // of loading a URL.
 - (void)webPageOrderedOpen:(OpenNewTabCommand*)command;
 
-// Load a tab with the given session.
-- (void)loadSessionTab:(const sessions::SessionTab*)sessionTab;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_URL_LOADER_H_

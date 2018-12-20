@@ -17,6 +17,7 @@
 #include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
+#include "ios/chrome/browser/sessions/session_util.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios_factory.h"
 #include "ios/chrome/browser/sync/session_sync_service_factory.h"
@@ -47,11 +48,14 @@
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
+#include "ios/chrome/browser/web_state_list/web_state_list.h"
+#include "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/common/favicon/favicon_attributes.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/web_state/context_menu_params.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 
@@ -860,7 +864,25 @@ const int kRecentlyClosedTabsSectionIndex = 0;
         "MobileRecentTabManagerTabFromOtherDeviceOpened"));
     new_tab_page_uma::RecordAction(
         self.browserState, new_tab_page_uma::ACTION_OPENED_FOREIGN_SESSION);
-    [self.loader loadSessionTab:toLoad];
+    std::unique_ptr<web::WebState> web_state =
+        session_util::CreateWebStateWithNavigationEntries(
+            self.browserState, toLoad->current_navigation_index,
+            toLoad->navigations);
+    switch (self.restoredTabDisposition) {
+      case WindowOpenDisposition::CURRENT_TAB:
+        self.webStateList->ReplaceWebStateAt(self.webStateList->active_index(),
+                                             std::move(web_state));
+        break;
+      case WindowOpenDisposition::NEW_FOREGROUND_TAB:
+        self.webStateList->InsertWebState(
+            self.webStateList->count(), std::move(web_state),
+            (WebStateList::INSERT_FORCE_INDEX | WebStateList::INSERT_ACTIVATE),
+            WebStateOpener());
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
   }
   [self.presentationDelegate showActiveRegularTabFromRecentTabs];
 }

@@ -12,6 +12,7 @@
 namespace ios {
 class ChromeBrowserState;
 }
+class WebStateList;
 
 @protocol ApplicationCommands;
 @protocol RecentTabsTableViewControllerDelegate;
@@ -31,6 +32,8 @@ class ChromeBrowserState;
 @property(nonatomic, assign) WindowOpenDisposition restoredTabDisposition;
 // RecentTabsTableViewControllerDelegate delegate.
 @property(nonatomic, weak) id<RecentTabsTableViewControllerDelegate> delegate;
+// WebStateList for tabs restored by this object.
+@property(nonatomic, assign) WebStateList* webStateList;
 
 // Delegate to present the tab UI.
 @property(nonatomic, weak) id<RecentTabsPresentationDelegate>

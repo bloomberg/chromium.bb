@@ -54,18 +54,6 @@ initWithRegularWebStateList:(WebStateList*)regularWebStateList
 
 #pragma mark - UrlLoader
 
-// Loading a |sessionTab| normally means navigating on the currently visible tab
-// view. This is not the case while in the tab grid. A new WebState is appended
-// and activated instead of replacing the current active WebState.
-- (void)loadSessionTab:(const sessions::SessionTab*)sessionTab {
-  DCHECK(self.regularBrowserState);
-  std::unique_ptr<web::WebState> webState =
-      session_util::CreateWebStateWithNavigationEntries(
-          self.regularBrowserState, sessionTab->current_navigation_index,
-          sessionTab->navigations);
-  AppendAndActivateWebState(self.regularWebStateList, std::move(webState));
-}
-
 // In tab grid, |inBackground| is ignored, which means that the new WebState is
 // activated. |appendTo| is also ignored, so the new WebState is always appended
 // at the end of the list. The page transition type is explicit rather than
