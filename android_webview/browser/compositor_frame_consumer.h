@@ -42,7 +42,6 @@ class CompositorFrameConsumer {
   // Returns uncommitted frame to be returned, if any.
   virtual std::unique_ptr<ChildFrame> SetFrameOnUI(
       std::unique_ptr<ChildFrame> frame) = 0;
-  virtual void InitializeHardwareDrawIfNeededOnUI() = 0;
   virtual ParentCompositorDrawConstraints GetParentDrawConstraintsOnUI()
       const = 0;
   virtual void SwapReturnedResourcesOnUI(

@@ -209,8 +209,6 @@ bool BrowserViewRenderer::OnDrawHardware() {
   DCHECK(current_compositor_frame_consumer_);
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::OnDrawHardware");
 
-  current_compositor_frame_consumer_->InitializeHardwareDrawIfNeededOnUI();
-
   if (!CanOnDraw()) {
     return false;
   }

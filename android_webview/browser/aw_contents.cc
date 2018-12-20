@@ -239,8 +239,7 @@ AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
       browser_view_renderer_(
           this,
           base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})),
-      web_contents_(std::move(web_contents)),
-      renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()) {
+      web_contents_(std::move(web_contents)) {
   base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
   icon_helper_.reset(new IconHelper(web_contents_.get()));
   icon_helper_->SetListener(this);

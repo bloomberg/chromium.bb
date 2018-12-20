@@ -4,7 +4,6 @@
 
 #include "android_webview/browser/deferred_gpu_command_service.h"
 
-#include "android_webview/browser/gl_view_renderer_manager.h"
 #include "android_webview/browser/render_thread_manager.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -43,14 +42,11 @@ ScopedAllowGL::ScopedAllowGL() {
 }
 
 ScopedAllowGL::~ScopedAllowGL() {
-  allow_gl.Get().Set(false);
-
   DeferredGpuCommandService* service = DeferredGpuCommandService::GetInstance();
   DCHECK(service);
   service->RunTasks();
-  if (service->IdleQueueSize()) {
-    service->RequestProcessGL(true);
-  }
+  service->PerformAllIdleWork();
+  allow_gl.Get().Set(false);
 }
 
 // gpu::CommandBufferTaskExectuor::Sequence implementation that encapsulates a
@@ -166,18 +162,6 @@ DeferredGpuCommandService::~DeferredGpuCommandService() {
   DCHECK(tasks_.empty());
 }
 
-// This method can be called on any thread.
-// static
-void DeferredGpuCommandService::RequestProcessGL(bool for_idle) {
-  RenderThreadManager* renderer_state =
-      GLViewRendererManager::GetInstance()->GetMostRecentlyDrawn();
-  if (!renderer_state) {
-    LOG(ERROR) << "No hardware renderer. Deadlock likely";
-    return;
-  }
-  renderer_state->ClientRequestInvokeGL(for_idle);
-}
-
 // Called from different threads!
 void DeferredGpuCommandService::ScheduleTask(base::OnceClosure task,
                                              bool out_of_order) {
@@ -191,13 +175,8 @@ void DeferredGpuCommandService::ScheduleTask(base::OnceClosure task,
   if (ScopedAllowGL::IsAllowed()) {
     RunTasks();
   } else {
-    RequestProcessGL(false);
+    LOG(FATAL) << "ScheduleTask outside ScopedAllowGL";
   }
-}
-
-size_t DeferredGpuCommandService::IdleQueueSize() {
-  base::AutoLock lock(tasks_lock_);
-  return idle_tasks_.size();
 }
 
 std::unique_ptr<gpu::CommandBufferTaskExecutor::Sequence>
@@ -211,44 +190,21 @@ void DeferredGpuCommandService::ScheduleOutOfOrderTask(base::OnceClosure task) {
 
 void DeferredGpuCommandService::ScheduleDelayedWork(
     base::OnceClosure callback) {
-  {
-    base::AutoLock lock(tasks_lock_);
-    idle_tasks_.push(std::make_pair(base::Time::Now(), std::move(callback)));
-  }
-  RequestProcessGL(true);
-}
-
-void DeferredGpuCommandService::PerformIdleWork(bool is_idle) {
-  TRACE_EVENT1("android_webview", "DeferredGpuCommandService::PerformIdleWork",
-               "is_idle", is_idle);
-  DCHECK(ScopedAllowGL::IsAllowed());
-  static const base::TimeDelta kMaxIdleAge =
-      base::TimeDelta::FromMilliseconds(16);
-
-  const base::Time now = base::Time::Now();
-  size_t queue_size = IdleQueueSize();
-  while (queue_size--) {
-    base::OnceClosure task;
-    {
-      base::AutoLock lock(tasks_lock_);
-      if (!is_idle) {
-        // Only run old tasks if we are not really idle right now.
-        base::TimeDelta age(now - idle_tasks_.front().first);
-        if (age < kMaxIdleAge)
-          break;
-      }
-      task = std::move(idle_tasks_.front().second);
-      idle_tasks_.pop();
-    }
-    std::move(task).Run();
-  }
+  LOG_IF(FATAL, !ScopedAllowGL::IsAllowed())
+      << "ScheduleDelayedWork outside of ScopedAllowGL";
+  base::AutoLock lock(tasks_lock_);
+  idle_tasks_.push(std::make_pair(base::Time::Now(), std::move(callback)));
 }
 
 void DeferredGpuCommandService::PerformAllIdleWork() {
   TRACE_EVENT0("android_webview",
                "DeferredGpuCommandService::PerformAllIdleWork");
-  while (IdleQueueSize()) {
-    PerformIdleWork(true);
+  base::AutoLock lock(tasks_lock_);
+  while (idle_tasks_.size()) {
+    base::OnceClosure task = std::move(idle_tasks_.front().second);
+    idle_tasks_.pop();
+    base::AutoUnlock unlock(tasks_lock_);
+    std::move(task).Run();
   }
 }
 
