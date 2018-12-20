@@ -37,7 +37,7 @@ GbmPixmapWayland::~GbmPixmapWayland() {
 bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
                                         gfx::BufferFormat format,
                                         gfx::BufferUsage usage) {
-  TRACE_EVENT1("Wayland", "GbmPixmapWayland::InitializeBuffer", "size",
+  TRACE_EVENT1("wayland", "GbmPixmapWayland::InitializeBuffer", "size",
                size.ToString());
   uint32_t flags = 0;
   switch (usage) {
