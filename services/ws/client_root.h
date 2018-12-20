@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
-#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host_observer.h"
@@ -134,7 +133,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
   // and device scale factor at the time the LocalSurfaceId was generated.
   gfx::Size last_surface_size_in_pixels_;
   float last_device_scale_factor_ = 1.0f;
-  viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
 
   std::unique_ptr<aura::ClientSurfaceEmbedder> client_surface_embedder_;
 
