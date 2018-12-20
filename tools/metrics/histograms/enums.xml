@@ -54512,6 +54512,58 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Error"/>
 </enum>
 
+<enum name="WebRtcLoggingUploadFailureReason">
+  <summary>
+    Failure reason can be either a response code (except 200 OK) for the upload
+    HTTP request, or another reason prior to uploading (values less than 100).
+    HTTP response codes copied from enum &quot;HttpResponseCode&quot;.
+  </summary>
+  <int value="0" label="Invalid state"/>
+  <int value="1" label="Stored log not found"/>
+  <int value="100" label="100: Continue"/>
+  <int value="101" label="101: Switching Protocols"/>
+  <int value="102" label="102: Processing"/>
+  <int value="103" label="103: Early Hints"/>
+  <int value="201" label="201: Created"/>
+  <int value="202" label="202: Accepted"/>
+  <int value="203" label="203: Non-Authoritative Information"/>
+  <int value="204" label="204: No Content"/>
+  <int value="205" label="205: Reset Content"/>
+  <int value="206" label="206: Partial Content"/>
+  <int value="300" label="300: Multiple Choices"/>
+  <int value="301" label="301: Moved Permanently"/>
+  <int value="302" label="302: Found"/>
+  <int value="303" label="303: See Other"/>
+  <int value="304" label="304: Not Modified"/>
+  <int value="305" label="305: Use Proxy"/>
+  <int value="306" label="306: (Unused)"/>
+  <int value="307" label="307: Temporary Redirect"/>
+  <int value="400" label="400: Bad Request"/>
+  <int value="401" label="401: Unauthorized"/>
+  <int value="402" label="402: Payment Required"/>
+  <int value="403" label="403: Forbidden"/>
+  <int value="404" label="404: Not Found"/>
+  <int value="405" label="405: Method Not Allowed"/>
+  <int value="406" label="406: Not Acceptable"/>
+  <int value="407" label="407: Proxy Authentication Required"/>
+  <int value="408" label="408: Request Timeout"/>
+  <int value="409" label="409: Conflict"/>
+  <int value="410" label="410: Gone"/>
+  <int value="411" label="411: Length Required"/>
+  <int value="412" label="412: Precondition Failed"/>
+  <int value="413" label="413: Request Entity Too Large"/>
+  <int value="414" label="414: Request-URI Too Long"/>
+  <int value="415" label="415: Unsupported Media Type"/>
+  <int value="416" label="416: Requested Range Not Satisfiable"/>
+  <int value="417" label="417: Expectation Failed"/>
+  <int value="500" label="500: Internal Server Error"/>
+  <int value="501" label="501: Not Implemented"/>
+  <int value="502" label="502: Bad Gateway"/>
+  <int value="503" label="503: Service Unavailable"/>
+  <int value="504" label="504: Gateway Timeout"/>
+  <int value="505" label="505: HTTP Version Not Supported"/>
+</enum>
+
 <enum name="WebRtcLoggingWebAppIdHash">
   <int value="-100222544" label="Hangouts"/>
   <int value="0" label="Undefined"/>

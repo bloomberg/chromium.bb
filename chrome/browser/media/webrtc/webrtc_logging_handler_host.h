@@ -65,6 +65,14 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   // Key used to attach the handler to the RenderProcessHost.
   static const char kWebRtcLoggingHandlerHostKey[];
 
+  // Upload failure reasons used for UMA stats. A failure reason can be one of
+  // those listed here or a response code for the upload HTTP request. The
+  // values in this list must be less than 100 and cannot be changed.
+  enum UploadFailureReason {
+    kInvalidState = 0,
+    kStoredLogNotFound = 1,
+  };
+
   WebRtcLoggingHandlerHost(int render_process_id,
                            content::BrowserContext* browser_context,
                            WebRtcLogUploader* log_uploader);
