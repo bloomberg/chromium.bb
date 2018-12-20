@@ -16,7 +16,6 @@ source_set("tabs") {
     "tab_model_synced_window_delegate_getter.h",
     "tab_private.h",
     "tab_title_util.h",
-    "tab_util.h",
   ]
   public_deps = [
     "//ios/web",
@@ -64,7 +63,6 @@ source_set("tabs_internal") {
     "tab_parenting_observer.mm",
     "tab_title_util.h",
     "tab_title_util.mm",
-    "tab_util.mm",
   ]
   deps = [
     ":tabs",
@@ -158,7 +156,6 @@ source_set("unit_tests") {
     "tab_model_unittest.mm",
     "tab_title_util_unittest.mm",
     "tab_unittest.mm",
-    "tab_util_unittest.mm",
   ]
   deps = [
     ":tabs",
