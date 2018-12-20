@@ -78,7 +78,6 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
 
   def _Prepare(self, bot_id=None, extra_config=None, cmd_args=None,
                extra_cmd_args=None, build_id=DEFAULT_BUILD_ID,
-               waterfall_url=constants.BUILD_INT_DASHBOARD,
                master_build_id=None,
                site_config=None):
     """Prepare a BuilderRun at self._run for this test.
@@ -106,7 +105,6 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
         Example: ['branch-name', 'some-branch-name'] will effectively cause
         self._run.options.branch_name to be set to 'some-branch-name'.
       build_id: mock build id
-      waterfall_url: Url for the current waterfall.
       master_build_id: mock build id of master build.
       site_config: SiteConfig to use (or MockSiteConfig)
     """
@@ -154,8 +152,6 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
 
     if master_build_id is not None:
       self._run.options.master_build_id = master_build_id
-
-    self._run.attrs.metadata.UpdateWithDict({'buildbot-url': waterfall_url})
 
     if self.RELEASE_TAG is not None:
       self._run.attrs.release_tag = self.RELEASE_TAG
@@ -335,8 +331,9 @@ class BuilderStageTest(AbstractStageTestCase):
     self.assertEqual(stage.ConstructDashboardURL(), exp_url)
 
     stage_name = 'Archive'
-    exp_url = ('https://uberchromegw.corp.google.com/i/chromeos/builders/'
-               'amd64-generic-paladin/builds/1234321/steps/Archive/logs/stdio')
+    exp_url = ('https://luci-logdog.appspot.com/v/?s=chromeos/buildbucket/'
+               'cr-buildbucket.appspot.com/1234321/%2B/steps/Archive/0/stdout')
+
     self.assertEqual(stage.ConstructDashboardURL(stage=stage_name), exp_url)
 
   def test_PrintSmoke(self):

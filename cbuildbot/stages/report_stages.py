@@ -68,11 +68,6 @@ def WriteBasicMetadata(builder_run):
       'bot-hostname': cros_build_lib.GetHostName(fully_qualified=True),
       'build-number': builder_run.buildnumber,
       'builder-name': builder_run.GetBuilderName(),
-      # This is something like https://uberchromegw.corp.google.com/i/chromeos/
-      # Note that we are phasing out using the buildbot UI, transitioning
-      # instead to luci-milo.
-      # Once we phase out completely, we can get rid of this metadata entry.
-      'buildbot-url': os.environ.get('BUILDBOT_BUILDBOTURL', ''),
       'bot-config': builder_run.config['name'],
       'time': {
           'start': start_time_stamp,
@@ -99,7 +94,6 @@ def WriteTagMetadata(builder_run):
       'build_id': build_id,
       'build_number': builder_run.buildnumber,
       'builder_name': builder_run.GetBuilderName(),
-      'buildbot_url': os.environ.get('BUILDBOT_BUILDBOTURL', ''),
       'buildbot_master_name':
           os.environ.get('BUILDBOT_MASTERNAME', ''),
       'id': ('Build', build_id),

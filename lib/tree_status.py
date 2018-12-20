@@ -29,6 +29,10 @@ _LEGOLAND_BUILD_URL = ('https://cros-goldeneye.corp.google.com/chromeos/'
                        'healthmonitoring/buildDetails?buildbucketId='
                        '%(buildbucket_id)s')
 
+_LOGDOG_URL = ('https://luci-logdog.appspot.com/v/'
+               '?s=chromeos/buildbucket/cr-buildbucket.appspot.com/'
+               '%s/%%2B/steps/%s/0/stdout')
+
 # The tree status json file contains the following keywords.
 TREE_STATUS_STATE = 'general_state'
 TREE_STATUS_USERNAME = 'username'
@@ -331,28 +335,8 @@ def ConstructDashboardURL(buildbot_master_name, builder_name, build_number):
   return os.path.join(
       _LUCI_MILO_BUILDBOT_URL, buildbot_master_name, url_suffix)
 
-
-# TODO(akeshet): This method still produces links to stage logs as hosted on
-# buildbot (rather then the newer replacement, LogDog). We will transition these
-# links to point at LogDog at a later date.
-def ConstructBuildStageURL(buildbot_url, builder_name, build_number,
-                           stage=None):
-  """Return the dashboard (buildbot) URL for this run
-
-  Args:
-    buildbot_url: Base URL for the waterfall.
-    builder_name: Builder name on buildbot dashboard.
-    build_number: Build number for this validation attempt.
-    stage: Link directly to a stage log, else use the general landing page.
-
-  Returns:
-    The fully formed URL.
-  """
-  url_suffix = 'builders/%s/builds/%s' % (builder_name, str(build_number))
-  if stage:
-    url_suffix += '/steps/%s/logs/stdio' % (stage,)
-  url_suffix = urllib.quote(url_suffix)
-  return os.path.join(buildbot_url, url_suffix)
+def ConstructLogDogURL(build_number, stage):
+  return _LOGDOG_URL % (str(build_number), stage)
 
 
 def ConstructViceroyBuildDetailsURL(build_id):

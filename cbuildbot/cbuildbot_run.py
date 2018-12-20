@@ -667,16 +667,6 @@ class _BuilderRunBase(object):
     """Create a BoardRunAttributes object for this run and given |board|."""
     return BoardRunAttributes(self.attrs, board, self.config.name)
 
-  def GetBuildbotUrl(self):
-    """Gets the URL of the waterfall hosting the current build."""
-    # Metadata dictionary may not have been written at this time (it
-    # should be written in the BuildStartStage), fall back to the
-    # environment variable in that case. Assume we are on the trybot
-    # waterfall if no waterfall can be found.
-    return (self.attrs.metadata.GetDict().get('buildbot-url') or
-            os.environ.get('BUILDBOT_BUILDBOTURL') or
-            constants.SWARMING_DASHBOARD)
-
   def GetBuilderName(self):
     """Get the name of this builder on the current waterfall."""
     return os.environ.get('BUILDBOT_BUILDERNAME', self.config.name)
@@ -684,7 +674,8 @@ class _BuilderRunBase(object):
   def ConstructDashboardURL(self, stage=None):
     """Return the dashboard URL
 
-    This is the direct link to buildbot logs as seen in build.chromium.org
+    This is the direct link to logdog logs if given a stage, or the link to the
+    legoland build page for the build.
 
     Args:
       stage: Link to a specific |stage|, otherwise the general buildbot log
@@ -692,14 +683,8 @@ class _BuilderRunBase(object):
     Returns:
       The fully formed URL
     """
-    # TODO: Stage links are only used in metadata_lib, and may not be
-    # necessary. The logs links are currently limited an uninteresting. We
-    # should remove or update to logdog.
     if stage:
-      return tree_status.ConstructBuildStageURL(
-          self.GetBuildbotUrl(),
-          self.GetBuilderName(),
-          self.options.buildnumber, stage=stage)
+      return tree_status.ConstructLogDogURL(self.options.buildnumber, stage)
     else:
       return tree_status.ConstructLegolandBuildURL(self.options.buildbucket_id)
 

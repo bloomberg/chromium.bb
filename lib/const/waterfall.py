@@ -9,7 +9,6 @@
 WATERFALL_SWARMING = 'go/legoland'
 
 # URLs to the various waterfalls.
-BUILD_INT_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos'
 SWARMING_DASHBOARD = 'http://go/legoland'
 
 # Sheriff-o-Matic tree which Chrome OS alerts are posted to.
