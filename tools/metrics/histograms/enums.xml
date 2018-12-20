@@ -25760,16 +25760,23 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <summary>
     These numbers are the lower 32 bits of the hash of the metric name.
   </summary>
+  <int value="-2140283801" label="Blink.UseCounter.Features"/>
   <int value="-2055973512" label="Login.ConsumerNewUsersAllowed"/>
   <int value="-2048378466" label="Sqlite.Vfs_Events"/>
   <int value="-2021219906"
       label="DataUse.MessageSize.AllServices.Downstream.Foreground.NotCellular"/>
+  <int value="-1952208361"
+      label="Autofill.FieldPredictionQuality.ByFieldType.Overall"/>
+  <int value="-1777783591"
+      label="Autofill.FieldPredictionQuality.ByFieldType.Server.NoSubmission"/>
   <int value="-1724216561"
       label="Extensions.Functions.SucceededTime.LessThan1ms"/>
   <int value="-1620411628"
       label="DataUse.MessageSize.AllServices.Downstream.Unknown.NotCellular"/>
   <int value="-1607339868"
       label="DataUse.MessageSize.AllServices.Upstream.Unknown.NotCellular"/>
+  <int value="-1592177888"
+      label="Bluetooth.MacOS.Errors.DidDiscoverPrimaryServices"/>
   <int value="-1561887015" label="MediaRouter.Cast.Channel.Error"/>
   <int value="-1459119846"
       label="ServiceWorkerCache.Cache.Scheduler.QueueLength"/>
@@ -25782,6 +25789,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="Network.Shill.Wifi.ExpiredLeaseLengthSeconds"/>
   <int value="-1189959109" label="RendererScheduler.TaskCountPerQueueType"/>
   <int value="-983723378" label="RendererScheduler.TaskDurationPerThreadType"/>
+  <int value="-970685679"
+      label="Bluetooth.MacOS.Errors.DidDiscoverDescriptors"/>
   <int value="-968816650"
       label="PasswordManager.Android.PasswordExceptionEntry.Website"/>
   <int value="-847447887"
@@ -25790,11 +25799,15 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-657514887" label="DataUse.MessageSize.AllServices"/>
   <int value="-535820174"
       label="DataUse.MessageSize.AllServices.Downstream.Background.NotCellular"/>
+  <int value="-453454441" label="Bluetooth.MacOS.Errors.DidWriteValue"/>
+  <int value="-412157817"
+      label="Autofill.FieldPredictionQuality.ByFieldType.Server"/>
   <int value="-355731177" label="UMA.SamplingRatePerMille"/>
   <int value="-141990989" label="DataUse.AllServices.Background"/>
   <int value="-132932440" label="DataUse.ContentType.Services"/>
   <int value="-48200749" label="DiskCache.0.TotalIOTime"/>
   <int value="0" label="Missing hash value"/>
+  <int value="37726187" label="BlinkGC.CommittedSize"/>
   <int value="61486329" label="RendererScheduler.TaskCountPerFrameType"/>
   <int value="76333534" label="WorkerThread.Task.Time"/>
   <int value="149985012"
@@ -25804,8 +25817,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="424952287"
       label="Network.Shill.Wifi.LinkMonitorResponseTimeSample"/>
   <int value="433324211" label="Extensions.FunctionCalls"/>
+  <int value="536258327" label="Blink.UseCounter.SVGImage.Features"/>
+  <int value="560548778"
+      label="Autofill.FieldPredictionQuality.ByFieldType.Server.BasedOnAutocomplete"/>
   <int value="628921860"
       label="Network.Shill.Ethernet.LinkMonitorResponseTimeSample"/>
+  <int value="656165878"
+      label="Bluetooth.MacOS.Errors.DidDiscoverCharacteristics"/>
+  <int value="657786774" label="PartitionAlloc.CommittedSize"/>
   <int value="662206917"
       label="Network.Shill.Ethernet.ExpiredLeaseLengthSeconds"/>
   <int value="705114606"
@@ -25813,12 +25832,21 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="757405826"
       label="DataUse.MessageSize.AllServices.Upstream.Foreground.Cellular"/>
   <int value="761823979" label="Crashpad.HandlerLifetimeMilestone"/>
+  <int value="873338882"
+      label="Autofill.FieldPredictionQuality.ByFieldType.Heuristic"/>
+  <int value="1126499749"
+      label="Autofill.FieldPredictionQuality.ByFieldType.Overall.NoSubmission"/>
+  <int value="1225311979" label="Blink.UseCounter.Extensions.Features"/>
   <int value="1264664660" label="DataUse.PageTransition.UserTraffic"/>
   <int value="1370064090"
       label="DataUse.MessageSize.AllServices.Upstream.Background.Cellular"/>
+  <int value="1507345292"
+      label="Autofill.FieldPredictionQuality.ByFieldType.Heuristic.BasedOnAutocomplete"/>
   <int value="1514844119" label="DataUse.Sync.Upload.Bytes"/>
   <int value="1525608243"
       label="PasswordManager.Android.PasswordCredentialEntry.Username"/>
+  <int value="1632894016"
+      label="Autofill.FieldPredictionQuality.ByFieldType.Heuristic.NoSubmission"/>
   <int value="1753226325"
       label="DataUse.MessageSize.AllServices.Downstream.Foreground.Cellular"/>
   <int value="1857977303"
@@ -25826,6 +25854,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1864392953" label="AsyncDNS.HostsNotifyInterval"/>
   <int value="1977321258"
       label="DataUse.MessageSize.AllServices.Downstream.Background.Cellular"/>
+  <int value="2006926569" label="Arc.OOMKills.Score"/>
+  <int value="2060836318"
+      label="Bluetooth.MacOS.Errors.DidDisconnectPeripheral"/>
   <int value="2147480259" label="Sqlite.Vfs_Fetch"/>
 </enum>
 
