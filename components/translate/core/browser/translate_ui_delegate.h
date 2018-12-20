@@ -100,16 +100,16 @@ class TranslateUIDelegate {
   void TranslationDeclined(bool explicitly_closed);
 
   // Returns true if the current language is blocked.
-  bool IsLanguageBlocked();
+  bool IsLanguageBlocked() const;
 
   // Sets the value if the current language is blocked.
   void SetLanguageBlocked(bool value);
 
   // Returns true if the current webpage is blacklisted.
-  bool IsSiteBlacklisted();
+  bool IsSiteBlacklisted() const;
 
   // Returns true if the site of the current webpage can be blacklisted.
-  bool CanBlacklistSite();
+  bool CanBlacklistSite() const;
 
   // Sets the blacklisted state for the host of the current page. If
   // value is true, the current host will be blacklisted and translations
@@ -118,29 +118,29 @@ class TranslateUIDelegate {
 
   // Returns true if the webpage in the current original language should be
   // translated into the current target language automatically.
-  bool ShouldAlwaysTranslate();
+  bool ShouldAlwaysTranslate() const;
 
   // Sets the value if the webpage in the current original language should be
   // translated into the current target language automatically.
   void SetAlwaysTranslate(bool value);
 
   // Returns true if the Always Translate checkbox should be checked by default.
-  bool ShouldAlwaysTranslateBeCheckedByDefault();
+  bool ShouldAlwaysTranslateBeCheckedByDefault() const;
 
   // Returns true if the UI should offer the user a shortcut to always translate
   // the language, when we think the user wants that functionality.
-  bool ShouldShowAlwaysTranslateShortcut();
+  bool ShouldShowAlwaysTranslateShortcut() const;
 
   // Returns true if the UI should offer the user a shortcut to never translate
   // the language, when we think the user wants that functionality.
-  bool ShouldShowNeverTranslateShortcut();
+  bool ShouldShowNeverTranslateShortcut() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TranslateUIDelegateTest, GetPageHost);
 
   // Gets the host of the page being translated, or an empty string if no URL is
   // associated with the current page.
-  std::string GetPageHost();
+  std::string GetPageHost() const;
 
   TranslateDriver* translate_driver_;
   base::WeakPtr<TranslateManager> translate_manager_;
