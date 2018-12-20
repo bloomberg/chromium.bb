@@ -28,6 +28,9 @@ class CORE_EXPORT CSSUnsupportedStyleValue final : public CSSStyleValue {
   static CSSUnsupportedStyleValue* Create(const CSSValue& value) {
     return MakeGarbageCollected<CSSUnsupportedStyleValue>(value.CssText());
   }
+  static CSSUnsupportedStyleValue* Create(const String& css_text) {
+    return MakeGarbageCollected<CSSUnsupportedStyleValue>(css_text);
+  }
   static CSSUnsupportedStyleValue* Create(const CSSPropertyName& name,
                                           const String& css_text) {
     return MakeGarbageCollected<CSSUnsupportedStyleValue>(name, css_text);
