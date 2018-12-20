@@ -23,6 +23,7 @@ import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.v4.text.BidiFormatter;
 import android.support.v4.view.MarginLayoutParamsCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
@@ -548,8 +549,9 @@ public class CustomTabToolbar
         } else {
             // ImageView#setImageResource is no-op if given resource is the current one.
             mSecurityButton.setImageResource(securityIconResource);
-            ApiCompatibilityUtils.setImageTintList(
-                    mSecurityButton, getToolbarDataProvider().getSecurityIconColorStateList());
+            ColorStateList colorStateList = AppCompatResources.getColorStateList(
+                    getContext(), getToolbarDataProvider().getSecurityIconColorStateList());
+            ApiCompatibilityUtils.setImageTintList(mSecurityButton, colorStateList);
             mAnimDelegate.showSecurityButton();
         }
 

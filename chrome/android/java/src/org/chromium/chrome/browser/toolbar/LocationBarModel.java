@@ -5,10 +5,9 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
+import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
-import android.support.v7.content.res.AppCompatResources;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 
@@ -397,44 +396,46 @@ public class LocationBarModel implements ToolbarDataProvider {
     }
 
     @Override
-    public ColorStateList getSecurityIconColorStateList() {
+    public @ColorRes int getSecurityIconColorStateList() {
         int securityLevel = getSecurityLevel();
-
-        ColorStateList list = null;
         int color = getPrimaryColor();
         boolean needLightIcon = ColorUtils.shouldUseLightForegroundOnBackground(color);
+
         if (isIncognito() || needLightIcon) {
             // For a dark theme color, use light icons.
-            list = AppCompatResources.getColorStateList(mContext, R.color.light_mode_tint);
-        } else if (isPreview()) {
+            return R.color.light_mode_tint;
+        }
+
+        if (isPreview()) {
             // There will never be a preview in incognito. Always use the darker color rather than
             // incorporating with the block above.
-            list = AppCompatResources.getColorStateList(
-                    mContext, R.color.locationbar_status_preview_color);
-        } else if (!hasTab() || isUsingBrandColor()
+            return R.color.locationbar_status_preview_color;
+        }
+
+        if (!hasTab() || isUsingBrandColor()
                 || ChromeFeatureList.isEnabled(
-                           ChromeFeatureList.OMNIBOX_HIDE_SCHEME_IN_STEADY_STATE)
+                        ChromeFeatureList.OMNIBOX_HIDE_SCHEME_IN_STEADY_STATE)
                 || ChromeFeatureList.isEnabled(
-                           ChromeFeatureList.OMNIBOX_HIDE_TRIVIAL_SUBDOMAINS_IN_STEADY_STATE)) {
+                        ChromeFeatureList.OMNIBOX_HIDE_TRIVIAL_SUBDOMAINS_IN_STEADY_STATE)) {
             // For theme colors which are not dark and are also not
             // light enough to warrant an opaque URL bar, use dark
             // icons.
-            list = AppCompatResources.getColorStateList(mContext, R.color.dark_mode_tint);
-        } else {
-            // For the default toolbar color, use a green or red icon.
-            if (securityLevel == ConnectionSecurityLevel.DANGEROUS) {
-                assert !shouldDisplaySearchTerms();
-                list = AppCompatResources.getColorStateList(mContext, R.color.google_red_700);
-            } else if (!shouldDisplaySearchTerms()
-                    && (securityLevel == ConnectionSecurityLevel.SECURE
-                               || securityLevel == ConnectionSecurityLevel.EV_SECURE)) {
-                list = AppCompatResources.getColorStateList(mContext, R.color.google_green_700);
-            } else {
-                list = AppCompatResources.getColorStateList(mContext, R.color.dark_mode_tint);
-            }
+            return R.color.dark_mode_tint;
         }
-        assert list != null : "Missing ColorStateList for Security Button.";
-        return list;
+
+        if (securityLevel == ConnectionSecurityLevel.DANGEROUS) {
+            // For the default toolbar color, use a green or red icon.
+            assert !shouldDisplaySearchTerms();
+            return R.color.google_red_700;
+        }
+
+        if (!shouldDisplaySearchTerms()
+                && (securityLevel == ConnectionSecurityLevel.SECURE
+                        || securityLevel == ConnectionSecurityLevel.EV_SECURE)) {
+            return R.color.google_green_700;
+        }
+
+        return R.color.dark_mode_tint;
     }
 
     @Override

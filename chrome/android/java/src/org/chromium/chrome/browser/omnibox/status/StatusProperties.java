@@ -23,6 +23,17 @@ class StatusProperties {
     public static final WritableIntPropertyKey NAVIGATION_BUTTON_TYPE =
             new WritableIntPropertyKey();
 
+    /** Specifies string resource holding content description for security icon. */
+    public static final WritableIntPropertyKey SECURITY_ICON_DESCRIPTION_RES =
+            new WritableIntPropertyKey();
+
+    /** Specifies resource displayed by security chip. */
+    public static final WritableIntPropertyKey SECURITY_ICON_RES = new WritableIntPropertyKey();
+
+    /** Specifies color tint list for icon displayed by security chip. */
+    public static final WritableIntPropertyKey SECURITY_ICON_TINT_RES =
+            new WritableIntPropertyKey();
+
     /** Specifies status separator color. */
     public static final WritableIntPropertyKey SEPARATOR_COLOR_RES = new WritableIntPropertyKey();
 
@@ -46,8 +57,9 @@ class StatusProperties {
             new WritableIntPropertyKey();
 
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {ANIMATIONS_ENABLED,
-            ICON_TINT_COLOR_RES, NAVIGATION_BUTTON_TYPE, SEPARATOR_COLOR_RES, STATUS_BUTTON_TYPE,
-            VERBOSE_STATUS_TEXT_COLOR_RES, VERBOSE_STATUS_TEXT_STRING_RES,
+            ICON_TINT_COLOR_RES, NAVIGATION_BUTTON_TYPE, SECURITY_ICON_RES,
+            SECURITY_ICON_DESCRIPTION_RES, SECURITY_ICON_TINT_RES, SEPARATOR_COLOR_RES,
+            STATUS_BUTTON_TYPE, VERBOSE_STATUS_TEXT_COLOR_RES, VERBOSE_STATUS_TEXT_STRING_RES,
             VERBOSE_STATUS_TEXT_VISIBLE, VERBOSE_STATUS_TEXT_WIDTH};
 
     private StatusProperties() {}

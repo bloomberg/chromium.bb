@@ -8,9 +8,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
+import android.support.annotation.ColorRes;
 import android.support.test.filters.SmallTest;
 import android.view.ViewGroup;
 
@@ -245,8 +245,8 @@ public class LocationBarVoiceRecognitionHandlerTest {
         }
 
         @Override
-        public ColorStateList getSecurityIconColorStateList() {
-            return null;
+        public @ColorRes int getSecurityIconColorStateList() {
+            return 0;
         }
 
         @Override
