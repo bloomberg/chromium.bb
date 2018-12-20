@@ -465,31 +465,39 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
 
   def __init__(
       self,
-      app,
+      app_path,
+      iossim_path,
       xcode_build_version,
       version,
       platform,
       out_dir,
       mac_toolchain=None,
-      retry=1,
+      retries=1,
       shards=1,
       xcode_path=None,
-      test_cases=None
+      test_cases=None,
+      test_args=None,
+      env_vars=None
   ):
     """Initializes a new instance of SimulatorParallelTestRunner class.
 
     Args:
-      app: (str) A path to egtests_app.
+      app_path: (str) A path to egtests_app.
+      iossim_path: Path to the compiled iossim binary to use.
+                   Not used, but is required by the base class.
       xcode_build_version: (str) Xcode build version for running tests.
       version: (str) iOS version to run simulator on.
       platform: (str) Name of device.
       out_dir: (str) A directory to emit test data into.
       mac_toolchain: (str) A command to run `mac_toolchain` tool.
-      retry: (int) A number to retry test run, will re-run only failed tests.
+      retries: (int) A number to retry test run, will re-run only failed tests.
       shards: (int) A number of shards. Default is 1.
       xcode_path: (str) A path to Xcode.app folder.
       test_cases: (list) List of tests to be included in the test run.
                   None or [] to include all tests.
+      test_args: List of strings to pass as arguments to the test when
+        launching.
+      env_vars: List of environment variables to pass to the test itself.
 
     Raises:
       AppNotFoundError: If the given app does not exist.
@@ -497,16 +505,22 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
       XcodeVersionNotFoundError: If the given Xcode version does not exist.
       XCTestPlugInNotFoundError: If the .xctest PlugIn does not exist.
     """
-    self.app = os.path.abspath(app)
-    self.xcode_build_version = xcode_build_version
-    self.version = version
-    self.platform = platform
-    self.out_dir = out_dir
-    self.mac_toolchain = mac_toolchain
-    self.retry = retry or 1
-    self.shards = shards or 1
-    self.xcode_path = xcode_path
-    self.test_cases = test_cases
+    super(SimulatorParallelTestRunner, self).__init__(
+        app_path,
+        iossim_path,
+        platform,
+        version,
+        xcode_build_version,
+        out_dir,
+        env_vars=env_vars,
+        mac_toolchain=mac_toolchain,
+        retries=retries or 1,
+        shards=shards or 1,
+        test_args=test_args,
+        test_cases=test_cases,
+        xcode_path=xcode_path,
+        xctest=False
+    )
     self._init_sharding_data()
     self.logs = collections.OrderedDict()
     self.test_results = collections.OrderedDict()
@@ -527,7 +541,7 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     """
     self.sharding_data = [
         {
-            'app': self.app,
+            'app': self.app_path,
             # Destination is required to run tests via xcodebuild and it
             # looks like
             # 'platform=iOS Simulator,OS=<os_version>,Name=<simulator-name>'
@@ -559,7 +573,7 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
           EgtestsApp(params['app'], filtered_tests=params['test_cases']),
           params['destination'],
           shards=params['shards'],
-          retries=self.retry,
+          retries=self.retries,
           out_dir=os.path.join(self.out_dir,
                                destinaion_folder(params['destination'])),
           env=self.get_launch_env()))

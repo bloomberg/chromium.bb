@@ -40,15 +40,18 @@ def main():
     if args.xcode_parallelization:
       tr = xcodebuild_runner.SimulatorParallelTestRunner(
           args.app,
+          args.iossim,
           args.xcode_build_version,
           args.version,
           args.platform,
           out_dir=args.out_dir,
           mac_toolchain=args.mac_toolchain_cmd,
-          retry=args.retries,
+          retries=args.retries,
           shards=args.shards,
           xcode_path=args.xcode_path,
-          test_cases=args.test_cases
+          test_cases=args.test_cases,
+          test_args=test_args,
+          env_vars=args.env_var
       )
     elif args.replay_path != 'NO_PATH':
       tr = test_runner.WprProxySimulatorTestRunner(
