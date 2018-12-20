@@ -402,6 +402,21 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
           content::GetNetworkChangeNotifier());
   network_change_notifier->OnConnectionChanged(
       net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  // If the network service is enabled, set the connection type for its
+  // NetworkChangeNotifier instance as well.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      !IsNetworkServiceRunningInProcess()) {
+    network::mojom::NetworkChangeManagerPtr manager_ptr;
+    network::mojom::NetworkChangeManagerRequest request(
+        mojo::MakeRequest(&manager_ptr));
+    GetNetworkService()->GetNetworkChangeManager(std::move(request));
+    manager_ptr->OnNetworkChanged(
+        /*dns_changed=*/false, /*ip_address_changed=*/false,
+        /*connection_type_changed=*/true,
+        network::mojom::ConnectionType::CONNECTION_ETHERNET,
+        /*connection_subtype_changed=*/false,
+        network::mojom::ConnectionSubtype::SUBTYPE_UNKNOWN);
+  }
 #endif
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
