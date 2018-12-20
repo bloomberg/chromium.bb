@@ -20,6 +20,9 @@
 @property(nonatomic, readwrite, copy) NSString* cellAccessibilityIdentifier;
 // If YES the cell's chevron will be hidden.
 @property(nonatomic, readwrite, assign) BOOL hideChevron;
+// UIColor for the cell's textLabel. ChromeTableViewStyler's |cellTitleColor|
+// takes precedence over the default color, but not over |textColor|.
+@property(nonatomic, strong) UIColor* textColor;
 
 @end
 

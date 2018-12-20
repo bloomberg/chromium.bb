@@ -46,8 +46,11 @@
   cell.chevronImageView.hidden = self.hideChevron;
   cell.imageView.backgroundColor = styler.tableViewBackgroundColor;
   cell.titleLabel.backgroundColor = styler.tableViewBackgroundColor;
-  if (styler.cellTitleColor)
+  if (self.textColor) {
+    cell.titleLabel.textColor = self.textColor;
+  } else if (styler.cellTitleColor) {
     cell.titleLabel.textColor = styler.cellTitleColor;
+  }
 }
 
 @end
