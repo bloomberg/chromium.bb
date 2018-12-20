@@ -259,15 +259,13 @@ def GconvStrip(opts):
   # Use scanelf to search for all the binary files on the rootfs that require
   # or define the symbol iconv_open. We also include the binaries that define
   # it since there could be internal calls to it from other functions.
-  files = set()
-  for symbol in GCONV_SYMBOLS:
-    cmd = ['scanelf', '--mount', '--quiet', '--recursive', '--format', '#s%F',
-           '--symbol', symbol, opts.root]
-    result = cros_build_lib.RunCommand(cmd, redirect_stdout=True,
-                                       print_cmd=False)
-    symbol_files = result.output.splitlines()
-    logging.debug('Symbol %s found on %d files.', symbol, len(symbol_files))
-    files.update(symbol_files)
+  symbols = ','.join(GCONV_SYMBOLS)
+  cmd = ['scanelf', '--mount', '--quiet', '--recursive', '--format', '#s%F',
+         '--symbol', symbols, opts.root]
+  result = cros_build_lib.RunCommand(cmd, redirect_stdout=True,
+                                     print_cmd=False)
+  files = set(result.output.splitlines())
+  logging.debug('Symbols %s found on %d files.', symbols, len(files))
 
   # The charsets are represented as nul-terminated strings in the binary files,
   # so we append the '\0' to each string. This prevents some false positives
