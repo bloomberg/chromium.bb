@@ -55,7 +55,7 @@ const base::Feature kWebViewPageStartedOnCommit{
 
 // Whether the application package name is logged in UMA.
 const base::Feature kWebViewUmaLogAppPackageName{
-    "WebViewUmaLogAppPackageName", base::FEATURE_DISABLED_BY_DEFAULT};
+    "WebViewUmaLogAppPackageName", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 
