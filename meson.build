@@ -67,7 +67,6 @@ cc = meson.get_compiler('c')
 global_args = []
 global_args_maybe = [
 	'-fvisibility=hidden',
-	'-DIN_WESTON',
 ]
 global_wnoargs_maybe = [
 	'unused-parameter',

@@ -57,7 +57,7 @@ CLEANFILES = weston.ini				\
 install-libweston_moduleLTLIBRARIES install-moduleLTLIBRARIES: install-libLTLIBRARIES
 
 lib_LTLIBRARIES = libweston-@LIBWESTON_MAJOR@.la
-libweston_@LIBWESTON_MAJOR@_la_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON
+libweston_@LIBWESTON_MAJOR@_la_CPPFLAGS = $(AM_CPPFLAGS)
 libweston_@LIBWESTON_MAJOR@_la_CFLAGS = $(AM_CFLAGS) \
 	$(COMPOSITOR_CFLAGS) $(EGL_CFLAGS) $(LIBDRM_CFLAGS)
 libweston_@LIBWESTON_MAJOR@_la_LIBADD = $(COMPOSITOR_LIBS) \
@@ -111,7 +111,7 @@ dist_libweston_@LIBWESTON_MAJOR@_data_DATA =	\
 	protocol/weston-debug.xml
 
 lib_LTLIBRARIES += libweston-desktop-@LIBWESTON_MAJOR@.la
-libweston_desktop_@LIBWESTON_MAJOR@_la_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON
+libweston_desktop_@LIBWESTON_MAJOR@_la_CPPFLAGS = $(AM_CPPFLAGS)
 libweston_desktop_@LIBWESTON_MAJOR@_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 libweston_desktop_@LIBWESTON_MAJOR@_la_LIBADD =		\
 	libweston-@LIBWESTON_MAJOR@.la			\
@@ -184,8 +184,7 @@ BUILT_SOURCES += $(nodist_libweston_@LIBWESTON_MAJOR@_la_SOURCES)
 bin_PROGRAMS += weston
 
 weston_LDFLAGS = -export-dynamic
-weston_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON 		\
-				 -DMODULEDIR='"$(moduledir)"' \
+weston_CPPFLAGS = $(AM_CPPFLAGS) -DMODULEDIR='"$(moduledir)"' \
 				 -DXSERVER_PATH='"@XSERVER_PATH@"'
 weston_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS) $(LIBINPUT_BACKEND_CFLAGS) \
 	$(PTHREAD_CFLAGS)
@@ -1026,8 +1025,7 @@ desktop_shell_la_CPPFLAGS =			\
 	-I$(top_srcdir)/libweston		\
 	-I$(top_builddir)/desktop-shell		\
 	-DMODULEDIR='"$(moduledir)"'		\
-	-DLIBEXECDIR='"$(libexecdir)"'		\
-	-DIN_WESTON
+	-DLIBEXECDIR='"$(libexecdir)"'
 
 desktop_shell_la_LDFLAGS = -module -avoid-version
 desktop_shell_la_LIBADD = libshared.la libweston-desktop-@LIBWESTON_MAJOR@.la $(COMPOSITOR_LIBS)
@@ -1053,8 +1051,7 @@ fullscreen_shell_la_CPPFLAGS =			\
 	-I$(top_builddir)/protocol		\
 	-I$(top_srcdir)/shared			\
 	-I$(top_builddir)/libweston		\
-	-I$(top_srcdir)/libweston		\
-	-DIN_WESTON
+	-I$(top_srcdir)/libweston
 
 fullscreen_shell_la_LDFLAGS = -module -avoid-version
 fullscreen_shell_la_LIBADD =			\
