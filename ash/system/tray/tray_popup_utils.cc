@@ -210,6 +210,7 @@ void TrayPopupUtils::ConfigureTrayPopupButton(views::Button* button) {
   button->set_has_ink_drop_action_on_click(true);
   button->set_ink_drop_base_color(kTrayPopupInkDropBaseColor);
   button->set_ink_drop_visible_opacity(kTrayPopupInkDropRippleOpacity);
+  button->set_ink_drop_highlight_opacity(kTrayPopupInkDropHighlightOpacity);
 }
 
 void TrayPopupUtils::ConfigureAsStickyHeader(views::View* view) {

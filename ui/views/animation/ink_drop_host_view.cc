@@ -162,13 +162,23 @@ std::unique_ptr<InkDropRipple> InkDropHostView::CreateInkDropRipple() const {
 
 std::unique_ptr<InkDropHighlight> InkDropHostView::CreateInkDropHighlight()
     const {
+  std::unique_ptr<InkDropHighlight> highlight;
+
   if (GetProperty(kHighlightPathKey)) {
-    return std::make_unique<views::InkDropHighlight>(
+    highlight = std::make_unique<views::InkDropHighlight>(
         size(), 0, gfx::RectF(GetMirroredRect(GetLocalBounds())).CenterPoint(),
         GetInkDropBaseColor());
+  } else {
+    highlight = CreateDefaultInkDropHighlight(
+        gfx::RectF(GetMirroredRect(GetContentsBounds())).CenterPoint());
   }
-  return CreateDefaultInkDropHighlight(
-      gfx::RectF(GetMirroredRect(GetContentsBounds())).CenterPoint());
+  // TODO(pbos): Once |ink_drop_highlight_opacity_| is either always set or
+  // callers are using the default InkDropHighlight value then make this a
+  // constructor argument to InkDropHighlight.
+  if (ink_drop_highlight_opacity_)
+    highlight->set_visible_opacity(*ink_drop_highlight_opacity_);
+
+  return highlight;
 }
 
 std::unique_ptr<views::InkDropMask> InkDropHostView::CreateInkDropMask() const {
