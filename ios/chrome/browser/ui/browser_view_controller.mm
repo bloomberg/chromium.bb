@@ -2543,105 +2543,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   return webState->GetView();
 }
 
-// Switch to the tab corresponding to |params|.
-- (void)switchToTabWithParams:
-    (const web::NavigationManager::WebLoadParams&)params {
-  const GURL& URL = params.url;
-
-  NSInteger newWebStateIndex = 0;
-  WebStateList* webStateList = self.tabModel.webStateList;
-  NSInteger currentWebStateIndex = webStateList->active_index();
-  web::WebState* currentWebState = webStateList->GetActiveWebState();
-
-  // TODO(crbug.com/893121): This should probably live in the WebStateList.
-  while (newWebStateIndex < webStateList->count()) {
-    web::WebState* webState = webStateList->GetWebStateAt(newWebStateIndex);
-
-    if (webState != currentWebState && URL == webState->GetVisibleURL()) {
-      break;
-    }
-    newWebStateIndex++;
-  }
-
-  BOOL isNTPWithoutHistory =
-      IsVisibleURLNewTabPage(currentWebState) &&
-      currentWebState->GetNavigationManager() &&
-      !currentWebState->GetNavigationManager()->CanGoBack() &&
-      !currentWebState->GetNavigationManager()->CanGoForward();
-
-  if (newWebStateIndex >= webStateList->count()) {
-    // If the tab containing the URL has been closed.
-    if (isNTPWithoutHistory) {
-      // It is NTP, just load the URL.
-      ChromeLoadParams currentPageParams(params);
-      [self loadURLWithParams:currentPageParams];
-    } else {
-      // Open the URL in foreground.
-      OpenNewTabCommand* newTabCommand =
-          [[OpenNewTabCommand alloc] initWithURL:URL
-                                        referrer:web::Referrer()
-                                     inIncognito:self.isOffTheRecord
-                                    inBackground:NO
-                                        appendTo:kCurrentTab];
-      [self.dispatcher openURLInNewTab:newTabCommand];
-    }
-    return;
-  }
-
-  web::WebState* webStateBeingActivated =
-      webStateList->GetWebStateAt(newWebStateIndex);
-
-  if (![self canShowTabStrip]) {
-    // Add animations only if the tab strip isn't shown.
-    UIView* snapshotView = [self.view snapshotViewAfterScreenUpdates:NO];
-
-    // TODO(crbug.com/904992): Do not repurpose SnapshotGeneratorDelegate.
-    SwipeView* swipeView = [[SwipeView alloc]
-        initWithFrame:self.contentArea.frame
-            topMargin:[self snapshotGenerator:nil
-                          snapshotEdgeInsetsForWebState:webStateBeingActivated]
-                          .top];
-
-    [swipeView setTopToolbarImage:[self.primaryToolbarCoordinator
-                                      toolbarSideSwipeSnapshotForWebState:
-                                          webStateBeingActivated]];
-    [swipeView setBottomToolbarImage:[self.secondaryToolbarCoordinator
-                                         toolbarSideSwipeSnapshotForWebState:
-                                             webStateBeingActivated]];
-
-    SnapshotTabHelper::FromWebState(webStateBeingActivated)
-        ->RetrieveColorSnapshot(^(UIImage* image) {
-          if (PagePlaceholderTabHelper::FromWebState(webStateBeingActivated)
-                  ->will_add_placeholder_for_next_navigation()) {
-            [swipeView setImage:SnapshotTabHelper::GetDefaultSnapshotImage()];
-          } else {
-            [swipeView setImage:image];
-          }
-        });
-
-    SwitchToTabAnimationView* animationView =
-        [[SwitchToTabAnimationView alloc] initWithFrame:self.view.bounds];
-
-    [self.view addSubview:animationView];
-
-    SwitchToTabAnimationPosition position =
-        newWebStateIndex > webStateList->active_index()
-            ? SwitchToTabAnimationPositionAfter
-            : SwitchToTabAnimationPositionBefore;
-    [animationView animateFromCurrentView:snapshotView
-                                toNewView:swipeView
-                               inPosition:position];
-  }
-  webStateList->ActivateWebStateAt(newWebStateIndex);
-
-  // Close the tab if it is NTP with no back/forward history to avoid having
-  // empty tabs.
-  if (isNTPWithoutHistory) {
-    webStateList->CloseWebStateAt(currentWebStateIndex,
-                                  WebStateList::CLOSE_USER_ACTION);
-  }
-}
-
 #pragma mark - Private Methods: Find Bar UI
 
 - (void)hideFindBarWithAnimation:(BOOL)animate {
@@ -4237,8 +4138,25 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       CGPointEqualToPoint(command.originPoint, CGPointZero)) {
     openTab();
   } else {
-    [self animateNewTabInBackgroundFromPoint:command.originPoint
-                              withCompletion:openTab];
+    self.inNewTabAnimation = YES;
+    // Exit fullscreen if needed.
+    FullscreenControllerFactory::GetInstance()
+        ->GetForBrowserState(_browserState)
+        ->ExitFullscreen();
+    const CGFloat kAnimatedViewSize = 50;
+    BackgroundTabAnimationView* animatedView =
+        [[BackgroundTabAnimationView alloc]
+            initWithFrame:CGRectMake(0, 0, kAnimatedViewSize,
+                                     kAnimatedViewSize)];
+    __weak UIView* weakAnimatedView = animatedView;
+    auto completionBlock = ^() {
+      self.inNewTabAnimation = NO;
+      [weakAnimatedView removeFromSuperview];
+      openTab();
+    };
+    [self.view addSubview:animatedView];
+    [animatedView animateFrom:command.originPoint
+        toTabGridButtonWithCompletion:completionBlock];
   }
 }
 
@@ -4249,6 +4167,105 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // optimized. This ensures that this method's name will show up in the stack
   // for easier identification.
   CHECK(true);
+}
+
+// Switch to the tab corresponding to |params|.
+- (void)switchToTabWithParams:
+    (const web::NavigationManager::WebLoadParams&)params {
+  const GURL& URL = params.url;
+
+  NSInteger newWebStateIndex = 0;
+  WebStateList* webStateList = self.tabModel.webStateList;
+  NSInteger currentWebStateIndex = webStateList->active_index();
+  web::WebState* currentWebState = webStateList->GetActiveWebState();
+
+  // TODO(crbug.com/893121): This should probably live in the WebStateList.
+  while (newWebStateIndex < webStateList->count()) {
+    web::WebState* webState = webStateList->GetWebStateAt(newWebStateIndex);
+
+    if (webState != currentWebState && URL == webState->GetVisibleURL()) {
+      break;
+    }
+    newWebStateIndex++;
+  }
+
+  BOOL isNTPWithoutHistory =
+      IsVisibleURLNewTabPage(currentWebState) &&
+      currentWebState->GetNavigationManager() &&
+      !currentWebState->GetNavigationManager()->CanGoBack() &&
+      !currentWebState->GetNavigationManager()->CanGoForward();
+
+  if (newWebStateIndex >= webStateList->count()) {
+    // If the tab containing the URL has been closed.
+    if (isNTPWithoutHistory) {
+      // It is NTP, just load the URL.
+      ChromeLoadParams currentPageParams(params);
+      [self loadURLWithParams:currentPageParams];
+    } else {
+      // Open the URL in foreground.
+      OpenNewTabCommand* newTabCommand =
+          [[OpenNewTabCommand alloc] initWithURL:URL
+                                        referrer:web::Referrer()
+                                     inIncognito:self.isOffTheRecord
+                                    inBackground:NO
+                                        appendTo:kCurrentTab];
+      [self.dispatcher openURLInNewTab:newTabCommand];
+    }
+    return;
+  }
+
+  web::WebState* webStateBeingActivated =
+      webStateList->GetWebStateAt(newWebStateIndex);
+
+  if (![self canShowTabStrip]) {
+    // Add animations only if the tab strip isn't shown.
+    UIView* snapshotView = [self.view snapshotViewAfterScreenUpdates:NO];
+
+    // TODO(crbug.com/904992): Do not repurpose SnapshotGeneratorDelegate.
+    SwipeView* swipeView = [[SwipeView alloc]
+        initWithFrame:self.contentArea.frame
+            topMargin:[self snapshotGenerator:nil
+                          snapshotEdgeInsetsForWebState:webStateBeingActivated]
+                          .top];
+
+    [swipeView setTopToolbarImage:[self.primaryToolbarCoordinator
+                                      toolbarSideSwipeSnapshotForWebState:
+                                          webStateBeingActivated]];
+    [swipeView setBottomToolbarImage:[self.secondaryToolbarCoordinator
+                                         toolbarSideSwipeSnapshotForWebState:
+                                             webStateBeingActivated]];
+
+    SnapshotTabHelper::FromWebState(webStateBeingActivated)
+        ->RetrieveColorSnapshot(^(UIImage* image) {
+          if (PagePlaceholderTabHelper::FromWebState(webStateBeingActivated)
+                  ->will_add_placeholder_for_next_navigation()) {
+            [swipeView setImage:SnapshotTabHelper::GetDefaultSnapshotImage()];
+          } else {
+            [swipeView setImage:image];
+          }
+        });
+
+    SwitchToTabAnimationView* animationView =
+        [[SwitchToTabAnimationView alloc] initWithFrame:self.view.bounds];
+
+    [self.view addSubview:animationView];
+
+    SwitchToTabAnimationPosition position =
+        newWebStateIndex > webStateList->active_index()
+            ? SwitchToTabAnimationPositionAfter
+            : SwitchToTabAnimationPositionBefore;
+    [animationView animateFromCurrentView:snapshotView
+                                toNewView:swipeView
+                               inPosition:position];
+  }
+  webStateList->ActivateWebStateAt(newWebStateIndex);
+
+  // Close the tab if it is NTP with no back/forward history to avoid having
+  // empty tabs.
+  if (isNTPWithoutHistory) {
+    webStateList->CloseWebStateAt(currentWebStateIndex,
+                                  WebStateList::CLOSE_USER_ACTION);
+  }
 }
 
 #pragma mark - ToolbarCoordinatorDelegate (Public)
@@ -4807,29 +4824,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self.contentArea addSubview:animatedView];
   [animatedView animateFrom:origin withCompletion:completionBlock];
   return;
-}
-
-- (void)animateNewTabInBackgroundFromPoint:(CGPoint)originPoint
-                            withCompletion:(ProceduralBlock)completion {
-  self.inNewTabAnimation = YES;
-
-  // Exit fullscreen if needed.
-  FullscreenControllerFactory::GetInstance()
-      ->GetForBrowserState(_browserState)
-      ->ExitFullscreen();
-  const CGFloat kAnimatedViewSize = 50;
-  BackgroundTabAnimationView* animatedView = [[BackgroundTabAnimationView alloc]
-      initWithFrame:CGRectMake(0, 0, kAnimatedViewSize, kAnimatedViewSize)];
-  __weak UIView* weakAnimatedView = animatedView;
-  auto completionBlock = ^() {
-    self.inNewTabAnimation = NO;
-    [weakAnimatedView removeFromSuperview];
-    if (completion)
-      completion();
-  };
-  [self.view addSubview:animatedView];
-  [animatedView animateFrom:originPoint
-      toTabGridButtonWithCompletion:completionBlock];
 }
 
 #pragma mark - InfobarPositioner
