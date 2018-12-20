@@ -8453,10 +8453,10 @@ static int txfm_search(const AV1_COMP *cpi, const TileDataEnc *tile_data,
                        int64_t ref_best_rd) {
   /*
    * This function combines y and uv planes' transform search processes
-   * together, when the prediction is generated. It first does subtration to
+   * together, when the prediction is generated. It first does subtraction to
    * obtain the prediction error. Then it calls
-   * select_tx_type_yrd/super_block_yrd and inter_block_uvrd sequentially and
-   * handles the early terminations happen in those functions. At the end, it
+   * select_tx_type_yrd/super_block_yrd and super_block_uvrd sequentially and
+   * handles the early terminations happening in those functions. At the end, it
    * computes the rd_stats/_y/_uv accordingly.
    */
   const AV1_COMMON *cm = &cpi->common;
@@ -9909,7 +9909,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi,
 }
 
 static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
-                                       RD_STATS *rd_cost, BLOCK_SIZE bsize,
+                                       RD_STATS *rd_stats, BLOCK_SIZE bsize,
                                        int64_t best_rd) {
   const AV1_COMMON *const cm = &cpi->common;
   if (!av1_allow_intrabc(cm) || !cpi->oxcf.enable_intrabc) return INT64_MAX;
@@ -9964,7 +9964,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   };
 
   MB_MODE_INFO best_mbmi = *mbmi;
-  RD_STATS best_rdcost = *rd_cost;
+  RD_STATS best_rdstats = *rd_stats;
   int best_skip = x->skip;
 
   uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE] = { 0 };
@@ -10008,9 +10008,9 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     MV mvp_full = dv_ref.as_mv;
     mvp_full.col >>= 3;
     mvp_full.row >>= 3;
-    int sadpb = x->sadperbit16;
+    const int sadpb = x->sadperbit16;
     int cost_list[5];
-    int bestsme = av1_full_pixel_search(
+    const int bestsme = av1_full_pixel_search(
         cpi, x, bsize, &mvp_full, step_param, cpi->sf.mv.search_method, 0,
         sadpb, cond_cost_list(cpi, cost_list), &dv_ref.as_mv, INT_MAX, 1,
         (MI_SIZE * mi_col), (MI_SIZE * mi_row), 1);
@@ -10018,7 +10018,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     x->mv_limits = tmp_mv_limits;
     if (bestsme == INT_MAX) continue;
     mvp_full = x->best_mv.as_mv;
-    MV dv = { .row = mvp_full.row * 8, .col = mvp_full.col * 8 };
+    const MV dv = { .row = mvp_full.row * 8, .col = mvp_full.col * 8 };
     if (mv_check_bounds(&x->mv_limits, &dv)) continue;
     if (!av1_is_dv_valid(dv, cm, xd, mi_row, mi_col, bsize,
                          cm->seq_params.mib_size_log2))
@@ -10043,68 +10043,32 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
                        (int *)&cpi->dv_cost[1][MV_MAX] };
     // TODO(aconverse@google.com): The full motion field defining discount
     // in MV_COST_WEIGHT is too large. Explore other values.
-    int rate_mv = av1_mv_bit_cost(&dv, &dv_ref.as_mv, cpi->dv_joint_cost,
-                                  dvcost, MV_COST_WEIGHT_SUB);
+    const int rate_mv = av1_mv_bit_cost(&dv, &dv_ref.as_mv, cpi->dv_joint_cost,
+                                        dvcost, MV_COST_WEIGHT_SUB);
     const int rate_mode = x->intrabc_cost[1];
-    RD_STATS rd_stats, rd_stats_uv;
-    av1_subtract_plane(x, bsize, 0);
-    if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
-      pick_tx_size_type_yrd(cpi, x, &rd_stats, bsize, mi_row, mi_col,
-                            INT64_MAX);
-    } else {
-      super_block_yrd(cpi, x, &rd_stats, bsize, INT64_MAX);
-      memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
-      for (int i = 0; i < xd->n4_h * xd->n4_w; ++i)
-        set_blk_skip(x, 0, i, rd_stats.skip);
-    }
-    if (num_planes > 1) {
-      super_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
-      av1_merge_rd_stats(&rd_stats, &rd_stats_uv);
-    }
-#if CONFIG_RD_DEBUG
-    mbmi->rd_stats = rd_stats;
-#endif
-
-    const int skip_ctx = av1_get_skip_context(xd);
-
-    RD_STATS rdc_noskip;
-    av1_init_rd_stats(&rdc_noskip);
-    rdc_noskip.rate =
-        rate_mode + rate_mv + rd_stats.rate + x->skip_cost[skip_ctx][0];
-    rdc_noskip.dist = rd_stats.dist;
-    rdc_noskip.rdcost = RDCOST(x->rdmult, rdc_noskip.rate, rdc_noskip.dist);
-    if (rdc_noskip.rdcost < best_rd) {
-      best_rd = rdc_noskip.rdcost;
+    RD_STATS rd_stats_yuv, rd_stats_y, rd_stats_uv;
+    if (!txfm_search(cpi, NULL, x, bsize, mi_row, mi_col, &rd_stats_yuv,
+                     &rd_stats_y, &rd_stats_uv, rate_mode + rate_mv, INT64_MAX))
+      continue;
+    rd_stats_yuv.rdcost =
+        RDCOST(x->rdmult, rd_stats_yuv.rate, rd_stats_yuv.dist);
+    if (rd_stats_yuv.rdcost < best_rd) {
+      best_rd = rd_stats_yuv.rdcost;
       best_mbmi = *mbmi;
-      best_skip = x->skip;
-      best_rdcost = rdc_noskip;
+      best_skip = mbmi->skip;
+      best_rdstats = rd_stats_yuv;
       memcpy(best_blk_skip, x->blk_skip,
              sizeof(x->blk_skip[0]) * xd->n4_h * xd->n4_w);
     }
-
-    if (!xd->lossless[mbmi->segment_id]) {
-      x->skip = 1;
-      mbmi->skip = 1;
-      RD_STATS rdc_skip;
-      av1_init_rd_stats(&rdc_skip);
-      rdc_skip.rate = rate_mode + rate_mv + x->skip_cost[skip_ctx][1];
-      rdc_skip.dist = rd_stats.sse;
-      rdc_skip.rdcost = RDCOST(x->rdmult, rdc_skip.rate, rdc_skip.dist);
-      if (rdc_skip.rdcost < best_rd) {
-        best_rd = rdc_skip.rdcost;
-        best_mbmi = *mbmi;
-        best_skip = x->skip;
-        best_rdcost = rdc_skip;
-        memcpy(best_blk_skip, x->blk_skip,
-               sizeof(x->blk_skip[0]) * xd->n4_h * xd->n4_w);
-      }
-    }
   }
   *mbmi = best_mbmi;
-  *rd_cost = best_rdcost;
+  *rd_stats = best_rdstats;
   x->skip = best_skip;
   memcpy(x->blk_skip, best_blk_skip,
          sizeof(x->blk_skip[0]) * xd->n4_h * xd->n4_w);
+#if CONFIG_RD_DEBUG
+  mbmi->rd_stats = *rd_stats;
+#endif
   return best_rd;
 }
 
