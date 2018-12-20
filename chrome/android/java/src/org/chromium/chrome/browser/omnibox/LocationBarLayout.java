@@ -255,7 +255,6 @@ public class LocationBarLayout extends FrameLayout
         mWindowAndroid = windowAndroid;
 
         mUrlCoordinator.setWindowDelegate(windowDelegate);
-        mStatusViewCoordinator.setWindowAndroid(windowAndroid);
         mAutocompleteCoordinator.setWindowAndroid(windowAndroid);
     }
 
