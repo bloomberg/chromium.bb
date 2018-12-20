@@ -44,6 +44,9 @@ using buzz::XmlElement;
 namespace remoting {
 namespace protocol {
 
+class ScopedAllowThreadJoinForWebRtcTransport
+    : public base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {};
+
 namespace {
 
 // Delay after candidate creation before sending transport-info message to
@@ -248,10 +251,9 @@ class WebrtcTransport::PeerConnectionWrapper
   }
 
   ~PeerConnectionWrapper() override {
-    // PeerConnection creates threads internally, which are stopped when the
-    // connection is closed. Thread.Stop() is a blocking operation.
-    // See crbug.com/660081.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    // PeerConnection creates threads internally, which are joined when the
+    // connection is closed. See crbug.com/660081.
+    ScopedAllowThreadJoinForWebRtcTransport allow_thread_join;
     peer_connection_->Close();
     peer_connection_ = nullptr;
     peer_connection_factory_ = nullptr;

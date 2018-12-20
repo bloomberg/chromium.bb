@@ -251,7 +251,8 @@ NativeDesktopMediaList::NativeDesktopMediaList(
 }
 
 NativeDesktopMediaList::~NativeDesktopMediaList() {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  // This thread should mostly be an idle observer. Stopping it should be fast.
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_thread_join;
   thread_.task_runner()->DeleteSoon(FROM_HERE, worker_.release());
   thread_.Stop();
 }

@@ -558,7 +558,9 @@ void DesktopCaptureDevice::AllocateAndStart(
 
 void DesktopCaptureDevice::StopAndDeAllocate() {
   if (core_) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    // This thread should mostly be an idle observer. Stopping it should be
+    // fast.
+    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_thread_join;
     thread_.task_runner()->DeleteSoon(FROM_HERE, core_.release());
     thread_.Stop();
   }

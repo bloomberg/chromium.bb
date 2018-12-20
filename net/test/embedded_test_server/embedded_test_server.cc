@@ -67,9 +67,7 @@ EmbeddedTestServer::~EmbeddedTestServer() {
   }
 
   {
-    // Thread::Join induced by test code should cause an assert.
-    base::ScopedAllowBlockingForTesting allow_blocking;
-
+    base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait_for_thread_join;
     io_thread_.reset();
   }
 }

@@ -28,6 +28,11 @@
 
 namespace base {
 
+// Allows StackSamplingProfiler to recall a thread which should already pretty
+// much be dead (thus it should be a fast Join()).
+class ScopedAllowThreadRecallForStackSamplingProfiler
+    : public base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {};
+
 namespace {
 
 // This value is used to initialize the WaitableEvent object. This MUST BE set
@@ -370,7 +375,7 @@ StackSamplingProfiler::SamplingThread::GetOrCreateTaskRunnerForAdd() {
     // happen a new profiling request would have to be made within the narrow
     // window between StopSoon() and thread exit following the end of the 60
     // second idle period.
-    ScopedAllowBlocking allow_blocking;
+    ScopedAllowThreadRecallForStackSamplingProfiler allow_thread_join;
     Stop();
   }
 
