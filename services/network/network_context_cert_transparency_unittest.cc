@@ -106,7 +106,7 @@ scoped_refptr<net::X509Certificate> GetCTCertForTesting() {
 
 // The number of valid SCTs in |GetCTCertForTesting| from logs configured in
 // |CreateContextParams()|.
-const int kNumSCTs = 3;
+const size_t kNumSCTs = 3;
 
 // Decodes a base64-encoded "DigitallySigned" TLS struct into |*sig_out|.
 // See https://tools.ietf.org/html/rfc5246#section-4.7.
@@ -238,6 +238,8 @@ TEST(NetworkContextCertTransparencyAuditingDisabledTest,
 
   ResourceRequest request;
   request.url = https_server.GetURL("localhost", "/");
+  request.method = "GET";
+  request.request_initiator = url::Origin();
 
   mojom::URLLoaderFactoryPtr loader_factory;
   auto url_loader_factory_params =
@@ -250,29 +252,31 @@ TEST(NetworkContextCertTransparencyAuditingDisabledTest,
   base::HistogramTester histograms;
   mojom::URLLoaderPtr loader;
   TestURLLoaderClient client;
+  int options = mojom::kURLLoadOptionSendSSLInfoWithResponse |
+                mojom::kURLLoadOptionSendSSLInfoForCertificateError;
   loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, request, client.CreateInterfacePtr(),
+      options, request, client.CreateInterfacePtr(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   client.RunUntilComplete();
   EXPECT_TRUE(client.has_received_response());
   EXPECT_TRUE(client.has_received_completion());
 
-  // Expect only a single connection.
-  ASSERT_EQ(histograms.GetBucketCount("Net.SSL_Connection_Error", net::OK), 1);
+  // Expect a successful connection.
+  EXPECT_EQ(net::OK, client.completion_status().error_code);
 
   // Expect 3 SCTs in this connection.
-  EXPECT_THAT(histograms.GetBucketCount(
-                  "Net.CertificateTransparency.SCTsPerConnection", kNumSCTs),
-              1);
+  ASSERT_TRUE(client.ssl_info().has_value());
+  ASSERT_EQ(kNumSCTs, client.ssl_info()->signed_certificate_timestamps.size());
 
-  // Expect that the SCTs were embedded in the certificate.
-  EXPECT_THAT(
-      histograms.GetBucketCount(
-          "Net.CertificateTransparency.SCTOrigin",
-          static_cast<int>(net::ct::SignedCertificateTimestamp::SCT_EMBEDDED)),
-      kNumSCTs);
+  // Expect that all SCTs were embedded in the certificate.
+  size_t embedded_scts = 0;
+  for (const auto& sct : client.ssl_info()->signed_certificate_timestamps) {
+    if (sct.sct->origin == net::ct::SignedCertificateTimestamp::SCT_EMBEDDED)
+      ++embedded_scts;
+  }
+  ASSERT_EQ(kNumSCTs, embedded_scts);
 
   // No SCTs should be eligible for inclusion checking, as inclusion checking
   // is disabled.
@@ -374,6 +378,8 @@ TEST(NetworkContextCertTransparencyAuditingEnabledTest,
 
   ResourceRequest request;
   request.url = https_server.GetURL("localhost", "/");
+  request.method = "GET";
+  request.request_initiator = url::Origin();
 
   mojom::URLLoaderFactoryPtr loader_factory;
   auto url_loader_factory_params =
@@ -385,29 +391,31 @@ TEST(NetworkContextCertTransparencyAuditingEnabledTest,
 
   mojom::URLLoaderPtr loader;
   TestURLLoaderClient client;
+  int options = mojom::kURLLoadOptionSendSSLInfoWithResponse |
+                mojom::kURLLoadOptionSendSSLInfoForCertificateError;
   loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, request, client.CreateInterfacePtr(),
+      options, request, client.CreateInterfacePtr(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   client.RunUntilComplete();
   EXPECT_TRUE(client.has_received_response());
   EXPECT_TRUE(client.has_received_completion());
 
-  // Expect only a single connection.
-  ASSERT_EQ(histograms.GetBucketCount("Net.SSL_Connection_Error", net::OK), 1);
+  // Expect a successful connection.
+  EXPECT_EQ(net::OK, client.completion_status().error_code);
 
   // Expect 3 SCTs in this connection.
-  EXPECT_THAT(histograms.GetBucketCount(
-                  "Net.CertificateTransparency.SCTsPerConnection", kNumSCTs),
-              1);
+  ASSERT_TRUE(client.ssl_info().has_value());
+  ASSERT_EQ(kNumSCTs, client.ssl_info()->signed_certificate_timestamps.size());
 
-  // Expect that the SCTs were embedded in the certificate.
-  EXPECT_THAT(
-      histograms.GetBucketCount(
-          "Net.CertificateTransparency.SCTOrigin",
-          static_cast<int>(net::ct::SignedCertificateTimestamp::SCT_EMBEDDED)),
-      kNumSCTs);
+  // Expect that all SCTs were embedded in the certificate.
+  size_t embedded_scts = 0;
+  for (const auto& sct : client.ssl_info()->signed_certificate_timestamps) {
+    if (sct.sct->origin == net::ct::SignedCertificateTimestamp::SCT_EMBEDDED)
+      ++embedded_scts;
+  }
+  ASSERT_EQ(kNumSCTs, embedded_scts);
 
   // The Pilot SCT should be eligible for inclusion checking, because a recent
   // enough Pilot STH is available.

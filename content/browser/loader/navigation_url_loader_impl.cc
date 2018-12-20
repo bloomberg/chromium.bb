@@ -437,7 +437,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         resource_request_(std::move(resource_request)),
         resource_context_(resource_context),
         url_(url),
-        is_main_frame_(is_main_frame),
         owner_(owner),
         response_loader_binding_(this),
         proxied_factory_request_(std::move(proxied_factory_request)),
@@ -1119,11 +1118,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
  private:
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(const network::ResourceResponseHead& head) override {
-    // Record the SCT histogram before checking if anything wants to intercept
-    // the response, so interceptors like AppCache and extensions can't hide
-    // values from the histograms.
-    RecordSCTHistogramIfNeeded(head.ssl_info);
-
     received_response_ = true;
 
     // If the default loader (network) was used to handle the URL load request
@@ -1357,8 +1351,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   }
 
   void OnComplete(const network::URLLoaderCompletionStatus& status) override {
-    RecordSCTHistogramIfNeeded(status.ssl_info);
-
     UMA_HISTOGRAM_BOOLEAN(
         "Navigation.URLLoaderNetworkService.OnCompleteHasSSLInfo",
         status.ssl_info.has_value());
@@ -1477,21 +1469,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         std::move(signed_exchange_prefetch_metric_recorder));
   }
 
-  void RecordSCTHistogramIfNeeded(
-      const base::Optional<net::SSLInfo>& ssl_info) {
-    if (is_main_frame_ && url_.SchemeIsCryptographic() &&
-        ssl_info.has_value()) {
-      int num_valid_scts = 0;
-      for (const auto& signed_certificate_timestamps :
-           ssl_info->signed_certificate_timestamps) {
-        if (signed_certificate_timestamps.status == net::ct::SCT_STATUS_OK)
-          ++num_valid_scts;
-      }
-      UMA_HISTOGRAM_COUNTS_100(
-          "Net.CertificateTransparency.MainFrameValidSCTCount", num_valid_scts);
-    }
-  }
-
   std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptors_;
   size_t interceptor_index_ = 0;
 
@@ -1519,8 +1496,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   // Current URL that is being navigated, updated after redirection.
   GURL url_;
-
-  const bool is_main_frame_;
 
   // Currently used by the AppCache loader to pass its factory to the
   // renderer which enables it to handle subresources.
