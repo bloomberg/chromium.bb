@@ -368,11 +368,17 @@ class MessagePumpNSApplication : public MessagePumpCFRunLoopBase {
  private:
   friend class ScopedPumpMessagesInPrivateModes;
 
+  void EnterExitRunLoop(CFRunLoopActivity activity) override;
+
   // True if DoRun is managing its own run loop as opposed to letting
   // -[NSApplication run] handle it.  The outermost run loop in the application
   // is managed by -[NSApplication run], inner run loops are handled by a loop
   // in DoRun.
   bool running_own_loop_;
+
+  // True if Quit() was called while a modal window was shown and needed to be
+  // deferred.
+  bool quit_pending_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpNSApplication);
 };

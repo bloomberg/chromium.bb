@@ -821,7 +821,8 @@ int ScopedPumpMessagesInPrivateModes::GetModeMaskForTest() {
 
 MessagePumpNSApplication::MessagePumpNSApplication()
     : MessagePumpCFRunLoopBase(kNSApplicationModalSafeModeMask),
-      running_own_loop_(false) {
+      running_own_loop_(false),
+      quit_pending_(false) {
   DCHECK_EQ(nullptr, g_app_pump);
   g_app_pump = this;
 }
@@ -864,6 +865,17 @@ void MessagePumpNSApplication::DoRun(Delegate* delegate) {
 }
 
 bool MessagePumpNSApplication::DoQuit() {
+  // If the app is displaying a modal window in a native run loop, we can only
+  // quit our run loop after the window is closed. Otherwise the [NSApplication
+  // stop] below will apply to the modal window run loop instead. To work around
+  // this, the quit is applied when we re-enter our own run loop after the
+  // window is gone (see MessagePumpNSApplication::EnterExitRunLoop).
+  if (nesting_level() > run_nesting_level() &&
+      [[NSApplication sharedApplication] modalWindow] != nil) {
+    quit_pending_ = true;
+    return false;
+  }
+
   if (!running_own_loop_) {
     [[NSApplication sharedApplication] stop:nil];
   }
@@ -880,6 +892,18 @@ bool MessagePumpNSApplication::DoQuit() {
                                          data2:0]
            atStart:NO];
   return true;
+}
+
+void MessagePumpNSApplication::EnterExitRunLoop(CFRunLoopActivity activity) {
+  // If we previously tried quitting while a modal window was active, check if
+  // the window is gone now and we're no longer nested in a system run loop.
+  if (activity == kCFRunLoopEntry && quit_pending_ &&
+      nesting_level() <= run_nesting_level() &&
+      [[NSApplication sharedApplication] modalWindow] == nil) {
+    quit_pending_ = false;
+    if (DoQuit())
+      OnDidQuit();
+  }
 }
 
 MessagePumpCrApplication::MessagePumpCrApplication() {

@@ -146,7 +146,12 @@ void ShowFirstRunDialog(Profile* profile) {
   // handlers is received. (The ShutdownDetector posts a task to the UI thread's
   // TaskRunner to begin shutdown upon receiving a SIGTERM.)
   static_cast<BrowserProcessImpl*>(g_browser_process)
-      ->SetQuitClosure(run_loop.QuitClosure());
+      ->SetQuitClosure(base::BindOnce(
+          [](base::RunLoop* run_loop) {
+            [NSApp abortModal];
+            run_loop->Quit();
+          },
+          &run_loop));
 
   // Barring a shutdown signal, the run loop will quit when the user closes the
   // first run dialog.
