@@ -109,6 +109,9 @@ message DeviceReportingProto {
   optional bool report_session_status = 8 [default = true];
   optional bool report_os_update_status = 10 [default = false];
   optional bool report_running_kiosk_app = 11 [default = false];
+  optional bool report_power_status = 12 [default = false];
+  optional bool report_storage_status = 13 [default = false];
+  optional bool report_board_status = 14 [default = false];
 
   // Frequency to report device status, default to 3 hours.
   optional int64 device_status_frequency = 9 [default = 10800000];
