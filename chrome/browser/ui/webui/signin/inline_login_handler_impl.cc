@@ -111,6 +111,9 @@ credential_provider::UiExitCodes ValidateSigninEmail(
     return credential_provider::kUiecEMailMissmatch;
   }
 
+  if (email_domains_parameter.empty())
+    return credential_provider::kUiecSuccess;
+
   std::vector<std::string> all_email_domains =
       GetEmailDomainsFromParameter(email_domains_parameter);
   std::string email_domain = gaia::ExtractDomainName(signin_email);
