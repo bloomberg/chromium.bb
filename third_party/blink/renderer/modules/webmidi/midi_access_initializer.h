@@ -53,7 +53,6 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
     MIDIAccessInitializer* resolver =
         MakeGarbageCollected<MIDIAccessInitializer>(script_state, options);
     resolver->KeepAliveWhilePending();
-    resolver->PauseIfNeeded();
     return resolver->Start();
   }
 
