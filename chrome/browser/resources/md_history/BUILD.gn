@@ -28,7 +28,7 @@ optimize_webui("build") {
 
   excludes = [
     "chrome://resources/html/util.html",
-    "chrome://history/constants.html",
+    "constants.html",
   ]
 
   deps = []
