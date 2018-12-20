@@ -141,6 +141,14 @@ void HostContextFactoryPrivate::UnconfigureCompositor(Compositor* compositor) {
   compositor_data_map_.erase(compositor);
 }
 
+base::flat_set<Compositor*> HostContextFactoryPrivate::GetAllCompositors() {
+  base::flat_set<Compositor*> all_compositors;
+  all_compositors.reserve(compositor_data_map_.size());
+  for (auto& pair : compositor_data_map_)
+    all_compositors.insert(pair.first);
+  return all_compositors;
+}
+
 std::unique_ptr<Reflector> HostContextFactoryPrivate::CreateReflector(
     Compositor* source,
     Layer* target) {
@@ -256,14 +264,6 @@ viz::FrameSinkManagerImpl* HostContextFactoryPrivate::GetFrameSinkManager() {
   // https://crbug.com/760181 for more context.
   NOTREACHED();
   return nullptr;
-}
-
-base::flat_set<Compositor*> HostContextFactoryPrivate::GetAllCompositors() {
-  base::flat_set<Compositor*> all_compositors;
-  all_compositors.reserve(compositor_data_map_.size());
-  for (auto& pair : compositor_data_map_)
-    all_compositors.insert(pair.first);
-  return all_compositors;
 }
 
 HostContextFactoryPrivate::CompositorData::CompositorData() = default;

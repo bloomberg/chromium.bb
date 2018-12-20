@@ -47,7 +47,6 @@ namespace content {
 // instead of in the browser process. Any interaction with the display
 // compositor must happen over IPC.
 class VizProcessTransportFactory : public ui::ContextFactory,
-                                   public ui::HostContextFactoryPrivate,
                                    public ImageTransportFactory,
                                    public viz::ContextLostObserver {
  public:
@@ -130,6 +129,7 @@ class VizProcessTransportFactory : public ui::ContextFactory,
   // Will start and run the VizCompositorThread for using an in-process display
   // compositor.
   std::unique_ptr<viz::VizCompositorThreadRunner> viz_compositor_thread_;
+  ui::HostContextFactoryPrivate context_factory_private_;
 
   base::WeakPtrFactory<VizProcessTransportFactory> weak_ptr_factory_;
 

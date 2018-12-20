@@ -50,6 +50,19 @@ class HostContextFactoryPrivate : public ContextFactoryPrivate {
 
   void UnconfigureCompositor(Compositor* compositor);
 
+  void set_is_gpu_compositing_disabled(bool value) {
+    is_gpu_compositing_disabled_ = value;
+  }
+  bool is_gpu_compositing_disabled() const {
+    return is_gpu_compositing_disabled_;
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner() {
+    return resize_task_runner_;
+  }
+
+  base::flat_set<Compositor*> GetAllCompositors();
+
   // ContextFactoryPrivate implementation.
   std::unique_ptr<Reflector> CreateReflector(Compositor* source,
                                              Layer* target) override;
@@ -71,20 +84,6 @@ class HostContextFactoryPrivate : public ContextFactoryPrivate {
                                const viz::BeginFrameArgs& args) override;
   void SetOutputIsSecure(Compositor* compositor, bool secure) override;
   viz::FrameSinkManagerImpl* GetFrameSinkManager() override;
-
- protected:
-  void set_is_gpu_compositing_disabled(bool value) {
-    is_gpu_compositing_disabled_ = value;
-  }
-  bool is_gpu_compositing_disabled() const {
-    return is_gpu_compositing_disabled_;
-  }
-
-  scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner() {
-    return resize_task_runner_;
-  }
-
-  base::flat_set<Compositor*> GetAllCompositors();
 
  private:
   struct CompositorData {
