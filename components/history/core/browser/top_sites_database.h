@@ -44,9 +44,11 @@ class TopSitesDatabase {
   FRIEND_TEST_ALL_PREFIXES(TopSitesDatabaseTest, Version1);
   FRIEND_TEST_ALL_PREFIXES(TopSitesDatabaseTest, Version2);
   FRIEND_TEST_ALL_PREFIXES(TopSitesDatabaseTest, Version3);
+  FRIEND_TEST_ALL_PREFIXES(TopSitesDatabaseTest, Version4);
   FRIEND_TEST_ALL_PREFIXES(TopSitesDatabaseTest, Recovery1);
   FRIEND_TEST_ALL_PREFIXES(TopSitesDatabaseTest, Recovery2);
   FRIEND_TEST_ALL_PREFIXES(TopSitesDatabaseTest, Recovery3);
+  FRIEND_TEST_ALL_PREFIXES(TopSitesDatabaseTest, Recovery4);
 
   // Rank used to indicate that a URL is not stored in the database.
   static const int kRankOfNonExistingURL;
@@ -54,6 +56,10 @@ class TopSitesDatabase {
   // Upgrades the thumbnail table to version 3, returning true if the
   // upgrade was successful.
   bool UpgradeToVersion3();
+
+  // Upgrades the top_sites table to version 4, returning true if the upgrade
+  // was successful.
+  bool UpgradeToVersion4();
 
   // Sets a top site for the URL. |new_rank| is the position of the URL in the
   // list of top sites, zero-based.

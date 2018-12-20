@@ -14,6 +14,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites.h"
 #include "sql/database.h"
@@ -25,24 +26,13 @@ namespace history {
 
 // Description of database table:
 //
-// thumbnails
-//   url              URL of the sites for which we have a thumbnail.
-//   url_rank         Index of the URL in that thumbnail, 0-based. The thumbnail
-//                    with the highest rank will be the next one evicted. Forced
-//                    thumbnails have a rank of -1.
-//   title            The title to display under that thumbnail.
+// top_sites
+//   url              URL of the top site.
+//   url_rank         Index of the site, 0-based. The site with the highest rank
+//                    will be the next one evicted.
+//   title            The title to display under that site.
 //   redirects        A space separated list of URLs that are known to redirect
 //                    to this url.
-//   boring_score     How "boring" that thumbnail is. See ThumbnailScore.
-//   good_clipping    True if the thumbnail was clipped from the bottom, keeping
-//                    the entire width of the window. See ThumbnailScore.
-//   at_top           True if the thumbnail was captured at the top of the
-//                    website.
-//   last_updated     The time at which this thumbnail was last updated.
-//   load_completed   True if the thumbnail was captured after the page load was
-//                    completed.
-//   last_forced      If this is a forced thumbnail, records the last time it
-//                    was forced. If it's not a forced thumbnail, 0.
 
 namespace {
 
@@ -54,33 +44,28 @@ namespace {
 // fatal (in fact, very old data may be expired immediately at startup
 // anyhow).
 
+// TODO(kristipark): Add revision/date details after v4 lands.
+// Version 4: kristipark@chromium.org
 // Version 3: b6d6a783/r231648 by beaudoin@chromium.org on 2013-10-29
 // Version 2: eb0b24e6/r87284 by satorux@chromium.org on 2011-05-31 (deprecated)
 // Version 1: 809cc4d8/r64072 by sky@chromium.org on 2010-10-27 (deprecated)
 
 // NOTE(shess): When changing the version, add a new golden file for
 // the new version and a test to verify that Init() works with it.
-static const int kVersionNumber = 3;
+static const int kVersionNumber = 4;
 static const int kDeprecatedVersionNumber = 2;  // and earlier.
 
 // Rank used to indicate that this is a newly added URL.
 static const int kRankOfNewURL = -1;
 
 bool InitTables(sql::Database* db) {
-  static const char kThumbnailsSql[] =
-      "CREATE TABLE IF NOT EXISTS thumbnails ("
+  static const char kTopSitesSql[] =
+      "CREATE TABLE IF NOT EXISTS top_sites ("
       "url LONGVARCHAR PRIMARY KEY,"
       "url_rank INTEGER,"
       "title LONGVARCHAR,"
-      "thumbnail BLOB,"
-      "redirects LONGVARCHAR,"
-      "boring_score DOUBLE DEFAULT 1.0,"
-      "good_clipping INTEGER DEFAULT 0,"
-      "at_top INTEGER DEFAULT 0,"
-      "last_updated INTEGER DEFAULT 0,"
-      "load_completed INTEGER DEFAULT 0,"
-      "last_forced INTEGER DEFAULT 0)";
-  return db->Execute(kThumbnailsSql);
+      "redirects LONGVARCHAR)";
+  return db->Execute(kTopSitesSql);
 }
 
 // Encodes redirects into a string.
@@ -130,7 +115,7 @@ enum RecoveryEventType {
   OBSOLETE_RECOVERY_EVENT_FAILED_AUTORECOVER_THUMBNAILS,
   RECOVERY_EVENT_FAILED_COMMIT,
 
-  // Track invariants resolved by FixThumbnailsTable().
+  // Track invariants resolved by FixTopSitesTable().
   RECOVERY_EVENT_INVARIANT_RANK,
   RECOVERY_EVENT_INVARIANT_REDIRECT,
   RECOVERY_EVENT_INVARIANT_CONTIGUOUS,
@@ -152,21 +137,28 @@ void RecordRecoveryEvent(RecoveryEventType recovery_event) {
 // depending on the operation broken.  This table has large rows, which will use
 // overflow pages, so it is possible (though unlikely) that a chain could fit
 // together and yield a row with errors.
-void FixThumbnailsTable(sql::Database* db) {
-  // Enforce invariant separating forced and non-forced thumbnails.
-  static const char kFixRankSql[] =
-      "DELETE FROM thumbnails "
-      "WHERE (url_rank = -1 AND last_forced = 0) "
-      "OR (url_rank <> -1 AND last_forced <> 0)";
-  ignore_result(db->Execute(kFixRankSql));
-  if (db->GetLastChangeCount() > 0)
-    RecordRecoveryEvent(RECOVERY_EVENT_INVARIANT_RANK);
+void FixTopSitesTable(sql::Database* db, int version) {
+  // Forced sites are only present in version 3.
+  if (version == 3) {
+    // Enforce invariant separating forced and non-forced thumbnails.
+    static const char kFixRankSql[] =
+        "DELETE FROM thumbnails "
+        "WHERE (url_rank = -1 AND last_forced = 0) "
+        "OR (url_rank <> -1 AND last_forced <> 0)";
+    ignore_result(db->Execute(kFixRankSql));
+    if (db->GetLastChangeCount() > 0)
+      RecordRecoveryEvent(RECOVERY_EVENT_INVARIANT_RANK);
+  }
+
+  // The table was renamed to "top_sites" in version 4.
+  const char* kTableName = (version == 3 ? "thumbnails" : "top_sites");
 
   // Enforce invariant that url is in its own redirects.
   static const char kFixRedirectsSql[] =
-      "DELETE FROM thumbnails "
+      "DELETE FROM %s "
       "WHERE url <> substr(redirects, -length(url), length(url))";
-  ignore_result(db->Execute(kFixRedirectsSql));
+  ignore_result(
+      db->Execute(base::StringPrintf(kFixRedirectsSql, kTableName).c_str()));
   if (db->GetLastChangeCount() > 0)
     RecordRecoveryEvent(RECOVERY_EVENT_INVARIANT_REDIRECT);
 
@@ -176,13 +168,15 @@ void FixThumbnailsTable(sql::Database* db) {
   // manually is easier to follow.  Another option would be to somehow integrate
   // the renumbering into the table recovery code.
   static const char kByRankSql[] =
-      "SELECT url_rank, rowid FROM thumbnails WHERE url_rank <> -1 "
+      "SELECT url_rank, rowid FROM %s WHERE url_rank <> -1 "
       "ORDER BY url_rank";
-  sql::Statement select_statement(db->GetUniqueStatement(kByRankSql));
+  sql::Statement select_statement(db->GetUniqueStatement(
+      base::StringPrintf(kByRankSql, kTableName).c_str()));
 
   static const char kAdjustRankSql[] =
-      "UPDATE thumbnails SET url_rank = ? WHERE rowid = ?";
-  sql::Statement update_statement(db->GetUniqueStatement(kAdjustRankSql));
+      "UPDATE %s SET url_rank = ? WHERE rowid = ?";
+  sql::Statement update_statement(db->GetUniqueStatement(
+      base::StringPrintf(kAdjustRankSql, kTableName).c_str()));
 
   // Update any rows where |next_rank| doesn't match |url_rank|.
   int next_rank = 0;
@@ -206,7 +200,7 @@ void FixThumbnailsTable(sql::Database* db) {
 // constraints.
 void RecoverAndFixup(sql::Database* db, const base::FilePath& db_path) {
   // NOTE(shess): If the version changes, review this code.
-  DCHECK_EQ(3, kVersionNumber);
+  DCHECK_EQ(4, kVersionNumber);
 
   std::unique_ptr<sql::Recovery> recovery =
       sql::Recovery::BeginRecoverDatabase(db, db_path);
@@ -245,7 +239,7 @@ void RecoverAndFixup(sql::Database* db, const base::FilePath& db_path) {
   }
 
   // TODO(shess): Inline this?
-  FixThumbnailsTable(recovery->db());
+  FixTopSitesTable(recovery->db(), version);
 
   if (!sql::Recovery::Recovered(std::move(recovery))) {
     // TODO(shess): Very unclear what this failure would actually mean, and what
@@ -368,6 +362,13 @@ bool TopSitesDatabase::InitImpl(const base::FilePath& db_name) {
     }
   }
 
+  if (meta_table_.GetVersionNumber() == 3) {
+    if (!UpgradeToVersion4()) {
+      LOG(WARNING) << "Unable to upgrade top sites database to version 4.";
+      return false;
+    }
+  }
+
   // Version check.
   if (meta_table_.GetVersionNumber() != kVersionNumber)
     return false;
@@ -408,12 +409,30 @@ bool TopSitesDatabase::UpgradeToVersion3() {
   return true;
 }
 
+bool TopSitesDatabase::UpgradeToVersion4() {
+  // Rename table to "top_sites" and retain only the url, url_rank, title, and
+  // redirects columns. Also, remove any remaining forced sites.
+  const char* statement =
+      // The top_sites table is created before the version upgrade.
+      "INSERT INTO top_sites SELECT "
+      "url,url_rank,title,redirects FROM thumbnails;"
+      "DROP TABLE thumbnails;"
+      // Remove any forced sites.
+      "DELETE FROM top_sites WHERE (url_rank = -1);";
+  if (!db_->Execute(statement)) {
+    NOTREACHED();
+    return false;
+  }
+
+  meta_table_.SetVersionNumber(4);
+  return true;
+}
+
 void TopSitesDatabase::GetSites(MostVisitedURLList* urls) {
   sql::Statement statement(
       db_->GetCachedStatement(SQL_FROM_HERE,
                               "SELECT url, url_rank, title, redirects "
-                              "FROM thumbnails WHERE url_rank <> -1 "
-                              "ORDER BY url_rank"));
+                              "FROM top_sites ORDER BY url_rank"));
 
   if (!statement.is_valid()) {
     LOG(WARNING) << db_->GetErrorMessage();
@@ -448,7 +467,7 @@ void TopSitesDatabase::SetSiteNoTransaction(const MostVisitedURL& url,
 void TopSitesDatabase::AddSite(const MostVisitedURL& url, int new_rank) {
   sql::Statement statement(
       db_->GetCachedStatement(SQL_FROM_HERE,
-                              "INSERT OR REPLACE INTO thumbnails "
+                              "INSERT OR REPLACE INTO top_sites "
                               "(url, url_rank, title, redirects) "
                               "VALUES (?, ?, ?, ?)"));
   statement.BindString(0, url.url.spec());
@@ -464,9 +483,9 @@ void TopSitesDatabase::AddSite(const MostVisitedURL& url, int new_rank) {
 
 bool TopSitesDatabase::UpdateSite(const MostVisitedURL& url) {
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE,
-                                                   "UPDATE thumbnails SET "
+                                                   "UPDATE top_sites SET "
                                                    "title = ?, redirects = ?"
-                                                   "WHERE url = ? "));
+                                                   "WHERE url = ?"));
   statement.BindString16(0, url.title);
   statement.BindString(1, GetRedirects(url));
 
@@ -477,7 +496,7 @@ int TopSitesDatabase::GetURLRank(const MostVisitedURL& url) {
   sql::Statement select_statement(
       db_->GetCachedStatement(SQL_FROM_HERE,
                               "SELECT url_rank "
-                              "FROM thumbnails WHERE url=?"));
+                              "FROM top_sites WHERE url = ?"));
   select_statement.BindString(0, url.url.spec());
   if (select_statement.Step())
     return select_statement.ColumnInt(0);
@@ -502,9 +521,9 @@ void TopSitesDatabase::UpdateSiteRankNoTransaction(const MostVisitedURL& url,
     // [-1 -> 2], 0, 1, [2 -> 3], [3 -> 4], [4 -> 5]
     sql::Statement shift_statement(
         db_->GetCachedStatement(SQL_FROM_HERE,
-                                "UPDATE thumbnails "
+                                "UPDATE top_sites "
                                 "SET url_rank = url_rank + 1 "
-                                "WHERE url_rank >= ? AND url_rank <> -1"));
+                                "WHERE url_rank >= ?"));
     shift_statement.BindInt(0, new_rank);
     shift_statement.Run();
   } else if (prev_rank > new_rank) {
@@ -513,10 +532,9 @@ void TopSitesDatabase::UpdateSiteRankNoTransaction(const MostVisitedURL& url,
     // 0, [1 -> 2], [2 -> 3], [3 -> 1], 4
     sql::Statement shift_statement(
         db_->GetCachedStatement(SQL_FROM_HERE,
-                                "UPDATE thumbnails "
+                                "UPDATE top_sites "
                                 "SET url_rank = url_rank + 1 "
-                                "WHERE url_rank >= ? AND url_rank < ? "
-                                "AND url_rank <> -1"));
+                                "WHERE url_rank >= ? AND url_rank < ?"));
     shift_statement.BindInt(0, new_rank);
     shift_statement.BindInt(1, prev_rank);
     shift_statement.Run();
@@ -526,10 +544,9 @@ void TopSitesDatabase::UpdateSiteRankNoTransaction(const MostVisitedURL& url,
     // 0, [1 -> 3], [2 -> 1], [3 -> 2], 4
     sql::Statement shift_statement(
         db_->GetCachedStatement(SQL_FROM_HERE,
-                                "UPDATE thumbnails "
+                                "UPDATE top_sites "
                                 "SET url_rank = url_rank - 1 "
-                                "WHERE url_rank > ? AND url_rank <= ? "
-                                "AND url_rank <> -1"));
+                                "WHERE url_rank > ? AND url_rank <= ?"));
     shift_statement.BindInt(0, prev_rank);
     shift_statement.BindInt(1, new_rank);
     shift_statement.Run();
@@ -537,7 +554,7 @@ void TopSitesDatabase::UpdateSiteRankNoTransaction(const MostVisitedURL& url,
 
   // Set the url's new_rank.
   sql::Statement set_statement(db_->GetCachedStatement(SQL_FROM_HERE,
-                                                       "UPDATE thumbnails "
+                                                       "UPDATE top_sites "
                                                        "SET url_rank = ? "
                                                        "WHERE url == ?"));
   set_statement.BindInt(0, new_rank);
@@ -553,16 +570,16 @@ bool TopSitesDatabase::RemoveURLNoTransaction(const MostVisitedURL& url) {
   // Decrement all following ranks.
   sql::Statement shift_statement(
       db_->GetCachedStatement(SQL_FROM_HERE,
-                              "UPDATE thumbnails "
+                              "UPDATE top_sites "
                               "SET url_rank = url_rank - 1 "
-                              "WHERE url_rank > ? AND url_rank <> -1"));
+                              "WHERE url_rank > ?"));
   shift_statement.BindInt(0, old_rank);
 
   if (!shift_statement.Run())
     return false;
 
   sql::Statement delete_statement(db_->GetCachedStatement(
-      SQL_FROM_HERE, "DELETE FROM thumbnails WHERE url = ?"));
+      SQL_FROM_HERE, "DELETE FROM top_sites WHERE url = ?"));
   delete_statement.BindString(0, url.url.spec());
 
   return delete_statement.Run();
