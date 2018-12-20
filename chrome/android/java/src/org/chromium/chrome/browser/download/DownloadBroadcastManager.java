@@ -179,18 +179,19 @@ public class DownloadBroadcastManager extends Service {
         final boolean browserStarted =
                 BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                         .isStartupSuccessfullyCompleted();
+        final ContentId id = getContentIdFromIntent(intent);
         final BrowserParts parts = new EmptyBrowserParts() {
             @Override
             public void finishNativeInitialization() {
                 // Delay the stop of the service by WAIT_TIME_MS after native library is loaded.
                 mHandler.postDelayed(mStopSelfRunnable, WAIT_TIME_MS);
 
-                if (ACTION_DOWNLOAD_RESUME.equals(intent.getAction())) {
+                if (ACTION_DOWNLOAD_RESUME.equals(intent.getAction())
+                        && LegacyHelpers.isLegacyDownload(id)) {
                     DownloadNotificationUmaHelper.recordDownloadResumptionHistogram(browserStarted
                                     ? UmaDownloadResumption.BROWSER_RUNNING
                                     : UmaDownloadResumption.BROWSER_NOT_RUNNING);
                     if (!browserStarted) {
-                        final ContentId id = getContentIdFromIntent(intent);
                         DownloadManagerService.getDownloadManagerService()
                                 .onBackgroundDownloadStarted(id.id);
                     }
@@ -200,6 +201,7 @@ public class DownloadBroadcastManager extends Service {
 
             @Override
             public boolean startServiceManagerOnly() {
+                if (!LegacyHelpers.isLegacyDownload(id)) return false;
                 Set<String> features = new HashSet<String>();
                 features.add(ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD);
                 features.add(ChromeFeatureList.NETWORK_SERVICE);
