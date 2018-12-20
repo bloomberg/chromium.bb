@@ -382,11 +382,10 @@ MediaControls.prototype.initTimeControls = function(opt_parent) {
   this.progressSlider_.addEventListener('dragging-changed', event => {
     this.setSeeking_(event.detail.value);
   });
-  this.progressSlider_.addEventListener(
-      'cr-slider-value-changed-from-ui', () => {
-        this.onProgressChange_();
-        this.updateTimeFromSlider_();
-      });
+  this.progressSlider_.addEventListener('cr-slider-value-changed', () => {
+    this.onProgressChange_();
+    this.updateTimeFromSlider_();
+  });
   timeControls.appendChild(this.progressSlider_);
 };
 
@@ -575,7 +574,7 @@ MediaControls.prototype.initVolumeControls = function(opt_parent) {
   this.volume_.setAttribute('aria-label',
       str('MEDIA_PLAYER_VOLUME_SLIDER_LABEL'));
   this.volume_.addEventListener(
-      'cr-slider-value-changed-from-ui', this.onVolumeChange_.bind(this));
+      'cr-slider-value-changed', this.onVolumeChange_.bind(this));
   this.loadVolumeControlState();
   volumeControls.appendChild(this.volume_);
 };

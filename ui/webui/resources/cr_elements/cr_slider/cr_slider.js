@@ -37,9 +37,8 @@ cr_slider.SliderTick;
   /**
    * The following are the events emitted from cr-slider.
    *
-   * cr-slider-value-changed-from-ui: fired when updating slider via the UI.
+   * cr-slider-value-changed: fired when updating slider via the UI.
    * dragging-changed: fired on pointer down and on pointer up.
-   * value-changed: fired anytime |value| is changed, manually or via the UI.
    */
   Polymer({
     is: 'cr-slider',
@@ -116,8 +115,6 @@ cr_slider.SliderTick;
       value: {
         type: Number,
         value: 0,
-        notify: true,
-        observer: 'onValueChanged_',
       },
 
       /** @private */
@@ -233,15 +230,6 @@ cr_slider.SliderTick;
       return (this.value - this.min) / (this.max - this.min);
     },
 
-    /** @private */
-    ensureValidValue_: function() {
-      if (this.value == undefined)
-        return;
-      let validValue = clamp(this.min, this.max, this.value);
-      validValue = this.snaps ? Math.round(validValue) : validValue;
-      this.value = validValue;
-    },
-
     /**
      * Removes all event listeners related to dragging, and cancels ripple.
      * @param {number} pointerId
@@ -295,26 +283,21 @@ cr_slider.SliderTick;
       if (event.metaKey || event.shiftKey || event.altKey || event.ctrlKey)
         return;
 
-      let handled = true;
       if (event.key == 'Home') {
-        this.value = this.min;
+        this.updateValue_(this.min);
       } else if (event.key == 'End') {
-        this.value = this.max;
+        this.updateValue_(this.max);
       } else if (this.deltaKeyMap_.has(event.key)) {
-        const newValue = this.value + this.deltaKeyMap_.get(event.key);
-        this.value = clamp(this.min, this.max, newValue);
+        this.updateValue_(this.value + this.deltaKeyMap_.get(event.key));
       } else {
-        handled = false;
+        return;
       }
 
-      if (handled) {
-        this.fire('cr-slider-value-changed-from-ui');
-        event.preventDefault();
-        event.stopPropagation();
-        setTimeout(() => {
-          this.holdDown_ = true;
-        });
-      }
+      event.preventDefault();
+      event.stopPropagation();
+      setTimeout(() => {
+        this.holdDown_ = true;
+      });
     },
 
     /**
@@ -388,17 +371,7 @@ cr_slider.SliderTick;
         this.max = this.ticks.length - 1;
         this.min = 0;
       }
-      this.ensureValidValue_();
-      this.updateLabelAndAria_();
-    },
-
-    /**
-     * Update |value| which is used for rendering when |value| is
-     * updated either programmatically or from a keyboard input or a mouse drag.
-     * @private
-     */
-    onValueChanged_: function() {
-      this.ensureValidValue_();
+      this.updateValue_(this.value);
     },
 
     /** @private */
@@ -424,7 +397,7 @@ cr_slider.SliderTick;
       this.label_ = Number.isFinite(tick) ? '' : tick.label;
 
       // Update label location after it has been rendered.
-      this.async(() => {
+      setTimeout(() => {
         const label = this.$.label;
         const parentWidth = label.parentElement.offsetWidth;
         const labelWidth = label.offsetWidth;
@@ -432,11 +405,7 @@ cr_slider.SliderTick;
         const margin = 16;
         const knobLocation = parentWidth * this.getRatio() + margin;
         const offsetStart = knobLocation - (labelWidth / 2);
-        // The label should be centered over the knob. Clamping the offset to a
-        // min and max value prevents the label from being cutoff.
-        const max = parentWidth + 2 * margin - labelWidth;
-        label.style.marginInlineStart =
-            `${Math.round(clamp(0, max, offsetStart))}px`;
+        label.style.marginInlineStart = `${Math.round(offsetStart)}px`;
       });
 
       const ariaValues = [tick, ticks[0], ticks[ticks.length - 1]].map(t => {
@@ -453,6 +422,19 @@ cr_slider.SliderTick;
     },
 
     /**
+     * @param {number} value
+     * @private
+     */
+    updateValue_: function(value) {
+      let validValue = clamp(this.min, this.max, value);
+      validValue = this.snaps ? Math.round(validValue) : validValue;
+      if (this.value != validValue) {
+        this.value = validValue;
+        this.fire('cr-slider-value-changed');
+      }
+    },
+
+    /**
      * @param {number} clientX
      * @private
      */
@@ -461,8 +443,7 @@ cr_slider.SliderTick;
       let ratio = (clientX - rect.left) / rect.width;
       if (this.isRtl_)
         ratio = 1 - ratio;
-      this.value = ratio * (this.max - this.min) + this.min;
-      this.fire('cr-slider-value-changed-from-ui');
+      this.updateValue_(ratio * (this.max - this.min) + this.min);
     },
 
     _createRipple: function() {
