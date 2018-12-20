@@ -41,6 +41,7 @@ class AboutResourceRootFolderIdLoader : public RootFolderIdLoader {
       std::unique_ptr<google_apis::AboutResource> about_resource);
 
   AboutResourceLoader* about_resource_loader_;  // Not owned.
+  std::string root_folder_id_;
 
   THREAD_CHECKER(thread_checker_);
 

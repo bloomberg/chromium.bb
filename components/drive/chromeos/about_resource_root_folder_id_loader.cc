@@ -22,8 +22,12 @@ void AboutResourceRootFolderIdLoader::GetRootFolderId(
     const RootFolderIdCallback& callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // After the initial load GetAboutResource will just return the cached value,
-  // avoiding any network calls.
+  // If we have already read the root folder id, then we can simply return it.
+  if (!root_folder_id_.empty()) {
+    callback.Run(FILE_ERROR_OK, root_folder_id_);
+    return;
+  }
+
   about_resource_loader_->GetAboutResource(
       base::BindRepeating(&AboutResourceRootFolderIdLoader::OnGetAboutResource,
                           weak_ptr_factory_.GetWeakPtr(), callback));
@@ -43,7 +47,9 @@ void AboutResourceRootFolderIdLoader::OnGetAboutResource(
 
   DCHECK(about_resource);
 
-  callback.Run(error, about_resource->root_folder_id());
+  // The root folder id is immutable so we can save it for subsequent calls.
+  root_folder_id_ = about_resource->root_folder_id();
+  callback.Run(error, root_folder_id_);
 }
 
 }  // namespace internal
