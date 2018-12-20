@@ -29,6 +29,26 @@ void SendResponse(dbus::MethodCall* method_call,
   writer.AppendBool(answer);
   response_sender.Run(std::move(response));
 }
+
+Profile* GetSenderProfile(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  dbus::MessageReader reader(method_call);
+  std::string user_id_hash;
+
+  if (!reader.PopString(&user_id_hash)) {
+    LOG(ERROR) << "Failed to pop user_id_hash from incoming message.";
+    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
+        method_call, DBUS_ERROR_INVALID_ARGS, "No user_id_hash string arg"));
+    return nullptr;
+  }
+
+  if (user_id_hash.empty())
+    return ProfileManager::GetActiveUserProfile();
+
+  return g_browser_process->profile_manager()->GetProfileByPath(
+      chromeos::ProfileHelper::GetProfilePathByUserIdHash(user_id_hash));
+}
 }  // namespace
 
 namespace chromeos {
@@ -83,24 +103,10 @@ void ChromeFeaturesServiceProvider::OnExported(
 void ChromeFeaturesServiceProvider::IsCrostiniEnabled(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  dbus::MessageReader reader(method_call);
-  std::string user_id_hash;
-
-  if (!reader.PopString(&user_id_hash)) {
-    LOG(ERROR) << "Failed to pop user_id_hash from incoming message.";
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS, "No user_id_hash string arg"));
-    return;
-  }
-
-  Profile* profile =
-      user_id_hash.empty()
-          ? ProfileManager::GetActiveUserProfile()
-          : g_browser_process->profile_manager()->GetProfileByPath(
-                ProfileHelper::GetProfilePathByUserIdHash(user_id_hash));
-
-  SendResponse(method_call, response_sender,
-               crostini::IsCrostiniAllowedForProfile(profile));
+  Profile* profile = GetSenderProfile(method_call, response_sender);
+  SendResponse(
+      method_call, response_sender,
+      profile ? crostini::IsCrostiniAllowedForProfile(profile) : false);
 }
 
 void ChromeFeaturesServiceProvider::IsPluginVmEnabled(
