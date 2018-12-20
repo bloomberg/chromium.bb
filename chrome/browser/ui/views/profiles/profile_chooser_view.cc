@@ -217,6 +217,14 @@ std::vector<gfx::Image> GetImagesForAccounts(
   return images;
 }
 
+gfx::ImageSkia CreateVectorIcon(const gfx::VectorIcon& icon) {
+  return gfx::CreateVectorIcon(
+      icon, kIconSize,
+      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()
+          ? gfx::kGoogleGrey500
+          : gfx::kChromeIconGrey);
+}
+
 }  // namespace
 
 // A title card with one back button left aligned and one label center aligned.
@@ -1333,9 +1341,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
     DCHECK(service);
     if (service->GetBoolean(prefs::kBrowserGuestModeEnabled)) {
       guest_profile_button_ = new HoverButton(
-          this,
-          gfx::CreateVectorIcon(kUserMenuGuestIcon, kIconSize,
-                                gfx::kChromeIconGrey),
+          this, CreateVectorIcon(kUserMenuGuestIcon),
           l10n_util::GetStringUTF16(IDS_PROFILES_OPEN_GUEST_PROFILE_BUTTON));
       layout->StartRow(1.0, 0);
       layout->AddView(guest_profile_button_);
@@ -1346,10 +1352,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
       is_guest ? IDS_PROFILES_EXIT_GUEST : IDS_PROFILES_MANAGE_USERS_BUTTON);
   const gfx::VectorIcon& settings_icon =
       is_guest ? kCloseAllIcon : kSettingsIcon;
-  users_button_ = new HoverButton(
-      this,
-      gfx::CreateVectorIcon(settings_icon, kIconSize, gfx::kChromeIconGrey),
-      text);
+  users_button_ = new HoverButton(this, CreateVectorIcon(settings_icon), text);
 
   layout->StartRow(1.0, 0);
   layout->AddView(users_button_);
@@ -1366,8 +1369,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
     AvatarMenu::Item active_avatar_item =
         avatar_menu->GetItemAt(ordered_item_indices[0]);
     close_all_windows_button_ = new HoverButton(
-        this,
-        gfx::CreateVectorIcon(kCloseAllIcon, kIconSize, gfx::kChromeIconGrey),
+        this, CreateVectorIcon(kCloseAllIcon),
         avatar_menu->GetNumberOfItems() >= 2
             ? l10n_util::GetStringFUTF16(IDS_PROFILES_EXIT_PROFILE_BUTTON,
                                          active_avatar_item.name)
@@ -1409,23 +1411,20 @@ views::View* ProfileChooserView::CreateAutofillHomeView() {
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
 
   // Passwords.
-  passwords_button_ = new HoverButton(
-      this, gfx::CreateVectorIcon(kKeyIcon, kIconSize, gfx::kChromeIconGrey),
-      l10n_util::GetStringUTF16(IDS_PROFILES_PASSWORDS_LINK));
+  passwords_button_ =
+      new HoverButton(this, CreateVectorIcon(kKeyIcon),
+                      l10n_util::GetStringUTF16(IDS_PROFILES_PASSWORDS_LINK));
   view->AddChildView(passwords_button_);
 
   // Credit cards.
   credit_cards_button_ = new HoverButton(
-      this,
-      gfx::CreateVectorIcon(kCreditCardIcon, kIconSize, gfx::kChromeIconGrey),
+      this, CreateVectorIcon(kCreditCardIcon),
       l10n_util::GetStringUTF16(IDS_PROFILES_CREDIT_CARDS_LINK));
   view->AddChildView(credit_cards_button_);
 
   // Addresses.
   addresses_button_ =
-      new HoverButton(this,
-                      gfx::CreateVectorIcon(vector_icons::kLocationOnIcon,
-                                            kIconSize, gfx::kChromeIconGrey),
+      new HoverButton(this, CreateVectorIcon(vector_icons::kLocationOnIcon),
                       l10n_util::GetStringUTF16(IDS_PROFILES_ADDRESSES_LINK));
   view->AddChildView(addresses_button_);
   return view;
@@ -1493,8 +1492,7 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
   int warning_button_width = 0;
   if (reauth_required) {
     const int kIconSize = 18;
-    warning_default_image = gfx::CreateVectorIcon(
-        vector_icons::kWarningIcon, kIconSize, gfx::kChromeIconGrey);
+    warning_default_image = CreateVectorIcon(vector_icons::kWarningIcon),
     warning_button_width =
         kIconSize +
         provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
