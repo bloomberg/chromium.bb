@@ -44,8 +44,7 @@ namespace {
 // fatal (in fact, very old data may be expired immediately at startup
 // anyhow).
 
-// TODO(kristipark): Add revision/date details after v4 lands.
-// Version 4: kristipark@chromium.org
+// Version 4: 95af34ec/r618360 kristipark@chromium.org on 2018-12-20
 // Version 3: b6d6a783/r231648 by beaudoin@chromium.org on 2013-10-29
 // Version 2: eb0b24e6/r87284 by satorux@chromium.org on 2011-05-31 (deprecated)
 // Version 1: 809cc4d8/r64072 by sky@chromium.org on 2010-10-27 (deprecated)
