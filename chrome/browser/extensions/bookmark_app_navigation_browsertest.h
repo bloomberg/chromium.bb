@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/ssl/cert_verifier_browser_test.h"
+#include "chrome/browser/ssl/chrome_mock_cert_verifier.h"
 #include "extensions/common/extension.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"

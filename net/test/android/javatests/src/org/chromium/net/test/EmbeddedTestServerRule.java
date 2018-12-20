@@ -4,6 +4,7 @@
 
 package org.chromium.net.test;
 
+import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 
 import org.junit.rules.TestWatcher;
@@ -25,6 +26,9 @@ public class EmbeddedTestServerRule extends TestWatcher {
     @GuardedBy("mLock")
     private int mServerPort;
 
+    @GuardedBy("mLock")
+    private boolean mUseHttps;
+
     @Override
     protected void finished(Description description) {
         super.finished(description);
@@ -44,8 +48,11 @@ public class EmbeddedTestServerRule extends TestWatcher {
         synchronized (mLock) {
             if (mServer == null) {
                 try {
-                    mServer = EmbeddedTestServer.createAndStartServerWithPort(
-                            InstrumentationRegistry.getContext(), mServerPort);
+                    Context context = InstrumentationRegistry.getContext();
+                    mServer = mUseHttps
+                            ? EmbeddedTestServer.createAndStartHTTPSServerWithPort(
+                                    context, ServerCertificate.CERT_OK, mServerPort)
+                            : EmbeddedTestServer.createAndStartServerWithPort(context, mServerPort);
                 } catch (InterruptedException e) {
                     throw new EmbeddedTestServer.EmbeddedTestServerFailure(
                             "Test server didn't start");
@@ -69,6 +76,14 @@ public class EmbeddedTestServerRule extends TestWatcher {
         synchronized (mLock) {
             assert mServer == null;
             mServerPort = port;
+        }
+    }
+
+    /** Sets whether to create an HTTPS (vs HTTP) server. */
+    public void setServerUsesHttps(boolean useHttps) {
+        synchronized (mLock) {
+            assert mServer == null;
+            mUseHttps = useHttps;
         }
     }
 }
