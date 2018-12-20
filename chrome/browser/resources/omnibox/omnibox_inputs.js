@@ -5,6 +5,7 @@
 /**
  * @typedef {{
  *   inputText: string,
+ *   resetAutocompleteController: boolean,
  *   cursorPosition: number,
  *   preventInlineAutocomplete: boolean,
  *   preferKeyword: boolean,
@@ -25,6 +26,12 @@ let DisplayInputs;
 class OmniboxInputs extends OmniboxElement {
   constructor() {
     super('omnibox-inputs-template');
+
+    const displayInputs = OmniboxInputs.defaultDisplayInputs;
+    this.$$('show-incomplete-results').checked =
+        displayInputs.showIncompleteResults;
+    this.$$('show-details').checked = displayInputs.showDetails;
+    this.$$('show-all-providers').checked = displayInputs.showAllProviders;
   }
 
   /** @override */
@@ -103,6 +110,15 @@ class OmniboxInputs extends OmniboxElement {
     return this.$$('lock-cursor-position').checked ?
         this.$$('input-text').value.length :
         this.$$('input-text').selectionEnd;
+  }
+
+  /** @return {DisplayInputs} */
+  static get defaultDisplayInputs() {
+    return {
+      showIncompleteResults: false,
+      showDetails: false,
+      showAllProviders: true,
+    };
   }
 }
 
