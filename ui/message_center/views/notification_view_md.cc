@@ -135,16 +135,6 @@ constexpr double kProgressNotificationMessageRatio = 0.7;
 // This key/property allows tagging the textfield with its index.
 DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(int, kTextfieldIndexKey, 0U);
 
-// Users on ChromeOS are used to the Settings and Close buttons not being
-// visible at all times, but users on other platforms expect them to be visible.
-constexpr bool AlwaysShowControlButtons() {
-#if defined(OS_CHROMEOS)
-  return false;
-#else
-  return true;
-#endif
-}
-
 // FontList for the texts except for the header.
 gfx::FontList GetTextFontList() {
   gfx::Font default_font;
@@ -1239,18 +1229,6 @@ void NotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
 
   Layout();
   SchedulePaint();
-}
-
-// TODO(yoshiki): Move this to the parent class (MessageView) and share the code
-// among NotificationView and ArcNotificationView.
-void NotificationViewMD::UpdateControlButtonsVisibility() {
-  const bool target_visibility =
-      (AlwaysShowControlButtons() || IsMouseHovered() ||
-       control_buttons_view_->IsCloseButtonFocused() ||
-       control_buttons_view_->IsSettingsButtonFocused()) &&
-      (GetMode() != Mode::SETTING);
-
-  control_buttons_view_->SetVisible(target_visibility);
 }
 
 void NotificationViewMD::UpdateCornerRadius(int top_radius, int bottom_radius) {

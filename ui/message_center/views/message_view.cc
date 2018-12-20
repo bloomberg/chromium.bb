@@ -130,21 +130,6 @@ void MessageView::CloseSwipeControl() {
   slide_out_controller_.CloseSwipeControl();
 }
 
-bool MessageView::IsCloseButtonFocused() const {
-  auto* control_buttons_view = GetControlButtonsView();
-  return control_buttons_view ? control_buttons_view->IsCloseButtonFocused()
-                              : false;
-}
-
-void MessageView::RequestFocusOnCloseButton() {
-  auto* control_buttons_view = GetControlButtonsView();
-  if (!control_buttons_view)
-    return;
-
-  control_buttons_view->RequestFocusOnCloseButton();
-  UpdateControlButtonsVisibility();
-}
-
 void MessageView::SetExpanded(bool expanded) {
   // Not implemented by default.
 }
@@ -383,6 +368,7 @@ float MessageView::GetSlideAmount() const {
 void MessageView::SetSettingMode(bool setting_mode) {
   setting_mode_ = setting_mode;
   slide_out_controller_.set_slide_mode(CalculateSlideMode());
+  UpdateControlButtonsVisibility();
 }
 
 void MessageView::DisableSlideForcibly(bool disable) {
@@ -405,6 +391,26 @@ void MessageView::OnSettingsButtonPressed(const ui::Event& event) {
 
 void MessageView::OnSnoozeButtonPressed(const ui::Event& event) {
   // No default implementation for snooze.
+}
+
+bool MessageView::ShouldShowControlButtons() const {
+#if defined(OS_CHROMEOS)
+  // Users on ChromeOS are used to the Settings and Close buttons not being
+  // visible at all times, but users on other platforms expect them to be
+  // visible.
+  auto* control_buttons_view = GetControlButtonsView();
+  return control_buttons_view &&
+         (control_buttons_view->IsAnyButtonFocused() ||
+          (GetMode() != Mode::SETTING && IsMouseHovered()));
+#else
+  return true;
+#endif
+}
+
+void MessageView::UpdateControlButtonsVisibility() {
+  auto* control_buttons_view = GetControlButtonsView();
+  if (control_buttons_view)
+    control_buttons_view->ShowButtons(ShouldShowControlButtons());
 }
 
 void MessageView::SetDrawBackgroundAsActive(bool active) {

@@ -112,11 +112,6 @@ void SetBorderRight(views::View* view, int right) {
 class NotificationItemView : public views::View {
  public:
   explicit NotificationItemView(const NotificationItem& item);
-  ~NotificationItemView() override;
-
-  // Overridden from views::View:
-  void SetVisible(bool visible) override;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationItemView);
 };
@@ -142,14 +137,6 @@ NotificationItemView::NotificationItemView(const NotificationItem& item) {
 
   PreferredSizeChanged();
   SchedulePaint();
-}
-
-NotificationItemView::~NotificationItemView() {}
-
-void NotificationItemView::SetVisible(bool visible) {
-  views::View::SetVisible(visible);
-  for (int i = 0; i < child_count(); ++i)
-    child_at(i)->SetVisible(visible);
 }
 
 }  // namespace
@@ -629,23 +616,6 @@ void NotificationView::UpdateControlButtonsVisibilityWithNotification(
   control_buttons_view_->ShowCloseButton(GetMode() ==
                                          MessageView::Mode::NORMAL);
   UpdateControlButtonsVisibility();
-}
-
-void NotificationView::UpdateControlButtonsVisibility() {
-#if defined(OS_CHROMEOS)
-  // On Chrome OS, the settings button and the close button are shown when:
-  // (1) the mouse is hovering on the notification.
-  // (2) the focus is on the control buttons.
-  const bool target_visibility =
-      IsMouseHovered() || control_buttons_view_->IsCloseButtonFocused() ||
-      control_buttons_view_->IsSettingsButtonFocused();
-#else
-  // On non Chrome OS, the settings button and the close button are always
-  // shown.
-  const bool target_visibility = true;
-#endif
-
-  control_buttons_view_->SetVisible(target_visibility);
 }
 
 NotificationControlButtonsView* NotificationView::GetControlButtonsView()

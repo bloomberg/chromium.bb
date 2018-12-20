@@ -163,15 +163,6 @@ MediaNotificationView::GetControlButtonsView() const {
   return control_buttons_view_.get();
 }
 
-void MediaNotificationView::UpdateControlButtonsVisibility() {
-  const bool target_visibility =
-      (IsMouseHovered() || control_buttons_view_->IsCloseButtonFocused() ||
-       control_buttons_view_->IsSettingsButtonFocused()) &&
-      (GetMode() != Mode::SETTING);
-
-  control_buttons_view_->SetVisible(target_visibility);
-}
-
 void MediaNotificationView::SetExpanded(bool expanded) {
   if (expanded_ == expanded)
     return;

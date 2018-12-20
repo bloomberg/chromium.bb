@@ -47,7 +47,6 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
       const message_center::Notification& notification) override;
   message_center::NotificationControlButtonsView* GetControlButtonsView()
       const override;
-  void UpdateControlButtonsVisibility() override;
   void SetExpanded(bool expanded) override;
 
   // views::View:

@@ -48,7 +48,6 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView,
   // Overridden from MessageView:
   void UpdateWithNotification(const Notification& notification) override;
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-  void UpdateControlButtonsVisibility() override;
   NotificationControlButtonsView* GetControlButtonsView() const override;
 
  private:
