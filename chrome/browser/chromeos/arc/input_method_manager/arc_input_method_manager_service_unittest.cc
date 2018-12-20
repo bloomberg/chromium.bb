@@ -34,7 +34,6 @@
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/mock_ime_input_context_handler.h"
 #include "ui/base/ime/mock_input_method.h"
-#include "ui/base/ui_base_features.h"
 
 namespace arc {
 namespace {
@@ -714,10 +713,6 @@ TEST_F(ArcInputMethodManagerServiceTest, FocusAndBlur) {
 }
 
 TEST_F(ArcInputMethodManagerServiceTest, DisableFallbackVirtualKeyboard) {
-  // TODO(crbug.com/910240): fix for mash.
-  if (features::IsSingleProcessMash())
-    return;
-
   namespace ceiu = chromeos::extension_ime_util;
   using crx_file::id_util::GenerateId;
 

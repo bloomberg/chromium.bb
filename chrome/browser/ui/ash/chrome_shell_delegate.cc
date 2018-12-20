@@ -52,11 +52,6 @@ void ChromeShellDelegate::OpenKeyboardShortcutHelpPage() const {
   Navigate(&params);
 }
 
-std::unique_ptr<keyboard::KeyboardUI> ChromeShellDelegate::CreateKeyboardUI() {
-  return std::make_unique<ChromeKeyboardUI>(
-      ProfileManager::GetActiveUserProfile());
-}
-
 ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {
   return new ChromeAccessibilityDelegate;
 }

@@ -10,6 +10,7 @@
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"
 #include "ash/components/tap_visualizer/public/mojom/constants.mojom.h"
+#include "ash/keyboard/test_keyboard_ui.h"
 #include "ash/login_status.h"
 #include "ash/shell.h"
 #include "ash/shell/example_session_controller_client.h"
@@ -95,6 +96,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   init_params.context_factory_private = content::GetContextFactoryPrivate();
   init_params.gpu_interface_provider = content::CreateGpuInterfaceProvider();
   init_params.connector = connector;
+  init_params.keyboard_ui_factory = std::make_unique<TestKeyboardUIFactory>();
   ash::Shell::CreateInstance(std::move(init_params));
 
   // Initialize session controller client and create fake user sessions. The

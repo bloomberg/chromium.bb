@@ -198,6 +198,7 @@
 #include "ui/events/event_target_iterator.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/keyboard/keyboard_ui_factory.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller.h"
@@ -270,7 +271,8 @@ Shell* Shell::CreateInstance(ShellInitParams init_params) {
   instance_->Init(init_params.context_factory,
                   init_params.context_factory_private,
                   std::move(init_params.initial_display_prefs),
-                  std::move(init_params.gpu_interface_provider));
+                  std::move(init_params.gpu_interface_provider),
+                  std::move(init_params.keyboard_ui_factory));
   return instance_;
 }
 
@@ -960,7 +962,8 @@ void Shell::Init(
     ui::ContextFactory* context_factory,
     ui::ContextFactoryPrivate* context_factory_private,
     std::unique_ptr<base::Value> initial_display_prefs,
-    std::unique_ptr<ws::GpuInterfaceProvider> gpu_interface_provider) {
+    std::unique_ptr<ws::GpuInterfaceProvider> gpu_interface_provider,
+    std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory) {
   if (::features::IsSingleProcessMash()) {
     // In SingleProcessMash mode ScreenMus is not created, which means Ash needs
     // to set the WindowManagerFrameValues.
@@ -1218,6 +1221,9 @@ void Shell::Init(
   system_notification_controller_ =
       std::make_unique<SystemNotificationController>();
 
+  ash_keyboard_controller_->CreateVirtualKeyboard(
+      std::move(keyboard_ui_factory));
+
   window_tree_host_manager_->InitHosts();
 
   // |assistant_controller_| needs to be created after InitHosts() since its
@@ -1225,8 +1231,6 @@ void Shell::Init(
   assistant_controller_ = chromeos::switches::IsAssistantEnabled()
                               ? std::make_unique<AssistantController>()
                               : nullptr;
-
-  ash_keyboard_controller_->CreateVirtualKeyboard();
 
   cursor_manager_->HideCursor();  // Hide the mouse cursor on startup.
   cursor_manager_->SetCursor(ui::CursorType::kPointer);

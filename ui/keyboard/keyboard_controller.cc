@@ -1092,6 +1092,14 @@ bool KeyboardController::IsKeyboardVisible() {
   return false;
 }
 
+void KeyboardController::KeyboardContentsLoaded(
+    const base::UnguessableToken& token,
+    const gfx::Size& size) {
+  if (!IsEnabled())
+    return;
+  ui_->KeyboardContentsLoaded(token, size);
+}
+
 ui::TextInputClient* KeyboardController::GetTextInputClient() {
   return ui_->GetInputMethod()->GetTextInputClient();
 }

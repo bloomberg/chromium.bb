@@ -13,6 +13,7 @@
 #include "ash/display/display_configuration_controller_test_api.h"
 #include "ash/display/screen_ash.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/keyboard/test_keyboard_ui.h"
 #include "ash/mojo_test_interface_factory.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/test/test_keyboard_controller_observer.h"
@@ -376,6 +377,7 @@ void AshTestHelper::CreateShell() {
   init_params.context_factory_private = context_factory_private;
   init_params.gpu_interface_provider =
       std::make_unique<TestGpuInterfaceProvider>();
+  init_params.keyboard_ui_factory = std::make_unique<TestKeyboardUIFactory>();
   Shell::CreateInstance(std::move(init_params));
 }
 

@@ -51,6 +51,10 @@ class Insets;
 class Point;
 }
 
+namespace keyboard {
+class KeyboardUIFactory;
+}
+
 namespace service_manager {
 class Connector;
 }
@@ -661,7 +665,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   void Init(ui::ContextFactory* context_factory,
             ui::ContextFactoryPrivate* context_factory_private,
             std::unique_ptr<base::Value> initial_display_prefs,
-            std::unique_ptr<ws::GpuInterfaceProvider> gpu_interface_provider);
+            std::unique_ptr<ws::GpuInterfaceProvider> gpu_interface_provider,
+            std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory);
 
   // Initializes the display manager and related components.
   void InitializeDisplayManager();

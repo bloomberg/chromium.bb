@@ -13,6 +13,10 @@ namespace base {
 class Value;
 }
 
+namespace keyboard {
+class KeyboardUIFactory;
+}
+
 namespace service_manager {
 class Connector;
 }
@@ -48,6 +52,10 @@ struct ASH_EXPORT ShellInitParams {
 
   // Connector used by Shell to establish connections.
   service_manager::Connector* connector = nullptr;
+
+  // Factory for creating the virtual keyboard UI. When the window service is
+  // used, this will be null and an AshKeyboardUI instance will be created.
+  std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory;
 };
 
 }  // namespace ash

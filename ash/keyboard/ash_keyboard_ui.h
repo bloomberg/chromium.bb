@@ -37,16 +37,13 @@ class AshKeyboardUI : public keyboard::KeyboardUI, public aura::WindowObserver {
   explicit AshKeyboardUI(AshKeyboardController* ash_keyboard_controller);
   ~AshKeyboardUI() override;
 
-  // Called from AshKeyboardController once the client (chrome) calls
-  // ash.mojom.KeyboardContentsLoaded with the client window token.
-  void KeyboardContentsLoaded(const base::UnguessableToken& token,
-                              const gfx::Size& size);
-
   // keyboard::KeyboardUI:
   aura::Window* LoadKeyboardWindow(LoadCallback callback) override;
   aura::Window* GetKeyboardWindow() const override;
   ui::InputMethod* GetInputMethod() override;
   void ReloadKeyboardIfNeeded() override;
+  void KeyboardContentsLoaded(const base::UnguessableToken& token,
+                              const gfx::Size& size) override;
 
   // aura::WindowObserver:
   void OnWindowBoundsChanged(aura::Window* window,
