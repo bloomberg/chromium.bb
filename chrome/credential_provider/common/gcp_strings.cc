@@ -18,6 +18,7 @@ const char kKeyAccessToken[] = "access_token";
 const char kKeySID[] = "sid";
 const char kKeyTokenHandle[] = "token_handle";
 const char kKeyUsername[] = "user_name";
+const char kKeyExitCode[] = "exit_code";
 
 // Name of registry value that holds user properties.
 const wchar_t kUserTokenHandle[] = L"th";
@@ -45,9 +46,24 @@ const wchar_t kRegUpdaterClientsAppPath[] =
 // Chrome is being opened to show the credential provider logon page.  This
 // page is always shown in incognito mode.
 const char kGcpwSigninSwitch[] = "gcpw-signin";
-const char kEmailDomainSwitch[] = "email-domain";
 
-const char kEmailDomainSigninPromoParameter[] = "emailDomain";
+// The email to use to prefill the Gaia signin page.
+const char kPrefillEmailSwitch[] = "prefill-email";
+
+// Comma separated list of valid Gaia signin domains. If email that is signed
+// into gaia is not part of these domains no LST will be minted and an error
+// will be reported.
+const char kEmailDomainsSwitch[] = "email-domains";
+
+// Expected gaia-id of user that will be signing into gaia. If the ids do not
+// match after signin, no LST will be minted and an error will be reported.
+const char kGaiaIdSwitch[] = "gaia-id";
+
+// Parameter appended to sign in URL to pass valid signin domains to the inline
+// login handler. These domains are separated by ','.
+const char kEmailDomainsSigninPromoParameter[] = "emailDomains";
+const char kEmailDomainsSeparator[] = ",";
+const char kValidateGaiaIdSigninPromoParameter[] = "validate_gaia_id";
 
 const wchar_t kRunAsCrashpadHandlerEntryPoint[] = L"RunAsCrashpadHandler";
 

@@ -84,13 +84,12 @@ class CredentialProviderSigninDialogWinDialogTest
   // has correctly received and procesed the sign in complete message.
   void HandleSignInComplete(
       base::Value signin_result,
-      const std::string& access_token,
-      const std::string& refresh_token,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader);
   bool signin_complete_called_ = false;
 
   std::string result_access_token_;
   std::string result_refresh_token_;
+  int exit_code_;
   base::Value result_value_;
   CredentialProviderSigninDialogTestDataStorage test_data_storage_;
 
@@ -142,11 +141,23 @@ void CredentialProviderSigninDialogWinDialogTest::ShowSigninDialog() {
 
 void CredentialProviderSigninDialogWinDialogTest::HandleSignInComplete(
     base::Value signin_result,
-    const std::string& access_token,
-    const std::string& refresh_token,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader) {
-  result_access_token_ = access_token;
-  result_refresh_token_ = refresh_token;
+  exit_code_ = signin_result
+                   .FindKeyOfType(credential_provider::kKeyExitCode,
+                                  base::Value::Type::INTEGER)
+                   ->GetInt();
+  if (exit_code_ == credential_provider::kUiecSuccess) {
+    result_access_token_ =
+        signin_result
+            .FindKeyOfType(credential_provider::kKeyAccessToken,
+                           base::Value::Type::STRING)
+            ->GetString();
+    result_refresh_token_ =
+        signin_result
+            .FindKeyOfType(credential_provider::kKeyRefreshToken,
+                           base::Value::Type::STRING)
+            ->GetString();
+  }
   EXPECT_FALSE(signin_complete_called_);
   signin_complete_called_ = true;
   result_value_ = std::move(signin_result);
@@ -162,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
   SendSigninCompleteMessage(test_data_storage_.MakeSignInResponseValue());
   EXPECT_TRUE(signin_complete_called_);
   EXPECT_TRUE(result_value_.is_dict());
-  EXPECT_TRUE(result_value_.DictEmpty());
+  EXPECT_EQ(result_value_.DictSize(), 1u);
   EXPECT_TRUE(result_access_token_.empty());
   EXPECT_TRUE(result_refresh_token_.empty());
 }
@@ -178,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
       test_data_storage_.GetSuccessRefreshToken()));
   EXPECT_TRUE(signin_complete_called_);
   EXPECT_TRUE(result_value_.is_dict());
-  EXPECT_TRUE(result_value_.DictEmpty());
+  EXPECT_EQ(result_value_.DictSize(), 1u);
   EXPECT_TRUE(result_access_token_.empty());
   EXPECT_TRUE(result_refresh_token_.empty());
 }
@@ -194,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
       test_data_storage_.GetSuccessRefreshToken()));
   EXPECT_TRUE(signin_complete_called_);
   EXPECT_TRUE(result_value_.is_dict());
-  EXPECT_TRUE(result_value_.DictEmpty());
+  EXPECT_EQ(result_value_.DictSize(), 1u);
   EXPECT_TRUE(result_access_token_.empty());
   EXPECT_TRUE(result_refresh_token_.empty());
 }
@@ -210,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
       test_data_storage_.GetSuccessRefreshToken()));
   EXPECT_TRUE(signin_complete_called_);
   EXPECT_TRUE(result_value_.is_dict());
-  EXPECT_TRUE(result_value_.DictEmpty());
+  EXPECT_EQ(result_value_.DictSize(), 1u);
   EXPECT_TRUE(result_access_token_.empty());
   EXPECT_TRUE(result_refresh_token_.empty());
 }
@@ -226,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
       test_data_storage_.GetSuccessRefreshToken()));
   EXPECT_TRUE(signin_complete_called_);
   EXPECT_TRUE(result_value_.is_dict());
-  EXPECT_TRUE(result_value_.DictEmpty());
+  EXPECT_EQ(result_value_.DictSize(), 1u);
   EXPECT_TRUE(result_access_token_.empty());
   EXPECT_TRUE(result_refresh_token_.empty());
 }
@@ -242,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
       test_data_storage_.GetSuccessAccessToken(), std::string()));
   EXPECT_TRUE(signin_complete_called_);
   EXPECT_TRUE(result_value_.is_dict());
-  EXPECT_TRUE(result_value_.DictEmpty());
+  EXPECT_EQ(result_value_.DictSize(), 1u);
   EXPECT_TRUE(result_access_token_.empty());
   EXPECT_TRUE(result_refresh_token_.empty());
 }
@@ -254,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
   SendValidSigninCompleteMessage();
   EXPECT_TRUE(signin_complete_called_);
   EXPECT_TRUE(result_value_.is_dict());
-  EXPECT_FALSE(result_value_.DictEmpty());
+  EXPECT_GT(result_value_.DictSize(), 1u);
   const base::DictionaryValue* result_dict;
   EXPECT_TRUE(result_value_.GetAsDictionary(&result_dict));
   std::string id_in_dict;
@@ -271,10 +282,67 @@ IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
   EXPECT_EQ(result_refresh_token_, test_data_storage_.GetSuccessRefreshToken());
 }
 
+// Tests the various exit codes for success / failure.
+class CredentialProviderSigninDialogWinDialogExitCodeTest
+    : public CredentialProviderSigninDialogWinDialogTest,
+      public ::testing::WithParamInterface<int> {};
+
+IN_PROC_BROWSER_TEST_P(CredentialProviderSigninDialogWinDialogExitCodeTest,
+                       SigninResultWithExitCode) {
+  ShowSigninDialog();
+  WaitForDialogToLoad();
+  base::Value signin_result = test_data_storage_.MakeValidSignInResponseValue();
+
+  int expected_error_code = GetParam();
+  bool should_succeed =
+      expected_error_code == (int)credential_provider::kUiecSuccess;
+  signin_result.SetKey(credential_provider::kKeyExitCode,
+                       base::Value(expected_error_code));
+
+  SendSigninCompleteMessage(signin_result);
+  EXPECT_TRUE(signin_complete_called_);
+  EXPECT_TRUE(result_value_.is_dict());
+  EXPECT_EQ(exit_code_, expected_error_code);
+  const base::Value* exit_code_value = result_value_.FindKeyOfType(
+      credential_provider::kKeyExitCode, base::Value::Type::INTEGER);
+  EXPECT_NE(exit_code_value, nullptr);
+  EXPECT_EQ(exit_code_value->GetInt(), expected_error_code);
+
+  if (should_succeed) {
+    EXPECT_GT(result_value_.DictSize(), 1u);
+
+    std::string id_in_dict =
+        result_value_.FindKeyOfType("id", base::Value::Type::STRING)
+            ->GetString();
+    std::string email_in_dict =
+        result_value_.FindKeyOfType("email", base::Value::Type::STRING)
+            ->GetString();
+    std::string password_in_dict =
+        result_value_.FindKeyOfType("password", base::Value::Type::STRING)
+            ->GetString();
+
+    EXPECT_EQ(id_in_dict, test_data_storage_.GetSuccessId());
+    EXPECT_EQ(email_in_dict, test_data_storage_.GetSuccessEmail());
+    EXPECT_EQ(password_in_dict, test_data_storage_.GetSuccessPassword());
+    EXPECT_EQ(result_access_token_, test_data_storage_.GetSuccessAccessToken());
+    EXPECT_EQ(result_refresh_token_,
+              test_data_storage_.GetSuccessRefreshToken());
+  } else {
+    EXPECT_EQ(result_value_.DictSize(), 1u);
+    EXPECT_TRUE(result_access_token_.empty());
+    EXPECT_TRUE(result_refresh_token_.empty());
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(
+    ,
+    CredentialProviderSigninDialogWinDialogExitCodeTest,
+    ::testing::Range(0, static_cast<int>(credential_provider::kUiecCount)));
+
 ///////////////////////////////////////////////////////////////////////////////
-// CredentialProviderSigninDialogWinIntegrationTest is used for testing the
-// integration of the dialog into Chrome, This test mainly verifies correct
-// start up state if we provide the --gcpw-signin switch.
+// CredentialProviderSigninDialogWinIntegrationTest is used for testing
+// the integration of the dialog into Chrome, This test mainly verifies
+// correct start up state if we provide the --gcpw-signin switch.
 
 class CredentialProviderSigninDialogWinIntegrationTest
     : public CredentialProviderSigninDialogWinBaseTest {

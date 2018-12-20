@@ -7,11 +7,14 @@
 #include <atlcomcli.h>
 
 #include "base/json/json_writer.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
 #include "chrome/browser/ui/startup/credential_provider_signin_dialog_win_test_data.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
+#include "chrome/credential_provider/gaiacp/gaia_resources.h"
 #include "chrome/credential_provider/gaiacp/reauth_credential.h"
+#include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/test/com_fakes.h"
 #include "chrome/credential_provider/test/fake_gls_run_helper.h"
 #include "chrome/credential_provider/test/gcp_fakes.h"
@@ -47,7 +50,7 @@ void GcpReauthCredentialTest::SetUp() {
       registry_override_.OverrideRegistry(HKEY_LOCAL_MACHINE));
 }
 
-TEST_F(GcpReauthCredentialTest, SetUserInfo) {
+TEST_F(GcpReauthCredentialTest, SetOSUserInfoAndReauthEmail) {
   USES_CONVERSION;
   CredentialProviderSigninDialogTestDataStorage test_data_storage;
 
@@ -55,12 +58,14 @@ TEST_F(GcpReauthCredentialTest, SetUserInfo) {
   ASSERT_EQ(S_OK, CComCreator<CComObject<CReauthCredential>>::CreateInstance(
                       nullptr, IID_IReauthCredential, (void**)&reauth));
   ASSERT_TRUE(!!reauth);
+  CComPtr<IGaiaCredential> gaia_cred;
+  gaia_cred = reauth;
+  ASSERT_TRUE(!!gaia_cred);
 
   const CComBSTR kSid(W2COLE(L"sid"));
-  ASSERT_EQ(S_OK,
-            reauth->SetUserInfo(
-                kSid, CComBSTR(W2COLE(L"username")),
-                CComBSTR(A2COLE(test_data_storage.GetSuccessEmail().c_str()))));
+  ASSERT_EQ(S_OK, reauth->SetOSUserInfo(kSid, CComBSTR(W2COLE(L"username"))));
+  ASSERT_EQ(S_OK, reauth->SetEmailForReauth(CComBSTR(
+                      A2COLE(test_data_storage.GetSuccessEmail().c_str()))));
 
   CComPtr<ICredentialProviderCredential2> cpc2;
   ASSERT_EQ(S_OK, reauth->QueryInterface(IID_ICredentialProviderCredential2,
@@ -72,23 +77,21 @@ TEST_F(GcpReauthCredentialTest, SetUserInfo) {
   ::CoTaskMemFree(sid);
 }
 
-TEST_F(GcpReauthCredentialTest, UsernameMismatch) {
+TEST_F(GcpReauthCredentialTest, UserGaiaIdMismatch) {
   USES_CONVERSION;
 
   CredentialProviderSigninDialogTestDataStorage test_data_storage;
 
-  // Create a valid result with the right user name.
-  std::string signin_result_utf8;
-  EXPECT_TRUE(base::JSONWriter::Write(test_data_storage.expected_full_result(),
-                                      &signin_result_utf8));
-  CComBSTR valid_signin_result = A2COLE(signin_result_utf8.c_str());
+  std::string unexpected_gaia_id = "unexpected-gaia-id";
 
-  // Create an invalid result with the wrong user name.
-  base::Value copy_full_result =
+  // Create an signin result with the unexpected gaia id.
+  base::Value unexpected_full_result =
       test_data_storage.expected_full_result().Clone();
-  copy_full_result.SetKey(kKeyEmail, base::Value("foo_bar2@gmail.com"));
-  EXPECT_TRUE(base::JSONWriter::Write(copy_full_result, &signin_result_utf8));
-  CComBSTR invalid_signin_result = A2COLE(signin_result_utf8.c_str());
+  unexpected_full_result.SetKey(kKeyId, base::Value(unexpected_gaia_id));
+  std::string signin_result_utf8;
+  EXPECT_TRUE(
+      base::JSONWriter::Write(unexpected_full_result, &signin_result_utf8));
+  CComBSTR unexpected_signin_result = A2COLE(signin_result_utf8.c_str());
 
   // Create a fake credential provider.  This object must outlive the reauth
   // credential so it should be declared first.
@@ -99,30 +102,43 @@ TEST_F(GcpReauthCredentialTest, UsernameMismatch) {
   CComBSTR password = A2COLE(test_data_storage.GetSuccessPassword().c_str());
   CComBSTR email = A2COLE(test_data_storage.GetSuccessEmail().c_str());
 
-  // Create a fake user to reauth.
+  // Create two fake users to reauth. One associated with the valid Gaia id
+  // and the other associated to the invalid gaia id.
   OSUserManager* manager = OSUserManager::Get();
-  CComBSTR sid;
+  CComBSTR first_sid;
   DWORD error;
   ASSERT_EQ(S_OK, manager->AddUser(username, password, full_name, L"comment",
-                                   true, &sid, &error));
+                                   true, &first_sid, &error));
+  ASSERT_EQ(S_OK, SetUserProperty(
+                      OLE2CW(first_sid), A2CW(kKeyId),
+                      base::UTF8ToUTF16(test_data_storage.GetSuccessId())));
 
-  // Initialize a reauth credential.
+  CComBSTR second_sid;
+  ASSERT_EQ(S_OK, manager->AddUser(L"foo_bar2", L"pwd2", L"name2", L"comment2",
+                                   true, &second_sid, &error));
+  ASSERT_EQ(S_OK, SetUserProperty(OLE2CW(second_sid), A2CW(kKeyId),
+                                  base::UTF8ToUTF16(unexpected_gaia_id)));
+
+  // Initialize a reauth credential for the valid gaia id.
   CComPtr<IReauthCredential> reauth;
   ASSERT_EQ(S_OK, CComCreator<CComObject<CReauthCredential>>::CreateInstance(
                       nullptr, IID_IReauthCredential, (void**)&reauth));
 
-  CComPtr<IGaiaCredential> cred;
-  ASSERT_EQ(S_OK, reauth->QueryInterface(IID_IGaiaCredential,
-                                         reinterpret_cast<void**>(&cred)));
-  ASSERT_EQ(S_OK, cred->Initialize(&provider));
+  CComPtr<IGaiaCredential> gaia_cred;
+  gaia_cred = reauth;
+  ASSERT_TRUE(!!gaia_cred);
 
-  ASSERT_EQ(S_OK, reauth->SetUserInfo(sid, username, email));
+  ASSERT_EQ(S_OK, gaia_cred->Initialize(&provider));
 
-  // Finishing reauth with an invalid username should fail.
+  ASSERT_EQ(S_OK, reauth->SetOSUserInfo(first_sid, username));
+  ASSERT_EQ(S_OK, reauth->SetEmailForReauth(email));
+
+  // Finishing reauth with an unexpected gaia id should fail.
   CComBSTR error2;
-  ASSERT_NE(S_OK, cred->OnUserAuthenticated(invalid_signin_result, &error2));
+  ASSERT_NE(S_OK,
+            gaia_cred->OnUserAuthenticated(unexpected_signin_result, &error2));
 
-  ASSERT_EQ(S_OK, cred->Terminate());
+  ASSERT_EQ(S_OK, gaia_cred->Terminate());
 
   EXPECT_EQ(0u, provider.username().Length());
   EXPECT_EQ(0u, provider.password().Length());
@@ -163,6 +179,10 @@ TEST_F(GcpReauthCredentialRunnableTest, NormalReauth) {
   DWORD error;
   ASSERT_EQ(S_OK, manager->AddUser(username, password, full_name, L"comment",
                                    true, &sid, &error));
+  ASSERT_EQ(S_OK, SetUserProperty(
+                      OLE2CW(sid), L"id",
+                      base::UTF8ToUTF16(test_data_storage.GetSuccessId())));
+  ASSERT_EQ(S_OK, SetUserProperty(OLE2CW(sid), L"email", OLE2CW(email)));
 
   FakeGaiaCredentialProvider provider;
 
@@ -172,15 +192,15 @@ TEST_F(GcpReauthCredentialRunnableTest, NormalReauth) {
             CreateReauthCredentialWithProvider(&provider, &gaia_cred, &cred));
 
   CComPtr<IReauthCredential> reauth;
-  ASSERT_EQ(S_OK, cred->QueryInterface(IID_IReauthCredential,
-                                       reinterpret_cast<void**>(&reauth)));
+  reauth = cred;
+  ASSERT_TRUE(!!reauth);
 
-  ASSERT_EQ(S_OK, reauth->SetUserInfo(sid, username, email));
+  ASSERT_EQ(S_OK, reauth->SetOSUserInfo(sid, username));
+  ASSERT_EQ(S_OK, reauth->SetEmailForReauth(email));
 
   CComPtr<testing::ITestCredential> test;
   ASSERT_EQ(S_OK, cred.QueryInterface(&test));
-  ASSERT_EQ(S_OK,
-            test->SetGlsEmailAddress(test_data_storage.GetSuccessEmail()));
+  ASSERT_EQ(S_OK, test->SetGlsEmailAddress(std::string()));
 
   ASSERT_EQ(S_OK, run_helper()->StartLogonProcessAndWait(cred));
 
@@ -193,6 +213,58 @@ TEST_F(GcpReauthCredentialRunnableTest, NormalReauth) {
   EXPECT_EQ(TRUE, provider.credentials_changed_fired());
 
   ASSERT_STREQ(test->GetErrorText(), NULL);
+}
+
+TEST_F(GcpReauthCredentialRunnableTest, GaiaIdMismatch) {
+  USES_CONVERSION;
+  CredentialProviderSigninDialogTestDataStorage test_data_storage;
+  CComBSTR username = L"foo_bar";
+  CComBSTR full_name = A2COLE(test_data_storage.GetSuccessFullName().c_str());
+  CComBSTR password = A2COLE(test_data_storage.GetSuccessPassword().c_str());
+  CComBSTR email = A2COLE(test_data_storage.GetSuccessEmail().c_str());
+
+  // Create a fake user to reauth.
+  OSUserManager* manager = OSUserManager::Get();
+  CComBSTR sid;
+  DWORD error;
+  ASSERT_EQ(S_OK, manager->AddUser(username, password, full_name, L"comment",
+                                   true, &sid, &error));
+  ASSERT_EQ(S_OK, SetUserProperty(
+                      OLE2CW(sid), L"id",
+                      base::UTF8ToUTF16(test_data_storage.GetSuccessId())));
+
+  std::string unexpected_gaia_id = "unexpected-gaia-id";
+  FakeGaiaCredentialProvider provider;
+
+  CComPtr<IGaiaCredential> gaia_cred;
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK,
+            CreateReauthCredentialWithProvider(&provider, &gaia_cred, &cred));
+
+  CComPtr<IReauthCredential> reauth;
+  reauth = cred;
+  ASSERT_TRUE(!!reauth);
+
+  ASSERT_EQ(S_OK, reauth->SetOSUserInfo(sid, username));
+  ASSERT_EQ(S_OK, reauth->SetEmailForReauth(email));
+
+  CComPtr<testing::ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  ASSERT_EQ(S_OK, test->SetGlsEmailAddress(std::string()));
+  ASSERT_EQ(S_OK, test->SetGaiaIdOverride(unexpected_gaia_id));
+
+  ASSERT_EQ(S_OK, run_helper()->StartLogonProcessAndWait(cred));
+
+  ASSERT_EQ(S_OK, gaia_cred->Terminate());
+
+  // Check that values were propagated to the provider.
+  EXPECT_EQ(0u, provider.username().Length());
+  EXPECT_EQ(0u, provider.password().Length());
+  EXPECT_EQ(0u, provider.sid().Length());
+  EXPECT_EQ(FALSE, provider.credentials_changed_fired());
+
+  ASSERT_STREQ(test->GetErrorText(),
+               GetStringResource(IDS_EMAIL_MISMATCH_BASE).c_str());
 }
 
 }  // namespace credential_provider
