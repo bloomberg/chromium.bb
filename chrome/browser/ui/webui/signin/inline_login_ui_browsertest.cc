@@ -14,10 +14,8 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
-#include "chrome/browser/signin/fake_signin_manager_builder.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -43,7 +41,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/render_frame_host.h"
@@ -67,6 +64,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -278,9 +276,9 @@ void InlineLoginUIBrowserTest::SetUpSigninManager(const std::string& username) {
   if (username.empty())
     return;
 
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(browser()->profile());
-  signin_manager->SetAuthenticatedAccountInfo(username, username);
+  auto* identity_manager =
+      IdentityManagerFactory::GetForProfile(browser()->profile());
+  identity::MakePrimaryAccountAvailable(identity_manager, username);
 }
 
 void InlineLoginUIBrowserTest::EnableSigninAllowed(bool enable) {
@@ -451,10 +449,8 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
     // Replace the signin manager and token service with fakes. Do this ahead of
     // creating the browser so that a bunch of classes don't register as
     // observers and end up needing to unregister when the fake is substituted.
-    SigninManagerFactory::GetInstance()->SetTestingFactory(
-        context, base::BindRepeating(&BuildFakeSigninManagerForTesting));
-    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
-        context, base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
+    IdentityTestEnvironmentProfileAdaptor::
+        SetIdentityTestEnvironmentFactoriesOnBrowserContext(context);
   }
 
   void SetUp() override {
@@ -488,13 +484,12 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
 
     // Grab references to the fake signin manager and token service.
     Profile* profile = browser()->profile();
-    signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
-        SigninManagerFactory::GetInstance()->GetForProfile(profile));
-    ASSERT_TRUE(signin_manager_);
-    token_service_ = static_cast<FakeProfileOAuth2TokenService*>(
-        ProfileOAuth2TokenServiceFactory::GetInstance()->GetForProfile(
-            profile));
-    ASSERT_TRUE(token_service_);
+    identity_test_env_profile_adaptor_ =
+        std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile);
+  }
+
+  void TearDownOnMainThread() override {
+    identity_test_env_profile_adaptor_.reset();
   }
 
   void SimulateStartAuthCodeForOAuth2TokenExchangeSuccess(
@@ -512,8 +507,6 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
     consumer->OnClientOAuthSuccess(result);
   }
 
-  FakeSigninManagerForTesting* signin_manager() { return signin_manager_; }
-  FakeProfileOAuth2TokenService* token_service() { return token_service_; }
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory() {
     return content::BrowserContext::GetDefaultStoragePartition(
                browser()->profile())
@@ -521,12 +514,17 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
+  identity::IdentityManager* identity_manager() {
+    return identity_test_env_profile_adaptor_->identity_test_env()
+        ->identity_manager();
+  }
+
   std::unique_ptr<net::test_server::ControllableHttpResponse>
       oauth2_token_exchange_success_;
 
  private:
-  FakeSigninManagerForTesting* signin_manager_;
-  FakeProfileOAuth2TokenService* token_service_;
+  std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
+      identity_test_env_profile_adaptor_;
   std::unique_ptr<
       base::CallbackList<void(content::BrowserContext*)>::Subscription>
       will_create_browser_context_services_subscription_;
@@ -693,7 +691,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
 // Test signin helper does not create sync starter when reauthenticating.
 IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                        ReauthCallsUpdateCredentials) {
-  ASSERT_EQ(0ul, token_service()->GetAccounts().size());
+  ASSERT_EQ(0ul, identity_manager()->GetAccountsWithRefreshTokens().size());
 
   // See Source enum in components/signin/core/browser/signin_metrics.h for
   // possible values of access_point=, reason=.
@@ -708,7 +706,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                             false,  // confirm untrusted signin
                             false);
   SimulateOnClientOAuthSuccess(&helper, "refresh_token");
-  ASSERT_EQ(1ul, token_service()->GetAccounts().size());
+  ASSERT_EQ(1ul, identity_manager()->GetAccountsWithRefreshTokens().size());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -716,7 +714,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
 // to profile.
 IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                        AddAccountsCallsUpdateCredentials) {
-  ASSERT_EQ(0ul, token_service()->GetAccounts().size());
+  ASSERT_EQ(0ul, identity_manager()->GetAccountsWithRefreshTokens().size());
 
   // See Source enum in components/signin/core/browser/signin_metrics.h for
   // possible values of access_point=, reason=.
@@ -731,7 +729,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                             false,  // confirm untrusted signin
                             false);
   SimulateOnClientOAuthSuccess(&helper, "refresh_token");
-  ASSERT_EQ(1ul, token_service()->GetAccounts().size());
+  ASSERT_EQ(1ul, identity_manager()->GetAccountsWithRefreshTokens().size());
   base::RunLoop().RunUntilIdle();
 }
 
