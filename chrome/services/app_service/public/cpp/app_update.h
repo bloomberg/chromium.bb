@@ -15,6 +15,10 @@ namespace apps {
 // with "addition" or "merging" simply being that the most recent version of
 // each field "wins".
 //
+// The state may be nullptr, meaning that there are no previous deltas.
+// Alternatively, the delta may be nullptr, meaning that there is no change in
+// state. At least one of state and delta must be non-nullptr.
+//
 // Almost all of an AppPtr's fields are optional. For example, if an app's name
 // hasn't changed, then a delta doesn't necessarily have to contain a copy of
 // the name, as the prior state should already contain it.
@@ -36,11 +40,16 @@ namespace apps {
 // See //chrome/services/app_service/README.md for more details.
 class AppUpdate {
  public:
-  // Modifies state by copying over all of delta's known fields: those fields
-  // whose values aren't "unknown".
-  static void Merge(apps::mojom::App* state, const apps::mojom::AppPtr& delta);
+  // Modifies |state| by copying over all of |delta|'s known fields: those
+  // fields whose values aren't "unknown". The |state| may not be nullptr.
+  static void Merge(apps::mojom::App* state, const apps::mojom::App* delta);
 
-  AppUpdate(const apps::mojom::AppPtr& state, const apps::mojom::AppPtr& delta);
+  // At most one of |state| or |delta| may be nullptr.
+  AppUpdate(const apps::mojom::App* state, const apps::mojom::App* delta);
+
+  // Returns whether this is the first update for the given AppId.
+  // Equivalently, there are no previous deltas for the AppId.
+  bool StateIsNull() const;
 
   apps::mojom::AppType AppType() const;
 
@@ -62,8 +71,8 @@ class AppUpdate {
   bool ShowInSearchChanged() const;
 
  private:
-  const apps::mojom::AppPtr& state_;
-  const apps::mojom::AppPtr& delta_;
+  const apps::mojom::App* state_;
+  const apps::mojom::App* delta_;
 
   DISALLOW_COPY_AND_ASSIGN(AppUpdate);
 };
