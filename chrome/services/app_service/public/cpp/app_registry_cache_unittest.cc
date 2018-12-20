@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -52,18 +54,69 @@ class RecursiveObserver : public apps::AppRegistryCache::Observer {
 
   ~RecursiveObserver() override { cache_->RemoveObserver(this); }
 
+  void PrepareForOnApps(int expected_num_apps,
+                        const std::string& expected_name_for_p) {
+    expected_name_for_p_ = expected_name_for_p;
+    expected_num_apps_ = expected_num_apps;
+    num_apps_seen_on_app_update_ = 0;
+    names_.clear();
+  }
+
+  int NumAppsSeenOnAppUpdate() { return num_apps_seen_on_app_update_; }
+
  protected:
   // apps::AppRegistryCache::Observer overrides.
   void OnAppUpdate(const apps::AppUpdate& outer) override {
-    cache_->ForOneApp(outer.AppId(), [&outer](const apps::AppUpdate& inner) {
-      EXPECT_EQ(outer.AppType(), inner.AppType());
-      EXPECT_EQ(outer.AppId(), inner.AppId());
-      EXPECT_EQ(outer.Readiness(), inner.Readiness());
-      EXPECT_EQ(outer.Name(), inner.Name());
+    int num_apps = 0;
+    cache_->ForEachApp([this, &outer, &num_apps](const apps::AppUpdate& inner) {
+      if (num_apps_seen_on_app_update_ == 0) {
+        // If this is the first time that OnAppUpdate is called, after a
+        // PrepareForOnApps call, then just populate the names_ map.
+        names_[inner.AppId()] = inner.Name();
+      } else {
+        // Otherwise, check that the names found during this OnAppUpdate call
+        // match those during the first OnAppUpdate call.
+        auto iter = names_.find(inner.AppId());
+        EXPECT_EQ(inner.Name(), (iter != names_.end()) ? iter->second : "");
+      }
+
+      if (outer.AppId() == inner.AppId()) {
+        ExpectEq(outer, inner);
+      }
+
+      if (inner.AppId() == "p") {
+        EXPECT_EQ(expected_name_for_p_, inner.Name());
+      }
+
+      num_apps++;
     });
+    EXPECT_EQ(expected_num_apps_, num_apps);
+
+    EXPECT_FALSE(cache_->ForOneApp(
+        "no_such_app_id",
+        [&outer](const apps::AppUpdate& inner) { ExpectEq(outer, inner); }));
+
+    EXPECT_TRUE(cache_->ForOneApp(
+        outer.AppId(),
+        [&outer](const apps::AppUpdate& inner) { ExpectEq(outer, inner); }));
+
+    num_apps_seen_on_app_update_++;
+  }
+
+  static void ExpectEq(const apps::AppUpdate& outer,
+                       const apps::AppUpdate& inner) {
+    EXPECT_EQ(outer.AppType(), inner.AppType());
+    EXPECT_EQ(outer.AppId(), inner.AppId());
+    EXPECT_EQ(outer.StateIsNull(), inner.StateIsNull());
+    EXPECT_EQ(outer.Readiness(), inner.Readiness());
+    EXPECT_EQ(outer.Name(), inner.Name());
   }
 
   apps::AppRegistryCache* cache_;
+  std::string expected_name_for_p_;
+  int expected_num_apps_;
+  std::map<std::string, std::string> names_;
+  int num_apps_seen_on_app_update_;
 };
 
 TEST_F(AppRegistryCacheTest, ForEachApp) {
@@ -169,19 +222,25 @@ TEST_F(AppRegistryCacheTest, Recursive) {
   apps::AppRegistryCache cache;
   RecursiveObserver observer(&cache);
 
+  observer.PrepareForOnApps(2, "peach");
   deltas.clear();
   deltas.push_back(MakeApp("o", "orange"));
   deltas.push_back(MakeApp("p", "peach"));
   cache.OnApps(std::move(deltas));
+  EXPECT_EQ(2, observer.NumAppsSeenOnAppUpdate());
 
+  observer.PrepareForOnApps(3, "pear");
   deltas.clear();
   deltas.push_back(MakeApp("p", "pear", apps::mojom::Readiness::kReady));
   deltas.push_back(MakeApp("q", "quince"));
   cache.OnApps(std::move(deltas));
+  EXPECT_EQ(2, observer.NumAppsSeenOnAppUpdate());
 
+  observer.PrepareForOnApps(3, "plum");
   deltas.clear();
   deltas.push_back(MakeApp("p", "pear"));
   deltas.push_back(MakeApp("p", "pear"));
   deltas.push_back(MakeApp("p", "plum"));
   cache.OnApps(std::move(deltas));
+  EXPECT_EQ(1, observer.NumAppsSeenOnAppUpdate());
 }
