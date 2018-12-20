@@ -1577,7 +1577,6 @@ crbug.com/893015 [ Linux ] virtual/streaming-preload/http/tests/fetch/chromium/r
 
 crbug.com/912364 [ Mac ] virtual/user-activation-v2/fast/events/no-fake-mousemove.html [ Slow ]
 crbug.com/914981 [ Mac ] media/controls/overflow-menu-pointer-selection.html [ Slow ]
-crbug.com/914981 [ Mac ] virtual/fractional_scrolling/fast/scrolling/overflow-scrollability.html [ Slow ]
 crbug.com/914981 [ Mac ] virtual/mouseevent_fractional/fast/events/no-fake-mousemove.html [ Slow ]
 crbug.com/914981 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/overflow-menu-pointer-selection.html [ Slow ]
 crbug.com/914981 [ Mac ] virtual/video-surface-layer/media/controls/overflow-menu-pointer-selection.html [ Slow ]
