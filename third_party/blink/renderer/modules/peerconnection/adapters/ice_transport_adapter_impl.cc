@@ -53,7 +53,7 @@ class QuicPacketTransportAdapter : public P2PQuicPacketTransport,
   void OnReadPacket(rtc::PacketTransportInternal* packet_transport,
                     const char* buffer,
                     size_t buffer_length,
-                    const rtc::PacketTime& packet_time,
+                    const int64_t& packet_time,
                     int flags) {
     DCHECK_EQ(packet_transport, p2p_transport_channel_);
     if (!receive_delegate_) {
