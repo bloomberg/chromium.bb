@@ -405,7 +405,7 @@ std::unique_ptr<base::DictionaryValue> LayerImpl::LayerAsJson() {
   result->SetBoolean("HitTestableWithoutDrawsContent",
                      hit_testable_without_draws_content_);
   result->SetBoolean("Is3dSorted", Is3dSorted());
-  result->SetDouble("OPACITY", Opacity());
+  result->SetDouble("Opacity", Opacity());
   result->SetBoolean("ContentsOpaque", contents_opaque_);
 
   if (scrollable())

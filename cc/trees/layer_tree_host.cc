@@ -380,11 +380,13 @@ void LayerTreeHost::FinishCommitOnImplThread(
     std::string property_trees;
     base::JSONWriter::WriteWithOptions(
         *sync_tree->property_trees()->AsTracedValue()->ToBaseValue(),
-        base::JSONWriter::OPTIONS_PRETTY_PRINT, &property_trees);
+        base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION |
+            base::JSONWriter::OPTIONS_PRETTY_PRINT,
+        &property_trees);
     VLOG(3) << "After finishing commit on impl, the sync tree:"
             << "\nproperty_trees:\n"
-            << property_trees << "\nlayers:\n"
-            << host_impl->LayerListAsJson();
+            << property_trees << "\ncc::LayerImpls:\n"
+            << sync_tree->LayerListAsJson();
   }
 }
 
@@ -809,7 +811,9 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
     std::string property_trees;
     base::JSONWriter::WriteWithOptions(
         *property_trees_.AsTracedValue()->ToBaseValue(),
-        base::JSONWriter::OPTIONS_PRETTY_PRINT, &property_trees);
+        base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION |
+            base::JSONWriter::OPTIONS_PRETTY_PRINT,
+        &property_trees);
     std::ostringstream layers;
     for (auto* layer : *this) {
       layers << "\n  layer id " << layer->id();
@@ -820,13 +824,14 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
       layers << "\n    draws_content: " << layer->DrawsContent();
       layers << "\n    scrollable: " << layer->scrollable();
       layers << "\n    contents_opaque: " << layer->contents_opaque();
-      layers << "\n    transform_tree_index: " << layer->transform_tree_index();
-      layers << "\n    clip_tree_index: " << layer->clip_tree_index();
-      layers << "\n    effect_tree_index: " << layer->effect_tree_index();
-      layers << "\n    scroll_tree_index: " << layer->scroll_tree_index();
+      layers << "\n    property tree indices: ";
+      layers << "transform(" << layer->transform_tree_index() << "), ";
+      layers << "clip(" << layer->clip_tree_index() << "), ";
+      layers << "effect(" << layer->effect_tree_index() << "), ";
+      layers << "scroll(" << layer->scroll_tree_index() << ")";
     }
     VLOG(3) << "After updating layers on the main thread:\nproperty trees:\n"
-            << property_trees << "\nlayers:" << layers.str();
+            << property_trees << "\ncc:Layers:" << layers.str();
   }
 
   bool painted_content_has_slow_paths = false;

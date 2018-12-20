@@ -618,6 +618,11 @@ class CC_EXPORT LayerTreeImpl {
     return elements_in_property_trees_;
   }
 
+  std::string LayerListAsJson() const;
+  // TODO(pdr): This should be removed because there is no longer a tree
+  // of layers, only a list.
+  std::string LayerTreeAsJson() const;
+
  protected:
   float ClampPageScaleFactorToLimits(float page_scale_factor) const;
   void PushPageScaleFactorAndLimits(const float* page_scale_factor,
