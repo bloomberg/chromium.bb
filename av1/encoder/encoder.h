@@ -507,7 +507,6 @@ typedef struct AV1RowMTInfo {
 typedef struct TileDataEnc {
   TileInfo tile_info;
   int thresh_freq_fact[BLOCK_SIZES_ALL][MAX_MODES];
-  int mode_map[BLOCK_SIZES_ALL][MAX_MODES];
   int m_search_count;
   int ex_search_count;
   CFL_CTX cfl;

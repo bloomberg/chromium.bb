@@ -5545,7 +5545,6 @@ void av1_alloc_tile_data(AV1_COMP *cpi) {
       for (i = 0; i < BLOCK_SIZES_ALL; ++i) {
         for (j = 0; j < MAX_MODES; ++j) {
           tile_data->thresh_freq_fact[i][j] = 32;
-          tile_data->mode_map[i][j] = j;
         }
       }
     }

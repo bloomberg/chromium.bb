@@ -11684,7 +11684,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   unsigned int ref_costs_single[REF_FRAMES];
   unsigned int ref_costs_comp[REF_FRAMES][REF_FRAMES];
   int *comp_inter_cost = x->comp_inter_cost[av1_get_reference_mode_context(xd)];
-  int *mode_map = tile_data->mode_map[bsize];
   mode_skip_mask_t mode_skip_mask;
   uint8_t motion_mode_skip_mask = 0;  // second pass of single ref modes
 #if CONFIG_ONE_PASS_SVM
@@ -11744,8 +11743,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   alloc_compound_type_rd_buffers(cm, &rd_buffers);
 
   for (int midx = 0; midx < MAX_MODES; ++midx) {
-    int mode_index = mode_map[midx];
-    const MODE_DEFINITION *mode_order = &av1_mode_order[mode_index];
+    const MODE_DEFINITION *mode_order = &av1_mode_order[midx];
     this_mode = mode_order->mode;
     const MV_REFERENCE_FRAME ref_frame = mode_order->ref_frame[0];
     const MV_REFERENCE_FRAME second_ref_frame = mode_order->ref_frame[1];
@@ -11767,8 +11765,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         if (args.single_ref_first_pass) {
           // clear stats
           for (int k = 0; k < MAX_REF_MV_SERCH; ++k) {
-            x->simple_rd_state[mode_index][k].rd_stats.rdcost = INT64_MAX;
-            x->simple_rd_state[mode_index][k].early_skipped = 0;
+            x->simple_rd_state[midx][k].rd_stats.rdcost = INT64_MAX;
+            x->simple_rd_state[midx][k].early_skipped = 0;
           }
         } else {
           if (motion_mode_skip_mask & (1 << ref_frame)) {
@@ -11791,13 +11789,13 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     int skippable = 0;
     int this_skip2 = 0;
 
-    init_mbmi(mbmi, mode_index, cm);
+    init_mbmi(mbmi, midx, cm);
 
     x->skip = 0;
     set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
 
     const int ret = inter_mode_search_order_independent_skip(
-        cpi, ctx, x, bsize, mode_index, mi_row, mi_col, &mode_skip_mask,
+        cpi, ctx, x, bsize, midx, mi_row, mi_col, &mode_skip_mask,
         &search_state);
     if (ret == 1) continue;
     args.skip_motion_mode = (ret == 2);
@@ -11808,8 +11806,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       }
     }
 
-    if (search_state.best_rd < search_state.mode_threshold[mode_index])
-      continue;
+    if (search_state.best_rd < search_state.mode_threshold[midx]) continue;
 
     if (sf->prune_comp_search_by_single_result > 0 && comp_pred) {
       if (compound_skip_by_single_states(cpi, &search_state, this_mode,
@@ -11868,7 +11865,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     }
 
     if (ref_frame == INTRA_FRAME) {
-      intra_mode_idx_ls[intra_mode_num++] = mode_index;
+      intra_mode_idx_ls[intra_mode_num++] = midx;
       continue;
     } else {
       mbmi->angle_delta[PLANE_TYPE_Y] = 0;
@@ -11887,8 +11884,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         args.single_newmv_valid = search_state.single_newmv_valid;
         args.single_comp_cost = real_compmode_cost;
         args.ref_frame_cost = ref_frame_cost;
-        if (mode_index < MAX_SINGLE_REF_MODES) {
-          args.simple_rd_state = x->simple_rd_state[mode_index];
+        if (midx < MAX_SINGLE_REF_MODES) {
+          args.simple_rd_state = x->simple_rd_state[midx];
         }
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
         this_rd = handle_inter_mode(
@@ -11937,7 +11934,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       }
       if (!mode_excluded) {
         // Note index of best mode so far
-        search_state.best_mode_index = mode_index;
+        search_state.best_mode_index = midx;
 
         if (ref_frame == INTRA_FRAME) {
           /* required for left and above block mv */
