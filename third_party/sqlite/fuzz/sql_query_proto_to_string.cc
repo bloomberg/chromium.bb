@@ -2436,6 +2436,7 @@ CONV_FN(Drop, d) {
 CONV_FN(AlterTable, at) {
   std::string ret("ALTER TABLE ");
   ret += ExprSchemaTableToString(at.schema_table());
+  ret += " ";
   if (at.has_col()) {
     ret += "RENAME ";
     if (at.column())
