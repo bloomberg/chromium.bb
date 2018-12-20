@@ -137,11 +137,11 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   virtual void TranslationDeclined();
 
   // Methods called by the Options menu delegate.
-  virtual bool IsTranslatableLanguageByPrefs();
+  virtual bool IsTranslatableLanguageByPrefs() const;
   virtual void ToggleTranslatableLanguageByPrefs();
-  virtual bool IsSiteBlacklisted();
+  virtual bool IsSiteBlacklisted() const;
   virtual void ToggleSiteBlacklist();
-  virtual bool ShouldAlwaysTranslate();
+  virtual bool ShouldAlwaysTranslate() const;
   virtual void ToggleAlwaysTranslate();
 
   // Methods called by the extra-buttons that can appear on the "before

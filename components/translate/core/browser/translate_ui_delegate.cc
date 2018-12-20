@@ -265,7 +265,7 @@ void TranslateUIDelegate::TranslationDeclined(bool explicitly_closed) {
   }
 }
 
-bool TranslateUIDelegate::IsLanguageBlocked() {
+bool TranslateUIDelegate::IsLanguageBlocked() const {
   return prefs_->IsBlockedLanguage(GetOriginalLanguageCode());
 }
 
@@ -288,12 +288,12 @@ void TranslateUIDelegate::SetLanguageBlocked(bool value) {
   UMA_HISTOGRAM_BOOLEAN(kNeverTranslateLang, value);
 }
 
-bool TranslateUIDelegate::IsSiteBlacklisted() {
+bool TranslateUIDelegate::IsSiteBlacklisted() const {
   std::string host = GetPageHost();
   return !host.empty() && prefs_->IsSiteBlacklisted(host);
 }
 
-bool TranslateUIDelegate::CanBlacklistSite() {
+bool TranslateUIDelegate::CanBlacklistSite() const {
   return !GetPageHost().empty();
 }
 
@@ -319,22 +319,22 @@ void TranslateUIDelegate::SetSiteBlacklist(bool value) {
   UMA_HISTOGRAM_BOOLEAN(kNeverTranslateSite, value);
 }
 
-bool TranslateUIDelegate::ShouldAlwaysTranslate() {
+bool TranslateUIDelegate::ShouldAlwaysTranslate() const {
   return prefs_->IsLanguagePairWhitelisted(GetOriginalLanguageCode(),
                                            GetTargetLanguageCode());
 }
 
-bool TranslateUIDelegate::ShouldAlwaysTranslateBeCheckedByDefault() {
+bool TranslateUIDelegate::ShouldAlwaysTranslateBeCheckedByDefault() const {
   return ShouldAlwaysTranslate();
 }
 
-bool TranslateUIDelegate::ShouldShowAlwaysTranslateShortcut() {
+bool TranslateUIDelegate::ShouldShowAlwaysTranslateShortcut() const {
   return !translate_driver_->IsIncognito() &&
          prefs_->GetTranslationAcceptedCount(GetOriginalLanguageCode()) >=
              kAlwaysTranslateShortcutMinimumAccepts;
 }
 
-bool TranslateUIDelegate::ShouldShowNeverTranslateShortcut() {
+bool TranslateUIDelegate::ShouldShowNeverTranslateShortcut() const {
   return !translate_driver_->IsIncognito() &&
          prefs_->GetTranslationDeniedCount(GetOriginalLanguageCode()) >=
              kNeverTranslateShortcutMinimumDenials;
@@ -360,7 +360,7 @@ void TranslateUIDelegate::SetAlwaysTranslate(bool value) {
   UMA_HISTOGRAM_BOOLEAN(kAlwaysTranslateLang, value);
 }
 
-std::string TranslateUIDelegate::GetPageHost() {
+std::string TranslateUIDelegate::GetPageHost() const {
   if (!translate_driver_->HasCurrentPage())
     return std::string();
   return translate_driver_->GetLastCommittedURL().HostNoBrackets();
