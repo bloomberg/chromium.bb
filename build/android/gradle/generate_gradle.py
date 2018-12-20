@@ -571,10 +571,7 @@ def _GenerateBaseVars(generator, build_vars):
 def _GenerateGradleFile(entry, generator, build_vars, jinja_processor):
   """Returns the data for a project's build.gradle."""
   deps_info = entry.DepsInfo()
-  gradle = entry.Gradle()
-
   variables = _GenerateBaseVars(generator, build_vars)
-
   sourceSetName = 'main'
 
   if deps_info['type'] == 'android_apk':
@@ -599,16 +596,10 @@ def _GenerateGradleFile(entry, generator, build_vars, jinja_processor):
 
   variables['target_name'] = os.path.splitext(deps_info['name'])[0]
   variables['template_type'] = target_type
-
   variables['main'] = {}
   variables[sourceSetName] = generator.Generate(entry)
-
   variables['main']['android_manifest'] = generator.GenerateManifest(entry)
 
-  bootclasspath = gradle.get('bootclasspath')
-  if bootclasspath:
-    # Must use absolute path here.
-    variables['bootclasspath'] = _RebasePath(bootclasspath)
   if entry.android_test_entries:
     variables['android_test'] = []
     for e in entry.android_test_entries:
