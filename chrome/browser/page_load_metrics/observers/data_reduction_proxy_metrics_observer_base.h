@@ -182,11 +182,10 @@ class DataReductionProxyMetricsObserverBase
 
   // The time when the navigation started. Used to estimate
   // |navigation_start_to_main_frame_fetch_start_|.
-  base::TimeTicks navigation_start_;
+  base::Optional<base::TimeTicks> navigation_start_;
 
-  // The duration between the navigation start as reported by the navigation
-  // handle, and when the fetchStart of the main page HTML.
-  base::TimeDelta navigation_start_to_main_frame_fetch_start_;
+  // The time of the fetchStart of the main page HTML.
+  base::Optional<base::TimeTicks> main_frame_fetch_start_;
 
   // The penalty of navigating to a lite page redirect preview.
   base::Optional<base::TimeDelta> lite_page_redirect_penalty_;

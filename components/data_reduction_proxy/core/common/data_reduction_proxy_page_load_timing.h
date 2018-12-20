@@ -32,7 +32,8 @@ struct DataReductionProxyPageLoadTiming {
       const base::Optional<base::TimeDelta>& lite_page_redirect_penalty,
       const base::Optional<previews::ServerLitePageStatus>&
           lite_page_redirect_status,
-      const base::TimeDelta& navigation_start_to_main_frame_fetch_start,
+      const base::Optional<base::TimeDelta>&
+          navigation_start_to_main_frame_fetch_start,
       int64_t network_bytes,
       int64_t original_network_bytes,
       int64_t total_page_size_bytes,
@@ -80,7 +81,8 @@ struct DataReductionProxyPageLoadTiming {
       lite_page_redirect_status;
   // The duration between the navigation start as reported by the navigation
   // handle, and when the fetchStart of the main page HTML.
-  const base::TimeDelta navigation_start_to_main_frame_fetch_start;
+  const base::Optional<base::TimeDelta>
+      navigation_start_to_main_frame_fetch_start;
 
   // The number of bytes served over the network, not including headers.
   const int64_t network_bytes;
