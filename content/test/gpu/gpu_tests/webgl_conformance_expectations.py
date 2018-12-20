@@ -826,6 +826,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=899754)
     self.Fail('conformance/rendering/clear-after-copyTexImage2D.html',
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=737002)
+    self.Fail('conformance/rendering/' +
+        'color-mask-preserved-during-implicit-clears.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=911918)
     self.Fail('conformance/rendering/gl-scissor-test.html',
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/rendering/gl-viewport-test.html',
