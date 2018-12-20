@@ -396,7 +396,7 @@ class WebRequestRequestCookieAction : public WebRequestAction {
       RequestCookieModification;
 
   explicit WebRequestRequestCookieAction(
-      linked_ptr<RequestCookieModification> request_cookie_modification);
+      RequestCookieModification request_cookie_modification);
 
   // Implementation of WebRequestAction:
   bool Equals(const WebRequestAction* other) const override;
@@ -409,7 +409,7 @@ class WebRequestRequestCookieAction : public WebRequestAction {
  private:
   ~WebRequestRequestCookieAction() override;
 
-  linked_ptr<RequestCookieModification> request_cookie_modification_;
+  const RequestCookieModification request_cookie_modification_;
   DISALLOW_COPY_AND_ASSIGN(WebRequestRequestCookieAction);
 };
 
@@ -420,7 +420,7 @@ class WebRequestResponseCookieAction : public WebRequestAction {
       ResponseCookieModification;
 
   explicit WebRequestResponseCookieAction(
-      linked_ptr<ResponseCookieModification> response_cookie_modification);
+      ResponseCookieModification response_cookie_modification);
 
   // Implementation of WebRequestAction:
   bool Equals(const WebRequestAction* other) const override;
@@ -433,7 +433,7 @@ class WebRequestResponseCookieAction : public WebRequestAction {
  private:
   ~WebRequestResponseCookieAction() override;
 
-  linked_ptr<ResponseCookieModification> response_cookie_modification_;
+  const ResponseCookieModification response_cookie_modification_;
   DISALLOW_COPY_AND_ASSIGN(WebRequestResponseCookieAction);
 };
 

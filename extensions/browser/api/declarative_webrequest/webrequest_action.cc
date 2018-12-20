@@ -53,14 +53,13 @@ const char kEmptyDocumentUrl[] = "data:text/html,";
     } \
   } while (0)
 
-std::unique_ptr<helpers::RequestCookie> ParseRequestCookie(
-    const base::DictionaryValue* dict) {
-  std::unique_ptr<helpers::RequestCookie> result(new helpers::RequestCookie);
+helpers::RequestCookie ParseRequestCookie(const base::DictionaryValue* dict) {
+  helpers::RequestCookie result;
   std::string tmp;
   if (dict->GetString(keys::kNameKey, &tmp))
-    result->name.reset(new std::string(tmp));
+    result.name = tmp;
   if (dict->GetString(keys::kValueKey, &tmp))
-    result->value.reset(new std::string(tmp));
+    result.value = tmp;
   return result;
 }
 
@@ -70,44 +69,42 @@ void ParseResponseCookieImpl(const base::DictionaryValue* dict,
   int int_tmp = 0;
   bool bool_tmp = false;
   if (dict->GetString(keys::kNameKey, &string_tmp))
-    cookie->name.reset(new std::string(string_tmp));
+    cookie->name = string_tmp;
   if (dict->GetString(keys::kValueKey, &string_tmp))
-    cookie->value.reset(new std::string(string_tmp));
+    cookie->value = string_tmp;
   if (dict->GetString(keys::kExpiresKey, &string_tmp))
-    cookie->expires.reset(new std::string(string_tmp));
+    cookie->expires = string_tmp;
   if (dict->GetInteger(keys::kMaxAgeKey, &int_tmp))
-    cookie->max_age.reset(new int(int_tmp));
+    cookie->max_age = int_tmp;
   if (dict->GetString(keys::kDomainKey, &string_tmp))
-    cookie->domain.reset(new std::string(string_tmp));
+    cookie->domain = string_tmp;
   if (dict->GetString(keys::kPathKey, &string_tmp))
-    cookie->path.reset(new std::string(string_tmp));
+    cookie->path = string_tmp;
   if (dict->GetBoolean(keys::kSecureKey, &bool_tmp))
-    cookie->secure.reset(new bool(bool_tmp));
+    cookie->secure = bool_tmp;
   if (dict->GetBoolean(keys::kHttpOnlyKey, &bool_tmp))
-    cookie->http_only.reset(new bool(bool_tmp));
+    cookie->http_only = bool_tmp;
 }
 
-std::unique_ptr<helpers::ResponseCookie> ParseResponseCookie(
-    const base::DictionaryValue* dict) {
-  std::unique_ptr<helpers::ResponseCookie> result(new helpers::ResponseCookie);
-  ParseResponseCookieImpl(dict, result.get());
+helpers::ResponseCookie ParseResponseCookie(const base::DictionaryValue* dict) {
+  helpers::ResponseCookie result;
+  ParseResponseCookieImpl(dict, &result);
   return result;
 }
 
-std::unique_ptr<helpers::FilterResponseCookie> ParseFilterResponseCookie(
+helpers::FilterResponseCookie ParseFilterResponseCookie(
     const base::DictionaryValue* dict) {
-  std::unique_ptr<helpers::FilterResponseCookie> result(
-      new helpers::FilterResponseCookie);
-  ParseResponseCookieImpl(dict, result.get());
+  helpers::FilterResponseCookie result;
+  ParseResponseCookieImpl(dict, &result);
 
   int int_tmp = 0;
   bool bool_tmp = false;
   if (dict->GetInteger(keys::kAgeUpperBoundKey, &int_tmp))
-    result->age_upper_bound.reset(new int(int_tmp));
+    result.age_upper_bound = int_tmp;
   if (dict->GetInteger(keys::kAgeLowerBoundKey, &int_tmp))
-    result->age_lower_bound.reset(new int(int_tmp));
+    result.age_lower_bound = int_tmp;
   if (dict->GetBoolean(keys::kSessionCookieKey, &bool_tmp))
-    result->session_cookie.reset(new bool(bool_tmp));
+    result.session_cookie = bool_tmp;
   return result;
 }
 
@@ -289,40 +286,39 @@ scoped_refptr<const WebRequestAction> CreateRequestCookieAction(
   const base::DictionaryValue* dict = NULL;
   CHECK(value->GetAsDictionary(&dict));
 
-  linked_ptr<RequestCookieModification> modification(
-      new RequestCookieModification);
+  RequestCookieModification modification;
 
   // Get modification type.
   if (instance_type == keys::kAddRequestCookieType)
-    modification->type = helpers::ADD;
+    modification.type = helpers::ADD;
   else if (instance_type == keys::kEditRequestCookieType)
-    modification->type = helpers::EDIT;
+    modification.type = helpers::EDIT;
   else if (instance_type == keys::kRemoveRequestCookieType)
-    modification->type = helpers::REMOVE;
+    modification.type = helpers::REMOVE;
   else
     INPUT_FORMAT_VALIDATE(false);
 
   // Get filter.
-  if (modification->type == helpers::EDIT ||
-      modification->type == helpers::REMOVE) {
+  if (modification.type == helpers::EDIT ||
+      modification.type == helpers::REMOVE) {
     const base::DictionaryValue* filter = NULL;
     INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kFilterKey, &filter));
-    modification->filter = ParseRequestCookie(filter);
+    modification.filter = ParseRequestCookie(filter);
   }
 
   // Get new value.
-  if (modification->type == helpers::ADD) {
+  if (modification.type == helpers::ADD) {
     const base::DictionaryValue* value = NULL;
     INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kCookieKey, &value));
-    modification->modification = ParseRequestCookie(value);
-  } else if (modification->type == helpers::EDIT) {
+    modification.modification = ParseRequestCookie(value);
+  } else if (modification.type == helpers::EDIT) {
     const base::DictionaryValue* value = NULL;
     INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kModificationKey, &value));
-    modification->modification = ParseRequestCookie(value);
+    modification.modification = ParseRequestCookie(value);
   }
 
   return scoped_refptr<const WebRequestAction>(
-      new WebRequestRequestCookieAction(modification));
+      new WebRequestRequestCookieAction(std::move(modification)));
 }
 
 scoped_refptr<const WebRequestAction> CreateResponseCookieAction(
@@ -335,40 +331,39 @@ scoped_refptr<const WebRequestAction> CreateResponseCookieAction(
   const base::DictionaryValue* dict = NULL;
   CHECK(value->GetAsDictionary(&dict));
 
-  linked_ptr<ResponseCookieModification> modification(
-      new ResponseCookieModification);
+  ResponseCookieModification modification;
 
   // Get modification type.
   if (instance_type == keys::kAddResponseCookieType)
-    modification->type = helpers::ADD;
+    modification.type = helpers::ADD;
   else if (instance_type == keys::kEditResponseCookieType)
-    modification->type = helpers::EDIT;
+    modification.type = helpers::EDIT;
   else if (instance_type == keys::kRemoveResponseCookieType)
-    modification->type = helpers::REMOVE;
+    modification.type = helpers::REMOVE;
   else
     INPUT_FORMAT_VALIDATE(false);
 
   // Get filter.
-  if (modification->type == helpers::EDIT ||
-      modification->type == helpers::REMOVE) {
+  if (modification.type == helpers::EDIT ||
+      modification.type == helpers::REMOVE) {
     const base::DictionaryValue* filter = NULL;
     INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kFilterKey, &filter));
-    modification->filter = ParseFilterResponseCookie(filter);
+    modification.filter = ParseFilterResponseCookie(filter);
   }
 
   // Get new value.
-  if (modification->type == helpers::ADD) {
+  if (modification.type == helpers::ADD) {
     const base::DictionaryValue* value = NULL;
     INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kCookieKey, &value));
-    modification->modification = ParseResponseCookie(value);
-  } else if (modification->type == helpers::EDIT) {
+    modification.modification = ParseResponseCookie(value);
+  } else if (modification.type == helpers::EDIT) {
     const base::DictionaryValue* value = NULL;
     INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kModificationKey, &value));
-    modification->modification = ParseResponseCookie(value);
+    modification.modification = ParseResponseCookie(value);
   }
 
   return scoped_refptr<const WebRequestAction>(
-      new WebRequestResponseCookieAction(modification));
+      new WebRequestResponseCookieAction(std::move(modification)));
 }
 
 scoped_refptr<const WebRequestAction> CreateSendMessageToExtensionAction(
@@ -1017,14 +1012,12 @@ LinkedPtrEventResponseDelta WebRequestIgnoreRulesAction::CreateDelta(
 //
 
 WebRequestRequestCookieAction::WebRequestRequestCookieAction(
-    linked_ptr<RequestCookieModification> request_cookie_modification)
+    RequestCookieModification request_cookie_modification)
     : WebRequestAction(ON_BEFORE_SEND_HEADERS,
                        ACTION_MODIFY_REQUEST_COOKIE,
                        std::numeric_limits<int>::min(),
                        STRATEGY_DEFAULT),
-      request_cookie_modification_(request_cookie_modification) {
-  CHECK(request_cookie_modification_.get());
-}
+      request_cookie_modification_(std::move(request_cookie_modification)) {}
 
 WebRequestRequestCookieAction::~WebRequestRequestCookieAction() {}
 
@@ -1034,13 +1027,12 @@ bool WebRequestRequestCookieAction::Equals(
     return false;
   const WebRequestRequestCookieAction* casted_other =
       static_cast<const WebRequestRequestCookieAction*>(other);
-  return helpers::NullableEquals(
-      request_cookie_modification_.get(),
-      casted_other->request_cookie_modification_.get());
+  return request_cookie_modification_ ==
+         casted_other->request_cookie_modification_;
 }
 
 std::string WebRequestRequestCookieAction::GetName() const {
-  switch (request_cookie_modification_->type) {
+  switch (request_cookie_modification_.type) {
     case helpers::ADD:
       return keys::kAddRequestCookieType;
     case helpers::EDIT:
@@ -1061,7 +1053,7 @@ LinkedPtrEventResponseDelta WebRequestRequestCookieAction::CreateDelta(
       new extension_web_request_api_helpers::EventResponseDelta(
           extension_id, extension_install_time));
   result->request_cookie_modifications.push_back(
-      request_cookie_modification_);
+      request_cookie_modification_.Clone());
   return result;
 }
 
@@ -1070,14 +1062,12 @@ LinkedPtrEventResponseDelta WebRequestRequestCookieAction::CreateDelta(
 //
 
 WebRequestResponseCookieAction::WebRequestResponseCookieAction(
-    linked_ptr<ResponseCookieModification> response_cookie_modification)
+    ResponseCookieModification response_cookie_modification)
     : WebRequestAction(ON_HEADERS_RECEIVED,
                        ACTION_MODIFY_RESPONSE_COOKIE,
                        std::numeric_limits<int>::min(),
                        STRATEGY_DEFAULT),
-      response_cookie_modification_(response_cookie_modification) {
-  CHECK(response_cookie_modification_.get());
-}
+      response_cookie_modification_(std::move(response_cookie_modification)) {}
 
 WebRequestResponseCookieAction::~WebRequestResponseCookieAction() {}
 
@@ -1087,13 +1077,12 @@ bool WebRequestResponseCookieAction::Equals(
     return false;
   const WebRequestResponseCookieAction* casted_other =
       static_cast<const WebRequestResponseCookieAction*>(other);
-  return helpers::NullableEquals(
-      response_cookie_modification_.get(),
-      casted_other->response_cookie_modification_.get());
+  return response_cookie_modification_ ==
+         casted_other->response_cookie_modification_;
 }
 
 std::string WebRequestResponseCookieAction::GetName() const {
-  switch (response_cookie_modification_->type) {
+  switch (response_cookie_modification_.type) {
     case helpers::ADD:
       return keys::kAddResponseCookieType;
     case helpers::EDIT:
@@ -1114,7 +1103,7 @@ LinkedPtrEventResponseDelta WebRequestResponseCookieAction::CreateDelta(
       new extension_web_request_api_helpers::EventResponseDelta(
           extension_id, extension_install_time));
   result->response_cookie_modifications.push_back(
-      response_cookie_modification_);
+      response_cookie_modification_.Clone());
   return result;
 }
 

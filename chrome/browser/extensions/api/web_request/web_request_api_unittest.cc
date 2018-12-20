@@ -1767,14 +1767,13 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnAuthRequiredDelta) {
 
   base::string16 username = base::ASCIIToUTF16("foo");
   base::string16 password = base::ASCIIToUTF16("bar");
-  std::unique_ptr<net::AuthCredentials> credentials(
-      new net::AuthCredentials(username, password));
+  net::AuthCredentials credentials(username, password);
 
   std::unique_ptr<EventResponseDelta> delta(CalculateOnAuthRequiredDelta(
-      "extid", base::Time::Now(), cancel, &credentials));
+      "extid", base::Time::Now(), cancel, credentials));
   ASSERT_TRUE(delta.get());
   EXPECT_TRUE(delta->cancel);
-  ASSERT_TRUE(delta->auth_credentials.get());
+  ASSERT_TRUE(delta->auth_credentials.has_value());
   EXPECT_EQ(username, delta->auth_credentials->username());
   EXPECT_EQ(password, delta->auth_credentials->password());
 }
@@ -2129,42 +2128,38 @@ TEST(ExtensionWebRequestHelpersTest,
   std::string header_value;
   EventResponseDeltas deltas;
 
-  linked_ptr<RequestCookieModification> add_cookie =
-      make_linked_ptr(new RequestCookieModification);
-  add_cookie->type = helpers::ADD;
-  add_cookie->modification.reset(new helpers::RequestCookie);
-  add_cookie->modification->name.reset(new std::string("name4"));
-  add_cookie->modification->value.reset(new std::string("\"value 4\""));
+  RequestCookieModification add_cookie;
+  add_cookie.type = helpers::ADD;
+  add_cookie.modification.emplace();
+  add_cookie.modification->name = "name4";
+  add_cookie.modification->value = "\"value 4\"";
 
-  linked_ptr<RequestCookieModification> add_cookie_2 =
-      make_linked_ptr(new RequestCookieModification);
-  add_cookie_2->type = helpers::ADD;
-  add_cookie_2->modification.reset(new helpers::RequestCookie);
-  add_cookie_2->modification->name.reset(new std::string("name"));
-  add_cookie_2->modification->value.reset(new std::string("new value"));
+  RequestCookieModification add_cookie_2;
+  add_cookie_2.type = helpers::ADD;
+  add_cookie_2.modification.emplace();
+  add_cookie_2.modification->name = "name";
+  add_cookie_2.modification->value = "new value";
 
-  linked_ptr<RequestCookieModification> edit_cookie =
-      make_linked_ptr(new RequestCookieModification);
-  edit_cookie->type = helpers::EDIT;
-  edit_cookie->filter.reset(new helpers::RequestCookie);
-  edit_cookie->filter->name.reset(new std::string("name2"));
-  edit_cookie->modification.reset(new helpers::RequestCookie);
-  edit_cookie->modification->value.reset(new std::string("new value"));
+  RequestCookieModification edit_cookie;
+  edit_cookie.type = helpers::EDIT;
+  edit_cookie.filter.emplace();
+  edit_cookie.filter->name = "name2";
+  edit_cookie.modification.emplace();
+  edit_cookie.modification->value = "new value";
 
-  linked_ptr<RequestCookieModification> remove_cookie =
-      make_linked_ptr(new RequestCookieModification);
-  remove_cookie->type = helpers::REMOVE;
-  remove_cookie->filter.reset(new helpers::RequestCookie);
-  remove_cookie->filter->name.reset(new std::string("name3"));
+  RequestCookieModification remove_cookie;
+  remove_cookie.type = helpers::REMOVE;
+  remove_cookie.filter.emplace();
+  remove_cookie.filter->name = "name3";
 
-  linked_ptr<RequestCookieModification> operations[] = {
-      add_cookie, add_cookie_2, edit_cookie, remove_cookie
-  };
+  RequestCookieModification* operations[] = {&add_cookie, &add_cookie_2,
+                                             &edit_cookie, &remove_cookie};
 
-  for (size_t i = 0; i < arraysize(operations); ++i) {
-    linked_ptr<EventResponseDelta> delta(
-        new EventResponseDelta("extid0", base::Time::FromInternalValue(i * 5)));
-    delta->request_cookie_modifications.push_back(operations[i]);
+  int64_t time = 0;
+  for (auto* operation : operations) {
+    linked_ptr<EventResponseDelta> delta(new EventResponseDelta(
+        "extid0", base::Time::FromInternalValue(time++ * 5)));
+    delta->request_cookie_modifications.push_back(std::move(*operation));
     deltas.push_back(delta);
   }
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
@@ -2249,160 +2244,145 @@ TEST(ExtensionWebRequestHelpersTest,
   EXPECT_FALSE(new_headers0.get());
   EXPECT_EQ(0u, logger.log_size());
 
-  linked_ptr<ResponseCookieModification> add_cookie =
-      make_linked_ptr(new ResponseCookieModification);
-  add_cookie->type = helpers::ADD;
-  add_cookie->modification.reset(new helpers::ResponseCookie);
-  add_cookie->modification->name.reset(new std::string("name4"));
-  add_cookie->modification->value.reset(new std::string("\"value4\""));
+  ResponseCookieModification add_cookie;
+  add_cookie.type = helpers::ADD;
+  add_cookie.modification.emplace();
+  add_cookie.modification->name = "name4";
+  add_cookie.modification->value = "\"value4\"";
 
-  linked_ptr<ResponseCookieModification> edit_cookie =
-      make_linked_ptr(new ResponseCookieModification);
-  edit_cookie->type = helpers::EDIT;
-  edit_cookie->filter.reset(new helpers::FilterResponseCookie);
-  edit_cookie->filter->name.reset(new std::string("name2"));
-  edit_cookie->modification.reset(new helpers::ResponseCookie);
-  edit_cookie->modification->value.reset(new std::string("new value"));
+  ResponseCookieModification edit_cookie;
+  edit_cookie.type = helpers::EDIT;
+  edit_cookie.filter.emplace();
+  edit_cookie.filter->name = "name2";
+  edit_cookie.modification.emplace();
+  edit_cookie.modification->value = "new value";
 
-  linked_ptr<ResponseCookieModification> edit_cookie_2 =
-      make_linked_ptr(new ResponseCookieModification);
-  edit_cookie_2->type = helpers::EDIT;
-  edit_cookie_2->filter.reset(new helpers::FilterResponseCookie);
-  edit_cookie_2->filter->secure.reset(new bool(false));
-  edit_cookie_2->modification.reset(new helpers::ResponseCookie);
-  edit_cookie_2->modification->secure.reset(new bool(true));
+  ResponseCookieModification edit_cookie_2;
+  edit_cookie_2.type = helpers::EDIT;
+  edit_cookie_2.filter.emplace();
+  edit_cookie_2.filter->secure = false;
+  edit_cookie_2.modification.emplace();
+  edit_cookie_2.modification->secure = true;
 
   // Tests 'ageLowerBound' filter when cookie lifetime is set
   // in cookie's 'max-age' attribute and its value is greater than
   // the filter's value.
-  linked_ptr<ResponseCookieModification> edit_cookie_3 =
-      make_linked_ptr(new ResponseCookieModification);
-  edit_cookie_3->type = helpers::EDIT;
-  edit_cookie_3->filter.reset(new helpers::FilterResponseCookie);
-  edit_cookie_3->filter->name.reset(new std::string("lBound1"));
-  edit_cookie_3->filter->age_lower_bound.reset(new int(600));
-  edit_cookie_3->modification.reset(new helpers::ResponseCookie);
-  edit_cookie_3->modification->value.reset(new std::string("greater_1"));
+  ResponseCookieModification edit_cookie_3;
+  edit_cookie_3.type = helpers::EDIT;
+  edit_cookie_3.filter.emplace();
+  edit_cookie_3.filter->name = "lBound1";
+  edit_cookie_3.filter->age_lower_bound = 600;
+  edit_cookie_3.modification.emplace();
+  edit_cookie_3.modification->value = "greater_1";
 
   // Cookie lifetime is set in the cookie's 'expires' attribute.
-  linked_ptr<ResponseCookieModification> edit_cookie_4 =
-      make_linked_ptr(new ResponseCookieModification);
-  edit_cookie_4->type = helpers::EDIT;
-  edit_cookie_4->filter.reset(new helpers::FilterResponseCookie);
-  edit_cookie_4->filter->name.reset(new std::string("lBound2"));
-  edit_cookie_4->filter->age_lower_bound.reset(new int(600));
-  edit_cookie_4->modification.reset(new helpers::ResponseCookie);
-  edit_cookie_4->modification->value.reset(new std::string("greater_2"));
+  ResponseCookieModification edit_cookie_4;
+  edit_cookie_4.type = helpers::EDIT;
+  edit_cookie_4.filter.emplace();
+  edit_cookie_4.filter->name = "lBound2";
+  edit_cookie_4.filter->age_lower_bound = 600;
+  edit_cookie_4.modification.emplace();
+  edit_cookie_4.modification->value = "greater_2";
 
   // Tests equality of the cookie lifetime with the filter value when
   // lifetime is set in the cookie's 'max-age' attribute.
   // Note: we don't test the equality when the lifetime is set in the 'expires'
   // attribute because the tests will be flaky. The reason is calculations will
   // depend on fetching the current time.
-  linked_ptr<ResponseCookieModification> edit_cookie_5 =
-      make_linked_ptr(new ResponseCookieModification);
-  edit_cookie_5->type = helpers::EDIT;
-  edit_cookie_5->filter.reset(new helpers::FilterResponseCookie);
-  edit_cookie_5->filter->name.reset(new std::string("lBound3"));
-  edit_cookie_5->filter->age_lower_bound.reset(new int(2000));
-  edit_cookie_5->modification.reset(new helpers::ResponseCookie);
-  edit_cookie_5->modification->value.reset(new std::string("equal_2"));
+  ResponseCookieModification edit_cookie_5;
+  edit_cookie_5.type = helpers::EDIT;
+  edit_cookie_5.filter.emplace();
+  edit_cookie_5.filter->name = "lBound3";
+  edit_cookie_5.filter->age_lower_bound = 2000;
+  edit_cookie_5.modification.emplace();
+  edit_cookie_5.modification->value = "equal_2";
 
   // Tests 'ageUpperBound' filter when cookie lifetime is set
   // in cookie's 'max-age' attribute and its value is lower than
   // the filter's value.
-  linked_ptr<ResponseCookieModification> edit_cookie_6 =
-      make_linked_ptr(new ResponseCookieModification);
-  edit_cookie_6->type = helpers::EDIT;
-  edit_cookie_6->filter.reset(new helpers::FilterResponseCookie);
-  edit_cookie_6->filter->name.reset(new std::string("uBound1"));
-  edit_cookie_6->filter->age_upper_bound.reset(new int(2000));
-  edit_cookie_6->modification.reset(new helpers::ResponseCookie);
-  edit_cookie_6->modification->value.reset(new std::string("smaller_1"));
+  ResponseCookieModification edit_cookie_6;
+  edit_cookie_6.type = helpers::EDIT;
+  edit_cookie_6.filter.emplace();
+  edit_cookie_6.filter->name = "uBound1";
+  edit_cookie_6.filter->age_upper_bound = 2000;
+  edit_cookie_6.modification.emplace();
+  edit_cookie_6.modification->value = "smaller_1";
 
   // Cookie lifetime is set in the cookie's 'expires' attribute.
-  linked_ptr<ResponseCookieModification> edit_cookie_7 =
-      make_linked_ptr(new ResponseCookieModification);
-  edit_cookie_7->type = helpers::EDIT;
-  edit_cookie_7->filter.reset(new helpers::FilterResponseCookie);
-  edit_cookie_7->filter->name.reset(new std::string("uBound2"));
-  edit_cookie_7->filter->age_upper_bound.reset(new int(2000));
-  edit_cookie_7->modification.reset(new helpers::ResponseCookie);
-  edit_cookie_7->modification->value.reset(new std::string("smaller_2"));
+  ResponseCookieModification edit_cookie_7;
+  edit_cookie_7.type = helpers::EDIT;
+  edit_cookie_7.filter.emplace();
+  edit_cookie_7.filter->name = "uBound2";
+  edit_cookie_7.filter->age_upper_bound = 2000;
+  edit_cookie_7.modification.emplace();
+  edit_cookie_7.modification->value = "smaller_2";
 
   // Tests equality of the cookie lifetime with the filter value when
   // lifetime is set in the cookie's 'max-age' attribute.
-  linked_ptr<ResponseCookieModification> edit_cookie_8 =
-      make_linked_ptr(new ResponseCookieModification);
-  edit_cookie_8->type = helpers::EDIT;
-  edit_cookie_8->filter.reset(new helpers::FilterResponseCookie);
-  edit_cookie_8->filter->name.reset(new std::string("uBound3"));
-  edit_cookie_8->filter->age_upper_bound.reset(new int(2000));
-  edit_cookie_8->modification.reset(new helpers::ResponseCookie);
-  edit_cookie_8->modification->value.reset(new std::string("equal_4"));
+  ResponseCookieModification edit_cookie_8;
+  edit_cookie_8.type = helpers::EDIT;
+  edit_cookie_8.filter.emplace();
+  edit_cookie_8.filter->name = "uBound3";
+  edit_cookie_8.filter->age_upper_bound = 2000;
+  edit_cookie_8.modification.emplace();
+  edit_cookie_8.modification->value = "equal_4";
 
   // Tests 'ageUpperBound' filter when cookie lifetime is greater
   // than the filter value. No modification is expected to be applied.
-  linked_ptr<ResponseCookieModification> edit_cookie_9 =
-      make_linked_ptr(new ResponseCookieModification);
-  edit_cookie_9->type = helpers::EDIT;
-  edit_cookie_9->filter.reset(new helpers::FilterResponseCookie);
-  edit_cookie_9->filter->name.reset(new std::string("uBound4"));
-  edit_cookie_9->filter->age_upper_bound.reset(new int(2501));
-  edit_cookie_9->modification.reset(new helpers::ResponseCookie);
-  edit_cookie_9->modification->value.reset(new std::string("Will not change"));
+  ResponseCookieModification edit_cookie_9;
+  edit_cookie_9.type = helpers::EDIT;
+  edit_cookie_9.filter.emplace();
+  edit_cookie_9.filter->name = "uBound4";
+  edit_cookie_9.filter->age_upper_bound = 2501;
+  edit_cookie_9.modification.emplace();
+  edit_cookie_9.modification->value = "Will not change";
 
   // Tests 'ageUpperBound' filter when both 'max-age' and 'expires' cookie
   // attributes are provided. 'expires' value matches the filter, however
   // no modification to the cookie is expected because 'max-age' overrides
   // 'expires' and it does not match the filter.
-  linked_ptr<ResponseCookieModification> edit_cookie_10 =
-      make_linked_ptr(new ResponseCookieModification);
-  edit_cookie_10->type = helpers::EDIT;
-  edit_cookie_10->filter.reset(new helpers::FilterResponseCookie);
-  edit_cookie_10->filter->name.reset(new std::string("uBound5"));
-  edit_cookie_10->filter->age_upper_bound.reset(new int(800));
-  edit_cookie_10->modification.reset(new helpers::ResponseCookie);
-  edit_cookie_10->modification->value.reset(new std::string("Will not change"));
+  ResponseCookieModification edit_cookie_10;
+  edit_cookie_10.type = helpers::EDIT;
+  edit_cookie_10.filter.emplace();
+  edit_cookie_10.filter->name = "uBound5";
+  edit_cookie_10.filter->age_upper_bound = 800;
+  edit_cookie_10.modification.emplace();
+  edit_cookie_10.modification->value = "Will not change";
 
-  linked_ptr<ResponseCookieModification> remove_cookie =
-      make_linked_ptr(new ResponseCookieModification);
-  remove_cookie->type = helpers::REMOVE;
-  remove_cookie->filter.reset(new helpers::FilterResponseCookie);
-  remove_cookie->filter->name.reset(new std::string("name3"));
+  ResponseCookieModification remove_cookie;
+  remove_cookie.type = helpers::REMOVE;
+  remove_cookie.filter.emplace();
+  remove_cookie.filter->name = "name3";
 
-  linked_ptr<ResponseCookieModification> remove_cookie_2 =
-      make_linked_ptr(new ResponseCookieModification);
-  remove_cookie_2->type = helpers::REMOVE;
-  remove_cookie_2->filter.reset(new helpers::FilterResponseCookie);
-  remove_cookie_2->filter->name.reset(new std::string("uBound6"));
-  remove_cookie_2->filter->age_upper_bound.reset(new int(700));
+  ResponseCookieModification remove_cookie_2;
+  remove_cookie_2.type = helpers::REMOVE;
+  remove_cookie_2.filter.emplace();
+  remove_cookie_2.filter->name = "uBound6";
+  remove_cookie_2.filter->age_upper_bound = 700;
 
-  linked_ptr<ResponseCookieModification> remove_cookie_3 =
-      make_linked_ptr(new ResponseCookieModification);
-  remove_cookie_3->type = helpers::REMOVE;
-  remove_cookie_3->filter.reset(new helpers::FilterResponseCookie);
-  remove_cookie_3->filter->name.reset(new std::string("sessionCookie"));
-  remove_cookie_3->filter->session_cookie.reset(new bool(true));
+  ResponseCookieModification remove_cookie_3;
+  remove_cookie_3.type = helpers::REMOVE;
+  remove_cookie_3.filter.emplace();
+  remove_cookie_3.filter->name = "sessionCookie";
+  remove_cookie_3.filter->session_cookie = true;
 
-  linked_ptr<ResponseCookieModification> remove_cookie_4 =
-        make_linked_ptr(new ResponseCookieModification);
-  remove_cookie_4->type = helpers::REMOVE;
-  remove_cookie_4->filter.reset(new helpers::FilterResponseCookie);
-  remove_cookie_4->filter->name.reset(new std::string("sessionCookie2"));
-  remove_cookie_4->filter->session_cookie.reset(new bool(true));
+  ResponseCookieModification remove_cookie_4;
+  remove_cookie_4.type = helpers::REMOVE;
+  remove_cookie_4.filter.emplace();
+  remove_cookie_4.filter->name = "sessionCookie2";
+  remove_cookie_4.filter->session_cookie = true;
 
-  linked_ptr<ResponseCookieModification> operations[] = {
-      add_cookie, edit_cookie, edit_cookie_2, edit_cookie_3, edit_cookie_4,
-      edit_cookie_5, edit_cookie_6, edit_cookie_7, edit_cookie_8,
-      edit_cookie_9, edit_cookie_10, remove_cookie, remove_cookie_2,
-      remove_cookie_3, remove_cookie_4
-  };
+  ResponseCookieModification* operations[] = {
+      &add_cookie,      &edit_cookie,     &edit_cookie_2,  &edit_cookie_3,
+      &edit_cookie_4,   &edit_cookie_5,   &edit_cookie_6,  &edit_cookie_7,
+      &edit_cookie_8,   &edit_cookie_9,   &edit_cookie_10, &remove_cookie,
+      &remove_cookie_2, &remove_cookie_3, &remove_cookie_4};
 
-  for (size_t i = 0; i < arraysize(operations); ++i) {
-    linked_ptr<EventResponseDelta> delta(
-        new EventResponseDelta("extid0", base::Time::FromInternalValue(i * 5)));
-    delta->response_cookie_modifications.push_back(operations[i]);
+  int64_t time = 0;
+  for (auto* operation : operations) {
+    linked_ptr<EventResponseDelta> delta(new EventResponseDelta(
+        "extid0", base::Time::FromInternalValue(time++ * 5)));
+    delta->response_cookie_modifications.push_back(std::move(*operation));
     deltas.push_back(delta);
   }
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
@@ -2669,7 +2649,7 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnAuthRequiredResponses) {
   // Check that we can set AuthCredentials.
   linked_ptr<EventResponseDelta> d1(
       new EventResponseDelta("extid1", base::Time::FromInternalValue(2000)));
-  d1->auth_credentials.reset(new net::AuthCredentials(username, password));
+  d1->auth_credentials = net::AuthCredentials(username, password);
   deltas.push_back(d1);
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
   ignored_actions.clear();
@@ -2687,7 +2667,7 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnAuthRequiredResponses) {
   // Check that we set AuthCredentials only once.
   linked_ptr<EventResponseDelta> d2(
       new EventResponseDelta("extid2", base::Time::FromInternalValue(1500)));
-  d2->auth_credentials.reset(new net::AuthCredentials(username, password2));
+  d2->auth_credentials = net::AuthCredentials(username, password2);
   deltas.push_back(d2);
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
   ignored_actions.clear();
@@ -2709,7 +2689,7 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnAuthRequiredResponses) {
   // a conflict.
   linked_ptr<EventResponseDelta> d3(
       new EventResponseDelta("extid3", base::Time::FromInternalValue(1000)));
-  d3->auth_credentials.reset(new net::AuthCredentials(username, password));
+  d3->auth_credentials = net::AuthCredentials(username, password);
   deltas.push_back(d3);
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
   ignored_actions.clear();
