@@ -7,8 +7,7 @@ cr.define('md_history', function() {
   function ensureLazyLoaded() {
     if (!lazyLoadPromise) {
       lazyLoadPromise = new Promise(function(resolve, reject) {
-        Polymer.Base.importHref(
-            'chrome://history/lazy_load.html', resolve, reject, true);
+        Polymer.Base.importHref('lazy_load.html', resolve, reject, true);
       });
     }
     return lazyLoadPromise;
