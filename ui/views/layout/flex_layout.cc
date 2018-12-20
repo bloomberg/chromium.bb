@@ -430,7 +430,8 @@ void FlexLayoutInternal::DoLayout(const Layout& layout,
   for (const ChildLayout& child_layout : layout.child_layouts) {
     if (child_layout.excluded)
       continue;
-    layout_.SetViewVisibility(child_layout.view, child_layout.visible);
+    if (child_layout.visible != child_layout.view->visible())
+      layout_.SetViewVisibility(child_layout.view, child_layout.visible);
     if (child_layout.visible) {
       NormalizedRect actual = child_layout.actual_bounds;
       actual.Offset(start.main(), start.cross());
