@@ -142,12 +142,6 @@ struct SecurityInfo {
   // True if the server's certificate does not contain a
   // subjectAltName extension with a domain name or IP address.
   bool cert_missing_subject_alt_name;
-  // True if the |security_level| was downgraded to HTTP_SHOW_WARNING because
-  // the page was loaded while Incognito.
-  bool incognito_downgraded_security_level;
-  // True if the |security_level| was downgraded to HTTP_SHOW_WARNING because
-  // of a field edit recorded in |insecure_input_events|.
-  bool field_edit_downgraded_security_level;
   // Contains information about input events that may impact the security
   // level of the page.
   InsecureInputEventData insecure_input_events;
@@ -188,8 +182,6 @@ struct VisibleSecurityState {
   bool ran_content_with_cert_errors;
   // True if PKP was bypassed due to a local trust anchor.
   bool pkp_bypassed;
-  // True if the page was displayed in an Incognito context.
-  bool is_incognito;
   // True if the page was an error page.
   // TODO(estark): this field is not populated on iOS. https://crbug.com/760647
   bool is_error_page;

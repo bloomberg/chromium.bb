@@ -116,12 +116,6 @@ void AutofillDriverIOS::RendererShouldAcceptDataListSuggestion(
     const base::string16& value) {
 }
 
-void AutofillDriverIOS::DidInteractWithCreditCardForm() {
-  if (!web::IsOriginSecure(web_state_->GetLastCommittedURL())) {
-    autofill_manager_.client()->DidInteractWithNonsecureCreditCardInput();
-  }
-}
-
 void AutofillDriverIOS::RendererShouldClearFilledSection() {}
 
 void AutofillDriverIOS::RendererShouldClearPreviewedForm() {

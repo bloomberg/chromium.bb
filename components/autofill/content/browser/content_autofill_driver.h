@@ -71,7 +71,6 @@ class ContentAutofillDriver : public AutofillDriver,
   void PopupHidden() override;
   gfx::RectF TransformBoundingBoxToViewportCoordinates(
       const gfx::RectF& bounding_box) override;
-  void DidInteractWithCreditCardForm() override;
 
   // mojom::AutofillDriver:
   void FormsSeen(const std::vector<FormData>& forms,

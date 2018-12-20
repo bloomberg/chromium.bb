@@ -32,7 +32,6 @@
 #include "ios/chrome/browser/infobars/infobar_utils.h"
 #include "ios/chrome/browser/metrics/ukm_url_recorder.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/ssl/insecure_input_tab_helper.h"
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
@@ -330,11 +329,6 @@ void ChromeAutofillClientIOS::PropagateAutofillPredictions(
 void ChromeAutofillClientIOS::DidFillOrPreviewField(
     const base::string16& autofilled_value,
     const base::string16& profile_full_name) {}
-
-void ChromeAutofillClientIOS::DidInteractWithNonsecureCreditCardInput() {
-  InsecureInputTabHelper::GetOrCreateForWebState(web_state_)
-      ->DidInteractWithNonsecureCreditCardInput();
-}
 
 bool ChromeAutofillClientIOS::IsContextSecure() {
   return IsContextSecureForWebState(web_state_);

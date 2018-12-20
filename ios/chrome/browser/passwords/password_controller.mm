@@ -52,7 +52,6 @@
 #import "ios/chrome/browser/passwords/notify_auto_signin_view_controller.h"
 #import "ios/chrome/browser/passwords/password_form_filler.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
-#import "ios/chrome/browser/ssl/insecure_input_tab_helper.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -586,13 +585,6 @@ void LogSuggestionShown(PasswordSuggestionType type) {
     return;
 
   if (!forms.empty()) {
-    // Notify web_state about password forms, so that this can be taken into
-    // account for the security state.
-    if (_webState && !web::IsOriginSecure(_webState->GetLastCommittedURL())) {
-      InsecureInputTabHelper::GetOrCreateForWebState(_webState)
-          ->DidShowPasswordFieldInInsecureContext();
-    }
-
     [self.suggestionHelper updateStateOnPasswordFormExtracted];
 
     // Invoke the password manager callback to autofill password forms

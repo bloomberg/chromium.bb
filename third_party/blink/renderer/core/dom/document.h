@@ -1372,11 +1372,6 @@ class CORE_EXPORT Document : public ContainerNode,
   const PropertyRegistry* GetPropertyRegistry() const;
   PropertyRegistry* GetPropertyRegistry();
 
-  // Document maintains a counter of visible non-secure password
-  // fields in the page. Used to notify the embedder when all visible
-  // non-secure password fields are no longer visible.
-  void IncrementPasswordCount();
-  void DecrementPasswordCount();
   // Used to notify the embedder when the user edits the value of a
   // text field in a non-secure context.
   void MaybeQueueSendDidEditFieldInInsecureContext();
@@ -1606,8 +1601,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   const OriginAccessEntry& AccessEntryFromURL();
 
-  void SendSensitiveInputVisibility();
-  void SendSensitiveInputVisibilityInternal();
   void SendDidEditFieldInInsecureContext();
 
   bool HaveImportsLoaded() const;
@@ -1876,11 +1869,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Member<PropertyRegistry> property_registry_;
 
-  unsigned password_count_;
-
   bool logged_field_edit_;
-
-  TaskHandle sensitive_input_visibility_task_;
 
   TaskHandle sensitive_input_edited_task_;
 

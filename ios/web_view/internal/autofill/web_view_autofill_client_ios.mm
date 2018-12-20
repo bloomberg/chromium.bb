@@ -230,8 +230,6 @@ void WebViewAutofillClientIOS::DidFillOrPreviewField(
     const base::string16& autofilled_value,
     const base::string16& profile_full_name) {}
 
-void WebViewAutofillClientIOS::DidInteractWithNonsecureCreditCardInput() {}
-
 bool WebViewAutofillClientIOS::IsContextSecure() {
   return IsContextSecureForWebState(web_state_);
 }

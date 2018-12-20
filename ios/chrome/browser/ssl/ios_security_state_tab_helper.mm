@@ -52,7 +52,6 @@ IOSSecurityStateTabHelper::GetVisibleSecurityState() const {
   state->displayed_mixed_content =
       (ssl.content_status & web::SSLStatus::DISPLAYED_INSECURE_CONTENT) ? true
                                                                         : false;
-  state->is_incognito = web_state_->GetBrowserState()->IsOffTheRecord();
 
   security_state::SSLStatusInputEventData* input_events =
       static_cast<security_state::SSLStatusInputEventData*>(

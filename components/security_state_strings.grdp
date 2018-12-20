@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
   <!-- Strings describing Chrome security policy for DevTools security panel -->
-  <message name="IDS_PRIVATE_USER_DATA_INPUT" desc="Summary phrase for a security problem where the site collects private user data on an insecure page." translateable="false">
-    Private user data input
-  </message>
-  <message name="IDS_PRIVATE_USER_DATA_INPUT_DESCRIPTION" desc="Description of a security problem where the site collects private user data on an insecure page, which results in an omnibox warning." translateable="false">
-    This page includes a password or credit card input over HTTP. A warning has been added to the URL bar.
-  </message>
-  <message name="IDS_INCOGNITO_NONSECURE" desc="Summary phrase for a security problem where the site is non-secure (HTTP) and the user is browsing Incognito." translateable="false">
-    Non-secure page loaded in incognito mode
-  </message>
-  <message name="IDS_INCOGNITO_NONSECURE_DESCRIPTION" desc="Description of a security problem where the site is non-secure (HTTP) and the user is browsing Incognito, which results in an omnibox warning." translateable="false">
-    This page was loaded non-securely in an incognito window. A warning has been added to the URL bar.
-  </message>
   <message name="IDS_EDITED_NONSECURE_SUMMARY" desc="Main summary for an HTTP page where a user has entered data in a form field." translateable="false">
     This page is insecure (unencrypted HTTP).
   </message>

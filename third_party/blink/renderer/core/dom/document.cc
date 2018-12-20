@@ -687,7 +687,6 @@ Document::Document(const DocumentInit& initializer,
       has_viewport_units_(false),
       parser_sync_policy_(kAllowAsynchronousParsing),
       node_count_(0),
-      password_count_(0),
       logged_field_edit_(false),
       secure_context_state_(SecureContextState::kUnknown),
       ukm_source_id_(ukm::UkmRecorder::GetNewSourceID()),
@@ -5168,30 +5167,6 @@ const OriginAccessEntry& Document::AccessEntryFromURL() {
   return *access_entry_from_url_;
 }
 
-void Document::SendSensitiveInputVisibility() {
-  if (sensitive_input_visibility_task_.IsActive())
-    return;
-
-  sensitive_input_visibility_task_ = PostCancellableTask(
-      *GetTaskRunner(TaskType::kInternalLoading), FROM_HERE,
-      WTF::Bind(&Document::SendSensitiveInputVisibilityInternal,
-                WrapWeakPersistent(this)));
-}
-
-void Document::SendSensitiveInputVisibilityInternal() {
-  if (!GetFrame())
-    return;
-
-  mojom::blink::InsecureInputServicePtr insecure_input_service_ptr;
-  GetFrame()->GetInterfaceProvider().GetInterface(
-      mojo::MakeRequest(&insecure_input_service_ptr));
-  if (password_count_ > 0) {
-    insecure_input_service_ptr->PasswordFieldVisibleInInsecureContext();
-    return;
-  }
-  insecure_input_service_ptr->AllPasswordFieldsInInsecureContextInvisible();
-}
-
 void Document::SendDidEditFieldInInsecureContext() {
   if (!GetFrame())
     return;
@@ -7490,30 +7465,6 @@ PropertyRegistry* Document::GetPropertyRegistry() {
 
 const PropertyRegistry* Document::GetPropertyRegistry() const {
   return const_cast<Document*>(this)->GetPropertyRegistry();
-}
-
-void Document::IncrementPasswordCount() {
-  ++password_count_;
-  if (IsSecureContext() || password_count_ != 1) {
-    // The browser process only cares about passwords on pages where the
-    // top-level URL is not secure. Secure contexts must have a top-level
-    // URL that is secure, so there is no need to send notifications for
-    // password fields in secure contexts.
-    //
-    // Also, only send a message on the first visible password field; the
-    // browser process doesn't care about the presence of additional
-    // password fields beyond that.
-    return;
-  }
-  SendSensitiveInputVisibility();
-}
-
-void Document::DecrementPasswordCount() {
-  DCHECK_GT(password_count_, 0u);
-  --password_count_;
-  if (IsSecureContext() || password_count_ > 0)
-    return;
-  SendSensitiveInputVisibility();
 }
 
 void Document::MaybeQueueSendDidEditFieldInInsecureContext() {

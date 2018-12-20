@@ -84,32 +84,17 @@ namespace {
 const FeatureEntry::FeatureParam kMarkHttpAsDangerous[] = {
     {security_state::features::kMarkHttpAsFeatureParameterName,
      security_state::features::kMarkHttpAsParameterDangerous}};
-const FeatureEntry::FeatureParam kMarkHttpAsWarning[] = {
-    {security_state::features::kMarkHttpAsFeatureParameterName,
-     security_state::features::kMarkHttpAsParameterWarning}};
 const FeatureEntry::FeatureParam kMarkHttpAsWarningAndDangerousOnFormEdits[] = {
     {security_state::features::kMarkHttpAsFeatureParameterName,
      security_state::features::
          kMarkHttpAsParameterWarningAndDangerousOnFormEdits}};
-const FeatureEntry::FeatureParam
-    kMarkHttpAsWarningAndDangerousOnPasswordsAndCreditCards[] = {
-        {security_state::features::kMarkHttpAsFeatureParameterName,
-         security_state::features::
-             kMarkHttpAsParameterWarningAndDangerousOnPasswordsAndCreditCards}};
 
 const FeatureEntry::FeatureVariation kMarkHttpAsFeatureVariations[] = {
     {"(mark as actively dangerous)", kMarkHttpAsDangerous,
      base::size(kMarkHttpAsDangerous), nullptr},
-    {"(mark with a Not Secure warning)", kMarkHttpAsWarning,
-     base::size(kMarkHttpAsWarning), nullptr},
     {"(mark with a Not Secure warning and dangerous on form edits)",
      kMarkHttpAsWarningAndDangerousOnFormEdits,
-     base::size(kMarkHttpAsWarningAndDangerousOnFormEdits), nullptr},
-    {"(mark with a Not Secure warning and dangerous on passwords and credit "
-     "card fields)",
-     kMarkHttpAsWarningAndDangerousOnPasswordsAndCreditCards,
-     base::size(kMarkHttpAsWarningAndDangerousOnPasswordsAndCreditCards),
-     nullptr}};
+     base::size(kMarkHttpAsWarningAndDangerousOnFormEdits), nullptr}};
 
 const FeatureEntry::Choice kUseDdljsonApiChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},

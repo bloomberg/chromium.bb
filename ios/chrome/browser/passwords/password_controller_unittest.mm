@@ -28,7 +28,6 @@
 #include "components/password_manager/ios/test_helpers.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/security_state/ios/ssl_status_input_event_data.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/passwords/password_form_filler.h"
@@ -37,7 +36,6 @@
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
-#include "ios/web/public/ssl_status.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/test/web_js_test.h"
 #include "ios/web/public/web_state/web_frame.h"
@@ -1170,62 +1168,6 @@ TEST_F(PasswordControllerTestSimple, SaveOnNonHTMLLandingPage) {
   web_state.SetContentIsHTML(false);
   web_state.SetCurrentURL(GURL("https://example.com"));
   [passwordController webState:&web_state didLoadPageWithSuccess:YES];
-}
-
-// Tests that an HTTP page without a password field does not update the SSL
-// status to indicate |password_field_shown|.
-TEST_F(PasswordControllerTest, HTTPNoPassword) {
-  LoadHtml(kHtmlWithoutPasswordForm, GURL("http://chromium.test"));
-
-  web::SSLStatus ssl_status =
-      web_state()->GetNavigationManager()->GetLastCommittedItem()->GetSSL();
-  security_state::SSLStatusInputEventData* input_events =
-      static_cast<security_state::SSLStatusInputEventData*>(
-          ssl_status.user_data.get());
-  EXPECT_FALSE(input_events &&
-               input_events->input_events()->password_field_shown);
-}
-
-// Tests that an HTTP page with a password field updates the SSL status
-// to indicate |password_field_shown|.
-TEST_F(PasswordControllerTest, HTTPPassword) {
-  LoadHtml(kHtmlWithPasswordForm, GURL("http://chromium.test"));
-
-  web::SSLStatus ssl_status =
-      web_state()->GetNavigationManager()->GetLastCommittedItem()->GetSSL();
-  security_state::SSLStatusInputEventData* input_events =
-      static_cast<security_state::SSLStatusInputEventData*>(
-          ssl_status.user_data.get());
-  ASSERT_TRUE(input_events);
-  EXPECT_TRUE(input_events->input_events()->password_field_shown);
-}
-
-// Tests that an HTTPS page without a password field does not update the SSL
-// status to indicate |password_field_shown|.
-TEST_F(PasswordControllerTest, HTTPSNoPassword) {
-  LoadHtml(kHtmlWithoutPasswordForm, GURL("https://chromium.test"));
-
-  web::SSLStatus ssl_status =
-      web_state()->GetNavigationManager()->GetLastCommittedItem()->GetSSL();
-  security_state::SSLStatusInputEventData* input_events =
-      static_cast<security_state::SSLStatusInputEventData*>(
-          ssl_status.user_data.get());
-  EXPECT_FALSE(input_events &&
-               input_events->input_events()->password_field_shown);
-}
-
-// Tests that an HTTPS page with a password field does not update the SSL status
-// to indicate |password_field_shown|.
-TEST_F(PasswordControllerTest, HTTPSPassword) {
-  LoadHtml(kHtmlWithPasswordForm, GURL("https://chromium.test"));
-
-  web::SSLStatus ssl_status =
-      web_state()->GetNavigationManager()->GetLastCommittedItem()->GetSSL();
-  security_state::SSLStatusInputEventData* input_events =
-      static_cast<security_state::SSLStatusInputEventData*>(
-          ssl_status.user_data.get());
-  EXPECT_FALSE(input_events &&
-               input_events->input_events()->password_field_shown);
 }
 
 // Checks that when the user set a focus on a field of a password form which was

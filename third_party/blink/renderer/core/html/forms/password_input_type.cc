@@ -77,12 +77,4 @@ bool PasswordInputType::ShouldRespectListAttribute() {
   return false;
 }
 
-void PasswordInputType::OnAttachWithLayoutObject() {
-  GetElement().GetDocument().IncrementPasswordCount();
-}
-
-void PasswordInputType::OnDetachWithLayoutObject() {
-  GetElement().GetDocument().DecrementPasswordCount();
-}
-
 }  // namespace blink

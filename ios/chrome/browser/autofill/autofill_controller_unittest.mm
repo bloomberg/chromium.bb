@@ -27,7 +27,6 @@
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/security_state/ios/ssl_status_input_event_data.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -41,7 +40,6 @@
 #include "ios/chrome/browser/web_data_service_factory.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
-#include "ios/web/public/ssl_status.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #include "ios/web/public/web_state/web_frame.h"
 #include "ios/web/public/web_state/web_frame_util.h"
@@ -656,66 +654,6 @@ TEST_F(AutofillControllerTest, CreditCardImport) {
   EXPECT_EQ(
       base::UTF8ToUTF16("2999"),
       credit_card.GetInfo(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), "en-US"));
-};
-
-// Checks that an HTTP page containing a credit card results in a navigation
-// entry with the "credit card interaction" bit set to true.
-TEST_F(AutofillControllerTest, HttpCreditCard) {
-  LoadHtml(kCreditCardAutofocusFormHtml, GURL("http://chromium.test"));
-  WaitForSuggestionRetrieval(/*wait_for_trigger=*/NO);
-
-  web::SSLStatus ssl_status =
-      web_state()->GetNavigationManager()->GetLastCommittedItem()->GetSSL();
-  security_state::SSLStatusInputEventData* input_events =
-      static_cast<security_state::SSLStatusInputEventData*>(
-          ssl_status.user_data.get());
-  EXPECT_TRUE(input_events &&
-              input_events->input_events()->credit_card_field_edited);
-};
-
-// Checks that an HTTP page without a credit card form does not result in a
-// navigation entry with the "credit card interaction" bit set to true.
-TEST_F(AutofillControllerTest, HttpNoCreditCard) {
-  LoadHtml(kNoCreditCardFormHtml, GURL("http://chromium.test"));
-  WaitForSuggestionRetrieval(/*wait_for_trigger=*/NO);
-
-  web::SSLStatus ssl_status =
-      web_state()->GetNavigationManager()->GetLastCommittedItem()->GetSSL();
-  security_state::SSLStatusInputEventData* input_events =
-      static_cast<security_state::SSLStatusInputEventData*>(
-          ssl_status.user_data.get());
-  EXPECT_FALSE(input_events &&
-               input_events->input_events()->credit_card_field_edited);
-};
-
-// Checks that an HTTPS page containing a credit card form does not result in a
-// navigation entry with the "credit card interaction" bit set to true.
-TEST_F(AutofillControllerTest, HttpsCreditCard) {
-  LoadHtml(kCreditCardAutofocusFormHtml, GURL("https://chromium.test"));
-  WaitForSuggestionRetrieval(/*wait_for_trigger=*/NO);
-
-  web::SSLStatus ssl_status =
-      web_state()->GetNavigationManager()->GetLastCommittedItem()->GetSSL();
-  security_state::SSLStatusInputEventData* input_events =
-      static_cast<security_state::SSLStatusInputEventData*>(
-          ssl_status.user_data.get());
-  EXPECT_FALSE(input_events &&
-               input_events->input_events()->credit_card_field_edited);
-};
-
-// Checks that an HTTPS page without a credit card form does not result in a
-// navigation entry with the "credit card interaction" bit set to true.
-TEST_F(AutofillControllerTest, HttpsNoCreditCard) {
-  LoadHtml(kNoCreditCardFormHtml, GURL("https://chromium.test"));
-  WaitForSuggestionRetrieval(/*wait_for_trigger=*/NO);
-
-  web::SSLStatus ssl_status =
-      web_state()->GetNavigationManager()->GetLastCommittedItem()->GetSSL();
-  security_state::SSLStatusInputEventData* input_events =
-      static_cast<security_state::SSLStatusInputEventData*>(
-          ssl_status.user_data.get());
-  EXPECT_FALSE(input_events &&
-               input_events->input_events()->credit_card_field_edited);
 };
 
 }  // namespace

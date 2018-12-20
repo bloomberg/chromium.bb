@@ -5949,38 +5949,6 @@ TEST_F(AutofillManagerTest,
   }
 }
 
-// Tests that querying for credit card field suggestions notifies the
-// driver of an interaction with a credit card field.
-TEST_F(AutofillManagerTest, NotifyDriverOfCreditCardInteraction) {
-  // Set up a credit card form.
-  FormData form;
-  form.name = ASCIIToUTF16("MyForm");
-  form.origin = GURL("https://myform.com/form.html");
-  form.action = GURL("https://myform.com/submit.html");
-  FormFieldData field;
-  test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
-  field.should_autocomplete = false;
-  form.fields.push_back(field);
-  test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
-  field.should_autocomplete = true;
-  form.fields.push_back(field);
-  test::CreateTestFormField("Expiration Month", "ccexpiresmonth", "", "text",
-                            &field);
-  field.should_autocomplete = false;
-  form.fields.push_back(field);
-  form.fields.push_back(field);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-  EXPECT_FALSE(autofill_driver_->GetDidInteractWithCreditCardForm());
-
-  // The driver should always be notified.
-  for (const FormFieldData& field : form.fields) {
-    GetAutofillSuggestions(form, field);
-    EXPECT_TRUE(autofill_driver_->GetDidInteractWithCreditCardForm());
-    autofill_driver_->ClearDidInteractWithCreditCardForm();
-  }
-}
-
 // Tests that a form with server only types is still autofillable if the form
 // gets updated in cache.
 TEST_F(AutofillManagerTest, DisplaySuggestionsForUpdatedServerTypedForm) {

@@ -50,59 +50,6 @@ class SecurityStateContentUtilsBrowserTest
 };
 
 #if defined(OS_WIN)
-#define MAYBE_VisibleSecurityStateNonsecureFormInputs \
-  DISABLED_VisibleSecurityStateNonsecureFormInputs
-#else
-#define MAYBE_VisibleSecurityStateNonsecureFormInputs \
-  VisibleSecurityStateNonsecureFormInputs
-#endif
-// Tests that the NavigationEntry's flags for nonsecure password/credit
-// card inputs are reflected in the VisibleSecurityState.
-IN_PROC_BROWSER_TEST_F(SecurityStateContentUtilsBrowserTest,
-                       MAYBE_VisibleSecurityStateNonsecureFormInputs) {
-  ASSERT_TRUE(https_server_.Start());
-  EXPECT_TRUE(NavigateToURL(shell(), https_server_.GetURL("/hello.html")));
-
-  content::WebContents* contents = shell()->web_contents();
-  ASSERT_TRUE(contents);
-
-  // First, ensure the flag is not set prematurely.
-  content::SSLStatus& ssl_status =
-      contents->GetController().GetVisibleEntry()->GetSSL();
-  SSLStatusInputEventData* ssl_status_input_events =
-      static_cast<SSLStatusInputEventData*>(ssl_status.user_data.get());
-  InsecureInputEventData events;
-  if (ssl_status_input_events)
-    events = *ssl_status_input_events->input_events();
-  ASSERT_FALSE(events.password_field_shown);
-  ASSERT_FALSE(events.credit_card_field_edited);
-
-  // Next, ensure they aren't set on the VisibleSecurityState.
-  std::unique_ptr<security_state::VisibleSecurityState>
-      visible_security_state_no_sensitive_inputs =
-          GetVisibleSecurityState(contents);
-  EXPECT_FALSE(visible_security_state_no_sensitive_inputs->insecure_input_events
-                   .password_field_shown);
-  EXPECT_FALSE(visible_security_state_no_sensitive_inputs->insecure_input_events
-                   .credit_card_field_edited);
-
-  // Now, set the flags on the NavigationEntry and test that they are
-  // reflected in the VisibleSecurityState.
-  events.password_field_shown = true;
-  events.credit_card_field_edited = true;
-  ssl_status.user_data =
-      std::make_unique<security_state::SSLStatusInputEventData>(events);
-
-  std::unique_ptr<security_state::VisibleSecurityState>
-      visible_security_state_sensitive_inputs =
-          GetVisibleSecurityState(contents);
-  EXPECT_TRUE(visible_security_state_sensitive_inputs->insecure_input_events
-                  .password_field_shown);
-  EXPECT_TRUE(visible_security_state_sensitive_inputs->insecure_input_events
-                  .credit_card_field_edited);
-}
-
-#if defined(OS_WIN)
 #define MAYBE_VisibleSecurityStateInsecureFieldEdit \
   DISABLED_VisibleSecurityStateInsecureFieldEdit
 #else

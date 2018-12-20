@@ -5,9 +5,7 @@
 module blink.mojom;
 
 // InsecureInputService receives per-frame notifications about insecure input
-// operations (display of password fields, editing of any fields) on the page.
+// operations (e.g. editing of any fields) on the page.
 interface InsecureInputService {
-  PasswordFieldVisibleInInsecureContext();
-  AllPasswordFieldsInInsecureContextInvisible();
   DidEditFieldInInsecureContext();
 };

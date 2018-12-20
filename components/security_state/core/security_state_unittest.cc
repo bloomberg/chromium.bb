@@ -55,7 +55,6 @@ class TestSecurityStateHelper {
         contained_mixed_form_(false),
         ran_mixed_content_(false),
         malicious_content_status_(MALICIOUS_CONTENT_STATUS_NONE),
-        is_incognito_(false),
         is_error_page_(false),
         is_view_source_(false),
         has_policy_certificate_(false) {}
@@ -89,13 +88,6 @@ class TestSecurityStateHelper {
       MaliciousContentStatus malicious_content_status) {
     malicious_content_status_ = malicious_content_status;
   }
-  void set_password_field_shown(bool password_field_shown) {
-    insecure_input_events_.password_field_shown = password_field_shown;
-  }
-  void set_credit_card_field_edited(bool credit_card_field_edited) {
-    insecure_input_events_.credit_card_field_edited = credit_card_field_edited;
-  }
-  void set_is_incognito(bool is_incognito) { is_incognito_ = is_incognito; }
 
   void set_is_error_page(bool is_error_page) { is_error_page_ = is_error_page; }
 
@@ -122,7 +114,6 @@ class TestSecurityStateHelper {
     state->contained_mixed_form = contained_mixed_form_;
     state->ran_mixed_content = ran_mixed_content_;
     state->malicious_content_status = malicious_content_status_;
-    state->is_incognito = is_incognito_;
     state->is_error_page = is_error_page_;
     state->is_view_source = is_view_source_;
     state->insecure_input_events = insecure_input_events_;
@@ -144,7 +135,6 @@ class TestSecurityStateHelper {
   bool contained_mixed_form_;
   bool ran_mixed_content_;
   MaliciousContentStatus malicious_content_status_;
-  bool is_incognito_;
   bool is_error_page_;
   bool is_view_source_;
   bool has_policy_certificate_;
@@ -298,43 +288,21 @@ TEST(SecurityStateTest, MalwareWithoutConnectionState) {
   EXPECT_EQ(DANGEROUS, security_info.security_level);
 }
 
-// Tests that pseudo URLs always cause an HTTP_SHOW_WARNING to be shown,
-// regardless of whether a password or credit card field was displayed.
+// Tests that pseudo URLs always cause an HTTP_SHOW_WARNING to be shown.
 TEST(SecurityStateTest, AlwaysWarnOnDataUrls) {
   TestSecurityStateHelper helper;
   helper.SetUrl(GURL("data:text/html,<html>test</html>"));
-  helper.set_password_field_shown(false);
-  helper.set_credit_card_field_edited(false);
   SecurityInfo security_info;
   helper.GetSecurityInfo(&security_info);
-  EXPECT_FALSE(security_info.insecure_input_events.password_field_shown);
-  EXPECT_FALSE(security_info.insecure_input_events.credit_card_field_edited);
   EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
 }
 
-// Tests that FTP URLs always cause an HTTP_SHOW_WARNING to be shown,
-// regardless of whether a password or credit card field was displayed.
+// Tests that FTP URLs always cause an HTTP_SHOW_WARNING to be shown.
 TEST(SecurityStateTest, AlwaysWarnOnFtpUrls) {
   TestSecurityStateHelper helper;
   helper.SetUrl(GURL("ftp://example.test/"));
-  helper.set_password_field_shown(false);
-  helper.set_credit_card_field_edited(false);
   SecurityInfo security_info;
   helper.GetSecurityInfo(&security_info);
-  EXPECT_FALSE(security_info.insecure_input_events.password_field_shown);
-  EXPECT_FALSE(security_info.insecure_input_events.credit_card_field_edited);
-  EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
-}
-
-// Tests that password fields cause the security level to be downgraded
-// to HTTP_SHOW_WARNING.
-TEST(SecurityStateTest, PasswordFieldWarning) {
-  TestSecurityStateHelper helper;
-  helper.SetUrl(GURL(kHttpUrl));
-  helper.set_password_field_shown(true);
-  SecurityInfo security_info;
-  helper.GetSecurityInfo(&security_info);
-  EXPECT_TRUE(security_info.insecure_input_events.password_field_shown);
   EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
 }
 
@@ -346,46 +314,6 @@ TEST(SecurityStateTest, WarningOnPseudoUrls) {
     helper.SetUrl(GURL(url));
     SecurityInfo security_info;
     helper.GetSecurityInfo(&security_info);
-    EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
-  }
-}
-
-// Tests that credit card fields cause the security level to be downgraded
-// to HTTP_SHOW_WARNING.
-TEST(SecurityStateTest, CreditCardFieldWarning) {
-  TestSecurityStateHelper helper;
-  helper.SetUrl(GURL(kHttpUrl));
-  helper.set_credit_card_field_edited(true);
-  SecurityInfo security_info;
-  helper.GetSecurityInfo(&security_info);
-  EXPECT_TRUE(security_info.insecure_input_events.credit_card_field_edited);
-  EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
-}
-
-// Tests that neither |password_field_shown| nor
-// |credit_card_field_edited| is set when the corresponding
-// VisibleSecurityState flags are not set.
-TEST(SecurityStateTest, PrivateUserDataNotSet) {
-  TestSecurityStateHelper helper;
-  helper.SetUrl(GURL(kHttpUrl));
-  SecurityInfo security_info;
-  helper.GetSecurityInfo(&security_info);
-  EXPECT_FALSE(security_info.insecure_input_events.password_field_shown);
-  EXPECT_FALSE(security_info.insecure_input_events.credit_card_field_edited);
-  EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
-}
-
-// Tests that neither |password_field_shown| nor
-// |credit_card_field_edited| is set on pseudo URLs when the
-// corresponding VisibleSecurityState flags are not set.
-TEST(SecurityStateTest, PrivateUserDataNotSetOnPseudoUrls) {
-  for (const char* const url : kPseudoUrls) {
-    TestSecurityStateHelper helper;
-    helper.SetUrl(GURL(url));
-    SecurityInfo security_info;
-    helper.GetSecurityInfo(&security_info);
-    EXPECT_FALSE(security_info.insecure_input_events.password_field_shown);
-    EXPECT_FALSE(security_info.insecure_input_events.credit_card_field_edited);
     EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
   }
 }
@@ -414,44 +342,6 @@ TEST(SecurityStateTest, ViewSourceKeepsWarning) {
   EXPECT_EQ(MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING,
             security_info.malicious_content_status);
   EXPECT_EQ(DANGEROUS, security_info.security_level);
-}
-
-// Tests that |incognito_downgraded_security_level| is set only when the
-// corresponding VisibleSecurityState flag is set. The incognito downgrade is
-// only performed when the HTTP-Bad feature is disabled.
-TEST(SecurityStateTest, IncognitoFlagPropagates) {
-  TestSecurityStateHelper helper;
-  helper.SetUrl(GURL(kHttpUrl));
-  SecurityInfo security_info;
-
-  {
-    // When the feature is disabled, the downgraded flag should be set for
-    // incognito http pages.
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndDisableFeature(
-        security_state::features::kMarkHttpAsFeature);
-    helper.set_is_incognito(false);
-    helper.GetSecurityInfo(&security_info);
-    EXPECT_FALSE(security_info.incognito_downgraded_security_level);
-
-    helper.set_is_incognito(true);
-    helper.GetSecurityInfo(&security_info);
-    EXPECT_TRUE(security_info.incognito_downgraded_security_level);
-  }
-
-  {
-    // When the feature is enabled, the downgraded flag should never be set.
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(
-        security_state::features::kMarkHttpAsFeature);
-    helper.set_is_incognito(false);
-    helper.GetSecurityInfo(&security_info);
-    EXPECT_FALSE(security_info.incognito_downgraded_security_level);
-
-    helper.set_is_incognito(true);
-    helper.GetSecurityInfo(&security_info);
-    EXPECT_FALSE(security_info.incognito_downgraded_security_level);
-  }
 }
 
 TEST(SecurityStateTest, DetectSubjectAltName) {
@@ -556,46 +446,82 @@ TEST(SecurityStateTest, MixedContentWithPolicyCertificate) {
   }
 }
 
-// Tests that a field edit is reflected in the SecurityInfo.
-TEST(SecurityStateTest, FieldEdit) {
+// Tests that HTTP_SHOW_WARNING is set on normal http pages but DANGEROUS on
+// form edits with default feature enabled.
+TEST(SecurityStateTest, WarningAndDangerousOnFormEditsWhenFeatureEnabled) {
   TestSecurityStateHelper helper;
   helper.SetUrl(GURL(kHttpUrl));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      security_state::features::kMarkHttpAsFeature);
 
   {
-    // Test that a warning is shown on field edits, when the feature is
-    // disabled.
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndDisableFeature(
-        security_state::features::kMarkHttpAsFeature);
+    SecurityInfo security_info;
+    helper.GetSecurityInfo(&security_info);
+    EXPECT_FALSE(security_info.insecure_input_events.insecure_field_edited);
+    EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+  }
 
-    SecurityInfo no_field_edit_security_info;
-    helper.GetSecurityInfo(&no_field_edit_security_info);
-    EXPECT_FALSE(no_field_edit_security_info.insecure_input_events
-                     .insecure_field_edited);
-    EXPECT_FALSE(
-        no_field_edit_security_info.field_edit_downgraded_security_level);
-    EXPECT_EQ(NONE, no_field_edit_security_info.security_level);
+  helper.set_insecure_field_edit(true);
 
-    helper.set_insecure_field_edit(true);
-
+  {
     SecurityInfo security_info;
     helper.GetSecurityInfo(&security_info);
     EXPECT_TRUE(security_info.insecure_input_events.insecure_field_edited);
-    EXPECT_TRUE(security_info.field_edit_downgraded_security_level);
+    EXPECT_EQ(DANGEROUS, security_info.security_level);
+  }
+}
+
+// Tests that HTTP_SHOW_WARNING is set on normal http pages but DANGEROUS on
+// form edits with default feature disabled.
+TEST(SecurityStateTest, WarningAndDangerousOnFormEditsWhenFeatureDisabled) {
+  TestSecurityStateHelper helper;
+  helper.SetUrl(GURL(kHttpUrl));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      security_state::features::kMarkHttpAsFeature);
+
+  {
+    SecurityInfo security_info;
+    helper.GetSecurityInfo(&security_info);
+    EXPECT_FALSE(security_info.insecure_input_events.insecure_field_edited);
     EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
   }
 
-  {
-    // Test that the default enabled configuration shows the dangerous warning
-    // on field edits.
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(
-        security_state::features::kMarkHttpAsFeature);
+  helper.set_insecure_field_edit(true);
 
+  {
     SecurityInfo security_info;
     helper.GetSecurityInfo(&security_info);
     EXPECT_TRUE(security_info.insecure_input_events.insecure_field_edited);
-    EXPECT_FALSE(security_info.field_edit_downgraded_security_level);
+    EXPECT_EQ(DANGEROUS, security_info.security_level);
+  }
+}
+
+// Tests that DANGEROUS is set on normal http pages regardless of form edits
+// when kMarkHttpAsFeature is set to always DANGEROUS
+TEST(SecurityStateTest, AlwaysDangerousWhenFeatureMarksAllAsDangerous) {
+  TestSecurityStateHelper helper;
+  helper.SetUrl(GURL(kHttpUrl));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      security_state::features::kMarkHttpAsFeature,
+      {{security_state::features::kMarkHttpAsFeatureParameterName,
+        security_state::features::kMarkHttpAsParameterDangerous}});
+
+  {
+    SecurityInfo security_info;
+    helper.GetSecurityInfo(&security_info);
+    EXPECT_FALSE(security_info.insecure_input_events.insecure_field_edited);
+    EXPECT_EQ(DANGEROUS, security_info.security_level);
+  }
+
+  helper.set_insecure_field_edit(true);
+
+  {
+    SecurityInfo security_info;
+    helper.GetSecurityInfo(&security_info);
+    EXPECT_TRUE(security_info.insecure_input_events.insecure_field_edited);
     EXPECT_EQ(DANGEROUS, security_info.security_level);
   }
 }
@@ -631,99 +557,20 @@ TEST(SecurityStateTest, SslCertificateValid) {
   EXPECT_FALSE(IsSslCertificateValid(SecurityLevel::HTTP_SHOW_WARNING));
 }
 
-// Tests that HTTP_SHOW_WARNING is not set in incognito for error pages.
-TEST(SecurityStateTest, IncognitoErrorPage) {
+// Tests that HTTP_SHOW_WARNING is not set for error pages.
+TEST(SecurityStateTest, ErrorPage) {
   TestSecurityStateHelper helper;
   SecurityInfo security_info;
   helper.SetUrl(GURL("http://nonexistent.test"));
-  helper.set_is_incognito(true);
   helper.set_is_error_page(true);
   helper.GetSecurityInfo(&security_info);
   EXPECT_EQ(SecurityLevel::NONE, security_info.security_level);
-  EXPECT_FALSE(security_info.incognito_downgraded_security_level);
 
   // Sanity-check that if it's not an error page, the security level is
   // downgraded.
   helper.set_is_error_page(false);
   helper.GetSecurityInfo(&security_info);
   EXPECT_EQ(SecurityLevel::HTTP_SHOW_WARNING, security_info.security_level);
-}
-
-// Tests that HTTP_SHOW_WARNING is set on normal http pages but DANGEROUS on
-// form edits when the default feature configuration is enabled.
-TEST(SecurityStateTest, WarningAndDangerousOnFormEdits) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      security_state::features::kMarkHttpAsFeature);
-
-  TestSecurityStateHelper helper;
-  helper.SetUrl(GURL(kHttpUrl));
-
-  {
-    SecurityInfo security_info;
-    helper.GetSecurityInfo(&security_info);
-    EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
-  }
-
-  {
-    SecurityInfo security_info;
-    helper.set_insecure_field_edit(true);
-    helper.GetSecurityInfo(&security_info);
-    EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
-  }
-
-  {
-    SecurityInfo security_info;
-    helper.set_insecure_field_edit(false);
-    helper.set_password_field_shown(true);
-    helper.GetSecurityInfo(&security_info);
-    EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
-  }
-}
-
-// Tests that HTTP_SHOW_WARNING is set on normal http pages but DANGEROUS on
-// sensitive fields when the
-// 'warning-and-dangerous-on-passwords-and-credit-cards' field trial
-// configuration is enabled.
-TEST(SecurityStateTest, WarningAndDangerousOnSensitiveFields) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      security_state::features::kMarkHttpAsFeature,
-      {{security_state::features::kMarkHttpAsFeatureParameterName,
-        security_state::features::
-            kMarkHttpAsParameterWarningAndDangerousOnPasswordsAndCreditCards}});
-
-  TestSecurityStateHelper helper;
-  helper.SetUrl(GURL(kHttpUrl));
-
-  {
-    SecurityInfo security_info;
-    helper.GetSecurityInfo(&security_info);
-    EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
-  }
-
-  {
-    SecurityInfo security_info;
-    helper.set_insecure_field_edit(true);
-    helper.GetSecurityInfo(&security_info);
-    EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
-  }
-
-  {
-    SecurityInfo security_info;
-    helper.set_insecure_field_edit(false);
-    helper.set_password_field_shown(true);
-    helper.GetSecurityInfo(&security_info);
-    EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
-  }
-
-  {
-    SecurityInfo security_info;
-    helper.set_password_field_shown(false);
-    helper.set_credit_card_field_edited(true);
-    helper.GetSecurityInfo(&security_info);
-    EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
-  }
 }
 
 // Tests that the billing status is set, and it overrides valid HTTPS.

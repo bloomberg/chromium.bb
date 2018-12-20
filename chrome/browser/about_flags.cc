@@ -1002,32 +1002,17 @@ const FeatureEntry::Choice kUseDdljsonApiChoices[] = {
 const FeatureEntry::FeatureParam kMarkHttpAsDangerous[] = {
     {security_state::features::kMarkHttpAsFeatureParameterName,
      security_state::features::kMarkHttpAsParameterDangerous}};
-const FeatureEntry::FeatureParam kMarkHttpAsWarning[] = {
-    {security_state::features::kMarkHttpAsFeatureParameterName,
-     security_state::features::kMarkHttpAsParameterWarning}};
 const FeatureEntry::FeatureParam kMarkHttpAsWarningAndDangerousOnFormEdits[] = {
     {security_state::features::kMarkHttpAsFeatureParameterName,
      security_state::features::
          kMarkHttpAsParameterWarningAndDangerousOnFormEdits}};
-const FeatureEntry::FeatureParam
-    kMarkHttpAsWarningAndDangerousOnPasswordsAndCreditCards[] = {
-        {security_state::features::kMarkHttpAsFeatureParameterName,
-         security_state::features::
-             kMarkHttpAsParameterWarningAndDangerousOnPasswordsAndCreditCards}};
 
 const FeatureEntry::FeatureVariation kMarkHttpAsFeatureVariations[] = {
     {"(mark as actively dangerous)", kMarkHttpAsDangerous,
-     arraysize(kMarkHttpAsDangerous), nullptr},
-    {"(mark with a Not Secure warning)", kMarkHttpAsWarning,
-     arraysize(kMarkHttpAsWarning), nullptr},
+     base::size(kMarkHttpAsDangerous), nullptr},
     {"(mark with a Not Secure warning and dangerous on form edits)",
      kMarkHttpAsWarningAndDangerousOnFormEdits,
-     arraysize(kMarkHttpAsWarningAndDangerousOnFormEdits), nullptr},
-    {"(mark with a Not Secure warning and dangerous on passwords and credit "
-     "card fields)",
-     kMarkHttpAsWarningAndDangerousOnPasswordsAndCreditCards,
-     arraysize(kMarkHttpAsWarningAndDangerousOnPasswordsAndCreditCards),
-     nullptr}};
+     base::size(kMarkHttpAsWarningAndDangerousOnFormEdits), nullptr}};
 
 #if defined(OS_ANDROID) && BUILDFLAG(ENABLE_VR)
 const FeatureEntry::FeatureParam kWebXrRenderPathChoiceClientWait[] = {

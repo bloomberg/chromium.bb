@@ -45,20 +45,6 @@ class InsecureSensitiveInputDriverFactory
   InsecureSensitiveInputDriver* GetOrCreateDriverForFrame(
       content::RenderFrameHost* render_frame_host);
 
-  // This method is called when the autofill component detects a credit
-  // card field was interacted with in a non-secure context.
-  void DidInteractWithNonsecureCreditCardInput();
-
-  // This method is called when there is a message notifying
-  // the browser process that the renderer has a visible password field.
-  void RenderFrameHasVisiblePasswordField(
-      content::RenderFrameHost* render_frame_host);
-
-  // This method is called when there is a message notifying the browser
-  // process that the renderer has no visible password fields anymore.
-  void RenderFrameHasNoVisiblePasswordFields(
-      content::RenderFrameHost* render_frame_host);
-
   // This method is called when there is a message notifying the browser
   // process that the user edited a field in a non-secure context.
   void DidEditFieldInInsecureContext();

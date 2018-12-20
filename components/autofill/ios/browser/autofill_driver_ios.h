@@ -54,7 +54,6 @@ class AutofillDriverIOS : public AutofillDriver {
   void RendererShouldClearPreviewedForm() override;
   void RendererShouldAcceptDataListSuggestion(
       const base::string16& value) override;
-  void DidInteractWithCreditCardForm() override;
 
   AutofillManager* autofill_manager() { return &autofill_manager_; }
 
