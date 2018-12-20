@@ -67,5 +67,8 @@ See also [open bugs](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=co
 
 ### cpplint.py
 
-To update cpplint.py, please submit the change upstream first at
-https://github.com/google/styleguide/tree/gh-pages/cpplint then copy it down.
+Until 2018, our `cpplint.py` was a copy of the upstream version at
+https://github.com/google/styleguide/tree/gh-pages/cpplint. Unfortunately, that
+repository is not maintained any more.
+If you want to update `cpplint.py` in `depot_tools`, just upload a patch to do
+so. We will figure out a long-term strategy via issue https://crbug.com/916550.
