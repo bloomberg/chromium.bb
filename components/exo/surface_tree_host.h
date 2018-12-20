@@ -65,6 +65,12 @@ class SurfaceTreeHost : public SurfaceDelegate,
     return layer_tree_frame_sink_holder_.get();
   }
 
+  using PresentationCallbacks = std::list<Surface::PresentationCallback>;
+  base::flat_map<uint32_t, PresentationCallbacks>&
+  GetActivePresentationCallbacksForTesting() {
+    return active_presentation_callbacks_;
+  }
+
   // Overridden from SurfaceDelegate:
   void OnSurfaceCommit() override;
   bool IsSurfaceSynchronized() const override;
@@ -104,7 +110,6 @@ class SurfaceTreeHost : public SurfaceDelegate,
 
   // These lists contains the callbacks to notify the client when surface
   // contents have been presented.
-  using PresentationCallbacks = std::list<Surface::PresentationCallback>;
   PresentationCallbacks presentation_callbacks_;
   base::flat_map<uint32_t, PresentationCallbacks>
       active_presentation_callbacks_;

@@ -285,6 +285,7 @@ TEST_F(MAYBE_PointerTest, SetCursorAndSetCursorType) {
 
   // Set pointer surface.
   pointer->SetCursor(pointer_surface.get(), gfx::Point());
+  EXPECT_EQ(1u, pointer->GetActivePresentationCallbacksForTesting().size());
   base::RunLoop().RunUntilIdle();
 
   {
@@ -299,12 +300,22 @@ TEST_F(MAYBE_PointerTest, SetCursorAndSetCursorType) {
 
   // Set the cursor type to the kNone through SetCursorType.
   pointer->SetCursorType(ui::CursorType::kNone);
+  EXPECT_TRUE(pointer->GetActivePresentationCallbacksForTesting().empty());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, pointer->root_surface());
 
   // Set the same pointer surface again.
   pointer->SetCursor(pointer_surface.get(), gfx::Point());
-  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, pointer->GetActivePresentationCallbacksForTesting().size());
+  auto& list =
+      pointer->GetActivePresentationCallbacksForTesting().begin()->second;
+  base::RunLoop runloop;
+  list.push_back(base::BindRepeating(
+      [](base::Closure callback, const gfx::PresentationFeedback&) {
+        callback.Run();
+      },
+      runloop.QuitClosure()));
+  runloop.Run();
 
   {
     viz::SurfaceId surface_id = pointer->host_window()->GetSurfaceId();
