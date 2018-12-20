@@ -178,8 +178,6 @@ TestGpuMemoryBufferManager::CreateGpuMemoryBuffer(
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     gpu::SurfaceHandle surface_handle) {
-  if (fail_on_create_)
-    return nullptr;
   const size_t buffer_size = gfx::BufferSizeForBufferFormat(size, format);
   base::UnsafeSharedMemoryRegion shared_memory_region =
       base::UnsafeSharedMemoryRegion::Create(buffer_size);

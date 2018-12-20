@@ -44,7 +44,6 @@ class ImageDecodeCache;
 namespace gpu {
 struct Capabilities;
 struct GpuFeatureInfo;
-class SharedImageInterface;
 
 namespace gles2 {
 class GLES2Interface;
@@ -83,7 +82,6 @@ class WebGraphicsContext3DProvider {
   virtual cc::ImageDecodeCache* ImageDecodeCache(
       SkColorType color_type,
       sk_sp<SkColorSpace> color_space) = 0;
-  virtual gpu::SharedImageInterface* SharedImageInterface() = 0;
 };
 
 }  // namespace blink

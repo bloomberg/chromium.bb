@@ -495,11 +495,7 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
       image_factory_(image_factory) {
   gl::GLApi* api = gl::g_current_gl_context;
   api->glGetIntegervFn(GL_MAX_TEXTURE_SIZE, &max_texture_size_);
-  // When the passthrough command decoder is used, the max_texture_size
-  // workaround is implemented by ANGLE. Trying to adjust the max size here
-  // would cause discrepency between what we think the max size is and what
-  // ANGLE tells the clients.
-  if (!use_passthrough_ && workarounds.max_texture_size) {
+  if (workarounds.max_texture_size) {
     max_texture_size_ =
         std::min(max_texture_size_, workarounds.max_texture_size);
   }
@@ -787,15 +783,10 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
                 SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT)) != 0;
   GLuint service_id = MakeTextureAndSetParameters(
       api, target, for_framebuffer_attachment && texture_usage_angle_);
-  bool is_rgb_emulation = usage & SHARED_IMAGE_USAGE_RGB_EMULATION;
 
+  // TODO(piman): RGB emulation
   gles2::Texture::ImageState image_state = gles2::Texture::UNBOUND;
-  bool is_bound = false;
-  if (is_rgb_emulation)
-    is_bound = image->BindTexImageWithInternalformat(target, GL_RGB);
-  else
-    is_bound = image->BindTexImage(target);
-  if (is_bound) {
+  if (image->BindTexImage(target)) {
     image_state = gles2::Texture::BOUND;
   } else if (use_passthrough_) {
     image->CopyTexImage(target);
@@ -808,8 +799,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
   //
   // - internalformat might be sized, which is wrong for format
   // - gl_type shouldn't be GL_UNSIGNED_BYTE for RGBA4444 for example.
-  GLuint internal_format =
-      is_rgb_emulation ? GL_RGB : image->GetInternalFormat();
+  GLuint internal_format = image->GetInternalFormat();
   GLenum gl_format = internal_format;
   GLenum gl_type = GL_UNSIGNED_BYTE;
 
