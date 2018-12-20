@@ -21,6 +21,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
@@ -756,6 +757,7 @@ void NotificationViewMD::CreateOrUpdateContextTitleView(
                                   ? kNotificationDefaultAccentColor
                                   : notification.accent_color());
   header_row_->SetTimestamp(notification.timestamp());
+  header_row_->SetAppNameElideBehavior(gfx::ELIDE_TAIL);
 
   base::string16 app_name = notification.display_source();
   if (notification.origin_url().is_valid() &&
@@ -763,6 +765,7 @@ void NotificationViewMD::CreateOrUpdateContextTitleView(
     app_name = url_formatter::FormatUrlForSecurityDisplay(
         notification.origin_url(),
         url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+    header_row_->SetAppNameElideBehavior(gfx::ELIDE_HEAD);
   } else if (app_name.empty() && notification.notifier_id().type ==
                                      NotifierType::SYSTEM_COMPONENT) {
     app_name = MessageCenter::Get()->GetSystemNotificationAppName();
