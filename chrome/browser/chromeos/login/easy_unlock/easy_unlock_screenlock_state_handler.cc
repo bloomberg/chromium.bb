@@ -130,8 +130,9 @@ bool EasyUnlockScreenlockStateHandler::InStateValidOnRemoteAuthFailure() const {
   // Note that NO_PHONE is not valid in this case because the phone may close
   // the connection if the auth challenge sent to it is invalid. This case
   // should be handled as authentication failure.
-  return (state_ == ScreenlockState::NO_BLUETOOTH ||
-          state_ == ScreenlockState::PHONE_LOCKED);
+  return state_ == ScreenlockState::INACTIVE ||
+         state_ == ScreenlockState::NO_BLUETOOTH ||
+         state_ == ScreenlockState::PHONE_LOCKED;
 }
 
 void EasyUnlockScreenlockStateHandler::ChangeState(ScreenlockState new_state) {
