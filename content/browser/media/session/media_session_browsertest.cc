@@ -16,6 +16,7 @@
 #include "content/shell/browser/shell.h"
 #include "media/base/media_switches.h"
 #include "services/media_session/public/cpp/switches.h"
+#include "services/media_session/public/cpp/test/audio_focus_test_util.h"
 
 namespace content {
 
@@ -187,15 +188,18 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, WebContents_Muted) {
   ASSERT_NE(nullptr, media_session);
 
   StartPlaybackAndWait(shell(), "long-video");
-  EXPECT_FALSE(media_session->IsControllable());
+  EXPECT_FALSE(media_session::test::GetMediaSessionInfoSync(media_session)
+                   ->is_controllable);
 
   // Unmute the web contents and the player should be created.
   shell()->web_contents()->SetAudioMuted(false);
-  EXPECT_TRUE(media_session->IsControllable());
+  EXPECT_TRUE(media_session::test::GetMediaSessionInfoSync(media_session)
+                  ->is_controllable);
 
   // Now mute it again and the player should be removed.
   shell()->web_contents()->SetAudioMuted(true);
-  EXPECT_FALSE(media_session->IsControllable());
+  EXPECT_FALSE(media_session::test::GetMediaSessionInfoSync(media_session)
+                   ->is_controllable);
 }
 
 #if !defined(OS_ANDROID)

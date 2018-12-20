@@ -171,6 +171,13 @@ class MediaSessionImpl : public MediaSession,
   // Returns information about the MediaSession.
   media_session::mojom::MediaSessionInfoPtr GetMediaSessionInfoSync();
 
+  // Returns if the session can be controlled by the user.
+  CONTENT_EXPORT bool IsControllable() const;
+
+  // Compute if the actual playback state is paused by combining the
+  // MediaSessionService declared state and guessed state (audio_focus_state_).
+  CONTENT_EXPORT bool IsActuallyPaused() const;
+
   // MediaSession overrides ---------------------------------------------------
 
   // Resume the media session.
@@ -183,13 +190,6 @@ class MediaSessionImpl : public MediaSession,
 
   // Seek the media session.
   CONTENT_EXPORT void Seek(base::TimeDelta seek_time) override;
-
-  // Returns if the session can be controlled by the user.
-  CONTENT_EXPORT bool IsControllable() const override;
-
-  // Compute if the actual playback state is paused by combining the
-  // MediaSessionService declared state and guessed state (audio_focus_state_).
-  CONTENT_EXPORT bool IsActuallyPaused() const override;
 
   // Called when a MediaSessionAction is received. The action will be forwarded
   // to blink::MediaSession corresponding to the current routed service.
