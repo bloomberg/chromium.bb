@@ -47,7 +47,7 @@
 #include "gaia_credential_provider_i.h"
 
 #define TYPE_FORMAT_STRING_SIZE   93                                
-#define PROC_FORMAT_STRING_SIZE   347                               
+#define PROC_FORMAT_STRING_SIZE   315                               
 #define EXPR_FORMAT_STRING_SIZE   1                                 
 #define TRANSMIT_AS_TABLE_SIZE    0            
 #define WIRE_MARSHAL_TABLE_SIZE   1            
@@ -351,17 +351,17 @@ static const gaia_credential_provider_MIDL_PROC_FORMAT_STRING gaia_credential_pr
 /* 262 */	0x8,		/* FC_LONG */
 			0x0,		/* 0 */
 
-	/* Procedure SetEmailForReauth */
+	/* Procedure SetUserInfo */
 
 /* 264 */	0x33,		/* FC_AUTO_HANDLE */
 			0x6c,		/* Old Flags:  object, Oi2 */
 /* 266 */	NdrFcLong( 0x0 ),	/* 0 */
 /* 270 */	NdrFcShort( 0x3 ),	/* 3 */
-/* 272 */	NdrFcShort( 0x18 ),	/* X64 Stack size/offset = 24 */
+/* 272 */	NdrFcShort( 0x28 ),	/* X64 Stack size/offset = 40 */
 /* 274 */	NdrFcShort( 0x0 ),	/* 0 */
 /* 276 */	NdrFcShort( 0x8 ),	/* 8 */
 /* 278 */	0x46,		/* Oi2 Flags:  clt must size, has return, has ext, */
-			0x2,		/* 2 */
+			0x4,		/* 4 */
 /* 280 */	0xa,		/* 10 */
 			0x5,		/* Ext Flags:  new corr desc, srv corr check, */
 /* 282 */	NdrFcShort( 0x0 ),	/* 0 */
@@ -369,54 +369,29 @@ static const gaia_credential_provider_MIDL_PROC_FORMAT_STRING gaia_credential_pr
 /* 286 */	NdrFcShort( 0x0 ),	/* 0 */
 /* 288 */	NdrFcShort( 0x0 ),	/* 0 */
 
-	/* Parameter email */
+	/* Parameter sid */
 
 /* 290 */	NdrFcShort( 0x8b ),	/* Flags:  must size, must free, in, by val, */
 /* 292 */	NdrFcShort( 0x8 ),	/* X64 Stack size/offset = 8 */
 /* 294 */	NdrFcShort( 0x2e ),	/* Type Offset=46 */
 
-	/* Return value */
-
-/* 296 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
-/* 298 */	NdrFcShort( 0x10 ),	/* X64 Stack size/offset = 16 */
-/* 300 */	0x8,		/* FC_LONG */
-			0x0,		/* 0 */
-
-	/* Procedure SetOSUserInfo */
-
-/* 302 */	0x33,		/* FC_AUTO_HANDLE */
-			0x6c,		/* Old Flags:  object, Oi2 */
-/* 304 */	NdrFcLong( 0x0 ),	/* 0 */
-/* 308 */	NdrFcShort( 0x4 ),	/* 4 */
-/* 310 */	NdrFcShort( 0x20 ),	/* X64 Stack size/offset = 32 */
-/* 312 */	NdrFcShort( 0x0 ),	/* 0 */
-/* 314 */	NdrFcShort( 0x8 ),	/* 8 */
-/* 316 */	0x46,		/* Oi2 Flags:  clt must size, has return, has ext, */
-			0x3,		/* 3 */
-/* 318 */	0xa,		/* 10 */
-			0x5,		/* Ext Flags:  new corr desc, srv corr check, */
-/* 320 */	NdrFcShort( 0x0 ),	/* 0 */
-/* 322 */	NdrFcShort( 0x1 ),	/* 1 */
-/* 324 */	NdrFcShort( 0x0 ),	/* 0 */
-/* 326 */	NdrFcShort( 0x0 ),	/* 0 */
-
-	/* Parameter sid */
-
-/* 328 */	NdrFcShort( 0x8b ),	/* Flags:  must size, must free, in, by val, */
-/* 330 */	NdrFcShort( 0x8 ),	/* X64 Stack size/offset = 8 */
-/* 332 */	NdrFcShort( 0x2e ),	/* Type Offset=46 */
-
 	/* Parameter username */
 
-/* 334 */	NdrFcShort( 0x8b ),	/* Flags:  must size, must free, in, by val, */
-/* 336 */	NdrFcShort( 0x10 ),	/* X64 Stack size/offset = 16 */
-/* 338 */	NdrFcShort( 0x2e ),	/* Type Offset=46 */
+/* 296 */	NdrFcShort( 0x8b ),	/* Flags:  must size, must free, in, by val, */
+/* 298 */	NdrFcShort( 0x10 ),	/* X64 Stack size/offset = 16 */
+/* 300 */	NdrFcShort( 0x2e ),	/* Type Offset=46 */
+
+	/* Parameter email */
+
+/* 302 */	NdrFcShort( 0x8b ),	/* Flags:  must size, must free, in, by val, */
+/* 304 */	NdrFcShort( 0x18 ),	/* X64 Stack size/offset = 24 */
+/* 306 */	NdrFcShort( 0x2e ),	/* Type Offset=46 */
 
 	/* Return value */
 
-/* 340 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
-/* 342 */	NdrFcShort( 0x18 ),	/* X64 Stack size/offset = 24 */
-/* 344 */	0x8,		/* FC_LONG */
+/* 308 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
+/* 310 */	NdrFcShort( 0x20 ),	/* X64 Stack size/offset = 32 */
+/* 312 */	0x8,		/* FC_LONG */
 			0x0,		/* 0 */
 
 			0x0
@@ -687,8 +662,7 @@ const CInterfaceStubVtbl _IGaiaCredentialStubVtbl =
 #pragma code_seg(".orpc")
 static const unsigned short IReauthCredential_FormatStringOffsetTable[] =
     {
-    264,
-    302
+    264
     };
 
 static const MIDL_STUBLESS_PROXY_INFO IReauthCredential_ProxyInfo =
@@ -712,22 +686,21 @@ static const MIDL_SERVER_INFO IReauthCredential_ServerInfo =
     0,
     0,
     0};
-CINTERFACE_PROXY_VTABLE(5) _IReauthCredentialProxyVtbl = 
+CINTERFACE_PROXY_VTABLE(4) _IReauthCredentialProxyVtbl = 
 {
     &IReauthCredential_ProxyInfo,
     &IID_IReauthCredential,
     IUnknown_QueryInterface_Proxy,
     IUnknown_AddRef_Proxy,
     IUnknown_Release_Proxy ,
-    (void *) (INT_PTR) -1 /* IReauthCredential::SetEmailForReauth */ ,
-    (void *) (INT_PTR) -1 /* IReauthCredential::SetOSUserInfo */
+    (void *) (INT_PTR) -1 /* IReauthCredential::SetUserInfo */
 };
 
 const CInterfaceStubVtbl _IReauthCredentialStubVtbl =
 {
     &IID_IReauthCredential,
     &IReauthCredential_ServerInfo,
-    5,
+    4,
     0, /* pure interpreted */
     CStdStubBuffer_METHODS
 };

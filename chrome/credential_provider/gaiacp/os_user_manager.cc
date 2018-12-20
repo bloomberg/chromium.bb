@@ -351,10 +351,10 @@ HRESULT OSUserManager::FindUserBySID(const wchar_t* sid,
   // https://support.microsoft.com/en-ca/help/909264/naming-conventions-in-active-directory-for-computers-domains-sites-and
   HRESULT hr = S_OK;
   DWORD name_length = username ? length : 0;
-  wchar_t nt_domain[256];
-  DWORD domain_length = base::size(nt_domain);
+  wchar_t domain[256];
+  DWORD domain_length = base::size(domain);
   SID_NAME_USE use;
-  if (!::LookupAccountSid(nullptr, psid, username, &name_length, nt_domain,
+  if (!::LookupAccountSid(nullptr, psid, username, &name_length, domain,
                           &domain_length, &use)) {
     hr = HRESULT_FROM_WIN32(::GetLastError());
     if (hr != HRESULT_FROM_WIN32(ERROR_NONE_MAPPED)) {
@@ -366,7 +366,7 @@ HRESULT OSUserManager::FindUserBySID(const wchar_t* sid,
     }
   }
 
-  LOGFN(INFO) << "username=" << username << " ntdomain=" << nt_domain;
+  LOGFN(INFO) << "username=" << username;
   ::LocalFree(psid);
   return hr;
 }

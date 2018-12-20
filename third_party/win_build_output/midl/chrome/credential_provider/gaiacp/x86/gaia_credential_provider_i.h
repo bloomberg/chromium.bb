@@ -415,12 +415,10 @@ EXTERN_C const IID IID_IReauthCredential;
     IReauthCredential : public IUnknown
     {
     public:
-        virtual HRESULT STDMETHODCALLTYPE SetEmailForReauth( 
-            /* [in] */ BSTR email) = 0;
-        
-        virtual HRESULT STDMETHODCALLTYPE SetOSUserInfo( 
+        virtual HRESULT STDMETHODCALLTYPE SetUserInfo( 
             /* [in] */ BSTR sid,
-            /* [in] */ BSTR username) = 0;
+            /* [in] */ BSTR username,
+            /* [in] */ BSTR email) = 0;
         
     };
     
@@ -443,14 +441,11 @@ EXTERN_C const IID IID_IReauthCredential;
         ULONG ( STDMETHODCALLTYPE *Release )( 
             IReauthCredential * This);
         
-        HRESULT ( STDMETHODCALLTYPE *SetEmailForReauth )( 
-            IReauthCredential * This,
-            /* [in] */ BSTR email);
-        
-        HRESULT ( STDMETHODCALLTYPE *SetOSUserInfo )( 
+        HRESULT ( STDMETHODCALLTYPE *SetUserInfo )( 
             IReauthCredential * This,
             /* [in] */ BSTR sid,
-            /* [in] */ BSTR username);
+            /* [in] */ BSTR username,
+            /* [in] */ BSTR email);
         
         END_INTERFACE
     } IReauthCredentialVtbl;
@@ -475,11 +470,8 @@ EXTERN_C const IID IID_IReauthCredential;
     ( (This)->lpVtbl -> Release(This) ) 
 
 
-#define IReauthCredential_SetEmailForReauth(This,email)	\
-    ( (This)->lpVtbl -> SetEmailForReauth(This,email) ) 
-
-#define IReauthCredential_SetOSUserInfo(This,sid,username)	\
-    ( (This)->lpVtbl -> SetOSUserInfo(This,sid,username) ) 
+#define IReauthCredential_SetUserInfo(This,sid,username,email)	\
+    ( (This)->lpVtbl -> SetUserInfo(This,sid,username,email) ) 
 
 #endif /* COBJMACROS */
 

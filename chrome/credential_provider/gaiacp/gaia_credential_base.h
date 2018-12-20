@@ -99,7 +99,7 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   }
   bool AreCredentialsValid() const;
   bool AreWindowsCredentialsAvailable() const;
-  HRESULT AreWindowsCredentialsValid(BSTR password) const;
+  bool AreWindowsCredentialsValid(BSTR password) const;
 
   // IGaiaCredential
   IFACEMETHODIMP Initialize(IGaiaCredentialProvider* provider) override;
@@ -124,14 +124,9 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   virtual void ResetInternalState();
 
  private:
-  // Gets the base portion of the command line to run the Gaia Logon stub.
-  // This portion of the command line would only include the executable and
-  // any executable specific arguments needed to correctly start the GLS.
-  virtual HRESULT GetBaseGlsCommandline(base::CommandLine* command_line);
-  // Gets the full command line to run the Gaia Logon stub (GLS). This
-  // function calls GetBaseGlsCommandline.
-  HRESULT GetGlsCommandline(const wchar_t* email,
-                            base::CommandLine* command_line);
+  // Gets the command line to run the Gaia Logon stub (GLS).
+  virtual HRESULT GetGlsCommandline(const wchar_t* email,
+                                    base::CommandLine* command_line);
 
   // Display error message to the user.  Virtual so that tests can override.
   virtual void DisplayErrorInUI(LONG status, LONG substatus, BSTR status_text);

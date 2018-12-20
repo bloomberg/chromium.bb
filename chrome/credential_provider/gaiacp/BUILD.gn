@@ -206,12 +206,14 @@ generate_embedded_i18n("generate_strings") {
   grdfile_folder = "./"
   grdfile_name = "gaia_resources"
   xtb_relative_path = "strings"
-  grd_files_info = [ [
-        grdfile_folder,
-        grdfile_name,
-        xtb_relative_path,
-        default_embedded_i18_locales,
-      ] ]
+  grd_files_info = [
+    [
+      grdfile_folder,
+      grdfile_name,
+      xtb_relative_path,
+      default_embedded_i18_locales
+    ]
+  ]
 
   output_file_name_base = grdfile_name
 }
