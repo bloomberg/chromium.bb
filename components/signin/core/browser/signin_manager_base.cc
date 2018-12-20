@@ -16,6 +16,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_pref_names.h"
@@ -26,9 +27,11 @@
 
 SigninManagerBase::SigninManagerBase(
     SigninClient* client,
+    ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker_service,
     SigninErrorController* signin_error_controller)
     : client_(client),
+      token_service_(token_service),
       account_tracker_service_(account_tracker_service),
       signin_error_controller_(signin_error_controller),
       initialized_(false),
@@ -148,7 +151,12 @@ void SigninManagerBase::Initialize(PrefService* local_state) {
     }
     SetAuthenticatedAccountId(account_id);
   }
+  FinalizeInitBeforeLoadingRefreshTokens(local_state);
+  token_service()->LoadCredentials(GetAuthenticatedAccountId());
 }
+
+void SigninManagerBase::FinalizeInitBeforeLoadingRefreshTokens(
+    PrefService* local_state) {}
 
 bool SigninManagerBase::IsInitialized() const { return initialized_; }
 

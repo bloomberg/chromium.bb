@@ -35,6 +35,7 @@
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/ui/app_list/arc/arc_data_removal_dialog.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/account_manager/account_manager.h"
@@ -59,6 +60,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_names.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -263,9 +265,6 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
         identity_test_environment_adaptor_->identity_test_env();
     identity_test_env->SetAutomaticIssueOfAccessTokens(true);
     identity_test_env->MakePrimaryAccountAvailable(kFakeUserName);
-    identity_test_env->identity_manager()
-        ->GetAccountsMutator()
-        ->LoadAccountsFromDisk(kFakeUserName);
 
     profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
     profile()->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
@@ -467,6 +466,19 @@ class ArcAuthServiceAccountManagerTest : public ArcAuthServiceTest {
     scoped_feature_list_.InitAndEnableFeature(
         chromeos::switches::kAccountManager);
     ArcAuthServiceTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Configure primary profile to be a guest profile, because the
+    // AccountManager can't deal with regular profiles in tests.
+    // https://crbug.com/915628
+    command_line->AppendSwitch(chromeos::switches::kGuestSession);
+    command_line->AppendSwitch(switches::kIncognito);
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "hash");
+    command_line->AppendSwitchASCII(
+        chromeos::switches::kLoginUser,
+        user_manager::GuestAccountId().GetUserEmail());
+    ArcAuthServiceTest::SetUpCommandLine(command_line);
   }
 
   AccountInfo SetupGaiaAccount(const std::string& email,

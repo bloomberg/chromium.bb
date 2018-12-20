@@ -33,18 +33,12 @@ class ChromeSessionManager;
 class UserSessionManager;
 }
 
-// Necessary to declare this class as a friend.
-namespace file_manager {
-class MultiProfileFilesAppBrowserTest;
-}
-
 namespace network {
 class SharedURLLoaderFactory;
 }
 
 // Necessary to declare these classes as friends.
 class ArcSupportHostTest;
-class MultiProfileDownloadNotificationTest;
 
 namespace identity {
 
@@ -323,9 +317,6 @@ class IdentityManager : public SigninManagerBase::Observer,
       IdentityManager* identity_manager,
       const std::string& account_id,
       const GoogleServiceAuthError& auth_error);
-
-  friend MultiProfileDownloadNotificationTest;
-  friend file_manager::MultiProfileFilesAppBrowserTest;
 
   // These clients needs to call SetPrimaryAccountSynchronously().
   friend ArcSupportHostTest;

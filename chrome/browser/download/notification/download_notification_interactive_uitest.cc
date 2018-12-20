@@ -40,6 +40,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_slow_download_job.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -877,14 +878,11 @@ class MultiProfileDownloadNotificationTest
         base::UTF8ToUTF16(info.display_name));
     Profile* profile =
         chromeos::ProfileHelper::GetProfileByUserIdHashForTest(info.hash);
-    // TODO(https://crbug.com/814307): We can't use
-    // identity::MakePrimaryAccountAvailable from identity_test_utils.h here
-    // because that DCHECKs that the SigninManager isn't authenticated yet.
-    // Here, it *can* be already authenticated if a PRE_ test previously set up
-    // the user.
-    IdentityManagerFactory::GetForProfile(profile)
-        ->SetPrimaryAccountSynchronouslyForTests(info.gaia_id, info.email,
-                                                 "refresh_token");
+
+    identity::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(profile);
+    if (!identity_manager->HasPrimaryAccount())
+      identity::MakePrimaryAccountAvailable(identity_manager, info.email);
   }
 
   std::unique_ptr<NotificationDisplayServiceTester> display_service1_;

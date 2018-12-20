@@ -20,22 +20,7 @@ class AccountsMutator {
   explicit AccountsMutator(ProfileOAuth2TokenService* token_service);
   ~AccountsMutator();
 
-  // Loads credentials from a backing persistent store to make them available
-  // after service is used between profile restarts.
-  //
-  // The primary account is specified with the |primary_account_id| argument.
-  // For a regular profile, the primary account id comes from IdentityManager.
-  // For a supervised user, the id comes from SupervisedUserService.
-  // NOTE: In normal usage this method SHOULD NOT be called as the loading of
-  // accounts from disk occurs as part of the internal startup flow. The method
-  // is only used in production for a very small number of corner case startup
-  // flows.
-  // TODO(https://crbug.com/740117): Eliminate the need to expose this.
-  void LoadAccountsFromDisk(const std::string& primary_account_id);
-
  private:
-  ProfileOAuth2TokenService* token_service_;
-
   DISALLOW_COPY_AND_ASSIGN(AccountsMutator);
 };
 

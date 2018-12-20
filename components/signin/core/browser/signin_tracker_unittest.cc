@@ -56,7 +56,9 @@ class SigninTrackerTest : public testing::Test {
                                           &signin_client_,
                                           &test_url_loader_factory_),
 #if defined(OS_CHROMEOS)
-        fake_signin_manager_(&signin_client_, &account_tracker_) {
+        fake_signin_manager_(&signin_client_,
+                             &fake_oauth2_token_service_,
+                             &account_tracker_) {
 #else
         fake_signin_manager_(&signin_client_,
                              &fake_oauth2_token_service_,
