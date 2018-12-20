@@ -18,6 +18,7 @@ namespace {
 
 using ipp_converter::HttpHeader;
 using ipp_converter::kCarriage;
+using ipp_converter::kIppSentinel;
 
 // Log debugging error and send empty response, signalling error.
 void Fail(const std::string& error_log, IppParser::ParseIppCallback cb) {
@@ -74,13 +75,13 @@ int LocateStartOfIppData(base::StringPiece request) {
     return -1;
   }
 
-  auto idx = request.find(ipp_converter::kIppSentinel, end_of_headers);
+  auto idx = request.find(kIppSentinel, end_of_headers);
   if (idx == base::StringPiece::npos) {
     return -1;
   }
 
   // Advance to start and check existence or end of request.
-  idx += strlen(ipp_converter::kIppSentinel);
+  idx += strlen(kIppSentinel);
   return idx <= request.size() ? idx : -1;
 }
 
