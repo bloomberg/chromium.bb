@@ -19,11 +19,11 @@ class StatusProperties {
     public static final WritableBooleanPropertyKey ANIMATIONS_ENABLED =
             new WritableBooleanPropertyKey();
 
-    /** Specifies status icon tint color. */
-    public static final WritableIntPropertyKey ICON_TINT_COLOR_RES = new WritableIntPropertyKey();
+    /** Specifies navigation icon resource type .*/
+    public static final WritableIntPropertyKey NAVIGATION_ICON_RES = new WritableIntPropertyKey();
 
-    /** Specifies navigation button type (eg: PAGE, MAGNIFIER) */
-    public static final WritableIntPropertyKey NAVIGATION_BUTTON_TYPE =
+    /** Specifies color tint for navigation icon. */
+    public static final WritableIntPropertyKey NAVIGATION_ICON_TINT_RES =
             new WritableIntPropertyKey();
 
     /** Specifies string resource holding content description for security icon. */
@@ -64,7 +64,7 @@ class StatusProperties {
             new WritableIntPropertyKey();
 
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {ANIMATIONS_ENABLED,
-            ICON_TINT_COLOR_RES, NAVIGATION_BUTTON_TYPE, SECURITY_ICON_RES,
+            NAVIGATION_ICON_RES, NAVIGATION_ICON_TINT_RES, SECURITY_ICON_RES,
             SECURITY_ICON_DESCRIPTION_RES, SECURITY_ICON_TINT_RES, SEPARATOR_COLOR_RES,
             STATUS_BUTTON_TYPE, STATUS_CLICK_LISTENER, VERBOSE_STATUS_TEXT_COLOR_RES,
             VERBOSE_STATUS_TEXT_STRING_RES, VERBOSE_STATUS_TEXT_VISIBLE, VERBOSE_STATUS_TEXT_WIDTH};
