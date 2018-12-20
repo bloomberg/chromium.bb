@@ -29,6 +29,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/process_manager.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 using ash::mojom::MediaCaptureState;
@@ -189,13 +190,19 @@ void MediaClient::HandleMediaPlayPause() {
 
 void MediaClient::ToggleMediaSessionPlayPause(
     content::MediaSession* media_session) {
-  if (!media_session->IsControllable())
-    return;
+  media_session->GetMediaSessionInfo(base::BindOnce(
+      [](content::MediaSession* media_session,
+         media_session::mojom::MediaSessionInfoPtr session_info) {
+        if (!session_info->is_controllable)
+          return;
 
-  if (media_session->IsActuallyPaused())
-    media_session->Resume(content::MediaSession::SuspendType::kUI);
-  else
-    media_session->Suspend(content::MediaSession::SuspendType::kUI);
+        if (session_info->playback_state ==
+            media_session::mojom::MediaPlaybackState::kPlaying)
+          media_session->Suspend(content::MediaSession::SuspendType::kUI);
+        else
+          media_session->Resume(content::MediaSession::SuspendType::kUI);
+      },
+      media_session));
 }
 
 void MediaClient::HandleMediaPrevTrack() {

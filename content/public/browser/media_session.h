@@ -29,13 +29,6 @@ class MediaSession : public media_session::mojom::MediaSession {
 
   ~MediaSession() override = default;
 
-  // Return if the session can be controlled by Resume() and Suspend() calls
-  // above.
-  virtual bool IsControllable() const = 0;
-
-  // Return if the actual playback state is paused.
-  virtual bool IsActuallyPaused() const = 0;
-
   // Tell the media session a user action has performed.
   virtual void DidReceiveAction(
       media_session::mojom::MediaSessionAction action) = 0;
