@@ -22,6 +22,11 @@ MANIFEST_OUTER_XML = """<?xml version="1.0" encoding="UTF-8"?>
 <manifest>%s</manifest>
 """
 
+INCLUDES_XML = """
+  <include name="include.xml"/>
+  <include name="include_me_too.xml"/>
+"""
+
 REMOTES_XML = """
   <remote name="simple_remote"
           fetch="http://simple.example.com"/>
@@ -98,12 +103,25 @@ class ManifestTest(cros_test_lib.TempDirTestCase, XMLTestCase):
       etree = self.ETreeFromString(MANIFEST_OUTER_XML % inner_xml)
       with self.assertRaises(repo_manifest.UnsupportedFeature):
         repo_manifest.Manifest(etree)
+      repo_manifest.Manifest(etree, allow_unsupported_features=True)
 
   def testPickle(self):
     """Test Manifest picklability."""
     pickled = pickle.dumps(self.manifest)
     unpickled = pickle.loads(pickled)
     self.AssertXMLAlmostEqual(ManifestToString(unpickled), MANIFEST_XML)
+    with self.assertRaises(repo_manifest.UnsupportedFeature):
+      unpickled.Includes().next()
+
+  def testPickleUnsupportedFeatures(self):
+    """Test Manifest picklability when unsupported features are allowed."""
+    manifest_xml = MANIFEST_OUTER_XML % INCLUDES_XML
+    manifest = repo_manifest.Manifest.FromString(
+        manifest_xml, allow_unsupported_features=True)
+    pickled = pickle.dumps(manifest)
+    unpickled = pickle.loads(pickled)
+    self.AssertXMLAlmostEqual(ManifestToString(unpickled), manifest_xml)
+    self.assertIsNotNone(unpickled.Includes().next())
 
   def testFromFile(self):
     """Test Manifest.FromFile."""
@@ -130,6 +148,12 @@ class ManifestTest(cros_test_lib.TempDirTestCase, XMLTestCase):
     """Test Manifest.Default with no <default>."""
     manifest = repo_manifest.Manifest.FromString(MANIFEST_OUTER_XML % '')
     self.assertIsNone(manifest.Default().remote)
+
+  def testIncludes(self):
+    manifest = repo_manifest.Manifest.FromString(
+        MANIFEST_OUTER_XML % INCLUDES_XML, allow_unsupported_features=True)
+    include_names = [i.name for i in manifest.Includes()]
+    self.assertItemsEqual(include_names, ['include.xml', 'include_me_too.xml'])
 
   def testRemotes(self):
     """Test Manifest.Remotes."""
