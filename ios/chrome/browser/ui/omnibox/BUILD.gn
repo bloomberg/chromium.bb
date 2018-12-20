@@ -21,6 +21,8 @@ source_set("omnibox") {
 source_set("omnibox_popup_shared") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "omnibox_constants.h",
+    "omnibox_constants.mm",
     "truncating_attributed_label.h",
     "truncating_attributed_label.mm",
   ]
