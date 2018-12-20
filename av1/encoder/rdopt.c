@@ -8812,12 +8812,11 @@ static int64_t motion_mode_rd(
   const int rate2_nocoeff = rd_stats->rate;
   int best_xskip = 0, best_disable_skip = 0;
   RD_STATS best_rd_stats, best_rd_stats_y, best_rd_stats_uv;
-  MB_MODE_INFO base_mbmi, best_mbmi;
   uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
   const int rate_mv0 = *rate_mv;
-
-  int interintra_allowed = cm->seq_params.enable_interintra_compound &&
-                           is_interintra_allowed(mbmi) && mbmi->compound_idx;
+  const int interintra_allowed = cm->seq_params.enable_interintra_compound &&
+                                 is_interintra_allowed(mbmi) &&
+                                 mbmi->compound_idx;
   int pts0[SAMPLES_ARRAY_SIZE], pts_inref0[SAMPLES_ARRAY_SIZE];
 
   assert(mbmi->ref_frame[1] != INTRA_FRAME);
@@ -8834,18 +8833,19 @@ static int64_t motion_mode_rd(
   if (last_motion_mode_allowed == WARPED_CAUSAL) {
     mbmi->num_proj_ref = findSamples(cm, xd, mi_row, mi_col, pts0, pts_inref0);
   }
-  int total_samples = mbmi->num_proj_ref;
+  const int total_samples = mbmi->num_proj_ref;
   if (total_samples == 0) {
     last_motion_mode_allowed = OBMC_CAUSAL;
   }
-  base_mbmi = *mbmi;
 
-  SimpleRDState *simple_states = &args->simple_rd_state[mbmi->ref_mv_idx];
+  const MB_MODE_INFO base_mbmi = *mbmi;
+  MB_MODE_INFO best_mbmi;
+  SimpleRDState *const simple_states = &args->simple_rd_state[mbmi->ref_mv_idx];
   const int switchable_rate =
       av1_is_interp_needed(xd) ? av1_get_switchable_rate(cm, x, xd) : 0;
   int64_t best_rd = INT64_MAX;
   int best_rate_mv = rate_mv0;
-  int identical_obmc_mv_field_detected =
+  const int identical_obmc_mv_field_detected =
       (cpi->sf.skip_obmc_in_uniform_mv_field ||
        cpi->sf.skip_wm_in_uniform_mv_field)
           ? av1_check_identical_obmc_mv_field(cm, xd, mi_row, mi_col)
@@ -8857,9 +8857,8 @@ static int64_t motion_mode_rd(
     if (cpi->sf.prune_single_motion_modes_by_simple_trans &&
         args->single_ref_first_pass && mode_index)
       break;
-    int64_t tmp_rd = INT64_MAX;
     int tmp_rate2 = rate2_nocoeff;
-    int is_interintra_mode = mode_index > (int)last_motion_mode_allowed;
+    const int is_interintra_mode = mode_index > (int)last_motion_mode_allowed;
     int tmp_rate_mv = rate_mv0;
 
     *mbmi = base_mbmi;
@@ -8907,7 +8906,7 @@ static int64_t motion_mode_rd(
       }
       simple_states->early_skipped = 0;
     } else if (mbmi->motion_mode == OBMC_CAUSAL) {
-      uint32_t cur_mv = mbmi->mv[0].as_int;
+      const uint32_t cur_mv = mbmi->mv[0].as_int;
       assert(!is_comp_pred);
       if (have_newmv_in_inter_mode(this_mode)) {
         single_motion_search(cpi, x, bsize, mi_row, mi_col, 0, &tmp_rate_mv);
@@ -8948,7 +8947,7 @@ static int64_t motion_mode_rd(
         if (have_newmv_in_inter_mode(this_mode)) {
           const int_mv mv0 = mbmi->mv[0];
           const WarpedMotionParams wm_params0 = mbmi->wm_params;
-          int num_proj_ref0 = mbmi->num_proj_ref;
+          const int num_proj_ref0 = mbmi->num_proj_ref;
 
           // Refine MV in a small range.
           av1_refine_warped_mv(cpi, x, bsize, mi_row, mi_col, pts0, pts_inref0,
@@ -9039,24 +9038,21 @@ static int64_t motion_mode_rd(
     }
 
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
-    {
-      int64_t est_rd = 0;
-      int est_skip = 0;
-      if (cpi->sf.inter_mode_rd_model_estimation && cm->tile_cols == 1 &&
-          cm->tile_rows == 1) {
-        InterModeRdModel *md = &tile_data->inter_mode_rd_models[mbmi->sb_type];
-        if (md->ready) {
-          const int64_t curr_sse = get_sse(cpi, x);
-          est_rd = get_est_rd(tile_data, mbmi->sb_type, x->rdmult, curr_sse,
-                              rd_stats->rate);
-          est_skip = est_rd * 0.8 > *best_est_rd;
-          if (est_skip) {
-            mbmi->ref_frame[1] = ref_frame_1;
-            continue;
-          } else {
-            if (est_rd < *best_est_rd) {
-              *best_est_rd = est_rd;
-            }
+    if (cpi->sf.inter_mode_rd_model_estimation && cm->tile_cols == 1 &&
+        cm->tile_rows == 1) {
+      const InterModeRdModel *md =
+          &tile_data->inter_mode_rd_models[mbmi->sb_type];
+      if (md->ready) {
+        const int64_t curr_sse = get_sse(cpi, x);
+        const int64_t est_rd = get_est_rd(tile_data, mbmi->sb_type, x->rdmult,
+                                          curr_sse, rd_stats->rate);
+        const int est_skip = est_rd * 0.8 > *best_est_rd;
+        if (est_skip) {
+          mbmi->ref_frame[1] = ref_frame_1;
+          continue;
+        } else {
+          if (est_rd < *best_est_rd) {
+            *best_est_rd = est_rd;
           }
         }
       }
@@ -9095,9 +9091,7 @@ static int64_t motion_mode_rd(
       }
 
       const int64_t curr_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
-      if (curr_rd < ref_best_rd) {
-        ref_best_rd = curr_rd;
-      }
+      ref_best_rd = AOMMIN(ref_best_rd, curr_rd);
       *disable_skip = 0;
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
       if (cpi->sf.inter_mode_rd_model_estimation) {
@@ -9117,7 +9111,7 @@ static int64_t motion_mode_rd(
       }
     }
 
-    tmp_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
+    const int64_t tmp_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
     if (mode_index == 0) {
       args->simple_rd[this_mode][mbmi->ref_mv_idx][mbmi->ref_frame[0]] = tmp_rd;
       if (!is_comp_pred) {
@@ -9131,7 +9125,7 @@ static int64_t motion_mode_rd(
         simple_states->disable_skip = *disable_skip;
       }
     }
-    if ((mode_index == 0) || (tmp_rd < best_rd)) {
+    if (mode_index == 0 || tmp_rd < best_rd) {
       best_mbmi = *mbmi;
       best_rd = tmp_rd;
       best_rd_stats = *rd_stats;
