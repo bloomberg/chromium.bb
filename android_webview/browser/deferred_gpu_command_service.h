@@ -13,6 +13,7 @@
 #include "base/containers/queue.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/threading/thread_checker.h"
 #include "base/threading/thread_local.h"
 #include "base/time/time.h"
 #include "gpu/config/gpu_info.h"
@@ -79,13 +80,19 @@ class DeferredGpuCommandService : public gpu::CommandBufferTaskExecutor {
   // Called by ScopedAllowGL and ScheduleTask().
   void RunTasks();
 
+  bool HasMoreTasks();
+
   // Called by TaskForwardingSequence. |out_of_order| indicates if task should
   // be run ahead of already enqueued tasks.
   void ScheduleTask(base::OnceClosure task, bool out_of_order);
 
-  base::Lock tasks_lock_;
+  // All access to task queue should happen on a single thread.
+  THREAD_CHECKER(task_queue_thread_checker_);
   base::circular_deque<base::OnceClosure> tasks_;
   base::queue<std::pair<base::Time, base::OnceClosure>> idle_tasks_;
+
+  bool inside_run_tasks_ = false;
+  bool inside_run_idle_tasks_ = false;
 
   std::unique_ptr<gpu::SyncPointManager> sync_point_manager_;
   gpu::GPUInfo gpu_info_;

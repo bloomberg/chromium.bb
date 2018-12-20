@@ -255,11 +255,6 @@ void RenderThreadManager::DeleteHardwareRendererOnUI() {
     }
   }
 
-  if (has_received_frame_) {
-    // Flush any tasks queued that's caused by releasing hardware.
-    client_->RequestInvokeGL(true);
-  }
-
   has_received_frame_ = false;
 }
 
