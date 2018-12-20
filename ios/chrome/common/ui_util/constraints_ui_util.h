@@ -119,8 +119,8 @@ void AddSameCenterXConstraint(id<LayoutGuideProvider> view1,
                               id<LayoutGuideProvider> view2);
 // Deprecated version:
 void AddSameCenterXConstraint(UIView* unused_parentView,
-                              UIView* subview1,
-                              UIView* subview2);
+                              id<LayoutGuideProvider> subview1,
+                              id<LayoutGuideProvider> subview2);
 
 // Adds a constraint that |view1| and |view2| are center-aligned vertically.
 // |view1| and |view2| must be in the same view hierarchy.
@@ -128,8 +128,8 @@ void AddSameCenterYConstraint(id<LayoutGuideProvider> view1,
                               id<LayoutGuideProvider> view2);
 // Deprecated version:
 void AddSameCenterYConstraint(UIView* unused_parentView,
-                              UIView* subview1,
-                              UIView* subview2);
+                              id<LayoutGuideProvider> subview1,
+                              id<LayoutGuideProvider> subview2);
 
 // Adds constraints to make two views' size and center equal by pinning leading,
 // trailing, top and bottom anchors.
@@ -166,12 +166,12 @@ void AddSameConstraintsToSidesWithInsets(id<LayoutGuideProvider> innerView,
 // the padding is optional so that the inner views are not artificially
 // shortened when fixed-size cells cut into that padding.  The padding is added
 // between |outerView| and |innerView|.
-void AddOptionalVerticalPadding(UIView* outerView,
-                                UIView* innerView,
+void AddOptionalVerticalPadding(id<LayoutGuideProvider> outerView,
+                                id<LayoutGuideProvider> innerView,
                                 CGFloat padding);
-void AddOptionalVerticalPadding(UIView* outerView,
-                                UIView* topInnerView,
-                                UIView* bottomInnerView,
+void AddOptionalVerticalPadding(id<LayoutGuideProvider> outerView,
+                                id<LayoutGuideProvider> topInnerView,
+                                id<LayoutGuideProvider> bottomInnerView,
                                 CGFloat padding);
 
 #pragma mark - Safe Area.

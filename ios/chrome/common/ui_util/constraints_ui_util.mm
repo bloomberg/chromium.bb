@@ -73,8 +73,8 @@ void AddSameCenterXConstraint(id<LayoutGuideProvider> view1,
 }
 
 void AddSameCenterXConstraint(UIView* unused_parentView,
-                              UIView* subview1,
-                              UIView* subview2) {
+                              id<LayoutGuideProvider> subview1,
+                              id<LayoutGuideProvider> subview2) {
   AddSameCenterXConstraint(subview1, subview2);
 }
 
@@ -85,8 +85,8 @@ void AddSameCenterYConstraint(id<LayoutGuideProvider> view1,
 }
 
 void AddSameCenterYConstraint(UIView* unused_parentView,
-                              UIView* subview1,
-                              UIView* subview2) {
+                              id<LayoutGuideProvider> subview1,
+                              id<LayoutGuideProvider> subview2) {
   AddSameCenterYConstraint(subview1, subview2);
 }
 
@@ -140,15 +140,15 @@ void AddSameConstraintsToSidesWithInsets(id<LayoutGuideProvider> innerView,
   [NSLayoutConstraint activateConstraints:constraints];
 }
 
-void AddOptionalVerticalPadding(UIView* outerView,
-                                UIView* innerView,
+void AddOptionalVerticalPadding(id<LayoutGuideProvider> outerView,
+                                id<LayoutGuideProvider> innerView,
                                 CGFloat padding) {
   AddOptionalVerticalPadding(outerView, innerView, innerView, padding);
 }
 
-void AddOptionalVerticalPadding(UIView* outerView,
-                                UIView* topInnerView,
-                                UIView* bottomInnerView,
+void AddOptionalVerticalPadding(id<LayoutGuideProvider> outerView,
+                                id<LayoutGuideProvider> topInnerView,
+                                id<LayoutGuideProvider> bottomInnerView,
                                 CGFloat padding) {
   NSLayoutConstraint* topPaddingConstraint = [topInnerView.topAnchor
       constraintGreaterThanOrEqualToAnchor:outerView.topAnchor
