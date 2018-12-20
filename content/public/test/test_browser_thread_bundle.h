@@ -115,26 +115,20 @@ class TestBrowserThreadBundle : public base::test::ScopedTaskEnvironment {
     // base::FileDescriptorWatcher API on POSIX).
     IO_MAINLOOP = 1 << 0,
     REAL_IO_THREAD = 1 << 1,
-    DONT_CREATE_BROWSER_THREADS = 1 << 2,
     // The main thread will use a plain main loop instead of a MessageLoopForUI.
     // (i.e. will support ThreadTaskRunnerHandle::Get() and RunLoop only).
-    PLAIN_MAINLOOP = 1 << 3,
+    PLAIN_MAINLOOP = 1 << 2,
   };
 
   // Deprecated.
   explicit TestBrowserThreadBundle(int options);
 
-  // |options| here to support REAL_IO_THREAD & DONT_CREATE_BROWSER_THREADS.
   TestBrowserThreadBundle(
       base::test::ScopedTaskEnvironment::MainThreadType main_thread_type =
           base::test::ScopedTaskEnvironment::MainThreadType::UI,
       base::test::ScopedTaskEnvironment::ExecutionMode execution_control_mode =
           base::test::ScopedTaskEnvironment::ExecutionMode::ASYNC,
       int options = DEFAULT);
-
-  // Creates browser threads; should only be called from other classes if the
-  // DONT_CREATE_BROWSER_THREADS option was used when the bundle was created.
-  void CreateBrowserThreads();
 
   // Runs all tasks posted to TaskScheduler and main thread until idle.
   // Note: At the moment, this will not process BrowserThread::IO if this
@@ -166,7 +160,6 @@ class TestBrowserThreadBundle : public base::test::ScopedTaskEnvironment {
   std::unique_ptr<TestBrowserThread> io_thread_;
 
   int options_;
-  bool threads_created_;
 
 #if defined(OS_WIN)
   std::unique_ptr<base::win::ScopedCOMInitializer> com_initializer_;

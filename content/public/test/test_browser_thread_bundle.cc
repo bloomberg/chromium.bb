@@ -41,8 +41,7 @@ TestBrowserThreadBundle::TestBrowserThreadBundle(
     int options)
     : base::test::ScopedTaskEnvironment(main_thread_type,
                                         execution_control_mode),
-      options_(options),
-      threads_created_(false) {
+      options_(options) {
   // Infer |options_| from |main_thread_type|.
   switch (main_thread_type) {
     case base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT:
@@ -70,8 +69,6 @@ TestBrowserThreadBundle::TestBrowserThreadBundle(int options)
           options) {}
 
 TestBrowserThreadBundle::~TestBrowserThreadBundle() {
-  CHECK(threads_created_);
-
   // To ensure a clean teardown, each thread's message loop must be flushed
   // just before the thread is destroyed. But stopping a fake thread does not
   // automatically flush the message loop, so we have to do it manually.
@@ -116,8 +113,6 @@ void TestBrowserThreadBundle::Init() {
 
   // Check for conflicting options can't have two IO threads.
   CHECK(!(options_ & IO_MAINLOOP) || !(options_ & REAL_IO_THREAD));
-  // There must be a thread to start to use DONT_CREATE_BROWSER_THREADS
-  CHECK((options_ & ~IO_MAINLOOP) != DONT_CREATE_BROWSER_THREADS);
   // Check for conflicting main loop options.
   CHECK(!(options_ & IO_MAINLOOP) || !(options_ & PLAIN_MAINLOOP));
 
@@ -140,13 +135,6 @@ void TestBrowserThreadBundle::Init() {
   ui_thread_ = std::make_unique<TestBrowserThread>(
       BrowserThread::UI, base::ThreadTaskRunnerHandle::Get());
 
-  if (!(options_ & DONT_CREATE_BROWSER_THREADS))
-    CreateBrowserThreads();
-}
-
-void TestBrowserThreadBundle::CreateBrowserThreads() {
-  CHECK(!threads_created_);
-
   if (options_ & REAL_IO_THREAD) {
     io_thread_ = std::make_unique<TestBrowserThread>(BrowserThread::IO);
     io_thread_->StartIOThread();
@@ -154,8 +142,6 @@ void TestBrowserThreadBundle::CreateBrowserThreads() {
     io_thread_ = std::make_unique<TestBrowserThread>(
         BrowserThread::IO, base::ThreadTaskRunnerHandle::Get());
   }
-
-  threads_created_ = true;
 
   // Consider startup complete such that after-startup-tasks always run in
   // the scope of the test they were posted from (http://crbug.com/732018).
