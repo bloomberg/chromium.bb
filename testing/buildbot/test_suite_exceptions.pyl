@@ -487,6 +487,12 @@
       'linux-win_cross-rel', # https://crbug.com/762167
     ],
   },
+  'dawn_end2end_tests': {
+    'remove_from': [
+      # chromium.gpu.fyi
+      'Linux FYI Release (AMD R7 240)', # https://crbug.com/915430
+    ],
+  },
   'extensions_browsertests': {
     'modifications': {
       'Win10 Tests x64 (dbg)': {

@@ -5272,25 +5272,6 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6613",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600,
-          "shards": 4
-        },
-        "test": "dawn_end2end_tests"
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests",
           "--use-cmd-decoder=validating"
         ],
         "swarming": {
