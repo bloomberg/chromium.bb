@@ -47,6 +47,7 @@ class NGLineBreakerTest : public NGLayoutTest {
     scoped_refptr<NGInlineBreakToken> break_token;
 
     Vector<NGLineInfo> line_infos;
+    trailing_whitespaces_.resize(0);
     NGExclusionSpace exclusion_space;
     NGLineLayoutOpportunity line_opportunity(available_width);
     while (!break_token || !break_token->IsFinished()) {
@@ -57,6 +58,8 @@ class NGLineBreakerTest : public NGLayoutTest {
                                  &exclusion_space, 0u, line_opportunity,
                                  break_token.get());
       line_breaker.NextLine(&line_info);
+      trailing_whitespaces_.push_back(
+          line_breaker.TrailingWhitespaceForTesting());
 
       if (line_info.Results().IsEmpty())
         break;
@@ -75,6 +78,8 @@ class NGLineBreakerTest : public NGLayoutTest {
       lines.push_back(std::move(line_info.Results()));
     return lines;
   }
+
+  Vector<NGLineBreaker::WhitespaceState> trailing_whitespaces_;
 };
 
 namespace {
@@ -318,6 +323,76 @@ TEST_F(NGLineBreakerTest, BoundaryInFirstWord) {
   EXPECT_EQ(2u, lines.size());
   EXPECT_EQ("123456", ToString(lines[0], node));
   EXPECT_EQ("789", ToString(lines[1], node));
+}
+
+struct WhitespaceStateTestData {
+  const char* html;
+  const char* white_space;
+  NGLineBreaker::WhitespaceState expected;
+} whitespace_state_test_data[] = {
+    // The most common cases.
+    {"12", "normal", NGLineBreaker::WhitespaceState::kNone},
+    {"1234 5678", "normal", NGLineBreaker::WhitespaceState::kCollapsed},
+    // |NGInlineItemsBuilder| collapses trailing spaces of a block, so
+    // |NGLineBreaker| computes to `none`.
+    {"12 ", "normal", NGLineBreaker::WhitespaceState::kNone},
+    // pre/pre-wrap should preserve trailing spaces if exists.
+    {"1234 5678", "pre-wrap", NGLineBreaker::WhitespaceState::kPreserved},
+    {"12 ", "pre", NGLineBreaker::WhitespaceState::kPreserved},
+    {"12 ", "pre-wrap", NGLineBreaker::WhitespaceState::kPreserved},
+    {"12", "pre", NGLineBreaker::WhitespaceState::kNone},
+    {"12", "pre-wrap", NGLineBreaker::WhitespaceState::kNone},
+    // Empty/space-only cases.
+    {"", "normal", NGLineBreaker::WhitespaceState::kLeading},
+    {" ", "pre", NGLineBreaker::WhitespaceState::kPreserved},
+    {" ", "pre-wrap", NGLineBreaker::WhitespaceState::kPreserved},
+    // Cases needing to rewind.
+    {"12 34<span>56</span>", "normal",
+     NGLineBreaker::WhitespaceState::kCollapsed},
+    {"12 34<span>56</span>", "pre-wrap",
+     NGLineBreaker::WhitespaceState::kPreserved},
+    // Atomic inlines.
+    {"12 <span style='display: inline-block'></span>", "normal",
+     NGLineBreaker::WhitespaceState::kNone},
+    // fast/text/whitespace/inline-whitespace-wrapping-4.html
+    {"<span style='white-space: nowrap'>1234  </span>"
+     "<span style='white-space: normal'>  5678</span>",
+     "pre", NGLineBreaker::WhitespaceState::kCollapsed},
+};
+
+std::ostream& operator<<(std::ostream& os,
+                         const WhitespaceStateTestData& data) {
+  return os << static_cast<int>(data.expected) << " for '" << data.html
+            << "' with 'white-space: " << data.white_space << "'";
+}
+
+class NGWhitespaceStateTest
+    : public NGLineBreakerTest,
+      public testing::WithParamInterface<WhitespaceStateTestData> {};
+
+INSTANTIATE_TEST_CASE_P(NGLineBreakerTest,
+                        NGWhitespaceStateTest,
+                        testing::ValuesIn(whitespace_state_test_data));
+
+TEST_P(NGWhitespaceStateTest, WhitespaceState) {
+  const auto& data = GetParam();
+  LoadAhem();
+  NGInlineNode node = CreateInlineNode(String(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    #container {
+      font: 10px/1 Ahem;
+      width: 50px;
+      white-space: )HTML") + data.white_space +
+                                       R"HTML(
+    }
+    </style>
+    <div id=container>)HTML" + data.html +
+                                       R"HTML(</div>
+  )HTML");
+
+  Vector<NGLineInfo> line_infos = BreakToLineInfo(node, LayoutUnit(50));
+  EXPECT_EQ(trailing_whitespaces_[0], data.expected);
 }
 
 struct TrailingSpaceWidthTestData {

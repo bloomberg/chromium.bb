@@ -49,13 +49,28 @@ void NGInlineItemResult::CheckConsistency(bool during_line_break) const {
 }
 #endif
 
+unsigned NGLineInfo::InflowEndOffset() const {
+  const NGInlineItemResults& item_results = Results();
+  for (auto it = item_results.rbegin(); it != item_results.rend(); ++it) {
+    const NGInlineItemResult& item_result = *it;
+    DCHECK(item_result.item);
+    const NGInlineItem& item = *item_result.item;
+    if (item.Type() == NGInlineItem::kText ||
+        item.Type() == NGInlineItem::kControl ||
+        item.Type() == NGInlineItem::kAtomicInline)
+      return item_result.end_offset;
+  }
+  return StartOffset();
+}
+
 LayoutUnit NGLineInfo::ComputeTrailingSpaceWidth(
     unsigned* end_offset_out) const {
-  // TODO(kojii): Consider adding a flag to skip this function when not needed.
-  // In many common cases, NGLineBreaker knows that there are no trailing
-  // spaces, so we can leverage the knowledge without adding the cost to compute
-  // the flag. We use this function only for 'text-align: justify', so the cost
-  // to compute the flag should not be more expensive than it benefits.
+  if (!has_trailing_spaces_) {
+    if (end_offset_out)
+      *end_offset_out = InflowEndOffset();
+    return LayoutUnit();
+  }
+
   const NGInlineItemResults& item_results = Results();
   LayoutUnit trailing_spaces_width;
   for (auto it = item_results.rbegin(); it != item_results.rend(); ++it) {

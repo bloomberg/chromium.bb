@@ -245,7 +245,9 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
   typename OffsetMappingBuilder::SourceNodeScope scope(&mapping_builder_,
                                                        nullptr);
   AppendBreakOpportunity(style, layout_object);
-  items_->back().SetIsGenerated();
+  NGInlineItem* item = &items_->back();
+  item->SetIsGenerated();
+  item->SetEndCollapseType(NGInlineItem::kOpaqueToCollapsing);
 }
 
 template <typename OffsetMappingBuilder>

@@ -192,8 +192,7 @@ void NGLineBreaker::NextLine(NGLineInfo* line_info) {
 
   PrepareNextLine();
   BreakLine();
-  if (!trailing_spaces_collapsed_)
-    RemoveTrailingCollapsibleSpace();
+  RemoveTrailingCollapsibleSpace();
 
 #if DCHECK_IS_ON()
   for (const auto& result : *item_results_)
@@ -216,6 +215,9 @@ void NGLineBreaker::NextLine(NGLineInfo* line_info) {
   if (!should_create_line_box)
     line_info_->SetIsEmptyLine();
   line_info_->SetEndItemIndex(item_index_);
+  DCHECK_NE(trailing_whitespace_, WhitespaceState::kUnknown);
+  if (trailing_whitespace_ == WhitespaceState::kPreserved)
+    line_info_->SetHasTrailingSpaces();
 
   ComputeLineLocation();
 
@@ -225,7 +227,8 @@ void NGLineBreaker::NextLine(NGLineInfo* line_info) {
 
 void NGLineBreaker::BreakLine() {
   const Vector<NGInlineItem>& items = Items();
-  state_ = LineBreakState::kLeading;
+  state_ = LineBreakState::kContinue;
+  trailing_whitespace_ = WhitespaceState::kLeading;
   while (state_ != LineBreakState::kDone) {
     // Check overflow even if |item_index_| is at the end of the block, because
     // the last item of the block may have caused overflow. In that case,
@@ -342,8 +345,7 @@ void NGLineBreaker::HandleText(const NGInlineItem& item) {
   // Skip leading collapsible spaces.
   // Most cases such spaces are handled as trailing spaces of the previous line,
   // but there are some cases doing so is too complex.
-  if (state_ == LineBreakState::kLeading) {
-    state_ = LineBreakState::kContinue;
+  if (trailing_whitespace_ == WhitespaceState::kLeading) {
     if (item.Style()->CollapseWhiteSpace() &&
         Text()[offset_] == kSpaceCharacter) {
       // Skipping one whitespace removes all collapsible spaces because
@@ -355,6 +357,7 @@ void NGLineBreaker::HandleText(const NGInlineItem& item) {
         return;
       }
     }
+    // |trailing_whitespace_| will be updated as we read the text.
   }
 
   NGInlineItemResult* item_result = AddItem(item);
@@ -492,10 +495,20 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
   //   beyond the end.
   if (item_result->end_offset < item.EndOffset()) {
     item_result->can_break_after = true;
+
+    DCHECK_EQ(break_iterator_.BreakSpace(), BreakSpaceType::kBeforeSpaceRun);
+    if (UNLIKELY(break_iterator_.BreakType() ==
+                 LineBreakType::kBreakCharacter)) {
+      trailing_whitespace_ = WhitespaceState::kUnknown;
+    } else {
+      DCHECK_NE(Text()[item_result->end_offset - 1], kSpaceCharacter);
+      trailing_whitespace_ = WhitespaceState::kNone;
+    }
   } else {
     DCHECK_EQ(item_result->end_offset, item.EndOffset());
     item_result->can_break_after =
         break_iterator_.IsBreakable(item_result->end_offset);
+    trailing_whitespace_ = WhitespaceState::kUnknown;
   }
 }
 
@@ -580,7 +593,7 @@ void NGLineBreaker::HandleTrailingSpaces(const NGInlineItem& item) {
     // Skipping one whitespace removes all collapsible spaces because
     // collapsible spaces are collapsed to single space in NGInlineItemBuilder.
     offset_++;
-    trailing_spaces_collapsed_ = true;
+    trailing_whitespace_ = WhitespaceState::kCollapsed;
 
     // Make the last item breakable after, even if it was nowrap.
     DCHECK(!item_results_->IsEmpty());
@@ -589,7 +602,6 @@ void NGLineBreaker::HandleTrailingSpaces(const NGInlineItem& item) {
     // Find the end of the run of space characters in this item.
     // Other white space characters (e.g., tab) are not included in this item.
     DCHECK(style.BreakOnlyAfterWhiteSpace());
-    trailing_spaces_collapsed_ = true;
     unsigned end = offset_;
     while (end < item.EndOffset() && text[end] == kSpaceCharacter)
       end++;
@@ -611,6 +623,7 @@ void NGLineBreaker::HandleTrailingSpaces(const NGInlineItem& item) {
     item_result->can_break_after =
         end < text.length() && !IsBreakableSpace(text[end]);
     offset_ = end;
+    trailing_whitespace_ = WhitespaceState::kPreserved;
   }
 
   // If non-space characters follow, the line is done.
@@ -627,12 +640,10 @@ void NGLineBreaker::HandleTrailingSpaces(const NGInlineItem& item) {
 // Remove trailing collapsible spaces in |line_info|.
 // https://drafts.csswg.org/css-text-3/#white-space-phase-2
 void NGLineBreaker::RemoveTrailingCollapsibleSpace() {
-  DCHECK(!trailing_spaces_collapsed_);
-
   ComputeTrailingCollapsibleSpace();
-  trailing_spaces_collapsed_ = true;
-  if (!trailing_collapsible_space_.has_value())
+  if (!trailing_collapsible_space_.has_value()) {
     return;
+  }
 
   // We have a trailing collapsible space. Remove it.
   NGInlineItemResult* item_result = trailing_collapsible_space_->item_result;
@@ -648,13 +659,11 @@ void NGLineBreaker::RemoveTrailingCollapsibleSpace() {
     item_results_->erase(item_result);
   }
   trailing_collapsible_space_.reset();
+  trailing_whitespace_ = WhitespaceState::kCollapsed;
 }
 
 // Compute the width of trailing spaces without removing it.
 LayoutUnit NGLineBreaker::TrailingCollapsibleSpaceWidth() {
-  if (trailing_spaces_collapsed_)
-    return LayoutUnit();
-
   ComputeTrailingCollapsibleSpace();
   if (!trailing_collapsible_space_.has_value())
     return LayoutUnit();
@@ -672,35 +681,59 @@ LayoutUnit NGLineBreaker::TrailingCollapsibleSpaceWidth() {
 // Find trailing collapsible space if exists. The result is cached to
 // |trailing_collapsible_space_|.
 void NGLineBreaker::ComputeTrailingCollapsibleSpace() {
-  DCHECK(!trailing_spaces_collapsed_);
+  if (trailing_whitespace_ == WhitespaceState::kLeading ||
+      trailing_whitespace_ == WhitespaceState::kNone ||
+      trailing_whitespace_ == WhitespaceState::kCollapsed ||
+      trailing_whitespace_ == WhitespaceState::kPreserved) {
+    trailing_collapsible_space_.reset();
+    return;
+  }
+  DCHECK(trailing_whitespace_ == WhitespaceState::kUnknown ||
+         trailing_whitespace_ == WhitespaceState::kCollapsible);
 
+  trailing_whitespace_ = WhitespaceState::kNone;
+  const String& text = Text();
   for (auto it = item_results_->rbegin(); it != item_results_->rend(); ++it) {
     NGInlineItemResult& item_result = *it;
     DCHECK(item_result.item);
     const NGInlineItem& item = *item_result.item;
     if (item.EndCollapseType() == NGInlineItem::kOpaqueToCollapsing)
       continue;
-    if (item.Type() != NGInlineItem::kText)
-      break;
-    DCHECK_GT(item_result.end_offset, 0u);
-    DCHECK(item.Style());
-    if (Text()[item_result.end_offset - 1] != kSpaceCharacter ||
-        !item.Style()->CollapseWhiteSpace() ||
-        // |shape_result| is nullptr if this is an overflow because BreakText()
-        // uses kNoResultIfOverflow option.
-        !item_result.shape_result)
-      break;
-
-    if (!trailing_collapsible_space_.has_value() ||
-        trailing_collapsible_space_->item_result != &item_result) {
-      trailing_collapsible_space_.emplace();
-      trailing_collapsible_space_->item_result = &item_result;
-      if (item_result.end_offset - 1 > item_result.start_offset) {
-        trailing_collapsible_space_->collapsed_shape_result =
-            TruncateLineEndResult(item_result, item_result.end_offset - 1);
+    if (item.Type() == NGInlineItem::kText) {
+      DCHECK_GT(item_result.end_offset, 0u);
+      DCHECK(item.Style());
+      if (text[item_result.end_offset - 1] != kSpaceCharacter)
+        break;
+      if (!item.Style()->CollapseWhiteSpace()) {
+        trailing_whitespace_ = WhitespaceState::kPreserved;
+        break;
       }
+      // |shape_result| is nullptr if this is an overflow because BreakText()
+      // uses kNoResultIfOverflow option.
+      if (!item_result.shape_result)
+        break;
+
+      if (!trailing_collapsible_space_.has_value() ||
+          trailing_collapsible_space_->item_result != &item_result) {
+        trailing_collapsible_space_.emplace();
+        trailing_collapsible_space_->item_result = &item_result;
+        if (item_result.end_offset - 1 > item_result.start_offset) {
+          trailing_collapsible_space_->collapsed_shape_result =
+              TruncateLineEndResult(item_result, item_result.end_offset - 1);
+        }
+      }
+      trailing_whitespace_ = WhitespaceState::kCollapsible;
+      return;
     }
-    return;
+    if (item.Type() == NGInlineItem::kControl) {
+      UChar character = text[item.StartOffset()];
+      if (character == kNewlineCharacter)
+        continue;
+      trailing_whitespace_ = WhitespaceState::kPreserved;
+      trailing_collapsible_space_.reset();
+      return;
+    }
+    break;
   }
 
   trailing_collapsible_space_.reset();
@@ -842,8 +875,7 @@ void NGLineBreaker::HandleAtomicInline(const NGInlineItem& item) {
       ComputeLineMarginsForVisualContainer(constraint_space_, style);
   item_result->inline_size += item_result->margins.InlineSum();
 
-  if (state_ == LineBreakState::kLeading)
-    state_ = LineBreakState::kContinue;
+  trailing_whitespace_ = WhitespaceState::kNone;
   position_ += item_result->inline_size;
   ComputeCanBreakAfter(item_result);
   MoveToNextOf(item);
@@ -1141,7 +1173,8 @@ void NGLineBreaker::HandleOverflow() {
     // rewinding all items simplifes the code.
     if (!item_results_->IsEmpty())
       Rewind(0);
-    state_ = LineBreakState::kLeading;
+    state_ = LineBreakState::kContinue;
+    trailing_whitespace_ = WhitespaceState::kLeading;
     SetCurrentStyle(line_info_->LineStyle());
     return;
   }
@@ -1157,6 +1190,7 @@ void NGLineBreaker::HandleOverflow() {
   }
 
   if (position_maybe_changed) {
+    trailing_whitespace_ = WhitespaceState::kUnknown;
     UpdatePosition();
   }
 
@@ -1213,7 +1247,7 @@ void NGLineBreaker::Rewind(unsigned new_end) {
 
   item_results.Shrink(new_end);
 
-  trailing_spaces_collapsed_ = false;
+  trailing_whitespace_ = WhitespaceState::kUnknown;
   trailing_collapsible_space_.reset();
   SetLineEndFragment(nullptr);
   UpdatePosition();

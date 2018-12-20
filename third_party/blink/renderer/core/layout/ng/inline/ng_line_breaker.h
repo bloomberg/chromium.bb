@@ -61,6 +61,20 @@ class CORE_EXPORT NGLineBreaker {
                                    const NGConstraintSpace&,
                                    NGInlineItemResult*);
 
+  // This enum is private, except for |WhitespaceStateForTesting()|. See
+  // |whitespace_| member.
+  enum class WhitespaceState {
+    kLeading,
+    kNone,
+    kUnknown,
+    kCollapsible,
+    kCollapsed,
+    kPreserved,
+  };
+  WhitespaceState TrailingWhitespaceForTesting() const {
+    return trailing_whitespace_;
+  }
+
  private:
   const String& Text() const { return items_data_.text_content; }
   const Vector<NGInlineItem>& Items() const { return items_data_.items; }
@@ -85,9 +99,6 @@ class CORE_EXPORT NGLineBreaker {
     // Trailing spaces, <br>, or close tags should be included to the line even
     // when it is overflowing.
     kTrailing,
-
-    // The initial state, until the first character is found.
-    kLeading,
 
     // Looking for more items to fit into the current line.
     kContinue,
@@ -149,6 +160,10 @@ class CORE_EXPORT NGLineBreaker {
   unsigned item_index_ = 0;
   unsigned offset_ = 0;
 
+  // |WhitespaceState| of the current end. When a line is broken, this indicates
+  // the state of trailing whitespaces.
+  WhitespaceState trailing_whitespace_;
+
   // The current position from inline_start. Unlike NGInlineLayoutAlgorithm
   // that computes position in visual order, this position in logical order.
   LayoutUnit position_;
@@ -183,9 +198,6 @@ class CORE_EXPORT NGLineBreaker {
 
   // True when the line we are breaking has a list marker.
   bool has_list_marker_ = false;
-
-  // True if trailing collapsible spaces have been collapsed.
-  bool trailing_spaces_collapsed_ = false;
 
   // Set when the line ended with a forced break. Used to setup the states for
   // the next line.
