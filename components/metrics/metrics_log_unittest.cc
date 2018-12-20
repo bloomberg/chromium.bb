@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
+#include "components/metrics/cpu_metrics_provider.h"
 #include "components/metrics/delegating_provider.h"
 #include "components/metrics/environment_recorder.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -237,6 +238,8 @@ TEST_F(MetricsLogTest, RecordEnvironment) {
   TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client);
 
   DelegatingProvider delegating_provider;
+  auto cpu_provider = std::make_unique<metrics::CPUMetricsProvider>();
+  delegating_provider.RegisterMetricsProvider(std::move(cpu_provider));
   log.RecordEnvironment(&delegating_provider);
   // Check that the system profile on the log has the correct values set.
   CheckSystemProfile(log.system_profile());
