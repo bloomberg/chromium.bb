@@ -23,7 +23,10 @@ using WebFeature = blink::mojom::WebFeature;
 const UseCounterPageLoadMetricsObserver::UkmFeatureList&
 UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
   static base::NoDestructor<UseCounterPageLoadMetricsObserver::UkmFeatureList>
-      opt_in_features({
+      // We explicitly use an std::initializer_list below to work around GCC
+      // bug 84849, which causes having a base::NoDestructor<T<U>> and passing
+      // an initializer list of Us does not work.
+      opt_in_features(std::initializer_list<WebFeature>({
           WebFeature::kNavigatorVibrate,
           WebFeature::kNavigatorVibrateSubFrame,
           WebFeature::kTouchEventPreventedNoTouchAction,
@@ -93,6 +96,6 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kDownloadInAdFrameWithUserGesture,
           WebFeature::kDownloadInAdFrameWithoutUserGesture,
           WebFeature::kOpenWebDatabase,
-      });
+      }));
   return *opt_in_features;
 }
