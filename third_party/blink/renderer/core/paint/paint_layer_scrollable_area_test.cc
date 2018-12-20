@@ -1117,4 +1117,46 @@ TEST_P(PaintLayerScrollableAreaTest, ScrollingBackgroundDisplayItemClient) {
                 .VisualRect());
 }
 
+TEST_P(PaintLayerScrollableAreaTest, RtlScrollOriginSnapping) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #container {
+        direction: rtl;
+        display: flex;
+      }
+      #scroller {
+        width: 100%;
+        height: 100px;
+        overflow: hidden;
+      }
+      #scroller-content {
+        width: 200%;
+        height: 200px;
+      }
+    </style>
+    <div id="container">
+      <div id="first-child" style="flex:1; display:none"></div>
+      <div style="flex:2.2">
+        <div id="scroller">
+          <div id ="scroller-content"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  // Test that scroll origin is snapped such that maximum scroll offset is
+  // always zero for an rtl block.
+
+  GetFrame().View()->Resize(795, 600);
+  UpdateAllLifecyclePhasesForTest();
+  LayoutBox* scroller = ToLayoutBox(GetLayoutObjectByElementId("scroller"));
+  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
+  EXPECT_EQ(scrollable_area->MaximumScrollOffsetInt(), IntSize(0, 100));
+
+  Element* first_child = GetElementById("first-child");
+  first_child->RemoveInlineStyleProperty(CSSPropertyDisplay);
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(scrollable_area->MaximumScrollOffsetInt(), IntSize(0, 100));
+}
+
 }  // namespace blink
