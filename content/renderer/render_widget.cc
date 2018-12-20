@@ -442,12 +442,6 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
 RenderWidget::~RenderWidget() {
   DCHECK(!webwidget_internal_) << "Leaking our WebWidget!";
 
-  // TODO(ajwong): Test if this actually has to be reset here
-  // or if it is okay to tear down later in the destructor. This
-  // would allow for removing the ordering constraint in teardown.
-  // https://crbug.com/545684
-  delegate_.reset();
-
   // TODO(ajwong): Add in check that routing_id_ has been removed from
   // g_routing_id_widget_map once the shutdown semantics for RenderWidget
   // and RenderViewImpl are rationalized. Currently, too many unit and
