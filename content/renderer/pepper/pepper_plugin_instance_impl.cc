@@ -2980,7 +2980,8 @@ PP_Var PepperPluginInstanceImpl::GetPluginReferrerURL(
   WebLocalFrame* frame = document.GetFrame();
   if (!frame)
     return PP_MakeUndefined();
-  WebString referer = frame->GetDocumentLoader()->OriginalReferrer();
+  const WebURLRequest& request = frame->GetDocumentLoader()->OriginalRequest();
+  WebString referer = request.HttpHeaderField("Referer");
   if (referer.IsEmpty())
     return PP_MakeUndefined();
   return ppapi::PPB_URLUtil_Shared::GenerateURLReturn(

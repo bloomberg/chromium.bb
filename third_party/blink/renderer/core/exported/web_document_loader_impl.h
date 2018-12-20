@@ -58,9 +58,7 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
   }
 
   // WebDocumentLoader methods:
-  WebURL OriginalUrl() const override;
-  WebString OriginalReferrer() const override;
-  WebURL GetUrl() const override;
+  const WebURLRequest& OriginalRequest() const override;
   const WebURLRequest& GetRequest() const override;
   const WebURLResponse& GetResponse() const override;
   bool HasUnreachableURL() const override;
@@ -92,6 +90,7 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
 
   // Mutable because the const getters will magically sync these to the
   // latest version from WebKit.
+  mutable WrappedResourceRequest original_request_wrapper_;
   mutable WrappedResourceRequest request_wrapper_;
   mutable WrappedResourceResponse response_wrapper_;
 

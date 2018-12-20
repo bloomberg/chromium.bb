@@ -53,16 +53,8 @@ bool WebDocumentLoader::WillLoadUrlAsEmpty(const WebURL& url) {
   return DocumentLoader::WillLoadUrlAsEmpty(url);
 }
 
-WebURL WebDocumentLoaderImpl::OriginalUrl() const {
-  return DocumentLoader::OriginalUrl();
-}
-
-WebString WebDocumentLoaderImpl::OriginalReferrer() const {
-  return DocumentLoader::OriginalReferrer();
-}
-
-WebURL WebDocumentLoaderImpl::GetUrl() const {
-  return request_wrapper_.Url();
+const WebURLRequest& WebDocumentLoaderImpl::OriginalRequest() const {
+  return original_request_wrapper_;
 }
 
 const WebURLRequest& WebDocumentLoaderImpl::GetRequest() const {
@@ -114,8 +106,11 @@ WebDocumentLoaderImpl::WebDocumentLoaderImpl(
     LocalFrame* frame,
     WebNavigationType navigation_type,
     std::unique_ptr<WebNavigationParams> navigation_params)
-    : DocumentLoader(frame, navigation_type, std::move(navigation_params)),
-      request_wrapper_(request_),
+    : DocumentLoader(frame,
+                     navigation_type,
+                     std::move(navigation_params)),
+      original_request_wrapper_(DocumentLoader::OriginalRequest()),
+      request_wrapper_(DocumentLoader::GetRequest()),
       response_wrapper_(DocumentLoader::GetResponse()) {}
 
 WebDocumentLoaderImpl::~WebDocumentLoaderImpl() {

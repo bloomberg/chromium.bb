@@ -108,8 +108,9 @@ class CORE_EXPORT DocumentLoader
 
   const AtomicString& MimeType() const;
 
-  const KURL& OriginalUrl() const;
-  const AtomicString& OriginalReferrer() const;
+  const ResourceRequest& OriginalRequest() const;
+
+  const ResourceRequest& GetRequest() const;
 
   ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
 
@@ -130,8 +131,6 @@ class CORE_EXPORT DocumentLoader
   const KURL& Url() const;
   const KURL& UnreachableURL() const;
   const KURL& UrlForHistory() const;
-  const AtomicString& Referrer() const;
-  EncodedFormData* HttpBody() const;
 
   void DidChangePerformanceTiming();
   void DidObserveLoadingBehavior(WebLoadingBehaviorFlag);
@@ -274,11 +273,6 @@ class CORE_EXPORT DocumentLoader
 
   Vector<KURL> redirect_chain_;
 
-  // The 'working' request. It may be mutated
-  // several times from the original request to include additional
-  // headers, cookie information, canonicalization and redirects.
-  ResourceRequest request_;
-
  private:
   // installNewDocument() does the work of creating a Document and
   // DocumentParser, as well as creating a new LocalDOMWindow if needed. It also
@@ -364,12 +358,17 @@ class CORE_EXPORT DocumentLoader
   // Stores the resource loading hints for this document.
   Member<PreviewsResourceLoadingHints> resource_loading_hints_;
 
+  // A reference to actual request used to create the data source.
+  // The only part of this request that should change is the url, and
+  // that only in the case of a same-document navigation.
+  ResourceRequest original_request_;
+
   SubstituteData substitute_data_;
 
-  // A reference to actual request's url and referrer used to
-  // inititate this load.
-  KURL original_url_;
-  AtomicString original_referrer_;
+  // The 'working' request. It may be mutated
+  // several times from the original request to include additional
+  // headers, cookie information, canonicalization and redirects.
+  ResourceRequest request_;
 
   ResourceResponse response_;
 
