@@ -23,6 +23,7 @@
 #include "chromecast/media/cma/test/mock_cma_backend_factory.h"
 #include "chromecast/media/cma/test/mock_multiroom_manager.h"
 #include "chromecast/public/task_runner.h"
+#include "chromecast/public/volume_control.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/mock_audio_source_callback.h"
@@ -881,7 +882,9 @@ TEST_F(CastAudioOutputStreamTest, MultiroomInfo) {
 }
 
 TEST_F(CastAudioOutputStreamTest, SessionId) {
-  ::media::AudioOutputStream* stream = CreateStream();
+  format_ = ::media::AudioParameters::AUDIO_PCM_LOW_LATENCY;
+  ::media::AudioOutputStream* stream = audio_manager_->MakeAudioOutputStream(
+      GetAudioParams(), "DummyGroupId", ::media::AudioManager::LogCallback());
   ASSERT_TRUE(stream);
   ASSERT_TRUE(stream->Open());
   RunThreadsUntilIdle();
@@ -903,6 +906,26 @@ TEST_F(CastAudioOutputStreamTest, SessionId) {
   EXPECT_EQ(multiroom_manager_.GetLastSessionId(), session_id);
   MediaPipelineDeviceParams params = cma_backend_->params();
   EXPECT_EQ(params.session_id, session_id);
+
+  stream->Stop();
+  stream->Close();
+}
+
+TEST_F(CastAudioOutputStreamTest, CommunicationsDeviceId) {
+  format_ = ::media::AudioParameters::AUDIO_PCM_LOW_LATENCY;
+  ::media::AudioOutputStream* stream = audio_manager_->MakeAudioOutputStream(
+      GetAudioParams(),
+      ::media::AudioDeviceDescription::kCommunicationsDeviceId,
+      ::media::AudioManager::LogCallback());
+  ASSERT_TRUE(stream);
+  ASSERT_TRUE(stream->Open());
+  RunThreadsUntilIdle();
+
+  ASSERT_TRUE(cma_backend_);
+  MediaPipelineDeviceParams params = cma_backend_->params();
+  EXPECT_EQ(params.content_type, AudioContentType::kCommunication);
+  EXPECT_EQ(params.device_id,
+            ::media::AudioDeviceDescription::kCommunicationsDeviceId);
 
   stream->Stop();
   stream->Close();
