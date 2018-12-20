@@ -650,6 +650,9 @@ extern const char kHarfbuzzRendertextDescription[];
 extern const char kHorizontalTabSwitcherAndroidName[];
 extern const char kHorizontalTabSwitcherAndroidDescription[];
 
+extern const char kTabSwitcherOnReturnName[];
+extern const char kTabSwitcherOnReturnDescription[];
+
 extern const char kViewsCastDialogName[];
 extern const char kViewsCastDialogDescription[];
 

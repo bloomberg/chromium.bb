@@ -1920,6 +1920,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-tab-switcher-on-return",
+    "owners": [ "memex-team@google.com" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable-tcp-fast-open",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

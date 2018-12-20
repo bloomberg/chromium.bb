@@ -277,6 +277,7 @@ public abstract class ChromeFeatureList {
     public static final String SUBRESOURCE_FILTER = "SubresourceFilter";
     public static final String QUERY_IN_OMNIBOX = "QueryInOmnibox";
     public static final String TAB_REPARENTING = "TabReparenting";
+    public static final String TAB_SWITCHER_ON_RETURN = "TabSwitcherOnReturn";
     public static final String TRANSLATE_ANDROID_MANUAL_TRIGGER = "TranslateAndroidManualTrigger";
     public static final String TRUSTED_WEB_ACTIVITY = "TrustedWebActivity";
     public static final String TRUSTED_WEB_ACTIVITY_POST_MESSAGE = "TrustedWebActivityPostMessage";
