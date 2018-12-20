@@ -671,6 +671,10 @@ Banners.prototype.showLowDownloadsSpaceWarning_ = function(show) {
       values[DOWNLOADS_WARNING_DISMISSED_KEY] = Date.now();
       chrome.storage.local.set(values);
       box.hidden = true;
+      // We explicitly mark the banner-close element as hidden as due to the
+      // use of position absolute in it's layout it does not get hidden by
+      // hiding it's parent.
+      close.hidden = true;
       this.requestRelayout_(100);
     }.bind(this));
   }
