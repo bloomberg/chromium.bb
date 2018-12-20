@@ -13,10 +13,10 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
-#include "content/common/service_worker/service_worker.mojom.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "url/gurl.h"
@@ -116,7 +116,7 @@ class CookieStoreWorkerTestHelper : public EmbeddedWorkerTestHelper {
       const GURL& scope,
       const GURL& script_url,
       bool pause_after_download,
-      mojom::ServiceWorkerRequest service_worker_request,
+      blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
@@ -135,8 +135,8 @@ class CookieStoreWorkerTestHelper : public EmbeddedWorkerTestHelper {
   }
 
   // Cookie change subscriptions can only be created in this event handler.
-  void OnInstallEvent(
-      mojom::ServiceWorker::DispatchInstallEventCallback callback) override {
+  void OnInstallEvent(blink::mojom::ServiceWorker::DispatchInstallEventCallback
+                          callback) override {
     for (auto& subscriptions : install_subscription_batches_) {
       cookie_store_service_->AppendSubscriptions(
           service_worker_registration_id_, std::move(subscriptions),
@@ -151,7 +151,8 @@ class CookieStoreWorkerTestHelper : public EmbeddedWorkerTestHelper {
 
   // Used to implement WaitForActivateEvent().
   void OnActivateEvent(
-      mojom::ServiceWorker::DispatchActivateEventCallback callback) override {
+      blink::mojom::ServiceWorker::DispatchActivateEventCallback callback)
+      override {
     if (quit_on_activate_) {
       quit_on_activate_->Quit();
       quit_on_activate_ = nullptr;
@@ -163,7 +164,7 @@ class CookieStoreWorkerTestHelper : public EmbeddedWorkerTestHelper {
   void OnCookieChangeEvent(
       const net::CanonicalCookie& cookie,
       ::network::mojom::CookieChangeCause cause,
-      mojom::ServiceWorker::DispatchCookieChangeEventCallback callback)
+      blink::mojom::ServiceWorker::DispatchCookieChangeEventCallback callback)
       override {
     changes_.emplace_back(cookie, cause);
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);

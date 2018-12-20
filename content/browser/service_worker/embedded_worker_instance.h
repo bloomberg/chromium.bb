@@ -25,7 +25,6 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
-#include "content/common/service_worker/service_worker.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"

@@ -20,7 +20,8 @@ BackgroundFetchEmbeddedWorkerTestHelper::
 
 void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchAbortEvent(
     blink::mojom::BackgroundFetchRegistrationPtr registration,
-    mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback callback) {
+    blink::mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback
+        callback) {
   last_registration_ = std::move(registration);
 
   if (fail_abort_event_) {
@@ -35,7 +36,8 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchAbortEvent(
 
 void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchClickEvent(
     blink::mojom::BackgroundFetchRegistrationPtr registration,
-    mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback callback) {
+    blink::mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback
+        callback) {
   last_registration_ = std::move(registration);
 
   if (fail_click_event_) {
@@ -50,7 +52,8 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchClickEvent(
 
 void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent(
     blink::mojom::BackgroundFetchRegistrationPtr registration,
-    mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback callback) {
+    blink::mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback
+        callback) {
   last_registration_ = std::move(registration);
 
   if (fail_fetch_fail_event_) {
@@ -65,7 +68,7 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent(
 
 void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchSuccessEvent(
     blink::mojom::BackgroundFetchRegistrationPtr registration,
-    mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
+    blink::mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
         callback) {
   last_registration_ = std::move(registration);
 

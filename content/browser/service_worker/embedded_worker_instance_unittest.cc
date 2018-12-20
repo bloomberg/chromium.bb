@@ -22,7 +22,6 @@
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
-#include "content/common/service_worker/service_worker.mojom.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -179,7 +178,7 @@ class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
     return provider_info;
   }
 
-  mojom::ServiceWorkerRequest CreateServiceWorker() {
+  blink::mojom::ServiceWorkerRequest CreateServiceWorker() {
     service_workers_.emplace_back();
     return mojo::MakeRequest(&service_workers_.back());
   }
@@ -219,7 +218,7 @@ class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
   }
 
   // Mojo endpoints.
-  std::vector<mojom::ServiceWorkerPtr> service_workers_;
+  std::vector<blink::mojom::ServiceWorkerPtr> service_workers_;
   std::vector<blink::mojom::ControllerServiceWorkerPtr> controllers_;
   std::vector<blink::mojom::ServiceWorkerInstalledScriptsManagerPtr>
       installed_scripts_managers_;
@@ -248,7 +247,7 @@ class StalledInStartWorkerHelper : public EmbeddedWorkerTestHelper {
       const GURL& scope,
       const GURL& script_url,
       bool pause_after_download,
-      mojom::ServiceWorkerRequest service_worker_request,
+      blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
@@ -816,7 +815,7 @@ class RecordCacheStorageHelper : public EmbeddedWorkerTestHelper {
       const GURL& scope,
       const GURL& script_url,
       bool pause_after_download,
-      mojom::ServiceWorkerRequest service_worker_request,
+      blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,

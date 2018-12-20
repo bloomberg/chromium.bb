@@ -53,19 +53,19 @@ class BackgroundFetchEmbeddedWorkerTestHelper
   // EmbeddedWorkerTestHelper overrides:
   void OnBackgroundFetchAbortEvent(
       blink::mojom::BackgroundFetchRegistrationPtr registration,
-      mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback callback)
-      override;
+      blink::mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback
+          callback) override;
   void OnBackgroundFetchClickEvent(
       blink::mojom::BackgroundFetchRegistrationPtr registration,
-      mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback callback)
-      override;
+      blink::mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback
+          callback) override;
   void OnBackgroundFetchFailEvent(
       blink::mojom::BackgroundFetchRegistrationPtr registration,
-      mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback callback)
-      override;
+      blink::mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback
+          callback) override;
   void OnBackgroundFetchSuccessEvent(
       blink::mojom::BackgroundFetchRegistrationPtr registration,
-      mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
+      blink::mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
           callback) override;
 
  private:

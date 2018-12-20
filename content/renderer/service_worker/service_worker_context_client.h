@@ -20,7 +20,6 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
-#include "content/common/service_worker/service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_listener.h"
@@ -70,7 +69,7 @@ class WebWorkerFetchContext;
 // called on the worker thread.
 class CONTENT_EXPORT ServiceWorkerContextClient
     : public blink::WebServiceWorkerContextClient,
-      public mojom::ServiceWorker {
+      public blink::mojom::ServiceWorker {
  public:
   // Returns a thread-specific client instance.  This does NOT create a
   // new instance.
@@ -90,7 +89,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       const GURL& script_url,
       bool is_starting_installed_worker,
       RendererPreferences renderer_preferences,
-      mojom::ServiceWorkerRequest service_worker_request,
+      blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
@@ -230,7 +229,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
 
   void SendWorkerStarted(blink::mojom::ServiceWorkerStartStatus status);
 
-  // Implements mojom::ServiceWorker.
+  // Implements blink::mojom::ServiceWorker.
   void InitializeGlobalScope(
       blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info)
@@ -251,10 +250,10 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       blink::mojom::BackgroundFetchRegistrationPtr registration,
       DispatchBackgroundFetchSuccessEventCallback callback) override;
   void DispatchExtendableMessageEvent(
-      mojom::ExtendableMessageEventPtr event,
+      blink::mojom::ExtendableMessageEventPtr event,
       DispatchExtendableMessageEventCallback callback) override;
   void DispatchExtendableMessageEventWithCustomTimeout(
-      mojom::ExtendableMessageEventPtr event,
+      blink::mojom::ExtendableMessageEventPtr event,
       base::TimeDelta timeout,
       DispatchExtendableMessageEventCallback callback) override;
   void DispatchFetchEvent(
@@ -377,7 +376,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   blink::WebServiceWorkerContextProxy* proxy_;
 
   // These Mojo objects are bound on the worker thread.
-  mojom::ServiceWorkerRequest pending_service_worker_request_;
+  blink::mojom::ServiceWorkerRequest pending_service_worker_request_;
   blink::mojom::ControllerServiceWorkerRequest pending_controller_request_;
 
   // This is bound on the main thread.

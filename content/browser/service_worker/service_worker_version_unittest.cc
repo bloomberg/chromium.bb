@@ -246,7 +246,7 @@ class MessageReceiverDisallowStart : public MessageReceiver {
       const GURL& scope,
       const GURL& script_url,
       bool pause_after_download,
-      mojom::ServiceWorkerRequest service_worker_request,
+      blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
@@ -299,7 +299,7 @@ class MessageReceiverDisallowStart : public MessageReceiver {
       int /* embedded_worker_id */,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtr /* instance_host_ptr */>
       instance_host_ptr_map_;
-  std::map<int /* embedded_worker_id */, mojom::ServiceWorkerRequest>
+  std::map<int /* embedded_worker_id */, blink::mojom::ServiceWorkerRequest>
       service_worker_request_map_;
   std::map<int /* embedded_worker_id */,
            blink::mojom::ControllerServiceWorkerRequest>
@@ -907,9 +907,9 @@ class MessageReceiverControlEvents : public MessageReceiver {
   ~MessageReceiverControlEvents() override {}
 
   void OnExtendableMessageEvent(
-      mojom::ExtendableMessageEventPtr event,
-      mojom::ServiceWorker::DispatchExtendableMessageEventCallback callback)
-      override {
+      blink::mojom::ExtendableMessageEventPtr event,
+      blink::mojom::ServiceWorker::DispatchExtendableMessageEventCallback
+          callback) override {
     EXPECT_FALSE(extendable_message_event_callback_);
     extendable_message_event_callback_ = std::move(callback);
   }
@@ -925,7 +925,7 @@ class MessageReceiverControlEvents : public MessageReceiver {
     return !extendable_message_event_callback_.is_null();
   }
 
-  mojom::ServiceWorker::DispatchExtendableMessageEventCallback
+  blink::mojom::ServiceWorker::DispatchExtendableMessageEventCallback
   TakeExtendableMessageEventCallback() {
     return std::move(extendable_message_event_callback_);
   }
@@ -935,7 +935,7 @@ class MessageReceiverControlEvents : public MessageReceiver {
   }
 
  private:
-  mojom::ServiceWorker::DispatchExtendableMessageEventCallback
+  blink::mojom::ServiceWorker::DispatchExtendableMessageEventCallback
       extendable_message_event_callback_;
   base::OnceClosure stop_worker_callback_;
 };
@@ -953,7 +953,7 @@ class ServiceWorkerRequestTimeoutTest : public ServiceWorkerVersionTest {
         ->has_extendable_message_event_callback();
   }
 
-  mojom::ServiceWorker::DispatchExtendableMessageEventCallback
+  blink::mojom::ServiceWorker::DispatchExtendableMessageEventCallback
   TakeExtendableMessageEventCallback() {
     return static_cast<MessageReceiverControlEvents*>(helper_.get())
         ->TakeExtendableMessageEventCallback();
@@ -982,7 +982,7 @@ TEST_F(ServiceWorkerRequestTimeoutTest, RequestTimeout) {
   // Dispatch a dummy event whose response will be received by SWVersion.
   EXPECT_FALSE(has_extendable_message_event_callback());
   version_->endpoint()->DispatchExtendableMessageEvent(
-      mojom::ExtendableMessageEvent::New(),
+      blink::mojom::ExtendableMessageEvent::New(),
       version_->CreateSimpleEventCallback(request_id));
 
   base::RunLoop().RunUntilIdle();

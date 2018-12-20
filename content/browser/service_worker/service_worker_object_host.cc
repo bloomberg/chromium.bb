@@ -19,7 +19,7 @@ namespace {
 
 using StatusCallback = base::OnceCallback<void(blink::ServiceWorkerStatusCode)>;
 using PrepareExtendableMessageEventCallback =
-    base::OnceCallback<bool(mojom::ExtendableMessageEventPtr*)>;
+    base::OnceCallback<bool(blink::mojom::ExtendableMessageEventPtr*)>;
 
 void DispatchExtendableMessageEventAfterStartWorker(
     scoped_refptr<ServiceWorkerVersion> worker,
@@ -34,7 +34,8 @@ void DispatchExtendableMessageEventAfterStartWorker(
     return;
   }
 
-  mojom::ExtendableMessageEventPtr event = mojom::ExtendableMessageEvent::New();
+  blink::mojom::ExtendableMessageEventPtr event =
+      blink::mojom::ExtendableMessageEvent::New();
   event->message = std::move(message);
   event->source_origin = source_origin;
   if (!std::move(prepare_callback).Run(&event)) {
@@ -80,7 +81,7 @@ bool PrepareExtendableMessageEventFromClient(
     base::WeakPtr<ServiceWorkerContextCore> context,
     int64_t registration_id,
     blink::mojom::ServiceWorkerClientInfoPtr source_client_info,
-    mojom::ExtendableMessageEventPtr* event) {
+    blink::mojom::ExtendableMessageEventPtr* event) {
   if (!context) {
     return false;
   }
@@ -108,7 +109,7 @@ bool PrepareExtendableMessageEventFromServiceWorker(
     scoped_refptr<ServiceWorkerVersion> worker,
     base::WeakPtr<ServiceWorkerProviderHost>
         source_service_worker_provider_host,
-    mojom::ExtendableMessageEventPtr* event) {
+    blink::mojom::ExtendableMessageEventPtr* event) {
   // The service worker execution context may have been destroyed by the time we
   // get here.
   if (!source_service_worker_provider_host)

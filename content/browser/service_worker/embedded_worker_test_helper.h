@@ -20,7 +20,6 @@
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
-#include "content/common/service_worker/service_worker.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/http/http_response_info.h"
@@ -158,7 +157,7 @@ class EmbeddedWorkerTestHelper {
       const GURL& scope,
       const GURL& script_url,
       bool pause_after_download,
-      mojom::ServiceWorkerRequest service_worker_request,
+      blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
@@ -172,59 +171,67 @@ class EmbeddedWorkerTestHelper {
   // On*Event handlers. By default they just return success via
   // SimulateSendReplyToBrowser.
   virtual void OnActivateEvent(
-      mojom::ServiceWorker::DispatchActivateEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchActivateEventCallback callback);
   virtual void OnBackgroundFetchAbortEvent(
       blink::mojom::BackgroundFetchRegistrationPtr registration,
-      mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback
+          callback);
   virtual void OnBackgroundFetchClickEvent(
       blink::mojom::BackgroundFetchRegistrationPtr registration,
-      mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback
+          callback);
   virtual void OnBackgroundFetchFailEvent(
       blink::mojom::BackgroundFetchRegistrationPtr registration,
-      mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback
+          callback);
   virtual void OnBackgroundFetchSuccessEvent(
       blink::mojom::BackgroundFetchRegistrationPtr registration,
-      mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
+      blink::mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
           callback);
   virtual void OnCookieChangeEvent(
       const net::CanonicalCookie& cookie,
       ::network::mojom::CookieChangeCause cause,
-      mojom::ServiceWorker::DispatchCookieChangeEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchCookieChangeEventCallback callback);
   virtual void OnExtendableMessageEvent(
-      mojom::ExtendableMessageEventPtr event,
-      mojom::ServiceWorker::DispatchExtendableMessageEventCallback callback);
+      blink::mojom::ExtendableMessageEventPtr event,
+      blink::mojom::ServiceWorker::DispatchExtendableMessageEventCallback
+          callback);
   virtual void OnInstallEvent(
-      mojom::ServiceWorker::DispatchInstallEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchInstallEventCallback callback);
   virtual void OnFetchEvent(
       int embedded_worker_id,
       blink::mojom::FetchAPIRequestPtr request,
       blink::mojom::FetchEventPreloadHandlePtr preload_handle,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      mojom::ServiceWorker::DispatchFetchEventCallback finish_callback);
+      blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback);
   virtual void OnNotificationClickEvent(
       const std::string& notification_id,
       const blink::PlatformNotificationData& notification_data,
       int action_index,
       const base::Optional<base::string16>& reply,
-      mojom::ServiceWorker::DispatchNotificationClickEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchNotificationClickEventCallback
+          callback);
   virtual void OnNotificationCloseEvent(
       const std::string& notification_id,
       const blink::PlatformNotificationData& notification_data,
-      mojom::ServiceWorker::DispatchNotificationCloseEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchNotificationCloseEventCallback
+          callback);
   virtual void OnPushEvent(
       base::Optional<std::string> payload,
-      mojom::ServiceWorker::DispatchPushEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchPushEventCallback callback);
   virtual void OnAbortPaymentEvent(
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-      mojom::ServiceWorker::DispatchAbortPaymentEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchAbortPaymentEventCallback callback);
   virtual void OnCanMakePaymentEvent(
       payments::mojom::CanMakePaymentEventDataPtr data,
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-      mojom::ServiceWorker::DispatchCanMakePaymentEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchCanMakePaymentEventCallback
+          callback);
   virtual void OnPaymentRequestEvent(
       payments::mojom::PaymentRequestEventDataPtr data,
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-      mojom::ServiceWorker::DispatchPaymentRequestEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchPaymentRequestEventCallback
+          callback);
   virtual void OnSetIdleTimerDelayToZero(int embedded_worker_id);
 
   // These functions simulate making Mojo calls to the browser.
@@ -266,59 +273,67 @@ class EmbeddedWorkerTestHelper {
   void OnResumeAfterDownloadStub(int embedded_worker_id);
   void OnStopWorkerStub(int embedded_worker_id);
   void OnActivateEventStub(
-      mojom::ServiceWorker::DispatchActivateEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchActivateEventCallback callback);
   void OnBackgroundFetchAbortEventStub(
       blink::mojom::BackgroundFetchRegistrationPtr registration,
-      mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback
+          callback);
   void OnBackgroundFetchClickEventStub(
       blink::mojom::BackgroundFetchRegistrationPtr registration,
-      mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback
+          callback);
   void OnBackgroundFetchFailEventStub(
       blink::mojom::BackgroundFetchRegistrationPtr registration,
-      mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback
+          callback);
   void OnBackgroundFetchSuccessEventStub(
       blink::mojom::BackgroundFetchRegistrationPtr registration,
-      mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
+      blink::mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
           callback);
   void OnCookieChangeEventStub(
       const net::CanonicalCookie& cookie,
       ::network::mojom::CookieChangeCause cause,
-      mojom::ServiceWorker::DispatchCookieChangeEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchCookieChangeEventCallback callback);
   void OnExtendableMessageEventStub(
-      mojom::ExtendableMessageEventPtr event,
-      mojom::ServiceWorker::DispatchExtendableMessageEventCallback callback);
+      blink::mojom::ExtendableMessageEventPtr event,
+      blink::mojom::ServiceWorker::DispatchExtendableMessageEventCallback
+          callback);
   void OnInstallEventStub(
-      mojom::ServiceWorker::DispatchInstallEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchInstallEventCallback callback);
   void OnFetchEventStub(
       int embedded_worker_id,
       blink::mojom::FetchAPIRequestPtr request,
       blink::mojom::FetchEventPreloadHandlePtr preload_handle,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      mojom::ServiceWorker::DispatchFetchEventCallback finish_callback);
+      blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback);
   void OnNotificationClickEventStub(
       const std::string& notification_id,
       const blink::PlatformNotificationData& notification_data,
       int action_index,
       const base::Optional<base::string16>& reply,
-      mojom::ServiceWorker::DispatchNotificationClickEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchNotificationClickEventCallback
+          callback);
   void OnNotificationCloseEventStub(
       const std::string& notification_id,
       const blink::PlatformNotificationData& notification_data,
-      mojom::ServiceWorker::DispatchNotificationCloseEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchNotificationCloseEventCallback
+          callback);
   void OnPushEventStub(
       base::Optional<std::string> payload,
-      mojom::ServiceWorker::DispatchPushEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchPushEventCallback callback);
   void OnAbortPaymentEventStub(
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-      mojom::ServiceWorker::DispatchAbortPaymentEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchAbortPaymentEventCallback callback);
   void OnCanMakePaymentEventStub(
       payments::mojom::CanMakePaymentEventDataPtr data,
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-      mojom::ServiceWorker::DispatchCanMakePaymentEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchCanMakePaymentEventCallback
+          callback);
   void OnPaymentRequestEventStub(
       payments::mojom::PaymentRequestEventDataPtr data,
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-      mojom::ServiceWorker::DispatchPaymentRequestEventCallback callback);
+      blink::mojom::ServiceWorker::DispatchPaymentRequestEventCallback
+          callback);
 
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<MockRenderProcessHost> render_process_host_;

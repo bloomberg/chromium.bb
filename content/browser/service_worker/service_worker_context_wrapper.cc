@@ -535,7 +535,8 @@ void ServiceWorkerContextWrapper::DidStartServiceWorkerForLongRunningMessage(
       base::TimeDelta::FromDays(kActiveWorkerTimeoutDays),
       ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
 
-  mojom::ExtendableMessageEventPtr event = mojom::ExtendableMessageEvent::New();
+  blink::mojom::ExtendableMessageEventPtr event =
+      blink::mojom::ExtendableMessageEvent::New();
   event->message = std::move(message);
   event->source_origin = url::Origin::Create(source_origin);
   event->source_info_for_service_worker =

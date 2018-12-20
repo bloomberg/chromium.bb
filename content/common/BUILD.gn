@@ -509,7 +509,6 @@ mojom("mojo_bindings") {
     "renderer.mojom",
     "renderer_host.mojom",
     "service_worker/embedded_worker.mojom",
-    "service_worker/service_worker.mojom",
     "service_worker/service_worker_container.mojom",
     "service_worker/service_worker_provider.mojom",
     "shared_worker/shared_worker_factory.mojom",
@@ -539,10 +538,6 @@ mojom("mojo_bindings") {
   import_dirs = [ "//mojo/services" ]
 
   public_deps = [
-    # Due to component_deps below, we're depending on blink_common, but
-    # blink_common does not export generated types of components/payments/mojom,
-    # so we need to specifically add this dependency here.
-    "//components/payments/mojom",
     "//components/services/leveldb/public/interfaces",
     "//content/public/common:interfaces",
     "//content/public/common:resource_type_bindings",
