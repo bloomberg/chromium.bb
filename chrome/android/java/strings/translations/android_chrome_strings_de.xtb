@@ -392,7 +392,6 @@ Wenn Sie den Suchbegriff anpassen möchten, halten Sie den entsprechenden Begrif
 <translation id="4099578267706723511">Nutzungsstatistiken und Absturzberichte zur Verbesserung von Chrome an Google senden</translation>
 <translation id="410351446219883937">Autoplay</translation>
 <translation id="4113030288477039509">Von Ihrem Administrator verwaltet</translation>
-<translation id="411332046216682877">Tippen Sie hier, um schnell mit einer Suche zu beginnen</translation>
 <translation id="4116038641877404294">Seiten zur Offline-Ansicht herunterladen</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d Lesezeichen}other{%1$d Lesezeichen}}</translation>
 <translation id="4149994727733219643">Vereinfachte Ansicht für Webseiten</translation>
@@ -646,7 +645,6 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="5962718611393537961">Zum Minimieren tippen</translation>
 <translation id="5990142338020175451">Personalisierte Google-Dienste, z. B. bessere Seitenvorschläge</translation>
 <translation id="6000066717592683814">Google beibehalten</translation>
-<translation id="6001839398155993679">Los gehts</translation>
 <translation id="6005538289190791541">Vorgeschlagenes Passwort</translation>
 <translation id="6039379616847168523">Zum nächsten Tab wechseln</translation>
 <translation id="6040143037577758943">Schließen</translation>
@@ -1048,7 +1046,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="9070377983101773829">Sprachsuche starten</translation>
 <translation id="9071742570345586758">Google VR Services installieren, um Virtual-Reality-Inhalte zu sehen</translation>
 <translation id="9074336505530349563">Melden Sie sich und aktivieren Sie die Synchronisierung, um personalisierte, von Google vorgeschlagene Inhalte zu erhalten</translation>
-<translation id="9079796397681444569">Über die Schaltflächen am unteren Bildschirmrand können Sie einfach andere Bereiche in Chrome aufrufen</translation>
 <translation id="9080642952018487277">Privaten Modus aktivieren</translation>
 <translation id="9086455579313502267">Kein Zugriff auf das Netzwerk</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB heruntergeladen</translation>

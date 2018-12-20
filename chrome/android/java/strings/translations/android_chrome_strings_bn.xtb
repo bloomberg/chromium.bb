@@ -200,6 +200,7 @@
 <translation id="2450083983707403292">আপনি কি আবার <ph name="FILE_NAME" /> ডাউনলোড করা শুরু করতে চান?</translation>
 <translation id="2476578072172137802">সাইটের সেটিংস</translation>
 <translation id="2482878487686419369">বিজ্ঞপ্তিগুলি</translation>
+<translation id="2494974097748878569">Chrome-এ Google অ্যাসিস্ট্যান্ট</translation>
 <translation id="2496180316473517155">ব্রাউজিং ইতিহাস</translation>
 <translation id="2498359688066513246">সহায়তা ও প্রতিক্রিয়া</translation>
 <translation id="2501278716633472235">ফিরে যান</translation>
@@ -394,7 +395,6 @@
 <translation id="4099578267706723511">Google-এ ব্যবহারের পরিসংখ্যান এবং ক্র্যাশ প্রতিবেদনগুলি পাঠিয়ে Chrome কে আরও ভাল করে তুলতে সহায়তা করুন৷</translation>
 <translation id="410351446219883937">স্বতঃচালানো</translation>
 <translation id="4113030288477039509">আপনার প্রশাসকের দ্বারা পরিচালিত</translation>
-<translation id="411332046216682877">এখানে ট্যাপ করে দ্রুত সার্চ করা শুরু করুন</translation>
 <translation id="4116038641877404294">পৃষ্ঠাগুলি অফলাইনে ব্যবহার করতে সেগুলি ডাউনলোড করুন</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$dটি বুকমার্ক}one{%1$dটি বুকমার্ক}other{%1$dটি বুকমার্ক}}</translation>
 <translation id="4149994727733219643">ওয়েব পৃষ্ঠার জন্য সরলীকৃত ভিউ</translation>
@@ -648,7 +648,6 @@
 <translation id="5962718611393537961">সঙ্কুচিত করতে আলতো চাপুন</translation>
 <translation id="5990142338020175451">ভাল পৃষ্ঠার সাজেশনের মতো আরও ব্যক্তিগত Google পরিষেবা</translation>
 <translation id="6000066717592683814">Google কে রাখুন</translation>
-<translation id="6001839398155993679">শুরু করা যাক</translation>
 <translation id="6005538289190791541">প্রস্তাবিত পাসওয়ার্ড</translation>
 <translation id="6039379616847168523">পরবর্তী ট্যাবে চলে যান</translation>
 <translation id="6040143037577758943">বন্ধ</translation>
@@ -685,6 +684,7 @@
 <translation id="6277522088822131679">পৃষ্ঠাটি প্রিন্ট করার সময় একটি সমস্যা হয়েছিল৷ দয়া করে আবার চেষ্টা করুন৷</translation>
 <translation id="6295158916970320988">সমস্ত সাইট</translation>
 <translation id="629730747756840877">অ্যাকাউন্ট</translation>
+<translation id="6302269476990306341">Chrome-এ Google অ্যাসিস্ট্যান্ট এতক্ষণ পরে বন্ধ হয়ে যাবে:</translation>
 <translation id="6303969859164067831">সাইন-আউট করুন এবং সিঙ্ক করা বন্ধ করুন</translation>
 <translation id="6316139424528454185">এই Android ভার্সন সমর্থিত নয়</translation>
 <translation id="6320088164292336938">কম্পন</translation>
@@ -818,6 +818,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" />টি বেছে নেওয়া হয়েছে</translation>
 <translation id="7253272406652746122">আপনার ডিভাইসের সেটিংস অ্যাপ্লিকেশানের অ্যাকাউন্টস পৃষ্ঠা থেকে একটি Google অ্যাকাউন্ট যোগ করুন।</translation>
 <translation id="7274013316676448362">অবরুদ্ধ সাইট</translation>
+<translation id="7291387454912369099">অ্যাসিস্ট্যান্টের মাধ্যমে "Checkout"</translation>
 <translation id="729975465115245577">পাসওয়ার্ড ফাইল সেভ করার জন্য আপনার ডিভাইসে কোনও অ্যাপ নেই।</translation>
 <translation id="7302081693174882195">বিবরণ: সেভ করা ডেটার পরিমাণ অনুযায়ী সাজানো হয়েছে</translation>
 <translation id="7333031090786104871">এখনও পূর্বের সাইট যোগ করছে</translation>
@@ -1050,7 +1051,6 @@
 <translation id="9070377983101773829">ভয়েস সার্চ শুরু করুন</translation>
 <translation id="9071742570345586758">ভার্চুয়াল বাস্তবতার কন্টেন্ট দেখতে Google VR পরিষেবাগুলি ইনস্টল করুন</translation>
 <translation id="9074336505530349563">Google-এর প্রস্তাবিত ব্যক্তিগতকৃত কন্টেন্ট পাওয়ার জন্য সাইন-ইন করে সিঙ্ক বিকল্প চালু করুন</translation>
-<translation id="9079796397681444569">আপনার স্ক্রিনের নিচে দেওয়া বোতামগুলি ব্যবহার করে যেকোনও জায়গা থেকে সহজেই Chrome-এ নেভিগেট করুন</translation>
 <translation id="9080642952018487277">ব্যক্তিগত মোডে যান</translation>
 <translation id="9086455579313502267">নেটওয়ার্কটি অ্যাক্সেস করতে অক্ষম</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB ডাউনলোড করা হয়েছে</translation>

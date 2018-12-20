@@ -200,6 +200,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="2450083983707403292">Czy chcesz jeszcze raz rozpocząć pobieranie pliku <ph name="FILE_NAME" />?</translation>
 <translation id="2476578072172137802">Ustawienia witryn</translation>
 <translation id="2482878487686419369">Powiadomienia</translation>
+<translation id="2494974097748878569">Asystent Google w Chrome</translation>
 <translation id="2496180316473517155">Historia przeglądania</translation>
 <translation id="2498359688066513246">Pomoc i opinie</translation>
 <translation id="2501278716633472235">Wróć</translation>
@@ -392,7 +393,6 @@ Jeśli chcesz dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je
 <translation id="4099578267706723511">Pomóż ulepszyć Chrome, wysyłając do Google statystyki użytkowania i raporty o awariach.</translation>
 <translation id="410351446219883937">Autoodtwarzanie</translation>
 <translation id="4113030288477039509">Zarządzany przez administratora</translation>
-<translation id="411332046216682877">Kliknij tutaj, by szybko rozpocząć wyszukiwanie</translation>
 <translation id="4116038641877404294">Pobierz strony, by przeglądać je w trybie offline</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d zakładka}few{%1$d zakładki}many{%1$d zakładek}other{%1$d zakładki}}</translation>
 <translation id="4149994727733219643">Uproszczony widok stron internetowych</translation>
@@ -646,7 +646,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="5962718611393537961">Kliknij, by zwinąć</translation>
 <translation id="5990142338020175451">Bardziej spersonalizowane usługi Google, na przykład lepsze podpowiedzi stron</translation>
 <translation id="6000066717592683814">Zachowaj Google</translation>
-<translation id="6001839398155993679">Do dzieła</translation>
 <translation id="6005538289190791541">Proponowane hasło</translation>
 <translation id="6039379616847168523">Przejdź do następnej karty</translation>
 <translation id="6040143037577758943">Zamknij</translation>
@@ -683,6 +682,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6277522088822131679">Podczas drukowania strony wystąpił problem. Spróbuj ponownie.</translation>
 <translation id="6295158916970320988">Wszystkie witryny</translation>
 <translation id="629730747756840877">Konto</translation>
+<translation id="6302269476990306341">Wyłączam Asystenta Google w Chrome</translation>
 <translation id="6303969859164067831">Wyloguj się i wyłącz synchronizację</translation>
 <translation id="6316139424528454185">Ta wersja Androida jest nieobsługiwana</translation>
 <translation id="6320088164292336938">Wibracje</translation>
@@ -816,6 +816,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7250468141469952378">Wybrano <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Otwórz aplikację Ustawienia na urządzeniu, przejdź na stronę Konta i dodaj konto Google.</translation>
 <translation id="7274013316676448362">Zablokowana witryna</translation>
+<translation id="7291387454912369099">Płatność przez Asystenta</translation>
 <translation id="729975465115245577">Na urządzeniu nie ma aplikacji umożliwiającej zapisanie pliku z hasłami.</translation>
 <translation id="7302081693174882195">Szczegóły: posortowane według zaoszczędzonych danych</translation>
 <translation id="7333031090786104871">Nadal dodaję poprzednią stronę</translation>
@@ -1048,7 +1049,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="9070377983101773829">Rozpocznij wyszukiwanie głosowe</translation>
 <translation id="9071742570345586758">Aby oglądać treści rzeczywistości wirtualnej, zainstaluj Usługi Google VR</translation>
 <translation id="9074336505530349563">Aby uzyskać dostęp do spersonalizowanej treści proponowanej przez Google, zaloguj się i włącz synchronizację</translation>
-<translation id="9079796397681444569">Możesz łatwo przechodzić w dowolne miejsce interfejsu Chrome, używając przycisków u dołu ekranu</translation>
 <translation id="9080642952018487277">Włącz tryb prywatny</translation>
 <translation id="9086455579313502267">Nie można uzyskać dostępu do sieci</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB pobranych plików</translation>

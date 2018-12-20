@@ -200,6 +200,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="2450083983707403292">Vuoi avviare di nuovo il download di <ph name="FILE_NAME" />?</translation>
 <translation id="2476578072172137802">Impostazioni sito</translation>
 <translation id="2482878487686419369">Notifiche</translation>
+<translation id="2494974097748878569">Assistente Google in Chrome</translation>
 <translation id="2496180316473517155">Cronologia di navigazione</translation>
 <translation id="2498359688066513246">Guida e feedback</translation>
 <translation id="2501278716633472235">Indietro</translation>
@@ -392,7 +393,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4099578267706723511">Aiutaci a migliorare Chrome inviando a Google statistiche sull'utilizzo e rapporti sugli arresti anomali.</translation>
 <translation id="410351446219883937">Riproduzione automatica</translation>
 <translation id="4113030288477039509">Gestito dall'amministratore</translation>
-<translation id="411332046216682877">Tocca qui per avviare rapidamente una ricerca</translation>
 <translation id="4116038641877404294">Scarica le pagine per usarle offline</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d segnalibro}other{%1$d segnalibri}}</translation>
 <translation id="4149994727733219643">Visualizzazione semplificata delle pagine web</translation>
@@ -646,7 +646,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="5962718611393537961">Tocca per comprimere</translation>
 <translation id="5990142338020175451">Servizi Google più personalizzati, ad esempio suggerimenti di pagine più pertinenti</translation>
 <translation id="6000066717592683814">Mantieni Google</translation>
-<translation id="6001839398155993679">Inizia</translation>
 <translation id="6005538289190791541">Password consigliata</translation>
 <translation id="6039379616847168523">Vai alla scheda successiva</translation>
 <translation id="6040143037577758943">Chiudi</translation>
@@ -683,6 +682,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6277522088822131679">Si è verificato un problema durante la stampa della pagina. Riprova.</translation>
 <translation id="6295158916970320988">Tutti i siti</translation>
 <translation id="629730747756840877">Account</translation>
+<translation id="6302269476990306341">Interruzione dell'Assistente Google in Chrome</translation>
 <translation id="6303969859164067831">Esci e disattiva la sincronizzazione</translation>
 <translation id="6316139424528454185">Vers. Android non supportata</translation>
 <translation id="6320088164292336938">Vibrazione</translation>
@@ -816,6 +816,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> elementi selezionati</translation>
 <translation id="7253272406652746122">Aggiungi un account Google dalla pagina Account nell'app Impostazioni del dispositivo.</translation>
 <translation id="7274013316676448362">Sito bloccato</translation>
+<translation id="7291387454912369099">Pagam. attivato con assistente</translation>
 <translation id="729975465115245577">Il tuo dispositivo non ha un'app per archiviare il file di password.</translation>
 <translation id="7302081693174882195">Dettagli: ordinati per quantità di dati salvati</translation>
 <translation id="7333031090786104871">Aggiunta del sito precedente ancora in corso</translation>
@@ -1048,7 +1049,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="9070377983101773829">Avvia la ricerca vocale</translation>
 <translation id="9071742570345586758">Per vedere contenuti di realtà virtuale, installa Servizi Google VR</translation>
 <translation id="9074336505530349563">Per ricevere contenuti suggeriti appositamente per te da Google, accedi e attiva la sincronizzazione</translation>
-<translation id="9079796397681444569">Naviga facilmente in Chrome grazie ai pulsanti in fondo allo schermo</translation>
 <translation id="9080642952018487277">Accedi alla modalità privata</translation>
 <translation id="9086455579313502267">Impossibile accedere alla rete</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> kB per i download</translation>

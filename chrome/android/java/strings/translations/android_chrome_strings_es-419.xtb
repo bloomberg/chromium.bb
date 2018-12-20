@@ -392,7 +392,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4099578267706723511">Envía las estadísticas de uso y los informes de fallos a Google para ayudarnos a mejorar Chrome.</translation>
 <translation id="410351446219883937">Reproducción automática</translation>
 <translation id="4113030288477039509">Administrado por tu administrador</translation>
-<translation id="411332046216682877">Presiona aquí para iniciar una búsqueda rápidamente</translation>
 <translation id="4116038641877404294">Descarga las páginas para usarlas sin conexión</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d favorito}other{%1$d favoritos}}</translation>
 <translation id="4149994727733219643">Vista simplificada para páginas web</translation>
@@ -646,7 +645,6 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="5962718611393537961">Presiona para contraer</translation>
 <translation id="5990142338020175451">Servicios de Google más personalizados, como mejores sugerencias de páginas</translation>
 <translation id="6000066717592683814">Seguir usando Google</translation>
-<translation id="6001839398155993679">Comenzar</translation>
 <translation id="6005538289190791541">Contraseña sugerida</translation>
 <translation id="6039379616847168523">Ir a la pestaña siguiente</translation>
 <translation id="6040143037577758943">Cerrar</translation>
@@ -1048,7 +1046,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="9070377983101773829">Iniciar búsqueda por voz</translation>
 <translation id="9071742570345586758">Para ver contenido de realidad virtual, instala los servicios de RV de Google</translation>
 <translation id="9074336505530349563">Para obtener contenido personalizado y sugerido por Google, accede a tu cuenta y activa la sincronización</translation>
-<translation id="9079796397681444569">Navega fácilmente en cualquier lugar con Chrome mediante los botones en la parte inferior de la pantalla</translation>
 <translation id="9080642952018487277">Acceder al modo privado</translation>
 <translation id="9086455579313502267">No se puede acceder a la red</translation>
 <translation id="9099018167121903954">Contenido descargado: <ph name="KILOBYTES" /> kilobytes</translation>

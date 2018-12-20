@@ -392,7 +392,6 @@
 <translation id="4099578267706723511">'इस्तेमाल के आंकड़े' और 'खराबी रिपोर्ट' Google को भेजकर Chrome को बेहतर बनाने में सहायता करें.</translation>
 <translation id="410351446219883937">स्वतः चलाएं</translation>
 <translation id="4113030288477039509">आपके व्यवस्थापक द्वारा प्रबंधित</translation>
-<translation id="411332046216682877">तेज़ी से खोजना शुरू करने के लिए यहां टैप करें</translation>
 <translation id="4116038641877404294">पेज का ऑफ़लाइन उपयोग करने के लिए उन्हें डाउनलोड करें</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d बुकमार्क}one{%1$d बुकमार्क}other{%1$d बुकमार्क}}</translation>
 <translation id="4149994727733219643">वेब पेजों के लिए सरल बनाया गया व्यू</translation>
@@ -646,7 +645,6 @@
 <translation id="5962718611393537961">संक्षिप्त करने के लिए टैप करें</translation>
 <translation id="5990142338020175451">ज़्यादा निजी Google सेवाएं, जैसे कि बेहतर पेज सुझाव</translation>
 <translation id="6000066717592683814">Google को डिफ़ॉल्ट बनाए रखें</translation>
-<translation id="6001839398155993679">आइए, शुरू करें</translation>
 <translation id="6005538289190791541">सुझाया गया पासवर्ड</translation>
 <translation id="6039379616847168523">सीधे अगले टैब पर जाएं</translation>
 <translation id="6040143037577758943">बंद करें</translation>
@@ -1048,7 +1046,6 @@
 <translation id="9070377983101773829">बोलकर खोजें चालू करें</translation>
 <translation id="9071742570345586758">आभासी वास्तविकता वाली सामग्री देखने के लिए, Google VR सेवाएं इंस्टॉल करें</translation>
 <translation id="9074336505530349563">Google की ओर से सुझाई गई मनमुताबिक सामग्री पाने के लिए, साइन इन करें और 'सिंक करें' को चालू करें</translation>
-<translation id="9079796397681444569">अपनी स्क्रीन के सबसे नीचे दिए गए बटनों का इस्तेमाल करके Chrome में कहीं भी आसानी से जाएं</translation>
 <translation id="9080642952018487277">निजी मोड में जाएं</translation>
 <translation id="9086455579313502267">नेटवर्क तक पहुंचने में असमर्थ</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> केबी डाउलनोड किया गया</translation>

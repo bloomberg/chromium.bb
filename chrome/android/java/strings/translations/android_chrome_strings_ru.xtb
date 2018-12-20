@@ -392,7 +392,6 @@
 <translation id="4099578267706723511">Отправлять в Google статистику использования и отчеты о сбоях</translation>
 <translation id="410351446219883937">Автовоспроизведение</translation>
 <translation id="4113030288477039509">Управляется администратором</translation>
-<translation id="411332046216682877">Нажмите здесь, чтобы начать поиск</translation>
 <translation id="4116038641877404294">Скачивайте страницы и открывайте их без подключения к Интернету</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d закладка}one{%1$d закладка}few{%1$d закладки}many{%1$d закладок}other{%1$d закладки}}</translation>
 <translation id="4149994727733219643">Упрощенный просмотр веб-страниц</translation>
@@ -646,7 +645,6 @@
 <translation id="5962718611393537961">Нажмите, чтобы свернуть</translation>
 <translation id="5990142338020175451">Расширенная персонализация сервисов Google, например более актуальные подсказки на странице быстрого доступа.</translation>
 <translation id="6000066717592683814">Использовать Google</translation>
-<translation id="6001839398155993679">Начать</translation>
 <translation id="6005538289190791541">Предложенный пароль</translation>
 <translation id="6039379616847168523">Перейти к следующей вкладке</translation>
 <translation id="6040143037577758943">Закрыть</translation>
@@ -1048,7 +1046,6 @@
 <translation id="9070377983101773829">Голосовой поиск</translation>
 <translation id="9071742570345586758">Чтобы просматривать контент в режиме виртуальной реальности, установите Google VR-сервисы</translation>
 <translation id="9074336505530349563">Чтобы мы могли рекомендовать вам интересный контент, войдите в аккаунт и включите синхронизацию.</translation>
-<translation id="9079796397681444569">Чтобы упростить навигацию в Chrome, мы перенесли кнопки в нижнюю часть экрана</translation>
 <translation id="9080642952018487277">Войти в режим инкогнито</translation>
 <translation id="9086455579313502267">Нет доступа к сети</translation>
 <translation id="9099018167121903954">Скачанные файлы: <ph name="KILOBYTES" /> КБ</translation>

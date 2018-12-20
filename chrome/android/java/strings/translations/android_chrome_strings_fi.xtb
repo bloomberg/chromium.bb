@@ -392,7 +392,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4099578267706723511">Auta parantamaan Chromea lähettämällä käyttötilastoja ja virheraportteja Googlelle.</translation>
 <translation id="410351446219883937">Automaattinen toisto</translation>
 <translation id="4113030288477039509">Järjestelmänvalvojasi hallinnoima</translation>
-<translation id="411332046216682877">Käynnistä haku nopeasti napauttamalla tästä</translation>
 <translation id="4116038641877404294">Lataa sivuja offline-käyttöä varten.</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d kirjanmerkki}other{%1$d kirjanmerkkiä}}</translation>
 <translation id="4149994727733219643">Yksinkertaisempi sivunäkymä</translation>
@@ -646,7 +645,6 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="5962718611393537961">Tiivistä napauttamalla.</translation>
 <translation id="5990142338020175451">Personoidumpia Google-palveluja, kuten parempia sivuehdotuksia</translation>
 <translation id="6000066717592683814">Käytä Googlea</translation>
-<translation id="6001839398155993679">Aloita</translation>
 <translation id="6005538289190791541">Salasanaehdotus</translation>
 <translation id="6039379616847168523">Siirry seuraavalle välilehdelle</translation>
 <translation id="6040143037577758943">Sulje</translation>
@@ -1048,7 +1046,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="9070377983101773829">Aloita puhehaku</translation>
 <translation id="9071742570345586758">Jos haluat tarkastella virtuaalitodellisuussisältöä, asenna Googlen VR-palvelut.</translation>
 <translation id="9074336505530349563">Kirjaudu sisään ja ota synkronointi käyttöön, niin näet Googlen suosittelemaa yksilöllistä sisältöä</translation>
-<translation id="9079796397681444569">Liiku helposti Chromessa näytön alareunan painikkeilla</translation>
 <translation id="9080642952018487277">Siirry yksityiseen tilaan</translation>
 <translation id="9086455579313502267">Ei yhteyttä verkkoon.</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> Kt ladattu</translation>

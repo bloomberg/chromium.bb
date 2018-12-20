@@ -392,7 +392,6 @@
 <translation id="4099578267706723511">Googleకి వినియోగ గణాంకాలు, క్రాష్ నివేదికలను పంపడం ద్వారా Chromeను మెరుగుపరచడంలో సహాయపడండి.</translation>
 <translation id="410351446219883937">స్వీయ ప్లే</translation>
 <translation id="4113030288477039509">మీ నిర్వాహకుడు ద్వారా నిర్వహించబడుతోంది</translation>
-<translation id="411332046216682877">శోధనను త్వరగా ప్రారంభించడం కోసం ఇక్కడ నొక్కండి</translation>
 <translation id="4116038641877404294">పేజీలను ఆఫ్‌లైన్‌లో ఉపయోగించడం కోసం వాటిని డౌన్‌లోడ్ చేసుకోండి</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d బుక్‌మార్క్}other{%1$d బుక్‌మార్క్‌లు}}</translation>
 <translation id="4149994727733219643">వెబ్ పేజీల కోసం సరళమైన వీక్షణ</translation>
@@ -646,7 +645,6 @@
 <translation id="5962718611393537961">కుదించడానికి నొక్కండి</translation>
 <translation id="5990142338020175451">మెరుగైన పేజీ సూచనల వంటి, మరిన్ని వ్యక్తిగత Google సేవలు</translation>
 <translation id="6000066717592683814">Googleని ఉంచు</translation>
-<translation id="6001839398155993679">ప్రారంభిద్దాం</translation>
 <translation id="6005538289190791541">సూచించబడిన పాస్‌వర్డ్‌</translation>
 <translation id="6039379616847168523">తదుపరి ట్యాబ్‌కు వెళ్లండి</translation>
 <translation id="6040143037577758943">మూసివేయి</translation>
@@ -1048,7 +1046,6 @@
 <translation id="9070377983101773829">వాయిస్ శోధనను ప్రారంభించండి</translation>
 <translation id="9071742570345586758">వర్చువల్ రియాలిటీ కంటెంట్‌ను వీక్షించడానికి, Google VR సేవలను ఇన్‌స్టాల్ చేయండి</translation>
 <translation id="9074336505530349563">Google ద్వారా మీ అభిరుచికి తగిన కంటెంట్‌ను సిఫార్సుల రూపంలో పొందాలనుకుంటే, సైన్ ఇన్ చేసి సమకాలీకరణ ఎంపికను ఆన్ చేయాలి</translation>
-<translation id="9079796397681444569">మీ స్క్రీన్ దిగువన ఉన్న బటన్‌లని ఉపయోగించి Chromeలో ఎక్కడికైనా సులభంగా నావిగేట్ చేయండి</translation>
 <translation id="9080642952018487277">ప్రైవేట్ మోడ్‌లోకి వెళ్లండి</translation>
 <translation id="9086455579313502267">నెట్‌వర్క్‌ని ప్రాప్యత చెయ్యడం సాధ్యం కాలేదు</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB డౌన్‌లోడ్ అయింది</translation>

@@ -851,7 +851,6 @@
 <translation id="2280486287150724112">右侧页边距</translation>
 <translation id="2282146716419988068">GPU 进程</translation>
 <translation id="2282155092769082568">自动配置网址：</translation>
-<translation id="2286841657746966508">帐单邮寄地址</translation>
 <translation id="2288181517385084064">切换到录像机</translation>
 <translation id="2288735659267887385">无障碍设置</translation>
 <translation id="2292848386125228270">请以普通用户的身份启动 <ph name="PRODUCT_NAME" />。如果您出于开发目的，需要以根用户的身份运行 Chrome，请使用 --no-sandbox 标记重新运行 Chrome。</translation>

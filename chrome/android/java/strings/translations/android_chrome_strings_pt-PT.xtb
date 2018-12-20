@@ -200,6 +200,7 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="2450083983707403292">Pretende começar a transferir <ph name="FILE_NAME" /> novamente?</translation>
 <translation id="2476578072172137802">Definições de sites</translation>
 <translation id="2482878487686419369">Notificações</translation>
+<translation id="2494974097748878569">Assistente Google no Chrome</translation>
 <translation id="2496180316473517155">Histórico de navegação</translation>
 <translation id="2498359688066513246">Ajuda e comentários</translation>
 <translation id="2501278716633472235">Voltar</translation>
@@ -392,7 +393,6 @@ Para ajustar o termo de pesquisa, mantenha-o premido para selecionar. Para refin
 <translation id="4099578267706723511">Ajude a melhorar o Chrome ao enviar estatísticas de utilização e relatórios de falhas para a Google.</translation>
 <translation id="410351446219883937">Reprodução automática</translation>
 <translation id="4113030288477039509">Gerido pelo gestor</translation>
-<translation id="411332046216682877">Toque aqui para começar rapidamente uma pesquisa.</translation>
 <translation id="4116038641877404294">Transfira páginas para as utilizar offline.</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d marcador}other{%1$d marcadores}}</translation>
 <translation id="4149994727733219643">Vista simplificada de páginas Web</translation>
@@ -646,7 +646,6 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="5962718611393537961">Toque para reduzir</translation>
 <translation id="5990142338020175451">Serviços Google mais pessoais, como melhores sugestões de páginas</translation>
 <translation id="6000066717592683814">Manter o Google</translation>
-<translation id="6001839398155993679">Vamos lá</translation>
 <translation id="6005538289190791541">Palavra-passe sugerida</translation>
 <translation id="6039379616847168523">Ir para o próximo separador</translation>
 <translation id="6040143037577758943">Fechar</translation>
@@ -683,6 +682,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6277522088822131679">Ocorreu um problema ao imprimir a página. Tente novamente.</translation>
 <translation id="6295158916970320988">Todos os sites</translation>
 <translation id="629730747756840877">Conta</translation>
+<translation id="6302269476990306341">Paragem do Assistente Google no Chrome</translation>
 <translation id="6303969859164067831">Terminar sessão e desativar a sincronização</translation>
 <translation id="6316139424528454185">Versão Android não suportada.</translation>
 <translation id="6320088164292336938">Vibrar</translation>
@@ -816,6 +816,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> selecionado(s).</translation>
 <translation id="7253272406652746122">Adicione uma Conta Google na página Contas na aplicação Definições do dispositivo.</translation>
 <translation id="7274013316676448362">Site bloqueado</translation>
+<translation id="7291387454912369099">O Assistente acionou o pagamento</translation>
 <translation id="729975465115245577">O dispositivo não tem uma aplicação para armazenar o ficheiro de palavras-passe.</translation>
 <translation id="7302081693174882195">Detalhes: ordenado por quantidade de dados guardados</translation>
 <translation id="7333031090786104871">Ainda a adicionar o site anterior…</translation>
@@ -1048,7 +1049,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="9070377983101773829">Iniciar pesquisa por voz</translation>
 <translation id="9071742570345586758">Para ver conteúdo de realidade virtual, instale os Serviços de RV da Google</translation>
 <translation id="9074336505530349563">Para obter conteúdo personalizado sugerido pelo Google, inicie sessão e ative a sincronização.</translation>
-<translation id="9079796397681444569">Navegue facilmente para qualquer local no Chrome através dos botões na parte inferior do ecrã.</translation>
 <translation id="9080642952018487277">Entrar no modo privado</translation>
 <translation id="9086455579313502267">Não é possível aceder à rede</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB transferido(s)</translation>

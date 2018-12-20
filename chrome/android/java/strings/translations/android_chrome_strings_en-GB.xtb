@@ -200,6 +200,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="2450083983707403292">Do you want to start downloading <ph name="FILE_NAME" /> again?</translation>
 <translation id="2476578072172137802">Site Settings</translation>
 <translation id="2482878487686419369">Notifications</translation>
+<translation id="2494974097748878569">Google Assistant in Chrome</translation>
 <translation id="2496180316473517155">Browsing history</translation>
 <translation id="2498359688066513246">Help &amp; feedback</translation>
 <translation id="2501278716633472235">Go back</translation>
@@ -392,7 +393,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4099578267706723511">Help make Chrome better by sending usage statistics and crash reports to Google.</translation>
 <translation id="410351446219883937">Autoplay</translation>
 <translation id="4113030288477039509">Managed by your administrator</translation>
-<translation id="411332046216682877">Tap here to quickly begin a search</translation>
 <translation id="4116038641877404294">Download pages to use them offline</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d bookmark}other{%1$d bookmarks}}</translation>
 <translation id="4149994727733219643">Simplified view for web pages</translation>
@@ -646,7 +646,6 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="5962718611393537961">Tap to collapse</translation>
 <translation id="5990142338020175451">More personal Google services, such as better page suggestions</translation>
 <translation id="6000066717592683814">Keep Google</translation>
-<translation id="6001839398155993679">Let's go</translation>
 <translation id="6005538289190791541">Suggested password</translation>
 <translation id="6039379616847168523">Jump to the next tab</translation>
 <translation id="6040143037577758943">Close</translation>
@@ -683,6 +682,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6277522088822131679">There was a problem printing the page. Please try again.</translation>
 <translation id="6295158916970320988">All sites</translation>
 <translation id="629730747756840877">Account</translation>
+<translation id="6302269476990306341">Google Assistant in Chrome stopping</translation>
 <translation id="6303969859164067831">Sign out and turn off sync</translation>
 <translation id="6316139424528454185">Android version is unsupported</translation>
 <translation id="6320088164292336938">Vibrate</translation>
@@ -816,6 +816,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> selected</translation>
 <translation id="7253272406652746122">Add a Google account from the Accounts page in your device’s Settings app.</translation>
 <translation id="7274013316676448362">Blocked site</translation>
+<translation id="7291387454912369099">Assistant Triggered Checkout</translation>
 <translation id="729975465115245577">Your device doesn’t have an app to store the passwords file.</translation>
 <translation id="7302081693174882195">Details: Sorted by amount of data saved</translation>
 <translation id="7333031090786104871">Still adding previous site</translation>
@@ -1048,7 +1049,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="9070377983101773829">Start voice search</translation>
 <translation id="9071742570345586758">To view virtual reality content, install Google VR Services</translation>
 <translation id="9074336505530349563">To get personalised content suggested by Google, sign in and turn on sync</translation>
-<translation id="9079796397681444569">Easily navigate anywhere in Chrome using the buttons at the bottom of your screen</translation>
 <translation id="9080642952018487277">Enter private mode</translation>
 <translation id="9086455579313502267">Unable to access the network</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB downloaded</translation>

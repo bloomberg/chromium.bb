@@ -200,6 +200,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="2450083983707403292">Ingin mulai mendownload <ph name="FILE_NAME" /> lagi?</translation>
 <translation id="2476578072172137802">Setelan Situs</translation>
 <translation id="2482878487686419369">Notifikasi</translation>
+<translation id="2494974097748878569">Asisten Google di Chrome</translation>
 <translation id="2496180316473517155">Histori jelajah</translation>
 <translation id="2498359688066513246">Bantuan &amp; masukan</translation>
 <translation id="2501278716633472235">Kembali</translation>
@@ -392,7 +393,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk memperse
 <translation id="4099578267706723511">Bantu penyempurnaan Chrome dengan mengirimkan statistik penggunaan dan laporan kerusakan ke Google.</translation>
 <translation id="410351446219883937">Putar otomatis</translation>
 <translation id="4113030288477039509">Dikelola oleh administrator</translation>
-<translation id="411332046216682877">Tap di sini untuk memulai penelusuran dengan cepat</translation>
 <translation id="4116038641877404294">Download halaman untuk melihat secara offline</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d bookmark}other{%1$d bookmark}}</translation>
 <translation id="4149994727733219643">Tampilan sederhana untuk halaman web</translation>
@@ -646,7 +646,6 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="5962718611393537961">Tap untuk menciutkan</translation>
 <translation id="5990142338020175451">Layanan Google yang lebih personal, seperti saran halaman yang lebih baik</translation>
 <translation id="6000066717592683814">Tetap menggunakan Google</translation>
-<translation id="6001839398155993679">Ayo</translation>
 <translation id="6005538289190791541">Sandi yang disarankan</translation>
 <translation id="6039379616847168523">Beralih ke tab berikutnya</translation>
 <translation id="6040143037577758943">Tutup</translation>
@@ -683,6 +682,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6277522088822131679">Terjadi masalah saat mencetak halaman. Coba lagi.</translation>
 <translation id="6295158916970320988">Semua situs</translation>
 <translation id="629730747756840877">Akun</translation>
+<translation id="6302269476990306341">Asisten Google di Chrome berhenti</translation>
 <translation id="6303969859164067831">Logout dan nonaktifkan sinkronisasi</translation>
 <translation id="6316139424528454185">Versi Android tidak didukung</translation>
 <translation id="6320088164292336938">Getar</translation>
@@ -816,6 +816,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> dipilih</translation>
 <translation id="7253272406652746122">Tambahkan Akun Google dari halaman Akun di aplikasi Setelan pada perangkat.</translation>
 <translation id="7274013316676448362">Situs yang diblokir</translation>
+<translation id="7291387454912369099">Pembayaran yang Dipicu Asisten</translation>
 <translation id="729975465115245577">Perangkat Anda tidak memiliki aplikasi untuk menyimpan file sandi.</translation>
 <translation id="7302081693174882195">Detail: Diurutkan menurut jumlah kuota yang dihemat</translation>
 <translation id="7333031090786104871">Masih menambahkan situs sebelumnya</translation>
@@ -1048,7 +1049,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="9070377983101773829">Mulai penelusuran suara</translation>
 <translation id="9071742570345586758">Untuk melihat konten realitas maya, instal Layanan Google VR</translation>
 <translation id="9074336505530349563">Untuk mendapatkan konten hasil personalisasi yang disarankan oleh Google, login dan aktifkan sinkronisasi</translation>
-<translation id="9079796397681444569">Buka bagian apa pun di Chrome dengan mudah menggunakan tombol di bawah layar</translation>
 <translation id="9080642952018487277">Masuk mode rahasia</translation>
 <translation id="9086455579313502267">Tidak dapat mengakses jaringan</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB didownload</translation>

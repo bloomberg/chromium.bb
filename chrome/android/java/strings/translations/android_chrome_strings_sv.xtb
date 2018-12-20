@@ -392,7 +392,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill finju
 <translation id="4099578267706723511">Hjälp till att förbättra Chrome genom att skicka användningsstatistik och felrapporter till Google.</translation>
 <translation id="410351446219883937">Automatisk uppspelning</translation>
 <translation id="4113030288477039509">Hanteras av administratören</translation>
-<translation id="411332046216682877">Börja söka snabbt genom att trycka här</translation>
 <translation id="4116038641877404294">Ladda ned sidor så att du kan använda dem offline</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d bokmärke}other{%1$d bokmärken}}</translation>
 <translation id="4149994727733219643">Förenklad vy för webbsidor</translation>
@@ -646,7 +645,6 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5962718611393537961">Tryck här om du vill komprimera</translation>
 <translation id="5990142338020175451">Personligare tjänster från Google, till exempel förbättrade förslag på sidor</translation>
 <translation id="6000066717592683814">Behåll Google</translation>
-<translation id="6001839398155993679">Då kör vi</translation>
 <translation id="6005538289190791541">Föreslaget lösenord</translation>
 <translation id="6039379616847168523">Hoppa till nästa flik</translation>
 <translation id="6040143037577758943">Stäng</translation>
@@ -1048,7 +1046,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="9070377983101773829">Starta röstsökning</translation>
 <translation id="9071742570345586758">Installera Googles VR-tjänster om du vill visa innehåll med virtuell verklighet</translation>
 <translation id="9074336505530349563">Logga in och aktivera synkronisering om du vill få förslag på anpassat innehåll från Google</translation>
-<translation id="9079796397681444569">Navigera enkelt vart som helst i Chrome med knapparna längst ned på skärmen</translation>
 <translation id="9080642952018487277">Aktivera privat läge</translation>
 <translation id="9086455579313502267">Det går inte att ansluta till nätverket</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> kB används av nedladdningar</translation>

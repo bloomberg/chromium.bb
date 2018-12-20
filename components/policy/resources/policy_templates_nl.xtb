@@ -2637,7 +2637,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       |future_config| is de primaire configuratie die wordt gebruikt om de toegangscode te valideren.
       |old_configs| moet alleen worden gebruikt om de toegangscode te valideren wanneer deze niet kan worden gevalideerd met |future_config| of |current_config|.
 
-      De verwachte gebruiksmethode van dit beleid is de configuratie voor de toegangscode geleidelijk rouleren. Een nieuwe configuratie wordt altijd in |future_config| geplaatst en tegelijkertijd wordt de bestaande waarde verplaatst naar |current_config|. De eerdere waarden van |current_config| worden verplaatst naar |old_configs| en verwijderd nadat de roulatiecyclus is afgelopen.
+      Dit beleid is bedoeld om de configuratie voor de toegangscode geleidelijk te rouleren. Een nieuwe configuratie wordt altijd in |future_config| geplaatst en tegelijkertijd wordt de bestaande waarde verplaatst naar |current_config|. De eerdere waarden van |current_config| worden verplaatst naar |old_configs| en verwijderd nadat de roulatiecyclus is afgelopen.
 
       Dit beleid is alleen van toepassing op gebruikers met een kinderaccount.
       Wanneer dit beleid is ingesteld, kan de toegangscode voor ouders worden geverifieerd op het apparaat van de gebruiker met een kinderaccount.

@@ -764,6 +764,7 @@
 <translation id="215753907730220065">Έξοδος από πλήρη οθόνη</translation>
 <translation id="2157875535253991059">Αυτή η σελίδα εμφανίζεται σε πλήρη οθόνη</translation>
 <translation id="216169395504480358">Προσθήκη Wi-Fi…</translation>
+<translation id="2162155940152307086">Ο συγχρονισμός θα ξεκινήσει μόλις αποχωρήσετε από τις ρυθμίσεις συγχρονισμού</translation>
 <translation id="2163470535490402084">Συνδεθείτε στο διαδίκτυο για να συνδεθείτε στη συσκευή σας <ph name="DEVICE_TYPE" />.</translation>
 <translation id="2166369534954157698">Η γρήγορη καφέ αλεπού πηδάει πάνω από το τεμπέλικο σκυλί</translation>
 <translation id="2169062631698640254">Σύνδεση</translation>
@@ -774,6 +775,7 @@
 <translation id="2178098616815594724">Η προσθήκη <ph name="PEPPER_PLUGIN_NAME" /> στον τομέα <ph name="PEPPER_PLUGIN_DOMAIN" /> επιθυμεί να αποκτήσει πρόσβαση στον υπολογιστή σας</translation>
 <translation id="2178614541317717477">Παραβίαση αρχής έκδοσης πιστοποιητικών</translation>
 <translation id="218070003709087997">Χρησιμοποιήστε έναν αριθμό για να υποδείξετε πόσα αντίγραφα θα εκτυπωθούν (1 ή 999).</translation>
+<translation id="2182253583899676504">Το κείμενο που πληκτρολογείτε σε πεδία κειμένου θα αποσταλεί στην Google.</translation>
 <translation id="2184515124301515068">Επιτρέψτε στο Chrome να επιλέξει πότε οι ιστότοποι μπορούν να αναπαράγουν ήχο (συνιστάται)</translation>
 <translation id="2187895286714876935">Σφάλμα εισαγωγής του πιστοποιητικού διακομιστή  </translation>
 <translation id="2187906491731510095">Οι επεκτάσεις ενημερώθηκαν</translation>
@@ -785,7 +787,9 @@
 <translation id="2192505247865591433">Από:</translation>
 <translation id="2193365732679659387">Ρυθμίσεις αξιοπιστίας</translation>
 <translation id="2195729137168608510">Προστασία ηλεκτρονικού ταχυδρομείου</translation>
+<translation id="2198757192731523470">Η Google μπορεί να χρησιμοποιεί το ιστορικό σας για την εξατομίκευση της Αναζήτησης, των διαφημίσεων και άλλων υπηρεσιών Google.</translation>
 <translation id="2199298570273670671">Σφάλμα</translation>
+<translation id="2199719347983604670">Δεδομένα από τον συγχρονισμό Chrome</translation>
 <translation id="2200094388063410062">Ηλεκτρονικό ταχυδρομείο</translation>
 <translation id="2200356397587687044">Το Chrome χρειάζεται άδεια για να συνεχίσει</translation>
 <translation id="2200603218210188859">Προτιμήσεις συσκευής USB</translation>
@@ -850,7 +854,6 @@
 <translation id="2280486287150724112">Δεξιό περιθώριο</translation>
 <translation id="2282146716419988068">Διαδικασία GPU</translation>
 <translation id="2282155092769082568">Αυτόματη διαμόρφωση URL</translation>
-<translation id="2286841657746966508">Διεύθυνση τιμολόγησης</translation>
 <translation id="2288181517385084064">Εναλλαγή σε πρόγραμμα εγγραφής βίντεο</translation>
 <translation id="2288735659267887385">Ρυθμίσεις προσβασιμότητας</translation>
 <translation id="2292848386125228270">Εκκινήστε το <ph name="PRODUCT_NAME" /> ως απλός χρήστης. Εάν απαιτείται εκτέλεση ως ρίζας για ανάπτυξη, εκτελέστε το ξανά με την ετικέτα --no-sandbox.</translation>
@@ -1243,6 +1246,7 @@
 <translation id="2889064240420137087">Άνοιγμα συνδέσμου με...</translation>
 <translation id="2889925978073739256">Συνέχιση αποκλεισμού προσθηκών εκτός περιβάλλοντος δοκιμών</translation>
 <translation id="2893168226686371498">Προεπιλεγμένο πρόγραμμα περιήγησης</translation>
+<translation id="2895734772884435517">Μπορείτε να προσαρμόσετε αυτές τις ρυθμίσεις ανά πάσα στιγμή.</translation>
 <translation id="289644616180464099">Η κάρτα SIM είναι κλειδωμένη</translation>
 <translation id="289695669188700754">Αναγνωριστικό κλειδιού: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Είστε βέβαιοι ότι θέλετε να ανοίξετε <ph name="TAB_COUNT" /> καρτέλες;</translation>
@@ -1711,6 +1715,7 @@
 <translation id="3636096452488277381">Γεια σας, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - Απομένει <ph name="TIME" /></translation>
 <translation id="3637682276779847508">Η κάρτα SIM θα απενεργοποιηθεί οριστικά αν δεν καταφέρετε να πληκτρολογήσετε το σωστό κλειδί ξεκλειδώματος PIN.</translation>
+<translation id="363863692969456324">Διορθώστε τα ορθογραφικά λάθη με τον βελτιωμένο ορθογραφικό έλεγχο</translation>
 <translation id="3640214691812501263">Προσθήκη "<ph name="EXTENSION_NAME" />" για <ph name="USER_NAME" />;</translation>
 <translation id="3644896802912593514">Πλάτος</translation>
 <translation id="3645372836428131288">Μετακινήστε ελαφρώς για να αποτυπώσετε ένα διαφορετικό τμήμα του δακτυλικού αποτυπώματος.</translation>
@@ -2143,6 +2148,7 @@
 <translation id="4310139701823742692">Λανθασμένη μορφή αρχείου. Ελέγξτε το αρχείο PPD και δοκιμάστε ξανά.</translation>
 <translation id="431076611119798497">&amp;Λεπτομέρειες</translation>
 <translation id="4312866146174492540">Αποκλεισμός (προεπιλογή)</translation>
+<translation id="4314815835985389558">Διαχείριση συγχρονισμού</translation>
 <translation id="4316850752623536204">Ιστότοπος προγραμματιστή</translation>
 <translation id="4320177379694898372">Χωρίς σύνδεση στο διαδίκτυο</translation>
 <translation id="4320948194796820126">Προσθήκη σελιδοδείκτη στο ηλεκτρονικό ταχυδρομείο σας</translation>
@@ -2222,6 +2228,7 @@
 <translation id="4450974146388585462">Διάγνωση</translation>
 <translation id="4451757071857432900">Αποκλεισμένες σε ιστότοπους που εμφανίζουν παρεμβατικές ή παραπλανητικές διαφημίσεις (συνιστάται)</translation>
 <translation id="4453946976636652378">Αναζητήστε στο <ph name="SEARCH_ENGINE_NAME" /> ή πληκτρολογήστε κάποιο URL</translation>
+<translation id="4461835665417498653">Αποστέλλει ανώνυμα ορισμένες πληροφορίες συστήματος και περιεχόμενο σελίδων στην Google.</translation>
 <translation id="4462159676511157176">Προσαρμοσμένοι διακομιστές ονομάτων</translation>
 <translation id="4467101674048705704">Ανάπτυξη <ph name="FOLDER_NAME" /></translation>
 <translation id="4469477701382819144">Αποκλεισμένες σε ιστότοπους που εμφανίζουν παρεμβατικές ή παραπλανητικές διαφημίσεις</translation>
@@ -2386,6 +2393,7 @@
 <translation id="4735265153267957659">Εισαγάγετε τον κωδικό πρόσβασής σας για την ενεργοποίηση του Smart Lock. Την επόμενη φορά, το τηλέφωνό σας θα ξεκλειδώσει τη συσκευή <ph name="DEVICE_TYPE" />. Απενεργοποιήστε το Smart Lock στις Ρυθμίσεις.</translation>
 <translation id="473546211690256853">Η διαχείριση αυτού του λογαριασμού γίνεται από τον τομέα <ph name="DOMAIN" />.</translation>
 <translation id="4735803855089279419">Το σύστημα δεν κατάφερε να προσδιορίσει αναγνωριστικά συσκευής για αυτήν τη συσκευή.</translation>
+<translation id="4736292055110123391">Συγχρονίστε τους σελιδοδείκτες, τους κωδικούς πρόσβασης, το ιστορικό σας και άλλο περιεχόμενο σε όλες τις συσκευές σας</translation>
 <translation id="4737715515457435632">Συνδεθείτε σε ένα δίκτυο</translation>
 <translation id="473775607612524610">Ενημέρωση</translation>
 <translation id="4742746985488890273">Καρφίτσωμα στο ράφι</translation>
@@ -2724,6 +2732,7 @@
 <translation id="5266113311903163739">Σφάλμα εισαγωγής της Αρχής Πιστοποίησης</translation>
 <translation id="5269977353971873915">Η εκτύπωση απέτυχε</translation>
 <translation id="5270167208902136840">Εμφάνιση <ph name="NUMBER_OF_MORE_APPS" /> επιπλέον εφαρμογών</translation>
+<translation id="5272654297705279635">Προσαρμοσμένες ρυθμίσεις</translation>
 <translation id="5275352920323889391">Σκύλος</translation>
 <translation id="5275973617553375938">Ανακτημένα αρχεία από το Google Drive</translation>
 <translation id="527605982717517565">Να επιτρέπεται πάντα το JavaScript στο <ph name="HOST" /></translation>
@@ -4896,6 +4905,7 @@
 <translation id="8598453409908276158">Η προσθήκη εκτός περιβάλλοντος δοκιμών αποκλείστηκε</translation>
 <translation id="8601206103050338563">Έλεγχος ταυτότητας πελάτη TLS WWW</translation>
 <translation id="8602851771975208551">Κάποιο άλλο πρόγραμμα στον υπολογιστή σας πρόσθεσε μια εφαρμογή, η οποία ενδέχεται να αλλάξει τον τρόπο λειτουργίας του Chrome.</translation>
+<translation id="8604763363205185560">Συμβάλλετε στη βελτίωση του Chrome και της ασφάλειάς του</translation>
 <translation id="8605428685123651449">Μνήμη SQLite</translation>
 <translation id="8606726445206553943">Χρήση των συσκευών σας MIDI</translation>
 <translation id="8609465669617005112">Μετακίνηση προς τα επάνω</translation>

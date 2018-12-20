@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">nama tidak diketahui</translation>
 <translation id="1050038467049342496">Tutup aplikasi lain</translation>
 <translation id="1055184225775184556">&amp;Urungkan Penambahan</translation>
+<translation id="1058479211578257048">Menyimpan kartu...</translation>
 <translation id="10614374240317010">Jangan pernah disimpan</translation>
 <translation id="1066396345355680611">Anda dapat kehilangan akses ke konten yang dilindungi dari <ph name="SITE" /> dan beberapa situs lain.</translation>
 <translation id="106701514854093668">Bookmark Desktop</translation>
@@ -531,6 +532,7 @@
 <translation id="4358461427845829800">Kelola metode pembayaran...</translation>
 <translation id="4372948949327679948">Nilai <ph name="VALUE_TYPE" /> yang diharapkan.</translation>
 <translation id="4377125064752653719">Anda berusaha menjangkau <ph name="DOMAIN" />, tetapi sertifikat yang disajikan oleh server telah dibatalkan oleh penerbitnya. Artinya informasi rahasia keamanan yang disajikan tidak dapat dipercaya. Anda mungkin sedang berkomunikasi dengan penyerang.</translation>
+<translation id="4378154925671717803">Ponsel</translation>
 <translation id="4406896451731180161">hasil penelusuran</translation>
 <translation id="4408413947728134509">Cookie <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Alamat Pengambilan</translation>
@@ -603,6 +605,7 @@
 <translation id="4989163558385430922">Lihat semua</translation>
 <translation id="4989809363548539747">Plugin ini tidak didukung</translation>
 <translation id="5002932099480077015">Jika diaktifkan, Chrome akan menyimpan salinan kartu Anda di perangkat ini untuk pengisian formulir yang lebih cepat.</translation>
+<translation id="5014174725590676422">Layar penggunaan pertama Asisten Google di Chrome ditampilkan</translation>
 <translation id="5015510746216210676">Nama Mesin:</translation>
 <translation id="5018422839182700155">Tidak dapat membuka halaman ini</translation>
 <translation id="5019198164206649151">Penyimpanan cadangan dalam kondisi buruk</translation>
@@ -714,6 +717,7 @@
 <translation id="5720705177508910913">Pengguna saat ini</translation>
 <translation id="5730040223043577876">Chrome menyarankan untuk menyetel ulang sandi jika Anda juga menggunakannya di situs lain.</translation>
 <translation id="5732392974455271431">Orang tua dapat membuka blokirnya untukmu</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{Simpan kartu di Akun Google Anda}other{Simpan kartu di Akun Google Anda}}</translation>
 <translation id="5763042198335101085">Masukkan alamat email yang valid</translation>
 <translation id="5765072501007116331">Untuk melihat persyaratan dan metode pengiriman, pilih alamat</translation>
 <translation id="5770114862687765385">File tersebut sepertinya rusak. Harap klik tombol 'Setel Ulang' untuk menyetel ulang sesi.</translation>
@@ -1190,6 +1194,7 @@
 <translation id="9080712759204168376">Ringkasan Pesanan</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> biasanya menggunakan enkripsi untuk melindungi informasi Anda. Saat Chromium mencoba menyambung ke <ph name="SITE" /> kali ini, situs web mengembalikan kredensial yang salah dan tidak biasa. Hal ini dapat terjadi jika ada penyerang yang berpura-pura menjadi <ph name="SITE" />, atau layar masuk Wi-Fi mengganggu sambungan. Informasi Anda masih aman karena Chromium menghentikan sambungan sebelum terjadi pertukaran data apa pun.</translation>
 <translation id="9106062320799175032">Tambahkan Alamat Penagihan</translation>
+<translation id="9110718169272311511">Asisten Google di Chrome tersedia di dekat bagian bawah layar</translation>
 <translation id="9114524666733003316">Mengonfirmasi kartu...</translation>
 <translation id="9128870381267983090">Sambungkan ke jaringan</translation>
 <translation id="9137013805542155359">Perlihatkan halaman asli</translation>

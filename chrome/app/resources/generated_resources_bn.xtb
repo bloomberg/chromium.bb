@@ -853,7 +853,6 @@
 <translation id="2280486287150724112">ডান মার্জিন</translation>
 <translation id="2282146716419988068">GPU প্রক্রিয়া</translation>
 <translation id="2282155092769082568">স্বতঃকনফিগারেশান URL:</translation>
-<translation id="2286841657746966508">বিলিং ঠিকানা</translation>
 <translation id="2288181517385084064">এর বদলে ভিডিও রেকর্ড করুন</translation>
 <translation id="2288735659267887385">অ্যাক্সেসযোগ্যতার সেটিংস</translation>
 <translation id="2292848386125228270">অনুগ্রহ করে একজন সাধারন ব্যবহারকারী হিসেবে <ph name="PRODUCT_NAME" /> আরম্ভ করুন। আপনার যদি বিকাশ করার জন্য রুট হিসাবে চালানোর প্রয়োজন হয়, তাহলে --নো-স্যান্ডবক্স ফ্ল্যাগটি আবার চালান।</translation>
@@ -1957,7 +1956,7 @@
 <translation id="3979748722126423326"><ph name="NETWORKDEVICE" /> সক্ষম করুন</translation>
 <translation id="3981760180856053153">অবৈধ সংরক্ষণ প্রকার প্রবেশ করা হয়েছে৷</translation>
 <translation id="3982375475032951137">কয়েকটি সহজ ধাপে আপনার ব্রাউজার সেট-আপ করুন</translation>
-<translation id="3983400541576569538">কিছু অ্যাপের ডেটার মুছে যেতে পারে</translation>
+<translation id="3983400541576569538">কিছু অ্যাপের ডেটা মুছে যেতে পারে</translation>
 <translation id="3983586614702900908">একটি অজানা বিক্রেতা থেকে ডিভাইসগুলি</translation>
 <translation id="3984159763196946143">ডেমো মোড শুরু করা যায়নি</translation>
 <translation id="3987348946546879621">ডেটা বাঁচানো হয়েছে</translation>
@@ -2673,7 +2672,7 @@
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />"-এর নতুনতম সংস্করনটি অক্ষম হয়েছে কারণ এটির আরও বেশি অনুমতির প্রয়োজন৷</translation>
 <translation id="5187295959347858724">আপনি এখন <ph name="SHORT_PRODUCT_NAME" />এ প্রবেশ করেছেন৷ আপনার বুকমার্ক, ইতিহাস এবং অন্য সেটিংস আপনার Google অ্যাকাউন্টে সমন্বিত করা হচ্ছে৷</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
-<translation id="5187892128515678283">টগল চালু করার মাধ্যমে Linux এর মাধ্যমে একটি ইউএসবি ডিভাইস শেয়ার করুন। শুধুমাত্র ডিভাইসটি বিচ্ছিন্ন না হওয়া পর্যন্ত শেয়ারিং বজায় থাকবে।</translation>
+<translation id="5187892128515678283">টগল চালু করার মাধ্যমে Linux-এর মাধ্যমে একটি ইউএসবি ডিভাইস শেয়ার করুন। ডিভাইসটি খুলে না নেওয়া পর্যন্ত শেয়ারিং বজায় থাকবে।</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> একাধিক ফাইল ডাউনলোড করতে চায়</translation>
 <translation id="5204673965307125349">ডিভাইস পাওয়ারওয়াশ করে আবার চেষ্টা করুন।</translation>
 <translation id="5204967432542742771">পাসওয়ার্ড প্রবেশ করান</translation>
@@ -2727,7 +2726,7 @@
 <translation id="5265797726250773323">ইনস্টল করার সময় সমস্যা</translation>
 <translation id="5266113311903163739">শংসাকরণ কর্তৃপক্ষ আমদানি ত্রুটি</translation>
 <translation id="5269977353971873915">প্রিন্ট ব্যর্থ হয়েছে</translation>
-<translation id="5270167208902136840">আরও <ph name="NUMBER_OF_MORE_APPS" /> অ্যাপ দেখুন</translation>
+<translation id="5270167208902136840">আরও <ph name="NUMBER_OF_MORE_APPS" />টি অ্যাপ দেখুন</translation>
 <translation id="5272654297705279635">কাস্টম সেটিংস</translation>
 <translation id="5275352920323889391">কুকুর</translation>
 <translation id="5275973617553375938">Google ড্রাইভ থেকে উদ্ধার করা ফাইলগুলি</translation>
@@ -4610,7 +4609,7 @@
 <translation id="8116972784401310538">&amp;বুকমার্ক পরিচালক</translation>
 <translation id="8117620576188476503">স্টেটাস ট্রে থেকে সংযোগ, আপডেট এবং সেটিংস পরিচালনা করুন। কীবোর্ডের সাহায্যে এখানে পেতে Alt + Shift + S বোতামটি টিপুন।</translation>
 <translation id="8118362518458010043">Chrome এটি বন্ধ করেছে। এই এক্সটেনশনটি নিরাপদ নাও হতে পারে।</translation>
-<translation id="8118488170956489476">আপনার সংগঠনের মাধ্যমে <ph name="BEGIN_LINK" />ব্রাউজার ম্যানেজ করা হয়<ph name="END_LINK" /></translation>
+<translation id="8118488170956489476">আপনার সংগঠন <ph name="BEGIN_LINK" />ব্রাউজার ম্যানেজ করছে<ph name="END_LINK" /></translation>
 <translation id="8118860139461251237">আপনার ডাউনলোডগুলি পরিচালনা করুন</translation>
 <translation id="8123590694679414600">আপনার সিঙ্ক পাসফ্রেজ দিয়ে <ph name="TIME" />-এ ডেটা এনক্রিপ্ট করা হয়েছিল। এতে Google Pay-এর পেমেন্ট পদ্ধতি ও ঠিকানা অন্তর্ভুক্ত থাকে না।</translation>
 <translation id="81238879832906896">হলুদ এবং সাদা ফুল</translation>

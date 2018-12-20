@@ -392,7 +392,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4099578267706723511">Pomozte Chrome zlepšovat – posílejte Googlu statistiky využití a zprávy o selhání.</translation>
 <translation id="410351446219883937">Automatické přehrávání</translation>
 <translation id="4113030288477039509">Spravováno vaším administrátorem</translation>
-<translation id="411332046216682877">Klepnutím sem rychle spustíte vyhledávání</translation>
 <translation id="4116038641877404294">Stáhněte si stránky k použití offline</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d záložka}few{%1$d záložky}many{%1$d záložky}other{%1$d záložek}}</translation>
 <translation id="4149994727733219643">Zjednodušené zobrazení webových stránek</translation>
@@ -646,7 +645,6 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="5962718611393537961">Klepnutím sbalíte</translation>
 <translation id="5990142338020175451">Více osobních služeb Google, např. lepší návrhy stránek</translation>
 <translation id="6000066717592683814">Ponechat Google</translation>
-<translation id="6001839398155993679">Jdeme na to</translation>
 <translation id="6005538289190791541">Navrhované heslo</translation>
 <translation id="6039379616847168523">Přejít na další kartu</translation>
 <translation id="6040143037577758943">Zavřít</translation>
@@ -1048,7 +1046,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="9070377983101773829">Spustit hlasové vyhledávání</translation>
 <translation id="9071742570345586758">Chcete-li zobrazit obsah pro virtuální realitu, nainstalujte si Služby VR Google</translation>
 <translation id="9074336505530349563">Chcete-li od Googlu získat personalizované návrhy obsahu, zapněte synchronizaci</translation>
-<translation id="9079796397681444569">Pomocí tlačítek v dolní části obrazovky v Chromu snadno přejdete kamkoliv</translation>
 <translation id="9080642952018487277">Přejít do soukromého režimu</translation>
 <translation id="9086455579313502267">Nelze získat přístup k síti.</translation>
 <translation id="9099018167121903954">Staženo: <ph name="KILOBYTES" /> kB</translation>

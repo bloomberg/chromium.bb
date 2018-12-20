@@ -392,7 +392,6 @@ Kljub temu niste nevidni. Če uporabljate zasebni način, ne skrijete brskanja p
 <translation id="4099578267706723511">Pomagajte izboljšati Chrome s pošiljanjem statističnih podatkov o uporabi in poročil o zrušitvah Googlu.</translation>
 <translation id="410351446219883937">Samodejno predvajanje</translation>
 <translation id="4113030288477039509">Upravlja skrbnik</translation>
-<translation id="411332046216682877">Dotaknite se tukaj, če želite hitro začeti iskanje</translation>
 <translation id="4116038641877404294">Prenesite strani, če jih želite uporabljati brez povezave</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d zaznamek}one{%1$d zaznamek}two{%1$d zaznamka}few{%1$d zaznamki}other{%1$d zaznamkov}}</translation>
 <translation id="4149994727733219643">Poenostavljen pogled za spletne strani</translation>
@@ -645,7 +644,6 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="5962718611393537961">Dotik za strnitev</translation>
 <translation id="5990142338020175451">Bolj osebne Googlove storitve, kot so boljši predlogi strani</translation>
 <translation id="6000066717592683814">Ohrani Google</translation>
-<translation id="6001839398155993679">Pa začnimo</translation>
 <translation id="6005538289190791541">Predlagano geslo</translation>
 <translation id="6039379616847168523">Premik na naslednji zavihek</translation>
 <translation id="6040143037577758943">Zapri</translation>
@@ -1047,7 +1045,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="9070377983101773829">Začni glasovno iskanje</translation>
 <translation id="9071742570345586758">Če si želite ogledati vsebino v navidezni resničnosti, namestite Googlove storitve za navidezno resničnost</translation>
 <translation id="9074336505530349563">Če želite prejemati prilagojeno vsebino, ki jo predlaga Google, se prijavite in vklopite sinhronizacijo</translation>
-<translation id="9079796397681444569">Gumbi na dnu zaslona omogočajo preprosto pomikanje po Chromu</translation>
 <translation id="9080642952018487277">Vklop zasebnega načina</translation>
 <translation id="9086455579313502267">Dostop do omrežja ni mogoč</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB prenesenih datotek</translation>
