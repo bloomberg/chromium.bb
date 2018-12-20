@@ -7,6 +7,7 @@
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -28,9 +29,11 @@ struct WebBackgroundFetchRegistration;
 // access to its properties, options, and enables them to abort the fetch.
 class BackgroundFetchRegistration final
     : public EventTargetWithInlineData,
+      public ActiveScriptWrappable<BackgroundFetchRegistration>,
       public blink::mojom::blink::BackgroundFetchRegistrationObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_PRE_FINALIZER(BackgroundFetchRegistration, Dispose);
+  USING_GARBAGE_COLLECTED_MIXIN(BackgroundFetchRegistration);
 
  public:
   BackgroundFetchRegistration(
@@ -62,6 +65,11 @@ class BackgroundFetchRegistration final
                   mojom::BackgroundFetchResult result,
                   mojom::BackgroundFetchFailureReason failure_reason) override;
   void OnRecordsUnavailable() override;
+
+  // TODO(crbug.com/875201): Update logic so this is called only if there are
+  // non-zero |observers_|.
+  void OnRequestCompleted(mojom::blink::FetchAPIRequestPtr request,
+                          mojom::blink::FetchAPIResponsePtr response) override;
 
   // Web Exposed attribute defined in the IDL file. Corresponds to the
   // |developer_id| used elsewhere in the codebase.
@@ -98,6 +106,9 @@ class BackgroundFetchRegistration final
   void Dispose();
 
   void Trace(blink::Visitor* visitor) override;
+
+  // Keeps the object alive until there are non-zero number of |observers_|.
+  bool HasPendingActivity() const final;
 
  private:
   void DidAbort(ScriptPromiseResolver* resolver,
@@ -137,6 +148,7 @@ class BackgroundFetchRegistration final
   bool records_available_ = true;
   mojom::BackgroundFetchResult result_;
   mojom::BackgroundFetchFailureReason failure_reason_;
+  HeapVector<Member<BackgroundFetchRecord>> observers_;
 
   mojo::Binding<blink::mojom::blink::BackgroundFetchRegistrationObserver>
       observer_binding_;

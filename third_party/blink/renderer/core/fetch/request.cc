@@ -677,7 +677,7 @@ String Request::method() const {
   return request_->Method();
 }
 
-KURL Request::url() const {
+const KURL& Request::url() const {
   return request_->Url();
 }
 

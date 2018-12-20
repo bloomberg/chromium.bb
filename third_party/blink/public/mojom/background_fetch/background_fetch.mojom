@@ -112,6 +112,11 @@ interface BackgroundFetchRegistrationObserver {
   // fetch is no longer available. The mojo connection will be closed after
   // this call.
   OnRecordsUnavailable();
+
+  // Notifies the BackgroundFetchRegistration that the |request| has completed.
+  // |response| points to the completed response, if any.
+  OnRequestCompleted(FetchAPIRequest request,
+                     FetchAPIResponse? response);
 };
 
 // Interface for Background Fetch tasks. Lives in the browser process.

@@ -13,6 +13,8 @@
 #include "content/browser/background_fetch/background_fetch_registration_notifier.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom.h"
 
 namespace content {
 
@@ -278,6 +280,14 @@ void BackgroundFetchScheduler::OnRegistrationLoadedAtStartup(
         base::BindOnce(&BackgroundFetchJobController::MarkRequestAsComplete,
                        active_controller_->GetWeakPtr()));
   }
+}
+
+void BackgroundFetchScheduler::OnRequestCompleted(
+    const std::string& unique_id,
+    blink::mojom::FetchAPIRequestPtr request,
+    blink::mojom::FetchAPIResponsePtr response) {
+  registration_notifier_->NotifyRequestCompleted(unique_id, std::move(request),
+                                                 std::move(response));
 }
 
 void BackgroundFetchScheduler::AbortFetches(

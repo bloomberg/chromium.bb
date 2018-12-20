@@ -9,8 +9,10 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,6 +24,7 @@ namespace {
 const char kDeveloperId[] = "my-fetch";
 const char kPrimaryUniqueId[] = "7e57ab1e-c0de-a150-ca75-1e75f005ba11";
 const char kSecondaryUniqueId[] = "bb48a9fb-c21f-4c2d-a9ae-58bd48a9fb53";
+const char kURL[] = "https://example.com";
 
 constexpr uint64_t kDownloadTotal = 1;
 constexpr uint64_t kDownloaded = 2;
@@ -29,6 +32,9 @@ constexpr uint64_t kDownloaded = 2;
 class TestRegistrationObserver
     : public blink::mojom::BackgroundFetchRegistrationObserver {
  public:
+  using CompletedRequests =
+      std::vector<std::pair<blink::mojom::FetchAPIRequestPtr,
+                            blink::mojom::FetchAPIResponsePtr>>;
   struct ProgressUpdate {
     ProgressUpdate(uint64_t upload_total,
                    uint64_t uploaded,
@@ -71,6 +77,12 @@ class TestRegistrationObserver
     return progress_updates_;
   }
 
+  // Returns the vector of completed request notifications received by this
+  // observer.
+  const CompletedRequests& completed_requests() const {
+    return completed_requests_;
+  }
+
   bool records_available() const { return records_available_; }
 
   // blink::mojom::BackgroundFetchRegistrationObserver implementation.
@@ -87,8 +99,14 @@ class TestRegistrationObserver
 
   void OnRecordsUnavailable() override { records_available_ = false; }
 
+  void OnRequestCompleted(blink::mojom::FetchAPIRequestPtr request,
+                          blink::mojom::FetchAPIResponsePtr response) override {
+    completed_requests_.emplace_back(std::move(request), std::move(response));
+  }
+
  private:
   std::vector<ProgressUpdate> progress_updates_;
+  CompletedRequests completed_requests_;
   mojo::Binding<blink::mojom::BackgroundFetchRegistrationObserver> binding_;
   bool records_available_ = true;
 
@@ -113,6 +131,14 @@ class BackgroundFetchRegistrationNotifierTest : public ::testing::Test {
 
   void NotifyRecordsUnavailable(const std::string& unique_id) {
     notifier_->NotifyRecordsUnavailable(unique_id);
+    task_runner_->RunUntilIdle();
+  }
+
+  void NotifyRequestCompleted(const std::string& unique_id,
+                              blink::mojom::FetchAPIRequestPtr request,
+                              blink::mojom::FetchAPIResponsePtr response) {
+    notifier_->NotifyRequestCompleted(unique_id, std::move(request),
+                                      std::move(response));
     task_runner_->RunUntilIdle();
   }
 
@@ -246,6 +272,30 @@ TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyRecordsUnavailable) {
 
   NotifyRecordsUnavailable(kPrimaryUniqueId);
   ASSERT_FALSE(observer->records_available());
+}
+
+TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyRequestCompleted) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kBackgroundFetchAccessActiveFetches);
+  ASSERT_TRUE(base::FeatureList::IsEnabled(
+      features::kBackgroundFetchAccessActiveFetches));
+  auto observer = std::make_unique<TestRegistrationObserver>();
+  notifier_->AddObserver(kPrimaryUniqueId, observer->GetPtr());
+
+  ASSERT_EQ(observer->completed_requests().size(), 0u);
+
+  auto request = blink::mojom::FetchAPIRequest::New();
+  request->url = GURL(kURL);
+
+  NotifyRequestCompleted(kPrimaryUniqueId, std::move(request),
+                         /* response */ nullptr);
+
+  ASSERT_EQ(observer->completed_requests().size(), 1u);
+
+  auto& received_pair = observer->completed_requests()[0];
+  EXPECT_EQ(received_pair.first->url, GURL(kURL));
+  EXPECT_TRUE(received_pair.second.is_null());
 }
 
 }  // namespace

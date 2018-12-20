@@ -5,6 +5,11 @@
 #include "content/browser/background_fetch/background_fetch_registration_notifier.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
+#include "base/feature_list.h"
+#include "content/common/background_fetch/background_fetch_types.h"
+#include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 
 namespace content {
 
@@ -51,6 +56,27 @@ void BackgroundFetchRegistrationNotifier::NotifyRecordsUnavailable(
 
     // No more notifications will be sent to the observers from this point.
     it = observers_.erase(it);
+  }
+}
+
+void BackgroundFetchRegistrationNotifier::NotifyRequestCompleted(
+    const std::string& unique_id,
+    blink::mojom::FetchAPIRequestPtr request,
+    blink::mojom::FetchAPIResponsePtr response) {
+  // TODO(crbug.com/875201): Remove this once we have lazy notification in
+  // place.
+  if (!base::FeatureList::IsEnabled(
+          features::kBackgroundFetchAccessActiveFetches) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures)) {
+    return;
+  }
+
+  auto range = observers_.equal_range(unique_id);
+  for (auto it = range.first; it != range.second; ++it) {
+    it->second->OnRequestCompleted(
+        BackgroundFetchSettledFetch::CloneRequest(request),
+        BackgroundFetchSettledFetch::CloneResponse(response));
   }
 }
 
