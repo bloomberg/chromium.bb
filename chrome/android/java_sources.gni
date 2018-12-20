@@ -2541,6 +2541,7 @@ chrome_junit_test_java_sources = [
 if (enable_usage_stats) {
   chrome_junit_test_java_sources += [
     "junit/src/org/chromium/chrome/browser/usage_stats/EventTrackerTest.java",
+    "junit/src/org/chromium/chrome/browser/usage_stats/PageViewObserverTest.java",
   ]
 }
 
