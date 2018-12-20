@@ -2774,7 +2774,8 @@ void RenderFrameImpl::DidFailProvisionalLoad(
     return;
 
   // Notify the browser that we failed a provisional load with an error.
-  SendFailedProvisionalLoad(document_loader->GetRequest(), error, frame_);
+  SendFailedProvisionalLoad(document_loader->GetRequest().HttpMethod().Ascii(),
+                            error, frame_);
 
   if (!ShouldDisplayErrorPageForFailedLoad(error.reason(), error.url()))
     return;
@@ -2814,8 +2815,11 @@ void RenderFrameImpl::LoadNavigationErrorPage(
   if (error_page_content) {
     error_html = error_page_content.value();
   } else {
-    GetContentClient()->renderer()->PrepareErrorPage(this, failed_request,
-                                                     error, &error_html);
+    GetContentClient()->renderer()->PrepareErrorPage(
+        this, error, failed_request.HttpMethod().Ascii(),
+        failed_request.GetCacheMode() ==
+            blink::mojom::FetchCacheMode::kBypassCache,
+        &error_html);
   }
 
   // Make sure we never show errors in view source mode.
@@ -3427,7 +3431,8 @@ void RenderFrameImpl::CommitFailedNavigation(
     if (frame_->GetProvisionalDocumentLoader()) {
       // TODO(dgozman): why do we need to notify browser in response
       // to it's own request?
-      SendFailedProvisionalLoad(failed_request, error, frame_);
+      SendFailedProvisionalLoad(failed_request.HttpMethod().Ascii(), error,
+                                frame_);
     }
   }
 
@@ -3436,11 +3441,17 @@ void RenderFrameImpl::CommitFailedNavigation(
     error_html = error_page_content.value();
     // We don't need the actual error page content, but still call this
     // for any possible side effects.
-    GetContentClient()->renderer()->PrepareErrorPage(this, failed_request,
-                                                     error, nullptr);
+    GetContentClient()->renderer()->PrepareErrorPage(
+        this, error, failed_request.HttpMethod().Ascii(),
+        failed_request.GetCacheMode() ==
+            blink::mojom::FetchCacheMode::kBypassCache,
+        nullptr);
   } else {
-    GetContentClient()->renderer()->PrepareErrorPage(this, failed_request,
-                                                     error, &error_html);
+    GetContentClient()->renderer()->PrepareErrorPage(
+        this, error, failed_request.HttpMethod().Ascii(),
+        failed_request.GetCacheMode() ==
+            blink::mojom::FetchCacheMode::kBypassCache,
+        &error_html);
   }
 
   // Make sure we never show errors in view source mode.
@@ -4541,8 +4552,11 @@ void RenderFrameImpl::RunScriptsAtDocumentReady(bool document_is_empty) {
     WebURL unreachable_url = frame_->GetDocument().Url();
     std::string error_html;
     GetContentClient()->renderer()->PrepareErrorPageForHttpStatusError(
-        this, document_loader->GetRequest(), unreachable_url, http_status_code,
-        &error_html);
+        this, unreachable_url,
+        document_loader->GetRequest().HttpMethod().Ascii(),
+        document_loader->GetRequest().GetCacheMode() ==
+            blink::mojom::FetchCacheMode::kBypassCache,
+        http_status_code, &error_html);
     // This call may run scripts, e.g. via the beforeunload event, and possibly
     // delete |this|.
     LoadNavigationErrorPage(document_loader,
@@ -4578,8 +4592,8 @@ void RenderFrameImpl::DidFailLoad(const WebURLError& error,
 
   const WebURLRequest& failed_request = document_loader->GetRequest();
   base::string16 error_description;
-  GetContentClient()->renderer()->GetErrorDescription(failed_request, error,
-                                                      &error_description);
+  GetContentClient()->renderer()->GetErrorDescription(
+      error, failed_request.HttpMethod().Ascii(), &error_description);
   Send(new FrameHostMsg_DidFailLoadWithError(
       routing_id_, failed_request.Url(), error.reason(), error_description));
 }
@@ -6877,18 +6891,16 @@ void RenderFrameImpl::SendUpdateState() {
       routing_id_, SingleHistoryItemToPageState(current_history_item_)));
 }
 
-void RenderFrameImpl::SendFailedProvisionalLoad(
-    const blink::WebURLRequest& request,
-    const WebURLError& error,
-    blink::WebLocalFrame* frame) {
+void RenderFrameImpl::SendFailedProvisionalLoad(const std::string& http_method,
+                                                const WebURLError& error,
+                                                blink::WebLocalFrame* frame) {
   bool show_repost_interstitial =
-      (error.reason() == net::ERR_CACHE_MISS &&
-       base::EqualsASCII(request.HttpMethod().Utf16(), "POST"));
+      error.reason() == net::ERR_CACHE_MISS && http_method == "POST";
 
   FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
   params.error_code = error.reason();
   GetContentClient()->renderer()->GetErrorDescription(
-      request, error, &params.error_description);
+      error, http_method, &params.error_description);
   params.url = error.url(),
   params.showing_repost_interstitial = show_repost_interstitial;
   Send(new FrameHostMsg_DidFailProvisionalLoadWithError(routing_id_, params));

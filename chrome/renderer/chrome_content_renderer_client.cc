@@ -1162,58 +1162,39 @@ bool ChromeContentRendererClient::ShouldTrackUseCounter(const GURL& url) {
 
 void ChromeContentRendererClient::PrepareErrorPage(
     content::RenderFrame* render_frame,
-    const WebURLRequest& failed_request,
     const blink::WebURLError& web_error,
+    const std::string& http_method,
+    bool ignoring_cache,
     std::string* error_html) {
-  PrepareErrorPageInternal(
-      render_frame, failed_request,
-      error_page::Error::NetError(web_error.url(), web_error.reason(),
-                                  web_error.has_copy_in_cache()),
-      error_html);
+  NetErrorHelper::Get(render_frame)
+      ->PrepareErrorPage(
+          error_page::Error::NetError(web_error.url(), web_error.reason(),
+                                      web_error.has_copy_in_cache()),
+          http_method == "POST", ignoring_cache, error_html);
 }
 
 void ChromeContentRendererClient::PrepareErrorPageForHttpStatusError(
     content::RenderFrame* render_frame,
-    const WebURLRequest& failed_request,
     const GURL& unreachable_url,
+    const std::string& http_method,
+    bool ignoring_cache,
     int http_status,
     std::string* error_html) {
-  PrepareErrorPageInternal(
-      render_frame, failed_request,
-      error_page::Error::HttpError(unreachable_url, http_status), error_html);
+  NetErrorHelper::Get(render_frame)
+      ->PrepareErrorPage(
+          error_page::Error::HttpError(unreachable_url, http_status),
+          http_method == "POST", ignoring_cache, error_html);
 }
 
 void ChromeContentRendererClient::GetErrorDescription(
-    const blink::WebURLRequest& failed_request,
-    const blink::WebURLError& error,
+    const blink::WebURLError& web_error,
+    const std::string& http_method,
     base::string16* error_description) {
-  GetErrorDescriptionInternal(
-      failed_request,
-      error_page::Error::NetError(error.url(), error.reason(),
-                                  error.has_copy_in_cache()),
-      error_description);
-}
-
-void ChromeContentRendererClient::PrepareErrorPageInternal(
-    content::RenderFrame* render_frame,
-    const WebURLRequest& failed_request,
-    const error_page::Error& error,
-    std::string* error_html) {
-  bool is_post = failed_request.HttpMethod().Ascii() == "POST";
-  bool is_ignoring_cache =
-      failed_request.GetCacheMode() == FetchCacheMode::kBypassCache;
-  NetErrorHelper::Get(render_frame)
-      ->PrepareErrorPage(error, is_post, is_ignoring_cache, error_html);
-}
-
-void ChromeContentRendererClient::GetErrorDescriptionInternal(
-    const blink::WebURLRequest& failed_request,
-    const error_page::Error& error,
-    base::string16* error_description) {
-  bool is_post = failed_request.HttpMethod().Ascii() == "POST";
+  error_page::Error error = error_page::Error::NetError(
+      web_error.url(), web_error.reason(), web_error.has_copy_in_cache());
   if (error_description) {
     *error_description = error_page::LocalizedError::GetErrorDetails(
-        error.domain(), error.reason(), is_post);
+        error.domain(), error.reason(), http_method == "POST");
   }
 }
 

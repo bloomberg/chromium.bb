@@ -29,15 +29,16 @@ class ShellContentRendererClient : public ContentRendererClient {
   void RenderViewCreated(RenderView* render_view) override;
   bool HasErrorPage(int http_status_code) override;
   void PrepareErrorPage(RenderFrame* render_frame,
-                        const blink::WebURLRequest& failed_request,
                         const blink::WebURLError& error,
+                        const std::string& http_method,
+                        bool ignoring_cache,
                         std::string* error_html) override;
-  void PrepareErrorPageForHttpStatusError(
-      content::RenderFrame* render_frame,
-      const blink::WebURLRequest& failed_request,
-      const GURL& unreachable_url,
-      int http_status,
-      std::string* error_html) override;
+  void PrepareErrorPageForHttpStatusError(content::RenderFrame* render_frame,
+                                          const GURL& unreachable_url,
+                                          const std::string& http_method,
+                                          bool ignoring_cache,
+                                          int http_status,
+                                          std::string* error_html) override;
 
   // TODO(mkwst): These toggle based on the kEnablePepperTesting flag. Do we
   // need that outside of web tests?
