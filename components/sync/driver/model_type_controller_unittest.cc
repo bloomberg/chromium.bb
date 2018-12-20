@@ -128,6 +128,17 @@ class TestModelTypeConfigurer : public ModelTypeConfigurer {
   std::unique_ptr<ModelTypeProcessor> processor_;
 };
 
+// Class used to expose ReportModelError() publicly.
+class TestModelTypeController : public ModelTypeController {
+ public:
+  explicit TestModelTypeController(
+      std::unique_ptr<ModelTypeControllerDelegate> delegate_on_disk)
+      : ModelTypeController(kTestModelType, std::move(delegate_on_disk)) {}
+  ~TestModelTypeController() override {}
+
+  using ModelTypeController::ReportModelError;
+};
+
 ConfigureContext MakeConfigureContext() {
   ConfigureContext context;
   context.authenticated_account_id = kAccountId;
@@ -140,9 +151,8 @@ ConfigureContext MakeConfigureContext() {
 class ModelTypeControllerTest : public testing::Test {
  public:
   ModelTypeControllerTest()
-      : controller_(kTestModelType,
-                    std::make_unique<ForwardingModelTypeControllerDelegate>(
-                        &mock_delegate_)) {}
+      : controller_(std::make_unique<ForwardingModelTypeControllerDelegate>(
+            &mock_delegate_)) {}
 
   ~ModelTypeControllerTest() {
     // Since we use ModelTypeProcessorProxy, which posts tasks, make sure we
@@ -210,14 +220,14 @@ class ModelTypeControllerTest : public testing::Test {
 
   MockDelegate* delegate() { return &mock_delegate_; }
   TestModelTypeProcessor* processor() { return &processor_; }
-  DataTypeController* controller() { return &controller_; }
+  TestModelTypeController* controller() { return &controller_; }
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
   NiceMock<MockDelegate> mock_delegate_;
   TestModelTypeConfigurer configurer_;
   TestModelTypeProcessor processor_;
-  ModelTypeController controller_;
+  TestModelTypeController controller_;
 };
 
 TEST_F(ModelTypeControllerTest, InitialState) {
@@ -352,8 +362,7 @@ TEST_F(ModelTypeControllerTest, StopDuringFailedState) {
         error_handler = request.error_handler;
       });
 
-  base::MockCallback<DataTypeController::ModelLoadCallback> load_models_done;
-  controller()->LoadModels(MakeConfigureContext(), load_models_done.Get());
+  controller()->LoadModels(MakeConfigureContext(), base::DoNothing());
   ASSERT_EQ(DataTypeController::MODEL_STARTING, controller()->state());
   ASSERT_TRUE(error_handler);
   // Mimic completion for OnSyncStarting(), with an error.
@@ -379,7 +388,11 @@ TEST_F(ModelTypeControllerTest, StopWhileStarting) {
         start_callback = std::move(callback);
       });
 
-  controller()->LoadModels(MakeConfigureContext(), base::DoNothing());
+  // A cancelled start never issues completion for the load.
+  base::MockCallback<DataTypeController::ModelLoadCallback> load_models_done;
+  EXPECT_CALL(load_models_done, Run(_, _)).Times(0);
+
+  controller()->LoadModels(MakeConfigureContext(), load_models_done.Get());
   ASSERT_EQ(DataTypeController::MODEL_STARTING, controller()->state());
   ASSERT_TRUE(start_callback);
 
@@ -472,6 +485,73 @@ TEST_F(ModelTypeControllerTest, StopWhileErrorInFlight) {
   EXPECT_EQ(DataTypeController::FAILED, controller()->state());
   histogram_tester.ExpectTotalCount(kStartFailuresHistogram, 0);
   histogram_tester.ExpectTotalCount(kRunFailuresHistogram, 0);
+}
+
+// Test emulates a controller subclass issuing ReportModelError() (e.g. custom
+// passphrase was enabled and the type should be disabled) while the delegate
+// is starting.
+TEST_F(ModelTypeControllerTest, ReportErrorWhileStarting) {
+  ModelTypeControllerDelegate::StartCallback start_callback;
+  EXPECT_CALL(*delegate(), OnSyncStarting(_, _))
+      .WillOnce([&](const DataTypeActivationRequest& request,
+                    ModelTypeControllerDelegate::StartCallback callback) {
+        start_callback = std::move(callback);
+      });
+
+  controller()->LoadModels(MakeConfigureContext(), base::DoNothing());
+  ASSERT_EQ(DataTypeController::MODEL_STARTING, controller()->state());
+  ASSERT_TRUE(start_callback);
+
+  // The delegate should receive no OnSyncStopping() while starting despite
+  // the subclass issuing ReportModelError().
+  EXPECT_CALL(*delegate(), OnSyncStopping(_)).Times(0);
+  controller()->ReportModelError(syncer::SyncError::DATATYPE_POLICY_ERROR,
+                                 ModelError(FROM_HERE, "Test error"));
+  EXPECT_EQ(DataTypeController::FAILED, controller()->state());
+
+  // Mimic completion for OnSyncStarting().
+  EXPECT_CALL(*delegate(), OnSyncStopping(_));
+  std::move(start_callback).Run(std::make_unique<DataTypeActivationResponse>());
+  EXPECT_EQ(DataTypeController::FAILED, controller()->state());
+}
+
+// Test emulates a controller subclass issuing ReportModelError() (e.g. custom
+// passphrase was enabled and the type should be disabled) AND the controller
+// being requested to stop, both of which are received while the delegate is
+// starting.
+TEST_F(ModelTypeControllerTest, StopAndReportErrorWhileStarting) {
+  ModelTypeControllerDelegate::StartCallback start_callback;
+  EXPECT_CALL(*delegate(), OnSyncStarting(_, _))
+      .WillOnce([&](const DataTypeActivationRequest& request,
+                    ModelTypeControllerDelegate::StartCallback callback) {
+        start_callback = std::move(callback);
+      });
+
+  controller()->LoadModels(MakeConfigureContext(), base::DoNothing());
+  ASSERT_EQ(DataTypeController::MODEL_STARTING, controller()->state());
+  ASSERT_TRUE(start_callback);
+
+  // The controller receives Stop() which should be deferred until
+  // OnSyncStarting() finishes or ReportModelError() is called.
+  base::MockCallback<base::OnceClosure> stop_completion;
+  EXPECT_CALL(stop_completion, Run()).Times(0);
+  EXPECT_CALL(*delegate(), OnSyncStopping(_)).Times(0);
+  controller()->Stop(DISABLE_SYNC, stop_completion.Get());
+  EXPECT_EQ(DataTypeController::STOPPING, controller()->state());
+
+  // The subclass issues ReportModelError(), which should be treated as stop
+  // completion, but shouldn't lead to an immediate OnSyncStopping() until
+  // loading completes.
+  EXPECT_CALL(stop_completion, Run());
+  EXPECT_CALL(*delegate(), OnSyncStopping(_)).Times(0);
+  controller()->ReportModelError(syncer::SyncError::DATATYPE_POLICY_ERROR,
+                                 ModelError(FROM_HERE, "Test error"));
+  EXPECT_EQ(DataTypeController::FAILED, controller()->state());
+
+  // Mimic completion for OnSyncStarting().
+  EXPECT_CALL(*delegate(), OnSyncStopping(_));
+  std::move(start_callback).Run(std::make_unique<DataTypeActivationResponse>());
+  EXPECT_EQ(DataTypeController::FAILED, controller()->state());
 }
 
 // Tests that StorageOption is honored when the controller has been constructed

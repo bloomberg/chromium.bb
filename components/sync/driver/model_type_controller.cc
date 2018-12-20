@@ -97,69 +97,11 @@ void ModelTypeController::LoadModels(
 
   // Ask the delegate to actually start the datatype.
   delegate_->OnSyncStarting(
-      request, base::BindOnce(&ModelTypeController::OnProcessorStarted,
+      request, base::BindOnce(&ModelTypeController::OnDelegateStarted,
                               base::AsWeakPtr(this)));
 }
 
 void ModelTypeController::BeforeLoadModels(ModelTypeConfigurer* configurer) {}
-
-void ModelTypeController::LoadModelsDone(ConfigureResult result,
-                                         const SyncError& error) {
-  DCHECK(CalledOnValidThread());
-  DCHECK_NE(NOT_RUNNING, state_);
-
-  if (state_ == STOPPING) {
-    DCHECK(!model_stop_callbacks_.empty());
-
-    // We make a copy in case running the callbacks has side effects and
-    // modifies the vector, although we don't expect that in practice.
-    std::vector<StopCallback> model_stop_callbacks =
-        std::move(model_stop_callbacks_);
-    DCHECK(model_stop_callbacks_.empty());
-
-    if (IsSuccessfulResult(result)) {
-      state_ = NOT_RUNNING;
-      DVLOG(1) << "Successful sync start completion received late for "
-               << ModelTypeToString(type())
-               << ", it has been stopped meanwhile";
-      delegate_->OnSyncStopping(model_stop_metadata_fate_);
-    } else {
-      state_ = FAILED;
-      DVLOG(1) << "Sync start completion error received late for "
-               << ModelTypeToString(type())
-               << ", it has been stopped meanwhile";
-    }
-
-    delegate_ = nullptr;
-
-    for (StopCallback& stop_callback : model_stop_callbacks) {
-      std::move(stop_callback).Run();
-    }
-    return;
-  }
-
-  if (IsSuccessfulResult(result)) {
-    DCHECK_EQ(MODEL_STARTING, state_);
-    state_ = MODEL_LOADED;
-    DVLOG(1) << "Sync start completed for " << ModelTypeToString(type());
-  } else {
-    state_ = FAILED;
-  }
-
-  if (model_load_callback_) {
-    model_load_callback_.Run(type(), error);
-  }
-}
-
-void ModelTypeController::OnProcessorStarted(
-    std::unique_ptr<DataTypeActivationResponse> activation_response) {
-  DCHECK(CalledOnValidThread());
-  // Hold on to the activation context until ActivateDataType is called.
-  if (state_ == MODEL_STARTING) {
-    activation_response_ = std::move(activation_response);
-  }
-  LoadModelsDone(OK, SyncError());
-}
 
 void ModelTypeController::RegisterWithBackend(
     base::OnceCallback<void(bool)> set_downloaded,
@@ -174,7 +116,7 @@ void ModelTypeController::RegisterWithBackend(
   std::move(set_downloaded)
       .Run(activation_response_->model_type_state.initial_sync_done());
   // Pass activation context to ModelTypeRegistry, where ModelTypeWorker gets
-  // created and connected with ModelTypeProcessor.
+  // created and connected with the delegate (processor).
   configurer->ActivateNonBlockingDataType(type(),
                                           std::move(activation_response_));
   activated_ = true;
@@ -261,16 +203,17 @@ void ModelTypeController::Stop(ShutdownReason shutdown_reason,
       DCHECK(model_stop_callbacks_.empty());
       DLOG(WARNING) << "Deferring stop for " << ModelTypeToString(type())
                     << " because it's still starting";
+      model_load_callback_.Reset();
       model_stop_metadata_fate_ = metadata_fate;
       model_stop_callbacks_.push_back(std::move(callback));
-      // The actual stop will be executed in LoadModelsDone(), when the starting
-      // process is finished.
+      // The actual stop will be executed when the starting process is finished.
       state_ = STOPPING;
       break;
 
     case MODEL_LOADED:
     case RUNNING:
       DVLOG(1) << "Stopping sync for " << ModelTypeToString(type());
+      model_load_callback_.Reset();
       state_ = NOT_RUNNING;
       delegate_->OnSyncStopping(metadata_fate);
       delegate_ = nullptr;
@@ -343,12 +286,10 @@ void ModelTypeController::ReportModelError(SyncError::ErrorType error_type,
       NOTREACHED();
   }
 
-  // TODO(jkrcal, mastiz): We should make it more strict and call
-  // LoadModelsDone() only if the model is actually starting as treat more cases
-  // above with an early return (as NOT_RUNNING).
-  LoadModelsDone(UNRECOVERABLE_ERROR, SyncError(error.location(), error_type,
-                                                error.message(), type()));
-  DCHECK_EQ(state_, FAILED);
+  state_ = FAILED;
+
+  TriggerCompletionCallbacks(
+      SyncError(error.location(), error_type, error.message(), type()));
 }
 
 void ModelTypeController::RecordStartFailure() const {
@@ -369,6 +310,66 @@ void ModelTypeController::RecordRunFailure() const {
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures2",
                             ModelTypeToHistogramInt(type()),
                             static_cast<int>(MODEL_TYPE_COUNT));
+}
+
+void ModelTypeController::OnDelegateStarted(
+    std::unique_ptr<DataTypeActivationResponse> activation_response) {
+  DCHECK(CalledOnValidThread());
+
+  switch (state_) {
+    case STOPPING:
+      DCHECK(!model_stop_callbacks_.empty());
+      DCHECK(!model_load_callback_);
+      state_ = NOT_RUNNING;
+      FALLTHROUGH;
+    case FAILED:
+      DVLOG(1) << "Successful sync start completion received late for "
+               << ModelTypeToString(type())
+               << ", it has been stopped meanwhile";
+      delegate_->OnSyncStopping(model_stop_metadata_fate_);
+      delegate_ = nullptr;
+      break;
+    case MODEL_STARTING:
+      DCHECK(model_stop_callbacks_.empty());
+      // Hold on to the activation context until ActivateDataType is called.
+      activation_response_ = std::move(activation_response);
+      state_ = MODEL_LOADED;
+      DVLOG(1) << "Sync start completed for " << ModelTypeToString(type());
+      break;
+    case MODEL_LOADED:
+    case RUNNING:
+    case NOT_RUNNING:
+    case ASSOCIATING:
+      NOTREACHED() << " type " << ModelTypeToString(type()) << " state "
+                   << StateToString(state_);
+  }
+
+  TriggerCompletionCallbacks(SyncError());
+}
+
+void ModelTypeController::TriggerCompletionCallbacks(const SyncError& error) {
+  DCHECK(CalledOnValidThread());
+
+  if (model_load_callback_) {
+    DCHECK(model_stop_callbacks_.empty());
+    DCHECK(state_ == MODEL_LOADED || state_ == FAILED);
+
+    model_load_callback_.Run(type(), error);
+  } else if (!model_stop_callbacks_.empty()) {
+    // State FAILED is possible if an error occurred during STOPPING, either
+    // because the load failed or because ReportModelError() was called
+    // directly by a subclass.
+    DCHECK(state_ == NOT_RUNNING || state_ == FAILED);
+
+    // We make a copy in case running the callbacks has side effects and
+    // modifies the vector, although we don't expect that in practice.
+    std::vector<StopCallback> model_stop_callbacks =
+        std::move(model_stop_callbacks_);
+    DCHECK(model_stop_callbacks_.empty());
+    for (StopCallback& stop_callback : model_stop_callbacks) {
+      std::move(stop_callback).Run();
+    }
+  }
 }
 
 }  // namespace syncer
