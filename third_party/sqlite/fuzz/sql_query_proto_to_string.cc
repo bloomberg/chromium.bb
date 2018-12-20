@@ -2271,8 +2271,10 @@ CONV_FN(CreateIndex, ci) {
   ret += "(";
   ret += IndexedColumnListToString(ci.icol_list());
   ret += ")";
-  if (ci.has_where())
+  if (ci.has_where()) {
+    ret += " ";
     ret += WhereStatementToString(ci.where());
+  }
   return ret;
 }
 
