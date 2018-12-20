@@ -94,11 +94,6 @@ class NotReady(Base):
   pass
 
 
-class TooManyPlaceholders(Base):
-  '''Too many placeholders for elements of the same type.'''
-  pass
-
-
 class MismatchingPlaceholders(Base):
   '''Placeholders do not match.'''
   pass

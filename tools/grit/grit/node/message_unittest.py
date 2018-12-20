@@ -14,6 +14,7 @@ import StringIO
 if __name__ == '__main__':
   sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
+from grit import exception
 from grit import tclib
 from grit import util
 from grit.node import message
@@ -96,6 +97,30 @@ class MessageUnittest(unittest.TestCase):
     msg.SetReplaceEllipsis(True)
     content = msg.Translate('en')
     self.failUnlessEqual(u'A...B.... %s\u2026 B\u2026 C\u2026', content)
+
+  def testPlaceholderHasTooManyExamples(self):
+    try:
+      util.ParseGrdForUnittest("""\
+        <messages>
+        <message name="IDS_FOO" desc="foo">
+          Hi <ph name="NAME">$1<ex>Joi</ex><ex>Joy</ex></ph>
+        </message>
+        </messages>""")
+    except exception.TooManyExamples:
+      return
+    self.fail('Should have gotten exception')
+
+  def testPlaceholderHasInvalidName(self):
+    try:
+      util.ParseGrdForUnittest("""\
+        <messages>
+        <message name="IDS_FOO" desc="foo">
+          Hi <ph name="ABC!">$1</ph>
+        </message>
+        </messages>""")
+    except exception.InvalidPlaceholderName:
+      return
+    self.fail('Should have gotten exception')
 
 
 if __name__ == '__main__':
