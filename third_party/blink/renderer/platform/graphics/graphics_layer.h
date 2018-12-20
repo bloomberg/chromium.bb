@@ -192,7 +192,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   }
 
   void SetFilters(CompositorFilterOperations);
-  void SetBackdropFilters(CompositorFilterOperations);
+  void SetBackdropFilters(CompositorFilterOperations, const gfx::RectF&);
 
   void SetStickyPositionConstraint(const cc::LayerStickyPositionConstraint&);
 

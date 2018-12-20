@@ -276,11 +276,16 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   gfx::PointF filters_origin() const { return inputs_.filters_origin; }
 
   // Set or get the list of filters that should be applied to the content this
-  // layer and its subtree will be drawn into. The effect is clipped to only
-  // apply directly behind this layer and its subtree.
+  // layer and its subtree will be drawn into. The effect is clipped by
+  // backdrop_filter_bounds.
   void SetBackdropFilters(const FilterOperations& filters);
   const FilterOperations& backdrop_filters() const {
     return inputs_.backdrop_filters;
+  }
+
+  void SetBackdropFilterBounds(const gfx::RectF& backdrop_filter_bounds);
+  const gfx::RectF& backdrop_filter_bounds() const {
+    return inputs_.backdrop_filter_bounds;
   }
 
   void SetBackdropFilterQuality(const float quality);
@@ -892,6 +897,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     FilterOperations filters;
     FilterOperations backdrop_filters;
+    gfx::RectF backdrop_filter_bounds;
     gfx::PointF filters_origin;
     float backdrop_filter_quality;
 

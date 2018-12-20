@@ -153,6 +153,10 @@ const FilterOperations& RenderSurfaceImpl::BackdropFilters() const {
   return OwningEffectNode()->backdrop_filters;
 }
 
+const gfx::RectF& RenderSurfaceImpl::BackdropFilterBounds() const {
+  return OwningEffectNode()->backdrop_filter_bounds;
+}
+
 bool RenderSurfaceImpl::TrilinearFiltering() const {
   return OwningEffectNode()->trilinear_filtering;
 }
@@ -375,6 +379,7 @@ std::unique_ptr<viz::RenderPass> RenderSurfaceImpl::CreateRenderPass() {
                draw_properties_.screen_space_transform);
   pass->filters = Filters();
   pass->backdrop_filters = BackdropFilters();
+  pass->backdrop_filter_bounds = BackdropFilterBounds();
   pass->generate_mipmap = TrilinearFiltering();
   pass->cache_render_pass = ShouldCacheRenderSurface();
   pass->has_damage_from_contributing_content =

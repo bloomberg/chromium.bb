@@ -723,6 +723,7 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
     effect_node.filters = next_effect->Filter().AsCcFilterOperations();
     effect_node.backdrop_filters =
         next_effect->BackdropFilter().AsCcFilterOperations();
+    effect_node.backdrop_filter_bounds = next_effect->BackdropFilterBounds();
     effect_node.filters_origin = next_effect->FiltersOrigin();
     effect_node.transform_id =
         EnsureCompositorTransformNode(next_effect->LocalTransformSpace());

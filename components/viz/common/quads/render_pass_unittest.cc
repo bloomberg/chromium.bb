@@ -14,6 +14,7 @@
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
 
 namespace viz {
@@ -28,6 +29,7 @@ struct RenderPassSize {
   gfx::Transform transform_to_root_target;
   cc::FilterOperations filters;
   cc::FilterOperations backdrop_filters;
+  gfx::RectF backdrop_filter_bounds;
   gfx::ColorSpace color_space;
   bool has_transparent_background;
   bool generate_mipmap;
@@ -50,6 +52,8 @@ static void CompareRenderPassLists(const RenderPassList& expected_list,
     EXPECT_EQ(expected->damage_rect, actual->damage_rect);
     EXPECT_EQ(expected->filters, actual->filters);
     EXPECT_EQ(expected->backdrop_filters, expected->backdrop_filters);
+    EXPECT_EQ(expected->backdrop_filter_bounds,
+              expected->backdrop_filter_bounds);
     EXPECT_EQ(expected->has_transparent_background,
               actual->has_transparent_background);
     EXPECT_EQ(expected->generate_mipmap, actual->generate_mipmap);
@@ -78,6 +82,7 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
   filters.Append(cc::FilterOperation::CreateOpacityFilter(0.5));
   cc::FilterOperations backdrop_filters;
   backdrop_filters.Append(cc::FilterOperation::CreateInvertFilter(1.0));
+  gfx::RectF backdrop_filter_bounds = gfx::RectF(10, 20, 130, 140);
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
   bool has_transparent_background = true;
   bool cache_render_pass = false;
@@ -86,7 +91,7 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
 
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
-               filters, backdrop_filters, color_space,
+               filters, backdrop_filters, backdrop_filter_bounds, color_space,
                has_transparent_background, cache_render_pass,
                has_damage_from_contributing_content, generate_mipmap);
   pass->copy_requests.push_back(CopyOutputRequest::CreateStubForTesting());
@@ -109,6 +114,8 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
   EXPECT_EQ(pass->damage_rect, copy->damage_rect);
   EXPECT_EQ(pass->filters, copy->filters);
   EXPECT_EQ(pass->backdrop_filters, copy->backdrop_filters);
+  EXPECT_EQ(gfx::ToNearestRect(pass->backdrop_filter_bounds),
+            gfx::ToNearestRect(copy->backdrop_filter_bounds));
   EXPECT_EQ(pass->has_transparent_background, copy->has_transparent_background);
   EXPECT_EQ(pass->generate_mipmap, copy->generate_mipmap);
   EXPECT_EQ(0u, copy->quad_list.size());
@@ -132,6 +139,7 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
   filters.Append(cc::FilterOperation::CreateOpacityFilter(0.5));
   cc::FilterOperations backdrop_filters;
   backdrop_filters.Append(cc::FilterOperation::CreateInvertFilter(1.0));
+  gfx::RectF backdrop_filter_bounds = gfx::RectF(10, 20, 130, 140);
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateXYZD50();
   bool has_transparent_background = true;
   bool cache_render_pass = false;
@@ -140,9 +148,9 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
 
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetAll(id, output_rect, damage_rect, transform_to_root, filters,
-               backdrop_filters, color_space, has_transparent_background,
-               cache_render_pass, has_damage_from_contributing_content,
-               generate_mipmap);
+               backdrop_filters, backdrop_filter_bounds, color_space,
+               has_transparent_background, cache_render_pass,
+               has_damage_from_contributing_content, generate_mipmap);
 
   // Two quads using one shared state.
   SharedQuadState* shared_state1 = pass->CreateAndAppendSharedQuadState();
@@ -184,6 +192,7 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
   contrib_filters.Append(cc::FilterOperation::CreateSepiaFilter(0.5));
   cc::FilterOperations contrib_backdrop_filters;
   contrib_backdrop_filters.Append(cc::FilterOperation::CreateSaturateFilter(1));
+  gfx::RectF contrib_backdrop_filter_bounds = gfx::RectF(20, 30, 140, 150);
   gfx::ColorSpace contrib_color_space = gfx::ColorSpace::CreateSCRGBLinear();
   bool contrib_has_transparent_background = true;
   bool contrib_cache_render_pass = false;
@@ -191,12 +200,12 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
   bool contrib_generate_mipmap = false;
 
   std::unique_ptr<RenderPass> contrib = RenderPass::Create();
-  contrib->SetAll(contrib_id, contrib_output_rect, contrib_damage_rect,
-                  contrib_transform_to_root, contrib_filters,
-                  contrib_backdrop_filters, contrib_color_space,
-                  contrib_has_transparent_background, contrib_cache_render_pass,
-                  contrib_has_damage_from_contributing_content,
-                  contrib_generate_mipmap);
+  contrib->SetAll(
+      contrib_id, contrib_output_rect, contrib_damage_rect,
+      contrib_transform_to_root, contrib_filters, contrib_backdrop_filters,
+      contrib_backdrop_filter_bounds, contrib_color_space,
+      contrib_has_transparent_background, contrib_cache_render_pass,
+      contrib_has_damage_from_contributing_content, contrib_generate_mipmap);
 
   SharedQuadState* contrib_shared_state =
       contrib->CreateAndAppendSharedQuadState();
@@ -238,6 +247,7 @@ TEST(RenderPassTest, CopyAllWithCulledQuads) {
   filters.Append(cc::FilterOperation::CreateOpacityFilter(0.5));
   cc::FilterOperations backdrop_filters;
   backdrop_filters.Append(cc::FilterOperation::CreateInvertFilter(1.0));
+  gfx::RectF backdrop_filter_bounds = gfx::RectF(10, 20, 130, 140);
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSCRGBLinear();
   bool has_transparent_background = true;
   bool cache_render_pass = false;
@@ -246,9 +256,9 @@ TEST(RenderPassTest, CopyAllWithCulledQuads) {
 
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetAll(id, output_rect, damage_rect, transform_to_root, filters,
-               backdrop_filters, color_space, has_transparent_background,
-               cache_render_pass, has_damage_from_contributing_content,
-               generate_mipmap);
+               backdrop_filters, backdrop_filter_bounds, color_space,
+               has_transparent_background, cache_render_pass,
+               has_damage_from_contributing_content, generate_mipmap);
 
   // A shared state with a quad.
   SharedQuadState* shared_state1 = pass->CreateAndAppendSharedQuadState();

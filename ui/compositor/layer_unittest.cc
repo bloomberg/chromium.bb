@@ -1577,6 +1577,85 @@ TEST_F(LayerWithRealCompositorTest, ModifyHierarchy) {
   EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img2, cc::ExactPixelComparator(true)));
 }
 
+// Checks that basic background blur is working.
+TEST_F(LayerWithRealCompositorTest, BackgroundBlur) {
+  GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(200, 200),
+                                   viz::LocalSurfaceIdAllocation());
+  // l0
+  //  +-l1
+  //  +-l2
+  std::unique_ptr<Layer> l0(
+      CreateColorLayer(SK_ColorRED, gfx::Rect(0, 0, 200, 200)));
+  std::unique_ptr<Layer> l1(
+      CreateColorLayer(SK_ColorGREEN, gfx::Rect(100, 100, 100, 100)));
+  SkColor blue_with_alpha = SkColorSetARGB(40, 10, 20, 200);
+  std::unique_ptr<Layer> l2(
+      CreateColorLayer(blue_with_alpha, gfx::Rect(50, 50, 100, 100)));
+  l2->SetFillsBoundsOpaquely(false);
+  l2->SetBackgroundBlur(15);
+
+  base::FilePath ref_img1 = test_data_dir().AppendASCII("BackgroundBlur1.png");
+  base::FilePath ref_img2 = test_data_dir().AppendASCII("BackgroundBlur2.png");
+  SkBitmap bitmap;
+
+  l0->Add(l1.get());
+  l0->Add(l2.get());
+  DrawTree(l0.get());
+  ReadPixels(&bitmap);
+  ASSERT_FALSE(bitmap.empty());
+  // WritePNGFile(bitmap, ref_img1, false);
+  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img1, cc::ExactPixelComparator(true)));
+
+  l0->StackAtTop(l1.get());
+  DrawTree(l0.get());
+  ReadPixels(&bitmap);
+  ASSERT_FALSE(bitmap.empty());
+  // WritePNGFile(bitmap, ref_img2, false);
+  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img2, cc::ExactPixelComparator(true)));
+}
+
+// Checks that background blur bounds rect gets properly updated when device
+// scale changes.
+TEST_F(LayerWithRealCompositorTest, BackgroundBlurChangeDeviceScale) {
+  GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(200, 200),
+                                   viz::LocalSurfaceIdAllocation());
+  // l0
+  //  +-l1
+  //  +-l2
+  std::unique_ptr<Layer> l0(
+      CreateColorLayer(SK_ColorRED, gfx::Rect(0, 0, 200, 200)));
+  std::unique_ptr<Layer> l1(
+      CreateColorLayer(SK_ColorGREEN, gfx::Rect(100, 100, 100, 100)));
+  SkColor blue_with_alpha = SkColorSetARGB(40, 10, 20, 200);
+  std::unique_ptr<Layer> l2(
+      CreateColorLayer(blue_with_alpha, gfx::Rect(50, 50, 100, 100)));
+  l2->SetFillsBoundsOpaquely(false);
+  l2->SetBackgroundBlur(15);
+
+  base::FilePath ref_img1 = test_data_dir().AppendASCII("BackgroundBlur1.png");
+  base::FilePath ref_img2 =
+      test_data_dir().AppendASCII("BackgroundBlur1_zoom.png");
+  SkBitmap bitmap;
+
+  l0->Add(l1.get());
+  l0->Add(l2.get());
+  DrawTree(l0.get());
+  ReadPixels(&bitmap);
+  ASSERT_FALSE(bitmap.empty());
+  // See LayerWithRealCompositorTest.BackgroundBlur test to rewrite this
+  // baseline.
+  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img1, cc::ExactPixelComparator(true)));
+
+  // Now change the scale, and make sure the bounds are still correct.
+  GetCompositor()->SetScaleAndSize(2.0f, gfx::Size(200, 200),
+                                   viz::LocalSurfaceIdAllocation());
+  DrawTree(l0.get());
+  ReadPixels(&bitmap);
+  ASSERT_FALSE(bitmap.empty());
+  // WritePNGFile(bitmap, ref_img2, false);
+  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img2, cc::ExactPixelComparator(true)));
+}
+
 // It is really hard to write pixel test on text rendering,
 // due to different font appearance.
 // So we choose to check result only on Windows.

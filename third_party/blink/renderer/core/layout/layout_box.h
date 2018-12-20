@@ -1361,7 +1361,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // container, applying adjustments for the given container offset,
   // scrolling, container clipping, and transform (including container
   // perspective).
-  bool MapVisualRectToContainer(const LayoutObject* container_bject,
+  bool MapVisualRectToContainer(const LayoutObject* container_object,
                                 const LayoutPoint& container_offset,
                                 const LayoutObject* ancestor,
                                 VisualRectFlags,

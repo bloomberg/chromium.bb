@@ -1132,7 +1132,8 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
   SkAutoCanvasRestore auto_canvas_restore_for_save_layer(current_canvas_,
                                                          false /* do_save */);
   current_canvas_->saveLayer(rec);
-  // TODO(masonfreed): need to draw the backdrop once first here
+  // TODO(916317): need to draw the backdrop once first here. Also need to
+  // pull the backdrop-filter bounds rect in and clip the backdrop image.
   current_canvas_->drawImageRect(content_image, content_rect, dest_visible_rect,
                                  paint);
 }

@@ -512,6 +512,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // Recomputes and sets to |cc_layer_|.
   void RecomputeDrawsContentAndUVRect();
   void RecomputePosition();
+  void RecomputeBackdropBounds();
 
   // Set all filters which got applied to the layer.
   void SetLayerFilters();

@@ -2548,6 +2548,7 @@ class RendererPixelTestWithBackgroundFilter
     std::unique_ptr<RenderPass> filter_pass = CreateTestRenderPass(
         filter_pass_id, filter_pass_layer_rect_, transform_to_root);
     filter_pass->backdrop_filters = this->backdrop_filters_;
+    filter_pass->backdrop_filter_bounds = this->backdrop_filter_bounds_;
 
     // A non-visible quad in the filtering render pass.
     {
@@ -2628,6 +2629,7 @@ class RendererPixelTestWithBackgroundFilter
 
   RenderPassList pass_list_;
   cc::FilterOperations backdrop_filters_;
+  gfx::RectF backdrop_filter_bounds_;
   gfx::Transform filter_pass_to_target_transform_;
   gfx::Rect filter_pass_layer_rect_;
 };
@@ -2641,10 +2643,14 @@ TYPED_TEST_CASE(RendererPixelTestWithBackgroundFilter,
 
 TYPED_TEST(RendererPixelTestWithBackgroundFilter, InvertFilter) {
   this->backdrop_filters_.Append(cc::FilterOperation::CreateInvertFilter(1.f));
-
   this->filter_pass_layer_rect_ = gfx::Rect(this->device_viewport_size_);
   this->filter_pass_layer_rect_.Inset(12, 14, 16, 18);
-
+  // The backdrop_filter_bounds will apply within the layer's coordinate space,
+  // so the clipping bounds should be 0,0 WxH, not
+  // this->filter_pass_layer_rect_.
+  this->backdrop_filter_bounds_ =
+      gfx::RectF(0, 0, this->filter_pass_layer_rect_.width(),
+                 this->filter_pass_layer_rect_.height());
   this->SetUpRenderPassList();
   EXPECT_TRUE(this->RunPixelTest(
       &this->pass_list_,
@@ -3065,10 +3071,10 @@ TEST_F(GLRendererPixelTest, TrilinearFiltering) {
       ScaleToCeiledSize(this->device_viewport_size_, 4.0f));
   bool generate_mipmap = true;
   std::unique_ptr<RenderPass> child_pass = RenderPass::Create();
-  child_pass->SetAll(child_pass_id, child_pass_rect, child_pass_rect,
-                     transform_to_root, cc::FilterOperations(),
-                     cc::FilterOperations(), gfx::ColorSpace::CreateSRGB(),
-                     false, false, false, generate_mipmap);
+  child_pass->SetAll(
+      child_pass_id, child_pass_rect, child_pass_rect, transform_to_root,
+      cc::FilterOperations(), cc::FilterOperations(), gfx::RectF(),
+      gfx::ColorSpace::CreateSRGB(), false, false, false, generate_mipmap);
 
   gfx::Rect red_rect(child_pass_rect);
   // Small enough red rect that linear filtering will miss it but large enough

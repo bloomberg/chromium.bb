@@ -36,6 +36,8 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackdropFilterBlur) {
   filters.Append(FilterOperation::CreateBlurFilter(
       2.f, SkBlurImageFilter::kClamp_TileMode));
   blur->SetBackdropFilters(filters);
+  gfx::RectF backdrop_filter_bounds(gfx::SizeF(blur->bounds()));
+  blur->SetBackdropFilterBounds(backdrop_filter_bounds);
 
 #if defined(OS_WIN) || defined(ARCH_CPU_ARM64)
   // Windows and ARM64 have 436 pixels off by 1: crbug.com/259915
@@ -77,6 +79,8 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackdropFilterBlurOutsets) {
   filters.Append(FilterOperation::CreateBlurFilter(
       5.f, SkBlurImageFilter::kClamp_TileMode));
   blur->SetBackdropFilters(filters);
+  gfx::RectF backdrop_filter_bounds(gfx::SizeF(blur->bounds()));
+  blur->SetBackdropFilterBounds(backdrop_filter_bounds);
 
 #if defined(OS_WIN) || defined(_MIPS_ARCH_LOONGSON) || defined(ARCH_CPU_ARM64)
 #if defined(OS_WIN) || defined(ARCH_CPU_ARM64)
@@ -143,6 +147,8 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackdropFilterBlurOffAxis) {
   filters.Append(FilterOperation::CreateBlurFilter(
       2.f, SkBlurImageFilter::kClamp_TileMode));
   blur->SetBackdropFilters(filters);
+  // TODO(916311): Fix clipping for 3D transformed elements.
+  blur->SetBackdropFilterBounds(gfx::RectF());
 
 #if defined(OS_WIN) || defined(ARCH_CPU_ARM64)
 #if defined(OS_WIN)
@@ -420,6 +426,7 @@ class ImageScaledBackdropFilter : public LayerTreeHostFiltersPixelTest {
     FilterOperations filters;
     filters.Append(FilterOperation::CreateGrayscaleFilter(1.0f));
     filter->SetBackdropFilters(filters);
+    filter->SetBackdropFilterBounds(gfx::RectF());
 
 #if defined(OS_WIN) || defined(_MIPS_ARCH_LOONGSON) || defined(ARCH_CPU_ARM64)
 #if defined(OS_WIN)
@@ -495,6 +502,11 @@ class ImageBackdropFilter : public LayerTreeHostFiltersPixelTest {
     filters.Append(FilterOperation::CreateBlurFilter(
         5.0f, SkBlurImageFilter::kClamp_TileMode));
     filter_layer->SetBackdropFilters(filters);
+    // TODO(916311): Adding filter bounds here should work, but it clips
+    // the corner of the red box.
+    // gfx::RectF backdrop_filter_bounds(gfx::SizeF(filter_layer->bounds()));
+    gfx::RectF backdrop_filter_bounds;
+    filter_layer->SetBackdropFilterBounds(backdrop_filter_bounds);
 
     background->AddChild(filter_layer);
 
@@ -613,6 +625,8 @@ class ZoomFilterTest : public LayerTreeHostFiltersPixelTest {
     border_filters.Append(
         FilterOperation::CreateZoomFilter(2.f /* zoom */, 0 /* inset */));
     border_edge_zoom->SetBackdropFilters(border_filters);
+    gfx::RectF border_filter_bounds(gfx::SizeF(border_edge_zoom->bounds()));
+    border_edge_zoom->SetBackdropFilterBounds(border_filter_bounds);
     root->AddChild(border_edge_zoom);
 
     // Test a zoom that extends past the edge of the screen.
@@ -622,6 +636,8 @@ class ZoomFilterTest : public LayerTreeHostFiltersPixelTest {
     top_filters.Append(
         FilterOperation::CreateZoomFilter(2.f /* zoom */, 0 /* inset */));
     top_edge_zoom->SetBackdropFilters(top_filters);
+    gfx::RectF top_filter_bounds(gfx::SizeF(top_edge_zoom->bounds()));
+    top_edge_zoom->SetBackdropFilterBounds(top_filter_bounds);
     root->AddChild(top_edge_zoom);
 
     // Test a zoom that is fully within the screen.
@@ -631,6 +647,8 @@ class ZoomFilterTest : public LayerTreeHostFiltersPixelTest {
     mid_filters.Append(
         FilterOperation::CreateZoomFilter(2.f /* zoom */, 0 /* inset */));
     contained_zoom->SetBackdropFilters(mid_filters);
+    gfx::RectF mid_filter_bounds(gfx::SizeF(contained_zoom->bounds()));
+    contained_zoom->SetBackdropFilterBounds(mid_filter_bounds);
     root->AddChild(contained_zoom);
 
 #if defined(OS_WIN)
@@ -1074,6 +1092,7 @@ class BackdropFilterWithDeviceScaleFactorTest
     filters.Append(FilterOperation::CreateReferenceFilter(
         sk_make_sp<OffsetPaintFilter>(0, 80, nullptr)));
     filtered->SetBackdropFilters(filters);
+    filtered->SetBackdropFilterBounds(gfx::RectF());
     root->AddChild(filtered);
 
     // This should appear as a grid of 4 100x100 squares which are:

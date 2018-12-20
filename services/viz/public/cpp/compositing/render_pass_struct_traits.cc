@@ -22,6 +22,7 @@ bool StructTraits<viz::mojom::RenderPassDataView,
       !data.ReadTransformToRootTarget(&(*out)->transform_to_root_target) ||
       !data.ReadFilters(&(*out)->filters) ||
       !data.ReadBackdropFilters(&(*out)->backdrop_filters) ||
+      !data.ReadBackdropFilterBounds(&(*out)->backdrop_filter_bounds) ||
       !data.ReadColorSpace(&(*out)->color_space) ||
       !data.ReadCopyRequests(&(*out)->copy_requests)) {
     return false;

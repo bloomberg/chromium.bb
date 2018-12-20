@@ -315,8 +315,11 @@ void CompositedLayerMapping::UpdateFilters() {
 }
 
 void CompositedLayerMapping::UpdateBackdropFilters() {
-  graphics_layer_->SetBackdropFilters(
-      OwningLayer().CreateCompositorFilterOperationsForBackdropFilter());
+  gfx::RectF backdrop_filter_bounds;
+  CompositorFilterOperations backdrop_filters =
+      OwningLayer().CreateCompositorFilterOperationsForBackdropFilter(
+          &backdrop_filter_bounds);
+  graphics_layer_->SetBackdropFilters(backdrop_filters, backdrop_filter_bounds);
 }
 
 void CompositedLayerMapping::UpdateStickyConstraints(

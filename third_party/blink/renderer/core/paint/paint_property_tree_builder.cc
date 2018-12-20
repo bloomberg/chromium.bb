@@ -1078,7 +1078,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
 
         layer->UpdateCompositorFilterOperationsForFilter(state.filter);
         layer->UpdateCompositorFilterOperationsForBackdropFilter(
-            state.backdrop_filter);
+            state.backdrop_filter, &state.backdrop_filter_bounds);
         layer->ClearFilterOnEffectNodeDirty();
       }
 

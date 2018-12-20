@@ -210,6 +210,7 @@ struct GLRenderer::DrawRenderPassDrawQuadParams {
   gfx::Transform quad_to_target_transform;
   const cc::FilterOperations* filters = nullptr;
   const cc::FilterOperations* backdrop_filters = nullptr;
+  const gfx::RectF* backdrop_filter_bounds = nullptr;
 
   // Whether the texture to be sampled from needs to be flipped.
   bool source_needs_flip = false;
@@ -711,7 +712,9 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
     const cc::FilterOperations* filters,
     const cc::FilterOperations* backdrop_filters,
     const gfx::QuadF* clip_region,
+    const gfx::RectF* backdrop_filter_bounds_input,
     bool use_aa,
+    gfx::Rect* backdrop_filter_bounds,
     gfx::Rect* unclipped_rect) {
   gfx::QuadF scaled_region;
   if (!GetScaledRegion(quad->rect, clip_region, &scaled_region)) {
@@ -720,6 +723,17 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
 
   gfx::Rect backdrop_rect = gfx::ToEnclosingRect(cc::MathUtil::MapClippedRect(
       contents_device_transform, scaled_region.BoundingBox()));
+  gfx::Rect orig_backdrop_rect = backdrop_rect;
+
+  // |backdrop_filter_bounds_input| can (rarely) be nullptr, if the render pass
+  // was not found. For example, some GLRenderer tests can trigger this case,
+  // e.g. GLRendererShaderTest.DrawRenderPassQuadShaderPermutations.
+  if (backdrop_filter_bounds_input) {
+    *backdrop_filter_bounds =
+        gfx::ToEnclosingRect(*backdrop_filter_bounds_input);
+  } else {
+    *backdrop_filter_bounds = gfx::Rect();
+  }
 
   if (ShouldApplyBackgroundFilters(quad, backdrop_filters)) {
     SkMatrix matrix;
@@ -749,6 +763,8 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   *unclipped_rect = backdrop_rect;
   backdrop_rect.Intersect(MoveFromDrawToWindowSpace(
       current_frame()->current_render_pass->output_rect));
+  backdrop_filter_bounds->Offset(orig_backdrop_rect.origin() -
+                                 backdrop_rect.origin());
   return backdrop_rect;
 }
 
@@ -813,7 +829,8 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
     uint32_t background_texture,
     const gfx::Rect& rect,
     const gfx::Rect& unclipped_rect,
-    const float backdrop_filter_quality) {
+    const float backdrop_filter_quality,
+    const gfx::Rect& backdrop_filter_bounds) {
   DCHECK(ShouldApplyBackgroundFilters(quad, backdrop_filters));
   auto use_gr_context = ScopedUseGrContext::Create(this);
 
@@ -823,14 +840,11 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
 
   // Update the backdrop filter to include "regular" filters and opacity.
   cc::FilterOperations backdrop_filters_plus_effects = *backdrop_filters;
-  bool need_prepaint = false;
   if (regular_filters) {
-    need_prepaint = true;
     for (const auto& filter_op : regular_filters->operations())
       backdrop_filters_plus_effects.Append(filter_op);
   }
   if (quad->shared_quad_state->opacity < 1.0) {
-    need_prepaint = true;
     backdrop_filters_plus_effects.Append(
         cc::FilterOperation::CreateOpacityFilter(
             quad->shared_quad_state->opacity));
@@ -876,27 +890,44 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
   // Big filters can sometimes fallback to CPU. Therefore, we need
   // to disable subnormal floats for performance and security reasons.
   cc::ScopedSubnormalFloatDisabler disabler;
-  SkMatrix local_matrix;
-  local_matrix.setScale(quad->filters_scale.x() * backdrop_filter_quality,
-                        quad->filters_scale.y() * backdrop_filter_quality);
 
-  SkPaint paint;
-  paint.setImageFilter(filter->makeWithLocalMatrix(local_matrix));
-  surface->getCanvas()->translate(-quality_adjusted_rect.x(),
-                                  -quality_adjusted_rect.y());
-  if (need_prepaint) {
-    // If we have filters or opacity applied, in addition to the backdrop-
-    // filter, then first paint the backdrop (unfiltered) at full opacity. The
-    // backdrop-filtered content will not be blended with the backdrop later, it
-    // will be rastered over the top.
-    surface->getCanvas()->drawImageRect(
-        src_image, SkRect::MakeWH(rect.width(), rect.height()),
-        RectToSkRect(quality_adjusted_rect), nullptr);
+  // First paint the backdrop at full opacity. The backdrop-filtered content
+  // will not be blended with the backdrop later, it will be rastered over the
+  // top. So we need to paint it here, unfiltered.
+  gfx::RectF src_image_rect = gfx::RectF(rect.width(), rect.height());
+  SkRect dest_rect = RectToSkRect(gfx::Rect(quality_adjusted_rect.size()));
+  surface->getCanvas()->drawImageRect(src_image, RectFToSkRect(src_image_rect),
+                                      dest_rect, nullptr);
+
+  // Can't crop here, because the crop rect is applied prior to filtering, and
+  // some filters move pixels and need to process the full image.
+  // TODO(916314): this could probably be put back to just using
+  // drawImageRect on the unfiltered image, with &paint last argument to handle
+  // filters and opacity. Would be cleaner.
+  SkIPoint offset;
+  SkIRect subset;
+  sk_sp<SkImage> filtered_image = SkiaHelper::ApplyImageFilter(
+      src_image, src_image_rect, src_image_rect, gfx::Vector2dF(1, 1),
+      std::move(filter), &offset, &subset, quad->filters_origin, true);
+
+  if (!backdrop_filter_bounds.IsEmpty()) {
+    // Clip the filtered image to the bounding box of the element.
+    surface->getCanvas()->save();
+    gfx::RectF clip_rect_scaled = gfx::RectF(backdrop_filter_bounds);
+    clip_rect_scaled.Scale(backdrop_filter_quality);
+    SkRRect clip_rect =
+        SkRRect::MakeRectXY(RectFToSkRect(clip_rect_scaled), 0, 0);
+    surface->getCanvas()->clipRRect(clip_rect, SkClipOp::kIntersect,
+                                    true /* antialias */);
   }
-  // Then paint with the backdrop-filter, plus other filters and opacity.
-  surface->getCanvas()->drawImageRect(
-      src_image, SkRect::MakeWH(rect.width(), rect.height()),
-      RectToSkRect(quality_adjusted_rect), &paint);
+
+  // Now paint the pre-filtered image onto the canvas.
+  surface->getCanvas()->drawImageRect(filtered_image, subset, dest_rect,
+                                      nullptr);
+
+  if (!backdrop_filter_bounds.IsEmpty()) {
+    surface->getCanvas()->restore();
+  }
 
   // Flush the drawing before source texture read lock goes out of scope.
   // Skia API does not guarantee that when the SkImage goes out of scope,
@@ -925,7 +956,6 @@ void GLRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
   params.window_matrix = current_frame()->window_matrix;
   params.projection_matrix = current_frame()->projection_matrix;
   params.tex_coord_rect = quad->tex_coord_rect;
-  params.backdrop_filter_quality = quad->backdrop_filter_quality;
   if (bypass != render_pass_bypass_quads_.end()) {
     TileDrawQuad* tile_quad = &bypass->second;
     // The projection matrix used by GLRenderer has a flip.  As tile texture
@@ -986,6 +1016,9 @@ bool GLRenderer::InitializeRPDQParameters(
   local_matrix.postScale(quad->filters_scale.x(), quad->filters_scale.y());
   params->filters = FiltersForPass(quad->render_pass_id);
   params->backdrop_filters = BackgroundFiltersForPass(quad->render_pass_id);
+  params->backdrop_filter_bounds =
+      BackgroundFilterBoundsForPass(quad->render_pass_id);
+  params->backdrop_filter_quality = quad->backdrop_filter_quality;
   gfx::Rect dst_rect = params->filters
                            ? params->filters->MapRect(quad->rect, local_matrix)
                            : quad->rect;
@@ -1054,11 +1087,13 @@ void GLRenderer::UpdateRPDQShadersForBlending(
   if (params->use_shaders_for_blending) {
     // Compute a bounding box around the pixels that will be visible through
     // the quad.
+    gfx::Rect backdrop_filter_bounds_rect;
     gfx::Rect unclipped_rect;
     params->background_rect = GetBackdropBoundingBoxForRenderPassQuad(
         quad, params->contents_device_transform, params->filters,
-        params->backdrop_filters, params->clip_region, params->use_aa,
-        &unclipped_rect);
+        params->backdrop_filters, params->clip_region,
+        params->backdrop_filter_bounds, params->use_aa,
+        &backdrop_filter_bounds_rect, &unclipped_rect);
 
     if (!params->background_rect.IsEmpty()) {
       // The pixels from the filtered background should completely replace the
@@ -1078,7 +1113,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
         params->background_image = ApplyBackgroundFilters(
             quad, params->backdrop_filters, params->filters,
             params->background_texture, params->background_rect, unclipped_rect,
-            params->backdrop_filter_quality);
+            params->backdrop_filter_quality, backdrop_filter_bounds_rect);
         if (params->background_image) {
           params->background_image_id =
               GetGLTextureIDFromSkImage(params->background_image.get());
