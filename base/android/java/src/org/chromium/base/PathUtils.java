@@ -262,13 +262,4 @@ public abstract class PathUtils {
     public static String getExternalStorageDirectory() {
         return Environment.getExternalStorageDirectory().getAbsolutePath();
     }
-
-    /**
-     * @ return the path to the base apk.
-     */
-    @SuppressWarnings("unused")
-    @CalledByNative
-    public static String getPathToBaseApk() {
-      return ContextUtils.getApplicationContext().getApplicationInfo().sourceDir;
-    }
 }
