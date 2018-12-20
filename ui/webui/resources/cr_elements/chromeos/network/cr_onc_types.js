@@ -250,6 +250,13 @@ CrOnc.getActiveValue = function(property) {
   if ('SharedSetting' in property)
     return property['SharedSetting'];
 
+  // Effective, UserEditable or DeviceEditable properties may not have a value
+  // set.
+  if ('Effective' in property || 'UserEditable' in property ||
+      'DeviceEditable' in property) {
+    return undefined;
+  }
+
   console.error(
       'getActiveValue called on invalid ONC object: ' +
       JSON.stringify(property));
@@ -276,7 +283,11 @@ CrOnc.getStateOrActiveString = function(property) {
  * @return {boolean}
  */
 CrOnc.isSimpleProperty = function(property) {
-  for (const prop of ['Active', 'Effective', 'UserSetting', 'SharedSetting']) {
+  const requiredProperties = [
+    'Active', 'Effective', 'UserSetting', 'SharedSetting', 'UserEditable',
+    'DeviceEditable'
+  ];
+  for (const prop of requiredProperties) {
     if (prop in property)
       return true;
   }
@@ -298,21 +309,14 @@ CrOnc.getActiveProperties = function(properties) {
   for (let i = 0; i < keys.length; ++i) {
     const k = keys[i];
     const property = properties[k];
-    // Skip policy properties with no effective value.
-    // TODO(nikitapodguzov@ / raleksandrov@): Remove this when crbug.com/888959
-    // providing dummy values for password fields will be fixed.
-    if ('Effective' in property && !(property.Effective in property))
-      continue;
     let propertyValue;
-    if (CrOnc.isSimpleProperty(property))
-      propertyValue = CrOnc.getActiveValue(property);
-    else
-      propertyValue = CrOnc.getActiveProperties(property);
-    if (propertyValue == undefined) {
-      console.error(
-          'getActiveProperties called on invalid ONC object: ' +
-          JSON.stringify(properties));
-      return undefined;
+    if (typeof property === 'object') {
+      if (CrOnc.isSimpleProperty(property))
+        propertyValue = CrOnc.getActiveValue(property);
+      else
+        propertyValue = CrOnc.getActiveProperties(property);
+    } else {
+      propertyValue = property;
     }
     result[k] = propertyValue;
   }
