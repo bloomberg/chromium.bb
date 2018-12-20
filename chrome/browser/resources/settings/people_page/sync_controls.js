@@ -42,7 +42,10 @@ Polymer({
      * The current sync status, supplied by the parent.
      * @type {settings.SyncStatus}
      */
-    syncStatus: Object,
+    syncStatus: {
+      type: Object,
+      observer: 'syncStatusChanged_',
+    },
   },
 
   /** @private {?settings.SyncBrowserProxy} */
@@ -167,6 +170,23 @@ Polymer({
   /** @private */
   onCancelSyncClick_: function() {
     this.fire('sync-setup-cancel');
+  },
+
+  /** @private */
+  syncStatusChanged_: function(syncStatus) {
+    // When the sync controls are embedded, the parent has to take care of
+    // showing/hiding them.
+    if (settings.getCurrentRoute() != settings.routes.SYNC_ADVANCED ||
+        !syncStatus)
+      return;
+
+    // Navigate to main sync page when the sync controls page should *not* be
+    // available.
+    if (!syncStatus.signedIn || !!syncStatus.disabled ||
+        (!!syncStatus.hasError &&
+         syncStatus.statusAction !== settings.StatusAction.ENTER_PASSPHRASE)) {
+      settings.navigateTo(settings.routes.SYNC);
+    }
   },
 });
 })();
