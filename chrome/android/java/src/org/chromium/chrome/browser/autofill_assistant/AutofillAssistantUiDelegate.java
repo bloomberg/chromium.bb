@@ -506,6 +506,7 @@ class AutofillAssistantUiDelegate {
         // to display longer messages. Setting the max lines and hiding the feedback button are
         // hacks to give enough space to display long messages.
         mStatusMessageView.setMaxLines(4);
+        expandBottomSheet();
         mBottomBar.findViewById(R.id.feedback_button).setVisibility(View.GONE);
         hideOverlay();
         mTouchEventFilter.setVisibility(View.GONE);
