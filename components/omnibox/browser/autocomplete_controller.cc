@@ -219,11 +219,6 @@ AutocompleteController::AutocompleteController(
     providers_.push_back(new BuiltinProvider(provider_client_.get()));
   if (provider_types & AutocompleteProvider::TYPE_HISTORY_QUICK)
     providers_.push_back(new HistoryQuickProvider(provider_client_.get()));
-  if (provider_types & AutocompleteProvider::TYPE_HISTORY_URL) {
-    history_url_provider_ =
-        new HistoryURLProvider(provider_client_.get(), this);
-    providers_.push_back(history_url_provider_);
-  }
   if (provider_types & AutocompleteProvider::TYPE_KEYWORD) {
     keyword_provider_ = new KeywordProvider(provider_client_.get(), this);
     providers_.push_back(keyword_provider_);
@@ -264,6 +259,25 @@ AutocompleteController::AutocompleteController(
           provider_client_.get(), history_url_provider_,
           ClipboardRecentContent::GetInstance()));
     }
+  }
+
+  // It's important that the HistoryURLProvider gets added last, or at least
+  // after SearchProvider:
+  // AutocompleteController::Start() calls each providers' Start() function
+  // synchronously in the order they're in in providers_.
+  // - SearchProvider::Start() synchronously queries the history database's
+  //   keyword_search_terms and url table.
+  // - HistoryUrlProvider::Start schedules a background task that also accesses
+  //   the history database.
+  // If both db accesses happen concurrently, TSan complains.
+  // So put HistoryURLProvider later to make sure that SearchProvider is done
+  // doing its thing by the time the HistoryURLProvider task runs.
+  // (And hope that it completes before AutocompleteController::Start() is
+  // called the next time.)
+  if (provider_types & AutocompleteProvider::TYPE_HISTORY_URL) {
+    history_url_provider_ =
+        new HistoryURLProvider(provider_client_.get(), this);
+    providers_.push_back(history_url_provider_);
   }
 
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
