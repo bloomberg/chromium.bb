@@ -3110,6 +3110,7 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/SetUpStatement.java",
       "test/android/javatests/src/org/chromium/base/test/TestListInstrumentationRunListener.java",
       "test/android/javatests/src/org/chromium/base/test/TestTraceEvent.java",
+      "test/android/javatests/src/org/chromium/base/test/CommitSharedPreferencesTestRule.java",
       "test/android/javatests/src/org/chromium/base/test/params/ParameterizedRunner.java",
       "test/android/javatests/src/org/chromium/base/test/params/BlockJUnit4RunnerDelegate.java",
       "test/android/javatests/src/org/chromium/base/test/params/BaseJUnit4RunnerDelegate.java",
