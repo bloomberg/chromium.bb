@@ -709,6 +709,8 @@ gfx::Rect SoftwareRenderer::GetBackdropBoundingBoxForRenderPassQuad(
     const gfx::Transform& contents_device_transform,
     const cc::FilterOperations* backdrop_filters,
     gfx::Rect* unclipped_rect) const {
+  // TODO(916318): This function needs to compute the backdrop
+  // filter clip rect and return it.
   DCHECK(ShouldApplyBackgroundFilters(quad, backdrop_filters));
   gfx::Rect backdrop_rect = gfx::ToEnclosingRect(cc::MathUtil::MapClippedRect(
       contents_device_transform, QuadVertexRect()));
@@ -775,6 +777,8 @@ sk_sp<SkShader> SoftwareRenderer::GetBackgroundFilterShader(
             quad->shared_quad_state->opacity));
   }
 
+  // TODO(916318): This function needs to apply the backdrop filter
+  // clip rect to the image.
   sk_sp<SkImageFilter> filter =
       cc::RenderSurfaceFilters::BuildImageFilter(
           backdrop_filters_plus_effects,

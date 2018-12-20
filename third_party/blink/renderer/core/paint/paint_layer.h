@@ -605,20 +605,24 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // only if |filter_on_effect_node_dirty_| is true or the reference box has
   // changed. Otherwise it will be populated unconditionally.
   void UpdateCompositorFilterOperationsForFilter(
-      CompositorFilterOperations&) const;
+      CompositorFilterOperations& operations) const;
   void SetFilterOnEffectNodeDirty() { filter_on_effect_node_dirty_ = true; }
   void ClearFilterOnEffectNodeDirty() { filter_on_effect_node_dirty_ = false; }
 
+  // |backdrop_filter_bounds| is an out param from both of these functions, and
+  // it represents the clipping bounds for the filtered backdrop image only.
+  // This rect lives in the local transform space of the containing
+  // EffectPaintPropertyNode.
   void UpdateCompositorFilterOperationsForBackdropFilter(
-      CompositorFilterOperations&) const;
+      CompositorFilterOperations& operations,
+      gfx::RectF* backdrop_filter_bounds) const;
+  CompositorFilterOperations CreateCompositorFilterOperationsForBackdropFilter(
+      gfx::RectF* backdrop_filter_bounds) const;
 
   void SetIsUnderSVGHiddenContainer(bool value) {
     is_under_svg_hidden_container_ = value;
   }
   bool IsUnderSVGHiddenContainer() { return is_under_svg_hidden_container_; }
-
-  CompositorFilterOperations CreateCompositorFilterOperationsForBackdropFilter()
-      const;
 
   bool PaintsWithFilters() const;
   FilterEffect* LastFilterEffect() const;

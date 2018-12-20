@@ -320,11 +320,20 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
 
   BeginDrawingFrame();
 
+  // RenderPass owns filters, backdrop_filters, etc., and will outlive this
+  // function call. So it is safe to store pointers in these maps.
   for (const auto& pass : *render_passes_in_draw_order) {
     if (!pass->filters.IsEmpty())
       render_pass_filters_[pass->id] = &pass->filters;
-    if (!pass->backdrop_filters.IsEmpty())
+    if (!pass->backdrop_filters.IsEmpty()) {
       render_pass_backdrop_filters_[pass->id] = &pass->backdrop_filters;
+      // |backdrop_filter_bounds| only apply if there is a non-empty
+      // backdrop-filter to apply.
+      if (!pass->backdrop_filter_bounds.IsEmpty()) {
+        render_pass_backdrop_filter_bounds_[pass->id] =
+            &pass->backdrop_filter_bounds;
+      }
+    }
   }
 
   // Create the overlay candidate for the output surface, and mark it as
@@ -497,6 +506,12 @@ const cc::FilterOperations* DirectRenderer::BackgroundFiltersForPass(
     RenderPassId render_pass_id) const {
   auto it = render_pass_backdrop_filters_.find(render_pass_id);
   return it == render_pass_backdrop_filters_.end() ? nullptr : it->second;
+}
+
+const gfx::RectF* DirectRenderer::BackgroundFilterBoundsForPass(
+    RenderPassId render_pass_id) const {
+  auto it = render_pass_backdrop_filter_bounds_.find(render_pass_id);
+  return it == render_pass_backdrop_filter_bounds_.end() ? nullptr : it->second;
 }
 
 void DirectRenderer::FlushPolygons(

@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 
 #include "build/build_config.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/skia/include/effects/SkCornerPathEffect.h"
@@ -353,6 +354,12 @@ bool ApproximatelyEqualSkColorSpaces(sk_sp<SkColorSpace> src_color_space,
   src_color_space->toProfile(&src_profile);
   dst_color_space->toProfile(&dst_profile);
   return skcms_ApproximatelyEqualProfiles(&src_profile, &dst_profile);
+}
+
+SkRect LayoutRectToSkRect(const blink::LayoutRect& rect) {
+  return SkRect::MakeXYWH(SkFloatToScalar(rect.X()), SkFloatToScalar(rect.Y()),
+                          SkFloatToScalar(rect.Width()),
+                          SkFloatToScalar(rect.Height()));
 }
 
 template <typename PrimitiveType>

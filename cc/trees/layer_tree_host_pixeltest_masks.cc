@@ -296,7 +296,9 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
 
   FilterOperations filters;
   filters.Append(FilterOperation::CreateGrayscaleFilter(1.0));
+  gfx::RectF backdrop_filter_bounds;
   blur->SetBackdropFilters(filters);
+  blur->SetBackdropFilterBounds(backdrop_filter_bounds);
 
   gfx::Size mask_bounds(100, 100);
   CircleContentLayerClient mask_client(mask_bounds);
@@ -756,6 +758,8 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
   FilterOperations filters;
   filters.Append(FilterOperation::CreateGrayscaleFilter(1.0));
   picture_horizontal->SetBackdropFilters(filters);
+  gfx::RectF backdrop_filter_bounds;
+  picture_horizontal->SetBackdropFilterBounds(backdrop_filter_bounds);
 
   background->AddChild(picture_vertical);
   background->AddChild(picture_horizontal);

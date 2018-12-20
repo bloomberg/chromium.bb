@@ -922,8 +922,11 @@ void GraphicsLayer::SetFilters(CompositorFilterOperations filters) {
   CcLayer()->SetFilters(filters.ReleaseCcFilterOperations());
 }
 
-void GraphicsLayer::SetBackdropFilters(CompositorFilterOperations filters) {
+void GraphicsLayer::SetBackdropFilters(
+    CompositorFilterOperations filters,
+    const gfx::RectF& backdrop_filter_bounds) {
   CcLayer()->SetBackdropFilters(filters.ReleaseCcFilterOperations());
+  CcLayer()->SetBackdropFilterBounds(backdrop_filter_bounds);
 }
 
 void GraphicsLayer::SetStickyPositionConstraint(

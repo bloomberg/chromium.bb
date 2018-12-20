@@ -3205,23 +3205,48 @@ void PaintLayer::UpdateCompositorFilterOperationsForFilter(
 }
 
 void PaintLayer::UpdateCompositorFilterOperationsForBackdropFilter(
-    CompositorFilterOperations& operations) const {
+    CompositorFilterOperations& operations,
+    gfx::RectF* backdrop_filter_bounds) const {
+  DCHECK(backdrop_filter_bounds);
   const auto& style = GetLayoutObject().StyleRef();
   float zoom = style.EffectiveZoom();
   auto filter = FilterOperationsIncludingReflection();
   FloatRect reference_box = FilterReferenceBox(filter, zoom);
   if (!operations.IsEmpty() && reference_box == operations.ReferenceBox())
     return;
-  operations = CreateCompositorFilterOperationsForBackdropFilter();
+  operations =
+      CreateCompositorFilterOperationsForBackdropFilter(backdrop_filter_bounds);
 }
 
 CompositorFilterOperations
-PaintLayer::CreateCompositorFilterOperationsForBackdropFilter() const {
+PaintLayer::CreateCompositorFilterOperationsForBackdropFilter(
+    gfx::RectF* backdrop_filter_bounds) const {
+  DCHECK(backdrop_filter_bounds);
   const auto& style = GetLayoutObject().StyleRef();
   float zoom = style.EffectiveZoom();
   FloatRect reference_box = FilterReferenceBox(style.BackdropFilter(), zoom);
-  return FilterEffectBuilder(reference_box, zoom)
-      .BuildFilterOperations(style.BackdropFilter());
+  CompositorFilterOperations return_value =
+      FilterEffectBuilder(reference_box, zoom)
+          .BuildFilterOperations(style.BackdropFilter());
+  if (!return_value.IsEmpty() && GetLayoutObject().IsBox()) {
+    const LayoutRect& bounds_rect =
+        ToLayoutBox(GetLayoutObject()).BorderBoxRect();
+    // |bounds_offset| is the location of the element containing
+    // backdrop_filter, relative to the overall bounding box of the stacking
+    // context, including stacking children.
+    const LayoutSize& bounds_offset =
+        bounds_rect.Location() -
+        PhysicalBoundingBoxIncludingStackingChildren(
+            LayoutPoint(), PaintLayer::CalculateBoundsOptions::
+                               kIncludeTransformsAndCompositedChildLayers)
+            .Location();
+    *backdrop_filter_bounds =
+        gfx::RectF(bounds_offset.Width(), bounds_offset.Height(),
+                   bounds_rect.Width(), bounds_rect.Height());
+  } else {
+    *backdrop_filter_bounds = gfx::RectF();
+  }
+  return return_value;
 }
 
 PaintLayerResourceInfo& PaintLayer::EnsureResourceInfo() {

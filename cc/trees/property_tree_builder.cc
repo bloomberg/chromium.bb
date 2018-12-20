@@ -748,6 +748,14 @@ static inline const FilterOperations& BackdropFilters(LayerImpl* layer) {
   return layer->test_properties()->backdrop_filters;
 }
 
+static inline const gfx::RectF& BackdropFilterBounds(Layer* layer) {
+  return layer->backdrop_filter_bounds();
+}
+
+static inline const gfx::RectF& BackdropFilterBounds(LayerImpl* layer) {
+  return layer->test_properties()->backdrop_filter_bounds;
+}
+
 static inline float BackdropFilterQuality(Layer* layer) {
   return layer->backdrop_filter_quality();
 }
@@ -992,6 +1000,7 @@ bool PropertyTreeBuilderContext<LayerType>::AddEffectNodeIfNeeded(
   node->has_copy_request = HasCopyRequest(layer);
   node->filters = Filters(layer);
   node->backdrop_filters = BackdropFilters(layer);
+  node->backdrop_filter_bounds = BackdropFilterBounds(layer);
   node->backdrop_filter_quality = BackdropFilterQuality(layer);
   node->filters_origin = FiltersOrigin(layer);
   node->trilinear_filtering = TrilinearFiltering(layer);

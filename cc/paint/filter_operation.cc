@@ -349,10 +349,17 @@ gfx::Rect MapRectInternal(const FilterOperation& op,
   switch (op.type()) {
     case FilterOperation::BLUR: {
       SkVector spread = MapStdDeviation(op.amount(), matrix);
-      float spread_x = std::abs(spread.x());
-      float spread_y = std::abs(spread.y());
+      // Mapping a blur forward requires an outset (negative inset) because a
+      // smaller source rectangle gets blurred to a larger destination
+      // rectangle.
+      // TODO(916583): Fix this function for reverse mapping:
+      // float sign = (direction == SkImageFilter::kForward_MapDirection) ? -1.0
+      // : 1.0;
+      float sign = -1.0;
+      float spread_x = std::abs(spread.x()) * sign;
+      float spread_y = std::abs(spread.y()) * sign;
       gfx::RectF result(rect);
-      result.Inset(-spread_x, -spread_y, -spread_x, -spread_y);
+      result.Inset(spread_x, spread_y, spread_x, spread_y);
       return gfx::ToEnclosingRect(result);
     }
     case FilterOperation::DROP_SHADOW: {
