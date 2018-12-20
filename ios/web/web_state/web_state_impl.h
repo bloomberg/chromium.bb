@@ -292,10 +292,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   WebState* GetWebState() override;
   id<CRWWebViewNavigationProxy> GetWebViewNavigationProxy() const override;
-  void GoToBackForwardListItem(WKBackForwardListItem* wk_item,
-                               NavigationItem* item,
-                               NavigationInitiationType type,
-                               bool has_user_gesture) override;
   void RemoveWebView() override;
 
  protected:

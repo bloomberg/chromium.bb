@@ -137,9 +137,7 @@
             state == web::WKNavigationState::REDIRECTED) ||
            // didFinishNavigation can be called before didCommitNvigation.
            (record.state == web::WKNavigationState::FINISHED &&
-            state == web::WKNavigationState::COMMITTED) ||
-           // |navigation| can be nil for same-document navigations.
-           !navigation);
+            state == web::WKNavigationState::COMMITTED));
     record.state = state;
   }
   if (state == web::WKNavigationState::COMMITTED) {

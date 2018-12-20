@@ -41,7 +41,6 @@ enum LoadPhase {
 class GURL;
 
 namespace web {
-class NavigationItem;
 class WebState;
 class WebStateImpl;
 }
@@ -206,14 +205,6 @@ class WebStateImpl;
 - (void)didFinishGoToIndexSameDocumentNavigationWithType:
             (web::NavigationInitiationType)type
                                           hasUserGesture:(BOOL)hasUserGesture;
-
-// Instructs WKWebView to navigate to the given navigation item. |wk_item| and
-// |item| must point to the same navigation item. Calling this method may
-// result in an iframe navigation.
-- (void)goToBackForwardListItem:(WKBackForwardListItem*)item
-                 navigationItem:(web::NavigationItem*)item
-       navigationInitiationType:(web::NavigationInitiationType)type
-                 hasUserGesture:(BOOL)hasUserGesture;
 
 // Takes snapshot of web view with |rect|. |rect| should be in self.view's
 // coordinate system.  |completion| is always called, but |snapshot| may be nil.

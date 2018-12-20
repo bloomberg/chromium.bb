@@ -297,10 +297,6 @@ bool WKBasedNavigationManagerImpl::IsRestoreSessionInProgress() const {
   return is_restore_session_in_progress_;
 }
 
-void WKBasedNavigationManagerImpl::SetPendingItemIndex(int index) {
-  pending_item_index_ = index;
-}
-
 BrowserState* WKBasedNavigationManagerImpl::GetBrowserState() const {
   return browser_state_;
 }
@@ -628,7 +624,7 @@ void WKBasedNavigationManagerImpl::FinishGoToIndex(
       item->GetTransitionType() | ui::PAGE_TRANSITION_FORWARD_BACK));
   WKBackForwardListItem* wk_item = web_view_cache_.GetWKItemAtIndex(index);
   if (wk_item) {
-    delegate_->GoToBackForwardListItem(wk_item, item, type, has_user_gesture);
+    [delegate_->GetWebViewNavigationProxy() goToBackForwardListItem:wk_item];
   } else {
     DCHECK(index == 0 && empty_window_open_item_)
         << " wk_item should not be nullptr. index: " << index
