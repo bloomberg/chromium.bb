@@ -61,8 +61,7 @@ void TableCellPainter::PaintBackground(const PaintInfo& paint_info,
     }
     BackgroundImageGeometry geometry(layout_table_cell_, &background_object);
     BoxModelObjectPainter(layout_table_cell_)
-        .PaintFillLayers(paint_info, c, bg_layer, paint_rect, geometry,
-                         kBackgroundBleedNone, SkBlendMode::kSrcOver);
+        .PaintFillLayers(paint_info, c, bg_layer, paint_rect, geometry);
   }
 }
 
