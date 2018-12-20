@@ -112,10 +112,6 @@ class ASH_EXPORT ShelfLayoutManager
   void ProcessGestureEventOfAutoHideShelf(ui::GestureEvent* event,
                                           aura::Window* target);
 
-  // Sets whether any windows overlap the shelf. If a window overlaps the shelf
-  // the shelf renders slightly differently.
-  void SetWindowOverlapsShelf(bool value);
-
   void AddObserver(ShelfLayoutManagerObserver* observer);
   void RemoveObserver(ShelfLayoutManagerObserver* observer);
 
@@ -206,7 +202,6 @@ class ASH_EXPORT ShelfLayoutManager
   int accessibility_panel_height() const { return accessibility_panel_height_; }
   int docked_magnifier_height() const { return docked_magnifier_height_; }
   ShelfWidget* shelf_widget() { return shelf_widget_; }
-  bool window_overlaps_shelf() const { return window_overlaps_shelf_; }
 
   // Returns whether background blur is enabled.
   bool IsBackgroundBlurEnabled() { return is_background_blur_enabled_; }
@@ -387,9 +382,6 @@ class ASH_EXPORT ShelfLayoutManager
   ShelfWidget* shelf_widget_;
   Shelf* shelf_;
 
-  // Do any windows overlap the shelf? This is maintained by WorkspaceManager.
-  bool window_overlaps_shelf_ = false;
-
   // Whether the app list is visible. This is maintained by
   // OnAppListVisibilityChanged.
   bool is_app_list_visible_ = false;
@@ -459,13 +451,13 @@ class ASH_EXPORT ShelfLayoutManager
 
   // The current shelf background. Should not be assigned to directly, use
   // MaybeUpdateShelfBackground() instead.
-  ShelfBackgroundType shelf_background_type_ = SHELF_BACKGROUND_OVERLAP;
+  ShelfBackgroundType shelf_background_type_ = SHELF_BACKGROUND_DEFAULT;
 
   // Shelf will become transparent if launcher is opened. Stores the shelf
   // background type before open the launcher when start to drag the launcher
   // from shelf.
   ShelfBackgroundType shelf_background_type_before_drag_ =
-      SHELF_BACKGROUND_OVERLAP;
+      SHELF_BACKGROUND_DEFAULT;
 
   ScopedSessionObserver scoped_session_observer_{this};
   ScopedObserver<WallpaperController, ShelfLayoutManager>

@@ -66,10 +66,6 @@ std::pair<int, int> GetTargetColorAlphaValues(
       target_shelf_color_alpha = kShelfTranslucentAlpha;
       target_item_color_alpha = SK_AlphaTRANSPARENT;
       break;
-    case SHELF_BACKGROUND_OVERLAP:
-      target_shelf_color_alpha = kShelfTranslucentAlpha;
-      target_item_color_alpha = SK_AlphaTRANSPARENT;
-      break;
     case SHELF_BACKGROUND_MAXIMIZED:
       target_shelf_color_alpha = kShelfTranslucentMaximizedWindow;
       target_item_color_alpha = SK_AlphaTRANSPARENT;
@@ -254,7 +250,6 @@ void ShelfBackgroundAnimator::CreateAnimator(
 
   switch (background_type) {
     case SHELF_BACKGROUND_DEFAULT:
-    case SHELF_BACKGROUND_OVERLAP:
     case SHELF_BACKGROUND_APP_LIST:
       duration_ms = 500;
       break;
@@ -302,7 +297,6 @@ void ShelfBackgroundAnimator::GetTargetValues(
   SkColor item_target_color = kShelfDefaultBaseColor;
   switch (background_type) {
     case SHELF_BACKGROUND_DEFAULT:
-    case SHELF_BACKGROUND_OVERLAP:
     case SHELF_BACKGROUND_APP_LIST:
       shelf_target_color = darken_wallpaper(kShelfTranslucentColorDarkenAlpha);
       item_target_color = shelf_target_color;

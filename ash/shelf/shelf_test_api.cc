@@ -32,10 +32,6 @@ void ShelfTestApi::UpdateVisibility(UpdateVisibilityCallback cb) {
   std::move(cb).Run();
 }
 
-void ShelfTestApi::HasOverlappingWindow(HasOverlappingWindowCallback cb) {
-  std::move(cb).Run(shelf_->shelf_layout_manager()->window_overlaps_shelf());
-}
-
 void ShelfTestApi::IsAlignmentBottomLocked(IsAlignmentBottomLockedCallback cb) {
   std::move(cb).Run(shelf_->alignment() == SHELF_ALIGNMENT_BOTTOM_LOCKED);
 }

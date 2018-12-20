@@ -53,9 +53,6 @@ enum ShelfBackgroundType {
   // The default transparent background.
   SHELF_BACKGROUND_DEFAULT,
 
-  // The background when a window is overlapping.
-  SHELF_BACKGROUND_OVERLAP,
-
   // The background when a window is maximized.
   SHELF_BACKGROUND_MAXIMIZED,
 
