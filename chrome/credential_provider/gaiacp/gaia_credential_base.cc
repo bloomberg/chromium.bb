@@ -45,22 +45,16 @@ namespace credential_provider {
 
 namespace {
 
-constexpr wchar_t kEmailDomainsKey[] = L"ed";
+constexpr wchar_t kEmailPatternKey[] = L"ep";
 
-base::string16 GetEmailDomains() {
-  std::vector<wchar_t> email_domains(16);
-  ULONG length = email_domains.size();
-  HRESULT hr = GetGlobalFlag(kEmailDomainsKey, &email_domains[0], &length);
-  if (FAILED(hr)) {
-    if (hr == HRESULT_FROM_WIN32(ERROR_MORE_DATA)) {
-      email_domains.resize(length + 1);
-      length = email_domains.size();
-      hr = GetGlobalFlag(kEmailDomainsKey, &email_domains[0], &length);
-      if (FAILED(hr))
-        email_domains[0] = 0;
-    }
-  }
-  return base::string16(&email_domains[0]);
+base::string16 GetEmailPattern() {
+  wchar_t email_pattern[64];
+  ULONG length = base::size(email_pattern);
+  HRESULT hr = GetGlobalFlag(kEmailPatternKey, email_pattern, &length);
+  if (FAILED(hr))
+    email_pattern[0] = 0;
+
+  return base::string16(email_pattern);
 }
 
 // Choose a suitable username for the given gaia account.  If a username has
@@ -118,8 +112,8 @@ void MakeUsernameForAccount(const base::DictionaryValue* result,
   }
 
   // If the username is longer than 20 characters, truncate.
-  if (os_username.size() > kWindowsUsernameBufferLength - 1)
-    os_username.resize(kWindowsUsernameBufferLength - 1);
+  if (os_username.size() > 20)
+    os_username.resize(20);
 
   // Replace invalid characters.  While @ is not strictly invalid according to
   // MSDN docs, it causes trouble.
@@ -158,15 +152,12 @@ HRESULT WaitForLoginUIAndGetResult(
   // it.
   LOGFN(INFO) << "exit_code=" << exit_code;
 
-  if (exit_code == kUiecAbort) {
-    LOGFN(ERROR) << "Aborted hr=" << putHR(hr);
+  if (exit_code != kUiecSuccess) {
+    LOGFN(ERROR) << "WaitForProcess hr=" << putHR(hr);
     return E_ABORT;
-  } else if (exit_code != kUiecSuccess) {
-    LOGFN(ERROR) << "Error hr=" << putHR(hr);
-    *status_text =
-        CGaiaCredentialBase::AllocErrorString(IDS_INVALID_UI_RESPONSE_BASE);
-    return E_FAIL;
   }
+  // TODO(crbug.com/913977): Check for mismatch email pattern error once the
+  // correct use of email pattern has been handled.
 
   *json_result = std::string(&output_buffer[0]);
   return S_OK;
@@ -175,40 +166,9 @@ HRESULT WaitForLoginUIAndGetResult(
 // This function validates the response from GLS and makes sure it contained
 // all the fields required to proceed with logon.  This does not necessarily
 // guarantee that the logon will succeed, only that GLS response seems correct.
-HRESULT ValidateResult(base::DictionaryValue* result, BSTR* status_text) {
+HRESULT ValidateAndFixResult(base::DictionaryValue* result, BSTR* status_text) {
   DCHECK(result);
   DCHECK(status_text);
-
-  // Check the exit_code to see if any errors were detected by the GLS.
-  const base::Value* exit_code_value =
-      result->FindKeyOfType(kKeyExitCode, base::Value::Type::INTEGER);
-  if (exit_code_value && exit_code_value->GetInt() != kUiecSuccess) {
-    int exit_code = exit_code_value->GetInt();
-    if (exit_code == kUiecEMailMissmatch) {
-      LOGFN(ERROR) << "Email mismatch";
-      *status_text =
-          CGaiaCredentialBase::AllocErrorString(IDS_EMAIL_MISMATCH_BASE);
-      return E_FAIL;
-    }
-    if (exit_code == kUiecInvalidEmailDomain) {
-      LOGFN(ERROR) << "Invalid email domain";
-      *status_text =
-          CGaiaCredentialBase::AllocErrorString(IDS_INVALID_EMAIL_DOMAIN_BASE);
-      return E_FAIL;
-    }
-    if (exit_code == kUiecMissingSigninData) {
-      LOGFN(ERROR) << "Missing sign in data";
-      *status_text =
-          CGaiaCredentialBase::AllocErrorString(IDS_INVALID_UI_RESPONSE_BASE);
-      return E_FAIL;
-    }
-    if (exit_code != kUiecSuccess) {
-      LOGFN(ERROR) << "Unspecified failure";
-      *status_text =
-          CGaiaCredentialBase::AllocErrorString(IDS_INVALID_UI_RESPONSE_BASE);
-      return E_FAIL;
-    }
-  }
 
   // Check that the webui returned all expected values.
 
@@ -261,6 +221,9 @@ HRESULT ValidateResult(base::DictionaryValue* result, BSTR* status_text) {
     return E_UNEXPECTED;
   }
 
+  wchar_t username[kWindowsUsernameBufferLength];
+  MakeUsernameForAccount(result, username, base::size(username));
+  result->SetString(kKeyUsername, username);
   return S_OK;
 }
 
@@ -532,21 +495,23 @@ CGaiaCredentialBase::~CGaiaCredentialBase() {}
 
 bool CGaiaCredentialBase::AreCredentialsValid() const {
   return AreWindowsCredentialsAvailable() &&
-         AreWindowsCredentialsValid(password_) == S_OK;
+         AreWindowsCredentialsValid(password_);
 }
 
 bool CGaiaCredentialBase::AreWindowsCredentialsAvailable() const {
   return username_.Length() > 0 && password_.Length() > 0;
 }
 
-HRESULT CGaiaCredentialBase::AreWindowsCredentialsValid(BSTR password) const {
+bool CGaiaCredentialBase::AreWindowsCredentialsValid(BSTR password) const {
   if (username_.Length() == 0 || user_sid_.Length() == 0)
-    return S_FALSE;
+    return false;
 
   if (::SysStringLen(password) == 0)
-    return S_FALSE;
+    return false;
   OSUserManager* manager = OSUserManager::Get();
-  return manager->IsWindowsPasswordValid(username_, password);
+  HRESULT checkpassword_hr =
+      manager->IsWindowsPasswordValid(username_, password);
+  return checkpassword_hr == S_OK;
 }
 
 HRESULT CGaiaCredentialBase::GetStringValueImpl(DWORD field_id,
@@ -588,11 +553,11 @@ void CGaiaCredentialBase::ResetInternalState() {
   authentication_results_.reset();
 
   // Don't reset user_sid_ or username_ as those are set for existing gaia
-  // users in CReauthCredential::SetGaiaUserInfo so that the user account
-  // matching the email can always be found for that credential even when the
-  // user cancels signin. These two members are reset in CGaiaCredential to
-  // allow changing between different users when cancelling signin on an
-  // unknown gaia user.
+  // users in CReauthCredential::SetUserInfo so that the user account matching
+  // the email can always be found for that credential even when the user
+  // cancels signin. These two members are reset in CGaiaCredential to allow
+  // changing between different users when cancelling signin on an unknown
+  // gaia user.
   TerminateLogonProcess();
 
   if (events_) {
@@ -620,8 +585,10 @@ HRESULT CGaiaCredentialBase::GetEmailForReauth(wchar_t* email, size_t length) {
   return S_OK;
 }
 
-HRESULT CGaiaCredentialBase::GetBaseGlsCommandline(
+HRESULT CGaiaCredentialBase::GetGlsCommandline(
+    const wchar_t* email,
     base::CommandLine* command_line) {
+  DCHECK(email);
   DCHECK(command_line);
 
   base::FilePath chrome_path =
@@ -636,7 +603,12 @@ HRESULT CGaiaCredentialBase::GetBaseGlsCommandline(
 
   LOGFN(INFO) << "App exe: " << command_line->GetProgram().value();
 
-  command_line->AppendSwitch(kGcpwSigninSwitch);
+  // If an email pattern is specified, pass it to the webui.
+  base::string16 email_pattern = GetEmailPattern();
+  if (email_pattern[0])
+    command_line->AppendSwitchNative(kEmailDomainSwitch, email_pattern);
+
+  command_line->AppendSwitchNative(kGcpwSigninSwitch, email);
 
   // Get the language selected by the LanguageSelector and pass it onto Chrome.
   // The language selected will depends on the curent thread UI language.
@@ -648,40 +620,10 @@ HRESULT CGaiaCredentialBase::GetBaseGlsCommandline(
 
   // The gpu process will be running on an alternative desktop since it does not
   // have access to the winlogon desktop. This mitigation is required merely to
-  // be able to start Chrome during winlogon. However, in this scenario no gpu
+  // be able to start Chrome during winlogon. However, In this scenario no gpu
   // rendering can be done to the screen, so all the gpu features need to be
   // disabled. (crbug.com/904902)
   command_line->AppendSwitch("disable-gpu");
-
-  return S_OK;
-}
-
-HRESULT CGaiaCredentialBase::GetGlsCommandline(
-    const wchar_t* email,
-    base::CommandLine* command_line) {
-  DCHECK(email);
-  HRESULT hr = GetBaseGlsCommandline(command_line);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "GetBaseGlsCommandline hr=" << putHR(hr);
-    return hr;
-  }
-
-  command_line->AppendSwitchNative(kPrefillEmailSwitch, email);
-
-  // If an email pattern is specified, pass it to the GLS.
-  base::string16 email_domains = GetEmailDomains();
-  if (email_domains[0])
-    command_line->AppendSwitchNative(kEmailDomainsSwitch, email_domains);
-
-  // If this is an existing user with an SID, try to get its gaia id and pass
-  // it to the GLS for verification.
-  if (user_sid_.Length()) {
-    LOGFN(INFO) << "Existing user sid: " << user_sid_;
-    base::string16 gaia_id;
-    if (GetIdFromSid(OLE2CW(user_sid_), &gaia_id) == S_OK)
-      command_line->AppendSwitchNative(kGaiaIdSwitch, gaia_id);
-    LOGFN(INFO) << "Existing user gaia id: " << gaia_id;
-  }
 
   LOGFN(INFO) << "Command line: " << command_line->GetCommandLineString();
   return S_OK;
@@ -711,32 +653,21 @@ HRESULT CGaiaCredentialBase::HandleAutologon(
   // using the old password. If it isn't, return S_FALSE to state that the
   // login is not complete.
   if (!AreCredentialsValid()) {
-    HRESULT windows_cred_hr =
-        AreWindowsCredentialsValid(current_windows_password_);
-    if (windows_cred_hr == S_OK) {
+    if (AreWindowsCredentialsValid(current_windows_password_)) {
       OSUserManager* manager = OSUserManager::Get();
       HRESULT changepassword_hr = manager->ChangeUserPassword(
           username_, current_windows_password_, password_);
       if (FAILED(changepassword_hr)) {
-        if (changepassword_hr != HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED)) {
-          LOGFN(ERROR) << "ChangeUserPassword hr=" << putHR(changepassword_hr);
-          return changepassword_hr;
-        }
-        LOGFN(ERROR) << "Access was denied to ChangeUserPassword.";
-        password_ = current_windows_password_;
+        LOGFN(ERROR) << "ChangeUserPassword hr=" << putHR(changepassword_hr);
+        return changepassword_hr;
       }
     } else {
       if (events_) {
-        int message_id = IDS_INVALID_PASSWORD_BASE;
-        if (windows_cred_hr == HRESULT_FROM_WIN32(ERROR_ACCOUNT_LOCKED_OUT)) {
-          message_id = IDS_ACCOUNT_LOCKED_BASE;
-          LOGFN(ERROR) << "Account is locked.";
-        }
-
         events_->SetFieldState(this, FID_DESCRIPTION,
                                CPFS_DISPLAY_IN_SELECTED_TILE);
-        events_->SetFieldString(this, FID_DESCRIPTION,
-                                GetStringResource(message_id).c_str());
+        events_->SetFieldString(
+            this, FID_DESCRIPTION,
+            GetStringResource(IDS_INVALID_PASSWORD_BASE).c_str());
       }
       return S_FALSE;
     }
@@ -1581,16 +1512,11 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
   std::unique_ptr<base::DictionaryValue> dict =
       base::DictionaryValue::From(std::move(properties));
 
-  HRESULT hr = ValidateResult(dict.get(), status_text);
+  HRESULT hr = ValidateAndFixResult(dict.get(), status_text);
   if (FAILED(hr)) {
-    LOGFN(ERROR) << "ValidateResult hr=" << putHR(hr);
+    LOGFN(ERROR) << "ValidateAndFixResult hr=" << putHR(hr);
     return hr;
   }
-
-  wchar_t username[kWindowsUsernameBufferLength];
-  MakeUsernameForAccount(dict.get(), username, base::size(username));
-
-  dict->SetString(kKeyUsername, username);
 
   // From this point the code assume the dictionary |dict| is valid.
   base::string16 new_username = GetDictString(dict, kKeyUsername);
@@ -1609,7 +1535,7 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
 
   // user_sid_ should have been verified to match or is empty in call to
   // ValidateOrCreateUser.
-  DCHECK(user_sid_.Length() == 0 || user_sid_ == sid);
+  DCHECK(user_sid_.Length() <= 0 || user_sid_ == sid);
 
   dict->SetString(kKeyUsername, new_username);
   dict->SetString(kKeySID, OLE2CA(sid));

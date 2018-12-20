@@ -42,8 +42,7 @@ class ATL_NO_VTABLE CReauthCredential
   DECLARE_PROTECT_FINAL_CONSTRUCT()
 
   // IReauthCredential
-  IFACEMETHODIMP SetEmailForReauth(BSTR email) override;
-  IFACEMETHODIMP SetOSUserInfo(BSTR sid, BSTR username) override;
+  IFACEMETHODIMP SetUserInfo(BSTR sid, BSTR username, BSTR email) override;
 
   CComBSTR email_for_reauth_;
 };
