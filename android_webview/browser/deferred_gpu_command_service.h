@@ -58,22 +58,12 @@ class DeferredGpuCommandService : public gpu::CommandBufferTaskExecutor {
 
   bool CanSupportThreadedTextureMailbox() const;
 
-  // If |is_idle| is false, this will only run older idle tasks.
-  void PerformIdleWork(bool is_idle);
-
-  // Flush the idle queue until it is empty. This is different from
-  // PerformIdleWork(is_idle = true), which does not run any newly scheduled
-  // idle tasks during the idle run.
-  void PerformAllIdleWork();
-
  protected:
   ~DeferredGpuCommandService() override;
 
  private:
   friend class ScopedAllowGL;
   friend class TaskForwardingSequence;
-
-  static void RequestProcessGL(bool for_idle);
 
   DeferredGpuCommandService(
       std::unique_ptr<gpu::SyncPointManager> sync_point_manager,
@@ -83,7 +73,8 @@ class DeferredGpuCommandService : public gpu::CommandBufferTaskExecutor {
 
   static DeferredGpuCommandService* CreateDeferredGpuCommandService();
 
-  size_t IdleQueueSize();
+  // Flush the idle queue until it is empty.
+  void PerformAllIdleWork();
 
   // Called by ScopedAllowGL and ScheduleTask().
   void RunTasks();
