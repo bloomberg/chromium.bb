@@ -66,6 +66,10 @@ static_library("app") {
     ]
   }
 
+  if (is_android) {
+    deps += [ "//components/crash/android:jni_headers" ]
+  }
+
   if (is_android || is_linux) {
     deps += [
       "//base:base_static",

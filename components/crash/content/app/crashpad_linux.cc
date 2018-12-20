@@ -40,7 +40,11 @@
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
 #include "base/android/java_exception_reporter.h"
+#include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
 #include "base/android/path_utils.h"
+#include "jni/PackagePaths_jni.h"
 #endif  // OS_ANDROID
 
 namespace crashpad {
@@ -237,26 +241,42 @@ void SetBuildInfoAnnotations(std::map<std::string, std::string>* annotations) {
 #error "Unsupported target abi"
 #endif
 
+void MakePackagePaths(std::string* classpath, std::string* libpath) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  base::android::ScopedJavaLocalRef<jstring> arch =
+      base::android::ConvertUTF8ToJavaString(env,
+                                             base::StringPiece(CURRENT_ABI));
+  base::android::ScopedJavaLocalRef<jobjectArray> paths =
+      Java_PackagePaths_makePackagePaths(env, arch);
+
+  base::android::ConvertJavaStringToUTF8(
+      env, static_cast<jstring>(env->GetObjectArrayElement(paths.obj(), 0)),
+      classpath);
+  base::android::ConvertJavaStringToUTF8(
+      env, static_cast<jstring>(env->GetObjectArrayElement(paths.obj(), 1)),
+      libpath);
+}
+
 // Copies and extends the current environment with CLASSPATH and LD_LIBRARY_PATH
 // set to library paths in the APK.
 bool BuildEnvironmentWithApk(std::vector<std::string>* result) {
   DCHECK(result->empty());
 
-  base::FilePath apk_path;
-  if (!base::android::GetPathToBaseApk(&apk_path)) {
-    return false;
-  }
+  std::string classpath;
+  std::string library_path;
+  MakePackagePaths(&classpath, &library_path);
 
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   static constexpr char kClasspathVar[] = "CLASSPATH";
-  std::string classpath;
-  env->GetVar(kClasspathVar, &classpath);
-  classpath = apk_path.value() + ":" + classpath;
+  std::string current_classpath;
+  env->GetVar(kClasspathVar, &current_classpath);
+  classpath += ":" + current_classpath;
 
   static constexpr char kLdLibraryPathVar[] = "LD_LIBRARY_PATH";
-  std::string library_path;
-  env->GetVar(kLdLibraryPathVar, &library_path);
-  library_path = apk_path.value() + "!/lib/" CURRENT_ABI ":" + library_path;
+  std::string current_library_path;
+  env->GetVar(kLdLibraryPathVar, &current_library_path);
+  library_path += ":" + current_library_path;
 
   result->push_back("CLASSPATH=" + classpath);
   result->push_back("LD_LIBRARY_PATH=" + library_path);
@@ -415,6 +435,9 @@ class HandlerStarter {
         return database_path;
       }
 
+      // TODO(jperaza): The logic for constructing an appropriate
+      // CLASSPATH/LD_LIBRARY_PATH won't work for Android Q+. The handler will
+      // need to be launched by executing the dynamic linker instead.
       bool result = GetCrashpadClient().StartJavaHandlerAtCrash(
           kCrashpadJavaMain, &env, database_path, metrics_path, url,
           process_annotations, arguments);
@@ -456,6 +479,9 @@ class HandlerStarter {
         return false;
       }
 
+      // TODO(jperaza): The logic for constructing an appropriate
+      // CLASSPATH/LD_LIBRARY_PATH won't work for Android Q+. The handler will
+      // need to be launched by executing the dynamic linker instead.
       bool result = GetCrashpadClient().StartJavaHandlerForClient(
           kCrashpadJavaMain, &env, database_path, metrics_path, url,
           process_annotations, arguments, fd);
