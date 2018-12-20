@@ -36,6 +36,12 @@
 				</dict>
 				<dict>
 					<key>input</key>
+					<string>IDS_IOS_INTENTS_SEARCH_IN_CHROME_DESCRIPTION</string>
+					<key>output</key>
+					<string>k0Ho6W</string>
+				</dict>
+				<dict>
+					<key>input</key>
 					<string>IDS_IOS_INTENTS_SEARCH_IN_CHROME_TITLE</string>
 					<key>output</key>
 					<string>Z6KvRw</string>
