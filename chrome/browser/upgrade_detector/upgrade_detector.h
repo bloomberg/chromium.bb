@@ -12,7 +12,6 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "ui/base/idle/idle.h"
 #include "ui/gfx/image/image.h"
 
 class PrefRegistrySimple;
@@ -222,12 +221,9 @@ class UpgradeDetector {
   // notified of the change (generally speaking, if an upgrade is available).
   virtual void OnRelaunchNotificationPeriodPrefChanged() = 0;
 
-  // Initiates an Idle check. See IdleCallback below.
-  void CheckIdle();
-
-  // The callback for the IdleCheck. Tells us whether Chrome has received any
+  // Initiates an Idle check. Tells us whether Chrome has received any
   // input events since the specified time.
-  void IdleCallback(ui::IdleState state);
+  void CheckIdle();
 
   // A provider of TimeTicks to the detector and its timers.
   const base::TickClock* const tick_clock_;

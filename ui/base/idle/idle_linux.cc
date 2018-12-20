@@ -4,7 +4,6 @@
 
 #include "ui/base/idle/idle.h"
 
-
 #if defined(USE_X11)
 #include "ui/base/idle/idle_query_x11.h"
 #include "ui/base/idle/screensaver_window_finder_x11.h"
@@ -12,10 +11,12 @@
 
 namespace ui {
 
-void CalculateIdleTime(IdleTimeCallback notify) {
+int CalculateIdleTime() {
 #if defined(USE_X11)
   IdleQueryX11 idle_query;
-  notify.Run(idle_query.IdleTime());
+  return idle_query.IdleTime();
+#else
+  return 0;
 #endif
 }
 

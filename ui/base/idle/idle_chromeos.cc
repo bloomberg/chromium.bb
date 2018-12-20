@@ -11,10 +11,10 @@
 
 namespace ui {
 
-void CalculateIdleTime(IdleTimeCallback notify) {
+int CalculateIdleTime() {
   base::TimeDelta idle_time = base::TimeTicks::Now() -
       ui::UserActivityDetector::Get()->last_activity_time();
-  notify.Run(static_cast<int>(idle_time.InSeconds()));
+  return static_cast<int>(idle_time.InSeconds());
 }
 
 bool CheckIdleStateIsLocked() {

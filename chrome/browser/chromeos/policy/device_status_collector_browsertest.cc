@@ -154,7 +154,7 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
 
   void Simulate(ui::IdleState* states, int len) {
     for (int i = 0; i < len; i++)
-      IdleStateCallback(states[i]);
+      ProcessIdleState(states[i]);
   }
 
   void set_max_stored_past_activity_interval(TimeDelta value) {

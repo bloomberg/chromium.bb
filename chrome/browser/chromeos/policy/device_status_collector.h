@@ -188,8 +188,8 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
   // Used instead of base::Time::Now(), to make testing possible.
   virtual base::Time GetCurrentTime();
 
-  // Callback which receives the results of the idle state check.
-  void IdleStateCallback(ui::IdleState state);
+  // Handles the results of the idle state check.
+  void ProcessIdleState(ui::IdleState state);
 
   // Gets the version of the passed app. Virtual to allow mocking.
   virtual std::string GetAppVersion(const std::string& app_id);
