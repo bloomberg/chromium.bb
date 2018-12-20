@@ -772,9 +772,16 @@ void WindowGrid::OnWindowDragEnded(aura::Window* dragged_window,
     AddDraggedWindowIntoOverviewOnDragEnd(dragged_window);
   }
 
-  window_selector_->RemoveWindowSelectorItem(
-      GetWindowSelectorItemContaining(drop_target_widget_->GetNativeWindow()),
-      /*reposition=*/false);
+  WindowSelectorItem* drop_target_item =
+      GetWindowSelectorItemContaining(drop_target_widget_->GetNativeWindow());
+  // TODO(http://crbug.com/916856): Disable tab and app dragging that doesn't
+  // happen in the primary display.
+  // The |drop_target_widget_| may not in the same display as
+  // |dragged_window|, which will cause |drop_target_item| to be null.
+  if (drop_target_item) {
+    window_selector_->RemoveWindowSelectorItem(drop_target_item,
+                                               /*reposition=*/false);
+  }
   drop_target_widget_.reset();
 
   // Called to reset caption and title visibility after dragging.
