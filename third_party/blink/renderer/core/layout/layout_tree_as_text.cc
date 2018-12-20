@@ -683,6 +683,9 @@ static void Write(WTF::TextStream& ts,
     }
   }
 
+  if ((behavior & kLayoutAsTextShowPaintProperties) && layer.NeedsRepaint())
+    ts << " needsRepaint";
+
   ts << "\n";
 
   if (paint_phase != kLayerPaintPhaseBackground)
@@ -709,13 +712,20 @@ void LayoutTreeAsText::WriteLayers(WTF::TextStream& ts,
   // Calculate the clip rects we should use.
   LayoutRect layer_bounds;
   ClipRect damage_rect, clip_rect_to_apply;
-  layer->Clipper(PaintLayer::kUseGeometryMapper)
-      .CalculateRects(
-          ClipRectsContext(root_layer,
-                           &root_layer->GetLayoutObject().FirstFragment(),
-                           kUncachedClipRects),
-          &layer->GetLayoutObject().FirstFragment(), nullptr, layer_bounds,
-          damage_rect, clip_rect_to_apply);
+  if (layer->GetLayoutObject().FirstFragment().HasLocalBorderBoxProperties()) {
+    layer->Clipper(PaintLayer::kUseGeometryMapper)
+        .CalculateRects(
+            ClipRectsContext(root_layer,
+                             &root_layer->GetLayoutObject().FirstFragment(),
+                             kUncachedClipRects),
+            &layer->GetLayoutObject().FirstFragment(), nullptr, layer_bounds,
+            damage_rect, clip_rect_to_apply);
+  } else {
+    layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
+        .CalculateRects(
+            ClipRectsContext(root_layer, nullptr, kUncachedClipRects), nullptr,
+            nullptr, layer_bounds, damage_rect, clip_rect_to_apply);
+  }
 
   LayoutPoint offset_from_root;
   layer->ConvertToLayerCoords(root_layer, offset_from_root);
