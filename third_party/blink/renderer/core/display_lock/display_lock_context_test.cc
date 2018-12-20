@@ -14,13 +14,6 @@
 
 namespace blink {
 
-void RunPendingTasks() {
-  base::RunLoop run_loop;
-  Thread::Current()->GetTaskRunner()->PostTask(FROM_HERE,
-                                               run_loop.QuitWhenIdleClosure());
-  run_loop.Run();
-}
-
 class DisplayLockContextTest : public RenderingTest {
  public:
   void SetUp() override {
@@ -34,6 +27,13 @@ class DisplayLockContextTest : public RenderingTest {
       features_backup_->Restore();
       features_backup_.reset();
     }
+  }
+
+  static void RunPendingTasks() {
+    base::RunLoop run_loop;
+    Thread::Current()->GetTaskRunner()->PostTask(
+        FROM_HERE, run_loop.QuitWhenIdleClosure());
+    run_loop.Run();
   }
 
   DisplayLockContext::State ContextState(DisplayLockContext* context) const {

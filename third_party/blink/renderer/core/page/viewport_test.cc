@@ -58,8 +58,6 @@
 
 namespace blink {
 
-using blink::test::RunPendingTasks;
-
 class ViewportTest : public testing::Test {
  protected:
   ViewportTest()
@@ -85,7 +83,7 @@ class ViewportTest : public testing::Test {
 
   void ExecuteScript(WebLocalFrame* frame, const WebString& code) {
     frame->ExecuteScript(WebScriptSource(code));
-    RunPendingTasks();
+    blink::test::RunPendingTasks();
   }
 
   std::string base_url_;
@@ -3286,7 +3284,7 @@ class ViewportHistogramsTest : public SimTest {
     request.Complete(responseText);
 
     // Pump the task queue so the meta tag gets processed.
-    test::RunPendingTasks();
+    blink::test::RunPendingTasks();
   }
 
   HistogramTester histogram_tester_;
