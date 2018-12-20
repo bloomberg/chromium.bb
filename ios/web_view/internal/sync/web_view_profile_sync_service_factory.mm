@@ -12,7 +12,6 @@
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/device_id_helper.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/driver/startup_controller.h"
@@ -23,7 +22,6 @@
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
-#include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_gcm_profile_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_model_type_store_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_profile_invalidation_provider_factory.h"
@@ -64,7 +62,6 @@ WebViewProfileSyncServiceFactory::WebViewProfileSyncServiceFactory()
   // when it is shut down.  Specify those dependencies here to build the proper
   // destruction order.
   DependsOn(WebViewIdentityManagerFactory::GetInstance());
-  DependsOn(WebViewOAuth2TokenServiceFactory::GetInstance());
   DependsOn(WebViewPersonalDataManagerFactory::GetInstance());
   DependsOn(WebViewWebDataServiceWrapperFactory::GetInstance());
   DependsOn(WebViewPasswordStoreFactory::GetInstance());
