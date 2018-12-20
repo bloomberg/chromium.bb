@@ -108,9 +108,11 @@ void FeedLoggingBridge::OnMoreButtonClicked(JNIEnv* j_env,
 
 void FeedLoggingBridge::OnOpenedWithContent(JNIEnv* j_env,
                                             const JavaRef<jobject>& j_this,
-                                            const jint j_time_to_Populate,
+                                            const jlong j_time_to_populate,
                                             const jint j_content_count) {
   feed_logging_metrics_->OnPageShown(j_content_count);
+  feed_logging_metrics_->OnPagePopulated(
+      base::TimeDelta::FromMilliseconds(j_time_to_populate));
 }
 
 void FeedLoggingBridge::OnOpenedWithNoImmediateContent(

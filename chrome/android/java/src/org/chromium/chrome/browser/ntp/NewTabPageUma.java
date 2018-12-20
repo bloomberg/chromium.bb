@@ -11,6 +11,8 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -117,6 +119,20 @@ public final class NewTabPageUma {
         int FAIL_DISABLED = 3;
 
         int NUM_ENTRIES = 4;
+    }
+
+    @IntDef({ContentSuggestionsDisplayStatus.VISIBLE, ContentSuggestionsDisplayStatus.COLLAPSED,
+            ContentSuggestionsDisplayStatus.DISABLED_BY_POLICY,
+            ContentSuggestionsDisplayStatus.NUM_ENTRIES})
+
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused. This maps directly to
+    // the ContentSuggestionsDisplayStatus enum defined in tools/metrics/enums.xml.
+    private @interface ContentSuggestionsDisplayStatus {
+        int VISIBLE = 0;
+        int COLLAPSED = 1;
+        int DISABLED_BY_POLICY = 2;
+        int NUM_ENTRIES = 3;
     }
 
     /** The NTP was loaded in a cold startup. */
@@ -284,6 +300,24 @@ public final class NewTabPageUma {
         RecordHistogram.recordEnumeratedHistogram("NewTabPage.ContentSuggestions.Shown.Articles."
                         + "Prefetched.Offline2",
                 positionInSection, MAX_SUGGESTIONS_PER_SECTION);
+    }
+
+    /**
+     * Records Content Suggestions Display Status when NTPs opened.
+     */
+    public static void recordContentSuggestionsDisplayStatus() {
+        @ContentSuggestionsDisplayStatus
+        int status = ContentSuggestionsDisplayStatus.VISIBLE;
+        if (!PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED)) {
+            // Disabled by policy.
+            status = ContentSuggestionsDisplayStatus.DISABLED_BY_POLICY;
+        } else if (!PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE)) {
+            // Articles are collapsed.
+            status = ContentSuggestionsDisplayStatus.COLLAPSED;
+        }
+
+        RecordHistogram.recordEnumeratedHistogram("ContentSuggestions.Feed.DisplayStatus", status,
+                ContentSuggestionsDisplayStatus.NUM_ENTRIES);
     }
 
     /**
