@@ -368,11 +368,6 @@ const char kForceAppMode[]                  = "force-app-mode";
 // whether or not it's actually the First Run (this overrides kNoFirstRun).
 const char kForceFirstRun[]                 = "force-first-run";
 
-// Shows the modal first run dialog during browser startup. This is shown for
-// the "organic" first run experience (Chrome downloaded, empty user data dir).
-// This does nothing without --force-first-run also being set.
-const char kForceFirstRunDialog[] = "force-first-run-dialog";
-
 // Forces Chrome to use localNTP instead of server (GWS) NTP.
 const char kForceLocalNtp[]                 = "force-local-ntp";
 
