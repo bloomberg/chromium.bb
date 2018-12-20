@@ -191,10 +191,11 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
 
   bool has_out_of_flow_positioned_items = false;
 
-  // In order to match other browsers when list-style-type: none, pretend
-  // there's an invisible marker here.
-  if (line_style.Display() == EDisplay::kListItem &&
-      line_style.ListStyleType() == EListStyleType::kNone)
+  // List items trigger strict line height, i.e. we make room for the line box
+  // strut, for *every* line. This matches other browsers. The intention may
+  // have been to make sure that there's always room for the list item marker,
+  // but that doesn't explain why it's done for every line...
+  if (quirks_mode_ && line_style.Display() == EDisplay::kListItem)
     box->ComputeTextMetrics(line_style, baseline_type_);
 
   for (NGInlineItemResult& item_result : *line_items) {
