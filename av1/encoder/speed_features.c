@@ -51,7 +51,7 @@ static uint8_t intrabc_max_mesh_pct[MAX_MESH_SPEED + 1] = { 100, 100, 100,
                                                             25,  25,  10 };
 // scaling values to be used for gating wedge/compound segment based on best
 // approximate rd
-static int comp_type_rd_threshold_mul[3] = { 1, 10, 11 };
+static int comp_type_rd_threshold_mul[3] = { 1, 11, 12 };
 static int comp_type_rd_threshold_div[3] = { 3, 16, 16 };
 
 // Intra only frames, golden frames (except alt ref overlays) and
