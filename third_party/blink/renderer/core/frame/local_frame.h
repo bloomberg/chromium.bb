@@ -33,6 +33,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom-blink.h"
 #include "third_party/blink/public/platform/reporting.mojom-blink.h"
@@ -381,15 +382,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Calculated in the constructor but LocalFrames created on behalf of OOPIF
   // aren't set until just before commit (ReadyToCommitNavigation time) by the
   // embedder.
-  bool IsAdSubframe() const { return is_ad_subframe_; }
-  void SetIsAdSubframe() {
-    DCHECK(!IsMainFrame());
-    if (is_ad_subframe_)
-      return;
-    is_ad_subframe_ = true;
-    frame_scheduler_->SetIsAdFrame();
-    InstanceCounters::IncrementCounter(InstanceCounters::kAdSubframeCounter);
-  }
+  bool IsAdSubframe() const;
+  bool IsAdRoot() const;
+  void SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type);
 
   // Binds |request| and prevents resource loading until either the frame is
   // navigated or the request pipe is closed.
@@ -510,11 +505,11 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   bool in_view_source_mode_;
 
-  // True if this frame is heuristically determined to have been created for
-  // advertising purposes. It's per-frame (as opposed to per-document) because
-  // when an iframe is created on behalf of ad script that same frame is not
-  // typically reused for non-ad purposes.
-  bool is_ad_subframe_ = false;
+  // Type of frame detected by heuristics checking if the frame was created
+  // for advertising purposes. It's per-frame (as opposed to per-document)
+  // because when an iframe is created on behalf of ad script that same frame is
+  // not typically reused for non-ad purposes.
+  blink::mojom::AdFrameType ad_frame_type_ = blink::mojom::AdFrameType::kNonAd;
 
   Member<CoreProbeSink> probe_sink_;
   scoped_refptr<InspectorTaskRunner> inspector_task_runner_;

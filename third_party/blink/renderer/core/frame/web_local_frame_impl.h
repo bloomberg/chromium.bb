@@ -36,6 +36,7 @@
 
 #include "base/single_thread_task_runner.h"
 
+#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
 #include "third_party/blink/public/platform/web_file_system_type.h"
@@ -100,7 +101,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebDocument GetDocument() const override;
   WebPerformance Performance() const override;
   bool IsAdSubframe() const override;
-  void SetIsAdSubframe() override;
+  void SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type) override;
   void DispatchUnloadEvent() override;
   void ExecuteScript(const WebScriptSource&) override;
   void ExecuteScriptInIsolatedWorld(int world_id,

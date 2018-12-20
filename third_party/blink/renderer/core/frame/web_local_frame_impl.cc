@@ -656,9 +656,10 @@ bool WebLocalFrameImpl::IsAdSubframe() const {
   return GetFrame()->IsAdSubframe();
 }
 
-void WebLocalFrameImpl::SetIsAdSubframe() {
+void WebLocalFrameImpl::SetIsAdSubframe(
+    blink::mojom::AdFrameType ad_frame_type) {
   DCHECK(GetFrame());
-  GetFrame()->SetIsAdSubframe();
+  GetFrame()->SetIsAdSubframe(ad_frame_type);
 }
 
 void WebLocalFrameImpl::DispatchUnloadEvent() {

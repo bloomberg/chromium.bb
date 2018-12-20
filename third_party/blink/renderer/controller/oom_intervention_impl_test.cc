@@ -290,7 +290,7 @@ TEST_F(OomInterventionImplTest, V1DetectionAdsNavigation) {
       WebString::FromUTF8("non-ad"));
 
   LocalFrame* local_adframe = ToLocalFrame(WebFrame::ToCoreFrame(*ad_iframe));
-  local_adframe->SetIsAdSubframe();
+  local_adframe->SetIsAdSubframe(blink::mojom::AdFrameType::kRootAd);
   LocalFrame* local_non_adframe =
       ToLocalFrame(WebFrame::ToCoreFrame(*non_ad_iframe));
 
