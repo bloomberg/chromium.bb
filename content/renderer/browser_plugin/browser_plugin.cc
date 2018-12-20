@@ -229,7 +229,7 @@ void BrowserPlugin::CreateMusWindowAndEmbed(
   }
   RendererWindowTreeClient* renderer_window_tree_client =
       RendererWindowTreeClient::Get(
-          render_frame->GetRenderWidget()->routing_id());
+          render_frame->GetLocalRootRenderWidget()->routing_id());
   DCHECK(renderer_window_tree_client);
   mus_embedded_frame_ =
       renderer_window_tree_client->CreateMusEmbeddedFrame(this, embed_token);
@@ -523,7 +523,7 @@ bool BrowserPlugin::Initialize(WebPluginContainer* container) {
 
   embedding_render_widget_ =
       RenderFrameImpl::FromWebFrame(container_->GetDocument().GetFrame())
-          ->GetRenderWidget()
+          ->GetLocalRootRenderWidget()
           ->AsWeakPtr();
   embedding_render_widget_->RegisterBrowserPlugin(this);
 

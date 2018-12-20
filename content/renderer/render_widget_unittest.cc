@@ -27,7 +27,7 @@
 #include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/devtools/render_widget_screen_metrics_emulator.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
-#include "content/renderer/render_widget_owner_delegate.h"
+#include "content/renderer/render_widget_delegate.h"
 #include "content/test/fake_compositor_dependencies.h"
 #include "content/test/mock_render_process.h"
 #include "ipc/ipc_test_sink.h"
@@ -497,7 +497,7 @@ class RenderWidgetPopupUnittest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetPopupUnittest);
 };
 
-class StubRenderWidgetOwnerDelegate : public RenderWidgetOwnerDelegate {
+class StubRenderWidgetDelegate : public RenderWidgetDelegate {
  public:
   blink::WebWidget* GetWebWidgetForWidget() const override { return nullptr; }
   blink::WebWidgetClient* GetWebWidgetClientForWidget() override {
@@ -562,9 +562,8 @@ TEST_F(RenderWidgetPopupUnittest, EmulatingPopupRect) {
       new PopupRenderWidget(&compositor_deps_));
   parent_widget->Release();  // Balance Init().
 
-  // Emulation only happens for RenderWidgets with an owner delegate.
-  StubRenderWidgetOwnerDelegate delegate;
-  parent_widget->set_owner_delegate(&delegate);
+  // Emulation only happens for RenderWidgets with a delegate.
+  parent_widget->set_delegate(std::make_unique<StubRenderWidgetDelegate>());
 
   // Setup emulation on the |parent_widget|.
   parent_widget->OnSynchronizeVisualProperties(visual_properties);

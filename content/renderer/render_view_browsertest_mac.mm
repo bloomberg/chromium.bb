@@ -97,7 +97,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   render_thread_->sink().ClearMessages();
 
   const char* kArrowDownScrollDown = "40,false,false,true,false\n9844";
-  view->OnSetEditCommandsForNextKeyEvent(
+  view->GetWidget()->OnSetEditCommandsForNextKeyEvent(
       EditCommands(1, EditCommand("moveToEndOfDocument", "")));
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowDownKeyDown));
   base::RunLoop().RunUntilIdle();
@@ -108,7 +108,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   EXPECT_EQ(kArrowDownScrollDown, output);
 
   const char* kArrowUpScrollUp = "38,false,false,true,false\n0";
-  view->OnSetEditCommandsForNextKeyEvent(
+  view->GetWidget()->OnSetEditCommandsForNextKeyEvent(
       EditCommands(1, EditCommand("moveToBeginningOfDocument", "")));
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowUpKeyDown));
   base::RunLoop().RunUntilIdle();
@@ -124,7 +124,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   ExecuteJavaScriptForTests("allowKeyEvents = false; window.scrollTo(0, 100)");
 
   const char* kArrowDownNoScroll = "40,false,false,true,false\n100";
-  view->OnSetEditCommandsForNextKeyEvent(
+  view->GetWidget()->OnSetEditCommandsForNextKeyEvent(
       EditCommands(1, EditCommand("moveToEndOfDocument", "")));
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowDownKeyDown));
   base::RunLoop().RunUntilIdle();
@@ -135,7 +135,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   EXPECT_EQ(kArrowDownNoScroll, output);
 
   const char* kArrowUpNoScroll = "38,false,false,true,false\n100";
-  view->OnSetEditCommandsForNextKeyEvent(
+  view->GetWidget()->OnSetEditCommandsForNextKeyEvent(
       EditCommands(1, EditCommand("moveToBeginningOfDocument", "")));
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowUpKeyDown));
   base::RunLoop().RunUntilIdle();

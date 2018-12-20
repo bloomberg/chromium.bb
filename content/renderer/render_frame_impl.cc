@@ -1756,7 +1756,7 @@ RenderFrameImpl::~RenderFrameImpl() {
 void RenderFrameImpl::Initialize() {
   is_main_frame_ = !frame_->Parent();
 
-  GetRenderWidget()->RegisterRenderFrame(this);
+  GetLocalRootRenderWidget()->RegisterRenderFrame(this);
 
   RenderFrameImpl* parent_frame =
       RenderFrameImpl::FromWebFrame(frame_->Parent());
@@ -1831,8 +1831,12 @@ void RenderFrameImpl::GetInterface(
   }
 }
 
-RenderWidget* RenderFrameImpl::GetRenderWidget() {
+RenderWidget* RenderFrameImpl::GetLocalRootRenderWidget() {
   return GetLocalRoot()->render_widget_.get();
+}
+
+RenderWidget* RenderFrameImpl::GetMainFrameRenderWidget() {
+  return render_view()->GetWidget();
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -1850,7 +1854,7 @@ void RenderFrameImpl::PepperDidChangeCursor(
   // the plugin would like to set an invisible cursor when there isn't any user
   // input for a while.
   if (instance == pepper_last_mouse_event_target_)
-    GetRenderWidget()->DidChangeCursor(cursor);
+    GetLocalRootRenderWidget()->DidChangeCursor(cursor);
 }
 
 void RenderFrameImpl::PepperDidReceiveMouseEvent(
@@ -1863,7 +1867,7 @@ void RenderFrameImpl::PepperTextInputTypeChanged(
   if (instance != focused_pepper_plugin_)
     return;
 
-  GetRenderWidget()->UpdateTextInputState();
+  GetLocalRootRenderWidget()->UpdateTextInputState();
 
   FocusedNodeChangedForAccessibility(WebNode());
 }
@@ -1872,20 +1876,20 @@ void RenderFrameImpl::PepperCaretPositionChanged(
     PepperPluginInstanceImpl* instance) {
   if (instance != focused_pepper_plugin_)
     return;
-  GetRenderWidget()->UpdateSelectionBounds();
+  GetLocalRootRenderWidget()->UpdateSelectionBounds();
 }
 
 void RenderFrameImpl::PepperCancelComposition(
     PepperPluginInstanceImpl* instance) {
   if (instance != focused_pepper_plugin_)
     return;
-  if (mojom::WidgetInputHandlerHost* host = GetRenderWidget()
+  if (mojom::WidgetInputHandlerHost* host = GetLocalRootRenderWidget()
                                                 ->widget_input_handler_manager()
                                                 ->GetWidgetInputHandlerHost()) {
     host->ImeCancelComposition();
   }
 #if defined(OS_MACOSX) || defined(USE_AURA)
-  GetRenderWidget()->UpdateCompositionInfo(
+  GetLocalRootRenderWidget()->UpdateCompositionInfo(
       false /* not an immediate request */);
 #endif
 }
@@ -1925,8 +1929,9 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
   // web ScreenInfo or the original ScreenInfo here.
   RenderWidgetFullscreenPepper* widget = RenderWidgetFullscreenPepper::Create(
       fullscreen_widget_routing_id, std::move(show_callback),
-      GetRenderWidget()->compositor_deps(), plugin, std::move(main_frame_url),
-      GetRenderWidget()->GetWebScreenInfo(), std::move(widget_channel_request));
+      GetLocalRootRenderWidget()->compositor_deps(), plugin,
+      std::move(main_frame_url), GetLocalRootRenderWidget()->GetWebScreenInfo(),
+      std::move(widget_channel_request));
   // TODO(nick): The show() handshake seems like unnecessary complexity here,
   // since there's no real delay between CreateFullscreenWidget and
   // ShowCreatedFullscreenWidget. Would it be simpler to have the
@@ -1954,20 +1959,21 @@ void RenderFrameImpl::SimulateImeSetComposition(
     const std::vector<blink::WebImeTextSpan>& ime_text_spans,
     int selection_start,
     int selection_end) {
-  render_view_->OnImeSetComposition(text, ime_text_spans,
-                                    gfx::Range::InvalidRange(), selection_start,
-                                    selection_end);
+  GetMainFrameRenderWidget()->OnImeSetComposition(
+      text, ime_text_spans, gfx::Range::InvalidRange(), selection_start,
+      selection_end);
 }
 
 void RenderFrameImpl::SimulateImeCommitText(
     const base::string16& text,
     const std::vector<blink::WebImeTextSpan>& ime_text_spans,
     const gfx::Range& replacement_range) {
-  render_view_->OnImeCommitText(text, ime_text_spans, replacement_range, 0);
+  GetMainFrameRenderWidget()->OnImeCommitText(text, ime_text_spans,
+                                              replacement_range, 0);
 }
 
 void RenderFrameImpl::SimulateImeFinishComposingText(bool keep_selection) {
-  render_view_->OnImeFinishComposingText(keep_selection);
+  GetMainFrameRenderWidget()->OnImeFinishComposingText(keep_selection);
 }
 
 void RenderFrameImpl::OnImeSetComposition(
@@ -2370,13 +2376,13 @@ void RenderFrameImpl::OnClipboardHostError() {
 
 void RenderFrameImpl::OnCopyImageAt(int x, int y) {
   blink::WebFloatRect viewport_position(x, y, 0, 0);
-  GetRenderWidget()->ConvertWindowToViewport(&viewport_position);
+  GetLocalRootRenderWidget()->ConvertWindowToViewport(&viewport_position);
   frame_->CopyImageAt(WebPoint(viewport_position.x, viewport_position.y));
 }
 
 void RenderFrameImpl::OnSaveImageAt(int x, int y) {
   blink::WebFloatRect viewport_position(x, y, 0, 0);
-  GetRenderWidget()->ConvertWindowToViewport(&viewport_position);
+  GetLocalRootRenderWidget()->ConvertWindowToViewport(&viewport_position);
   frame_->SaveImageAt(WebPoint(viewport_position.x, viewport_position.y));
 }
 
@@ -2518,7 +2524,7 @@ void RenderFrameImpl::HandleJavascriptExecutionResult(
 }
 
 void RenderFrameImpl::OnVisualStateRequest(uint64_t id) {
-  GetRenderWidget()->QueueMessage(
+  GetLocalRootRenderWidget()->QueueMessage(
       new FrameHostMsg_VisualStateResponse(routing_id_, id));
 }
 
@@ -2904,7 +2910,7 @@ int RenderFrameImpl::ShowContextMenu(ContextMenuClient* client,
   ContextMenuParams our_params(params);
 
   blink::WebRect position_in_window(params.x, params.y, 0, 0);
-  GetRenderWidget()->ConvertViewportToWindow(&position_in_window);
+  GetLocalRootRenderWidget()->ConvertViewportToWindow(&position_in_window);
   our_params.x = position_in_window.x;
   our_params.y = position_in_window.y;
 
@@ -3668,7 +3674,7 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
     const blink::WebString& sink_id,
     blink::WebLayerTreeView* layer_tree_view) {
   const cc::LayerTreeSettings& settings =
-      GetRenderWidget()->layer_tree_view()->GetLayerTreeSettings();
+      GetLocalRootRenderWidget()->layer_tree_view()->GetLayerTreeSettings();
   return media_factory_.CreateMediaPlayer(source, client, encrypted_client,
                                           initial_cdm, sink_id, layer_tree_view,
                                           settings);
@@ -3778,11 +3784,8 @@ WebExternalPopupMenu* RenderFrameImpl::CreateExternalPopupMenu(
     return NULL;
   external_popup_menu_.reset(
       new ExternalPopupMenu(this, popup_menu_info, popup_menu_client));
-  if (render_view_->screen_metrics_emulator_) {
-    render_view_->SetExternalPopupOriginAdjustmentsForEmulation(
-        external_popup_menu_.get(),
-        render_view_->screen_metrics_emulator_.get());
-  }
+  render_view_->GetWidget()->SetExternalPopupOriginAdjustmentsForEmulation(
+      external_popup_menu_.get());
   return external_popup_menu_.get();
 #else
   return nullptr;
@@ -3977,7 +3980,7 @@ void RenderFrameImpl::FrameDetached(DetachType type) {
     Send(new FrameHostMsg_Detach(routing_id_));
 
   // Clean up the associated RenderWidget for the frame, if there is one.
-  GetRenderWidget()->UnregisterRenderFrame(this);
+  GetLocalRootRenderWidget()->UnregisterRenderFrame(this);
   if (is_main_frame_) {
     // TODO(crbug.com/419087): The RenderWidget for the main frame can't be
     // closed/destroyed since it is part of the RenderView. So instead it is
@@ -4119,7 +4122,7 @@ void RenderFrameImpl::SetHasReceivedUserGestureBeforeNavigation(bool value) {
 }
 
 void RenderFrameImpl::SetMouseCapture(bool capture) {
-  GetRenderWidget()->SetMouseCapture(capture);
+  GetLocalRootRenderWidget()->SetMouseCapture(capture);
 }
 
 bool RenderFrameImpl::ShouldReportDetailedMessageForSource(
@@ -4299,15 +4302,16 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   // track of that on the widget to help the browser process detect when stale
   // compositor frames are being shown after a commit.
   if (is_main_frame_) {
-    GetRenderWidget()->DidNavigate();
+    GetLocalRootRenderWidget()->DidNavigate();
 
     // Update the URL used to key Ukm metrics in the compositor if the
     // navigation is not in the same document, which represents a new source
     // URL.
     // Note that this is only done for the main frame since the metrics for all
     // frames are keyed to the main frame's URL.
-    if (GetRenderWidget()->layer_tree_view())
-      GetRenderWidget()->layer_tree_view()->SetURLForUkm(GetLoadingUrl());
+    if (GetLocalRootRenderWidget()->layer_tree_view())
+      GetLocalRootRenderWidget()->layer_tree_view()->SetURLForUkm(
+          GetLoadingUrl());
   }
 
   service_manager::mojom::InterfaceProviderRequest
@@ -4690,7 +4694,7 @@ void RenderFrameImpl::AbortClientNavigation() {
 }
 
 void RenderFrameImpl::DidChangeSelection(bool is_empty_selection) {
-  if (!GetRenderWidget()->input_handler().handling_input_event() &&
+  if (!GetLocalRootRenderWidget()->input_handler().handling_input_event() &&
       !handling_select_range_)
     return;
 
@@ -4702,13 +4706,13 @@ void RenderFrameImpl::DidChangeSelection(bool is_empty_selection) {
   // was changed, and SyncSelectionIfRequired may send SelectionChanged
   // to notify the selection was changed.  Focus change should be notified
   // before selection change.
-  GetRenderWidget()->UpdateTextInputState();
+  GetLocalRootRenderWidget()->UpdateTextInputState();
   SyncSelectionIfRequired();
 }
 
 bool RenderFrameImpl::HandleCurrentKeyboardEvent() {
   bool did_execute_command = false;
-  for (auto command : GetRenderWidget()->edit_commands()) {
+  for (auto command : GetLocalRootRenderWidget()->edit_commands()) {
     // In gtk and cocoa, it's possible to bind multiple edit commands to one
     // key (but it's the exception). Once one edit command is not executed, it
     // seems safest to not execute the rest.
@@ -4761,13 +4765,13 @@ bool RenderFrameImpl::RunModalBeforeUnloadDialog(bool is_reload) {
 void RenderFrameImpl::ShowContextMenu(const blink::WebContextMenuData& data) {
   ContextMenuParams params = ContextMenuParamsBuilder::Build(data);
   blink::WebRect position_in_window(params.x, params.y, 0, 0);
-  GetRenderWidget()->ConvertViewportToWindow(&position_in_window);
+  GetLocalRootRenderWidget()->ConvertViewportToWindow(&position_in_window);
   params.x = position_in_window.x;
   params.y = position_in_window.y;
-  GetRenderWidget()->OnShowHostContextMenu(&params);
-  if (GetRenderWidget()->has_host_context_menu_location()) {
-    params.x = GetRenderWidget()->host_context_menu_location().x();
-    params.y = GetRenderWidget()->host_context_menu_location().y();
+  GetLocalRootRenderWidget()->OnShowHostContextMenu(&params);
+  if (GetLocalRootRenderWidget()->has_host_context_menu_location()) {
+    params.x = GetLocalRootRenderWidget()->host_context_menu_location().x();
+    params.y = GetLocalRootRenderWidget()->host_context_menu_location().y();
   }
 
   // Serializing a GURL longer than kMaxURLChars will fail, so don't do
@@ -4779,7 +4783,7 @@ void RenderFrameImpl::ShowContextMenu(const blink::WebContextMenuData& data) {
     params.src_url = GURL();
 
   blink::WebRect selection_in_window(data.selection_rect);
-  GetRenderWidget()->ConvertViewportToWindow(&selection_in_window);
+  GetLocalRootRenderWidget()->ConvertViewportToWindow(&selection_in_window);
   params.selection_rect = selection_in_window;
 
 #if defined(OS_ANDROID)
@@ -5441,7 +5445,7 @@ bool RenderFrameImpl::IsMainFrame() {
 }
 
 bool RenderFrameImpl::IsHidden() {
-  return GetRenderWidget()->is_hidden();
+  return GetLocalRootRenderWidget()->is_hidden();
 }
 
 bool RenderFrameImpl::IsLocalRoot() const {
@@ -5487,7 +5491,7 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
   // resource requests. Once those dependencies are unwound or moved to
   // RenderFrameHost (https://crbug.com/304341) we can move the client to be
   // based on the routing_id of the RenderFrameHost.
-  params->render_view_routing_id = render_view_->routing_id();
+  params->render_view_routing_id = render_view_->GetRoutingID();
 
   // "Standard" commits from Blink create new NavigationEntries. We also treat
   // main frame "inert" commits as creating new NavigationEntries if they
@@ -5532,7 +5536,7 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
   // corresponding FrameNavigationEntry.
   params->page_state = SingleHistoryItemToPageState(current_history_item_);
 
-  params->content_source_id = GetRenderWidget()->GetContentSourceId();
+  params->content_source_id = GetLocalRootRenderWidget()->GetContentSourceId();
 
   params->method = request.HttpMethod().Latin1();
   if (params->method == "POST")
@@ -5887,7 +5891,7 @@ bool RenderFrameImpl::SwapIn() {
       // then we won't have to do this.
       render_view_->GetWidget()->SetIsFrozen(false);
     }
-    render_view_->UpdateWebViewWithDeviceScaleFactor();
+    render_view_->GetWidget()->UpdateWebViewWithDeviceScaleFactor();
   }
 
   return true;
@@ -5924,7 +5928,7 @@ void RenderFrameImpl::FocusedNodeChanged(const WebNode& node) {
   if (!node.IsNull() && node.IsElementNode()) {
     WebElement element = const_cast<WebNode&>(node).To<WebElement>();
     blink::WebRect rect = element.BoundsInViewport();
-    GetRenderWidget()->ConvertViewportToWindow(&rect);
+    GetLocalRootRenderWidget()->ConvertViewportToWindow(&rect);
     is_editable = element.IsEditable();
     node_bounds = gfx::Rect(rect);
   }
@@ -5932,7 +5936,7 @@ void RenderFrameImpl::FocusedNodeChanged(const WebNode& node) {
                                            node_bounds));
   // Ensures that further text input state can be sent even when previously
   // focused input and the newly focused input share the exact same state.
-  GetRenderWidget()->ClearTextInputState();
+  GetLocalRootRenderWidget()->ClearTextInputState();
 
   for (auto& observer : observers_)
     observer.FocusedNodeChanged(node);
@@ -6362,7 +6366,7 @@ void RenderFrameImpl::OnMediaPlayerActionAt(
     const gfx::PointF& location,
     const blink::WebMediaPlayerAction& action) {
   blink::WebFloatRect viewport_position(location.x(), location.y(), 0, 0);
-  GetRenderWidget()->ConvertWindowToViewport(&viewport_position);
+  GetLocalRootRenderWidget()->ConvertWindowToViewport(&viewport_position);
   frame_->PerformMediaPlayerAction(
       WebPoint(viewport_position.x, viewport_position.y), action);
 }
@@ -6604,7 +6608,7 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
     selection_range_ = range;
     SetSelectedText(text, offset, range);
   }
-  GetRenderWidget()->UpdateSelectionBounds();
+  GetLocalRootRenderWidget()->UpdateSelectionBounds();
 }
 
 void RenderFrameImpl::SetCustomURLLoaderFactory(
@@ -6632,7 +6636,9 @@ void RenderFrameImpl::ScrollFocusedEditableElementIntoRect(
 
   rect_for_scrolled_focused_editable_node_ = rect;
   has_scrolled_focused_editable_node_into_rect_ = true;
-  if (!GetRenderWidget()->layer_tree_view()->HasPendingPageScaleAnimation() &&
+  if (!GetLocalRootRenderWidget()
+           ->layer_tree_view()
+           ->HasPendingPageScaleAnimation() &&
       autofill_client) {
     autofill_client->DidCompleteFocusChangeInFrame();
   }
@@ -6950,8 +6956,8 @@ void RenderFrameImpl::HandlePepperImeCommit(const base::string16& text) {
         char_event.unmodified_text[i - char_start] = text[i];
       }
 
-      if (GetRenderWidget()->GetWebWidget())
-        GetRenderWidget()->GetWebWidget()->HandleInputEvent(
+      if (GetLocalRootRenderWidget()->GetWebWidget())
+        GetLocalRootRenderWidget()->GetWebWidget()->HandleInputEvent(
             blink::WebCoalescedInputEvent(char_event));
     }
   } else {
@@ -7145,8 +7151,8 @@ void RenderFrameImpl::PepperFocusChanged(PepperPluginInstanceImpl* instance,
   else if (focused_pepper_plugin_ == instance)
     focused_pepper_plugin_ = nullptr;
 
-  GetRenderWidget()->UpdateTextInputState();
-  GetRenderWidget()->UpdateSelectionBounds();
+  GetLocalRootRenderWidget()->UpdateTextInputState();
+  GetLocalRootRenderWidget()->UpdateSelectionBounds();
 }
 
 void RenderFrameImpl::PepperStartsPlayback(PepperPluginInstanceImpl* instance) {
@@ -7229,7 +7235,7 @@ RenderFrameImpl::IsControlledByServiceWorker() {
 }
 
 void RenderFrameImpl::BindWidget(mojom::WidgetRequest request) {
-  GetRenderWidget()->SetWidgetBinding(std::move(request));
+  GetLocalRootRenderWidget()->SetWidgetBinding(std::move(request));
 }
 
 blink::WebComputedAXTree* RenderFrameImpl::GetOrCreateWebComputedAXTree() {

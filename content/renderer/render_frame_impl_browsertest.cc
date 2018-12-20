@@ -239,7 +239,8 @@ TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
   grandchild->in_frame_tree_ = true;
   grandchild->Initialize();
 
-  EXPECT_EQ(grandchild->GetRenderWidget(), frame()->GetRenderWidget());
+  EXPECT_EQ(grandchild->GetLocalRootRenderWidget(),
+            frame()->GetLocalRootRenderWidget());
 
   RenderFrameTestObserver observer(grandchild);
 

@@ -262,10 +262,10 @@ class RenderViewImplTest : public RenderViewTest {
     view->GetWidget()->OnEnableDeviceEmulation(params);
   }
 
-  void ReceiveSetTextDirection(RenderViewImpl* view,
+  void ReceiveSetTextDirection(RenderWidget* widget,
                                blink::WebTextDirection direction) {
     // Emulates receiving an IPC message.
-    view->OnSetTextDirection(direction);
+    widget->OnSetTextDirection(direction);
   }
 
   void GoToOffsetWithParams(int offset,
@@ -433,10 +433,8 @@ class RenderViewImplTest : public RenderViewTest {
   // the main frame is detached and deleted, and makes sure the view does not
   // leak.
   void CloseRenderView(RenderViewImpl* new_view) {
-    new_view->Close();
+    new_view->GetWidget()->Close();
     EXPECT_FALSE(new_view->GetMainRenderFrame());
-
-    new_view->Release();
   }
 
  private:
@@ -477,20 +475,22 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
     visual_properties.new_size = gfx::Size(100, 100);
     visual_properties.compositor_viewport_pixel_size = gfx::Size(200, 200);
     visual_properties.visible_viewport_size = visual_properties.new_size;
-    visual_properties.auto_resize_enabled = view()->auto_resize_mode();
+    visual_properties.auto_resize_enabled =
+        view()->GetWidget()->auto_resize_mode();
     visual_properties.capture_sequence_number =
-        view()->capture_sequence_number();
+        view()->GetWidget()->capture_sequence_number();
     visual_properties.min_size_for_auto_resize =
-        view()->min_size_for_auto_resize();
+        view()->GetWidget()->min_size_for_auto_resize();
     visual_properties.max_size_for_auto_resize =
-        view()->max_size_for_auto_resize();
+        view()->GetWidget()->max_size_for_auto_resize();
     visual_properties.local_surface_id_allocation =
         viz::LocalSurfaceIdAllocation(
             viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()),
             base::TimeTicks::Now());
-    view()->OnSynchronizeVisualProperties(visual_properties);
-    ASSERT_EQ(dsf, view()->GetWebScreenInfo().device_scale_factor);
-    ASSERT_EQ(dsf, view()->GetOriginalScreenInfo().device_scale_factor);
+    view()->GetWidget()->OnSynchronizeVisualProperties(visual_properties);
+    ASSERT_EQ(dsf, view()->GetWidget()->GetWebScreenInfo().device_scale_factor);
+    ASSERT_EQ(dsf,
+              view()->GetWidget()->GetOriginalScreenInfo().device_scale_factor);
   }
 
   void TestEmulatedSizeDprDsf(int width, int height, float dpr,
@@ -516,7 +516,8 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
     EXPECT_EQ(height, emulated_height);
     EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_dpr, &emulated_dpr));
     EXPECT_EQ(static_cast<int>(dpr * 10), emulated_dpr);
-    cc::LayerTreeHost* host = view()->layer_tree_view()->layer_tree_host();
+    cc::LayerTreeHost* host =
+        view()->GetWidget()->layer_tree_view()->layer_tree_host();
     EXPECT_EQ(compositor_dsf, host->device_scale_factor());
   }
 };
@@ -1253,7 +1254,7 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
 
     // Update the IME status and verify if our IME backend sends an IPC message
     // to activate IMEs.
-    view()->UpdateTextInputState();
+    view()->GetWidget()->UpdateTextInputState();
     const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
     EXPECT_TRUE(msg != nullptr);
     EXPECT_EQ(static_cast<uint32_t>(WidgetHostMsg_TextInputStateChanged::ID),
@@ -1275,7 +1276,7 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
 
     // Update the IME status and verify if our IME backend sends an IPC message
     // to de-activate IMEs.
-    view()->UpdateTextInputState();
+    view()->GetWidget()->UpdateTextInputState();
     msg = render_thread_->sink().GetMessageAt(0);
     EXPECT_TRUE(msg != nullptr);
     EXPECT_EQ(static_cast<uint32_t>(WidgetHostMsg_TextInputStateChanged::ID),
@@ -1300,7 +1301,7 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
 
       // Update the IME status and verify if our IME backend sends an IPC
       // message to activate IMEs.
-      view()->UpdateTextInputState();
+      view()->GetWidget()->UpdateTextInputState();
       base::RunLoop().RunUntilIdle();
       const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
       EXPECT_TRUE(msg != nullptr);
@@ -1408,36 +1409,37 @@ TEST_F(RenderViewImplTest, ImeComposition) {
 
       case IME_SETFOCUS:
         // Update the window focus.
-        view()->OnSetFocus(ime_message->enable);
+        view()->GetWidget()->OnSetFocus(ime_message->enable);
         break;
 
       case IME_SETCOMPOSITION:
-        view()->OnImeSetComposition(
+        view()->GetWidget()->OnImeSetComposition(
             base::WideToUTF16(ime_message->ime_string),
             std::vector<blink::WebImeTextSpan>(), gfx::Range::InvalidRange(),
             ime_message->selection_start, ime_message->selection_end);
         break;
 
       case IME_COMMITTEXT:
-        view()->OnImeCommitText(base::WideToUTF16(ime_message->ime_string),
-                                std::vector<blink::WebImeTextSpan>(),
-                                gfx::Range::InvalidRange(), 0);
+        view()->GetWidget()->OnImeCommitText(
+            base::WideToUTF16(ime_message->ime_string),
+            std::vector<blink::WebImeTextSpan>(), gfx::Range::InvalidRange(),
+            0);
         break;
 
       case IME_FINISHCOMPOSINGTEXT:
-        view()->OnImeFinishComposingText(false);
+        view()->GetWidget()->OnImeFinishComposingText(false);
         break;
 
       case IME_CANCELCOMPOSITION:
-        view()->OnImeSetComposition(base::string16(),
-                                    std::vector<blink::WebImeTextSpan>(),
-                                    gfx::Range::InvalidRange(), 0, 0);
+        view()->GetWidget()->OnImeSetComposition(
+            base::string16(), std::vector<blink::WebImeTextSpan>(),
+            gfx::Range::InvalidRange(), 0, 0);
         break;
     }
 
     // Update the status of our IME back-end.
     // TODO(hbono): we should verify messages to be sent from the back-end.
-    view()->UpdateTextInputState();
+    view()->GetWidget()->UpdateTextInputState();
     base::RunLoop().RunUntilIdle();
     render_thread_->sink().ClearMessages();
 
@@ -1480,7 +1482,7 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
   for (size_t i = 0; i < arraysize(kTextDirection); ++i) {
     // Set the text direction of the <textarea> element.
     ExecuteJavaScriptForTests("document.getElementById('test').focus();");
-    ReceiveSetTextDirection(view(), kTextDirection[i].direction);
+    ReceiveSetTextDirection(view()->GetWidget(), kTextDirection[i].direction);
 
     // Write the values of its DOM 'dir' attribute and its CSS 'direction'
     // property to the <div> element.
@@ -1694,43 +1696,46 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   const base::string16 empty_string;
   const std::vector<blink::WebImeTextSpan> empty_ime_text_span;
   std::vector<gfx::Rect> bounds;
-  view()->OnSetFocus(true);
+  view()->GetWidget()->OnSetFocus(true);
 
   // ASCII composition
   const base::string16 ascii_composition = base::UTF8ToUTF16("aiueo");
-  view()->OnImeSetComposition(ascii_composition, empty_ime_text_span,
-                              gfx::Range::InvalidRange(), 0, 0);
-  view()->GetCompositionCharacterBounds(&bounds);
+  view()->GetWidget()->OnImeSetComposition(
+      ascii_composition, empty_ime_text_span, gfx::Range::InvalidRange(), 0, 0);
+  view()->GetWidget()->GetCompositionCharacterBounds(&bounds);
   ASSERT_EQ(ascii_composition.size(), bounds.size());
 
   for (size_t i = 0; i < bounds.size(); ++i)
     EXPECT_LT(0, bounds[i].width());
-  view()->OnImeCommitText(empty_string, std::vector<blink::WebImeTextSpan>(),
-                          gfx::Range::InvalidRange(), 0);
+  view()->GetWidget()->OnImeCommitText(empty_string,
+                                       std::vector<blink::WebImeTextSpan>(),
+                                       gfx::Range::InvalidRange(), 0);
 
   // Non surrogate pair unicode character.
   const base::string16 unicode_composition = base::UTF8ToUTF16(
       "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86\xE3\x81\x88\xE3\x81\x8A");
-  view()->OnImeSetComposition(unicode_composition, empty_ime_text_span,
-                              gfx::Range::InvalidRange(), 0, 0);
-  view()->GetCompositionCharacterBounds(&bounds);
+  view()->GetWidget()->OnImeSetComposition(unicode_composition,
+                                           empty_ime_text_span,
+                                           gfx::Range::InvalidRange(), 0, 0);
+  view()->GetWidget()->GetCompositionCharacterBounds(&bounds);
   ASSERT_EQ(unicode_composition.size(), bounds.size());
   for (size_t i = 0; i < bounds.size(); ++i)
     EXPECT_LT(0, bounds[i].width());
-  view()->OnImeCommitText(empty_string, empty_ime_text_span,
-                          gfx::Range::InvalidRange(), 0);
+  view()->GetWidget()->OnImeCommitText(empty_string, empty_ime_text_span,
+                                       gfx::Range::InvalidRange(), 0);
 
   // Surrogate pair character.
   const base::string16 surrogate_pair_char =
       base::UTF8ToUTF16("\xF0\xA0\xAE\x9F");
-  view()->OnImeSetComposition(surrogate_pair_char, empty_ime_text_span,
-                              gfx::Range::InvalidRange(), 0, 0);
-  view()->GetCompositionCharacterBounds(&bounds);
+  view()->GetWidget()->OnImeSetComposition(surrogate_pair_char,
+                                           empty_ime_text_span,
+                                           gfx::Range::InvalidRange(), 0, 0);
+  view()->GetWidget()->GetCompositionCharacterBounds(&bounds);
   ASSERT_EQ(surrogate_pair_char.size(), bounds.size());
   EXPECT_LT(0, bounds[0].width());
   EXPECT_EQ(0, bounds[1].width());
-  view()->OnImeCommitText(empty_string, empty_ime_text_span,
-                          gfx::Range::InvalidRange(), 0);
+  view()->GetWidget()->OnImeCommitText(empty_string, empty_ime_text_span,
+                                       gfx::Range::InvalidRange(), 0);
 
   // Mixed string.
   const base::string16 surrogate_pair_mixed_composition =
@@ -1739,10 +1744,10 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   const size_t utf16_length = 8UL;
   const bool is_surrogate_pair_empty_rect[8] = {
     false, true, false, false, true, false, false, true };
-  view()->OnImeSetComposition(surrogate_pair_mixed_composition,
-                              empty_ime_text_span, gfx::Range::InvalidRange(),
-                              0, 0);
-  view()->GetCompositionCharacterBounds(&bounds);
+  view()->GetWidget()->OnImeSetComposition(surrogate_pair_mixed_composition,
+                                           empty_ime_text_span,
+                                           gfx::Range::InvalidRange(), 0, 0);
+  view()->GetWidget()->GetCompositionCharacterBounds(&bounds);
   ASSERT_EQ(utf16_length, bounds.size());
   for (size_t i = 0; i < utf16_length; ++i) {
     if (is_surrogate_pair_empty_rect[i]) {
@@ -1751,8 +1756,8 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
       EXPECT_LT(0, bounds[i].width());
     }
   }
-  view()->OnImeCommitText(empty_string, empty_ime_text_span,
-                          gfx::Range::InvalidRange(), 0);
+  view()->GetWidget()->OnImeCommitText(empty_string, empty_ime_text_span,
+                                       gfx::Range::InvalidRange(), 0);
 }
 #endif
 
@@ -2725,18 +2730,18 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
   const base::string16 empty_string;
   const std::vector<blink::WebImeTextSpan> empty_ime_text_span;
   std::vector<gfx::Rect> bounds_at_1x;
-  view()->OnSetFocus(true);
+  view()->GetWidget()->OnSetFocus(true);
 
   // ASCII composition
   const base::string16 ascii_composition = base::UTF8ToUTF16("aiueo");
-  view()->OnImeSetComposition(ascii_composition, empty_ime_text_span,
-                              gfx::Range::InvalidRange(), 0, 0);
-  view()->GetCompositionCharacterBounds(&bounds_at_1x);
+  view()->GetWidget()->OnImeSetComposition(
+      ascii_composition, empty_ime_text_span, gfx::Range::InvalidRange(), 0, 0);
+  view()->GetWidget()->GetCompositionCharacterBounds(&bounds_at_1x);
   ASSERT_EQ(ascii_composition.size(), bounds_at_1x.size());
 
   SetDeviceScaleFactor(2.f);
   std::vector<gfx::Rect> bounds_at_2x;
-  view()->GetCompositionCharacterBounds(&bounds_at_2x);
+  view()->GetWidget()->GetCompositionCharacterBounds(&bounds_at_2x);
   ASSERT_EQ(bounds_at_1x.size(), bounds_at_2x.size());
   for (size_t i = 0; i < bounds_at_1x.size(); i++) {
     const gfx::Rect& b1 = bounds_at_1x[i];

@@ -32,8 +32,9 @@ void InputTargetClientImpl::FrameSinkIdAt(const gfx::PointF& point,
                          "step", "FrameSinkIdAt");
 
   gfx::PointF local_point;
-  viz::FrameSinkId id = render_frame_->GetRenderWidget()->GetFrameSinkIdAtPoint(
-      point, &local_point);
+  viz::FrameSinkId id =
+      render_frame_->GetLocalRootRenderWidget()->GetFrameSinkIdAtPoint(
+          point, &local_point);
   std::move(callback).Run(id, local_point);
 }
 
