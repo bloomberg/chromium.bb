@@ -82,7 +82,6 @@ extern const base::Feature kAutofillUpstreamUseGooglePayBrandingOnMobile;
 extern const base::Feature kAutofillUseApi;
 extern const base::Feature kAutofillUsePaymentsCustomerData;
 extern const base::Feature kAutomaticPasswordGeneration;
-extern const base::Feature kSingleClickAutofill;
 extern const char kAutofillCreditCardLastUsedDateShowExpirationDateKey[];
 extern const char kAutofillLocalCardMigrationCloseButtonDelay[];
 extern const char kAutofillCreditCardLocalCardMigrationParameterName[];

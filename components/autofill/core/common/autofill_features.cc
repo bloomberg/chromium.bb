@@ -303,10 +303,6 @@ const base::Feature kAutomaticPasswordGeneration = {
     "AutomaticPasswordGeneration", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-// Controls whether or not the autofill UI triggers on a single click.
-const base::Feature kSingleClickAutofill{"SingleClickAutofill",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 const char kAutofillCreditCardLocalCardMigrationParameterName[] = "variant";
 
 const char kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage[] =

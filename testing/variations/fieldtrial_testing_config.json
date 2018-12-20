@@ -782,21 +782,6 @@
             ]
         }
     ],
-    "AutofillSingleClick": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
-                }
-            ]
-        }
-    ],
     "AutofillSmallFormSupport": [
         {
             "platforms": [

@@ -1739,10 +1739,6 @@ const char kSimplifyHttpsIndicatorName[] = "Simplify HTTPS indicator UI";
 const char kSimplifyHttpsIndicatorDescription[] =
     "Change the UI treatment for HTTPS pages.";
 
-const char kSingleClickAutofillName[] = "Single-click autofill";
-const char kSingleClickAutofillDescription[] =
-    "Make autofill suggestions on initial mouse click on a form element.";
-
 const char kSingleTabMode[] = "Single-tab mode";
 const char kSingleTabModeDescription[] =
     "Windows with a single tab receive a special, minimal visual treatment.";
