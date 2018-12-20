@@ -14,17 +14,22 @@
 #include "extensions/shell/browser/desktop_controller.h"
 #include "extensions/shell/browser/shell_content_browser_client.h"
 #include "extensions/shell/browser/shell_extension_system.h"
+#include "ui/base/ui_base_features.h"
 
 namespace extensions {
 
 AppShellTest::AppShellTest()
     : browser_context_(nullptr),
       extension_system_(nullptr) {
+  // Disable mash until app_shell test infra is updated to use Window Service.
+  scoped_feature_list_.InitWithFeatures(
+      {} /* enabled */,
+      {features::kMash, features::kSingleProcessMash} /* disabled */);
+
   CreateTestServer(base::FilePath(FILE_PATH_LITERAL("extensions/test/data")));
 }
 
-AppShellTest::~AppShellTest() {
-}
+AppShellTest::~AppShellTest() = default;
 
 void AppShellTest::SetUp() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
