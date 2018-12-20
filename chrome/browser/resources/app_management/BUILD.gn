@@ -17,6 +17,7 @@ if (!is_android) {
       ":main_view",
       ":pwa_permission_view",
       ":reducers",
+      ":router",
       ":store",
       ":store_client",
       ":types",
@@ -46,6 +47,7 @@ if (!is_android) {
       ":browser_proxy",
       ":main_view",
       ":pwa_permission_view",
+      ":router",
       ":util",
     ]
   }
@@ -70,6 +72,8 @@ if (!is_android) {
 
   js_library("item") {
     deps = [
+      ":actions",
+      ":store_client",
       "//ui/webui/resources/js:load_time_data",
     ]
   }
@@ -94,6 +98,14 @@ if (!is_android) {
     deps = [
       ":types",
       "//ui/webui/resources/js:cr",
+    ]
+  }
+
+  js_library("router") {
+    deps = [
+      ":actions",
+      ":constants",
+      ":store_client",
     ]
   }
 

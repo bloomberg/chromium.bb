@@ -7,12 +7,35 @@
  */
 
 cr.define('app_management.util', function() {
-  /** @return {!AppManagementPageState} */
+  /**
+   * @return {!AppManagementPageState}
+   */
   function createEmptyState() {
-    return {apps: {}};
+    return {
+      apps: {},
+      currentPage: {
+        pageType: PageType.MAIN,
+        selectedAppId: null,
+      }
+    };
+  }
+
+  /**
+   * @param {!Array<App>} apps
+   * @return {!AppManagementPageState}
+   */
+  function createInitialState(apps) {
+    const initialState = createEmptyState();
+
+    for (const app of apps) {
+      initialState.apps[app.id] = app;
+    }
+
+    return initialState;
   }
 
   return {
     createEmptyState: createEmptyState,
+    createInitialState: createInitialState,
   };
 });

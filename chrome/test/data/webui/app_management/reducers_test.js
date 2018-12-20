@@ -5,6 +5,7 @@
 suite('app state', function() {
   let apps;
   let action;
+  let state;
 
   function createApp(id, config) {
     return app_management.FakePageHandler.createApp(id, config);
@@ -16,6 +17,12 @@ suite('app state', function() {
       '1': createApp('1'),
       '2': createApp('2'),
     };
+
+    // Create an initial state.
+    state = app_management.util.createInitialState([
+      createApp('1'),
+      createApp('2'),
+    ]);
   });
 
   test('updates when apps are added', function() {
@@ -45,12 +52,12 @@ suite('app state', function() {
     action = app_management.actions.changeApp(changedApp);
     apps = app_management.AppState.updateApps(apps, action);
 
-    // Check that app has changed
+    // Check that app has changed.
     const app = apps['2'];
     assertEquals(1, app.type);
     assertEquals('a', app.title);
 
-    // Check that number of apps hasn't changed
+    // Check that number of apps hasn't changed.
     assertEquals(Object.keys(apps).length, 2);
   });
 
@@ -58,10 +65,48 @@ suite('app state', function() {
     action = app_management.actions.removeApp('1');
     apps = app_management.AppState.updateApps(apps, action);
 
-    // Check that app is removed
+    // Check that app is removed.
     assertFalse(!!apps['1']);
 
-    // Check that other app is unaffected
+    // Check that other app is unaffected.
     assertTrue(!!apps['2']);
+  });
+
+  test('state updates when changing to main page', function() {
+    // Returning to main page results in no selected app.
+    state.currentPage.selectedAppId = '1';
+    state.currentPage.pageType = PageType.DETAIL;
+
+    action = app_management.actions.changePage(PageType.MAIN);
+    state = app_management.reduceAction(state, action);
+
+    assertEquals(null, state.currentPage.selectedAppId);
+    assertEquals(PageType.MAIN, state.currentPage.pageType);
+
+    // Id is disregarded when changing to main page.
+    action = app_management.actions.changePage(PageType.MAIN, '1');
+    state = app_management.reduceAction(state, action);
+
+    assertEquals(null, state.currentPage.selectedAppId);
+    assertEquals(PageType.MAIN, state.currentPage.pageType);
+  });
+
+  test('state updates when changing to app detail page', function() {
+    // State updates when a valid app detail page is selected.
+    action = app_management.actions.changePage(PageType.DETAIL, '2');
+    state = app_management.reduceAction(state, action);
+
+    assertEquals('2', state.currentPage.selectedAppId);
+    assertEquals(PageType.DETAIL, state.currentPage.pageType);
+
+    // State returns to main page if invalid app id is given.
+    state.currentPage.selectedAppId = '2';
+    state.currentPage.pageType = PageType.DETAIL;
+
+    action = app_management.actions.changePage(PageType.DETAIL, '3');
+    state = app_management.reduceAction(state, action);
+
+    assertEquals(null, state.currentPage.selectedAppId);
+    assertEquals(PageType.MAIN, state.currentPage.pageType);
   });
 });
