@@ -10487,13 +10487,115 @@ static void sf_refine_fast_tx_type_search(
   }
 }
 
+// Contains information on which modes to skip. The last entry contains
+// information on whether the reference frames should should be skipped.
+typedef struct mode_skip_mask_struct {
+  uint32_t mode[REF_FRAMES];
+  uint16_t ref_frame1;
+  uint16_t ref_frame2;
+} mode_skip_mask_t;
+
+static void init_mode_skip_mask(mode_skip_mask_t *mask, const AV1_COMP *cpi,
+                                MACROBLOCK *x, BLOCK_SIZE bsize) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const struct segmentation *const seg = &cm->seg;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *const mbmi = xd->mi[0];
+  unsigned char segment_id = mbmi->segment_id;
+  const SPEED_FEATURES *const sf = &cpi->sf;
+
+  memset(mask, 0, sizeof(*mask));
+
+  int min_pred_mv_sad = INT_MAX;
+  MV_REFERENCE_FRAME ref_frame;
+  for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame)
+    min_pred_mv_sad = AOMMIN(min_pred_mv_sad, x->pred_mv_sad[ref_frame]);
+
+  for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
+    if (!(cpi->ref_frame_flags & ref_frame_flag_list[ref_frame])) {
+      // Skip checking missing references in both single and compound reference
+      // modes. Note that a mode will be skipped iff both reference frames
+      // are masked out.
+      mask->ref_frame1 |= (1 << ref_frame);
+      mask->ref_frame2 |= SECOND_REF_FRAME_MASK;
+    } else {
+      // Skip fixed mv modes for poor references
+      if ((x->pred_mv_sad[ref_frame] >> 2) > min_pred_mv_sad) {
+        mask->mode[ref_frame] |= INTER_NEAREST_NEAR_ZERO;
+      }
+    }
+    // If the segment reference frame feature is enabled....
+    // then do nothing if the current ref frame is not allowed..
+    if (segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME) &&
+        get_segdata(seg, segment_id, SEG_LVL_REF_FRAME) != (int)ref_frame) {
+      mask->ref_frame1 |= (1 << ref_frame);
+      mask->ref_frame2 |= SECOND_REF_FRAME_MASK;
+    }
+  }
+  // Disable this drop out case if the ref frame
+  // segment level feature is enabled for this segment. This is to
+  // prevent the possibility that we end up unable to pick any mode.
+  if (!segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME)) {
+    // Only consider GLOBALMV/ALTREF_FRAME for alt ref frame,
+    // unless ARNR filtering is enabled in which case we want
+    // an unfiltered alternative. We allow near/nearest as well
+    // because they may result in zero-zero MVs but be cheaper.
+    if (cpi->rc.is_src_frame_alt_ref && (cpi->oxcf.arnr_max_frames == 0)) {
+      mask->ref_frame1 = (1 << LAST_FRAME) | (1 << LAST2_FRAME) |
+                         (1 << LAST3_FRAME) | (1 << BWDREF_FRAME) |
+                         (1 << ALTREF2_FRAME) | (1 << GOLDEN_FRAME);
+      mask->ref_frame2 = SECOND_REF_FRAME_MASK;
+      // TODO(zoeliu): To further explore whether following needs to be done for
+      //               BWDREF_FRAME as well.
+      mask->mode[ALTREF_FRAME] = ~INTER_NEAREST_NEAR_ZERO;
+      const MV_REFERENCE_FRAME tmp_ref_frames[2] = { ALTREF_FRAME, NONE_FRAME };
+      int_mv near_mv, nearest_mv, global_mv;
+      get_this_mv(&nearest_mv, NEARESTMV, 0, 0, tmp_ref_frames, x->mbmi_ext);
+      get_this_mv(&near_mv, NEARMV, 0, 0, tmp_ref_frames, x->mbmi_ext);
+      get_this_mv(&global_mv, GLOBALMV, 0, 0, tmp_ref_frames, x->mbmi_ext);
+
+      if (near_mv.as_int != global_mv.as_int)
+        mask->mode[ALTREF_FRAME] |= (1 << NEARMV);
+      if (nearest_mv.as_int != global_mv.as_int)
+        mask->mode[ALTREF_FRAME] |= (1 << NEARESTMV);
+    }
+  }
+
+  if (cpi->rc.is_src_frame_alt_ref) {
+    if (sf->alt_ref_search_fp) {
+      assert(cpi->ref_frame_flags & ref_frame_flag_list[ALTREF_FRAME]);
+      mask->mode[ALTREF_FRAME] = 0;
+      mask->ref_frame1 = ~(1 << ALTREF_FRAME);
+      mask->ref_frame2 = SECOND_REF_FRAME_MASK;
+    }
+  }
+
+  if (sf->alt_ref_search_fp)
+    if (!cm->show_frame && x->pred_mv_sad[GOLDEN_FRAME] < INT_MAX)
+      if (x->pred_mv_sad[ALTREF_FRAME] > (x->pred_mv_sad[GOLDEN_FRAME] << 1))
+        mask->mode[ALTREF_FRAME] |= INTER_ALL;
+
+  if (sf->adaptive_mode_search) {
+    if (cm->show_frame && !cpi->rc.is_src_frame_alt_ref &&
+        cpi->rc.frames_since_golden >= 3)
+      if ((x->pred_mv_sad[GOLDEN_FRAME] >> 1) > x->pred_mv_sad[LAST_FRAME])
+        mask->mode[GOLDEN_FRAME] |= INTER_ALL;
+  }
+
+  if (bsize > sf->max_intra_bsize) {
+    mask->ref_frame1 |= (1 << INTRA_FRAME);
+    mask->ref_frame2 |= (1 << INTRA_FRAME);
+  }
+
+  mask->mode[INTRA_FRAME] |= ~(sf->intra_y_mode_mask[max_txsize_lookup[bsize]]);
+}
+
 // Please add/modify parameter setting in this function, making it consistent
 // and easy to read and maintain.
 static void set_params_rd_pick_inter_mode(
     const AV1_COMP *cpi, MACROBLOCK *x, HandleInterModeArgs *args,
-    BLOCK_SIZE bsize, int mi_row, int mi_col, uint16_t ref_frame_skip_mask[2],
-    uint32_t mode_skip_mask[REF_FRAMES], int skip_ref_frame_mask,
-    unsigned int ref_costs_single[REF_FRAMES],
+    BLOCK_SIZE bsize, int mi_row, int mi_col, mode_skip_mask_t *mode_skip_mask,
+    int skip_ref_frame_mask, unsigned int ref_costs_single[REF_FRAMES],
     unsigned int ref_costs_comp[REF_FRAMES][REF_FRAMES],
     struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE]) {
   const AV1_COMMON *const cm = &cpi->common;
@@ -10501,8 +10603,6 @@ static void set_params_rd_pick_inter_mode(
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
-  const struct segmentation *const seg = &cm->seg;
-  const SPEED_FEATURES *const sf = &cpi->sf;
   unsigned char segment_id = mbmi->segment_id;
   int dst_width1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
   int dst_width2[MAX_MB_PLANE] = { MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1,
@@ -10607,93 +10707,7 @@ static void set_params_rd_pick_inter_mode(
         args->left_pred_stride[0]);
   }
 
-  int min_pred_mv_sad = INT_MAX;
-  for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame)
-    min_pred_mv_sad = AOMMIN(min_pred_mv_sad, x->pred_mv_sad[ref_frame]);
-
-  for (int i = 0; i < 2; ++i) {
-    ref_frame_skip_mask[i] = 0;
-  }
-  memset(mode_skip_mask, 0, REF_FRAMES * sizeof(*mode_skip_mask));
-  for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-    if (!(cpi->ref_frame_flags & ref_frame_flag_list[ref_frame])) {
-      // Skip checking missing references in both single and compound reference
-      // modes. Note that a mode will be skipped iff both reference frames
-      // are masked out.
-      ref_frame_skip_mask[0] |= (1 << ref_frame);
-      ref_frame_skip_mask[1] |= SECOND_REF_FRAME_MASK;
-    } else {
-      // Skip fixed mv modes for poor references
-      if ((x->pred_mv_sad[ref_frame] >> 2) > min_pred_mv_sad) {
-        mode_skip_mask[ref_frame] |= INTER_NEAREST_NEAR_ZERO;
-      }
-    }
-    // If the segment reference frame feature is enabled....
-    // then do nothing if the current ref frame is not allowed..
-    if (segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME) &&
-        get_segdata(seg, segment_id, SEG_LVL_REF_FRAME) != (int)ref_frame) {
-      ref_frame_skip_mask[0] |= (1 << ref_frame);
-      ref_frame_skip_mask[1] |= SECOND_REF_FRAME_MASK;
-    }
-  }
-
-  // Disable this drop out case if the ref frame
-  // segment level feature is enabled for this segment. This is to
-  // prevent the possibility that we end up unable to pick any mode.
-  if (!segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME)) {
-    // Only consider GLOBALMV/ALTREF_FRAME for alt ref frame,
-    // unless ARNR filtering is enabled in which case we want
-    // an unfiltered alternative. We allow near/nearest as well
-    // because they may result in zero-zero MVs but be cheaper.
-    if (cpi->rc.is_src_frame_alt_ref && (cpi->oxcf.arnr_max_frames == 0)) {
-      ref_frame_skip_mask[0] = (1 << LAST_FRAME) | (1 << LAST2_FRAME) |
-                               (1 << LAST3_FRAME) | (1 << BWDREF_FRAME) |
-                               (1 << ALTREF2_FRAME) | (1 << GOLDEN_FRAME);
-      ref_frame_skip_mask[1] = SECOND_REF_FRAME_MASK;
-      // TODO(zoeliu): To further explore whether following needs to be done for
-      //               BWDREF_FRAME as well.
-      mode_skip_mask[ALTREF_FRAME] = ~INTER_NEAREST_NEAR_ZERO;
-      const MV_REFERENCE_FRAME tmp_ref_frames[2] = { ALTREF_FRAME, NONE_FRAME };
-      int_mv near_mv, nearest_mv, global_mv;
-      get_this_mv(&nearest_mv, NEARESTMV, 0, 0, tmp_ref_frames, x->mbmi_ext);
-      get_this_mv(&near_mv, NEARMV, 0, 0, tmp_ref_frames, x->mbmi_ext);
-      get_this_mv(&global_mv, GLOBALMV, 0, 0, tmp_ref_frames, x->mbmi_ext);
-
-      if (near_mv.as_int != global_mv.as_int)
-        mode_skip_mask[ALTREF_FRAME] |= (1 << NEARMV);
-      if (nearest_mv.as_int != global_mv.as_int)
-        mode_skip_mask[ALTREF_FRAME] |= (1 << NEARESTMV);
-    }
-  }
-
-  if (cpi->rc.is_src_frame_alt_ref) {
-    if (sf->alt_ref_search_fp) {
-      assert(cpi->ref_frame_flags & ref_frame_flag_list[ALTREF_FRAME]);
-      mode_skip_mask[ALTREF_FRAME] = 0;
-      ref_frame_skip_mask[0] = ~(1 << ALTREF_FRAME);
-      ref_frame_skip_mask[1] = SECOND_REF_FRAME_MASK;
-    }
-  }
-
-  if (sf->alt_ref_search_fp)
-    if (!cm->show_frame && x->pred_mv_sad[GOLDEN_FRAME] < INT_MAX)
-      if (x->pred_mv_sad[ALTREF_FRAME] > (x->pred_mv_sad[GOLDEN_FRAME] << 1))
-        mode_skip_mask[ALTREF_FRAME] |= INTER_ALL;
-
-  if (sf->adaptive_mode_search) {
-    if (cm->show_frame && !cpi->rc.is_src_frame_alt_ref &&
-        cpi->rc.frames_since_golden >= 3)
-      if ((x->pred_mv_sad[GOLDEN_FRAME] >> 1) > x->pred_mv_sad[LAST_FRAME])
-        mode_skip_mask[GOLDEN_FRAME] |= INTER_ALL;
-  }
-
-  if (bsize > sf->max_intra_bsize) {
-    ref_frame_skip_mask[0] |= (1 << INTRA_FRAME);
-    ref_frame_skip_mask[1] |= (1 << INTRA_FRAME);
-  }
-
-  mode_skip_mask[INTRA_FRAME] |=
-      ~(sf->intra_y_mode_mask[max_txsize_lookup[bsize]]);
+  init_mode_skip_mask(mode_skip_mask, cpi, x, bsize);
 
   if (cpi->sf.tx_type_search.fast_intra_tx_type_search)
     x->use_default_intra_tx_type = 1;
@@ -10901,14 +10915,24 @@ static void init_inter_mode_search_state(InterModeSearchState *search_state,
   av1_zero(search_state->single_state_modelled_cnt);
 }
 
+bool mask_says_skip(const mode_skip_mask_t *mode_skip_mask,
+                    const MV_REFERENCE_FRAME *ref_frame,
+                    const PREDICTION_MODE this_mode) {
+  if (mode_skip_mask->mode[ref_frame[0]] & (1 << this_mode)) {
+    return true;
+  }
+
+  return (mode_skip_mask->ref_frame1 & (1 << ref_frame[0])) &&
+         (mode_skip_mask->ref_frame2 & (1 << AOMMAX(0, ref_frame[1])));
+}
+
 // Case 1: return 0, means don't skip this mode
 // Case 2: return 1, means skip this mode completely
 // Case 3: return 2, means skip compound only, but still try single motion modes
 static int inter_mode_search_order_independent_skip(
     const AV1_COMP *cpi, const PICK_MODE_CONTEXT *ctx, const MACROBLOCK *x,
     BLOCK_SIZE bsize, int mode_index, int mi_row, int mi_col,
-    uint32_t *mode_skip_mask, uint16_t *ref_frame_skip_mask,
-    InterModeSearchState *search_state) {
+    mode_skip_mask_t *mode_skip_mask, InterModeSearchState *search_state) {
   const SPEED_FEATURES *const sf = &cpi->sf;
   const AV1_COMMON *const cm = &cpi->common;
   const struct segmentation *const seg = &cm->seg;
@@ -10921,12 +10945,7 @@ static int inter_mode_search_order_independent_skip(
   const PREDICTION_MODE this_mode = av1_mode_order[mode_index].mode;
   int skip_motion_mode = 0;
 
-  if (mode_skip_mask[ref_frame[0]] & (1 << this_mode)) {
-    return 1;
-  }
-
-  if ((ref_frame_skip_mask[0] & (1 << ref_frame[0])) &&
-      (ref_frame_skip_mask[1] & (1 << AOMMAX(0, ref_frame[1])))) {
+  if (mask_says_skip(mode_skip_mask, ref_frame, this_mode)) {
     return 1;
   }
 
@@ -11702,8 +11721,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   unsigned int ref_costs_comp[REF_FRAMES][REF_FRAMES];
   int *comp_inter_cost = x->comp_inter_cost[av1_get_reference_mode_context(xd)];
   int *mode_map = tile_data->mode_map[bsize];
-  uint32_t mode_skip_mask[REF_FRAMES];
-  uint16_t ref_frame_skip_mask[2];
+  mode_skip_mask_t mode_skip_mask;
   uint8_t motion_mode_skip_mask = 0;  // second pass of single ref modes
 #if CONFIG_ONE_PASS_SVM
   int temp_y_eob = 0, temp_y_eob_0 = 0, temp_y_eob_1 = 0, temp_y_eob_2 = 0,
@@ -11734,9 +11752,9 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   av1_invalid_rd_stats(rd_cost);
 
   // init params, set frame modes, speed features
-  set_params_rd_pick_inter_mode(
-      cpi, x, &args, bsize, mi_row, mi_col, ref_frame_skip_mask, mode_skip_mask,
-      ctx->skip_ref_frame_mask, ref_costs_single, ref_costs_comp, yv12_mb);
+  set_params_rd_pick_inter_mode(cpi, x, &args, bsize, mi_row, mi_col,
+                                &mode_skip_mask, ctx->skip_ref_frame_mask,
+                                ref_costs_single, ref_costs_comp, yv12_mb);
 
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
   int64_t best_est_rd = INT64_MAX;
@@ -11815,8 +11833,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
 
     const int ret = inter_mode_search_order_independent_skip(
-        cpi, ctx, x, bsize, mode_index, mi_row, mi_col, mode_skip_mask,
-        ref_frame_skip_mask, &search_state);
+        cpi, ctx, x, bsize, mode_index, mi_row, mi_col, &mode_skip_mask,
+        &search_state);
     if (ret == 1) continue;
     args.skip_motion_mode = (ret == 2);
 
