@@ -810,8 +810,9 @@ void ThreadableLoader::ReportResponseReceived(
   if (!frame)
     return;
   DocumentLoader* loader = frame->Loader().GetDocumentLoader();
-  probe::didReceiveResourceResponse(execution_context_, identifier, loader,
-                                    response, GetResource());
+  probe::didReceiveResourceResponse(probe::ToCoreProbeSink(execution_context_),
+                                    identifier, loader, response,
+                                    GetResource());
   frame->Console().ReportResourceResponseReceived(loader, identifier, response);
 }
 

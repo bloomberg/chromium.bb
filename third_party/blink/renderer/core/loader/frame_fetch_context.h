@@ -51,6 +51,7 @@ n * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 namespace blink {
 
 class ClientHintsPreferences;
+class CoreProbeSink;
 class Document;
 class DocumentLoader;
 class LocalFrame;
@@ -266,6 +267,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   // Returns the origin of the top frame in the document.
   scoped_refptr<const SecurityOrigin> GetTopFrameOrigin() const;
+
+  CoreProbeSink* Probe() const;
 
   Member<DocumentLoader> document_loader_;
   Member<Document> document_;
