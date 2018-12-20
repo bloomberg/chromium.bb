@@ -553,7 +553,7 @@ typedef unrestricted float GLclampf;
 
     GLenum getError();
 
-    [CallWith=ScriptState] object? getExtension(DOMString name);
+    [CallWith=ScriptState, HighEntropy, Measure] object? getExtension(DOMString name);
 
     [CallWith=ScriptState] any getFramebufferAttachmentParameter(GLenum target, GLenum attachment, GLenum pname);
     [CallWith=ScriptState] any getParameter(GLenum pname);
@@ -568,7 +568,7 @@ typedef unrestricted float GLclampf;
 
     DOMString?   getShaderSource(WebGLShader shader);
 
-    sequence<DOMString>? getSupportedExtensions();
+    [HighEntropy, Measure] sequence<DOMString>? getSupportedExtensions();
 
     [CallWith=ScriptState] any getTexParameter(GLenum target, GLenum pname);
 

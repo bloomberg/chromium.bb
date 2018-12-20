@@ -21079,6 +21079,66 @@ Called by update_net_error_codes.py.-->
   <int value="2662" label="NavigatorPlugins"/>
   <int value="2663" label="NavigatorUserAgent"/>
   <int value="2664" label="WebBluetoothRequestScan"/>
+  <int value="2665" label="V8SVGGeometryElement_IsPointInFill_Method"/>
+  <int value="2666" label="V8SVGGeometryElement_IsPointInStroke_Method"/>
+  <int value="2667" label="V8SVGGeometryElement_GetTotalLength_Method"/>
+  <int value="2668" label="V8SVGGeometryElement_GetPointAtLength_Method"/>
+  <int value="2669" label="OffscreenCanvasTransferToImageBitmap"/>
+  <int value="2670" label="OffscreenCanvasIsPointInPath"/>
+  <int value="2671" label="OffscreenCanvasIsPointInStroke"/>
+  <int value="2672" label="OffscreenCanvasMeasureText"/>
+  <int value="2673" label="OffscreenCanvasGetImageData"/>
+  <int value="2674"
+      label="V8SVGTextContentElement_GetComputedTextLength_Method"/>
+  <int value="2675"
+      label="V8SVGTextContentElement_GetEndPositionOfChar_Method"/>
+  <int value="2676" label="V8SVGTextContentElement_GetExtentOfChar_Method"/>
+  <int value="2677"
+      label="V8SVGTextContentElement_GetStartPositionOfChar_Method"/>
+  <int value="2678" label="V8SVGTextContentElement_GetSubStringLength_Method"/>
+  <int value="2679" label="V8BatteryManager_ChargingTime_AttributeGetter"/>
+  <int value="2680" label="V8BatteryManager_Charging_AttributeGetter"/>
+  <int value="2681" label="V8BatteryManager_DischargingTime_AttributeGetter"/>
+  <int value="2682" label="V8BatteryManager_Level_AttributeGetter"/>
+  <int value="2683" label="V8PaintRenderingContext2D_IsPointInPath_Method"/>
+  <int value="2684" label="V8PaintRenderingContext2D_IsPointInStroke_Method"/>
+  <int value="2685" label="V8PaymentRequest_CanMakePayment_Method"/>
+  <int value="2686" label="V8AnalyserNode_GetByteFrequencyData_Method"/>
+  <int value="2687" label="V8AnalyserNode_GetByteTimeDomainData_Method"/>
+  <int value="2688" label="V8AnalyserNode_GetFloatFrequencyData_Method"/>
+  <int value="2689" label="V8AnalyserNode_GetFloatTimeDomainData_Method"/>
+  <int value="2690" label="V8AudioBuffer_CopyFromChannel_Method"/>
+  <int value="2691" label="V8AudioBuffer_GetChannelData_Method"/>
+  <int value="2692" label="WebGLDebugRendererInfo"/>
+  <int value="2693"
+      label="V8WebGL2ComputeRenderingContext_GetExtension_Method"/>
+  <int value="2694"
+      label="V8WebGL2ComputeRenderingContext_GetSupportedExtensions_Method"/>
+  <int value="2695" label="V8WebGL2RenderingContext_GetExtension_Method"/>
+  <int value="2696"
+      label="V8WebGL2RenderingContext_GetSupportedExtensions_Method"/>
+  <int value="2697" label="V8WebGLRenderingContext_GetExtension_Method"/>
+  <int value="2698"
+      label="V8WebGLRenderingContext_GetSupportedExtensions_Method"/>
+  <int value="2699" label="V8Screen_AvailHeight_AttributeGetter"/>
+  <int value="2700" label="V8Screen_AvailWidth_AttributeGetter"/>
+  <int value="2701" label="V8Screen_ColorDepth_AttributeGetter"/>
+  <int value="2702" label="V8Screen_Height_AttributeGetter"/>
+  <int value="2703" label="V8Screen_PixelDepth_AttributeGetter"/>
+  <int value="2704" label="V8Screen_Width_AttributeGetter"/>
+  <int value="2705" label="WindowInnerWidth"/>
+  <int value="2706" label="WindowInnerHeight"/>
+  <int value="2707" label="V8Window_MatchMedia_Method"/>
+  <int value="2708" label="WindowScrollX"/>
+  <int value="2709" label="WindowScrollY"/>
+  <int value="2710" label="WindowPageXOffset"/>
+  <int value="2711" label="WindowPageYOffset"/>
+  <int value="2712" label="WindowScreenX"/>
+  <int value="2713" label="WindowScreenY"/>
+  <int value="2714" label="WindowOuterHeight"/>
+  <int value="2715" label="WindowOuterWidth"/>
+  <int value="2716" label="WindowDevicePixelRatio"/>
+  <int value="2717" label="CanvasCaptureStream"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

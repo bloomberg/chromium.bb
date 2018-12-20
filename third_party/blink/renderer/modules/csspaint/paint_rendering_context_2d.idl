@@ -58,10 +58,10 @@
 
     void clip(optional CanvasFillRule winding);
     void clip(Path2D path, optional CanvasFillRule winding);
-    boolean isPointInPath(unrestricted double x, unrestricted double y, optional CanvasFillRule winding);
-    boolean isPointInPath(Path2D path, unrestricted double x, unrestricted double y, optional CanvasFillRule winding);
-    boolean isPointInStroke(unrestricted double x, unrestricted double y);
-    boolean isPointInStroke(Path2D path, unrestricted double x, unrestricted double y);
+    [HighEntropy, Measure] boolean isPointInPath(unrestricted double x, unrestricted double y, optional CanvasFillRule winding);
+    [HighEntropy, Measure] boolean isPointInPath(Path2D path, unrestricted double x, unrestricted double y, optional CanvasFillRule winding);
+    [HighEntropy, Measure] boolean isPointInStroke(unrestricted double x, unrestricted double y);
+    [HighEntropy, Measure] boolean isPointInStroke(Path2D path, unrestricted double x, unrestricted double y);
 
     // drawing images
     [CallWith=ScriptState, RaisesException] void drawImage(CanvasImageSource image, unrestricted double x, unrestricted double y);

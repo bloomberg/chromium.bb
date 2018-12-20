@@ -16,7 +16,7 @@
 ] interface PaymentRequest : EventTarget {
     [CallWith=ScriptState, NewObject] Promise<PaymentResponse> show();
     [CallWith=ScriptState, NewObject] Promise<void> abort();
-    [CallWith=ScriptState, NewObject] Promise<boolean> canMakePayment();
+    [CallWith=ScriptState, HighEntropy, Measure, NewObject] Promise<boolean> canMakePayment();
 
     readonly attribute DOMString id;
     [ImplementedAs=getShippingAddress] readonly attribute PaymentAddress? shippingAddress;
