@@ -25,6 +25,11 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method fetch
 [Worker]     method get
 [Worker]     method getIds
+[Worker] interface BackgroundFetchRecord
+[Worker]     attribute @@toStringTag
+[Worker]     getter request
+[Worker]     getter responseReady
+[Worker]     method constructor
 [Worker] interface BackgroundFetchRegistration : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter downloadTotal
@@ -38,6 +43,8 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter uploaded
 [Worker]     method abort
 [Worker]     method constructor
+[Worker]     method match
+[Worker]     method matchAll
 [Worker]     setter onprogress
 [Worker] interface BarcodeDetector
 [Worker]     attribute @@toStringTag
