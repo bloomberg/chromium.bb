@@ -571,9 +571,11 @@ def main():
       help='Total number of external shards.')
 
   # Tast test args.
+  # pylint: disable=line-too-long
   tast_test_parser = subparsers.add_parser(
       'tast',
-      help='Runs a vm-side set of Tast tests.')
+      help='Runs a vm-side set of Tast tests. For more details, see: '
+           'https://chromium.googlesource.com/chromiumos/platform/tast/+/master/docs/running_tests.md')
   tast_test_parser.set_defaults(func=vm_test)
   tast_test_parser.add_argument(
       '--suite-name', type=str, required=True,
@@ -583,9 +585,10 @@ def main():
   tast_test_parser.add_argument(
       '--test-launcher-summary-output', type=str,
       help='Generates a simple GTest-style JSON result file for the test run.')
+  # TODO(bpastene): Change all uses of "--conditional" to use "--attr-expr".
   tast_test_parser.add_argument(
-      '--conditional', type=str,
-      help='A conditional whose matching tests will run '
+      '--conditional', '--attr-expr', type=str, dest='conditional',
+      help='A boolean expression whose matching tests will run '
            '(eg: ("dep:chrome" || "dep:chrome_login")).')
   tast_test_parser.add_argument(
       '--test', '-t', action='append', dest='tests',

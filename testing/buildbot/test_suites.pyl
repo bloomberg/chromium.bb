@@ -463,7 +463,7 @@
 
     'chromeos_device_kevin_tests': {
       'base_unittests': {},
-      'chrome_all_tast_tests': {},
+      'chrome_kevin_tast_tests': {},
       'cros_vm_sanity_test': {},
     },
 
