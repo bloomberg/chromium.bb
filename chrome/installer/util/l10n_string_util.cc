@@ -20,7 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/atl.h"
-#include "base/win/embedded_i18n/language_Selector.h"
+#include "base/win/embedded_i18n/language_selector.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
 #include "chrome/installer/util/google_update_settings.h"
