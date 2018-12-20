@@ -458,7 +458,11 @@ jint BookmarkBridge::GetTotalBookmarkCount(
     nodes.pop();
 
     for (int i = 0; i < node->child_count(); ++i) {
+      // Empty title means deleted partner bookmarks or folders. See
+      // PartnerBookmarksShim::RemoveBookmark().
       const BookmarkNode* child = node->GetChild(i);
+      if (GetTitle(child).empty())
+        continue;
       if (child->is_folder()) {
         nodes.push(child);
       } else {
