@@ -282,16 +282,16 @@ ImageEditorToolbar.prototype.addRange = function(
   slider.min = Math.ceil(min * scale);
   slider.max = Math.floor(max * scale);
   slider.value = value * scale;
-  slider.addEventListener('value-changed', () => {
+  const handler = () => {
     if (this.updateCallback_)
       this.updateCallback_(this.getOptions());
-  });
+  };
+  slider.addEventListener('cr-slider-value-changed', handler);
+  setTimeout(handler);
   range.appendChild(slider);
 
   range.name = name;
-  range.getValue = function(slider, scale) {
-    return slider.value / scale;
-  }.bind(this, slider, scale);
+  range.getValue = () => slider.value / scale;
 
   // Swallow the left and right keys, so they are not handled by other
   // listeners.

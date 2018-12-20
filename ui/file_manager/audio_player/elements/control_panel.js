@@ -139,14 +139,14 @@ var AriaLabels;
      */
     ready: function() {
       var timeSlider = /** @type {!CrSliderElement} */ (this.$.timeSlider);
-      timeSlider.addEventListener('value-changed', function() {
+      timeSlider.addEventListener('cr-slider-value-changed', () => {
         this.time = timeSlider.value;
-      }.bind(this));
+      });
 
       var volumeSlider = /** @type {!CrSliderElement} */ (this.$.volumeSlider);
-      volumeSlider.addEventListener('value-changed', function() {
+      volumeSlider.addEventListener('cr-slider-value-changed', () => {
         this.volume = volumeSlider.value;
-      }.bind(this));
+      });
     },
 
     /**
