@@ -33,28 +33,43 @@ class StatusMediator {
 
     private @DrawableRes int mSecurityIconRes;
 
-    public StatusMediator(PropertyModel model) {
+    StatusMediator(PropertyModel model) {
         mModel = model;
     }
 
     /**
      * Toggle animations of icon changes.
      */
-    public void setAnimationsEnabled(boolean enabled) {
+    void setAnimationsEnabled(boolean enabled) {
         mModel.set(StatusProperties.ANIMATIONS_ENABLED, enabled);
     }
 
     /**
      * Specify navigation button image type.
      */
-    public void setNavigationButtonType(@NavigationButtonType int buttonType) {
-        mModel.set(StatusProperties.NAVIGATION_BUTTON_TYPE, buttonType);
+    void setNavigationButtonType(@NavigationButtonType int buttonType) {
+        @DrawableRes
+        int imageRes = 0;
+
+        switch (buttonType) {
+            case NavigationButtonType.PAGE:
+                imageRes = R.drawable.ic_omnibox_page;
+                break;
+            case NavigationButtonType.MAGNIFIER:
+                imageRes = R.drawable.omnibox_search;
+                break;
+            case NavigationButtonType.EMPTY:
+                break;
+            default:
+                assert false : "Invalid navigation button type";
+        }
+        mModel.set(StatusProperties.NAVIGATION_ICON_RES, imageRes);
     }
 
     /**
      * Specify whether displayed page is an offline page.
      */
-    public void setPageIsOffline(boolean pageIsOffline) {
+    void setPageIsOffline(boolean pageIsOffline) {
         if (mPageIsOffline != pageIsOffline) {
             mPageIsOffline = pageIsOffline;
             updateStatusVisibility();
@@ -65,7 +80,7 @@ class StatusMediator {
     /**
      * Specify whether displayed page is a preview page.
      */
-    public void setPageIsPreview(boolean pageIsPreview) {
+    void setPageIsPreview(boolean pageIsPreview) {
         if (mPageIsPreview != pageIsPreview) {
             mPageIsPreview = pageIsPreview;
             updateStatusVisibility();
@@ -76,7 +91,7 @@ class StatusMediator {
     /**
      * Specify icon displayed by the security chip.
      */
-    public void setSecurityIconResource(@DrawableRes int securityIcon) {
+    void setSecurityIconResource(@DrawableRes int securityIcon) {
         if (mSecurityIconRes == securityIcon) return;
         mSecurityIconRes = securityIcon;
         updateLocationBarIcon();
@@ -85,28 +100,28 @@ class StatusMediator {
     /**
      * Specify tint of icon displayed by the security chip.
      */
-    public void setSecurityIconTint(@ColorRes int tintList) {
+    void setSecurityIconTint(@ColorRes int tintList) {
         mModel.set(StatusProperties.SECURITY_ICON_TINT_RES, tintList);
     }
 
     /**
      * Specify tint of icon displayed by the security chip.
      */
-    public void setSecurityIconDescription(@StringRes int desc) {
+    void setSecurityIconDescription(@StringRes int desc) {
         mModel.set(StatusProperties.SECURITY_ICON_DESCRIPTION_RES, desc);
     }
 
     /**
      * Specify minimum width of the separator field.
      */
-    public void setSeparatorFieldMinWidth(int width) {
+    void setSeparatorFieldMinWidth(int width) {
         mSeparatorMinWidth = width;
     }
 
     /**
      * Toggle tablet mode.
      */
-    public void setTabletMode(boolean isTablet) {
+    void setTabletMode(boolean isTablet) {
         mTabletMode = isTablet;
     }
 
@@ -123,7 +138,7 @@ class StatusMediator {
      * Update unfocused location bar width to determine shape and content of the
      * Status view.
      */
-    public void setUnfocusedLocationBarWidth(int width) {
+    void setUnfocusedLocationBarWidth(int width) {
         // This unfocused width is used rather than observing #onMeasure() to avoid showing the
         // verbose status when the animation to unfocus the URL bar has finished. There is a call to
         // LocationBarLayout#onMeasure() after the URL focus animation has finished and before the
@@ -144,7 +159,7 @@ class StatusMediator {
     /**
      * Report URL focus change.
      */
-    public void setUrlHasFocus(boolean urlHasFocus) {
+    void setUrlHasFocus(boolean urlHasFocus) {
         if (mUrlHasFocus == urlHasFocus) return;
 
         mUrlHasFocus = urlHasFocus;
@@ -155,14 +170,14 @@ class StatusMediator {
     /**
      * Specify minimum width of an URL field.
      */
-    public void setUrlMinWidth(int width) {
+    void setUrlMinWidth(int width) {
         mUrlMinWidth = width;
     }
 
     /**
      * Toggle between dark and light UI color theme.
      */
-    public void setUseDarkColors(boolean useDarkColors) {
+    void setUseDarkColors(boolean useDarkColors) {
         if (mDarkTheme != useDarkColors) {
             mDarkTheme = useDarkColors;
             updateColorTheme();
@@ -172,7 +187,7 @@ class StatusMediator {
     /**
      * Specify whether parent allows verbose status text.
      */
-    public void setVerboseStatusTextAllowed(boolean isVerboseStatusTextAllowed) {
+    void setVerboseStatusTextAllowed(boolean isVerboseStatusTextAllowed) {
         mVerboseStatusAllowed = isVerboseStatusTextAllowed;
         updateStatusVisibility();
     }
@@ -180,7 +195,7 @@ class StatusMediator {
     /**
      * Specify minimum width of the verbose status text field.
      */
-    public void setVerboseStatusTextMinWidth(int width) {
+    void setVerboseStatusTextMinWidth(int width) {
         mVerboseStatusTextMinWidth = width;
     }
 
@@ -233,7 +248,7 @@ class StatusMediator {
         @ColorRes
         int tintColor = mDarkTheme ? R.color.dark_mode_tint : R.color.light_mode_tint;
 
-        mModel.set(StatusProperties.ICON_TINT_COLOR_RES, tintColor);
+        mModel.set(StatusProperties.NAVIGATION_ICON_TINT_RES, tintColor);
         mModel.set(StatusProperties.SEPARATOR_COLOR_RES, separatorColor);
 
         if (textColor != 0) mModel.set(StatusProperties.VERBOSE_STATUS_TEXT_COLOR_RES, textColor);

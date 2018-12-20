@@ -4,15 +4,9 @@
 
 package org.chromium.chrome.browser.omnibox.status;
 
-import android.graphics.drawable.Drawable;
-import android.support.annotation.ColorRes;
-
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor.ViewBinder;
-import org.chromium.chrome.browser.omnibox.status.StatusView.NavigationButtonType;
-import org.chromium.chrome.browser.widget.TintedDrawable;
 
 /**
  * StatusViewBinder observes StatusModel changes and triggers StatusView updates.
@@ -26,10 +20,10 @@ class StatusViewBinder implements ViewBinder<PropertyModel, StatusView, Property
             view.setAnimationsEnabled(model.get(StatusProperties.ANIMATIONS_ENABLED));
         } else if (StatusProperties.STATUS_BUTTON_TYPE.equals(propertyKey)) {
             view.setStatusButtonType(model.get(StatusProperties.STATUS_BUTTON_TYPE));
-        } else if (StatusProperties.NAVIGATION_BUTTON_TYPE.equals(propertyKey)
-                || StatusProperties.ICON_TINT_COLOR_RES.equals(propertyKey)) {
-            updateNavigationButtonType(view, model.get(StatusProperties.NAVIGATION_BUTTON_TYPE),
-                    model.get(StatusProperties.ICON_TINT_COLOR_RES));
+        } else if (StatusProperties.NAVIGATION_ICON_RES.equals(propertyKey)) {
+            view.setNavigationIcon(model.get(StatusProperties.NAVIGATION_ICON_RES));
+        } else if (StatusProperties.NAVIGATION_ICON_TINT_RES.equals(propertyKey)) {
+            view.setNavigationIconTint(model.get(StatusProperties.NAVIGATION_ICON_TINT_RES));
         } else if (StatusProperties.SECURITY_ICON_RES.equals(propertyKey)) {
             view.setSecurityIcon(model.get(StatusProperties.SECURITY_ICON_RES));
         } else if (StatusProperties.SECURITY_ICON_TINT_RES.equals(propertyKey)) {
@@ -55,26 +49,5 @@ class StatusViewBinder implements ViewBinder<PropertyModel, StatusView, Property
         } else {
             assert false : "Unhandled property update";
         }
-    }
-
-    private static void updateNavigationButtonType(
-            StatusView view, @NavigationButtonType int buttonType, @ColorRes int tintColor) {
-        Drawable image = null;
-
-        switch (buttonType) {
-            case NavigationButtonType.PAGE:
-                image = TintedDrawable.constructTintedDrawable(
-                        view.getContext(), R.drawable.ic_omnibox_page, tintColor);
-                break;
-            case NavigationButtonType.MAGNIFIER:
-                image = TintedDrawable.constructTintedDrawable(
-                        view.getContext(), R.drawable.omnibox_search, tintColor);
-                break;
-            case NavigationButtonType.EMPTY:
-                break;
-            default:
-                assert false;
-        }
-        view.setNavigationIcon(image);
     }
 }

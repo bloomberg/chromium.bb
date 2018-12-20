@@ -12,7 +12,6 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
@@ -237,14 +236,29 @@ public class StatusView extends LinearLayout {
     /**
      * Specify navigation button image.
      */
-    void setNavigationIcon(Drawable image) {
-        mNavigationButton.setImageDrawable(image);
+    void setNavigationIcon(@DrawableRes int imageRes) {
+        if (imageRes != 0) {
+            mNavigationButton.setImageResource(imageRes);
+        } else {
+            mNavigationButton.setImageDrawable(null);
+        }
+    }
+
+    /**
+     * Specify navigation icon tint color.
+     */
+    void setNavigationIconTint(@ColorRes int colorRes) {
+        ColorStateList list = null;
+        if (colorRes != 0) {
+            list = AppCompatResources.getColorStateList(getContext(), colorRes);
+        }
+        ApiCompatibilityUtils.setImageTintList(mNavigationButton, list);
     }
 
     /**
      * Specify security icon image.
      */
-    public void setSecurityIcon(@DrawableRes int imageRes) {
+    void setSecurityIcon(@DrawableRes int imageRes) {
         if (imageRes != 0) {
             mSecurityButton.setImageResource(imageRes);
         } else {
@@ -255,7 +269,7 @@ public class StatusView extends LinearLayout {
     /**
      * Specify security icon tint color.
      */
-    public void setSecurityIconTint(@ColorRes int colorRes) {
+    void setSecurityIconTint(@ColorRes int colorRes) {
         // Note: There's no need to apply this each time icon changes:
         // Subsequent calls to setImageDrawable will automatically
         // mutate the drawable and apply the specified tint and tint mode.
@@ -269,7 +283,7 @@ public class StatusView extends LinearLayout {
     /**
      * Specify content description for security icon.
      */
-    public void setSecurityIconDescription(@StringRes int descriptionRes) {
+    void setSecurityIconDescription(@StringRes int descriptionRes) {
         String description = null;
         if (descriptionRes != 0) {
             description = getResources().getString(descriptionRes);
