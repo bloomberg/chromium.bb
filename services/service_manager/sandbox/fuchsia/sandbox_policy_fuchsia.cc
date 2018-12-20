@@ -181,7 +181,9 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
     // /config/vulkan/icd.d are to used configure and access the GPU.
     options->paths_to_clone.push_back(base::FilePath("/system/lib"));
     options->paths_to_clone.push_back(base::FilePath("/dev/class/gpu"));
-    options->paths_to_clone.push_back(base::FilePath("/config/vulkan/icd.d"));
+    const auto vulkan_icd_path = base::FilePath("/config/vulkan/icd.d");
+    if (base::PathExists(vulkan_icd_path))
+      options->paths_to_clone.push_back(vulkan_icd_path);
   }
 
   if (service_directory_client_channel_) {
