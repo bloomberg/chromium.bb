@@ -269,7 +269,8 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
     write_surface_ = nullptr;
   }
 
-  bool BeginReadAccess(GrBackendTexture* backend_texture) override {
+  bool BeginReadAccess(SkSurface* sk_surface,
+                       GrBackendTexture* backend_texture) override {
     if (!GetGrBackendTexture(gl::GLContext::GetCurrent()->GetVersionInfo(),
                              target_, size(), service_id_, format(),
                              backend_texture)) {

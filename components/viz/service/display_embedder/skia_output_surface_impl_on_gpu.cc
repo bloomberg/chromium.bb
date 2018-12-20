@@ -419,7 +419,7 @@ void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
         shared_image_representation_factory_->ProduceSkia(
             metadata.mailbox_holder.mailbox);
     DCHECK(shared_image);
-    if (!shared_image->BeginReadAccess(backend_texture)) {
+    if (!shared_image->BeginReadAccess(sk_surface_.get(), backend_texture)) {
       DLOG(ERROR)
           << "Failed to begin read access for SharedImageRepresentationSkia";
       return;
