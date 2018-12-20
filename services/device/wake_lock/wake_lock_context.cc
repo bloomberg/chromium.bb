@@ -4,6 +4,7 @@
 
 #include "services/device/wake_lock/wake_lock_context.h"
 
+#include <string>
 #include <utility>
 
 #include "services/device/wake_lock/wake_lock.h"

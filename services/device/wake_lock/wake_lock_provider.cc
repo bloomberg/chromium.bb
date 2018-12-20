@@ -4,15 +4,14 @@
 
 #include "services/device/wake_lock/wake_lock_provider.h"
 
+#include <memory>
+#include <string>
 #include <utility>
 
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/wake_lock/wake_lock.h"
-#include "services/device/wake_lock/wake_lock_for_testing.h"
 
 namespace device {
-
-bool WakeLockProvider::is_in_unittest_ = false;
 
 // static
 void WakeLockProvider::Create(
@@ -35,7 +34,7 @@ WakeLockProvider::~WakeLockProvider() {}
 void WakeLockProvider::GetWakeLockContextForID(
     int context_id,
     mojo::InterfaceRequest<mojom::WakeLockContext> request) {
-  DCHECK(context_id >= 0);
+  DCHECK_GE(context_id, 0);
   mojo::MakeStrongBinding(
       std::make_unique<WakeLockContext>(context_id, file_task_runner_,
                                         native_view_getter_),
@@ -47,17 +46,10 @@ void WakeLockProvider::GetWakeLockWithoutContext(
     mojom::WakeLockReason reason,
     const std::string& description,
     mojom::WakeLockRequest request) {
-  if (is_in_unittest_) {
-    // Create WakeLockForTesting.
-    new WakeLockForTesting(std::move(request), type, reason, description,
-                           WakeLockContext::WakeLockInvalidContextId,
-                           native_view_getter_, file_task_runner_);
-  } else {
-    // WakeLock owns itself.
-    new WakeLock(std::move(request), type, reason, description,
-                 WakeLockContext::WakeLockInvalidContextId, native_view_getter_,
-                 file_task_runner_);
-  }
+  // WakeLock owns itself.
+  new WakeLock(std::move(request), type, reason, description,
+               WakeLockContext::WakeLockInvalidContextId, native_view_getter_,
+               file_task_runner_);
 }
 
 }  // namespace device
