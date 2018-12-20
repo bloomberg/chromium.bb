@@ -352,8 +352,4 @@ bool LegacyNavigationManagerImpl::IsRestoreSessionInProgress() const {
   return false;  // Session restoration is synchronous.
 }
 
-void LegacyNavigationManagerImpl::SetPendingItemIndex(int index) {
-  NOTREACHED();
-}
-
 }  // namespace web

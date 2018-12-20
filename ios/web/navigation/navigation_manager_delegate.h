@@ -9,13 +9,11 @@
 
 
 @protocol CRWWebViewNavigationProxy;
-@class WKBackForwardListItem;
 
 namespace web {
 
-struct LoadCommittedDetails;
 enum class NavigationInitiationType;
-class NavigationItem;
+struct LoadCommittedDetails;
 class WebState;
 
 // Delegate for NavigationManager to hand off parts of the navigation flow.
@@ -63,14 +61,6 @@ class NavigationManagerDelegate {
   // Returns a CRWWebViewNavigationProxy protocol that can be used to access
   // navigation related functions on the main WKWebView.
   virtual id<CRWWebViewNavigationProxy> GetWebViewNavigationProxy() const = 0;
-
-  // Instructs WKWebView to navigate to the given navigation item. |wk_item| and
-  // |item| must point to the same navigation item. Calling this method may
-  // result in an iframe navigation.
-  virtual void GoToBackForwardListItem(WKBackForwardListItem* wk_item,
-                                       NavigationItem* item,
-                                       NavigationInitiationType type,
-                                       bool has_user_gesture) = 0;
 
   // Instructs the delegate to remove the underlying web view. The only use case
   // currently is to clear back-forward history in web view before restoring

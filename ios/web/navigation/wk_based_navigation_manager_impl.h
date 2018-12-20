@@ -112,7 +112,6 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
                                    NSString* state_object,
                                    ui::PageTransition transition) override;
   bool IsRestoreSessionInProgress() const override;
-  void SetPendingItemIndex(int index) override;
 
   // NavigationManager:
   BrowserState* GetBrowserState() const override;

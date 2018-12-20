@@ -866,16 +866,6 @@ id<CRWWebViewNavigationProxy> WebStateImpl::GetWebViewNavigationProxy() const {
   return [web_controller_ webViewNavigationProxy];
 }
 
-void WebStateImpl::GoToBackForwardListItem(WKBackForwardListItem* wk_item,
-                                           NavigationItem* item,
-                                           NavigationInitiationType type,
-                                           bool has_user_gesture) {
-  return [web_controller_ goToBackForwardListItem:wk_item
-                                   navigationItem:item
-                         navigationInitiationType:type
-                                   hasUserGesture:has_user_gesture];
-}
-
 void WebStateImpl::RemoveWebView() {
   return [web_controller_ removeWebView];
 }
