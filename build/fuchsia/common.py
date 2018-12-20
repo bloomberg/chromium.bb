@@ -69,7 +69,7 @@ def ConnectPortForwardingTask(target, local_port, remote_port = 0):
   task.wait()
   if task.returncode != 0:
     raise Exception('Got an error code when requesting port forwarding: %d' %
-                    output.returncode)
+                    task.returncode)
 
   parsed_port = int(output[0].strip())
   logging.debug('Port forwarding established (local=%d, device=%d)' %
