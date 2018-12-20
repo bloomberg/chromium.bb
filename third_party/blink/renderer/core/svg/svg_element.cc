@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -1035,10 +1036,8 @@ bool SVGElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
 }
 
 bool SVGElement::HasSVGParent() const {
-  // Should we use the flat tree parent instead? If so, we should probably fix a
-  // few other checks.
-  return ParentOrShadowHostElement() &&
-         ParentOrShadowHostElement()->IsSVGElement();
+  Element* parent = FlatTreeTraversal::ParentElement(*this);
+  return parent && parent->IsSVGElement();
 }
 
 MutableCSSPropertyValueSet* SVGElement::AnimatedSMILStyleProperties() const {
