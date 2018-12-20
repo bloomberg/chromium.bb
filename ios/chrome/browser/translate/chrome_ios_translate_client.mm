@@ -30,9 +30,11 @@
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/translate/after_translate_infobar_controller.h"
 #import "ios/chrome/browser/translate/before_translate_infobar_controller.h"
+#import "ios/chrome/browser/translate/language_selection_handler.h"
 #import "ios/chrome/browser/translate/never_translate_infobar_controller.h"
 #include "ios/chrome/browser/translate/translate_accept_languages_factory.h"
 #import "ios/chrome/browser/translate/translate_message_infobar_controller.h"
+#import "ios/chrome/browser/translate/translate_option_selection_handler.h"
 #include "ios/chrome/browser/translate/translate_ranker_factory.h"
 #include "ios/chrome/browser/translate/translate_service_ios.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -192,6 +194,7 @@ void ChromeIOSTranslateClient::ShowReportLanguageDetectionErrorUI(
 
 void ChromeIOSTranslateClient::DidStartLoading(web::WebState* web_state) {
   [language_selection_handler_ dismissLanguageSelector];
+  [translate_option_selection_handler_ dismissTranslateOptionSelector];
 }
 
 void ChromeIOSTranslateClient::WebStateDestroyed(web::WebState* web_state) {
@@ -200,6 +203,7 @@ void ChromeIOSTranslateClient::WebStateDestroyed(web::WebState* web_state) {
   web_state_ = nullptr;
 
   [language_selection_handler_ dismissLanguageSelector];
+  [translate_option_selection_handler_ dismissTranslateOptionSelector];
 
   // Translation process can be interrupted.
   // Destroying the TranslateManager now guarantees that it never has to deal

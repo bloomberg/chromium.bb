@@ -15,7 +15,6 @@
 #include "components/translate/core/browser/translate_step.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "components/translate/ios/browser/ios_translate_driver.h"
-#include "ios/chrome/browser/translate/language_selection_handler.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "ios/web/public/web_state/web_state_user_data.h"
 
@@ -36,6 +35,9 @@ struct LanguageDetectionDetails;
 namespace web {
 class WebState;
 }  // namespace web
+
+@protocol LanguageSelectionHandler;
+@protocol TranslateOptionSelectionHandler;
 
 class ChromeIOSTranslateClient
     : public translate::TranslateClient,
@@ -79,6 +81,11 @@ class ChromeIOSTranslateClient
     language_selection_handler_ = handler;
   }
 
+  void set_translate_option_selection_handler(
+      id<TranslateOptionSelectionHandler> handler) {
+    translate_option_selection_handler_ = handler;
+  }
+
  private:
   ChromeIOSTranslateClient(web::WebState* web_state);
   friend class web::WebStateUserData<ChromeIOSTranslateClient>;
@@ -94,6 +101,8 @@ class ChromeIOSTranslateClient
   std::unique_ptr<translate::TranslateManager> translate_manager_;
   translate::IOSTranslateDriver translate_driver_;
   __weak id<LanguageSelectionHandler> language_selection_handler_;
+  __weak id<TranslateOptionSelectionHandler>
+      translate_option_selection_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeIOSTranslateClient);
 };
