@@ -1,8 +1,7 @@
 Name: ARCore SDK
 Short Name: arcore
 URL: https://github.com/google-ar/arcore-android-sdk
-Version: 1.1
-Date: 19 March 2018
+Version: 1.5
 License: Apache 2.0
 License File: LICENSE
 Security Critical: yes
@@ -12,11 +11,7 @@ The ARCore Android SDK provides augmented reality capabilities to Android
 devices.
 
 Local Modifications:
-To address binary size concerns, we are using a minimal shim produced for
-Chromium that is not publicly distributed elsewhere. We have also stripped the
-.so's to minimize their size.
-
-Also, added BUILD.gn for compilation in chrome.
+Added BUILD.gn for compilation in chrome.
 
 Added the test-apks/ subdirectory for storing production versions of AR APKs,
 namely ArCore, for testing.
@@ -29,6 +24,8 @@ The LICENSE file is taken from
  * https://github.com/google-ar/arcore-unity-sdk/blob/master/LICENSE
 
 Changes:
+2018-12-11 - Upgrade ARCore to v1.5. Remove checked in .so files - we now
+             extract them from ARCore's .aar file at build time.
 2018-12-11 - Upgrade test-apks/arcore_current.apk to v1.6.
 2018-09-14 - Upgrade test-apks/arcore_current.apk to v1.4.
 2018-08-10 - First, removed arcore shim copy target from BUILD.gn since it is no

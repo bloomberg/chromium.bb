@@ -85,6 +85,8 @@ class SectionSizeKnobs(object):
           '../../chrome/android/webapk/libs/runtime_library_version.gni'),
       'lib/armeabi-v7a/libarcore_sdk_c_minimal.so': (
           '../../third_party/arcore-android-sdk'),
+      'lib/armeabi-v7a/libarcore_sdk_c.so': (
+          '../../third_party/arcore-android-sdk'),
     }
 
     self.apk_expected_other_files = set([

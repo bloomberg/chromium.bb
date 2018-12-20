@@ -28,7 +28,7 @@ def main():
   args = parser.parse_args()
 
   #TODO(crbug.com/838414): add support for files included via loadable_modules.
-  ignored_libs = ['libarcore_sdk_c_minimal.so']
+  ignored_libs = ['libarcore_sdk_c.so']
 
   si_count = resource_sizes.AnalyzeStaticInitializers(
       args.apk, args.tool_prefix, False, '.', ignored_libs)
