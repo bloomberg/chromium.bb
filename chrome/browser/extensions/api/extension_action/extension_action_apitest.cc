@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/extension_action/test_extension_action_api_observer.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -20,6 +21,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/state_store.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/test_extension_dir.h"
 #include "ui/base/window_open_disposition.h"
@@ -57,13 +59,46 @@ class TestStateStoreObserver : public StateStore::TestObserver {
   DISALLOW_COPY_AND_ASSIGN(TestStateStoreObserver);
 };
 
+enum class TestActionType {
+  kBrowser,
+  kPage,
+};
+
 }  // namespace
 
-using ExtensionActionAPITest = ExtensionApiTest;
+class ExtensionActionAPITest : public ExtensionApiTest {
+ public:
+  ExtensionActionAPITest() {}
+  ~ExtensionActionAPITest() override {}
+
+  const char* GetManifestKey(TestActionType action_type) {
+    switch (action_type) {
+      case TestActionType::kBrowser:
+        return manifest_keys::kBrowserAction;
+      case TestActionType::kPage:
+        return manifest_keys::kPageAction;
+    }
+    NOTREACHED();
+    return nullptr;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ExtensionActionAPITest);
+};
+
+// Alias these for readability, when a test only exercises one type of action.
+using BrowserActionAPITest = ExtensionActionAPITest;
+using PageActionAPITest = ExtensionActionAPITest;
+
+// A class that runs tests exercising both page and browser action behavior.
+class MultiActionAPITest : public ExtensionActionAPITest,
+                           public testing::WithParamInterface<TestActionType> {
+};
 
 // Check that updating the browser action badge for a specific tab id does not
 // cause a disk write (since we only persist the defaults).
-IN_PROC_BROWSER_TEST_F(ExtensionActionAPITest, TestNoUnnecessaryIO) {
+// Only browser actions persist settings.
+IN_PROC_BROWSER_TEST_F(BrowserActionAPITest, TestNoUnnecessaryIO) {
   ExtensionTestMessageListener ready_listener("ready", false);
 
   TestExtensionDir test_dir;
@@ -132,19 +167,22 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionAPITest, TestNoUnnecessaryIO) {
 
 // Verify that tab-specific values are cleared on navigation and on tab
 // removal. Regression test for https://crbug.com/834033.
-IN_PROC_BROWSER_TEST_F(ExtensionActionAPITest,
+IN_PROC_BROWSER_TEST_P(MultiActionAPITest,
                        ValuesAreClearedOnNavigationAndTabRemoval) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   TestExtensionDir test_dir;
-  test_dir.WriteManifest(
+  constexpr char kManifestTemplate[] =
       R"({
            "name": "Extension",
            "description": "An extension",
            "manifest_version": 2,
            "version": "0.1",
-           "browser_action": {}
-         })");
+           "%s": {}
+         })";
+
+  test_dir.WriteManifest(
+      base::StringPrintf(kManifestTemplate, GetManifestKey(GetParam())));
   const Extension* extension = LoadExtension(test_dir.UnpackedPath());
   ASSERT_TRUE(extension);
 
@@ -184,5 +222,45 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionAPITest,
   // The title should have been cleared on tab removal as well.
   EXPECT_FALSE(action->HasTitle(tab_id));
 }
+
+// Tests that tooltips of an extension action icon can be specified using UTF8.
+// See http://crbug.com/25349.
+IN_PROC_BROWSER_TEST_P(MultiActionAPITest, TitleLocalization) {
+  TestExtensionDir test_dir;
+  constexpr char kManifestTemplate[] =
+      R"({
+           "name": "Hreggvi\u00F0ur is my name",
+           "description": "Hreggvi\u00F0ur: l10n action",
+           "manifest_version": 2,
+           "version": "0.1",
+           "%s": {
+             "default_title": "Hreggvi\u00F0ur"
+           }
+         })";
+
+  test_dir.WriteManifest(
+      base::StringPrintf(kManifestTemplate, GetManifestKey(GetParam())));
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  auto* action_manager = ExtensionActionManager::Get(profile());
+  ExtensionAction* action = action_manager->GetExtensionAction(*extension);
+  ASSERT_TRUE(action);
+
+  EXPECT_EQ(base::WideToUTF8(L"Hreggvi\u00F0ur: l10n action"),
+            extension->description());
+  EXPECT_EQ(base::WideToUTF8(L"Hreggvi\u00F0ur is my name"), extension->name());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  int tab_id = SessionTabHelper::IdForTab(web_contents).id();
+  EXPECT_EQ(base::WideToUTF8(L"Hreggvi\u00F0ur"), action->GetTitle(tab_id));
+  EXPECT_EQ(base::WideToUTF8(L"Hreggvi\u00F0ur"),
+            action->GetTitle(ExtensionAction::kDefaultTabId));
+}
+
+INSTANTIATE_TEST_CASE_P(,
+                        MultiActionAPITest,
+                        testing::Values(TestActionType::kBrowser,
+                                        TestActionType::kPage));
 
 }  // namespace extensions
