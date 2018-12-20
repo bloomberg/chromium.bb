@@ -83,7 +83,7 @@ def WaitForChromeExit(chrome_path):
         (process.pid, len(chrome_processes), process.exe))
       process.wait()
     # Check for stragglers and keep waiting until all are gone.
-    chrome_processes = GetChromeProcesses()
+    chrome_processes = GetChromeProcesses(chrome_path)
 
 
 def GetWindowHandles(process_ids):
