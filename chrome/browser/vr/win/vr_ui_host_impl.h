@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_WIN_VR_RENDERLOOP_HOST_WIN_H_
-#define CHROME_BROWSER_VR_WIN_VR_RENDERLOOP_HOST_WIN_H_
+#ifndef CHROME_BROWSER_VR_WIN_VR_UI_HOST_IMPL_H_
+#define CHROME_BROWSER_VR_WIN_VR_UI_HOST_IMPL_H_
 
 #include "base/threading/thread.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
@@ -15,7 +15,7 @@ namespace vr {
 
 class VRBrowserRendererThreadWin;
 
-class VRBrowserRendererHostWin : public BrowserXRRuntimeObserver {
+class VRUiHostImpl : public BrowserXRRuntimeObserver {
  public:
   // Called by IsolatedDeviceProvider when devices are added/removed.  These
   // manage the lifetime of VRBrowserRendererHostWin instances.
@@ -24,24 +24,24 @@ class VRBrowserRendererHostWin : public BrowserXRRuntimeObserver {
   static void RemoveCompositor(device::mojom::XRDeviceId id);
 
  private:
-  VRBrowserRendererHostWin(device::mojom::VRDisplayInfoPtr info,
-                           device::mojom::XRCompositorHostPtr compositor);
-  ~VRBrowserRendererHostWin() override;
+  VRUiHostImpl(device::mojom::VRDisplayInfoPtr info,
+               device::mojom::XRCompositorHostPtr compositor);
+  ~VRUiHostImpl() override;
 
-  // Called by BrowserXRRuntime (we register to observe a BrowserXRDevice).
-  // The parameter contents indicate which page is rendering with WebXR or WebVR
-  // presentation.  When null, no page is presenting.
+  // BrowserXRRuntimeObserver implementation.
   void SetWebXRWebContents(content::WebContents* contents) override;
   void SetVRDisplayInfo(device::mojom::VRDisplayInfoPtr display_info) override;
 
-  void StartBrowserRenderer();
-  void StopBrowserRenderer();
+  // Internal methods used to start/stop the UI rendering thread that is used
+  // for drawing browser UI (such as permission prompts) for display in VR.
+  void StartUiRendering();
+  void StopUiRendering();
 
   device::mojom::XRCompositorHostPtr compositor_;
-  std::unique_ptr<VRBrowserRendererThreadWin> render_thread_;
+  std::unique_ptr<VRBrowserRendererThreadWin> ui_rendering_thread_;
   device::mojom::VRDisplayInfoPtr info_;
 };
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_WIN_VR_RENDERLOOP_HOST_WIN_H_
+#endif  // CHROME_BROWSER_VR_WIN_VR_UI_HOST_IMPL_H_

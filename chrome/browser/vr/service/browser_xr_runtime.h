@@ -29,6 +29,10 @@ class BrowserXRRuntimeObserver : public base::CheckedObserver {
  public:
   virtual void SetVRDisplayInfo(
       device::mojom::VRDisplayInfoPtr display_info) = 0;
+
+  // The parameter |contents| is set when a page starts an immersive WebXR
+  // session. There can only be at most one active immersive session for the
+  // XRRuntime. Set to null when there is no active immersive session.
   virtual void SetWebXRWebContents(content::WebContents* contents) = 0;
 };
 
