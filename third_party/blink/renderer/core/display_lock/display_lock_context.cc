@@ -288,16 +288,13 @@ void DisplayLockContext::DidPrePaint() {
 bool DisplayLockContext::ShouldPaint() const {
   // Note that forced updates should never require us to paint, so we don't
   // check |update_forced_| here. In other words, although |update_forced_|
-  // could be true here, we still should not paint.
-  // TODO(vmpstr): I think that updating should not paint.
-  return state_ > kUpdating ||
-         (state_ == kUpdating &&
-          update_budget_->ShouldPerformPhase(DisplayLockBudget::Phase::kPaint));
+  // could be true here, we still should not paint. This also holds for
+  // kUpdating state, since updates should not paint.
+  return state_ >= kCommitting;
 }
 
 void DisplayLockContext::DidPaint() {
-  if (state_ == kUpdating)
-    update_budget_->DidPerformPhase(DisplayLockBudget::Phase::kPaint);
+  // This is here for symmetry, but could be removed if necessary.
 }
 
 void DisplayLockContext::DidAttachLayoutTree() {
@@ -347,7 +344,7 @@ DisplayLockContext::GetScopedForcedUpdate() {
   // ShouldPaint().
   MarkAncestorsForStyleRecalcIfNeeded();
   MarkAncestorsForLayoutIfNeeded();
-  MarkAncestorsForPaintInvalidationCheckIfNeeded();
+  MarkAncestorsForPrePaintIfNeeded();
   return ScopedForcedUpdate(this);
 }
 
@@ -374,7 +371,7 @@ void DisplayLockContext::StartCommit() {
   // Now that we know we have a layout object, we should ensure that we can
   // reach the rest of the phases as well.
   MarkAncestorsForLayoutIfNeeded();
-  MarkAncestorsForPaintInvalidationCheckIfNeeded();
+  MarkAncestorsForPrePaintIfNeeded();
   MarkPaintLayerNeedsRepaint();
 
   // We also need to commit the pending frame rect at this point.
@@ -418,7 +415,7 @@ std::unique_ptr<DisplayLockBudget> DisplayLockContext::CreateNewBudget() {
 }
 
 bool DisplayLockContext::MarkAncestorsForStyleRecalcIfNeeded() {
-  if (element_->NeedsStyleRecalc() || element_->ChildNeedsStyleRecalc()) {
+  if (IsElementDirtyForStyleRecalc()) {
     element_->MarkAncestorsWithChildNeedsStyleRecalc();
     return true;
   }
@@ -426,23 +423,19 @@ bool DisplayLockContext::MarkAncestorsForStyleRecalcIfNeeded() {
 }
 
 bool DisplayLockContext::MarkAncestorsForLayoutIfNeeded() {
-  if (auto* layout_object = element_->GetLayoutObject()) {
-    if (layout_object->NeedsLayout()) {
-      layout_object->MarkContainerChainForLayout();
-      return true;
-    }
+  if (IsElementDirtyForLayout()) {
+    element_->GetLayoutObject()->MarkContainerChainForLayout();
+    return true;
   }
   return false;
 }
 
-bool DisplayLockContext::MarkAncestorsForPaintInvalidationCheckIfNeeded() {
-  if (auto* layout_object = element_->GetLayoutObject()) {
-    if (layout_object->Parent() &&
-        (layout_object->ShouldCheckForPaintInvalidation() ||
-         layout_object->SubtreeShouldCheckForPaintInvalidation())) {
-      layout_object->Parent()->SetSubtreeShouldCheckForPaintInvalidation();
-      return true;
-    }
+bool DisplayLockContext::MarkAncestorsForPrePaintIfNeeded() {
+  if (IsElementDirtyForPrePaint()) {
+    auto* layout_object = element_->GetLayoutObject();
+    if (auto* parent = layout_object->Parent())
+      parent->SetSubtreeShouldCheckForPaintInvalidation();
+    return true;
   }
   return false;
 }
@@ -451,6 +444,26 @@ bool DisplayLockContext::MarkPaintLayerNeedsRepaint() {
   if (auto* layout_object = element_->GetLayoutObject()) {
     layout_object->PaintingLayer()->SetNeedsRepaint();
     return true;
+  }
+  return false;
+}
+
+bool DisplayLockContext::IsElementDirtyForStyleRecalc() const {
+  return element_->NeedsStyleRecalc() || element_->ChildNeedsStyleRecalc();
+}
+
+bool DisplayLockContext::IsElementDirtyForLayout() const {
+  if (auto* layout_object = element_->GetLayoutObject())
+    return layout_object->NeedsLayout();
+  return false;
+}
+
+bool DisplayLockContext::IsElementDirtyForPrePaint() const {
+  if (auto* layout_object = element_->GetLayoutObject()) {
+    return layout_object->ShouldCheckForPaintInvalidation() ||
+           layout_object->SubtreeShouldCheckForPaintInvalidation() ||
+           layout_object->NeedsPaintPropertyUpdate() ||
+           layout_object->DescendantNeedsPaintPropertyUpdate();
   }
   return false;
 }
@@ -480,8 +493,7 @@ void DisplayLockContext::DidFinishLifecycleUpdate() {
   if (state_ != kUpdating)
     return;
 
-  bool needs_more_work = update_budget_->DidFinishLifecycleUpdate();
-  if (needs_more_work) {
+  if (update_budget_->NeedsLifecycleUpdates()) {
     // Note that we post a task to schedule an animation, since rAF requests can
     // be ignored if they happen from within a lifecycle update.
     GetExecutionContext()

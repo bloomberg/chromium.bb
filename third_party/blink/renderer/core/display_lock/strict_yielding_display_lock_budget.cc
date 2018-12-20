@@ -57,9 +57,21 @@ void StrictYieldingDisplayLockBudget::WillStartLifecycleUpdate() {
   completed_new_phase_this_cycle_ = false;
 }
 
-bool StrictYieldingDisplayLockBudget::DidFinishLifecycleUpdate() {
-  return !completed_new_phase_this_cycle_ || !last_completed_phase_ ||
-         *last_completed_phase_ != Phase::kLast;
+bool StrictYieldingDisplayLockBudget::NeedsLifecycleUpdates() const {
+  if (last_completed_phase_ && *last_completed_phase_ == Phase::kLast)
+    return false;
+
+  auto next_phase = last_completed_phase_
+                        ? static_cast<Phase>(
+                              static_cast<unsigned>(*last_completed_phase_) + 1)
+                        : Phase::kFirst;
+  // Check if any future phase needs updates.
+  for (auto phase = static_cast<unsigned>(next_phase);
+       phase <= static_cast<unsigned>(Phase::kLast); ++phase) {
+    if (IsElementDirtyForPhase(static_cast<Phase>(phase)))
+      return true;
+  }
+  return false;
 }
 
 }  // namespace blink

@@ -17,9 +17,20 @@ bool DisplayLockBudget::MarkAncestorsDirtyForPhaseIfNeeded(Phase phase) {
     case Phase::kLayout:
       return context_->MarkAncestorsForLayoutIfNeeded();
     case Phase::kPrePaint:
-      return context_->MarkAncestorsForPaintInvalidationCheckIfNeeded();
-    case Phase::kPaint:
-      return context_->MarkPaintLayerNeedsRepaint();
+      return context_->MarkAncestorsForPrePaintIfNeeded();
+  }
+  NOTREACHED();
+  return false;
+}
+
+bool DisplayLockBudget::IsElementDirtyForPhase(Phase phase) const {
+  switch (phase) {
+    case Phase::kStyle:
+      return context_->IsElementDirtyForStyleRecalc();
+    case Phase::kLayout:
+      return context_->IsElementDirtyForLayout();
+    case Phase::kPrePaint:
+      return context_->IsElementDirtyForPrePaint();
   }
   NOTREACHED();
   return false;

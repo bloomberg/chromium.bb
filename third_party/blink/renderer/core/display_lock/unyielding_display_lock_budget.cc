@@ -24,7 +24,12 @@ void UnyieldingDisplayLockBudget::WillStartLifecycleUpdate() {
   }
 }
 
-bool UnyieldingDisplayLockBudget::DidFinishLifecycleUpdate() {
+bool UnyieldingDisplayLockBudget::NeedsLifecycleUpdates() const {
+  for (auto phase = static_cast<unsigned>(Phase::kFirst);
+       phase <= static_cast<unsigned>(Phase::kLast); ++phase) {
+    if (IsElementDirtyForPhase(static_cast<Phase>(phase)))
+      return true;
+  }
   return false;
 }
 

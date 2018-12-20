@@ -36,7 +36,8 @@ class CORE_EXPORT DisplayLockContext final
   //     committing. That is, this is the "no budget" option.
   // - kStrictYieldBetweenLifecyclePhases:
   //     This type always yields between each lifecycle phase, even if that
-  //     phase was quick.
+  //     phase was quick (note that it still skips phases that don't need any
+  //     updates).
   // - kYieldBetweenLifecyclePhases:
   //     This type will only yield between lifecycle phases (not in the middle
   //     of one). However, if there is sufficient time left (TODO(vmpstr):
@@ -155,8 +156,12 @@ class CORE_EXPORT DisplayLockContext final
   // its subtree were dirty, and false otherwise.
   bool MarkAncestorsForStyleRecalcIfNeeded();
   bool MarkAncestorsForLayoutIfNeeded();
-  bool MarkAncestorsForPaintInvalidationCheckIfNeeded();
+  bool MarkAncestorsForPrePaintIfNeeded();
   bool MarkPaintLayerNeedsRepaint();
+
+  bool IsElementDirtyForStyleRecalc() const;
+  bool IsElementDirtyForLayout() const;
+  bool IsElementDirtyForPrePaint() const;
 
   // When ScopedPendingFrameRect is destroyed, it calls this function. See
   // GetScopedPendingFrameRect() for more information.

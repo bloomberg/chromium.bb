@@ -17,9 +17,8 @@ class CORE_EXPORT DisplayLockBudget {
     kStyle,
     kLayout,
     kPrePaint,
-    kPaint,
     kFirst = kStyle,
-    kLast = kPaint
+    kLast = kPrePaint
   };
 
   DisplayLockBudget(DisplayLockContext*);
@@ -35,14 +34,18 @@ class CORE_EXPORT DisplayLockBudget {
   // Notifies the budget that a new lifecycle update phase is going to start.
   virtual void WillStartLifecycleUpdate() = 0;
 
-  // Notifies the budget that a lifecycle update phase finished. This returns
-  // true if another update cycle is needed in order to process more phases.
-  virtual bool DidFinishLifecycleUpdate() = 0;
+  // Returns true if according to this budget, we still need a lifecycle update.
+  // For example, if a budget blocked a needed phase, then it this will return
+  // true indicating that another frame is needed.
+  virtual bool NeedsLifecycleUpdates() const = 0;
 
  protected:
   // Marks the ancestor chain dirty for the given phase if it's needed. Returns
   // true if the ancestors were marked dirty and false otherwise.
   bool MarkAncestorsDirtyForPhaseIfNeeded(Phase);
+
+  // Returns true if there is likely to be work for the given phase.
+  bool IsElementDirtyForPhase(Phase) const;
 
  private:
   // This is a backpointer to the context, which should always outlive this
