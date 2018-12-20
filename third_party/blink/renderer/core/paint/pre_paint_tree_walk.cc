@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_layer_property_updater.h"
@@ -68,6 +69,13 @@ void PrePaintTreeWalk::WalkTree(LocalFrameView& root_frame_view) {
   if (VLOG_IS_ON(1))
     showAllPropertyTrees(root_frame_view);
 #endif
+
+  // If the frame is invalidated, we need to inform the frame's chrome client
+  // so that the client will initiate repaint of the contents.
+  if (root_frame_view.GetLayoutView()->Layer()->NeedsRepaint()) {
+    if (auto* client = root_frame_view.GetChromeClient())
+      client->InvalidateRect(IntRect(IntPoint(), root_frame_view.Size()));
+  }
 }
 
 void PrePaintTreeWalk::Walk(LocalFrameView& frame_view) {
