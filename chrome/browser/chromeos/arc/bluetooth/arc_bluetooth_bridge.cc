@@ -1009,7 +1009,7 @@ void ArcBluetoothBridge::OnSetDiscoverable(bool discoverable,
 void ArcBluetoothBridge::SetDiscoverable(bool discoverable, uint32_t timeout) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(bluetooth_adapter_);
-  DCHECK(!discoverable || timeout == 0);
+  DCHECK(!discoverable || timeout != 0);
 
   bool currently_discoverable = bluetooth_adapter_->IsDiscoverable();
 
