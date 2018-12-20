@@ -140,8 +140,8 @@ class BrowsingModeBottomToolbarMediator
                 (baseColor & 0x00FFFFFF) | ((int) (DUET_IPH_BUBBLE_ALPHA_FRACTION * 255) << 24);
 
         FeatureHighlightProvider.getInstance().buildForView(activity, anchor,
-                R.string.iph_duet_start_search, FeatureHighlightProvider.TextAlignment.CENTER,
-                R.style.WhiteTitle1, R.string.iph_duet_icons_moved,
+                R.string.iph_duet_title, FeatureHighlightProvider.TextAlignment.CENTER,
+                R.style.WhiteTitle1, R.string.iph_duet_description,
                 FeatureHighlightProvider.TextAlignment.CENTER, R.style.WhiteBody, finalColor,
                 DUET_IPH_BUBBLE_SHOW_DURATION_MS);
 
