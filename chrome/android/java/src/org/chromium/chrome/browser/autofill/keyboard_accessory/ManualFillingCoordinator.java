@@ -46,9 +46,6 @@ public class ManualFillingCoordinator {
     @VisibleForTesting
     void initialize(WindowAndroid windowAndroid, ViewProvider<KeyboardAccessoryView> barProvider,
             ViewProvider<AccessorySheetView> sheetProvider) {
-        sheetProvider.whenLoaded(accessorySheetView -> barProvider.whenLoaded(accessoryView -> {
-            accessorySheetView.addOnPageChangeListener(accessoryView.getPageChangeListener());
-        }));
         mMediator.initialize(new KeyboardAccessoryCoordinator(mMediator, barProvider),
                 new AccessorySheetCoordinator(sheetProvider), windowAndroid);
     }

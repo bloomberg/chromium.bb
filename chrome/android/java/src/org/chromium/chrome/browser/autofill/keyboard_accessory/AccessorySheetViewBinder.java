@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.ACTIVE_TAB_INDEX;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.HEIGHT;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.NO_ACTIVE_TAB;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.PAGE_CHANGE_LISTENER;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.TABS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.TOP_SHADOW_VISIBLE;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.VISIBLE;
@@ -43,6 +44,10 @@ class AccessorySheetViewBinder {
         } else if (propertyKey == ACTIVE_TAB_INDEX) {
             if (model.get(ACTIVE_TAB_INDEX) != NO_ACTIVE_TAB) {
                 view.setCurrentItem(model.get(ACTIVE_TAB_INDEX));
+            }
+        } else if (propertyKey == PAGE_CHANGE_LISTENER) {
+            if (model.get(PAGE_CHANGE_LISTENER) != null) {
+                view.addOnPageChangeListener(model.get(PAGE_CHANGE_LISTENER));
             }
         } else {
             assert false : "Every possible property update needs to be handled!";

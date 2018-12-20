@@ -4,11 +4,14 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import android.support.v4.view.ViewPager;
+
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Tab;
 import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.PropertyModel.ReadableObjectPropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModel.WritableIntPropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 /**
  * This model holds all view state of the accessory sheet.
@@ -23,6 +26,8 @@ class AccessorySheetProperties {
     public static final WritableIntPropertyKey HEIGHT = new WritableIntPropertyKey();
     public static final WritableBooleanPropertyKey TOP_SHADOW_VISIBLE =
             new WritableBooleanPropertyKey();
+    public static final WritableObjectPropertyKey<ViewPager.OnPageChangeListener>
+            PAGE_CHANGE_LISTENER = new WritableObjectPropertyKey<>();
 
     public static final int NO_ACTIVE_TAB = -1;
 

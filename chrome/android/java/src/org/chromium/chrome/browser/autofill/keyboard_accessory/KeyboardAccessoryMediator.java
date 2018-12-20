@@ -6,18 +6,16 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTrigger.MANUAL_CLOSE;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIONS;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIVE_TAB;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BOTTOM_OFFSET_PX;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TABS;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TAB_SELECTION_CALLBACKS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.VISIBLE;
 
 import android.support.annotation.Nullable;
 import android.support.annotation.Px;
-import android.support.design.widget.TabLayout;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryCoordinator.TabSwitchingDelegate;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryCoordinator.VisibilityDelegate;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.modelutil.ListObservable;
@@ -40,22 +38,23 @@ class KeyboardAccessoryMediator
         implements ListObservable.ListObserver<Void>,
                    PropertyObservable.PropertyObserver<PropertyKey>,
                    KeyboardAccessoryData.Observer<KeyboardAccessoryData.Action[]>,
-                   TabLayout.OnTabSelectedListener {
+                   KeyboardAccessoryTabLayoutCoordinator.AccessoryTabObserver {
     private final PropertyModel mModel;
     private final VisibilityDelegate mVisibilityDelegate;
+    private final TabSwitchingDelegate mTabSwitcher;
 
     private boolean mShowIfNotEmpty;
 
-    KeyboardAccessoryMediator(PropertyModel model, VisibilityDelegate visibilityDelegate) {
+    KeyboardAccessoryMediator(PropertyModel model, VisibilityDelegate visibilityDelegate,
+            TabSwitchingDelegate tabSwitcher) {
         mModel = model;
         mVisibilityDelegate = visibilityDelegate;
+        mTabSwitcher = tabSwitcher;
 
         // Add mediator as observer so it can use model changes as signal for accessory visibility.
-        mModel.addObserver(this);
-        mModel.get(TABS).addObserver(this);
-        mModel.get(ACTIONS).addObserver(this);
-        mModel.set(TAB_SELECTION_CALLBACKS, this);
         mModel.set(SHOW_KEYBOARD_CALLBACK, this::closeSheet);
+        mModel.get(ACTIONS).addObserver(this);
+        mModel.addObserver(this);
     }
 
     @Override
@@ -68,7 +67,7 @@ class KeyboardAccessoryMediator
             if (a.getActionType() == typeId) continue;
             retainedActions.add(a);
         }
-        // Always append autofill suggestions to the very end.
+        // Append autofill suggestions to the end, right before the tab switcher.
         int insertPos = typeId == AccessoryAction.AUTOFILL_SUGGESTION ? retainedActions.size() : 0;
         retainedActions.addAll(insertPos, Arrays.asList(actions));
         mModel.get(ACTIONS).set(retainedActions);
@@ -84,25 +83,9 @@ class KeyboardAccessoryMediator
         updateVisibility();
     }
 
-    void addTab(KeyboardAccessoryData.Tab tab) {
-        mModel.get(TABS).add(tab);
-    }
-
-    void removeTab(KeyboardAccessoryData.Tab tab) {
-        mModel.get(TABS).remove(tab);
-    }
-
-    void setTabs(KeyboardAccessoryData.Tab[] tabs) {
-        mModel.get(TABS).set(tabs);
-    }
-
     void dismiss() {
-        closeActiveTab();
+        mTabSwitcher.closeActiveTab();
         close();
-    }
-
-    void closeActiveTab() {
-        mModel.set(ACTIVE_TAB, null);
     }
 
     @VisibleForTesting
@@ -112,20 +95,20 @@ class KeyboardAccessoryMediator
 
     @Override
     public void onItemRangeInserted(ListObservable source, int index, int count) {
-        assert source == mModel.get(ACTIONS) || source == mModel.get(TABS);
+        assert source == mModel.get(ACTIONS);
         updateVisibility();
     }
 
     @Override
     public void onItemRangeRemoved(ListObservable source, int index, int count) {
-        assert source == mModel.get(ACTIONS) || source == mModel.get(TABS);
+        assert source == mModel.get(ACTIONS);
         updateVisibility();
     }
 
     @Override
     public void onItemRangeChanged(
             ListObservable source, int index, int count, @Nullable Void payload) {
-        assert source == mModel.get(ACTIONS) || source == mModel.get(TABS);
+        assert source == mModel.get(ACTIONS);
         assert payload == null;
         updateVisibility();
     }
@@ -136,7 +119,7 @@ class KeyboardAccessoryMediator
         // Update the visibility only if we haven't set it just now.
         if (propertyKey == VISIBLE) {
             // When the accessory just (dis)appeared, there should be no active tab.
-            closeActiveTab();
+            mTabSwitcher.closeActiveTab();
             mVisibilityDelegate.onBottomControlSpaceChanged();
             if (!mModel.get(VISIBLE)) {
                 // TODO(fhorschig|ioanap): Maybe the generation bridge should take care of that.
@@ -144,52 +127,48 @@ class KeyboardAccessoryMediator
             }
             return;
         }
-        if (propertyKey == ACTIVE_TAB) {
-            Integer activeTab = mModel.get(ACTIVE_TAB);
-            if (activeTab == null) {
-                mVisibilityDelegate.onCloseAccessorySheet();
-                updateVisibility();
-                return;
-            }
-            mVisibilityDelegate.onChangeAccessorySheet(activeTab);
-            return;
-        }
-        if (propertyKey == BOTTOM_OFFSET_PX || propertyKey == TAB_SELECTION_CALLBACKS
-                || propertyKey == SHOW_KEYBOARD_CALLBACK) {
+        if (propertyKey == BOTTOM_OFFSET_PX || propertyKey == SHOW_KEYBOARD_CALLBACK
+                || propertyKey == KEYBOARD_TOGGLE_VISIBLE) {
             return;
         }
         assert false : "Every property update needs to be handled explicitly!";
     }
 
     @Override
-    public void onTabSelected(TabLayout.Tab tab) {
-        mModel.set(ACTIVE_TAB, tab.getPosition());
+    public void onActiveTabChanged(Integer activeTab) {
+        mModel.set(KEYBOARD_TOGGLE_VISIBLE, activeTab != null);
+        if (activeTab == null) {
+            mVisibilityDelegate.onCloseAccessorySheet();
+            updateVisibility();
+            return;
+        }
+        mVisibilityDelegate.onChangeAccessorySheet(activeTab);
     }
 
     @Override
-    public void onTabUnselected(TabLayout.Tab tab) {}
+    public void onActiveTabReselected() {
+        closeSheet();
+    }
 
     @Override
-    public void onTabReselected(TabLayout.Tab tab) {
-        if (mModel.get(ACTIVE_TAB) == null) {
-            mModel.set(ACTIVE_TAB, tab.getPosition());
-        } else {
-            closeSheet();
-        }
+    public void onTabsChanged() {
+        updateVisibility();
     }
 
     private void closeSheet() {
+        assert mTabSwitcher.getActiveTab() != null;
         KeyboardAccessoryMetricsRecorder.recordSheetTrigger(
-                mModel.get(TABS).get(mModel.get(ACTIVE_TAB)).getRecordingType(), MANUAL_CLOSE);
+                mTabSwitcher.getActiveTab().getRecordingType(), MANUAL_CLOSE);
+        mModel.set(KEYBOARD_TOGGLE_VISIBLE, false);
         mVisibilityDelegate.onOpenKeyboard(); // This will close the active tab gently.
     }
 
     boolean hasContents() {
-        return mModel.get(ACTIONS).size() > 0 || mModel.get(TABS).size() > 0;
+        return mModel.get(ACTIONS).size() > 0 || mTabSwitcher.hasTabs();
     }
 
     private boolean shouldShowAccessory() {
-        if (!mShowIfNotEmpty && mModel.get(ACTIVE_TAB) == null) return false;
+        if (!mShowIfNotEmpty && mTabSwitcher.getActiveTab() == null) return false;
         return hasContents();
     }
 
@@ -206,6 +185,6 @@ class KeyboardAccessoryMediator
     }
 
     public boolean hasActiveTab() {
-        return mModel.get(VISIBLE) && mModel.get(ACTIVE_TAB) != null;
+        return mModel.get(VISIBLE) && mTabSwitcher.getActiveTab() != null;
     }
 }
