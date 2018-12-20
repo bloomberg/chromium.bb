@@ -6,7 +6,6 @@
 
 #include "base/no_destructor.h"
 #include "base/unguessable_token.h"
-#include "build/build_config.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
@@ -23,20 +22,10 @@ namespace {
 
 const char kAudioFocusSourceName[] = "web";
 
-base::UnguessableToken GetAudioFocusGroupId(MediaSessionImpl* session) {
-  // Allow the media session to override the group id.
-  if (session->audio_focus_group_id() != base::UnguessableToken::Null())
-    return session->audio_focus_group_id();
-
-    // If we are on Chrome OS, then use a shared audio focus group id for the
-    // whole browser. This will mean that tabs will share audio focus.
-#if defined(OS_CHROMEOS)
+static const base::UnguessableToken& GetBrowserGroupId() {
   static const base::NoDestructor<base::UnguessableToken> token(
       base::UnguessableToken::Create());
   return *token;
-#else
-  return base::UnguessableToken::Create();
-#endif
 }
 
 // AudioFocusDelegateDefault is the default implementation of
@@ -113,7 +102,9 @@ AudioFocusDelegateDefault::RequestAudioFocus(AudioFocusType audio_focus_type) {
     audio_focus_ptr_->RequestGroupedAudioFocus(
         mojo::MakeRequest(&request_client_ptr_), std::move(media_session),
         session_info_.Clone(), audio_focus_type,
-        GetAudioFocusGroupId(media_session_),
+        media_session_->audio_focus_group_id() == base::UnguessableToken::Null()
+            ? GetBrowserGroupId()
+            : media_session_->audio_focus_group_id(),
         base::BindOnce(&AudioFocusDelegateDefault::FinishAudioFocusRequest,
                        base::Unretained(this), audio_focus_type));
   }
