@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
 #include "third_party/blink/renderer/core/event_interface_names.h"
+#include "third_party/blink/renderer/core/frame/intervention.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 
@@ -122,10 +123,22 @@ bool WheelEvent::IsWheelEvent() const {
 void WheelEvent::preventDefault() {
   MouseEvent::preventDefault();
 
+  PassiveMode passive_mode = HandlingPassive();
+  if (passive_mode == PassiveMode::kPassiveForcedDocumentLevel) {
+    String id = "PreventDefaultPassive";
+    String message =
+        "Unable to preventDefault inside passive event listener due to "
+        "target being treated as passive. See "
+        "https://www.chromestatus.com/features/6662647093133312";
+    if (view() && view()->IsLocalDOMWindow() && view()->GetFrame()) {
+      Intervention::GenerateReport(ToLocalDOMWindow(view())->GetFrame(), id,
+                                   message);
+    }
+  }
+
   if (!currentTarget() || !currentTarget()->IsTopLevelNode())
     return;
 
-  PassiveMode passive_mode = HandlingPassive();
   if (passive_mode == PassiveMode::kPassiveForcedDocumentLevel ||
       passive_mode == PassiveMode::kNotPassiveDefault) {
     if (ExecutionContext* context = currentTarget()->GetExecutionContext()) {
