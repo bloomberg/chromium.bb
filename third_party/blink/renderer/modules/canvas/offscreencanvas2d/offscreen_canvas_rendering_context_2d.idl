@@ -60,15 +60,15 @@
     void stroke(Path2D path);
     void clip();
     void clip(Path2D path);
-    boolean isPointInPath(unrestricted double x, unrestricted double y, optional CanvasFillRule winding);
-    boolean isPointInPath(Path2D path, unrestricted double x, unrestricted double y, optional CanvasFillRule winding);
-    boolean isPointInStroke(unrestricted double x, unrestricted double y);
-    boolean isPointInStroke(Path2D path, unrestricted double x, unrestricted double y);
+    [HighEntropy, MeasureAs=OffscreenCanvasIsPointInPath] boolean isPointInPath(unrestricted double x, unrestricted double y, optional CanvasFillRule winding);
+    [HighEntropy, MeasureAs=OffscreenCanvasIsPointInPath] boolean isPointInPath(Path2D path, unrestricted double x, unrestricted double y, optional CanvasFillRule winding);
+    [HighEntropy, MeasureAs=OffscreenCanvasIsPointInStroke] boolean isPointInStroke(unrestricted double x, unrestricted double y);
+    [HighEntropy, MeasureAs=OffscreenCanvasIsPointInStroke] boolean isPointInStroke(Path2D path, unrestricted double x, unrestricted double y);
 
     // text (see also the CanvasDrawingStyles interface)
     void fillText(DOMString text, unrestricted double x, unrestricted double y, optional unrestricted double maxWidth);
     void strokeText(DOMString text, unrestricted double x, unrestricted double y, optional unrestricted double maxWidth);
-    TextMetrics measureText(DOMString text);
+    [HighEntropy, MeasureAs=OffscreenCanvasMeasureText] TextMetrics measureText(DOMString text);
 
     // drawing images
     [CallWith=ScriptState, RaisesException] void drawImage(CanvasImageSource image, unrestricted double x, unrestricted double y);
@@ -78,7 +78,7 @@
     // pixel manipulation
     [RaisesException] ImageData createImageData(ImageData imagedata);
     [RaisesException] ImageData createImageData(long sw, long sh);
-    [RaisesException] ImageData getImageData(long sx, long sy, long sw, long sh);
+    [HighEntropy, MeasureAs=OffscreenCanvasGetImageData, RaisesException] ImageData getImageData(long sx, long sy, long sw, long sh);
     [RaisesException] void putImageData(ImageData imagedata, long dx, long dy);
     [RaisesException] void putImageData(ImageData imagedata, long dx, long dy, long dirtyX, long dirtyY, long dirtyWidth, long dirtyHeight);
 

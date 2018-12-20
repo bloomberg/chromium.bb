@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/html_canvas_element_or_offscreen_canvas.h"
 #include "third_party/blink/renderer/bindings/modules/v8/webgl_any.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/dactyloscoper.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -2964,6 +2965,12 @@ bool WebGLRenderingContextBase::ExtensionSupportedAndAllowed(
 ScriptValue WebGLRenderingContextBase::getExtension(ScriptState* script_state,
                                                     const String& name) {
   WebGLExtension* extension = nullptr;
+
+  if (name == WebGLDebugRendererInfo::ExtensionName()) {
+    ExecutionContext* context = ExecutionContext::From(script_state);
+    UseCounter::Count(context, WebFeature::kWebGLDebugRendererInfo);
+    Dactyloscoper::Record(context, WebFeature::kWebGLDebugRendererInfo);
+  }
 
   if (!isContextLost()) {
     for (ExtensionTracker* tracker : extensions_) {

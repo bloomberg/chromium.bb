@@ -14,6 +14,6 @@
     attribute [EnforceRange] unsigned long width;
     attribute [EnforceRange] unsigned long height;
 
-    [CallWith=ScriptState, RaisesException] ImageBitmap transferToImageBitmap();
-    [MeasureAs=OffscreenCanvasConvertToBlob, RaisesException, CallWith=ScriptState] Promise<Blob> convertToBlob(optional ImageEncodeOptions options);
+    [CallWith=ScriptState, HighEntropy, MeasureAs=OffscreenCanvasTransferToImageBitmap, RaisesException] ImageBitmap transferToImageBitmap();
+    [CallWith=ScriptState, HighEntropy, MeasureAs=OffscreenCanvasConvertToBlob, RaisesException] Promise<Blob> convertToBlob(optional ImageEncodeOptions options);
 };

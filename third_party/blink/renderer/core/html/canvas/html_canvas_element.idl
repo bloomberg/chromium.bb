@@ -37,11 +37,11 @@ interface HTMLCanvasElement : HTMLElement
     // Note: The arguments argument is variadic in the spec, but not here as
     // only one extra argument is actually used.
     // FIXME: type should not have a default value.
-    [MeasureAs=CanvasToDataURL, RaisesException] DOMString toDataURL(optional DOMString type = null, optional any arguments);
+    [HighEntropy, MeasureAs=CanvasToDataURL, RaisesException] DOMString toDataURL(optional DOMString type = null, optional any arguments);
 
-    [MeasureAs=CanvasToBlob, RaisesException] void toBlob(BlobCallback _callback, optional DOMString type = null, optional any arguments);
+    [HighEntropy, MeasureAs=CanvasToBlob, RaisesException] void toBlob(BlobCallback _callback, optional DOMString type = null, optional any arguments);
 
-    [RuntimeEnabled=CanvasColorManagement, MeasureAs=CanvasConvertToBlob, RaisesException, CallWith=ScriptState] Promise<Blob> convertToBlob(optional ImageEncodeOptions options);
+    [HighEntropy, RuntimeEnabled=CanvasColorManagement, MeasureAs=CanvasConvertToBlob, RaisesException, CallWith=ScriptState] Promise<Blob> convertToBlob(optional ImageEncodeOptions options);
 };
 
 // https://html.spec.whatwg.org/multipage/canvas.html#blobcallback
