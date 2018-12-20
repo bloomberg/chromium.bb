@@ -1055,6 +1055,10 @@ class ChromeSDKCommand(command.CliCommand):
 
     gn_args.pop('internal_khronos_glcts_tests', None)  # crbug.com/588080
 
+    # Update to use LLD as linker for building Chrome.  This is only needed
+    # until crosbug/913317 is fixed.
+    gn_args['use_lld'] = True
+
     # Disable ThinLTO and CFI for simplechrome. Tryjob machines do not have
     # enough file descriptors to use. crbug.com/789607
     if not options.thinlto and 'use_thin_lto' in gn_args:
