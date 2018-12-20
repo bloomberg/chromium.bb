@@ -6,8 +6,6 @@
 
 namespace ash {
 
-const char kMediaSessionNotificationId[] = "media-session";
-
 const char kMediaSessionNotificationCustomViewType[] = "media-session";
 
 const char kMediaSessionNotifierId[] = "media-session";

@@ -8,6 +8,7 @@
 
 #include "ash/media/media_notification_constants.h"
 #include "ash/media/media_notification_controller.h"
+#include "ash/media/media_notification_item.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
@@ -18,6 +19,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/unguessable_token.h"
 #include "services/media_session/public/cpp/test/test_media_controller.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -59,9 +61,7 @@ class MediaNotificationViewTest : public AshTestBase {
 
     AshTestBase::SetUp();
 
-    media_controller_ = std::make_unique<TestMediaController>();
-    Shell::Get()->media_notification_controller()->SetMediaControllerForTesting(
-        media_controller_->CreateMediaControllerPtr());
+    request_id_ = base::UnguessableToken::Create();
 
     ShowNotificationAndCaptureView(
         media_session::mojom::MediaSessionInfo::New());
@@ -85,12 +85,14 @@ class MediaNotificationViewTest : public AshTestBase {
     media_session::mojom::AudioFocusRequestStatePtr session(
         media_session::mojom::AudioFocusRequestState::New());
     session->session_info = std::move(session_info);
-    Shell::Get()->media_notification_controller()->OnActiveSessionChanged(
+    session->session_info->is_controllable = true;
+    session->request_id = request_id_;
+    Shell::Get()->media_notification_controller()->OnFocusGained(
         std::move(session));
 
     message_center::Notification* notification =
         message_center::MessageCenter::Get()->FindVisibleNotificationById(
-            kMediaSessionNotificationId);
+            request_id_.ToString());
     ASSERT_TRUE(notification);
 
     // Open the system tray. This will trigger the view to be created.
@@ -104,6 +106,12 @@ class MediaNotificationViewTest : public AshTestBase {
     // Check that the view was captured.
     ASSERT_TRUE(view_);
     view_->set_notify_enter_exit_on_child(true);
+
+    // Inject the test media controller into the item.
+    ASSERT_TRUE(GetItem());
+    media_controller_ = std::make_unique<TestMediaController>();
+    GetItem()->SetMediaControllerForTesting(
+        media_controller_->CreateMediaControllerPtr());
   }
 
   void TearDown() override {
@@ -129,8 +137,7 @@ class MediaNotificationViewTest : public AshTestBase {
     metadata.title = base::ASCIIToUTF16("title");
     metadata.artist = base::ASCIIToUTF16("artist");
 
-    Shell::Get()->media_notification_controller()->MediaSessionMetadataChanged(
-        metadata);
+    GetItem()->MediaSessionMetadataChanged(metadata);
 
     EXPECT_TRUE(title_artist_row()->visible());
     EXPECT_TRUE(title_label()->visible());
@@ -166,7 +173,14 @@ class MediaNotificationViewTest : public AshTestBase {
     return nullptr;
   }
 
+  MediaNotificationItem* GetItem() const {
+    return Shell::Get()->media_notification_controller()->GetItem(
+        request_id_.ToString());
+  }
+
   bool is_expanded() const { return view_->expanded_; }
+
+  const base::UnguessableToken& request_id() const { return request_id_; }
 
  private:
   std::unique_ptr<message_center::MessageView> CreateAndCaptureCustomView(
@@ -175,6 +189,8 @@ class MediaNotificationViewTest : public AshTestBase {
     view_ = view.get();
     return view;
   }
+
+  base::UnguessableToken request_id_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -242,7 +258,7 @@ TEST_F(MediaNotificationViewTest, NextTrackButtonClick) {
       GetButtonForAction(MediaSessionAction::kNextTrack), &cursor_location);
   GetEventGenerator()->MoveMouseTo(cursor_location);
   GetEventGenerator()->ClickLeftButton();
-  Shell::Get()->media_notification_controller()->FlushForTesting();
+  GetItem()->FlushForTesting();
 
   EXPECT_EQ(1, media_controller()->next_track_count());
 }
@@ -255,7 +271,7 @@ TEST_F(MediaNotificationViewTest, PlayButtonClick) {
       GetButtonForAction(MediaSessionAction::kPlay), &cursor_location);
   GetEventGenerator()->MoveMouseTo(cursor_location);
   GetEventGenerator()->ClickLeftButton();
-  Shell::Get()->media_notification_controller()->FlushForTesting();
+  GetItem()->FlushForTesting();
 
   EXPECT_EQ(1, media_controller()->resume_count());
 }
@@ -267,15 +283,15 @@ TEST_F(MediaNotificationViewTest, PauseButtonClick) {
       media_session::mojom::MediaSessionInfo::New());
   session_info->playback_state =
       media_session::mojom::MediaPlaybackState::kPlaying;
-  Shell::Get()->media_notification_controller()->MediaSessionInfoChanged(
-      session_info.Clone());
+  session_info->is_controllable = true;
+  GetItem()->MediaSessionInfoChanged(session_info.Clone());
 
   gfx::Point cursor_location(1, 1);
   views::View::ConvertPointToScreen(
       GetButtonForAction(MediaSessionAction::kPause), &cursor_location);
   GetEventGenerator()->MoveMouseTo(cursor_location);
   GetEventGenerator()->ClickLeftButton();
-  Shell::Get()->media_notification_controller()->FlushForTesting();
+  GetItem()->FlushForTesting();
 
   EXPECT_EQ(1, media_controller()->suspend_count());
 }
@@ -288,7 +304,7 @@ TEST_F(MediaNotificationViewTest, PreviousTrackButtonClick) {
       GetButtonForAction(MediaSessionAction::kPreviousTrack), &cursor_location);
   GetEventGenerator()->MoveMouseTo(cursor_location);
   GetEventGenerator()->ClickLeftButton();
-  Shell::Get()->media_notification_controller()->FlushForTesting();
+  GetItem()->FlushForTesting();
 
   EXPECT_EQ(1, media_controller()->previous_track_count());
 }
@@ -301,7 +317,7 @@ TEST_F(MediaNotificationViewTest, SeekBackwardButtonClick) {
       GetButtonForAction(MediaSessionAction::kSeekBackward), &cursor_location);
   GetEventGenerator()->MoveMouseTo(cursor_location);
   GetEventGenerator()->ClickLeftButton();
-  Shell::Get()->media_notification_controller()->FlushForTesting();
+  GetItem()->FlushForTesting();
 
   EXPECT_EQ(1, media_controller()->seek_backward_count());
 }
@@ -314,7 +330,7 @@ TEST_F(MediaNotificationViewTest, SeekForwardButtonClick) {
       GetButtonForAction(MediaSessionAction::kSeekForward), &cursor_location);
   GetEventGenerator()->MoveMouseTo(cursor_location);
   GetEventGenerator()->ClickLeftButton();
-  Shell::Get()->media_notification_controller()->FlushForTesting();
+  GetItem()->FlushForTesting();
 
   EXPECT_EQ(1, media_controller()->seek_forward_count());
 }
@@ -326,7 +342,7 @@ TEST_F(MediaNotificationViewTest, ClickNotification) {
   views::View::ConvertPointToScreen(view(), &cursor_location);
   GetEventGenerator()->MoveMouseTo(cursor_location);
   GetEventGenerator()->ClickLeftButton();
-  Shell::Get()->media_notification_controller()->FlushForTesting();
+  GetItem()->FlushForTesting();
 
   EXPECT_EQ(0, media_controller()->toggle_suspend_resume_count());
 }
@@ -339,8 +355,11 @@ TEST_F(MediaNotificationViewTest, PlayToggle_FromActiveSessionChanged) {
     EXPECT_FALSE(button->toggled_for_testing());
   }
 
-  Shell::Get()->media_notification_controller()->OnActiveSessionChanged(
-      nullptr);
+  media_session::mojom::AudioFocusRequestStatePtr session(
+      media_session::mojom::AudioFocusRequestState::New());
+  session->request_id = request_id();
+  Shell::Get()->media_notification_controller()->OnFocusLost(
+      std::move(session));
 
   // Disable the tray and run the loop to make sure that the existing view is
   // destroyed.
@@ -370,7 +389,7 @@ TEST_F(MediaNotificationViewTest, PlayToggle_FromObserver_Empty) {
   ASSERT_EQ(views::ToggleImageButton::kViewClassName, button->GetClassName());
   EXPECT_FALSE(button->toggled_for_testing());
 
-  Shell::Get()->media_notification_controller()->MediaSessionInfoChanged(
+  GetItem()->MediaSessionInfoChanged(
       media_session::mojom::MediaSessionInfo::New());
   EXPECT_FALSE(button->toggled_for_testing());
 }
@@ -386,14 +405,12 @@ TEST_F(MediaNotificationViewTest, PlayToggle_FromObserver_PlaybackState) {
 
   session_info->playback_state =
       media_session::mojom::MediaPlaybackState::kPlaying;
-  Shell::Get()->media_notification_controller()->MediaSessionInfoChanged(
-      session_info.Clone());
+  GetItem()->MediaSessionInfoChanged(session_info.Clone());
   EXPECT_TRUE(button->toggled_for_testing());
 
   session_info->playback_state =
       media_session::mojom::MediaPlaybackState::kPaused;
-  Shell::Get()->media_notification_controller()->MediaSessionInfoChanged(
-      session_info.Clone());
+  GetItem()->MediaSessionInfoChanged(session_info.Clone());
   EXPECT_FALSE(button->toggled_for_testing());
 }
 
@@ -404,8 +421,7 @@ TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver) {
 TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver_Empty) {
   UpdateWithSampleMetadata();
 
-  Shell::Get()->media_notification_controller()->MediaSessionMetadataChanged(
-      base::nullopt);
+  GetItem()->MediaSessionMetadataChanged(base::nullopt);
 
   EXPECT_FALSE(title_artist_row()->visible());
 }
@@ -413,8 +429,7 @@ TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver_Empty) {
 TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver_EmptyString) {
   UpdateWithSampleMetadata();
 
-  Shell::Get()->media_notification_controller()->MediaSessionMetadataChanged(
-      media_session::MediaMetadata());
+  GetItem()->MediaSessionMetadataChanged(media_session::MediaMetadata());
 
   EXPECT_FALSE(title_artist_row()->visible());
 }
@@ -427,8 +442,7 @@ TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver_NoArtist) {
   media_session::MediaMetadata metadata;
   metadata.title = base::ASCIIToUTF16("title");
 
-  Shell::Get()->media_notification_controller()->MediaSessionMetadataChanged(
-      metadata);
+  GetItem()->MediaSessionMetadataChanged(metadata);
 
   EXPECT_TRUE(title_artist_row()->visible());
   EXPECT_TRUE(title_label()->visible());
@@ -445,8 +459,7 @@ TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver_NoTitle) {
   media_session::MediaMetadata metadata;
   metadata.artist = base::ASCIIToUTF16("artist");
 
-  Shell::Get()->media_notification_controller()->MediaSessionMetadataChanged(
-      metadata);
+  GetItem()->MediaSessionMetadataChanged(metadata);
 
   EXPECT_TRUE(title_artist_row()->visible());
   EXPECT_FALSE(title_label()->visible());
@@ -459,8 +472,7 @@ TEST_F(MediaNotificationViewTest, Buttons_WhenCollapsed) {
   media_session::MediaMetadata metadata;
   metadata.artist = base::ASCIIToUTF16("artist");
 
-  Shell::Get()->media_notification_controller()->MediaSessionMetadataChanged(
-      metadata);
+  GetItem()->MediaSessionMetadataChanged(metadata);
 
   view()->SetExpanded(false);
 
@@ -479,8 +491,7 @@ TEST_F(MediaNotificationViewTest, Buttons_WhenExpanded) {
   media_session::MediaMetadata metadata;
   metadata.artist = base::ASCIIToUTF16("artist");
 
-  Shell::Get()->media_notification_controller()->MediaSessionMetadataChanged(
-      metadata);
+  GetItem()->MediaSessionMetadataChanged(metadata);
 
   view()->SetExpanded(true);
 

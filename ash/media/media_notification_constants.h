@@ -9,9 +9,6 @@
 
 namespace ash {
 
-// The notification ID for the media session notification.
-ASH_EXPORT extern const char kMediaSessionNotificationId[];
-
 // The custom view type that should be set on media session notifications.
 ASH_EXPORT extern const char kMediaSessionNotificationCustomViewType[];
 
