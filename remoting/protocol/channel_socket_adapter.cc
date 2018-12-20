@@ -126,7 +126,7 @@ void TransportChannelSocketAdapter::OnNewPacket(
     rtc::PacketTransportInterface* transport,
     const char* data,
     size_t data_size,
-    const rtc::PacketTime& packet_time,
+    const int64_t& packet_time,
     int flags) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(transport, channel_);

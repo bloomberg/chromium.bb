@@ -59,7 +59,7 @@ class TransportChannelSocketAdapter : public P2PDatagramSocket,
   void OnNewPacket(rtc::PacketTransportInterface* transport,
                    const char* data,
                    size_t data_size,
-                   const rtc::PacketTime& packet_time,
+                   const int64_t& packet_time,
                    int flags);
   void OnWritableState(rtc::PacketTransportInterface* transport);
   void OnChannelDestroyed(cricket::IceTransportInternal* ice_transport);

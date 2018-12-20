@@ -35,9 +35,10 @@ class ChromiumSocketFactoryTest : public testing::Test,
   }
 
   void OnPacket(rtc::AsyncPacketSocket* socket,
-                const char* data, size_t size,
+                const char* data,
+                size_t size,
                 const rtc::SocketAddress& address,
-                const rtc::PacketTime& packet_time) {
+                const int64_t& packet_time) {
     EXPECT_EQ(socket, socket_.get());
     last_packet_.assign(data, data + size);
     last_address_ = address;
