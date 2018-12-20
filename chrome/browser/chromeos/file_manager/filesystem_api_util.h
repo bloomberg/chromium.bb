@@ -32,6 +32,10 @@ bool IsNonNativeFileSystemType(storage::FileSystemType type);
 // requires special handling.
 bool IsUnderNonNativeLocalPath(Profile* profile, const base::FilePath& path);
 
+// Checks whether |path| points to a filesystem that requires special handling
+// for retrieving mime types.
+bool HasNonNativeMimeTypeProvider(Profile* profile, const base::FilePath& path);
+
 // Returns the mime type of the file pointed by |path|, and asynchronously sends
 // the result to |callback|.
 void GetNonNativeLocalPathMimeType(

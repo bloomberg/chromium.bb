@@ -27,6 +27,8 @@ class NonNativeFileSystemDelegateChromeOS
   // extensions::NonNativeFileSystemDelegate:
   bool IsUnderNonNativeLocalPath(content::BrowserContext* context,
                                  const base::FilePath& path) override;
+  bool HasNonNativeMimeTypeProvider(content::BrowserContext* context,
+                                    const base::FilePath& path) override;
   void GetNonNativeLocalPathMimeType(
       content::BrowserContext* context,
       const base::FilePath& path,
