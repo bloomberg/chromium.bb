@@ -1,8 +1,7 @@
 <!doctype HTML>
 
 <!--
-Runs an acquireDisplayLock, which changes DOM and suspends the context.
-DOM changes should never be visible.
+Calls commit without first acquiring, which fails.
 -->
 
 <style>
@@ -15,21 +14,16 @@ DOM changes should never be visible.
 #child {
   width: 50px;
   height: 50px;
-  background: red;
+  background: lightgreen;
 }
 </style>
 
 <div id="log"></div>
 
 <script>
+// TODO(vmpstr): In WPT this needs to be replaced with reftest-wait.
 if (window.testRunner)
   window.testRunner.waitUntilDone();
-
-function modifyDom(context) {
-  let child = document.createElement("div");
-  child.id = "child";
-  context.lockedElement.appendChild(child);
-}
 
 function finishTest(status_string) {
   if (document.getElementById("log").innerHTML === "")
@@ -38,20 +32,14 @@ function finishTest(status_string) {
     window.testRunner.notifyDone();
 }
 
-function acquire() {
+function runTest() {
   let container = document.createElement("div");
   container.id = "container";
-  container.acquireDisplayLock(
-    (context) => {
-      modifyDom(context);
-      context.suspend();
-  }).then(
-    () => { finishTest("FAIL"); },
-    () => { finishTest("FAIL"); });
+  container.getDisplayLock().commit().then(
+      () => { finishTest("FAIL"); },
+      () => { finishTest("PASS"); });
   document.body.appendChild(container);
-  setTimeout(() => { finishTest("PASS"); }, 100);
 }
 
-window.onload = acquire;
+window.onload = runTest;
 </script>
-

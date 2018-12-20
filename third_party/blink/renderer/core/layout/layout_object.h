@@ -2994,7 +2994,7 @@ inline void LayoutObject::SetNeedsLayout(
   bool already_needed_layout = bitfields_.SelfNeedsLayout();
   SetSelfNeedsLayout(true);
   MarkContainerNeedsCollectInlines();
-  if (!already_needed_layout && !LayoutBlockedByDisplayLock()) {
+  if (!already_needed_layout) {
     TRACE_EVENT_INSTANT1(
         TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
         "LayoutInvalidationTracking", TRACE_EVENT_SCOPE_THREAD, "data",

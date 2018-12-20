@@ -36,7 +36,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_display_lock_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_display_lock_options.h"
 #include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
@@ -1897,8 +1897,6 @@ Node::InsertionNotificationRequest Element::InsertedInto(
       if (LocalFrameView* frame_view = GetDocument().View())
         frame_view->SetIntersectionObservationState(LocalFrameView::kRequired);
     }
-    if (rare_data->GetDisplayLockContext())
-      rare_data->GetDisplayLockContext()->NotifyConnectedMayHaveChanged();
   }
 
   if (isConnected()) {
@@ -1938,8 +1936,6 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
     // pseudo elements.
     ElementRareData* rare_data = GetElementRareData();
     rare_data->ClearPseudoElements();
-    if (rare_data->GetDisplayLockContext())
-      rare_data->GetDisplayLockContext()->NotifyConnectedMayHaveChanged();
   }
 
   if (Fullscreen::IsFullscreenElement(*this)) {
@@ -3567,21 +3563,9 @@ void Element::SetNeedsResizeObserverUpdate() {
   }
 }
 
-ScriptPromise Element::acquireDisplayLock(ScriptState* script_state,
-                                          V8DisplayLockCallback* callback) {
-  auto* context = EnsureElementRareData().EnsureDisplayLockContext(
+DisplayLockContext* Element::getDisplayLockForBindings() {
+  return EnsureElementRareData().EnsureDisplayLockContext(
       this, GetExecutionContext());
-  context->RequestLock(callback, script_state);
-  auto lock_promise = context->Promise();
-
-  // Only support "mode 2" display locking, which requires that the lock is
-  // acquired before the element is connected. Note that we need to call this
-  // after actually getting the promise to avoid ScriptPromiseResolver asserts.
-  // TODO(vmpstr): Implement mode 1.
-  if (isConnected())
-    context->RejectAndCleanUp();
-
-  return lock_promise;
 }
 
 DisplayLockContext* Element::GetDisplayLockContext() const {

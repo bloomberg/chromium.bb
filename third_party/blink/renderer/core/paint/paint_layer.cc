@@ -1945,6 +1945,9 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
                                      HitTestingTransformState* transform_state,
                                      double* z_offset) {
   const LayoutObject& layout_object = GetLayoutObject();
+  if (layout_object.PaintBlockedByDisplayLock())
+    return nullptr;
+
   DCHECK_GE(layout_object.GetDocument().Lifecycle().GetState(),
             DocumentLifecycle::kCompositingClean);
 

@@ -1,8 +1,7 @@
 <!doctype HTML>
 
 <!--
-Runs an acquireDisplayLock, which suspends the context and schedules
-a continuation, which should never run.
+Calls update without first calling acquire, which fails.
 -->
 
 <style>
@@ -15,22 +14,16 @@ a continuation, which should never run.
 #child {
   width: 50px;
   height: 50px;
-  background: red;
+  background: lightgreen;
 }
 </style>
 
 <div id="log"></div>
 
 <script>
+// TODO(vmpstr): In WPT this needs to be replaced with reftest-wait.
 if (window.testRunner)
   window.testRunner.waitUntilDone();
-
-function modifyDom(context) {
-  let child = document.createElement("div");
-  child.id = "child";
-  // Append to body directly so it's clear whether this runs or not.
-  document.body.appendChild(child);
-}
 
 function finishTest(status_string) {
   if (document.getElementById("log").innerHTML === "")
@@ -39,20 +32,14 @@ function finishTest(status_string) {
     window.testRunner.notifyDone();
 }
 
-function acquire() {
+function runTest() {
   let container = document.createElement("div");
   container.id = "container";
-  container.acquireDisplayLock(
-    (context) => {
-      context.schedule(modifyDom);
-      context.suspend();
-  }).then(
-    () => { finishTest("FAIL"); },
-    () => { finishTest("FAIL"); });
+  container.getDisplayLock().update().then(
+      () => { finishTest("FAIL"); },
+      () => { finishTest("PASS"); });
   document.body.appendChild(container);
-  setTimeout(() => { finishTest("PASS"); }, 50);
 }
 
-window.onload = acquire;
+window.onload = runTest;
 </script>
-

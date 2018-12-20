@@ -1,10 +1,8 @@
 <!doctype HTML>
 
 <!--
-Runs an acquireDisplayLock on an element that doesn't has contain: paint, but
-is an inline, which means we won't actually apply paint containment.
-
-This rejects the promise.
+Runs an acquire on an inline with containment, commit fails
+since the containment isn't actually applied.
 -->
 
 <style>
@@ -16,6 +14,7 @@ This rejects the promise.
 <div id="log"></div>
 
 <script>
+// TODO(vmpstr): In WPT this needs to be replaced with reftest-wait.
 if (window.testRunner)
   window.testRunner.waitUntilDone();
 
@@ -26,13 +25,14 @@ function finishTest(status_string) {
     window.testRunner.notifyDone();
 }
 
-function acquire() {
+async function acquire() {
   let container = document.createElement("span");
   container.id = "container";
-  container.acquireDisplayLock((context) => {}).then(
+  await container.getDisplayLock().acquire();
+  document.body.appendChild(container);
+  container.getDisplayLock().commit().then(
     () => { finishTest("FAIL"); },
     () => { finishTest("PASS"); });
-  document.body.appendChild(container);
 }
 
 window.onload = acquire;
