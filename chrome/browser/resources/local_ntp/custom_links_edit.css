@@ -99,10 +99,6 @@ input:focus + .underline {
   width: 100%;
 }
 
-#url-field {
-  direction: ltr;
-}
-
 .field-title.focused {
   color: rgb(26, 115, 232);
 }
