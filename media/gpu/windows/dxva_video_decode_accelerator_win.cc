@@ -2977,10 +2977,8 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
           PictureBufferMechanism::DELAYED_COPY_TO_NV12) {
     // If we're copying NV12 textures, make sure we set the same
     // color space on input and output.
-    D3D11_VIDEO_PROCESSOR_COLOR_SPACE d3d11_color_space = {0};
-    d3d11_color_space.RGB_Range = 1;
-    d3d11_color_space.Nominal_Range = D3D11_VIDEO_PROCESSOR_NOMINAL_RANGE_0_255;
-
+    const auto d3d11_color_space =
+        gfx::ColorSpaceWin::GetD3D11ColorSpace(color_space);
     video_context_->VideoProcessorSetOutputColorSpace(d3d11_processor_.Get(),
                                                       &d3d11_color_space);
 
