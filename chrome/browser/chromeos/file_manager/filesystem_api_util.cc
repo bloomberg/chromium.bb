@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
@@ -29,6 +30,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/drive/task_util.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "storage/browser/fileapi/file_system_context.h"
 
 namespace file_manager {
@@ -49,6 +51,18 @@ void GetMimeTypeAfterGetResourceEntryForDrive(
     return;
   }
   std::move(callback).Run(entry->file_specific_info().content_mime_type());
+}
+
+void GetMimeTypeAfterGetMetadata(
+    base::OnceCallback<void(const base::Optional<std::string>&)> callback,
+    drive::FileError error,
+    drivefs::mojom::FileMetadataPtr metadata) {
+  if (error != drive::FILE_ERROR_OK || !metadata ||
+      metadata->content_mime_type.empty()) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+  std::move(callback).Run(std::move(metadata->content_mime_type));
 }
 
 // Helper function used to implement GetNonNativeLocalPathMimeType. It extracts
@@ -159,27 +173,47 @@ bool IsUnderNonNativeLocalPath(Profile* profile,
   return IsNonNativeFileSystemType(filesystem_url.type());
 }
 
+bool HasNonNativeMimeTypeProvider(Profile* profile,
+                                  const base::FilePath& path) {
+  auto* drive_integration_service =
+      drive::util::GetIntegrationServiceByProfile(profile);
+  return (drive_integration_service &&
+          drive_integration_service->GetMountPointPath().IsParent(path)) ||
+         IsUnderNonNativeLocalPath(profile, path);
+}
+
 void GetNonNativeLocalPathMimeType(
     Profile* profile,
     const base::FilePath& path,
     base::OnceCallback<void(const base::Optional<std::string>&)> callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(IsUnderNonNativeLocalPath(profile, path));
+  DCHECK(HasNonNativeMimeTypeProvider(profile, path));
 
-  if (drive::util::IsUnderDriveMountPoint(path)) {
-    drive::FileSystemInterface* file_system =
-        drive::util::GetFileSystemByProfile(profile);
-    if (!file_system) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {content::BrowserThread::UI},
-          base::BindOnce(std::move(callback), base::nullopt));
+  auto* drive_integration_service =
+      drive::util::GetIntegrationServiceByProfile(profile);
+  base::FilePath drive_relative_path;
+  if (drive_integration_service &&
+      drive_integration_service->GetRelativeDrivePath(path,
+                                                      &drive_relative_path)) {
+    if (drive::FileSystemInterface* file_system =
+            drive_integration_service->file_system()) {
+      file_system->GetResourceEntry(
+          drive::util::ExtractDrivePath(path),
+          base::BindOnce(&GetMimeTypeAfterGetResourceEntryForDrive,
+                         std::move(callback)));
       return;
     }
+    if (auto* drivefs = drive_integration_service->GetDriveFsInterface()) {
+      drivefs->GetMetadata(
+          drive_relative_path,
+          mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+              base::BindOnce(&GetMimeTypeAfterGetMetadata, std::move(callback)),
+              drive::FILE_ERROR_SERVICE_UNAVAILABLE, nullptr));
 
-    file_system->GetResourceEntry(
-        drive::util::ExtractDrivePath(path),
-        base::BindOnce(&GetMimeTypeAfterGetResourceEntryForDrive,
-                       std::move(callback)));
+      return;
+    }
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
     return;
   }
 

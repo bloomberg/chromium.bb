@@ -140,7 +140,7 @@ void GetMimeTypeForLocalPath(
 #if defined(OS_CHROMEOS)
   NonNativeFileSystemDelegate* delegate =
       ExtensionsAPIClient::Get()->GetNonNativeFileSystemDelegate();
-  if (delegate && delegate->IsUnderNonNativeLocalPath(context, local_path)) {
+  if (delegate && delegate->HasNonNativeMimeTypeProvider(context, local_path)) {
     // For non-native files, try to get the MIME type from metadata. If not
     // available, then try to guess from the extension. Never sniff (because
     // it can be very slow).
