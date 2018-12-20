@@ -57,6 +57,7 @@
 #include "components/download/public/common/download_features.h"
 #include "components/error_page/common/error_page_switches.h"
 #include "components/favicon/core/features.h"
+#include "components/feature_engagement/buildflags.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/feature_list.h"
 #include "components/feed/feed_feature_list.h"
@@ -4353,6 +4354,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableCustomMacPaperSizesDescription, kOsMac,
      FEATURE_VALUE_TYPE(printing::features::kEnableCustomMacPaperSizes)},
 #endif
+
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+    {"enable-reopen-tab-in-product-help",
+     flag_descriptions::kReopenTabInProductHelpName,
+     flag_descriptions::kReopenTabInProductHelpDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(feature_engagement::kIPHReopenTabFeature)},
+#endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 };
 
 class FlagsStateSingleton {
