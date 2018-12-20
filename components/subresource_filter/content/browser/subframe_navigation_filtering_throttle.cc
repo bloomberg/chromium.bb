@@ -125,6 +125,13 @@ void SubframeNavigationFilteringThrottle::NotifyLoadPolicy() const {
       navigation_handle()->GetWebContents()->UnsafeFindFrameByFrameTreeNodeId(
           navigation_handle()->GetFrameTreeNodeId());
   DCHECK(starting_rfh);
+  if (!starting_rfh) {
+    // TODO(arthursonzogni): Remove this block, this must not happen.
+    // See https://crbug.com/904248.
+    observer_manager->NotifySubframeNavigationEvaluated(
+        navigation_handle(), load_policy_, false /* is_ad_subframe */);
+    return;
+  }
 
   bool is_ad_subframe =
       delegate_->CalculateIsAdSubframe(starting_rfh, load_policy_);
