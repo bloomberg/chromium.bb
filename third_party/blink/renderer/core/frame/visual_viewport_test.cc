@@ -867,8 +867,12 @@ TEST_P(VisualViewportTest, TestAttachingNewFrameSetsInnerScrollLayerSize) {
   UpdateAllLifecyclePhases();
 
   // Ensure the scroll contents size matches the frame view's size.
-  EXPECT_EQ(IntSize(320, 240), IntSize(visual_viewport.ScrollLayer()->Size()));
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    EXPECT_EQ(IntSize(320, 240),
+              IntSize(visual_viewport.ScrollLayer()->Size()));
+  }
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(IntSize(320, 240),
               visual_viewport.GetScrollNode()->ContentsSize());
   }
@@ -1636,6 +1640,9 @@ static void configureHiddenScrollbarsSettings(WebSettings* settings) {
 // layer when hideScrollbars WebSetting is true.
 TEST_P(VisualViewportTest,
        TestScrollbarsNotAttachedWhenHideScrollbarsSettingIsTrue) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
   InitializeWithAndroidSettings(configureHiddenScrollbarsSettings);
   WebView()->MainFrameWidget()->Resize(IntSize(100, 150));
   NavigateTo("about:blank");
@@ -1649,6 +1656,9 @@ TEST_P(VisualViewportTest,
 // layer when hideScrollbars WebSetting is false.
 TEST_P(VisualViewportTest,
        TestScrollbarsAttachedWhenHideScrollbarsSettingIsFalse) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
   InitializeWithAndroidSettings();
   WebView()->MainFrameWidget()->Resize(IntSize(100, 150));
   NavigateTo("about:blank");

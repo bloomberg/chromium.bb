@@ -530,6 +530,9 @@ bool VisualViewport::MagnifyScaleAroundAnchor(float magnify_delta,
 }
 
 void VisualViewport::CreateLayerTree() {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
   if (inner_viewport_scroll_layer_)
     return;
 

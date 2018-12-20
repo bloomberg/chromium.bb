@@ -369,6 +369,10 @@ void InspectorLayerTreeAgent::GatherGraphicsLayers(
 }
 
 PaintLayerCompositor* InspectorLayerTreeAgent::GetPaintLayerCompositor() {
+  // TODO(crbug.com/916768): Implement the feature.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return nullptr;
+
   auto* layout_view = inspected_frames_->Root()->ContentLayoutObject();
   PaintLayerCompositor* compositor =
       layout_view ? layout_view->Compositor() : nullptr;
