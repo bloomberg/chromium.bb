@@ -47,6 +47,10 @@ class CONTENT_EXPORT BackgroundFetchRegistrationNotifier {
                               blink::mojom::FetchAPIRequestPtr request,
                               blink::mojom::FetchAPIResponsePtr response);
 
+  // Add |url| to the list of |observed_urls_|. Once this is done, the
+  // |observers_| start getting updates about any requests with this URL.
+  void AddObservedUrl(const std::string& unique_id, const GURL& url);
+
   base::WeakPtr<BackgroundFetchRegistrationNotifier> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
@@ -62,6 +66,9 @@ class CONTENT_EXPORT BackgroundFetchRegistrationNotifier {
   std::multimap<std::string,
                 blink::mojom::BackgroundFetchRegistrationObserverPtr>
       observers_;
+
+  // URLs the observers care about, indexed by the unique_id of the observer.
+  std::map<std::string, std::set<GURL>> observed_urls_;
 
   base::WeakPtrFactory<BackgroundFetchRegistrationNotifier> weak_factory_;
 

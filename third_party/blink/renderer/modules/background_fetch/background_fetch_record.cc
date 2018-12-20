@@ -45,7 +45,7 @@ void BackgroundFetchRecord::ResolveResponseReadyProperty(Response* response) {
       if (!script_state_->ContextIsValid())
         return;
 
-      // TODO(crbug.com/875201):Per https://wicg.github.io/background-fetch/
+      // TODO(crbug.com/875201): Per https://wicg.github.io/background-fetch/
       // #background-fetch-response-exposed, this should be resolved with a
       // TypeError. Figure out a way to do so.
       // Rejecting this with a TypeError here doesn't work because the

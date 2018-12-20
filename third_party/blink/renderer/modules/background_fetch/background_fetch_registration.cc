@@ -263,7 +263,12 @@ void BackgroundFetchRegistration::DidGetMatchingRequests(
     Request* request = Request::Create(script_state, *(fetch->request));
     auto* record =
         MakeGarbageCollected<BackgroundFetchRecord>(request, script_state);
-    observers_.push_back(record);
+
+    // If this request is incomplete, enlist this record to receive updates on
+    // the request.
+    if (fetch->response.is_null() && !IsAborted())
+      observers_.push_back(*record);
+
     UpdateRecord(record, fetch->response);
     to_return.push_back(record);
   }

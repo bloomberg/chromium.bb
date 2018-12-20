@@ -66,8 +66,8 @@ class BackgroundFetchRegistration final
                   mojom::BackgroundFetchFailureReason failure_reason) override;
   void OnRecordsUnavailable() override;
 
-  // TODO(crbug.com/875201): Update logic so this is called only if there are
-  // non-zero |observers_|.
+  // Called when the |request| is complete. |response| points to the response
+  // received, if any.
   void OnRequestCompleted(mojom::blink::FetchAPIRequestPtr request,
                           mojom::blink::FetchAPIResponsePtr response) override;
 

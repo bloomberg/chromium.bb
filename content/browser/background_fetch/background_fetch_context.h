@@ -121,6 +121,10 @@ class CONTENT_EXPORT BackgroundFetchContext
       const base::Optional<SkBitmap>& icon,
       blink::mojom::BackgroundFetchService::UpdateUICallback callback);
 
+  BackgroundFetchRegistrationNotifier* registration_notifier() const {
+    return registration_notifier_.get();
+  }
+
  private:
   using GetPermissionCallback =
       base::OnceCallback<void(BackgroundFetchPermission)>;
@@ -155,6 +159,7 @@ class CONTENT_EXPORT BackgroundFetchContext
   // from storage, and |callback| can be invoked to pass these on to the
   // renderer.
   void DidGetMatchingRequests(
+      const std::string& unique_id,
       blink::mojom::BackgroundFetchService::MatchRequestsCallback callback,
       blink::mojom::BackgroundFetchError error,
       std::vector<blink::mojom::BackgroundFetchSettledFetchPtr>

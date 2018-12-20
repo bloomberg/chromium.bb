@@ -59,16 +59,27 @@ void BackgroundFetchRegistrationNotifier::NotifyRecordsUnavailable(
   }
 }
 
+void BackgroundFetchRegistrationNotifier::AddObservedUrl(
+    const std::string& unique_id,
+    const GURL& url) {
+  // Ensure we have an observer for this unique_id.
+  if (observers_.find(unique_id) == observers_.end())
+    return;
+
+  observed_urls_[unique_id].insert(url);
+}
+
 void BackgroundFetchRegistrationNotifier::NotifyRequestCompleted(
     const std::string& unique_id,
     blink::mojom::FetchAPIRequestPtr request,
     blink::mojom::FetchAPIResponsePtr response) {
-  // TODO(crbug.com/875201): Remove this once we have lazy notification in
-  // place.
-  if (!base::FeatureList::IsEnabled(
-          features::kBackgroundFetchAccessActiveFetches) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
+  // Avoid sending {request, response} over the mojo pipe if no |observers_|
+  // care about it.
+  auto observed_urls_iter = observed_urls_.find(unique_id);
+  if (observed_urls_iter == observed_urls_.end())
+    return;
+  if (observed_urls_iter->second.find(request->url) ==
+      observed_urls_iter->second.end()) {
     return;
   }
 

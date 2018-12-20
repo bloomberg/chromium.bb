@@ -250,10 +250,12 @@ void BackgroundFetchContext::MatchRequests(
   data_manager_->MatchRequests(
       registration_id, std::move(match_params),
       base::BindOnce(&BackgroundFetchContext::DidGetMatchingRequests,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_factory_.GetWeakPtr(), registration_id.unique_id(),
+                     std::move(callback)));
 }
 
 void BackgroundFetchContext::DidGetMatchingRequests(
+    const std::string& unique_id,
     blink::mojom::BackgroundFetchService::MatchRequestsCallback callback,
     blink::mojom::BackgroundFetchError error,
     std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> settled_fetches) {
@@ -261,6 +263,12 @@ void BackgroundFetchContext::DidGetMatchingRequests(
 
   if (error != blink::mojom::BackgroundFetchError::NONE)
     DCHECK(settled_fetches.empty());
+
+  // TODO(crbug.com/850512): We don't need to call this for requests that're
+  // complete.
+  // AddObservedUrl() is a no-op in those cases, but we can skip calling it.
+  for (const auto& fetch : settled_fetches)
+    registration_notifier_->AddObservedUrl(unique_id, fetch->request->url);
 
   std::move(callback).Run(std::move(settled_fetches));
 }
