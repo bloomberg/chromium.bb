@@ -1288,10 +1288,13 @@ bool QuicChromiumClientSession::ShouldCreateIncomingStream(
     return false;
   }
   if (quic::QuicUtils::IsClientInitiatedStreamId(
-          connection()->transport_version(), id)) {
+          connection()->transport_version(), id) ||
+      (connection()->transport_version() == quic::QUIC_VERSION_99 &&
+       quic::QuicUtils::IsBidirectionalStreamId(id))) {
     LOG(WARNING) << "Received invalid push stream id " << id;
     connection()->CloseConnection(
-        quic::QUIC_INVALID_STREAM_ID, "Server created odd numbered stream",
+        quic::QUIC_INVALID_STREAM_ID,
+        "Server created non write unidirectional stream",
         quic::ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return false;
   }
