@@ -326,8 +326,8 @@ void ExtensionFrameHelper::DidStartProvisionalLoad(
   // be resumed when it happens. It doesn't apply to sandboxed pages.
   if (view_type_ == VIEW_TYPE_APP_WINDOW && render_frame()->IsMainFrame() &&
       !has_started_first_navigation_ &&
-      GURL(document_loader->GetUrl()).SchemeIs(kExtensionScheme) &&
-      !ScriptContext::IsSandboxedPage(document_loader->GetUrl())) {
+      GURL(document_loader->GetRequest().Url()).SchemeIs(kExtensionScheme) &&
+      !ScriptContext::IsSandboxedPage(document_loader->GetRequest().Url())) {
     document_loader->BlockParser();
   }
 

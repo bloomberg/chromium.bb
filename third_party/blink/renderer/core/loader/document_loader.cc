@@ -115,11 +115,10 @@ DocumentLoader::DocumentLoader(
     LocalFrame* frame,
     WebNavigationType navigation_type,
     std::unique_ptr<WebNavigationParams> navigation_params)
-    : request_(navigation_params->request.ToResourceRequest()),
-      frame_(frame),
+    : frame_(frame),
       fetcher_(FrameFetchContext::CreateFetcherFromDocumentLoader(this)),
-      original_url_(request_.Url()),
-      original_referrer_(request_.HttpReferrer()),
+      original_request_(navigation_params->request.ToResourceRequest()),
+      request_(navigation_params->request.ToResourceRequest()),
       load_type_(navigation_params->frame_load_type),
       is_client_redirect_(navigation_params->is_client_redirect),
       replaces_current_history_item_(false),
@@ -245,12 +244,12 @@ ResourceTimingInfo* DocumentLoader::GetNavigationTimingInfo() const {
   return Fetcher()->GetNavigationTimingInfo();
 }
 
-const KURL& DocumentLoader::OriginalUrl() const {
-  return original_url_;
+const ResourceRequest& DocumentLoader::OriginalRequest() const {
+  return original_request_;
 }
 
-const AtomicString& DocumentLoader::OriginalReferrer() const {
-  return original_referrer_;
+const ResourceRequest& DocumentLoader::GetRequest() const {
+  return request_;
 }
 
 void DocumentLoader::SetSubresourceFilter(
@@ -329,7 +328,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
   }
 
   KURL old_url = request_.Url();
-  original_url_ = new_url;
+  original_request_.SetURL(new_url);
   request_.SetURL(new_url);
   SetReplacesCurrentHistoryItem(type != WebFrameLoadType::kStandard);
   if (same_document_navigation_source == kSameDocumentNavigationHistoryApi) {
@@ -363,14 +362,6 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
 
 const KURL& DocumentLoader::UrlForHistory() const {
   return UnreachableURL().IsEmpty() ? Url() : UnreachableURL();
-}
-
-const AtomicString& DocumentLoader::Referrer() const {
-  return request_.HttpReferrer();
-}
-
-EncodedFormData* DocumentLoader::HttpBody() const {
-  return request_.HttpBody();
 }
 
 void DocumentLoader::SetHistoryItemStateForCommit(
@@ -602,7 +593,7 @@ void DocumentLoader::CancelLoadAfterCSPDenied(
   ClearResource();
   content_security_policy_.Clear();
   KURL blocked_url = SecurityOrigin::UrlWithUniqueOpaqueOrigin();
-  original_url_ = blocked_url;
+  original_request_.SetURL(blocked_url);
   request_.SetURL(blocked_url);
   redirect_chain_.pop_back();
   AppendRedirect(blocked_url);

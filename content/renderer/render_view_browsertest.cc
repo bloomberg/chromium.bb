@@ -839,8 +839,9 @@ TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkEmptyUrl) {
   GURL blank_url("about:blank");
 
   LoadHTMLWithUrlOverride("<body></body", example_url.spec().c_str());
-  EXPECT_EQ(example_url,
-            GURL(frame()->GetWebFrame()->GetDocumentLoader()->GetUrl()));
+  EXPECT_EQ(
+      example_url,
+      GURL(frame()->GetWebFrame()->GetDocumentLoader()->GetRequest().Url()));
 
   // Empty url should never fork.
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
@@ -856,8 +857,9 @@ TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkAboutBlank) {
   GURL blank_url("about:blank");
 
   LoadHTMLWithUrlOverride("<body></body", example_url.spec().c_str());
-  EXPECT_EQ(example_url,
-            GURL(frame()->GetWebFrame()->GetDocumentLoader()->GetUrl()));
+  EXPECT_EQ(
+      example_url,
+      GURL(frame()->GetWebFrame()->GetDocumentLoader()->GetRequest().Url()));
 
   // About blank should never fork.
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
