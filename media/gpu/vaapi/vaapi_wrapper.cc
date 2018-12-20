@@ -371,6 +371,10 @@ static std::vector<VAConfigAttrib> GetRequiredAttribs(
     VAProfile profile) {
   std::vector<VAConfigAttrib> required_attribs;
 
+  // No attribute for kVideoProcess.
+  if (mode == VaapiWrapper::kVideoProcess)
+    return required_attribs;
+
   // VAConfigAttribRTFormat is common to both encode and decode |mode|s.
   if (profile == VAProfileVP9Profile2 || profile == VAProfileVP9Profile3) {
     required_attribs.push_back(
@@ -406,6 +410,8 @@ static VAEntrypoint GetVaEntryPoint(VaapiWrapper::CodecMode mode,
         return VAEntrypointEncPicture;
       else
         return VAEntrypointEncSlice;
+    case VaapiWrapper::kVideoProcess:
+      return VAEntrypointVideoProc;
     case VaapiWrapper::kCodecModeMax:
       NOTREACHED();
       return VAEntrypointVLD;
@@ -527,6 +533,9 @@ VASupportedProfiles::VASupportedProfiles()
 std::vector<VASupportedProfiles::ProfileInfo>
 VASupportedProfiles::GetSupportedProfileInfosForCodecModeInternal(
     VaapiWrapper::CodecMode mode) const {
+  if (mode == VaapiWrapper::kVideoProcess)
+    return {ProfileInfo{VAProfileNone, gfx::Size()}};
+
   std::vector<ProfileInfo> supported_profile_infos;
   std::vector<VAProfile> va_profiles;
   if (!GetSupportedVAProfiles(&va_profiles))
@@ -1240,23 +1249,23 @@ bool VaapiWrapper::UploadVideoFrameToSurface(
   return ret == 0;
 }
 
-bool VaapiWrapper::CreateCodedBuffer(size_t size, VABufferID* buffer_id) {
+bool VaapiWrapper::CreateVABuffer(size_t size, VABufferID* buffer_id) {
   base::AutoLock auto_lock(*va_lock_);
   VAStatus va_res =
       vaCreateBuffer(va_display_, va_context_id_, VAEncCodedBufferType, size, 1,
                      NULL, buffer_id);
   VA_SUCCESS_OR_RETURN(va_res, "Failed to create a coded buffer", false);
 
-  const auto is_new_entry = coded_buffers_.insert(*buffer_id).second;
+  const auto is_new_entry = va_buffers_.insert(*buffer_id).second;
   DCHECK(is_new_entry);
   return true;
 }
 
-bool VaapiWrapper::DownloadFromCodedBuffer(VABufferID buffer_id,
-                                           VASurfaceID sync_surface_id,
-                                           uint8_t* target_ptr,
-                                           size_t target_size,
-                                           size_t* coded_data_size) {
+bool VaapiWrapper::DownloadFromVABuffer(VABufferID buffer_id,
+                                        VASurfaceID sync_surface_id,
+                                        uint8_t* target_ptr,
+                                        size_t target_size,
+                                        size_t* coded_data_size) {
   DCHECK(target_ptr);
   base::AutoLock auto_lock(*va_lock_);
 
@@ -1296,48 +1305,42 @@ bool VaapiWrapper::DownloadFromCodedBuffer(VABufferID buffer_id,
   return buffer_segment == nullptr;
 }
 
-bool VaapiWrapper::DownloadAndDestroyCodedBuffer(VABufferID buffer_id,
-                                                 VASurfaceID sync_surface_id,
-                                                 uint8_t* target_ptr,
-                                                 size_t target_size,
-                                                 size_t* coded_data_size) {
-  bool result = DownloadFromCodedBuffer(buffer_id, sync_surface_id, target_ptr,
-                                        target_size, coded_data_size);
+bool VaapiWrapper::DownloadAndDestroyVABuffer(VABufferID buffer_id,
+                                              VASurfaceID sync_surface_id,
+                                              uint8_t* target_ptr,
+                                              size_t target_size,
+                                              size_t* coded_data_size) {
+  bool result = DownloadFromVABuffer(buffer_id, sync_surface_id, target_ptr,
+                                     target_size, coded_data_size);
 
   base::AutoLock auto_lock(*va_lock_);
   VAStatus va_res = vaDestroyBuffer(va_display_, buffer_id);
   VA_LOG_ON_ERROR(va_res, "vaDestroyBuffer failed");
-  const auto was_found = coded_buffers_.erase(buffer_id);
+  const auto was_found = va_buffers_.erase(buffer_id);
   DCHECK(was_found);
 
   return result;
 }
 
-void VaapiWrapper::DestroyCodedBuffers() {
+void VaapiWrapper::DestroyVABuffers() {
   base::AutoLock auto_lock(*va_lock_);
 
-  for (std::set<VABufferID>::const_iterator iter = coded_buffers_.begin();
-       iter != coded_buffers_.end(); ++iter) {
-    VAStatus va_res = vaDestroyBuffer(va_display_, *iter);
+  for (auto it = va_buffers_.begin(); it != va_buffers_.end(); ++it) {
+    VAStatus va_res = vaDestroyBuffer(va_display_, *it);
     VA_LOG_ON_ERROR(va_res, "vaDestroyBuffer failed");
   }
 
-  coded_buffers_.clear();
+  va_buffers_.clear();
 }
 
 bool VaapiWrapper::BlitSurface(
     const scoped_refptr<VASurface>& va_surface_src,
     const scoped_refptr<VASurface>& va_surface_dest) {
   base::AutoLock auto_lock(*va_lock_);
-
-  // Initialize the post processing engine if not already done.
-  if (va_vpp_buffer_id_ == VA_INVALID_ID) {
-    if (!InitializeVpp_Locked())
-      return false;
-  }
-
+  DCHECK_EQ(va_buffers_.size(), 1u);
+  VABufferID buffer_id = *va_buffers_.begin();
   {
-    ScopedVABufferMapping mapping(va_lock_, va_display_, va_vpp_buffer_id_);
+    ScopedVABufferMapping mapping(va_lock_, va_display_, buffer_id);
     if (!mapping.IsValid())
       return false;
     auto* pipeline_param =
@@ -1368,14 +1371,14 @@ bool VaapiWrapper::BlitSurface(
   }
 
   VA_SUCCESS_OR_RETURN(
-      vaBeginPicture(va_display_, va_vpp_context_id_, va_surface_dest->id()),
+      vaBeginPicture(va_display_, va_context_id_, va_surface_dest->id()),
       "Couldn't begin picture", false);
 
   VA_SUCCESS_OR_RETURN(
-      vaRenderPicture(va_display_, va_vpp_context_id_, &va_vpp_buffer_id_, 1),
+      vaRenderPicture(va_display_, va_context_id_, &buffer_id, 1),
       "Couldn't render picture", false);
 
-  VA_SUCCESS_OR_RETURN(vaEndPicture(va_display_, va_vpp_context_id_),
+  VA_SUCCESS_OR_RETURN(vaEndPicture(va_display_, va_context_id_),
                        "Couldn't end picture", false);
 
   return true;
@@ -1423,30 +1426,48 @@ VaapiWrapper::VaapiWrapper()
       va_surface_format_(0),
       va_display_(NULL),
       va_config_id_(VA_INVALID_ID),
-      va_context_id_(VA_INVALID_ID),
-      va_vpp_config_id_(VA_INVALID_ID),
-      va_vpp_context_id_(VA_INVALID_ID),
-      va_vpp_buffer_id_(VA_INVALID_ID) {}
+      va_context_id_(VA_INVALID_ID) {}
 
 VaapiWrapper::~VaapiWrapper() {
   DestroyPendingBuffers();
-  DestroyCodedBuffers();
+  DestroyVABuffers();
   DestroyContextAndSurfaces();
-  DeinitializeVpp();
   Deinitialize();
 }
 
 bool VaapiWrapper::Initialize(CodecMode mode, VAProfile va_profile) {
-  TryToSetVADisplayAttributeToLocalGPU();
+  if (mode != kVideoProcess)
+    TryToSetVADisplayAttributeToLocalGPU();
 
   VAEntrypoint entrypoint = GetVaEntryPoint(mode, va_profile);
   std::vector<VAConfigAttrib> required_attribs =
       GetRequiredAttribs(mode, va_profile);
+
   base::AutoLock auto_lock(*va_lock_);
+
   VAStatus va_res =
-      vaCreateConfig(va_display_, va_profile, entrypoint, &required_attribs[0],
+      vaCreateConfig(va_display_, va_profile, entrypoint,
+                     required_attribs.empty() ? nullptr : &required_attribs[0],
                      required_attribs.size(), &va_config_id_);
   VA_SUCCESS_OR_RETURN(va_res, "vaCreateConfig failed", false);
+
+  if (mode != kVideoProcess)
+    return true;
+
+  // Creates context and buffer here in the case of kVideoProcess.
+  constexpr size_t kIrrelevantWidth = 0;
+  constexpr size_t kIrrelevantHeight = 0;
+  va_res = vaCreateContext(va_display_, va_config_id_, kIrrelevantWidth,
+                           kIrrelevantHeight, 0, NULL, 0, &va_context_id_);
+  VA_SUCCESS_OR_RETURN(va_res, "Couldn't create context", false);
+
+  VABufferID buffer_id;
+  va_res = vaCreateBuffer(
+      va_display_, va_context_id_, VAProcPipelineParameterBufferType,
+      sizeof(VAProcPipelineParameterBuffer), 1, NULL, &buffer_id);
+  VA_SUCCESS_OR_RETURN(va_res, "Couldn't create buffer", false);
+  DCHECK_NE(buffer_id, VA_INVALID_ID);
+  va_buffers_.emplace(buffer_id);
 
   return true;
 }
@@ -1486,46 +1507,6 @@ void VaapiWrapper::DestroySurface(VASurfaceID va_surface_id) {
 
   VAStatus va_res = vaDestroySurfaces(va_display_, &va_surface_id, 1);
   VA_LOG_ON_ERROR(va_res, "vaDestroySurfaces on surface failed");
-}
-
-bool VaapiWrapper::InitializeVpp_Locked() {
-  va_lock_->AssertAcquired();
-
-  VA_SUCCESS_OR_RETURN(
-      vaCreateConfig(va_display_, VAProfileNone, VAEntrypointVideoProc, NULL, 0,
-                     &va_vpp_config_id_),
-      "Couldn't create config", false);
-
-  // The size of the picture for the context is irrelevant in the case
-  // of the VPP, just passing 1x1.
-  VA_SUCCESS_OR_RETURN(vaCreateContext(va_display_, va_vpp_config_id_, 1, 1, 0,
-                                       NULL, 0, &va_vpp_context_id_),
-                       "Couldn't create context", false);
-
-  VA_SUCCESS_OR_RETURN(vaCreateBuffer(va_display_, va_vpp_context_id_,
-                                      VAProcPipelineParameterBufferType,
-                                      sizeof(VAProcPipelineParameterBuffer), 1,
-                                      NULL, &va_vpp_buffer_id_),
-                       "Couldn't create buffer", false);
-
-  return true;
-}
-
-void VaapiWrapper::DeinitializeVpp() {
-  base::AutoLock auto_lock(*va_lock_);
-
-  if (va_vpp_buffer_id_ != VA_INVALID_ID) {
-    vaDestroyBuffer(va_display_, va_vpp_buffer_id_);
-    va_vpp_buffer_id_ = VA_INVALID_ID;
-  }
-  if (va_vpp_context_id_ != VA_INVALID_ID) {
-    vaDestroyContext(va_display_, va_vpp_context_id_);
-    va_vpp_context_id_ = VA_INVALID_ID;
-  }
-  if (va_vpp_config_id_ != VA_INVALID_ID) {
-    vaDestroyConfig(va_display_, va_vpp_config_id_);
-    va_vpp_config_id_ = VA_INVALID_ID;
-  }
 }
 
 bool VaapiWrapper::Execute(VASurfaceID va_surface_id) {

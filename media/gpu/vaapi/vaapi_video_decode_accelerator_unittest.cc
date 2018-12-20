@@ -141,6 +141,7 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
         mock_decoder_(new MockAcceleratedVideoDecoder),
         mock_vaapi_picture_factory_(new MockVaapiPictureFactory()),
         mock_vaapi_wrapper_(new MockVaapiWrapper()),
+        mock_vpp_vaapi_wrapper_(new MockVaapiWrapper()),
         weak_ptr_factory_(this) {
     decoder_thread_.Start();
 
@@ -152,6 +153,7 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
     vda_.decoder_.reset(mock_decoder_);
     vda_.client_ = weak_ptr_factory_.GetWeakPtr();
     vda_.vaapi_wrapper_ = mock_vaapi_wrapper_;
+    vda_.vpp_vaapi_wrapper_ = mock_vpp_vaapi_wrapper_;
     vda_.vaapi_picture_factory_.reset(mock_vaapi_picture_factory_);
 
     vda_.state_ = VaapiVideoDecodeAccelerator::kIdle;
@@ -242,6 +244,9 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
     base::Closure quit_closure = run_loop.QuitClosure();
 
     const size_t kNumReferenceFrames = num_pictures / 2;
+    // TODO(crbug.com/): We assume that |decode_using_client_picture_buffers_|
+    // is false, we should also support a pattern when
+    // |decode_using_client_picture_buffers_|.
     EXPECT_CALL(
         *mock_vaapi_wrapper_,
         CreateContextAndSurfaces(_, picture_size, kNumReferenceFrames, _))
@@ -251,8 +256,10 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
               va_surface_ids->resize(kNumReferenceFrames);
             })),
             Return(true)));
-    EXPECT_CALL(*mock_vaapi_picture_factory_,
-                MockCreateVaapiPicture(mock_vaapi_wrapper_.get(), picture_size))
+
+    EXPECT_CALL(
+        *mock_vaapi_picture_factory_,
+        MockCreateVaapiPicture(mock_vpp_vaapi_wrapper_.get(), picture_size))
         .Times(num_pictures);
 
     ::testing::InSequence s;
@@ -320,6 +327,7 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
   MockVaapiPictureFactory* mock_vaapi_picture_factory_;
 
   scoped_refptr<MockVaapiWrapper> mock_vaapi_wrapper_;
+  scoped_refptr<MockVaapiWrapper> mock_vpp_vaapi_wrapper_;
 
   std::unique_ptr<base::SharedMemory> in_shm_;
 

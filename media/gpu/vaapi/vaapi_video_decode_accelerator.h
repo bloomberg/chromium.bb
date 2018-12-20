@@ -221,6 +221,10 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
   std::unique_ptr<AcceleratedVideoDecoder> decoder_;
 
+  // VaapiWrapper for VPP (Video Post Processing). This is used for copying
+  // from a decoded surface to a surface bound to client's PictureBuffer.
+  scoped_refptr<VaapiWrapper> vpp_vaapi_wrapper_;
+
   // All allocated VaapiPictures, regardless of their current state. Pictures
   // are allocated at AssignPictureBuffers() and are kept until dtor or
   // TryFinishSurfaceSetChange(). Comes after |vaapi_wrapper_| to ensure all

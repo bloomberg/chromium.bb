@@ -48,6 +48,7 @@ namespace {
 // UMA errors that the VaapiVideoDecodeAccelerator class reports.
 enum VAVDADecoderFailure {
   VAAPI_ERROR = 0,
+  VAAPI_VPP_ERROR = 1,
   VAVDA_DECODER_FAILURES_MAX,
 };
 
@@ -95,12 +96,15 @@ bool IsGeminiLakeOrLater() {
       cpuid.model() >= kGeminiLakeModelId;
   return is_geminilake_or_later;
 }
+
 // Decides if the current platform and profile may decode using the client's
 // PictureBuffers, or engage the Vpp to adapt VaApi's and the client's format.
-bool ShouldDecodeOnclientPictureBuffers(VideoCodecProfile profile,
-                                        bool has_va_surface_ids = true) {
-  return has_va_surface_ids && (profile == VP9PROFILE_PROFILE0) &&
-         (IsKabyLakeOrLater() || IsGeminiLakeOrLater());
+bool ShouldDecodeOnclientPictureBuffers(
+    VideoDecodeAccelerator::Config::OutputMode output_mode,
+    VideoCodecProfile profile) {
+  return output_mode == VideoDecodeAccelerator::Config::OutputMode::ALLOCATE &&
+         (IsKabyLakeOrLater() || IsGeminiLakeOrLater()) &&
+         profile == VP9PROFILE_PROFILE0;
 }
 
 }  // namespace
@@ -240,13 +244,15 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
     VLOGF(1) << "Unsupported profile " << GetProfileName(profile);
     return false;
   }
-  profile_ = profile;
 
   CHECK(decoder_thread_.Start());
   decoder_thread_task_runner_ = decoder_thread_.task_runner();
 
   state_ = kIdle;
+  profile_ = profile;
   output_mode_ = config.output_mode;
+  decode_using_client_picture_buffers_ =
+      ShouldDecodeOnclientPictureBuffers(output_mode_, profile_);
   return true;
 }
 
@@ -527,7 +533,7 @@ void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(
 
   // If we cannot |decode_using_client_picture_buffers_|, split the requested
   // |num_pics| between VA reference frames and client PictureBuffers proper.
-  if (ShouldDecodeOnclientPictureBuffers(profile_))
+  if (decode_using_client_picture_buffers_)
     requested_num_reference_frames_ = 0;
   else
     requested_num_reference_frames_ = num_reference_frames;
@@ -638,11 +644,29 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
   const unsigned int va_format = GetVaFormatForVideoCodecProfile(profile_);
   std::vector<VASurfaceID> va_surface_ids;
 
+  // If we can't |decode_using_client_picture_buffers_|, we have to allocate a
+  // |vpp_vaapi_wrapper_| for VaapiPicture to DownloadFromSurface() the VA's
+  // internal decoded frame.
+  if (!decode_using_client_picture_buffers_ && !vpp_vaapi_wrapper_) {
+    vpp_vaapi_wrapper_ = VaapiWrapper::Create(
+        VaapiWrapper::kVideoProcess, VAProfileNone,
+        base::BindRepeating(&ReportToUMA, VAAPI_VPP_ERROR));
+    if (!vpp_vaapi_wrapper_) {
+      VLOGF(1) << "Failed initializing VppVaapiWrapper";
+      NotifyError(PLATFORM_FAILURE);
+    }
+  }
+
   for (size_t i = 0; i < buffers.size(); ++i) {
     DCHECK(requested_pic_size_ == buffers[i].size());
 
-    std::unique_ptr<VaapiPicture> picture(vaapi_picture_factory_->Create(
-        vaapi_wrapper_, make_context_current_cb_, bind_image_cb_, buffers[i]));
+    // If |decode_using_client_picture_buffers_| is false, this |picture| is
+    // only used as a copy destination. Therefore, the VaapiWrapper used and
+    // owned by |picture| is |vpp_vaapi_wrapper_|.
+    std::unique_ptr<VaapiPicture> picture = vaapi_picture_factory_->Create(
+        decode_using_client_picture_buffers_ ? vaapi_wrapper_
+                                             : vpp_vaapi_wrapper_,
+        make_context_current_cb_, bind_image_cb_, buffers[i]);
     RETURN_AND_NOTIFY_ON_FAILURE(picture, "Failed creating a VaapiPicture",
                                  PLATFORM_FAILURE, );
 
@@ -663,28 +687,21 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
     surfaces_available_.Signal();
   }
 
-  decode_using_client_picture_buffers_ =
-      ShouldDecodeOnclientPictureBuffers(profile_, !va_surface_ids.empty());
-
-  // If we have some |va_surface_ids|, use them for decode, otherwise ask
-  // |vaapi_wrapper_| to allocate them for us.
+  // If |decode_using_client_picture_buffers_|, we use |va_surface_ids| for
+  // decode, otherwise ask |vaapi_wrapper_| to allocate them for us.
   if (decode_using_client_picture_buffers_) {
+    DCHECK(!va_surface_ids.empty());
     RETURN_AND_NOTIFY_ON_FAILURE(
         vaapi_wrapper_->CreateContext(va_format, requested_pic_size_),
         "Failed creating VA Context", PLATFORM_FAILURE, );
     DCHECK_EQ(va_surface_ids.size(), buffers.size());
   } else {
-    // If |requested_num_reference_frames_| == 0 here it's because we were too
-    // optimistic when calling ShouldDecodeOnclientPictureBuffers() from
-    // InitiateSurfaceSetChange(); correct it here.
-    const size_t requested_num_va_surfaces =
-        requested_num_reference_frames_ ? requested_num_reference_frames_
-                                        : buffers.size();
+    DCHECK_NE(requested_num_reference_frames_, 0u);
     va_surface_ids.clear();
     RETURN_AND_NOTIFY_ON_FAILURE(
-        vaapi_wrapper_->CreateContextAndSurfaces(va_format, requested_pic_size_,
-                                                 requested_num_va_surfaces,
-                                                 &va_surface_ids),
+        vaapi_wrapper_->CreateContextAndSurfaces(
+            va_format, requested_pic_size_, requested_num_reference_frames_,
+            &va_surface_ids),
         "Failed creating VA Surfaces", PLATFORM_FAILURE, );
   }
 

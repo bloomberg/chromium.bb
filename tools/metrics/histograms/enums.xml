@@ -52946,6 +52946,7 @@ Full version information for the fingerprint enum values:
 
 <enum name="VAVDADecoderFailure">
   <int value="0" label="VAAPI_ERROR"/>
+  <int value="1" label="VAAPI_VPP_ERROR"/>
 </enum>
 
 <enum name="VAVDAH264DecoderFailure">

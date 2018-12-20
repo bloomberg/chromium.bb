@@ -143,12 +143,12 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeTask(
   size_t max_coded_buffer_size =
       VaapiJpegEncoder::GetMaxCodedBufferSize(input_size);
   if (max_coded_buffer_size > cached_output_buffer_size_) {
-    vaapi_wrapper_->DestroyCodedBuffers();
+    vaapi_wrapper_->DestroyVABuffers();
     cached_output_buffer_size_ = 0;
 
     VABufferID output_buffer_id;
-    if (!vaapi_wrapper_->CreateCodedBuffer(max_coded_buffer_size,
-                                           &output_buffer_id)) {
+    if (!vaapi_wrapper_->CreateVABuffer(max_coded_buffer_size,
+                                        &output_buffer_id)) {
       VLOGF(1) << "Failed to create VA buffer for encoding output";
       notify_error_cb_.Run(buffer_id, PLATFORM_FAILURE);
       return;
@@ -179,10 +179,10 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeTask(
     return;
   }
 
-  // Get the encoded output. DownloadFromCodedBuffer() is a blocking call. It
+  // Get the encoded output. DownloadFromVABuffer() is a blocking call. It
   // would wait until encoding is finished.
   size_t encoded_size = 0;
-  if (!vaapi_wrapper_->DownloadFromCodedBuffer(
+  if (!vaapi_wrapper_->DownloadFromVABuffer(
           cached_output_buffer_id_, va_surface_id_,
           static_cast<uint8_t*>(request->output_shm->memory()),
           request->output_shm->size(), &encoded_size)) {
