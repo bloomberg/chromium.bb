@@ -112,7 +112,9 @@ class WebUsbNotificationDelegate : public TabStripModelObserver,
     if (tab_strip_model->empty() || !selection.active_tab_changed())
       return;
 
-    if (selection.new_contents->GetURL() == landing_page_) {
+    if (base::StartsWith(selection.new_contents->GetURL().spec(),
+                         landing_page_.spec(),
+                         base::CompareCase::INSENSITIVE_ASCII)) {
       // If the disposition is not already set, go ahead and set it.
       if (disposition_ == WEBUSB_NOTIFICATION_CLOSED)
         disposition_ = WEBUSB_NOTIFICATION_CLOSED_MANUAL_NAVIGATION;
@@ -129,7 +131,8 @@ class WebUsbNotificationDelegate : public TabStripModelObserver,
     Browser* browser = nullptr;
     auto& all_tabs = AllTabContentses();
     for (auto it = all_tabs.begin(), end = all_tabs.end(); it != end; ++it) {
-      if (it->GetVisibleURL() == landing_page_ &&
+      if (base::StartsWith(it->GetVisibleURL().spec(), landing_page_.spec(),
+                           base::CompareCase::INSENSITIVE_ASCII) &&
           (!tab_to_activate ||
            it->GetLastActiveTime() > tab_to_activate->GetLastActiveTime())) {
         tab_to_activate = *it;
@@ -215,8 +218,10 @@ void WebUsbDetector::OnDeviceAdded(
   if (!landing_page.is_valid() || !content::IsOriginSecure(landing_page))
     return;
 
-  if (landing_page == GetActiveTabURL())
+  if (base::StartsWith(GetActiveTabURL().spec(), landing_page.spec(),
+                       base::CompareCase::INSENSITIVE_ASCII)) {
     return;
+  }
 
   std::string notification_id = device_info->guid;
 
