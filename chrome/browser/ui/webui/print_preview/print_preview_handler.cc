@@ -1101,7 +1101,8 @@ void PrintPreviewHandler::SendPrinterCapabilities(
     const std::string& callback_id,
     base::Value settings_info) {
   // Check that |settings_info| is valid.
-  if (settings_info.FindKeyOfType(printing::kSettingCapabilities,
+  if (settings_info.is_dict() &&
+      settings_info.FindKeyOfType(printing::kSettingCapabilities,
                                   base::Value::Type::DICTIONARY)) {
     VLOG(1) << "Get printer capabilities finished";
     ResolveJavascriptCallback(base::Value(callback_id), settings_info);
@@ -1116,8 +1117,11 @@ void PrintPreviewHandler::SendPrinterSetup(const std::string& callback_id,
                                            const std::string& printer_name,
                                            base::Value destination_info) {
   base::Value response(base::Value::Type::DICTIONARY);
-  base::Value* caps_value = destination_info.FindKeyOfType(
-      printing::kSettingCapabilities, base::Value::Type::DICTIONARY);
+  base::Value* caps_value =
+      destination_info.is_dict()
+          ? destination_info.FindKeyOfType(printing::kSettingCapabilities,
+                                           base::Value::Type::DICTIONARY)
+          : nullptr;
   response.SetKey("printerId", base::Value(printer_name));
   response.SetKey("success", base::Value(!!caps_value));
   response.SetKey("capabilities",
