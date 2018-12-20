@@ -37,8 +37,19 @@
         position: relative;
       }
 
-      #content-side-bar {
+      #sidebar-container {
         float: left;
+        height: 100%;
+        outline: none;
+        overflow-x: hidden;
+        overflow-y: auto;
+        width: var(--side-bar-width);
+      }
+
+      #content-container {
+        height: 100%;
+        outline: none;
+        overflow: auto;
       }
 
       :host-context([dir='rtl']) #content-side-bar {
@@ -80,29 +91,34 @@
 
     <div id="drop-shadow"></div>
     <div id="main-container">
-      <history-side-bar id="content-side-bar" selected-page="{{selectedPage_}}"
-          show-footer="[[showSidebarFooter]]"
-          hidden$="[[hasDrawer_]]">
-      </history-side-bar>
-      <iron-pages id="content" attr-for-selected="path"
-          fallback-selection="history"
-          selected="[[getSelectedPage_(selectedPage_, items)]]"
-          selected-item="{{scrollTarget}}"
-          items="{{items}}">
-        <history-list id="history" query-state="[[queryState_]]"
-            searched-term="[[queryResult_.info.term]]"
-            query-result="[[queryResult_]]"
-            path="history">
-        </history-list>
-        <template is="dom-if" if="[[syncedTabsSelected_(selectedPage_)]]">
-          <history-synced-device-manager id="synced-devices"
-              session-list="[[queryResult_.sessionList]]"
-              search-term="[[queryState_.searchTerm]]"
-              sign-in-state="[[isUserSignedIn_]]"
-              path="syncedTabs">
-          </history-synced-device-manager>
-        </template>
-      </iron-pages>
+      <div id="sidebar-container" tabindex="-1">
+        <history-side-bar id="content-side-bar"
+            selected-page="{{selectedPage_}}"
+            show-footer="[[showSidebarFooter]]"
+            hidden$="[[hasDrawer_]]">
+        </history-side-bar>
+      </div>
+      <div id="content-container" tabindex="-1">
+        <iron-pages id="content" attr-for-selected="path"
+            fallback-selection="history"
+            selected="[[getSelectedPage_(selectedPage_, items)]]"
+            selected-item="{{scrollTarget}}"
+            items="{{items}}">
+          <history-list id="history" query-state="[[queryState_]]"
+              searched-term="[[queryResult_.info.term]]"
+              query-result="[[queryResult_]]"
+              path="history">
+          </history-list>
+          <template is="dom-if" if="[[syncedTabsSelected_(selectedPage_)]]">
+            <history-synced-device-manager id="synced-devices"
+                session-list="[[queryResult_.sessionList]]"
+                search-term="[[queryState_.searchTerm]]"
+                sign-in-state="[[isUserSignedIn_]]"
+                path="syncedTabs">
+            </history-synced-device-manager>
+          </template>
+        </iron-pages>
+      </div>
     </div>
 
     <cr-lazy-render id="drawer">
