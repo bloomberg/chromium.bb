@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -67,20 +68,20 @@ void ClearCacheOnNavigationOnUI() {
   web_cache::WebCacheManager::GetInstance()->ClearCacheOnNavigation();
 }
 
-bool ParseCookieLifetime(net::ParsedCookie* cookie,
+bool ParseCookieLifetime(const net::ParsedCookie& cookie,
                          int64_t* seconds_till_expiry) {
   // 'Max-Age' is processed first because according to:
   // http://tools.ietf.org/html/rfc6265#section-5.3 'Max-Age' attribute
   // overrides 'Expires' attribute.
-  if (cookie->HasMaxAge() &&
-      base::StringToInt64(cookie->MaxAge(), seconds_till_expiry)) {
+  if (cookie.HasMaxAge() &&
+      base::StringToInt64(cookie.MaxAge(), seconds_till_expiry)) {
     return true;
   }
 
   Time parsed_expiry_time;
-  if (cookie->HasExpires()) {
+  if (cookie.HasExpires()) {
     parsed_expiry_time =
-        net::cookie_util::ParseCookieExpirationTime(cookie->Expires());
+        net::cookie_util::ParseCookieExpirationTime(cookie.Expires());
   }
 
   if (!parsed_expiry_time.is_null()) {
@@ -89,24 +90,6 @@ bool ParseCookieLifetime(net::ParsedCookie* cookie,
     return *seconds_till_expiry >= 0;
   }
   return false;
-}
-
-bool NullableEquals(const int* a, const int* b) {
-  if ((a && !b) || (!a && b))
-    return false;
-  return (!a) || (*a == *b);
-}
-
-bool NullableEquals(const bool* a, const bool* b) {
-  if ((a && !b) || (!a && b))
-    return false;
-  return (!a) || (*a == *b);
-}
-
-bool NullableEquals(const std::string* a, const std::string* b) {
-  if ((a && !b) || (!a && b))
-    return false;
-  return (!a) || (*a == *b);
 }
 
 void RecordSpecialRequestHeadersRemoved(
@@ -158,75 +141,124 @@ bool ExtraInfoSpec::InitFromValue(const base::ListValue& value,
   return true;
 }
 
-RequestCookie::RequestCookie() {}
-RequestCookie::~RequestCookie() {}
+RequestCookie::RequestCookie() = default;
+RequestCookie::RequestCookie(RequestCookie&& other) = default;
+RequestCookie& RequestCookie ::operator=(RequestCookie&& other) = default;
+RequestCookie::~RequestCookie() = default;
 
-bool NullableEquals(const RequestCookie* a, const RequestCookie* b) {
-  if ((a && !b) || (!a && b))
-    return false;
-  if (!a)
-    return true;
-  return NullableEquals(a->name.get(), b->name.get()) &&
-         NullableEquals(a->value.get(), b->value.get());
+bool RequestCookie::operator==(const RequestCookie& other) const {
+  return std::tie(name, value) == std::tie(other.name, other.value);
 }
 
-ResponseCookie::ResponseCookie() {}
-ResponseCookie::~ResponseCookie() {}
-
-bool NullableEquals(const ResponseCookie* a, const ResponseCookie* b) {
-  if ((a && !b) || (!a && b))
-    return false;
-  if (!a)
-    return true;
-  return NullableEquals(a->name.get(), b->name.get()) &&
-         NullableEquals(a->value.get(), b->value.get()) &&
-         NullableEquals(a->expires.get(), b->expires.get()) &&
-         NullableEquals(a->max_age.get(), b->max_age.get()) &&
-         NullableEquals(a->domain.get(), b->domain.get()) &&
-         NullableEquals(a->path.get(), b->path.get()) &&
-         NullableEquals(a->secure.get(), b->secure.get()) &&
-         NullableEquals(a->http_only.get(), b->http_only.get());
+RequestCookie RequestCookie::Clone() const {
+  RequestCookie clone;
+  clone.name = name;
+  clone.value = value;
+  return clone;
 }
 
-FilterResponseCookie::FilterResponseCookie() {}
-FilterResponseCookie::~FilterResponseCookie() {}
+ResponseCookie::ResponseCookie() = default;
+ResponseCookie::ResponseCookie(ResponseCookie&& other) = default;
+ResponseCookie& ResponseCookie ::operator=(ResponseCookie&& other) = default;
+ResponseCookie::~ResponseCookie() = default;
 
-bool NullableEquals(const FilterResponseCookie* a,
-                    const FilterResponseCookie* b) {
-  if ((a && !b) || (!a && b))
-    return false;
-  if (!a)
-    return true;
-  return NullableEquals(a->age_lower_bound.get(), b->age_lower_bound.get()) &&
-         NullableEquals(a->age_upper_bound.get(), b->age_upper_bound.get()) &&
-         NullableEquals(a->session_cookie.get(), b->session_cookie.get());
+bool ResponseCookie::operator==(const ResponseCookie& other) const {
+  return std::tie(name, value, expires, max_age, domain, path, secure,
+                  http_only) ==
+         std::tie(other.name, other.value, other.expires, other.max_age,
+                  other.domain, other.path, other.secure, other.http_only);
 }
 
-RequestCookieModification::RequestCookieModification() {}
-RequestCookieModification::~RequestCookieModification() {}
+ResponseCookie ResponseCookie::Clone() const {
+  ResponseCookie clone;
+  clone.name = name;
+  clone.value = value;
+  clone.expires = expires;
+  clone.max_age = max_age;
+  clone.domain = domain;
+  clone.path = path;
+  clone.secure = secure;
+  clone.http_only = http_only;
+  return clone;
+}
 
-bool NullableEquals(const RequestCookieModification* a,
-                    const RequestCookieModification* b) {
-  if ((a && !b) || (!a && b))
-    return false;
-  if (!a)
-    return true;
-  return NullableEquals(a->filter.get(), b->filter.get()) &&
-         NullableEquals(a->modification.get(), b->modification.get());
+FilterResponseCookie::FilterResponseCookie() = default;
+FilterResponseCookie::FilterResponseCookie(FilterResponseCookie&& other) =
+    default;
+FilterResponseCookie& FilterResponseCookie ::operator=(
+    FilterResponseCookie&& other) = default;
+FilterResponseCookie::~FilterResponseCookie() = default;
+
+bool FilterResponseCookie::operator==(const FilterResponseCookie& other) const {
+  // This ignores all of the fields of the base class ResponseCookie. Why?
+  // https://crbug.com/916248
+  return std::tie(age_lower_bound, age_upper_bound, session_cookie) ==
+         std::tie(other.age_lower_bound, other.age_upper_bound,
+                  other.session_cookie);
+}
+
+FilterResponseCookie FilterResponseCookie::Clone() const {
+  FilterResponseCookie clone;
+  clone.name = name;
+  clone.value = value;
+  clone.expires = expires;
+  clone.max_age = max_age;
+  clone.domain = domain;
+  clone.path = path;
+  clone.secure = secure;
+  clone.http_only = http_only;
+  clone.age_upper_bound = age_upper_bound;
+  clone.age_lower_bound = age_lower_bound;
+  clone.session_cookie = session_cookie;
+  return clone;
+}
+
+RequestCookieModification::RequestCookieModification() = default;
+RequestCookieModification::RequestCookieModification(
+    RequestCookieModification&& other) = default;
+RequestCookieModification& RequestCookieModification ::operator=(
+    RequestCookieModification&& other) = default;
+RequestCookieModification::~RequestCookieModification() = default;
+
+bool RequestCookieModification::operator==(
+    const RequestCookieModification& other) const {
+  // This ignores |type|. Why? https://crbug.com/916248
+  return std::tie(filter, modification) ==
+         std::tie(other.filter, other.modification);
+}
+
+RequestCookieModification RequestCookieModification::Clone() const {
+  RequestCookieModification clone;
+  clone.type = type;
+  if (filter.has_value())
+    clone.filter = filter->Clone();
+  if (modification.has_value())
+    clone.modification = modification->Clone();
+  return clone;
 }
 
 ResponseCookieModification::ResponseCookieModification() : type(ADD) {}
-ResponseCookieModification::~ResponseCookieModification() {}
+ResponseCookieModification::ResponseCookieModification(
+    ResponseCookieModification&& other) = default;
+ResponseCookieModification& ResponseCookieModification ::operator=(
+    ResponseCookieModification&& other) = default;
+ResponseCookieModification::~ResponseCookieModification() = default;
 
-bool NullableEquals(const ResponseCookieModification* a,
-                    const ResponseCookieModification* b) {
-  if ((a && !b) || (!a && b))
-    return false;
-  if (!a)
-    return true;
-  return a->type == b->type &&
-         NullableEquals(a->filter.get(), b->filter.get()) &&
-         NullableEquals(a->modification.get(), b->modification.get());
+bool ResponseCookieModification::operator==(
+    const ResponseCookieModification& other) const {
+  // This ignores |type|. Why? https://crbug.com/916248
+  return std::tie(filter, modification) ==
+         std::tie(other.filter, other.modification);
+}
+
+ResponseCookieModification ResponseCookieModification::Clone() const {
+  ResponseCookieModification clone;
+  clone.type = type;
+  if (filter.has_value())
+    clone.filter = filter->Clone();
+  if (modification.has_value())
+    clone.modification = modification->Clone();
+  return clone;
 }
 
 EventResponseDelta::EventResponseDelta(
@@ -421,11 +453,11 @@ EventResponseDelta* CalculateOnAuthRequiredDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
-    std::unique_ptr<net::AuthCredentials>* auth_credentials) {
+    base::Optional<net::AuthCredentials> auth_credentials) {
   EventResponseDelta* result =
       new EventResponseDelta(extension_id, extension_install_time);
   result->cancel = cancel;
-  result->auth_credentials.swap(*auth_credentials);
+  result->auth_credentials = std::move(auth_credentials);
   return result;
 }
 
@@ -518,10 +550,13 @@ void MergeOnBeforeRequestResponses(const GURL& url,
 
 static bool DoesRequestCookieMatchFilter(
     const ParsedRequestCookie& cookie,
-    RequestCookie* filter) {
-  if (!filter) return true;
-  if (filter->name.get() && cookie.first != *filter->name) return false;
-  if (filter->value.get() && cookie.second != *filter->value) return false;
+    const base::Optional<RequestCookie>& filter) {
+  if (!filter.has_value())
+    return true;
+  if (filter->name.has_value() && cookie.first != *filter->name)
+    return false;
+  if (filter->value.has_value() && cookie.second != *filter->value)
+    return false;
   return true;
 }
 
@@ -539,26 +574,29 @@ static bool MergeAddRequestCookieModifications(
         (*delta)->request_cookie_modifications;
     for (auto mod = modifications.cbegin(); mod != modifications.cend();
          ++mod) {
-      if ((*mod)->type != ADD || !(*mod)->modification.get())
+      if (mod->type != ADD || !mod->modification.has_value())
         continue;
-      std::string* new_name = (*mod)->modification->name.get();
-      std::string* new_value = (*mod)->modification->value.get();
-      if (!new_name || !new_value)
+
+      if (!mod->modification->name.has_value() ||
+          !mod->modification->value.has_value())
         continue;
+
+      const std::string& new_name = *mod->modification->name;
+      const std::string& new_value = *mod->modification->value;
 
       bool cookie_with_same_name_found = false;
       for (auto cookie = cookies->begin();
            cookie != cookies->end() && !cookie_with_same_name_found; ++cookie) {
-        if (cookie->first == *new_name) {
-          if (cookie->second != *new_value) {
-            cookie->second = *new_value;
+        if (cookie->first == new_name) {
+          if (cookie->second != new_value) {
+            cookie->second = new_value;
             modified = true;
           }
           cookie_with_same_name_found = true;
         }
       }
       if (!cookie_with_same_name_found) {
-        cookies->emplace_back(*new_name, *new_value);
+        cookies->emplace_back(new_name, new_value);
         modified = true;
       }
     }
@@ -580,18 +618,21 @@ static bool MergeEditRequestCookieModifications(
         (*delta)->request_cookie_modifications;
     for (auto mod = modifications.cbegin(); mod != modifications.cend();
          ++mod) {
-      if ((*mod)->type != EDIT || !(*mod)->modification.get())
+      if (mod->type != EDIT || !mod->modification.has_value())
         continue;
 
-      std::string* new_value = (*mod)->modification->value.get();
-      RequestCookie* filter = (*mod)->filter.get();
+      if (!mod->modification->value.has_value())
+        continue;
+
+      const std::string& new_value = *mod->modification->value;
+      const base::Optional<RequestCookie>& filter = mod->filter;
       for (auto cookie = cookies->begin(); cookie != cookies->end(); ++cookie) {
         if (!DoesRequestCookieMatchFilter(*cookie, filter))
           continue;
         // If the edit operation tries to modify the cookie name, we just ignore
         // this. We only modify the cookie value.
-        if (new_value && cookie->second != *new_value) {
-          cookie->second = *new_value;
+        if (cookie->second != new_value) {
+          cookie->second = new_value;
           modified = true;
         }
       }
@@ -614,10 +655,10 @@ static bool MergeRemoveRequestCookieModifications(
         (*delta)->request_cookie_modifications;
     for (auto mod = modifications.cbegin(); mod != modifications.cend();
          ++mod) {
-      if ((*mod)->type != REMOVE)
+      if (mod->type != REMOVE)
         continue;
 
-      RequestCookie* filter = (*mod)->filter.get();
+      const base::Optional<RequestCookie>& filter = mod->filter;
       auto i = cookies->begin();
       while (i != cookies->end()) {
         if (DoesRequestCookieMatchFilter(*i, filter)) {
@@ -956,63 +997,65 @@ static void StoreResponseCookies(
 
 // Modifies |cookie| according to |modification|. Each value that is set in
 // |modification| is applied to |cookie|.
-static bool ApplyResponseCookieModification(ResponseCookie* modification,
+static bool ApplyResponseCookieModification(const ResponseCookie& modification,
                                             net::ParsedCookie* cookie) {
   bool modified = false;
-  if (modification->name.get())
-    modified |= cookie->SetName(*modification->name);
-  if (modification->value.get())
-    modified |= cookie->SetValue(*modification->value);
-  if (modification->expires.get())
-    modified |= cookie->SetExpires(*modification->expires);
-  if (modification->max_age.get())
-    modified |= cookie->SetMaxAge(base::IntToString(*modification->max_age));
-  if (modification->domain.get())
-    modified |= cookie->SetDomain(*modification->domain);
-  if (modification->path.get())
-    modified |= cookie->SetPath(*modification->path);
-  if (modification->secure.get())
-    modified |= cookie->SetIsSecure(*modification->secure);
-  if (modification->http_only.get())
-    modified |= cookie->SetIsHttpOnly(*modification->http_only);
+  if (modification.name.has_value())
+    modified |= cookie->SetName(*modification.name);
+  if (modification.value.has_value())
+    modified |= cookie->SetValue(*modification.value);
+  if (modification.expires.has_value())
+    modified |= cookie->SetExpires(*modification.expires);
+  if (modification.max_age.has_value())
+    modified |= cookie->SetMaxAge(base::IntToString(*modification.max_age));
+  if (modification.domain.has_value())
+    modified |= cookie->SetDomain(*modification.domain);
+  if (modification.path.has_value())
+    modified |= cookie->SetPath(*modification.path);
+  if (modification.secure.has_value())
+    modified |= cookie->SetIsSecure(*modification.secure);
+  if (modification.http_only.has_value())
+    modified |= cookie->SetIsHttpOnly(*modification.http_only);
   return modified;
 }
 
-static bool DoesResponseCookieMatchFilter(net::ParsedCookie* cookie,
-                                          FilterResponseCookie* filter) {
-  if (!cookie->IsValid()) return false;
-  if (!filter) return true;
-  if (filter->name && cookie->Name() != *filter->name)
+static bool DoesResponseCookieMatchFilter(
+    const net::ParsedCookie& cookie,
+    const base::Optional<FilterResponseCookie>& filter) {
+  if (!cookie.IsValid())
     return false;
-  if (filter->value && cookie->Value() != *filter->value)
+  if (!filter.has_value())
+    return true;
+  if (filter->name && cookie.Name() != *filter->name)
+    return false;
+  if (filter->value && cookie.Value() != *filter->value)
     return false;
   if (filter->expires) {
     std::string actual_value =
-        cookie->HasExpires() ? cookie->Expires() : std::string();
+        cookie.HasExpires() ? cookie.Expires() : std::string();
     if (actual_value != *filter->expires)
       return false;
   }
   if (filter->max_age) {
     std::string actual_value =
-        cookie->HasMaxAge() ? cookie->MaxAge() : std::string();
+        cookie.HasMaxAge() ? cookie.MaxAge() : std::string();
     if (actual_value != base::IntToString(*filter->max_age))
       return false;
   }
   if (filter->domain) {
     std::string actual_value =
-        cookie->HasDomain() ? cookie->Domain() : std::string();
+        cookie.HasDomain() ? cookie.Domain() : std::string();
     if (actual_value != *filter->domain)
       return false;
   }
   if (filter->path) {
-    std::string actual_value =
-        cookie->HasPath() ? cookie->Path() : std::string();
+    std::string actual_value = cookie.HasPath() ? cookie.Path() : std::string();
     if (actual_value != *filter->path)
       return false;
   }
-  if (filter->secure && cookie->IsSecure() != *filter->secure)
+  if (filter->secure && cookie.IsSecure() != *filter->secure)
     return false;
-  if (filter->http_only && cookie->IsHttpOnly() != *filter->http_only)
+  if (filter->http_only && cookie.IsHttpOnly() != *filter->http_only)
     return false;
   if (filter->age_upper_bound || filter->age_lower_bound ||
       (filter->session_cookie && *filter->session_cookie)) {
@@ -1042,12 +1085,12 @@ static bool MergeAddResponseCookieModifications(
         (*delta)->response_cookie_modifications;
     for (auto mod = modifications.cbegin(); mod != modifications.cend();
          ++mod) {
-      if ((*mod)->type != ADD || !(*mod)->modification.get())
+      if (mod->type != ADD || !mod->modification.has_value())
         continue;
       // Cookie names are not unique in response cookies so we always append
       // and never override.
       auto cookie = std::make_unique<net::ParsedCookie>(std::string());
-      ApplyResponseCookieModification((*mod)->modification.get(), cookie.get());
+      ApplyResponseCookieModification(mod->modification.value(), cookie.get());
       cookies->push_back(std::move(cookie));
       modified = true;
     }
@@ -1069,13 +1112,13 @@ static bool MergeEditResponseCookieModifications(
         (*delta)->response_cookie_modifications;
     for (auto mod = modifications.cbegin(); mod != modifications.cend();
          ++mod) {
-      if ((*mod)->type != EDIT || !(*mod)->modification.get())
+      if (mod->type != EDIT || !mod->modification.has_value())
         continue;
 
       for (const std::unique_ptr<net::ParsedCookie>& cookie : *cookies) {
-        if (DoesResponseCookieMatchFilter(cookie.get(), (*mod)->filter.get())) {
-          modified |= ApplyResponseCookieModification(
-              (*mod)->modification.get(), cookie.get());
+        if (DoesResponseCookieMatchFilter(*cookie.get(), mod->filter)) {
+          modified |= ApplyResponseCookieModification(mod->modification.value(),
+                                                      cookie.get());
         }
       }
     }
@@ -1097,13 +1140,12 @@ static bool MergeRemoveResponseCookieModifications(
         (*delta)->response_cookie_modifications;
     for (auto mod = modifications.cbegin(); mod != modifications.cend();
          ++mod) {
-      if ((*mod)->type != REMOVE)
+      if (mod->type != REMOVE)
         continue;
 
       auto i = cookies->begin();
       while (i != cookies->end()) {
-        if (DoesResponseCookieMatchFilter(i->get(),
-                                          (*mod)->filter.get())) {
+        if (DoesResponseCookieMatchFilter(*i->get(), mod->filter)) {
           i = cookies->erase(i);
           modified = true;
         } else {
@@ -1299,7 +1341,7 @@ bool MergeOnAuthRequiredResponses(const EventResponseDeltas& deltas,
   bool credentials_set = false;
 
   for (auto delta = deltas.cbegin(); delta != deltas.cend(); ++delta) {
-    if (!(*delta)->auth_credentials.get())
+    if (!(*delta)->auth_credentials.has_value())
       continue;
     bool different =
         auth_credentials->username() !=
