@@ -14,7 +14,6 @@ import plistlib
 import re
 import shutil
 import subprocess
-import tempfile
 import time
 
 import test_runner
@@ -60,6 +59,8 @@ def test_status_summary(summary_plist):
   for summary in root_summary['TestableSummaries']:
     failed_egtests = []
     passed_egtests = []
+    if not summary['Tests']:
+      continue
     for test_suite in summary['Tests'][0]['Subtests'][0]['Subtests']:
       for test in test_suite['Subtests']:
         if test['TestStatus'] == 'Success':
@@ -102,13 +103,17 @@ def collect_test_results(cmd_list, plist_path, return_code, output):
   root = plistlib.readPlist(plist_path)
 
   for action in root['Actions']:
-    summary_plist = os.path.join(os.path.dirname(plist_path),
-                                 action['ActionResult']['TestSummaryPath'])
-    summary = test_status_summary(summary_plist)
-    test_results['failed'] = summary['failed']
-    test_results['passed'] = summary['passed']
+    action_result = action['ActionResult']
+    if action_result['TestsCount'] == 0 and action_result['ErrorCount'] != 0:
+      test_results['failed']['TESTS_DID_NOT_START'] = []
+    else:
+      summary_plist = os.path.join(os.path.dirname(plist_path),
+                                   action_result['TestSummaryPath'])
+      summary = test_status_summary(summary_plist)
+      test_results['failed'] = summary['failed']
+      test_results['passed'] = summary['passed']
 
-    for error_summary in action['ActionResult']['ErrorSummaries']:
+    for error_summary in action_result['ErrorSummaries']:
       test_results['errors'].append(error_summary['Message'])
   # If xcodebuild finished with non-zero status and no failure/error
   # in the Info.plist log.
@@ -275,7 +280,7 @@ class LaunchCommand(object):
       print 'No failures in %s' % info_plist_path
       return
 
-    screenshot_regex = re.compile(r'Screenshots:\s\{(\n.*)*\n}')
+    screenshot_regex = re.compile(r'Screenshots:\s\{(\n.*)+?\n}')
     for failure_summary in plist['TestFailureSummaries']:
       screenshots = screenshot_regex.search(failure_summary['Message'])
       test_case_folder = os.path.join(
@@ -359,6 +364,7 @@ class LaunchCommand(object):
   def launch(self):
     """Launches tests using xcodebuild."""
     initial_command = []
+    cmd_list = []
     self.test_results['attempts'] = []
 
     # total number of attempts is self.retries+1
@@ -370,7 +376,10 @@ class LaunchCommand(object):
                                 self.destination,
                                 self.shards)
         initial_command = list(cmd_list)
-      else:
+      # (http://crbug.com/916620) If tests has not started, repeat the command
+      # otherwise re-init based on list of failed tests.
+      elif 'TESTS_DID_NOT_START' not in self.test_results[
+          'attempts'][-1]['failed']:
         cmd_list = self._make_cmd_list_for_failed_tests(
             self.test_results['attempts'][-1]['failed'],
             outdir_attempt)
@@ -411,7 +420,12 @@ class LaunchCommand(object):
     """
     if not egtests_app:
       raise test_runner.AppNotFoundError('Egtests is not found!')
-    xctestrun = tempfile.mkstemp()[1]
+    xctestrun = os.path.join(
+        os.path.abspath(os.path.join(self.out_dir, os.pardir)),
+        'run_%d.xctestrun' % int(time.time()))
+    if not os.path.exists(xctestrun):
+      with open(xctestrun, 'w'):
+        pass
     # Creates a dict with data about egtests to run - fill all required fields:
     # egtests_module, egtest_app_path, egtests_xctest_path and
     # filtered tests if filter is specified.
