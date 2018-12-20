@@ -47,14 +47,19 @@ void MIDIDispatcher::AddAccessor(MIDIAccessor* accessor) {
 }
 
 void MIDIDispatcher::RemoveAccessor(MIDIAccessor* accessor) {
-  DCHECK(accessors_.Contains(accessor) ||
-         accessors_waiting_session_queue_.Contains(accessor))
+  // |accessor| should either be in |accessors_| or
+  // |accessors_waiting_session_queue_|, but not both.
+  DCHECK_NE(accessors_.Contains(accessor),
+            accessors_waiting_session_queue_.Contains(accessor))
       << "RemoveAccessor call was not balanced with AddAccessor call";
-  accessors_.EraseAt(accessors_.Find(accessor));
-  auto** it = std::find(accessors_waiting_session_queue_.begin(),
-                        accessors_waiting_session_queue_.end(), accessor);
-  if (it != accessors_waiting_session_queue_.end())
-    accessors_waiting_session_queue_.erase(it);
+  auto** it = std::find(accessors_.begin(), accessors_.end(), accessor);
+  if (it != accessors_.end()) {
+    accessors_.erase(it);
+  } else {
+    accessors_waiting_session_queue_.erase(
+        std::find(accessors_waiting_session_queue_.begin(),
+                  accessors_waiting_session_queue_.end(), accessor));
+  }
   if (accessors_.IsEmpty() && accessors_waiting_session_queue_.IsEmpty()) {
     session_result_ = midi::mojom::Result::NOT_INITIALIZED;
     inputs_.clear();
