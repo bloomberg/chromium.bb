@@ -167,7 +167,7 @@ ANDROID_PIXEL2_WEBVIEW = PerfPlatform(
 
 ANDROID_GO_WEBVIEW = PerfPlatform(
     'android-go_webview-perf', 'Android OPM1.171019.021', is_fyi=True,
-    num_shards=25)
+    num_shards=25, benchmarks_names_to_run=_ANDROID_GO_BENCHMARK_NAMES)
 
 ANDROID_NEXUS5X_PERF_FYI =  PerfPlatform(
     'android-nexus5x-perf-fyi', 'Android MMB29Q', is_fyi=True,
