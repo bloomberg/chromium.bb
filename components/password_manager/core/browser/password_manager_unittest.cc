@@ -2003,6 +2003,39 @@ TEST_F(PasswordManagerTest, PasswordGenerationPresavePasswordAndLogin) {
   }
 }
 
+TEST_F(PasswordManagerTest, SetGenerationElementAndReasonForForm) {
+  // Verifies that |SetGenerationElementAndReasonForForm| method works for both
+  // old and new parsers.
+  for (bool new_parser : {false, true}) {
+    SCOPED_TRACE(testing::Message("new_parser = ") << new_parser);
+    base::test::ScopedFeatureList scoped_feature_list;
+    if (new_parser)
+      TurnOnNewParsingForSaving(&scoped_feature_list);
+
+    EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+        .WillRepeatedly(Return(true));
+    PasswordForm form(MakeSimpleForm());
+    EXPECT_CALL(*store_, GetLogins(PasswordStore::FormDigest(form), _))
+        .Times(new_parser ? 2 : 1);
+    manager()->OnPasswordFormsParsed(&driver_, {form});
+
+    manager()->SetGenerationElementAndReasonForForm(&driver_, form,
+                                                    ASCIIToUTF16("psw"), false);
+    EXPECT_CALL(*store_, AddLogin(_));
+    manager()->OnPresaveGeneratedPassword(&driver_, form);
+
+    const PasswordFormManagerInterface* form_manager = nullptr;
+    if (new_parser) {
+      ASSERT_EQ(1u, manager()->form_managers().size());
+      form_manager = manager()->form_managers().front().get();
+    } else {
+      ASSERT_EQ(1u, manager()->pending_login_managers().size());
+      form_manager = manager()->pending_login_managers().front().get();
+    }
+    EXPECT_TRUE(form_manager->HasGeneratedPassword());
+  }
+}
+
 TEST_F(PasswordManagerTest,
        PasswordGenerationNoCorrespondingPasswordFormManager) {
   // Verifies that if there is no corresponding password form manager for the
