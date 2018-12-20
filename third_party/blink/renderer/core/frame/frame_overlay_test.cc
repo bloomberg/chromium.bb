@@ -34,9 +34,6 @@ using testing::Property;
 namespace blink {
 namespace {
 
-static const int kViewportWidth = 800;
-static const int kViewportHeight = 600;
-
 // FrameOverlay that paints a solid color.
 class SolidColorOverlay : public FrameOverlay::Delegate {
  public:
@@ -60,6 +57,9 @@ class SolidColorOverlay : public FrameOverlay::Delegate {
 
 class FrameOverlayTest : public testing::Test {
  protected:
+  static constexpr int kViewportWidth = 800;
+  static constexpr int kViewportHeight = 600;
+
   FrameOverlayTest() {
     helper_.Initialize(nullptr /* web_frame_client */,
                        nullptr /* web_view_client */,
