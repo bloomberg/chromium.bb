@@ -96,6 +96,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
       rendering_context3d_(0),
       weak_ptr_factory_(this) {
 #if DCHECK_IS_ON()
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   client.VerifyNotPainting();
 #endif
   layer_ = cc::PictureLayer::Create(this);
