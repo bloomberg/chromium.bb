@@ -48,8 +48,8 @@
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
-#include "third_party/blink/renderer/core/loader/link_loader.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
+#include "third_party/blink/renderer/core/loader/preload_helper.h"
 #include "third_party/blink/renderer/core/loader/previews_resource_loading_hints.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
@@ -209,7 +209,7 @@ class CORE_EXPORT DocumentLoader
   bool WasBlockedAfterCSP() { return was_blocked_after_csp_; }
 
   void DispatchLinkHeaderPreloads(ViewportDescriptionWrapper*,
-                                  LinkLoader::MediaPreloadPolicy);
+                                  PreloadHelper::MediaPreloadPolicy);
 
   void SetServiceWorkerNetworkProvider(
       std::unique_ptr<WebServiceWorkerNetworkProvider>);

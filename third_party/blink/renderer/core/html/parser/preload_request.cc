@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/core/loader/link_loader.h"
+#include "third_party/blink/renderer/core/loader/preload_helper.h"
 #include "third_party/blink/renderer/core/script/document_write_intervention.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
 #include "third_party/blink/renderer/platform/cross_origin_attribute_value.h"
@@ -114,7 +114,8 @@ Resource* PreloadRequest::Start(Document* document) {
     }
   }
 
-  return LinkLoader::StartPreload(resource_type_, params, document->Fetcher());
+  return PreloadHelper::StartPreload(resource_type_, params,
+                                     document->Fetcher());
 }
 
 }  // namespace blink
