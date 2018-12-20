@@ -644,10 +644,6 @@ class PersonalDataManager : public KeyedService,
       const base::string16& field_contents,
       const std::vector<CreditCard*>& cards_to_suggest) const;
 
-  // Returns true if the given credit card can be deleted in a major version
-  // upgrade. The card will need to be local and disused, to be deletable.
-  static bool IsCreditCardDeletable(const CreditCard* card);
-
   // Runs the routine that removes the orphan rows in the autofill tables if
   // it's never been done.
   void RemoveOrphanAutofillTableRows();
