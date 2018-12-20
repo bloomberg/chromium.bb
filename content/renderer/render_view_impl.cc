@@ -430,14 +430,14 @@ cc::BrowserControlsState ContentToCc(BrowserControlsState state) {
 
 RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
                                const mojom::CreateViewParams& params)
-    : RenderWidget(
+    : render_widget_(new RenderWidget(
           params.main_frame_widget_routing_id,
           compositor_deps,
           params.visual_properties.screen_info,
           params.visual_properties.display_mode,
           /*is_frozen=*/params.main_frame_routing_id == MSG_ROUTING_NONE,
           params.hidden,
-          params.never_visible),
+          params.never_visible)),
       routing_id_(params.view_id),
       renderer_wide_named_frame_lookup_(
           params.renderer_wide_named_frame_lookup),
@@ -446,7 +446,14 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       weak_ptr_factory_(this) {
   DCHECK(!session_storage_namespace_id_.empty())
       << "Session storage namespace must be populated.";
-  GetWidget()->set_owner_delegate(this);
+
+  // RenderView used to inherit from RenderWidget. Creating a delegate
+  // interface and explicitly passing ownership of ourselves to the
+  // RenderWidget preserves the lifetime semantics. This is a stepping
+  // stone to having RenderWidget creation taken out of the RenderViewImpl
+  // constructor. See the corresponding explicit reset() of the delegate
+  // in the ~RenderWidget(). Also, I hate inheritance.
+  GetWidget()->set_delegate(base::WrapUnique(this));
   RenderThread::Get()->AddRoute(routing_id_, this);
 }
 
@@ -466,7 +473,7 @@ void RenderViewImpl::Initialize(
   webview_ = WebView::Create(this, WidgetClient(), params->hidden,
                              /*compositing_enabled=*/true,
                              opener_frame ? opener_frame->View() : nullptr);
-  RenderWidget::Init(std::move(show_callback), webview_->MainFrameWidget());
+  GetWidget()->Init(std::move(show_callback), webview_->MainFrameWidget());
 
   g_view_map.Get().insert(std::make_pair(webview(), this));
   g_routing_id_view_map.Get().insert(std::make_pair(GetRoutingID(), this));
@@ -544,9 +551,9 @@ void RenderViewImpl::Initialize(
   if (params->window_was_created_with_opener)
     webview()->SetOpenedByDOM();
 
-  UpdateWebViewWithDeviceScaleFactor();
+  GetWidget()->UpdateWebViewWithDeviceScaleFactor();
   OnSetRendererPrefs(params->renderer_preferences);
-  OnSynchronizeVisualProperties(params->visual_properties);
+  GetWidget()->OnSynchronizeVisualProperties(params->visual_properties);
 
   GetContentClient()->renderer()->RenderViewCreated(this);
   page_zoom_level_ = 0;
@@ -1118,7 +1125,7 @@ void RenderViewImpl::ScrollFocusedNodeIntoViewForWidget() {
 void RenderViewImpl::DidReceiveSetFocusEventForWidget() {
   // This message must always be received when the main frame is a
   // WebLocalFrame.
-  // TODO(ajwong): Can this be removed and just check |owner_delegate_| in
+  // TODO(ajwong): Can this be removed and just check |delegate_| in
   // RenderWidget instead?
   CHECK(webview()->MainFrame()->IsWebLocalFrame());
 }
@@ -1278,8 +1285,9 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     // Adding a new message? Add platform independent ones first, then put the
     // platform specific ones at the end.
 
-    // Have the super handle all other messages.
-    IPC_MESSAGE_UNHANDLED(handled = RenderWidget::OnMessageReceived(message))
+    // Have the widget handle all other messages.
+    // TODO(ajwong): Remove this cross-object dispatch.
+    IPC_MESSAGE_UNHANDLED(handled = GetWidget()->OnMessageReceived(message))
   IPC_END_MESSAGE_MAP()
 
   return handled;
@@ -1687,7 +1695,10 @@ bool RenderViewImpl::CanUpdateLayout() {
 }
 
 blink::WebWidgetClient* RenderViewImpl::WidgetClient() {
-  return this;
+  // TODO(ajwong): Remove this API and force clients to get the
+  // WebWidgetClient through GetWidget().
+  // https://crbug.com/545684
+  return render_widget_;
 }
 
 // blink::WebLocalFrameClient
@@ -1784,11 +1795,18 @@ bool RenderViewImpl::Send(IPC::Message* message) {
   // override of IPC::Sender, so this method also overrides RenderWidget. Thus
   // we must call to the base class, not via an upcast or virtual dispatch would
   // go back here.
-  return RenderWidget::Send(message);
+  CHECK(message->routing_id() != MSG_ROUTING_NONE);
+
+  // TODO(ajwong): Don't delegate to render widget. Filter here.
+  return GetWidget()->Send(message);
 }
 
 RenderWidget* RenderViewImpl::GetWidget() {
-  return this;
+  return render_widget_;
+}
+
+const RenderWidget* RenderViewImpl::GetWidget() const {
+  return render_widget_;
 }
 
 RenderFrameImpl* RenderViewImpl::GetMainRenderFrame() {
@@ -1800,11 +1818,11 @@ int RenderViewImpl::GetRoutingID() {
 }
 
 gfx::Size RenderViewImpl::GetSize() {
-  return size();
+  return GetWidget()->size();
 }
 
 float RenderViewImpl::GetDeviceScaleFactor() {
-  return GetWebScreenInfo().device_scale_factor;
+  return GetWidget()->GetWebScreenInfo().device_scale_factor;
 }
 
 float RenderViewImpl::GetZoomLevel() {
@@ -2121,16 +2139,16 @@ void RenderViewImpl::SetFocusAndActivateForTesting(bool enable) {
   if (webview()->MainFrame()->IsWebRemoteFrame())
     return;
 
-  if (enable == has_focus())
+  if (enable == GetWidget()->has_focus())
     return;
 
   if (enable) {
     SetActiveForWidget(true);
     // Fake an IPC message so go through the IPC handler.
-    OnSetFocus(true);
+    GetWidget()->OnSetFocus(true);
   } else {
     // Fake an IPC message so go through the IPC handler.
-    OnSetFocus(false);
+    GetWidget()->OnSetFocus(false);
     SetActiveForWidget(false);
   }
 }

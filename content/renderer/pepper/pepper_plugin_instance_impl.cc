@@ -558,10 +558,11 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
 
   if (render_frame_) {  // NULL in tests or if the frame has been destroyed.
     render_frame_->PepperInstanceCreated(this);
-    view_data_.is_page_visible = !render_frame_->GetRenderWidget()->is_hidden();
+    view_data_.is_page_visible =
+        !render_frame_->GetLocalRootRenderWidget()->is_hidden();
 
     // Set the initial focus.
-    SetContentAreaFocus(render_frame_->GetRenderWidget()->has_focus());
+    SetContentAreaFocus(render_frame_->GetLocalRootRenderWidget()->has_focus());
 
     if (!module_->IsProxied()) {
       PepperBrowserConnection* browser_connection =
@@ -1145,7 +1146,8 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
       (event.GetModifiers() & blink::WebInputEvent::kLeftButtonDown)) {
     has_been_clicked_ = true;
     blink::WebRect bounds = container()->GetElement().BoundsInViewport();
-    render_frame()->GetRenderWidget()->ConvertViewportToWindow(&bounds);
+    render_frame()->GetLocalRootRenderWidget()->ConvertViewportToWindow(
+        &bounds);
     RecordFlashClickSizeMetric(bounds.width, bounds.height);
   }
 
@@ -1300,7 +1302,7 @@ void PepperPluginInstanceImpl::ViewChanged(
   view_data_.css_scale =
       container_->PageZoomFactor() * container_->PageScaleFactor();
   blink::WebFloatRect windowToViewportScale(0, 0, 1.0f, 0);
-  render_frame()->GetRenderWidget()->ConvertWindowToViewport(
+  render_frame()->GetLocalRootRenderWidget()->ConvertWindowToViewport(
       &windowToViewportScale);
   viewport_to_dip_scale_ = 1.0f / windowToViewportScale.width;
   ConvertRectToDIP(&view_data_.rect);
@@ -1323,7 +1325,7 @@ void PepperPluginInstanceImpl::ViewChanged(
   if (desired_fullscreen_state_ || view_data_.is_fullscreen) {
     bool is_fullscreen_element = container_->IsFullscreenElement();
     if (!view_data_.is_fullscreen && desired_fullscreen_state_ &&
-        render_frame()->GetRenderWidget()->is_fullscreen_granted() &&
+        render_frame()->GetLocalRootRenderWidget()->is_fullscreen_granted() &&
         is_fullscreen_element) {
       // Entered fullscreen. Only possible via SetFullscreen().
       view_data_.is_fullscreen = true;
@@ -2708,7 +2710,7 @@ PP_Bool PepperPluginInstanceImpl::GetScreenSize(PP_Instance instance,
     *size = view_data_.rect.size;
   } else {
     // All other cases: Report the screen size.
-    if (!render_frame_ || !render_frame_->GetRenderWidget())
+    if (!render_frame_ || !render_frame_->GetLocalRootRenderWidget())
       return PP_FALSE;
     blink::WebScreenInfo info = render_frame_->render_view()->GetScreenInfo();
     *size = PP_MakeSize(info.rect.width, info.rect.height);
@@ -3374,7 +3376,7 @@ MouseLockDispatcher* PepperPluginInstanceImpl::GetMouseLockDispatcher() {
     return container->mouse_lock_dispatcher();
   }
   if (render_frame_)
-    return render_frame_->GetRenderWidget()->mouse_lock_dispatcher();
+    return render_frame_->GetLocalRootRenderWidget()->mouse_lock_dispatcher();
   return nullptr;
 }
 

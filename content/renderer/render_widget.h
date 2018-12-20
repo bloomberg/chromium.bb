@@ -43,6 +43,7 @@
 #include "content/renderer/input/render_widget_input_handler.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
+#include "content/renderer/render_widget_delegate.h"
 #include "content/renderer/render_widget_mouse_lock_dispatcher.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
@@ -111,7 +112,7 @@ class PepperPluginInstanceImpl;
 class RenderFrameImpl;
 class RenderFrameProxy;
 class RenderViewImpl;
-class RenderWidgetOwnerDelegate;
+class RenderWidgetDelegate;
 class RenderWidgetScreenMetricsEmulator;
 class ResizingModeSelector;
 class TextInputClientObserver;
@@ -183,11 +184,17 @@ class CONTENT_EXPORT RenderWidget
   // making it self-referencing, which can be released by calling Close().
   void InitForChildLocalRoot(blink::WebFrameWidget* web_frame_widget);
 
-  void set_owner_delegate(RenderWidgetOwnerDelegate* owner_delegate) {
-    DCHECK(!owner_delegate_);
-    owner_delegate_ = owner_delegate;
+  // Sets a delegate to handle certain RenderWidget operations that need an
+  // escape to the RenderView. Also take ownership until RenderWidget lifetime
+  // has been reassociated with the RenderFrame. This is only set on Widgets
+  // that are associated with the RenderView.
+  // TODO(ajwong): Do not have RenderWidget own the delegate.
+  void set_delegate(std::unique_ptr<RenderWidgetDelegate> delegate) {
+    DCHECK(!delegate_);
+    delegate_ = std::move(delegate);
   }
-  RenderWidgetOwnerDelegate* owner_delegate() const { return owner_delegate_; }
+
+  RenderWidgetDelegate* delegate() const { return delegate_.get(); }
 
   // Returns the RenderWidget for the given routing ID.
   static RenderWidget* FromRoutingID(int32_t routing_id);
@@ -549,27 +556,28 @@ class CONTENT_EXPORT RenderWidget
                                   const gfx::Size& max_size);
   void DisableAutoResizeForTesting(const gfx::Size& new_size);
 
-  base::WeakPtr<RenderWidget> AsWeakPtr();
+  // Update the WebView's device scale factor.
+  // TODO(ajwong): This should be moved into RenderView.
+  void UpdateWebViewWithDeviceScaleFactor();
 
- protected:
-  ~RenderWidget() override;
+  // RenderWidget IPC message handler that can be overridden by subclasses.
+  virtual void OnSynchronizeVisualProperties(const VisualProperties& params);
 
   // Called by Create() functions and subclasses to finish initialization.
   // |show_callback| will be invoked once WebWidgetClient::Show() occurs, and
   // should be null if Show() won't be triggered for this widget.
   void Init(ShowCallback show_callback, blink::WebWidget* web_widget);
 
-  // Update the web view's device scale factor.
-  void UpdateWebViewWithDeviceScaleFactor();
+  base::WeakPtr<RenderWidget> AsWeakPtr();
+
+ protected:
+  ~RenderWidget() override;
 
   // Close the underlying WebWidget and stop the compositor.
   virtual void Close();
 
   // Notify subclasses that we initiated the paint operation.
   virtual void DidInitiatePaint() {}
-
-  // RenderWidget IPC message handler that can be overridden by subclasses.
-  virtual void OnSynchronizeVisualProperties(const VisualProperties& params);
 
  private:
   // Friend RefCounted so that the dtor can be non-public. Using this class
@@ -585,7 +593,7 @@ class CONTENT_EXPORT RenderWidget
   friend class PopupRenderWidget;
   friend class QueueMessageSwapPromiseTest;
   friend class RenderWidgetTest;
-  friend class RenderViewImplTest;
+  friend class RenderViewImplTest;  // TODO(ajwong): Can this be removed?
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetPopupUnittest, EmulatingPopupRect);
 
   static scoped_refptr<base::SingleThreadTaskRunner> GetCleanupTaskRunner();
@@ -611,9 +619,7 @@ class CONTENT_EXPORT RenderWidget
   void CloseWebWidget();
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-  void SetExternalPopupOriginAdjustmentsForEmulation(
-      ExternalPopupMenu* popup,
-      RenderWidgetScreenMetricsEmulator* emulator);
+  void SetExternalPopupOriginAdjustmentsForEmulation(ExternalPopupMenu* popup);
 #endif
 
   // RenderWidget IPC message handlers.
@@ -780,10 +786,8 @@ class CONTENT_EXPORT RenderWidget
 
   // Whether this widget is for a frame. This excludes widgets that are not for
   // a frame (eg popups, pepper), but includes both the main frame
-  // (via owner_delegate_) and subframes (via for_child_local_root_frame_).
-  bool for_frame() const {
-    return owner_delegate_ || for_child_local_root_frame_;
-  }
+  // (via delegate_) and subframes (via for_child_local_root_frame_).
+  bool for_frame() const { return delegate_ || for_child_local_root_frame_; }
 
   // Routing ID that allows us to communicate to the parent browser process
   // RenderWidgetHost.
@@ -798,8 +802,8 @@ class CONTENT_EXPORT RenderWidget
   // May be NULL when the window is closing.
   blink::WebWidget* webwidget_internal_;
 
-  // The delegate of the owner of this object.
-  RenderWidgetOwnerDelegate* owner_delegate_;
+  // The delegate for this object which is just a RenderViewImpl.
+  std::unique_ptr<RenderWidgetDelegate> delegate_;
 
   // This is lazily constructed and must not outlive webwidget_.
   std::unique_ptr<LayerTreeView> layer_tree_view_;

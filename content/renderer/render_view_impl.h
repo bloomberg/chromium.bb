@@ -37,7 +37,7 @@
 #include "content/public/renderer/render_view.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_widget.h"
-#include "content/renderer/render_widget_owner_delegate.h"
+#include "content/renderer/render_widget_delegate.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
@@ -100,12 +100,18 @@ class CreateViewParams;
 // a local frame for this view, then it also manages a RenderWidget for the
 // main frame.
 //
-// TODO(419087): That RenderWidget should be managed by the main frame itself.
-class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
-                                      public blink::WebViewClient,
-                                      public RenderWidgetOwnerDelegate,
+// TODO(419087): Currently even though the RenderViewImpl "manages" the
+// RenderWidget, the RenderWidget owns the RenderViewImpl. This is due to
+// RenderViewImpl historically being a subclass of RenderWidget. Breaking
+// the ownership relation will require moving the RenderWidget to the main
+// frame and updating all the blink objects to understand the lifetime changes.
+class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
+                                      public IPC::Listener,
+                                      public RenderWidgetDelegate,
                                       public RenderView {
  public:
+  ~RenderViewImpl() override;
+
   // Creates a new RenderView. Note that if the original opener has been closed,
   // |params.window_was_created_with_opener| will be true and
   // |params.opener_frame_route_id| will be MSG_ROUTING_NONE.
@@ -137,6 +143,7 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
 
   // Returns the RenderWidget for this RenderView.
   RenderWidget* GetWidget();
+  const RenderWidget* GetWidget() const;
 
   const WebPreferences& webkit_preferences() const {
     return webkit_preferences_;
@@ -308,9 +315,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
                   RenderWidget::ShowCallback show_callback,
                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  // Do not delete directly.  This class is reference counted.
-  ~RenderViewImpl() override;
-
   // Called when Page visibility is changed, to update the View/Page in blink.
   // This is separate from the IPC handlers as tests may call this and need to
   // be able to specify |initial_setting| where IPC handlers do not.
@@ -380,10 +384,7 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
     CONNECTION_ERROR,
   };
 
-  // RenderWidget public API that should no longer go through RenderView.
-  using RenderWidget::routing_id;
-
-  // RenderWidgetOwnerDelegate implementation ----------------------------------
+  // RenderWidgetDelegate implementation ----------------------------------
 
   blink::WebWidget* GetWebWidgetForWidget() const override;
   blink::WebWidgetClient* GetWebWidgetClientForWidget() override;
@@ -518,6 +519,8 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // ADDING NEW FUNCTIONS? Please keep private functions alphabetized and put
   // it in the same order in the .cc file as it was in the header.
   // ---------------------------------------------------------------------------
+
+  RenderWidget* render_widget_;
 
   // Routing ID that allows us to communicate with the corresponding
   // RenderViewHost in the parent browser process.

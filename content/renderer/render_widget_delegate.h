@@ -2,25 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_RENDER_WIDGET_OWNER_DELEGATE_H_
-#define CONTENT_RENDERER_RENDER_WIDGET_OWNER_DELEGATE_H_
+#ifndef CONTENT_RENDERER_RENDER_WIDGET_DELEGATE_H_
+#define CONTENT_RENDERER_RENDER_WIDGET_DELEGATE_H_
 
 #include "content/common/content_export.h"
 
 namespace blink {
 class WebMouseEvent;
-}
+class WebWidget;
+class WebWidgetClient;
+}  // namespace blink
 
 namespace content {
 
 //
-// RenderWidgetOwnerDelegate
+// RenderWidgetDelegate
 //
 //  An interface implemented by an object owning a RenderWidget. This is
 //  intended to be temporary until the RenderViewImpl and RenderWidget classes
 //  are disentangled; see https://crbug.com/583347 and https://crbug.com/478281.
-class CONTENT_EXPORT RenderWidgetOwnerDelegate {
+class CONTENT_EXPORT RenderWidgetDelegate {
  public:
+  virtual ~RenderWidgetDelegate() = default;
+
   // Returns the WebWidget if the delegate has one. Otherwise it returns null,
   // and RenderWidget will fall back to its own WebWidget.
   virtual blink::WebWidget* GetWebWidgetForWidget() const = 0;
@@ -106,11 +110,8 @@ class CONTENT_EXPORT RenderWidgetOwnerDelegate {
   virtual void SetScreenMetricsEmulationParametersForWidget(
       bool enabled,
       const blink::WebDeviceEmulationParams& params) = 0;
-
- protected:
-  virtual ~RenderWidgetOwnerDelegate() {}
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_RENDER_WIDGET_OWNER_DELEGATE_H_
+#endif  // CONTENT_RENDERER_RENDER_WIDGET_DELEGATE_H_

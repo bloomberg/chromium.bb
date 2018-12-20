@@ -208,7 +208,7 @@ test_runner::WebWidgetTestProxyBase* GetWebWidgetTestProxyBase(
     //   RenderWidget     WebWidgetTestProxyBase
     //       \\             //
     //      WebWidgetTestProxy
-    RenderWidget* render_widget = local_root_impl->GetRenderWidget();
+    RenderWidget* render_widget = local_root_impl->GetLocalRootRenderWidget();
     auto* proxy = static_cast<test_runner::WebWidgetTestProxy*>(render_widget);
     return static_cast<test_runner::WebWidgetTestProxyBase*>(proxy);
   }
@@ -555,7 +555,7 @@ void SchedulerRunIdleTasks(base::OnceClosure callback) {
 
 void ForceTextInputStateUpdateForRenderFrame(RenderFrame* frame) {
   RenderWidget* render_widget =
-      static_cast<RenderFrameImpl*>(frame)->GetRenderWidget();
+      static_cast<RenderFrameImpl*>(frame)->GetLocalRootRenderWidget();
   render_widget->ShowVirtualKeyboard();
 }
 

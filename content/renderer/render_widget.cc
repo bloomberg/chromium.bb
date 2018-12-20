@@ -71,7 +71,6 @@
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
-#include "content/renderer/render_widget_owner_delegate.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/resizing_mode_selector.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -387,7 +386,6 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
     : routing_id_(widget_routing_id),
       compositor_deps_(compositor_deps),
       webwidget_internal_(nullptr),
-      owner_delegate_(nullptr),
       auto_resize_mode_(false),
       is_hidden_(hidden),
       compositor_never_visible_(never_visible),
@@ -443,6 +441,13 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
 
 RenderWidget::~RenderWidget() {
   DCHECK(!webwidget_internal_) << "Leaking our WebWidget!";
+
+  // TODO(ajwong): Test if this actually has to be reset here
+  // or if it is okay to tear down later in the destructor. This
+  // would allow for removing the ordering constraint in teardown.
+  // https://crbug.com/545684
+  delegate_.reset();
+
   // TODO(ajwong): Add in check that routing_id_ has been removed from
   // g_routing_id_widget_map once the shutdown semantics for RenderWidget
   // and RenderViewImpl are rationalized. Currently, too many unit and
@@ -556,9 +561,9 @@ gfx::Rect RenderWidget::AdjustValidationMessageAnchor(const gfx::Rect& anchor) {
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 void RenderWidget::SetExternalPopupOriginAdjustmentsForEmulation(
-    ExternalPopupMenu* popup,
-    RenderWidgetScreenMetricsEmulator* emulator) {
-  popup->SetOriginScaleForEmulation(emulator->scale());
+    ExternalPopupMenu* popup) {
+  if (screen_metrics_emulator_)
+    popup->SetOriginScaleForEmulation(screen_metrics_emulator_->scale());
 }
 #endif
 
@@ -640,7 +645,7 @@ void RenderWidget::SendOrCrash(IPC::Message* message) {
 }
 
 bool RenderWidget::ShouldHandleImeEvents() const {
-  if (owner_delegate_)
+  if (delegate())
     return has_focus_;
   if (for_child_local_root_frame_) {
     // TODO(ekaramad): We track page focus in all RenderViews on the page but
@@ -702,12 +707,12 @@ void RenderWidget::OnSynchronizeVisualProperties(
   TRACE_EVENT0("renderer", "RenderWidget::OnSynchronizeVisualProperties");
 
   VisualProperties params = original_params;
-  if (owner_delegate_) {
-    owner_delegate_->ApplyNewSizeForWidget(size_, params.new_size);
+  if (delegate()) {
+    delegate()->ApplyNewSizeForWidget(size_, params.new_size);
 
     if (display_mode_ != params.display_mode) {
       display_mode_ = params.display_mode;
-      owner_delegate_->ApplyNewDisplayModeForWidget(params.display_mode);
+      delegate()->ApplyNewDisplayModeForWidget(params.display_mode);
     }
 
     bool auto_resize_mode_changed =
@@ -725,10 +730,9 @@ void RenderWidget::OnSynchronizeVisualProperties(
         max_auto_size = gfx::ScaleToCeiledSize(
             max_auto_size, params.screen_info.device_scale_factor);
       }
-      owner_delegate_->ApplyAutoResizeLimitsForWidget(min_auto_size,
-                                                      max_auto_size);
+      delegate()->ApplyAutoResizeLimitsForWidget(min_auto_size, max_auto_size);
     } else if (auto_resize_mode_changed) {
-      owner_delegate_->DisableAutoResizeForWidget();
+      delegate()->DisableAutoResizeForWidget();
       if (params.new_size.IsEmpty())
         return;
     }
@@ -762,8 +766,8 @@ void RenderWidget::OnSynchronizeVisualProperties(
     }
   }
 
-  if (owner_delegate_ && params.scroll_focused_node_into_view)
-    owner_delegate_->ScrollFocusedNodeIntoViewForWidget();
+  if (delegate() && params.scroll_focused_node_into_view)
+    delegate()->ScrollFocusedNodeIntoViewForWidget();
 }
 
 void RenderWidget::OnEnableDeviceEmulation(
@@ -856,7 +860,7 @@ void RenderWidget::HandleInputEvent(
     const blink::WebCoalescedInputEvent& input_event,
     const ui::LatencyInfo& latency_info,
     HandledEventCallback callback) {
-  if (owner_delegate_ && is_frozen_) {
+  if (delegate() && is_frozen_) {
     std::move(callback).Run(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, latency_info,
                             nullptr, base::nullopt);
     return;
@@ -885,17 +889,17 @@ void RenderWidget::OnSetEditCommandsForNextKeyEvent(
 }
 
 void RenderWidget::OnSetActive(bool active) {
-  if (owner_delegate_)
-    owner_delegate_->SetActiveForWidget(active);
+  if (delegate())
+    delegate()->SetActiveForWidget(active);
 }
 
 void RenderWidget::OnSetBackgroundOpaque(bool opaque) {
   // This IPC never sent when frozen.
   DCHECK(!is_frozen_);
   // Background opaque-ness modification is only supported for the main frame.
-  // The |owner_delegate_| is used as proxy for this RenderWidget being attached
+  // The delegate() is used as proxy for this RenderWidget being attached
   // to the main frame.
-  if (!owner_delegate_)
+  if (!delegate())
     return;
 
   blink::WebFrameWidget* web_frame_widget = GetFrameWidget();
@@ -909,8 +913,8 @@ void RenderWidget::OnSetBackgroundOpaque(bool opaque) {
 }
 
 void RenderWidget::OnSetFocus(bool enable) {
-  if (owner_delegate_)
-    owner_delegate_->DidReceiveSetFocusEventForWidget();
+  if (delegate())
+    delegate()->DidReceiveSetFocusEventForWidget();
   SetFocus(enable);
 }
 
@@ -923,15 +927,15 @@ void RenderWidget::SetFocus(bool enable) {
   for (auto& observer : render_frames_)
     observer.RenderWidgetSetFocus(enable);
 
-  if (owner_delegate_)
-    owner_delegate_->DidChangeFocusForWidget();
+  if (delegate())
+    delegate()->DidChangeFocusForWidget();
 }
 
 void RenderWidget::SetNeedsMainFrame() {
   // The WebWidgetClient is not |this| if tests override it for the WebView and
   // WebViewClient.
   blink::WebWidgetClient* client =
-      owner_delegate_ ? owner_delegate_->GetWebWidgetClientForWidget() : this;
+      delegate() ? delegate()->GetWebWidgetClientForWidget() : this;
   client->ScheduleAnimation();
 }
 
@@ -1038,13 +1042,13 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
 }
 
 void RenderWidget::DidCommitCompositorFrame() {
-  if (owner_delegate_)
-    owner_delegate_->DidCommitCompositorFrameForWidget();
+  if (delegate())
+    delegate()->DidCommitCompositorFrameForWidget();
 }
 
 void RenderWidget::DidCompletePageScaleAnimation() {
-  if (owner_delegate_)
-    owner_delegate_->DidCompletePageScaleAnimationForWidget();
+  if (delegate())
+    delegate()->DidCompletePageScaleAnimationForWidget();
 }
 
 void RenderWidget::ScheduleAnimation() {
@@ -1294,8 +1298,8 @@ bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
   possible_drag_event_info_.event_location =
       gfx::Point(event.PositionInScreen().x, event.PositionInScreen().y);
 
-  if (owner_delegate_)
-    return owner_delegate_->RenderWidgetWillHandleMouseEventForWidget(event);
+  if (delegate())
+    return delegate()->RenderWidgetWillHandleMouseEventForWidget(event);
 
   return false;
 }
@@ -1310,10 +1314,10 @@ void RenderWidget::Redraw() {
 
 void RenderWidget::ResizeWebWidget() {
   gfx::Size size = GetSizeForWebWidget();
-  if (owner_delegate_) {
-    owner_delegate_->ResizeWebWidgetForWidget(
-        size, top_controls_height_, bottom_controls_height_,
-        browser_controls_shrink_blink_size_);
+  if (delegate()) {
+    delegate()->ResizeWebWidgetForWidget(size, top_controls_height_,
+                                         bottom_controls_height_,
+                                         browser_controls_shrink_blink_size_);
     return;
   }
   GetWebWidget()->Resize(size);
@@ -1361,7 +1365,7 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
     return;
 
   // Only propagate the external PSF to non-main-frames.
-  if (!owner_delegate_)
+  if (!delegate())
     layer_tree_view_->SetExternalPageScaleFactor(params.page_scale_factor);
 
   gfx::Size new_compositor_viewport_pixel_size =
@@ -1411,7 +1415,7 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
       DidToggleFullscreen();
   }
 
-  if (!owner_delegate_) {
+  if (!delegate()) {
     // Make sure that page scale factor changes propagating down from the main
     // frame are relayed to nested OOPIFs/non-main-frames.
     page_scale_factor_from_mainframe_ = params.page_scale_factor;
@@ -1423,10 +1427,9 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
 void RenderWidget::SetScreenMetricsEmulationParameters(
     bool enabled,
     const blink::WebDeviceEmulationParams& params) {
-  // This is only supported in RenderView, which has an |owner_delegate_|.
-  DCHECK(owner_delegate_);
-  owner_delegate_->SetScreenMetricsEmulationParametersForWidget(enabled,
-                                                                params);
+  // This is only supported in RenderView, which has an delegate().
+  DCHECK(delegate());
+  delegate()->SetScreenMetricsEmulationParametersForWidget(enabled, params);
 }
 
 void RenderWidget::SetScreenRects(const gfx::Rect& widget_screen_rect,
@@ -1519,12 +1522,12 @@ void RenderWidget::AutoscrollEnd() {
 //
 void RenderWidget::Show(WebNavigationPolicy policy) {
   if (!show_callback_) {
-    if (owner_delegate_) {
+    if (delegate()) {
       // When SupportsMultipleWindows is disabled, popups are reusing
       // the view's RenderWidget. In some scenarios, this makes blink to call
       // Show() twice. But otherwise, if it is enabled, we should not visit
       // Show() more than once.
-      DCHECK(!owner_delegate_->SupportsMultipleWindowsForWidget());
+      DCHECK(!delegate()->SupportsMultipleWindowsForWidget());
       return;
     } else {
       NOTREACHED() << "received extraneous Show call";
@@ -1703,8 +1706,8 @@ void RenderWidget::Close() {
     CloseWebWidget();
 
   layer_tree_view_.reset();
-  if (owner_delegate_)
-    owner_delegate_->DidCloseWidget();
+  if (delegate())
+    delegate()->DidCloseWidget();
   // Note the ACK is a control message going to the RenderProcessHost.
   RenderThread::Get()->Send(new WidgetHostMsg_Close_ACK(routing_id()));
 }
@@ -1719,7 +1722,7 @@ void RenderWidget::CloseWebWidget() {
   // that would be alive while the IPC route is active such as the
   // |layer_tree_view_|. So we ensure that it is the first thing to be
   // destroyed here before deleting things from the RenderWidget or the
-  // |owner_delegate_|.
+  // delegate().
   //
   // TODO(danakj): The emulator could reset to non-emulated values in an
   // explicit method call (instead of in the destructor) that occurs when
@@ -1730,14 +1733,14 @@ void RenderWidget::CloseWebWidget() {
   // Informs the WebWidget that compositor is being destroyed, so it can remove
   // references to it first.
   //
-  // When |owner_delegate_| is present, the RenderWidget is for a main frame,
+  // When delegate() is present, the RenderWidget is for a main frame,
   // and the GetWebWidget() is not the same as |webwidget_internal_|. However
   // that widget is responsible for doing WillCloseLayerTreeView() on the
   // |webwidget_internal_|, not us. Otherwise, they are the same and this is
   // notifying |webwidget_internal_|.
   GetWebWidget()->WillCloseLayerTreeView();
 
-  // While the wrapping WebWidget from an |owner_delegate_| is responsible for
+  // While the wrapping WebWidget from an delegate() is responsible for
   // doing WillCloseLayerTreeView() on the |webwidget_internal_|, this class is
   // responsible for calling Close() on it. Notably, then, the wrapping
   // WebWidget does not.
@@ -1773,14 +1776,14 @@ blink::WebFrameWidget* RenderWidget::GetFrameWidget() const {
     return nullptr;
 
   blink::WebWidget* widget;
-  if (owner_delegate_) {
+  if (delegate()) {
     // Main frame WebFrameWidgets are held by the delegate, the internal widget
     // points directly to the WebView.
     // TODO(ekaramad): We should drop IPCs when |is_frozen_| instead of
     // handling them and finding a null here. However there is also the case
     // of the frame being detached without the widget being frozen to be
     // resolved (https://crbug.com/906340). So for now this can return null.
-    widget = owner_delegate_->GetWebWidgetForWidget();
+    widget = delegate()->GetWebWidgetForWidget();
   } else {
     // Subframes always have a WebFrameWidget themselves.
     widget = webwidget_internal_;
@@ -2520,7 +2523,7 @@ bool RenderWidget::CanComposeInline() {
 void RenderWidget::DidHandleGestureEvent(const WebGestureEvent& event,
                                          bool event_cancelled) {
   if (event_cancelled) {
-    // The |owner_delegate_| doesn't need to hear about cancelled events.
+    // The delegate() doesn't need to hear about cancelled events.
     return;
   }
 
@@ -2551,9 +2554,9 @@ void RenderWidget::DidHandleGestureEvent(const WebGestureEvent& event,
 #endif
 #endif
 
-  // The |owner_delegate_| gets to respond to handling gestures last.
-  if (owner_delegate_)
-    owner_delegate_->DidHandleGestureEventForWidget(event);
+  // The delegate() gets to respond to handling gestures last.
+  if (delegate())
+    delegate()->DidHandleGestureEventForWidget(event);
 }
 
 void RenderWidget::DidOverscroll(
@@ -3035,7 +3038,7 @@ void RenderWidget::AnimateDoubleTapZoomInMainFrame(
     const blink::WebPoint& point,
     const blink::WebRect& rect_to_zoom) {
   // Only oopif subframes should be sending this message.
-  DCHECK(!owner_delegate_);
+  DCHECK(!delegate());
   Send(new WidgetHostMsg_AnimateDoubleTapZoomInMainFrame(routing_id(), point,
                                                          rect_to_zoom));
 }
@@ -3043,7 +3046,7 @@ void RenderWidget::AnimateDoubleTapZoomInMainFrame(
 void RenderWidget::ZoomToFindInPageRectInMainFrame(
     const blink::WebRect& rect_to_zoom) {
   // Only oopif subframes should be sending this message.
-  DCHECK(!owner_delegate_);
+  DCHECK(!delegate_);
   Send(new WidgetHostMsg_ZoomToFindInPageRectInMainFrame(routing_id(),
                                                          rect_to_zoom));
 }
@@ -3158,9 +3161,8 @@ void RenderWidget::DidNavigate() {
 }
 
 blink::WebWidget* RenderWidget::GetWebWidget() const {
-  if (owner_delegate_) {
-    blink::WebWidget* delegate_widget =
-        owner_delegate_->GetWebWidgetForWidget();
+  if (delegate()) {
+    blink::WebWidget* delegate_widget = delegate()->GetWebWidgetForWidget();
     if (delegate_widget)
       return delegate_widget;
   }
@@ -3212,7 +3214,7 @@ void RenderWidget::PageScaleFactorChanged(float page_scale_factor) {
   // Only the main frame pulls page scale information from the layer tree host.
   // Pages scale is shared with non-mainframe widgets via the IPC for
   // OnSynchronizeVisualProperties.
-  if (!owner_delegate_)
+  if (!delegate())
     return;
 
   page_scale_factor_from_mainframe_ = page_scale_factor;

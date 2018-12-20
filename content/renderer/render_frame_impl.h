@@ -314,7 +314,7 @@ class CONTENT_EXPORT RenderFrameImpl
   RendererWebCookieJarImpl* cookie_jar() { return &cookie_jar_; }
 
   // Returns the RenderWidget associated with this frame.
-  RenderWidget* GetRenderWidget();
+  RenderWidget* GetLocalRootRenderWidget();
 
   // This method must be called after the frame has been added to the frame
   // tree. It creates all objects that depend on the frame being at its proper
@@ -990,6 +990,11 @@ class CONTENT_EXPORT RenderFrameImpl
   // tree.  If the associated proxy has been detached before this is called,
   // this returns false and aborts the swap.
   bool SwapIn();
+
+  // Returns the RenderWidget associated with the main frame.
+  // TODO(ajwong): This method should go away when cross-frame property setting
+  // events moves into RenderWidget.
+  RenderWidget* GetMainFrameRenderWidget();
 
   // IPC message handlers ------------------------------------------------------
   //

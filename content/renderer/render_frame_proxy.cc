@@ -102,7 +102,7 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
   // RenderFrameProxy uses its parent's RenderWidget.
   RenderWidget* widget =
       parent_is_local
-          ? frame_to_replace->GetRenderWidget()
+          ? frame_to_replace->GetLocalRootRenderWidget()
           : RenderFrameProxy::FromWebFrame(
                 frame_to_replace->GetWebFrame()->Parent()->ToWebRemoteFrame())
                 ->render_widget();
