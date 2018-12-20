@@ -39,6 +39,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "chrome/browser/ui/webui/version_handler_win.h"
 #include "chrome/install_static/install_details.h"
 #endif
 
@@ -165,6 +166,8 @@ VersionUI::VersionUI(content::WebUI* web_ui)
 
 #if defined(OS_CHROMEOS)
   web_ui->AddMessageHandler(std::make_unique<VersionHandlerChromeOS>());
+#elif defined(OS_WIN)
+  web_ui->AddMessageHandler(std::make_unique<VersionHandlerWindows>());
 #else
   web_ui->AddMessageHandler(std::make_unique<VersionHandler>());
 #endif
@@ -177,5 +180,4 @@ VersionUI::VersionUI(content::WebUI* web_ui)
   WebUIDataSource::Add(profile, CreateVersionUIDataSource());
 }
 
-VersionUI::~VersionUI() {
-}
+VersionUI::~VersionUI() {}
