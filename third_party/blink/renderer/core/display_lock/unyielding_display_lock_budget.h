@@ -21,7 +21,7 @@ class CORE_EXPORT UnyieldingDisplayLockBudget final : public DisplayLockBudget {
   bool ShouldPerformPhase(Phase) const override;
   void DidPerformPhase(Phase) override;
   void WillStartLifecycleUpdate() override;
-  bool DidFinishLifecycleUpdate() override;
+  bool NeedsLifecycleUpdates() const override;
 };
 
 }  // namespace blink

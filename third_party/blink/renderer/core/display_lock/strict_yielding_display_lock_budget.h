@@ -24,7 +24,13 @@ class CORE_EXPORT StrictYieldingDisplayLockBudget final
   bool ShouldPerformPhase(Phase) const override;
   void DidPerformPhase(Phase) override;
   void WillStartLifecycleUpdate() override;
-  bool DidFinishLifecycleUpdate() override;
+  // Returns true if any of the lifecycles that have been previously blocked by
+  // this budget need updates. Note that this does not check lifecycle phases
+  // that have already completed by this budget even if they are now dirty
+  // again. This is done to prevent starvation (ie, it is possible for the
+  // budget to always schedule more work if something in rAF keeps dirtying
+  // layout, for example).
+  bool NeedsLifecycleUpdates() const override;
 
  protected:
   base::Optional<Phase> last_completed_phase_;
