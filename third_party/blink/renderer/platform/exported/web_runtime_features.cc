@@ -55,6 +55,10 @@ void WebRuntimeFeatures::EnableWebBluetooth(bool enable) {
   RuntimeEnabledFeatures::SetWebBluetoothEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableWebBluetoothScanning(bool enable) {
+  RuntimeEnabledFeatures::SetWebBluetoothScanningEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableWebNfc(bool enable) {
   RuntimeEnabledFeatures::SetWebNFCEnabled(enable);
 }

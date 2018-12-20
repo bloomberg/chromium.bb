@@ -177,6 +177,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::EnableAutomationControlled(true);
   }
 
+  if (command_line.HasSwitch(switches::kEnableWebBluetoothScanning))
+    WebRuntimeFeatures::EnableWebBluetoothScanning(true);
+
 #if defined(OS_MACOSX)
   const bool enable_canvas_2d_image_chromium =
       command_line.HasSwitch(

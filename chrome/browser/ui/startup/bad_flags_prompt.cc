@@ -114,6 +114,11 @@ static const char* kBadFlags[] = {
     // such as writing user data to disk, cleaning caches, reporting metrics or
     // updating components won't be performed until shutdown.
     switches::kDisableBackgroundTasks,
+
+    // The UI for Web Bluetooth scanning is not yet implemented. Without the
+    // UI websites can scan for bluetooth without user intervention. Show a
+    // warning until the UI is complete.
+    switches::kEnableWebBluetoothScanning,
 };
 #endif  // OS_ANDROID
 

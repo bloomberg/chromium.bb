@@ -534,6 +534,47 @@ interface BlobEvent : Event
     getter data
     getter timecode
     method constructor
+interface BluetoothAdvertisingEvent : Event
+    attribute @@toStringTag
+    getter appearance
+    getter device
+    getter manufacturerData
+    getter name
+    getter rssi
+    getter serviceData
+    getter txPower
+    getter uuids
+    method constructor
+interface BluetoothLEScan
+    attribute @@toStringTag
+    getter acceptAllAdvertisements
+    getter active
+    getter filters
+    getter keepRepeatedDevices
+    method constructor
+    method stop
+interface BluetoothManufacturerDataMap
+    attribute @@toStringTag
+    getter size
+    method @@iterator
+    method constructor
+    method entries
+    method forEach
+    method get
+    method has
+    method keys
+    method values
+interface BluetoothServiceDataMap
+    attribute @@toStringTag
+    getter size
+    method @@iterator
+    method constructor
+    method entries
+    method forEach
+    method get
+    method has
+    method keys
+    method values
 interface BroadcastChannel : EventTarget
     attribute @@toStringTag
     getter name

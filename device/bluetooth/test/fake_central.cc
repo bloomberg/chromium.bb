@@ -80,16 +80,29 @@ void FakeCentral::SimulateAdvertisementReceived(
   }
 
   auto& scan_record = scan_result_ptr->scan_record;
+  auto uuids = ValueOrDefault(std::move(scan_record->uuids));
+  auto service_data = ValueOrDefault(std::move(scan_record->service_data));
+  auto manufacturer_data = ToManufacturerDataMap(
+      ValueOrDefault(std::move(scan_record->manufacturer_data)));
+
+  for (auto& observer : observers_) {
+    observer.DeviceAdvertisementReceived(
+        scan_result_ptr->device_address, scan_record->name, scan_record->name,
+        scan_result_ptr->rssi, scan_record->tx_power->value,
+        device::BluetoothDevice::
+            kAppearanceNotPresent, /* TODO(crbug.com/588083)
+                                      Implement appearance
+                                    */
+        uuids, service_data, manufacturer_data);
+  }
+
   fake_peripheral->SetName(std::move(scan_record->name));
   fake_peripheral->UpdateAdvertisementData(
-      scan_result_ptr->rssi, base::nullopt /* flags */,
-      ValueOrDefault(std::move(scan_record->uuids)),
+      scan_result_ptr->rssi, base::nullopt /* flags */, uuids,
       scan_record->tx_power->has_value
           ? base::make_optional(scan_record->tx_power->value)
           : base::nullopt,
-      ValueOrDefault(std::move(scan_record->service_data)),
-      ToManufacturerDataMap(
-          ValueOrDefault(std::move(scan_record->manufacturer_data))));
+      service_data, manufacturer_data);
 
   if (is_new_device) {
     // Call DeviceAdded on observers because it is a newly detected peripheral.

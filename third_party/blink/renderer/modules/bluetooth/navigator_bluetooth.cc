@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/bluetooth/navigator_bluetooth.h"
 
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth.h"
 
@@ -24,8 +26,14 @@ Bluetooth* NavigatorBluetooth::bluetooth(Navigator& navigator) {
 }
 
 Bluetooth* NavigatorBluetooth::bluetooth() {
-  if (!bluetooth_)
-    bluetooth_ = Bluetooth::Create();
+  if (bluetooth_)
+    return bluetooth_.Get();
+
+  if (!GetSupplementable()->GetFrame())
+    return nullptr;
+
+  bluetooth_ = Bluetooth::Create(
+      GetSupplementable()->GetFrame()->GetDocument()->GetExecutionContext());
   return bluetooth_.Get();
 }
 

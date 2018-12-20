@@ -30,6 +30,7 @@
     "addsourcebuffer",
     "addstream",
     "addtrack",
+    "advertisementreceived",
     "afterprint",
     "animationend",
     "animationiteration",

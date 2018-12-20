@@ -10,6 +10,7 @@
   data: [
     "BackgroundFetchRegistration",
     "BatteryManager",
+    "Bluetooth",
     "BluetoothDevice",
     "BluetoothRemoteGATTCharacteristic",
     "CookieStore",

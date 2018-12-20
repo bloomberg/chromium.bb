@@ -1,10 +1,10 @@
 This is a testharness.js-based test.
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
-FAIL Bluetooth interface: existence and properties of interface object assert_equals: prototype of Bluetooth is not EventTarget expected function "function EventTarget() { [native code] }" but got function "function () { [native code] }"
+PASS Bluetooth interface: existence and properties of interface object
 PASS Bluetooth interface object length
 PASS Bluetooth interface object name
-FAIL Bluetooth interface: existence and properties of interface prototype object assert_equals: prototype of Bluetooth.prototype is not EventTarget.prototype expected object "[object EventTarget]" but got object "[object Object]"
+PASS Bluetooth interface: existence and properties of interface prototype object
 PASS Bluetooth interface: existence and properties of interface prototype object's "constructor" property
 PASS Bluetooth interface: existence and properties of interface prototype object's @@unscopables property
 FAIL Bluetooth interface: operation getAvailability() assert_own_property: interface prototype object missing non-static operation expected property "getAvailability" missing
@@ -59,32 +59,32 @@ FAIL BluetoothDevice interface: attribute oncharacteristicvaluechanged assert_tr
 FAIL BluetoothDevice interface: attribute onserviceadded assert_true: The prototype object must have a property "onserviceadded" expected true got false
 FAIL BluetoothDevice interface: attribute onservicechanged assert_true: The prototype object must have a property "onservicechanged" expected true got false
 FAIL BluetoothDevice interface: attribute onserviceremoved assert_true: The prototype object must have a property "onserviceremoved" expected true got false
-FAIL BluetoothManufacturerDataMap interface: existence and properties of interface object assert_own_property: self does not have own property "BluetoothManufacturerDataMap" expected property "BluetoothManufacturerDataMap" missing
-FAIL BluetoothManufacturerDataMap interface object length assert_own_property: self does not have own property "BluetoothManufacturerDataMap" expected property "BluetoothManufacturerDataMap" missing
-FAIL BluetoothManufacturerDataMap interface object name assert_own_property: self does not have own property "BluetoothManufacturerDataMap" expected property "BluetoothManufacturerDataMap" missing
-FAIL BluetoothManufacturerDataMap interface: existence and properties of interface prototype object assert_own_property: self does not have own property "BluetoothManufacturerDataMap" expected property "BluetoothManufacturerDataMap" missing
-FAIL BluetoothManufacturerDataMap interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "BluetoothManufacturerDataMap" expected property "BluetoothManufacturerDataMap" missing
-FAIL BluetoothManufacturerDataMap interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "BluetoothManufacturerDataMap" expected property "BluetoothManufacturerDataMap" missing
-FAIL BluetoothServiceDataMap interface: existence and properties of interface object assert_own_property: self does not have own property "BluetoothServiceDataMap" expected property "BluetoothServiceDataMap" missing
-FAIL BluetoothServiceDataMap interface object length assert_own_property: self does not have own property "BluetoothServiceDataMap" expected property "BluetoothServiceDataMap" missing
-FAIL BluetoothServiceDataMap interface object name assert_own_property: self does not have own property "BluetoothServiceDataMap" expected property "BluetoothServiceDataMap" missing
-FAIL BluetoothServiceDataMap interface: existence and properties of interface prototype object assert_own_property: self does not have own property "BluetoothServiceDataMap" expected property "BluetoothServiceDataMap" missing
-FAIL BluetoothServiceDataMap interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "BluetoothServiceDataMap" expected property "BluetoothServiceDataMap" missing
-FAIL BluetoothServiceDataMap interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "BluetoothServiceDataMap" expected property "BluetoothServiceDataMap" missing
-FAIL BluetoothAdvertisingEvent interface: existence and properties of interface object assert_own_property: self does not have own property "BluetoothAdvertisingEvent" expected property "BluetoothAdvertisingEvent" missing
-FAIL BluetoothAdvertisingEvent interface object length assert_own_property: self does not have own property "BluetoothAdvertisingEvent" expected property "BluetoothAdvertisingEvent" missing
-FAIL BluetoothAdvertisingEvent interface object name assert_own_property: self does not have own property "BluetoothAdvertisingEvent" expected property "BluetoothAdvertisingEvent" missing
-FAIL BluetoothAdvertisingEvent interface: existence and properties of interface prototype object assert_own_property: self does not have own property "BluetoothAdvertisingEvent" expected property "BluetoothAdvertisingEvent" missing
-FAIL BluetoothAdvertisingEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "BluetoothAdvertisingEvent" expected property "BluetoothAdvertisingEvent" missing
-FAIL BluetoothAdvertisingEvent interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "BluetoothAdvertisingEvent" expected property "BluetoothAdvertisingEvent" missing
-FAIL BluetoothAdvertisingEvent interface: attribute device assert_own_property: self does not have own property "BluetoothAdvertisingEvent" expected property "BluetoothAdvertisingEvent" missing
-FAIL BluetoothAdvertisingEvent interface: attribute uuids assert_own_property: self does not have own property "BluetoothAdvertisingEvent" expected property "BluetoothAdvertisingEvent" missing
-FAIL BluetoothAdvertisingEvent interface: attribute name assert_own_property: self does not have own property "BluetoothAdvertisingEvent" expected property "BluetoothAdvertisingEvent" missing
-FAIL BluetoothAdvertisingEvent interface: attribute appearance assert_own_property: self does not have own property "BluetoothAdvertisingEvent" expected property "BluetoothAdvertisingEvent" missing
-FAIL BluetoothAdvertisingEvent interface: attribute txPower assert_own_property: self does not have own property "BluetoothAdvertisingEvent" expected property "BluetoothAdvertisingEvent" missing
-FAIL BluetoothAdvertisingEvent interface: attribute rssi assert_own_property: self does not have own property "BluetoothAdvertisingEvent" expected property "BluetoothAdvertisingEvent" missing
-FAIL BluetoothAdvertisingEvent interface: attribute manufacturerData assert_own_property: self does not have own property "BluetoothAdvertisingEvent" expected property "BluetoothAdvertisingEvent" missing
-FAIL BluetoothAdvertisingEvent interface: attribute serviceData assert_own_property: self does not have own property "BluetoothAdvertisingEvent" expected property "BluetoothAdvertisingEvent" missing
+PASS BluetoothManufacturerDataMap interface: existence and properties of interface object
+PASS BluetoothManufacturerDataMap interface object length
+PASS BluetoothManufacturerDataMap interface object name
+PASS BluetoothManufacturerDataMap interface: existence and properties of interface prototype object
+PASS BluetoothManufacturerDataMap interface: existence and properties of interface prototype object's "constructor" property
+PASS BluetoothManufacturerDataMap interface: existence and properties of interface prototype object's @@unscopables property
+PASS BluetoothServiceDataMap interface: existence and properties of interface object
+PASS BluetoothServiceDataMap interface object length
+PASS BluetoothServiceDataMap interface object name
+PASS BluetoothServiceDataMap interface: existence and properties of interface prototype object
+PASS BluetoothServiceDataMap interface: existence and properties of interface prototype object's "constructor" property
+PASS BluetoothServiceDataMap interface: existence and properties of interface prototype object's @@unscopables property
+PASS BluetoothAdvertisingEvent interface: existence and properties of interface object
+FAIL BluetoothAdvertisingEvent interface object length assert_equals: wrong value for BluetoothAdvertisingEvent.length expected 2 but got 0
+PASS BluetoothAdvertisingEvent interface object name
+PASS BluetoothAdvertisingEvent interface: existence and properties of interface prototype object
+PASS BluetoothAdvertisingEvent interface: existence and properties of interface prototype object's "constructor" property
+PASS BluetoothAdvertisingEvent interface: existence and properties of interface prototype object's @@unscopables property
+PASS BluetoothAdvertisingEvent interface: attribute device
+PASS BluetoothAdvertisingEvent interface: attribute uuids
+PASS BluetoothAdvertisingEvent interface: attribute name
+PASS BluetoothAdvertisingEvent interface: attribute appearance
+PASS BluetoothAdvertisingEvent interface: attribute txPower
+PASS BluetoothAdvertisingEvent interface: attribute rssi
+PASS BluetoothAdvertisingEvent interface: attribute manufacturerData
+PASS BluetoothAdvertisingEvent interface: attribute serviceData
 FAIL BluetoothAdvertisingEvent must be primary interface of event assert_equals: wrong typeof object expected "object" but got "undefined"
 FAIL Stringification of event assert_equals: wrong typeof object expected "object" but got "undefined"
 FAIL BluetoothAdvertisingEvent interface: event must inherit property "device" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"

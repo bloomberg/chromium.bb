@@ -22,7 +22,6 @@ class BluetoothRemoteGATTCharacteristic;
 class BluetoothRemoteGATTDescriptor;
 class BluetoothRemoteGATTServer;
 class BluetoothRemoteGATTService;
-class ScriptPromiseResolver;
 
 // BluetoothDevice represents a physical bluetooth device in the DOM. See IDL.
 //
@@ -39,11 +38,6 @@ class BluetoothDevice final : public EventTargetWithInlineData,
   BluetoothDevice(ExecutionContext*,
                   mojom::blink::WebBluetoothDevicePtr,
                   Bluetooth*);
-
-  // Interface required by CallbackPromiseAdapter:
-  static BluetoothDevice* Take(ScriptPromiseResolver*,
-                               mojom::blink::WebBluetoothDevicePtr,
-                               Bluetooth*);
 
   BluetoothRemoteGATTService* GetOrCreateRemoteGATTService(
       mojom::blink::WebBluetoothRemoteGATTServicePtr,

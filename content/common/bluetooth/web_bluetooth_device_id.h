@@ -22,8 +22,9 @@ class CONTENT_EXPORT WebBluetoothDeviceId {
   // resulting object will DCHECK-fail.
   WebBluetoothDeviceId();
 
-  // DCHECKS that |device_id| is valid.
-  explicit WebBluetoothDeviceId(std::string device_id);
+  // CHECKS that |device_id| is valid if |is_mac_address| is false.
+  explicit WebBluetoothDeviceId(std::string device_id,
+                                bool is_mac_address = false);
   ~WebBluetoothDeviceId();
 
   // Returns the string that represents this WebBluetoothDeviceId.
@@ -33,14 +34,21 @@ class CONTENT_EXPORT WebBluetoothDeviceId {
   // string and base64-encoding it.
   static WebBluetoothDeviceId Create();
 
-  // Returns true if base64-decoding |device_id| results in a 128bit string.
-  static bool IsValid(const std::string& device_id);
+  // If |is_mac_address| is true, the method will return true if |device_id| is
+  // a MAC address.  If |is_mac_address| is false, this method will return true
+  // if |device_id| results in a 128bit base64-encoding string. Otherwise
+  // returns false.
+  static bool IsValid(const std::string& device_id,
+                      bool is_mac_address = false);
+
+  bool IsValid() const;
 
   bool operator==(const WebBluetoothDeviceId& device_id) const;
   bool operator!=(const WebBluetoothDeviceId& device_id) const;
 
  private:
   std::string device_id_;
+  bool is_mac_address_;
 };
 
 // This is required by gtest to print a readable output on test failures.
