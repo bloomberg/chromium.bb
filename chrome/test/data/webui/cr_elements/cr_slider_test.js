@@ -76,6 +76,14 @@ suite('cr-slider', function() {
     pointerEvent('pointerup', 0);
   }
 
+  // Ensure that value-changed event bubbles, since users of cr-slider rely on
+  // such event.
+  test('value-changed bubbles', function() {
+    const whenFired = test_util.eventToPromise('value-changed', crSlider);
+    crSlider.value = 50;
+    return whenFired;
+  });
+
   test('key events', () => {
     crSlider.value = 0;
     pressArrowRight();
@@ -185,7 +193,7 @@ suite('cr-slider', function() {
     assertEquals('4', crSlider.getAttribute('aria-valuenow'));
     assertEquals('', crSlider.$.label.innerHTML.trim());
     assertEquals(2, crSlider.value);
-    pressArrowRight();
+    crSlider.value = 100;
     assertEquals(3, crSlider.value);
     assertEquals('8', crSlider.getAttribute('aria-valuetext'));
     assertEquals('8', crSlider.getAttribute('aria-valuenow'));
@@ -211,7 +219,7 @@ suite('cr-slider', function() {
     assertEquals('Third', crSlider.getAttribute('aria-valuetext'));
     assertEquals('Third', crSlider.$.label.innerHTML.trim());
     assertEquals('3', crSlider.getAttribute('aria-valuenow'));
-    pressArrowLeft();
+    crSlider.value = 1;
     assertEquals('Second', crSlider.getAttribute('aria-valuetext'));
     assertEquals('20', crSlider.getAttribute('aria-valuenow'));
     assertEquals('Second', crSlider.$.label.innerHTML.trim());
@@ -349,14 +357,16 @@ suite('cr-slider', function() {
     assertEquals(.5, crSlider.getRatio());
   });
 
-  test('cr-slider-value-changed event when mouse clicked', () => {
-    const wait = test_util.eventToPromise('cr-slider-value-changed', crSlider);
-    pointerDown(.1);
+  test('cr-slider-value-changed-from-ui event when mouse clicked', () => {
+    const wait =
+        test_util.eventToPromise('cr-slider-value-changed-from-ui', crSlider);
+    pointerDown(0);
     return wait;
   });
 
-  test('cr-slider-value-changed event when key pressed', () => {
-    const wait = test_util.eventToPromise('cr-slider-value-changed', crSlider);
+  test('cr-slider-value-changed-from-ui event when key pressed', () => {
+    const wait =
+        test_util.eventToPromise('cr-slider-value-changed-from-ui', crSlider);
     pressArrowRight();
     return wait;
   });
