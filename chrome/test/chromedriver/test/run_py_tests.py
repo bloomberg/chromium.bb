@@ -134,6 +134,11 @@ _OS_SPECIFIC_FILTER['mac'] = [
 
 _OS_VERSION_SPECIFIC_FILTER = {}
 
+_OS_VERSION_SPECIFIC_FILTER['mac', 'HEAD'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2710
+    'ChromeDriverSiteIsolation.testCanClickOOPIF',
+]
+
 _DESKTOP_NEGATIVE_FILTER = [
     # Desktop doesn't support touch (without --touch-events).
     'ChromeDriverTest.testTouchSingleTapElement',
