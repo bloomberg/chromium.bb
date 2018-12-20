@@ -13,8 +13,36 @@
 namespace sql_fuzzer {
 
 namespace {
+constexpr int kMaxNumRows = 10;
+constexpr int kMaxNumColumns = 10;
+
+sqlite3_int64 killTime;
+
+/* Return the current real-world time in milliseconds since the
+** Julian epoch (-4714-11-24).
+*/
+static sqlite3_int64 timeOfDay(void) {
+  static sqlite3_vfs* clockVfs = 0;
+  sqlite3_int64 t;
+  if (clockVfs == 0) {
+    clockVfs = sqlite3_vfs_find(0);
+    if (clockVfs == 0)
+      return 0;
+  }
+  if (clockVfs->iVersion >= 2 && clockVfs->xCurrentTimeInt64 != 0) {
+    clockVfs->xCurrentTimeInt64(clockVfs, &t);
+  } else {
+    double r;
+    clockVfs->xCurrentTime(clockVfs, &r);
+    t = (sqlite3_int64)(r * 86400000.0);
+  }
+  return t;
+}
+
 int progress_handler(void*) {
-  return 1;
+  sqlite3_int64 iNow = timeOfDay();
+  int rc = iNow >= killTime;
+  return rc;
 }
 }  // namespace
 
@@ -40,14 +68,6 @@ sqlite3* InitConnectionForFuzzing() {
     std::cerr << "Failed to open DB. " << std::endl;
     return nullptr;
   }
-
-#ifndef SQLITE_OMIT_PROGRESS_CALLBACK
-  // Invoke the progress handler frequently to check to see if we
-  // are taking too long.  The progress handler will return true
-  // (which will block further processing) if more than 10 seconds have
-  // elapsed since the start of the test.
-  sqlite3_progress_handler(db, 23, progress_handler, nullptr);
-#endif
 
   // Enables foreign key constraints
   sqlite3_db_config(db, SQLITE_DBCONFIG_ENABLE_FKEY, 1, &rc);
@@ -83,10 +103,20 @@ void RunSqlQueriesOnConnection(sqlite3* db, std::vector<std::string> queries) {
 
     // No sqlite3_bind.
 
+    // Reset progress callback for every query. Timeout after 1 second.
+    // ClusterFuzz timeouts are not useful, so we try to avoid them.
+    // This will hopefully make Clusterfuzz find better, smaller SELECT
+    // statements.
+#ifndef SQLITE_OMIT_PROGRESS_CALLBACK
+    killTime = timeOfDay() + 1000;
+    sqlite3_progress_handler(db, 100, progress_handler, nullptr);
+#endif
+
     // Now run the compiled query.
     int col_cnt = sqlite3_column_count(stmt);
+    int count = 0;
     rc = SQLITE_ROW;
-    while (rc == SQLITE_ROW) {
+    while (rc == SQLITE_ROW && count++ <= kMaxNumRows) {
       rc = sqlite3_step(stmt);
       if (rc != SQLITE_DONE && rc != SQLITE_ROW) {
         if (getenv("PRINT_SQLITE_ERRORS")) {
@@ -98,7 +128,7 @@ void RunSqlQueriesOnConnection(sqlite3* db, std::vector<std::string> queries) {
         goto free_stmt;
       }
       // Loop through the columns to catch a little bit more coverage.
-      for (int i = 0; i < col_cnt; i++) {
+      for (int i = 0; i < col_cnt && i < kMaxNumColumns; i++) {
         switch (sqlite3_column_type(stmt, i)) {
           case SQLITE_INTEGER:
             sqlite3_column_int(stmt, i);

@@ -536,7 +536,7 @@ message Insert {
     INSERT_OR_ROLLBACK = 3;
     INSERT_OR_ABORT = 4;
     INSERT_OR_FAIL = 5;
-    INSERT_IGNORE = 6;
+    INSERT_OR_IGNORE = 6;
   }
   required InsertType insert_type = 2;
   required SchemaTableAsAlias staa = 3;
@@ -957,8 +957,8 @@ message NumericLiteral {
 message LiteralValue {
   enum SpecialVal {
     VAL_NULL = 0;  // using just "NULL" vauses it not to compile.
-    TRUE = 1;
-    FALSE = 2;
+    VAL_TRUE = 1;
+    VAL_FALSE = 2;
     CURRENT_TIME = 3;
     CURRENT_DATE = 4;
     CURRENT_TIMESTAMP = 5;

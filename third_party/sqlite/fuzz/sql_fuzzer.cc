@@ -18,6 +18,14 @@ using namespace sql_query_grammar;
 // 12. CORPUS Indexes on expressions (https://www.sqlite.org/expridx.html) and
 // other places using functions on columns???
 // 17. Generate a nice big random, well-formed corpus.
+// 18. Possibly very difficult for fuzzer to find certain areas of code, because
+// some protobufs need to be mutated together. For example, an index on an
+// expression is useless to change, if you don't change the SELECTs that use
+// that expression. May need to create a mechanism for the protobufs to
+// "register" (in the c++ fuzzer) expressions being used for certain purposes,
+// and then protobufs can simple reference those expressions later (similarly to
+// columns or tables, with just an index). This should be added if coverage
+// shows it is the case.
 
 // FIXME in the future
 // 1. Rest of the pragmas

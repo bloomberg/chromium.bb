@@ -218,6 +218,10 @@ static_library("protobuf_full") {
     # Perfetto uses the full library for testing.
     "//third_party/perfetto/protos/ftrace:full",
     "//third_party/perfetto/gn:protobuf_full_deps",
+
+    # The SQLite fuzzer's corpus generator needs protobuf_full and is not
+    # included in Chrome.
+    "//third_party/sqlite:sqlite3_lpm_corpus_gen",
   ]
 
   sources = protobuf_lite_sources + [

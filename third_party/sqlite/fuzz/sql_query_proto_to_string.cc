@@ -376,9 +376,13 @@ CONV_FN(LiteralValue, lit_val) {
       ret += '\'';
       return ret;
     case LitValType::kSpecialVal:
-      // special case for NULL
+      // special case for NULL, TRUE, FALSE
       if (lit_val.special_val() == LiteralValue::VAL_NULL)
         return "NULL";
+      if (lit_val.special_val() == LiteralValue::VAL_TRUE)
+        return "TRUE";
+      if (lit_val.special_val() == LiteralValue::VAL_FALSE)
+        return "FALSE";
       // do not remove underscores
       return LiteralValue_SpecialVal_Name(lit_val.special_val());
     case LitValType::kNumericLit:
@@ -1425,7 +1429,7 @@ CONV_FN(Update, update) {
     ret += " ";
   }
   ret += QualifiedTableNameToString(update.qtn());
-  ret += " SET ";
+  ret += " ";
   ret += UpsertClausePart2ToString(update.ucp2());
   return ret;
 }
@@ -1524,7 +1528,7 @@ CONV_FN(JoinClause, jc) {
   std::string ret;
   ret += TableOrSubqueryToString(jc.tos());
   ret += " ";
-  for (int i = 1; i < jc.clauses_size(); i++) {
+  for (int i = 0; i < jc.clauses_size(); i++) {
     ret += JoinClauseCoreToString(jc.clauses(i));
   }
   ret += " ";
@@ -2409,12 +2413,12 @@ CONV_FN(Drop, d) {
     ret += if_exists;
     ret += schema;
     ret += IndexToString(d.index());
-  } else if (d.has_index()) {
+  } else if (d.has_table()) {
     ret += "TABLE ";
     ret += if_exists;
     ret += schema;
     ret += TableToString(d.table());
-  } else if (d.has_index()) {
+  } else if (d.has_trigger()) {
     ret += "TRIGGER ";
     ret += if_exists;
     ret += schema;
