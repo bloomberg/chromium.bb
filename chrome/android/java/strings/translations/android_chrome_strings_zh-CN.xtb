@@ -200,6 +200,7 @@
 <translation id="2450083983707403292">要重新开始下载 <ph name="FILE_NAME" /> 吗？</translation>
 <translation id="2476578072172137802">网站设置</translation>
 <translation id="2482878487686419369">通知</translation>
+<translation id="2494974097748878569">Chrome 中的 Google 助理</translation>
 <translation id="2496180316473517155">浏览记录</translation>
 <translation id="2498359688066513246">帮助和反馈</translation>
 <translation id="2501278716633472235">返回</translation>
@@ -392,7 +393,6 @@
 <translation id="4099578267706723511">将使用情况统计信息和崩溃报告发送给 Google，帮助我们完善 Chrome。</translation>
 <translation id="410351446219883937">自动播放</translation>
 <translation id="4113030288477039509">由您的管理员管理</translation>
-<translation id="411332046216682877">点按此处即可快速开始搜索</translation>
 <translation id="4116038641877404294">下载网页以便离线查看</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d 个书签}other{%1$d 个书签}}</translation>
 <translation id="4149994727733219643">使用简化版视图查看网页</translation>
@@ -646,7 +646,6 @@
 <translation id="5962718611393537961">点按即可收起</translation>
 <translation id="5990142338020175451">畅享更加个性化的 Google 服务，例如更贴合个人需求的网页建议</translation>
 <translation id="6000066717592683814">继续使用 Google</translation>
-<translation id="6001839398155993679">开始</translation>
 <translation id="6005538289190791541">建议的密码</translation>
 <translation id="6039379616847168523">跳转到下一个标签页</translation>
 <translation id="6040143037577758943">关闭</translation>
@@ -683,6 +682,7 @@
 <translation id="6277522088822131679">打印该页面时出现问题，请重试。</translation>
 <translation id="6295158916970320988">所有网站</translation>
 <translation id="629730747756840877">帐号</translation>
+<translation id="6302269476990306341">Chrome 中的 Google 助理即将停止工作</translation>
 <translation id="6303969859164067831">退出帐号并关闭同步功能</translation>
 <translation id="6316139424528454185">Android 版本不受支持</translation>
 <translation id="6320088164292336938">振动</translation>
@@ -816,6 +816,7 @@
 <translation id="7250468141469952378">已选择 <ph name="ITEM_COUNT" /> 项</translation>
 <translation id="7253272406652746122">请在设备的“设置”应用中，通过“帐号”页面添加 Google 帐号。</translation>
 <translation id="7274013316676448362">禁止访问的网站</translation>
+<translation id="7291387454912369099">使用 Chrome 中的 Google 助理结帐</translation>
 <translation id="729975465115245577">您的设备上没有可以存储密码文件的应用。</translation>
 <translation id="7302081693174882195">详细信息：按已节省的数据流量排序</translation>
 <translation id="7333031090786104871">仍在添加先前的网站</translation>
@@ -1048,7 +1049,6 @@
 <translation id="9070377983101773829">开始语音搜索</translation>
 <translation id="9071742570345586758">要查看虚拟实境内容，请安装 Google VR 服务</translation>
 <translation id="9074336505530349563">要获取 Google 推荐的个性化内容，请登录您的帐号并开启同步功能</translation>
-<translation id="9079796397681444569">您可以使用屏幕底部的按钮在 Chrome 中轻松导航至任何位置</translation>
 <translation id="9080642952018487277">进入私密模式</translation>
 <translation id="9086455579313502267">无法访问网络</translation>
 <translation id="9099018167121903954">下载内容已占用的空间：<ph name="KILOBYTES" /> KB</translation>

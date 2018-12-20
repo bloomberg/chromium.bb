@@ -527,6 +527,7 @@
 <translation id="4358461427845829800">Spravovat platební metody...</translation>
 <translation id="4372948949327679948">Očekávána hodnota <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">Pokusili jste se přejít na web <ph name="DOMAIN" />, ale certifikát prezentovaný tímto webem byl vydavatelem certifikátu zrušen. To znamená, že bezpečnostním pověřením, která web prezentoval, nelze zcela důvěřovat. Je možné, že komunikujete s útočníkem.</translation>
+<translation id="4378154925671717803">Telefon</translation>
 <translation id="4406896451731180161">výsledky vyhledávání</translation>
 <translation id="4408413947728134509">Soubory cookie <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Adresa vyzvednutí</translation>

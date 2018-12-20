@@ -531,6 +531,7 @@
 <translation id="4358461427845829800">Hantera betalningsmetoder …</translation>
 <translation id="4372948949327679948">Ett <ph name="VALUE_TYPE" />-värde förväntades.</translation>
 <translation id="4377125064752653719">Du försökte öppna <ph name="DOMAIN" />, men servern visade ett certifikat som har återkallats av utfärdaren. Det innebär att säkerhetsuppgifterna som servern visar inte är absolut tillförlitliga. Du kanske kommunicerar med en skadlig server.</translation>
+<translation id="4378154925671717803">Mobil</translation>
 <translation id="4406896451731180161">sökresultat</translation>
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Hämtningsadress</translation>

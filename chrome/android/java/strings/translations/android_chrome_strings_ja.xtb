@@ -392,7 +392,6 @@
 <translation id="4099578267706723511">使用統計情報と障害レポートを Google に送信して、Chrome の品質向上にご協力ください。</translation>
 <translation id="410351446219883937">自動再生</translation>
 <translation id="4113030288477039509">管理者により管理されています</translation>
-<translation id="411332046216682877">ここをタップすると、すばやく検索できます</translation>
 <translation id="4116038641877404294">ページをダウンロードするとオフラインで使用できるようになります</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d 個のブックマーク}other{%1$d 個のブックマーク}}</translation>
 <translation id="4149994727733219643">ウェブページの簡易表示</translation>
@@ -646,7 +645,6 @@
 <translation id="5962718611393537961">タップして折りたたむ</translation>
 <translation id="5990142338020175451">おすすめのページなど、カスタマイズされた Google サービスを利用できます</translation>
 <translation id="6000066717592683814">Google のままにする</translation>
-<translation id="6001839398155993679">開始する</translation>
 <translation id="6005538289190791541">推奨パスワード</translation>
 <translation id="6039379616847168523">次のタブに移動する</translation>
 <translation id="6040143037577758943">閉じる</translation>
@@ -1048,7 +1046,6 @@
 <translation id="9070377983101773829">音声検索を開始</translation>
 <translation id="9071742570345586758">バーチャル リアリティ コンテンツを表示するには、Google VR サービスをインストールしてください</translation>
 <translation id="9074336505530349563">ユーザーに合わせた Google からのおすすめコンテンツを表示するには、ログインして同期を有効にします</translation>
-<translation id="9079796397681444569">画面下部にあるボタンを使って Chrome を自由かつ手軽に操作できます</translation>
 <translation id="9080642952018487277">プライベート モードを開始</translation>
 <translation id="9086455579313502267">ネットワークにアクセスできません</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB をダウンロードで使用中</translation>

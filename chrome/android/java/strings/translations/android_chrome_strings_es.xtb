@@ -392,7 +392,6 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4099578267706723511">Ayudar a mejorar Chrome enviando estadísticas de uso e informes sobre fallos.</translation>
 <translation id="410351446219883937">Reproducción automática</translation>
 <translation id="4113030288477039509">Administrado por tu administrador</translation>
-<translation id="411332046216682877">Toca aquí para iniciar rápidamente una búsqueda</translation>
 <translation id="4116038641877404294">Descarga páginas para usarlas sin conexión</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d marcador}other{%1$d marcadores}}</translation>
 <translation id="4149994727733219643">Vista simplificada de páginas web</translation>
@@ -646,7 +645,6 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo de in
 <translation id="5962718611393537961">Toca para ocultar</translation>
 <translation id="5990142338020175451">Servicios de Google más personalizados, como mejores sugerencias de páginas</translation>
 <translation id="6000066717592683814">Mantener Google como motor de búsqueda predeterminado</translation>
-<translation id="6001839398155993679">Empezar</translation>
 <translation id="6005538289190791541">Contraseña sugerida</translation>
 <translation id="6039379616847168523">Te dirige a la siguiente pestaña</translation>
 <translation id="6040143037577758943">Cerrar</translation>
@@ -1048,7 +1046,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="9070377983101773829">Iniciar búsqueda por voz</translation>
 <translation id="9071742570345586758">Para ver contenido de realidad virtual, instala Servicios RV de Google</translation>
 <translation id="9074336505530349563">Inicia sesión y activa la sincronización para obtener contenido personalizado sugerido por Google</translation>
-<translation id="9079796397681444569">Navega fácilmente en Chrome usando los botones de la parte inferior de la pantalla</translation>
 <translation id="9080642952018487277">Activa el modo privado</translation>
 <translation id="9086455579313502267">No ha sido posible acceder a la red</translation>
 <translation id="9099018167121903954">kB descargados: <ph name="KILOBYTES" /></translation>

@@ -200,6 +200,7 @@
 <translation id="2450083983707403292">هل ترغب في بدء تنزيل <ph name="FILE_NAME" /> مرة أخرى؟</translation>
 <translation id="2476578072172137802">إعدادات الموقع</translation>
 <translation id="2482878487686419369">الاشعارات</translation>
+<translation id="2494974097748878569">‏"مساعد Google" على Chrome</translation>
 <translation id="2496180316473517155">سجل التصفح</translation>
 <translation id="2498359688066513246">المساعدة والتعليقات</translation>
 <translation id="2501278716633472235">الرجوع للخلف</translation>
@@ -392,7 +393,6 @@
 <translation id="4099578267706723511">‏ساعد في تحسين Chrome عن طريق إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google.</translation>
 <translation id="410351446219883937">تشغيل تلقائي</translation>
 <translation id="4113030288477039509">يديره المسؤول</translation>
-<translation id="411332046216682877">يمكنك النقر هنا لبدء البحث بسرعة</translation>
 <translation id="4116038641877404294">تنزيل الصفحات لاستخدامها بلا اتصال بالإنترنت</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{‏إشارة مرجعية (%1$d)}zero{‏%1$d إشارة مرجعية}two{‏إشارتان مرجعيتان (%1$d)}few{‏%1$d إشارات مرجعية}many{‏%1$d إشارةً مرجعيةً}other{‏%1$d إشارة مرجعية}}</translation>
 <translation id="4149994727733219643">عرض مبسَّط لصفحات الويب</translation>
@@ -646,7 +646,6 @@
 <translation id="5962718611393537961">النقر للتصغير</translation>
 <translation id="5990142338020175451">‏مزيد من خدمات Google الشخصية، مثل أفضل اقتراحات الصفحة</translation>
 <translation id="6000066717592683814">‏الاستمرار في استخدام محرك Google</translation>
-<translation id="6001839398155993679">البدء</translation>
 <translation id="6005538289190791541">كلمة المرور المُقترحَة</translation>
 <translation id="6039379616847168523">الانتقال السريع إلى علامة التبويب التالية</translation>
 <translation id="6040143037577758943">إغلاق</translation>
@@ -683,6 +682,7 @@
 <translation id="6277522088822131679">حدثت مشكلة أثناء طباعة الصفحة. يُرجى إعادة المحاولة.</translation>
 <translation id="6295158916970320988">جميع المواقع</translation>
 <translation id="629730747756840877">الحساب</translation>
+<translation id="6302269476990306341">‏جارٍ إيقاف "مساعد Google" على Chrome</translation>
 <translation id="6303969859164067831">تسجيل الخروج وإيقاف المزامنة</translation>
 <translation id="6316139424528454185">‏إصدار Android غير متوافق</translation>
 <translation id="6320088164292336938">اهتزاز</translation>
@@ -816,6 +816,7 @@
 <translation id="7250468141469952378">تم اختيار <ph name="ITEM_COUNT" /> عنصراً</translation>
 <translation id="7253272406652746122">‏أضف حساب Google من صفحة "الحسابات" في تطبيق إعدادات جهازك.</translation>
 <translation id="7274013316676448362">الموقع المحظور</translation>
+<translation id="7291387454912369099">‏تفعيل الدفع عن طريق "مساعد Google"</translation>
 <translation id="729975465115245577">لا يتضمن جهازك تطبيقًا لتخزين ملف كلمات المرور.</translation>
 <translation id="7302081693174882195">التفاصيل: تم الترتيب بحسب مقدار البيانات المحفوظة</translation>
 <translation id="7333031090786104871">لا تزال عملية إضافة موقع الويب السابق جارية</translation>
@@ -1048,7 +1049,6 @@
 <translation id="9070377983101773829">بدء البحث الصوتي</translation>
 <translation id="9071742570345586758">‏لعرض محتوى الواقع الافتراضي، يلزمك تثبيت خدمات Google VR</translation>
 <translation id="9074336505530349563">‏للحصول على محتوى مُخصَّص اقترحته Google، يُرجى تسجيل الدخول وتفعيل المزامنة.</translation>
-<translation id="9079796397681444569">‏يمكنك التنقل بسهولة في أي مكان في Chrome باستخدام الأزرار الموجودة أسفل الشاشة</translation>
 <translation id="9080642952018487277">الدخول إلى الوضع الخاص</translation>
 <translation id="9086455579313502267">تعذر الدخول إلى الشبكة</translation>
 <translation id="9099018167121903954">تم تنزيل <ph name="KILOBYTES" /> كيلوبايت</translation>

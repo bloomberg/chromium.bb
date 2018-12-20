@@ -200,6 +200,7 @@
 <translation id="2450083983707403292">Завантажити файл <ph name="FILE_NAME" /> ще раз?</translation>
 <translation id="2476578072172137802">Налаштування сайту</translation>
 <translation id="2482878487686419369">Сповіщення</translation>
+<translation id="2494974097748878569">Google Асистент у Chrome</translation>
 <translation id="2496180316473517155">Історія переглядів</translation>
 <translation id="2498359688066513246">Довідка й відгуки</translation>
 <translation id="2501278716633472235">Назад</translation>
@@ -392,7 +393,6 @@
 <translation id="4099578267706723511">Допоможіть покращити Chrome, надсилаючи статистику та звіти про збої в Google.</translation>
 <translation id="410351446219883937">Автовідтворення</translation>
 <translation id="4113030288477039509">Керується адміністратором</translation>
-<translation id="411332046216682877">Торкніться тут, щоб швидко почати пошук</translation>
 <translation id="4116038641877404294">Завантажуйте сторінки, щоб переглядати їх офлайн</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d закладка}one{%1$d закладка}few{%1$d закладки}many{%1$d закладок}other{%1$d закладки}}</translation>
 <translation id="4149994727733219643">Спрощений перегляд веб-сторінок</translation>
@@ -646,7 +646,6 @@
 <translation id="5962718611393537961">Торкніться, щоб згорнути</translation>
 <translation id="5990142338020175451">Більш персоналізовані сервіси Google, як-от кращі пропозиції сторінок</translation>
 <translation id="6000066717592683814">Залишити Google</translation>
-<translation id="6001839398155993679">Почати</translation>
 <translation id="6005538289190791541">Запропонований пароль</translation>
 <translation id="6039379616847168523">Перейти до наступної вкладки</translation>
 <translation id="6040143037577758943">Закрити</translation>
@@ -683,6 +682,7 @@
 <translation id="6277522088822131679">Виникла проблема з друком цієї сторінки. Повторіть спробу.</translation>
 <translation id="6295158916970320988">Усі сайти</translation>
 <translation id="629730747756840877">Обліковий запис</translation>
+<translation id="6302269476990306341">Припинення роботи Google Асистента в Chrome</translation>
 <translation id="6303969859164067831">Вийти й вимкнути синхронізацію</translation>
 <translation id="6316139424528454185">Версія Android несумісна</translation>
 <translation id="6320088164292336938">Вібросигнал</translation>
@@ -816,6 +816,7 @@
 <translation id="7250468141469952378">Вибрано <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Додайте обліковий запис Google зі сторінки "Облікові записи" в додатку Налаштування на пристрої.</translation>
 <translation id="7274013316676448362">Заблокований сайт</translation>
+<translation id="7291387454912369099">Оплата за допомогою Асистента</translation>
 <translation id="729975465115245577">На пристрої немає додатка для зберігання файлу з паролями.</translation>
 <translation id="7302081693174882195">Деталі: відсортовано за кількістю заощадженого трафіку</translation>
 <translation id="7333031090786104871">Попередній сайт ще додається</translation>
@@ -1048,7 +1049,6 @@
 <translation id="9070377983101773829">Почати голосовий пошук</translation>
 <translation id="9071742570345586758">Щоб переглядати вміст віртуальної реальності, установіть Google VR-сервіси</translation>
 <translation id="9074336505530349563">Щоб отримувати персоналізовані пропозиції від Google, увійдіть в обліковий запис і ввімкніть синхронізацію</translation>
-<translation id="9079796397681444569">Легко переходьте будь-куди в Chrome за допомогою кнопок унизу екрана</translation>
 <translation id="9080642952018487277">Перейти в приватний режим</translation>
 <translation id="9086455579313502267">Неможливо отримати доступ до мережі</translation>
 <translation id="9099018167121903954">Завантажено <ph name="KILOBYTES" /> КБ</translation>

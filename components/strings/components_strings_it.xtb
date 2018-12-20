@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">nome sconosciuto</translation>
 <translation id="1050038467049342496">Chiudi altre app</translation>
 <translation id="1055184225775184556">&amp;Annulla aggiunta</translation>
+<translation id="1058479211578257048">Salvataggio delle carte...</translation>
 <translation id="10614374240317010">Mai salvate</translation>
 <translation id="1066396345355680611">Potresti non riuscire più ad accedere ai contenuti protetti del sito <ph name="SITE" /> e di altri siti.</translation>
 <translation id="106701514854093668">Preferiti desktop</translation>
@@ -528,6 +529,7 @@
 <translation id="4358461427845829800">Gestisci metodi di pagamento…</translation>
 <translation id="4372948949327679948">È previsto il valore <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">Hai tentato di accedere a <ph name="DOMAIN" /> ma il server ha presentato un certificato revocato dall'autorità di certificazione. Ciò significa che le credenziali di sicurezza presentate dal server non sono assolutamente attendibili. Potresti avere stabilito una comunicazione con un utente malintenzionato.</translation>
+<translation id="4378154925671717803">Telefono</translation>
 <translation id="4406896451731180161">risultati di ricerca</translation>
 <translation id="4408413947728134509">Cookie: <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Indirizzo di ritiro</translation>
@@ -600,6 +602,7 @@
 <translation id="4989163558385430922">Mostra tutto</translation>
 <translation id="4989809363548539747">Questo plug-in non è supportato</translation>
 <translation id="5002932099480077015">Se questa opzione viene attivata, Chrome memorizza una copia della carta sul dispositivo per velocizzare la compilazione dei moduli.</translation>
+<translation id="5014174725590676422">È mostrata la schermata della prima esecuzione dell'Assistente Google in Chrome</translation>
 <translation id="5015510746216210676">Nome macchina:</translation>
 <translation id="5018422839182700155">Impossibile aprire questa pagina</translation>
 <translation id="5019198164206649151">Archivio di backup in stato non valido</translation>
@@ -711,6 +714,7 @@
 <translation id="5720705177508910913">Utente corrente</translation>
 <translation id="5730040223043577876">Chrome ti consiglia di reimpostare la password, se l'hai utilizzata su altri siti.</translation>
 <translation id="5732392974455271431">I tuoi genitori possono sbloccarlo per te</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{Salva la carta nel tuo Account Google}other{Salva carte nel tuo Account Google}}</translation>
 <translation id="5763042198335101085">Inserisci un indirizzo email valido</translation>
 <translation id="5765072501007116331">Seleziona un indirizzo per conoscere i requisiti e i metodi di consegna</translation>
 <translation id="5770114862687765385">Sembra che il file sia danneggiato. Fai clic sul pulsante "Ripristina" per ripristinare la sessione.</translation>
@@ -1190,6 +1194,7 @@ Ulteriori dettagli:
 <translation id="9080712759204168376">Riepilogo dell'ordine</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> in genere utilizza la crittografia per proteggere le tue informazioni. Questa volta, quando Chromium ha provato a connettersi a <ph name="SITE" />, il sito web ha restituito credenziali insolite e sbagliate. È possibile che un malintenzionato stia cercando di spacciarsi per il sito <ph name="SITE" /> oppure che una schermata di accesso alla rete Wi-Fi abbia interrotto la connessione. Le tue informazioni sono ancora al sicuro perché Chromium ha interrotto la connessione prima che avvenissero scambi di dati.</translation>
 <translation id="9106062320799175032">Aggiungi indirizzo di fatturazione</translation>
+<translation id="9110718169272311511">L'Assistente Google in Chrome è disponibile nella parte inferiore dello schermo</translation>
 <translation id="9114524666733003316">Conferma della carta...</translation>
 <translation id="9128870381267983090">Collegati alla rete</translation>
 <translation id="9137013805542155359">Mostra originale</translation>

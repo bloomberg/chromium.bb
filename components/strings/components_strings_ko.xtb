@@ -531,6 +531,7 @@
 <translation id="4358461427845829800">결제 수단 관리...</translation>
 <translation id="4372948949327679948">예상 <ph name="VALUE_TYPE" /> 값입니다.</translation>
 <translation id="4377125064752653719"><ph name="DOMAIN" />에 접속하려 했으나 발행기관에서 서버가 전달한 인증서를 폐기했습니다. 이는 서버가 제시한 보안 자격증명 정보를 신뢰할 수 없음을 의미합니다. 사용자는 현재 공격자와 통신 중일 수도 있습니다.</translation>
+<translation id="4378154925671717803">전화기</translation>
 <translation id="4406896451731180161">검색결과</translation>
 <translation id="4408413947728134509">쿠키 <ph name="NUM_COOKIES" />개</translation>
 <translation id="4415426530740016218">픽업 주소</translation>

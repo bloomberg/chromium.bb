@@ -62,7 +62,6 @@
 <translation id="1820259098641718022">נוסף לרשימת הקריאה</translation>
 <translation id="1821253160463689938">‏שימוש בקובצי cookie כדי לשמור את ההעדפות שלך, גם אם לא נכנסת אל הדפים האלה</translation>
 <translation id="1876721852596493031">שלח נתוני שימוש</translation>
-<translation id="1880677175115548835">בחירת טקסט</translation>
 <translation id="1886928167269928266">משחר ההיסטוריה</translation>
 <translation id="1911619930368729126">‏העלה אל Google Drive</translation>
 <translation id="1941314575388338491">הקש פעמיים כדי להעתיק.</translation>
@@ -82,6 +81,7 @@
 <translation id="2239626343334228536">מנקה נתוני גלישה…</translation>
 <translation id="2256128224215992540">הצעות למונחי חיפוש ולאתרים</translation>
 <translation id="2267753748892043616">הוסף חשבון</translation>
+<translation id="2268044343513325586">צמצם</translation>
 <translation id="2273327106802955778">התפריט 'עוד'</translation>
 <translation id="2320166752086256636">הסתר מקלדת</translation>
 <translation id="2339560363438331454">‏סנכרון ושירותי Google</translation>
@@ -194,7 +194,7 @@
 <translation id="4084682180776658562">סימניה</translation>
 <translation id="411254640334432676">ההורדה נכשלה.</translation>
 <translation id="4112644173421521737">חיפוש</translation>
-<translation id="4121993058175073134">כדי לשלוח נתוני ייצוא ברשת, הגדר את חשבון האימייל שלך ביישום 'הגדרות'.</translation>
+<translation id="4121993058175073134">כדי לשלוח נתוני ייצוא ברשת, יש להגדיר את חשבון האימייל שלך ביישום 'הגדרות'.</translation>
 <translation id="4124987746317609294">טווח זמן</translation>
 <translation id="4172051516777682613">הצג תמיד</translation>
 <translation id="418156467088430727">הצג גרסה לא מקוונת בכרטיסייה חדשה</translation>

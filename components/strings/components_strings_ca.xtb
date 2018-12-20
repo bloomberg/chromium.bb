@@ -531,6 +531,7 @@
 <translation id="4358461427845829800">Gestiona les formes de pagament...</translation>
 <translation id="4372948949327679948">Valor <ph name="VALUE_TYPE" /> esperat.</translation>
 <translation id="4377125064752653719">Heu provat d'accedir a <ph name="DOMAIN" />, però l'emissor ha revocat el certificat que ha presentat el servidor. Això vol dir que no heu de confiar gens en les credencials de seguretat que ha presentat el servidor. És possible que us estigueu comunicant amb un atacant.</translation>
+<translation id="4378154925671717803">Telèfon</translation>
 <translation id="4406896451731180161">resultats de la cerca</translation>
 <translation id="4408413947728134509">Galetes <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Adreça de recollida</translation>

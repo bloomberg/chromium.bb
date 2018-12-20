@@ -392,7 +392,6 @@ Per ajustar el terme de cerca, mantén-lo premut per seleccionar-lo. Per definir
 <translation id="4099578267706723511">Ajuda a millorar Chrome enviant estadístiques d'ús i d'informes d'error a Google.</translation>
 <translation id="410351446219883937">Reproducció automàtica</translation>
 <translation id="4113030288477039509">Gestionat per l'administrador</translation>
-<translation id="411332046216682877">Toca aquí per iniciar una cerca ràpidament</translation>
 <translation id="4116038641877404294">Baixa pàgines per utilitzar-les sense connexió</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d adreça d'interès}other{%1$d adreces d'interès}}</translation>
 <translation id="4149994727733219643">Visualització simplificada de pàgines web</translation>
@@ -646,7 +645,6 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="5962718611393537961">Toca per replegar</translation>
 <translation id="5990142338020175451">Serveis de Google més personals, com ara millors suggeriments de pàgines</translation>
 <translation id="6000066717592683814">Continua amb Google</translation>
-<translation id="6001839398155993679">Som-hi</translation>
 <translation id="6005538289190791541">Contrasenya suggerida</translation>
 <translation id="6039379616847168523">Ves a la pestanya següent</translation>
 <translation id="6040143037577758943">Tanca</translation>
@@ -1048,7 +1046,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="9070377983101773829">Inicia la cerca per veu</translation>
 <translation id="9071742570345586758">Per veure contingut en realitat virtual, instal·la els Serveis RV de Google</translation>
 <translation id="9074336505530349563">Perquè Google et suggereixi contingut personalitzat, inicia la sessió i activa la sincronització</translation>
-<translation id="9079796397681444569">Navega fàcilment a qualsevol lloc de Chrome amb els botons de la part inferior de la pantalla</translation>
 <translation id="9080642952018487277">Activa el mode privat</translation>
 <translation id="9086455579313502267">No es pot accedir a la xarxa</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> kB en baixades</translation>

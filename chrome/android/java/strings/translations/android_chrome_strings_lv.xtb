@@ -392,7 +392,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4099578267706723511">Uzlabojiet pārlūku Chrome, uzņēmumam Google sūtot lietojuma statistiku un avāriju pārskatus.</translation>
 <translation id="410351446219883937">Automātiskā atskaņošana</translation>
 <translation id="4113030288477039509">Pārvalda jūsu administrators</translation>
-<translation id="411332046216682877">Pieskarieties šeit, lai ātri sāktu meklēšanu</translation>
 <translation id="4116038641877404294">Lejupielādējiet lapas, lai izmantotu tās bezsaistē</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d grāmatzīme}zero{%1$d grāmatzīmes}one{%1$d grāmatzīme}other{%1$d grāmatzīmes}}</translation>
 <translation id="4149994727733219643">Vienkāršots tīmekļa lapu skatījums</translation>
@@ -646,7 +645,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5962718611393537961">Pieskarties, lai sakļautu</translation>
 <translation id="5990142338020175451">Personalizētāki Google pakalpojumi, piemēram, precīzāki lapu ieteikumi</translation>
 <translation id="6000066717592683814">Arī turpmāk izmantot Google</translation>
-<translation id="6001839398155993679">Aiziet!</translation>
 <translation id="6005538289190791541">Ieteiktā parole</translation>
 <translation id="6039379616847168523">Pāriet uz nākamo cilni</translation>
 <translation id="6040143037577758943">Aizvērt</translation>
@@ -1048,7 +1046,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="9070377983101773829">Sākt meklēšanu ar balsi</translation>
 <translation id="9071742570345586758">Lai skatītu virtuālās realitātes saturu, instalējiet Google VR pakalpojumus.</translation>
 <translation id="9074336505530349563">Lai saņemtu Google ieteikto personalizēto saturu, pierakstieties un ieslēdziet sinhronizāciju.</translation>
-<translation id="9079796397681444569">Pārvietojieties pārlūkā Chrome, izmantojot pogas ekrāna apakšējā daļā</translation>
 <translation id="9080642952018487277">Atvērt privāto režīmu</translation>
 <translation id="9086455579313502267">Nevar piekļūt tīklam</translation>
 <translation id="9099018167121903954">Lejupielādes: <ph name="KILOBYTES" /> KB.</translation>

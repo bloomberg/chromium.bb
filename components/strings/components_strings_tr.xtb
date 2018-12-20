@@ -531,6 +531,7 @@
 <translation id="4358461427845829800">Ödeme yöntemlerini yönet...</translation>
 <translation id="4372948949327679948">Beklenen <ph name="VALUE_TYPE" /> değeri.</translation>
 <translation id="4377125064752653719"><ph name="DOMAIN" /> adresine ulaşmayı denediniz, ancak sunucunun sağladığı sertifika, sertifikayı veren tarafından iptal edildi. Bu, sunucunun sağladığı güvenlik kimlik bilgilerine kesinlikle güvenilmemesi gerektiği anlamına gelir. Bir saldırganla irtibat kuruyor olabilirsiniz.</translation>
+<translation id="4378154925671717803">Telefon</translation>
 <translation id="4406896451731180161">arama sonuçları</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> çerez</translation>
 <translation id="4415426530740016218">Alınacağı Adres</translation>

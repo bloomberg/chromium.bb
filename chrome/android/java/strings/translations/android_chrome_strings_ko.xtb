@@ -392,7 +392,6 @@
 <translation id="4099578267706723511">사용 통계와 비정상 종료 보고서를 Google로 전송하면 Chrome 개선에 도움이 됩니다.</translation>
 <translation id="410351446219883937">자동재생</translation>
 <translation id="4113030288477039509">관리자가 관리합니다.</translation>
-<translation id="411332046216682877">여기를 탭하여 빠르게 검색을 시작하세요.</translation>
 <translation id="4116038641877404294">페이지를 다운로드하여 오프라인에서 사용하세요.</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{북마크 %1$d개}other{북마크 %1$d개}}</translation>
 <translation id="4149994727733219643">웹페이지 간단히 보기</translation>
@@ -646,7 +645,6 @@
 <translation id="5962718611393537961">탭하여 접기</translation>
 <translation id="5990142338020175451">향상된 페이지 추천과 같이 더욱 맞춤설정된 Google 서비스</translation>
 <translation id="6000066717592683814">계속 Google 사용</translation>
-<translation id="6001839398155993679">시작</translation>
 <translation id="6005538289190791541">추천 비밀번호</translation>
 <translation id="6039379616847168523">다음 탭으로 이동</translation>
 <translation id="6040143037577758943">닫기</translation>
@@ -1048,7 +1046,6 @@
 <translation id="9070377983101773829">음성 검색 시작</translation>
 <translation id="9071742570345586758">가상 현실 콘텐츠를 보려면 Google VR 서비스를 설치하세요.</translation>
 <translation id="9074336505530349563">Google에서 추천하는 맞춤 콘텐츠를 보려면 로그인하고 동기화를 사용 설정하세요.</translation>
-<translation id="9079796397681444569">화면 하단의 버튼을 사용하여 Chrome에서 어디로든 간편하게 이동하세요.</translation>
 <translation id="9080642952018487277">비공개 모드로 들어가기</translation>
 <translation id="9086455579313502267">네트워크에 액세스할 수 없습니다.</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" />KB가 다운로드됨</translation>

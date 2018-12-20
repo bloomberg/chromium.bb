@@ -530,6 +530,7 @@
 <translation id="4358461427845829800">管理付款方式...</translation>
 <translation id="4372948949327679948">預期的「<ph name="VALUE_TYPE" />」值。</translation>
 <translation id="4377125064752653719">你嘗試前往 <ph name="DOMAIN" />，但是發行者已撤銷伺服器提供的憑證。在這種情況下，請勿信任伺服器提供的安全性憑證，因為你的連線對象可能是攻擊者的電腦。</translation>
+<translation id="4378154925671717803">電話</translation>
 <translation id="4406896451731180161">搜尋結果</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> 個 Cookie</translation>
 <translation id="4415426530740016218">取件地址</translation>

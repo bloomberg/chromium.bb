@@ -531,6 +531,7 @@
 <translation id="4358461427845829800">Administrer betalingsmåter…</translation>
 <translation id="4372948949327679948">Forventet <ph name="VALUE_TYPE" />-verdi.</translation>
 <translation id="4377125064752653719">Du forsøkte å gå til <ph name="DOMAIN" />, men sertifikatet tjeneren presenterte har blitt trukket tilbake av utstederen. Dette innebærer at sikkerhetsinformasjonen tjeneren presenterte ikke er klarert. Det kan hende at du kommuniserer med en angriper.</translation>
+<translation id="4378154925671717803">Telefon</translation>
 <translation id="4406896451731180161">søkeresultater</translation>
 <translation id="4408413947728134509">Informasjonskapsler <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Henteadresse</translation>

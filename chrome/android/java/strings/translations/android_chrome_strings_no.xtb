@@ -392,7 +392,6 @@ Hvis du vil endre søkeordet, kan du trykke og holde inne for å merke. Hvis du 
 <translation id="4099578267706723511">Gjør Chrome bedre ved å sende bruksstatistikk og programstopprapporter til Google.</translation>
 <translation id="410351446219883937">Autoavspilling</translation>
 <translation id="4113030288477039509">Styres av administratoren din</translation>
-<translation id="411332046216682877">Trykk her for å starte et søk raskt</translation>
 <translation id="4116038641877404294">Last ned sidene for å bruke dem uten nett</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d bokmerke}other{%1$d bokmerker}}</translation>
 <translation id="4149994727733219643">Forenklet visning av nettsider</translation>
@@ -646,7 +645,6 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="5962718611393537961">Trykk for å skjule</translation>
 <translation id="5990142338020175451">Google-tjenester med et mer personlig preg, som for eksempel bedre sideforslag</translation>
 <translation id="6000066717592683814">Behold Google</translation>
-<translation id="6001839398155993679">Sett i gang</translation>
 <translation id="6005538289190791541">Foreslått passord</translation>
 <translation id="6039379616847168523">Gå til den neste fanen</translation>
 <translation id="6040143037577758943">Lukk</translation>
@@ -1048,7 +1046,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="9070377983101773829">Start talesøk</translation>
 <translation id="9071742570345586758">Du må installere Google VR Services for å kunne se innhold for virtuell virkelighet.</translation>
 <translation id="9074336505530349563">For å få forslag om personlig tilpasset innhold fra Google, slå på synkronisering</translation>
-<translation id="9079796397681444569">Naviger enkelt hvor som helst i Chrome ved å bruke knappene nederst på skjermen</translation>
 <translation id="9080642952018487277">Start privatmodus</translation>
 <translation id="9086455579313502267">Fikk ikke tilgang til nettverket</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> kB er lastet ned</translation>

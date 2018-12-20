@@ -854,7 +854,6 @@
 <translation id="2280486287150724112">ขอบขวา</translation>
 <translation id="2282146716419988068">การประมวลผลของ GPU</translation>
 <translation id="2282155092769082568">URL การกำหนดค่าอัตโนมัติ:</translation>
-<translation id="2286841657746966508">ที่อยู่สำหรับเรียกเก็บเงิน</translation>
 <translation id="2288181517385084064">สลับไปเป็นโปรแกรมบันทึกวิดีโอ</translation>
 <translation id="2288735659267887385">การตั้งค่าการเข้าถึง</translation>
 <translation id="2292848386125228270">โปรดเริ่มต้น <ph name="PRODUCT_NAME" /> ในฐานะผู้ใช้ทั่วไป หากต้องการเรียกใช้ในฐานะผู้ใช้ระดับรากเพื่อการพัฒนา ให้เรียกใช้อีกครั้งโดยตั้งค่าสถานะเป็น no-sandbox</translation>
@@ -2677,7 +2676,7 @@
 <translation id="5185386675596372454">รุ่นใหม่ล่าสุดของ "<ph name="EXTENSION_NAME" />" ถูกปิดใช้งาน เนื่องจากต้องได้รับการอนุญาตมากกว่านี้</translation>
 <translation id="5187295959347858724">คุณได้ลงชื่อเข้าใช้ <ph name="SHORT_PRODUCT_NAME" /> แล้วในตอนนี้ บุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ ของคุณจะได้รับการซิงค์กับบัญชี Google</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
-<translation id="5187892128515678283">แชร์อุปกรณ์ USB กับ Linux โดยการเปิดสวิตช์ การแชร์จะทำได้จนกว่าจะถอดอุปกรณ์ออก</translation>
+<translation id="5187892128515678283">แชร์อุปกรณ์ USB กับ Linux โดยการเปิดสวิตช์ การแชร์จะยังคงอยู่จนกระทั่งถอดอุปกรณ์ออก</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> ต้องการดาวน์โหลดหลายไฟล์</translation>
 <translation id="5204673965307125349">โปรดทำ Powerwash อุปกรณ์และลองอีกครั้ง</translation>
 <translation id="5204967432542742771">ป้อนรหัสผ่าน</translation>

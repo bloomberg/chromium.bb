@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">nežinomas pavadinimas</translation>
 <translation id="1050038467049342496">Uždarykite kitas programas</translation>
 <translation id="1055184225775184556">&amp;Anuliuoti pridėjimą</translation>
+<translation id="1058479211578257048">Išsaugomos kortelės...</translation>
 <translation id="10614374240317010">Niekada neišsaugota</translation>
 <translation id="1066396345355680611">Galite prarasti prieigą prie saugomo turinio iš <ph name="SITE" /> ir kelių kitų svetainių.</translation>
 <translation id="106701514854093668">Žymės staliniame kompiuteryje</translation>
@@ -532,6 +533,7 @@
 <translation id="4358461427845829800">Tvarkyti mokėjimo metodus...</translation>
 <translation id="4372948949327679948">Numatyta „<ph name="VALUE_TYPE" />“ vertė.</translation>
 <translation id="4377125064752653719">Bandėte pasiekti svetainę „<ph name="DOMAIN" />“, bet sertifikatą, kurį pateikė serveris, anuliavo jo išdavėjas. Tai reiškia, kad saugos kredencialais, kuriuos pateikė serveris, visiškai negalima pasitikėti. Galbūt bendraujate su užpuoliku.</translation>
+<translation id="4378154925671717803">Telefonas</translation>
 <translation id="4406896451731180161">paieškos rezultatai</translation>
 <translation id="4408413947728134509">Slapukai <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Paėmimo adresas</translation>
@@ -604,6 +606,7 @@
 <translation id="4989163558385430922">Žr. viską</translation>
 <translation id="4989809363548539747">Šis papildinys nepalaikomas</translation>
 <translation id="5002932099480077015">Jei šis nustatymas įgalintas, „Chrome“ saugos kortelės kopiją šiame įrenginyje, kad būtų galima greičiau užpildyti formas.</translation>
+<translation id="5014174725590676422">Rodomas „Google“ padėjėjo sistemoje „Chrome“ pirmosios paleisties ekranas</translation>
 <translation id="5015510746216210676">Įrenginio pavadinimas:</translation>
 <translation id="5018422839182700155">Negalima atidaryti šio puslapio</translation>
 <translation id="5019198164206649151">Bloga atsarginio atminties įrenginio būsena</translation>
@@ -715,6 +718,7 @@
 <translation id="5720705177508910913">Dabartinis naudotojas</translation>
 <translation id="5730040223043577876">„Chrome“ rekomenduoja iš naujo nustatyti slaptažodį, jei naudojate jį kitose svetainėse.</translation>
 <translation id="5732392974455271431">Jūsų tėvai gali atblokuoti ją už jus</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{Išsaugokite kortelę „Google“ paskyroje}one{Išsaugokite korteles „Google“ paskyroje}few{Išsaugokite korteles „Google“ paskyroje}many{Išsaugokite korteles „Google“ paskyroje}other{Išsaugokite korteles „Google“ paskyroje}}</translation>
 <translation id="5763042198335101085">Įveskite galiojantį el. pašto adresą</translation>
 <translation id="5765072501007116331">Jei norite peržiūrėti pristatymo metodus ir reikalavimus, pasirinkite adresą.</translation>
 <translation id="5770114862687765385">Panašu, kad failas sugadintas. Spustelėkite nustatymo iš naujo mygtuką ir nustatykite sesiją iš naujo.</translation>
@@ -1196,6 +1200,7 @@ Papildoma išsami informacija:
 <translation id="9080712759204168376">Užsakymų suvestinė</translation>
 <translation id="9103872766612412690">Svetainėje <ph name="SITE" /> įprastai naudojama šifruotė informacijai apsaugoti. Šį kartą „Chromium“ bandant prisijungti prie <ph name="SITE" />, ji pateikė neįprastus ir netinkamus prisijungimo duomenis. Gali būti, kad užpuolėjas bando apsimesti svetaine <ph name="SITE" /> arba „Wi-Fi“ prisijungimo ekrane nutrūko ryšys. Jūsų informacija vis tiek liko apsaugota, nes „Chromium“ sustabdė prisijungimą prieš apsikeitimą bet kokiais duomenimis.</translation>
 <translation id="9106062320799175032">Atsiskaitymo adreso pridėjimas</translation>
+<translation id="9110718169272311511">„Google“ padėjėjas sistemoje „Chrome“ rodomas netoli ekrano apačios</translation>
 <translation id="9114524666733003316">Kortelė patvirtinama...</translation>
 <translation id="9128870381267983090">Prisijungti prie tinklo</translation>
 <translation id="9137013805542155359">Rodyti originalą</translation>

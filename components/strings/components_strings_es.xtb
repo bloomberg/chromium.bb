@@ -531,6 +531,7 @@
 <translation id="4358461427845829800">Gestiona tus métodos de pago...</translation>
 <translation id="4372948949327679948">Se esperaba un valor <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">Has intentado acceder a <ph name="DOMAIN" />, pero el emisor ha revocado el certificado mostrado por el servidor, lo que significa que las credenciales de seguridad presentadas por el servidor no son de confianza. Es posible que hayas accedido a la página de un atacante.</translation>
+<translation id="4378154925671717803">Teléfono</translation>
 <translation id="4406896451731180161">resultados de la búsqueda</translation>
 <translation id="4408413947728134509">Cookies: <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Dirección de recogida</translation>

@@ -531,6 +531,7 @@
 <translation id="4358461427845829800">Halda makseviise …</translation>
 <translation id="4372948949327679948">Oodatud väärtus: <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">Püüdsite jõuda saidile <ph name="DOMAIN" />, kuid sertifikaadi väljaandja on serveri esitatud sertifikaadi tagasi võtnud. See tähendab, et serveri esitatud turvamandaate ei tohiks mingil juhul usaldada. Võimalik, et suhtlete ründajaga.</translation>
+<translation id="4378154925671717803">Telefon</translation>
 <translation id="4406896451731180161">otsingutulemused</translation>
 <translation id="4408413947728134509">Küpsisefailid: <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Kättesaamisaadress</translation>

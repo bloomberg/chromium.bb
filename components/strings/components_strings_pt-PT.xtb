@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">nome desconhecido</translation>
 <translation id="1050038467049342496">Fechar outras aplicações</translation>
 <translation id="1055184225775184556">&amp;Anular adição</translation>
+<translation id="1058479211578257048">A guardar os cartões…</translation>
 <translation id="10614374240317010">Nunca guardadas</translation>
 <translation id="1066396345355680611">Pode perder o acesso ao conteúdo protegido de <ph name="SITE" /> e de outros sites.</translation>
 <translation id="106701514854093668">Marcadores do Ambiente de Trabalho</translation>
@@ -531,6 +532,7 @@
 <translation id="4358461427845829800">Gerir métodos de pagamento…</translation>
 <translation id="4372948949327679948">Valor <ph name="VALUE_TYPE" /> esperado.</translation>
 <translation id="4377125064752653719">Tentou aceder a <ph name="DOMAIN" />, mas o certificado que o servidor apresentou foi revogado pelo emissor. Isto significa que as credenciais de segurança apresentadas pelo servidor não deverão, em circunstância alguma, ser consideradas fidedignas. Pode estar a comunicar com um utilizador mal intencionado.</translation>
+<translation id="4378154925671717803">Telemóvel</translation>
 <translation id="4406896451731180161">resultados da pesquisa</translation>
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Endereço de recolha</translation>
@@ -603,6 +605,7 @@
 <translation id="4989163558385430922">Ver tudo</translation>
 <translation id="4989809363548539747">Este plug-in não é compatível</translation>
 <translation id="5002932099480077015">Quando esta opção está ativada, o Chrome armazena uma cópia do seu cartão neste dispositivo para preencher formulários mais rapidamente.</translation>
+<translation id="5014174725590676422">É apresentado o primeiro ecrã de execução do Assistente Google no Chrome.</translation>
 <translation id="5015510746216210676">Nome do computador:</translation>
 <translation id="5018422839182700155">Não é possível abrir esta página</translation>
 <translation id="5019198164206649151">Armazenamento de segurança em mau estado</translation>
@@ -714,6 +717,7 @@
 <translation id="5720705177508910913">Utilizador atual</translation>
 <translation id="5730040223043577876">O Chrome recomenda a reposição da palavra-passe se a tiver reutilizado noutros sites.</translation>
 <translation id="5732392974455271431">Os teus pais podem desbloquear-te</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{Guardar o cartão na sua Conta Google}other{Guardar os cartões na sua Conta Google}}</translation>
 <translation id="5763042198335101085">Introduza um endereço de email válido</translation>
 <translation id="5765072501007116331">Para ver os métodos de fornecimento e os requisitos, selecione um endereço</translation>
 <translation id="5770114862687765385">O ficheiro parece estar danificado. Clique no botão "Repor" para repor a sessão.</translation>
@@ -1054,7 +1058,7 @@ Detalhes adicionais:
 <translation id="8103161714697287722">Método de pagamento</translation>
 <translation id="8118489163946903409">Método de pagamento</translation>
 <translation id="8127301229239896662">O "<ph name="SOFTWARE_NAME" />" não foi instalado corretamente no computador ou na rede. Peça ao gestor de TI que resolva este problema.</translation>
-<translation id="8130693978878176684">Já não posso ajudar mais, continue por sua conta.</translation>
+<translation id="8130693978878176684">Não é possível ajudar mais, continue por sua conta.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8149426793427495338">O computador entrou em suspensão.</translation>
 <translation id="8150722005171944719">O ficheiro em <ph name="URL" /> não é legível. Pode ter sido removido, movido ou as permissões do ficheiro podem estar a impedir o acesso.</translation>
@@ -1194,6 +1198,7 @@ Detalhes adicionais:
 <translation id="9080712759204168376">Resumo da encomenda</translation>
 <translation id="9103872766612412690">Normalmente, o site <ph name="SITE" /> utiliza a encriptação para proteger as suas informações. Quando o Chromium tentou estabelecer ligação a <ph name="SITE" /> desta vez, o Website devolveu credenciais invulgares e incorretas. Isto pode acontecer quando um utilizador mal intencionado tenta simular ser <ph name="SITE" /> ou quando um ecrã de início de sessão Wi-Fi interrompe a ligação. As suas informações continuam seguras porque o Chromium interrompeu a ligação antes de qualquer troca de dados.</translation>
 <translation id="9106062320799175032">Adicionar endereço de faturação</translation>
+<translation id="9110718169272311511">O Assistente Google no Chrome está disponível junto à parte inferior do ecrã.</translation>
 <translation id="9114524666733003316">A confirmar o cartão…</translation>
 <translation id="9128870381267983090">Ligar à rede</translation>
 <translation id="9137013805542155359">Mostrar original</translation>

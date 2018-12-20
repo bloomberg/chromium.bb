@@ -200,6 +200,7 @@ Tačiau nesate nematomi. Kai naudojate privatų režimą, jūsų darbdavys, inte
 <translation id="2450083983707403292">Ar norite vėl pradėti <ph name="FILE_NAME" /> atsisiuntimą?</translation>
 <translation id="2476578072172137802">Svetainės nustatymai</translation>
 <translation id="2482878487686419369">Pranešimai</translation>
+<translation id="2494974097748878569">„Google“ padėjėjas sistemoje „Chrome“</translation>
 <translation id="2496180316473517155">Naršymo istorija</translation>
 <translation id="2498359688066513246">Pagalba ir atsiliepimai</translation>
 <translation id="2501278716633472235">Grįžti</translation>
@@ -392,7 +393,6 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4099578267706723511">Padėkite tobulinti „Chrome“ siųsdami „Google“ naudojimo statistiką ir strigčių ataskaitas.</translation>
 <translation id="410351446219883937">Automatinis paleidimas</translation>
 <translation id="4113030288477039509">Tvarko jūsų administratorius</translation>
-<translation id="411332046216682877">Palieskite čia, kad greitai pradėtumėte paiešką.</translation>
 <translation id="4116038641877404294">Atsisiųskite puslapius, kad galėtumėte naudoti juos neprisijungę</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d žymė}one{%1$d žymė}few{%1$d žymės}many{%1$d žymės}other{%1$d žymių}}</translation>
 <translation id="4149994727733219643">Supaprastinta tinklalapių peržiūra</translation>
@@ -646,7 +646,6 @@ Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, int
 <translation id="5962718611393537961">Palieskite ir sutraukite</translation>
 <translation id="5990142338020175451">Daugiau suasmenintų „Google“ paslaugų, pvz., geresni puslapių pasiūlymai</translation>
 <translation id="6000066717592683814">Palikti „Google“</translation>
-<translation id="6001839398155993679">Pradėkime</translation>
 <translation id="6005538289190791541">Siūlomas slaptažodis</translation>
 <translation id="6039379616847168523">Pereiti prie kito skirtuko</translation>
 <translation id="6040143037577758943">Uždaryti</translation>
@@ -683,6 +682,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6277522088822131679">Spausdinant puslapį kilo problema. Bandykite dar kartą.</translation>
 <translation id="6295158916970320988">Visos svetainės</translation>
 <translation id="629730747756840877">Paskyra</translation>
+<translation id="6302269476990306341">„Google“ padėjėjas sistemoje „Chrome“ sustabdomas</translation>
 <translation id="6303969859164067831">Atsijungti ir išjungti sinchronizavimą</translation>
 <translation id="6316139424528454185">„Android“ versija nepalaikoma</translation>
 <translation id="6320088164292336938">Vibruoti</translation>
@@ -816,6 +816,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7250468141469952378">Pasirinkta: <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Pridėkite „Google“ paskyrą iš įrenginio Nustatymų programos puslapio „Paskyros“.</translation>
 <translation id="7274013316676448362">Užblokuota svetainė</translation>
+<translation id="7291387454912369099">Padėjėjo suaktyvinamas mokėjimas</translation>
 <translation id="729975465115245577">Įrenginyje nėra slaptažodžių failo saugojimo programos.</translation>
 <translation id="7302081693174882195">Išsami informacija: surūšiuota pagal išsaugotų duomenų kiekį</translation>
 <translation id="7333031090786104871">Vis dar pridedama ankstesnė svetainė</translation>
@@ -1048,7 +1049,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="9070377983101773829">Pradėti paiešką balsu</translation>
 <translation id="9071742570345586758">Kad galėtumėte peržiūrėti virtualiosios realybės turinį, įdiekite „Google“ VR paslaugas</translation>
 <translation id="9074336505530349563">Jei norite gauti „Google“ siūlomo suasmeninto turinio, prisijunkite ir įjunkite sinchronizavimą</translation>
-<translation id="9079796397681444569">Naudodami ekrano apačioje esančius mygtukus lengvai naršykite visoje sistemoje „Chrome“.</translation>
 <translation id="9080642952018487277">Įjungti privatų režimą</translation>
 <translation id="9086455579313502267">Nepavyko pasiekti tinklo</translation>
 <translation id="9099018167121903954">Atsisiųsta <ph name="KILOBYTES" /> KB</translation>

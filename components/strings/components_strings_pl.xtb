@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">nieznana nazwa</translation>
 <translation id="1050038467049342496">Zamknij inne aplikacje</translation>
 <translation id="1055184225775184556">&amp;Cofnij dodanie</translation>
+<translation id="1058479211578257048">Zapisuję karty…</translation>
 <translation id="10614374240317010">Nigdy nie zapisane</translation>
 <translation id="1066396345355680611">Możesz stracić dostęp do treści chronionych na: <ph name="SITE" /> i na niektórych innych stronach.</translation>
 <translation id="106701514854093668">Zakładki na komputerze</translation>
@@ -531,6 +532,7 @@
 <translation id="4358461427845829800">Zarządzaj formami płatności…</translation>
 <translation id="4372948949327679948">Oczekiwano wartości typu <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">Próbujesz wejść na <ph name="DOMAIN" />, ale serwer przedstawił certyfikat unieważniony przez wystawcę. Oznacza to, że dane uwierzytelniające podane przez serwer są zupełnie niewiarygodne. Możliwe, że komunikujesz się z intruzem.</translation>
+<translation id="4378154925671717803">Telefon</translation>
 <translation id="4406896451731180161">wyniki wyszukiwania</translation>
 <translation id="4408413947728134509">Pliki cookie (<ph name="NUM_COOKIES" />)</translation>
 <translation id="4415426530740016218">Adres odbioru</translation>
@@ -603,6 +605,7 @@
 <translation id="4989163558385430922">Pokaż wszystko</translation>
 <translation id="4989809363548539747">Ta wtyczka nie jest obsługiwana</translation>
 <translation id="5002932099480077015">Jeśli włączysz tę opcję, Chrome zapisze kopię Twojej karty na tym urządzeniu, by umożliwić Ci szybsze wypełnianie formularzy.</translation>
+<translation id="5014174725590676422">Wyświetlany jest ekran pierwszego uruchomienia Asystenta Google w Chrome</translation>
 <translation id="5015510746216210676">Nazwa komputera:</translation>
 <translation id="5018422839182700155">Nie można otworzyć tej strony</translation>
 <translation id="5019198164206649151">Nieprawidłowy stan magazynu wspomagającego</translation>
@@ -714,6 +717,7 @@
 <translation id="5720705177508910913">Bieżący użytkownik</translation>
 <translation id="5730040223043577876">Chrome zaleca zresetowanie hasła, jeśli zostało użyte na innej stronie.</translation>
 <translation id="5732392974455271431">Mogą ją dla Ciebie odblokować Twoi rodzice</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{Zapisywanie karty na koncie Google}few{Zapisywanie kart na koncie Google}many{Zapisywanie kart na koncie Google}other{Zapisywanie kart na koncie Google}}</translation>
 <translation id="5763042198335101085">Wpisz prawidłowy adres e-mail</translation>
 <translation id="5765072501007116331">Aby zobaczyć metody dostawy oraz wymagania, wybierz adres</translation>
 <translation id="5770114862687765385">Plik wygląda na uszkodzony. Kliknij przycisk „Zresetuj”, by zresetować sesję.</translation>
@@ -1194,6 +1198,7 @@ Dodatkowe informacje:
 <translation id="9080712759204168376">Podsumowanie zamówienia</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> zazwyczaj używa szyfrowania do ochrony Twoich informacji. Gdy tym razem przeglądarka Chromium próbowała połączyć się ze stroną <ph name="SITE" />, odesłała ona nietypowe i nieprawidłowe dane logowania. Może się tak zdarzyć, gdy pod stronę <ph name="SITE" /> podszywa się osoba atakująca albo gdy ekran logowania do sieci Wi-Fi przerwie połączenie. Twoje informacje są nadal bezpieczne, bo połączenie w Chromium zakończyło się przed wymianą jakichkolwiek danych.</translation>
 <translation id="9106062320799175032">Dodaj adres rozliczeniowy</translation>
+<translation id="9110718169272311511">Asystent Google w Chrome jest dostępny u dołu ekranu</translation>
 <translation id="9114524666733003316">Sprawdzam kartę…</translation>
 <translation id="9128870381267983090">Połącz z siecią</translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>
