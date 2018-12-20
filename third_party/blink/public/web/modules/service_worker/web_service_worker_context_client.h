@@ -270,6 +270,16 @@ class WebServiceWorkerContextClient {
   CreateServiceWorkerFetchContext(WebServiceWorkerNetworkProvider*) {
     return nullptr;
   }
+
+  // Called when a task is going to be scheduled on the service worker.
+  // The service worker shouldn't request to be terminated until the task is
+  // finished. Returns an id for the task. The caller must call DidEndTask()
+  // with the returned id to notify that the task is finished.
+  virtual int WillStartTask() { return -1; }
+
+  // Called when a task is finished. |task_id| must be a return value of
+  // WillStartTask().
+  virtual void DidEndTask(int task_id) {}
 };
 
 }  // namespace blink

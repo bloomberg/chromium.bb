@@ -1806,6 +1806,14 @@ void ServiceWorkerContextClient::StopWorker() {
     embedded_worker_client_->StopWorker();
 }
 
+int ServiceWorkerContextClient::WillStartTask() {
+  return context_->timeout_timer->StartEvent(base::DoNothing());
+}
+
+void ServiceWorkerContextClient::DidEndTask(int task_id) {
+  context_->timeout_timer->EndEvent(task_id);
+}
+
 base::WeakPtr<ServiceWorkerContextClient>
 ServiceWorkerContextClient::GetWeakPtr() {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());

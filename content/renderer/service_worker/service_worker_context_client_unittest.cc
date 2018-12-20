@@ -306,6 +306,30 @@ class ServiceWorkerContextClientTest : public testing::Test {
     return context_client;
   }
 
+  std::unique_ptr<ServiceWorkerContextClient> CreateIdleContextClient(
+      ContextClientPipes* pipes,
+      MockWebServiceWorkerContextProxy* mock_proxy) {
+    std::unique_ptr<ServiceWorkerContextClient> context_client =
+        CreateContextClient(pipes, mock_proxy);
+    context_client->DidEvaluateScript(true /* success */);
+    task_runner()->RunUntilIdle();
+    EXPECT_TRUE(mock_proxy->fetch_events().empty());
+    is_idle_ = false;
+    auto timer = std::make_unique<ServiceWorkerTimeoutTimer>(
+        CreateCallbackWithCalledFlag(&is_idle_),
+        task_runner()->GetMockTickClock());
+    context_client->SetTimeoutTimerForTesting(std::move(timer));
+
+    // Ensure the idle state.
+    EXPECT_FALSE(context_client->RequestedTermination());
+    task_runner()->FastForwardBy(ServiceWorkerTimeoutTimer::kIdleDelay +
+                                 ServiceWorkerTimeoutTimer::kUpdateInterval +
+                                 base::TimeDelta::FromSeconds(1));
+    EXPECT_TRUE(context_client->RequestedTermination());
+
+    return context_client;
+  }
+
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner() const {
     return task_runner_;
   }
@@ -314,6 +338,7 @@ class ServiceWorkerContextClientTest : public testing::Test {
   base::MessageLoop message_loop_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::test::ScopedFeatureList feature_list_;
+  bool is_idle_;
 };
 
 TEST_F(ServiceWorkerContextClientTest, Ping) {
@@ -447,23 +472,7 @@ TEST_F(ServiceWorkerContextClientTest,
   ContextClientPipes pipes;
   MockWebServiceWorkerContextProxy mock_proxy;
   std::unique_ptr<ServiceWorkerContextClient> context_client =
-      CreateContextClient(&pipes, &mock_proxy);
-  context_client->DidEvaluateScript(true /* success */);
-  task_runner()->RunUntilIdle();
-  EXPECT_TRUE(mock_proxy.fetch_events().empty());
-
-  bool is_idle = false;
-  auto timer = std::make_unique<ServiceWorkerTimeoutTimer>(
-      CreateCallbackWithCalledFlag(&is_idle),
-      task_runner()->GetMockTickClock());
-  context_client->SetTimeoutTimerForTesting(std::move(timer));
-
-  // Ensure the idle state.
-  EXPECT_FALSE(context_client->RequestedTermination());
-  task_runner()->FastForwardBy(ServiceWorkerTimeoutTimer::kIdleDelay +
-                               ServiceWorkerTimeoutTimer::kUpdateInterval +
-                               base::TimeDelta::FromSeconds(1));
-  EXPECT_TRUE(context_client->RequestedTermination());
+      CreateIdleContextClient(&pipes, &mock_proxy);
 
   const GURL expected_url("https://example.com/expected");
 
@@ -494,22 +503,7 @@ TEST_F(ServiceWorkerContextClientTest,
   ContextClientPipes pipes;
   MockWebServiceWorkerContextProxy mock_proxy;
   std::unique_ptr<ServiceWorkerContextClient> context_client =
-      CreateContextClient(&pipes, &mock_proxy);
-  context_client->DidEvaluateScript(true /* success */);
-  task_runner()->RunUntilIdle();
-  EXPECT_TRUE(mock_proxy.fetch_events().empty());
-  bool is_idle = false;
-  auto timer = std::make_unique<ServiceWorkerTimeoutTimer>(
-      CreateCallbackWithCalledFlag(&is_idle),
-      task_runner()->GetMockTickClock());
-  context_client->SetTimeoutTimerForTesting(std::move(timer));
-
-  // Ensure the idle state.
-  EXPECT_FALSE(context_client->RequestedTermination());
-  task_runner()->FastForwardBy(ServiceWorkerTimeoutTimer::kIdleDelay +
-                               ServiceWorkerTimeoutTimer::kUpdateInterval +
-                               base::TimeDelta::FromSeconds(1));
-  EXPECT_TRUE(context_client->RequestedTermination());
+      CreateIdleContextClient(&pipes, &mock_proxy);
 
   const GURL expected_url_1("https://example.com/expected_1");
   const GURL expected_url_2("https://example.com/expected_2");
@@ -556,6 +550,25 @@ TEST_F(ServiceWorkerContextClientTest,
             static_cast<GURL>(mock_proxy.fetch_events()[0].second.Url()));
   EXPECT_EQ(expected_url_2,
             static_cast<GURL>(mock_proxy.fetch_events()[1].second.Url()));
+}
+
+TEST_F(ServiceWorkerContextClientTest, TaskInServiceWorker) {
+  EnableServicification();
+  ContextClientPipes pipes;
+  MockWebServiceWorkerContextProxy mock_proxy;
+  std::unique_ptr<ServiceWorkerContextClient> context_client =
+      CreateIdleContextClient(&pipes, &mock_proxy);
+
+  int task_id = context_client->WillStartTask();
+  EXPECT_FALSE(context_client->RequestedTermination());
+  context_client->DidEndTask(task_id);
+  EXPECT_FALSE(context_client->RequestedTermination());
+
+  // Ensure the idle state.
+  task_runner()->FastForwardBy(ServiceWorkerTimeoutTimer::kIdleDelay +
+                               ServiceWorkerTimeoutTimer::kUpdateInterval +
+                               base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(context_client->RequestedTermination());
 }
 
 }  // namespace content

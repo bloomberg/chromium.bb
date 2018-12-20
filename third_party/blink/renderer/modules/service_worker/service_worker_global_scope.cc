@@ -499,4 +499,14 @@ mojom::blink::CacheStoragePtrInfo ServiceWorkerGlobalScope::TakeCacheStorage() {
   return std::move(cache_storage_info_);
 }
 
+int ServiceWorkerGlobalScope::WillStartTask() {
+  return ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
+      ->WillStartTask();
+}
+
+void ServiceWorkerGlobalScope::DidEndTask(int task_id) {
+  ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
+      ->DidEndTask(task_id);
+}
+
 }  // namespace blink

@@ -139,6 +139,9 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient final
 
   void WillDestroyWorkerContext();
 
+  int WillStartTask();
+  void DidEndTask(int task_id);
+
   static ServiceWorkerGlobalScopeClient* From(ExecutionContext*);
 
   void Trace(blink::Visitor*) override;

@@ -300,6 +300,14 @@ void ServiceWorkerGlobalScopeClient::WillDestroyWorkerContext() {
   service_worker_host_.reset();
 }
 
+int ServiceWorkerGlobalScopeClient::WillStartTask() {
+  return client_.WillStartTask();
+}
+
+void ServiceWorkerGlobalScopeClient::DidEndTask(int task_id) {
+  client_.DidEndTask(task_id);
+}
+
 const char ServiceWorkerGlobalScopeClient::kSupplementName[] =
     "ServiceWorkerGlobalScopeClient";
 
