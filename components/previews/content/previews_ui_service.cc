@@ -91,24 +91,17 @@ void PreviewsUIService::OnIgnoreBlacklistDecisionStatusChanged(bool ignored) {
   logger_->OnIgnoreBlacklistDecisionStatusChanged(ignored);
 }
 
-void PreviewsUIService::SetResourceLoadingHintsResourcePatternsToBlock(
-    const GURL& document_gurl,
-    const std::vector<std::string>& patterns) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  resource_loading_hints_document_gurl_ = document_gurl;
-  resource_loading_hints_patterns_to_block_ = patterns;
-}
-
 std::vector<std::string>
 PreviewsUIService::GetResourceLoadingHintsResourcePatternsToBlock(
     const GURL& document_gurl) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(tbansal): https://crbug.com/856243. Read patterns from the proto
-  // optimizations file from the disk, and populate the return value.
-  if (document_gurl != resource_loading_hints_document_gurl_)
-    return std::vector<std::string>();
-  return resource_loading_hints_patterns_to_block_;
+  std::vector<std::string> resource_patterns_to_block;
+  if (previews_decider_impl_) {
+    previews_decider_impl_->GetResourceLoadingHints(
+        document_gurl, &resource_patterns_to_block);
+  }
+  return resource_patterns_to_block;
 }
 
 PreviewsLogger* PreviewsUIService::previews_logger() const {

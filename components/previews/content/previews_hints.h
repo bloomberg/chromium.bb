@@ -65,6 +65,12 @@ class PreviewsHints {
   bool MaybeLoadOptimizationHints(const GURL& url,
                                   HintLoadedCallback callback) const;
 
+  // Whether |url| has loaded resource loading hints and, if it does, populates
+  // |out_resource_patterns_to_block| with the resource patterns to block.
+  bool GetResourceLoadingHints(
+      const GURL& url,
+      std::vector<std::string>* out_resource_patterns_to_block) const;
+
   // Logs UMA for whether the HintCache has a matching Hint and also a matching
   // PageHint for |url|. Records the client's current |ect| as well. This is
   // useful for measuring the effectiveness of the page hints provided by Cacao.
