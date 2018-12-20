@@ -44,7 +44,7 @@ Polymer({
    */
   onAriaLabelSet_: function() {
     if (this.hasAttribute('aria-label')) {
-      let ariaLabel = this.ariaLabel;
+      const ariaLabel = this.ariaLabel;
       this.removeAttribute('aria-label');
       this.ariaLabel = ariaLabel;
     }

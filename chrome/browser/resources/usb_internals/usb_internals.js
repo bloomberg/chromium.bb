@@ -13,15 +13,15 @@ let pageHandler = null;
 
 function refreshDeviceList() {
   pageHandler.getTestDevices().then(function(response) {
-    let tableBody = $('test-device-list');
+    const tableBody = $('test-device-list');
     tableBody.innerHTML = '';
-    for (let device of response.devices) {
-      let row = document.createElement('tr');
-      let name = document.createElement('td');
-      let serialNumber = document.createElement('td');
-      let landingPage = document.createElement('td');
-      let remove = document.createElement('td');
-      let removeButton = document.createElement('button');
+    for (const device of response.devices) {
+      const row = document.createElement('tr');
+      const name = document.createElement('td');
+      const serialNumber = document.createElement('td');
+      const landingPage = document.createElement('td');
+      const remove = document.createElement('td');
+      const removeButton = document.createElement('button');
       name.textContent = device.name;
       serialNumber.textContent = device.serialNumber;
       landingPage.textContent = device.landingPage.url;

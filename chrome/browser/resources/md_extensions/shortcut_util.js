@@ -76,7 +76,7 @@ cr.define('extensions', function() {
   function isValidKeyCode(keyCode) {
     if (keyCode == Key.Escape)
       return false;
-    for (let k in Key) {
+    for (const k in Key) {
       if (Key[k] == keyCode)
         return true;
     }
@@ -91,7 +91,7 @@ cr.define('extensions', function() {
    * @return {string} The keystroke as a string.
    */
   function keystrokeToString(e) {
-    let output = [];
+    const output = [];
     // TODO(devlin): Should this be i18n'd?
     if (cr.isMac && e.metaKey)
       output.push('Command');
@@ -104,7 +104,7 @@ cr.define('extensions', function() {
     if (e.shiftKey)
       output.push('Shift');
 
-    let keyCode = e.keyCode;
+    const keyCode = e.keyCode;
     if (isValidKeyCode(keyCode)) {
       if ((keyCode >= 'A'.charCodeAt(0) && keyCode <= 'Z'.charCodeAt(0)) ||
           (keyCode >= '0'.charCodeAt(0) && keyCode <= '9'.charCodeAt(0))) {

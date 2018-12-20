@@ -229,7 +229,7 @@ Polymer({
    * @private
    */
   toggleStartupSoundEnabled_: function(e) {
-    let checked = /** @type {boolean} */ (e.detail);
+    const checked = /** @type {boolean} */ (e.detail);
     chrome.send('setStartupSoundEnabled', [checked]);
   },
 

@@ -182,7 +182,7 @@ Polymer({
     const added = {};
     const ranges = this.inputString_.split(/,|\u3001/);
     const maxPage = this.allPagesArray_.length;
-    for (let range of ranges) {
+    for (const range of ranges) {
       if (range == '') {
         this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
         this.onRangeChange_();
@@ -253,7 +253,6 @@ Polymer({
    * @private
    */
   computeRangesToPrint_: function() {
-    let lastPage = 0;
     if (this.pagesToPrint_.length == 0 || this.pagesToPrint_[0] == -1 ||
         this.pagesToPrint_ == this.allPagesArray_) {
       return [];
@@ -261,8 +260,8 @@ Polymer({
 
     let from = this.pagesToPrint_[0];
     let to = this.pagesToPrint_[0];
-    let ranges = [];
-    for (let page of this.pagesToPrint_.slice(1)) {
+    const ranges = [];
+    for (const page of this.pagesToPrint_.slice(1)) {
       if (page == to + 1) {
         to = page;
         continue;

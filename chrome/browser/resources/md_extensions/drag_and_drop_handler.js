@@ -60,7 +60,7 @@ cr.define('extensions', function() {
 
       // Files lack a check if they're a directory, but we can find out through
       // its item entry.
-      let item = e.dataTransfer.items[0];
+      const item = e.dataTransfer.items[0];
       if (item.kind === 'file' && item.webkitGetAsEntry().isDirectory) {
         handled = true;
         this.handleDirectoryDrop_();

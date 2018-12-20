@@ -26,7 +26,7 @@ Polymer({
    * @private
    */
   getTimeZoneResolveMethodsList_: function() {
-    let result = [];
+    const result = [];
     // Make sure current value is in the list, even if it is not
     // user-selectable.
     if (this.getPref('generated.resolve_timezone_by_geolocation_method_short')

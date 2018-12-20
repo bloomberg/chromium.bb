@@ -16,6 +16,7 @@
  *    </settings-section>
  */
 
+// eslint-disable-next-line prefer-const
 let SettingsSectionElement = Polymer({
   is: 'settings-section',
 

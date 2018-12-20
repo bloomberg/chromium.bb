@@ -115,7 +115,7 @@ Polymer({
     if (!this.isCapabilityTypeSelect_())
       return false;
 
-    for (let option of
+    for (const option of
          /** @type {!Array<!print_preview.VendorCapabilitySelectOption>} */ (
              this.capability.select_cap.option)) {
       if (this.getDisplayName_(option).match(query))

@@ -272,7 +272,7 @@ Polymer({
           // Add any new origins to the (monotonically increasing)
           // set of requested origins.
           const dbRows = response.result.dbRows;
-          for (let dbRow of dbRows)
+          for (const dbRow of dbRows)
             this.requestedOrigins_[dbRow.origin] = true;
           this.rows_ = dbRows;
         });

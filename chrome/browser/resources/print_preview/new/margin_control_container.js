@@ -148,7 +148,7 @@ Polymer({
       // Set the custom margins values to the current document margins if the
       // custom margins were reset.
       const newMargins = {};
-      for (let side of Object.values(
+      for (const side of Object.values(
                print_preview.ticket_items.CustomMarginsOrientation)) {
         const key = print_preview_new.MARGIN_KEY_MAP.get(side);
         newMargins[key] = this.documentMargins.get(side);

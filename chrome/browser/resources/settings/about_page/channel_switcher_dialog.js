@@ -6,7 +6,7 @@
 
 /**
  */
-let WarningMessage = {
+const WarningMessage = {
   NONE: -1,
   ENTERPRISE_MANAGED: 0,
   POWERWASH: 1,

@@ -261,7 +261,7 @@ Polymer({
       // iron-list makes the correct timing to focus an item in the list
       // very complicated, and the item may not exist, so just focus the
       // entire list for now.
-      let subPage = this.$$('settings-internet-subpage');
+      const subPage = this.$$('settings-internet-subpage');
       if (subPage)
         element = subPage.$$('#networkList');
     } else if (this.detailType_) {
@@ -383,7 +383,7 @@ Polymer({
    * @private
    */
   onDeviceStatesChanged_: function(newValue, oldValue) {
-    let wifiDeviceState = this.getDeviceState_(CrOnc.Type.WI_FI, newValue);
+    const wifiDeviceState = this.getDeviceState_(CrOnc.Type.WI_FI, newValue);
     let managedNetworkAvailable = false;
     if (!!wifiDeviceState)
       managedNetworkAvailable = !!wifiDeviceState.ManagedNetworkAvailable;

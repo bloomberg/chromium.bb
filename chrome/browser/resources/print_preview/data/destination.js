@@ -718,7 +718,7 @@ cr.define('print_preview', function() {
      */
     get srcSet() {
       let srcSetIcon = '';
-      let iconUrl = this.iconUrl;
+      const iconUrl = this.iconUrl;
       if (iconUrl == Destination.IconUrl_.LOCAL_1X) {
         srcSetIcon = Destination.IconUrl_.LOCAL_2X;
       } else if (iconUrl == Destination.IconUrl_.CLOUD_1X) {

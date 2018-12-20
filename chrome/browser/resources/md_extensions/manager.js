@@ -166,9 +166,9 @@ cr.define('extensions', function() {
 
     /** @override */
     ready: function() {
-      let service = extensions.Service.getInstance();
+      const service = extensions.Service.getInstance();
 
-      let onProfileStateChanged = profileInfo => {
+      const onProfileStateChanged = profileInfo => {
         this.isSupervised_ = profileInfo.isSupervised;
         this.incognitoAvailable_ = profileInfo.isIncognitoAvailable;
         this.devModeControlledByPolicy =
@@ -340,10 +340,10 @@ cr.define('extensions', function() {
      */
     initExtensionsAndApps_: function(extensionsAndApps) {
       extensionsAndApps.sort(compareExtensions);
-      let apps = [];
-      let extensions = [];
-      for (let i of extensionsAndApps) {
-        let list = this.getListId_(i) === 'apps_' ? apps : extensions;
+      const apps = [];
+      const extensions = [];
+      for (const i of extensionsAndApps) {
+        const list = this.getListId_(i) === 'apps_' ? apps : extensions;
         list.push(i);
       }
 

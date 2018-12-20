@@ -585,7 +585,7 @@ Polymer({
           /** @type {!print_preview.MarginsSetting} */ (
               this.getSettingValue('customMargins'));
 
-      for (let side of Object.values(
+      for (const side of Object.values(
                print_preview.ticket_items.CustomMarginsOrientation)) {
         const key = print_preview_new.MARGIN_KEY_MAP.get(side);
         // If custom margins are undefined, return and wait for them to be set.

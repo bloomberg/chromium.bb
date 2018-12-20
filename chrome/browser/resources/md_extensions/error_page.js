@@ -353,12 +353,12 @@ cr.define('extensions', function() {
 
       e.preventDefault();
 
-      let list = e.target.parentElement.querySelectorAll('li');
+      const list = e.target.parentElement.querySelectorAll('li');
 
       for (let i = 0; i < list.length; ++i) {
         if (list[i].classList.contains('selected')) {
-          let polymerEvent = /** @type {!{model: !Object}} */ (e);
-          let frame = polymerEvent.model.item.stackTrace[i + direction];
+          const polymerEvent = /** @type {!{model: !Object}} */ (e);
+          const frame = polymerEvent.model.item.stackTrace[i + direction];
           if (frame) {
             this.updateSelected_(frame);
             list[i + direction].focus();  // Preserve focus.

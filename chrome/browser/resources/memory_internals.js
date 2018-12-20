@@ -23,9 +23,9 @@ function startProfiling(pid) {
 // celltype should either be "td" or "th". The contents of the |cols| will be
 // added as children of each table cell if they are non-null.
 function addListRow(table, celltype, cols) {
-  let tr = document.createElement('tr');
-  for (let col of cols) {
-    let cell = document.createElement(celltype);
+  const tr = document.createElement('tr');
+  for (const col of cols) {
+    const cell = document.createElement(celltype);
     if (col)
       cell.appendChild(col);
     tr.appendChild(cell);
@@ -40,32 +40,32 @@ function setSaveDumpMessage(data) {
 function returnProcessList(data) {
   $('message').innerText = data['message'];
 
-  let proclist = $('proclist');
+  const proclist = $('proclist');
   proclist.innerText = '';  // Clear existing contents.
 
-  let processes = data['processes'];
+  const processes = data['processes'];
   if (processes.length == 0)
     return;  // No processes to dump, don't make the table and refresh button.
 
   // Add the refresh and save-dump buttons.
-  let commandsDiv = document.createElement('div');
+  const commandsDiv = document.createElement('div');
   commandsDiv.className = 'commands';
 
-  let refreshButton = document.createElement('button');
+  const refreshButton = document.createElement('button');
   refreshButton.innerText = '\u21ba Refresh process list';
   refreshButton.onclick = () => requestProcessList();
   commandsDiv.appendChild(refreshButton);
-  let saveDumpButton = document.createElement('button');
+  const saveDumpButton = document.createElement('button');
   saveDumpButton.innerText = '\u21e9 Save dump';
   saveDumpButton.onclick = () => saveDump();
   commandsDiv.appendChild(saveDumpButton);
-  let saveDumpText = document.createElement('div');
+  const saveDumpText = document.createElement('div');
   saveDumpText.id = 'save_dump_text';
   commandsDiv.appendChild(saveDumpText);
 
   proclist.appendChild(commandsDiv);
 
-  let table = document.createElement('table');
+  const table = document.createElement('table');
 
   // Heading.
   addListRow(table, 'th', [

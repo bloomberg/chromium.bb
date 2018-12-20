@@ -292,14 +292,14 @@ cr.define('bookmarks', function() {
       const state = this.getState();
       switch (command) {
         case Command.EDIT: {
-          let id = Array.from(itemIds)[0];
+          const id = Array.from(itemIds)[0];
           /** @type {!BookmarksEditDialogElement} */ (this.$.editDialog.get())
               .showEditDialog(state.nodes[id]);
           break;
         }
         case Command.COPY_URL:
         case Command.COPY: {
-          let idList = Array.from(itemIds);
+          const idList = Array.from(itemIds);
           chrome.bookmarkManagerPrivate.copy(idList, () => {
             let labelPromise;
             if (command == Command.COPY_URL) {
@@ -319,7 +319,7 @@ cr.define('bookmarks', function() {
           break;
         }
         case Command.SHOW_IN_FOLDER: {
-          let id = Array.from(itemIds)[0];
+          const id = Array.from(itemIds)[0];
           this.dispatch(bookmarks.actions.selectFolder(
               assert(state.nodes[id].parentId), state.nodes));
           bookmarks.DialogFocusManager.getInstance().clearFocus();
@@ -327,7 +327,7 @@ cr.define('bookmarks', function() {
           break;
         }
         case Command.DELETE: {
-          let idList = Array.from(this.minimizeDeletionSet_(itemIds));
+          const idList = Array.from(this.minimizeDeletionSet_(itemIds));
           const title = state.nodes[idList[0]].title;
           let labelPromise;
 
