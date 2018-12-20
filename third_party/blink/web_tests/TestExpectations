@@ -4611,6 +4611,18 @@ crbug.com/681468 [ Win ] virtual/scalefactor200/fast/hidpi/static/data-suggestio
 
 crbug.com/683800 [ Win7 Debug ] external/wpt/selection/ [ Failure Pass ]
 
+# Arrow function name inferring
+crbug.com/916975 external/wpt/workers/semantics/structured-clone/dedicated.html [ Pass Failure ]
+crbug.com/916975 external/wpt/workers/semantics/structured-clone/shared.html [ Pass Failure ]
+crbug.com/916975 http/tests/devtools/console/console-repeat-count.js [ Pass Failure ]
+crbug.com/916975 http/tests/devtools/service-workers/lazy-addeventlisteners.js [ Pass Failure ]
+crbug.com/916975 http/tests/devtools/sources/debugger-ui/call-stack-show-more.js [ Pass Failure ]
+crbug.com/916975 http/tests/devtools/tracing/timeline-misc/timeline-event-causes.js [ Pass Failure ]
+crbug.com/916975 inspector-protocol/css/media-query-listener-exception.js [ Pass Failure ]
+crbug.com/916975 virtual/omt-worker-fetch/external/wpt/workers/semantics/structured-clone/dedicated.html [ Pass Failure ]
+crbug.com/916975 virtual/omt-worker-fetch/external/wpt/workers/semantics/structured-clone/shared.html [ Pass Failure ]
+crbug.com/916975 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-event-causes.js [ Pass Failure ]
+
 # Importing 'fetch' tests from WPT.
 crbug.com/705490 external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
 crbug.com/705490 virtual/outofblink-cors/external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
