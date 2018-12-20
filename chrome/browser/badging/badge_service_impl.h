@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_BADGING_BADGE_SERVICE_IMPL_H_
 #define CHROME_BROWSER_BADGING_BADGE_SERVICE_IMPL_H_
 
+#include "base/optional.h"
 #include "content/public/browser/frame_service_base.h"
 #include "third_party/blink/public/platform/modules/badging/badging.mojom.h"
 
@@ -35,8 +36,8 @@ class BadgeServiceImpl
                      content::RenderFrameHost* render_frame_host);
 
   // blink::mojom::BadgeService overrides.
-  // TODO(crbug.com/719176): Support non-flag badges.
-  void SetBadge() override;
+  void SetInteger(uint64_t content) override;
+  void SetFlag() override;
   void ClearBadge() override;
 
  private:
@@ -44,6 +45,7 @@ class BadgeServiceImpl
                    blink::mojom::BadgeServiceRequest request);
   ~BadgeServiceImpl() override;
 
+  void SetBadge(base::Optional<uint64_t> content);
   const extensions::Extension* ExtensionFromLastUrl();
   bool IsInApp();
 

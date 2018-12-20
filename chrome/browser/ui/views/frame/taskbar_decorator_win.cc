@@ -97,7 +97,8 @@ void PostSetOverlayIcon(HWND hwnd, std::unique_ptr<SkBitmap> bitmap) {
 
 }  // namespace
 
-void DrawNumericTaskbarDecoration(gfx::NativeWindow window) {
+void DrawTaskbarDecorationString(gfx::NativeWindow window,
+                                 const std::string& content) {
   HWND hwnd = views::HWNDForNativeWindow(window);
 
   // This is the color used by the Windows 10 Badge API, for platform
@@ -105,8 +106,12 @@ void DrawNumericTaskbarDecoration(gfx::NativeWindow window) {
   constexpr int kBackgroundColor = SkColorSetRGB(0x26, 0x25, 0x2D);
   constexpr int kForegroundColor = SK_ColorWHITE;
   constexpr int kRadius = kOverlayIconSize / 2;
-  constexpr int kTextSize = 12;  // Fits nicely into our 16x16px icon.
-  const std::string kFallbackBadge = "•";
+  // The minimum gap to have between our content and the edge of the badge.
+  constexpr int kMinMargin = 3;
+  // The amount of space we have to render the icon.
+  constexpr int kMaxBounds = kOverlayIconSize - 2 * kMinMargin;
+  constexpr int kMaxTextSize = 24;  // Max size for our text.
+  constexpr int kMinTextSize = 7;   // Min size for our text.
 
   auto badge = std::make_unique<SkBitmap>();
   badge->allocN32Pixels(kOverlayIconSize, kOverlayIconSize);
@@ -123,17 +128,18 @@ void DrawNumericTaskbarDecoration(gfx::NativeWindow window) {
   paint.reset();
   paint.setAntiAlias(true);
   paint.setColor(kForegroundColor);
-  paint.setTextSize(kTextSize);
 
   SkRect bounds;
-  paint.measureText(kFallbackBadge.c_str(), kFallbackBadge.size(), &bounds);
+  int text_size = kMaxTextSize;
+  // Find the largest |text_size| larger than |kMinTextSize| in which
+  // |content| fits into our 16x16px icon, with margins.
+  do {
+    paint.setTextSize(text_size--);
+    paint.measureText(content.c_str(), content.size(), &bounds);
+  } while (text_size >= kMinTextSize &&
+           (bounds.width() > kMaxBounds || bounds.height() > kMaxBounds));
 
-  // Text automatically has an offset applied to it, which needs to be removed
-  // in order to centre text.
-  // TODO(harrisjay): Draw a number instead of the '•' when we update
-  // the Mojo bindings for the BadgeService to accept badge contents.
-  // See http://crbug.com/719176
-  canvas.drawText(kFallbackBadge.c_str(), kFallbackBadge.size(),
+  canvas.drawText(content.c_str(), content.size(),
                   kRadius - bounds.width() / 2 - bounds.x(),
                   kRadius - bounds.height() / 2 - bounds.y(), paint);
 
