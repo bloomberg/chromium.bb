@@ -135,8 +135,9 @@ bool ShellContentRendererClient::HasErrorPage(int http_status_code) {
 
 void ShellContentRendererClient::PrepareErrorPage(
     RenderFrame* render_frame,
-    const blink::WebURLRequest& failed_request,
     const blink::WebURLError& error,
+    const std::string& http_method,
+    bool ignoring_cache,
     std::string* error_html) {
   if (error_html && error_html->empty()) {
     *error_html =
@@ -151,8 +152,9 @@ void ShellContentRendererClient::PrepareErrorPage(
 
 void ShellContentRendererClient::PrepareErrorPageForHttpStatusError(
     content::RenderFrame* render_frame,
-    const blink::WebURLRequest& failed_request,
     const GURL& unreachable_url,
+    const std::string& http_method,
+    bool ignoring_cache,
     int http_status,
     std::string* error_html) {
   if (error_html) {

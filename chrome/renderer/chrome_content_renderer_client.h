@@ -55,10 +55,6 @@ class BrowserPluginDelegate;
 struct WebPluginInfo;
 }
 
-namespace error_page {
-class Error;
-}
-
 namespace network_hints {
 class PrescientNetworkingDispatcher;
 }
@@ -110,18 +106,19 @@ class ChromeContentRendererClient
                                const GURL& url) override;
   bool ShouldTrackUseCounter(const GURL& url) override;
   void PrepareErrorPage(content::RenderFrame* render_frame,
-                        const blink::WebURLRequest& failed_request,
                         const blink::WebURLError& error,
+                        const std::string& http_method,
+                        bool ignoring_cache,
                         std::string* error_html) override;
-  void PrepareErrorPageForHttpStatusError(
-      content::RenderFrame* render_frame,
-      const blink::WebURLRequest& failed_request,
-      const GURL& unreachable_url,
-      int http_status,
-      std::string* error_html) override;
+  void PrepareErrorPageForHttpStatusError(content::RenderFrame* render_frame,
+                                          const GURL& unreachable_url,
+                                          const std::string& http_method,
+                                          bool ignoring_cache,
+                                          int http_status,
+                                          std::string* error_html) override;
 
-  void GetErrorDescription(const blink::WebURLRequest& failed_request,
-                           const blink::WebURLError& error,
+  void GetErrorDescription(const blink::WebURLError& error,
+                           const std::string& http_method,
                            base::string16* error_description) override;
 
   bool DeferMediaLoad(content::RenderFrame* render_frame,
@@ -257,15 +254,6 @@ class ChromeContentRendererClient
   // service_manager::LocalInterfaceProvider:
   void GetInterface(const std::string& name,
                     mojo::ScopedMessagePipeHandle request_handle) override;
-
-  void PrepareErrorPageInternal(content::RenderFrame* render_frame,
-                                const blink::WebURLRequest& failed_request,
-                                const error_page::Error& error,
-                                std::string* error_html);
-
-  void GetErrorDescriptionInternal(const blink::WebURLRequest& failed_request,
-                                   const error_page::Error& error,
-                                   base::string16* error_description);
 
   // Time at which this object was created. This is very close to the time at
   // which the RendererMain function was entered.

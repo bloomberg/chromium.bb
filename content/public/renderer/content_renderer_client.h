@@ -138,21 +138,24 @@ class CONTENT_EXPORT ContentRendererClient {
   // (lack of information on the error code) so the caller should take care to
   // initialize it with a safe default before the call.
   virtual void PrepareErrorPage(content::RenderFrame* render_frame,
-                                const blink::WebURLRequest& failed_request,
                                 const blink::WebURLError& error,
+                                const std::string& http_method,
+                                bool ignoring_cache,
                                 std::string* error_html) {}
+
   virtual void PrepareErrorPageForHttpStatusError(
       content::RenderFrame* render_frame,
-      const blink::WebURLRequest& failed_request,
       const GURL& unreachable_url,
+      const std::string& http_method,
+      bool ignoring_cache,
       int http_status,
       std::string* error_html) {}
 
   // Returns as |error_description| a brief description of the error that
   // ocurred. The out parameter may be not written to in certain cases (lack of
   // information on the error code)
-  virtual void GetErrorDescription(const blink::WebURLRequest& failed_request,
-                                   const blink::WebURLError& error,
+  virtual void GetErrorDescription(const blink::WebURLError& error,
+                                   const std::string& http_method,
                                    base::string16* error_description) {}
 
   // Allows the embedder to control when media resources are loaded. Embedders
