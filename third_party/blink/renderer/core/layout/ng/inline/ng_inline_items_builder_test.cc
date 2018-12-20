@@ -14,6 +14,11 @@ namespace blink {
 
 namespace {
 
+// The spec turned into a discussion that may change. Put this logic on hold
+// until CSSWG resolves the issue.
+// https://github.com/w3c/csswg-drafts/issues/337
+#define SEGMENT_BREAK_TRANSFORMATION_FOR_EAST_ASIAN_WIDTH 0
+
 #define EXPECT_ITEM_OFFSET(item, type, start, end) \
   EXPECT_EQ(type, (item).Type());                  \
   EXPECT_EQ(start, (item).StartOffset());          \
@@ -256,6 +261,7 @@ TEST_F(NGInlineItemsBuilderTest, CollapseZeroWidthSpaces) {
          "a zero width space is collapsed to a zero width space.";
 }
 
+#if SEGMENT_BREAK_TRANSFORMATION_FOR_EAST_ASIAN_WIDTH
 TEST_F(NGInlineItemsBuilderTest, CollapseEastAsianWidth) {
   EXPECT_EQ(String(u"\u4E00\u4E00"), TestAppend(u"\u4E00\n\u4E00"))
       << "Newline is removed when both sides are Wide.";
@@ -271,6 +277,7 @@ TEST_F(NGInlineItemsBuilderTest, CollapseEastAsianWidth) {
       << "Newline at the beginning of elements is removed "
          "when both sides are Wide.";
 }
+#endif
 
 TEST_F(NGInlineItemsBuilderTest, OpaqueToSpaceCollapsing) {
   NGInlineItemsBuilder builder(&items_);
