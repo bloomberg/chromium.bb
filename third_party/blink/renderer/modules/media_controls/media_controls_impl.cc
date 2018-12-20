@@ -2307,6 +2307,7 @@ void MediaControlsImpl::OpenVolumeSliderIfNecessary() {
     if (volume_slider_->IsFocused() || mute_button_->IsFocused()) {
       // When we're focusing with the keyboard, we don't need the delay.
       volume_slider_->OpenSlider();
+      ShowVolumeControlHoverBackground();
     } else {
       volume_slider_wanted_timer_.StartOneShot(
           WebTestSupport::IsRunningWebTest() ? kTimeToShowVolumeSliderTest
