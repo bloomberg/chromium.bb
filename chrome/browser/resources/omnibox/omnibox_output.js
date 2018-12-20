@@ -23,7 +23,7 @@ cr.define('omnibox_output', function() {
       /** @private {!QueryInputs} */
       this.queryInputs_ = /** @type {!QueryInputs} */ ({});
       /** @private {!DisplayInputs} */
-      this.displayInputs_ = /** @type {!DisplayInputs} */ ({});
+      this.displayInputs_ = OmniboxInputs.defaultDisplayInputs;
       /** @private {string} */
       this.filterText_ = '';
     }
@@ -401,7 +401,7 @@ cr.define('omnibox_output', function() {
       return Object.keys(this.additionalProperties.value).length > 0;
     }
 
-    /** @private @return !Array<!OutputProperty> */
+    /** @private @return {!Array<!OutputProperty>} */
     get allProperties_() {
       return Object.values(this.properties).concat(this.additionalProperties);
     }
