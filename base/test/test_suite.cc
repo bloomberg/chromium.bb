@@ -346,11 +346,12 @@ void TestSuite::UnitTestAssertHandler(const char* file,
 #if defined(OS_WIN)
 namespace {
 
-// Disable optimizations to prevent function folding or other transformations
-// that will make the call stacks on failures more confusing.
-#pragma optimize("", off)
 // Handlers for invalid parameter, pure call, and abort. They generate a
 // breakpoint to ensure that we get a call stack on these failures.
+// These functions should be written to be unique in order to avoid confusing
+// call stacks from /OPT:ICF function folding. Printing a unique message or
+// returning a unique value will do this. Note that for best results they need
+// to be unique from *all* functions in Chrome.
 void InvalidParameter(const wchar_t* expression,
                       const wchar_t* function,
                       const wchar_t* file,
@@ -372,7 +373,6 @@ void AbortHandler(int signal) {
   fprintf(stderr, "\n");
   __debugbreak();
 }
-#pragma optimize("", on)
 
 }  // namespace
 #endif
