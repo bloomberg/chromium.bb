@@ -88,6 +88,9 @@ class CrostiniPackageNotification
 
   std::unique_ptr<message_center::Notification> notification_;
 
+  // True if we think the notification is visible.
+  bool visible_;
+
   base::WeakPtrFactory<CrostiniPackageNotification> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniPackageNotification);

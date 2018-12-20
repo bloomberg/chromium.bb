@@ -5,10 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_PACKAGE_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_PACKAGE_SERVICE_H_
 
-#include <deque>
 #include <map>
 #include <memory>
-#include <set>
+#include <queue>
 #include <string>
 #include <utility>
 #include <vector>
@@ -33,7 +32,7 @@ class CrostiniPackageService : public KeyedService,
   // KeyedService:
   void Shutdown() override;
 
-  void NotificationClosed(CrostiniPackageNotification* notification);
+  void NotificationCompleted(CrostiniPackageNotification* notification);
 
   // The package installer service caches the most recent retrieved package
   // info, for use in a package install notification.
@@ -148,15 +147,8 @@ class CrostiniPackageService : public KeyedService,
   std::map<ContainerIdentifier, std::unique_ptr<CrostiniPackageNotification>>
       running_notifications_;
 
-  // A list of containers with running operations. Generally, matches the list
-  // of containers with notifications, but we need a separate copy of the state
-  // in case the user closes the notification while still running.
-  std::set<ContainerIdentifier> containers_with_running_operations_;
-
-  // Uninstalls we want to run when the current one is done. Operations are
-  // queued in FIFO order (but we can't use std::queue because we sometimes need
-  // to erase a notification window pointer in the middle of the queue).
-  std::map<ContainerIdentifier, std::deque<QueuedUninstall>> queued_uninstalls_;
+  // Uninstalls we want to run when the current one is done.
+  std::map<ContainerIdentifier, std::queue<QueuedUninstall>> queued_uninstalls_;
 
   // Notifications in a finished state (either SUCCEEDED or FAILED). We need
   // to keep notifications around until they are dismissed even if we don't
