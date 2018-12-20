@@ -249,8 +249,8 @@ gfx::Rect PipWindowResizer::ComputeFlungPosition() {
     y_dist = area.bottom() - bounds.y() - bounds.height();
 
   // Compute which axis is limiting the movement, then offset.
-  if (fling_velocity_x_ == 0 ||
-      x_dist * fling_velocity_y_ > y_dist * fling_velocity_x_) {
+  if (fling_velocity_x_ == 0 || std::abs(x_dist * fling_velocity_y_) >
+                                    std::abs(y_dist * fling_velocity_x_)) {
     bounds.Offset((y_dist * fling_velocity_x_) / fling_velocity_y_, y_dist);
   } else {
     bounds.Offset(x_dist, (x_dist * fling_velocity_y_) / fling_velocity_x_);

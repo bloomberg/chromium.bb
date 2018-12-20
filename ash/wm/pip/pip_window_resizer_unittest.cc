@@ -430,6 +430,72 @@ TEST_F(PipWindowResizerTest, PipWindowIsFlungDiagonally) {
     // Flung downward and to the right, but reaching the right edge first.
     EXPECT_EQ(gfx::Rect(292, 269, 100, 100), test_state()->last_bounds());
   }
+
+  {
+    std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
+    ASSERT_TRUE(resizer.get());
+
+    resizer->Drag(CalculateDragPoint(*resizer, -3, -4), 0);
+    Fling(std::move(resizer), -3000.f, -4000.f);
+
+    // Flung upward and to the left, but reaching the top edge first.
+    EXPECT_EQ(gfx::Rect(56, 8, 100, 100), test_state()->last_bounds());
+  }
+
+  {
+    std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
+    ASSERT_TRUE(resizer.get());
+
+    resizer->Drag(CalculateDragPoint(*resizer, -4, -3), 0);
+    Fling(std::move(resizer), -4000.f, -3000.f);
+
+    // Flung upward and to the left, but reaching the left edge first.
+    EXPECT_EQ(gfx::Rect(8, 56, 100, 100), test_state()->last_bounds());
+  }
+
+  {
+    std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
+    ASSERT_TRUE(resizer.get());
+
+    resizer->Drag(CalculateDragPoint(*resizer, 3, -9), 0);
+    Fling(std::move(resizer), 3000.f, -9000.f);
+
+    // Flung upward and to the right, but reaching the top edge first.
+    EXPECT_EQ(gfx::Rect(264, 8, 100, 100), test_state()->last_bounds());
+  }
+
+  {
+    std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
+    ASSERT_TRUE(resizer.get());
+
+    resizer->Drag(CalculateDragPoint(*resizer, 3, -3), 0);
+    Fling(std::move(resizer), 3000.f, -3000.f);
+
+    // Flung upward and to the right, but reaching the right edge first.
+    EXPECT_EQ(gfx::Rect(292, 108, 100, 100), test_state()->last_bounds());
+  }
+
+  {
+    std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
+    ASSERT_TRUE(resizer.get());
+
+    resizer->Drag(CalculateDragPoint(*resizer, -3, 3), 0);
+    Fling(std::move(resizer), -3000.f, 3000.f);
+
+    // Flung downward and to the left, but reaching the bottom edge first.
+    EXPECT_EQ(gfx::Rect(108, 292, 100, 100), test_state()->last_bounds());
+  }
+
+  {
+    std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
+    ASSERT_TRUE(resizer.get());
+
+    resizer->Drag(CalculateDragPoint(*resizer, -9, 3), 0);
+    Fling(std::move(resizer), -9000.f, 3000.f);
+
+    // Flung downward and to the left, but reaching the left edge first.
+    EXPECT_EQ(gfx::Rect(8, 264, 100, 100), test_state()->last_bounds());
+  }
 }
 
 TEST_F(PipWindowResizerTest, PipWindowFlungAvoidsFloatingKeyboard) {
