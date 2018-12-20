@@ -4551,7 +4551,7 @@ TEST_F(WebFrameTest, ReloadWhileProvisional) {
       web_view_helper.LocalMainFrame()->GetDocumentLoader();
   ASSERT_TRUE(document_loader);
   EXPECT_EQ(ToKURL(base_url_ + "fixed_layout.html"),
-            KURL(document_loader->GetRequest().Url()));
+            KURL(document_loader->GetUrl()));
 }
 
 TEST_F(WebFrameTest, AppendRedirects) {
