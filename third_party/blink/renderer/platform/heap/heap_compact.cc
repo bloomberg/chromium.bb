@@ -368,10 +368,14 @@ bool HeapCompact::ShouldCompact(ThreadHeap* heap,
     return force_compaction_gc_;
   }
 
+  // TODO(keishi): Should be enable after fixing the crashes.
+  if (marking_type == BlinkGC::kIncrementalMarking)
+    return false;
+
+  // TODO(harukamt): Add kIncrementalIdleGC and kIncrementalV8FollowupGC when we
+  // enable heap compaction for incremental marking.
   if (reason != BlinkGC::GCReason::kIdleGC &&
       reason != BlinkGC::GCReason::kPreciseGC &&
-      reason != BlinkGC::GCReason::kIncrementalIdleGC &&
-      reason != BlinkGC::GCReason::kIncrementalV8FollowupGC &&
       reason != BlinkGC::GCReason::kForcedGC)
     return false;
 
