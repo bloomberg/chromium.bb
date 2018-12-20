@@ -169,8 +169,7 @@ InlineFlowBoxPainter::GetBorderPaintType(const LayoutRect& adjusted_frame_rect,
     // The simple case is where we either have no border image or we are the
     // only box for this object.  In those cases only a single call to draw is
     // required.
-    if (!has_border_image || (!inline_flow_box_.PrevForSameLayoutObject() &&
-                              !inline_flow_box_.NextForSameLayoutObject()))
+    if (!has_border_image || !object_has_multiple_boxes)
       return kPaintBordersWithoutClip;
 
     // We have a border image that spans multiple lines.
@@ -267,8 +266,7 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
 
   // The simple case is where we are the only box for this object. In those
   // cases only a single call to draw is required.
-  if (!inline_flow_box_.PrevForSameLayoutObject() &&
-      !inline_flow_box_.NextForSameLayoutObject()) {
+  if (!object_has_multiple_boxes) {
     NinePieceImagePainter::Paint(paint_info.context, box_model,
                                  box_model.GetDocument(), GetNode(&box_model),
                                  paint_rect, box_model.StyleRef(),
