@@ -56,11 +56,6 @@ struct NativeValueTraitsBase<
 //     return toInt32(isolate, value, exceptionState, NormalConversion);
 //   }
 // }
-//
-// Note that there exist some specializations (particularly in V8Binding.h) for
-// which T actually represents the final C++ type that a JavaScript value
-// should be converted to. Introducing new specializations of this kind is
-// discouraged.
 template <typename T, typename SFINAEHelper = void>
 struct NativeValueTraits;
 
