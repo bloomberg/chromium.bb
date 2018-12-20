@@ -30,7 +30,6 @@ TEST(ServiceWorkerRequestTest, SerialiazeDeserializeRoundTrip) {
   request->redirect_mode = network::mojom::FetchRedirectMode::kManual;
   request->integrity = "integrity";
   request->keepalive = true;
-  request->client_id = "42";
   request->is_reload = true;
 
   EXPECT_EQ(

@@ -237,8 +237,6 @@ std::string ServiceWorkerUtils::SerializeFetchRequestToString(
     request_proto.set_integrity(request.integrity.value());
   request_proto.set_keepalive(request.keepalive);
   request_proto.set_is_history_navigation(request.is_history_navigation);
-  if (request.client_id)
-    request_proto.set_client_id(request.client_id.value());
   return request_proto.SerializeAsString();
 }
 
@@ -279,8 +277,6 @@ ServiceWorkerUtils::DeserializeFetchRequestFromString(
     request_ptr->integrity = request_proto.integrity();
   request_ptr->keepalive = request_proto.keepalive();
   request_ptr->is_history_navigation = request_proto.is_history_navigation();
-  if (request_proto.has_client_id())
-    request_ptr->client_id = request_proto.client_id();
   return request_ptr;
 }
 

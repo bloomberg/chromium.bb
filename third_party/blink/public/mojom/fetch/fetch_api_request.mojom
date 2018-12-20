@@ -151,7 +151,6 @@ struct FetchAPIRequest {
   mojo_base.mojom.UnguessableToken? fetch_window_id;
 
   bool keepalive = false;
-  string? client_id;
   bool is_reload = false;
   bool is_history_navigation = false;
 };

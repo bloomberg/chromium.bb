@@ -251,8 +251,8 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
           nullptr /* body */, request->referrer.Clone(),
           request->credentials_mode, request->cache_mode,
           request->redirect_mode, request->integrity, request->priority,
-          request->fetch_window_id, request->keepalive, request->client_id,
-          request->is_reload, request->is_history_navigation);
+          request->fetch_window_id, request->keepalive, request->is_reload,
+          request->is_history_navigation);
       cache_ptr_->Match(std::move(request), mojom::blink::QueryParams::New(),
                         WTF::Bind(
                             [](scoped_refptr<ResponsesAccumulator> accumulator,

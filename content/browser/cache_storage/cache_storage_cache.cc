@@ -885,8 +885,6 @@ size_t CacheStorageCache::EstimatedStructSize(
     const blink::mojom::FetchAPIRequestPtr& request) {
   size_t size = sizeof(*request);
   size += request->url.spec().size();
-  if (request->client_id.has_value())
-    size += request->client_id.value().size();
 
   for (const auto& key_and_value : request->headers) {
     size += key_and_value.first.size();
