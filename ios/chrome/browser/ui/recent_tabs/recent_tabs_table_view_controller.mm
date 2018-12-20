@@ -47,6 +47,7 @@
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/browser/web_state_list/web_state_opener.h"
@@ -222,6 +223,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   historyItem.title = l10n_util::GetNSString(IDS_HISTORY_SHOWFULLHISTORY_LINK);
   historyItem.image = [UIImage imageNamed:@"show_history"];
   historyItem.hideChevron = YES;
+  historyItem.textColor = UIColorFromRGB(kTableViewTextLabelColorBlue);
   historyItem.cellAccessibilityIdentifier =
       kRecentTabsShowFullHistoryCellAccessibilityIdentifier;
   [model addItem:historyItem
@@ -927,7 +929,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
           sectionIsCollapsed:[self.tableViewModel
                                  sectionIdentifierForSection:section]];
       DisclosureDirection direction =
-          collapsed ? DisclosureDirectionUp : DisclosureDirectionDown;
+          collapsed ? DisclosureDirectionTrailing : DisclosureDirectionDown;
 
       [disclosureHeaderView animateHighlightAndRotateToDirection:direction];
       disclosureItem.collapsed = collapsed;
