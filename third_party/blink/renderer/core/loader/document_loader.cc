@@ -63,8 +63,8 @@
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
-#include "third_party/blink/renderer/core/loader/link_loader.h"
 #include "third_party/blink/renderer/core/loader/network_hints_interface.h"
+#include "third_party/blink/renderer/core/loader/preload_helper.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
@@ -273,13 +273,13 @@ std::unique_ptr<SourceLocation> DocumentLoader::CopySourceLocation() const {
 
 void DocumentLoader::DispatchLinkHeaderPreloads(
     ViewportDescriptionWrapper* viewport,
-    LinkLoader::MediaPreloadPolicy media_policy) {
+    PreloadHelper::MediaPreloadPolicy media_policy) {
   DCHECK_GE(state_, kCommitted);
-  LinkLoader::LoadLinksFromHeader(
+  PreloadHelper::LoadLinksFromHeader(
       GetResponse().HttpHeaderField(http_names::kLink),
       GetResponse().CurrentRequestUrl(), *frame_, frame_->GetDocument(),
-      NetworkHintsInterfaceImpl(), LinkLoader::kOnlyLoadResources, media_policy,
-      viewport);
+      NetworkHintsInterfaceImpl(), PreloadHelper::kOnlyLoadResources,
+      media_policy, viewport);
 }
 
 void DocumentLoader::DidChangePerformanceTiming() {
@@ -1106,7 +1106,7 @@ void DocumentLoader::DidCommitNavigation(
 
   // Links with media values need more information (like viewport information).
   // This happens after the first chunk is parsed in HTMLDocumentParser.
-  DispatchLinkHeaderPreloads(nullptr, LinkLoader::kOnlyLoadNonMedia);
+  DispatchLinkHeaderPreloads(nullptr, PreloadHelper::kOnlyLoadNonMedia);
 
   frame_->GetPage()->DidCommitLoad(frame_);
   GetUseCounter().DidCommitLoad(frame_);

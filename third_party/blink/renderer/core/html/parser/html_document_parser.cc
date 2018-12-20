@@ -47,8 +47,8 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/core/loader/link_loader.h"
 #include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
+#include "third_party/blink/renderer/core/loader/preload_helper.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/html_parser_script_runner.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
@@ -322,7 +322,7 @@ void HTMLDocumentParser::EnqueueTokenizedChunk(
     // Note that on commit, the loader dispatched preloads for all the non-media
     // links.
     GetDocument()->Loader()->DispatchLinkHeaderPreloads(
-        &chunk->viewport, LinkLoader::kOnlyLoadMedia);
+        &chunk->viewport, PreloadHelper::kOnlyLoadMedia);
     tried_loading_link_headers_ = true;
   }
 

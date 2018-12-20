@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/html/link_resource.h"
 #include "third_party/blink/renderer/core/html/link_style.h"
 #include "third_party/blink/renderer/core/html/rel_list.h"
-#include "third_party/blink/renderer/core/loader/link_loader.h"
 #include "third_party/blink/renderer/core/loader/link_loader_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
@@ -44,6 +43,7 @@ namespace blink {
 
 class KURL;
 class LinkImport;
+class LinkLoader;
 struct LinkLoadParameters;
 
 class CORE_EXPORT HTMLLinkElement final : public HTMLElement,

@@ -640,17 +640,17 @@ void FrameFetchContext::DispatchDidReceiveResponse(
 
   MixedContentChecker::CheckMixedPrivatePublic(GetFrame(),
                                                response.RemoteIPAddress());
-  LinkLoader::CanLoadResources resource_loading_policy =
+  PreloadHelper::CanLoadResources resource_loading_policy =
       response_type == ResourceResponseType::kFromMemoryCache
-          ? LinkLoader::kDoNotLoadResources
-          : LinkLoader::kLoadResourcesAndPreconnect;
+          ? PreloadHelper::kDoNotLoadResources
+          : PreloadHelper::kLoadResourcesAndPreconnect;
   if (document_loader_ &&
       document_loader_ == document_loader_->GetFrame()
                               ->Loader()
                               .GetProvisionalDocumentLoader()) {
     // When response is received with a provisional docloader, the resource
     // haven't committed yet, and we cannot load resources, only preconnect.
-    resource_loading_policy = LinkLoader::kDoNotLoadResources;
+    resource_loading_policy = PreloadHelper::kDoNotLoadResources;
   }
   // Client hints preferences should be persisted only from responses that were
   // served by the same host as the host of the document-level origin.
@@ -667,10 +667,10 @@ void FrameFetchContext::DispatchDidReceiveResponse(
     ParseAndPersistClientHints(response);
   }
 
-  LinkLoader::LoadLinksFromHeader(
+  PreloadHelper::LoadLinksFromHeader(
       response.HttpHeaderField(http_names::kLink), response.CurrentRequestUrl(),
       *GetFrame(), document_, NetworkHintsInterfaceImpl(),
-      resource_loading_policy, LinkLoader::kLoadAll, nullptr);
+      resource_loading_policy, PreloadHelper::kLoadAll, nullptr);
 
   if (response.HasMajorCertificateErrors()) {
     MixedContentChecker::HandleCertificateError(GetFrame(), response,
