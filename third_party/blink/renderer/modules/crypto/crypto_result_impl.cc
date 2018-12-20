@@ -66,7 +66,6 @@ class CryptoResultImpl::Resolver final : public ScriptPromiseResolver {
   static Resolver* Create(ScriptState* script_state, CryptoResultImpl* result) {
     DCHECK(script_state->ContextIsValid());
     Resolver* resolver = MakeGarbageCollected<Resolver>(script_state, result);
-    resolver->PauseIfNeeded();
     resolver->KeepAliveWhilePending();
     return resolver;
   }

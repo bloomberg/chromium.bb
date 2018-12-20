@@ -15,7 +15,7 @@
 namespace blink {
 
 ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* script_state)
-    : PausableObject(ExecutionContext::From(script_state)),
+    : ContextLifecycleObserver(ExecutionContext::From(script_state)),
       state_(kPending),
       script_state_(script_state),
       resolver_(script_state) {
@@ -25,8 +25,8 @@ ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* script_state)
   }
 }
 
-#if DCHECK_IS_ON()
 ScriptPromiseResolver::~ScriptPromiseResolver() {
+#if DCHECK_IS_ON()
   // This is here temporarily to make it easier to track down which promise
   // resolvers are being abandoned.
   // TODO(crbug.com/873980): Remove this.
@@ -41,22 +41,13 @@ ScriptPromiseResolver::~ScriptPromiseResolver() {
   DCHECK(state_ == kDetached || !is_promise_called_ ||
          !GetScriptState()->ContextIsValid() || !GetExecutionContext() ||
          GetExecutionContext()->IsContextDestroyed());
-}
 #endif
+}
 
 void ScriptPromiseResolver::Reject(ExceptionState& exception_state) {
   DCHECK(exception_state.HadException());
   Reject(exception_state.GetException());
   exception_state.ClearException();
-}
-
-void ScriptPromiseResolver::Pause() {
-  deferred_resolve_task_.Cancel();
-}
-
-void ScriptPromiseResolver::Unpause() {
-  if (state_ == kResolving || state_ == kRejecting)
-    ScheduleResolveOrReject();
 }
 
 void ScriptPromiseResolver::Detach() {
@@ -115,7 +106,7 @@ void ScriptPromiseResolver::ResolveOrRejectDeferred() {
 
 void ScriptPromiseResolver::Trace(blink::Visitor* visitor) {
   visitor->Trace(script_state_);
-  PausableObject::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

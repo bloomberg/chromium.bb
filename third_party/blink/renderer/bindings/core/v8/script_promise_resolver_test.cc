@@ -202,10 +202,7 @@ TEST_F(ScriptPromiseResolverTest, stop) {
 class ScriptPromiseResolverKeepAlive : public ScriptPromiseResolver {
  public:
   static ScriptPromiseResolverKeepAlive* Create(ScriptState* script_state) {
-    ScriptPromiseResolverKeepAlive* resolver =
-        MakeGarbageCollected<ScriptPromiseResolverKeepAlive>(script_state);
-    resolver->PauseIfNeeded();
-    return resolver;
+    return MakeGarbageCollected<ScriptPromiseResolverKeepAlive>(script_state);
   }
 
   explicit ScriptPromiseResolverKeepAlive(ScriptState* script_state)

@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
@@ -28,37 +28,32 @@ namespace blink {
 // functionalities.
 //  - A ScriptPromiseResolver retains a ScriptState. A caller
 //    can call resolve or reject from outside of a V8 context.
-//  - This class is an PausableObject and keeps track of the associated
-//    ExecutionContext state. When the ExecutionContext is suspended,
-//    resolve or reject will be delayed. When it is stopped, resolve or reject
+//  - This class is an ContextLifecycleObserver and keeps track of the
+//    associated ExecutionContext state. When it is stopped, resolve or reject
 //    will be ignored.
 //
 // There are cases where promises cannot work (e.g., where the thread is being
 // terminated). In such cases operations will silently fail.
 class CORE_EXPORT ScriptPromiseResolver
     : public GarbageCollectedFinalized<ScriptPromiseResolver>,
-      public PausableObject {
+      public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ScriptPromiseResolver);
   WTF_MAKE_NONCOPYABLE(ScriptPromiseResolver);
 
  public:
   static ScriptPromiseResolver* Create(ScriptState* script_state) {
-    ScriptPromiseResolver* resolver =
-        MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-    resolver->PauseIfNeeded();
-    return resolver;
+    return MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   }
 
   // You need to call suspendIfNeeded after the construction because
   // this is an PausableObject.
   explicit ScriptPromiseResolver(ScriptState*);
+  virtual ~ScriptPromiseResolver();
 
 #if DCHECK_IS_ON()
   // Eagerly finalized so as to ensure valid access to getExecutionContext()
   // from the destructor's assert.
   EAGERLY_FINALIZE();
-
-  ~ScriptPromiseResolver() override;
 #endif
 
   // Anything that can be passed to toV8 can be passed to this function.
@@ -90,9 +85,7 @@ class CORE_EXPORT ScriptPromiseResolver
     return resolver_.Promise();
   }
 
-  // PausableObject implementation.
-  void Pause() override;
-  void Unpause() override;
+  // ContextLifecycleObserver implementation.
   void ContextDestroyed(ExecutionContext*) override { Detach(); }
 
   // Calling this function makes the resolver release its internal resources.
@@ -140,8 +133,7 @@ class CORE_EXPORT ScriptPromiseResolver
     }
 
     if (GetExecutionContext()->IsContextPaused()) {
-      // Retain this object until it is actually resolved or rejected.
-      KeepAliveWhilePending();
+      ScheduleResolveOrReject();
       return;
     }
     // TODO(esprehn): This is a hack, instead we should CHECK that
