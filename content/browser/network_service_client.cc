@@ -475,8 +475,6 @@ void NetworkServiceClient::OnCertificateRequested(
     const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
     network::mojom::NetworkServiceClient::OnCertificateRequestedCallback
         callback) {
-  base::RepeatingCallback<WebContents*(void)> web_contents_getter;
-
   // Use |window_id| if it's provided.
   if (window_id) {
     base::PostTaskWithTraitsAndReplyWithResult(
