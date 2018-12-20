@@ -66,6 +66,8 @@ cr.define('extensions', function() {
       return Array.from(this.data.countsByUrl.entries())
           .map(e => ({page: e[0], count: e[1]}))
           .sort(function(a, b) {
+            if (a.count != b.count)
+              return b.count - a.count;
             return a.page < b.page ? -1 : (a.page > b.page ? 1 : 0);
           });
     },

@@ -98,6 +98,62 @@ suite('ExtensionsActivityLogTest', function() {
     expectEquals(activityLogItems[1].$$('#activity-count').innerText, '35');
   });
 
+  test('activities shown match search query', function() {
+    const search = activityLog.$$('cr-search-field');
+    assertTrue(!!search);
+
+    // Partial, case insensitive search for i18n.getUILanguage. Whitespace is
+    // also appended to the search term to test trimming.
+    search.setValue('getuilanguage   ');
+
+    return proxyDelegate.whenCalled('getFilteredExtensionActivityLog')
+        .then(() => {
+          Polymer.dom.flush();
+
+          const activityLogItems =
+              activityLog.shadowRoot.querySelectorAll('activity-log-item');
+
+          // Since we searched for an API call, we expect only one match as
+          // activity log entries are grouped by their API call.
+          expectEquals(activityLogItems.length, 1);
+          expectEquals(
+              activityLogItems[0].$$('#api-call').innerText,
+              'i18n.getUILanguage');
+
+          // Change search query so no results match.
+          proxyDelegate.resetResolver('getFilteredExtensionActivityLog');
+          search.setValue('query that does not match any activities');
+
+          return proxyDelegate.whenCalled('getFilteredExtensionActivityLog');
+        })
+        .then(() => {
+          Polymer.dom.flush();
+
+          testVisible('#no-activities', true);
+          testVisible('#loading-activities', false);
+          testVisible('#activity-list', false);
+
+          expectEquals(
+              activityLog.shadowRoot.querySelectorAll('activity-log-item')
+                  .length,
+              0);
+
+          proxyDelegate.resetResolver('getExtensionActivityLog');
+
+          // Finally, we clear the search query via the #clearSearch button. We
+          // should see all the activities displayed.
+          search.$$('#clearSearch').click();
+          return proxyDelegate.whenCalled('getExtensionActivityLog');
+        })
+        .then(() => {
+          Polymer.dom.flush();
+
+          const activityLogItems =
+              activityLog.shadowRoot.querySelectorAll('activity-log-item');
+          expectEquals(activityLogItems.length, 2);
+        });
+  });
+
   test('message shown when no activities present for extension', function() {
     // Spoof an API call and pretend that the extension has no activities.
     activityLog.activityData_ = [];

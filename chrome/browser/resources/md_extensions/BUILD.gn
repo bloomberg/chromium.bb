@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/closure_compiler/compile_js.gni")
-import("../optimize_webui.gni")
-import("//tools/grit/grit_rule.gni")
 import("//chrome/common/features.gni")
+import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/grit/grit_rule.gni")
+import("../optimize_webui.gni")
 
 extensions_pak_file = "extensions_resources.pak"
 unpak_folder = "extensions_resources.unpak"
@@ -101,6 +101,7 @@ js_library("activity_log_item") {
 js_library("activity_log") {
   deps = [
     ":activity_log_item",
+    "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field",
     "//ui/webui/resources/js:cr",
   ]
   externs_list = [
