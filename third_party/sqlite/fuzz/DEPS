@@ -1,1 +1,1 @@
-include_rules = [ '+testing/libfuzzer/proto' ]
+include_rules = [ '+testing/libfuzzer/proto', '+base' ]

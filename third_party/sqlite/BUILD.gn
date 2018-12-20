@@ -205,6 +205,10 @@ config("chromium_sqlite3_compile_options") {
         # This is to fuzz SQLite's resilience to database corruption.
         "SQLITE_ENABLE_DESERIALIZE",
       ]
+
+      # The progress callback is used in fuzzing to cancel long-running queries
+      # so we don't spend too much time on them.
+      defines -= [ "SQLITE_OMIT_PROGRESS_CALLBACK" ]
     }
   }
 
@@ -463,6 +467,7 @@ fuzzer_test("sqlite3_lpm_fuzzer") {
     "max_len=2111000",
     "len_control=0",
   ]
+  seed_corpus = "fuzz/lpm_fuzzer_seed_corpus/"
 }
 
 # FTS3-focused LPM-based fuzzer test.
@@ -545,6 +550,22 @@ proto_library("sqlite3_lpm_fuzzer_input") {
     "fuzz/sql_queries.proto",
     "fuzz/sql_query_grammar.proto",
   ]
+}
+
+# Generates a good corpus for the sqlite_lpm_fuzzer
+if (use_fuzzing_engine) {
+  executable("sqlite3_lpm_corpus_gen") {
+    sources = [
+      "fuzz/sql_generate_corpus.cc",
+      "fuzz/sql_query_proto_to_string.cc",
+      "fuzz/sql_query_proto_to_string.h",
+    ]
+    deps = [
+      ":sqlite3_lpm_fuzzer_core",
+      "//base",
+      "//third_party/protobuf:protobuf_full",
+    ]
+  }
 }
 
 config("sqlite3_dbfuzz2_config") {
