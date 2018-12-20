@@ -1001,7 +1001,6 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
   size_t ocsp_response_len;
   SSL_get0_ocsp_response(ssl_.get(), &ocsp_response_raw, &ocsp_response_len);
   set_stapled_ocsp_response_received(ocsp_response_len != 0);
-  UMA_HISTOGRAM_BOOLEAN("Net.OCSPResponseStapled", ocsp_response_len != 0);
 
   const uint8_t* sct_list;
   size_t sct_list_len;
