@@ -294,9 +294,12 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
                                  PLATFORM_FAILURE, );
   }
 
-  TRACE_COUNTER_ID2("media,gpu", "Vaapi frames at client", this, "used",
-                    pictures_.size() - available_picture_buffers_.size(),
-                    "available", available_picture_buffers_.size());
+  {
+    base::AutoLock auto_lock(lock_);
+    TRACE_COUNTER_ID2("media,gpu", "Vaapi frames at client", this, "used",
+                      pictures_.size() - available_picture_buffers_.size(),
+                      "available", available_picture_buffers_.size());
+  }
 
   DVLOGF(4) << "Notifying output picture id " << output_id << " for input "
             << input_id
@@ -317,8 +320,11 @@ void VaapiVideoDecodeAccelerator::TryOutputPicture() {
   if (!client_)
     return;
 
-  if (pending_output_cbs_.empty() || available_picture_buffers_.empty())
-    return;
+  {
+    base::AutoLock auto_lock(lock_);
+    if (pending_output_cbs_.empty() || available_picture_buffers_.empty())
+      return;
+  }
 
   auto output_cb = std::move(pending_output_cbs_.front());
   pending_output_cbs_.pop();
@@ -535,6 +541,7 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   if (!awaiting_va_surfaces_recycle_)
     return;
 
+  base::AutoLock auto_lock(lock_);
   if (!pending_output_cbs_.empty() ||
       pictures_.size() != available_va_surfaces_.size()) {
     // Either:
@@ -567,7 +574,7 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   VLOGF(2) << "Requesting " << requested_num_pics_
            << " pictures of size: " << requested_pic_size_.ToString();
 
-  VideoPixelFormat format = GfxBufferFormatToVideoPixelFormat(
+  const VideoPixelFormat format = GfxBufferFormatToVideoPixelFormat(
       vaapi_picture_factory_->GetBufferFormat());
   task_runner_->PostTask(
       FROM_HERE,
@@ -702,27 +709,30 @@ void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
     return;
   }
 
-  if (!pictures_.count(picture_buffer_id)) {
-    CloseGpuMemoryBufferHandle(gpu_memory_buffer_handle);
+  {
+    base::AutoLock auto_lock(lock_);
+    if (!pictures_.count(picture_buffer_id)) {
+      CloseGpuMemoryBufferHandle(gpu_memory_buffer_handle);
 
-    // It's possible that we've already posted a DismissPictureBuffer for this
-    // picture, but it has not yet executed when this ImportBufferForPicture
-    // was posted to us by the client. In that case just ignore this (we've
-    // already dismissed it and accounted for that).
-    DVLOGF(3) << "got picture id=" << picture_buffer_id
-              << " not in use (anymore?).";
-    return;
-  }
+      // It's possible that we've already posted a DismissPictureBuffer for this
+      // picture, but it has not yet executed when this ImportBufferForPicture
+      // was posted to us by the client. In that case just ignore this (we've
+      // already dismissed it and accounted for that).
+      DVLOGF(3) << "got picture id=" << picture_buffer_id
+                << " not in use (anymore?).";
+      return;
+    }
 
-  VaapiPicture* picture = pictures_[picture_buffer_id].get();
-  if (!picture->ImportGpuMemoryBufferHandle(
-          VideoPixelFormatToGfxBufferFormat(pixel_format),
-          gpu_memory_buffer_handle)) {
-    // ImportGpuMemoryBufferHandle will close the handles even on failure, so
-    // we don't need to do this ourselves.
-    VLOGF(1) << "Failed to import GpuMemoryBufferHandle";
-    NotifyError(PLATFORM_FAILURE);
-    return;
+    VaapiPicture* picture = pictures_[picture_buffer_id].get();
+    if (!picture->ImportGpuMemoryBufferHandle(
+            VideoPixelFormatToGfxBufferFormat(pixel_format),
+            gpu_memory_buffer_handle)) {
+      // ImportGpuMemoryBufferHandle will close the handles even on failure, so
+      // we don't need to do this ourselves.
+      VLOGF(1) << "Failed to import GpuMemoryBufferHandle";
+      NotifyError(PLATFORM_FAILURE);
+      return;
+    }
   }
 
   ReusePictureBuffer(picture_buffer_id);
@@ -736,24 +746,24 @@ void VaapiVideoDecodeAccelerator::ReusePictureBuffer(
   TRACE_EVENT1("media,gpu", "VAVDA::ReusePictureBuffer", "Picture id",
                picture_buffer_id);
 
-  if (!pictures_.count(picture_buffer_id)) {
-    // It's possible that we've already posted a DismissPictureBuffer for this
-    // picture, but it has not yet executed when this ReusePictureBuffer
-    // was posted to us by the client. In that case just ignore this (we've
-    // already dismissed it and accounted for that).
-    DVLOGF(3) << "got picture id=" << picture_buffer_id
-              << " not in use (anymore?).";
-    return;
-  }
-
   {
     base::AutoLock auto_lock(lock_);
-    available_picture_buffers_.push_back(picture_buffer_id);
-  }
 
-  TRACE_COUNTER_ID2("media,gpu", "Vaapi frames at client", this, "used",
-                    pictures_.size() - available_picture_buffers_.size(),
-                    "available", available_picture_buffers_.size());
+    if (!pictures_.count(picture_buffer_id)) {
+      // It's possible that we've already posted a DismissPictureBuffer for this
+      // picture, but it has not yet executed when this ReusePictureBuffer
+      // was posted to us by the client. In that case just ignore this (we've
+      // already dismissed it and accounted for that).
+      DVLOGF(3) << "got picture id=" << picture_buffer_id
+                << " not in use (anymore?).";
+      return;
+    }
+
+    available_picture_buffers_.push_back(picture_buffer_id);
+    TRACE_COUNTER_ID2("media,gpu", "Vaapi frames at client", this, "used",
+                      pictures_.size() - available_picture_buffers_.size(),
+                      "available", available_picture_buffers_.size());
+  }
 
   TryOutputPicture();
 }
@@ -966,10 +976,10 @@ void VaapiVideoDecodeAccelerator::SurfaceReady(
     if (state_ == kResetting || state_ == kDestroying)
       return;
   }
-
   pending_output_cbs_.push(
       base::BindOnce(&VaapiVideoDecodeAccelerator::OutputPicture, weak_this_,
                      dec_surface, bitstream_id, visible_rect, color_space));
+
   TryOutputPicture();
 }
 
@@ -1017,14 +1027,16 @@ scoped_refptr<VASurface> VaapiVideoDecodeAccelerator::CreateSurface() {
 void VaapiVideoDecodeAccelerator::RecycleVASurfaceID(
     VASurfaceID va_surface_id) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  base::AutoLock auto_lock(lock_);
-  available_va_surfaces_.push_back(va_surface_id);
-  if (!decode_using_client_picture_buffers_) {
-    TRACE_COUNTER_ID2("media,gpu", "Vaapi VASurfaceIDs", this, "used",
-                      pictures_.size() - available_va_surfaces_.size(),
-                      "available", available_va_surfaces_.size());
+  {
+    base::AutoLock auto_lock(lock_);
+    available_va_surfaces_.push_back(va_surface_id);
+    if (!decode_using_client_picture_buffers_) {
+      TRACE_COUNTER_ID2("media,gpu", "Vaapi VASurfaceIDs", this, "used",
+                        pictures_.size() - available_va_surfaces_.size(),
+                        "available", available_va_surfaces_.size());
+    }
+    surfaces_available_.Signal();
   }
-  surfaces_available_.Signal();
 
   TryOutputPicture();
 }
