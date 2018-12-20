@@ -791,6 +791,78 @@ enum Channel {
   CHANNEL_STABLE = 4;
 }
 
+// Frequently changing data for battery.
+message BatterySample {
+  optional int64 timestamp = 1;
+  // Battery voltage
+  optional int64 voltage = 2;
+  // Battery remaining capacity (mWatt-hours)
+  optional int64 remaining_capacity = 3;
+  // Temperature in Celsius.
+  optional int32 temperature = 4;
+  // TODO(crbug/916991): We should also include battery charge rate here.
+}
+
+// Status of the single battery
+message BatteryInfo {
+  optional string serial = 1;
+  optional string manufacturer = 2;
+  optional string battery_health = 3;
+  // Design capacity (mWatt-hours)
+  optional int64 design_capacity = 4;
+  // Full charge capacity (mWatt-hours)
+  optional int64 full_charge_capacity = 5;
+  optional int32 cycle_count = 6;
+  // Last sampling data.
+  repeated BatterySample samples = 7;
+}
+
+// Status of the power subsystem
+message PowerStatus {
+  enum PowerSource {
+    POWER_UNKNOWN = 0;
+    POWER_AC = 1;
+    POWER_BATTERY = 2;
+  }
+  optional PowerSource power_source = 1;
+  repeated BatteryInfo batteries = 2;
+}
+
+// Status of the single storage device
+message DiskInfo {
+  optional string serial = 1;
+  optional string manufacturer = 2;
+  optional string model = 3;
+  optional int64 size = 4;
+  // SSD / eMMC / HDD
+  optional string type = 5;
+  optional string health = 6;
+  // volume_id for volumes on this disk.
+  repeated string volumes = 7;
+}
+
+// Status of the storage subsystem.
+message StorageStatus {
+  repeated DiskInfo disks = 1;
+}
+
+// Sampling for single temperature measurements
+message ThermalSample {
+  optional int64 timestamp = 1;
+  optional int32 temperature = 2;
+}
+
+// Temperature measurement series for thermal point.
+message ThermalInfo {
+  optional string label = 1;
+  optional int32 temperature = 2;
+}
+
+// Status for various on-board components
+message BoardStatus {
+  repeated ThermalInfo thermal = 1;
+}
+
 // Report device level status.
 message DeviceStatusReportRequest {
   reserved 4, 7, 13, 20;
@@ -859,6 +931,15 @@ message DeviceStatusReportRequest {
 
   // Whether hardware write protect switch is on.
   optional bool write_protect_switch = 24;
+
+  // Status of the power subsystem.
+  optional PowerStatus power_status = 25;
+
+  // Status of the storage subsystem.
+  optional StorageStatus storage_status = 26;
+
+  // Status of various main board components.
+  optional BoardStatus board_status = 27;
 }
 
 message OsUpdateStatus {
