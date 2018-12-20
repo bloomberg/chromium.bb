@@ -5956,32 +5956,6 @@ the Bookmarks menu.">
         <message name="IDS_TOOLBAR_INFORM_SET_HOME_PAGE" desc="The confirmation message when dropping a link on the Home toolbar button">
            Your home page has been set.
         </message>
-        <!-- TODO(718146) Move autofill strings to autofill_strings.grd -->
-        <message name="IDS_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA" desc="The accessibility text to speak when we display an autofill popup.">
-          Autofill
-        </message>
-
-        <message name="IDS_AUTOFILL_FIELD_LABEL_PHONE" desc="The label of the Phone entry.">
-          Phone
-        </message>
-        <message name="IDS_AUTOFILL_FIELD_LABEL_NAME_ON_CARD" desc="The label of the Name on card entry.">
-          Name on card
-        </message>
-        <message name="IDS_AUTOFILL_FIELD_LABEL_CREDIT_CARD_NUMBER" desc="The label of the card number entry. This can be either credit, debit, or prepaid card.">
-          Card number
-        </message>
-        <message name="IDS_AUTOFILL_FIELD_LABEL_EXPIRATION_DATE" desc="The label of the Expiration date entry.">
-          Expiration date
-        </message>
-        <message name="IDS_AUTOFILL_FIELD_LABEL_EXPIRATION_MONTH" desc="The label of the Expiration date entry.">
-          Expiration month
-        </message>
-        <message name="IDS_AUTOFILL_FIELD_LABEL_EXPIRATION_YEAR" desc="The label of the Expiration date entry.">
-          Expiration year
-        </message>
-        <message name="IDS_AUTOFILL_FIELD_LABEL_BILLING_ADDRESS" desc="The label of the Billing Address chooser.">
-          Billing address
-        </message>
 
         <!-- Extension settings -->
         <message name="IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE" desc="Title that appears in the dialogue title bar for manage extensions settings">

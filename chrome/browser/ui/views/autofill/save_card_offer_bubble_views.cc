@@ -291,7 +291,7 @@ SaveCardOfferBubbleViews::CreateRequestExpirationDateView() {
 
   // Set up expiration date label.
   auto expiration_date_label = std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_EXPIRATION_DATE),
+      l10n_util::GetStringUTF16(IDS_SETTINGS_CREDIT_CARD_EXPIRATION_DATE),
       CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_SECONDARY);
   expiration_date_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 

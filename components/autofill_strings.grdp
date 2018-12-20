@@ -189,6 +189,18 @@
     </message>
   </if>
 
+  <if expr="not is_android">
+    <message name="IDS_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA" desc="The accessibility text to speak when we display an autofill popup.">
+      Autofill
+    </message>
+    <message name="IDS_AUTOFILL_FIELD_LABEL_PHONE" desc="The label of the Phone entry in a settings-like UI to enter a phone number.">
+      Phone
+    </message>
+    <message name="IDS_AUTOFILL_FIELD_LABEL_BILLING_ADDRESS" desc="Title of the field representing the billing address of a credit card.">
+      Billing Address
+    </message>
+  </if>
+
   <!-- Autofill save credit card bubble or infobar prompt -->
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT" desc="Text to show for the Autofill save credit card prompt accept button. The prompt can be either a bubble or an infobar.">
     Save
