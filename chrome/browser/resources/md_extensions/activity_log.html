@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/promise_resolver.html">
@@ -21,7 +22,12 @@
       }
 
       #activity-log-heading {
+        flex-grow: 1;
         margin-inline-start: 16px;
+      }
+
+      cr-search-field  {
+        padding-inline-end: 8px;
       }
     </style>
     <div class="page-container" id="container">
@@ -32,6 +38,9 @@
                 on-click="onCloseButtonTap_"></button>
           </paper-icon-button-light>
           <span id="activity-log-heading">$i18n{activityLogPageHeading}</span>
+          <cr-search-field label="$i18n{activityLogSearchLabel}"
+              on-search-changed="onSearchChanged_">
+          </cr-search-field >
         </div>
         <div id="loading-activities" class="activity-message"
             hidden$="[[!shouldShowLoadingMessage_(

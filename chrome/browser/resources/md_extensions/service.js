@@ -350,6 +350,51 @@ cr.define('extensions', function() {
             resolve);
       });
     }
+
+    /** @override */
+    getFilteredExtensionActivityLog(extensionId, searchTerm) {
+      const anyType = chrome.activityLogPrivate.ExtensionActivityFilter.ANY;
+
+      // Construct one filter for each API call we will make: one for exact
+      // match on the api call (api does not support partial matches), one for
+      // substring search by page URL, and one for substring search by argument
+      // URL. For the last two, % acts as a wildcard.
+      const activityLogFilters = [
+        {
+          activityType: anyType,
+          extensionId: extensionId,
+          apiCall: `%${searchTerm}%`,
+        },
+        {
+          activityType: anyType,
+          extensionId: extensionId,
+          pageUrl: `%${searchTerm}%`,
+        },
+        {
+          activityType: anyType,
+          extensionId: extensionId,
+          argUrl: `%${searchTerm}%`
+        }
+      ];
+
+      const promises = activityLogFilters.map(
+          filter => new Promise(function(resolve, reject) {
+            chrome.activityLogPrivate.getExtensionActivities(filter, resolve);
+          }));
+
+      return Promise.all(promises).then(results => {
+        // We may have results that are present in one or more searches, so
+        // we merge them here. We also assume that every distinct activity
+        // id corresponds to exactly one activity.
+        const activitiesById = new Map();
+        for (const result of results) {
+          for (const activity of result.activities)
+            activitiesById.set(activity.activityId, activity);
+        }
+
+        return {activities: Array.from(activitiesById.values())};
+      });
+    }
   }
 
   cr.addSingletonGetter(Service);

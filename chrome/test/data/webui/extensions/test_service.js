@@ -11,6 +11,7 @@ cr.define('extensions', function() {
         'getExtensionActivityLog',
         'getExtensionsInfo',
         'getExtensionSize',
+        'getFilteredExtensionActivityLog',
         'getProfileConfiguration',
         'loadUnpacked',
         'retryLoadUnpacked',
@@ -158,6 +159,32 @@ cr.define('extensions', function() {
     getExtensionActivityLog(id) {
       this.methodCalled('getExtensionActivityLog', id);
       return Promise.resolve(this.testActivities);
+    }
+
+    /** @override */
+    getFilteredExtensionActivityLog(id, searchTerm) {
+      // This is functionally identical to getFilteredExtensionActivityLog in
+      // service.js but we do the filtering here instead of making API calls
+      // with filter objects.
+      this.methodCalled('getFilteredExtensionActivityLog', id, searchTerm);
+
+      // Convert everything to lowercase as searching is not case sensitive.
+      const lowerCaseSearchTerm = searchTerm.toLowerCase();
+
+      const activities = this.testActivities.activities;
+      const apiCallMatches = activities.filter(
+          activity =>
+              activity.apiCall.toLowerCase().includes(lowerCaseSearchTerm));
+      const pageUrlMatches = activities.filter(
+          activity => activity.pageUrl &&
+              activity.pageUrl.toLowerCase().includes(lowerCaseSearchTerm));
+      const argUrlMatches = activities.filter(
+          activity => activity.argUrl &&
+              activity.argUrl.toLowerCase().includes(lowerCaseSearchTerm));
+
+      return Promise.resolve({
+        activities: [...apiCallMatches, ...pageUrlMatches, ...argUrlMatches]
+      });
     }
   }
 

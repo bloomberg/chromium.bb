@@ -26,6 +26,13 @@ cr.define('extensions', function() {
      * @return {!Promise<!chrome.activityLogPrivate.ActivityResultSet>}
      */
     getExtensionActivityLog(extensionId) {}
+
+    /**
+     * @param {string} extensionId
+     * @param {string} searchTerm
+     * @return {!Promise<!chrome.activityLogPrivate.ActivityResultSet>}
+     */
+    getFilteredExtensionActivityLog(extensionId, searchTerm) {}
   }
 
   /**
@@ -124,6 +131,9 @@ cr.define('extensions', function() {
        * @type {!PromiseResolver}
        */
       onDataFetched: {type: Object, value: new PromiseResolver()},
+
+      /** @private */
+      lastSearch_: String,
     },
 
     /** @private {?number} */
@@ -185,15 +195,54 @@ cr.define('extensions', function() {
           {page: Page.DETAILS, extensionId: this.extensionId});
     },
 
+    /**
+     * @private
+     * @param {!Array<!chrome.activityLogPrivate.ExtensionActivity>}
+     *     activityData
+     */
+    processActivities_: function(activityData) {
+      this.pageState_ = ActivityLogPageState.LOADED;
+      this.activityData_ =
+          sortActivitiesByCallCount(groupActivitiesByApiCall(activityData));
+      if (!this.onDataFetched.isFulfilled)
+        this.onDataFetched.resolve();
+    },
+
     /** @private */
     getActivityLog_: function() {
       this.pageState_ = ActivityLogPageState.LOADING;
       this.delegate.getExtensionActivityLog(this.extensionId).then(result => {
-        this.pageState_ = ActivityLogPageState.LOADED;
-        this.activityData_ = sortActivitiesByCallCount(
-            groupActivitiesByApiCall(result.activities));
-        this.onDataFetched.resolve();
+        this.processActivities_(result.activities);
       });
+    },
+
+    /**
+     * @private
+     * @param {string} searchTerm
+     */
+    getFilteredActivityLog_: function(searchTerm) {
+      this.pageState_ = ActivityLogPageState.LOADING;
+      this.delegate
+          .getFilteredExtensionActivityLog(this.extensionId, searchTerm)
+          .then(result => {
+            this.processActivities_(result.activities);
+          });
+    },
+
+    /** @private */
+    onSearchChanged_: function(e) {
+      // Remove all whitespaces from the search term, as API call names and
+      // urls should not contain any whitespace. As of now, only single term
+      // search queries are allowed.
+      const searchTerm = e.detail.replace(/\s+/g, '');
+      if (searchTerm === this.lastSearch_)
+        return;
+
+      this.lastSearch_ = searchTerm;
+      if (searchTerm === '')
+        this.getActivityLog_();
+      else
+        this.getFilteredActivityLog_(searchTerm);
     },
   });
 
