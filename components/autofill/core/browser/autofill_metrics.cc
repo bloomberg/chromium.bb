@@ -57,10 +57,6 @@ enum FieldTypeGroupForMetrics {
   NUM_FIELD_TYPE_GROUPS_FOR_METRICS
 };
 
-const int KMaxFieldTypeGroupMetric =
-    (NUM_FIELD_TYPE_GROUPS_FOR_METRICS << 8) |
-    AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS;
-
 std::string PreviousSaveCreditCardPromptUserDecisionToString(
     int previous_save_credit_card_prompt_user_decision) {
   DCHECK_LT(previous_save_credit_card_prompt_user_decision,
@@ -236,22 +232,6 @@ int GetFieldTypeGroupMetric(ServerFieldType field_type,
 
 namespace {
 
-// A version of the UMA_HISTOGRAM_ENUMERATION macro that allows the |name|
-// to vary over the program's runtime.
-// TODO(crbug.com/850520): Remove this function when the remaining logs use the
-// histogram_functions instead.
-void LogUMAHistogramEnumeration(const std::string& name,
-                                int sample,
-                                int boundary_value) {
-  DCHECK_LT(sample, boundary_value);
-
-  // Note: This leaks memory, which is expected behavior.
-  base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
-      name, 1, boundary_value, boundary_value + 1,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram->Add(sample);
-}
-
 const char* GetQualityMetricPredictionSource(
     AutofillMetrics::QualityMetricPredictionSource source) {
   switch (source) {
@@ -371,18 +351,16 @@ void LogPredictionQualityMetricsForFieldsOnlyFilledWhenFocused(
     // Only log aggregate true negative; do not log type specific metrics
     // for UNKNOWN/EMPTY.
     DVLOG(2) << "TRUE NEGATIVE";
-    base::UmaHistogramEnumeration(
+    base::UmaHistogramSparse(
         aggregate_histogram,
         (is_empty ? AutofillMetrics::TRUE_NEGATIVE_EMPTY
                   : (is_ambiguous ? AutofillMetrics::TRUE_NEGATIVE_AMBIGUOUS
-                                  : AutofillMetrics::TRUE_NEGATIVE_UNKNOWN)),
-        AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
+                                  : AutofillMetrics::TRUE_NEGATIVE_UNKNOWN)));
     if (log_rationalization_metrics) {
-      base::UmaHistogramEnumeration(
+      base::UmaHistogramSparse(
           rationalization_quality_histogram,
           (is_empty ? AutofillMetrics::RATIONALIZATION_GOOD
-                    : AutofillMetrics::RATIONALIZATION_OK),
-          AutofillMetrics::NUM_RATIONALIZATION_QUALITY_METRICS);
+                    : AutofillMetrics::RATIONALIZATION_OK));
     }
     return;
   }
@@ -393,20 +371,17 @@ void LogPredictionQualityMetricsForFieldsOnlyFilledWhenFocused(
   // automatically if there has been no rationalization.
   if (predicted_type == actual_type) {
     DVLOG(2) << "TRUE POSITIVE";
-    base::UmaHistogramEnumeration(
-        aggregate_histogram, AutofillMetrics::TRUE_POSITIVE,
-        AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
-    LogUMAHistogramEnumeration(
+    base::UmaHistogramSparse(aggregate_histogram,
+                             AutofillMetrics::TRUE_POSITIVE);
+    base::UmaHistogramSparse(
         type_specific_histogram,
-        GetFieldTypeGroupMetric(actual_type, AutofillMetrics::TRUE_POSITIVE),
-        KMaxFieldTypeGroupMetric);
+        GetFieldTypeGroupMetric(actual_type, AutofillMetrics::TRUE_POSITIVE));
     if (log_rationalization_metrics) {
       bool duplicated_filling = DuplicatedFilling(form, field);
-      base::UmaHistogramEnumeration(
+      base::UmaHistogramSparse(
           rationalization_quality_histogram,
           (duplicated_filling ? AutofillMetrics::RATIONALIZATION_BAD
-                              : AutofillMetrics::RATIONALIZATION_OK),
-          AutofillMetrics::NUM_RATIONALIZATION_QUALITY_METRICS);
+                              : AutofillMetrics::RATIONALIZATION_OK));
     }
     return;
   }
@@ -414,24 +389,21 @@ void LogPredictionQualityMetricsForFieldsOnlyFilledWhenFocused(
   DVLOG(2) << "MISMATCH";
   // Here the prediction is wrong, but user has to provide some value still.
   // This should be a false negative.
-  base::UmaHistogramEnumeration(
-      aggregate_histogram, AutofillMetrics::FALSE_NEGATIVE_MISMATCH,
-      AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
+  base::UmaHistogramSparse(aggregate_histogram,
+                           AutofillMetrics::FALSE_NEGATIVE_MISMATCH);
   // Log FALSE_NEGATIVE_MISMATCH for predicted type if it did predicted
   // something but actual type is different.
   if (predicted_type != UNKNOWN_TYPE)
-    LogUMAHistogramEnumeration(
+    base::UmaHistogramSparse(
         type_specific_histogram,
         GetFieldTypeGroupMetric(predicted_type,
-                                AutofillMetrics::FALSE_NEGATIVE_MISMATCH),
-        KMaxFieldTypeGroupMetric);
+                                AutofillMetrics::FALSE_NEGATIVE_MISMATCH));
   if (log_rationalization_metrics) {
     // Logging RATIONALIZATION_OK despite of type mismatch here because autofill
     // would have got it wrong with or without rationalization. Rationalization
     // here does not help, neither does it do any harm.
-    base::UmaHistogramEnumeration(
-        rationalization_quality_histogram, AutofillMetrics::RATIONALIZATION_OK,
-        AutofillMetrics::NUM_RATIONALIZATION_QUALITY_METRICS);
+    base::UmaHistogramSparse(rationalization_quality_histogram,
+                             AutofillMetrics::RATIONALIZATION_OK);
   }
   return;
 }
@@ -451,25 +423,22 @@ void LogPredictionQualityMetricsForCommonFields(
       // Only log aggregate true negative; do not log type specific metrics
       // for UNKNOWN/EMPTY.
       DVLOG(2) << "TRUE NEGATIVE";
-      base::UmaHistogramEnumeration(
+      base::UmaHistogramSparse(
           aggregate_histogram,
           (is_empty ? AutofillMetrics::TRUE_NEGATIVE_EMPTY
                     : (is_ambiguous ? AutofillMetrics::TRUE_NEGATIVE_AMBIGUOUS
-                                    : AutofillMetrics::TRUE_NEGATIVE_UNKNOWN)),
-          AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
+                                    : AutofillMetrics::TRUE_NEGATIVE_UNKNOWN)));
       return;
     }
 
     DVLOG(2) << "TRUE POSITIVE";
     // Log both aggregate and type specific true positive if we correctly
     // predict that type with which the field was filled.
-    base::UmaHistogramEnumeration(
-        aggregate_histogram, AutofillMetrics::TRUE_POSITIVE,
-        AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
-    LogUMAHistogramEnumeration(
+    base::UmaHistogramSparse(aggregate_histogram,
+                             AutofillMetrics::TRUE_POSITIVE);
+    base::UmaHistogramSparse(
         type_specific_histogram,
-        GetFieldTypeGroupMetric(actual_type, AutofillMetrics::TRUE_POSITIVE),
-        KMaxFieldTypeGroupMetric);
+        GetFieldTypeGroupMetric(actual_type, AutofillMetrics::TRUE_POSITIVE));
     return;
   }
 
@@ -483,12 +452,9 @@ void LogPredictionQualityMetricsForCommonFields(
         (is_empty ? AutofillMetrics::FALSE_POSITIVE_EMPTY
                   : (is_ambiguous ? AutofillMetrics::FALSE_POSITIVE_AMBIGUOUS
                                   : AutofillMetrics::FALSE_POSITIVE_UNKNOWN));
-    base::UmaHistogramEnumeration(
-        aggregate_histogram, metric,
-        AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
-    LogUMAHistogramEnumeration(type_specific_histogram,
-                               GetFieldTypeGroupMetric(predicted_type, metric),
-                               KMaxFieldTypeGroupMetric);
+    base::UmaHistogramSparse(aggregate_histogram, metric);
+    base::UmaHistogramSparse(type_specific_histogram,
+                             GetFieldTypeGroupMetric(predicted_type, metric));
     return;
   }
 
@@ -497,14 +463,12 @@ void LogPredictionQualityMetricsForCommonFields(
   // unknown.
   if (predicted_type == UNKNOWN_TYPE) {
     DVLOG(2) << "FALSE NEGATIVE";
-    base::UmaHistogramEnumeration(
-        aggregate_histogram, AutofillMetrics::FALSE_NEGATIVE_UNKNOWN,
-        AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
-    LogUMAHistogramEnumeration(
+    base::UmaHistogramSparse(aggregate_histogram,
+                             AutofillMetrics::FALSE_NEGATIVE_UNKNOWN);
+    base::UmaHistogramSparse(
         type_specific_histogram,
         GetFieldTypeGroupMetric(actual_type,
-                                AutofillMetrics::FALSE_NEGATIVE_UNKNOWN),
-        KMaxFieldTypeGroupMetric);
+                                AutofillMetrics::FALSE_NEGATIVE_UNKNOWN));
     return;
   }
 
@@ -515,19 +479,16 @@ void LogPredictionQualityMetricsForCommonFields(
   // This is a mismatch. From the reference of the actual type, this is a false
   // negative (it was T, but predicted U). From the reference of the prediction,
   // this is a false positive (predicted it was T, but it was U).
-  base::UmaHistogramEnumeration(
-      aggregate_histogram, AutofillMetrics::FALSE_NEGATIVE_MISMATCH,
-      AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
-  LogUMAHistogramEnumeration(
+  base::UmaHistogramSparse(aggregate_histogram,
+                           AutofillMetrics::FALSE_NEGATIVE_MISMATCH);
+  base::UmaHistogramSparse(
       type_specific_histogram,
       GetFieldTypeGroupMetric(actual_type,
-                              AutofillMetrics::FALSE_NEGATIVE_MISMATCH),
-      KMaxFieldTypeGroupMetric);
-  LogUMAHistogramEnumeration(
+                              AutofillMetrics::FALSE_NEGATIVE_MISMATCH));
+  base::UmaHistogramSparse(
       type_specific_histogram,
       GetFieldTypeGroupMetric(predicted_type,
-                              AutofillMetrics::FALSE_POSITIVE_MISMATCH),
-      KMaxFieldTypeGroupMetric);
+                              AutofillMetrics::FALSE_POSITIVE_MISMATCH));
 }
 
 // Logs field type prediction quality metrics.  The primary histogram name is
@@ -1646,8 +1607,9 @@ const char* AutofillMetrics::SubmissionSourceToUploadEventMetric(
 void AutofillMetrics::LogUploadEvent(SubmissionSource submission_source,
                                      bool was_sent) {
   UMA_HISTOGRAM_BOOLEAN("Autofill.UploadEvent", was_sent);
-  LogUMAHistogramEnumeration(
-      SubmissionSourceToUploadEventMetric(submission_source), was_sent, 2);
+  base::UmaHistogramEnumeration(
+      SubmissionSourceToUploadEventMetric(submission_source),
+      was_sent ? UploadEventStatus::kSent : UploadEventStatus::kNotSent);
 }
 
 // static

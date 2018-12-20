@@ -833,6 +833,9 @@ class AutofillMetrics {
     NUM_CONVERTED_ADDRESS_CONVERSION_TYPES
   };
 
+  // To record whether or not the upload event was sent,
+  enum class UploadEventStatus { kNotSent, kSent, kMaxValue = kSent };
+
   // Utility to log URL keyed form interaction events.
   class FormInteractionsUkmLogger {
    public:
