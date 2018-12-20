@@ -1021,9 +1021,7 @@ TimeDelta DeviceStatusCollector::GetActiveChildScreenTime() {
 }
 
 void DeviceStatusCollector::CheckIdleState() {
-  CalculateIdleState(kIdleStateThresholdSeconds,
-                     base::Bind(&DeviceStatusCollector::IdleStateCallback,
-                                base::Unretained(this)));
+  ProcessIdleState(ui::CalculateIdleState(kIdleStateThresholdSeconds));
 }
 
 void DeviceStatusCollector::UpdateReportingSettings() {
@@ -1103,7 +1101,7 @@ void DeviceStatusCollector::ClearCachedResourceUsage() {
   last_cpu_idle_ = 0;
 }
 
-void DeviceStatusCollector::IdleStateCallback(ui::IdleState state) {
+void DeviceStatusCollector::ProcessIdleState(ui::IdleState state) {
   // Do nothing if device activity reporting is disabled or if it's a child
   // account. Usage time for child accounts are calculated differently.
   if (!report_activity_times_ || !is_enterprise_reporting_ ||

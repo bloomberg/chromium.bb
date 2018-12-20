@@ -4,8 +4,6 @@
 
 #include "extensions/browser/api/idle/idle_api.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/values.h"
 #include "extensions/browser/api/idle/idle_api_constants.h"
 #include "extensions/browser/api/idle/idle_manager.h"
@@ -38,14 +36,13 @@ ExtensionFunction::ResponseAction IdleQueryStateFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &threshold));
   threshold = ClampThreshold(threshold);
 
-  IdleManagerFactory::GetForBrowserContext(context_)->QueryState(
-      threshold, base::Bind(&IdleQueryStateFunction::IdleStateCallback, this));
+  ui::IdleState state =
+      IdleManagerFactory::GetForBrowserContext(context_)->QueryState(threshold);
 
-  return RespondLater();
+  return RespondNow(OneArgument(IdleManager::CreateIdleValue(state)));
 }
 
 void IdleQueryStateFunction::IdleStateCallback(ui::IdleState state) {
-  Respond(OneArgument(IdleManager::CreateIdleValue(state)));
 }
 
 ExtensionFunction::ResponseAction IdleSetDetectionIntervalFunction::Run() {

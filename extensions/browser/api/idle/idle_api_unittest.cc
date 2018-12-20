@@ -43,8 +43,8 @@ class TestIdleProvider : public IdleManager::IdleTimeProvider {
  public:
   TestIdleProvider();
   ~TestIdleProvider() override;
-  void CalculateIdleState(int idle_threshold, ui::IdleCallback notify) override;
-  void CalculateIdleTime(ui::IdleTimeCallback notify) override;
+  ui::IdleState CalculateIdleState(int idle_threshold) override;
+  int CalculateIdleTime() override;
   bool CheckIdleStateIsLocked() override;
 
   void set_idle_time(int idle_time);
@@ -61,21 +61,18 @@ TestIdleProvider::TestIdleProvider() : idle_time_(0), locked_(false) {
 TestIdleProvider::~TestIdleProvider() {
 }
 
-void TestIdleProvider::CalculateIdleState(int idle_threshold,
-                                          ui::IdleCallback notify) {
+ui::IdleState TestIdleProvider::CalculateIdleState(int idle_threshold) {
   if (locked_) {
-    notify.Run(ui::IDLE_STATE_LOCKED);
+    return ui::IDLE_STATE_LOCKED;
+  } else if (idle_time_ >= idle_threshold) {
+    return ui::IDLE_STATE_IDLE;
   } else {
-    if (idle_time_ >= idle_threshold) {
-      notify.Run(ui::IDLE_STATE_IDLE);
-    } else {
-      notify.Run(ui::IDLE_STATE_ACTIVE);
-    }
+    return ui::IDLE_STATE_ACTIVE;
   }
 }
 
-void TestIdleProvider::CalculateIdleTime(ui::IdleTimeCallback notify) {
-  notify.Run(idle_time_);
+int TestIdleProvider::CalculateIdleTime() {
+  return idle_time_;
 }
 
 bool TestIdleProvider::CheckIdleStateIsLocked() {
