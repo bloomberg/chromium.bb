@@ -22,6 +22,8 @@ source_set("translate") {
     "translate_infobar_tags.h",
     "translate_message_infobar_controller.h",
     "translate_message_infobar_controller.mm",
+    "translate_option_selection_delegate.h",
+    "translate_option_selection_handler.h",
     "translate_ranker_factory.cc",
     "translate_ranker_factory.h",
     "translate_ranker_metrics_provider.cc",
