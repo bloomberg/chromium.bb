@@ -344,7 +344,7 @@ TEST_F(PreviewsHintsTest, IsWhitelistedOutParams) {
       optimization_with_inflation_percent->add_resource_loading_hints();
   resource_hint1->set_loading_optimization_type(
       optimization_guide::proto::LOADING_BLOCK_RESOURCE);
-  resource_hint1->set_resource_pattern("default_resource.js");
+  resource_hint1->set_resource_pattern("resource1.js");
   // Page hint for "/has_max_ect_trigger/"
   optimization_guide::proto::PageHint* page_hint2 = hint1->add_page_hints();
   page_hint2->set_page_pattern("/has_max_ect_trigger/");
@@ -356,11 +356,22 @@ TEST_F(PreviewsHintsTest, IsWhitelistedOutParams) {
           page_hint2->add_whitelisted_optimizations();
   optimization_without_inflation_percent->set_optimization_type(
       optimization_guide::proto::RESOURCE_LOADING);
-  optimization_guide::proto::ResourceLoadingHint* resource_hint2 =
+  optimization_guide::proto::ResourceLoadingHint* resource_hint2a =
       optimization_without_inflation_percent->add_resource_loading_hints();
-  resource_hint2->set_loading_optimization_type(
+  resource_hint2a->set_loading_optimization_type(
       optimization_guide::proto::LOADING_BLOCK_RESOURCE);
-  resource_hint2->set_resource_pattern("default_resource.js");
+  resource_hint2a->set_resource_pattern("resource2a.js");
+  optimization_guide::proto::ResourceLoadingHint* unsupported_resource_hint =
+      optimization_without_inflation_percent->add_resource_loading_hints();
+  unsupported_resource_hint->set_loading_optimization_type(
+      optimization_guide::proto::LOADING_UNSPECIFIED);
+  unsupported_resource_hint->set_resource_pattern(
+      "unsupported_resource_hint.js");
+  optimization_guide::proto::ResourceLoadingHint* resource_hint2b =
+      optimization_without_inflation_percent->add_resource_loading_hints();
+  resource_hint2b->set_loading_optimization_type(
+      optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+  resource_hint2b->set_resource_pattern("resource2b.js");
   ParseConfig(config);
 
   // Verify optimization providing inflation_percent.
@@ -386,6 +397,21 @@ TEST_F(PreviewsHintsTest, IsWhitelistedOutParams) {
   EXPECT_EQ(0, inflation_percent);
   EXPECT_EQ(net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G,
             ect_threshold);
+
+  // Verify getting resource patterns to block.
+  std::vector<std::string> patterns_to_block1;
+  previews_hints()->GetResourceLoadingHints(
+      GURL("https://www.somedomain.org/has_inflation_percent/"),
+      &patterns_to_block1);
+  EXPECT_EQ(1ul, patterns_to_block1.size());
+  EXPECT_EQ("resource1.js", patterns_to_block1[0]);
+  std::vector<std::string> patterns_to_block2;
+  previews_hints()->GetResourceLoadingHints(
+      GURL("https://www.somedomain.org/has_max_ect_trigger/"),
+      &patterns_to_block2);
+  EXPECT_EQ(2ul, patterns_to_block2.size());
+  EXPECT_EQ("resource2a.js", patterns_to_block2[0]);
+  EXPECT_EQ("resource2b.js", patterns_to_block2[1]);
 }
 
 TEST_F(PreviewsHintsTest,
@@ -451,7 +477,7 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForExperimentalPreview) {
       default_pagehint_optimization->add_resource_loading_hints();
   default_resourcehint->set_loading_optimization_type(
       optimization_guide::proto::LOADING_BLOCK_RESOURCE);
-  default_resourcehint->set_resource_pattern("experimental_resource.js");
+  default_resourcehint->set_resource_pattern("default_resource.js");
 
   // Test with the experiment disabled.
   {
@@ -471,6 +497,12 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForExperimentalPreview) {
     EXPECT_EQ(33, inflation_percent);
     EXPECT_EQ(net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G,
               ect_threshold);
+    std::vector<std::string> patterns_to_block;
+    previews_hints()->GetResourceLoadingHints(
+        GURL("https://www.somedomain.org/experimental_preview/"),
+        &patterns_to_block);
+    EXPECT_EQ(1ul, patterns_to_block.size());
+    EXPECT_EQ("default_resource.js", patterns_to_block[0]);
 
     // Verify that the experimental optimization was not added when it was
     // disabled.
@@ -501,6 +533,12 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForExperimentalPreview) {
     EXPECT_EQ(99, inflation_percent);
     EXPECT_EQ(net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G,
               ect_threshold);
+    std::vector<std::string> patterns_to_block;
+    previews_hints()->GetResourceLoadingHints(
+        GURL("https://www.somedomain.org/experimental_preview/"),
+        &patterns_to_block);
+    EXPECT_EQ(1ul, patterns_to_block.size());
+    EXPECT_EQ("experimental_resource.js", patterns_to_block[0]);
 
     // Verify that the second optimization was not added when the experimental
     // optimization was enabled.

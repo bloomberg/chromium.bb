@@ -29,6 +29,12 @@ bool TestPreviewsDecider::LoadResourceHints(const GURL& url) {
   return true;
 }
 
+bool TestPreviewsDecider::GetResourceLoadingHints(
+    const GURL& url,
+    std::vector<std::string>* out_resource_patterns_to_block) const {
+  return false;
+}
+
 void TestPreviewsDecider::LogHintCacheMatch(const GURL& url,
                                             bool is_committed) const {}
 

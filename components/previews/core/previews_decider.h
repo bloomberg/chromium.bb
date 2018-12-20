@@ -43,6 +43,12 @@ class PreviewsDecider {
   // need to be loaded from persistent storage).
   virtual bool LoadResourceHints(const GURL& url) = 0;
 
+  // Whether |url| has loaded resource loading hints and, if it does, populates
+  // |out_resource_patterns_to_block| with the resource patterns to block.
+  virtual bool GetResourceLoadingHints(
+      const GURL& url,
+      std::vector<std::string>* out_resource_patterns_to_block) const = 0;
+
   // Logs UMA for whether the OptimizationGuide HintCache has a matching Hint
   // guidance for |url|. This is useful for measuring the effectiveness of the
   // page hints provided by Cacao.

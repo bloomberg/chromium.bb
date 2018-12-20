@@ -69,6 +69,7 @@ void PreviewsOptimizationGuide::OnLoadedHint(
     const optimization_guide::proto::Hint& loaded_hint) const {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
+  // TODO(dougarnett): Drop this load callback.
   const optimization_guide::proto::PageHint* matched_page_hint =
       PreviewsHints::FindPageHint(document_url, loaded_hint);
   if (!matched_page_hint)
@@ -113,6 +114,17 @@ bool PreviewsOptimizationGuide::MaybeLoadOptimizationHints(
       url, base::BindOnce(&PreviewsOptimizationGuide::OnLoadedHint,
                           ui_weak_ptr_factory_.GetWeakPtr(),
                           std::move(callback), url));
+}
+
+bool PreviewsOptimizationGuide::GetResourceLoadingHints(
+    const GURL& url,
+    std::vector<std::string>* out_resource_patterns_to_block) const {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+
+  if (!hints_)
+    return false;
+
+  return hints_->GetResourceLoadingHints(url, out_resource_patterns_to_block);
 }
 
 void PreviewsOptimizationGuide::LogHintCacheMatch(

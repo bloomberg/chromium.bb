@@ -46,6 +46,12 @@ class PreviewEnabledPreviewsDecider : public PreviewsDecider {
     return url.host_piece().ends_with("hintcachedhost.com");
   }
 
+  bool GetResourceLoadingHints(
+      const GURL& url,
+      std::vector<std::string>* out_resource_patterns_to_block) const override {
+    return false;
+  }
+
   void LogHintCacheMatch(const GURL& url, bool is_committed) const override {}
 
  private:

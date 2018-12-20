@@ -637,6 +637,54 @@ bool PreviewsHints::MaybeLoadOptimizationHints(
   return hint_cache_->HasHint(url.host());
 }
 
+bool PreviewsHints::GetResourceLoadingHints(
+    const GURL& url,
+    std::vector<std::string>* out_resource_patterns_to_block) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!hint_cache_) {
+    return false;
+  }
+
+  // First find matched page hint.
+
+  std::string host = url.host();
+  if (!hint_cache_->IsHintLoaded(host)) {
+    return false;
+  }
+  const optimization_guide::proto::Hint* hint = hint_cache_->GetHint(host);
+  const optimization_guide::proto::PageHint* matched_page_hint =
+      FindPageHint(url, *hint);
+  if (!matched_page_hint) {
+    return false;
+  }
+
+  // Now populate the resource patterns.
+
+  for (const auto& optimization :
+       matched_page_hint->whitelisted_optimizations()) {
+    if (optimization.optimization_type() !=
+        optimization_guide::proto::RESOURCE_LOADING) {
+      continue;
+    }
+
+    // TODO(jegray): When persistence is added for hints, address handling of
+    // disabled experimental optimizations.
+    for (const auto& resource_loading_hint :
+         optimization.resource_loading_hints()) {
+      if (!resource_loading_hint.resource_pattern().empty() &&
+          resource_loading_hint.loading_optimization_type() ==
+              optimization_guide::proto::LOADING_BLOCK_RESOURCE) {
+        out_resource_patterns_to_block->push_back(
+            resource_loading_hint.resource_pattern());
+      }
+    }
+    // Done - only use first whitelisted resource loading optimization.
+    return true;
+  }
+  return false;
+}
+
 void PreviewsHints::LogHintCacheMatch(const GURL& url,
                                       bool is_committed,
                                       net::EffectiveConnectionType ect) const {
