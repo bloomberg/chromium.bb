@@ -77,7 +77,7 @@ bool WaylandBufferManager::CreateBuffer(base::File file,
                                         const std::vector<uint64_t>& modifiers,
                                         uint32_t planes_count,
                                         uint32_t buffer_id) {
-  TRACE_EVENT2("Wayland", "WaylandBufferManager::CreateZwpLinuxDmabuf",
+  TRACE_EVENT2("wayland", "WaylandBufferManager::CreateZwpLinuxDmabuf",
                "Format", format, "Buffer id", buffer_id);
 
   static const struct zwp_linux_buffer_params_v1_listener params_listener = {
@@ -121,7 +121,7 @@ bool WaylandBufferManager::ScheduleBufferSwap(gfx::AcceleratedWidget widget,
                                               uint32_t buffer_id,
                                               const gfx::Rect& damage_region,
                                               wl::BufferSwapCallback callback) {
-  TRACE_EVENT1("Wayland", "WaylandBufferManager::ScheduleSwapBuffer",
+  TRACE_EVENT1("wayland", "WaylandBufferManager::ScheduleSwapBuffer",
                "Buffer id", buffer_id);
 
   if (!ValidateDataFromGpu(widget, buffer_id))
@@ -152,7 +152,7 @@ bool WaylandBufferManager::ScheduleBufferSwap(gfx::AcceleratedWidget widget,
 }
 
 bool WaylandBufferManager::DestroyBuffer(uint32_t buffer_id) {
-  TRACE_EVENT1("Wayland", "WaylandBufferManager::DestroyZwpLinuxDmabuf",
+  TRACE_EVENT1("wayland", "WaylandBufferManager::DestroyZwpLinuxDmabuf",
                "Buffer id", buffer_id);
 
   auto it = buffers_.find(buffer_id);
@@ -181,7 +181,7 @@ void WaylandBufferManager::ClearState() {
 
 // TODO(msisov): handle buffer swap failure or success.
 bool WaylandBufferManager::SwapBuffer(Buffer* buffer) {
-  TRACE_EVENT1("Wayland", "WaylandBufferManager::SwapBuffer", "Buffer id",
+  TRACE_EVENT1("wayland", "WaylandBufferManager::SwapBuffer", "Buffer id",
                buffer->buffer_id);
 
   WaylandWindow* window = connection_->GetWindow(buffer->widget);
