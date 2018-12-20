@@ -532,7 +532,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     private void notifyCallbacksWaitingForOperation() {
         ThreadUtils.assertOnUiThread();
         for (Runnable callback : mCallbacksWaitingForPendingOperation) {
-            callback.run();
+            ThreadUtils.postOnUiThread(callback);
         }
         mCallbacksWaitingForPendingOperation.clear();
     }
