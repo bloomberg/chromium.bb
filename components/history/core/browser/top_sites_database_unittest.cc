@@ -38,24 +38,22 @@ const GURL kUrl2 = GURL("https://chrome.google.com/webstore?hl=en");
 // present.  Any extraneous items have the potential to interact
 // negatively with future schema changes.
 void VerifyTablesAndColumns(sql::Database* db) {
-  // [meta] and [thumbnails].
+  // [meta] and [top_sites].
   EXPECT_EQ(2u, sql::test::CountSQLTables(db));
 
-  // Implicit index on [meta], index on [thumbnails].
+  // Implicit index on [meta], index on [top_sites].
   EXPECT_EQ(2u, sql::test::CountSQLIndices(db));
 
   // [key] and [value].
   EXPECT_EQ(2u, sql::test::CountTableColumns(db, "meta"));
 
-  // [url], [url_rank], [title], [thumbnail], [redirects],
-  // [boring_score], [good_clipping], [at_top], [last_updated], and
-  // [load_completed], [last_forced]
-  EXPECT_EQ(11u, sql::test::CountTableColumns(db, "thumbnails"));
+  // [url], [url_rank], [title], [redirects]
+  EXPECT_EQ(4u, sql::test::CountTableColumns(db, "top_sites"));
 }
 
 void VerifyDatabaseEmpty(sql::Database* db) {
   size_t rows = 0;
-  EXPECT_TRUE(sql::test::CountTableRows(db, "thumbnails", &rows));
+  EXPECT_TRUE(sql::test::CountTableRows(db, "top_sites", &rows));
   EXPECT_EQ(0u, rows);
 }
 
@@ -127,8 +125,31 @@ TEST_F(TopSitesDatabaseTest, Version3) {
   ASSERT_EQ(2u, urls.size());
 }
 
-// Version 1 is deprecated, the resulting schema should be current,
-// with no data.
+TEST_F(TopSitesDatabaseTest, Version4) {
+  ASSERT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v4.sql"));
+
+  TopSitesDatabase db;
+  ASSERT_TRUE(db.Init(file_name_));
+
+  VerifyTablesAndColumns(db.db_.get());
+
+  // Basic operational check.
+  MostVisitedURLList urls;
+  db.GetSites(&urls);
+  ASSERT_EQ(3u, urls.size());
+  EXPECT_EQ(kUrl0, urls[0].url);  // [0] because of url_rank.
+
+  sql::Transaction transaction(db.db_.get());
+  transaction.Begin();
+  ASSERT_TRUE(db.RemoveURLNoTransaction(urls[1]));
+  transaction.Commit();
+
+  db.GetSites(&urls);
+  ASSERT_EQ(2u, urls.size());
+}
+
+// Version 1 is deprecated, the resulting schema should be current, with no
+// data.
 TEST_F(TopSitesDatabaseTest, Recovery1) {
   // Create an example database.
   EXPECT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v1.sql"));
@@ -160,6 +181,8 @@ TEST_F(TopSitesDatabaseTest, Recovery1) {
   }
 }
 
+// Version 2 is deprecated, the resulting schema should be current, with no
+// data.
 TEST_F(TopSitesDatabaseTest, Recovery2) {
   // Create an example database.
   EXPECT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v2.sql"));
@@ -233,11 +256,114 @@ TEST_F(TopSitesDatabaseTest, Recovery3) {
 
   // Corrupt the thumnails.url auto-index by deleting an element from the table
   // but leaving it in the index.
-  static const char kIndexName[] = "sqlite_autoindex_thumbnails_1";
+  static const char kIndexName[] = "sqlite_autoindex_top_sites_1";
   // TODO(shess): Refactor CorruptTableOrIndex() to make parameterized
   // statements easy.
   static const char kDeleteSql[] =
-      "DELETE FROM thumbnails WHERE url = "
+      "DELETE FROM top_sites WHERE url = "
+      "'http://www.google.com/chrome/intl/en/welcome.html'";
+  EXPECT_TRUE(
+      sql::test::CorruptTableOrIndex(file_name_, kIndexName, kDeleteSql));
+
+  // SQLite can operate on the database, but notices the corruption in integrity
+  // check.
+  {
+    sql::Database raw_db;
+    EXPECT_TRUE(raw_db.Open(file_name_));
+    ASSERT_NE("ok", sql::test::IntegrityCheck(&raw_db));
+  }
+
+  // Open the database and access the corrupt index.
+  {
+    TopSitesDatabase db;
+    ASSERT_TRUE(db.Init(file_name_));
+
+    {
+      sql::test::ScopedErrorExpecter expecter;
+      expecter.ExpectError(SQLITE_CORRUPT);
+
+      // Data for kUrl1 was deleted, but the index entry remains, this will
+      // throw SQLITE_CORRUPT.  The corruption handler will recover the database
+      // and poison the handle, so the outer call fails.
+      EXPECT_EQ(TopSitesDatabase::kRankOfNonExistingURL,
+                db.GetURLRank(MostVisitedURL(kUrl1, base::string16())));
+
+      ASSERT_TRUE(expecter.SawExpectedErrors());
+    }
+  }
+
+  // Check that the database is recovered at the SQLite level.
+  {
+    sql::Database raw_db;
+    EXPECT_TRUE(raw_db.Open(file_name_));
+    ASSERT_EQ("ok", sql::test::IntegrityCheck(&raw_db));
+  }
+
+  // After recovery, the database accesses won't throw errors.  The top-ranked
+  // item is removed, but the ranking was revised in post-processing.
+  {
+    TopSitesDatabase db;
+    ASSERT_TRUE(db.Init(file_name_));
+    VerifyTablesAndColumns(db.db_.get());
+
+    EXPECT_EQ(TopSitesDatabase::kRankOfNonExistingURL,
+              db.GetURLRank(MostVisitedURL(kUrl1, base::string16())));
+
+    MostVisitedURLList urls;
+    db.GetSites(&urls);
+    ASSERT_EQ(2u, urls.size());
+    EXPECT_EQ(kUrl0, urls[0].url);  // [0] because of url_rank.
+    EXPECT_EQ(kUrl2, urls[1].url);  // [1] because of url_rank.
+  }
+}
+
+TEST_F(TopSitesDatabaseTest, Recovery4) {
+  // Create an example database.
+  EXPECT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v4.sql"));
+
+  // Corrupt the database by adjusting the header.
+  EXPECT_TRUE(sql::test::CorruptSizeInHeader(file_name_));
+
+  // Database is unusable at the SQLite level.
+  {
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
+    sql::Database raw_db;
+    EXPECT_TRUE(raw_db.Open(file_name_));
+    EXPECT_FALSE(raw_db.IsSQLValid("PRAGMA integrity_check"));
+    ASSERT_TRUE(expecter.SawExpectedErrors());
+  }
+
+  // Corruption should be detected and recovered during Init().
+  {
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
+
+    TopSitesDatabase db;
+    ASSERT_TRUE(db.Init(file_name_));
+
+    MostVisitedURLList urls;
+    db.GetSites(&urls);
+    ASSERT_EQ(3u, urls.size());
+    EXPECT_EQ(kUrl0, urls[0].url);  // [0] because of url_rank.
+
+    ASSERT_TRUE(expecter.SawExpectedErrors());
+  }
+
+  // Double-check database integrity.
+  {
+    sql::Database raw_db;
+    EXPECT_TRUE(raw_db.Open(file_name_));
+    ASSERT_EQ("ok", sql::test::IntegrityCheck(&raw_db));
+  }
+
+  // Corrupt the tops_sites.url auto-index by deleting an element from the table
+  // but leaving it in the index.
+  static const char kIndexName[] = "sqlite_autoindex_top_sites_1";
+  // TODO(shess): Refactor CorruptTableOrIndex() to make parameterized
+  // statements easy.
+  static const char kDeleteSql[] =
+      "DELETE FROM top_sites WHERE url = "
       "'http://www.google.com/chrome/intl/en/welcome.html'";
   EXPECT_TRUE(
       sql::test::CorruptTableOrIndex(file_name_, kIndexName, kDeleteSql));
@@ -295,7 +421,7 @@ TEST_F(TopSitesDatabaseTest, Recovery3) {
 }
 
 TEST_F(TopSitesDatabaseTest, ApplyDelta_Delete) {
-  ASSERT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v3.sql"));
+  ASSERT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v4.sql"));
 
   TopSitesDatabase db;
   ASSERT_TRUE(db.Init(file_name_));
@@ -315,7 +441,7 @@ TEST_F(TopSitesDatabaseTest, ApplyDelta_Delete) {
 }
 
 TEST_F(TopSitesDatabaseTest, ApplyDelta_Add) {
-  ASSERT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v3.sql"));
+  ASSERT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v4.sql"));
 
   TopSitesDatabase db;
   ASSERT_TRUE(db.Init(file_name_));
@@ -339,7 +465,7 @@ TEST_F(TopSitesDatabaseTest, ApplyDelta_Add) {
 }
 
 TEST_F(TopSitesDatabaseTest, ApplyDelta_Move) {
-  ASSERT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v3.sql"));
+  ASSERT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v4.sql"));
 
   TopSitesDatabase db;
   ASSERT_TRUE(db.Init(file_name_));
@@ -361,7 +487,7 @@ TEST_F(TopSitesDatabaseTest, ApplyDelta_Move) {
 }
 
 TEST_F(TopSitesDatabaseTest, ApplyDelta_All) {
-  ASSERT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v3.sql"));
+  ASSERT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v4.sql"));
 
   TopSitesDatabase db;
   ASSERT_TRUE(db.Init(file_name_));
