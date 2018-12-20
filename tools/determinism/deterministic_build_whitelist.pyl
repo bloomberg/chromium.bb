@@ -23,6 +23,7 @@
     'fontconfig_caches/df1acc8c-39d5-4a8b-8507-b1a7396ac3ac-le64.cache-7',
 
     # nacl stuff, https://crbug.com/429358
+    'nacl_helper_bootstrap',
     'nacl_helper_nonsfi',
     'nacl_helper_nonsfi_unittests_main',
     'nacl_test_data/nonsfi/irt_exception_test_pnacl_newlib_x32_nonsfi.nexe',
