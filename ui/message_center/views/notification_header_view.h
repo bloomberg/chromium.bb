@@ -6,6 +6,7 @@
 #define UI_MESSAGE_CENTER_VIEWS_NOTIFICATION_HEADER_VIEW_H_
 
 #include "base/macros.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/views/controls/button/button.h"
@@ -25,6 +26,7 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
                          views::ButtonListener* listener);
   void SetAppIcon(const gfx::ImageSkia& img);
   void SetAppName(const base::string16& name);
+  void SetAppNameElideBehavior(gfx::ElideBehavior elide_behavior);
   void SetProgress(int progress);
   void SetOverflowIndicator(int count);
   void SetTimestamp(base::Time past);

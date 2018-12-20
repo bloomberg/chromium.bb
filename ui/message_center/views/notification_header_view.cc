@@ -25,6 +25,8 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/painter.h"
 
 namespace message_center {
@@ -32,7 +34,9 @@ namespace message_center {
 namespace {
 
 constexpr int kHeaderHeight = 32;
-constexpr int kHeaderHorizontalSpacing = 2;
+
+// The padding between controls in the header.
+constexpr gfx::Insets kHeaderSpacing(0, 2, 0, 2);
 
 // The padding outer the header and the control buttons.
 constexpr gfx::Insets kHeaderOuterPadding(2, 2, 0, 2);
@@ -42,16 +46,11 @@ constexpr gfx::Insets kHeaderOuterPadding(2, 2, 0, 2);
 // Buttom: 6px from the mock.
 constexpr gfx::Insets kTextViewPaddingDefault(9, 0, 6, 0);
 
-// Paddings of the entire header.
-// Left: 14px = 16px (from the mock) - 2px (outer padding).
-// Right: 2px = minimum padding between the control buttons and the header.
-constexpr gfx::Insets kHeaderPadding(0, 14, 0, 2);
-
 // Paddings of the app icon (small image).
 // Top: 8px = 10px (from the mock) - 2px (outer padding).
 // Bottom: 4px from the mock.
 // Right: 4px = 6px (from the mock) - kHeaderHorizontalSpacing.
-constexpr gfx::Insets kAppIconPadding(8, 0, 4, 4);
+constexpr gfx::Insets kAppIconPadding(8, 14, 4, 4);
 
 // Size of the expand icon. 8px = 32px - 15px - 9px (values from the mock).
 constexpr int kExpandIconSize = 8;
@@ -187,19 +186,22 @@ NotificationHeaderView::NotificationHeaderView(
     : views::Button(listener) {
   const int kInnerHeaderHeight = kHeaderHeight - kHeaderOuterPadding.height();
 
-  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, kHeaderOuterPadding,
-      kHeaderHorizontalSpacing));
-  layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+  const views::FlexSpecification kAppNameFlex =
+      views::FlexSpecification::ForSizeRule(
+          views::MinimumFlexSizeRule::kScaleToZero,
+          views::MaximumFlexSizeRule::kPreferred)
+          .WithOrder(1);
 
-  views::View* app_info_container = new views::View();
-  auto app_info_layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, kHeaderPadding, kHeaderHorizontalSpacing);
-  app_info_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  app_info_container->SetLayoutManager(std::move(app_info_layout));
-  AddChildView(app_info_container);
+  const views::FlexSpecification kSpacerFlex =
+      views::FlexSpecification::ForSizeRule(
+          views::MinimumFlexSizeRule::kScaleToZero,
+          views::MaximumFlexSizeRule::kUnbounded)
+          .WithOrder(2);
+
+  auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
+  layout->SetDefaultChildMargins(kHeaderSpacing);
+  layout->SetInteriorMargin(kHeaderOuterPadding);
+  layout->SetCollapseMargins(true);
 
   // App icon view
   app_icon_view_ = new views::ImageView();
@@ -208,7 +210,7 @@ NotificationHeaderView::NotificationHeaderView(
   app_icon_view_->SetVerticalAlignment(views::ImageView::LEADING);
   app_icon_view_->SetHorizontalAlignment(views::ImageView::LEADING);
   DCHECK_EQ(kInnerHeaderHeight, app_icon_view_->GetPreferredSize().height());
-  app_info_container->AddChildView(app_icon_view_);
+  AddChildView(app_icon_view_);
 
   // Font list for text views.
   gfx::FontList font_list = GetHeaderTextFontList();
@@ -217,13 +219,16 @@ NotificationHeaderView::NotificationHeaderView(
 
   // App name view
   app_name_view_ = new views::Label(base::string16());
+  // Explicitly disable multiline to support proper text elision for URLs.
+  app_name_view_->SetMultiLine(false);
   app_name_view_->SetFontList(font_list);
   app_name_view_->SetLineHeight(font_list_height);
   app_name_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   app_name_view_->SetEnabledColor(accent_color_);
   app_name_view_->SetBorder(views::CreateEmptyBorder(text_view_padding));
   DCHECK_EQ(kInnerHeaderHeight, app_name_view_->GetPreferredSize().height());
-  app_info_container->AddChildView(app_name_view_);
+  AddChildView(app_name_view_);
+  layout->SetFlexForView(app_name_view_, kAppNameFlex);
 
   // Summary text divider
   summary_text_divider_ =
@@ -235,7 +240,7 @@ NotificationHeaderView::NotificationHeaderView(
   summary_text_divider_->SetVisible(false);
   DCHECK_EQ(kInnerHeaderHeight,
             summary_text_divider_->GetPreferredSize().height());
-  app_info_container->AddChildView(summary_text_divider_);
+  AddChildView(summary_text_divider_);
 
   // Summary text view
   summary_text_view_ = new views::Label(base::string16());
@@ -246,7 +251,7 @@ NotificationHeaderView::NotificationHeaderView(
   summary_text_view_->SetVisible(false);
   DCHECK_EQ(kInnerHeaderHeight,
             summary_text_view_->GetPreferredSize().height());
-  app_info_container->AddChildView(summary_text_view_);
+  AddChildView(summary_text_view_);
 
   // Timestamp divider
   timestamp_divider_ =
@@ -258,7 +263,7 @@ NotificationHeaderView::NotificationHeaderView(
   timestamp_divider_->SetVisible(false);
   DCHECK_EQ(kInnerHeaderHeight,
             timestamp_divider_->GetPreferredSize().height());
-  app_info_container->AddChildView(timestamp_divider_);
+  AddChildView(timestamp_divider_);
 
   // Timestamp view
   timestamp_view_ = new views::Label(base::string16());
@@ -268,7 +273,7 @@ NotificationHeaderView::NotificationHeaderView(
   timestamp_view_->SetBorder(views::CreateEmptyBorder(text_view_padding));
   timestamp_view_->SetVisible(false);
   DCHECK_EQ(kInnerHeaderHeight, timestamp_view_->GetPreferredSize().height());
-  app_info_container->AddChildView(timestamp_view_);
+  AddChildView(timestamp_view_);
 
   // Expand button view
   expand_button_ = new ExpandButton();
@@ -278,13 +283,13 @@ NotificationHeaderView::NotificationHeaderView(
   expand_button_->SetHorizontalAlignment(views::ImageView::LEADING);
   expand_button_->SetImageSize(gfx::Size(kExpandIconSize, kExpandIconSize));
   DCHECK_EQ(kInnerHeaderHeight, expand_button_->GetPreferredSize().height());
-  app_info_container->AddChildView(expand_button_);
+  AddChildView(expand_button_);
 
   // Spacer between left-aligned views and right-aligned views
   views::View* spacer = new views::View;
   spacer->SetPreferredSize(gfx::Size(1, kInnerHeaderHeight));
   AddChildView(spacer);
-  layout->SetFlexForView(spacer, 1);
+  layout->SetFlexForView(spacer, kSpacerFlex);
 
   // Settings and close buttons view
   AddChildView(control_buttons_view);
@@ -303,6 +308,11 @@ void NotificationHeaderView::ClearAppIcon() {
 
 void NotificationHeaderView::SetAppName(const base::string16& name) {
   app_name_view_->SetText(name);
+}
+
+void NotificationHeaderView::SetAppNameElideBehavior(
+    gfx::ElideBehavior elide_behavior) {
+  app_name_view_->SetElideBehavior(elide_behavior);
 }
 
 void NotificationHeaderView::SetProgress(int progress) {
