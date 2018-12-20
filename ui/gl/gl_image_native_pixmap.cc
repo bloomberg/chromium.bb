@@ -328,15 +328,15 @@ unsigned GLImageNativePixmap::GetInternalFormat() {
 }
 
 bool GLImageNativePixmap::CopyTexImage(unsigned target) {
-  if (egl_image_ == EGL_NO_IMAGE_KHR) {
-    // Pass-through image type fails to bind and copy; make sure we
-    // don't draw with uninitialized texture.
-    std::vector<unsigned char> data(size_.width() * size_.height() * 4);
-    glTexImage2D(target, 0, GL_RGBA, size_.width(), size_.height(), 0, GL_RGBA,
-                 GL_UNSIGNED_BYTE, data.data());
-    return true;
-  }
-  return false;
+  if (egl_image_ != EGL_NO_IMAGE_KHR)
+    return false;
+
+  // Pass-through image type fails to bind and copy; make sure we
+  // don't draw with uninitialized texture.
+  std::vector<unsigned char> data(size_.width() * size_.height() * 4);
+  glTexImage2D(target, 0, GL_RGBA, size_.width(), size_.height(), 0, GL_RGBA,
+               GL_UNSIGNED_BYTE, data.data());
+  return true;
 }
 
 bool GLImageNativePixmap::CopyTexSubImage(unsigned target,
