@@ -147,7 +147,7 @@ function getSuggestionsByCategory() {
     const links = document.getElementsByClassName(toggleClass);
     for (const link of links) {
       link.onclick = function(event) {
-        let id = event.currentTarget.getAttribute('hidden-id');
+        const id = event.currentTarget.getAttribute('hidden-id');
         $(id).classList.toggle('hidden');
       };
     }

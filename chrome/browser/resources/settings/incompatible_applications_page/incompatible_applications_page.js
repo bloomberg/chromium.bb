@@ -105,7 +105,7 @@ Polymer({
    */
   onIncompatibleApplicationRemoved_: function(applicationName) {
     // Find the index of the element.
-    let index = this.applications_.findIndex(function(application) {
+    const index = this.applications_.findIndex(function(application) {
       return application.name == applicationName;
     });
 

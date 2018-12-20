@@ -37,7 +37,7 @@ Polymer({
     settings.CrostiniBrowserProxyImpl.getInstance()
         .getCrostiniSharedPathsDisplayText(paths)
         .then(text => {
-          let sharedPaths = [];
+          const sharedPaths = [];
           for (let i = 0; i < paths.length; i++) {
             sharedPaths.push({path: paths[i], pathDisplayText: text[i]});
           }

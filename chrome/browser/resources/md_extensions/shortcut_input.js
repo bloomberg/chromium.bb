@@ -199,7 +199,7 @@ cr.define('extensions', function() {
      * @private
      */
     computeText_: function() {
-      let shortcutString =
+      const shortcutString =
           this.capturing_ ? this.pendingShortcut_ : this.shortcut;
       return shortcutString.split('+').join(' + ');
     },

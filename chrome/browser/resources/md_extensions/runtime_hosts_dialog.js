@@ -29,12 +29,12 @@ cr.define('extensions', function() {
       '$');
 
   function getPatternFromSite(site) {
-    let res = patternRegExp.exec(site);
+    const res = patternRegExp.exec(site);
     assert(res);
-    let scheme = res[1] || '*://';
-    let host = (res[3] || '') + res[4];
-    let port = res[5] || '';
-    let path = '/*';
+    const scheme = res[1] || '*://';
+    const host = (res[3] || '') + res[4];
+    const port = res[5] || '';
+    const path = '/*';
     return scheme + host + port + path;
   }
 
@@ -109,7 +109,7 @@ cr.define('extensions', function() {
         return;
       }
 
-      let valid = patternRegExp.test(this.site_);
+      const valid = patternRegExp.test(this.site_);
       this.inputInvalid_ = !valid;
     },
 
@@ -204,7 +204,7 @@ cr.define('extensions', function() {
      * @private
      */
     addPermission_: function() {
-      let pattern = getPatternFromSite(this.site_);
+      const pattern = getPatternFromSite(this.site_);
       this.delegate.addRuntimeHostPermission(this.itemId, pattern)
           .then(
               () => {

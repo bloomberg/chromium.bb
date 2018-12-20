@@ -108,7 +108,7 @@ cr.define('extensions', function() {
       this.truncatedBefore_ = linesBefore.length - visibleLineCountBefore;
       this.truncatedAfter_ = linesAfter.length - visibleLineCountAfter;
 
-      let visibleCode = visibleBefore + highlight + visibleAfter;
+      const visibleCode = visibleBefore + highlight + visibleAfter;
 
       this.setLineNumbers_(
           this.truncatedBefore_ + 1,

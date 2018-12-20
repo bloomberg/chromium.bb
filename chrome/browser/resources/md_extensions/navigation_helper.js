@@ -151,7 +151,7 @@ cr.define('extensions', function() {
      * @param {!PageState} newPage the page to navigate to.
      */
     navigateTo(newPage) {
-      let currentPage = this.getCurrentPage();
+      const currentPage = this.getCurrentPage();
       if (currentPage && isPageStateEqual(currentPage, newPage)) {
         return;
       }

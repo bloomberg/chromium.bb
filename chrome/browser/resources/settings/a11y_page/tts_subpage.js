@@ -131,10 +131,11 @@ Polymer({
    * @private
    */
   initTick_: function(tick) {
-    let value = Math.round(100 * tick);
-    let strValue = value.toFixed(0);
-    let label = strValue === '100' ? this.i18n('defaultPercentage', strValue) :
-                                     this.i18n('percentage', strValue);
+    const value = Math.round(100 * tick);
+    const strValue = value.toFixed(0);
+    const label = strValue === '100' ?
+        this.i18n('defaultPercentage', strValue) :
+        this.i18n('percentage', strValue);
     return {label: label, value: tick, ariaValue: value};
   },
 
@@ -166,10 +167,10 @@ Polymer({
    */
   populateVoiceList_: function(voices) {
     // Build a map of language code to human-readable language and voice.
-    let result = {};
-    let languageCodeMap = {};
-    let pref = this.prefs.settings['language']['preferred_languages'];
-    let preferredLangs = pref.value.split(',');
+    const result = {};
+    const languageCodeMap = {};
+    const pref = this.prefs.settings['language']['preferred_languages'];
+    const preferredLangs = pref.value.split(',');
     voices.forEach(voice => {
       if (!result[voice.languageCode]) {
         result[voice.languageCode] = {
@@ -283,13 +284,13 @@ Polymer({
   updateLangToVoicePrefs_: function(langToVoices) {
     if (langToVoices.length == 0)
       return;
-    let allCodes = new Set(
+    const allCodes = new Set(
         Object.keys(this.prefs.settings['tts']['lang_to_voice_name'].value));
-    for (let code in langToVoices) {
+    for (const code in langToVoices) {
       // Remove from allCodes, to track what we've found a default for.
       allCodes.delete(code);
-      let voices = langToVoices[code].voices;
-      let defaultVoiceForLang =
+      const voices = langToVoices[code].voices;
+      const defaultVoiceForLang =
           this.prefs.settings['tts']['lang_to_voice_name'].value[code];
       if (!defaultVoiceForLang || defaultVoiceForLang === '') {
         // Initialize prefs that have no value
@@ -310,7 +311,7 @@ Polymer({
     // If there are any items left in allCodes, they are for languages that are
     // no longer covered by the UI. We could now delete them from the
     // lang_to_voice_name pref.
-    for (let code of allCodes) {
+    for (const code of allCodes) {
       this.set('prefs.settings.tts.lang_to_voice_name.value.' + code, '');
     }
   },
@@ -336,12 +337,12 @@ Polymer({
     if (!this.defaultPreviewVoice)
       this.set('defaultPreviewVoice', this.getBestVoiceForLocale_(allVoices));
 
-    let browserProxy = settings.LanguagesBrowserProxyImpl.getInstance();
+    const browserProxy = settings.LanguagesBrowserProxyImpl.getInstance();
     browserProxy.getProspectiveUILanguage().then(prospectiveUILanguage => {
       let result;
       if (prospectiveUILanguage && prospectiveUILanguage != '' &&
           languageCodeMap[prospectiveUILanguage]) {
-        let code = languageCodeMap[prospectiveUILanguage];
+        const code = languageCodeMap[prospectiveUILanguage];
         // First try the pref value.
         result = this.prefs.settings['tts']['lang_to_voice_name'].value[code];
       }
@@ -386,9 +387,9 @@ Polymer({
     // Log the default voice the user selected. Each voice has at most one
     // language, so there's no need to log language as well.
     // The event target is the settings-dropdown-menu.
-    let target = /** @type {{prefStringValue_: function():string}} */
+    const target = /** @type {{prefStringValue_: function():string}} */
         (event.target);
-    let newDefault = target.prefStringValue_();
+    const newDefault = target.prefStringValue_();
     chrome.metricsPrivate.recordSparseHashable(
         'TextToSpeech.Settings.DefaultVoicePicked', newDefault);
   },

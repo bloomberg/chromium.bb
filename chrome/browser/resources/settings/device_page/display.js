@@ -369,7 +369,7 @@ Polymer({
    * @private
    */
   getDisplayModeOptionList_: function(selectedDisplay) {
-    let optionList = [];
+    const optionList = [];
     for (let i = 0; i < selectedDisplay.modes.length; ++i) {
       const option = this.i18n(
           'displayResolutionMenuItem',
@@ -840,13 +840,13 @@ Polymer({
     event.target.blur();
 
     /** @type {!chrome.system.display.MirrorModeInfo} */
-    let mirrorModeInfo = {
+    const mirrorModeInfo = {
       mode: this.isMirrored_(this.displays) ?
           chrome.system.display.MirrorMode.OFF :
           chrome.system.display.MirrorMode.NORMAL
     };
     settings.display.systemDisplayApi.setMirrorMode(mirrorModeInfo, () => {
-      let error = chrome.runtime.lastError;
+      const error = chrome.runtime.lastError;
       if (error)
         console.error('setMirrorMode Error: ' + error.message);
     });

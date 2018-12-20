@@ -315,7 +315,7 @@ cr.define('policy', function() {
 
       // First, add known policies whose value is currently set.
       const unset = [];
-      for (let name in this.policies_) {
+      for (const name in this.policies_) {
         if (name in values)
           this.setPolicyValue_(name, values[name], false);
         else
@@ -324,7 +324,7 @@ cr.define('policy', function() {
 
       // Second, add policies whose value is currently set but whose name is not
       // recognized.
-      for (let name in values) {
+      for (const name in values) {
         if (!(name in this.policies_))
           this.setPolicyValue_(name, values[name], true);
       }

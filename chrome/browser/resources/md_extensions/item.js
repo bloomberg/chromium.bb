@@ -339,7 +339,7 @@ cr.define('extensions', function() {
      * @private
      */
     computeFirstInspectLabel_: function() {
-      let label = this.computeFirstInspectTitle_();
+      const label = this.computeFirstInspectTitle_();
       return label && this.data.views.length > 1 ? label + ',' : label;
     },
 

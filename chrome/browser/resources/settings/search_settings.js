@@ -59,8 +59,8 @@ cr.define('settings', function() {
    */
   function findAndHighlightMatches_(request, root) {
     let foundMatches = false;
-    let highlights = [];
-    let bubbles = [];
+    const highlights = [];
+    const bubbles = [];
 
     const domIfTag = Polymer.DomIf ? 'DOM-IF' : 'TEMPLATE';
 
@@ -100,7 +100,7 @@ cr.define('settings', function() {
 
         if (request.regExp.test(textContent)) {
           foundMatches = true;
-          let bubble = revealParentSection_(node, request.rawQuery_);
+          const bubble = revealParentSection_(node, request.rawQuery_);
           if (bubble)
             bubbles.push(bubble);
 
@@ -439,7 +439,7 @@ cr.define('settings', function() {
 
     removeAllHighlightsAndBubbles() {
       cr.search_highlight_utils.removeHighlights(this.highlights_);
-      for (let bubble of this.bubbles_)
+      for (const bubble of this.bubbles_)
         bubble.remove();
       this.highlights_ = [];
       this.bubbles_ = [];

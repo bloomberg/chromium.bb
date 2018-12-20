@@ -474,7 +474,7 @@ Polymer({
     if (!syncStatus.signedIn || !syncStatus.syncSystemEnabled)
       return false;
 
-    let numberOfMigratableCreditCard =
+    const numberOfMigratableCreditCard =
         creditCards.filter(card => card.metadata.isMigratable).length;
     // Check whether exist at least one local valid card for migration.
     if (numberOfMigratableCreditCard == 0)

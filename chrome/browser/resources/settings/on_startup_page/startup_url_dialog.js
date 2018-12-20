@@ -8,7 +8,7 @@
  * Describe the current URL input error status.
  * @enum {number}
  */
-let UrlInputError = {
+const UrlInputError = {
   NONE: 0,
   INVALID_URL: 1,
   TOO_LONG: 2,

@@ -284,8 +284,8 @@ Polymer({
    * @private
    */
   onFeatureToggleClicked_: function(event) {
-    let feature = event.detail.feature;
-    let enabled = event.detail.enabled;
+    const feature = event.detail.feature;
+    const enabled = event.detail.enabled;
 
     // Disabling any feature does not require authentication, and enable some
     // features does not require authentication.
