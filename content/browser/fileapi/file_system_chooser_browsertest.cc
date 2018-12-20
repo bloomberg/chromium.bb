@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
@@ -9,6 +10,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_dialog_factory.h"
@@ -24,6 +26,9 @@ class FileSystemChooserBrowserTest : public ContentBrowserTest {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     scoped_feature_list_.InitAndEnableFeature(
         blink::features::kWritableFilesAPI);
+
+    ASSERT_TRUE(embedded_test_server()->Start());
+
     ContentBrowserTest::SetUp();
   }
 
@@ -50,10 +55,6 @@ class FileSystemChooserBrowserTest : public ContentBrowserTest {
     return result;
   }
 
- protected:
-  const std::string kBlankHtml = "<!DOCTYPE html><html><body>";
-  const GURL kTestUrl = GURL("https://foobar.com/");
-
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   base::ScopedTempDir temp_dir_;
@@ -61,7 +62,8 @@ class FileSystemChooserBrowserTest : public ContentBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, CancelDialog) {
   ui::SelectFileDialog::SetFactory(new CancellingSelectFileDialogFactory);
-  LoadDataWithBaseURL(shell(), kTestUrl, kBlankHtml, kTestUrl);
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
   auto result = EvalJs(shell(), "self.chooseFileSystemEntries()");
   EXPECT_TRUE(result.error.find("AbortError") != std::string::npos)
       << result.error;
@@ -73,7 +75,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenFile) {
   SelectFileDialogParams dialog_params;
   ui::SelectFileDialog::SetFactory(
       new FakeSelectFileDialogFactory({test_file}, &dialog_params));
-  LoadDataWithBaseURL(shell(), kTestUrl, kBlankHtml, kTestUrl);
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
   EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
             EvalJs(shell(),
                    "(async () => {"
@@ -100,7 +103,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, SaveFile) {
   SelectFileDialogParams dialog_params;
   ui::SelectFileDialog::SetFactory(
       new FakeSelectFileDialogFactory({test_file}, &dialog_params));
-  LoadDataWithBaseURL(shell(), kTestUrl, kBlankHtml, kTestUrl);
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
   EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
             EvalJs(shell(),
                    "(async () => {"
@@ -130,7 +134,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenMultipleFiles) {
   SelectFileDialogParams dialog_params;
   ui::SelectFileDialog::SetFactory(new FakeSelectFileDialogFactory(
       {test_file1, test_file2}, &dialog_params));
-  LoadDataWithBaseURL(shell(), kTestUrl, kBlankHtml, kTestUrl);
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
   EXPECT_EQ(ListValueOf(test_file1.BaseName().AsUTF8Unsafe(),
                         test_file2.BaseName().AsUTF8Unsafe()),
             EvalJs(shell(),
@@ -146,7 +151,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenDirectory) {
   SelectFileDialogParams dialog_params;
   ui::SelectFileDialog::SetFactory(
       new FakeSelectFileDialogFactory({test_dir}, &dialog_params));
-  LoadDataWithBaseURL(shell(), kTestUrl, kBlankHtml, kTestUrl);
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
   EXPECT_EQ(test_dir.BaseName().AsUTF8Unsafe(),
             EvalJs(shell(),
                    "(async () => {"
@@ -161,7 +167,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, AcceptsOptions) {
   SelectFileDialogParams dialog_params;
   ui::SelectFileDialog::SetFactory(
       new CancellingSelectFileDialogFactory(&dialog_params));
-  LoadDataWithBaseURL(shell(), kTestUrl, kBlankHtml, kTestUrl);
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
   auto result = EvalJs(shell(),
                        "self.chooseFileSystemEntries({accepts: ["
                        "  {description: 'no-extensions'},"
