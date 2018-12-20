@@ -12,6 +12,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -473,6 +474,8 @@ class PrintJobHostImpl : public mojom::PrintJobHost,
     document->SetDocument(std::move(metafile_) /* metafile */,
                           gfx::Size() /* paper_size */,
                           gfx::Rect() /* page_rect */);
+    UMA_HISTOGRAM_COUNTS_1000("Arc.CupsPrinting.PageCount",
+                              document->page_count());
     job_->StartPrinting();
   }
 
