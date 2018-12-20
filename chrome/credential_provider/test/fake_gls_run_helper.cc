@@ -24,6 +24,7 @@ namespace switches {
 
 constexpr char kGlsUserEmail[] = "gls-user-email";
 constexpr char kStartGlsEventName[] = "start-gls-event-name";
+constexpr char kOverrideGaiaId[] = "override-gaia-id";
 
 }  // namespace switches
 
@@ -61,14 +62,32 @@ MULTIPROCESS_TEST_MAIN(gls_main) {
   std::string gls_email =
       command_line->GetSwitchValueASCII(switches::kGlsUserEmail);
 
+  std::string gaia_id_override =
+      command_line->GetSwitchValueASCII(switches::kOverrideGaiaId);
+  std::string expected_gaia_id =
+      command_line->GetSwitchValueASCII(kGaiaIdSwitch);
+  std::string expected_email =
+      command_line->GetSwitchValueASCII(kPrefillEmailSwitch);
+  if (expected_email.empty()) {
+    expected_email = gls_email;
+  } else {
+    EXPECT_EQ(gls_email, std::string());
+  }
+  constexpr char default_gaia_id[] = "1234567890";
+  if (expected_gaia_id.empty())
+    expected_gaia_id = default_gaia_id;
   base::DictionaryValue dict;
-  dict.SetString(kKeyEmail, gls_email);
-  dict.SetString(kKeyFullname, "Full Name");
-  dict.SetString(kKeyId, "1234567890");
-  dict.SetString(kKeyMdmIdToken, "idt-123456");
-  dict.SetString(kKeyPassword, "password");
-  dict.SetString(kKeyRefreshToken, "rt-123456");
-  dict.SetString(kKeyTokenHandle, "th-123456");
+  if (!gaia_id_override.empty() && gaia_id_override != expected_gaia_id) {
+    dict.SetInteger(kKeyExitCode, kUiecEMailMissmatch);
+  } else {
+    dict.SetString(kKeyEmail, expected_email);
+    dict.SetString(kKeyFullname, "Full Name");
+    dict.SetString(kKeyId, expected_gaia_id);
+    dict.SetString(kKeyMdmIdToken, "idt-123456");
+    dict.SetString(kKeyPassword, "password");
+    dict.SetString(kKeyRefreshToken, "rt-123456");
+    dict.SetString(kKeyTokenHandle, "th-123456");
+  }
 
   std::string json;
   if (!base::JSONWriter::Write(dict, &json))
@@ -150,13 +169,19 @@ HRESULT FakeGlsRunHelper::StartLogonProcessAndWait(
 }
 
 // static
-HRESULT FakeGlsRunHelper::GetMockGlsCommandline(
+HRESULT FakeGlsRunHelper::GetFakeGlsCommandline(
     const std::string& gls_email,
+    const std::string& gaia_id_override,
     const base::string16& start_gls_event_name,
     base::CommandLine* command_line) {
   *command_line = base::GetMultiProcessTestChildBaseCommandLine();
   command_line->AppendSwitchASCII(::switches::kTestChildProcess, "gls_main");
   command_line->AppendSwitchASCII(switches::kGlsUserEmail, gls_email);
+
+  if (!gaia_id_override.empty()) {
+    command_line->AppendSwitchASCII(switches::kOverrideGaiaId,
+                                    gaia_id_override);
+  }
 
   if (!start_gls_event_name.empty()) {
     command_line->AppendSwitchNative(switches::kStartGlsEventName,

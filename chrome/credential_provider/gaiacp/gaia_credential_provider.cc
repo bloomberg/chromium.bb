@@ -273,14 +273,9 @@ HRESULT CGaiaCredentialProvider::SetUserArray(
 
     LOGFN(INFO) << "Existing gaia user: sid=" << kv.first
                 << " user=" << kv.second << " email=" << email;
-
     CComPtr<IGaiaCredential> cred;
     hr = CComCreator<CComObject<CReauthCredential>>::CreateInstance(
         nullptr, IID_IGaiaCredential, (void**)&cred);
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Could not create credential hr=" << putHR(hr);
-      return hr;
-    }
 
     hr = cred->Initialize(this);
     if (FAILED(hr)) {
@@ -290,11 +285,16 @@ HRESULT CGaiaCredentialProvider::SetUserArray(
 
     CComPtr<IReauthCredential> reauth;
     reauth = cred;
-    hr = reauth->SetUserInfo(CComBSTR(W2COLE(kv.first.c_str())),
-                             CComBSTR(W2COLE(kv.second.c_str())),
-                             CComBSTR(email));
+    hr = reauth->SetOSUserInfo(CComBSTR(W2COLE(kv.first.c_str())),
+                               CComBSTR(W2COLE(kv.second.c_str())));
     if (FAILED(hr)) {
-      LOG(ERROR) << "reauth->SetUserInfo hr=" << putHR(hr);
+      LOG(ERROR) << "reauth->SetOSUserInfo hr=" << putHR(hr);
+      return hr;
+    }
+
+    hr = reauth->SetEmailForReauth(CComBSTR(email));
+    if (FAILED(hr)) {
+      LOG(ERROR) << "reauth->SetEmailForReauth hr=" << putHR(hr);
       return hr;
     }
 
