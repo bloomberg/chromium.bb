@@ -49,8 +49,6 @@ class SharedImageBackingFactoryAHBTest : public testing::Test {
 
     GpuDriverBugWorkarounds workarounds;
     workarounds.max_texture_size = INT_MAX - 1;
-    backing_factory_ = std::make_unique<SharedImageBackingFactoryAHB>(
-        workarounds, GpuFeatureInfo());
 
     scoped_refptr<gl::GLShareGroup> share_group = new gl::GLShareGroup();
     context_state_ = new raster::RasterDecoderContextState(
@@ -60,6 +58,9 @@ class SharedImageBackingFactoryAHBTest : public testing::Test {
     auto feature_info =
         base::MakeRefCounted<gles2::FeatureInfo>(workarounds, GpuFeatureInfo());
     context_state_->InitializeGL(std::move(feature_info));
+
+    backing_factory_ = std::make_unique<SharedImageBackingFactoryAHB>(
+        workarounds, GpuFeatureInfo(), context_state_.get());
 
     memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);
     shared_image_representation_factory_ =
@@ -149,7 +150,7 @@ TEST_F(SharedImageBackingFactoryAHBTest, Basic) {
   EXPECT_EQ(size.height(), surface->height());
   skia_representation->EndWriteAccess(std::move(surface));
   GrBackendTexture backend_texture;
-  EXPECT_TRUE(skia_representation->BeginReadAccess(&backend_texture));
+  EXPECT_TRUE(skia_representation->BeginReadAccess(nullptr, &backend_texture));
   EXPECT_EQ(size.width(), backend_texture.width());
   EXPECT_EQ(size.width(), backend_texture.width());
   skia_representation->EndReadAccess();
@@ -209,7 +210,7 @@ TEST_F(SharedImageBackingFactoryAHBTest, GLSkiaGL) {
       shared_image_representation_factory_->ProduceSkia(mailbox);
   EXPECT_TRUE(skia_representation);
   GrBackendTexture backend_texture;
-  EXPECT_TRUE(skia_representation->BeginReadAccess(&backend_texture));
+  EXPECT_TRUE(skia_representation->BeginReadAccess(nullptr, &backend_texture));
   EXPECT_EQ(size.width(), backend_texture.width());
   EXPECT_EQ(size.width(), backend_texture.width());
 
