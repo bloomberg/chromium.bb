@@ -12,14 +12,19 @@
 
 namespace blink {
 
-const int kViewportWidth = 500;
-const int kViewportHeight = 600;
 class HTMLImageElementTest : public PageTestBase {
  protected:
+  static constexpr int kViewportWidth = 500;
+  static constexpr int kViewportHeight = 600;
+
   void SetUp() override {
     PageTestBase::SetUp(IntSize(kViewportWidth, kViewportHeight));
   }
 };
+
+// Instantiate class constants. Not needed after C++17.
+constexpr int HTMLImageElementTest::kViewportWidth;
+constexpr int HTMLImageElementTest::kViewportHeight;
 
 TEST_F(HTMLImageElementTest, width) {
   auto* image = HTMLImageElement::Create(GetDocument());
