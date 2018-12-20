@@ -713,7 +713,7 @@ void LayoutTreeAsText::WriteLayers(WTF::TextStream& ts,
   LayoutRect layer_bounds;
   ClipRect damage_rect, clip_rect_to_apply;
   if (layer->GetLayoutObject().FirstFragment().HasLocalBorderBoxProperties()) {
-    layer->Clipper(PaintLayer::kUseGeometryMapper)
+    layer->Clipper(PaintLayer::GeometryMapperOption::kUseGeometryMapper)
         .CalculateRects(
             ClipRectsContext(root_layer,
                              &root_layer->GetLayoutObject().FirstFragment(),
@@ -721,7 +721,7 @@ void LayoutTreeAsText::WriteLayers(WTF::TextStream& ts,
             &layer->GetLayoutObject().FirstFragment(), nullptr, layer_bounds,
             damage_rect, clip_rect_to_apply);
   } else {
-    layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
+    layer->Clipper(PaintLayer::GeometryMapperOption::kDoNotUseGeometryMapper)
         .CalculateRects(
             ClipRectsContext(root_layer, nullptr, kUncachedClipRects), nullptr,
             nullptr, layer_bounds, damage_rect, clip_rect_to_apply);

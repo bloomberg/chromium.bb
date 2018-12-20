@@ -305,7 +305,7 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
   }
 
   ClipRect clip_rect;
-  layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
+  layer->Clipper(PaintLayer::GeometryMapperOption::kDoNotUseGeometryMapper)
       .CalculateBackgroundClipRect(
           ClipRectsContext(root_layer_,
                            &root_layer_->GetLayoutObject().FirstFragment(),

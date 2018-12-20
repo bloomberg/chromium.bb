@@ -669,7 +669,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return scrollable_area_.Get();
   }
 
-  enum GeometryMapperOption { kUseGeometryMapper, kDoNotUseGeometryMapper };
+  enum class GeometryMapperOption {
+    kUseGeometryMapper,
+    kDoNotUseGeometryMapper
+  };
 
   PaintLayerClipper Clipper(GeometryMapperOption) const;
 
