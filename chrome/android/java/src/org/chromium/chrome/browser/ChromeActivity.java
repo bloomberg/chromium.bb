@@ -225,6 +225,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     private TabModelSelector mTabModelSelector;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
+    private ActivityTabProvider.ActivityTabTabObserver mStatusBarColorTabObserver;
     private TabCreatorManager.TabCreator mRegularTabCreator;
     private TabCreatorManager.TabCreator mIncognitoTabCreator;
     private TabContentManager mTabContentManager;
@@ -692,11 +693,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             }
 
             @Override
-            public void onShown(Tab tab, @TabSelectionType int type) {
-                setStatusBarColor(tab, TabThemeColorHelper.getColor(tab));
-            }
-
-            @Override
             public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
                 postDeferredStartupIfNeeded();
             }
@@ -711,18 +707,32 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             public void onCrash(Tab tab) {
                 postDeferredStartupIfNeeded();
             }
+        };
+
+        mStatusBarColorTabObserver =
+                new ActivityTabProvider.ActivityTabTabObserver(getActivityTabProvider()) {
+            @Override
+            public void onShown(Tab tab, @TabSelectionType int type) {
+                setStatusBarColor(tab, TabThemeColorHelper.getColor(tab));
+            }
 
             @Override
             public void onDidChangeThemeColor(Tab tab, int color) {
-                if (getActivityTab() != tab) return;
                 setStatusBarColor(tab, color);
 
                 if (getToolbarManager() == null) return;
                 getToolbarManager().updatePrimaryColor(color, true);
 
-                ControlContainer controlContainer =
-                        (ControlContainer) findViewById(R.id.control_container);
+                ControlContainer controlContainer = findViewById(R.id.control_container);
                 controlContainer.getToolbarResourceAdapter().invalidate(null);
+            }
+
+            @Override
+            protected void onObservingDifferentTab(Tab tab) {
+                // |tab == null| means we're switching tabs - by the tab switcher or by swiping
+                // on the omnibox. These cases are dealt with differently, elsewhere.
+                if (tab == null) return;
+                setStatusBarColor(tab, TabThemeColorHelper.getColor(tab));
             }
         };
 
@@ -1288,6 +1298,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (mTabModelSelectorTabObserver != null) {
             mTabModelSelectorTabObserver.destroy();
             mTabModelSelectorTabObserver = null;
+        }
+
+        if (mStatusBarColorTabObserver != null) {
+            mStatusBarColorTabObserver.destroy();
+            mStatusBarColorTabObserver = null;
         }
 
         if (mCompositorViewHolder != null) {

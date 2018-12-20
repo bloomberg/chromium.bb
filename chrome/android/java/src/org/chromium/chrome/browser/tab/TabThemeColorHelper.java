@@ -52,7 +52,7 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
     }
 
     private void updateDefaultColor() {
-        calculateDefaultColor();
+        mDefaultColor = calculateDefaultColor();
         updateIfNeeded(false);
     }
 
