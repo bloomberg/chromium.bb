@@ -224,6 +224,8 @@ source_set("material_components_ios") {
     "src/components/FlexibleHeader/src/MDCFlexibleHeaderViewController.h",
     "src/components/FlexibleHeader/src/MDCFlexibleHeaderViewController.m",
     "src/components/FlexibleHeader/src/MaterialFlexibleHeader.h",
+    "src/components/FlexibleHeader/src/private/MDCFlexibleHeaderMinMaxHeight.h",
+    "src/components/FlexibleHeader/src/private/MDCFlexibleHeaderMinMaxHeight.m",
     "src/components/FlexibleHeader/src/private/MDCFlexibleHeaderTopSafeArea.h",
     "src/components/FlexibleHeader/src/private/MDCFlexibleHeaderTopSafeArea.m",
     "src/components/FlexibleHeader/src/private/MDCStatusBarShifter.h",
