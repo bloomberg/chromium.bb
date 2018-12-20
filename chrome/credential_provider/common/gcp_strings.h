@@ -5,7 +5,38 @@
 #ifndef CHROME_CREDENTIAL_PROVIDER_COMMON_GCP_STRINGS_H_
 #define CHROME_CREDENTIAL_PROVIDER_COMMON_GCP_STRINGS_H_
 
+#include <string>
+#include <vector>
+
+#include "base/values.h"
+
 namespace credential_provider {
+
+// The the UI process can exit with the following exit code.
+enum UiExitCodes {
+  // The user completed the sign in successfully.
+  kUiecSuccess,
+
+  // The sign in was aborted by the user.
+  kUiecAbort,
+
+  // The sign in timed out.
+  kUiecTimeout,
+
+  // The process was killed by the GCP.
+  kUiecKilled,
+
+  // The email is not valid for the given user logging in.
+  kUiecEMailMissmatch,
+
+  // The email domain is not an accepted domain.
+  kUiecInvalidEmailDomain,
+
+  // Some signin data was missing.
+  kUiecMissingSigninData,
+
+  kUiecCount,
+};
 
 // Names of keys returned on json data from UI process.
 extern const char kKeyEmail[];
@@ -19,6 +50,7 @@ extern const char kKeyAccessToken[];
 extern const char kKeySID[];
 extern const char kKeyTokenHandle[];
 extern const char kKeyUsername[];
+extern const char kKeyExitCode[];
 
 // Name of registry value that holds user properties.
 extern const wchar_t kUserTokenHandle[];
@@ -42,10 +74,13 @@ extern const wchar_t kRegUpdaterClientsAppPath[];
 // These are command line switches passed to chrome to start it as a process
 // used as a logon stub.
 extern const char kGcpwSigninSwitch[];
-extern const char kEmailDomainSwitch[];
+extern const char kPrefillEmailSwitch[];
+extern const char kEmailDomainsSwitch[];
+extern const char kGaiaIdSwitch[];
 
-// Parameter appended to sign in URL to pass domain hint to GAIA.
-extern const char kEmailDomainSigninPromoParameter[];
+extern const char kEmailDomainsSigninPromoParameter[];
+extern const char kEmailDomainsSeparator[];
+extern const char kValidateGaiaIdSigninPromoParameter[];
 
 // Crashpad related constants
 extern const wchar_t kRunAsCrashpadHandlerEntryPoint[];

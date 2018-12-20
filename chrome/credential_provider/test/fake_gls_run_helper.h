@@ -32,8 +32,9 @@ class FakeGlsRunHelper {
   HRESULT StartLogonProcessAndWait(ICredentialProviderCredential* cred);
 
   FakeOSUserManager* fake_os_user_manager() { return &fake_os_user_manager_; }
-  static HRESULT GetMockGlsCommandline(
+  static HRESULT GetFakeGlsCommandline(
       const std::string& gls_email,
+      const std::string& gaia_id_override,
       const base::string16& start_gls_event_name,
       base::CommandLine* command_line);
 

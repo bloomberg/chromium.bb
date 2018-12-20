@@ -29,6 +29,8 @@ class DECLSPEC_UUID("3710aa3a-13c7-44c2-bc38-09ba137804d8") ITestCredential
  public:
   virtual HRESULT STDMETHODCALLTYPE
   SetGlsEmailAddress(const std::string& email) = 0;
+  virtual HRESULT STDMETHODCALLTYPE
+  SetGaiaIdOverride(const std::string& gaia_id) = 0;
   virtual HRESULT STDMETHODCALLTYPE WaitForGls() = 0;
   virtual HRESULT STDMETHODCALLTYPE
   SetStartGlsEventName(const base::string16& event_name) = 0;
@@ -48,7 +50,7 @@ class DECLSPEC_UUID("3710aa3a-13c7-44c2-bc38-09ba137804d8") ITestCredential
 // A CGaiaCredentialBase is required to call base class functions in the
 // following ITestCredential implementations:
 // GetFinalUsername, AreCredentialsValid, AreWindowsCredentialsAvailable,
-// AreWindowsCredentialsValid, DisplayErrorInUI, GetGlsCommandline
+// AreWindowsCredentialsValid, DisplayErrorInUI, GetBaseGlsCommandline
 // Also the following IGaiaCredential function needs to be overridden to
 // notify the completion of the fake GLS that this credential runs:
 // OnUserAuthenticated.
@@ -60,6 +62,7 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
 
   // ITestCredential.
   IFACEMETHODIMP SetGlsEmailAddress(const std::string& email) override;
+  IFACEMETHODIMP SetGaiaIdOverride(const std::string& gaia_id) override;
   IFACEMETHODIMP WaitForGls() override;
   IFACEMETHODIMP SetStartGlsEventName(
       const base::string16& event_name) override;
@@ -76,14 +79,14 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
                                      BSTR* status_text) override;
 
   // Overrides to build a dummy command line for testing.
-  HRESULT GetGlsCommandline(const wchar_t* email,
-                            base::CommandLine* command_line) override;
+  HRESULT GetBaseGlsCommandline(base::CommandLine* command_line) override;
 
   // Override to catch completion of the GLS process on failure and also log
   // the error message.
   void DisplayErrorInUI(LONG status, LONG substatus, BSTR status_text) override;
 
   std::string gls_email_;
+  std::string gaia_id_override_;
   base::WaitableEvent gls_done_;
   base::win::ScopedHandle process_continue_event_;
   base::string16 start_gls_event_name_;
@@ -102,6 +105,12 @@ CTestCredentialBase<T>::~CTestCredentialBase() {}
 template <class T>
 HRESULT CTestCredentialBase<T>::SetGlsEmailAddress(const std::string& email) {
   gls_email_ = email;
+  return S_OK;
+}
+
+template <class T>
+HRESULT CTestCredentialBase<T>::SetGaiaIdOverride(const std::string& gaia_id) {
+  gaia_id_override_ = gaia_id;
   return S_OK;
 }
 
@@ -143,7 +152,8 @@ bool CTestCredentialBase<T>::AreWindowsCredentialsAvailable() {
 
 template <class T>
 bool CTestCredentialBase<T>::AreWindowsCredentialsValid() {
-  return T::AreWindowsCredentialsValid(this->get_current_windows_password());
+  return T::AreWindowsCredentialsValid(this->get_current_windows_password()) ==
+         S_OK;
 }
 
 template <class T>
@@ -162,11 +172,10 @@ HRESULT CTestCredentialBase<T>::OnUserAuthenticated(BSTR authentication_info,
 }
 
 template <class T>
-HRESULT CTestCredentialBase<T>::GetGlsCommandline(
-    const wchar_t* /*email*/,
+HRESULT CTestCredentialBase<T>::GetBaseGlsCommandline(
     base::CommandLine* command_line) {
-  HRESULT hr = FakeGlsRunHelper::GetMockGlsCommandline(
-      gls_email_, start_gls_event_name_, command_line);
+  HRESULT hr = FakeGlsRunHelper::GetFakeGlsCommandline(
+      gls_email_, gaia_id_override_, start_gls_event_name_, command_line);
 
   // Reset the manual event since GLS will be started upon return.
   gls_done_.Reset();

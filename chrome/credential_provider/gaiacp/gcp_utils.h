@@ -40,24 +40,6 @@ constexpr int kWindowsUsernameBufferLength = 21;
 // define STATUS_SUCCESS here instead of including ntstatus.h or SubAuth.h
 #define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
 
-// The the UI process can exit with the following exit code.
-enum UiExitCodes {
-  // The user completed the sign in successfully.
-  kUiecSuccess,
-
-  // The sign in was aborted by the user.
-  kUiecAbort,
-
-  // The sign in timed out.
-  kUiecTimeout,
-
-  // The process was killed by the GCP.
-  kUiecKilled,
-
-  // The email does not match the required pattern.
-  kUiecEMailMissmatch,
-};
-
 // A bitfield indicating which standard handles are to be created.
 using StdHandlesToCreate = uint32_t;
 

@@ -36,16 +36,19 @@ HRESULT CReauthCredential::GetEmailForReauth(wchar_t* email, size_t length) {
   return err == 0 ? S_OK : E_FAIL;
 }
 
-IFACEMETHODIMP CReauthCredential::SetUserInfo(BSTR sid,
-                                              BSTR username,
-                                              BSTR email) {
+IFACEMETHODIMP CReauthCredential::SetEmailForReauth(BSTR email) {
+  DCHECK(email);
+
+  email_for_reauth_ = email;
+  return S_OK;
+}
+
+HRESULT CReauthCredential::SetOSUserInfo(BSTR sid, BSTR username) {
   DCHECK(sid);
   DCHECK(username);
-  DCHECK(email);
 
   set_user_sid(sid);
   set_username(username);
-  email_for_reauth_ = email;
   return S_OK;
 }
 
