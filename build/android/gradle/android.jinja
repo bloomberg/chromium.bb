@@ -111,9 +111,4 @@ afterEvaluate {
     tasksToDisable.each { Task task ->
       task.enabled = false
     }
-{% if bootclasspath is defined %}
-    tasks.withType(JavaCompile) {
-      options.bootClasspath = "{{ bootclasspath }}"
-    }
-{% endif %}
 }

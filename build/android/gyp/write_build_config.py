@@ -1241,7 +1241,6 @@ def main(argv):
     config['android'] = {}
     config['android']['sdk_interface_jars'] = system_interface_jars
     config['android']['sdk_jars'] = system_jars
-    gradle['bootclasspath'] = system_jars
 
   if options.proguard_configs:
     deps_info['proguard_configs'] = (
