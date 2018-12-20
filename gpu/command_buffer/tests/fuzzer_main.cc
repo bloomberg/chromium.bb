@@ -364,7 +364,7 @@ class CommandBufferSetup {
             share_group_, surface_, context_,
             config_.workarounds.use_virtualized_gl_contexts, base::DoNothing());
     context_state->InitializeGrContext(config_.workarounds, nullptr);
-    context_state->InitializeGL(config_.workarounds, gpu_feature_info);
+    context_state->InitializeGL(feature_info);
     auto* context = context_state->context();
     decoder_.reset(raster::RasterDecoder::Create(
         command_buffer_.get(), command_buffer_->service(), &outputter_,

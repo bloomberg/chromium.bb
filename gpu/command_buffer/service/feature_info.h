@@ -154,7 +154,8 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   // Initializes the feature information. Needs a current GL context.
   void Initialize(ContextType context_type,
                   bool is_passthrough_cmd_decoder,
-                  const DisallowedFeatures& disallowed_features);
+                  const DisallowedFeatures& disallowed_features,
+                  bool force_reinitialize = false);
 
   // Helper that defaults to no disallowed features and a GLES2 context.
   void InitializeForTesting();
@@ -231,6 +232,8 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   void InitializeBasicState(const base::CommandLine* command_line);
   void InitializeFeatures();
   void InitializeFloatAndHalfFloatFeatures(const gfx::ExtensionSet& extensions);
+
+  bool initialized_ = false;
 
   Validators validators_;
 

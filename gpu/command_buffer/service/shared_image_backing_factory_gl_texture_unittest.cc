@@ -56,19 +56,19 @@ class SharedImageBackingFactoryGLTextureTestBase
         preferences, workarounds, GpuFeatureInfo(), factory);
 
     scoped_refptr<gl::GLShareGroup> share_group = new gl::GLShareGroup();
-    context_state_ = new raster::RasterDecoderContextState(
+    auto feature_info =
+        base::MakeRefCounted<gles2::FeatureInfo>(workarounds, GpuFeatureInfo());
+    context_state_ = base::MakeRefCounted<raster::RasterDecoderContextState>(
         std::move(share_group), surface_, context_,
         false /* use_virtualized_gl_contexts */, base::DoNothing());
     context_state_->InitializeGrContext(workarounds, nullptr);
-    context_state_->InitializeGL(workarounds, GpuFeatureInfo());
+    context_state_->InitializeGL(feature_info);
 
     memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);
     shared_image_representation_factory_ =
         std::make_unique<SharedImageRepresentationFactory>(
             &shared_image_manager_, nullptr);
 
-    scoped_refptr<gles2::FeatureInfo> feature_info =
-        new gles2::FeatureInfo(workarounds, GpuFeatureInfo());
     supports_etc1_ =
         feature_info->validators()->compressed_texture_format.IsValid(
             GL_ETC1_RGB8_OES);

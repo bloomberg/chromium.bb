@@ -570,8 +570,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
       context_state_ = base::MakeRefCounted<raster::RasterDecoderContextState>(
           gl_share_group_, surface_, real_context, use_virtualized_gl_context_,
           base::DoNothing());
-      context_state_->InitializeGL(workarounds,
-                                   task_executor_->gpu_feature_info());
+      context_state_->InitializeGL(context_group_->feature_info());
       gr_shader_cache_ = params.gr_shader_cache;
       context_state_->InitializeGrContext(workarounds, params.gr_shader_cache,
                                           params.activity_flags);
