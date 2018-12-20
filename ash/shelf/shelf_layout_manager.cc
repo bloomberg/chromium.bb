@@ -299,8 +299,6 @@ void ShelfLayoutManager::UpdateVisibilityState() {
       case wm::WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF:
       case wm::WORKSPACE_WINDOW_STATE_DEFAULT:
         SetState(CalculateShelfVisibility());
-        SetWindowOverlapsShelf(
-            window_state == wm::WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF);
         break;
     }
   }
@@ -377,11 +375,6 @@ void ShelfLayoutManager::ProcessGestureEventOfAutoHideShelf(
     if (ProcessGestureEvent(event_in_screen))
       event->StopPropagation();
   }
-}
-
-void ShelfLayoutManager::SetWindowOverlapsShelf(bool value) {
-  window_overlaps_shelf_ = value;
-  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
 }
 
 void ShelfLayoutManager::AddObserver(ShelfLayoutManagerObserver* observer) {
@@ -475,19 +468,9 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
     return SHELF_BACKGROUND_MAXIMIZED;
   }
 
-  if (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS ||
-      window_overlaps_shelf_ || state_.visibility_state == SHELF_AUTO_HIDE) {
-    return SHELF_BACKGROUND_OVERLAP;
-  }
-
   // If split view mode is active, make the shelf fully opapue.
   if (Shell::Get()->IsSplitViewModeActive())
     return SHELF_BACKGROUND_SPLIT_VIEW;
-
-  if (Shell::Get()->window_selector_controller() &&
-      Shell::Get()->window_selector_controller()->IsSelecting()) {
-    return SHELF_BACKGROUND_OVERLAP;
-  }
 
   return SHELF_BACKGROUND_DEFAULT;
 }
@@ -515,8 +498,7 @@ void ShelfLayoutManager::MaybeUpdateShelfBackground(AnimationChangeType type) {
 
 bool ShelfLayoutManager::ShouldBlurShelfBackground() {
   return IsBackgroundBlurEnabled() &&
-         (shelf_background_type_ == SHELF_BACKGROUND_DEFAULT ||
-          shelf_background_type_ == SHELF_BACKGROUND_OVERLAP) &&
+         shelf_background_type_ == SHELF_BACKGROUND_DEFAULT &&
          state_.session_state == session_manager::SessionState::ACTIVE;
 }
 

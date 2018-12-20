@@ -38,7 +38,7 @@ constexpr int kMinimumMargin = 8;
 OverflowBubbleView::OverflowBubbleView(Shelf* shelf)
     : shelf_(shelf),
       shelf_view_(nullptr),
-      background_animator_(SHELF_BACKGROUND_OVERLAP,
+      background_animator_(SHELF_BACKGROUND_DEFAULT,
                            // Don't pass the Shelf so the translucent color is
                            // always used.
                            nullptr,

@@ -12,10 +12,6 @@ interface ShelfTestApi {
   // Forces a visibility update and then runs the callback.
   UpdateVisibility() => ();
 
-  // Returns true if a window is overlapping the shelf, which changes its
-  // appearance slightly.
-  HasOverlappingWindow() => (bool overlap);
-
   // Returns true if the shelf alignment is BOTTOM_LOCKED, which is not exposed
   // via prefs.
   IsAlignmentBottomLocked() => (bool locked);

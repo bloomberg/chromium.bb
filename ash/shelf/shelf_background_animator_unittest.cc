@@ -232,15 +232,6 @@ TEST_F(ShelfBackgroundAnimatorTest, DefaultBackground) {
   EXPECT_EQ(0, observer_.GetItemBackgroundAlpha());
 }
 
-// Verify the alpha values for the SHELF_BACKGROUND_OVERLAP state.
-TEST_F(ShelfBackgroundAnimatorTest, OverlapBackground) {
-  PaintBackground(SHELF_BACKGROUND_OVERLAP);
-
-  EXPECT_EQ(SHELF_BACKGROUND_OVERLAP, animator_->target_background_type());
-  EXPECT_EQ(kShelfTranslucentAlpha, observer_.GetBackgroundAlpha());
-  EXPECT_EQ(0, observer_.GetItemBackgroundAlpha());
-}
-
 // Verify the alpha values for the SHELF_BACKGROUND_MAXIMIZED state.
 TEST_F(ShelfBackgroundAnimatorTest, MaximizedBackground) {
   PaintBackground(SHELF_BACKGROUND_MAXIMIZED);
@@ -277,7 +268,7 @@ TEST_F(ShelfBackgroundAnimatorTest, MAYBE_FullscreenAppListBackground) {
 
 TEST_F(ShelfBackgroundAnimatorTest,
        AnimatorIsDetroyedWhenCompletingSuccessfully) {
-  PaintBackground(SHELF_BACKGROUND_OVERLAP, AnimationChangeType::ANIMATE);
+  PaintBackground(SHELF_BACKGROUND_MAXIMIZED, AnimationChangeType::ANIMATE);
   EXPECT_TRUE(test_api_->animator());
   CompleteAnimations();
   EXPECT_FALSE(test_api_->animator());
@@ -285,10 +276,10 @@ TEST_F(ShelfBackgroundAnimatorTest,
 
 TEST_F(ShelfBackgroundAnimatorTest,
        AnimatorDestroyedWhenChangingBackgroundImmediately) {
-  PaintBackground(SHELF_BACKGROUND_OVERLAP, AnimationChangeType::ANIMATE);
+  PaintBackground(SHELF_BACKGROUND_MAXIMIZED, AnimationChangeType::ANIMATE);
   EXPECT_TRUE(test_api_->animator());
 
-  PaintBackground(SHELF_BACKGROUND_OVERLAP, AnimationChangeType::IMMEDIATE);
+  PaintBackground(SHELF_BACKGROUND_DEFAULT, AnimationChangeType::IMMEDIATE);
   EXPECT_FALSE(test_api_->animator());
 }
 
@@ -310,14 +301,13 @@ TEST_F(ShelfBackgroundAnimatorTest,
 // the same as the previous background.
 TEST_F(ShelfBackgroundAnimatorTest,
        ExistingAnimatorNotReusedWhenTargetBackgroundNotPreviousBackground) {
-  PaintBackground(SHELF_BACKGROUND_DEFAULT, AnimationChangeType::ANIMATE);
-  PaintBackground(SHELF_BACKGROUND_MAXIMIZED, AnimationChangeType::ANIMATE);
+  PaintBackground(SHELF_BACKGROUND_APP_LIST, AnimationChangeType::ANIMATE);
 
   const gfx::SlideAnimation* animator = test_api_->animator();
   EXPECT_TRUE(animator);
 
-  EXPECT_NE(SHELF_BACKGROUND_OVERLAP, test_api_->previous_background_type());
-  PaintBackground(SHELF_BACKGROUND_OVERLAP, AnimationChangeType::ANIMATE);
+  EXPECT_NE(SHELF_BACKGROUND_MAXIMIZED, test_api_->previous_background_type());
+  PaintBackground(SHELF_BACKGROUND_MAXIMIZED, AnimationChangeType::ANIMATE);
 
   EXPECT_NE(animator, test_api_->animator());
 }

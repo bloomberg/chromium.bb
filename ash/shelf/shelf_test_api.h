@@ -24,7 +24,6 @@ class ShelfTestApi : public mojom::ShelfTestApi {
   // mojom::ShelfTestApi:
   void IsVisible(IsVisibleCallback cb) override;
   void UpdateVisibility(UpdateVisibilityCallback cb) override;
-  void HasOverlappingWindow(HasOverlappingWindowCallback cb) override;
   void IsAlignmentBottomLocked(IsAlignmentBottomLockedCallback cb) override;
 
  private:
