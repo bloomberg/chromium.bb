@@ -210,7 +210,7 @@ To run Chromium using VaAPI two arguments are necessary:
 
 Also, the environment variable `MESA_GLSL_CACHE_DISABLE=false` should be set:
 
-**TODO(mcasas): Further clarify the env variable and the flags**
+**TODO(crbug.com/917091): Further clarify the env variable and the flags**
 
 ```shell
  MESA_GLSL_CACHE_DISABLE=false ./out/gn/chrome --ignore-gpu-blacklist --use-gl=egl
