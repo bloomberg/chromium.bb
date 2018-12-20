@@ -274,25 +274,12 @@ bool EnableInProcessStackDumping() {
   return InitializeSymbols();
 }
 
-// Disable optimizations for the StackTrace::StackTrace function. It is
-// important to disable at least frame pointer optimization ("y"), since
-// that breaks CaptureStackBackTrace() and prevents StackTrace from working
-// in Release builds (it may still be janky if other frames are using FPO,
-// but at least it will make it further).
-#if defined(COMPILER_MSVC)
-#pragma optimize("", off)
-#endif
-
-StackTrace::StackTrace(size_t count) {
+NOINLINE StackTrace::StackTrace(size_t count) {
   count = std::min(arraysize(trace_), count);
 
   // When walking our own stack, use CaptureStackBackTrace().
   count_ = CaptureStackBackTrace(0, count, trace_, NULL);
 }
-
-#if defined(COMPILER_MSVC)
-#pragma optimize("", on)
-#endif
 
 StackTrace::StackTrace(EXCEPTION_POINTERS* exception_pointers) {
   InitTrace(exception_pointers->ContextRecord);
