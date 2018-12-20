@@ -510,6 +510,8 @@ component("ash") {
     "media/media_notification_constants.h",
     "media/media_notification_controller.cc",
     "media/media_notification_controller.h",
+    "media/media_notification_item.cc",
+    "media/media_notification_item.h",
     "media/media_notification_view.cc",
     "media/media_notification_view.h",
     "media_controller.cc",

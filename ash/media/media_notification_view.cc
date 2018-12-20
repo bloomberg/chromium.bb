@@ -140,11 +140,13 @@ MediaNotificationView::MediaNotificationView(
                      message_center::kNotificationCornerRadius);
   UpdateViewForExpandedState();
 
-  Shell::Get()->media_notification_controller()->SetView(this);
+  Shell::Get()->media_notification_controller()->SetView(notification_id(),
+                                                         this);
 }
 
 MediaNotificationView::~MediaNotificationView() {
-  Shell::Get()->media_notification_controller()->SetView(nullptr);
+  Shell::Get()->media_notification_controller()->SetView(notification_id(),
+                                                         nullptr);
 }
 
 void MediaNotificationView::UpdateWithNotification(
