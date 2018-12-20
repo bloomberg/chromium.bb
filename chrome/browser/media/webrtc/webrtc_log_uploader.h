@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <list>
+#include <map>
 #include <memory>
 #include <string>
 
@@ -119,9 +120,7 @@ class WebRtcLogUploader {
                       const base::FilePath& outgoing_rtp_dump,
                       const std::map<std::string, std::string>& meta_data);
 
-  void CompressLog(std::string* compressed_log, WebRtcLogBuffer* buffer);
-
-  void ResizeForNextOutput(std::string* compressed_log, z_stream* stream);
+  std::string CompressLog(WebRtcLogBuffer* buffer);
 
   void UploadCompressedLog(const WebRtcLogUploadDoneData& upload_done_data,
                            std::unique_ptr<std::string> post_data);
@@ -171,7 +170,7 @@ class WebRtcLogUploader {
       std::list<std::unique_ptr<network::SimpleURLLoader>>;
 
   void OnSimpleLoaderComplete(SimpleURLLoaderList::iterator it,
-                              WebRtcLogUploadDoneData upload_done_data,
+                              const WebRtcLogUploadDoneData& upload_done_data,
                               std::unique_ptr<std::string> response_body);
 
   // This is the UI thread for Chromium. Some other thread for tests.
@@ -183,17 +182,17 @@ class WebRtcLogUploader {
 
   // Keeps track of number of currently open logs. Must be accessed on the IO
   // thread.
-  int log_count_;
+  int log_count_ = 0;
 
   // For testing purposes, see OverrideUploadWithBufferForTesting. Only accessed
   // on the FILE thread.
-  std::string* post_data_;
+  std::string* post_data_ = nullptr;
 
   // Only accessed on the IO thread.
   SimpleURLLoaderList pending_uploads_;
 
   // When shutting down, don't create new URL loaders.
-  bool shutting_down_;
+  bool shutting_down_ = false;
 
   // URLLoaderFactory bound to the IO thread.
   network::mojom::URLLoaderFactoryPtr url_loader_factory_;
