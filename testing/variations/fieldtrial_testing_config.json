@@ -590,27 +590,6 @@
             ]
         }
     ],
-    "AutofillDeleteDisusedData": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillDeleteDisusedAddresses",
-                        "AutofillDeleteDisusedCreditCards"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillDropdownLayout": [
         {
             "platforms": [
@@ -798,26 +777,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "AutofillRefreshStyleAndroid"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AutofillResetFullServerCardsOnAuthError": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillResetFullServerCardsOnAuthError"
                     ]
                 }
             ]

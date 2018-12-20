@@ -110,9 +110,6 @@ extern const char kAutofillPrefilledFieldsDescription[];
 extern const char kAutofillPreviewStyleExperimentName[];
 extern const char kAutofillPreviewStyleExperimentDescription[];
 
-extern const char kAutofillRationalizeRepeatedServerPredictionsName[];
-extern const char kAutofillRationalizeRepeatedServerPredictionsDescription[];
-
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[];
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[];
 
