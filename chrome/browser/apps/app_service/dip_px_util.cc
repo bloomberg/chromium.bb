@@ -12,7 +12,7 @@
 
 namespace {
 
-float GetDeviceScaleFactor() {
+float GetPrimaryDisplayScaleFactor() {
   display::Screen* screen = display::Screen::GetScreen();
   if (!screen) {
     return 1.0f;
@@ -26,12 +26,12 @@ namespace apps {
 
 int ConvertDipToPx(int dip) {
   return base::saturated_cast<int>(
-      std::floor(static_cast<float>(dip) * GetDeviceScaleFactor()));
+      std::floor(static_cast<float>(dip) * GetPrimaryDisplayScaleFactor()));
 }
 
 int ConvertPxToDip(int px) {
   return base::saturated_cast<int>(
-      std::floor(static_cast<float>(px) / GetDeviceScaleFactor()));
+      std::floor(static_cast<float>(px) / GetPrimaryDisplayScaleFactor()));
 }
 
 }  // namespace apps
