@@ -74,17 +74,6 @@ void ReloadBypassingCacheBlockUntilNavigationsComplete(
   same_tab_observer.Wait();
 }
 
-void LoadDataWithBaseURL(Shell* window,
-                         const GURL& url,
-                         const std::string& data,
-                         const GURL& base_url) {
-  WaitForLoadStop(window->web_contents());
-  TestNavigationObserver same_tab_observer(window->web_contents(), 1);
-
-  window->LoadDataWithBaseURL(url, data, base_url);
-  same_tab_observer.Wait();
-}
-
 bool NavigateToURL(Shell* window, const GURL& url) {
   return NavigateToURL(window->web_contents(), url);
 }
@@ -93,7 +82,7 @@ bool NavigateToURLFromRenderer(const ToRenderFrameHost& adapter,
                                const GURL& url) {
   RenderFrameHost* rfh = adapter.render_frame_host();
   TestFrameNavigationObserver nav_observer(rfh);
-  if (!ExecuteScript(rfh, "location = '" + url.spec() + "';"))
+  if (!ExecJs(rfh, JsReplace("location = $1", url)))
     return false;
   nav_observer.Wait();
   return nav_observer.last_committed_url() == url;
@@ -104,8 +93,8 @@ bool NavigateToURLFromRendererWithoutUserGesture(
     const GURL& url) {
   RenderFrameHost* rfh = adapter.render_frame_host();
   TestFrameNavigationObserver nav_observer(rfh);
-  if (!ExecuteScriptWithoutUserGesture(rfh,
-                                       "location = '" + url.spec() + "';")) {
+  if (!ExecJs(rfh, JsReplace("location = $1", url),
+              EXECUTE_SCRIPT_NO_USER_GESTURE)) {
     return false;
   }
   nav_observer.Wait();

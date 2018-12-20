@@ -80,11 +80,6 @@ WARN_UNUSED_RESULT bool NavigateToURLFromRendererWithoutUserGesture(
     const ToRenderFrameHost& adapter,
     const GURL& url);
 
-void LoadDataWithBaseURL(Shell* window,
-                         const GURL& url,
-                         const std::string& data,
-                         const GURL& base_url);
-
 // Navigates |window| to |url|, blocking until the given number of navigations
 // finishes.
 void NavigateToURLBlockUntilNavigationsComplete(Shell* window,
