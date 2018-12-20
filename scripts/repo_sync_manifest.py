@@ -209,4 +209,9 @@ def main(argv):
     series = patch_series.PatchSeries(
         path=options.repo_root, helper_pool=helper_pool, forced_manifest=None)
 
-    series.Apply(patches)
+    _, failed_tot, failed_inflight = series.Apply(patches)
+
+    failed = failed_tot + failed_inflight
+    if failed:
+      logging.error('Failed to apply: %s', ', '.join(str(p) for p in failed))
+      return 1
