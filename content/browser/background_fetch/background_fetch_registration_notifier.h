@@ -36,9 +36,16 @@ class CONTENT_EXPORT BackgroundFetchRegistrationNotifier {
   // Completed fetches must also call Notify with the final state.
   void Notify(const blink::mojom::BackgroundFetchRegistration& registration);
 
-  // Notifies any registered observers for the registration identifier by
+  // Notifies any registered observers for the registration identified by
   // |unique_id| that the records for the fetch are no longer available.
   void NotifyRecordsUnavailable(const std::string& unique_id);
+
+  // Notifies any registered observers for the registration identified by
+  // |unique_id| that the |request| has completed. |response| points to the
+  // completed response, if any.
+  void NotifyRequestCompleted(const std::string& unique_id,
+                              blink::mojom::FetchAPIRequestPtr request,
+                              blink::mojom::FetchAPIResponsePtr response);
 
   base::WeakPtr<BackgroundFetchRegistrationNotifier> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();

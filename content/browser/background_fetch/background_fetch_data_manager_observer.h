@@ -53,6 +53,13 @@ class BackgroundFetchDataManagerObserver {
   virtual void OnServiceWorkerDatabaseCorrupted(
       int64_t service_worker_registration_id) = 0;
 
+  // Called when a request has been completed, for the registration identified
+  // by |unique_id|.
+  virtual void OnRequestCompleted(
+      const std::string& unique_id,
+      blink::mojom::FetchAPIRequestPtr request,
+      blink::mojom::FetchAPIResponsePtr response) = 0;
+
   virtual ~BackgroundFetchDataManagerObserver() {}
 };
 

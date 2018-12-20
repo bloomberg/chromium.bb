@@ -13,6 +13,7 @@
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "storage/browser/blob/blob_data_builder.h"
@@ -60,10 +61,10 @@ void MarkRequestCompleteTask::Start() {
 }
 
 void MarkRequestCompleteTask::StoreResponse(base::OnceClosure done_closure) {
-  auto response = blink::mojom::FetchAPIResponse::New();
-  response->url_list = request_info_->GetURLChain();
-  response->response_type = network::mojom::FetchResponseType::kDefault;
-  response->response_time = request_info_->GetResponseTime();
+  response_ = blink::mojom::FetchAPIResponse::New();
+  response_->url_list = request_info_->GetURLChain();
+  response_->response_type = network::mojom::FetchResponseType::kDefault;
+  response_->response_time = request_info_->GetResponseTime();
 
   if (request_info_->GetURLChain().empty()) {
     // The URL chain was not provided, so this is a failed response.
@@ -84,7 +85,7 @@ void MarkRequestCompleteTask::StoreResponse(base::OnceClosure done_closure) {
     return;
   }
 
-  PopulateResponseBody(response.get());
+  PopulateResponseBody(response_.get());
   if (!IsOK(*request_info_))
     failure_reason_ = proto::BackgroundFetchRegistration::BAD_STATUS;
 
@@ -104,17 +105,14 @@ void MarkRequestCompleteTask::StoreResponse(base::OnceClosure done_closure) {
     IsQuotaAvailable(
         registration_id_.origin(), response_size,
         base::BindOnce(&MarkRequestCompleteTask::DidGetIsQuotaAvailable,
-                       weak_factory_.GetWeakPtr(), std::move(response),
-                       std::move(done_closure)));
+                       weak_factory_.GetWeakPtr(), std::move(done_closure)));
   } else {
     // Assume there is enough quota.
-    DidGetIsQuotaAvailable(std::move(response), std::move(done_closure),
-                           true /* is_available */);
+    DidGetIsQuotaAvailable(std::move(done_closure), true /* is_available */);
   }
 }
 
 void MarkRequestCompleteTask::DidGetIsQuotaAvailable(
-    blink::mojom::FetchAPIResponsePtr response,
     base::OnceClosure done_closure,
     bool is_available) {
   if (!is_available) {
@@ -126,8 +124,7 @@ void MarkRequestCompleteTask::DidGetIsQuotaAvailable(
   cache_storage.value()->OpenCache(
       registration_id_.unique_id() /* cache_name */,
       base::BindOnce(&MarkRequestCompleteTask::DidOpenCache,
-                     weak_factory_.GetWeakPtr(), std::move(response),
-                     std::move(done_closure)));
+                     weak_factory_.GetWeakPtr(), std::move(done_closure)));
 }
 
 void MarkRequestCompleteTask::PopulateResponseBody(
@@ -175,7 +172,6 @@ void MarkRequestCompleteTask::PopulateResponseBody(
 }
 
 void MarkRequestCompleteTask::DidOpenCache(
-    blink::mojom::FetchAPIResponsePtr response,
     base::OnceClosure done_closure,
     CacheStorageCacheHandle handle,
     blink::mojom::CacheStorageError error) {
@@ -188,12 +184,13 @@ void MarkRequestCompleteTask::DidOpenCache(
   DCHECK(handle.value());
 
   blink::mojom::FetchAPIRequestPtr request =
-      BackgroundFetchSettledFetch::CloneRequest(request_info_->fetch_request());
+      BackgroundFetchSettledFetch::CloneRequest(
+          request_info_->fetch_request_ptr());
 
   // TODO(crbug.com/774054): The request blob stored in the cache is being
   // overwritten here, it should be written back.
   handle.value()->Put(
-      std::move(request), std::move(response),
+      std::move(request), BackgroundFetchSettledFetch::CloneResponse(response_),
       base::BindOnce(&MarkRequestCompleteTask::DidWriteToCache,
                      weak_factory_.GetWeakPtr(), std::move(handle),
                      std::move(done_closure)));
@@ -239,6 +236,15 @@ void MarkRequestCompleteTask::DidStoreCompletedRequest(
       SetStorageError(BackgroundFetchStorageError::kServiceWorkerStorageError);
       std::move(done_closure).Run();
       return;
+  }
+
+  // Notify observers that the request is complete.
+  for (auto& observer : data_manager()->observers()) {
+    observer.OnRequestCompleted(
+        registration_id_.unique_id(),
+        BackgroundFetchSettledFetch::CloneRequest(
+            request_info_->fetch_request_ptr()),
+        BackgroundFetchSettledFetch::CloneResponse(response_));
   }
 
   // Delete the active request.

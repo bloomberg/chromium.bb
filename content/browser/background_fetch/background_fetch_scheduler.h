@@ -71,6 +71,9 @@ class CONTENT_EXPORT BackgroundFetchScheduler
       int64_t service_worker_registration_id) override;
   void OnRegistrationQueried(
       blink::mojom::BackgroundFetchRegistration* registration) override;
+  void OnRequestCompleted(const std::string& unique_id,
+                          blink::mojom::FetchAPIRequestPtr request,
+                          blink::mojom::FetchAPIResponsePtr response) override;
 
   // ServiceWorkerContextCoreObserver implementation.
   void OnRegistrationDeleted(int64_t registration_id,

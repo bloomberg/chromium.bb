@@ -602,6 +602,10 @@ class BackgroundFetchDataManagerTest
                void(blink::mojom::BackgroundFetchRegistration* registration));
   MOCK_METHOD1(OnServiceWorkerDatabaseCorrupted,
                void(int64_t service_worker_registration_id));
+  MOCK_METHOD3(OnRequestCompleted,
+               void(const std::string& unique_id,
+                    blink::mojom::FetchAPIRequestPtr request,
+                    blink::mojom::FetchAPIResponsePtr response));
 
  protected:
   void DidGetRegistration(
@@ -2197,6 +2201,67 @@ TEST_F(BackgroundFetchDataManagerTest, StorageErrorsReported) {
     histogram_tester.ExpectBucketCount(
         "BackgroundFetch.Storage.MatchRequestsTask", 2 /* kCacheStorageError */,
         1);
+  }
+}
+
+TEST_F(BackgroundFetchDataManagerTest, NotifyObserversOnRequestCompletion) {
+  int64_t sw_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
+
+  BackgroundFetchRegistrationId registration_id1(
+      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+
+  std::vector<blink::mojom::FetchAPIRequestPtr> requests =
+      CreateValidRequests(origin(), 1u);
+  auto options = blink::mojom::BackgroundFetchOptions::New();
+  blink::mojom::BackgroundFetchError error;
+  blink::mojom::BackgroundFetchFailureReason failure_reason;
+
+  // Complete the fetch successfully, and expect an OnRequestCompleted() call.
+  {
+    CreateRegistration(registration_id1, CloneRequestVector(requests),
+                       options.Clone(), SkBitmap(), &error);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+    scoped_refptr<BackgroundFetchRequestInfo> request_info;
+    PopNextRequest(registration_id1, &error, &request_info);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+    AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
+                                                   /* succeeded= */ true);
+    EXPECT_CALL(*this, OnRequestCompleted(kExampleUniqueId, _, _));
+    MarkRequestAsComplete(registration_id1, request_info.get(), &error);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+    // Mark the Registration for deletion.
+    MarkRegistrationForDeletion(registration_id1, /* check_for_failure= */ true,
+                                &error, &failure_reason);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+    EXPECT_EQ(failure_reason, blink::mojom::BackgroundFetchFailureReason::NONE);
+  }
+
+  BackgroundFetchRegistrationId registration_id2(
+      sw_id, origin(), kAlternativeDeveloperId, kAlternativeUniqueId);
+
+  // Complete the fetch with a BAD_STATUS, and expect an OnRequestCompleted()
+  // call.
+  {
+    CreateRegistration(registration_id2, CloneRequestVector(requests),
+                       std::move(options), SkBitmap(), &error);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+    scoped_refptr<BackgroundFetchRequestInfo> request_info;
+    PopNextRequest(registration_id2, &error, &request_info);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+    AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
+    EXPECT_CALL(*this, OnRequestCompleted(kAlternativeUniqueId, _, _));
+    MarkRequestAsComplete(registration_id2, request_info.get(), &error);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+    // Mark the Registration for deletion.
+    MarkRegistrationForDeletion(registration_id2, /* check_for_failure= */ true,
+                                &error, &failure_reason);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+    // The fetch resulted in a 404.
+    EXPECT_EQ(failure_reason,
+              blink::mojom::BackgroundFetchFailureReason::BAD_STATUS);
   }
 }
 

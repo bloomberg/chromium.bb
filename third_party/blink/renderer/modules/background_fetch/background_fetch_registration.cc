@@ -103,6 +103,20 @@ void BackgroundFetchRegistration::OnRecordsUnavailable() {
   records_available_ = false;
 }
 
+void BackgroundFetchRegistration::OnRequestCompleted(
+    mojom::blink::FetchAPIRequestPtr request,
+    mojom::blink::FetchAPIResponsePtr response) {
+  for (auto* it = observers_.begin(); it != observers_.end();) {
+    BackgroundFetchRecord* observer = it->Get();
+    if (observer->ObservedUrl() == request->url) {
+      observer->OnRequestCompleted(response->Clone());
+      it = observers_.erase(it);
+    } else {
+      it++;
+    }
+  }
+}
+
 String BackgroundFetchRegistration::id() const {
   return developer_id_;
 }
@@ -154,9 +168,10 @@ ScriptPromise BackgroundFetchRegistration::match(
     const RequestOrUSVString& request,
     const CacheQueryOptions* options,
     ExceptionState& exception_state) {
-  return MatchImpl(
-      script_state, base::make_optional<RequestOrUSVString>(request),
-      Cache::ToQueryParams(options), exception_state, /* match_all = */ false);
+  return MatchImpl(script_state,
+                   base::make_optional<RequestOrUSVString>(request),
+                   Cache::ToQueryParams(options), exception_state,
+                   /* match_all = */ false);
 }
 
 ScriptPromise BackgroundFetchRegistration::matchAll(
@@ -183,8 +198,8 @@ ScriptPromise BackgroundFetchRegistration::MatchImpl(
     mojom::blink::QueryParamsPtr cache_query_params,
     ExceptionState& exception_state,
     bool match_all) {
-  // TODO(crbug.com/875201): Update this check once we support access to active
-  // fetches.
+  // TODO(crbug.com/875201): Update this check once we support access to
+  // active fetches.
   if (result_ == mojom::BackgroundFetchResult::UNSET &&
       !RuntimeEnabledFeatures::BackgroundFetchAccessActiveFetchesEnabled()) {
     return ScriptPromise::RejectWithDOMException(
@@ -248,7 +263,7 @@ void BackgroundFetchRegistration::DidGetMatchingRequests(
     Request* request = Request::Create(script_state, *(fetch->request));
     auto* record =
         MakeGarbageCollected<BackgroundFetchRecord>(request, script_state);
-
+    observers_.push_back(record);
     UpdateRecord(record, fetch->response);
     to_return.push_back(record);
   }
@@ -364,9 +379,20 @@ void BackgroundFetchRegistration::Dispose() {
   observer_binding_.Close();
 }
 
+bool BackgroundFetchRegistration::HasPendingActivity() const {
+  if (!GetExecutionContext())
+    return false;
+  if (GetExecutionContext()->IsContextDestroyed())
+    return false;
+
+  return !observers_.IsEmpty();
+}
+
 void BackgroundFetchRegistration::Trace(Visitor* visitor) {
   visitor->Trace(registration_);
+  visitor->Trace(observers_);
   EventTargetWithInlineData::Trace(visitor);
+  ActiveScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

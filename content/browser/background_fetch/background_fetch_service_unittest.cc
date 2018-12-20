@@ -347,6 +347,10 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase,
                void(blink::mojom::BackgroundFetchRegistration* registration));
   MOCK_METHOD1(OnServiceWorkerDatabaseCorrupted,
                void(int64_t service_worker_registration_id));
+  MOCK_METHOD3(OnRequestCompleted,
+               void(const std::string& unique_id,
+                    blink::mojom::FetchAPIRequestPtr request,
+                    blink::mojom::FetchAPIResponsePtr response));
 
   // ServiceWorkerContextCoreObserver implementation.
   MOCK_METHOD2(OnRegistrationDeleted,

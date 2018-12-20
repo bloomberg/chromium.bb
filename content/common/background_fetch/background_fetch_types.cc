@@ -8,7 +8,7 @@ namespace {
 
 blink::mojom::SerializedBlobPtr CloneSerializedBlob(
     const blink::mojom::SerializedBlobPtr& blob) {
-  if (!blob)
+  if (blob.is_null())
     return nullptr;
   blink::mojom::BlobPtr blob_ptr(std::move(blob->blob));
   blob_ptr->Clone(mojo::MakeRequest(&blob->blob));
@@ -25,7 +25,7 @@ blink::mojom::FetchAPIResponsePtr BackgroundFetchSettledFetch::CloneResponse(
     const blink::mojom::FetchAPIResponsePtr& response) {
   // TODO(https://crbug.com/876546): Replace this method with response.Clone()
   // if the associated bug is fixed.
-  if (!response)
+  if (response.is_null())
     return nullptr;
   return blink::mojom::FetchAPIResponse::New(
       response->url_list, response->status_code, response->status_text,
@@ -39,7 +39,7 @@ blink::mojom::FetchAPIResponsePtr BackgroundFetchSettledFetch::CloneResponse(
 // static
 blink::mojom::FetchAPIRequestPtr BackgroundFetchSettledFetch::CloneRequest(
     const blink::mojom::FetchAPIRequestPtr& request) {
-  if (!request)
+  if (request.is_null())
     return nullptr;
   return blink::mojom::FetchAPIRequest::New(
       request->mode, request->is_main_resource_load,
