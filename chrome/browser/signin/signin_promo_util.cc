@@ -5,9 +5,12 @@
 #include "chrome/browser/signin/signin_promo_util.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "net/base/network_change_notifier.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 
 namespace signin {
 
@@ -22,15 +25,29 @@ bool ShouldShowPromo(Profile* profile) {
   if (net::NetworkChangeNotifier::IsOffline())
     return false;
 
+  // Consider original profile even if an off-the-record profile was
+  // passed to this method as sign-in state is only defined for the
+  // primary profile.
+  Profile* original_profile = profile->GetOriginalProfile();
+
   // Don't show for supervised profiles.
-  if (profile->IsSupervised())
+  if (original_profile->IsSupervised())
+    return false;
+
+  // Don't show if sign-in is not allowed.
+  if (!original_profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed))
     return false;
 
   // Display the signin promo if the user is not signed in.
-  SigninManager* signin =
-      SigninManagerFactory::GetForProfile(profile->GetOriginalProfile());
-  return !signin->AuthInProgress() && signin->IsSigninAllowed() &&
-         !signin->IsAuthenticated();
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(original_profile);
+  if (identity_manager->HasPrimaryAccount() ||
+      identity_manager->GetPrimaryAccountMutator()
+          ->LegacyIsPrimaryAccountAuthInProgress()) {
+    return false;
+  }
+
+  return true;
 #endif
 }
 
