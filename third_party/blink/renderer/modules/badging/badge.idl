@@ -11,6 +11,6 @@
     Exposed=Window
 ] interface Badge {
   [CallWith=ScriptState, RaisesException]
-  static void set(optional (USVString or long) contents);
+  static void set(optional [EnforceRange] unsigned long long contents);
   [CallWith=ScriptState] static void clear();
 };

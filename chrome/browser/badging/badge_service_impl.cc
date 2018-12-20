@@ -28,7 +28,15 @@ void BadgeServiceImpl::Create(blink::mojom::BadgeServiceRequest request,
   new BadgeServiceImpl(render_frame_host, std::move(request));
 }
 
-void BadgeServiceImpl::SetBadge() {
+void BadgeServiceImpl::SetInteger(uint64_t content) {
+  SetBadge(base::Optional<uint64_t>(content));
+}
+
+void BadgeServiceImpl::SetFlag() {
+  SetBadge(base::nullopt);
+}
+
+void BadgeServiceImpl::SetBadge(base::Optional<uint64_t> content) {
 #if defined(OS_CHROMEOS)
   const extensions::Extension* extension = ExtensionFromLastUrl();
 
@@ -40,7 +48,7 @@ void BadgeServiceImpl::SetBadge() {
   if (!IsInApp())
     return;
 
-  delegate_->SetBadge(web_contents_);
+  delegate_->SetBadge(web_contents_, content);
 #endif
 }
 

@@ -857,6 +857,11 @@ need to be translated for each locale.-->
       <message name="IDS_CROSTINI_NOT_NOW_BUTTON" desc="Label for the button in the Crostini app restart dialog to dismiss the dialog.">
         Not now
       </message>
+
+      <!-- Badging -->
+      <message name="IDS_SATURATED_BADGE_CONTENT" desc="The content to display when the application's badge is too large to display to indicate that the badge is more than a given maximum. This string should be as short as possible, preferably only one character beyond the content">
+        <ph name="MAXIMUM_VALUE">$1<ex>99</ex></ph>+
+      </message>
     </messages>
   </release>
 </grit>

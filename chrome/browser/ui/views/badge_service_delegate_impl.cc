@@ -4,11 +4,15 @@
 
 #include "chrome/browser/badging/badge_service_delegate.h"
 
+#include "base/i18n/number_formatting.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/strings/grit/ui_strings.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/frame/taskbar_decorator_win.cc"
@@ -40,15 +44,30 @@ void SetAppShimBadgeLabel(content::WebContents* contents,
 }
 #endif
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
+std::string GetBadgeString(base::Optional<uint64_t> badge_content) {
+  if (!badge_content)
+    return "•";
+
+  if (badge_content > 99u) {
+    return base::UTF16ToUTF8(l10n_util::GetStringFUTF16(
+        IDS_SATURATED_BADGE_CONTENT, base::FormatNumber(99)));
+  }
+
+  return base::UTF16ToUTF8(base::FormatNumber(badge_content.value()));
+}
+#endif
+
 }  // namespace
 
-void BadgeServiceDelegate::SetBadge(content::WebContents* contents) {
+void BadgeServiceDelegate::SetBadge(content::WebContents* contents,
+                                    base::Optional<uint64_t> badge_content) {
 #if defined(OS_WIN)
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
   auto* window = browser->window()->GetNativeWindow();
-  chrome::DrawNumericTaskbarDecoration(window);
+  chrome::DrawTaskbarDecorationString(window, GetBadgeString(badge_content));
 #elif defined(OS_MACOSX)
-  SetAppShimBadgeLabel(contents, "•");
+  SetAppShimBadgeLabel(contents, GetBadgeString(badge_content));
 #endif
 }
 

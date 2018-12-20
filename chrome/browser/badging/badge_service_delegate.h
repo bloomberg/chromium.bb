@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_BADGING_BADGE_SERVICE_DELEGATE_H_
 #define CHROME_BROWSER_BADGING_BADGE_SERVICE_DELEGATE_H_
 
+#include "base/optional.h"
+
 namespace content {
 class WebContents;
 }
@@ -14,8 +16,8 @@ class WebContents;
 class BadgeServiceDelegate {
  public:
   // Sets the Badge for |web_contents|.
-  // TODO(harrisjay): Make this accept contents for the badge.
-  void SetBadge(content::WebContents* web_contents);
+  void SetBadge(content::WebContents* web_contents,
+                base::Optional<uint64_t> badge_content);
 
   // Clears the badge for |web_contents|.
   void ClearBadge(content::WebContents* web_contents);

@@ -14,7 +14,6 @@ namespace blink {
 class ExceptionState;
 class ExecutionContext;
 class ScriptState;
-class USVStringOrLong;
 
 class Badge final : public ScriptWrappable,
                     public Supplement<ExecutionContext> {
@@ -31,10 +30,11 @@ class Badge final : public ScriptWrappable,
 
   // Badge IDL interface.
   static void set(ScriptState*, ExceptionState&);
-  static void set(ScriptState*, USVStringOrLong&, ExceptionState&);
+  static void set(ScriptState*, uint64_t content, ExceptionState&);
   static void clear(ScriptState*);
 
-  void Set(USVStringOrLong*, ExceptionState&);
+  void SetInteger(uint64_t content);
+  void SetFlag();
   void Clear();
 
   void Trace(blink::Visitor*) override;
