@@ -252,9 +252,9 @@ void ExtensionAppShimHandler::Delegate::LaunchShim(
     Profile* profile,
     const Extension* extension,
     base::OnceCallback<void(base::Process)> launch_callback) {
-  web_app::MaybeLaunchShortcut(
-      web_app::ShortcutInfoForExtensionAndProfile(extension, profile),
-      std::move(launch_callback));
+  web_app::LaunchShim(
+      web_app::LaunchShimUpdateBehavior::NO_UPDATE, std::move(launch_callback),
+      web_app::ShortcutInfoForExtensionAndProfile(extension, profile));
 }
 
 void ExtensionAppShimHandler::Delegate::LaunchUserManager() {

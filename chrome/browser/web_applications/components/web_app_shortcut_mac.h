@@ -25,17 +25,22 @@ extern bool g_app_shims_allow_update_and_launch_in_tests;
 
 namespace web_app {
 
-// Callback type for MaybeLaunchShortcut. If |shim_process| is valid then the
+enum class LaunchShimUpdateBehavior {
+  NO_UPDATE,
+  UPDATE_IF_INSTALLED,
+  RECREATE,
+};
+
+// Callback type for LaunchShim. If |shim_process| is valid then the
 // app shim was launched.
-using LaunchAppCallback = base::OnceCallback<void(base::Process shim_process)>;
+using LaunchShimCallback = base::OnceCallback<void(base::Process shim_process)>;
 
-// If necessary, launch the shortcut for an app. Return the process that was
-// launched.
-void MaybeLaunchShortcut(std::unique_ptr<ShortcutInfo> shortcut_info,
-                         LaunchAppCallback callback);
-
-// Update the shortcut and launch it.
-void UpdateAndLaunchShim(std::unique_ptr<web_app::ShortcutInfo> shortcut_info);
+// Launch the shim specified by |shortcut_info|. Update the shim prior to launch
+// if requested. Return in |callback| the pid that was launched (or an invalid
+// pid if none was launched).
+void LaunchShim(LaunchShimUpdateBehavior update_behavior,
+                LaunchShimCallback callback,
+                std::unique_ptr<web_app::ShortcutInfo> shortcut_info);
 
 std::unique_ptr<web_app::ShortcutInfo> RecordAppShimErrorAndBuildShortcutInfo(
     const base::FilePath& bundle_path);
@@ -78,7 +83,13 @@ class WebAppShortcutCreator {
   bool CreateShortcuts(ShortcutCreationReason creation_reason,
                        ShortcutLocations creation_locations);
   void DeleteShortcuts();
-  bool UpdateShortcuts();
+
+  // Recreate the shortcuts where they are found on disk and in the profile
+  // path. If |recreate_if_needed| is true, then recreate the shortcuts if no
+  // matching shortcuts are found on disk. Populate |updated_paths| with the
+  // paths that were updated.
+  bool UpdateShortcuts(bool recreate_if_needed,
+                       std::vector<base::FilePath>* updated_paths);
 
   // Show the bundle we just generated in the Finder.
   virtual void RevealAppShimInFinder() const;
@@ -104,8 +115,10 @@ class WebAppShortcutCreator {
   bool BuildShortcut(const base::FilePath& staging_path) const;
 
   // Builds a shortcut and copies it to the specified app paths. Returns with
-  // the number of successful copies created.
-  size_t CreateShortcutsAt(const std::vector<base::FilePath>& app_paths) const;
+  // the number of successful copies created. If non-nullptr, populates
+  // |updated_paths| with the paths that were successfully updated.
+  size_t CreateShortcutsAt(const std::vector<base::FilePath>& app_paths,
+                           std::vector<base::FilePath>* updated_paths) const;
 
   // Updates the InfoPlist.string inside |app_path| with the display name for
   // the app.

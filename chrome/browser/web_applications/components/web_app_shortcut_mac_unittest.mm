@@ -203,9 +203,16 @@ TEST_F(WebAppShortcutCreatorTest, UpdateShortcuts) {
 
   EXPECT_TRUE(base::DeleteFile(other_shim_path.Append("Contents"), true));
 
-  EXPECT_TRUE(shortcut_creator.UpdateShortcuts());
+  std::vector<base::FilePath> updated_paths;
+  EXPECT_TRUE(shortcut_creator.UpdateShortcuts(false, &updated_paths));
   EXPECT_FALSE(base::PathExists(shim_path_));
   EXPECT_TRUE(base::PathExists(other_shim_path.Append("Contents")));
+
+  // The list of updated paths is the paths found by bundle, plus the internal
+  // path.
+  EXPECT_EQ(bundle_by_id_paths.size() + 1, updated_paths.size());
+  updated_paths.pop_back();
+  EXPECT_EQ(bundle_by_id_paths, updated_paths);
 
   // Also test case where GetAppBundlesByIdUnsorted fails.
   bundle_by_id_paths.clear();
@@ -216,8 +223,24 @@ TEST_F(WebAppShortcutCreatorTest, UpdateShortcuts) {
 
   EXPECT_TRUE(base::DeleteFile(other_shim_path.Append("Contents"), true));
 
-  EXPECT_FALSE(shortcut_creator.UpdateShortcuts());
+  updated_paths.clear();
+  EXPECT_FALSE(shortcut_creator.UpdateShortcuts(false, &updated_paths));
+  EXPECT_TRUE(updated_paths.empty());
   EXPECT_FALSE(base::PathExists(shim_path_));
+  EXPECT_FALSE(base::PathExists(other_shim_path.Append("Contents")));
+
+  // Also test case where GetAppBundlesByIdUnsorted fails and recreation is
+  // forced.
+  bundle_by_id_paths.clear();
+  EXPECT_CALL(shortcut_creator, GetAppBundlesByIdUnsorted())
+      .WillOnce(Return(bundle_by_id_paths));
+
+  // The default shim path is created along with the internal path.
+  updated_paths.clear();
+  EXPECT_TRUE(shortcut_creator.UpdateShortcuts(true, &updated_paths));
+  EXPECT_EQ(2u, updated_paths.size());
+  EXPECT_EQ(shim_path_, updated_paths[0]);
+  EXPECT_TRUE(base::PathExists(shim_path_));
   EXPECT_FALSE(base::PathExists(other_shim_path.Append("Contents")));
 }
 
@@ -246,7 +269,8 @@ TEST_F(WebAppShortcutCreatorTest, UpdateBookmarkAppShortcut) {
   EXPECT_TRUE(base::DeleteFile(other_shim_path, true));
 
   // The original shim should be recreated.
-  EXPECT_TRUE(shortcut_creator.UpdateShortcuts());
+  std::vector<base::FilePath> updated_paths;
+  EXPECT_TRUE(shortcut_creator.UpdateShortcuts(false, &updated_paths));
   EXPECT_TRUE(base::PathExists(shim_path_));
   EXPECT_FALSE(base::PathExists(other_shim_path.Append("Contents")));
 }
