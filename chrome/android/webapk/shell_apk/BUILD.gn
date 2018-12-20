@@ -249,13 +249,6 @@ webapk_tmpl("unbound_webapk") {
   apk_package_name = "org.chromium.arbitrarypackage"
 }
 
-webapk_tmpl("http_webapk") {
-  config_file = "manifest/bound_manifest_config.json"
-  delta_config_file = "manifest/http_manifest_config_delta.json"
-  apk_name = "HttpWebApk"
-  apk_package_name = "org.chromium.webapk.http"
-}
-
 webapk_tmpl("new_splash_webapk") {
   use_new_splash = true
   config_file = "manifest/bound_manifest_config.json"

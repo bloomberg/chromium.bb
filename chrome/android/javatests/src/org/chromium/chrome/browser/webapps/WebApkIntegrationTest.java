@@ -13,6 +13,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.CommandLine;
@@ -25,6 +26,7 @@ import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.test.MockCertVerifierRuleAndroid;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -42,15 +44,22 @@ import org.chromium.webapk.lib.common.WebApkConstants;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class WebApkIntegrationTest {
-    @Rule
     public final ChromeActivityTestRule<WebApkActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(WebApkActivity.class);
 
-    @Rule
     public final NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
 
-    @Rule
     public EmbeddedTestServerRule mTestServerRule = new EmbeddedTestServerRule();
+
+    public MockCertVerifierRuleAndroid mCertVerifierRule =
+            new MockCertVerifierRuleAndroid(mNativeLibraryTestRule, 0 /* net::OK */);
+
+    @Rule
+    public RuleChain mRuleChain = RuleChain.emptyRuleChain()
+                                          .around(mActivityTestRule)
+                                          .around(mNativeLibraryTestRule)
+                                          .around(mCertVerifierRule)
+                                          .around(mTestServerRule);
 
     private static final long STARTUP_TIMEOUT = ScalableTimeout.scaleTimeout(10000);
 
@@ -99,12 +108,13 @@ public class WebApkIntegrationTest {
 
     /** Returns URL for the passed-in host which maps to a page on the EmbeddedTestServer. */
     private String getUrlForHost(String host) {
-        return "http://" + host + "/defaultresponse";
+        return "https://" + host + "/defaultresponse";
     }
 
     @Before
     public void setUp() throws Exception {
         WebApkUpdateManager.setUpdatesEnabledForTesting(false);
+        mTestServerRule.setServerUsesHttps(true);
         Uri mapToUri = Uri.parse(mTestServerRule.getServer().getURL("/"));
         CommandLine.getInstance().appendSwitchWithValue(
                 ContentSwitches.HOST_RESOLVER_RULES, "MAP * " + mapToUri.getAuthority());
@@ -124,7 +134,7 @@ public class WebApkIntegrationTest {
         intent.setPackage(InstrumentationRegistry.getTargetContext().getPackageName());
         intent.setAction(WebappLauncherActivity.ACTION_START_WEBAPP);
         intent.putExtra(WebApkConstants.EXTRA_URL, pwaRocksUrl)
-                .putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, "org.chromium.webapk.http");
+                .putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, "org.chromium.webapk");
 
         WebApkValidator.disableValidationForTesting();
         mActivityTestRule.startActivityCompletely(intent);
@@ -141,7 +151,7 @@ public class WebApkIntegrationTest {
     @LargeTest
     @Feature({"WebApk"})
     public void testLaunchAndNavigateOffOrigin() throws Exception {
-        startWebApkActivity("org.chromium.webapk.http", getUrlForHost("pwa.rocks"));
+        startWebApkActivity("org.chromium.webapk", getUrlForHost("pwa.rocks"));
         waitUntilSplashscreenHides();
         WebApkActivity webApkActivity = (WebApkActivity) mActivityTestRule.getActivity();
         WebappActivityTestRule.assertToolbarShowState(webApkActivity, false);
@@ -164,7 +174,7 @@ public class WebApkIntegrationTest {
     @Feature({"WebApk"})
     public void testLaunchAndOpenNewWindowInOrigin() throws Exception {
         String pwaRocksUrl = getUrlForHost("pwa.rocks");
-        startWebApkActivity("org.chromium.webapk.http", pwaRocksUrl);
+        startWebApkActivity("org.chromium.webapk", pwaRocksUrl);
         waitUntilSplashscreenHides();
 
         WebappActivityTestRule.jsWindowOpen(mActivityTestRule.getActivity(), pwaRocksUrl);
@@ -188,7 +198,7 @@ public class WebApkIntegrationTest {
     public void testLaunchAndNavigationInNewWindowOffandInOrigin() throws Exception {
         String pwaRocksUrl = getUrlForHost("pwa.rocks");
         String googleUrl = getUrlForHost("www.google.com");
-        startWebApkActivity("org.chromium.webapk.http", pwaRocksUrl);
+        startWebApkActivity("org.chromium.webapk", pwaRocksUrl);
         waitUntilSplashscreenHides();
 
         WebappActivityTestRule.jsWindowOpen(mActivityTestRule.getActivity(), googleUrl);
@@ -213,7 +223,7 @@ public class WebApkIntegrationTest {
     @Feature({"WebApk"})
     public void testLaunchIntervalHistogramNotRecordedOnFirstLaunch() throws Exception {
         final String histogramName = "WebApk.LaunchInterval";
-        final String packageName = "org.chromium.webapk.http";
+        final String packageName = "org.chromium.webapk";
         startWebApkActivity(packageName, getUrlForHost("pwa.rocks"));
 
         CriteriaHelper.pollUiThread(new Criteria("Deferred startup never completed") {
@@ -236,7 +246,7 @@ public class WebApkIntegrationTest {
         mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
 
         final String histogramName = "WebApk.LaunchInterval2";
-        final String packageName = "org.chromium.webapk.http";
+        final String packageName = "org.chromium.webapk";
 
         WebappDataStorage storage =
                 registerWithStorage(WebApkConstants.WEBAPK_ID_PREFIX + packageName);

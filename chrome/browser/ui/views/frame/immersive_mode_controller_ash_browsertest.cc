@@ -12,7 +12,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/ssl/cert_verifier_browser_test.h"
+#include "chrome/browser/ssl/chrome_mock_cert_verifier.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/browser_commands.h"

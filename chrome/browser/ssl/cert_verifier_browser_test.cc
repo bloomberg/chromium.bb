@@ -4,24 +4,6 @@
 
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 
-#include "chrome/browser/profiles/profile_io_data.h"
-
-ChromeMockCertVerifier::ChromeMockCertVerifier() = default;
-
-ChromeMockCertVerifier::~ChromeMockCertVerifier() = default;
-
-void ChromeMockCertVerifier::SetUpInProcessBrowserTestFixture() {
-  ContentMockCertVerifier::SetUpInProcessBrowserTestFixture();
-  IOThread::SetCertVerifierForTesting(mock_cert_verifier_internal());
-  ProfileIOData::SetCertVerifierForTesting(mock_cert_verifier_internal());
-}
-
-void ChromeMockCertVerifier::TearDownInProcessBrowserTestFixture() {
-  ContentMockCertVerifier::TearDownInProcessBrowserTestFixture();
-  IOThread::SetCertVerifierForTesting(nullptr);
-  ProfileIOData::SetCertVerifierForTesting(nullptr);
-}
-
 CertVerifierBrowserTest::CertVerifierBrowserTest() = default;
 
 CertVerifierBrowserTest::~CertVerifierBrowserTest() = default;
