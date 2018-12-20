@@ -12,6 +12,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
 
 // Tests for the external select popup menu (Mac specific).
@@ -151,6 +152,31 @@ TEST_F(ExternalPopupMenuRemoveTest, RemoveOnChange) {
   // Just to check the soundness of the test, call SimulateElementClick again.
   // It should return false as the select has been removed.
   EXPECT_FALSE(SimulateElementClick(kSelectID));
+}
+
+// crbug.com/912211
+TEST_F(ExternalPopupMenuRemoveTest, RemoveFrameOnChange) {
+  LoadHTML(
+      "<style>* { margin: 0; } iframe { border: 0; }</style>"
+      "<body><iframe srcdoc=\""
+      "<style>* { margin: 0; }</style><select><option>opt1<option>opt2"
+      "\"></iframe>"
+      "<script>"
+      "onload = function() {"
+      "  const frame = document.querySelector('iframe');"
+      "  frame.contentDocument.querySelector('select').onchange = "
+      "      () => { frame.remove(); };"
+      "};"
+      "</script>");
+  // Open a popup.
+  SimulatePointClick(gfx::Point(8, 8));
+  // Select something on the sub-frame, it causes the frame to be removed from
+  // the page.
+  auto* child_web_frame =
+      static_cast<blink::WebLocalFrame*>(frame()->GetWebFrame()->FirstChild());
+  static_cast<RenderFrameImpl*>(RenderFrame::FromWebFrame(child_web_frame))
+      ->OnSelectPopupMenuItem(1);
+  // The test passes if the test didn't crash and ASAN didn't complain.
 }
 
 class ExternalPopupMenuDisplayNoneTest : public ExternalPopupMenuTest {
