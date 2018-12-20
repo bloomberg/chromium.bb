@@ -446,7 +446,7 @@ void VaapiVideoEncodeAccelerator::ReturnBitstreamBuffer(
   uint8_t* target_data = static_cast<uint8_t*>(buffer->shm->memory());
   size_t data_size = 0;
 
-  if (!vaapi_wrapper_->DownloadAndDestroyCodedBuffer(
+  if (!vaapi_wrapper_->DownloadAndDestroyVABuffer(
           encode_job->coded_buffer_id(), encode_job->input_surface()->id(),
           target_data, buffer->shm->size(), &data_size)) {
     NOTIFY_ERROR(kPlatformFailureError, "Failed downloading coded buffer");
@@ -497,8 +497,8 @@ scoped_refptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
   }
 
   VABufferID coded_buffer_id;
-  if (!vaapi_wrapper_->CreateCodedBuffer(output_buffer_byte_size_,
-                                         &coded_buffer_id)) {
+  if (!vaapi_wrapper_->CreateVABuffer(output_buffer_byte_size_,
+                                      &coded_buffer_id)) {
     NOTIFY_ERROR(kPlatformFailureError, "Failed creating coded buffer");
     return nullptr;
   }

@@ -60,6 +60,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   enum CodecMode {
     kDecode,
     kEncode,
+    kVideoProcess,
     kCodecModeMax,
   };
 
@@ -179,7 +180,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
                                  VASurfaceID va_surface_id);
 
   // Create a buffer of |size| bytes to be used as encode output.
-  bool CreateCodedBuffer(size_t size, VABufferID* buffer_id);
+  bool CreateVABuffer(size_t size, VABufferID* buffer_id);
 
   // Download the contents of the buffer with given |buffer_id| into a buffer of
   // size |target_size|, pointed to by |target_ptr|. The number of bytes
@@ -187,22 +188,22 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // be used as a sync point, i.e. it will have to become idle before starting
   // the download. |sync_surface_id| should be the source surface passed
   // to the encode job.
-  bool DownloadFromCodedBuffer(VABufferID buffer_id,
-                               VASurfaceID sync_surface_id,
-                               uint8_t* target_ptr,
-                               size_t target_size,
-                               size_t* coded_data_size);
+  bool DownloadFromVABuffer(VABufferID buffer_id,
+                            VASurfaceID sync_surface_id,
+                            uint8_t* target_ptr,
+                            size_t target_size,
+                            size_t* coded_data_size);
 
-  // See DownloadFromCodedBuffer() for details. After downloading, it deletes
+  // See DownloadFromVABuffer() for details. After downloading, it deletes
   // the VA buffer with |buffer_id|.
-  bool DownloadAndDestroyCodedBuffer(VABufferID buffer_id,
-                                     VASurfaceID sync_surface_id,
-                                     uint8_t* target_ptr,
-                                     size_t target_size,
-                                     size_t* coded_data_size);
+  bool DownloadAndDestroyVABuffer(VABufferID buffer_id,
+                                  VASurfaceID sync_surface_id,
+                                  uint8_t* target_ptr,
+                                  size_t target_size,
+                                  size_t* coded_data_size);
 
-  // Destroy all previously-allocated (and not yet destroyed) coded buffers.
-  void DestroyCodedBuffers();
+  // Destroy all previously-allocated (and not yet destroyed) buffers.
+  void DestroyVABuffers();
 
   // Blits a VASurface |va_surface_src| into another VASurface
   // |va_surface_dest| applying pixel format conversion and scaling
@@ -230,13 +231,6 @@ class MEDIA_GPU_EXPORT VaapiWrapper
 
   // Destroys a |va_surface_id|.
   void DestroySurface(VASurfaceID va_surface_id);
-
-  // Initialize the video post processing context with the |size| of
-  // the input pictures to be processed.
-  bool InitializeVpp_Locked() EXCLUSIVE_LOCKS_REQUIRED(va_lock_);
-
-  // Deinitialize the video post processing context.
-  void DeinitializeVpp();
 
   // Execute pending job in hardware and destroy pending buffers. Return false
   // if vaapi driver refuses to accept parameter or slice buffers submitted
@@ -268,19 +262,12 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   std::vector<VABufferID> pending_slice_bufs_;
   std::vector<VABufferID> pending_va_bufs_;
 
-  // Bitstream buffers for encode.
-  std::set<VABufferID> coded_buffers_;
+  // Buffers for kEncode or kVideoProcess.
+  std::set<VABufferID> va_buffers_;
 
   // Called to report codec errors to UMA. Errors to clients are reported via
   // return values from public methods.
   base::Closure report_error_to_uma_cb_;
-
-  // VPP (Video Post Processing) context, this is used to convert
-  // pictures used by the decoder to RGBA pictures usable by GL or the
-  // display hardware.
-  VAConfigID va_vpp_config_id_;
-  VAContextID va_vpp_context_id_;
-  VABufferID va_vpp_buffer_id_;
 
   DISALLOW_COPY_AND_ASSIGN(VaapiWrapper);
 };
