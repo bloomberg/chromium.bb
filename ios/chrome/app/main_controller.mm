@@ -108,7 +108,6 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
-#import "ios/chrome/browser/tabs/tab_util.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -135,6 +134,7 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
+#import "ios/chrome/browser/web/web_navigation_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/common/app_group/app_group_utils.h"
 #include "ios/net/cookies/cookie_store_ios.h"
@@ -2194,13 +2194,13 @@ enum class ShowTabSwitcherSnapshotResult {
   if (!(currentTabInTargetBVC.webState &&
         IsURLNtp(currentTabInTargetBVC.webState->GetVisibleURL()))) {
     [targetBVC appendTabAddedCompletion:tabOpenedCompletion];
-    [targetTabModel
-        insertTabWithLoadParams:CreateWebLoadParams(URL, transition,
-                                                    /*post_data=*/nullptr)
-                         opener:nil
-                    openedByDOM:NO
-                        atIndex:targetTabModel.count
-                   inBackground:NO];
+    auto params = web_navigation_util::CreateWebLoadParams(
+        URL, transition, /*post_data=*/nullptr);
+    [targetTabModel insertTabWithLoadParams:params
+                                     opener:nil
+                                openedByDOM:NO
+                                    atIndex:targetTabModel.count
+                               inBackground:NO];
   }
 
   Tab* newTab = currentTabInTargetBVC;
@@ -2275,13 +2275,13 @@ enum class ShowTabSwitcherSnapshotResult {
               ? TabSwitcherDismissalMode::NORMAL
               : TabSwitcherDismissalMode::INCOGNITO;
       [targetInterface.bvc appendTabAddedCompletion:tabOpenedCompletion];
-      tab = [targetInterface.tabModel
-          insertTabWithLoadParams:CreateWebLoadParams(url, transition,
-                                                      /*post_data=*/nullptr)
-                           opener:nil
-                      openedByDOM:NO
-                          atIndex:tabIndex
-                     inBackground:NO];
+      auto params = web_navigation_util::CreateWebLoadParams(
+          url, transition, /*post_data=*/nullptr);
+      tab = [targetInterface.tabModel insertTabWithLoadParams:params
+                                                       opener:nil
+                                                  openedByDOM:NO
+                                                      atIndex:tabIndex
+                                                 inBackground:NO];
     } else {
       // Voice search, QRScanner and the omnibox are presented by the BVC.
       // They must be started after the BVC view is added in the hierarchy.

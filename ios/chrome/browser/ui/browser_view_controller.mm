@@ -70,7 +70,6 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
-#import "ios/chrome/browser/tabs/tab_util.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/activity_services/activity_service_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
@@ -169,6 +168,7 @@
 #include "ios/chrome/browser/web/print_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
+#import "ios/chrome/browser/web/web_navigation_util.h"
 #include "ios/chrome/browser/web/web_state_printer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
@@ -1183,13 +1183,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     SnapshotTabHelper::FromWebState(self.currentWebState)->UpdateSnapshot();
   }
 
-  [self.tabModel insertTabWithLoadParams:CreateWebLoadParams(
-                                             GURL(kChromeUINewTabURL),
-                                             ui::PAGE_TRANSITION_TYPED, nullptr)
-                                  opener:nil
-                             openedByDOM:NO
-                                 atIndex:self.tabModel.count
-                            inBackground:NO];
+  [self.tabModel
+      insertTabWithLoadParams:web_navigation_util::CreateWebLoadParams(
+                                  GURL(kChromeUINewTabURL),
+                                  ui::PAGE_TRANSITION_TYPED, nullptr)
+                       opener:nil
+                  openedByDOM:NO
+                      atIndex:self.tabModel.count
+                 inBackground:NO];
 }
 
 - (void)appendTabAddedCompletion:(ProceduralBlock)tabAddedCompletion {
@@ -3438,13 +3439,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   TemplateURLRef::PostContent postContent;
   GURL result(defaultURL->image_url_ref().ReplaceSearchTerms(
       search_args, templateUrlService->search_terms_data(), &postContent));
-  [self.tabModel insertTabWithLoadParams:CreateWebLoadParams(
-                                             result, ui::PAGE_TRANSITION_TYPED,
-                                             &postContent)
-                                  opener:nil
-                             openedByDOM:NO
-                                 atIndex:self.tabModel.count
-                            inBackground:NO];
+  [self.tabModel
+      insertTabWithLoadParams:web_navigation_util::CreateWebLoadParams(
+                                  result, ui::PAGE_TRANSITION_TYPED,
+                                  &postContent)
+                       opener:nil
+                  openedByDOM:NO
+                      atIndex:self.tabModel.count
+                 inBackground:NO];
 }
 
 // Saves the image at the given URL on the system's album.  The referrer is used
@@ -4344,11 +4346,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 #pragma mark - BrowserCommands
 
 - (void)goBack {
-  self.currentWebState->GetNavigationManager()->GoBack();
+  web_navigation_util::GoBack(self.currentWebState);
 }
 
 - (void)goForward {
-  self.currentWebState->GetNavigationManager()->GoForward();
+  web_navigation_util::GoForward(self.currentWebState);
 }
 
 - (void)stopLoading {
@@ -5072,13 +5074,14 @@ nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
 - (void)captivePortalDetectorTabHelper:
             (CaptivePortalDetectorTabHelper*)tabHelper
                  connectWithLandingURL:(const GURL&)landingURL {
-  [self.tabModel insertTabWithLoadParams:CreateWebLoadParams(
-                                             landingURL,
-                                             ui::PAGE_TRANSITION_TYPED, nullptr)
-                                  opener:nil
-                             openedByDOM:NO
-                                 atIndex:self.tabModel.count
-                            inBackground:NO];
+  [self.tabModel
+      insertTabWithLoadParams:web_navigation_util::CreateWebLoadParams(
+                                  landingURL, ui::PAGE_TRANSITION_TYPED,
+                                  nullptr)
+                       opener:nil
+                  openedByDOM:NO
+                      atIndex:self.tabModel.count
+                 inBackground:NO];
 }
 
 #pragma mark - PageInfoPresentation

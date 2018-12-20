@@ -27,6 +27,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/side_swipe_toolbar_interacting.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
+#import "ios/chrome/browser/web/web_navigation_util.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -459,12 +460,13 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
       onOverThresholdCompletion:^{
         BOOL wantsBack = IsSwipingBack(gesture.direction);
         web::WebState* webState = [weakCurrentTab webState];
-        if (wantsBack) {
-          [[model_ currentTab] goBack];
-        } else {
-          [[model_ currentTab] goForward];
+        if (webState) {
+          if (wantsBack) {
+            web_navigation_util::GoBack(webState);
+          } else {
+            web_navigation_util::GoForward(webState);
+          }
         }
-
         // Checking -IsLoading() is likely incorrect, but to narrow the scope of
         // fixes for slim navigation manager, only ignore this state when
         // slim is disabled.  With slim navigation enabled, this false when
