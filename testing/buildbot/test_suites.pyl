@@ -4453,6 +4453,14 @@
       'win_specific_chromium_gtests',
     ],
 
+    'chromium_win_rel_isolated_scripts': [
+      'chromedriver_py_tests_isolated_scripts',
+      'components_perftests_isolated_scripts',
+      'desktop_chromium_isolated_scripts',
+      'telemetry_perf_unittests_isolated_scripts',
+      'win_specific_isolated_scripts',
+    ],
+
     # BEGIN composition test suites used by the GPU bots
 
     'gpu_angle_deqp_android_gtests': [

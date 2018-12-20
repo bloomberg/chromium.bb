@@ -738,6 +738,18 @@
         }
       },
       {
+        "isolate_name": "mini_installer_tests",
+        "name": "mini_installer_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "integrity": "high"
+            }
+          ]
+        }
+      },
+      {
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
         "swarming": {
@@ -4104,6 +4116,18 @@
         "name": "metrics_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "isolate_name": "mini_installer_tests",
+        "name": "mini_installer_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "integrity": "high"
+            }
+          ]
         }
       },
       {

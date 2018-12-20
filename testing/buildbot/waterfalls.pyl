@@ -3588,7 +3588,7 @@
       'Win 7 Tests x64 (1)': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
-          'isolated_scripts': 'chromium_rel_isolated_scripts',
+          'isolated_scripts': 'chromium_win_rel_isolated_scripts',
         },
       },
       'Win Builder': {
@@ -3631,7 +3631,7 @@
       'Win7 Tests (1)': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
-          'isolated_scripts': 'chromium_rel_isolated_scripts',
+          'isolated_scripts': 'chromium_win_rel_isolated_scripts',
           'scripts': 'chromium_scripts',
         },
       },
