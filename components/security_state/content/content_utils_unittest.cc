@@ -660,55 +660,6 @@ TEST(SecurityStateContentUtilsTest, HTTPWarning) {
   EXPECT_EQ(blink::kWebSecurityStyleNeutral, security_style);
   // Verify no explanation was shown, because Form Not Secure was not triggered.
   EXPECT_EQ(0u, explanations.neutral_explanations.size());
-
-  explanations.neutral_explanations.clear();
-  security_info.insecure_input_events.credit_card_field_edited = true;
-  security_style = GetSecurityStyle(security_info, &explanations);
-  EXPECT_EQ(blink::kWebSecurityStyleNeutral, security_style);
-  // Verify one explanation was shown, because Form Not Secure was triggered.
-  EXPECT_EQ(1u, explanations.neutral_explanations.size());
-
-  // Check that when both password and credit card fields get displayed, only
-  // one explanation is added.
-  explanations.neutral_explanations.clear();
-  security_info.insecure_input_events.credit_card_field_edited = true;
-  security_info.insecure_input_events.password_field_shown = true;
-  security_style = GetSecurityStyle(security_info, &explanations);
-  EXPECT_EQ(blink::kWebSecurityStyleNeutral, security_style);
-  // Verify only one explanation was shown when Form Not Secure is triggered.
-  EXPECT_EQ(1u, explanations.neutral_explanations.size());
-
-  // Verify that two explanations are shown when the Incognito and
-  // FormNotSecure flags are both set.
-  explanations.neutral_explanations.clear();
-  security_info.insecure_input_events.credit_card_field_edited = true;
-  security_info.insecure_input_events.password_field_shown = false;
-  security_info.incognito_downgraded_security_level = true;
-  security_style = GetSecurityStyle(security_info, &explanations);
-  EXPECT_EQ(blink::kWebSecurityStyleNeutral, security_style);
-  EXPECT_EQ(2u, explanations.neutral_explanations.size());
-
-  // Verify that three explanations are shown when the Incognito, FormNotSecure,
-  // and Insecure Field Edit flags are all set.
-  explanations.neutral_explanations.clear();
-  security_info.insecure_input_events.credit_card_field_edited = true;
-  security_info.insecure_input_events.password_field_shown = false;
-  security_info.incognito_downgraded_security_level = true;
-  security_info.field_edit_downgraded_security_level = true;
-  security_style = GetSecurityStyle(security_info, &explanations);
-  EXPECT_EQ(blink::kWebSecurityStyleNeutral, security_style);
-  EXPECT_EQ(3u, explanations.neutral_explanations.size());
-
-  // Verify that one explanation is shown when the Insecure Field Edit flags
-  // alone is set.
-  explanations.neutral_explanations.clear();
-  security_info.insecure_input_events.credit_card_field_edited = false;
-  security_info.insecure_input_events.password_field_shown = false;
-  security_info.incognito_downgraded_security_level = false;
-  security_info.field_edit_downgraded_security_level = true;
-  security_style = GetSecurityStyle(security_info, &explanations);
-  EXPECT_EQ(blink::kWebSecurityStyleNeutral, security_style);
-  EXPECT_EQ(1u, explanations.neutral_explanations.size());
 }
 
 // Tests that a security level of DANGEROUS on an HTTP page with insecure form

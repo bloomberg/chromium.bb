@@ -2107,7 +2107,6 @@ void AutofillManager::GetAvailableSuggestions(
   if (got_autofillable_form) {
     if (context->focused_field->Type().group() == CREDIT_CARD) {
       context->is_filling_credit_card = true;
-      driver()->DidInteractWithCreditCardForm();
       credit_card_form_event_logger_->OnDidInteractWithAutofillableForm(
           context->form_structure->form_signature(), sync_state_);
     } else {

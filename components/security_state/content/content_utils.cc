@@ -72,29 +72,6 @@ void ExplainHTTPSecurity(
               l10n_util::GetStringUTF8(IDS_EDITED_NONSECURE_DESCRIPTION)));
     }
   }
-
-  if (security_info.security_level != security_state::HTTP_SHOW_WARNING)
-    return;
-
-  if (security_info.field_edit_downgraded_security_level) {
-    security_style_explanations->neutral_explanations.push_back(
-        content::SecurityStyleExplanation(
-            l10n_util::GetStringUTF8(IDS_EDITED_NONSECURE),
-            l10n_util::GetStringUTF8(IDS_EDITED_NONSECURE_DESCRIPTION)));
-  }
-  if (security_info.insecure_input_events.password_field_shown ||
-      security_info.insecure_input_events.credit_card_field_edited) {
-    security_style_explanations->neutral_explanations.push_back(
-        content::SecurityStyleExplanation(
-            l10n_util::GetStringUTF8(IDS_PRIVATE_USER_DATA_INPUT),
-            l10n_util::GetStringUTF8(IDS_PRIVATE_USER_DATA_INPUT_DESCRIPTION)));
-  }
-  if (security_info.incognito_downgraded_security_level) {
-    security_style_explanations->neutral_explanations.push_back(
-        content::SecurityStyleExplanation(
-            l10n_util::GetStringUTF8(IDS_INCOGNITO_NONSECURE),
-            l10n_util::GetStringUTF8(IDS_INCOGNITO_NONSECURE_DESCRIPTION)));
-  }
 }
 
 void ExplainSafeBrowsingSecurity(

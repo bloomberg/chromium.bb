@@ -195,7 +195,6 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
   virtual const QualifiedName& SubResourceAttributeName() const;
   virtual void CopyNonAttributeProperties(const HTMLInputElement&);
   virtual void OnAttachWithLayoutObject();
-  virtual void OnDetachWithLayoutObject();
 
   // Parses the specified string for the type, and return
   // the Decimal value for the parsing result if the parsing

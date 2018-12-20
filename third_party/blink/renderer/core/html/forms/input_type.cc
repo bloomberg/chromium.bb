@@ -646,8 +646,6 @@ void InputType::CopyNonAttributeProperties(const HTMLInputElement&) {}
 
 void InputType::OnAttachWithLayoutObject() {}
 
-void InputType::OnDetachWithLayoutObject() {}
-
 bool InputType::ShouldAppearIndeterminate() const {
   return false;
 }

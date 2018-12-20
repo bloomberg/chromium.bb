@@ -32,11 +32,8 @@ bool IsNonsecureBlobUrl(
 }
 
 // For nonsecure pages, sets |security_level| in |*security_info| based on the
-// provided information and the kMarkHttpAsFeature field trial. Also sets the
-// explanatory fields |incognito_downgraded_security_level| and
-// |field_edit_downgraded_security_level|.
+// provided information and the kMarkHttpAsFeature field trial.
 void SetSecurityLevelAndRelatedFieldsForNonSecureFieldTrial(
-    bool is_incognito,
     bool is_error_page,
     const InsecureInputEventData& input_events,
     SecurityInfo* security_info) {
@@ -49,43 +46,12 @@ void SetSecurityLevelAndRelatedFieldsForNonSecureFieldTrial(
       security_info->security_level = DANGEROUS;
       return;
     }
-
-    if (parameter ==
-        features::
-            kMarkHttpAsParameterWarningAndDangerousOnPasswordsAndCreditCards) {
-      security_info->security_level = (input_events.password_field_shown ||
-                                       input_events.credit_card_field_edited)
-                                          ? DANGEROUS
-                                          : HTTP_SHOW_WARNING;
-      return;
-    }
-
-    // By default, if the feature is enabled, show a warning on all http://
-    // pages and mark as dangerous on form edits.
-    security_info->security_level =
-        input_events.insecure_field_edited ? DANGEROUS : HTTP_SHOW_WARNING;
-    // Do not set |field_edit_downgraded_security_level| here because that
-    // field is for specifically for when the security level was downgraded
-    // from NONE to HTTP_SHOW_WARNING, not from HTTP_SHOW_WARNING to DANGEROUS
-    // as in this case.
-    return;
   }
 
-  // No warning treatment is configured via field trial. Default to warning on
-  // incognito or editing or sensitive form fields.
+  // Default to dangerous on editing form fields and otherwise
+  // warning.
   security_info->security_level =
-      (is_incognito || input_events.insecure_field_edited ||
-       input_events.password_field_shown ||
-       input_events.credit_card_field_edited)
-          ? HTTP_SHOW_WARNING
-          : NONE;
-  security_info->incognito_downgraded_security_level =
-      (is_incognito && !is_error_page &&
-       security_info->security_level == HTTP_SHOW_WARNING);
-
-  security_info->field_edit_downgraded_security_level =
-      (security_info->security_level == HTTP_SHOW_WARNING &&
-       input_events.insecure_field_edited);
+      input_events.insecure_field_edited ? DANGEROUS : HTTP_SHOW_WARNING;
 }
 
 ContentStatus GetContentStatus(bool displayed, bool ran) {
@@ -98,9 +64,7 @@ ContentStatus GetContentStatus(bool displayed, bool ran) {
   return CONTENT_STATUS_NONE;
 }
 
-// Sets |security_level| in |*security_info| based on the provided information,
-// as well as the explanatory fields |incognito_downgraded_security_level| and
-// |field_edit_downgraded_security_level|.
+// Sets |security_level| in |*security_info| based on the provided information.
 void SetSecurityLevelAndRelatedFields(
     const VisibleSecurityState& visible_security_state,
     bool used_policy_installed_certificate,
@@ -112,12 +76,6 @@ void SetSecurityLevelAndRelatedFields(
   DCHECK(visible_security_state.connection_info_initialized ||
          visible_security_state.malicious_content_status !=
              MALICIOUS_CONTENT_STATUS_NONE);
-
-  // Initialize the related fields; they'll be set to true in
-  // SetSecurityLevelAndRelatedFieldsForNonSecureFieldTrial() below if
-  // necessary.
-  security_info->incognito_downgraded_security_level = false;
-  security_info->field_edit_downgraded_security_level = false;
 
   // Override the connection security information if the website failed the
   // browser's malware checks.
@@ -144,8 +102,7 @@ void SetSecurityLevelAndRelatedFields(
   // Likewise, ftp: URLs are always non-secure, and are uncommon enough that
   // we can treat them as such without significant user impact.
   //
-  // Display a "Not secure" badge for all these URLs, regardless of whether
-  // they show a password or credit card field.
+  // Display a "Not secure" badge for all these URLs.
   if (url.SchemeIs(url::kDataScheme) || url.SchemeIs(url::kFtpScheme)) {
     security_info->security_level = SecurityLevel::HTTP_SHOW_WARNING;
     return;
@@ -161,7 +118,6 @@ void SetSecurityLevelAndRelatedFields(
         (url.IsStandard() ||
          IsNonsecureBlobUrl(url, is_origin_secure_callback))) {
       SetSecurityLevelAndRelatedFieldsForNonSecureFieldTrial(
-          visible_security_state.is_incognito,
           visible_security_state.is_error_page,
           visible_security_state.insecure_input_events, security_info);
       return;
@@ -326,9 +282,7 @@ SecurityInfo::SecurityInfo()
       obsolete_ssl_status(net::OBSOLETE_SSL_NONE),
       pkp_bypassed(false),
       contained_mixed_form(false),
-      cert_missing_subject_alt_name(false),
-      incognito_downgraded_security_level(false),
-      field_edit_downgraded_security_level(false) {}
+      cert_missing_subject_alt_name(false) {}
 
 SecurityInfo::~SecurityInfo() {}
 
@@ -355,7 +309,6 @@ VisibleSecurityState::VisibleSecurityState()
       displayed_content_with_cert_errors(false),
       ran_content_with_cert_errors(false),
       pkp_bypassed(false),
-      is_incognito(false),
       is_error_page(false),
       is_view_source(false) {}
 
