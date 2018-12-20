@@ -57,8 +57,11 @@ HRESULT GetRegString(const base::string16& key_name,
   DWORD type;
   ULONG local_length = *length - 1;
   sts = key.ReadValue(name.c_str(), value, &local_length, &type);
-  if (sts != ERROR_SUCCESS)
+  if (sts != ERROR_SUCCESS) {
+    if (sts == ERROR_MORE_DATA)
+      *length = local_length;
     return HRESULT_FROM_WIN32(sts);
+  }
   if (type != REG_SZ)
     return HRESULT_FROM_WIN32(ERROR_CANTREAD);
 
@@ -95,6 +98,7 @@ HRESULT SetRegString(const base::string16& key_name,
   } else {
     sts = key.WriteValue(name.c_str(), value.c_str());
   }
+
   if (sts != ERROR_SUCCESS)
     return HRESULT_FROM_WIN32(sts);
 
@@ -192,16 +196,44 @@ HRESULT GetSidFromId(const base::string16& id, wchar_t* sid, ULONG length) {
   wchar_t key_name[128];
   swprintf_s(key_name, base::size(key_name), L"%ls\\Users", kGcpRootKeyName);
 
+  bool result_found = false;
   base::win::RegistryKeyIterator iter(HKEY_LOCAL_MACHINE, key_name);
   for (; iter.Valid(); ++iter) {
     const wchar_t* user_sid = iter.Name();
     wchar_t user_id[256];
     ULONG user_length = base::size(user_id);
-    HRESULT hr =
-        GetUserProperty(user_sid, kUserId, user_id, &user_length);
+    HRESULT hr = GetUserProperty(user_sid, kUserId, user_id, &user_length);
     if (SUCCEEDED(hr) && id == user_id) {
+      // Make sure there are not 2 users with the same SID.
+      if (result_found)
+        return HRESULT_FROM_WIN32(ERROR_USER_EXISTS);
+
       wcsncpy_s(sid, length, user_sid, wcslen(user_sid));
-      return S_OK;
+      result_found = true;
+    }
+  }
+
+  return result_found ? S_OK : HRESULT_FROM_WIN32(ERROR_NONE_MAPPED);
+}
+
+HRESULT GetIdFromSid(const wchar_t* sid, base::string16* id) {
+  DCHECK(id);
+
+  wchar_t key_name[128];
+  swprintf_s(key_name, base::size(key_name), L"%ls\\Users", kGcpRootKeyName);
+
+  base::win::RegistryKeyIterator iter(HKEY_LOCAL_MACHINE, key_name);
+  for (; iter.Valid(); ++iter) {
+    const wchar_t* user_sid = iter.Name();
+
+    if (wcscmp(sid, user_sid) == 0) {
+      wchar_t user_id[256];
+      ULONG user_length = base::size(user_id);
+      HRESULT hr = GetUserProperty(user_sid, kUserId, user_id, &user_length);
+      if (SUCCEEDED(hr)) {
+        *id = user_id;
+        return S_OK;
+      }
     }
   }
   return HRESULT_FROM_WIN32(ERROR_NONE_MAPPED);

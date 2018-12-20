@@ -61,6 +61,10 @@ HRESULT GetUserTokenHandles(std::map<base::string16, base::string16>* handles);
 // HRESULT_FROM_WIN32(ERROR_NONE_MAPPED).
 HRESULT GetSidFromId(const base::string16& id, wchar_t* sid, ULONG length);
 
+// Gets the gaia id associated with the given SID.  If none exists, returns
+// HRESULT_FROM_WIN32(ERROR_NONE_MAPPED).
+HRESULT GetIdFromSid(const wchar_t* sid, base::string16* id);
+
 // Returns the root registry key that needs to be verified in unit tests.
 const wchar_t* GetUsersRootKeyForTesting();
 

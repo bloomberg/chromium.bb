@@ -75,11 +75,53 @@
 
 #if defined(OS_WIN)
 
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 
 #endif  // defined(OS_WIN)
 
 namespace {
+
+#if defined(OS_WIN)
+
+// Returns a list of valid signin domains that were passed in
+// |email_domains_parameter| as an argument to the gcpw signin dialog.
+
+std::vector<std::string> GetEmailDomainsFromParameter(
+    const std::string& email_domains_parameter) {
+  return base::SplitString(base::ToLowerASCII(email_domains_parameter),
+                           credential_provider::kEmailDomainsSeparator,
+                           base::WhitespaceHandling::TRIM_WHITESPACE,
+                           base::SplitResult::SPLIT_WANT_NONEMPTY);
+}
+
+// Validates that the |signin_gaia_id| that the user signed in with matches
+// the |gaia_id_parameter| passed to the gcpw signin dialog. Also ensures
+// that the |signin_email| is in a domain listed in |email_domains_parameter|.
+// Returns kUiecSuccess on success.
+// Returns the appropriate error code on failure.
+credential_provider::UiExitCodes ValidateSigninEmail(
+    const std::string& gaia_id_parameter,
+    const std::string& email_domains_parameter,
+    const std::string& signin_email,
+    const std::string& signin_gaia_id) {
+  if (!gaia_id_parameter.empty() &&
+      !base::LowerCaseEqualsASCII(gaia_id_parameter, signin_gaia_id)) {
+    return credential_provider::kUiecEMailMissmatch;
+  }
+
+  std::vector<std::string> all_email_domains =
+      GetEmailDomainsFromParameter(email_domains_parameter);
+  std::string email_domain = gaia::ExtractDomainName(signin_email);
+
+  return std::find(all_email_domains.begin(), all_email_domains.end(),
+                   email_domain) != all_email_domains.end()
+             ? credential_provider::kUiecSuccess
+             : credential_provider::kUiecInvalidEmailDomain;
+}
+
+#endif
 
 void LogHistogramValue(signin_metrics::AccessPointAction action) {
   UMA_HISTOGRAM_ENUMERATION("Signin.AllAccessPointActions", action,
@@ -465,11 +507,14 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
 
 #if defined(OS_WIN)
   if (reason == signin_metrics::Reason::REASON_FETCH_LST_ONLY) {
-    std::string email_domain;
+    std::string email_domains;
     if (net::GetValueForKeyInQuery(
-            current_url, credential_provider::kEmailDomainSigninPromoParameter,
-            &email_domain)) {
-      params.SetString("emailDomain", email_domain);
+            current_url, credential_provider::kEmailDomainsSigninPromoParameter,
+            &email_domains)) {
+      std::vector<std::string> all_email_domains =
+          GetEmailDomainsFromParameter(email_domains);
+      if (all_email_domains.size() == 1)
+        params.SetString("emailDomain", all_email_domains[0]);
     }
   }
 #endif
@@ -624,16 +669,47 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
     const FinishCompleteLoginParams& params,
     Profile* profile,
     Profile::CreateStatus status) {
+  signin_metrics::Reason reason =
+      signin::GetSigninReasonForPromoURL(params.url);
+
+  std::string default_email;
+  net::GetValueForKeyInQuery(params.url, "email", &default_email);
+  std::string validate_email;
+  net::GetValueForKeyInQuery(params.url, "validateEmail", &validate_email);
+
+#if defined(OS_WIN)
+  if (reason == signin_metrics::Reason::REASON_FETCH_LST_ONLY) {
+    std::string validate_gaia_id;
+    net::GetValueForKeyInQuery(
+        params.url, credential_provider::kValidateGaiaIdSigninPromoParameter,
+        &validate_gaia_id);
+    std::string email_domains;
+    net::GetValueForKeyInQuery(
+        params.url, credential_provider::kEmailDomainsSigninPromoParameter,
+        &email_domains);
+    credential_provider::UiExitCodes exit_code = ValidateSigninEmail(
+        validate_gaia_id, email_domains, params.email, params.gaia_id);
+    if (exit_code != credential_provider::kUiecSuccess) {
+      if (params.handler) {
+        params.handler->HandleLoginError(base::NumberToString((int)exit_code),
+                                         base::UTF8ToUTF16(params.email));
+      }
+      return;
+    } else {
+      // Validation has already been done for GCPW, so clear the validate
+      // argument so it doesn't validate again. GCPW validation allows the
+      // signin email to not match the email given in the request url if the
+      // gaia id of the signin email matches the one given in the request url.
+      validate_email.clear();
+    }
+  }
+#endif
+
   // When doing a SAML sign in, this email check may result in a false
   // positive.  This happens when the user types one email address in the
   // gaia sign in page, but signs in to a different account in the SAML sign in
   // page.
-  std::string default_email;
-  std::string validate_email;
-  if (net::GetValueForKeyInQuery(params.url, "email", &default_email) &&
-      net::GetValueForKeyInQuery(params.url, "validateEmail",
-                                 &validate_email) &&
-      validate_email == "1" && !default_email.empty()) {
+  if (validate_email == "1" && !default_email.empty()) {
     if (!gaia::AreEmailsSame(params.email, default_email)) {
       if (params.handler) {
         params.handler->HandleLoginError(
@@ -647,8 +723,6 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
 
   signin_metrics::AccessPoint access_point =
       signin::GetAccessPointForPromoURL(params.url);
-  signin_metrics::Reason reason =
-      signin::GetSigninReasonForPromoURL(params.url);
   LogHistogramValue(signin_metrics::HISTOGRAM_ACCEPTED);
   bool switch_to_advanced =
       params.choose_what_to_sync &&
@@ -725,7 +799,17 @@ void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg,
       signin::GetSigninReasonForPromoURL(current_url);
 
   if (reason == signin_metrics::Reason::REASON_FETCH_LST_ONLY) {
-    SendLSTFetchResultsMessage(base::Value(base::Value::Type::DICTIONARY));
+    base::Value error_value(base::Value::Type::DICTIONARY);
+#if defined(OS_WIN)
+    // If the message is an integer error code, send it as part
+    // of the result.
+    int exit_code = 0;
+    if (base::StringToInt(error_msg, &exit_code)) {
+      error_value.SetKey(credential_provider::kKeyExitCode,
+                         base::Value(exit_code));
+    }
+#endif
+    SendLSTFetchResultsMessage(error_value);
     return;
   }
   SyncStarterCallback(OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
