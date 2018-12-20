@@ -52,8 +52,9 @@
 #endif
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "components/signin/core/browser/signin_pref_names.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #endif
 
 using base::UserMetricsAction;
@@ -384,9 +385,7 @@ void ShowSearchEngineSettings(Browser* browser) {
 void ShowBrowserSignin(Browser* browser,
                        signin_metrics::AccessPoint access_point) {
   Profile* original_profile = browser->profile()->GetOriginalProfile();
-  SigninManagerBase* manager =
-      SigninManagerFactory::GetForProfile(original_profile);
-  DCHECK(manager->IsSigninAllowed());
+  DCHECK(original_profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
 
   // If the browser's profile is an incognito profile, make sure to use
   // a browser window from the original profile. The user cannot sign in
@@ -428,8 +427,10 @@ void ShowBrowserSignin(Browser* browser,
     NOTREACHED();
 #else
     profiles::BubbleViewMode bubble_view_mode =
-        manager->IsAuthenticated() ? profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH
-                                   : profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN;
+        IdentityManagerFactory::GetForProfile(original_profile)
+                ->HasPrimaryAccount()
+            ? profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH
+            : profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN;
     browser->signin_view_controller()->ShowSignin(bubble_view_mode, browser,
                                                   access_point);
 #endif
@@ -439,10 +440,9 @@ void ShowBrowserSignin(Browser* browser,
 void ShowBrowserSigninOrSettings(Browser* browser,
                                  signin_metrics::AccessPoint access_point) {
   Profile* original_profile = browser->profile()->GetOriginalProfile();
-  SigninManagerBase* manager =
-      SigninManagerFactory::GetForProfile(original_profile);
-  DCHECK(manager->IsSigninAllowed());
-  if (manager->IsAuthenticated())
+  DCHECK(original_profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
+  if (IdentityManagerFactory::GetForProfile(original_profile)
+          ->HasPrimaryAccount())
     ShowSettings(browser);
   else
     ShowBrowserSignin(browser, access_point);
