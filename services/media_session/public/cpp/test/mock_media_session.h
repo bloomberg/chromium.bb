@@ -38,11 +38,14 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
   void MediaSessionInfoChanged(mojom::MediaSessionInfoPtr session) override;
   void MediaSessionMetadataChanged(
       const base::Optional<MediaMetadata>& metadata) override;
+  void MediaSessionActionsChanged(
+      const std::vector<mojom::MediaSessionAction>& actions) override;
 
   void WaitForState(mojom::MediaSessionInfo::SessionState wanted_state);
   void WaitForPlaybackState(mojom::MediaPlaybackState wanted_state);
   const base::Optional<MediaMetadata>& WaitForMetadata();
   const MediaMetadata& WaitForNonEmptyMetadata();
+  void WaitForActions();
 
   const mojom::MediaSessionInfoPtr& session_info() const {
     return session_info_;
@@ -53,15 +56,24 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
     return session_metadata_;
   }
 
+  const std::vector<mojom::MediaSessionAction>& actions() const {
+    return session_actions_;
+  }
+
  private:
+  void StartWaiting();
+
   mojom::MediaSessionInfoPtr session_info_;
   base::Optional<base::Optional<MediaMetadata>> session_metadata_;
+  std::vector<mojom::MediaSessionAction> session_actions_;
 
   bool waiting_for_metadata_ = false;
   bool waiting_for_non_empty_metadata_ = false;
+  bool waiting_for_actions_ = false;
+
   base::Optional<mojom::MediaSessionInfo::SessionState> wanted_state_;
   base::Optional<mojom::MediaPlaybackState> wanted_playback_state_;
-  base::RunLoop run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   mojo::Binding<mojom::MediaSessionObserver> binding_;
 };
@@ -112,6 +124,9 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
 
   void SimulateMetadataChanged(const base::Optional<MediaMetadata>& metadata);
 
+  void EnableAction(mojom::MediaSessionAction action);
+  void DisableAction(mojom::MediaSessionAction action);
+
   int prev_track_count() const { return prev_track_count_; }
   int next_track_count() const { return next_track_count_; }
   int add_observer_count() const { return add_observer_count_; }
@@ -121,6 +136,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
   void SetState(mojom::MediaSessionInfo::SessionState);
   void NotifyObservers();
   mojom::MediaSessionInfoPtr GetMediaSessionInfoSync() const;
+  void NotifyActionObservers();
 
   mojom::AudioFocusRequestClientPtr afr_client_;
 
@@ -132,6 +148,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
   int next_track_count_ = 0;
   int add_observer_count_ = 0;
   int seek_count_ = 0;
+
+  std::set<mojom::MediaSessionAction> actions_;
 
   mojom::MediaSessionInfo::SessionState state_ =
       mojom::MediaSessionInfo::SessionState::kInactive;

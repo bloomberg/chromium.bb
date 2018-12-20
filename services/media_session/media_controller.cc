@@ -57,6 +57,7 @@ void MediaController::AddObserver(mojom::MediaSessionObserverPtr observer) {
   if (!session_info_.is_null())
     observer->MediaSessionInfoChanged(session_info_.Clone());
   observer->MediaSessionMetadataChanged(session_metadata_);
+  observer->MediaSessionActionsChanged(session_actions_);
 
   observers_.AddPtr(std::move(observer));
 }
@@ -80,6 +81,17 @@ void MediaController::MediaSessionMetadataChanged(
   });
 
   session_metadata_ = metadata;
+}
+
+void MediaController::MediaSessionActionsChanged(
+    const std::vector<mojom::MediaSessionAction>& actions) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  observers_.ForAllPtrs([&actions](mojom::MediaSessionObserver* observer) {
+    observer->MediaSessionActionsChanged(actions);
+  });
+
+  session_actions_ = actions;
 }
 
 void MediaController::PreviousTrack() {
@@ -112,6 +124,7 @@ bool MediaController::SetMediaSession(mojom::MediaSession* session) {
     session_binding_.Close();
     session_info_.reset();
     session_metadata_.reset();
+    session_actions_.clear();
 
     if (session) {
       // Add |this| as an observer for |session|.

@@ -725,4 +725,106 @@ TEST_F(MediaControllerTest, BoundController_DropOnAbandon) {
   EXPECT_EQ(1, media_session.next_track_count());
 }
 
+TEST_F(MediaControllerTest, ActiveController_Actions_AddObserver_Empty) {
+  test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(controller());
+    observer.WaitForActions();
+    EXPECT_TRUE(observer.actions().empty());
+  }
+}
+
+TEST_F(MediaControllerTest, ActiveController_Actions_AddObserver_WithInfo) {
+  test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  media_session.EnableAction(mojom::MediaSessionAction::kPlay);
+
+  {
+    test::MockMediaSessionMojoObserver observer(controller());
+    observer.WaitForActions();
+
+    EXPECT_EQ(1u, observer.actions().size());
+    EXPECT_EQ(mojom::MediaSessionAction::kPlay, observer.actions()[0]);
+  }
+}
+
+TEST_F(MediaControllerTest, ActiveController_Actions_Observer_Empty) {
+  test::MockMediaSession media_session;
+  media_session.EnableAction(mojom::MediaSessionAction::kPlay);
+  media_session.SetIsControllable(true);
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(controller());
+    observer.WaitForActions();
+
+    media_session.DisableAction(mojom::MediaSessionAction::kPlay);
+    observer.WaitForActions();
+
+    EXPECT_TRUE(observer.actions().empty());
+  }
+}
+
+TEST_F(MediaControllerTest, ActiveController_Actions_Observer_WithInfo) {
+  test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(controller());
+    observer.WaitForActions();
+
+    media_session.EnableAction(mojom::MediaSessionAction::kPlay);
+    observer.WaitForActions();
+
+    EXPECT_EQ(1u, observer.actions().size());
+    EXPECT_EQ(mojom::MediaSessionAction::kPlay, observer.actions()[0]);
+  }
+}
+
+TEST_F(MediaControllerTest, ActiveController_Actions_Observer_Abandoned) {
+  test::MockMediaSession media_session;
+  media_session.EnableAction(mojom::MediaSessionAction::kPlay);
+  media_session.SetIsControllable(true);
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  media_session.AbandonAudioFocusFromClient();
+
+  {
+    test::MockMediaSessionMojoObserver observer(controller());
+    observer.WaitForActions();
+    EXPECT_TRUE(observer.actions().empty());
+  }
+}
+
 }  // namespace media_session

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/stl_util.h"
 #include "services/media_session/public/cpp/switches.h"
 
 namespace media_session {
@@ -35,7 +36,7 @@ void MockMediaSessionMojoObserver::MediaSessionInfoChanged(
 
   if (wanted_state_ == session_info_->state ||
       session_info_->playback_state == wanted_playback_state_) {
-    run_loop_.Quit();
+    run_loop_->Quit();
   }
 }
 
@@ -44,11 +45,21 @@ void MockMediaSessionMojoObserver::MediaSessionMetadataChanged(
   session_metadata_ = metadata;
 
   if (waiting_for_metadata_) {
-    run_loop_.Quit();
+    run_loop_->Quit();
     waiting_for_metadata_ = false;
   } else if (waiting_for_non_empty_metadata_ && metadata.has_value()) {
-    run_loop_.Quit();
+    run_loop_->Quit();
     waiting_for_non_empty_metadata_ = false;
+  }
+}
+
+void MockMediaSessionMojoObserver::MediaSessionActionsChanged(
+    const std::vector<mojom::MediaSessionAction>& actions) {
+  session_actions_ = actions;
+
+  if (waiting_for_actions_) {
+    run_loop_->Quit();
+    waiting_for_actions_ = false;
   }
 }
 
@@ -58,7 +69,7 @@ void MockMediaSessionMojoObserver::WaitForState(
     return;
 
   wanted_state_ = wanted_state;
-  run_loop_.Run();
+  StartWaiting();
 }
 
 void MockMediaSessionMojoObserver::WaitForPlaybackState(
@@ -67,14 +78,14 @@ void MockMediaSessionMojoObserver::WaitForPlaybackState(
     return;
 
   wanted_playback_state_ = wanted_state;
-  run_loop_.Run();
+  StartWaiting();
 }
 
 const base::Optional<MediaMetadata>&
 MockMediaSessionMojoObserver::WaitForMetadata() {
   if (!session_metadata_.has_value()) {
     waiting_for_metadata_ = true;
-    run_loop_.Run();
+    StartWaiting();
   }
 
   return session_metadata_.value();
@@ -83,10 +94,23 @@ MockMediaSessionMojoObserver::WaitForMetadata() {
 const MediaMetadata& MockMediaSessionMojoObserver::WaitForNonEmptyMetadata() {
   if (!session_metadata_.has_value() || !session_metadata_->has_value()) {
     waiting_for_non_empty_metadata_ = true;
-    run_loop_.Run();
+    StartWaiting();
   }
 
   return session_metadata_->value();
+}
+
+void MockMediaSessionMojoObserver::WaitForActions() {
+  waiting_for_actions_ = true;
+  StartWaiting();
+}
+
+void MockMediaSessionMojoObserver::StartWaiting() {
+  DCHECK(!run_loop_);
+
+  run_loop_ = std::make_unique<base::RunLoop>();
+  run_loop_->Run();
+  run_loop_.reset();
 }
 
 MockMediaSession::MockMediaSession() = default;
@@ -122,6 +146,11 @@ void MockMediaSession::AddObserver(mojom::MediaSessionObserverPtr observer) {
   ++add_observer_count_;
 
   observer->MediaSessionInfoChanged(GetMediaSessionInfoSync());
+
+  std::vector<mojom::MediaSessionAction> actions(actions_.begin(),
+                                                 actions_.end());
+  observer->MediaSessionActionsChanged(actions);
+
   observers_.AddPtr(std::move(observer));
 }
 
@@ -261,6 +290,22 @@ void MockMediaSession::SimulateMetadataChanged(
   });
 }
 
+void MockMediaSession::EnableAction(mojom::MediaSessionAction action) {
+  if (base::ContainsKey(actions_, action))
+    return;
+
+  actions_.insert(action);
+  NotifyActionObservers();
+}
+
+void MockMediaSession::DisableAction(mojom::MediaSessionAction action) {
+  if (!base::ContainsKey(actions_, action))
+    return;
+
+  actions_.erase(action);
+  NotifyActionObservers();
+}
+
 void MockMediaSession::SetState(mojom::MediaSessionInfo::SessionState state) {
   state_ = state;
   NotifyObservers();
@@ -291,6 +336,15 @@ mojom::MediaSessionInfoPtr MockMediaSession::GetMediaSessionInfoSync() const {
   info->is_controllable = is_controllable_;
 
   return info;
+}
+
+void MockMediaSession::NotifyActionObservers() {
+  std::vector<mojom::MediaSessionAction> actions(actions_.begin(),
+                                                 actions_.end());
+
+  observers_.ForAllPtrs([&actions](mojom::MediaSessionObserver* observer) {
+    observer->MediaSessionActionsChanged(actions);
+  });
 }
 
 }  // namespace test
