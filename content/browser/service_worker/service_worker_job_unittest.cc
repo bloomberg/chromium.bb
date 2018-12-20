@@ -500,7 +500,7 @@ class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
       const GURL& scope,
       const GURL& script_url,
       bool pause_after_download,
-      mojom::ServiceWorkerRequest service_worker_request,
+      blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
@@ -1008,7 +1008,7 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
       const GURL& scope,
       const GURL& script,
       bool pause_after_download,
-      mojom::ServiceWorkerRequest service_worker_request,
+      blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
@@ -1151,7 +1151,7 @@ class EvictIncumbentVersionHelper : public UpdateJobTestHelper {
       const GURL& scope,
       const GURL& script,
       bool pause_after_download,
-      mojom::ServiceWorkerRequest service_worker_request,
+      blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
@@ -1723,15 +1723,16 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
         activate_event_result_(
             blink::mojom::ServiceWorkerEventStatus::COMPLETED) {}
 
-  void OnInstallEvent(
-      mojom::ServiceWorker::DispatchInstallEventCallback callback) override {
+  void OnInstallEvent(blink::mojom::ServiceWorker::DispatchInstallEventCallback
+                          callback) override {
     if (!install_callback_.is_null())
       std::move(install_callback_).Run();
     std::move(callback).Run(install_event_result_, has_fetch_handler_);
   }
 
   void OnActivateEvent(
-      mojom::ServiceWorker::DispatchActivateEventCallback callback) override {
+      blink::mojom::ServiceWorker::DispatchActivateEventCallback callback)
+      override {
     std::move(callback).Run(activate_event_result_);
   }
 

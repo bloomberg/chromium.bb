@@ -15,12 +15,12 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
-#include "content/common/service_worker/service_worker.mojom.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -66,7 +66,7 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
       const GURL& scope,
       const GURL& script_url,
       bool pause_after_download,
-      mojom::ServiceWorkerRequest service_worker_request,
+      blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
@@ -86,7 +86,7 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
   void OnPaymentRequestEvent(
       payments::mojom::PaymentRequestEventDataPtr event_data,
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-      mojom::ServiceWorker::DispatchPaymentRequestEventCallback callback)
+      blink::mojom::ServiceWorker::DispatchPaymentRequestEventCallback callback)
       override {
     if (respond_payment_request_immediately) {
       EmbeddedWorkerTestHelper::OnPaymentRequestEvent(
@@ -102,7 +102,7 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
   void OnCanMakePaymentEvent(
       payments::mojom::CanMakePaymentEventDataPtr event_data,
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-      mojom::ServiceWorker::DispatchCanMakePaymentEventCallback callback)
+      blink::mojom::ServiceWorker::DispatchCanMakePaymentEventCallback callback)
       override {
     EmbeddedWorkerTestHelper::OnCanMakePaymentEvent(
         std::move(event_data), std::move(response_callback),
@@ -111,7 +111,7 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
 
   void OnAbortPaymentEvent(
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-      mojom::ServiceWorker::DispatchCanMakePaymentEventCallback callback)
+      blink::mojom::ServiceWorker::DispatchCanMakePaymentEventCallback callback)
       override {
     EmbeddedWorkerTestHelper::OnAbortPaymentEvent(std::move(response_callback),
                                                   std::move(callback));

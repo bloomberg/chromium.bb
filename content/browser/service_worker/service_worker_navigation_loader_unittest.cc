@@ -16,7 +16,6 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/common/service_worker/service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/common/single_request_url_loader_factory.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -35,6 +34,7 @@
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
@@ -107,7 +107,7 @@ class NavigationPreloadLoaderClient final
   NavigationPreloadLoaderClient(
       blink::mojom::FetchEventPreloadHandlePtr preload_handle,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
+      blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
       : url_loader_(std::move(preload_handle->url_loader)),
         binding_(this, std::move(preload_handle->url_loader_client_request)),
         response_callback_(std::move(response_callback)),
@@ -171,7 +171,7 @@ class NavigationPreloadLoaderClient final
 
   // Callbacks that complete Helper::OnFetchEvent().
   blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_;
-  mojom::ServiceWorker::DispatchFetchEventCallback finish_callback_;
+  blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationPreloadLoaderClient);
 };
@@ -278,7 +278,7 @@ class Helper : public EmbeddedWorkerTestHelper {
       blink::mojom::FetchAPIRequestPtr request,
       blink::mojom::FetchEventPreloadHandlePtr preload_handle,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
+      blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
       override {
     // Basic checks on DispatchFetchEvent parameters.
     EXPECT_TRUE(request->is_main_resource_load);
@@ -334,7 +334,7 @@ class Helper : public EmbeddedWorkerTestHelper {
         SimulateWorkerStopped(embedded_worker_id);
         // Finish the event by calling |finish_callback|.
         // This is the Mojo callback for
-        // mojom::ServiceWorker::DispatchFetchEvent().
+        // blink::mojom::ServiceWorker::DispatchFetchEvent().
         // If this is not called, Mojo will complain. In production code,
         // ServiceWorkerContextClient would call this when it aborts all
         // callbacks after an unexpected stop.
@@ -390,7 +390,7 @@ class Helper : public EmbeddedWorkerTestHelper {
   blink::mojom::ServiceWorkerStreamHandlePtr stream_handle_;
 
   // For ResponseMode::kEarlyResponse and kDeferredResponse.
-  mojom::ServiceWorker::DispatchFetchEventCallback finish_callback_;
+  blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback_;
   blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_;
 
   // For ResponseMode::kRedirect.

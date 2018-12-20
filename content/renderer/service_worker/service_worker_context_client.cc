@@ -20,7 +20,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "content/common/service_worker/service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/network_service_util.h"
@@ -59,6 +58,7 @@
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
@@ -341,7 +341,7 @@ struct ServiceWorkerContextClient::WorkerContextData {
     DCHECK(thread_checker.CalledOnValidThread());
   }
 
-  mojo::Binding<mojom::ServiceWorker> service_worker_binding;
+  mojo::Binding<blink::mojom::ServiceWorker> service_worker_binding;
 
   // Maps for inflight event callbacks.
   // These are mapped from an event id issued from ServiceWorkerTimeoutTimer to
@@ -563,7 +563,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     const GURL& script_url,
     bool is_starting_installed_worker,
     RendererPreferences renderer_preferences,
-    mojom::ServiceWorkerRequest service_worker_request,
+    blink::mojom::ServiceWorkerRequest service_worker_request,
     blink::mojom::ControllerServiceWorkerRequest controller_request,
     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
     mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
@@ -1515,7 +1515,7 @@ void ServiceWorkerContextClient::DispatchInstallEvent(
 }
 
 void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
-    mojom::ExtendableMessageEventPtr event,
+    blink::mojom::ExtendableMessageEventPtr event,
     DispatchExtendableMessageEventCallback callback) {
   int request_id = context_->timeout_timer->StartEvent(
       CreateAbortCallback(&context_->message_event_callbacks));
@@ -1546,7 +1546,7 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
 
 void ServiceWorkerContextClient::
     DispatchExtendableMessageEventWithCustomTimeout(
-        mojom::ExtendableMessageEventPtr event,
+        blink::mojom::ExtendableMessageEventPtr event,
         base::TimeDelta timeout,
         DispatchExtendableMessageEventCallback callback) {
   int request_id = context_->timeout_timer->StartEventWithCustomTimeout(
@@ -1659,7 +1659,7 @@ void ServiceWorkerContextClient::DispatchPushEvent(
     DispatchPushEventCallback callback) {
   int request_id = context_->timeout_timer->StartEventWithCustomTimeout(
       CreateAbortCallback(&context_->push_event_callbacks),
-      base::TimeDelta::FromSeconds(mojom::kPushEventTimeoutSeconds));
+      base::TimeDelta::FromSeconds(blink::mojom::kPushEventTimeoutSeconds));
   context_->push_event_callbacks.emplace(request_id, std::move(callback));
   TRACE_EVENT_WITH_FLOW0("ServiceWorker",
                          "ServiceWorkerContextClient::DispatchPushEvent",

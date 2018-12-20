@@ -161,12 +161,18 @@ mojom("mojom_core") {
 
   public_deps = [
     ":mojom_platform",
+    "//components/payments/mojom",
     "//mojo/public/mojom/base",
+    "//services/network/public/mojom",
     "//skia/public/interfaces",
     "//url/mojom:url_mojom_gurl",
+    "//url/mojom:url_mojom_origin",
   ]
 
-  overridden_deps_blink = [ ":mojom_platform" ]
+  overridden_deps_blink = [
+    ":mojom_platform",
+    "//services/network/public/mojom",
+  ]
   component_deps_blink = [ "//third_party/blink/renderer/platform" ]
 
   export_class_attribute = "BLINK_COMMON_EXPORT"

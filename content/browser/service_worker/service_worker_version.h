@@ -36,7 +36,6 @@
 #include "content/browser/service_worker/service_worker_ping_controller.h"
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -306,8 +305,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // the event, as well as the behavior for when the request times out.
   //
   // S13nServiceWorker: |timeout| and |timeout_behavior| don't have any effect.
-  // They are just ignored. Timeouts can be added to the mojom::ServiceWorker
-  // interface instead (see DispatchSyncEvent for an example).
+  // They are just ignored. Timeouts can be added to the
+  // blink::mojom::ServiceWorker interface instead (see DispatchSyncEvent for an
+  // example).
   int StartRequestWithCustomTimeout(ServiceWorkerMetrics::EventType event_type,
                                     StatusCallback error_callback,
                                     const base::TimeDelta& timeout,
@@ -333,13 +333,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool FinishExternalRequest(const std::string& request_uuid);
 
   // Creates a callback that is to be used for marking simple events dispatched
-  // through mojom::ServiceWorker as finished for the |request_id|.
+  // through blink::mojom::ServiceWorker as finished for the |request_id|.
   // Simple event means those events expecting a response with only a status
   // code and the dispatch time. See service_worker.mojom.
   SimpleEventCallback CreateSimpleEventCallback(int request_id);
 
   // This must be called when the worker is running.
-  mojom::ServiceWorker* endpoint() {
+  blink::mojom::ServiceWorker* endpoint() {
     DCHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
            running_status() == EmbeddedWorkerStatus::RUNNING);
     DCHECK(service_worker_ptr_.is_bound());
@@ -729,7 +729,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool HasWorkInBrowser() const;
 
   // Callback function for simple events dispatched through mojo interface
-  // mojom::ServiceWorker. Use CreateSimpleEventCallback() to
+  // blink::mojom::ServiceWorker. Use CreateSimpleEventCallback() to
   // create a callback for a given |request_id|.
   void OnSimpleEventFinished(int request_id,
                              blink::mojom::ServiceWorkerEventStatus status);
@@ -839,7 +839,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::set<std::string> pending_external_requests_;
 
   // Connected to ServiceWorkerContextClient while the worker is running.
-  mojom::ServiceWorkerPtr service_worker_ptr_;
+  blink::mojom::ServiceWorkerPtr service_worker_ptr_;
 
   // S13nServiceWorker: connected to the controller service worker.
   // |controller_request_| is non-null only when the |controller_ptr_| is

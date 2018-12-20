@@ -50,7 +50,7 @@ namespace {
 // Pipes connected to the context client.
 struct ContextClientPipes {
   // From the browser to ServiceWorkerContextClient.
-  mojom::ServiceWorkerPtr service_worker;
+  blink::mojom::ServiceWorkerPtr service_worker;
   blink::mojom::ControllerServiceWorkerPtr controller;
   blink::mojom::ServiceWorkerRegistrationObjectAssociatedPtr registration;
 
@@ -534,7 +534,7 @@ TEST_F(ServiceWorkerContextClientTest,
   }
   EXPECT_TRUE(mock_proxy.fetch_events().empty());
 
-  // Another event dispatched to mojom::ServiceWorker wakes up
+  // Another event dispatched to blink::mojom::ServiceWorker wakes up
   // the context client.
   {
     blink::mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;

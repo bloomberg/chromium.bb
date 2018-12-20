@@ -51,19 +51,19 @@ class ExtendableMessageEventTestHelper : public EmbeddedWorkerTestHelper {
       : EmbeddedWorkerTestHelper(base::FilePath()) {}
 
   void OnExtendableMessageEvent(
-      mojom::ExtendableMessageEventPtr event,
-      mojom::ServiceWorker::DispatchExtendableMessageEventCallback callback)
-      override {
+      blink::mojom::ExtendableMessageEventPtr event,
+      blink::mojom::ServiceWorker::DispatchExtendableMessageEventCallback
+          callback) override {
     events_.push_back(std::move(event));
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
   }
 
-  const std::vector<mojom::ExtendableMessageEventPtr>& events() {
+  const std::vector<blink::mojom::ExtendableMessageEventPtr>& events() {
     return events_;
   }
 
  private:
-  std::vector<mojom::ExtendableMessageEventPtr> events_;
+  std::vector<blink::mojom::ExtendableMessageEventPtr> events_;
 };
 
 class FailToStartWorkerTestHelper : public ExtendableMessageEventTestHelper {
@@ -76,7 +76,7 @@ class FailToStartWorkerTestHelper : public ExtendableMessageEventTestHelper {
       const GURL& scope,
       const GURL& script_url,
       bool pause_after_download,
-      mojom::ServiceWorkerRequest service_worker_request,
+      blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
@@ -302,7 +302,7 @@ TEST_F(ServiceWorkerObjectHostTest,
   // should correspond to the pair (|version_->provider_host()|, |version_|),
   // means it should correspond to |sender_worker_object_host|.
   EXPECT_EQ(2u, GetBindingsCount(sender_worker_object_host));
-  const std::vector<mojom::ExtendableMessageEventPtr>& events =
+  const std::vector<blink::mojom::ExtendableMessageEventPtr>& events =
       static_cast<ExtendableMessageEventTestHelper*>(helper_.get())->events();
   EXPECT_EQ(1u, events.size());
   EXPECT_FALSE(events[0]->source_info_for_client);
@@ -362,7 +362,7 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
   // The dispatched ExtendableMessageEvent should be kept in
   // ExtendableMessageEventTestHelper, and its source client info should
   // correspond to |provider_host|.
-  const std::vector<mojom::ExtendableMessageEventPtr>& events =
+  const std::vector<blink::mojom::ExtendableMessageEventPtr>& events =
       static_cast<ExtendableMessageEventTestHelper*>(helper_.get())->events();
   EXPECT_EQ(1u, events.size());
   EXPECT_FALSE(events[0]->source_info_for_service_worker);
@@ -415,7 +415,7 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_Fail) {
   EXPECT_TRUE(called);
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorStartWorkerFailed, status);
   // No ExtendableMessageEvent has been dispatched.
-  const std::vector<mojom::ExtendableMessageEventPtr>& events =
+  const std::vector<blink::mojom::ExtendableMessageEventPtr>& events =
       static_cast<ExtendableMessageEventTestHelper*>(helper_.get())->events();
   EXPECT_EQ(0u, events.size());
 }
