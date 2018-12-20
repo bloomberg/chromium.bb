@@ -309,6 +309,7 @@ class HtmlInlineUnittest(unittest.TestCase):
     self.failUnlessEqual(resources, source_resources)
     self.failUnlessEqual(expected_inlined,
                          util.FixLineEnd(result.inlined_data, '\n'))
+    tmp_dir.CleanUp()
 
   def testCssIncludedFileNames(self):
     '''Tests that all included files from css are returned'''
@@ -398,6 +399,7 @@ class HtmlInlineUnittest(unittest.TestCase):
     self.failUnlessEqual(resources, source_resources)
     self.failUnlessEqual(expected_inlined,
                          util.FixLineEnd(result.inlined_data, '\n'))
+    tmp_dir.CleanUp()
 
   def testFilenameVariableExpansion(self):
     '''Tests that variables are expanded in filenames before inlining.'''
@@ -458,6 +460,7 @@ class HtmlInlineUnittest(unittest.TestCase):
     resources = result.inlined_files
     resources.add(tmp_dir.GetPath('index.html'))
     self.failUnlessEqual(resources, source_resources)
+    tmp_dir.CleanUp()
 
   def testWithCloseTags(self):
     '''Tests that close tags are removed.'''
@@ -524,6 +527,7 @@ class HtmlInlineUnittest(unittest.TestCase):
     self.failUnlessEqual(resources, source_resources)
     self.failUnlessEqual(expected_inlined,
                          util.FixLineEnd(result.inlined_data, '\n'))
+    tmp_dir.CleanUp()
 
   def testCommentedJsInclude(self):
     '''Tests that <include> works inside a comment.'''
@@ -546,6 +550,7 @@ class HtmlInlineUnittest(unittest.TestCase):
     self.failUnlessEqual(resources, source_resources)
     self.failUnlessEqual(expected_inlined,
                          util.FixLineEnd(result.inlined_data, '\n'))
+    tmp_dir.CleanUp()
 
   def testCommentedJsIf(self):
     '''Tests that <if> works inside a comment.'''
@@ -586,6 +591,7 @@ class HtmlInlineUnittest(unittest.TestCase):
     self.failUnlessEqual(resources, source_resources)
     self.failUnlessEqual(expected_inlined,
                          util.FixLineEnd(result.inlined_data, '\n'))
+    tmp_dir.CleanUp()
 
   def testImgSrcset(self):
     '''Tests that img srcset="" attributes are converted.'''
@@ -640,6 +646,7 @@ class HtmlInlineUnittest(unittest.TestCase):
     self.failUnlessEqual(resources, source_resources)
     self.failUnlessEqual(expected_inlined,
                          util.FixLineEnd(result.inlined_data, '\n'))
+    tmp_dir.CleanUp()
 
   def testConditionalInclude(self):
     '''Tests that output and dependency generation includes only files not'''\
@@ -717,6 +724,8 @@ class HtmlInlineUnittest(unittest.TestCase):
     actually_inlined = re.sub(r'\s+', ' ',
                               util.FixLineEnd(result.inlined_data, '\n'))
     self.failUnlessEqual(expected_inlined, actually_inlined);
+    tmp_dir.CleanUp()
+
 
 if __name__ == '__main__':
   unittest.main()
