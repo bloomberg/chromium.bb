@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">jina lisilojulikana</translation>
 <translation id="1050038467049342496">Funga programu nyingine</translation>
 <translation id="1055184225775184556">Tendua Kuongeza</translation>
+<translation id="1058479211578257048">Inahifadhi kadi...</translation>
 <translation id="10614374240317010">Haijahifadhiwa kamwe</translation>
 <translation id="1066396345355680611">Utapoteza idhini ya kufikia maudhui yanayolindwa kwenye <ph name="SITE" /> na tovuti nyingine.</translation>
 <translation id="106701514854093668">Alamisho za Eneokazi</translation>
@@ -602,6 +603,7 @@
 <translation id="4989163558385430922">Angalia vyote</translation>
 <translation id="4989809363548539747">Programu jalizi hii haitumiki</translation>
 <translation id="5002932099480077015">Ikiwashwa, Chrome itahifadhi nakala ya kadi yako kwenye kifaa hiki kwa ajili ya kujaza fomu haraka zaidi.</translation>
+<translation id="5014174725590676422">Inaonyesha skrini ya haraka ya programu ya Mratibu wa Google katika Chrome</translation>
 <translation id="5015510746216210676">Jina la Mashine:</translation>
 <translation id="5018422839182700155">Ukurasa huu haufunguki</translation>
 <translation id="5019198164206649151">Hifadhi la kucheleza liko katika hali mbaya</translation>
@@ -713,6 +715,7 @@
 <translation id="5720705177508910913">Mtumiaji wa sasa</translation>
 <translation id="5730040223043577876">Chrome inapendekeza ubadilishe nenosiri lako ikiwa ulilitumia tena kwenye tovuti zingine.</translation>
 <translation id="5732392974455271431">Wazazi wako wanaweza kukuondolea kizuizi</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{Hifadhi kadi katika Akaunti yako ya Google}other{Hifadhi kadi katika Akaunti yako ya Google}}</translation>
 <translation id="5763042198335101085">Andika anwani sahihi ya barua pepe</translation>
 <translation id="5765072501007116331">Chagua mahali ili uone njia za kusafirisha na mahitaji</translation>
 <translation id="5770114862687765385">Inaonekana faili imeharibika. Bofya kitufe cha 'Pakia upya' ili uanzishe upya kipindi.</translation>
@@ -1189,6 +1192,7 @@
 <translation id="9080712759204168376">Muhtasari wa Agizo</translation>
 <translation id="9103872766612412690">Kwa kawaida <ph name="SITE" /> hutumia usimbaji fiche ili kulinda maelezo yako. Chromium ilipojaribu kuunganisha kwenye <ph name="SITE" /> wakati huu, tovuti ilituma kitambulisho kisicho cha kawaida na kisicho sahihi. Hili linaweza kutokea mvamizi anapojaribu kujifanya kuwa <ph name="SITE" />, au uchanganuzi wa kuingia katika Wi-Fi umeingilia muunganisho. Maelezo yako yangali salama kwa sababu Chromium ilisimamisha muunganisho kabla data yoyote itumwe.</translation>
 <translation id="9106062320799175032">Ongeza Anwani ya Kutuma Bili</translation>
+<translation id="9110718169272311511">Programu ya Mratibu wa Google katika Chrome inapatikana karibu na sehemu ya chini ya skrini</translation>
 <translation id="9114524666733003316">Inathibitisha kadi…</translation>
 <translation id="9128870381267983090">Unganisha kwenye mtandao</translation>
 <translation id="9137013805542155359">Onyesha asili</translation>

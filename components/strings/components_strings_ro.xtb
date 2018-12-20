@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">nume necunoscut</translation>
 <translation id="1050038467049342496">închide celelalte aplicații;</translation>
 <translation id="1055184225775184556">&amp;Anulați adăugarea</translation>
+<translation id="1058479211578257048">Se salvează cardurile…</translation>
 <translation id="10614374240317010">Nu se salvează niciodată</translation>
 <translation id="1066396345355680611">Este posibil să pierzi accesul la conținutul protejat de pe <ph name="SITE" /> și de pe alte site-uri.</translation>
 <translation id="106701514854093668">Marcaje desktop</translation>
@@ -602,6 +603,7 @@
 <translation id="4989163558385430922">Afișează-le pe toate</translation>
 <translation id="4989809363548539747">Acest plugin nu este acceptat</translation>
 <translation id="5002932099480077015">Dacă este activată, Chrome va stoca o copie a cardului pe acest dispozitiv, pentru completarea mai rapidă a formularelor.</translation>
+<translation id="5014174725590676422">Se afișează ecranul pentru prima rulare a Asistentului Google în Chrome</translation>
 <translation id="5015510746216210676">Numele dispozitivului:</translation>
 <translation id="5018422839182700155">Pagina nu poate fi deschisă</translation>
 <translation id="5019198164206649151">Depozit de fundal în stare nevalidă</translation>
@@ -713,6 +715,7 @@
 <translation id="5720705177508910913">Utilizator curent</translation>
 <translation id="5730040223043577876">Chrome îți recomandă să resetezi parola dacă ai folosit-o și pe alte site-uri.</translation>
 <translation id="5732392974455271431">Părinții tăi îl pot debloca pentru tine</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{Salvează cardul în Contul Google}few{Salvează cardurile în Contul Google}other{Salvează cardurile în Contul Google}}</translation>
 <translation id="5763042198335101085">Introdu o adresă de e-mail validă</translation>
 <translation id="5765072501007116331">Pentru a vedea metodele de livrare și cerințele, selectează o adresă</translation>
 <translation id="5770114862687765385">Fișierul pare deteriorat. Pentru a reseta sesiunea, dă clic pe butonul „Resetează”.</translation>
@@ -1193,6 +1196,7 @@ Detalii suplimentare:
 <translation id="9080712759204168376">Rezumatul comenzii</translation>
 <translation id="9103872766612412690">Site-ul <ph name="SITE" /> folosește în mod obișnuit criptarea pentru a-ți proteja informațiile. Când Chromium a încercat să se conecteze la <ph name="SITE" /> de această dată, site-ul a returnat date de conectare neobișnuite și incorecte. Acest lucru s-a întâmplat fie pentru că un atacator încearcă să falsifice site-ul <ph name="SITE" />, fie pentru că un ecran de conectare Wi-Fi a întrerupt conexiunea. Securitatea informațiilor tale nu a fost afectată, deoarece Chromium a oprit conexiunea înainte ca datele să fie transferate.</translation>
 <translation id="9106062320799175032">Adaugă o adresă de facturare</translation>
+<translation id="9110718169272311511">Asistentul Google în Chrome este disponibil în partea de jos a ecranului</translation>
 <translation id="9114524666733003316">Se confirmă cardul…</translation>
 <translation id="9128870381267983090">Conectați-vă la rețea</translation>
 <translation id="9137013805542155359">Afișează originalul</translation>

@@ -780,6 +780,7 @@
 <translation id="215753907730220065">Изход от цял екран</translation>
 <translation id="2157875535253991059">Тази страница сега е на цял екран.</translation>
 <translation id="216169395504480358">Добавяне на Wi-Fi...</translation>
+<translation id="2162155940152307086">Синхронизирането ще започне, след като излезете от страницата с настройките му</translation>
 <translation id="2163470535490402084">Моля, свържете се с интернет, за да влезте в устройството си <ph name="DEVICE_TYPE" />.</translation>
 <translation id="2166369534954157698">Ах, чудна българска земьо, полюшвай цъфтящи жита!</translation>
 <translation id="2169062631698640254">Влизане въпреки това</translation>
@@ -790,6 +791,7 @@
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_NAME" /> от <ph name="PEPPER_PLUGIN_DOMAIN" /> иска да осъществи достъп до компютъра ви</translation>
 <translation id="2178614541317717477">Компрометиране на сертифициращия орган</translation>
 <translation id="218070003709087997">Използвайте число, за да укажете колко копия да се отпечатат (от 1 до 999).</translation>
+<translation id="2182253583899676504">Текстът, който въвеждате в текстовите полета, ще се изпраща до Google.</translation>
 <translation id="2184515124301515068">Нека Chrome избира кога сайтовете да могат да възпроизвеждат звук (препоръчително)</translation>
 <translation id="2187895286714876935">Грешка при импортирането на сертификат на сървър</translation>
 <translation id="2187906491731510095">Разширенията бяха актуализирани</translation>
@@ -801,7 +803,9 @@
 <translation id="2192505247865591433">От:</translation>
 <translation id="2193365732679659387">Настройки за доверие</translation>
 <translation id="2195729137168608510">Защита за имейли</translation>
+<translation id="2198757192731523470">Възможно е да използваме историята ви, за да персонализираме търсенето, рекламите и други услуги на Google.</translation>
 <translation id="2199298570273670671">Грешка</translation>
+<translation id="2199719347983604670">Данни от синхронизирането в Chrome</translation>
 <translation id="2200356397587687044">Chrome се нуждае от разрешение, за да продължи</translation>
 <translation id="220138918934036434">Скриване на бутона</translation>
 <translation id="2202898655984161076">При изреждането на принтерите възникна проблем. Възможно е някои от тях да не са регистрирани успешно с/ъс <ph name="CLOUD_PRINT_NAME" />.</translation>
@@ -1258,6 +1262,7 @@
 <translation id="2889925978073739256">Блокирането на приставки извън тестова среда да продължи</translation>
 <translation id="2890678560483811744">Посочената страница е извън обхват</translation>
 <translation id="2893168226686371498">Браузър по подразбиране</translation>
+<translation id="2895734772884435517">Можете да персонализирате тези настройки по всяко време.</translation>
 <translation id="289644616180464099">SIM картата е заключена</translation>
 <translation id="289695669188700754">Идентификатор (ИД) на ключ: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Наистина ли искате да отворите <ph name="TAB_COUNT" /> раздела?</translation>
@@ -1736,6 +1741,7 @@
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% – остава/т <ph name="TIME" /></translation>
 <translation id="3637682276779847508">SIM картата ви ще бъде деактивирана за постоянно, ако не успеете да въведете
 правилния PUK код</translation>
+<translation id="363863692969456324">Поправка на правописните грешки посредством подобрената функция за проверка на правописа</translation>
 <translation id="3640214691812501263">Да се добави ли <ph name="EXTENSION_NAME" /> за <ph name="USER_NAME" />?</translation>
 <translation id="3644896802912593514">Ширина</translation>
 <translation id="3645372836428131288">Преместете малко пръста си, за да бъде заснета друга част от отпечатъка.</translation>
@@ -2176,6 +2182,7 @@
 <translation id="4310139701823742692">Файловият формат е неправилен. Проверете PPD файла и опитайте отново.</translation>
 <translation id="431076611119798497">&amp;Подробности</translation>
 <translation id="4312866146174492540">Блокиране (по подразбиране)</translation>
+<translation id="4314815835985389558">Управление на синхронизирането</translation>
 <translation id="4316850752623536204">Уебсайт на програмиста</translation>
 <translation id="4320177379694898372">Няма връзка с интернет</translation>
 <translation id="4320948194796820126">Добавете отметка към електронната си поща</translation>
@@ -2255,6 +2262,7 @@
 <translation id="4450974146388585462">Диагностициране</translation>
 <translation id="4451757071857432900">Блокиране за сайтовете, на които се показват натрапчиви или подвеждащи реклами (препоръчително)</translation>
 <translation id="4453946976636652378">Търсете с(ъс) <ph name="SEARCH_ENGINE_NAME" /> или въведете URL адрес</translation>
+<translation id="4461835665417498653">Изпраща анонимно до Google системна информация и част от съдържанието на страниците.</translation>
 <translation id="4462159676511157176">Специално зададени сървъри за имена</translation>
 <translation id="4467101674048705704">Разгъване на „<ph name="FOLDER_NAME" />“</translation>
 <translation id="4469477701382819144">Блокиране за сайтовете, на които се показват натрапчиви или подвеждащи реклами</translation>
@@ -2424,6 +2432,7 @@
 <translation id="4735265153267957659">Въведете паролата си, за да активирате Smart Lock. Следващия път телефонът ви ще отключи вашия <ph name="DEVICE_TYPE" />. Можете да изключите Smart Lock от настройките.</translation>
 <translation id="473546211690256853">Този профил се управлява от <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">Системата не успя да определи идентификаторите за това устройство.</translation>
+<translation id="4736292055110123391">Синхронизиране на вашите отметки, пароли, история и др. на всичките ви устройства</translation>
 <translation id="4737715515457435632">Моля, установете връзка с мрежа</translation>
 <translation id="473775607612524610">Актуализиране</translation>
 <translation id="474217410105706308">Спиране на звука на раздела</translation>
@@ -4979,6 +4988,7 @@
 <translation id="8598453409908276158">Приставката извън тестовата среда е блокирана</translation>
 <translation id="8601206103050338563">Удостоверяване на TLS WWW клиент</translation>
 <translation id="8602851771975208551">Друга програма на компютъра ви добави приложение, което може да промени начина на работа на Chrome.</translation>
+<translation id="8604763363205185560">Помогнете за подобряването на Chrome и сигурността му</translation>
 <translation id="8605428685123651449">Памет за SQLite</translation>
 <translation id="8606726445206553943">Да използва MIDI устройствата ви.</translation>
 <translation id="8609465669617005112">Придвижване нагоре</translation>

@@ -201,6 +201,7 @@
 <translation id="2450083983707403292">আপনি কি আবার <ph name="FILE_NAME" /> ডাউনলোড করা শুরু করতে চান?</translation>
 <translation id="2476578072172137802">সাইটের সেটিংস</translation>
 <translation id="2482878487686419369">বিজ্ঞপ্তিগুলি</translation>
+<translation id="2494974097748878569">Chrome-এ Google অ্যাসিস্ট্যান্ট</translation>
 <translation id="2496180316473517155">ব্রাউজিং ইতিহাস</translation>
 <translation id="2498359688066513246">সহায়তা ও প্রতিক্রিয়া</translation>
 <translation id="2501278716633472235">ফিরে যান</translation>
@@ -410,6 +411,7 @@
 <translation id="4195643157523330669">নতুন ট্যাবে খুলুন</translation>
 <translation id="4198423547019359126">ডাউনলোড করার জন্য লোকেশন উপলভ্য নেই</translation>
 <translation id="4209895695669353772">Google-এর প্রস্তাবিত ব্যক্তিগতকৃত কন্টেন্ট পেতে সিঙ্ক বিকল্প চালু করুন</translation>
+<translation id="4222812745228723705">চালিয়ে যাওয়ার অর্থ, আপনি সম্মতি দিচ্ছেন যে, Crome অটোফিল, সাইটের ইউআরএল এবং সাইটের কন্টেন্টের তথ্য Crome-এর তরফে Google-কে দেওয়া হবে। Chrome এবং Chrome অটোফিলে Google অ্যাসিস্ট্যান্ট বন্ধ করতে Chrome-এর সেটিংসে যান। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">কোনও কন্টেন্ট খুঁজে পাওয়া যায়নি</translation>
 <translation id="4226663524361240545">বিজ্ঞপ্তি আসলে ডিভাইস ভাইব্রেট হতে পারে</translation>
 <translation id="423219824432660969">Google পাসওয়ার্ড দিয়ে <ph name="TIME" />-এ সিঙ্ক করা ডেটা এনক্রিপ্ট করুন</translation>
@@ -692,6 +694,7 @@
 <translation id="6277522088822131679">পৃষ্ঠাটি প্রিন্ট করার সময় একটি সমস্যা হয়েছিল৷ দয়া করে আবার চেষ্টা করুন৷</translation>
 <translation id="6295158916970320988">সমস্ত সাইট</translation>
 <translation id="629730747756840877">অ্যাকাউন্ট</translation>
+<translation id="6302269476990306341">Chrome-এ Google অ্যাসিস্ট্যান্ট এতক্ষণ পরে বন্ধ হয়ে যাবে:</translation>
 <translation id="6303969859164067831">সাইন-আউট করুন এবং সিঙ্ক করা বন্ধ করুন</translation>
 <translation id="6316139424528454185">এই Android ভার্সন সমর্থিত নয়</translation>
 <translation id="6320088164292336938">কম্পন</translation>
@@ -828,6 +831,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" />টি বেছে নেওয়া হয়েছে</translation>
 <translation id="7253272406652746122">আপনার ডিভাইসের সেটিংস অ্যাপ্লিকেশানের অ্যাকাউন্টস পৃষ্ঠা থেকে একটি Google অ্যাকাউন্ট যোগ করুন।</translation>
 <translation id="7274013316676448362">অবরুদ্ধ সাইট</translation>
+<translation id="7291387454912369099">অ্যাসিস্ট্যান্টের মাধ্যমে "Checkout"</translation>
 <translation id="729975465115245577">পাসওয়ার্ড ফাইল সেভ করার জন্য আপনার ডিভাইসে কোনও অ্যাপ নেই।</translation>
 <translation id="7302081693174882195">বিবরণ: সেভ করা ডেটার পরিমাণ অনুযায়ী সাজানো হয়েছে</translation>
 <translation id="7333031090786104871">এখনও পূর্বের সাইট যোগ করছে</translation>

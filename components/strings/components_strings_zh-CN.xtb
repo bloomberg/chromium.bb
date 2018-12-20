@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">未知名称</translation>
 <translation id="1050038467049342496">关闭其他应用</translation>
 <translation id="1055184225775184556">撤消添加(&amp;U)</translation>
+<translation id="1058479211578257048">正在保存银行卡…</translation>
 <translation id="10614374240317010">一律不保存</translation>
 <translation id="1066396345355680611">您可能会无法再访问 <ph name="SITE" /> 及其他一些网站上的受保护内容。</translation>
 <translation id="106701514854093668">桌面书签</translation>
@@ -599,6 +600,7 @@
 <translation id="4989163558385430922">查看全部</translation>
 <translation id="4989809363548539747">该插件不受支持</translation>
 <translation id="5002932099480077015">如果您选中此项，Chrome 会将您的卡的副本存储在此设备上，以加快表单填写速度。</translation>
+<translation id="5014174725590676422">显示 Chrome 中的 Google 助理的首次运行屏幕</translation>
 <translation id="5015510746216210676">设备名称：</translation>
 <translation id="5018422839182700155">无法打开此网页</translation>
 <translation id="5019198164206649151">后备存储状态不佳</translation>
@@ -710,6 +712,7 @@
 <translation id="5720705177508910913">当前用户</translation>
 <translation id="5730040223043577876">如果您在其他网站上重复使用了您的密码，Chrome 建议您重置该密码。</translation>
 <translation id="5732392974455271431">您的父母可为您取消屏蔽此网站</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{将这张卡保存在您的 Google 帐号中}other{将这些卡保存在您的 Google 帐号中}}</translation>
 <translation id="5763042198335101085">请输入有效的电子邮件地址</translation>
 <translation id="5765072501007116331">要查看递送方式和要求，请选择相应地址</translation>
 <translation id="5770114862687765385">该文件似乎已受损。请点击“重置”按钮以重置此会话。</translation>
@@ -1049,7 +1052,7 @@
 <translation id="8103161714697287722">付款方式</translation>
 <translation id="8118489163946903409">付款方式</translation>
 <translation id="8127301229239896662">“<ph name="SOFTWARE_NAME" />”没有正确地安装到您的计算机或网络上。请让您的 IT 管理员解决此问题。</translation>
-<translation id="8130693978878176684">我已无法再提供帮助，请自行继续。</translation>
+<translation id="8130693978878176684">我已无法再提供帮助，接下来请自行操作。</translation>
 <translation id="8131740175452115882">确认</translation>
 <translation id="8149426793427495338">您的计算机已进入休眠模式。</translation>
 <translation id="8150722005171944719">无法读取 <ph name="URL" /> 上的文件。该文件可能已遭到删除、移动，或者文件权限不允许进行访问。</translation>
@@ -1189,6 +1192,7 @@
 <translation id="9080712759204168376">订单摘要</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> 通常会使用加密技术来保护您的信息。Chromium 此次尝试连接到 <ph name="SITE" /> 时，此网站发回了异常的错误凭据。这可能是因为有攻击者在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Chromium 尚未进行任何数据交换便停止了连接。</translation>
 <translation id="9106062320799175032">添加帐单邮寄地址</translation>
+<translation id="9110718169272311511">Chrome 中的 Google 助理位于屏幕底部附近</translation>
 <translation id="9114524666733003316">正在确认信用卡…</translation>
 <translation id="9128870381267983090">连接到网络</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
