@@ -37,8 +37,6 @@ config("compiler") {
   }
 
   ldflags = [
-    "-Wl,--no-undefined",
-
     # Don't allow visible symbols from libgcc or libc++ to be
     # re-exported.
     "-Wl,--exclude-libs=libgcc.a",
