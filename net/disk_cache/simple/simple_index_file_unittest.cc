@@ -41,11 +41,6 @@ using disk_cache::SimpleIndex;
 
 namespace disk_cache {
 
-// The Simple Cache backend requires a few guarantees from the filesystem like
-// atomic renaming of recently open files. Those guarantees are not provided in
-// general on Windows.
-#if defined(OS_POSIX)
-
 namespace {
 
 uint32_t RoundSize(uint32_t in) {
@@ -499,7 +494,5 @@ TEST_F(SimpleIndexFileTest, OverwritesStaleTempFile) {
   EXPECT_FALSE(base::PathExists(simple_index_file.GetTempIndexFilePath()));
   EXPECT_TRUE(base::PathExists(simple_index_file.GetIndexFilePath()));
 }
-
-#endif  // defined(OS_POSIX)
 
 }  // namespace disk_cache

@@ -17,10 +17,6 @@
 #include "net/disk_cache/simple/simple_entry_format_history.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// The migration process relies on ability to rename newly created files, which
-// could be problematic on Windows XP.
-#if defined(OS_POSIX)
-
 namespace {
 
 // Same as |disk_cache::kSimpleInitialMagicNumber|.
@@ -160,5 +156,3 @@ TEST(SimpleVersionUpgradeTest, UpgradeV5V6IndexMustDisappear) {
 }
 
 }  // namespace
-
-#endif  // defined(OS_POSIX)
