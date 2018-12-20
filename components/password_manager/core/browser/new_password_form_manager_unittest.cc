@@ -40,6 +40,7 @@ using testing::_;
 using testing::AllOf;
 using testing::Mock;
 using testing::NiceMock;
+using testing::Return;
 using testing::SaveArg;
 using testing::SaveArgPointee;
 
@@ -91,6 +92,8 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
   MockPasswordManagerClient() = default;
   ~MockPasswordManagerClient() override = default;
+
+  MOCK_CONST_METHOD0(IsIncognito, bool());
 
   MOCK_METHOD0(GetAutofillDownloadManager,
                autofill::AutofillDownloadManager*());
@@ -635,12 +638,20 @@ TEST_F(NewPasswordFormManagerTest, CreatePendingCredentialsAlreadySaved) {
       saved_match_.username_value;
   submitted_form_.fields[kPasswordFieldIndex].value =
       saved_match_.password_value;
-  EXPECT_TRUE(
-      form_manager_->ProvisionallySaveIfIsManaged(submitted_form_, &driver_));
-  CheckPendingCredentials(/* expected */ saved_match_,
-                          form_manager_->GetPendingCredentials());
-  EXPECT_EQ(UserAction::kNone,
-            form_manager_->GetMetricsRecorder()->GetUserAction());
+
+  // Tests that depending on whether we fill on page load or account select that
+  // correct user action is recorded. Fill on account select is simulated by
+  // pretending we are in incognito mode.
+  for (bool is_incognito : {false, true}) {
+    EXPECT_CALL(client_, IsIncognito).WillOnce(Return(is_incognito));
+    form_manager_->Fill();
+    EXPECT_TRUE(
+        form_manager_->ProvisionallySaveIfIsManaged(submitted_form_, &driver_));
+    CheckPendingCredentials(/* expected */ saved_match_,
+                            form_manager_->GetPendingCredentials());
+    EXPECT_EQ(is_incognito ? UserAction::kChoose : UserAction::kNone,
+              form_manager_->GetMetricsRecorder()->GetUserAction());
+  }
 }
 
 // Tests that when submitted credentials are equal to already saved PSL

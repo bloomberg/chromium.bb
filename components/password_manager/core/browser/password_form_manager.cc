@@ -27,7 +27,6 @@
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/form_saver.h"
 #include "components/password_manager/core/browser/log_manager.h"
-#include "components/password_manager/core/browser/password_form_filling.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
@@ -550,10 +549,10 @@ void PasswordFormManager::ProcessFrameInternal(
     return;
   if (!driver)
     return;
-  SendFillInformationToRenderer(*client_, driver.get(), IsBlacklisted(),
-                                observed_form_, best_matches_,
-                                form_fetcher_->GetFederatedMatches(),
-                                preferred_match_, GetMetricsRecorder());
+  likely_form_filling_ = SendFillInformationToRenderer(
+      *client_, driver.get(), IsBlacklisted(), observed_form_, best_matches_,
+      form_fetcher_->GetFederatedMatches(), preferred_match_,
+      GetMetricsRecorder());
 }
 
 void PasswordFormManager::ProcessLoginPrompt() {
@@ -672,12 +671,14 @@ void PasswordFormManager::CreatePendingCredentials() {
         metrics_recorder_->SetUserAction(UserAction::kOverridePassword);
       } else {
         // In case |saved_form| is pointing to the same form as
-        // |preferred_match_|, the user either did not do anything, or
-        // re-selected the default option. Otherwise, the user purposefully
-        // chose an alternative.
-        metrics_recorder_->SetUserAction(saved_form == preferred_match_
-                                             ? UserAction::kNone
-                                             : UserAction::kChoose);
+        // |preferred_match_| and the form was filled on page load, the user
+        // either did not do anything, or re-selected the default option.
+        // Otherwise, the user purposefully chose a credential.
+        metrics_recorder_->SetUserAction(
+            saved_form == preferred_match_ &&
+                    likely_form_filling_ == LikelyFormFilling::kFillOnPageLoad
+                ? UserAction::kNone
+                : UserAction::kChoose);
       }
     }
   } else if (!best_matches_.empty() &&

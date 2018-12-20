@@ -321,6 +321,8 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
         autofill::prefs::kAutofillUploadEncodingSeed, "");
   }
 
+  MOCK_CONST_METHOD0(IsIncognito, bool());
+
   PrefService* GetPrefs() const override { return prefs_.get(); }
 
   MockPasswordManagerDriver* mock_driver() { return driver_.get(); }
@@ -999,7 +1001,7 @@ class PasswordFormManagerTest : public testing::Test {
   PasswordForm observed_form_;
   PasswordForm saved_match_;
   PasswordForm psl_saved_match_;
-  TestPasswordManagerClient client_;
+  NiceMock<TestPasswordManagerClient> client_;
   std::unique_ptr<PasswordManager> password_manager_;
   // Define |fake_form_fetcher_| before |form_manager_|, because the former
   // needs to outlive the latter.
@@ -4921,6 +4923,17 @@ TEST_F(PasswordFormManagerTest, ProvisionallySaveUpdatesUserAction) {
   // the user action.
   form_manager()->ProvisionallySave(preferred_match);
   EXPECT_EQ(UserAction::kNone,
+            form_manager()->GetMetricsRecorder()->GetUserAction());
+
+  // Verify that provisionally saving the |preferred_match| with filling on
+  // account select results in the corresponding user action. Fill on account
+  // select is simulated by pretending we are in incognito mode.
+  EXPECT_CALL(*client(), IsIncognito).WillOnce(Return(true));
+  fake_form_fetcher()->SetNonFederated(
+      {&preferred_match, &other_match, &psl_match}, 0);
+
+  form_manager()->ProvisionallySave(preferred_match);
+  EXPECT_EQ(UserAction::kChoose,
             form_manager()->GetMetricsRecorder()->GetUserAction());
 }
 
