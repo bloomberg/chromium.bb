@@ -258,6 +258,24 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
            LookalikeUrlNavigationObserver::MatchType::kTopSite);
 }
 
+// The navigated domain itself is a top domain or a subdomain of a top domain.
+// Should not record metrics. The top domain list doesn't contain any IDN, so
+// this only tests the case where the subdomains are IDNs.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
+                       TopDomainIdnSubdomain_NoInfobar) {
+  TestInfobarNotShown(
+      embedded_test_server()->GetURL("tést.google.com", "/title1.html"));
+  CheckNoUkm();
+
+  // blogspot.com is a private registry, so the eTLD+1 of "tést.blogspot.com" is
+  // itself, instead of just "blogspot.com". This is different than
+  // tést.google.com whose eTLD+1 is google.com, and it should be handled
+  // correctly.
+  TestInfobarNotShown(
+      embedded_test_server()->GetURL("tést.blogspot.com", "/title1.html"));
+  CheckNoUkm();
+}
+
 // Navigate to a domain within an edit distance of 1 to a top domain.
 // This should record metrics. It should also show a "Did you mean to go to ..."
 // infobar if configured via a feature param.
