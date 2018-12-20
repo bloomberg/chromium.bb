@@ -2906,14 +2906,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpstreamEditableExpirationDate)},
-    {"enable-autofill-credit-card-upload-google-pay-on-android-branding",
-     flag_descriptions::
-         kEnableAutofillCreditCardUploadGooglePayOnAndroidBrandingName,
-     flag_descriptions::
-         kEnableAutofillCreditCardUploadGooglePayOnAndroidBrandingDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillUpstreamUseGooglePayBrandingOnMobile)},
     {"enable-autofill-local-card-migration-show-feedback",
      flag_descriptions::kEnableAutofillLocalCardMigrationShowFeedbackName,
      flag_descriptions::

@@ -180,12 +180,6 @@ const char kAutofillRichMetadataQueriesDescription[] =
     "Transmit rich form/field metadata when querying the autofill server. "
     "This feature only works on the Canary and Dev channels.";
 
-const char kAutofillUpstreamUseGooglePayBrandingOnMobileName[] =
-    "Enable Google Pay branding when offering credit card upload";
-const char kAutofillUpstreamUseGooglePayBrandingOnMobileDescription[] =
-    "If enabled, shows the Google Pay logo and a shorter header message when "
-    "credit card upload to Google Payments is offered.";
-
 const char kBrowserContainerFullscreenName[] = "Browser Container Fullscreen";
 const char kBrowserContainerFullscreenDescription[] =
     "When enabled, the BrowserContainer is fullscreen. No UI change should be "

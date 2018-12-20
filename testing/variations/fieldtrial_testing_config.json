@@ -918,22 +918,6 @@
             ]
         }
     ],
-    "AutofillUpstreamUseGooglePayOnAndroidBranding": [
-        {
-            "platforms": [
-                "android",
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillUpstreamUseGooglePayOnAndroidBranding"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutomaticTabDiscarding": [
         {
             "platforms": [
