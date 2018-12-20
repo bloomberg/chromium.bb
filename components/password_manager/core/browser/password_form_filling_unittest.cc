@@ -102,9 +102,10 @@ TEST_F(PasswordFormFillingTest, NoSavedCredentials) {
   EXPECT_CALL(driver_, FillPasswordForm(_)).Times(0);
   EXPECT_CALL(driver_, ShowInitialPasswordAccountSuggestions(_)).Times(0);
 
-  SendFillInformationToRenderer(
+  LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
       client_, &driver_, false /* is_blacklisted */, observed_form_,
       best_matches, federated_matches_, nullptr, metrics_recorder_.get());
+  EXPECT_EQ(LikelyFormFilling::kNoFilling, likely_form_filling);
 }
 
 TEST_F(PasswordFormFillingTest, Autofill) {
@@ -124,9 +125,10 @@ TEST_F(PasswordFormFillingTest, Autofill) {
     EXPECT_CALL(driver_, ShowInitialPasswordAccountSuggestions(_)).Times(0);
     EXPECT_CALL(client_, PasswordWasAutofilled(_, _, _));
 
-    SendFillInformationToRenderer(
+    LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
         client_, &driver_, is_blacklisted, observed_form_, best_matches,
         federated_matches_, &saved_match_, metrics_recorder_.get());
+    EXPECT_EQ(LikelyFormFilling::kFillOnPageLoad, likely_form_filling);
 
     // Check that the message to the renderer (i.e. |fill_data|) is filled
     // correctly.
@@ -189,12 +191,13 @@ TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestion) {
     EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
     EXPECT_CALL(client_, PasswordWasAutofilled(_, _, _));
 
-    SendFillInformationToRenderer(client_, &driver_, false, observed_form,
-                                  best_matches, federated_matches_,
-                                  &saved_match_, metrics_recorder_.get());
+    LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
+        client_, &driver_, false, observed_form, best_matches,
+        federated_matches_, &saved_match_, metrics_recorder_.get());
 
     // In all cases, fill on load should not be prevented. If there is no
     // current-password field, the renderer will not fill anyway.
+    EXPECT_EQ(LikelyFormFilling::kFillOnPageLoad, likely_form_filling);
     EXPECT_FALSE(fill_data.wait_for_username);
   }
 }
@@ -210,10 +213,11 @@ TEST_F(PasswordFormFillingTest, AutofillPSLMatch) {
   EXPECT_CALL(driver_, ShowInitialPasswordAccountSuggestions(_)).Times(0);
   EXPECT_CALL(client_, PasswordWasAutofilled(_, _, _));
 
-  SendFillInformationToRenderer(client_, &driver_, false /* is_blacklisted */,
-                                observed_form_, best_matches,
-                                federated_matches_, &psl_saved_match_,
-                                metrics_recorder_.get());
+  LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
+      client_, &driver_, false /* is_blacklisted */, observed_form_,
+      best_matches, federated_matches_, &psl_saved_match_,
+      metrics_recorder_.get());
+  EXPECT_EQ(LikelyFormFilling::kFillOnAccountSelect, likely_form_filling);
 
   // Check that the message to the renderer (i.e. |fill_data|) is filled
   // correctly.
@@ -224,6 +228,27 @@ TEST_F(PasswordFormFillingTest, AutofillPSLMatch) {
   EXPECT_EQ(saved_match_.username_value, fill_data.username_field.value);
   EXPECT_EQ(observed_form_.password_element, fill_data.password_field.name);
   EXPECT_EQ(saved_match_.password_value, fill_data.password_field.value);
+}
+
+TEST_F(PasswordFormFillingTest, FillingOnHttp) {
+  ASSERT_FALSE(GURL(saved_match_.signon_realm).SchemeIsCryptographic());
+  std::map<base::string16, const autofill::PasswordForm*> best_matches;
+  best_matches.emplace(saved_match_.username_value, &saved_match_);
+
+  for (bool enable_foas_http : {false, true}) {
+    base::test::ScopedFeatureList features;
+    enable_foas_http
+        ? features.InitAndEnableFeature(features::kFillOnAccountSelectHttp)
+        : features.InitAndDisableFeature(features::kFillOnAccountSelectHttp);
+
+    LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
+        client_, &driver_, false /* is_blacklisted */, observed_form_,
+        best_matches, federated_matches_, &saved_match_,
+        metrics_recorder_.get());
+    EXPECT_EQ(enable_foas_http ? LikelyFormFilling::kFillOnAccountSelect
+                               : LikelyFormFilling::kFillOnPageLoad,
+              likely_form_filling);
+  }
 }
 
 }  // namespace password_manager

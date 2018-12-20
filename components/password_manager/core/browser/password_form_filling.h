@@ -20,7 +20,26 @@ class PasswordManagerClient;
 class PasswordManagerDriver;
 class PasswordFormMetricsRecorder;
 
-void SendFillInformationToRenderer(
+// Enum detailing the browser process' best belief what kind of credential
+// filling is used in the renderer for a given password form.
+//
+// NOTE: The renderer can still decide not to fill due to reasons that are only
+// known to it, thus this enum contains only probable filling kinds. Due to the
+// inherent inaccuracy DO NOT record this enum to UMA.
+enum class LikelyFormFilling {
+  // There are no credentials to fill.
+  kNoFilling,
+  // The form is rendered with the best matching credential filled in.
+  kFillOnPageLoad,
+  // The form requires an active selection of the username before passwords
+  // are filled.
+  kFillOnAccountSelect,
+  // The form is rendered with initial account suggestions, but no credential
+  // is filled in.
+  kShowInitialAccountSuggestions,
+};
+
+LikelyFormFilling SendFillInformationToRenderer(
     const PasswordManagerClient& client,
     PasswordManagerDriver* driver,
     bool is_blacklisted,

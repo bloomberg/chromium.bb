@@ -103,7 +103,7 @@ void ShowInitialPasswordAccountSuggestions(
 
 }  // namespace
 
-void SendFillInformationToRenderer(
+LikelyFormFilling SendFillInformationToRenderer(
     const PasswordManagerClient& client,
     PasswordManagerDriver* driver,
     bool is_blacklisted,
@@ -122,7 +122,7 @@ void SendFillInformationToRenderer(
     driver->InformNoSavedCredentials();
     metrics_recorder->RecordFillEvent(
         PasswordFormMetricsRecorder::kManagerFillEventNoCredential);
-    return;
+    return LikelyFormFilling::kNoFilling;
   }
   DCHECK(preferred_match);
 
@@ -136,9 +136,15 @@ void SendFillInformationToRenderer(
   // password field ID, then PasswordAutofillAgent has no way to fill the
   // password anywhere.
   const bool form_good_for_filling =
-      base::FeatureList::IsEnabled(features::kNewPasswordFormParsing)
-          ? true
-          : !observed_form.IsPossibleChangePasswordForm();
+      base::FeatureList::IsEnabled(features::kNewPasswordFormParsing) ||
+      !observed_form.IsPossibleChangePasswordForm();
+
+  // Wait for the username before filling passwords in case the
+  // fill-on-account-select-http feature is active and the main frame is
+  // insecure.
+  const bool enable_foas_on_http =
+      base::FeatureList::IsEnabled(features::kFillOnAccountSelectHttp) &&
+      !client.IsMainFrameSecure();
 
   // Proceed to autofill.
   // Note that we provide the choices but don't actually prefill a value if:
@@ -146,9 +152,11 @@ void SendFillInformationToRenderer(
   // (2) if it matched using public suffix domain matching, or
   // (3) it would result in unexpected filling in a form with new password
   //     fields.
+  // (4) the current main frame origin is insecure and the FOAS on HTTP feature
+  //     is active.
   bool wait_for_username = client.IsIncognito() ||
                            preferred_match->is_public_suffix_match ||
-                           !form_good_for_filling;
+                           !form_good_for_filling || enable_foas_on_http;
 
   if (wait_for_username) {
     metrics_recorder->SetManagerAction(
@@ -170,12 +178,15 @@ void SendFillInformationToRenderer(
     ShowInitialPasswordAccountSuggestions(client, driver, observed_form,
                                           best_matches, *preferred_match,
                                           wait_for_username);
-  } else {
-    // If fill-on-account-select is not enabled, continue with autofilling any
-    // password forms as traditionally has been done.
-    Autofill(client, driver, observed_form, best_matches, federated_matches,
-             *preferred_match, wait_for_username);
+    return LikelyFormFilling::kShowInitialAccountSuggestions;
   }
+
+  // If fill-on-account-select is not enabled, continue with autofilling any
+  // password forms as traditionally has been done.
+  Autofill(client, driver, observed_form, best_matches, federated_matches,
+           *preferred_match, wait_for_username);
+  return wait_for_username ? LikelyFormFilling::kFillOnAccountSelect
+                           : LikelyFormFilling::kFillOnPageLoad;
 }
 
 }  // namespace password_manager

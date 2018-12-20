@@ -16,7 +16,6 @@
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/form_saver.h"
-#include "components/password_manager/core/browser/password_form_filling.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -596,10 +595,10 @@ void NewPasswordFormManager::Fill() {
   // TODO(https://crbug.com/831123). Implement correct treating of federated
   // matches.
   std::vector<const PasswordForm*> federated_matches;
-  SendFillInformationToRenderer(*client_, driver_.get(), IsBlacklisted(),
-                                *observed_password_form.get(), best_matches_,
-                                federated_matches, preferred_match_,
-                                metrics_recorder_.get());
+  likely_form_filling_ = SendFillInformationToRenderer(
+      *client_, driver_.get(), IsBlacklisted(), *observed_password_form.get(),
+      best_matches_, federated_matches, preferred_match_,
+      metrics_recorder_.get());
 }
 
 void NewPasswordFormManager::FillForm(const FormData& observed_form) {
@@ -753,12 +752,14 @@ void NewPasswordFormManager::CreatePendingCredentials() {
         metrics_recorder_->SetUserAction(UserAction::kOverridePassword);
       } else {
         // In case |saved_form| is pointing to the same form as
-        // |preferred_match_|, the user either did not do anything, or
-        // re-selected the default option. Otherwise, the user purposefully
-        // chose an alternative.
-        metrics_recorder_->SetUserAction(saved_form == preferred_match_
-                                             ? UserAction::kNone
-                                             : UserAction::kChoose);
+        // |preferred_match_| and the form was filled on page load, the user
+        // either did not do anything, or re-selected the default option.
+        // Otherwise, the user purposefully chose a credential.
+        metrics_recorder_->SetUserAction(
+            saved_form == preferred_match_ &&
+                    likely_form_filling_ == LikelyFormFilling::kFillOnPageLoad
+                ? UserAction::kNone
+                : UserAction::kChoose);
       }
     }
   } else if (!best_matches_.empty() &&
