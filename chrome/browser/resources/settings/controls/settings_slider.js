@@ -134,20 +134,9 @@ Polymer({
     }
 
     const prefValue = /** @type {number} */ (this.pref.value);
-
-    // The preference and slider values are continuous when |ticks| is empty.
+    // If |ticks| is empty, simply set current value to the slider.
     if (numTicks == 0) {
-      // This method is handling a preference value change. If the slider is,
-      // in a dragging state, that change is discarded and the the preference
-      // value is updated based on the slider value.
-      if (this.$.slider.dragging) {
-        const prefValueFromSlider = this.$.slider.value / this.scale;
-        if (this.updateValueInstantly && prefValue != prefValueFromSlider)
-          this.set('pref.value', prefValueFromSlider);
-      } else {
-        // When not dragging, simply update the slider value.
-        this.$.slider.value = prefValue * this.scale;
-      }
+      this.$.slider.value = prefValue * this.scale;
       return;
     }
 
@@ -157,27 +146,28 @@ Polymer({
     this.$.slider.markerCount =
         (this.showMarkers || numTicks <= MAX_TICKS) ? numTicks : 0;
 
-    if (this.$.slider.dragging) {
-      const tickValue = this.getTickValueAtIndex_(this.$.slider.value);
-      if (this.updateValueInstantly && this.pref.value != tickValue)
-        this.set('pref.value', tickValue);
+    const tickValue = this.getTickValueAtIndex_(this.$.slider.value);
+    if (this.$.slider.dragging && this.pref.value != tickValue) {
+      if (!this.updateValueInstantly)
+        return;
 
+      // The value changed outside settings-slider but we're still holding the
+      // knob, so set the value back to where the knob was.
+      // Async so we don't confuse Polymer's data binding.
+      this.async(() => {
+        this.set('pref.value', tickValue);
+      });
       return;
     }
 
     // Convert from the public |value| to the slider index (where the knob
     // should be positioned on the slider).
-    const index =
+    this.$.slider.value =
         this.ticks.map(tick => Math.abs(this.getTickValue_(tick) - prefValue))
             .reduce(
                 (acc, diff, index) => diff < acc.diff ? {index, diff} : acc,
                 {index: -1, diff: Number.MAX_VALUE})
             .index;
-    assert(index != -1);
-    if (this.$.slider.value != index)
-      this.$.slider.value = index;
-    const tickValue = this.getTickValueAtIndex_(index);
-    if (this.pref.value != tickValue)
-      this.set('pref.value', tickValue);
+    assert(this.$.slider.value != -1);
   },
 });

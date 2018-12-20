@@ -96,7 +96,7 @@ function FullWindowVideoControls(
   document.addEventListener('keypress', function(e) {
     this.inactivityWatcher_.kick();
   }.wrap(this));
-  controlsContainer.addEventListener('cr-slider-value-changed', () => {
+  controlsContainer.addEventListener('cr-slider-value-changed-from-ui', () => {
     this.inactivityWatcher_.kick();
   });
 
