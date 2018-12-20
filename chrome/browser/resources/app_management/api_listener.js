@@ -4,19 +4,37 @@
 cr.define('app_management.ApiListener', function() {
   let initialized = false;
 
+  let initialListenerId;
+
   function init() {
     assert(!initialized);
-    app_management.BrowserProxy.getInstance().handler.getApps();
+
     const callbackRouter =
         app_management.BrowserProxy.getInstance().callbackRouter;
 
-    app_management.Store.getInstance().init(
-        app_management.util.createEmptyState());
+    initialListenerId =
+        callbackRouter.onAppsAdded.addListener(initialOnAppsAdded);
 
-    callbackRouter.onAppsAdded.addListener(onAppsAdded.bind(this));
-    callbackRouter.onAppChanged.addListener(onAppChanged.bind(this));
-    callbackRouter.onAppRemoved.addListener(onAppRemoved.bind(this));
+    app_management.BrowserProxy.getInstance().handler.getApps();
+
     initialized = true;
+  }
+
+  /**
+   * @param {!Array<App>} apps
+   */
+  function initialOnAppsAdded(apps) {
+    const initialState = app_management.util.createInitialState(apps);
+    app_management.Store.getInstance().init(initialState);
+
+    const callbackRouter =
+        app_management.BrowserProxy.getInstance().callbackRouter;
+
+    callbackRouter.onAppsAdded.addListener(onAppsAdded);
+    callbackRouter.onAppChanged.addListener(onAppChanged);
+    callbackRouter.onAppRemoved.addListener(onAppRemoved);
+
+    callbackRouter.removeListener(initialListenerId);
   }
 
   /**
@@ -27,14 +45,14 @@ cr.define('app_management.ApiListener', function() {
   }
 
   /**
-   * @param {Array<appManagement.mojom.App>} apps
+   * @param {Array<App>} apps
    */
   function onAppsAdded(apps) {
     dispatch(app_management.actions.addApps(apps));
   }
 
   /**
-   * @param {appManagement.mojom.App} app
+   * @param {App} app
    */
   function onAppChanged(app) {
     dispatch(app_management.actions.changeApp(app));

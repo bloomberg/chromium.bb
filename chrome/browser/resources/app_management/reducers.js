@@ -68,6 +68,42 @@ cr.define('app_management', function() {
     }
   };
 
+  const CurrentPageState = {};
+
+  /**
+   * @param {AppMap} apps
+   * @param {Object} action
+   * @return {Page}
+   */
+  CurrentPageState.changePage = function(apps, action) {
+    if (action.pageType == PageType.DETAIL && apps[action.id]) {
+      return {
+        pageType: PageType.DETAIL,
+        selectedAppId: action.id,
+      };
+    } else {
+      return {
+        pageType: PageType.MAIN,
+        selectedAppId: null,
+      };
+    }
+  };
+
+  /**
+   * @param {AppMap} apps
+   * @param {Page} currentPage
+   * @param {Object} action
+   * @return {Page}
+   */
+  CurrentPageState.updateCurrentPage = function(apps, currentPage, action) {
+    switch (action.name) {
+      case 'change-page':
+        return CurrentPageState.changePage(apps, action);
+      default:
+        return currentPage;
+    }
+  };
+
   /**
    * Root reducer for the App Management page. This is called by the store in
    * response to an action, and the return value is used to update the UI.
@@ -78,11 +114,14 @@ cr.define('app_management', function() {
   function reduceAction(state, action) {
     return {
       apps: AppState.updateApps(state.apps, action),
+      currentPage: CurrentPageState.updateCurrentPage(
+          state.apps, state.currentPage, action),
     };
   }
 
   return {
     reduceAction: reduceAction,
     AppState: AppState,
+    CurrentPageState: CurrentPageState,
   };
 });

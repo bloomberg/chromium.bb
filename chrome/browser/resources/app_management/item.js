@@ -4,11 +4,27 @@
 Polymer({
   is: 'app-management-item',
 
+  behaviors: [
+    app_management.StoreClient,
+  ],
+
   properties: {
     /** @type {appManagement.mojom.App} */
     app: {
       type: Object,
     },
+  },
+
+  listeners: {
+    'click': 'onClick_',
+  },
+
+  /**
+   * @private
+   */
+  onClick_: function() {
+    this.dispatch(
+        app_management.actions.changePage(PageType.DETAIL, this.app.id));
   },
 
   /**
@@ -19,5 +35,4 @@ Polymer({
   iconUrlFromId_: function(app) {
     return `chrome://extension-icon/${app.id}/128/1`;
   },
-
 });

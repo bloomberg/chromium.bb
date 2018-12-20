@@ -4,3 +4,13 @@
 
 /** @const {number} */
 const NUMBER_OF_APPS_DISPLAYED_DEFAULT = 4;
+
+/**
+ * Enumeration of the different subpage types within the app management page.
+ * @enum {number}
+ * @const
+ */
+const PageType = {
+  MAIN: 0,
+  DETAIL: 1,
+};

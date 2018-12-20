@@ -78,6 +78,8 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
                           IDR_APP_MANAGEMENT_PWA_PERMISSION_VIEW_JS);
   source->AddResourcePath("reducers.html", IDR_APP_MANAGEMENT_REDUCERS_HTML);
   source->AddResourcePath("reducers.js", IDR_APP_MANAGEMENT_REDUCERS_JS);
+  source->AddResourcePath("router.html", IDR_APP_MANAGEMENT_ROUTER_HTML);
+  source->AddResourcePath("router.js", IDR_APP_MANAGEMENT_ROUTER_JS);
   source->AddResourcePath("shared_style.html",
                           IDR_APP_MANAGEMENT_SHARED_STYLE_HTML);
   source->AddResourcePath("shared_vars.html",
