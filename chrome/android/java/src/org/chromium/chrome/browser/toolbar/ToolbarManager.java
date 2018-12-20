@@ -212,6 +212,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
     private boolean mNativeLibraryReady;
     private boolean mTabRestoreCompleted;
+    private boolean mProgressBarEnabled;
 
     private AppMenuButtonHelper mAppMenuButtonHelper;
 
@@ -1471,7 +1472,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      * @return One of View.VISIBLE, View.INVISIBLE, or View.GONE.
      */
     public int getToolbarVisibility() {
-        View toolbar = getToolbarView();
+        View toolbar = mControlContainer.findViewById(R.id.toolbar);
         return (toolbar != null) ? toolbar.getVisibility() : View.GONE;
     }
 
@@ -1479,16 +1480,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      * Sets the visibility of the Toolbar.
      */
     public void setToolbarVisibility(int visibility) {
-        View toolbar = getToolbarView();
+        View toolbar = mControlContainer.findViewById(R.id.toolbar);
         if (toolbar != null) toolbar.setVisibility(visibility);
-    }
-
-    /**
-     * Gets the Toolbar view.
-     */
-    @Nullable
-    public View getToolbarView() {
-        return mControlContainer.findViewById(R.id.toolbar);
     }
 
     /**
@@ -1765,17 +1758,18 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     }
 
     /**
-     * @param enabled Whether the progress bar is enabled.
+     * @return Whether the progress bar is enabled.
      */
-    public void setProgressBarEnabled(boolean enabled) {
-        mToolbar.setProgressBarEnabled(enabled);
+    public boolean isProgressBarEnabled() {
+        return mProgressBarEnabled;
     }
 
     /**
-     * @param anchor The view to use as an anchor.
+     * @param enabled Whether the progress bar is enabled.
      */
-    public void setProgressBarAnchorView(@Nullable View anchor) {
-        mToolbar.setProgressBarAnchorView(anchor);
+    public void setProgressBarEnabled(boolean enabled) {
+        mProgressBarEnabled = enabled;
+        mToolbar.setProgressBarEnabled(enabled);
     }
 
     private boolean shouldShowCursorInLocationBar() {

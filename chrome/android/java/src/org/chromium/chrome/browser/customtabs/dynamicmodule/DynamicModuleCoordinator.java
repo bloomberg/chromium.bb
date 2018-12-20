@@ -88,6 +88,8 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
     @ToolbarVisibility
     private int mDefaultToolbarShadowVisibility;
 
+    // Whether the progress bar is enabled prior to any header customization.
+    private boolean mDefaultIsProgressBarEnabled;
     // Default height of the top control container prior to any header customization.
     private int mDefaultTopControlContainerHeight;
     private boolean mHasSetOverlayView;
@@ -278,6 +280,7 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
             mDefaultToolbarVisibility = mActivity.getToolbarManager().getToolbarVisibility();
             mDefaultToolbarShadowVisibility =
                     mActivity.getToolbarManager().getToolbarShadowVisibility();
+            mDefaultIsProgressBarEnabled = mActivity.getToolbarManager().isProgressBarEnabled();
             mDefaultTopControlContainerHeight = mFullscreenManager.get().getTopControlsHeight();
 
             mModuleCallback = null;
@@ -376,11 +379,10 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
                     isModuleManagedUrl ? View.GONE : mDefaultToolbarVisibility);
             mActivity.getToolbarManager().setToolbarShadowVisibility(
                     isModuleManagedUrl ? View.GONE : mDefaultToolbarShadowVisibility);
+            mActivity.getToolbarManager().setProgressBarEnabled(
+                    isModuleManagedUrl ? false : mDefaultIsProgressBarEnabled);
             mFullscreenManager.get().setTopControlsHeight(
                     isModuleManagedUrl ? getTopBarHeight() : mDefaultTopControlContainerHeight);
-            mActivity.getToolbarManager().setProgressBarAnchorView(isModuleManagedUrl
-                            ? mTopBarDelegate.get().getTopBarContentView()
-                            : mActivity.getToolbarManager().getToolbarView());
         }
     }
 
