@@ -590,9 +590,15 @@ cr.define('device_page_tests', function() {
     });
 
     test(assert(TestNames.Keyboard), function() {
+      const name = k => `prefs.settings.language.${k}.value`;
+      const get = k => devicePage.get(name(k));
+      const set = (k, v) => devicePage.set(name(k), v);
+      let keyboardPage;
+      let collapse;
       // Open the keyboard subpage.
       return showAndGetDeviceSubpage('keyboard', settings.routes.KEYBOARD)
-          .then(function(keyboardPage) {
+          .then(function(page) {
+            keyboardPage = page;
             // Initially, the optional keys are hidden.
             expectFalse(!!keyboardPage.$$('#capsLockKey'));
             expectFalse(!!keyboardPage.$$('#diamondKey'));
@@ -653,7 +659,7 @@ cr.define('device_page_tests', function() {
             expectTrue(!!keyboardPage.$$('#externalMetaKey'));
             expectTrue(!!keyboardPage.$$('#externalCommandKey'));
 
-            const collapse = keyboardPage.$$('iron-collapse');
+            collapse = keyboardPage.$$('iron-collapse');
             assertTrue(!!collapse);
             expectTrue(collapse.opened);
 
@@ -668,31 +674,28 @@ cr.define('device_page_tests', function() {
             MockInteractions.pressAndReleaseKeyOn(
                 keyboardPage.$$('#repeatRateSlider').$$('cr-slider'), 39, [],
                 'ArrowRight');
-            const language = devicePage.prefs.settings.language;
-            expectEquals(1000, language.xkb_auto_repeat_delay_r2.value);
-            expectEquals(300, language.xkb_auto_repeat_interval_r2.value);
+            expectEquals(1000, get('xkb_auto_repeat_delay_r2'));
+            expectEquals(300, get('xkb_auto_repeat_interval_r2'));
 
             // Test sliders change when prefs change.
-            devicePage.set(
-                'prefs.settings.language.xkb_auto_repeat_delay_r2.value', 1500);
+            set('xkb_auto_repeat_delay_r2', 1500);
             expectEquals(1500, keyboardPage.$$('#delaySlider').pref.value);
-            devicePage.set(
-                'prefs.settings.language.xkb_auto_repeat_interval_r2.value',
-                2000);
+            set('xkb_auto_repeat_interval_r2', 2000);
             expectEquals(2000, keyboardPage.$$('#repeatRateSlider').pref.value);
 
             // Test sliders round to nearest value when prefs change.
-            devicePage.set(
-                'prefs.settings.language.xkb_auto_repeat_delay_r2.value', 600);
+            set('xkb_auto_repeat_delay_r2', 600);
+            return PolymerTest.flushTasks();
+          })
+          .then(() => {
             expectEquals(500, keyboardPage.$$('#delaySlider').pref.value);
-            devicePage.set(
-                'prefs.settings.language.xkb_auto_repeat_interval_r2.value',
-                45);
+            set('xkb_auto_repeat_interval_r2', 45);
+            return PolymerTest.flushTasks();
+          })
+          .then(() => {
             expectEquals(50, keyboardPage.$$('#repeatRateSlider').pref.value);
 
-            devicePage.set(
-                'prefs.settings.language.xkb_auto_repeat_enabled_r2.value',
-                false);
+            set('xkb_auto_repeat_enabled_r2', false);
             expectFalse(collapse.opened);
 
             // Test keyboard shortcut viewer button.
