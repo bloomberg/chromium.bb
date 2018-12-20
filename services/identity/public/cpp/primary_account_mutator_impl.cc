@@ -114,7 +114,8 @@ AccountInfo PrimaryAccountMutatorImpl::LegacyPrimaryAccountForAuthInProgress()
 
 void PrimaryAccountMutatorImpl::LegacyCopyCredentialsFrom(
     const PrimaryAccountMutator& source) {
-  NOTIMPLEMENTED();
+  signin_manager_->CopyCredentialsFrom(
+      *static_cast<const PrimaryAccountMutatorImpl&>(source).signin_manager_);
 }
 
 }  // namespace identity

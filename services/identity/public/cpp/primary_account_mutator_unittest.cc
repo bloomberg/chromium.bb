@@ -845,3 +845,101 @@ TEST_F(PrimaryAccountMutatorTest, AuthInProgress_SigninCancelled) {
   EXPECT_EQ(identity_manager->GetPrimaryAccountId(), std::string());
   EXPECT_TRUE(identity_manager->GetPrimaryAccountInfo().IsEmpty());
 }
+
+// Checks that copying the credentials from another PrimaryAccountMutator works.
+TEST_F(PrimaryAccountMutatorTest, CopyCredentialsFrom) {
+  base::test::ScopedTaskEnvironment task_environment;
+  identity::IdentityTestEnvironment environment;
+
+  identity::IdentityManager* identity_manager = environment.identity_manager();
+  identity::PrimaryAccountMutator* primary_account_mutator =
+      identity_manager->GetPrimaryAccountMutator();
+
+  // Abort the test if the current platform does not support mutation of the
+  // primary account (the returned PrimaryAccountMutator* will be null).
+  if (!primary_account_mutator)
+    return;
+
+  // We will need another PrimaryAccountMutator to copy the credentials from the
+  // one used previously and check that they match later on.
+  identity::IdentityTestEnvironment other_environment;
+  identity::IdentityManager* other_identity_manager =
+      other_environment.identity_manager();
+  identity::PrimaryAccountMutator* other_primary_account_mutator =
+      other_identity_manager->GetPrimaryAccountMutator();
+
+  AccountInfo account_info =
+      environment.MakeAccountAvailable(kPrimaryAccountEmail);
+
+  // Start a signin process for the account we just made available so that we
+  // can check whether the credentials copied to another PrimaryAccountMutator.
+  base::RunLoop run_loop;
+  std::string signed_account_refresh_token;
+  primary_account_mutator->LegacyStartSigninWithRefreshTokenForPrimaryAccount(
+      kRefreshToken, account_info.gaia, account_info.email, kPassword,
+      base::BindOnce(
+          [](std::string* out_refresh_token, const std::string& refresh_token) {
+            *out_refresh_token = refresh_token;
+          },
+          base::Unretained(&signed_account_refresh_token)));
+  run_loop.RunUntilIdle();
+
+  // The refresh token assigned to the account should match the one passed.
+  EXPECT_EQ(signed_account_refresh_token, kRefreshToken);
+
+  // This is a good moment to copy the credentials from one mutator to the other
+  // since internal transient data hold by the SigninManager in this state will
+  // be non-empty while the authentication process is ongoing (e.g. possibly
+  // invalid account ID, Gaia ID and email), allowing us to compare values.
+  base::RunLoop run_loop2;
+  other_primary_account_mutator->LegacyCopyCredentialsFrom(
+      *primary_account_mutator);
+  run_loop2.RunUntilIdle();
+
+  EXPECT_TRUE(primary_account_mutator->LegacyIsPrimaryAccountAuthInProgress());
+  EXPECT_TRUE(
+      other_primary_account_mutator->LegacyIsPrimaryAccountAuthInProgress());
+
+  AccountInfo auth_in_progress_account_info =
+      primary_account_mutator->LegacyPrimaryAccountForAuthInProgress();
+  AccountInfo other_auth_in_progress_account_info =
+      other_primary_account_mutator->LegacyPrimaryAccountForAuthInProgress();
+
+  EXPECT_FALSE(auth_in_progress_account_info.IsEmpty());
+  EXPECT_FALSE(other_auth_in_progress_account_info.IsEmpty());
+
+  EXPECT_EQ(auth_in_progress_account_info.account_id,
+            other_auth_in_progress_account_info.account_id);
+  EXPECT_EQ(auth_in_progress_account_info.gaia,
+            other_auth_in_progress_account_info.gaia);
+  EXPECT_EQ(auth_in_progress_account_info.email,
+            other_auth_in_progress_account_info.email);
+
+  // Finally, complete the signin process so that we can do further checks.
+  base::RunLoop run_loop3;
+  primary_account_mutator->LegacyCompletePendingPrimaryAccountSignin();
+  run_loop3.RunUntilIdle();
+
+  // An account has been authenticated now, so there should be a primary account
+  // authenticated and no authentication process reported as in progress now.
+  EXPECT_TRUE(identity_manager->HasPrimaryAccount());
+  EXPECT_FALSE(primary_account_mutator->LegacyIsPrimaryAccountAuthInProgress());
+
+  // Query again the information for each of the two different environments now
+  // that the original one has completed the authentication process and compare
+  // them one more time: they should not match as the original one is no longer
+  // in the middle of the authentication process.
+  EXPECT_TRUE(identity_manager->HasPrimaryAccount());
+  EXPECT_FALSE(other_identity_manager->HasPrimaryAccount());
+
+  EXPECT_FALSE(primary_account_mutator->LegacyIsPrimaryAccountAuthInProgress());
+  EXPECT_TRUE(
+      other_primary_account_mutator->LegacyIsPrimaryAccountAuthInProgress());
+
+  auth_in_progress_account_info =
+      primary_account_mutator->LegacyPrimaryAccountForAuthInProgress();
+  other_auth_in_progress_account_info =
+      other_primary_account_mutator->LegacyPrimaryAccountForAuthInProgress();
+  EXPECT_TRUE(auth_in_progress_account_info.IsEmpty());
+  EXPECT_FALSE(other_auth_in_progress_account_info.IsEmpty());
+}
