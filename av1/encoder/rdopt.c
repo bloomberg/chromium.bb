@@ -8542,7 +8542,7 @@ static int txfm_search(const AV1_COMP *cpi, const TileDataEnc *tile_data,
     rd_stats_y->rate = 0;
     rd_stats_uv->rate = 0;
     rd_stats->rate += skip_flag_cost[1];
-    mbmi->skip = 0;
+    mbmi->skip = 1;
     // here mbmi->skip temporarily plays a role as what this_skip2 does
 
     const int64_t tmprd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
