@@ -47,6 +47,7 @@ run_jsbundler("switch_access_copied_files") {
     "prefs.js",
     "switch_access.js",
     "switch_access_predicate.js",
+    "text_input_manager.js",
   ]
   rewrite_rules = [
     rebase_path(".", root_build_dir) + ":",
@@ -151,6 +152,7 @@ js_type_check("closure_compile") {
     ":options",
     ":prefs",
     ":switch_access_predicate",
+    ":text_input_manager",
     "../chromevox:constants",
     "../chromevox:tree_walker",
     "../select_to_speak:closure_shim",
@@ -168,7 +170,9 @@ js_library("auto_scan_manager") {
 
 js_library("navigation_manager") {
   deps = [
+    ":context_menu_manager",
     ":switch_access_predicate",
+    ":text_input_manager",
     "../chromevox:constants",
     "../chromevox:tree_walker",
   ]
@@ -242,4 +246,8 @@ js_library("switch_access_interface") {
 
 js_library("switch_access_predicate") {
   externs_list = [ "$externs_path/automation.js" ]
+}
+
+js_library("text_input_manager") {
+  externs_list = [ "$externs_path/accessibility_private.js" ]
 }

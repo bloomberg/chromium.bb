@@ -180,6 +180,10 @@ class NavigationManager {
     if (!this.node_.role)
       return;
 
+    if (TextInputManager.pressKey(this.node_)) {
+      return;
+    }
+
     if (this.node_ === this.scope_) {
       // If we're visiting the scope as actionable, perform the default action.
       if (this.visitingScopeAsActionable_) {
