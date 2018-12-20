@@ -140,6 +140,10 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
 
   mojom::blink::CacheStoragePtrInfo TakeCacheStorage();
 
+  // See the functions of the same name in WebServiceWorkerContextClient.
+  int WillStartTask();
+  void DidEndTask(int task_id);
+
   DEFINE_ATTRIBUTE_EVENT_LISTENER(install, kInstall);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(activate, kActivate);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(fetch, kFetch);

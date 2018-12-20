@@ -195,6 +195,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   CreateServiceWorkerNetworkProvider() override;
   scoped_refptr<blink::WebWorkerFetchContext> CreateServiceWorkerFetchContext(
       blink::WebServiceWorkerNetworkProvider*) override;
+  int WillStartTask() override;
+  void DidEndTask(int task_id) override;
 
   // Dispatches the fetch event if the worker is running normally, and queues it
   // instead if the worker has already requested to be terminated by the
@@ -222,6 +224,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       DispatchOrQueueFetchEvent_RequestedTerminationAndWakeUp);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextClientTest,
                            DispatchOrQueueFetchEvent_NotRequestedTermination);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextClientTest, TaskInServiceWorker);
 
   // Get routing_id for sending message to the ServiceWorkerVersion
   // in the browser process.
