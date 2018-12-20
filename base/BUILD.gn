@@ -191,6 +191,7 @@ jumbo_component("base") {
     "containers/stack.h",
     "containers/stack_container.h",
     "containers/unique_ptr_adapters.h",
+    "containers/util.h",
     "containers/vector_buffer.h",
     "cpu.cc",
     "cpu.h",
