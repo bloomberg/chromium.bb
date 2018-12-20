@@ -353,7 +353,7 @@ AccountReconcilorTest::AccountReconcilorTest()
                               &test_signin_client_,
                               &test_url_loader_factory_),
 #if defined(OS_CHROMEOS)
-      signin_manager_(&test_signin_client_, &account_tracker_),
+      signin_manager_(&test_signin_client_, &token_service_, &account_tracker_),
 #else
       signin_manager_(&test_signin_client_,
                       &token_service_,

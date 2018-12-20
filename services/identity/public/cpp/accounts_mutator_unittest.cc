@@ -66,17 +66,8 @@ class AccountsMutatorTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(AccountsMutatorTest);
 };
 
-// Tests that requesting a load of accounts results in the notification
-// firing that tokens were loaded.
-TEST_F(AccountsMutatorTest, LoadAccountsFromDisk) {
-  base::RunLoop run_loop;
-  token_service_observer()->set_on_refresh_tokens_loaded_callback(
-      run_loop.QuitClosure());
-
-  // Load the accounts and ensure that we see the resulting notification that
-  // they were loaded.
-  accounts_mutator()->LoadAccountsFromDisk("");
-  run_loop.Run();
+TEST_F(AccountsMutatorTest, Basic) {
+  // Should not crash.
 }
 
 }  // namespace identity

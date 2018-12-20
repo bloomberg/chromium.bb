@@ -37,15 +37,17 @@ std::unique_ptr<KeyedService> BuildSigninManagerFake(
       AccountTrackerServiceFactory::GetForProfile(profile);
   SigninErrorController* signin_error_controller =
       SigninErrorControllerFactory::GetForProfile(profile);
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
 #if defined (OS_CHROMEOS)
-  std::unique_ptr<SigninManagerBase> signin(new SigninManagerBase(
-      signin_client, account_tracker_service, signin_error_controller));
+  std::unique_ptr<SigninManagerBase> signin(
+      new SigninManagerBase(signin_client, token_service,
+                            account_tracker_service, signin_error_controller));
   signin->Initialize(NULL);
   return std::move(signin);
 #else
   std::unique_ptr<FakeSigninManager> manager(new FakeSigninManager(
-      signin_client, ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      account_tracker_service,
+      signin_client, token_service, account_tracker_service,
       GaiaCookieManagerServiceFactory::GetForProfile(profile),
       signin_error_controller));
   manager->Initialize(g_browser_process->local_state());

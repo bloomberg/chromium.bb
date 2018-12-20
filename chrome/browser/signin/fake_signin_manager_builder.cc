@@ -30,6 +30,7 @@ std::unique_ptr<KeyedService> BuildFakeSigninManagerForTesting(
 FakeSigninManagerForTesting::FakeSigninManagerForTesting(Profile* profile)
     : FakeSigninManagerBase(
           ChromeSigninClientFactory::GetForProfile(profile),
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
           AccountTrackerServiceFactory::GetForProfile(profile),
           SigninErrorControllerFactory::GetForProfile(profile)) {}
 #else

@@ -466,7 +466,7 @@ class IdentityManagerTest : public testing::Test {
     DCHECK_EQ(account_consistency, signin::AccountConsistencyMethod::kDisabled)
         << "AccountConsistency is not used by SigninManagerBase";
     signin_manager_ = std::make_unique<FakeSigninManagerBase>(
-        &signin_client_, &account_tracker_);
+        &signin_client_, &token_service_, &account_tracker_);
 #else
     signin_manager_ = std::make_unique<FakeSigninManager>(
         &signin_client_, &token_service_, &account_tracker_,
