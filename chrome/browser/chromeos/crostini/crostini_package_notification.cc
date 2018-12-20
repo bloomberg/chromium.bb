@@ -43,6 +43,7 @@ CrostiniPackageNotification::CrostiniPackageNotification(
       notification_settings_(
           GetNotificationSettingsForTypeAndAppName(notification_type,
                                                    app_name)),
+      visible_(true),
       weak_ptr_factory_(this) {
   if (status == PackageOperationStatus::RUNNING) {
     running_start_time_ = base::Time::Now();
@@ -217,11 +218,33 @@ void CrostiniPackageNotification::ForceAllowAutoHide() {
 }
 
 void CrostiniPackageNotification::Close(bool by_user) {
-  // This call deletes us.
-  package_service_->NotificationClosed(this);
+  if (current_status_ == PackageOperationStatus::RUNNING ||
+      current_status_ == PackageOperationStatus::QUEUED) {
+    // We don't want to delete ourselves yet; we want to forcibly redisplay
+    // when we hit success or failure. Just note that we are hidden.
+    visible_ = false;
+  } else {
+    // This call deletes us.
+    package_service_->NotificationCompleted(this);
+  }
 }
 
 void CrostiniPackageNotification::UpdateDisplayedNotification() {
+  if (current_status_ == PackageOperationStatus::SUCCEEDED ||
+      current_status_ == PackageOperationStatus::FAILED) {
+    // If the user closes the notification when it is queued or running, we
+    // still want to tell them when it is actually finished. So force the
+    // notification back to visibility when we get our success / fail notice.
+    // Note that we only get one success / fail notice, so we won't keep
+    // reshowing this.
+    visible_ = true;
+  }
+
+  if (!visible_) {
+    // User hid, don't re-display.
+    return;
+  }
+
   NotificationDisplayService* display_service =
       NotificationDisplayService::GetForProfile(profile_);
   display_service->Display(NotificationHandler::Type::TRANSIENT,

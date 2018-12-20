@@ -116,16 +116,8 @@ void CrostiniPackageService::Shutdown() {
   manager->RemoveLinuxPackageOperationProgressObserver(this);
 }
 
-void CrostiniPackageService::NotificationClosed(
+void CrostiniPackageService::NotificationCompleted(
     CrostiniPackageNotification* notification) {
-  for (auto it = running_notifications_.begin();
-       it != running_notifications_.end(); ++it) {
-    if (it->second.get() == notification) {
-      running_notifications_.erase(it);
-      return;
-    }
-  }
-
   for (auto it = finished_notifications_.begin();
        it != finished_notifications_.end(); ++it) {
     if (it->get() == notification) {
@@ -133,19 +125,7 @@ void CrostiniPackageService::NotificationClosed(
       return;
     }
   }
-
-  for (auto it = queued_uninstalls_.begin(); it != queued_uninstalls_.end();
-       ++it) {
-    std::deque<QueuedUninstall>& queue = it->second;
-    for (auto it2 = queue.begin(); it2 != queue.end(); ++it2) {
-      if (it2->notification.get() == notification) {
-        // We need to delete the notification, but we still want to run the
-        // uninstall, so don't do erase(it2).
-        it2->notification.reset();
-        return;
-      }
-    }
-  }
+  // Notifications should never delete themselves while queued or running.
   NOTREACHED();
 }
 
@@ -220,7 +200,6 @@ void CrostiniPackageService::QueueUninstallApplication(
       container_id,
       CrostiniPackageNotification::NotificationType::APPLICATION_UNINSTALL,
       app_name);
-  containers_with_running_operations_.insert(container_id);
 
   UninstallApplication(*registration, app_id);
 }
@@ -233,8 +212,8 @@ std::string CrostiniPackageService::ContainerIdentifierToString(
 
 bool CrostiniPackageService::ContainerHasRunningOperation(
     const ContainerIdentifier& container_id) const {
-  return containers_with_running_operations_.find(container_id) !=
-         containers_with_running_operations_.end();
+  return running_notifications_.find(container_id) !=
+         running_notifications_.end();
 }
 
 void CrostiniPackageService::CreateRunningNotification(
@@ -265,7 +244,7 @@ void CrostiniPackageService::CreateQueuedUninstall(
     const ContainerIdentifier& container_id,
     const std::string& app_id,
     const std::string& app_name) {
-  queued_uninstalls_[container_id].emplace_back(
+  queued_uninstalls_[container_id].emplace(
       app_id,
       std::make_unique<CrostiniPackageNotification>(
           profile_,
@@ -278,33 +257,24 @@ void CrostiniPackageService::UpdatePackageOperationStatus(
     const ContainerIdentifier& container_id,
     PackageOperationStatus status,
     int progress_percent) {
-  // Update the notification window, if any. User may have closed it while it
-  // was in progress, so don't complain if not found.
+  // Update the notification window, if any.
   auto it = running_notifications_.find(container_id);
-  if (it != running_notifications_.end()) {
-    DCHECK(it->second) << ContainerIdentifierToString(container_id)
-                       << " has null notification pointer";
-    it->second->UpdateProgress(status, progress_percent);
+  DCHECK(it != running_notifications_.end())
+      << ContainerIdentifierToString(container_id)
+      << " has no notification to update";
+  DCHECK(it->second) << ContainerIdentifierToString(container_id)
+                     << " has null notification pointer";
+  it->second->UpdateProgress(status, progress_percent);
 
-    if (status == PackageOperationStatus::SUCCEEDED ||
-        status == PackageOperationStatus::FAILED) {
-      finished_notifications_.emplace_back(std::move(it->second));
-      running_notifications_.erase(it);
-    }
-  }
-
-  // Update our state and kick off the next operation if we just finished an
-  // operation.
-  DCHECK(ContainerHasRunningOperation(container_id))
-      << "containers_with_running_operations_["
-      << ContainerIdentifierToString(container_id) << "] not found";
   if (status == PackageOperationStatus::SUCCEEDED ||
       status == PackageOperationStatus::FAILED) {
+    finished_notifications_.emplace_back(std::move(it->second));
+    running_notifications_.erase(it);
+
+    // Kick off the next operation if we just finished one.
     auto queued_iter = queued_uninstalls_.find(container_id);
-    if (queued_iter == queued_uninstalls_.end() ||
-        queued_iter->second.empty()) {
-      containers_with_running_operations_.erase(container_id);
-    } else {
+    if (queued_iter != queued_uninstalls_.end() &&
+        !queued_iter->second.empty()) {
       StartQueuedUninstall(container_id);
     }
   }
@@ -331,7 +301,6 @@ void CrostiniPackageService::OnInstallLinuxPackage(
       container_id,
       CrostiniPackageNotification::NotificationType::PACKAGE_INSTALL,
       "" /* app_name */);
-  containers_with_running_operations_.insert(container_id);
 }
 
 void CrostiniPackageService::UninstallApplication(
@@ -397,24 +366,16 @@ void CrostiniPackageService::StartQueuedUninstall(
   if (uninstall_queue_iter == queued_uninstalls_.end()) {
     return;
   }
-  std::deque<QueuedUninstall>& uninstall_queue = uninstall_queue_iter->second;
-  {  // Scope |next|; it becomes an invalid reference when we pop_front()
+  std::queue<QueuedUninstall>& uninstall_queue = uninstall_queue_iter->second;
+  {  // Scope |next|; it becomes an invalid reference when we pop()
     QueuedUninstall& next = uninstall_queue.front();
 
-    // User may have closed notification while still queued; don't complain if
-    // notification is nullptr.
-    if (next.notification) {
-      next.notification->UpdateProgress(PackageOperationStatus::RUNNING, 0);
-      running_notifications_.emplace(container_id,
-                                     std::move(next.notification));
-    }
+    next.notification->UpdateProgress(PackageOperationStatus::RUNNING, 0);
+    running_notifications_.emplace(container_id, std::move(next.notification));
 
     app_id = next.app_id;
-    uninstall_queue.pop_front();  // Invalidates |next|
+    uninstall_queue.pop();  // Invalidates |next|
   }
-  // containers_with_running_operations_ should be set from before and not
-  // cleared.
-  DCHECK(ContainerHasRunningOperation(container_id));
 
   auto registration =
       CrostiniRegistryServiceFactory::GetForProfile(profile_)->GetRegistration(
