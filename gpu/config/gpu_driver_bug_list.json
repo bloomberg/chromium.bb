@@ -3046,7 +3046,7 @@
     {
       "id": 284,
       "cr_bugs": [913301],
-      "description": "Clamp texture's BASE_LEVEL/MAX_LEVEL for GenerateMipmap on Mac",
+      "description": "Clamp texture's BASE_LEVEL/MAX_LEVEL for GenerateMipmap",
       "os": {
         "type": "macosx"
       },
@@ -3082,18 +3082,6 @@
       "hardware_overlay": "unsupported",
       "features": [
         "disable_direct_composition"
-      ]
-    },
-    {
-      "id": 287,
-      "cr_bugs": [913301],
-      "description": "Clamp texture's BASE_LEVEL/MAX_LEVEL for GenerateMipmap on Linux/AMD",
-      "os": {
-        "type": "linux"
-      },
-      "vendor_id": "0x1002",
-      "features": [
-        "clamp_texture_base_level_and_max_level"
       ]
     }
   ]
