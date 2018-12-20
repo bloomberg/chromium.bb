@@ -81,6 +81,7 @@ extern const base::Feature kSpannableInlineAutocomplete;
 extern const base::Feature kSpecialLocaleFeature;
 extern const base::Feature kSpecialLocaleWrapper;
 extern const base::Feature kTabReparenting;
+extern const base::Feature kTabSwitcherOnReturn;
 extern const base::Feature kTrustedWebActivity;
 extern const base::Feature kTrustedWebActivityPostMessage;
 extern const base::Feature kUserMediaScreenCapturing;

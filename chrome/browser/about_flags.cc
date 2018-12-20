@@ -1185,6 +1185,19 @@ const FeatureEntry::FeatureVariation kOfflineIndicatorFeatureVariations[] = {
      base::size(kBottomOfflineIndicatorEnabled), nullptr}};
 #endif  // OS_ANDROID
 
+#if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kTabSwitcherOnReturn_30Minutes[] = {
+    {"tab_switcher_on_return_time_ms", "1800000"}};
+const FeatureEntry::FeatureParam kTabSwitcherOnReturn_60Minutes[] = {
+    {"tab_switcher_on_return_time_ms", "3600000"}};
+const FeatureEntry::FeatureVariation kTabSwitcherOnReturnVariations[] = {
+    {"30 minutes", kTabSwitcherOnReturn_30Minutes,
+     base::size(kTabSwitcherOnReturn_30Minutes), nullptr},
+    {"60 minutes", kTabSwitcherOnReturn_60Minutes,
+     base::size(kTabSwitcherOnReturn_60Minutes), nullptr},
+};
+#endif  // OS_ANDROID
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -3689,6 +3702,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHorizontalTabSwitcherAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kHorizontalTabSwitcherAndroid)},
 #endif  // OS_ANDROID
+
+#if defined(OS_ANDROID)
+    {"enable-tab-switcher-on-return",
+     flag_descriptions::kTabSwitcherOnReturnName,
+     flag_descriptions::kTabSwitcherOnReturnDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kTabSwitcherOnReturn,
+                                    kTabSwitcherOnReturnVariations,
+                                    "TabSwitcherOnReturn")},
+#endif
 
 #if defined(OS_CHROMEOS)
     {"enable-apps-grid-gap", flag_descriptions::kEnableAppsGridGapFeatureName,

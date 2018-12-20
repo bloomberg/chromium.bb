@@ -1091,6 +1091,10 @@ const char kHorizontalTabSwitcherAndroidDescription[] =
     "Changes the layout of the Android tab switcher so tabs scroll "
     "horizontally instead of vertically.";
 
+const char kTabSwitcherOnReturnName[] = "Enable tab switcher on return";
+const char kTabSwitcherOnReturnDescription[] =
+    "Enable tab switcher on return after specified time has elapsed";
+
 const char kHostedAppQuitNotificationName[] =
     "Quit notification for hosted apps";
 const char kHostedAppQuitNotificationDescription[] =
