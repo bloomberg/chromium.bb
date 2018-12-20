@@ -813,8 +813,15 @@ def GeneralTemplates(site_config, ge_build_config):
           config_lib.MoblabVMTestConfig(constants.MOBLAB_VM_SMOKE_TEST_TYPE)],
   )
 
+  # This should be used by any "workspace_builders."
+  site_config.AddTemplate(
+      'workspace',
+      postsync_patch=False,
+  )
+
   site_config.AddTemplate(
       'buildspec',
+      site_config.templates.workspace,
       master=True,
       boards=[],
       build_type=constants.GENERIC_TYPE,
@@ -2803,6 +2810,7 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
   site_config.AddTemplate(
       'firmwarebranch',
       site_config.templates.firmware,
+      site_config.templates.workspace,
       sign_types=['firmware', 'accessory_rwsig'],
       build_type=constants.GENERIC_TYPE,
       uprev=True,
@@ -3008,6 +3016,7 @@ def FactoryBuilders(site_config, boards_dict, ge_build_config):
   site_config.AddTemplate(
       'factorybranch',
       site_config.templates.factory,
+      site_config.templates.workspace,
       sign_types=['factory'],
       build_type=constants.GENERIC_TYPE,
       uprev=True,

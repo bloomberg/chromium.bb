@@ -25,6 +25,7 @@ import os
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import manifest_version
+from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -125,6 +126,7 @@ class SyncStage(WorkspaceStageBase):
                external=False,
                branch=None,
                version=None,
+               patch_pool=None,
                **kwargs):
     """Initializer.
 
@@ -135,6 +137,7 @@ class SyncStage(WorkspaceStageBase):
       external: Boolean telling if this an internal or external checkout.
       branch: Branch to sync, with default to master.
       version: Version number to sync too.
+      patch_pool: None or a list of lib.patch.GerritPatch objects.
     """
     super(SyncStage, self).__init__(
         builder_run, buildstore, build_root=build_root, **kwargs)
@@ -142,10 +145,12 @@ class SyncStage(WorkspaceStageBase):
     self.external = external
     self.branch = branch
     self.version = version
+    self.patch_pool = patch_pool
 
   def PerformStage(self):
     """Sync stuff!"""
     logging.info('SubWorkspaceSync')
+
     cmd = [
         os.path.join(constants.CHROMITE_DIR, 'scripts', 'repo_sync_manifest'),
         '--repo-root', self._build_root,
@@ -162,6 +167,18 @@ class SyncStage(WorkspaceStageBase):
     if self.version:
       cmd += ['--version', self.version]
 
+    if self.patch_pool:
+      patch_options = []
+      for patch in self.patch_pool:
+        logging.PrintBuildbotLink(str(patch), patch.url)
+        patch_options += ['--gerrit-patches', patch.gerrit_number_str]
+
+      cmd += patch_options
+
+    assert not (self.version and self.patch_pool), (
+        'Can\'t cherry-pick "%s" into an official version "%s."' %
+        (patch_options, self.version))
+
     cros_build_lib.RunCommand(cmd)
 
 
@@ -172,6 +189,14 @@ class WorkspaceSyncStage(WorkspaceStageBase):
 
   def PerformStage(self):
     """Sync all the stuff!"""
+    # Select changes to cherry-pick into the build, and filter them into
+    # chromite versus branch changes.
+    patch_pool = trybot_patch_pool.TrybotPatchPool.FromOptions(
+        gerrit_patches=self._run.options.gerrit_patches)
+
+    infra_pool = patch_pool.FilterFn(trybot_patch_pool.ChromiteFilter)
+    branch_pool = patch_pool.FilterFn(trybot_patch_pool.ChromiteFilter,
+                                      negate=True)
 
     SyncStage(
         self._run,
@@ -179,16 +204,20 @@ class WorkspaceSyncStage(WorkspaceStageBase):
         build_root=self._orig_root,
         external=True,
         branch='master',
+        patch_pool=infra_pool,
         suffix=' [Infra]').Run()
+
+    branch = self._run.config.workspace_branch
 
     SyncStage(
         self._run,
         self.buildstore,
         build_root=self._build_root,
         external=not self._run.config.internal,
-        branch=self._run.config.workspace_branch,
+        branch=branch,
         version=self._run.options.force_version,
-        suffix=' [Branch]').Run()
+        patch_pool=branch_pool,
+        suffix=' [%s]' % branch).Run()
 
 
 class WorkspaceSyncChromeStage(WorkspaceStageBase):
