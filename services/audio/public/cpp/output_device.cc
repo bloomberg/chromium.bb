@@ -82,7 +82,7 @@ void OutputDevice::StreamCreated(
 void OutputDevice::OnConnectionError() {
   // Connection errors should be rare and handling them synchronously is
   // simpler.
-  base::ScopedAllowBlocking allow_blocking;
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_thread_join;
   CleanUp();
 }
 

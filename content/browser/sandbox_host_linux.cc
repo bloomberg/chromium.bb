@@ -64,6 +64,10 @@ SandboxHostLinux::~SandboxHostLinux() {
     if (IGNORE_EINTR(close(child_socket_)) < 0)
       PLOG(ERROR) << "close";
 
+    // TODO(gab): We might be able to just delete this destructor:
+    // https://chromium-review.googlesource.com/c/chromium/src/+/1378683
+    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope
+        allow_thread_join_on_shutdown;
     ipc_thread_->Join();
   }
 }

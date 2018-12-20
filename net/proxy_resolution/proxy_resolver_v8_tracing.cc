@@ -49,6 +49,9 @@
 // known.
 namespace net {
 
+class ScopedAllowThreadJoinForProxyResolverV8Tracing
+    : public base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {};
+
 namespace {
 
 // Upper bound on how many *unique* DNS resolves a PAC script is allowed
@@ -943,7 +946,7 @@ ProxyResolverV8TracingImpl::~ProxyResolverV8TracingImpl() {
   CHECK_EQ(0, num_outstanding_callbacks_);
 
   // Join the worker thread. See http://crbug.com/69710.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  ScopedAllowThreadJoinForProxyResolverV8Tracing allow_thread_join;
   thread_.reset();
 }
 
@@ -1060,7 +1063,7 @@ class ProxyResolverV8TracingFactoryImpl::CreateJob
 
   void StopWorkerThread() {
     // Join the worker thread. See http://crbug.com/69710.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    ScopedAllowThreadJoinForProxyResolverV8Tracing allow_thread_join;
     thread_.reset();
   }
 

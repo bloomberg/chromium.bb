@@ -72,7 +72,7 @@ bool ReadData(HANDLE read_fd,
     bytes_read += num_bytes;
   }
 
-  base::ScopedAllowBlockingForTesting allow_thread_join;
+  base::ScopedAllowBaseSyncPrimitivesForTesting allow_thread_join;
   thread.Stop();
 
   // If the timeout kicked in, abort.

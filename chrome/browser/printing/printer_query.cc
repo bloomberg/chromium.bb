@@ -136,7 +136,7 @@ void PrinterQuery::StopWorker() {
     // http://crbug.com/66082: We're blocking on the PrinterQuery's worker
     // thread.  It's not clear to me if this may result in blocking the current
     // thread for an unacceptable time.  We should probably fix it.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_thread_join;
     worker_->Stop();
     worker_.reset();
   }

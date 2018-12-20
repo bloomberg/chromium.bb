@@ -165,7 +165,7 @@ void AudioInputDevice::Stop() {
   // audio_thread_.reset(). In most cases, the thread will already be stopped.
   //
   // |alive_checker_| must outlive |audio_callback_|.
-  base::ScopedAllowBlocking allow_blocking;
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_thread_join;
   audio_thread_.reset();
   audio_callback_.reset();
   alive_checker_.reset();

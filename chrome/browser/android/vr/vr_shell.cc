@@ -319,11 +319,11 @@ VrShell::~VrShell() {
     // we need to block shutting down the GvrLayout on stopping our GL thread
     // from using the GvrApi instance.
     // base::Thread::Stop, which is called when destroying the thread, asserts
-    // that IO is allowed to prevent jank, but there shouldn't be any concerns
-    // regarding jank in this case, because we're switching from 3D to 2D,
-    // adding/removing a bunch of Java views, and probably changing device
-    // orientation here.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    // that sync primitives are allowed to prevent jank, but there shouldn't be
+    // any concerns regarding jank in this case, because we're switching from 3D
+    // to 2D, adding/removing a bunch of Java views, and probably changing
+    // device orientation here.
+    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_thread_join;
     gl_thread_.reset();
   }
   g_vr_shell_instance = nullptr;

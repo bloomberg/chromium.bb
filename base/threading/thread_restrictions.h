@@ -96,8 +96,10 @@
 
 class BrowserProcessImpl;
 class HistogramSynchronizer;
-class NativeBackendKWallet;
 class KeyStorageLinux;
+class NativeBackendKWallet;
+class NativeDesktopMediaList;
+class StartupTimeBomb;
 
 namespace android_webview {
 class AwFormDatabaseService;
@@ -130,12 +132,14 @@ class BrowserProcessSubThread;
 class BrowserShutdownProfileDumper;
 class BrowserTestBase;
 class CategorizedWorkerPool;
+class DesktopCaptureDevice;
 class GpuProcessTransportFactory;
 class NestedMessagePumpAndroid;
+class SandboxHostLinux;
 class ScopedAllowWaitForDebugURL;
+class ServiceWorkerSubresourceLoader;
 class SessionStorageDatabase;
 class SoftwareOutputDeviceMus;
-class ServiceWorkerSubresourceLoader;
 class SynchronousCompositor;
 class SynchronousCompositorHost;
 class SynchronousCompositorSyncCallBridge;
@@ -163,6 +167,7 @@ class LevelDBMojoProxy;
 }
 namespace media {
 class AudioInputDevice;
+class AudioOutputDevice;
 class BlockingUrlProtocol;
 }
 namespace midi {
@@ -175,6 +180,9 @@ namespace core {
 class ScopedIPCSupport;
 }
 }
+namespace printing {
+class PrinterQuery;
+}
 namespace rlz_lib {
 class FinancialPing;
 }
@@ -186,7 +194,10 @@ class MaterialDesignController;
 }
 namespace net {
 class MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives;
+class MultiThreadedProxyResolverScopedAllowJoinOnIO;
 class NetworkChangeNotifierMac;
+class NetworkConfigWatcherMacThread;
+class ScopedAllowThreadJoinForProxyResolverV8Tracing;
 namespace internal {
 class AddressTrackerLinux;
 }
@@ -194,6 +205,9 @@ class AddressTrackerLinux;
 
 namespace remoting {
 class AutoThread;
+namespace protocol {
+class ScopedAllowThreadJoinForWebRtcTransport;
+}
 }
 
 namespace resource_coordinator {
@@ -216,6 +230,10 @@ namespace viz {
 class HostGpuMemoryBufferManager;
 }
 
+namespace vr {
+class VrShell;
+}
+
 namespace webrtc {
 class DesktopConfigurationMonitor;
 }
@@ -233,6 +251,7 @@ class TaskTracker;
 class AdjustOOMScoreHelper;
 class GetAppOutputScopedAllowBaseSyncPrimitives;
 class MessageLoopImpl;
+class ScopedAllowThreadRecallForStackSamplingProfiler;
 class SimpleThread;
 class StackSamplingProfiler;
 class Thread;
@@ -284,21 +303,20 @@ class BASE_EXPORT ScopedDisallowBlocking {
 
 class BASE_EXPORT ScopedAllowBlocking {
  private:
+  FRIEND_TEST_ALL_PREFIXES(ThreadRestrictionsTest, ScopedAllowBlocking);
+  friend class ScopedAllowBlockingForTesting;
+
   // This can only be instantiated by friends. Use ScopedAllowBlockingForTesting
   // in unit tests to avoid the friend requirement.
-  FRIEND_TEST_ALL_PREFIXES(ThreadRestrictionsTest, ScopedAllowBlocking);
   friend class AdjustOOMScoreHelper;
   friend class android_webview::ScopedAllowInitGLBindings;
-  friend class audio::OutputDevice;
   friend class content::BrowserProcessSubThread;
   friend class content::GpuProcessTransportFactory;
   friend class cronet::CronetPrefsManager;
   friend class cronet::CronetURLRequestContext;
-  friend class media::AudioInputDevice;
   friend class mojo::CoreLibraryInitializer;
   friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703
   friend class ui::MaterialDesignController;
-  friend class ScopedAllowBlockingForTesting;
   friend class StackSamplingProfiler;
 
   ScopedAllowBlocking() EMPTY_BODY_IF_DCHECK_IS_OFF;
@@ -391,16 +409,26 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   // Allowed usage:
   friend class ::BrowserProcessImpl;  // http://crbug.com/125207
   friend class ::KeyStorageLinux;
-  friend class Thread;
+  friend class ::NativeDesktopMediaList;
+  friend class ::StartupTimeBomb;
   friend class android::JavaHandlerThread;
+  friend class audio::OutputDevice;
   friend class base::MessageLoopImpl;
+  friend class base::ScopedAllowThreadRecallForStackSamplingProfiler;
   friend class base::StackSamplingProfiler;
+  friend class base::Thread;
+  friend class content::DesktopCaptureDevice;
+  friend class content::SandboxHostLinux;
   friend class content::ScopedAllowWaitForDebugURL;
   friend class content::SynchronousCompositor;
   friend class content::SynchronousCompositorHost;
   friend class content::SynchronousCompositorSyncCallBridge;
+  friend class media::AudioInputDevice;
+  friend class media::AudioOutputDevice;
   friend class mojo::SyncCallRestrictions;
+  friend class net::NetworkConfigWatcherMacThread;
   friend class viz::HostGpuMemoryBufferManager;
+  friend class vr::VrShell;
 
   // Usage that should be fixed:
   friend class ::chromeos::BlockingMethodCaller;  // http://crbug.com/125360
@@ -413,9 +441,16 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class disk_cache::BackendImpl;             // http://crbug.com/74623
   friend class disk_cache::InFlightIO;              // http://crbug.com/74623
   friend class gpu::GpuChannelHost;                 // http://crbug.com/125264
+  friend class remoting::protocol::
+      ScopedAllowThreadJoinForWebRtcTransport;      // http://crbug.com/660081
   friend class midi::TaskService;                   // https://crbug.com/796830
-  friend class net::NetworkChangeNotifierMac;       // http://crbug.com/125097
   friend class net::internal::AddressTrackerLinux;  // http://crbug.com/125097
+  friend class net::
+      MultiThreadedProxyResolverScopedAllowJoinOnIO;  // http://crbug.com/69710
+  friend class net::NetworkChangeNotifierMac;         // http://crbug.com/125097
+  friend class net::
+      ScopedAllowThreadJoinForProxyResolverV8Tracing; // http://crbug.com/69710
+  friend class printing::PrinterQuery;                // http://crbug.com/66082
   // Not used in production yet, https://crbug.com/844078.
   friend class service_manager::ServiceProcessLauncher;
   friend class ui::WindowResizeHelperMac;  // http://crbug.com/902829
