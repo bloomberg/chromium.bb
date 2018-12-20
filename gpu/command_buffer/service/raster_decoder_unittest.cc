@@ -221,14 +221,15 @@ class RasterDecoderOOPTest : public testing::Test, DecoderClient {
         share_group.get(), surface.get(), gl::GLContextAttribs());
     ASSERT_TRUE(context->MakeCurrent(surface.get()));
 
+    auto feature_info =
+        base::MakeRefCounted<gles2::FeatureInfo>(workarounds, gpu_feature_info);
+
     context_state_ = new raster::RasterDecoderContextState(
         std::move(share_group), std::move(surface), std::move(context),
         false /* use_virtualized_gl_contexts */, base::DoNothing());
     context_state_->InitializeGrContext(workarounds, nullptr);
-    context_state_->InitializeGL(workarounds, gpu_feature_info);
+    context_state_->InitializeGL(feature_info);
 
-    scoped_refptr<gles2::FeatureInfo> feature_info =
-        new gles2::FeatureInfo(workarounds, gpu_feature_info);
     group_ = new gles2::ContextGroup(
         gpu_preferences_, false, &mailbox_manager_,
         nullptr /* memory_tracker */, &shader_translator_cache_,
