@@ -3792,9 +3792,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillNoLocalSaveOnUploadSuccessDescription, kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillNoLocalSaveOnUploadSuccess)},
-    {"single-click-autofill", flag_descriptions::kSingleClickAutofillName,
-     flag_descriptions::kSingleClickAutofillDescription, kOsAll,
-     FEATURE_VALUE_TYPE(autofill::features::kSingleClickAutofill)},
     {"autofill-rich-metadata-queries",
      flag_descriptions::kAutofillRichMetadataQueriesName,
      flag_descriptions::kAutofillRichMetadataQueriesDescription, kOsAll,

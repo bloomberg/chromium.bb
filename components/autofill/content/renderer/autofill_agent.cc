@@ -87,12 +87,6 @@ namespace {
 // upon, instead of multiple in close succession (debounce time).
 size_t kWaitTimeForSelectOptionsChangesMs = 50;
 
-// Whether the "single click" autofill feature is enabled, through command-line
-// or field trial.
-bool IsSingleClickEnabled() {
-  return base::FeatureList::IsEnabled(features::kSingleClickAutofill);
-}
-
 // Gets all the data list values (with corresponding label) for the given
 // element.
 void GetDataListSuggestions(const WebInputElement& element,
@@ -926,10 +920,6 @@ void AutofillAgent::FormControlElementClicked(
   // Show full suggestions when clicking on an already-focused form field.
   options.show_full_suggestion_list = element.IsAutofilled() || was_focused;
 
-  if (!IsSingleClickEnabled()) {
-    // On  the initial click (not focused yet), only show password suggestions.
-    options.show_password_suggestions_only = !was_focused;
-  }
   ShowSuggestions(element, options);
 }
 

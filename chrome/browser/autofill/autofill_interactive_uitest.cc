@@ -1120,31 +1120,9 @@ class AutofillCompanyInteractiveTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// Test params:
-//  - bool popup_views_enabled_: whether feature AutofillExpandedPopupViews
-//        is enabled.
-//  - bool single_click_enabled_: whether AutofillSingleClick is enabled.
-class AutofillSingleClickTest : public AutofillInteractiveTestBase,
-                                public testing::WithParamInterface<bool> {
- protected:
-  AutofillSingleClickTest() : single_click_enabled_(GetParam()) {}
-
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeatureState(features::kSingleClickAutofill,
-                                              single_click_enabled_);
-    AutofillInteractiveTestBase::SetUp();
-  }
-
-  const bool single_click_enabled_;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-// Depending on whether or not AutofillSingleClick is enabled, makes sure that
-// the first click does or does not activate the autofill popup on the initial
-// click within a fillable field.
-IN_PROC_BROWSER_TEST_P(AutofillSingleClickTest, Click) {
+// Makes sure that the first click does or does not activate the autofill popup
+// on the initial click within a fillable field.
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, Click) {
   // Make sure autofill data exists.
   CreateTestProfile();
 
@@ -1152,16 +1130,6 @@ IN_PROC_BROWSER_TEST_P(AutofillSingleClickTest, Click) {
   SetTestUrlResponse(kTestShippingFormString);
   ASSERT_NO_FATAL_FAILURE(
       ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
-
-  // If AutofillSingleClick is NOT enabled, then the first time we click on the
-  // first name field, nothing should happen.
-  if (!single_click_enabled_) {
-    // Click the first name field while it's out of focus, then twiddle our
-    // thumbs a bit. If the autofill popup shows, it will hit the CHECKs in
-    // AutofillManagerTestDelegateImpl while we're waiting.
-    ASSERT_NO_FATAL_FAILURE(ClickFirstNameField());
-    ASSERT_NO_FATAL_FAILURE(MakeSurePopupDoesntAppear());
-  }
 
   // This click should activate the autofill popup.
   test_delegate()->Reset();
@@ -3467,10 +3435,6 @@ INSTANTIATE_TEST_CASE_P(All, AutofillCompanyInteractiveTest, testing::Bool());
 
 INSTANTIATE_TEST_CASE_P(All,
                         AutofillDynamicFormInteractiveTest,
-                        testing::Bool());
-
-INSTANTIATE_TEST_CASE_P(All,
-                        AutofillSingleClickTest,
                         testing::Bool());
 
 INSTANTIATE_TEST_CASE_P(All,

@@ -1042,9 +1042,6 @@ extern const char kSimpleCacheBackendDescription[];
 extern const char kSimplifyHttpsIndicatorName[];
 extern const char kSimplifyHttpsIndicatorDescription[];
 
-extern const char kSingleClickAutofillName[];
-extern const char kSingleClickAutofillDescription[];
-
 extern const char kSingleTabMode[];
 extern const char kSingleTabModeDescription[];
 
