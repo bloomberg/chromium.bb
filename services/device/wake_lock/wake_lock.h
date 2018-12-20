@@ -6,6 +6,7 @@
 #define SERVICES_DEVICE_WAKE_LOCK_WAKE_LOCK_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -15,6 +16,7 @@
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
 #include "services/device/wake_lock/power_save_blocker/power_save_blocker.h"
+#include "services/device/wake_lock/wake_lock.h"
 #include "services/device/wake_lock/wake_lock_context.h"
 #include "ui/gfx/native_widget_types.h"
 

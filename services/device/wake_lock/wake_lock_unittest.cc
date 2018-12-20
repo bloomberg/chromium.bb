@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "services/device/wake_lock/wake_lock.h"
+
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "services/device/device_service_test_base.h"
@@ -25,7 +27,6 @@ class WakeLockTest : public DeviceServiceTestBase {
     DeviceServiceTestBase::SetUp();
     connector()->BindInterface(mojom::kServiceName, &wake_lock_provider_);
 
-    WakeLockProvider::is_in_unittest_ = true;
     wake_lock_provider_->GetWakeLockWithoutContext(
         device::mojom::WakeLockType::kPreventAppSuspension,
         device::mojom::WakeLockReason::kOther, "WakeLockTest",
