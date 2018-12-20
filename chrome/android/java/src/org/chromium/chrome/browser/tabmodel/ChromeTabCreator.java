@@ -114,7 +114,6 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
             Tab tab;
             if (asyncParams != null && asyncParams.getTabToReparent() != null) {
                 type = TabLaunchType.FROM_REPARENTING;
-                openInForeground = true;
 
                 TabReparentingParams params = (TabReparentingParams) asyncParams;
                 tab = params.getTabToReparent();
