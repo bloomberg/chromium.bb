@@ -4,6 +4,8 @@
 
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut_mac.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -88,9 +90,11 @@ void RebuildAppAndLaunch(std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
       shortcut_info->extension_id, extensions::ExtensionRegistry::ENABLED);
   if (!extension || !extension->is_platform_app())
     return;
-
-  web_app::GetShortcutInfoForApp(extension, profile,
-                                 base::BindOnce(&UpdateAndLaunchShim));
+  base::OnceCallback<void(base::Process)> launch_callback = base::DoNothing();
+  web_app::GetShortcutInfoForApp(
+      extension, profile,
+      base::BindOnce(&LaunchShim, LaunchShimUpdateBehavior::UPDATE_IF_INSTALLED,
+                     std::move(launch_callback)));
 }
 
 bool MaybeRebuildShortcut(const base::CommandLine& command_line) {

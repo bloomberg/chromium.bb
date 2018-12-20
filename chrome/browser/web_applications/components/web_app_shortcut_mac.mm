@@ -183,68 +183,69 @@ bool HasSameUserDataDir(const base::FilePath& bundle_path) {
                           user_data_dir.value(), base::CompareCase::SENSITIVE);
 }
 
-void LaunchShimOnFileThread(web_app::LaunchAppCallback callback,
-                            bool launched_after_rebuild,
+void LaunchShimOnFileThread(web_app::LaunchShimUpdateBehavior update_behavior,
+                            web_app::LaunchShimCallback callback,
                             const web_app::ShortcutInfo& shortcut_info) {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   web_app::WebAppShortcutCreator shortcut_creator(
       web_app::internals::GetShortcutDataDir(shortcut_info), &shortcut_info);
 
-  // Attempt to locate the shim's path using LaunchServices.
-  std::vector<base::FilePath> shim_paths = shortcut_creator.GetAppBundlesById();
-
-  // Add as a last resort the copy in the web app's |app_data_dir_|, in case
-  // the user deleted all other copies.
-  shim_paths.push_back(shortcut_creator.GetInternalShortcutPath());
-  base::FilePath shim_path = shim_paths.front();
-  if (!base::PathExists(shim_path)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(std::move(callback), base::Process()));
-    return;
+  // Recreate shims if requested, and populate |shim_paths| with the paths to
+  // attempt to launch.
+  bool launched_after_rebuild = false;
+  std::vector<base::FilePath> shim_paths;
+  switch (update_behavior) {
+    case web_app::LaunchShimUpdateBehavior::NO_UPDATE:
+      // Attempt to locate the shim's path using LaunchServices, and as a last
+      // resort use the copy in the web app's |app_data_dir_|, in case the user
+      // deleted all other copies.
+      shim_paths = shortcut_creator.GetAppBundlesById();
+      shim_paths.push_back(shortcut_creator.GetInternalShortcutPath());
+      break;
+    case web_app::LaunchShimUpdateBehavior::UPDATE_IF_INSTALLED:
+      // Only attempt to launch shims that were updated.
+      launched_after_rebuild = true;
+      shortcut_creator.UpdateShortcuts(false, &shim_paths);
+      break;
+    case web_app::LaunchShimUpdateBehavior::RECREATE:
+      // Likewise, only attempt to launch shims that were updated.
+      launched_after_rebuild = true;
+      shortcut_creator.UpdateShortcuts(true, &shim_paths);
+      break;
   }
 
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  command_line.AppendSwitchASCII(app_mode::kLaunchedByChromeProcessId,
-                                 base::IntToString(base::GetCurrentProcId()));
-  if (launched_after_rebuild)
-    command_line.AppendSwitch(app_mode::kLaunchedAfterRebuild);
-  // Launch without activating (NSWorkspaceLaunchWithoutActivation).
-  base::Process process = base::mac::OpenApplicationWithPath(
-      shim_path, command_line,
-      NSWorkspaceLaunchDefault | NSWorkspaceLaunchWithoutActivation);
+  // Attempt to launch the shim.
+  for (const auto& shim_path : shim_paths) {
+    if (!base::PathExists(shim_path))
+      continue;
+
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    command_line.AppendSwitchASCII(app_mode::kLaunchedByChromeProcessId,
+                                   base::IntToString(base::GetCurrentProcId()));
+    if (launched_after_rebuild)
+      command_line.AppendSwitch(app_mode::kLaunchedAfterRebuild);
+
+    // Launch without activating (NSWorkspaceLaunchWithoutActivation).
+    base::Process process = base::mac::OpenApplicationWithPath(
+        shim_path, command_line,
+        NSWorkspaceLaunchDefault | NSWorkspaceLaunchWithoutActivation);
+    if (process.IsValid()) {
+      base::PostTaskWithTraits(
+          FROM_HERE, {content::BrowserThread::UI},
+          base::BindOnce(std::move(callback), std::move(process)));
+      return;
+    }
+  }
+
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(std::move(callback), std::move(process)));
+      base::BindOnce(std::move(callback), base::Process()));
 }
 
 base::FilePath GetAppLoaderPath() {
   return base::mac::PathForFrameworkBundleResource(
       base::mac::NSToCFCast(@"app_mode_loader.app"));
-}
-
-void UpdatePlatformShortcutsInternal(
-    const base::FilePath& app_data_path,
-    const base::string16& old_app_title,
-    const web_app::ShortcutInfo& shortcut_info) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
-  if (web_app::AppShimLaunchDisabled())
-    return;
-
-  web_app::WebAppShortcutCreator shortcut_creator(app_data_path,
-                                                  &shortcut_info);
-  shortcut_creator.UpdateShortcuts();
-}
-
-void UpdateAndLaunchShimOnFileThread(
-    const web_app::ShortcutInfo& shortcut_info) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
-  base::FilePath shortcut_data_dir = web_app::GetWebAppDataDirectory(
-      shortcut_info.profile_path, shortcut_info.extension_id, GURL());
-  UpdatePlatformShortcutsInternal(shortcut_data_dir, base::string16(),
-                                  shortcut_info);
-  LaunchShimOnFileThread(base::DoNothing(), true, shortcut_info);
 }
 
 base::FilePath GetLocalizableAppShortcutsSubdirName() {
@@ -483,12 +484,6 @@ std::unique_ptr<web_app::ShortcutInfo> BuildShortcutInfoFromBundle(
 
 namespace web_app {
 
-void UpdateAndLaunchShim(std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
-  web_app::internals::PostShortcutIOTask(
-      base::BindOnce(&UpdateAndLaunchShimOnFileThread),
-      std::move(shortcut_info));
-}
-
 std::unique_ptr<web_app::ShortcutInfo> RecordAppShimErrorAndBuildShortcutInfo(
     const base::FilePath& bundle_path) {
   NSDictionary* plist = ReadPlist(GetPlistPath(bundle_path));
@@ -559,7 +554,9 @@ bool WebAppShortcutCreator::BuildShortcut(
 }
 
 size_t WebAppShortcutCreator::CreateShortcutsAt(
-    const std::vector<base::FilePath>& dst_app_paths) const {
+    const std::vector<base::FilePath>& dst_app_paths,
+    std::vector<base::FilePath>* updated_paths) const {
+  DCHECK(updated_paths && updated_paths->empty());
   size_t succeeded = 0;
 
   base::ScopedTempDir scoped_temp_dir;
@@ -597,6 +594,7 @@ size_t WebAppShortcutCreator::CreateShortcutsAt(
     base::mac::RemoveQuarantineAttribute(dst_app_path.Append("Contents")
                                              .Append("MacOS")
                                              .Append("app_mode_loader"));
+    updated_paths->push_back(dst_app_path);
     ++succeeded;
   }
 
@@ -642,7 +640,8 @@ bool WebAppShortcutCreator::CreateShortcuts(
     app_paths.push_back(GetApplicationsShortcutPath());
 
   DCHECK(!app_paths.empty());
-  size_t success_count = CreateShortcutsAt(app_paths);
+  std::vector<base::FilePath> updated_app_paths;
+  size_t success_count = CreateShortcutsAt(app_paths, &updated_app_paths);
   if (success_count == 0)
     return false;
 
@@ -696,7 +695,11 @@ void WebAppShortcutCreator::DeleteShortcuts() {
     base::DeleteFile(app_data_dir_, false);
 }
 
-bool WebAppShortcutCreator::UpdateShortcuts() {
+bool WebAppShortcutCreator::UpdateShortcuts(
+    bool recreate_if_needed,
+    std::vector<base::FilePath>* updated_paths) {
+  DCHECK(updated_paths && updated_paths->empty());
+
   // Never look in ~/Applications or search the system for a bundle ID in a test
   // since that relies on global system state and potentially cruft that may be
   // leftover from prior/crashed test runs.
@@ -717,7 +720,7 @@ bool WebAppShortcutCreator::UpdateShortcuts() {
       // Otherwise, take its absence as a signal that a shortcut has never been
       // created.
       bool profile_copy_exists = base::PathExists(GetInternalShortcutPath());
-      if (profile_copy_exists && info_->from_bookmark) {
+      if (recreate_if_needed || (profile_copy_exists && info_->from_bookmark)) {
         // The bookmark app shortcut has been deleted by the user. Restore it,
         // as the Mac UI for bookmark apps creates the expectation that the app
         // will be added to Applications.
@@ -739,11 +742,9 @@ bool WebAppShortcutCreator::UpdateShortcuts() {
     app_paths.push_back(GetInternalShortcutPath());
   }
 
-  size_t success_count = CreateShortcutsAt(app_paths);
-  if (success_count == 0)
-    return false;
-
-  UpdateInternalBundleIdentifier();
+  size_t success_count = CreateShortcutsAt(app_paths, updated_paths);
+  if (success_count)
+    UpdateInternalBundleIdentifier();
   return success_count == app_paths.size();
 }
 
@@ -978,8 +979,9 @@ void WebAppShortcutCreator::RevealAppShimInFinder() const {
       openFile:base::mac::FilePathToNSString(apps_path)];
 }
 
-void MaybeLaunchShortcut(std::unique_ptr<ShortcutInfo> shortcut_info,
-                         LaunchAppCallback callback) {
+void LaunchShim(LaunchShimUpdateBehavior update_behavior,
+                LaunchShimCallback callback,
+                std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
   if (web_app::AppShimLaunchDisabled()) {
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
@@ -988,7 +990,8 @@ void MaybeLaunchShortcut(std::unique_ptr<ShortcutInfo> shortcut_info,
   }
 
   web_app::internals::PostShortcutIOTask(
-      base::BindOnce(&LaunchShimOnFileThread, std::move(callback), false),
+      base::BindOnce(&LaunchShimOnFileThread, update_behavior,
+                     std::move(callback)),
       std::move(shortcut_info));
 }
 
@@ -1016,7 +1019,14 @@ void DeletePlatformShortcuts(const base::FilePath& app_data_path,
 void UpdatePlatformShortcuts(const base::FilePath& app_data_path,
                              const base::string16& old_app_title,
                              const ShortcutInfo& shortcut_info) {
-  UpdatePlatformShortcutsInternal(app_data_path, old_app_title, shortcut_info);
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  if (web_app::AppShimLaunchDisabled())
+    return;
+
+  web_app::WebAppShortcutCreator shortcut_creator(app_data_path,
+                                                  &shortcut_info);
+  std::vector<base::FilePath> updated_shim_paths;
+  shortcut_creator.UpdateShortcuts(false, &updated_shim_paths);
 }
 
 void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
