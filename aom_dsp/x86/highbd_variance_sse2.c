@@ -784,7 +784,7 @@ void aom_highbd_jnt_comp_avg_pred_sse2(uint8_t *comp_pred8,
                                        const uint8_t *pred8, int width,
                                        int height, const uint8_t *ref8,
                                        int ref_stride,
-                                       const JNT_COMP_PARAMS *jcp_param) {
+                                       const DIST_WTD_COMP_PARAMS *jcp_param) {
   int i;
   const uint16_t wt0 = (uint16_t)jcp_param->fwd_offset;
   const uint16_t wt1 = (uint16_t)jcp_param->bck_offset;
@@ -836,7 +836,7 @@ void aom_highbd_jnt_comp_avg_upsampled_pred_sse2(
     MACROBLOCKD *xd, const struct AV1Common *const cm, int mi_row, int mi_col,
     const MV *const mv, uint8_t *comp_pred8, const uint8_t *pred8, int width,
     int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref8,
-    int ref_stride, int bd, const JNT_COMP_PARAMS *jcp_param,
+    int ref_stride, int bd, const DIST_WTD_COMP_PARAMS *jcp_param,
     int subpel_search) {
   uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
   int n;

@@ -1339,14 +1339,14 @@ static void set_rc_buffer_sizes(RATE_CONTROL *rc,
   static unsigned int fnname##_bits8(                                       \
       const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr,    \
       int ref_stride, const uint8_t *second_pred,                           \
-      const JNT_COMP_PARAMS *jcp_param) {                                   \
+      const DIST_WTD_COMP_PARAMS *jcp_param) {                              \
     return fnname(src_ptr, source_stride, ref_ptr, ref_stride, second_pred, \
                   jcp_param);                                               \
   }                                                                         \
   static unsigned int fnname##_bits10(                                      \
       const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr,    \
       int ref_stride, const uint8_t *second_pred,                           \
-      const JNT_COMP_PARAMS *jcp_param) {                                   \
+      const DIST_WTD_COMP_PARAMS *jcp_param) {                              \
     return fnname(src_ptr, source_stride, ref_ptr, ref_stride, second_pred, \
                   jcp_param) >>                                             \
            2;                                                               \
@@ -1354,7 +1354,7 @@ static void set_rc_buffer_sizes(RATE_CONTROL *rc,
   static unsigned int fnname##_bits12(                                      \
       const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr,    \
       int ref_stride, const uint8_t *second_pred,                           \
-      const JNT_COMP_PARAMS *jcp_param) {                                   \
+      const DIST_WTD_COMP_PARAMS *jcp_param) {                              \
     return fnname(src_ptr, source_stride, ref_ptr, ref_stride, second_pred, \
                   jcp_param) >>                                             \
            4;                                                               \

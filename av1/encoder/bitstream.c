@@ -1127,7 +1127,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     if (mbmi->ref_frame[1] != INTRA_FRAME) write_motion_mode(cm, xd, mbmi, w);
 
     // First write idx to indicate current compound inter prediction mode group
-    // Group A (0): jnt_comp, compound_average
+    // Group A (0): dist_wtd_comp, compound_average
     // Group B (1): interintra, compound_diffwtd, wedge
     if (has_second_ref(mbmi)) {
       const int masked_compound_used = is_any_masked_compound_used(bsize) &&

@@ -195,7 +195,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->ml_prune_ab_partition = 1;
   sf->ml_prune_4_partition = 1;
   sf->adaptive_txb_search_level = 1;
-  sf->use_jnt_comp_flag = JNT_COMP_SKIP_MV_SEARCH;
+  sf->use_dist_wtd_comp_flag = DIST_WTD_COMP_SKIP_MV_SEARCH;
   sf->model_based_prune_tx_search_level = 1;
   sf->model_based_post_interp_filter_breakout = 1;
   sf->inter_mode_rd_model_estimation = 1;
@@ -281,7 +281,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->disable_wedge_search_edge_thresh = 0;
     sf->fast_wedge_sign_estimate = 1;
     sf->disable_dual_filter = 1;
-    sf->use_jnt_comp_flag = JNT_COMP_DISABLED;
+    sf->use_dist_wtd_comp_flag = DIST_WTD_COMP_DISABLED;
     sf->prune_comp_type_by_comp_avg = 2;
   }
 
@@ -487,8 +487,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->use_inter_txb_hash = 0;
   sf->use_mb_rd_hash = 1;
   sf->optimize_b_precheck = 0;
-  sf->jnt_comp_fast_tx_search = 0;
-  sf->use_jnt_comp_flag = JNT_COMP_ENABLED;
+  sf->dist_wtd_comp_fast_tx_search = 0;
+  sf->use_dist_wtd_comp_flag = DIST_WTD_COMP_ENABLED;
   sf->reuse_inter_intra_mode = 0;
   sf->intra_angle_estimation = 0;
   sf->skip_obmc_in_uniform_mv_field = 0;

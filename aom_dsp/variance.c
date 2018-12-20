@@ -185,7 +185,7 @@ void aom_var_filter_block2d_bil_second_pass_c(const uint16_t *a, uint8_t *b,
   uint32_t aom_jnt_sub_pixel_avg_variance##W##x##H##_c(                       \
       const uint8_t *a, int a_stride, int xoffset, int yoffset,               \
       const uint8_t *b, int b_stride, uint32_t *sse,                          \
-      const uint8_t *second_pred, const JNT_COMP_PARAMS *jcp_param) {         \
+      const uint8_t *second_pred, const DIST_WTD_COMP_PARAMS *jcp_param) {    \
     uint16_t fdata3[(H + 1) * W];                                             \
     uint8_t temp2[H * W];                                                     \
     DECLARE_ALIGNED(16, uint8_t, temp3[H * W]);                               \
@@ -426,7 +426,7 @@ void aom_comp_avg_upsampled_pred_c(MACROBLOCKD *xd, const AV1_COMMON *const cm,
 
 void aom_jnt_comp_avg_pred_c(uint8_t *comp_pred, const uint8_t *pred, int width,
                              int height, const uint8_t *ref, int ref_stride,
-                             const JNT_COMP_PARAMS *jcp_param) {
+                             const DIST_WTD_COMP_PARAMS *jcp_param) {
   int i, j;
   const int fwd_offset = jcp_param->fwd_offset;
   const int bck_offset = jcp_param->bck_offset;
@@ -447,7 +447,7 @@ void aom_jnt_comp_avg_upsampled_pred_c(
     MACROBLOCKD *xd, const AV1_COMMON *const cm, int mi_row, int mi_col,
     const MV *const mv, uint8_t *comp_pred, const uint8_t *pred, int width,
     int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref,
-    int ref_stride, const JNT_COMP_PARAMS *jcp_param, int subpel_search) {
+    int ref_stride, const DIST_WTD_COMP_PARAMS *jcp_param, int subpel_search) {
   int i, j;
   const int fwd_offset = jcp_param->fwd_offset;
   const int bck_offset = jcp_param->bck_offset;
@@ -752,7 +752,7 @@ void aom_highbd_var_filter_block2d_bil_second_pass(
   uint32_t aom_highbd_8_jnt_sub_pixel_avg_variance##W##x##H##_c(               \
       const uint8_t *src, int src_stride, int xoffset, int yoffset,            \
       const uint8_t *dst, int dst_stride, uint32_t *sse,                       \
-      const uint8_t *second_pred, const JNT_COMP_PARAMS *jcp_param) {          \
+      const uint8_t *second_pred, const DIST_WTD_COMP_PARAMS *jcp_param) {     \
     uint16_t fdata3[(H + 1) * W];                                              \
     uint16_t temp2[H * W];                                                     \
     DECLARE_ALIGNED(16, uint16_t, temp3[H * W]);                               \
@@ -772,7 +772,7 @@ void aom_highbd_var_filter_block2d_bil_second_pass(
   uint32_t aom_highbd_10_jnt_sub_pixel_avg_variance##W##x##H##_c(              \
       const uint8_t *src, int src_stride, int xoffset, int yoffset,            \
       const uint8_t *dst, int dst_stride, uint32_t *sse,                       \
-      const uint8_t *second_pred, const JNT_COMP_PARAMS *jcp_param) {          \
+      const uint8_t *second_pred, const DIST_WTD_COMP_PARAMS *jcp_param) {     \
     uint16_t fdata3[(H + 1) * W];                                              \
     uint16_t temp2[H * W];                                                     \
     DECLARE_ALIGNED(16, uint16_t, temp3[H * W]);                               \
@@ -792,7 +792,7 @@ void aom_highbd_var_filter_block2d_bil_second_pass(
   uint32_t aom_highbd_12_jnt_sub_pixel_avg_variance##W##x##H##_c(              \
       const uint8_t *src, int src_stride, int xoffset, int yoffset,            \
       const uint8_t *dst, int dst_stride, uint32_t *sse,                       \
-      const uint8_t *second_pred, const JNT_COMP_PARAMS *jcp_param) {          \
+      const uint8_t *second_pred, const DIST_WTD_COMP_PARAMS *jcp_param) {     \
     uint16_t fdata3[(H + 1) * W];                                              \
     uint16_t temp2[H * W];                                                     \
     DECLARE_ALIGNED(16, uint16_t, temp3[H * W]);                               \
@@ -1021,7 +1021,7 @@ void aom_highbd_comp_avg_upsampled_pred_c(
 void aom_highbd_jnt_comp_avg_pred_c(uint8_t *comp_pred8, const uint8_t *pred8,
                                     int width, int height, const uint8_t *ref8,
                                     int ref_stride,
-                                    const JNT_COMP_PARAMS *jcp_param) {
+                                    const DIST_WTD_COMP_PARAMS *jcp_param) {
   int i, j;
   const int fwd_offset = jcp_param->fwd_offset;
   const int bck_offset = jcp_param->bck_offset;
@@ -1045,7 +1045,7 @@ void aom_highbd_jnt_comp_avg_upsampled_pred_c(
     MACROBLOCKD *xd, const struct AV1Common *const cm, int mi_row, int mi_col,
     const MV *const mv, uint8_t *comp_pred8, const uint8_t *pred8, int width,
     int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref8,
-    int ref_stride, int bd, const JNT_COMP_PARAMS *jcp_param,
+    int ref_stride, int bd, const DIST_WTD_COMP_PARAMS *jcp_param,
     int subpel_search) {
   int i, j;
   const int fwd_offset = jcp_param->fwd_offset;

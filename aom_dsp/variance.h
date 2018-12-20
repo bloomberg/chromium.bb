@@ -50,15 +50,14 @@ typedef unsigned int (*aom_subp_avg_variance_fn_t)(
     const uint8_t *a, int a_stride, int xoffset, int yoffset, const uint8_t *b,
     int b_stride, unsigned int *sse, const uint8_t *second_pred);
 
-typedef unsigned int (*aom_jnt_sad_avg_fn_t)(const uint8_t *a, int a_stride,
-                                             const uint8_t *b, int b_stride,
-                                             const uint8_t *second_pred,
-                                             const JNT_COMP_PARAMS *jcp_param);
+typedef unsigned int (*aom_jnt_sad_avg_fn_t)(
+    const uint8_t *a, int a_stride, const uint8_t *b, int b_stride,
+    const uint8_t *second_pred, const DIST_WTD_COMP_PARAMS *jcp_param);
 
 typedef unsigned int (*aom_jnt_subp_avg_variance_fn_t)(
     const uint8_t *a, int a_stride, int xoffset, int yoffset, const uint8_t *b,
     int b_stride, unsigned int *sse, const uint8_t *second_pred,
-    const JNT_COMP_PARAMS *jcp_param);
+    const DIST_WTD_COMP_PARAMS *jcp_param);
 
 typedef unsigned int (*aom_masked_sad_fn_t)(const uint8_t *src, int src_stride,
                                             const uint8_t *ref, int ref_stride,

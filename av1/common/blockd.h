@@ -479,11 +479,11 @@ typedef struct cfl_ctx {
   int is_chroma_reference;
 } CFL_CTX;
 
-typedef struct jnt_comp_params {
+typedef struct dist_wtd_comp_params {
   int use_dist_wtd_comp_avg;
   int fwd_offset;
   int bck_offset;
-} JNT_COMP_PARAMS;
+} DIST_WTD_COMP_PARAMS;
 
 struct scale_factors;
 
@@ -583,7 +583,7 @@ typedef struct macroblockd {
   uint8_t *mc_buf[2];
   CFL_CTX cfl;
 
-  JNT_COMP_PARAMS jcp_param;
+  DIST_WTD_COMP_PARAMS jcp_param;
 
   uint16_t cb_offset[MAX_MB_PLANE];
   uint16_t txb_offset[MAX_MB_PLANE];

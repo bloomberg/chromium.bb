@@ -38,7 +38,7 @@ typedef ::testing::tuple<int, int, SadMxNAvgFunc, int> SadMxNAvgParam;
 typedef void (*JntCompAvgFunc)(uint8_t *comp_pred, const uint8_t *pred,
                                int width, int height, const uint8_t *ref,
                                int ref_stride,
-                               const JNT_COMP_PARAMS *jcp_param);
+                               const DIST_WTD_COMP_PARAMS *jcp_param);
 typedef ::testing::tuple<int, int, JntCompAvgFunc, int> JntCompAvgParam;
 
 typedef unsigned int (*JntSadMxhFunc)(const uint8_t *src_ptr, int src_stride,
@@ -49,7 +49,7 @@ typedef ::testing::tuple<int, int, JntSadMxhFunc, int> JntSadMxhParam;
 typedef uint32_t (*JntSadMxNAvgFunc)(const uint8_t *src_ptr, int src_stride,
                                      const uint8_t *ref_ptr, int ref_stride,
                                      const uint8_t *second_pred,
-                                     const JNT_COMP_PARAMS *jcp_param);
+                                     const DIST_WTD_COMP_PARAMS *jcp_param);
 typedef ::testing::tuple<int, int, JntSadMxNAvgFunc, int> JntSadMxNAvgParam;
 
 typedef void (*SadMxNx4Func)(const uint8_t *src_ptr, int src_stride,
@@ -305,7 +305,7 @@ class SADTestBase : public ::testing::Test {
   static uint8_t *comp_pred_test_;
   static uint8_t *comp_pred8_test_;
   static uint16_t *comp_pred16_test_;
-  JNT_COMP_PARAMS jcp_param_;
+  DIST_WTD_COMP_PARAMS jcp_param_;
 
   ACMRandom rnd_;
 };

@@ -154,7 +154,7 @@ static model_rd_from_sse_type model_rd_sse_fn[MODELRD_TYPES] = {
 #define MODELRD_TYPE_MASKED_COMPOUND 1
 #define MODELRD_TYPE_INTERINTRA 1
 #define MODELRD_TYPE_INTRA 1
-#define MODELRD_TYPE_JNT_COMPOUND 1
+#define MODELRD_TYPE_DIST_WTD_COMPOUND 1
 
 #define DUAL_FILTER_SET_SIZE (SWITCHABLE_FILTERS * SWITCHABLE_FILTERS)
 static const InterpFilters filter_sets[DUAL_FILTER_SET_SIZE] = {
@@ -9561,7 +9561,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi,
   const int search_dist_wtd_comp =
       is_comp_pred & cm->seq_params.order_hint_info.enable_dist_wtd_comp &
       (mbmi->mode != GLOBAL_GLOBALMV) &
-      (cpi->sf.use_jnt_comp_flag != JNT_COMP_DISABLED);
+      (cpi->sf.use_dist_wtd_comp_flag != DIST_WTD_COMP_DISABLED);
 
   // TODO(jingning): This should be deprecated shortly.
   const int has_nearmv = have_nearmv_in_inter_mode(mbmi->mode) ? 1 : 0;
@@ -9652,7 +9652,8 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi,
           cur_mv[0] = args->single_newmv[ref_mv_idx][ref0];
           rate_mv = args->single_newmv_rate[ref_mv_idx][ref0];
         } else if (!(search_dist_wtd_comp &&
-                     (cpi->sf.use_jnt_comp_flag == JNT_COMP_SKIP_MV_SEARCH) &&
+                     (cpi->sf.use_dist_wtd_comp_flag ==
+                      DIST_WTD_COMP_SKIP_MV_SEARCH) &&
                      comp_idx == 0)) {
           newmv_ret_val = handle_newmv(cpi, x, bsize, cur_mv, mi_row, mi_col,
                                        &rate_mv, args);
@@ -9829,7 +9830,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi,
       }
       rd_stats->rate += compmode_interinter_cost;
 
-      if (search_dist_wtd_comp && cpi->sf.jnt_comp_fast_tx_search &&
+      if (search_dist_wtd_comp && cpi->sf.dist_wtd_comp_fast_tx_search &&
           comp_idx == 0) {
         // TODO(chengchen): this speed feature introduces big loss.
         // Need better estimation of rate distortion.
@@ -9839,7 +9840,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi,
         int64_t plane_sse[MAX_MB_PLANE] = { 0 };
         int64_t plane_dist[MAX_MB_PLANE] = { 0 };
 
-        model_rd_sb_fn[MODELRD_TYPE_JNT_COMPOUND](
+        model_rd_sb_fn[MODELRD_TYPE_DIST_WTD_COMPOUND](
             cpi, bsize, x, xd, 0, num_planes - 1, mi_row, mi_col, &dummy_rate,
             &dummy_dist, &skip_txfm_sb, &skip_sse_sb, plane_rate, plane_sse,
             plane_dist);

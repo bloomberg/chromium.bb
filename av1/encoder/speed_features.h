@@ -258,10 +258,10 @@ enum {
 } UENUM1BYTE(TXFM_RD_MODEL);
 
 enum {
-  JNT_COMP_ENABLED,
-  JNT_COMP_SKIP_MV_SEARCH,
-  JNT_COMP_DISABLED,
-} UENUM1BYTE(JNT_COMP_FLAG);
+  DIST_WTD_COMP_ENABLED,
+  DIST_WTD_COMP_SKIP_MV_SEARCH,
+  DIST_WTD_COMP_DISABLED,
+} UENUM1BYTE(DIST_WTD_COMP_FLAG);
 
 typedef struct SPEED_FEATURES {
   MV_SPEED_FEATURES mv;
@@ -548,11 +548,11 @@ typedef struct SPEED_FEATURES {
   // Calculate RD cost before doing optimize_b, and skip if the cost is large.
   int optimize_b_precheck;
 
-  // Use model rd instead of transform search in jnt_comp
-  int jnt_comp_fast_tx_search;
+  // Use model rd instead of transform search in dist_wtd_comp
+  int dist_wtd_comp_fast_tx_search;
 
   // Decide when and how to use joint_comp.
-  JNT_COMP_FLAG use_jnt_comp_flag;
+  DIST_WTD_COMP_FLAG use_dist_wtd_comp_flag;
 
   // Decoder side speed feature to add penalty for use of dual-sgr filters.
   // Takes values 0 - 10, 0 indicating no penalty and each additional level
