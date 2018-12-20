@@ -38,7 +38,7 @@ void CastFeatureListCreator::CreatePrefServiceAndFeatureList() {
       *features_dict, *experiment_ids,
       command_line->GetSwitchValueASCII(switches::kEnableFeatures),
       command_line->GetSwitchValueASCII(switches::kDisableFeatures),
-      extra_enable_features_);
+      extra_enable_features_, extra_disable_features_);
 }
 
 std::unique_ptr<PrefService> CastFeatureListCreator::TakePrefService() {
@@ -48,6 +48,11 @@ std::unique_ptr<PrefService> CastFeatureListCreator::TakePrefService() {
 void CastFeatureListCreator::SetExtraEnableFeatures(
     std::string extra_enable_features) {
   extra_enable_features_ = extra_enable_features;
+}
+
+void CastFeatureListCreator::SetExtraDisableFeatures(
+    std::string extra_disable_features) {
+  extra_disable_features_ = extra_disable_features;
 }
 
 }  // namespace chromecast
