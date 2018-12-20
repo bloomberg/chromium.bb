@@ -359,7 +359,11 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
       // drawing to context.
       CGContextSaveGState(context);
       CGContextTranslateCTM(context, 0, overlay.yOffset);
-      if (useDrawViewHierarchy) {
+      // |drawViewHierarchyInRect:| has undefined behavior when the view is not
+      // in the visible view hierarchy. In practice, when this method is called
+      // on a view that is part of view controller containment, an
+      // UIViewControllerHierarchyInconsistency exception will be thrown.
+      if (useDrawViewHierarchy && overlay.view.window) {
         [overlay.view drawViewHierarchyInRect:overlay.view.bounds
                            afterScreenUpdates:YES];
       } else {
@@ -399,8 +403,16 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
     // drawing to context.
     CGContextSaveGState(context);
     CGContextTranslateCTM(context, 0, overlay.yOffset - frame.origin.y);
-    [overlay.view drawViewHierarchyInRect:overlay.view.bounds
-                       afterScreenUpdates:YES];
+    // |drawViewHierarchyInRect:| has undefined behavior when the view is not in
+    // the visible view hierarchy. In practice, when this method is called on a
+    // view that is part of view controller containment, an
+    // UIViewControllerHierarchyInconsistency exception will be thrown.
+    if (overlay.view.window) {
+      [overlay.view drawViewHierarchyInRect:overlay.view.bounds
+                         afterScreenUpdates:YES];
+    } else {
+      [[overlay.view layer] renderInContext:context];
+    }
     CGContextRestoreGState(context);
   }
   UIImage* snapshotWithOverlays = UIGraphicsGetImageFromCurrentImageContext();
