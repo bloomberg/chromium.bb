@@ -33,7 +33,6 @@ using base::ASCIIToUTF16;
 using autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics;
 using autofill::features::kAutofillEnforceMinRequiredFieldsForQuery;
 using autofill::features::kAutofillEnforceMinRequiredFieldsForUpload;
-using autofill::features::kAutofillRationalizeRepeatedServerPredictions;
 
 namespace autofill {
 
@@ -5178,36 +5177,14 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeLoneField) {
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
-  // Test that the expiry month field is rationalized away when enabled.
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
-
-    FormStructure::ParseQueryResponse(response_string, forms, nullptr);
-    ASSERT_EQ(1U, forms.size());
-    ASSERT_EQ(4U, forms[0]->field_count());
-    EXPECT_EQ(NAME_FULL, forms[0]->field(0)->Type().GetStorableType());
-    EXPECT_EQ(ADDRESS_HOME_LINE1, forms[0]->field(1)->Type().GetStorableType());
-    EXPECT_EQ(UNKNOWN_TYPE, forms[0]->field(2)->Type().GetStorableType());
-    EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(3)->Type().GetStorableType());
-  }
-
-  // Sanity check that the enable/disabled works.
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
-
-    FormStructure::ParseQueryResponse(response_string, forms, nullptr);
-    ASSERT_EQ(1U, forms.size());
-    ASSERT_EQ(4U, forms[0]->field_count());
-    EXPECT_EQ(NAME_FULL, forms[0]->field(0)->Type().GetStorableType());
-    EXPECT_EQ(ADDRESS_HOME_LINE1, forms[0]->field(1)->Type().GetStorableType());
-    EXPECT_EQ(CREDIT_CARD_EXP_MONTH,
-              forms[0]->field(2)->Type().GetStorableType());
-    EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(3)->Type().GetStorableType());
-  }
+  // Test that the expiry month field is rationalized away.
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  ASSERT_EQ(1U, forms.size());
+  ASSERT_EQ(4U, forms[0]->field_count());
+  EXPECT_EQ(NAME_FULL, forms[0]->field(0)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_LINE1, forms[0]->field(1)->Type().GetStorableType());
+  EXPECT_EQ(UNKNOWN_TYPE, forms[0]->field(2)->Type().GetStorableType());
+  EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(3)->Type().GetStorableType());
 }
 
 TEST_F(FormStructureTest, ParseQueryResponse_RationalizeCCName) {
@@ -5240,35 +5217,13 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeCCName) {
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
-  // Test that the name fields are rationalized when enabled.
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
-
-    FormStructure::ParseQueryResponse(response_string, forms, nullptr);
-    ASSERT_EQ(1U, forms.size());
-    ASSERT_EQ(3U, forms[0]->field_count());
-    EXPECT_EQ(NAME_FIRST, forms[0]->field(0)->Type().GetStorableType());
-    EXPECT_EQ(NAME_LAST, forms[0]->field(1)->Type().GetStorableType());
-    EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(2)->Type().GetStorableType());
-  }
-
-  // Sanity check that the enable/disabled works.
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
-
-    FormStructure::ParseQueryResponse(response_string, forms, nullptr);
-    ASSERT_EQ(1U, forms.size());
-    ASSERT_EQ(3U, forms[0]->field_count());
-    EXPECT_EQ(CREDIT_CARD_NAME_FIRST,
-              forms[0]->field(0)->Type().GetStorableType());
-    EXPECT_EQ(CREDIT_CARD_NAME_LAST,
-              forms[0]->field(1)->Type().GetStorableType());
-    EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(2)->Type().GetStorableType());
-  }
+  // Test that the name fields are rationalized.
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  ASSERT_EQ(1U, forms.size());
+  ASSERT_EQ(3U, forms[0]->field_count());
+  EXPECT_EQ(NAME_FIRST, forms[0]->field(0)->Type().GetStorableType());
+  EXPECT_EQ(NAME_LAST, forms[0]->field(1)->Type().GetStorableType());
+  EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(2)->Type().GetStorableType());
 }
 
 TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_1) {
@@ -5313,44 +5268,18 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_1) {
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
-  // Test that the extra month field is rationalized away when enabled.
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
-
-    FormStructure::ParseQueryResponse(response_string, forms, nullptr);
-    ASSERT_EQ(1U, forms.size());
-    ASSERT_EQ(5U, forms[0]->field_count());
-    EXPECT_EQ(CREDIT_CARD_NAME_FULL,
-              forms[0]->field(0)->Type().GetStorableType());
-    EXPECT_EQ(CREDIT_CARD_NUMBER, forms[0]->field(1)->Type().GetStorableType());
-    EXPECT_EQ(CREDIT_CARD_EXP_MONTH,
-              forms[0]->field(2)->Type().GetStorableType());
-    EXPECT_EQ(CREDIT_CARD_EXP_2_DIGIT_YEAR,
-              forms[0]->field(3)->Type().GetStorableType());
-    EXPECT_EQ(UNKNOWN_TYPE, forms[0]->field(4)->Type().GetStorableType());
-  }
-
-  // Sanity check that the enable/disabled works.
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
-
-    FormStructure::ParseQueryResponse(response_string, forms, nullptr);
-    ASSERT_EQ(1U, forms.size());
-    ASSERT_EQ(5U, forms[0]->field_count());
-    EXPECT_EQ(CREDIT_CARD_NAME_FULL,
-              forms[0]->field(0)->Type().GetStorableType());
-    EXPECT_EQ(CREDIT_CARD_NUMBER, forms[0]->field(1)->Type().GetStorableType());
-    EXPECT_EQ(CREDIT_CARD_EXP_MONTH,
-              forms[0]->field(2)->Type().GetStorableType());
-    EXPECT_EQ(CREDIT_CARD_EXP_2_DIGIT_YEAR,
-              forms[0]->field(3)->Type().GetStorableType());
-    EXPECT_EQ(CREDIT_CARD_EXP_MONTH,
-              forms[0]->field(4)->Type().GetStorableType());
-  }
+  // Test that the extra month field is rationalized away.
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  ASSERT_EQ(1U, forms.size());
+  ASSERT_EQ(5U, forms[0]->field_count());
+  EXPECT_EQ(CREDIT_CARD_NAME_FULL,
+            forms[0]->field(0)->Type().GetStorableType());
+  EXPECT_EQ(CREDIT_CARD_NUMBER, forms[0]->field(1)->Type().GetStorableType());
+  EXPECT_EQ(CREDIT_CARD_EXP_MONTH,
+            forms[0]->field(2)->Type().GetStorableType());
+  EXPECT_EQ(CREDIT_CARD_EXP_2_DIGIT_YEAR,
+            forms[0]->field(3)->Type().GetStorableType());
+  EXPECT_EQ(UNKNOWN_TYPE, forms[0]->field(4)->Type().GetStorableType());
 }
 
 TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_2) {
@@ -5390,38 +5319,16 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_2) {
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
-  // Test that the extra month field is rationalized away when enabled.
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
-    FormStructure::ParseQueryResponse(response_string, forms, nullptr);
-    ASSERT_EQ(1U, forms.size());
-    ASSERT_EQ(4U, forms[0]->field_count());
-    EXPECT_EQ(CREDIT_CARD_NAME_FULL,
-              forms[0]->field(0)->Type().GetStorableType());
-    EXPECT_EQ(CREDIT_CARD_NUMBER, forms[0]->field(1)->Type().GetStorableType());
-    EXPECT_EQ(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR,
-              forms[0]->field(2)->Type().GetStorableType());
-    EXPECT_EQ(UNKNOWN_TYPE, forms[0]->field(3)->Type().GetStorableType());
-  }
-
-  // Sanity check that the enable/disabled works.
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
-    FormStructure::ParseQueryResponse(response_string, forms, nullptr);
-    ASSERT_EQ(1U, forms.size());
-    ASSERT_EQ(4U, forms[0]->field_count());
-    EXPECT_EQ(CREDIT_CARD_NAME_FULL,
-              forms[0]->field(0)->Type().GetStorableType());
-    EXPECT_EQ(CREDIT_CARD_NUMBER, forms[0]->field(1)->Type().GetStorableType());
-    EXPECT_EQ(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR,
-              forms[0]->field(2)->Type().GetStorableType());
-    EXPECT_EQ(CREDIT_CARD_EXP_MONTH,
-              forms[0]->field(3)->Type().GetStorableType());
-  }
+  // Test that the extra month field is rationalized away.
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  ASSERT_EQ(1U, forms.size());
+  ASSERT_EQ(4U, forms[0]->field_count());
+  EXPECT_EQ(CREDIT_CARD_NAME_FULL,
+            forms[0]->field(0)->Type().GetStorableType());
+  EXPECT_EQ(CREDIT_CARD_NUMBER, forms[0]->field(1)->Type().GetStorableType());
+  EXPECT_EQ(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR,
+            forms[0]->field(2)->Type().GetStorableType());
+  EXPECT_EQ(UNKNOWN_TYPE, forms[0]->field(3)->Type().GetStorableType());
 }
 
 TEST_F(FormStructureTest, FindLongestCommonPrefix) {
@@ -5520,10 +5427,6 @@ TEST_F(FormStructureTest, RationalizePhoneNumber_RunsOncePerSection) {
 // Tests that a form that has only one address predicted as
 // ADDRESS_HOME_STREET_ADDRESS is not modified by the address rationalization.
 TEST_F(FormStructureTest, RationalizeRepeatedFields_OneAddress) {
-  base::test::ScopedFeatureList feature_list;
-  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
-              true);
-
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -5570,10 +5473,6 @@ TEST_F(FormStructureTest, RationalizeRepeatedFields_OneAddress) {
 // ADDRESS_HOME_STREET_ADDRESS is modified by the address rationalization to be
 // ADDRESS_HOME_LINE1 and ADDRESS_HOME_LINE2 instead.
 TEST_F(FormStructureTest, RationalizeRepreatedFields_TwoAddresses) {
-  base::test::ScopedFeatureList feature_list;
-  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
-              true);
-
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -5626,10 +5525,6 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_TwoAddresses) {
 // ADDRESS_HOME_STREET_ADDRESS is modified by the address rationalization to be
 // ADDRESS_HOME_LINE1, ADDRESS_HOME_LINE2 and ADDRESS_HOME_LINE3 instead.
 TEST_F(FormStructureTest, RationalizeRepreatedFields_ThreeAddresses) {
-  base::test::ScopedFeatureList feature_list;
-  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
-              true);
-
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -5690,9 +5585,6 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_ThreeAddresses) {
 // This doesn't happen in real world, bc four address lines mean multiple
 // sections according to the heuristics.
 TEST_F(FormStructureTest, RationalizeRepreatedFields_FourAddresses) {
-  base::test::ScopedFeatureList feature_list;
-  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
-              true);
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -5762,10 +5654,6 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_FourAddresses) {
 // Tests that a form that has only one address in each section predicted as
 // ADDRESS_HOME_STREET_ADDRESS is not modified by the address rationalization.
 TEST_F(FormStructureTest, RationalizeRepreatedFields_OneAddressEachSection) {
-  base::test::ScopedFeatureList feature_list;
-  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
-              true);
-
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -5839,15 +5727,11 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_OneAddressEachSection) {
 
 // Tests a form that has multiple sections with multiple number of address
 // fields predicted as ADDRESS_HOME_STREET_ADDRESS. The last section
-// doesn't happen in real world, bc it is in fact two sections according to
+// doesn't happen in real world, because it is in fact two sections according to
 // heuristics, and is only made for testing.
 TEST_F(
     FormStructureTest,
     RationalizeRepreatedFields_SectionTwoAddress_SectionThreeAddress_SectionFourAddresses) {
-  base::test::ScopedFeatureList feature_list;
-  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
-              true);
-
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -6001,10 +5885,6 @@ TEST_F(
 // while the sections are previously determined by the heuristics.
 TEST_F(FormStructureTest,
        RationalizeRepreatedFields_MultipleSectionsByHeuristics_OneAddressEach) {
-  base::test::ScopedFeatureList feature_list;
-  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
-              true);
-
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -6078,10 +5958,6 @@ TEST_F(FormStructureTest,
 TEST_F(
     FormStructureTest,
     RationalizeRepreatedFields_MultipleSectionsByHeuristics_TwoAddress_ThreeAddress) {
-  base::test::ScopedFeatureList feature_list;
-  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
-              true);
-
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -6171,10 +6047,6 @@ TEST_F(
 
 TEST_F(FormStructureTest,
        RationalizeRepreatedFields_StateCountry_NoRationalization) {
-  base::test::ScopedFeatureList feature_list;
-  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
-              true);
-
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -6270,10 +6142,6 @@ TEST_F(FormStructureTest,
 }
 
 TEST_F(FormStructureTest, RationalizeRepreatedFields_CountryStateNoHeuristics) {
-  base::test::ScopedFeatureList feature_list;
-  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
-              true);
-
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -6405,10 +6273,6 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_CountryStateNoHeuristics) {
 
 TEST_F(FormStructureTest,
        RationalizeRepreatedFields_StateCountryWithHeuristics) {
-  base::test::ScopedFeatureList feature_list;
-  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
-              true);
-
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -6540,10 +6404,6 @@ TEST_F(FormStructureTest,
 }
 
 TEST_F(FormStructureTest, RationalizeRepreatedFields_FirstFieldRationalized) {
-  base::test::ScopedFeatureList feature_list;
-  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
-              true);
-
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -6605,10 +6465,6 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_FirstFieldRationalized) {
 }
 
 TEST_F(FormStructureTest, RationalizeRepreatedFields_LastFieldRationalized) {
-  base::test::ScopedFeatureList feature_list;
-  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
-              true);
-
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;

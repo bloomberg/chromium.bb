@@ -2990,60 +2990,27 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_ComponentizedNumbers) {
   std::vector<FormData> forms_copy;
   forms_copy.push_back(form_data_copy);
 
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
+  FormsSeen(forms);
+  int page_id = 1;
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(
+      page_id, form_with_multiple_componentized_phone_fields,
+      *form_with_multiple_componentized_phone_fields.fields.begin(),
+      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+  EXPECT_EQ(1, response_page_id);
 
-    FormsSeen(forms);
-    int page_id = 1;
-    int response_page_id = 0;
-    FormData response_data;
-    FillAutofillFormDataAndSaveResults(
-        page_id, form_with_multiple_componentized_phone_fields,
-        *form_with_multiple_componentized_phone_fields.fields.begin(),
-        MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
-    EXPECT_EQ(1, response_page_id);
-
-    // Verify only the first complete set of phone number fields are filled.
-    ASSERT_EQ(8U, response_data.fields.size());
-    EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
-              response_data.fields[0].value);
-    EXPECT_EQ(ASCIIToUTF16("1"), response_data.fields[1].value);
-    EXPECT_EQ(ASCIIToUTF16("650"), response_data.fields[2].value);
-    EXPECT_EQ(ASCIIToUTF16("5554567"), response_data.fields[3].value);
-    EXPECT_EQ(base::string16(), response_data.fields[4].value);
-    EXPECT_EQ(base::string16(), response_data.fields[5].value);
-    EXPECT_EQ(base::string16(), response_data.fields[6].value);
-    EXPECT_EQ(base::string16(), response_data.fields[7].value);
-  }
-
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
-
-    FormsSeen(forms_copy);
-    int page_id = 1;
-    int response_page_id = 0;
-    FormData response_data;
-    FillAutofillFormDataAndSaveResults(
-        page_id, form_data_copy, *form_data_copy.fields.begin(),
-        MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
-    EXPECT_EQ(1, response_page_id);
-
-    // Sanity check for old behavior: all phone number fields are filled.
-    ASSERT_EQ(8U, response_data.fields.size());
-    EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
-              response_data.fields[0].value);
-    EXPECT_EQ(ASCIIToUTF16("1"), response_data.fields[1].value);
-    EXPECT_EQ(ASCIIToUTF16("650"), response_data.fields[2].value);
-    EXPECT_EQ(ASCIIToUTF16("5554567"), response_data.fields[3].value);
-    EXPECT_EQ(base::string16(), response_data.fields[4].value);
-    EXPECT_EQ(ASCIIToUTF16("1"), response_data.fields[5].value);
-    EXPECT_EQ(ASCIIToUTF16("650"), response_data.fields[6].value);
-    EXPECT_EQ(ASCIIToUTF16("5554567"), response_data.fields[7].value);
-  }
+  // Verify only the first complete set of phone number fields are filled.
+  ASSERT_EQ(8U, response_data.fields.size());
+  EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
+            response_data.fields[0].value);
+  EXPECT_EQ(ASCIIToUTF16("1"), response_data.fields[1].value);
+  EXPECT_EQ(ASCIIToUTF16("650"), response_data.fields[2].value);
+  EXPECT_EQ(ASCIIToUTF16("5554567"), response_data.fields[3].value);
+  EXPECT_EQ(base::string16(), response_data.fields[4].value);
+  EXPECT_EQ(base::string16(), response_data.fields[5].value);
+  EXPECT_EQ(base::string16(), response_data.fields[6].value);
+  EXPECT_EQ(base::string16(), response_data.fields[7].value);
 }
 
 TEST_F(AutofillManagerTest, FillFirstPhoneNumber_WholeNumbers) {
@@ -3079,52 +3046,23 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_WholeNumbers) {
   std::vector<FormData> forms_copy;
   forms_copy.push_back(form_data_copy);
 
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
+  FormsSeen(forms);
+  int page_id = 1;
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(
+      page_id, form_with_multiple_whole_number_fields,
+      *form_with_multiple_whole_number_fields.fields.begin(),
+      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+  EXPECT_EQ(1, response_page_id);
 
-    FormsSeen(forms);
-    int page_id = 1;
-    int response_page_id = 0;
-    FormData response_data;
-    FillAutofillFormDataAndSaveResults(
-        page_id, form_with_multiple_whole_number_fields,
-        *form_with_multiple_whole_number_fields.fields.begin(),
-        MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
-    EXPECT_EQ(1, response_page_id);
-
-    // Verify only the first complete set of phone number fields are filled.
-    ASSERT_EQ(4U, response_data.fields.size());
-    EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
-              response_data.fields[0].value);
-    EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[1].value);
-    EXPECT_EQ(base::string16(), response_data.fields[2].value);
-    EXPECT_EQ(base::string16(), response_data.fields[3].value);
-  }
-
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
-
-    FormsSeen(forms_copy);
-    int page_id = 1;
-    int response_page_id = 0;
-    FormData response_data;
-    FillAutofillFormDataAndSaveResults(
-        page_id, form_data_copy, *form_data_copy.fields.begin(),
-        MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
-    EXPECT_EQ(1, response_page_id);
-
-    // Sanity check for old behavior: all phone number fields are filled.
-    ASSERT_EQ(4U, response_data.fields.size());
-    EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
-              response_data.fields[0].value);
-    EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[1].value);
-    EXPECT_EQ(base::string16(), response_data.fields[2].value);
-    EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[3].value);
-  }
+  // Verify only the first complete set of phone number fields are filled.
+  ASSERT_EQ(4U, response_data.fields.size());
+  EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
+            response_data.fields[0].value);
+  EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[1].value);
+  EXPECT_EQ(base::string16(), response_data.fields[2].value);
+  EXPECT_EQ(base::string16(), response_data.fields[3].value);
 }
 
 TEST_F(AutofillManagerTest, FillFirstPhoneNumber_FillPartsOnceOnly) {
@@ -3175,61 +3113,28 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_FillPartsOnceOnly) {
   std::vector<FormData> forms_copy;
   forms_copy.push_back(form_data_copy);
 
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
+  FormsSeen(forms);
+  int page_id = 1;
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(
+      page_id, form_with_multiple_componentized_phone_fields,
+      *form_with_multiple_componentized_phone_fields.fields.begin(),
+      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+  EXPECT_EQ(1, response_page_id);
 
-    FormsSeen(forms);
-    int page_id = 1;
-    int response_page_id = 0;
-    FormData response_data;
-    FillAutofillFormDataAndSaveResults(
-        page_id, form_with_multiple_componentized_phone_fields,
-        *form_with_multiple_componentized_phone_fields.fields.begin(),
-        MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
-    EXPECT_EQ(1, response_page_id);
-
-    // Verify only the first complete set of phone number fields are filled,
-    // and phone components are not filled more than once.
-    ASSERT_EQ(8U, response_data.fields.size());
-    EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
-              response_data.fields[0].value);
-    EXPECT_EQ(ASCIIToUTF16("1"), response_data.fields[1].value);
-    EXPECT_EQ(base::string16(), response_data.fields[2].value);
-    EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[3].value);
-    EXPECT_EQ(base::string16(), response_data.fields[4].value);
-    EXPECT_EQ(base::string16(), response_data.fields[5].value);
-    EXPECT_EQ(base::string16(), response_data.fields[6].value);
-    EXPECT_EQ(base::string16(), response_data.fields[7].value);
-  }
-
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
-
-    FormsSeen(forms_copy);
-    int page_id = 1;
-    int response_page_id = 0;
-    FormData response_data;
-    FillAutofillFormDataAndSaveResults(
-        page_id, form_data_copy, *form_data_copy.fields.begin(),
-        MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
-    EXPECT_EQ(1, response_page_id);
-
-    // Sanity check for old behavior: all phone number fields are filled.
-    ASSERT_EQ(8U, response_data.fields.size());
-    EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
-              response_data.fields[0].value);
-    EXPECT_EQ(ASCIIToUTF16("1"), response_data.fields[1].value);
-    EXPECT_EQ(ASCIIToUTF16("650"), response_data.fields[2].value);
-    EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[3].value);
-    EXPECT_EQ(base::string16(), response_data.fields[4].value);
-    EXPECT_EQ(ASCIIToUTF16("1"), response_data.fields[5].value);
-    EXPECT_EQ(ASCIIToUTF16("650"), response_data.fields[6].value);
-    EXPECT_EQ(ASCIIToUTF16("5554567"), response_data.fields[7].value);
-  }
+  // Verify only the first complete set of phone number fields are filled,
+  // and phone components are not filled more than once.
+  ASSERT_EQ(8U, response_data.fields.size());
+  EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
+            response_data.fields[0].value);
+  EXPECT_EQ(ASCIIToUTF16("1"), response_data.fields[1].value);
+  EXPECT_EQ(base::string16(), response_data.fields[2].value);
+  EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[3].value);
+  EXPECT_EQ(base::string16(), response_data.fields[4].value);
+  EXPECT_EQ(base::string16(), response_data.fields[5].value);
+  EXPECT_EQ(base::string16(), response_data.fields[6].value);
+  EXPECT_EQ(base::string16(), response_data.fields[7].value);
 }
 
 // Verify when extension is misclassified, and there is a complete
@@ -3275,55 +3180,24 @@ TEST_F(AutofillManagerTest,
   std::vector<FormData> forms_copy;
   forms_copy.push_back(form_data_copy);
 
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
+  FormsSeen(forms);
+  int page_id = 1;
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(
+      page_id, form_with_misclassified_extension,
+      *form_with_misclassified_extension.fields.begin(),
+      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+  EXPECT_EQ(1, response_page_id);
 
-    FormsSeen(forms);
-    int page_id = 1;
-    int response_page_id = 0;
-    FormData response_data;
-    FillAutofillFormDataAndSaveResults(
-        page_id, form_with_misclassified_extension,
-        *form_with_misclassified_extension.fields.begin(),
-        MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
-    EXPECT_EQ(1, response_page_id);
-
-    // Verify the misclassified extension field is not filled.
-    ASSERT_EQ(5U, response_data.fields.size());
-    EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
-              response_data.fields[0].value);
-    EXPECT_EQ(base::string16(), response_data.fields[1].value);
-    EXPECT_EQ(ASCIIToUTF16("650"), response_data.fields[2].value);
-    EXPECT_EQ(ASCIIToUTF16("5554567"), response_data.fields[3].value);
-    EXPECT_EQ(base::string16(), response_data.fields[4].value);
-  }
-
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
-
-    FormsSeen(forms_copy);
-    int page_id = 1;
-    int response_page_id = 0;
-    FormData response_data;
-    FillAutofillFormDataAndSaveResults(
-        page_id, form_data_copy, *form_data_copy.fields.begin(),
-        MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
-    EXPECT_EQ(1, response_page_id);
-
-    // Sanity check for old behavior: the misclassified extension field is
-    // filled.
-    ASSERT_EQ(5U, response_data.fields.size());
-    EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
-              response_data.fields[0].value);
-    EXPECT_EQ(base::string16(), response_data.fields[1].value);
-    EXPECT_EQ(ASCIIToUTF16("650"), response_data.fields[2].value);
-    EXPECT_EQ(ASCIIToUTF16("5554567"), response_data.fields[3].value);
-    EXPECT_EQ(ASCIIToUTF16("5554567"), response_data.fields[4].value);
-  }
+  // Verify the misclassified extension field is not filled.
+  ASSERT_EQ(5U, response_data.fields.size());
+  EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
+            response_data.fields[0].value);
+  EXPECT_EQ(base::string16(), response_data.fields[1].value);
+  EXPECT_EQ(ASCIIToUTF16("650"), response_data.fields[2].value);
+  EXPECT_EQ(ASCIIToUTF16("5554567"), response_data.fields[3].value);
+  EXPECT_EQ(base::string16(), response_data.fields[4].value);
 }
 
 // Verify when no complete number can be found, we do best-effort filling.
@@ -3363,53 +3237,24 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_BestEfforFilling) {
   std::vector<FormData> forms_copy;
   forms_copy.push_back(form_data_copy);
 
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
+  FormsSeen(forms);
+  int page_id = 1;
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(
+      page_id, form_with_no_complete_number,
+      *form_with_no_complete_number.fields.begin(),
+      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+  EXPECT_EQ(1, response_page_id);
 
-    FormsSeen(forms);
-    int page_id = 1;
-    int response_page_id = 0;
-    FormData response_data;
-    FillAutofillFormDataAndSaveResults(
-        page_id, form_with_no_complete_number,
-        *form_with_no_complete_number.fields.begin(),
-        MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
-    EXPECT_EQ(1, response_page_id);
-
-    // Verify when there is no complete phone number fields, we do best effort
-    // filling.
-    ASSERT_EQ(4U, response_data.fields.size());
-    EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
-              response_data.fields[0].value);
-    EXPECT_EQ(base::string16(), response_data.fields[1].value);
-    EXPECT_EQ(ASCIIToUTF16("650"), response_data.fields[2].value);
-    EXPECT_EQ(base::string16(), response_data.fields[3].value);
-  }
-
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
-
-    FormsSeen(forms);
-    int page_id = 1;
-    int response_page_id = 0;
-    FormData response_data;
-    FillAutofillFormDataAndSaveResults(
-        page_id, form_data_copy, *form_data_copy.fields.begin(),
-        MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
-    EXPECT_EQ(1, response_page_id);
-
-    // Sanity check for old behavior: always do best effort filling.
-    ASSERT_EQ(4U, response_data.fields.size());
-    EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
-              response_data.fields[0].value);
-    EXPECT_EQ(base::string16(), response_data.fields[1].value);
-    EXPECT_EQ(ASCIIToUTF16("650"), response_data.fields[2].value);
-    EXPECT_EQ(base::string16(), response_data.fields[3].value);
-  }
+  // Verify when there is no complete phone number fields, we do best effort
+  // filling.
+  ASSERT_EQ(4U, response_data.fields.size());
+  EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
+            response_data.fields[0].value);
+  EXPECT_EQ(base::string16(), response_data.fields[1].value);
+  EXPECT_EQ(ASCIIToUTF16("650"), response_data.fields[2].value);
+  EXPECT_EQ(base::string16(), response_data.fields[3].value);
 }
 
 // When the focus is on second phone field explicitly, we will fill the
@@ -3447,58 +3292,26 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_FocusOnSecondPhoneNumber) {
   std::vector<FormData> forms_copy;
   forms_copy.push_back(form_data_copy);
 
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
+  FormsSeen(forms);
+  int page_id = 1;
+  int response_page_id = 0;
+  FormData response_data;
+  auto it = form_with_multiple_whole_number_fields.fields.begin();
+  // Move it to point to "shipping number".
+  std::advance(it, 3);
+  FillAutofillFormDataAndSaveResults(
+      page_id, form_with_multiple_whole_number_fields, *it,
+      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+  EXPECT_EQ(1, response_page_id);
 
-    FormsSeen(forms);
-    int page_id = 1;
-    int response_page_id = 0;
-    FormData response_data;
-    auto it = form_with_multiple_whole_number_fields.fields.begin();
-    // Move it to point to "shipping number".
-    std::advance(it, 3);
-    FillAutofillFormDataAndSaveResults(
-        page_id, form_with_multiple_whole_number_fields, *it,
-        MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
-    EXPECT_EQ(1, response_page_id);
-
-    // Verify when the second phone number field is being focused, we fill
-    // that field *AND* the first phone number field.
-    ASSERT_EQ(4U, response_data.fields.size());
-    EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
-              response_data.fields[0].value);
-    EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[1].value);
-    EXPECT_EQ(base::string16(), response_data.fields[2].value);
-    EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[3].value);
-  }
-
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
-
-    FormsSeen(forms);
-    int page_id = 1;
-    int response_page_id = 0;
-    FormData response_data;
-    auto it = form_data_copy.fields.begin();
-    // Move it to point to "shipping number".
-    std::advance(it, 3);
-    FillAutofillFormDataAndSaveResults(page_id, form_data_copy, *it,
-                                       MakeFrontendID(std::string(), guid),
-                                       &response_page_id, &response_data);
-    EXPECT_EQ(1, response_page_id);
-
-    // Sanity check for old behavior: fill all the phone fields we can find.
-    ASSERT_EQ(4U, response_data.fields.size());
-    EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
-              response_data.fields[0].value);
-    EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[1].value);
-    EXPECT_EQ(base::string16(), response_data.fields[2].value);
-    EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[3].value);
-  }
+  // Verify when the second phone number field is being focused, we fill
+  // that field *AND* the first phone number field.
+  ASSERT_EQ(4U, response_data.fields.size());
+  EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
+            response_data.fields[0].value);
+  EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[1].value);
+  EXPECT_EQ(base::string16(), response_data.fields[2].value);
+  EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[3].value);
 }
 
 TEST_F(AutofillManagerTest, FillFirstPhoneNumber_HiddenFieldShouldNotCount) {
@@ -3536,52 +3349,23 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_HiddenFieldShouldNotCount) {
   std::vector<FormData> forms_copy;
   forms_copy.push_back(form_data_copy);
 
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
+  FormsSeen(forms);
+  int page_id = 1;
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(
+      page_id, form_with_multiple_whole_number_fields,
+      *form_with_multiple_whole_number_fields.fields.begin(),
+      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+  EXPECT_EQ(1, response_page_id);
 
-    FormsSeen(forms);
-    int page_id = 1;
-    int response_page_id = 0;
-    FormData response_data;
-    FillAutofillFormDataAndSaveResults(
-        page_id, form_with_multiple_whole_number_fields,
-        *form_with_multiple_whole_number_fields.fields.begin(),
-        MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
-    EXPECT_EQ(1, response_page_id);
-
-    // Verify hidden/non-focusable phone field is set to only_fill_when_focused.
-    ASSERT_EQ(4U, response_data.fields.size());
-    EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
-              response_data.fields[0].value);
-    EXPECT_EQ(base::string16(), response_data.fields[1].value);
-    EXPECT_EQ(base::string16(), response_data.fields[2].value);
-    EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[3].value);
-  }
-
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
-
-    FormsSeen(forms);
-    int page_id = 1;
-    int response_page_id = 0;
-    FormData response_data;
-    FillAutofillFormDataAndSaveResults(
-        page_id, form_data_copy, *form_data_copy.fields.begin(),
-        MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
-    EXPECT_EQ(1, response_page_id);
-
-    // Sanity check for old behavior: fill hidden phone fields.
-    ASSERT_EQ(4U, response_data.fields.size());
-    EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
-              response_data.fields[0].value);
-    EXPECT_EQ(ASCIIToUTF16(""), response_data.fields[1].value);
-    EXPECT_EQ(base::string16(), response_data.fields[2].value);
-    EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[3].value);
-  }
+  // Verify hidden/non-focusable phone field is set to only_fill_when_focused.
+  ASSERT_EQ(4U, response_data.fields.size());
+  EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
+            response_data.fields[0].value);
+  EXPECT_EQ(base::string16(), response_data.fields[1].value);
+  EXPECT_EQ(base::string16(), response_data.fields[2].value);
+  EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[3].value);
 }
 
 // The hidden and the presentational fields should be filled, only if their
@@ -3702,107 +3486,51 @@ TEST_F(AutofillManagerTest,
   std::vector<FormData> forms_copy;
   forms_copy.push_back(form_data_copy);
 
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
+  FormsSeen(forms);
+  int page_id = 1;
+  int response_page_id = 0;
+  FormData response_data;
+  // Fill first sections.
+  FillAutofillFormDataAndSaveResults(
+      page_id, form_with_multiple_sections,
+      *form_with_multiple_sections.fields.begin(),
+      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+  EXPECT_EQ(1, response_page_id);
 
-    FormsSeen(forms);
-    int page_id = 1;
-    int response_page_id = 0;
-    FormData response_data;
-    // Fill first sections.
-    FillAutofillFormDataAndSaveResults(
-        page_id, form_with_multiple_sections,
-        *form_with_multiple_sections.fields.begin(),
-        MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
-    EXPECT_EQ(1, response_page_id);
+  // Verify first section is filled with rationalization.
+  ASSERT_EQ(9U, response_data.fields.size());
+  EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
+            response_data.fields[0].value);
+  EXPECT_EQ(ASCIIToUTF16("123 Apple St."), response_data.fields[1].value);
+  EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[2].value);
+  EXPECT_EQ(base::string16(), response_data.fields[3].value);
+  EXPECT_EQ(base::string16(), response_data.fields[4].value);
+  EXPECT_EQ(base::string16(), response_data.fields[5].value);
+  EXPECT_EQ(base::string16(), response_data.fields[6].value);
+  EXPECT_EQ(base::string16(), response_data.fields[7].value);
+  EXPECT_EQ(base::string16(), response_data.fields[8].value);
 
-    // Verify first section is filled with rationalization.
-    ASSERT_EQ(9U, response_data.fields.size());
-    EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
-              response_data.fields[0].value);
-    EXPECT_EQ(ASCIIToUTF16("123 Apple St."), response_data.fields[1].value);
-    EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[2].value);
-    EXPECT_EQ(base::string16(), response_data.fields[3].value);
-    EXPECT_EQ(base::string16(), response_data.fields[4].value);
-    EXPECT_EQ(base::string16(), response_data.fields[5].value);
-    EXPECT_EQ(base::string16(), response_data.fields[6].value);
-    EXPECT_EQ(base::string16(), response_data.fields[7].value);
-    EXPECT_EQ(base::string16(), response_data.fields[8].value);
+  // Fill second section.
+  auto it = form_with_multiple_sections.fields.begin();
+  std::advance(it, 6);  // Pointing to second section.
 
-    // Fill second section.
-    auto it = form_with_multiple_sections.fields.begin();
-    std::advance(it, 6);  // Pointing to second section.
+  FillAutofillFormDataAndSaveResults(page_id, form_with_multiple_sections, *it,
+                                     MakeFrontendID(std::string(), guid),
+                                     &response_page_id, &response_data);
+  EXPECT_EQ(1, response_page_id);
 
-    FillAutofillFormDataAndSaveResults(page_id, form_with_multiple_sections,
-                                       *it, MakeFrontendID(std::string(), guid),
-                                       &response_page_id, &response_data);
-    EXPECT_EQ(1, response_page_id);
-
-    // Verify second section is filled with rationalization.
-    ASSERT_EQ(9U, response_data.fields.size());
-    EXPECT_EQ(base::string16(), response_data.fields[0].value);
-    EXPECT_EQ(base::string16(), response_data.fields[1].value);
-    EXPECT_EQ(base::string16(), response_data.fields[2].value);
-    EXPECT_EQ(base::string16(), response_data.fields[3].value);
-    EXPECT_EQ(base::string16(), response_data.fields[4].value);
-    EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
-              response_data.fields[5].value);
-    EXPECT_EQ(ASCIIToUTF16("123 Apple St."), response_data.fields[6].value);
-    EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[7].value);
-    EXPECT_EQ(base::string16(), response_data.fields[8].value);
-  }
-
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(
-        autofill::features::kAutofillRationalizeFieldTypePredictions);
-
-    FormsSeen(forms);
-    int page_id = 1;
-    int response_page_id = 0;
-    FormData response_data;
-    // Fill first section.
-    FillAutofillFormDataAndSaveResults(
-        page_id, form_data_copy, *form_data_copy.fields.begin(),
-        MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
-
-    // Verify first section is filled without rationalization.
-    ASSERT_EQ(9U, response_data.fields.size());
-    EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
-              response_data.fields[0].value);
-    EXPECT_EQ(ASCIIToUTF16("123 Apple St."), response_data.fields[1].value);
-    EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[2].value);
-    EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[3].value);
-    EXPECT_EQ(base::string16(), response_data.fields[4].value);
-    EXPECT_EQ(base::string16(), response_data.fields[5].value);
-    EXPECT_EQ(base::string16(), response_data.fields[6].value);
-    EXPECT_EQ(base::string16(), response_data.fields[7].value);
-    EXPECT_EQ(base::string16(), response_data.fields[8].value);
-
-    // Fill second section.
-    auto it = form_data_copy.fields.begin();
-    std::advance(it, 6);  // Pointing to second section.
-
-    FillAutofillFormDataAndSaveResults(page_id, form_data_copy, *it,
-                                       MakeFrontendID(std::string(), guid),
-                                       &response_page_id, &response_data);
-    EXPECT_EQ(1, response_page_id);
-
-    // Verify second section is filled without rationalization.
-    ASSERT_EQ(9U, response_data.fields.size());
-    EXPECT_EQ(base::string16(), response_data.fields[0].value);
-    EXPECT_EQ(base::string16(), response_data.fields[1].value);
-    EXPECT_EQ(base::string16(), response_data.fields[2].value);
-    EXPECT_EQ(base::string16(), response_data.fields[3].value);
-    EXPECT_EQ(base::string16(), response_data.fields[4].value);
-    EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
-              response_data.fields[5].value);
-    EXPECT_EQ(ASCIIToUTF16("123 Apple St."), response_data.fields[6].value);
-    EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[7].value);
-    EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[8].value);
-  }
+  // Verify second section is filled with rationalization.
+  ASSERT_EQ(9U, response_data.fields.size());
+  EXPECT_EQ(base::string16(), response_data.fields[0].value);
+  EXPECT_EQ(base::string16(), response_data.fields[1].value);
+  EXPECT_EQ(base::string16(), response_data.fields[2].value);
+  EXPECT_EQ(base::string16(), response_data.fields[3].value);
+  EXPECT_EQ(base::string16(), response_data.fields[4].value);
+  EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
+            response_data.fields[5].value);
+  EXPECT_EQ(ASCIIToUTF16("123 Apple St."), response_data.fields[6].value);
+  EXPECT_EQ(ASCIIToUTF16("6505554567"), response_data.fields[7].value);
+  EXPECT_EQ(base::string16(), response_data.fields[8].value);
 }
 
 // Test that we can still fill a form when a field has been removed from it.

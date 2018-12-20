@@ -529,9 +529,7 @@ void FormStructure::DetermineHeuristicTypes() {
         1 << AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT;
   }
 
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillRationalizeFieldTypePredictions))
-    RationalizeFieldTypePredictions();
+  RationalizeFieldTypePredictions();
 
   AutofillMetrics::LogDetermineHeuristicTypesTiming(
       base::TimeTicks::Now() - determine_heuristic_types_start_time);
@@ -727,14 +725,8 @@ void FormStructure::ProcessQueryResponse(
         !query_response_has_no_server_data);
 
     form->UpdateAutofillCount();
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillRationalizeRepeatedServerPredictions))
-      form->RationalizeRepeatedFields(form_interactions_ukm_logger);
-
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillRationalizeFieldTypePredictions))
-      form->RationalizeFieldTypePredictions();
-
+    form->RationalizeRepeatedFields(form_interactions_ukm_logger);
+    form->RationalizeFieldTypePredictions();
     form->IdentifySections(false);
   }
 

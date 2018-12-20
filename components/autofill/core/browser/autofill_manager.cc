@@ -1379,13 +1379,9 @@ void AutofillManager::FillOrPreviewDataModelForm(
   DCHECK(form_structure);
   DCHECK(autofill_field);
 
+  form_structure->RationalizePhoneNumbersInSection(autofill_field->section);
+
   FormData result = form;
-
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillRationalizeFieldTypePredictions)) {
-    form_structure->RationalizePhoneNumbersInSection(autofill_field->section);
-  }
-
   DCHECK_EQ(form_structure->field_count(), form.fields.size());
 
   // Only record the types that are filled for an eventual refill if all the

@@ -52,8 +52,6 @@ extern const base::Feature kAutofillPreferServerNamePredictions;
 extern const base::Feature kAutofillNoLocalSaveOnUploadSuccess;
 extern const base::Feature kAutofillOverrideWithRaterConsensus;
 extern const base::Feature kAutofillPrefilledFields;
-extern const base::Feature kAutofillRationalizeFieldTypePredictions;
-extern const base::Feature kAutofillRationalizeRepeatedServerPredictions;
 extern const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout;
 extern const base::Feature kAutofillRichMetadataQueries;
 extern const base::Feature kAutofillSaveCardDialogUnlabeledExpirationDate;

@@ -160,16 +160,6 @@ const base::Feature kAutofillPreferServerNamePredictions{
 const base::Feature kAutofillPrefilledFields{"AutofillPrefilledFields",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kAutofillRationalizeFieldTypePredictions{
-    "AutofillRationalizeFieldTypePredictions",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls whether Autofill should rationalize repeated server type
-// predictions.
-const base::Feature kAutofillRationalizeRepeatedServerPredictions{
-    "AutofillRationalizeRepeatedServerPredictions",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether or not a group of fields not enclosed in a form can be
 // considered a form. If this is enabled, unowned fields will only constitute
 // a form if there are signals to suggest that this might a checkout page.

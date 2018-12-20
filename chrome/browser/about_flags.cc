@@ -3677,14 +3677,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillPrefilledFieldsDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillPrefilledFields)},
 
-    {"autofill-rationalize-repeated-server-predictions",
-     flag_descriptions::kAutofillRationalizeRepeatedServerPredictionsName,
-     flag_descriptions::
-         kAutofillRationalizeRepeatedServerPredictionsDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillRationalizeRepeatedServerPredictions)},
-
     {"autofill-restrict-formless-form-extraction",
      flag_descriptions::kAutofillRestrictUnownedFieldsToFormlessCheckoutName,
      flag_descriptions::
