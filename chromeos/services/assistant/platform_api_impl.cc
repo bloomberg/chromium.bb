@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "chromeos/services/assistant/media_session/assistant_media_session.h"
 #include "chromeos/services/assistant/utils.h"
 #include "libassistant/shared/public/assistant_export.h"
 #include "libassistant/shared/public/platform_api.h"
@@ -73,11 +74,12 @@ void PlatformApiImpl::DummyAuthProvider::Reset() {}
 
 PlatformApiImpl::PlatformApiImpl(
     service_manager::Connector* connector,
+    AssistantMediaSession* media_session,
     device::mojom::BatteryMonitorPtr battery_monitor,
     scoped_refptr<base::SingleThreadTaskRunner> background_task_runner,
     network::NetworkConnectionTracker* network_connection_tracker)
     : audio_input_provider_(connector),
-      audio_output_provider_(connector, background_task_runner),
+      audio_output_provider_(connector, media_session, background_task_runner),
       network_provider_(network_connection_tracker),
       system_provider_(std::move(battery_monitor)) {}
 

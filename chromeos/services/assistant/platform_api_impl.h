@@ -27,11 +27,14 @@ class Connector;
 namespace chromeos {
 namespace assistant {
 
+class AssistantMediaSession;
+
 // Platform API required by the voice assistant.
 class PlatformApiImpl : public assistant_client::PlatformApi {
  public:
   PlatformApiImpl(
       service_manager::Connector* connector,
+      AssistantMediaSession* media_session,
       device::mojom::BatteryMonitorPtr battery_monitor,
       scoped_refptr<base::SingleThreadTaskRunner> background_task_runner,
       network::NetworkConnectionTracker* network_connection_tracker);

@@ -26,6 +26,7 @@
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_op/device_args.pb.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/services/assistant/constants.h"
+#include "chromeos/services/assistant/media_session/assistant_media_session.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/service.h"
 #include "chromeos/services/assistant/utils.h"
@@ -98,7 +99,8 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     device::mojom::BatteryMonitorPtr battery_monitor,
     Service* service,
     network::NetworkConnectionTracker* network_connection_tracker)
-    : action_module_(std::make_unique<action::CrosActionModule>(
+    : media_session_(std::make_unique<AssistantMediaSession>(connector)),
+      action_module_(std::make_unique<action::CrosActionModule>(
           this,
           base::FeatureList::IsEnabled(
               assistant::features::kAssistantAppSupport))),
@@ -111,8 +113,8 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       weak_factory_(this) {
   background_thread_.Start();
   platform_api_ = std::make_unique<PlatformApiImpl>(
-      connector, std::move(battery_monitor), background_thread_.task_runner(),
-      network_connection_tracker);
+      connector, media_session_.get(), std::move(battery_monitor),
+      background_thread_.task_runner(), network_connection_tracker);
   connector->BindInterface(ash::mojom::kServiceName,
                            &ash_message_center_controller_);
 }

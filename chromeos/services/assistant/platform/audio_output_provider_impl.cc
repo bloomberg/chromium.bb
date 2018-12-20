@@ -9,12 +9,14 @@
 
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
+#include "chromeos/services/assistant/media_session/assistant_media_session.h"
 #include "chromeos/services/assistant/platform/audio_stream_handler.h"
 #include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "libassistant/shared/public/platform_audio_buffer.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/limits.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
@@ -167,8 +169,10 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
 
 }  // namespace
 
-VolumeControlImpl::VolumeControlImpl(service_manager::Connector* connector)
-    : binding_(this),
+VolumeControlImpl::VolumeControlImpl(service_manager::Connector* connector,
+                                     AssistantMediaSession* media_session)
+    : media_session_(media_session),
+      binding_(this),
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       weak_factory_(this) {
   connector->BindInterface(ash::mojom::kServiceName, &volume_control_ptr_);
@@ -180,7 +184,11 @@ VolumeControlImpl::VolumeControlImpl(service_manager::Connector* connector)
 VolumeControlImpl::~VolumeControlImpl() = default;
 
 void VolumeControlImpl::SetAudioFocus(
-    assistant_client::OutputStreamType focused_stream) {}
+    assistant_client::OutputStreamType focused_stream) {
+  main_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VolumeControlImpl::SetAudioFocusOnMainThread,
+                                weak_factory_.GetWeakPtr(), focused_stream));
+}
 
 float VolumeControlImpl::GetSystemVolume() {
   return volume_ * 1.0 / 100.0;
@@ -220,6 +228,28 @@ void VolumeControlImpl::OnMuteStateChanged(bool mute) {
   mute_ = mute;
 }
 
+void VolumeControlImpl::SetAudioFocusOnMainThread(
+    assistant_client::OutputStreamType focused_stream) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+  // TODO(wutao): Fix the libassistant behavior.
+  // Currently this is called with |STREAM_TTS| and |STREAM_ALARM| when
+  // requesting focus. When releasing focus it calls with |STREAM_MEDIA|.
+  // libassistant media code path does not request focus.
+  switch (focused_stream) {
+    case assistant_client::OutputStreamType::STREAM_ALARM:
+      media_session_->RequestAudioFocus(
+          media_session::mojom::AudioFocusType::kGainTransientMayDuck);
+      break;
+    case assistant_client::OutputStreamType::STREAM_TTS:
+      media_session_->RequestAudioFocus(
+          media_session::mojom::AudioFocusType::kGainTransient);
+      break;
+    case assistant_client::OutputStreamType::STREAM_MEDIA:
+      media_session_->AbandonAudioFocusIfNeeded();
+      break;
+  }
+}
+
 void VolumeControlImpl::SetSystemVolumeOnMainThread(float new_volume,
                                                     bool user_initiated) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
@@ -233,8 +263,9 @@ void VolumeControlImpl::SetSystemMutedOnMainThread(bool muted) {
 
 AudioOutputProviderImpl::AudioOutputProviderImpl(
     service_manager::Connector* connector,
+    AssistantMediaSession* media_session,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
-    : volume_control_impl_(connector),
+    : volume_control_impl_(connector, media_session),
       connector_(connector),
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       background_task_runner_(background_task_runner) {

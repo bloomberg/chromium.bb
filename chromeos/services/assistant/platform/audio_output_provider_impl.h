@@ -27,10 +27,13 @@ class Connector;
 namespace chromeos {
 namespace assistant {
 
+class AssistantMediaSession;
+
 class VolumeControlImpl : public assistant_client::VolumeControl,
                           public ash::mojom::VolumeObserver {
  public:
-  explicit VolumeControlImpl(service_manager::Connector* connector);
+  explicit VolumeControlImpl(service_manager::Connector* connector,
+                             AssistantMediaSession* media_session);
   ~VolumeControlImpl() override;
 
   // assistant_client::VolumeControl overrides:
@@ -48,9 +51,12 @@ class VolumeControlImpl : public assistant_client::VolumeControl,
   void OnMuteStateChanged(bool mute) override;
 
  private:
+  void SetAudioFocusOnMainThread(
+      assistant_client::OutputStreamType focused_stream);
   void SetSystemVolumeOnMainThread(float new_volume, bool user_initiated);
   void SetSystemMutedOnMainThread(bool muted);
 
+  AssistantMediaSession* media_session_;
   ash::mojom::AssistantVolumeControlPtr volume_control_ptr_;
   mojo::Binding<ash::mojom::VolumeObserver> binding_;
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
@@ -67,6 +73,7 @@ class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
  public:
   explicit AudioOutputProviderImpl(
       service_manager::Connector* connector,
+      AssistantMediaSession* media_session,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
   ~AudioOutputProviderImpl() override;
 
