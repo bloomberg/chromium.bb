@@ -1689,6 +1689,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-reopen-tab-in-product-help",
+    "owners": [ "collinbaker" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable-request-tablet-site",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

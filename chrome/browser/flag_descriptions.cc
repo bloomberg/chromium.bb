@@ -3752,6 +3752,15 @@ extern const char kWebrtcPipeWireCapturerDescription[] =
 
 #endif  // #if defined(WEBRTC_USE_PIPEWIRE)
 
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+
+const char kReopenTabInProductHelpName[] = "Reopen tab in-product help";
+const char kReopenTabInProductHelpDescription[] =
+    "Enable in-product help that guides a user to reopen a tab if it looks "
+    "like they accidentally closed it.";
+
+#endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+
 // ============================================================================
 // Don't just add flags to the end, put them in the right section in
 // alphabetical order just like the header file.

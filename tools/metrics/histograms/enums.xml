@@ -32397,11 +32397,13 @@ from previous Chrome versions.
   <int value="2014629801" label="view-passwords:disabled"/>
   <int value="2015335629" label="shelf-hover-previews"/>
   <int value="2015547864" label="NetworkServiceInProcess:enabled"/>
+  <int value="2018386804" label="IPH_ReopenTab:disabled"/>
   <int value="2020107447" label="AndroidPayIntegrationV1:enabled"/>
   <int value="2032558514"
       label="RemoveUsageOfDeprecatedGaiaSigninEndpoint:enabled"/>
   <int value="2034198538" label="TabHoverCards:enabled"/>
   <int value="2037756154" label="enable-impl-side-painting"/>
+  <int value="2040316611" label="IPH_ReopenTab:enabled"/>
   <int value="2043321329" label="OfflinePagesPrefetchingUI:disabled"/>
   <int value="2056572020" label="EnableUsernameCorrection:disabled"/>
   <int value="2058283872" label="CCTModuleCache:disabled"/>
