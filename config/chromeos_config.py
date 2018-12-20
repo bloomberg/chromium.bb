@@ -3440,12 +3440,6 @@ def ApplyCustomOverrides(site_config):
           'hw_tests': [],
           'hw_tests_override': [],
       },
-
-      # TODO(crbug/884613) Remove these once the board compiler flags for grunt
-      # are changed.
-      'grunt-release': {
-          'useflags': config_lib.append_useflags(['grunt_march'])
-      }
   }
 
   for config_name, overrides  in overwritten_configs.iteritems():
