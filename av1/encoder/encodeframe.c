@@ -1484,10 +1484,8 @@ static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   encode_superblock(cpi, tile_data, td, tp, dry_run, mi_row, mi_col, bsize,
                     rate);
 
-  if (dry_run == 0)
-    x->cb_offset += block_size_wide[bsize] * block_size_high[bsize];
-
   if (!dry_run) {
+    x->cb_offset += block_size_wide[bsize] * block_size_high[bsize];
     if (bsize == cpi->common.seq_params.sb_size && mbmi->skip == 1 &&
         cpi->common.delta_q_info.delta_lf_present_flag) {
       const int frame_lf_count = av1_num_planes(&cpi->common) > 1
