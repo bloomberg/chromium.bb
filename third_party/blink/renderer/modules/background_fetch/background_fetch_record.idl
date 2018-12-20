@@ -5,7 +5,7 @@
 // https://wicg.github.io/background-fetch/#background-fetch-record
 
 [
-    Exposed=(ServiceWorker),
+    Exposed=(Window,Worker),
     OriginTrialEnabled=BackgroundFetch
 ] interface BackgroundFetchRecord {
     readonly attribute Request request;

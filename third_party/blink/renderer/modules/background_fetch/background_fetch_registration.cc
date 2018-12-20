@@ -198,8 +198,8 @@ ScriptPromise BackgroundFetchRegistration::MatchImpl(
     mojom::blink::QueryParamsPtr cache_query_params,
     ExceptionState& exception_state,
     bool match_all) {
-  // TODO(crbug.com/875201): Update this check once we support access to
-  // active fetches.
+  // TODO(crbug.com/875201): Update this check once we remove the feature flag
+  // for active fetches.
   if (result_ == mojom::BackgroundFetchResult::UNSET &&
       !RuntimeEnabledFeatures::BackgroundFetchAccessActiveFetchesEnabled()) {
     return ScriptPromise::RejectWithDOMException(

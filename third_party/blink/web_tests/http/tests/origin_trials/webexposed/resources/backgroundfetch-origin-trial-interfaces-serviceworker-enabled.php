@@ -18,8 +18,7 @@ test(t => {
     'BackgroundFetchRegistration': ['id', 'uploadTotal', 'uploaded',
                                     'downloadTotal', 'downloaded', 'result',
                                     'failureReason', 'recordsAvailable',
-                                    'onprogress', 'abort', 'match',
-                                    'matchAll'],
+                                    'onprogress', 'abort', 'match', 'matchAll'],
   });
 });
 
