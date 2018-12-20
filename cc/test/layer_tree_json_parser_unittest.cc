@@ -86,7 +86,7 @@ TEST_F(LayerTreeJsonParserSanityCheck, Basic) {
   tree->SetRootLayerForTesting(std::move(root_impl));
   tree->BuildPropertyTreesForTesting();
 
-  std::string json = host_impl.LayerTreeAsJson();
+  std::string json = tree->LayerTreeAsJson();
   scoped_refptr<Layer> root = ParseTreeFromJson(json, nullptr);
   ASSERT_TRUE(root.get());
   EXPECT_TRUE(LayerTreesMatch(host_impl.active_tree()->root_layer_for_testing(),
@@ -114,7 +114,7 @@ TEST_F(LayerTreeJsonParserSanityCheck, EventHandlerRegions) {
   tree->SetRootLayerForTesting(std::move(root_impl));
   tree->BuildPropertyTreesForTesting();
 
-  std::string json = host_impl.LayerTreeAsJson();
+  std::string json = tree->LayerTreeAsJson();
   scoped_refptr<Layer> root = ParseTreeFromJson(json, nullptr);
   ASSERT_TRUE(root.get());
   EXPECT_TRUE(LayerTreesMatch(host_impl.active_tree()->root_layer_for_testing(),

@@ -464,11 +464,6 @@ class CC_EXPORT LayerTreeHostImpl
   int max_texture_size() const { return max_texture_size_; }
   void ReleaseLayerTreeFrameSink();
 
-  std::string LayerListAsJson() const;
-  // TODO(pdr): This should be removed because there is no longer a tree
-  // of layers, only a list.
-  std::string LayerTreeAsJson() const;
-
   int RequestedMSAASampleCount() const;
 
   virtual bool InitializeFrameSink(LayerTreeFrameSink* layer_tree_frame_sink);

@@ -15,6 +15,7 @@
 #include "base/containers/adapters.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/json/json_writer.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -2330,6 +2331,33 @@ void LayerTreeImpl::ResetAllChangeTracking() {
   for (auto& layer : *layers_)
     layer->ResetChangeTracking();
   property_trees_.ResetAllChangeTracking();
+}
+
+std::string LayerTreeImpl::LayerListAsJson() const {
+  auto list = std::make_unique<base::ListValue>();
+  for (auto* layer : *this)
+    list->Append(layer->LayerAsJson());
+  std::string str;
+  base::JSONWriter::WriteWithOptions(
+      *list,
+      base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION |
+          base::JSONWriter::OPTIONS_PRETTY_PRINT,
+      &str);
+  return str;
+}
+
+std::string LayerTreeImpl::LayerTreeAsJson() const {
+  std::string str;
+  if (root_layer_for_testing_) {
+    std::unique_ptr<base::Value> json(
+        root_layer_for_testing_->LayerTreeAsJson());
+    base::JSONWriter::WriteWithOptions(
+        *json,
+        base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION |
+            base::JSONWriter::OPTIONS_PRETTY_PRINT,
+        &str);
+  }
+  return str;
 }
 
 }  // namespace cc

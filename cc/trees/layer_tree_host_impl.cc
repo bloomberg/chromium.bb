@@ -2947,11 +2947,13 @@ void LayerTreeHostImpl::ActivateSyncTree() {
     std::string property_trees;
     base::JSONWriter::WriteWithOptions(
         *active_tree_->property_trees()->AsTracedValue()->ToBaseValue(),
-        base::JSONWriter::OPTIONS_PRETTY_PRINT, &property_trees);
+        base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION |
+            base::JSONWriter::OPTIONS_PRETTY_PRINT,
+        &property_trees);
     VLOG(3) << "After activating sync tree, the active tree:"
             << "\nproperty_trees:\n"
-            << property_trees << "\nlayers:\n"
-            << LayerListAsJson();
+            << property_trees << "\ncc::LayerImpls:\n"
+            << active_tree_->LayerListAsJson();
   }
 }
 
@@ -4938,28 +4940,6 @@ void LayerTreeHostImpl::ActivateAnimations() {
     // Request another frame to run the next tick of the animation.
     SetNeedsOneBeginImplFrame();
   }
-}
-
-std::string LayerTreeHostImpl::LayerListAsJson() const {
-  auto list = std::make_unique<base::ListValue>();
-  for (auto* layer : *active_tree_) {
-    list->Append(layer->LayerAsJson());
-  }
-  std::string str;
-  base::JSONWriter::WriteWithOptions(
-      *list, base::JSONWriter::OPTIONS_PRETTY_PRINT, &str);
-  return str;
-}
-
-std::string LayerTreeHostImpl::LayerTreeAsJson() const {
-  std::string str;
-  if (active_tree_->root_layer_for_testing()) {
-    std::unique_ptr<base::Value> json(
-        active_tree_->root_layer_for_testing()->LayerTreeAsJson());
-    base::JSONWriter::WriteWithOptions(
-        *json, base::JSONWriter::OPTIONS_PRETTY_PRINT, &str);
-  }
-  return str;
 }
 
 void LayerTreeHostImpl::RegisterScrollbarAnimationController(
