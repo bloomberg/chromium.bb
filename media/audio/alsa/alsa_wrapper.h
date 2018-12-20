@@ -46,6 +46,52 @@ class MEDIA_EXPORT AlsaWrapper {
                            unsigned int latency);
   virtual int PcmGetParams(snd_pcm_t* handle, snd_pcm_uframes_t* buffer_size,
                            snd_pcm_uframes_t* period_size);
+  virtual int PcmHwParamsMalloc(snd_pcm_hw_params_t** hw_params);
+  virtual int PcmHwParamsAny(snd_pcm_t* handle, snd_pcm_hw_params_t* hw_params);
+  virtual int PcmHwParamsSetRateResample(snd_pcm_t* handle,
+                                         snd_pcm_hw_params_t* hw_params,
+                                         unsigned int value);
+  virtual int PcmHwParamsSetRateNear(snd_pcm_t* handle,
+                                     snd_pcm_hw_params_t* hw_params,
+                                     unsigned int* rate,
+                                     int* direction);
+  virtual int PcmHwParamsTestFormat(snd_pcm_t* handle,
+                                    snd_pcm_hw_params_t* hw_params,
+                                    snd_pcm_format_t format);
+  virtual int PcmFormatSize(snd_pcm_format_t format, size_t samples);
+  virtual int PcmHwParamsGetChannelsMin(const snd_pcm_hw_params_t* hw_params,
+                                        unsigned int* min_channels);
+  virtual int PcmHwParamsGetChannelsMax(const snd_pcm_hw_params_t* hw_params,
+                                        unsigned int* max_channels);
+  virtual int PcmHwParamsSetFormat(snd_pcm_t* handle,
+                                   snd_pcm_hw_params_t* hw_params,
+                                   snd_pcm_format_t format);
+  virtual int PcmHwParamsSetAccess(snd_pcm_t* handle,
+                                   snd_pcm_hw_params_t* hw_params,
+                                   snd_pcm_access_t access);
+  virtual int PcmHwParamsSetChannels(snd_pcm_t* handle,
+                                     snd_pcm_hw_params_t* hw_params,
+                                     unsigned int channels);
+  virtual int PcmHwParamsSetBufferSizeNear(snd_pcm_t* handle,
+                                           snd_pcm_hw_params_t* hw_params,
+                                           snd_pcm_uframes_t* buffer_size);
+  virtual int PcmHwParamsSetPeriodSizeNear(snd_pcm_t* handle,
+                                           snd_pcm_hw_params_t* hw_params,
+                                           snd_pcm_uframes_t* period_size,
+                                           int* direction);
+  virtual int PcmHwParams(snd_pcm_t* handle, snd_pcm_hw_params_t* hw_params);
+  virtual void PcmHwParamsFree(snd_pcm_hw_params_t* hw_params);
+  virtual int PcmSwParamsMalloc(snd_pcm_sw_params_t** sw_params);
+  virtual int PcmSwParamsCurrent(snd_pcm_t* handle,
+                                 snd_pcm_sw_params_t* sw_params);
+  virtual int PcmSwParamsSetStartThreshold(snd_pcm_t* handle,
+                                           snd_pcm_sw_params_t* sw_params,
+                                           snd_pcm_uframes_t start_threshold);
+  virtual int PcmSwParamsSetAvailMin(snd_pcm_t* handle,
+                                     snd_pcm_sw_params_t* sw_params,
+                                     snd_pcm_uframes_t period_size);
+  virtual int PcmSwParams(snd_pcm_t* handle, snd_pcm_sw_params_t* sw_params);
+  virtual void PcmSwParamsFree(snd_pcm_sw_params_t* sw_params);
   virtual const char* PcmName(snd_pcm_t* handle);
   virtual snd_pcm_sframes_t PcmAvailUpdate(snd_pcm_t* handle);
   virtual snd_pcm_state_t PcmState(snd_pcm_t* handle);
@@ -105,15 +151,6 @@ class MEDIA_EXPORT AlsaWrapper {
 
   virtual const char* StrError(int errnum);
 
- private:
-  int ConfigureHwParams(snd_pcm_t* handle,
-                        snd_pcm_hw_params_t* hw_params,
-                        snd_pcm_format_t format,
-                        snd_pcm_access_t access,
-                        unsigned int channels,
-                        unsigned int rate,
-                        int soft_resample,
-                        unsigned int latency);
   DISALLOW_COPY_AND_ASSIGN(AlsaWrapper);
 };
 

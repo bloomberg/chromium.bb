@@ -46,10 +46,6 @@ snd_pcm_uframes_t AlsaWrapper::PcmStatusGetAvail(const snd_pcm_status_t* obj) {
   return snd_pcm_status_get_avail(obj);
 }
 
-ssize_t AlsaWrapper::PcmFormatSize(snd_pcm_format_t format, size_t samples) {
-  return snd_pcm_format_size(format, samples);
-}
-
 void AlsaWrapper::PcmStatusGetHtstamp(const snd_pcm_status_t* obj,
                                       snd_htimestamp_t* ptr) {
   snd_pcm_status_get_htstamp(obj, ptr);
@@ -57,14 +53,6 @@ void AlsaWrapper::PcmStatusGetHtstamp(const snd_pcm_status_t* obj,
 
 snd_pcm_state_t AlsaWrapper::PcmStatusGetState(const snd_pcm_status_t* obj) {
   return snd_pcm_status_get_state(obj);
-}
-
-int AlsaWrapper::PcmHwParamsMalloc(snd_pcm_hw_params_t** ptr) {
-  return snd_pcm_hw_params_malloc(ptr);
-}
-
-void AlsaWrapper::PcmHwParamsFree(snd_pcm_hw_params_t* obj) {
-  snd_pcm_hw_params_free(obj);
 }
 
 int AlsaWrapper::PcmHwParamsCurrent(snd_pcm_t* handle,
@@ -76,95 +64,11 @@ int AlsaWrapper::PcmHwParamsCanPause(const snd_pcm_hw_params_t* params) {
   return snd_pcm_hw_params_can_pause(params);
 }
 
-int AlsaWrapper::PcmHwParamsSetRateResample(snd_pcm_t* handle,
-                                            snd_pcm_hw_params_t* params,
-                                            bool val) {
-  return snd_pcm_hw_params_set_rate_resample(handle, params, val);
-}
-
-int AlsaWrapper::PcmHwParamsSetAccess(snd_pcm_t* handle,
-                                      snd_pcm_hw_params_t* params,
-                                      snd_pcm_access_t access) {
-  return snd_pcm_hw_params_set_access(handle, params, access);
-}
-
-int AlsaWrapper::PcmHwParamsSetFormat(snd_pcm_t* handle,
-                                      snd_pcm_hw_params_t* params,
-                                      snd_pcm_format_t format) {
-  return snd_pcm_hw_params_set_format(handle, params, format);
-}
-
-int AlsaWrapper::PcmHwParamsSetChannels(snd_pcm_t* handle,
-                                        snd_pcm_hw_params_t* params,
-                                        unsigned int num_channels) {
-  return snd_pcm_hw_params_set_channels(handle, params, num_channels);
-}
-
-int AlsaWrapper::PcmHwParamsSetRateNear(snd_pcm_t* handle,
-                                        snd_pcm_hw_params_t* params,
-                                        unsigned int* rate,
-                                        int* dir) {
-  return snd_pcm_hw_params_set_rate_near(handle, params, rate, dir);
-}
-
-int AlsaWrapper::PcmHwParamsSetBufferSizeNear(snd_pcm_t* handle,
-                                              snd_pcm_hw_params_t* params,
-                                              snd_pcm_uframes_t* val) {
-  return snd_pcm_hw_params_set_buffer_size_near(handle, params, val);
-}
-
-int AlsaWrapper::PcmHwParamsSetPeriodSizeNear(snd_pcm_t* handle,
-                                              snd_pcm_hw_params_t* params,
-                                              snd_pcm_uframes_t* val,
-                                              int* dir) {
-  return snd_pcm_hw_params_set_period_size_near(handle, params, val, dir);
-}
-
-int AlsaWrapper::PcmHwParamsTestFormat(snd_pcm_t* handle,
-                                       snd_pcm_hw_params_t* params,
-                                       snd_pcm_format_t format) {
-  return snd_pcm_hw_params_test_format(handle, params, format);
-}
-
 int AlsaWrapper::PcmHwParamsTestRate(snd_pcm_t* handle,
                                      snd_pcm_hw_params_t* params,
                                      unsigned int rate,
                                      int dir) {
   return snd_pcm_hw_params_test_rate(handle, params, rate, dir);
-}
-
-int AlsaWrapper::PcmHwParamsAny(snd_pcm_t* handle,
-                                snd_pcm_hw_params_t* params) {
-  return snd_pcm_hw_params_any(handle, params);
-}
-
-int AlsaWrapper::PcmHwParams(snd_pcm_t* handle, snd_pcm_hw_params_t* params) {
-  return snd_pcm_hw_params(handle, params);
-}
-
-int AlsaWrapper::PcmSwParamsMalloc(snd_pcm_sw_params_t** params) {
-  return snd_pcm_sw_params_malloc(params);
-}
-
-void AlsaWrapper::PcmSwParamsFree(snd_pcm_sw_params_t* params) {
-  snd_pcm_sw_params_free(params);
-}
-
-int AlsaWrapper::PcmSwParamsCurrent(snd_pcm_t* handle,
-                                    snd_pcm_sw_params_t* params) {
-  return snd_pcm_sw_params_current(handle, params);
-}
-
-int AlsaWrapper::PcmSwParamsSetStartThreshold(snd_pcm_t* handle,
-                                              snd_pcm_sw_params_t* params,
-                                              snd_pcm_uframes_t val) {
-  return snd_pcm_sw_params_set_start_threshold(handle, params, val);
-}
-
-int AlsaWrapper::PcmSwParamsSetAvailMin(snd_pcm_t* handle,
-                                        snd_pcm_sw_params_t* params,
-                                        snd_pcm_uframes_t val) {
-  return snd_pcm_sw_params_set_avail_min(handle, params, val);
 }
 
 int AlsaWrapper::PcmSwParamsSetTstampMode(snd_pcm_t* handle,
@@ -182,10 +86,6 @@ int AlsaWrapper::PcmSwParamsSetTstampType(snd_pcm_t* handle,
 #else
   return 0;
 #endif  // BUILDFLAG(MEDIA_CLOCK_MONOTONIC_RAW)
-}
-
-int AlsaWrapper::PcmSwParams(snd_pcm_t* handle, snd_pcm_sw_params_t* params) {
-  return snd_pcm_sw_params(handle, params);
 }
 
 }  // namespace media

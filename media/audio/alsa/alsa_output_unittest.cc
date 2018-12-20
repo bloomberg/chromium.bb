@@ -15,6 +15,7 @@
 #include "media/audio/alsa/alsa_output.h"
 #include "media/audio/alsa/alsa_wrapper.h"
 #include "media/audio/alsa/audio_manager_alsa.h"
+#include "media/audio/alsa/mock_alsa_wrapper.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/mock_audio_source_callback.h"
 #include "media/audio/test_audio_thread.h"
@@ -41,42 +42,6 @@ using testing::StrEq;
 using testing::Unused;
 
 namespace media {
-
-class MockAlsaWrapper : public AlsaWrapper {
- public:
-  MOCK_METHOD3(DeviceNameHint, int(int card,
-                                   const char* iface,
-                                   void*** hints));
-  MOCK_METHOD2(DeviceNameGetHint, char*(const void* hint, const char* id));
-  MOCK_METHOD1(DeviceNameFreeHint, int(void** hints));
-
-  MOCK_METHOD4(PcmOpen, int(snd_pcm_t** handle, const char* name,
-                            snd_pcm_stream_t stream, int mode));
-  MOCK_METHOD1(PcmClose, int(snd_pcm_t* handle));
-  MOCK_METHOD1(PcmPrepare, int(snd_pcm_t* handle));
-  MOCK_METHOD1(PcmDrop, int(snd_pcm_t* handle));
-  MOCK_METHOD2(PcmDelay, int(snd_pcm_t* handle, snd_pcm_sframes_t* delay));
-  MOCK_METHOD3(PcmWritei, snd_pcm_sframes_t(snd_pcm_t* handle,
-                                            const void* buffer,
-                                            snd_pcm_uframes_t size));
-  MOCK_METHOD3(PcmReadi, snd_pcm_sframes_t(snd_pcm_t* handle,
-                                           void* buffer,
-                                           snd_pcm_uframes_t size));
-  MOCK_METHOD3(PcmRecover, int(snd_pcm_t* handle, int err, int silent));
-  MOCK_METHOD7(PcmSetParams, int(snd_pcm_t* handle, snd_pcm_format_t format,
-                                 snd_pcm_access_t access, unsigned int channels,
-                                 unsigned int rate, int soft_resample,
-                                 unsigned int latency));
-  MOCK_METHOD3(PcmGetParams, int(snd_pcm_t* handle,
-                                 snd_pcm_uframes_t* buffer_size,
-                                 snd_pcm_uframes_t* period_size));
-  MOCK_METHOD1(PcmName, const char*(snd_pcm_t* handle));
-  MOCK_METHOD1(PcmAvailUpdate, snd_pcm_sframes_t(snd_pcm_t* handle));
-  MOCK_METHOD1(PcmState, snd_pcm_state_t(snd_pcm_t* handle));
-  MOCK_METHOD1(PcmStart, int(snd_pcm_t* handle));
-
-  MOCK_METHOD1(StrError, const char*(int errnum));
-};
 
 class MockAudioManagerAlsa : public AudioManagerAlsa {
  public:
