@@ -799,6 +799,9 @@ void AssistantManagerServiceImpl::HandleVerifyAndroidAppResponse(
 
   assistant_client::VoicelessOptions options;
   options.obfuscated_gaia_id = interaction.user_id;
+  // Set the request to be user initiated so that a new conversation will be
+  // created to handle the client OPs in the response of this request.
+  options.is_user_initiated = true;
 
   assistant_manager_internal_->SendVoicelessInteraction(
       interaction_proto, "verify_provider_response", options, [](auto) {});
