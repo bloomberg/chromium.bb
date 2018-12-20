@@ -36,8 +36,18 @@ class MockView : public View {
     return minimum_size_.value_or(GetPreferredSize());
   }
 
+  void SetVisible(bool visible) override {
+    View::SetVisible(visible);
+    ++set_visible_count_;
+  }
+
+  int GetSetVisibleCount() const { return set_visible_count_; }
+
+  void ResetCounts() { set_visible_count_ = 0; }
+
  private:
   Optional<Size> minimum_size_;
+  int set_visible_count_ = 0;
 };
 
 // Custom flex rule that snaps a view between its preffered size and half that
@@ -72,16 +82,17 @@ class FlexLayoutTest : public testing::Test {
     layout_ = host_->SetLayoutManager(std::make_unique<FlexLayout>());
   }
 
-  View* AddChild(const Size& preferred_size,
-                 const Optional<Size>& minimum_size = Optional<Size>(),
-                 bool visible = true) {
+  MockView* AddChild(const Size& preferred_size,
+                     const Optional<Size>& minimum_size = Optional<Size>(),
+                     bool visible = true) {
     return AddChild(host_.get(), preferred_size, minimum_size, visible);
   }
 
-  static View* AddChild(View* parent,
-                        const Size& preferred_size,
-                        const Optional<Size>& minimum_size = Optional<Size>(),
-                        bool visible = true) {
+  static MockView* AddChild(
+      View* parent,
+      const Size& preferred_size,
+      const Optional<Size>& minimum_size = Optional<Size>(),
+      bool visible = true) {
     MockView* const child = new MockView();
     child->SetPreferredSize(preferred_size);
     if (minimum_size.has_value())
@@ -1504,6 +1515,54 @@ TEST_F(FlexLayoutTest, Layout_FlexRule_CustomFlexRule_ShrinkToZero) {
   host_->SetSize(Size(20, 20));
   host_->Layout();
   EXPECT_FALSE(child->visible());
+}
+
+TEST_F(FlexLayoutTest, Layout_OnlyCallsSetViewVisibilityWhenNecessary) {
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetCollapseMargins(true);
+  layout_->SetInteriorMargin(Insets(5));
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetDefaultChildMargins(gfx::Insets(5));
+  MockView* child1 = AddChild(Size(20, 10), Size(5, 5));
+  MockView* child2 = AddChild(Size(20, 10), Size(5, 5));
+  layout_->SetFlexForView(child1, kFlex1ScaleToZero);
+  layout_->SetFlexForView(child2, kFlex1ScaleToMinimumHighPriority);
+
+  child1->ResetCounts();
+  child2->ResetCounts();
+  host_->SetSize(Size(40, 20));
+  host_->Layout();
+  EXPECT_TRUE(child1->visible());
+  EXPECT_TRUE(child2->visible());
+  EXPECT_EQ(0, child1->GetSetVisibleCount());
+  EXPECT_EQ(0, child2->GetSetVisibleCount());
+
+  host_->SetSize(Size(35, 20));
+  host_->Layout();
+  EXPECT_FALSE(child1->visible());
+  EXPECT_TRUE(child2->visible());
+  EXPECT_EQ(1, child1->GetSetVisibleCount());
+  EXPECT_EQ(0, child2->GetSetVisibleCount());
+
+  child1->ResetCounts();
+  child2->ResetCounts();
+  host_->SetSize(Size(30, 20));
+  host_->Layout();
+  EXPECT_FALSE(child1->visible());
+  EXPECT_TRUE(child2->visible());
+  EXPECT_EQ(0, child1->GetSetVisibleCount());
+  EXPECT_EQ(0, child2->GetSetVisibleCount());
+
+  child1->SetVisible(false);
+  child1->ResetCounts();
+
+  host_->SetSize(Size(40, 20));
+  host_->Layout();
+  EXPECT_FALSE(child1->visible());
+  EXPECT_TRUE(child2->visible());
+  EXPECT_EQ(0, child1->GetSetVisibleCount());
+  EXPECT_EQ(0, child2->GetSetVisibleCount());
 }
 
 // Nested Layout Tests ---------------------------------------------------------
