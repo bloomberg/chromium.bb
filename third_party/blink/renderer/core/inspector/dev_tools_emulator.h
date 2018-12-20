@@ -66,6 +66,10 @@ class CORE_EXPORT DevToolsEmulator final
   // This ensures that all content inside the forced viewport is painted.
   base::Optional<IntRect> VisibleContentRectForPainting() const;
 
+  // Returns the scale used to convert incoming input events while emulating
+  // device metics.
+  float InputEventsScaleForEmulation();
+
  private:
   void EnableMobileEmulation();
   void DisableMobileEmulation();
@@ -74,7 +78,6 @@ class CORE_EXPORT DevToolsEmulator final
   // deviceScaleFactor() otherwise.
   float CompositorDeviceScaleFactor() const;
 
-  void ApplyDeviceEmulationTransform(TransformationMatrix*);
   void ApplyViewportOverride(TransformationMatrix*);
   void UpdateRootLayerTransform();
 

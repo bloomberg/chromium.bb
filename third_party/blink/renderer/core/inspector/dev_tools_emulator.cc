@@ -421,21 +421,6 @@ void DevToolsEmulator::MainFrameScrollOrScaleChanged() {
     UpdateRootLayerTransform();
 }
 
-void DevToolsEmulator::ApplyDeviceEmulationTransform(
-    TransformationMatrix* transform) {
-  if (device_metrics_enabled_) {
-    transform->Scale(emulation_params_.scale);
-    if (web_view_->MainFrameImpl()) {
-      web_view_->MainFrameImpl()->SetInputEventsScaleForEmulation(
-          emulation_params_.scale);
-    }
-  } else {
-    if (web_view_->MainFrameImpl()) {
-      web_view_->MainFrameImpl()->SetInputEventsScaleForEmulation(1.0);
-    }
-  }
-}
-
 void DevToolsEmulator::ApplyViewportOverride(TransformationMatrix* transform) {
   if (!viewport_override_)
     return;
@@ -467,7 +452,8 @@ void DevToolsEmulator::UpdateRootLayerTransform() {
   // Apply device emulation transform first, so that it is affected by the
   // viewport override.
   ApplyViewportOverride(&transform);
-  ApplyDeviceEmulationTransform(&transform);
+  if (device_metrics_enabled_)
+    transform.Scale(emulation_params_.scale);
   web_view_->SetDeviceEmulationTransform(transform);
 }
 
@@ -482,6 +468,10 @@ base::Optional<IntRect> DevToolsEmulator::VisibleContentRectForPainting()
   return EnclosingIntRect(
       FloatRect(viewport_override_->position.x, viewport_override_->position.y,
                 viewport_size.Width(), viewport_size.Height()));
+}
+
+float DevToolsEmulator::InputEventsScaleForEmulation() {
+  return device_metrics_enabled_ ? emulation_params_.scale : 1.0;
 }
 
 void DevToolsEmulator::SetTouchEventEmulationEnabled(bool enabled,
