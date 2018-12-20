@@ -21,7 +21,7 @@ TEST(ScopedHistogramTimer, TwoTimersOneScope) {
 // - unscoped enums
 // - scoped enums
 TEST(HistogramMacro, IntegralPsuedoEnumeration) {
-  UMA_HISTOGRAM_ENUMERATION("Test.FauxEnumeration", 1, 10000);
+  UMA_HISTOGRAM_ENUMERATION("Test.FauxEnumeration", 1, 1000);
 }
 
 TEST(HistogramMacro, UnscopedEnumeration) {

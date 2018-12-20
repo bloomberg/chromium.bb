@@ -253,7 +253,7 @@ HistogramBase* Histogram::FactoryGet(const std::string& name,
                                      int32_t flags) {
   bool valid_arguments =
       InspectConstructionArguments(name, &minimum, &maximum, &bucket_count);
-  DCHECK(valid_arguments);
+  DCHECK(valid_arguments) << name;
 
   return Factory(name, minimum, maximum, bucket_count, flags).Build();
 }
@@ -450,6 +450,29 @@ bool Histogram::InspectConstructionArguments(StringPiece name,
   if (*bucket_count > 1002) {
     UmaHistogramSparse("Histogram.TooManyBuckets.1000",
                        static_cast<Sample>(HashMetricName(name)));
+
+    // TODO(bcwhite): Clean these up as bugs get fixed. Also look at injecting
+    // whitelist (using hashes) from a higher layer rather than hardcoding
+    // them here.
+    // Blink.UseCounter legitimately has more than 1000 entries in its enum.
+    // Arc.OOMKills: https://crbug.com/916757
+    // Autofill.FieldPredictionQuality.ByFieldType: https://crbug.com/916752
+    // Bluetooth.MacOS.Errors: https://crbug.com/916754
+    // BlinkGC.CommittedSize: https://crbug.com/916761
+    // PartitionAlloc.CommittedSize: https://crbug.com/916761
+    if (!name.starts_with("Blink.UseCounter") &&
+        !name.starts_with("Arc.OOMKills.") &&
+        !name.starts_with("Autofill.FieldPredictionQuality.ByFieldType.") &&
+        !name.starts_with("Bluetooth.MacOS.Errors.") &&
+        name != "BlinkGC.CommittedSize" &&
+        name != "PartitionAlloc.CommittedSize") {
+      // Assume it's a mistake and limit to 100 buckets, plus under and over.
+      // If the DCHECK doesn't alert the user then hopefully the small number
+      // will be obvious on the dashboard. If not, then it probably wasn't
+      // important.
+      *bucket_count = 102;
+      check_okay = false;
+    }
   }
 
   // Ensure parameters are sane.
@@ -939,7 +962,7 @@ HistogramBase* LinearHistogram::FactoryGetWithRangeDescription(
 
   bool valid_arguments = Histogram::InspectConstructionArguments(
       name, &minimum, &maximum, &bucket_count);
-  DCHECK(valid_arguments);
+  DCHECK(valid_arguments) << name;
 
   return Factory(name, minimum, maximum, bucket_count, flags, descriptions)
       .Build();
