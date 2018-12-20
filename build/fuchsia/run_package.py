@@ -226,13 +226,14 @@ def RunPackage(output_dir, target, package_path, package_name, package_deps,
 
     # Install all packages.
     for next_package_path in all_packages:
-      package_name, package_version = GetPackageInfo(next_package_path)
+      install_package_name, package_version = GetPackageInfo(next_package_path)
       logging.info('Installing %s version %s.' %
-                   (package_name, package_version))
+                   (install_package_name, package_version))
       return_code = target.RunCommand(['amber_ctl', 'get_up', '-n',
-                                       package_name, '-v', package_version])
+                                       install_package_name, '-v',
+                                       package_version])
       if return_code != 0:
-        raise Exception('Error while installing %s.' % package_name)
+        raise Exception('Error while installing %s.' % install_package_name)
 
     if system_logger:
       log_output_quit_event.set()
