@@ -60,7 +60,7 @@ TEST_F(ContentSettingsEphemeralProviderTest, EphemeralTypeStorageAndRetrieval) {
   EXPECT_NE(nullptr, rule_iterator);
   EXPECT_TRUE(rule_iterator->HasNext());
   content_settings::Rule rule = rule_iterator->Next();
-  EXPECT_EQ(base::Value(CONTENT_SETTING_ALLOW), *rule.value);
+  EXPECT_EQ(base::Value(CONTENT_SETTING_ALLOW), rule.value);
 
   // Overwrite previous value.
   EXPECT_TRUE(provider()->SetWebsiteSetting(
@@ -72,10 +72,10 @@ TEST_F(ContentSettingsEphemeralProviderTest, EphemeralTypeStorageAndRetrieval) {
   EXPECT_NE(nullptr, rule_iterator);
   EXPECT_TRUE(rule_iterator->HasNext());
   rule = rule_iterator->Next();
-  EXPECT_EQ(base::Value(CONTENT_SETTING_BLOCK), *rule.value);
+  EXPECT_EQ(base::Value(CONTENT_SETTING_BLOCK), rule.value);
 }
 
-// Tests if storage of a persistent perference is rejected.
+// Tests if storage of a persistent preference is rejected.
 TEST_F(ContentSettingsEphemeralProviderTest, PersistentTypeRejection) {
   ContentSettingsPattern site_pattern =
       ContentSettingsPattern::FromString("https://example.com");

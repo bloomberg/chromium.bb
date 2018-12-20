@@ -10,23 +10,22 @@
 
 namespace content_settings {
 
-Rule::Rule() {}
+Rule::Rule() = default;
 
-Rule::Rule(
-    const ContentSettingsPattern& primary_pattern,
-    const ContentSettingsPattern& secondary_pattern,
-    base::Value* value)
+Rule::Rule(const ContentSettingsPattern& primary_pattern,
+           const ContentSettingsPattern& secondary_pattern,
+           base::Value value)
     : primary_pattern(primary_pattern),
       secondary_pattern(secondary_pattern),
-      value(value) {
-  DCHECK(value);
-}
+      value(std::move(value)) {}
 
-Rule::Rule(const Rule& other) = default;
+Rule::Rule(Rule&& other) = default;
 
-Rule::~Rule() {}
+Rule& Rule::operator=(Rule&& other) = default;
 
-RuleIterator::~RuleIterator() {}
+Rule::~Rule() = default;
+
+RuleIterator::~RuleIterator() = default;
 
 ConcatenationIterator::ConcatenationIterator(
     std::vector<std::unique_ptr<RuleIterator>> iterators,
@@ -41,7 +40,7 @@ ConcatenationIterator::ConcatenationIterator(
   }
 }
 
-ConcatenationIterator::~ConcatenationIterator() {}
+ConcatenationIterator::~ConcatenationIterator() = default;
 
 bool ConcatenationIterator::HasNext() const {
   return !iterators_.empty();
@@ -51,7 +50,9 @@ Rule ConcatenationIterator::Next() {
   auto current_iterator = iterators_.begin();
   DCHECK(current_iterator != iterators_.end());
   DCHECK((*current_iterator)->HasNext());
-  const Rule& to_return = (*current_iterator)->Next();
+  const Rule& next_rule = (*current_iterator)->Next();
+  Rule to_return(next_rule.primary_pattern, next_rule.secondary_pattern,
+                 next_rule.value.Clone());
   if (!(*current_iterator)->HasNext())
     iterators_.erase(current_iterator);
   return to_return;

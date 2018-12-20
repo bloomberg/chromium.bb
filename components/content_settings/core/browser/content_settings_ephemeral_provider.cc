@@ -71,7 +71,8 @@ bool EphemeralProvider::SetWebsiteSetting(
   if (in_value) {
     content_settings_rules_.SetValue(
         primary_pattern, secondary_pattern, content_type, resource_identifier,
-        store_last_modified_ ? clock_->Now() : base::Time(), in_value);
+        store_last_modified_ ? clock_->Now() : base::Time(),
+        std::move(*in_value));
     NotifyObservers(primary_pattern, secondary_pattern, content_type,
                     resource_identifier);
   } else {

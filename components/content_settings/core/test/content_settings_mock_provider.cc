@@ -30,7 +30,8 @@ bool MockProvider::SetWebsiteSetting(
     return false;
   if (value) {
     value_map_.SetValue(requesting_url_pattern, embedding_url_pattern,
-                        content_type, resource_identifier, base::Time(), value);
+                        content_type, resource_identifier, base::Time(),
+                        std::move(*value));
   } else {
     value_map_.DeleteValue(requesting_url_pattern, embedding_url_pattern,
                            content_type, resource_identifier);

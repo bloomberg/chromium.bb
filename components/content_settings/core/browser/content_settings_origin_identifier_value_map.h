@@ -12,7 +12,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/time/time.h"
 #include "components/content_settings/core/common/content_settings.h"
 
@@ -47,7 +46,7 @@ class OriginIdentifierValueMap {
 
   struct ValueEntry {
     base::Time last_modified;
-    linked_ptr<base::Value> value;
+    base::Value value;
     ValueEntry();
     ~ValueEntry();
   };
@@ -94,7 +93,7 @@ class OriginIdentifierValueMap {
   // Returns a weak pointer to the value for the given |primary_pattern|,
   // |secondary_pattern|, |content_type|, |resource_identifier| tuple. If
   // no value is stored for the passed parameter |NULL| is returned.
-  base::Value* GetValue(
+  const base::Value* GetValue(
       const GURL& primary_url,
       const GURL& secondary_url,
       ContentSettingsType content_type,
@@ -107,15 +106,14 @@ class OriginIdentifierValueMap {
       const ResourceIdentifier& resource_identifier) const;
 
   // Sets the |value| for the given |primary_pattern|, |secondary_pattern|,
-  // |content_type|, |resource_identifier| tuple. The method takes the ownership
-  // of the passed |value|. The caller can also store a |last_modified| date
-  // for each value.
+  // |content_type|, |resource_identifier| tuple. The caller can also store a
+  // |last_modified| date for each value.
   void SetValue(const ContentSettingsPattern& primary_pattern,
                 const ContentSettingsPattern& secondary_pattern,
                 ContentSettingsType content_type,
                 const ResourceIdentifier& resource_identifier,
                 base::Time last_modified,
-                base::Value* value);
+                base::Value value);
 
   // Deletes the map entry for the given |primary_pattern|,
   // |secondary_pattern|, |content_type|, |resource_identifier| tuple.

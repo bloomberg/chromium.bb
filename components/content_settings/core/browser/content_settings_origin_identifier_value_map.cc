@@ -38,10 +38,9 @@ class RuleIteratorImpl : public RuleIterator {
 
   Rule Next() override {
     DCHECK(HasNext());
-    DCHECK(current_rule_->second.value.get());
     Rule to_return(current_rule_->first.primary_pattern,
                    current_rule_->first.secondary_pattern,
-                   current_rule_->second.value->DeepCopy());
+                   current_rule_->second.value.Clone());
     ++current_rule_;
     return to_return;
   }
@@ -117,7 +116,7 @@ OriginIdentifierValueMap::OriginIdentifierValueMap() {}
 
 OriginIdentifierValueMap::~OriginIdentifierValueMap() {}
 
-base::Value* OriginIdentifierValueMap::GetValue(
+const base::Value* OriginIdentifierValueMap::GetValue(
     const GURL& primary_url,
     const GURL& secondary_url,
     ContentSettingsType content_type,
@@ -133,7 +132,7 @@ base::Value* OriginIdentifierValueMap::GetValue(
   for (const auto& entry : it->second) {
     if (entry.first.primary_pattern.Matches(primary_url) &&
         entry.first.secondary_pattern.Matches(secondary_url)) {
-      return entry.second.value.get();
+      return &entry.second.value;
     }
   }
   return nullptr;
@@ -164,18 +163,16 @@ void OriginIdentifierValueMap::SetValue(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     base::Time last_modified,
-    base::Value* value) {
+    base::Value value) {
   DCHECK(primary_pattern.IsValid());
   DCHECK(secondary_pattern.IsValid());
-  DCHECK(value);
   // TODO(raymes): Remove this after we track down the cause of
   // crbug.com/531548.
   CHECK_NE(CONTENT_SETTINGS_TYPE_DEFAULT, content_type);
   EntryMapKey key(content_type, resource_identifier);
   PatternPair patterns(primary_pattern, secondary_pattern);
-  // This will create the entry and the linked_ptr if needed.
   ValueEntry* entry = &entries_[key][patterns];
-  entry->value.reset(value);
+  entry->value = std::move(value);
   entry->last_modified = last_modified;
 }
 
