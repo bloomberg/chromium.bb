@@ -41,7 +41,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/current_module.h"
-#include "base/win/embedded_i18n/language_Selector.h"
+#include "base/win/embedded_i18n/language_selector.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_version.h"
