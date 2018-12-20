@@ -106,7 +106,6 @@ KURL WorkerGlobalScope::CompleteURL(const String& url) const {
 void WorkerGlobalScope::Dispose() {
   DCHECK(IsContextThread());
   closing_ = true;
-  paused_calls_.clear();
   WorkerOrWorkletGlobalScope::Dispose();
 }
 
@@ -343,56 +342,28 @@ ExecutionContext* WorkerGlobalScope::GetExecutionContext() const {
   return const_cast<WorkerGlobalScope*>(this);
 }
 
-void WorkerGlobalScope::TasksWereUnpaused() {
-  WorkerOrWorkletGlobalScope::TasksWereUnpaused();
-  // We cannot run the paused tasks right away, as there might be some other
-  // code that still needs to be run synchronously.
-  GetTaskRunner(TaskType::kInternalWorker)
-      ->PostTask(FROM_HERE, WTF::Bind(&WorkerGlobalScope::MaybeRunPausedTasks,
-                                      WrapWeakPersistent(this)));
-}
-
-void WorkerGlobalScope::MaybeRunPausedTasks() {
-  if (IsContextPaused())
-    return;
-  Vector<base::OnceClosure> calls;
-  paused_calls_.swap(calls);
-  for (auto& call : calls)
-    std::move(call).Run();
-}
-
-void WorkerGlobalScope::EvaluateClassicScriptPausable(
+void WorkerGlobalScope::EvaluateClassicScript(
     const KURL& script_url,
     String source_code,
     std::unique_ptr<Vector<char>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
-  if (IsContextPaused()) {
-    AddPausedCall(WTF::Bind(&WorkerGlobalScope::EvaluateClassicScriptPausable,
-                            WrapWeakPersistent(this), script_url, source_code,
-                            WTF::Passed(std::move(cached_meta_data)),
-                            stack_id));
-    return;
-  }
+  DCHECK(!IsContextPaused());
   ThreadDebugger* debugger = ThreadDebugger::From(GetThread()->GetIsolate());
   if (debugger)
     debugger->ExternalAsyncTaskStarted(stack_id);
-  EvaluateClassicScript(script_url, source_code, std::move(cached_meta_data));
+  EvaluateClassicScriptInternal(script_url, source_code,
+                                std::move(cached_meta_data));
   if (debugger)
     debugger->ExternalAsyncTaskFinished(stack_id);
 }
 
 // https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
-void WorkerGlobalScope::ImportClassicScriptPausable(
+void WorkerGlobalScope::ImportClassicScript(
     const KURL& script_url,
     FetchClientSettingsObjectSnapshot* outside_settings_object,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(RuntimeEnabledFeatures::OffMainThreadWorkerScriptFetchEnabled());
-  if (IsContextPaused()) {
-    AddPausedCall(WTF::Bind(&WorkerGlobalScope::ImportClassicScriptPausable,
-                            WrapWeakPersistent(this), script_url,
-                            WrapPersistent(outside_settings_object), stack_id));
-    return;
-  }
+  DCHECK(!IsContextPaused());
 
   // Step 12. "Fetch a classic worker script given url, outside settings,
   // destination, and inside settings."
@@ -466,33 +437,13 @@ void WorkerGlobalScope::DidImportClassicScript(
 
   // Step 13.7. "Asynchronously complete the perform the fetch steps with
   // response."
-
-  EvaluateClassicScriptPausable(
+  EvaluateClassicScript(
       classic_script_loader->ResponseURL(), classic_script_loader->SourceText(),
       classic_script_loader->ReleaseCachedMetadata(), stack_id);
 }
 
-void WorkerGlobalScope::ImportModuleScriptPausable(
-    const KURL& module_url_record,
-    FetchClientSettingsObjectSnapshot* outside_settings_object,
-    network::mojom::FetchCredentialsMode mode) {
-  if (IsContextPaused()) {
-    AddPausedCall(WTF::Bind(&WorkerGlobalScope::ImportModuleScriptPausable,
-                            WrapWeakPersistent(this), module_url_record,
-                            WrapPersistent(outside_settings_object), mode));
-    return;
-  }
-  ImportModuleScript(module_url_record, outside_settings_object, mode);
-}
-
-void WorkerGlobalScope::ReceiveMessagePausable(
-    BlinkTransferableMessage message) {
-  if (IsContextPaused()) {
-    AddPausedCall(WTF::Bind(&WorkerGlobalScope::ReceiveMessagePausable,
-                            WrapWeakPersistent(this), std::move(message)));
-    return;
-  }
-
+void WorkerGlobalScope::ReceiveMessage(BlinkTransferableMessage message) {
+  DCHECK(!IsContextPaused());
   MessagePortArray* ports =
       MessagePort::EntanglePorts(*this, std::move(message.ports));
   ThreadDebugger* debugger = ThreadDebugger::From(GetThread()->GetIsolate());
@@ -510,7 +461,7 @@ void WorkerGlobalScope::ReceiveMessagePausable(
     debugger->ExternalAsyncTaskFinished(message.sender_stack_trace_id);
 }
 
-void WorkerGlobalScope::EvaluateClassicScript(
+void WorkerGlobalScope::EvaluateClassicScriptInternal(
     const KURL& script_url,
     String source_code,
     std::unique_ptr<Vector<char>> cached_meta_data) {
@@ -529,10 +480,6 @@ void WorkerGlobalScope::EvaluateClassicScript(
       SanitizeScriptErrors::kDoNotSanitize, nullptr /* error_event */,
       v8_cache_options_);
   ReportingProxy().DidEvaluateClassicScript(success);
-}
-
-void WorkerGlobalScope::AddPausedCall(base::OnceClosure closure) {
-  paused_calls_.push_back(std::move(closure));
 }
 
 WorkerGlobalScope::WorkerGlobalScope(

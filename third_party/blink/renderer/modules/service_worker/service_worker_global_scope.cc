@@ -135,62 +135,6 @@ bool ServiceWorkerGlobalScope::ShouldInstallV8Extensions() const {
   return Platform::Current()->AllowScriptExtensionForServiceWorker(Url());
 }
 
-void ServiceWorkerGlobalScope::EvaluateClassicScript(
-    const KURL& script_url,
-    String source_code,
-    std::unique_ptr<Vector<char>> cached_meta_data) {
-  DCHECK(IsContextThread());
-
-  if (!evaluate_script_ready_) {
-    evaluate_script_ =
-        WTF::Bind(&ServiceWorkerGlobalScope::EvaluateClassicScript,
-                  WrapWeakPersistent(this), script_url, std::move(source_code),
-                  std::move(cached_meta_data));
-    return;
-  }
-
-  // Receive the main script via script streaming if needed.
-  InstalledScriptsManager* installed_scripts_manager =
-      GetThread()->GetInstalledScriptsManager();
-  if (installed_scripts_manager &&
-      installed_scripts_manager->IsScriptInstalled(script_url)) {
-    // GetScriptData blocks until the script is received from the browser.
-    std::unique_ptr<InstalledScriptsManager::ScriptData> script_data =
-        installed_scripts_manager->GetScriptData(script_url);
-    if (!script_data) {
-      ReportingProxy().DidFailToLoadInstalledClassicScript();
-      // This will eventually initiate worker thread termination. See
-      // ServiceWorkerGlobalScopeProxy::DidCloseWorkerGlobalScope() for details.
-      close();
-      return;
-    }
-
-    DCHECK(source_code.IsEmpty());
-    DCHECK(!cached_meta_data);
-    source_code = script_data->TakeSourceText();
-    cached_meta_data = script_data->TakeMetaData();
-
-    base::Optional<ContentSecurityPolicyResponseHeaders>
-        content_security_policy_raw_headers =
-            script_data->GetContentSecurityPolicyResponseHeaders();
-    ApplyContentSecurityPolicyFromHeaders(
-        content_security_policy_raw_headers.value());
-
-    String referrer_policy = script_data->GetReferrerPolicy();
-    if (!referrer_policy.IsNull())
-      ParseAndSetReferrerPolicy(referrer_policy);
-
-    std::unique_ptr<Vector<String>> origin_trial_tokens =
-        script_data->CreateOriginTrialTokens();
-    OriginTrialContext::AddTokens(this, origin_trial_tokens.get());
-
-    ReportingProxy().DidLoadInstalledScript();
-  }
-
-  WorkerGlobalScope::EvaluateClassicScript(script_url, source_code,
-                                           std::move(cached_meta_data));
-}
-
 void ServiceWorkerGlobalScope::ImportModuleScript(
     const KURL& module_url_record,
     FetchClientSettingsObjectSnapshot* outside_settings_object,
@@ -349,6 +293,62 @@ bool ServiceWorkerGlobalScope::AddEventListenerInternal(
   }
   return WorkerGlobalScope::AddEventListenerInternal(event_type, listener,
                                                      options);
+}
+
+void ServiceWorkerGlobalScope::EvaluateClassicScriptInternal(
+    const KURL& script_url,
+    String source_code,
+    std::unique_ptr<Vector<char>> cached_meta_data) {
+  DCHECK(IsContextThread());
+
+  if (!evaluate_script_ready_) {
+    evaluate_script_ =
+        WTF::Bind(&ServiceWorkerGlobalScope::EvaluateClassicScriptInternal,
+                  WrapWeakPersistent(this), script_url, std::move(source_code),
+                  std::move(cached_meta_data));
+    return;
+  }
+
+  // Receive the main script via script streaming if needed.
+  InstalledScriptsManager* installed_scripts_manager =
+      GetThread()->GetInstalledScriptsManager();
+  if (installed_scripts_manager &&
+      installed_scripts_manager->IsScriptInstalled(script_url)) {
+    // GetScriptData blocks until the script is received from the browser.
+    std::unique_ptr<InstalledScriptsManager::ScriptData> script_data =
+        installed_scripts_manager->GetScriptData(script_url);
+    if (!script_data) {
+      ReportingProxy().DidFailToLoadInstalledClassicScript();
+      // This will eventually initiate worker thread termination. See
+      // ServiceWorkerGlobalScopeProxy::DidCloseWorkerGlobalScope() for details.
+      close();
+      return;
+    }
+
+    DCHECK(source_code.IsEmpty());
+    DCHECK(!cached_meta_data);
+    source_code = script_data->TakeSourceText();
+    cached_meta_data = script_data->TakeMetaData();
+
+    base::Optional<ContentSecurityPolicyResponseHeaders>
+        content_security_policy_raw_headers =
+            script_data->GetContentSecurityPolicyResponseHeaders();
+    ApplyContentSecurityPolicyFromHeaders(
+        content_security_policy_raw_headers.value());
+
+    String referrer_policy = script_data->GetReferrerPolicy();
+    if (!referrer_policy.IsNull())
+      ParseAndSetReferrerPolicy(referrer_policy);
+
+    std::unique_ptr<Vector<String>> origin_trial_tokens =
+        script_data->CreateOriginTrialTokens();
+    OriginTrialContext::AddTokens(this, origin_trial_tokens.get());
+
+    ReportingProxy().DidLoadInstalledScript();
+  }
+
+  WorkerGlobalScope::EvaluateClassicScriptInternal(script_url, source_code,
+                                                   std::move(cached_meta_data));
 }
 
 const AtomicString& ServiceWorkerGlobalScope::InterfaceName() const {

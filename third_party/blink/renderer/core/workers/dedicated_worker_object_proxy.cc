@@ -77,7 +77,7 @@ void DedicatedWorkerObjectProxy::ProcessMessageFromWorkerObject(
     BlinkTransferableMessage message,
     WorkerThread* worker_thread) {
   To<WorkerGlobalScope>(worker_thread->GlobalScope())
-      ->ReceiveMessagePausable(std::move(message));
+      ->ReceiveMessage(std::move(message));
 }
 
 void DedicatedWorkerObjectProxy::ProcessUnhandledException(

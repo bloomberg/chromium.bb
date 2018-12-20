@@ -80,10 +80,6 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   bool ShouldInstallV8Extensions() const final;
 
   // Implements WorkerGlobalScope.
-  void EvaluateClassicScript(
-      const KURL& script_url,
-      String source_code,
-      std::unique_ptr<Vector<char>> cached_meta_data) override;
   void ImportModuleScript(
       const KURL& module_url_record,
       FetchClientSettingsObjectSnapshot* outside_settings_object,
@@ -157,6 +153,12 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
       const AtomicString& event_type,
       EventListener*,
       const AddEventListenerOptionsResolved*) override;
+
+  // WorkerGlobalScope
+  void EvaluateClassicScriptInternal(
+      const KURL& script_url,
+      String source_code,
+      std::unique_ptr<Vector<char>> cached_meta_data) override;
 
  private:
   void importScripts(const HeapVector<StringOrTrustedScriptURL>& urls,
