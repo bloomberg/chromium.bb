@@ -73,7 +73,7 @@ bool WorkerFetchContext::AllowScriptFromSource(const KURL& url) const {
 
 bool WorkerFetchContext::ShouldBlockRequestByInspector(const KURL& url) const {
   bool should_block_request = false;
-  probe::shouldBlockRequest(global_scope_, url, &should_block_request);
+  probe::shouldBlockRequest(Probe(), url, &should_block_request);
   return should_block_request;
 }
 
@@ -103,6 +103,10 @@ void WorkerFetchContext::CountUsage(WebFeature feature) const {
 
 void WorkerFetchContext::CountDeprecation(WebFeature feature) const {
   Deprecation::CountDeprecation(global_scope_, feature);
+}
+
+CoreProbeSink* WorkerFetchContext::Probe() const {
+  return probe::ToCoreProbeSink(static_cast<ExecutionContext*>(global_scope_));
 }
 
 bool WorkerFetchContext::ShouldBlockWebSocketByMixedContentCheck(
@@ -233,7 +237,7 @@ int WorkerFetchContext::ApplicationCacheHostID() const {
 void WorkerFetchContext::PrepareRequest(ResourceRequest& request,
                                         RedirectType) {
   String user_agent = global_scope_->UserAgent();
-  probe::applyUserAgentOverride(global_scope_, &user_agent);
+  probe::applyUserAgentOverride(Probe(), &user_agent);
   DCHECK(!user_agent.IsNull());
   request.SetHTTPUserAgent(AtomicString(user_agent));
 
@@ -280,20 +284,20 @@ void WorkerFetchContext::DispatchDidReceiveResponse(
       web_context_->DidDisplayContentWithCertificateErrors();
     }
   }
-  probe::didReceiveResourceResponse(global_scope_, identifier, nullptr,
-                                    response, resource);
+  probe::didReceiveResourceResponse(Probe(), identifier, nullptr, response,
+                                    resource);
 }
 
 void WorkerFetchContext::DispatchDidReceiveData(unsigned long identifier,
                                                 const char* data,
                                                 size_t data_length) {
-  probe::didReceiveData(global_scope_, identifier, nullptr, data, data_length);
+  probe::didReceiveData(Probe(), identifier, nullptr, data, data_length);
 }
 
 void WorkerFetchContext::DispatchDidReceiveEncodedData(
     unsigned long identifier,
     size_t encoded_data_length) {
-  probe::didReceiveEncodedDataLength(global_scope_, nullptr, identifier,
+  probe::didReceiveEncodedDataLength(Probe(), nullptr, identifier,
                                      encoded_data_length);
 }
 
@@ -303,7 +307,7 @@ void WorkerFetchContext::DispatchDidFinishLoading(
     int64_t encoded_data_length,
     int64_t decoded_body_length,
     bool should_report_corb_blocking) {
-  probe::didFinishLoading(global_scope_, identifier, nullptr, finish_time,
+  probe::didFinishLoading(Probe(), identifier, nullptr, finish_time,
                           encoded_data_length, decoded_body_length,
                           should_report_corb_blocking);
 }
@@ -313,7 +317,7 @@ void WorkerFetchContext::DispatchDidFail(const KURL& url,
                                          const ResourceError& error,
                                          int64_t encoded_data_length,
                                          bool is_internal_request) {
-  probe::didFailLoading(global_scope_, identifier, nullptr, error);
+  probe::didFailLoading(Probe(), identifier, nullptr, error);
   if (network_utils::IsCertificateTransparencyRequiredError(
           error.ErrorCode())) {
     CountUsage(WebFeature::kCertificateTransparencyRequiredErrorOnResourceLoad);

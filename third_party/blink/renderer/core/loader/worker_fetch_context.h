@@ -15,6 +15,7 @@
 
 namespace blink {
 
+class CoreProbeSink;
 class Resource;
 class SubresourceFilter;
 class WebURLLoader;
@@ -125,6 +126,8 @@ class WorkerFetchContext final : public BaseFetchContext {
 
  private:
   void SetFirstPartyCookie(ResourceRequest&);
+
+  CoreProbeSink* Probe() const;
 
   const Member<WorkerOrWorkletGlobalScope> global_scope_;
 

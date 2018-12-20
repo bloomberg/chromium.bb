@@ -431,9 +431,9 @@ void DocumentLoader::NotifyFinished(Resource* resource) {
     application_cache_host_->FailedLoadingMainResource();
 
   if (resource->GetResourceError().WasBlockedByResponse()) {
-    probe::didReceiveResourceResponse(frame_->GetDocument(),
-                                      MainResourceIdentifier(), this,
-                                      resource->GetResponse(), resource);
+    probe::didReceiveResourceResponse(
+        probe::ToCoreProbeSink(frame_->GetDocument()), MainResourceIdentifier(),
+        this, resource->GetResponse(), resource);
   }
 
   LoadFailed(resource->GetResourceError());
@@ -588,9 +588,9 @@ bool DocumentLoader::ShouldContinueForResponse() const {
 
 void DocumentLoader::CancelLoadAfterCSPDenied(
     const ResourceResponse& response) {
-  probe::didReceiveResourceResponse(frame_->GetDocument(),
-                                    MainResourceIdentifier(), this, response,
-                                    GetResource());
+  probe::didReceiveResourceResponse(
+      probe::ToCoreProbeSink(frame_->GetDocument()), MainResourceIdentifier(),
+      this, response, GetResource());
 
   SetWasBlockedAfterCSP();
 
@@ -723,9 +723,9 @@ void DocumentLoader::ResponseReceived(
     resource->SetDataBufferingPolicy(kBufferData);
 
   if (!ShouldContinueForResponse()) {
-    probe::didReceiveResourceResponse(frame_->GetDocument(),
-                                      resource->Identifier(), this, response_,
-                                      resource);
+    probe::didReceiveResourceResponse(
+        probe::ToCoreProbeSink(frame_->GetDocument()), resource->Identifier(),
+        this, response_, resource);
     fetcher_->StopFetching();
     return;
   }

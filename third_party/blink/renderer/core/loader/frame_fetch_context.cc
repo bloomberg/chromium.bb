@@ -694,8 +694,8 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   GetFrame()->Loader().Progress().IncrementProgress(identifier, response);
   GetLocalFrameClient()->DispatchDidReceiveResponse(response);
   DocumentLoader* document_loader = MasterDocumentLoader();
-  probe::didReceiveResourceResponse(GetFrame()->GetDocument(), identifier,
-                                    document_loader, response, resource);
+  probe::didReceiveResourceResponse(Probe(), identifier, document_loader,
+                                    response, resource);
   // It is essential that inspector gets resource response BEFORE console.
   GetFrame()->Console().ReportResourceResponseReceived(document_loader,
                                                        identifier, response);
@@ -708,8 +708,8 @@ void FrameFetchContext::DispatchDidReceiveData(unsigned long identifier,
     return;
 
   GetFrame()->Loader().Progress().IncrementProgress(identifier, data_length);
-  probe::didReceiveData(GetFrame()->GetDocument(), identifier,
-                        MasterDocumentLoader(), data, data_length);
+  probe::didReceiveData(Probe(), identifier, MasterDocumentLoader(), data,
+                        data_length);
 }
 
 void FrameFetchContext::DispatchDidReceiveEncodedData(
@@ -717,9 +717,8 @@ void FrameFetchContext::DispatchDidReceiveEncodedData(
     size_t encoded_data_length) {
   if (IsDetached())
     return;
-  probe::didReceiveEncodedDataLength(GetFrame()->GetDocument(),
-                                     MasterDocumentLoader(), identifier,
-                                     encoded_data_length);
+  probe::didReceiveEncodedDataLength(Probe(), MasterDocumentLoader(),
+                                     identifier, encoded_data_length);
 }
 
 void FrameFetchContext::DispatchDidDownloadToBlob(unsigned long identifier,
@@ -727,8 +726,7 @@ void FrameFetchContext::DispatchDidDownloadToBlob(unsigned long identifier,
   if (IsDetached() || !blob)
     return;
 
-  probe::didReceiveBlob(GetFrame()->GetDocument(), identifier,
-                        MasterDocumentLoader(), blob);
+  probe::didReceiveBlob(Probe(), identifier, MasterDocumentLoader(), blob);
 }
 
 void FrameFetchContext::DispatchDidFinishLoading(
@@ -741,9 +739,8 @@ void FrameFetchContext::DispatchDidFinishLoading(
     return;
 
   GetFrame()->Loader().Progress().CompleteProgress(identifier);
-  probe::didFinishLoading(GetFrame()->GetDocument(), identifier,
-                          MasterDocumentLoader(), finish_time,
-                          encoded_data_length, decoded_body_length,
+  probe::didFinishLoading(Probe(), identifier, MasterDocumentLoader(),
+                          finish_time, encoded_data_length, decoded_body_length,
                           should_report_corb_blocking);
   if (document_) {
     InteractiveDetector* interactive_detector(
@@ -778,8 +775,7 @@ void FrameFetchContext::DispatchDidFail(const KURL& url,
   }
 
   GetFrame()->Loader().Progress().CompleteProgress(identifier);
-  probe::didFailLoading(GetFrame()->GetDocument(), identifier,
-                        MasterDocumentLoader(), error);
+  probe::didFailLoading(Probe(), identifier, MasterDocumentLoader(), error);
   if (document_) {
     InteractiveDetector* interactive_detector(
         InteractiveDetector::From(*document_));
@@ -1176,8 +1172,7 @@ bool FrameFetchContext::ShouldBlockRequestByInspector(const KURL& url) const {
   if (IsDetached())
     return false;
   bool should_block_request = false;
-  probe::shouldBlockRequest(GetFrame()->GetDocument(), url,
-                            &should_block_request);
+  probe::shouldBlockRequest(Probe(), url, &should_block_request);
   return should_block_request;
 }
 
@@ -1587,6 +1582,10 @@ base::Optional<ResourceRequestBlockedReason> FrameFetchContext::CanRequest(
   }
   return BaseFetchContext::CanRequest(type, resource_request, url, options,
                                       reporting_policy, redirect_status);
+}
+
+CoreProbeSink* FrameFetchContext::Probe() const {
+  return probe::ToCoreProbeSink(GetFrame()->GetDocument());
 }
 
 }  // namespace blink
