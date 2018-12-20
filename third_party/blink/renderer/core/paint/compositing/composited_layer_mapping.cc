@@ -650,7 +650,8 @@ void CompositedLayerMapping::
       kIgnoreOverflowClip);
 
   ClipRect clip_rect;
-  owning_layer_.Clipper(PaintLayer::kDoNotUseGeometryMapper)
+  owning_layer_
+      .Clipper(PaintLayer::GeometryMapperOption::kDoNotUseGeometryMapper)
       .CalculateBackgroundClipRect(clip_rects_context, clip_rect);
   if (clip_rect.Rect() == LayoutRect(LayoutRect::InfiniteIntRect()))
     return;
@@ -1375,7 +1376,8 @@ void CompositedLayerMapping::UpdateAncestorClippingLayerGeometry(
       kIgnorePlatformOverlayScrollbarSize, kIgnoreOverflowClipAndScroll);
 
   ClipRect clip_rect;
-  owning_layer_.Clipper(PaintLayer::kDoNotUseGeometryMapper)
+  owning_layer_
+      .Clipper(PaintLayer::GeometryMapperOption::kDoNotUseGeometryMapper)
       .CalculateBackgroundClipRect(clip_rects_context, clip_rect);
   // Scroll offset is not included in the clip rect returned above
   // (see kIgnoreOverflowClipAndScroll), so we need to add it in
@@ -3050,7 +3052,8 @@ void CompositedLayerMapping::LocalClipRectForSquashedLayer(
       &ancestor_paint_info->paint_layer->GetLayoutObject().FirstFragment(),
       kUncachedClipRects);
   ClipRect parent_clip_rect;
-  paint_info.paint_layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
+  paint_info.paint_layer
+      ->Clipper(PaintLayer::GeometryMapperOption::kDoNotUseGeometryMapper)
       .CalculateBackgroundClipRect(clip_rects_context, parent_clip_rect);
 
   // Convert from ancestor to local coordinates.

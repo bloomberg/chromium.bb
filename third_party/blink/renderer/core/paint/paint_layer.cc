@@ -1377,7 +1377,7 @@ PaintLayer* PaintLayer::RemoveChild(PaintLayer* old_child) {
 }
 
 void PaintLayer::ClearClipRects(ClipRectsCacheSlot cache_slot) {
-  Clipper(PaintLayer::kDoNotUseGeometryMapper)
+  Clipper(GeometryMapperOption::kDoNotUseGeometryMapper)
       .ClearClipRectsIncludingDescendants(cache_slot);
 }
 
@@ -1636,7 +1636,7 @@ void PaintLayer::AppendSingleFragmentIgnoringPagination(
       root_layer, &root_layer->GetLayoutObject().FirstFragment(),
       kUncachedClipRects, overlay_scrollbar_clip_behavior,
       respect_overflow_clip, sub_pixel_accumulation);
-  Clipper(kUseGeometryMapper)
+  Clipper(GeometryMapperOption::kUseGeometryMapper)
       .CalculateRects(clip_rects_context, &GetLayoutObject().FirstFragment(),
                       cull_rect, fragment.layer_bounds,
                       fragment.background_rect, fragment.foreground_rect,
@@ -1734,7 +1734,7 @@ void PaintLayer::CollectFragments(
       fragment_cull_rect.emplace(rect);
     }
 
-    Clipper(kUseGeometryMapper)
+    Clipper(GeometryMapperOption::kUseGeometryMapper)
         .CalculateRects(
             clip_rects_context, fragment_data,
             fragment_cull_rect ? &*fragment_cull_rect : nullptr,
@@ -1978,7 +1978,7 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
     // Make sure the parent's clip rects have been calculated.
     if (Parent()) {
       ClipRect clip_rect;
-      Clipper(PaintLayer::kUseGeometryMapper)
+      Clipper(GeometryMapperOption::kUseGeometryMapper)
           .CalculateBackgroundClipRect(
               ClipRectsContext(
                   root_layer, &root_layer->GetLayoutObject().FirstFragment(),
@@ -2633,7 +2633,7 @@ LayoutRect PaintLayer::BoundingBoxForCompositingInternal(
 
   // If there is a clip applied by an ancestor to this PaintLayer but below or
   // equal to |ancestorLayer|, apply that clip.
-  LayoutRect result = Clipper(PaintLayer::kDoNotUseGeometryMapper)
+  LayoutRect result = Clipper(GeometryMapperOption::kDoNotUseGeometryMapper)
                           .LocalClipRect(composited_layer);
 
   result.Intersect(PhysicalBoundingBox(LayoutPoint()));
@@ -3166,7 +3166,8 @@ LayoutPoint PaintLayer::LocationInternal() const {
 
 PaintLayerClipper PaintLayer::Clipper(
     GeometryMapperOption geometry_mapper_option) const {
-  return PaintLayerClipper(*this, geometry_mapper_option == kUseGeometryMapper);
+  return PaintLayerClipper(*this, geometry_mapper_option ==
+                                      GeometryMapperOption::kUseGeometryMapper);
 }
 
 bool PaintLayer::ScrollsOverflow() const {
