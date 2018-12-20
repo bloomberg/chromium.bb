@@ -180,6 +180,9 @@ class CORE_EXPORT NGLineInfo {
   // without clamping.
   LayoutUnit ComputeWidth() const;
 
+  bool HasTrailingSpaces() const { return has_trailing_spaces_; }
+  void SetHasTrailingSpaces() { has_trailing_spaces_ = true; }
+
   // True if this line has overflow, excluding preserved trailing spaces.
   bool HasOverflow() const { return has_overflow_; }
   void SetHasOverflow() { has_overflow_ = true; }
@@ -193,6 +196,10 @@ class CORE_EXPORT NGLineInfo {
   // Start text offset of this line.
   unsigned StartOffset() const { return start_offset_; }
   void SetStartOffset(unsigned offset) { start_offset_ = offset; }
+  // End text offset of this line, excluding out-of-flow objects such as
+  // floating or positioned.
+  unsigned InflowEndOffset() const;
+  // End item index of this line.
   unsigned EndItemIndex() const { return end_item_index_; }
   void SetEndItemIndex(unsigned index) { end_item_index_ = index; }
 
@@ -229,6 +236,7 @@ class CORE_EXPORT NGLineInfo {
   bool is_last_line_ = false;
   bool is_empty_line_ = false;
   bool has_overflow_ = false;
+  bool has_trailing_spaces_ = false;
 };
 
 }  // namespace blink
