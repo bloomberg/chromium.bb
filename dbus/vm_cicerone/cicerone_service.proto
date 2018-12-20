@@ -101,6 +101,9 @@ message ContainerStartedSignal {
 
   // The owner of the VM and container.
   string owner_id = 3;
+
+  // The username of uid 1000 in the container.
+  string container_username = 4;
 }
 
 // Message used in the signal for when a container has shut down.
@@ -715,6 +718,9 @@ message SetUpLxdContainerUserResponse {
 
   // The failure_reason if the user was not set up successfully.
   string failure_reason = 2;
+
+  // The username of uid 1000 in the container.
+  string container_username = 3;
 }
 
 // Request for debug information about virtual machine and container state.
