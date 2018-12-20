@@ -7,18 +7,15 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.AUTOFILL_SUGGESTION;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.GENERATE_PASSWORD_AUTOMATIC;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIONS;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIVE_TAB;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TABS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.VISIBLE;
 
 import org.junit.Before;
@@ -53,13 +50,13 @@ public class KeyboardAccessoryControllerTest {
     @Mock
     private PropertyObserver<PropertyKey> mMockPropertyObserver;
     @Mock
-    private ListObservable.ListObserver<Void> mMockTabListObserver;
-    @Mock
     private ListObservable.ListObserver<Void> mMockActionListObserver;
     @Mock
     private KeyboardAccessoryCoordinator.VisibilityDelegate mMockVisibilityDelegate;
     @Mock
     private KeyboardAccessoryModernView mMockView;
+    @Mock
+    private KeyboardAccessoryTabLayoutView mMockTabSwitcherView;
 
     private final KeyboardAccessoryData.Tab mTestTab =
             new KeyboardAccessoryData.Tab(null, null, 0, 0, null);
@@ -76,6 +73,7 @@ public class KeyboardAccessoryControllerTest {
         features.put(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY, true);
         ChromeFeatureList.setTestFeatures(features);
 
+        when(mMockView.getTabLayout()).thenReturn(mMockTabSwitcherView);
         mCoordinator = new KeyboardAccessoryCoordinator(
                 mMockVisibilityDelegate, new FakeViewProvider<>(mMockView));
         mMediator = mCoordinator.getMediatorForTesting();
@@ -103,22 +101,6 @@ public class KeyboardAccessoryControllerTest {
         mModel.set(VISIBLE, false);
         verify(mMockPropertyObserver, times(2)).onPropertyChanged(mModel, VISIBLE);
         assertThat(mModel.get(VISIBLE), is(false));
-    }
-
-    @Test
-    public void testChangingTabsNotifiesTabObserver() {
-        mModel.get(TABS).addObserver(mMockTabListObserver);
-
-        // Calling addTab on the coordinator should make model propagate that it has a new tab.
-        mCoordinator.addTab(mTestTab);
-        verify(mMockTabListObserver).onItemRangeInserted(mModel.get(TABS), 0, 1);
-        assertThat(mModel.get(TABS).size(), is(1));
-        assertThat(mModel.get(TABS).get(0), is(mTestTab));
-
-        // Calling hide on the coordinator should make model propagate that it's invisible.
-        mCoordinator.removeTab(mTestTab);
-        verify(mMockTabListObserver).onItemRangeRemoved(mModel.get(TABS), 0, 1);
-        assertThat(mModel.get(TABS).size(), is(0));
     }
 
     @Test
@@ -167,24 +149,6 @@ public class KeyboardAccessoryControllerTest {
         verify(mMockPropertyObserver) // Unchanged number of invocations.
                 .onPropertyChanged(mModel, VISIBLE);
         assertThat(mModel.get(VISIBLE), is(true));
-    }
-
-    @Test
-    public void testModelDoesntNotifyUnchangedActiveTab() {
-        mModel.addObserver(mMockPropertyObserver);
-
-        assertThat(mModel.get(ACTIVE_TAB), is(nullValue()));
-        mModel.set(ACTIVE_TAB, null);
-        assertThat(mModel.get(ACTIVE_TAB), is(nullValue()));
-        verify(mMockPropertyObserver, never()).onPropertyChanged(mModel, ACTIVE_TAB);
-
-        mModel.set(ACTIVE_TAB, 0);
-        assertThat(mModel.get(ACTIVE_TAB), is(0));
-        verify(mMockPropertyObserver).onPropertyChanged(mModel, ACTIVE_TAB);
-
-        mModel.set(ACTIVE_TAB, 0);
-        assertThat(mModel.get(ACTIVE_TAB), is(0));
-        verify(mMockPropertyObserver).onPropertyChanged(mModel, ACTIVE_TAB);
     }
 
     @Test
@@ -316,28 +280,6 @@ public class KeyboardAccessoryControllerTest {
         // Adding actions while the keyboard is visible triggers the accessory.
         mCoordinator.addTab(mTestTab);
         assertThat(mModel.get(VISIBLE), is(true));
-    }
-
-    @Test
-    public void testClosingTabDismissesOpenSheet() {
-        mModel.set(ACTIVE_TAB, 0);
-        mModel.addObserver(mMockPropertyObserver);
-        assertThat(mModel.get(ACTIVE_TAB), is(0));
-
-        // Closing the active tab should reset the tab which should trigger the visibility delegate.
-        mCoordinator.closeActiveTab();
-        assertThat(mModel.get(ACTIVE_TAB), is(nullValue()));
-        verify(mMockPropertyObserver).onPropertyChanged(mModel, ACTIVE_TAB);
-        verify(mMockVisibilityDelegate).onCloseAccessorySheet();
-    }
-
-    @Test
-    public void testClosingTabIsNoOpForAlreadyClosedTab() {
-        mModel.set(ACTIVE_TAB, null);
-        mModel.addObserver(mMockPropertyObserver);
-
-        mCoordinator.closeActiveTab();
-        verifyNoMoreInteractions(mMockPropertyObserver, mMockVisibilityDelegate);
     }
 
     @Test

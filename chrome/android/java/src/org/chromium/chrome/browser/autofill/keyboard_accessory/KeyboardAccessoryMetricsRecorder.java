@@ -58,9 +58,12 @@ public class KeyboardAccessoryMetricsRecorder {
         private final Set<Integer> mRecordedBarBuckets = new HashSet<>();
         private final Set<Integer> mRecordedActionImpressions = new HashSet<>();
         private final PropertyModel mModel;
+        private final KeyboardAccessoryCoordinator.TabSwitchingDelegate mTabSwitcher;
 
-        AccessoryBarObserver(PropertyModel keyboardAccessoryModel) {
+        AccessoryBarObserver(PropertyModel keyboardAccessoryModel,
+                KeyboardAccessoryCoordinator.TabSwitchingDelegate tabSwitcher) {
             mModel = keyboardAccessoryModel;
+            mTabSwitcher = tabSwitcher;
         }
 
         @Override
@@ -70,8 +73,7 @@ public class KeyboardAccessoryMetricsRecorder {
                 if (mModel.get(KeyboardAccessoryProperties.VISIBLE)) {
                     recordFirstImpression();
                     maybeRecordBarBucket(AccessoryBarContents.WITH_AUTOFILL_SUGGESTIONS);
-                    recordUnrecordedList(mModel.get(KeyboardAccessoryProperties.TABS), 0,
-                            mModel.get(KeyboardAccessoryProperties.TABS).size());
+                    maybeRecordBarBucket(AccessoryBarContents.WITH_TABS);
                     recordUnrecordedList(mModel.get(KeyboardAccessoryProperties.ACTIONS), 0,
                             mModel.get(KeyboardAccessoryProperties.ACTIONS).size());
                 } else {
@@ -80,9 +82,8 @@ public class KeyboardAccessoryMetricsRecorder {
                 }
                 return;
             }
-            if (propertyKey == KeyboardAccessoryProperties.ACTIVE_TAB
-                    || propertyKey == KeyboardAccessoryProperties.BOTTOM_OFFSET_PX
-                    || propertyKey == KeyboardAccessoryProperties.TAB_SELECTION_CALLBACKS
+            if (propertyKey == KeyboardAccessoryProperties.BOTTOM_OFFSET_PX
+                    || propertyKey == KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE
                     || propertyKey == KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK) {
                 return;
             }
@@ -99,10 +100,6 @@ public class KeyboardAccessoryMetricsRecorder {
          */
         private void recordUnrecordedList(ListObservable list, int first, int count) {
             if (!mModel.get(KeyboardAccessoryProperties.VISIBLE)) return;
-            if (list == mModel.get(KeyboardAccessoryProperties.TABS)) {
-                maybeRecordBarBucket(AccessoryBarContents.WITH_TABS);
-                return;
-            }
             if (list == mModel.get(KeyboardAccessoryProperties.ACTIONS)) {
                 // Remove all actions that were changed, so changes are treated as new recordings.
                 for (int index = first; index < first + count; ++index) {
@@ -114,6 +111,7 @@ public class KeyboardAccessoryMetricsRecorder {
                 for (int index = first; index < first + count; ++index) {
                     KeyboardAccessoryData.Action action =
                             mModel.get(KeyboardAccessoryProperties.ACTIONS).get(index);
+                    if (action.getActionType() == AccessoryAction.TAB_SWITCHER) continue; // Ignore!
                     maybeRecordBarBucket(
                             action.getActionType() == AccessoryAction.AUTOFILL_SUGGESTION
                                     ? AccessoryBarContents.WITH_AUTOFILL_SUGGESTIONS
@@ -189,7 +187,7 @@ public class KeyboardAccessoryMetricsRecorder {
                             mModel.get(KeyboardAccessoryProperties.ACTIONS),
                             AccessoryAction.AUTOFILL_SUGGESTION);
                 case AccessoryBarContents.WITH_TABS:
-                    return mModel.get(KeyboardAccessoryProperties.TABS).size() > 0;
+                    return mTabSwitcher.hasTabs();
                 case AccessoryBarContents.ANY_CONTENTS: // Intentional fallthrough.
                 case AccessoryBarContents.NO_CONTENTS:
                     return true; // Logged on first impression.
@@ -203,11 +201,11 @@ public class KeyboardAccessoryMetricsRecorder {
      * Registers an observer to the given model that records changes for all properties.
      * @param keyboardAccessoryModel The observable {@link KeyboardAccessoryProperties}.
      */
-    static void registerKeyboardAccessoryModelMetricsObserver(
-            PropertyModel keyboardAccessoryModel) {
-        AccessoryBarObserver observer = new AccessoryBarObserver(keyboardAccessoryModel);
+    static void registerKeyboardAccessoryModelMetricsObserver(PropertyModel keyboardAccessoryModel,
+            KeyboardAccessoryCoordinator.TabSwitchingDelegate tabSwitcher) {
+        AccessoryBarObserver observer =
+                new AccessoryBarObserver(keyboardAccessoryModel, tabSwitcher);
         keyboardAccessoryModel.addObserver(observer);
-        keyboardAccessoryModel.get(KeyboardAccessoryProperties.TABS).addObserver(observer);
         keyboardAccessoryModel.get(KeyboardAccessoryProperties.ACTIONS).addObserver(observer);
     }
 
@@ -236,7 +234,8 @@ public class KeyboardAccessoryMetricsRecorder {
             }
             if (propertyKey == AccessorySheetProperties.ACTIVE_TAB_INDEX
                     || propertyKey == AccessorySheetProperties.HEIGHT
-                    || propertyKey == AccessorySheetProperties.TOP_SHADOW_VISIBLE) {
+                    || propertyKey == AccessorySheetProperties.TOP_SHADOW_VISIBLE
+                    || propertyKey == AccessorySheetProperties.PAGE_CHANGE_LISTENER) {
                 return;
             }
             assert false : "Every property update needs to be handled explicitly!";

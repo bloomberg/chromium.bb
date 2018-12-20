@@ -69,13 +69,7 @@
             android:layout_weight="0"
             style="@style/VerticalDivider" />
 
-        <android.support.design.widget.TabLayout
-            android:id="@+id/tabs"
-            app:tabIndicatorHeight="0dp"
-            android:layout_gravity="end"
-            android:layout_width="wrap_content"
-            android:layout_weight="0"
-            android:layout_height="match_parent"/>
+        <include layout="@layout/keyboard_accessory_tabs" />
     </LinearLayout>
 
 </org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryModernView>

@@ -6,12 +6,14 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.ACTIVE_TAB_INDEX;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.NO_ACTIVE_TAB;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.PAGE_CHANGE_LISTENER;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.TABS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.TOP_SHADOW_VISIBLE;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.VISIBLE;
 
 import android.support.annotation.Nullable;
 import android.support.annotation.Px;
+import android.support.v4.view.ViewPager;
 import android.support.v7.widget.RecyclerView;
 
 import org.chromium.base.VisibleForTesting;
@@ -133,9 +135,13 @@ class AccessorySheetMediator implements PropertyObservable.PropertyObserver<Prop
             return;
         }
         if (propertyKey == ACTIVE_TAB_INDEX || propertyKey == AccessorySheetProperties.HEIGHT
-                || propertyKey == TOP_SHADOW_VISIBLE) {
+                || propertyKey == TOP_SHADOW_VISIBLE || propertyKey == PAGE_CHANGE_LISTENER) {
             return;
         }
         assert false : "Every property update needs to be handled explicitly!";
+    }
+
+    void setOnPageChangeListener(ViewPager.OnPageChangeListener onPageChangeListener) {
+        mModel.set(PAGE_CHANGE_LISTENER, onPageChangeListener);
     }
 }
