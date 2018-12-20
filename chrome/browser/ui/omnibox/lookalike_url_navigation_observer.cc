@@ -48,6 +48,16 @@ bool SkeletonsMatch(const url_formatter::Skeletons& skeletons1,
   return false;
 }
 
+// Returns the eTLD+1 of |hostname|. This excludes private registries so that
+// GetETLDPlusOne("test.blogspot.com") returns "blogspot.com" (blogspot.com is
+// listed as a private registry). We do this to be consistent with
+// url_formatter's top domain list which doesn't have a notion of private
+// registries.
+std::string GetETLDPlusOne(const GURL& url) {
+  return net::registry_controlled_domains::GetDomainAndRegistry(
+      url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+}
+
 // Returns a site that the user has used before that the eTLD+1 in
 // |domain_and_registry| may be attempting to spoof, based on skeleton
 // comparison.
@@ -78,10 +88,8 @@ std::string GetMatchingSiteEngagementDomain(
     // If the user has engaged with eTLD+1 of this site, don't show any
     // lookalike navigation suggestions.
     const std::string engaged_domain_and_registry =
-        net::registry_controlled_domains::GetDomainAndRegistry(
-            detail.origin,
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-    // eTLD+1 can be empty for private domains.
+        GetETLDPlusOne(detail.origin);
+    // eTLD+1 can be empty for private domains (e.g. http://test).
     if (engaged_domain_and_registry.empty())
       continue;
 
@@ -182,9 +190,7 @@ bool LookalikeUrlNavigationObserver::GetMatchingDomain(
     std::string* matched_domain,
     MatchType* match_type) {
   // Perform all computations on eTLD+1.
-  const std::string domain_and_registry =
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  const std::string domain_and_registry = GetETLDPlusOne(url);
 
   url_formatter::IDNConversionResult result =
       url_formatter::IDNToUnicodeWithDetails(domain_and_registry);
@@ -192,6 +198,14 @@ bool LookalikeUrlNavigationObserver::GetMatchingDomain(
     // If the navigated domain is IDN, check its skeleton against top domains
     // and engaged sites.
     if (!result.matching_top_domain.empty()) {
+      // In practice, this is not possible since the top domain list does not
+      // contain IDNs, so domain_and_registry can't both have IDN and be a top
+      // domain. Still, sanity check in case the top domain list changes in the
+      // future.
+      if (domain_and_registry == result.matching_top_domain) {
+        // Navigated domain is a top domain, do nothing.
+        return false;
+      }
       RecordEvent(NavigationSuggestionEvent::kMatchTopSite);
       *matched_domain = result.matching_top_domain;
       *match_type = MatchType::kTopSite;
