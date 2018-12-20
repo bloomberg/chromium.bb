@@ -28,8 +28,7 @@ void BoxPainterBase::PaintFillLayers(const PaintInfo& paint_info,
                                      const FillLayer& fill_layer,
                                      const LayoutRect& rect,
                                      BackgroundImageGeometry& geometry,
-                                     BackgroundBleedAvoidance bleed,
-                                     SkBlendMode op) {
+                                     BackgroundBleedAvoidance bleed) {
   FillLayerOcclusionOutputList reversed_paint_list;
   bool should_draw_background_in_separate_buffer =
       CalculateFillLayerOcclusionCulling(reversed_paint_list, fill_layer);
@@ -43,7 +42,7 @@ void BoxPainterBase::PaintFillLayers(const PaintInfo& paint_info,
 
   for (auto it = reversed_paint_list.rbegin(); it != reversed_paint_list.rend();
        ++it) {
-    PaintFillLayer(paint_info, c, **it, rect, bleed, geometry, op);
+    PaintFillLayer(paint_info, c, **it, rect, bleed, geometry);
   }
 
   if (should_draw_background_in_separate_buffer)
@@ -599,7 +598,6 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
                                     const LayoutRect& rect,
                                     BackgroundBleedAvoidance bleed_avoidance,
                                     BackgroundImageGeometry& geometry,
-                                    SkBlendMode op,
                                     bool object_has_multiple_boxes,
                                     const LayoutSize flow_box_size) {
   GraphicsContext& context = paint_info.context;

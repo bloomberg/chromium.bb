@@ -66,16 +66,15 @@ void InlineBoxPainterBase::PaintFillLayers(BoxPainterBase& box_painter,
                                            const FillLayer& layer,
                                            const LayoutRect& rect,
                                            BackgroundImageGeometry& geometry,
-                                           bool object_has_multiple_boxes,
-                                           SkBlendMode op) {
+                                           bool object_has_multiple_boxes) {
   // FIXME: This should be a for loop or similar. It's a little non-trivial to
   // do so, however, since the layers need to be painted in reverse order.
   if (layer.Next()) {
     PaintFillLayers(box_painter, info, c, *layer.Next(), rect, geometry,
-                    object_has_multiple_boxes, op);
+                    object_has_multiple_boxes);
   }
   PaintFillLayer(box_painter, info, c, layer, rect, geometry,
-                 object_has_multiple_boxes, op);
+                 object_has_multiple_boxes);
 }
 
 void InlineBoxPainterBase::PaintFillLayer(BoxPainterBase& box_painter,
@@ -84,15 +83,14 @@ void InlineBoxPainterBase::PaintFillLayer(BoxPainterBase& box_painter,
                                           const FillLayer& fill_layer,
                                           const LayoutRect& paint_rect,
                                           BackgroundImageGeometry& geometry,
-                                          bool object_has_multiple_boxes,
-                                          SkBlendMode op) {
+                                          bool object_has_multiple_boxes) {
   StyleImage* img = fill_layer.GetImage();
   bool has_fill_image = img && img->CanRender();
 
   if (!object_has_multiple_boxes ||
       (!has_fill_image && !style_.HasBorderRadius())) {
     box_painter.PaintFillLayer(paint_info, c, fill_layer, paint_rect,
-                               kBackgroundBleedNone, geometry, op, false);
+                               kBackgroundBleedNone, geometry, false);
     return;
   }
 
@@ -105,7 +103,7 @@ void InlineBoxPainterBase::PaintFillLayer(BoxPainterBase& box_painter,
   GraphicsContextStateSaver state_saver(paint_info.context);
   paint_info.context.Clip(PixelSnappedIntRect(paint_rect));
   box_painter.PaintFillLayer(paint_info, c, fill_layer, rect,
-                             kBackgroundBleedNone, geometry, op, multi_line,
+                             kBackgroundBleedNone, geometry, multi_line,
                              paint_rect.Size());
 }
 

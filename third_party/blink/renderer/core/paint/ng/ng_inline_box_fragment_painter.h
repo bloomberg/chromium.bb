@@ -8,9 +8,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_border_edges.h"
 #include "third_party/blink/renderer/core/paint/inline_box_painter_base.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
-
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/skia/include/core/SkBlendMode.h"
 
 namespace blink {
 
