@@ -34,34 +34,6 @@ constexpr char kTilingRepeatX[] = "repeat-x";
 constexpr char kTilingRepeatY[] = "repeat-y";
 constexpr char kTilingRepeat[] = "repeat";
 
-base::Optional<SkColor> GetDarkModeColor(int id) {
-  switch (id) {
-    case ThemeProperties::COLOR_BOOKMARK_TEXT:
-    case ThemeProperties::COLOR_TAB_TEXT:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
-    case ThemeProperties::COLOR_NTP_TEXT:
-      return SK_ColorWHITE;
-    case ThemeProperties::COLOR_TOOLBAR:
-    case ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
-      return SkColorSetRGB(0x41, 0x41, 0x41);
-    case ThemeProperties::COLOR_FRAME:
-    case ThemeProperties::COLOR_BACKGROUND_TAB:
-      return SkColorSetRGB(0x2B, 0x2B, 0x2B);
-    case ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR:
-      return SK_ColorLTGRAY;
-    case ThemeProperties::COLOR_NTP_BACKGROUND:
-      return SK_ColorBLACK;
-    case ThemeProperties::COLOR_BUTTON_BACKGROUND:
-      return SkColorSetARGB(0xE5, 0x41, 0x41, 0x41);
-    case ThemeProperties::COLOR_FRAME_INACTIVE:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE:
-      return gfx::kGoogleGrey800;
-    default:
-      return base::nullopt;
-  }
-}
-
 base::Optional<SkColor> GetIncognitoColor(int id) {
   switch (id) {
     case ThemeProperties::COLOR_FRAME:
@@ -100,6 +72,19 @@ base::Optional<SkColor> GetIncognitoColor(int id) {
     default:
       return base::nullopt;
   }
+}
+
+base::Optional<SkColor> GetDarkModeColor(int id) {
+  // Current UX thinking is to use the same colors for dark mode and incognito,
+  // but this is very subject to change. Additionally, dark mode incognito may
+  // end up having a different look. For now, just call into GetIncognitoColor
+  // for convenience, but maintain a separate interface.
+
+  // NTP background is an exception since the NTP is different in incognito.
+  if (id == ThemeProperties::COLOR_NTP_BACKGROUND) {
+    return base::nullopt;
+  }
+  return GetIncognitoColor(id);
 }
 
 }  // namespace

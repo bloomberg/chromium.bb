@@ -62,11 +62,6 @@
 
 namespace {
 
-const SkColor kMenuPopupBackgroundColor = SK_ColorWHITE;
-// TODO(crbug.com/893598): Finalize dark mode color.
-const SkColor kMenuPopupBackgroundColorDarkMode =
-    SkColorSetRGB(0x2B, 0x2B, 0x2B);
-
 // Helper to make indexing an array by an enum class easier.
 template <class KEY, class VALUE>
 struct EnumArray {
@@ -176,6 +171,17 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
       [NSAppearance setCurrentAppearance:effective_appearance];
     }
   }
+
+  if (UsesHighContrastColors()) {
+    switch (color_id) {
+      case kColorId_SelectedMenuItemForegroundColor:
+        return SK_ColorWHITE;
+      case kColorId_FocusedMenuItemBackgroundColor:
+        return SK_ColorDKGRAY;
+      default:
+        break;
+    }
+  }
   // Even with --secondary-ui-md, menus use the platform colors and styling, and
   // Mac has a couple of specific color overrides, documented below.
   switch (color_id) {
@@ -183,21 +189,10 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
       return NSSystemColorToSkColor([NSColor controlTextColor]);
     case kColorId_DisabledMenuItemForegroundColor:
       return NSSystemColorToSkColor([NSColor disabledControlTextColor]);
-    case kColorId_SelectedMenuItemForegroundColor:
-      return UsesHighContrastColors() ? SK_ColorWHITE : SK_ColorBLACK;
-    case kColorId_FocusedMenuItemBackgroundColor:
-      return UsesHighContrastColors() ? SK_ColorDKGRAY : gfx::kGoogleGrey200;
-    case kColorId_MenuBackgroundColor:
-    case kColorId_BubbleBackground:
-    case kColorId_DialogBackground:
-      return SystemDarkModeEnabled() ? kMenuPopupBackgroundColorDarkMode
-                                     : kMenuPopupBackgroundColor;
     case kColorId_MenuSeparatorColor:
-      return UsesHighContrastColors() ? SK_ColorBLACK
-                                      : SkColorSetA(SK_ColorBLACK, 0x26);
+      return SkColorSetA(SK_ColorBLACK, 0x26);
     case kColorId_MenuBorderColor:
-      return UsesHighContrastColors() ? SK_ColorBLACK
-                                      : SkColorSetA(SK_ColorBLACK, 0x60);
+      return SkColorSetA(SK_ColorBLACK, 0x60);
 
     // Mac has a different "pressed button" styling because it doesn't use
     // ripples.

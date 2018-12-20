@@ -75,10 +75,15 @@ void MdTextButton::set_corner_radius(float radius) {
 void MdTextButton::OnPaintBackground(gfx::Canvas* canvas) {
   LabelButton::OnPaintBackground(canvas);
   if (hover_animation().is_animating() || state() == STATE_HOVERED) {
-    const int kHoverAlpha = is_prominent_ ? 0x0c : 0x05;
-    SkScalar alpha = hover_animation().CurrentValueBetween(0, kHoverAlpha);
+    bool is_dark_mode = GetNativeTheme()->SystemDarkModeEnabled();
+    int hover_alpha = is_prominent_ ? 0x0C : 0x05;
+    if (is_dark_mode)
+      hover_alpha = 0x0A;
+    const SkColor hover_color =
+        is_dark_mode && !is_prominent_ ? gfx::kGoogleBlue300 : SK_ColorBLACK;
+    SkScalar alpha = hover_animation().CurrentValueBetween(0, hover_alpha);
     cc::PaintFlags flags;
-    flags.setColor(SkColorSetA(SK_ColorBLACK, alpha));
+    flags.setColor(SkColorSetA(hover_color, alpha));
     flags.setStyle(cc::PaintFlags::kFill_Style);
     flags.setAntiAlias(true);
     canvas->DrawRoundRect(gfx::RectF(GetLocalBounds()), corner_radius_, flags);
@@ -123,18 +128,21 @@ void MdTextButton::OnBlur() {
 
 std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
     const {
+  bool is_dark_mode = GetNativeTheme()->SystemDarkModeEnabled();
   // The prominent button hover effect is a shadow.
   const int kYOffset = 1;
   const int kSkiaBlurRadius = 2;
   const int shadow_alpha = is_prominent_ ? 0x3D : 0x1A;
+  const SkColor shadow_color =
+      is_dark_mode && is_prominent_ ? gfx::kGoogleBlue300 : SK_ColorBLACK;
   std::vector<gfx::ShadowValue> shadows;
   // The notion of blur that gfx::ShadowValue uses is twice the Skia/CSS value.
   // Skia counts the number of pixels outside the mask area whereas
   // gfx::ShadowValue counts together the number of pixels inside and outside
   // the mask bounds.
-  shadows.push_back(gfx::ShadowValue(gfx::Vector2d(0, kYOffset),
-                                     2 * kSkiaBlurRadius,
-                                     SkColorSetA(SK_ColorBLACK, shadow_alpha)));
+  shadows.push_back(gfx::ShadowValue(
+      gfx::Vector2d(0, kYOffset), 2 * kSkiaBlurRadius,
+      SkColorSetA(shadow_color, is_dark_mode ? 0x7F : shadow_alpha)));
   const SkColor fill_color =
       SkColorSetA(SK_ColorWHITE, is_prominent_ ? 0x0D : 0x05);
   return std::make_unique<InkDropHighlight>(

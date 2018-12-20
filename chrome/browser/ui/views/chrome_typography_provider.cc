@@ -32,6 +32,13 @@ namespace {
 // in Windows 10 still has black text, but (since the user wants high contrast)
 // the grey text shades in Harmony should not be used.
 bool ShouldIgnoreHarmonySpec(const ui::NativeTheme& theme) {
+  // Mac provides users limited ways to customize the UI, including dark and
+  // high contrast modes; all these are addressed elsewhere, so there's no need
+  // for Mac to try to detect non-Harmony cases as Windows and Linux need to,
+  // and dark mode can interfere with the detection below.
+#if defined(OS_MACOSX)
+  return false;
+#else
   if (theme.UsesHighContrastColors())
     return true;
 
@@ -42,6 +49,7 @@ bool ShouldIgnoreHarmonySpec(const ui::NativeTheme& theme) {
   const bool label_color_is_black =
       test_color == SK_ColorBLACK || test_color == gfx::kGoogleGrey900;
   return !label_color_is_black;
+#endif  // defined(OS_MACOSX)
 }
 
 // Returns a color for a possibly inverted or high-contrast OS color theme.
@@ -173,6 +181,8 @@ const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
 SkColor ChromeTypographyProvider::GetColor(const views::View& view,
                                            int context,
                                            int style) const {
+  // TODO(lgrey): Remove anything that could be using native theme
+  // colors from here after UX review of divergences.
   const ui::NativeTheme* native_theme = view.GetNativeTheme();
   DCHECK(native_theme);
   if (ShouldIgnoreHarmonySpec(*native_theme)) {
@@ -183,11 +193,16 @@ SkColor ChromeTypographyProvider::GetColor(const views::View& view,
   if (context == views::style::CONTEXT_BUTTON_MD) {
     switch (style) {
       case views::style::STYLE_DIALOG_BUTTON_DEFAULT:
-        return SK_ColorWHITE;
+        return native_theme->SystemDarkModeEnabled() ? gfx::kGoogleGrey900
+                                                     : SK_ColorWHITE;
       case views::style::STYLE_DISABLED:
-        return SkColorSetRGB(0x9e, 0x9e, 0x9e);
+        return native_theme->SystemDarkModeEnabled()
+                   ? gfx::kGoogleGrey600
+                   : SkColorSetRGB(0x9e, 0x9e, 0x9e);
       default:
-        return SkColorSetRGB(0x75, 0x75, 0x75);
+        return native_theme->SystemDarkModeEnabled()
+                   ? gfx::kGoogleBlue300
+                   : SkColorSetRGB(0x75, 0x75, 0x75);
     }
   }
 
@@ -201,21 +216,27 @@ SkColor ChromeTypographyProvider::GetColor(const views::View& view,
     case views::style::STYLE_DIALOG_BUTTON_DEFAULT:
       return SK_ColorWHITE;
     case views::style::STYLE_DISABLED:
-      return SkColorSetRGB(0x9e, 0x9e, 0x9e);
+      return native_theme->SystemDarkModeEnabled()
+                 ? gfx::kGoogleGrey800
+                 : SkColorSetRGB(0x9e, 0x9e, 0x9e);
     case views::style::STYLE_LINK:
       return gfx::kGoogleBlue700;
     case STYLE_SECONDARY:
     case STYLE_EMPHASIZED_SECONDARY:
     case STYLE_HINT:
-      return gfx::kGoogleGrey700;
+      return native_theme->SystemDarkModeEnabled()
+                 ? SkColorSetA(SK_ColorWHITE, 0x99)
+                 : gfx::kGoogleGrey700;
     case STYLE_RED:
       return gfx::kGoogleRed700;
     case STYLE_GREEN:
       return gfx::kGoogleGreen700;
   }
 
-  // Use GoogleGrey900 as primary color for everything else.
-  return gfx::kGoogleGrey900;
+  // Use default primary color for everything else.
+  return native_theme->SystemDarkModeEnabled()
+             ? SkColorSetA(SK_ColorWHITE, 0xDD)
+             : gfx::kGoogleGrey900;
 }
 
 int ChromeTypographyProvider::GetLineHeight(int context, int style) const {

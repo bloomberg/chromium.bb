@@ -23,12 +23,37 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     switch (color_id) {
       case NativeTheme::kColorId_LabelEnabledColor:
       case NativeTheme::kColorId_TextfieldDefaultColor:
-        return SK_ColorWHITE;
+      case NativeTheme::kColorId_SelectedMenuItemForegroundColor:
+        return SkColorSetA(SK_ColorWHITE, 0xDD);
       case NativeTheme::kColorId_UnfocusedBorderColor:
-        return gfx::kGoogleGrey900;
+        return SK_ColorTRANSPARENT;
       case NativeTheme::kColorId_ButtonEnabledColor:
       case NativeTheme::kColorId_ButtonHoverColor:
         return gfx::kGoogleGrey200;
+      case NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
+        return SkColorSetA(gfx::kGoogleGrey800, 0x99);
+      case NativeTheme::kColorId_MenuBackgroundColor:
+      case NativeTheme::kColorId_BubbleBackground:
+      case NativeTheme::kColorId_DialogBackground:
+        return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900, 0xA);
+      case NativeTheme::kColorId_ProminentButtonColor:
+        return gfx::kGoogleBlue300;
+      case NativeTheme::kColorId_TextOnProminentButtonColor:
+        return gfx::kGoogleGrey900;
+      case NativeTheme::kColorId_TextfieldSelectionColor:
+      case NativeTheme::kColorId_LabelTextSelectionColor:
+        return color_utils::AlphaBlend(
+            SK_ColorWHITE,
+            GetAuraColor(
+                NativeTheme::kColorId_LabelTextSelectionBackgroundFocused,
+                base_theme),
+            0xDD);
+      case NativeTheme::kColorId_MenuSeparatorColor:
+      case NativeTheme::kColorId_SeparatorColor:
+        return SkColorSetA(gfx::kGoogleGrey800, 0xCC);
+      case NativeTheme::kColorId_TextfieldDefaultBackground:
+        return SkColorSetA(SK_ColorBLACK, 0x4D);
+
       default:
         break;
     }
@@ -132,7 +157,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_MenuBackgroundColor:
       return SK_ColorWHITE;
     case NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
-      return SkColorSetA(SK_ColorBLACK, 0x14);
+      return gfx::kGoogleGrey200;
     case NativeTheme::kColorId_DisabledMenuItemForegroundColor:
       return kDisabledTextColor;
     case NativeTheme::kColorId_MenuItemMinorTextColor:
