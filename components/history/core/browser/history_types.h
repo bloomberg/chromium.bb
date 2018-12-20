@@ -410,19 +410,6 @@ struct HistoryAddPageArgs {
 typedef std::vector<MostVisitedURL> MostVisitedURLList;
 typedef std::vector<FilteredURL> FilteredURLList;
 
-// Used by TopSites to store the thumbnails.
-struct Images {
-  Images();
-  Images(const Images& other);
-  ~Images();
-
-  scoped_refptr<base::RefCountedMemory> thumbnail;
-  ThumbnailScore thumbnail_score;
-
-  // TODO(brettw): this will eventually store the favicon.
-  // scoped_refptr<base::RefCountedBytes> favicon;
-};
-
 struct MostVisitedURLWithRank {
   MostVisitedURL url;
   int rank;
@@ -440,22 +427,7 @@ struct TopSitesDelta {
   MostVisitedURLWithRankList moved;
 };
 
-typedef std::map<GURL, Images> URLToImagesMap;
-
-class MostVisitedThumbnails
-    : public base::RefCountedThreadSafe<MostVisitedThumbnails> {
- public:
-  MostVisitedThumbnails();
-
-  MostVisitedURLList most_visited;
-  URLToImagesMap url_to_images_map;
-
- private:
-  friend class base::RefCountedThreadSafe<MostVisitedThumbnails>;
-  virtual ~MostVisitedThumbnails();
-
-  DISALLOW_COPY_AND_ASSIGN(MostVisitedThumbnails);
-};
+typedef base::RefCountedData<MostVisitedURLList> MostVisitedThreadSafe;
 
 // Map from origins to a count of matching URLs and the last visited time to any
 // URL under that origin.

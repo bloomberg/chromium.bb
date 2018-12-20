@@ -1,4 +1,4 @@
--- unit_tests --gtest_filter=TopSitesDatabaseTest.Version2
+-- components_unittests --gtest_filter=TopSitesDatabaseTest.Version2
 --
 -- .dump of a version 2 "Top Sites" database.  The Google thumbnail
 -- matches kGoogleThumbnail from thumbnail-inl.h.

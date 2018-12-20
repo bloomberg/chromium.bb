@@ -112,8 +112,9 @@ void TopSitesImpl::Init(const base::FilePath& db_name) {
   // do not need the backend can run without a problem.
   backend_ = new TopSitesBackend();
   backend_->Init(db_name);
-  backend_->GetMostVisitedThumbnails(
-      base::Bind(&TopSitesImpl::OnGotMostVisitedURLs, base::Unretained(this)),
+  backend_->GetMostVisitedSites(
+      base::BindOnce(&TopSitesImpl::OnGotMostVisitedURLs,
+                     base::Unretained(this)),
       &cancelable_task_tracker_);
 }
 
@@ -455,14 +456,13 @@ void TopSitesImpl::ScheduleUpdateTimer() {
 }
 
 void TopSitesImpl::OnGotMostVisitedURLs(
-    const scoped_refptr<MostVisitedThumbnails>& thumbnails) {
+    const scoped_refptr<MostVisitedThreadSafe>& sites) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Set the top sites directly in the cache so that SetTopSites diffs
   // correctly.
-  cache_->SetTopSites(thumbnails->most_visited);
-  SetTopSites(thumbnails->most_visited,
-              CALL_LOCATION_FROM_ON_GOT_MOST_VISITED_URLS);
+  cache_->SetTopSites(sites->data);
+  SetTopSites(sites->data, CALL_LOCATION_FROM_ON_GOT_MOST_VISITED_URLS);
 
   MoveStateToLoaded();
 
