@@ -4,9 +4,12 @@
 
 package org.chromium.chrome.browser.omnibox.status;
 
+import android.view.View;
+
 import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModel.WritableIntPropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 /**
  * Model for the Status view.
@@ -40,6 +43,10 @@ class StatusProperties {
     /** Specifies current selection of the location bar button type. */
     public static final WritableIntPropertyKey STATUS_BUTTON_TYPE = new WritableIntPropertyKey();
 
+    /** Specifies object to receive status click events. */
+    public static final WritableObjectPropertyKey<View.OnClickListener> STATUS_CLICK_LISTENER =
+            new WritableObjectPropertyKey<>();
+
     /** Specifies verbose status text color. */
     public static final WritableIntPropertyKey VERBOSE_STATUS_TEXT_COLOR_RES =
             new WritableIntPropertyKey();
@@ -59,8 +66,8 @@ class StatusProperties {
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {ANIMATIONS_ENABLED,
             ICON_TINT_COLOR_RES, NAVIGATION_BUTTON_TYPE, SECURITY_ICON_RES,
             SECURITY_ICON_DESCRIPTION_RES, SECURITY_ICON_TINT_RES, SEPARATOR_COLOR_RES,
-            STATUS_BUTTON_TYPE, VERBOSE_STATUS_TEXT_COLOR_RES, VERBOSE_STATUS_TEXT_STRING_RES,
-            VERBOSE_STATUS_TEXT_VISIBLE, VERBOSE_STATUS_TEXT_WIDTH};
+            STATUS_BUTTON_TYPE, STATUS_CLICK_LISTENER, VERBOSE_STATUS_TEXT_COLOR_RES,
+            VERBOSE_STATUS_TEXT_STRING_RES, VERBOSE_STATUS_TEXT_VISIBLE, VERBOSE_STATUS_TEXT_WIDTH};
 
     private StatusProperties() {}
 }

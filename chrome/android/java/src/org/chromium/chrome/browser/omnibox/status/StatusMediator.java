@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.omnibox.status;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.StringRes;
+import android.view.View;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
@@ -107,6 +108,15 @@ class StatusMediator {
      */
     public void setTabletMode(boolean isTablet) {
         mTabletMode = isTablet;
+    }
+
+    /**
+     * Specify object to receive status click events.
+     *
+     * @param listener Specifies target object to receive events.
+     */
+    void setStatusClickListener(View.OnClickListener listener) {
+        mModel.set(StatusProperties.STATUS_CLICK_LISTENER, listener);
     }
 
     /**

@@ -5,10 +5,10 @@
 package org.chromium.chrome.browser.omnibox.status;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.res.Resources;
 import android.support.annotation.DrawableRes;
 import android.view.View;
-import android.widget.ImageView;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -18,21 +18,18 @@ import org.chromium.chrome.browser.omnibox.status.StatusView.NavigationButtonTyp
 import org.chromium.chrome.browser.omnibox.status.StatusView.StatusButtonType;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * A component for displaying a status icon (e.g. security icon or navigation icon) and optional
  * verbose status text.
  */
 public class StatusViewCoordinator implements View.OnClickListener {
-    private final boolean mIsTablet;
     private final StatusView mStatusView;
     private final StatusMediator mMediator;
     private final PropertyModel mModel;
+    private final boolean mIsTablet;
 
     private ToolbarDataProvider mToolbarDataProvider;
-    private WindowAndroid mWindowAndroid;
-
     private boolean mUrlHasFocus;
 
     /**
@@ -78,21 +75,10 @@ public class StatusViewCoordinator implements View.OnClickListener {
     }
 
     /**
-     * Provides the WindowAndroid for the parent component. Used to retreive the current activity
-     * on demand.
-     * @param windowAndroid The current {@link WindowAndroid}.
-     */
-    public void setWindowAndroid(WindowAndroid windowAndroid) {
-        mWindowAndroid = windowAndroid;
-    }
-
-    /**
      * Signals that native initialization has completed.
      */
     public void onNativeInitialized() {
-        mStatusView.getSecurityButton().setOnClickListener(this);
-        mStatusView.getNavigationButton().setOnClickListener(this);
-        mStatusView.getVerboseStatusTextView().setOnClickListener(this);
+        mMediator.setStatusClickListener(this);
     }
 
     /**
@@ -162,7 +148,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
 
         mMediator.setNavigationButtonType(buttonType);
 
-        ImageView navigationButton = mStatusView.getNavigationButton();
+        View navigationButton = mStatusView.getNavigationButton();
         if (navigationButton.getVisibility() != View.VISIBLE) {
             navigationButton.setVisibility(View.VISIBLE);
         }
@@ -180,29 +166,22 @@ public class StatusViewCoordinator implements View.OnClickListener {
         mMediator.setPageIsPreview(mToolbarDataProvider.isPreview());
     }
 
-    /**
-     * Whether {@code v} is a view (location icon, verbose status, ...) which can be clicked to
-     * show the Page Info popup.
-     */
-    public boolean shouldShowPageInfoForView(View v) {
-        return v == mStatusView.getSecurityButton() || v == mStatusView.getNavigationButton()
-                || v == mStatusView.getVerboseStatusTextView();
-    }
-
     @Override
     public void onClick(View view) {
-        if (mUrlHasFocus || !shouldShowPageInfoForView(view)) return;
+        if (mUrlHasFocus) return;
 
-        if (!mToolbarDataProvider.hasTab() || mToolbarDataProvider.getTab().getWebContents() == null
-                || mWindowAndroid == null) {
+        // Get Activity from our managed view.
+        // TODO(ender): turn this into a property accessible via shared model.
+        Context context = view.getContext();
+        if (context == null || !(context instanceof Activity)) return;
+
+        if (!mToolbarDataProvider.hasTab()
+                || mToolbarDataProvider.getTab().getWebContents() == null) {
             return;
         }
 
-        Activity activity = mWindowAndroid.getActivity().get();
-        if (activity != null) {
-            PageInfoController.show(activity, mToolbarDataProvider.getTab(), null,
-                    PageInfoController.OpenedFromSource.TOOLBAR);
-        }
+        PageInfoController.show((Activity) context, mToolbarDataProvider.getTab(), null,
+                PageInfoController.OpenedFromSource.TOOLBAR);
     }
 
     /**

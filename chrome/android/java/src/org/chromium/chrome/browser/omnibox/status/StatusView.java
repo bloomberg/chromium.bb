@@ -166,6 +166,20 @@ public class StatusView extends LinearLayout {
         configureLocationBarIconAnimations();
     }
 
+    /**
+     * Specify object to receive click events.
+     *
+     * @param listener Instance of View.OnClickListener or null.
+     */
+    public void setStatusClickListener(View.OnClickListener listener) {
+        mNavigationButton.setOnClickListener(listener);
+        mSecurityButton.setOnClickListener(listener);
+        mVerboseStatusTextView.setOnClickListener(listener);
+    }
+
+    /**
+     * Configure animations used to cross-fade status icon.
+     */
     void configureLocationBarIconAnimations() {
         // Animation presenting Security button and hiding all others.
         mLocationBarSecurityButtonShowAnimator = new StatusViewAnimator(
@@ -305,11 +319,11 @@ public class StatusView extends LinearLayout {
 
     // TODO(ender): replace these with methods manipulating views directly.
     // Do not depend on these when creating new code!
-    ImageView getNavigationButton() {
+    View getNavigationButton() {
         return mNavigationButton;
     }
 
-    ImageButton getSecurityButton() {
+    View getSecurityButton() {
         return mSecurityButton;
     }
 
