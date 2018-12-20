@@ -1019,5 +1019,10 @@
     "prefix": "spatial-navigation-force-outline",
     "base": "fast/spatial-navigation",
     "args": ["--enable-blink-features=SpatialNavigationForcesOutline"]
+  },
+  {
+    "prefix": "bidi-caret-affinity",
+    "base": "editing",
+    "args": ["--enable-blink-features=BidiCaretAffinity"]
   }
 ]
