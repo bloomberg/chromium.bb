@@ -5105,6 +5105,7 @@ crbug.com/779087 external/wpt/html/semantics/embedded-content/media-elements/aut
 crbug.com/793771 [ Mac ] media/controls/modern/scrubbing.html [ Skip ]
 crbug.com/793771 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/scrubbing.html [ Skip ]
 crbug.com/914981 [ Mac ] virtual/video-surface-layer/media/controls/modern/scrubbing.html [ Skip ]
+crbug.com/916902 [ Mac ] virtual/fractional_scrolling/fast/scrolling/overflow-scrollability.html [ Skip ]
 
 # Different paths may have different anti-aliasing pixels 2018-02-21
 skbug.com/7641 external/wpt/css/css-paint-api/paint2d-paths.https.html [ Failure Pass ]
