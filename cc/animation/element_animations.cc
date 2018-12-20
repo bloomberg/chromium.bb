@@ -31,7 +31,7 @@ namespace {
 // tracking is done on the KeyframeModel - https://crbug.com/900241
 ElementId CalculateTargetElementId(const ElementAnimations* element_animations,
                                    const KeyframeModel* keyframe_model) {
-  if (keyframe_model->element_id())
+  if (LIKELY(keyframe_model->element_id()))
     return keyframe_model->element_id();
   return element_animations->element_id();
 }
