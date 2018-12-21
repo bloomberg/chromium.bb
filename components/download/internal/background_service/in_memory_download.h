@@ -48,6 +48,7 @@ class InMemoryDownload {
     virtual void OnDownloadStarted(InMemoryDownload* download) = 0;
     virtual void OnDownloadProgress(InMemoryDownload* download) = 0;
     virtual void OnDownloadComplete(InMemoryDownload* download) = 0;
+    virtual void OnUploadProgress(InMemoryDownload* download) = 0;
 
    protected:
     virtual ~Delegate() = default;
@@ -112,6 +113,7 @@ class InMemoryDownload {
   scoped_refptr<const net::HttpResponseHeaders> response_headers() const {
     return response_headers_;
   }
+  uint64_t bytes_uploaded() const { return bytes_uploaded_; }
 
  protected:
   InMemoryDownload(const std::string& guid);
@@ -134,6 +136,8 @@ class InMemoryDownload {
   scoped_refptr<const net::HttpResponseHeaders> response_headers_;
 
   uint64_t bytes_downloaded_;
+
+  uint64_t bytes_uploaded_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InMemoryDownload);
@@ -198,6 +202,8 @@ class InMemoryDownloadImpl : public network::SimpleURLLoaderStreamConsumer,
   // Called when the response of the final URL is received.
   void OnResponseStarted(const GURL& final_url,
                          const network::ResourceResponseHead& response_head);
+
+  void OnUploadProgress(uint64_t position, uint64_t total);
 
   // Resets local states.
   void Reset();

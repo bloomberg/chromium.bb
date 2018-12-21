@@ -93,6 +93,8 @@ class ControllerImpl : public Controller,
   void OnDownloadSucceeded(const DriverEntry& download) override;
   void OnDownloadUpdated(const DriverEntry& download) override;
   bool IsTrackingDownload(const std::string& guid) const override;
+  void OnUploadProgress(const std::string& guid,
+                        uint64_t bytes_uploaded) const override;
 
   // Model::Client implementation.
   void OnModelReady(bool success) override;
@@ -222,6 +224,7 @@ class ControllerImpl : public Controller,
   void SendOnServiceUnavailable();
   void SendOnDownloadUpdated(DownloadClient client_id,
                              const std::string& guid,
+                             uint64_t bytes_uploaded,
                              uint64_t bytes_downloaded);
   void SendOnDownloadSucceeded(DownloadClient client_id,
                                const std::string& guid,

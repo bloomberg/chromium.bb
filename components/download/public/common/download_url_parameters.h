@@ -63,6 +63,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
 
   using BlobStorageContextGetter =
       base::OnceCallback<storage::BlobStorageContext*()>;
+  using UploadProgressCallback =
+      base::RepeatingCallback<void(uint64_t bytes_uploaded)>;
 
   // Constructs a download not associated with a frame.
   //
@@ -237,6 +239,12 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
     download_source_ = download_source;
   }
 
+  // Sets the callback to run if there are upload progress updates.
+  void set_upload_progress_callback(
+      const UploadProgressCallback& upload_callback) {
+    upload_callback_ = upload_callback;
+  }
+
   const OnStartedCallback& callback() const { return callback_; }
   bool content_initiated() const { return content_initiated_; }
   const std::string& last_modified() const { return last_modified_; }
@@ -297,6 +305,10 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
 
   DownloadSource download_source() const { return download_source_; }
 
+  const UploadProgressCallback& upload_callback() const {
+    return upload_callback_;
+  }
+
  private:
   OnStartedCallback callback_;
   bool content_initiated_;
@@ -326,6 +338,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
   std::string request_origin_;
   DownloadSource download_source_;
+  UploadProgressCallback upload_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadUrlParameters);
 };

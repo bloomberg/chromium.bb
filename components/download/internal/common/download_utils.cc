@@ -246,6 +246,7 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   bool has_upload_data = false;
   if (params->post_body()) {
     request->request_body = params->post_body();
+    request->enable_upload_progress = !params->upload_callback().is_null();
     has_upload_data = true;
   }
 

@@ -23,6 +23,7 @@ Client::ShouldDownload DebuggingClient::OnDownloadStarted(
 }
 
 void DebuggingClient::OnDownloadUpdated(const std::string& guid,
+                                        uint64_t bytes_uploaded,
                                         uint64_t bytes_downloaded) {}
 
 void DebuggingClient::OnDownloadFailed(const std::string& guid,

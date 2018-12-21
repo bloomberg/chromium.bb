@@ -67,6 +67,11 @@ class DownloadDriver : public MemoryTracker {
 
     // Returns whether the client is tracking the download with |guid|.
     virtual bool IsTrackingDownload(const std::string& guid) const = 0;
+
+    // Called when progress has been made in uploading the body for the download
+    // with |guid|.
+    virtual void OnUploadProgress(const std::string& guid,
+                                  uint64_t bytes_uploaded) const = 0;
   };
 
   ~DownloadDriver() override = default;

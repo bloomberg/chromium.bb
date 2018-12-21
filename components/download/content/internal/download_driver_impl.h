@@ -62,6 +62,8 @@ class DownloadDriverImpl : public DownloadDriver,
   void OnDownloadRemoved(content::DownloadManager* manager,
                          download::DownloadItem* item) override;
 
+  void OnUploadProgress(const std::string& guid, uint64_t bytes_uploaded);
+
   void OnHardRecoverComplete(bool success);
 
   // Remove the download, used to be posted to the task queue.

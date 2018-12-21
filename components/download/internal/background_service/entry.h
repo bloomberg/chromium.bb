@@ -91,6 +91,11 @@ struct Entry {
   // completed.
   uint64_t bytes_downloaded;
 
+  // Size of the upload payload in bytes.
+  // NOTE: This value isn't persisted, and there is no need to since there are
+  // no retries for uploads.
+  uint64_t bytes_uploaded;
+
   // Stores the number of retries for this download.
   uint32_t attempt_count;
 

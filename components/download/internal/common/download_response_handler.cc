@@ -188,7 +188,10 @@ void DownloadResponseHandler::OnReceiveRedirect(
 void DownloadResponseHandler::OnUploadProgress(
     int64_t current_position,
     int64_t total_size,
-    OnUploadProgressCallback callback) {}
+    OnUploadProgressCallback callback) {
+  delegate_->OnUploadProgress(current_position);
+  std::move(callback).Run();
+}
 
 void DownloadResponseHandler::OnReceiveCachedMetadata(
     const std::vector<uint8_t>& data) {}

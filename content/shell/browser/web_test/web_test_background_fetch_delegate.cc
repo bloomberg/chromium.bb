@@ -77,7 +77,11 @@ class WebTestBackgroundFetchDelegate::WebTestBackgroundFetchDownloadClient
   }
 
   void OnDownloadUpdated(const std::string& guid,
+                         uint64_t bytes_uploaded,
                          uint64_t bytes_downloaded) override {
+    if (bytes_downloaded == 0u)
+      return;
+
     DCHECK(guid_to_unique_job_id_mapping_.count(guid));
     if (!client_)
       return;

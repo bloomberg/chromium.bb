@@ -20,7 +20,8 @@ InMemoryDownload::InMemoryDownload(const std::string& guid)
     : guid_(guid),
       state_(State::INITIAL),
       paused_(false),
-      bytes_downloaded_(0u) {}
+      bytes_downloaded_(0u),
+      bytes_uploaded_(0u) {}
 
 InMemoryDownload::~InMemoryDownload() = default;
 
@@ -192,7 +193,10 @@ void InMemoryDownloadImpl::SendRequest() {
   request->method = request_params_.method;
   request->headers = request_params_.request_headers;
   request->load_flags = net::LOAD_DISABLE_CACHE;
-  request->request_body = std::move(request_body_);
+  if (request_body_) {
+    request->request_body = std::move(request_body_);
+    request->enable_upload_progress = true;
+  }
 
   url_chain_.push_back(request_params_.url);
 
@@ -203,6 +207,8 @@ void InMemoryDownloadImpl::SendRequest() {
   loader_->SetOnResponseStartedCallback(
       base::BindRepeating(&InMemoryDownloadImpl::OnResponseStarted,
                           weak_ptr_factory_.GetWeakPtr()));
+  loader_->SetOnUploadProgressCallback(base::BindRepeating(
+      &InMemoryDownloadImpl::OnUploadProgress, weak_ptr_factory_.GetWeakPtr()));
 
   // TODO(xingliu): Use SimpleURLLoader's retry when it won't hit CHECK in
   // SharedURLLoaderFactory.
@@ -224,6 +230,12 @@ void InMemoryDownloadImpl::OnResponseStarted(
 
   if (delegate_)
     delegate_->OnDownloadStarted(this);
+}
+
+void InMemoryDownloadImpl::OnUploadProgress(uint64_t position, uint64_t total) {
+  bytes_uploaded_ = position;
+  if (delegate_)
+    delegate_->OnUploadProgress(this);
 }
 
 void InMemoryDownloadImpl::Reset() {

@@ -188,4 +188,10 @@ void InMemoryDownloadDriver::OnDownloadComplete(InMemoryDownload* download) {
   }
 }
 
+void InMemoryDownloadDriver::OnUploadProgress(InMemoryDownload* download) {
+  DCHECK(download);
+  DCHECK(client_);
+  client_->OnUploadProgress(download->guid(), download->bytes_uploaded());
+}
+
 }  // namespace download
