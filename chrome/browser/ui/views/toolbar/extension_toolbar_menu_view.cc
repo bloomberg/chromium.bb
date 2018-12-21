@@ -84,6 +84,11 @@ void ExtensionToolbarMenuView::Layout() {
   views::ScrollView::Layout();
 }
 
+void ExtensionToolbarMenuView::OnBoundsChanged(
+    const gfx::Rect& previous_bounds) {
+  menu_item_->GetParentMenuItem()->ChildrenChanged();
+}
+
 void ExtensionToolbarMenuView::set_close_menu_delay_for_testing(int delay) {
   g_close_menu_delay = delay;
 }
@@ -95,7 +100,7 @@ void ExtensionToolbarMenuView::OnToolbarActionsBarDestroyed() {
 void ExtensionToolbarMenuView::OnToolbarActionDragDone() {
   // In the case of a drag-and-drop, the bounds of the container may have
   // changed (in the case of removing an icon that was the last in a row).
-  Redraw();
+  Layout();
 
   // We need to close the app menu if it was just opened for the drag and drop,
   // or if there are no more extensions in the overflow menu after a drag and
@@ -110,23 +115,8 @@ void ExtensionToolbarMenuView::OnToolbarActionDragDone() {
   }
 }
 
-void ExtensionToolbarMenuView::OnToolbarActionsBarDidStartResize() {
-  Redraw();
-}
-
 void ExtensionToolbarMenuView::CloseAppMenu() {
   app_menu_->CloseMenu();
-}
-
-void ExtensionToolbarMenuView::Redraw() {
-  // In a case where the size of the container may have changed (e.g., by a row
-  // being added or removed), we need to re-layout the menu in order to resize
-  // the view. This may result in redrawing the window. Luckily, this happens
-  // only in the case of a row being aded or removed (very rare), and
-  // typically happens near menu initialization (rather than once the menu is
-  // fully open).
-  Layout();
-  menu_item_->GetParentMenuItem()->ChildrenChanged();
 }
 
 int ExtensionToolbarMenuView::start_padding() const {
