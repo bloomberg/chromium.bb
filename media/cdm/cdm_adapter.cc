@@ -386,8 +386,8 @@ CdmContext* CdmAdapter::GetCdmContext() {
   return this;
 }
 
-std::unique_ptr<CallbackRegistration> CdmAdapter::RegisterNewKeyCB(
-    base::RepeatingClosure new_key_cb) {
+std::unique_ptr<CallbackRegistration> CdmAdapter::RegisterEventCB(
+    EventCB event_cb) {
   NOTIMPLEMENTED();
   return nullptr;
 }

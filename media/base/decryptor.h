@@ -53,6 +53,7 @@ class MEDIA_EXPORT Decryptor {
   // If this function is called multiple times for the same |stream_type|, the
   // previously registered callback will be replaced. In other words,
   // registering a null callback cancels the originally registered callback.
+  // TODO(crbug.com/821288): Replace this with CdmContext::RegisterEventCB().
   virtual void RegisterNewKeyCB(StreamType stream_type,
                                 const NewKeyCB& key_added_cb) = 0;
 

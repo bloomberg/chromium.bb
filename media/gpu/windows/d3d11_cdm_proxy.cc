@@ -203,7 +203,7 @@ class D3D11CdmContext : public CdmContext {
               CdmProxy::KeyType key_type,
               const std::vector<uint8_t>& key_blob) {
     cdm_proxy_context_.SetKey(crypto_session, key_id, key_type, key_blob);
-    new_key_callbacks_.Notify();
+    event_callbacks_.Notify(Event::kHasAdditionalUsableKey);
   }
   void RemoveKey(ID3D11CryptoSession* crypto_session,
                  const std::vector<uint8_t>& key_id) {
@@ -218,9 +218,9 @@ class D3D11CdmContext : public CdmContext {
   }
 
   // CdmContext implementation.
-  std::unique_ptr<CallbackRegistration> RegisterNewKeyCB(
-      base::RepeatingClosure new_key_cb) override {
-    return new_key_callbacks_.Register(std::move(new_key_cb));
+  std::unique_ptr<CallbackRegistration> RegisterEventCB(
+      EventCB event_cb) override {
+    return event_callbacks_.Register(std::move(event_cb));
   }
   CdmProxyContext* GetCdmProxyContext() override { return &cdm_proxy_context_; }
 
@@ -236,7 +236,7 @@ class D3D11CdmContext : public CdmContext {
 
   std::unique_ptr<D3D11Decryptor> decryptor_;
 
-  ClosureRegistry new_key_callbacks_;
+  CallbackRegistry<EventCB::RunType> event_callbacks_;
 
   base::WeakPtrFactory<D3D11CdmContext> weak_factory_;
 

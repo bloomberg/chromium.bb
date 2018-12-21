@@ -62,8 +62,8 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
   CdmContext* GetCdmContext() override;
 
   // CdmContext implementation.
-  std::unique_ptr<CallbackRegistration> RegisterNewKeyCB(
-      base::RepeatingClosure new_key_cb) override;
+  std::unique_ptr<CallbackRegistration> RegisterEventCB(
+      EventCB event_cb) override;
   Decryptor* GetDecryptor() override;
   int GetCdmId() const override;
 

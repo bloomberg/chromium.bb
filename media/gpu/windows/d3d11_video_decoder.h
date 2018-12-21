@@ -169,8 +169,8 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   // returned true.  Also will add a MediaLog entry, etc.
   void SetWasSupportedReason(D3D11VideoNotSupportedReason enum_value);
 
-  // Callback to notify that new usable key is available.
-  void NotifyNewKey();
+  // Callback to notify that new CdmContext event is available.
+  void OnCdmContextEvent(CdmContext::Event event);
 
   // Enter the kError state.  This will fail any pending |init_cb_| and / or
   // pending decode as well.

@@ -28,27 +28,44 @@ class MediaCryptoContext;
 //
 // Thread Model: Since this interface is used in many different contexts (e.g.
 // different processes or platforms), the thread model is not defined as part
-// of this interface. Subclasses must ensure thread safty.
+// of this interface. Subclasses must ensure thread safety.
 class MEDIA_EXPORT CdmContext {
  public:
   // Indicates an invalid CDM ID. See GetCdmId() for details.
   enum { kInvalidCdmId = 0 };
 
+  // Events happening in a CDM that a media player should be aware of.
+  enum class Event {
+    // A key is newly usable, e.g. new key available, or previously expired key
+    // has been renewed, etc.
+    kHasAdditionalUsableKey,
+
+    // A hardware reset happened. Some hardware context, e.g. hardware decoder
+    // context may be lost.
+    kHardwareContextLost,
+  };
+
+  // Callback to notify the occurrence of an Event.
+  using EventCB = base::RepeatingCallback<void(Event)>;
+
   virtual ~CdmContext();
 
-  // Registers a callback which will be called when an additional usable key is
-  // available in the CDM. Can be called multiple times to register multiple
-  // callbacks, all of which will be called when a new usable key is available.
-  // Lifetime: The caller should keep the returned CallbackRegistration object
+  // Registers a callback which will be called when an event happens in the CDM.
+  // Returns null if the registration fails, otherwise the caller should hold
+  // the returned CallbackRegistration (see "Lifetime" notes below). Can be
+  // called multiple times to register multiple callbacks, all of which will be
+  // called when an event happens.
+  // Notes:
+  // - Lifetime: The caller should keep the returned CallbackRegistration object
   // to keep the callback registered. The callback will be unregistered upon the
   // destruction of the returned CallbackRegistration object. The returned
   // CallbackRegistration object can be destructed on any thread.
-  // Thread Model: Can be called on any thread. The registered callback will
-  // always be called on the thread where RegisterNewKeyCB() is called.
-  // TODO(xhwang): We are not using base::CallbackList because it is not thread-
+  // - Thread Model: Can be called on any thread. The registered callback will
+  // always be called on the thread where RegisterEventCB() is called.
+  // - TODO(xhwang): Not using base::CallbackList because it is not thread-
   // safe. Consider refactoring base::CallbackList to avoid code duplication.
-  virtual std::unique_ptr<CallbackRegistration> RegisterNewKeyCB(
-      base::RepeatingClosure new_key_cb);
+  virtual std::unique_ptr<CallbackRegistration> RegisterEventCB(
+      EventCB event_cb);
 
   // Gets the Decryptor object associated with the CDM. Returns nullptr if the
   // CDM does not support a Decryptor (i.e. platform-based CDMs where decryption
