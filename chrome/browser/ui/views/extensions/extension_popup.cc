@@ -30,13 +30,14 @@ const int ExtensionPopup::kMaxHeight = 600;
 
 #if !defined(USE_AURA)
 // static
-ExtensionPopup* ExtensionPopup::Create(extensions::ExtensionViewHost* host,
-                                       views::View* anchor_view,
-                                       views::BubbleBorder::Arrow arrow,
-                                       ShowAction show_action) {
-  auto* popup = new ExtensionPopup(host, anchor_view, arrow, show_action);
+void ExtensionPopup::ShowPopup(
+    std::unique_ptr<extensions::ExtensionViewHost> host,
+    views::View* anchor_view,
+    views::BubbleBorder::Arrow arrow,
+    ShowAction show_action) {
+  auto* popup =
+      new ExtensionPopup(host.release(), anchor_view, arrow, show_action);
   views::BubbleDialogDelegateView::CreateBubble(popup);
-  return popup;
 }
 #endif
 
@@ -48,7 +49,7 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
                                arrow,
                                views::BubbleBorder::SMALL_SHADOW),
       host_(host) {
-  inspect_with_devtools_ = show_action == SHOW_AND_INSPECT;
+  show_action_ = show_action;
   set_margins(gfx::Insets());
   SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(GetExtensionView());
@@ -62,8 +63,7 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
       extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
       content::Source<content::BrowserContext>(host->browser_context()));
   content::DevToolsAgentHost::AddObserver(this);
-
-  GetExtensionView()->GetBrowser()->tab_strip_model()->AddObserver(this);
+  observer_.Add(GetExtensionView()->GetBrowser()->tab_strip_model());
 
   // If the host had somehow finished loading, then we'd miss the notification
   // and not show.  This seems to happen in single-process mode.
@@ -80,12 +80,18 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
 
 ExtensionPopup::~ExtensionPopup() {
   content::DevToolsAgentHost::RemoveObserver(this);
-
-  GetExtensionView()->GetBrowser()->tab_strip_model()->RemoveObserver(this);
 }
 
 int ExtensionPopup::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
+}
+
+void ExtensionPopup::OnWidgetActivationChanged(views::Widget* widget,
+                                               bool active) {
+  // Don't close if we haven't shown the widget yet (the widget is shown once
+  // the WebContents finishes loading).
+  if (GetWidget()->IsVisible() && active && widget == anchor_widget())
+    CloseUnlessUnderInspection();
 }
 
 void ExtensionPopup::Observe(int type,
@@ -110,19 +116,14 @@ void ExtensionPopup::Observe(int type,
 
 void ExtensionPopup::DevToolsAgentHostAttached(
     content::DevToolsAgentHost* agent_host) {
-  // First check that the devtools are being opened on this popup.
-  if (host()->host_contents() != agent_host->GetWebContents())
-    return;
-  // Set inspect_with_devtools_ so the popup will be kept open while
-  // the devtools are open.
-  inspect_with_devtools_ = true;
+  if (host()->host_contents() == agent_host->GetWebContents())
+    show_action_ = SHOW_AND_INSPECT;
 }
 
 void ExtensionPopup::DevToolsAgentHostDetached(
     content::DevToolsAgentHost* agent_host) {
-  if (host()->host_contents() != agent_host->GetWebContents())
-    return;
-  inspect_with_devtools_ = false;
+  if (host()->host_contents() == agent_host->GetWebContents())
+    show_action_ = SHOW;
 }
 
 ExtensionViewViews* ExtensionPopup::GetExtensionView() {
@@ -150,37 +151,17 @@ void ExtensionPopup::AddedToWidget() {
       gfx::Insets(contents_has_rounded_corners ? 0 : radius, 0)));
 }
 
-void ExtensionPopup::OnWidgetActivationChanged(views::Widget* widget,
-                                               bool active) {
-  // Don't close if we haven't shown the widget yet (the widget is shown once
-  // the WebContents finishes loading).
-  if (GetWidget()->IsVisible() && active && widget == anchor_widget())
-    CloseUnlessUnderInspection();
-}
-
 void ExtensionPopup::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
-  if (tab_strip_model->empty() || !selection.active_tab_changed())
-    return;
-
-  GetWidget()->Close();
-}
-
-void ExtensionPopup::CloseUnlessUnderInspection() {
-  if (!inspect_with_devtools_)
+  if (!tab_strip_model->empty() && selection.active_tab_changed())
     GetWidget()->Close();
 }
 
-// static
-ExtensionPopup* ExtensionPopup::ShowPopup(
-    std::unique_ptr<extensions::ExtensionViewHost> host,
-    views::View* anchor_view,
-    views::BubbleBorder::Arrow arrow,
-    ShowAction show_action) {
-  return ExtensionPopup::Create(
-      host.release(), anchor_view, arrow, show_action);
+void ExtensionPopup::CloseUnlessUnderInspection() {
+  if (show_action_ == SHOW)
+    GetWidget()->Close();
 }
 
 void ExtensionPopup::ShowBubble() {
@@ -189,7 +170,7 @@ void ExtensionPopup::ShowBubble() {
   // Focus on the host contents when the bubble is first shown.
   host()->host_contents()->Focus();
 
-  if (inspect_with_devtools_) {
+  if (show_action_ == SHOW_AND_INSPECT) {
     DevToolsWindow::OpenDevToolsWindow(
         host()->host_contents(), DevToolsToggleAction::ShowConsolePanel());
   }

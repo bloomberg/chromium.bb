@@ -24,10 +24,9 @@ MediaRouterDialogControllerImplBase::GetOrCreateForWebContents(
   if (ShouldUseViewsDialog()) {
     return MediaRouterDialogControllerViews::GetOrCreateForWebContents(
         web_contents);
-  } else {
-    return MediaRouterDialogControllerWebUIImpl::GetOrCreateForWebContents(
-        web_contents);
   }
+  return MediaRouterDialogControllerWebUIImpl::GetOrCreateForWebContents(
+      web_contents);
 }
 
 MediaRouterDialogControllerViews::~MediaRouterDialogControllerViews() {
@@ -44,8 +43,8 @@ MediaRouterDialogControllerViews::GetOrCreateForWebContents(
     content::WebContents* web_contents) {
   DCHECK(web_contents);
   // This call does nothing if the controller already exists.
-  MediaRouterDialogControllerViews::CreateForWebContents(web_contents);
-  return MediaRouterDialogControllerViews::FromWebContents(web_contents);
+  CreateForWebContents(web_contents);
+  return FromWebContents(web_contents);
 }
 
 void MediaRouterDialogControllerViews::CreateMediaRouterDialog() {

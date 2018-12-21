@@ -71,15 +71,12 @@ MediaRouterAction::~MediaRouterAction() {
 SkColor MediaRouterAction::GetIconColor(const gfx::VectorIcon& icon_id) {
   if (&icon_id == &vector_icons::kMediaRouterIdleIcon)
     return gfx::kChromeIconGrey;
-  else if (&icon_id == &vector_icons::kMediaRouterActiveIcon)
+  if (&icon_id == &vector_icons::kMediaRouterActiveIcon)
     return gfx::kGoogleBlue500;
-  else if (&icon_id == &vector_icons::kMediaRouterWarningIcon)
+  if (&icon_id == &vector_icons::kMediaRouterWarningIcon)
     return gfx::kGoogleYellow700;
-  else if (&icon_id == &vector_icons::kMediaRouterErrorIcon)
-    return gfx::kGoogleRed700;
-
-  NOTREACHED();
-  return gfx::kPlaceholderColor;
+  DCHECK_EQ(&vector_icons::kMediaRouterErrorIcon, &icon_id);
+  return gfx::kGoogleRed700;
 }
 
 std::string MediaRouterAction::GetId() const {
@@ -175,7 +172,7 @@ bool MediaRouterAction::ExecuteAction(bool by_user) {
   base::RecordAction(base::UserMetricsAction("MediaRouter_Icon_Click"));
 
   if (GetMediaRouterDialogController()->IsShowingMediaRouterDialog()) {
-    GetMediaRouterDialogController()->HideMediaRouterDialog();
+    HidePopup();
     return false;
   }
 

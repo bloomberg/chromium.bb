@@ -142,11 +142,11 @@ class ToolbarActionView : public views::MenuButton,
   Delegate* delegate_;
 
   // Used to make sure we only register the command once.
-  bool called_register_command_;
+  bool called_register_command_ = false;
 
   // The cached value of whether or not the action wants to run on the current
   // tab.
-  bool wants_to_run_;
+  bool wants_to_run_ = false;
 
   // Responsible for converting the context menu model into |menu_|.
   std::unique_ptr<views::MenuModelAdapter> menu_adapter_;
@@ -156,12 +156,12 @@ class ToolbarActionView : public views::MenuButton,
 
   // The root MenuItemView for the context menu, or null if no menu is being
   // shown.
-  views::MenuItemView* menu_;
+  views::MenuItemView* menu_ = nullptr;
 
   // The time the popup was last closed.
   base::TimeTicks popup_closed_time_;
 
-  base::WeakPtrFactory<ToolbarActionView> weak_factory_;
+  base::WeakPtrFactory<ToolbarActionView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionView);
 };

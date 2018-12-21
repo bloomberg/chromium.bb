@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/extensions/extension_popup_aura.h"
 
+#include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
@@ -12,11 +13,13 @@
 #include "ui/wm/public/activation_client.h"
 
 // static
-ExtensionPopup* ExtensionPopup::Create(extensions::ExtensionViewHost* host,
-                                       views::View* anchor_view,
-                                       views::BubbleBorder::Arrow arrow,
-                                       ShowAction show_action) {
-  auto* popup = new ExtensionPopupAura(host, anchor_view, arrow, show_action);
+void ExtensionPopup::ShowPopup(
+    std::unique_ptr<extensions::ExtensionViewHost> host,
+    views::View* anchor_view,
+    views::BubbleBorder::Arrow arrow,
+    ShowAction show_action) {
+  auto* popup =
+      new ExtensionPopupAura(host.release(), anchor_view, arrow, show_action);
   views::Widget* widget = views::BubbleDialogDelegateView::CreateBubble(popup);
   gfx::NativeView native_view = widget->GetNativeView();
 
@@ -25,8 +28,6 @@ ExtensionPopup* ExtensionPopup::Create(extensions::ExtensionViewHost* host,
   wm::SetWindowVisibilityAnimationVerticalPosition(native_view, -3.0f);
 
   wm::GetActivationClient(native_view->GetRootWindow())->AddObserver(popup);
-
-  return popup;
 }
 
 ExtensionPopupAura::ExtensionPopupAura(extensions::ExtensionViewHost* host,

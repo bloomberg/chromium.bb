@@ -79,8 +79,7 @@ void ExtensionActionViewController::SetDelegate(
     view_delegate_ = delegate;
     platform_delegate_->OnDelegateSet();
   } else {
-    if (is_showing_popup())
-      HidePopup();
+    HidePopup();
     platform_delegate_.reset();
     view_delegate_ = nullptr;
   }
