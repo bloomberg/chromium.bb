@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper_delegate_impl.h"
 #include "chrome/browser/ui/webui/signin/signin_utils_desktop.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_consistency_method.h"
@@ -44,6 +46,34 @@
 #include "content/public/browser/storage_partition.h"
 
 namespace {
+
+// A helper class to watch profile lifetime.
+class DiceTurnSyncOnHelperShutdownNotifierFactory
+    : public BrowserContextKeyedServiceShutdownNotifierFactory {
+ public:
+  static DiceTurnSyncOnHelperShutdownNotifierFactory* GetInstance() {
+    static base::NoDestructor<DiceTurnSyncOnHelperShutdownNotifierFactory>
+        factory;
+    return factory.get();
+  }
+
+ private:
+  friend class base::NoDestructor<DiceTurnSyncOnHelperShutdownNotifierFactory>;
+
+  DiceTurnSyncOnHelperShutdownNotifierFactory()
+      : BrowserContextKeyedServiceShutdownNotifierFactory(
+            "DiceTurnSyncOnHelperShutdownNotifier") {
+    DependsOn(AccountTrackerServiceFactory::GetInstance());
+    DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+    DependsOn(ProfileSyncServiceFactory::GetInstance());
+    DependsOn(SigninManagerFactory::GetInstance());
+    DependsOn(UnifiedConsentServiceFactory::GetInstance());
+    DependsOn(policy::UserPolicySigninServiceFactory::GetInstance());
+  }
+  ~DiceTurnSyncOnHelperShutdownNotifierFactory() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(DiceTurnSyncOnHelperShutdownNotifierFactory);
+};
 
 AccountInfo GetAccountInfo(Profile* profile, const std::string& account_id) {
   return AccountTrackerServiceFactory::GetForProfile(profile)->GetAccountInfo(
@@ -63,15 +93,22 @@ class TokensLoadedCallbackRunner : public OAuth2TokenService::Observer {
     }
     // TokensLoadedCallbackRunner deletes itself after running the callback.
     new TokensLoadedCallbackRunner(
-        token_service, base::BindOnce(std::move(callback), profile));
+        token_service,
+        DiceTurnSyncOnHelperShutdownNotifierFactory::GetInstance()->Get(
+            profile),
+        base::BindOnce(std::move(callback), profile));
   }
 
  private:
   TokensLoadedCallbackRunner(ProfileOAuth2TokenService* token_service,
+                             KeyedServiceShutdownNotifier* shutdown_notifier,
                              base::OnceClosure callback)
       : token_service_(token_service),
         scoped_token_service_observer_(this),
-        callback_(std::move(callback)) {
+        callback_(std::move(callback)),
+        shutdown_subscription_(shutdown_notifier->Subscribe(
+            base::Bind(&TokensLoadedCallbackRunner::OnShutdown,
+                       base::Unretained(this)))) {
     DCHECK(!token_service_->AreAllCredentialsLoaded());
     scoped_token_service_observer_.Add(token_service_);
   }
@@ -82,10 +119,14 @@ class TokensLoadedCallbackRunner : public OAuth2TokenService::Observer {
     delete this;
   }
 
+  void OnShutdown() { delete this; }
+
   ProfileOAuth2TokenService* token_service_;
   ScopedObserver<OAuth2TokenService, TokensLoadedCallbackRunner>
       scoped_token_service_observer_;
   base::OnceClosure callback_;
+  std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
+      shutdown_subscription_;
 };
 
 }  // namespace
@@ -107,6 +148,11 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
       signin_reason_(signin_reason),
       signin_aborted_mode_(signin_aborted_mode),
       account_info_(GetAccountInfo(profile, account_id)),
+      shutdown_subscription_(
+          DiceTurnSyncOnHelperShutdownNotifierFactory::GetInstance()
+              ->Get(profile)
+              ->Subscribe(base::Bind(&DiceTurnSyncOnHelper::AbortAndDelete,
+                                     base::Unretained(this)))),
       weak_pointer_factory_(this) {
   DCHECK(delegate_);
   DCHECK(profile_);
@@ -129,7 +175,7 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
     // Do not self-destruct synchronously in the constructor.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&DiceTurnSyncOnHelper::AbortAndDelete,
-                                  base::Unretained(this)));
+                                  weak_pointer_factory_.GetWeakPtr()));
     return;
   }
 
@@ -476,6 +522,11 @@ void DiceTurnSyncOnHelper::SwitchToProfile(Profile* new_profile) {
   profile_ = new_profile;
   signin_manager_ = SigninManagerFactory::GetForProfile(profile_);
   token_service_ = ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  shutdown_subscription_ =
+      DiceTurnSyncOnHelperShutdownNotifierFactory::GetInstance()
+          ->Get(profile_)
+          ->Subscribe(base::Bind(&DiceTurnSyncOnHelper::AbortAndDelete,
+                                 base::Unretained(this)));
   delegate_->SwitchToProfile(new_profile);
   // Since this is a fresh profile, it's better to remove the token if the user
   // aborts the signin.
