@@ -13,6 +13,7 @@
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -22,6 +23,7 @@ namespace {
 const char kURL0[] = "https://chromium.org/0";
 const char kURL1[] = "https://chromium.org/1";
 const char kURL2[] = "https://chromium.org/2";
+const char kURL3[] = "https://chromium.org/3";
 
 // WebStateList observer that records which events have been called by the
 // WebStateList.
@@ -168,6 +170,12 @@ class WebStateListTest : public PlatformTest {
                                    WebStateList::INSERT_NO_FLAGS, opener);
   }
 
+  void AppendNewWebState(std::unique_ptr<web::TestWebState> web_state) {
+    web_state_list_.InsertWebState(
+        WebStateList::kInvalidIndex, std::move(web_state),
+        WebStateList::INSERT_NO_FLAGS, WebStateOpener());
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebStateListTest);
 };
@@ -231,6 +239,92 @@ TEST_F(WebStateListTest, InsertActivate) {
   ASSERT_EQ(1, web_state_list_.count());
   EXPECT_EQ(web_state_list_.GetWebStateAt(0),
             web_state_list_.GetActiveWebState());
+}
+
+TEST_F(WebStateListTest, GetIndexOfWebState) {
+  std::unique_ptr<web::TestWebState> web_state_0 = CreateWebState(kURL0);
+  web::WebState* target_web_state = web_state_0.get();
+  std::unique_ptr<web::TestWebState> other_web_state = CreateWebState(kURL1);
+
+  // Target not yet in list.
+  EXPECT_EQ(WebStateList::kInvalidIndex,
+            web_state_list_.GetIndexOfWebState(target_web_state));
+
+  AppendNewWebState(kURL2);
+  AppendNewWebState(std::move(web_state_0));
+  // Target in list at index 1.
+  EXPECT_EQ(1, web_state_list_.GetIndexOfWebState(target_web_state));
+  EXPECT_EQ(WebStateList::kInvalidIndex,
+            web_state_list_.GetIndexOfWebState(other_web_state.get()));
+
+  // Another webstate with the same URL as the target also in list.
+  AppendNewWebState(kURL0);
+  EXPECT_EQ(1, web_state_list_.GetIndexOfWebState(target_web_state));
+
+  // Another webstate inserted before target; target now at index 2.
+  web_state_list_.InsertWebState(0, CreateWebState(kURL3),
+                                 WebStateList::INSERT_FORCE_INDEX,
+                                 WebStateOpener());
+  EXPECT_EQ(2, web_state_list_.GetIndexOfWebState(target_web_state));
+}
+
+TEST_F(WebStateListTest, GetIndexOfWebStateWithURL) {
+  // Empty list.
+  EXPECT_EQ(WebStateList::kInvalidIndex,
+            web_state_list_.GetIndexOfWebStateWithURL(GURL(kURL0)));
+
+  // One webstate with a different URL in list.
+  AppendNewWebState(kURL1);
+  EXPECT_EQ(WebStateList::kInvalidIndex,
+            web_state_list_.GetIndexOfWebStateWithURL(GURL(kURL0)));
+
+  // Target URL at index 1.
+  AppendNewWebState(kURL0);
+  EXPECT_EQ(1, web_state_list_.GetIndexOfWebStateWithURL(GURL(kURL0)));
+
+  // Another webstate with the target URL also at index 3.
+  AppendNewWebState(kURL2);
+  AppendNewWebState(kURL0);
+  EXPECT_EQ(1, web_state_list_.GetIndexOfWebStateWithURL(GURL(kURL0)));
+}
+
+TEST_F(WebStateListTest, GetIndexOfInactiveWebStateWithURL) {
+  // Empty list.
+  EXPECT_EQ(WebStateList::kInvalidIndex,
+            web_state_list_.GetIndexOfInactiveWebStateWithURL(GURL(kURL0)));
+
+  // One webstate with a different URL in list.
+  AppendNewWebState(kURL1);
+  EXPECT_EQ(WebStateList::kInvalidIndex,
+            web_state_list_.GetIndexOfInactiveWebStateWithURL(GURL(kURL0)));
+
+  // Target URL at index 1.
+  AppendNewWebState(kURL0);
+  EXPECT_EQ(1, web_state_list_.GetIndexOfInactiveWebStateWithURL(GURL(kURL0)));
+
+  // Activate webstate at index 1.
+  web_state_list_.ActivateWebStateAt(1);
+  EXPECT_EQ(WebStateList::kInvalidIndex,
+            web_state_list_.GetIndexOfInactiveWebStateWithURL(GURL(kURL0)));
+  // GetIndexOfWebStateWithURL still finds it.
+  EXPECT_EQ(1, web_state_list_.GetIndexOfWebStateWithURL(GURL(kURL0)));
+
+  // Another webstate with the target URL also at index 3.
+  AppendNewWebState(kURL2);
+  AppendNewWebState(kURL0);
+  EXPECT_EQ(3, web_state_list_.GetIndexOfInactiveWebStateWithURL(GURL(kURL0)));
+  EXPECT_EQ(1, web_state_list_.GetIndexOfWebStateWithURL(GURL(kURL0)));
+
+  // Activate the webstate at index 2, so there the target URL is both before
+  // and after the active webstate.
+  web_state_list_.ActivateWebStateAt(2);
+  EXPECT_EQ(1, web_state_list_.GetIndexOfInactiveWebStateWithURL(GURL(kURL0)));
+
+  // Remove the webstate at index 1, so the only webstate with the target URL
+  // is after the active webstate.
+  web_state_list_.DetachWebStateAt(1);
+  // Active webstate is now index 1, target URL is at index 2.
+  EXPECT_EQ(2, web_state_list_.GetIndexOfInactiveWebStateWithURL(GURL(kURL0)));
 }
 
 TEST_F(WebStateListTest, InsertInheritOpener) {

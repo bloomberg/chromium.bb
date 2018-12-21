@@ -4176,30 +4176,15 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     (const web::NavigationManager::WebLoadParams&)params {
   const GURL& URL = params.url;
 
-  NSInteger newWebStateIndex = 0;
   WebStateList* webStateList = self.tabModel.webStateList;
-  NSInteger currentWebStateIndex = webStateList->active_index();
-  web::WebState* currentWebState = webStateList->GetActiveWebState();
+  NSInteger newWebStateIndex =
+      webStateList->GetIndexOfInactiveWebStateWithURL(URL);
+  bool oldTabIsNTPWithoutHistory =
+      IsNTPWithoutHistory(webStateList->GetActiveWebState());
 
-  // TODO(crbug.com/893121): This should probably live in the WebStateList.
-  while (newWebStateIndex < webStateList->count()) {
-    web::WebState* webState = webStateList->GetWebStateAt(newWebStateIndex);
-
-    if (webState != currentWebState && URL == webState->GetVisibleURL()) {
-      break;
-    }
-    newWebStateIndex++;
-  }
-
-  BOOL isNTPWithoutHistory =
-      IsVisibleURLNewTabPage(currentWebState) &&
-      currentWebState->GetNavigationManager() &&
-      !currentWebState->GetNavigationManager()->CanGoBack() &&
-      !currentWebState->GetNavigationManager()->CanGoForward();
-
-  if (newWebStateIndex >= webStateList->count()) {
+  if (!webStateList->ContainsIndex(newWebStateIndex)) {
     // If the tab containing the URL has been closed.
-    if (isNTPWithoutHistory) {
+    if (oldTabIsNTPWithoutHistory) {
       // It is NTP, just load the URL.
       ChromeLoadParams currentPageParams(params);
       [self loadURLWithParams:currentPageParams];
@@ -4260,12 +4245,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                 toNewView:swipeView
                                inPosition:position];
   }
+  NSInteger oldWebStateIndex = webStateList->active_index();
   webStateList->ActivateWebStateAt(newWebStateIndex);
 
   // Close the tab if it is NTP with no back/forward history to avoid having
   // empty tabs.
-  if (isNTPWithoutHistory) {
-    webStateList->CloseWebStateAt(currentWebStateIndex,
+  if (oldTabIsNTPWithoutHistory) {
+    webStateList->CloseWebStateAt(oldWebStateIndex,
                                   WebStateList::CLOSE_USER_ACTION);
   }
 }

@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "url/gurl.h"
 
 class WebStateListDelegate;
 class WebStateListObserver;
@@ -80,6 +81,15 @@ class WebStateList {
   // Returns the index of the specified WebState or kInvalidIndex if the
   // WebState is not in the model.
   int GetIndexOfWebState(const web::WebState* web_state) const;
+
+  // Returns the index of the first WebState in the model whose visible URL is
+  // |url| or kInvalidIndex if no WebState with that URL exists.
+  int GetIndexOfWebStateWithURL(const GURL& url) const;
+
+  // Returns the index of the first WebState, ignoring the currently active
+  // WebState, in the model whose visible URL is |url| or kInvalidIndex if no
+  // non-active WebState with that URL exists.
+  int GetIndexOfInactiveWebStateWithURL(const GURL& url) const;
 
   // Returns information about the opener of the WebState at the specified
   // index. The structure |opener| will be null if there is no opener.
