@@ -530,8 +530,11 @@ void WebRtcLoggingHandlerHost::DoUploadLogAndRtpDumps(
     // If the channel is closing we don't log failure to UMA for consistency,
     // since there are other cases during shutdown were we don't get a chance
     // to log.
-    if (!channel_is_closing)
+    if (!channel_is_closing) {
       base::UmaHistogramSparse("WebRtcTextLogging.UploadFailed", web_app_id_);
+      base::UmaHistogramSparse("WebRtcTextLogging.UploadFailureReason",
+                               UploadFailureReason::kInvalidState);
+    }
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(callback, false, "",

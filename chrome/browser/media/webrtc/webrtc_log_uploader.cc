@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/media/webrtc/webrtc_logging_handler_host.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "components/version_info/version_info.h"
 #include "components/webrtc_logging/browser/log_cleanup.h"
@@ -192,6 +193,9 @@ void WebRtcLogUploader::UploadStoredLog(
     DPLOG(WARNING) << "Could not read WebRTC log file.";
     base::UmaHistogramSparse("WebRtcTextLogging.UploadFailed",
                              upload_data.web_app_id);
+    base::UmaHistogramSparse(
+        "WebRtcTextLogging.UploadFailureReason",
+        WebRtcLoggingHandlerHost::UploadFailureReason::kStoredLogNotFound);
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(upload_data.callback, false, "", "Log doesn't exist."));
@@ -653,6 +657,8 @@ void WebRtcLogUploader::NotifyUploadDone(
     } else {
       base::UmaHistogramSparse("WebRtcTextLogging.UploadFailed",
                                upload_done_data.web_app_id);
+      base::UmaHistogramSparse("WebRtcTextLogging.UploadFailureReason",
+                               response_code);
       error_message = "Uploading failed, response code: " +
                       base::IntToString(response_code);
     }
