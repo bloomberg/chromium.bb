@@ -75,10 +75,10 @@ class ExtensionAppShimHandler : public AppShimHandler,
     virtual void LaunchApp(Profile* profile,
                            const extensions::Extension* extension,
                            const std::vector<base::FilePath>& files);
-    virtual void LaunchShim(
-        Profile* profile,
-        const extensions::Extension* extension,
-        base::OnceCallback<void(base::Process)> launch_callback);
+    virtual void LaunchShim(Profile* profile,
+                            const extensions::Extension* extension,
+                            bool recreate_shims,
+                            LaunchShimCallback launch_callback);
     virtual void LaunchUserManager();
 
     virtual void MaybeTerminate();
@@ -135,6 +135,10 @@ class ExtensionAppShimHandler : public AppShimHandler,
   void OnChromeWillHide();
 
   // AppShimHandler overrides:
+  void OnShimLaunchRequested(
+      AppShimHost* host,
+      bool recreate_shims,
+      base::OnceCallback<void(base::Process)> launch_callback) override;
   void OnShimProcessConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
   void OnShimClose(AppShimHost* host) override;
@@ -193,12 +197,6 @@ class ExtensionAppShimHandler : public AppShimHandler,
   // This is passed to Delegate::EnableViaPrompt for shim-initiated launches
   // where the extension is disabled.
   void OnExtensionEnabled(std::unique_ptr<AppShimHostBootstrap> bootstrap);
-
-  // If an LaunchShim was called to service |host|, then this call will be made
-  // with the resulting process. If the process is invalid, then there was an
-  // error launching the app shim.
-  void OnRequestedShimLaunchComplete(base::WeakPtr<AppShimHost> host,
-                                     base::Process process);
 
   std::unique_ptr<Delegate> delegate_;
 

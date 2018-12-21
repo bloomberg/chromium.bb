@@ -251,10 +251,22 @@ void ExtensionAppShimHandler::Delegate::LaunchApp(
 void ExtensionAppShimHandler::Delegate::LaunchShim(
     Profile* profile,
     const Extension* extension,
-    base::OnceCallback<void(base::Process)> launch_callback) {
-  web_app::LaunchShim(
-      web_app::LaunchShimUpdateBehavior::NO_UPDATE, std::move(launch_callback),
-      web_app::ShortcutInfoForExtensionAndProfile(extension, profile));
+    bool recreate_shims,
+    LaunchShimCallback launch_callback) {
+  if (recreate_shims) {
+    // Load the resources needed to build the app shim (icons, etc), and then
+    // recreate the shim and launch it.
+    web_app::GetShortcutInfoForApp(
+        extension, profile,
+        base::BindOnce(&web_app::LaunchShim,
+                       web_app::LaunchShimUpdateBehavior::RECREATE,
+                       std::move(launch_callback)));
+  } else {
+    web_app::LaunchShim(
+        web_app::LaunchShimUpdateBehavior::NO_UPDATE,
+        std::move(launch_callback),
+        web_app::ShortcutInfoForExtensionAndProfile(extension, profile));
+  }
 }
 
 void ExtensionAppShimHandler::Delegate::LaunchUserManager() {
@@ -437,6 +449,18 @@ void ExtensionAppShimHandler::OnChromeWillHide() {
     entry.second->OnAppHide();
 }
 
+void ExtensionAppShimHandler::OnShimLaunchRequested(
+    AppShimHost* host,
+    bool recreate_shims,
+    LaunchShimCallback launch_callback) {
+  Profile* profile = nullptr;
+  const Extension* extension = MaybeGetExtensionOrCloseHost(host, &profile);
+  if (!profile || !extension)
+    return;
+  delegate_->LaunchShim(profile, extension, recreate_shims,
+                        std::move(launch_callback));
+}
+
 void ExtensionAppShimHandler::OnShimProcessConnected(
     std::unique_ptr<AppShimHostBootstrap> bootstrap) {
   const std::string& app_id = bootstrap->GetAppId();
@@ -591,23 +615,6 @@ void ExtensionAppShimHandler::OnExtensionEnabled(
     delegate_->LaunchApp(profile, extension, files);
 }
 
-void ExtensionAppShimHandler::OnRequestedShimLaunchComplete(
-    base::WeakPtr<AppShimHost> host,
-    base::Process shim_process) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // It is possible (but not likely) that the windows for this app were closed
-  // or the profile was unloaded before this callback came in.
-  if (!host)
-    return;
-
-  if (!shim_process.IsValid()) {
-    // TODO(https://crbug.com/913362)): Consider adding some UI to tell the
-    // user that the process launch failed.
-    DLOG(ERROR) << "Failed to launch shim.";
-    host->OnAppClosed();
-  }
-}
-
 void ExtensionAppShimHandler::OnShimClose(AppShimHost* host) {
   // This might be called when shutting down. Don't try to look up the profile
   // since profile_manager might not be around.
@@ -756,16 +763,7 @@ void ExtensionAppShimHandler::OnAppActivated(content::BrowserContext* context,
   AppShimHost* host = FindOrCreateHost(profile, extension);
   if (!host)
     return;
-  if (host->HasBootstrapConnected()) {
-    // If there is a connected app shim process, focus the app windows.
-    OnShimFocus(host, APP_SHIM_FOCUS_NORMAL, std::vector<base::FilePath>());
-    return;
-  }
-  // Otherwise, launch an app shim.
-  delegate_->LaunchShim(
-      profile, extension,
-      base::BindOnce(&ExtensionAppShimHandler::OnRequestedShimLaunchComplete,
-                     weak_factory_.GetWeakPtr(), host->GetWeakPtr()));
+  host->LaunchShim();
 }
 
 void ExtensionAppShimHandler::OnAppDeactivated(content::BrowserContext* context,

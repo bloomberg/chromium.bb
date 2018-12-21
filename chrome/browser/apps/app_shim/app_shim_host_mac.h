@@ -39,6 +39,10 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   // host.
   bool HasBootstrapConnected() const;
 
+  // Invoked to request that the shim be launched (if it has not been launched
+  // already).
+  void LaunchShim();
+
   // Invoked when the app shim has launched and connected to the browser.
   virtual void OnBootstrapConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap);
@@ -69,8 +73,6 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   // Return the app shim interface.
   chrome::mojom::AppShim* GetAppShim() const;
 
-  base::WeakPtr<AppShimHost> GetWeakPtr();
-
  protected:
   // AppShimHost is owned by itself. It will delete itself in Close (called on
   // channel error and OnAppClosed).
@@ -79,6 +81,10 @@ class AppShimHost : public chrome::mojom::AppShimHost {
 
   // Closes the channel and destroys the AppShimHost.
   void Close();
+
+  // Called when LaunchShim has launched (or failed to launch) a process.
+  void OnShimLaunchCompleted(bool recreate_shims_requested,
+                             base::Process shim_process);
 
   // Return the AppShimHandler for this app (virtual for tests).
   virtual apps::AppShimHandler* GetAppShimHandler() const;

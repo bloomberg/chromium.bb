@@ -82,6 +82,39 @@ apps::AppShimHandler* AppShimHost::GetAppShimHandler() const {
   return apps::AppShimHandler::GetForAppMode(app_id_);
 }
 
+void AppShimHost::OnShimLaunchCompleted(bool recreate_shims_requested,
+                                        base::Process shim_process) {
+  // If the shim process was created, assume that it will successfully create
+  // an AppShimHostBootstrap.
+  // TODO(https://crbug.com/913362): We should add a callback for when
+  // |shim_process| exits, and handle the case where that happens without the
+  // creation of an AppShimHostBootstrap.
+  if (shim_process.IsValid())
+    return;
+
+  // If this was a launch without recreating shims, then the launch may have
+  // failed because the shims were not present, or because they were out of
+  // date. Try again, recreating the shims this time.
+  if (!recreate_shims_requested) {
+    DLOG(ERROR) << "Failed to launch shim, attempting to recreate.";
+    constexpr bool recreate_shims = true;
+    apps::AppShimHandler* handler = GetAppShimHandler();
+    handler->OnShimLaunchRequested(
+        this, recreate_shims,
+        base::BindOnce(&AppShimHost::OnShimLaunchCompleted,
+                       weak_factory_.GetWeakPtr(), recreate_shims));
+    return;
+  }
+
+  // If we attempted to recreate the app shims and still failed to launch, then
+  // there is no hope to launch the app. Close its windows (since they will
+  // never be seen).
+  // TODO(https://crbug.com/913362): Consider adding some UI to tell the
+  // user that the process launch failed.
+  DLOG(ERROR) << "Failed to launch recreated shim, giving up.";
+  OnAppClosed();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AppShimHost, chrome::mojom::AppShimHost
 
@@ -99,6 +132,24 @@ void AppShimHost::OnBootstrapConnected(
   host_binding_.Bind(bootstrap_->GetLaunchAppShimHostRequest());
   host_binding_.set_connection_error_with_reason_handler(
       base::BindOnce(&AppShimHost::ChannelError, base::Unretained(this)));
+}
+
+void AppShimHost::LaunchShim() {
+  apps::AppShimHandler* handler = GetAppShimHandler();
+  if (!handler)
+    return;
+  if (bootstrap_) {
+    // If there is a connected app shim process, focus the app windows.
+    handler->OnShimFocus(this, apps::APP_SHIM_FOCUS_NORMAL,
+                         std::vector<base::FilePath>());
+  } else {
+    // Otherwise, attempt to launch whatever app shims we find.
+    constexpr bool recreate_shims = false;
+    handler->OnShimLaunchRequested(
+        this, recreate_shims,
+        base::BindOnce(&AppShimHost::OnShimLaunchCompleted,
+                       weak_factory_.GetWeakPtr(), recreate_shims));
+  }
 }
 
 void AppShimHost::FocusApp(apps::AppShimFocusType focus_type,
@@ -153,8 +204,4 @@ views::BridgeFactoryHost* AppShimHost::GetViewsBridgeFactoryHost() const {
 
 chrome::mojom::AppShim* AppShimHost::GetAppShim() const {
   return app_shim_.get();
-}
-
-base::WeakPtr<AppShimHost> AppShimHost::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
