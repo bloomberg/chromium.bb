@@ -790,7 +790,7 @@ public class ChromeTabbedActivity
         long lastBackgroundedTimeMillis =
                 ContextUtils.getAppSharedPreferences().getLong(LAST_BACKGROUNDED_TIME_MS_PREF, -1);
         if (ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(lastBackgroundedTimeMillis)
-                && !isOverviewVisible) {
+                && isMainIntentFromLauncher(getIntent()) && !isOverviewVisible) {
             toggleOverview();
             return;
         }
