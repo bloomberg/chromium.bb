@@ -203,13 +203,10 @@
             class$="[[getListFrameClass_(unifiedConsentEnabled)]]">
 
           <template is="dom-if" if="[[unifiedConsentEnabled]]">
-            <div id="sync-advanced-row" class="list-item first two-line"
+            <div id="sync-advanced-row" class="list-item first"
                 on-click="onSyncAdvancedTap_" actionable>
               <div class="start">
                 $i18n{syncAdvancedPageTitle}
-                <div class="secondary">
-                  [[getSyncAdvancedRowSublabel_(syncPrefs.syncAllDataTypes)]]
-                </div>
               </div>
               <paper-icon-button-light class="subpage-arrow">
                 <button aria-label="$i18n{syncAdvancedPageTitle}"></button>
