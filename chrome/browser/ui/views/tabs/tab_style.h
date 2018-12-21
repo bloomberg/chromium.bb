@@ -86,9 +86,6 @@ class TabStyle {
       bool force_active = false,
       RenderUnits render_units = RenderUnits::kPixels) const = 0;
 
-  // Gets the bounds for the leading and trailing separators for a tab.
-  virtual SeparatorBounds GetSeparatorBounds(float scale) const = 0;
-
   // Returns the thickness of the stroke drawn around the top and sides of the
   // tab.  Only active tabs may have a stroke, and not in all cases.  If there
   // is no stroke, returns 0.  If |should_paint_as_active| is true, the tab is
@@ -97,11 +94,6 @@ class TabStyle {
 
   // Paint the tab.
   virtual void PaintTab(gfx::Canvas* canvas, const gfx::Path& clip) const = 0;
-
-  // Returns the opacities of the separators.  If |for_layout| is true, returns
-  // the "layout" opacities, which ignore the effects of surrounding tabs' hover
-  // effects and consider only the current tab's state.
-  virtual SeparatorOpacities GetSeparatorOpacities(bool for_layout) const = 0;
 
   // Returns the insets to use for laying out tab contents.
   virtual gfx::Insets GetContentsInsets() const = 0;

@@ -80,13 +80,19 @@ class GM2TabStyle : public TabStyle {
       float scale,
       bool force_active = false,
       RenderUnits render_units = RenderUnits::kPixels) const override;
-  SeparatorBounds GetSeparatorBounds(float scale) const override;
   gfx::Insets GetContentsInsets() const override;
   int GetStrokeThickness(bool should_paint_as_active = false) const override;
-  SeparatorOpacities GetSeparatorOpacities(bool for_layout) const override;
   void PaintTab(gfx::Canvas* canvas, const gfx::Path& clip) const override;
 
  private:
+  // Gets the bounds for the leading and trailing separators for a tab.
+  SeparatorBounds GetSeparatorBounds(float scale) const;
+
+  // Returns the opacities of the separators. If |for_layout| is true, returns
+  // the "layout" opacities, which ignore the effects of surrounding tabs' hover
+  // effects and consider only the current tab's state.
+  SeparatorOpacities GetSeparatorOpacities(bool for_layout) const;
+
   // Returns whether we shoould extend the hit test region for Fitts' Law.
   bool ShouldExtendHitTest() const;
 
@@ -371,6 +377,46 @@ gfx::Path GM2TabStyle::GetPath(PathType path_type,
   return path;
 }
 
+gfx::Insets GM2TabStyle::GetContentsInsets() const {
+  const int stroke_thickness = GetStrokeThickness();
+  const int horizontal_inset = GetContentsHorizontalInsetSize();
+  return gfx::Insets(
+      stroke_thickness, horizontal_inset,
+      stroke_thickness + GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP),
+      horizontal_inset);
+}
+
+int GM2TabStyle::GetStrokeThickness(bool should_paint_as_active) const {
+  return (tab_->IsActive() || should_paint_as_active)
+             ? tab_->controller()->GetStrokeThickness()
+             : 0;
+}
+
+void GM2TabStyle::PaintTab(gfx::Canvas* canvas, const gfx::Path& clip) const {
+  int active_tab_fill_id = 0;
+  int active_tab_y_inset = 0;
+  if (tab_->GetThemeProvider()->HasCustomImage(IDR_THEME_TOOLBAR)) {
+    active_tab_fill_id = IDR_THEME_TOOLBAR;
+    active_tab_y_inset = GetStrokeThickness(true);
+  }
+
+  if (tab_->IsActive()) {
+    PaintTabBackground(canvas, true /* active */, active_tab_fill_id,
+                       active_tab_y_inset, nullptr /* clip */);
+  } else {
+    PaintInactiveTabBackground(canvas, clip);
+
+    const float throb_value = tab_->GetThrobValue();
+    if (throb_value > 0) {
+      canvas->SaveLayerAlpha(gfx::ToRoundedInt(throb_value * 0xff),
+                             tab_->GetLocalBounds());
+      PaintTabBackground(canvas, true /* active */, active_tab_fill_id,
+                         active_tab_y_inset, nullptr /* clip */);
+      canvas->Restore();
+    }
+  }
+}
+
 TabStyle::SeparatorBounds GM2TabStyle::GetSeparatorBounds(float scale) const {
   const gfx::RectF aligned_bounds =
       ScaleAndAlignBounds(tab_->bounds(), scale, GetStrokeThickness());
@@ -396,21 +442,6 @@ TabStyle::SeparatorBounds GM2TabStyle::GetSeparatorBounds(float scale) const {
   separator_bounds.trailing.Offset(-origin.x(), -origin.y());
 
   return separator_bounds;
-}
-
-gfx::Insets GM2TabStyle::GetContentsInsets() const {
-  const int stroke_thickness = GetStrokeThickness();
-  const int horizontal_inset = GetContentsHorizontalInsetSize();
-  return gfx::Insets(
-      stroke_thickness, horizontal_inset,
-      stroke_thickness + GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP),
-      horizontal_inset);
-}
-
-int GM2TabStyle::GetStrokeThickness(bool should_paint_as_active) const {
-  return (tab_->IsActive() || should_paint_as_active)
-             ? tab_->controller()->GetStrokeThickness()
-             : 0;
 }
 
 TabStyle::SeparatorOpacities GM2TabStyle::GetSeparatorOpacities(
@@ -495,31 +526,6 @@ TabStyle::SeparatorOpacities GM2TabStyle::GetSeparatorOpacities(
   if (base::i18n::IsRTL())
     std::swap(leading_opacity, trailing_opacity);
   return {leading_opacity, trailing_opacity};
-}
-
-void GM2TabStyle::PaintTab(gfx::Canvas* canvas, const gfx::Path& clip) const {
-  int active_tab_fill_id = 0;
-  int active_tab_y_inset = 0;
-  if (tab_->GetThemeProvider()->HasCustomImage(IDR_THEME_TOOLBAR)) {
-    active_tab_fill_id = IDR_THEME_TOOLBAR;
-    active_tab_y_inset = GetStrokeThickness(true);
-  }
-
-  if (tab_->IsActive()) {
-    PaintTabBackground(canvas, true /* active */, active_tab_fill_id,
-                       active_tab_y_inset, nullptr /* clip */);
-  } else {
-    PaintInactiveTabBackground(canvas, clip);
-
-    const float throb_value = tab_->GetThrobValue();
-    if (throb_value > 0) {
-      canvas->SaveLayerAlpha(gfx::ToRoundedInt(throb_value * 0xff),
-                             tab_->GetLocalBounds());
-      PaintTabBackground(canvas, true /* active */, active_tab_fill_id,
-                         active_tab_y_inset, nullptr /* clip */);
-      canvas->Restore();
-    }
-  }
 }
 
 bool GM2TabStyle::ShouldExtendHitTest() const {
