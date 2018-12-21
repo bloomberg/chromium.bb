@@ -335,8 +335,6 @@ IN_PROC_BROWSER_TEST_F(
   browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
   histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
                                     2);
-
-  EXPECT_EQ(0u, accepted_socket_count());
 }
 
 // Test that the action accuracy is properly recorded and when same origin
