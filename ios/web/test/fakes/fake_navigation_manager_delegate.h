@@ -26,6 +26,10 @@ class FakeNavigationManagerDelegate : public NavigationManagerDelegate {
       const LoadCommittedDetails& load_details) override;
   WebState* GetWebState() override;
   id<CRWWebViewNavigationProxy> GetWebViewNavigationProxy() const override;
+  void GoToBackForwardListItem(WKBackForwardListItem* wk_item,
+                               NavigationItem* item,
+                               NavigationInitiationType type,
+                               bool has_user_gesture) override;
   void RemoveWebView() override;
 
   // Setters for tests to inject dependencies.
