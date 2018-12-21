@@ -119,7 +119,7 @@ const base::Feature kAutofillEnforceMinRequiredFieldsForQuery{
 // field type votes are uploaded to the crowd-sourcing server.
 const base::Feature kAutofillEnforceMinRequiredFieldsForUpload{
     "AutofillEnforceMinRequiredFieldsForUpload",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAutofillExpandedPopupViews{
     "AutofillExpandedPopupViews", base::FEATURE_ENABLED_BY_DEFAULT};
