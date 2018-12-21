@@ -117,6 +117,10 @@ class AppShimHostManagerBrowserTest : public InProcessBrowserTest,
   void TearDownOnMainThread() override;
 
   // AppShimHandler overrides:
+  void OnShimLaunchRequested(
+      ::AppShimHost* host,
+      bool recreate_shims,
+      apps::LaunchShimCallback launch_callback) override {}
   void OnShimProcessConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
   void OnShimClose(::AppShimHost* host) override {}

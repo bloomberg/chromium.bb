@@ -9,13 +9,17 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/process/process.h"
 #include "chrome/common/mac/app_shim_launch.h"
 
 class AppShimHost;
 class AppShimHostBootstrap;
 
 namespace apps {
+
+using LaunchShimCallback = base::OnceCallback<void(base::Process)>;
 
 // Registrar, and interface for services that can handle interactions with OSX
 // shim processes.
@@ -46,7 +50,13 @@ class AppShimHandler {
   // running.
   static bool ShouldRestoreSession();
 
-  // Invoked by the AppShimHostBootstrap  when a shim process has connected to
+  // Request that the handler launch the app shim process.
+  virtual void OnShimLaunchRequested(
+      AppShimHost* host,
+      bool recreate_shims,
+      apps::LaunchShimCallback launch_callback) = 0;
+
+  // Invoked by the AppShimHostBootstrap when a shim process has connected to
   // the browser process. This will connect to (creating, if needed) an
   // AppShimHost. |bootstrap| must have OnConnectedToHost or
   // OnFailedToConnectToHost called on it to inform the shim of the result.

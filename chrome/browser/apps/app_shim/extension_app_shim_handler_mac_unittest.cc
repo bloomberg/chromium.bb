@@ -71,10 +71,22 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
                void(Profile*,
                     const Extension*,
                     const std::vector<base::FilePath>&));
-  MOCK_METHOD3(LaunchShim,
-               void(Profile*,
-                    const Extension*,
-                    base::OnceCallback<void(base::Process)> launch_callback));
+
+  // Conditionally mock LaunchShim. Some tests will execute |launch_callback|
+  // with a particular value.
+  MOCK_METHOD3(DoLaunchShim, void(Profile*, const Extension*, bool));
+  void LaunchShim(Profile* profile,
+                  const Extension* extension,
+                  bool recreate_shim,
+                  LaunchShimCallback launch_callback) override {
+    if (launch_shim_callback_capture_)
+      *launch_shim_callback_capture_ = std::move(launch_callback);
+    DoLaunchShim(profile, extension, recreate_shim);
+  }
+  void SetCaptureLaunchShimCallback(LaunchShimCallback* callback) {
+    launch_shim_callback_capture_ = callback;
+  }
+
   MOCK_METHOD0(LaunchUserManager, void());
 
   MOCK_METHOD0(MaybeTerminate, void());
@@ -111,6 +123,7 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
   }
 
  private:
+  LaunchShimCallback* launch_shim_callback_capture_ = nullptr;
   std::map<base::FilePath, base::OnceCallback<void(Profile*)>> callbacks_;
   AppShimHost* host_for_create_ = nullptr;
   bool allow_shim_to_connect_ = true;
@@ -478,7 +491,7 @@ TEST_F(ExtensionAppShimHandlerTest, AppLifetime) {
   // When the app activates, a host is created. If there is no shim, one is
   // launched.
   delegate_->SetHostForCreate(host_aa_.get());
-  EXPECT_CALL(*delegate_, LaunchShim(&profile_a_, extension_a_.get(), _));
+  EXPECT_CALL(*delegate_, DoLaunchShim(&profile_a_, extension_a_.get(), false));
   handler_->OnAppActivated(&profile_a_, kTestAppIdA);
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
 
@@ -522,6 +535,28 @@ TEST_F(ExtensionAppShimHandlerTest, AppLifetime) {
       .WillOnce(Return());
   EXPECT_NE(nullptr, host_aa_.get());
   handler_->OnAppDeactivated(&profile_a_, kTestAppIdA);
+  EXPECT_EQ(nullptr, host_aa_.get());
+}
+
+TEST_F(ExtensionAppShimHandlerTest, FailToLaunch) {
+  // When the app activates, it requests a launch.
+  LaunchShimCallback launch_callback;
+  delegate_->SetCaptureLaunchShimCallback(&launch_callback);
+  delegate_->SetHostForCreate(host_aa_.get());
+  EXPECT_CALL(*delegate_, DoLaunchShim(&profile_a_, extension_a_.get(), false));
+  handler_->OnAppActivated(&profile_a_, kTestAppIdA);
+  EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
+  EXPECT_TRUE(launch_callback);
+
+  // Run the callback claiming that the launch failed. This should trigger
+  // another launch, this time forcing shim recreation.
+  EXPECT_CALL(*delegate_, DoLaunchShim(&profile_a_, extension_a_.get(), true));
+  std::move(launch_callback).Run(base::Process());
+  EXPECT_TRUE(launch_callback);
+
+  // Report that the launch failed. This should trigger deletion of the host.
+  EXPECT_NE(nullptr, host_aa_.get());
+  std::move(launch_callback).Run(base::Process());
   EXPECT_EQ(nullptr, host_aa_.get());
 }
 
