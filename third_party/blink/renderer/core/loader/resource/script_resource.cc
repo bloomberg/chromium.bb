@@ -155,7 +155,6 @@ String ScriptResource::TextForInspector() const {
   // the assumptions are confirmed.
 
   if (IsLoaded()) {
-    CHECK(IsFinishedInternal());
     if (!source_text_.IsNull()) {
       // 1. We have finished loading, and have already decoded the buffer into
       //    the source text and cleared the resource buffer to save space.
@@ -163,15 +162,19 @@ String ScriptResource::TextForInspector() const {
     }
 
     // 2. We have finished loading with no data received, so no streaming ever
-    //    happened or streaming was suppressed.
+    //    happened or streaming was suppressed. Note that the finished
+    //    notification may not have come through yet because of task posting, so
+    //    NotifyFinished may not have been called yet. Regardless, there was no
+    //    data, so the text should be empty.
     //
     // TODO(crbug/909858) Currently this CHECK can occasionally fail, but this
     // doesn't seem to cause real issues immediately. For now, we suppress the
     // crashes on release builds by making this a DCHECK and continue baking the
     // script streamer control (crbug/865098) on beta, while investigating the
     // failure reason on canary.
-    DCHECK(!streamer_ || streamer_->StreamingSuppressedReason() ==
-                             ScriptStreamer::kScriptTooSmall);
+    DCHECK(!IsFinishedInternal() || !streamer_ ||
+           streamer_->StreamingSuppressedReason() ==
+               ScriptStreamer::kScriptTooSmall);
     return "";
   }
 
