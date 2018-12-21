@@ -5127,8 +5127,6 @@ static int64_t select_tx_size_and_type(const AV1_COMP *cpi, MACROBLOCK *x,
   }
 
   if (skip_rd <= this_rd) {
-    rd_stats->rate = 0;
-    rd_stats->dist = rd_stats->sse;
     rd_stats->skip = 1;
 #if CONFIG_ONE_PASS_SVM
     av1_reg_stat_skipmode_update(rd_stats, x->rdmult);
@@ -5775,10 +5773,33 @@ static void set_skip_flag(MACROBLOCK *x, RD_STATS *rd_stats, int bsize,
   mbmi->tx_size = tx_size;
   for (int i = 0; i < n4; ++i) set_blk_skip(x, 0, i, 1);
   rd_stats->skip = 1;
-  rd_stats->rate = 0;
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
     dist = ROUND_POWER_OF_TWO(dist, (xd->bd - 8) * 2);
   rd_stats->dist = rd_stats->sse = (dist << 4);
+  // Though decision is to make the block as skip based on luma stats,
+  // it is possible that block becomes non skip after chroma rd. In addition
+  // intermediate non skip costs calculated by caller function will be
+  // incorrect, if rate is set as  zero (i.e., if zero_blk_rate is not
+  // accounted). Hence intermediate rate is populated to code the luma tx blks
+  // as skip, the caller function based on final rd decision (i.e., skip vs
+  // non-skip) sets the final rate accordingly. Here the rate populated
+  // corresponds to coding all the tx blocks with zero_blk_rate (based on max tx
+  // size possible) in the current block. Eg: For 128*128 block, rate would be
+  // 4 * zero_blk_rate where zero_blk_rate corresponds to coding of one 64x64 tx
+  // block as 'all zeros'
+  ENTROPY_CONTEXT ctxa[MAX_MIB_SIZE];
+  ENTROPY_CONTEXT ctxl[MAX_MIB_SIZE];
+  av1_get_entropy_contexts(bsize, &xd->plane[0], ctxa, ctxl);
+  ENTROPY_CONTEXT *ta = ctxa;
+  ENTROPY_CONTEXT *tl = ctxl;
+  const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
+  TXB_CTX txb_ctx;
+  get_txb_ctx(bsize, tx_size, 0, ta, tl, &txb_ctx);
+  const int zero_blk_rate = x->coeff_costs[txs_ctx][PLANE_TYPE_Y]
+                                .txb_skip_cost[txb_ctx.txb_skip_ctx][1];
+  rd_stats->rate = zero_blk_rate *
+                   (block_size_wide[bsize] >> tx_size_wide_log2[tx_size]) *
+                   (block_size_high[bsize] >> tx_size_high_log2[tx_size]);
 }
 
 // Search for best transform size and type for luma inter blocks.
@@ -5881,8 +5902,7 @@ static void pick_tx_size_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   const int64_t rd =
       select_tx_size_and_type(cpi, x, &this_rd_stats, bsize, ref_best_rd,
                               found_rd_info ? matched_rd_info : NULL);
-  assert(IMPLIES(this_rd_stats.skip && !this_rd_stats.invalid_rate,
-                 this_rd_stats.rate == 0));
+
   if (rd < INT64_MAX) {
     *rd_stats = this_rd_stats;
     found = 1;
@@ -8769,6 +8789,9 @@ static int txfm_search(const AV1_COMP *cpi, const TileDataEnc *tile_data,
     rd_stats->rate -= rd_stats_uv->rate + rd_stats_y->rate;
     rd_stats_y->rate = 0;
     rd_stats_uv->rate = 0;
+    rd_stats->dist = rd_stats->sse;
+    rd_stats_y->dist = rd_stats_y->sse;
+    rd_stats_uv->dist = rd_stats_uv->sse;
     rd_stats->rate += skip_flag_cost[1];
     mbmi->skip = 1;
     // here mbmi->skip temporarily plays a role as what this_skip2 does
@@ -8789,6 +8812,8 @@ static int txfm_search(const AV1_COMP *cpi, const TileDataEnc *tile_data,
     rd_stats->rate -= rd_stats_uv->rate + rd_stats_y->rate;
     rd_stats->rate += skip_flag_cost[1];
     rd_stats->dist = rd_stats->sse;
+    rd_stats_y->dist = rd_stats_y->sse;
+    rd_stats_uv->dist = rd_stats_uv->sse;
     rd_stats_y->rate = 0;
     rd_stats_uv->rate = 0;
     mbmi->skip = 1;
