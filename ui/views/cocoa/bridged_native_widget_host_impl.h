@@ -122,6 +122,10 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
 
   void InitWindow(const Widget::InitParams& params);
 
+  // Close the window immediately. This function may result in |this| being
+  // deleted.
+  void CloseWindowNow();
+
   // Changes the bounds of the window and the hosted layer if present. The
   // origin is a location in screen coordinates except for "child" windows,
   // which are positioned relative to their parent. SetBounds() considers a
