@@ -7,16 +7,23 @@ const kDefaultLimits: w.WebGPULimits = {
   maxBindGroups: 0,
 };
 
+type StatusableObject = Buffer | Texture;
+
 class BindGroup implements w.WebGPUBindGroup {
 }
 class BindGroupLayout implements w.WebGPUBindGroupLayout {
 }
 class Buffer implements w.WebGPUBuffer {
   public readonly mapping: ArrayBuffer | null = null;
-
+  private status: w.WebGPUObjectStatus = "valid";
   constructor() {}
-  public destroy() {}
+  public destroy() {
+    this.status = "invalid";
+  }
   public unmap() {}
+  public _getStatus() {
+    return this.status;
+  }
 }
 class CommandBuffer implements w.WebGPUCommandBuffer {
   public label: string | undefined;
@@ -87,13 +94,20 @@ class ShaderModule implements w.WebGPUShaderModule {
   public label: string | undefined;
 }
 class Texture implements w.WebGPUTexture {
+  private status: w.WebGPUObjectStatus = "valid";
+  constructor() {}
   public createDefaultTextureView(): TextureView {
     return new TextureView();
   }
   public createTextureView(desc: w.WebGPUTextureViewDescriptor): TextureView {
     return new TextureView();
   }
-  public destroy(): void {}
+  public destroy() {
+    this.status = "invalid";
+  }
+  public _getStatus() {
+    return this.status;
+  }
 }
 class TextureView {
   constructor() {}
@@ -104,20 +118,16 @@ class Queue implements w.WebGPUQueue {
   public submit(buffers: CommandBuffer[]): void {}
   public wait(fence: Fence, valueToWait: w.u64): void {}
 }
-
 class Device implements w.WebGPUDevice {
   public readonly adapter: Adapter;
   public readonly extensions: w.WebGPUExtensions;
   public readonly limits = kDefaultLimits;
   public onLog: w.WebGPULogCallback | undefined;
-
   private queue: Queue = new Queue();
-
   constructor(adapter: Adapter, descriptor: w.WebGPUDeviceDescriptor) {
     this.adapter = adapter;
     this.extensions = descriptor.extensions || kNoExtensions;
   }
-
   public createBindGroup(descriptor: w.WebGPUBindGroupDescriptor): BindGroup {
     return new BindGroup();
   }
@@ -151,8 +161,8 @@ class Device implements w.WebGPUDevice {
   public createTexture(descriptor: w.WebGPUTextureDescriptor): Texture {
     return new Texture();
   }
-  public getObjectStatus(statusableObject: w.WebGPUStatusableObject): w.WebGPUObjectStatusQuery {
-    return Promise.resolve("valid");
+  public getObjectStatus(statusableObject: StatusableObject): w.WebGPUObjectStatusQuery {
+    return Promise.resolve(statusableObject._getStatus());
   }
   public getQueue(): Queue {
     return this.queue;
