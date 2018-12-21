@@ -1846,8 +1846,6 @@ crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/caret-ltr-2.html 
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/caret-rtl-2-left.html [ Failure ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/caret-rtl-2.html [ Failure ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/css-pseudo-element.html [ Failure ]
-crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/offset-from-point-complex-scripts.html [ Failure ]
-crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/offset-from-point.html [ Failure ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/select-bidi-run.html [ Failure ]
 
 ### virtual/bidi-caret-affinity/editing/selection/modify_extend/
