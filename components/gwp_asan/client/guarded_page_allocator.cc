@@ -101,10 +101,10 @@ void GuardedPageAllocator::Deallocate(void* ptr) {
     __builtin_trap();
   }
 
-  MarkPageInaccessible(reinterpret_cast<void*>(state_.GetPageAddr(addr)));
-
-  // Record deallocation stack trace/thread id.
+  // Record deallocation stack trace/thread id before marking the page
+  // inaccessible in case a use-after-free occurs immediately.
   RecordDeallocationInSlot(slot);
+  MarkPageInaccessible(reinterpret_cast<void*>(state_.GetPageAddr(addr)));
 
   FreeSlot(slot);
 }
