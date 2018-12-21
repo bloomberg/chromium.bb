@@ -1,6 +1,8 @@
 export const name = "unittests";
 export const description = `
-Unit tests for CTS framework.
+Unit tests for namespaced logging system.
+
+Also serves as a larger test of async test functions, and of the logging system.
 `;
 
 import { StringLogger, TestTree } from "framework";
