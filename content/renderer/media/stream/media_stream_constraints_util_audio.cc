@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "content/common/media/media_stream_controls.h"
 #include "content/public/common/content_features.h"
+#include "content/renderer/media/stream/media_stream_audio_processor_options.h"
 #include "content/renderer/media/stream/media_stream_audio_source.h"
 #include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_sets.h"
@@ -116,19 +117,25 @@ class SourceInfo {
  public:
   SourceInfo(SourceType type,
              const AudioProcessingProperties& properties,
-             base::Optional<int> channels)
-      : type_(type), properties_(properties), channels_(std::move(channels)) {}
+             base::Optional<int> channels,
+             base::Optional<int> sample_rate)
+      : type_(type),
+        properties_(properties),
+        channels_(std::move(channels)),
+        sample_rate_(std::move(sample_rate)) {}
 
   bool HasActiveSource() { return type_ != SourceType::kNone; }
 
   SourceType type() { return type_; }
   const AudioProcessingProperties& properties() { return properties_; }
   const base::Optional<int>& channels() { return channels_; }
+  const base::Optional<int>& sample_rate() { return sample_rate_; }
 
  private:
   const SourceType type_;
   const AudioProcessingProperties properties_;
   const base::Optional<int> channels_;
+  const base::Optional<int> sample_rate_;
 };
 
 // Container for each independent boolean constrainable property.
@@ -638,6 +645,8 @@ class ProcessingBasedContainer {
         BoolSet(), /* goog_experimental_auto_gain_control_set */
         IntRangeSet::FromValue(GetSampleSize()), /* sample_size_range */
         IntRangeSet::FromValue(1),               /* channels_range */
+        IntRangeSet::FromValue(
+            kAudioProcessingSampleRate), /* sample_rate_range */
         source_info, is_device_capture, device_parameters);
   }
 
@@ -664,6 +673,8 @@ class ProcessingBasedContainer {
         IntRangeSet::FromValue(GetSampleSize()), /* sample_size_range */
         IntRangeSet::FromValue(
             device_parameters.channels()), /* channels_range */
+        IntRangeSet::FromValue(
+            device_parameters.sample_rate()), /* sample_rate_range */
         source_info, is_device_capture, device_parameters);
   }
 
@@ -689,6 +700,8 @@ class ProcessingBasedContainer {
         IntRangeSet::FromValue(GetSampleSize()), /* sample_size_range */
         IntRangeSet::FromValue(
             device_parameters.channels()), /* channels_range */
+        IntRangeSet::FromValue(
+            device_parameters.sample_rate()), /* sample_rate_range */
         source_info, is_device_capture, device_parameters);
   }
 
@@ -707,6 +720,11 @@ class ProcessingBasedContainer {
 
     failed_constraint_name =
         channels_container_.ApplyConstraintSet(constraint_set.channel_count);
+    if (failed_constraint_name != nullptr)
+      return failed_constraint_name;
+
+    failed_constraint_name =
+        sample_rate_container_.ApplyConstraintSet(constraint_set.sample_rate);
     if (failed_constraint_name != nullptr)
       return failed_constraint_name;
 
@@ -738,6 +756,13 @@ class ProcessingBasedContainer {
     std::tie(sub_score, channels) = channels_container_.SelectSettingsAndScore(
         constraint_set.channel_count);
     DCHECK(channels);
+    score += sub_score;
+
+    base::Optional<int> sample_size;
+    std::tie(sub_score, sample_size) =
+        sample_rate_container_.SelectSettingsAndScore(
+            constraint_set.sample_rate);
+    DCHECK(sample_size != base::nullopt);
     score += sub_score;
 
     AudioProcessingProperties properties;
@@ -776,7 +801,8 @@ class ProcessingBasedContainer {
         return true;
     }
     return echo_cancellation_container_.IsEmpty() ||
-           sample_size_container_.IsEmpty() || channels_container_.IsEmpty();
+           sample_size_container_.IsEmpty() || channels_container_.IsEmpty() ||
+           sample_rate_container_.IsEmpty();
   }
 
  private:
@@ -844,12 +870,14 @@ class ProcessingBasedContainer {
       BoolSet goog_experimental_auto_gain_control_set,
       IntRangeSet sample_size_range,
       IntRangeSet channels_range,
+      IntRangeSet sample_rate_range,
       SourceInfo source_info,
       bool is_device_capture,
       media::AudioParameters device_parameters)
       : processing_type_(processing_type),
         sample_size_container_(sample_size_range),
-        channels_container_(channels_range) {
+        channels_container_(channels_range),
+        sample_rate_container_(sample_rate_range) {
     // If the parameters indicate that system echo cancellation is available, we
     // add such value in the allowed values for the EC type.
     if (device_parameters.effects() & media::AudioParameters::ECHO_CANCELLER ||
@@ -891,6 +919,9 @@ class ProcessingBasedContainer {
     DCHECK(source_info.channels());
     channels_container_ =
         IntegerContainer(IntRangeSet::FromValue(*source_info.channels()));
+    DCHECK(source_info.sample_rate() != base::nullopt);
+    sample_rate_container_ =
+        IntegerContainer(IntRangeSet::FromValue(*source_info.sample_rate()));
   }
 
   // The priority of each processing-based container depends on the default
@@ -918,6 +949,7 @@ class ProcessingBasedContainer {
   EchoCancellationContainer echo_cancellation_container_;
   IntegerContainer sample_size_container_;
   IntegerContainer channels_container_;
+  IntegerContainer sample_rate_container_;
 };
 
 constexpr ProcessingBasedContainer::BooleanPropertyContainerInfo
@@ -929,9 +961,10 @@ class DeviceContainer {
   DeviceContainer(const AudioDeviceCaptureCapability& capability,
                   bool is_device_capture)
       : device_parameters_(capability.Parameters()) {
-    if (!capability.DeviceID().empty())
+    if (!capability.DeviceID().empty()) {
       device_id_container_ =
           StringContainer(StringSet({capability.DeviceID()}));
+    }
 
     if (!capability.GroupID().empty())
       group_id_container_ = StringContainer(StringSet({capability.GroupID()}));
@@ -1156,12 +1189,14 @@ class DeviceContainer {
     ProcessedLocalAudioSource* processed_source =
         ProcessedLocalAudioSource::From(source);
     base::Optional<int> channels;
+    base::Optional<int> sample_rate;
 
     if (source == nullptr) {
       source_type = SourceType::kNone;
     } else {
       media::AudioParameters source_parameters = source->GetAudioParameters();
       channels = source_parameters.channels();
+      sample_rate = source_parameters.sample_rate();
 
       if (processed_source == nullptr) {
         source_type = SourceType::kUnprocessed;
@@ -1183,7 +1218,7 @@ class DeviceContainer {
       }
     }
 
-    return SourceInfo(source_type, properties, channels);
+    return SourceInfo(source_type, properties, channels, sample_rate);
   }
 
   media::AudioParameters device_parameters_;
