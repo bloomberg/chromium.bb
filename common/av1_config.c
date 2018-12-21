@@ -345,7 +345,7 @@ static int parse_sequence_header(const uint8_t *const buffer, size_t length,
 
     AV1C_READ_BIT_OR_RETURN_ERROR(enable_order_hint);
     if (enable_order_hint) {
-      AV1C_READ_BIT_OR_RETURN_ERROR(enable_jnt_comp);
+      AV1C_READ_BIT_OR_RETURN_ERROR(enable_dist_wtd_comp);
       AV1C_READ_BIT_OR_RETURN_ERROR(enable_ref_frame_mvs);
     }
 

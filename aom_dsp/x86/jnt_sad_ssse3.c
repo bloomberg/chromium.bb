@@ -193,22 +193,22 @@ unsigned int aom_sad128xh_sse2(const uint8_t *a, int a_stride, const uint8_t *b,
 }
 
 #define jnt_sadMxN_sse2(m, n)                                                 \
-  unsigned int aom_jnt_sad##m##x##n##_avg_ssse3(                              \
+  unsigned int aom_dist_wtd_sad##m##x##n##_avg_ssse3(                         \
       const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, \
       const uint8_t *second_pred, const DIST_WTD_COMP_PARAMS *jcp_param) {    \
     uint8_t comp_pred[m * n];                                                 \
-    aom_jnt_comp_avg_pred(comp_pred, second_pred, m, n, ref, ref_stride,      \
-                          jcp_param);                                         \
+    aom_dist_wtd_comp_avg_pred(comp_pred, second_pred, m, n, ref, ref_stride, \
+                               jcp_param);                                    \
     return aom_sad##m##xh_sse2(src, src_stride, comp_pred, m, m, n);          \
   }
 
 #define jnt_sadMxN_avx2(m, n)                                                 \
-  unsigned int aom_jnt_sad##m##x##n##_avg_avx2(                               \
+  unsigned int aom_dist_wtd_sad##m##x##n##_avg_avx2(                          \
       const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, \
       const uint8_t *second_pred, const DIST_WTD_COMP_PARAMS *jcp_param) {    \
     uint8_t comp_pred[m * n];                                                 \
-    aom_jnt_comp_avg_pred(comp_pred, second_pred, m, n, ref, ref_stride,      \
-                          jcp_param);                                         \
+    aom_dist_wtd_comp_avg_pred(comp_pred, second_pred, m, n, ref, ref_stride, \
+                               jcp_param);                                    \
     return aom_sad##m##xh_avx2(src, src_stride, comp_pred, m, m, n);          \
   }
 
