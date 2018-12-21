@@ -93,6 +93,13 @@ void NGLayoutInputNode::IntrinsicSize(
   *default_intrinsic_size =
       NGLogicalSize(box_intrinsic_size.Width(), box_intrinsic_size.Height());
 
+  if (ShouldApplySizeContainment()) {
+    *computed_inline_size = LayoutUnit();
+    *computed_block_size = LayoutUnit();
+    *aspect_ratio = NGLogicalSize(LayoutUnit(), LayoutUnit());
+    return;
+  }
+
   IntrinsicSizingInfo legacy_sizing_info;
 
   ToLayoutReplaced(box_)->ComputeIntrinsicSizingInfo(legacy_sizing_info);
