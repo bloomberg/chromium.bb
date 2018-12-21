@@ -50,8 +50,11 @@ Channel AwVariationsServiceClient::GetChannel() {
   return android_webview::GetChannelOrStable();
 }
 
+// True is the default, but keep this override so we can revert permanent
+// consistency support with a 1-line change.
+// TODO(crbug/866722): Remove this, along with the rest of commit bbac4d2c4c.
 bool AwVariationsServiceClient::GetSupportsPermanentConsistency() {
-  return false;
+  return true;
 }
 
 bool AwVariationsServiceClient::OverridesRestrictParameter(
