@@ -51,6 +51,18 @@ void BindFetcherToDataTracker(net::URLFetcher* fetcher) {
       fetcher, data_use_measurement::DataUseUserData::SYNC);
 }
 
+void RecordPerModelTypeInvalidation(int model_type, int number_of_ids) {
+  UMA_HISTOGRAM_ENUMERATION("Sync.InvalidationPerModelType", model_type,
+                            static_cast<int>(syncer::MODEL_TYPE_COUNT));
+  if (number_of_ids == 1) {
+    // When recording metrics it's important to distinguish between
+    // many/one case, since "many" case is only common in the deprecated
+    // implementation.
+    UMA_HISTOGRAM_ENUMERATION("Sync.NonGroupedInvalidation", model_type,
+                              static_cast<int>(syncer::MODEL_TYPE_COUNT));
+  }
+}
+
 }  // namespace
 
 namespace syncer {
@@ -253,6 +265,8 @@ void SyncBackendHostCore::DoOnIncomingInvalidation(
       UMA_HISTOGRAM_ENUMERATION("Sync.InvalidationPerModelType",
                                 ModelTypeToHistogramInt(type),
                                 static_cast<int>(MODEL_TYPE_COUNT));
+
+      RecordPerModelTypeInvalidation(ModelTypeToHistogramInt(type), ids.size());
       SingleObjectInvalidationSet invalidation_set =
           invalidation_map.ForObject(object_id);
       for (Invalidation invalidation : invalidation_set) {
