@@ -34,11 +34,11 @@
 #include <memory>
 #include "third_party/blink/public/platform/web_source_buffer_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/mediasource/track_default_list.h"
-#include "third_party/blink/renderer/platform/async_method_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -56,7 +56,7 @@ class WebSourceBuffer;
 
 class SourceBuffer final : public EventTargetWithInlineData,
                            public ActiveScriptWrappable<SourceBuffer>,
-                           public PausableObject,
+                           public ContextLifecycleObserver,
                            public WebSourceBufferClient {
   USING_GARBAGE_COLLECTED_MIXIN(SourceBuffer);
   DEFINE_WRAPPERTYPEINFO();
@@ -105,9 +105,7 @@ class SourceBuffer final : public EventTargetWithInlineData,
   // ScriptWrappable
   bool HasPendingActivity() const final;
 
-  // PausableObject
-  void Pause() override;
-  void Unpause() override;
+  // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;
 
   // EventTarget interface
@@ -172,11 +170,11 @@ class SourceBuffer final : public EventTargetWithInlineData,
 
   Vector<unsigned char> pending_append_data_;
   wtf_size_t pending_append_data_offset_;
-  Member<AsyncMethodRunner<SourceBuffer>> append_buffer_async_part_runner_;
+  TaskHandle append_buffer_async_task_handle_;
 
   double pending_remove_start_;
   double pending_remove_end_;
-  Member<AsyncMethodRunner<SourceBuffer>> remove_async_part_runner_;
+  TaskHandle remove_async_task_handle_;
 };
 
 }  // namespace blink
