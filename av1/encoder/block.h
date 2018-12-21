@@ -277,7 +277,7 @@ struct macroblock {
   CONV_BUF_TYPE *tmp_conv_dst;
   uint8_t *tmp_obmc_bufs[2];
 
-  FRAME_CONTEXT *backup_tile_ctx;
+  FRAME_CONTEXT *row_ctx;
   // This context will be used to update color_map_cdf pointer which would be
   // used during pack bitstream. For single thread and tile-multithreading case
   // this ponter will be same as xd->tile_ctx, but for the case of row-mt:

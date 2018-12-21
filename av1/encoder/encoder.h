@@ -511,7 +511,7 @@ typedef struct TileDataEnc {
   int ex_search_count;
   CFL_CTX cfl;
   DECLARE_ALIGNED(16, FRAME_CONTEXT, tctx);
-  DECLARE_ALIGNED(16, FRAME_CONTEXT, backup_tctx);
+  FRAME_CONTEXT *row_ctx;
   uint8_t allow_update_cdf;
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
   InterModeRdModel inter_mode_rd_models[BLOCK_SIZES_ALL];
