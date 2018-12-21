@@ -30,6 +30,7 @@
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
@@ -55,6 +56,7 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/test/fake_app_instance.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -1604,6 +1606,25 @@ TEST_P(ArcPlayStoreAppTest, StartPaiOnNextRun) {
   EXPECT_FALSE(pai_starter);
 }
 
+// Validates that PAI is not started in case it is explicitly disabled.
+TEST_P(ArcPlayStoreAppTest, StartPaiDisabled) {
+  if (GetParam() == ArcState::ARC_WITHOUT_PLAY_STORE)
+    return;
+
+  base::test::ScopedCommandLine command_line;
+  command_line.GetProcessCommandLine()->AppendSwitch(
+      chromeos::switches::kArcDisablePlayAutoInstall);
+
+  arc::ArcSessionManager* session_manager = arc::ArcSessionManager::Get();
+  ASSERT_TRUE(session_manager);
+
+  arc::ArcPaiStarter* pai_starter = session_manager->pai_starter();
+  ASSERT_TRUE(pai_starter);
+  EXPECT_FALSE(pai_starter->started());
+  SendPlayStoreApp();
+  EXPECT_FALSE(pai_starter->started());
+}
+
 TEST_P(ArcVoiceInteractionTest, PaiStarterVoiceInteractionNormalFlow) {
   voice_service()->OnAssistantAppRequested();
 
@@ -2316,6 +2337,21 @@ TEST_P(ArcAppModelBuilderTest, DontRemoveRuntimeAppOnPackageChange) {
   app_instance()->SendPackageAppListRefreshed(apps[0].package_name, apps);
 
   prefs->RemoveObserver(&observer);
+}
+
+TEST_P(ArcAppModelBuilderTest, PackageSyncableServiceEnabled) {
+  EXPECT_TRUE(ProfileSyncServiceFactory::GetForProfile(profile_.get())
+                  ->GetRegisteredDataTypes()
+                  .Has(syncer::ARC_PACKAGE));
+}
+
+TEST_P(ArcAppModelBuilderTest, PackageSyncableServiceDisabled) {
+  base::test::ScopedCommandLine command_line;
+  command_line.GetProcessCommandLine()->AppendSwitch(
+      chromeos::switches::kArcDisableAppSync);
+  EXPECT_FALSE(ProfileSyncServiceFactory::GetForProfile(profile_.get())
+                   ->GetRegisteredDataTypes()
+                   .Has(syncer::ARC_PACKAGE));
 }
 
 TEST_P(ArcDefaulAppTest, DefaultApps) {

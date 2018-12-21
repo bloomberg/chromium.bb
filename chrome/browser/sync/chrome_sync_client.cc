@@ -124,6 +124,7 @@
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_sync_data_type_controller.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
+#include "components/arc/arc_util.h"
 #endif  // defined(OS_CHROMEOS)
 
 using content::BrowserThread;
@@ -444,7 +445,8 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
 #endif  // defined(OS_LINUX) || defined(OS_WIN)
 
 #if defined(OS_CHROMEOS)
-  if (arc::IsArcAllowedForProfile(profile_)) {
+  if (arc::IsArcAllowedForProfile(profile_) &&
+      !arc::IsArcAppSyncFlowDisabled()) {
     controllers.push_back(std::make_unique<ArcPackageSyncDataTypeController>(
         syncer::ARC_PACKAGE, dump_stack, sync_service, this, profile_));
   }

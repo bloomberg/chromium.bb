@@ -111,6 +111,12 @@ bool IsArcForceCacheAppIcon();
 // Returns true if data clean up is requested for each ARC start.
 bool IsArcDataCleanupOnStartRequested();
 
+// Returns true in case ARC app sync flow is disabled.
+bool IsArcAppSyncFlowDisabled();
+
+// Returns true in case ARC Play Auto Install flow is disabled.
+bool IsArcPlayAutoInstallDisabled();
+
 // Adjusts the amount of CPU the ARC instance is allowed to use. When
 // |do_restrict| is true, the limit is adjusted so ARC can only use tightly
 // restricted CPU resources.
