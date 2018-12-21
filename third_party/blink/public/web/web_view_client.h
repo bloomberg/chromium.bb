@@ -200,6 +200,8 @@ class WebViewClient {
 
   virtual bool CanHandleGestureEvent() { return false; }
 
+  // TODO(danakj): Remove this, there is not going to always be a
+  // Widget+WidgetClient for the view (when the main frame is a proxy).
   virtual WebWidgetClient* WidgetClient() = 0;
 };
 

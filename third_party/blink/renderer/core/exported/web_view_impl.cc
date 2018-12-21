@@ -295,8 +295,8 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
                          bool is_hidden,
                          bool does_composite,
                          WebViewImpl* opener)
-    : client_(client),
-      widget_client_(widget_client),
+    : as_view_(client),
+      as_widget_(widget_client),
       chrome_client_(ChromeClientImpl::Create(this)),
       should_auto_resize_(false),
       zoom_level_(0),
@@ -333,8 +333,8 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       display_mode_(kWebDisplayModeBrowser),
       elastic_overscroll_(FloatSize()),
       mutator_dispatcher_(nullptr) {
-  DCHECK_EQ(!!client_, !!widget_client_);
-  if (!client_) {
+  DCHECK_EQ(!!AsView().client, !!AsWidget().client);
+  if (!AsView().client) {
     DCHECK(!does_composite_);
   }
   Page::PageClients page_clients;
@@ -342,7 +342,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
 
   page_ =
       Page::CreateOrdinary(page_clients, opener ? opener->GetPage() : nullptr);
-  CoreInitializer::GetInstance().ProvideModulesToPage(*page_, client_);
+  CoreInitializer::GetInstance().ProvideModulesToPage(*page_, AsView().client);
   SetIsHidden(is_hidden, /*is_initial_state=*/true);
 
   // When not compositing, keep the Page in the loop so that it will paint all
@@ -386,7 +386,7 @@ void WebViewImpl::SetTabKeyCyclesThroughElements(bool value) {
 
 void WebViewImpl::HandleMouseLeave(LocalFrame& main_frame,
                                    const WebMouseEvent& event) {
-  client_->SetMouseOverURL(WebURL());
+  AsView().client->SetMouseOverURL(WebURL());
   PageWidgetEventHandler::HandleMouseLeave(main_frame, event);
 }
 
@@ -513,7 +513,7 @@ WebInputEventResult WebViewImpl::HandleMouseWheel(
 
 WebInputEventResult WebViewImpl::HandleGestureEvent(
     const WebGestureEvent& event) {
-  if (!client_ || !WidgetClient() || !client_->CanHandleGestureEvent()) {
+  if (!AsView().client || !AsView().client->CanHandleGestureEvent()) {
     return WebInputEventResult::kNotHandled;
   }
 
@@ -543,7 +543,7 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
         }
       }
       event_result = WebInputEventResult::kHandledSystem;
-      WidgetClient()->DidHandleGestureEvent(event, event_cancelled);
+      AsWidget().client->DidHandleGestureEvent(event, event_cancelled);
       return event_result;
     case WebInputEvent::kGestureScrollBegin:
     case WebInputEvent::kGestureScrollEnd:
@@ -557,7 +557,7 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
                          ->GetFrame()
                          ->GetEventHandler()
                          .HandleGestureScrollEvent(scaled_event);
-      WidgetClient()->DidHandleGestureEvent(event, event_cancelled);
+      AsWidget().client->DidHandleGestureEvent(event, event_cancelled);
       return event_result;
     default:
       break;
@@ -660,7 +660,7 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
     }
     default: { NOTREACHED(); }
   }
-  WidgetClient()->DidHandleGestureEvent(event, event_cancelled);
+  AsWidget().client->DidHandleGestureEvent(event, event_cancelled);
   return event_result;
 }
 
@@ -740,8 +740,8 @@ void WebViewImpl::SetShowHitTestBorders(bool show) {
 }
 
 void WebViewImpl::AcceptLanguagesChanged() {
-  if (client_)
-    FontCache::AcceptLanguagesChanged(client_->AcceptLanguages());
+  if (AsView().client)
+    FontCache::AcceptLanguagesChanged(AsView().client->AcceptLanguages());
 
   if (!GetPage())
     return;
@@ -1223,7 +1223,7 @@ WebPagePopupImpl* WebViewImpl::OpenPagePopup(PagePopupClient* client) {
 
   WebLocalFrameImpl* frame = WebLocalFrameImpl::FromFrame(
       client->OwnerElement().GetDocument().GetFrame()->LocalFrameRoot());
-  WebPagePopup* popup_widget = client_->CreatePopup(frame);
+  WebPagePopup* popup_widget = AsView().client->CreatePopup(frame);
   // CreatePopup returns nullptr if this renderer process is about to die.
   if (!popup_widget)
     return nullptr;
@@ -1303,7 +1303,7 @@ void WebViewImpl::Close() {
 
   // Reset the delegate to prevent notifications being sent as we're being
   // deleted.
-  client_ = nullptr;
+  AsView().client = nullptr;
 
   Release();  // Balances a reference acquired in WebView::Create
 }
@@ -2309,7 +2309,7 @@ void WebViewImpl::ZoomLimitsChanged(double minimum_zoom_level,
                                     double maximum_zoom_level) {
   minimum_zoom_level_ = minimum_zoom_level;
   maximum_zoom_level_ = maximum_zoom_level;
-  client_->ZoomLimitsChanged(minimum_zoom_level_, maximum_zoom_level_);
+  AsView().client->ZoomLimitsChanged(minimum_zoom_level_, maximum_zoom_level_);
 }
 
 float WebViewImpl::TextZoomFactor() {
@@ -2739,12 +2739,12 @@ void WebViewImpl::SendResizeEventAndRepaint() {
     MainFrameImpl()->GetFrame()->GetDocument()->EnqueueResizeEvent();
   }
 
-  if (client_) {
+  if (AsWidget().client) {
     if (layer_tree_view_) {
       UpdateLayerTreeViewport();
     } else {
       WebRect damaged_rect(0, 0, size_.width, size_.height);
-      client_->WidgetClient()->DidInvalidateRect(damaged_rect);
+      AsWidget().client->DidInvalidateRect(damaged_rect);
     }
   }
 }
@@ -2960,7 +2960,7 @@ void WebViewImpl::DidCommitLoad(bool is_new_navigation,
 
 void WebViewImpl::ResizeAfterLayout() {
   DCHECK(MainFrameImpl());
-  if (!client_ || !client_->CanUpdateLayout())
+  if (!AsView().client || !AsView().client->CanUpdateLayout())
     return;
 
   if (should_auto_resize_) {
@@ -2973,7 +2973,7 @@ void WebViewImpl::ResizeAfterLayout() {
       GetPageScaleConstraintsSet().DidChangeInitialContainingBlockSize(size_);
       view->SetInitialViewportSize(size_);
 
-      client_->DidAutoResize(size_);
+      AsView().client->DidAutoResize(size_);
       SendResizeEventAndRepaint();
     }
   }
@@ -2986,10 +2986,10 @@ void WebViewImpl::ResizeAfterLayout() {
 
 void WebViewImpl::MainFrameLayoutUpdated() {
   DCHECK(MainFrameImpl());
-  if (!client_)
+  if (!AsView().client)
     return;
 
-  client_->DidUpdateMainFrameLayout();
+  AsView().client->DidUpdateMainFrameLayout();
 }
 
 void WebViewImpl::DidChangeContentsSize() {
@@ -3012,7 +3012,7 @@ void WebViewImpl::DidChangeContentsSize() {
 void WebViewImpl::PageScaleFactorChanged() {
   GetPageScaleConstraintsSet().SetNeedsReset(false);
   UpdateLayerTreeViewport();
-  client_->PageScaleFactorChanged();
+  AsView().client->PageScaleFactorChanged();
   dev_tools_emulator_->MainFrameScrollOrScaleChanged();
 }
 
@@ -3203,9 +3203,9 @@ void WebViewImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
 void WebViewImpl::InvalidateRect(const IntRect& rect) {
   if (layer_tree_view_) {
     UpdateLayerTreeViewport();
-  } else if (client_) {
+  } else if (AsWidget().client) {
     // This is only for WebViewPlugin.
-    client_->WidgetClient()->DidInvalidateRect(rect);
+    AsWidget().client->DidInvalidateRect(rect);
   }
 }
 
