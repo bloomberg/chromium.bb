@@ -35,6 +35,8 @@
 #import "ios/chrome/browser/device_sharing/device_sharing_manager.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_config.h"
+#import "ios/chrome/browser/metrics/ios_profile_session_durations_service.h"
+#import "ios/chrome/browser/metrics/ios_profile_session_durations_service_factory.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
@@ -364,6 +366,12 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     [currentInterface.bvc presentBubblesIfEligible];
   }
 
+  IOSProfileSessionDurationsService* psdService =
+      IOSProfileSessionDurationsServiceFactory::GetForBrowserState(
+          currentInterface.browserState);
+  if (psdService)
+    psdService->OnSessionStarted(_sessionStartTime);
+
   [MetricsMediator logStartupDuration:_startupInformation];
 }
 
@@ -422,13 +430,22 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   // time the app becomes active.
   [_startupInformation setIsColdStart:NO];
 
+  id<BrowserInterface> currentInterface =
+      _browserLauncher.interfaceProvider.currentInterface;
   base::TimeDelta duration = base::TimeTicks::Now() - _sessionStartTime;
   UMA_HISTOGRAM_LONG_TIMES("Session.TotalDuration", duration);
   UMA_HISTOGRAM_CUSTOM_TIMES("Session.TotalDurationMax1Day", duration,
                              base::TimeDelta::FromMilliseconds(1),
                              base::TimeDelta::FromHours(24), 50);
-  [_browserLauncher.interfaceProvider.currentInterface
-          .tabModel recordSessionMetrics];
+  [currentInterface.tabModel recordSessionMetrics];
+
+  if (currentInterface.browserState) {
+    IOSProfileSessionDurationsService* psdService =
+        IOSProfileSessionDurationsServiceFactory::GetForBrowserState(
+            currentInterface.browserState);
+    if (psdService)
+      psdService->OnSessionEnded(duration);
+  }
 }
 
 - (BOOL)requiresHandlingAfterLaunchWithOptions:(NSDictionary*)launchOptions

@@ -30,6 +30,8 @@
 #import "ios/chrome/browser/device_sharing/device_sharing_manager.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_config.h"
+#import "ios/chrome/browser/metrics/ios_profile_session_durations_service.h"
+#import "ios/chrome/browser/metrics/ios_profile_session_durations_service_factory.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
@@ -121,6 +123,36 @@ class FakeChromeBrowserProvider : public ios::TestChromeBrowserProvider {
   DISALLOW_COPY_AND_ASSIGN(FakeChromeBrowserProvider);
 };
 
+class FakeProfileSessionDurationsService
+    : public IOSProfileSessionDurationsService {
+ public:
+  FakeProfileSessionDurationsService()
+      : IOSProfileSessionDurationsService(nullptr, nullptr) {}
+  ~FakeProfileSessionDurationsService() override = default;
+
+  static std::unique_ptr<KeyedService> Create(
+      web::BrowserState* browser_state) {
+    return std::make_unique<FakeProfileSessionDurationsService>();
+  }
+
+  void OnSessionStarted(base::TimeTicks session_start) override {
+    ++session_started_count_;
+  }
+  void OnSessionEnded(base::TimeDelta session_length) override {
+    ++session_ended_count_;
+  };
+
+  // IOSProfileSessionDurationsService:
+  int session_started_count() const { return session_started_count_; }
+  int session_ended_count() const { return session_ended_count_; }
+
+ private:
+  int session_started_count_ = 0;
+  int session_ended_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeProfileSessionDurationsService);
+};
+
 }  // namespace
 
 @interface CallTrackingStubBrowserInterfaceProvider
@@ -163,6 +195,9 @@ class AppStateTest : public BlockCleanupTest {
         AuthenticationServiceFactory::GetInstance(),
         base::BindRepeating(
             &AuthenticationServiceFake::CreateAuthenticationService));
+    test_cbs_builder.AddTestingFactory(
+        IOSProfileSessionDurationsServiceFactory::GetInstance(),
+        base::BindRepeating(&FakeProfileSessionDurationsService::Create));
     browser_state_ = test_cbs_builder.Build();
   }
 
@@ -297,6 +332,12 @@ class AppStateTest : public BlockCleanupTest {
   ios::ChromeBrowserState* getBrowserState() { return browser_state_.get(); }
 
   BOOL metricsMediatorHasBeenCalled() { return metrics_mediator_called_; }
+
+  FakeProfileSessionDurationsService* getProfileSessionDurationsService() {
+    return static_cast<FakeProfileSessionDurationsService*>(
+        IOSProfileSessionDurationsServiceFactory::GetForBrowserState(
+            getBrowserState()));
+  }
 
  private:
   web::TestWebThreadBundle thread_bundle_;
@@ -623,6 +664,8 @@ TEST_F(AppStateTest, resumeSessionWithStartupParameters) {
 
   // Test.
   EXPECT_EQ(NSUInteger(0), [window subviews].count);
+  EXPECT_EQ(1, getProfileSessionDurationsService()->session_started_count());
+  EXPECT_EQ(0, getProfileSessionDurationsService()->session_ended_count());
   EXPECT_OCMOCK_VERIFY(mainTabModel);
 }
 
