@@ -164,12 +164,21 @@ struct SaturateFastOp<
     Dst,
     Src,
     typename std::enable_if<std::is_integral<Src>::value &&
-                            std::is_integral<Dst>::value>::type> {
+                            std::is_integral<Dst>::value &&
+                            SaturateFastAsmOp<Dst, Src>::is_supported>::type> {
+  static const bool is_supported = true;
+  static Dst Do(Src value) { return SaturateFastAsmOp<Dst, Src>::Do(value); }
+};
+
+template <typename Dst, typename Src>
+struct SaturateFastOp<
+    Dst,
+    Src,
+    typename std::enable_if<std::is_integral<Src>::value &&
+                            std::is_integral<Dst>::value &&
+                            !SaturateFastAsmOp<Dst, Src>::is_supported>::type> {
   static const bool is_supported = true;
   static Dst Do(Src value) {
-    if (SaturateFastAsmOp<Dst, Src>::is_supported)
-      return SaturateFastAsmOp<Dst, Src>::Do(value);
-
     // The exact order of the following is structured to hit the correct
     // optimization heuristics across compilers. Do not change without
     // checking the emitted code.
