@@ -66,7 +66,8 @@ void RasterDecoderContextState::InitializeGrContext(
     GpuProcessActivityFlags* activity_flags,
     gl::ProgressReporter* progress_reporter) {
   if (!use_vulkan_gr_context) {
-    DCHECK(context_->IsCurrent(nullptr));
+    DCHECK(context_->IsCurrent(surface()));
+
     sk_sp<GrGLInterface> interface(gl::init::CreateGrGLInterface(
         *context_->GetVersionInfo(), workarounds.use_es2_for_oopr,
         progress_reporter));
@@ -117,20 +118,15 @@ void RasterDecoderContextState::InitializeGrContext(
 }
 
 bool RasterDecoderContextState::InitializeGL(
-    scoped_refptr<gles2::FeatureInfo> feature_info) {
-  // We still need initialize GL when Vulkan is used, because RasterDecoder
-  // depends on GL.
-  // TODO(penghuang): don't initialize GL when RasterDecoder can work without
-  // GL.
-  if (IsGLInitialized()) {
-    DCHECK(feature_info == feature_info_);
-    DCHECK(context_state_);
+    const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds,
+    const GpuFeatureInfo& gpu_feature_info) {
+  if (use_vulkan_gr_context)
     return true;
-  }
+  DCHECK(!context_state_);
 
-  DCHECK(context_->IsCurrent(nullptr));
+  feature_info_ = base::MakeRefCounted<gles2::FeatureInfo>(
+      gpu_driver_bug_workarounds, gpu_feature_info);
 
-  feature_info_ = std::move(feature_info);
   feature_info_->Initialize(gpu::CONTEXT_TYPE_OPENGLES2,
                             false /* is_passthrough_cmd_decoder */,
                             gles2::DisallowedFeatures());
@@ -139,10 +135,8 @@ bool RasterDecoderContextState::InitializeGL(
   const GLint kGLES2RequiredMinimumVertexAttribs = 8u;
   GLint max_vertex_attribs = 0;
   api->glGetIntegervFn(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
-  if (max_vertex_attribs < kGLES2RequiredMinimumVertexAttribs) {
-    feature_info_ = nullptr;
+  if (max_vertex_attribs < kGLES2RequiredMinimumVertexAttribs)
     return false;
-  }
 
   context_state_ = std::make_unique<gles2::ContextState>(
       feature_info_.get(), false /* track_texture_and_sampler_units */);
@@ -160,11 +154,8 @@ bool RasterDecoderContextState::InitializeGL(
     auto virtual_context = base::MakeRefCounted<GLContextVirtual>(
         share_group_.get(), real_context_.get(),
         weak_ptr_factory_.GetWeakPtr());
-    if (!virtual_context->Initialize(surface_.get(), gl::GLContextAttribs())) {
-      feature_info_ = nullptr;
-      context_state_ = nullptr;
+    if (!virtual_context->Initialize(surface_.get(), gl::GLContextAttribs()))
       return false;
-    }
     context_ = std::move(virtual_context);
     MakeCurrent(nullptr);
   }
@@ -188,13 +179,12 @@ bool RasterDecoderContextState::MakeCurrent(gl::GLSurface* surface) {
 void RasterDecoderContextState::MarkContextLost() {
   if (!context_lost_) {
     context_lost_ = true;
-    // context_state_ could be nullptr for some unittests.
-    if (context_state_)
-      context_state_->MarkContextLost();
+    context_state_->MarkContextLost();
     if (gr_context)
       gr_context->abandonContext();
     std::move(context_lost_callback).Run();
   }
+  // TODO notify gpu channel manager.
 }
 
 bool RasterDecoderContextState::IsCurrent(gl::GLSurface* surface) {

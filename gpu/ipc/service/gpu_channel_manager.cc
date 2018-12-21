@@ -424,23 +424,18 @@ GpuChannelManager::GetRasterDecoderContextState(ContextResult* result) {
                      /*synthetic_loss=*/false),
       vulkan_context_provider_);
 
-  // OOP-R needs GrContext for raster tiles.
-  bool need_gr_context =
+  if (!vulkan_context_provider_) {
+    if (!raster_decoder_context_state_->InitializeGL(
+            gpu_driver_bug_workarounds(), gpu_feature_info())) {
+      raster_decoder_context_state_ = nullptr;
+      return nullptr;
+    }
+  }
+
+  const bool enable_raster_transport =
       gpu_feature_info_.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
       gpu::kGpuFeatureStatusEnabled;
-
-  // SkiaRenderer needs GrContext to composite output surface.
-  need_gr_context |= features::IsUsingSkiaRenderer();
-
-  if (need_gr_context) {
-    if (!vulkan_context_provider_) {
-      auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
-          gpu_driver_bug_workarounds(), gpu_feature_info());
-      if (!raster_decoder_context_state_->InitializeGL(feature_info.get())) {
-        raster_decoder_context_state_ = nullptr;
-        return nullptr;
-      }
-    }
+  if (enable_raster_transport || features::IsUsingSkiaRenderer()) {
     raster_decoder_context_state_->InitializeGrContext(
         gpu_driver_bug_workarounds_, gr_shader_cache(), &activity_flags_,
         watchdog_);
