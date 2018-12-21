@@ -275,13 +275,13 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter,
     parent node.
     '''
     #default max value for an integer
-    max = '2000000000'
-    min = '0'
+    max = 2000000000
+    min = 0
     if self.PolicyHasRestrictions(policy):
       schema = policy['schema']
-      if 'minimum' in schema:
+      if 'minimum' in schema and schema['minimum'] >= 0:
         min = schema['minimum']
-      if 'maximum' in schema:
+      if 'maximum' in schema and schema['maximum'] >= 0:
         max = schema['maximum']
     attributes = {
         'id': policy['name'],
