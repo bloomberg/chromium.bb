@@ -55,25 +55,6 @@ class ScreenTimeControllerTest : public policy::LoginPolicyTestBase {
     policy::LoginPolicyTestBase::SetUp();
   }
 
-  void SetUpOnMainThread() override {
-    policy::LoginPolicyTestBase::SetUpOnMainThread();
-
-    SkipToLoginScreen();
-    LogIn(kAccountId, kAccountPassword, test::kChildAccountServiceFlags);
-
-    const user_manager::UserManager* const user_manager =
-        user_manager::UserManager::Get();
-    EXPECT_EQ(user_manager->GetActiveUser()->GetType(),
-              user_manager::USER_TYPE_CHILD);
-    child_profile_ =
-        ProfileHelper::Get()->GetProfileByUser(user_manager->GetActiveUser());
-
-    // Mock time for ScreenTimeController.
-    ScreenTimeControllerFactory::GetForBrowserContext(child_profile_)
-        ->SetClocksForTesting(task_runner_->GetMockClock(),
-                              task_runner_->GetMockTickClock());
-  }
-
   void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override {
     // A basic starting policy.
     constexpr char kUsageTimeLimit[] = R"({
@@ -91,6 +72,20 @@ class ScreenTimeControllerTest : public policy::LoginPolicyTestBase {
   }
 
  protected:
+  void MockClockForActiveUser() {
+    const user_manager::UserManager* const user_manager =
+        user_manager::UserManager::Get();
+    EXPECT_EQ(user_manager->GetActiveUser()->GetType(),
+              user_manager::USER_TYPE_CHILD);
+    child_profile_ =
+        ProfileHelper::Get()->GetProfileByUser(user_manager->GetActiveUser());
+
+    // Mock time for ScreenTimeController.
+    ScreenTimeControllerFactory::GetForBrowserContext(child_profile_)
+        ->SetClocksForTesting(task_runner_->GetMockClock(),
+                              task_runner_->GetMockTickClock());
+  }
+
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
 
   Profile* child_profile_ = nullptr;
@@ -101,6 +96,10 @@ class ScreenTimeControllerTest : public policy::LoginPolicyTestBase {
 
 // Tests a simple lock override.
 IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, LockOverride) {
+  SkipToLoginScreen();
+  LogIn(kAccountId, kAccountPassword, test::kChildAccountServiceFlags);
+  MockClockForActiveUser();
+
   // Verify screen is unlocked.
   EXPECT_FALSE(session_manager::SessionManager::Get()->IsScreenLocked());
 
