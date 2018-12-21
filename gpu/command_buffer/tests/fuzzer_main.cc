@@ -228,8 +228,13 @@ struct Config {
     attrib_helper.bind_generates_resource = it.GetBit();
     attrib_helper.single_buffer = it.GetBit();
     bool es3 = it.GetBit();
+#if defined(GPU_FUZZER_USE_RASTER_DECODER)
+    ALLOW_UNUSED_LOCAL(es3);
+    attrib_helper.context_type = CONTEXT_TYPE_OPENGLES2;
+#else
     attrib_helper.context_type =
         es3 ? CONTEXT_TYPE_OPENGLES3 : CONTEXT_TYPE_OPENGLES2;
+#endif
     attrib_helper.enable_oop_rasterization = it.GetBit();
 
 #if defined(GPU_FUZZER_USE_STUB)
@@ -364,7 +369,7 @@ class CommandBufferSetup {
             share_group_, surface_, context_,
             config_.workarounds.use_virtualized_gl_contexts, base::DoNothing());
     context_state->InitializeGrContext(config_.workarounds, nullptr);
-    context_state->InitializeGL(config_.workarounds, gpu_feature_info);
+    context_state->InitializeGL(feature_info);
     auto* context = context_state->context();
     decoder_.reset(raster::RasterDecoder::Create(
         command_buffer_.get(), command_buffer_->service(), &outputter_,

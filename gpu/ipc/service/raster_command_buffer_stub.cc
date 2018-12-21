@@ -93,22 +93,6 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
     return ContextResult::kFatalFailure;
   }
 
-  auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
-      manager->gpu_driver_bug_workarounds(), manager->gpu_feature_info());
-  gpu::GpuMemoryBufferFactory* gmb_factory =
-      manager->gpu_memory_buffer_factory();
-  context_group_ = base::MakeRefCounted<gles2::ContextGroup>(
-      manager->gpu_preferences(), gles2::PassthroughCommandDecoderSupported(),
-      manager->mailbox_manager(), CreateMemoryTracker(init_params),
-      manager->shader_translator_cache(),
-      manager->framebuffer_completeness_cache(), std::move(feature_info),
-      init_params.attribs.bind_generates_resource, channel_->image_manager(),
-      gmb_factory ? gmb_factory->AsImageFactory() : nullptr,
-      /*progress_reporter=*/manager->watchdog(), manager->gpu_feature_info(),
-      manager->discardable_manager(),
-      manager->passthrough_discardable_manager(),
-      manager->shared_image_manager());
-
   ContextResult result;
   auto raster_decoder_context_state =
       manager->GetRasterDecoderContextState(&result);
@@ -118,6 +102,32 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
     DCHECK_NE(result, gpu::ContextResult::kSuccess);
     return result;
   }
+
+  if (!raster_decoder_context_state->IsGLInitialized()) {
+    if (!raster_decoder_context_state->MakeCurrent(nullptr) ||
+        !raster_decoder_context_state->InitializeGL(
+            base::MakeRefCounted<gles2::FeatureInfo>(
+                manager->gpu_driver_bug_workarounds(),
+                manager->gpu_feature_info()))) {
+      LOG(ERROR) << "Failed to Initialize GL for RasterDecoderContextState";
+      return ContextResult::kFatalFailure;
+    }
+  }
+
+  gpu::GpuMemoryBufferFactory* gmb_factory =
+      manager->gpu_memory_buffer_factory();
+  context_group_ = base::MakeRefCounted<gles2::ContextGroup>(
+      manager->gpu_preferences(), gles2::PassthroughCommandDecoderSupported(),
+      manager->mailbox_manager(), CreateMemoryTracker(init_params),
+      manager->shader_translator_cache(),
+      manager->framebuffer_completeness_cache(),
+      raster_decoder_context_state->feature_info(),
+      init_params.attribs.bind_generates_resource, channel_->image_manager(),
+      gmb_factory ? gmb_factory->AsImageFactory() : nullptr,
+      /*progress_reporter=*/manager->watchdog(), manager->gpu_feature_info(),
+      manager->discardable_manager(),
+      manager->passthrough_discardable_manager(),
+      manager->shared_image_manager());
 
   surface_ = raster_decoder_context_state->surface();
   share_group_ = raster_decoder_context_state->share_group();
