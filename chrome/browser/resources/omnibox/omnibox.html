@@ -14,90 +14,121 @@
   <script src="omnibox_output.js"></script>
   <script src="omnibox.js"></script>
 </head>
+
 <body>
   <template id="omnibox-inputs-template">
     <link rel="stylesheet" href="omnibox.css">
-    <p>
-      <input id="input-text" type="text" size="60" placeholder="Enter omnibox input text [Alt+L]" accesskey="l" autocomplete="off" autofocus>
-    </p>
-    <p>Input parameters:</p>
-    <p>
-      <label>
-        <input id="reset-autocomplete-controller" type="checkbox" accesskey="r">
-        <span class="accesskey">R</span>eset autocomplete controller
-      </label>
-    </p>
-    <p>
-      <label>
-        <input id="lock-cursor-position" type="checkbox" accesskey="c">
-        Lock <span class="accesskey">c</span>ursor position to end of input
-      </label>
-    </p>
-    <p>
-      <label title="This sets the input's from_omnibox_focus field. When checked, certain providers will not provide matches, e.g. bookmarks, built in, history, history url, keyword, search, and shortcut providers. Certain provider will only provide matches when zero suggest is checked, e.g., clipboard and zero suggest providers.">
-        <input id="zero-suggest" type="checkbox" accesskey="z">
-        <span class="accesskey">Z</span>ero suggest
-      </label>
-    </p>
-    <p>
-      <label>
-        <input id="prevent-inline-autocomplete" type="checkbox" accesskey="a">
-        Prevent inline <span class="accesskey">a</span>utocomplete
-      </label>
-    </p>
-    <p>
-      <label>
-        <input id="prefer-keyword" type="checkbox" accesskey="k">
-        In <span class="accesskey">k</span>eyword mode
-      </label>
-    </p>
-    <p>
-      <label>
-        <input id="current-url" type="text" size="60"
-               placeholder="Enter current url (e.g. 'https://www.google.com') [Alt+U]"
-               accesskey="u" title="Mostly useful when zero-suggest is enabled, but may also affect clipboard and search providers.">
-      </label>
-    </p>
-    <p>
-      Current page c<span class="accesskey">o</span>ntext:
-      <select id="page-classification" accesskey="o">
-        <option value="0">Invalid spec</option>
-        <option value="2">about:blank</option>
-        <option value="3">user's home page</option>
-        <option value="4" selected>arbitrary URL</option>
-        <option value="9">search result page not doing search term replacement</option>
-        <option value="7">new tab page omnibox</option>
-        <option value="8">new tab page fakebox</option>
-        <option value="1">(OBSOLETE) new tab page</option>
-        <option value="6">(OBSOLETE) search result page doing search term replacement</option>
-      </select>
-    </p>
-    <p>Display parameters:</p>
-    <p>
-      <label>
-        <input id="show-incomplete-results" type="checkbox" accesskey="i">
-        Show <span class="accesskey">i</span>ncomplete results
-      </label>
-    </p>
-    <p>
-      <label>
-        <input id="show-details" type="checkbox" accesskey="t">
-        Show all de<span class="accesskey">t</span>ails
-      </label>
-    </p>
-    <p>
-      <label>
-        <input id="show-all-providers" type="checkbox" accesskey="p">
-        Show results per <span class="accesskey">p</span>rovider, not just merged results
-      </label>
-    </p>
-    <div class="section">
-      <button id="copy-text" title="Copy visible table in text format. This is affected by the visibility of ouput; i.e. toggling 'Show all details' affects what will be copied.">Copy as text</button>
-      <button id="copy-json" title="Copy responses in JSON format. This is not affected by the visibility of output and will copy responses in their entirety.">Copy as JSON</button>
-    </div>
 
-    <div class="section">
-      <input id="filter-text" type="text" size="60" placeholder="Enter filter text (e.g. 'google', 'is:star', 'not:del') [Alt+G]" accesskey="g" autocomplete="off" title="Checks each cell individually; i.e. filter text should not span multiple columns. Supports fuzzyness; each character of filter text must be present in the cell, either adjacent to the previous matched character, or at the start of a new word. Words are defined as being delimited by either capital letters, groups of digits, or non alpha characters. E.g. 'abc' matches 'abc', 'a big cat', 'a-bigCat', 'a very big cat', and 'an amBer cat'; but does not match 'abigcat' or 'an amber cat'. 'green rainbow' is matched by 'gre rain', but not by 'gre bow'. One exception is the first character, which may be matched mid-word. E.g. 'een rain' can also match 'green rainbow'. Boolean properties can be searched for via the property name prefixed by 'is:' or 'not:'. Boolean property names are: 'Can Be Default', 'Starred', 'Has Tab Match', 'Del', 'Prev', and 'Done'.">
+    <div class="top text">
+      <div class="top-column">
+        <input id="input-text" type="text" class="row unindented input-icon-container search-icon" accesskey="l" autofocus autocomplete="off" placeholder="Enter omnibox input [Alt+L]">
+      </div>
+
+      <div class="top-column">
+        <p class="row section-header">Input parameters</p>
+        <div class="row">
+          <label class="checkbox-container">
+            <input id="reset-autocomplete-controller" type="checkbox" accesskey="r">
+            <span>
+              <span class="accesskey">R</span>eset autocomplete controller
+            </span>
+          </label>
+        </div>
+        <div class="row">
+          <label class="checkbox-container">
+            <input id="lock-cursor-position" type="checkbox" accesskey="c">
+            <span>
+              Lock <span class="accesskey">c</span>ursor position to end of input
+            </span>
+          </label>
+        </div>
+        <div class="row">
+          <label class="checkbox-container">
+            <input id="zero-suggest" type="checkbox" accesskey="z">
+            <span>
+              <span class="accesskey">Z</span>ero suggest
+            </span>
+          </label>
+        </div>
+        <div class="row indented">
+          <label class="checkbox-container">
+            <input id="prevent-inline-autocomplete" type="checkbox" accesskey="a">
+            <span>
+              Prevent inline <span class="accesskey">a</span>utocomplete
+            </span>
+          </label>
+        </div>
+        <div class="row">
+          <label class="checkbox-container">
+            <input id="prefer-keyword" type="checkbox" accesskey="k">
+            <span>
+              In <span class="accesskey">k</span>eyword mode
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div class="top-column">
+        <p class="row section-header">Current page c<span class="accesskey">o</span>ntext:</p>
+        <input id="current-url" type="text" class="row unindented" accesskey="u" placeholder="Enter current url (e.g. 'https://www.google.com') [Alt+U]" title="Mostly useful when zero-suggest is enabled, but may also affect clipboard and search providers.">
+        <select id="page-classification" class="row unindented" accesskey="o">
+          <option value="0">Invalid spec</option>
+          <option value="2">about:blank</option>
+          <option value="3">user's home page</option>
+          <option value="4" selected>arbitrary URL</option>
+          <option value="9">search result page not doing search term replacement</option>
+          <option value="7">new tab page omnibox</option>
+          <option value="8">new tab page fakebox</option>
+          <option value="1">(OBSOLETE) new tab page</option>
+          <option value="6">(OBSOLETE) search result page doing search term replacement</option>
+        </select>
+      </div>
+
+      <div class="top-column">
+        <p class="row section-header">Display paramters</p>
+        <div class="row">
+          <label class="checkbox-container">
+            <input id="show-incomplete-results" type="checkbox" accesskey="i">
+            <span>
+              Show <span class="accesskey">i</span>ncomplete results
+            </span>
+          </label>
+        </div>
+        <div class="row">
+          <label class="checkbox-container">
+            <input id="show-details" type="checkbox" accesskey="t">
+            <span>
+              Show all de<span class="accesskey">t</span>ails
+            </span>
+          </label>
+        </div>
+        <div class="row">
+          <label class="checkbox-container">
+            <input id="show-all-providers" type="checkbox" accesskey="p">
+            <span>
+              Show results per <span class="accesskey">p</span>rovider
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div class="top-column">
+        <p class="row section-header">Output controls</p>
+        <input id="filter-text" type="text" class="row unindented input-icon-container filter-icon" accesskey="g" autocomplete="off" placeholder="Enter filter (e.g. 'google', 'is:star', 'not:del') [Alt+G]" title="Checks each cell individually; i.e. filter text should not span multiple columns. Supports fuzzyness; each character of filter text must be present in the cell, either adjacent to the previous matched character, or at the start of a new word. Words are defined as being delimited by either capital letters, groups of digits, or non alpha characters. E.g. 'abc' matches 'abc', 'a big cat', 'a-bigCat', 'a very big cat', and 'an amBer cat'; but does not match 'abigcat' or 'an amber cat'. 'green rainbow' is matched by 'gre rain', but not by 'gre bow'. One exception is the first character, which may be matched mid-word. E.g. 'een rain' can also match 'green rainbow'. Boolean properties can be searched for via the property name prefixed by 'is:' or 'not:'. Boolean property names are: 'Can Be Default', 'Starred', 'Has Tab Match', 'Del', 'Prev', and 'Done'.">
+        <div class="row unindented">
+          <span id="copy-text" class="icon-button button" title="Copy visible table in text format. This is affected by the visibility of ouput; i.e. toggling 'Show all details' affects what will be copied.">
+            <i class="icon copy-white-icon"></i>
+            <span>Copy as text</span>
+          </span>
+        </div>
+        <div class="row unindented">
+          <span id="copy-json" class="icon-button button" title="Copy responses in JSON format. This is not affected by the visibility of output and will copy responses in their entirety.">
+            <i class="icon copy-black-icon"></i>
+            <span>Copy as JSON</span>
+          </span>
+        </div>
+        <!--TODO(manukh): import button-->
+      </div>
     </div>
   </template>
 
@@ -119,11 +150,7 @@
     <p>host = <span class="host"></span>, has isTypedHost = <span class="is-typed-host"></span></p>
   </template>
 
-  <div class="section">
-    <omnibox-inputs id="omnibox-inputs"></omnibox-inputs>
-  </div>
-  <div class="section">
-    <omnibox-output id="omnibox-output"></omnibox-output>
-  </div>
+  <omnibox-inputs id="omnibox-inputs"></omnibox-inputs>
+  <omnibox-output id="omnibox-output"></omnibox-output>
 </body>
 </html>
