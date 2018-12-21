@@ -1,7 +1,8 @@
 {
-  "editor.tabSize": 2,
   "editor.detectIndentation": false,
   "editor.rulers": [100],
+  "editor.tabSize": 2,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
   "files.trimTrailingWhitespace": true,
 }
-
