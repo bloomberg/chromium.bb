@@ -119,6 +119,7 @@ class LayerTreeView : public blink::WebLayerTreeView,
       float device_scale_factor,
       const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
   void RequestNewLocalSurfaceId();
+  void RequestForceSendMetadata();
   void SetViewportVisibleRect(const gfx::Rect& visible_rect);
   void SetURLForUkm(const GURL& url);
   // Call this if the compositor is becoming non-visible in a way that it won't

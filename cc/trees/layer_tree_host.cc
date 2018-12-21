@@ -1542,6 +1542,9 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
         std::move(pending_page_scale_animation_));
   }
 
+  if (TakeForceSendMetadataRequest())
+    tree_impl->RequestForceSendMetadata();
+
   tree_impl->set_has_ever_been_drawn(false);
 }
 
@@ -1786,6 +1789,12 @@ void LayerTreeHost::SetURLForUkm(const GURL& url) {
 void LayerTreeHost::SetRenderFrameObserver(
     std::unique_ptr<RenderFrameMetadataObserver> observer) {
   proxy_->SetRenderFrameObserver(std::move(observer));
+}
+
+bool LayerTreeHost::TakeForceSendMetadataRequest() {
+  bool force_send_metadata_request = force_send_metadata_request_;
+  force_send_metadata_request_ = false;
+  return force_send_metadata_request;
 }
 
 }  // namespace cc
