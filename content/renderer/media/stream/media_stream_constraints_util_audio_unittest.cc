@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/stream/media_stream_constraints_util_audio.h"
 
+#include <algorithm>
 #include <cmath>
 #include <memory>
 #include <string>
@@ -106,6 +107,12 @@ class MediaStreamConstraintsUtilAudioTest
                                  media::CHANNEL_LAYOUT_4_0,
                                  media::AudioParameters::kAudioCDSampleRate,
                                  1000));
+
+      capabilities_.emplace_back(
+          "8khz_sample_rate_device", "fake_group4",
+          media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                 media::CHANNEL_LAYOUT_STEREO,
+                                 AudioProcessing::kSampleRate8kHz, 1000));
 
       default_device_ = &capabilities_[0];
       system_echo_canceller_device_ = &capabilities_[1];
@@ -759,6 +766,168 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, ChannelsWithSource) {
     else
       EXPECT_FALSE(result.HasValue());
   }
+}
+
+TEST_P(MediaStreamConstraintsUtilAudioTest, SampleRate) {
+  AudioCaptureSettings result;
+  int exact_sample_rate = AudioProcessing::kSampleRate8kHz;
+  int min_sample_rate = AudioProcessing::kSampleRate8kHz;
+  // |max_sample_rate| is different based on architecture, namely due to a
+  // difference on Android.
+  int max_sample_rate =
+      std::max(static_cast<int>(media::AudioParameters::kAudioCDSampleRate),
+               kAudioProcessingSampleRate);
+  int ideal_sample_rate = AudioProcessing::kSampleRate8kHz;
+  if (!IsDeviceCapture()) {
+    exact_sample_rate = media::AudioParameters::kAudioCDSampleRate;
+    min_sample_rate =
+        std::min(static_cast<int>(media::AudioParameters::kAudioCDSampleRate),
+                 kAudioProcessingSampleRate);
+    ideal_sample_rate = media::AudioParameters::kAudioCDSampleRate;
+  }
+
+  // Test set exact sampleRate.
+  ResetFactory();
+  constraint_factory_.basic().sample_rate.SetExact(exact_sample_rate);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  if (IsDeviceCapture())
+    EXPECT_EQ(result.device_id(), "8khz_sample_rate_device");
+
+  constraint_factory_.basic().sample_rate.SetExact(11111);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  // Only set a min value for the constraint.
+  ResetFactory();
+  constraint_factory_.basic().sample_rate.SetMin(max_sample_rate);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  if (IsDeviceCapture())
+    EXPECT_EQ(result.device_id(), "default_device");
+
+  constraint_factory_.basic().sample_rate.SetMin(max_sample_rate + 1);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  // Only set a max value for the constraint.
+  ResetFactory();
+  constraint_factory_.basic().sample_rate.SetMax(min_sample_rate);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  if (IsDeviceCapture())
+    EXPECT_EQ(result.device_id(), "8khz_sample_rate_device");
+
+  constraint_factory_.basic().sample_rate.SetMax(min_sample_rate - 1);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  // Define a bounded range for the constraint.
+  ResetFactory();
+  constraint_factory_.basic().sample_rate.SetMin(min_sample_rate);
+  constraint_factory_.basic().sample_rate.SetMax(max_sample_rate);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  if (IsDeviceCapture())
+    EXPECT_EQ(result.device_id(), "default_device");
+
+  constraint_factory_.basic().sample_rate.SetMin(min_sample_rate - 1000);
+  constraint_factory_.basic().sample_rate.SetMax(min_sample_rate - 1);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  constraint_factory_.basic().sample_rate.SetMin(max_sample_rate + 1);
+  constraint_factory_.basic().sample_rate.SetMax(max_sample_rate + 1000);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  // Test ideal constraints.
+  ResetFactory();
+  constraint_factory_.basic().sample_rate.SetIdeal(ideal_sample_rate);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  if (IsDeviceCapture())
+    EXPECT_EQ(result.device_id(), "8khz_sample_rate_device");
+
+  constraint_factory_.basic().sample_rate.SetIdeal(ideal_sample_rate);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  if (IsDeviceCapture())
+    EXPECT_EQ(result.device_id(), "8khz_sample_rate_device");
+
+  if (IsDeviceCapture()) {
+    constraint_factory_.basic().sample_rate.SetIdeal(
+        AudioProcessing::kSampleRate48kHz + 1000);
+    result = SelectSettings();
+    EXPECT_TRUE(result.HasValue());
+    EXPECT_EQ(result.device_id(), "default_device");
+  }
+}
+
+TEST_P(MediaStreamConstraintsUtilAudioTest, SampleRateWithSource) {
+  if (!IsDeviceCapture())
+    return;
+
+  std::unique_ptr<LocalMediaStreamAudioSource> source =
+      GetLocalMediaStreamAudioSource(false /* enable_system_echo_canceller */,
+                                     false /* hotword_enabled */,
+                                     false /* disable_local_echo */,
+                                     false /* render_to_associated_sink */);
+
+  // Test set exact sampleRate.
+  ResetFactory();
+  constraint_factory_.basic().sample_rate.SetExact(
+      media::AudioParameters::kAudioCDSampleRate);
+  auto result = SelectSettingsAudioCapture(
+      source.get(), constraint_factory_.CreateWebMediaConstraints());
+  EXPECT_TRUE(result.HasValue());
+
+  constraint_factory_.basic().sample_rate.SetExact(11111);
+  result = SelectSettingsAudioCapture(
+      source.get(), constraint_factory_.CreateWebMediaConstraints());
+  EXPECT_FALSE(result.HasValue());
+
+  // Test set min sampleRate.
+  ResetFactory();
+  constraint_factory_.basic().sample_rate.SetMin(
+      media::AudioParameters::kAudioCDSampleRate);
+  result = SelectSettingsAudioCapture(
+      source.get(), constraint_factory_.CreateWebMediaConstraints());
+  EXPECT_TRUE(result.HasValue());
+
+  constraint_factory_.basic().sample_rate.SetMin(
+      media::AudioParameters::kAudioCDSampleRate + 1);
+  result = SelectSettingsAudioCapture(
+      source.get(), constraint_factory_.CreateWebMediaConstraints());
+  EXPECT_FALSE(result.HasValue());
+
+  // Test set max sampleRate.
+  ResetFactory();
+  constraint_factory_.basic().sample_rate.SetMax(
+      media::AudioParameters::kAudioCDSampleRate);
+  result = SelectSettingsAudioCapture(
+      source.get(), constraint_factory_.CreateWebMediaConstraints());
+  EXPECT_TRUE(result.HasValue());
+
+  constraint_factory_.basic().sample_rate.SetMax(
+      media::AudioParameters::kAudioCDSampleRate - 1);
+  result = SelectSettingsAudioCapture(
+      source.get(), constraint_factory_.CreateWebMediaConstraints());
+  EXPECT_FALSE(result.HasValue());
+
+  // Test set ideal sampleRate.
+  ResetFactory();
+  constraint_factory_.basic().sample_rate.SetIdeal(
+      media::AudioParameters::kAudioCDSampleRate);
+  result = SelectSettingsAudioCapture(
+      source.get(), constraint_factory_.CreateWebMediaConstraints());
+  EXPECT_TRUE(result.HasValue());
+
+  constraint_factory_.basic().sample_rate.SetIdeal(
+      media::AudioParameters::kAudioCDSampleRate - 1);
+  result = SelectSettingsAudioCapture(
+      source.get(), constraint_factory_.CreateWebMediaConstraints());
+  EXPECT_TRUE(result.HasValue());
 }
 
 // DeviceID tests.
