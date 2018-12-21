@@ -117,7 +117,13 @@ CaptureHeaderHandlerAndReturnScript(
 }
 
 // Checks that the DNT header is not sent by default.
-IN_PROC_BROWSER_TEST_F(DoNotTrackTest, NotEnabled) {
+// Disabled on Android due to test failures: crbug.com/916978
+#if defined(OS_ANDROID)
+#define MAYBE_NotEnabled DISABLED_NotEnabled
+#else
+#define MAYBE_NotEnabled NotEnabled
+#endif
+IN_PROC_BROWSER_TEST_F(DoNotTrackTest, MAYBE_NotEnabled) {
   ASSERT_TRUE(embedded_test_server()->Start());
   EXPECT_TRUE(NavigateToURL(shell(), GetURL("/echoheader?DNT")));
   ExpectPageTextEq("None");
