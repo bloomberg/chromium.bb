@@ -248,6 +248,22 @@ void BridgedNativeWidgetHostImpl::InitWindow(const Widget::InitParams& params) {
     bridge()->SetVisibilityState(WindowVisibilityState::kShowInactive);
 }
 
+void BridgedNativeWidgetHostImpl::CloseWindowNow() {
+  bool is_out_of_process = !bridge_impl_;
+  // Note that CloseWindowNow may delete |this| for in-process windows.
+  if (bridge())
+    bridge()->CloseWindowNow();
+
+  // If it is out-of-process, then simulate the calls that would have been
+  // during window closure.
+  if (is_out_of_process) {
+    OnWindowWillClose();
+    while (!children_.empty())
+      children_.front()->CloseWindowNow();
+    OnWindowHasClosed();
+  }
+}
+
 void BridgedNativeWidgetHostImpl::SetBounds(const gfx::Rect& bounds) {
   UpdateLocalWindowFrame(bounds);
   bridge()->SetBounds(bounds,

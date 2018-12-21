@@ -383,9 +383,9 @@ void NativeWidgetMac::Close() {
 }
 
 void NativeWidgetMac::CloseNow() {
-  if (bridge())
-    bridge()->CloseWindowNow();
-  // Note: |bridge_host_| will be deleted her, and |this| will be deleted here
+  if (bridge_host_)
+    bridge_host_->CloseWindowNow();
+  // Note: |bridge_host_| will be deleted here, and |this| will be deleted here
   // when ownership_ == NATIVE_WIDGET_OWNS_WIDGET,
 }
 
