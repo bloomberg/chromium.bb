@@ -54,9 +54,11 @@ class TestWakeLockProvider : public mojom::WakeLockProvider,
  private:
   class TestWakeLock;
 
-  // Called by |wake_lock| when the lock is requested or canceled.
-  void OnWakeLockRequested(TestWakeLock* wake_lock);
-  void OnWakeLockCanceled(TestWakeLock* wake_lock);
+  // Called by |wake_lock| when the lock is requested for the first time.
+  void OnWakeLockActivated(TestWakeLock* wake_lock);
+
+  // Called by |wake_lock| when the lock is canceled for the last time.
+  void OnWakeLockDeactivated(TestWakeLock* wake_lock);
 
   service_manager::ServiceBinding service_binding_;
 
