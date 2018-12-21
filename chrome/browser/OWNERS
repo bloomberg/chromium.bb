@@ -103,5 +103,4 @@ per-file site_per_process_interactive_browsertest.cc=kenrb@chromium.org
 
 per-file unload_browsertest.cc=file://content/OWNERS
 
-per-file web_bluetooth*=jyasskin@chromium.org
-per-file web_bluetooth*=ortuno@chromium.org
+per-file web_bluetooth*=file://content/browser/bluetooth/OWNERS

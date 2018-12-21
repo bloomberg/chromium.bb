@@ -1,3 +1,1 @@
-per-file *bluetooth*=jyasskin@chromium.org
-per-file *bluetooth*=ortuno@chromium.org
-
+per-file *bluetooth*=file://content/browser/bluetooth/OWNERS
