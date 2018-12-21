@@ -199,6 +199,9 @@
   <message name="IDS_MD_EXTENSIONS_ITEM_SITE_ACCESS" desc="The label above the list of the websites that the extension can access.">
     Site access
   </message>
+  <message name="IDS_MD_EXTENSIONS_ITEM_SITE_ACCESS_ADD_HOST" desc="The label of the option to add a new site that the extension should be allowed to access.">
+    Add a new page
+  </message>
   <message name="IDS_MD_EXTENSIONS_ITEM_SITE_ACCESS_EMPTY" desc="The text to indicate that an extension does not have any site access.">
     This extension has no additional site access.
   </message>
