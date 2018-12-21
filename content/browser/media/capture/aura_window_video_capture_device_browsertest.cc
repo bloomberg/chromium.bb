@@ -11,6 +11,7 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "cc/test/pixel_test_utils.h"
+#include "components/viz/common/features.h"
 #include "content/browser/media/capture/content_capture_device_browsertest_base.h"
 #include "content/browser/media/capture/fake_video_capture_stack.h"
 #include "content/browser/media/capture/frame_test_util.h"
@@ -106,9 +107,12 @@ class AuraWindowVideoCaptureDeviceBrowserTest
 #else
         // viz::SoftwareRenderer does not do color space management. Otherwise
         // (normal case), be strict about color differences.
-        const int max_color_diff = IsSoftwareCompositingTest()
-                                       ? kVeryLooseMaxColorDifference
-                                       : kMaxColorDifference;
+        // TODO(crbug/795132): SkiaRenderer temporarily uses same code as
+        // software compositor. Fix plumbing for SkiaRenderer.
+        const int max_color_diff =
+            (IsSoftwareCompositingTest() || features::IsUsingSkiaRenderer())
+                ? kVeryLooseMaxColorDifference
+                : kMaxColorDifference;
 #endif
 
         // Determine the average RGB color in the three regions of the frame.

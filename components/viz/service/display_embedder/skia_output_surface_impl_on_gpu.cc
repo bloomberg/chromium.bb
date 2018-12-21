@@ -352,15 +352,14 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
   auto* surface = id ? offscreen_surfaces_[id].get() : sk_surface_.get();
 
   SkBitmap bitmap;
-  if (request->is_scaled()) {
-    // Resolve the source for the scaling input: Initialize a SkPixmap that
-    // selects the current RenderPass's output rect within the current canvas
-    // and provides access to its pixels.
-    SkBitmap render_pass_output;
-    sk_sp<SkImage> copy_image =
-        surface->makeImageSnapshot(RectToSkIRect(copy_rect));
-    copy_image->asLegacyBitmap(&render_pass_output);
+  SkImageInfo copy_rect_info = SkImageInfo::Make(
+      copy_rect.width(), copy_rect.height(), SkColorType::kN32_SkColorType,
+      SkAlphaType::kPremul_SkAlphaType,
+      surface->getCanvas()->imageInfo().refColorSpace());
+  bitmap.allocPixels(copy_rect_info, copy_rect.width() * 4);
+  surface->readPixels(bitmap, copy_rect.x(), copy_rect.y());
 
+  if (request->is_scaled()) {
     // Execute the scaling: For downscaling, use the RESIZE_BETTER strategy
     // (appropriate for thumbnailing); and, for upscaling, use the RESIZE_BEST
     // strategy. Note that processing is only done on the subset of the
@@ -373,13 +372,9 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
         is_downscale_in_both_dimensions ? ImageOperations::RESIZE_BETTER
                                         : ImageOperations::RESIZE_BEST;
     bitmap = ImageOperations::Resize(
-        render_pass_output, method, result_rect.width(), result_rect.height(),
+        bitmap, method, result_rect.width(), result_rect.height(),
         SkIRect{result_rect.x(), result_rect.y(), result_rect.right(),
                 result_rect.bottom()});
-  } else /* if (!request->is_scaled()) */ {
-    sk_sp<SkImage> copy_image =
-        surface->makeImageSnapshot(RectToSkIRect(copy_rect));
-    copy_image->asLegacyBitmap(&bitmap);
   }
 
   // TODO(crbug.com/795132): Plumb color space throughout SkiaRenderer up to the
