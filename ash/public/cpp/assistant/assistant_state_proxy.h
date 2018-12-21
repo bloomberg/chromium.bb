@@ -23,7 +23,7 @@ class Connector;
 namespace ash {
 
 // Provides a convenient client to access various Assistant states. The state
-// infomration can be accessed through direct accessors which returns
+// information can be accessed through direct accessors which returns
 // |base::Optional<>| or observers. When adding an observer, all change events
 // will fire if this client already have data.
 class ASH_PUBLIC_EXPORT AssistantStateProxy

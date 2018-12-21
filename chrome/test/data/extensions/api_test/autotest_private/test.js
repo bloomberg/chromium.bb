@@ -217,6 +217,13 @@ var defaultTests = [
         chrome.test.callbackFail(
             'Assistant is not available for the current user'));
   },
+  function sendAssistantTextQuery() {
+    chrome.autotestPrivate.sendAssistantTextQuery(
+        'what time is it?' /* query */,
+        1000 /* timeout_ms */,
+        chrome.test.callbackFail(
+          'Assistant is not available for the current user'));
+  },
   // This test verifies that ARC is not provisioned by default.
   function isArcProvisioned() {
     chrome.autotestPrivate.isArcProvisioned(
