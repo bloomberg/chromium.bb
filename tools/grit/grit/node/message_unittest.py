@@ -122,6 +122,18 @@ class MessageUnittest(unittest.TestCase):
       return
     self.fail('Should have gotten exception')
 
+  def testPlaceholderIsInsidePhNode(self):
+    try:
+      util.ParseGrdForUnittest("""\
+        <messages>
+        <message name="IDS_FOO" desc="foo">
+          This message is missing the ph node: $1!
+        </message>
+        </messages>""")
+    except exception.PlaceholderNotInsidePhNode:
+      return
+    self.fail('Should have gotten exception')
+
 
 if __name__ == '__main__':
   unittest.main()

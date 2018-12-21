@@ -126,3 +126,8 @@ class IdRangeOverlap(Base):
 class ReservedHeaderCollision(Base):
   '''Resource included with first 3 bytes matching reserved header.'''
   pass
+
+
+class PlaceholderNotInsidePhNode(Base):
+  '''Placeholder should be inside <ph> element.'''
+  pass
