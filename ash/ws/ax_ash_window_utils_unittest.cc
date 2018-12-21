@@ -20,7 +20,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
-#include "ui/aura/test/mus/window_tree_client_test_api.h"
+#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
@@ -95,8 +95,7 @@ class AXAshWindowUtilsTest : public SingleProcessMashTestBase {
 
     // Flush all messages from the WindowTreeClient to ensure the window service
     // has finished Widget creation.
-    aura::WindowTreeClientTestApi(MusClient::Get()->window_tree_client())
-        .FlushForTesting();
+    aura::test::WaitForAllChangesToComplete();
   }
 
   void TearDown() override {

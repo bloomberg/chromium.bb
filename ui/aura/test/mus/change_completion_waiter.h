@@ -55,7 +55,9 @@ class ChangeCompletionWaiter : public WindowTreeClientTestObserver {
 
 // Under mus and mash, waits until there are no more pending changes for
 // |client|. If |client| is null, the default is used. Returns immediately under
-// classic ash because window operations are synchronous.
+// classic ash because window operations are synchronous. This is similar to
+// FlushForTesting() but also waits for any in flights changes from the client
+// to complete.
 void WaitForAllChangesToComplete(WindowTreeClient* client = nullptr);
 
 }  // namespace test
