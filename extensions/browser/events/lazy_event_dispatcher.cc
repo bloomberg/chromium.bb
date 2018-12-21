@@ -19,28 +19,28 @@ namespace extensions {
 
 LazyEventDispatcher::LazyEventDispatcher(
     BrowserContext* browser_context,
-    const linked_ptr<Event>& event,
     const DispatchFunction& dispatch_function)
     : browser_context_(browser_context),
-      event_(event),
       dispatch_function_(dispatch_function) {}
 
 LazyEventDispatcher::~LazyEventDispatcher() {}
 
 void LazyEventDispatcher::DispatchToEventPage(
+    const Event& event,
     const ExtensionId& extension_id,
     const base::DictionaryValue* listener_filter) {
   LazyContextId dispatch_context(browser_context_, extension_id);
-  DispatchToLazyContext(&dispatch_context, listener_filter);
+  DispatchToLazyContext(event, &dispatch_context, listener_filter);
 }
 
 void LazyEventDispatcher::DispatchToServiceWorker(
+    const Event& event,
     const ExtensionId& extension_id,
     const GURL& service_worker_scope,
     const base::DictionaryValue* listener_filter) {
   LazyContextId dispatch_context(browser_context_, extension_id,
                                  service_worker_scope);
-  DispatchToLazyContext(&dispatch_context, listener_filter);
+  DispatchToLazyContext(event, &dispatch_context, listener_filter);
 }
 
 bool LazyEventDispatcher::HasAlreadyDispatched(
@@ -59,6 +59,7 @@ bool LazyEventDispatcher::HasAlreadyDispatched(
 }
 
 void LazyEventDispatcher::DispatchToLazyContext(
+    const Event& event,
     LazyContextId* dispatch_context,
     const base::DictionaryValue* listener_filter) {
   const Extension* extension = ExtensionRegistry::Get(browser_context_)
@@ -71,7 +72,7 @@ void LazyEventDispatcher::DispatchToLazyContext(
   // should load a non-peristent context (a lazy background page or an
   // extension service worker) to handle the event. We need to use the incognito
   // context in the case of split-mode extensions.
-  if (QueueEventDispatch(*dispatch_context, extension, listener_filter))
+  if (QueueEventDispatch(event, *dispatch_context, extension, listener_filter))
     RecordAlreadyDispatched(*dispatch_context);
 
   BrowserContext* additional_context = GetIncognitoContext(extension);
@@ -79,16 +80,17 @@ void LazyEventDispatcher::DispatchToLazyContext(
     return;
 
   dispatch_context->set_browser_context(additional_context);
-  if (QueueEventDispatch(*dispatch_context, extension, listener_filter))
+  if (QueueEventDispatch(event, *dispatch_context, extension, listener_filter))
     RecordAlreadyDispatched(*dispatch_context);
 }
 
 bool LazyEventDispatcher::QueueEventDispatch(
+    const Event& event,
     const LazyContextId& dispatch_context,
     const Extension* extension,
     const base::DictionaryValue* listener_filter) {
   if (!EventRouter::CanDispatchEventToBrowserContext(
-          dispatch_context.browser_context(), extension, *event_)) {
+          dispatch_context.browser_context(), extension, event)) {
     return false;
   }
 
@@ -101,13 +103,14 @@ bool LazyEventDispatcher::QueueEventDispatch(
     return false;
   }
 
-  linked_ptr<Event> dispatched_event(event_);
+  // TODO(devlin): This results in a copy each time we dispatch events to
+  // ServiceWorkers and inactive event pages. It'd be nice to avoid that.
+  std::unique_ptr<Event> dispatched_event = event.DeepCopy();
 
   // If there's a dispatch callback, call it now (rather than dispatch time)
   // to avoid lifetime issues. Use a separate copy of the event args, so they
   // last until the event is dispatched.
-  if (!event_->will_dispatch_callback.is_null()) {
-    dispatched_event.reset(event_->DeepCopy().release());
+  if (!dispatched_event->will_dispatch_callback.is_null()) {
     if (!dispatched_event->will_dispatch_callback.Run(
             dispatch_context.browser_context(), extension,
             dispatched_event.get(), listener_filter)) {
@@ -118,8 +121,9 @@ bool LazyEventDispatcher::QueueEventDispatch(
     dispatched_event->will_dispatch_callback.Reset();
   }
 
-  queue->AddPendingTask(dispatch_context,
-                        base::BindOnce(dispatch_function_, dispatched_event));
+  queue->AddPendingTask(
+      dispatch_context,
+      base::BindOnce(dispatch_function_, std::move(dispatched_event)));
 
   return true;
 }
