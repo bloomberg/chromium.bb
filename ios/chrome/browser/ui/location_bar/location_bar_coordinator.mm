@@ -266,6 +266,9 @@ const int kLocationAuthorizationStatusCount = 4;
 }
 
 - (void)focusOmnibox {
+  // Dismiss the edit menu.
+  [[UIMenuController sharedMenuController] setMenuVisible:NO animated:NO];
+
   // When the NTP and fakebox are visible, make the fakebox animates into place
   // before focusing the omnibox.webState
   if (IsVisibleURLNewTabPage([self webState]) &&
