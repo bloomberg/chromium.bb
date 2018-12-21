@@ -33,8 +33,9 @@ bool BookmarkNodeData::ClipboardContainsBookmarks() {
   return PasteboardContainsBookmarks(pb);
 }
 
-void BookmarkNodeData::WriteToClipboard(ui::ClipboardType type) {
-  NSPasteboard* pb = ui::ClipboardUtil::PasteboardFromType(type);
+void BookmarkNodeData::WriteToClipboard() {
+  NSPasteboard* pb =
+      ui::ClipboardUtil::PasteboardFromType(ui::CLIPBOARD_TYPE_COPY_PASTE);
   WriteBookmarksToPasteboard(pb, elements, profile_path_);
 }
 

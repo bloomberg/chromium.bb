@@ -256,8 +256,7 @@ void CopyToClipboard(BookmarkModel* model,
     if (!HasSelectedAncestor(model, nodes, nodes[i]->parent()))
       filtered_nodes.push_back(nodes[i]);
 
-  BookmarkNodeData(filtered_nodes).
-      WriteToClipboard(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  BookmarkNodeData(filtered_nodes).WriteToClipboard();
 
   if (remove_nodes) {
     ScopedGroupBookmarkActions group_cut(model);
