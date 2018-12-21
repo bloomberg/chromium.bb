@@ -66,6 +66,10 @@ jumbo_source_set("utility") {
       "//media/mojo/services",
     ]
   }
+
+  if (is_chromeos) {
+    deps += [ "//chromeos/services/ime:sandbox_hook" ]
+  }
 }
 
 # See comment at the top of //content/BUILD.gn for how this works.

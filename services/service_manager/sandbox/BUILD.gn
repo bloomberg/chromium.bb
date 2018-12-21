@@ -73,6 +73,12 @@ component("sandbox") {
       "//sandbox/linux:suid_sandbox_client",
     ]
   }
+  if (is_chromeos) {
+    sources += [
+      "linux/bpf_ime_policy_linux.cc",
+      "linux/bpf_ime_policy_linux.h",
+    ]
+  }
   if (is_mac) {
     sources += [
       "mac/sandbox_mac.h",

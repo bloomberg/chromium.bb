@@ -82,6 +82,9 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
     case SANDBOX_TYPE_XRCOMPOSITING:
 #endif
     case SANDBOX_TYPE_AUDIO:
+#if defined(OS_CHROMEOS)
+    case SANDBOX_TYPE_IME:
+#endif  // defined(OS_CHROMEOS)
       DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
              switches::kUtilityProcess);
       DCHECK(!command_line->HasSwitch(switches::kServiceSandboxType));
@@ -157,6 +160,10 @@ std::string StringFromUtilitySandboxType(SandboxType sandbox_type) {
 #endif
     case SANDBOX_TYPE_AUDIO:
       return switches::kAudioSandbox;
+#if defined(OS_CHROMEOS)
+    case SANDBOX_TYPE_IME:
+      return switches::kImeSandbox;
+#endif  // defined(OS_CHROMEOS)
     default:
       NOTREACHED();
       return std::string();
@@ -189,6 +196,10 @@ SandboxType UtilitySandboxTypeFromString(const std::string& sandbox_string) {
 #endif
   if (sandbox_string == switches::kAudioSandbox)
     return SANDBOX_TYPE_AUDIO;
+#if defined(OS_CHROMEOS)
+  if (sandbox_string == switches::kImeSandbox)
+    return SANDBOX_TYPE_IME;
+#endif  // defined(OS_CHROMEOS)
   return SANDBOX_TYPE_UTILITY;
 }
 

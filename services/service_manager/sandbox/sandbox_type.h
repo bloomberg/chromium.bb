@@ -70,6 +70,10 @@ enum SandboxType {
   // The audio service process.
   SANDBOX_TYPE_AUDIO,
 
+#if defined(OS_CHROMEOS)
+  SANDBOX_TYPE_IME,
+#endif  // defined(OS_CHROMEOS)
+
   SANDBOX_TYPE_AFTER_LAST_TYPE,  // Placeholder to ease iteration.
 };
 

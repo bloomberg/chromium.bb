@@ -3,3 +3,5 @@ shuchen@chromium.org
 
 per-file manifest.json=set noparent
 per-file manifest.json=file://ipc/SECURITY_OWNERS
+
+per-file ime_sandbox_hook.*=file://sandbox/linux/OWNERS
