@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -29,6 +30,7 @@
 #include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/favicon/core/favicon_driver_observer.h"
 #include "components/nacl/common/buildflags.h"
@@ -43,7 +45,11 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
+#include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/messaging/string_message_codec.h"
 
 namespace chrome_service_worker_browser_test {
@@ -760,5 +766,193 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest, DisallowChromeScheme) {
   // would be effective at catching a regression.
   EXPECT_FALSE(result);
 }
+
+enum class ServicifiedFeatures { kNone, kServiceWorker, kNetwork };
+
+// A simple fixture used for navigation preload tests so far. The fixture
+// stashes the HttpRequest to a certain URL, useful for inspecting the headers
+// to see if it was a navigation preload request and if it contained cookies.
+//
+// This is in //chrome instead of //content since the tests exercise the
+// kBlockThirdPartyCookies preference which is not a //content concept.
+class ChromeServiceWorkerNavigationPreloadTest
+    : public InProcessBrowserTest,
+      public ::testing::WithParamInterface<ServicifiedFeatures> {
+ public:
+  ChromeServiceWorkerNavigationPreloadTest() = default;
+
+  void SetUp() override {
+    // Enable servicification based on the test parameter.
+    ServicifiedFeatures param = GetParam();
+    switch (param) {
+      case ServicifiedFeatures::kNone:
+        scoped_feature_list_.InitWithFeatures(
+            {}, {blink::features::kServiceWorkerServicification,
+                 network::features::kNetworkService});
+        break;
+      case ServicifiedFeatures::kServiceWorker:
+        scoped_feature_list_.InitWithFeatures(
+            {blink::features::kServiceWorkerServicification},
+            {network::features::kNetworkService});
+        break;
+      case ServicifiedFeatures::kNetwork:
+        scoped_feature_list_.InitAndEnableFeature(
+            network::features::kNetworkService);
+        break;
+    }
+
+    // Setup the test server.
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        &ChromeServiceWorkerNavigationPreloadTest::HandleRequest,
+        base::Unretained(this)));
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+
+    InProcessBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    // Make all hosts resolve to 127.0.0.1 so the same embedded test server can
+    // be used for cross-origin URLs.
+    host_resolver()->AddRule("*", "127.0.0.1");
+
+    embedded_test_server()->StartAcceptingConnections();
+  }
+
+  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
+      const net::test_server::HttpRequest& request) {
+    // Intercept requests to the "test" endpoint.
+    GURL url = request.base_url;
+    url = url.Resolve(request.relative_url);
+    if (url.path() != "/service_worker/test")
+      return nullptr;
+
+    // Stash the request for testing. We'd typically prefer to echo back the
+    // request and test the resulting page contents, but that becomes
+    // cumbersome if the test involves cross-origin frames.
+    EXPECT_FALSE(received_request_);
+    received_request_ = request;
+
+    // Respond with OK.
+    std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
+        new net::test_server::BasicHttpResponse());
+    http_response->set_code(net::HTTP_OK);
+    http_response->set_content("OK");
+    http_response->set_content_type("text/plain");
+    return http_response;
+  }
+
+  bool HasHeader(const net::test_server::HttpRequest& request,
+                 const std::string& name) const {
+    return request.headers.find(name) != request.headers.end();
+  }
+
+  std::string GetHeader(const net::test_server::HttpRequest& request,
+                        const std::string& name) const {
+    const auto& iter = request.headers.find(name);
+    EXPECT_TRUE(iter != request.headers.end());
+    if (iter == request.headers.end())
+      return std::string();
+    return iter->second;
+  }
+
+  bool has_received_request() const { return received_request_.has_value(); }
+
+  const net::test_server::HttpRequest& received_request() const {
+    return *received_request_;
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  // The request that hit the "test" endpoint.
+  base::Optional<net::test_server::HttpRequest> received_request_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeServiceWorkerNavigationPreloadTest);
+};
+
+// Tests navigation preload during a navigation in the top-level frame
+// when third-party cookies are blocked. The navigation preload request
+// should be sent with cookies as normal. Regression test for
+// https://crbug.com/913220.
+IN_PROC_BROWSER_TEST_P(ChromeServiceWorkerNavigationPreloadTest,
+                       TopFrameWithThirdPartyBlocking) {
+  // Enable third-party cookie blocking.
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies,
+                                               true);
+
+  // Load a page that registers a service worker.
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/service_worker/create_service_worker.html"));
+  EXPECT_EQ("DONE", EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                           "register('navigation_preload_worker.js');"));
+
+  // Also set cookies.
+  EXPECT_EQ("foo=bar",
+            EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                   "document.cookie = 'foo=bar'; document.cookie;"));
+
+  // Load the test page.
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/service_worker/test"));
+
+  // The navigation preload request should have occurred and included cookies.
+  ASSERT_TRUE(has_received_request());
+  EXPECT_EQ("true",
+            GetHeader(received_request(), "Service-Worker-Navigation-Preload"));
+  EXPECT_EQ("foo=bar", GetHeader(received_request(), "Cookie"));
+}
+
+// Tests navigation preload during a navigation in a third-party iframe
+// when third-party cookies are blocked. This blocks service worker as well,
+// so the navigation preload request should not be sent. And the navigation
+// request should not include cookies.
+IN_PROC_BROWSER_TEST_P(ChromeServiceWorkerNavigationPreloadTest,
+                       SubFrameWithThirdPartyBlocking) {
+  // Enable third-party cookie blocking.
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies,
+                                               true);
+
+  // Load a page that registers a service worker.
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/service_worker/create_service_worker.html"));
+  EXPECT_EQ("DONE", EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                           "register('navigation_preload_worker.js');"));
+
+  // Also set cookies.
+  EXPECT_EQ("foo=bar",
+            EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                   "document.cookie = 'foo=bar'; document.cookie;"));
+
+  // Generate a cross-origin URL.
+  GURL top_frame_url = embedded_test_server()->GetURL(
+      "/service_worker/page_with_third_party_iframe.html");
+  GURL::Replacements replacements;
+  replacements.SetHostStr("cross-origin.example.com");
+  top_frame_url = top_frame_url.ReplaceComponents(replacements);
+
+  // Navigate to the page and embed a third-party iframe to the test
+  // page.
+  ui_test_utils::NavigateToURL(browser(), top_frame_url);
+  GURL iframe_url = embedded_test_server()->GetURL("/service_worker/test");
+  EXPECT_EQ(true, EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                         "addIframe('" + iframe_url.spec() + "');"));
+
+  // The request should have been received. Because the navigation was for a
+  // third-party iframe with cookies blocked, the service worker should not have
+  // handled the request so navigation preload should not have occurred.
+  // Likewise, the cookies should not have been sent.
+  ASSERT_TRUE(has_received_request());
+  EXPECT_FALSE(
+      HasHeader(received_request(), "Service-Worker-Navigation-Preload"));
+  EXPECT_FALSE(HasHeader(received_request(), "Cookie"));
+}
+
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        ChromeServiceWorkerNavigationPreloadTest,
+                        ::testing::Values(ServicifiedFeatures::kNone,
+                                          ServicifiedFeatures::kServiceWorker,
+                                          ServicifiedFeatures::kNetwork));
 
 }  // namespace chrome_service_worker_browser_test
