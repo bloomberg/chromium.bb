@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_HINTS_H_
 #define COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_HINTS_H_
 
-#include <map>
 #include <memory>
 #include <set>
 #include <utility>
@@ -18,7 +17,6 @@
 #include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/host_filter.h"
-#include "components/url_matcher/url_matcher.h"
 #include "net/nqe/effective_connection_type.h"
 
 class GURL;
@@ -48,9 +46,7 @@ class PreviewsHints {
 
   // Whether the URL is whitelisted for the given previews type. If so,
   // |out_inflation_percent| and |out_ect_threshold| will be populated if
-  // metadata is available for them. This first checks the top-level whitelist
-  // and, if not whitelisted there, it will check the HintCache for having a
-  // loaded, matching PageHint that whitelists it.
+  // metadata is available for them.
   bool IsWhitelisted(const GURL& url,
                      PreviewsType type,
                      int* out_inflation_percent,
@@ -83,39 +79,13 @@ class PreviewsHints {
 
   PreviewsHints();
 
-  // Returns whether |url| is whitelisted in |whitelist_|. If it is, then
-  // |out_inflation_percent| will be populated if metadata is available for it.
-  // NOTE: PreviewsType::RESOURCE_LOADING_HINTS cannot be whitelisted at the
-  // top-level.
-  bool IsWhitelistedAtTopLevel(const GURL& url,
-                               PreviewsType type,
-                               int* out_inflation_percent) const;
-  // Returns whether |url| is whitelisted in the page hints contained within
-  // |hint_cache_|. If it is, then |out_inflation_percent| and
-  // |out_ect_threshold| will be populated if metadata is available for them.
-  bool IsWhitelistedInPageHints(
-      const GURL& url,
-      PreviewsType type,
-      int* out_inflation_percent,
-      net::EffectiveConnectionType* out_ect_threshold) const;
-
   // Parses optimization filters from |config| and populates corresponding
   // supported blacklists in this object.
   void ParseOptimizationFilters(
       const optimization_guide::proto::Configuration& config);
 
-  // The URLMatcher used to match whether a URL has any hints associated with
-  // it.
-  url_matcher::URLMatcher url_matcher_;
-
   // Holds the hint cache (if any optimizations using it are enabled).
   std::unique_ptr<HintCache> hint_cache_;
-
-  // A map from the condition set ID to associated whitelist Optimization
-  // details.
-  std::map<url_matcher::URLMatcherConditionSet::ID,
-           std::set<std::pair<PreviewsType, int>>>
-      whitelist_;
 
   // Blacklist of host suffixes for LITE_PAGE_REDIRECT Previews.
   std::unique_ptr<HostFilter> lite_page_redirect_blacklist_;

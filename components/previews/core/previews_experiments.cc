@@ -335,11 +335,6 @@ int NoScriptPreviewsInflationBytes() {
                                           kNoScriptInflationBytes, 0);
 }
 
-bool NoScriptPreviewsUsesTopLevelHints() {
-  return base::FeatureList::IsEnabled(
-      features::kNoScriptPreviewsUsesTopLevelHints);
-}
-
 int ResourceLoadingHintsPreviewsInflationPercent() {
   return GetFieldTrialParamByFeatureAsInt(features::kResourceLoadingHints,
                                           kResourceLoadingHintsInflationPercent,

@@ -308,87 +308,6 @@ TEST_F(PreviewsOptimizationGuideTest, IsWhitelistedWithoutHints) {
 }
 
 TEST_F(PreviewsOptimizationGuideTest,
-       ProcessHintsWhitelistForNoScriptTopLevelHintsWithTopLevelHintsEnabled) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(
-      features::kNoScriptPreviewsUsesTopLevelHints);
-
-  optimization_guide::proto::Configuration config;
-  optimization_guide::proto::Hint* hint1 = config.add_hints();
-  hint1->set_key("facebook.com");
-  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-  optimization_guide::proto::Optimization* optimization1 =
-      hint1->add_whitelisted_optimizations();
-  optimization1->set_optimization_type(optimization_guide::proto::NOSCRIPT);
-  // Add a second optimization to ensure that the applicable optimizations are
-  // still whitelisted.
-  optimization_guide::proto::Optimization* optimization2 =
-      hint1->add_whitelisted_optimizations();
-  optimization2->set_optimization_type(
-      optimization_guide::proto::TYPE_UNSPECIFIED);
-  // Add a second hint.
-  optimization_guide::proto::Hint* hint2 = config.add_hints();
-  hint2->set_key("twitter.com");
-  hint2->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-  optimization_guide::proto::Optimization* optimization3 =
-      hint2->add_whitelisted_optimizations();
-  optimization3->set_optimization_type(optimization_guide::proto::NOSCRIPT);
-  ProcessHints(config, "2.0.0");
-
-  RunUntilIdle();
-  PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
-  // Twitter and Facebook should be whitelisted but not Google.
-  EXPECT_TRUE(guide()->IsWhitelisted(&user_data, GURL("https://m.facebook.com"),
-                                     PreviewsType::NOSCRIPT, &ect_threshold));
-  EXPECT_TRUE(guide()->IsWhitelisted(&user_data,
-                                     GURL("https://m.twitter.com/example"),
-                                     PreviewsType::NOSCRIPT, &ect_threshold));
-  EXPECT_FALSE(guide()->IsWhitelisted(&user_data, GURL("https://google.com"),
-                                      PreviewsType::NOSCRIPT, &ect_threshold));
-}
-
-TEST_F(PreviewsOptimizationGuideTest,
-       ProcessHintsWhitelistForNoScriptTopLevelHintsWithTopLevelHintsDisabled) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndDisableFeature(
-      features::kNoScriptPreviewsUsesTopLevelHints);
-
-  optimization_guide::proto::Configuration config;
-  optimization_guide::proto::Hint* hint1 = config.add_hints();
-  hint1->set_key("facebook.com");
-  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-  optimization_guide::proto::Optimization* optimization1 =
-      hint1->add_whitelisted_optimizations();
-  optimization1->set_optimization_type(optimization_guide::proto::NOSCRIPT);
-  // Add a second optimization to ensure that the applicable optimizations are
-  // still whitelisted.
-  optimization_guide::proto::Optimization* optimization2 =
-      hint1->add_whitelisted_optimizations();
-  optimization2->set_optimization_type(
-      optimization_guide::proto::TYPE_UNSPECIFIED);
-  // Add a second hint.
-  optimization_guide::proto::Hint* hint2 = config.add_hints();
-  hint2->set_key("twitter.com");
-  hint2->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-  optimization_guide::proto::Optimization* optimization3 =
-      hint2->add_whitelisted_optimizations();
-  optimization3->set_optimization_type(optimization_guide::proto::NOSCRIPT);
-  ProcessHints(config, "2.0.0");
-
-  RunUntilIdle();
-  PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
-  // Not whitelisted since NoScriptPreviewsUsesTopLevelHints disabled.
-  EXPECT_FALSE(guide()->IsWhitelisted(&user_data,
-                                      GURL("https://m.facebook.com"),
-                                      PreviewsType::NOSCRIPT, &ect_threshold));
-  EXPECT_FALSE(guide()->IsWhitelisted(&user_data,
-                                      GURL("https://m.twitter.com/example"),
-                                      PreviewsType::NOSCRIPT, &ect_threshold));
-}
-
-TEST_F(PreviewsOptimizationGuideTest,
        ProcessHintsForNoScriptPageHintsPopulatedCorrectly) {
   optimization_guide::proto::Configuration config;
 
@@ -454,6 +373,7 @@ TEST_F(PreviewsOptimizationGuideTest,
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
 
+  // Add first hint.
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint1 = config.add_hints();
   hint1->set_key("facebook.com");
@@ -470,31 +390,26 @@ TEST_F(PreviewsOptimizationGuideTest,
       optimization_guide::proto::LOADING_BLOCK_RESOURCE);
   resource_hint1->set_resource_pattern("resource.js");
 
-  // Add additional optimizations to ensure that the applicable optimizations
-  // are still whitelisted.
-  optimization_guide::proto::Optimization* optimization2 =
-      hint1->add_whitelisted_optimizations();
-  optimization2->set_optimization_type(
-      optimization_guide::proto::TYPE_UNSPECIFIED);
-
+  // Add an additional optimization to first hint to verify that the applicable
+  // optimizations are still whitelisted.
   optimization_guide::proto::PageHint* page_hint2 = hint1->add_page_hints();
   page_hint2->set_page_pattern("*");
-  optimization_guide::proto::Optimization* optimization3 =
+  optimization_guide::proto::Optimization* optimization2 =
       page_hint2->add_whitelisted_optimizations();
-  optimization3->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+  optimization2->set_optimization_type(optimization_guide::proto::NOSCRIPT);
 
-  // Add a second hint.
+  // Add second hint.
   optimization_guide::proto::Hint* hint2 = config.add_hints();
   hint2->set_key("twitter.com");
   hint2->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
   optimization_guide::proto::PageHint* page_hint3 = hint2->add_page_hints();
   page_hint3->set_page_pattern("*");
-  optimization_guide::proto::Optimization* optimization4 =
+  optimization_guide::proto::Optimization* optimization3 =
       page_hint3->add_whitelisted_optimizations();
-  optimization4->set_optimization_type(
+  optimization3->set_optimization_type(
       optimization_guide::proto::RESOURCE_LOADING);
   optimization_guide::proto::ResourceLoadingHint* resource_hint2 =
-      optimization4->add_resource_loading_hints();
+      optimization3->add_resource_loading_hints();
   resource_hint2->set_loading_optimization_type(
       optimization_guide::proto::LOADING_BLOCK_RESOURCE);
   resource_hint2->set_resource_pattern("resource.js");
@@ -525,6 +440,7 @@ TEST_F(
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
 
+  // Add first hint.
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint1 = config.add_hints();
   hint1->set_key("facebook.com");
@@ -535,14 +451,19 @@ TEST_F(
       page_hint1->add_whitelisted_optimizations();
   optimization1->set_optimization_type(optimization_guide::proto::NOSCRIPT);
 
-  // Add a second optimization to ensure that the applicable optimizations are
-  // still whitelisted.
+  // Add additional optimization to second hint to verify that the applicable
+  // optimizations are still whitelisted.
   optimization_guide::proto::Optimization* optimization2 =
-      hint1->add_whitelisted_optimizations();
+      page_hint1->add_whitelisted_optimizations();
   optimization2->set_optimization_type(
-      optimization_guide::proto::TYPE_UNSPECIFIED);
+      optimization_guide::proto::RESOURCE_LOADING);
+  optimization_guide::proto::ResourceLoadingHint* resource_hint1 =
+      optimization2->add_resource_loading_hints();
+  resource_hint1->set_loading_optimization_type(
+      optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+  resource_hint1->set_resource_pattern("resource.js");
 
-  // Add a second hint.
+  // Add second hint.
   optimization_guide::proto::Hint* hint2 = config.add_hints();
   hint2->set_key("twitter.com");
   hint2->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
@@ -552,11 +473,11 @@ TEST_F(
       page_hint2->add_whitelisted_optimizations();
   optimization3->set_optimization_type(
       optimization_guide::proto::RESOURCE_LOADING);
-  optimization_guide::proto::ResourceLoadingHint* resource_hint1 =
+  optimization_guide::proto::ResourceLoadingHint* resource_hint2 =
       optimization3->add_resource_loading_hints();
-  resource_hint1->set_loading_optimization_type(
+  resource_hint2->set_loading_optimization_type(
       optimization_guide::proto::LOADING_BLOCK_RESOURCE);
-  resource_hint1->set_resource_pattern("resource.js");
+  resource_hint2->set_resource_pattern("resource.js");
 
   ProcessHints(config, "2.0.0");
 
@@ -807,10 +728,13 @@ TEST_F(PreviewsOptimizationGuideTest,
   optimization_guide::proto::Hint* hint = config.add_hints();
   hint->set_key("facebook.com");
   hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-  optimization_guide::proto::Optimization* optimization =
-      hint->add_whitelisted_optimizations();
-  optimization->set_optimization_type(
+  optimization_guide::proto::PageHint* page_hint1 = hint->add_page_hints();
+  page_hint1->set_page_pattern("*");
+  optimization_guide::proto::Optimization* optimization1 =
+      page_hint1->add_whitelisted_optimizations();
+  optimization1->set_optimization_type(
       optimization_guide::proto::TYPE_UNSPECIFIED);
+
   ProcessHints(config, "2.0.0");
 
   RunUntilIdle();
@@ -910,9 +834,11 @@ TEST_F(PreviewsOptimizationGuideTest, ProcessHintConfigWithNoKeyFailsDcheck) {
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint = config.add_hints();
   hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-  optimization_guide::proto::Optimization* optimization =
-      hint->add_whitelisted_optimizations();
-  optimization->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+  optimization_guide::proto::PageHint* page_hint1 = hint->add_page_hints();
+  page_hint1->set_page_pattern("*");
+  optimization_guide::proto::Optimization* optimization1 =
+      page_hint1->add_whitelisted_optimizations();
+  optimization1->set_optimization_type(optimization_guide::proto::NOSCRIPT);
 
   EXPECT_DCHECK_DEATH({
     ProcessHints(config, "2.0.0");
@@ -934,86 +860,16 @@ TEST_F(PreviewsOptimizationGuideTest,
   optimization_guide::proto::Hint* hint2 = config.add_hints();
   hint2->set_key("facebook.com");
   hint2->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  optimization_guide::proto::PageHint* page_hint2 = hint1->add_page_hints();
+  page_hint2->set_page_pattern("*");
   optimization_guide::proto::Optimization* optimization2 =
-      hint2->add_whitelisted_optimizations();
+      page_hint2->add_whitelisted_optimizations();
   optimization2->set_optimization_type(optimization_guide::proto::NOSCRIPT);
 
   EXPECT_DCHECK_DEATH({
     ProcessHints(config, "2.0.0");
     RunUntilIdle();
   });
-}
-
-TEST_F(PreviewsOptimizationGuideTest,
-       IsWhitelistedWithMultipleTopLevelHintMatches) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(
-      features::kNoScriptPreviewsUsesTopLevelHints);
-
-  optimization_guide::proto::Configuration config;
-
-  // Whitelist NoScript for indoor.sports.yahoo.com:
-  optimization_guide::proto::Hint* hint1 = config.add_hints();
-  hint1->set_key("indoor.sports.yahoo.com");
-  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-  optimization_guide::proto::Optimization* optimization1 =
-      hint1->add_whitelisted_optimizations();
-  optimization1->set_optimization_type(optimization_guide::proto::NOSCRIPT);
-  optimization1->set_inflation_percent(10);
-
-  // No optimizations for sports.yahoo.com:
-  optimization_guide::proto::Hint* hint2 = config.add_hints();
-  hint2->set_key("sports.yahoo.com");
-  hint2->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-
-  // Whitelist NoScript for base domain yahoo.com:
-  optimization_guide::proto::Hint* hint3 = config.add_hints();
-  hint3->set_key("yahoo.com");
-  hint3->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-  optimization_guide::proto::Optimization* optimization3 =
-      hint3->add_whitelisted_optimizations();
-  optimization3->set_optimization_type(optimization_guide::proto::NOSCRIPT);
-  optimization3->set_inflation_percent(30);
-
-  // No optimizations for mail.yahoo.com:
-  optimization_guide::proto::Hint* hint4 = config.add_hints();
-  hint4->set_key("mail.yahoo.com");
-  hint4->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-
-  ProcessHints(config, "2.0.0");
-  RunUntilIdle();
-
-  PreviewsUserData user_data(1);
-  net::EffectiveConnectionType ect_threshold;
-  EXPECT_TRUE(guide()->IsWhitelisted(&user_data, GURL("https://yahoo.com"),
-                                     PreviewsType::NOSCRIPT, &ect_threshold));
-  EXPECT_EQ(30, user_data.data_savings_inflation_percent());
-
-  PreviewsUserData user_data2(2);
-  // Uses "sports.yahoo.com" match before "yahoo.com" match.
-  EXPECT_FALSE(guide()->IsWhitelisted(&user_data,
-                                      GURL("https://sports.yahoo.com"),
-                                      PreviewsType::NOSCRIPT, &ect_threshold));
-
-  PreviewsUserData user_data3(3);
-  // Uses "yahoo.com" match before "mail.yahoo.com" match.
-  EXPECT_TRUE(guide()->IsWhitelisted(&user_data3,
-                                     GURL("https://mail.yahoo.com"),
-                                     PreviewsType::NOSCRIPT, &ect_threshold));
-  EXPECT_EQ(30, user_data3.data_savings_inflation_percent());
-
-  PreviewsUserData user_data4(4);
-  // Uses "indoor.sports.yahoo.com" match before "sports.yahoo.com" match.
-  EXPECT_TRUE(guide()->IsWhitelisted(&user_data4,
-                                     GURL("https://indoor.sports.yahoo.com"),
-                                     PreviewsType::NOSCRIPT, &ect_threshold));
-  EXPECT_EQ(10, user_data4.data_savings_inflation_percent());
-
-  PreviewsUserData user_data5(5);
-  // Uses "sports.yahoo.com" match before "yahoo.com" match.
-  EXPECT_FALSE(guide()->IsWhitelisted(&user_data5,
-                                      GURL("https://outdoor.sports.yahoo.com"),
-                                      PreviewsType::NOSCRIPT, &ect_threshold));
 }
 
 TEST_F(PreviewsOptimizationGuideTest, MaybeLoadOptimizationHints) {

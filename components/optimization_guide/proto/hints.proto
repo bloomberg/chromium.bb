@@ -133,12 +133,8 @@ message Hint {
   // The key that applies to this hint. The key_representation field describes
   // the form in which this key takes. Guaranteed to be non-empty.
   optional string key = 2;
-  // An unordered set of optimizations that should be whitelisted for this
-  // hint.
-  // If empty, then no optimizations should be whitelisted (this allows for an
-  // earlier hint entry to act as an exception to a subsequently matching hint
-  // whitelist entry). If multiple optimizations or page_hints are provided, the
-  // client will decide which one to act on.
+  // Top-level optimizations are currently unused on the client as of M-72. This
+  // may change in the future as new optimization types are added.
   repeated Optimization whitelisted_optimizations = 3;
   // An ordered set of per-page hints. Only the first PageHint record
   // that matches a committed page URL should be used for that page load.
