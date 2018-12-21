@@ -29,7 +29,7 @@ const base::FeatureParam<int> kMaxAllocationsParam{&kGwpAsan, "MaxAllocations",
 const base::FeatureParam<int> kTotalPagesParam{&kGwpAsan, "TotalPages", 128};
 
 const base::FeatureParam<int> kAllocationSamplingParam{
-    &kGwpAsan, "AllocationSamplingFrequency", 128};
+    &kGwpAsan, "AllocationSamplingFrequency", 1000};
 
 const base::FeatureParam<double> kProcessSamplingParam{
     &kGwpAsan, "ProcessSamplingProbability", 1.0};
