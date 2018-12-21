@@ -962,6 +962,9 @@ bool TabStripModel::IsContextMenuCommandEnabled(
     case CommandTogglePinned:
       return true;
 
+    case CommandSendToMyDevices:
+      return true;
+
     default:
       NOTREACHED();
   }
@@ -1045,6 +1048,12 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
     case CommandRestoreTab: {
       base::RecordAction(UserMetricsAction("TabContextMenu_RestoreTab"));
       delegate()->RestoreTab();
+      break;
+    }
+
+    case CommandSendToMyDevices: {
+      // TODO(tinazwang): add implementation
+      NOTIMPLEMENTED();
       break;
     }
 
@@ -1155,6 +1164,9 @@ bool TabStripModel::ContextMenuCommandToBrowserCommand(int cmd_id,
       break;
     case CommandDuplicate:
       *browser_cmd = IDC_DUPLICATE_TAB;
+      break;
+    case CommandSendToMyDevices:
+      *browser_cmd = IDC_SEND_TO_MY_DEVICES;
       break;
     case CommandCloseTab:
       *browser_cmd = IDC_CLOSE_TAB;

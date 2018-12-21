@@ -504,6 +504,9 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_MANAGE_PASSWORDS_FOR_PAGE:
       ManagePasswordsForPage(browser_);
       break;
+    case IDC_SEND_TO_MY_DEVICES:
+      SendToMyDevices(browser_);
+      break;
 
     // Clipboard commands
     case IDC_CUT:
@@ -875,6 +878,7 @@ void BrowserCommandController::InitCommandState() {
   // Page-related commands
   command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION, true);
   command_updater_.UpdateCommandEnabled(IDC_MANAGE_PASSWORDS_FOR_PAGE, true);
+  command_updater_.UpdateCommandEnabled(IDC_SEND_TO_MY_DEVICES, true);
 
   // Zoom
   command_updater_.UpdateCommandEnabled(IDC_ZOOM_MENU, true);

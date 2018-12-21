@@ -91,6 +91,7 @@
 #define IDC_WINDOW_MUTE_SITE            35012
 #define IDC_WINDOW_PIN_TAB              35013
 #define IDC_MIGRATE_LOCAL_CREDIT_CARD_FOR_PAGE 35014
+#define IDC_SEND_TO_MY_DEVICES          35015
 
 // Clipboard commands
 #define IDC_CUT                         36000

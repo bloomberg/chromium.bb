@@ -953,6 +953,12 @@ bool CanSavePage(const Browser* browser) {
       !(GetContentRestrictions(browser) & CONTENT_RESTRICTION_SAVE);
 }
 
+void SendToMyDevices(Browser* browser) {
+  browser->tab_strip_model()->ExecuteContextMenuCommand(
+      browser->tab_strip_model()->active_index(),
+      TabStripModel::ContextMenuCommand::CommandSendToMyDevices);
+}
+
 void ShowFindBar(Browser* browser) {
   browser->GetFindBarController()->Show();
 }
