@@ -37,45 +37,8 @@
     # https://crbug.com/900696
     'remoting-webapp.v2.zip',
 
-    # https://crbug.com/908474
-    'app_shell_unittests',
-    'browser_tests',
-    'chrome',
-    'chrome_app_unittests',
-    'components_browsertests',
-    'components_unittests',
-    'content_browsertests',
-    'content_shell',
-    'crashpad_tests',
-    'extensions_browsertests',
-    'extensions_unittests',
-    'headless_browsertests',
-    'headless_unittests',
-    'interactive_ui_tests',
-    'libboringssl.so',
-    'libcrashpad_snapshot_test_module.so',
-    'libcrashpad_snapshot_test_module_large.so',
-    'libcrashpad_snapshot_test_module_small.so',
-    'libheadless.so',
-    'performance_browser_tests',
-    'sync_integration_tests',
-    'unit_tests',
-
     # additional nacl stuff, https://crbug.com/429358
-    'nacl_helper',
     'nacl_helper_bootstrap',
-    'nacl_loader_unittests',
-
-    # https://crbug.com/913204
-    'captured_sites_interactive_tests',
-
-    # https://crbug.com/914776
-    'libboringssl_fuzzer.so',
-    'libboringssl_fuzzer_no_fuzzer_mode.so',
-    'merkle_integrity_source_stream_fuzzer',
-    'renderer_fuzzer',
-    'renderer_proto_tree_fuzzer',
-    'renderer_tree_fuzzer',
   ],
 
   # https://crbug.com/330262
