@@ -144,7 +144,7 @@ ServiceWorkerRemoteProviderEndpoint::~ServiceWorkerRemoteProviderEndpoint() {}
 
 void ServiceWorkerRemoteProviderEndpoint::BindWithProviderHostInfo(
     mojom::ServiceWorkerProviderHostInfoPtr* info) {
-  mojom::ServiceWorkerContainerAssociatedPtr client_ptr;
+  blink::mojom::ServiceWorkerContainerAssociatedPtr client_ptr;
   client_request_ = mojo::MakeRequestAssociatedWithDedicatedPipe(&client_ptr);
   (*info)->client_ptr_info = client_ptr.PassInterface();
   (*info)->host_request =

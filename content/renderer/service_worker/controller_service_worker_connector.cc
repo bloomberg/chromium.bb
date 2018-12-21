@@ -11,7 +11,7 @@
 namespace content {
 
 ControllerServiceWorkerConnector::ControllerServiceWorkerConnector(
-    mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
+    blink::mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
     blink::mojom::ControllerServiceWorkerPtr controller_ptr,
     const std::string& client_id)
     : client_id_(client_id) {
@@ -24,7 +24,7 @@ ControllerServiceWorkerConnector::ControllerServiceWorkerConnector(
 
 blink::mojom::ControllerServiceWorker*
 ControllerServiceWorkerConnector::GetControllerServiceWorker(
-    mojom::ControllerServiceWorkerPurpose purpose) {
+    blink::mojom::ControllerServiceWorkerPurpose purpose) {
   switch (state_) {
     case State::kDisconnected: {
       DCHECK(!controller_service_worker_);

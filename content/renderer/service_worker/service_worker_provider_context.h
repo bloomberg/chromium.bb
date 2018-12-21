@@ -15,13 +15,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_container.mojom.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/renderer/service_worker/service_worker_provider_state_for_client.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -62,7 +62,7 @@ struct ServiceWorkerProviderContextDeleter;
 class CONTENT_EXPORT ServiceWorkerProviderContext
     : public base::RefCountedThreadSafe<ServiceWorkerProviderContext,
                                         ServiceWorkerProviderContextDeleter>,
-      public mojom::ServiceWorkerContainer,
+      public blink::mojom::ServiceWorkerContainer,
       public mojom::ServiceWorkerWorkerClientRegistry {
  public:
   // Constructor for service worker clients.
@@ -83,16 +83,16 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   ServiceWorkerProviderContext(
       int provider_id,
       blink::mojom::ServiceWorkerProviderType provider_type,
-      mojom::ServiceWorkerContainerAssociatedRequest request,
-      mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info,
+      blink::mojom::ServiceWorkerContainerAssociatedRequest request,
+      blink::mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory);
 
   // Constructor for service worker execution contexts.
   ServiceWorkerProviderContext(
       int provider_id,
-      mojom::ServiceWorkerContainerAssociatedRequest request,
-      mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info);
+      blink::mojom::ServiceWorkerContainerAssociatedRequest request,
+      blink::mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info);
 
   blink::mojom::ServiceWorkerProviderType provider_type() const {
     return provider_type_;
@@ -144,7 +144,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // S13nServiceWorker:
   // For service worker clients. Returns a ServiceWorkerContainerHostPtrInfo
   // to this client's container host.
-  mojom::ServiceWorkerContainerHostPtrInfo CloneContainerHostPtrInfo();
+  blink::mojom::ServiceWorkerContainerHostPtrInfo CloneContainerHostPtrInfo();
 
   // Called when ServiceWorkerNetworkProvider is destructed. This function
   // severs the Mojo binding to the browser-side ServiceWorkerProviderHost. The
@@ -156,12 +156,12 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // occur and ensuring the Clients API doesn't return the client).
   void OnNetworkProviderDestroyed();
 
-  // Gets the mojom::ServiceWorkerContainerHost* for sending requests to
+  // Gets the blink::mojom::ServiceWorkerContainerHost* for sending requests to
   // browser-side ServiceWorkerProviderHost. May be nullptr if
   // OnNetworkProviderDestroyed() has already been called.
   // Currently this can be called only for clients that are Documents,
   // see comments of |container_host_|.
-  mojom::ServiceWorkerContainerHost* container_host() const;
+  blink::mojom::ServiceWorkerContainerHost* container_host() const;
 
   // Pings the container host and calls |callback| once a pong arrived. Useful
   // for waiting for all messages the host sent thus far to arrive.
@@ -188,7 +188,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // shared) worker, when the connection to the worker is disconnected.
   void UnregisterWorkerFetchContext(mojom::ServiceWorkerWorkerClient*);
 
-  // Implementation of mojom::ServiceWorkerContainer.
+  // Implementation of blink::mojom::ServiceWorkerContainer.
   void SetController(
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       const std::vector<blink::mojom::WebFeature>& used_features,
@@ -210,7 +210,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // Mojo binding for the |request| passed to the constructor. This keeps the
   // connection to the content::ServiceWorkerProviderHost in the browser process
   // alive.
-  mojo::AssociatedBinding<mojom::ServiceWorkerContainer> binding_;
+  mojo::AssociatedBinding<blink::mojom::ServiceWorkerContainer> binding_;
 
   // The |container_host_| interface represents the connection to the
   // browser-side ServiceWorkerProviderHost, whose lifetime is bound to
@@ -221,7 +221,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // for a Document, as navigator.serviceWorker is currently only implemented
   // for Document (https://crbug.com/371690).
   // Note: Currently this is always bound on main thread.
-  mojom::ServiceWorkerContainerHostAssociatedPtr container_host_;
+  blink::mojom::ServiceWorkerContainerHostAssociatedPtr container_host_;
 
   // State for service worker clients.
   std::unique_ptr<ServiceWorkerProviderStateForClient> state_for_client_;

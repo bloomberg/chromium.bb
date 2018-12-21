@@ -916,8 +916,9 @@ class ServiceWorkerRegistrationObjectHostTest
   }
 
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
-  GetRegistrationFromRemote(mojom::ServiceWorkerContainerHost* container_host,
-                            const GURL& url) {
+  GetRegistrationFromRemote(
+      blink::mojom::ServiceWorkerContainerHost* container_host,
+      const GURL& url) {
     blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info;
     container_host->GetRegistration(
         url, base::BindOnce(

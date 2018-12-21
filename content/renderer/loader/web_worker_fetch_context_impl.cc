@@ -43,7 +43,7 @@ namespace {
 
 // Runs on a background thread created in ResetServiceWorkerURLLoaderFactory().
 void CreateServiceWorkerSubresourceLoaderFactory(
-    mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
+    blink::mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
     const std::string& client_id,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory,
     network::mojom::URLLoaderFactoryRequest request,
@@ -153,7 +153,8 @@ WebWorkerFetchContextImpl::WebWorkerFetchContextImpl(
     mojom::ServiceWorkerWorkerClientRequest service_worker_client_request,
     mojom::ServiceWorkerWorkerClientRegistryPtrInfo
         service_worker_worker_client_registry_info,
-    mojom::ServiceWorkerContainerHostPtrInfo service_worker_container_host_info,
+    blink::mojom::ServiceWorkerContainerHostPtrInfo
+        service_worker_container_host_info,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info,
     std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
@@ -199,7 +200,7 @@ WebWorkerFetchContextImpl::CloneForNestedWorker() {
   service_worker_worker_client_registry_->CloneWorkerClientRegistry(
       mojo::MakeRequest(&service_worker_worker_client_registry_ptr_info));
 
-  mojom::ServiceWorkerContainerHostPtrInfo host_ptr_info;
+  blink::mojom::ServiceWorkerContainerHostPtrInfo host_ptr_info;
   if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     service_worker_container_host_->CloneContainerHost(
         mojo::MakeRequest(&host_ptr_info));
@@ -448,7 +449,7 @@ void WebWorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
   }
 
   network::mojom::URLLoaderFactoryPtr service_worker_url_loader_factory;
-  mojom::ServiceWorkerContainerHostPtrInfo host_ptr_info;
+  blink::mojom::ServiceWorkerContainerHostPtrInfo host_ptr_info;
   service_worker_container_host_->CloneContainerHost(
       mojo::MakeRequest(&host_ptr_info));
   // To avoid potential dead-lock while synchronous loading, create the

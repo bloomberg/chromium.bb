@@ -71,7 +71,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       mojom::ServiceWorkerWorkerClientRequest service_worker_client_request,
       mojom::ServiceWorkerWorkerClientRegistryPtrInfo
           service_worker_worker_client_registry_info,
-      mojom::ServiceWorkerContainerHostPtrInfo
+      blink::mojom::ServiceWorkerContainerHostPtrInfo
           service_worker_container_host_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
@@ -162,7 +162,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   mojom::ServiceWorkerWorkerClientRegistryPtrInfo
       service_worker_worker_client_registry_info_;
   // Consumed on the worker thread to create |service_worker_container_host_|.
-  mojom::ServiceWorkerContainerHostPtrInfo service_worker_container_host_info_;
+  blink::mojom::ServiceWorkerContainerHostPtrInfo
+      service_worker_container_host_info_;
   // Consumed on the worker thread to create |loader_factory_|.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info_;
   // Consumed on the worker thread to create |fallback_factory_|.
@@ -174,7 +175,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
 
   // S13nServiceWorker:
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
-  mojom::ServiceWorkerContainerHostPtr service_worker_container_host_;
+  blink::mojom::ServiceWorkerContainerHostPtr service_worker_container_host_;
 
   // S13nServiceWorker:
   // The Client#id value of the shared worker or dedicated worker (since

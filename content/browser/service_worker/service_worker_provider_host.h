@@ -23,7 +23,6 @@
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_container.mojom.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/resource_type.h"
@@ -33,6 +32,7 @@
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/platform/web_feature.mojom.h"
@@ -126,7 +126,7 @@ FORWARD_DECLARE_TEST(ServiceWorkerDispatcherHostTest,
 class CONTENT_EXPORT ServiceWorkerProviderHost
     : public ServiceWorkerRegistration::Listener,
       public base::SupportsWeakPtr<ServiceWorkerProviderHost>,
-      public mojom::ServiceWorkerContainerHost,
+      public blink::mojom::ServiceWorkerContainerHost,
       public service_manager::mojom::InterfaceProvider {
  public:
   using WebContentsGetter = base::RepeatingCallback<WebContents*()>;
@@ -542,7 +542,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void CheckControllerConsistency() const;
 #endif  // DCHECK_IS_ON()
 
-  // Implements mojom::ServiceWorkerContainerHost.
+  // Implements blink::mojom::ServiceWorkerContainerHost.
   void Register(const GURL& script_url,
                 blink::mojom::ServiceWorkerRegistrationOptionsPtr options,
                 RegisterCallback callback) override;
@@ -553,9 +553,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       GetRegistrationForReadyCallback callback) override;
   void EnsureControllerServiceWorker(
       blink::mojom::ControllerServiceWorkerRequest controller_request,
-      mojom::ControllerServiceWorkerPurpose purpose) override;
-  void CloneContainerHost(
-      mojom::ServiceWorkerContainerHostRequest container_host_request) override;
+      blink::mojom::ControllerServiceWorkerPurpose purpose) override;
+  void CloneContainerHost(blink::mojom::ServiceWorkerContainerHostRequest
+                              container_host_request) override;
   void Ping(PingCallback callback) override;
   void HintToUpdateServiceWorker() override;
 
@@ -695,19 +695,20 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // |container_| is the Mojo endpoint to the renderer-side
   // ServiceWorkerContainer that |this| is a ServiceWorkerContainerHost for.
-  mojom::ServiceWorkerContainerAssociatedPtr container_;
+  blink::mojom::ServiceWorkerContainerAssociatedPtr container_;
   // |binding_| is the Mojo binding that keeps the connection to the
   // renderer-side counterpart (content::ServiceWorkerProviderContext). When the
   // connection bound on |binding_| gets killed from the renderer side, or the
   // bound |ServiceWorkerProviderInfoForStartWorker::host_ptr_info| is otherwise
   // destroyed before being passed to the renderer, this
   // content::ServiceWorkerProviderHost will be destroyed.
-  mojo::AssociatedBinding<mojom::ServiceWorkerContainerHost> binding_;
+  mojo::AssociatedBinding<blink::mojom::ServiceWorkerContainerHost> binding_;
 
   // Container host bindings other than the original |binding_|. These include
   // bindings for container host pointers used from (dedicated or shared) worker
   // threads, or from ServiceWorkerSubresourceLoaderFactory.
-  mojo::BindingSet<mojom::ServiceWorkerContainerHost> additional_bindings_;
+  mojo::BindingSet<blink::mojom::ServiceWorkerContainerHost>
+      additional_bindings_;
 
   // For service worker execution contexts.
   mojo::Binding<service_manager::mojom::InterfaceProvider>

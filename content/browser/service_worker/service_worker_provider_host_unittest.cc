@@ -183,7 +183,7 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
   }
 
   blink::mojom::ServiceWorkerErrorType Register(
-      mojom::ServiceWorkerContainerHost* container_host,
+      blink::mojom::ServiceWorkerContainerHost* container_host,
       GURL scope,
       GURL worker_url) {
     blink::mojom::ServiceWorkerErrorType error =
@@ -203,7 +203,7 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
   }
 
   blink::mojom::ServiceWorkerErrorType GetRegistration(
-      mojom::ServiceWorkerContainerHost* container_host,
+      blink::mojom::ServiceWorkerContainerHost* container_host,
       GURL document_url,
       blink::mojom::ServiceWorkerRegistrationObjectInfoPtr* out_info =
           nullptr) {
@@ -228,7 +228,7 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
   }
 
   blink::mojom::ServiceWorkerErrorType GetRegistrations(
-      mojom::ServiceWorkerContainerHost* container_host) {
+      blink::mojom::ServiceWorkerContainerHost* container_host) {
     blink::mojom::ServiceWorkerErrorType error =
         blink::mojom::ServiceWorkerErrorType::kUnknown;
     container_host->GetRegistrations(base::BindOnce(
@@ -456,10 +456,10 @@ TEST_P(ServiceWorkerProviderHostTest, RemoveProvider) {
   EXPECT_FALSE(context_->GetProviderHost(process_id, provider_id));
 }
 
-class MockServiceWorkerContainer : public mojom::ServiceWorkerContainer {
+class MockServiceWorkerContainer : public blink::mojom::ServiceWorkerContainer {
  public:
   explicit MockServiceWorkerContainer(
-      mojom::ServiceWorkerContainerAssociatedRequest request)
+      blink::mojom::ServiceWorkerContainerAssociatedRequest request)
       : binding_(this, std::move(request)) {}
 
   ~MockServiceWorkerContainer() override = default;
@@ -478,7 +478,7 @@ class MockServiceWorkerContainer : public mojom::ServiceWorkerContainer {
 
  private:
   bool was_set_controller_called_ = false;
-  mojo::AssociatedBinding<mojom::ServiceWorkerContainer> binding_;
+  mojo::AssociatedBinding<blink::mojom::ServiceWorkerContainer> binding_;
 };
 
 TEST_P(ServiceWorkerProviderHostTest, Controller) {
@@ -986,7 +986,7 @@ TEST_P(ServiceWorkerProviderHostTest, HintToUpdateServiceWorker) {
   EXPECT_TRUE(HasVersionToUpdate(host));
 
   // Send the hint from the renderer. Update should be scheduled.
-  mojom::ServiceWorkerContainerHostAssociatedPtr* host_ptr =
+  blink::mojom::ServiceWorkerContainerHostAssociatedPtr* host_ptr =
       remote_endpoints_.back().host_ptr();
   (*host_ptr)->HintToUpdateServiceWorker();
   base::RunLoop().RunUntilIdle();
@@ -1025,7 +1025,7 @@ TEST_P(ServiceWorkerProviderHostTest,
 
   // Send the hint from the renderer. Update should not be scheduled, since
   // AddServiceWorkerToUpdate() was not called.
-  mojom::ServiceWorkerContainerHostAssociatedPtr* host_ptr =
+  blink::mojom::ServiceWorkerContainerHostAssociatedPtr* host_ptr =
       remote_endpoints_.back().host_ptr();
   (*host_ptr)->HintToUpdateServiceWorker();
   base::RunLoop().RunUntilIdle();
@@ -1085,7 +1085,7 @@ TEST_P(ServiceWorkerProviderHostTest, HintToUpdateServiceWorkerMultiple) {
 
   // Send the hint from the renderer. Update should be scheduled except for
   // |version3| as it's being used by another page.
-  mojom::ServiceWorkerContainerHostAssociatedPtr* host_ptr =
+  blink::mojom::ServiceWorkerContainerHostAssociatedPtr* host_ptr =
       remote_endpoints_.back().host_ptr();
   (*host_ptr)->HintToUpdateServiceWorker();
   base::RunLoop().RunUntilIdle();

@@ -415,7 +415,7 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
       mojo::MakeRequest(&worker_client_ptr);
   context->RegisterWorkerClient(std::move(worker_client_ptr));
 
-  mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info;
+  blink::mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info;
   if (blink::ServiceWorkerUtils::IsServicificationEnabled())
     container_host_ptr_info = context->CloneContainerHostPtrInfo();
 
