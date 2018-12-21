@@ -458,6 +458,31 @@ test("webrunner_unittests") {
   ]
 }
 
+test("webrunner_smoketests") {
+  sources = [
+    "app/web/webrunner_smoke_test.cc",
+  ]
+  deps = [
+    ":test_common",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//net:test_support",
+    "//testing/gtest",
+    "//third_party/fuchsia-sdk/sdk:sys",
+  ]
+  package_deps = [
+    [
+      ":service_pkg",
+      "chromium",
+    ],
+    [
+      ":webrunner_pkg",
+      "web_runner",
+    ],
+  ]
+}
+
 fidl_library("web_fidl") {
   library_name = "web"
   namespace = "chromium"
