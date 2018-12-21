@@ -222,9 +222,8 @@ const int kRecentlyClosedTabsSectionIndex = 0;
       [[TableViewImageItem alloc] initWithType:ItemTypeShowFullHistory];
   historyItem.title = l10n_util::GetNSString(IDS_HISTORY_SHOWFULLHISTORY_LINK);
   historyItem.image = [UIImage imageNamed:@"show_history"];
-  historyItem.hideChevron = YES;
   historyItem.textColor = UIColorFromRGB(kTableViewTextLabelColorBlue);
-  historyItem.cellAccessibilityIdentifier =
+  historyItem.accessibilityIdentifier =
       kRecentTabsShowFullHistoryCellAccessibilityIdentifier;
   [model addItem:historyItem
       toSectionWithIdentifier:SectionIdentifierRecentlyClosedTabs];

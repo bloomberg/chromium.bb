@@ -19,7 +19,7 @@ using TableViewImageItemTest = PlatformTest;
 }
 
 // Tests that the UILabel is set properly after a call to
-// |configureCell:| and the image and chevron are visible.
+// |configureCell:| and the image are visible.
 TEST_F(TableViewImageItemTest, ItemProperties) {
   NSString* text = @"Cell text";
 
@@ -38,7 +38,6 @@ TEST_F(TableViewImageItemTest, ItemProperties) {
   [item configureCell:cell withStyler:[[ChromeTableViewStyler alloc] init]];
   EXPECT_NSEQ(text, imageCell.titleLabel.text);
   EXPECT_FALSE(imageCell.imageView.isHidden);
-  EXPECT_FALSE(imageCell.chevronImageView.isHidden);
 }
 
 // Tests that the imageView is not visible if no image is set.
@@ -57,22 +56,4 @@ TEST_F(TableViewImageItemTest, ItemImageViewHidden) {
   [item configureCell:cell withStyler:[[ChromeTableViewStyler alloc] init]];
   EXPECT_FALSE(item.image);
   EXPECT_TRUE(imageCell.imageView.isHidden);
-}
-
-// Tests that the chevron is not visible if hideChevron is YES.
-TEST_F(TableViewImageItemTest, ItemChevronViewHidden) {
-  NSString* text = @"Cell text";
-
-  TableViewImageItem* item = [[TableViewImageItem alloc] initWithType:0];
-  item.title = text;
-  item.hideChevron = YES;
-
-  id cell = [[[item cellClass] alloc] init];
-  ASSERT_TRUE([cell isMemberOfClass:[TableViewImageCell class]]);
-
-  TableViewImageCell* imageCell =
-      base::mac::ObjCCastStrict<TableViewImageCell>(cell);
-  EXPECT_FALSE(imageCell.chevronImageView.isHidden);
-  [item configureCell:cell withStyler:[[ChromeTableViewStyler alloc] init]];
-  EXPECT_TRUE(imageCell.chevronImageView.isHidden);
 }

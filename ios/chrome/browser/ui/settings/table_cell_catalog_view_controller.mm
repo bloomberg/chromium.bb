@@ -121,12 +121,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   textImageItem.title = @"Image Item with No Image";
   [model addItem:textImageItem toSectionWithIdentifier:SectionIdentifierText];
 
-  textImageItem =
-      [[TableViewImageItem alloc] initWithType:ItemTypeTextAccessoryNoImage];
-  textImageItem.title = @"Image Item with No Image and no Chevron";
-  textImageItem.hideChevron = YES;
-  [model addItem:textImageItem toSectionWithIdentifier:SectionIdentifierText];
-
   TableViewTextItem* textItemDefault =
       [[TableViewTextItem alloc] initWithType:ItemTypeText];
   textItemDefault.text = @"Simple Text Cell with Defaults";
