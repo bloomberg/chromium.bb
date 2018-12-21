@@ -2082,7 +2082,8 @@ def _GetOwnersFilesToCheckForIpcOwners(input_api):
   # *.mojom files.
   for f in input_api.AffectedFiles(include_deletes=False):
     # Manifest files don't have a strong naming convention. Instead, scan
-    # affected files for .json files and see if they look like a manifest.
+    # affected files for .json, .cc, and .h files which look like they contain
+    # a manifest definition.
     if (f.LocalPath().endswith('.json') and
         not _MatchesFile(input_api, _KNOWN_INVALID_JSON_FILE_PATTERNS,
                          f.LocalPath())):
@@ -2098,6 +2099,15 @@ def _GetOwnersFilesToCheckForIpcOwners(input_api):
         continue
       if 'interface_provider_specs' in json_content:
         AddPatternToCheck(f, input_api.os_path.basename(f.LocalPath()))
+    else:
+      manifest_pattern = input_api.re.compile('manifests?\.(cc|h)$')
+      test_manifest_pattern = input_api.re.compile('test_manifests?\.(cc|h)')
+      if (manifest_pattern.search(f.LocalPath()) and not
+          test_manifest_pattern.search(f.LocalPath())):
+        # We expect all actual service manifest files to contain at least one
+        # qualified reference to service_manager::Manifest.
+        if 'service_manager::Manifest' in '\n'.join(f.NewContents()):
+          AddPatternToCheck(f, input_api.os_path.basename(f.LocalPath()))
     for pattern in file_patterns:
       if input_api.fnmatch.fnmatch(
           input_api.os_path.basename(f.LocalPath()), pattern):
