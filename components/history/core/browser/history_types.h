@@ -299,9 +299,7 @@ struct VisibleVisitCountToHostResult {
 // Holds the per-URL information of the most visited query.
 struct MostVisitedURL {
   MostVisitedURL();
-  MostVisitedURL(const GURL& url,
-                 const base::string16& title,
-                 base::Time last_forced_time = base::Time());
+  MostVisitedURL(const GURL& url, const base::string16& title);
   MostVisitedURL(const GURL& url,
                  const base::string16& title,
                  const RedirectList& preceding_redirects);
@@ -315,11 +313,6 @@ struct MostVisitedURL {
 
   GURL url;
   base::string16 title;
-
-  // If this is a URL for which we want to force a thumbnail, records the last
-  // time it was forced so we can evict it when more recent URLs are requested.
-  // If it's not a forced thumbnail, keep a time of 0.
-  base::Time last_forced_time;
 
   RedirectList redirects;
 
