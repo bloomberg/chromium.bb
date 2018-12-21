@@ -205,8 +205,10 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
 
     /**
      * Share the image that triggered the current context menu.
+     * Package-private, allowing access only from the context menu item to ensure that
+     * it will use the right activity set when the menu was displayed.
      */
-    public void shareImage() {
+    void shareImage() {
         shareImageDirectly(null);
     }
 
@@ -214,17 +216,14 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
      * Share image triggered with the current context menu directly with a specific app.
      * @param name The {@link ComponentName} of the app to share the image directly with.
      */
-    public void shareImageDirectly(@Nullable final ComponentName name) {
+    private void shareImageDirectly(@Nullable final ComponentName name) {
         if (mNativeContextMenuHelper == 0) return;
         Callback<byte[]> callback = new Callback<byte[]>() {
             @Override
             public void onResult(byte[] result) {
-                WindowAndroid windowAndroid = mWebContents.getTopLevelNativeWindow();
+                if (mActivity == null) return;
 
-                Activity activity = windowAndroid.getActivity().get();
-                if (activity == null) return;
-
-                ShareHelper.shareImage(activity, result, name);
+                ShareHelper.shareImage(mActivity, result, name);
             }
         };
         nativeRetrieveImageForShare(
