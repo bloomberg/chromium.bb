@@ -67,7 +67,10 @@ void RendererWebApplicationCacheHostImpl::SetSubresourceFactory(
   RenderFrameImpl* render_frame =
       RenderFrameImpl::FromRoutingID(frame_routing_id_);
   if (render_frame) {
-    render_frame->SetCustomURLLoaderFactory(std::move(url_loader_factory));
+    auto info = std::make_unique<ChildURLLoaderFactoryBundleInfo>();
+    info->appcache_factory_info() = url_loader_factory.PassInterface();
+    render_frame->GetLoaderFactoryBundle()->Update(std::move(info),
+                                                   base::nullopt);
   }
 }
 

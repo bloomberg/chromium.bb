@@ -246,15 +246,11 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
     url_loader_factory = network::SharedURLLoaderFactory::Create(
         std::move(blob_url_loader_factory_info));
   } else {
-    // Create a factory bundle to use.
-    scoped_refptr<URLLoaderFactoryBundle> factory_bundle =
-        base::MakeRefCounted<URLLoaderFactoryBundle>(
-            std::move(factory_bundle_for_browser_info));
-
     // Add the default factory to the bundle for browser if NetworkService
     // is on. When NetworkService is off, we already created the default factory
     // in CreateFactoryBundle().
     if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      DCHECK(factory_bundle_for_browser_info);
       // Get the direct network factory from |loader_factory_getter|. When
       // NetworkService is enabled, it returns a factory that doesn't support
       // reconnection to the network service after a crash, but it's OK since
@@ -262,10 +258,11 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
       network::mojom::URLLoaderFactoryPtr network_factory_ptr;
       loader_factory_getter->CloneNetworkFactory(
           mojo::MakeRequest(&network_factory_ptr));
-      factory_bundle->SetDefaultFactory(std::move(network_factory_ptr));
+      factory_bundle_for_browser_info->default_factory_info() =
+          network_factory_ptr.PassInterface();
     }
-
-    url_loader_factory = factory_bundle;
+    url_loader_factory = base::MakeRefCounted<URLLoaderFactoryBundle>(
+        std::move(factory_bundle_for_browser_info));
   }
 
   // It's safe for |appcache_handle_core| to be a raw pointer. The core is owned

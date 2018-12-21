@@ -869,9 +869,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // selection handles in sync with the webpage.
   void SyncSelectionIfRequired();
 
-  // Sets the custom URLLoaderFactory instance to be used for network requests.
-  void SetCustomURLLoaderFactory(network::mojom::URLLoaderFactoryPtr factory);
-
   void ScrollFocusedEditableElementIntoRect(const gfx::Rect& rect);
   void DidChangeVisibleViewport();
 
@@ -900,6 +897,10 @@ class CONTENT_EXPORT RenderFrameImpl
   friend class RenderFrameObserver;
   friend class RenderAccessibilityImplTest;
   friend class TestRenderFrame;
+
+  // To update AppCache loader factory via GetLoaderFactoryBundle().
+  friend class RendererWebApplicationCacheHostImpl;
+
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuDisplayNoneTest, SelectItem);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuRemoveTest, RemoveFrameOnChange);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuRemoveTest, RemoveOnChange);
