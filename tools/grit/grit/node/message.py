@@ -142,11 +142,12 @@ class MessageNode(base.ContentNode):
     for item in self.mixed_content:
       if isinstance(item, types.StringTypes):
         if _PLACEHOLDER.search(item):
-          if util.IsParsingGrdForUnittest():
-            raise exception.PlaceholderNotInsidePhNode
-          # TODO(thestig): Remove this to finish fixing https://crbug.com/915681
+          # TODO(thestig): Remove this conditional to finish fixing
+          # https://crbug.com/915681
           # This condition should always raise an exception.
-          print _BAD_PLACEHOLDER_MSG % (item, self.source)
+          if util.IsParsingGrdForUnittest():
+            print _BAD_PLACEHOLDER_MSG % (item, self.source)
+            raise exception.PlaceholderNotInsidePhNode
         text += item
       else:
         presentation = item.attrs['name'].upper()
