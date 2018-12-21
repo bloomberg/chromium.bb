@@ -843,8 +843,8 @@ TEST_P(WebStateObserverTest, FailedNavigation) {
   DCHECK_EQ(item->GetTitle(), base::UTF8ToUTF16(kFailedTitle));
 }
 
-// Tests failed navigation because URL scheme is not supported.
-TEST_P(WebStateObserverTest, UnsupportedSchemeNavigation) {
+// Tests failed navigation because URL scheme is not supported by WKWebView.
+TEST_P(WebStateObserverTest, WebViewUnsupportedSchemeNavigation) {
   GURL url(url::SchemeHostPort(kTestAppSpecificScheme, "foo", 0).Serialize());
 
   // Perform a navigation to url with unsupported scheme, which will fail.
@@ -867,6 +867,26 @@ TEST_P(WebStateObserverTest, UnsupportedSchemeNavigation) {
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));
+  test::LoadUrl(web_state(), url);
+  ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+}
+
+// Tests failed navigation because URL scheme is not supported by WebState.
+// TODO(crbug.com/917176): Actual callbacks for this navigation should not be
+// different from callbacks observed in WebViewUnsupportedSchemeNavigation.
+TEST_P(WebStateObserverTest, WebStateUnsupportedSchemeNavigation) {
+  GURL url("ftp://foo.test/");
+
+  // Perform a navigation to url with unsupported scheme.
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+
+  WebStatePolicyDecider::RequestInfo expected_request_info(
+      ui::PageTransition::PAGE_TRANSITION_TYPED,
+      /*target_main_frame=*/true, /*has_user_gesture=*/false);
+  EXPECT_CALL(*decider_,
+              ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
+      .WillOnce(Return(true));
   test::LoadUrl(web_state(), url);
   ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
 }
