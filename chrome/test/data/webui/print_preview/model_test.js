@@ -234,6 +234,7 @@ cr.define('model_test', function() {
         shouldPrintSelectionOnly: false,
         previewModifiable: true,
         printToPDF: false,
+        printToGoogleDrive: false,
         printWithCloudPrint: false,
         printWithPrivet: false,
         printWithExtension: false,
@@ -268,6 +269,7 @@ cr.define('model_test', function() {
         shouldPrintSelectionOnly: false,  // Only for Print Preview.
         previewModifiable: true,
         printToPDF: false,
+        printToGoogleDrive: false,
         printWithCloudPrint: false,
         printWithPrivet: false,
         printWithExtension: false,

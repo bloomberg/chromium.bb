@@ -161,6 +161,9 @@ const char kSettingPrinterDescription[] = "printerDescription";
 // Additional printer options.
 const char kSettingPrinterOptions[] = "printerOptions";
 
+// Print to Google Drive option: true if selected, false if not.
+const char kSettingPrintToGoogleDrive[] = "printToGoogleDrive";
+
 // Print to PDF option: true if selected, false if not.
 const char kSettingPrintToPDF[] = "printToPDF";
 

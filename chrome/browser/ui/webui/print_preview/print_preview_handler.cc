@@ -114,6 +114,7 @@ enum UserActionBuckets {
   PRINT_WITH_PRIVET,
   PRINT_WITH_EXTENSION,
   OPEN_IN_MAC_PREVIEW,
+  PRINT_TO_GOOGLE_DRIVE,
   USERACTION_BUCKET_BOUNDARY
 };
 
@@ -211,6 +212,10 @@ bool ReportPageCountHistogram(UserActionBuckets user_action, int page_count) {
       return true;
     case OPEN_IN_MAC_PREVIEW:
       UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.OpenInMacPreview",
+                              page_count);
+      return true;
+    case PRINT_TO_GOOGLE_DRIVE:
+      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.PrintToGoogleDrive",
                               page_count);
       return true;
     default:
@@ -434,6 +439,11 @@ UserActionBuckets DetermineUserAction(const base::DictionaryValue& settings) {
 #endif
   if (value)
     return OPEN_IN_MAC_PREVIEW;
+  // This needs to be checked before checking for a cloud print ID, since a
+  // print ticket for printing to Drive will also contain a cloud print ID.
+  settings.GetBoolean(printing::kSettingPrintToGoogleDrive, &value);
+  if (value)
+    return PRINT_TO_GOOGLE_DRIVE;
   if (settings.HasKey(printing::kSettingCloudPrintId))
     return PRINT_WITH_CLOUD_PRINT;
   settings.GetBoolean(printing::kSettingPrintWithPrivet, &value);
@@ -884,7 +894,8 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     return;
   }
 
-  if (user_action == PRINT_WITH_CLOUD_PRINT) {
+  if (user_action == PRINT_WITH_CLOUD_PRINT ||
+      user_action == PRINT_TO_GOOGLE_DRIVE) {
     // Does not send the title like the other printer handler types below,
     // because JS already has the document title from the initial settings.
     SendCloudPrintJob(callback_id, data.get());

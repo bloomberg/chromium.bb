@@ -57,6 +57,7 @@ PRINTING_EXPORT extern const char kSettingPageHeight[];
 PRINTING_EXPORT extern const char kSettingPagesPerSheet[];
 PRINTING_EXPORT extern const char kSettingPolicies[];
 PRINTING_EXPORT extern const char kSettingPreviewModifiable[];
+PRINTING_EXPORT extern const char kSettingPrintToGoogleDrive[];
 PRINTING_EXPORT extern const char kSettingPrintToPDF[];
 PRINTING_EXPORT extern const char kSettingPrintWithPrivet[];
 PRINTING_EXPORT extern const char kSettingPrintWithExtension[];
