@@ -50,6 +50,18 @@
 namespace variations {
 namespace {
 
+// The below seed and signature pair were generated using the server's
+// private key.
+const char kBase64SeedData[] =
+    "CigxZDI5NDY0ZmIzZDc4ZmYxNTU2ZTViNTUxYzY0NDdjYmM3NGU1ZmQwEr0BCh9VTUEtVW5p"
+    "Zm9ybWl0eS1UcmlhbC0xMC1QZXJjZW50GICckqUFOAFCB2RlZmF1bHRKCwoHZGVmYXVsdBAB"
+    "SgwKCGdyb3VwXzAxEAFKDAoIZ3JvdXBfMDIQAUoMCghncm91cF8wMxABSgwKCGdyb3VwXzA0"
+    "EAFKDAoIZ3JvdXBfMDUQAUoMCghncm91cF8wNhABSgwKCGdyb3VwXzA3EAFKDAoIZ3JvdXBf"
+    "MDgQAUoMCghncm91cF8wORAB";
+const char kBase64SeedSignature[] =
+    "MEQCIDD1IVxjzWYncun+9IGzqYjZvqxxujQEayJULTlbTGA/AiAr0oVmEgVUQZBYq5VLOSvy"
+    "96JkMYgzTkHPwbv7K/CmgA==";
+
 // A stub for the metrics state manager.
 void StubStoreClientInfo(const metrics::ClientInfo& /* client_info */) {}
 
@@ -829,22 +841,10 @@ TEST_F(VariationsServiceTest, SafeMode_SuccessfulFetchClearsFailureStreaks) {
       &prefs_, GetMetricsStateManager(), true);
   service.set_intercepts_fetch(false);
 
-  // The below seed and signature pair were generated using the server's
-  // private key.
-  const std::string base64_seed_data =
-      "CigxZDI5NDY0ZmIzZDc4ZmYxNTU2ZTViNTUxYzY0NDdjYmM3NGU1ZmQwEr0BCh9VTUEtVW5p"
-      "Zm9ybWl0eS1UcmlhbC0xMC1QZXJjZW50GICckqUFOAFCB2RlZmF1bHRKCwoHZGVmYXVsdBAB"
-      "SgwKCGdyb3VwXzAxEAFKDAoIZ3JvdXBfMDIQAUoMCghncm91cF8wMxABSgwKCGdyb3VwXzA0"
-      "EAFKDAoIZ3JvdXBfMDUQAUoMCghncm91cF8wNhABSgwKCGdyb3VwXzA3EAFKDAoIZ3JvdXBf"
-      "MDgQAUoMCghncm91cF8wORAB";
-  const std::string base64_seed_signature =
-      "MEQCIDD1IVxjzWYncun+9IGzqYjZvqxxujQEayJULTlbTGA/AiAr0oVmEgVUQZBYq5VLOSvy"
-      "96JkMYgzTkHPwbv7K/CmgA==";
-
   std::string response;
-  ASSERT_TRUE(base::Base64Decode(base64_seed_data, &response));
+  ASSERT_TRUE(base::Base64Decode(kBase64SeedData, &response));
   const std::string seed_signature_header =
-      "X-Seed-Signature:" + base64_seed_signature;
+      std::string("X-Seed-Signature:") + kBase64SeedSignature;
 
   std::string headers("HTTP/1.1 200 OK\n\n");
   network::ResourceResponseHead head;
@@ -911,8 +911,14 @@ TEST_F(VariationsServiceTest, InsecurelyFetchedSetWhenHTTP) {
   service.set_intercepts_fetch(false);
   service.test_url_loader_factory()->AddResponse(
       service.interception_url().spec(), serialized_seed);
-  service.DoActualFetch();
+  base::HistogramTester histogram_tester;
+  // Note: We call DoFetchFromURL() here instead of DoActualFetch() since the
+  // latter doesn't pass true to |http_retry|.
+  service.DoFetchFromURL(service.interception_url(), true);
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(service.insecurely_fetched_seed());
+  histogram_tester.ExpectUniqueSample(
+      "Variations.SeedFetchResponseOrErrorCode.HTTP", net::HTTP_OK, 1);
 }
 
 TEST_F(VariationsServiceTest, InsecurelyFetchedNotSetWhenHTTPS) {
@@ -925,8 +931,11 @@ TEST_F(VariationsServiceTest, InsecurelyFetchedNotSetWhenHTTPS) {
   service.set_intercepts_fetch(false);
   service.test_url_loader_factory()->AddResponse(
       service.interception_url().spec(), serialized_seed);
+  base::HistogramTester histogram_tester;
   service.DoActualFetch();
   EXPECT_FALSE(service.insecurely_fetched_seed());
+  histogram_tester.ExpectUniqueSample("Variations.SeedFetchResponseOrErrorCode",
+                                      net::HTTP_OK, 1);
 }
 
 TEST_F(VariationsServiceTest, RetryOverHTTPIfURLisSet) {
@@ -963,6 +972,43 @@ TEST_F(VariationsServiceTest, DoNotRetryIfInsecureURLIsHTTPS) {
   service.set_insecure_url(GURL("https://example.test"));
   EXPECT_FALSE(service.CallMaybeRetryOverHTTP());
   EXPECT_FALSE(service.fetch_attempted());
+}
+
+TEST_F(VariationsServiceTest, NullResponseReceivedWithHTTPOk) {
+  VariationsService::EnableFetchForTesting();
+
+  TestVariationsService service(
+      std::make_unique<web_resource::TestRequestAllowedNotifier>(
+          &prefs_, network_tracker_),
+      &prefs_, GetMetricsStateManager(), true);
+  service.set_intercepts_fetch(false);
+
+  std::string response;
+  ASSERT_TRUE(base::Base64Decode(kBase64SeedData, &response));
+  const std::string seed_signature_header =
+      std::string("X-Seed-Signature:") + kBase64SeedSignature;
+
+  std::string headers("HTTP/1.1 200 OK\n\n");
+  network::ResourceResponseHead head;
+  head.headers = new net::HttpResponseHeaders(
+      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+  EXPECT_EQ(net::HTTP_OK, head.headers->response_code());
+  head.headers->AddHeader(seed_signature_header);
+  // Set ERR_FAILED status code despite the 200 response code.
+  network::URLLoaderCompletionStatus status(net::ERR_FAILED);
+  status.decoded_body_length = response.size();
+  service.test_url_loader_factory()->AddResponse(
+      service.interception_url(), head, response, status,
+      network::TestURLLoaderFactory::Redirects(),
+      // We pass the flag below to preserve the 200 code with an error response.
+      network::TestURLLoaderFactory::kSendHeadersOnNetworkError);
+  EXPECT_EQ(net::HTTP_OK, head.headers->response_code());
+
+  base::HistogramTester histogram_tester;
+  service.DoActualFetch();
+  EXPECT_FALSE(service.seed_stored());
+  histogram_tester.ExpectUniqueSample("Variations.SeedFetchResponseOrErrorCode",
+                                      net::ERR_FAILED, 1);
 }
 
 // TODO(isherman): Add an integration test for saving and loading a safe seed,

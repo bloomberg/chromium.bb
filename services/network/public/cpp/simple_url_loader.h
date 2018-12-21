@@ -86,8 +86,11 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   static const size_t kMaxUploadStringSizeToCopy;
 
   // Callback used when downloading the response body as a std::string.
-  // |response_body| is the body of the response, or nullptr on failure. It is
-  // safe to delete the SimpleURLLoader during the callback.
+  // |response_body| is the body of the response, or nullptr on failure. Note
+  // that |response_body| may be nullptr even if there's a valid response code
+  // like HTTP_OK, which could happen if there's an interruption before the
+  // full response body is received. It is safe to delete the SimpleURLLoader
+  // during the callback.
   using BodyAsStringCallback =
       base::OnceCallback<void(std::unique_ptr<std::string> response_body)>;
 

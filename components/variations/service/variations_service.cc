@@ -86,9 +86,8 @@ const uint8_t kServerPublicKey[] = {
 
 const uint32_t kServerPublicKeyVersion = 1;
 
-// TODO(mad): To be removed when we stop updating the NetworkTimeTracker.
 // For the HTTP date headers, the resolution of the server time is 1 second.
-const int64_t kServerTimeResolutionMs = 1000;
+const base::TimeDelta kServerTimeResolution = base::TimeDelta::FromSeconds(1);
 
 // Whether the VariationsService should fetch the seed for testing.
 bool g_should_fetch_for_testing = false;
@@ -688,7 +687,7 @@ void VariationsService::OnSimpleLoaderComplete(
     headers = pending_seed_request_->ResponseInfo()->headers;
     response_code = headers->response_code();
   }
-  bool is_success = headers && (net_error == net::OK);
+  bool is_success = headers && response_body && (net_error == net::OK);
   // We use the final URL HTTPS/HTTP value to pass to StoreSeed, since
   // signature validation should be forced on for any HTTP fetch, including
   // redirects from HTTPS to HTTP.
@@ -696,10 +695,10 @@ void VariationsService::OnSimpleLoaderComplete(
       pending_seed_request_->GetFinalURL().SchemeIs(url::kHttpsScheme);
   pending_seed_request_.reset();
   if (last_request_was_http_retry_) {
-    base::UmaHistogramSparse("Variations.SeedFetchResponseOrErrorCode",
+    base::UmaHistogramSparse("Variations.SeedFetchResponseOrErrorCode.HTTP",
                              is_success ? response_code : net_error);
   } else {
-    base::UmaHistogramSparse("Variations.SeedFetchResponseOrErrorCode.HTTP",
+    base::UmaHistogramSparse("Variations.SeedFetchResponseOrErrorCode",
                              is_success ? response_code : net_error);
   }
   if (!is_success) {
@@ -722,39 +721,46 @@ void VariationsService::OnSimpleLoaderComplete(
     }
   }
 
-  const base::TimeDelta latency =
-      base::TimeTicks::Now() - last_request_started_time_;
-
-  base::Time response_date;
-  if (response_code == net::HTTP_OK ||
-      response_code == net::HTTP_NOT_MODIFIED) {
-    bool success = headers->GetDateValue(&response_date);
-    DCHECK(success || response_date.is_null());
-
-    if (!response_date.is_null()) {
-      client_->GetNetworkTimeTracker()->UpdateNetworkTime(
-          response_date,
-          base::TimeDelta::FromMilliseconds(kServerTimeResolutionMs), latency,
-          base::TimeTicks::Now());
-    }
-  }
-
-  if (response_code != net::HTTP_OK) {
-    DVLOG(1) << "Variations server request returned non-HTTP_OK response code: "
-             << response_code;
-    if (response_code == net::HTTP_NOT_MODIFIED) {
-      RecordSuccessfulFetch();
-
-      // Update the seed date value in local state (used for expiry check on
-      // next start up), since 304 is a successful response. Note that the
-      // serial number included in the request is always that of the latest
-      // seed, even when running in safe mode, so it's appropriate to always
-      // modify the latest seed's date.
-      field_trial_creator_.seed_store()->UpdateSeedDateAndLogDayChange(
-          response_date);
-    }
+  // Return if there was a failure. Note that we check both |is_success| which
+  // is set above and the response code. There could be a case where there's a
+  // HTTP_OK response code but |is_success| is false, for example if the fetch
+  // download was interrupted after having been started.
+  if (!is_success || (response_code != net::HTTP_OK &&
+                      response_code != net::HTTP_NOT_MODIFIED)) {
+    DVLOG(1) << "Variations server request failed: is_success=" << is_success
+             << " response_code=" << response_code
+             << " net_error=" << net_error;
     return;
   }
+  // At this point, |headers| and |response_body| should exist.
+  DCHECK(headers);
+  DCHECK(response_body);
+
+  base::Time response_date;
+  if (headers->GetDateValue(&response_date)) {
+    DCHECK(!response_date.is_null());
+
+    const base::TimeTicks now = base::TimeTicks::Now();
+    const base::TimeDelta latency = now - last_request_started_time_;
+    client_->GetNetworkTimeTracker()->UpdateNetworkTime(
+        response_date, kServerTimeResolution, latency, now);
+  }
+
+  if (response_code == net::HTTP_NOT_MODIFIED) {
+    RecordSuccessfulFetch();
+
+    // Update the seed date value in local state (used for expiry check on
+    // next start up), since 304 is a successful response. Note that the
+    // serial number included in the request is always that of the latest
+    // seed, even when running in safe mode, so it's appropriate to always
+    // modify the latest seed's date.
+    field_trial_creator_.seed_store()->UpdateSeedDateAndLogDayChange(
+        response_date);
+    return;
+  }
+
+  // We're now handling the HTTP_OK success case.
+  DCHECK_EQ(response_code, net::HTTP_OK);
 
   bool is_delta_compressed;
   bool is_gzip_compressed;

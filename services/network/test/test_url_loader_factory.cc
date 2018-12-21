@@ -237,8 +237,12 @@ void TestURLLoaderFactory::SimulateResponse(
   if (response_flags & kResponseOnlyRedirectsNoDestination)
     return;
 
-  if (status.error_code == net::OK) {
+  if ((response_flags & kSendHeadersOnNetworkError) ||
+      status.error_code == net::OK) {
     client->OnReceiveResponse(head);
+  }
+
+  if (status.error_code == net::OK) {
     mojo::DataPipe data_pipe(content.size());
     uint32_t bytes_written = content.size();
     CHECK_EQ(MOJO_RESULT_OK, data_pipe.producer_handle->WriteData(
