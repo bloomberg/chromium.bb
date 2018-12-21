@@ -188,10 +188,6 @@ if (host_toolchain == "") {
 
   if (host_os == "linux") {
     if (target_os != "linux") {
-      # TODO(dpranke) - is_clang normally applies only to the target
-      # build, and there is no way to indicate that you want to override
-      # it for both the target build *and* the host build. Do we need to
-      # support this?
       host_toolchain = "//build/toolchain/linux:clang_$host_cpu"
     } else if (is_clang) {
       host_toolchain = "//build/toolchain/linux:clang_$host_cpu"
@@ -292,7 +288,6 @@ if (custom_toolchain != "") {
 # current_os value directly.
 
 if (current_os == "win" || current_os == "winuwp") {
-  is_aix = false
   is_android = false
   is_chromeos = false
   is_fuchsia = false
@@ -303,7 +298,6 @@ if (current_os == "win" || current_os == "winuwp") {
   is_posix = false
   is_win = true
 } else if (current_os == "mac") {
-  is_aix = false
   is_android = false
   is_chromeos = false
   is_fuchsia = false
@@ -314,7 +308,6 @@ if (current_os == "win" || current_os == "winuwp") {
   is_posix = true
   is_win = false
 } else if (current_os == "android") {
-  is_aix = false
   is_android = true
   is_chromeos = false
   is_fuchsia = false
@@ -325,7 +318,6 @@ if (current_os == "win" || current_os == "winuwp") {
   is_posix = true
   is_win = false
 } else if (current_os == "chromeos") {
-  is_aix = false
   is_android = false
   is_chromeos = true
   is_fuchsia = false
@@ -339,7 +331,6 @@ if (current_os == "win" || current_os == "winuwp") {
   # current_os == "nacl" will be passed by the nacl toolchain definition.
   # It is not set by default or on the command line. We treat is as a
   # Posix variant.
-  is_aix = false
   is_android = false
   is_chromeos = false
   is_fuchsia = false
@@ -350,7 +341,6 @@ if (current_os == "win" || current_os == "winuwp") {
   is_posix = true
   is_win = false
 } else if (current_os == "fuchsia") {
-  is_aix = false
   is_android = false
   is_chromeos = false
   is_fuchsia = true
@@ -361,7 +351,6 @@ if (current_os == "win" || current_os == "winuwp") {
   is_posix = false
   is_win = false
 } else if (current_os == "ios") {
-  is_aix = false
   is_android = false
   is_chromeos = false
   is_fuchsia = false
@@ -372,7 +361,6 @@ if (current_os == "win" || current_os == "winuwp") {
   is_posix = true
   is_win = false
 } else if (current_os == "linux") {
-  is_aix = false
   is_android = false
   is_chromeos = false
   is_fuchsia = false
@@ -383,7 +371,6 @@ if (current_os == "win" || current_os == "winuwp") {
   is_posix = true
   is_win = false
 } else if (current_os == "aix") {
-  is_aix = true
   is_android = false
   is_chromeos = false
   is_fuchsia = false
