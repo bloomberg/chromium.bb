@@ -691,24 +691,12 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             public void onOverviewModeStartedShowing(boolean showToolbar) {
                 mToolbar.setTabSwitcherMode(true, showToolbar, false);
                 updateButtonStatus();
-
-                // For top toolbar we depend on animations instead.
-                if (mBottomToolbarCoordinator == null) return;
-                MenuButton menuButton = mBottomToolbarCoordinator.getMenuButtonWrapper();
-                if (menuButton == null) return;
-                menuButton.setUpdateBadgeVisibilityIfValidState(false);
             }
 
             @Override
             public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
                 mToolbar.setTabSwitcherMode(false, showToolbar, delayAnimation);
                 updateButtonStatus();
-
-                // For top toolbar we depend on animations instead.
-                if (mBottomToolbarCoordinator == null) return;
-                MenuButton menuButton = mBottomToolbarCoordinator.getMenuButtonWrapper();
-                if (menuButton == null) return;
-                menuButton.setUpdateBadgeVisibilityIfValidState(true);
             }
 
             @Override

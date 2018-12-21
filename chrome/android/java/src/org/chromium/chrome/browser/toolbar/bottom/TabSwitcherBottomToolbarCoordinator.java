@@ -91,27 +91,6 @@ public class TabSwitcherBottomToolbarCoordinator {
     }
 
     /**
-     * Show the update badge over the bottom toolbar's app menu.
-     */
-    public void showAppMenuUpdateBadge() {
-        mMenuButton.setUpdateBadgeVisibilityIfValidState(true);
-    }
-
-    /**
-     * Remove the update badge.
-     */
-    public void removeAppMenuUpdateBadge() {
-        mMenuButton.setUpdateBadgeVisibilityIfValidState(false);
-    }
-
-    /**
-     * @return Whether the update badge is showing.
-     */
-    public boolean isShowingAppMenuUpdateBadge() {
-        return mMenuButton.isShowingAppMenuUpdateBadge();
-    }
-
-    /**
      * @return The tab switcher mode bottom toolbar's menu button.
      */
     public MenuButton getMenuButton() {
