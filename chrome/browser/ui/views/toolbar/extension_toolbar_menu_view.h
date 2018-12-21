@@ -33,11 +33,6 @@ class ExtensionToolbarMenuView : public views::ScrollView,
                            views::MenuItemView* menu_item);
   ~ExtensionToolbarMenuView() override;
 
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override;
-  int GetHeightForWidth(int width) const override;
-  void Layout() override;
-
   BrowserActionsContainer* container_for_testing() {
     return container_;
   }
@@ -46,17 +41,20 @@ class ExtensionToolbarMenuView : public views::ScrollView,
   // operation.
   static void set_close_menu_delay_for_testing(int delay);
 
+ protected:
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override;
+  int GetHeightForWidth(int width) const override;
+  void Layout() override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+
  private:
   // ToolbarActionsBarObserver:
   void OnToolbarActionsBarDestroyed() override;
   void OnToolbarActionDragDone() override;
-  void OnToolbarActionsBarDidStartResize() override;
 
   // Closes the |app_menu_|.
   void CloseAppMenu();
-
-  // Resizes and lays out the view.
-  void Redraw();
 
   // Returns the padding before the BrowserActionsContainer in the menu.
   int start_padding() const;

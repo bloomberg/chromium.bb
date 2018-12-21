@@ -721,9 +721,6 @@ void ToolbarActionsBar::ResizeDelegate(gfx::Tween::Type tween_type) {
     // action and added a different one in quick succession).
     delegate_->Redraw(false);
   }
-
-  for (ToolbarActionsBarObserver& observer : observers_)
-    observer.OnToolbarActionsBarDidStartResize();
 }
 
 void ToolbarActionsBar::OnToolbarHighlightModeChanged(bool is_highlighting) {
