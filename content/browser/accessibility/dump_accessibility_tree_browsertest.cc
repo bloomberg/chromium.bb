@@ -733,6 +733,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunAriaTest(FILE_PATH_LITERAL("aria-menuitemradio.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaMismatchedTableAttr) {
+  RunHtmlTest(FILE_PATH_LITERAL("aria-mismatched-table-attr.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaModal) {
   RunAriaTest(FILE_PATH_LITERAL("aria-modal.html"));
 }
