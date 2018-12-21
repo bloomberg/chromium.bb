@@ -767,13 +767,18 @@ static int get_est_rate_dist(const TileDataEnc *tile_data, BLOCK_SIZE bsize,
   aom_clear_system_state();
   const InterModeRdModel *md = &tile_data->inter_mode_rd_models[bsize];
   if (md->ready) {
-    const double est_ld = md->a * sse + md->b;
     if (sse < md->dist_mean) {
       *est_residue_cost = 0;
       *est_dist = sse;
     } else {
-      *est_residue_cost = (int)round((sse - md->dist_mean) / est_ld);
       *est_dist = (int64_t)round(md->dist_mean);
+      const double est_ld = md->a * sse + md->b;
+      // Clamp estimated rate cost by INT_MAX / 2.
+      // TODO(angiebird@google.com): find better solution than clamping.
+      *est_residue_cost =
+          fabs(est_ld) < 1e-2
+              ? INT_MAX / 2
+              : (int)AOMMIN(round((sse - md->dist_mean) / est_ld), INT_MAX / 2);
     }
     return 1;
   }
@@ -785,9 +790,7 @@ static int64_t get_est_rd(TileDataEnc *tile_data, BLOCK_SIZE bsize, int rdmult,
   int est_residue_cost;
   int64_t est_dist;
   if (get_est_rate_dist(tile_data, bsize, sse, &est_residue_cost, &est_dist)) {
-    int rate = est_residue_cost + curr_cost;
-    int64_t est_rd = RDCOST(rdmult, rate, est_dist);
-    return est_rd;
+    return RDCOST(rdmult, est_residue_cost + curr_cost, est_dist);
   }
   return 0;
 }
