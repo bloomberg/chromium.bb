@@ -205,8 +205,7 @@ class WrappedSkImageRepresentation : public SharedImageRepresentationSkia {
     write_surface_ = nullptr;
   }
 
-  bool BeginReadAccess(SkSurface* sk_surface,
-                       GrBackendTexture* backend_texture) override {
+  bool BeginReadAccess(GrBackendTexture* backend_texture) override {
     if (!wrapped_sk_image()->GetGrBackendTexture(backend_texture))
       return false;
     return true;
