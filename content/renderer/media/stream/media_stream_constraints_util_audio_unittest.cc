@@ -48,6 +48,8 @@ const MockFactoryAccessor kFactoryAccessors[] = {
 
 const bool kBoolValues[] = {true, false};
 
+const int kMinChannels = 1;
+
 using AudioSettingsBoolMembers =
     std::vector<bool (AudioCaptureSettings::*)() const>;
 using AudioPropertiesBoolMembers =
@@ -98,8 +100,16 @@ class MediaStreamConstraintsUtilAudioTest
       capabilities_.emplace_back("system_echo_canceller_device", "fake_group2",
                                  system_echo_canceller_parameters);
 
+      capabilities_.emplace_back(
+          "4_channels_device", "fake_group3",
+          media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                 media::CHANNEL_LAYOUT_4_0,
+                                 media::AudioParameters::kAudioCDSampleRate,
+                                 1000));
+
       default_device_ = &capabilities_[0];
       system_echo_canceller_device_ = &capabilities_[1];
+      four_channels_device_ = &capabilities_[2];
     } else {
       // For content capture, use a single capability that admits all possible
       // settings.
@@ -456,6 +466,7 @@ class MediaStreamConstraintsUtilAudioTest
   AudioDeviceCaptureCapabilities capabilities_;
   const AudioDeviceCaptureCapability* default_device_ = nullptr;
   const AudioDeviceCaptureCapability* system_echo_canceller_device_ = nullptr;
+  const AudioDeviceCaptureCapability* four_channels_device_ = nullptr;
   const std::vector<media::Point> kMicPositions = {{8, 8, 8}, {4, 4, 4}};
 
   // TODO(grunell): Store these as separate constants and compare against those
@@ -638,6 +649,116 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SampleSize) {
   constraint_factory_.basic().sample_size.SetIdeal(0);
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
+}
+
+TEST_P(MediaStreamConstraintsUtilAudioTest, Channels) {
+  int channel_count = kMinChannels;
+  AudioCaptureSettings result;
+
+  // Test set exact channelCount.
+  for (; channel_count <= media::limits::kMaxChannels; ++channel_count) {
+    ResetFactory();
+    constraint_factory_.basic().channel_count.SetExact(channel_count);
+    result = SelectSettings();
+
+    if (!IsDeviceCapture()) {
+      // The source capture configured above is actually using a channel count
+      // set to 2 channels.
+      if (channel_count <= 2)
+        EXPECT_TRUE(result.HasValue());
+      else
+        EXPECT_FALSE(result.HasValue());
+      continue;
+    }
+
+    if (channel_count == 3 || channel_count > 4) {
+      EXPECT_FALSE(result.HasValue());
+      continue;
+    }
+
+    EXPECT_TRUE(result.HasValue());
+    if (channel_count == 4)
+      EXPECT_EQ(result.device_id(), "4_channels_device");
+    else
+      EXPECT_EQ(result.device_id(), "default_device");
+  }
+
+  // Only set a min value for the constraint.
+  ResetFactory();
+  constraint_factory_.basic().channel_count.SetMin(media::limits::kMaxChannels +
+                                                   1);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  constraint_factory_.basic().channel_count.SetMin(kMinChannels);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+
+  // Only set a max value for the constraint.
+  ResetFactory();
+  constraint_factory_.basic().channel_count.SetMax(kMinChannels - 1);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  constraint_factory_.basic().channel_count.SetMax(kMinChannels);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+
+  // Define a bounded range for the constraint.
+  ResetFactory();
+  constraint_factory_.basic().channel_count.SetMin(kMinChannels);
+  constraint_factory_.basic().channel_count.SetMax(media::limits::kMaxChannels);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+
+  constraint_factory_.basic().channel_count.SetMin(kMinChannels - 10);
+  constraint_factory_.basic().channel_count.SetMax(kMinChannels - 1);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  constraint_factory_.basic().channel_count.SetMin(media::limits::kMaxChannels +
+                                                   1);
+  constraint_factory_.basic().channel_count.SetMax(media::limits::kMaxChannels +
+                                                   10);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  // Test ideal constraints.
+  for (; channel_count <= media::limits::kMaxChannels; ++channel_count) {
+    ResetFactory();
+    constraint_factory_.basic().channel_count.SetExact(channel_count);
+    result = SelectSettings();
+
+    EXPECT_TRUE(result.HasValue());
+    if (IsDeviceCapture()) {
+      if (channel_count == 4)
+        EXPECT_EQ(result.device_id(), "4_channels_device");
+      else
+        EXPECT_EQ(result.device_id(), "default_device");
+    }
+  }
+}
+
+TEST_P(MediaStreamConstraintsUtilAudioTest, ChannelsWithSource) {
+  if (!IsDeviceCapture())
+    return;
+
+  std::unique_ptr<LocalMediaStreamAudioSource> source =
+      GetLocalMediaStreamAudioSource(false /* enable_system_echo_canceller */,
+                                     false /* hotword_enabled */,
+                                     false /* disable_local_echo */,
+                                     false /* render_to_associated_sink */);
+  int channel_count = kMinChannels;
+  for (; channel_count <= media::limits::kMaxChannels; ++channel_count) {
+    ResetFactory();
+    constraint_factory_.basic().channel_count.SetExact(channel_count);
+    auto result = SelectSettingsAudioCapture(
+        source.get(), constraint_factory_.CreateWebMediaConstraints());
+    if (channel_count == 2)
+      EXPECT_TRUE(result.HasValue());
+    else
+      EXPECT_FALSE(result.HasValue());
+  }
 }
 
 // DeviceID tests.

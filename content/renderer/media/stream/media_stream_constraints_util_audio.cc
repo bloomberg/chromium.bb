@@ -110,6 +110,27 @@ struct Score {
   std::tuple<double, bool, EcModeScore, int> score;
 };
 
+// This class represents the output of DeviceContainer::InfoFromSource and is
+// used to obtain information regarding an active source, if that exists.
+class SourceInfo {
+ public:
+  SourceInfo(SourceType type,
+             const AudioProcessingProperties& properties,
+             base::Optional<int> channels)
+      : type_(type), properties_(properties), channels_(std::move(channels)) {}
+
+  bool HasActiveSource() { return type_ != SourceType::kNone; }
+
+  SourceType type() { return type_; }
+  const AudioProcessingProperties& properties() { return properties_; }
+  const base::Optional<int>& channels() { return channels_; }
+
+ private:
+  const SourceType type_;
+  const AudioProcessingProperties properties_;
+  const base::Optional<int> channels_;
+};
+
 // Container for each independent boolean constrainable property.
 class BooleanContainer {
  public:
@@ -197,9 +218,17 @@ class IntegerContainer {
     return IsEmpty() ? constraint.GetName() : nullptr;
   }
 
-  std::tuple<double, int> SelectSettingsAndScore(
+  // This function will return a fitness with the associated setting for channel
+  // count. The setting will be the ideal value, if such value is provided and
+  // admitted, or the closest value to it.
+  // When no ideal is available and |default_setting| is provided, the setting
+  // will be |default_setting| or the closest value to it.
+  // When |default_setting| is **not** provided, the setting will be a value iff
+  // |allowed_values_| contains only a single value, otherwise base::nullopt is
+  // returned to signal that it was not possible to make a decision.
+  std::tuple<double, base::Optional<int>> SelectSettingsAndScore(
       const blink::LongConstraint& constraint,
-      int default_setting) const {
+      const base::Optional<int>& default_setting = base::nullopt) const {
     DCHECK(!IsEmpty());
 
     if (constraint.HasIdeal()) {
@@ -212,13 +241,21 @@ class IntegerContainer {
       return std::make_tuple(fitness, value);
     }
 
-    if (allowed_values_.Contains(default_setting))
-      return std::make_tuple(0.0, default_setting);
+    if (default_setting) {
+      if (allowed_values_.Contains(*default_setting))
+        return std::make_tuple(0.0, *default_setting);
 
-    // If the default value provided is not contained, select the value closest
-    // to it.
-    int selected_value = SelectClosestValueTo(default_setting);
-    return std::make_tuple(0.0, selected_value);
+      // If the default value provided is not contained, select the value
+      // closest to it.
+      return std::make_tuple(0.0, SelectClosestValueTo(*default_setting));
+    }
+
+    if (allowed_values_.Min() && allowed_values_.Max() &&
+        *allowed_values_.Min() == *allowed_values_.Max()) {
+      return std::make_tuple(0.0, *allowed_values_.Min());
+    }
+
+    return std::make_tuple(0.0, base::nullopt);
   }
 
   bool IsEmpty() const { return allowed_values_.IsEmpty(); }
@@ -583,10 +620,9 @@ class ProcessingBasedContainer {
   // related |parameters.effects()|, and (b) any combination of processing
   // properties settings.
   static ProcessingBasedContainer CreateApmProcessedContainer(
-      AudioProcessingProperties properties,
-      bool has_active_source,
+      const SourceInfo& source_info,
       bool is_device_capture,
-      media::AudioParameters parameters) {
+      const media::AudioParameters& device_parameters) {
     return ProcessingBasedContainer(
         ProcessingType::kApmProcessed,
         {EchoCancellationType::kEchoCancellationAec2,
@@ -601,7 +637,8 @@ class ProcessingBasedContainer {
         BoolSet(), /* goog_highpass_filter_set */
         BoolSet(), /* goog_experimental_auto_gain_control_set */
         IntRangeSet::FromValue(GetSampleSize()), /* sample_size_range */
-        properties, has_active_source, is_device_capture, parameters);
+        IntRangeSet::FromValue(1),               /* channels_range */
+        source_info, is_device_capture, device_parameters);
   }
 
   // Creates an instance of ProcessingBasedContainer for the processed source
@@ -610,10 +647,9 @@ class ProcessingBasedContainer {
   // audio mirroring, while (c) all other processing properties settings cannot
   // be enabled.
   static ProcessingBasedContainer CreateNoApmProcessedContainer(
-      AudioProcessingProperties properties,
-      bool has_active_source,
+      const SourceInfo& source_info,
       bool is_device_capture,
-      media::AudioParameters parameters) {
+      const media::AudioParameters& device_parameters) {
     return ProcessingBasedContainer(
         ProcessingType::kNoApmProcessed,
         {EchoCancellationType::kEchoCancellationDisabled},
@@ -626,7 +662,9 @@ class ProcessingBasedContainer {
         BoolSet({false}), /* goog_highpass_filter_set */
         BoolSet({false}), /* goog_experimental_auto_gain_control_set */
         IntRangeSet::FromValue(GetSampleSize()), /* sample_size_range */
-        properties, has_active_source, is_device_capture, parameters);
+        IntRangeSet::FromValue(
+            device_parameters.channels()), /* channels_range */
+        source_info, is_device_capture, device_parameters);
   }
 
   // Creates an instance of ProcessingBasedContainer for the unprocessed source
@@ -634,10 +672,9 @@ class ProcessingBasedContainer {
   // allowed by the |parameters.effects()|, or none, while (c) all processing
   // properties settings cannot be enabled.
   static ProcessingBasedContainer CreateUnprocessedContainer(
-      AudioProcessingProperties properties,
-      bool has_active_source,
+      const SourceInfo& source_info,
       bool is_device_capture,
-      media::AudioParameters parameters) {
+      const media::AudioParameters& device_parameters) {
     return ProcessingBasedContainer(
         ProcessingType::kUnprocessed,
         {EchoCancellationType::kEchoCancellationDisabled},
@@ -650,7 +687,9 @@ class ProcessingBasedContainer {
         BoolSet({false}), /* goog_highpass_filter_set */
         BoolSet({false}), /* goog_experimental_auto_gain_control_set */
         IntRangeSet::FromValue(GetSampleSize()), /* sample_size_range */
-        properties, has_active_source, is_device_capture, parameters);
+        IntRangeSet::FromValue(
+            device_parameters.channels()), /* channels_range */
+        source_info, is_device_capture, device_parameters);
   }
 
   const char* ApplyConstraintSet(const ConstraintSet& constraint_set) {
@@ -666,6 +705,11 @@ class ProcessingBasedContainer {
     if (failed_constraint_name != nullptr)
       return failed_constraint_name;
 
+    failed_constraint_name =
+        channels_container_.ApplyConstraintSet(constraint_set.channel_count);
+    if (failed_constraint_name != nullptr)
+      return failed_constraint_name;
+
     for (auto& info : kBooleanPropertyContainerInfoMap) {
       failed_constraint_name =
           boolean_containers_[info.index].ApplyConstraintSet(
@@ -678,7 +722,8 @@ class ProcessingBasedContainer {
 
   std::tuple<Score, AudioProcessingProperties> SelectSettingsAndScore(
       const ConstraintSet& constraint_set,
-      bool should_disable_hardware_noise_suppression) const {
+      bool should_disable_hardware_noise_suppression,
+      media::AudioParameters parameters) const {
     DCHECK(!IsEmpty());
 
     Score score(0.0);
@@ -687,6 +732,12 @@ class ProcessingBasedContainer {
     std::tie(sub_score, std::ignore) =
         sample_size_container_.SelectSettingsAndScore(
             constraint_set.sample_size, GetSampleSize());
+    score += sub_score;
+
+    base::Optional<int> channels;
+    std::tie(sub_score, channels) = channels_container_.SelectSettingsAndScore(
+        constraint_set.channel_count);
+    DCHECK(channels);
     score += sub_score;
 
     AudioProcessingProperties properties;
@@ -725,7 +776,7 @@ class ProcessingBasedContainer {
         return true;
     }
     return echo_cancellation_container_.IsEmpty() ||
-           sample_size_container_.IsEmpty();
+           sample_size_container_.IsEmpty() || channels_container_.IsEmpty();
   }
 
  private:
@@ -792,12 +843,13 @@ class ProcessingBasedContainer {
       BoolSet goog_highpass_filter_set,
       BoolSet goog_experimental_auto_gain_control_set,
       IntRangeSet sample_size_range,
-      AudioProcessingProperties properties,
-      bool has_active_source,
+      IntRangeSet channels_range,
+      SourceInfo source_info,
       bool is_device_capture,
       media::AudioParameters device_parameters)
       : processing_type_(processing_type),
-        sample_size_container_(sample_size_range) {
+        sample_size_container_(sample_size_range),
+        channels_container_(channels_range) {
     // If the parameters indicate that system echo cancellation is available, we
     // add such value in the allowed values for the EC type.
     if (device_parameters.effects() & media::AudioParameters::ECHO_CANCELLER ||
@@ -807,8 +859,8 @@ class ProcessingBasedContainer {
           EchoCancellationType::kEchoCancellationSystem);
     }
     echo_cancellation_container_ = EchoCancellationContainer(
-        echo_cancellation_types, has_active_source, is_device_capture,
-        device_parameters, properties);
+        echo_cancellation_types, source_info.HasActiveSource(),
+        is_device_capture, device_parameters, source_info.properties());
 
     boolean_containers_[kGoogAudioMirroring] =
         BooleanContainer(goog_audio_mirroring_set);
@@ -827,14 +879,18 @@ class ProcessingBasedContainer {
     boolean_containers_[kGoogExperimentalAutoGainControl] =
         BooleanContainer(goog_experimental_auto_gain_control_set);
 
-    if (!has_active_source)
+    if (!source_info.HasActiveSource())
       return;
 
     for (size_t i = 0; i < kNumBooleanContainerIds; ++i) {
       auto& info = kBooleanPropertyContainerInfoMap[i];
-      boolean_containers_[info.index] =
-          BooleanContainer(BoolSet({properties.*(info.property_member)}));
+      boolean_containers_[info.index] = BooleanContainer(
+          BoolSet({source_info.properties().*(info.property_member)}));
     }
+
+    DCHECK(source_info.channels());
+    channels_container_ =
+        IntegerContainer(IntRangeSet::FromValue(*source_info.channels()));
   }
 
   // The priority of each processing-based container depends on the default
@@ -861,6 +917,7 @@ class ProcessingBasedContainer {
   std::array<BooleanContainer, kNumBooleanContainerIds> boolean_containers_;
   EchoCancellationContainer echo_cancellation_container_;
   IntegerContainer sample_size_container_;
+  IntegerContainer channels_container_;
 };
 
 constexpr ProcessingBasedContainer::BooleanPropertyContainerInfo
@@ -883,44 +940,39 @@ class DeviceContainer {
     // must be initialized such that their only supported values correspond to
     // the source settings. Otherwise, the containers are initialized to contain
     // all possible values.
-    SourceType source_type;
-    AudioProcessingProperties properties;
-    std::tie(source_type, properties) =
+    SourceInfo source_info =
         InfoFromSource(capability.source(), device_parameters_.effects());
 
     // Three variations of the processing-based container. Each variant is
     // associated to a different type of audio processing configuration, namely
     // unprocessed, processed by WebRTC, or processed by other means.
-    if (source_type == SourceType::kNone ||
-        source_type == SourceType::kUnprocessed) {
+    if (source_info.type() == SourceType::kNone ||
+        source_info.type() == SourceType::kUnprocessed) {
       processing_based_containers_.push_back(
           ProcessingBasedContainer::CreateUnprocessedContainer(
-              properties, source_type != SourceType::kNone, is_device_capture,
-              device_parameters_));
+              source_info, is_device_capture, device_parameters_));
     }
-    if (source_type == SourceType::kNone ||
-        source_type == SourceType::kNoApmProcessed) {
+    if (source_info.type() == SourceType::kNone ||
+        source_info.type() == SourceType::kNoApmProcessed) {
       processing_based_containers_.push_back(
           ProcessingBasedContainer::CreateNoApmProcessedContainer(
-              properties, source_type != SourceType::kNone, is_device_capture,
-              device_parameters_));
+              source_info, is_device_capture, device_parameters_));
     }
-    if (source_type == SourceType::kNone ||
-        source_type == SourceType::kApmProcessed) {
+    if (source_info.type() == SourceType::kNone ||
+        source_info.type() == SourceType::kApmProcessed) {
       processing_based_containers_.push_back(
           ProcessingBasedContainer::CreateApmProcessedContainer(
-              properties, source_type != SourceType::kNone, is_device_capture,
-              device_parameters_));
+              source_info, is_device_capture, device_parameters_));
     }
 
 #if DCHECK_IS_ON()
-    if (source_type == SourceType::kNone)
+    if (source_info.type() == SourceType::kNone)
       DCHECK(processing_based_containers_.size() == 3);
     else
       DCHECK(processing_based_containers_.size() == 1);
 #endif
 
-    if (source_type == SourceType::kNone)
+    if (source_info.type() == SourceType::kNone)
       return;
 
     MediaStreamAudioSource* source = capability.source();
@@ -1033,7 +1085,8 @@ class DeviceContainer {
       AudioProcessingProperties container_properties;
       std::tie(container_score, container_properties) =
           container.SelectSettingsAndScore(
-              constraint_set, should_disable_hardware_noise_suppression);
+              constraint_set, should_disable_hardware_noise_suppression,
+              device_parameters_);
       if (container_score > best_score) {
         best_score = container_score;
         best_properties = container_properties;
@@ -1095,39 +1148,42 @@ class DeviceContainer {
           {kRenderToAssociatedSink, &ConstraintSet::render_to_associated_sink}};
 
   // Utility function to determine which version of this class should be
-  // allocated depending on the |source| provided. This function returns the
-  // Type of this instance, a copy of the AudioProcessingProperties related, and
-  // whether processing is enabled or not.
-  static std::tuple<SourceType, AudioProcessingProperties> InfoFromSource(
-      MediaStreamAudioSource* source,
-      int effects) {
+  // allocated depending on the |source| provided.
+  static SourceInfo InfoFromSource(MediaStreamAudioSource* source,
+                                   int effects) {
     SourceType source_type;
     AudioProcessingProperties properties;
     ProcessedLocalAudioSource* processed_source =
         ProcessedLocalAudioSource::From(source);
+    base::Optional<int> channels;
 
     if (source == nullptr) {
       source_type = SourceType::kNone;
-    } else if (processed_source == nullptr) {
-      source_type = SourceType::kUnprocessed;
-      properties.DisableDefaultProperties();
-
-      // It is possible, however, that the HW echo canceller is enabled. In such
-      // case the property for echo cancellation type should be updated
-      // accordingly.
-      if (effects & media::AudioParameters::ECHO_CANCELLER ||
-          effects & media::AudioParameters::EXPERIMENTAL_ECHO_CANCELLER) {
-        properties.echo_cancellation_type =
-            EchoCancellationType::kEchoCancellationSystem;
-      }
     } else {
-      source_type = properties.EchoCancellationIsWebRtcProvided()
-                        ? SourceType::kApmProcessed
-                        : SourceType::kNoApmProcessed;
-      properties = processed_source->audio_processing_properties();
+      media::AudioParameters source_parameters = source->GetAudioParameters();
+      channels = source_parameters.channels();
+
+      if (processed_source == nullptr) {
+        source_type = SourceType::kUnprocessed;
+        properties.DisableDefaultProperties();
+
+        // It is possible, however, that the HW echo canceller is enabled. In
+        // such case the property for echo cancellation type should be updated
+        // accordingly.
+        if (effects & media::AudioParameters::ECHO_CANCELLER ||
+            effects & media::AudioParameters::EXPERIMENTAL_ECHO_CANCELLER) {
+          properties.echo_cancellation_type =
+              EchoCancellationType::kEchoCancellationSystem;
+        }
+      } else {
+        source_type = properties.EchoCancellationIsWebRtcProvided()
+                          ? SourceType::kApmProcessed
+                          : SourceType::kNoApmProcessed;
+        properties = processed_source->audio_processing_properties();
+      }
     }
 
-    return std::make_tuple(source_type, properties);
+    return SourceInfo(source_type, properties, channels);
   }
 
   media::AudioParameters device_parameters_;
