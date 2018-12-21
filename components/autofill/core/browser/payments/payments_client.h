@@ -178,7 +178,7 @@ class PaymentsClient {
       const std::string& app_locale,
       base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                               const base::string16&,
-                              std::unique_ptr<base::DictionaryValue>)> callback,
+                              std::unique_ptr<base::Value>)> callback,
       const int billable_service_number,
       UploadCardSource upload_card_source =
           UploadCardSource::UNKNOWN_UPLOAD_CARD_SOURCE);

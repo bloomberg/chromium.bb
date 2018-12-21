@@ -364,14 +364,14 @@ void CreditCardSaveManager::OnDidGetStrikesForUploadSave(
 void CreditCardSaveManager::OnDidGetUploadDetails(
     AutofillClient::PaymentsRpcResult result,
     const base::string16& context_token,
-    std::unique_ptr<base::DictionaryValue> legal_message) {
+    std::unique_ptr<base::Value> legal_message) {
   if (observer_for_testing_)
     observer_for_testing_->OnReceivedGetUploadDetailsResponse();
   if (result == AutofillClient::SUCCESS) {
     // Do *not* call payments_client_->Prepare() here. We shouldn't send
     // credentials until the user has explicitly accepted a prompt to upload.
     upload_request_.context_token = context_token;
-    legal_message_ = std::move(legal_message);
+    legal_message_ = base::DictionaryValue::From(std::move(legal_message));
 
     // Only offer upload once both Payments and the Autofill
     // LegacyStrikeDatabase have returned their decisions. Use presence of

@@ -55,7 +55,7 @@ class TestLocalCardMigrationManager : public LocalCardMigrationManager {
       bool is_from_settings_page,
       AutofillClient::PaymentsRpcResult result,
       const base::string16& context_token,
-      std::unique_ptr<base::DictionaryValue> legal_message) override;
+      std::unique_ptr<base::Value> legal_message) override;
 
   bool local_card_migration_was_triggered_ = false;
 

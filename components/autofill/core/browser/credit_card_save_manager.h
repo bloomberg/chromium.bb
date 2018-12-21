@@ -136,10 +136,9 @@ class CreditCardSaveManager {
   // Returns the legal message retrieved from Payments. On failure or not
   // meeting Payments's conditions for upload, |legal_message| will contain
   // nullptr.
-  void OnDidGetUploadDetails(
-      AutofillClient::PaymentsRpcResult result,
-      const base::string16& context_token,
-      std::unique_ptr<base::DictionaryValue> legal_message);
+  void OnDidGetUploadDetails(AutofillClient::PaymentsRpcResult result,
+                             const base::string16& context_token,
+                             std::unique_ptr<base::Value> legal_message);
 
   // Logs the number of strikes that a card had when save succeeded.
   void LogStrikesPresentWhenCardSaved(bool is_local, const int num_strikes);

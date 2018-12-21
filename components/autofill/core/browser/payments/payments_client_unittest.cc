@@ -115,10 +115,9 @@ class PaymentsClientTest : public testing::Test {
     real_pan_ = real_pan;
   }
 
-  void OnDidGetUploadDetails(
-      AutofillClient::PaymentsRpcResult result,
-      const base::string16& context_token,
-      std::unique_ptr<base::DictionaryValue> legal_message) {
+  void OnDidGetUploadDetails(AutofillClient::PaymentsRpcResult result,
+                             const base::string16& context_token,
+                             std::unique_ptr<base::Value> legal_message) {
     result_ = result;
     legal_message_ = std::move(legal_message);
   }
@@ -233,7 +232,7 @@ class PaymentsClientTest : public testing::Test {
   AutofillClient::PaymentsRpcResult result_;
   std::string server_id_;
   std::string real_pan_;
-  std::unique_ptr<base::DictionaryValue> legal_message_;
+  std::unique_ptr<base::Value> legal_message_;
   std::vector<MigratableCreditCard> migratable_credit_cards_;
   std::unique_ptr<std::unordered_map<std::string, std::string>> save_result_;
   std::string display_text_;

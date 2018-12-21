@@ -30,7 +30,7 @@ void TestPaymentsClient::GetUploadDetails(
     const std::string& app_locale,
     base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                             const base::string16&,
-                            std::unique_ptr<base::DictionaryValue>)> callback,
+                            std::unique_ptr<base::Value>)> callback,
     const int billable_service_number,
     PaymentsClient::UploadCardSource upload_card_source) {
   upload_details_addresses_ = addresses;
@@ -42,7 +42,7 @@ void TestPaymentsClient::GetUploadDetails(
                               ? AutofillClient::SUCCESS
                               : AutofillClient::PERMANENT_FAILURE,
                           base::ASCIIToUTF16("this is a context token"),
-                          std::unique_ptr<base::DictionaryValue>(nullptr));
+                          std::unique_ptr<base::Value>(nullptr));
 }
 
 void TestPaymentsClient::UploadCard(

@@ -123,7 +123,7 @@ class LocalCardMigrationManager {
       bool is_from_settings_page,
       AutofillClient::PaymentsRpcResult result,
       const base::string16& context_token,
-      std::unique_ptr<base::DictionaryValue> legal_message);
+      std::unique_ptr<base::Value> legal_message);
 
   // Callback after successfully getting the migration save results. Map
   // migration save result to each card depending on the |save_result|. Will
