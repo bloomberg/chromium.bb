@@ -215,7 +215,7 @@ TEST_F(GcpReauthCredentialRunnableTest, NormalReauth) {
   ASSERT_STREQ(test->GetErrorText(), NULL);
 }
 
-TEST_F(GcpReauthCredentialRunnableTest, GaiaIdMismatch) {
+TEST_F(GcpReauthCredentialRunnableTest, DISABLED_GaiaIdMismatch) {
   USES_CONVERSION;
   CredentialProviderSigninDialogTestDataStorage test_data_storage;
   CComBSTR username = L"foo_bar";
