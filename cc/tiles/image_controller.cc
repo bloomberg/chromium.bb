@@ -147,7 +147,7 @@ void ImageController::SetImageDecodeCache(ImageDecodeCache* cache) {
   }
 }
 
-void ImageController::GetTasksForPaintWorkletImages(
+void ImageController::ConvertPaintWorkletImagesToTask(
     std::vector<DrawImage>* sync_decoded_images,
     std::vector<scoped_refptr<TileTask>>* tasks) {
   for (auto it = sync_decoded_images->begin();
@@ -167,7 +167,7 @@ void ImageController::GetTasksForPaintWorkletImages(
   }
 }
 
-void ImageController::GetTasksForImagesAndRef(
+void ImageController::ConvertDataImagesToTasks(
     std::vector<DrawImage>* sync_decoded_images,
     std::vector<scoped_refptr<TileTask>>* tasks,
     bool* has_at_raster_images,
@@ -207,8 +207,8 @@ std::vector<scoped_refptr<TileTask>> ImageController::SetPredecodeImages(
     const ImageDecodeCache::TracingInfo& tracing_info) {
   std::vector<scoped_refptr<TileTask>> new_tasks;
   bool has_at_raster_images = false;
-  GetTasksForImagesAndRef(&images, &new_tasks, &has_at_raster_images,
-                          tracing_info);
+  ConvertDataImagesToTasks(&images, &new_tasks, &has_at_raster_images,
+                           tracing_info);
   UnrefImages(predecode_locked_images_);
   predecode_locked_images_ = std::move(images);
   return new_tasks;
