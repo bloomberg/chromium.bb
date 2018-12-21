@@ -194,6 +194,8 @@ list(APPEND AOM_AV1_ENCODER_SOURCES
             "${AOM_ROOT}/av1/encoder/tpl_model.c"
             "${AOM_ROOT}/av1/encoder/tpl_model.h"
             "${AOM_ROOT}/av1/encoder/wedge_utils.c"
+            "${AOM_ROOT}/av1/encoder/var_based_part.c"
+            "${AOM_ROOT}/av1/encoder/var_based_part.h"
             "${AOM_ROOT}/third_party/fastfeat/fast.c"
             "${AOM_ROOT}/third_party/fastfeat/fast.h"
             "${AOM_ROOT}/third_party/fastfeat/fast_9.c"

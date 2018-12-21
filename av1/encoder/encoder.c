@@ -71,6 +71,7 @@
 #include "av1/encoder/segmentation.h"
 #include "av1/encoder/speed_features.h"
 #include "av1/encoder/reconinter_enc.h"
+#include "av1/encoder/var_based_part.h"
 
 #define DEFAULT_EXPLICIT_ORDER_HINT_BITS 7
 
@@ -4729,6 +4730,9 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     }
     av1_set_quantizer(cm, q);
     av1_init_quantizer(cpi);
+
+    av1_set_variance_partition_thresholds(cpi, q, 0);
+
     // printf("Frame %d/%d: q = %d, frame_type = %d superres_denom = %d\n",
     //        cm->current_frame.frame_number, cm->show_frame, q,
     //        cm->current_frame.frame_type, cm->superres_scale_denominator);

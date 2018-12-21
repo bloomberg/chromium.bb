@@ -154,6 +154,8 @@ static const arg_def_t skip =
     ARG_DEF(NULL, "skip", 1, "Skip the first n input frames");
 static const arg_def_t good_dl =
     ARG_DEF(NULL, "good", 0, "Use Good Quality Deadline");
+static const arg_def_t rt_dl =
+    ARG_DEF(NULL, "rt", 0, "Use Realtime Quality Deadline");
 static const arg_def_t quietarg =
     ARG_DEF("q", "quiet", 0, "Do not print encode progress");
 static const arg_def_t verbosearg =
@@ -219,6 +221,7 @@ static const arg_def_t *main_args[] = { &help,
                                         &limit,
                                         &skip,
                                         &good_dl,
+                                        &rt_dl,
                                         &quietarg,
                                         &verbosearg,
                                         &psnrarg,
@@ -1064,7 +1067,9 @@ static void parse_global_config(struct AvxEncoderConfig *global, int argc,
     } else if (arg_match(&arg, &usage, argi))
       global->usage = arg_parse_uint(&arg);
     else if (arg_match(&arg, &good_dl, argi))
-      warn("Deprecated --good option! Ignoring\n");
+      global->usage = AOM_USAGE_GOOD_QUALITY;  // Good quality usage
+    else if (arg_match(&arg, &rt_dl, argi))
+      global->usage = AOM_USAGE_REALTIME;  // Real-time usage
     else if (arg_match(&arg, &use_yv12, argi))
       global->color_type = YV12;
     else if (arg_match(&arg, &use_i420, argi))
@@ -1117,10 +1122,18 @@ static void parse_global_config(struct AvxEncoderConfig *global, int argc,
     // Make default AV1 passes = 2 until there is a better quality 1-pass
     // encoder
     if (global->codec != NULL && global->codec->name != NULL)
-      global->passes = (strcmp(global->codec->name, "av1") == 0) ? 2 : 1;
+      global->passes = (strcmp(global->codec->name, "av1") == 0 &&
+                        global->usage != AOM_USAGE_REALTIME)
+                           ? 2
+                           : 1;
 #else
     global->passes = 1;
 #endif
+  }
+
+  if (global->usage == AOM_USAGE_REALTIME && global->passes > 1) {
+    warn("Enforcing one-pass encoding in realtime mode\n");
+    global->passes = 1;
   }
 }
 
@@ -1355,6 +1368,12 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.g_error_resilient = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &lag_in_frames, argi)) {
       config->cfg.g_lag_in_frames = arg_parse_uint(&arg);
+      if (global->usage == AOM_USAGE_REALTIME &&
+          config->cfg.rc_end_usage == AOM_CBR &&
+          config->cfg.g_lag_in_frames != 0) {
+        warn("non-zero %s option ignored in realtime CBR mode.\n", arg.name);
+        config->cfg.g_lag_in_frames = 0;
+      }
     } else if (arg_match(&arg, &large_scale_tile, argi)) {
       config->cfg.large_scale_tile = arg_parse_uint(&arg);
       if (config->cfg.large_scale_tile) global->codec = get_aom_lst_encoder();

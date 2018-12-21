@@ -24,6 +24,8 @@
 #include "av1/common/onyxc_int.h"
 #include "av1/common/resize.h"
 #include "av1/common/timing.h"
+#include "av1/common/blockd.h"
+#include "av1/common/enums.h"
 #include "av1/encoder/aq_cyclicrefresh.h"
 #include "av1/encoder/av1_quantize.h"
 #include "av1/encoder/context_tree.h"
@@ -36,6 +38,7 @@
 #include "av1/encoder/rd.h"
 #include "av1/encoder/speed_features.h"
 #include "av1/encoder/tokenize.h"
+#include "av1/encoder/block.h"
 
 #if CONFIG_INTERNAL_STATS
 #include "aom_dsp/ssim.h"
@@ -85,7 +88,10 @@ enum {
 enum {
   // Good Quality Fast Encoding. The encoder balances quality with the amount of
   // time it takes to encode the output. Speed setting controls how fast.
-  GOOD
+  GOOD,
+  // Realtime Fast Encoding. Will force some restrictions on bitrate
+  // constraints.
+  REALTIME
 } UENUM1BYTE(MODE);
 
 enum {
@@ -131,6 +137,16 @@ enum {
   SUPERRES_AUTO,     // Automatically select superres for appropriate frames.
   SUPERRES_MODES
 } UENUM1BYTE(SUPERRES_MODE);
+
+typedef enum {
+  kInvalid = 0,
+  kLowSadLowSumdiff = 1,
+  kLowSadHighSumdiff = 2,
+  kHighSadLowSumdiff = 3,
+  kHighSadHighSumdiff = 4,
+  kLowVarHighSumdiff = 5,
+  kVeryHighSad = 6,
+} CONTENT_STATE_SB;
 
 typedef struct TplDepStats {
   int64_t intra_cost;
@@ -825,6 +841,16 @@ typedef struct AV1_COMP {
   // VARIANCE_AQ segment map refresh
   int vaq_refresh;
 
+  // VAR_BASED_PARTITION thresholds
+  // 0 - threshold_128x128; 1 - threshold_64x64;
+  // 2 - threshold_32x32; 3 - threshold_16x16;
+  // 4 - vbp_threshold_8x8;
+  int64_t vbp_thresholds[5];
+  int64_t vbp_threshold_minmax;
+  int64_t vbp_threshold_sad;
+  int64_t vbp_threshold_copy;
+  BLOCK_SIZE vbp_bsize_min;
+
   // Multi-threading
   int num_workers;
   AVxWorker *workers;
@@ -1111,6 +1137,39 @@ static INLINE int av1_frame_scaled(const AV1_COMMON *cm) {
 static INLINE int encode_show_existing_frame(const AV1_COMMON *cm) {
   return cm->show_existing_frame && (!cm->error_resilient_mode ||
                                      cm->current_frame.frame_type == KEY_FRAME);
+}
+
+// Lighter version of set_offsets that only sets the mode info
+// pointers.
+static INLINE void set_mode_info_offsets(const AV1_COMP *const cpi,
+                                         MACROBLOCK *const x,
+                                         MACROBLOCKD *const xd, int mi_row,
+                                         int mi_col) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const int idx_str = xd->mi_stride * mi_row + mi_col;
+  xd->mi = cm->mi_grid_visible + idx_str;
+  xd->mi[0] = cm->mi + idx_str;
+  x->mbmi_ext = cpi->mbmi_ext_base + (mi_row * cm->mi_cols + mi_col);
+}
+
+// Check to see if the given partition size is allowed for a specified number
+// of mi block rows and columns remaining in the image.
+// If not then return the largest allowed partition size
+static INLINE BLOCK_SIZE find_partition_size(BLOCK_SIZE bsize, int rows_left,
+                                             int cols_left, int *bh, int *bw) {
+  int int_size = (int)bsize;
+  if (rows_left <= 0 || cols_left <= 0) {
+    return AOMMIN(bsize, BLOCK_8X8);
+  } else {
+    for (; int_size > 0; int_size -= 3) {
+      *bh = mi_size_high[int_size];
+      *bw = mi_size_wide[int_size];
+      if ((*bh <= rows_left) && (*bw <= cols_left)) {
+        break;
+      }
+    }
+  }
+  return (BLOCK_SIZE)int_size;
 }
 
 // Returns a Sequence Header OBU stored in an aom_fixed_buf_t, or NULL upon

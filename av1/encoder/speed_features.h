@@ -191,7 +191,9 @@ enum {
   // Always use a fixed size partition
   FIXED_PARTITION,
 
-  REFERENCE_PARTITION
+  REFERENCE_PARTITION,
+
+  VAR_BASED_PARTITION
 } UENUM1BYTE(PARTITION_SEARCH_TYPE);
 
 enum {
@@ -652,6 +654,9 @@ typedef struct SPEED_FEATURES {
 
   // Flag used to control the extent of coeff R-D optimization
   int perform_coeff_opt;
+
+  // This flag controls the use of non-RD mode decision.
+  int use_nonrd_pick_mode;
 } SPEED_FEATURES;
 
 struct AV1_COMP;
