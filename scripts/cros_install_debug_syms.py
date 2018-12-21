@@ -320,8 +320,12 @@ def main(argv):
   with DebugSymbolsInstaller(vartree, gs_context, sysroot,
                              not options.debug) as installer:
     args = [(p, symbols_mapping[p]) for p in to_install]
-    parallel.RunTasksInProcessPool(installer.Install, args,
-                                   processes=options.jobs)
+    # TODO(crbug.com/917405) revert the hack and restore parallel functionality
+    # parallel.RunTasksInProcessPool(installer.Install, args,
+    #                                processes=options.jobs)
+    for arg in args:
+      installer.Install(*arg)
+
 
   logging.debug('installation done, updating packages index file')
   packages_dir = os.path.join(sysroot, 'packages')
