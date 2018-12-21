@@ -56,8 +56,7 @@ class DiceTurnSyncOnHelperDelegateImpl : public DiceTurnSyncOnHelper::Delegate,
       base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>
           callback) override;
   void ShowSyncSettings() override;
-  void ShowSigninPageInNewProfile(Profile* new_profile,
-                                  const std::string& username) override;
+  void SwitchToProfile(Profile* new_profile) override;
 
   // LoginUIService::Observer:
   void OnSyncConfirmationUIClosed(

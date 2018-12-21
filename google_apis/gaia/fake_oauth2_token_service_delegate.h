@@ -30,19 +30,19 @@ class FakeOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
 
   // Overriden to make sure it works on Android.
   bool RefreshTokenIsAvailable(const std::string& account_id) const override;
+
   GoogleServiceAuthError GetAuthError(
       const std::string& account_id) const override;
   void UpdateAuthError(const std::string& account_id,
                        const GoogleServiceAuthError& error) override;
-
   std::vector<std::string> GetAccounts() override;
   void RevokeAllCredentials() override;
-
   void LoadCredentials(const std::string& primary_account_id) override;
-
   void UpdateCredentials(const std::string& account_id,
                          const std::string& refresh_token) override;
   void RevokeCredentials(const std::string& account_id) override;
+  void ExtractCredentials(OAuth2TokenService* to_service,
+                          const std::string& account_id) override;
 
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;

@@ -102,6 +102,16 @@ void FakeOAuth2TokenServiceDelegate::RevokeCredentials(
   IssueRefreshTokenForUser(account_id, std::string());
 }
 
+void FakeOAuth2TokenServiceDelegate::ExtractCredentials(
+    OAuth2TokenService* to_service,
+    const std::string& account_id) {
+  auto it = refresh_tokens_.find(account_id);
+  DCHECK(it != refresh_tokens_.end());
+  to_service->GetDelegate()->UpdateCredentials(account_id,
+                                               it->second->refresh_token);
+  RevokeCredentials(account_id);
+}
+
 scoped_refptr<network::SharedURLLoaderFactory>
 FakeOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
   return shared_factory_;

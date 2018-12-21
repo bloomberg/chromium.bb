@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
@@ -69,6 +70,11 @@ const signin_metrics::PromoAction kSigninPromoAction =
 const signin_metrics::Reason kSigninReason =
     signin_metrics::Reason::REASON_REAUTHENTICATION;
 
+// Builds a testing profile with the right setup for this test.
+std::unique_ptr<TestingProfile> BuildTestingProfile(
+    const base::FilePath& path,
+    Profile::Delegate* delegate);
+
 // Dummy delegate forwarding all the calls the test fixture.
 // Owned by the DiceTurnOnSyncHelper.
 class TestDiceTurnSyncOnHelperDelegate : public DiceTurnSyncOnHelper::Delegate {
@@ -92,8 +98,7 @@ class TestDiceTurnSyncOnHelperDelegate : public DiceTurnSyncOnHelper::Delegate {
       base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>
           callback) override;
   void ShowSyncSettings() override;
-  void ShowSigninPageInNewProfile(Profile* new_profile,
-                                  const std::string& username) override;
+  void SwitchToProfile(Profile* new_profile) override;
 
   DiceTurnSyncOnHelperTestBase* test_fixture_;
 };
@@ -108,7 +113,7 @@ class UnittestProfileManager : public ProfileManagerWithoutInit {
   Profile* CreateProfileHelper(const base::FilePath& file_path) override {
     if (!base::PathExists(file_path) && !base::CreateDirectory(file_path))
       return nullptr;
-    return new TestingProfile(file_path, nullptr);
+    return BuildTestingProfile(file_path, /*delegate=*/nullptr).release();
   }
 
   Profile* CreateProfileAsyncHelper(const base::FilePath& path,
@@ -116,7 +121,7 @@ class UnittestProfileManager : public ProfileManagerWithoutInit {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(base::IgnoreResult(&base::CreateDirectory), path));
-    return new TestingProfile(path, this);
+    return BuildTestingProfile(path, this).release();
   }
 };
 
@@ -173,6 +178,30 @@ class FakeUserPolicySigninService : public policy::UserPolicySigninService {
   std::string email_;
 };
 
+std::unique_ptr<TestingProfile> BuildTestingProfile(
+    const base::FilePath& path,
+    Profile::Delegate* delegate) {
+  TestingProfile::Builder profile_builder;
+  profile_builder.AddTestingFactory(
+      ProfileOAuth2TokenServiceFactory::GetInstance(),
+      base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
+  profile_builder.AddTestingFactory(
+      SigninManagerFactory::GetInstance(),
+      base::BindRepeating(&BuildFakeSigninManagerForTesting));
+  profile_builder.AddTestingFactory(
+      ChromeSigninClientFactory::GetInstance(),
+      base::BindRepeating(&signin::BuildTestSigninClient));
+  profile_builder.AddTestingFactory(
+      ProfileSyncServiceFactory::GetInstance(),
+      base::BindRepeating(&BuildMockProfileSyncService));
+  profile_builder.AddTestingFactory(
+      policy::UserPolicySigninServiceFactory::GetInstance(),
+      base::BindRepeating(&FakeUserPolicySigninService::Build));
+  profile_builder.SetDelegate(delegate);
+  profile_builder.SetPath(path);
+  return profile_builder.Build();
+}
+
 }  // namespace
 
 class DiceTurnSyncOnHelperTestBase : public testing::Test {
@@ -185,23 +214,7 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
     TestingBrowserProcess::GetGlobal()->SetProfileManager(
         new UnittestProfileManager(temp_dir_.GetPath()));
 
-    TestingProfile::Builder profile_builder;
-    profile_builder.AddTestingFactory(
-        ProfileOAuth2TokenServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
-    profile_builder.AddTestingFactory(
-        SigninManagerFactory::GetInstance(),
-        base::BindRepeating(&BuildFakeSigninManagerForTesting));
-    profile_builder.AddTestingFactory(
-        ChromeSigninClientFactory::GetInstance(),
-        base::BindRepeating(&signin::BuildTestSigninClient));
-    profile_builder.AddTestingFactory(
-        ProfileSyncServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildMockProfileSyncService));
-    profile_builder.AddTestingFactory(
-        policy::UserPolicySigninServiceFactory::GetInstance(),
-        base::BindRepeating(&FakeUserPolicySigninService::Build));
-    profile_ = profile_builder.Build();
+    profile_ = BuildTestingProfile(base::FilePath(), /*delegate=*/nullptr);
     account_tracker_service_ =
         AccountTrackerServiceFactory::GetForProfile(profile());
     account_id_ = account_tracker_service_->SeedAccountInfo(kGaiaID, kEmail);
@@ -212,6 +225,8 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
     token_service_->UpdateCredentials(account_id_, "refresh_token");
     signin_manager_ = SigninManagerFactory::GetForProfile(profile());
     EXPECT_TRUE(token_service_->RefreshTokenIsAvailable(account_id_));
+    initial_device_id_ = GetSigninScopedDeviceIdForProfile(profile());
+    EXPECT_FALSE(initial_device_id_.empty());
   }
 
   ~DiceTurnSyncOnHelperTestBase() override {
@@ -229,6 +244,7 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
   FakeUserPolicySigninService* user_policy_signin_service() {
     return user_policy_signin_service_;
   }
+  const std::string initial_device_id() { return initial_device_id_; }
 
   // Gets the ProfileSyncServiceMock.
   browser_sync::ProfileSyncServiceMock* GetProfileSyncServiceMock() {
@@ -282,7 +298,7 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
     EXPECT_EQ(expected_merge_data_new_email_, merge_data_new_email_);
     EXPECT_EQ(expected_enterprise_confirmation_email_,
               enterprise_confirmation_email_);
-    EXPECT_EQ(expected_new_profile_username_, new_profile_username_);
+    EXPECT_EQ(expected_switched_to_new_profile_, switched_to_new_profile_);
     EXPECT_EQ(expected_sync_confirmation_shown_, sync_confirmation_shown_);
     EXPECT_EQ(expected_sync_settings_shown_, sync_settings_shown_);
   }
@@ -341,15 +357,24 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
     sync_settings_shown_ = true;
   }
 
-  void OnShowSigninPageInNewProfile(Profile* new_profile,
-                                    const std::string& username) {
+  void SwitchToProfile(Profile* new_profile) {
     EXPECT_TRUE(new_profile);
     EXPECT_NE(profile(), new_profile)
         << "new_profile should not be the existing profile";
-    EXPECT_FALSE(username.empty());
-    EXPECT_TRUE(new_profile_username_.empty())
-        << "Signin page should be shown only once";
-    new_profile_username_ = username;
+    EXPECT_FALSE(switched_to_new_profile_)
+        << "Flow should only be restarted once";
+    // The token has been transferred to the new token service, regardless of
+    // SigninAbortedMode.
+    EXPECT_FALSE(token_service()->RefreshTokenIsAvailable(account_id_));
+    EXPECT_TRUE(ProfileOAuth2TokenServiceFactory::GetForProfile(new_profile)
+                    ->RefreshTokenIsAvailable(account_id_));
+    // The initial device ID is no longer used by any profile.
+    EXPECT_NE(initial_device_id(),
+              GetSigninScopedDeviceIdForProfile(profile()));
+    EXPECT_NE(initial_device_id(),
+              GetSigninScopedDeviceIdForProfile(new_profile));
+
+    switched_to_new_profile_ = true;
   }
 
   void OnDelegateDestroyed() { delegate_destroyed_ = true; }
@@ -369,7 +394,7 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
   std::string expected_enterprise_confirmation_email_;
   std::string expected_merge_data_previous_email_;
   std::string expected_merge_data_new_email_;
-  std::string expected_new_profile_username_;
+  bool expected_switched_to_new_profile_ = false;
   bool expected_sync_confirmation_shown_ = false;
   bool expected_sync_settings_shown_ = false;
 
@@ -383,6 +408,7 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
   ProfileOAuth2TokenService* token_service_ = nullptr;
   SigninManager* signin_manager_ = nullptr;
   FakeUserPolicySigninService* user_policy_signin_service_ = nullptr;
+  std::string initial_device_id_;
 
   // State of the delegate calls.
   bool delegate_destroyed_ = false;
@@ -391,7 +417,7 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
   std::string enterprise_confirmation_email_;
   std::string merge_data_previous_email_;
   std::string merge_data_new_email_;
-  std::string new_profile_username_;
+  bool switched_to_new_profile_ = false;
   bool sync_confirmation_shown_ = false;
   bool sync_settings_shown_ = false;
 
@@ -463,10 +489,8 @@ void TestDiceTurnSyncOnHelperDelegate::ShowSyncSettings() {
   test_fixture_->OnShowSyncSettings();
 }
 
-void TestDiceTurnSyncOnHelperDelegate::ShowSigninPageInNewProfile(
-    Profile* new_profile,
-    const std::string& username) {
-  test_fixture_->OnShowSigninPageInNewProfile(new_profile, username);
+void TestDiceTurnSyncOnHelperDelegate::SwitchToProfile(Profile* new_profile) {
+  test_fixture_->SwitchToProfile(new_profile);
 }
 
 // Check that the invalid account is supported.
@@ -551,17 +575,20 @@ TEST_F(DiceTurnSyncOnHelperTest, CrossAccountNewProfile) {
   // Set expectations.
   expected_merge_data_previous_email_ = kPreviousEmail;
   expected_merge_data_new_email_ = kEmail;
-  expected_new_profile_username_ = kEmail;
+  expected_switched_to_new_profile_ = true;
+  expected_sync_confirmation_shown_ = true;
   // Configure the test.
   merge_data_choice_ = DiceTurnSyncOnHelper::SIGNIN_CHOICE_NEW_PROFILE;
   profile()->GetPrefs()->SetString(prefs::kGoogleServicesLastUsername,
                                    kPreviousEmail);
   // Signin flow.
   CreateDiceTurnOnSyncHelper(
-      DiceTurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT);
+      DiceTurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT);
   // Check expectations.
   base::RunLoop().RunUntilIdle();  // Profile creation is asynchronous.
   EXPECT_FALSE(signin_manager()->IsAuthenticated());
+  // The token has been removed from the source profile even though
+  // KEEP_ACCOUNT was used.
   EXPECT_FALSE(token_service()->RefreshTokenIsAvailable(account_id()));
   CheckDelegateCalls();
 }
@@ -604,7 +631,8 @@ TEST_F(DiceTurnSyncOnHelperTest, EnterpriseConfirmationContinue) {
 TEST_F(DiceTurnSyncOnHelperTest, EnterpriseConfirmationNewProfile) {
   // Set expectations.
   expected_enterprise_confirmation_email_ = kEmail;
-  expected_new_profile_username_ = kEmail;
+  expected_switched_to_new_profile_ = true;
+  expected_sync_confirmation_shown_ = true;
   // Configure the test.
   user_policy_signin_service()->set_dm_token("foo");
   user_policy_signin_service()->set_client_id("bar");

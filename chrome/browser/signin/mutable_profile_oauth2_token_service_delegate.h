@@ -42,7 +42,7 @@ class MutableProfileOAuth2TokenServiceDelegate
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // OAuth2TokenServiceDelegate overrides.
+  // Overridden from OAuth2TokenServiceDelegate.
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -61,16 +61,13 @@ class MutableProfileOAuth2TokenServiceDelegate
   std::vector<std::string> GetAccounts() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
-
   void LoadCredentials(const std::string& primary_account_id) override;
   void UpdateCredentials(const std::string& account_id,
                          const std::string& refresh_token) override;
   void RevokeAllCredentials() override;
-
-  // Revokes credentials related to |account_id|.
   void RevokeCredentials(const std::string& account_id) override;
-
-  // Overridden from OAuth2TokenServiceDelegate.
+  void ExtractCredentials(OAuth2TokenService* to_service,
+                          const std::string& account_id) override;
   void Shutdown() override;
 
   // Overridden from NetworkConnectionTracker::NetworkConnectionObserver.
@@ -132,6 +129,8 @@ class MutableProfileOAuth2TokenServiceDelegate
                            ClearTokensOnStartup);
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
                            InvalidateTokensForMultilogin);
+  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
+                           ExtractCredentials);
 
   // WebDataServiceConsumer implementation:
   void OnWebDataServiceRequestDone(
@@ -175,6 +174,12 @@ class MutableProfileOAuth2TokenServiceDelegate
   // Called at when tokens are loaded. Performs housekeeping tasks and notifies
   // the observers.
   void FinishLoadingCredentials();
+
+  // Deletes the credential locally and notifies observers through
+  // OnRefreshTokenRevoked(). If |revoke_on_server| is true, the token is also
+  // revoked on the server.
+  void RevokeCredentialsImpl(const std::string& account_id,
+                             bool revoke_on_server);
 
   // Maps the |account_id| of accounts known to ProfileOAuth2TokenService
   // to information about the account.

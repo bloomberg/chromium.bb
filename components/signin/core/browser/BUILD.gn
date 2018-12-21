@@ -84,6 +84,7 @@ static_library("internals") {
 
   deps = [
     ":shared",
+    ":signin_buildflags",
     "//base",
     "//components/data_use_measurement/core",
     "//components/keyed_service/core",

@@ -101,6 +101,13 @@ class OAuth2TokenServiceDelegate {
     return load_credentials_state_;
   }
 
+  // Removes the credentials associated to account_id from the internal storage,
+  // and moves them to |to_service|. The credentials are not revoked on the
+  // server, but the OnRefreshTokenRevoked() notification is sent to the
+  // observers.
+  virtual void ExtractCredentials(OAuth2TokenService* to_service,
+                                  const std::string& account_id);
+
   // -----------------------------------------------------------------------
   // End of methods that are only used by ProfileOAuth2TokenService
   // -----------------------------------------------------------------------

@@ -838,19 +838,7 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeAllCredentials() {
 
 void MutableProfileOAuth2TokenServiceDelegate::RevokeCredentials(
     const std::string& account_id) {
-  ValidateAccountId(account_id);
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (refresh_tokens_.count(account_id) > 0) {
-    VLOG(1) << "MutablePO2TS::RevokeCredentials for account_id=" << account_id;
-    ScopedBatchChange batch(this);
-    const std::string& token = refresh_tokens_[account_id].refresh_token;
-    RecordTokenRevoked(token);
-    RevokeCredentialsOnServer(token);
-    refresh_tokens_.erase(account_id);
-    ClearPersistedCredentials(account_id);
-    FireRefreshTokenRevoked(account_id);
-  }
+  RevokeCredentialsImpl(account_id, /*revoke_on_server=*/true);
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::ClearPersistedCredentials(
@@ -884,11 +872,22 @@ void MutableProfileOAuth2TokenServiceDelegate::CancelWebTokenFetch() {
   }
 }
 
+void MutableProfileOAuth2TokenServiceDelegate::ExtractCredentials(
+    OAuth2TokenService* to_service,
+    const std::string& account_id) {
+  static_cast<ProfileOAuth2TokenService*>(to_service)
+      ->UpdateCredentials(account_id, GetRefreshToken(account_id),
+                          signin_metrics::SourceForRefreshTokenOperation::
+                              kTokenService_ExtractCredentials);
+  RevokeCredentialsImpl(account_id, /*revoke_on_server=*/false);
+}
+
 void MutableProfileOAuth2TokenServiceDelegate::Shutdown() {
   VLOG(1) << "MutablePO2TS::Shutdown";
   server_revokes_.clear();
   CancelWebTokenFetch();
   refresh_tokens_.clear();
+  OAuth2TokenServiceDelegate::Shutdown();
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::OnConnectionChanged(
@@ -914,4 +913,23 @@ void MutableProfileOAuth2TokenServiceDelegate::AddAccountStatus(
 
 void MutableProfileOAuth2TokenServiceDelegate::FinishLoadingCredentials() {
   FireRefreshTokensLoaded();
+}
+
+void MutableProfileOAuth2TokenServiceDelegate::RevokeCredentialsImpl(
+    const std::string& account_id,
+    bool revoke_on_server) {
+  ValidateAccountId(account_id);
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (refresh_tokens_.count(account_id) > 0) {
+    VLOG(1) << "MutablePO2TS::RevokeCredentials for account_id=" << account_id;
+    ScopedBatchChange batch(this);
+    const std::string& token = refresh_tokens_[account_id].refresh_token;
+    RecordTokenRevoked(token);
+    if (revoke_on_server)
+      RevokeCredentialsOnServer(token);
+    refresh_tokens_.erase(account_id);
+    ClearPersistedCredentials(account_id);
+    FireRefreshTokenRevoked(account_id);
+  }
 }
