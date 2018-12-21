@@ -483,8 +483,11 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   blink::WebString web_name = src.GetName(nameFrom, nameObjects);
   if ((!web_name.IsEmpty() && !web_name.IsNull()) ||
       nameFrom == ax::mojom::NameFrom::kAttributeExplicitlyEmpty) {
+    int max_length = dst->role == ax::mojom::Role::kStaticText
+                         ? kMaxStaticTextLength
+                         : kMaxStringAttributeLength;
     TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kName,
-                                  web_name.Utf8());
+                                  web_name.Utf8(), max_length);
     dst->SetNameFrom(nameFrom);
     AddIntListAttributeFromWebObjects(
         ax::mojom::IntListAttribute::kLabelledbyIds, nameObjects, dst);
@@ -1011,11 +1014,11 @@ WebAXObject BlinkAXTreeSource::ComputeRoot() const {
 void BlinkAXTreeSource::TruncateAndAddStringAttribute(
     AXContentNodeData* dst,
     ax::mojom::StringAttribute attribute,
-    const std::string& value) const {
-  if (value.size() > BlinkAXTreeSource::kMaxStringAttributeLength) {
+    const std::string& value,
+    uint32_t max_len) const {
+  if (value.size() > max_len) {
     std::string truncated;
-    base::TruncateUTF8ToByteSize(
-        value, BlinkAXTreeSource::kMaxStringAttributeLength, &truncated);
+    base::TruncateUTF8ToByteSize(value, max_len, &truncated);
     dst->AddStringAttribute(attribute, truncated);
   } else {
     dst->AddStringAttribute(attribute, value);

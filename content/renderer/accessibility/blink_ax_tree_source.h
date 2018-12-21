@@ -110,10 +110,16 @@ class BlinkAXTreeSource
 
   blink::WebAXObject ComputeRoot() const;
 
-  uint32_t kMaxStringAttributeLength = 10000;
-  void TruncateAndAddStringAttribute(AXContentNodeData* dst,
-                                     ax::mojom::StringAttribute attribute,
-                                     const std::string& value) const;
+  // Max length for attributes such as aria-label.
+  static const uint32_t kMaxStringAttributeLength = 10000;
+  // Max length for a static text name.
+  // Length of War and Peace (http://www.gutenberg.org/files/2600/2600-0.txt).
+  static const uint32_t kMaxStaticTextLength = 3227574;
+  void TruncateAndAddStringAttribute(
+      AXContentNodeData* dst,
+      ax::mojom::StringAttribute attribute,
+      const std::string& value,
+      uint32_t max_len = kMaxStringAttributeLength) const;
 
   RenderFrameImpl* render_frame_;
 
