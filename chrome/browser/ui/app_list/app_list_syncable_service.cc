@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
@@ -34,6 +35,7 @@
 #include "chrome/browser/ui/app_list/internal_app/internal_app_model_builder.h"
 #include "chrome/browser/ui/app_list/page_break_app_item.h"
 #include "chrome/browser/ui/app_list/page_break_constants.h"
+#include "chrome/browser/ui/app_list/plugin_vm/plugin_vm_app_model_builder.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -373,6 +375,10 @@ void AppListSyncableService::BuildModel() {
       crostini_apps_builder_ =
           std::make_unique<CrostiniAppModelBuilder>(controller);
     }
+    if (plugin_vm::IsPluginVmAllowedForProfile(profile_)) {
+      plugin_vm_apps_builder_ =
+          std::make_unique<PluginVmAppModelBuilder>(controller);
+    }
     internal_apps_builder_ =
         std::make_unique<InternalAppModelBuilder>(controller);
   }
@@ -388,6 +394,8 @@ void AppListSyncableService::BuildModel() {
       arc_apps_builder_->Initialize(this, profile_, model_updater_.get());
     if (crostini_apps_builder_.get())
       crostini_apps_builder_->Initialize(this, profile_, model_updater_.get());
+    if (plugin_vm_apps_builder_.get())
+      plugin_vm_apps_builder_->Initialize(this, profile_, model_updater_.get());
     internal_apps_builder_->Initialize(this, profile_, model_updater_.get());
   }
 
@@ -908,6 +916,7 @@ void AppListSyncableService::Shutdown() {
   crostini_apps_builder_.reset();
   arc_apps_builder_.reset();
   ext_apps_builder_.reset();
+  plugin_vm_apps_builder_.reset();
 }
 
 // AppListSyncableService private
