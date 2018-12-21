@@ -5035,24 +5035,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "views_mus_interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "views_mus_unittests"
-      },
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "views_unittests"
       },
       {
@@ -6563,36 +6545,6 @@
           ]
         },
         "test": "url_unittests"
-      },
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Ubuntu-14.04"
-            }
-          ]
-        },
-        "test": "views_mus_interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Ubuntu-14.04"
-            }
-          ]
-        },
-        "test": "views_mus_unittests"
       },
       {
         "args": [

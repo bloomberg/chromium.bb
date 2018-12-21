@@ -46,8 +46,14 @@ class RemoteViewHostTest : public aura::test::AuraTestBase {
 
   // aura::test::AuraTestBase
   void SetUp() override {
+    env_ = aura::Env::CreateInstance();
     EnableMusWithTestWindowTree();
     AuraTestBase::SetUp();
+  }
+
+  void TearDown() override {
+    AuraTestBase::TearDown();
+    env_.reset();
   }
 
   // Creates a widget to host |contents|.
@@ -77,6 +83,8 @@ class RemoteViewHostTest : public aura::test::AuraTestBase {
   }
 
  private:
+  std::unique_ptr<aura::Env> env_;
+
   DISALLOW_COPY_AND_ASSIGN(RemoteViewHostTest);
 };
 
