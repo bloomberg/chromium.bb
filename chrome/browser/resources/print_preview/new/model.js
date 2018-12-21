@@ -790,6 +790,8 @@ Polymer({
       previewModifiable: this.documentInfo.isModifiable,
       printToPDF: destination.id ==
           print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
+      printToGoogleDrive:
+          destination.id == print_preview.Destination.GooglePromotedId.DOCS,
       printWithCloudPrint: !destination.isLocal,
       printWithPrivet: destination.isPrivet,
       printWithExtension: destination.isExtension,
