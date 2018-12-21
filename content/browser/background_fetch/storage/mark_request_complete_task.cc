@@ -289,6 +289,8 @@ void MarkRequestCompleteTask::DidGetMetadata(
 
   metadata->mutable_registration()->set_downloaded(
       metadata->registration().downloaded() + request_info_->GetFileSize());
+  metadata->mutable_registration()->set_uploaded(
+      metadata->registration().uploaded() + request_info_->request_body_size());
 
   service_worker_context()->StoreRegistrationUserData(
       registration_id_.service_worker_registration_id(),

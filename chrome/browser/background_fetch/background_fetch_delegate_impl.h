@@ -80,7 +80,9 @@ class BackgroundFetchDelegateImpl
       const std::string& guid,
       std::unique_ptr<content::BackgroundFetchResponse> response);
 
-  void OnDownloadUpdated(const std::string& guid, uint64_t bytes_downloaded);
+  void OnDownloadUpdated(const std::string& guid,
+                         uint64_t bytes_uploaded,
+                         uint64_t bytes_downloaded);
 
   void OnDownloadFailed(const std::string& guid,
                         std::unique_ptr<content::BackgroundFetchResult> result);

@@ -240,7 +240,7 @@ class GetRequestsTask : public InitializationSubTask {
           active_request.request_index(),
           ServiceWorkerUtils::DeserializeFetchRequestFromString(
               active_request.serialized_request()),
-          active_request.has_request_body());
+          active_request.request_body_size());
       request_info->SetDownloadGuid(active_request.download_guid());
 
       sub_task_init().initialization_data->active_fetch_requests.push_back(

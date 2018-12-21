@@ -1413,13 +1413,17 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
                           2 /* completed_requests */}));
 }
 
-TEST_F(BackgroundFetchDataManagerTest, DownloadedUpdated) {
+TEST_F(BackgroundFetchDataManagerTest, RegistrationBytesUpdated) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
   BackgroundFetchRegistrationId registration_id(
       sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
   auto requests = CreateValidRequests(origin(), 3u /* num_requests */);
+
+  const std::string upload_payload = "Upload Data";
+  requests[0]->blob = BuildBlob(upload_payload);
+  requests[1]->blob = BuildBlob(upload_payload);
 
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
@@ -1435,6 +1439,8 @@ TEST_F(BackgroundFetchDataManagerTest, DownloadedUpdated) {
       GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(registration->downloaded, 0u);
+  EXPECT_EQ(registration->uploaded, 0u);
+  EXPECT_EQ(registration->upload_total, 2 * upload_payload.size());
 
   scoped_refptr<BackgroundFetchRequestInfo> request_info;
   PopNextRequest(registration_id, &error, &request_info);
@@ -1447,6 +1453,9 @@ TEST_F(BackgroundFetchDataManagerTest, DownloadedUpdated) {
   registration = GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(registration->downloaded, kResponseFileSize);
+  EXPECT_EQ(registration->uploaded, upload_payload.size());
+
+  RestartDataManagerFromPersistentStorage();
 
   PopNextRequest(registration_id, &error, &request_info);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -1458,6 +1467,7 @@ TEST_F(BackgroundFetchDataManagerTest, DownloadedUpdated) {
   registration = GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(registration->downloaded, 2 * kResponseFileSize);
+  EXPECT_EQ(registration->uploaded, 2 * upload_payload.size());
 
   PopNextRequest(registration_id, &error, &request_info);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -1468,8 +1478,9 @@ TEST_F(BackgroundFetchDataManagerTest, DownloadedUpdated) {
 
   registration = GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-  // |registration.downloaded| is unchanged.
+
   EXPECT_EQ(registration->downloaded, 2 * kResponseFileSize);
+  EXPECT_EQ(registration->uploaded, 2 * upload_payload.size());
 }
 
 TEST_F(BackgroundFetchDataManagerTest, ExceedingQuotaIsReported) {

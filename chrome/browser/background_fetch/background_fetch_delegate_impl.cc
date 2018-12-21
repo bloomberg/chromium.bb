@@ -387,6 +387,7 @@ void BackgroundFetchDelegateImpl::OnDownloadStarted(
 
 void BackgroundFetchDelegateImpl::OnDownloadUpdated(
     const std::string& download_guid,
+    uint64_t bytes_uploaded,
     uint64_t bytes_downloaded) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto download_job_unique_id_iter =
@@ -416,7 +417,7 @@ void BackgroundFetchDelegateImpl::OnDownloadUpdated(
 
   if (job_details.client)
     job_details.client->OnDownloadUpdated(job_unique_id, download_guid,
-                                          bytes_downloaded);
+                                          bytes_uploaded, bytes_downloaded);
 }
 
 void BackgroundFetchDelegateImpl::OnDownloadFailed(

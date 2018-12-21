@@ -114,24 +114,28 @@ message BackgroundFetchUIOptions {
 
 // A background fetch request that is still in a pending state.
 //
-// Next Tag: 5
+// Next Tag: 6
 message BackgroundFetchPendingRequest {
   optional string unique_id = 1;
   optional int32 request_index = 2;
   optional string serialized_request = 3;
-  optional bool has_request_body = 4;
+  optional uint64 request_body_size = 5;
+
+  reserved 4;
 }
 
 // A background fetch request in the active state. This means that
 // the DownloadManager started downloading the file.
 //
-// Next Tag: 6
+// Next Tag: 7
 message BackgroundFetchActiveRequest {
   optional string unique_id = 1;
   optional int32 request_index = 2;
   optional string serialized_request = 3;
   optional string download_guid = 4;
-  optional bool has_request_body = 5;
+  optional uint64 request_body_size = 6;
+
+  reserved 5;
 }
 
 // A background fetch request in the completed state. This means that

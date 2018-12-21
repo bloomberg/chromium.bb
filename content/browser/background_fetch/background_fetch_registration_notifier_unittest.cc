@@ -27,8 +27,10 @@ const char kPrimaryUniqueId[] = "7e57ab1e-c0de-a150-ca75-1e75f005ba11";
 const char kSecondaryUniqueId[] = "bb48a9fb-c21f-4c2d-a9ae-58bd48a9fb53";
 const char kURL[] = "https://example.com";
 
-constexpr uint64_t kDownloadTotal = 1;
-constexpr uint64_t kDownloaded = 2;
+constexpr uint64_t kDownloadTotal = 2u;
+constexpr uint64_t kDownloaded = 1u;
+constexpr uint64_t kUploadTotal = 3u;
+constexpr uint64_t kUploaded = 3u;
 
 class TestRegistrationObserver
     : public blink::mojom::BackgroundFetchRegistrationObserver {
@@ -165,17 +167,15 @@ TEST_F(BackgroundFetchRegistrationNotifierTest, NotifySingleObserver) {
   ASSERT_EQ(observer->progress_updates().size(), 0u);
 
   Notify(blink::mojom::BackgroundFetchRegistration::New(
-      kDeveloperId, kPrimaryUniqueId,
-      /* upload_total*/ 0, /* uploaded*/ 0, kDownloadTotal, kDownloaded,
-      blink::mojom::BackgroundFetchResult::UNSET,
+      kDeveloperId, kPrimaryUniqueId, kUploadTotal, kUploaded, kDownloadTotal,
+      kDownloaded, blink::mojom::BackgroundFetchResult::UNSET,
       blink::mojom::BackgroundFetchFailureReason::NONE));
 
   ASSERT_EQ(observer->progress_updates().size(), 1u);
 
   auto& update = observer->progress_updates()[0];
-  // TODO(crbug.com/774054): Uploads are not yet supported.
-  EXPECT_EQ(update.upload_total, 0u);
-  EXPECT_EQ(update.uploaded, 0u);
+  EXPECT_EQ(update.upload_total, kUploadTotal);
+  EXPECT_EQ(update.uploaded, kUploaded);
   EXPECT_EQ(update.download_total, kDownloadTotal);
   EXPECT_EQ(update.downloaded, kDownloaded);
   EXPECT_EQ(update.result, blink::mojom::BackgroundFetchResult::UNSET);
@@ -201,18 +201,16 @@ TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyMultipleObservers) {
 
   // Notify the |kPrimaryUniqueId|.
   Notify(blink::mojom::BackgroundFetchRegistration::New(
-      kDeveloperId, kPrimaryUniqueId,
-      /* upload_total*/ 0, /* uploaded*/ 0, kDownloadTotal, kDownloaded,
-      blink::mojom::BackgroundFetchResult::UNSET,
+      kDeveloperId, kPrimaryUniqueId, kUploadTotal, kUploaded, kDownloadTotal,
+      kDownloaded, blink::mojom::BackgroundFetchResult::UNSET,
       blink::mojom::BackgroundFetchFailureReason::NONE));
 
   for (auto& observer : primary_observers) {
     ASSERT_EQ(observer->progress_updates().size(), 1u);
 
     auto& update = observer->progress_updates()[0];
-    // TODO(crbug.com/774054): Uploads are not yet supported.
-    EXPECT_EQ(update.upload_total, 0u);
-    EXPECT_EQ(update.uploaded, 0u);
+    EXPECT_EQ(update.upload_total, kUploadTotal);
+    EXPECT_EQ(update.uploaded, kUploaded);
     EXPECT_EQ(update.download_total, kDownloadTotal);
     EXPECT_EQ(update.downloaded, kDownloaded);
     EXPECT_EQ(update.result, blink::mojom::BackgroundFetchResult::UNSET);
@@ -232,9 +230,8 @@ TEST_F(BackgroundFetchRegistrationNotifierTest,
   ASSERT_EQ(observer->progress_updates().size(), 0u);
 
   Notify(blink::mojom::BackgroundFetchRegistration::New(
-      kDeveloperId, kPrimaryUniqueId,
-      /* upload_total*/ 0, /* uploaded*/ 0, kDownloadTotal, kDownloaded,
-      blink::mojom::BackgroundFetchResult::UNSET,
+      kDeveloperId, kPrimaryUniqueId, kUploadTotal, kUploaded, kDownloadTotal,
+      kDownloaded, blink::mojom::BackgroundFetchResult::UNSET,
       blink::mojom::BackgroundFetchFailureReason::NONE));
 
   ASSERT_EQ(observer->progress_updates().size(), 1u);
@@ -243,9 +240,8 @@ TEST_F(BackgroundFetchRegistrationNotifierTest,
   observer->Close();
 
   Notify(blink::mojom::BackgroundFetchRegistration::New(
-      kDeveloperId, kPrimaryUniqueId,
-      /* upload_total*/ 0, /* uploaded*/ 0, kDownloadTotal, kDownloaded,
-      blink::mojom::BackgroundFetchResult::UNSET,
+      kDeveloperId, kPrimaryUniqueId, kUploadTotal, kUploaded, kDownloadTotal,
+      kDownloaded, blink::mojom::BackgroundFetchResult::UNSET,
       blink::mojom::BackgroundFetchFailureReason::NONE));
 
   // The observers for |kPrimaryUniqueId| were removed, so no second update

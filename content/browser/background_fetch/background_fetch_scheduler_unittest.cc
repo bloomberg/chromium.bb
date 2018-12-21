@@ -38,7 +38,9 @@ class FakeController : public BackgroundFetchJobController {
             registration_id,
             blink::mojom::BackgroundFetchOptions::New(),
             SkBitmap(),
-            0ul,
+            /* bytes_downloaded= */ 0u,
+            /* bytes_uploaded= */ 0u,
+            /* upload_total= */ 0u,
             base::DoNothing(),
             std::move(finished_callback)),
         controller_sequence_list_(controller_sequence_list) {

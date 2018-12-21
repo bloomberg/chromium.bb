@@ -19,12 +19,12 @@ namespace content {
 BackgroundFetchRequestInfo::BackgroundFetchRequestInfo(
     int request_index,
     blink::mojom::FetchAPIRequestPtr fetch_request,
-    bool has_request_body)
+    uint64_t request_body_size)
     : RefCountedDeleteOnSequence<BackgroundFetchRequestInfo>(
           base::SequencedTaskRunnerHandle::Get()),
       request_index_(request_index),
       fetch_request_(std::move(fetch_request)),
-      has_request_body_(has_request_body) {}
+      request_body_size_(request_body_size) {}
 
 BackgroundFetchRequestInfo::~BackgroundFetchRequestInfo() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

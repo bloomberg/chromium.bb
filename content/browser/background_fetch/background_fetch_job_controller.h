@@ -58,6 +58,8 @@ class CONTENT_EXPORT BackgroundFetchJobController
       blink::mojom::BackgroundFetchOptionsPtr options,
       const SkBitmap& icon,
       uint64_t bytes_downloaded,
+      uint64_t bytes_uploaded,
+      uint64_t upload_total,
       ProgressCallback progress_callback,
       FinishedCallback finished_callback);
   ~BackgroundFetchJobController() override;
@@ -72,8 +74,10 @@ class CONTENT_EXPORT BackgroundFetchJobController
           active_fetch_requests,
       bool start_paused);
 
-  // Gets the number of bytes downloaded for jobs that are currently running.
+  // Gets the number of bytes downloaded/uploaded for jobs that are currently
+  // running.
   uint64_t GetInProgressDownloadedBytes();
+  uint64_t GetInProgressUploadedBytes();
 
   // Returns a blink::mojom::BackgroundFetchRegistrationPtr object
   // created with member fields.
@@ -92,6 +96,7 @@ class CONTENT_EXPORT BackgroundFetchJobController
       const scoped_refptr<BackgroundFetchRequestInfo>& request) override;
   void DidUpdateRequest(
       const scoped_refptr<BackgroundFetchRequestInfo>& request,
+      uint64_t bytes_uploaded,
       uint64_t bytes_downloaded) override;
   void DidCompleteRequest(
       const scoped_refptr<BackgroundFetchRequestInfo>& request) override;
@@ -150,8 +155,9 @@ class CONTENT_EXPORT BackgroundFetchJobController
   // Icon for the represented background fetch registration.
   SkBitmap icon_;
 
-  // Number of bytes downloaded for the active request.
-  uint64_t active_request_downloaded_bytes_ = 0;
+  // Number of bytes downloaded/uploaded for the active request.
+  uint64_t active_request_downloaded_bytes_ = 0u;
+  uint64_t active_request_uploaded_bytes_ = 0u;
 
   // Finished callback to invoke when the active request has finished.
   RequestFinishedCallback active_request_finished_callback_;
@@ -159,6 +165,12 @@ class CONTENT_EXPORT BackgroundFetchJobController
   // Cache of downloaded byte count stored by the DataManager, to enable
   // delivering progress events without having to read from the database.
   uint64_t complete_requests_downloaded_bytes_cache_;
+
+  // Overall number of bytes that have been uploaded.
+  uint64_t complete_requests_uploaded_bytes_cache_;
+
+  // Total number of bytes to upload.
+  uint64_t upload_total_;
 
   // Callback run each time download progress updates.
   ProgressCallback progress_callback_;
