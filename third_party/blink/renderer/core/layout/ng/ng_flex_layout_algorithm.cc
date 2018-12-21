@@ -157,15 +157,40 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
                                       ? physical_child_margins.HorizontalSum()
                                       : physical_child_margins.VerticalSum();
 
-    // TODO(dgrogan): When child has a min/max-{width,height} set, call
-    // Resolve{Inline,Block}Length here with child's style and constraint space.
-    // Pass kMinSize, kMaxSize as appropriate.
-    // Further, min-width:auto has special meaning for flex items. We'll need to
-    // calculate that here by either extracting the logic from legacy or
-    // reimplementing. When resolved, pass it here.
-    // https://www.w3.org/TR/css-flexbox-1/#min-size-auto
     MinMaxSize min_max_sizes_in_main_axis_direction{LayoutUnit(),
                                                     LayoutUnit::Max()};
+    Length max = is_horizontal_flow ? child.Style().MaxWidth()
+                                    : child.Style().MaxHeight();
+    if (MainAxisIsInlineAxis(child)) {
+      min_max_sizes_in_main_axis_direction.max_size = ResolveInlineLength(
+          child_space, child_style, min_max_sizes_border_box, max,
+          LengthResolveType::kMaxSize, LengthResolvePhase::kLayout);
+    } else {
+      min_max_sizes_in_main_axis_direction.max_size = ResolveBlockLength(
+          child_space, child_style, max,
+          fragment_in_child_writing_mode.BlockSize(),
+          LengthResolveType::kMaxSize, LengthResolvePhase::kLayout);
+    }
+
+    Length min = is_horizontal_flow ? child.Style().MinWidth()
+                                    : child.Style().MinHeight();
+    if (min.IsAuto()) {
+      if (algorithm.ShouldApplyMinSizeAutoForChild(*child.GetLayoutBox())) {
+        // TODO(dgrogan): Port logic from
+        // https://www.w3.org/TR/css-flexbox-1/#min-size-auto and
+        // LayoutFlexibleBox::ComputeMinAndMaxSizesForChild
+      }
+    } else if (MainAxisIsInlineAxis(child)) {
+      min_max_sizes_in_main_axis_direction.min_size = ResolveInlineLength(
+          child_space, child_style, min_max_sizes_border_box, min,
+          LengthResolveType::kMinSize, LengthResolvePhase::kLayout);
+    } else {
+      min_max_sizes_in_main_axis_direction.min_size = ResolveBlockLength(
+          child_space, child_style, min,
+          fragment_in_child_writing_mode.BlockSize(),
+          LengthResolveType::kMinSize, LengthResolvePhase::kLayout);
+    }
+
     algorithm
         .emplace_back(child.GetLayoutBox(), flex_base_content_size,
                       min_max_sizes_in_main_axis_direction,
