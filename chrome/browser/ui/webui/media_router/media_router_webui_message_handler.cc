@@ -964,13 +964,13 @@ void MediaRouterWebUIMessageHandler::OnPlayCurrentMedia(
 void MediaRouterWebUIMessageHandler::OnSeekCurrentMedia(
     const base::ListValue* args) {
   const base::DictionaryValue* args_dict = nullptr;
-  int time;
+  double time;
   if (!args->GetDictionary(0, &args_dict) ||
-      !args_dict->GetInteger("time", &time)) {
+      !args_dict->GetDouble("time", &time)) {
     DVLOG(1) << "Unable to extract time";
     return;
   }
-  base::TimeDelta time_delta = base::TimeDelta::FromSeconds(time);
+  base::TimeDelta time_delta = base::TimeDelta::FromSecondsD(time);
   MediaRouteController* route_controller =
       media_router_ui_->GetMediaRouteController();
   if (route_controller && current_media_status_ &&

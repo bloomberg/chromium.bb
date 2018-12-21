@@ -199,7 +199,7 @@ cr.define('route_controls', function() {
         MockInteractions.tap(controls.$$('#route-volume-button'));
       });
 
-      // // Tests that the seek slider sends a command to the browser API.
+      // Tests that the seek slider sends a command to the browser API.
       test('send seek command', function(done) {
         var currentTime = 500;
         var duration = 1200;
@@ -222,16 +222,16 @@ cr.define('route_controls', function() {
         // In actual usage, the change event gets fired when the user interacts
         // with the slider.
         controls.$$('#route-time-slider').value = currentTime;
-        controls.$$('#route-time-slider').fire('change');
+        controls.$$('#route-time-slider').fire('cr-slider-value-changed');
       });
 
       // Tests that the volume slider sends a command to the browser API.
       test('send set volume command', function(done) {
-        var volume = 0.45;
+        var volume = 45;
         var waitForSetVolumeEvent = function(data) {
           document.removeEventListener(
               'mock-set-current-media-volume', waitForSetVolumeEvent);
-          if (data.detail.volume == volume) {
+          if (data.detail.volume == volume / 100) {
             done();
           } else {
             done(
@@ -247,7 +247,7 @@ cr.define('route_controls', function() {
         // In actual usage, the change event gets fired when the user interacts
         // with the slider.
         controls.$$('#route-volume-slider').value = volume;
-        controls.$$('#route-volume-slider').fire('change');
+        controls.$$('#route-volume-slider').fire('cr-slider-value-changed');
       });
 
       test('increment current time while playing', function(done) {
@@ -329,7 +329,7 @@ cr.define('route_controls', function() {
       test('ignore external updates right after using sliders', function(done) {
         var currentTime = 500;
         var externalCurrentTime = 800;
-        var volume = 0.45;
+        var volume = 45;
         var externalVolume = 0.72;
         var duration = 1200;
         var doExternalUpdate = function() {
@@ -348,9 +348,9 @@ cr.define('route_controls', function() {
         // In actual usage, the change event gets fired when the user interacts
         // with the slider.
         controls.$$('#route-time-slider').value = currentTime;
-        controls.$$('#route-time-slider').fire('change');
+        controls.$$('#route-time-slider').fire('cr-slider-value-changed');
         controls.$$('#route-volume-slider').value = volume;
-        controls.$$('#route-volume-slider').fire('change');
+        controls.$$('#route-volume-slider').fire('cr-slider-value-changed');
 
         // External updates right after slider interaction should be ignored.
         doExternalUpdate();
@@ -363,7 +363,7 @@ cr.define('route_controls', function() {
           assertEquals(
               controls.$$('#route-time-slider').value, externalCurrentTime);
           assertEquals(
-              controls.$$('#route-volume-slider').value, externalVolume);
+              controls.$$('#route-volume-slider').value, externalVolume * 100);
           done();
         }, 1001);
       });

@@ -1,10 +1,10 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_slider/cr_slider.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
 
 <iron-iconset-svg name="route-controls" size="24">
 <svg><defs>
@@ -31,15 +31,15 @@
       </div>
       <div>
         <div id="route-time-controls" hidden="[[!routeStatus.canSeek]]">
-          <paper-slider
+          <cr-slider
               aria-valuetext$="[[getTimeSliderValueText_(displayedCurrentTime_)]]"
               dir="ltr"
               id="route-time-slider"
-              on-change="onSeekComplete_"
-              on-immediate-value-change="onSeekByDragging_"
-              min="0" max="[[routeStatus.duration]]" step="1"
+              on-dragging-changed="onSeekingChanged_"
+              on-cr-slider-value-changed="onSeekSliderValueChanged_"
+              min="0" max="[[routeStatus.duration]]"
               title="[[i18n('seekTitle')]]"
-              value="[[displayedCurrentTime_]]"></paper-slider>
+              value="[[displayedCurrentTime_]]"></cr-slider>
           <div id="timeline">
             <span id="current-time"
                   aria-label$="[[getCurrentTimeLabel_(displayedCurrentTime_)]]">
@@ -69,15 +69,13 @@
                 on-click="onMuteUnmute_"></paper-icon-button>
           </span>
           <span id="volume-holder" hidden="[[!routeStatus.canSetVolume]]">
-            <paper-slider
+            <cr-slider
                 aria-valuetext$="[[getVolumeSliderValueText_(displayedVolume_)]]"
                 id="route-volume-slider"
                 disabled="[[!routeStatus.canSetVolume]]"
-                on-change="onVolumeChangeComplete_"
-                on-immediate-value-change="onVolumeChangeByDragging_"
-                title="[[i18n('volumeTitle')]]"
-                value="[[displayedVolume_]]"
-                min="0" max="1" step="0.01"></paper-slider>
+                on-cr-slider-value-changed="onVolumeChanged_"
+                on-dragging-changed="onVolumeDraggingChanged_"
+                title="[[i18n('volumeTitle')]]"></cr-slider>
           </span>
           <div id="hangouts-local-present-controls"
                hidden="[[!routeStatus.hangoutsExtraData]]">

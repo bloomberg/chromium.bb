@@ -147,6 +147,7 @@ suite('cr-slider', function() {
 
   test('snaps to closest value', () => {
     crSlider.snaps = true;
+    crSlider.ticks = [];
     pointerDown(.501);
     assertEquals(50, crSlider.value);
     pointerMove(.505);
