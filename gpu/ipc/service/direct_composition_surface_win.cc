@@ -1012,6 +1012,10 @@ bool DCLayerTree::SwapChainPresenter::PresentToDecodeSwapChain(
 
     content_visual_->SetContent(decode_surface_.Get());
     *needs_commit = true;
+  } else if (last_y_image_ == image_dxgi && last_uv_image_ == image_dxgi &&
+             swap_chain_size_ == swap_chain_size) {
+    // Early out if we're presenting the same image again.
+    return true;
   }
 
   RECT source_rect = content_rect.ToRECT();
