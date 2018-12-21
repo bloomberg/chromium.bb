@@ -223,7 +223,6 @@
 #include <windows.h>
 #include "chrome/browser/ui/view_ids.h"
 #include "components/autofill/core/browser/autofill_ie_toolbar_import_win.h"
-#include "ui/base/pointer/pointer_device.h"
 #include "ui/base/win/shell.h"
 #endif  // OS_WIN
 
@@ -1111,28 +1110,15 @@ void Browser::SetTopControlsGestureScrollInProgress(bool in_progress) {
 }
 
 bool Browser::CanOverscrollContent() const {
-#if defined(OS_WIN)
-  // Don't enable overscroll on Windows machines unless they have a touch
-  // screen as these machines typically don't have a touchpad capable of
-  // horizontal scrolling. We are purposefully biased towards "no" here,
-  // so that we don't waste resources capturing screenshots for horizontal
-  // overscroll navigation unnecessarily.
-  bool allow_overscroll = ui::GetTouchScreensAvailability() ==
-      ui::TouchScreensAvailability::ENABLED;
-#elif defined(USE_AURA)
-  bool allow_overscroll = true;
-#else
-  bool allow_overscroll = false;
-#endif
-
-  if (!allow_overscroll)
-    return false;
-
+#if defined(USE_AURA)
   if (is_app() || is_devtools() || !is_type_tabbed())
     return false;
 
   return content::OverscrollConfig::GetHistoryNavigationMode() !=
          content::OverscrollConfig::HistoryNavigationMode::kDisabled;
+#else
+  return false;
+#endif
 }
 
 bool Browser::ShouldPreserveAbortedURLs(WebContents* source) {
