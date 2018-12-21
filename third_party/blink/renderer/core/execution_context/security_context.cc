@@ -146,6 +146,13 @@ void SecurityContext::InitializeFeaturePolicy(
 bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
                                        ReportOptions report_on_failure,
                                        const String& message) const {
+  if (report_on_failure == ReportOptions::kReportOnFailure) {
+    // We are expecting a violation report in case the feature is disabled in
+    // the context. Therefore, this qualifies as a potential violation (i.e.,
+    // if the feature was disabled it would generate a report).
+    CountPotentialFeaturePolicyViolation(feature);
+  }
+
   FeatureEnabledState state = GetFeatureEnabledState(feature);
   if (state == FeatureEnabledState::kEnabled)
     return true;

@@ -151,6 +151,8 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
       ReportOptions report_on_failure = ReportOptions::kDoNotReport,
       const String& message = g_empty_string) const;
   FeatureEnabledState GetFeatureEnabledState(mojom::FeaturePolicyFeature) const;
+  virtual void CountPotentialFeaturePolicyViolation(
+      mojom::FeaturePolicyFeature) const {}
   virtual void ReportFeaturePolicyViolation(
       mojom::FeaturePolicyFeature,
       mojom::FeaturePolicyDisposition,
