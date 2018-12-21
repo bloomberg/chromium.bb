@@ -17,6 +17,9 @@
 // The text to display.
 @property(nonatomic, copy) NSString* text;
 
+// The detail text string.
+@property(nonatomic, copy) NSString* detailText;
+
 // The current state of the switch.
 @property(nonatomic, assign, getter=isOn) BOOL on;
 

@@ -46,11 +46,8 @@ const CGFloat kIconImageSize = 28;
 
 @implementation SettingsSwitchCell
 
-@synthesize accessibilityConstraints = _accessibilityConstraints;
-@synthesize standardConstraints = _standardConstraints;
-@synthesize iconHiddenConstraint = _iconHiddenConstraint;
-@synthesize iconVisibleConstraint = _iconVisibleConstraint;
 @synthesize textLabel = _textLabel;
+@synthesize detailTextLabel = _detailTextLabel;
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
               reuseIdentifier:(NSString*)reuseIdentifier {
@@ -63,6 +60,9 @@ const CGFloat kIconImageSize = 28;
     _iconImageView.hidden = YES;
     [self.contentView addSubview:_iconImageView];
 
+    UILayoutGuide* textLayoutGuide = [[UILayoutGuide alloc] init];
+    [self.contentView addLayoutGuide:textLayoutGuide];
+
     _textLabel = [[UILabel alloc] init];
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
@@ -70,6 +70,16 @@ const CGFloat kIconImageSize = 28;
     _textLabel.textColor = [UIColor blackColor];
     _textLabel.numberOfLines = 0;
     [self.contentView addSubview:_textLabel];
+
+    _detailTextLabel = [[UILabel alloc] init];
+    _detailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _detailTextLabel.font =
+        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+    _detailTextLabel.adjustsFontForContentSizeCategory = YES;
+    _detailTextLabel.textColor =
+        UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+    _detailTextLabel.numberOfLines = 0;
+    [self.contentView addSubview:_detailTextLabel];
 
     _switchView = [[UISwitch alloc] initWithFrame:CGRectZero];
     _switchView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -83,30 +93,37 @@ const CGFloat kIconImageSize = 28;
     [self.contentView addSubview:_switchView];
 
     // Set up the constraints assuming that the icon image is hidden.
-    _iconVisibleConstraint = [_textLabel.leadingAnchor
+    _iconVisibleConstraint = [textLayoutGuide.leadingAnchor
         constraintEqualToAnchor:_iconImageView.trailingAnchor
                        constant:kIconTrailingPadding];
-    _iconHiddenConstraint = [_textLabel.leadingAnchor
+    _iconHiddenConstraint = [textLayoutGuide.leadingAnchor
         constraintEqualToAnchor:self.contentView.leadingAnchor
                        constant:kTableViewHorizontalSpacing];
 
     _standardConstraints = @[
       [_switchView.centerYAnchor
           constraintEqualToAnchor:self.contentView.centerYAnchor],
-      [_textLabel.trailingAnchor
+      [textLayoutGuide.trailingAnchor
           constraintLessThanOrEqualToAnchor:_switchView.leadingAnchor
                                    constant:-kTableViewHorizontalSpacing],
+      [textLayoutGuide.centerYAnchor
+          constraintEqualToAnchor:self.contentView.centerYAnchor],
+
+      [_switchView.trailingAnchor
+          constraintEqualToAnchor:self.contentView.trailingAnchor
+                         constant:-kTableViewHorizontalSpacing],
     ];
     _accessibilityConstraints = @[
-      [_switchView.topAnchor constraintEqualToAnchor:_textLabel.bottomAnchor
-                                            constant:kVerticalPadding],
+      [_switchView.topAnchor
+          constraintEqualToAnchor:textLayoutGuide.bottomAnchor
+                         constant:kVerticalPadding],
       [_switchView.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor
                          constant:kTableViewHorizontalSpacing],
       [_switchView.bottomAnchor
           constraintEqualToAnchor:self.contentView.bottomAnchor
                          constant:-kVerticalPadding],
-      [_textLabel.trailingAnchor
+      [textLayoutGuide.trailingAnchor
           constraintLessThanOrEqualToAnchor:self.contentView.trailingAnchor
                                    constant:-kTableViewHorizontalSpacing],
     ];
@@ -118,14 +135,24 @@ const CGFloat kIconImageSize = 28;
       [_iconImageView.widthAnchor constraintEqualToConstant:kIconImageSize],
       [_iconImageView.heightAnchor constraintEqualToConstant:kIconImageSize],
 
-      [_switchView.trailingAnchor
-          constraintEqualToAnchor:self.contentView.trailingAnchor
-                         constant:-kTableViewHorizontalSpacing],
-
       [_iconImageView.centerYAnchor
-          constraintEqualToAnchor:_textLabel.centerYAnchor],
+          constraintEqualToAnchor:textLayoutGuide.centerYAnchor],
 
       _iconHiddenConstraint,
+
+      [textLayoutGuide.leadingAnchor
+          constraintEqualToAnchor:_textLabel.leadingAnchor],
+      [textLayoutGuide.leadingAnchor
+          constraintEqualToAnchor:_detailTextLabel.leadingAnchor],
+      [textLayoutGuide.trailingAnchor
+          constraintEqualToAnchor:_textLabel.trailingAnchor],
+      [textLayoutGuide.trailingAnchor
+          constraintEqualToAnchor:_detailTextLabel.trailingAnchor],
+      [textLayoutGuide.topAnchor constraintEqualToAnchor:_textLabel.topAnchor],
+      [textLayoutGuide.bottomAnchor
+          constraintEqualToAnchor:_detailTextLabel.bottomAnchor],
+      [_textLabel.bottomAnchor
+          constraintEqualToAnchor:_detailTextLabel.topAnchor],
     ]];
 
     if (UIContentSizeCategoryIsAccessibilityCategory(
@@ -135,7 +162,8 @@ const CGFloat kIconImageSize = 28;
       [NSLayoutConstraint activateConstraints:_standardConstraints];
     }
 
-    AddOptionalVerticalPadding(self.contentView, _textLabel, kVerticalPadding);
+    AddOptionalVerticalPadding(self.contentView, textLayoutGuide,
+                               kVerticalPadding);
   }
   return self;
 }
@@ -188,6 +216,8 @@ const CGFloat kIconImageSize = 28;
 - (void)prepareForReuse {
   [super prepareForReuse];
 
+  self.textLabel.text = nil;
+  self.detailTextLabel.text = nil;
   [self setIconImage:nil];
   [_switchView removeTarget:nil
                      action:nil
