@@ -42,7 +42,8 @@ class SANDBOX_EXPORT SyscallSets {
   static bool IsAllowedGetOrModifySocket(int sysno);
   static bool IsDeniedGetOrModifySocket(int sysno);
 
-#if defined(__i386__) || defined(__mips32__)
+#if defined(__i386__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
   // Big multiplexing system call for sockets.
   static bool IsSocketCall(int sysno);
 #endif
@@ -71,21 +72,22 @@ class SANDBOX_EXPORT SyscallSets {
   static bool IsAsyncIo(int sysno);
   static bool IsKeyManagement(int sysno);
 #if defined(__x86_64__) || defined(__arm__) || defined(__aarch64__) || \
-    defined(__mips64__)
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_64_BITS))
   static bool IsSystemVSemaphores(int sysno);
 #endif
 #if defined(__x86_64__) || defined(__arm__) || defined(__aarch64__) || \
-    defined(__mips64__)
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_64_BITS))
   // These give a lot of ambient authority and bypass the setuid sandbox.
   static bool IsSystemVSharedMemory(int sysno);
 #endif
 
 #if defined(__x86_64__) || defined(__arm__) || defined(__aarch64__) || \
-    defined(__mips64__)
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_64_BITS))
   static bool IsSystemVMessageQueue(int sysno);
 #endif
 
-#if defined(__i386__) || defined(__mips32__)
+#if defined(__i386__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
   // Big system V multiplexing system call.
   static bool IsSystemVIpc(int sysno);
 #endif

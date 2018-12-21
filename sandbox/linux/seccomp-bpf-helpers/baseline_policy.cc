@@ -86,7 +86,8 @@ bool IsBaselinePolicyWatched(int sysno) {
          SyscallSets::IsNuma(sysno) ||
          SyscallSets::IsPrctl(sysno) ||
          SyscallSets::IsProcessGroupOrSession(sysno) ||
-#if defined(__i386__) || defined(__mips32__)
+#if defined(__i386__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
          SyscallSets::IsSocketCall(sysno) ||
 #endif
 #if defined(__arm__)
@@ -147,7 +148,8 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
   if (sysno == __NR_fcntl)
     return RestrictFcntlCommands();
 
-#if defined(__i386__) || defined(__arm__) || defined(__mips32__)
+#if defined(__i386__) || defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
   if (sysno == __NR_fcntl64)
     return RestrictFcntlCommands();
 #endif
@@ -193,7 +195,8 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
     return RestrictMmapFlags();
 #endif
 
-#if defined(__i386__) || defined(__arm__) || defined(__mips32__)
+#if defined(__i386__) || defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
   if (sysno == __NR_mmap2)
     return RestrictMmapFlags();
 #endif
@@ -244,7 +247,8 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
     return Error(EPERM);
   }
 
-#if defined(__i386__) || defined(__mips32__)
+#if defined(__i386__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
   if (SyscallSets::IsSocketCall(sysno))
     return RestrictSocketcallCommand();
 #endif

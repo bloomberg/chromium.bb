@@ -28,7 +28,8 @@ bool SyscallSets::IsKill(int sysno) {
 bool SyscallSets::IsAllowedGettime(int sysno) {
   switch (sysno) {
     case __NR_gettimeofday:
-#if defined(__i386__) || defined(__x86_64__) || defined(__mips32__)
+#if defined(__i386__) || defined(__x86_64__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_time:
 #endif
       return true;
@@ -38,11 +39,13 @@ bool SyscallSets::IsAllowedGettime(int sysno) {
     case __NR_clock_gettime:
     case __NR_clock_nanosleep:  // Could be allowed.
     case __NR_clock_settime:    // Privileged.
-#if defined(__i386__) || defined(__mips32__)
+#if defined(__i386__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_ftime:  // Obsolete.
 #endif
     case __NR_settimeofday:  // Privileged.
-#if defined(__i386__) || defined(__mips32__)
+#if defined(__i386__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_stime:
 #endif
     default:
@@ -97,7 +100,7 @@ bool SyscallSets::IsFileSystem(int sysno) {
     case __NR_stat:  // EPERM not a valid errno.
     case __NR_symlink:
     case __NR_unlink:
-#if !defined(__mips64__)
+#if !defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_64_BITS)
     case __NR_uselib:  // Neither EPERM, nor ENOENT are valid errno.
 #endif
     case __NR_ustat:   // Same as above. Deprecated.
@@ -110,7 +113,8 @@ bool SyscallSets::IsFileSystem(int sysno) {
     case __NR_fchownat:  // Should be called chownat ?
 #if defined(__x86_64__) || defined(__aarch64__)
     case __NR_newfstatat:  // fstatat(). EPERM not a valid errno.
-#elif defined(__i386__) || defined(__arm__) || defined(__mips32__)
+#elif defined(__i386__) || defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_fstatat64:
 #endif
 #if defined(__i386__) || defined(__arm__)
@@ -119,7 +123,8 @@ bool SyscallSets::IsFileSystem(int sysno) {
     case __NR_linkat:
     case __NR_lookup_dcookie:  // ENOENT not a valid errno.
 
-#if defined(__i386__) || defined(__arm__) || defined(__mips32__)
+#if defined(__i386__) || defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_lstat64:
 #endif
     case __NR_memfd_create:
@@ -133,16 +138,19 @@ bool SyscallSets::IsFileSystem(int sysno) {
     case __NR_readlinkat:
     case __NR_renameat:
     case __NR_renameat2:
-#if defined(__i386__) || defined(__arm__) || defined(__mips32__)
+#if defined(__i386__) || defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_stat64:
 #endif
     case __NR_statfs:  // EPERM not a valid errno.
-#if defined(__i386__) || defined(__arm__) || defined(__mips32__)
+#if defined(__i386__) || defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_statfs64:
 #endif
     case __NR_symlinkat:
     case __NR_truncate:
-#if defined(__i386__) || defined(__arm__) || defined(__mips32__)
+#if defined(__i386__) || defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_truncate64:
 #endif
     case __NR_unlinkat:
@@ -159,7 +167,8 @@ bool SyscallSets::IsFileSystem(int sysno) {
 bool SyscallSets::IsAllowedFileSystemAccessViaFd(int sysno) {
   switch (sysno) {
     case __NR_fstat:
-#if defined(__i386__) || defined(__arm__) || defined(__mips32__)
+#if defined(__i386__) || defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_fstat64:
 #endif
       return true;
@@ -176,7 +185,8 @@ bool SyscallSets::IsAllowedFileSystemAccessViaFd(int sysno) {
     case __NR_fdatasync:  // EPERM not a valid errno.
     case __NR_flock:      // EPERM not a valid errno.
     case __NR_fstatfs:    // Give information about the whole filesystem.
-#if defined(__i386__) || defined(__arm__) || defined(__mips32__)
+#if defined(__i386__) || defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_fstatfs64:
 #endif
     case __NR_fsync:  // EPERM not a valid errno.
@@ -204,14 +214,16 @@ bool SyscallSets::IsDeniedFileSystemAccessViaFd(int sysno) {
 #if defined(__i386__) || defined(__arm__)
     case __NR_fchown32:
 #endif
-#if defined(__i386__) || defined(__arm__) || defined(__mips32__)
+#if defined(__i386__) || defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_ftruncate64:
 #endif
 #if !defined(__aarch64__)
     case __NR_getdents:    // EPERM not a valid errno.
 #endif
     case __NR_getdents64:  // EPERM not a valid errno.
-#if defined(__i386__) || defined(__mips32__)
+#if defined(__i386__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_readdir:
 #endif
       return true;
@@ -301,7 +313,8 @@ bool SyscallSets::IsAllowedSignalHandling(int sysno) {
     case __NR_rt_sigaction:
     case __NR_rt_sigprocmask:
     case __NR_rt_sigreturn:
-#if defined(__i386__) || defined(__arm__) || defined(__mips32__)
+#if defined(__i386__) || defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_sigaction:
     case __NR_sigprocmask:
     case __NR_sigreturn:
@@ -317,11 +330,13 @@ bool SyscallSets::IsAllowedSignalHandling(int sysno) {
     case __NR_signalfd:
 #endif
     case __NR_signalfd4:
-#if defined(__i386__) || defined(__arm__) || defined(__mips32__)
+#if defined(__i386__) || defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_sigpending:
     case __NR_sigsuspend:
 #endif
-#if defined(__i386__) || defined(__mips32__)
+#if defined(__i386__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_signal:
     case __NR_sgetmask:  // Obsolete.
     case __NR_ssetmask:
@@ -345,7 +360,8 @@ bool SyscallSets::IsAllowedOperationOnFd(int sysno) {
 #endif
       return true;
     case __NR_fcntl:
-#if defined(__i386__) || defined(__arm__) || defined(__mips32__)
+#if defined(__i386__) || defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_fcntl64:
 #endif
     default:
@@ -462,11 +478,12 @@ bool SyscallSets::IsDeniedGetOrModifySocket(int sysno) {
   }
 }
 
-#if defined(__i386__) || defined(__mips32__)
+#if defined(__i386__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
 // Big multiplexing system call for sockets.
 bool SyscallSets::IsSocketCall(int sysno) {
   switch (sysno) {
-#if !defined(__mips64__)
+#if !defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_64_BITS)
     case __NR_socketcall:
       return true;
 #endif
@@ -504,10 +521,12 @@ bool SyscallSets::IsAllowedAddressSpaceAccess(int sysno) {
     defined(__aarch64__)
     case __NR_mmap:
 #endif
-#if defined(__i386__) || defined(__arm__) || defined(__mips32__)
+#if defined(__i386__) || defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_mmap2:
 #endif
-#if defined(__i386__) || defined(__x86_64__) || defined(__mips32__)
+#if defined(__i386__) || defined(__x86_64__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_modify_ldt:
 #endif
     case __NR_mprotect:
@@ -528,7 +547,8 @@ bool SyscallSets::IsAllowedAddressSpaceAccess(int sysno) {
 bool SyscallSets::IsAllowedGeneralIo(int sysno) {
   switch (sysno) {
     case __NR_lseek:
-#if defined(__i386__) || defined(__arm__) || defined(__mips32__)
+#if defined(__i386__) || defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR__llseek:
 #endif
 #if !defined(__aarch64__)
@@ -539,7 +559,8 @@ bool SyscallSets::IsAllowedGeneralIo(int sysno) {
     case __NR_read:
     case __NR_readv:
     case __NR_pread64:
-#if defined(__arm__) || defined(__mips32__)
+#if defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_recv:
 #endif
 #if defined(__x86_64__) || defined(__arm__) || defined(__mips__) || \
@@ -553,7 +574,8 @@ bool SyscallSets::IsAllowedGeneralIo(int sysno) {
 #if defined(__i386__) || defined(__arm__) || defined(__mips__)
     case __NR__newselect:
 #endif
-#if defined(__arm__) || defined(__mips32__)
+#if defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_send:
 #endif
 #if defined(__x86_64__) || defined(__arm__) || defined(__mips__) || \
@@ -570,7 +592,8 @@ bool SyscallSets::IsAllowedGeneralIo(int sysno) {
     case __NR_pwritev:
     case __NR_recvmmsg:  // Could specify source.
     case __NR_sendfile:
-#if defined(__i386__) || defined(__arm__) || defined(__mips32__)
+#if defined(__i386__) || defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_sendfile64:
 #endif
     case __NR_sendmmsg:  // Could specify destination.
@@ -612,7 +635,8 @@ bool SyscallSets::IsAllowedBasicScheduler(int sysno) {
     case __NR_nanosleep:
       return true;
     case __NR_getpriority:
-#if defined(__i386__) || defined(__arm__) || defined(__mips32__)
+#if defined(__i386__) || defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_nice:
 #endif
     case __NR_setpriority:
@@ -623,7 +647,8 @@ bool SyscallSets::IsAllowedBasicScheduler(int sysno) {
 
 bool SyscallSets::IsAdminOperation(int sysno) {
   switch (sysno) {
-#if defined(__i386__) || defined(__arm__) || defined(__mips32__)
+#if defined(__i386__) || defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_bdflush:
 #endif
     case __NR_kexec_load:
@@ -671,7 +696,8 @@ bool SyscallSets::IsFsControl(int sysno) {
     case __NR_quotactl:
     case __NR_swapoff:
     case __NR_swapon:
-#if defined(__i386__) || defined(__mips32__)
+#if defined(__i386__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_umount:
 #endif
     case __NR_umount2:
@@ -722,7 +748,8 @@ bool SyscallSets::IsGlobalProcessEnvironment(int sysno) {
 #if defined(__i386__) || defined(__arm__)
     case __NR_ugetrlimit:
 #endif
-#if defined(__i386__) || defined(__mips32__)
+#if defined(__i386__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_ulimit:
 #endif
     case __NR_getrusage:
@@ -804,8 +831,10 @@ bool SyscallSets::IsKeyManagement(int sysno) {
 }
 
 #if defined(__x86_64__) || defined(__arm__) || defined(__aarch64__) || \
-    defined(__mips64__)
-bool SyscallSets::IsSystemVSemaphores(int sysno) { switch (sysno) { case __NR_semctl:
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_64_BITS))
+bool SyscallSets::IsSystemVSemaphores(int sysno) {
+  switch (sysno) {
+    case __NR_semctl:
     case __NR_semget:
     case __NR_semop:
     case __NR_semtimedop:
@@ -817,7 +846,7 @@ bool SyscallSets::IsSystemVSemaphores(int sysno) { switch (sysno) { case __NR_se
 #endif
 
 #if defined(__x86_64__) || defined(__arm__) || defined(__aarch64__) || \
-    defined(__mips64__)
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_64_BITS))
 // These give a lot of ambient authority and bypass the setuid sandbox.
 bool SyscallSets::IsSystemVSharedMemory(int sysno) {
   switch (sysno) {
@@ -833,7 +862,7 @@ bool SyscallSets::IsSystemVSharedMemory(int sysno) {
 #endif
 
 #if defined(__x86_64__) || defined(__arm__) || defined(__aarch64__) || \
-    defined(__mips64__)
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_64_BITS))
 bool SyscallSets::IsSystemVMessageQueue(int sysno) {
   switch (sysno) {
     case __NR_msgctl:
@@ -847,11 +876,12 @@ bool SyscallSets::IsSystemVMessageQueue(int sysno) {
 }
 #endif
 
-#if defined(__i386__) || defined(__mips32__)
+#if defined(__i386__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
 // Big system V multiplexing system call.
 bool SyscallSets::IsSystemVIpc(int sysno) {
   switch (sysno) {
-#if !defined(__mips64__)
+#if !defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_64_BITS)
     case __NR_ipc:
       return true;
 #endif
@@ -862,11 +892,12 @@ bool SyscallSets::IsSystemVIpc(int sysno) {
 #endif
 
 bool SyscallSets::IsAnySystemV(int sysno) {
-#if defined(__x86_64__) || defined(__arm__) || defined(__aarch64__) \
-    || defined(__mips64__)
+#if defined(__x86_64__) || defined(__arm__) || defined(__aarch64__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_64_BITS))
   return IsSystemVMessageQueue(sysno) || IsSystemVSemaphores(sysno) ||
          IsSystemVSharedMemory(sysno);
-#elif defined(__i386__) || defined(__mips32__)
+#elif defined(__i386__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
   return IsSystemVIpc(sysno);
 #endif
 }
@@ -981,13 +1012,15 @@ bool SyscallSets::IsMisc(int sysno) {
 #if defined(__i386__) || defined(__x86_64__) || defined(__mips__)
     case __NR_afs_syscall:
 #endif
-#if defined(__i386__) || defined(__mips32__)
+#if defined(__i386__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_break:
 #endif
 #if defined(__i386__) || defined(__x86_64__) || defined(__mips__)
     case __NR_getpmsg:
 #endif
-#if defined(__i386__) || defined(__mips32__)
+#if defined(__i386__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_gtty:
     case __NR_idle:
     case __NR_lock:
@@ -1001,7 +1034,8 @@ bool SyscallSets::IsMisc(int sysno) {
 #if defined(__x86_64__)
     case __NR_security:
 #endif
-#if defined(__i386__) || defined(__mips32__)
+#if defined(__i386__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_stty:
 #endif
 #if defined(__x86_64__)
@@ -1056,7 +1090,7 @@ bool SyscallSets::IsMipsPrivate(int sysno) {
 bool SyscallSets::IsMipsMisc(int sysno) {
   switch (sysno) {
     case __NR_sysmips:
-#if !defined(__mips64__)
+#if !defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_64_BITS)
     case __NR_unused150:
 #endif
       return true;

@@ -5,6 +5,8 @@
 #ifndef SANDBOX_LINUX_BPF_DSL_LINUX_SYSCALL_RANGES_H_
 #define SANDBOX_LINUX_BPF_DSL_LINUX_SYSCALL_RANGES_H_
 
+#include "build/build_config.h"
+
 #if defined(__x86_64__)
 
 #define MIN_SYSCALL         0u
@@ -33,14 +35,14 @@
 #define MIN_GHOST_SYSCALL   (MIN_PRIVATE_SYSCALL + 0xfff0u)
 #define MAX_SYSCALL         (MIN_GHOST_SYSCALL + 4u)
 
-#elif defined(__mips32__)
+#elif defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS)
 
 #include <asm/unistd.h>  // for __NR_O32_Linux and __NR_Linux_syscalls
 #define MIN_SYSCALL         __NR_O32_Linux
 #define MAX_PUBLIC_SYSCALL  (MIN_SYSCALL + __NR_Linux_syscalls)
 #define MAX_SYSCALL         MAX_PUBLIC_SYSCALL
 
-#elif defined(__mips64__)
+#elif defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_64_BITS)
 
 #include <asm/unistd.h>  // for __NR_64_Linux and __NR_64_Linux_syscalls
 #define MIN_SYSCALL         __NR_64_Linux
