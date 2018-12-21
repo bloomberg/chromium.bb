@@ -22,6 +22,7 @@
 #include "base/no_destructor.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
@@ -55,7 +56,6 @@
 #include "mojo/public/cpp/system/invitation.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/service_factory.h"
-#include "services/catalog/manifest_provider.h"
 #include "services/catalog/public/cpp/manifest_parsing_util.h"
 #include "services/catalog/public/mojom/constants.mojom.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
@@ -76,6 +76,7 @@
 #include "services/service_manager/embedder/manifest_utils.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
+#include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/runner/common/client_util.h"
@@ -217,53 +218,32 @@ void StartServiceInGpuProcess(
                                  std::move(pid_receiver));
 }
 
-// A ManifestProvider which resolves application names to builtin manifest
-// resources for the catalog service to consume.
-class BuiltinManifestProvider : public catalog::ManifestProvider {
- public:
-  BuiltinManifestProvider() {}
-  ~BuiltinManifestProvider() override {}
+service_manager::Manifest LoadServiceManifest(base::StringPiece service_name,
+                                              int resource_id) {
+  std::string contents =
+      GetContentClient()
+          ->GetDataResource(resource_id, ui::ScaleFactor::SCALE_FACTOR_NONE)
+          .as_string();
+  DCHECK(!contents.empty());
 
-  void AddServiceManifest(base::StringPiece name, int resource_id) {
-    std::string contents =
-        GetContentClient()
-            ->GetDataResource(resource_id, ui::ScaleFactor::SCALE_FACTOR_NONE)
-            .as_string();
-    DCHECK(!contents.empty());
+  service_manager::Manifest manifest =
+      service_manager::Manifest::FromValueDeprecated(
+          base::JSONReader::Read(contents));
+  base::Optional<service_manager::Manifest> overlay =
+      GetContentClient()->browser()->GetServiceManifestOverlay(service_name);
+  if (overlay)
+    manifest.Amend(*overlay);
 
-    std::unique_ptr<base::Value> manifest_value =
-        base::JSONReader::Read(contents);
-    DCHECK(manifest_value);
-
-    std::unique_ptr<base::Value> overlay_value =
-        GetContentClient()->browser()->GetServiceManifestOverlay(name);
-
-    service_manager::MergeManifestWithOverlay(manifest_value.get(),
-                                              overlay_value.get());
-
-    base::Optional<catalog::RequiredFileMap> required_files =
-        catalog::RetrieveRequiredFiles(*manifest_value);
-    if (required_files) {
-      ChildProcessLauncher::SetRegisteredFilesForService(
-          name.as_string(), std::move(*required_files));
-    }
-
-    auto result = manifests_.insert(
-        std::make_pair(name.as_string(), std::move(manifest_value)));
-    DCHECK(result.second) << "Duplicate manifest entry: " << name;
+  if (!manifest.preloaded_files.empty()) {
+    std::map<std::string, base::FilePath> preloaded_files_map;
+    for (const auto& info : manifest.preloaded_files)
+      preloaded_files_map.emplace(info.key, info.path);
+    ChildProcessLauncher::SetRegisteredFilesForService(
+        service_name.as_string(), std::move(preloaded_files_map));
   }
 
- private:
-  // catalog::ManifestProvider:
-  std::unique_ptr<base::Value> GetManifest(const std::string& name) override {
-    auto it = manifests_.find(name);
-    return it != manifests_.end() ? it->second->CreateDeepCopy() : nullptr;
-  }
-
-  std::map<std::string, std::unique_ptr<base::Value>> manifests_;
-
-  DISALLOW_COPY_AND_ASSIGN(BuiltinManifestProvider);
-};
+  return manifest;
+}
 
 class NullServiceProcessLauncherFactory
     : public service_manager::ServiceProcessLauncherFactory {
@@ -461,13 +441,12 @@ class ServiceManagerContext::InProcessServiceManagerContext
 
   void Start(
       service_manager::mojom::ServicePtrInfo packaged_services_service_info,
-      std::unique_ptr<BuiltinManifestProvider> manifest_provider) {
+      std::vector<service_manager::Manifest> manifests) {
     service_manager_thread_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(
             &InProcessServiceManagerContext::StartOnServiceManagerThread, this,
-            std::move(manifest_provider),
-            std::move(packaged_services_service_info),
+            std::move(manifests), std::move(packaged_services_service_info),
             base::ThreadTaskRunnerHandle::Get()));
   }
 
@@ -492,10 +471,9 @@ class ServiceManagerContext::InProcessServiceManagerContext
   ~InProcessServiceManagerContext() {}
 
   void StartOnServiceManagerThread(
-      std::unique_ptr<BuiltinManifestProvider> manifest_provider,
+      std::vector<service_manager::Manifest> manifests,
       service_manager::mojom::ServicePtrInfo packaged_services_service_info,
       scoped_refptr<base::SequencedTaskRunner> ui_thread_task_runner) {
-    manifest_provider_ = std::move(manifest_provider);
     std::unique_ptr<service_manager::ServiceProcessLauncherFactory>
         service_process_launcher_factory;
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -507,8 +485,7 @@ class ServiceManagerContext::InProcessServiceManagerContext
           std::make_unique<NullServiceProcessLauncherFactory>();
     }
     service_manager_ = std::make_unique<service_manager::ServiceManager>(
-        std::move(service_process_launcher_factory), nullptr,
-        manifest_provider_.get());
+        std::move(service_process_launcher_factory), std::move(manifests));
 
     service_manager::mojom::ServicePtr packaged_services_service;
     packaged_services_service.Bind(std::move(packaged_services_service_info));
@@ -542,7 +519,6 @@ class ServiceManagerContext::InProcessServiceManagerContext
 
   void ShutDownOnServiceManagerThread() {
     service_manager_.reset();
-    manifest_provider_.reset();
   }
 
   void StartServicesOnServiceManagerThread(
@@ -556,7 +532,6 @@ class ServiceManagerContext::InProcessServiceManagerContext
 
   scoped_refptr<base::SingleThreadTaskRunner>
       service_manager_thread_task_runner_;
-  std::unique_ptr<BuiltinManifestProvider> manifest_provider_;
   std::unique_ptr<service_manager::ServiceManager> service_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessServiceManagerContext);
@@ -578,13 +553,10 @@ ServiceManagerContext::ServiceManagerContext(
     packaged_services_request =
         service_manager::GetServiceRequestFromCommandLine(&invitation);
   } else {
-    std::unique_ptr<BuiltinManifestProvider> manifest_provider =
-        std::make_unique<BuiltinManifestProvider>();
-
     static const struct ManifestInfo {
       const char* name;
       int resource_id;
-    } kManifests[] = {
+    } kManifestInfo[] = {
         {mojom::kBrowserServiceName, IDR_MOJO_CONTENT_BROWSER_MANIFEST},
         {mojom::kGpuServiceName, IDR_MOJO_CONTENT_GPU_MANIFEST},
         {mojom::kPackagedServicesServiceName,
@@ -594,15 +566,15 @@ ServiceManagerContext::ServiceManagerContext(
         {mojom::kUtilityServiceName, IDR_MOJO_CONTENT_UTILITY_MANIFEST},
         {catalog::mojom::kServiceName, IDR_MOJO_CATALOG_MANIFEST},
     };
-
-    for (size_t i = 0; i < arraysize(kManifests); ++i) {
-      manifest_provider->AddServiceManifest(kManifests[i].name,
-                                            kManifests[i].resource_id);
+    std::vector<service_manager::Manifest> manifests;
+    for (const auto& manifest_info : kManifestInfo) {
+      manifests.push_back(
+          LoadServiceManifest(manifest_info.name, manifest_info.resource_id));
     }
     for (const auto& manifest :
          GetContentClient()->browser()->GetExtraServiceManifests()) {
-      manifest_provider->AddServiceManifest(manifest.name,
-                                            manifest.resource_id);
+      manifests.push_back(
+          LoadServiceManifest(manifest.name, manifest.resource_id));
     }
     in_process_context_ =
         new InProcessServiceManagerContext(service_manager_thread_task_runner_);
@@ -610,7 +582,7 @@ ServiceManagerContext::ServiceManagerContext(
     service_manager::mojom::ServicePtr packaged_services_service;
     packaged_services_request = mojo::MakeRequest(&packaged_services_service);
     in_process_context_->Start(packaged_services_service.PassInterface(),
-                               std::move(manifest_provider));
+                               std::move(manifests));
   }
 
   packaged_services_connection_ =

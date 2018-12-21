@@ -3926,7 +3926,7 @@ bool ChromeContentBrowserClient::ShouldTerminateOnServiceQuit(
   return false;
 }
 
-std::unique_ptr<base::Value>
+base::Optional<service_manager::Manifest>
 ChromeContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   int id = -1;
@@ -3943,11 +3943,12 @@ ChromeContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   else if (name == content::mojom::kUtilityServiceName)
     id = IDR_CHROME_CONTENT_UTILITY_MANIFEST_OVERLAY;
   if (id == -1)
-    return nullptr;
+    return base::nullopt;
 
   base::StringPiece manifest_contents =
       rb.GetRawDataResourceForScale(id, ui::ScaleFactor::SCALE_FACTOR_NONE);
-  return base::JSONReader::Read(manifest_contents);
+  return service_manager::Manifest::FromValueDeprecated(
+      base::JSONReader::Read(manifest_contents));
 }
 
 std::vector<content::ContentBrowserClient::ServiceManifestInfo>

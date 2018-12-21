@@ -648,11 +648,6 @@ base::string16 ContentBrowserClient::GetAppContainerSidForSandboxType(
 }
 #endif  // defined(OS_WIN)
 
-std::unique_ptr<base::Value> ContentBrowserClient::GetServiceManifestOverlay(
-    base::StringPiece name) {
-  return nullptr;
-}
-
 ContentBrowserClient::OutOfProcessServiceInfo::OutOfProcessServiceInfo() =
     default;
 
@@ -678,6 +673,11 @@ void ContentBrowserClient::HandleServiceRequest(
 bool ContentBrowserClient::ShouldTerminateOnServiceQuit(
     const service_manager::Identity& id) {
   return false;
+}
+
+base::Optional<service_manager::Manifest>
+ContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
+  return base::nullopt;
 }
 
 std::vector<ContentBrowserClient::ServiceManifestInfo>

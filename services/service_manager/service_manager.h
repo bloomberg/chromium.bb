@@ -50,10 +50,11 @@ class ServiceManager : public Service {
   // |service_process_launcher_factory| is an instance of an object capable of
   // vending implementations of ServiceProcessLauncher, e.g. for out-of-process
   // execution.
-  explicit ServiceManager(std::unique_ptr<ServiceProcessLauncherFactory>
-                              service_process_launcher_factory,
-                          const std::vector<Manifest>& manifests,
-                          catalog::ManifestProvider* manifest_provider);
+  explicit ServiceManager(
+      std::unique_ptr<ServiceProcessLauncherFactory>
+          service_process_launcher_factory,
+      const std::vector<Manifest>& manifests,
+      catalog::ManifestProvider* manifest_provider = nullptr);
 
   // |service_process_launcher_factory| is an instance of an object capable of
   // vending implementations of ServiceProcessLauncher, e.g. for out-of-process

@@ -147,17 +147,25 @@ HeadlessContentBrowserClient::GetDevToolsManagerDelegate() {
   return new HeadlessDevToolsManagerDelegate(browser_->GetWeakPtr());
 }
 
-std::unique_ptr<base::Value>
+base::Optional<service_manager::Manifest>
 HeadlessContentBrowserClient::GetServiceManifestOverlay(
     base::StringPiece name) {
-  if (name == content::mojom::kBrowserServiceName)
-    return GetBrowserServiceManifestOverlay();
-  if (name == content::mojom::kRendererServiceName)
-    return GetRendererServiceManifestOverlay();
-  if (name == content::mojom::kPackagedServicesServiceName)
-    return GetPackagedServicesServiceManifestOverlay();
+  if (name == content::mojom::kBrowserServiceName) {
+    return service_manager::Manifest::FromValueDeprecated(
+        GetBrowserServiceManifestOverlay());
+  }
 
-  return nullptr;
+  if (name == content::mojom::kRendererServiceName) {
+    return service_manager::Manifest::FromValueDeprecated(
+        GetRendererServiceManifestOverlay());
+  }
+
+  if (name == content::mojom::kPackagedServicesServiceName) {
+    return service_manager::Manifest::FromValueDeprecated(
+        GetPackagedServicesServiceManifestOverlay());
+  }
+
+  return base::nullopt;
 }
 
 void HeadlessContentBrowserClient::RegisterOutOfProcessServices(

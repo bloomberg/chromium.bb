@@ -111,6 +111,7 @@ source_set("unittests") {
     ":cpp",
     "//base",
     "//services/service_manager/public/mojom",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }

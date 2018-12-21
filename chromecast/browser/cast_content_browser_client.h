@@ -185,7 +185,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   void HandleServiceRequest(
       const std::string& service_name,
       service_manager::mojom::ServiceRequest request) override;
-  std::unique_ptr<base::Value> GetServiceManifestOverlay(
+  base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece service_name) override;
   void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,

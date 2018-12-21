@@ -4,6 +4,7 @@
 
 #include "ios/web/service_manager_context.h"
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
@@ -25,13 +26,13 @@
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web/service_manager_connection_impl.h"
-#include "services/catalog/manifest_provider.h"
 #include "services/catalog/public/cpp/manifest_parsing_util.h"
 #include "services/catalog/public/mojom/constants.mojom.h"
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/embedder/manifest_utils.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
+#include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/service_manager.h"
@@ -49,45 +50,25 @@ struct ManifestInfo {
   int resource_id;
 };
 
-// A ManifestProvider which resolves application names to builtin manifest
-// resources for the catalog service to consume.
-class BuiltinManifestProvider : public catalog::ManifestProvider {
- public:
-  BuiltinManifestProvider() {}
-  ~BuiltinManifestProvider() override {}
+service_manager::Manifest LoadServiceManifest(base::StringPiece service_name,
+                                              int resource_id) {
+  std::string contents =
+      GetWebClient()
+          ->GetDataResource(resource_id, ui::ScaleFactor::SCALE_FACTOR_NONE)
+          .as_string();
+  DCHECK(!contents.empty());
 
-  void AddServiceManifest(base::StringPiece name, int resource_id) {
-    std::string contents =
-        GetWebClient()
-            ->GetDataResource(resource_id, ui::ScaleFactor::SCALE_FACTOR_NONE)
-            .as_string();
-    DCHECK(!contents.empty());
+  service_manager::Manifest manifest =
+      service_manager::Manifest::FromValueDeprecated(
+          base::JSONReader::Read(contents));
 
-    std::unique_ptr<base::Value> manifest_value =
-        base::JSONReader::Read(contents);
-    DCHECK(manifest_value);
+  base::Optional<service_manager::Manifest> overlay =
+      GetWebClient()->GetServiceManifestOverlay(service_name);
+  if (overlay)
+    manifest.Amend(*overlay);
 
-    std::unique_ptr<base::Value> overlay_value =
-        GetWebClient()->GetServiceManifestOverlay(name);
-
-    service_manager::MergeManifestWithOverlay(manifest_value.get(),
-                                              overlay_value.get());
-    auto insertion_result = manifests_.insert(
-        std::make_pair(name.as_string(), std::move(manifest_value)));
-    DCHECK(insertion_result.second) << "Duplicate manifest entry: " << name;
-  }
-
- private:
-  // catalog::ManifestProvider:
-  std::unique_ptr<base::Value> GetManifest(const std::string& name) override {
-    auto it = manifests_.find(name);
-    return it != manifests_.end() ? it->second->CreateDeepCopy() : nullptr;
-  }
-
-  std::map<std::string, std::unique_ptr<base::Value>> manifests_;
-
-  DISALLOW_COPY_AND_ASSIGN(BuiltinManifestProvider);
-};
+  return manifest;
+}
 
 }  // namespace
 
@@ -99,12 +80,12 @@ class ServiceManagerContext::InProcessServiceManagerContext
 
   void Start(
       service_manager::mojom::ServicePtrInfo packaged_services_service_info,
-      std::unique_ptr<BuiltinManifestProvider> manifest_provider) {
+      std::vector<service_manager::Manifest> manifests) {
     base::PostTaskWithTraits(
         FROM_HERE, {WebThread::IO},
         base::BindOnce(&InProcessServiceManagerContext::StartOnIOThread, this,
-                       base::Passed(&manifest_provider),
-                       base::Passed(&packaged_services_service_info)));
+                       std::move(manifests),
+                       std::move(packaged_services_service_info)));
   }
 
   void ShutDown() {
@@ -123,11 +104,10 @@ class ServiceManagerContext::InProcessServiceManagerContext
   // with it, connecting the other end of the packaged services serviceto
   // |packaged_services_service_info|.
   void StartOnIOThread(
-      std::unique_ptr<BuiltinManifestProvider> manifest_provider,
+      std::vector<service_manager::Manifest> manifests,
       service_manager::mojom::ServicePtrInfo packaged_services_service_info) {
-    manifest_provider_ = std::move(manifest_provider);
-    service_manager_ = std::make_unique<service_manager::ServiceManager>(
-        nullptr, nullptr, manifest_provider_.get());
+    service_manager_ =
+        std::make_unique<service_manager::ServiceManager>(nullptr, manifests);
 
     service_manager::mojom::ServicePtr packaged_services_service;
     packaged_services_service.Bind(std::move(packaged_services_service_info));
@@ -140,35 +120,27 @@ class ServiceManagerContext::InProcessServiceManagerContext
 
   void ShutDownOnIOThread() {
     service_manager_.reset();
-    manifest_provider_.reset();
   }
 
-  std::unique_ptr<BuiltinManifestProvider> manifest_provider_;
   std::unique_ptr<service_manager::ServiceManager> service_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessServiceManagerContext);
 };
 
 ServiceManagerContext::ServiceManagerContext() {
-  service_manager::mojom::ServiceRequest packaged_services_request;
-  std::unique_ptr<BuiltinManifestProvider> manifest_provider =
-      std::make_unique<BuiltinManifestProvider>();
+  std::vector<service_manager::Manifest> manifests = {
+      LoadServiceManifest(mojom::kBrowserServiceName,
+                          IDR_MOJO_WEB_BROWSER_MANIFEST),
+      LoadServiceManifest(mojom::kPackagedServicesServiceName,
+                          IDR_MOJO_WEB_PACKAGED_SERVICES_MANIFEST),
+  };
 
-  const std::array<ManifestInfo, 3> manifests = {{
-      {mojom::kBrowserServiceName, IDR_MOJO_WEB_BROWSER_MANIFEST},
-      {mojom::kPackagedServicesServiceName,
-       IDR_MOJO_WEB_PACKAGED_SERVICES_MANIFEST},
-      {catalog::mojom::kServiceName, IDR_MOJO_CATALOG_MANIFEST},
-  }};
-  for (const ManifestInfo& manifest : manifests) {
-    manifest_provider->AddServiceManifest(manifest.name, manifest.resource_id);
-  }
   in_process_context_ = base::MakeRefCounted<InProcessServiceManagerContext>();
-
   service_manager::mojom::ServicePtr packaged_services_service;
-  packaged_services_request = mojo::MakeRequest(&packaged_services_service);
+  service_manager::mojom::ServiceRequest packaged_services_request =
+      mojo::MakeRequest(&packaged_services_service);
   in_process_context_->Start(packaged_services_service.PassInterface(),
-                             std::move(manifest_provider));
+                             std::move(manifests));
 
   packaged_services_connection_ = ServiceManagerConnection::Create(
       std::move(packaged_services_request),

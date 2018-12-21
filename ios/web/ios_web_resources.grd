@@ -10,7 +10,6 @@
   <release seq="1">
     <includes>
       <include name="IDR_IOS_MOJO_BINDINGS_JS" file="${root_gen_dir}/mojo/public/js/mojo_bindings.js" flattenhtml="true" type="BINDATA" use_base_dir="false" compress="gzip" />
-      <include name="IDR_MOJO_CATALOG_MANIFEST" file="../../services/catalog/manifest.json" type="BINDATA" />
       <include name="IDR_MOJO_WEB_BROWSER_MANIFEST" file="${root_gen_dir}/ios/web/public/app/browser_manifest.json" use_base_dir="false" type="BINDATA" />
       <include name="IDR_MOJO_WEB_PACKAGED_SERVICES_MANIFEST" file="${root_gen_dir}/ios/web/public/app/packaged_services_manifest.json" use_base_dir="false" type="BINDATA" />
     </includes>
