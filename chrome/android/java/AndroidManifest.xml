@@ -169,6 +169,10 @@ by a child template that "extends" this file.
         <!-- ARCore APK integration -->
         <!-- This tag indicates that this application optionally uses ARCore. -->
         <meta-data android:name="com.google.ar.core" android:value="optional" />
+        <!-- TODO(crbug.com/917406): We should pull this flag in from the ArCore AAR. It's added here
+             because it doesn't get added properly for bundle base modules. -->
+        <meta-data android:name="com.google.ar.core.min_apk_version"
+            android:value="180815000"/>
         {% endif %}
 
         <!-- Cast support -->
