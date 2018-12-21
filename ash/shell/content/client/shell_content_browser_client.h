@@ -32,7 +32,7 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* context,
       content::StoragePartition* partition,
       storage::OptionalQuotaSettingsCallback callback) override;
-  std::unique_ptr<base::Value> GetServiceManifestOverlay(
+  base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece name) override;
   std::vector<ServiceManifestInfo> GetExtraServiceManifests() override;
   void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;

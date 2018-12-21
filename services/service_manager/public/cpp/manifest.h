@@ -11,6 +11,7 @@
 
 #include "base/component_export.h"
 #include "base/files/file_path.h"
+#include "base/values.h"
 
 namespace service_manager {
 
@@ -22,8 +23,8 @@ const char* GetInterfaceName() {
 }
 
 template <typename... InterfaceTypes>
-std::set<const char*> GetInterfaceNames() {
-  return std::set<const char*>({GetInterfaceName<InterfaceTypes>()...});
+std::set<std::string> GetInterfaceNames() {
+  return std::set<std::string>({GetInterfaceName<InterfaceTypes>()...});
 }
 
 }  // namespace internal
@@ -48,11 +49,11 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Manifest {
   // TODO(https://crbug.com/915806): Extend this to support resource IDs in
   // addition to raw strings.
   struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) DisplayName {
-    constexpr DisplayName() : raw_string(nullptr) {}
-    explicit constexpr DisplayName(const char* raw_string)
+    DisplayName() = default;
+    explicit DisplayName(const std::string& raw_string)
         : raw_string(raw_string) {}
 
-    const char* raw_string;
+    std::string raw_string;
   };
 
   enum class InstanceSharingPolicy {
@@ -110,7 +111,7 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Manifest {
     // The type of sandboxing required by instances of this service.
     //
     // TODO(https://crbug.com/915806): Make this field a SandboxType enum.
-    const char* sandbox_type = "none";
+    std::string sandbox_type{"none"};
   };
 
   // Represents a file required by instances of the service despite being
@@ -120,7 +121,7 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Manifest {
   struct PreloadedFileInfo {
     // A key which can be used by the service implementation to locate the
     // file's open descriptor via |base::FileDescriptorStore|.
-    const char* key;
+    std::string key;
 
     // The path to the file. On Linux this is relative to the main Service
     // Manager embedder's executable (i.e. relative to base::DIR_EXE.) On
@@ -146,13 +147,13 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Manifest {
     ExposedCapability(ExposedCapability&&);
 
     template <typename... InterfaceTypes>
-    ExposedCapability(const char* capability_name,
+    ExposedCapability(const std::string& capability_name,
                       InterfaceList<InterfaceTypes...> interfaces)
         : capability_name(capability_name),
           interface_names(internal::GetInterfaceNames<InterfaceTypes...>()) {}
 
     // Prefer the above constructor. This exists to support genenerated code.
-    ExposedCapability(const char* capability_name,
+    ExposedCapability(const std::string& capability_name,
                       std::set<const char*> interface_names);
 
     ~ExposedCapability();
@@ -161,10 +162,10 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Manifest {
     ExposedCapability& operator=(ExposedCapability&&);
 
     // The name of this capability.
-    const char* capability_name;
+    std::string capability_name;
 
     // The list of interfaces accessible to clients granted this capability.
-    std::set<const char*> interface_names;
+    std::set<std::string> interface_names;
   };
 
   // Represents a capability required by a service. Every required capability
@@ -179,11 +180,11 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Manifest {
   // it to an instance of the target service.
   struct RequiredCapability {
     // The name of the service which exposes this required capability.
-    const char* service_name;
+    std::string service_name;
 
     // The name of the capability to require. This must match the name of a
     // capability exposed by |service_name|'s own Manifest.
-    const char* capability_name;
+    std::string capability_name;
   };
 
   // DEPRECATED: This will be removed soon. Don't add new uses of interface
@@ -211,16 +212,16 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Manifest {
 
     template <typename... InterfaceTypes>
     ExposedInterfaceFilterCapability(
-        const char* filter_name,
-        const char* capability_name,
+        const std::string& filter_name,
+        const std::string& capability_name,
         InterfaceList<InterfaceTypes...> interfaces)
         : filter_name(filter_name),
           capability_name(capability_name),
           interface_names(internal::GetInterfaceNames<InterfaceTypes...>()) {}
 
     // Prefer the above constructor. This exists to support genenerated code.
-    ExposedInterfaceFilterCapability(const char* filter_name,
-                                     const char* capability_name,
+    ExposedInterfaceFilterCapability(const std::string& filter_name,
+                                     const std::string& capability_name,
                                      std::set<const char*> interface_names);
 
     ~ExposedInterfaceFilterCapability();
@@ -230,9 +231,9 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Manifest {
     ExposedInterfaceFilterCapability& operator=(
         ExposedInterfaceFilterCapability&&);
 
-    const char* filter_name;
-    const char* capability_name;
-    std::set<const char*> interface_names;
+    std::string filter_name;
+    std::string capability_name;
+    std::set<std::string> interface_names;
   };
 
   // DEPRECATED: This will be removed soon. Don't add new uses of interface
@@ -244,9 +245,9 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Manifest {
   // ExposedInterfaceFilterCapability in that service's manifest. See notes on
   // ExposedInterfaceFilterCapability.
   struct RequiredInterfaceFilterCapability {
-    const char* service_name;
-    const char* filter_name;
-    const char* capability_name;
+    std::string service_name;
+    std::string filter_name;
+    std::string capability_name;
   };
 
   Manifest();
@@ -258,7 +259,17 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Manifest {
   Manifest& operator=(const Manifest&);
   Manifest& operator=(Manifest&&);
 
-  const char* service_name = nullptr;
+  // Creates a new Manifest object from a |base::Value| representation of the
+  // deprecated JSON manifest format. This is a temporary function and should
+  // only be used to transition services away from JSON manifests.
+  static Manifest FromValueDeprecated(std::unique_ptr<base::Value> value_ptr);
+
+  // Amends this Manifest with a subset of |other|. Namely, exposed and required
+  // capabilities, exposed and required interface filter capabilities, packaged
+  // services, and preloaded files are all added from |other| if present.
+  void Amend(Manifest other);
+
+  std::string service_name;
   DisplayName display_name;
   Options options;
   std::vector<ExposedCapability> exposed_capabilities;

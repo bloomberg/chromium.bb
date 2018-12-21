@@ -753,7 +753,7 @@ void CastContentBrowserClient::HandleServiceRequest(
 #endif
 }
 
-std::unique_ptr<base::Value>
+base::Optional<service_manager::Manifest>
 CastContentBrowserClient::GetServiceManifestOverlay(
     base::StringPiece service_name) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -765,11 +765,12 @@ CastContentBrowserClient::GetServiceManifestOverlay(
   } else if (service_name == content::mojom::kRendererServiceName) {
     id = IDR_CAST_CONTENT_RENDERER_MANIFEST_OVERLAY;
   } else {
-    return nullptr;
+    return base::nullopt;
   }
   base::StringPiece manifest_contents =
       rb.GetRawDataResourceForScale(id, ui::ScaleFactor::SCALE_FACTOR_NONE);
-  return base::JSONReader::Read(manifest_contents);
+  return service_manager::Manifest::FromValueDeprecated(
+      base::JSONReader::Read(manifest_contents));
 }
 
 void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(

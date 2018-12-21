@@ -46,7 +46,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       service_manager::mojom::ServiceRequest request) override;
   bool ShouldTerminateOnServiceQuit(
       const service_manager::Identity& id) override;
-  std::unique_ptr<base::Value> GetServiceManifestOverlay(
+  base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece name) override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;

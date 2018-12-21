@@ -32,7 +32,7 @@ class ShellWebClient : public WebClient {
   std::unique_ptr<service_manager::Service> HandleServiceRequest(
       const std::string& service_name,
       service_manager::mojom::ServiceRequest request) override;
-  std::unique_ptr<base::Value> GetServiceManifestOverlay(
+  base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece name) override;
   void BindInterfaceRequestFromMainFrame(
       WebState* web_state,

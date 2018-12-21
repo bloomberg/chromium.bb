@@ -647,8 +647,8 @@ AwContentBrowserClient::GetDevToolsManagerDelegate() {
   return new AwDevToolsManagerDelegate();
 }
 
-std::unique_ptr<base::Value> AwContentBrowserClient::GetServiceManifestOverlay(
-    base::StringPiece name) {
+base::Optional<service_manager::Manifest>
+AwContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   int id = -1;
   if (name == content::mojom::kBrowserServiceName)
     id = IDR_AW_BROWSER_MANIFEST_OVERLAY;
@@ -657,12 +657,13 @@ std::unique_ptr<base::Value> AwContentBrowserClient::GetServiceManifestOverlay(
   else if (name == content::mojom::kUtilityServiceName)
     id = IDR_AW_UTILITY_MANIFEST_OVERLAY;
   if (id == -1)
-    return nullptr;
+    return base::nullopt;
 
   base::StringPiece manifest_contents =
       ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
           id, ui::ScaleFactor::SCALE_FACTOR_NONE);
-  return base::JSONReader::Read(manifest_contents);
+  return service_manager::Manifest::FromValueDeprecated(
+      base::JSONReader::Read(manifest_contents));
 }
 
 void AwContentBrowserClient::BindInterfaceRequestFromFrame(

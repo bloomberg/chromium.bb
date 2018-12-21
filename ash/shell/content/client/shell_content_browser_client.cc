@@ -55,7 +55,7 @@ void ShellContentBrowserClient::GetQuotaSettings(
       partition->GetPath(), context->IsOffTheRecord(), std::move(callback));
 }
 
-std::unique_ptr<base::Value>
+base::Optional<service_manager::Manifest>
 ShellContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   if (name == content::mojom::kBrowserServiceName) {
     // This is necessary for outgoing interface requests (such as the keyboard
@@ -64,16 +64,18 @@ ShellContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
     base::StringPiece manifest_contents = rb.GetRawDataResourceForScale(
         IDR_ASH_SHELL_CONTENT_BROWSER_MANIFEST_OVERLAY,
         ui::ScaleFactor::SCALE_FACTOR_NONE);
-    return base::JSONReader::Read(manifest_contents);
+    return service_manager::Manifest::FromValueDeprecated(
+        base::JSONReader::Read(manifest_contents));
   }
   if (name == content::mojom::kPackagedServicesServiceName) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     base::StringPiece manifest_contents = rb.GetRawDataResourceForScale(
         IDR_ASH_SHELL_CONTENT_PACKAGED_SERVICES_MANIFEST_OVERLAY,
         ui::ScaleFactor::SCALE_FACTOR_NONE);
-    return base::JSONReader::Read(manifest_contents);
+    return service_manager::Manifest::FromValueDeprecated(
+        base::JSONReader::Read(manifest_contents));
   }
-  return nullptr;
+  return base::nullopt;
 }
 
 std::vector<content::ContentBrowserClient::ServiceManifestInfo>

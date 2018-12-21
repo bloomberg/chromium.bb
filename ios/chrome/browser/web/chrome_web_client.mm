@@ -148,8 +148,8 @@ base::RefCountedMemory* ChromeWebClient::GetDataResourceBytes(
       resource_id);
 }
 
-std::unique_ptr<base::Value> ChromeWebClient::GetServiceManifestOverlay(
-    base::StringPiece name) {
+base::Optional<service_manager::Manifest>
+ChromeWebClient::GetServiceManifestOverlay(base::StringPiece name) {
   int identifier = -1;
   if (name == web::mojom::kBrowserServiceName)
     identifier = IDR_CHROME_BROWSER_MANIFEST_OVERLAY;
@@ -157,12 +157,13 @@ std::unique_ptr<base::Value> ChromeWebClient::GetServiceManifestOverlay(
     identifier = IDR_CHROME_PACKAGED_SERVICES_MANIFEST_OVERLAY;
 
   if (identifier == -1)
-    return nullptr;
+    return base::nullopt;
 
   base::StringPiece manifest_contents =
       ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
           identifier, ui::ScaleFactor::SCALE_FACTOR_NONE);
-  return base::JSONReader::Read(manifest_contents);
+  return service_manager::Manifest::FromValueDeprecated(
+      base::JSONReader::Read(manifest_contents));
 }
 
 void ChromeWebClient::GetAdditionalWebUISchemes(

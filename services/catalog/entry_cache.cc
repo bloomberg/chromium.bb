@@ -32,8 +32,7 @@ std::unique_ptr<Entry> MakeEntryFromManifest(
     const service_manager::Manifest& manifest) {
   auto entry = std::make_unique<Entry>();
   entry->set_name(manifest.service_name);
-  if (manifest.display_name.raw_string)
-    entry->set_display_name(manifest.display_name.raw_string);
+  entry->set_display_name(manifest.display_name.raw_string);
 
   base::FilePath service_exe_root;
   CHECK(base::PathService::Get(base::DIR_ASSETS, &service_exe_root));
@@ -64,14 +63,10 @@ std::unique_ptr<Entry> MakeEntryFromManifest(
   entry->AddOptions(options);
 
   service_manager::InterfaceProviderSpec main_spec;
-  for (const auto& entry : manifest.exposed_capabilities) {
-    std::set<std::string> interfaces;
-    for (const char* name : entry.interface_names)
-      interfaces.emplace(name);
-    main_spec.provides.emplace(entry.capability_name, std::move(interfaces));
-  }
+  for (const auto& entry : manifest.exposed_capabilities)
+    main_spec.provides.emplace(entry.capability_name, entry.interface_names);
   for (const auto& entry : manifest.required_capabilities) {
-    main_spec.requires[entry.service_name].emplace(entry.capability_name);
+    main_spec.requires[entry.service_name].insert(entry.capability_name);
   }
 
   entry->AddInterfaceProviderSpec(
@@ -80,15 +75,12 @@ std::unique_ptr<Entry> MakeEntryFromManifest(
 
   std::map<std::string, service_manager::InterfaceProviderSpec> other_specs;
   for (const auto& entry : manifest.exposed_interface_filter_capabilities) {
-    std::set<std::string> interfaces;
-    for (const char* name : entry.interface_names)
-      interfaces.emplace(name);
     other_specs[entry.filter_name].provides.emplace(entry.capability_name,
-                                                    std::move(interfaces));
+                                                    entry.interface_names);
   }
 
   for (const auto& entry : manifest.required_interface_filter_capabilities) {
-    other_specs[entry.filter_name].requires[entry.service_name].emplace(
+    other_specs[entry.filter_name].requires[entry.service_name].insert(
         entry.capability_name);
   }
 

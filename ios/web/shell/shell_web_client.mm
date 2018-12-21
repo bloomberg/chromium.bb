@@ -97,8 +97,8 @@ std::unique_ptr<service_manager::Service> ShellWebClient::HandleServiceRequest(
   return nullptr;
 }
 
-std::unique_ptr<base::Value> ShellWebClient::GetServiceManifestOverlay(
-    base::StringPiece name) {
+base::Optional<service_manager::Manifest>
+ShellWebClient::GetServiceManifestOverlay(base::StringPiece name) {
   int identifier = -1;
   if (name == mojom::kBrowserServiceName)
     identifier = IDR_WEB_SHELL_BROWSER_MANIFEST_OVERLAY;
@@ -106,12 +106,13 @@ std::unique_ptr<base::Value> ShellWebClient::GetServiceManifestOverlay(
     identifier = IDR_WEB_SHELL_PACKAGED_SERVICES_MANIFEST_OVERLAY;
 
   if (identifier == -1)
-    return nullptr;
+    return base::nullopt;
 
   base::StringPiece manifest_contents =
       ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
           identifier, ui::ScaleFactor::SCALE_FACTOR_NONE);
-  return base::JSONReader::Read(manifest_contents);
+  return service_manager::Manifest::FromValueDeprecated(
+      base::JSONReader::Read(manifest_contents));
 }
 
 void ShellWebClient::BindInterfaceRequestFromMainFrame(
