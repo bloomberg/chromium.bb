@@ -394,10 +394,12 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
       new TouchSelectionControllerClientAura(this));
   CreateSelectionController();
 
-  RenderViewHost* rvh = RenderViewHost::From(host());
+  RenderViewHost* rvh = host()->GetRenderViewHost();
   if (rvh) {
     // TODO(mostynb): actually use prefs.  Landing this as a separate CL
     // first to rebaseline some unreliable web tests.
+    // NOTE: This will not be run for child frame widgets, which do not have
+    // an owner delegate and won't get a RenderViewHost here.
     ignore_result(rvh->GetWebkitPreferences());
   }
 }
@@ -601,7 +603,8 @@ void RenderWidgetHostViewAura::OnBeginFrame(base::TimeTicks frame_time) {
 }
 
 RenderFrameHostImpl* RenderWidgetHostViewAura::GetFocusedFrame() const {
-  RenderViewHost* rvh = RenderViewHost::From(host());
+  RenderViewHost* rvh = host()->GetRenderViewHost();
+  // TODO(crbug.com/689777): Child local roots do not work here?
   if (!rvh)
     return nullptr;
   FrameTreeNode* focused_frame =
@@ -1666,7 +1669,8 @@ void RenderWidgetHostViewAura::GetHitTestMask(gfx::Path* mask) const {
 }
 
 bool RenderWidgetHostViewAura::RequiresDoubleTapGestureEvents() const {
-  RenderViewHost* rvh = RenderViewHost::From(host());
+  RenderViewHost* rvh = host()->GetRenderViewHost();
+  // TODO(crbug.com/916715): Child local roots do not work here?
   return rvh && rvh->GetWebkitPreferences().double_tap_to_zoom_enabled;
 }
 
@@ -2195,7 +2199,10 @@ void RenderWidgetHostViewAura::ShowContextMenu(
     const ContextMenuParams& params) {
   // Use RenderViewHostDelegate to get to the WebContentsViewAura, which will
   // actually show the disambiguation popup.
-  RenderViewHost* rvh = RenderViewHost::From(host());
+  // NOTE: This only works for main frame widgets then, as child frame widgets
+  // don't have an owner delegate and won't get access to the RenderViewHost
+  // here.
+  RenderViewHost* rvh = host()->GetRenderViewHost();
   if (!rvh)
     return;
 

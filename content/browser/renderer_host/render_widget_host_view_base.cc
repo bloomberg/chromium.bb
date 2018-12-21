@@ -24,6 +24,7 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
+#include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base_observer.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/text_input_manager.h"
@@ -319,6 +320,9 @@ base::string16 RenderWidgetHostViewBase::GetSelectedText() {
 }
 
 void RenderWidgetHostViewBase::SetBackgroundColor(SkColor color) {
+  // TODO(danakj): OPAQUE colors only make sense for main frame widgets,
+  // as child frames are always transparent background. We should move this to
+  // RenderView instead.
   DCHECK(SkColorGetA(color) == SK_AlphaOPAQUE ||
          SkColorGetA(color) == SK_AlphaTRANSPARENT);
   if (default_background_color_ == color)
@@ -329,8 +333,12 @@ void RenderWidgetHostViewBase::SetBackgroundColor(SkColor color) {
                     : SK_AlphaOPAQUE;
   default_background_color_ = color;
   UpdateBackgroundColor();
-  if (opaque != (SkColorGetA(color) == SK_AlphaOPAQUE))
-    host()->SetBackgroundOpaque(SkColorGetA(color) == SK_AlphaOPAQUE);
+  if (opaque != (SkColorGetA(color) == SK_AlphaOPAQUE)) {
+    if (host()->owner_delegate()) {
+      host()->owner_delegate()->SetBackgroundOpaque(SkColorGetA(color) ==
+                                                    SK_AlphaOPAQUE);
+    }
+  }
 }
 
 base::Optional<SkColor> RenderWidgetHostViewBase::GetBackgroundColor() const {

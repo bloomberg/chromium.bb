@@ -101,11 +101,11 @@ class ServerSharedBitmapManager;
 }
 
 namespace content {
-
 class BrowserAccessibilityManager;
 class FlingSchedulerBase;
 class InputRouter;
 class MockRenderWidgetHost;
+class RenderViewHost;
 class RenderWidgetHostOwnerDelegate;
 class SyntheticGestureController;
 class TimeoutMonitor;
@@ -173,6 +173,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   }
 
   RenderWidgetHostOwnerDelegate* owner_delegate() { return owner_delegate_; }
+
+  // Gets the RenderViewHost from the owner delegate if this RenderWidgetHost
+  // is for a main frame (and thus has an owner delegate).
+  RenderViewHost* GetRenderViewHost();
 
   void set_clock_for_testing(const base::TickClock* clock) { clock_ = clock; }
 
@@ -482,9 +486,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   bool IsIgnoringInputEvents() const;
 
   bool has_touch_handler() const { return has_touch_handler_; }
-
-  // Set the RenderView background transparency.
-  void SetBackgroundOpaque(bool opaque);
 
   // Called when the response to a pending mouse lock request has arrived.
   // Returns true if |allowed| is true and the mouse has been successfully

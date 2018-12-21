@@ -129,32 +129,8 @@ void WebViewFrameWidget::WillCloseLayerTreeView() {
   web_view_->WillCloseLayerTreeView();
 }
 
-SkColor WebViewFrameWidget::BackgroundColor() const {
-  return web_view_->BackgroundColor();
-}
-
 WebURL WebViewFrameWidget::GetURLForDebugTrace() {
   return web_view_->GetURLForDebugTrace();
-}
-
-void WebViewFrameWidget::SetBackgroundColorOverride(SkColor color) {
-  web_view_->SetBackgroundColorOverride(color);
-}
-
-void WebViewFrameWidget::ClearBackgroundColorOverride() {
-  web_view_->ClearBackgroundColorOverride();
-}
-
-void WebViewFrameWidget::SetBaseBackgroundColorOverride(SkColor color) {
-  web_view_->SetBaseBackgroundColorOverride(color);
-}
-
-void WebViewFrameWidget::ClearBaseBackgroundColorOverride() {
-  web_view_->ClearBaseBackgroundColorOverride();
-}
-
-void WebViewFrameWidget::SetBaseBackgroundColor(SkColor color) {
-  web_view_->SetBaseBackgroundColor(color);
 }
 
 WebInputMethodController*

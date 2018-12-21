@@ -432,10 +432,10 @@ TEST_F(WebViewTest, SetBaseBackgroundColor) {
   const SkColor kTranslucentPutty = SkColorSetARGB(0x80, 0xBF, 0xB1, 0x96);
 
   WebViewImpl* web_view = web_view_helper_.Initialize();
-  EXPECT_EQ(SK_ColorWHITE, web_view->MainFrameWidget()->BackgroundColor());
+  EXPECT_EQ(SK_ColorWHITE, web_view->BackgroundColor());
 
   web_view->SetBaseBackgroundColor(SK_ColorBLUE);
-  EXPECT_EQ(SK_ColorBLUE, web_view->MainFrameWidget()->BackgroundColor());
+  EXPECT_EQ(SK_ColorBLUE, web_view->BackgroundColor());
 
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(
@@ -444,7 +444,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColor) {
       "{background-color:#227788}</style></head></"
       "html>",
       base_url);
-  EXPECT_EQ(kDarkCyan, web_view->MainFrameWidget()->BackgroundColor());
+  EXPECT_EQ(kDarkCyan, web_view->BackgroundColor());
 
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
                                      "<html><head><style>body "
@@ -452,11 +452,11 @@ TEST_F(WebViewTest, SetBaseBackgroundColor) {
                                      "style></head></html>",
                                      base_url);
   // Expected: red (50% alpha) blended atop base of SK_ColorBLUE.
-  EXPECT_EQ(0xFF80007F, web_view->MainFrameWidget()->BackgroundColor());
+  EXPECT_EQ(0xFF80007F, web_view->BackgroundColor());
 
   web_view->SetBaseBackgroundColor(kTranslucentPutty);
   // Expected: red (50% alpha) blended atop kTranslucentPutty. Note the alpha.
-  EXPECT_EQ(0xBFE93A31, web_view->MainFrameWidget()->BackgroundColor());
+  EXPECT_EQ(0xBFE93A31, web_view->BackgroundColor());
 
   web_view->SetBaseBackgroundColor(SK_ColorTRANSPARENT);
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
@@ -465,8 +465,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColor) {
                                      "head></html>",
                                      base_url);
   // Expected: transparent on top of transparent will still be transparent.
-  EXPECT_EQ(SK_ColorTRANSPARENT,
-            web_view->MainFrameWidget()->BackgroundColor());
+  EXPECT_EQ(SK_ColorTRANSPARENT, web_view->BackgroundColor());
 
   LocalFrame* frame = web_view->MainFrameImpl()->GetFrame();
   // The shutdown() calls are a hack to prevent this test
@@ -492,11 +491,11 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
       WebView::Create(&web_view_client, web_view_client.WidgetClient(),
                       /*is_hidden=*/false,
                       /*compositing_enabled=*/true, nullptr));
-  EXPECT_NE(SK_ColorBLUE, web_view->MainFrameWidget()->BackgroundColor());
+  EXPECT_NE(SK_ColorBLUE, web_view->BackgroundColor());
   // webView does not have a frame yet, but we should still be able to set the
   // background color.
   web_view->SetBaseBackgroundColor(SK_ColorBLUE);
-  EXPECT_EQ(SK_ColorBLUE, web_view->MainFrameWidget()->BackgroundColor());
+  EXPECT_EQ(SK_ColorBLUE, web_view->BackgroundColor());
   frame_test_helpers::TestWebFrameClient web_frame_client;
   WebLocalFrame* frame = WebLocalFrame::CreateMainFrame(
       web_view, &web_frame_client, nullptr, nullptr);
@@ -2391,7 +2390,7 @@ TEST_F(WebViewTest, FullscreenBackgroundColor) {
       web_view_helper_.InitializeAndLoad(base_url_ + "fullscreen_style.html");
   web_view_impl->MainFrameWidget()->Resize(WebSize(800, 600));
   UpdateAllLifecyclePhases();
-  EXPECT_EQ(SK_ColorWHITE, web_view_impl->MainFrameWidget()->BackgroundColor());
+  EXPECT_EQ(SK_ColorWHITE, web_view_impl->BackgroundColor());
 
   // Enter fullscreen.
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
@@ -2403,8 +2402,7 @@ TEST_F(WebViewTest, FullscreenBackgroundColor) {
   web_view_impl->MainFrameWidget()->DidEnterFullscreen();
   UpdateAllLifecyclePhases();
 
-  EXPECT_EQ(SK_ColorYELLOW,
-            web_view_impl->MainFrameWidget()->BackgroundColor());
+  EXPECT_EQ(SK_ColorYELLOW, web_view_impl->BackgroundColor());
 }
 
 class PrintWebViewClient : public frame_test_helpers::TestWebViewClient {

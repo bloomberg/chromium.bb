@@ -237,6 +237,8 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
       const NativeWebKeyboardEvent& key_event) override;
   bool ShouldContributePriorityToProcess() override;
   void RequestSetBounds(const gfx::Rect& bounds) override;
+  void SetBackgroundOpaque(bool opaque) override;
+  RenderViewHost* GetRenderViewHost() override;
 
   // IPC message handlers.
   void OnShowView(int route_id,

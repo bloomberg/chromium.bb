@@ -588,7 +588,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WidgetMsg_WasHidden, OnWasHidden)
     IPC_MESSAGE_HANDLER(WidgetMsg_WasShown, OnWasShown)
     IPC_MESSAGE_HANDLER(WidgetMsg_SetActive, OnSetActive)
-    IPC_MESSAGE_HANDLER(WidgetMsg_SetBackgroundOpaque, OnSetBackgroundOpaque)
     IPC_MESSAGE_HANDLER(WidgetMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(WidgetMsg_SetBounds_ACK, OnRequestSetBoundsAck)
     IPC_MESSAGE_HANDLER(WidgetMsg_UpdateScreenRects, OnUpdateScreenRects)
@@ -885,25 +884,6 @@ void RenderWidget::OnSetEditCommandsForNextKeyEvent(
 void RenderWidget::OnSetActive(bool active) {
   if (delegate())
     delegate()->SetActiveForWidget(active);
-}
-
-void RenderWidget::OnSetBackgroundOpaque(bool opaque) {
-  // This IPC never sent when frozen.
-  DCHECK(!is_frozen_);
-  // Background opaque-ness modification is only supported for the main frame.
-  // The delegate() is used as proxy for this RenderWidget being attached
-  // to the main frame.
-  if (!delegate())
-    return;
-
-  blink::WebFrameWidget* web_frame_widget = GetFrameWidget();
-  if (opaque) {
-    web_frame_widget->ClearBaseBackgroundColorOverride();
-    web_frame_widget->ClearBackgroundColorOverride();
-  } else {
-    web_frame_widget->SetBaseBackgroundColorOverride(SK_ColorTRANSPARENT);
-    web_frame_widget->SetBackgroundColorOverride(SK_ColorTRANSPARENT);
-  }
 }
 
 void RenderWidget::OnSetFocus(bool enable) {

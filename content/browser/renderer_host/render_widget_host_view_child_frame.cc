@@ -370,7 +370,10 @@ void RenderWidgetHostViewChildFrame::UpdateBackgroundColor() {
   SkColor color = *GetBackgroundColor();
   DCHECK(SkColorGetA(color) == SK_AlphaOPAQUE ||
          SkColorGetA(color) == SK_AlphaTRANSPARENT);
-  host()->SetBackgroundOpaque(SkColorGetA(color) == SK_AlphaOPAQUE);
+  if (host()->owner_delegate()) {
+    host()->owner_delegate()->SetBackgroundOpaque(SkColorGetA(color) ==
+                                                  SK_AlphaOPAQUE);
+  }
 }
 
 gfx::Size RenderWidgetHostViewChildFrame::GetCompositorViewportPixelSize()

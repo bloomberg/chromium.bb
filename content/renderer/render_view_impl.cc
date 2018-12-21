@@ -1264,6 +1264,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_AnimateDoubleTapZoom,
                         OnAnimateDoubleTapZoomInMainFrame)
     IPC_MESSAGE_HANDLER(ViewMsg_ZoomToFindInPageRect, OnZoomToFindInPageRect)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetBackgroundOpaque, OnSetBackgroundOpaque)
 
     // Page messages.
     IPC_MESSAGE_HANDLER(PageMsg_UpdateWindowScreenRect,
@@ -2158,6 +2159,19 @@ void RenderViewImpl::OnAnimateDoubleTapZoomInMainFrame(
 void RenderViewImpl::OnZoomToFindInPageRect(
     const blink::WebRect& rect_to_zoom) {
   webview()->ZoomToFindInPageRect(rect_to_zoom);
+}
+
+void RenderViewImpl::OnSetBackgroundOpaque(bool opaque) {
+  if (!webview())
+    return;
+
+  if (opaque) {
+    webview()->ClearBaseBackgroundColorOverride();
+    webview()->ClearBackgroundColorOverride();
+  } else {
+    webview()->SetBaseBackgroundColorOverride(SK_ColorTRANSPARENT);
+    webview()->SetBackgroundColorOverride(SK_ColorTRANSPARENT);
+  }
 }
 
 }  // namespace content

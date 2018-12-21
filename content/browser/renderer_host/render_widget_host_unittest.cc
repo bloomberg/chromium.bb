@@ -49,8 +49,10 @@
 #include "content/test/fake_renderer_compositor_frame_sink.h"
 #include "content/test/mock_widget_impl.h"
 #include "content/test/mock_widget_input_handler.h"
+#include "content/test/stub_render_widget_host_owner_delegate.h"
 #include "content/test/test_render_view_host.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
@@ -85,6 +87,8 @@ using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
+
+using testing::_;
 
 namespace content {
 
@@ -652,6 +656,12 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   int focus_owning_web_contents_call_count = 0;
 };
 
+class MockRenderWidgetHostOwnerDelegate
+    : public StubRenderWidgetHostOwnerDelegate {
+ public:
+  MOCK_METHOD1(SetBackgroundOpaque, void(bool opaque));
+};
+
 // RenderWidgetHostTest --------------------------------------------------------
 
 class RenderWidgetHostTest : public testing::Test {
@@ -701,6 +711,8 @@ class RenderWidgetHostTest : public testing::Test {
 #endif
     host_.reset(MockRenderWidgetHost::Create(delegate_.get(), process_,
                                              process_->GetNextRoutingID()));
+    // Set up the RenderWidgetHost as being for a main frame.
+    host_->set_owner_delegate(&mock_owner_delegate_);
     view_.reset(new TestView(host_.get()));
     ConfigureView(view_.get());
     host_->SetView(view_.get());
@@ -912,6 +924,7 @@ class RenderWidgetHostTest : public testing::Test {
   std::unique_ptr<TestBrowserContext> browser_context_;
   RenderWidgetHostProcess* process_;  // Deleted automatically by the widget.
   std::unique_ptr<MockRenderWidgetHostDelegate> delegate_;
+  testing::NiceMock<MockRenderWidgetHostOwnerDelegate> mock_owner_delegate_;
   std::unique_ptr<MockRenderWidgetHost> host_;
   std::unique_ptr<TestView> view_;
   std::unique_ptr<display::Screen> screen_;
@@ -1182,18 +1195,34 @@ TEST_F(RenderWidgetHostTest, Background) {
   host_->SetView(view.get());
 
   ASSERT_FALSE(view->GetBackgroundColor());
-  view->SetBackgroundColor(SK_ColorTRANSPARENT);
-  ASSERT_TRUE(view->GetBackgroundColor());
-  EXPECT_EQ(static_cast<unsigned>(SK_ColorTRANSPARENT),
-            *view->GetBackgroundColor());
 
-  const IPC::Message* set_background =
-      process_->sink().GetUniqueMessageMatching(
-          WidgetMsg_SetBackgroundOpaque::ID);
-  ASSERT_TRUE(set_background);
-  std::tuple<bool> sent_background;
-  WidgetMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
-  EXPECT_FALSE(std::get<0>(sent_background));
+  {
+    // The background is assumed opaque by default, so choosing opaque won't
+    // do anything if it's not set to transparent first.
+    EXPECT_CALL(mock_owner_delegate_, SetBackgroundOpaque(_)).Times(0);
+    view->SetBackgroundColor(SK_ColorRED);
+    EXPECT_EQ(unsigned{SK_ColorRED}, *view->GetBackgroundColor());
+  }
+  {
+    // Another opaque color doesn't inform the view of any change.
+    EXPECT_CALL(mock_owner_delegate_, SetBackgroundOpaque(_)).Times(0);
+    view->SetBackgroundColor(SK_ColorBLUE);
+    EXPECT_EQ(unsigned{SK_ColorBLUE}, *view->GetBackgroundColor());
+  }
+  {
+    // The owner delegate will be called to pass it over IPC to the RenderView.
+    EXPECT_CALL(mock_owner_delegate_, SetBackgroundOpaque(false));
+    view->SetBackgroundColor(SK_ColorTRANSPARENT);
+    // The browser side will represent the background color as transparent
+    // immediately.
+    EXPECT_EQ(unsigned{SK_ColorTRANSPARENT}, *view->GetBackgroundColor());
+  }
+  {
+    // Setting back an opaque color informs the view.
+    EXPECT_CALL(mock_owner_delegate_, SetBackgroundOpaque(true));
+    view->SetBackgroundColor(SK_ColorBLUE);
+    EXPECT_EQ(unsigned{SK_ColorBLUE}, *view->GetBackgroundColor());
+  }
 
   host_->SetView(nullptr);
   static_cast<RenderWidgetHostViewBase*>(view.release())->Destroy();

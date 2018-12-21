@@ -293,11 +293,11 @@ void AwRenderFrameExt::OnSetInitialPageScale(double page_scale_factor) {
 }
 
 void AwRenderFrameExt::OnSetBackgroundColor(SkColor c) {
-  blink::WebFrameWidget* web_frame_widget = GetWebFrameWidget();
-  if (!web_frame_widget)
+  blink::WebView* webview = GetWebView();
+  if (!webview)
     return;
 
-  web_frame_widget->SetBaseBackgroundColor(c);
+  webview->SetBaseBackgroundColor(c);
 }
 
 void AwRenderFrameExt::OnSmoothScroll(int target_x,

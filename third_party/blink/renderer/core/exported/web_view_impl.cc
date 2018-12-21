@@ -1911,21 +1911,6 @@ bool WebViewImpl::SelectionBounds(WebRect& anchor_web,
   return true;
 }
 
-SkColor WebViewImpl::BackgroundColor() const {
-  if (background_color_override_enabled_)
-    return background_color_override_;
-  if (!page_)
-    return BaseBackgroundColor().Rgb();
-  if (!page_->MainFrame())
-    return BaseBackgroundColor().Rgb();
-  if (!page_->MainFrame()->IsLocalFrame())
-    return BaseBackgroundColor().Rgb();
-  LocalFrameView* view = page_->DeprecatedLocalMainFrame()->View();
-  if (!view)
-    return BaseBackgroundColor().Rgb();
-  return view->DocumentBackgroundColor().Rgb();
-}
-
 bool WebViewImpl::IsAcceleratedCompositingActive() const {
   return !!root_layer_;
 }
@@ -2846,6 +2831,21 @@ WebInputMethodController* WebViewImpl::GetActiveWebInputMethodController()
   WebLocalFrameImpl* local_frame =
       WebLocalFrameImpl::FromFrame(FocusedLocalFrameInWidget());
   return local_frame ? local_frame->GetInputMethodController() : nullptr;
+}
+
+SkColor WebViewImpl::BackgroundColor() const {
+  if (background_color_override_enabled_)
+    return background_color_override_;
+  if (!page_)
+    return BaseBackgroundColor().Rgb();
+  if (!page_->MainFrame())
+    return BaseBackgroundColor().Rgb();
+  if (!page_->MainFrame()->IsLocalFrame())
+    return BaseBackgroundColor().Rgb();
+  LocalFrameView* view = page_->DeprecatedLocalMainFrame()->View();
+  if (!view)
+    return BaseBackgroundColor().Rgb();
+  return view->DocumentBackgroundColor().Rgb();
 }
 
 Color WebViewImpl::BaseBackgroundColor() const {

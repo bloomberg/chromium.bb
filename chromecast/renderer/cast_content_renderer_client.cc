@@ -133,10 +133,8 @@ void CastContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
   blink::WebView* webview = render_view->GetWebView();
   if (webview) {
-    if (auto* web_frame_widget = render_view->GetWebFrameWidget())
-      web_frame_widget->SetBaseBackgroundColor(chromecast::GetSwitchValueColor(
-          switches::kCastAppBackgroundColor, SK_ColorBLACK));
-
+    webview->SetBaseBackgroundColor(chromecast::GetSwitchValueColor(
+        switches::kCastAppBackgroundColor, SK_ColorBLACK));
     // Disable application cache as Chromecast doesn't support off-line
     // application running.
     webview->GetSettings()->SetOfflineWebApplicationCacheEnabled(false);
