@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "ui/base/x/x11_window_event_manager.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/geometry/rect.h"
@@ -43,6 +44,7 @@ class TestCompositorHostX11 : public TestCompositorHost {
   XID window_;
 
   std::unique_ptr<XScopedEventSelector> window_events_;
+  viz::ParentLocalSurfaceIdAllocator allocator_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCompositorHostX11);
 };
@@ -58,7 +60,6 @@ TestCompositorHostX11::TestCompositorHostX11(
                   context_factory_,
                   context_factory_private_,
                   base::ThreadTaskRunnerHandle::Get(),
-                  false /* enable_surface_synchronization */,
                   false /* enable_pixel_canvas */) {}
 
 TestCompositorHostX11::~TestCompositorHostX11() {}
@@ -85,9 +86,10 @@ void TestCompositorHostX11::Show() {
     if (event.type == MapNotify && event.xmap.window == window_)
       break;
   }
+  allocator_.GenerateId();
   compositor_.SetAcceleratedWidget(window_);
   compositor_.SetScaleAndSize(1.0f, bounds_.size(),
-                              viz::LocalSurfaceIdAllocation());
+                              allocator_.GetCurrentLocalSurfaceIdAllocation());
   compositor_.SetVisible(true);
 }
 

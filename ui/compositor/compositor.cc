@@ -67,7 +67,6 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
                        ui::ContextFactory* context_factory,
                        ui::ContextFactoryPrivate* context_factory_private,
                        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                       bool enable_surface_synchronization,
                        bool enable_pixel_canvas,
                        bool external_begin_frames_enabled,
                        bool force_software_compositor,
@@ -155,7 +154,7 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
 
   settings.initial_debug_state.SetRecordRenderingStats(
       command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking));
-  settings.enable_surface_synchronization = enable_surface_synchronization;
+  settings.enable_surface_synchronization = true;
   settings.build_hit_test_data = features::IsVizHitTestingSurfaceLayerEnabled();
 
   settings.use_zero_copy = IsUIZeroCopyEnabled();

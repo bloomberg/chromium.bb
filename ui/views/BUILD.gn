@@ -1072,6 +1072,7 @@ source_set("views_unittests_sources") {
     "//cc",
     "//cc/paint",
     "//components/vector_icons",
+    "//components/viz/common",
     "//services/ws/public/mojom",
     "//skia",
     "//testing/gtest",
