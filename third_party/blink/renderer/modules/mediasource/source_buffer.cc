@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 #ifndef BLINK_SBLOG
@@ -108,16 +109,14 @@ SourceBuffer* SourceBuffer::Create(
     std::unique_ptr<WebSourceBuffer> web_source_buffer,
     MediaSource* source,
     EventQueue* async_event_queue) {
-  SourceBuffer* source_buffer = MakeGarbageCollected<SourceBuffer>(
-      std::move(web_source_buffer), source, async_event_queue);
-  source_buffer->PauseIfNeeded();
-  return source_buffer;
+  return MakeGarbageCollected<SourceBuffer>(std::move(web_source_buffer),
+                                            source, async_event_queue);
 }
 
 SourceBuffer::SourceBuffer(std::unique_ptr<WebSourceBuffer> web_source_buffer,
                            MediaSource* source,
                            EventQueue* async_event_queue)
-    : PausableObject(source->GetExecutionContext()),
+    : ContextLifecycleObserver(source->GetExecutionContext()),
       web_source_buffer_(std::move(web_source_buffer)),
       source_(source),
       track_defaults_(TrackDefaultList::Create()),
@@ -129,16 +128,8 @@ SourceBuffer::SourceBuffer(std::unique_ptr<WebSourceBuffer> web_source_buffer,
       append_window_end_(std::numeric_limits<double>::infinity()),
       first_initialization_segment_received_(false),
       pending_append_data_offset_(0),
-      append_buffer_async_part_runner_(AsyncMethodRunner<SourceBuffer>::Create(
-          this,
-          &SourceBuffer::AppendBufferAsyncPart,
-          GetExecutionContext()->GetTaskRunner(TaskType::kMediaElementEvent))),
       pending_remove_start_(-1),
-      pending_remove_end_(-1),
-      remove_async_part_runner_(AsyncMethodRunner<SourceBuffer>::Create(
-          this,
-          &SourceBuffer::RemoveAsyncPart,
-          GetExecutionContext()->GetTaskRunner(TaskType::kMediaElementEvent))) {
+      pending_remove_end_(-1) {
   BLINK_SBLOG << __func__ << " this=" << this;
 
   DCHECK(web_source_buffer_);
@@ -514,7 +505,10 @@ void SourceBuffer::remove(double start,
   //      asynchronously.
   pending_remove_start_ = start;
   pending_remove_end_ = end;
-  remove_async_part_runner_->RunAsync();
+  remove_async_task_handle_ = PostCancellableTask(
+      *GetExecutionContext()->GetTaskRunner(TaskType::kMediaElementEvent),
+      FROM_HERE,
+      WTF::Bind(&SourceBuffer::RemoveAsyncPart, WrapPersistent(this)));
 }
 
 void SourceBuffer::changeType(const String& type,
@@ -604,7 +598,7 @@ void SourceBuffer::setTrackDefaults(TrackDefaultList* track_defaults,
 void SourceBuffer::CancelRemove() {
   DCHECK(updating_);
   DCHECK_NE(pending_remove_start_, -1);
-  remove_async_part_runner_->Stop();
+  remove_async_task_handle_.Cancel();
   pending_remove_start_ = -1;
   pending_remove_end_ = -1;
   updating_ = false;
@@ -630,7 +624,7 @@ void SourceBuffer::AbortIfUpdating() {
 
   // 4.1. Abort the buffer append and stream append loop algorithms if they are
   //      running.
-  append_buffer_async_part_runner_->Stop();
+  append_buffer_async_task_handle_.Cancel();
   pending_append_data_.clear();
   pending_append_data_offset_ = 0;
 
@@ -1155,23 +1149,13 @@ bool SourceBuffer::HasPendingActivity() const {
   return source_;
 }
 
-void SourceBuffer::Pause() {
-  append_buffer_async_part_runner_->Pause();
-  remove_async_part_runner_->Pause();
-}
-
-void SourceBuffer::Unpause() {
-  append_buffer_async_part_runner_->Unpause();
-  remove_async_part_runner_->Unpause();
-}
-
 void SourceBuffer::ContextDestroyed(ExecutionContext*) {
-  append_buffer_async_part_runner_->Stop();
-  remove_async_part_runner_->Stop();
+  append_buffer_async_task_handle_.Cancel();
+  remove_async_task_handle_.Cancel();
 }
 
 ExecutionContext* SourceBuffer::GetExecutionContext() const {
-  return PausableObject::GetExecutionContext();
+  return ContextLifecycleObserver::GetExecutionContext();
 }
 
 const AtomicString& SourceBuffer::InterfaceName() const {
@@ -1297,7 +1281,10 @@ void SourceBuffer::AppendBufferInternal(double media_time,
   ScheduleEvent(event_type_names::kUpdatestart);
 
   // 5. Asynchronously run the buffer append algorithm.
-  append_buffer_async_part_runner_->RunAsync();
+  append_buffer_async_task_handle_ = PostCancellableTask(
+      *GetExecutionContext()->GetTaskRunner(TaskType::kMediaElementEvent),
+      FROM_HERE,
+      WTF::Bind(&SourceBuffer::AppendBufferAsyncPart, WrapPersistent(this)));
 
   TRACE_EVENT_ASYNC_STEP_INTO0("media", "SourceBuffer::appendBuffer", this,
                                "initialDelay");
@@ -1346,7 +1333,11 @@ void SourceBuffer::AppendBufferAsyncPart() {
     pending_append_data_offset_ += append_size;
 
     if (pending_append_data_offset_ < pending_append_data_.size()) {
-      append_buffer_async_part_runner_->RunAsync();
+      append_buffer_async_task_handle_ = PostCancellableTask(
+          *GetExecutionContext()->GetTaskRunner(TaskType::kMediaElementEvent),
+          FROM_HERE,
+          WTF::Bind(&SourceBuffer::AppendBufferAsyncPart,
+                    WrapPersistent(this)));
       TRACE_EVENT_ASYNC_STEP_INTO0("media", "SourceBuffer::appendBuffer", this,
                                    "nextPieceDelay");
       return;
@@ -1427,12 +1418,10 @@ void SourceBuffer::Trace(blink::Visitor* visitor) {
   visitor->Trace(source_);
   visitor->Trace(track_defaults_);
   visitor->Trace(async_event_queue_);
-  visitor->Trace(append_buffer_async_part_runner_);
-  visitor->Trace(remove_async_part_runner_);
   visitor->Trace(audio_tracks_);
   visitor->Trace(video_tracks_);
   EventTargetWithInlineData::Trace(visitor);
-  PausableObject::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink
