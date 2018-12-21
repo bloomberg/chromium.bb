@@ -6,8 +6,8 @@
 
 ## Note: This is a jinja2 template, processed at build time into the final manifest.
 
-## TODO(torne): we need a Trichrome application subclass to use the library preloader
-##{% block application_name %}org.chromium.chrome.browser.MonochromeApplication{% endblock %}
+## TODO(torne): we may need a TrichromeApplication?
+{% block application_name %}org.chromium.chrome.browser.MonochromeApplication{% endblock %}
 
 {% block extra_application_attributes %}
 {{ super() }}
