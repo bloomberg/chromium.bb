@@ -293,13 +293,6 @@ bool BrowserFrameMac::ExecuteCommand(
   return true;
 }
 
-void BrowserFrameMac::InitNativeWidget(
-    const views::Widget::InitParams& params) {
-  views::NativeWidgetMac::InitNativeWidget(params);
-
-  [[GetNativeWindow().GetNativeNSWindow() contentView] setWantsLayer:YES];
-}
-
 void BrowserFrameMac::PopulateCreateWindowParams(
     const views::Widget::InitParams& widget_params,
     views_bridge_mac::mojom::CreateWindowParams* params) {
