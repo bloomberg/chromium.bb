@@ -2183,7 +2183,8 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
   if (render_frame_metadata_observer_) {
     last_draw_render_frame_metadata_ = MakeRenderFrameMetadata(frame);
     render_frame_metadata_observer_->OnRenderFrameSubmission(
-        *last_draw_render_frame_metadata_, &metadata);
+        *last_draw_render_frame_metadata_, &metadata,
+        active_tree()->TakeForceSendMetadataRequest());
   }
 
   metadata.latency_info.emplace_back(ui::SourceEventType::FRAME);

@@ -301,6 +301,10 @@ void LayerTreeView::RequestNewLocalSurfaceId() {
   layer_tree_host_->RequestNewLocalSurfaceId();
 }
 
+void LayerTreeView::RequestForceSendMetadata() {
+  layer_tree_host_->RequestForceSendMetadata();
+}
+
 void LayerTreeView::SetViewportVisibleRect(const gfx::Rect& visible_rect) {
   layer_tree_host_->SetViewportVisibleRect(visible_rect);
 }

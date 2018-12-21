@@ -34,7 +34,8 @@ void RenderFrameMetadataObserverImpl::BindToCurrentThread() {
 
 void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
     const cc::RenderFrameMetadata& render_frame_metadata,
-    viz::CompositorFrameMetadata* compositor_frame_metadata) {
+    viz::CompositorFrameMetadata* compositor_frame_metadata,
+    bool force_send) {
   // By default only report metadata changes for fields which have a low
   // frequency of change. However if there are changes in high frequency
   // fields these can be reported while testing is enabled.
@@ -54,6 +55,7 @@ void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
                           *last_render_frame_metadata_, render_frame_metadata,
                           &needs_activation_notification);
     }
+    send_metadata |= force_send;
   }
 
   // Allways cache the full metadata, so that it can correctly be sent upon
