@@ -1888,7 +1888,7 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
 
 namespace {
 
-helpers::EventResponseDelta* CalculateDelta(
+helpers::EventResponseDelta CalculateDelta(
     ExtensionWebRequestEventRouter::BlockedRequest* blocked_request,
     ExtensionWebRequestEventRouter::EventResponse* response,
     int extra_info_spec) {
@@ -1920,7 +1920,7 @@ helpers::EventResponseDelta* CalculateDelta(
           response->cancel, response->auth_credentials);
     default:
       NOTREACHED();
-      return nullptr;
+      return helpers::EventResponseDelta("", base::Time());
   }
 }
 
@@ -2057,16 +2057,15 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
   CHECK_GE(num_handlers_blocking, 0);
 
   if (response) {
-    helpers::EventResponseDelta* delta =
+    helpers::EventResponseDelta delta =
         CalculateDelta(&blocked_request, response, extra_info_spec);
 
     activity_monitor::OnWebRequestApiUsed(
         static_cast<content::BrowserContext*>(browser_context), extension_id,
         blocked_request.request->url, blocked_request.is_incognito, event_name,
-        SummarizeResponseDelta(event_name, *delta));
+        SummarizeResponseDelta(event_name, delta));
 
-    blocked_request.response_deltas.push_back(
-        linked_ptr<helpers::EventResponseDelta>(delta));
+    blocked_request.response_deltas.push_back(std::move(delta));
   }
 
   if (num_handlers_blocking == 0) {
@@ -2093,7 +2092,7 @@ void ExtensionWebRequestEventRouter::SendMessages(
     const BlockedRequest& blocked_request) {
   const helpers::EventResponseDeltas& deltas = blocked_request.response_deltas;
   for (const auto& delta : deltas) {
-    const std::set<std::string>& messages = delta->messages_to_extension;
+    const std::set<std::string>& messages = delta.messages_to_extension;
     for (const std::string& message : messages) {
       std::unique_ptr<WebRequestEventDetails> event_details(CreateEventDetails(
           *blocked_request.request, /* extra_info_spec */ 0));
@@ -2103,7 +2102,7 @@ void ExtensionWebRequestEventRouter::SendMessages(
       base::PostTaskWithTraits(
           FROM_HERE, {BrowserThread::UI},
           base::Bind(&SendOnMessageEventOnUI, browser_context,
-                     delta->extension_id, blocked_request.request->is_web_view,
+                     delta.extension_id, blocked_request.request->is_web_view,
                      blocked_request.request->web_view_instance_id,
                      base::Passed(&event_details)));
     }
@@ -2305,7 +2304,8 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
     if (!result.empty()) {
       helpers::EventResponseDeltas& deltas =
           blocked_requests_[request->id].response_deltas;
-      deltas.insert(deltas.end(), result.begin(), result.end());
+      deltas.insert(deltas.end(), std::make_move_iterator(result.begin()),
+                    std::make_move_iterator(result.end()));
       deltas_created = true;
     }
   }

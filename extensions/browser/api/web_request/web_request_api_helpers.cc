@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/adapters.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -268,6 +269,10 @@ EventResponseDelta::EventResponseDelta(
       cancel(false) {
 }
 
+EventResponseDelta::EventResponseDelta(EventResponseDelta&& other) = default;
+EventResponseDelta& EventResponseDelta ::operator=(EventResponseDelta&& other) =
+    default;
+
 EventResponseDelta::~EventResponseDelta() {
 }
 
@@ -295,10 +300,9 @@ std::unique_ptr<base::Value> MakeHeaderModificationLogValue(
   return dict;
 }
 
-bool InDecreasingExtensionInstallationTimeOrder(
-    const linked_ptr<EventResponseDelta>& a,
-    const linked_ptr<EventResponseDelta>& b) {
-  return a->extension_install_time > b->extension_install_time;
+bool InDecreasingExtensionInstallationTimeOrder(const EventResponseDelta& a,
+                                                const EventResponseDelta& b) {
+  return a.extension_install_time > b.extension_install_time;
 }
 
 std::unique_ptr<base::ListValue> StringToCharList(const std::string& s) {
@@ -324,28 +328,26 @@ bool CharListToString(const base::ListValue* list, std::string* out) {
   return true;
 }
 
-EventResponseDelta* CalculateOnBeforeRequestDelta(
+EventResponseDelta CalculateOnBeforeRequestDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
     const GURL& new_url) {
-  EventResponseDelta* result =
-      new EventResponseDelta(extension_id, extension_install_time);
-  result->cancel = cancel;
-  result->new_url = new_url;
+  EventResponseDelta result(extension_id, extension_install_time);
+  result.cancel = cancel;
+  result.new_url = new_url;
   return result;
 }
 
-EventResponseDelta* CalculateOnBeforeSendHeadersDelta(
+EventResponseDelta CalculateOnBeforeSendHeadersDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
     net::HttpRequestHeaders* old_headers,
     net::HttpRequestHeaders* new_headers,
     int extra_info_spec) {
-  EventResponseDelta* result =
-      new EventResponseDelta(extension_id, extension_install_time);
-  result->cancel = cancel;
+  EventResponseDelta result(extension_id, extension_install_time);
+  result.cancel = cancel;
 
   // The event listener might not have passed any new headers if it
   // just wanted to cancel the request.
@@ -357,7 +359,7 @@ EventResponseDelta* CalculateOnBeforeSendHeadersDelta(
         if (ShouldHideRequestHeader(extra_info_spec, i.name()))
           continue;
         if (!new_headers->HasHeader(i.name())) {
-          result->deleted_request_headers.push_back(i.name());
+          result.deleted_request_headers.push_back(i.name());
         }
       }
     }
@@ -370,7 +372,7 @@ EventResponseDelta* CalculateOnBeforeSendHeadersDelta(
           continue;
         std::string value;
         if (!old_headers->GetHeader(i.name(), &value) || i.value() != value) {
-          result->modified_request_headers.SetHeader(i.name(), i.value());
+          result.modified_request_headers.SetHeader(i.name(), i.value());
         }
       }
     }
@@ -378,7 +380,7 @@ EventResponseDelta* CalculateOnBeforeSendHeadersDelta(
   return result;
 }
 
-EventResponseDelta* CalculateOnHeadersReceivedDelta(
+EventResponseDelta CalculateOnHeadersReceivedDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
@@ -387,10 +389,9 @@ EventResponseDelta* CalculateOnHeadersReceivedDelta(
     const net::HttpResponseHeaders* old_response_headers,
     ResponseHeaders* new_response_headers,
     int extra_info_spec) {
-  EventResponseDelta* result =
-      new EventResponseDelta(extension_id, extension_install_time);
-  result->cancel = cancel;
-  result->new_url = new_url;
+  EventResponseDelta result(extension_id, extension_install_time);
+  result.cancel = cancel;
+  result.new_url = new_url;
 
   if (!new_response_headers)
     return result;
@@ -418,7 +419,7 @@ EventResponseDelta* CalculateOnHeadersReceivedDelta(
         }
       }
       if (!header_found)
-        result->deleted_response_headers.push_back(ResponseHeader(name, value));
+        result.deleted_response_headers.push_back(ResponseHeader(name, value));
     }
   }
 
@@ -442,33 +443,32 @@ EventResponseDelta* CalculateOnHeadersReceivedDelta(
         }
       }
       if (!header_found)
-        result->added_response_headers.push_back(i);
+        result.added_response_headers.push_back(i);
     }
   }
 
   return result;
 }
 
-EventResponseDelta* CalculateOnAuthRequiredDelta(
+EventResponseDelta CalculateOnAuthRequiredDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
     base::Optional<net::AuthCredentials> auth_credentials) {
-  EventResponseDelta* result =
-      new EventResponseDelta(extension_id, extension_install_time);
-  result->cancel = cancel;
-  result->auth_credentials = std::move(auth_credentials);
+  EventResponseDelta result(extension_id, extension_install_time);
+  result.cancel = cancel;
+  result.auth_credentials = std::move(auth_credentials);
   return result;
 }
 
 void MergeCancelOfResponses(const EventResponseDeltas& deltas,
                             bool* canceled,
                             extensions::WebRequestInfo::Logger* logger) {
-  for (auto i = deltas.cbegin(); i != deltas.cend(); ++i) {
-    if ((*i)->cancel) {
+  for (const auto& delta : deltas) {
+    if (delta.cancel) {
       *canceled = true;
       logger->LogEvent(net::NetLogEventType::CHROME_EXTENSION_ABORTED_REQUEST,
-                       (*i)->extension_id);
+                       delta.extension_id);
       break;
     }
   }
@@ -494,28 +494,27 @@ static bool MergeRedirectUrlOfResponsesHelper(
 
   bool redirected = false;
 
-  EventResponseDeltas::const_iterator delta;
-  for (delta = deltas.begin(); delta != deltas.end(); ++delta) {
-    if ((*delta)->new_url.is_empty())
+  for (const auto& delta : deltas) {
+    if (delta.new_url.is_empty())
       continue;
     if (consider_only_cancel_scheme_urls &&
-        !(*delta)->new_url.SchemeIs(url::kDataScheme) &&
-        (*delta)->new_url.spec() != "about:blank") {
+        !delta.new_url.SchemeIs(url::kDataScheme) &&
+        delta.new_url.spec() != "about:blank") {
       continue;
     }
 
-    if (!redirected || *new_url == (*delta)->new_url) {
-      *new_url = (*delta)->new_url;
+    if (!redirected || *new_url == delta.new_url) {
+      *new_url = delta.new_url;
       redirected = true;
       logger->LogEvent(
           net::NetLogEventType::CHROME_EXTENSION_REDIRECTED_REQUEST,
-          (*delta)->extension_id);
+          delta.extension_id);
     } else {
-      ignored_actions->emplace_back((*delta)->extension_id,
+      ignored_actions->emplace_back(delta.extension_id,
                                     web_request::IGNORED_ACTION_TYPE_REDIRECT);
       logger->LogEvent(
           net::NetLogEventType::CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
-          (*delta)->extension_id);
+          delta.extension_id);
     }
   }
   return redirected;
@@ -568,10 +567,9 @@ static bool MergeAddRequestCookieModifications(
   bool modified = false;
   // We assume here that the deltas are sorted in decreasing extension
   // precedence (i.e. decreasing extension installation time).
-  EventResponseDeltas::const_reverse_iterator delta;
-  for (delta = deltas.rbegin(); delta != deltas.rend(); ++delta) {
+  for (const auto& delta : base::Reversed(deltas)) {
     const RequestCookieModifications& modifications =
-        (*delta)->request_cookie_modifications;
+        delta.request_cookie_modifications;
     for (auto mod = modifications.cbegin(); mod != modifications.cend();
          ++mod) {
       if (mod->type != ADD || !mod->modification.has_value())
@@ -612,10 +610,9 @@ static bool MergeEditRequestCookieModifications(
   bool modified = false;
   // We assume here that the deltas are sorted in decreasing extension
   // precedence (i.e. decreasing extension installation time).
-  EventResponseDeltas::const_reverse_iterator delta;
-  for (delta = deltas.rbegin(); delta != deltas.rend(); ++delta) {
+  for (const auto& delta : base::Reversed(deltas)) {
     const RequestCookieModifications& modifications =
-        (*delta)->request_cookie_modifications;
+        delta.request_cookie_modifications;
     for (auto mod = modifications.cbegin(); mod != modifications.cend();
          ++mod) {
       if (mod->type != EDIT || !mod->modification.has_value())
@@ -649,10 +646,9 @@ static bool MergeRemoveRequestCookieModifications(
   bool modified = false;
   // We assume here that the deltas are sorted in decreasing extension
   // precedence (i.e. decreasing extension installation time).
-  EventResponseDeltas::const_reverse_iterator delta;
-  for (delta = deltas.rbegin(); delta != deltas.rend(); ++delta) {
+  for (const auto& delta : base::Reversed(deltas)) {
     const RequestCookieModifications& modifications =
-        (*delta)->request_cookie_modifications;
+        delta.request_cookie_modifications;
     for (auto mod = modifications.cbegin(); mod != modifications.cend();
          ++mod) {
       if (mod->type != REMOVE)
@@ -680,10 +676,8 @@ void MergeCookiesInOnBeforeSendHeadersResponses(
     extensions::WebRequestInfo::Logger* logger) {
   // Skip all work if there are no registered cookie modifications.
   bool cookie_modifications_exist = false;
-  EventResponseDeltas::const_iterator delta;
-  for (delta = deltas.begin(); delta != deltas.end(); ++delta) {
-    cookie_modifications_exist |=
-        !(*delta)->request_cookie_modifications.empty();
+  for (const auto& delta : deltas) {
+    cookie_modifications_exist |= !delta.request_cookie_modifications.empty();
   }
   if (!cookie_modifications_exist)
     return;
@@ -819,8 +813,6 @@ void MergeOnBeforeSendHeadersResponses(
   DCHECK(request_headers_modified);
   *request_headers_modified = false;
 
-  EventResponseDeltas::const_iterator delta;
-
   // Here we collect which headers we have removed or set to new values
   // so far due to extensions of higher precedence.
   std::set<std::string> removed_headers;
@@ -828,9 +820,9 @@ void MergeOnBeforeSendHeadersResponses(
 
   // We assume here that the deltas are sorted in decreasing extension
   // precedence (i.e. decreasing extension installation time).
-  for (delta = deltas.begin(); delta != deltas.end(); ++delta) {
-    if ((*delta)->modified_request_headers.IsEmpty() &&
-        (*delta)->deleted_request_headers.empty()) {
+  for (const auto& delta : deltas) {
+    if (delta.modified_request_headers.IsEmpty() &&
+        delta.deleted_request_headers.empty()) {
       continue;
     }
 
@@ -840,7 +832,7 @@ void MergeOnBeforeSendHeadersResponses(
     bool extension_conflicts = false;
     {
       net::HttpRequestHeaders::Iterator modification(
-          (*delta)->modified_request_headers);
+          delta.modified_request_headers);
       while (modification.GetNext() && !extension_conflicts) {
         // This modification sets |key| to |value|.
         const std::string& key = modification.name();
@@ -868,10 +860,8 @@ void MergeOnBeforeSendHeadersResponses(
     // Check whether any deletion affects a request header that has been
     // modified before.
     {
-      std::vector<std::string>::iterator key;
-      for (key = (*delta)->deleted_request_headers.begin();
-           key != (*delta)->deleted_request_headers.end() &&
-               !extension_conflicts;
+      for (auto key = delta.deleted_request_headers.begin();
+           key != delta.deleted_request_headers.end() && !extension_conflicts;
            ++key) {
         if (set_headers.find(*key) != set_headers.end()) {
           std::string current_value;
@@ -884,35 +874,31 @@ void MergeOnBeforeSendHeadersResponses(
     // Now execute the modifications if there were no conflicts.
     if (!extension_conflicts) {
       // Copy all modifications into the original headers.
-      request_headers->MergeFrom((*delta)->modified_request_headers);
+      request_headers->MergeFrom(delta.modified_request_headers);
       {
         // Record which keys were changed.
         net::HttpRequestHeaders::Iterator modification(
-            (*delta)->modified_request_headers);
+            delta.modified_request_headers);
         while (modification.GetNext())
           set_headers.insert(modification.name());
       }
 
       // Perform all deletions and record which keys were deleted.
       {
-        std::vector<std::string>::iterator key;
-        for (key = (*delta)->deleted_request_headers.begin();
-             key != (*delta)->deleted_request_headers.end();
-             ++key) {
-          request_headers->RemoveHeader(*key);
-          removed_headers.insert(*key);
+        for (const auto& header : delta.deleted_request_headers) {
+          request_headers->RemoveHeader(header);
+          removed_headers.insert(header);
         }
       }
       logger->LogEvent(net::NetLogEventType::CHROME_EXTENSION_MODIFIED_HEADERS,
-                       (*delta)->extension_id);
+                       delta.extension_id);
       *request_headers_modified = true;
     } else {
       ignored_actions->emplace_back(
-          (*delta)->extension_id,
-          web_request::IGNORED_ACTION_TYPE_REQUEST_HEADERS);
+          delta.extension_id, web_request::IGNORED_ACTION_TYPE_REQUEST_HEADERS);
       logger->LogEvent(
           net::NetLogEventType::CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
-          (*delta)->extension_id);
+          delta.extension_id);
     }
   }
 
@@ -969,7 +955,7 @@ void MergeOnBeforeSendHeadersResponses(
                                              logger);
 }
 
-// Retrives all cookies from |override_response_headers|.
+// Retrieves all cookies from |override_response_headers|.
 static ParsedResponseCookies GetResponseCookies(
     scoped_refptr<net::HttpResponseHeaders> override_response_headers) {
   ParsedResponseCookies result;
@@ -1079,18 +1065,17 @@ static bool MergeAddResponseCookieModifications(
   bool modified = false;
   // We assume here that the deltas are sorted in decreasing extension
   // precedence (i.e. decreasing extension installation time).
-  EventResponseDeltas::const_reverse_iterator delta;
-  for (delta = deltas.rbegin(); delta != deltas.rend(); ++delta) {
+  for (const auto& delta : base::Reversed(deltas)) {
     const ResponseCookieModifications& modifications =
-        (*delta)->response_cookie_modifications;
-    for (auto mod = modifications.cbegin(); mod != modifications.cend();
-         ++mod) {
-      if (mod->type != ADD || !mod->modification.has_value())
+        delta.response_cookie_modifications;
+    for (const auto& mod : modifications) {
+      if (mod.type != ADD || !mod.modification.has_value())
         continue;
+
       // Cookie names are not unique in response cookies so we always append
       // and never override.
       auto cookie = std::make_unique<net::ParsedCookie>(std::string());
-      ApplyResponseCookieModification(mod->modification.value(), cookie.get());
+      ApplyResponseCookieModification(mod.modification.value(), cookie.get());
       cookies->push_back(std::move(cookie));
       modified = true;
     }
@@ -1106,18 +1091,16 @@ static bool MergeEditResponseCookieModifications(
   bool modified = false;
   // We assume here that the deltas are sorted in decreasing extension
   // precedence (i.e. decreasing extension installation time).
-  EventResponseDeltas::const_reverse_iterator delta;
-  for (delta = deltas.rbegin(); delta != deltas.rend(); ++delta) {
+  for (const auto& delta : base::Reversed(deltas)) {
     const ResponseCookieModifications& modifications =
-        (*delta)->response_cookie_modifications;
-    for (auto mod = modifications.cbegin(); mod != modifications.cend();
-         ++mod) {
-      if (mod->type != EDIT || !mod->modification.has_value())
+        delta.response_cookie_modifications;
+    for (const auto& mod : modifications) {
+      if (mod.type != EDIT || !mod.modification.has_value())
         continue;
 
       for (const std::unique_ptr<net::ParsedCookie>& cookie : *cookies) {
-        if (DoesResponseCookieMatchFilter(*cookie.get(), mod->filter)) {
-          modified |= ApplyResponseCookieModification(mod->modification.value(),
+        if (DoesResponseCookieMatchFilter(*cookie.get(), mod.filter)) {
+          modified |= ApplyResponseCookieModification(mod.modification.value(),
                                                       cookie.get());
         }
       }
@@ -1134,10 +1117,9 @@ static bool MergeRemoveResponseCookieModifications(
   bool modified = false;
   // We assume here that the deltas are sorted in decreasing extension
   // precedence (i.e. decreasing extension installation time).
-  EventResponseDeltas::const_reverse_iterator delta;
-  for (delta = deltas.rbegin(); delta != deltas.rend(); ++delta) {
+  for (const auto& delta : base::Reversed(deltas)) {
     const ResponseCookieModifications& modifications =
-        (*delta)->response_cookie_modifications;
+        delta.response_cookie_modifications;
     for (auto mod = modifications.cbegin(); mod != modifications.cend();
          ++mod) {
       if (mod->type != REMOVE)
@@ -1165,10 +1147,8 @@ void MergeCookiesInOnHeadersReceivedResponses(
     extensions::WebRequestInfo::Logger* logger) {
   // Skip all work if there are no registered cookie modifications.
   bool cookie_modifications_exist = false;
-  EventResponseDeltas::const_reverse_iterator delta;
-  for (delta = deltas.rbegin(); delta != deltas.rend(); ++delta) {
-    cookie_modifications_exist |=
-        !(*delta)->response_cookie_modifications.empty();
+  for (const auto& delta : base::Reversed(deltas)) {
+    cookie_modifications_exist |= !delta.response_cookie_modifications.empty();
   }
 
   if (!cookie_modifications_exist)
@@ -1210,8 +1190,6 @@ void MergeOnHeadersReceivedResponses(
   DCHECK(response_headers_modified);
   *response_headers_modified = false;
 
-  EventResponseDeltas::const_iterator delta;
-
   // Here we collect which headers we have removed or added so far due to
   // extensions of higher precedence. Header keys are always stored as
   // lower case.
@@ -1220,9 +1198,9 @@ void MergeOnHeadersReceivedResponses(
 
   // We assume here that the deltas are sorted in decreasing extension
   // precedence (i.e. decreasing extension installation time).
-  for (delta = deltas.begin(); delta != deltas.end(); ++delta) {
-    if ((*delta)->added_response_headers.empty() &&
-        (*delta)->deleted_response_headers.empty()) {
+  for (const auto& delta : deltas) {
+    if (delta.added_response_headers.empty() &&
+        delta.deleted_response_headers.empty()) {
       continue;
     }
 
@@ -1239,8 +1217,8 @@ void MergeOnHeadersReceivedResponses(
     // this takes care of precedence.
     bool extension_conflicts = false;
     ResponseHeaders::const_iterator i;
-    for (i = (*delta)->deleted_response_headers.begin();
-         i != (*delta)->deleted_response_headers.end(); ++i) {
+    for (i = delta.deleted_response_headers.begin();
+         i != delta.deleted_response_headers.end(); ++i) {
       if (removed_headers.find(ToLowerCase(*i)) != removed_headers.end()) {
         extension_conflicts = true;
         break;
@@ -1251,8 +1229,8 @@ void MergeOnHeadersReceivedResponses(
     if (!extension_conflicts) {
       // Delete headers
       {
-        for (i = (*delta)->deleted_response_headers.begin();
-             i != (*delta)->deleted_response_headers.end(); ++i) {
+        for (i = delta.deleted_response_headers.begin();
+             i != delta.deleted_response_headers.end(); ++i) {
           (*override_response_headers)->RemoveHeaderLine(i->first, i->second);
           removed_headers.insert(ToLowerCase(*i));
         }
@@ -1260,8 +1238,8 @@ void MergeOnHeadersReceivedResponses(
 
       // Add headers.
       {
-        for (i = (*delta)->added_response_headers.begin();
-             i != (*delta)->added_response_headers.end(); ++i) {
+        for (i = delta.added_response_headers.begin();
+             i != delta.added_response_headers.end(); ++i) {
           ResponseHeader lowercase_header(ToLowerCase(*i));
           if (added_headers.find(lowercase_header) != added_headers.end())
             continue;
@@ -1270,15 +1248,15 @@ void MergeOnHeadersReceivedResponses(
         }
       }
       logger->LogEvent(net::NetLogEventType::CHROME_EXTENSION_MODIFIED_HEADERS,
-                       (*delta)->extension_id);
+                       delta.extension_id);
       *response_headers_modified = true;
     } else {
       ignored_actions->emplace_back(
-          (*delta)->extension_id,
+          delta.extension_id,
           web_request::IGNORED_ACTION_TYPE_RESPONSE_HEADERS);
       logger->LogEvent(
           net::NetLogEventType::CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
-          (*delta)->extension_id);
+          delta.extension_id);
     }
   }
 
@@ -1340,25 +1318,24 @@ bool MergeOnAuthRequiredResponses(const EventResponseDeltas& deltas,
   CHECK(auth_credentials);
   bool credentials_set = false;
 
-  for (auto delta = deltas.cbegin(); delta != deltas.cend(); ++delta) {
-    if (!(*delta)->auth_credentials.has_value())
+  for (const auto& delta : deltas) {
+    if (!delta.auth_credentials.has_value())
       continue;
     bool different =
-        auth_credentials->username() !=
-            (*delta)->auth_credentials->username() ||
-        auth_credentials->password() != (*delta)->auth_credentials->password();
+        auth_credentials->username() != delta.auth_credentials->username() ||
+        auth_credentials->password() != delta.auth_credentials->password();
     if (credentials_set && different) {
       ignored_actions->emplace_back(
-          (*delta)->extension_id,
+          delta.extension_id,
           web_request::IGNORED_ACTION_TYPE_AUTH_CREDENTIALS);
       logger->LogEvent(
           net::NetLogEventType::CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
-          (*delta)->extension_id);
+          delta.extension_id);
     } else {
       logger->LogEvent(
           net::NetLogEventType::CHROME_EXTENSION_PROVIDE_AUTH_CREDENTIALS,
-          (*delta)->extension_id);
-      *auth_credentials = *(*delta)->auth_credentials;
+          delta.extension_id);
+      *auth_credentials = *delta.auth_credentials;
       credentials_set = true;
     }
   }

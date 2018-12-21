@@ -28,9 +28,15 @@
 #include "testing/gtest/include/gtest/gtest-message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace helpers = extension_web_request_api_helpers;
+namespace keys = extensions::declarative_webrequest_constants;
+namespace keys2 = url_matcher::url_matcher_constants;
+
 using base::Value;
 using extension_test_util::LoadManifest;
 using extension_test_util::LoadManifestUnchecked;
+using helpers::EventResponseDelta;
+using helpers::EventResponseDeltas;
 using testing::HasSubstr;
 using url_matcher::URLMatcher;
 
@@ -55,10 +61,6 @@ WebRequestInfo CreateRequest(const GURL& url) {
 }
 
 }  // namespace
-
-namespace helpers = extension_web_request_api_helpers;
-namespace keys = declarative_webrequest_constants;
-namespace keys2 = url_matcher::url_matcher_constants;
 
 class TestWebRequestRulesRegistry : public WebRequestRulesRegistry {
  public:
@@ -437,7 +439,7 @@ TEST_F(WebRequestRulesRegistryTest, Precedences) {
   GURL url("http://www.google.com");
   WebRequestInfo request_info = CreateRequest(url);
   WebRequestData request_data(&request_info, ON_BEFORE_REQUEST);
-  std::list<LinkedPtrEventResponseDelta> deltas =
+  EventResponseDeltas deltas =
       registry->CreateDeltas(NULL, request_data, false);
 
   // The second extension is installed later and will win for this reason
@@ -445,19 +447,18 @@ TEST_F(WebRequestRulesRegistryTest, Precedences) {
   ASSERT_EQ(2u, deltas.size());
   deltas.sort(&helpers::InDecreasingExtensionInstallationTimeOrder);
 
-  auto i = deltas.begin();
-  LinkedPtrEventResponseDelta winner = *i++;
-  LinkedPtrEventResponseDelta loser = *i;
+  const EventResponseDelta& winner = deltas.front();
+  const EventResponseDelta& loser = deltas.back();
 
-  EXPECT_EQ(kExtensionId2, winner->extension_id);
+  EXPECT_EQ(kExtensionId2, winner.extension_id);
   EXPECT_EQ(base::Time() + base::TimeDelta::FromDays(2),
-            winner->extension_install_time);
-  EXPECT_EQ(GURL("http://www.bar.com"), winner->new_url);
+            winner.extension_install_time);
+  EXPECT_EQ(GURL("http://www.bar.com"), winner.new_url);
 
-  EXPECT_EQ(kExtensionId, loser->extension_id);
+  EXPECT_EQ(kExtensionId, loser.extension_id);
   EXPECT_EQ(base::Time() + base::TimeDelta::FromDays(1),
-            loser->extension_install_time);
-  EXPECT_EQ(GURL("http://www.foo.com"), loser->new_url);
+            loser.extension_install_time);
+  EXPECT_EQ(GURL("http://www.foo.com"), loser.new_url);
 }
 
 // Test priorities of rules within one extension.
@@ -490,17 +491,17 @@ TEST_F(WebRequestRulesRegistryTest, Priorities) {
   GURL url("http://www.google.com/index.html");
   WebRequestInfo request_info = CreateRequest(url);
   WebRequestData request_data(&request_info, ON_BEFORE_REQUEST);
-  std::list<LinkedPtrEventResponseDelta> deltas =
+  EventResponseDeltas deltas =
       registry->CreateDeltas(nullptr, request_data, false);
 
   // The redirect by the first extension is ignored due to the ignore rule.
   ASSERT_EQ(1u, deltas.size());
-  LinkedPtrEventResponseDelta effective_rule = *(deltas.begin());
+  const EventResponseDelta& effective_rule = *deltas.begin();
 
-  EXPECT_EQ(kExtensionId2, effective_rule->extension_id);
+  EXPECT_EQ(kExtensionId2, effective_rule.extension_id);
   EXPECT_EQ(base::Time() + base::TimeDelta::FromDays(2),
-            effective_rule->extension_install_time);
-  EXPECT_EQ(GURL("http://www.bar.com"), effective_rule->new_url);
+            effective_rule.extension_install_time);
+  EXPECT_EQ(GURL("http://www.bar.com"), effective_rule.new_url);
 }
 
 // Test ignoring of rules by tag.
@@ -564,7 +565,7 @@ TEST_F(WebRequestRulesRegistryTest, IgnoreRulesByTag) {
   GURL url("http://www.foo.com/test");
   WebRequestInfo request_info = CreateRequest(url);
   WebRequestData request_data(&request_info, ON_BEFORE_REQUEST);
-  std::list<LinkedPtrEventResponseDelta> deltas =
+  EventResponseDeltas deltas =
       registry->CreateDeltas(NULL, request_data, false);
 
   // The redirect by the redirect rule is ignored due to the ignore rule.
@@ -816,7 +817,7 @@ TEST_F(WebRequestRulesRegistryTest, CheckOriginAndPathRegEx) {
   std::string error = registry->AddRulesImpl(kExtensionId, rules);
   EXPECT_EQ("", error);
 
-  std::list<LinkedPtrEventResponseDelta> deltas;
+  EventResponseDeltas deltas;
 
   // No match because match is in the query parameter.
   GURL url1("http://bar.com/index.html?foo.com");

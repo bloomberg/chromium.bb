@@ -35,9 +35,13 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace helpers = extension_web_request_api_helpers;
+namespace keys = extensions::declarative_webrequest_constants;
+
 using base::DictionaryValue;
 using base::ListValue;
 using extension_test_util::LoadManifestUnchecked;
+using helpers::EventResponseDeltas;
 using testing::HasSubstr;
 
 namespace extensions {
@@ -70,8 +74,6 @@ std::unique_ptr<WebRequestActionSet> CreateSetOfActions(const char* json) {
 }
 
 }  // namespace
-
-namespace keys = declarative_webrequest_constants;
 
 class WebRequestActionWithThreadsTest : public testing::Test {
  public:
@@ -149,7 +151,7 @@ bool WebRequestActionWithThreadsTest::ActionWorksOnRequest(
   std::unique_ptr<net::URLRequest> regular_request(
       context_.CreateRequest(GURL(url_string), net::DEFAULT_PRIORITY, NULL,
                              TRAFFIC_ANNOTATION_FOR_TESTS));
-  std::list<LinkedPtrEventResponseDelta> deltas;
+  EventResponseDeltas deltas;
   scoped_refptr<net::HttpResponseHeaders> headers(
       new net::HttpResponseHeaders(""));
   WebRequestInfo request_info(regular_request.get());

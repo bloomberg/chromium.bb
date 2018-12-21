@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -38,8 +37,8 @@ class Extension;
 
 namespace extension_web_request_api_helpers {
 
-typedef std::pair<std::string, std::string> ResponseHeader;
-typedef std::vector<ResponseHeader> ResponseHeaders;
+using ResponseHeader = std::pair<std::string, std::string>;
+using ResponseHeaders = std::vector<ResponseHeader>;
 
 struct IgnoredAction {
   IgnoredAction(extensions::ExtensionId extension_id,
@@ -196,6 +195,8 @@ using ResponseCookieModifications = std::vector<ResponseCookieModification>;
 struct EventResponseDelta {
   EventResponseDelta(const std::string& extension_id,
                      const base::Time& extension_install_time);
+  EventResponseDelta(EventResponseDelta&& other);
+  EventResponseDelta& operator=(EventResponseDelta&& other);
   ~EventResponseDelta();
 
   // ID of the extension that sent this response.
@@ -239,13 +240,12 @@ struct EventResponseDelta {
   DISALLOW_COPY_AND_ASSIGN(EventResponseDelta);
 };
 
-typedef std::list<linked_ptr<EventResponseDelta> > EventResponseDeltas;
+using EventResponseDeltas = std::list<EventResponseDelta>;
 
 // Comparison operator that returns true if the extension that caused
 // |a| was installed after the extension that caused |b|.
-bool InDecreasingExtensionInstallationTimeOrder(
-    const linked_ptr<EventResponseDelta>& a,
-    const linked_ptr<EventResponseDelta>& b);
+bool InDecreasingExtensionInstallationTimeOrder(const EventResponseDelta& a,
+                                                const EventResponseDelta& b);
 
 // Converts a string to a list of integers, each in 0..255.
 std::unique_ptr<base::ListValue> StringToCharList(const std::string& s);
@@ -259,21 +259,21 @@ bool CharListToString(const base::ListValue* list, std::string* out);
 // that commanded a modification, the installation time of this extension (used
 // for defining a precedence in conflicting modifications) and whether the
 // extension requested to |cancel| the request. Other parameters depend on a
-// the signal handler. Ownership of the returned object is passed to the caller.
+// the signal handler.
 
-EventResponseDelta* CalculateOnBeforeRequestDelta(
+EventResponseDelta CalculateOnBeforeRequestDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
     const GURL& new_url);
-EventResponseDelta* CalculateOnBeforeSendHeadersDelta(
+EventResponseDelta CalculateOnBeforeSendHeadersDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
     net::HttpRequestHeaders* old_headers,
     net::HttpRequestHeaders* new_headers,
     int extra_info_spec);
-EventResponseDelta* CalculateOnHeadersReceivedDelta(
+EventResponseDelta CalculateOnHeadersReceivedDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
@@ -282,7 +282,7 @@ EventResponseDelta* CalculateOnHeadersReceivedDelta(
     const net::HttpResponseHeaders* old_response_headers,
     ResponseHeaders* new_response_headers,
     int extra_info_spec);
-EventResponseDelta* CalculateOnAuthRequiredDelta(
+EventResponseDelta CalculateOnAuthRequiredDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
