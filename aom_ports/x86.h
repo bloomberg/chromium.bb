@@ -301,15 +301,15 @@ static INLINE unsigned int x86_readtscp(void) {
 }
 
 static INLINE unsigned int x86_tsc_start(void) {
-  unsigned int ax, bx, cx, dx;
-  cpuid(0, 0, ax, bx, cx, dx);
+  unsigned int reg_eax, reg_ebx, reg_ecx, reg_edx;
+  cpuid(0, 0, reg_eax, reg_ebx, reg_ecx, reg_edx);
   return x86_readtsc();
 }
 
 static INLINE unsigned int x86_tsc_end(void) {
   uint32_t v = x86_readtscp();
-  unsigned int ax, bx, cx, dx;
-  cpuid(0, 0, ax, bx, cx, dx);
+  unsigned int reg_eax, reg_ebx, reg_ecx, reg_edx;
+  cpuid(0, 0, reg_eax, reg_ebx, reg_ecx, reg_edx);
   return v;
 }
 
