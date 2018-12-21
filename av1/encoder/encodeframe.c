@@ -4445,7 +4445,8 @@ BEGIN_PARTITION_SEARCH:
   }
 
   if (cpi->sf.ml_prune_rect_partition && !frame_is_intra_only(cm) &&
-      (partition_horz_allowed || partition_vert_allowed)) {
+      (partition_horz_allowed || partition_vert_allowed) &&
+      !(prune_horz || prune_vert)) {
     av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes, bsize);
     ml_prune_rect_partition(cpi, x, bsize, best_rdc.rdcost, cur_none_rd,
                             split_rd, &prune_horz, &prune_vert);

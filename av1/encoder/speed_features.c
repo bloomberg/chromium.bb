@@ -249,10 +249,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->prune_single_motion_modes_by_simple_trans = 1;
 
     sf->full_pixel_motion_search_based_split = 1;
-    // TODO(chiyotsai@google.com): Try enabling both
-    // simple_motion_search_prune_rect and ml_prune_rect_partition.
     sf->simple_motion_search_prune_rect = 1;
-    sf->ml_prune_rect_partition = 0;
 
     sf->disable_wedge_search_var_thresh = 0;
     sf->disable_wedge_search_edge_thresh = 0;
