@@ -27,7 +27,7 @@ if(WIN32)
     ${CMAKE_BINARY_DIR}/bin/clang
   )
 else()
-  add_llvm_loadable_module(libFindBadConstructs ${plugin_sources})
+  add_llvm_library(libFindBadConstructs MODULE ${plugin_sources})
   add_dependencies(libFindBadConstructs clang)
 
   cr_install(TARGETS libFindBadConstructs LIBRARY DESTINATION lib)
