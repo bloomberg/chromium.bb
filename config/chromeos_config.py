@@ -2682,7 +2682,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'grunt',
       'hana',
       'kevin-arcnext',
-      'kevin64',
       'nocturne',
       'nyan_big',
       'peach_pit',
@@ -2696,6 +2695,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _chrome_pfq_experimental_boards = frozenset([
+      'kevin64',
   ])
 
   _chrome_pfq_skylab_boards = frozenset([
