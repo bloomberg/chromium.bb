@@ -1005,7 +1005,13 @@ void FlexLayout::ViewVisibilitySet(View* host, View* view, bool visible) {
   const bool hide = !visible;
   if (it->second.hidden_by_owner != hide) {
     it->second.hidden_by_owner = hide;
-    InvalidateLayout();
+    if (!it->second.excluded) {
+      // It's not always obvious to our host that an owner of a child view
+      // changing its visibility could change a layout. So we'll notify the host
+      // view that its layout is potentially invalid, and it will in turn call
+      // InvalidateLayout() on the layout manager (i.e. this object).
+      host_->InvalidateLayout();
+    }
   }
 }
 
