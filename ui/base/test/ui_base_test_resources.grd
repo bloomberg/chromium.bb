@@ -13,10 +13,10 @@
         Hello World!
       </message>
       <message translateable="false" name="IDS_PLACEHOLDERS">
-        Hello, $1. Your number is $2.
+        Hello, <ph name="USER">$1</ph>. Your number is <ph name="HERE">$2</ph>.
       </message>
       <message translateable="false" name="IDS_PLACEHOLDERS_2">
-        You owe me $$$1.
+        You owe me <ph name="FUNNY_AMOUNT"> $$$1 </ph>.
       </message>
     </messages>
   </release>
