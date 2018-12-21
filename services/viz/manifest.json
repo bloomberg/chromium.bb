@@ -21,7 +21,8 @@
       "requires": {
         "*": [ "app" ],
         "catalog": [ "directory" ],
-        "ui": [ "ozone" ]
+        "ui": [ "ozone" ],
+        "metrics": [ "url_keyed_metrics" ]
       }
     }
   }

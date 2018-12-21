@@ -115,8 +115,8 @@ GpuHost::GpuHost(GpuHostDelegate* delegate,
         base::BindOnce(&GpuHost::InitializeVizMain, base::Unretained(this),
                        base::Passed(MakeRequest(&viz_main_ptr))));
   } else {
-    // Currently, GPU is only run in process in OOP-Ash.
-    NOTREACHED();
+    connector->BindInterface(viz::mojom::kVizServiceName,
+                             MakeRequest(&viz_main_ptr));
   }
 
   viz::GpuHostImpl::InitParams params;

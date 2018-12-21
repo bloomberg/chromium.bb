@@ -85,7 +85,8 @@
           "ozone",
           "window_manager"
         ],
-        "data_decoder": [ "image_decoder" ]
+        "data_decoder": [ "image_decoder" ],
+        "viz": [ "viz_host" ]
       }
     }
   }
