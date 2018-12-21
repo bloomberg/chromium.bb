@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
@@ -31,6 +32,7 @@
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/device_id_helper.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
@@ -47,6 +49,44 @@ AccountInfo GetAccountInfo(Profile* profile, const std::string& account_id) {
   return AccountTrackerServiceFactory::GetForProfile(profile)->GetAccountInfo(
       account_id);
 }
+
+class TokensLoadedCallbackRunner : public OAuth2TokenService::Observer {
+ public:
+  // Calls |callback| when tokens are loaded.
+  static void RunWhenLoaded(Profile* profile,
+                            base::OnceCallback<void(Profile*)> callback) {
+    ProfileOAuth2TokenService* token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+    if (token_service->AreAllCredentialsLoaded()) {
+      std::move(callback).Run(profile);
+      return;
+    }
+    // TokensLoadedCallbackRunner deletes itself after running the callback.
+    new TokensLoadedCallbackRunner(
+        token_service, base::BindOnce(std::move(callback), profile));
+  }
+
+ private:
+  TokensLoadedCallbackRunner(ProfileOAuth2TokenService* token_service,
+                             base::OnceClosure callback)
+      : token_service_(token_service),
+        scoped_token_service_observer_(this),
+        callback_(std::move(callback)) {
+    DCHECK(!token_service_->AreAllCredentialsLoaded());
+    scoped_token_service_observer_.Add(token_service_);
+  }
+
+  // OAuth2TokenService::Observer implementation:
+  void OnRefreshTokensLoaded() override {
+    std::move(callback_).Run();
+    delete this;
+  }
+
+  ProfileOAuth2TokenService* token_service_;
+  ScopedObserver<OAuth2TokenService, TokensLoadedCallbackRunner>
+      scoped_token_service_observer_;
+  base::OnceClosure callback_;
+};
 
 }  // namespace
 
@@ -279,13 +319,12 @@ void DiceTurnSyncOnHelper::CreateNewSignedInProfile() {
   ProfileManager::CreateMultiProfileAsync(
       base::UTF8ToUTF16(account_info_.email),
       profiles::GetDefaultAvatarIconUrl(icon_index),
-      base::BindRepeating(&DiceTurnSyncOnHelper::CompleteInitForNewProfile,
+      base::BindRepeating(&DiceTurnSyncOnHelper::OnNewProfileCreated,
                           weak_pointer_factory_.GetWeakPtr()));
 }
 
-void DiceTurnSyncOnHelper::CompleteInitForNewProfile(
-    Profile* new_profile,
-    Profile::CreateStatus status) {
+void DiceTurnSyncOnHelper::OnNewProfileCreated(Profile* new_profile,
+                                               Profile::CreateStatus status) {
   DCHECK_NE(profile_, new_profile);
 
   // TODO(atwilson): On error, unregister the client to release the DMToken
@@ -299,9 +338,10 @@ void DiceTurnSyncOnHelper::CompleteInitForNewProfile(
       // Ignore this, wait for profile to be initialized.
       break;
     case Profile::CREATE_STATUS_INITIALIZED:
-      // The user needs to sign in to the new profile in order to enable sync.
-      delegate_->ShowSigninPageInNewProfile(new_profile, account_info_.email);
-      AbortAndDelete();
+      TokensLoadedCallbackRunner::RunWhenLoaded(
+          new_profile,
+          base::BindOnce(&DiceTurnSyncOnHelper::OnNewProfileTokensLoaded,
+                         weak_pointer_factory_.GetWeakPtr()));
       break;
     case Profile::CREATE_STATUS_REMOTE_FAIL:
     case Profile::CREATE_STATUS_CANCELED:
@@ -318,6 +358,33 @@ syncer::SyncService* DiceTurnSyncOnHelper::GetSyncService() {
              ? ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
                    profile_)
              : nullptr;
+}
+
+void DiceTurnSyncOnHelper::OnNewProfileTokensLoaded(Profile* new_profile) {
+  AccountTrackerServiceFactory::GetForProfile(new_profile)
+      ->SeedAccountInfo(account_info_);
+  // This deletes the token locally, even in KEEP_ACCOUNT mode.
+  token_service_->ExtractCredentials(
+      ProfileOAuth2TokenServiceFactory::GetForProfile(new_profile),
+      account_info_.account_id);
+  // Reset the device ID from the source profile: the exported token is linked
+  // to the device ID of the current profile on the server. Reset the device ID
+  // of the current profile to avoid tying it with the new profile. See
+  // https://crbug.com/813928#c16
+  signin::RecreateSigninScopedDeviceId(profile_->GetPrefs());
+
+  SwitchToProfile(new_profile);
+  DCHECK_EQ(profile_, new_profile);
+
+  if (!dm_token_.empty()) {
+    // Load policy for the just-created profile - once policy has finished
+    // loading the signin process will complete.
+    DCHECK(!client_id_.empty());
+    LoadPolicyWithCachedCredentials();
+  } else {
+    // No policy to load - simply complete the signin process.
+    SigninAndShowSyncConfirmationUI();
+  }
 }
 
 void DiceTurnSyncOnHelper::SigninAndShowSyncConfirmationUI() {
@@ -401,6 +468,18 @@ void DiceTurnSyncOnHelper::FinishSyncSetupAndDelete(
       return;
   }
   delete this;
+}
+
+void DiceTurnSyncOnHelper::SwitchToProfile(Profile* new_profile) {
+  DCHECK(!sync_blocker_);
+  DCHECK(!sync_startup_tracker_);
+  profile_ = new_profile;
+  signin_manager_ = SigninManagerFactory::GetForProfile(profile_);
+  token_service_ = ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  delegate_->SwitchToProfile(new_profile);
+  // Since this is a fresh profile, it's better to remove the token if the user
+  // aborts the signin.
+  signin_aborted_mode_ = SigninAbortedMode::REMOVE_ACCOUNT;
 }
 
 void DiceTurnSyncOnHelper::AbortAndDelete() {

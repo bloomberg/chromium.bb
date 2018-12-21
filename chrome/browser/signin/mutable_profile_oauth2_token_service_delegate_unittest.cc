@@ -33,6 +33,7 @@
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -1584,4 +1585,32 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 
   token_service.RemoveDiagnosticsObserver(this);
   token_service.Shutdown();
+}
+
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ExtractCredentials) {
+  InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDice);
+  oauth2_service_delegate_->LoadCredentials(std::string());
+
+  // Create another token service
+  sync_preferences::TestingPrefServiceSyncable prefs;
+  ProfileOAuth2TokenService::RegisterProfilePrefs(prefs.registry());
+  std::unique_ptr<FakeOAuth2TokenServiceDelegate> delegate =
+      std::make_unique<FakeOAuth2TokenServiceDelegate>();
+  FakeOAuth2TokenServiceDelegate* other_delegate = delegate.get();
+  ProfileOAuth2TokenService other_token_service(&prefs, std::move(delegate));
+  other_token_service.LoadCredentials(std::string());
+
+  // Add credentials to the first token service delegate.
+  oauth2_service_delegate_->UpdateCredentials("account_id", "token");
+
+  // Extract the credentials.
+  ResetObserverCounts();
+  oauth2_service_delegate_->ExtractCredentials(&other_token_service,
+                                               "account_id");
+
+  EXPECT_EQ(1, token_revoked_count_);
+  EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
+  EXPECT_FALSE(oauth2_service_delegate_->RefreshTokenIsAvailable("account_id"));
+  EXPECT_TRUE(other_delegate->RefreshTokenIsAvailable("account_id"));
+  EXPECT_EQ("token", other_delegate->GetRefreshToken("account_id"));
 }

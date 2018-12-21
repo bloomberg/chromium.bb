@@ -52,8 +52,7 @@ class TestDiceTurnSyncOnHelperDelegate : public DiceTurnSyncOnHelper::Delegate {
     std::move(callback).Run(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
   }
   void ShowSyncSettings() override {}
-  void ShowSigninPageInNewProfile(Profile* new_profile,
-                                  const std::string& username) override {}
+  void SwitchToProfile(Profile* new_profile) override {}
 };
 
 struct SigninUtilWinBrowserTestParams {

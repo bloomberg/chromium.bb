@@ -126,3 +126,9 @@ void OAuth2TokenServiceDelegate::LoadCredentials(
                   "Subclasses that need to load credentials must provide "
                   "an implemenation of this method";
 }
+
+void OAuth2TokenServiceDelegate::ExtractCredentials(
+    OAuth2TokenService* to_service,
+    const std::string& account_id) {
+  NOTREACHED();
+}

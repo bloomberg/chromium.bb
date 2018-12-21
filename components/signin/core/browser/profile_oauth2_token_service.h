@@ -8,7 +8,9 @@
 #include <string>
 
 #include "base/macros.h"
+#include "build/buildflag.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
@@ -88,6 +90,15 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // is no such instance.
   const net::BackoffEntry* GetDelegateBackoffEntry();
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  // Removes the credentials associated to account_id from the internal storage,
+  // and moves them to |to_service|. The credentials are not revoked on the
+  // server, but the OnRefreshTokenRevoked() notification is sent to the
+  // observers.
+  void ExtractCredentials(ProfileOAuth2TokenService* to_service,
+                          const std::string& account_id);
+#endif
+
   void set_all_credentials_loaded_for_testing(bool loaded) {
     all_credentials_loaded_ = loaded;
   }
@@ -95,6 +106,7 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
  private:
   friend class identity::IdentityManager;
 
+  // OAuth2TokenService::Observer implementation.
   void OnRefreshTokenAvailable(const std::string& account_id) override;
   void OnRefreshTokenRevoked(const std::string& account_id) override;
   void OnRefreshTokensLoaded() override;

@@ -48406,6 +48406,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="14" label="DiceResponseHandler::Signout"/>
   <int value="15" label="DiceTurnOnSyncHelper::Abort"/>
   <int value="16" label="MachineLogon::CredentialProvider"/>
+  <int value="17" label="TokenService::ExtractCredentials"/>
 </enum>
 
 <enum name="SpareProcessMaybeTakeAction">

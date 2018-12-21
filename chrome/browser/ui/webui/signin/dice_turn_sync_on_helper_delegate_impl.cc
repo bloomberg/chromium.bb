@@ -13,9 +13,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/startup/startup_types.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -159,17 +157,9 @@ void DiceTurnSyncOnHelperDelegateImpl::ShowSyncSettings() {
   chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
 }
 
-void DiceTurnSyncOnHelperDelegateImpl::ShowSigninPageInNewProfile(
-    Profile* new_profile,
-    const std::string& username) {
-  profiles::FindOrCreateNewWindowForProfile(
-      new_profile, chrome::startup::IS_PROCESS_STARTUP,
-      chrome::startup::IS_FIRST_RUN, false);
-  Browser* browser = chrome::FindTabbedBrowser(new_profile, false);
-  browser->signin_view_controller()->ShowDiceSigninTab(
-      profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser,
-      signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
-      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO, username);
+void DiceTurnSyncOnHelperDelegateImpl::SwitchToProfile(Profile* new_profile) {
+  profile_ = new_profile;
+  browser_ = nullptr;
 }
 
 void DiceTurnSyncOnHelperDelegateImpl::OnSyncConfirmationUIClosed(

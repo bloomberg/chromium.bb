@@ -83,9 +83,8 @@ class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
     // Opens the Sync settings page.
     virtual void ShowSyncSettings() = 0;
 
-    // Opens the signin page in a new profile.
-    virtual void ShowSigninPageInNewProfile(Profile* new_profile,
-                                            const std::string& username) = 0;
+    // Informs the delegate that the flow is switching to a new profile.
+    virtual void SwitchToProfile(Profile* new_profile) = 0;
   };
 
   // Create a helper that turns sync on for an account that is already present
@@ -158,10 +157,12 @@ class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
   // in-progress auth credentials currently stored in this object.
   void CreateNewSignedInProfile();
 
-  // Callback invoked once a profile is created, so we can complete the
-  // credentials transfer, load policy, and open the first window.
-  void CompleteInitForNewProfile(Profile* new_profile,
-                                 Profile::CreateStatus status);
+  // Callback invoked once a profile is created, so we can transfer the
+  // credentials.
+  void OnNewProfileCreated(Profile* new_profile, Profile::CreateStatus status);
+
+  // Callback invoked once the token service is ready for the new profile.
+  void OnNewProfileTokensLoaded(Profile* new_profile);
 
   // Returns the SyncService, or nullptr if sync is not allowed.
   syncer::SyncService* GetSyncService();
@@ -180,6 +181,9 @@ class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
   void FinishSyncSetupAndDelete(
       LoginUIService::SyncConfirmationUIClosedResult result);
 
+  // Switch to a new profile after exporting the token.
+  void SwitchToProfile(Profile* new_profile);
+
   // Aborts the flow and deletes this object.
   void AbortAndDelete();
 
@@ -192,7 +196,7 @@ class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
   const signin_metrics::Reason signin_reason_;
 
   // Whether the refresh token should be deleted if the Sync flow is aborted.
-  const SigninAbortedMode signin_aborted_mode_;
+  SigninAbortedMode signin_aborted_mode_;
 
   // Account information.
   const AccountInfo account_info_;

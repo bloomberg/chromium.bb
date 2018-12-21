@@ -51,6 +51,8 @@ std::string SourceToString(SourceForRefreshTokenOperation source) {
       return "DiceTurnOnSyncHelper::Abort";
     case SourceForRefreshTokenOperation::kMachineLogon_CredentialProvider:
       return "MachineLogon::CredentialProvider";
+    case SourceForRefreshTokenOperation::kTokenService_ExtractCredentials:
+      return "TokenService::ExtractCredentials";
   }
 }
 }  // namespace
@@ -128,6 +130,17 @@ void ProfileOAuth2TokenService::RevokeAllCredentials(
 const net::BackoffEntry* ProfileOAuth2TokenService::GetDelegateBackoffEntry() {
   return GetDelegate()->BackoffEntry();
 }
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+void ProfileOAuth2TokenService::ExtractCredentials(
+    ProfileOAuth2TokenService* to_service,
+    const std::string& account_id) {
+  base::AutoReset<SourceForRefreshTokenOperation> auto_reset(
+      &update_refresh_token_source_,
+      SourceForRefreshTokenOperation::kTokenService_ExtractCredentials);
+  GetDelegate()->ExtractCredentials(to_service, account_id);
+}
+#endif
 
 void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
     const std::string& account_id) {
