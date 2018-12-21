@@ -1187,6 +1187,11 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   if (topMostIndexPath.row == 0)
     return 0;
 
+  // To avoid an index out of bounds, check if there are less or equal
+  // kRowsHiddenByNavigationBar than number of visibleIndexPaths.
+  if ([visibleIndexPaths count] <= kRowsHiddenByNavigationBar)
+    return 0;
+
   // Return the first visible row not covered by the NavigationBar.
   topMostIndexPath =
       [visibleIndexPaths objectAtIndex:kRowsHiddenByNavigationBar];
