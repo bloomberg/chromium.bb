@@ -930,6 +930,170 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SampleRateWithSource) {
   EXPECT_TRUE(result.HasValue());
 }
 
+TEST_P(MediaStreamConstraintsUtilAudioTest, Latency) {
+  // Test set exact sampleRate.
+  ResetFactory();
+  if (IsDeviceCapture())
+    constraint_factory_.basic().latency.SetExact(0.125);
+  else
+    constraint_factory_.basic().latency.SetExact(0.01);
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  if (IsDeviceCapture())
+    EXPECT_EQ(result.device_id(), "8khz_sample_rate_device");
+
+  constraint_factory_.basic().latency.SetExact(
+      static_cast<double>(kFallbackAudioLatencyMs) / 1000);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  if (IsDeviceCapture())
+    EXPECT_EQ(result.device_id(), "default_device");
+
+  constraint_factory_.basic().latency.SetExact(0.0);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  // Test set min sampleRate.
+  ResetFactory();
+  if (IsDeviceCapture())
+    constraint_factory_.basic().latency.SetMin(0.125);
+  else
+    constraint_factory_.basic().latency.SetMin(0.01);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  if (IsDeviceCapture())
+    EXPECT_EQ(result.device_id(), "8khz_sample_rate_device");
+
+  constraint_factory_.basic().latency.SetMin(0.126);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  // Test set max sampleRate.
+  ResetFactory();
+  constraint_factory_.basic().latency.SetMax(0.1);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  if (IsDeviceCapture())
+    EXPECT_EQ(result.device_id(), "default_device");
+
+  constraint_factory_.basic().latency.SetMax(0.001);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  // Test set bounded sampleRate range.
+  ResetFactory();
+  if (IsDeviceCapture()) {
+    constraint_factory_.basic().latency.SetMin(0.1);
+    constraint_factory_.basic().latency.SetMax(0.125);
+  } else {
+    constraint_factory_.basic().latency.SetMin(0.01);
+    constraint_factory_.basic().latency.SetMax(0.1);
+  }
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  if (IsDeviceCapture())
+    EXPECT_EQ(result.device_id(), "8khz_sample_rate_device");
+
+  constraint_factory_.basic().latency.SetMin(0.0001);
+  constraint_factory_.basic().latency.SetMax(0.001);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  constraint_factory_.basic().latency.SetMin(0.126);
+  constraint_factory_.basic().latency.SetMax(0.2);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  // Test set ideal sampleRate range.
+  ResetFactory();
+  if (IsDeviceCapture())
+    constraint_factory_.basic().latency.SetIdeal(0.125);
+  else
+    constraint_factory_.basic().latency.SetIdeal(0.01);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  if (IsDeviceCapture())
+    EXPECT_EQ(result.device_id(), "8khz_sample_rate_device");
+
+  constraint_factory_.basic().latency.SetIdeal(0.0);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  if (IsDeviceCapture())
+    EXPECT_EQ(result.device_id(), "default_device");
+}
+
+TEST_P(MediaStreamConstraintsUtilAudioTest, LatencyWithSource) {
+  if (!IsDeviceCapture())
+    return;
+
+  std::unique_ptr<LocalMediaStreamAudioSource> source =
+      GetLocalMediaStreamAudioSource(false /* enable_system_echo_canceller */,
+                                     false /* hotword_enabled */,
+                                     false /* disable_local_echo */,
+                                     false /* render_to_associated_sink */);
+  // Test set exact sampleRate.
+  ResetFactory();
+  constraint_factory_.basic().latency.SetExact(0.01);
+  auto result = SelectSettingsAudioCapture(
+      source.get(), constraint_factory_.CreateWebMediaConstraints());
+  EXPECT_TRUE(result.HasValue());
+
+  constraint_factory_.basic().latency.SetExact(0.1234);
+  result = SelectSettingsAudioCapture(
+      source.get(), constraint_factory_.CreateWebMediaConstraints());
+  EXPECT_FALSE(result.HasValue());
+
+  // Test set min sampleRate.
+  ResetFactory();
+  constraint_factory_.basic().latency.SetMin(0.01);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+
+  constraint_factory_.basic().latency.SetMin(0.2);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  // Test set max sampleRate.
+  ResetFactory();
+  constraint_factory_.basic().latency.SetMax(
+      static_cast<double>(kFallbackAudioLatencyMs) / 1000);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+
+  constraint_factory_.basic().latency.SetMax(0.001);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  // Test set bounded sampleRate range.
+  ResetFactory();
+  constraint_factory_.basic().latency.SetMin(0.01);
+  constraint_factory_.basic().latency.SetMax(0.1);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+
+  constraint_factory_.basic().latency.SetMin(0.0001);
+  constraint_factory_.basic().latency.SetMax(0.001);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  constraint_factory_.basic().latency.SetMin(0.2);
+  constraint_factory_.basic().latency.SetMax(0.4);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  // Test set ideal sampleRate.
+  ResetFactory();
+  constraint_factory_.basic().latency.SetIdeal(0.01);
+  result = SelectSettingsAudioCapture(
+      source.get(), constraint_factory_.CreateWebMediaConstraints());
+  EXPECT_TRUE(result.HasValue());
+
+  constraint_factory_.basic().latency.SetIdeal(0.1234);
+  result = SelectSettingsAudioCapture(
+      source.get(), constraint_factory_.CreateWebMediaConstraints());
+  EXPECT_TRUE(result.HasValue());
+}
+
 // DeviceID tests.
 TEST_P(MediaStreamConstraintsUtilAudioTest, ExactArbitraryDeviceID) {
   const std::string kArbitraryDeviceID = "arbitrary";

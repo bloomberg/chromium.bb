@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/stream/media_stream_audio_deliverer.h"
 #include "content/renderer/media/stream/media_stream_source.h"
@@ -33,6 +34,21 @@ static constexpr int kMaxAudioLatencyMs = 5000;
 static_assert(std::numeric_limits<int>::max() / media::limits::kMaxSampleRate >
                   kMaxAudioLatencyMs,
               "The maxium audio latency can cause overflow.");
+
+// TODO(https://crbug.com/638081):
+// Like in ProcessedLocalAudioSource::GetBufferSize(), we should re-evaluate
+// whether Android needs special treatment here. Or, perhaps we should just
+// DCHECK_GT(device...frames_per_buffer, 0)?
+#if defined(OS_ANDROID)
+static constexpr int kFallbackAudioLatencyMs = 20;
+#else
+static constexpr int kFallbackAudioLatencyMs = 10;
+#endif
+
+static_assert(kFallbackAudioLatencyMs >= 0,
+              "Audio latency has to be non-negative.");
+static_assert(kFallbackAudioLatencyMs <= kMaxAudioLatencyMs,
+              "Audio latency can cause overflow.");
 
 class MediaStreamAudioTrack;
 

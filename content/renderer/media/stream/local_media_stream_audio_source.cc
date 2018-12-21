@@ -4,27 +4,11 @@
 
 #include "content/renderer/media/stream/local_media_stream_audio_source.h"
 
-#include "build/build_config.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_frame_impl.h"
 
 namespace content {
-
-// TODO(https://crbug.com/638081):
-// Like in ProcessedLocalAudioSource::GetBufferSize(), we should re-evaluate
-// whether Android needs special treatment here. Or, perhaps we should just
-// DCHECK_GT(device...frames_per_buffer, 0)?
-#if defined(OS_ANDROID)
-static constexpr int kFallbackAudioLatencyMs = 20;
-#else
-static constexpr int kFallbackAudioLatencyMs = 10;
-#endif
-
-static_assert(kFallbackAudioLatencyMs >= 0,
-              "Audio latency has to be non-negative.");
-static_assert(kFallbackAudioLatencyMs <= kMaxAudioLatencyMs,
-              "Audio latency can cause overflow.");
 
 LocalMediaStreamAudioSource::LocalMediaStreamAudioSource(
     int consumer_render_frame_id,
