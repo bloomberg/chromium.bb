@@ -567,7 +567,7 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 // events. Navigation is considered complete when the document has finished
 // loading, or when other page load mechanics are completed on a
 // non-document-changing URL change.
-- (void)didFinishNavigation:(WKNavigation*)navigation;
+- (void)didFinishNavigation:(web::NavigationContextImpl*)context;
 // Update the appropriate parts of the model and broadcast to the embedder. This
 // may be called multiple times and thus must be idempotent.
 - (void)loadCompleteWithSuccess:(BOOL)loadSuccess
@@ -2135,14 +2135,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
   _lastTransferTimeInSeconds = CFAbsoluteTimeGetCurrent();
 }
 
-- (void)didFinishNavigation:(WKNavigation*)navigation {
+- (void)didFinishNavigation:(web::NavigationContextImpl*)context {
   // This can be called at multiple times after the document has loaded. Do
   // nothing if the document has already loaded.
   if (_loadPhase == web::PAGE_LOADED)
     return;
 
-  web::NavigationContextImpl* context =
-      [_navigationStates contextForNavigation:navigation];
   BOOL success = !context || !context->GetError();
   [self loadCompleteWithSuccess:success forContext:context];
 }
@@ -2822,7 +2820,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
           CRWWebController* strongSelf = weakSelf;
           if (strongSelf && !strongSelf->_isBeingDestroyed) {
             [strongSelf optOutScrollsToTopForSubviews];
-            [strongSelf didFinishNavigation:nil];
+            [strongSelf didFinishNavigation:nullptr];
           }
         }];
   return YES;
@@ -2881,7 +2879,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
           CRWWebController* strongSelf = weakSelf;
           if (!strongSelf || strongSelf->_isBeingDestroyed)
             return;
-          [strongSelf didFinishNavigation:nil];
+          [strongSelf didFinishNavigation:nullptr];
         }];
   return YES;
 }
@@ -5130,7 +5128,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // WKUserScriptInjectionTimeAtDocumentEnd to inject this material at the
   // appropriate time rather than invoking here.
   web::ExecuteJavaScript(webView, @"__gCrWeb.didFinishNavigation()", nil);
-  [self didFinishNavigation:navigation];
+  [self didFinishNavigation:context];
   [self forgetNullWKNavigation:navigation];
 }
 
@@ -5319,6 +5317,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   }
 
+  web::NavigationContextImpl* existingContext =
+      [self contextForPendingMainFrameNavigationWithURL:webViewURL];
+
   if (!navigationWasCommitted && ![_pendingNavigationInfo cancelled]) {
     // A fast back-forward navigation does not call |didCommitNavigation:|, so
     // signal page change explicitly.
@@ -5326,8 +5327,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     BOOL isSameDocumentNavigation =
         [self isKVOChangePotentialSameDocumentNavigationToURL:webViewURL];
 
-    web::NavigationContextImpl* existingContext =
-        [self contextForPendingMainFrameNavigationWithURL:webViewURL];
     [self setDocumentURL:webViewURL context:existingContext];
     if (!existingContext) {
       // This URL was not seen before, so register new load request.
@@ -5344,7 +5343,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
       // exclusive with the condition below. Refactor this method after
       // deprecating _pendingNavigationInfo.
       if (newContext->GetWKNavigationType() == WKNavigationTypeBackForward) {
-        [self didFinishNavigation:nil];
+        [self didFinishNavigation:newContext.get()];
       }
     } else {
       // Same document navigation does not contain response headers.
@@ -5361,7 +5360,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 
   [self updateSSLStatusForCurrentNavigationItem];
-  [self didFinishNavigation:nil];
+  [self didFinishNavigation:existingContext];
 }
 
 - (void)webViewTitleDidChange {
@@ -5617,7 +5616,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     _webStateImpl->OnNavigationFinished(navigationContext);
 
     [self updateSSLStatusForCurrentNavigationItem];
-    [self didFinishNavigation:nil];
+    [self didFinishNavigation:navigationContext];
   }
 }
 
