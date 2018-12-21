@@ -34,7 +34,6 @@ class BrowserFrameMac : public views::NativeWidgetMac,
                                     float* titlebar_height) override;
   void OnFocusWindowToolbar() override;
   void OnWindowFullscreenStateChange() override;
-  void InitNativeWidget(const views::Widget::InitParams& params) override;
 
   // Overridden from NativeBrowserFrame:
   views::Widget::InitParams GetWidgetParams() override;

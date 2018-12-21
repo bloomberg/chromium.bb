@@ -541,6 +541,7 @@ void BridgedNativeWidgetImpl::CreateContentView(uint64_t ns_view_id,
   [compositor_view setWantsLayer:YES];
   [bridged_view_ addSubview:compositor_view];
 
+  [bridged_view_ setWantsLayer:YES];
   [window_ setContentView:bridged_view_];
 }
 
