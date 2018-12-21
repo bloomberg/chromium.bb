@@ -191,8 +191,10 @@ void OmniboxPageHandler::SetClientPage(mojom::OmniboxPagePtr page) {
 void OmniboxPageHandler::StartOmniboxQuery(const std::string& input_string,
                                            bool reset_autocomplete_controller,
                                            int32_t cursor_position,
+                                           bool zero_suggest,
                                            bool prevent_inline_autocomplete,
                                            bool prefer_keyword,
+                                           const std::string& current_url,
                                            int32_t page_classification) {
   // Reset the controller.  If we don't do this, then the
   // AutocompleteController might inappropriately set its |minimal_changes|
@@ -207,8 +209,14 @@ void OmniboxPageHandler::StartOmniboxQuery(const std::string& input_string,
       static_cast<metrics::OmniboxEventProto::PageClassification>(
           page_classification),
       ChromeAutocompleteSchemeClassifier(profile_));
+  GURL current_url_gurl{current_url};
+  if (current_url_gurl.is_valid())
+    input_.set_current_url(current_url_gurl);
+  input_.set_current_title(base::UTF8ToUTF16(current_url));
   input_.set_prevent_inline_autocomplete(prevent_inline_autocomplete);
   input_.set_prefer_keyword(prefer_keyword);
+  input_.set_from_omnibox_focus(zero_suggest);
+
   controller_->Start(input_);
 }
 

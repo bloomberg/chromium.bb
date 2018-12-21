@@ -57,8 +57,10 @@ interface OmniboxPageHandler {
   StartOmniboxQuery(string input_string,
                     bool reset_autocomplete_controller,
                     int32 cursor_position,
+                    bool zero_suggest,
                     bool prevent_inline_autocomplete,
                     bool prefer_keyword,
+                    string current_url,
                     int32 page_classification);
 };
 
