@@ -828,25 +828,20 @@ def UpdateClang(args):
         '-DANDROID=1']
       RmCmakeCache('.')
       RunCommand(['cmake'] + android_args + [COMPILER_RT_DIR])
-      RunCommand(['ninja', 'asan', 'ubsan', 'profile'])
+
+      # We use ASan i686 build for fuzzing.
+      libs_want = ['lib/linux/libclang_rt.asan-{0}-android.so']
+      if target_arch in ['aarch64', 'arm']:
+        libs_want += [
+            'lib/linux/libclang_rt.ubsan_standalone-{0}-android.so',
+            'lib/linux/libclang_rt.profile-{0}-android.a',
+        ]
+      libs_want = [lib.format(target_arch) for lib in libs_want]
+      RunCommand(['ninja'] + libs_want)
 
       # And copy them into the main build tree.
-      asan_lib_path_format = 'lib/linux/libclang_rt.asan-{0}-android.so'
-      libs_want = [
-          asan_lib_path_format,
-          'lib/linux/libclang_rt.ubsan_standalone-{0}-android.so',
-          'lib/linux/libclang_rt.profile-{0}-android.a',
-      ]
-      for arch in ['aarch64', 'arm']:
-        for p in libs_want:
-          lib_path = os.path.join(build_dir, p.format(arch))
-          if os.path.exists(lib_path):
-            shutil.copy(lib_path, rt_lib_dst_dir)
-
-      # We also use ASan i686 build for fuzzing.
-      lib_path = os.path.join(build_dir, asan_lib_path_format.format('i686'))
-      if os.path.exists(lib_path):
-        shutil.copy(lib_path, rt_lib_dst_dir)
+      for p in libs_want:
+        shutil.copy(p, rt_lib_dst_dir)
 
   if args.with_fuchsia:
     # Fuchsia links against libclang_rt.builtins-<arch>.a instead of libgcc.a.
