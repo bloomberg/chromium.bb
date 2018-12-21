@@ -717,12 +717,20 @@ void NavigationSimulator::CommitSameDocument() {
   render_frame_host_->SendNavigateWithParamsAndInterfaceProvider(
       &params, nullptr /* interface_provider_request */, true);
 
-  state_ = FINISHED;
-
-  CHECK_EQ(1, num_did_start_navigation_called_);
+  // Same-document commits should never hit network-related stages of committing
+  // a navigation.
   CHECK_EQ(0, num_will_start_request_called_);
   CHECK_EQ(0, num_will_process_response_called_);
   CHECK_EQ(0, num_ready_to_commit_called_);
+
+  if (num_did_finish_navigation_called_ == 0) {
+    // Fail the navigation if it results in a process kill (e.g. see
+    // NavigatorTestWithBrowserSideNavigation.CrossSiteClaimWithinPage test).
+    state_ = FAILED;
+    return;
+  }
+  state_ = FINISHED;
+  CHECK_EQ(1, num_did_start_navigation_called_);
   CHECK_EQ(1, num_did_finish_navigation_called_);
 }
 
