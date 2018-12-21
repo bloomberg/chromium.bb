@@ -6,48 +6,6 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "angle_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true",
-          "--shard-timeout=300"
-        ],
-        "isolate_name": "angle_perftests",
-        "merge": {
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "angle_perftests",
-        "override_compile_targets": [
-          "angle_perftests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "KOT49H",
-              "device_os_flavor": "google",
-              "device_type": "hammerhead",
-              "os": "Android",
-              "pool": "chrome.tests.perf"
-            }
-          ],
-          "expiration": 7200,
-          "hard_timeout": 36000,
-          "ignore_task_failure": false,
-          "io_timeout": 1800,
-          "shards": 1,
-          "upload_test_results": true
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/perf_device_trigger.py"
-        }
-      },
-      {
-        "args": [
-          "--gtest-benchmark-name",
           "components_perftests",
           "--non-telemetry=true",
           "--migrated-test=true"
