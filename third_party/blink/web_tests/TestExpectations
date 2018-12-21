@@ -5874,7 +5874,6 @@ crbug.com/899222 [ Win ] virtual/scroll_customization/fast/events/touch/gesture/
 crbug.com/900326 [ Win7 ] http/tests/devtools/network/preview-searchable.js [ Timeout Pass ]
 crbug.com/900326 [ Mac10.12 ] http/tests/devtools/network/preview-searchable.js [ Timeout Pass ]
 crbug.com/874695 crbug.com/900641 crbug.com/913865 [ Linux Mac ] compositing/transitions/transform-on-large-layer.html [ Timeout Pass Crash ]
-crbug.com/900703 external/wpt/cors/origin.htm [ Failure Pass ]
 crbug.com/900730 [ Mac ] rootscroller/gesture-scroll-document-not-root-scroller.html [ Pass Failure Timeout Crash ]
 
 # ecosystem-infra sheriff 2018-11-02
