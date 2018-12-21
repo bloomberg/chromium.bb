@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -39,7 +40,9 @@ enum class SubscriptionStatus {
 
 void RecordRequestStatus(
     SubscriptionStatus status,
-    syncer::PerUserTopicRegistrationRequest::RequestType type) {
+    syncer::PerUserTopicRegistrationRequest::RequestType type,
+    int net_error = net::OK,
+    int response_code = 200) {
   switch (type) {
     case syncer::PerUserTopicRegistrationRequest::SUBSCRIBE: {
       UMA_HISTOGRAM_ENUMERATION("FCMInvalidations.SubscriptionRequestStatus",
@@ -51,6 +54,21 @@ void RecordRequestStatus(
                                 status);
       break;
     }
+  }
+  if (type != syncer::PerUserTopicRegistrationRequest::SUBSCRIBE) {
+    return;
+  }
+
+  if (net_error != net::OK && (response_code == -1 || response_code == 200)) {
+    // Tracks the cases, when request fails due to network error.
+    base::UmaHistogramSparse("FCMInvalidations.FailedSubscriptionsErrorCode",
+                             -net_error);
+    DVLOG(1) << "Subscription request failed with error: " << net_error << ": "
+             << net::ErrorToString(net_error);
+  } else {
+    // Log a histogram to track response success vs. failure rates.
+    base::UmaHistogramSparse("FCMInvalidations.SubscriptionResponseCode",
+                             response_code);
   }
 }
 
@@ -92,13 +110,6 @@ void PerUserTopicRegistrationRequest::OnURLFetchCompleteInternal(
     int net_error,
     int response_code,
     std::unique_ptr<std::string> response_body) {
-  if (net_error != net::OK) {
-    std::move(request_completed_callback_)
-        .Run(Status(StatusCode::FAILED, base::StringPrintf("Network Error")),
-             std::string());
-    RecordRequestStatus(SubscriptionStatus::kNetworkFailure, type_);
-    return;
-  }
 
   if (response_code != net::HTTP_OK) {
     std::move(request_completed_callback_)
@@ -107,20 +118,32 @@ void PerUserTopicRegistrationRequest::OnURLFetchCompleteInternal(
                         : StatusCode::FAILED,
                     base::StringPrintf("HTTP Error: %d", response_code)),
              std::string());
-    RecordRequestStatus(SubscriptionStatus::kHttpFailure, type_);
+    RecordRequestStatus(SubscriptionStatus::kHttpFailure, type_, net_error,
+                        response_code);
+    return;
+  }
+
+  if (net_error != net::OK) {
+    std::move(request_completed_callback_)
+        .Run(Status(StatusCode::FAILED, base::StringPrintf("Network Error")),
+             std::string());
+    RecordRequestStatus(SubscriptionStatus::kNetworkFailure, type_, net_error,
+                        response_code);
     return;
   }
 
   if (type_ == UNSUBSCRIBE) {
     // No response body expected for DELETE requests.
-    RecordRequestStatus(SubscriptionStatus::kSuccess, type_);
+    RecordRequestStatus(SubscriptionStatus::kSuccess, type_, net_error,
+                        response_code);
     std::move(request_completed_callback_)
         .Run(Status(StatusCode::SUCCESS, std::string()), std::string());
     return;
   }
 
   if (!response_body || response_body->empty()) {
-    RecordRequestStatus(SubscriptionStatus::kParsingFailure, type_);
+    RecordRequestStatus(SubscriptionStatus::kParsingFailure, type_, net_error,
+                        response_code);
     std::move(request_completed_callback_)
         .Run(Status(StatusCode::FAILED, base::StringPrintf("Body parse error")),
              std::string());
