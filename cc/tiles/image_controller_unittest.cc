@@ -331,8 +331,8 @@ TEST_F(ImageControllerTest, GetTasksForImagesAndRefForPaintWorkletImages) {
 
   std::vector<scoped_refptr<TileTask>> tasks;
   bool has_at_raster_images = false;
-  controller()->GetTasksForImagesAndRef(&images, &tasks, &has_at_raster_images,
-                                        tracing_info);
+  controller()->ConvertDataImagesToTasks(&images, &tasks, &has_at_raster_images,
+                                         tracing_info);
   EXPECT_EQ(tasks.size(), 0u);
 }
 
