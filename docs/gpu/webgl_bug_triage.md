@@ -90,4 +90,6 @@ like [pixel wrangling](pixel_wrangling.md), and may overlap. If any conflicts do
 arise, please reach out or [swap
 shifts](https://www.chromium.org/developers/tree-sheriffs#TOC-How-to-swap).
 
-(TODO(kbr): link to the rotation tool.)
+The rotation is managed in [rota-ng](https://rota-ng.appspot.com/).
+The rotation members, as well as a few others, are owners under their
+@google.com addresses.
