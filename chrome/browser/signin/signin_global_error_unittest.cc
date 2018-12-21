@@ -46,9 +46,9 @@ class SigninGlobalErrorTest : public testing::Test {
     ASSERT_TRUE(profile_manager_.SetUp());
 
     // Create a signed-in profile.
-    TestingProfile::TestingFactories testing_factories;
-    IdentityTestEnvironmentProfileAdaptor::
-        AppendIdentityTestEnvironmentFactories(&testing_factories);
+    TestingProfile::TestingFactories testing_factories =
+        IdentityTestEnvironmentProfileAdaptor::
+            GetIdentityTestEnvironmentFactories();
 
     profile_ = profile_manager_.CreateTestingProfile(
         "Person 1", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),

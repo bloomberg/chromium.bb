@@ -139,9 +139,9 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
-    TestingProfile::TestingFactories factories;
-    IdentityTestEnvironmentProfileAdaptor::
-        AppendIdentityTestEnvironmentFactories(&factories);
+    TestingProfile::TestingFactories factories =
+        IdentityTestEnvironmentProfileAdaptor::
+            GetIdentityTestEnvironmentFactories();
     profile_ = profile_manager_->CreateTestingProfile(
         chrome::kInitialProfile,
         std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
