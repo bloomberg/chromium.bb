@@ -296,6 +296,39 @@ void UserScriptLoader::StartLoad() {
   removed_script_hosts_.clear();
 }
 
+bool UserScriptLoader::HasLoadedScripts(const HostID& host_id) const {
+  // If there are no loaded scripts (which can happen if either the initial
+  // load hasn't completed or if the loader is currently re-fetching scripts),
+  // then the scripts have not been loaded.
+  if (!loaded_scripts_)
+    return false;
+
+  // If there is a pending change for scripts associated with the |host_id|
+  // (either addition or removal of a script), the scripts haven't finished
+  // loading.
+  for (const auto& key_value : added_scripts_map_) {
+    if (key_value.second->host_id() == host_id)
+      return false;
+  }
+  for (const UserScriptIDPair& id_pair : removed_script_hosts_) {
+    if (id_pair.host_id == host_id)
+      return false;
+  }
+
+  // Find if we have any scripts associated with the |host_id|.
+  bool has_loaded_script = false;
+  for (const auto& script : *loaded_scripts_) {
+    if (script->host_id() == host_id) {
+      has_loaded_script = true;
+      break;
+    }
+  }
+
+  // Assume that if any script associated with |host_id| is present (and there
+  // aren't any pending changes), then the scripts have successfully loaded.
+  return has_loaded_script;
+}
+
 // static
 std::unique_ptr<base::SharedMemory> UserScriptLoader::Serialize(
     const UserScriptList& scripts) {

@@ -83,6 +83,9 @@ class UserScriptLoader : public content::NotificationObserver {
   // Initiates procedure to start loading scripts on the file thread.
   void StartLoad();
 
+  // Returns true if the scripts for the given |host_id| have been loaded.
+  bool HasLoadedScripts(const HostID& host_id) const;
+
   // Returns true if we have any scripts ready.
   bool initial_load_complete() const { return shared_memory_.get() != nullptr; }
 
