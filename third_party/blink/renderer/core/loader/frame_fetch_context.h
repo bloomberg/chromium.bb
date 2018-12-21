@@ -143,7 +143,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
       const override;
   int64_t ServiceWorkerID() const override;
-  int ApplicationCacheHostID() const override;
 
   bool IsMainFrame() const override;
   bool DefersLoading() const override;

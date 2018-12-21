@@ -49,6 +49,8 @@
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
@@ -296,7 +298,7 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
           shadow_page_->DocumentLoader()->GetServiceWorkerNetworkProvider());
   DCHECK(web_worker_fetch_context);
   web_worker_fetch_context->SetApplicationCacheHostID(
-      document->Fetcher()->Context().ApplicationCacheHostID());
+      document->Loader()->GetApplicationCacheHost()->GetHostID());
 
   ContentSecurityPolicy* content_security_policy =
       main_script_loader_->GetContentSecurityPolicy();

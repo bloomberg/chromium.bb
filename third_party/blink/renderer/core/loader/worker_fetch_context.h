@@ -76,7 +76,6 @@ class WorkerFetchContext final : public BaseFetchContext {
   void PrepareRequest(ResourceRequest&, RedirectType) override;
   blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
       const override;
-  int ApplicationCacheHostID() const override;
   void AddAdditionalRequestHeaders(ResourceRequest&,
                                    FetchResourceType) override;
   void DispatchWillSendRequest(unsigned long,
