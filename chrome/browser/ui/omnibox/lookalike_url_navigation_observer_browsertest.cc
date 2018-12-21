@@ -39,22 +39,25 @@ const int kHighEngagement = 20;
 // An engagement score below MEDIUM.
 const int kLowEngagement = 1;
 
+// The domains here should not private domains (e.g. site.test), otherwise they
+// might test the wrong thing. Also note that site5.com is in the top domain
+// list, so it shouldn't be used here.
 struct SiteEngagementTestCase {
   const char* const navigated;
   const char* const suggested;
 } kSiteEngagementTestCases[] = {
-    {"sité1.test", "site1.test"},
-    {"mail.www.sité1.test", "site1.test"},
+    {"sité1.com", "site1.com"},
+    {"mail.www.sité1.com", "site1.com"},
 
     // These should match since the comparison uses eTLD+1s.
-    {"sité2.test", "www.site2.test"},
-    {"mail.sité2.test", "www.site2.test"},
+    {"sité2.com", "www.site2.com"},
+    {"mail.sité2.com", "www.site2.com"},
 
-    {"síté3.test", "sité3.test"},
-    {"mail.síté3.test", "sité3.test"},
+    {"síté3.com", "sité3.com"},
+    {"mail.síté3.com", "sité3.com"},
 
-    {"síté4.test", "www.sité4.test"},
-    {"mail.síté4.test", "www.sité4.test"},
+    {"síté4.com", "www.sité4.com"},
+    {"mail.síté4.com", "www.sité4.com"},
 };
 
 }  // namespace
@@ -276,6 +279,13 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
   CheckNoUkm();
 }
 
+// Schemes other than HTTP and HTTPS should be ignored.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
+                       TopDomainChromeUrl_NoInfobar) {
+  TestInfobarNotShown(GURL("chrome://googlé.com"));
+  CheckNoUkm();
+}
+
 // Navigate to a domain within an edit distance of 1 to a top domain.
 // This should record metrics. It should also show a "Did you mean to go to ..."
 // infobar if configured via a feature param.
@@ -333,10 +343,10 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
 // a feature param.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
                        Idn_SiteEngagement_Match) {
-  SetSiteEngagementScore(GURL("http://site1.test"), kHighEngagement);
-  SetSiteEngagementScore(GURL("http://www.site2.test"), kHighEngagement);
-  SetSiteEngagementScore(GURL("http://sité3.test"), kHighEngagement);
-  SetSiteEngagementScore(GURL("http://www.sité4.test"), kHighEngagement);
+  SetSiteEngagementScore(GURL("http://site1.com"), kHighEngagement);
+  SetSiteEngagementScore(GURL("http://www.site2.com"), kHighEngagement);
+  SetSiteEngagementScore(GURL("http://sité3.com"), kHighEngagement);
+  SetSiteEngagementScore(GURL("http://www.sité4.com"), kHighEngagement);
 
   std::vector<GURL> ukm_urls;
   for (const auto& test_case : kSiteEngagementTestCases) {
@@ -391,11 +401,26 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
   // Test that navigations to a site with a high engagement score shouldn't
   // record metrics or show infobar.
   base::HistogramTester histograms;
-  SetSiteEngagementScore(GURL("http://site5.test"), kHighEngagement);
-  const GURL high_engagement_url =
-      embedded_test_server()->GetURL("síte5.test", "/title1.html");
+  SetSiteEngagementScore(GURL("http://site-not-in-top-domain-list.com"),
+                         kHighEngagement);
+  const GURL high_engagement_url = embedded_test_server()->GetURL(
+      "síte-not-ín-top-domaín-líst.com", "/title1.html");
   SetSiteEngagementScore(high_engagement_url, kHighEngagement);
   TestInfobarNotShown(high_engagement_url);
+  histograms.ExpectTotalCount(LookalikeUrlNavigationObserver::kHistogramName,
+                              0);
+}
+
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
+                       Idn_SiteEngagement_ChromeUrl_Ignored) {
+  // Test that an engaged site with a scheme other than HTTP or HTTPS should be
+  // ignored.
+  base::HistogramTester histograms;
+  SetSiteEngagementScore(GURL("chrome://site-not-in-top-domain-list.com"),
+                         kHighEngagement);
+  const GURL low_engagement_url("http://síte-not-ín-top-domaín-líst.com");
+  SetSiteEngagementScore(low_engagement_url, kLowEngagement);
+  TestInfobarNotShown(low_engagement_url);
   histograms.ExpectTotalCount(LookalikeUrlNavigationObserver::kHistogramName,
                               0);
 }
