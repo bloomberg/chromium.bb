@@ -4,7 +4,7 @@ const kNoExtensions: w.WebGPUExtensions = {
   anisotropicFiltering: false,
 };
 const kDefaultLimits: w.WebGPULimits = {
-  maxBindGroups: 0,
+  maxBindGroups: 4,
 };
 
 type StatusableObject = Buffer | Texture;
