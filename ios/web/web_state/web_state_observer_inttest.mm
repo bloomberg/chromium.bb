@@ -1049,33 +1049,31 @@ TEST_P(WebStateObserverTest, UserInitiatedHashChangeNavigation) {
   // Perform same-document navigation by going back.
   // No ShouldAllowRequest callback for same-document back-forward navigations.
   if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    // Called once each for CanGoBack and CanGoForward.
     EXPECT_CALL(observer_, DidChangeBackForwardState(web_state())).Times(2);
+  } else {
+    // TODO(crbug.com/913813): This callback is not really needed, but Page Load
+    // Count metric relies on it DidStartLoading.
+    EXPECT_CALL(observer_, DidStartLoading(web_state()));
   }
-  EXPECT_CALL(observer_, DidStartLoading(web_state()));
-
-  bool has_user_gesture = true;
   ui::PageTransition expected_transition = static_cast<ui::PageTransition>(
       ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK |
       ui::PageTransition::PAGE_TRANSITION_TYPED);
-  if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    // TODO(crbug.com/913052): propagate |has_user_gesture| on back/forward
-    // navigation in slim nav.
-    has_user_gesture = false;
-    // TODO(crbug.com/851119): back/forward navigation between hash-only changes
-    // should have the PAGE_TRANSITION_FORWARD_BACK qualifier.
-    expected_transition = ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT;
-  }
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
       .WillOnce(VerifySameDocumentStartedContext(
-          web_state(), url, has_user_gesture, &context, &nav_id,
+          web_state(), url, /*has_user_gesture=*/true, &context, &nav_id,
           expected_transition, /*renderer_initiated=*/false));
   // No ShouldAllowResponse callbacks for same-document back-forward
   // navigations.
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifySameDocumentFinishedContext(
-          web_state(), url, has_user_gesture, &context, &nav_id,
+          web_state(), url, /*has_user_gesture=*/true, &context, &nav_id,
           expected_transition, /*renderer_initiated=*/false));
-  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  if (!GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    // TODO(crbug.com/913813): This callback is not really needed, but Page Load
+    // Count metric relies on it DidStartLoading.
+    EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  }
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   ASSERT_TRUE(ExecuteBlockAndWaitForLoad(url, ^{
@@ -1647,10 +1645,10 @@ TEST_P(WebStateObserverTest, ForwardPostNavigation) {
           ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK |
           ui::PageTransition::PAGE_TRANSITION_TYPED),
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
   if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
     EXPECT_CALL(observer_, DidChangeBackForwardState(web_state())).Times(2);
   }
-  EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(back_request_info)))
       .WillOnce(Return(true));
@@ -1680,30 +1678,24 @@ TEST_P(WebStateObserverTest, ForwardPostNavigation) {
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   NavigationContext* context = nullptr;
   int32_t nav_id = 0;
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
   if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
     EXPECT_CALL(observer_, DidChangeBackForwardState(web_state())).Times(2);
   }
-
-  EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(forward_request_info)))
       .WillOnce(Return(true));
 
-  // TODO(crbug.com/913052): propagate |has_user_gesture| on back/forward
-  // navigation in slim nav.
-  bool forward_navigation_has_user_gesture =
-      !GetWebClient()->IsSlimNavigationManagerEnabled();
-
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
       .WillOnce(VerifyPostStartedContext(web_state(), action,
-                                         forward_navigation_has_user_gesture,
-                                         &context, &nav_id,
+                                         /*has_user_gesture=*/true, &context,
+                                         &nav_id,
                                          /*renderer_initiated=*/false));
 
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyPostFinishedContext(web_state(), action,
-                                          forward_navigation_has_user_gesture,
-                                          &context, &nav_id,
+                                          /*has_user_gesture=*/true, &context,
+                                          &nav_id,
                                           /*renderer_initiated=*/false));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
       .WillOnce(VerifyTitle(action.GetContent()));
@@ -2026,6 +2018,7 @@ TEST_P(WebStateObserverTest, IframeNavigation) {
   ASSERT_NSEQ(@2, history_length);
 
   // Go back to top.
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo forward_back_request_info(
       ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK,
       /*target_main_frame=*/false, /*has_user_gesture=*/true);
@@ -2036,6 +2029,7 @@ TEST_P(WebStateObserverTest, IframeNavigation) {
       .WillOnce(Return(true));
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/false))
       .WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
   web_state()->GetNavigationManager()->GoBack();
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
     id URL = ExecuteJavaScript(@"window.frames[0].location.pathname;");
@@ -2094,13 +2088,20 @@ TEST_P(WebStateObserverTest, NewPageLoadDestroysForwardItems) {
   if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
     // Called once each for CanGoBack and CanGoForward;
     EXPECT_CALL(observer_, DidChangeBackForwardState(web_state())).Times(2);
+  } else {
+    // TODO(crbug.com/913813): This callback is not really needed, but Page Load
+    // Count metric relies on it DidStartLoading.
+    EXPECT_CALL(observer_, DidStartLoading(web_state()));
   }
-  EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
   // No ShouldAllowResponse callbacks for same-document back-forward
   // navigations.
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
-  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  if (!GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    // TODO(crbug.com/913813): This callback is not really needed, but Page Load
+    // Count metric relies on it DidStartLoading.
+    EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  }
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   ASSERT_TRUE(ExecuteBlockAndWaitForLoad(first_url, ^{

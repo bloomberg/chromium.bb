@@ -148,6 +148,10 @@ class NavigationManagerImpl : public NavigationManager {
   // complete.
   virtual bool IsRestoreSessionInProgress() const = 0;
 
+  // Sets the index of the pending navigation item. -1 means no navigation or a
+  // new navigation.
+  virtual void SetPendingItemIndex(int index) = 0;
+
   // Resets the transient url rewriter list.
   void RemoveTransientURLRewriters();
 

@@ -15,8 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nullable, nonatomic, readonly, copy) NSURL* URL;
 @property(nonatomic, readonly, strong) WKBackForwardList* backForwardList;
 
-- (nullable WKNavigation*)goToBackForwardListItem:(WKBackForwardListItem*)item;
-
 @end
 NS_ASSUME_NONNULL_END
 
