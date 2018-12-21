@@ -155,6 +155,11 @@ static inline bool LayoutObjectHasAspectRatio(
 
 void LayoutReplaced::ComputeIntrinsicSizingInfoForReplacedContent(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
+  if (ShouldApplySizeContainment()) {
+    intrinsic_sizing_info.size = FloatSize();
+    return;
+  }
+
   ComputeIntrinsicSizingInfo(intrinsic_sizing_info);
 
   // Update our intrinsic size to match what was computed, so that
@@ -648,11 +653,7 @@ LayoutRect LayoutReplaced::PreSnappedRectForPersistentSizing(LayoutRect rect) {
 
 void LayoutReplaced::ComputeIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
-  if (ShouldApplySizeContainment()) {
-    intrinsic_sizing_info.size = FloatSize();
-    return;
-  }
-
+  DCHECK(!ShouldApplySizeContainment());
   intrinsic_sizing_info.size = FloatSize(IntrinsicLogicalWidth().ToFloat(),
                                          IntrinsicLogicalHeight().ToFloat());
 

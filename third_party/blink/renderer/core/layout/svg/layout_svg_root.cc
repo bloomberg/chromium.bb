@@ -95,6 +95,7 @@ void LayoutSVGRoot::UnscaledIntrinsicSizingInfo(
 
 void LayoutSVGRoot::ComputeIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
+  DCHECK(!ShouldApplySizeContainment());
   UnscaledIntrinsicSizingInfo(intrinsic_sizing_info);
 
   intrinsic_sizing_info.size.Scale(StyleRef().EffectiveZoom());
