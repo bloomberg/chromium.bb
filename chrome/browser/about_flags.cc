@@ -3510,30 +3510,11 @@ const FeatureEntry kFeatureEntries[] = {
          kMarkHttpAsFeatureVariations,
          "HTTPBadPhase3")},
 
-    {"enable-web-authentication-api",
-     flag_descriptions::kEnableWebAuthenticationAPIName,
-     flag_descriptions::kEnableWebAuthenticationAPIDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kWebAuth)},
-
 #if !defined(OS_ANDROID)
     {"enable-web-authentication-testing-api",
      flag_descriptions::kEnableWebAuthenticationTestingAPIName,
      flag_descriptions::kEnableWebAuthenticationTestingAPIDescription,
      kOsDesktop, SINGLE_VALUE_TYPE(switches::kEnableWebAuthTestingAPI)},
-#endif  // !defined(OS_ANDROID)
-
-#if !defined(OS_ANDROID)
-    {"enable-web-authentication-ctap2-support",
-     flag_descriptions::kEnableWebAuthenticationCtap2SupportName,
-     flag_descriptions::kEnableWebAuthenticationCtap2SupportDescription,
-     kOsDesktop, FEATURE_VALUE_TYPE(device::kNewCtap2Device)},
-#endif  // !defined(OS_ANDROID)
-
-#if !defined(OS_ANDROID)
-    {"enable-web-authentication-cable-support",
-     flag_descriptions::kEnableWebAuthenticationCableSupportName,
-     flag_descriptions::kEnableWebAuthenticationCableSupportDescription,
-     kOsDesktop, FEATURE_VALUE_TYPE(features::kWebAuthCable)},
 #endif  // !defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
@@ -4029,13 +4010,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          features::kAllowSignedHTTPExchangeCertsWithoutExtension)},
-
-#if defined(OS_MACOSX)
-    {"enable-web-authentication-touch-id",
-     flag_descriptions::kEnableWebAuthenticationTouchIdName,
-     flag_descriptions::kEnableWebAuthenticationTouchIdDescription, kOsMac,
-     FEATURE_VALUE_TYPE(device::kWebAuthTouchId)},
-#endif
 
     {"enable-autofill-account-wallet-storage",
      flag_descriptions::kEnableAutofillAccountWalletStorageName,

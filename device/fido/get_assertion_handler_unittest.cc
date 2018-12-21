@@ -143,10 +143,6 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
                                          GetAllTransportProtocols());
   }
 
-  void InitFeatureListAndDisableCtapFlag() {
-    scoped_feature_list_.InitAndDisableFeature(kNewCtap2Device);
-  }
-
   test::FakeFidoDiscovery* discovery() const { return discovery_; }
   test::FakeFidoDiscovery* ble_discovery() const { return ble_discovery_; }
   test::FakeFidoDiscovery* cable_discovery() const { return cable_discovery_; }
@@ -176,7 +172,6 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
-  base::test::ScopedFeatureList scoped_feature_list_;
   test::ScopedFakeFidoDiscoveryFactory scoped_fake_discovery_factory_;
   test::FakeFidoDiscovery* discovery_;
   test::FakeFidoDiscovery* ble_discovery_;
@@ -222,29 +217,6 @@ TEST_F(FidoGetAssertionHandlerTest, TestU2fSign) {
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
   auto device = MockFidoDevice::MakeU2fWithGetInfoExpectation();
-  device->ExpectRequestAndRespondWith(
-      test_data::kU2fCheckOnlySignCommandApdu,
-      test_data::kApduEncodedNoErrorSignResponse);
-  device->ExpectRequestAndRespondWith(
-      test_data::kU2fSignCommandApdu,
-      test_data::kApduEncodedNoErrorSignResponse);
-
-  discovery()->AddDevice(std::move(device));
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
-  EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
-  EXPECT_TRUE(get_assertion_callback().value<0>());
-  EXPECT_TRUE(request_handler->is_complete());
-}
-
-// Test a scenario where the connected authenticator is a U2F device and
-// "WebAuthenticationCtap2" flag is not enabled.
-TEST_F(FidoGetAssertionHandlerTest, TestU2fSignWithoutCtapFlag) {
-  InitFeatureListAndDisableCtapFlag();
-  auto request_handler = CreateGetAssertionHandlerU2f();
-  discovery()->WaitForCallToStartAndSimulateSuccess();
-
-  auto device = std::make_unique<MockFidoDevice>();
-  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
   device->ExpectRequestAndRespondWith(
       test_data::kU2fCheckOnlySignCommandApdu,
       test_data::kApduEncodedNoErrorSignResponse);

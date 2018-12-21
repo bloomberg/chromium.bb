@@ -489,14 +489,10 @@ base::flat_set<device::FidoTransportProtocol> GetTransportsEnabledByFlags() {
     transports.insert(device::FidoTransportProtocol::kBluetoothLowEnergy);
   }
 
-  if (
-#if defined(OS_WIN)
-      base::FeatureList::IsEnabled(features::kWebAuthCableWin) &&
-#endif
-      base::FeatureList::IsEnabled(features::kWebAuthCable)) {
-    transports.insert(
-        device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
-  }
+  // caBLE is independent of the BLE transport.
+  transports.insert(
+      device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
+
   return transports;
 }
 
