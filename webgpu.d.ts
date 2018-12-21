@@ -1,3 +1,5 @@
+// https://github.com/gpuweb/gpuweb/blob/e4f6adf2625edbfc91f280efbb81309a70b9a094/design/sketch.webidl
+
 type u64 = number;
 
 type WebGPUObjectStatusQuery = Promise<WebGPUObjectStatus>;
@@ -540,3 +542,13 @@ interface WebGPUTextureView {
 }
 
 type WebGPULogCallback = (error: WebGPULogEntry) => void;
+
+type WebGPUPowerPreference =
+  | "low-power"
+  | "high-performance";
+interface WebGPURequestAdapterOptions {
+  powerPreference: WebGPUPowerPreference;
+}
+declare namespace gpu {
+  function requestAdapter(options?: WebGPURequestAdapterOptions): Promise<WebGPUAdapter>;
+}
