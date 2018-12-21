@@ -21,9 +21,6 @@
 @property(nonatomic, strong) ChromeIdentity* chromeIdentity;
 @property(nonatomic, assign, getter=isEnabled) BOOL enabled;
 
-// The accessory type for the represented cell.
-@property(nonatomic, assign) UITableViewCellAccessoryType accessoryType;
-
 @end
 
 // Cell for account avatar with a leading avatar imageView, title text label,

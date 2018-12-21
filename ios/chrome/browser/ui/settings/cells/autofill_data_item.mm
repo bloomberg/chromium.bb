@@ -25,7 +25,6 @@ const CGFloat kCompressionResistanceAdditionalPriority = 1;
 @synthesize text = _text;
 @synthesize leadingDetailText = _leadingDetailText;
 @synthesize trailingDetailText = _trailingDetailText;
-@synthesize accessoryType = _accessoryType;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
@@ -43,7 +42,6 @@ const CGFloat kCompressionResistanceAdditionalPriority = 1;
   cell.textLabel.text = self.text;
   cell.leadingDetailTextLabel.text = self.leadingDetailText;
   cell.trailingDetailTextLabel.text = self.trailingDetailText;
-  cell.accessoryType = self.accessoryType;
 }
 
 @end
@@ -152,7 +150,6 @@ const CGFloat kCompressionResistanceAdditionalPriority = 1;
   self.textLabel.text = nil;
   self.leadingDetailTextLabel.text = nil;
   self.trailingDetailTextLabel.text = nil;
-  self.accessoryType = UITableViewCellAccessoryNone;
 }
 
 #pragma mark - NSObject(Accessibility)

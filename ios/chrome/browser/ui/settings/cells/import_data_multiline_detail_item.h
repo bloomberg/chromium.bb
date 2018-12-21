@@ -13,9 +13,6 @@
 // ImportDataMultilineDetailCell.
 @interface ImportDataMultilineDetailItem : TableViewItem
 
-// The accessory type to display on the trailing edge of the cell.
-@property(nonatomic) UITableViewCellAccessoryType accessoryType;
-
 // The main text string.
 @property(nonatomic, copy) NSString* text;
 

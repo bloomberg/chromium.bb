@@ -14,6 +14,9 @@
 // TableViewItem holds the model data for a given table view item.
 @interface TableViewItem : ListItem
 
+// The accessory type to display on the trailing edge of the cell.
+@property(nonatomic, assign) UITableViewCellAccessoryType accessoryType;
+
 - (instancetype)initWithType:(NSInteger)type NS_DESIGNATED_INITIALIZER;
 
 // Configures the given cell with the item's information. Override this method

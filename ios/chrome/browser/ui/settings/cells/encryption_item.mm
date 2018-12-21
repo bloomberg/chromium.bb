@@ -14,7 +14,6 @@
 
 @implementation EncryptionItem
 
-@synthesize accessoryType = _accessoryType;
 @synthesize text = _text;
 @synthesize enabled = _enabled;
 
@@ -31,7 +30,6 @@
 - (void)configureCell:(EncryptionCell*)cell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
-  cell.accessoryType = self.accessoryType;
   cell.textLabel.text = self.text;
   cell.textLabel.textColor =
       self.enabled ? [UIColor blackColor]
@@ -74,7 +72,6 @@
 
 - (void)prepareForReuse {
   [super prepareForReuse];
-  self.accessoryType = UITableViewCellAccessoryNone;
   self.textLabel.text = nil;
 }
 

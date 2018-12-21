@@ -48,7 +48,6 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
   cell.imageView.image = self.image;
   cell.textLabel.text = self.text;
   cell.detailTextLabel.text = self.detailText;
-  cell.accessoryType = self.accessoryType;
   if (self.shouldDisplayError) {
     cell.errorIcon.image = [UIImage imageNamed:@"settings_error"];
     cell.detailTextLabel.textColor = UIColor.redColor;
@@ -248,7 +247,6 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
   self.detailTextLabel.textColor =
       UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
   self.errorIcon.image = nil;
-  self.accessoryType = UITableViewCellAccessoryNone;
   self.userInteractionEnabled = YES;
   self.contentView.alpha = 1;
   UIImageView* accessoryImage =
