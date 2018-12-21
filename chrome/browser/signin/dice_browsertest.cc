@@ -103,7 +103,6 @@ const char kEnableSyncURL[] = "/enable_sync";
 const char kGoogleSignoutResponseHeader[] = "Google-Accounts-SignOut";
 const char kMainGmailEmail[] = "main_email@gmail.com";
 const char kMainManagedEmail[] = "main_email@managed.com";
-const char kMainGaiaID[] = "main_gaia_id";
 const char kNoDiceRequestHeader[] = "NoDiceHeader";
 const char kOAuth2TokenExchangeURL[] = "/oauth2/v4/token";
 const char kOAuth2TokenRevokeURL[] = "/o/oauth2/revoke";
@@ -172,7 +171,8 @@ std::unique_ptr<HttpResponse> HandleSigninURL(
         kDiceResponseHeader,
         base::StringPrintf(
             "action=SIGNIN,authuser=1,id=%s,email=%s,authorization_code=%s",
-            kMainGaiaID, main_email.c_str(), kAuthorizationCode));
+            identity::GetTestGaiaIdForEmail(main_email).c_str(),
+            main_email.c_str(), kAuthorizationCode));
   }
 
   // When hitting the Chrome Sync endpoint, redirect to kEnableSyncURL, which
@@ -199,7 +199,8 @@ std::unique_ptr<HttpResponse> HandleEnableSyncURL(
   http_response->AddCustomHeader(
       kDiceResponseHeader,
       base::StringPrintf("action=ENABLE_SYNC,authuser=1,id=%s,email=%s",
-                         kMainGaiaID, main_email.c_str()));
+                         identity::GetTestGaiaIdForEmail(main_email).c_str(),
+                         main_email.c_str()));
   http_response->AddCustomHeader("Cache-Control", "no-store");
   return std::move(http_response);
 }
@@ -221,9 +222,10 @@ std::unique_ptr<HttpResponse> HandleSignoutURL(const std::string& main_email,
   EXPECT_LT(signout_type, kSignoutTypeLast);
   std::string signout_header_value;
   if (signout_type == kAllAccounts || signout_type == kMainAccount) {
+    std::string main_gaia_id = identity::GetTestGaiaIdForEmail(main_email);
     signout_header_value =
         base::StringPrintf("email=\"%s\", obfuscatedid=\"%s\", sessionindex=1",
-                           main_email.c_str(), kMainGaiaID);
+                           main_email.c_str(), main_gaia_id.c_str());
   }
   if (signout_type == kAllAccounts || signout_type == kSecondaryAccount) {
     if (!signout_header_value.empty())
@@ -372,10 +374,11 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     return IdentityManagerFactory::GetForProfile(browser()->profile());
   }
 
-  // Returns the account ID associated with |main_email_|, kMainGaiaID.
+  // Returns the account ID associated with |main_email_| and its associated
+  // gaia ID.
   std::string GetMainAccountID() {
-    return GetAccountTrackerService()->PickAccountIdForAccount(kMainGaiaID,
-                                                               main_email_);
+    return GetAccountTrackerService()->PickAccountIdForAccount(
+        identity::GetTestGaiaIdForEmail(main_email_), main_email_);
   }
 
   // Returns the account ID associated with kSecondaryEmail and its associated
@@ -392,11 +395,8 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   // Signin with a main account and add token for a secondary account.
   void SetupSignedInAccounts() {
     // Signin main account.
-    auto* primary_account_mutator =
-        GetIdentityManager()->GetPrimaryAccountMutator();
-    primary_account_mutator->LegacyStartSigninWithRefreshTokenForPrimaryAccount(
-        "existing_refresh_token", kMainGaiaID, main_email_, "password",
-        base::OnceCallback<void(const std::string&)>());
+    AccountInfo primary_account_info = identity::MakePrimaryAccountAvailable(
+        GetIdentityManager(), main_email_);
     ASSERT_TRUE(
         GetIdentityManager()->HasAccountWithRefreshToken(GetMainAccountID()));
     ASSERT_FALSE(
