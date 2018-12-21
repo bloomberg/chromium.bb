@@ -34,6 +34,9 @@ using EchoCancellationType = AudioProcessingProperties::EchoCancellationType;
 using ProcessingType = AudioCaptureSettings::ProcessingType;
 using StringConstraint = blink::StringConstraint;
 
+template <class T>
+using NumericRangeSet = media_constraints::NumericRangeSet<T>;
+
 namespace {
 
 using BoolSet = media_constraints::DiscreteSet<bool>;
@@ -213,14 +216,16 @@ class StringContainer {
   StringSet allowed_values_;
 };
 
-// Container for each independent integer constrainable property.
-class IntegerContainer {
+// Container for each independent numeric constrainable property.
+template <class T, class C>
+class NumericContainer {
  public:
-  explicit IntegerContainer(IntRangeSet allowed_values = IntRangeSet())
+  explicit NumericContainer(
+      NumericRangeSet<T> allowed_values = NumericRangeSet<T>())
       : allowed_values_(std::move(allowed_values)) {}
 
-  const char* ApplyConstraintSet(const blink::LongConstraint& constraint) {
-    auto constraint_set = IntRangeSet::FromConstraint(constraint);
+  const char* ApplyConstraintSet(const C& constraint) {
+    auto constraint_set = NumericRangeSet<T>::FromConstraint(constraint);
     allowed_values_ = allowed_values_.Intersection(constraint_set);
     return IsEmpty() ? constraint.GetName() : nullptr;
   }
@@ -233,16 +238,16 @@ class IntegerContainer {
   // When |default_setting| is **not** provided, the setting will be a value iff
   // |allowed_values_| contains only a single value, otherwise base::nullopt is
   // returned to signal that it was not possible to make a decision.
-  std::tuple<double, base::Optional<int>> SelectSettingsAndScore(
-      const blink::LongConstraint& constraint,
-      const base::Optional<int>& default_setting = base::nullopt) const {
+  std::tuple<double, base::Optional<T>> SelectSettingsAndScore(
+      const C& constraint,
+      const base::Optional<T>& default_setting = base::nullopt) const {
     DCHECK(!IsEmpty());
 
     if (constraint.HasIdeal()) {
       if (allowed_values_.Contains(constraint.Ideal()))
         return std::make_tuple(1.0, constraint.Ideal());
 
-      int value = SelectClosestValueTo(constraint.Ideal());
+      T value = SelectClosestValueTo(constraint.Ideal());
       double fitness =
           1.0 - NumericConstraintFitnessDistance(value, constraint.Ideal());
       return std::make_tuple(fitness, value);
@@ -268,7 +273,7 @@ class IntegerContainer {
   bool IsEmpty() const { return allowed_values_.IsEmpty(); }
 
  private:
-  int SelectClosestValueTo(int value) const {
+  T SelectClosestValueTo(T value) const {
     DCHECK(allowed_values_.Min() || allowed_values_.Max());
     DCHECK(!allowed_values_.Contains(value));
     return allowed_values_.Min() && value < *allowed_values_.Min()
@@ -276,8 +281,10 @@ class IntegerContainer {
                : *allowed_values_.Max();
   }
 
-  IntRangeSet allowed_values_;
+  NumericRangeSet<T> allowed_values_;
 };
+
+using IntegerContainer = NumericContainer<int, blink::LongConstraint>;
 
 // Container to manage the properties related to echo cancellation:
 // echoCancellation, googEchoCancellation and echoCancellationType.
