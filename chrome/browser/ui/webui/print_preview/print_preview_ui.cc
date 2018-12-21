@@ -29,6 +29,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
+#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -176,193 +177,139 @@ bool HandleRequestCallback(
 }
 
 void AddPrintPreviewStrings(content::WebUIDataSource* source) {
-  source->AddLocalizedString("title", IDS_PRINT_PREVIEW_TITLE);
-  source->AddLocalizedString("learnMore", IDS_LEARN_MORE);
-  source->AddLocalizedString("loading", IDS_PRINT_PREVIEW_LOADING);
-  source->AddLocalizedString("noPlugin", IDS_PRINT_PREVIEW_NO_PLUGIN);
-  source->AddLocalizedString("previewFailed", IDS_PRINT_PREVIEW_FAILED);
-  source->AddLocalizedString("invalidPrinterSettings",
-                             IDS_PRINT_INVALID_PRINTER_SETTINGS);
-  source->AddLocalizedString("unsupportedCloudPrinter",
-                             IDS_PRINT_PREVIEW_UNSUPPORTED_CLOUD_PRINTER);
-  source->AddLocalizedString("printButton", IDS_PRINT_PREVIEW_PRINT_BUTTON);
-  source->AddLocalizedString("saveButton", IDS_PRINT_PREVIEW_SAVE_BUTTON);
-  source->AddLocalizedString("printing", IDS_PRINT_PREVIEW_PRINTING);
-  source->AddLocalizedString("saving", IDS_PRINT_PREVIEW_SAVING);
-  source->AddLocalizedString("destinationLabel",
-                             IDS_PRINT_PREVIEW_DESTINATION_LABEL);
-  source->AddLocalizedString("copiesLabel", IDS_PRINT_PREVIEW_COPIES_LABEL);
-  source->AddLocalizedString("scalingLabel", IDS_PRINT_PREVIEW_SCALING_LABEL);
-  source->AddLocalizedString("pagesPerSheetLabel",
-                             IDS_PRINT_PREVIEW_PAGES_PER_SHEET_LABEL);
+  static constexpr LocalizedString kLocalizedStrings[] = {
+    {"accept", IDS_PRINT_PREVIEW_ACCEPT_INVITE},
+    {"acceptForGroup", IDS_PRINT_PREVIEW_ACCEPT_GROUP_INVITE},
+    {"accountSelectTitle", IDS_PRINT_PREVIEW_ACCOUNT_SELECT_TITLE},
+    {"addAccountTitle", IDS_PRINT_PREVIEW_ADD_ACCOUNT_TITLE},
+    {"advancedSettingsDialogConfirm",
+     IDS_PRINT_PREVIEW_ADVANCED_SETTINGS_DIALOG_CONFIRM},
+    {"advancedSettingsDialogTitle",
+     IDS_PRINT_PREVIEW_ADVANCED_SETTINGS_DIALOG_TITLE},
+    {"advancedSettingsSearchBoxPlaceholder",
+     IDS_PRINT_PREVIEW_ADVANCED_SETTINGS_SEARCH_BOX_PLACEHOLDER},
+    {"bottom", IDS_PRINT_PREVIEW_BOTTOM_MARGIN_LABEL},
+    {"cancel", IDS_CANCEL},
+    {"changeDestination", IDS_PRINT_PREVIEW_CHANGE_DESTINATION},
+    {"cloudPrintPromotion", IDS_PRINT_PREVIEW_CLOUD_PRINT_PROMOTION},
+    {"copiesInstruction", IDS_PRINT_PREVIEW_COPIES_INSTRUCTION},
+    {"copiesLabel", IDS_PRINT_PREVIEW_COPIES_LABEL},
+    {"couldNotPrint", IDS_PRINT_PREVIEW_COULD_NOT_PRINT},
+    {"customMargins", IDS_PRINT_PREVIEW_CUSTOM_MARGINS},
+    {"defaultMargins", IDS_PRINT_PREVIEW_DEFAULT_MARGINS},
+    {"destinationCount", IDS_PRINT_PREVIEW_DESTINATION_COUNT},
+    {"destinationLabel", IDS_PRINT_PREVIEW_DESTINATION_LABEL},
+    {"destinationSearchTitle", IDS_PRINT_PREVIEW_DESTINATION_SEARCH_TITLE},
+    {"dpiItemLabel", IDS_PRINT_PREVIEW_DPI_ITEM_LABEL},
+    {"dpiLabel", IDS_PRINT_PREVIEW_DPI_LABEL},
+    {"examplePageRangeText", IDS_PRINT_PREVIEW_EXAMPLE_PAGE_RANGE_TEXT},
+    {"extensionDestinationIconTooltip",
+     IDS_PRINT_PREVIEW_EXTENSION_DESTINATION_ICON_TOOLTIP},
+    {"goBackButton", IDS_PRINT_PREVIEW_BUTTON_GO_BACK},
+    {"groupPrinterSharingInviteText", IDS_PRINT_PREVIEW_GROUP_INVITE_TEXT},
+    {"invalidPrinterSettings", IDS_PRINT_INVALID_PRINTER_SETTINGS},
+    {"layoutLabel", IDS_PRINT_PREVIEW_LAYOUT_LABEL},
+    {"learnMore", IDS_LEARN_MORE},
+    {"left", IDS_PRINT_PREVIEW_LEFT_MARGIN_LABEL},
+    {"loading", IDS_PRINT_PREVIEW_LOADING},
+    {"manage", IDS_PRINT_PREVIEW_MANAGE},
+    {"managedOption", IDS_PRINT_PREVIEW_MANAGED_OPTION_TEXT},
+    {"marginsLabel", IDS_PRINT_PREVIEW_MARGINS_LABEL},
+    {"mediaSizeLabel", IDS_PRINT_PREVIEW_MEDIA_SIZE_LABEL},
+    {"minimumMargins", IDS_PRINT_PREVIEW_MINIMUM_MARGINS},
+    {"moreOptionsLabel", IDS_MORE_OPTIONS_LABEL},
+    {"newShowAdvancedOptions", IDS_PRINT_PREVIEW_NEW_SHOW_ADVANCED_OPTIONS},
+    {"noAdvancedSettingsMatchSearchHint",
+     IDS_PRINT_PREVIEW_NO_ADVANCED_SETTINGS_MATCH_SEARCH_HINT},
+    {"noDestinationsMessage", IDS_PRINT_PREVIEW_NO_DESTINATIONS_MESSAGE},
+    {"noLongerSupported", IDS_PRINT_PREVIEW_NO_LONGER_SUPPORTED},
+    {"noLongerSupportedFragment",
+     IDS_PRINT_PREVIEW_NO_LONGER_SUPPORTED_FRAGMENT},
+    {"noMargins", IDS_PRINT_PREVIEW_NO_MARGINS},
+    {"noPlugin", IDS_PRINT_PREVIEW_NO_PLUGIN},
+    {"nonIsotropicDpiItemLabel",
+     IDS_PRINT_PREVIEW_NON_ISOTROPIC_DPI_ITEM_LABEL},
+    {"offline", IDS_PRINT_PREVIEW_OFFLINE},
+    {"offlineForMonth", IDS_PRINT_PREVIEW_OFFLINE_FOR_MONTH},
+    {"offlineForWeek", IDS_PRINT_PREVIEW_OFFLINE_FOR_WEEK},
+    {"offlineForYear", IDS_PRINT_PREVIEW_OFFLINE_FOR_YEAR},
+    {"optionAllPages", IDS_PRINT_PREVIEW_OPTION_ALL_PAGES},
+    {"optionBackgroundColorsAndImages",
+     IDS_PRINT_PREVIEW_OPTION_BACKGROUND_COLORS_AND_IMAGES},
+    {"optionBw", IDS_PRINT_PREVIEW_OPTION_BW},
+    {"optionCollate", IDS_PRINT_PREVIEW_OPTION_COLLATE},
+    {"optionColor", IDS_PRINT_PREVIEW_OPTION_COLOR},
+    {"optionCustomPages", IDS_PRINT_PREVIEW_OPTION_CUSTOM_PAGES},
+    {"optionFitToPage", IDS_PRINT_PREVIEW_OPTION_FIT_TO_PAGE},
+    {"optionHeaderFooter", IDS_PRINT_PREVIEW_OPTION_HEADER_FOOTER},
+    {"optionLandscape", IDS_PRINT_PREVIEW_OPTION_LANDSCAPE},
+    {"optionPortrait", IDS_PRINT_PREVIEW_OPTION_PORTRAIT},
+    {"optionRasterize", IDS_PRINT_PREVIEW_OPTION_RASTERIZE},
+    {"optionSelectionOnly", IDS_PRINT_PREVIEW_OPTION_SELECTION_ONLY},
+    {"optionTwoSided", IDS_PRINT_PREVIEW_OPTION_TWO_SIDED},
+    {"optionsLabel", IDS_PRINT_PREVIEW_OPTIONS_LABEL},
+    {"pageRangeLimitInstructionWithValue",
+     IDS_PRINT_PREVIEW_PAGE_RANGE_LIMIT_INSTRUCTION_WITH_VALUE},
+    {"pageRangeSyntaxInstruction",
+     IDS_PRINT_PREVIEW_PAGE_RANGE_SYNTAX_INSTRUCTION},
+    {"pagesLabel", IDS_PRINT_PREVIEW_PAGES_LABEL},
+    {"pagesPerSheetLabel", IDS_PRINT_PREVIEW_PAGES_PER_SHEET_LABEL},
+    {"previewFailed", IDS_PRINT_PREVIEW_FAILED},
+    {"printButton", IDS_PRINT_PREVIEW_PRINT_BUTTON},
+    {"printDestinationsTitle", IDS_PRINT_PREVIEW_PRINT_DESTINATIONS_TITLE},
+    {"printPagesLabel", IDS_PRINT_PREVIEW_PRINT_PAGES_LABEL},
+    {"printPreviewPageLabelPlural", IDS_PRINT_PREVIEW_PAGE_LABEL_PLURAL},
+    {"printPreviewPageLabelSingular", IDS_PRINT_PREVIEW_PAGE_LABEL_SINGULAR},
+    {"printPreviewSheetsLabelPlural", IDS_PRINT_PREVIEW_SHEETS_LABEL_PLURAL},
+    {"printPreviewSheetsLabelSingular",
+     IDS_PRINT_PREVIEW_SHEETS_LABEL_SINGULAR},
+    {"printPreviewSummaryFormatShort", IDS_PRINT_PREVIEW_SUMMARY_FORMAT_SHORT},
+    {"printToPDF", IDS_PRINT_PREVIEW_PRINT_TO_PDF},
+    {"printerSharingInviteText", IDS_PRINT_PREVIEW_INVITE_TEXT},
+    {"printing", IDS_PRINT_PREVIEW_PRINTING},
+    {"recentDestinationsTitle", IDS_PRINT_PREVIEW_RECENT_DESTINATIONS_TITLE},
+    {"registerPrinterInformationMessage",
+     IDS_CLOUD_PRINT_REGISTER_PRINTER_INFORMATION},
+    {"reject", IDS_PRINT_PREVIEW_REJECT_INVITE},
+    {"resolveExtensionUSBDialogTitle",
+     IDS_PRINT_PREVIEW_RESOLVE_EXTENSION_USB_DIALOG_TITLE},
+    {"resolveExtensionUSBErrorMessage",
+     IDS_PRINT_PREVIEW_RESOLVE_EXTENSION_USB_ERROR_MESSAGE},
+    {"resolveExtensionUSBPermissionMessage",
+     IDS_PRINT_PREVIEW_RESOLVE_EXTENSION_USB_PERMISSION_MESSAGE},
+    {"right", IDS_PRINT_PREVIEW_RIGHT_MARGIN_LABEL},
+    {"saveButton", IDS_PRINT_PREVIEW_SAVE_BUTTON},
+    {"saving", IDS_PRINT_PREVIEW_SAVING},
+    {"scalingInstruction", IDS_PRINT_PREVIEW_SCALING_INSTRUCTION},
+    {"scalingLabel", IDS_PRINT_PREVIEW_SCALING_LABEL},
+    {"searchBoxPlaceholder", IDS_PRINT_PREVIEW_SEARCH_BOX_PLACEHOLDER},
+    {"selectButton", IDS_PRINT_PREVIEW_BUTTON_SELECT},
+    {"title", IDS_PRINT_PREVIEW_TITLE},
+    {"top", IDS_PRINT_PREVIEW_TOP_MARGIN_LABEL},
+    {"unsupportedCloudPrinter", IDS_PRINT_PREVIEW_UNSUPPORTED_CLOUD_PRINTER},
+#if defined(OS_CHROMEOS)
+    {"configuringFailedText", IDS_PRINT_CONFIGURING_FAILED_TEXT},
+    {"configuringInProgressText", IDS_PRINT_CONFIGURING_IN_PROGRESS_TEXT},
+#endif
+#if defined(OS_MACOSX)
+    {"openPdfInPreviewOption", IDS_PRINT_PREVIEW_OPEN_PDF_IN_PREVIEW_APP},
+    {"openingPDFInPreview", IDS_PRINT_PREVIEW_OPENING_PDF_IN_PREVIEW_APP},
+#endif
+  };
+  AddLocalizedStringsBulk(source, kLocalizedStrings,
+                          base::size(kLocalizedStrings));
 
-  source->AddLocalizedString("examplePageRangeText",
-                             IDS_PRINT_PREVIEW_EXAMPLE_PAGE_RANGE_TEXT);
-  source->AddLocalizedString("layoutLabel", IDS_PRINT_PREVIEW_LAYOUT_LABEL);
-  source->AddLocalizedString("optionAllPages",
-                             IDS_PRINT_PREVIEW_OPTION_ALL_PAGES);
-  source->AddLocalizedString("optionCustomPages",
-                             IDS_PRINT_PREVIEW_OPTION_CUSTOM_PAGES);
-  source->AddLocalizedString("optionBw", IDS_PRINT_PREVIEW_OPTION_BW);
-  source->AddLocalizedString("optionCollate", IDS_PRINT_PREVIEW_OPTION_COLLATE);
-  source->AddLocalizedString("optionColor", IDS_PRINT_PREVIEW_OPTION_COLOR);
-  source->AddLocalizedString("optionLandscape",
-                             IDS_PRINT_PREVIEW_OPTION_LANDSCAPE);
-  source->AddLocalizedString("optionPortrait",
-                             IDS_PRINT_PREVIEW_OPTION_PORTRAIT);
-  source->AddLocalizedString("optionTwoSided",
-                             IDS_PRINT_PREVIEW_OPTION_TWO_SIDED);
-  source->AddLocalizedString("pagesLabel", IDS_PRINT_PREVIEW_PAGES_LABEL);
-  source->AddLocalizedString("printToPDF", IDS_PRINT_PREVIEW_PRINT_TO_PDF);
-  source->AddLocalizedString("printPreviewSummaryFormatShort",
-                             IDS_PRINT_PREVIEW_SUMMARY_FORMAT_SHORT);
-  source->AddLocalizedString("printPreviewSheetsLabelSingular",
-                             IDS_PRINT_PREVIEW_SHEETS_LABEL_SINGULAR);
-  source->AddLocalizedString("printPreviewSheetsLabelPlural",
-                             IDS_PRINT_PREVIEW_SHEETS_LABEL_PLURAL);
-  source->AddLocalizedString("printPreviewPageLabelSingular",
-                             IDS_PRINT_PREVIEW_PAGE_LABEL_SINGULAR);
-  source->AddLocalizedString("printPreviewPageLabelPlural",
-                             IDS_PRINT_PREVIEW_PAGE_LABEL_PLURAL);
-  source->AddLocalizedString("selectButton",
-                             IDS_PRINT_PREVIEW_BUTTON_SELECT);
-  source->AddLocalizedString("goBackButton",
-                             IDS_PRINT_PREVIEW_BUTTON_GO_BACK);
-  source->AddLocalizedString(
-      "resolveExtensionUSBDialogTitle",
-      IDS_PRINT_PREVIEW_RESOLVE_EXTENSION_USB_DIALOG_TITLE);
-  source->AddLocalizedString(
-      "resolveExtensionUSBPermissionMessage",
-      IDS_PRINT_PREVIEW_RESOLVE_EXTENSION_USB_PERMISSION_MESSAGE);
-  source->AddLocalizedString(
-      "resolveExtensionUSBErrorMessage",
-      IDS_PRINT_PREVIEW_RESOLVE_EXTENSION_USB_ERROR_MESSAGE);
   source->AddString(
       "settingsPrintingPage",
       chrome::GetSettingsUrl(chrome::kPrintingSettingsSubPage).spec());
   source->AddString("gcpCertificateErrorLearnMoreURL",
                     chrome::kCloudPrintCertificateErrorLearnMoreURL);
-  source->AddLocalizedString(
-      "pageRangeLimitInstructionWithValue",
-      IDS_PRINT_PREVIEW_PAGE_RANGE_LIMIT_INSTRUCTION_WITH_VALUE);
-  source->AddLocalizedString("pageRangeSyntaxInstruction",
-                             IDS_PRINT_PREVIEW_PAGE_RANGE_SYNTAX_INSTRUCTION);
-  source->AddLocalizedString("copiesInstruction",
-                             IDS_PRINT_PREVIEW_COPIES_INSTRUCTION);
-  source->AddLocalizedString("scalingInstruction",
-                             IDS_PRINT_PREVIEW_SCALING_INSTRUCTION);
-  source->AddLocalizedString("printPagesLabel",
-                             IDS_PRINT_PREVIEW_PRINT_PAGES_LABEL);
-  source->AddLocalizedString("optionsLabel", IDS_PRINT_PREVIEW_OPTIONS_LABEL);
-  source->AddLocalizedString("optionHeaderFooter",
-                             IDS_PRINT_PREVIEW_OPTION_HEADER_FOOTER);
-  source->AddLocalizedString("optionFitToPage",
-                             IDS_PRINT_PREVIEW_OPTION_FIT_TO_PAGE);
-  source->AddLocalizedString(
-      "optionBackgroundColorsAndImages",
-      IDS_PRINT_PREVIEW_OPTION_BACKGROUND_COLORS_AND_IMAGES);
-  source->AddLocalizedString("optionSelectionOnly",
-                             IDS_PRINT_PREVIEW_OPTION_SELECTION_ONLY);
-  source->AddLocalizedString("optionRasterize",
-                             IDS_PRINT_PREVIEW_OPTION_RASTERIZE);
-  source->AddLocalizedString("marginsLabel", IDS_PRINT_PREVIEW_MARGINS_LABEL);
-  source->AddLocalizedString("defaultMargins",
-                             IDS_PRINT_PREVIEW_DEFAULT_MARGINS);
-  source->AddLocalizedString("noMargins", IDS_PRINT_PREVIEW_NO_MARGINS);
-  source->AddLocalizedString("customMargins", IDS_PRINT_PREVIEW_CUSTOM_MARGINS);
-  source->AddLocalizedString("minimumMargins",
-                             IDS_PRINT_PREVIEW_MINIMUM_MARGINS);
-  source->AddLocalizedString("top", IDS_PRINT_PREVIEW_TOP_MARGIN_LABEL);
-  source->AddLocalizedString("bottom", IDS_PRINT_PREVIEW_BOTTOM_MARGIN_LABEL);
-  source->AddLocalizedString("left", IDS_PRINT_PREVIEW_LEFT_MARGIN_LABEL);
-  source->AddLocalizedString("right", IDS_PRINT_PREVIEW_RIGHT_MARGIN_LABEL);
-  source->AddLocalizedString("mediaSizeLabel",
-                             IDS_PRINT_PREVIEW_MEDIA_SIZE_LABEL);
-  source->AddLocalizedString("dpiLabel", IDS_PRINT_PREVIEW_DPI_LABEL);
-  source->AddLocalizedString("dpiItemLabel", IDS_PRINT_PREVIEW_DPI_ITEM_LABEL);
-  source->AddLocalizedString("nonIsotropicDpiItemLabel",
-                             IDS_PRINT_PREVIEW_NON_ISOTROPIC_DPI_ITEM_LABEL);
-  source->AddLocalizedString("destinationSearchTitle",
-                             IDS_PRINT_PREVIEW_DESTINATION_SEARCH_TITLE);
-  source->AddLocalizedString("accountSelectTitle",
-                             IDS_PRINT_PREVIEW_ACCOUNT_SELECT_TITLE);
-  source->AddLocalizedString("addAccountTitle",
-                             IDS_PRINT_PREVIEW_ADD_ACCOUNT_TITLE);
-  source->AddLocalizedString("cloudPrintPromotion",
-                             IDS_PRINT_PREVIEW_CLOUD_PRINT_PROMOTION);
-  source->AddLocalizedString("searchBoxPlaceholder",
-                             IDS_PRINT_PREVIEW_SEARCH_BOX_PLACEHOLDER);
-  source->AddLocalizedString("noDestinationsMessage",
-                             IDS_PRINT_PREVIEW_NO_DESTINATIONS_MESSAGE);
-  source->AddLocalizedString("destinationCount",
-                             IDS_PRINT_PREVIEW_DESTINATION_COUNT);
-  source->AddLocalizedString("recentDestinationsTitle",
-                             IDS_PRINT_PREVIEW_RECENT_DESTINATIONS_TITLE);
-  source->AddLocalizedString("printDestinationsTitle",
-                             IDS_PRINT_PREVIEW_PRINT_DESTINATIONS_TITLE);
-  source->AddLocalizedString("manage", IDS_PRINT_PREVIEW_MANAGE);
-  source->AddLocalizedString("changeDestination",
-                             IDS_PRINT_PREVIEW_CHANGE_DESTINATION);
-  source->AddLocalizedString("offlineForYear",
-                             IDS_PRINT_PREVIEW_OFFLINE_FOR_YEAR);
-  source->AddLocalizedString("offlineForMonth",
-                             IDS_PRINT_PREVIEW_OFFLINE_FOR_MONTH);
-  source->AddLocalizedString("offlineForWeek",
-                             IDS_PRINT_PREVIEW_OFFLINE_FOR_WEEK);
-  source->AddLocalizedString("offline", IDS_PRINT_PREVIEW_OFFLINE);
-  source->AddLocalizedString("noLongerSupportedFragment",
-                             IDS_PRINT_PREVIEW_NO_LONGER_SUPPORTED_FRAGMENT);
-  source->AddLocalizedString("noLongerSupported",
-                             IDS_PRINT_PREVIEW_NO_LONGER_SUPPORTED);
-  source->AddLocalizedString("couldNotPrint",
-                             IDS_PRINT_PREVIEW_COULD_NOT_PRINT);
-  source->AddLocalizedString(
-      "extensionDestinationIconTooltip",
-      IDS_PRINT_PREVIEW_EXTENSION_DESTINATION_ICON_TOOLTIP);
-  source->AddLocalizedString(
-      "advancedSettingsSearchBoxPlaceholder",
-      IDS_PRINT_PREVIEW_ADVANCED_SETTINGS_SEARCH_BOX_PLACEHOLDER);
-  source->AddLocalizedString("advancedSettingsDialogTitle",
-                             IDS_PRINT_PREVIEW_ADVANCED_SETTINGS_DIALOG_TITLE);
-  source->AddLocalizedString(
-      "noAdvancedSettingsMatchSearchHint",
-      IDS_PRINT_PREVIEW_NO_ADVANCED_SETTINGS_MATCH_SEARCH_HINT);
-  source->AddLocalizedString(
-      "advancedSettingsDialogConfirm",
-      IDS_PRINT_PREVIEW_ADVANCED_SETTINGS_DIALOG_CONFIRM);
-  source->AddLocalizedString("cancel", IDS_CANCEL);
-  source->AddLocalizedString("newShowAdvancedOptions",
-                             IDS_PRINT_PREVIEW_NEW_SHOW_ADVANCED_OPTIONS);
 
-  source->AddLocalizedString("accept", IDS_PRINT_PREVIEW_ACCEPT_INVITE);
-  source->AddLocalizedString(
-      "acceptForGroup", IDS_PRINT_PREVIEW_ACCEPT_GROUP_INVITE);
-  source->AddLocalizedString("reject", IDS_PRINT_PREVIEW_REJECT_INVITE);
-  source->AddLocalizedString(
-      "groupPrinterSharingInviteText", IDS_PRINT_PREVIEW_GROUP_INVITE_TEXT);
-  source->AddLocalizedString(
-      "printerSharingInviteText", IDS_PRINT_PREVIEW_INVITE_TEXT);
-  source->AddLocalizedString("registerPrinterInformationMessage",
-                             IDS_CLOUD_PRINT_REGISTER_PRINTER_INFORMATION);
-  source->AddLocalizedString("moreOptionsLabel", IDS_MORE_OPTIONS_LABEL);
-  source->AddLocalizedString("managedOption",
-                             IDS_PRINT_PREVIEW_MANAGED_OPTION_TEXT);
-#if defined(OS_CHROMEOS)
-  source->AddLocalizedString("configuringInProgressText",
-                             IDS_PRINT_CONFIGURING_IN_PROGRESS_TEXT);
-  source->AddLocalizedString("configuringFailedText",
-                             IDS_PRINT_CONFIGURING_FAILED_TEXT);
-#else
+#if !defined(OS_CHROMEOS)
   const base::string16 shortcut_text(base::UTF8ToUTF16(kBasicPrintShortcut));
   source->AddString("systemDialogOption",
                     l10n_util::GetStringFUTF16(
                         IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION, shortcut_text));
-#endif
-#if defined(OS_MACOSX)
-  source->AddLocalizedString("openingPDFInPreview",
-                             IDS_PRINT_PREVIEW_OPENING_PDF_IN_PREVIEW_APP);
-  source->AddLocalizedString("openPdfInPreviewOption",
-                             IDS_PRINT_PREVIEW_OPEN_PDF_IN_PREVIEW_APP);
 #endif
 }
 
@@ -396,92 +343,74 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
 }
 
 void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
-  source->AddResourcePath("pdf/index.html", IDR_PDF_INDEX_HTML);
-  source->AddResourcePath("pdf/index.css", IDR_PDF_INDEX_CSS);
-  source->AddResourcePath("pdf/main.js", IDR_PDF_MAIN_JS);
-  source->AddResourcePath("pdf/pdf_viewer.js", IDR_PDF_PDF_VIEWER_JS);
-  source->AddResourcePath("pdf/toolbar_manager.js", IDR_PDF_UI_MANAGER_JS);
-  source->AddResourcePath("pdf/pdf_fitting_type.js",
-                          IDR_PDF_PDF_FITTING_TYPE_JS);
-  source->AddResourcePath("pdf/viewport.js", IDR_PDF_VIEWPORT_JS);
-  source->AddResourcePath("pdf/open_pdf_params_parser.js",
-                          IDR_PDF_OPEN_PDF_PARAMS_PARSER_JS);
-  source->AddResourcePath("pdf/navigator.js", IDR_PDF_NAVIGATOR_JS);
-  source->AddResourcePath("pdf/viewport_scroller.js",
-                          IDR_PDF_VIEWPORT_SCROLLER_JS);
-  source->AddResourcePath("pdf/pdf_scripting_api.js",
-                          IDR_PDF_PDF_SCRIPTING_API_JS);
-  source->AddResourcePath("pdf/zoom_manager.js", IDR_PDF_ZOOM_MANAGER_JS);
-  source->AddResourcePath("pdf/gesture_detector.js",
-                          IDR_PDF_GESTURE_DETECTOR_JS);
-  source->AddResourcePath("pdf/browser_api.js", IDR_PDF_BROWSER_API_JS);
-  source->AddResourcePath("pdf/metrics.js", IDR_PDF_METRICS_JS);
-
-  source->AddResourcePath("pdf/elements/shared-vars.html",
-                          IDR_PDF_SHARED_VARS_HTML);
-  source->AddResourcePath("pdf/elements/icons.html", IDR_PDF_ICONS_HTML);
-  source->AddResourcePath("pdf/elements/viewer-bookmark/viewer-bookmark.html",
-                          IDR_PDF_VIEWER_BOOKMARK_HTML);
-  source->AddResourcePath("pdf/elements/viewer-bookmark/viewer-bookmark.js",
-                          IDR_PDF_VIEWER_BOOKMARK_JS);
-  source->AddResourcePath(
-      "pdf/elements/viewer-bookmarks-content/viewer-bookmarks-content.html",
-      IDR_PDF_VIEWER_BOOKMARKS_CONTENT_HTML);
-  source->AddResourcePath(
-      "pdf/elements/viewer-bookmarks-content/viewer-bookmarks-content.js",
-      IDR_PDF_VIEWER_BOOKMARKS_CONTENT_JS);
-  source->AddResourcePath(
-      "pdf/elements/viewer-error-screen/viewer-error-screen.html",
-      IDR_PDF_VIEWER_ERROR_SCREEN_HTML);
-  source->AddResourcePath(
-      "pdf/elements/viewer-error-screen/viewer-error-screen.js",
-      IDR_PDF_VIEWER_ERROR_SCREEN_JS);
-  source->AddResourcePath("pdf/elements/viewer-ink-host/viewer-ink-host.html",
-                          IDR_PDF_VIEWER_INK_HOST_HTML);
-  source->AddResourcePath("pdf/elements/viewer-ink-host/viewer-ink-host.js",
-                          IDR_PDF_VIEWER_INK_HOST_JS);
-  source->AddResourcePath(
-      "pdf/elements/viewer-page-indicator/viewer-page-indicator.html",
-      IDR_PDF_VIEWER_PAGE_INDICATOR_HTML);
-  source->AddResourcePath(
-      "pdf/elements/viewer-page-indicator/viewer-page-indicator.js",
-      IDR_PDF_VIEWER_PAGE_INDICATOR_JS);
-  source->AddResourcePath(
-      "pdf/elements/viewer-page-selector/viewer-page-selector.html",
-      IDR_PDF_VIEWER_PAGE_SELECTOR_HTML);
-  source->AddResourcePath(
-      "pdf/elements/viewer-page-selector/viewer-page-selector.js",
-      IDR_PDF_VIEWER_PAGE_SELECTOR_JS);
-  source->AddResourcePath(
-      "pdf/elements/viewer-password-screen/viewer-password-screen.html",
-      IDR_PDF_VIEWER_PASSWORD_SCREEN_HTML);
-  source->AddResourcePath(
-      "pdf/elements/viewer-password-screen/viewer-password-screen.js",
-      IDR_PDF_VIEWER_PASSWORD_SCREEN_JS);
-  source->AddResourcePath(
-      "pdf/elements/viewer-pdf-toolbar/viewer-pdf-toolbar.html",
-      IDR_PDF_VIEWER_PDF_TOOLBAR_HTML);
-  source->AddResourcePath(
-      "pdf/elements/viewer-pdf-toolbar/viewer-pdf-toolbar.js",
-      IDR_PDF_VIEWER_PDF_TOOLBAR_JS);
-  source->AddResourcePath(
-      "pdf/elements/viewer-toolbar-dropdown/viewer-toolbar-dropdown.html",
-      IDR_PDF_VIEWER_TOOLBAR_DROPDOWN_HTML);
-  source->AddResourcePath(
-      "pdf/elements/viewer-toolbar-dropdown/viewer-toolbar-dropdown.js",
-      IDR_PDF_VIEWER_TOOLBAR_DROPDOWN_JS);
-  source->AddResourcePath(
-      "pdf/elements/viewer-zoom-toolbar/viewer-zoom-button.html",
-      IDR_PDF_VIEWER_ZOOM_BUTTON_HTML);
-  source->AddResourcePath(
-      "pdf/elements/viewer-zoom-toolbar/viewer-zoom-button.js",
-      IDR_PDF_VIEWER_ZOOM_BUTTON_JS);
-  source->AddResourcePath(
-      "pdf/elements/viewer-zoom-toolbar/viewer-zoom-toolbar.html",
-      IDR_PDF_VIEWER_ZOOM_SELECTOR_HTML);
-  source->AddResourcePath(
-      "pdf/elements/viewer-zoom-toolbar/viewer-zoom-toolbar.js",
-      IDR_PDF_VIEWER_ZOOM_SELECTOR_JS);
+  static constexpr struct {
+    const char* path;
+    int id;
+  } kPdfResources[] = {
+      {"pdf/browser_api.js", IDR_PDF_BROWSER_API_JS},
+      {"pdf/elements/icons.html", IDR_PDF_ICONS_HTML},
+      {"pdf/elements/shared-vars.html", IDR_PDF_SHARED_VARS_HTML},
+      {"pdf/elements/viewer-bookmarks-content/viewer-bookmarks-content.html",
+       IDR_PDF_VIEWER_BOOKMARKS_CONTENT_HTML},
+      {"pdf/elements/viewer-bookmarks-content/viewer-bookmarks-content.js",
+       IDR_PDF_VIEWER_BOOKMARKS_CONTENT_JS},
+      {"pdf/elements/viewer-bookmark/viewer-bookmark.html",
+       IDR_PDF_VIEWER_BOOKMARK_HTML},
+      {"pdf/elements/viewer-bookmark/viewer-bookmark.js",
+       IDR_PDF_VIEWER_BOOKMARK_JS},
+      {"pdf/elements/viewer-error-screen/viewer-error-screen.html",
+       IDR_PDF_VIEWER_ERROR_SCREEN_HTML},
+      {"pdf/elements/viewer-error-screen/viewer-error-screen.js",
+       IDR_PDF_VIEWER_ERROR_SCREEN_JS},
+      {"pdf/elements/viewer-ink-host/viewer-ink-host.html",
+       IDR_PDF_VIEWER_INK_HOST_HTML},
+      {"pdf/elements/viewer-ink-host/viewer-ink-host.js",
+       IDR_PDF_VIEWER_INK_HOST_JS},
+      {"pdf/elements/viewer-page-indicator/viewer-page-indicator.html",
+       IDR_PDF_VIEWER_PAGE_INDICATOR_HTML},
+      {"pdf/elements/viewer-page-indicator/viewer-page-indicator.js",
+       IDR_PDF_VIEWER_PAGE_INDICATOR_JS},
+      {"pdf/elements/viewer-page-selector/viewer-page-selector.html",
+       IDR_PDF_VIEWER_PAGE_SELECTOR_HTML},
+      {"pdf/elements/viewer-page-selector/viewer-page-selector.js",
+       IDR_PDF_VIEWER_PAGE_SELECTOR_JS},
+      {"pdf/elements/viewer-password-screen/viewer-password-screen.html",
+       IDR_PDF_VIEWER_PASSWORD_SCREEN_HTML},
+      {"pdf/elements/viewer-password-screen/viewer-password-screen.js",
+       IDR_PDF_VIEWER_PASSWORD_SCREEN_JS},
+      {"pdf/elements/viewer-pdf-toolbar/viewer-pdf-toolbar.html",
+       IDR_PDF_VIEWER_PDF_TOOLBAR_HTML},
+      {"pdf/elements/viewer-pdf-toolbar/viewer-pdf-toolbar.js",
+       IDR_PDF_VIEWER_PDF_TOOLBAR_JS},
+      {"pdf/elements/viewer-toolbar-dropdown/viewer-toolbar-dropdown.html",
+       IDR_PDF_VIEWER_TOOLBAR_DROPDOWN_HTML},
+      {"pdf/elements/viewer-toolbar-dropdown/viewer-toolbar-dropdown.js",
+       IDR_PDF_VIEWER_TOOLBAR_DROPDOWN_JS},
+      {"pdf/elements/viewer-zoom-toolbar/viewer-zoom-button.html",
+       IDR_PDF_VIEWER_ZOOM_BUTTON_HTML},
+      {"pdf/elements/viewer-zoom-toolbar/viewer-zoom-button.js",
+       IDR_PDF_VIEWER_ZOOM_BUTTON_JS},
+      {"pdf/elements/viewer-zoom-toolbar/viewer-zoom-toolbar.html",
+       IDR_PDF_VIEWER_ZOOM_SELECTOR_HTML},
+      {"pdf/elements/viewer-zoom-toolbar/viewer-zoom-toolbar.js",
+       IDR_PDF_VIEWER_ZOOM_SELECTOR_JS},
+      {"pdf/gesture_detector.js", IDR_PDF_GESTURE_DETECTOR_JS},
+      {"pdf/index.css", IDR_PDF_INDEX_CSS},
+      {"pdf/index.html", IDR_PDF_INDEX_HTML},
+      {"pdf/main.js", IDR_PDF_MAIN_JS},
+      {"pdf/metrics.js", IDR_PDF_METRICS_JS},
+      {"pdf/navigator.js", IDR_PDF_NAVIGATOR_JS},
+      {"pdf/open_pdf_params_parser.js", IDR_PDF_OPEN_PDF_PARAMS_PARSER_JS},
+      {"pdf/pdf_fitting_type.js", IDR_PDF_PDF_FITTING_TYPE_JS},
+      {"pdf/pdf_scripting_api.js", IDR_PDF_PDF_SCRIPTING_API_JS},
+      {"pdf/pdf_viewer.js", IDR_PDF_PDF_VIEWER_JS},
+      {"pdf/toolbar_manager.js", IDR_PDF_UI_MANAGER_JS},
+      {"pdf/viewport.js", IDR_PDF_VIEWPORT_JS},
+      {"pdf/viewport_scroller.js", IDR_PDF_VIEWPORT_SCROLLER_JS},
+      {"pdf/zoom_manager.js", IDR_PDF_ZOOM_MANAGER_JS},
+  };
+  for (const auto& resource : kPdfResources)
+    source->AddResourcePath(resource.path, resource.id);
 
   source->SetRequestFilter(base::BindRepeating(&HandleRequestCallback));
   source->OverrideContentSecurityPolicyChildSrc("child-src 'self';");
