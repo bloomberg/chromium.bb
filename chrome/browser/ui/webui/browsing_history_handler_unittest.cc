@@ -16,10 +16,6 @@
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
 #include "chrome/browser/history/web_history_service_factory.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
-#include "chrome/browser/signin/fake_signin_manager_builder.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -27,8 +23,6 @@
 #include "components/browser_sync/test_profile_sync_service.h"
 #include "components/history/core/browser/browsing_history_service.h"
 #include "components/history/core/test/fake_web_history_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/sync/base/model_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_web_ui.h"
@@ -125,12 +119,6 @@ class BrowsingHistoryHandlerTest : public ChromeRenderViewHostTestHarness {
 
   content::BrowserContext* CreateBrowserContext() override {
     TestingProfile::Builder builder;
-    builder.AddTestingFactory(
-        ProfileOAuth2TokenServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
-    builder.AddTestingFactory(
-        SigninManagerFactory::GetInstance(),
-        base::BindRepeating(&BuildFakeSigninManagerForTesting));
     builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(),
                               base::BindRepeating(&BuildFakeSyncService));
     builder.AddTestingFactory(WebHistoryServiceFactory::GetInstance(),
