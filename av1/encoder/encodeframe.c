@@ -3698,8 +3698,8 @@ static void simple_motion_search_prune_rect_features(
   features[f_idx++] = logf(1.0f + (float)(dc_q * dc_q) / 256.0f);
 
   // Decide whethe we are on the edges
-  features[f_idx++] = mi_row + h_mi / 2 >= cm->mi_rows;
-  features[f_idx++] = mi_col + w_mi / 2 >= cm->mi_cols;
+  features[f_idx++] = (float)(mi_row + h_mi / 2 >= cm->mi_rows);
+  features[f_idx++] = (float)(mi_col + w_mi / 2 >= cm->mi_cols);
 
   assert(f_idx == FEATURES);
 }
