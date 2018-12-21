@@ -30,6 +30,12 @@ struct NavigableContentsParams {
   // |DidSuppressNavigation()| message being sent to the corresponding
   // NavigableContentsClient.
   bool suppress_navigations = false;
+
+  // Background color of the content. Effective when |override_background_color|
+  // is true.
+  // TODO(https://crbug.com/657632): Numeric types are not nullable.
+  bool override_background_color = false;
+  uint32 background_color = 0xFFFFFFFF;  // Opaque white.
 };
 
 // NavigableContentsFactory is the primary interface through which a new

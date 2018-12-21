@@ -5,8 +5,10 @@
 #include "content/browser/content_service_delegate_impl.h"
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -14,6 +16,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "services/content/navigable_contents_delegate.h"
 #include "services/content/service.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace content {
 
@@ -34,7 +37,10 @@ class NavigableContentsDelegateImpl : public content::NavigableContentsDelegate,
         auto_resize_min_size_(
             params.auto_resize_min_size.value_or(gfx::Size(1, 1))),
         auto_resize_max_size_(
-            params.auto_resize_max_size.value_or(gfx::Size(INT_MAX, INT_MAX))) {
+            params.auto_resize_max_size.value_or(gfx::Size(INT_MAX, INT_MAX))),
+        background_color_(params.override_background_color
+                              ? base::make_optional(params.background_color)
+                              : base::nullopt) {
     WebContents::CreateParams create_params(browser_context);
     web_contents_ = WebContents::Create(create_params);
     WebContentsObserver::Observe(web_contents_.get());
@@ -128,11 +134,32 @@ class NavigableContentsDelegateImpl : public content::NavigableContentsDelegate,
   }
 
   // WebContentsObserver:
+  void RenderViewReady() override {
+    if (background_color_) {
+      web_contents_->GetRenderViewHost()
+          ->GetWidget()
+          ->GetView()
+          ->SetBackgroundColor(background_color_.value());
+    }
+  }
+
+  void RenderViewCreated(RenderViewHost* render_view_host) override {
+    if (background_color_) {
+      render_view_host->GetWidget()->GetView()->SetBackgroundColor(
+          background_color_.value());
+    }
+  }
+
   void RenderViewHostChanged(RenderViewHost* old_host,
                              RenderViewHost* new_host) override {
     if (enable_view_auto_resize_ && web_contents_->GetRenderWidgetHostView()) {
       web_contents_->GetRenderWidgetHostView()->EnableAutoResize(
           auto_resize_min_size_, auto_resize_max_size_);
+    }
+
+    if (background_color_) {
+      new_host->GetWidget()->GetView()->SetBackgroundColor(
+          background_color_.value());
     }
 
     NotifyAXTreeChange();
@@ -156,6 +183,7 @@ class NavigableContentsDelegateImpl : public content::NavigableContentsDelegate,
   const bool enable_view_auto_resize_;
   const gfx::Size auto_resize_min_size_;
   const gfx::Size auto_resize_max_size_;
+  const base::Optional<SkColor> background_color_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigableContentsDelegateImpl);
 };
