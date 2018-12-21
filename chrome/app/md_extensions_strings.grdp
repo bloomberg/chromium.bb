@@ -88,7 +88,7 @@
   <message name="IDS_MD_EXTENSIONS_ERROR_LINES_NOT_SHOWN" desc="The label displayed to the users indicating that some lines of code are truncated.">
     {LINE_COUNT, plural,
       =1 {&lt;1 line not shown&gt;}
-      other {&lt;$1 lines not shown&gt;}}
+      other {&lt;<ph name="NUMBER_OF_LINES">$1<ex>4</ex></ph> lines not shown&gt;}}
   </message>
   <!-- TODO(devlin): Unify this with IDS_SETTINGS_EDIT. -->
   <message name="IDS_MD_EXTENSIONS_HOST_PERMISSIONS_EDIT" desc="The label of the button used to edit an extension's access to a given website.">
