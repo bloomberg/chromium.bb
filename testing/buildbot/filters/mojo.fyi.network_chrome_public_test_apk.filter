@@ -8,3 +8,6 @@
 -org.chromium.chrome.browser.FeaturesAnnotationsTest.testFeaturesAddToExistingFlags
 -org.chromium.chrome.browser.FeaturesAnnotationsTest.testFeaturesDoNotRemoveExistingFlags
 -org.chromium.chrome.browser.FeaturesAnnotationsTest.testFeaturesSetExistingFlags
+
+# http://crbug.com/917467
+-org.chromium.chrome.browser.webapps.WebApkIntegrationTest.testLaunchAndNavigateOffOrigin
