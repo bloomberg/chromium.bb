@@ -40,6 +40,7 @@
 <translation id="1259100630977430756">ব্যক্তিগত ট্যাবগুলিতে আপনি যে পৃষ্ঠাগুলি দেখেন, সেই সব ব্যক্তিগত ট্যাবগুলি বন্ধ করার পরে আপনার ব্রাউজারের ইতিহাস, কুকি সঞ্চয় বা সার্চ ইতিহাসে দেখা যাবে না। আপনার ডাউনলোড করা যেকোনও ফাইল বা আপনার তৈরি যে কোনও বুকমার্ক সেভ করা হবে।
 
 আপনি অবশ্য অদৃশ্য থাকবেন না। ব্যক্তিগত মোডে গেলেও তা আপনার নিয়োগকর্তা, আপনার ইন্টারনেট পরিষেবা প্রদানকারী অথবা আপনার পরিদর্শন করা ওয়েবসাইট থেকে আপনার ব্রাউজিংকে আড়াল করবে না।</translation>
+<translation id="1260236875608242557">সার্চ করুন, ঘুরে দেখুন</translation>
 <translation id="1264974993859112054">খেলাধূলা</translation>
 <translation id="127138278192656016">সিঙ্ক এবং সমস্ত পরিষেবা ব্যবহার করুন</translation>
 <translation id="1272079795634619415">বন্ধ</translation>
@@ -399,7 +400,6 @@
 <translation id="4099578267706723511">Google-এ ব্যবহারের পরিসংখ্যান এবং ক্র্যাশ প্রতিবেদনগুলি পাঠিয়ে Chrome কে আরও ভাল করে তুলতে সহায়তা করুন৷</translation>
 <translation id="410351446219883937">স্বতঃচালানো</translation>
 <translation id="4113030288477039509">আপনার প্রশাসকের দ্বারা পরিচালিত</translation>
-<translation id="411332046216682877">এখানে ট্যাপ করে দ্রুত সার্চ করা শুরু করুন</translation>
 <translation id="4116038641877404294">পৃষ্ঠাগুলি অফলাইনে ব্যবহার করতে সেগুলি ডাউনলোড করুন</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$dটি বুকমার্ক}one{%1$dটি বুকমার্ক}other{%1$dটি বুকমার্ক}}</translation>
 <translation id="4149994727733219643">ওয়েব পৃষ্ঠার জন্য সরলীকৃত ভিউ</translation>
@@ -706,6 +706,7 @@
 <translation id="6343192674172527289">কোনো ডাউনলোড পাওয়া যায়নি</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 এবং <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> আরও অনেক}one{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 এবং <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> আরও অনেক}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 এবং <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> আরও অনেক}}</translation>
 <translation id="6364438453358674297">ইতিহাস থেকে প্রস্তাবনা সরাবেন?</translation>
+<translation id="6369229450655021117">এখান থেকে আপনি ওয়েবে সার্চ করতে, বন্ধুদের সাথে শেয়ার করতে এবং খোলা পৃষ্ঠাগুলি দেখতে পারেন</translation>
 <translation id="6378173571450987352">বিবরণ: ব্যবহার করা ডেটার পরিমাণ অনুযায়ী সাজানো হয়েছে</translation>
 <translation id="6383961787135158834">সাইট সঞ্চয়স্থান মুছুন...</translation>
 <translation id="6388207532828177975">পরিষ্কার এবং আবার সেট করুন</translation>
@@ -1060,7 +1061,6 @@
 <translation id="9070377983101773829">ভয়েস সার্চ শুরু করুন</translation>
 <translation id="9071742570345586758">ভার্চুয়াল বাস্তবতার কন্টেন্ট দেখতে Google VR পরিষেবাগুলি ইনস্টল করুন</translation>
 <translation id="9074336505530349563">Google-এর প্রস্তাবিত ব্যক্তিগতকৃত কন্টেন্ট পাওয়ার জন্য সাইন-ইন করে সিঙ্ক বিকল্প চালু করুন</translation>
-<translation id="9079796397681444569">আপনার স্ক্রিনের নিচে দেওয়া বোতামগুলি ব্যবহার করে যেকোনও জায়গা থেকে সহজেই Chrome-এ নেভিগেট করুন</translation>
 <translation id="9080642952018487277">ব্যক্তিগত মোডে যান</translation>
 <translation id="9086455579313502267">নেটওয়ার্কটি অ্যাক্সেস করতে অক্ষম</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB ডাউনলোড করা হয়েছে</translation>

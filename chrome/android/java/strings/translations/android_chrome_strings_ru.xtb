@@ -40,6 +40,7 @@
 <translation id="1259100630977430756">Информация о страницах, открытых в режиме инкогнито, не сохраняется. Это касается файлов cookie, а также истории браузера или поиска. После того как вы закроете эти вкладки, останутся только скачанные файлы и добавленные закладки.
 
 Однако в режиме инкогнито ваши действия видны системному администратору и интернет-провайдеру, а также доступны сайтам, которые вы посещаете.</translation>
+<translation id="1260236875608242557">Поиск и рекомендации</translation>
 <translation id="1264974993859112054">Спорт</translation>
 <translation id="127138278192656016">Включить синхронизацию и все сервисы Chrome</translation>
 <translation id="1272079795634619415">Остановить</translation>
@@ -396,7 +397,6 @@
 <translation id="4099578267706723511">Отправлять в Google статистику использования и отчеты о сбоях</translation>
 <translation id="410351446219883937">Автовоспроизведение</translation>
 <translation id="4113030288477039509">Управляется администратором</translation>
-<translation id="411332046216682877">Нажмите здесь, чтобы начать поиск</translation>
 <translation id="4116038641877404294">Скачивайте страницы и открывайте их без подключения к Интернету</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d закладка}one{%1$d закладка}few{%1$d закладки}many{%1$d закладок}other{%1$d закладки}}</translation>
 <translation id="4149994727733219643">Упрощенный просмотр веб-страниц</translation>
@@ -701,6 +701,7 @@
 <translation id="6343192674172527289">Ничего не найдено</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> адрес доставки}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> адрес доставки}few{<ph name="SHIPPING_ADDRESS_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> адреса доставки}many{<ph name="SHIPPING_ADDRESS_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> адресов доставки}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> адреса доставки}}</translation>
 <translation id="6364438453358674297">Удалить подсказку из истории?</translation>
+<translation id="6369229450655021117">Здесь вы можете искать информацию онлайн, отправлять ее друзьям и просматривать открытые страницы</translation>
 <translation id="6378173571450987352">Сортировка по объему использованного трафика</translation>
 <translation id="6383961787135158834">Удалить данные сайтов</translation>
 <translation id="6388207532828177975">Очистить и сбросить</translation>
@@ -1054,7 +1055,6 @@
 <translation id="9070377983101773829">Голосовой поиск</translation>
 <translation id="9071742570345586758">Чтобы просматривать контент в режиме виртуальной реальности, установите Google VR-сервисы</translation>
 <translation id="9074336505530349563">Чтобы мы могли рекомендовать вам интересный контент, войдите в аккаунт и включите синхронизацию.</translation>
-<translation id="9079796397681444569">Чтобы упростить навигацию в Chrome, мы перенесли кнопки в нижнюю часть экрана</translation>
 <translation id="9080642952018487277">Войти в режим инкогнито</translation>
 <translation id="9086455579313502267">Нет доступа к сети</translation>
 <translation id="9099018167121903954">Скачанные файлы: <ph name="KILOBYTES" /> КБ</translation>

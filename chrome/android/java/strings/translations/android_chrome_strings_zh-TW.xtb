@@ -396,7 +396,6 @@
 <translation id="4099578267706723511">將使用統計資料及當機報告傳送給 Google，助我們一臂之力，讓 Chrome 更臻完美。</translation>
 <translation id="410351446219883937">自動播放</translation>
 <translation id="4113030288477039509">您的管理員已停用這項功能</translation>
-<translation id="411332046216682877">輕觸這裡即可快速啟動搜尋</translation>
 <translation id="4116038641877404294">下載網頁以便離線存取</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d 個書籤}other{%1$d 個書籤}}</translation>
 <translation id="4149994727733219643">使用簡易檢視模式查看網頁</translation>
@@ -1054,7 +1053,6 @@
 <translation id="9070377983101773829">開始語音搜尋</translation>
 <translation id="9071742570345586758">如要查看虛擬實境內容，請安裝 Google VR 服務</translation>
 <translation id="9074336505530349563">如要取得個人化的 Google 推薦內容，請登入並開啟同步處理功能</translation>
-<translation id="9079796397681444569">只要按下畫面底部的各個按鈕，就可以輕鬆瀏覽 Chrome 的各項功能</translation>
 <translation id="9080642952018487277">進入私密模式</translation>
 <translation id="9086455579313502267">無法存取網路</translation>
 <translation id="9099018167121903954">下載內容佔 <ph name="KILOBYTES" /> KB</translation>

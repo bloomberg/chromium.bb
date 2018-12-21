@@ -397,7 +397,6 @@
 <translation id="4099578267706723511">Допоможіть покращити Chrome, надсилаючи статистику та звіти про збої в Google.</translation>
 <translation id="410351446219883937">Автовідтворення</translation>
 <translation id="4113030288477039509">Керується адміністратором</translation>
-<translation id="411332046216682877">Торкніться тут, щоб швидко почати пошук</translation>
 <translation id="4116038641877404294">Завантажуйте сторінки, щоб переглядати їх офлайн</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d закладка}one{%1$d закладка}few{%1$d закладки}many{%1$d закладок}other{%1$d закладки}}</translation>
 <translation id="4149994727733219643">Спрощений перегляд веб-сторінок</translation>
@@ -1058,7 +1057,6 @@
 <translation id="9070377983101773829">Почати голосовий пошук</translation>
 <translation id="9071742570345586758">Щоб переглядати вміст віртуальної реальності, установіть Google VR-сервіси</translation>
 <translation id="9074336505530349563">Щоб отримувати персоналізовані пропозиції від Google, увійдіть в обліковий запис і ввімкніть синхронізацію</translation>
-<translation id="9079796397681444569">Легко переходьте будь-куди в Chrome за допомогою кнопок унизу екрана</translation>
 <translation id="9080642952018487277">Перейти в приватний режим</translation>
 <translation id="9086455579313502267">Неможливо отримати доступ до мережі</translation>
 <translation id="9099018167121903954">Завантажено <ph name="KILOBYTES" /> КБ</translation>

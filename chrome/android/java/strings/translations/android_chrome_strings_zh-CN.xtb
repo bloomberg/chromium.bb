@@ -397,7 +397,6 @@
 <translation id="4099578267706723511">将使用情况统计信息和崩溃报告发送给 Google，帮助我们完善 Chrome。</translation>
 <translation id="410351446219883937">自动播放</translation>
 <translation id="4113030288477039509">由您的管理员管理</translation>
-<translation id="411332046216682877">点按此处即可快速开始搜索</translation>
 <translation id="4116038641877404294">下载网页以便离线查看</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d 个书签}other{%1$d 个书签}}</translation>
 <translation id="4149994727733219643">使用简化版视图查看网页</translation>
@@ -1058,7 +1057,6 @@
 <translation id="9070377983101773829">开始语音搜索</translation>
 <translation id="9071742570345586758">要查看虚拟实境内容，请安装 Google VR 服务</translation>
 <translation id="9074336505530349563">要获取 Google 推荐的个性化内容，请登录您的帐号并开启同步功能</translation>
-<translation id="9079796397681444569">您可以使用屏幕底部的按钮在 Chrome 中轻松导航至任何位置</translation>
 <translation id="9080642952018487277">进入私密模式</translation>
 <translation id="9086455579313502267">无法访问网络</translation>
 <translation id="9099018167121903954">下载内容已占用的空间：<ph name="KILOBYTES" /> KB</translation>

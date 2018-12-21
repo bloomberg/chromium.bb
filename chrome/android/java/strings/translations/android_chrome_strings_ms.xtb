@@ -40,6 +40,7 @@
 <translation id="1259100630977430756">Halaman yang anda lihat dalam tab peribadi tidak akan kekal dalam sejarah, simpanan kuki atau sejarah carian penyemak imbas anda selepas anda menutup semua tab peribadi anda. Sebarang fail yang dimuat turun atau penanda halaman yang anda buat akan disimpan.
 
 Namun begitu, anda tidak halimunan. Menggunakan mod peribadi tidak menyembunyikan penyemakan imbas anda daripada majikan anda, penyedia perkhidmatan Internet anda atau tapak web yang anda lawati.</translation>
+<translation id="1260236875608242557">Cari &amp; teroka</translation>
 <translation id="1264974993859112054">Sukan</translation>
 <translation id="127138278192656016">Gunakan penyegerakan dan semua perkhidmatan</translation>
 <translation id="1272079795634619415">Berhenti</translation>
@@ -396,7 +397,6 @@ Untuk melaraskan istilah carian anda, tekan lama untuk memilih. Untuk memperhalu
 <translation id="4099578267706723511">Bantu jadikan Chrome lebih baik dengan menghantar laporan perangkaan penggunaan dan ranap sistem kepada Google.</translation>
 <translation id="410351446219883937">Automain</translation>
 <translation id="4113030288477039509">Diurus oleh pentadbir anda</translation>
-<translation id="411332046216682877">Ketik di sini untuk memulakan carian dengan pantas</translation>
 <translation id="4116038641877404294">Muat turun halaman untuk digunakan di luar talian</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d penanda halaman}other{%1$d penanda halaman}}</translation>
 <translation id="4149994727733219643">Paparan ringkas bagi halaman web</translation>
@@ -701,6 +701,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6343192674172527289">Tiada muat turun ditemui</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 dan <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> lagi}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 dan <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> lagi}}</translation>
 <translation id="6364438453358674297">Alih keluar cadangan daripada sejarah?</translation>
+<translation id="6369229450655021117">Dari sini, anda boleh membuat carian di web, berkongsi dengan rakan dan melihat halaman yang terbuka</translation>
 <translation id="6378173571450987352">Butiran: Diisih mengikut jumlah data yang digunakan</translation>
 <translation id="6383961787135158834">Kosongkan Storan Tapak...</translation>
 <translation id="6388207532828177975">Kosongkan &amp; tetapkan semula</translation>
@@ -1054,7 +1055,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="9070377983101773829">Mulakan carian suara</translation>
 <translation id="9071742570345586758">Untuk melihat kandungan realiti maya, pasang Perkhidmatan Google VR</translation>
 <translation id="9074336505530349563">Log masuk dan hidupkan penyegerakan untuk mendapatkan kandungan diperibadikan yang dicadangkan oleh Google</translation>
-<translation id="9079796397681444569">Navigasi dengan mudah di mana-mana sahaja dalam Chrome menggunakan butang di bahagian bawah skrin anda</translation>
 <translation id="9080642952018487277">Masuk ke mod peribadi</translation>
 <translation id="9086455579313502267">Tidak dapat mengakses rangkaian</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB dimuat turun</translation>

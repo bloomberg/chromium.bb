@@ -783,6 +783,7 @@
 <translation id="215753907730220065">結束全螢幕</translation>
 <translation id="2157875535253991059">這個頁面已顯示為全螢幕。</translation>
 <translation id="216169395504480358">新增 WiFi...</translation>
+<translation id="2162155940152307086">同步功能會在你退出同步功能設定後立即啟動</translation>
 <translation id="2163470535490402084">請連線至網際網路，以登入您的 <ph name="DEVICE_TYPE" />。</translation>
 <translation id="2166369534954157698">狐狗大戰</translation>
 <translation id="2169062631698640254">繼續登入</translation>
@@ -793,6 +794,7 @@
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" /> 的「<ph name="PEPPER_PLUGIN_NAME" />」要求存取你的電腦</translation>
 <translation id="2178614541317717477">CA 洩露</translation>
 <translation id="218070003709087997">使用數字指定列印份數 (1 至 999)。</translation>
+<translation id="2182253583899676504">系統會將你在文字欄位中輸入的文字傳送給 Google。</translation>
 <translation id="2184515124301515068">讓 Chrome 自行判斷何時允許網站播放音訊 (建議使用)</translation>
 <translation id="2187895286714876935">伺服器憑證匯入錯誤</translation>
 <translation id="2187906491731510095">擴充功能已更新</translation>
@@ -804,7 +806,9 @@
 <translation id="2192505247865591433">來源：</translation>
 <translation id="2193365732679659387">信任設定</translation>
 <translation id="2195729137168608510">電子郵件保護</translation>
+<translation id="2198757192731523470">Google 可能會使用你的歷史記錄，為你提供個人化的搜尋服務、廣告內容和其他各項 Google 服務。</translation>
 <translation id="2199298570273670671">錯誤</translation>
+<translation id="2199719347983604670">Chrome 同步功能資料</translation>
 <translation id="2200356397587687044">Chrome 需要權限才能繼續執行</translation>
 <translation id="220138918934036434">隱藏按鈕</translation>
 <translation id="2202898655984161076">列出印表機清單時發生問題，你的部分印表機尚未使用 <ph name="CLOUD_PRINT_NAME" /> 完成註冊。</translation>
@@ -1260,6 +1264,7 @@
 <translation id="2889925978073739256">繼續封鎖無沙箱防護的外掛程式</translation>
 <translation id="2890678560483811744">參照的網頁超出範圍</translation>
 <translation id="2893168226686371498">預設瀏覽器</translation>
+<translation id="2895734772884435517">你隨時可以自訂這些設定。</translation>
 <translation id="289644616180464099">SIM 卡已鎖定</translation>
 <translation id="289695669188700754">金鑰識別碼：<ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">你確定要開啟 <ph name="TAB_COUNT" /> 分頁嗎？</translation>
@@ -1415,6 +1420,7 @@
 <translation id="3141318088920353606">聽取中…</translation>
 <translation id="3141917231319778873">無法對以下裝置提出指定的要求：「<ph name="DEVICE_NAME" />」。</translation>
 <translation id="3143515551205905069">取消同步處理</translation>
+<translation id="3143754809889689516">從頭播放</translation>
 <translation id="3144126448740580210">完成</translation>
 <translation id="3144647712221361880">以其他身分開啟連結</translation>
 <translation id="3146006635381699911">無法使用離線示範模式的資源。</translation>
@@ -1736,6 +1742,7 @@
 <translation id="3636096452488277381"><ph name="USER_GIVEN_NAME" />，你好！</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - 還可以使用 <ph name="TIME" /></translation>
 <translation id="3637682276779847508">如果無法輸入正確的 PIN 解鎖金鑰，SIM 卡會遭到永久停用。</translation>
+<translation id="363863692969456324">使用進階拼字檢查功能修正拼字錯誤</translation>
 <translation id="3640214691812501263">為<ph name="USER_NAME" />新增「<ph name="EXTENSION_NAME" />」？</translation>
 <translation id="3644896802912593514">寬度</translation>
 <translation id="3645372836428131288">請稍微移動手指，讓系統擷取完整指紋</translation>
@@ -2174,6 +2181,7 @@
 <translation id="4310139701823742692">檔案格式錯誤。請檢查 PPD 檔案，然後再試一次。</translation>
 <translation id="431076611119798497">詳細資訊(&amp;D)</translation>
 <translation id="4312866146174492540">封鎖 (預設)</translation>
+<translation id="4314815835985389558">管理同步功能資料</translation>
 <translation id="4316850752623536204">開發人員網站</translation>
 <translation id="4320177379694898372">沒有網際網路連線</translation>
 <translation id="4320948194796820126">為電子郵件服務加上書籤</translation>
@@ -2253,6 +2261,7 @@
 <translation id="4450974146388585462">診斷</translation>
 <translation id="4451757071857432900">已封鎖干擾性或誤導性的網站廣告 (建議)</translation>
 <translation id="4453946976636652378">執行 <ph name="SEARCH_ENGINE_NAME" /> 搜尋或輸入網址</translation>
+<translation id="4461835665417498653">將部分系統資訊和網頁內容以匿名方式傳送給 Google。</translation>
 <translation id="4462159676511157176">自訂名稱伺服器</translation>
 <translation id="4467101674048705704">展開「<ph name="FOLDER_NAME" />」</translation>
 <translation id="4469477701382819144">已封鎖干擾性或誤導性的網站廣告</translation>
@@ -2422,6 +2431,7 @@
 <translation id="4735265153267957659">輸入密碼即可啟用 Smart Lock，這樣下次手機就會為你的 <ph name="DEVICE_TYPE" /> 解鎖。你可以在「設定」中停用 Smart Lock。</translation>
 <translation id="473546211690256853">這個帳戶是由 <ph name="DOMAIN" /> 負責管理。</translation>
 <translation id="4735803855089279419">系統無法判別這個裝置的裝置識別碼。</translation>
+<translation id="4736292055110123391">讓你在所有裝置上的書籤、密碼、歷史記錄及其他設定保持同步</translation>
 <translation id="4737715515457435632">請連上網路</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="474217410105706308">關閉分頁音訊</translation>
@@ -3829,6 +3839,7 @@
 <translation id="6841186874966388268">錯誤</translation>
 <translation id="6843423766595476978">Ok Google 設定完成</translation>
 <translation id="6845038076637626672">最大化開啟</translation>
+<translation id="6848388270925200958">目前你有一些卡片只能在這部裝置上使用</translation>
 <translation id="6851497530878285708">應用程式已啟用</translation>
 <translation id="6853388645642883916">更新程式休眠中</translation>
 <translation id="68541483639528434">關閉其他分頁</translation>
@@ -4090,6 +4101,7 @@
 <translation id="7253521419891527137">瞭解詳情(&amp;L)</translation>
 <translation id="7254554697254365959">無法翻譯這個網頁的內容。</translation>
 <translation id="7254951428499890870">你確定要在診斷模式中啟動「<ph name="APP_NAME" />」？</translation>
+<translation id="7255002516883565667">目前你有一張卡片只能在這部裝置上使用</translation>
 <translation id="7255220508626648026">現正投放：<ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">套用</translation>
 <translation id="7256069762010468647">網站正在使用你的攝影機</translation>
@@ -4925,6 +4937,7 @@
 <translation id="8521475323816527629">快速存取應用程式</translation>
 <translation id="8523493869875972733">保留變更</translation>
 <translation id="8523849605371521713">依政策新增</translation>
+<translation id="8524783101666974011">將卡片儲存到你的 Google 帳戶</translation>
 <translation id="8525306231823319788">全螢幕</translation>
 <translation id="8528074251912154910">新增語言</translation>
 <translation id="8528962588711550376">登入中。</translation>
@@ -4971,6 +4984,7 @@
 <translation id="8598453409908276158">已封鎖無沙箱防護的外掛程式</translation>
 <translation id="8601206103050338563">TLS WWW 用戶端驗證</translation>
 <translation id="8602851771975208551">電腦中其他程式所新增的應用程式可能會變更 Chrome 的運作方式。</translation>
+<translation id="8604763363205185560">協助改善 Chrome 及其安全性</translation>
 <translation id="8605428685123651449">SQLite 記憶體使用量</translation>
 <translation id="8606726445206553943">使用您的 MIDI 裝置</translation>
 <translation id="8609465669617005112">上移</translation>
