@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_CONNECT_LISTENER_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_CONNECT_LISTENER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_CLIENT_H_
 
 #include "third_party/blink/public/mojom/worker/shared_worker_client.mojom-blink.h"
 
@@ -13,11 +13,14 @@ namespace blink {
 
 class SharedWorker;
 
-class SharedWorkerConnectListener final
-    : public mojom::blink::SharedWorkerClient {
+// This is a client that connects with a SharedWorkerHost in the browser
+// process. There can be multiple clients (including in different renderer
+// processes) per shared worker. Clients are managed by the owning document's
+// SharedWorkerClientHolder.
+class SharedWorkerClient final : public mojom::blink::SharedWorkerClient {
  public:
-  explicit SharedWorkerConnectListener(SharedWorker*);
-  ~SharedWorkerConnectListener() override;
+  explicit SharedWorkerClient(SharedWorker*);
+  ~SharedWorkerClient() override;
 
   // mojom::blink::SharedWorkerClient overrides.
   void OnCreated(mojom::SharedWorkerCreationContextType) override;
@@ -31,4 +34,4 @@ class SharedWorkerConnectListener final
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_CONNECT_LISTENER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_CLIENT_H_
