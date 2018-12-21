@@ -16,10 +16,6 @@
 @property(nonatomic, readwrite, strong) UIImage* image;
 // The title label in the cell.
 @property(nonatomic, readwrite, copy) NSString* title;
-// The accessibility identifier for the cell.
-@property(nonatomic, readwrite, copy) NSString* cellAccessibilityIdentifier;
-// If YES the cell's chevron will be hidden.
-@property(nonatomic, readwrite, assign) BOOL hideChevron;
 // UIColor for the cell's textLabel. ChromeTableViewStyler's |cellTitleColor|
 // takes precedence over the default color, but not over |textColor|.
 @property(nonatomic, strong) UIColor* textColor;
@@ -33,8 +29,6 @@
 @property(nonatomic, readonly, strong) UIImageView* imageView;
 // The cell title.
 @property(nonatomic, readonly, strong) UILabel* titleLabel;
-// The chevron ImageView.
-@property(nonatomic, readonly, strong) UIImageView* chevronImageView;
 
 @end
 
