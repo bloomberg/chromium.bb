@@ -220,15 +220,6 @@ bool AutocompleteProviderClientImpl::IsTabOpenWithURL(
   TabModel* tab_model =
       TabModelList::GetLastActiveTabModelForChromeBrowserState(browser_state_);
   WebStateList* web_state_list = tab_model.webStateList;
-  if (!web_state_list)
-    return false;
-
-  for (int index = 0; index < web_state_list->count(); index++) {
-    web::WebState* web_state = web_state_list->GetWebStateAt(index);
-
-    if (web_state != web_state_list->GetActiveWebState() &&
-        url == web_state->GetVisibleURL())
-      return true;
-  }
-  return false;
+  return web_state_list && web_state_list->GetIndexOfInactiveWebStateWithURL(
+                               url) != WebStateList::kInvalidIndex;
 }
