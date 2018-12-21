@@ -840,7 +840,9 @@ def CheckOwnersFormat(input_api, output_api):
   if not affected_files:
     return []
   try:
-    input_api.owners_db.load_data_needed_for(affected_files)
+    owners_db = input_api.owners_db
+    owners_db.override_files = {}
+    owners_db.load_data_needed_for(affected_files)
     return []
   except Exception as e:
     return [output_api.PresubmitError(
