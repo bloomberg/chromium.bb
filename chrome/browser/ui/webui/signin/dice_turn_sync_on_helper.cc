@@ -21,8 +21,8 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper_delegate_impl.h"
@@ -44,6 +44,8 @@
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "content/public/browser/storage_partition.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 
 namespace {
 
@@ -64,9 +66,9 @@ class DiceTurnSyncOnHelperShutdownNotifierFactory
       : BrowserContextKeyedServiceShutdownNotifierFactory(
             "DiceTurnSyncOnHelperShutdownNotifier") {
     DependsOn(AccountTrackerServiceFactory::GetInstance());
+    DependsOn(IdentityManagerFactory::GetInstance());
     DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
     DependsOn(ProfileSyncServiceFactory::GetInstance());
-    DependsOn(SigninManagerFactory::GetInstance());
     DependsOn(UnifiedConsentServiceFactory::GetInstance());
     DependsOn(policy::UserPolicySigninServiceFactory::GetInstance());
   }
@@ -75,9 +77,13 @@ class DiceTurnSyncOnHelperShutdownNotifierFactory
   DISALLOW_COPY_AND_ASSIGN(DiceTurnSyncOnHelperShutdownNotifierFactory);
 };
 
-AccountInfo GetAccountInfo(Profile* profile, const std::string& account_id) {
-  return AccountTrackerServiceFactory::GetForProfile(profile)->GetAccountInfo(
-      account_id);
+AccountInfo GetAccountInfo(identity::IdentityManager* identity_manager,
+                           const std::string& account_id) {
+  auto maybe_account_info =
+      identity_manager->FindAccountInfoForAccountWithRefreshTokenByAccountId(
+          account_id);
+  return maybe_account_info.has_value() ? maybe_account_info.value()
+                                        : AccountInfo();
 }
 
 class TokensLoadedCallbackRunner : public OAuth2TokenService::Observer {
@@ -141,13 +147,13 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
     std::unique_ptr<Delegate> delegate)
     : delegate_(std::move(delegate)),
       profile_(profile),
-      signin_manager_(SigninManagerFactory::GetForProfile(profile)),
+      identity_manager_(IdentityManagerFactory::GetForProfile(profile)),
       token_service_(ProfileOAuth2TokenServiceFactory::GetForProfile(profile)),
       signin_access_point_(signin_access_point),
       signin_promo_action_(signin_promo_action),
       signin_reason_(signin_reason),
       signin_aborted_mode_(signin_aborted_mode),
-      account_info_(GetAccountInfo(profile, account_id)),
+      account_info_(GetAccountInfo(identity_manager_, account_id)),
       shutdown_subscription_(
           DiceTurnSyncOnHelperShutdownNotifierFactory::GetInstance()
               ->Get(profile)
@@ -157,7 +163,7 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
   DCHECK(delegate_);
   DCHECK(profile_);
   // Should not start syncing if the profile is already authenticated
-  DCHECK(!signin_manager_->IsAuthenticated());
+  DCHECK(!identity_manager_->HasPrimaryAccount());
 
   // Force sign-in uses the modal sign-in flow.
   DCHECK(!signin_util::IsForceSigninEnabled());
@@ -281,7 +287,7 @@ void DiceTurnSyncOnHelper::OnEnterpriseAccountConfirmation(
 }
 
 void DiceTurnSyncOnHelper::TurnSyncOnWithProfileMode(ProfileMode profile_mode) {
-  // Make sure the syncing is requested, otherwise the SigninManager
+  // Make sure the syncing is requested, otherwise the IdentityManager
   // will not be able to complete successfully.
   syncer::SyncPrefs sync_prefs(profile_->GetPrefs());
   sync_prefs.SetSyncRequested(true);
@@ -350,7 +356,7 @@ void DiceTurnSyncOnHelper::LoadPolicyWithCachedCredentials() {
 void DiceTurnSyncOnHelper::OnPolicyFetchComplete(bool success) {
   // For now, we allow signin to complete even if the policy fetch fails. If
   // we ever want to change this behavior, we could call
-  // SigninManager::SignOut() here instead.
+  // PrimaryAccountMutator::ClearPrimaryAccount() here instead.
   DLOG_IF(ERROR, !success) << "Error fetching policy for user";
   DVLOG_IF(1, success) << "Policy fetch successful - completing signin";
   SigninAndShowSyncConfirmationUI();
@@ -435,7 +441,9 @@ void DiceTurnSyncOnHelper::OnNewProfileTokensLoaded(Profile* new_profile) {
 
 void DiceTurnSyncOnHelper::SigninAndShowSyncConfirmationUI() {
   // Signin.
-  signin_manager_->OnExternalSigninCompleted(account_info_.email);
+  auto* primary_account_mutator = identity_manager_->GetPrimaryAccountMutator();
+  DCHECK(primary_account_mutator);
+  primary_account_mutator->SetPrimaryAccount(account_info_.account_id);
   signin_metrics::LogSigninAccessPointCompleted(signin_access_point_,
                                                 signin_promo_action_);
   signin_metrics::LogSigninReason(signin_reason_);
@@ -507,7 +515,11 @@ void DiceTurnSyncOnHelper::FinishSyncSetupAndDelete(
       break;
     }
     case LoginUIService::ABORT_SIGNIN:
-      signin_manager_->SignOutAndKeepAllAccounts(
+      auto* primary_account_mutator =
+          identity_manager_->GetPrimaryAccountMutator();
+      DCHECK(primary_account_mutator);
+      primary_account_mutator->ClearPrimaryAccount(
+          identity::PrimaryAccountMutator::ClearAccountsAction::kKeepAll,
           signin_metrics::ABORT_SIGNIN,
           signin_metrics::SignoutDelete::IGNORE_METRIC);
       AbortAndDelete();
@@ -520,7 +532,7 @@ void DiceTurnSyncOnHelper::SwitchToProfile(Profile* new_profile) {
   DCHECK(!sync_blocker_);
   DCHECK(!sync_startup_tracker_);
   profile_ = new_profile;
-  signin_manager_ = SigninManagerFactory::GetForProfile(profile_);
+  identity_manager_ = IdentityManagerFactory::GetForProfile(profile_);
   token_service_ = ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   shutdown_subscription_ =
       DiceTurnSyncOnHelperShutdownNotifierFactory::GetInstance()
