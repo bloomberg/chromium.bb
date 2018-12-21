@@ -164,10 +164,7 @@ void av1_row_mt_sync_mem_alloc(AV1RowMTSync *row_mt_sync, AV1_COMMON *cm,
                   aom_malloc(sizeof(*row_mt_sync->cur_col) * rows));
 
   // Set up nsync.
-  if (cm->seq_params.mib_size_log2 == 4)
-    row_mt_sync->sync_range = 2;
-  else
-    row_mt_sync->sync_range = 1;
+  row_mt_sync->sync_range = 1;
 }
 
 // Deallocate row based multi-threading synchronization related mutex and data

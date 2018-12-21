@@ -5458,23 +5458,9 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       av1_inter_mode_data_fit(tile_data, x->rdmult);
     }
 #endif
-    // Context update for row based multi-threading of encoder is done based on
-    // the following conditions:
-    // 1. If mib_size_log2==5, context of top-right superblock is used
-    // for context modelling. If top-right is not available (in case of tile
-    // with width == mib_size_log2==5), top superblock's context is used.
-    // 2. If mib_size_log2==4, context of next superblock to top-right
-    // superblock is used. Using context of top-right superblock in this case
-    // gives high BD Rate drop for smaller resolutions.
     if (cpi->row_mt == 1) {
       int update_context = 0;
-      if (mib_size_log2 == 5) {
-        update_context = sb_cols_in_tile == 1 || sb_col_in_tile == 1;
-      } else if (mib_size_log2 == 4) {
-        update_context = sb_cols_in_tile == 1 ||
-                         (sb_cols_in_tile == 2 && sb_col_in_tile == 1) ||
-                         sb_col_in_tile == 2;
-      }
+      update_context = sb_cols_in_tile == 1 || sb_col_in_tile == 1;
       if (update_context)
         memcpy(x->backup_tile_ctx, xd->tile_ctx, sizeof(*xd->tile_ctx));
     }
