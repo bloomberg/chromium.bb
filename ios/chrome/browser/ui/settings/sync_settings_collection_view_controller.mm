@@ -12,20 +12,16 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#import "components/signin/ios/browser/oauth2_token_service_observer_bridge.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/model_type.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/experimental_flags.h"
-#include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
-#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -51,6 +47,7 @@
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
+#import "services/identity/public/objc/identity_manager_observer_bridge.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
 
@@ -93,15 +90,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface SyncSettingsCollectionViewController ()<
+@interface SyncSettingsCollectionViewController () <
     ChromeIdentityServiceObserver,
-    OAuth2TokenServiceObserverBridgeDelegate,
+    IdentityManagerObserverBridgeDelegate,
     SettingsControllerProtocol,
     SyncObserverModelBridge> {
   ios::ChromeBrowserState* _browserState;  // Weak.
   SyncSetupService* _syncSetupService;     // Weak.
   std::unique_ptr<SyncObserverBridge> _syncObserver;
-  std::unique_ptr<OAuth2TokenServiceObserverBridge> _tokenServiceObserver;
+  std::unique_ptr<identity::IdentityManagerObserverBridge>
+      _identityManagerObserver;
   AuthenticationFlow* _authenticationFlow;
   // Whether switching sync account is allowed on the screen.
   BOOL _allowSwitchSyncAccount;
@@ -224,9 +222,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     browser_sync::ProfileSyncService* syncService =
         ProfileSyncServiceFactory::GetForBrowserState(_browserState);
     _syncObserver.reset(new SyncObserverBridge(self, syncService));
-    _tokenServiceObserver.reset(new OAuth2TokenServiceObserverBridge(
-        ProfileOAuth2TokenServiceFactory::GetForBrowserState(_browserState),
-        self));
+    _identityManagerObserver.reset(new identity::IdentityManagerObserverBridge(
+        IdentityManagerFactory::GetForBrowserState(_browserState), self));
     self.collectionViewAccessibilityIdentifier = kSettingsSyncId;
     _avatarCache = [[ResizedAvatarCache alloc] init];
     _identityServiceObserver.reset(
@@ -240,7 +237,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)stopBrowserStateServiceObservers {
   _syncObserver.reset();
-  _tokenServiceObserver.reset();
+  _identityManagerObserver.reset();
   _identityServiceObserver.reset();
 }
 
@@ -298,13 +295,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
     syncToHeader.textColor = [[MDCPalette greyPalette] tint500];
     [model setHeader:syncToHeader
         forSectionWithIdentifier:SectionIdentifierSyncAccounts];
-    ProfileOAuth2TokenService* oauth2_service =
-        ProfileOAuth2TokenServiceFactory::GetForBrowserState(_browserState);
-    AccountTrackerService* accountTracker =
-        ios::AccountTrackerServiceFactory::GetForBrowserState(_browserState);
+    auto* identity_manager =
+        IdentityManagerFactory::GetForBrowserState(_browserState);
 
-    for (const std::string& account_id : oauth2_service->GetAccounts()) {
-      AccountInfo account = accountTracker->GetAccountInfo(account_id);
+    for (const AccountInfo& account :
+         identity_manager->GetAccountsWithRefreshTokens()) {
       ChromeIdentity* identity = ios::GetChromeBrowserProvider()
                                      ->GetChromeIdentityService()
                                      ->GetIdentityWithGaiaID(account.gaia);
@@ -928,9 +923,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark Helpers
 
 - (BOOL)hasAccountsSection {
-  OAuth2TokenService* tokenService =
-      ProfileOAuth2TokenServiceFactory::GetForBrowserState(_browserState);
-  return _allowSwitchSyncAccount && tokenService->GetAccounts().size() > 1;
+  return _allowSwitchSyncAccount &&
+         IdentityManagerFactory::GetForBrowserState(_browserState)
+                 ->GetAccountsWithRefreshTokens()
+                 .size() > 1;
 }
 
 - (BOOL)shouldDisplaySyncError {
@@ -1042,9 +1038,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self updateCollectionView];
 }
 
-#pragma mark OAuth2TokenServiceObserverBridgeDelegate
+#pragma mark identity::IdentityManagerObserverBridgeDelegate
 
-- (void)onEndBatchChanges {
+- (void)onEndBatchOfRefreshTokenStateChanges {
   if (_authenticationOperationInProgress) {
     return;
   }
