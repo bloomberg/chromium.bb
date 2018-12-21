@@ -55,9 +55,7 @@ class SharedImageBackingFactoryAHBTest : public testing::Test {
         std::move(share_group), surface_, context_,
         false /* use_virtualized_gl_contexts */, base::DoNothing());
     context_state_->InitializeGrContext(workarounds, nullptr);
-    auto feature_info =
-        base::MakeRefCounted<gles2::FeatureInfo>(workarounds, GpuFeatureInfo());
-    context_state_->InitializeGL(std::move(feature_info));
+    context_state_->InitializeGL(workarounds, GpuFeatureInfo());
 
     backing_factory_ = std::make_unique<SharedImageBackingFactoryAHB>(
         workarounds, GpuFeatureInfo(), context_state_.get());

@@ -27,6 +27,7 @@ class VulkanContextProvider;
 
 namespace gpu {
 class GpuDriverBugWorkarounds;
+struct GpuFeatureInfo;
 class GpuProcessActivityFlags;
 class ServiceTransferCache;
 namespace gles2 {
@@ -57,8 +58,9 @@ struct GPU_GLES2_EXPORT RasterDecoderContextState
                            GpuProcessActivityFlags* activity_flags = nullptr,
                            gl::ProgressReporter* progress_reporter = nullptr);
 
-  bool InitializeGL(scoped_refptr<gles2::FeatureInfo> feature_info);
-  bool IsGLInitialized() const { return !!feature_info_; }
+  // TODO(penghuang) do not depend on ContextGroup.
+  bool InitializeGL(const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds,
+                    const GpuFeatureInfo& gpu_feature_info);
 
   bool MakeCurrent(gl::GLSurface* surface);
   void MarkContextLost();
@@ -73,7 +75,6 @@ struct GPU_GLES2_EXPORT RasterDecoderContextState
   gl::GLContext* context() { return context_.get(); }
   gl::GLContext* real_context() { return real_context_.get(); }
   gl::GLSurface* surface() { return surface_.get(); }
-  gles2::FeatureInfo* feature_info() { return feature_info_.get(); }
   gles2::ContextState* context_state() const { return context_state_.get(); }
   bool context_lost() const { return context_lost_; }
 

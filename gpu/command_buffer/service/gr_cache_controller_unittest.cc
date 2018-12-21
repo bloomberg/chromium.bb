@@ -6,7 +6,6 @@
 
 #include "base/bind_helpers.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_feature_info.h"
@@ -40,9 +39,7 @@ class GrCacheControllerTest : public testing::Test {
         std::move(share_group), std::move(surface), std::move(context),
         false /* use_virtualized_gl_contexts */, base::DoNothing());
     context_state_->InitializeGrContext(workarounds, nullptr);
-    auto feature_info =
-        base::MakeRefCounted<gles2::FeatureInfo>(workarounds, GpuFeatureInfo());
-    context_state_->InitializeGL(std::move(feature_info));
+    context_state_->InitializeGL(workarounds, GpuFeatureInfo());
 
     controller_ =
         std::make_unique<GrCacheController>(context_state_.get(), task_runner_);
