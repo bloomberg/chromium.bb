@@ -53,7 +53,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeEncryption,
   ItemTypeLinkFooter,
   ItemTypeDetailText,
-  ItemTypeSettingsSwitch,
+  ItemTypeSettingsSwitch1,
+  ItemTypeSettingsSwitch2,
   ItemTypeAutofillEditItem,
   ItemTypeAutofillData,
   ItemTypeAccount,
@@ -174,9 +175,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierSettings];
 
   SettingsSwitchItem* settingsSwitchItem =
-      [[SettingsSwitchItem alloc] initWithType:ItemTypeSettingsSwitch];
+      [[SettingsSwitchItem alloc] initWithType:ItemTypeSettingsSwitch1];
   settingsSwitchItem.text = @"This is a switch item";
   [model addItem:settingsSwitchItem
+      toSectionWithIdentifier:SectionIdentifierSettings];
+
+  SettingsSwitchItem* settingsSwitchItem2 =
+      [[SettingsSwitchItem alloc] initWithType:ItemTypeSettingsSwitch2];
+  settingsSwitchItem2.text = @"This is a disabled switch item";
+  settingsSwitchItem2.detailText = @"This is a switch item with detail text";
+  settingsSwitchItem2.on = YES;
+  settingsSwitchItem2.enabled = NO;
+  [model addItem:settingsSwitchItem2
       toSectionWithIdentifier:SectionIdentifierSettings];
 
   EncryptionItem* encryptionChecked =

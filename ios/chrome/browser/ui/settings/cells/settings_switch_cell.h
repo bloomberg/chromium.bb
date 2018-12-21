@@ -8,13 +8,16 @@
 #import <UIKit/UIKit.h>
 
 // SettingsSwitchCell implements a UITableViewCell subclass containing an icon,
-// a text label, and a switch.
+// a text label, a detail text and a switch.
 // If the preferred content size category is an accessibility category, the
 // switch is displayed below the label. Otherwise, it is on the trailing side.
 @interface SettingsSwitchCell : UITableViewCell
 
 // UILabel corresponding to |text| from the item.
 @property(nonatomic, readonly, strong) UILabel* textLabel;
+
+// UILabel corresponding to |detailText| from the item.
+@property(nonatomic, readonly, strong) UILabel* detailTextLabel;
 
 // The switch view.
 @property(nonatomic, readonly, strong) UISwitch* switchView;
