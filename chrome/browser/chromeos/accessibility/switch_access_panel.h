@@ -9,6 +9,8 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_panel.h"
 #include "chrome/common/extensions/extension_constants.h"
 
+class SwitchAccessPanelTest;
+
 // Shows a context menu of controls for Switch Access users
 class SwitchAccessPanel : public AccessibilityPanel {
  public:
@@ -16,6 +18,13 @@ class SwitchAccessPanel : public AccessibilityPanel {
   void Show(const gfx::Rect& element_bounds);
   void Hide();
   ~SwitchAccessPanel() override = default;
+
+ private:
+  friend class SwitchAccessPanelTest;
+
+  static const gfx::Rect CalculatePanelBounds(const gfx::Rect& element_bounds,
+                                              const gfx::Rect& screen_bounds);
+  static int GetFocusRingBuffer();
 
   DISALLOW_COPY_AND_ASSIGN(SwitchAccessPanel);
 };
