@@ -31,6 +31,7 @@ class AXTreeSourceMusTest : public ViewsTestBase {
 
   // testing::Test:
   void SetUp() override {
+    set_native_widget_type(NativeWidgetType::kDesktop);
     ViewsTestBase::SetUp();
     widget_ = std::make_unique<Widget>();
     Widget::InitParams params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);

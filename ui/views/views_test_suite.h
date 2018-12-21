@@ -30,14 +30,16 @@ class ViewsTestSuite : public base::TestSuite {
   void Initialize() override;
   void Shutdown() override;
 
-#if defined(USE_AURA)
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
   // Different test suites may wish to create Env differently.
   virtual void InitializeEnv();
   virtual void DestroyEnv();
 #endif
 
  private:
-#if defined(USE_AURA)
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+  // On Chrome OS, aura::Env is set up in individual test fixtures, most notably
+  // ViewsTestBase.
   std::unique_ptr<aura::Env> env_;
 #endif
   int argc_;

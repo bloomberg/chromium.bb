@@ -30,15 +30,6 @@ NativeWidget* CreatePlatformNativeWidgetImpl(
     uint32_t behavior,
     bool* destroyed);
 
-// Creates the appropriate desktop platform specific NativeWidget
-// implementation. On some platforms this is the same as
-// CreatePlatformNativeWidgetImpl(). If |destroyed| is non-null it it set to
-// true from the destructor of the NativeWidget.
-NativeWidget* CreatePlatformDesktopNativeWidgetImpl(
-    const Widget::InitParams& init_params,
-    Widget* widget,
-    bool* destroyed);
-
 }  // namespace test
 }  // namespace views
 

@@ -827,13 +827,6 @@ TEST_F(GridLayoutTest, MinimumPreferredSize) {
 // GridLayout must guard against this as it hasn't yet updated the internal
 // structures it uses to calculate Layout, so will give bogus results.
 TEST_F(GridLayoutTest, LayoutOnAddDeath) {
-  // gtest death tests, such as EXPECT_DCHECK_DEATH(), can not work in the
-  // presence of fork() and other process launching. In views-mus, we have
-  // already launched additional processes for our service manager. Performing
-  // this test under mus is impossible.
-  if (PlatformTestHelper::IsMus())
-    return;
-
   ColumnSet* set = layout()->AddColumnSet(0);
   set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0, GridLayout::USE_PREF, 0,
                  0);

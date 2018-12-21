@@ -129,7 +129,6 @@ std::unique_ptr<Widget> CreateWidget(WidgetDelegate* delegate) {
   params.delegate = delegate;
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.remove_standard_frame = true;
-  params.native_widget = new DesktopNativeWidgetAura(widget.get());
   params.bounds = gfx::Rect(100, 100, 100, 100);
   widget->Init(params);
   return widget;
@@ -178,6 +177,8 @@ class DesktopWindowTreeHostX11Test : public ViewsTestBase {
   ~DesktopWindowTreeHostX11Test() override {}
 
   void SetUp() override {
+    set_native_widget_type(NativeWidgetType::kDesktop);
+
     std::vector<int> pointer_devices;
     pointer_devices.push_back(kPointerDeviceId);
     ui::TouchFactory::GetInstance()->SetPointerDeviceForTest(pointer_devices);
@@ -371,7 +372,6 @@ TEST_F(DesktopWindowTreeHostX11Test, ToggleMinimizePropogateToContentWindow) {
   Widget widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.native_widget = new DesktopNativeWidgetAura(&widget);
   widget.Init(params);
   widget.Show();
   ui::X11EventSource::GetInstance()->DispatchXEvents();
@@ -431,7 +431,6 @@ TEST_F(DesktopWindowTreeHostX11Test, ChildWindowDestructionDuringTearDown) {
   Widget::InitParams parent_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW);
   parent_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  parent_params.native_widget = new DesktopNativeWidgetAura(&parent_widget);
   parent_widget.Init(parent_params);
   parent_widget.Show();
   ui::X11EventSource::GetInstance()->DispatchXEvents();
@@ -440,7 +439,6 @@ TEST_F(DesktopWindowTreeHostX11Test, ChildWindowDestructionDuringTearDown) {
   Widget::InitParams child_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW);
   child_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  child_params.native_widget = new DesktopNativeWidgetAura(&child_widget);
   child_params.parent = parent_widget.GetNativeWindow();
   child_widget.Init(child_params);
   child_widget.Show();
@@ -477,7 +475,6 @@ TEST_F(DesktopWindowTreeHostX11Test, SetBoundsWithMinMax) {
   CustomSizeWidget widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.native_widget = new DesktopNativeWidgetAura(&widget);
   params.bounds = gfx::Rect(200, 100);
   widget.Init(params);
   widget.Show();
@@ -551,7 +548,6 @@ TEST_F(DesktopWindowTreeHostX11HighDPITest,
   Widget first;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.native_widget = new DesktopNativeWidgetAura(&first);
   params.bounds = gfx::Rect(0, 0, 50, 50);
   first.Init(params);
   first.Show();
@@ -559,7 +555,6 @@ TEST_F(DesktopWindowTreeHostX11HighDPITest,
   Widget second;
   params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.native_widget = new DesktopNativeWidgetAura(&second);
   params.bounds = gfx::Rect(50, 50, 50, 50);
   second.Init(params);
   second.Show();

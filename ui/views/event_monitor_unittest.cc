@@ -44,18 +44,8 @@ class EventMonitorTest : public WidgetTest {
     widget_ = CreateTopLevelNativeWidget();
     widget_->SetSize(gfx::Size(100, 100));
     widget_->Show();
-    if (IsMus()) {
-      generator_ =
-          std::make_unique<ui::test::EventGenerator>(GetRootWindow(widget_));
-// This #if will always be true on this path, but the code inside won't compile
-// for non-Aura.
-#if defined(USE_AURA)
-      generator_->MoveMouseRelativeTo(widget_->GetNativeWindow(), gfx::Point());
-#endif
-    } else {
-      generator_ = std::make_unique<ui::test::EventGenerator>(
-          GetContext(), widget_->GetNativeWindow());
-    }
+    generator_ = std::make_unique<ui::test::EventGenerator>(
+        GetContext(), widget_->GetNativeWindow());
     generator_->set_target(ui::test::EventGenerator::Target::APPLICATION);
   }
   void TearDown() override {

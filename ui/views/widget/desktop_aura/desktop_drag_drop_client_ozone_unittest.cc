@@ -26,7 +26,7 @@ class FakeWmDragHandler;
 // A fake handler, which initiates dragging.
 class FakeWmDragHandler : public ui::WmDragHandler {
  public:
-  FakeWmDragHandler() : weak_ptr_factory_(this) {}
+  FakeWmDragHandler() = default;
   ~FakeWmDragHandler() override = default;
 
   // ui::WmDragHandler
@@ -45,7 +45,7 @@ class FakeWmDragHandler : public ui::WmDragHandler {
 
  private:
   base::OnceCallback<void(int)> callback_;
-  base::WeakPtrFactory<FakeWmDragHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeWmDragHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeWmDragHandler);
 };
@@ -75,14 +75,14 @@ class DesktopDragDropClientOzoneTest : public ViewsTestBase {
 
   // ViewsTestBase:
   void SetUp() override {
+    set_native_widget_type(NativeWidgetType::kDesktop);
+
     ViewsTestBase::SetUp();
-    test_views_delegate()->set_use_desktop_native_widgets(true);
 
     // Create widget to initiate the drags.
     widget_ = std::make_unique<Widget>();
     Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.native_widget = new DesktopNativeWidgetAura(widget_.get());
     params.bounds = gfx::Rect(100, 100);
     widget_->Init(params);
     widget_->Show();

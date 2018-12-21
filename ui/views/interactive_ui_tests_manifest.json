@@ -1,6 +1,6 @@
 {
-  "name": "views_mus_interactive_ui_tests",
-  "display_name": "Views Mus Interactive UI Tests",
+  "name": "interactive_ui_tests",
+  "display_name": "Interactive UI Tests",
   "interface_provider_specs": {
     "service_manager:connector": {
       "requires": {

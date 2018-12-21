@@ -20,12 +20,3 @@ include_rules = [
   "+ui/platform_window",
   "+ui/wm",
 ]
-
-specific_include_rules = {
-  "views_mus_test_suite.cc": [
-    "+services/service_manager/background",
-  ],
-  "views_aura_mus_test_suite.cc": [
-    "+services/service_manager/background",
-  ],
-}

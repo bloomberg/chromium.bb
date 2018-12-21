@@ -44,10 +44,7 @@ class WidgetTest : public ViewsTestBase {
 
   using WidgetAutoclosePtr = std::unique_ptr<Widget, WidgetCloser>;
 
-  explicit WidgetTest(
-      std::unique_ptr<ScopedTaskEnvironment> scoped_task_environment =
-          std::make_unique<ScopedTaskEnvironment>(
-              ScopedTaskEnvironment::MainThreadType::UI));
+  WidgetTest();
   ~WidgetTest() override;
 
   // Create Widgets with |native_widget| in InitParams set to an instance of
@@ -62,11 +59,6 @@ class WidgetTest : public ViewsTestBase {
   Widget* CreateTopLevelNativeWidget();
   Widget* CreateChildNativeWidgetWithParent(Widget* parent);
   Widget* CreateChildNativeWidget();
-
-  // Create a top-level Widget with |native_widget| in InitParams set to an
-  // instance of the "native desktop" type. This is a PlatformNativeWidget on
-  // ChromeOS, and a PlatformDesktopNativeWidget everywhere else.
-  Widget* CreateNativeDesktopWidget();
 
   View* GetMousePressedHandler(internal::RootView* root_view);
 
@@ -113,6 +105,18 @@ class WidgetTest : public ViewsTestBase {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WidgetTest);
+};
+
+class DesktopWidgetTest : public WidgetTest {
+ public:
+  DesktopWidgetTest();
+  ~DesktopWidgetTest() override;
+
+  // WidgetTest:
+  void SetUp() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DesktopWidgetTest);
 };
 
 // A helper WidgetDelegate for tests that require hooks into WidgetDelegate

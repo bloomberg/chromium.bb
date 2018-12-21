@@ -29,9 +29,6 @@ class PlatformTestHelper {
   static void set_factory(const Factory& factory);
   static std::unique_ptr<PlatformTestHelper> Create();
 
-  static void SetIsMus();
-  static bool IsMus();
-
   // Called once the ViewsTestHelper has been created, but before SetUp() is
   // called.
   virtual void OnTestHelperCreated(ViewsTestHelper* helper) {}

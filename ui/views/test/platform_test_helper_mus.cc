@@ -1,60 +1,59 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/mus/views_mus_test_suite.h"
+#include "ui/views/test/platform_test_helper_mus.h"
 
-#include <memory>
-#include <string>
-
-#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
-#include "mojo/core/embedder/embedder.h"
-#include "mojo/core/embedder/scoped_ipc_support.h"
 #include "services/catalog/catalog.h"
 #include "services/service_manager/background/background_service_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
-#include "services/ws/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/env.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
+#include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/test/mus/input_method_mus_test_api.h"
 #include "ui/aura/window.h"
-#include "ui/base/ui_base_features.h"
-#include "ui/base/ui_base_switches.h"
-#include "ui/compositor/test/fake_context_factory.h"
-#include "ui/gl/gl_switches.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/mus_client.h"
-#include "ui/views/mus/views_mus_tests_catalog_source.h"
-#include "ui/views/test/platform_test_helper.h"
 #include "ui/views/test/views_test_helper_aura.h"
 #include "ui/views/views_delegate.h"
+#include "ui/views/views_unittests_catalog_source.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#include "ui/views/widget/native_widget_aura.h"
 
 namespace views {
+
 namespace {
 
-void EnsureCommandLineSwitch(const std::string& name) {
-  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (!cmd_line->HasSwitch(name))
-    cmd_line->AppendSwitch(name);
+NativeWidget* CreateNativeWidget(const Widget::InitParams& init_params,
+                                 internal::NativeWidgetDelegate* delegate) {
+  NativeWidget* native_widget =
+      MusClient::Get()->CreateNativeWidget(init_params, delegate);
+  if (!native_widget)
+    return nullptr;
+
+  // Disable sending KeyEvents to IME as tests aren't set up to wait for an
+  // ack (and tests run concurrently).
+  aura::WindowTreeHostMus* window_tree_host_mus =
+      static_cast<aura::WindowTreeHostMus*>(
+          static_cast<DesktopNativeWidgetAura*>(native_widget)->host());
+  aura::InputMethodMusTestApi::Disable(window_tree_host_mus->input_method());
+  return native_widget;
 }
 
-class ServiceManagerConnection {
+}  // namespace
+
+class PlatformTestHelperMus::ServiceManagerConnection {
  public:
   ServiceManagerConnection()
       : thread_("Persistent service_manager connections"),
         default_service_binding_(&default_service_) {
-    catalog::Catalog::SetDefaultCatalogManifest(CreateViewsMusTestsCatalog());
+    catalog::Catalog::SetDefaultCatalogManifest(CreateViewsUnittestsCatalog());
     base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     base::Thread::Options options;
@@ -82,6 +81,10 @@ class ServiceManagerConnection {
     MusClient::InitParams params;
     params.connector = GetConnector();
     params.identity = service_manager_identity_;
+    // The window tree client might have been created already by the test suite
+    // (e.g. AuraTestSuiteSetup).
+    params.window_tree_client =
+        aura::test::EnvTestHelper().GetWindowTreeClient();
     return std::make_unique<MusClient>(params);
   }
 
@@ -127,7 +130,7 @@ class ServiceManagerConnection {
     wait->Signal();
   }
 
-  // Returns the name of the test executable, e.g. "views_mus_unittests".
+  // Returns the name of the test executable, e.g. "views_unittests".
   std::string GetTestName() {
     base::FilePath executable = base::CommandLine::ForCurrentProcess()
                                     ->GetProgram()
@@ -147,103 +150,32 @@ class ServiceManagerConnection {
   DISALLOW_COPY_AND_ASSIGN(ServiceManagerConnection);
 };
 
-class PlatformTestHelperMus : public PlatformTestHelper {
- public:
-  PlatformTestHelperMus() {
-    mus_client_ = service_manager_connection_.CreateMusClient();
-    ViewsDelegate::GetInstance()->set_native_widget_factory(base::Bind(
-        &PlatformTestHelperMus::CreateNativeWidget, base::Unretained(this)));
-  }
-  ~PlatformTestHelperMus() override {}
-
-  // PlatformTestHelper:
-  void OnTestHelperCreated(ViewsTestHelper* helper) override {
-    static_cast<ViewsTestHelperAura*>(helper)->EnableMusWithWindowTreeClient(
-        mus_client_->window_tree_client());
-  }
-  void SimulateNativeDestroy(Widget* widget) override {
-    aura::WindowTreeHostMus* window_tree_host =
-        static_cast<aura::WindowTreeHostMus*>(
-            widget->GetNativeView()->GetHost());
-    static_cast<aura::WindowTreeClientDelegate*>(mus_client_.get())
-        ->OnEmbedRootDestroyed(window_tree_host);
-  }
-
-  void InitializeContextFactory(
-      ui::ContextFactory** context_factory,
-      ui::ContextFactoryPrivate** context_factory_private) override {
-    *context_factory = &context_factory_;
-    *context_factory_private = nullptr;
-  }
-
- private:
-  NativeWidget* CreateNativeWidget(const Widget::InitParams& init_params,
-                                   internal::NativeWidgetDelegate* delegate) {
-    NativeWidget* native_widget =
-        mus_client_->CreateNativeWidget(init_params, delegate);
-    if (!native_widget)
-      return nullptr;
-
-    // Disable sending KeyEvents to IME as tests aren't set up to wait for an
-    // ack (and tests run concurrently).
-    aura::WindowTreeHostMus* window_tree_host_mus =
-        static_cast<aura::WindowTreeHostMus*>(
-            static_cast<DesktopNativeWidgetAura*>(native_widget)->host());
-    aura::InputMethodMusTestApi::Disable(window_tree_host_mus->input_method());
-    return native_widget;
-  }
-
-  ServiceManagerConnection service_manager_connection_;
-  std::unique_ptr<MusClient> mus_client_;
-  ui::FakeContextFactory context_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformTestHelperMus);
-};
-
-std::unique_ptr<PlatformTestHelper> CreatePlatformTestHelper() {
-  return std::make_unique<PlatformTestHelperMus>();
+PlatformTestHelperMus::PlatformTestHelperMus() {
+  service_manager_connection_ = std::make_unique<ServiceManagerConnection>();
+  mus_client_ = service_manager_connection_->CreateMusClient();
+  ViewsDelegate::GetInstance()->set_native_widget_factory(
+      base::BindRepeating(&CreateNativeWidget));
 }
 
-}  // namespace
+PlatformTestHelperMus::~PlatformTestHelperMus() = default;
 
-ViewsMusTestSuite::ViewsMusTestSuite(int argc, char** argv)
-    : ViewsTestSuite(argc, argv), ipc_thread_("IPC thread") {}
-
-ViewsMusTestSuite::~ViewsMusTestSuite() {}
-
-void ViewsMusTestSuite::Initialize() {
-  PlatformTestHelper::SetIsMus();
-  // Let other services know that we're running in tests. Do this with a
-  // command line flag to avoid making blocking calls to other processes for
-  // setup for tests (e.g. to unlock the screen in the window manager).
-  EnsureCommandLineSwitch(ws::switches::kUseTestConfig);
-
-  EnsureCommandLineSwitch(switches::kOverrideUseSoftwareGLForTests);
-
-  ViewsTestSuite::Initialize();
-
-  // NOTE: this has to be after ViewsTestSuite::Initialize() as
-  // TestSuite::Initialize() resets kEnableFeatures and the command line.
-  feature_list_.InitAndEnableFeature(features::kMash);
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnableFeatures, features::kMash.name);
-
-  PlatformTestHelper::set_factory(base::Bind(&CreatePlatformTestHelper));
-
-  mojo::core::Init();
-  ipc_thread_.StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-  ipc_support_ = std::make_unique<mojo::core::ScopedIPCSupport>(
-      ipc_thread_.task_runner(),
-      mojo::core::ScopedIPCSupport::ShutdownPolicy::CLEAN);
+void PlatformTestHelperMus::OnTestHelperCreated(ViewsTestHelper* helper) {
+  static_cast<ViewsTestHelperAura*>(helper)->EnableMusWithWindowTreeClient(
+      mus_client_->window_tree_client());
 }
 
-void ViewsMusTestSuite::InitializeEnv() {
-  env_ = aura::Env::CreateInstance(aura::Env::Mode::MUS);
+void PlatformTestHelperMus::SimulateNativeDestroy(Widget* widget) {
+  aura::WindowTreeHostMus* window_tree_host =
+      static_cast<aura::WindowTreeHostMus*>(widget->GetNativeView()->GetHost());
+  static_cast<aura::WindowTreeClientDelegate*>(mus_client_.get())
+      ->OnEmbedRootDestroyed(window_tree_host);
 }
 
-void ViewsMusTestSuite::DestroyEnv() {
-  env_.reset();
+void PlatformTestHelperMus::InitializeContextFactory(
+    ui::ContextFactory** context_factory,
+    ui::ContextFactoryPrivate** context_factory_private) {
+  *context_factory = &context_factory_;
+  *context_factory_private = nullptr;
 }
 
 }  // namespace views
