@@ -1682,8 +1682,8 @@ class CorrectProductNameInMessagesTest(unittest.TestCase):
         'chrome/app/chromium_strings.grd:8' in warnings[1].items[1])
 
 
-class MojoManifestOwnerTest(unittest.TestCase):
-  def testMojoManifestChangeNeedsSecurityOwner(self):
+class ServiceManifestOwnerTest(unittest.TestCase):
+  def testServiceManifestJsonChangeNeedsSecurityOwner(self):
     mock_input_api = MockInputApi()
     mock_input_api.files = [
       MockAffectedFile('services/goat/manifest.json',
@@ -1706,7 +1706,7 @@ class MojoManifestOwnerTest(unittest.TestCase):
 
     # No warning if already covered by an OWNERS rule.
 
-  def testNonManifestChangesDoNotRequireSecurityOwner(self):
+  def testNonManifestJsonChangesDoNotRequireSecurityOwner(self):
     mock_input_api = MockInputApi()
     mock_input_api.files = [
       MockAffectedFile('services/goat/species.json',
@@ -1717,6 +1717,34 @@ class MojoManifestOwnerTest(unittest.TestCase):
                          ']',
                        ])
     ]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT._CheckIpcOwners(
+        mock_input_api, mock_output_api)
+    self.assertEqual([], errors)
+
+  def testServiceManifestChangeNeedsSecurityOwner(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('services/goat/public/cpp/manifest.cc',
+                       [
+                         '#include "services/goat/public/cpp/manifest.h"',
+                         'const service_manager::Manifest& GetManifest() {}',
+                       ])]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT._CheckIpcOwners(
+        mock_input_api, mock_output_api)
+    self.assertEqual(1, len(errors))
+    self.assertEqual(
+        'Found OWNERS files that need to be updated for IPC security review ' +
+        'coverage.\nPlease update the OWNERS files below:', errors[0].message)
+
+  def testNonServiceManifestSourceChangesDoNotRequireSecurityOwner(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('some/non/service/thing/foo_manifest.cc',
+                       [
+                         'const char kNoEnforcement[] = "not a manifest!";',
+                       ])]
     mock_output_api = MockOutputApi()
     errors = PRESUBMIT._CheckIpcOwners(
         mock_input_api, mock_output_api)
