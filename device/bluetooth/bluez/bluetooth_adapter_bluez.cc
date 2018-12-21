@@ -217,6 +217,9 @@ void BluetoothAdapterBlueZ::Shutdown() {
       this);
   bluez::BluezDBusManager::Get()->GetBluetoothInputClient()->RemoveObserver(
       this);
+  bluez::BluezDBusManager::Get()
+      ->GetBluetoothAgentManagerClient()
+      ->RemoveObserver(this);
 
   BLUETOOTH_LOG(EVENT) << "Unregistering pairing agent";
   bluez::BluezDBusManager::Get()
@@ -266,6 +269,8 @@ void BluetoothAdapterBlueZ::Init() {
       this);
   bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->AddObserver(this);
   bluez::BluezDBusManager::Get()->GetBluetoothInputClient()->AddObserver(this);
+  bluez::BluezDBusManager::Get()->GetBluetoothAgentManagerClient()->AddObserver(
+      this);
 
   // Register the pairing agent.
   dbus::Bus* system_bus = bluez::BluezDBusManager::Get()->GetSystemBus();
@@ -741,6 +746,22 @@ void BluetoothAdapterBlueZ::InputPropertyChanged(
   }
 }
 
+void BluetoothAdapterBlueZ::AgentManagerAdded(
+    const dbus::ObjectPath& object_path) {
+  BLUETOOTH_LOG(DEBUG) << "Registering pairing agent";
+  bluez::BluezDBusManager::Get()
+      ->GetBluetoothAgentManagerClient()
+      ->RegisterAgent(dbus::ObjectPath(kAgentPath),
+                      bluetooth_agent_manager::kKeyboardDisplayCapability,
+                      base::Bind(&BluetoothAdapterBlueZ::OnRegisterAgent,
+                                 weak_ptr_factory_.GetWeakPtr()),
+                      base::Bind(&BluetoothAdapterBlueZ::OnRegisterAgentError,
+                                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void BluetoothAdapterBlueZ::AgentManagerRemoved(
+    const dbus::ObjectPath& object_path) {}
+
 void BluetoothAdapterBlueZ::Released() {
   BLUETOOTH_LOG(EVENT) << "Released";
   if (!IsPresent())
@@ -987,16 +1008,6 @@ void BluetoothAdapterBlueZ::SetAdapter(const dbus::ObjectPath& object_path) {
   object_path_ = object_path;
 
   BLUETOOTH_LOG(EVENT) << object_path_.value() << ": using adapter.";
-
-  BLUETOOTH_LOG(DEBUG) << "Registering pairing agent";
-  bluez::BluezDBusManager::Get()
-      ->GetBluetoothAgentManagerClient()
-      ->RegisterAgent(dbus::ObjectPath(kAgentPath),
-                      bluetooth_agent_manager::kKeyboardDisplayCapability,
-                      base::Bind(&BluetoothAdapterBlueZ::OnRegisterAgent,
-                                 weak_ptr_factory_.GetWeakPtr()),
-                      base::Bind(&BluetoothAdapterBlueZ::OnRegisterAgentError,
-                                 weak_ptr_factory_.GetWeakPtr()));
 
 #if defined(OS_CHROMEOS)
   SetStandardChromeOSAdapterName();
