@@ -125,6 +125,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
 
   scoped_refptr<ws::ContextProviderCommandBuffer> GetMediaContextProvider()
       override;
+  gpu::ContextSupport* GetMediaContextProviderContextSupport() override;
 
   void SetRenderingColorSpace(const gfx::ColorSpace& color_space) override;
 

@@ -481,6 +481,12 @@ GpuVideoAcceleratorFactoriesImpl::GetMediaContextProvider() {
   return CheckContextLost() ? nullptr : context_provider_;
 }
 
+gpu::ContextSupport*
+GpuVideoAcceleratorFactoriesImpl::GetMediaContextProviderContextSupport() {
+  auto context_provider = GetMediaContextProvider();
+  return context_provider ? context_provider->ContextSupport() : nullptr;
+}
+
 void GpuVideoAcceleratorFactoriesImpl::SetRenderingColorSpace(
     const gfx::ColorSpace& color_space) {
   rendering_color_space_ = color_space;
