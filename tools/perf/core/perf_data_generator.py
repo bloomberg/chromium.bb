@@ -236,14 +236,6 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'num_shards': 1,
           'telemetry': False,
         },
-        {
-          'isolate': 'angle_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-          'extra_args': [
-              '--shard-timeout=300'
-          ],
-        }
       ],
       'platform': 'android',
       'dimension': {
