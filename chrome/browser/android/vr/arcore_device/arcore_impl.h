@@ -82,14 +82,9 @@ class ArCoreImpl : public ArCore {
   void Pause() override;
   void Resume() override;
   bool RequestHitTest(const mojom::XRRayPtr& ray,
-                      const gfx::Size& image_size,
                       std::vector<mojom::XRHitResultPtr>* hit_results) override;
 
  private:
-  bool TransformRayToScreenSpace(const mojom::XRRayPtr& ray,
-                                 const gfx::Size& image_size,
-                                 gfx::PointF* screen_point);
-
   bool IsOnGlThread();
   base::WeakPtr<ArCoreImpl> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
