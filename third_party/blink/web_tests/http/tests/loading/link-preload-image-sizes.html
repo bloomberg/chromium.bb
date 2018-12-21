@@ -22,6 +22,9 @@
     shouldBeFalse("internals.isPreloaded('resources/base-image1.png?10');");
     shouldBeFalse("internals.isPreloaded('resources/base-image2.png?10');");
     shouldBeFalse("internals.isPreloaded('resources/base-image3.png?10');");
+    shouldBeFalse("internals.isPreloaded('resources/preload-test.jpg?11');");
+    shouldBeFalse("internals.isPreloaded('resources/base-image1.png?11');");
+    shouldBeTrue("internals.isPreloaded('resources/base-image2.png?11');");
 
 </script>
 <!-- Control group -->
@@ -42,5 +45,7 @@
      imagesizes="800px">
 <!-- Sizes with 'x' descriptors -->
 <link rel="preload" as="image" imagesrcset="resources/base-image1.png?10 2x, resources/base-image3.png?10 4x, resources/base-image2.png?10 8x" imagesizes="400px" href="resources/preload-test.jpg?10">
+<!-- No imagesizes attribute -->
+<link rel="preload" as="image" imagesrcset="resources/base-image1.png?11 1w, resources/base-image2.png?11 2w" href="resources/preload-test.jpg?11">
 </body>
 </html>
