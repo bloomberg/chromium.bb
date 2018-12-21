@@ -755,7 +755,7 @@ void NavigationPredictor::MaybeTakeActionOnLoad(
   prefetch_url_ = GetUrlToPrefetch(document_origin, sorted_navigation_scores);
   if (prefetch_url_.has_value()) {
     DCHECK_EQ(document_origin.host(), prefetch_url_->host());
-    base::UmaHistogramEnumeration(action_histogram_name, Action::kPrefetch);
+    MaybePreconnectNow(Action::kPrefetch);
     return;
   }
 
