@@ -504,12 +504,13 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(const KURL& url) {
   // avoid setting timers from the latter.
   FlushPendingTimelineRewind();
 
-  view->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kOther);
-
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    view->UpdateAllLifecyclePhases(
+        DocumentLifecycle::LifecycleUpdateReason::kOther);
     return view->GetPaintRecord();
+  }
 
+  view->UpdateAllLifecyclePhasesExceptPaint();
   PaintRecordBuilder builder(nullptr, nullptr, paint_controller_.get());
   view->PaintOutsideOfLifecycle(builder.Context(), kGlobalPaintNormalPhase);
   return builder.EndRecording();
