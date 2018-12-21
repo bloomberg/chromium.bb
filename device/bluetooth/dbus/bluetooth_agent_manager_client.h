@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/values.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_export.h"
@@ -22,7 +23,25 @@ namespace bluez {
 class DEVICE_BLUETOOTH_EXPORT BluetoothAgentManagerClient
     : public BluezDBusClient {
  public:
+  // Interface for observing changes of agent manager.
+  class Observer : public base::CheckedObserver {
+   public:
+    ~Observer() override {}
+
+    // Called when the agent manager with object path |object_path| is added to
+    // the system.
+    virtual void AgentManagerAdded(const dbus::ObjectPath& object_path) {}
+
+    // Called when the agent manager with object path |object_path| is removed
+    // from the system.
+    virtual void AgentManagerRemoved(const dbus::ObjectPath& object_path) {}
+  };
+
   ~BluetoothAgentManagerClient() override;
+
+  // Adds and removes observers for events on agent manager.
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   // The ErrorCallback is used by agent manager methods to indicate failure.
   // It receives two arguments: the name of the error in |error_name| and

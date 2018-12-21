@@ -19,6 +19,14 @@ void FakeBluetoothAgentManagerClient::Init(
     dbus::Bus* bus,
     const std::string& bluetooth_service_name) {}
 
+void FakeBluetoothAgentManagerClient::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void FakeBluetoothAgentManagerClient::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void FakeBluetoothAgentManagerClient::RegisterAgent(
     const dbus::ObjectPath& agent_path,
     const std::string& capability,

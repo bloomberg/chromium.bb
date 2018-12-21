@@ -28,6 +28,8 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAgentManagerClient
 
   // BluetoothAgentManagerClient overrides
   void Init(dbus::Bus* bus, const std::string& bluetooth_service_name) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
   void RegisterAgent(const dbus::ObjectPath& agent_path,
                      const std::string& capability,
                      const base::Closure& callback,
@@ -50,6 +52,9 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAgentManagerClient
   // The single agent service provider we permit, owned by the application
   // using it.
   FakeBluetoothAgentServiceProvider* service_provider_;
+
+  // List of observers interested in event notifications from us.
+  base::ObserverList<Observer>::Unchecked observers_;
 };
 
 }  // namespace bluez
