@@ -1458,7 +1458,8 @@
                   '|AndroidManifest',
     },
     'send_tab_to_self': {
-      'filepath': 'components/send_tab_to_self',
+      'filepath': 'components/send_tab_to_self' \
+        '|chrome/android/java/src/org/chromium/chrome/browser/send_tab_to_self/',
     },
     'service_worker': {
       'filepath': 'content/(browser|renderer|child|common)/service_worker/',
@@ -2410,7 +2411,7 @@
     'screen_orientation': ['mlamouri+watch-screen-orientation@chromium.org'],
     'security': ['security-watchlist@chromium.org'],
     'send_tab_to_self': ['hansberry+watch-send_tab_to_self@chromium.org',
-                         'tgupta+watch-send_tab_to_self@chromium.org',
+                         'tgupta+watch@chromium.org',
                          'jeffreycohen+watch-send_tab_to_self@chromium.org',
                          'jlklein+watch-send_tab_to_self@chromium.org',
                          'jhawkins+watch-send_tab_to_self@chromium.org'],

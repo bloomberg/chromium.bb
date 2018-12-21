@@ -3392,6 +3392,9 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       <message name="IDS_PRINT_SHARE_ACTIVITY_TITLE" desc="Title of the Print Share activity that will appear in the Android share dialog.">
         Print
       </message>
+      <message name="IDS_SEND_TAB_TO_SELF_SHARE_ACTIVITY_TITLE" desc="Title of the Send Tab To Self Share activity that will appear in the Android share dialog.">
+        Send to my devices
+      </message>
 
       <!-- Omnibox Autocomplete -->
       <message name="IDS_OMNIBOX_CONFIRM_DELETE" desc="A message within a modal dialog that confirms the user wants to delete a suggestion from the list dropdown in the omnibox">
