@@ -5954,9 +5954,6 @@ crbug.com/v8/8381 http/tests/devtools/coverage/coverage-view.js [ Pass Failure ]
 crbug.com/v8/8381 http/tests/devtools/coverage/multiple-instances-merge.js [ Pass Failure ]
 crbug.com/v8/8381 http/tests/devtools/coverage/coverage-export.js [ Pass Failure ]
 
-# Sheriff 2018-12-20
-crbug.com/916899 [ Win10 ] virtual/stable/webexposed/global-interface-listing-platform-specific.html [ Failure ]
-
 # TODO (michaelludwig): Todo after Skia roll and rebaseline
 crbug.com/915735 compositing/masks/mask-with-added-filters.html [ Pass Failure ]
 crbug.com/917379 media/video-layer-crash.html [ Pass Failure ]
