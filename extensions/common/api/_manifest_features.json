@@ -114,6 +114,8 @@
     "extension_types": ["extension", "legacy_packaged_app"]
   },
   "content_security_policy.extension_pages": {
+    // TODO(crbug.com/914224): Keep the channel in sync with the check in
+    // csp_info.cc.
     "channel": "trunk",
     "extension_types": ["extension"]
   },
