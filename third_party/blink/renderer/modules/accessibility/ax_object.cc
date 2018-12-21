@@ -902,9 +902,12 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded() const {
       !!InheritsPresentationalRoleFrom();
   cached_is_ignored_ = ComputeAccessibilityIsIgnored();
   cached_is_editable_root_ = ComputeIsEditableRoot();
+  // Compute live region root, which can be from any ARIA live value, including
+  // "off", or from an automatic ARIA live value, e.g. from role="status".
   // TODO(dmazzoni): remove this const_cast.
+  AtomicString aria_live;
   cached_live_region_root_ =
-      IsLiveRegion()
+      IsLiveRegionRoot()
           ? const_cast<AXObject*>(this)
           : (ParentObjectIfExists() ? ParentObjectIfExists()->LiveRegionRoot()
                                     : nullptr);
@@ -1912,7 +1915,12 @@ int AXObject::IndexInParent() const {
   return (index == kNotFound) ? 0 : static_cast<int>(index);
 }
 
-bool AXObject::IsLiveRegion() const {
+bool AXObject::IsLiveRegionRoot() const {
+  const AtomicString& live_region = LiveRegionStatus();
+  return !live_region.IsEmpty();
+}
+
+bool AXObject::IsActiveLiveRegionRoot() const {
   const AtomicString& live_region = LiveRegionStatus();
   return !live_region.IsEmpty() && !EqualIgnoringASCIICase(live_region, "off");
 }

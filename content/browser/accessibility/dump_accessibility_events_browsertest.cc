@@ -378,6 +378,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsLiveRegionOff) {
+  RunEventTest(FILE_PATH_LITERAL("live-region-off.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsLiveRegionElemReparent) {
   RunEventTest(FILE_PATH_LITERAL("live-region-elem-reparent.html"));
 }
