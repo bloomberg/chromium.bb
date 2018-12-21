@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_REPOSITORY_CLIENT_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_REPOSITORY_CLIENT_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_CLIENT_HOLDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_CLIENT_HOLDER_H_
 
 #include <memory>
 
@@ -51,25 +51,27 @@ class MessagePortChannel;
 class KURL;
 class SharedWorker;
 
-// This manages connections with SharedWorkerServiceImpl in the browser process.
-// This is owned by Document on the main thread.
-// TODO(nhiroki): Rename this class because SharedWorkerRepository doesn't
-// exist.
-class CORE_EXPORT SharedWorkerRepositoryClient final
-    : public GarbageCollectedFinalized<SharedWorkerRepositoryClient>,
+// This holds SharedWorkerClients connecting with SharedWorkerHosts in the
+// browser process. Every call of SharedWorkerClientHolder::Connect() creates a
+// new client instance regardless of existing connections, and keeps it until
+// the connection gets lost.
+//
+// SharedWorkerClientHolder is a per-Document object and owned by Document via
+// Supplement<Document>.
+class CORE_EXPORT SharedWorkerClientHolder final
+    : public GarbageCollectedFinalized<SharedWorkerClientHolder>,
       public Supplement<Document>,
       public ContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(SharedWorkerRepositoryClient);
+  USING_GARBAGE_COLLECTED_MIXIN(SharedWorkerClientHolder);
 
  public:
   static const char kSupplementName[];
-  static SharedWorkerRepositoryClient* From(Document& document);
+  static SharedWorkerClientHolder* From(Document& document);
 
-  explicit SharedWorkerRepositoryClient(Document&);
-  virtual ~SharedWorkerRepositoryClient() = default;
+  explicit SharedWorkerClientHolder(Document&);
+  virtual ~SharedWorkerClientHolder() = default;
 
-  // Establishes a connection with SharedWorkerServiceImpl in the browser
-  // process.
+  // Establishes a connection with SharedWorkerHost in the browser process.
   void Connect(SharedWorker*,
                MessagePortChannel,
                const KURL&,
@@ -85,9 +87,9 @@ class CORE_EXPORT SharedWorkerRepositoryClient final
   mojom::blink::SharedWorkerConnectorPtr connector_;
   mojo::StrongBindingSet<mojom::blink::SharedWorkerClient> client_set_;
 
-  DISALLOW_COPY_AND_ASSIGN(SharedWorkerRepositoryClient);
+  DISALLOW_COPY_AND_ASSIGN(SharedWorkerClientHolder);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_REPOSITORY_CLIENT_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_CLIENT_HOLDER_H_

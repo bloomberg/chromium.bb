@@ -38,7 +38,7 @@
 #include "third_party/blink/renderer/core/messaging/message_channel.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/core/workers/shared_worker_repository_client.h"
+#include "third_party/blink/renderer/core/workers/shared_worker_client_holder.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -94,7 +94,7 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
   if (!name.IsNull())
     worker_name = name;
 
-  SharedWorkerRepositoryClient::From(*document)->Connect(
+  SharedWorkerClientHolder::From(*document)->Connect(
       worker, std::move(remote_port), script_url, std::move(blob_url_token),
       worker_name);
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/workers/shared_worker_connect_listener.h"
+#include "third_party/blink/renderer/core/workers/shared_worker_client.h"
 
 #include "base/logging.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -12,16 +12,16 @@
 
 namespace blink {
 
-SharedWorkerConnectListener::SharedWorkerConnectListener(SharedWorker* worker)
+SharedWorkerClient::SharedWorkerClient(SharedWorker* worker)
     : worker_(worker) {}
 
-SharedWorkerConnectListener::~SharedWorkerConnectListener() {
+SharedWorkerClient::~SharedWorkerClient() {
   // We have lost our connection to the worker. If this happens before
   // OnConnected() is called, then it suggests that the document is gone or
   // going away.
 }
 
-void SharedWorkerConnectListener::OnCreated(
+void SharedWorkerClient::OnCreated(
     mojom::SharedWorkerCreationContextType creation_context_type) {
   worker_->SetIsBeingConnected(true);
 
@@ -34,19 +34,19 @@ void SharedWorkerConnectListener::OnCreated(
                 : mojom::SharedWorkerCreationContextType::kNonsecure);
 }
 
-void SharedWorkerConnectListener::OnConnected(
+void SharedWorkerClient::OnConnected(
     const Vector<mojom::WebFeature>& features_used) {
   worker_->SetIsBeingConnected(false);
   for (auto feature : features_used)
     OnFeatureUsed(feature);
 }
 
-void SharedWorkerConnectListener::OnScriptLoadFailed() {
+void SharedWorkerClient::OnScriptLoadFailed() {
   worker_->DispatchEvent(*Event::CreateCancelable(event_type_names::kError));
   worker_->SetIsBeingConnected(false);
 }
 
-void SharedWorkerConnectListener::OnFeatureUsed(mojom::WebFeature feature) {
+void SharedWorkerClient::OnFeatureUsed(mojom::WebFeature feature) {
   UseCounter::Count(worker_->GetExecutionContext(), feature);
 }
 

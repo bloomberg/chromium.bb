@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/core/workers/shared_worker_repository_client.h"
+#include "third_party/blink/renderer/core/workers/shared_worker_client_holder.h"
 
 #include <memory>
 #include <utility>
@@ -44,32 +44,31 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/workers/shared_worker.h"
-#include "third_party/blink/renderer/core/workers/shared_worker_connect_listener.h"
+#include "third_party/blink/renderer/core/workers/shared_worker_client.h"
 
 namespace blink {
 
-const char SharedWorkerRepositoryClient::kSupplementName[] =
-    "SharedWorkerRepositoryClient";
+const char SharedWorkerClientHolder::kSupplementName[] =
+    "SharedWorkerClientHolder";
 
-SharedWorkerRepositoryClient* SharedWorkerRepositoryClient::From(
-    Document& document) {
+SharedWorkerClientHolder* SharedWorkerClientHolder::From(Document& document) {
   DCHECK(IsMainThread());
-  SharedWorkerRepositoryClient* client =
-      Supplement<Document>::From<SharedWorkerRepositoryClient>(document);
-  if (!client) {
-    client = MakeGarbageCollected<SharedWorkerRepositoryClient>(document);
-    Supplement<Document>::ProvideTo(document, client);
+  SharedWorkerClientHolder* holder =
+      Supplement<Document>::From<SharedWorkerClientHolder>(document);
+  if (!holder) {
+    holder = MakeGarbageCollected<SharedWorkerClientHolder>(document);
+    Supplement<Document>::ProvideTo(document, holder);
   }
-  return client;
+  return holder;
 }
 
-SharedWorkerRepositoryClient::SharedWorkerRepositoryClient(Document& document)
+SharedWorkerClientHolder::SharedWorkerClientHolder(Document& document)
     : ContextLifecycleObserver(&document) {
   DCHECK(IsMainThread());
   document.GetInterfaceProvider()->GetInterface(mojo::MakeRequest(&connector_));
 }
 
-void SharedWorkerRepositoryClient::Connect(
+void SharedWorkerClientHolder::Connect(
     SharedWorker* worker,
     MessagePortChannel port,
     const KURL& url,
@@ -97,7 +96,7 @@ void SharedWorkerRepositoryClient::Connect(
       worker->GetExecutionContext()->GetSecurityContext().AddressSpace()));
 
   mojom::blink::SharedWorkerClientPtr client_ptr;
-  client_set_.AddBinding(std::make_unique<SharedWorkerConnectListener>(worker),
+  client_set_.AddBinding(std::make_unique<SharedWorkerClient>(worker),
                          mojo::MakeRequest(&client_ptr));
 
   connector_->Connect(
@@ -111,14 +110,14 @@ void SharedWorkerRepositoryClient::Connect(
           mojom::blink::BlobURLToken::Version_)));
 }
 
-void SharedWorkerRepositoryClient::ContextDestroyed(ExecutionContext*) {
+void SharedWorkerClientHolder::ContextDestroyed(ExecutionContext*) {
   DCHECK(IsMainThread());
   // Close mojo connections which will signal disinterest in the associated
   // shared worker.
   client_set_.CloseAllBindings();
 }
 
-void SharedWorkerRepositoryClient::Trace(Visitor* visitor) {
+void SharedWorkerClientHolder::Trace(Visitor* visitor) {
   Supplement<Document>::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }
