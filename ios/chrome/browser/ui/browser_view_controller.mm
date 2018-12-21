@@ -937,7 +937,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     return;
 
   _visible = visible;
-  [self updateBroadcastState];
 }
 
 - (void)setViewVisible:(BOOL)viewVisible {
@@ -946,6 +945,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   _viewVisible = viewVisible;
   self.visible = viewVisible;
   [self updateDialogPresenterActiveState];
+  [self updateBroadcastState];
 }
 
 - (void)setBroadcasting:(BOOL)broadcasting {
@@ -2467,7 +2467,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)updateBroadcastState {
-  self.broadcasting = self.active && self.visible;
+  self.broadcasting = self.active && self.viewVisible;
 }
 
 - (void)updateDialogPresenterActiveState {
