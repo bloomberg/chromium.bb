@@ -14,6 +14,7 @@ crbug.com/24182 editing/selection/modify_move/move-by-word-visually-mac.html [ S
 crbug.com/24182 compositing/culling/filter-occlusion-blur-large.html [ Slow ]
 crbug.com/24182 compositing/video-frame-size-change.html [ Slow ]
 crbug.com/24182 editing/selection/caret-at-bidi-boundary.html [ Slow ]
+crbug.com/24182 virtual/bidi-caret-affinity/editing/selection/caret-at-bidi-boundary.html [ Slow ]
 crbug.com/24182 editing/selection/modify_move/move-by-word-visually-single-space-inline-element.html [ Slow ]
 crbug.com/24182 editing/selection/modify_move/move-by-word-visually-inline-block-positioned-element.html [ Slow ]
 crbug.com/24182 editing/selection/modify_move/move-by-word-visually-multi-space.html [ Slow ]

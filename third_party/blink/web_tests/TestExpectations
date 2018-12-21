@@ -1824,7 +1824,6 @@ crbug.com/725470 virtual/bidi-caret-affinity/editing/shadow/doubleclick-on-meter
 crbug.com/894651 virtual/bidi-caret-affinity/editing/inserting/caret-position.html [ Failure ]
 
 ### virtual/bidi-caret-affinity/editing/selection/
-crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/caret-at-bidi-boundary.html [ Failure Timeout ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/caret-bidi-first-and-last-letters.html [ Failure ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/css-pseudo-element.html [ Failure ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/select-bidi-run.html [ Failure ]
