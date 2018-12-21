@@ -48,6 +48,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/printing/printer_configuration.h"
+#include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
@@ -1199,6 +1200,84 @@ void AutotestPrivateSetAssistantEnabledFunction::
 
 void AutotestPrivateSetAssistantEnabledFunction::Timeout() {
   Respond(Error("Assistant service timed out"));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSendAssistantTextQueryFunction
+///////////////////////////////////////////////////////////////////////////////
+AutotestPrivateSendAssistantTextQueryFunction::
+    AutotestPrivateSendAssistantTextQueryFunction()
+    : assistant_interaction_subscriber_binding_(this),
+      result_(std::make_unique<base::DictionaryValue>()) {}
+
+AutotestPrivateSendAssistantTextQueryFunction::
+    ~AutotestPrivateSendAssistantTextQueryFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSendAssistantTextQueryFunction::Run() {
+  DVLOG(1) << "AutotestPrivateSendAssistantTextQueryFunction";
+
+  std::unique_ptr<api::autotest_private::SendAssistantTextQuery::Params> params(
+      api::autotest_private::SendAssistantTextQuery::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  if (!profile || arc::IsAssistantAllowedForProfile(profile) !=
+                      ash::mojom::AssistantAllowedState::ALLOWED) {
+    return RespondNow(Error("Assistant is not available for the current user"));
+  }
+
+  // Bind to Assistant service interface.
+  service_manager::Connector* connector =
+      content::BrowserContext::GetConnectorFor(profile);
+  connector->BindInterface(chromeos::assistant::mojom::kServiceName,
+                           &assistant_);
+
+  // Subscribe to Assistant interaction events.
+  chromeos::assistant::mojom::AssistantInteractionSubscriberPtr ptr;
+  assistant_interaction_subscriber_binding_.Bind(mojo::MakeRequest(&ptr));
+  assistant_->AddAssistantInteractionSubscriber(std::move(ptr));
+
+  // Start text interaction with Assistant server.
+  assistant_->StartTextInteraction(params->query, true);
+
+  // Set up a delayed timer to wait for the query response and hold a reference
+  // to |this| to avoid being destructed. Also make sure we stop and respond
+  // when timeout.
+  timeout_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(params->timeout_ms),
+      base::BindOnce(&AutotestPrivateSendAssistantTextQueryFunction::Timeout,
+                     this));
+
+  return RespondLater();
+}
+
+void AutotestPrivateSendAssistantTextQueryFunction::OnTextResponse(
+    const std::string& response) {
+  result_->SetKey("text", base::Value(response));
+}
+
+void AutotestPrivateSendAssistantTextQueryFunction::OnHtmlResponse(
+    const std::string& response,
+    const std::string& fallback) {
+  result_->SetKey("htmlResponse", base::Value(response));
+  result_->SetKey("htmlFallback", base::Value(fallback));
+}
+
+void AutotestPrivateSendAssistantTextQueryFunction::OnInteractionFinished(
+    AssistantInteractionResolution resolution) {
+  if (resolution != AssistantInteractionResolution::kNormal) {
+    Respond(Error("Interaction ends abnormally."));
+    timeout_timer_.AbandonAndStop();
+    return;
+  }
+
+  Respond(OneArgument(std::move(result_)));
+  timeout_timer_.AbandonAndStop();
+}
+
+void AutotestPrivateSendAssistantTextQueryFunction::Timeout() {
+  Respond(Error("Assistant response timeout."));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

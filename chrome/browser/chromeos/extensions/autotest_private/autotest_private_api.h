@@ -16,6 +16,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "ui/message_center/public/cpp/notification_types.h"
@@ -441,6 +442,54 @@ class AutotestPrivateSetAssistantEnabledFunction
   ash::AssistantStateProxy assistant_state_;
   base::Optional<ash::mojom::VoiceInteractionState> expected_state_;
   base::OneShotTimer timeout_timer_;
+};
+
+class AutotestPrivateSendAssistantTextQueryFunction
+    : public UIThreadExtensionFunction,
+      public chromeos::assistant::mojom::AssistantInteractionSubscriber {
+ public:
+  AutotestPrivateSendAssistantTextQueryFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.sendAssistantTextQuery",
+                             AUTOTESTPRIVATE_SENDASSISTANTTEXTQUERY)
+
+ private:
+  ~AutotestPrivateSendAssistantTextQueryFunction() override;
+  ResponseAction Run() override;
+
+  using AssistantSuggestionPtr =
+      chromeos::assistant::mojom::AssistantSuggestionPtr;
+  using AssistantInteractionResolution =
+      chromeos::assistant::mojom::AssistantInteractionResolution;
+
+  // chromeos::assistant::mojom::AssistantInteractionSubscriber:
+  void OnHtmlResponse(const std::string& response,
+                      const std::string& fallback) override;
+  void OnTextResponse(const std::string& response) override;
+  void OnInteractionFinished(
+      AssistantInteractionResolution resolution) override;
+  void OnInteractionStarted(bool is_voice_interaction) override {}
+  void OnSuggestionsResponse(
+      std::vector<AssistantSuggestionPtr> response) override {}
+  void OnOpenUrlResponse(const GURL& url) override {}
+  void OnSpeechRecognitionStarted() override {}
+  void OnSpeechRecognitionIntermediateResult(
+      const std::string& high_confidence_text,
+      const std::string& low_confidence_text) override {}
+  void OnSpeechRecognitionEndOfUtterance() override {}
+  void OnSpeechRecognitionFinalResult(
+      const std::string& final_result) override {}
+  void OnSpeechLevelUpdated(float speech_level) override {}
+  void OnTtsStarted(bool due_to_error) override {}
+
+  // Called when Assistant service fails to respond in a certain amount of
+  // time. We will respond with an error.
+  void Timeout();
+
+  chromeos::assistant::mojom::AssistantPtr assistant_;
+  mojo::Binding<chromeos::assistant::mojom::AssistantInteractionSubscriber>
+      assistant_interaction_subscriber_binding_;
+  base::OneShotTimer timeout_timer_;
+  std::unique_ptr<base::DictionaryValue> result_;
 };
 
 // The profile-keyed service that manages the autotestPrivate extension API.

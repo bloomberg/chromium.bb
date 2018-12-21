@@ -102,6 +102,13 @@ namespace autotestPrivate {
   };
   callback HistogramCallback = void (Histogram histogram);
 
+  dictionary AssistantQueryResponse {
+    DOMString? text;
+    DOMString? htmlResponse;
+    DOMString? htmlFallback;
+  };
+  callback AssistantQueryResponseCallback = void (AssistantQueryResponse response);
+
   callback IsAppShownCallback = void (boolean appShown);
 
   callback IsArcProvisionedCallback = void (boolean arcProvisioned);
@@ -272,5 +279,10 @@ namespace autotestPrivate {
     // Enable/disable the Google Assistant
     // |callback|: Called when the operation has completed.
     static void setAssistantEnabled(boolean enabled, long timeout_ms, VoidCallback callback);
+
+    // Send a text query via Google Assistant.
+    // |callback|: Called when response has been received.
+    static void sendAssistantTextQuery(DOMString query, long timeout_ms,
+                                       AssistantQueryResponseCallback callback);
   };
 };
