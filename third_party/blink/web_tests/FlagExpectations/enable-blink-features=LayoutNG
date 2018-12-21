@@ -301,7 +301,6 @@ crbug.com/591099 virtual/bidi-caret-affinity/editing/selection/dont-select-text-
 crbug.com/591099 virtual/bidi-caret-affinity/editing/selection/dont-select-text-overflow-ellipsis-when-wrapping.html [ Crash ]
 crbug.com/591099 virtual/bidi-caret-affinity/editing/selection/doubleclick-whitespace-crash.html [ Crash ]
 crbug.com/591099 virtual/bidi-caret-affinity/editing/selection/legal-positions.html [ Crash ]
-crbug.com/591099 virtual/bidi-caret-affinity/editing/selection/modify_extend/extend_by_character.html [ Pass ]
 crbug.com/591099 virtual/bidi-caret-affinity/editing/selection/paint-hyphen.html [ Crash ]
 crbug.com/591099 virtual/bidi-caret-affinity/editing/selection/select-text-overflow-ellipsis-mixed-in-ltr-2.html [ Crash ]
 crbug.com/591099 virtual/bidi-caret-affinity/editing/selection/select-text-overflow-ellipsis-mixed-in-ltr.html [ Crash ]

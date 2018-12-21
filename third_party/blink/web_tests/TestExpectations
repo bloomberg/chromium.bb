@@ -1812,6 +1812,8 @@ crbug.com/821455 virtual/bidi-caret-affinity/editing/pasteboard/drag-files-to-ed
 crbug.com/891427 virtual/bidi-caret-affinity/editing/pasteboard/drop-text-without-selection.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 virtual/bidi-caret-affinity/editing/selection/drag-in-iframe.html [ Failure ]
 crbug.com/900060 virtual/bidi-caret-affinity/editing/selection/mixed-editability-8.html [ Failure ]
+crbug.com/751952 [ Mac ] virtual/bidi-caret-affinity/editing/selection/modify_extend/extend_by_character.html [ Failure Pass ]
+crbug.com/751952 [ Win ] virtual/bidi-caret-affinity/editing/selection/modify_extend/extend_by_character.html [ Failure Pass ]
 crbug.com/636424 virtual/bidi-caret-affinity/editing/selection/modify_move/move-by-word-visually-crash-test-5.html [ Pass Timeout ]
 crbug.com/851812 virtual/bidi-caret-affinity/editing/selection/paint-hyphen.html [ Failure ]
 crbug.com/725470 virtual/bidi-caret-affinity/editing/shadow/doubleclick-on-meter-in-shadow-crash.html [ Crash Failure ]
@@ -1830,9 +1832,6 @@ crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/caret-rtl-2-left.
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/caret-rtl-2.html [ Failure ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/css-pseudo-element.html [ Failure ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/select-bidi-run.html [ Failure ]
-
-### virtual/bidi-caret-affinity/editing/selection/modify_extend/
-crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_extend/extend_by_character.html [ Failure ]
 
 ### virtual/bidi-caret-affinity/editing/selection/modify_move/
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move-by-word-visually-mac.html [ Timeout ]
