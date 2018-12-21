@@ -345,8 +345,8 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   // TODO(liberato): On re-init, should this still happen?
   if (cdm_context) {
     new_key_callback_registration_ =
-        cdm_context->RegisterNewKeyCB(base::BindRepeating(
-            &D3D11VideoDecoder::NotifyNewKey, weak_factory_.GetWeakPtr()));
+        cdm_context->RegisterEventCB(base::BindRepeating(
+            &D3D11VideoDecoder::OnCdmContextEvent, weak_factory_.GetWeakPtr()));
   }
 
   // Initialize the gpu side.  We wait until everything else is initialized,
@@ -476,7 +476,7 @@ void D3D11VideoDecoder::DoDecode() {
     } else if (result == media::AcceleratedVideoDecoder::kTryAgain) {
       state_ = State::kWaitingForNewKey;
       waiting_cb_.Run(WaitingReason::kNoDecryptionKey);
-      // Note that another DoDecode() task would be posted in NotifyNewKey().
+      // Another DoDecode() task would be posted in OnCdmContextEvent().
       return;
     } else {
       LOG(ERROR) << "VDA Error " << result;
@@ -637,21 +637,28 @@ void D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   output_cb_.Run(frame);
 }
 
-void D3D11VideoDecoder::NotifyNewKey() {
+void D3D11VideoDecoder::OnCdmContextEvent(CdmContext::Event event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (state_ != State::kWaitingForNewKey) {
-    // Note that this method may be called before DoDecode() because the key
-    // acquisition stack may be running independently of the media decoding
-    // stack. So if this isn't in kWaitingForNewKey state no "resuming" is
-    // required therefore no special action taken here.
-    return;
-  }
+  switch (event) {
+    case CdmContext::Event::kHasAdditionalUsableKey:
+      // Note that this event may happen before DoDecode() because the key
+      // acquisition stack runs independently of the media decoding stack.
+      // So if this isn't in kWaitingForNewKey state no "resuming" is
+      // required therefore no special action taken here.
+      if (state_ != State::kWaitingForNewKey)
+        return;
 
-  state_ = State::kRunning;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&D3D11VideoDecoder::DoDecode, weak_factory_.GetWeakPtr()));
+      state_ = State::kRunning;
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(&D3D11VideoDecoder::DoDecode,
+                                    weak_factory_.GetWeakPtr()));
+      return;
+
+    case CdmContext::Event::kHardwareContextLost:
+      // TODO(xhwang): Handle this event.
+      return;
+  }
 }
 
 void D3D11VideoDecoder::NotifyError(const char* reason) {

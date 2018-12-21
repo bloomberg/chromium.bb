@@ -39,10 +39,10 @@ class CdmProxyContextRef : public CdmContextRef, public CdmContext {
 
  private:
   // CdmContext implementation.
-  std::unique_ptr<CallbackRegistration> RegisterNewKeyCB(
-      base::RepeatingClosure new_key_cb) final {
+  std::unique_ptr<CallbackRegistration> RegisterEventCB(
+      EventCB event_cb) final {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    return cdm_context_ ? cdm_context_->RegisterNewKeyCB(std::move(new_key_cb))
+    return cdm_context_ ? cdm_context_->RegisterEventCB(std::move(event_cb))
                         : nullptr;
   }
 

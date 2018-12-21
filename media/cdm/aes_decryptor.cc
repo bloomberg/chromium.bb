@@ -453,8 +453,8 @@ CdmContext* AesDecryptor::GetCdmContext() {
   return this;
 }
 
-std::unique_ptr<CallbackRegistration> AesDecryptor::RegisterNewKeyCB(
-    base::RepeatingClosure new_key_cb) {
+std::unique_ptr<CallbackRegistration> AesDecryptor::RegisterEventCB(
+    EventCB event_cb) {
   NOTIMPLEMENTED();
   return nullptr;
 }
