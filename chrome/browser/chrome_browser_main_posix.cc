@@ -99,7 +99,7 @@ void ExitHandler::OnSessionRestoreDone(int /* num_tabs */) {
 void ExitHandler::Exit() {
 #if defined(OS_CHROMEOS)
   // On ChromeOS, exiting on signal should be always clean.
-  chrome::ExitCleanly();
+  chrome::ExitIgnoreUnloadHandlers();
 #else
   chrome::AttemptExit();
 #endif
