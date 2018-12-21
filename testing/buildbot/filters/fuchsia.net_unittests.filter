@@ -28,10 +28,7 @@
 -URLRequestTest.NetworkDelegateProxyError
 
 # Flaky hangs, https://crbug.com/913037.
--URLRequestTestHTTP.Redirect301Tests
--URLRequestTestHTTP.Redirect302Tests
--URLRequestTestHTTP.Redirect303Tests
--URLRequestTestHTTP.Redirect307Tests
+-URLRequestTestHTTP.Redirect30*
 
 # SocketPosix::IsConnected has a different behavior on Fuchsia.
 # https://crbug.com/887587.
