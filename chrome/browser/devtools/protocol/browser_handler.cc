@@ -156,8 +156,9 @@ Response BrowserHandler::GetWindowBounds(
 }
 
 Response BrowserHandler::Close() {
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce([]() { chrome::AttemptExit(); }));
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce([]() { chrome::ExitIgnoreUnloadHandlers(); }));
   return Response::OK();
 }
 
