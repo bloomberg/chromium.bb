@@ -1748,7 +1748,7 @@ bool WebGLRenderingContextBase::CheckObjectToBeBound(const char* function_name,
                         "object not from this context");
       return false;
     }
-    deleted = !object->HasObject();
+    deleted = object->IsDeleted();
   }
   return true;
 }
