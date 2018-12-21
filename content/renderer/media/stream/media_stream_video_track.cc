@@ -270,6 +270,9 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
       media::BindToCurrentLoop(base::BindRepeating(
           &MediaStreamVideoTrack::SetSizeAndComputedFrameRate,
           weak_factory_.GetWeakPtr())),
+      media::BindToCurrentLoop(base::BindRepeating(
+          &MediaStreamVideoTrack::set_computed_source_format,
+          weak_factory_.GetWeakPtr())),
       callback);
 }
 
@@ -298,6 +301,9 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
                  frame_deliverer_),
       media::BindToCurrentLoop(base::BindRepeating(
           &MediaStreamVideoTrack::SetSizeAndComputedFrameRate,
+          weak_factory_.GetWeakPtr())),
+      media::BindToCurrentLoop(base::BindRepeating(
+          &MediaStreamVideoTrack::set_computed_source_format,
           weak_factory_.GetWeakPtr())),
       callback);
 }
@@ -428,6 +434,11 @@ void MediaStreamVideoTrack::OnReadyStateChanged(
 void MediaStreamVideoTrack::SetTrackAdapterSettings(
     const VideoTrackAdapterSettings& settings) {
   adapter_settings_ = std::make_unique<VideoTrackAdapterSettings>(settings);
+}
+
+media::VideoCaptureFormat MediaStreamVideoTrack::GetComputedSourceFormat() {
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
+  return computed_source_format_;
 }
 
 }  // namespace content
