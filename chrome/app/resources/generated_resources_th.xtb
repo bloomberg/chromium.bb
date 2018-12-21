@@ -1602,7 +1602,6 @@
 <translation id="3470502288861289375">กำลังคัดลอก...</translation>
 <translation id="3473479545200714844">แว่นขยายหน้าจอ</translation>
 <translation id="3475447146579922140">สเปรดชีตของ Google</translation>
-<translation id="3475538074809281797">{LINE_COUNT,plural, =1{&lt;ไม่ได้แสดง 1 บรรทัด&gt;}other{&lt;ไม่ได้แสดง $1 บรรทัด&gt;}}</translation>
 <translation id="3475843873335999118">ขออภัย ระบบยังคงไม่รู้จักลายนิ้วมือของคุณ โปรดป้อนรหัสผ่าน</translation>
 <translation id="347670947055184738">อ๊ะ! ระบบไม่สามารถดึงข้อมูลนโยบายจากอุปกรณ์</translation>
 <translation id="347785443197175480">อนุญาตให้ <ph name="HOST" /> เข้าถึงกล้องถ่ายรูปและไมโครโฟนของคุณต่อไป</translation>
@@ -2732,7 +2731,6 @@
 <translation id="5266113311903163739">ข้อผิดพลาดเกี่ยวกับการนำเข้าผู้ออกใบรับรอง</translation>
 <translation id="5269977353971873915">การพิมพ์ล้มเหลว</translation>
 <translation id="5270167208902136840">แสดงอีก <ph name="NUMBER_OF_MORE_APPS" /> แอป</translation>
-<translation id="5272654297705279635">การตั้งค่าที่กำหนดเอง</translation>
 <translation id="5275352920323889391">สุนัข</translation>
 <translation id="5275973617553375938">ไฟล์ที่กู้คืนจาก Google ไดรฟ์</translation>
 <translation id="527605982717517565">อนุญาตให้เรียกใช้ JavaScript บน <ph name="HOST" /> เสมอ</translation>

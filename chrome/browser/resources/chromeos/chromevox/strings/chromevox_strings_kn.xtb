@@ -337,7 +337,6 @@
 <translation id="3392045790598181549"><ph name="NAME" />, ಮೆನು ಐಟಂ</translation>
 <translation id="3393605254399152980">ನೀವು ಸ್ಪರ್ಶಿಸಿರುವುದನ್ನು ಆಲಿಸಲು ಒಂದು ಬೆರಳನ್ನು ಎಳೆಯಿರಿ</translation>
 <translation id="3406283310380167331">ಫಾರ್ಮ್‌ಗಳ ಪಟ್ಟಿಯನ್ನು ತೋರಿಸಿ</translation>
-<translation id="3423495725743882470">ಸಾಲು $1 ಕಾಲಮ್ $2</translation>
 <translation id="3457000393508828486">ಭಾಗಶಃ ಒತ್ತಿದಾಗ</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, ಆಫ್ ಮಾಡಿ</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, ಬಟನ್</translation>
@@ -376,7 +375,6 @@
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}other{#}}</translation>
 <translation id="3801735343383419236">ಸ್ವಯಂಪೂರ್ಣಗೊಳಿಸುವಿಕೆ ಪಟ್ಟಿ</translation>
 <translation id="3810838688059735925">ವೀಡಿಯೊ</translation>
-<translation id="3812237531158591503">$1 ಅಂಟಿಸಿ.</translation>
 <translation id="3816633764618089385">ಮುಂದಿನ ಮಾಧ್ಯಮ</translation>
 <translation id="3819376190738087562">ಯಾವುದೇ ಜಂಪ್‌ಗಳಿಲ್ಲ.</translation>
 <translation id="385383972552776628">ಆಯ್ಕೆಗಳ ಪುಟವನ್ನು ತೆರೆಯಿರಿ</translation>
@@ -578,7 +576,6 @@
 <translation id="5402791055281059602">ಒಂದು ಮಾದರಿ ಎಚ್ಚರಿಕೆ</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{ಅಲ್ಪವಿರಾಮ ಚಿಹ್ನೆ}one{# ಅರ್ಧವಿರಾಮ ಚಿಹ್ನೆಗಳು}other{# ಅರ್ಧವಿರಾಮ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="5411891038905756502">ಯಾವುದೇ ಹಿಂದಿನ ಅಂಶವಿಲ್ಲ.</translation>
-<translation id="5417034931411865818">ರೂಟಿಂಗ್ ಕೀ $1 ಅಡಿಯಲ್ಲಿ ಐಟಂ ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
 <translation id="5435274640623994081">ಇಯರ್‌ಕಾನ್‌ ಲಾಗ್ ಇನ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{ಕಡಿಮೆ ಸೂಚಕ}one{# ಕಡಿಮೆ ಸೂಚಕ ಚಿಹ್ನೆಗಳು}other{# ಕಡಿಮೆ ಸೂಚಕ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="5444587279251314700">(ಸಕ್ರಿಯವಾಗಿದೆ)</translation>
@@ -676,7 +673,6 @@
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">ಸ್ಪೇಸ್</translation>
 <translation id="6132506484792346370">ಪಟ್ಟಿ ಬಾಕ್ಸ್ ಅಥವಾ ಕಾಂಬೊ ಬಾಕ್ಸ್</translation>
-<translation id="6138576064440631958">$1 ವೃತ್ತದ ಭಾಗ</translation>
 <translation id="6142308968191113180">ಶೀರ್ಷಿಕೆ 4</translation>
 <translation id="6164829606128959761">ಮೀಟರ್</translation>
 <translation id="6169420925157477918">ದೀರ್ಘ ವಿವರಣೆಯೊಂದಿಗೆ ಚಿತ್ರ</translation>
@@ -698,7 +694,6 @@
 <translation id="6355910664415701303">ಮುಂದಿನ ಯಾವುದೇ ಪಟ್ಟಿ ಐಟಂಯಿಲ್ಲ.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">ಹಿಂದಿನ ಶಿರೋನಾಮೆ</translation>
-<translation id="6378565991815958969">$1 ನಕಲಿಸಿ.</translation>
 <translation id="6385591741672306837">ಕಾಲಮ್</translation>
 <translation id="6387719785439924554">ಪಕ್ಕದಲ್ಲಿ</translation>
 <translation id="6411426777058107714">ಹಿಂದಿನ ರೇಡಿಯೊ ಬಟನ್ ಇಲ್ಲ.</translation>
@@ -898,7 +893,6 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="820469951249669083">ಮುಂದಿನ ಸಾಲಿಗೆ ಹೋಗಿ</translation>
 <translation id="8215202828671303819">ಬಹು ಆಯ್ಕೆ</translation>
 <translation id="826825447994856889">ಪರಿಚಯ</translation>
-<translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">ಹಿಂದೆ ಗಮನಹರಿಸಿದಂತಹ ಐಟಂಗೆ ಹೋಗಿ</translation>
 <translation id="8278417001922463147">ಯಾವುದೇ ಹಿಂದಿನ ಲೇಖನವಿಲ್ಲ.</translation>
 <translation id="8283603667300770666">ಮುಂದಿನ ಫಾರ್ಮ್ ಕ್ಷೇತ್ರ</translation>
@@ -980,7 +974,6 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="9082874451376019682">ಹಿಂದಿನ ಸ್ಲೈಡರ್ ಇಲ್ಲ.</translation>
 <translation id="9087707351856729768">ಸ್ವಯಂ ಪೂರ್ಣಗೊಳಿಸುವಿಕೆ ಆಯ್ಕೆಗಳನ್ನು ಪಡೆಯಲು ಟೈಪ್ ಮಾಡಿ.</translation>
 <translation id="9089864840575085222">ಸೈಕಲ್ ಟೈಪಿಂಗ್ ಇಕೋ</translation>
-<translation id="9105227991373418255">$1 ಕತ್ತರಿಸಿ.</translation>
 <translation id="9107530006868467849">ಯಾವುದೇ ಹಿಂದಿನ ಮಾಧ್ಯಮ ವಿಜೆಟ್ ಇಲ್ಲ.</translation>
 <translation id="9108370397979208512">ಮ್ಯಾಥ್</translation>
 <translation id="9108589040018540527">scbr</translation>

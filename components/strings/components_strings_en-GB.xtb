@@ -393,7 +393,10 @@
 <translation id="3479539252931486093">Was this unexpected? <ph name="BEGIN_LINK" />Let us know<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Not now</translation>
 <translation id="3484560055331845446">You could lose access to your Google account. Chrome recommends changing your password now. You'll be asked to sign in.</translation>
+<translation id="3495081129428749620">Find in page
+    <ph name="PAGE_TITLE" /></translation>
 <translation id="3498215018399854026">We could not reach your parent at the moment. Please try again.</translation>
+<translation id="3505277389583235524">Tab switch button, press enter to switch to the open tab, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="3528171143076753409">Server's certificate is not trusted</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{At least 1 item on synced devices}=1{1 item (and more on synced devices)}other{# items (and more on synced devices)}}</translation>
 <translation id="3539171420378717834">Keep a copy of this card on this device</translation>
@@ -453,7 +456,6 @@
 <translation id="3890664840433101773">Add email</translation>
 <translation id="3901925938762663762">The card is expired</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3945915738023014686">Uploaded Crash Report ID <ph name="CRASH_ID" /> (Local Crash ID: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">Always ask on this site</translation>
 <translation id="3947577358805392297">Save page for later</translation>
 <translation id="3949571496842715403">This server could not prove that it is <ph name="DOMAIN" />; its security certificate does not specify Subject Alternative Names. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
@@ -567,6 +569,7 @@
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4736825316280949806">Restart Chromium</translation>
 <translation id="473775607612524610">Update</translation>
+<translation id="4738601419177586157"><ph name="TEXT" /> search suggestion</translation>
 <translation id="4742407542027196863">Manage passwords…</translation>
 <translation id="4744603770635761495">Executable Path</translation>
 <translation id="4750917950439032686">Your information (for example, passwords or credit card numbers) is private when it is sent to this site.</translation>
@@ -587,6 +590,7 @@
 <translation id="4854362297993841467">This delivery method isn’t available. Try a different method.</translation>
 <translation id="4858792381671956233">You asked your parents if it's OK to visit this site</translation>
 <translation id="4876305945144899064">No username</translation>
+<translation id="4877422487531841831"><ph name="TEXT" /> search</translation>
 <translation id="4879491255372875719">Automatic (default)</translation>
 <translation id="4880827082731008257">Search history</translation>
 <translation id="4881695831933465202">Open</translation>
@@ -1022,6 +1026,7 @@ Additional details:
 <translation id="7815407501681723534">Found <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> for '<ph name="SEARCH_STRING" />'</translation>
 <translation id="7818867226424560206">Policy management</translation>
 <translation id="782886543891417279">The Wi-Fi that you are using (<ph name="WIFI_NAME" />) may require you to visit its login page.</translation>
+<translation id="7844689747373518809">{COUNT,plural, =0{None}=1{1 app (<ph name="EXAMPLE_APP_1" />)}=2{2 apps (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# apps (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">However, you aren’t invisible. Going incognito doesn’t hide your browsing from your employer, your Internet service provider or the websites that you visit.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Leave site?</translation>
@@ -1064,7 +1069,6 @@ Additional details:
 <translation id="8149426793427495338">Your computer went to sleep.</translation>
 <translation id="8150722005171944719">The file at <ph name="URL" /> is not readable.  It may have been removed, moved or file permissions may be preventing access.</translation>
 <translation id="8184538546369750125">Use global default (Allow)</translation>
-<translation id="8191494405820426728">Local Crash ID <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">&amp;Undo Move</translation>
 <translation id="8197543752516192074">Translate page</translation>
 <translation id="8201077131113104583">Invalid update URL for extension with ID "<ph name="EXTENSION_ID" />".</translation>
@@ -1130,6 +1134,7 @@ Additional details:
 <translation id="858637041960032120">Add phone no.</translation>
 <translation id="859285277496340001">The certificate does not specify a mechanism to check whether it has been revoked.</translation>
 <translation id="860043288473659153">Cardholder name</translation>
+<translation id="8604621652298273827"><ph name="TAB_SWITCH_SUFFIX" />, currently open, press tab then enter to switch to the open tab</translation>
 <translation id="8620436878122366504">Your parents haven't approved it yet</translation>
 <translation id="8625384913736129811">Save This Card to This Device</translation>
 <translation id="8662811608048051533">Signs you out of most sites.</translation>
@@ -1192,6 +1197,7 @@ Additional details:
 <translation id="9049981332609050619">You attempted to reach <ph name="DOMAIN" />, but the server presented an invalid certificate.</translation>
 <translation id="9050666287014529139">Passphrase</translation>
 <translation id="9065203028668620118">Edit</translation>
+<translation id="9065745800631924235"><ph name="TEXT" /> search from history</translation>
 <translation id="9069693763241529744">Blocked by an extension</translation>
 <translation id="9076283476770535406">It may have mature content</translation>
 <translation id="9078964945751709336">More information required</translation>

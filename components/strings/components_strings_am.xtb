@@ -452,7 +452,6 @@
 <translation id="3890664840433101773">ኢሜይል ያክሉ</translation>
 <translation id="3901925938762663762">ካርዱ አገልግሎት ጊዜው አብቅቷል</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3945915738023014686">የተሰቀለ የብልሽት ሪፖርት መታወቂያ <ph name="CRASH_ID" /> (የአካባቢ የብልሽት መታወቂያ፦ <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">ሁልጊዜ በዚህ ጣቢያ ላይ ጠይቅ</translation>
 <translation id="3947577358805392297">በኋላ ላይ ለመጠቀም ገጽን አስቀምጥ</translation>
 <translation id="3949571496842715403">ይህ አገልጋይ <ph name="DOMAIN" /> መሆኑን ሊያረጋግጥ አልቻለም፤ የደህንነት ዕውቅና ማረጋገጫው የርዕሰ ጒዳይ አማራጭ ስሞችን አይጠቅስም። ይህ በተሳሳተ ውቅረት የተከሰተ ወይም አጥቂ የእርስዎን ግንኙነት አቋርጦ እየገባ ስለሆነ ሊሆን ይችላል።</translation>
@@ -1063,7 +1062,6 @@
 <translation id="8149426793427495338">የእርስዎ ኮምፒውተ ተኝቷል።</translation>
 <translation id="8150722005171944719"><ph name="URL" /> ላይ ያለው ፋይል የሚነበብ አይደለም።  ተወግዶ፣ ተወስዶ ወይም የፋይል ፍቃዶቹ መዳረሻ እየከለከሉ ሊሆኑ ይችላሉ።</translation>
 <translation id="8184538546369750125">ሁለንተናዊ ነባሪውን ተጠቀም (ፍቀድ)</translation>
-<translation id="8191494405820426728">ከባቢያዊ የብልሽት መታወቂያ <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">&amp;ውሰድን ቀልብስ</translation>
 <translation id="8197543752516192074">ገጽን ተርጉም</translation>
 <translation id="8201077131113104583">የማይሰራ የURL ዝማኔ ለቅጥያ ከመታወቂያ «<ph name="EXTENSION_ID" />» ጋር።</translation>

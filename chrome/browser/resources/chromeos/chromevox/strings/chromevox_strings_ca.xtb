@@ -336,7 +336,6 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="3392045790598181549"><ph name="NAME" />, element de menú</translation>
 <translation id="3393605254399152980">Arrossega un dit per sentir què estàs tocant</translation>
 <translation id="3406283310380167331">Mostra la llista de formularis.</translation>
-<translation id="3423495725743882470">fila $1, columna $2</translation>
 <translation id="3457000393508828486">S'ha premut parcialment.</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, desactiva</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, botó</translation>
@@ -375,7 +374,6 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Llista de compleció automàtica</translation>
 <translation id="3810838688059735925">Vídeo</translation>
-<translation id="3812237531158591503">enganxa $1.</translation>
 <translation id="3816633764618089385">Fitxer multimèdia següent</translation>
 <translation id="3819376190738087562">No hi ha cap salt.</translation>
 <translation id="385383972552776628">Obre la pàgina d'opcions</translation>
@@ -577,7 +575,6 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="5402791055281059602">Una alerta modal</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{punt i coma}other{# punts i coma}}</translation>
 <translation id="5411891038905756502">No hi ha cap punt de salt anterior.</translation>
-<translation id="5417034931411865818">Fes clic a l'element que hi ha a sota de la tecla d'encaminament $1</translation>
 <translation id="5435274640623994081">Activa el registre de sons</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{menor que}other{# símbols menor que}}</translation>
 <translation id="5444587279251314700">(activa)</translation>
@@ -675,7 +672,6 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="6122013438240733403">botó</translation>
 <translation id="6129953537138746214">Espai</translation>
 <translation id="6132506484792346370">Un quadre de llista o combinat</translation>
-<translation id="6138576064440631958">Acord: $1</translation>
 <translation id="6142308968191113180">Capçalera 4</translation>
 <translation id="6164829606128959761">comptador</translation>
 <translation id="6169420925157477918">Imatge amb descripció llarga</translation>
@@ -697,7 +693,6 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="6355910664415701303">No hi ha cap element de llista anterior.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Capçalera anterior</translation>
-<translation id="6378565991815958969">copia $1.</translation>
 <translation id="6385591741672306837">columna</translation>
 <translation id="6387719785439924554">complement</translation>
 <translation id="6411426777058107714">No hi ha cap botó d'opció anterior.</translation>
@@ -897,7 +892,6 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="820469951249669083">Ves a la fila següent</translation>
 <translation id="8215202828671303819">Selecció múltiple</translation>
 <translation id="826825447994856889">Introducció</translation>
-<translation id="826991282343985864">f$1c$2</translation>
 <translation id="8276439074553447000">Ves a l'element enfocable anterior</translation>
 <translation id="8278417001922463147">No hi ha cap article anterior.</translation>
 <translation id="8283603667300770666">Camp de formulari següent</translation>
@@ -979,7 +973,6 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="9082874451376019682">No hi ha cap control lliscant anterior.</translation>
 <translation id="9087707351856729768">Escriu alguna cosa per emplenar el camp automàticament.</translation>
 <translation id="9089864840575085222">Retorn de l'escriptura del cicle</translation>
-<translation id="9105227991373418255">retalla $1.</translation>
 <translation id="9107530006868467849">No hi ha cap widget multimèdia anterior.</translation>
 <translation id="9108370397979208512">matemàtiques</translation>
 <translation id="9108589040018540527">scbr</translation>

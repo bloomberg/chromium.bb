@@ -453,7 +453,6 @@
 <translation id="3890664840433101773">Agregar correo electrónico</translation>
 <translation id="3901925938762663762">Caducó la tarjeta.</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3945915738023014686">ID del informe de fallos <ph name="CRASH_ID" /> cargado (ID de fallo local: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">Preguntar siempre en este sitio</translation>
 <translation id="3947577358805392297">Guardar la página</translation>
 <translation id="3949571496842715403">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; su certificado de seguridad no especifica la extensión Nombres alternativos del asunto. Es posible que se deba a un error en la configuración o a que haya un atacante que está interceptando tu conexión.</translation>
@@ -1062,7 +1061,6 @@ Detalles adicionales:
 <translation id="8149426793427495338">La computadora se suspendió.</translation>
 <translation id="8150722005171944719">El archivo de <ph name="URL" /> no se puede leer. Es posible que se haya eliminado o movido o que se impida el acceso a los permisos del archivo.</translation>
 <translation id="8184538546369750125">Usar configuración global predeterminada (Permitir)</translation>
-<translation id="8191494405820426728">ID del fallo local: <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">&amp;Deshacer Mover</translation>
 <translation id="8197543752516192074">Traducir página</translation>
 <translation id="8201077131113104583">URL de actualización no válida para la extensión con ID "<ph name="EXTENSION_ID" />"</translation>

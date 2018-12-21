@@ -1602,7 +1602,6 @@
 <translation id="3470502288861289375">Αντιγραφή…</translation>
 <translation id="3473479545200714844">Μεγεθυντής οθόνης</translation>
 <translation id="3475447146579922140">Υπολογιστικό φύλλο Google</translation>
-<translation id="3475538074809281797">{LINE_COUNT,plural, =1{&lt;1 γραμμή δεν εμφανίζεται&gt;}other{&lt;$1 γραμμές δεν εμφανίζονται&gt;}}</translation>
 <translation id="3475843873335999118">Δυστυχώς, το δακτυλικό σας αποτύπωμα εξακολουθεί να μην αναγνωρίζεται. Πληκτρολογήστε τον κωδικό πρόσβασής σας.</translation>
 <translation id="347670947055184738">Ωχ! Το σύστημα δεν κατάφερε να ανακτήσει την πολιτική για τη συσκευή σας.</translation>
 <translation id="347785443197175480">Να συνεχίσει να επιτρέπεται στο <ph name="HOST" /> η πρόσβαση στην κάμερα και στο μικρόφωνό σας</translation>
@@ -2732,7 +2731,6 @@
 <translation id="5266113311903163739">Σφάλμα εισαγωγής της Αρχής Πιστοποίησης</translation>
 <translation id="5269977353971873915">Η εκτύπωση απέτυχε</translation>
 <translation id="5270167208902136840">Εμφάνιση <ph name="NUMBER_OF_MORE_APPS" /> επιπλέον εφαρμογών</translation>
-<translation id="5272654297705279635">Προσαρμοσμένες ρυθμίσεις</translation>
 <translation id="5275352920323889391">Σκύλος</translation>
 <translation id="5275973617553375938">Ανακτημένα αρχεία από το Google Drive</translation>
 <translation id="527605982717517565">Να επιτρέπεται πάντα το JavaScript στο <ph name="HOST" /></translation>

@@ -39,6 +39,7 @@
 <translation id="1259100630977430756">As páginas que visualizar em separadores privados não serão guardadas no histórico do navegador, no armazenamento de cookies ou no histórico de pesquisas depois de fechar todos os separadores privados. Os ficheiros que transferir ou os marcadores que criar manter-se-ão.
 
 No entanto, a navegação não é invisível. Passar para o modo privado não oculta a navegação do empregador, do fornecedor de serviços de Internet nem dos Websites que visitar.</translation>
+<translation id="1260236875608242557">Pesquisar e explorar</translation>
 <translation id="1264974993859112054">Desporto</translation>
 <translation id="127138278192656016">Utilizar a sincronização e todos os serviços</translation>
 <translation id="1272079795634619415">Parar</translation>
@@ -330,6 +331,7 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="3599863153486145794">Limpa o histórico de todos os dispositivos com sessão iniciada. A sua Conta Google pode ter outras formas do histórico de navegação em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Desativar o som dos sites que reproduzem som</translation>
 <translation id="360207483134687714">Ajude a melhorar a experiência de RV no Chrome</translation>
+<translation id="3604604794717279723">Aceito</translation>
 <translation id="3616113530831147358">Áudio</translation>
 <translation id="3630011985153972676">Permita que o Chrome lhe transfira artigos quando ligado ao Wi-Fi nas definições.</translation>
 <translation id="3632295766818638029">Desmascarar palavra-passe</translation>
@@ -694,6 +696,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6343192674172527289">Nenhuma transferência encontrada</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
 <translation id="6364438453358674297">Pretende remover a sugestão do histórico?</translation>
+<translation id="6369229450655021117">A partir daqui, pode pesquisar na Web, partilhar com amigos e ver as páginas abertas.</translation>
 <translation id="6378173571450987352">Detalhes: ordenado por quantidade de dados utilizados</translation>
 <translation id="6383961787135158834">Limpar armazen. do site…</translation>
 <translation id="6388207532828177975">Limpar e repor</translation>
@@ -872,6 +875,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7665369617277396874">Adicionar conta</translation>
+<translation id="7670842975141217779">Assistente Google\nno Chrome</translation>
 <translation id="7682724950699840886">Experimente as seguintes sugestões: certifique-se de que existe espaço suficiente no dispositivo e tente exportar novamente.</translation>
 <translation id="7698359219371678927">Criar email no <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Pesquisas de preenchimento automático e URLs</translation>

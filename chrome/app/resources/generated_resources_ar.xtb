@@ -1600,7 +1600,6 @@
 <translation id="3470502288861289375">جارٍ النسخ...</translation>
 <translation id="3473479545200714844">مكبّر الشاشة</translation>
 <translation id="3475447146579922140">‏جدول بيانات Google</translation>
-<translation id="3475538074809281797">{LINE_COUNT,plural, =1{&lt;لم يظهر خط واحد (1)&gt;}zero{&lt;لم يظهر $1 خط&gt;}two{&lt;لم يظهر خطان ($1)&gt;}few{&lt;لم يظهر $1 خطوط&gt;}many{&lt;لم يظهر $1 خطًّا&gt;}other{&lt;لم يظهر $1 خط&gt;}}</translation>
 <translation id="3475843873335999118">عذرًا، لا يزال التعرُّف على بصمة الإصبع متعذّرًا. يُرجى إدخال كلمة المرور.</translation>
 <translation id="347670947055184738">عفوًا! تعذّر النظام في جلب السياسة لجهازك.</translation>
 <translation id="347785443197175480">مواصلة إتاحة دخول <ph name="HOST" /> إلى الكاميرا والميكروفون التابعين لك</translation>
@@ -2671,7 +2670,7 @@
 <translation id="5185386675596372454">تم إيقاف أحدث إصدار من "<ph name="EXTENSION_NAME" />" لأنه يتطلب المزيد من الأذونات.</translation>
 <translation id="5187295959347858724">‏تم الآن تسجيل دخولك إلى <ph name="SHORT_PRODUCT_NAME" />. تتم الآن مزامنة الإشارات المرجعية والسجل وغير ذلك من الإعدادات مع حسابك في Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
-<translation id="5187892128515678283">‏مشاركة جهاز USB مع جهاز يعمل بنظام التشغيل Linux من خلال تفعيل التبديل. ستستمر المشاركة فقط حتى يتم فصل الجهاز.</translation>
+<translation id="5187892128515678283">‏مشاركة جهاز USB مع جهاز يعمل بنظام التشغيل Linux من خلال تفعيل مفتاح التبديل. ستستمر المشاركة فقط حتى يتم فصل الجهاز.</translation>
 <translation id="51918995459521422">يريد <ph name="ORIGIN" /> تنزيل ملفات متعددة.</translation>
 <translation id="5204673965307125349">‏يُرجى إجراء powerwash للجهاز وإعادة المحاولة.</translation>
 <translation id="5204967432542742771">إدخال كلمة المرور</translation>
@@ -2726,8 +2725,7 @@
 <translation id="5265797726250773323">حدث خطأ أثناء التثبيت</translation>
 <translation id="5266113311903163739">خطأ استيراد مرجع مصدق</translation>
 <translation id="5269977353971873915">تعذّرت الطباعة</translation>
-<translation id="5270167208902136840">عرض <ph name="NUMBER_OF_MORE_APPS" /> من التطبيقات الإضافية</translation>
-<translation id="5272654297705279635">الإعدادات المُخصَّصة</translation>
+<translation id="5270167208902136840">عرض <ph name="NUMBER_OF_MORE_APPS" /> من التطبيقات الأخرى</translation>
 <translation id="5275352920323889391">كلب</translation>
 <translation id="5275973617553375938">‏الملفات المستردة من Google Drive</translation>
 <translation id="527605982717517565">السماح بتشغيل جافا سكريبت على الموقع <ph name="HOST" /> دومًا</translation>
@@ -3462,7 +3460,7 @@
 <translation id="6351063337294363751">يمكنك مسح بيانات التصفح من هذه القائمة</translation>
 <translation id="6352773953037195952">الأعلى</translation>
 <translation id="6354918092619878358">‏منحنى SECG ناقص المقطع secp256r1‏ (aka ANSI X9.62 prime256v1‏، NIST P-256)</translation>
-<translation id="635609604405270300">إبقاء الجهاز مفعلاً</translation>
+<translation id="635609604405270300">يُرجى إبقاء الجهاز مشغَّلاً</translation>
 <translation id="6356138805250111037">‏تدقيق إملائي أكثر دقة من خلال إرسال ما تكتبه في المتصفح إلى Google</translation>
 <translation id="63566973648609420">‏لا يمكن لأحد قراءة بياناتك المشفرة سوى من لديه عبارة المرور التي تستخدمها. ولا يتم إرسال عبارة المرور إلى شركة Google أو تخزينها لديها. إذا نسيت عبارة المرور أو رغبت في تغيير هذا الإعداد، فسيلزمك <ph name="BEGIN_LINK" />إعادة تعيين المزامنة<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">مرحبًا بانضمامك إلى عائلة <ph name="SHORT_PRODUCT_NAME" />. معنا ستستمتع بجهاز كمبيوتر غير عادي.</translation>

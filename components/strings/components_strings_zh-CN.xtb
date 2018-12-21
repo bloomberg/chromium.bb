@@ -450,7 +450,6 @@
 <translation id="3890664840433101773">添加电子邮件地址</translation>
 <translation id="3901925938762663762">此信用卡已过期</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3945915738023014686">已上传的崩溃报告的 ID：<ph name="CRASH_ID" />（本地崩溃 ID：<ph name="CRASH_LOCAL_ID" />）</translation>
 <translation id="3946209740501886391">在该网站上一律询问</translation>
 <translation id="3947577358805392297">保存页面以备后用</translation>
 <translation id="3949571496842715403">此服务器无法证实它就是 <ph name="DOMAIN" /> - 它的安全证书没有指定主题备用名称。这可能是因为某项配置有误或某个攻击者拦截了您的连接。</translation>
@@ -1060,7 +1059,6 @@
 <translation id="8149426793427495338">您的计算机已进入休眠模式。</translation>
 <translation id="8150722005171944719">无法读取 <ph name="URL" /> 上的文件。该文件可能已遭到删除、移动，或者文件权限不允许进行访问。</translation>
 <translation id="8184538546369750125">使用全局默认设置（允许）</translation>
-<translation id="8191494405820426728">本地崩溃 ID：<ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">撤消移动(&amp;U)</translation>
 <translation id="8197543752516192074">翻译网页</translation>
 <translation id="8201077131113104583">ID 为“<ph name="EXTENSION_ID" />”的扩展程序的更新网址无效。</translation>

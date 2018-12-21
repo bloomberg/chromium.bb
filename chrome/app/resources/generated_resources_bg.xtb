@@ -1599,7 +1599,6 @@
 <translation id="3470502288861289375">Копира се...</translation>
 <translation id="3473479545200714844">Екранна лупа</translation>
 <translation id="3475447146579922140">Електронна таблица в Google</translation>
-<translation id="3475538074809281797">{LINE_COUNT,plural, =1{&lt;1 ред не е показан&gt;}other{&lt;$1 реда не са показани&gt;}}</translation>
 <translation id="3475843873335999118">За съжаление, отпечатъкът ви е все още неразпознат. Моля, въведете паролата си.</translation>
 <translation id="347670947055184738">Ами сега! Системата не успя да извлече правилата за устройството ви.</translation>
 <translation id="347785443197175480">Достъпът на <ph name="HOST" /> до камерата и микрофона ви да продължава да е разрешен</translation>
@@ -2731,7 +2730,6 @@
 <translation id="5266113311903163739">Грешка при импортирането на сертифициращ орган</translation>
 <translation id="5269977353971873915">Отпечатването не бе успешно</translation>
 <translation id="5270167208902136840">Показване на още <ph name="NUMBER_OF_MORE_APPS" /> приложения</translation>
-<translation id="5272654297705279635">Персонализирани настройки</translation>
 <translation id="5275352920323889391">Куче</translation>
 <translation id="5275973617553375938">Възстановени от Google Диск файлове</translation>
 <translation id="527605982717517565">Да се разреши на <ph name="HOST" /> винаги да изпълнява JavaScript</translation>

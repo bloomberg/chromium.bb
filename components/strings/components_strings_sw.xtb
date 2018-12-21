@@ -453,7 +453,6 @@
 <translation id="3890664840433101773">Ongeza anwani ya barua pepe</translation>
 <translation id="3901925938762663762">Kadi imekwisha muda</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3945915738023014686">Kitambulisho cha Ripoti ya Kuacha Kufanya Kazi Kilichopakiwa <ph name="CRASH_ID" /> (Kitambulisho cha Kuacha Kufanya Kazi cha Ndani ya Kifaa: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">Uliza kwenye tovuti hii kila wakati</translation>
 <translation id="3947577358805392297">Hifadhi ukurasa kwa matumizi ya baadaye</translation>
 <translation id="3949571496842715403">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama hakibainishi Majina Mbadala ya Mada. Hii inaweza kusababishwa na uwekaji mipangilio usiofaa au muunganisho wako kukatwa na mvamizi.</translation>
@@ -1062,7 +1061,6 @@
 <translation id="8149426793427495338">Kompyuta yako iko katika hali tuli.</translation>
 <translation id="8150722005171944719">Faili katika <ph name="URL" /> haisomeki. Huenda imeondolewa, kusogezwa, au idhini za faili huenda zinazuia ufikiaji.</translation>
 <translation id="8184538546369750125">Tumia chaguomsingi la duniani (Ruhusu)</translation>
-<translation id="8191494405820426728">Kitambulisho cha Kuacha Kufanya Kazi <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">Tendua hatua</translation>
 <translation id="8197543752516192074">Tafsiri Ukurasa</translation>
 <translation id="8201077131113104583">URL ya sasisho si sahihi kwa kiendelezi chenye Kitambulisho "<ph name="EXTENSION_ID" />".</translation>

@@ -452,7 +452,6 @@
 <translation id="3890664840433101773">הוספת כתובת אימייל</translation>
 <translation id="3901925938762663762">תוקף הכרטיס פג</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3945915738023014686">מזהה דוח הקריסה שהועלה <ph name="CRASH_ID" /> (מזהה קריסה מקומי: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">שאל תמיד באתר הזה</translation>
 <translation id="3947577358805392297">שמירת הדף למועד מאוחר יותר</translation>
 <translation id="3949571496842715403">‏השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו לא מציין ערכי Subject Alternative Name. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
@@ -1066,7 +1065,6 @@ Del</translation>
 <translation id="8149426793427495338">המחשב עבר למצב שינה.</translation>
 <translation id="8150722005171944719">הקובץ הנמצא ב-<ph name="URL" /> לא ניתן לקריאה. ייתכן שהקובץ הוסר או הועבר, או שהרשאות הקובץ מונעות גישה אליו.</translation>
 <translation id="8184538546369750125">השתמש בברירת המחדל הכללית (אפשר)</translation>
-<translation id="8191494405820426728">מזהה קריסה מקומי <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">&amp;ביטול העברה</translation>
 <translation id="8197543752516192074">תרגום הדף</translation>
 <translation id="8201077131113104583">כתובת אתר לא חוקית לעדכון עבור תוסף עם המזהה "<ph name="EXTENSION_ID" />".</translation>

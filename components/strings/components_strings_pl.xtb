@@ -453,7 +453,6 @@
 <translation id="3890664840433101773">Dodaj adres e-mail</translation>
 <translation id="3901925938762663762">Karta straciła ważność</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3945915738023014686">Przesłano raport o awarii – identyfikator: <ph name="CRASH_ID" /> (lokalny identyfikator awarii: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">Zawsze pytaj na tej stronie</translation>
 <translation id="3947577358805392297">Zapisz stronę na później</translation>
 <translation id="3949571496842715403">Serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie określa alternatywnych nazw podmiotu. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
@@ -1064,7 +1063,6 @@ Dodatkowe informacje:
 <translation id="8149426793427495338">Twój komputer przeszedł w tryb uśpienia.</translation>
 <translation id="8150722005171944719">Nie można odczytać pliku <ph name="URL" />. Być może został usunięty lub uprawnienia dostępu uniemożliwiają jego odczyt.</translation>
 <translation id="8184538546369750125">Użyj globalnej wartości domyślnej (Zezwalaj)</translation>
-<translation id="8191494405820426728">Lokalny identyfikator awarii: <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">&amp;Cofnij przeniesienie</translation>
 <translation id="8197543752516192074">Przetłumacz stronę</translation>
 <translation id="8201077131113104583">Nieprawidłowy URL aktualizowania dla rozszerzenia o identyfikatorze „<ph name="EXTENSION_ID" />”.</translation>

@@ -453,7 +453,6 @@
 <translation id="3890664840433101773">Tambah e-mel</translation>
 <translation id="3901925938762663762">Kad telah tamat tempoh</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3945915738023014686">ID Laporan Ranap Yang Dimuat Naik <ph name="CRASH_ID" /> (ID Ranap Setempat: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">Sentiasa tanya pada tapak ini</translation>
 <translation id="3947577358805392297">Simpan halaman untuk dirujuk lagi</translation>
 <translation id="3949571496842715403">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya tidak menyatakan Nama Alternatif Subjek. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang memintasi sambungan anda.</translation>
@@ -1062,7 +1061,6 @@ Butiran tambahan:
 <translation id="8149426793427495338">Komputer anda dalam mod tidur.</translation>
 <translation id="8150722005171944719">Fail di <ph name="URL" /> tidak boleh dibaca.  Fail mungkin telah dialih keluar, dipindahkan atau kebenaran fail mungkin menghalang akses.</translation>
 <translation id="8184538546369750125">Gunakan lalai global (Benarkan)</translation>
-<translation id="8191494405820426728">ID Ranap Setempat <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">&amp;Buat Asal Pindahkan</translation>
 <translation id="8197543752516192074">Terjemah Halaman</translation>
 <translation id="8201077131113104583">URL kemas kini tidak sah untuk sambungan dengan ID "<ph name="EXTENSION_ID" />".</translation>

@@ -1598,7 +1598,6 @@
 <translation id="3470502288861289375">કૉપિ કરી રહ્યું છે...</translation>
 <translation id="3473479545200714844">સ્ક્રીન બૃહદદર્શક</translation>
 <translation id="3475447146579922140">Google સ્પ્રેડશીટ</translation>
-<translation id="3475538074809281797">{LINE_COUNT,plural, =1{&lt;1 રેખા બતાવેલ નથી&gt;}one{&lt;$1 રેખાઓ બતાવેલ નથી&gt;}other{&lt;$1 રેખાઓ બતાવેલ નથી&gt;}}</translation>
 <translation id="3475843873335999118">માફ કરશો, તમારી ફિંગરપ્રિંટ હજી પણ ઓળખવામાં આવી નથી. કૃપા કરીને તમારો પાસવર્ડ દાખલ કરો.</translation>
 <translation id="347670947055184738">અરેરે!  તમારા ઉપકરણ માટે સિસ્ટમ નીતિ લાવવામાં નિષ્ફળ થયું.</translation>
 <translation id="347785443197175480">તમારા કૅમેરા અને માઇક્રોફોનને ઍક્સેસ કરવા માટે <ph name="HOST" /> ને સતત મંજૂરી આપે છે </translation>
@@ -2728,7 +2727,6 @@
 <translation id="5266113311903163739">પ્રમાણન અધિકારી આયાત ભૂલ</translation>
 <translation id="5269977353971873915">પ્રિન્ટ કાઢવામાં નિષ્ફળ</translation>
 <translation id="5270167208902136840">વધુ <ph name="NUMBER_OF_MORE_APPS" /> ઍપ બતાવો</translation>
-<translation id="5272654297705279635">કસ્ટમ સેટિંગ</translation>
 <translation id="5275352920323889391">કૂતરું</translation>
 <translation id="5275973617553375938">Google ડ્રાઇવમાંથી પુનર્પ્રાપ્ત ફાઇલો</translation>
 <translation id="527605982717517565"><ph name="HOST" /> પર JavaScript ને હંમેશા મંજૂરી આપો </translation>

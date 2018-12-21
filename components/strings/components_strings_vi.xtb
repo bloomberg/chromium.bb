@@ -452,7 +452,6 @@
 <translation id="3890664840433101773">Thêm email</translation>
 <translation id="3901925938762663762">Thẻ đã hết hạn</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3945915738023014686">ID báo cáo sự cố đã tải lên <ph name="CRASH_ID" /> (ID sự cố cục bộ: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">Luôn hỏi trên trang web này</translation>
 <translation id="3947577358805392297">Lưu trang để xem sau</translation>
 <translation id="3949571496842715403">Máy chủ này không thể chứng minh được đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ không chỉ định Tên thay thế đối tượng. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
@@ -1061,7 +1060,6 @@ Thông tin chi tiết bổ sung:
 <translation id="8149426793427495338">Máy tính của bạn đã chuyển sang chế độ ngủ.</translation>
 <translation id="8150722005171944719">Không thể đọc được tệp tại <ph name="URL" />.  Tệp này có thể đã bị xóa, di chuyển hoặc quyền tệp có thể đang chặn truy cập.</translation>
 <translation id="8184538546369750125">Sử dụng cài đặt mặc định chung (Cho phép)</translation>
-<translation id="8191494405820426728">ID sự cố cục bộ <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">&amp;Hoàn tác di chuyển</translation>
 <translation id="8197543752516192074">Dịch trang</translation>
 <translation id="8201077131113104583">URL cập nhật không hợp lệ cho tiện ích có ID "<ph name="EXTENSION_ID" />".</translation>

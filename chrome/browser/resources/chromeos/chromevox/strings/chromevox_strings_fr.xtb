@@ -337,7 +337,6 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="3392045790598181549"><ph name="NAME" />, élément de menu</translation>
 <translation id="3393605254399152980">Faites glisser un doigt pour entendre une description de ce que vous touchez</translation>
 <translation id="3406283310380167331">Afficher la liste des formulaires</translation>
-<translation id="3423495725743882470">ligne $1 colonne $2</translation>
 <translation id="3457000393508828486">Partiellement sélectionné</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, interrupteur désactivé</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, bouton</translation>
@@ -376,7 +375,6 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="3795836767122514678">et{COUNT,plural, =1{# autre}one{# autre}other{# autres}}</translation>
 <translation id="3801735343383419236">Saisie semi-automatique sous forme de liste</translation>
 <translation id="3810838688059735925">Vidéo</translation>
-<translation id="3812237531158591503">coller $1.</translation>
 <translation id="3816633764618089385">Contenu multimédia suivant</translation>
 <translation id="3819376190738087562">Aucun renvoi</translation>
 <translation id="385383972552776628">Ouvrir la page d'options</translation>
@@ -578,7 +576,6 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="5402791055281059602">Une alerte modale</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{point-virgule}one{# point-virgule}other{# points-virgules}}</translation>
 <translation id="5411891038905756502">Aucun renvoi précédent</translation>
-<translation id="5417034931411865818">Cliquez sur l'élément sous la clé de routage $1</translation>
 <translation id="5435274640623994081">Activer la journalisation des icônes sonores</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{signe inférieur à}one{# signe inférieur à}other{# signes inférieur à}}</translation>
 <translation id="5444587279251314700">(activé)</translation>
@@ -676,7 +673,6 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="6122013438240733403">bouton</translation>
 <translation id="6129953537138746214">Espace</translation>
 <translation id="6132506484792346370">Une zone de liste ou une liste déroulante</translation>
-<translation id="6138576064440631958">Accord $1</translation>
 <translation id="6142308968191113180">Titre 4</translation>
 <translation id="6164829606128959761">outil de mesure</translation>
 <translation id="6169420925157477918">Image avec une description longue</translation>
@@ -698,7 +694,6 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="6355910664415701303">Aucun élément de liste précédent</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">En-tête précédent</translation>
-<translation id="6378565991815958969">copier $1.</translation>
 <translation id="6385591741672306837">colonne</translation>
 <translation id="6387719785439924554">contenu relatif</translation>
 <translation id="6411426777058107714">Aucune case d'option précédente</translation>
@@ -898,7 +893,6 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="820469951249669083">Accéder à la ligne suivante</translation>
 <translation id="8215202828671303819">Sélection multiple</translation>
 <translation id="826825447994856889">Introduction</translation>
-<translation id="826991282343985864">l$1c$2</translation>
 <translation id="8276439074553447000">Renvoyer à l'élément précédent pouvant être agrandi</translation>
 <translation id="8278417001922463147">Aucun article précédent</translation>
 <translation id="8283603667300770666">Champ de formulaire suivant</translation>
@@ -980,7 +974,6 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="9082874451376019682">Aucun curseur précédent</translation>
 <translation id="9087707351856729768">Saisissez du texte pour activer la saisie semi-automatique.</translation>
 <translation id="9089864840575085222">Écho de la saisie par cycle</translation>
-<translation id="9105227991373418255">couper $1.</translation>
 <translation id="9107530006868467849">Aucun widget de contenu multimédia précédent</translation>
 <translation id="9108370397979208512">math.</translation>
 <translation id="9108589040018540527">scbr</translation>

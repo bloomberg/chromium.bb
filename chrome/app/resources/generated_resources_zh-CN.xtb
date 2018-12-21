@@ -1595,7 +1595,6 @@
 <translation id="3470502288861289375">正在复制…</translation>
 <translation id="3473479545200714844">屏幕放大镜</translation>
 <translation id="3475447146579922140">Google 电子表格</translation>
-<translation id="3475538074809281797">{LINE_COUNT,plural, =1{&lt;有 1 行代码未显示出来&gt;}other{&lt;有 $1 行代码未显示出来&gt;}}</translation>
 <translation id="3475843873335999118">抱歉，系统仍无法识别您的指纹。请输入您的密码。</translation>
 <translation id="347670947055184738">糟糕！系统未能成功抓取您设备的政策。</translation>
 <translation id="347785443197175480">继续允许 <ph name="HOST" /> 使用您的摄像头和麦克风</translation>
@@ -2719,7 +2718,6 @@
 <translation id="5266113311903163739">证书授权中心导入错误</translation>
 <translation id="5269977353971873915">打印失败</translation>
 <translation id="5270167208902136840">显示另外 <ph name="NUMBER_OF_MORE_APPS" /> 个应用</translation>
-<translation id="5272654297705279635">自定义设置</translation>
 <translation id="5275352920323889391">狗</translation>
 <translation id="5275973617553375938">从 Google 云端硬盘恢复的文件</translation>
 <translation id="527605982717517565">始终允许使用 <ph name="HOST" /> 上的 JavaScript</translation>

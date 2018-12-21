@@ -1602,7 +1602,6 @@
 <translation id="3470502288861289375">Kopiranje...</translation>
 <translation id="3473479545200714844">Povećalo</translation>
 <translation id="3475447146579922140">Googleova proračunska tablica</translation>
-<translation id="3475538074809281797">{LINE_COUNT,plural, =1{&lt;1 linija nije prikazana&gt;}one{&lt;$1 linija nije prikazana&gt;}few{&lt;$1 linije nisu prikazane&gt;}other{&lt;$1 linija nije prikazano&gt;}}</translation>
 <translation id="3475843873335999118">Žao nam je, uređaj i dalje ne prepoznaje vaš otisak prsta. Unesite zaporku.</translation>
 <translation id="347670947055184738">Ups! Sustav nije uspio dohvatiti pravila za vaš uređaj.</translation>
 <translation id="347785443197175480">Nastavi dopuštati hostu <ph name="HOST" /> pristup kameri i mikrofonu</translation>
@@ -2732,7 +2731,6 @@
 <translation id="5266113311903163739">Pogreška pri uvozu tijela za izdavanje certifikata</translation>
 <translation id="5269977353971873915">Ispis nije uspio</translation>
 <translation id="5270167208902136840">Prikaži više aplikacija (još <ph name="NUMBER_OF_MORE_APPS" />)</translation>
-<translation id="5272654297705279635">Prilagođene postavke</translation>
 <translation id="5275352920323889391">Pas</translation>
 <translation id="5275973617553375938">Oporavljene datoteke s Google diska</translation>
 <translation id="527605982717517565">Uvijek dopusti JavaScript na web-lokaciji <ph name="HOST" /></translation>

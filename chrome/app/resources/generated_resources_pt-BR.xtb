@@ -1602,7 +1602,6 @@
 <translation id="3470502288861289375">Copiando...</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3475447146579922140">Planilha do Google</translation>
-<translation id="3475538074809281797">{LINE_COUNT,plural, =1{&lt;1 linha não mostrada&gt;}one{&lt;$1 linha não mostrada&gt;}other{&lt;$1 linhas não mostradas&gt;}}</translation>
 <translation id="3475843873335999118">Sua impressão digital ainda não foi reconhecida. Digite sua senha.</translation>
 <translation id="347670947055184738">Falha do sistema ao buscar a política do seu dispositivo.</translation>
 <translation id="347785443197175480">Continuar permitindo que <ph name="HOST" /> acesse sua câmera e seu microfone</translation>
@@ -2732,7 +2731,6 @@
 <translation id="5266113311903163739">Erro de importação da Autoridade de certificação</translation>
 <translation id="5269977353971873915">Falha ao imprimir</translation>
 <translation id="5270167208902136840">Mostrar mais <ph name="NUMBER_OF_MORE_APPS" /> apps</translation>
-<translation id="5272654297705279635">Configurações personalizadas</translation>
 <translation id="5275352920323889391">Cachorro</translation>
 <translation id="5275973617553375938">Arquivos recuperados a partir do Google Drive</translation>
 <translation id="527605982717517565">Sempre permitir JavaScript em <ph name="HOST" /></translation>

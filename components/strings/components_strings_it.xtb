@@ -450,7 +450,6 @@
 <translation id="3890664840433101773">Aggiungi email</translation>
 <translation id="3901925938762663762">La carta è scaduta</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3945915738023014686">ID rapporto sugli arresti anomali caricato <ph name="CRASH_ID" /> (ID arresto anomalo locale: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">Chiedi sempre su questo sito</translation>
 <translation id="3947577358805392297">Salva la pagina per dopo</translation>
 <translation id="3949571496842715403">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza non contiene nomi alternativi del soggetto. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
@@ -1060,7 +1059,6 @@ Ulteriori dettagli:
 <translation id="8149426793427495338">Il computer è entrato in modalità sospensione.</translation>
 <translation id="8150722005171944719">Il file all'indirizzo <ph name="URL" /> non è leggibile. Potrebbe essere stato rimosso, spostato oppure delle autorizzazioni del file potrebbero impedire l'accesso.</translation>
 <translation id="8184538546369750125">Usa predefinita globale (Consenti)</translation>
-<translation id="8191494405820426728">ID arresto anomalo locale: <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">&amp;Annulla spostamento</translation>
 <translation id="8197543752516192074">Traduci la pagina</translation>
 <translation id="8201077131113104583">URL di aggiornamento non valido per l'estensione con ID "<ph name="EXTENSION_ID" />".</translation>

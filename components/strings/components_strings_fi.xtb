@@ -453,7 +453,6 @@
 <translation id="3890664840433101773">Lisää sähköposti</translation>
 <translation id="3901925938762663762">Kortti on vanhentunut.</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3945915738023014686">Kaatumisraportti lähetetty, raporttitunnus: <ph name="CRASH_ID" /> (paikallinen kaatumistunnus: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">Kysy aina tällä sivustolla</translation>
 <translation id="3947577358805392297">Tallenna sivu myöhempää käyttöä varten</translation>
 <translation id="3949571496842715403">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenteessa ei määritetä kohteen vaihtoehtoisia nimiä. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
@@ -1062,7 +1061,6 @@ Lisätietoja:
 <translation id="8149426793427495338">Tietokoneesi siirtyi virransäästötilaan.</translation>
 <translation id="8150722005171944719">Tiedosto osoitteessa <ph name="URL" /> ei ole luettavissa. Se on voitu poistaa tai siirtää, tai tiedoston käyttöluvat voivat estää sen käytön.</translation>
 <translation id="8184538546369750125">Käytä yleistä oletusasetusta (salli)</translation>
-<translation id="8191494405820426728">Paikallinen kaatumistunnus <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">K&amp;umoa siirto</translation>
 <translation id="8197543752516192074">Käännä sivu</translation>
 <translation id="8201077131113104583">Laajennuksella, jonka tunnus on <ph name="EXTENSION_ID" />, on virheellinen päivitys-URL-osoite.</translation>

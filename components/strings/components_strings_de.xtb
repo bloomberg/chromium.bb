@@ -451,7 +451,6 @@
 <translation id="3890664840433101773">E-Mail-Adresse hinzufügen</translation>
 <translation id="3901925938762663762">Die Karte ist abgelaufen.</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> – <ph name="ERROR" /></translation>
-<translation id="3945915738023014686">ID des hochgeladenen Absturzberichts: <ph name="CRASH_ID" /> (lokale Absturz-ID: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">Auf dieser Website immer fragen</translation>
 <translation id="3947577358805392297">Seite für später speichern</translation>
 <translation id="3949571496842715403">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat gibt keine alternativen Namen an. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
@@ -1060,7 +1059,6 @@ Weitere Details:
 <translation id="8149426793427495338">Ihr Computer ist im Ruhemodus.</translation>
 <translation id="8150722005171944719">Die Datei unter <ph name="URL" /> kann nicht gelesen werden. Sie wurde möglicherweise entfernt oder verschoben oder die Dateiberechtigungen verhindern den Zugriff.</translation>
 <translation id="8184538546369750125">Globalen Standard verwenden (Zulassen)</translation>
-<translation id="8191494405820426728">Lokale Absturz-ID: <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">&amp;Verschieben rückgängig machen</translation>
 <translation id="8197543752516192074">Seite übersetzen</translation>
 <translation id="8201077131113104583">Ungültige Update-URL für Erweiterung mit der ID "<ph name="EXTENSION_ID" />"</translation>

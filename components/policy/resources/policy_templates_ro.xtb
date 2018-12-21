@@ -1799,7 +1799,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Adresele URL (cum ar fi https://example.com/some/path) vor putea fi folosite numai drept coduri ale aplicației U2F. Domeniile (cum ar fi example.com) vor putea fi folosite numai ca ID-uri webauthn RP. Prin urmare, pentru a acoperi atât API-urile U2F, cât și API-urile webauthn pentru un anumit site, trebuie listate atât adresa URL, cât și domeniul cu codul aplicației.</translation>
 <translation id="5836064773277134605">Limitați intervalul pentru portul UDP folosit de gazda de acces la distanță</translation>
-<translation id="5861856285460256766">Configurare cod de acces parental</translation>
+<translation id="5861856285460256766">Configurarea codului de acces parental</translation>
 <translation id="5862253018042179045">Setați funcția de accesibilitate pentru feedback vocal ca stare prestabilită pe ecranul de conectare.
 
           Dacă această politică este activată, feedbackul vocal va fi activat când este afișat ecranul de conectare.
@@ -2557,9 +2557,9 @@ nu poate fi stabilit de utilizator din setările browserului.
           Se acceptă în versiunea 70 și versiunile ulterioare de <ph name="PRODUCT_OS_NAME" />. Pentru clienții mai vechi, această valoare înseamnă că revenirea este dezactivată.</translation>
 <translation id="7620869951155758729">Această politică specifică ce configurație este utilizată pentru generarea și verificarea codului de acces parental.
 
-      |current_config| este folosită întotdeauna pentru generarea codului de acces și trebuie folosită pentru validarea codului de acces numai atunci când nu poate fi validată cu |future_config|.
+      |current_config| este folosită întotdeauna pentru generarea codului de acces și trebuie folosită pentru validarea codului de acces numai atunci când nu poate fi validat cu |future_config|.
       |future_config| este configurația principală folosită pentru validarea codului de acces.
-      |old_configs| trebuie folosită pentru validarea codului de acces numai atunci când nu poate fi validată nici cu |future_config|, nici cu |current_config|.
+      |old_configs| trebuie folosită pentru validarea codului de acces numai atunci când nu poate fi validat nici cu |future_config|, nici cu |current_config|.
 
       Modul așteptat de a folosi această politică este de a schimba prin rotație treptat configurația codului de acces. Configurația nouă este întotdeauna introdusă în |future_config| și, în același timp, valoarea existentă este mutată în |current_config|. Valorile anterioare ale |current_config| sunt mutate în |old_configs| și eliminate după ciclul de rotație.
 

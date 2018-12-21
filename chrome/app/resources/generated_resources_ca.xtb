@@ -1599,7 +1599,6 @@
 <translation id="3470502288861289375">S'està copiant...</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3475447146579922140">Full de càlcul de Google</translation>
-<translation id="3475538074809281797">{LINE_COUNT,plural, =1{&lt;Hi ha 1 línia que no es mostra&gt;}other{&lt;Hi ha $1 línies que no es mostren&gt;}}</translation>
 <translation id="3475843873335999118">No es reconeix la teva empremta digital. Escriu la contrasenya.</translation>
 <translation id="347670947055184738">El sistema no ha pogut obtenir la política per al dispositiu.</translation>
 <translation id="347785443197175480">Continua permetent que <ph name="HOST" /> accedeixi a la càmera i al micròfon</translation>
@@ -2729,7 +2728,6 @@
 <translation id="5266113311903163739">Error d'importació de l'entitat emissora de certificats</translation>
 <translation id="5269977353971873915">Error d'impressió</translation>
 <translation id="5270167208902136840">Mostra <ph name="NUMBER_OF_MORE_APPS" /> aplicacions més</translation>
-<translation id="5272654297705279635">Configuració personalitzada</translation>
 <translation id="5275352920323889391">Gos</translation>
 <translation id="5275973617553375938">Fitxers recuperats de Google Drive</translation>
 <translation id="527605982717517565">Permet sempre JavaScript a <ph name="HOST" /></translation>

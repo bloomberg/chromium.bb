@@ -764,6 +764,7 @@
 <translation id="215753907730220065">전체화면 종료</translation>
 <translation id="2157875535253991059">페이지가 현재 전체화면으로 전환되었습니다.</translation>
 <translation id="216169395504480358">Wi-Fi 추가</translation>
+<translation id="2162155940152307086">동기화 설정을 종료하면 동기화가 시작됩니다.</translation>
 <translation id="2163470535490402084"><ph name="DEVICE_TYPE" /> 기기에 로그인하려면 인터넷에 연결하세요.</translation>
 <translation id="2166369534954157698">재빠른 갈색 여우가 게으른 개를 뛰어넘습니다.</translation>
 <translation id="2169062631698640254">로그인</translation>
@@ -774,6 +775,7 @@
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" />의 <ph name="PEPPER_PLUGIN_NAME" />에서 내 컴퓨터에 액세스하려고 합니다</translation>
 <translation id="2178614541317717477">CA 손상</translation>
 <translation id="218070003709087997">숫자로 인쇄 부수를 표시하세요(1부터 999까지).</translation>
+<translation id="2182253583899676504">입력란에 텍스트를 입력하면 Google로 전송됩니다.</translation>
 <translation id="2184515124301515068">사이트의 소리 재생 여부를 Chrome이 결정(권장)</translation>
 <translation id="2187895286714876935">서버 인증서 가져오기 오류</translation>
 <translation id="2187906491731510095">확장 프로그램 업데이트됨</translation>
@@ -785,7 +787,9 @@
 <translation id="2192505247865591433">웹 브라우저</translation>
 <translation id="2193365732679659387">신뢰 설정</translation>
 <translation id="2195729137168608510">이메일 보호</translation>
+<translation id="2198757192731523470">Google에서 검색, 광고 및 다른 Google 서비스를 맞춤설정하기 위하여 내 방문 기록을 사용할 수 있습니다.</translation>
 <translation id="2199298570273670671">오류</translation>
+<translation id="2199719347983604670">Chrome 동기화 데이터</translation>
 <translation id="2200094388063410062">이메일</translation>
 <translation id="2200356397587687044">계속하려면 Chrome에 권한이 필요함</translation>
 <translation id="2200603218210188859">USB 기기 환경설정</translation>
@@ -1242,6 +1246,7 @@
 <translation id="2889064240420137087">다음으로 링크 열기...</translation>
 <translation id="2889925978073739256">샌드박스 처리되지 않은 플러그인 계속 차단</translation>
 <translation id="2893168226686371498">기본 브라우저</translation>
+<translation id="2895734772884435517">언제든지 이러한 설정을 맞춤설정할 수 있습니다.</translation>
 <translation id="289644616180464099">SIM 카드가 잠겨 있습니다.</translation>
 <translation id="289695669188700754">키 ID: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870"><ph name="TAB_COUNT" />개 탭을 여시겠습니까?</translation>
@@ -1597,7 +1602,6 @@
 <translation id="3470502288861289375">복사 중...</translation>
 <translation id="3473479545200714844">화면 돋보기</translation>
 <translation id="3475447146579922140">Google 스프레드시트</translation>
-<translation id="3475538074809281797">{LINE_COUNT,plural, =1{&lt;1줄이 표시되지 않음&gt;}other{&lt;$1줄이 표시되지 않음&gt;}}</translation>
 <translation id="3475843873335999118">죄송합니다. 지문이 인식되지 않았습니다. 비밀번호를 입력하세요.</translation>
 <translation id="347670947055184738">시스템에서 기기 정책을 가져오지 못했습니다.</translation>
 <translation id="347785443197175480"><ph name="HOST" />에서 카메라와 마이크에 액세스하도록 계속 허용</translation>
@@ -1710,6 +1714,7 @@
 <translation id="3636096452488277381"><ph name="USER_GIVEN_NAME" />님, 반갑습니다.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - <ph name="TIME" /> 남음</translation>
 <translation id="3637682276779847508">정확한 PIN 잠금 해제 키를 입력하지 않으면 SIM 카드가 영구적으로 사용 중지됩니다.</translation>
+<translation id="363863692969456324">향상된 맞춤법 검사 기술로 맞춤법 오류 수정</translation>
 <translation id="3640214691812501263"><ph name="USER_NAME" />님에 대하여 '<ph name="EXTENSION_NAME" />'을(를) 추가할까요?</translation>
 <translation id="3644896802912593514">너비</translation>
 <translation id="3645372836428131288">지문의 다른 부분이 인식되도록 손가락을 살짝 움직이세요.</translation>
@@ -2140,6 +2145,7 @@
 <translation id="4310139701823742692">파일 형식이 잘못되었습니다. PPD 파일을 확인하고 다시 시도하세요.</translation>
 <translation id="431076611119798497">세부정보(&amp;D)</translation>
 <translation id="4312866146174492540">차단(기본값)</translation>
+<translation id="4314815835985389558">동기화 관리</translation>
 <translation id="4316850752623536204">개발자 웹사이트</translation>
 <translation id="4320177379694898372">인터넷에 연결되지 않음</translation>
 <translation id="4320948194796820126">북마크할 이메일 선택</translation>
@@ -2219,6 +2225,7 @@
 <translation id="4450974146388585462">진단</translation>
 <translation id="4451757071857432900">방해가 되거나 사용자를 현혹하는 광고를 표시하는 사이트에서 광고가 차단됨(권장)</translation>
 <translation id="4453946976636652378"><ph name="SEARCH_ENGINE_NAME" />에서 검색하거나 URL을 입력하세요.</translation>
+<translation id="4461835665417498653">일부 시스템 정보와 페이지 콘텐츠를 익명으로 Google로 전송</translation>
 <translation id="4462159676511157176">맞춤 이름 서버</translation>
 <translation id="4467101674048705704"><ph name="FOLDER_NAME" /> 펼치기</translation>
 <translation id="4469477701382819144">방해가 되거나 사용자를 현혹하는 광고를 표시하는 사이트에서 광고가 차단됩니다.</translation>
@@ -2383,6 +2390,7 @@
 <translation id="4735265153267957659">비밀번호를 입력하여 Smart Lock을 사용 설정하세요. 다음번에는 휴대전화를 통해 <ph name="DEVICE_TYPE" />이(가) 잠금 해제됩니다. 설정에서 Smart Lock을 사용 중지할 수 있습니다.</translation>
 <translation id="473546211690256853">이 계정은 <ph name="DOMAIN" />에서 관리합니다.</translation>
 <translation id="4735803855089279419">시스템에서 이 기기의 기기 식별자를 확인하지 못했습니다.</translation>
+<translation id="4736292055110123391">북마크, 비밀번호, 방문 기록 등을 모든 기기에 동기화</translation>
 <translation id="4737715515457435632">네트워크에 연결하세요.</translation>
 <translation id="473775607612524610">업데이트</translation>
 <translation id="4742746985488890273">임시보관함에 고정</translation>
@@ -4892,6 +4900,7 @@
 <translation id="8598453409908276158">샌드박스 처리되지 않은 플러그인이 차단됨</translation>
 <translation id="8601206103050338563">TLS WWW 클라이언트 인증</translation>
 <translation id="8602851771975208551">컴퓨터의 다른 프로그램에서 Chrome 작동에 영향을 줄 수 있는 앱을 추가했습니다.</translation>
+<translation id="8604763363205185560">Chrome 및 보안 개선에 참여</translation>
 <translation id="8605428685123651449">SQLite 메모리</translation>
 <translation id="8606726445206553943">MIDI 기기를 사용합니다.</translation>
 <translation id="8609465669617005112">위로 이동</translation>

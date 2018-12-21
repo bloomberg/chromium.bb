@@ -1602,7 +1602,6 @@
 <translation id="3470502288861289375">Kinokopya...</translation>
 <translation id="3473479545200714844">Screen magnifier</translation>
 <translation id="3475447146579922140">Spreadsheet ng Google</translation>
-<translation id="3475538074809281797">{LINE_COUNT,plural, =1{&lt;1 linya ang hindi ipinapakita&gt;}one{&lt;$1 linya ang hindi ipinapakita&gt;}other{&lt;$1 na linya ang hindi ipinapakita&gt;}}</translation>
 <translation id="3475843873335999118">Paumanhin, hindi pa rin nakikilala ang iyong fingerprint. Pakilagay ang password mo.</translation>
 <translation id="347670947055184738">Oops!  Hindi nakuha ng system ang patakaran para sa iyong device.</translation>
 <translation id="347785443197175480">Magpatuloy sa pagpayag sa <ph name="HOST" /> na i-access ang iyong camera at mikropono</translation>
@@ -2732,7 +2731,6 @@
 <translation id="5266113311903163739">Error sa Pag-import ng Certification Authority</translation>
 <translation id="5269977353971873915">Nabigo ang Pag-print</translation>
 <translation id="5270167208902136840">Magpakita ng <ph name="NUMBER_OF_MORE_APPS" /> pang app</translation>
-<translation id="5272654297705279635">Mga custom na setting</translation>
 <translation id="5275352920323889391">Aso</translation>
 <translation id="5275973617553375938">Mga nabawing file mula sa Google Drive</translation>
 <translation id="527605982717517565">Palaging hayaan ang JavaScript sa <ph name="HOST" /></translation>

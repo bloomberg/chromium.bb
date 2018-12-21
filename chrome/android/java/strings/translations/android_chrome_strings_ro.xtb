@@ -39,6 +39,7 @@
 <translation id="1259100630977430756">Paginile pe care le vezi în filele private nu vor fi înregistrate în istoricul browserului, nu vor stoca cookie-uri și nu vor rămâne în istoricul de căutare după ce închizi toate filele private. Fișierele descărcate și marcajele create vor fi păstrate.
 
 Totuși, nu ești invizibil(ă). Trecerea în modul privat nu ascunde activitatea de navigare față de angajator, față de furnizorul de servicii de internet sau față de site-urile pe care le accesezi.</translation>
+<translation id="1260236875608242557">Caută și explorează</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="127138278192656016">Folosește sincronizarea și toate serviciile</translation>
 <translation id="1272079795634619415">Oprește</translation>
@@ -330,6 +331,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul privat nu ascunde activitate
 <translation id="3599863153486145794">Șterge istoricul de pe toate dispozitivele conectate. Contul Google poate să ofere alte forme ale istoricului de navigare la <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Dezactivează sunetul pentru site-urile care îl redau</translation>
 <translation id="360207483134687714">Ajută la îmbunătățirea experienței RV în Chrome</translation>
+<translation id="3604604794717279723">Accept</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3630011985153972676">Permite serviciului Chrome să descarce articole pentru tine după conectarea la Wi-Fi în setări.</translation>
 <translation id="3632295766818638029">Afișează parola</translation>
@@ -694,6 +696,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6343192674172527289">Nu s-a găsit nicio descărcare</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 și încă <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}few{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 și încă <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 și încă <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
 <translation id="6364438453358674297">Elimini sugestia din istoric?</translation>
+<translation id="6369229450655021117">De aici, poți să cauți pe web, să trimiți fișiere prietenilor și să vezi paginile deschise</translation>
 <translation id="6378173571450987352">Detalii: sortate după volumul de date folosite</translation>
 <translation id="6383961787135158834">Șterge stocare site-uri…</translation>
 <translation id="6388207532828177975">Șterge și resetează</translation>
@@ -872,6 +875,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7649070708921625228">Ajutor</translation>
 <translation id="7658239707568436148">Anulează</translation>
 <translation id="7665369617277396874">Adăugați un cont</translation>
+<translation id="7670842975141217779">Asistentul Google\nîn Chrome</translation>
 <translation id="7682724950699840886">Încearcă următoarele sfaturi: asigură-te că există spațiu suficient pe dispozitiv, încearcă să exporți din nou.</translation>
 <translation id="7698359219371678927">Creează un e-mail în <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Completează automat căutările și adresele URL</translation>

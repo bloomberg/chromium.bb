@@ -39,6 +39,7 @@
 <translation id="1259100630977430756">Le pagine visualizzate nelle schede di navigazione privata non vengono memorizzate nella cronologia del browser, nell'archivio di cookie o nella cronologia delle ricerche dopo aver chiuso tutte le schede. I file da te scaricati o i Preferiti da te creati vengono mantenuti.
 
 Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di navigazione privata non consente di nascondere la navigazione al datore di lavoro, al provider di servizi Internet o ai siti web che visiti.</translation>
+<translation id="1260236875608242557">Cerca ed esplora</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="127138278192656016">Usa la sincronizzazione e tutti i servizi</translation>
 <translation id="1272079795634619415">Interrompi</translation>
@@ -330,6 +331,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="3599863153486145794">Consente di cancellare la cronologia da tutti i dispositivi su cui hai eseguito l'accesso. Il tuo account Google potrebbe avere altri tipi di cronologia di navigazione all'indirizzo <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Disattiva l'audio nei siti che riproducono suoni</translation>
 <translation id="360207483134687714">Contribuisci a migliorare l'esperienza di realtà virtuale in Chrome</translation>
+<translation id="3604604794717279723">Accetto</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3630011985153972676">Consenti a Chrome di scaricare gli articoli quando è attiva la connessione Wi-Fi.</translation>
 <translation id="3632295766818638029">Visualizza password</translation>
@@ -694,6 +696,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6343192674172527289">Nessun download trovato</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 e altri <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 e altri <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
 <translation id="6364438453358674297">Rimuovere il suggerimento dalla cronologia?</translation>
+<translation id="6369229450655021117">Da qui puoi eseguire ricerche sul Web, condividere contenuti con amici e vedere le pagine aperte.</translation>
 <translation id="6378173571450987352">Dettagli: ordinati per quantità di dati utilizzati</translation>
 <translation id="6383961787135158834">Elimina memoria siti…</translation>
 <translation id="6388207532828177975">Cancella e reimposta</translation>
@@ -872,6 +875,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7649070708921625228">Guida</translation>
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7665369617277396874">Aggiungi account</translation>
+<translation id="7670842975141217779">Assistente Google\nin Chrome</translation>
 <translation id="7682724950699840886">Prova i seguenti suggerimenti: assicurati di avere spazio sufficiente sul dispositivo e prova a esportare di nuovo.</translation>
 <translation id="7698359219371678927">Crea email in <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Completamento automatico di ricerche e URL</translation>

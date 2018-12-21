@@ -452,7 +452,6 @@
 <translation id="3890664840433101773">Додајте имејл</translation>
 <translation id="3901925938762663762">Картица је истекла</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3945915738023014686">ИД извештаја о отказивању је отпремљен <ph name="CRASH_ID" /> (ИД локалног отказивања: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">Увек питај на овом сајту</translation>
 <translation id="3947577358805392297">Сачувај страницу за касније</translation>
 <translation id="3949571496842715403">Овај сервер не може да докаже да је <ph name="DOMAIN" />; његов безбедносни сертификат не наводи Алтернативне називе субјекта. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу.</translation>
@@ -1060,7 +1059,6 @@
 <translation id="8149426793427495338">Рачунар је прешао у режим спавања.</translation>
 <translation id="8150722005171944719">Датотека на адреси <ph name="URL" /> не може да се чита. Можда је уклоњена или премештена или дозволе за датотеке спречавају приступ.</translation>
 <translation id="8184538546369750125">Користи глобалну подразумевану вредност (Дозволи)</translation>
-<translation id="8191494405820426728">ИД локалног отказивања <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">&amp;Опозови премештање</translation>
 <translation id="8197543752516192074">Преведи страницу</translation>
 <translation id="8201077131113104583">Неважећи URL за ажурирање за додатак са ИД-ом „<ph name="EXTENSION_ID" />“.</translation>

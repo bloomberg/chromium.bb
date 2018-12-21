@@ -452,7 +452,6 @@
 <translation id="3890664840433101773">เพิ่มอีเมล</translation>
 <translation id="3901925938762663762">บัตรหมดอายุ</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3945915738023014686">อัปโหลดรหัสรายงานข้อขัดข้อง <ph name="CRASH_ID" /> แล้ว (รหัสข้อขัดข้องในเครื่อง: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">ถามทุกครั้งบนเว็บไซต์นี้</translation>
 <translation id="3947577358805392297">เก็บหน้านี้ไว้ดูทีหลัง</translation>
 <translation id="3949571496842715403">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะใบรับรองความปลอดภัยไม่ได้ระบุชื่อสำรองของหัวเรื่อง โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้โจมตีที่ขัดขวางการเชื่อมต่อของคุณ</translation>
@@ -1061,7 +1060,6 @@
 <translation id="8149426793427495338">คอมพิวเตอร์ของคุณเข้าสู่โหมดสลีปแล้ว</translation>
 <translation id="8150722005171944719">ไฟล์ที่ <ph name="URL" /> ไม่สามารถอ่านได้ เนื่องจากอาจถูกลบ ย้ายไปแล้ว หรือการอนุญาตของไฟล์อาจป้องกันการเข้าถึง</translation>
 <translation id="8184538546369750125">ใช้ค่าเริ่มต้นสากล (อนุญาต)</translation>
-<translation id="8191494405820426728">รหัสข้อขัดข้องในเครื่อง <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">&amp;เลิกทำการย้าย</translation>
 <translation id="8197543752516192074">แปลหน้าเว็บ</translation>
 <translation id="8201077131113104583">การอัปเดต URL ไม่ถูกต้องสำหรับส่วนขยายรหัส "<ph name="EXTENSION_ID" />"</translation>

@@ -453,7 +453,6 @@
 <translation id="3890664840433101773">Tambahkan email</translation>
 <translation id="3901925938762663762">Kartu telah habis masa berlakunya</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3945915738023014686">ID Laporan Error yang Diupload <ph name="CRASH_ID" /> (ID Error Lokal: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">Selalu tanyakan pada situs ini</translation>
 <translation id="3947577358805392297">Simpan halaman untuk nanti</translation>
 <translation id="3949571496842715403">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak menyebutkan Nama Alternatif Subjek. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
@@ -1062,7 +1061,6 @@
 <translation id="8149426793427495338">Komputer Anda sedang dalam mode tidur.</translation>
 <translation id="8150722005171944719">File pada <ph name="URL" /> tidak dapat dibaca.  File mungkin telah dihapus, dipindahkan, atau izin file mungkin mencegah akses.</translation>
 <translation id="8184538546369750125">Gunakan default global (Izinkan)</translation>
-<translation id="8191494405820426728">ID Error Lokal <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">&amp;Urungkan Pemindahan</translation>
 <translation id="8197543752516192074">Terjemahkan Halaman</translation>
 <translation id="8201077131113104583">URL pembaruan tidak valid untuk ekstensi dengan ID "<ph name="EXTENSION_ID" />".</translation>

@@ -46,6 +46,7 @@
 <translation id="1605658421715042784">Copy image</translation>
 <translation id="1612730193129642006">Show Tab Grid</translation>
 <translation id="1644574205037202324">History</translation>
+<translation id="1650222530560417226">Tap the 'Start Logging' button to collect future JavaScript console logs and errors from all tabs. Logs will be collected (and stored only in memory) until this page is closed or 'Stop Logging' is tapped.</translation>
 <translation id="1657011748321897393">Sharing failed because you are not connected to the network.</translation>
 <translation id="165877110639533037">No Open Tabs</translation>
 <translation id="168715261339224929">To get your bookmarks on all your devices, turn on sync.</translation>
@@ -61,6 +62,7 @@
 <translation id="1813414402673211292">Clear Browsing Data</translation>
 <translation id="1820259098641718022">Added to Reading List</translation>
 <translation id="1821253160463689938">Uses cookies to remember your preferences, even if you don't visit those pages</translation>
+<translation id="1828824471510190776">Suggest  Password…</translation>
 <translation id="1876721852596493031">Send usage data</translation>
 <translation id="1886928167269928266">Beginning of Time</translation>
 <translation id="1911619930368729126">Upload to Google Drive</translation>
@@ -172,6 +174,7 @@
 <translation id="3638472932233958418">Pre-load Web Pages</translation>
 <translation id="3691593122358196899">Bookmarked to <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Incognito Tabs</translation>
+<translation id="3771149149411027381">Search Copied Text</translation>
 <translation id="3779810277399252432">No Internet connection.</translation>
 <translation id="3783017676699494206">Save Image</translation>
 <translation id="3789841737615482174">Install</translation>
@@ -196,6 +199,7 @@
 <translation id="4112644173421521737">Search</translation>
 <translation id="4121993058175073134">To send net-export data, please configure your email account in the Settings app.</translation>
 <translation id="4124987746317609294">Time Range</translation>
+<translation id="4155190233692914060">Visit Copied Link</translation>
 <translation id="4172051516777682613">Always show</translation>
 <translation id="418156467088430727">View Offline Version in New Tab</translation>
 <translation id="4237682350741091554">Manage Chrome Sync and personalisation in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" /></translation>

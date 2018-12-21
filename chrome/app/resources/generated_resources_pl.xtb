@@ -1602,7 +1602,6 @@
 <translation id="3470502288861289375">Kopiuję...</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3475447146579922140">Arkusz kalkulacyjny Google</translation>
-<translation id="3475538074809281797">{LINE_COUNT,plural, =1{&lt;1 wiersz jest niewidoczny&gt;}few{&lt;$1 wiersze są niewidoczne&gt;}many{&lt;$1 wierszy jest niewidocznych&gt;}other{&lt;$1 wiersza jest niewidoczne&gt;}}</translation>
 <translation id="3475843873335999118">Odcisk palca nie został rozpoznany. Podaj hasło.</translation>
 <translation id="347670947055184738">Ups. System nie mógł pobrać zasad dotyczących Twojego urządzenia.</translation>
 <translation id="347785443197175480">Nadal zezwalaj witrynie <ph name="HOST" /> na dostęp do kamery i mikrofonu</translation>
@@ -2732,7 +2731,6 @@
 <translation id="5266113311903163739">Błąd importowania urzędu certyfikacji</translation>
 <translation id="5269977353971873915">Niepowodzenie drukowania</translation>
 <translation id="5270167208902136840">Pokaż więcej aplikacji (<ph name="NUMBER_OF_MORE_APPS" />)</translation>
-<translation id="5272654297705279635">Ustawienia niestandardowe</translation>
 <translation id="5275352920323889391">Pies</translation>
 <translation id="5275973617553375938">Pliki odzyskane z Dysku Google</translation>
 <translation id="527605982717517565">Zawsze zezwalaj na wykonywanie kodu JavaScript w witrynie <ph name="HOST" /></translation>

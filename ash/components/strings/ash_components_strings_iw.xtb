@@ -20,7 +20,7 @@
 <translation id="168356808214100546">הקשה ארוכה על <ph name="ALT" />, הקשה על <ph name="TAB" /> עד ההגעה לחלון שרוצים לפתוח, ושחרור.</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
-<translation id="1733525068429116555">‏הוספת www. ו-‎.comלקלט בשורת הכתובת, ולאחר מכן פתיחת הדף</translation>
+<translation id="1733525068429116555">‏הוספת www. ו-‎ .comלקלט בשורת כתובת האתר, ולאחר מכן פתיחת הדף</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> ואז <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> או <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">מעבר לכרטיסייה הבאה</translation>
 <translation id="2010818616644390445">מעבר לכרטיסייה האחרונה בחלון</translation>
@@ -86,7 +86,7 @@
 <translation id="4092538597492297615">העתקת התוכן שנבחר אל לוח העריכה</translation>
 <translation id="4101772068965291327">פתח את דף הבית</translation>
 <translation id="4123108089450197101">שמירת הקישור כסימניה</translation>
-<translation id="4141203561740478845">הדגשת השורה של סרגל הכתובות</translation>
+<translation id="4141203561740478845">הדגשת הסרגל של שורת כתובת האתר</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> או <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">מצב סקירה כללית</translation>
 <translation id="4382340674111381977">חזרה לדף הקודם</translation>
@@ -153,7 +153,7 @@
 <translation id="7025325401470358758">החלונית הבאה</translation>
 <translation id="7076878155205969899">השתקת צלילים</translation>
 <translation id="7077383985738259936">התמקדות בסרגל הסימניות או הדגשה שלו (אם מוצג)</translation>
-<translation id="7237562915163138771">יש להקליד כתובת אתר בסרגל הכתובות ולהקיש על <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
+<translation id="7237562915163138771">יש להקליד כתובת אינטרנט בשורת כתובת האתר ולהקיש על <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">העברת המכשיר למצב שינה (השעיה)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> או <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7422707470576323858">מעבר אל שיטת הקלט הזמינה הבאה</translation>
@@ -169,7 +169,7 @@
 <translation id="8026334261755873520">נקה נתוני גלישה</translation>
 <translation id="8130528849632411619">מעבר אל תחילת המסמך</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> או <ph name="E" /></translation>
-<translation id="8232835244134740473">העברת המיקוד בין: אזור הסטטוס (האזור שבו מופיעה תמונת החשבון שלך), מרכז האפליקציות, סרגל הכתובות, סרגל הסימניות (אם מוצג), דף האינטרנט הפתוח וסרגל ההורדות (אם מוצג).</translation>
+<translation id="8232835244134740473">העברת המיקוד בין: אזור הסטטוס (האזור שבו מופיעה תמונת החשבון שלך), מרכז האפליקציות, שורת כתובת האתר, סרגל הסימניות (אם מוצג), דף האינטרנט הפתוח וסרגל ההורדות (אם מוצג).</translation>
 <translation id="8234414138295101081">סיבוב המסך ב-90 מעלות</translation>
 <translation id="8264941229485248811">הצגה או הסתרה של בודק 'כלים למפתחים'</translation>
 <translation id="836869401750819675">פתיחת הדף 'הורדות'</translation>

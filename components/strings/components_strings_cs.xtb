@@ -448,7 +448,6 @@
 <translation id="3890664840433101773">Přidat e-mail</translation>
 <translation id="3901925938762663762">Karta vypršela</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3945915738023014686">ID nahrané zprávy o selhání <ph name="CRASH_ID" /> (místní ID selhání: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">Na tomto webu se vždy zeptat</translation>
 <translation id="3947577358805392297">Uložit stránku na později</translation>
 <translation id="3949571496842715403">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. V jeho bezpečnostním certifikátu nejsou uvedeny alternativní názvy subjektu. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
@@ -1055,7 +1054,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8149426793427495338">Počítač přešel do režimu spánku.</translation>
 <translation id="8150722005171944719">Soubor na adrese <ph name="URL" /> nelze načíst. Možná byl odstraněn, přesunut nebo mohou přístupu bránit oprávnění souboru.</translation>
 <translation id="8184538546369750125">Použít výchozí globální hodnotu (Povolit)</translation>
-<translation id="8191494405820426728">Místní ID selhání <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">&amp;Vrátit přesunutí zpět</translation>
 <translation id="8197543752516192074">Přeložit stránku</translation>
 <translation id="8201077131113104583">Neplatná adresa URL aktualizace rozšíření s ID <ph name="EXTENSION_ID" />.</translation>

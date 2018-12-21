@@ -453,7 +453,6 @@
 <translation id="3890664840433101773">Adicionar email</translation>
 <translation id="3901925938762663762">O cartão expirou</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3945915738023014686">ID do relatório de falhas carregado <ph name="CRASH_ID" /> (ID de falha de sistema local: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">Perguntar sempre neste site</translation>
 <translation id="3947577358805392297">Guardar a página para mais tarde</translation>
 <translation id="3949571496842715403">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O respetivo certificado de segurança não especifica Nomes alternativos do requerente. Isto pode ser o resultado de uma configuração incorreta ou de um utilizador mal-intencionado que intercetou a sua ligação.</translation>
@@ -1063,7 +1062,6 @@ Detalhes adicionais:
 <translation id="8149426793427495338">O computador entrou em suspensão.</translation>
 <translation id="8150722005171944719">O ficheiro em <ph name="URL" /> não é legível. Pode ter sido removido, movido ou as permissões do ficheiro podem estar a impedir o acesso.</translation>
 <translation id="8184538546369750125">Utilizar predefinição global (Permitir)</translation>
-<translation id="8191494405820426728">ID de falha local <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">&amp;Anular movimentação</translation>
 <translation id="8197543752516192074">Traduzir página</translation>
 <translation id="8201077131113104583">Atualizar URL inválido para a extensão com o ID "<ph name="EXTENSION_ID" />".</translation>

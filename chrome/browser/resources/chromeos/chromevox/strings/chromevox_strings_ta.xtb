@@ -337,7 +337,6 @@
 <translation id="3392045790598181549"><ph name="NAME" />, மெனு உருப்படி</translation>
 <translation id="3393605254399152980">நீங்கள் தொடுவதைப் பேச்சுவடிவில் கேட்க, ஒரு விரலை இழுக்கவும்</translation>
 <translation id="3406283310380167331">படிவங்கள் பட்டியலைக் காட்டு</translation>
-<translation id="3423495725743882470">வரிசை $1 நெடுவரிசை $2</translation>
 <translation id="3457000393508828486">பகுதியளவு அழுத்தப்பட்டது</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, ஸ்விட்ச் ஆஃப்</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, பொத்தான்</translation>
@@ -376,7 +375,6 @@
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">தானே நிரப்புதல் பட்டியல்</translation>
 <translation id="3810838688059735925">வீடியோ</translation>
-<translation id="3812237531158591503">$1ஐ ஒட்டு.</translation>
 <translation id="3816633764618089385">அடுத்த ஊடகம்</translation>
 <translation id="3819376190738087562">தாவல்கள் இல்லை.</translation>
 <translation id="385383972552776628">விருப்பங்கள் பக்கத்தைத் திற</translation>
@@ -578,7 +576,6 @@
 <translation id="5402791055281059602">கட்டாய விழிப்பூட்டல்</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{அரைப்புள்ளி}other{# அரைப்புள்ளிகள்}}</translation>
 <translation id="5411891038905756502">முந்தைய தாவல் புள்ளி இல்லை.</translation>
-<translation id="5417034931411865818">ரூட்டிங் விசை $1க்குக் கீழுள்ள உருப்படியைக் கிளிக் செய்யவும்</translation>
 <translation id="5435274640623994081">ஆடியோ செய்திகள் பதிவிடலை இயக்கு</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{குறைவிற்கான குறி}other{# குறைவிற்கான குறிகள்}}</translation>
 <translation id="5444587279251314700">(செயலில்)</translation>
@@ -676,7 +673,6 @@
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">இடைவெளி</translation>
 <translation id="6132506484792346370">பட்டியல்பெட்டி அல்லது சேர்க்கைப் பெட்டி</translation>
-<translation id="6138576064440631958">$1 விசைச் சேர்க்கை</translation>
 <translation id="6142308968191113180">தலைப்பு 4</translation>
 <translation id="6164829606128959761">மீட்டர்</translation>
 <translation id="6169420925157477918">நீண்ட விளக்கத்துடன் உள்ள படம்</translation>
@@ -698,7 +694,6 @@
 <translation id="6355910664415701303">முந்தைய பட்டியல் உருப்படி இல்லை.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">முந்தைய தலைப்பு</translation>
-<translation id="6378565991815958969">$1ஐ நகலெடு.</translation>
 <translation id="6385591741672306837">நெடுவரிசை</translation>
 <translation id="6387719785439924554">aside</translation>
 <translation id="6411426777058107714">முந்தைய ரேடியோ பட்டன் இல்லை.</translation>
@@ -898,7 +893,6 @@ Chrome உலாவி மெனுவைத் திறக்க, Alt+F வி
 <translation id="820469951249669083">அடுத்த வரிசைக்குச் செல்லும்</translation>
 <translation id="8215202828671303819">பலவற்றைத் தேர்ந்தெடுத்தல்</translation>
 <translation id="826825447994856889">அறிமுகம்</translation>
-<translation id="826991282343985864">வ$1நெ$2</translation>
 <translation id="8276439074553447000">முன்பு கவனிக்கப்பட்ட உருப்படிக்குத் தாவு</translation>
 <translation id="8278417001922463147">முந்தைய உறுப்பு இல்லை.</translation>
 <translation id="8283603667300770666">அடுத்தப் படிவப் புலம்</translation>
@@ -980,7 +974,6 @@ Chrome உலாவி மெனுவைத் திறக்க, Alt+F வி
 <translation id="9082874451376019682">முந்தைய ஸ்லைடர் இல்லை.</translation>
 <translation id="9087707351856729768">தானாக நிரப்ப, உள்ளிடவும்.</translation>
 <translation id="9089864840575085222">தொடர் தட்டச்சிடும் எதிரொலி</translation>
-<translation id="9105227991373418255">$1ஐ வெட்டு.</translation>
 <translation id="9107530006868467849">முந்தைய ஊடக விட்ஜெட் இல்லை.</translation>
 <translation id="9108370397979208512">கணிதம்</translation>
 <translation id="9108589040018540527">scbr</translation>

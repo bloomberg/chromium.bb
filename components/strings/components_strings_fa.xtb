@@ -452,7 +452,6 @@
 <translation id="3890664840433101773">افزودن ایمیل</translation>
 <translation id="3901925938762663762">کارت منقضی شده است</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3945915738023014686">شناسه گزارش خرابی بارگذاری‌شده <ph name="CRASH_ID" /> (شناسه خرابی محلی: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">در این سایت، همیشه سؤال شود</translation>
 <translation id="3947577358805392297">ذخیره صفحه برای بعد</translation>
 <translation id="3949571496842715403">‏این سرور نتوانست ثابت کند که <ph name="DOMAIN" /> است؛ در گواهی امنیتی آن، Subject Alternative Names مشخص نشده است. ممکن است این مشکل به دلیل پیکربندی نادرست یا قطع اتصال شما توسط مهاجم ایجاد شده باشد.</translation>
@@ -1061,7 +1060,6 @@
 <translation id="8149426793427495338">رایانه‌تان به خواب رفته است.</translation>
 <translation id="8150722005171944719">این فایل در <ph name="URL" /> قابل خواندن نیست. ممکن است حذف شده، جابجا شده باشد و یا مجوزهای فایل از دسترسی جلوگیری می‌کنند.</translation>
 <translation id="8184538546369750125">استفاده از پیش‌فرض جهانی (مجاز)</translation>
-<translation id="8191494405820426728">شناسه خرابی محلی <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">&amp;واگرد انتقال</translation>
 <translation id="8197543752516192074">ترجمه صفحه</translation>
 <translation id="8201077131113104583">نشانی وب به‌روزرسانی نامعتبر برای برنامه افزودنی با شناسه «<ph name="EXTENSION_ID" />».</translation>

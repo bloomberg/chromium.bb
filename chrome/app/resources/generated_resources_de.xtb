@@ -761,6 +761,7 @@
 <translation id="215753907730220065">Vollbildmodus aus</translation>
 <translation id="2157875535253991059">Diese Seite wird nun im Vollbildmodus angezeigt.</translation>
 <translation id="216169395504480358">WLAN hinzufügen...</translation>
+<translation id="2162155940152307086">Die Synchronisierung wird gestartet, sobald Sie die Synchronisierungseinstellungen verlassen</translation>
 <translation id="2163470535490402084">Stellen Sie eine Internetverbindung her, um sich auf Ihrem Gerät (<ph name="DEVICE_TYPE" />) anzumelden.</translation>
 <translation id="2166369534954157698">Zwölf Boxkämpfer jagen Viktor quer über den großen Sylter Deich</translation>
 <translation id="2169062631698640254">Trotzdem anmelden</translation>
@@ -771,6 +772,7 @@
 <translation id="2178098616815594724">Das Plug-in <ph name="PEPPER_PLUGIN_NAME" /> auf <ph name="PEPPER_PLUGIN_DOMAIN" /> möchte auf Ihren Computer zugreifen</translation>
 <translation id="2178614541317717477">Kompromittierung der Zertifizierungsstelle</translation>
 <translation id="218070003709087997">Geben Sie eine Zahl ein, um die Anzahl der zu druckenden Exemplare festzulegen (1 bis 999).</translation>
+<translation id="2182253583899676504">Wenn Sie etwas in ein Textfeld eingeben, wird dieser Text an Google gesendet.</translation>
 <translation id="2184515124301515068">Chrome die Entscheidung überlassen, wann Audioinhalte auf Websites abgespielt werden (empfohlen)</translation>
 <translation id="2187895286714876935">Fehler beim Importieren des Serverzertifikats</translation>
 <translation id="2187906491731510095">Erweiterungen wurden aktualisiert</translation>
@@ -782,7 +784,9 @@
 <translation id="2192505247865591433">von</translation>
 <translation id="2193365732679659387">Vertrauenseinstellungen</translation>
 <translation id="2195729137168608510">E-Mail-Schutz</translation>
+<translation id="2198757192731523470">Mithilfe Ihres Verlaufs kann Google die Google-Suche, Werbung und andere Google-Dienste personalisieren.</translation>
 <translation id="2199298570273670671">Fehler</translation>
+<translation id="2199719347983604670">Daten aus der Chrome-Synchronisierung</translation>
 <translation id="2200094388063410062">E-Mail</translation>
 <translation id="2200356397587687044">Chrome benötigt eine Berechtigung, um fortzufahren</translation>
 <translation id="2200603218210188859">Einstellungen für USB-Geräte</translation>
@@ -1237,6 +1241,7 @@
 <translation id="2889064240420137087">Link öffnen mit...</translation>
 <translation id="2889925978073739256">Plug-ins ohne Sandbox weiterhin blockieren</translation>
 <translation id="2893168226686371498">Standardbrowser</translation>
+<translation id="2895734772884435517">Sie können diese Einstellungen jederzeit anpassen.</translation>
 <translation id="289644616180464099">SIM-Karte ist gesperrt</translation>
 <translation id="289695669188700754">Schlüssel-ID: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Möchten Sie wirklich <ph name="TAB_COUNT" /> Tabs öffnen?</translation>
@@ -1592,7 +1597,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3470502288861289375">Wird kopiert...</translation>
 <translation id="3473479545200714844">Lupe</translation>
 <translation id="3475447146579922140">Google-Tabellendokument</translation>
-<translation id="3475538074809281797">{LINE_COUNT,plural, =1{&lt;1 Zeile wird nicht angezeigt&gt;}other{&lt;$1 Zeilen werden nicht angezeigt&gt;}}</translation>
 <translation id="3475843873335999118">Ihr Fingerabdruck wurde immer noch nicht erkannt. Bitte geben Sie Ihr Passwort ein.</translation>
 <translation id="347670947055184738">Hoppla! Das System konnte die Richtlinie für Ihr Gerät nicht abrufen.</translation>
 <translation id="347785443197175480"><ph name="HOST" /> weiterhin Zugriff auf Kamera und Mikrofon gestatten</translation>
@@ -1705,6 +1709,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3636096452488277381">Hallo <ph name="USER_GIVEN_NAME" /></translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" /> % – Restzeit: <ph name="TIME" /></translation>
 <translation id="3637682276779847508">Ihre SIM-Karte wird dauerhaft deaktiviert, wenn Sie nicht den korrekten PUK eingeben.</translation>
+<translation id="363863692969456324">Rechtschreibfehler mit der erweiterten Rechtschreibprüfung korrigieren</translation>
 <translation id="3640214691812501263">"<ph name="EXTENSION_NAME" />" für <ph name="USER_NAME" /> hinzufügen?</translation>
 <translation id="3644896802912593514">Breite</translation>
 <translation id="3645372836428131288">Bewegen Sie Ihren Finger etwas, um einen anderen Teil des Fingerabdrucks zu erfassen.</translation>
@@ -2137,6 +2142,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4310139701823742692">Die Datei hat das falsche Format. Prüfen Sie die PPD-Datei und versuchen Sie es noch einmal.</translation>
 <translation id="431076611119798497">&amp;Details</translation>
 <translation id="4312866146174492540">Blockieren (Standardeinstellung)</translation>
+<translation id="4314815835985389558">Synchronisierung verwalten</translation>
 <translation id="4316850752623536204">Website des Entwicklers</translation>
 <translation id="4320177379694898372">Keine Internetverbindung</translation>
 <translation id="4320948194796820126">Wählen Sie einen E-Mail-Dienst aus, um ihn als Lesezeichen hinzuzufügen</translation>
@@ -2216,6 +2222,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4450974146388585462">Diagnose</translation>
 <translation id="4451757071857432900">Auf Websites blockiert, die aufdringliche oder irreführende Werbung anzeigen (empfohlen)</translation>
 <translation id="4453946976636652378">Mit <ph name="SEARCH_ENGINE_NAME" /> suchen oder eine URL eingeben</translation>
+<translation id="4461835665417498653">Einige Systeminformationen und Seiteninhalte werden anonym an Google gesendet.</translation>
 <translation id="4462159676511157176">Benutzerdefinierte Nameserver</translation>
 <translation id="4467101674048705704"><ph name="FOLDER_NAME" /> maximieren</translation>
 <translation id="4469477701382819144">Auf Websites blockiert, die aufdringliche oder irreführende Werbung anzeigen</translation>
@@ -2380,6 +2387,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4735265153267957659">Geben Sie Ihr Passwort ein, um Smart Lock zu aktivieren. Beim nächsten Mal wird Ihr <ph name="DEVICE_TYPE" /> durch Ihr Smartphone entsperrt. Sie können Smart Lock bei Bedarf jederzeit in den Einstellungen deaktivieren.</translation>
 <translation id="473546211690256853">Dieses Konto wird von <ph name="DOMAIN" /> verwaltet.</translation>
 <translation id="4735803855089279419">Das System konnte die Gerätekennungen für dieses Gerät nicht ermitteln.</translation>
+<translation id="4736292055110123391">Lesezeichen, Passwörter, Verlauf und mehr auf allen Geräten synchronisieren</translation>
 <translation id="4737715515457435632">Bitte stellen Sie eine Verbindung zu einem Netzwerk her.</translation>
 <translation id="473775607612524610">Aktualisieren</translation>
 <translation id="4742746985488890273">An Ablage anpinnen</translation>
@@ -2662,7 +2670,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5185386675596372454">Die aktuelle Version von "<ph name="EXTENSION_NAME" />" wurde deaktiviert, weil sie weitere Berechtigungen erfordert.</translation>
 <translation id="5187295959347858724">Sie sind jetzt in <ph name="SHORT_PRODUCT_NAME" /> angemeldet. Ihre Lesezeichen, der Verlauf sowie andere Einstellungen werden mit Ihrem Google-Konto synchronisiert.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
-<translation id="5187892128515678283">Schieben Sie den Schalter auf "An", wenn Sie ein USB-Gerät für Linux freigeben möchten. Die Freigabe bleibt solange aktiviert, wie das Gerät angeschlossen ist.</translation>
+<translation id="5187892128515678283">Schieben Sie den Schalter auf "An", wenn Sie ein USB-Gerät für Linux freigeben möchten. Die Freigabe bleibt so lange aktiviert, wie das Gerät angeschlossen ist.</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> möchte mehrere Dateien herunterladen</translation>
 <translation id="5204673965307125349">Bitte führen einen Powerwash auf dem Gerät durch und versuchen Sie es noch einmal.</translation>
 <translation id="5204967432542742771">Passwort eingeben</translation>
@@ -4889,6 +4897,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8598453409908276158">Plug-in ohne Sandbox blockiert</translation>
 <translation id="8601206103050338563">TLS-WWW-Client-Authentifizierung</translation>
 <translation id="8602851771975208551">Ein anderes Programm auf Ihrem Computer hat eine App hinzugefügt, die sich möglicherweise auf die Funktionsweise von Chrome auswirkt.</translation>
+<translation id="8604763363205185560">Helfen Sie, die Sicherheit und Funktionen von Chrome zu verbessern</translation>
 <translation id="8605428685123651449">SQLite-Speicher</translation>
 <translation id="8606726445206553943">Ihre MIDI-Geräte verwenden</translation>
 <translation id="8609465669617005112">Nach oben</translation>

@@ -147,6 +147,7 @@
 <translation id="3236488194889173876">No mobile network available</translation>
 <translation id="3255483164551725916">What can you do?</translation>
 <translation id="3294437725009624529">Guest</translation>
+<translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> can still sign in later.</translation>
 <translation id="332587331255250389">Please replace the battery</translation>
 <translation id="3351879221545518001">You are currently casting the screen.</translation>
 <translation id="3364721542077212959">Stylus tools</translation>
@@ -420,6 +421,7 @@
 <translation id="8132793192354020517">Connected to <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialising...</translation>
 <translation id="8142699993796781067">Private networks</translation>
+<translation id="8167567890448493835">Using <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Customise languages and input...</translation>
 <translation id="8192202700944119416">Notifications are hidden.</translation>
 <translation id="8236042855478648955">Time for a break</translation>

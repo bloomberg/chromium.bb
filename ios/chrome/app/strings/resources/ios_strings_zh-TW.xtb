@@ -224,6 +224,7 @@
 <translation id="4666531726415300315">目前登入的帳戶是 <ph name="EMAIL" />。
 
 您已使用同步通關密語對資料進行加密，請輸入通關密語開始進行同步。</translation>
+<translation id="4689564913179979534">管理付款方式...</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="4747097190499141774">通關密語加密保護的資料不包括 Google Pay 的付款方式和地址。只有知道你通關密語的人，才能讀取加密保護的資料。系統不會將通關密語傳送給 Google，Google 也不會儲存通關密語。如果你忘記自己的通關密語，或是想變更這項設定，則必須重設同步功能。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">在網頁中尋找...</translation>
@@ -345,6 +346,7 @@
 <translation id="6482629121755362506">已刪除 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
 <translation id="6541915733953096570">過去 1 小時</translation>
 <translation id="6548479190262846511">找不到這個網站的密碼</translation>
+<translation id="6642362222295953972">切換至現有分頁</translation>
 <translation id="6643016212128521049">清除</translation>
 <translation id="6656103420185847513">編輯資料夾</translation>
 <translation id="6657585470893396449">密碼</translation>
