@@ -825,7 +825,6 @@ void FieldTrialList::CreateTrialsFromCommandLine(
     bool result = CreateTrialsFromSwitchValue(switch_value);
     UMA_HISTOGRAM_BOOLEAN("ChildProcess.FieldTrials.CreateFromShmemSuccess",
                           result);
-    DCHECK(result);
   }
 #elif defined(OS_POSIX) && !defined(OS_NACL)
   // On POSIX, we check if the handle is valid by seeing if the browser process
@@ -1231,6 +1230,9 @@ SharedMemoryHandle FieldTrialList::DeserializeSharedMemoryHandleMetadata(
     // but this process can since by definition it's not sandboxed.
     base::ProcessId parent_pid = base::GetParentProcessId(GetCurrentProcess());
     HANDLE parent_handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, parent_pid);
+    // TODO(https://crbug.com/916461): Duplicating the handle is known to fail
+    // with ERROR_ACCESS_DENIED when the parent process is being torn down. This
+    // should be handled elegantly somehow.
     DuplicateHandle(parent_handle, handle, GetCurrentProcess(), &handle, 0,
                     FALSE, DUPLICATE_SAME_ACCESS);
     CloseHandle(parent_handle);
