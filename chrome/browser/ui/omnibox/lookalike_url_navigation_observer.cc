@@ -85,6 +85,9 @@ std::string GetMatchingSiteEngagementDomain(
                                       blink::mojom::EngagementLevel::MEDIUM))
       continue;
 
+    // Site engagement service should only return HTTP or HTTPS domains.
+    DCHECK(detail.origin.SchemeIsHTTPOrHTTPS());
+
     // If the user has engaged with eTLD+1 of this site, don't show any
     // lookalike navigation suggestions.
     const std::string engaged_domain_and_registry =
@@ -147,6 +150,8 @@ void LookalikeUrlNavigationObserver::DidFinishNavigation(
     return;
 
   const GURL url = navigation_handle->GetURL();
+  if (!url.SchemeIsHTTPOrHTTPS())
+    return;
 
   // If the user has engaged with this site, don't show any lookalike
   // navigation suggestions.
