@@ -19,6 +19,7 @@
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/fakes/test_native_content.h"
 #import "ios/web/public/test/fakes/test_native_content_provider.h"
+#include "ios/web/public/test/fakes/test_web_state_observer.h"
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
@@ -62,6 +63,14 @@ enum NavigationManagerChoice {
   TEST_WK_BASED_NAVIGATION_MANAGER,
 };
 
+// Calls Stop() on the given WebState.
+ACTION_P(ReturnTrueAndStopNavigation, web_state) {
+  dispatch_async(dispatch_get_main_queue(), ^{
+    web_state->Stop();
+  });
+  return true;
+}
+
 // Verifies correctness of WebState's title.
 ACTION_P(VerifyTitle, expected_title) {
   WebState* web_state = arg0;
@@ -99,6 +108,38 @@ ACTION_P5(VerifyPageStartedContext,
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetPendingItem();
   EXPECT_EQ(url, item->GetURL());
+}
+
+// Verifies correctness of |NavigationContext| (|arg1|) for navigation for
+// stopped load. Stores |NavigationContext| in |context| pointer.
+ACTION_P5(VerifyAbortedNavigationStartedContext,
+          web_state,
+          url,
+          transition,
+          context,
+          nav_id) {
+  *context = arg1;
+  ASSERT_TRUE(*context);
+  EXPECT_EQ(web_state, arg0);
+  EXPECT_EQ(web_state, (*context)->GetWebState());
+  *nav_id = (*context)->GetNavigationId();
+  EXPECT_NE(0, *nav_id);
+  EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE((*context)->HasUserGesture());
+  ui::PageTransition actual_transition = (*context)->GetPageTransition();
+  EXPECT_TRUE(PageTransitionCoreTypeIs(transition, actual_transition))
+      << "Got unexpected transition: " << actual_transition;
+  EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_FALSE((*context)->HasCommitted());
+  EXPECT_FALSE((*context)->IsDownload());
+  EXPECT_FALSE((*context)->IsPost());
+  EXPECT_FALSE((*context)->GetError());
+  EXPECT_FALSE((*context)->IsRendererInitiated());
+  ASSERT_FALSE((*context)->GetResponseHeaders());
+  ASSERT_FALSE(web_state->IsLoading());
+  // TODO(crbug.com/899827): Pending URL should exist and be owned by
+  // NavigationContext.
+  ASSERT_FALSE(web_state->GetNavigationManager()->GetPendingItem());
 }
 
 // Verifies correctness of |NavigationContext| (|arg1|) for new page navigation
@@ -1842,7 +1883,7 @@ TEST_P(WebStateObserverTest, DisallowResponse) {
 
 // Tests stopping a navigation. Did FinishLoading and PageLoaded are never
 // called.
-TEST_P(WebStateObserverTest, StopNavigation) {
+TEST_P(WebStateObserverTest, ImmidiatelyStopNavigation) {
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
@@ -1854,6 +1895,38 @@ TEST_P(WebStateObserverTest, StopNavigation) {
   test::LoadUrl(web_state(), test_server_->GetURL("/hung"));
   web_state()->Stop();
   ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+}
+
+// Tests stopping a navigation after allowing the navigation from
+// WebStatePolicyDecider. DidStartNavigation and DidFinishNavigation callbacks
+// are still called.
+TEST_P(WebStateObserverTest, StopNavigationAfterPolicyDeciderCallback) {
+  GURL url(test_server_->GetURL("/hung"));
+  NavigationContext* context = nullptr;
+  int32_t nav_id = 0;
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  WebStatePolicyDecider::RequestInfo expected_request_info(
+      ui::PageTransition::PAGE_TRANSITION_TYPED,
+      /*target_main_frame=*/true, /*has_user_gesture=*/false);
+  EXPECT_CALL(*decider_,
+              ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
+      .WillOnce(ReturnTrueAndStopNavigation(web_state()));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
+      .WillOnce(VerifyAbortedNavigationStartedContext(
+          web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
+          &nav_id));
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
+      .WillOnce(VerifyResponseRejectedFinishedContext(web_state(), url,
+                                                      &context, &nav_id));
+
+  // Load the page and wait for DidFinishNavigation callback.
+  TestWebStateObserver page_loaded_observer(web_state());
+  test::LoadUrl(web_state(), url);
+  TestWebStateObserver* page_loaded_observer_ptr = &page_loaded_observer;
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
+    return page_loaded_observer_ptr->did_finish_navigation_info();
+  }));
 }
 
 // Tests stopping a finished navigation. PageLoaded is never called.
