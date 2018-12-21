@@ -605,4 +605,41 @@ TEST_F(FeaturePolicyMutationTest, TestAllowNewFeatureUnconditionally) {
                                          test_policy));
 }
 
+class FeaturePolicyViolationHistogramTest : public testing::Test {
+ protected:
+  FeaturePolicyViolationHistogramTest() = default;
+
+  ~FeaturePolicyViolationHistogramTest() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FeaturePolicyViolationHistogramTest);
+};
+
+TEST_F(FeaturePolicyViolationHistogramTest, PotentialViolation) {
+  HistogramTester tester;
+  const char* histogram_name =
+      "Blink.UseCounter.FeaturePolicy.PotentialViolation";
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_ =
+      DummyPageHolder::Create();
+  // Probing feature state should not count.
+  dummy_page_holder_->GetDocument().IsFeatureEnabled(
+      mojom::FeaturePolicyFeature::kPayment);
+  tester.ExpectTotalCount(histogram_name, 0);
+  // Checking the feature state with reporting intent should record a potential
+  // violation.
+  dummy_page_holder_->GetDocument().IsFeatureEnabled(
+      mojom::FeaturePolicyFeature::kPayment, ReportOptions::kReportOnFailure);
+  tester.ExpectTotalCount(histogram_name, 1);
+  // The potential violation for an already recorded violation does not count
+  // again.
+  dummy_page_holder_->GetDocument().IsFeatureEnabled(
+      mojom::FeaturePolicyFeature::kPayment, ReportOptions::kReportOnFailure);
+  tester.ExpectTotalCount(histogram_name, 1);
+  // Sanity check: check some other feature to increase the count.
+  dummy_page_holder_->GetDocument().IsFeatureEnabled(
+      mojom::FeaturePolicyFeature::kFullscreen,
+      ReportOptions::kReportOnFailure);
+  tester.ExpectTotalCount(histogram_name, 2);
+}
+
 }  // namespace blink

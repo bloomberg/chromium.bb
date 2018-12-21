@@ -1471,6 +1471,8 @@ class CORE_EXPORT Document : public ContainerNode,
     return agent_cluster_id_;
   }
 
+  void CountPotentialFeaturePolicyViolation(
+      mojom::FeaturePolicyFeature) const override;
   void ReportFeaturePolicyViolation(
       mojom::FeaturePolicyFeature,
       mojom::FeaturePolicyDisposition,
@@ -1924,6 +1926,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // Tracks which feature policies have already been parsed, so as not to count
   // them multiple times.
   BitVector parsed_feature_policies_;
+  // Tracks which features have already been potentially violated in this
+  // document. This helps to count them only once per page load.
+  mutable BitVector potentially_violated_features_;
 
   AtomicString override_last_modified_;
 };
