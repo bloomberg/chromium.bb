@@ -451,7 +451,7 @@ cr.define('omnibox_output', function() {
      */
     static create(column, values) {
       const outputProperty = new column.outputClass();
-      outputProperty.className = column.cellClassName;
+      outputProperty.classList.add(column.cellClassName);
       outputProperty.name = column.headerText.join('.');
       outputProperty.values = values;
       return outputProperty;
