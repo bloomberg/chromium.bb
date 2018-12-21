@@ -80,6 +80,7 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
   void OnReceiveRedirect() override;
   void OnResponseCompleted() override;
   bool CanRequestURL(const GURL& url) override;
+  void OnUploadProgress(uint64_t bytes_uploaded) override;
 
  private:
   // Helper method to start the network request.
@@ -123,6 +124,9 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
 
   // Callback to run after download starts.
   download::DownloadUrlParameters::OnStartedCallback callback_;
+
+  // Callback to run with upload updates.
+  DownloadUrlParameters::UploadProgressCallback upload_callback_;
 
   // Frame and process id associated with the request.
   int render_process_id_;

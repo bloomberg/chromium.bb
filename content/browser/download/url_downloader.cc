@@ -24,8 +24,10 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/upload_progress.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "services/network/upload_progress_tracker.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
@@ -49,10 +51,10 @@ std::unique_ptr<UrlDownloader> UrlDownloader::BeginDownload(
 
   // From this point forward, the |UrlDownloader| is responsible for
   // |started_callback|.
-  std::unique_ptr<UrlDownloader> downloader(new UrlDownloader(
+  auto downloader = std::make_unique<UrlDownloader>(
       std::move(request), delegate, is_parallel_request,
       params->request_origin(), params->follow_cross_origin_redirects(),
-      params->download_source()));
+      params->download_source(), params->upload_callback());
   downloader->Start();
 
   return downloader;
@@ -64,7 +66,9 @@ UrlDownloader::UrlDownloader(
     bool is_parallel_request,
     const std::string& request_origin,
     bool follow_cross_origin_redirects,
-    download::DownloadSource download_source)
+    download::DownloadSource download_source,
+    const download::DownloadUrlParameters::UploadProgressCallback&
+        upload_callback)
     : request_(std::move(request)),
       delegate_(delegate),
       core_(request_.get(),
@@ -73,16 +77,30 @@ UrlDownloader::UrlDownloader(
             request_origin,
             download_source),
       follow_cross_origin_redirects_(follow_cross_origin_redirects),
+      upload_callback_(upload_callback),
       weak_ptr_factory_(this) {}
 
-UrlDownloader::~UrlDownloader() {
-}
+UrlDownloader::~UrlDownloader() = default;
 
 void UrlDownloader::Start() {
   DCHECK(!request_->is_pending());
 
+  if (request_->has_upload() && upload_callback_) {
+    upload_progress_tracker_ = std::make_unique<network::UploadProgressTracker>(
+        FROM_HERE,
+        base::BindRepeating(&UrlDownloader::OnUploadProgressReport,
+                            weak_ptr_factory_.GetWeakPtr()),
+        request_.get());
+  }
   request_->set_delegate(this);
   request_->Start();
+}
+
+void UrlDownloader::OnUploadProgressReport(
+    const net::UploadProgress& upload_progress) {
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(upload_callback_, upload_progress.position()));
 }
 
 void UrlDownloader::OnReceivedRedirect(net::URLRequest* request,
@@ -109,6 +127,9 @@ void UrlDownloader::OnResponseStarted(net::URLRequest* request, int net_error) {
   DCHECK_NE(net::ERR_IO_PENDING, net_error);
 
   DVLOG(1) << "OnResponseStarted: " << request_->url().spec();
+
+  if (upload_progress_tracker_)
+    upload_progress_tracker_->OnUploadCompleted();
 
   if (net_error != net::OK) {
     ResponseCompleted(net_error);

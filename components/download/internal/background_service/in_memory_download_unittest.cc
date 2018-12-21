@@ -60,6 +60,7 @@ class MockDelegate : public InMemoryDownload::Delegate {
     if (run_loop_.running())
       run_loop_.Quit();
   }
+  MOCK_METHOD1(OnUploadProgress, void(InMemoryDownload*));
 
  private:
   base::RunLoop run_loop_;

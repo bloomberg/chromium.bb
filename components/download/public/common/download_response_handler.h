@@ -36,6 +36,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadResponseHandler
     virtual void OnReceiveRedirect() = 0;
     virtual void OnResponseCompleted() = 0;
     virtual bool CanRequestURL(const GURL& url) = 0;
+    virtual void OnUploadProgress(uint64_t bytes_uploaded) = 0;
   };
 
   DownloadResponseHandler(

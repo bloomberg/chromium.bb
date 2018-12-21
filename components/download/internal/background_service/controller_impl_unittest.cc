@@ -1178,8 +1178,8 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadUpdated) {
   dentry_update.bytes_downloaded = 1024;
   driver_->MakeReady();
 
-  EXPECT_CALL(*client_,
-              OnDownloadUpdated(entry.guid, dentry_update.bytes_downloaded));
+  EXPECT_CALL(*client_, OnDownloadUpdated(entry.guid, /* bytes_uploaded= */ 0u,
+                                          dentry_update.bytes_downloaded));
   driver_->NotifyDownloadUpdate(dentry_update);
   EXPECT_EQ(Entry::State::ACTIVE, model_->Get(entry.guid)->state);
 

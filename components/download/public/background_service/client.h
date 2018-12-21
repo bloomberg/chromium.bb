@@ -103,6 +103,7 @@ class Client {
   // with byte updates coming in as they are processed by the internal download
   // driver.
   virtual void OnDownloadUpdated(const std::string& guid,
+                                 uint64_t bytes_uploaded,
                                  uint64_t bytes_downloaded) = 0;
 
   // Called when a download failed.  Check FailureReason for a list of possible

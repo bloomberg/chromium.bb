@@ -24,6 +24,7 @@ Client::ShouldDownload EmptyClient::OnDownloadStarted(
 }
 
 void EmptyClient::OnDownloadUpdated(const std::string& guid,
+                                    uint64_t bytes_uploaded,
                                     uint64_t bytes_downloaded) {}
 
 void EmptyClient::OnDownloadFailed(const std::string& guid,

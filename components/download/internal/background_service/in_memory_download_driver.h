@@ -76,6 +76,7 @@ class InMemoryDownloadDriver : public DownloadDriver,
   void OnDownloadStarted(InMemoryDownload* download) override;
   void OnDownloadProgress(InMemoryDownload* download) override;
   void OnDownloadComplete(InMemoryDownload* download) override;
+  void OnUploadProgress(InMemoryDownload* download) override;
 
   // The client that receives updates from low level download logic.
   DownloadDriver::Client* client_;

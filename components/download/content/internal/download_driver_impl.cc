@@ -14,6 +14,7 @@
 #include "components/download/internal/background_service/driver_entry.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_url_parameters.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 
@@ -165,7 +166,9 @@ void DownloadDriverImpl::Start(
       download::DownloadSource::INTERNAL_API);
   download_url_params->set_post_body(post_body);
   download_url_params->set_follow_cross_origin_redirects(true);
-
+  download_url_params->set_upload_progress_callback(
+      base::BindRepeating(&DownloadDriverImpl::OnUploadProgress,
+                          weak_ptr_factory_.GetWeakPtr(), guid));
   download_manager_->DownloadUrl(std::move(download_url_params),
                                  nullptr /* blob_data_handle */,
                                  nullptr /* blob_url_loader_factory */);
@@ -292,6 +295,12 @@ void DownloadDriverImpl::OnDownloadCreated(content::DownloadManager* manager,
   // be loaded before the driver is ready.
   if (IsReady())
     client_->OnDownloadCreated(entry);
+}
+
+void DownloadDriverImpl::OnUploadProgress(const std::string& guid,
+                                          uint64_t bytes_uploaded) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  client_->OnUploadProgress(guid, bytes_uploaded);
 }
 
 void DownloadDriverImpl::OnManagerInitialized(
