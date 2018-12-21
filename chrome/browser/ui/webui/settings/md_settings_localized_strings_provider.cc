@@ -1740,8 +1740,6 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
                           ? IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES
                           : IDS_SETTINGS_SYNC_PAGE_TITLE},
     {"syncAdvancedPageTitle", IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE},
-    {"syncAdvancedRowCustomSettings",
-     IDS_SETTINGS_SYNC_ADVANCED_ROW_CUSTOM_SETTINGS},
     {"syncLoading", IDS_SETTINGS_SYNC_LOADING},
     {"syncTimeout", IDS_SETTINGS_SYNC_TIMEOUT},
     {"syncEverythingCheckboxLabel",

@@ -3600,9 +3600,6 @@
   <message name="IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE" desc="Name of the settings page which manages data used by sync.">
     Manage sync
   </message>
-  <message name="IDS_SETTINGS_SYNC_ADVANCED_ROW_CUSTOM_SETTINGS" desc="Sublabel for the sync advanced row to inform that the user has custom sync settings, i.e. is not syncing everything.">
-    Custom settings
-  </message>
   <message name="IDS_SETTINGS_SYNC_LOADING" desc="The message shown when waiting for the sync backend to start up.">
     Please wait...
   </message>
