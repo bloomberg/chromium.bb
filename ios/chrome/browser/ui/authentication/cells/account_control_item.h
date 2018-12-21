@@ -17,8 +17,6 @@
 @property(nonatomic, copy) NSString* detailText;
 @property(nonatomic, assign) BOOL shouldDisplayError;
 
-// The accessory type for the represented cell.
-@property(nonatomic) UITableViewCellAccessoryType accessoryType;
 
 @end
 

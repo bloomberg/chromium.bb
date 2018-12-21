@@ -24,6 +24,7 @@
            withStyler:(ChromeTableViewStyler*)styler {
   DCHECK(styler);
   DCHECK([cell class] == self.cellClass);
+  cell.accessoryType = self.accessoryType;
   cell.accessibilityTraits = self.accessibilityTraits;
   cell.accessibilityIdentifier = self.accessibilityIdentifier;
   if (!cell.backgroundView) {

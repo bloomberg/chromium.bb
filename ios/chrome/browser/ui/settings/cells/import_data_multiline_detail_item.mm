@@ -15,7 +15,6 @@
 
 @implementation ImportDataMultilineDetailItem
 
-@synthesize accessoryType = _accessoryType;
 @synthesize text = _text;
 @synthesize detailText = _detailText;
 
@@ -32,7 +31,6 @@
 - (void)configureCell:(ImportDataMultilineDetailCell*)cell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
-  cell.accessoryType = self.accessoryType;
   cell.textLabel.text = self.text;
   cell.detailTextLabel.text = self.detailText;
 }

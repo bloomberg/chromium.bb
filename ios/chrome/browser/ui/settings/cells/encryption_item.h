@@ -12,9 +12,6 @@
 // Item displaying possible options in the Sync Encryption screen.
 @interface EncryptionItem : TableViewItem
 
-// The accessory type for the represented cell.
-@property(nonatomic) UITableViewCellAccessoryType accessoryType;
-
 // The text to display.
 @property(nonatomic, copy) NSString* text;
 

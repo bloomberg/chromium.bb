@@ -38,7 +38,6 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
 
 @implementation SettingsDetailItem
 
-@synthesize accessoryType = _accessoryType;
 @synthesize iconImageName = _iconImageName;
 @synthesize text = _text;
 @synthesize detailText = _detailText;
@@ -57,7 +56,6 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
 - (void)configureCell:(SettingsDetailCell*)cell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
-  cell.accessoryType = self.accessoryType;
   cell.textLabel.text = self.text;
   cell.detailTextLabel.text = self.detailText;
   cell.backgroundColor = self.cellBackgroundColor;

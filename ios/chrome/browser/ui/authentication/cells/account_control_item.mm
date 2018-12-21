@@ -28,7 +28,6 @@
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
   cell.imageView.image = self.image;
-  cell.accessoryType = self.accessoryType;
 
   cell.textLabel.text = self.text;
   cell.textLabel.textColor = UIColor.blackColor;
@@ -170,7 +169,6 @@
   self.detailTextLabel.text = nil;
   self.detailTextLabel.textColor =
       UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
-  self.accessoryType = UITableViewCellAccessoryNone;
 }
 
 #pragma mark - NSObject(Accessibility)

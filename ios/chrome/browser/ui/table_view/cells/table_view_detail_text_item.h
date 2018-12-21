@@ -16,9 +16,6 @@
 // Text Alignment for the cell's textLabel. Default is NSTextAlignmentNatural.
 @property(nonatomic, assign) NSTextAlignment textAlignment;
 
-// The accessory type to display on the trailing edge of the cell.
-@property(nonatomic) UITableViewCellAccessoryType accessoryType;
-
 // UIColor for the cell's textLabel. Default is
 // kTableViewTextLabelColorLightGrey. ChromeTableViewStyler's |cellTitleColor|
 // takes precedence over the default color, but not over |textColor|.
