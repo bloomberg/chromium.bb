@@ -21,8 +21,11 @@ from grit import util
 _ELLIPSIS_PATTERN = lazy_re.compile(r'(?<!\.)\.\.\.(?=$|\s)')
 _ELLIPSIS_SYMBOL = u'\u2026'  # Ellipsis
 # Finds whitespace at the start and end of a string which can be multiline.
-_WHITESPACE = lazy_re.compile('(?P<start>\s*)(?P<body>.+?)(?P<end>\s*)\Z',
+_WHITESPACE = lazy_re.compile(r'(?P<start>\s*)(?P<body>.+?)(?P<end>\s*)\Z',
                               re.DOTALL | re.MULTILINE)
+_PLACEHOLDER = lazy_re.compile(r'\$\d')
+_BAD_PLACEHOLDER_MSG = ('WARNING: Placeholder found outside of <ph> tag in '
+                        'message "%s" in %s.')
 
 
 class MessageNode(base.ContentNode):
@@ -138,6 +141,12 @@ class MessageNode(base.ContentNode):
     placeholders = []
     for item in self.mixed_content:
       if isinstance(item, types.StringTypes):
+        if _PLACEHOLDER.search(item):
+          if util.IsParsingGrdForUnittest():
+            raise exception.PlaceholderNotInsidePhNode
+          # TODO(thestig): Remove this to finish fixing https://crbug.com/915681
+          # This condition should always raise an exception.
+          print _BAD_PLACEHOLDER_MSG % (item, self.source)
         text += item
       else:
         presentation = item.attrs['name'].upper()
