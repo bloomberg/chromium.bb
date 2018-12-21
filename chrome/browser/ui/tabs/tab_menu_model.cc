@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 
 TabMenuModel::TabMenuModel(ui::SimpleMenuModel::Delegate* delegate,
@@ -54,6 +55,10 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
                       IDS_TAB_CXMENU_AUDIO_MUTE_TAB, num_affected_tabs)
                 : l10n_util::GetPluralStringFUTF16(
                       IDS_TAB_CXMENU_AUDIO_UNMUTE_TAB, num_affected_tabs));
+  }
+  if (base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf)) {
+    AddItemWithStringId(TabStripModel::CommandSendToMyDevices,
+                        IDS_TAB_CXMENU_SEND_TO_MY_DEVICES);
   }
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItem(TabStripModel::CommandCloseTab,

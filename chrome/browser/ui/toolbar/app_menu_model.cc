@@ -54,6 +54,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/vector_icons/vector_icons.h"
 #include "components/zoom/zoom_controller.h"
 #include "components/zoom/zoom_event_manager.h"
@@ -757,6 +758,11 @@ void AppMenuModel::Build() {
     AddItemWithStringId(IDC_ROUTE_MEDIA, IDS_MEDIA_ROUTER_MENU_ITEM_TITLE);
 
   AddItemWithStringId(IDC_FIND, IDS_FIND);
+
+  if (base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf)) {
+    AddItemWithStringId(IDC_SEND_TO_MY_DEVICES, IDS_SEND_TO_MY_DEVICES);
+  }
+
   if (extensions::util::IsNewBookmarkAppsEnabled() &&
       banners::AppBannerManager::IsExperimentalAppBannersEnabled()) {
     const extensions::Extension* pwa =

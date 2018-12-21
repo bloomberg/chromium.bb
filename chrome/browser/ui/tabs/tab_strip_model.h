@@ -348,6 +348,7 @@ class TabStripModel {
     CommandTogglePinned,
     CommandToggleTabAudioMuted,
     CommandToggleSiteMuted,
+    CommandSendToMyDevices,
     CommandBookmarkAllTabs,
     CommandLast
   };

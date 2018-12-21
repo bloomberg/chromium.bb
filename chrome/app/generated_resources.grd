@@ -370,6 +370,9 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_CONTENT_CONTEXT_SAVEPAGEAS" desc="The name of the Save Page As command in the content area context menu">
             Save &amp;as...
           </message>
+          <message name="IDS_CONTENT_CONTEXT_SEND_TO_MY_DEVICES" desc="The name of the Send to my devices command in the content area context menu">
+            Send to my devices
+          </message>
           <message name="IDS_CONTENT_CONTEXT_PRINT" desc="The name of the Print... command in the content area context menu. Brings a dialog to select the print options">
             &amp;Print...
           </message>
@@ -578,6 +581,9 @@ are declared in tools/grit/grit_rule.gni.
           </message>
           <message name="IDS_CONTENT_CONTEXT_SAVEPAGEAS" desc="In Title Case: The name of the Save Page As command in the content area context menu">
             Save &amp;As...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SEND_TO_MY_DEVICES" desc="In Title Case: The name of the Send To My Devices command in the content area context menu">
+            Send To My Devices
           </message>
           <message name="IDS_CONTENT_CONTEXT_PRINT" desc="In Title Case: The name of the Print... command in the content area context menu. Brings a dialog to select the print options">
             &amp;Print...
@@ -900,6 +906,9 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_OPEN_IN_APP_WINDOW" desc="The text label of the menu item for moving the current tab to a standalone app window">
             Open in <ph name="APP">$1<ex>Gmail App</ex></ph>
           </message>
+          <message name="IDS_SEND_TO_MY_DEVICES" desc="The text label of the menu item for share this tab to other devices.">
+            Send to my devices
+          </message>
         </if>
         <if expr="use_titlecase">
           <message name="IDS_NEW_TAB" desc="In Title Case: The text label of a menu item for opening a new tab">
@@ -970,6 +979,9 @@ are declared in tools/grit/grit_rule.gni.
           </message>
           <message name="IDS_OPEN_IN_APP_WINDOW" desc="In Title Case: The text label of the menu item for moving the current tab to a standalone app window">
             Open in <ph name="APP">$1<ex>Gmail App</ex></ph>
+          </message>
+          <message name="IDS_SEND_TO_MY_DEVICES" desc="In Title Case: The text label of the menu item for share this tab to other devices.">
+            Send To My Devices
           </message>
         </if>
       </if>
@@ -5714,6 +5726,9 @@ the Bookmarks menu.">
         <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
           Bookmark all tabs...
         </message>
+        <message name="IDS_TAB_CXMENU_SEND_TO_MY_DEVICES" desc="The label of the tab context menu item for share this tab to other devices.">
+          Send to my devices
+        </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_TAB_CXMENU_NEWTAB" desc="In Title Case: The label of the 'New Tab' Tab context menu item.">
@@ -5754,6 +5769,9 @@ the Bookmarks menu.">
         </message>
         <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="In Title Case: The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
           Bookmark All Tabs...
+        </message>
+        <message name="IDS_TAB_CXMENU_SEND_TO_MY_DEVICES" desc="In Title Case: The label of the tab context menu item for share this tab to other devices.">
+          Send To My Devices
         </message>
       </if>
 

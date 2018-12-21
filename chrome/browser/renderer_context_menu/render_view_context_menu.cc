@@ -98,6 +98,7 @@
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -1325,7 +1326,10 @@ void RenderViewContextMenu::AppendPageItems() {
                                   IDS_CONTENT_CONTEXT_SAVEPAGEAS);
   menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
   AppendMediaRouterItem();
-
+  if (base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf)) {
+    menu_model_.AddItemWithStringId(IDC_SEND_TO_MY_DEVICES,
+                                    IDS_SEND_TO_MY_DEVICES);
+  }
   if (TranslateService::IsTranslatableURL(params_.page_url)) {
     std::unique_ptr<translate::TranslatePrefs> prefs(
         ChromeTranslateClient::CreateTranslatePrefs(
@@ -1772,6 +1776,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_GOTOURL:
     case IDC_SPELLPANEL_TOGGLE:
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
+    case IDC_SEND_TO_MY_DEVICES:
       return true;
     case IDC_CHECK_SPELLING_WHILE_TYPING:
       return prefs->GetBoolean(spellcheck::prefs::kSpellCheckEnable);
