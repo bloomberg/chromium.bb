@@ -367,9 +367,9 @@ class PrintPreviewHandlerTest : public testing::Test {
 
     const base::Value* header_footer =
         settings->FindKeyOfType("headerFooter", base::Value::Type::BOOLEAN);
-    EXPECT_EQ(bool(expected_header_footer), bool(header_footer));
-    if (expected_header_footer)
-      EXPECT_EQ(*expected_header_footer, header_footer->GetBool());
+    ASSERT_EQ(expected_header_footer.has_value(), !!header_footer);
+    if (expected_header_footer.has_value())
+      EXPECT_EQ(expected_header_footer.value(), header_footer->GetBool());
   }
 
   IPC::TestSink& initiator_sink() {
@@ -423,7 +423,7 @@ TEST_F(PrintPreviewHandlerTest, InitialSettingsSimple) {
   // Verify initial settings were sent.
   ValidateInitialSettings(*web_ui()->call_data().back(),
                           printing::kDummyPrinterName,
-                          printing::kDummyInitiatorName, base::nullopt);
+                          printing::kDummyInitiatorName, {});
 
   // Check that the use-cloud-print event got sent
   AssertWebUIEventFired(*web_ui()->call_data().front(), "use-cloud-print");
@@ -433,18 +433,18 @@ TEST_F(PrintPreviewHandlerTest, InitialSettingsEnableHeaderFooter) {
   // Set a pref that should take priority over StickySettings.
   prefs()->SetBoolean(prefs::kPrintHeaderFooter, true);
   Initialize();
-  ValidateInitialSettings(
-      *web_ui()->call_data().back(), printing::kDummyPrinterName,
-      printing::kDummyInitiatorName, base::Optional<bool>(true));
+  ValidateInitialSettings(*web_ui()->call_data().back(),
+                          printing::kDummyPrinterName,
+                          printing::kDummyInitiatorName, true);
 }
 
 TEST_F(PrintPreviewHandlerTest, InitialSettingsDisableHeaderFooter) {
   // Set a pref that should take priority over StickySettings.
   prefs()->SetBoolean(prefs::kPrintHeaderFooter, false);
   Initialize();
-  ValidateInitialSettings(
-      *web_ui()->call_data().back(), printing::kDummyPrinterName,
-      printing::kDummyInitiatorName, base::Optional<bool>(false));
+  ValidateInitialSettings(*web_ui()->call_data().back(),
+                          printing::kDummyPrinterName,
+                          printing::kDummyInitiatorName, false);
 }
 
 TEST_F(PrintPreviewHandlerTest, GetPrinters) {
