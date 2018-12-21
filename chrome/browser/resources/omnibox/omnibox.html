@@ -34,6 +34,12 @@
       </label>
     </p>
     <p>
+      <label title="This sets the input's from_omnibox_focus field. When checked, certain providers will not provide matches, e.g. bookmarks, built in, history, history url, keyword, search, and shortcut providers. Certain provider will only provide matches when zero suggest is checked, e.g., clipboard and zero suggest providers.">
+        <input id="zero-suggest" type="checkbox" accesskey="z">
+        <span class="accesskey">Z</span>ero suggest
+      </label>
+    </p>
+    <p>
       <label>
         <input id="prevent-inline-autocomplete" type="checkbox" accesskey="a">
         Prevent inline <span class="accesskey">a</span>utocomplete
@@ -46,8 +52,15 @@
       </label>
     </p>
     <p>
-      C<span class="accesskey">u</span>rrent page context:
-      <select id="page-classification" accesskey="u">
+      <label>
+        <input id="current-url" type="text" size="60"
+               placeholder="Enter current url (e.g. 'https://www.google.com') [Alt+U]"
+               accesskey="u" title="Mostly useful when zero-suggest is enabled, but may also affect clipboard and search providers.">
+      </label>
+    </p>
+    <p>
+      Current page c<span class="accesskey">o</span>ntext:
+      <select id="page-classification" accesskey="o">
         <option value="0">Invalid spec</option>
         <option value="2">about:blank</option>
         <option value="3">user's home page</option>

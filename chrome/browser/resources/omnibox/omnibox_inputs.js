@@ -41,21 +41,26 @@ class OmniboxInputs extends OmniboxElement {
 
   /** @private */
   setupElementListeners_() {
-    const onQueryInputsChanged = this.onQueryInputsChanged_.bind(this);
-    const onDisplayInputsChanged = this.onDisplayInputsChanged_.bind(this);
+    ['input-text',
+     'reset-autocomplete-controller',
+     'lock-cursor-position',
+     'zero-suggest',
+     'prevent-inline-autocomplete',
+     'prefer-keyword',
+     'current-url',
+     'page-classification',
+    ]
+        .forEach(
+            id => this.$$(id).addEventListener(
+                'input', this.onQueryInputsChanged_.bind(this)));
 
-    [this.$$('input-text'),
-     this.$$('reset-autocomplete-controller'),
-     this.$$('lock-cursor-position'),
-     this.$$('prevent-inline-autocomplete'),
-     this.$$('prefer-keyword'),
-     this.$$('page-classification'),
-    ].forEach(elem => elem.addEventListener('input', onQueryInputsChanged));
-
-    [this.$$('show-incomplete-results'),
-     this.$$('show-details'),
-     this.$$('show-all-providers'),
-    ].forEach(elem => elem.addEventListener('input', onDisplayInputsChanged));
+    ['show-incomplete-results',
+     'show-details',
+     'show-all-providers',
+    ]
+        .forEach(
+            id => this.$$(id).addEventListener(
+                'input', this.onDisplayInputsChanged_.bind(this)));
 
     this.$$('copy-text')
         .addEventListener('click', () => this.onCopyOutput_('text'));
@@ -68,14 +73,21 @@ class OmniboxInputs extends OmniboxElement {
 
   /** @private */
   onQueryInputsChanged_() {
+    const zeroSuggest = this.$$('zero-suggest').checked;
+    this.$$('current-url').disabled = zeroSuggest;
+    if (zeroSuggest)
+      this.$$('current-url').value = this.$$('input-text').value;
+
     /** @type {!QueryInputs} */
     const queryInputs = {
       inputText: this.$$('input-text').value,
       resetAutocompleteController:
           this.$$('reset-autocomplete-controller').checked,
       cursorPosition: this.cursorPosition_,
+      zeroSuggest: zeroSuggest,
       preventInlineAutocomplete: this.$$('prevent-inline-autocomplete').checked,
       preferKeyword: this.$$('prefer-keyword').checked,
+      currentUrl: this.$$('current-url').value,
       pageClassification: this.$$('page-classification').value,
     };
     this.dispatchEvent(

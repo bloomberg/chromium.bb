@@ -34,7 +34,10 @@
       this.handler_ = mojom.OmniboxPageHandler.getProxy();
       this.handler_.setClientPage(this.callbackRouter_.createProxy());
 
-      /** @type {function(string, boolean, number, boolean, boolean, number)} */
+      /**
+       * @type {function(string, boolean, number, boolean, boolean, boolean,
+       *     string, number)}
+       */
       this.makeRequest = this.handler_.startOmniboxQuery.bind(this.handler_);
     }
   }
@@ -58,8 +61,10 @@
           event.detail.inputText,
           event.detail.resetAutocompleteController,
           event.detail.cursorPosition,
+          event.detail.zeroSuggest,
           event.detail.preventInlineAutocomplete,
           event.detail.preferKeyword,
+          event.detail.currentUrl,
           event.detail.pageClassification);
     });
     omniboxInputs.addEventListener(
