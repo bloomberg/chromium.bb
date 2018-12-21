@@ -125,6 +125,8 @@ class MODULES_EXPORT PaymentRequest final
   void OnAbort(bool aborted_successfully) override;
   void OnCanMakePayment(
       payments::mojom::blink::CanMakePaymentQueryResult) override;
+  void OnHasEnrolledInstrument(
+      payments::mojom::blink::HasEnrolledInstrumentQueryResult) override;
   void WarnNoFavicon() override;
 
   void OnCompleteTimeout(TimerBase*);

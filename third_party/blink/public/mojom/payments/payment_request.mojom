@@ -44,9 +44,20 @@ enum CanMakePaymentQueryResult {
   QUERY_QUOTA_EXCEEDED,
 
   // Used only on localhost and file:// schemes to warn web developer that the
-  // query quota has exceeded, but Chrome is returning an answer anyway.
+  // query quota has been exceeded, but Chrome is returning an answer anyway.
   WARNING_CAN_MAKE_PAYMENT,
   WARNING_CANNOT_MAKE_PAYMENT,
+};
+
+enum HasEnrolledInstrumentQueryResult {
+  HAS_ENROLLED_INSTRUMENT,
+  HAS_NO_ENROLLED_INSTRUMENT,
+  QUERY_QUOTA_EXCEEDED,
+
+  // Used only on localhost and file:// schemes to warn web developer that the
+  // query quota has been exceeded, but Chrome is returning an answer anyway.
+  WARNING_HAS_ENROLLED_INSTRUMENT,
+  WARNING_HAS_NO_ENROLLED_INSTRUMENT,
 };
 
 interface PaymentRequestClient {
@@ -58,6 +69,7 @@ interface PaymentRequestClient {
   OnComplete();
   OnAbort(bool aborted_successfully);
   OnCanMakePayment(CanMakePaymentQueryResult result);
+  OnHasEnrolledInstrument(HasEnrolledInstrumentQueryResult result);
   WarnNoFavicon();
 };
 
@@ -219,6 +231,14 @@ interface PaymentRequest {
   // the payment response.
   Retry(PaymentValidationErrors errors);
 
-  // Queries whether the user has a form of payment on file.
+  // Queries whether support for the merchant-specified payment method is
+  // available, either because the user has a registered payment handler for
+  // that method, or because the browser can do just-in-time registration for a
+  // suitable payment handler.
   CanMakePayment();
+
+  // Queries whether support for the merchant-specified payment method is
+  // available and the user has an enrolled instrument for that payment method
+  // that is ready to pay.
+  HasEnrolledInstrument();
 };

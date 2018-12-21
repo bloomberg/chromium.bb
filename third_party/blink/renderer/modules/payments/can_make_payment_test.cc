@@ -12,7 +12,7 @@
 namespace blink {
 namespace {
 
-using payments::mojom::blink::CanMakePaymentQueryResult;
+using payments::mojom::blink::HasEnrolledInstrumentQueryResult;
 using payments::mojom::blink::PaymentErrorReason;
 using payments::mojom::blink::PaymentRequestClient;
 
@@ -70,8 +70,8 @@ TEST(CanMakePaymentTest, RejectQueryQuotaExceeded) {
   request->canMakePayment(scope.GetScriptState())
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
-  static_cast<PaymentRequestClient*>(request)->OnCanMakePayment(
-      CanMakePaymentQueryResult::QUERY_QUOTA_EXCEEDED);
+  static_cast<PaymentRequestClient*>(request)->OnHasEnrolledInstrument(
+      HasEnrolledInstrumentQueryResult::QUERY_QUOTA_EXCEEDED);
 }
 
 TEST(CanMakePaymentTest, ReturnCannotMakeCanMakePayment) {
@@ -85,8 +85,8 @@ TEST(CanMakePaymentTest, ReturnCannotMakeCanMakePayment) {
   request->canMakePayment(scope.GetScriptState())
       .Then(funcs.ExpectCall(&captor), funcs.ExpectNoCall());
 
-  static_cast<PaymentRequestClient*>(request)->OnCanMakePayment(
-      CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT);
+  static_cast<PaymentRequestClient*>(request)->OnHasEnrolledInstrument(
+      HasEnrolledInstrumentQueryResult::HAS_NO_ENROLLED_INSTRUMENT);
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
   EXPECT_EQ("false", captor);
@@ -103,8 +103,8 @@ TEST(CanMakePaymentTest, ReturnCanMakePayment) {
   request->canMakePayment(scope.GetScriptState())
       .Then(funcs.ExpectCall(&captor), funcs.ExpectNoCall());
 
-  static_cast<PaymentRequestClient*>(request)->OnCanMakePayment(
-      CanMakePaymentQueryResult::CAN_MAKE_PAYMENT);
+  static_cast<PaymentRequestClient*>(request)->OnHasEnrolledInstrument(
+      HasEnrolledInstrumentQueryResult::HAS_ENROLLED_INSTRUMENT);
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
   EXPECT_EQ("true", captor);

@@ -214,6 +214,12 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     public CallbackHelper getCanMakePaymentQueryResponded() {
         return mCanMakePaymentQueryResponded;
     }
+    public CallbackHelper getHasEnrolledInstrumentQueryResponded() {
+        // TODO(https://crbug.com/915907): return mHasEnrolledInstrumentQueryResponded once
+        // hasEnrolledInstrument is exposed in the PaymentRequest JavaScript API and browser tests
+        // are switched over to use the new API.
+        return mCanMakePaymentQueryResponded;
+    }
     public CallbackHelper getExpirationMonthChange() {
         return mExpirationMonthChange;
     }
@@ -893,6 +899,15 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     @Override
     public void onPaymentRequestServiceCanMakePaymentQueryResponded() {
         ThreadUtils.assertOnUiThread();
+        mCanMakePaymentQueryResponded.notifyCalled();
+    }
+
+    @Override
+    public void onPaymentRequestServiceHasEnrolledInstrumentQueryResponded() {
+        ThreadUtils.assertOnUiThread();
+        // TODO(https://crbug.com/915907): return mHasEnrolledInstrumentQueryResponded once
+        // hasEnrolledInstrument is exposed in the PaymentRequest JavaScript API and browser tests
+        // are switched over to use the new API.
         mCanMakePaymentQueryResponded.notifyCalled();
     }
 

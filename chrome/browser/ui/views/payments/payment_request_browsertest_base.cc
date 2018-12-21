@@ -147,6 +147,20 @@ void PaymentRequestBrowserTestBase::OnCanMakePaymentReturned() {
     event_waiter_->OnEvent(DialogEvent::CAN_MAKE_PAYMENT_RETURNED);
 }
 
+void PaymentRequestBrowserTestBase::OnHasEnrolledInstrumentCalled() {
+  // TODO(https://crbug.com/915907): rename enum to HAS_ENROLLED_INSTRUMENT
+  // version when new CanMakePayment behavior is implemented.
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::CAN_MAKE_PAYMENT_CALLED);
+}
+
+void PaymentRequestBrowserTestBase::OnHasEnrolledInstrumentReturned() {
+  // TODO(https://crbug.com/915907): rename enum to HAS_ENROLLED_INSTRUMENT
+  // version when new CanMakePayment behavior is implemented.
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::CAN_MAKE_PAYMENT_RETURNED);
+}
+
 void PaymentRequestBrowserTestBase::OnNotSupportedError() {
   if (event_waiter_)
     event_waiter_->OnEvent(DialogEvent::NOT_SUPPORTED_ERROR);
@@ -869,6 +883,12 @@ std::ostream& operator<<(
       break;
     case DialogEvent::CAN_MAKE_PAYMENT_RETURNED:
       out << "CAN_MAKE_PAYMENT_RETURNED";
+      break;
+    case DialogEvent::HAS_ENROLLED_INSTRUMENT_CALLED:
+      out << "HAS_ENROLLED_INSTRUMENT_CALLED";
+      break;
+    case DialogEvent::HAS_ENROLLED_INSTRUMENT_RETURNED:
+      out << "HAS_ENROLLED_INSTRUMENT_RETURNED";
       break;
     case DialogEvent::ERROR_MESSAGE_SHOWN:
       out << "ERROR_MESSAGE_SHOWN";
