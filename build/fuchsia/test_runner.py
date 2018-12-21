@@ -106,7 +106,7 @@ def main():
       target.PutFile(args.test_launcher_filter_file, TEST_FILTER_PATH)
       child_args.append('--test-launcher-filter-file=' + TEST_FILTER_PATH)
 
-    forwarder = None
+    test_server = None
     if args.enable_test_server:
       test_server = SetupTestServer(target, test_concurrency)
 
@@ -115,9 +115,8 @@ def main():
         args.output_directory, target, args.package, args.package_name,
         args.package_dep, child_args, run_package_args)
 
-    if forwarder:
-      forwarder.terminate()
-      forwarder.wait()
+    if test_server:
+      test_server.Stop()
 
     if args.test_launcher_summary_output:
       target.GetFile(TEST_RESULT_PATH, args.test_launcher_summary_output)
