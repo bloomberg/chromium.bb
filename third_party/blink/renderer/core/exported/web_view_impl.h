@@ -161,7 +161,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void AnimateDoubleTapZoom(const gfx::Point&,
                             const WebRect& block_bounds) override;
   void ZoomToFindInPageRect(const WebRect&) override;
-
   void SetDeviceScaleFactor(float) override;
   void SetZoomFactorForDeviceScaleFactor(float) override;
   float ZoomFactorForDeviceScaleFactor() override {
@@ -230,10 +229,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Returns the currently focused Element or null if no element has focus.
   Element* FocusedElement() const;
 
-  WebViewClient* Client() { return client_; }
+  WebViewClient* Client() { return AsView().client; }
   // TODO(dcheng): This client should be acquirable from the MainFrameImpl
   // in some cases? We need to know how to get it in all cases.
-  WebWidgetClient* WidgetClient() { return widget_client_; }
+  WebWidgetClient* WidgetClient() { return AsWidget().client; }
 
   // Returns the page object associated with this view. This may be null when
   // the page is shutting down, but will be valid at all other times.
@@ -415,6 +414,14 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest,
                            DivScrollIntoEditableTestWithDeviceScaleFactor);
 
+  // TODO(danakj): DCHECK in these that we're not inside a wrong API stackframe.
+  struct ViewData;
+  ViewData& AsView() { return as_view_; }
+  const ViewData& AsView() const { return as_view_; }
+  struct WidgetData;
+  WidgetData& AsWidget() { return as_widget_; }
+  const WidgetData& AsWidget() const { return as_widget_; }
+
   // WebWidget methods:
   void SetLayerTreeView(WebLayerTreeView*) override;
   void Close() override;
@@ -423,7 +430,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void ResizeVisualViewport(const WebSize&) override;
   void DidEnterFullscreen() override;
   void DidExitFullscreen() override;
-
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) override;
   void BeginFrame(base::TimeTicks last_frame_time) override;
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
@@ -544,8 +550,24 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       IntPoint& scroll,
       bool& need_animation);
 
-  WebViewClient* client_;  // Can be null (e.g. unittests, shared workers, etc.)
-  WebWidgetClient* widget_client_;  // Can also be null.
+  // These member variables should not be accessed within calls to WebWidget
+  // APIs. They can be called from within WebView APIs, and internal methods,
+  // though these need to be sorted as being for the view or the widget also.
+  struct ViewData {
+    ViewData(WebViewClient* client) : client(client) {}
+
+    // Can be null (e.g. unittests, shared workers, etc.)
+    WebViewClient* client;
+  } as_view_;
+
+  // These member variables should not be accessed within calls to WebView
+  // APIs. They can be called from within WebWidget APIs, and internal methods,
+  // though these need to be sorted as being for the view or the widget also.
+  struct WidgetData {
+    WidgetData(WebWidgetClient* client) : client(client) {}
+
+    WebWidgetClient* client;  // Can also be null.
+  } as_widget_;
 
   Persistent<ChromeClient> chrome_client_;
 
