@@ -17,7 +17,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -182,7 +181,7 @@ std::unique_ptr<net::URLRequest> CreateRequestHelper(
 // Tasks.
 class TestIPCSender : public IPC::Sender {
  public:
-  typedef std::list<linked_ptr<IPC::Message> > SentMessages;
+  using SentMessages = std::list<std::unique_ptr<IPC::Message>>;
 
   // Adds a Task to the queue. We will fire these in order as events are
   // dispatched.
@@ -211,7 +210,7 @@ class TestIPCSender : public IPC::Sender {
                                                   task_queue_.front());
     task_queue_.pop();
 
-    sent_messages_.push_back(linked_ptr<IPC::Message>(message));
+    sent_messages_.push_back(base::WrapUnique(message));
     return true;
   }
 
