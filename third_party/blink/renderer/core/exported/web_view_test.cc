@@ -5590,4 +5590,27 @@ TEST_F(WebViewTest, LongestInputDelayExcludesProcessingTime) {
 
   web_view_helper_.Reset();  // Remove dependency on locally scoped client.
 }
+
+TEST_F(WebViewTest, RootLayerAttachment) {
+  WebView* web_view = web_view_helper_.InitializeAndLoad("about:blank");
+
+  // Do a lifecycle update that includes compositing but not paint. Hit test
+  // events are an example of a real case where this occurs
+  // (see: WebViewTest::ClientTapHandling).
+  web_view->MainFrameWidget()->UpdateLifecycle(
+      WebFrameWidget::LifecycleUpdate::kPrePaint,
+      WebWidget::LifecycleUpdateReason::kTest);
+
+  // With BlinkGenPropertyTrees, layers (including the root layer) should not be
+  // attached until the paint lifecycle phase.
+  auto* layer_tree_view = web_view_helper_.GetLayerTreeView();
+  EXPECT_FALSE(layer_tree_view->GetRootLayer());
+
+  // Do a full lifecycle update and ensure that the root layer has been added.
+  web_view->MainFrameWidget()->UpdateLifecycle(
+      WebFrameWidget::LifecycleUpdate::kAll,
+      WebWidget::LifecycleUpdateReason::kTest);
+  EXPECT_TRUE(layer_tree_view->GetRootLayer());
+}
+
 }  // namespace blink

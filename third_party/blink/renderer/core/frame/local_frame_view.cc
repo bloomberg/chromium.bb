@@ -2855,6 +2855,8 @@ void LocalFrameView::PushPaintArtifactToCompositor(
             // The layer being scrolled is destroyed before the
             // ScrollingCoordinator.
             WrapWeakPersistent(page->GetScrollingCoordinator())));
+    if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+      GetLayoutView()->Compositor()->AttachRootLayerViaChromeClient();
     page->GetChromeClient().AttachRootLayer(
         paint_artifact_compositor_->RootLayer(), &GetFrame());
   }

@@ -156,6 +156,8 @@ class CORE_EXPORT PaintLayerCompositor {
 
   bool IsRootScrollerAncestor() const;
 
+  void AttachRootLayerViaChromeClient();
+
  private:
 #if DCHECK_IS_ON()
   void AssertNoUnresolvedDirtyBits();
