@@ -22,7 +22,7 @@ PerfTestRunner.measureTime({
   run: () => {
     runHostChildrenMutationThenLayout(host, loop);
   },
-  done: () => {
+  teardown: () => {
     host.remove();
   }
 });
