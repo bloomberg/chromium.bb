@@ -522,7 +522,7 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest,
     ASSERT_TRUE(entry);
 
     EXPECT_EQ(use_secure_inner_origin ? security_state::NONE
-                                      : security_state::HTTP_SHOW_WARNING,
+                                      : security_state::DANGEROUS,
               security_info.security_level);
   }
 
