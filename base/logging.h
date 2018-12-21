@@ -617,11 +617,17 @@ class CheckOpResult {
   } while (false)
 #endif
 
+#if defined(__clang__) || defined(COMPILER_GCC)
 #define IMMEDIATE_CRASH()    \
   ({                         \
     WRAPPED_TRAP_SEQUENCE(); \
     __builtin_unreachable(); \
   })
+#else
+// This is supporting non-chromium user of logging.h to build with MSVC, like
+// pdfium. On MSVC there is no __builtin_unreachable().
+#define IMMEDIATE_CRASH() WRAPPED_TRAP_SEQUENCE()
+#endif
 
 // CHECK dies with a fatal error if condition is not true.  It is *not*
 // controlled by NDEBUG, so the check will be executed regardless of
