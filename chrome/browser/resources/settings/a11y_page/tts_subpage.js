@@ -58,6 +58,12 @@ Polymer({
       value: false,
     },
 
+    /** @private */
+    previewText_: {
+      type: String,
+      value: '',
+    },
+
     /** Whether any voices are loaded. */
     hasVoices: {
       type: Boolean,
@@ -73,6 +79,9 @@ Polymer({
 
   /** @override */
   ready: function() {
+    // Populate the preview text with textToSpeechPreviewInput. Users can change
+    // this to their own value later.
+    this.previewText_ = this.i18n('textToSpeechPreviewInput');
     this.addWebUIListener(
         'all-voice-data-updated', this.populateVoiceList_.bind(this));
     chrome.send('getAllTtsVoiceData');
@@ -150,14 +159,18 @@ Polymer({
   },
 
   /**
-   * Returns true if voices are loaded and preview is not currently speaking.
+   * Returns true if voices are loaded and preview is not currently speaking and
+   * there is text to preview.
    * @param {!Array<TtsHandlerVoice>} voices
    * @param {boolean} isPreviewing
+   * @param {boolean} previewText
    * @return {boolean}
    * @private
    */
-  enablePreviewButton_: function(voices, isPreviewing) {
-    return this.hasVoices_(voices) && !isPreviewing;
+  enablePreviewButton_: function(voices, isPreviewing, previewText) {
+    const nonWhitespaceRe = /\S+/;
+    const hasPreviewText = nonWhitespaceRe.exec(previewText) != null;
+    return this.hasVoices_(voices) && !isPreviewing && hasPreviewText;
   },
 
   /**
@@ -376,8 +389,7 @@ Polymer({
   /** @private */
   onPreviewTtsClick_: function() {
     chrome.send(
-        'previewTtsVoice',
-        [this.$.previewInput.value, this.$.previewVoice.value]);
+        'previewTtsVoice', [this.previewText_, this.$.previewVoice.value]);
     chrome.metricsPrivate.recordSparseHashable(
         'TextToSpeech.Settings.PreviewVoiceClicked', this.$.previewVoice.value);
   },
