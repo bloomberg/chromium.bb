@@ -50,12 +50,24 @@ namespace media {
 // e.g.
 // EXPECT_CALL(*device_mock_.Get(), QueryInterface(IID_ID3D11VideoDevice, _))
 //  .WillRepeatedly(DoAll(
-//     AddRefAndSetArgPointee<1>(video_device_mock_.Get()), Return(S_OK)));
-ACTION_TEMPLATE(AddRefAndSetArgPointee,
+//     SetComPointee<1>(video_device_mock_.Get()), Return(S_OK)));
+ACTION_TEMPLATE(SetComPointee,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(p)) {
   p->AddRef();
   *std::get<k>(args) = p;
+}
+
+// Same as above, but returns S_OK for convenience.
+// e.g.
+// EXPECT_CALL(*device_mock_.Get(), QueryInterface(IID_ID3D11VideoDevice, _))
+//  .WillRepeatedly(SetComPointeeAndReturnOk<1>(video_device_mock_.Get()));
+ACTION_TEMPLATE(SetComPointeeAndReturnOk,
+                HAS_1_TEMPLATE_PARAMS(int, k),
+                AND_1_VALUE_PARAMS(p)) {
+  p->AddRef();
+  *std::get<k>(args) = p;
+  return S_OK;
 }
 
 // Use this function to create a mock so that they are ref-counted correctly.

@@ -19,6 +19,8 @@
 #include "media/gpu/windows/d3d11_mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using Microsoft::WRL::ComPtr;
+
 using ::testing::_;
 using ::testing::AllOf;
 using ::testing::AtLeast;
@@ -26,7 +28,9 @@ using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Lt;
+using ::testing::Mock;
 using ::testing::Ne;
+using ::testing::NiceMock;
 using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SaveArg;
@@ -87,7 +91,10 @@ class D3D11CdmProxyTest : public ::testing::Test {
     std::map<CdmProxy::Function, uint32_t> function_id_map;
     function_id_map[kTestFunction] = kTestFunctionId;
 
-    auto mock_power_monitor_source = std::make_unique<MockPowerMonitorSource>();
+    // Use NiceMock because we don't care about base::PowerMonitorSource events
+    // other than calling Suspend() directly.
+    auto mock_power_monitor_source =
+        std::make_unique<NiceMock<MockPowerMonitorSource>>();
     mock_power_monitor_source_ = mock_power_monitor_source.get();
     power_monitor_ = std::make_unique<base::PowerMonitor>(
         std::move(mock_power_monitor_source));
@@ -103,7 +110,7 @@ class D3D11CdmProxyTest : public ::testing::Test {
     video_context_mock_ = CreateD3D11Mock<D3D11VideoContextMock>();
     video_context1_mock_ = CreateD3D11Mock<D3D11VideoContext1Mock>();
     dxgi_device_ = CreateD3D11Mock<DXGIDevice2Mock>();
-    dxgi_adapter_ = CreateD3D11Mock<DXGIAdapter3Mock>();
+    dxgi_adapter_ = CreateD3D11Mock<NiceMock<DXGIAdapter3Mock>>();
 
     // These flags are a reasonable subset of flags to get HARDWARE protected
     // playback.
@@ -135,26 +142,20 @@ class D3D11CdmProxyTest : public ::testing::Test {
     ON_CALL(create_device_mock_,
             Create(_, D3D_DRIVER_TYPE_HARDWARE, _, _, _, _, _, _, _, _))
         .WillByDefault(
-            DoAll(AddRefAndSetArgPointee<7>(device_mock_.Get()),
-                  AddRefAndSetArgPointee<9>(device_context_mock_.Get()),
-                  Return(S_OK)));
+            DoAll(SetComPointee<7>(device_mock_.Get()),
+                  SetComPointeeAndReturnOk<9>(device_context_mock_.Get())));
 
     ON_CALL(*device_mock_.Get(), QueryInterface(IID_ID3D11VideoDevice, _))
-        .WillByDefault(DoAll(
-            AddRefAndSetArgPointee<1>(video_device_mock_.Get()), Return(S_OK)));
+        .WillByDefault(SetComPointeeAndReturnOk<1>(video_device_mock_.Get()));
 
     ON_CALL(*device_mock_.Get(), QueryInterface(IID_ID3D11VideoDevice1, _))
-        .WillByDefault(
-            DoAll(AddRefAndSetArgPointee<1>(video_device1_mock_.Get()),
-                  Return(S_OK)));
+        .WillByDefault(SetComPointeeAndReturnOk<1>(video_device1_mock_.Get()));
 
     ON_CALL(*device_mock_.Get(), QueryInterface(IID_IDXGIDevice2, _))
-        .WillByDefault(
-            DoAll(AddRefAndSetArgPointee<1>(dxgi_device_.Get()), Return(S_OK)));
+        .WillByDefault(SetComPointeeAndReturnOk<1>(dxgi_device_.Get()));
 
     ON_CALL(*dxgi_device_.Get(), GetParent(IID_IDXGIAdapter3, _))
-        .WillByDefault(DoAll(AddRefAndSetArgPointee<1>(dxgi_adapter_.Get()),
-                             Return(S_OK)));
+        .WillByDefault(SetComPointeeAndReturnOk<1>(dxgi_adapter_.Get()));
 
     ON_CALL(*dxgi_adapter_.Get(),
             RegisterHardwareContentProtectionTeardownStatusEvent(_, _))
@@ -162,22 +163,16 @@ class D3D11CdmProxyTest : public ::testing::Test {
 
     ON_CALL(*device_context_mock_.Get(),
             QueryInterface(IID_ID3D11VideoContext, _))
-        .WillByDefault(
-            DoAll(AddRefAndSetArgPointee<1>(video_context_mock_.Get()),
-                  Return(S_OK)));
+        .WillByDefault(SetComPointeeAndReturnOk<1>(video_context_mock_.Get()));
 
     ON_CALL(*device_context_mock_.Get(),
             QueryInterface(IID_ID3D11VideoContext1, _))
-        .WillByDefault(
-            DoAll(AddRefAndSetArgPointee<1>(video_context1_mock_.Get()),
-                  Return(S_OK)));
+        .WillByDefault(SetComPointeeAndReturnOk<1>(video_context1_mock_.Get()));
 
     ON_CALL(*video_device_mock_.Get(),
             CreateCryptoSession(Pointee(CRYPTO_TYPE_GUID), _,
                                 Pointee(D3D11_KEY_EXCHANGE_HW_PROTECTION), _))
-        .WillByDefault(
-            DoAll(AddRefAndSetArgPointee<3>(crypto_session_mock_.Get()),
-                  Return(S_OK)));
+        .WillByDefault(SetComPointeeAndReturnOk<3>(crypto_session_mock_.Get()));
 
     ON_CALL(
         *video_device1_mock_.Get(),
@@ -199,73 +194,46 @@ class D3D11CdmProxyTest : public ::testing::Test {
   // access to the mocks later.
   void Initialize(CdmProxy::Client* client, CdmProxy::InitializeCB callback) {
     EXPECT_CALL(create_device_mock_,
-                Create(_, D3D_DRIVER_TYPE_HARDWARE, _, _, _, _, _, _, _, _))
-        .WillOnce(DoAll(AddRefAndSetArgPointee<7>(device_mock_.Get()),
-                        AddRefAndSetArgPointee<9>(device_context_mock_.Get()),
-                        Return(S_OK)));
-
+                Create(_, D3D_DRIVER_TYPE_HARDWARE, _, _, _, _, _, _, _, _));
     EXPECT_CALL(*device_mock_.Get(), QueryInterface(IID_ID3D11VideoDevice, _))
-        .Times(AtLeast(1))
-        .WillRepeatedly(DoAll(
-            AddRefAndSetArgPointee<1>(video_device_mock_.Get()), Return(S_OK)));
-
+        .Times(AtLeast(1));
     EXPECT_CALL(*device_mock_.Get(), QueryInterface(IID_IDXGIDevice2, _))
-        .Times(AtLeast(1))
-        .WillRepeatedly(
-            DoAll(AddRefAndSetArgPointee<1>(dxgi_device_.Get()), Return(S_OK)));
-
+        .Times(AtLeast(1));
     EXPECT_CALL(*dxgi_device_.Get(), GetParent(IID_IDXGIAdapter3, _))
-        .Times(AtLeast(1))
-        .WillRepeatedly(DoAll(AddRefAndSetArgPointee<1>(dxgi_adapter_.Get()),
-                              Return(S_OK)));
-
+        .Times(AtLeast(1));
     EXPECT_CALL(*dxgi_adapter_.Get(),
                 RegisterHardwareContentProtectionTeardownStatusEvent(_, _))
-        .Times(AtLeast(1))
-        .WillRepeatedly(DoAll(SaveArg<0>(&teardown_event_), Return(S_OK)));
-
+        .Times(AtLeast(1));
     EXPECT_CALL(*device_mock_.Get(), QueryInterface(IID_ID3D11VideoDevice1, _))
-        .Times(AtLeast(1))
-        .WillRepeatedly(
-            DoAll(AddRefAndSetArgPointee<1>(video_device1_mock_.Get()),
-                  Return(S_OK)));
-
+        .Times(AtLeast(1));
     EXPECT_CALL(*device_context_mock_.Get(),
                 QueryInterface(IID_ID3D11VideoContext, _))
-        .Times(AtLeast(1))
-        .WillRepeatedly(
-            DoAll(AddRefAndSetArgPointee<1>(video_context_mock_.Get()),
-                  Return(S_OK)));
-
+        .Times(AtLeast(1));
     EXPECT_CALL(*device_context_mock_.Get(),
                 QueryInterface(IID_ID3D11VideoContext1, _))
-        .Times(AtLeast(1))
-        .WillRepeatedly(
-            DoAll(AddRefAndSetArgPointee<1>(video_context1_mock_.Get()),
-                  Return(S_OK)));
-
+        .Times(AtLeast(1));
     EXPECT_CALL(
         *video_device_mock_.Get(),
         CreateCryptoSession(Pointee(CRYPTO_TYPE_GUID), _,
-                            Pointee(D3D11_KEY_EXCHANGE_HW_PROTECTION), _))
-        .WillOnce(DoAll(AddRefAndSetArgPointee<3>(crypto_session_mock_.Get()),
-                        Return(S_OK)));
-
+                            Pointee(D3D11_KEY_EXCHANGE_HW_PROTECTION), _));
     EXPECT_CALL(
         *video_device1_mock_.Get(),
-        GetCryptoSessionPrivateDataSize(Pointee(CRYPTO_TYPE_GUID), _, _, _, _))
-        .WillOnce(DoAll(SetArgPointee<3>(kPrivateInputSize),
-                        SetArgPointee<4>(kPrivateOutputSize), Return(S_OK)));
+        GetCryptoSessionPrivateDataSize(Pointee(CRYPTO_TYPE_GUID), _, _, _, _));
+
+    EXPECT_CALL(*video_device_mock_.Get(), GetContentProtectionCaps(_, _, _));
+
+    EXPECT_CALL(*video_device_mock_.Get(),
+                CheckCryptoKeyExchange(_, _, Lt(1u), _));
 
     proxy_->Initialize(client, std::move(callback));
 
-    ::testing::Mock::VerifyAndClearExpectations(device_mock_.Get());
-    ::testing::Mock::VerifyAndClearExpectations(video_device_mock_.Get());
-    ::testing::Mock::VerifyAndClearExpectations(video_device1_mock_.Get());
-    ::testing::Mock::VerifyAndClearExpectations(crypto_session_mock_.Get());
-    ::testing::Mock::VerifyAndClearExpectations(device_context_mock_.Get());
-    ::testing::Mock::VerifyAndClearExpectations(video_context_mock_.Get());
-    ::testing::Mock::VerifyAndClearExpectations(video_context1_mock_.Get());
+    Mock::VerifyAndClearExpectations(device_mock_.Get());
+    Mock::VerifyAndClearExpectations(video_device_mock_.Get());
+    Mock::VerifyAndClearExpectations(video_device1_mock_.Get());
+    Mock::VerifyAndClearExpectations(crypto_session_mock_.Get());
+    Mock::VerifyAndClearExpectations(device_context_mock_.Get());
+    Mock::VerifyAndClearExpectations(video_context_mock_.Get());
+    Mock::VerifyAndClearExpectations(video_context1_mock_.Get());
   }
 
   MockProxyClient client_;
@@ -277,15 +245,15 @@ class D3D11CdmProxyTest : public ::testing::Test {
   D3D11CreateDeviceMock create_device_mock_;
   CallbackMock callback_mock_;
 
-  Microsoft::WRL::ComPtr<D3D11DeviceMock> device_mock_;
-  Microsoft::WRL::ComPtr<D3D11VideoDeviceMock> video_device_mock_;
-  Microsoft::WRL::ComPtr<D3D11VideoDevice1Mock> video_device1_mock_;
-  Microsoft::WRL::ComPtr<D3D11CryptoSessionMock> crypto_session_mock_;
-  Microsoft::WRL::ComPtr<D3D11DeviceContextMock> device_context_mock_;
-  Microsoft::WRL::ComPtr<D3D11VideoContextMock> video_context_mock_;
-  Microsoft::WRL::ComPtr<D3D11VideoContext1Mock> video_context1_mock_;
-  Microsoft::WRL::ComPtr<DXGIDevice2Mock> dxgi_device_;
-  Microsoft::WRL::ComPtr<DXGIAdapter3Mock> dxgi_adapter_;
+  ComPtr<D3D11DeviceMock> device_mock_;
+  ComPtr<D3D11VideoDeviceMock> video_device_mock_;
+  ComPtr<D3D11VideoDevice1Mock> video_device1_mock_;
+  ComPtr<D3D11CryptoSessionMock> crypto_session_mock_;
+  ComPtr<D3D11DeviceContextMock> device_context_mock_;
+  ComPtr<D3D11VideoContextMock> video_context_mock_;
+  ComPtr<D3D11VideoContext1Mock> video_context1_mock_;
+  ComPtr<DXGIDevice2Mock> dxgi_device_;
+  ComPtr<NiceMock<DXGIAdapter3Mock>> dxgi_adapter_;
 
   D3D11_VIDEO_CONTENT_PROTECTION_CAPS content_protection_caps_ = {};
 
@@ -421,7 +389,7 @@ TEST_F(D3D11CdmProxyTest, ProcessInvalidCryptoSessionID) {
   ASSERT_NO_FATAL_FAILURE(
       Initialize(&client_, base::BindOnce(&CallbackMock::InitializeCallback,
                                           base::Unretained(&callback_mock_))));
-  ::testing::Mock::VerifyAndClearExpectations(&callback_mock_);
+  Mock::VerifyAndClearExpectations(&callback_mock_);
 
   // The size nor value here matter, so making non empty non zero vector.
   const std::vector<uint8_t> kAnyInput(16, 0xFF);
@@ -514,7 +482,7 @@ TEST_F(D3D11CdmProxyTest, Process) {
   ASSERT_NO_FATAL_FAILURE(
       Initialize(&client_, base::BindOnce(&CallbackMock::InitializeCallback,
                                           base::Unretained(&callback_mock_))));
-  ::testing::Mock::VerifyAndClearExpectations(&callback_mock_);
+  Mock::VerifyAndClearExpectations(&callback_mock_);
 
   // The size nor value here matter, so making non empty non zero vector.
   const std::vector<uint8_t> kAnyInput(16, 0xFF);
@@ -596,7 +564,7 @@ TEST_F(D3D11CdmProxyTest, CreateMediaCryptoSessionNoExtraData) {
   ASSERT_NO_FATAL_FAILURE(
       Initialize(&client_, base::BindOnce(&CallbackMock::InitializeCallback,
                                           base::Unretained(&callback_mock_))));
-  ::testing::Mock::VerifyAndClearExpectations(&callback_mock_);
+  Mock::VerifyAndClearExpectations(&callback_mock_);
 
   // Expect a new crypto session.
   EXPECT_CALL(callback_mock_, CreateMediaCryptoSessionCallback(
@@ -606,9 +574,7 @@ TEST_F(D3D11CdmProxyTest, CreateMediaCryptoSessionNoExtraData) {
   EXPECT_CALL(*video_device_mock_.Get(),
               CreateCryptoSession(Pointee(CRYPTO_TYPE_GUID), _,
                                   Pointee(CRYPTO_TYPE_GUID), _))
-      .WillOnce(
-          DoAll(AddRefAndSetArgPointee<3>(media_crypto_session_mock.Get()),
-                Return(S_OK)));
+      .WillOnce(SetComPointeeAndReturnOk<3>(media_crypto_session_mock.Get()));
 
   EXPECT_CALL(*video_context1_mock_.Get(), GetDataForNewHardwareKey(_, _, _, _))
       .Times(0);
@@ -645,7 +611,7 @@ TEST_F(D3D11CdmProxyTest, CreateMediaCryptoSessionWithExtraData) {
   ASSERT_NO_FATAL_FAILURE(
       Initialize(&client_, base::BindOnce(&CallbackMock::InitializeCallback,
                                           base::Unretained(&callback_mock_))));
-  ::testing::Mock::VerifyAndClearExpectations(&callback_mock_);
+  Mock::VerifyAndClearExpectations(&callback_mock_);
 
   // Expect a new crypto session.
   EXPECT_CALL(callback_mock_, CreateMediaCryptoSessionCallback(
@@ -656,9 +622,7 @@ TEST_F(D3D11CdmProxyTest, CreateMediaCryptoSessionWithExtraData) {
   EXPECT_CALL(*video_device_mock_.Get(),
               CreateCryptoSession(Pointee(CRYPTO_TYPE_GUID), _,
                                   Pointee(CRYPTO_TYPE_GUID), _))
-      .WillOnce(
-          DoAll(AddRefAndSetArgPointee<3>(media_crypto_session_mock.Get()),
-                Return(S_OK)));
+      .WillOnce(SetComPointeeAndReturnOk<3>(media_crypto_session_mock.Get()));
   // The size nor value here matter, so making non empty non zero vector.
   const std::vector<uint8_t> kAnyInput(16, 0xFF);
   const uint64_t kAnyOutputData = 23298u;
@@ -708,7 +672,7 @@ TEST_F(D3D11CdmProxyTest, GetD3D11DecryptContextNoKeyForKeyType) {
   ASSERT_NO_FATAL_FAILURE(
       Initialize(&client_, base::BindOnce(&CallbackMock::InitializeCallback,
                                           base::Unretained(&callback_mock_))));
-  ::testing::Mock::VerifyAndClearExpectations(&callback_mock_);
+  Mock::VerifyAndClearExpectations(&callback_mock_);
 
   const std::vector<uint8_t> kAnyBlob = {
       0x01, 0x4f, 0x83,
@@ -741,7 +705,7 @@ TEST_F(D3D11CdmProxyTest, SetKeyAndGetDecryptContext) {
   ASSERT_NO_FATAL_FAILURE(
       Initialize(&client_, base::BindOnce(&CallbackMock::InitializeCallback,
                                           base::Unretained(&callback_mock_))));
-  ::testing::Mock::VerifyAndClearExpectations(&callback_mock_);
+  Mock::VerifyAndClearExpectations(&callback_mock_);
 
   std::vector<uint8_t> kKeyId = {
       0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
@@ -799,7 +763,7 @@ TEST_F(D3D11CdmProxyTest, ClearKeysAfterHardwareContentProtectionTeardown) {
   ASSERT_NO_FATAL_FAILURE(
       Initialize(&client_, base::BindOnce(&CallbackMock::InitializeCallback,
                                           base::Unretained(&callback_mock_))));
-  ::testing::Mock::VerifyAndClearExpectations(&callback_mock_);
+  Mock::VerifyAndClearExpectations(&callback_mock_);
 
   std::vector<uint8_t> kKeyId = {
       0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
@@ -837,7 +801,7 @@ TEST_F(D3D11CdmProxyTest, RemoveKey) {
   ASSERT_NO_FATAL_FAILURE(
       Initialize(&client_, base::BindOnce(&CallbackMock::InitializeCallback,
                                           base::Unretained(&callback_mock_))));
-  ::testing::Mock::VerifyAndClearExpectations(&callback_mock_);
+  Mock::VerifyAndClearExpectations(&callback_mock_);
 
   std::vector<uint8_t> kKeyId = {
       0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,

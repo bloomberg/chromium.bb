@@ -169,18 +169,16 @@ class D3D11DecryptorTest : public ::testing::Test {
     // crypto session.
     EXPECT_CALL(*crypto_session_mock, GetDevice(_))
         .Times(AtLeast(1))
-        .WillRepeatedly(AddRefAndSetArgPointee<0>(device_mock_.Get()));
+        .WillRepeatedly(SetComPointee<0>(device_mock_.Get()));
 
     // The other components accessible (directly or indirectly) from the device.
     EXPECT_CALL(*device_mock_.Get(), GetImmediateContext(_))
         .Times(AtLeast(1))
-        .WillRepeatedly(AddRefAndSetArgPointee<0>(device_context_mock_.Get()));
+        .WillRepeatedly(SetComPointee<0>(device_context_mock_.Get()));
     EXPECT_CALL(*device_context_mock_.Get(),
                 QueryInterface(IID_ID3D11VideoContext, _))
         .Times(AtLeast(1))
-        .WillRepeatedly(
-            DoAll(AddRefAndSetArgPointee<1>(video_context_mock_.Get()),
-                  Return(S_OK)));
+        .WillRepeatedly(SetComPointeeAndReturnOk<1>(video_context_mock_.Get()));
 
     EXPECT_CALL(mock_proxy_,
                 GetD3D11DecryptContext(CdmProxy::KeyType::kDecryptOnly, kKeyId))
@@ -201,10 +199,8 @@ class D3D11DecryptorTest : public ::testing::Test {
                                            D3D11_CPU_ACCESS_READ |
                                                D3D11_CPU_ACCESS_WRITE),
                              nullptr, _))
-        .WillOnce(DoAll(AddRefAndSetArgPointee<2>(staging_buffer1_.Get()),
-                        Return(S_OK)))
-        .WillOnce(DoAll(AddRefAndSetArgPointee<2>(staging_buffer2_.Get()),
-                        Return(S_OK)));
+        .WillOnce(SetComPointeeAndReturnOk<2>(staging_buffer1_.Get()))
+        .WillOnce(SetComPointeeAndReturnOk<2>(staging_buffer2_.Get()));
 
     // It should be requesting a GPU only accessible buffer to the decrypted
     // output.
@@ -212,8 +208,7 @@ class D3D11DecryptorTest : public ::testing::Test {
                 CreateBuffer(BufferDescHas(D3D11_USAGE_DEFAULT,
                                            D3D11_BIND_RENDER_TARGET, 0u),
                              nullptr, _))
-        .WillOnce(
-            DoAll(AddRefAndSetArgPointee<2>(gpu_buffer_.Get()), Return(S_OK)));
+        .WillOnce(SetComPointeeAndReturnOk<2>(gpu_buffer_.Get()));
   }
 
   // |input| is the input to the Decrypt() function, the subsample information
@@ -506,7 +501,7 @@ TEST_F(D3D11DecryptorTest, ReuseBuffers) {
 
   EXPECT_CALL(*crypto_session_mock.Get(), GetDevice(_))
       .Times(AtLeast(1))
-      .WillRepeatedly(AddRefAndSetArgPointee<0>(device_mock_.Get()));
+      .WillRepeatedly(SetComPointee<0>(device_mock_.Get()));
   EXPECT_CALL(mock_proxy_,
               GetD3D11DecryptContext(CdmProxy::KeyType::kDecryptOnly, kKeyId))
       .WillOnce(Return(decrypt_context));
