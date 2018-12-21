@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef CRASHPAD_UTIL_MACH_TASK_MEMORY_H_
-#define CRASHPAD_UTIL_MACH_TASK_MEMORY_H_
+#ifndef CRASHPAD_UTIL_PROCESS_PROCESS_MEMORY_MAC_H_
+#define CRASHPAD_UTIL_PROCESS_PROCESS_MEMORY_MAC_H_
 
 #include <mach/mach.h>
 #include <sys/types.h>
@@ -23,11 +23,14 @@
 
 #include "base/mac/scoped_mach_vm.h"
 #include "base/macros.h"
+#include "util/misc/address_types.h"
+#include "util/misc/initialization_state_dcheck.h"
+#include "util/process/process_memory.h"
 
 namespace crashpad {
 
 //! \brief Accesses the memory of another Mach task.
-class TaskMemory {
+class ProcessMemoryMac : public ProcessMemory {
  public:
   //! \brief A memory region mapped from another Mach task.
   //!
@@ -82,33 +85,25 @@ class TaskMemory {
     size_t user_size_;
 
     // The outer class needs to be able to call this class’ private constructor.
-    friend class TaskMemory;
+    friend class ProcessMemoryMac;
 
     DISALLOW_COPY_AND_ASSIGN(MappedMemory);
   };
 
-  //! \param[in] task A send right to the target task’s task port. This object
+  ProcessMemoryMac();
+  ~ProcessMemoryMac() {}
+
+  //! \brief Initializes this object to read the memory of a task with the
+  //!     provided task port.
+  //!
+  //! This method must be called successfully prior to calling any other method
+  //! in this class.
+  //!
+  //! \param[in] task A send right to the target task's task port. This object
   //!     does not take ownership of the send right.
-  explicit TaskMemory(task_t task);
-
-  ~TaskMemory() {}
-
-  //! \brief Copies memory from the target task into a caller-provided buffer in
-  //!     the current task.
   //!
-  //! \param[in] address The address, in the target task’s address space, of the
-  //!     memory region to copy.
-  //! \param[in] size The size, in bytes, of the memory region to copy. \a
-  //!     buffer must be at least this size.
-  //! \param[out] buffer The buffer into which the contents of the other task’s
-  //!     memory will be copied.
-  //!
-  //! \return `true` on success, with \a buffer filled appropriately. `false` on
-  //!     failure, with a warning logged. Failures can occur, for example, when
-  //!     encountering unmapped or unreadable pages.
-  //!
-  //! \sa ReadMapped()
-  bool Read(mach_vm_address_t address, size_t size, void* buffer);
+  //! \return `true` on success, `false` on failure with a message logged.
+  bool Initialize(task_t task);
 
   //! \brief Maps memory from the target task into the current task.
   //!
@@ -124,56 +119,17 @@ class TaskMemory {
   //!     requested. On faliure, `nullptr`, with a warning logged. Failures can
   //!     occur, for example, when encountering unmapped or unreadable pages.
   std::unique_ptr<MappedMemory> ReadMapped(mach_vm_address_t address,
-                                           size_t size);
-
-  //! \brief Reads a `NUL`-terminated C string from the target task into a
-  //!     string in the current task.
-  //!
-  //! The length of the string need not be known ahead of time. This method will
-  //! read contiguous memory until a `NUL` terminator is found.
-  //!
-  //! \param[in] address The address, in the target task’s address space, of the
-  //!     string to copy.
-  //! \param[out] string The string read from the other task.
-  //!
-  //! \return `true` on success, with \a string set appropriately. `false` on
-  //!     failure, with a warning logged. Failures can occur, for example, when
-  //!     encountering unmapped or unreadable pages.
-  //!
-  //! \sa MappedMemory::ReadCString()
-  bool ReadCString(mach_vm_address_t address, std::string* string);
-
-  //! \brief Reads a `NUL`-terminated C string from the target task into a
-  //!     string in the current task.
-  //!
-  //! \param[in] address The address, in the target task’s address space, of the
-  //!     string to copy.
-  //! \param[in] size The maximum number of bytes to read. The string is
-  //!     required to be `NUL`-terminated within this many bytes.
-  //! \param[out] string The string read from the other task.
-  //!
-  //! \return `true` on success, with \a string set appropriately. `false` on
-  //!     failure, with a warning logged. Failures can occur, for example, when
-  //!     a `NUL` terminator is not found within \a size bytes, or when
-  //!     encountering unmapped or unreadable pages.
-  //!
-  //! \sa MappedMemory::ReadCString()
-  bool ReadCStringSizeLimited(mach_vm_address_t address,
-                              mach_vm_size_t size,
-                              std::string* string);
+                                           size_t size) const;
 
  private:
-  // The common internal implementation shared by the ReadCString*() methods.
-  bool ReadCStringInternal(mach_vm_address_t address,
-                           bool has_size,
-                           mach_vm_size_t size,
-                           std::string* string);
+  ssize_t ReadUpTo(VMAddress address, size_t size, void* buffer) const override;
 
   task_t task_;  // weak
+  InitializationStateDcheck initialized_;
 
-  DISALLOW_COPY_AND_ASSIGN(TaskMemory);
+  DISALLOW_COPY_AND_ASSIGN(ProcessMemoryMac);
 };
 
 }  // namespace crashpad
 
-#endif  // CRASHPAD_UTIL_MACH_TASK_MEMORY_H_
+#endif  // CRASHPAD_UTIL_PROCESS_PROCESS_MEMORY_MAC_H_
