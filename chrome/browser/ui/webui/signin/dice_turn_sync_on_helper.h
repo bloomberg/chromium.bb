@@ -20,14 +20,17 @@
 
 class Browser;
 class ProfileOAuth2TokenService;
-class SigninManager;
+
+namespace identity {
+class IdentityManager;
+}
 
 namespace syncer {
 class SyncService;
 class SyncSetupInProgressHandle;
 }
 
-// Handles details of signing the user in with SigninManager and turning on
+// Handles details of signing the user in with IdentityManager and turning on
 // sync for an account that is already present in the token service.
 class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
  public:
@@ -168,7 +171,7 @@ class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
   // Returns the SyncService, or nullptr if sync is not allowed.
   syncer::SyncService* GetSyncService();
 
-  // Completes the signin in SigninManager and displays the Sync confirmation
+  // Completes the signin in IdentityManager and displays the Sync confirmation
   // UI.
   void SigninAndShowSyncConfirmationUI();
 
@@ -190,7 +193,7 @@ class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
 
   std::unique_ptr<Delegate> delegate_;
   Profile* profile_;
-  SigninManager* signin_manager_;
+  identity::IdentityManager* identity_manager_;
   ProfileOAuth2TokenService* token_service_;
   const signin_metrics::AccessPoint signin_access_point_;
   const signin_metrics::PromoAction signin_promo_action_;
