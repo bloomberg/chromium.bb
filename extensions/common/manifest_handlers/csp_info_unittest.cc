@@ -3,13 +3,25 @@
 // found in the LICENSE file.
 
 #include "extensions/common/manifest_handlers/csp_info.h"
+#include "base/strings/stringprintf.h"
+#include "components/version_info/channel.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_test.h"
 
 namespace extensions {
 
+namespace {
+
 namespace errors = manifest_errors;
+namespace keys = manifest_keys;
+
+std::string GetInvalidManifestKeyError(base::StringPiece key) {
+  return ErrorUtils::FormatErrorMessage(errors::kInvalidManifestKey, key);
+};
+
+}  // namespace
 
 using CSPInfoUnitTest = ManifestTest;
 
@@ -73,41 +85,68 @@ TEST_F(CSPInfoUnitTest, SandboxedPages) {
   RunTestcases(testcases, arraysize(testcases), EXPECT_TYPE_ERROR);
 }
 
-TEST_F(CSPInfoUnitTest, CSPKey) {
+TEST_F(CSPInfoUnitTest, CSPStringKey) {
+  scoped_refptr<Extension> extension =
+      LoadAndExpectSuccess("csp_string_valid.json");
+  ASSERT_TRUE(extension);
+  EXPECT_EQ("script-src 'self'; default-src 'none';",
+            CSPInfo::GetContentSecurityPolicy(extension.get()));
+
+  RunTestcase(Testcase("csp_invalid_1.json", GetInvalidManifestKeyError(
+                                                 keys::kContentSecurityPolicy)),
+              EXPECT_TYPE_ERROR);
+}
+
+TEST_F(CSPInfoUnitTest, CSPDictionaryKey) {
   const char kDefaultCSP[] =
       "script-src 'self' blob: filesystem: chrome-extension-resource:; "
       "object-src 'self' blob: filesystem:;";
   struct {
     const char* file_name;
     const char* csp;
-  } success_cases[] = {
-      {"csp_string_valid.json", "script-src 'self'; default-src 'none';"},
+  } cases[] = {
       {"csp_dictionary_valid.json", "default-src 'none';"},
       {"csp_empty_valid.json", "script-src 'self'; object-src 'self';"},
       {"csp_empty_dictionary_valid.json", kDefaultCSP}};
 
-  for (const auto& test_case : success_cases) {
-    SCOPED_TRACE(test_case.file_name);
-    scoped_refptr<Extension> extension =
-        LoadAndExpectSuccess(test_case.file_name);
-    ASSERT_TRUE(extension.get());
-    EXPECT_EQ(test_case.csp,
-              CSPInfo::GetContentSecurityPolicy(extension.get()));
+  // Verify that "content_security_policy" key can be used as a dictionary on
+  // trunk.
+  {
+    ScopedCurrentChannel channel(version_info::Channel::UNKNOWN);
+    for (const auto& test_case : cases) {
+      SCOPED_TRACE(
+          base::StringPrintf("%s on channel %s", test_case.file_name, "trunk"));
+      scoped_refptr<Extension> extension =
+          LoadAndExpectSuccess(test_case.file_name);
+      ASSERT_TRUE(extension.get());
+      EXPECT_EQ(test_case.csp,
+                CSPInfo::GetContentSecurityPolicy(extension.get()));
+    }
   }
 
-  auto get_invalid_manifest_key_error = [](base::StringPiece key) {
-    return ErrorUtils::FormatErrorMessage(errors::kInvalidManifestKey, key);
-  };
+  // Verify that "content_security_policy" key can't be used as a dictionary on
+  // Stable.
+  {
+    ScopedCurrentChannel channel(version_info::Channel::STABLE);
+    for (const auto& test_case : cases) {
+      SCOPED_TRACE(base::StringPrintf("%s on channel %s", test_case.file_name,
+                                      "stable"));
+      LoadAndExpectError(
+          test_case.file_name,
+          GetInvalidManifestKeyError(keys::kContentSecurityPolicy));
+    }
+  }
 
-  const char* kExtensionPagesKey = "content_security_policy.extension_pages";
-  const char* kCSPKey = "content_security_policy";
-  Testcase testcases[] = {
-      Testcase("csp_invalid_1.json", get_invalid_manifest_key_error(kCSPKey)),
-      Testcase("csp_invalid_2.json",
-               get_invalid_manifest_key_error(kExtensionPagesKey)),
-      Testcase("csp_invalid_3.json",
-               get_invalid_manifest_key_error(kExtensionPagesKey))};
-  RunTestcases(testcases, arraysize(testcases), EXPECT_TYPE_ERROR);
+  {
+    ScopedCurrentChannel channel(version_info::Channel::UNKNOWN);
+    const char* kExtensionPagesKey = "content_security_policy.extension_pages";
+    Testcase testcases[] = {
+        Testcase("csp_invalid_2.json",
+                 GetInvalidManifestKeyError(kExtensionPagesKey)),
+        Testcase("csp_invalid_3.json",
+                 GetInvalidManifestKeyError(kExtensionPagesKey))};
+    RunTestcases(testcases, arraysize(testcases), EXPECT_TYPE_ERROR);
+  }
 }
 
 }  // namespace extensions

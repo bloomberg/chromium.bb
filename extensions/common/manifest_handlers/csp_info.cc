@@ -9,8 +9,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/version_info/channel.h"
 #include "extensions/common/csp_validator.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/sandboxed_page_info.h"
@@ -127,7 +129,14 @@ bool CSPHandler::Parse(Extension* extension, base::string16* error) {
   //  }
   const base::DictionaryValue* csp_dict = nullptr;
   std::string content_security_policy;
-  if (!is_platform_app_ && extension->manifest()->GetDictionary(key, &csp_dict))
+
+  // TODO(crbug.com/914224): Remove the channel check once the support for the
+  // dictionary key is launched to other channels.
+  bool csp_dictionary_supported =
+      !is_platform_app_ &&
+      GetCurrentChannel() == version_info::Channel::UNKNOWN;
+  if (csp_dictionary_supported &&
+      extension->manifest()->GetDictionary(key, &csp_dict))
     return ParseCSPDictionary(extension, error, *csp_dict);
 
   if (extension->manifest()->GetString(key, &content_security_policy)) {
