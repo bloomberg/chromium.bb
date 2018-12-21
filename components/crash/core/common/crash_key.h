@@ -217,6 +217,8 @@ CRASH_KEY_EXPORT void InitializeCrashKeys();
 #if defined(UNIT_TEST) || defined(CRASH_CORE_COMMON_IMPLEMENTATION)
 // Returns a value for the crash key named |key_name|. For Crashpad-based
 // clients, this returns the first instance found of the name.
+// Note: In a component build, this will only retrieve crash keys for the
+// current component.
 CRASH_KEY_EXPORT std::string GetCrashKeyValue(const std::string& key_name);
 
 // Resets crash key state and, depending on the platform, de-initializes

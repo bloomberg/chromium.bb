@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // NOTE: This file is only compiled when Crashpad is used as the crash
-// reproter.
+// reporter.
 
 #include "components/crash/core/common/crash_key.h"
 
