@@ -67,6 +67,7 @@ constexpr base::Feature kChromeOSAssistantDogfood{
     "ChromeOSAssistantDogfood", base::FEATURE_DISABLED_BY_DEFAULT};
 
 constexpr char kServersideDogfoodExperimentId[] = "20347368";
+constexpr char kServersideOpenAppExperimentId[] = "39651593";
 
 constexpr float kDefaultSliderStep = 0.1f;
 
@@ -1124,6 +1125,9 @@ void AssistantManagerServiceImpl::FillServerExperimentIds(
   if (base::FeatureList::IsEnabled(kChromeOSAssistantDogfood)) {
     server_experiment_ids->emplace_back(kServersideDogfoodExperimentId);
   }
+
+  if (base::FeatureList::IsEnabled(assistant::features::kAssistantAppSupport))
+    server_experiment_ids->emplace_back(kServersideOpenAppExperimentId);
 }
 
 void AssistantManagerServiceImpl::RecordQueryResponseTypeUMA() {
