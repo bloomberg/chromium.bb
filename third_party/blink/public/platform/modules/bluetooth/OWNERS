@@ -1,5 +1,4 @@
-jyasskin@chromium.org
-ortuno@chromium.org
+file://content/browser/bluetooth/OWNERS
 
 per-file *.mojom=set noparent
 per-file *.mojom=file://ipc/SECURITY_OWNERS
