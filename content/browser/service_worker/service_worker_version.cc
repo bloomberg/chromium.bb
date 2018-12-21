@@ -1577,7 +1577,8 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   worker_is_idle_on_renderer_ = false;
   needs_to_be_terminated_asap_ = false;
 
-  auto provider_info = mojom::ServiceWorkerProviderInfoForStartWorker::New();
+  auto provider_info =
+      blink::mojom::ServiceWorkerProviderInfoForStartWorker::New();
   provider_host_ = ServiceWorkerProviderHost::PreCreateForController(
       context(), base::WrapRefCounted(this), &provider_info);
 

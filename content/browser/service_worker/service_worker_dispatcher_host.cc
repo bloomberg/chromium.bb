@@ -29,7 +29,7 @@ ServiceWorkerDispatcherHost::~ServiceWorkerDispatcherHost() {
 }
 
 void ServiceWorkerDispatcherHost::AddBinding(
-    mojom::ServiceWorkerDispatcherHostAssociatedRequest request) {
+    blink::mojom::ServiceWorkerDispatcherHostAssociatedRequest request) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   bindings_.AddBinding(this, std::move(request));
 }
@@ -51,7 +51,7 @@ void ServiceWorkerDispatcherHost::RenderProcessExited(
 }
 
 void ServiceWorkerDispatcherHost::OnProviderCreated(
-    mojom::ServiceWorkerProviderHostInfoPtr info) {
+    blink::mojom::ServiceWorkerProviderHostInfoPtr info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcherHost::OnProviderCreated");

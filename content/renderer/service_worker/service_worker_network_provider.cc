@@ -7,7 +7,6 @@
 #include "base/atomic_sequence_num.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/navigation_params.h"
-#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/origin_util.h"
 #include "content/renderer/loader/request_extra_data.h"
@@ -21,6 +20,7 @@
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -211,7 +211,7 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
 // static
 std::unique_ptr<ServiceWorkerNetworkProvider>
 ServiceWorkerNetworkProvider::CreateForSharedWorker(
-    mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
+    blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         script_loader_factory_info,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
@@ -235,7 +235,7 @@ ServiceWorkerNetworkProvider::CreateForSharedWorker(
 // static
 std::unique_ptr<ServiceWorkerNetworkProvider>
 ServiceWorkerNetworkProvider::CreateForController(
-    mojom::ServiceWorkerProviderInfoForStartWorkerPtr info) {
+    blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr info) {
   return base::WrapUnique(new ServiceWorkerNetworkProvider(std::move(info)));
 }
 
@@ -293,7 +293,7 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
          provider_type ==
              blink::mojom::ServiceWorkerProviderType::kForSharedWorker);
 
-  auto host_info = mojom::ServiceWorkerProviderHostInfo::New(
+  auto host_info = blink::mojom::ServiceWorkerProviderHostInfo::New(
       provider_id, route_id, provider_type, is_parent_frame_secure,
       nullptr /* host_request */, nullptr /* client_ptr_info */);
   blink::mojom::ServiceWorkerContainerAssociatedRequest client_request =
@@ -322,7 +322,7 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
 
 // Constructor for precreated shared worker.
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
-    mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
+    blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         script_loader_factory_info,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
@@ -338,7 +338,7 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
 
 // Constructor for service worker execution contexts.
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
-    mojom::ServiceWorkerProviderInfoForStartWorkerPtr info) {
+    blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr info) {
   context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
       info->provider_id, std::move(info->client_request),
       std::move(info->host_ptr_info));

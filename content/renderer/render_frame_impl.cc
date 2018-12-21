@@ -3724,8 +3724,8 @@ RenderFrameImpl::CreateWorkerFetchContext() {
   ServiceWorkerNetworkProvider* provider =
       ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
           web_provider);
-  mojom::ServiceWorkerWorkerClientRequest service_worker_client_request;
-  mojom::ServiceWorkerWorkerClientRegistryPtrInfo
+  blink::mojom::ServiceWorkerWorkerClientRequest service_worker_client_request;
+  blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
       service_worker_worker_client_registry_ptr_info;
   blink::mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info;
   ServiceWorkerProviderContext* provider_context = provider->context();
@@ -3735,7 +3735,7 @@ RenderFrameImpl::CreateWorkerFetchContext() {
     provider_context->CloneWorkerClientRegistry(
         mojo::MakeRequest(&service_worker_worker_client_registry_ptr_info));
 
-    mojom::ServiceWorkerWorkerClientPtr worker_client_ptr;
+    blink::mojom::ServiceWorkerWorkerClientPtr worker_client_ptr;
     service_worker_client_request = mojo::MakeRequest(&worker_client_ptr);
     provider_context->RegisterWorkerClient(std::move(worker_client_ptr));
 

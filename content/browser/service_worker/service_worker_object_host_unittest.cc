@@ -79,7 +79,7 @@ class FailToStartWorkerTestHelper : public ExtendableMessageEventTestHelper {
       blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
+      blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
     mojom::EmbeddedWorkerInstanceHostAssociatedPtr instance_host_ptr;
@@ -334,7 +334,7 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
       WebContentsTester::CreateTestWebContents(helper_->browser_context(),
                                                nullptr));
   RenderFrameHost* frame_host = web_contents->GetMainFrame();
-  mojom::ServiceWorkerProviderHostInfoPtr provider_host_info =
+  blink::mojom::ServiceWorkerProviderHostInfoPtr provider_host_info =
       CreateProviderHostInfoForWindow(kProviderId, frame_host->GetRoutingID());
   std::unique_ptr<ServiceWorkerProviderHost> provider_host =
       ServiceWorkerProviderHost::Create(frame_host->GetProcess()->GetID(),
@@ -389,7 +389,7 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_Fail) {
       WebContentsTester::CreateTestWebContents(helper_->browser_context(),
                                                nullptr));
   RenderFrameHost* frame_host = web_contents->GetMainFrame();
-  mojom::ServiceWorkerProviderHostInfoPtr provider_host_info =
+  blink::mojom::ServiceWorkerProviderHostInfoPtr provider_host_info =
       CreateProviderHostInfoForWindow(kProviderId, frame_host->GetRoutingID());
   std::unique_ptr<ServiceWorkerProviderHost> provider_host =
       ServiceWorkerProviderHost::Create(frame_host->GetProcess()->GetID(),

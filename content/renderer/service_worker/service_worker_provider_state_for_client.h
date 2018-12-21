@@ -13,13 +13,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/platform/web_feature.mojom.h"
 
 namespace content {
@@ -68,10 +68,10 @@ struct ServiceWorkerProviderStateForClient {
   // - If this ServiceWorkerProviderContext is for a SharedWorker (technically
   //   speaking, for its shadow page), then |worker_clients| has one element:
   //   the shared worker.
-  std::vector<mojom::ServiceWorkerWorkerClientPtr> worker_clients;
+  std::vector<blink::mojom::ServiceWorkerWorkerClientPtr> worker_clients;
 
   // For adding new ServiceWorkerWorkerClients.
-  mojo::BindingSet<mojom::ServiceWorkerWorkerClientRegistry>
+  mojo::BindingSet<blink::mojom::ServiceWorkerWorkerClientRegistry>
       worker_client_registry_bindings;
 
   // S13nServiceWorker

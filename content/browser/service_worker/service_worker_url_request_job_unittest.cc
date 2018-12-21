@@ -504,7 +504,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
       blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
+      blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
     embedded_worker_id_ = embedded_worker_id;
@@ -541,7 +541,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
   blink::mojom::ControllerServiceWorkerRequest controller_request_;
   mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
       start_worker_instance_host_;
-  mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info_;
+  blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info_;
   blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info_;
   int embedded_worker_id_ = 0;
   blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_;

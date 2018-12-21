@@ -967,7 +967,8 @@ void ServiceWorkerContextWrapper::RemoveObserver(
 base::WeakPtr<ServiceWorkerProviderHost>
 ServiceWorkerContextWrapper::PreCreateHostForSharedWorker(
     int process_id,
-    mojom::ServiceWorkerProviderInfoForSharedWorkerPtr* out_provider_info) {
+    blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr*
+        out_provider_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   return ServiceWorkerProviderHost::PreCreateForSharedWorker(

@@ -170,9 +170,10 @@ class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
     return params;
   }
 
-  mojom::ServiceWorkerProviderInfoForStartWorkerPtr CreateProviderInfo(
+  blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr CreateProviderInfo(
       scoped_refptr<ServiceWorkerVersion> version) {
-    auto provider_info = mojom::ServiceWorkerProviderInfoForStartWorker::New();
+    auto provider_info =
+        blink::mojom::ServiceWorkerProviderInfoForStartWorker::New();
     version->provider_host_ = ServiceWorkerProviderHost::PreCreateForController(
         context()->AsWeakPtr(), version, &provider_info);
     return provider_info;
@@ -250,7 +251,7 @@ class StalledInStartWorkerHelper : public EmbeddedWorkerTestHelper {
       blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
+      blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
     if (force_stall_in_start_) {
@@ -818,7 +819,7 @@ class RecordCacheStorageHelper : public EmbeddedWorkerTestHelper {
       blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
+      blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
     had_cache_storage_ = !!provider_info->cache_storage;

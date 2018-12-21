@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module content.mojom;
+module blink.mojom;
 
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
@@ -23,8 +23,8 @@ const string kNavigation_ServiceWorkerSpec = "navigation:service_worker";
 // worker.
 struct ServiceWorkerProviderInfoForSharedWorker {
   int32 provider_id;
-  associated blink.mojom.ServiceWorkerContainerHost host_ptr_info;
-  associated blink.mojom.ServiceWorkerContainer& client_request;
+  associated ServiceWorkerContainerHost host_ptr_info;
+  associated ServiceWorkerContainer& client_request;
 };
 
 // Sent from the browser process to the renderer. Contains parameters for the
@@ -33,8 +33,8 @@ struct ServiceWorkerProviderInfoForSharedWorker {
 struct ServiceWorkerProviderInfoForStartWorker {
   int32 provider_id;
 
-  associated blink.mojom.ServiceWorkerContainerHost host_ptr_info;
-  associated blink.mojom.ServiceWorkerContainer& client_request;
+  associated ServiceWorkerContainerHost host_ptr_info;
+  associated ServiceWorkerContainer& client_request;
 
   // S13nServiceWorker:
   // The loader to use for loading the worker's main script and
@@ -46,7 +46,7 @@ struct ServiceWorkerProviderInfoForStartWorker {
   // null for service workers created for update checks, as the optimization
   // would be wasteful because these workers usually are aborted after the
   // byte-to-byte update check before running.
-  blink.mojom.CacheStorage? cache_storage;
+  CacheStorage? cache_storage;
 
   service_manager.mojom.InterfaceProvider interface_provider;
 };
@@ -67,7 +67,7 @@ struct ServiceWorkerProviderHostInfo {
 
   // This identifies whether this provider is for a service worker or for a
   // service worker client (Documents and Shared Workers).
-  blink.mojom.ServiceWorkerProviderType type;
+  ServiceWorkerProviderType type;
 
   // |is_parent_frame_secure| is false if the provider is created for a document
   // whose parent frame is not secure from the point of view of the document;
@@ -84,14 +84,14 @@ struct ServiceWorkerProviderHostInfo {
   // will be associated with ServiceWorkerDisptacherHost. |host_request| should
   // be valid when ServiceWorkerProviderHostInfo is passed to any Mojo method.
   // After used to create the ServiceWorkerProviderHost, this will be invalid.
-  associated blink.mojom.ServiceWorkerContainerHost& host_request;
+  associated ServiceWorkerContainerHost& host_request;
 
   // Mojo endpoint to send a message from the browser to the renderer. This
   // will be associated with ServiceWorkerDispatcherHost. |client_ptr_info|
   // should be valid when ServiceWorkerProviderHostInfo is passed to any Mojo
   // method.
   // After used to create the ServiceWorkerProviderHost, this will be invalid.
-  associated blink.mojom.ServiceWorkerContainer client_ptr_info;
+  associated ServiceWorkerContainer client_ptr_info;
 };
 
 // ServiceWorkerWorkerClient represents a service worker client that is a worker
@@ -102,7 +102,7 @@ interface ServiceWorkerWorkerClient {
   // Called when the worker is controlled by a new service worker. This is only
   // used to let the worker know that we now have a service worker (while there
   // may or may not have been one previously), but not the other way around.
-  OnControllerChanged(blink.mojom.ControllerServiceWorkerMode mode);
+  OnControllerChanged(ControllerServiceWorkerMode mode);
 };
 
 // ServiceWorkerWorkerClientRegistry is a mojo interface for hosting and

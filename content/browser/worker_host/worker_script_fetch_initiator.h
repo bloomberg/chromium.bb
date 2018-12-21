@@ -11,11 +11,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
 
 namespace network {
@@ -39,7 +39,7 @@ struct SubresourceLoaderParams;
 class WorkerScriptFetchInitiator {
  public:
   using CompletionCallback = base::OnceCallback<void(
-      mojom::ServiceWorkerProviderInfoForSharedWorkerPtr,
+      blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo,
       std::unique_ptr<URLLoaderFactoryBundleInfo>,
       blink::mojom::WorkerMainScriptLoadParamsPtr,
@@ -81,7 +81,7 @@ class WorkerScriptFetchInitiator {
       CompletionCallback callback);
   static void DidCreateScriptLoaderOnIO(
       CompletionCallback callback,
-      mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+      blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
           service_worker_provider_info,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           main_script_loader_factory,

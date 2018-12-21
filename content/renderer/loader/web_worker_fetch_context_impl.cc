@@ -13,7 +13,6 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/frame_messages.h"
-#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/service_names.mojom.h"
@@ -33,6 +32,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 
 namespace content {
@@ -150,8 +150,9 @@ class WebWorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
 WebWorkerFetchContextImpl::WebWorkerFetchContextImpl(
     RendererPreferences renderer_preferences,
     mojom::RendererPreferenceWatcherRequest preference_watcher_request,
-    mojom::ServiceWorkerWorkerClientRequest service_worker_client_request,
-    mojom::ServiceWorkerWorkerClientRegistryPtrInfo
+    blink::mojom::ServiceWorkerWorkerClientRequest
+        service_worker_client_request,
+    blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
         service_worker_worker_client_registry_info,
     blink::mojom::ServiceWorkerContainerHostPtrInfo
         service_worker_container_host_info,
@@ -189,13 +190,13 @@ void WebWorkerFetchContextImpl::SetTerminateSyncLoadEvent(
 
 scoped_refptr<blink::WebWorkerFetchContext>
 WebWorkerFetchContextImpl::CloneForNestedWorker() {
-  mojom::ServiceWorkerWorkerClientRequest service_worker_client_request;
-  mojom::ServiceWorkerWorkerClientPtr service_worker_client_ptr;
+  blink::mojom::ServiceWorkerWorkerClientRequest service_worker_client_request;
+  blink::mojom::ServiceWorkerWorkerClientPtr service_worker_client_ptr;
   service_worker_client_request = mojo::MakeRequest(&service_worker_client_ptr);
   service_worker_worker_client_registry_->RegisterWorkerClient(
       std::move(service_worker_client_ptr));
 
-  mojom::ServiceWorkerWorkerClientRegistryPtrInfo
+  blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
       service_worker_worker_client_registry_ptr_info;
   service_worker_worker_client_registry_->CloneWorkerClientRegistry(
       mojo::MakeRequest(&service_worker_worker_client_registry_ptr_info));

@@ -15,9 +15,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 
 namespace blink {
@@ -91,7 +91,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   // |controller_info| contains the endpoint and object info that is needed to
   // set up the controller service worker for the client.
   static std::unique_ptr<ServiceWorkerNetworkProvider> CreateForSharedWorker(
-      mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
+      blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           script_loader_factory_info,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
@@ -100,7 +100,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   // Creates a ServiceWorkerNetworkProvider for a "controller" (i.e.
   // a service worker execution context).
   static std::unique_ptr<ServiceWorkerNetworkProvider> CreateForController(
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr info);
+      blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr info);
 
   // Valid only for WebServiceWorkerNetworkProvider created by
   // CreateForNavigation.
@@ -144,7 +144,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
       scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory);
 
   ServiceWorkerNetworkProvider(
-      mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
+      blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           script_loader_factory_info,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
@@ -152,10 +152,10 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
 
   // This is for controllers, used in CreateForController.
   explicit ServiceWorkerNetworkProvider(
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr info);
+      blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr info);
 
   scoped_refptr<ServiceWorkerProviderContext> context_;
-  mojom::ServiceWorkerDispatcherHostAssociatedPtr dispatcher_host_;
+  blink::mojom::ServiceWorkerDispatcherHostAssociatedPtr dispatcher_host_;
 
   // The URL loader factory for loading worker scripts, used for service workers
   // and shared workers.

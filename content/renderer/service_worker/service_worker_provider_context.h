@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/renderer/service_worker/service_worker_provider_state_for_client.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -23,6 +22,7 @@
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider_client.h"
@@ -51,11 +51,11 @@ struct ServiceWorkerProviderContextDeleter;
 // this class.
 //
 // ServiceWorkerProviderContext is also a
-// mojom::ServiceWorkerWorkerClientRegistry. If it's a provider for a document,
-// then it tracks all the dedicated workers created from the document (including
-// nested workers), as dedicated workers don't yet have their own providers. If
-// it's a provider for a shared worker, then it tracks only the shared worker
-// itself.
+// blink::mojom::ServiceWorkerWorkerClientRegistry. If it's a provider for a
+// document, then it tracks all the dedicated workers created from the document
+// (including nested workers), as dedicated workers don't yet have their own
+// providers. If it's a provider for a shared worker, then it tracks only the
+// shared worker itself.
 //
 // Created and destructed on the main thread. Unless otherwise noted, all
 // methods are called on the main thread.
@@ -63,7 +63,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
     : public base::RefCountedThreadSafe<ServiceWorkerProviderContext,
                                         ServiceWorkerProviderContextDeleter>,
       public blink::mojom::ServiceWorkerContainer,
-      public mojom::ServiceWorkerWorkerClientRegistry {
+      public blink::mojom::ServiceWorkerWorkerClientRegistry {
  public:
   // Constructor for service worker clients.
   //
@@ -135,11 +135,11 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   void SetWebServiceWorkerProvider(
       base::WeakPtr<WebServiceWorkerProviderImpl> provider);
 
-  // mojom::ServiceWorkerWorkerClientRegistry:
+  // blink::mojom::ServiceWorkerWorkerClientRegistry:
   void RegisterWorkerClient(
-      mojom::ServiceWorkerWorkerClientPtr client) override;
+      blink::mojom::ServiceWorkerWorkerClientPtr client) override;
   void CloneWorkerClientRegistry(
-      mojom::ServiceWorkerWorkerClientRegistryRequest request) override;
+      blink::mojom::ServiceWorkerWorkerClientRegistryRequest request) override;
 
   // S13nServiceWorker:
   // For service worker clients. Returns a ServiceWorkerContainerHostPtrInfo
@@ -186,7 +186,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
 
   // Clears the information of the ServiceWorkerWorkerClient of dedicated (or
   // shared) worker, when the connection to the worker is disconnected.
-  void UnregisterWorkerFetchContext(mojom::ServiceWorkerWorkerClient*);
+  void UnregisterWorkerFetchContext(blink::mojom::ServiceWorkerWorkerClient*);
 
   // Implementation of blink::mojom::ServiceWorkerContainer.
   void SetController(

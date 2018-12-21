@@ -23,7 +23,6 @@
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -33,6 +32,7 @@
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/platform/web_feature.mojom.h"
@@ -157,7 +157,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   static base::WeakPtr<ServiceWorkerProviderHost> PreCreateForController(
       base::WeakPtr<ServiceWorkerContextCore> context,
       scoped_refptr<ServiceWorkerVersion> version,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr* out_provider_info);
+      blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr*
+          out_provider_info);
 
   // S13nServiceWorker:
   // Used for starting a shared worker. Returns a provider host for the shared
@@ -167,14 +168,15 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   static base::WeakPtr<ServiceWorkerProviderHost> PreCreateForSharedWorker(
       base::WeakPtr<ServiceWorkerContextCore> context,
       int process_id,
-      mojom::ServiceWorkerProviderInfoForSharedWorkerPtr* out_provider_info);
+      blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr*
+          out_provider_info);
 
   // Used to create a ServiceWorkerProviderHost when the renderer-side provider
   // is created. This ProviderHost will be created for the process specified by
   // |process_id|.
   static std::unique_ptr<ServiceWorkerProviderHost> Create(
       int process_id,
-      mojom::ServiceWorkerProviderHostInfoPtr info,
+      blink::mojom::ServiceWorkerProviderHostInfoPtr info,
       base::WeakPtr<ServiceWorkerContextCore> context);
 
   ~ServiceWorkerProviderHost() override;
@@ -382,7 +384,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // provider hosts used for navigation requests.
   void CompleteNavigationInitialized(
       int process_id,
-      mojom::ServiceWorkerProviderHostInfoPtr info);
+      blink::mojom::ServiceWorkerProviderHostInfoPtr info);
 
   // For service worker execution contexts. Completes initialization of this
   // provider host. It is called once a renderer process has been found to host
@@ -398,11 +400,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // service worker main script and import scripts. It is possibly not the
   // simple direct network factory, since service worker scripts can have
   // non-NetworkService schemes, e.g., chrome-extension:// URLs.
-  mojom::ServiceWorkerProviderInfoForStartWorkerPtr
+  blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr
   CompleteStartWorkerPreparation(
       int process_id,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info);
+      blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info);
 
   // Called when the shared worker main script resource has finished loading.
   // After this is called, is_execution_ready() returns true.
@@ -501,7 +503,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                            RegisterWithoutLiveSWRegistration);
 
   ServiceWorkerProviderHost(int process_id,
-                            mojom::ServiceWorkerProviderHostInfoPtr info,
+                            blink::mojom::ServiceWorkerProviderHostInfoPtr info,
                             base::WeakPtr<ServiceWorkerContextCore> context);
 
   // ServiceWorkerRegistration::Listener overrides.
@@ -633,7 +635,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Otherwise, |kDocumentMainThreadId|.
   int render_thread_id_;
 
-  mojom::ServiceWorkerProviderHostInfoPtr info_;
+  blink::mojom::ServiceWorkerProviderHostInfoPtr info_;
 
   // Only set when this object is pre-created for a navigation. It indicates the
   // tab where the navigation occurs.

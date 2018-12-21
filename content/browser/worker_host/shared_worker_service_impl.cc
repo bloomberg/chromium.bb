@@ -27,7 +27,6 @@
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/navigation_subresource_loader_params.h"
-#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -40,6 +39,7 @@
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_client.mojom.h"
 #include "url/origin.h"
 
@@ -237,7 +237,7 @@ void SharedWorkerServiceImpl::DidCreateScriptLoader(
     int process_id,
     int frame_id,
     const blink::MessagePortChannel& message_port,
-    mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+    blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
         service_worker_provider_info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         main_script_loader_factory,
@@ -272,7 +272,7 @@ void SharedWorkerServiceImpl::StartWorker(
     int process_id,
     int frame_id,
     const blink::MessagePortChannel& message_port,
-    mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+    blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
         service_worker_provider_info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         main_script_loader_factory,
