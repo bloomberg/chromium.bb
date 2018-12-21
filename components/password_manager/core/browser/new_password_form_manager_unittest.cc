@@ -359,9 +359,23 @@ TEST_F(NewPasswordFormManagerTest, DoesManage) {
   another_form.is_form_tag = false;
   EXPECT_FALSE(form_manager_->DoesManage(another_form, &driver_));
 
+  // On non-iOS platforms unique_renderer_id is the form identifier.
   another_form = observed_form_;
   another_form.unique_renderer_id = observed_form_.unique_renderer_id + 1;
+#if defined(OS_IOS)
+  EXPECT_TRUE(form_manager_->DoesManage(another_form, &driver_));
+#else
   EXPECT_FALSE(form_manager_->DoesManage(another_form, &driver_));
+#endif
+
+  // On iOS platforms form name is the form identifier.
+  another_form = observed_form_;
+  another_form.name = observed_form_.name + ASCIIToUTF16("1");
+#if defined(OS_IOS)
+  EXPECT_FALSE(form_manager_->DoesManage(another_form, &driver_));
+#else
+  EXPECT_TRUE(form_manager_->DoesManage(another_form, &driver_));
+#endif
 }
 
 TEST_F(NewPasswordFormManagerTest, DoesManageNoFormTag) {
@@ -496,11 +510,13 @@ TEST_F(NewPasswordFormManagerTest, SetSubmitted) {
 
   FormData another_form = submitted_form_;
   another_form.name += ASCIIToUTF16("1");
+#if !defined(OS_IOS)
   // |another_form| is managed because the same |unique_renderer_id| as
   // |observed_form_|.
   EXPECT_TRUE(
       form_manager_->ProvisionallySaveIfIsManaged(another_form, &driver_));
   EXPECT_TRUE(form_manager_->is_submitted());
+#endif
 
   form_manager_->set_not_submitted();
   EXPECT_FALSE(form_manager_->is_submitted());
