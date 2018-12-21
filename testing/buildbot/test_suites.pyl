@@ -462,7 +462,11 @@
     },
 
     'chromeos_device_kevin_tests': {
-      'base_unittests': {},
+      'base_unittests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.base_unittests.filter',
+        ],
+      },
       'chrome_kevin_tast_tests': {},
       'cros_vm_sanity_test': {},
     },
