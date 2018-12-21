@@ -156,7 +156,8 @@ bool BrokerProcess::IsSyscallAllowed(int sysno) const {
 #endif
       return !fast_check_in_client_ || allowed_command_set_.test(COMMAND_STAT);
 
-#if defined(__i386__) || defined(__arm__) || defined(__mips32__)
+#if defined(__i386__) || defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
     case __NR_stat64:
     case __NR_lstat64:
       // For security purposes, map stat64 to COMMAND_STAT permission. The

@@ -99,7 +99,7 @@ void PrintSyscallError(uint32_t sysno) {
     sysno_base10[i] = '0' + mod;
   }
 
-#if defined(__mips32__)
+#if defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS)
   static const char kSeccompErrorPrefix[] = __FILE__
       ":**CRASHING**:" SECCOMP_MESSAGE_COMMON_CONTENT " in syscall 4000 + ";
 #else
