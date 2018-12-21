@@ -55190,6 +55190,18 @@ Full version information for the fingerprint enum values:
   <int value="2" label="AdHoc"/>
 </enum>
 
+<enum name="WiFiBSSTransitionManagementSupport">
+  <int value="0" label="Accept"/>
+  <int value="1" label="Reject unspecified"/>
+  <int value="2" label="Reject insufficient beacon"/>
+  <int value="3" label="Reject insufficient capability"/>
+  <int value="4" label="Reject undesired"/>
+  <int value="5" label="Reject delay request"/>
+  <int value="6" label="Reject STA candidate list provided"/>
+  <int value="7" label="Reject no suitable candidates"/>
+  <int value="8" label="Reject leaving ESS"/>
+</enum>
+
 <enum name="WiFiConnectionStatusAfterWake">
   <int value="0" label="Connected (Wake On WiFi enabled)"/>
   <int value="1" label="Not connected (Wake On WiFi enabled)"/>
