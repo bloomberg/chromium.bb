@@ -40,6 +40,7 @@ using NumericRangeSet = media_constraints::NumericRangeSet<T>;
 namespace {
 
 using BoolSet = media_constraints::DiscreteSet<bool>;
+using DoubleRangeSet = media_constraints::NumericRangeSet<double>;
 using EchoCancellationTypeSet =
     media_constraints::DiscreteSet<EchoCancellationType>;
 using IntRangeSet = media_constraints::NumericRangeSet<int>;
@@ -121,11 +122,13 @@ class SourceInfo {
   SourceInfo(SourceType type,
              const AudioProcessingProperties& properties,
              base::Optional<int> channels,
-             base::Optional<int> sample_rate)
+             base::Optional<int> sample_rate,
+             base::Optional<double> latency)
       : type_(type),
         properties_(properties),
         channels_(std::move(channels)),
-        sample_rate_(std::move(sample_rate)) {}
+        sample_rate_(std::move(sample_rate)),
+        latency_(latency) {}
 
   bool HasActiveSource() { return type_ != SourceType::kNone; }
 
@@ -133,12 +136,14 @@ class SourceInfo {
   const AudioProcessingProperties& properties() { return properties_; }
   const base::Optional<int>& channels() { return channels_; }
   const base::Optional<int>& sample_rate() { return sample_rate_; }
+  const base::Optional<double>& latency() { return latency_; }
 
  private:
   const SourceType type_;
   const AudioProcessingProperties properties_;
   const base::Optional<int> channels_;
   const base::Optional<int> sample_rate_;
+  const base::Optional<double> latency_;
 };
 
 // Container for each independent boolean constrainable property.
@@ -285,6 +290,7 @@ class NumericContainer {
 };
 
 using IntegerContainer = NumericContainer<int, blink::LongConstraint>;
+using DoubleContainer = NumericContainer<double, blink::DoubleConstraint>;
 
 // Container to manage the properties related to echo cancellation:
 // echoCancellation, googEchoCancellation and echoCancellationType.
@@ -735,6 +741,11 @@ class ProcessingBasedContainer {
     if (failed_constraint_name != nullptr)
       return failed_constraint_name;
 
+    failed_constraint_name =
+        latency_container_.ApplyConstraintSet(constraint_set.latency);
+    if (failed_constraint_name != nullptr)
+      return failed_constraint_name;
+
     for (auto& info : kBooleanPropertyContainerInfoMap) {
       failed_constraint_name =
           boolean_containers_[info.index].ApplyConstraintSet(
@@ -770,6 +781,12 @@ class ProcessingBasedContainer {
         sample_rate_container_.SelectSettingsAndScore(
             constraint_set.sample_rate);
     DCHECK(sample_size != base::nullopt);
+    score += sub_score;
+
+    base::Optional<double> latency;
+    std::tie(sub_score, latency) =
+        latency_container_.SelectSettingsAndScore(constraint_set.latency);
+    DCHECK(latency != base::nullopt);
     score += sub_score;
 
     AudioProcessingProperties properties;
@@ -809,7 +826,7 @@ class ProcessingBasedContainer {
     }
     return echo_cancellation_container_.IsEmpty() ||
            sample_size_container_.IsEmpty() || channels_container_.IsEmpty() ||
-           sample_rate_container_.IsEmpty();
+           sample_rate_container_.IsEmpty() || latency_container_.IsEmpty();
   }
 
  private:
@@ -884,7 +901,9 @@ class ProcessingBasedContainer {
       : processing_type_(processing_type),
         sample_size_container_(sample_size_range),
         channels_container_(channels_range),
-        sample_rate_container_(sample_rate_range) {
+        sample_rate_container_(sample_rate_range),
+        latency_container_(
+            GetAllowedLatency(processing_type, device_parameters)) {
     // If the parameters indicate that system echo cancellation is available, we
     // add such value in the allowed values for the EC type.
     if (device_parameters.effects() & media::AudioParameters::ECHO_CANCELLER ||
@@ -929,6 +948,30 @@ class ProcessingBasedContainer {
     DCHECK(source_info.sample_rate() != base::nullopt);
     sample_rate_container_ =
         IntegerContainer(IntRangeSet::FromValue(*source_info.sample_rate()));
+    DCHECK(source_info.latency() != base::nullopt);
+    latency_container_ =
+        DoubleContainer(DoubleRangeSet::FromValue(*source_info.latency()));
+  }
+
+  // The allowed latency is expressed in a range latencies in seconds.
+  static const DoubleRangeSet GetAllowedLatency(
+      ProcessingType processing_type,
+      const media::AudioParameters& device_parameters) {
+    double fallback_latency =
+        static_cast<double>(kFallbackAudioLatencyMs) / 1000;
+    double device_latency = device_parameters.GetBufferDuration().InSecondsF();
+    double allowed_latency = device_parameters.frames_per_buffer() > 0
+                                 ? device_latency
+                                 : fallback_latency;
+
+    switch (processing_type) {
+      case ProcessingType::kApmProcessed:
+        return DoubleRangeSet::FromValue(fallback_latency);
+      case ProcessingType::kNoApmProcessed:
+        return DoubleRangeSet::FromValue(allowed_latency);
+      case ProcessingType::kUnprocessed:
+        return DoubleRangeSet::FromValue(allowed_latency);
+    }
   }
 
   // The priority of each processing-based container depends on the default
@@ -957,6 +1000,7 @@ class ProcessingBasedContainer {
   IntegerContainer sample_size_container_;
   IntegerContainer channels_container_;
   IntegerContainer sample_rate_container_;
+  DoubleContainer latency_container_;
 };
 
 constexpr ProcessingBasedContainer::BooleanPropertyContainerInfo
@@ -1197,6 +1241,7 @@ class DeviceContainer {
         ProcessedLocalAudioSource::From(source);
     base::Optional<int> channels;
     base::Optional<int> sample_rate;
+    base::Optional<double> latency;
 
     if (source == nullptr) {
       source_type = SourceType::kNone;
@@ -1204,6 +1249,7 @@ class DeviceContainer {
       media::AudioParameters source_parameters = source->GetAudioParameters();
       channels = source_parameters.channels();
       sample_rate = source_parameters.sample_rate();
+      latency = source_parameters.GetBufferDuration().InSecondsF();
 
       if (processed_source == nullptr) {
         source_type = SourceType::kUnprocessed;
@@ -1225,7 +1271,7 @@ class DeviceContainer {
       }
     }
 
-    return SourceInfo(source_type, properties, channels, sample_rate);
+    return SourceInfo(source_type, properties, channels, sample_rate, latency);
   }
 
   media::AudioParameters device_parameters_;
