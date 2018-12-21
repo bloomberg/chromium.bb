@@ -24,24 +24,33 @@ config("dl_config") {
     # Enable build-time NEON selection.
     defines = [ "DL_ARM_NEON" ]
   }
+}
 
+config("no_integrated_as") {
   if (current_cpu == "arm" && is_clang) {
-    # TODO(hans) Enable integrated-as (crbug.com/124610).
+    # TODO(hans): Enable integrated-as (crbug.com/917355).
+    # Once that's fixed, also stop removing assembler_debug_dir from configs.
     asmflags = [ "-fno-integrated-as" ]
     if (is_android) {
       rebased_android_toolchain_root =
           rebase_path(android_toolchain_root, root_build_dir)
+
       # Else /usr/bin/as gets picked up.
       asmflags += [ "-B${rebased_android_toolchain_root}/bin" ]
     }
   }
 }
 
-# GYP: third_party/openmax_dl/dl/dl.gyp:openmax_dl
 static_library("dl") {
   public_configs = [ ":dl_config" ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs -= [
+    "//build/config/compiler:chromium_code",
+    "//build/config/compiler:assembler_debug_dir",
+  ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    ":no_integrated_as",
+  ]
   sources = [
     "api/omxtypes.h",
     "sp/api/omxSP.h",
@@ -88,7 +97,7 @@ static_library("dl") {
 
     deps += [
       ":openmax_dl_armv7",
-      ":openmax_dl_neon"
+      ":openmax_dl_neon",
     ]
   }
 
@@ -104,13 +113,13 @@ static_library("dl") {
       "sp/src/arm/arm64/armSP_FFT_CToC_FC32_Radix4_ls_s.S",
       "sp/src/arm/arm64/armSP_FFT_CToC_FC32_Radix4_s.S",
       "sp/src/arm/arm64/armSP_FFT_CToC_FC32_Radix8_fs_s.S",
-      "sp/src/arm/arm64/omxSP_FFTInv_CToC_FC32.c",
       "sp/src/arm/arm64/omxSP_FFTFwd_CToC_FC32.c",
+      "sp/src/arm/arm64/omxSP_FFTInv_CToC_FC32.c",
 
       # Real floating-point FFT
+      "sp/src/arm/arm64/ComplexToRealFixup.S",
       "sp/src/arm/arm64/armSP_FFTInv_CCSToR_F32_preTwiddleRadix2_s.S",
       "sp/src/arm/arm64/omxSP_FFTFwd_RToCCS_F32.c",
-      "sp/src/arm/arm64/ComplexToRealFixup.S",
       "sp/src/arm/arm64/omxSP_FFTInv_CCSToR_F32.c",
     ]
   }
@@ -163,21 +172,24 @@ static_library("dl") {
       "sp/src/mips/mips_FFTFwd_RToCCS_F32_real.c",
       "sp/src/mips/mips_FFTInv_CCSToR_F32_complex.c",
       "sp/src/mips/mips_FFTInv_CCSToR_F32_real.c",
-      "sp/src/mips/omxSP_FFT_F32TwiddleTable.c",
       "sp/src/mips/omxSP_FFTFwd_RToCCS_F32_Sfs.c",
       "sp/src/mips/omxSP_FFTGetBufSize_R_F32.c",
       "sp/src/mips/omxSP_FFTInit_R_F32.c",
       "sp/src/mips/omxSP_FFTInv_CCSToR_F32_Sfs.c",
+      "sp/src/mips/omxSP_FFT_F32TwiddleTable.c",
     ]
   }
 }
 
 if (current_cpu == "arm") {
-  # GYP: third_party/openmax_dl/dl/dl.gyp:openmax_dl_armv7
   # Non-NEON implementation of FFT. This library is NOT
   # standalone. Applications must link with openmax_dl.
   static_library("openmax_dl_armv7") {
-    configs += [ ":dl_config" ]
+    configs += [
+      ":dl_config",
+      ":no_integrated_as",
+    ]
+    configs -= [ "//build/config/compiler:assembler_debug_dir" ]
     visibility = [ ":*" ]
 
     sources = [
@@ -186,8 +198,8 @@ if (current_cpu == "arm") {
       "sp/src/arm/armv7/armSP_FFT_CToC_FC32_Radix4_fs_unsafe_s.S",
       "sp/src/arm/armv7/armSP_FFT_CToC_FC32_Radix4_unsafe_s.S",
       "sp/src/arm/armv7/armSP_FFT_CToC_FC32_Radix8_fs_unsafe_s.S",
-      "sp/src/arm/armv7/omxSP_FFTInv_CToC_FC32_Sfs_s.S",
       "sp/src/arm/armv7/omxSP_FFTFwd_CToC_FC32_Sfs_s.S",
+      "sp/src/arm/armv7/omxSP_FFTInv_CToC_FC32_Sfs_s.S",
 
       # Real floating-point FFT
       "sp/src/arm/armv7/armSP_FFTInv_CCSToR_F32_preTwiddleRadix2_unsafe_s.S",
@@ -196,19 +208,26 @@ if (current_cpu == "arm") {
     ]
     if (arm_optionally_use_neon) {
       # Run-time NEON detection.
-      deps = [ "//third_party/android_tools:cpu_features" ]
+      deps = [
+        "//third_party/android_tools:cpu_features",
+      ]
+
       # To get the __android_log_print routine
       libs = [ "log" ]
+
       # Detection routine
       sources += [ "sp/src/arm/detect.c" ]
     }
   }
 
-  # GYP: third_party/openmax_dl/dl/dl.gyp:openmax_dl_neon
   # NEON implementation of FFT. This library is NOT
   # standalone. Applications must link with openmax_dl.
   static_library("openmax_dl_neon") {
-    configs += [ ":dl_config" ]
+    configs += [
+      ":dl_config",
+      ":no_integrated_as",
+    ]
+    configs -= [ "//build/config/compiler:assembler_debug_dir" ]
     visibility = [ ":*" ]
 
     if (!arm_use_neon) {
@@ -247,9 +266,9 @@ if (current_cpu == "arm") {
       "sp/src/arm/neon/omxSP_FFTInv_CToC_SC16_Sfs_s.S",
 
       # Real 16-bit fixed-point FFT
+      "sp/src/arm/neon/omxSP_FFTFwd_RToCCS_S16S32_Sfs_s.S",
       "sp/src/arm/neon/omxSP_FFTFwd_RToCCS_S16_Sfs_s.S",
       "sp/src/arm/neon/omxSP_FFTInv_CCSToR_S16_Sfs_s.S",
-      "sp/src/arm/neon/omxSP_FFTFwd_RToCCS_S16S32_Sfs_s.S",
       "sp/src/arm/neon/omxSP_FFTInv_CCSToR_S32S16_Sfs_s.S",
 
       # Complex floating-point FFT
