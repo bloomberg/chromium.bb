@@ -228,7 +228,15 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   EXPECT_TRUE(CheckSyncHasMetadataForURLID(0, url_id_on_first_client));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddThenExpireThenAddAgain) {
+#if defined(THREAD_SANITIZER)
+// https://crbug.com/917385
+#define MAYBE_AddThenExpireThenAddAgain DISABLED_AddThenExpireThenAddAgain
+#else
+#define MAYBE_AddThenExpireThenAddAgain AddThenExpireThenAddAgain
+#endif
+
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
+                       MAYBE_AddThenExpireThenAddAgain) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   base::Time now = base::Time::Now();
@@ -280,7 +288,15 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddThenExpireThenAddAgain) {
   EXPECT_TRUE(CheckSyncHasURLMetadata(0, url));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddThenExpireVisitByVisit) {
+#if defined(THREAD_SANITIZER)
+// https://crbug.com/917385
+#define MAYBE_AddThenExpireVisitByVisit DISABLED_AddThenExpireVisitByVisit
+#else
+#define MAYBE_AddThenExpireVisitByVisit AddThenExpireVisitByVisit
+#endif
+
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
+                       MAYBE_AddThenExpireVisitByVisit) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   base::Time now = base::Time::Now();
