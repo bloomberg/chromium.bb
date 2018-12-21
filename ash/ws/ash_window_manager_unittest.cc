@@ -10,6 +10,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window.h"
 #include "ui/views/mus/mus_client.h"

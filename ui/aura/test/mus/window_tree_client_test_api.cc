@@ -103,10 +103,6 @@ bool WindowTreeClientTestApi::HasChangeInFlightOfType(ChangeType type) {
   return false;
 }
 
-void WindowTreeClientTestApi::FlushForTesting() {
-  tree_client_impl_->binding_.FlushForTesting();
-}
-
 ws::mojom::WindowDataPtr WindowTreeClientTestApi::CreateWindowDataForEmbed() {
   ws::mojom::WindowDataPtr root_data(ws::mojom::WindowData::New());
   root_data->parent_id = 0;
@@ -119,6 +115,10 @@ ws::mojom::WindowDataPtr WindowTreeClientTestApi::CreateWindowDataForEmbed() {
       (client_id << 32) | tree_client_impl_->GetRoots().size();
   root_data->visible = true;
   return root_data;
+}
+
+void WindowTreeClientTestApi::FlushForTesting() {
+  tree_client_impl_->binding_.FlushForTesting();
 }
 
 }  // namespace aura

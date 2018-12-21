@@ -13,6 +13,7 @@
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/mus/mus_types.h"
 #include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/test/mus/change_completion_waiter.h"
 
 namespace ws {
 namespace mojom {
@@ -74,11 +75,14 @@ class WindowTreeClientTestApi {
 
   bool HasChangeInFlightOfType(ChangeType type);
 
-  // Calls FlushForTesting() on the mojo::Binding for the WindowTreeClient.
-  void FlushForTesting();
-
  private:
+  friend void test::WaitForAllChangesToComplete(WindowTreeClient* client);
+
   ws::mojom::WindowDataPtr CreateWindowDataForEmbed();
+
+  // This is private as WaitForAllChangesToComplete() (in
+  // change_completion_waiter) should be used instead.
+  void FlushForTesting();
 
   WindowTreeClient* tree_client_impl_;
 
