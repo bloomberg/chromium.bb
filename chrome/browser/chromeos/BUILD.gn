@@ -1434,6 +1434,8 @@ source_set("chromeos") {
     "platform_keys/platform_keys_service_factory.h",
     "plugin_vm/plugin_vm_pref_names.cc",
     "plugin_vm/plugin_vm_pref_names.h",
+    "plugin_vm/plugin_vm_util.cc",
+    "plugin_vm/plugin_vm_util.h",
     "policy/active_directory_join_delegate.h",
     "policy/active_directory_policy_manager.cc",
     "policy/active_directory_policy_manager.h",
