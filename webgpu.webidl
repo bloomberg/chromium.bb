@@ -723,7 +723,7 @@ partial interface WebGPUProgrammablePassEncoder {
 };
 
 interface mixin WebGPUDebugLabel {
-    attribute DOMString label;
+    attribute DOMString? label;
 };
 
 WebGPUCommandBuffer includes WebGPUDebugLabel;

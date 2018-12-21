@@ -451,7 +451,7 @@ interface WebGPUComputePipeline extends WebGPUDebugLabel {
 }
 
 interface WebGPUDebugLabel {
-  label: string;
+  label: string | undefined;
 }
 
 interface WebGPUDevice {
