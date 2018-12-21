@@ -5,6 +5,7 @@
 import("//build/config/android/chrome_version.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//chrome/android/chrome_public_apk_tmpl.gni")
 
 trichrome_library_package = "org.chromium.trichromelibrary"
 trichrome_certdigest =
@@ -53,13 +54,21 @@ template("trichrome_library_apk_tmpl") {
     }
 
     if (android_64bit_target_cpu) {
-      # Include a 64-bit placeholder library to ensure that the library is treated
-      # as multiarch and gets its Java code precompiled for both architectures.
-      native_lib_placeholders = [ "libdummy.so" ]
-      if (build_apk_secondary_abi) {
-        # Include the actual 32-bit libmonochrome library.
-        secondary_abi_shared_libraries =
-            [ "//chrome/android:monochrome_secondary_abi_lib" ]
+      # Include the actual browser-bitness libmonochrome library, and an
+      # opposite-bitness placeholder library to ensure that the library is
+      # treated as multiarch and gets its Java code precompiled for both
+      # architectures.
+      if (android_64bit_browser) {
+        shared_libraries = [ "//chrome/android:monochrome" ]
+        if (build_apk_secondary_abi) {
+          secondary_native_lib_placeholders = [ "libdummy.so" ]
+        }
+      } else {
+        native_lib_placeholders = [ "libdummy.so" ]
+        if (build_apk_secondary_abi) {
+          secondary_abi_shared_libraries =
+              [ "//chrome/android:monochrome_secondary_abi_lib" ]
+        }
       }
     } else {
       shared_libraries = [ "//chrome/android:monochrome" ]
