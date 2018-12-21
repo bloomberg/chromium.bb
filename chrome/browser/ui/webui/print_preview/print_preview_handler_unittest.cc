@@ -245,7 +245,10 @@ class TestPrintPreviewHandler : public PrintPreviewHandler {
 
 class PrintPreviewHandlerTest : public testing::Test {
  public:
-  PrintPreviewHandlerTest() {
+  PrintPreviewHandlerTest() = default;
+  ~PrintPreviewHandlerTest() override = default;
+
+  void SetUp() override {
     TestingProfile::Builder builder;
     profile_ = builder.Build();
     initiator_web_contents_ = content::WebContents::Create(
@@ -261,8 +264,7 @@ class PrintPreviewHandlerTest : public testing::Test {
 
     printers_.push_back(
         printing::GetSimplePrinterInfo(printing::kDummyPrinterName, true));
-    auto printer_handler =
-        std::make_unique<printing::TestPrinterHandler>(printers_);
+    auto printer_handler = CreatePrinterHandler(printers_);
     printer_handler_ = printer_handler.get();
 
     auto preview_handler = std::make_unique<printing::TestPrintPreviewHandler>(
@@ -277,9 +279,14 @@ class PrintPreviewHandlerTest : public testing::Test {
     web_ui()->SetController(std::move(preview_ui));
   }
 
-  ~PrintPreviewHandlerTest() override {
+  void TearDown() override {
     printing::PrintViewManager::FromWebContents(initiator_web_contents_.get())
         ->PrintPreviewDone();
+  }
+
+  virtual std::unique_ptr<printing::TestPrinterHandler> CreatePrinterHandler(
+      const std::vector<printing::PrinterInfo>& printers) {
+    return std::make_unique<printing::TestPrinterHandler>(printers);
   }
 
   void Initialize() {
@@ -694,4 +701,76 @@ TEST_F(PrintPreviewHandlerTest, SendPreviewUpdates) {
 
   // Handler should have tried to kill the renderer for each of these.
   EXPECT_EQ(handler()->bad_messages(), 3);
+}
+
+class FailingTestPrinterHandler : public printing::TestPrinterHandler {
+ public:
+  explicit FailingTestPrinterHandler(
+      const std::vector<printing::PrinterInfo>& printers)
+      : TestPrinterHandler(printers) {}
+
+  ~FailingTestPrinterHandler() override = default;
+
+  void StartGetCapability(const std::string& destination_id,
+                          GetCapabilityCallback callback) override {
+    std::move(callback).Run(base::Value());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FailingTestPrinterHandler);
+};
+
+class PrintPreviewHandlerFailingTest : public PrintPreviewHandlerTest {
+ public:
+  PrintPreviewHandlerFailingTest() = default;
+  ~PrintPreviewHandlerFailingTest() override = default;
+
+  std::unique_ptr<printing::TestPrinterHandler> CreatePrinterHandler(
+      const std::vector<printing::PrinterInfo>& printers) override {
+    return std::make_unique<FailingTestPrinterHandler>(printers);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PrintPreviewHandlerFailingTest);
+};
+
+// This test is similar to PrintPreviewHandlerTest.GetPrinterCapabilities, but
+// uses FailingTestPrinterHandler instead of TestPrinterHandler. As a result,
+// StartGetCapability() always fails, to exercise its callback's failure
+// handling path. Failure is different from getting no capabilities.
+TEST_F(PrintPreviewHandlerFailingTest, GetPrinterCapabilities) {
+  // Add an empty printer to the handler.
+  printers().push_back(printing::GetEmptyPrinterInfo());
+  printer_handler()->SetPrinters(printers());
+
+  // Initial settings first to enable javascript.
+  Initialize();
+
+  // Check all four printer types that implement
+  // PrinterHandler::StartGetCapability().
+  for (size_t i = 0; i < base::size(printing::kAllTypes); i++) {
+    printing::PrinterType type = printing::kAllTypes[i];
+    handler()->reset_calls();
+    base::Value args(base::Value::Type::LIST);
+    std::string callback_id_in =
+        "test-callback-id-" + base::UintToString(i + 1);
+    args.GetList().emplace_back(callback_id_in);
+    args.GetList().emplace_back(printing::kDummyPrinterName);
+    args.GetList().emplace_back(type);
+    std::unique_ptr<base::ListValue> list_args =
+        base::ListValue::From(base::Value::ToUniquePtrValue(std::move(args)));
+    handler()->HandleGetPrinterCapabilities(list_args.get());
+    EXPECT_TRUE(handler()->CalledOnlyForType(type));
+
+    // Start with 2 calls from initial settings, then add 1 more for each loop
+    // iteration.
+    ASSERT_EQ(2u + (i + 1), web_ui()->call_data().size());
+
+    // Verify printer capabilities promise was rejected.
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    CheckWebUIResponse(data, callback_id_in, false);
+    const base::Value* settings = data.arg3();
+    ASSERT_TRUE(settings);
+    EXPECT_TRUE(settings->is_none());
+  }
 }
