@@ -53,11 +53,7 @@ ToolbarActionView::ToolbarActionView(
     ToolbarActionView::Delegate* delegate)
     : MenuButton(base::string16(), this),
       view_controller_(view_controller),
-      delegate_(delegate),
-      called_register_command_(false),
-      wants_to_run_(false),
-      menu_(nullptr),
-      weak_factory_(this) {
+      delegate_(delegate) {
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
   set_id(VIEW_ID_BROWSER_ACTION);
@@ -104,8 +100,8 @@ std::unique_ptr<LabelButtonBorder> ToolbarActionView::CreateDefaultBorder()
     const {
   std::unique_ptr<LabelButtonBorder> border =
       LabelButton::CreateDefaultBorder();
-  border->set_insets(gfx::Insets(kBorderInset, kBorderInset,
-                                 kBorderInset, kBorderInset));
+  border->set_insets(
+      gfx::Insets(kBorderInset, kBorderInset, kBorderInset, kBorderInset));
   return border;
 }
 
@@ -214,13 +210,14 @@ gfx::Size ToolbarActionView::CalculatePreferredSize() const {
 }
 
 bool ToolbarActionView::OnMousePressed(const ui::MouseEvent& event) {
-  // views::MenuButton actions are only triggered by left mouse clicks.
   if (event.IsOnlyLeftMouseButton() && !pressed_lock_) {
+    // This event is likely to trigger the MenuButton action.
     // TODO(bruthig): The ACTION_PENDING triggering logic should be in
     // MenuButton::OnPressed() however there is a bug with the pressed state
     // logic in MenuButton. See http://crbug.com/567252.
     AnimateInkDrop(views::InkDropState::ACTION_PENDING, &event);
   }
+
   return MenuButton::OnMousePressed(event);
 }
 
@@ -284,10 +281,9 @@ void ToolbarActionView::OnPopupClosed() {
   pressed_lock_.reset();  // Unpress the menu button if it was pressed.
 }
 
-void ToolbarActionView::ShowContextMenuForView(
-    views::View* source,
-    const gfx::Point& point,
-    ui::MenuSourceType source_type) {
+void ToolbarActionView::ShowContextMenuForView(views::View* source,
+                                               const gfx::Point& point,
+                                               ui::MenuSourceType source_type) {
   if (CloseActiveMenuIfNeeded())
     return;
 
@@ -295,8 +291,7 @@ void ToolbarActionView::ShowContextMenuForView(
   DoShowContextMenu(source_type);
 }
 
-void ToolbarActionView::DoShowContextMenu(
-    ui::MenuSourceType source_type) {
+void ToolbarActionView::DoShowContextMenu(ui::MenuSourceType source_type) {
   ui::MenuModel* context_menu_model = view_controller_->GetContextMenu();
   // It's possible the action doesn't have a context menu.
   if (!context_menu_model)
@@ -311,9 +306,10 @@ void ToolbarActionView::DoShowContextMenu(
 
   // RunMenuAt expects a nested menu to be parented by the same widget as the
   // already visible menu, in this case the Chrome menu.
-  views::Widget* parent = delegate_->ShownInsideMenu() ?
-      delegate_->GetOverflowReferenceView()->GetWidget() :
-      GetWidget();
+  views::Widget* parent =
+      delegate_->ShownInsideMenu()
+          ? delegate_->GetOverflowReferenceView()->GetWidget()
+          : GetWidget();
 
   // Unretained() is safe here as ToolbarActionView will always outlive the
   // menu. Any action that would lead to the deletion of |this| first triggers

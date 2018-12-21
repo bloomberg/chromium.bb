@@ -12,12 +12,7 @@
 
 TestToolbarActionViewController::TestToolbarActionViewController(
     const std::string& id)
-    : id_(id),
-      delegate_(nullptr),
-      is_enabled_(true),
-      wants_to_run_(false),
-      disabled_click_opens_menu_(false),
-      execute_action_count_(0) {
+    : id_(id) {
   // Needs a non-empty accessible name to pass accessibility checks.
   SetAccessibleName(base::ASCIIToUTF16("Default name"));
 }

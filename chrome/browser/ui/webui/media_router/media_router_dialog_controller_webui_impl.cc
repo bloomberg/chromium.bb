@@ -151,8 +151,8 @@ MediaRouterDialogControllerWebUIImpl::GetOrCreateForWebContents(
     content::WebContents* web_contents) {
   DCHECK(web_contents);
   // This call does nothing if the controller already exists.
-  MediaRouterDialogControllerWebUIImpl::CreateForWebContents(web_contents);
-  return MediaRouterDialogControllerWebUIImpl::FromWebContents(web_contents);
+  CreateForWebContents(web_contents);
+  return FromWebContents(web_contents);
 }
 
 MediaRouterDialogControllerWebUIImpl::~MediaRouterDialogControllerWebUIImpl() {
