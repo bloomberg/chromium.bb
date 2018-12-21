@@ -111,10 +111,10 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
       return;
 
     HeapVector<Member<IDBDatabaseInfo>> name_and_version_list;
-    for (size_t i = 0; i < idb_name_and_version_list.size(); ++i) {
+    for (const auto& item : idb_name_and_version_list) {
       IDBDatabaseInfo* idb_info = IDBDatabaseInfo::Create();
-      idb_info->setName(idb_name_and_version_list[i].name);
-      idb_info->setVersion(idb_name_and_version_list[i].version);
+      idb_info->setName(item.name);
+      idb_info->setVersion(item.version);
       name_and_version_list.push_back(idb_info);
     }
     probe::AsyncTask async_task(
