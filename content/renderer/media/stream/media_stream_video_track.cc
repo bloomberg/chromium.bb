@@ -268,7 +268,8 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
       base::Bind(&MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO,
                  frame_deliverer_),
       media::BindToCurrentLoop(base::BindRepeating(
-          &MediaStreamVideoTrack::SetSize, weak_factory_.GetWeakPtr())),
+          &MediaStreamVideoTrack::SetSizeAndComputedFrameRate,
+          weak_factory_.GetWeakPtr())),
       callback);
 }
 
@@ -296,7 +297,8 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
       base::Bind(&MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO,
                  frame_deliverer_),
       media::BindToCurrentLoop(base::BindRepeating(
-          &MediaStreamVideoTrack::SetSize, weak_factory_.GetWeakPtr())),
+          &MediaStreamVideoTrack::SetSizeAndComputedFrameRate,
+          weak_factory_.GetWeakPtr())),
       callback);
 }
 
@@ -387,7 +389,13 @@ void MediaStreamVideoTrack::GetSettings(
     if (frame_rate_ == 0.0)
       settings.frame_rate = format->frame_rate;
     settings.video_kind = GetVideoKindForFormat(*format);
+  } else {
+    // Format is only set for local tracks. For other tracks, use the frame rate
+    // reported through settings callback SetSizeAndComputedFrameRate().
+    if (computed_frame_rate_)
+      settings.frame_rate = *computed_frame_rate_;
   }
+
   settings.facing_mode = ToWebFacingMode(source_->device().video_facing);
   settings.resize_mode = blink::WebString::FromASCII(
       std::string(adapter_settings().target_size()

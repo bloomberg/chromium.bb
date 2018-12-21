@@ -8,7 +8,7 @@
 namespace content {
 
 using VideoTrackSettingsCallback =
-    base::RepeatingCallback<void(int width, int height)>;
+    base::RepeatingCallback<void(int width, int height, double frame_rate)>;
 
 }  // namespace content
 
