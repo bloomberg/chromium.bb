@@ -22,7 +22,7 @@ namespace {
   CALL(ArFrame_acquireCamera)            \
   CALL(ArFrame_create)                   \
   CALL(ArFrame_destroy)                  \
-  CALL(ArFrame_hitTest)                  \
+  CALL(ArFrame_hitTestRay)               \
   CALL(ArFrame_transformDisplayUvCoords) \
   CALL(ArHitResult_create)               \
   CALL(ArHitResult_destroy)              \
@@ -152,13 +152,13 @@ void ArFrame_destroy(ArFrame* frame) {
   arcore_api->impl_ArFrame_destroy(frame);
 }
 
-void ArFrame_hitTest(const ArSession* session,
-                     const ArFrame* frame,
-                     float pixel_x,
-                     float pixel_y,
-                     ArHitResultList* out_hit_results) {
-  arcore_api->impl_ArFrame_hitTest(session, frame, pixel_x, pixel_y,
-                                   out_hit_results);
+void ArFrame_hitTestRay(const ArSession* session,
+                        const ArFrame* frame,
+                        const float* ray_origin_3,
+                        const float* ray_direction_3,
+                        ArHitResultList* out_hit_results) {
+  arcore_api->impl_ArFrame_hitTestRay(session, frame, ray_origin_3,
+                                      ray_direction_3, out_hit_results);
 }
 
 void ArFrame_transformDisplayUvCoords(const ArSession* session,
