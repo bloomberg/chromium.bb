@@ -444,7 +444,7 @@ bool VertexArrayObjectManager::SetAttribPointer(
     const void* ptr,
     GLboolean integer) {
   // Client side arrays are not allowed in vaos.
-  if (buffer_id == 0 && !IsDefaultVAOBound()) {
+  if (buffer_id == 0 && !IsDefaultVAOBound() && ptr) {
     return false;
   }
   bound_vertex_array_object_->SetAttribPointer(

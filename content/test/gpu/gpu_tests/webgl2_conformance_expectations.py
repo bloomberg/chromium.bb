@@ -99,7 +99,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Need to implement new lifetime/deletion semantics.
     self.Fail('conformance2/vertex_arrays/vertex-array-object.html', bug=739604)
-    self.Fail('deqp/functional/gles3/lifetime.html', bug=898350)
 
     # The following actually passes on gl_passthrough and also Mac Intel with
     # command buffer.
@@ -293,9 +292,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance/rendering/rendering-stencil-large-viewport.html',
         ['win', 'intel', 'd3d11'], bug=782317)
 
-    # TODO(kbr): re-enable after fix for http://crbug.com/898350
-    # self.Flaky('deqp/functional/gles3/lifetime.html',
-    #     ['win', 'intel', 'd3d11'], bug=620379)
+    self.Flaky('deqp/functional/gles3/lifetime.html',
+        ['win', 'intel', 'd3d11'], bug=620379)
     self.Flaky('deqp/functional/gles3/textureformat/unsized_3d.html',
         ['win', 'intel', 'd3d11'], bug=614418)
 
