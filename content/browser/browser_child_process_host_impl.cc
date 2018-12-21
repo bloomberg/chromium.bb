@@ -317,6 +317,7 @@ void BrowserChildProcessHostImpl::LaunchWithoutExtraCommandLineSwitches(
       switches::kDisableLogging,
       switches::kEnableLogging,
       switches::kIPCConnectionTimeout,
+      switches::kLogFile,
       switches::kLoggingLevel,
       switches::kTraceToConsole,
       switches::kV,
