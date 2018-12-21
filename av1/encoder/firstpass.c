@@ -2379,6 +2379,10 @@ static INLINE int is_almost_static(double gf_zero_motion, int kf_zero_motion) {
          (kf_zero_motion >= STATIC_KF_GROUP_THRESH);
 }
 
+#if CONFIG_FIX_GF_LENGTH
+#define ARF_ABS_ZOOM_THRESH 4.4
+#endif  // CONFIG_FIX_GF_LENGTH
+
 // Analyse and define a gf/arf group.
 static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   AV1_COMMON *const cm = &cpi->common;
@@ -2392,10 +2396,9 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   double boost_score = 0.0;
 #if !CONFIG_FIX_GF_LENGTH
   double old_boost_score = 0.0;
-  double mv_ratio_accumulator_thresh;
   int active_max_gf_interval;
+#endif  // !CONFIG_FIX_GF_LENGTH
   int active_min_gf_interval;
-#endif
   double gf_group_err = 0.0;
 #if GROUP_ADAPTIVE_MAXQ
   double gf_group_raw_error = 0.0;
@@ -2455,10 +2458,14 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     gf_group_skip_pct -= this_frame->intra_skip_pct;
     gf_group_inactive_zone_rows -= this_frame->inactive_zone_rows;
   }
-#if !CONFIG_FIX_GF_LENGTH
   // Motion breakout threshold for loop below depends on image size.
-  mv_ratio_accumulator_thresh =
+  const double mv_ratio_accumulator_thresh =
       (cpi->initial_height + cpi->initial_width) / 4.0;
+
+#if CONFIG_FIX_GF_LENGTH
+  // TODO(urvang): Try the 'else' like logic to vary min and max interval.
+  active_min_gf_interval = rc->min_gf_interval;
+#else
   // Set a maximum and minimum interval for the GF group.
   // If the image appears almost completely static we can extend beyond this.
   {
@@ -2483,7 +2490,8 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     else if (active_max_gf_interval > rc->max_gf_interval)
       active_max_gf_interval = rc->max_gf_interval;
   }
-#endif  // !CONFIG_FIX_GF_LENGTH
+#endif  // CONFIG_FIX_GF_LENGTH
+
   double avg_sr_coded_error = 0;
   double avg_raw_err_stdev = 0;
   int non_zero_stdev_count = 0;
@@ -2550,6 +2558,16 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     if (i >= (av1_rc_get_fixed_gf_length(oxcf->gf_max_pyr_height) + 1) &&
         !is_almost_static(zero_motion_accumulator,
                           twopass->kf_zeromotion_pct)) {
+      break;
+    }
+
+    // Some conditions to breakout after min interval.
+    if (i >= active_min_gf_interval &&
+        // If possible don't break very close to a kf
+        (rc->frames_to_key - i >= rc->min_gf_interval) && (i & 0x01) &&
+        !flash_detected &&
+        (mv_ratio_accumulator > mv_ratio_accumulator_thresh ||
+         abs_mv_in_out_accumulator > ARF_ABS_ZOOM_THRESH)) {
       break;
     }
 #else
