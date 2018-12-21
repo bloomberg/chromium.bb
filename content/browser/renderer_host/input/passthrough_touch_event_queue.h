@@ -112,6 +112,7 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
   void FlushQueue();
 
  private:
+  friend class InputRouterImplTestBase;
   friend class PassthroughTouchEventQueueTest;
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
                            TouchScrollStartedUnfiltered);

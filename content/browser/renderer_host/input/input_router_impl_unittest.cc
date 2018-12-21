@@ -436,6 +436,31 @@ class InputRouterImplTestBase : public testing::Test {
     EXPECT_EQ(input_router_->touch_action_filter_.num_of_active_touches_, 0);
   }
 
+  void StopTimeoutMonitorTest(bool compositor_touch_action_enabled) {
+    ResetTouchAction();
+    PressTouchPoint(1, 1);
+    base::Optional<ui::DidOverscrollParams> overscroll;
+    base::Optional<cc::TouchAction> touch_action = cc::kTouchActionPan;
+    input_router_->SendTouchEvent(TouchEventWithLatencyInfo(touch_event_));
+    EXPECT_TRUE(input_router_->touch_event_queue_.IsTimeoutRunningForTesting());
+    input_router_->TouchEventHandled(
+        TouchEventWithLatencyInfo(touch_event_),
+        compositor_touch_action_enabled ? InputEventAckSource::COMPOSITOR_THREAD
+                                        : InputEventAckSource::MAIN_THREAD,
+        ui::LatencyInfo(), INPUT_EVENT_ACK_STATE_NOT_CONSUMED, overscroll,
+        touch_action);
+    if (compositor_touch_action_enabled) {
+      EXPECT_TRUE(
+          input_router_->touch_event_queue_.IsTimeoutRunningForTesting());
+      input_router_->SetTouchActionFromMain(cc::kTouchActionPan);
+      EXPECT_FALSE(
+          input_router_->touch_event_queue_.IsTimeoutRunningForTesting());
+    } else {
+      EXPECT_FALSE(
+          input_router_->touch_event_queue_.IsTimeoutRunningForTesting());
+    }
+  }
+
   void OnTouchEventAckWithAckState(
       InputEventAckSource source,
       InputEventAckState ack_state,
@@ -2060,6 +2085,13 @@ TEST_P(InputRouterImplTest, TouchActionInCallback) {
     EXPECT_FALSE(white_listed_touch_action.has_value());
     EXPECT_EQ(expected_touch_action, allowed_touch_action);
   }
+}
+
+TEST_P(InputRouterImplTest, TimeoutMonitorStopWithMainThreadTouchAction) {
+  SetUpForTouchAckTimeoutTest(1, 1);
+  OnHasTouchEventHandlers(true);
+
+  StopTimeoutMonitorTest(compositor_touch_action_enabled_);
 }
 
 namespace {
