@@ -958,9 +958,9 @@ bool SelectionController::HandleMousePressEvent(
 
   // If we got the event back, that must mean it wasn't prevented,
   // so it's allowed to start a drag or selection if it wasn't in a scrollbar.
-  mouse_down_may_start_select_ =
-      (CanMouseDownStartSelect(event.InnerNode()) || IsLinkSelection(event)) &&
-      !event.GetScrollbar();
+  mouse_down_may_start_select_ = (CanMouseDownStartSelect(event.InnerNode()) ||
+                                  IsSelectionOverLink(event)) &&
+                                 !event.GetScrollbar();
   mouse_down_was_single_click_in_selection_ = false;
   if (!Selection().IsAvailable()) {
     // "gesture-tap-frame-removed.html" reaches here.
@@ -1270,7 +1270,7 @@ FrameSelection& SelectionController::Selection() const {
   return frame_->Selection();
 }
 
-bool IsLinkSelection(const MouseEventWithHitTestResults& event) {
+bool IsSelectionOverLink(const MouseEventWithHitTestResults& event) {
   return (event.Event().GetModifiers() & WebInputEvent::Modifiers::kAltKey) !=
              0 &&
          event.IsOverLink();

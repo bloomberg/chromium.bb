@@ -324,7 +324,7 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
       !(frame_->GetEventHandler()
             .GetSelectionController()
             .HasExtendedSelection() &&
-        IsLinkSelection(mev));
+        IsSelectionOverLink(mev));
   if (!should_dispatch_click_event)
     return WebInputEventResult::kNotHandled;
 
@@ -696,8 +696,8 @@ WebInputEventResult MouseEventManager::HandleMousePressEvent(
 
   bool single_click = event.Event().click_count <= 1;
 
-  mouse_down_may_start_drag_ =
-      single_click && !IsLinkSelection(event) && !IsExtendingSelection(event);
+  mouse_down_may_start_drag_ = single_click && !IsSelectionOverLink(event) &&
+                               !IsExtendingSelection(event);
 
   mouse_down_ = event.Event();
 
