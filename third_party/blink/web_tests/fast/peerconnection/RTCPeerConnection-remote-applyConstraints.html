@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>RTCPeerConnection-ontrack</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+</head>
+<body>
+<script>
+
+const FRAME_RATE_ERROR = 0.5;
+
+promise_test(async t => {
+  const localPc = new RTCPeerConnection();
+  t.add_cleanup(() => localPc.close());
+  const remotePc = new RTCPeerConnection();
+  t.add_cleanup(() => remotePc.close());
+
+  const localStream = await navigator.mediaDevices.getUserMedia({video:true});
+  const [localTrack] = localStream.getTracks();
+  t.add_cleanup(() => localTrack.stop());
+  let remoteTrack = null;
+  let remoteStream = null;
+  localPc.addTrack(localTrack, localStream);
+  remotePc.ontrack = e => {
+    remoteTrack = e.track;
+    remoteStream = e.stream;
+  };
+
+  exchangeIceCandidates(localPc, remotePc);
+
+  const offer = await localPc.createOffer();
+  await localPc.setLocalDescription(offer);
+  await remotePc.setRemoteDescription(offer);
+
+  const answer = await remotePc.createAnswer();
+  await remotePc.setLocalDescription(answer);
+  await localPc.setRemoteDescription(answer);
+
+  const settings = await new Promise((resolve) => {
+    listenForFrames(remoteTrack, resolve);
+  });
+
+  assert_true('frameRate' in settings);
+  assert_true('width' in settings);
+  assert_true('height' in settings);
+
+  const constraints = {
+    frameRate: settings.frameRate / 2,
+    width: settings.width / 2,
+    height: settings.height / 2
+  };
+  remoteTrack.applyConstraints(constraints);
+
+  const constraintSettings = await new Promise((resolve) => {
+    listenForNewSettings(remoteTrack, constraints, resolve);
+  });
+  assert_true(constraintSettings.frameRate - constraints.frameRate <= FRAME_RATE_ERROR);
+  assert_true(constraintSettings.width === constraints.width);
+  assert_true(constraintSettings.height === constraints.height);
+}, 'applyConstraints for remote track.');
+
+function listenForFrames(track, resolve) {
+  const settings = track.getSettings();
+  if ('frameRate' in settings) {
+    resolve(settings);
+    return;
+  }
+  setTimeout(() => listenForFrames(track, resolve), 0);
+}
+
+function listenForNewSettings(track, constraints, resolve) {
+  const settings = track.getSettings();
+  assert_true('frameRate' in settings);
+  assert_true('width' in settings);
+  assert_true('height' in settings);
+  if (settings.frameRate - constraints.frameRate > FRAME_RATE_ERROR ||
+      settings.width != constraints.width ||
+      settings.height != constraints.height) {
+    setTimeout(() => listenForNewSettings(track, constraints, resolve), 0);
+  } else {
+    resolve(settings);
+  }
+}
+
+function exchangeIceCandidates(pc1, pc2) {
+  function doExchange(localPc, remotePc) {
+    localPc.addEventListener('icecandidate', event => {
+      const { candidate } = event;
+      if(candidate && remotePc.signalingState !== 'closed') {
+        remotePc.addIceCandidate(candidate);
+      }
+    });
+  }
+  doExchange(pc1, pc2);
+  doExchange(pc2, pc1);
+}
+
+</script>
+</body>
+</html>

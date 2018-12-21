@@ -93,6 +93,7 @@ class VideoTrackAdapter
   void AddTrack(const MediaStreamVideoTrack* track,
                 VideoCaptureDeliverFrameCB frame_callback,
                 VideoTrackSettingsCallback settings_callback,
+                VideoTrackFormatCallback track_callback,
                 const VideoTrackAdapterSettings& settings);
   void RemoveTrack(const MediaStreamVideoTrack* track);
   void ReconfigureTrack(const MediaStreamVideoTrack* track,
@@ -134,6 +135,7 @@ class VideoTrackAdapter
   void AddTrackOnIO(const MediaStreamVideoTrack* track,
                     VideoCaptureDeliverFrameCB frame_callback,
                     VideoTrackSettingsCallback settings_callback,
+                    VideoTrackFormatCallback track_callback,
                     const VideoTrackAdapterSettings& settings);
   void RemoveTrackOnIO(const MediaStreamVideoTrack* track);
   void ReconfigureTrackOnIO(const MediaStreamVideoTrack* track,
