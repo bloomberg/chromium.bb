@@ -400,19 +400,6 @@ Resource* ResourceFetcher::CachedResource(const KURL& resource_url) const {
   return resource.Get();
 }
 
-void ResourceFetcher::HoldResourcesFromPreviousFetcher(
-    ResourceFetcher* old_fetcher) {
-  DCHECK(resources_from_previous_fetcher_.IsEmpty());
-  for (Resource* resource : old_fetcher->document_resources_) {
-    if (GetMemoryCache()->Contains(resource))
-      resources_from_previous_fetcher_.insert(resource);
-  }
-}
-
-void ResourceFetcher::ClearResourcesFromPreviousFetcher() {
-  resources_from_previous_fetcher_.clear();
-}
-
 blink::mojom::ControllerServiceWorkerMode
 ResourceFetcher::IsControlledByServiceWorker() const {
   return Context().IsControlledByServiceWorker();
@@ -1483,7 +1470,6 @@ FetchContext& ResourceFetcher::Context() const {
 }
 
 void ResourceFetcher::ClearContext() {
-  DCHECK(resources_from_previous_fetcher_.IsEmpty());
   scheduler_->Shutdown();
   ClearPreloads(ResourceFetcher::kClearAllPreloads);
   context_ = Context().Detach();
@@ -1983,7 +1969,6 @@ void ResourceFetcher::Trace(blink::Visitor* visitor) {
   visitor->Trace(non_blocking_loaders_);
   visitor->Trace(cached_resources_map_);
   visitor->Trace(document_resources_);
-  visitor->Trace(resources_from_previous_fetcher_);
   visitor->Trace(preloads_);
   visitor->Trace(matched_preloads_);
   visitor->Trace(resource_timing_info_map_);

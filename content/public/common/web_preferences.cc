@@ -37,14 +37,6 @@ STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_FULLCODE_WITHOUT_HEAT_CHECK,
 STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_LAST,
                    WebSettings::V8CacheOptions::kFullCodeWithoutHeatCheck);
 
-STATIC_ASSERT_ENUM(SavePreviousDocumentResources::NEVER,
-                   WebSettings::SavePreviousDocumentResources::kNever);
-STATIC_ASSERT_ENUM(
-    SavePreviousDocumentResources::UNTIL_ON_DOM_CONTENT_LOADED,
-    WebSettings::SavePreviousDocumentResources::kUntilOnDOMContentLoaded);
-STATIC_ASSERT_ENUM(SavePreviousDocumentResources::UNTIL_ON_LOAD,
-                   WebSettings::SavePreviousDocumentResources::kUntilOnLoad);
-
 STATIC_ASSERT_ENUM(IMAGE_ANIMATION_POLICY_ALLOWED,
                    WebSettings::ImageAnimationPolicy::kAllowed);
 STATIC_ASSERT_ENUM(IMAGE_ANIMATION_POLICY_ANIMATION_ONCE,
@@ -177,7 +169,6 @@ WebPreferences::WebPreferences()
       navigate_on_drag_drop(true),
       v8_cache_options(V8_CACHE_OPTIONS_DEFAULT),
       record_whole_document(false),
-      save_previous_document_resources(SavePreviousDocumentResources::NEVER),
       cookie_enabled(true),
       accelerated_video_decode_enabled(false),
       animation_policy(IMAGE_ANIMATION_POLICY_ALLOWED),

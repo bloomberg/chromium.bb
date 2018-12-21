@@ -462,8 +462,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.use_solid_color_scrollbars = true;
 #endif  // defined(OS_ANDROID)
 
-  prefs.save_previous_document_resources = GetSavePreviousDocumentResources();
-
   prefs.accelerated_video_decode_enabled =
       !command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode);
 

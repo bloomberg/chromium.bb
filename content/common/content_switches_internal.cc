@@ -36,9 +36,6 @@ namespace content {
 
 namespace {
 
-const base::Feature kSavePreviousDocumentResources{
-    "SavePreviousDocumentResources", base::FEATURE_DISABLED_BY_DEFAULT};
-
 #if defined(OS_WIN)
 
 base::string16 ToNativeString(base::StringPiece string) {
@@ -85,29 +82,6 @@ V8CacheOptions GetV8CacheOptions() {
   } else {
     return V8_CACHE_OPTIONS_DEFAULT;
   }
-}
-
-SavePreviousDocumentResources GetSavePreviousDocumentResources() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  std::string save_previous_document_resources =
-      command_line.GetSwitchValueASCII(
-          switches::kSavePreviousDocumentResources);
-  if (save_previous_document_resources == "never")
-    return SavePreviousDocumentResources::NEVER;
-  if (save_previous_document_resources == "onDOMContentLoaded")
-    return SavePreviousDocumentResources::UNTIL_ON_DOM_CONTENT_LOADED;
-  if (save_previous_document_resources == "onload")
-    return SavePreviousDocumentResources::UNTIL_ON_LOAD;
-  // The command line, which is set by the user, takes priority. Otherwise,
-  // fall back to the field trial.
-  std::string until = base::GetFieldTrialParamValueByFeature(
-      kSavePreviousDocumentResources, "until");
-  if (until == "onDOMContentLoaded")
-    return SavePreviousDocumentResources::UNTIL_ON_DOM_CONTENT_LOADED;
-  if (until == "onload")
-    return SavePreviousDocumentResources::UNTIL_ON_LOAD;
-  return SavePreviousDocumentResources::NEVER;
 }
 
 void WaitForDebugger(const std::string& label) {

@@ -61,12 +61,6 @@ class WebSettings {
     kFullCodeWithoutHeatCheck
   };
 
-  enum class SavePreviousDocumentResources {
-    kNever,
-    kUntilOnDOMContentLoaded,
-    kUntilOnLoad
-  };
-
   // Selection strategy defines how the selection granularity changes when the
   // selection extent is moved.
   enum class SelectionStrategyType {
@@ -183,8 +177,6 @@ class WebSettings {
   virtual void SetLoadsImagesAutomatically(bool) = 0;
   virtual void SetLoadWithOverviewMode(bool) = 0;
   virtual void SetShouldReuseGlobalForUnownedMainFrame(bool) = 0;
-  virtual void SetSavePreviousDocumentResources(
-      SavePreviousDocumentResources) = 0;
   virtual void SetLocalStorageEnabled(bool) = 0;
   virtual void SetMainFrameClipsContent(bool) = 0;
   virtual void SetMainFrameResizesAreOrientationChanges(bool) = 0;
