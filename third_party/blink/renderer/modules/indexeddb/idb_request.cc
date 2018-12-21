@@ -120,7 +120,6 @@ IDBRequest* IDBRequest::Create(ScriptState* script_state,
                                IDBRequest::AsyncTraceState metrics) {
   IDBRequest* request = MakeGarbageCollected<IDBRequest>(
       script_state, source, transaction, std::move(metrics));
-  request->PauseIfNeeded();
   // Requests associated with IDBFactory (open/deleteDatabase/getDatabaseNames)
   // do not have an associated transaction.
   if (transaction)
@@ -132,7 +131,7 @@ IDBRequest::IDBRequest(ScriptState* script_state,
                        const Source& source,
                        IDBTransaction* transaction,
                        AsyncTraceState metrics)
-    : PausableObject(ExecutionContext::From(script_state)),
+    : ContextLifecycleObserver(ExecutionContext::From(script_state)),
       transaction_(transaction),
       isolate_(script_state->GetIsolate()),
       metrics_(std::move(metrics)),
@@ -153,7 +152,7 @@ void IDBRequest::Trace(blink::Visitor* visitor) {
   visitor->Trace(event_queue_);
   visitor->Trace(pending_cursor_);
   EventTargetWithInlineData::Trace(visitor);
-  PausableObject::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 ScriptValue IDBRequest::result(ScriptState* script_state,
@@ -627,7 +626,7 @@ const AtomicString& IDBRequest::InterfaceName() const {
 }
 
 ExecutionContext* IDBRequest::GetExecutionContext() const {
-  return PausableObject::GetExecutionContext();
+  return ContextLifecycleObserver::GetExecutionContext();
 }
 
 DispatchEventResult IDBRequest::DispatchEventInternal(Event& event) {

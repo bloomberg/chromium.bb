@@ -44,10 +44,8 @@ IDBOpenDBRequest* IDBOpenDBRequest::Create(
     int64_t transaction_id,
     int64_t version,
     IDBRequest::AsyncTraceState metrics) {
-  IDBOpenDBRequest* request = MakeGarbageCollected<IDBOpenDBRequest>(
+  return MakeGarbageCollected<IDBOpenDBRequest>(
       script_state, callbacks, transaction_id, version, std::move(metrics));
-  request->PauseIfNeeded();
-  return request;
 }
 
 IDBOpenDBRequest::IDBOpenDBRequest(ScriptState* script_state,
