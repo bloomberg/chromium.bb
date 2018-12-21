@@ -101,6 +101,8 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -184,6 +186,13 @@ bool CanBookmarkCurrentPageInternal(const Browser* browser,
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+const extensions::Extension* GetExtensionForBrowser(Browser* browser) {
+  return extensions::ExtensionRegistry::Get(browser->profile())
+      ->GetExtensionById(
+          web_app::GetAppIdFromApplicationName(browser->app_name()),
+          extensions::ExtensionRegistry::EVERYTHING);
+}
+
 bool GetBookmarkOverrideCommand(Profile* profile,
                                 const extensions::Extension** extension,
                                 extensions::Command* command) {
@@ -512,14 +521,9 @@ void Home(Browser* browser, WindowOpenDisposition disposition) {
   // With bookmark apps enabled, hosted apps should return to their launch page
   // when the home button is pressed.
   if (browser->is_app()) {
-    const extensions::Extension* extension =
-        extensions::ExtensionRegistry::Get(browser->profile())
-            ->GetExtensionById(
-                web_app::GetAppIdFromApplicationName(browser->app_name()),
-                extensions::ExtensionRegistry::EVERYTHING);
+    const extensions::Extension* extension = GetExtensionForBrowser(browser);
     if (!extension)
       return;
-
     url = extensions::AppLaunchInfo::GetLaunchWebURL(extension);
   }
 
@@ -576,6 +580,20 @@ void Stop(Browser* browser) {
 }
 
 void NewWindow(Browser* browser) {
+#if BUILDFLAG(ENABLE_EXTENSIONS) && defined(OS_MACOSX)
+  // With bookmark apps enabled, hosted apps should open a window to their
+  // launch page.
+  const extensions::Extension* extension = GetExtensionForBrowser(browser);
+  if (extension && extension->is_hosted_app()) {
+    const auto app_launch_params = CreateAppLaunchParamsUserContainer(
+        browser->profile(), extension, WindowOpenDisposition::NEW_WINDOW,
+        extensions::SOURCE_KEYBOARD);
+    OpenApplicationWindow(
+        app_launch_params,
+        extensions::AppLaunchInfo::GetLaunchWebURL(extension));
+    return;
+  }
+#endif
   NewEmptyWindow(browser->profile()->GetOriginalProfile());
 }
 
