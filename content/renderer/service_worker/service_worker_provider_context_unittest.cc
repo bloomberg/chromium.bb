@@ -16,7 +16,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/common/service_worker/service_worker_container.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_type.h"
@@ -29,6 +28,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
@@ -214,14 +214,14 @@ class FakeControllerServiceWorker
 };
 
 class FakeServiceWorkerContainerHost
-    : public mojom::ServiceWorkerContainerHost {
+    : public blink::mojom::ServiceWorkerContainerHost {
  public:
   explicit FakeServiceWorkerContainerHost(
-      mojom::ServiceWorkerContainerHostAssociatedRequest request)
+      blink::mojom::ServiceWorkerContainerHostAssociatedRequest request)
       : associated_binding_(this, std::move(request)) {}
   ~FakeServiceWorkerContainerHost() override = default;
 
-  // Implements mojom::ServiceWorkerContainerHost.
+  // Implements blink::mojom::ServiceWorkerContainerHost.
   void Register(const GURL& script_url,
                 blink::mojom::ServiceWorkerRegistrationOptionsPtr options,
                 RegisterCallback callback) override {
@@ -240,19 +240,19 @@ class FakeServiceWorkerContainerHost
   }
   void EnsureControllerServiceWorker(
       blink::mojom::ControllerServiceWorkerRequest request,
-      mojom::ControllerServiceWorkerPurpose purpose) override {
+      blink::mojom::ControllerServiceWorkerPurpose purpose) override {
     NOTIMPLEMENTED();
   }
   void CloneContainerHost(
-      mojom::ServiceWorkerContainerHostRequest request) override {
+      blink::mojom::ServiceWorkerContainerHostRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
   void Ping(PingCallback callback) override { NOTIMPLEMENTED(); }
   void HintToUpdateServiceWorker() override { NOTIMPLEMENTED(); }
 
  private:
-  mojo::BindingSet<mojom::ServiceWorkerContainerHost> bindings_;
-  mojo::AssociatedBinding<mojom::ServiceWorkerContainerHost>
+  mojo::BindingSet<blink::mojom::ServiceWorkerContainerHost> bindings_;
+  mojo::AssociatedBinding<blink::mojom::ServiceWorkerContainerHost>
       associated_binding_;
   DISALLOW_COPY_AND_ASSIGN(FakeServiceWorkerContainerHost);
 };
@@ -314,8 +314,8 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
     // (1) In the case there is no WebSWProviderClient but SWProviderContext for
     // the provider, the passed reference should be adopted and owned by the
     // provider context.
-    mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
-    mojom::ServiceWorkerContainerAssociatedRequest container_request =
+    blink::mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
+    blink::mojom::ServiceWorkerContainerAssociatedRequest container_request =
         mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
     auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
         kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
@@ -350,12 +350,12 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
     // context and then be transfered ownership to the provider client, after
     // that due to limitation of the mock implementation, the reference
     // immediately gets released.
-    mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info;
-    mojom::ServiceWorkerContainerHostAssociatedRequest host_request =
+    blink::mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info;
+    blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request =
         mojo::MakeRequest(&host_ptr_info);
 
-    mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
-    mojom::ServiceWorkerContainerAssociatedRequest container_request =
+    blink::mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
+    blink::mojom::ServiceWorkerContainerAssociatedRequest container_request =
         mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
     auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
         kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
@@ -385,12 +385,12 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
 TEST_F(ServiceWorkerProviderContextTest, SetController_Null) {
   const int kProviderId = 10;
 
-  mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info;
-  mojom::ServiceWorkerContainerHostAssociatedRequest host_request =
+  blink::mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info;
+  blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request =
       mojo::MakeRequest(&host_ptr_info);
 
-  mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
-  mojom::ServiceWorkerContainerAssociatedRequest container_request =
+  blink::mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
+  blink::mojom::ServiceWorkerContainerAssociatedRequest container_request =
       mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
       kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
@@ -417,11 +417,11 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
 
   // Make the ServiceWorkerContainerHost implementation and
   // ServiceWorkerContainer request.
-  mojom::ServiceWorkerContainerHostAssociatedPtr host_ptr;
+  blink::mojom::ServiceWorkerContainerHostAssociatedPtr host_ptr;
   FakeServiceWorkerContainerHost host(
       mojo::MakeRequestAssociatedWithDedicatedPipe(&host_ptr));
-  mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
-  mojom::ServiceWorkerContainerAssociatedRequest container_request =
+  blink::mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
+  blink::mojom::ServiceWorkerContainerAssociatedRequest container_request =
       mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
 
   // (1) Test if setting the controller via the CTOR works.
@@ -619,8 +619,8 @@ TEST_F(ServiceWorkerProviderContextTest, ControllerWithoutFetchHandler) {
       blink::mojom::ControllerServiceWorkerMode::kNoFetchEventHandler;
   controller_info->object_info = std::move(object_info);
 
-  mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
-  mojom::ServiceWorkerContainerAssociatedRequest container_request =
+  blink::mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
+  blink::mojom::ServiceWorkerContainerAssociatedRequest container_request =
       mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
       kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
@@ -642,12 +642,12 @@ TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
       mock_service_worker_object_host->CreateObjectInfo();
   EXPECT_EQ(1, mock_service_worker_object_host->GetBindingCount());
 
-  mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info;
-  mojom::ServiceWorkerContainerHostAssociatedRequest host_request =
+  blink::mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info;
+  blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request =
       mojo::MakeRequest(&host_ptr_info);
 
-  mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
-  mojom::ServiceWorkerContainerAssociatedRequest container_request =
+  blink::mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
+  blink::mojom::ServiceWorkerContainerAssociatedRequest container_request =
       mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
       kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
@@ -672,12 +672,12 @@ TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
 TEST_F(ServiceWorkerProviderContextTest, CountFeature) {
   const int kProviderId = 10;
 
-  mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info;
-  mojom::ServiceWorkerContainerHostAssociatedRequest host_request =
+  blink::mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info;
+  blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request =
       mojo::MakeRequest(&host_ptr_info);
 
-  mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
-  mojom::ServiceWorkerContainerAssociatedRequest container_request =
+  blink::mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
+  blink::mojom::ServiceWorkerContainerAssociatedRequest container_request =
       mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
       kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,

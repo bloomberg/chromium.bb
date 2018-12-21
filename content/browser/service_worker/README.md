@@ -5,7 +5,7 @@
 [content/common/service_worker]: /content/common/service_worker
 [disk_cache]: /net/disk_cache/README.md
 [embedded_worker.mojom]: https://codesearch.chromium.org/chromium/src/content/common/service_worker/embedded_worker.mojom
-[service_worker_container.mojom]: https://codesearch.chromium.org/chromium/src/content/common/service_worker/service_worker_container.mojom
+[service_worker_container.mojom]: https://codesearch.chromium.org/chromium/src/third_party/blink/public/mojom/service_worker/service_worker_container.mojom
 [service_worker_database.h]: https://codesearch.chromium.org/chromium/src/content/browser/service_worker/service_worker_database.h
 [third_party/blink/common/service_worker]: /third_party/blink/common/service_worker
 [third_party/blink/public/common/service_worker]: /third_party/blink/public/common/service_worker

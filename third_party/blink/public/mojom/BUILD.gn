@@ -156,6 +156,7 @@ mojom("mojom_core") {
     "portal/portal.mojom",
     "service_worker/controller_service_worker.mojom",
     "service_worker/service_worker.mojom",
+    "service_worker/service_worker_container.mojom",
     "service_worker/service_worker_object.mojom",
     "service_worker/service_worker_registration.mojom",
   ]
@@ -166,6 +167,7 @@ mojom("mojom_core") {
     "//mojo/public/mojom/base",
     "//services/network/public/mojom",
     "//skia/public/interfaces",
+    "//third_party/blink/public:web_feature_mojo_bindings",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]

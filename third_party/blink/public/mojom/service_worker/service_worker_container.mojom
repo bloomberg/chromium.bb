@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module content.mojom;
+module blink.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
 import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
@@ -43,10 +43,10 @@ interface ServiceWorkerContainerHost {
   // On success, |error| is kNone with |registration| set.
   // Otherwise, |error| and |error_msg| describe the failure.
   Register(url.mojom.Url script_url,
-           blink.mojom.ServiceWorkerRegistrationOptions options)
-    => (blink.mojom.ServiceWorkerErrorType error,
+           ServiceWorkerRegistrationOptions options)
+    => (ServiceWorkerErrorType error,
         string? error_msg,
-        blink.mojom.ServiceWorkerRegistrationObjectInfo? registration);
+        ServiceWorkerRegistrationObjectInfo? registration);
 
   // Corresponds to navigator.serviceWorker.getRegistration().
   // Gets the service worker registration for the |client_url|.
@@ -55,9 +55,9 @@ interface ServiceWorkerContainerHost {
   // uninstalling, |error| is still kNone but with null |registration|.
   // Otherwise, |error| and |error_msg| describe the failure.
   GetRegistration(url.mojom.Url client_url)
-    => (blink.mojom.ServiceWorkerErrorType error,
+    => (ServiceWorkerErrorType error,
         string? error_msg,
-        blink.mojom.ServiceWorkerRegistrationObjectInfo? registration);
+        ServiceWorkerRegistrationObjectInfo? registration);
 
   // Corresponds to navigator.serviceWorker.getRegistrations().
   // Gets all service worker registrations which have the same origin with
@@ -65,16 +65,16 @@ interface ServiceWorkerContainerHost {
   // On success, |error| is kNone with |infos| set. Otherwise, |error| and
   // |error_msg| describe the failure.
   GetRegistrations()
-    => (blink.mojom.ServiceWorkerErrorType error,
+    => (ServiceWorkerErrorType error,
         string? error_msg,
-        array<blink.mojom.ServiceWorkerRegistrationObjectInfo>? infos);
+        array<ServiceWorkerRegistrationObjectInfo>? infos);
 
   // Corresponds to navigator.serviceWorker.ready.
   // Returns the service worker registration for the ServiceWorkerContainer that
   // this interface hosts, once such a registration exists and has an active
   // service worker.
   GetRegistrationForReady()
-    => (blink.mojom.ServiceWorkerRegistrationObjectInfo? registration);
+    => (ServiceWorkerRegistrationObjectInfo? registration);
 
   // S13nServiceWorker:
   // Returns a Mojo end point to the controller ServiceWorker. This may start a
@@ -86,7 +86,7 @@ interface ServiceWorkerContainerHost {
   // reported to the controllees, but the browser process is responsible for
   // properly handling the failure and recording the reasons.
   // |purpose| is used for UMA.
-  EnsureControllerServiceWorker(blink.mojom.ControllerServiceWorker& controller,
+  EnsureControllerServiceWorker(ControllerServiceWorker& controller,
                                 ControllerServiceWorkerPurpose purpose);
 
   // S13nServiceWorker:
@@ -132,17 +132,17 @@ interface ServiceWorkerContainer {
   // features the controller has used, for UseCounter purposes.
   // If |should_notify_controllerchange| is true, dispatch a 'controllerchange'
   // event.
-  SetController(blink.mojom.ControllerServiceWorkerInfo controller_info,
-                array<blink.mojom.WebFeature> used_features,
+  SetController(ControllerServiceWorkerInfo controller_info,
+                array<WebFeature> used_features,
                 bool should_notify_controllerchange);
 
   // Corresponds to Client#postMessage().
   // Sends |message| from the service worker |source| to this service worker
   // client.
-  PostMessageToClient(blink.mojom.ServiceWorkerObjectInfo source,
-                      blink.mojom.TransferableMessage message);
+  PostMessageToClient(ServiceWorkerObjectInfo source,
+                      TransferableMessage message);
 
   // Notifies this service worker client that its controller used a |feature|,
   // for UseCounter purposes.
-  CountFeature(blink.mojom.WebFeature feature);
+  CountFeature(WebFeature feature);
 };

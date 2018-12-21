@@ -14,7 +14,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "content/common/service_worker/service_worker_container.mojom.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_type.h"
@@ -33,6 +32,7 @@
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "url/origin.h"
 
@@ -400,7 +400,7 @@ class FakeControllerServiceWorker
 };
 
 class FakeServiceWorkerContainerHost
-    : public mojom::ServiceWorkerContainerHost {
+    : public blink::mojom::ServiceWorkerContainerHost {
  public:
   explicit FakeServiceWorkerContainerHost(
       FakeControllerServiceWorker* fake_controller)
@@ -416,7 +416,7 @@ class FakeServiceWorkerContainerHost
     return get_controller_service_worker_count_;
   }
 
-  // Implements mojom::ServiceWorkerContainerHost.
+  // Implements blink::mojom::ServiceWorkerContainerHost.
   void Register(const GURL& script_url,
                 blink::mojom::ServiceWorkerRegistrationOptionsPtr options,
                 RegisterCallback callback) override {
@@ -435,14 +435,14 @@ class FakeServiceWorkerContainerHost
   }
   void EnsureControllerServiceWorker(
       blink::mojom::ControllerServiceWorkerRequest request,
-      mojom::ControllerServiceWorkerPurpose purpose) override {
+      blink::mojom::ControllerServiceWorkerPurpose purpose) override {
     get_controller_service_worker_count_++;
     if (!fake_controller_)
       return;
     fake_controller_->Clone(std::move(request));
   }
   void CloneContainerHost(
-      mojom::ServiceWorkerContainerHostRequest request) override {
+      blink::mojom::ServiceWorkerContainerHostRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
   void Ping(PingCallback callback) override { NOTIMPLEMENTED(); }
@@ -451,7 +451,7 @@ class FakeServiceWorkerContainerHost
  private:
   int get_controller_service_worker_count_ = 0;
   FakeControllerServiceWorker* fake_controller_;
-  mojo::BindingSet<mojom::ServiceWorkerContainerHost> bindings_;
+  mojo::BindingSet<blink::mojom::ServiceWorkerContainerHost> bindings_;
   DISALLOW_COPY_AND_ASSIGN(FakeServiceWorkerContainerHost);
 };
 
@@ -495,7 +495,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
 
   network::mojom::URLLoaderFactoryPtr CreateSubresourceLoaderFactory() {
     if (!connector_) {
-      mojom::ServiceWorkerContainerHostPtrInfo host_ptr_info;
+      blink::mojom::ServiceWorkerContainerHostPtrInfo host_ptr_info;
       fake_container_host_.CloneContainerHost(
           mojo::MakeRequest(&host_ptr_info));
       connector_ = base::MakeRefCounted<ControllerServiceWorkerConnector>(

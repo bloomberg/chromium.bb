@@ -247,7 +247,7 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
   response_callback_binding_.Bind(mojo::MakeRequest(&response_callback_ptr));
   blink::mojom::ControllerServiceWorker* controller =
       controller_connector_->GetControllerServiceWorker(
-          mojom::ControllerServiceWorkerPurpose::FETCH_SUB_RESOURCE);
+          blink::mojom::ControllerServiceWorkerPurpose::FETCH_SUB_RESOURCE);
 
   response_head_.load_timing.send_start = base::TimeTicks::Now();
   response_head_.load_timing.send_end = base::TimeTicks::Now();

@@ -34,7 +34,7 @@ namespace content {
 namespace {
 
 void CreateSubresourceLoaderFactoryForProviderContext(
-    mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
+    blink::mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
     blink::mojom::ControllerServiceWorkerPtrInfo controller_ptr_info,
     const std::string& client_id,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info,
@@ -58,8 +58,8 @@ void CreateSubresourceLoaderFactoryForProviderContext(
 ServiceWorkerProviderContext::ServiceWorkerProviderContext(
     int provider_id,
     blink::mojom::ServiceWorkerProviderType provider_type,
-    mojom::ServiceWorkerContainerAssociatedRequest request,
-    mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info,
+    blink::mojom::ServiceWorkerContainerAssociatedRequest request,
+    blink::mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory)
     : provider_type_(provider_type),
@@ -83,8 +83,8 @@ ServiceWorkerProviderContext::ServiceWorkerProviderContext(
 // For service worker execution contexts.
 ServiceWorkerProviderContext::ServiceWorkerProviderContext(
     int provider_id,
-    mojom::ServiceWorkerContainerAssociatedRequest request,
-    mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info)
+    blink::mojom::ServiceWorkerContainerAssociatedRequest request,
+    blink::mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info)
     : provider_type_(
           blink::mojom::ServiceWorkerProviderType::kForServiceWorker),
       provider_id_(provider_id),
@@ -154,7 +154,7 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactory() {
   return state->subresource_loader_factory.get();
 }
 
-mojom::ServiceWorkerContainerHost*
+blink::mojom::ServiceWorkerContainerHost*
 ServiceWorkerProviderContext::container_host() const {
   DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForWindow,
             provider_type_);
@@ -202,12 +202,12 @@ void ServiceWorkerProviderContext::CloneWorkerClientRegistry(
       this, std::move(request));
 }
 
-mojom::ServiceWorkerContainerHostPtrInfo
+blink::mojom::ServiceWorkerContainerHostPtrInfo
 ServiceWorkerProviderContext::CloneContainerHostPtrInfo() {
   DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(state_for_client_);
-  mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info;
+  blink::mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info;
   container_host_->CloneContainerHost(
       mojo::MakeRequest(&container_host_ptr_info));
   return container_host_ptr_info;

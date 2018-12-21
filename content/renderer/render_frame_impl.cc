@@ -3727,7 +3727,7 @@ RenderFrameImpl::CreateWorkerFetchContext() {
   mojom::ServiceWorkerWorkerClientRequest service_worker_client_request;
   mojom::ServiceWorkerWorkerClientRegistryPtrInfo
       service_worker_worker_client_registry_ptr_info;
-  mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info;
+  blink::mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info;
   ServiceWorkerProviderContext* provider_context = provider->context();
   // Some sandboxed iframes are not allowed to use service worker so don't have
   // a real service worker provider, so the provider context is null.

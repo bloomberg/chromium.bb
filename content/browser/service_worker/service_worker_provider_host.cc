@@ -143,9 +143,9 @@ void GetInterfaceImpl(const std::string& interface_name,
 }
 
 ServiceWorkerMetrics::EventType PurposeToEventType(
-    mojom::ControllerServiceWorkerPurpose purpose) {
+    blink::mojom::ControllerServiceWorkerPurpose purpose) {
   switch (purpose) {
-    case mojom::ControllerServiceWorkerPurpose::FETCH_SUB_RESOURCE:
+    case blink::mojom::ControllerServiceWorkerPurpose::FETCH_SUB_RESOURCE:
       return ServiceWorkerMetrics::EventType::FETCH_SUB_RESOURCE;
   }
   NOTREACHED();
@@ -818,7 +818,7 @@ void ServiceWorkerProviderHost::CompleteNavigationInitialized(
 
   SetExecutionReady();
 
-  // Connect with the mojom::ServiceWorkerContainer on the renderer.
+  // Connect with the blink::mojom::ServiceWorkerContainer on the renderer.
   DCHECK(!container_.is_bound());
   DCHECK(!binding_.is_bound());
   container_.Bind(std::move(info->client_ptr_info));
@@ -1257,7 +1257,7 @@ void ServiceWorkerProviderHost::StartControllerComplete(
 
 void ServiceWorkerProviderHost::EnsureControllerServiceWorker(
     blink::mojom::ControllerServiceWorkerRequest controller_request,
-    mojom::ControllerServiceWorkerPurpose purpose) {
+    blink::mojom::ControllerServiceWorkerPurpose purpose) {
   // TODO(kinuko): Log the reasons we drop the request.
   if (!IsContextAlive() || !controller_)
     return;
@@ -1270,7 +1270,7 @@ void ServiceWorkerProviderHost::EnsureControllerServiceWorker(
 }
 
 void ServiceWorkerProviderHost::CloneContainerHost(
-    mojom::ServiceWorkerContainerHostRequest container_host_request) {
+    blink::mojom::ServiceWorkerContainerHostRequest container_host_request) {
   DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   additional_bindings_.AddBinding(this, std::move(container_host_request));
 }

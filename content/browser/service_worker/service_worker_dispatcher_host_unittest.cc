@@ -44,8 +44,8 @@ static void SaveStatusCallback(bool* called,
 }
 
 struct RemoteProviderInfo {
-  mojom::ServiceWorkerContainerHostAssociatedPtr host_ptr;
-  mojom::ServiceWorkerContainerAssociatedRequest client_request;
+  blink::mojom::ServiceWorkerContainerHostAssociatedPtr host_ptr;
+  blink::mojom::ServiceWorkerContainerAssociatedRequest client_request;
 };
 
 std::unique_ptr<ServiceWorkerNavigationHandleCore> CreateNavigationHandleCore(
@@ -141,7 +141,7 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     DCHECK(!host_info->client_ptr_info.is_valid());
 
     RemoteProviderInfo remote_info;
-    mojom::ServiceWorkerContainerAssociatedPtrInfo client;
+    blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client;
     remote_info.client_request = mojo::MakeRequest(&client);
     host_info->host_request = mojo::MakeRequest(&remote_info.host_ptr);
     host_info->client_ptr_info = std::move(client);

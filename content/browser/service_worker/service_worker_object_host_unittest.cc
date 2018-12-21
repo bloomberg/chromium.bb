@@ -179,8 +179,9 @@ class ServiceWorkerObjectHostTest : public testing::Test {
   }
 
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
-  GetRegistrationFromRemote(mojom::ServiceWorkerContainerHost* container_host,
-                            const GURL& scope) {
+  GetRegistrationFromRemote(
+      blink::mojom::ServiceWorkerContainerHost* container_host,
+      const GURL& scope) {
     blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info;
     base::RunLoop run_loop;
     container_host->GetRegistration(

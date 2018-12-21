@@ -11,9 +11,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_container.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
 
 namespace content {
 
@@ -63,14 +63,14 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
   // will be created on a different thread from the thread that has the
   // original |container_host|).
   ControllerServiceWorkerConnector(
-      mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
+      blink::mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
       blink::mojom::ControllerServiceWorkerPtr controller_ptr,
       const std::string& client_id);
 
   // This may return nullptr if the connection to the ContainerHost (in the
   // browser process) is already terminated.
   blink::mojom::ControllerServiceWorker* GetControllerServiceWorker(
-      mojom::ControllerServiceWorkerPurpose purpose);
+      blink::mojom::ControllerServiceWorkerPurpose purpose);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -101,7 +101,7 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
   mojo::BindingSet<blink::mojom::ControllerServiceWorkerConnector> bindings_;
 
   // Connection to the container host in the browser process.
-  mojom::ServiceWorkerContainerHostPtr container_host_ptr_;
+  blink::mojom::ServiceWorkerContainerHostPtr container_host_ptr_;
 
   // Connection to the controller service worker, which lives in a renderer
   // process that's not necessarily the same as this connector.
