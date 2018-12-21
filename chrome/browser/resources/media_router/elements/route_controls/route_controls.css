@@ -24,7 +24,7 @@
   transform: scaleX(-1);
 }
 
-:host-context([dir='rtl']) #route-volume-slider {
+:host-context([dir='rtl']) #volume-holder {
   transform: scaleX(-1);
 }
 
@@ -51,9 +51,9 @@
 }
 
 #route-time-slider {
-  --paper-slider-knob-color: rgb(16, 16, 16);
-  --paper-slider-active-color: rgb(16, 16, 16);
-  --paper-slider-pin-color: rgb(16, 16, 16);
+  --cr-slider-active-color: rgb(16, 16, 16);
+  --cr-slider-container-color: rgba(16, 16, 16, .24);
+  --cr-slider-knob-color: rgb(16, 16, 16);
   width: 100%;
 }
 
@@ -63,9 +63,9 @@
 }
 
 #route-volume-slider {
-  --paper-slider-knob-color: rgb(16, 16, 16);
-  --paper-slider-active-color: rgb(33, 150, 243);
-  --paper-slider-pin-color: rgb(16, 16, 16);
+  --cr-slider-active-color: rgb(33, 150, 243);
+  --cr-slider-container-color: rgba(16, 16, 16, .24);
+  --cr-slider-knob-color: rgb(16, 16, 16);
   width: 100%;
 }
 

@@ -76,7 +76,7 @@
 
     /** @override */
     attached: function() {
-      this.isRtl_ = this.matches(':host-context([dir=rtl]) cr-slider');
+      this.isRtl_ = this.matches(':host-context([dir=rtl]) cr-radio-group');
       this.deltaKeyMap_ = new Map([
         ['ArrowDown', 1],
         ['ArrowLeft', this.isRtl_ ? 1 : -1],

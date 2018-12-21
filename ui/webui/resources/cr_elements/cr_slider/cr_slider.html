@@ -38,7 +38,8 @@
       }
 
       #barContainer {
-        border-top-color: var(--cr-slider-container-color, var(--google-blue-600-opacity-24));
+        border-top-color: var(--cr-slider-container-color,
+            var(--google-blue-600-opacity-24));
         height: var(--cr-slider-bar-height);
         margin: 0 16px;
         position: absolute;
@@ -52,18 +53,12 @@
 
       #bar {
         border-top-color: var(--cr-slider-active-color, var(--google-blue-600));
-        left: 0;
         position: absolute;
         width: 0;
       }
 
       :host([transiting_]) #bar {
         transition: width var(--cr-slider-position-transition);
-      }
-
-      :host([is-rtl_]) #bar {
-        left: initial;
-        right: 0;
       }
 
       #knobContainer {

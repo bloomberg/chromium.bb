@@ -283,16 +283,21 @@ cr_slider.SliderTick;
       if (event.metaKey || event.shiftKey || event.altKey || event.ctrlKey)
         return;
 
+      /** @type {number|undefined} */
+      let newValue;
       if (event.key == 'Home') {
-        this.updateValue_(this.min);
+        newValue = this.min;
       } else if (event.key == 'End') {
-        this.updateValue_(this.max);
+        newValue = this.max;
       } else if (this.deltaKeyMap_.has(event.key)) {
-        this.updateValue_(this.value + this.deltaKeyMap_.get(event.key));
-      } else {
-        return;
+        newValue = this.value + this.deltaKeyMap_.get(event.key);
       }
 
+      if (newValue == undefined)
+        return;
+
+      if (this.updateValue_(newValue))
+        this.fire('cr-slider-value-changed');
       event.preventDefault();
       event.stopPropagation();
       setTimeout(() => {
@@ -364,9 +369,7 @@ cr_slider.SliderTick;
 
     /** @private */
     onTicksChanged_: function() {
-      if (this.ticks.length == 0) {
-        this.snaps = false;
-      } else if (this.ticks.length > 1) {
+      if (this.ticks.length > 1) {
         this.snaps = true;
         this.max = this.ticks.length - 1;
         this.min = 0;
@@ -423,15 +426,17 @@ cr_slider.SliderTick;
 
     /**
      * @param {number} value
+     * @return {boolean}
      * @private
      */
     updateValue_: function(value) {
-      let validValue = clamp(this.min, this.max, value);
-      validValue = this.snaps ? Math.round(validValue) : validValue;
-      if (this.value != validValue) {
-        this.value = validValue;
-        this.fire('cr-slider-value-changed');
+      value = this.snaps ? Math.round(value) : value;
+      value = clamp(this.min, this.max, value);
+      if (this.value == value) {
+        return false;
       }
+      this.value = value;
+      return true;
     },
 
     /**
@@ -443,7 +448,8 @@ cr_slider.SliderTick;
       let ratio = (clientX - rect.left) / rect.width;
       if (this.isRtl_)
         ratio = 1 - ratio;
-      this.updateValue_(ratio * (this.max - this.min) + this.min);
+      if (this.updateValue_(ratio * (this.max - this.min) + this.min))
+        this.fire('cr-slider-value-changed');
     },
 
     _createRipple: function() {
