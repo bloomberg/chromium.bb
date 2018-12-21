@@ -771,8 +771,9 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   bool SupportsARIASetSizeAndPosInSet() const;
 
   // ARIA live-region features.
-  bool IsLiveRegion() const;
-  AXObject* LiveRegionRoot() const;
+  bool IsLiveRegionRoot() const;  // Any live region, including polite="off".
+  bool IsActiveLiveRegionRoot() const;  // Live region that is not polite="off".
+  AXObject* LiveRegionRoot() const;  // Container that controls live politeness.
   virtual const AtomicString& LiveRegionStatus() const { return g_null_atom; }
   virtual const AtomicString& LiveRegionRelevant() const { return g_null_atom; }
   bool LiveRegionAtomic() const;

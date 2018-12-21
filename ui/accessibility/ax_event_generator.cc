@@ -203,7 +203,9 @@ void AXEventGenerator::OnStringAttributeChanged(AXTree* tree,
     case ax::mojom::StringAttribute::kLiveStatus:
       // TODO(accessibility): tree in the midst of updates. Disallow access to
       // |node|.
-      if (node->data().role != ax::mojom::Role::kAlert)
+      if (node->data().GetStringAttribute(
+              ax::mojom::StringAttribute::kLiveStatus) != "off" &&
+          node->data().role != ax::mojom::Role::kAlert)
         AddEvent(node, Event::LIVE_REGION_CREATED);
       break;
     default:
@@ -350,7 +352,8 @@ void AXEventGenerator::OnAtomicUpdateFinished(
               ax::mojom::StringAttribute::kLiveStatus)) {
         if (change.node->data().role == ax::mojom::Role::kAlert)
           AddEvent(change.node, Event::ALERT);
-        else
+        else if (change.node->data().GetStringAttribute(
+                     ax::mojom::StringAttribute::kLiveStatus) != "off")
           AddEvent(change.node, Event::LIVE_REGION_CREATED);
       } else if (change.node->data().HasStringAttribute(
                      ax::mojom::StringAttribute::kContainerLiveStatus) &&
@@ -374,7 +377,9 @@ void AXEventGenerator::FireLiveRegionEvents(AXNode* node) {
     live_root = live_root->parent();
 
   if (live_root &&
-      !live_root->data().GetBoolAttribute(ax::mojom::BoolAttribute::kBusy)) {
+      !live_root->data().GetBoolAttribute(ax::mojom::BoolAttribute::kBusy) &&
+      live_root->data().GetStringAttribute(
+          ax::mojom::StringAttribute::kLiveStatus) != "off") {
     // Fire LIVE_REGION_NODE_CHANGED on each node that changed.
     if (!node->data()
              .GetStringAttribute(ax::mojom::StringAttribute::kName)

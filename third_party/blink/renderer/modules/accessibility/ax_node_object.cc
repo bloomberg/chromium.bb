@@ -2530,17 +2530,25 @@ void AXNodeObject::ChildrenChanged() {
     // update.
 
     // If this element supports ARIA live regions, then notify the AT of
-    // changes.
-    if (parent->IsLiveRegion()) {
-      AXObjectCache().PostNotification(parent,
-                                       ax::mojom::Event::kLiveRegionChanged);
+    // changes. Do not fire live region changed events if aria-live="off".
+    if (parent->IsLiveRegionRoot()) {
+      if (parent->IsActiveLiveRegionRoot()) {
+        AXObjectCache().PostNotification(parent,
+                                         ax::mojom::Event::kLiveRegionChanged);
+      }
+      break;
     }
+  }
 
+  for (AXObject* parent = this; parent;
+       parent = parent->ParentObjectIfExists()) {
     // If this element is an ARIA text box or content editable, post a "value
     // changed" notification on it so that it behaves just like a native input
     // element or textarea.
-    if (IsNonNativeTextControl())
+    if (IsNonNativeTextControl()) {
       AXObjectCache().PostNotification(parent, ax::mojom::Event::kValueChanged);
+      break;
+    }
   }
 }
 
@@ -2610,14 +2618,27 @@ void AXNodeObject::TextChanged() {
     if (!parent)
       continue;
 
-    if (parent->IsLiveRegion())
-      cache.PostNotification(parent_node, ax::mojom::Event::kLiveRegionChanged);
+    if (parent->IsLiveRegionRoot()) {
+      if (parent->IsActiveLiveRegionRoot()) {
+        cache.PostNotification(parent_node,
+                               ax::mojom::Event::kLiveRegionChanged);
+      }
+      break;
+    }
+  }
 
-    // If this element is an ARIA text box or content editable, post a "value
-    // changed" notification on it so that it behaves just like a native input
-    // element or textarea.
-    if (parent->IsNonNativeTextControl())
+  // If this element is an ARIA text box or content editable, post a "value
+  // changed" notification on it so that it behaves just like a native input
+  // element or textarea.
+  for (Node* parent_node = GetNode(); parent_node;
+       parent_node = parent_node->parentNode()) {
+    AXObject* parent = cache.Get(parent_node);
+    if (!parent)
+      continue;
+    if (parent->IsNonNativeTextControl()) {
       cache.PostNotification(parent_node, ax::mojom::Event::kValueChanged);
+      break;
+    }
   }
 }
 

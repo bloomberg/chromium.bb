@@ -1,6 +1,6 @@
 rootWebArea
-++marquee
-++++staticText name='Off'
+++marquee containerLiveRelevant='additions text' containerLiveStatus='off' liveRelevant='additions text' liveStatus='off' containerLiveAtomic=false containerLiveBusy=false liveAtomic=false
+++++staticText containerLiveRelevant='additions text' containerLiveStatus='off' name='Off' liveRelevant='additions text' containerLiveAtomic=false containerLiveBusy=false liveAtomic=false
 ++++++inlineTextBox name='Off'
 ++marquee containerLiveRelevant='additions text' containerLiveStatus='polite' liveRelevant='additions text' liveStatus='polite' containerLiveAtomic=false containerLiveBusy=false liveAtomic=false
 ++++staticText containerLiveRelevant='additions text' containerLiveStatus='polite' name='Polite' liveRelevant='additions text' containerLiveAtomic=false containerLiveBusy=false liveAtomic=false

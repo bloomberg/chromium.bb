@@ -96,7 +96,7 @@ void FillLiveRegionProperties(AXObject& ax_object,
                      CreateValue(ax_object.ContainerLiveRegionRelevant(),
                                  AXValueTypeEnum::TokenList)));
 
-  if (!ax_object.IsLiveRegion()) {
+  if (!ax_object.IsLiveRegionRoot()) {
     properties.addItem(CreateProperty(
         AXPropertyNameEnum::Root,
         CreateRelatedNodeListValue(*(ax_object.LiveRegionRoot()))));
