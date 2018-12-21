@@ -821,10 +821,10 @@
         tbl <ph name="tableName">$1</ph> <ph name="tableRows">$2</ph>x<ph name="tableCols">$3</ph>
       </message>
       <message desc="summarizes a table cell." name="IDS_CHROMEVOX_CELL_SUMMARY">
-        row $1 column $2
+        row <ph name="tableCellRowIndex">$1</ph> column <ph name="tableCellColumnIndex">$2</ph>
       </message>
       <message desc="summarizes a table cell for braille; for example, r1c2 means row 1, column 2. Try to localize the 'r' and 'c' to the first letter of something that would be recognizable." name="IDS_CHROMEVOX_CELL_SUMMARY_BRL">
-        r$1c$2
+        r<ph name="tableCellRowIndex">$1</ph>c<ph name="tableCellColumnIndex">$2</ph>
       </message>
       <message desc="Spoken if the user attempts to jump to the next checkbox when none exists." name="IDS_CHROMEVOX_NO_NEXT_CHECKBOX">
         No next checkbox.
@@ -2111,13 +2111,13 @@
         Start or end selection.
       </message>
       <message desc="Spoken when the browser's copy command is invoked." name="IDS_CHROMEVOX_COPY">
-        copy $1.
+        copy <ph name="TEXT">$1</ph>.
       </message>
       <message desc="Spoken when the browser's cut command is invoked." name="IDS_CHROMEVOX_CUT">
-        cut $1.
+        cut <ph name="TEXT">$1</ph>.
       </message>
       <message desc="Spoken when the browser's paste command is invoked." name="IDS_CHROMEVOX_PASTE">
-        paste $1.
+        paste <ph name="TEXT">$1</ph>.
       </message>
       <message desc="Spoken when additional characters are selected in editable text." name="IDS_CHROMEVOX_SELECTED">
         selected
@@ -2525,7 +2525,7 @@
         {COUNT, plural, =1 {bullet}other {# bullets}}
       </message>
       <message desc="Describes the braille click command. Displayed in the options page." name="IDS_CHROMEVOX_BRAILLE_ROUTING">
-        Click the item under routing key $1
+        Click the item under routing key <ph name="ROUTING_KEY_NUMBER">$1</ph>
       </message>
       <message desc="Describes the braille pan backward command. Displayed in the options page." name="IDS_CHROMEVOX_BRAILLE_PAN_LEFT">
         Pan backward
@@ -2552,7 +2552,7 @@
         dots <ph name="dot">$1</ph>
       </message>
       <message desc="Describes dots on a refreshable braille display pressed with the space key. For example, dots 1 2 3 4 8 chord" name="IDS_CHROMEVOX_BRAILLE_CHORD">
-        $1 chord
+        <ph name="dot">$1</ph> chord
       </message>
       <message desc="The description of the command that allows the user to view a graphic as a dot pattern on a refreshable braille display." name="IDS_CHROMEVOX_VIEW_GRAPHIC_AS_BRAILLE">
         View Graphic As Braille
