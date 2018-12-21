@@ -549,6 +549,6 @@ type WebGPUPowerPreference =
 interface WebGPURequestAdapterOptions {
   powerPreference: WebGPUPowerPreference;
 }
-declare namespace gpu {
+export declare namespace gpu {
   function requestAdapter(options?: WebGPURequestAdapterOptions): Promise<WebGPUAdapter>;
 }
