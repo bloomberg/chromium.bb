@@ -250,11 +250,7 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
       init.lose_context_when_out_of_memory;
   attribs.context_type = context_type;
 
-  // Setup expections for RasterDecoderContextState::InitializeGL()
-  // It will initialize a FeatureInfo and
-  gles2::TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
-      gl_.get(), all_extensions.c_str(), "" /* gl_renderer */,
-      init.gl_version.c_str(), CONTEXT_TYPE_OPENGLES2);
+  // Setup expectations for RasterDecoderContextState::InitializeGL().
   EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VERTEX_ATTRIBS, _))
       .WillOnce(SetArgPointee<1>(8u))
       .RetiresOnSaturation();
@@ -266,8 +262,7 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
       feature_info->workarounds().use_virtualized_gl_contexts,
       base::DoNothing());
 
-  raster_decoder_context_state_->InitializeGL(init.workarounds,
-                                              gpu_feature_info);
+  raster_decoder_context_state_->InitializeGL(feature_info);
 
   decoder_.reset(RasterDecoder::Create(this, command_buffer_service_.get(),
                                        &outputter_, group_.get(),
