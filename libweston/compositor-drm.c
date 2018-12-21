@@ -3818,7 +3818,7 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 	if (!state) {
 		mode = DRM_OUTPUT_PROPOSE_STATE_RENDERER_ONLY;
 		state = drm_output_propose_state(output_base, pending_state,
-						 DRM_OUTPUT_PROPOSE_STATE_RENDERER_ONLY);
+						 mode);
 	}
 
 	assert(state);
