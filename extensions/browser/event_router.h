@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -305,7 +304,7 @@ class EventRouter : public KeyedService,
   // empty, the event is broadcast.  An event that just came off the pending
   // list may not be delayed again.
   void DispatchEventImpl(const std::string& restrict_to_extension_id,
-                         const linked_ptr<Event>& event);
+                         std::unique_ptr<Event> event);
 
   // Dispatches the event to the specified extension or URL running in
   // |process|.
@@ -314,7 +313,7 @@ class EventRouter : public KeyedService,
                               content::RenderProcessHost* process,
                               int64_t service_worker_version_id,
                               int worker_thread_id,
-                              const linked_ptr<Event>& event,
+                              Event* event,
                               const base::DictionaryValue* listener_filter,
                               bool did_enqueue);
 
@@ -352,7 +351,7 @@ class EventRouter : public KeyedService,
       const std::string& event_name);
 
   void DispatchPendingEvent(
-      const linked_ptr<Event>& event,
+      std::unique_ptr<Event> event,
       std::unique_ptr<LazyContextTaskQueue::ContextInfo> params);
 
   // Implementation of EventListenerMap::Delegate.

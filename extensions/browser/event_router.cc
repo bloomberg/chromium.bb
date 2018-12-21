@@ -501,13 +501,13 @@ const DictionaryValue* EventRouter::GetFilteredEvents(
 }
 
 void EventRouter::BroadcastEvent(std::unique_ptr<Event> event) {
-  DispatchEventImpl(std::string(), linked_ptr<Event>(event.release()));
+  DispatchEventImpl(std::string(), std::move(event));
 }
 
 void EventRouter::DispatchEventToExtension(const std::string& extension_id,
                                            std::unique_ptr<Event> event) {
   DCHECK(!extension_id.empty());
-  DispatchEventImpl(extension_id, linked_ptr<Event>(event.release()));
+  DispatchEventImpl(extension_id, std::move(event));
 }
 
 void EventRouter::DispatchEventWithLazyListener(const std::string& extension_id,
@@ -547,7 +547,7 @@ void EventRouter::DispatchEventWithLazyListener(const std::string& extension_id,
 }
 
 void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
-                                    const linked_ptr<Event>& event) {
+                                    std::unique_ptr<Event> event) {
   // We don't expect to get events from a completely different browser context.
   DCHECK(!event->restrict_to_browser_context ||
          ExtensionsBrowserClient::Get()->IsSameContext(
@@ -560,9 +560,8 @@ void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
       listeners_.GetEventListeners(*event));
 
   LazyEventDispatcher lazy_event_dispatcher(
-      browser_context_, event,
-      base::Bind(&EventRouter::DispatchPendingEvent,
-                 weak_factory_.GetWeakPtr()));
+      browser_context_, base::BindRepeating(&EventRouter::DispatchPendingEvent,
+                                            weak_factory_.GetWeakPtr()));
 
   // We dispatch events for lazy background pages first because attempting to do
   // so will cause those that are being suspended to cancel that suspension.
@@ -577,12 +576,12 @@ void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
     }
     if (listener->IsLazy()) {
       if (listener->is_for_service_worker()) {
-        lazy_event_dispatcher.DispatchToServiceWorker(listener->extension_id(),
-                                                      listener->listener_url(),
-                                                      listener->filter());
+        lazy_event_dispatcher.DispatchToServiceWorker(
+            *event, listener->extension_id(), listener->listener_url(),
+            listener->filter());
       } else {
-        lazy_event_dispatcher.DispatchToEventPage(listener->extension_id(),
-                                                  listener->filter());
+        lazy_event_dispatcher.DispatchToEventPage(
+            *event, listener->extension_id(), listener->filter());
       }
     }
   }
@@ -602,7 +601,7 @@ void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
     DispatchEventToProcess(
         listener->extension_id(), listener->listener_url(), listener->process(),
         listener->service_worker_version_id(), listener->worker_thread_id(),
-        event, listener->filter(), false /* did_enqueue */);
+        event.get(), listener->filter(), false /* did_enqueue */);
   }
 }
 
@@ -612,7 +611,7 @@ void EventRouter::DispatchEventToProcess(
     content::RenderProcessHost* process,
     int64_t service_worker_version_id,
     int worker_thread_id,
-    const linked_ptr<Event>& event,
+    Event* event,
     const base::DictionaryValue* listener_filter,
     bool did_enqueue) {
   BrowserContext* listener_context = process->GetBrowserContext();
@@ -674,8 +673,8 @@ void EventRouter::DispatchEventToProcess(
   }
 
   if (!event->will_dispatch_callback.is_null() &&
-      !event->will_dispatch_callback.Run(listener_context, extension,
-                                         event.get(), listener_filter)) {
+      !event->will_dispatch_callback.Run(listener_context, extension, event,
+                                         listener_filter)) {
     return;
   }
 
@@ -854,7 +853,7 @@ void EventRouter::ReportEvent(events::HistogramValue histogram_value,
 }
 
 void EventRouter::DispatchPendingEvent(
-    const linked_ptr<Event>& event,
+    std::unique_ptr<Event> event,
     std::unique_ptr<LazyContextTaskQueue::ContextInfo> params) {
   if (!params)
     return;
@@ -864,8 +863,8 @@ void EventRouter::DispatchPendingEvent(
                                     params->extension_id)) {
     DispatchEventToProcess(
         params->extension_id, params->url, params->render_process_host,
-        params->service_worker_version_id, params->worker_thread_id, event,
-        nullptr, true /* did_enqueue */);
+        params->service_worker_version_id, params->worker_thread_id,
+        event.get(), nullptr, true /* did_enqueue */);
   }
 }
 
