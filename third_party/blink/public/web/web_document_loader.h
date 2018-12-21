@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "base/time/time.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_archive_info.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_source_location.h"
@@ -49,6 +50,10 @@ class WebURLRequest;
 class WebURLResponse;
 template <typename T>
 class WebVector;
+
+namespace mojom {
+enum class FetchCacheMode : int32_t;
+}  // namespace mojom
 
 // An interface to expose the blink::DocumentLoader to the content layer,
 // including SetExtraData() and GetExtraData() to allow the content layer to
@@ -71,6 +76,18 @@ class BLINK_EXPORT WebDocumentLoader {
   // Returns the url corresponding to this load. It may also be a url
   // specified by a redirect that was followed.
   virtual WebURL GetUrl() const = 0;
+
+  // Returns the http method of the request corresponding to this load.
+  virtual WebString HttpMethod() const = 0;
+
+  // Returns the cache mode of the request corresponding to this load.
+  virtual mojom::FetchCacheMode GetCacheMode() const = 0;
+
+  // Returns the http referrer of the request corresponding to this load.
+  virtual WebString Referrer() const = 0;
+
+  // Returns the referrer policy of the request corresponding to this load.
+  virtual network::mojom::ReferrerPolicy GetReferrerPolicy() const = 0;
 
   // Returns the request corresponding to this datasource.  It may
   // include additional request headers added by WebKit that were not

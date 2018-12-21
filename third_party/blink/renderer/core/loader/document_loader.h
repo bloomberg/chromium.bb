@@ -132,6 +132,7 @@ class CORE_EXPORT DocumentLoader
   const KURL& UrlForHistory() const;
   const AtomicString& Referrer() const;
   EncodedFormData* HttpBody() const;
+  bool CacheControlContainsNoStore() const;
 
   void DidChangePerformanceTiming();
   void DidObserveLoadingBehavior(WebLoadingBehaviorFlag);

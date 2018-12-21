@@ -7483,7 +7483,7 @@ TEST_F(WebFrameTest, BackToReload) {
 
   frame_test_helpers::ReloadFrame(frame);
   EXPECT_EQ(mojom::FetchCacheMode::kValidateCache,
-            frame->GetDocumentLoader()->GetRequest().GetCacheMode());
+            frame->GetDocumentLoader()->GetCacheMode());
 }
 
 TEST_F(WebFrameTest, BackDuringChildFrameReload) {
@@ -7533,11 +7533,11 @@ TEST_F(WebFrameTest, ReloadPost) {
   frame_test_helpers::PumpPendingRequestsForFrameToLoad(
       web_view_helper.LocalMainFrame());
   EXPECT_EQ(WebString::FromUTF8("POST"),
-            frame->GetDocumentLoader()->GetRequest().HttpMethod());
+            frame->GetDocumentLoader()->HttpMethod());
 
   frame_test_helpers::ReloadFrame(frame);
   EXPECT_EQ(mojom::FetchCacheMode::kValidateCache,
-            frame->GetDocumentLoader()->GetRequest().GetCacheMode());
+            frame->GetDocumentLoader()->GetCacheMode());
   EXPECT_EQ(kWebNavigationTypeFormResubmitted,
             frame->GetDocumentLoader()->GetNavigationType());
 }
@@ -7564,7 +7564,7 @@ TEST_F(WebFrameTest, LoadHistoryItemReload) {
   EXPECT_EQ(first_item.Get(),
             main_frame_loader.GetDocumentLoader()->GetHistoryItem());
   EXPECT_EQ(mojom::FetchCacheMode::kValidateCache,
-            frame->GetDocumentLoader()->GetRequest().GetCacheMode());
+            frame->GetDocumentLoader()->GetCacheMode());
 }
 
 class TestCachePolicyWebFrameClient
@@ -8901,7 +8901,7 @@ TEST_F(WebFrameTest, ReloadBypassingCache) {
   WebLocalFrame* frame = web_view_helper.LocalMainFrame();
   frame_test_helpers::ReloadFrameBypassingCache(frame);
   EXPECT_EQ(mojom::FetchCacheMode::kBypassCache,
-            frame->GetDocumentLoader()->GetRequest().GetCacheMode());
+            frame->GetDocumentLoader()->GetCacheMode());
 }
 
 static void NodeImageTestValidation(const IntSize& reference_bitmap_size,

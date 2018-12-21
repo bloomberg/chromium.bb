@@ -373,6 +373,10 @@ EncodedFormData* DocumentLoader::HttpBody() const {
   return request_.HttpBody();
 }
 
+bool DocumentLoader::CacheControlContainsNoStore() const {
+  return request_.CacheControlContainsNoStore();
+}
+
 void DocumentLoader::SetHistoryItemStateForCommit(
     HistoryItem* old_item,
     WebFrameLoadType load_type,
