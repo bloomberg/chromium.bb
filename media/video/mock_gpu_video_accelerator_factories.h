@@ -67,6 +67,7 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
                VideoEncodeAccelerator::SupportedProfiles());
   MOCK_METHOD0(GetMediaContextProvider,
                scoped_refptr<ws::ContextProviderCommandBuffer>());
+  MOCK_METHOD0(GetMediaContextProviderContextSupport, gpu::ContextSupport*());
   MOCK_METHOD1(SetRenderingColorSpace, void(const gfx::ColorSpace&));
 
   std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(

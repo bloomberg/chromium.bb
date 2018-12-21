@@ -35,6 +35,7 @@ class Size;
 }
 
 namespace gpu {
+class ContextSupport;
 struct SyncToken;
 }
 
@@ -154,6 +155,7 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
 
   virtual scoped_refptr<ws::ContextProviderCommandBuffer>
   GetMediaContextProvider() = 0;
+  virtual gpu::ContextSupport* GetMediaContextProviderContextSupport() = 0;
 
   // Sets the current pipeline rendering color space.
   virtual void SetRenderingColorSpace(const gfx::ColorSpace& color_space) = 0;

@@ -35,6 +35,8 @@ source_set("video") {
     "jpeg_encode_accelerator.h",
     "picture.cc",
     "picture.h",
+    "trace_util.cc",
+    "trace_util.h",
     "video_decode_accelerator.cc",
     "video_decode_accelerator.h",
     "video_encode_accelerator.cc",

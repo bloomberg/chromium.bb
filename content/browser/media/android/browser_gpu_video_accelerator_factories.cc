@@ -204,6 +204,11 @@ BrowserGpuVideoAcceleratorFactories::GetMediaContextProvider() {
   return context_provider_;
 }
 
+gpu::ContextSupport*
+BrowserGpuVideoAcceleratorFactories::GetMediaContextProviderContextSupport() {
+  return GetMediaContextProvider()->ContextSupport();
+}
+
 void BrowserGpuVideoAcceleratorFactories::SetRenderingColorSpace(
     const gfx::ColorSpace& color_space) {}
 
