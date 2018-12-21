@@ -13,19 +13,6 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 
-namespace {
-
-TestingProfile::TestingFactories GetIdentityTestEnvironmentFactories() {
-  return {{GaiaCookieManagerServiceFactory::GetInstance(),
-           base::BindRepeating(&BuildFakeGaiaCookieManagerService)},
-          {ProfileOAuth2TokenServiceFactory::GetInstance(),
-           base::BindRepeating(&BuildFakeProfileOAuth2TokenService)},
-          {SigninManagerFactory::GetInstance(),
-           base::BindRepeating(&BuildFakeSigninManagerForTesting)}};
-}
-
-}  // namespace
-
 // static
 std::unique_ptr<TestingProfile> IdentityTestEnvironmentProfileAdaptor::
     CreateProfileForIdentityTestEnvironment() {
@@ -75,6 +62,17 @@ void IdentityTestEnvironmentProfileAdaptor::
   factories_to_append_to->insert(factories_to_append_to->end(),
                                  identity_factories.begin(),
                                  identity_factories.end());
+}
+
+// static
+TestingProfile::TestingFactories
+IdentityTestEnvironmentProfileAdaptor::GetIdentityTestEnvironmentFactories() {
+  return {{GaiaCookieManagerServiceFactory::GetInstance(),
+           base::BindRepeating(&BuildFakeGaiaCookieManagerService)},
+          {ProfileOAuth2TokenServiceFactory::GetInstance(),
+           base::BindRepeating(&BuildFakeProfileOAuth2TokenService)},
+          {SigninManagerFactory::GetInstance(),
+           base::BindRepeating(&BuildFakeSigninManagerForTesting)}};
 }
 
 IdentityTestEnvironmentProfileAdaptor::IdentityTestEnvironmentProfileAdaptor(

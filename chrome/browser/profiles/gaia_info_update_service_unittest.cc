@@ -112,12 +112,12 @@ class GAIAInfoUpdateServiceTestBase : public ProfileInfoCacheTest {
   NiceMock<ProfileDownloaderMock>* downloader() { return downloader_.get(); }
 
   Profile* CreateProfile(const std::string& name) {
-    TestingProfile::TestingFactories testing_factories;
+    TestingProfile::TestingFactories testing_factories =
+        IdentityTestEnvironmentProfileAdaptor::
+            GetIdentityTestEnvironmentFactories();
     testing_factories.emplace_back(
         ChromeSigninClientFactory::GetInstance(),
         base::BindRepeating(&signin::BuildTestSigninClient));
-    IdentityTestEnvironmentProfileAdaptor::
-        AppendIdentityTestEnvironmentFactories(&testing_factories);
     Profile* profile = testing_profile_manager_.CreateTestingProfile(
         name, std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
         base::UTF8ToUTF16(name), 0, std::string(),

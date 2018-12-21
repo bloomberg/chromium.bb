@@ -55,6 +55,11 @@ class IdentityTestEnvironmentProfileAdaptor {
   static void AppendIdentityTestEnvironmentFactories(
       TestingProfile::TestingFactories* factories_to_append_to);
 
+  // Returns the set of testing factories that identity::IdentityTestEnvironment
+  // requires, which can be useful to configure profiles for services that do
+  // not require any other testing factory than the ones specified in here.
+  static TestingProfile::TestingFactories GetIdentityTestEnvironmentFactories();
+
   // Constructs an adaptor that associates an IdentityTestEnvironment instance
   // with |profile| via the relevant backing objects. Note that
   // |profile| must have been configured with the IdentityTestEnvironment
