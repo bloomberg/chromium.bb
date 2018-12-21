@@ -254,8 +254,9 @@ class ServiceWorkerContextClientTest : public testing::Test {
   }
 
   // Creates an empty struct to initialize ServiceWorkerProviderContext.
-  mojom::ServiceWorkerProviderInfoForStartWorkerPtr CreateProviderInfo() {
-    auto info = mojom::ServiceWorkerProviderInfoForStartWorker::New();
+  blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr
+  CreateProviderInfo() {
+    auto info = blink::mojom::ServiceWorkerProviderInfoForStartWorker::New();
     info->provider_id = 10;  // dummy
     return info;
   }

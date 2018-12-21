@@ -16,13 +16,13 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
-#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/shared_worker/shared_worker_factory.mojom.h"
 #include "content/public/browser/global_routing_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_client.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_host.mojom.h"
@@ -91,7 +91,7 @@ class CONTENT_EXPORT SharedWorkerHost
   // service worker controller is sent via ServiceWorkerContainer#SetController.
   void Start(
       mojom::SharedWorkerFactoryPtr factory,
-      mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+      blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
           service_worker_provider_info,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           main_script_loader_factory,

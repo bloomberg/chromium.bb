@@ -23,7 +23,6 @@
 #include "content/browser/worker_host/worker_script_loader_factory.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/navigation_subresource_loader_params.h"
-#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/url_loader_factory_bundle.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -40,6 +39,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -232,7 +232,8 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
   DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
 
   // Set up for service worker.
-  auto provider_info = mojom::ServiceWorkerProviderInfoForSharedWorker::New();
+  auto provider_info =
+      blink::mojom::ServiceWorkerProviderInfoForSharedWorker::New();
   base::WeakPtr<ServiceWorkerProviderHost> host =
       context->PreCreateHostForSharedWorker(process_id, &provider_info);
 
@@ -317,7 +318,7 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
 
 void WorkerScriptFetchInitiator::DidCreateScriptLoaderOnIO(
     CompletionCallback callback,
-    mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+    blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
         service_worker_provider_info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         main_script_loader_factory,

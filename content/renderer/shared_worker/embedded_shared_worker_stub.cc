@@ -213,7 +213,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     const RendererPreferences& renderer_preferences,
     mojom::RendererPreferenceWatcherRequest preference_watcher_request,
     blink::mojom::WorkerContentSettingsProxyPtr content_settings,
-    mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+    blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
         service_worker_provider_info,
     int appcache_host_id,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
@@ -405,13 +405,13 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
           ->provider()
           ->context();
 
-  mojom::ServiceWorkerWorkerClientRegistryPtrInfo
+  blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
       worker_client_registry_ptr_info;
   context->CloneWorkerClientRegistry(
       mojo::MakeRequest(&worker_client_registry_ptr_info));
 
-  mojom::ServiceWorkerWorkerClientPtr worker_client_ptr;
-  mojom::ServiceWorkerWorkerClientRequest worker_client_request =
+  blink::mojom::ServiceWorkerWorkerClientPtr worker_client_ptr;
+  blink::mojom::ServiceWorkerWorkerClientRequest worker_client_request =
       mojo::MakeRequest(&worker_client_ptr);
   context->RegisterWorkerClient(std::move(worker_client_ptr));
 

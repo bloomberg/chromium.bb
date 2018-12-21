@@ -27,7 +27,7 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
     const RendererPreferences& renderer_preferences,
     mojom::RendererPreferenceWatcherRequest preference_watcher_request,
     blink::mojom::WorkerContentSettingsProxyPtr content_settings,
-    mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+    blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
         service_worker_provider_info,
     int appcache_host_id,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo

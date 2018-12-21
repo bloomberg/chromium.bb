@@ -5,7 +5,6 @@
 module content.mojom;
 
 import "content/common/native_types.mojom";
-import "content/common/service_worker/service_worker_provider.mojom";
 import "content/common/url_loader_factory_bundle.mojom";
 import "content/public/common/renderer_preference_watcher.mojom";
 import "content/public/common/renderer_preferences.mojom";
@@ -18,6 +17,7 @@ import "third_party/blink/public/mojom/service_worker/controller_service_worker.
 import "third_party/blink/public/mojom/service_worker/service_worker.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom";
+import "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom";
 import "third_party/blink/public/platform/web_feature.mojom";
 import "third_party/blink/public/web/console_message.mojom";
@@ -71,7 +71,7 @@ struct EmbeddedWorkerStartParams {
   // Interface for the renderer to send the status updates to the browser.
   associated EmbeddedWorkerInstanceHost instance_host;
   // Information for creating ServiceWorkerNetworkProvider on the renderer.
-  ServiceWorkerProviderInfoForStartWorker provider_info;
+  blink.mojom.ServiceWorkerProviderInfoForStartWorker provider_info;
   // Interface for the renderer to query the content settings in the browser.
   blink.mojom.WorkerContentSettingsProxy content_settings_proxy;
   // Interface for keeping track of the renderer preferences.

@@ -249,7 +249,7 @@ class MessageReceiverDisallowStart : public MessageReceiver {
       blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
+      blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
     switch (mode_) {

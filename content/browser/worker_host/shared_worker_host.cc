@@ -141,7 +141,7 @@ SharedWorkerHost::~SharedWorkerHost() {
 
 void SharedWorkerHost::Start(
     mojom::SharedWorkerFactoryPtr factory,
-    mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+    blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
         service_worker_provider_info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         main_script_loader_factory,

@@ -503,7 +503,7 @@ class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
       blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
+      blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
     mojom::EmbeddedWorkerInstanceHostAssociatedPtr instance_host_ptr;
@@ -1011,7 +1011,7 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
       blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
+      blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
     const std::string kMockScriptBody = "mock_script";
@@ -1154,7 +1154,7 @@ class EvictIncumbentVersionHelper : public UpdateJobTestHelper {
       blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
+      blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
     ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);

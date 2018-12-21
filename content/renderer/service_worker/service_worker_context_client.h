@@ -20,7 +20,6 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
-#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -32,6 +31,7 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_client.h"
@@ -92,7 +92,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
+      blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client,
       mojom::EmbeddedWorkerStartTimingPtr start_timing,
       mojom::RendererPreferenceWatcherRequest preference_watcher_request,

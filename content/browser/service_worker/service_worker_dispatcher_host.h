@@ -9,11 +9,11 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 
 namespace content {
 
@@ -32,12 +32,12 @@ FORWARD_DECLARE_TEST(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash);
 // Unless otherwise noted, all methods are called on the IO thread.
 //
 // In order to keep ordering with navigation IPCs to avoid potential races,
-// currently mojom::ServiceWorkerDispatcherHost interface is associated with the
-// legacy IPC channel.
+// currently blink::mojom::ServiceWorkerDispatcherHost interface is associated
+// with the legacy IPC channel.
 // TODO(leonhsl): Remove this class once we can understand how to move
 // OnProviderCreated() to an isolated message pipe.
 class CONTENT_EXPORT ServiceWorkerDispatcherHost
-    : public mojom::ServiceWorkerDispatcherHost,
+    : public blink::mojom::ServiceWorkerDispatcherHost,
       public RenderProcessHostObserver {
  public:
   // Called on the UI thread.
@@ -45,7 +45,8 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
       int render_process_id);
 
-  void AddBinding(mojom::ServiceWorkerDispatcherHostAssociatedRequest request);
+  void AddBinding(
+      blink::mojom::ServiceWorkerDispatcherHostAssociatedRequest request);
 
   // Called on the UI thread.
   void RenderProcessExited(RenderProcessHost* host,
@@ -68,15 +69,17 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       service_worker_dispatcher_host_unittest::ServiceWorkerDispatcherHostTest,
       CleanupOnRendererCrash);
 
-  // mojom::ServiceWorkerDispatcherHost implementation
-  void OnProviderCreated(mojom::ServiceWorkerProviderHostInfoPtr info) override;
+  // blink::mojom::ServiceWorkerDispatcherHost implementation
+  void OnProviderCreated(
+      blink::mojom::ServiceWorkerProviderHostInfoPtr info) override;
 
   void RemoveAllProviderHostsForProcess();
 
   const int render_process_id_;
   // Only accessed on the IO thread.
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
-  mojo::AssociatedBindingSet<mojom::ServiceWorkerDispatcherHost> bindings_;
+  mojo::AssociatedBindingSet<blink::mojom::ServiceWorkerDispatcherHost>
+      bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDispatcherHost);
 };

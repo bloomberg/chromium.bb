@@ -185,7 +185,7 @@ void ServiceWorkerProviderContext::SetWebServiceWorkerProvider(
 }
 
 void ServiceWorkerProviderContext::RegisterWorkerClient(
-    mojom::ServiceWorkerWorkerClientPtr client) {
+    blink::mojom::ServiceWorkerWorkerClientPtr client) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(state_for_client_);
   client.set_connection_error_handler(base::BindOnce(
@@ -195,7 +195,7 @@ void ServiceWorkerProviderContext::RegisterWorkerClient(
 }
 
 void ServiceWorkerProviderContext::CloneWorkerClientRegistry(
-    mojom::ServiceWorkerWorkerClientRegistryRequest request) {
+    blink::mojom::ServiceWorkerWorkerClientRegistryRequest request) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(state_for_client_);
   state_for_client_->worker_client_registry_bindings.AddBinding(
@@ -242,12 +242,12 @@ void ServiceWorkerProviderContext::DispatchNetworkQuiet() {
 }
 
 void ServiceWorkerProviderContext::UnregisterWorkerFetchContext(
-    mojom::ServiceWorkerWorkerClient* client) {
+    blink::mojom::ServiceWorkerWorkerClient* client) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(state_for_client_);
   base::EraseIf(
       state_for_client_->worker_clients,
-      [client](const mojom::ServiceWorkerWorkerClientPtr& client_ptr) {
+      [client](const blink::mojom::ServiceWorkerWorkerClientPtr& client_ptr) {
         return client_ptr.get() == client;
       });
 }

@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/unguessable_token.h"
-#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/public/common/renderer_preference_watcher.mojom.h"
 #include "content/public/common/renderer_preferences.h"
 #include "ipc/ipc_listener.h"
@@ -18,6 +17,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_host.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_info.mojom.h"
@@ -65,7 +65,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       const RendererPreferences& renderer_preferences,
       mojom::RendererPreferenceWatcherRequest preference_watcher_request,
       blink::mojom::WorkerContentSettingsProxyPtr content_settings,
-      mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+      blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
           service_worker_provider_info,
       int appcache_host_id,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
@@ -129,7 +129,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
 
   // S13nServiceWorker: The info needed to connect to the
   // ServiceWorkerProviderHost on the browser.
-  mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+  blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
       service_worker_provider_info_;
 
   // NetworkService: The URLLoaderFactory used for loading the shared worker

@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/synchronization/waitable_event.h"
-#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/renderer_preference_watcher.mojom.h"
 #include "content/public/common/renderer_preferences.h"
@@ -21,6 +20,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
@@ -44,7 +44,7 @@ class WebSocketHandshakeThrottleProvider;
 // service workers, ServiceWorkerFetchContextImpl class is used instead.
 class CONTENT_EXPORT WebWorkerFetchContextImpl
     : public blink::WebWorkerFetchContext,
-      public mojom::ServiceWorkerWorkerClient,
+      public blink::mojom::ServiceWorkerWorkerClient,
       public mojom::RendererPreferenceWatcher {
  public:
   // |service_worker_client_request| is bound to |this| to receive
@@ -68,8 +68,9 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   WebWorkerFetchContextImpl(
       RendererPreferences renderer_preferences,
       mojom::RendererPreferenceWatcherRequest watcher_request,
-      mojom::ServiceWorkerWorkerClientRequest service_worker_client_request,
-      mojom::ServiceWorkerWorkerClientRegistryPtrInfo
+      blink::mojom::ServiceWorkerWorkerClientRequest
+          service_worker_client_request,
+      blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
           service_worker_worker_client_registry_info,
       blink::mojom::ServiceWorkerContainerHostPtrInfo
           service_worker_container_host_info,
@@ -109,7 +110,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   std::unique_ptr<blink::WebSocketHandshakeThrottle>
   CreateWebSocketHandshakeThrottle() override;
 
-  // mojom::ServiceWorkerWorkerClient implementation:
+  // blink::mojom::ServiceWorkerWorkerClient implementation:
   void OnControllerChanged(blink::mojom::ControllerServiceWorkerMode) override;
 
   // Sets the fetch context status copied from a frame. For dedicated workers,
@@ -151,15 +152,15 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // Implements mojom::RendererPreferenceWatcher.
   void NotifyUpdate(const RendererPreferences& new_prefs) override;
 
-  mojo::Binding<mojom::ServiceWorkerWorkerClient> binding_;
-  mojom::ServiceWorkerWorkerClientRegistryPtr
+  mojo::Binding<blink::mojom::ServiceWorkerWorkerClient> binding_;
+  blink::mojom::ServiceWorkerWorkerClientRegistryPtr
       service_worker_worker_client_registry_;
 
   // Bound to |this| on the worker thread.
-  mojom::ServiceWorkerWorkerClientRequest service_worker_client_request_;
+  blink::mojom::ServiceWorkerWorkerClientRequest service_worker_client_request_;
   // Consumed on the worker thread to create
   // |service_worker_worker_client_registry_|.
-  mojom::ServiceWorkerWorkerClientRegistryPtrInfo
+  blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
       service_worker_worker_client_registry_info_;
   // Consumed on the worker thread to create |service_worker_container_host_|.
   blink::mojom::ServiceWorkerContainerHostPtrInfo
