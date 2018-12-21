@@ -171,11 +171,6 @@ int NoScriptPreviewsInflationPercent();
 // for inflating the original_bytes count.
 int NoScriptPreviewsInflationBytes();
 
-// Whether to use top level optimization hints for NoScript instead of
-// page hints. This is to allow for reverting to original behavior until
-// page hints for NoScript is successfully launched.
-bool NoScriptPreviewsUsesTopLevelHints();
-
 // For estimating ResourceLoadingHints data savings, this is the percentage
 // factor to multiple by the network bytes for inflating the original_bytes
 // count.

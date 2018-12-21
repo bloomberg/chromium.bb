@@ -315,13 +315,6 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
   std::unique_ptr<PreviewsHints> hints(new PreviewsHints());
   HintCache::Data hint_cache_data;
 
-  // The condition set ID is a simple increasing counter that matches the
-  // order of hints in the config (where earlier hints in the config take
-  // precedence over later hints in the config if there are multiple matches).
-  url_matcher::URLMatcherConditionSet::ID id = 0;
-  url_matcher::URLMatcherConditionFactory* condition_factory =
-      hints->url_matcher_.condition_factory();
-  url_matcher::URLMatcherConditionSet::Vector all_conditions;
   std::set<std::string> seen_host_suffixes;
 
   size_t total_page_patterns_with_resource_loading_hints_received = 0;
@@ -350,38 +343,6 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
     }
     seen_host_suffixes.insert(hint_key);
 
-    // Only process legacy top level hints if specifically enabled.
-    if (previews::params::NoScriptPreviewsUsesTopLevelHints()) {
-      // Create whitelist condition set out of the optimizations that are
-      // whitelisted for the host suffix at the top level (i.e., not within
-      // PageHints).
-      std::set<std::pair<PreviewsType, int>> whitelisted_optimizations;
-      for (const auto& optimization : hint.whitelisted_optimizations()) {
-        if (IsDisabledExperimentalOptimization(optimization)) {
-          continue;
-        }
-        base::Optional<PreviewsType> previews_type =
-            ConvertProtoOptimizationTypeToPreviewsType(
-                optimization.optimization_type());
-        if (!previews_type.has_value()) {
-          continue;
-        }
-        // Resource loading hints should always be page hints; if they appear as
-        // top-level whitelisted optimizations, then it indicates a bug.
-        DCHECK(previews_type != PreviewsType::RESOURCE_LOADING_HINTS);
-
-        whitelisted_optimizations.insert(std::make_pair(
-            previews_type.value(), optimization.inflation_percent()));
-      }
-
-      url_matcher::URLMatcherCondition condition =
-          condition_factory->CreateHostSuffixCondition(hint_key);
-      all_conditions.push_back(new url_matcher::URLMatcherConditionSet(
-          id, std::set<url_matcher::URLMatcherCondition>{condition}));
-      hints->whitelist_[id] = whitelisted_optimizations;
-      id++;
-    }
-
     // If this hint contains page hints, then add a pared down version of the
     // hint to the initial hints that are used to populate the hint cache,
     // removing all of the hint's top-level optimizations and only retaining the
@@ -401,10 +362,6 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
         total_resource_loading_hints_received);
   }
 
-  if (!all_conditions.empty()) {
-    hints->url_matcher_.AddConditionSets(all_conditions);
-  }
-
   if (hint_cache_data.HasHints()) {
     hints->hint_cache_ =
         std::make_unique<HintCache>(std::move(hint_cache_data));
@@ -416,7 +373,7 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
   // Completed processing hints data without crashing so clear sentinel.
   DeleteSentinelFile(sentinel_path);
   RecordProcessHintsResult(
-      all_conditions.empty() && !hints->hint_cache_
+      !hints->hint_cache_
           ? PreviewsProcessHintsResult::kProcessedNoPreviewsHints
           : PreviewsProcessHintsResult::kProcessedPreviewsHints);
   return hints;
@@ -507,64 +464,11 @@ bool PreviewsHints::IsWhitelisted(
     net::EffectiveConnectionType* out_ect_threshold) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!url.has_host()) {
-    return false;
-  }
-
-  return IsWhitelistedAtTopLevel(url, type, out_inflation_percent) ||
-         IsWhitelistedInPageHints(url, type, out_inflation_percent,
-                                  out_ect_threshold);
-}
-
-bool PreviewsHints::IsWhitelistedAtTopLevel(const GURL& url,
-                                            PreviewsType type,
-                                            int* out_inflation_percent) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // Top level hints are deprecated so only check here if specifically enabled
-  // for NoScript.
-  if (!previews::params::NoScriptPreviewsUsesTopLevelHints()) {
-    return false;
-  }
-
-  // Resource loading hints are not processed in the top-level whitelist.
-  if (type == PreviewsType::RESOURCE_LOADING_HINTS) {
-    return false;
-  }
-
-  std::set<url_matcher::URLMatcherConditionSet::ID> matches =
-      url_matcher_.MatchURL(url);
-
-  // Only consider the first match in iteration order as it takes precedence
-  // if there are multiple matches for the top-level whitelist.
-  const auto& first_match = matches.begin();
-  if (first_match != matches.end()) {
-    const auto whitelist_iter = whitelist_.find(*first_match);
-    if (whitelist_iter != whitelist_.end()) {
-      const auto& whitelisted_optimizations = whitelist_iter->second;
-      for (auto optimization_iter = whitelisted_optimizations.begin();
-           optimization_iter != whitelisted_optimizations.end();
-           ++optimization_iter) {
-        if (optimization_iter->first == type) {
-          *out_inflation_percent = optimization_iter->second;
-          // Whitelisted on top level whitelist.
-          return true;
-        }
-      }
-    }
-  }
-
-  return false;
-}
-
-bool PreviewsHints::IsWhitelistedInPageHints(
-    const GURL& url,
-    PreviewsType type,
-    int* out_inflation_percent,
-    net::EffectiveConnectionType* out_ect_threshold) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   if (!hint_cache_) {
+    return false;
+  }
+
+  if (!url.has_host()) {
     return false;
   }
 
