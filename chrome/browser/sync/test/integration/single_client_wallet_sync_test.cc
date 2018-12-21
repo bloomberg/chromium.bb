@@ -1084,8 +1084,17 @@ class SingleClientWalletSecondaryAccountSyncTest
 // ChromeOS doesn't support changes to the primary account after startup, so
 // these secondary-account-related tests don't apply.
 #if !defined(OS_CHROMEOS)
+#if defined(THREAD_SANITIZER)
+// Web Database thread and history DB thread access sqlite concurrently,
+// https://crbug.com/917380
+#define MAYBE_SwitchesFromAccountToProfileStorageOnSyncOptIn \
+  DISABLED_SwitchesFromAccountToProfileStorageOnSyncOptIn
+#else
+#define MAYBE_SwitchesFromAccountToProfileStorageOnSyncOptIn \
+  SwitchesFromAccountToProfileStorageOnSyncOptIn
+#endif
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSecondaryAccountSyncTest,
-                       SwitchesFromAccountToProfileStorageOnSyncOptIn) {
+                       MAYBE_SwitchesFromAccountToProfileStorageOnSyncOptIn) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   GetPersonalDataManager(0)->OnSyncServiceInitialized(GetSyncService(0));
 
