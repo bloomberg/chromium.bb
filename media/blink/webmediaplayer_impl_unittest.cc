@@ -49,6 +49,7 @@
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
+#include "third_party/blink/public/platform/web_media_player_encrypted_media_client.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -65,8 +66,10 @@
 #include "media/blink/renderer_media_player_interface.h"
 #endif
 
+using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Eq;
+using ::testing::Gt;
 using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::NiceMock;
@@ -74,12 +77,12 @@ using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::StrictMock;
-using ::testing::_;
 
 namespace media {
 
 constexpr char kAudioOnlyTestFile[] = "sfx-opus-441.webm";
 constexpr char kVideoOnlyTestFile[] = "bear-320x240-video-only.webm";
+constexpr char kEncryptedVideoOnlyTestFile[] = "bear-320x240-av_enc-v.webm";
 
 MATCHER(WmpiDestroyed, "") {
   return CONTAINS_STRING(arg, "WEBMEDIAPLAYER_DESTROYED {}");
@@ -181,6 +184,22 @@ class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWebMediaPlayerClient);
+};
+
+class MockWebMediaPlayerEncryptedMediaClient
+    : public blink::WebMediaPlayerEncryptedMediaClient {
+ public:
+  MockWebMediaPlayerEncryptedMediaClient() = default;
+
+  MOCK_METHOD3(Encrypted,
+               void(blink::WebEncryptedMediaInitDataType,
+                    const unsigned char*,
+                    unsigned));
+  MOCK_METHOD0(DidBlockPlaybackWaitingForKey, void());
+  MOCK_METHOD0(DidResumePlaybackBlockedForKey, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockWebMediaPlayerEncryptedMediaClient);
 };
 
 class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
@@ -398,7 +417,7 @@ class WebMediaPlayerImplTest : public testing::Test {
     compositor_ = compositor.get();
 
     wmpi_ = std::make_unique<WebMediaPlayerImpl>(
-        web_local_frame_, &client_, nullptr, &delegate_,
+        web_local_frame_, &client_, &encrypted_client_, &delegate_,
         std::move(factory_selector), url_index_.get(), std::move(compositor),
         std::move(params));
 
@@ -488,6 +507,8 @@ class WebMediaPlayerImplTest : public testing::Test {
   }
 
   void OnMetadata(PipelineMetadata metadata) { wmpi_->OnMetadata(metadata); }
+
+  void OnWaiting(WaitingReason reason) { wmpi_->OnWaiting(reason); }
 
   void OnVideoNaturalSizeChange(const gfx::Size& size) {
     wmpi_->OnVideoNaturalSizeChange(size);
@@ -597,7 +618,7 @@ class WebMediaPlayerImplTest : public testing::Test {
     return wmpi_->pipeline_metadata_.natural_size;
   }
 
-  void LoadAndWaitForMetadata(std::string data_file) {
+  void Load(std::string data_file) {
     // URL doesn't matter, it's value is unknown to the underlying demuxer.
     const GURL kTestURL("file://example.com/sample.webm");
 
@@ -638,6 +659,10 @@ class WebMediaPlayerImplTest : public testing::Test {
     client->DidReceiveData(reinterpret_cast<const char*>(data->data()),
                            data->data_size());
     client->DidFinishLoading();
+  }
+
+  void LoadAndWaitForMetadata(std::string data_file) {
+    Load(data_file);
 
     // This runs until we reach the have current data state. Attempting to wait
     // for states < kReadyStateHaveCurrentData is unreliable due to asynchronous
@@ -693,6 +718,7 @@ class WebMediaPlayerImplTest : public testing::Test {
 
   // The client interface used by |wmpi_|.
   NiceMock<MockWebMediaPlayerClient> client_;
+  MockWebMediaPlayerEncryptedMediaClient encrypted_client_;
 
 #if defined(OS_ANDROID)
   NiceMock<MockRendererMediaPlayerManager> mock_media_player_manager_;
@@ -1332,6 +1358,38 @@ TEST_F(WebMediaPlayerImplTest, NoStreams) {
 
   // Nothing should happen.  In particular, no assertions should fail.
   OnMetadata(metadata);
+}
+
+// TODO(xhwang): Use MockCdm in encrypted media related tests.
+
+TEST_F(WebMediaPlayerImplTest, Encrypted) {
+  InitializeWebMediaPlayerImpl();
+
+  base::RunLoop loop;
+  EXPECT_CALL(
+      encrypted_client_,
+      Encrypted(blink::WebEncryptedMediaInitDataType::kWebm, NotNull(), Gt(0u)))
+      .WillOnce(RunClosure(loop.QuitClosure()));
+
+  // Cannot wait for metadata since we don't have a CDM and pipeline
+  // initialization will stall waiting for a CDM to be set. But Encrypted()
+  // should still be called.
+  Load(kEncryptedVideoOnlyTestFile);
+
+  loop.Run();
+}
+
+TEST_F(WebMediaPlayerImplTest, Waiting_NoDecryptionKey) {
+  InitializeWebMediaPlayerImpl();
+
+  // Use non-encrypted file here since we don't have a CDM. Otherwise pipeline
+  // initialization will stall waiting for a CDM to be set.
+  LoadAndWaitForMetadata(kVideoOnlyTestFile);
+
+  EXPECT_CALL(encrypted_client_, DidBlockPlaybackWaitingForKey());
+  EXPECT_CALL(encrypted_client_, DidResumePlaybackBlockedForKey());
+
+  OnWaiting(WaitingReason::kNoDecryptionKey);
 }
 
 TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
