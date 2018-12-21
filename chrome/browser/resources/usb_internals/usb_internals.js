@@ -9,10 +9,10 @@
 (function() {
 // Connection to the UsbInternalsPageHandler instance running in the browser
 // process.
-let pageHandler = null;
+let usbManagerTest = null;
 
 function refreshDeviceList() {
-  pageHandler.getTestDevices().then(function(response) {
+  usbManagerTest.getTestDevices().then(function(response) {
     const tableBody = $('test-device-list');
     tableBody.innerHTML = '';
     for (const device of response.devices) {
@@ -25,8 +25,9 @@ function refreshDeviceList() {
       name.textContent = device.name;
       serialNumber.textContent = device.serialNumber;
       landingPage.textContent = device.landingPage.url;
-      removeButton.addEventListener('click', function() {
-        pageHandler.removeDeviceForTesting(device.guid).then(refreshDeviceList);
+      removeButton.addEventListener('click', async function() {
+        await usbManagerTest.removeDeviceForTesting(device.guid);
+        refreshDeviceList();
       });
       removeButton.textContent = 'Remove';
       row.appendChild(name);
@@ -40,13 +41,14 @@ function refreshDeviceList() {
 }
 
 function addTestDevice(event) {
-  pageHandler
+  usbManagerTest
       .addDeviceForTesting(
           $('test-device-name').value, $('test-device-serial').value,
           $('test-device-landing-page').value)
       .then(function(response) {
         if (response.success)
           refreshDeviceList();
+
         $('add-test-device-result').textContent = response.message;
         $('add-test-device-result').className =
             response.success ? 'action-success' : 'action-failure';
@@ -55,9 +57,12 @@ function addTestDevice(event) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  pageHandler = new mojom.UsbInternalsPageHandlerPtr;
+  const pageHandler = new mojom.UsbInternalsPageHandlerPtr;
   Mojo.bindInterface(
       mojom.UsbInternalsPageHandler.name, mojo.makeRequest(pageHandler).handle);
+
+  usbManagerTest = new device.mojom.UsbDeviceManagerTestPtr;
+  pageHandler.bindTestInterface(mojo.makeRequest(usbManagerTest));
 
   $('add-test-device-form').addEventListener('submit', addTestDevice);
   refreshDeviceList();

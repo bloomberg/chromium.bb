@@ -29,6 +29,7 @@ source_set("lib") {
     "//base",
     "//device/usb/mojo",
     "//device/usb/public/mojom",
+    "//device/usb/public/mojom:test",
     "//services/device/fingerprint",
     "//services/device/generic_sensor",
     "//services/device/geolocation",
