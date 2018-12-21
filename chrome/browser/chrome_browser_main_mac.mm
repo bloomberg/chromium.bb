@@ -14,6 +14,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -61,6 +62,101 @@ void EnsureMetadataNeverIndexFile(const base::FilePath& user_data_dir) {
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::Bind(&EnsureMetadataNeverIndexFileOnFileThread, user_data_dir));
+}
+
+// Used for UMA; never alter existing values.
+enum class FilesystemType {
+  kUnknown,
+  kOther,
+  k_acfs,
+  k_afpfs,
+  k_apfs,
+  k_cdd9660,
+  k_cddafs,
+  k_exfat,
+  k_ftp,
+  k_hfs,
+  k_hfs_rodmg,
+  k_msdos,
+  k_nfs,
+  k_ntfs,
+  k_smbfs,
+  k_udf,
+  k_webdav,
+  kGoogleDriveFS,
+  kMaxValue = kGoogleDriveFS,
+};
+
+FilesystemType FilesystemStringToType(DiskImageStatus is_ro_dmg,
+                                      NSString* filesystem_type) {
+  if ([filesystem_type isEqualToString:@"acfs"])
+    return FilesystemType::k_acfs;
+  if ([filesystem_type isEqualToString:@"afpfs"])
+    return FilesystemType::k_afpfs;
+  if ([filesystem_type isEqualToString:@"apfs"])
+    return FilesystemType::k_apfs;
+  if ([filesystem_type isEqualToString:@"cdd9660"])
+    return FilesystemType::k_cdd9660;
+  if ([filesystem_type isEqualToString:@"cddafs"])
+    return FilesystemType::k_cddafs;
+  if ([filesystem_type isEqualToString:@"exfat"])
+    return FilesystemType::k_exfat;
+  if ([filesystem_type isEqualToString:@"hfs"]) {
+    switch (is_ro_dmg) {
+      case DiskImageStatusFailure:
+      case DiskImageStatusFalse:
+        return FilesystemType::k_hfs;
+        break;
+
+      case DiskImageStatusTrue:
+        return FilesystemType::k_hfs_rodmg;
+        break;
+    }
+  }
+  if ([filesystem_type isEqualToString:@"msdos"])
+    return FilesystemType::k_msdos;
+  if ([filesystem_type isEqualToString:@"nfs"])
+    return FilesystemType::k_nfs;
+  if ([filesystem_type isEqualToString:@"ntfs"])
+    return FilesystemType::k_ntfs;
+  if ([filesystem_type isEqualToString:@"smbfs"])
+    return FilesystemType::k_smbfs;
+  if ([filesystem_type isEqualToString:@"udf"])
+    return FilesystemType::k_udf;
+  if ([filesystem_type isEqualToString:@"webdav"])
+    return FilesystemType::k_webdav;
+  if ([filesystem_type isEqualToString:@"dfsfuse_DFS"])
+    return FilesystemType::kGoogleDriveFS;
+  return FilesystemType::kOther;
+}
+
+// Records various bits of information about the local Chromium installation in
+// UMA.
+void RecordInstallationStats() {
+  NSBundle* outer_bundle = base::mac::OuterBundle();
+
+  // What file system?
+
+  DiskImageStatus is_ro_dmg = IsAppRunningFromReadOnlyDiskImage(nullptr);
+  // Note that -getFileSystemInfoForPath:... is implemented with Disk
+  // Arbitration and |filesystem_type_string| is the value from
+  // kDADiskDescriptionVolumeKindKey. Furthermore, for built-in filesystems, the
+  // string returned specifies which file in /System/Library/Filesystems is
+  // handling it.
+  NSString* filesystem_type_string;
+  BOOL success = [[NSWorkspace sharedWorkspace]
+      getFileSystemInfoForPath:[outer_bundle bundlePath]
+                   isRemovable:nil
+                    isWritable:nil
+                 isUnmountable:nil
+                   description:nil
+                          type:&filesystem_type_string];
+
+  FilesystemType filesystem_type = FilesystemType::kUnknown;
+  if (success)
+    filesystem_type = FilesystemStringToType(is_ro_dmg, filesystem_type_string);
+
+  UMA_HISTOGRAM_ENUMERATION("OSX.InstallationFilesystem", filesystem_type);
 }
 
 }  // namespace
@@ -142,6 +238,8 @@ void ChromeBrowserMainPartsMac::PostMainMessageLoopStart() {
   MacStartupProfiler::GetInstance()->Profile(
       MacStartupProfiler::POST_MAIN_MESSAGE_LOOP_START);
   ChromeBrowserMainPartsPosix::PostMainMessageLoopStart();
+
+  RecordInstallationStats();
 }
 
 void ChromeBrowserMainPartsMac::PreProfileInit() {

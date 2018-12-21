@@ -38627,6 +38627,30 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="OSXFilesystem">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Other"/>
+  <int value="2" label="Apple Xsan"/>
+  <int value="3" label="AFP network share"/>
+  <int value="4" label="APFS"/>
+  <int value="5" label="ISO9660 CD"/>
+  <int value="6" label="CD digital audio">!</int>
+  <int value="7" label="exFAT"/>
+  <int value="8" label="FTP"/>
+  <int value="9" label="HFS family"/>
+  <int value="10" label="HFS read-only disk image">
+    An HFS read-only disk image, likely the original Chromium distribution disk
+    image.
+  </int>
+  <int value="11" label="FAT12/16/32"/>
+  <int value="12" label="NFS"/>
+  <int value="13" label="NTFS"/>
+  <int value="14" label="SMB network share"/>
+  <int value="15" label="UDF"/>
+  <int value="16" label="WebDAV"/>
+  <int value="17" label="Google Drive File Stream"/>
+</enum>
+
 <enum name="OSXFullscreenParameters">
   <int value="0" label="IMMERSIVE_SECONDARY_SHARED_SINGLE">INVALID</int>
   <int value="1" label="APPKIT_SECONDARY_SHARED_SINGLE">INVALID</int>
