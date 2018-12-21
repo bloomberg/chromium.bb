@@ -333,7 +333,8 @@ void CreateMetadataTask::StoreMetadata() {
     pending_request_proto.set_request_index(i);
     pending_request_proto.set_serialized_request(
         ServiceWorkerUtils::SerializeFetchRequestToString(*requests_[i]));
-    pending_request_proto.set_has_request_body(!requests_[i]->blob.is_null());
+    if (requests_[i]->blob)
+      pending_request_proto.set_request_body_size(requests_[i]->blob->size);
     entries.emplace_back(PendingRequestKey(registration_id_.unique_id(), i),
                          pending_request_proto.SerializeAsString());
   }

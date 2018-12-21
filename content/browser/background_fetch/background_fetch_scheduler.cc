@@ -206,7 +206,7 @@ BackgroundFetchScheduler::CreateInitializedController(
   // TODO(rayankans): Only create a controller when the fetch starts.
   auto controller = std::make_unique<BackgroundFetchJobController>(
       data_manager_, delegate_proxy_, registration_id, std::move(options), icon,
-      registration.downloaded,
+      registration.downloaded, registration.uploaded, registration.upload_total,
       // Safe because JobControllers are destroyed before RegistrationNotifier.
       base::BindRepeating(&BackgroundFetchRegistrationNotifier::Notify,
                           base::Unretained(registration_notifier_)),
@@ -322,11 +322,13 @@ void BackgroundFetchScheduler::OnRegistrationQueried(
     return;
 
   // The data manager only has the number of bytes from completed downloads, so
-  // augment this with the number of downloaded bytes from in-progress jobs.
+  // augment this with the number of downloaded/uploaded bytes from in-progress
+  // jobs.
   if (active_controller_->registration_id().unique_id() ==
       registration->unique_id) {
     registration->downloaded +=
         active_controller_->GetInProgressDownloadedBytes();
+    registration->uploaded += active_controller_->GetInProgressUploadedBytes();
   }
 }
 

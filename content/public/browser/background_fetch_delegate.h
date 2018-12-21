@@ -86,6 +86,7 @@ class CONTENT_EXPORT BackgroundFetchDelegate {
     // called on the UI thread.
     virtual void OnDownloadUpdated(const std::string& job_unique_id,
                                    const std::string& download_guid,
+                                   uint64_t bytes_uploaded,
                                    uint64_t bytes_downloaded) = 0;
 
     // Called after the download has completed giving the result including the

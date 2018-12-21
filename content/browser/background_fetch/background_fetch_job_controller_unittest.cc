@@ -149,17 +149,20 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
         std::make_unique<BackgroundFetchDelegateProxy>(browser_context());
 
     auto controller = std::make_unique<BackgroundFetchJobController>(
-        nullptr /* data_manager */, delegate_proxy_.get(), registration_id,
+        /* data_manager= */ nullptr, delegate_proxy_.get(), registration_id,
         blink::mojom::BackgroundFetchOptions::New(), SkBitmap(),
-        0 /* bytes_downloaded */,
+        /* bytes_downloaded= */ 0u,
+        /* bytes_uploaded= */ 0u,
+        /* upload_total= */ 0u,
         base::BindRepeating(
             &BackgroundFetchJobControllerTest::DidUpdateProgress,
             base::Unretained(this)),
         base::BindOnce(&BackgroundFetchJobControllerTest::DidFinishJob,
                        base::Unretained(this)));
 
-    controller->InitializeRequestStatus(0, total_downloads,
-                                        {} /* outstanding_guids */,
+    controller->InitializeRequestStatus(/* completed_downloads= */ 0,
+                                        total_downloads,
+                                        /* outstanding_guids= */ {},
                                         /* start_paused = */ false);
 
     return controller;

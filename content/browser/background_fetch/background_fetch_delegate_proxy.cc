@@ -161,10 +161,10 @@ class BackgroundFetchDelegateProxy::Core
       headers.SetHeader("Origin", origin.Serialize());
     }
 
-    delegate->DownloadUrl(job_unique_id, request->download_guid(),
-                          fetch_request->method, fetch_request->url,
-                          traffic_annotation, headers,
-                          request->has_request_body());
+    delegate->DownloadUrl(
+        job_unique_id, request->download_guid(), fetch_request->method,
+        fetch_request->url, traffic_annotation, headers,
+        /* has_request_body= */ request->request_body_size() > 0u);
   }
 
   void Abort(const std::string& job_unique_id) {
@@ -196,6 +196,7 @@ class BackgroundFetchDelegateProxy::Core
       blink::mojom::BackgroundFetchFailureReason reason_to_abort) override;
   void OnDownloadUpdated(const std::string& job_unique_id,
                          const std::string& guid,
+                         uint64_t bytes_uploaded,
                          uint64_t bytes_downloaded) override;
   void OnDownloadComplete(
       const std::string& job_unique_id,
@@ -235,12 +236,14 @@ void BackgroundFetchDelegateProxy::Core::OnJobCancelled(
 void BackgroundFetchDelegateProxy::Core::OnDownloadUpdated(
     const std::string& job_unique_id,
     const std::string& guid,
+    uint64_t bytes_uploaded,
     uint64_t bytes_downloaded) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&BackgroundFetchDelegateProxy::OnDownloadUpdated,
-                     io_parent_, job_unique_id, guid, bytes_downloaded));
+                     io_parent_, job_unique_id, guid, bytes_uploaded,
+                     bytes_downloaded));
 }
 
 void BackgroundFetchDelegateProxy::Core::OnDownloadComplete(
@@ -481,6 +484,7 @@ void BackgroundFetchDelegateProxy::DidActivateUI(
 void BackgroundFetchDelegateProxy::OnDownloadUpdated(
     const std::string& job_unique_id,
     const std::string& guid,
+    uint64_t bytes_uploaded,
     uint64_t bytes_downloaded) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -498,7 +502,8 @@ void BackgroundFetchDelegateProxy::OnDownloadUpdated(
         job_details.current_request_map[guid];
     DCHECK(request_info);
     DCHECK_EQ(guid, request_info->download_guid());
-    job_details.controller->DidUpdateRequest(request_info, bytes_downloaded);
+    job_details.controller->DidUpdateRequest(request_info, bytes_uploaded,
+                                             bytes_downloaded);
   }
 }
 

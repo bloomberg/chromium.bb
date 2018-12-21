@@ -73,6 +73,8 @@ BackgroundFetchJobController::BackgroundFetchJobController(
     blink::mojom::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
     uint64_t bytes_downloaded,
+    uint64_t bytes_uploaded,
+    uint64_t upload_total,
     ProgressCallback progress_callback,
     FinishedCallback finished_callback)
     : data_manager_(data_manager),
@@ -81,6 +83,8 @@ BackgroundFetchJobController::BackgroundFetchJobController(
       options_(std::move(options)),
       icon_(icon),
       complete_requests_downloaded_bytes_cache_(bytes_downloaded),
+      complete_requests_uploaded_bytes_cache_(bytes_uploaded),
+      upload_total_(upload_total),
       progress_callback_(std::move(progress_callback)),
       finished_callback_(std::move(finished_callback)),
       weak_ptr_factory_(this) {
@@ -160,20 +164,26 @@ void BackgroundFetchJobController::DidStartRequest(
 
 void BackgroundFetchJobController::DidUpdateRequest(
     const scoped_refptr<BackgroundFetchRequestInfo>& request,
+    uint64_t bytes_uploaded,
     uint64_t bytes_downloaded) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // Don't send updates so the size is not leaked.
-  if (!request->can_populate_body())
+  // Don't send download updates so the size is not leaked.
+  // Upload updates are fine since that information is already available.
+  if (!request->can_populate_body() && bytes_downloaded > 0u)
     return;
 
-  if (active_request_downloaded_bytes_ == bytes_downloaded)
+  if (active_request_downloaded_bytes_ == bytes_downloaded &&
+      active_request_uploaded_bytes_ == bytes_uploaded) {
     return;
+  }
 
   active_request_downloaded_bytes_ = bytes_downloaded;
+  active_request_uploaded_bytes_ = bytes_uploaded;
 
   auto registration = NewRegistration();
-  registration->downloaded += GetInProgressDownloadedBytes();
+  registration->downloaded += active_request_downloaded_bytes_;
+  registration->uploaded += active_request_uploaded_bytes_;
   progress_callback_.Run(*registration);
 }
 
@@ -187,11 +197,14 @@ void BackgroundFetchJobController::DidCompleteRequest(
   if (!active_request_finished_callback_)
     return;
 
-  active_request_downloaded_bytes_ = 0;
+  ++completed_downloads_;
 
   if (request->can_populate_body())
     complete_requests_downloaded_bytes_cache_ += request->GetFileSize();
-  ++completed_downloads_;
+  complete_requests_uploaded_bytes_cache_ += active_request_uploaded_bytes_;
+
+  active_request_downloaded_bytes_ = 0u;
+  active_request_uploaded_bytes_ = 0u;
 
   std::move(active_request_finished_callback_).Run(request);
 }
@@ -200,13 +213,17 @@ blink::mojom::BackgroundFetchRegistrationPtr
 BackgroundFetchJobController::NewRegistration() const {
   return blink::mojom::BackgroundFetchRegistration::New(
       registration_id().developer_id(), registration_id().unique_id(),
-      0 /* upload_total */, 0 /* uploaded */, options_->download_total,
-      complete_requests_downloaded_bytes_cache_,
+      upload_total_, complete_requests_uploaded_bytes_cache_,
+      options_->download_total, complete_requests_downloaded_bytes_cache_,
       blink::mojom::BackgroundFetchResult::UNSET, failure_reason_);
 }
 
 uint64_t BackgroundFetchJobController::GetInProgressDownloadedBytes() {
   return active_request_downloaded_bytes_;
+}
+
+uint64_t BackgroundFetchJobController::GetInProgressUploadedBytes() {
+  return active_request_uploaded_bytes_;
 }
 
 void BackgroundFetchJobController::AbortFromDelegate(

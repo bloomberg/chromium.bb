@@ -41,9 +41,11 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
         const scoped_refptr<BackgroundFetchRequestInfo>& request) = 0;
 
     // Called when the given |request| has an update, meaning that a total of
+    // |bytes_uploaded| of the request were uploaded, and a total of
     // |bytes_downloaded| are now available for the response.
     virtual void DidUpdateRequest(
         const scoped_refptr<BackgroundFetchRequestInfo>& request,
+        uint64_t bytes_uploaded,
         uint64_t bytes_downloaded) = 0;
 
     // Called when the given |request| has been completed.
@@ -138,9 +140,11 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
                           std::unique_ptr<BackgroundFetchResult> result);
 
   // Called when progress has been made for the download identified by |guid|.
-  // Should only be called on the IO thread.
+  // Progress is either the request body being uploaded or response body being
+  // downloaded. Should only be called on the IO thread.
   void OnDownloadUpdated(const std::string& job_unique_id,
                          const std::string& guid,
+                         uint64_t bytes_uploaded,
                          uint64_t bytes_downloaded);
 
   // Should only be called from the BackgroundFetchDelegate (on the IO thread).

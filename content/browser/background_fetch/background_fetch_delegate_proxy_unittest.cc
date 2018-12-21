@@ -147,6 +147,7 @@ class FakeController : public BackgroundFetchDelegateProxy::Controller {
 
   void DidUpdateRequest(
       const scoped_refptr<BackgroundFetchRequestInfo>& request,
+      uint64_t bytes_uploaded,
       uint64_t bytes_downloaded) override {}
 
   void DidCompleteRequest(

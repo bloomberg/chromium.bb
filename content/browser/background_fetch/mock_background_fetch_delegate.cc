@@ -116,20 +116,35 @@ void MockBackgroundFetchDelegate::DownloadUrl(
                      std::make_unique<BackgroundFetchResponse>(
                          std::vector<GURL>({url}), test_response->headers)));
 
+  uint64_t bytes_uploaded = 0u;
+
+  if (has_request_body) {
+    // This value isn't actually used anywhere within content tests so a random
+    // value is OK.
+    bytes_uploaded = 42u;
+
+    // Report upload progress.
+    PostAbortCheckingTask(
+        job_unique_id,
+        base::BindOnce(&BackgroundFetchDelegate::Client::OnDownloadUpdated,
+                       job_id_to_client_map_[job_unique_id], job_unique_id,
+                       guid, bytes_uploaded, /* bytes_download */ 0u));
+  }
+
   if (test_response->data.size()) {
     // Report progress at 50% complete.
     PostAbortCheckingTask(
         job_unique_id,
         base::BindOnce(&BackgroundFetchDelegate::Client::OnDownloadUpdated,
                        job_id_to_client_map_[job_unique_id], job_unique_id,
-                       guid, test_response->data.size() / 2));
+                       guid, bytes_uploaded, test_response->data.size() / 2));
 
     // Report progress at 100% complete.
     PostAbortCheckingTask(
         job_unique_id,
         base::BindOnce(&BackgroundFetchDelegate::Client::OnDownloadUpdated,
                        job_id_to_client_map_[job_unique_id], job_unique_id,
-                       guid, test_response->data.size()));
+                       guid, bytes_uploaded, test_response->data.size()));
   }
 
   if (test_response->succeeded) {

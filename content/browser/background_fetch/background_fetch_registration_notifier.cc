@@ -37,8 +37,7 @@ void BackgroundFetchRegistrationNotifier::Notify(
     const blink::mojom::BackgroundFetchRegistration& registration) {
   auto range = observers_.equal_range(registration.unique_id);
   for (auto it = range.first; it != range.second; ++it) {
-    // TODO(crbug.com/774054): Uploads are not yet supported.
-    it->second->OnProgress(0 /* upload_total */, 0 /* uploaded */,
+    it->second->OnProgress(registration.upload_total, registration.uploaded,
                            registration.download_total, registration.downloaded,
                            registration.result, registration.failure_reason);
   }

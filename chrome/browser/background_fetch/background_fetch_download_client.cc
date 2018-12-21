@@ -105,9 +105,7 @@ void BackgroundFetchDownloadClient::OnDownloadUpdated(
     const std::string& guid,
     uint64_t bytes_uploaded,
     uint64_t bytes_downloaded) {
-  if (bytes_downloaded == 0u)
-    return;
-  GetDelegate()->OnDownloadUpdated(guid, bytes_downloaded);
+  GetDelegate()->OnDownloadUpdated(guid, bytes_uploaded, bytes_downloaded);
 }
 
 void BackgroundFetchDownloadClient::OnDownloadFailed(

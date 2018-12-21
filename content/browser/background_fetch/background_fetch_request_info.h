@@ -40,7 +40,7 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
  public:
   BackgroundFetchRequestInfo(int request_index,
                              blink::mojom::FetchAPIRequestPtr fetch_request,
-                             bool has_request_body);
+                             uint64_t request_body_size);
 
   // Sets the download GUID to a newly generated value. Can only be used if no
   // GUID is already set.
@@ -78,8 +78,8 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
     return fetch_request_;
   }
 
-  // Returns whether the request has a body that needs to be uploaded.
-  bool has_request_body() const { return has_request_body_; }
+  // Returns the size of the blob to upload.
+  uint64_t request_body_size() const { return request_body_size_; }
 
   void set_can_populate_body(bool can_populate_body) {
     can_populate_body_ = can_populate_body;
@@ -128,7 +128,7 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   // ---- Data associated with the request -------------------------------------
   int request_index_ = kInvalidBackgroundFetchRequestIndex;
   blink::mojom::FetchAPIRequestPtr fetch_request_;
-  bool has_request_body_ = false;
+  uint64_t request_body_size_;
 
   // ---- Data associated with the in-progress download ------------------------
   std::string download_guid_;
