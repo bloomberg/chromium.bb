@@ -184,12 +184,13 @@ class TokenPreloadScanner::StartTagScanner {
         height_attr_small_absolute_(false),
         inline_style_dimensions_small_(false),
         scanner_type_(scanner_type) {
-    if (Match(tag_impl_, kImgTag) || Match(tag_impl_, kSourceTag)) {
+    if (Match(tag_impl_, kImgTag) || Match(tag_impl_, kSourceTag) ||
+        Match(tag_impl_, kLinkTag)) {
       source_size_ = SizesAttributeParser(media_values_, String()).length();
       return;
     }
-    if (!Match(tag_impl_, kInputTag) && !Match(tag_impl_, kLinkTag) &&
-        !Match(tag_impl_, kScriptTag) && !Match(tag_impl_, kVideoTag))
+    if (!Match(tag_impl_, kInputTag) && !Match(tag_impl_, kScriptTag) &&
+        !Match(tag_impl_, kVideoTag))
       tag_impl_ = nullptr;
   }
 
