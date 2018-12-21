@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
@@ -62,6 +63,16 @@ class D3D11VideoDecoderTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  void EnableFeature(const base::Feature& feature) {
+    scoped_feature_list_.emplace();
+    scoped_feature_list_->InitAndEnableFeature(feature);
+  }
+
+  void DisableFeature(const base::Feature& feature) {
+    scoped_feature_list_.emplace();
+    scoped_feature_list_->InitAndDisableFeature(feature);
+  }
+
   void CreateDecoder() {
     std::unique_ptr<MockD3D11VideoDecoderImpl> impl =
         std::make_unique<NiceMock<MockD3D11VideoDecoderImpl>>();
@@ -109,6 +120,8 @@ class D3D11VideoDecoderTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  MOCK_METHOD1(MockInitCB, void(bool));
+
   base::test::ScopedTaskEnvironment env_;
 
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
@@ -120,7 +133,7 @@ class D3D11VideoDecoderTest : public ::testing::Test {
   MockD3D11VideoDecoderImpl* impl_ = nullptr;
   D3D11CreateDeviceMock create_device_mock_;
 
-  MOCK_METHOD1(MockInitCB, void(bool));
+  base::Optional<base::test::ScopedFeatureList> scoped_feature_list_;
 };
 
 TEST_F(D3D11VideoDecoderTest, RequiresD3D11_0) {
@@ -163,17 +176,11 @@ TEST_F(D3D11VideoDecoderTest, OnlySupportsVP9WithFlagEnabled) {
   VideoDecoderConfig configuration =
       TestVideoConfig::NormalCodecProfile(kCodecVP9, VP9PROFILE_PROFILE0);
 
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitWithFeatures({}, {kD3D11VP9Decoder});
-    EXPECT_FALSE(d3d11_decoder_raw_->IsPotentiallySupported(configuration));
-  }
+  DisableFeature(kD3D11VP9Decoder);
+  EXPECT_FALSE(d3d11_decoder_raw_->IsPotentiallySupported(configuration));
 
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitWithFeatures({kD3D11VP9Decoder}, {});
-    EXPECT_TRUE(d3d11_decoder_raw_->IsPotentiallySupported(configuration));
-  }
+  EnableFeature(kD3D11VP9Decoder);
+  EXPECT_TRUE(d3d11_decoder_raw_->IsPotentiallySupported(configuration));
 }
 
 TEST_F(D3D11VideoDecoderTest, OnlySupportsH264NonHIGH10Profile) {
@@ -210,11 +217,9 @@ TEST_F(D3D11VideoDecoderTest, DoesNotSupportEncryptionWithoutFlag) {
   VideoDecoderConfig encrypted_config =
       TestVideoConfig::NormalCodecProfile(kCodecH264, H264PROFILE_MAIN);
   encrypted_config.SetIsEncrypted(true);
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitWithFeatures({}, {kD3D11EncryptedMedia});
-    EXPECT_FALSE(d3d11_decoder_raw_->IsPotentiallySupported(encrypted_config));
-  }
+
+  DisableFeature(kD3D11EncryptedMedia);
+  EXPECT_FALSE(d3d11_decoder_raw_->IsPotentiallySupported(encrypted_config));
 }
 
 TEST_F(D3D11VideoDecoderTest, SupportsEncryptionWithFlag) {
@@ -222,11 +227,9 @@ TEST_F(D3D11VideoDecoderTest, SupportsEncryptionWithFlag) {
   VideoDecoderConfig encrypted_config =
       TestVideoConfig::NormalCodecProfile(kCodecH264, H264PROFILE_MAIN);
   encrypted_config.SetIsEncrypted(true);
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitWithFeatures({kD3D11EncryptedMedia}, {});
-    EXPECT_TRUE(d3d11_decoder_raw_->IsPotentiallySupported(encrypted_config));
-  }
+
+  EnableFeature(kD3D11EncryptedMedia);
+  EXPECT_TRUE(d3d11_decoder_raw_->IsPotentiallySupported(encrypted_config));
 }
 
 }  // namespace media
