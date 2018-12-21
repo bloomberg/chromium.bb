@@ -43,6 +43,10 @@ const double kMinTimeInMsBetweenFrames = 5;
 // be invalid and reset the fps calculation.
 const double kMaxTimeInMsBetweenFrames = 1000;
 
+const double kFrameRateChangeIntervalInSeconds = 1;
+const double kFrameRateChangeRate = 0.01;
+const double kFrameRateUpdateIntervalInSeconds = 5;
+
 // Empty method used for keeping a reference to the original media::VideoFrame
 // in VideoFrameResolutionAdapter::DeliverFrame if cropping is needed.
 // The reference to |frame| is kept in the closure that calls this method.
@@ -97,6 +101,9 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
 
   bool IsEmpty() const;
 
+  // Sets frame rate to 0.0 if frame monitor has detected muted state.
+  void ResetFrameRate();
+
  private:
   virtual ~VideoFrameResolutionAdapter();
   friend class base::RefCountedThreadSafe<VideoFrameResolutionAdapter>;
@@ -109,11 +116,20 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
   bool MaybeDropFrame(const scoped_refptr<media::VideoFrame>& frame,
                       float source_frame_rate);
 
-  // Calls |settings_callback| to update track settings if either frame width or
-  // height has changed since last update.
+  // Updates track settings if either frame width, height or frame rate have
+  // changed since last update.
   void MaybeUpdateTrackSettings(
       const VideoTrackSettingsCallback& settings_callback,
       const scoped_refptr<media::VideoFrame>& frame);
+
+  void ComputeFrameRate(const base::TimeDelta& frame_timestamp);
+
+  // Controls the frequency of track settings updates based on frame rate
+  // changes. Returns |true| if over the last second the computed frame rate
+  // is consistently kFrameRateChangeRate different than the last reported
+  // value, or if there hasn't been any update in the last
+  // kFrameRateUpdateIntervalInSeconds seconds.
+  bool MaybeUpdateFrameRate();
 
   // Bound to the IO-thread.
   THREAD_CHECKER(io_thread_checker_);
@@ -124,10 +140,15 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
 
   VideoTrackAdapterSettings settings_;
   double frame_rate_;
-  gfx::Size frame_size_;
-
   base::TimeDelta last_time_stamp_;
   double keep_frame_counter_;
+
+  gfx::Size frame_size_;
+  double computed_frame_rate_;
+  double last_updated_frame_rate_;
+  base::TimeDelta prev_frame_timestamp_;
+  base::TimeTicks new_frame_rate_timestamp_;
+  base::TimeTicks last_update_timestamp_;
 
   base::flat_map<const MediaStreamVideoTrack*, VideoTrackCallbacks> callbacks_;
 
@@ -141,7 +162,10 @@ VideoTrackAdapter::VideoFrameResolutionAdapter::VideoFrameResolutionAdapter(
       settings_(settings),
       frame_rate_(MediaStreamVideoSource::kDefaultFrameRate),
       last_time_stamp_(base::TimeDelta::Max()),
-      keep_frame_counter_(0.0) {
+      keep_frame_counter_(0.0),
+      computed_frame_rate_(MediaStreamVideoSource::kDefaultFrameRate),
+      last_updated_frame_rate_(MediaStreamVideoSource::kDefaultFrameRate),
+      prev_frame_timestamp_(base::TimeDelta::Max()) {
   DCHECK(renderer_task_runner_.get());
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   CHECK_NE(0, settings_.max_aspect_ratio());
@@ -335,9 +359,62 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeUpdateTrackSettings(
     const VideoTrackSettingsCallback& settings_callback,
     const scoped_refptr<media::VideoFrame>& frame) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
-  if (frame->natural_size() != frame_size_) {
+  ComputeFrameRate(frame->timestamp());
+  if (MaybeUpdateFrameRate() || frame->natural_size() != frame_size_) {
     frame_size_ = frame->natural_size();
-    settings_callback.Run(frame_size_.width(), frame_size_.height());
+    settings_callback.Run(frame_size_.width(), frame_size_.height(),
+                          computed_frame_rate_);
+  }
+}
+
+void VideoTrackAdapter::VideoFrameResolutionAdapter::ComputeFrameRate(
+    const base::TimeDelta& frame_timestamp) {
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
+  const double delta_ms =
+      (frame_timestamp - prev_frame_timestamp_).InMillisecondsF();
+  prev_frame_timestamp_ = frame_timestamp;
+  if (delta_ms < 0)
+    return;
+
+  computed_frame_rate_ = 200 / delta_ms + 0.8 * computed_frame_rate_;
+}
+
+bool VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeUpdateFrameRate() {
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
+  base::TimeTicks now = base::TimeTicks::Now();
+
+  // Update frame rate if over the last second the computed frame rate has been
+  // consistently kFrameRateChangeIntervalInSeconds different than the last
+  // reported value.
+  if (std::abs(computed_frame_rate_ - last_updated_frame_rate_) >
+      last_updated_frame_rate_ * kFrameRateChangeRate) {
+    if ((now - new_frame_rate_timestamp_).InSecondsF() >
+        kFrameRateChangeIntervalInSeconds) {
+      new_frame_rate_timestamp_ = now;
+      last_update_timestamp_ = now;
+      last_updated_frame_rate_ = computed_frame_rate_;
+      return true;
+    }
+  } else {
+    new_frame_rate_timestamp_ = now;
+  }
+
+  // Update frame rate if it hasn't been updated in the last
+  // kFrameRateUpdateIntervalInSeconds seconds.
+  if ((now - last_update_timestamp_).InSecondsF() >
+      kFrameRateUpdateIntervalInSeconds) {
+    last_update_timestamp_ = now;
+    last_updated_frame_rate_ = computed_frame_rate_;
+    return true;
+  }
+  return false;
+}
+
+void VideoTrackAdapter::VideoFrameResolutionAdapter::ResetFrameRate() {
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
+  for (const auto& callback : callbacks_) {
+    callback.second.settings_callback.Run(frame_size_.width(),
+                                          frame_size_.height(), 0.0);
   }
 }
 
@@ -640,6 +717,10 @@ void VideoTrackAdapter::CheckFramesReceivedOnIO(
   if (muted_state_ != muted_state) {
     set_muted_state_callback.Run(muted_state);
     muted_state_ = muted_state;
+    if (muted_state_) {
+      for (const auto& adapter : adapters_)
+        adapter->ResetFrameRate();
+    }
   }
 
   io_task_runner_->PostDelayedTask(

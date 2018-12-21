@@ -695,13 +695,13 @@
           .getSettings();
       assertTrue(settings1.width != undefined);
       assertTrue(settings1.height != undefined);
-      assertTrue(settings1.frameRate === undefined);
+      assertTrue(settings1.frameRate != undefined);
       detectVideoPlaying('remote-view-2').then(() => {
         var settings2 = gSecondConnection.getRemoteStreams()[0]
             .getVideoTracks()[0].getSettings();
         assertTrue(settings2.width != undefined);
         assertTrue(settings2.height != undefined);
-        assertTrue(settings2.frameRate === undefined);
+        assertTrue(settings2.frameRate != undefined);
         reportTestSuccess();
       });
     });

@@ -108,11 +108,12 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   }
 
   // Setting information about the track size.
-  // Passed as callback on MediaStreamVideoTrack::AddTrack, and called from
+  // Passed as callback on MediaStreamVideoTrack::AddTrack, and run from
   // VideoFrameResolutionAdapter on frame delivery to update track settings.
-  void SetSize(int width, int height) {
+  void SetSizeAndComputedFrameRate(int width, int height, double frame_rate) {
     width_ = width;
     height_ = height;
+    computed_frame_rate_ = frame_rate;
   }
 
   void SetTrackAdapterSettings(const VideoTrackAdapterSettings& settings);
@@ -164,6 +165,7 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   int width_ = 0;
   int height_ = 0;
   double frame_rate_ = 0.0;
+  base::Optional<double> computed_frame_rate_;
 
   base::WeakPtrFactory<MediaStreamVideoTrack> weak_factory_;
 
