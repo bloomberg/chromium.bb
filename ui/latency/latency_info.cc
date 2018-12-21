@@ -125,7 +125,8 @@ LatencyInfo::LatencyInfo(SourceEventType type)
       coalesced_(false),
       began_(false),
       terminated_(false),
-      source_event_type_(type) {}
+      source_event_type_(type),
+      scroll_update_delta_(0) {}
 
 LatencyInfo::LatencyInfo(const LatencyInfo& other) = default;
 
@@ -137,7 +138,8 @@ LatencyInfo::LatencyInfo(int64_t trace_id, bool terminated)
       coalesced_(false),
       began_(false),
       terminated_(terminated),
-      source_event_type_(SourceEventType::UNKNOWN) {}
+      source_event_type_(SourceEventType::UNKNOWN),
+      scroll_update_delta_(0) {}
 
 bool LatencyInfo::Verify(const std::vector<LatencyInfo>& latency_info,
                          const char* referring_msg) {
@@ -184,6 +186,7 @@ void LatencyInfo::CopyLatencyFrom(const LatencyInfo& other,
   }
 
   coalesced_ = other.coalesced();
+  scroll_update_delta_ = other.scroll_update_delta();
   // TODO(tdresser): Ideally we'd copy |began_| here as well, but |began_|
   // isn't very intuitive, and we can actually begin multiple times across
   // copied events.
@@ -207,6 +210,7 @@ void LatencyInfo::AddNewLatencyFrom(const LatencyInfo& other) {
   }
 
   coalesced_ = other.coalesced();
+  scroll_update_delta_ = other.scroll_update_delta();
   // TODO(tdresser): Ideally we'd copy |began_| here as well, but |began_| isn't
   // very intuitive, and we can actually begin multiple times across copied
   // events.
@@ -309,6 +313,18 @@ void LatencyInfo::Terminate() {
   TRACE_EVENT_WITH_FLOW0("input,benchmark", "LatencyInfo.Flow",
                          TRACE_ID_DONT_MANGLE(trace_id_),
                          TRACE_EVENT_FLAG_FLOW_IN);
+}
+
+void LatencyInfo::CoalesceScrollUpdateWith(const LatencyInfo& other) {
+  base::TimeTicks other_timestamp;
+  if (other.FindLatency(INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT,
+                        &other_timestamp)) {
+    latency_components_
+        [INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT] =
+            other_timestamp;
+  }
+
+  scroll_update_delta_ += other.scroll_update_delta();
 }
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
