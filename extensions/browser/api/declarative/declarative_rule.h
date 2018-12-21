@@ -18,7 +18,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
@@ -62,9 +61,9 @@ namespace extensions {
 template<typename ConditionT>
 class DeclarativeConditionSet {
  public:
-  typedef std::vector<std::unique_ptr<base::Value>> Values;
-  typedef std::vector<linked_ptr<const ConditionT> > Conditions;
-  typedef typename Conditions::const_iterator const_iterator;
+  using Values = std::vector<std::unique_ptr<base::Value>>;
+  using Conditions = std::vector<std::unique_ptr<const ConditionT>>;
+  using const_iterator = typename Conditions::const_iterator;
 
   // Factory method that creates a DeclarativeConditionSet for |extension|
   // according to the JSON array |conditions| passed by the extension API. Sets
@@ -100,11 +99,11 @@ class DeclarativeConditionSet {
   }
 
  private:
-  typedef std::map<url_matcher::URLMatcherConditionSet::ID, const ConditionT*>
-      URLMatcherIdToCondition;
+  using URLMatcherIdToCondition =
+      std::map<url_matcher::URLMatcherConditionSet::ID, const ConditionT*>;
 
   DeclarativeConditionSet(
-      const Conditions& conditions,
+      Conditions conditions,
       const URLMatcherIdToCondition& match_id_to_condition,
       const std::vector<const ConditionT*>& conditions_without_urls);
 
@@ -145,8 +144,8 @@ class DeclarativeConditionSet {
 template<typename ActionT>
 class DeclarativeActionSet {
  public:
-  typedef std::vector<std::unique_ptr<base::Value>> Values;
-  typedef std::vector<scoped_refptr<const ActionT> > Actions;
+  using Values = std::vector<std::unique_ptr<base::Value>>;
+  using Actions = std::vector<scoped_refptr<const ActionT>>;
 
   explicit DeclarativeActionSet(const Actions& actions);
 
@@ -200,19 +199,19 @@ class DeclarativeActionSet {
 template<typename ConditionT, typename ActionT>
 class DeclarativeRule {
  public:
-  typedef std::string RuleId;
-  typedef std::pair<ExtensionId, RuleId> GlobalRuleId;
-  typedef int Priority;
-  typedef DeclarativeConditionSet<ConditionT> ConditionSet;
-  typedef DeclarativeActionSet<ActionT> ActionSet;
-  typedef extensions::api::events::Rule JsonRule;
-  typedef std::vector<std::string> Tags;
+  using RuleId = std::string;
+  using GlobalRuleId = std::pair<ExtensionId, RuleId>;
+  using Priority = int;
+  using ConditionSet = DeclarativeConditionSet<ConditionT>;
+  using ActionSet = DeclarativeActionSet<ActionT>;
+  using JsonRule = extensions::api::events::Rule;
+  using Tags = std::vector<std::string>;
 
   // Checks whether the set of |conditions| and |actions| are consistent.
   // Returns true in case of consistency and MUST set |error| otherwise.
-  typedef base::Callback<bool(const ConditionSet* conditions,
-                              const ActionSet* actions,
-                              std::string* error)> ConsistencyChecker;
+  using ConsistencyChecker = base::Callback<bool(const ConditionSet* conditions,
+                                                 const ActionSet* actions,
+                                                 std::string* error)>;
 
   DeclarativeRule(const GlobalRuleId& id,
                   const Tags& tags,
@@ -296,7 +295,7 @@ bool DeclarativeConditionSet<ConditionT>::IsFulfilled(
 template<typename ConditionT>
 void DeclarativeConditionSet<ConditionT>::GetURLMatcherConditionSets(
     url_matcher::URLMatcherConditionSet::Vector* condition_sets) const {
-  for (const linked_ptr<const ConditionT>& condition : conditions_)
+  for (const auto& condition : conditions_)
     condition->GetURLMatcherConditionSets(condition_sets);
 }
 
@@ -310,20 +309,20 @@ DeclarativeConditionSet<ConditionT>::Create(
     std::string* error) {
   Conditions result;
 
-  for (const std::unique_ptr<base::Value>& value : condition_values) {
+  for (const auto& value : condition_values) {
     CHECK(value.get());
     std::unique_ptr<ConditionT> condition = ConditionT::Create(
         extension, url_matcher_condition_factory, *value, error);
     if (!error->empty())
-      return std::unique_ptr<DeclarativeConditionSet>();
-    result.push_back(make_linked_ptr(condition.release()));
+      return nullptr;
+    result.push_back(std::move(condition));
   }
 
   URLMatcherIdToCondition match_id_to_condition;
   std::vector<const ConditionT*> conditions_without_urls;
   url_matcher::URLMatcherConditionSet::Vector condition_sets;
 
-  for (const linked_ptr<const ConditionT>& condition : result) {
+  for (const auto& condition : result) {
     condition_sets.clear();
     condition->GetURLMatcherConditionSets(&condition_sets);
     if (condition_sets.empty()) {
@@ -336,16 +335,16 @@ DeclarativeConditionSet<ConditionT>::Create(
   }
 
   return base::WrapUnique(new DeclarativeConditionSet(
-      result, match_id_to_condition, conditions_without_urls));
+      std::move(result), match_id_to_condition, conditions_without_urls));
 }
 
-template<typename ConditionT>
+template <typename ConditionT>
 DeclarativeConditionSet<ConditionT>::DeclarativeConditionSet(
-    const Conditions& conditions,
+    Conditions conditions,
     const URLMatcherIdToCondition& match_id_to_condition,
     const std::vector<const ConditionT*>& conditions_without_urls)
     : match_id_to_condition_(match_id_to_condition),
-      conditions_(conditions),
+      conditions_(std::move(conditions)),
       conditions_without_urls_(conditions_without_urls) {}
 
 //
@@ -368,7 +367,7 @@ DeclarativeActionSet<ActionT>::Create(content::BrowserContext* browser_context,
   *bad_message = false;
   Actions result;
 
-  for (const std::unique_ptr<base::Value>& value : action_values) {
+  for (const auto& value : action_values) {
     CHECK(value.get());
     scoped_refptr<const ActionT> action =
         ActionT::Create(browser_context, extension, *value, error, bad_message);
@@ -377,8 +376,7 @@ DeclarativeActionSet<ActionT>::Create(content::BrowserContext* browser_context,
     result.push_back(action);
   }
 
-  return std::unique_ptr<DeclarativeActionSet>(
-      new DeclarativeActionSet(result));
+  return std::make_unique<DeclarativeActionSet>(result);
 }
 
 template<typename ActionT>
@@ -433,8 +431,8 @@ DeclarativeRule<ConditionT, ActionT>::DeclarativeRule(
     : id_(id),
       tags_(tags),
       extension_installation_time_(extension_installation_time),
-      conditions_(conditions.release()),
-      actions_(actions.release()),
+      conditions_(std::move(conditions)),
+      actions_(std::move(actions)),
       priority_(priority) {
   CHECK(conditions_.get());
   CHECK(actions_.get());
@@ -484,9 +482,9 @@ DeclarativeRule<ConditionT, ActionT>::Create(
 
   GlobalRuleId rule_id(extension->id(), *(rule.id));
   Tags tags = rule.tags ? *rule.tags : Tags();
-  return std::unique_ptr<DeclarativeRule>(
-      new DeclarativeRule(rule_id, tags, extension_installation_time,
-                          std::move(conditions), std::move(actions), priority));
+  return std::make_unique<DeclarativeRule>(
+      rule_id, tags, extension_installation_time, std::move(conditions),
+      std::move(actions), priority);
 }
 
 template<typename ConditionT, typename ActionT>
