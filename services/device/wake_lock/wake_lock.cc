@@ -38,6 +38,16 @@ void WakeLock::AddClient(mojom::WakeLockRequest request) {
                           std::make_unique<bool>(false));
 }
 
+void WakeLock::AddObserver(Observer* observer) {
+  DCHECK(observer);
+  observers_.AddObserver(observer);
+}
+
+void WakeLock::RemoveObserver(Observer* observer) {
+  DCHECK(observer);
+  observers_.RemoveObserver(observer);
+}
+
 void WakeLock::RequestWakeLock() {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(binding_set_.dispatch_context());
@@ -114,6 +124,9 @@ void WakeLock::CreateWakeLock() {
   wake_lock_ = std::make_unique<PowerSaveBlocker>(
       type_, reason_, *description_, main_task_runner_, file_task_runner_);
 
+  for (auto& observer : observers_)
+    observer.OnWakeLockActivated(type_);
+
   if (type_ != mojom::WakeLockType::kPreventDisplaySleep)
     return;
 
@@ -133,6 +146,9 @@ void WakeLock::CreateWakeLock() {
 void WakeLock::RemoveWakeLock() {
   DCHECK(wake_lock_);
   wake_lock_.reset();
+
+  for (auto& observer : observers_)
+    observer.OnWakeLockDeactivated(type_);
 }
 
 void WakeLock::SwapWakeLock() {

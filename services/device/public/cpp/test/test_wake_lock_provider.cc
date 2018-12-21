@@ -20,7 +20,7 @@ class TestWakeLockProvider::TestWakeLock : public mojom::WakeLock,
       : provider_(provider), type_(type) {}
   ~TestWakeLock() override {
     if (active_)
-      provider_->OnWakeLockCanceled(this);
+      provider_->OnWakeLockDeactivated(this);
   }
 
   mojom::WakeLockType type() const { return type_; }
@@ -28,13 +28,13 @@ class TestWakeLockProvider::TestWakeLock : public mojom::WakeLock,
   // mojom::WakeLock:
   void RequestWakeLock() override {
     if (!active_) {
-      provider_->OnWakeLockRequested(this);
+      provider_->OnWakeLockActivated(this);
       active_ = true;
     }
   }
   void CancelWakeLock() override {
     if (active_) {
-      provider_->OnWakeLockCanceled(this);
+      provider_->OnWakeLockDeactivated(this);
       active_ = false;
     }
   }
@@ -99,14 +99,14 @@ void TestWakeLockProvider::OnBindInterface(
       this, mojom::WakeLockProviderRequest(std::move(interface_pipe)));
 }
 
-void TestWakeLockProvider::OnWakeLockRequested(TestWakeLock* wake_lock) {
+void TestWakeLockProvider::OnWakeLockActivated(TestWakeLock* wake_lock) {
   DCHECK(!active_wake_locks_.count(wake_lock));
   active_wake_locks_.insert(wake_lock);
   if (wake_lock_requested_callback_)
     wake_lock_requested_callback_.Run();
 }
 
-void TestWakeLockProvider::OnWakeLockCanceled(TestWakeLock* wake_lock) {
+void TestWakeLockProvider::OnWakeLockDeactivated(TestWakeLock* wake_lock) {
   DCHECK(active_wake_locks_.count(wake_lock));
   active_wake_locks_.erase(wake_lock);
   if (wake_lock_canceled_callback_)
