@@ -2443,6 +2443,7 @@
         'os_type': 'mac',
         'browser_config': 'release',
         'mixins': [
+          'limited_capacity_bot',
           'mac_mini_intel_gpu_experimental',
         ],
         'test_suites': {
@@ -2454,6 +2455,7 @@
         'os_type': 'mac',
         'browser_config': 'release',
         'mixins': [
+          'limited_capacity_bot',
           'mac_retina_amd_gpu_experimental',
         ],
         'test_suites': {
@@ -2696,6 +2698,7 @@
         'os_type': 'win',
         'browser_config': 'release',
         'mixins': [
+          'limited_capacity_bot',
           'win10_intel_hd_630_experimental',
         ],
         'test_suites': {
@@ -2709,6 +2712,7 @@
         'os_type': 'win',
         'browser_config': 'release',
         'mixins': [
+          'limited_capacity_bot',
           'win10_nvidia_quadro_p400_experimental',
         ],
         'test_suites': {
@@ -2767,6 +2771,7 @@
         'os_type': 'win',
         'browser_config': 'release',
         'mixins': [
+          'limited_capacity_bot',
           'win7_amd_r7_240',
         ],
         'test_suites': {
@@ -2778,6 +2783,7 @@
         'os_type': 'win',
         'browser_config': 'debug',
         'mixins': [
+          'limited_capacity_bot',
           'win7_amd_r7_240',
         ],
         'test_suites': {
@@ -2789,6 +2795,7 @@
         'os_type': 'win',
         'browser_config': 'release',
         'mixins': [
+          'limited_capacity_bot',
           'win7_amd_r7_240',
         ],
         'test_suites': {
@@ -2800,6 +2807,7 @@
         'os_type': 'win',
         'browser_config': 'release',
         'mixins': [
+          'limited_capacity_bot',
           'win7_nvidia_quadro_p400',
         ],
         'test_suites': {
@@ -2811,6 +2819,7 @@
       'Win7 FYI dEQP Release (AMD)': {
         'os_type': 'win',
         'mixins': [
+          'limited_capacity_bot',
           'win7_amd_r7_240',
         ],
         'test_suites': {
@@ -2821,6 +2830,7 @@
         'os_type': 'win',
         'browser_config': 'release_x64',
         'mixins': [
+          'limited_capacity_bot',
           'win7_nvidia_quadro_p400',
         ],
         'test_suites': {
