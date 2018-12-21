@@ -245,6 +245,18 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
     return user_policy_signin_service_;
   }
   const std::string initial_device_id() { return initial_device_id_; }
+  bool delegate_destroyed() const { return delegate_destroyed_; }
+  std::string enterprise_confirmation_email() const {
+    return enterprise_confirmation_email_;
+  }
+
+  void ClearProfile() {
+    profile_.reset();
+    account_tracker_service_ = nullptr;
+    user_policy_signin_service_ = nullptr;
+    token_service_ = nullptr;
+    signin_manager_ = nullptr;
+  }
 
   // Gets the ProfileSyncServiceMock.
   browser_sync::ProfileSyncServiceMock* GetProfileSyncServiceMock() {
@@ -327,7 +339,8 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
         << "Merge data confirmation should be shown only once";
     merge_data_previous_email_ = previous_email;
     merge_data_new_email_ = new_email;
-    std::move(callback).Run(merge_data_choice_);
+    if (run_delegate_callbacks_)
+      std::move(callback).Run(merge_data_choice_);
   }
 
   void OnShowEnterpriseAccountConfirmation(
@@ -338,7 +351,8 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
     EXPECT_TRUE(enterprise_confirmation_email_.empty())
         << "Enterprise confirmation should be shown only once.";
     enterprise_confirmation_email_ = email;
-    std::move(callback).Run(enterprise_choice_);
+    if (run_delegate_callbacks_)
+      std::move(callback).Run(enterprise_choice_);
   }
 
   void OnShowSyncConfirmation(
@@ -347,7 +361,8 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
     EXPECT_FALSE(sync_confirmation_shown_)
         << "Sync confirmation should be shown only once.";
     sync_confirmation_shown_ = true;
-    std::move(callback).Run(sync_confirmation_result_);
+    if (run_delegate_callbacks_)
+      std::move(callback).Run(sync_confirmation_result_);
   }
 
   void OnShowSyncSettings() {
@@ -387,6 +402,7 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
       DiceTurnSyncOnHelper::SIGNIN_CHOICE_CANCEL;
   LoginUIService::SyncConfirmationUIClosedResult sync_confirmation_result_ =
       LoginUIService::SyncConfirmationUIClosedResult::ABORT_SIGNIN;
+  bool run_delegate_callbacks_ = true;
 
   // Expected delegate calls.
   std::string expected_login_error_email_;
@@ -849,4 +865,31 @@ TEST_F(DiceTurnSyncOnHelperTest,
       SYNC_WITH_DEFAULT_SETTINGS;
   dice_sync_starter->SyncStartupFailed();
   CheckDelegateCalls();
+}
+
+// Checks that the profile can be deleted in the middle of the flow.
+TEST_F(DiceTurnSyncOnHelperTest, ProfileDeletion) {
+  run_delegate_callbacks_ = false;  // Delegate is hanging.
+
+  // Show the enterprise confirmation dialog.
+  expected_enterprise_confirmation_email_ = kEmail;
+  expected_sync_confirmation_shown_ = true;
+  user_policy_signin_service()->set_dm_token("foo");
+  user_policy_signin_service()->set_client_id("bar");
+  enterprise_choice_ = DiceTurnSyncOnHelper::SIGNIN_CHOICE_CONTINUE;
+  // Signin flow.
+  CreateDiceTurnOnSyncHelper(
+      DiceTurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT);
+
+  // Delegate is now hanging at the enterprise confirmation dialog.
+  // Dialog has been shown.
+  EXPECT_EQ(kEmail, enterprise_confirmation_email());
+  // But signin is not finished.
+  EXPECT_FALSE(signin_manager()->IsAuthenticated());
+
+  // Delete the profile.
+  ClearProfile();
+
+  // DiceTurnSyncOnHelper was destroyed.
+  EXPECT_TRUE(delegate_destroyed());
 }

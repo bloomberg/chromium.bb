@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_startup_tracker.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_metrics.h"
 
@@ -210,6 +211,8 @@ class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
   std::string client_id_;
 
   std::unique_ptr<SyncStartupTracker> sync_startup_tracker_;
+  std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
+      shutdown_subscription_;
 
   base::WeakPtrFactory<DiceTurnSyncOnHelper> weak_pointer_factory_;
   DISALLOW_COPY_AND_ASSIGN(DiceTurnSyncOnHelper);
