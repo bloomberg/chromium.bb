@@ -22,6 +22,7 @@
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "third_party/blink/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 
 namespace url {
@@ -319,7 +320,7 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   std::vector<RequestScanningStartCallback> discovery_callbacks_;
 
   // List of clients that we must broadcast scan changes to.
-  std::vector<blink::mojom::WebBluetoothScanClientAssociatedPtr>
+  mojo::AssociatedInterfacePtrSet<blink::mojom::WebBluetoothScanClient>
       scanning_clients_;
 
   // The lifetime of this instance is exclusively managed by the RFH that

@@ -247,13 +247,7 @@ void WebBluetoothServiceImpl::DeviceAdvertisementReceived(
   if (!discovery_session_ || !discovery_session_->IsActive())
     return;
 
-  bool has_bound_client = false;
-  for (auto const& client : scanning_clients_) {
-    if (!client.is_bound())
-      continue;
-
-    has_bound_client = true;
-
+  scanning_clients_.ForAllPtrs([=](auto* client) {
     // TODO(dougt): filter out devices the client is not interested in.
     auto device = blink::mojom::WebBluetoothDevice::New();
     // TODO(dougt):
@@ -294,15 +288,13 @@ void WebBluetoothServiceImpl::DeviceAdvertisementReceived(
     result->service_data = std::move(services);
 
     client->ScanEvent(std::move(result));
-  }
-
-  // TODO(dougt): Instead of this we should have a connection error handler on
-  // each client and remove it from |scanning_clients_| when the pipe closes.
+  });
 
   // If we don't have any bound clients, clean things up.
-  if (!discovery_request_pending_ && !has_bound_client && discovery_session_) {
-    scanning_clients_.clear();
+  if (scanning_clients_.empty()) {
     discovery_session_->Stop(base::DoNothing(), base::DoNothing());
+    discovery_session_ = nullptr;
+    return;
   }
 }
 
@@ -932,7 +924,7 @@ void WebBluetoothServiceImpl::RequestScanningStartImpl(
   }
 
   if (discovery_session_) {
-    scanning_clients_.push_back(std::move(client));
+    scanning_clients_.AddPtr(std::move(client));
     std::move(callback).Run(blink::mojom::WebBluetoothResult::SUCCESS);
     return;
   }
@@ -958,7 +950,7 @@ void WebBluetoothServiceImpl::OnStartDiscoverySession(
 
   discovery_request_pending_ = false;
   discovery_session_ = std::move(session);
-  scanning_clients_.push_back(std::move(client));
+  scanning_clients_.AddPtr(std::move(client));
 
   for (auto& callback : discovery_callbacks_)
     std::move(callback).Run(blink::mojom::WebBluetoothResult::SUCCESS);
@@ -1406,7 +1398,7 @@ void WebBluetoothServiceImpl::ClearState() {
   binding_.Close();
 
   characteristic_id_to_notify_session_.clear();
-  scanning_clients_.clear();
+  scanning_clients_.CloseAll();
   pending_primary_services_requests_.clear();
   descriptor_id_to_characteristic_id_.clear();
   characteristic_id_to_service_id_.clear();
