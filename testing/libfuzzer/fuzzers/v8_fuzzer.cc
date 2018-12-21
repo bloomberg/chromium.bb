@@ -92,11 +92,11 @@ void terminate_execution(v8::Isolate* isolate,
 
 struct Environment {
   Environment() {
-    v8::Platform* platform = v8::platform::CreateDefaultPlatform(
+    platform_ = v8::platform::NewDefaultPlatform(
         0, v8::platform::IdleTaskSupport::kDisabled,
         v8::platform::InProcessStackDumping::kDisabled, nullptr);
 
-    v8::V8::InitializePlatform(platform);
+    v8::V8::InitializePlatform(platform_.get());
     v8::V8::Initialize();
     v8::Isolate::CreateParams create_params;
 
@@ -109,6 +109,7 @@ struct Environment {
   mutex mtx;
   std::thread terminator_thread;
   v8::Isolate* isolate;
+  std::unique_ptr<v8::Platform> platform_;
   time_point<steady_clock> start_time;
   bool is_running;
 };
