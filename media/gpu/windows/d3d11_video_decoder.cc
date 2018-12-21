@@ -387,8 +387,11 @@ void D3D11VideoDecoder::OnGpuInitComplete(bool success) {
 
   if (!init_cb_) {
     // We already failed, so just do nothing.
+    DCHECK_EQ(state_, State::kError);
     return;
   }
+
+  DCHECK_EQ(state_, State::kInitializing);
 
   if (!success) {
     NotifyError("Gpu init failed");
@@ -410,6 +413,7 @@ void D3D11VideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   }
 
   input_buffer_queue_.push_back(std::make_pair(std::move(buffer), decode_cb));
+
   // Post, since we're not supposed to call back before this returns.  It
   // probably doesn't matter since we're in the gpu process anyway.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -492,6 +496,7 @@ void D3D11VideoDecoder::DoDecode() {
 
 void D3D11VideoDecoder::Reset(const base::RepeatingClosure& closure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_NE(state_, State::kInitializing);
 
   current_buffer_ = nullptr;
   if (current_decode_cb_)
@@ -503,6 +508,12 @@ void D3D11VideoDecoder::Reset(const base::RepeatingClosure& closure) {
 
   // TODO(liberato): how do we signal an error?
   accelerated_video_decoder_->Reset();
+
+  // Transition from kWaitingForNewKey to kRunning upon reset since the new
+  // buffer could be clear or have a different key ID.
+  if (state_ == State::kWaitingForNewKey)
+    state_ = State::kRunning;
+
   closure.Run();
 }
 
