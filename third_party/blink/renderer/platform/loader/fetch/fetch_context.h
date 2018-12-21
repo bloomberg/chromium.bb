@@ -42,7 +42,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
-#include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "third_party/blink/public/platform/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
@@ -205,9 +204,6 @@ class PLATFORM_EXPORT FetchContext
     return blink::mojom::ControllerServiceWorkerMode::kNoController;
   }
   virtual int64_t ServiceWorkerID() const { return -1; }
-  virtual int ApplicationCacheHostID() const {
-    return WebApplicationCacheHost::kAppCacheNoHostId;
-  }
 
   virtual bool IsMainFrame() const { return true; }
   virtual bool DefersLoading() const { return false; }

@@ -21,6 +21,9 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/messaging/post_message_options.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
@@ -392,7 +395,10 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
     LocalFrame* frame = document->GetFrame();
     web_worker_fetch_context = frame->Client()->CreateWorkerFetchContext();
     web_worker_fetch_context->SetApplicationCacheHostID(
-        GetExecutionContext()->Fetcher()->Context().ApplicationCacheHostID());
+        frame->Loader()
+            .GetDocumentLoader()
+            ->GetApplicationCacheHost()
+            ->GetHostID());
     web_worker_fetch_context->SetIsOnSubframe(!frame->IsMainFrame());
   } else if (auto* scope =
                  DynamicTo<WorkerGlobalScope>(GetExecutionContext())) {
