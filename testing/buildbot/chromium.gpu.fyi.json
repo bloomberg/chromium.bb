@@ -2226,26 +2226,6 @@
     "isolated_scripts": [
       {
         "args": [
-          "-v",
-          "--one-frame-only",
-          "--shard-timeout=500"
-        ],
-        "isolate_name": "angle_perftests",
-        "name": "angle_perftests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "L",
-              "device_type": "hammerhead",
-              "os": "Android",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "context_lost",
           "--show-stdout",
           "--browser=android-chromium",
