@@ -317,6 +317,8 @@ js_library("runtime_host_permissions") {
   deps = [
     ":item",
     ":runtime_hosts_dialog",
+    "//ui/webui/resources/cr_elements/cr_radio_button:cr_radio_button",
+    "//ui/webui/resources/cr_elements/cr_radio_group:cr_radio_group",
   ]
   externs_list = [ "$externs_path/developer_private.js" ]
 }

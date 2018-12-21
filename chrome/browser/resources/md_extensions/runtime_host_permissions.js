@@ -96,9 +96,8 @@ cr.define('extensions', function() {
      * @private
      */
     onHostAccessChange_: function(event) {
-      const select = /** @type {!HTMLSelectElement} */ (event.target);
-      const access =
-          /** @type {chrome.developerPrivate.HostAccess} */ (select.value);
+      const group = this.$['host-access'];
+      const access = group.selected;
 
       if (access == chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES &&
           this.permissions.hostAccess !=
@@ -112,7 +111,7 @@ cr.define('extensions', function() {
         //   This ensures there will be at least one, so that the host access
         //   is properly calculated.
         this.oldHostAccess_ = this.permissions.hostAccess;
-        this.doShowHostDialog_(select, null);
+        this.doShowHostDialog_(group, null);
       } else {
         this.delegate.setItemHostAccess(this.itemId, access);
       }
@@ -182,7 +181,7 @@ cr.define('extensions', function() {
       // if the dialog was shown when just transitioning to a new state.
       if (this.oldHostAccess_) {
         assert(this.permissions.hostAccess == this.oldHostAccess_);
-        this.$['host-access'].value = this.oldHostAccess_;
+        this.$['host-access'].selected = this.oldHostAccess_;
         this.oldHostAccess_ = null;
       }
     },
