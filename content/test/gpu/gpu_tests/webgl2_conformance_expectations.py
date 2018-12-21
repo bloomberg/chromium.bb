@@ -1293,6 +1293,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/buffers/get-buffer-sub-data-validity.html',
         ['linux', ('amd', 0x6613)], bug=851159)
 
+    self.Fail('conformance2/textures/misc/' +
+        'generate-mipmap-with-large-base-level.html',
+        ['linux', ('amd', 0x6613)], bug=913301)
+
     ####################
     # Android failures #
     ####################
