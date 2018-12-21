@@ -67,11 +67,6 @@ URLLoaderFactoryBundle::URLLoaderFactoryBundle(
 
 URLLoaderFactoryBundle::~URLLoaderFactoryBundle() = default;
 
-void URLLoaderFactoryBundle::SetDefaultFactory(
-    network::mojom::URLLoaderFactoryPtr factory) {
-  default_factory_ = std::move(factory);
-}
-
 network::mojom::URLLoaderFactory* URLLoaderFactoryBundle::GetFactory(
     const network::ResourceRequest& request) {
   auto it = scheme_specific_factories_.find(request.url.scheme());

@@ -90,10 +90,6 @@ class CONTENT_EXPORT URLLoaderFactoryBundle
   explicit URLLoaderFactoryBundle(
       std::unique_ptr<URLLoaderFactoryBundleInfo> info);
 
-  // Sets the default factory to use when no registered factories match a given
-  // |url|.
-  void SetDefaultFactory(network::mojom::URLLoaderFactoryPtr factory);
-
   // SharedURLLoaderFactory implementation.
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
                             int32_t routing_id,

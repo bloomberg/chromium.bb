@@ -6625,11 +6625,6 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
   GetLocalRootRenderWidget()->UpdateSelectionBounds();
 }
 
-void RenderFrameImpl::SetCustomURLLoaderFactory(
-    network::mojom::URLLoaderFactoryPtr factory) {
-  GetLoaderFactoryBundle()->SetDefaultFactory(std::move(factory));
-}
-
 void RenderFrameImpl::ScrollFocusedEditableElementIntoRect(
     const gfx::Rect& rect) {
   // TODO(ekaramad): Perhaps we should remove |rect| since all it seems to be
