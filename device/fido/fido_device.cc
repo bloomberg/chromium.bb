@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "device/base/features.h"
 #include "device/fido/ctap_empty_authenticator_request.h"
 #include "device/fido/device_response_converter.h"
 #include "device/fido/fido_constants.h"
@@ -33,18 +32,13 @@ bool FidoDevice::IsPaired() const {
 
 void FidoDevice::DiscoverSupportedProtocolAndDeviceInfo(
     base::OnceClosure done) {
-  if (base::FeatureList::IsEnabled(kNewCtap2Device)) {
-    // Set the protocol version to CTAP2 for the purpose of sending the GetInfo
-    // request. The correct value will be set in the callback based on the
-    // device response.
-    supported_protocol_ = ProtocolVersion::kCtap;
-    DeviceTransact(AuthenticatorGetInfoRequest().Serialize(),
-                   base::BindOnce(&FidoDevice::OnDeviceInfoReceived,
-                                  GetWeakPtr(), std::move(done)));
-  } else {
-    supported_protocol_ = ProtocolVersion::kU2f;
-    std::move(done).Run();
-  }
+  // Set the protocol version to CTAP2 for the purpose of sending the GetInfo
+  // request. The correct value will be set in the callback based on the
+  // device response.
+  supported_protocol_ = ProtocolVersion::kCtap;
+  DeviceTransact(AuthenticatorGetInfoRequest().Serialize(),
+                 base::BindOnce(&FidoDevice::OnDeviceInfoReceived, GetWeakPtr(),
+                                std::move(done)));
 }
 
 bool FidoDevice::SupportedProtocolIsInitialized() {

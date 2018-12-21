@@ -40,8 +40,7 @@ GetAssertionTask::GetAssertionTask(FidoDevice* device,
 GetAssertionTask::~GetAssertionTask() = default;
 
 void GetAssertionTask::StartTask() {
-  if (base::FeatureList::IsEnabled(kNewCtap2Device) &&
-      device()->supported_protocol() == ProtocolVersion::kCtap) {
+  if (device()->supported_protocol() == ProtocolVersion::kCtap) {
     GetAssertion();
   } else {
     U2fSign();

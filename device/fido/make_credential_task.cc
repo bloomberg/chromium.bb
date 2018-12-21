@@ -54,8 +54,7 @@ MakeCredentialTask::MakeCredentialTask(
 MakeCredentialTask::~MakeCredentialTask() = default;
 
 void MakeCredentialTask::StartTask() {
-  if (base::FeatureList::IsEnabled(kNewCtap2Device) &&
-      device()->supported_protocol() == ProtocolVersion::kCtap &&
+  if (device()->supported_protocol() == ProtocolVersion::kCtap &&
       !request_parameter_.is_u2f_only() &&
       !ShouldUseU2fBecauseCtapRequiresClientPin(device(), request_parameter_)) {
     MakeCredential();

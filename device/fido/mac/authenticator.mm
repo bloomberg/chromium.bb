@@ -31,10 +31,8 @@ namespace mac {
 
 // static
 bool TouchIdAuthenticator::IsAvailable() {
-  if (base::FeatureList::IsEnabled(device::kWebAuthTouchId)) {
-    if (__builtin_available(macOS 10.12.2, *)) {
-      return TouchIdContext::TouchIdAvailable();
-    }
+  if (__builtin_available(macOS 10.12.2, *)) {
+    return TouchIdContext::TouchIdAvailable();
   }
   return false;
 }

@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "crypto/ec_private_key.h"
 #include "device/base/features.h"
@@ -39,20 +38,14 @@ using TestGetAssertionTaskCallbackReceiver =
 
 class FidoGetAssertionTaskTest : public testing::Test {
  public:
-  FidoGetAssertionTaskTest() { scoped_feature_list_.emplace(); }
+  FidoGetAssertionTaskTest() {}
 
   TestGetAssertionTaskCallbackReceiver& get_assertion_callback_receiver() {
     return cb_;
   }
 
-  void RemoveCtapFlag() {
-    scoped_feature_list_.emplace();
-    scoped_feature_list_->InitAndDisableFeature(kNewCtap2Device);
-  }
-
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  base::Optional<base::test::ScopedFeatureList> scoped_feature_list_;
   TestGetAssertionTaskCallbackReceiver cb_;
 };
 
@@ -149,32 +142,6 @@ TEST_F(FidoGetAssertionTaskTest, TestSignSuccessWithFake) {
                     .value()
                     ->auth_data()
                     .SerializeToByteArray()[36]);  // counter
-}
-
-TEST_F(FidoGetAssertionTaskTest, TestU2fSignWithoutFlag) {
-  RemoveCtapFlag();
-  auto device = MockFidoDevice::MakeU2f();
-  device->ExpectRequestAndRespondWith(
-      test_data::kU2fCheckOnlySignCommandApdu,
-      test_data::kApduEncodedNoErrorSignResponse);
-  device->ExpectRequestAndRespondWith(
-      test_data::kU2fSignCommandApdu,
-      test_data::kApduEncodedNoErrorSignResponse);
-
-  CtapGetAssertionRequest request_param(test_data::kRelyingPartyId,
-                                        test_data::kClientDataJson);
-  request_param.SetAllowList(
-      {{CredentialType::kPublicKey,
-        fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)}});
-
-  auto task = std::make_unique<GetAssertionTask>(
-      device.get(), std::move(request_param),
-      get_assertion_callback_receiver().callback());
-
-  get_assertion_callback_receiver().WaitForCallback();
-  EXPECT_EQ(CtapDeviceResponseCode::kSuccess,
-            get_assertion_callback_receiver().status());
-  EXPECT_TRUE(get_assertion_callback_receiver().value());
 }
 
 TEST_F(FidoGetAssertionTaskTest, TestIncorrectGetAssertionResponse) {

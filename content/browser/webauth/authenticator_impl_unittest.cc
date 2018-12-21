@@ -989,18 +989,8 @@ TEST_F(AuthenticatorImplTest, TestCableDiscoveryByDefault) {
           device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
 }
 
-TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledWithFlag) {
-  DisableFeature(features::kWebAuthCable);
-
-  auto authenticator = ConnectToAuthenticator();
-  EXPECT_FALSE(SupportsTransportProtocol(
-      device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
-}
-
 #if defined(OS_WIN)
-TEST_F(AuthenticatorImplTest, TestCableDiscoveryEnabledWithWinFlag) {
-  EnableFeature(features::kWebAuthCableWin);
-
+TEST_F(AuthenticatorImplTest, TestCableDiscoveryEnabled) {
   auto authenticator = ConnectToAuthenticator();
 
   // Should be enabled if the new Windows BLE stack is.
@@ -1008,24 +998,6 @@ TEST_F(AuthenticatorImplTest, TestCableDiscoveryEnabledWithWinFlag) {
       device::BluetoothAdapterFactory::Get().IsLowEnergySupported(),
       SupportsTransportProtocol(
           device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
-}
-
-// Tests that caBLE is not supported when features::kWebAuthCable is disabled,
-// regardless of the state of features::kWebAuthCableWin.
-TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledWithoutFlagWin) {
-  for (bool enable_win_flag : {false, true}) {
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features = {features::kWebAuthCable};
-    enable_win_flag ? enabled_features.push_back(features::kWebAuthCableWin)
-                    : disabled_features.push_back(features::kWebAuthCableWin);
-
-    scoped_feature_list_.emplace();
-    scoped_feature_list_->InitWithFeatures(enabled_features, disabled_features);
-
-    auto authenticator = ConnectToAuthenticator();
-    EXPECT_FALSE(SupportsTransportProtocol(
-        device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
-  }
 }
 #endif
 
@@ -1897,9 +1869,7 @@ TEST_F(AuthenticatorContentBrowserClientTest,
 TEST_F(AuthenticatorContentBrowserClientTest,
        IsUVPAAFalseIfEmbedderDoesNotSupportTouchId) {
   if (__builtin_available(macOS 10.12.2, *)) {
-    // Touch ID is hardware-supported, and flag-enabled, but not enabled by the
-    // embedder.
-    EnableFeature(device::kWebAuthTouchId);
+    // Touch ID is hardware-supported, but not enabled by the embedder.
     device::fido::mac::ScopedTouchIdTestEnvironment touch_id_test_environment;
     touch_id_test_environment.SetTouchIdAvailable(true);
     test_client_.supports_touch_id = false;
@@ -1914,28 +1884,8 @@ TEST_F(AuthenticatorContentBrowserClientTest,
   }
 }
 
-TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAAFalseIfFeatureFlagOff) {
-  if (__builtin_available(macOS 10.12.2, *)) {
-    // Touch ID is hardware-supported and embedder-enabled, but the flag is off.
-    DisableFeature(device::kWebAuthTouchId);
-    device::fido::mac::ScopedTouchIdTestEnvironment touch_id_test_environment;
-    touch_id_test_environment.SetTouchIdAvailable(true);
-    test_client_.supports_touch_id = true;
-
-    NavigateAndCommit(GURL(kTestOrigin1));
-    AuthenticatorPtr authenticator = ConnectToAuthenticator();
-
-    TestIsUvpaaCallback cb;
-    authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
-    cb.WaitForCallback();
-    EXPECT_FALSE(cb.value());
-  }
-}
-
 TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAATrueIfTouchIdAvailable) {
   if (__builtin_available(macOS 10.12.2, *)) {
-    // Touch ID is available.
-    EnableFeature(device::kWebAuthTouchId);
     device::fido::mac::ScopedTouchIdTestEnvironment touch_id_test_environment;
     touch_id_test_environment.SetTouchIdAvailable(true);
     test_client_.supports_touch_id = true;
