@@ -38,12 +38,10 @@ class CORE_EXPORT PaintWorkletInput : public cc::PaintWorkletInput {
   PaintWorkletStylePropertyMap* StyleMap() { return style_map_.Get(); }
 
  private:
-  // TODO(xidachen): these members should be const as they are immutable once
-  // created.
-  std::string name_;
-  FloatSize container_size_;
-  float effective_zoom_;
-  CrossThreadPersistent<PaintWorkletStylePropertyMap> style_map_;
+  const std::string name_;
+  const FloatSize container_size_;
+  const float effective_zoom_;
+  const CrossThreadPersistent<PaintWorkletStylePropertyMap> style_map_;
 };
 
 }  // namespace blink
