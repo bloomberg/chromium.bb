@@ -498,7 +498,7 @@
   },
   {
     "name": "direct-manipulation-stylus",
-    // "owners": [ "your-team" ],
+    "owners": [ "lanwei", "input-dev" ],
     "expiry_milestone": 76
   },
   {
@@ -675,12 +675,12 @@
   },
   {
     "name": "document-passive-event-listeners",
-    // "owners": [ "your-team" ],
+    "owners": ["input-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "document-passive-wheel-event-listeners",
-    // "owners": [ "your-team" ],
+    "owners": [ "sahel", "input-dev" ],
     "expiry_milestone": 76
   },
   {
@@ -1936,8 +1936,8 @@
   },
   {
     "name": "enable-touch-drag-drop",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": ["input-dev" ],
+    "expiry_milestone": -1
   },
   {
     "name": "enable-touchable-app-context-menu",
@@ -2762,12 +2762,12 @@
   },
   {
     "name": "passive-event-listeners-due-to-fling",
-    // "owners": [ "your-team" ],
+    "owners": ["input-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "passive-listener-default",
-    // "owners": [ "your-team" ],
+    "owners": ["input-dev" ],
     "expiry_milestone": 76
   },
   {
@@ -3124,7 +3124,7 @@
   },
   {
     "name": "touchpad-overscroll-history-navigation",
-    // "owners": [ "your-team" ],
+    "owners": ["chaopeng", "input-dev" ],
     "expiry_milestone": 76
   },
   {
