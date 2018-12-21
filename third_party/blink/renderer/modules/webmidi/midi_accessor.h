@@ -53,7 +53,7 @@ class MIDIAccessor final {
   void StartSession();
   void SendMIDIData(unsigned port_index,
                     const unsigned char* data,
-                    size_t length,
+                    wtf_size_t length,
                     base::TimeTicks time_stamp);
   // MIDIAccessInitializer and MIDIAccess are both MIDIAccessClient.
   // MIDIAccessInitializer is the first client and MIDIAccess takes over it
@@ -77,7 +77,7 @@ class MIDIAccessor final {
   void DidStartSession(midi::mojom::Result);
   void DidReceiveMIDIData(unsigned port_index,
                           const unsigned char* data,
-                          size_t length,
+                          wtf_size_t length,
                           base::TimeTicks time_stamp);
 
  private:
