@@ -29,6 +29,7 @@
 #include "components/omnibox/browser/test_location_bar_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ui_base_features.h"
@@ -146,6 +147,13 @@ void TestingOmniboxView::UpdatePopup() {
   ++update_popup_call_count_;
   update_popup_text_ = text();
   update_popup_selection_range_ = GetSelectedRange();
+
+  // The real view calls OmniboxEditModel::UpdateInput(), which sets input in
+  // progress and starts autocomplete.  Triggering autocomplete and the popup is
+  // beyond the scope of this test, but setting input in progress is important
+  // for making some sequences (e.g. uneliding on taking an action) behave
+  // correctly.
+  model()->SetInputInProgress(true);
 }
 
 void TestingOmniboxView::SetEmphasis(bool emphasize, const Range& range) {
@@ -217,9 +225,7 @@ class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
   views::Textfield* omnibox_textfield() const { return omnibox_view(); }
   views::View* omnibox_textfield_view() const { return omnibox_view(); }
 
-  ui::TextEditCommand scheduled_text_edit_command() const {
-    return test_api_->scheduled_text_edit_command();
-  }
+  views::TextfieldTestApi* textfield_test_api() { return test_api_.get(); }
 
   // Sets |new_text| as the omnibox text, and emphasizes it appropriately.  If
   // |accept_input| is true, pretends that the user has accepted this input
@@ -365,12 +371,13 @@ TEST_F(OmniboxViewViewsTest, EditTextfield) {
 TEST_F(OmniboxViewViewsTest, ScheduledTextEditCommand) {
   omnibox_textfield()->SetTextEditCommandForNextKeyEvent(
       ui::TextEditCommand::MOVE_UP);
-  EXPECT_EQ(ui::TextEditCommand::MOVE_UP, scheduled_text_edit_command());
+  EXPECT_EQ(ui::TextEditCommand::MOVE_UP,
+            textfield_test_api()->scheduled_text_edit_command());
 
   ui::KeyEvent up_pressed(ui::ET_KEY_PRESSED, ui::VKEY_UP, 0);
   omnibox_textfield()->OnKeyEvent(&up_pressed);
   EXPECT_EQ(ui::TextEditCommand::INVALID_COMMAND,
-            scheduled_text_edit_command());
+            textfield_test_api()->scheduled_text_edit_command());
 }
 
 // Test that Shift+Up and Shift+Down are not captured and let selection mode
@@ -539,6 +546,87 @@ TEST_F(OmniboxViewViewsTest, BackspaceExitsKeywordMode) {
   EXPECT_TRUE(omnibox_view()->GetText().empty());
   EXPECT_TRUE(omnibox_view()->model()->keyword().empty());
 }
+
+class OmniboxViewViewsClipboardTest
+    : public OmniboxViewViewsTest,
+      public ::testing::WithParamInterface<ui::TextEditCommand> {
+ public:
+  void SetUp() override {
+    OmniboxViewViewsTest::SetUp();
+
+    location_bar_model()->set_url(GURL("https://test.com/"));
+    omnibox_view()->model()->ResetDisplayTexts();
+    omnibox_view()->RevertAll();
+  }
+};
+
+TEST_P(OmniboxViewViewsClipboardTest, ClipboardCopyOrCutURL) {
+  omnibox_view()->SelectAll(false);
+  ASSERT_TRUE(omnibox_view()->IsSelectAll());
+
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  ui::ClipboardType clipboard_type = ui::CLIPBOARD_TYPE_COPY_PASTE;
+
+  clipboard->Clear(clipboard_type);
+  ui::TextEditCommand clipboard_command = GetParam();
+  textfield_test_api()->ExecuteTextEditCommand(clipboard_command);
+
+  base::string16 expected_text;
+  if (clipboard_command == ui::TextEditCommand::COPY)
+    expected_text = base::ASCIIToUTF16("https://test.com/");
+  EXPECT_EQ(expected_text, omnibox_view()->GetText());
+
+  // Make sure HTML format isn't written. See
+  // BookmarkNodeData::WriteToClipboard() for details.
+  EXPECT_TRUE(clipboard->IsFormatAvailable(
+      ui::Clipboard::GetPlainTextFormatType(), clipboard_type));
+  EXPECT_FALSE(clipboard->IsFormatAvailable(ui::Clipboard::GetHtmlFormatType(),
+                                            clipboard_type));
+
+  // Windows clipboard only supports text URLs.
+  // Mac clipboard not reporting URL format available for some reason.
+  // crbug.com/751031
+#if defined(OS_LINUX)
+  EXPECT_TRUE(clipboard->IsFormatAvailable(ui::Clipboard::GetUrlFormatType(),
+                                           clipboard_type));
+#endif
+
+  std::string read_from_clipboard;
+  clipboard->ReadAsciiText(clipboard_type, &read_from_clipboard);
+  EXPECT_EQ("https://test.com/", read_from_clipboard);
+}
+
+TEST_P(OmniboxViewViewsClipboardTest, ClipboardCopyOrCutUserText) {
+  omnibox_view()->SetUserText(base::ASCIIToUTF16("user text"));
+  omnibox_view()->SelectAll(false);
+  ASSERT_TRUE(omnibox_view()->IsSelectAll());
+
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  ui::ClipboardType clipboard_type = ui::CLIPBOARD_TYPE_COPY_PASTE;
+
+  clipboard->Clear(clipboard_type);
+  ui::TextEditCommand clipboard_command = GetParam();
+  textfield_test_api()->ExecuteTextEditCommand(clipboard_command);
+
+  if (clipboard_command == ui::TextEditCommand::CUT)
+    EXPECT_EQ(base::string16(), omnibox_view()->GetText());
+
+  // Make sure HTML format isn't written. See
+  // BookmarkNodeData::WriteToClipboard() for details.
+  EXPECT_TRUE(clipboard->IsFormatAvailable(
+      ui::Clipboard::GetPlainTextFormatType(), clipboard_type));
+  EXPECT_FALSE(clipboard->IsFormatAvailable(ui::Clipboard::GetHtmlFormatType(),
+                                            clipboard_type));
+
+  std::string read_from_clipboard;
+  clipboard->ReadAsciiText(clipboard_type, &read_from_clipboard);
+  EXPECT_EQ("user text", read_from_clipboard);
+}
+
+INSTANTIATE_TEST_CASE_P(OmniboxViewViewsClipboardTest,
+                        OmniboxViewViewsClipboardTest,
+                        ::testing::Values(ui::TextEditCommand::COPY,
+                                          ui::TextEditCommand::CUT));
 
 class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
  public:
