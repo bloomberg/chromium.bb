@@ -5955,7 +5955,6 @@ crbug.com/v8/8381 http/tests/devtools/coverage/multiple-instances-merge.js [ Pas
 crbug.com/v8/8381 http/tests/devtools/coverage/coverage-export.js [ Pass Failure ]
 
 # TODO (michaelludwig): Todo after Skia roll and rebaseline
-crbug.com/915735 compositing/masks/mask-with-added-filters.html [ Pass Failure ]
 crbug.com/917379 media/video-layer-crash.html [ Pass Failure ]
 crbug.com/917379 virtual/gpu-rasterization/images/color-profile-background-image-cover.html [ Pass Failure ]
 crbug.com/917379 virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Pass Failure ]
