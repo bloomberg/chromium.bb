@@ -303,20 +303,16 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
   DCHECK(host_info->host_request.is_pending());
   DCHECK(host_info->host_request.handle().is_valid());
 
+  context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
+      provider_id, provider_type, std::move(client_request),
+      std::move(host_ptr_info), std::move(controller_info),
+      std::move(fallback_loader_factory));
+
   // current() may be null in tests.
   if (ChildThreadImpl::current()) {
-    context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
-        provider_id, provider_type, std::move(client_request),
-        std::move(host_ptr_info), std::move(controller_info),
-        std::move(fallback_loader_factory));
     ChildThreadImpl::current()->channel()->GetRemoteAssociatedInterface(
         &dispatcher_host_);
     dispatcher_host_->OnProviderCreated(std::move(host_info));
-  } else {
-    context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
-        provider_id, provider_type, std::move(client_request),
-        std::move(host_ptr_info), std::move(controller_info),
-        std::move(fallback_loader_factory));
   }
 }
 
