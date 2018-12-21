@@ -8,6 +8,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.payments.mojom.CanMakePaymentQueryResult;
+import org.chromium.payments.mojom.HasEnrolledInstrumentQueryResult;
 import org.chromium.payments.mojom.PaymentDetails;
 import org.chromium.payments.mojom.PaymentErrorReason;
 import org.chromium.payments.mojom.PaymentMethodData;
@@ -63,6 +64,14 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
         public void canMakePayment() {
             if (mClient != null) {
                 mClient.onCanMakePayment(CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
+            }
+        }
+
+        @Override
+        public void hasEnrolledInstrument() {
+            if (mClient != null) {
+                mClient.onHasEnrolledInstrument(
+                        HasEnrolledInstrumentQueryResult.HAS_NO_ENROLLED_INSTRUMENT);
             }
         }
 

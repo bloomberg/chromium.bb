@@ -55,7 +55,7 @@ import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsStatics;
 import org.chromium.mojo.system.MojoException;
-import org.chromium.payments.mojom.CanMakePaymentQueryResult;
+import org.chromium.payments.mojom.HasEnrolledInstrumentQueryResult;
 import org.chromium.payments.mojom.PaymentComplete;
 import org.chromium.payments.mojom.PaymentCurrencyAmount;
 import org.chromium.payments.mojom.PaymentDetails;
@@ -124,9 +124,14 @@ public class PaymentRequestImpl
         void onPaymentRequestServiceShowFailed();
 
         /**
-         * Called when the canMakePayment() request has been responded.
+         * Called when the canMakePayment() request has been responded to.
          */
         void onPaymentRequestServiceCanMakePaymentQueryResponded();
+
+        /**
+         * Called when the hasEnrolledInstrument() request has been responded to.
+         */
+        void onPaymentRequestServiceHasEnrolledInstrumentQueryResponded();
     }
 
     /** Limit in the number of suggested items in a section. */
@@ -214,7 +219,7 @@ public class PaymentRequestImpl
     private final boolean mIsIncognito;
 
     private PaymentRequestClient mClient;
-    private boolean mIsCanMakePaymentResponsePending;
+    private boolean mIsHasEnrolledInstrumentResponsePending;
     private boolean mIsCurrentPaymentRequestShowing;
 
     /**
@@ -290,7 +295,7 @@ public class PaymentRequestImpl
      * True after at least one usable payment instrument has been found. Should be read only after
      * all payment apps have been queried.
      */
-    private boolean mCanMakePayment;
+    private boolean mHasEnrolledInstrument;
 
     /**
      * True if we should skip showing PaymentRequest UI.
@@ -679,8 +684,8 @@ public class PaymentRequestImpl
             }
         }
 
-        if (mIsCanMakePaymentResponsePending && queryApps.isEmpty()) {
-            respondCanMakePaymentQuery(mCanMakePayment);
+        if (mIsHasEnrolledInstrumentResponsePending && queryApps.isEmpty()) {
+            respondHasEnrolledInstrumentQuery(mHasEnrolledInstrument);
         }
 
         if (disconnectIfNoPaymentMethodsSupported()) return;
@@ -1514,36 +1519,46 @@ public class PaymentRequestImpl
      */
     @Override
     public void canMakePayment() {
+        // TODO(https://crbug.com/915907): Implement new canMakePayment.
+        assert false;
+    }
+
+    /**
+     * Called by the merchant website to check if the user has complete payment instruments.
+     */
+    @Override
+    public void hasEnrolledInstrument() {
         if (mClient == null) return;
 
         if (isFinishedQueryingPaymentApps()) {
-            respondCanMakePaymentQuery(mCanMakePayment);
+            respondHasEnrolledInstrumentQuery(mHasEnrolledInstrument);
         } else {
-            mIsCanMakePaymentResponsePending = true;
+            mIsHasEnrolledInstrumentResponsePending = true;
         }
     }
 
-    private void respondCanMakePaymentQuery(boolean response) {
+    private void respondHasEnrolledInstrumentQuery(boolean response) {
         if (mClient == null) return;
 
-        mIsCanMakePaymentResponsePending = false;
+        mIsHasEnrolledInstrumentResponsePending = false;
 
         if (CanMakePaymentQuery.canQuery(
                     mWebContents, mTopLevelOrigin, mPaymentRequestOrigin, mMethodData)) {
-            mClient.onCanMakePayment(response ? CanMakePaymentQueryResult.CAN_MAKE_PAYMENT
-                                              : CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
+            mClient.onHasEnrolledInstrument(response
+                            ? HasEnrolledInstrumentQueryResult.HAS_ENROLLED_INSTRUMENT
+                            : HasEnrolledInstrumentQueryResult.HAS_NO_ENROLLED_INSTRUMENT);
         } else if (shouldEnforceCanMakePaymentQueryQuota()) {
-            mClient.onCanMakePayment(CanMakePaymentQueryResult.QUERY_QUOTA_EXCEEDED);
+            mClient.onHasEnrolledInstrument(HasEnrolledInstrumentQueryResult.QUERY_QUOTA_EXCEEDED);
         } else {
-            mClient.onCanMakePayment(response
-                            ? CanMakePaymentQueryResult.WARNING_CAN_MAKE_PAYMENT
-                            : CanMakePaymentQueryResult.WARNING_CANNOT_MAKE_PAYMENT);
+            mClient.onHasEnrolledInstrument(response
+                            ? HasEnrolledInstrumentQueryResult.WARNING_HAS_ENROLLED_INSTRUMENT
+                            : HasEnrolledInstrumentQueryResult.WARNING_HAS_NO_ENROLLED_INSTRUMENT);
         }
 
         mJourneyLogger.setCanMakePaymentValue(response || mIsIncognito);
 
         if (sObserverForTest != null) {
-            sObserverForTest.onPaymentRequestServiceCanMakePaymentQueryResponded();
+            sObserverForTest.onPaymentRequestServiceHasEnrolledInstrumentQueryResponded();
         }
     }
 
@@ -1596,7 +1611,7 @@ public class PaymentRequestImpl
                 if (!instrumentMethodNames.isEmpty()) {
                     mHideServerAutofillInstruments |=
                             instrument.isServerAutofillInstrumentReplacement();
-                    mCanMakePayment |= instrument.canMakePayment();
+                    mHasEnrolledInstrument |= instrument.canMakePayment();
                     mPendingInstruments.add(instrument);
                 } else {
                     instrument.dismissInstrument();
@@ -1605,7 +1620,7 @@ public class PaymentRequestImpl
         }
 
         // Always return false when can make payment is disabled.
-        mCanMakePayment &=
+        mHasEnrolledInstrument &=
                 PrefServiceBridge.getInstance().getBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED);
 
         int additionalTextResourceId = app.getAdditionalAppTextResourceId();
@@ -1649,7 +1664,9 @@ public class PaymentRequestImpl
                 ? 0
                 : SectionInformation.NO_SELECTION;
 
-        if (mIsCanMakePaymentResponsePending) respondCanMakePaymentQuery(mCanMakePayment);
+        if (mIsHasEnrolledInstrumentResponsePending) {
+            respondHasEnrolledInstrumentQuery(mHasEnrolledInstrument);
+        }
 
         // The list of payment instruments is ready to display.
         mPaymentMethodsSection = new SectionInformation(PaymentRequestUI.DataType.PAYMENT_METHODS,

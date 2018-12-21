@@ -66,6 +66,7 @@ namespace {
 using ::payments::mojom::blink::AddressErrors;
 using ::payments::mojom::blink::AddressErrorsPtr;
 using ::payments::mojom::blink::CanMakePaymentQueryResult;
+using ::payments::mojom::blink::HasEnrolledInstrumentQueryResult;
 using ::payments::mojom::blink::PayerErrors;
 using ::payments::mojom::blink::PayerErrorsPtr;
 using ::payments::mojom::blink::PaymentAddress;
@@ -869,7 +870,7 @@ ScriptPromise PaymentRequest::canMakePayment(ScriptState* script_state) {
                                            "Cannot query payment request"));
   }
 
-  payment_provider_->CanMakePayment();
+  payment_provider_->HasEnrolledInstrument();
 
   can_make_payment_resolver_ = ScriptPromiseResolver::Create(script_state);
   return can_make_payment_resolver_->Promise();
@@ -1408,25 +1409,31 @@ void PaymentRequest::OnAbort(bool aborted_successfully) {
 }
 
 void PaymentRequest::OnCanMakePayment(CanMakePaymentQueryResult result) {
+  // TODO(https://crbug.com/915907): implement new CanMakePayment behavior.
+  NOTREACHED();
+}
+
+void PaymentRequest::OnHasEnrolledInstrument(
+    HasEnrolledInstrumentQueryResult result) {
   // TODO(https://crbug.com/891371): Understand how the resolver could be null
   // here and prevent it.
   if (!can_make_payment_resolver_)
     return;
 
   switch (result) {
-    case CanMakePaymentQueryResult::WARNING_CAN_MAKE_PAYMENT:
+    case HasEnrolledInstrumentQueryResult::WARNING_HAS_ENROLLED_INSTRUMENT:
       WarnIgnoringQueryQuotaForCanMakePayment(*GetExecutionContext());
       FALLTHROUGH;
-    case CanMakePaymentQueryResult::CAN_MAKE_PAYMENT:
+    case HasEnrolledInstrumentQueryResult::HAS_ENROLLED_INSTRUMENT:
       can_make_payment_resolver_->Resolve(true);
       break;
-    case CanMakePaymentQueryResult::WARNING_CANNOT_MAKE_PAYMENT:
+    case HasEnrolledInstrumentQueryResult::WARNING_HAS_NO_ENROLLED_INSTRUMENT:
       WarnIgnoringQueryQuotaForCanMakePayment(*GetExecutionContext());
       FALLTHROUGH;
-    case CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT:
+    case HasEnrolledInstrumentQueryResult::HAS_NO_ENROLLED_INSTRUMENT:
       can_make_payment_resolver_->Resolve(false);
       break;
-    case CanMakePaymentQueryResult::QUERY_QUOTA_EXCEEDED:
+    case HasEnrolledInstrumentQueryResult::QUERY_QUOTA_EXCEEDED:
       can_make_payment_resolver_->Reject(DOMException::Create(
           DOMExceptionCode::kNotAllowedError,
           "Not allowed to check whether can make payment"));

@@ -96,9 +96,14 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   void OnStartUpdating(PaymentRequestSpec::UpdateReason reason) override {}
   void OnSpecUpdated() override;
 
+  // Checks whether support for the specified payment methods exist, either
+  // because the user has a registered payment handler or because the browser
+  // can do just-in-time registration for a suitable payment handler.
+  void CanMakePayment(StatusCallback callback);
+
   // Checks whether the user has at least one instrument that satisfies the
   // specified supported payment methods asynchronously.
-  void CanMakePayment(StatusCallback callback);
+  void HasEnrolledInstrument(StatusCallback callback);
 
   // Checks if the payment methods that the merchant website have
   // requested are supported asynchronously. For example, may return true for
@@ -256,10 +261,14 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
       bool result);
   void FinishedGetAllSWPaymentInstruments();
 
+  // Checks whether support for the specified payment methods exists and call
+  // the |callback| to return the result.
+  void CheckCanMakePayment(StatusCallback callback);
+
   // Checks whether the user has at least one instrument that satisfies the
   // specified supported payment methods and call the |callback| to return the
   // result.
-  void CheckCanMakePayment(StatusCallback callback);
+  void CheckHasEnrolledInstrument(StatusCallback callback);
 
   // Checks if the payment methods that the merchant website have
   // requested are supported and call the |callback| to return the result.
@@ -283,7 +292,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   autofill::PersonalDataManager* personal_data_manager_;
   JourneyLogger* journey_logger_;
 
-  StatusCallback can_make_payment_callback_;
+  StatusCallback has_enrolled_instrument_callback_;
   StatusCallback are_requested_methods_supported_callback_;
   bool are_requested_methods_supported_;
 

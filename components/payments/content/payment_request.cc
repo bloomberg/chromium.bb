@@ -29,6 +29,12 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 
+namespace {
+
+using ::payments::mojom::HasEnrolledInstrumentQueryResult;
+
+}  // namespace
+
 namespace payments {
 
 PaymentRequest::PaymentRequest(
@@ -372,6 +378,28 @@ void PaymentRequest::CanMakePayment() {
   }
 }
 
+void PaymentRequest::HasEnrolledInstrument() {
+  if (!IsInitialized()) {
+    log_.Error("Attempted hasEnrolledInstrument without initialization");
+    OnConnectionTerminated();
+    return;
+  }
+
+  // It's valid to call hasEnrolledInstrument() without calling show() first.
+
+  if (observer_for_testing_)
+    observer_for_testing_->OnHasEnrolledInstrumentCalled();
+
+  if (!delegate_->GetPrefService()->GetBoolean(kCanMakePaymentEnabled) ||
+      !state_) {
+    HasEnrolledInstrumentCallback(/*has_enrolled_instrument=*/false);
+  } else {
+    state_->HasEnrolledInstrument(
+        base::BindOnce(&PaymentRequest::HasEnrolledInstrumentCallback,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
 void PaymentRequest::AreRequestedMethodsSupportedCallback(
     bool methods_supported) {
   if (methods_supported) {
@@ -543,6 +571,26 @@ void PaymentRequest::CanMakePaymentCallback(bool can_make_payment) {
     observer_for_testing_->OnCanMakePaymentReturned();
 }
 
+void PaymentRequest::HasEnrolledInstrumentCallback(
+    bool has_enrolled_instrument) {
+  if (!spec_ || CanMakePaymentQueryFactory::GetInstance()
+                    ->GetForContext(web_contents_->GetBrowserContext())
+                    ->CanQuery(top_level_origin_, frame_origin_,
+                               spec_->stringified_method_data())) {
+    RespondToHasEnrolledInstrumentQuery(has_enrolled_instrument,
+                                        /*warn_localhost_or_file=*/false);
+  } else if (OriginSecurityChecker::IsOriginLocalhostOrFile(frame_origin_)) {
+    RespondToHasEnrolledInstrumentQuery(has_enrolled_instrument,
+                                        /*warn_localhost_or_file=*/true);
+  } else {
+    client_->OnHasEnrolledInstrument(
+        HasEnrolledInstrumentQueryResult::QUERY_QUOTA_EXCEEDED);
+  }
+
+  if (observer_for_testing_)
+    observer_for_testing_->OnHasEnrolledInstrumentReturned();
+}
+
 void PaymentRequest::RespondToCanMakePaymentQuery(bool can_make_payment,
                                                   bool warn_localhost_or_file) {
   mojom::CanMakePaymentQueryResult positive =
@@ -556,6 +604,23 @@ void PaymentRequest::RespondToCanMakePaymentQuery(bool can_make_payment,
 
   client_->OnCanMakePayment(can_make_payment ? positive : negative);
   journey_logger_.SetCanMakePaymentValue(can_make_payment);
+}
+
+void PaymentRequest::RespondToHasEnrolledInstrumentQuery(
+    bool has_enrolled_instrument,
+    bool warn_localhost_or_file) {
+  HasEnrolledInstrumentQueryResult positive =
+      warn_localhost_or_file
+          ? HasEnrolledInstrumentQueryResult::WARNING_HAS_ENROLLED_INSTRUMENT
+          : HasEnrolledInstrumentQueryResult::HAS_ENROLLED_INSTRUMENT;
+  HasEnrolledInstrumentQueryResult negative =
+      warn_localhost_or_file
+          ? HasEnrolledInstrumentQueryResult::WARNING_HAS_NO_ENROLLED_INSTRUMENT
+          : HasEnrolledInstrumentQueryResult::HAS_NO_ENROLLED_INSTRUMENT;
+
+  client_->OnHasEnrolledInstrument(has_enrolled_instrument ? positive
+                                                           : negative);
+  journey_logger_.SetCanMakePaymentValue(has_enrolled_instrument);
 }
 
 }  // namespace payments

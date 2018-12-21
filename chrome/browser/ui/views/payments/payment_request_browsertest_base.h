@@ -82,6 +82,8 @@ class PaymentRequestBrowserTestBase
     EDITOR_VIEW_UPDATED,
     CAN_MAKE_PAYMENT_CALLED,
     CAN_MAKE_PAYMENT_RETURNED,
+    HAS_ENROLLED_INSTRUMENT_CALLED,
+    HAS_ENROLLED_INSTRUMENT_RETURNED,
     ERROR_MESSAGE_SHOWN,
     SPEC_DONE_UPDATING,
     CVC_PROMPT_SHOWN,
@@ -109,6 +111,8 @@ class PaymentRequestBrowserTestBase
   // PaymentRequest::ObserverForTest:
   void OnCanMakePaymentCalled() override;
   void OnCanMakePaymentReturned() override;
+  void OnHasEnrolledInstrumentCalled() override;
+  void OnHasEnrolledInstrumentReturned() override;
   void OnNotSupportedError() override;
   void OnConnectionTerminated() override;
   void OnAbortCalled() override;

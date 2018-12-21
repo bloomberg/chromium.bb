@@ -44,6 +44,8 @@ class PaymentRequest : public mojom::PaymentRequest,
    public:
     virtual void OnCanMakePaymentCalled() = 0;
     virtual void OnCanMakePaymentReturned() = 0;
+    virtual void OnHasEnrolledInstrumentCalled() = 0;
+    virtual void OnHasEnrolledInstrumentReturned() = 0;
     virtual void OnNotSupportedError() = 0;
     virtual void OnConnectionTerminated() = 0;
     virtual void OnAbortCalled() = 0;
@@ -73,6 +75,7 @@ class PaymentRequest : public mojom::PaymentRequest,
   void Abort() override;
   void Complete(mojom::PaymentComplete result) override;
   void CanMakePayment() override;
+  void HasEnrolledInstrument() override;
 
   // PaymentRequestSpec::Observer:
   void OnSpecUpdated() override {}
@@ -143,6 +146,10 @@ class PaymentRequest : public mojom::PaymentRequest,
   // quota and may send QUERY_QUOTA_EXCEEDED.
   void CanMakePaymentCallback(bool can_make_payment);
 
+  // The callback for PaymentRequestState::HasEnrolledInstrument. Checks for
+  // query quota and may send QUERY_QUOTA_EXCEEDED.
+  void HasEnrolledInstrumentCallback(bool has_enrolled_instrument);
+
   // The callback for PaymentRequestState::AreRequestedMethodsSupported.
   void AreRequestedMethodsSupportedCallback(bool methods_supported);
 
@@ -153,6 +160,15 @@ class PaymentRequest : public mojom::PaymentRequest,
   // WARNING_CANNOT_MAKE_PAYMENT version of the values instead.
   void RespondToCanMakePaymentQuery(bool can_make_payment,
                                     bool warn_localhost_or_file);
+
+  // Sends either HAS_ENROLLED_INSTRUMENT or HAS_NO_ENROLLED_INSTRUMENT to the
+  // renderer, depending on |has_enrolled_instrument| value. Never sends
+  // QUERY_QUOTA_EXCEEDED. Does not check query quota, but does check for
+  // incognito mode. If |warn_localhost_or_file| is true, then sends
+  // WARNING_HAS_ENROLLED_INSTRUMENT or WARNING_HAS_NO_ENROLLED_INSTRUMENT
+  // version of the values instead.
+  void RespondToHasEnrolledInstrumentQuery(bool has_enrolled_instrument,
+                                           bool warn_localhost_or_file);
 
   content::WebContents* web_contents_;
   DeveloperConsoleLogger log_;
