@@ -544,19 +544,26 @@ void PaintLayerCompositor::UpdateIfNeeded(
         layers_needing_paint_invalidation[i]->GetLayoutObject());
   }
 
-  if (root_layer_attachment_ == kRootLayerPendingAttachViaChromeClient) {
-    if (Page* page = layout_view_.GetFrame()->GetPage()) {
-      page->GetChromeClient().AttachRootGraphicsLayer(RootGraphicsLayer(),
-                                                      layout_view_.GetFrame());
-      root_layer_attachment_ = kRootLayerAttachedViaChromeClient;
-    }
-  }
+  // When BlinkGenPropertyTrees is enabled, layer attachment, including the root
+  // layer, must occur in the paint lifecycle step.
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    AttachRootLayerViaChromeClient();
 
   // Inform the inspector that the layer tree has changed.
   if (IsMainFrame())
     probe::layerTreeDidChange(layout_view_.GetFrame());
 
   Lifecycle().AdvanceTo(DocumentLifecycle::kCompositingClean);
+}
+
+void PaintLayerCompositor::AttachRootLayerViaChromeClient() {
+  if (root_layer_attachment_ == kRootLayerPendingAttachViaChromeClient) {
+    if (Page* page = layout_view_.GetFrame()->GetPage()) {
+      page->GetChromeClient().AttachRootGraphicsLayer(RootGraphicsLayer(),
+                                                      layout_view_.GetFrame());
+    }
+    root_layer_attachment_ = kRootLayerAttachedViaChromeClient;
+  }
 }
 
 static void RestartAnimationOnCompositor(const LayoutObject& layout_object) {
