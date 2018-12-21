@@ -18,6 +18,7 @@
 #include "extensions/browser/api/messaging/message_property_provider.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/lazy_context_id.h"
 #include "extensions/browser/lazy_context_task_queue.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/api/messaging/port_id.h"
@@ -132,8 +133,7 @@ class MessageService : public BrowserContextKeyedAPI,
 
   // A map of channel ID to information about the extension that is waiting
   // for that channel to open. Used for lazy background pages.
-  using PendingLazyBackgroundPageChannel =
-      std::pair<content::BrowserContext*, ExtensionId>;
+  using PendingLazyBackgroundPageChannel = LazyContextId;
   using PendingLazyBackgroundPageChannelMap =
       std::map<ChannelId, PendingLazyBackgroundPageChannel>;
 

@@ -91,8 +91,7 @@ void LazyBackgroundTaskQueue::AddPendingTask(const LazyContextId& context_id,
   const ExtensionId& extension_id = context_id.extension_id();
   content::BrowserContext* const browser_context = context_id.browser_context();
   PendingTasksList* tasks_list = nullptr;
-  PendingTasksKey key(browser_context, extension_id);
-  auto it = pending_tasks_.find(key);
+  auto it = pending_tasks_.find(context_id);
   if (it == pending_tasks_.end()) {
     const Extension* extension = ExtensionRegistry::Get(browser_context)
                                      ->enabled_extensions()
@@ -108,7 +107,7 @@ void LazyBackgroundTaskQueue::AddPendingTask(const LazyContextId& context_id,
     }
     auto tasks_list_tmp = std::make_unique<PendingTasksList>();
     tasks_list = tasks_list_tmp.get();
-    pending_tasks_[key] = std::move(tasks_list_tmp);
+    pending_tasks_[context_id] = std::move(tasks_list_tmp);
   } else {
     tasks_list = it->second.get();
   }
