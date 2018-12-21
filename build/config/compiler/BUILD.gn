@@ -520,8 +520,7 @@ config("compiler") {
   }
 
   # Makes builds independent of absolute file path.
-  if (symbol_level != 0 && is_clang && !is_mac && !is_ios &&
-      strip_absolute_paths_from_debug_symbols) {
+  if (symbol_level != 0 && is_clang && strip_absolute_paths_from_debug_symbols) {
     # If debug option is given, clang includes $cwd in debug info by default.
     # For such build, this flag generates reproducible obj files even we use
     # different build directory like "out/feature_a" and "out/feature_b" if
@@ -1170,6 +1169,20 @@ config("compiler_arm") {
     # arm is normally the default mode for clang, but on chromeos a wrapper
     # is used to pass -mthumb, and therefor change the default.
     cflags = [ "-marm" ]
+  }
+}
+
+config("assembler_debug_dir") {
+  # TODO(thakis): Once openmax_dl no longer uses -fno-integrated-as, move
+  # this behind the -fdebug-compilation-dir cflags in the "compiler" config.
+  if (symbol_level != 0 && is_clang && strip_absolute_paths_from_debug_symbols) {
+    if (!is_win && target_os != "chromeos") {
+      # We don't use clang -cc1as on Windows (yet? https://crbug.com/762167)
+      # Chrome OS's clang doesn't know this flag yet, https://crbug.com/917357
+      # TODO(thakis): Uncomment the next line once openmax_dl removes this
+      # config.
+      asmflags = [ "-Wa,-fdebug-compilation-dir,." ]
+    }
   }
 }
 
