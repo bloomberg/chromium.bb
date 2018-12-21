@@ -2,12 +2,7 @@ type u64 = number;
 
 type WebGPUObjectStatusQuery = Promise<WebGPUObjectStatus>;
 type WebGPUStatusableObject = WebGPUBuffer | WebGPUTexture;
-type WebGPUBufferUsageFlags = number;
-type WebGPUTextureUsageFlags = number;
-type WebGPUTextureAspectFlags = number;
-type WebGPUShaderStageFlags = number;
 type WebGPUBindingResource = WebGPUSampler | WebGPUTextureView | WebGPUBufferBinding;
-type WebGPUColorWriteFlags = number;
 
 type WebGPUAddressMode = "clampToEdge" | "repeat" | "mirrorRepeat" | "clampToBorderColor";
 type WebGPUBindingType = "uniformBuffer" | "sampler" | "sampledTexture" | "storageBuffer";
@@ -30,6 +25,55 @@ type WebGPUTextureDimension = "1d" | "2d" | "3d";
 type WebGPUTextureFormat = "R8G8B8A8Unorm" | "R8G8B8A8Uint" | "B8G8R8A8Unorm" | "D32FloatS8Uint";
 type WebGPUTextureViewDimension = "1d" | "2d" | "2darray" | "cube" | "cubearray" | "3d";
 type WebGPUVertexFormat = "floatR32G32B32A32" | "floatR32G32B32" | "floatR32G32" | "floatR32";
+
+type WebGPUBufferUsageFlags = number;
+declare const enum WebGPUBufferUsage {
+  NONE = 0,
+  MAP_READ = 1,
+  MAP_WRITE = 2,
+  TRANSFER_SRC = 4,
+  TRANSFER_DST = 8,
+  INDEX = 16,
+  VERTEX = 32,
+  UNIFORM = 64,
+  STORAGE = 128,
+}
+
+type WebGPUColorWriteFlags = number;
+declare const enum WebGPUColorWriteBits {
+    NONE = 0,
+    RED = 1,
+    GREEN = 2,
+    BLUE = 4,
+    ALPHA = 8,
+    ALL = 15,
+}
+
+type WebGPUShaderStageFlags = number;
+declare const enum WebGPUShaderStageBit {
+  NONE = 0,
+  VERTEX = 1,
+  FRAGMENT = 2,
+  COMPUTE = 4,
+}
+
+type WebGPUTextureAspectFlags = number;
+declare const enum WebGPUTextureAspect {
+  COLOR = 1,
+  DEPTH = 2,
+  STENCIL = 4,
+}
+
+type WebGPUTextureUsageFlags = number;
+declare const enum WebGPUTextureUsage {
+  NONE = 0,
+  TRANSFER_SRC = 1,
+  TRANSFER_DST = 2,
+  SAMPLED = 4,
+  STORAGE = 8,
+  OUTPUT_ATTACHMENT = 16,
+  PRESENT = 32,
+}
 
 interface WebGPUAttachmentDescriptor {
     format?: WebGPUTextureFormat;
@@ -288,83 +332,17 @@ interface WebGPUAdapter {
     createDevice(descriptor: WebGPUDeviceDescriptor): WebGPUDevice;
 }
 
-declare var WebGPUAdapter: {
-    prototype: WebGPUAdapter;
-    new(): WebGPUAdapter;
-};
-
 interface WebGPUBindGroup {
 }
 
-declare var WebGPUBindGroup: {
-    prototype: WebGPUBindGroup;
-    new(): WebGPUBindGroup;
-};
-
 interface WebGPUBindGroupLayout {
 }
-
-declare var WebGPUBindGroupLayout: {
-    prototype: WebGPUBindGroupLayout;
-    new(): WebGPUBindGroupLayout;
-};
 
 interface WebGPUBuffer {
     readonly mapping: ArrayBuffer | null;
     destroy(): void;
     unmap(): void;
 }
-
-declare var WebGPUBuffer: {
-    prototype: WebGPUBuffer;
-    new(): WebGPUBuffer;
-};
-
-interface WebGPUBufferUsage {
-    readonly INDEX: number;
-    readonly MAP_READ: number;
-    readonly MAP_WRITE: number;
-    readonly NONE: number;
-    readonly STORAGE: number;
-    readonly TRANSFER_DST: number;
-    readonly TRANSFER_SRC: number;
-    readonly UNIFORM: number;
-    readonly VERTEX: number;
-}
-
-declare var WebGPUBufferUsage: {
-    prototype: WebGPUBufferUsage;
-    new(): WebGPUBufferUsage;
-    readonly INDEX: number;
-    readonly MAP_READ: number;
-    readonly MAP_WRITE: number;
-    readonly NONE: number;
-    readonly STORAGE: number;
-    readonly TRANSFER_DST: number;
-    readonly TRANSFER_SRC: number;
-    readonly UNIFORM: number;
-    readonly VERTEX: number;
-};
-
-interface WebGPUColorWriteBits {
-    readonly ALL: number;
-    readonly ALPHA: number;
-    readonly BLUE: number;
-    readonly GREEN: number;
-    readonly NONE: number;
-    readonly RED: number;
-}
-
-declare var WebGPUColorWriteBits: {
-    prototype: WebGPUColorWriteBits;
-    new(): WebGPUColorWriteBits;
-    readonly ALL: number;
-    readonly ALPHA: number;
-    readonly BLUE: number;
-    readonly GREEN: number;
-    readonly NONE: number;
-    readonly RED: number;
-};
 
 interface WebGPUCommandBuffer extends WebGPUDebugLabel {
     beginComputePass(): WebGPUComputePassEncoder;
@@ -376,27 +354,12 @@ interface WebGPUCommandBuffer extends WebGPUDebugLabel {
     copyTextureToTexture(source: WebGPUTextureCopyView, destination: WebGPUTextureCopyView, copySize: WebGPUExtent3D): void;
 }
 
-declare var WebGPUCommandBuffer: {
-    prototype: WebGPUCommandBuffer;
-    new(): WebGPUCommandBuffer;
-};
-
 interface WebGPUComputePassEncoder extends WebGPUProgrammablePassEncoder {
     dispatch(x: number, y: number, z: number): void;
 }
 
-declare var WebGPUComputePassEncoder: {
-    prototype: WebGPUComputePassEncoder;
-    new(): WebGPUComputePassEncoder;
-};
-
 interface WebGPUComputePipeline extends WebGPUDebugLabel {
 }
-
-declare var WebGPUComputePipeline: {
-    prototype: WebGPUComputePipeline;
-    new(): WebGPUComputePipeline;
-};
 
 interface WebGPUDebugLabel {
     label: string;
@@ -422,20 +385,10 @@ interface WebGPUDevice {
     getQueue(): WebGPUQueue;
 }
 
-declare var WebGPUDevice: {
-    prototype: WebGPUDevice;
-    new(): WebGPUDevice;
-};
-
 interface WebGPUFence extends WebGPUDebugLabel {
     getCompletedValue(): u64;
     onCompletion(completionValue: u64): Promise<void>;
 }
-
-declare var WebGPUFence: {
-    prototype: WebGPUFence;
-    new(): WebGPUFence;
-};
 
 interface WebGPULogEntry {
     readonly reason: string | null;
@@ -443,18 +396,8 @@ interface WebGPULogEntry {
     readonly type: WebGPULogEntryType;
 }
 
-declare var WebGPULogEntry: {
-    prototype: WebGPULogEntry;
-    new(): WebGPULogEntry;
-};
-
 interface WebGPUPipelineLayout {
 }
-
-declare var WebGPUPipelineLayout: {
-    prototype: WebGPUPipelineLayout;
-    new(): WebGPUPipelineLayout;
-};
 
 interface WebGPUProgrammablePassEncoder extends WebGPUDebugLabel {
     endPass(): WebGPUCommandBuffer;
@@ -465,21 +408,11 @@ interface WebGPUProgrammablePassEncoder extends WebGPUDebugLabel {
     setPipeline(pipeline: WebGPUComputePipeline | WebGPURenderPipeline): void;
 }
 
-declare var WebGPUProgrammablePassEncoder: {
-    prototype: WebGPUProgrammablePassEncoder;
-    new(): WebGPUProgrammablePassEncoder;
-};
-
 interface WebGPUQueue extends WebGPUDebugLabel {
     signal(fence: WebGPUFence, signalValue: u64): void;
     submit(buffers: WebGPUCommandBuffer[]): void;
     wait(fence: WebGPUFence, valueToWait: u64): void;
 }
-
-declare var WebGPUQueue: {
-    prototype: WebGPUQueue;
-    new(): WebGPUQueue;
-};
 
 interface WebGPURenderPassEncoder extends WebGPUProgrammablePassEncoder {
     draw(vertexCount: number, instanceCount: number, firstVertex: number, firstInstance: number): void;
@@ -492,58 +425,17 @@ interface WebGPURenderPassEncoder extends WebGPUProgrammablePassEncoder {
     setViewport(x: number, y: number, width: number, height: number, minDepth: number, maxDepth: number): void;
 }
 
-declare var WebGPURenderPassEncoder: {
-    prototype: WebGPURenderPassEncoder;
-    new(): WebGPURenderPassEncoder;
-};
-
 interface WebGPURenderPipeline extends WebGPUDebugLabel {
 }
-
-declare var WebGPURenderPipeline: {
-    prototype: WebGPURenderPipeline;
-    new(): WebGPURenderPipeline;
-};
 
 interface WebGPURenderingContext extends WebGPUSwapChain {
 }
 
-declare var WebGPURenderingContext: {
-    prototype: WebGPURenderingContext;
-    new(): WebGPURenderingContext;
-};
-
 interface WebGPUSampler {
 }
 
-declare var WebGPUSampler: {
-    prototype: WebGPUSampler;
-    new(): WebGPUSampler;
-};
-
 interface WebGPUShaderModule extends WebGPUDebugLabel {
 }
-
-declare var WebGPUShaderModule: {
-    prototype: WebGPUShaderModule;
-    new(): WebGPUShaderModule;
-};
-
-interface WebGPUShaderStageBit {
-    readonly COMPUTE: number;
-    readonly FRAGMENT: number;
-    readonly NONE: number;
-    readonly VERTEX: number;
-}
-
-declare var WebGPUShaderStageBit: {
-    prototype: WebGPUShaderStageBit;
-    new(): WebGPUShaderStageBit;
-    readonly COMPUTE: number;
-    readonly FRAGMENT: number;
-    readonly NONE: number;
-    readonly VERTEX: number;
-};
 
 interface WebGPUSwapChain {
     configure(descriptor: WebGPUSwapChainDescriptor): void;
@@ -551,66 +443,13 @@ interface WebGPUSwapChain {
     present(): void;
 }
 
-declare var WebGPUSwapChain: {
-    prototype: WebGPUSwapChain;
-    new(): WebGPUSwapChain;
-};
-
 interface WebGPUTexture {
     createDefaultTextureView(): WebGPUTextureView;
     createTextureView(desc: WebGPUTextureViewDescriptor): WebGPUTextureView;
     destroy(): void;
 }
 
-declare var WebGPUTexture: {
-    prototype: WebGPUTexture;
-    new(): WebGPUTexture;
-};
-
-interface WebGPUTextureAspect {
-    readonly COLOR: number;
-    readonly DEPTH: number;
-    readonly STENCIL: number;
-}
-
-declare var WebGPUTextureAspect: {
-    prototype: WebGPUTextureAspect;
-    new(): WebGPUTextureAspect;
-    readonly COLOR: number;
-    readonly DEPTH: number;
-    readonly STENCIL: number;
-};
-
-interface WebGPUTextureUsage {
-    readonly NONE: number;
-    readonly OUTPUT_ATTACHMENT: number;
-    readonly PRESENT: number;
-    readonly SAMPLED: number;
-    readonly STORAGE: number;
-    readonly TRANSFER_DST: number;
-    readonly TRANSFER_SRC: number;
-}
-
-declare var WebGPUTextureUsage: {
-    prototype: WebGPUTextureUsage;
-    new(): WebGPUTextureUsage;
-    readonly NONE: number;
-    readonly OUTPUT_ATTACHMENT: number;
-    readonly PRESENT: number;
-    readonly SAMPLED: number;
-    readonly STORAGE: number;
-    readonly TRANSFER_DST: number;
-    readonly TRANSFER_SRC: number;
-};
-
 interface WebGPUTextureView {
 }
 
-declare var WebGPUTextureView: {
-    prototype: WebGPUTextureView;
-    new(): WebGPUTextureView;
-};
-
-interface WebGPULogCallback {
-    (error: WebGPULogEntry): void;
-}
+type WebGPULogCallback = (error: WebGPULogEntry) => void;
