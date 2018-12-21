@@ -4143,6 +4143,10 @@ bool RenderFrameHostImpl::CanCommitOrigin(
   // conversion to GURL.
   GURL origin_url = origin.GetURL();
 
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  if (!policy->CanAccessDataForOrigin(GetProcess()->GetID(), origin.GetURL()))
+    return false;
+
   // Verify that the origin is allowed to commit in this process.
   // Note: This also handles non-standard cases for |url|, such as
   // about:blank, data, and blob URLs.
