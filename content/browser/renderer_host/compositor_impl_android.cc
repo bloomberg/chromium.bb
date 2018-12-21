@@ -23,6 +23,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
@@ -788,6 +789,10 @@ void CompositorImpl::SetVisible(bool visible) {
 }
 
 void CompositorImpl::TearDownDisplayAndUnregisterRootFrameSink() {
+  // TODO(ericrk): Remove this once hang issues have been debugged.
+  // https://crbug.com/899705
+  SCOPED_UMA_HISTOGRAM_LONG_TIMER("CompositorImplAndroid.TearDownDisplayTime");
+
   if (enable_viz_) {
     // Make a best effort to try to complete pending readbacks.
     // TODO(crbug.com/637035): Consider doing this in a better way,
