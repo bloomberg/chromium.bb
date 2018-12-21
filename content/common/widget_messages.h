@@ -163,9 +163,6 @@ IPC_MESSAGE_ROUTED2(WidgetMsg_WasShown,
 // accordingly, etc.).
 IPC_MESSAGE_ROUTED1(WidgetMsg_SetActive, bool /* active */)
 
-// Make the RenderWidget background transparent or opaque.
-IPC_MESSAGE_ROUTED1(WidgetMsg_SetBackgroundOpaque, bool /* opaque */)
-
 // Changes the text direction of the currently selected input field (if any).
 IPC_MESSAGE_ROUTED1(WidgetMsg_SetTextDirection,
                     blink::WebTextDirection /* direction */)

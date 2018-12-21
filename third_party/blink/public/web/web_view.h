@@ -365,6 +365,19 @@ class WebView {
                                   unsigned inactive_background_color,
                                   unsigned inactive_foreground_color) = 0;
 
+  // Sets the default background color when the page has not loaded enough to
+  // know a background colour. This can be overridden by the methods below as
+  // well.
+  virtual void SetBaseBackgroundColor(SkColor) {}
+
+  // Overrides the page's background and base background color. You
+  // can use this to enforce a transparent background, which is useful if you
+  // want to have some custom background rendered behind the widget.
+  virtual void SetBackgroundColorOverride(SkColor) {}
+  virtual void ClearBackgroundColorOverride() {}
+  virtual void SetBaseBackgroundColorOverride(SkColor) {}
+  virtual void ClearBaseBackgroundColorOverride() {}
+
   // Modal dialog support ------------------------------------------------
 
   // Call these methods before and after running a nested, modal event loop

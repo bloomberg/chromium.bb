@@ -506,7 +506,6 @@ class CONTENT_EXPORT RenderWidget
 
   void OnSetActive(bool active);
   void OnSetFocus(bool enable);
-  void OnSetBackgroundOpaque(bool opaque);
   void OnMouseCaptureLost();
   void OnCursorVisibilityChange(bool is_visible);
   void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);

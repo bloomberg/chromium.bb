@@ -32,6 +32,7 @@
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/input_messages.h"
 #include "content/common/text_input_state.h"
+#include "content/common/view_messages.h"
 #include "content/common/widget_messages.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -44,6 +45,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/test/mock_render_widget_host_delegate.h"
 #include "content/test/mock_widget_impl.h"
+#include "content/test/stub_render_widget_host_owner_delegate.h"
 #include "content/test/test_render_view_host.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/image_transport_surface.h"
@@ -62,6 +64,8 @@
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/latency/latency_info.h"
+
+using testing::_;
 
 // Helper class with methods used to mock -[NSEvent phase], used by
 // |MockScrollWheelEventWithPhase()|.
@@ -455,6 +459,12 @@ NSEvent* MockScrollWheelEventWithoutPhase(int32_t delta) {
   return MockScrollWheelEventWithMomentumPhase(@selector(phaseNone), delta);
 }
 
+class MockRenderWidgetHostOwnerDelegate
+    : public StubRenderWidgetHostOwnerDelegate {
+ public:
+  MOCK_METHOD1(SetBackgroundOpaque, void(bool opaque));
+};
+
 }  // namespace
 
 class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
@@ -473,9 +483,10 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     process_host_ =
         std::make_unique<MockRenderProcessHost>(browser_context_.get());
     process_host_->Init();
-    host_ = MockRenderWidgetHostImpl::Create(&delegate_, process_host_.get(),
-                                             process_host_->GetNextRoutingID());
-    rwhv_mac_ = new RenderWidgetHostViewMac(host_, false);
+    host_ = base::WrapUnique(MockRenderWidgetHostImpl::Create(
+        &delegate_, process_host_.get(), process_host_->GetNextRoutingID()));
+    host_->set_owner_delegate(&mock_owner_delegate_);
+    rwhv_mac_ = new RenderWidgetHostViewMac(host_.get(), false);
     rwhv_cocoa_.reset([rwhv_mac_->cocoa_view() retain]);
 
     base::RunLoop().RunUntilIdle();
@@ -484,7 +495,10 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
 
   void TearDown() override {
     rwhv_cocoa_.reset();
-    host_->ShutdownAndDestroyWidget(true);
+    // RenderWidgetHostImpls with an owner delegate are not expected to be self-
+    // deleting.
+    host_->ShutdownAndDestroyWidget(/*also_delete=*/false);
+    host_.reset();
     process_host_.reset();
     browser_context_.reset();
     RecycleAndWait();
@@ -518,7 +532,8 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
 
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<MockRenderProcessHost> process_host_;
-  MockRenderWidgetHostImpl* host_ = nullptr;
+  testing::NiceMock<MockRenderWidgetHostOwnerDelegate> mock_owner_delegate_;
+  std::unique_ptr<MockRenderWidgetHostImpl> host_;
   RenderWidgetHostViewMac* rwhv_mac_ = nullptr;
   base::scoped_nsobject<RenderWidgetHostViewCocoa> rwhv_cocoa_;
 
@@ -888,25 +903,25 @@ TEST_F(RenderWidgetHostViewMacTest, BlurAndFocusOnSetActive) {
 
   EXPECT_CALL(*host_, Focus());
   [window makeFirstResponder:rwhv_mac_->cocoa_view()];
-  testing::Mock::VerifyAndClearExpectations(host_);
+  testing::Mock::VerifyAndClearExpectations(host_.get());
 
   EXPECT_CALL(*host_, Blur());
   rwhv_mac_->SetActive(false);
-  testing::Mock::VerifyAndClearExpectations(host_);
+  testing::Mock::VerifyAndClearExpectations(host_.get());
 
   EXPECT_CALL(*host_, Focus());
   rwhv_mac_->SetActive(true);
-  testing::Mock::VerifyAndClearExpectations(host_);
+  testing::Mock::VerifyAndClearExpectations(host_.get());
 
   // Unsetting first responder should blur.
   EXPECT_CALL(*host_, Blur());
   [window makeFirstResponder:nil];
-  testing::Mock::VerifyAndClearExpectations(host_);
+  testing::Mock::VerifyAndClearExpectations(host_.get());
 
   // |SetActive()| shoud not focus if view is not first responder.
   EXPECT_CALL(*host_, Focus()).Times(0);
   rwhv_mac_->SetActive(true);
-  testing::Mock::VerifyAndClearExpectations(host_);
+  testing::Mock::VerifyAndClearExpectations(host_.get());
 }
 
 TEST_F(RenderWidgetHostViewMacTest, LastWheelEventLatencyInfoExists) {
@@ -1228,52 +1243,36 @@ TEST_F(RenderWidgetHostViewMacTest, GuestViewDoesNotLeak) {
 // RenderWidgetHostTest.Background. This test has some additional checks for
 // Mac.
 TEST_F(RenderWidgetHostViewMacTest, Background) {
-  const IPC::Message* set_background = nullptr;
-  std::tuple<bool> sent_background;
-
   // If no color has been specified then background_color is not set yet.
   ASSERT_FALSE(rwhv_mac_->GetBackgroundColor());
 
-  // Set the color to red. The background is initially assumed to be opaque, so
-  // no opacity message change should be sent.
-  rwhv_mac_->SetBackgroundColor(SK_ColorRED);
-  EXPECT_EQ(static_cast<unsigned>(SK_ColorRED),
-            *rwhv_mac_->GetBackgroundColor());
-  set_background = process_host_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SetBackgroundOpaque::ID);
-  ASSERT_FALSE(set_background);
-
-  // Set the color to blue. This should not send an opacity message.
-  rwhv_mac_->SetBackgroundColor(SK_ColorBLUE);
-  EXPECT_EQ(static_cast<unsigned>(SK_ColorBLUE),
-            *rwhv_mac_->GetBackgroundColor());
-  set_background = process_host_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SetBackgroundOpaque::ID);
-  ASSERT_FALSE(set_background);
-
-  // Set the color back to transparent. The background color should now be
-  // reported as the default (white), and a transparency change message should
-  // be sent.
-  process_host_->sink().ClearMessages();
-  rwhv_mac_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  EXPECT_EQ(static_cast<unsigned>(SK_ColorWHITE),
-            *rwhv_mac_->GetBackgroundColor());
-  set_background = process_host_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SetBackgroundOpaque::ID);
-  ASSERT_TRUE(set_background);
-  WidgetMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
-  EXPECT_FALSE(std::get<0>(sent_background));
-
-  // Set the color to red. This should send an opacity message.
-  process_host_->sink().ClearMessages();
-  rwhv_mac_->SetBackgroundColor(SK_ColorBLUE);
-  EXPECT_EQ(static_cast<unsigned>(SK_ColorBLUE),
-            *rwhv_mac_->GetBackgroundColor());
-  set_background = process_host_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SetBackgroundOpaque::ID);
-  ASSERT_TRUE(set_background);
-  WidgetMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
-  EXPECT_TRUE(std::get<0>(sent_background));
+  {
+    // Set the color to red. The background is initially assumed to be opaque,
+    // so no opacity message change should be sent.
+    EXPECT_CALL(mock_owner_delegate_, SetBackgroundOpaque(_)).Times(0);
+    rwhv_mac_->SetBackgroundColor(SK_ColorRED);
+    EXPECT_EQ(unsigned{SK_ColorRED}, *rwhv_mac_->GetBackgroundColor());
+  }
+  {
+    // Set the color to blue. This should not send an opacity message.
+    EXPECT_CALL(mock_owner_delegate_, SetBackgroundOpaque(_)).Times(0);
+    rwhv_mac_->SetBackgroundColor(SK_ColorBLUE);
+    EXPECT_EQ(unsigned{SK_ColorBLUE}, *rwhv_mac_->GetBackgroundColor());
+  }
+  {
+    // Set the color back to transparent. The background color should now be
+    // reported as the default (white), and a transparency change message should
+    // be sent.
+    EXPECT_CALL(mock_owner_delegate_, SetBackgroundOpaque(false));
+    rwhv_mac_->SetBackgroundColor(SK_ColorTRANSPARENT);
+    EXPECT_EQ(unsigned{SK_ColorWHITE}, *rwhv_mac_->GetBackgroundColor());
+  }
+  {
+    // Set the color to blue. This should send an opacity message.
+    EXPECT_CALL(mock_owner_delegate_, SetBackgroundOpaque(true));
+    rwhv_mac_->SetBackgroundColor(SK_ColorBLUE);
+    EXPECT_EQ(unsigned{SK_ColorBLUE}, *rwhv_mac_->GetBackgroundColor());
+  }
 }
 
 // Scrolling with a mouse wheel device on Mac won't give phase information.

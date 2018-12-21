@@ -400,6 +400,14 @@ void RenderViewHostImpl::SyncRendererPrefs() {
   Send(new ViewMsg_SetRendererPrefs(GetRoutingID(), renderer_preferences));
 }
 
+void RenderViewHostImpl::SetBackgroundOpaque(bool opaque) {
+  Send(new ViewMsg_SetBackgroundOpaque(GetRoutingID(), opaque));
+}
+
+RenderViewHost* RenderViewHostImpl::GetRenderViewHost() {
+  return this;
+}
+
 WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   TRACE_EVENT0("browser", "RenderViewHostImpl::GetWebkitPrefs");
   WebPreferences prefs;

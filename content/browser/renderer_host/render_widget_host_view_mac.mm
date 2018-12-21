@@ -212,12 +212,14 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
         GetFrameSinkId(), this);
   }
 
-  RenderViewHost* rvh = RenderViewHost::From(host());
+  RenderViewHost* rvh = host()->GetRenderViewHost();
   bool needs_begin_frames = true;
 
   if (rvh) {
     // TODO(mostynb): actually use prefs.  Landing this as a separate CL
     // first to rebaseline some unreliable web tests.
+    // NOTE: This will not be run for child frame widgets, which do not have
+    // an owner delegate and won't get a RenderViewHost here.
     ignore_result(rvh->GetWebkitPreferences());
     needs_begin_frames = !rvh->GetDelegate()->IsNeverVisible();
   }
@@ -995,7 +997,7 @@ gfx::Range RenderWidgetHostViewMac::ConvertCharacterRangeToCompositionRange(
 }
 
 WebContents* RenderWidgetHostViewMac::GetWebContents() {
-  return WebContents::FromRenderViewHost(RenderViewHost::From(host()));
+  return WebContents::FromRenderViewHost(host()->GetRenderViewHost());
 }
 
 bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
@@ -1455,7 +1457,9 @@ void RenderWidgetHostViewMac::SetAccessibilityWindow(NSWindow* window) {
 }
 
 bool RenderWidgetHostViewMac::SyncIsRenderViewHost(bool* is_render_view) {
-  *is_render_view = RenderViewHost::From(host()) != nullptr;
+  // TODO(danakj): This should return true/false if there is an owner delegate
+  // instead of checking if it is a RenderViewHost.
+  *is_render_view = host()->GetRenderViewHost() != nullptr;
   return true;
 }
 

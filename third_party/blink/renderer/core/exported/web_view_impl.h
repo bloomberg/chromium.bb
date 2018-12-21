@@ -197,6 +197,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void AcceptLanguagesChanged() override;
   void SetPageFrozen(bool frozen) override;
   WebWidget* MainFrameWidget() override;
+  void SetBaseBackgroundColor(SkColor) override;
+  void SetBackgroundColorOverride(SkColor) override;
+  void ClearBackgroundColorOverride() override;
+  void SetBaseBackgroundColorOverride(SkColor) override;
+  void ClearBaseBackgroundColorOverride() override;
 
   void DidUpdateFullscreenSize();
 
@@ -208,16 +213,12 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   HitTestResult CoreHitTestResultAt(const gfx::Point&);
   void InvalidateRect(const IntRect&);
 
-  void SetBaseBackgroundColor(SkColor);
-  void SetBaseBackgroundColorOverride(SkColor);
-  void ClearBaseBackgroundColorOverride();
-  void SetBackgroundColorOverride(SkColor);
-  void ClearBackgroundColorOverride();
   void SetZoomFactorOverride(float);
   void SetCompositorDeviceScaleFactorOverride(float);
   void SetDeviceEmulationTransform(const TransformationMatrix&);
   TransformationMatrix GetDeviceEmulationTransformForTesting() const;
 
+  SkColor BackgroundColor() const;
   Color BaseBackgroundColor() const;
   bool BackgroundColorOverrideEnabled() const {
     return background_color_override_enabled_;
@@ -446,7 +447,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
                                          bool has_scrolled_by_touch) override;
   void MouseCaptureLost() override;
   void SetFocus(bool enable) override;
-  SkColor BackgroundColor() const override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
   bool IsAcceleratedCompositingActive() const override;
   void WillCloseLayerTreeView() override;

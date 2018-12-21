@@ -462,6 +462,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void OnSetPageScale(float page_scale_factor);
   void OnAudioStateChanged(bool is_audio_playing);
   void OnPausePageScheduledTasks(bool paused);
+  void OnSetBackgroundOpaque(bool opaque);
 
   // Page message handlers -----------------------------------------------------
   void OnUpdateWindowScreenRect(gfx::Rect window_screen_rect);

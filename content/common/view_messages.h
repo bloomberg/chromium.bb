@@ -131,6 +131,9 @@ IPC_MESSAGE_ROUTED1(ViewMsg_ReplaceDateTime,
 
 #endif
 
+// Make the RenderWidget background transparent or opaque.
+IPC_MESSAGE_ROUTED1(ViewMsg_SetBackgroundOpaque, bool /* opaque */)
+
 // Sends updated preferences to the renderer.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetRendererPrefs,
                     content::RendererPreferences)

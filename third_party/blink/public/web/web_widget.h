@@ -230,12 +230,6 @@ class WebWidget {
   // reasons such as the user exiting lock, window focus changing, etc.
   virtual void DidLosePointerLock() {}
 
-  // The page background color. Can be used for filling in areas without
-  // content.
-  virtual SkColor BackgroundColor() const {
-    return 0xFFFFFFFF; /* SK_ColorWHITE */
-  }
-
   // Called by client to request showing the context menu.
   virtual void ShowContextMenu(WebMenuSourceType) {}
 

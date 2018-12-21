@@ -159,10 +159,6 @@ WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient& client)
       is_accelerated_compositing_active_(false),
       layer_tree_view_closed_(false),
       suppress_next_keypress_event_(false),
-      background_color_override_enabled_(false),
-      background_color_override_(Color::kTransparent),
-      base_background_color_override_enabled_(false),
-      base_background_color_override_(Color::kTransparent),
       ime_accept_events_(true),
       self_keep_alive_(this) {}
 
@@ -323,7 +319,6 @@ void WebFrameWidgetImpl::UpdateLifecycle(LifecycleUpdate requested_update,
       LocalRootImpl()->GetFrame()->GetDocument()->Lifecycle());
   PageWidgetDelegate::UpdateLifecycle(*GetPage(), *LocalRootImpl()->GetFrame(),
                                       requested_update, reason);
-  UpdateLayerTreeBackgroundColor();
 }
 
 void WebFrameWidgetImpl::PaintContent(cc::PaintCanvas* canvas,
@@ -340,54 +335,6 @@ void WebFrameWidgetImpl::UpdateLayerTreeViewport() {
   // needed in setting the raster scale.
   layer_tree_view_->SetPageScaleFactorAndLimits(
       1, View()->MinimumPageScaleFactor(), View()->MaximumPageScaleFactor());
-}
-
-void WebFrameWidgetImpl::UpdateLayerTreeBackgroundColor() {
-  if (!layer_tree_view_)
-    return;
-
-  SkColor color = BackgroundColor();
-  layer_tree_view_->SetBackgroundColor(color);
-}
-
-void WebFrameWidgetImpl::SetBackgroundColorOverride(SkColor color) {
-  background_color_override_enabled_ = true;
-  background_color_override_ = color;
-  UpdateLayerTreeBackgroundColor();
-}
-
-void WebFrameWidgetImpl::ClearBackgroundColorOverride() {
-  background_color_override_enabled_ = false;
-  UpdateLayerTreeBackgroundColor();
-}
-
-void WebFrameWidgetImpl::SetBaseBackgroundColorOverride(SkColor color) {
-  if (base_background_color_override_enabled_ &&
-      base_background_color_override_ == color) {
-    return;
-  }
-
-  base_background_color_override_enabled_ = true;
-  base_background_color_override_ = color;
-  // Force lifecycle update to ensure we're good to call
-  // LocalFrameView::setBaseBackgroundColor().
-  LocalRootImpl()
-      ->GetFrameView()
-      ->UpdateLifecycleToCompositingCleanPlusScrolling();
-  UpdateBaseBackgroundColor();
-}
-
-void WebFrameWidgetImpl::ClearBaseBackgroundColorOverride() {
-  if (!base_background_color_override_enabled_)
-    return;
-
-  base_background_color_override_enabled_ = false;
-  // Force lifecycle update to ensure we're good to call
-  // LocalFrameView::setBaseBackgroundColor().
-  LocalRootImpl()
-      ->GetFrameView()
-      ->UpdateLifecycleToCompositingCleanPlusScrolling();
-  UpdateBaseBackgroundColor();
 }
 
 void WebFrameWidgetImpl::LayoutAndPaintAsync(base::OnceClosure callback) {
@@ -532,25 +479,6 @@ void WebFrameWidgetImpl::SetCursorVisibilityState(bool is_visible) {
   GetPage()->SetIsCursorVisible(is_visible);
 }
 
-Color WebFrameWidgetImpl::BaseBackgroundColor() const {
-  return base_background_color_override_enabled_
-             ? base_background_color_override_
-             : base_background_color_;
-}
-
-void WebFrameWidgetImpl::SetBaseBackgroundColor(SkColor color) {
-  if (base_background_color_ == color)
-    return;
-
-  base_background_color_ = color;
-  UpdateBaseBackgroundColor();
-}
-
-void WebFrameWidgetImpl::UpdateBaseBackgroundColor() {
-  LocalRootImpl()->GetFrameView()->SetBaseBackgroundColor(
-      BaseBackgroundColor());
-}
-
 WebInputMethodController*
 WebFrameWidgetImpl::GetActiveWebInputMethodController() const {
   WebLocalFrameImpl* local_frame =
@@ -574,8 +502,6 @@ bool WebFrameWidgetImpl::ScrollFocusedEditableElementIntoView() {
 }
 
 void WebFrameWidgetImpl::Initialize() {
-  if (LocalRoot()->Parent())
-    SetBackgroundColorOverride(Color::kTransparent);
 }
 
 void WebFrameWidgetImpl::IntrinsicSizingInfoChanged(
@@ -656,15 +582,6 @@ void WebFrameWidgetImpl::SetFocus(bool enable) {
       ime_accept_events_ = false;
     }
   }
-}
-
-SkColor WebFrameWidgetImpl::BackgroundColor() const {
-  if (background_color_override_enabled_)
-    return background_color_override_;
-  if (!LocalRootImpl()->GetFrameView())
-    return base_background_color_;
-  LocalFrameView* view = LocalRootImpl()->GetFrameView();
-  return view->DocumentBackgroundColor().Rgb();
 }
 
 bool WebFrameWidgetImpl::SelectionBounds(WebRect& anchor_web,
@@ -1076,6 +993,10 @@ void WebFrameWidgetImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view) {
   // be moved from WebViewImpl into WebFrameWidget and used for all local
   // frame roots. https://crbug.com/712794
   layer_tree_view_->HeuristicsForGpuRasterizationUpdated(true);
+
+  // WebFrameWidgetImpl is used for child frames, which always have a
+  // transparent background color.
+  layer_tree_view_->SetBackgroundColor(SK_ColorTRANSPARENT);
 }
 
 void WebFrameWidgetImpl::SetIsAcceleratedCompositingActive(bool active) {
@@ -1094,7 +1015,6 @@ void WebFrameWidgetImpl::SetIsAcceleratedCompositingActive(bool active) {
     TRACE_EVENT0("blink",
                  "WebViewImpl::setIsAcceleratedCompositingActive(true)");
     layer_tree_view_->SetRootLayer(root_layer_);
-    UpdateLayerTreeBackgroundColor();
     UpdateLayerTreeViewport();
     is_accelerated_compositing_active_ = true;
   }

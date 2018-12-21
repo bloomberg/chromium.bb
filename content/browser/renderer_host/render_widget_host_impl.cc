@@ -528,18 +528,17 @@ RenderWidgetHostImpl* RenderWidgetHostImpl::FromID(
 // static
 std::unique_ptr<RenderWidgetHostIterator>
 RenderWidgetHost::GetRenderWidgetHosts() {
-  std::unique_ptr<RenderWidgetHostIteratorImpl> hosts(
-      new RenderWidgetHostIteratorImpl());
+  auto hosts = std::make_unique<RenderWidgetHostIteratorImpl>();
   for (auto& it : g_routing_id_widget_map.Get()) {
-    RenderWidgetHost* widget = it.second;
-
-    RenderViewHost* rvh = RenderViewHost::From(widget);
+    RenderWidgetHostImpl* widget = it.second;
+    RenderViewHost* rvh = widget->GetRenderViewHost();
+    // If the widget is not for a main frame, add to |hosts|.
     if (!rvh) {
       hosts->Add(widget);
       continue;
     }
 
-    // For RenderViewHosts, add only active ones.
+    // If the widget is for a main frame, add only if active.
     if (static_cast<RenderViewHostImpl*>(rvh)->is_active())
       hosts->Add(widget);
   }
@@ -561,6 +560,10 @@ RenderWidgetHostImpl::GetAllRenderWidgetHosts() {
 // static
 RenderWidgetHostImpl* RenderWidgetHostImpl::From(RenderWidgetHost* rwh) {
   return static_cast<RenderWidgetHostImpl*>(rwh);
+}
+
+RenderViewHost* RenderWidgetHostImpl::GetRenderViewHost() {
+  return owner_delegate_ ? owner_delegate_->GetRenderViewHost() : nullptr;
 }
 
 void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {
@@ -1092,8 +1095,8 @@ void RenderWidgetHostImpl::SetPageFocus(bool focused) {
   GetWidgetInputHandler()->SetFocus(focused);
 
   // Also send page-level focus state to other SiteInstances involved in
-  // rendering the current FrameTree.
-  if (RenderViewHost::From(this) && delegate_)
+  // rendering the current FrameTree, if this widget is for a main frame.
+  if (owner_delegate_ && delegate_)
     delegate_->ReplicatePageFocus(focused);
 }
 
@@ -2717,10 +2720,6 @@ void RenderWidgetHostImpl::OnUnexpectedEventAck(UnexpectedEventAckType type) {
 bool RenderWidgetHostImpl::IsIgnoringInputEvents() const {
   return process_->IsBlocked() || !delegate_ ||
          delegate_->ShouldIgnoreInputEvents();
-}
-
-void RenderWidgetHostImpl::SetBackgroundOpaque(bool opaque) {
-  Send(new WidgetMsg_SetBackgroundOpaque(GetRoutingID(), opaque));
 }
 
 bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {

@@ -88,6 +88,34 @@ TEST_F(RenderViewHostTest, CreateFullscreenWidget) {
   test_rvh()->CreateNewFullscreenWidget(routing_id, std::move(widget));
 }
 
+// The RenderViewHost tells the renderer process about SetBackgroundOpaque()
+// changes.
+TEST_F(RenderViewHostTest, SetBackgroundOpaque) {
+  for (bool value : {true, false}) {
+    SCOPED_TRACE(value);
+    // This method is part of RenderWidgetHostOwnerDelegate, provided to the
+    // main frame RenderWidgetHost, which uses it to inform the RenderView
+    // in the renderer process of the background opaque state.
+    auto* as_owner_delegate =
+        static_cast<RenderWidgetHostOwnerDelegate*>(test_rvh());
+    as_owner_delegate->SetBackgroundOpaque(value);
+
+    // This RenderWidget(View) was a main frame, so it passes along
+    // transparent background color to the RenderView.
+    const IPC::Message* set_background =
+        process()->sink().GetUniqueMessageMatching(
+            ViewMsg_SetBackgroundOpaque::ID);
+    ASSERT_TRUE(set_background);
+    std::tuple<bool> sent_background;
+    ViewMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
+    EXPECT_EQ(std::get<0>(sent_background), value);
+
+    // GetUniqueMessageMatching() on the next trip through the loop should
+    // not find the message from the current loop, so remove that one.
+    process()->sink().ClearMessages();
+  }
+}
+
 // Ensure we do not grant bindings to a process shared with unprivileged views.
 TEST_F(RenderViewHostTest, DontGrantBindingsToSharedProcess) {
   // Create another view in the same process.

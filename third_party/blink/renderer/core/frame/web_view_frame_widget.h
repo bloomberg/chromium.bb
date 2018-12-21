@@ -68,15 +68,9 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
   bool IsAcceleratedCompositingActive() const override;
   void WillCloseLayerTreeView() override;
-  SkColor BackgroundColor() const override;
   WebURL GetURLForDebugTrace() override;
 
   // WebFrameWidget overrides:
-  void SetBackgroundColorOverride(SkColor) override;
-  void ClearBackgroundColorOverride() override;
-  void SetBaseBackgroundColorOverride(SkColor) override;
-  void ClearBaseBackgroundColorOverride() override;
-  void SetBaseBackgroundColor(SkColor) override;
   WebInputMethodController* GetActiveWebInputMethodController() const override;
   bool ScrollFocusedEditableElementIntoView() override;
   WebHitTestResult HitTestResultAt(const gfx::Point&) override;

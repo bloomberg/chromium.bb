@@ -11,9 +11,13 @@ namespace blink {
 class WebMouseEvent;
 }
 
-namespace content {
+namespace gfx {
+class Rect;
+}
 
+namespace content {
 struct NativeWebKeyboardEvent;
+class RenderViewHost;
 
 //
 // RenderWidgetHostOwnerDelegate
@@ -67,6 +71,17 @@ class CONTENT_EXPORT RenderWidgetHostOwnerDelegate {
   // Notify the OwnerDelegate that the renderer has requested a change in
   // the bounds of the content area.
   virtual void RequestSetBounds(const gfx::Rect& bounds) = 0;
+
+  // When false, this allows the renderer's output to be transparent. By default
+  // the renderer's background is forced to be opaque.
+  virtual void SetBackgroundOpaque(bool opaque) = 0;
+
+  // Returns the RenderViewHost, which holds the frame tree for this
+  // RenderWidgetHost.
+  // TODO(danakj): This should not exist, instead any use of RenderViewHost
+  // should go through specific methods in this delegate interface.
+  // DO NOT ADD NEW CALLS TO THIS METHOD.
+  virtual RenderViewHost* GetRenderViewHost() = 0;
 
  protected:
   virtual ~RenderWidgetHostOwnerDelegate() {}
