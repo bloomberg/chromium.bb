@@ -1342,36 +1342,6 @@
             ]
         }
     ],
-    "D3D11VP9Decoder": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "D3D11VP9Decoder"
-                    ]
-                }
-            ]
-        }
-    ],
-    "D3D11VideoDecoder": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "D3D11VideoDecoder"
-                    ]
-                }
-            ]
-        }
-    ],
     "DataCompressionProxyLoFi": [
         {
             "platforms": [
@@ -1599,21 +1569,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "DirectCompositionPreferNV12Overlays"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DirectCompositionUseNV12DecodeSwapChain": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DirectCompositionUseNV12DecodeSwapChain"
                     ]
                 }
             ]
