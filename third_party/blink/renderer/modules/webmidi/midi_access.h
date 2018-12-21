@@ -119,14 +119,14 @@ class MIDIAccess final : public EventTargetWithInlineData,
   }
   void DidReceiveMIDIData(unsigned port_index,
                           const unsigned char* data,
-                          size_t length,
+                          wtf_size_t length,
                           TimeTicks time_stamp) override;
 
   // |timeStampInMilliseconds| is in the same time coordinate system as
   // performance.now().
   void SendMIDIData(unsigned port_index,
                     const unsigned char* data,
-                    size_t length,
+                    wtf_size_t length,
                     TimeTicks time_stamp);
 
   // Eager finalization needed to promptly release m_accessor. Otherwise

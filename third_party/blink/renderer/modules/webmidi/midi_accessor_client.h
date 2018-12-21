@@ -58,7 +58,7 @@ class MIDIAccessorClient {
   virtual void DidStartSession(midi::mojom::Result) = 0;
   virtual void DidReceiveMIDIData(unsigned port_index,
                                   const unsigned char* data,
-                                  size_t length,
+                                  wtf_size_t length,
                                   base::TimeTicks time_stamp) = 0;
 };
 

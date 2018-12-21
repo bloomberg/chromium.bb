@@ -181,7 +181,7 @@ void MIDIAccess::DidSetOutputPortState(unsigned port_index, PortState state) {
 
 void MIDIAccess::DidReceiveMIDIData(unsigned port_index,
                                     const unsigned char* data,
-                                    size_t length,
+                                    wtf_size_t length,
                                     TimeTicks time_stamp) {
   DCHECK(IsMainThread());
   if (port_index >= inputs_.size())
@@ -192,7 +192,7 @@ void MIDIAccess::DidReceiveMIDIData(unsigned port_index,
 
 void MIDIAccess::SendMIDIData(unsigned port_index,
                               const unsigned char* data,
-                              size_t length,
+                              wtf_size_t length,
                               TimeTicks time_stamp) {
   DCHECK(!time_stamp.is_null());
   if (!GetExecutionContext() || !data || !length ||

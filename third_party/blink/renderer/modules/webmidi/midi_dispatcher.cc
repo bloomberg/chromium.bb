@@ -72,7 +72,7 @@ void MIDIDispatcher::RemoveAccessor(MIDIAccessor* accessor) {
 
 void MIDIDispatcher::SendMidiData(uint32_t port,
                                   const uint8_t* data,
-                                  size_t length,
+                                  wtf_size_t length,
                                   base::TimeTicks timestamp) {
   if ((kMaxUnacknowledgedBytesSent - unacknowledged_bytes_sent_) < length) {
     // TODO(toyoshim): buffer up the data to send at a later time.
