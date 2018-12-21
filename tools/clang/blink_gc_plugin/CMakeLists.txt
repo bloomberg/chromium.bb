@@ -36,7 +36,7 @@ if(WIN32)
     ${CMAKE_BINARY_DIR}/bin/clang
     )
 else()
-  add_llvm_loadable_module("lib${LIBRARYNAME}" ${plugin_sources})
+  add_llvm_library("lib${LIBRARYNAME}" MODULE ${plugin_sources})
   add_dependencies("lib${LIBRARYNAME}" clang)
 
   cr_install(TARGETS "lib${LIBRARYNAME}" LIBRARY DESTINATION lib)
