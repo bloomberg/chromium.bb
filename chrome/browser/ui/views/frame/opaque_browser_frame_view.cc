@@ -552,7 +552,10 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
    * So we'd need to sample the background color at the right location and
    * synthesize a good shadow color. */
 
-  PaintClientEdge(canvas);
+  // Custom tab bar mode draws the toolbar as a unified part of the titlebar, so
+  // it shouldn't have a client edge.
+  if (!browser_view()->toolbar()->custom_tab_bar())
+    PaintClientEdge(canvas);
 }
 
 // BrowserNonClientFrameView:
