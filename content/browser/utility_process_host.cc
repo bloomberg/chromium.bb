@@ -84,6 +84,9 @@ class UtilitySandboxedProcessLauncherDelegate
         sandbox_type_ == service_manager::SANDBOX_TYPE_PDF_COMPOSITOR ||
         sandbox_type_ == service_manager::SANDBOX_TYPE_PROFILING ||
         sandbox_type_ == service_manager::SANDBOX_TYPE_PPAPI ||
+#if defined(OS_CHROMEOS)
+        sandbox_type_ == service_manager::SANDBOX_TYPE_IME ||
+#endif  // OS_CHROMEOS
         sandbox_type_ == service_manager::SANDBOX_TYPE_AUDIO;
     DCHECK(supported_sandbox_type);
 #endif  // DCHECK_IS_ON()
@@ -161,6 +164,9 @@ class UtilitySandboxedProcessLauncherDelegate
   service_manager::ZygoteHandle GetZygote() override {
     if (service_manager::IsUnsandboxedSandboxType(sandbox_type_) ||
         sandbox_type_ == service_manager::SANDBOX_TYPE_NETWORK ||
+#if defined(OS_CHROMEOS)
+        sandbox_type_ == service_manager::SANDBOX_TYPE_IME ||
+#endif  // OS_CHROMEOS
         sandbox_type_ == service_manager::SANDBOX_TYPE_AUDIO) {
       return nullptr;
     }

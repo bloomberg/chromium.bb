@@ -32,6 +32,19 @@ source_set("lib") {
   }
 }
 
+source_set("sandbox_hook") {
+  sources = [
+    "ime_sandbox_hook.cc",
+    "ime_sandbox_hook.h",
+  ]
+
+  deps = [
+    "//base",
+    "//sandbox/linux:sandbox_services",
+    "//services/service_manager/sandbox:sandbox",
+  ]
+}
+
 service_manifest("manifest") {
   name = "ime"
   source = "manifest.json"
