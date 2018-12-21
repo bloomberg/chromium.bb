@@ -268,6 +268,7 @@ void InputRouterImpl::ProcessDeferredGestureEventQueue() {
 void InputRouterImpl::SetTouchActionFromMain(cc::TouchAction touch_action) {
   if (compositor_touch_action_enabled_) {
     touch_action_filter_.OnSetTouchAction(touch_action);
+    touch_event_queue_.StopTimeoutMonitor();
     ProcessDeferredGestureEventQueue();
   }
   UpdateTouchAckTimeoutEnabled();
