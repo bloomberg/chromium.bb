@@ -5,6 +5,7 @@
 #include "chrome/browser/chrome_browser_main_mac.h"
 
 #import <Cocoa/Cocoa.h>
+#include <libproc.h>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -130,13 +131,7 @@ FilesystemType FilesystemStringToType(DiskImageStatus is_ro_dmg,
   return FilesystemType::kOther;
 }
 
-// Records various bits of information about the local Chromium installation in
-// UMA.
-void RecordInstallationStats() {
-  NSBundle* outer_bundle = base::mac::OuterBundle();
-
-  // What file system?
-
+void RecordFilesystemStats() {
   DiskImageStatus is_ro_dmg = IsAppRunningFromReadOnlyDiskImage(nullptr);
   // Note that -getFileSystemInfoForPath:... is implemented with Disk
   // Arbitration and |filesystem_type_string| is the value from
@@ -145,7 +140,7 @@ void RecordInstallationStats() {
   // handling it.
   NSString* filesystem_type_string;
   BOOL success = [[NSWorkspace sharedWorkspace]
-      getFileSystemInfoForPath:[outer_bundle bundlePath]
+      getFileSystemInfoForPath:[base::mac::OuterBundle() bundlePath]
                    isRemovable:nil
                     isWritable:nil
                  isUnmountable:nil
@@ -157,6 +152,77 @@ void RecordInstallationStats() {
     filesystem_type = FilesystemStringToType(is_ro_dmg, filesystem_type_string);
 
   UMA_HISTOGRAM_ENUMERATION("OSX.InstallationFilesystem", filesystem_type);
+}
+
+// Get the uid and executable path for a pid. Returns true iff successful.
+// |path_buffer| must be of PROC_PIDPATHINFO_MAXSIZE length.
+bool GetUIDAndPathOfPID(pid_t pid, char* path_buffer, uid_t* out_uid) {
+  struct proc_bsdshortinfo info;
+  int error = proc_pidinfo(pid, PROC_PIDT_SHORTBSDINFO, 0, &info, sizeof(info));
+  if (error <= 0)
+    return false;
+
+  error = proc_pidpath(pid, path_buffer, PROC_PIDPATHINFO_MAXSIZE);
+  if (error <= 0)
+    return false;
+
+  *out_uid = info.pbsi_uid;
+  return true;
+}
+
+void RecordInstanceStats() {
+  // Get list of all processes.
+
+  int pid_array_size_needed = proc_listallpids(nullptr, 0);
+  if (pid_array_size_needed <= 0)
+    return;
+  std::vector<pid_t> pid_array(pid_array_size_needed * 4);  // slack
+  int pid_count = proc_listallpids(pid_array.data(),
+                                   pid_array.size() * sizeof(pid_array[0]));
+  if (pid_count <= 0)
+    return;
+
+  pid_array.resize(pid_count);
+
+  // Get info about this process.
+
+  const pid_t this_pid = getpid();
+  uid_t this_uid;
+  char this_path[PROC_PIDPATHINFO_MAXSIZE];
+  if (!GetUIDAndPathOfPID(this_pid, this_path, &this_uid))
+    return;
+
+  // Compare all other processes to this one.
+
+  int this_user_count = 0;
+  int other_user_count = 0;
+  for (pid_t pid : pid_array) {
+    if (pid == this_pid)
+      continue;
+
+    uid_t uid;
+    char path[PROC_PIDPATHINFO_MAXSIZE];
+    if (!GetUIDAndPathOfPID(pid, path, &uid))
+      continue;
+
+    if (strcmp(path, this_path) != 0)
+      continue;
+
+    if (uid == this_uid)
+      ++this_user_count;
+    else
+      ++other_user_count;
+  }
+
+  UMA_HISTOGRAM_COUNTS_100("OSX.OtherInstances.ThisUser", this_user_count);
+  UMA_HISTOGRAM_COUNTS_100("OSX.OtherInstances.OtherUser", other_user_count);
+}
+
+// Records various bits of information about the local Chromium installation in
+// UMA.
+void RecordInstallationStats() {
+  RecordFilesystemStats();
+  RecordInstanceStats();
 }
 
 }  // namespace
