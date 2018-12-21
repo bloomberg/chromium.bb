@@ -61,8 +61,11 @@ def SetupTestServer(target, test_concurrency):
   Returns a Popen object for the test server process."""
 
   logging.debug('Starting test server.')
+  # The TestLauncher can launch more jobs than the limit specified with
+  # --test-launcher-jobs so the max number of spawned test servers is set to
+  # twice that limit here. See https://crbug.com/913156#c19.
   spawning_server = chrome_test_server_spawner.SpawningServer(
-      0, SSHPortForwarder(target), test_concurrency)
+      0, SSHPortForwarder(target), test_concurrency * 2)
   forwarded_port = common.ConnectPortForwardingTask(
       target, spawning_server.server_port)
   spawning_server.Start()
