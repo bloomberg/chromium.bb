@@ -65,6 +65,23 @@ WebURL WebDocumentLoaderImpl::GetUrl() const {
   return request_wrapper_.Url();
 }
 
+WebString WebDocumentLoaderImpl::HttpMethod() const {
+  return request_wrapper_.HttpMethod();
+}
+
+mojom::FetchCacheMode WebDocumentLoaderImpl::GetCacheMode() const {
+  return request_wrapper_.GetCacheMode();
+}
+
+WebString WebDocumentLoaderImpl::Referrer() const {
+  return DocumentLoader::Referrer();
+}
+
+network::mojom::ReferrerPolicy WebDocumentLoaderImpl::GetReferrerPolicy()
+    const {
+  return request_wrapper_.GetReferrerPolicy();
+}
+
 const WebURLRequest& WebDocumentLoaderImpl::GetRequest() const {
   return request_wrapper_;
 }

@@ -403,9 +403,9 @@ bool MaybeGetOverriddenURL(WebDocumentLoader* document_loader, GURL* output) {
 }
 
 // Returns the original request url. If there is no redirect, the original
-// url is the same as ds->getRequest()->url(). If the WebDocumentLoader belongs
-// to a frame was loaded by loadData, the original url will be
-// ds->unreachableURL()
+// url is the same as document loader's OriginalUrl(). If the WebDocumentLoader
+// belongs to a frame was loaded by loadData, the original url will be
+// it's UnreachableURL().
 GURL GetOriginalRequestURL(WebDocumentLoader* document_loader) {
   GURL overriden_url;
   if (MaybeGetOverriddenURL(document_loader, &overriden_url))
@@ -2774,8 +2774,8 @@ void RenderFrameImpl::DidFailProvisionalLoad(
     return;
 
   // Notify the browser that we failed a provisional load with an error.
-  SendFailedProvisionalLoad(document_loader->GetRequest().HttpMethod().Ascii(),
-                            error, frame_);
+  SendFailedProvisionalLoad(document_loader->HttpMethod().Ascii(), error,
+                            frame_);
 
   if (!ShouldDisplayErrorPageForFailedLoad(error.reason(), error.url()))
     return;
@@ -2809,15 +2809,13 @@ void RenderFrameImpl::LoadNavigationErrorPage(
     const base::Optional<std::string>& error_page_content,
     bool replace_current_item,
     bool inherit_document_state) {
-  WebURLRequest failed_request = document_loader->GetRequest();
-
   std::string error_html;
   if (error_page_content) {
     error_html = error_page_content.value();
   } else {
     GetContentClient()->renderer()->PrepareErrorPage(
-        this, error, failed_request.HttpMethod().Ascii(),
-        failed_request.GetCacheMode() ==
+        this, error, document_loader->HttpMethod().Ascii(),
+        document_loader->GetCacheMode() ==
             blink::mojom::FetchCacheMode::kBypassCache,
         &error_html);
   }
@@ -2843,9 +2841,10 @@ void RenderFrameImpl::LoadNavigationErrorPage(
   }
 
   // Locally generated error pages should not be cached.
-  failed_request.SetCacheMode(blink::mojom::FetchCacheMode::kNoStore);
-  failed_request.SetURL(GURL(kUnreachableWebDataURL));
-  navigation_params->request = failed_request;
+  navigation_params->request = document_loader->GetRequest();
+  navigation_params->request.SetCacheMode(
+      blink::mojom::FetchCacheMode::kNoStore);
+  navigation_params->request.SetURL(GURL(kUnreachableWebDataURL));
 
   if (replace_current_item)
     navigation_params->frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
@@ -4552,9 +4551,8 @@ void RenderFrameImpl::RunScriptsAtDocumentReady(bool document_is_empty) {
     WebURL unreachable_url = frame_->GetDocument().Url();
     std::string error_html;
     GetContentClient()->renderer()->PrepareErrorPageForHttpStatusError(
-        this, unreachable_url,
-        document_loader->GetRequest().HttpMethod().Ascii(),
-        document_loader->GetRequest().GetCacheMode() ==
+        this, unreachable_url, document_loader->HttpMethod().Ascii(),
+        document_loader->GetCacheMode() ==
             blink::mojom::FetchCacheMode::kBypassCache,
         http_status_code, &error_html);
     // This call may run scripts, e.g. via the beforeunload event, and possibly
@@ -4590,12 +4588,12 @@ void RenderFrameImpl::DidFailLoad(const WebURLError& error,
   WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
   DCHECK(document_loader);
 
-  const WebURLRequest& failed_request = document_loader->GetRequest();
   base::string16 error_description;
   GetContentClient()->renderer()->GetErrorDescription(
-      error, failed_request.HttpMethod().Ascii(), &error_description);
+      error, document_loader->HttpMethod().Ascii(), &error_description);
   Send(new FrameHostMsg_DidFailLoadWithError(
-      routing_id_, failed_request.Url(), error.reason(), error_description));
+      routing_id_, document_loader->GetUrl(), error.reason(),
+      error_description));
 }
 
 void RenderFrameImpl::DidFinishLoad() {
@@ -5479,7 +5477,6 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
     blink::WebHistoryCommitType commit_type,
     ui::PageTransition transition) {
   WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
-  const WebURLRequest& request = document_loader->GetRequest();
   const WebURLResponse& response = document_loader->GetResponse();
 
   InternalDocumentStateData* internal_data =
@@ -5552,7 +5549,7 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
 
   params->content_source_id = GetLocalRootRenderWidget()->GetContentSourceId();
 
-  params->method = request.HttpMethod().Latin1();
+  params->method = document_loader->HttpMethod().Latin1();
   if (params->method == "POST")
     params->post_id = ExtractPostId(current_history_item_);
 
@@ -5564,11 +5561,11 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
   // set the referrer appropriately.
   if (document_loader->IsClientRedirect()) {
     params->referrer =
-        Referrer(params->redirects[0],
-                 document_loader->GetRequest().GetReferrerPolicy());
+        Referrer(params->redirects[0], document_loader->GetReferrerPolicy());
   } else {
-    params->referrer = RenderViewImpl::GetReferrerFromRequest(
-        frame_, document_loader->GetRequest());
+    params->referrer =
+        Referrer(blink::WebStringToGURL(document_loader->Referrer()),
+                 document_loader->GetReferrerPolicy());
   }
 
   if (!frame_->Parent()) {

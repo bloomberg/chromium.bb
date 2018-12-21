@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -407,9 +408,9 @@ bool CacheControlNoStoreHeaderPresent(
   if (response.CacheControlContainsNoStore())
     return true;
 
-  const ResourceRequest& request =
-      web_local_frame.GetDocumentLoader()->GetRequest().ToResourceRequest();
-  return request.CacheControlContainsNoStore();
+  DocumentLoader* document_loader =
+      web_local_frame.GetFrame()->Loader().GetDocumentLoader();
+  return document_loader->CacheControlContainsNoStore();
 }
 
 bool FrameShouldBeSerializedAsMHTML(
