@@ -458,7 +458,7 @@ interface WebGPUDevice {
   readonly adapter: WebGPUAdapter;
   readonly extensions: WebGPUExtensions;
   readonly limits: WebGPULimits;
-  onLog: WebGPULogCallback;
+  onLog?: WebGPULogCallback;
   createBindGroup(descriptor: WebGPUBindGroupDescriptor): WebGPUBindGroup;
   createBindGroupLayout(descriptor: WebGPUBindGroupLayoutDescriptor): WebGPUBindGroupLayout;
   createBuffer(descriptor: WebGPUBufferDescriptor): WebGPUBuffer;

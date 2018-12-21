@@ -679,7 +679,7 @@ interface WebGPUDevice {
 
     WebGPUQueue getQueue();
 
-    attribute WebGPULogCallback onLog;
+    attribute WebGPULogCallback? onLog;
     WebGPUObjectStatusQuery getObjectStatus(WebGPUStatusableObject statusableObject);
 };
 
