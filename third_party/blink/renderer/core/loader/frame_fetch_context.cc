@@ -308,19 +308,7 @@ ResourceFetcher* FrameFetchContext::CreateFetcher(DocumentLoader* loader,
                                                   Document* document) {
   FrameFetchContext* context =
       MakeGarbageCollected<FrameFetchContext>(loader, document);
-  ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(context);
-
-  if (loader && context->GetSettings()->GetSavePreviousDocumentResources() !=
-                    SavePreviousDocumentResources::kNever) {
-    if (Document* previous_document = context->GetFrame()->GetDocument()) {
-      if (previous_document->IsSecureTransitionTo(NullURL())) {
-        fetcher->HoldResourcesFromPreviousFetcher(
-            previous_document->Loader()->Fetcher());
-      }
-    }
-  }
-
-  return fetcher;
+  return MakeGarbageCollected<ResourceFetcher>(context);
 }
 
 FrameFetchContext::FrameFetchContext(DocumentLoader* loader, Document* document)

@@ -1627,18 +1627,6 @@ const char kSavePageAsMhtmlDescription[] =
     "Enables saving pages as MHTML: a single text file containing HTML and all "
     "sub-resources.";
 
-const char kSavePreviousDocumentResourcesName[] =
-    "Save Previous Document Resources";
-const char kSavePreviousDocumentResourcesDescription[] =
-    "Saves an old document's cached resources until the specified point in the "
-    "next document's lifecycle.";
-const char kSavePreviousDocumentResourcesNever[] =
-    "Don't explicitly save resources";
-const char kSavePreviousDocumentResourcesUntilOnDOMContentLoaded[] =
-    "Save resources until onDOMContentLoaded completes";
-const char kSavePreviousDocumentResourcesUntilOnLoad[] =
-    "Save resources until onload completes";
-
 const char kSendTabToSelfName[] = "Send tab to self";
 const char kSendTabToSelfDescription[] =
     "Allows users to push tabs from Android devices to other synced "

@@ -19,8 +19,6 @@ bool IsPinchToZoomEnabled();
 
 V8CacheOptions GetV8CacheOptions();
 
-SavePreviousDocumentResources GetSavePreviousDocumentResources();
-
 void WaitForDebugger(const std::string& label);
 
 // Returns all comma-separated values from all instances of a switch, in the

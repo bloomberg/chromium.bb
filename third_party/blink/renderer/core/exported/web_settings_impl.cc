@@ -259,12 +259,6 @@ void WebSettingsImpl::SetShouldReuseGlobalForUnownedMainFrame(bool enabled) {
   settings_->SetShouldReuseGlobalForUnownedMainFrame(enabled);
 }
 
-void WebSettingsImpl::SetSavePreviousDocumentResources(
-    SavePreviousDocumentResources save_resources) {
-  settings_->SetSavePreviousDocumentResources(
-      static_cast<blink::SavePreviousDocumentResources>(save_resources));
-}
-
 void WebSettingsImpl::SetPluginsEnabled(bool enabled) {
   dev_tools_emulator_->SetPluginsEnabled(enabled);
 }

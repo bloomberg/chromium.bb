@@ -443,7 +443,6 @@ void DocumentLoader::NotifyFinished(Resource* resource) {
 void DocumentLoader::LoadFailed(const ResourceError& error) {
   if (!error.IsCancellation() && frame_->Owner())
     frame_->Owner()->RenderFallbackContent(frame_);
-  fetcher_->ClearResourcesFromPreviousFetcher();
 
   WebHistoryCommitType history_commit_type = LoadTypeToCommitType(load_type_);
   switch (state_) {

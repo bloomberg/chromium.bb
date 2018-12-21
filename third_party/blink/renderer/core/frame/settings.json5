@@ -786,12 +786,6 @@
     },
 
     {
-      name: "savePreviousDocumentResources",
-      initial: "SavePreviousDocumentResources::kNever",
-      type: "SavePreviousDocumentResources",
-    },
-
-    {
       name: "historyEntryRequiresUserGesture",
       initial: false,
     },
