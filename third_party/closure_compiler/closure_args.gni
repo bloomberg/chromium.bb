@@ -53,7 +53,7 @@ minifying_closure_args = [
   "compilation_level=WHITESPACE_ONLY",
 
   "language_in=ECMASCRIPT_NEXT",
-  "language_out=ECMASCRIPT6",
+  "language_out=ECMASCRIPT_2017",
 
   # TODO(wychen): turn on 'use strict'. crbug.com/729689
   "emit_use_strict=false",
