@@ -282,7 +282,7 @@ class TriageRelevantChanges(object):
   def _UpdateSlaveInfo(self):
     """Update slave infomation with stages, relevant_changes, and subsys."""
     self.slave_stages_dict = self.GetSlaveStages(
-        self.master_build_id, self.db, self.buildbucket_info_dict)
+        self.db, self.buildbucket_info_dict)
     self.slave_changes_dict = self._GetRelevantChanges(
         self.slave_stages_dict)
     self.change_relevant_slaves_dict = cros_collections.InvertDictionary(
@@ -311,11 +311,10 @@ class TriageRelevantChanges(object):
 
   # TODO(nxia): Consolidate with completion_stages._ShouldSubmitPartialPool
   @staticmethod
-  def GetSlaveStages(master_build_id, db, buildbucket_info_dict):
+  def GetSlaveStages(db, buildbucket_info_dict):
     """Get slave stages from CIDB.
 
     Args:
-      master_build_id: The build_id of the master build.
       db: An instance of cidb.CIDBConnection to fetch data from CIDB.
       buildbucket_info_dict: A dict mapping all slave build config names to
         their BuildbucketInfos (See SlaveStatus.GetAllSlaveBuildbucketInfo
@@ -336,8 +335,11 @@ class TriageRelevantChanges(object):
         slave_stages_dict.setdefault(slave_config, [])
         slave_buildbucket_ids.append(buildbucket_info.buildbucket_id)
 
-    stages = db.GetSlaveStages(master_build_id,
-                               buildbucket_ids=slave_buildbucket_ids)
+    child_build_ids = [
+        c['id']
+        for c in db.GetBuildStatusesWithBuildbucketIds(slave_buildbucket_ids)]
+    stages = db.GetBuildsStages(child_build_ids)
+
     for stage in stages:
       slave_stages_dict[stage['build_config']].append(stage)
 

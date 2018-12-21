@@ -441,35 +441,19 @@ class FakeCIDBConnection(object):
             for _id in self.buildStageTable
             if self.buildStageTable[_id]['build_id'] == build_id]
 
-  def GetSlaveStages(self, master_build_id, buildbucket_ids=None):
-    """Get the slave stages of the given build.
-
-    Args:
-      master_build_id: The build id (string) of the master build.
-      buildbucket_ids: A list of buildbucket ids (strings) of the slaves.
-
-    Returns:
-      A list of slave stages (in format of dicts).
-    """
-    slave_builds = []
-
-    if buildbucket_ids is None:
-      slave_builds = {b['id']: b for b in self.buildTable
-                      if b['master_build_id'] == master_build_id}
-    else:
-      slave_builds = {b['id']: b for b in self.buildTable
-                      if b['master_build_id'] == master_build_id and
-                      b['buildbucket_id'] in buildbucket_ids}
-
-    slave_stages = []
+  def GetBuildsStages(self, build_ids):
+    """Quick implementation of fake GetBuildsStages."""
+    build_stages = []
+    build_statuses = {b['id']: b for b in self.buildTable
+                      if b['id'] in build_ids}
     for _id in self.buildStageTable:
       build_id = self.buildStageTable[_id]['build_id']
-      if build_id in slave_builds:
+      if build_id in build_ids:
         stage = self.buildStageTable[_id].copy()
-        stage['build_config'] = slave_builds[build_id]['build_config']
-        slave_stages.append(stage)
+        stage['build_config'] = build_statuses[build_id]['build_config']
+        build_stages.append(stage)
 
-    return slave_stages
+    return build_stages
 
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
@@ -531,12 +515,13 @@ class FakeCIDBConnection(object):
     """Gets contents of keyvalTable."""
     return self.fake_keyvals
 
-  def GetBuildStatusWithBuildbucketId(self, buildbucket_id):
+  def GetBuildStatusesWithBuildbucketIds(self, buildbucket_ids):
+    rows = []
     for row in self.buildTable:
-      if row['buildbucket_id'] == buildbucket_id:
-        return self._TrimStatus(row)
+      if row['buildbucket_id'] in buildbucket_ids:
+        rows.append(self._TrimStatus(row))
 
-    return None
+    return rows
 
   def GetBuildsFailures(self, build_ids):
     """Gets the failure entries for all listed build_ids.

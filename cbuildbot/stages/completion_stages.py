@@ -829,7 +829,7 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
                     self._build_stage_id, db, stage_name)
     return False
 
-  def CheckSlaveUploadPrebuiltsTest(self, db, build_id):
+  def CheckSlaveUploadPrebuiltsTest(self, db):
     """Check if the slaves have passed UploadPrebuilts stage.
 
     Given the master build id, check if all the important slaves have passed
@@ -837,7 +837,6 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
 
     Args:
       db: cidb.CIDBConnection object.
-      build_id: build_id of the master build to check for.
 
     Returns:
       True if all the important slaves have passed the stage;
@@ -860,9 +859,11 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
       slave_configs = self._GetSlaveConfigs()
       important_set = set([slave['name'] for slave in slave_configs])
 
-      slave_buildbucket_ids = self.GetScheduledSlaveBuildbucketIds()
-      stages = db.GetSlaveStages(
-          build_id, buildbucket_ids=slave_buildbucket_ids)
+      child_buildbucket_ids = self.GetScheduledSlaveBuildbucketIds()
+      child_build_ids = [
+          c['id']
+          for c in db.GetBuildStatusesWithBuildbucketIds(child_buildbucket_ids)]
+      stages = db.GetBuildsStages(child_build_ids)
 
       passed_set = set([
           s['build_config']
@@ -904,7 +905,7 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
       # If the master passed BinHostTest and all the important slaves passed
       # UploadPrebuiltsTest, push uprev commits to a staging_branch.
       if (self.CheckMasterBinhostTest(db, build_id) and
-          self.CheckSlaveUploadPrebuiltsTest(db, build_id)):
+          self.CheckSlaveUploadPrebuiltsTest(db)):
         staging_branch = ('refs/' + constants.PFQ_REF + '/' +
                           constants.STAGING_PFQ_BRANCH_PREFIX + str(build_id))
 

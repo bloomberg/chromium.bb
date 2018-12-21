@@ -99,9 +99,12 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
     build_stages_dict = {}
 
     # Get slave stages.
-    slave_stages = db.GetSlaveStages(
-        build_id, buildbucket_ids=slave_buildbucket_ids)
-    for stage in slave_stages:
+    child_build_ids = [
+        c['id']
+        for c in db.GetBuildStatusesWithBuildbucketIds(slave_buildbucket_ids)]
+
+    child_stages = db.GetBuildsStages(child_build_ids)
+    for stage in child_stages:
       build_stages_dict.setdefault(stage['build_config'], []).append(stage)
 
     # Get master stages.

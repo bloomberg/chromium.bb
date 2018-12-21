@@ -1687,7 +1687,10 @@ class PreCQLauncherStage(SyncStage):
         metrics.Counter(constants.MON_BB_CANCEL_PRE_CQ_BUILD_COUNT).increment()
 
         if db:
-          old_build = db.GetBuildStatusWithBuildbucketId(buildbucket_id)
+          old_build_list = db.GetBuildStatusesWithBuildbucketIds(
+              [buildbucket_id])
+          if old_build_list:
+            old_build = old_build_list[0]
           if old_build is not None:
             cancel_action = old_build_action._replace(
                 action=constants.CL_ACTION_TRYBOT_CANCELLED)

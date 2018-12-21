@@ -88,7 +88,8 @@ class CommitQueueHandleChangesStageTests(
     """Test _GetBuildsPassedSyncStage."""
     stage = self.ConstructStage()
     mock_cidb = mock.Mock()
-    mock_cidb.GetSlaveStages.return_value = [
+    mock_cidb.GetBuildStatusesWithBuildbucketIds.return_value = []
+    mock_cidb.GetBuildsStages.return_value = [
         {'build_config': 's_1', 'status': 'pass', 'name': 'CommitQueueSync'},
         {'build_config': 's_2', 'status': 'pass', 'name': 'CommitQueueSync'},
         {'build_config': 's_3', 'status': 'fail', 'name': 'CommitQueueSync'}]
@@ -232,7 +233,7 @@ class CommitQueueHandleChangesStageTests(
         slave_stages.append({'name': stage_name,
                              'build_config': slave,
                              'status': constants.BUILDER_STATUS_PASSED})
-    self.PatchObject(mock_cidb, 'GetSlaveStages', return_value=slave_stages)
+    self.PatchObject(mock_cidb, 'GetBuildsStages', return_value=slave_stages)
 
     # Set up SubmitPartialPool to provide a list of changes to look at.
     self.PatchObject(stage.sync_stage.pool, 'SubmitPartialPool',

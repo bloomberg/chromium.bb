@@ -1122,11 +1122,13 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         (status, build_id, child_config))
 
   @minimum_schema(65)
-  def GetBuildStatusWithBuildbucketId(self, buildbucket_id):
-    status = self._SelectWhere('buildTable',
-                               'buildbucket_id = "%s"' % buildbucket_id,
-                               self.BUILD_STATUS_KEYS)
-    return status[0] if status else None
+  def GetBuildStatusesWithBuildbucketIds(self, buildbucket_ids):
+    status = self._SelectWhere(
+        'buildTable',
+        'buildbucket_id IN (%s)' % ','.join([str(int(x))
+                                             for x in buildbucket_ids]),
+        self.BUILD_STATUS_KEYS)
+    return status if status else []
 
   @minimum_schema(65)
   def GetBuildStatus(self, build_id):
@@ -1207,11 +1209,25 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     """
     if not build_ids:
       return []
-    return self._SelectWhere(
-        'buildStageTable',
-        'build_id IN (%s)' % ','.join(str(int(x)) for x in build_ids),
-        ['id', 'build_id', 'name', 'board', 'status',
-         'last_updated', 'start_time', 'finish_time', 'final'])
+    bs_table_columns = ['id', 'build_id', 'name', 'board', 'status',
+                        'last_updated', 'start_time', 'finish_time', 'final']
+    bs_prepended_columns = ['bs.' + x for x in bs_table_columns]
+
+    b_table_columns = ['build_config', 'important']
+    b_prepended_columns = ['b.' + x for x in b_table_columns]
+
+    query = ('SELECT %s, %s FROM buildStageTable bs JOIN '
+             'buildTable b ON bs.build_id=b.id' %
+             (', '.join(bs_prepended_columns),
+              ', '.join(b_prepended_columns)))
+
+    query += (' WHERE b.id IN (%s)' %
+              (','.join('"%s"' % x for x in build_ids)))
+
+    results = self._Execute(query).fetchall()
+
+    columns = bs_table_columns + b_table_columns
+    return [dict(zip(columns, values)) for values in results]
 
   @minimum_schema(65)
   def GetSlaveStatuses(self, master_build_id, buildbucket_ids=None):
@@ -1245,80 +1261,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
             self.BUILD_STATUS_KEYS)
       else:
         return []
-
-  @minimum_schema(30)
-  def _GetStages(self, master_build_id, is_master=False, buildbucket_ids=None):
-    """Gets stages of master/slave builds of a given master build.
-
-    Args:
-      master_build_id: build id of the master build to fetch the master/slave
-                       builds' stages for.
-      is_master: boolean, if the query is for a master build's stages. If true,
-                 return all the stages in the master build. Otherwise return
-                 stages in the slave builds.
-      buildbucket_ids: A list of buildbucket_ids (strings) of slave builds
-        to given master_build_id. If buildbucket_ids is given, only fetch
-        the stages of builds with |buildbucket_id| in buildbucket_ids.
-        Default to None.
-
-    Returns:
-      A list containing, for each stage of master/slave builds found,
-      a dictionary with keys (id, build_id, name, board, status, last_updated,
-      start_time, finish_time, final, build_config).
-      If buildbucket_ids is None, the list contains all stages found; else, it
-      only contains the stages with |buildbucket_id| in buildbucket_ids.
-    """
-    bs_table_columns = ['id', 'build_id', 'name', 'board', 'status',
-                        'last_updated', 'start_time', 'finish_time', 'final']
-    bs_prepended_columns = ['bs.' + x for x in bs_table_columns]
-
-    b_table_columns = ['build_config', 'important']
-    b_prepended_columns = ['b.' + x for x in b_table_columns]
-
-    # define query for a master build
-    id_key = 'id' if is_master else 'master_build_id'
-
-    query = ('SELECT %s, %s FROM buildStageTable bs JOIN '
-             'buildTable b ON bs.build_id=b.id WHERE b.%s=%d' %
-             (', '.join(bs_prepended_columns),
-              ', '.join(b_prepended_columns),
-              id_key,
-              master_build_id))
-
-
-    if buildbucket_ids is not None:
-      if not buildbucket_ids:
-        return []
-
-      query += (' AND b.buildbucket_id IN (%s)' %
-                (','.join('"%s"' % x for x in buildbucket_ids)))
-
-    results = self._Execute(query).fetchall()
-
-    columns = bs_table_columns + b_table_columns
-    return [dict(zip(columns, values)) for values in results]
-
-  @minimum_schema(30)
-  def GetSlaveStages(self, master_build_id, buildbucket_ids=None):
-    """Gets the stages of all slave builds to given master_build_id.
-
-    Args:
-      master_build_id: build id of the master build to fetch the slave
-                       stages for.
-      buildbucket_ids: A list of buildbucket_ids (strings) of slave builds
-        to given master_build_id. If buildbucket_ids is given, only fetch
-        the stages of builds with |buildbucket_id| in buildbucket_ids.
-        Default to None.
-
-    Returns:
-      A list containing, for each stage of slave builds found,
-      a dictionary with keys (id, build_id, name, board, status, last_updated,
-      start_time, finish_time, final, build_config).
-      If buildbucket_ids is None, the list contains all stages of all slaves;
-      else, it only contains the stages of the slaves with |buildbucket_id|
-      in buildbucket_ids.
-    """
-    return self._GetStages(master_build_id, buildbucket_ids=buildbucket_ids)
 
   @minimum_schema(44)
   def GetBuildsFailures(self, build_ids):

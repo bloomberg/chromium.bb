@@ -642,58 +642,6 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
     self.assertEqual(slave_stages[0]['build_config'], 'build_config')
     self.assertEqual(slave_stages[0]['name'], 'My Stage')
 
-  def testGetSlaveStages(self):
-    """test GetSlaveStages."""
-    self._PrepareDatabase()
-
-    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
-
-    master_build_id = bot_db.InsertBuild('master',
-                                         _random(),
-                                         'master',
-                                         'master.hostname')
-
-    build_id_1 = bot_db.InsertBuild('slave1',
-                                    _random(),
-                                    'slave1',
-                                    'bot_hostname',
-                                    master_build_id=master_build_id,
-                                    buildbucket_id='bb_id_1')
-    build_id_2 = bot_db.InsertBuild('slave2',
-                                    _random(),
-                                    'slave2',
-                                    'bot_hostname',
-                                    master_build_id=master_build_id,
-                                    buildbucket_id='bb_id_2')
-    build_id_3 = bot_db.InsertBuild('slave1',
-                                    _random(),
-                                    'slave1',
-                                    'bot_hostname',
-                                    master_build_id=master_build_id,
-                                    buildbucket_id='bb_id_3')
-
-    bot_db.InsertBuildStage(
-        build_id_1, 'build_1_stage', board='test1')
-    bot_db.InsertBuildStage(
-        build_id_2, 'build_2_stage', board='test2')
-    bot_db.InsertBuildStage(
-        build_id_3, 'build_3_stage', board='test1')
-
-    slave_stages = bot_db.GetSlaveStages(master_build_id)
-    self.assertEqual(len(slave_stages), 3)
-
-    buildbucket_ids = ['bb_id_3']
-    slave_stages = bot_db.GetSlaveStages(
-        master_build_id, buildbucket_ids=buildbucket_ids)
-    self.assertEqual(len(slave_stages), 1)
-    self.assertEqual(slave_stages[0]['status'], 'planned')
-    self.assertEqual(slave_stages[0]['build_config'], 'slave1')
-    self.assertEqual(slave_stages[0]['name'], 'build_3_stage')
-
-    slave_stages = bot_db.GetSlaveStages(
-        master_build_id, buildbucket_ids=[])
-    self.assertEqual(len(slave_stages), 0)
-
   def testGetSlaveFailures(self):
     """Test GetSlaveFailures and GetBuildFailures"""
     self._PrepareDatabase()
@@ -817,7 +765,7 @@ class BuildTableTest(CIDBIntegrationTest):
     self._PrepareDatabase()
     bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
 
-    tmp_buildbucket_id = 'tmp_buildbucket_id'
+    tmp_buildbucket_id = '120'
     build_id = bot_db.InsertBuild('build_name',
                                   _random(),
                                   'build_config',
@@ -826,8 +774,10 @@ class BuildTableTest(CIDBIntegrationTest):
     self.assertEqual(tmp_buildbucket_id,
                      bot_db.GetBuildStatus(build_id)['buildbucket_id'])
 
-    build_status = bot_db.GetBuildStatusWithBuildbucketId(
-        tmp_buildbucket_id)
+    build_status = bot_db.GetBuildStatusesWithBuildbucketIds(
+        [tmp_buildbucket_id])
+    if build_status:
+      build_status = build_status[0]
     self.assertEqual(build_status['id'], build_id)
 
   def testFinishBuild(self):

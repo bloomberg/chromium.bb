@@ -35,8 +35,8 @@ def FetchBuildStatuses(db, options):
     List of build_status dicts from CIDB, or None.
   """
   if options.buildbucket_id:
-    build_status = db.GetBuildStatusWithBuildbucketId(
-        options.buildbucket_id)
+    build_status = db.GetBuildStatusesWithBuildbucketIds(
+        [options.buildbucket_id])
     if build_status:
       return [build_status]
   elif options.cidb_id:
