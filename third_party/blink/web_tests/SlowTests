@@ -724,7 +724,6 @@ crbug.com/874695 external/wpt/requestidlecallback/callback-suspended.html [ Slow
 crbug.com/874695 external/wpt/requestidlecallback/callback-timeout.html [ Slow ]
 crbug.com/874695 external/wpt/requestidlecallback/callback-timeout-when-busy.html [ Slow ]
 crbug.com/874695 external/wpt/requestidlecallback/callback-xhr-sync.html [ Slow ]
-crbug.com/874695 external/wpt/resource-timing/resource-timing.html [ Slow ]
 crbug.com/874695 external/wpt/screen-orientation/onchange-event.html [ Slow ]
 crbug.com/874695 external/wpt/screen-orientation/onchange-event-subframe.html [ Slow ]
 crbug.com/874695 external/wpt/screen-orientation/orientation-reading.html [ Slow ]

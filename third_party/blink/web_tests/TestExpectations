@@ -4040,7 +4040,6 @@ crbug.com/626703 external/wpt/pointerevents/pointerevent_disabled_form_control-m
 crbug.com/626703 external/wpt/presentation-api/controlling-ua/getAvailability.https.html [ Timeout ]
 crbug.com/626703 external/wpt/requestidlecallback/callback-timeout.html [ Timeout ]
 crbug.com/626703 external/wpt/requestidlecallback/callback-xhr-sync.html [ Timeout ]
-crbug.com/626703 external/wpt/resource-timing/resource-timing.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/screen-orientation/onchange-event.html [ Timeout ]
 crbug.com/626703 external/wpt/screen-orientation/onchange-event-subframe.html [ Timeout ]
 crbug.com/648295 external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
