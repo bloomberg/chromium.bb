@@ -146,6 +146,13 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
     self.assertEquals(len(read_data[0].values), 6)
     self.assertGreater(read_data[0].GetRepresentativeNumber(), 0.001)
 
+  def testBlinkPerfLifecycleMethods(self):
+    results = self.RunMeasurement(measurement=self._measurement,
+        ps=self._CreateStorySetForTestFile(
+            'lifecycle-methods.html'),
+        options=self._options)
+    self.assertFalse(results.failures)
+
 
 # pylint: disable=protected-access
 # This is needed for testing _ComputeTraceEventsThreadTimeForBlinkPerf method.

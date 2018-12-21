@@ -208,6 +208,9 @@ if (window.testRunner) {
                     currentTest.setup();
 
                 var measuredValue = runner();
+
+                if (currentTest.teardown)
+                    currentTest.teardown();
             } catch (exception) {
                 PerfTestRunner.logFatalError("Got an exception while running test.run with name=" + exception.name + ", message=" + exception.message);
                 return;
