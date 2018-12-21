@@ -201,6 +201,16 @@ bool IsArcDataCleanupOnStartRequested() {
       chromeos::switches::kArcDataCleanupOnStart);
 }
 
+bool IsArcAppSyncFlowDisabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kArcDisableAppSync);
+}
+
+bool IsArcPlayAutoInstallDisabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kArcDisablePlayAutoInstall);
+}
+
 // static
 int32_t GetLcdDensityForDeviceScaleFactor(float device_scale_factor) {
   // Keep this consistent with wayland_client.cpp on Android side.

@@ -102,6 +102,14 @@ const char kArcAvailable[] = "arc-available";
 // Flag that forces ARC data be cleaned on each start.
 const char kArcDataCleanupOnStart[] = "arc-data-cleanup-on-start";
 
+// Flag that disables ARC app sync flow that installs some apps silently. Used
+// in autotests to resolve racy conditions.
+const char kArcDisableAppSync[] = "arc-disable-app-sync";
+
+// Flag that disables ARC Play Auto Install flow that installs set of predefined
+// apps silently. Used in autotests to resolve racy conditions.
+const char kArcDisablePlayAutoInstall[] = "arc-disable-play-auto-install";
+
 // Flag that forces ARC to cache icons for apps.
 const char kArcForceCacheAppIcons[] = "arc-force-cache-app-icons";
 
