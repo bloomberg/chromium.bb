@@ -39,7 +39,8 @@ specific_include_rules = {
     "+mojo/core/embedder",
   ],
   "view_unittest\.cc": [
-    "+cc/playback"
+    "+cc/playback",
+    "+components/viz/common",
   ],
   "views_test_suite\.cc": [
     "+gpu/ipc/service",

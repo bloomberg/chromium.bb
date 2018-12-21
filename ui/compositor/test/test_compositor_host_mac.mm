@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/geometry/rect.h"
@@ -115,6 +116,7 @@ class TestCompositorHostMac : public TestCompositorHost, public AppKitHost {
 
   // Owned.  Released when window is closed.
   NSWindow* window_;
+  viz::ParentLocalSurfaceIdAllocator allocator_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCompositorHostMac);
 };
@@ -128,7 +130,6 @@ TestCompositorHostMac::TestCompositorHostMac(
                   context_factory,
                   context_factory_private,
                   base::ThreadTaskRunnerHandle::Get(),
-                  false /* enable_surface_synchronization */,
                   false /* enable_pixel_canvas */),
       window_(nil) {}
 
@@ -159,10 +160,11 @@ void TestCompositorHostMac::Show() {
       [[AcceleratedTestView alloc] init]);
   test_accelerated_widget_nsview_ =
       std::make_unique<TestAcceleratedWidgetMacNSView>(view);
+  allocator_.GenerateId();
   accelerated_widget_.SetNSView(test_accelerated_widget_nsview_.get());
   compositor_.SetAcceleratedWidget(accelerated_widget_.accelerated_widget());
   compositor_.SetScaleAndSize(1.0f, bounds_.size(),
-                              viz::LocalSurfaceIdAllocation());
+                              allocator_.GetCurrentLocalSurfaceIdAllocation());
   [view setCompositor:&compositor_];
   [window_ setContentView:view];
   [window_ orderFront:nil];

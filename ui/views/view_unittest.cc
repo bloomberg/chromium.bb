@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/paint/display_item_list.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -4461,6 +4462,8 @@ std::string ToString(const gfx::Vector2dF& vector) {
 }  // namespace
 
 TEST_F(ViewLayerTest, SnapLayerToPixel) {
+  viz::ParentLocalSurfaceIdAllocator allocator;
+  allocator.GenerateId();
   View* v1 = new View;
 
   View* v11 = v1->AddChildView(std::make_unique<View>());
@@ -4469,7 +4472,7 @@ TEST_F(ViewLayerTest, SnapLayerToPixel) {
 
   const gfx::Size& size = GetRootLayer()->GetCompositor()->size();
   GetRootLayer()->GetCompositor()->SetScaleAndSize(
-      1.25f, size, viz::LocalSurfaceIdAllocation());
+      1.25f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
 
   v11->SetBoundsRect(gfx::Rect(1, 1, 10, 10));
   v1->SetBoundsRect(gfx::Rect(1, 1, 10, 10));
@@ -4484,7 +4487,7 @@ TEST_F(ViewLayerTest, SnapLayerToPixel) {
 
   // DSF change should get propagated and update offsets.
   GetRootLayer()->GetCompositor()->SetScaleAndSize(
-      1.5f, size, viz::LocalSurfaceIdAllocation());
+      1.5f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
   EXPECT_EQ("0.33 0.33", ToString(v1->layer()->subpixel_position_offset()));
   EXPECT_EQ("0.33 0.33", ToString(v11->layer()->subpixel_position_offset()));
 
@@ -4498,7 +4501,7 @@ TEST_F(ViewLayerTest, SnapLayerToPixel) {
 
   // Setting integral DSF should reset the offset.
   GetRootLayer()->GetCompositor()->SetScaleAndSize(
-      2.0f, size, viz::LocalSurfaceIdAllocation());
+      2.0f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
   EXPECT_EQ("0.00 0.00", ToString(v11->layer()->subpixel_position_offset()));
 }
 
@@ -4558,6 +4561,8 @@ class ViewLayerPixelCanvasTest : public ViewLayerTest {
 };
 
 TEST_F(ViewLayerPixelCanvasTest, SnapLayerToPixel) {
+  viz::ParentLocalSurfaceIdAllocator allocator;
+  allocator.GenerateId();
   View* v1 = new View;
   View* v2 = v1->AddChildView(std::make_unique<View>());
   PaintLayerView* v3 = v2->AddChildView(std::make_unique<PaintLayerView>());
@@ -4566,7 +4571,7 @@ TEST_F(ViewLayerPixelCanvasTest, SnapLayerToPixel) {
 
   const gfx::Size& size = GetRootLayer()->GetCompositor()->size();
   GetRootLayer()->GetCompositor()->SetScaleAndSize(
-      1.6f, size, viz::LocalSurfaceIdAllocation());
+      1.6f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
 
   v3->SetBoundsRect(gfx::Rect(14, 13, 13, 5));
   v2->SetBoundsRect(gfx::Rect(7, 7, 50, 50));
@@ -4582,7 +4587,7 @@ TEST_F(ViewLayerPixelCanvasTest, SnapLayerToPixel) {
 
   // DSF change should get propagated and update offsets.
   GetRootLayer()->GetCompositor()->SetScaleAndSize(
-      1.5f, size, viz::LocalSurfaceIdAllocation());
+      1.5f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
 
   EXPECT_EQ("0.33 0.33", ToString(v1->layer()->subpixel_position_offset()));
   EXPECT_EQ("0.33 0.67", ToString(v3->layer()->subpixel_position_offset()));
@@ -4592,7 +4597,7 @@ TEST_F(ViewLayerPixelCanvasTest, SnapLayerToPixel) {
   v1->SetPaintToLayer();
 
   GetRootLayer()->GetCompositor()->SetScaleAndSize(
-      1.33f, size, viz::LocalSurfaceIdAllocation());
+      1.33f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
 
   EXPECT_EQ("0.02 0.02", ToString(v1->layer()->subpixel_position_offset()));
   EXPECT_EQ("0.05 -0.45", ToString(v3->layer()->subpixel_position_offset()));
@@ -4609,7 +4614,7 @@ TEST_F(ViewLayerPixelCanvasTest, SnapLayerToPixel) {
 
   // Setting integral DSF should reset the offset.
   GetRootLayer()->GetCompositor()->SetScaleAndSize(
-      2.0f, size, viz::LocalSurfaceIdAllocation());
+      2.0f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
   EXPECT_EQ("0.00 0.00", ToString(v3->layer()->subpixel_position_offset()));
 }
 

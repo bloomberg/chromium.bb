@@ -1512,8 +1512,10 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_CompositorObservers) {
 
 // Checks that modifying the hierarchy correctly affects final composite.
 TEST_F(LayerWithRealCompositorTest, ModifyHierarchy) {
-  GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(50, 50),
-                                   viz::LocalSurfaceIdAllocation());
+  viz::ParentLocalSurfaceIdAllocator allocator;
+  allocator.GenerateId();
+  GetCompositor()->SetScaleAndSize(
+      1.0f, gfx::Size(50, 50), allocator.GetCurrentLocalSurfaceIdAllocation());
 
   // l0
   //  +-l11
@@ -1579,8 +1581,11 @@ TEST_F(LayerWithRealCompositorTest, ModifyHierarchy) {
 
 // Checks that basic background blur is working.
 TEST_F(LayerWithRealCompositorTest, BackgroundBlur) {
-  GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(200, 200),
-                                   viz::LocalSurfaceIdAllocation());
+  viz::ParentLocalSurfaceIdAllocator allocator;
+  allocator.GenerateId();
+  GetCompositor()->SetScaleAndSize(
+      1.0f, gfx::Size(200, 200),
+      allocator.GetCurrentLocalSurfaceIdAllocation());
   // l0
   //  +-l1
   //  +-l2
@@ -1617,8 +1622,11 @@ TEST_F(LayerWithRealCompositorTest, BackgroundBlur) {
 // Checks that background blur bounds rect gets properly updated when device
 // scale changes.
 TEST_F(LayerWithRealCompositorTest, BackgroundBlurChangeDeviceScale) {
-  GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(200, 200),
-                                   viz::LocalSurfaceIdAllocation());
+  viz::ParentLocalSurfaceIdAllocator allocator;
+  allocator.GenerateId();
+  GetCompositor()->SetScaleAndSize(
+      1.0f, gfx::Size(200, 200),
+      allocator.GetCurrentLocalSurfaceIdAllocation());
   // l0
   //  +-l1
   //  +-l2
@@ -1647,8 +1655,9 @@ TEST_F(LayerWithRealCompositorTest, BackgroundBlurChangeDeviceScale) {
   EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img1, cc::ExactPixelComparator(true)));
 
   // Now change the scale, and make sure the bounds are still correct.
-  GetCompositor()->SetScaleAndSize(2.0f, gfx::Size(200, 200),
-                                   viz::LocalSurfaceIdAllocation());
+  GetCompositor()->SetScaleAndSize(
+      2.0f, gfx::Size(200, 200),
+      allocator.GetCurrentLocalSurfaceIdAllocation());
   DrawTree(l0.get());
   ReadPixels(&bitmap);
   ASSERT_FALSE(bitmap.empty());
@@ -1662,8 +1671,11 @@ TEST_F(LayerWithRealCompositorTest, BackgroundBlurChangeDeviceScale) {
 // See https://codereview.chromium.org/1634103003/#msg41
 #if defined(OS_WIN)
 TEST_F(LayerWithRealCompositorTest, CanvasDrawFadedString) {
+  viz::ParentLocalSurfaceIdAllocator allocator;
+  allocator.GenerateId();
   gfx::Size size(50, 50);
-  GetCompositor()->SetScaleAndSize(1.0f, size, viz::LocalSurfaceIdAllocation());
+  GetCompositor()->SetScaleAndSize(
+      1.0f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
   DrawFadedStringLayerDelegate delegate(SK_ColorBLUE, size);
   std::unique_ptr<Layer> layer(
       CreateDrawFadedStringLayerDelegate(gfx::Rect(size), &delegate));
@@ -1696,8 +1708,10 @@ TEST_F(LayerWithRealCompositorTest, CanvasDrawFadedString) {
 // Opacity is rendered correctly.
 // Checks that modifying the hierarchy correctly affects final composite.
 TEST_F(LayerWithRealCompositorTest, Opacity) {
-  GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(50, 50),
-                                   viz::LocalSurfaceIdAllocation());
+  viz::ParentLocalSurfaceIdAllocator allocator;
+  allocator.GenerateId();
+  GetCompositor()->SetScaleAndSize(
+      1.0f, gfx::Size(50, 50), allocator.GetCurrentLocalSurfaceIdAllocation());
 
   // l0
   //  +-l11
@@ -1813,8 +1827,11 @@ TEST_F(LayerWithRealCompositorTest, ScaleUpDown) {
   l1->set_delegate(&l1_delegate);
   l1_delegate.set_layer_bounds(l1->bounds());
 
-  GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(500, 500),
-                                   viz::LocalSurfaceIdAllocation());
+  viz::ParentLocalSurfaceIdAllocator allocator;
+  allocator.GenerateId();
+  GetCompositor()->SetScaleAndSize(
+      1.0f, gfx::Size(500, 500),
+      allocator.GetCurrentLocalSurfaceIdAllocation());
   GetCompositor()->SetRootLayer(root.get());
   root->Add(l1.get());
   WaitForDraw();
@@ -1830,8 +1847,10 @@ TEST_F(LayerWithRealCompositorTest, ScaleUpDown) {
   EXPECT_EQ(0.0f, l1_delegate.device_scale_factor());
 
   // Scale up to 2.0. Changing scale doesn't change the bounds in DIP.
-  GetCompositor()->SetScaleAndSize(2.0f, gfx::Size(500, 500),
-                                   viz::LocalSurfaceIdAllocation());
+  allocator.GenerateId();
+  GetCompositor()->SetScaleAndSize(
+      2.0f, gfx::Size(500, 500),
+      allocator.GetCurrentLocalSurfaceIdAllocation());
   EXPECT_EQ("10,20 200x220", root->bounds().ToString());
   EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
   // CC layer should still match the UI layer bounds.
@@ -1845,8 +1864,10 @@ TEST_F(LayerWithRealCompositorTest, ScaleUpDown) {
   EXPECT_EQ(2.0f, l1_delegate.device_scale_factor());
 
   // Scale down back to 1.0f.
-  GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(500, 500),
-                                   viz::LocalSurfaceIdAllocation());
+  allocator.GenerateId();
+  GetCompositor()->SetScaleAndSize(
+      1.0f, gfx::Size(500, 500),
+      allocator.GetCurrentLocalSurfaceIdAllocation());
   EXPECT_EQ("10,20 200x220", root->bounds().ToString());
   EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
   // CC layer should still match the UI layer bounds.
@@ -1863,14 +1884,18 @@ TEST_F(LayerWithRealCompositorTest, ScaleUpDown) {
   l1_delegate.reset();
   // Just changing the size shouldn't notify the scale change nor
   // trigger repaint.
-  GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(1000, 1000),
-                                   viz::LocalSurfaceIdAllocation());
+  allocator.GenerateId();
+  GetCompositor()->SetScaleAndSize(
+      1.0f, gfx::Size(1000, 1000),
+      allocator.GetCurrentLocalSurfaceIdAllocation());
   // No scale change, so no scale notification.
   EXPECT_EQ(0.0f, root_delegate.device_scale_factor());
   EXPECT_EQ(0.0f, l1_delegate.device_scale_factor());
 }
 
 TEST_F(LayerWithRealCompositorTest, ScaleReparent) {
+  viz::ParentLocalSurfaceIdAllocator allocator;
+  allocator.GenerateId();
   std::unique_ptr<Layer> root(
       CreateColorLayer(SK_ColorWHITE, gfx::Rect(10, 20, 200, 220)));
   std::unique_ptr<Layer> l1(
@@ -1880,8 +1905,9 @@ TEST_F(LayerWithRealCompositorTest, ScaleReparent) {
   l1->set_delegate(&l1_delegate);
   l1_delegate.set_layer_bounds(l1->bounds());
 
-  GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(500, 500),
-                                   viz::LocalSurfaceIdAllocation());
+  GetCompositor()->SetScaleAndSize(
+      1.0f, gfx::Size(500, 500),
+      allocator.GetCurrentLocalSurfaceIdAllocation());
   GetCompositor()->SetRootLayer(root.get());
 
   root->Add(l1.get());
@@ -1894,8 +1920,10 @@ TEST_F(LayerWithRealCompositorTest, ScaleReparent) {
   root->Remove(l1.get());
   EXPECT_EQ(NULL, l1->parent());
   EXPECT_EQ(NULL, l1->GetCompositor());
-  GetCompositor()->SetScaleAndSize(2.0f, gfx::Size(500, 500),
-                                   viz::LocalSurfaceIdAllocation());
+  allocator.GenerateId();
+  GetCompositor()->SetScaleAndSize(
+      2.0f, gfx::Size(500, 500),
+      allocator.GetCurrentLocalSurfaceIdAllocation());
   // Sanity check on root and l1.
   EXPECT_EQ("10,20 200x220", root->bounds().ToString());
   cc_bounds_size = l1->cc_layer_for_testing()->bounds();
@@ -2339,8 +2367,11 @@ TEST_F(LayerWithRealCompositorTest, SnapLayerToPixels) {
   std::unique_ptr<Layer> c1(CreateLayer(LAYER_TEXTURED));
   std::unique_ptr<Layer> c11(CreateLayer(LAYER_TEXTURED));
 
-  GetCompositor()->SetScaleAndSize(1.25f, gfx::Size(100, 100),
-                                   viz::LocalSurfaceIdAllocation());
+  viz::ParentLocalSurfaceIdAllocator allocator;
+  allocator.GenerateId();
+  GetCompositor()->SetScaleAndSize(
+      1.25f, gfx::Size(100, 100),
+      allocator.GetCurrentLocalSurfaceIdAllocation());
   GetCompositor()->SetRootLayer(root.get());
   root->Add(c1.get());
   c1->Add(c11.get());
@@ -2353,8 +2384,10 @@ TEST_F(LayerWithRealCompositorTest, SnapLayerToPixels) {
   EXPECT_EQ("0.40 0.40",
             Vector2dFTo100thPrecisionString(c11->subpixel_position_offset()));
 
-  GetCompositor()->SetScaleAndSize(1.5f, gfx::Size(100, 100),
-                                   viz::LocalSurfaceIdAllocation());
+  allocator.GenerateId();
+  GetCompositor()->SetScaleAndSize(
+      1.5f, gfx::Size(100, 100),
+      allocator.GetCurrentLocalSurfaceIdAllocation());
   SnapLayerToPhysicalPixelBoundary(root.get(), c11.get());
   // c11 must already be aligned at 1.5 scale.
   EXPECT_EQ("0.00 0.00",
@@ -2374,8 +2407,11 @@ TEST_F(LayerWithRealCompositorTest, SnapLayerToPixelsWithScaleTransform) {
   std::unique_ptr<Layer> c11(CreateLayer(LAYER_TEXTURED));
   std::unique_ptr<Layer> c111(CreateLayer(LAYER_TEXTURED));
 
-  GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(100, 100),
-                                   viz::LocalSurfaceIdAllocation());
+  viz::ParentLocalSurfaceIdAllocator allocator;
+  allocator.GenerateId();
+  GetCompositor()->SetScaleAndSize(
+      1.0f, gfx::Size(100, 100),
+      allocator.GetCurrentLocalSurfaceIdAllocation());
   GetCompositor()->SetRootLayer(root.get());
   root->Add(c1.get());
   c1->Add(c11.get());
