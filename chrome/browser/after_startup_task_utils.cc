@@ -125,10 +125,7 @@ void SetBrowserStartupIsComplete() {
   for (AfterStartupTask* queued_task : g_after_startup_tasks.Get())
     ScheduleTask(base::WrapUnique(queued_task));
   g_after_startup_tasks.Get().clear();
-
-  // The shrink_to_fit() method is not available for all of our build targets.
-  base::circular_deque<AfterStartupTask*>(g_after_startup_tasks.Get())
-      .swap(g_after_startup_tasks.Get());
+  g_after_startup_tasks.Get().shrink_to_fit();
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Make sure we complete the startup notification sequence, or launchers will
