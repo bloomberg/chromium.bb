@@ -285,7 +285,7 @@ void AppendProtoDictAsJSON(std::string* out,
 JSONTraceExporter::JSONTraceExporter(const std::string& config,
                                      perfetto::TracingService* service)
     : config_(config), metadata_(std::make_unique<base::DictionaryValue>()) {
-  consumer_endpoint_ = service->ConnectConsumer(this);
+  consumer_endpoint_ = service->ConnectConsumer(this, /*uid=*/0);
 
   // Start tracing.
   perfetto::TraceConfig trace_config;
@@ -466,6 +466,14 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
   }
 
   json_callback_.Run(out, metadata_.get(), has_more);
+}
+
+// Consumer Detach / Attach is not used in Chrome.
+void JSONTraceExporter::OnDetach(bool) {
+  NOTREACHED();
+}
+void JSONTraceExporter::OnAttach(bool, const perfetto::TraceConfig&) {
+  NOTREACHED();
 }
 
 }  // namespace tracing

@@ -102,6 +102,8 @@ class MockConsumer : public perfetto::Consumer {
 
   void OnTraceData(std::vector<perfetto::TracePacket> packets,
                    bool has_more) override;
+  void OnDetach(bool success) override;
+  void OnAttach(bool success, const perfetto::TraceConfig&) override;
 
  private:
   std::unique_ptr<perfetto::TracingService::ConsumerEndpoint>
