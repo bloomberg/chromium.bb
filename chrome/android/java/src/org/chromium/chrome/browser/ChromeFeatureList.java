@@ -267,6 +267,7 @@ public abstract class ChromeFeatureList {
     public static final String READER_MODE_IN_CCT = "ReaderModeInCCT";
     public static final String REMOVE_NAVIGATION_HISTORY = "RemoveNavigationHistory";
     public static final String SEARCH_READY_OMNIBOX = "SearchReadyOmnibox";
+    public static final String SEND_TAB_TO_SELF = "SyncSendTabToSelf";
     public static final String SERVICE_MANAGER_FOR_DOWNLOAD = "ServiceManagerForDownload";
     public static final String SERVICE_WORKER_PAYMENT_APPS = "ServiceWorkerPaymentApps";
     public static final String SHOW_TRUSTED_PUBLISHER_URL = "ShowTrustedPublisherURL";
