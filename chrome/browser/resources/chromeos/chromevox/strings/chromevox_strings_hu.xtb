@@ -337,7 +337,6 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="3392045790598181549"><ph name="NAME" />, menüelem</translation>
 <translation id="3393605254399152980">Ha hallani szeretné, mit érintett meg, csúsztasson egy ujjával</translation>
 <translation id="3406283310380167331">Űrlaplista megjelenítése</translation>
-<translation id="3423495725743882470">$1. sor $2. oszlop</translation>
 <translation id="3457000393508828486">Részben megnyomva</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, kikapcsolás</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, gomb</translation>
@@ -376,7 +375,6 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Automatikus kiegészítés listaként</translation>
 <translation id="3810838688059735925">Videó</translation>
-<translation id="3812237531158591503">$1 beillesztése.</translation>
 <translation id="3816633764618089385">Következő médiaelem</translation>
 <translation id="3819376190738087562">Nincs ugrás.</translation>
 <translation id="385383972552776628">A beállítások oldalának megnyitása</translation>
@@ -578,7 +576,6 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="5402791055281059602">Modális riasztás</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{pontosvessző}other{# pontosvessző}}</translation>
 <translation id="5411891038905756502">Nincs előző ugrópont.</translation>
-<translation id="5417034931411865818">Kattintson a(z) $1 átirányítási kulcs alatti elemre</translation>
 <translation id="5435274640623994081">Hangjelzés naplózásának engedélyezése</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{kisebb jel}other{# kisebb jel}}</translation>
 <translation id="5444587279251314700">(aktív)</translation>
@@ -676,7 +673,6 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="6122013438240733403">gmb</translation>
 <translation id="6129953537138746214">Szóköz</translation>
 <translation id="6132506484792346370">Listamező vagy kombinált mező</translation>
-<translation id="6138576064440631958">$1 akkord</translation>
 <translation id="6142308968191113180">4-es címsor</translation>
 <translation id="6164829606128959761">mérő</translation>
 <translation id="6169420925157477918">Kép hosszú leírással</translation>
@@ -698,7 +694,6 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="6355910664415701303">Nincs előző listaelem.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Előző fejléc</translation>
-<translation id="6378565991815958969">$1 másolása.</translation>
 <translation id="6385591741672306837">oszlop</translation>
 <translation id="6387719785439924554">oldaltartalom</translation>
 <translation id="6411426777058107714">Nincs előző választógomb.</translation>
@@ -898,7 +893,6 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="820469951249669083">Ugrás a következő sorra</translation>
 <translation id="8215202828671303819">Többszörös kiválasztás</translation>
 <translation id="826825447994856889">Bevezetés</translation>
-<translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">Ugrás következő fókuszálható elemre</translation>
 <translation id="8278417001922463147">Nincs előző cikk.</translation>
 <translation id="8283603667300770666">Következő űrlapmező</translation>
@@ -980,7 +974,6 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="9082874451376019682">Nincs előző dia.</translation>
 <translation id="9087707351856729768">Kezdjen el gépelni az automatikus kiegészítéshez.</translation>
 <translation id="9089864840575085222">Ciklikus gépelési visszaolvasás</translation>
-<translation id="9105227991373418255">$1 kivágása.</translation>
 <translation id="9107530006868467849">Nincs előző médiamodul.</translation>
 <translation id="9108370397979208512">matematika</translation>
 <translation id="9108589040018540527">görgetősáv</translation>

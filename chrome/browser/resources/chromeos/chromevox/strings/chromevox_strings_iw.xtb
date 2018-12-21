@@ -337,7 +337,6 @@
 <translation id="3392045790598181549"><ph name="NAME" />, פריט תפריט</translation>
 <translation id="3393605254399152980">גוררים עם אצבע אחת כדי לשמוע את שם הפריט שבו נוגעים</translation>
 <translation id="3406283310380167331">הצג את רשימת הטפסים</translation>
-<translation id="3423495725743882470">שורה $1 עמודה $2</translation>
 <translation id="3457000393508828486">לחוץ חלקית</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, כבה</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, לחצן</translation>
@@ -376,7 +375,6 @@
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}two{#}many{#}other{#}}</translation>
 <translation id="3801735343383419236">רשימת השלמה אוטומטית</translation>
 <translation id="3810838688059735925">וידאו</translation>
-<translation id="3812237531158591503">הדבק את $1.</translation>
 <translation id="3816633764618089385">המדיה הבאה</translation>
 <translation id="3819376190738087562">אין דילוגים.</translation>
 <translation id="385383972552776628">פתח את דף האפשרויות</translation>
@@ -578,7 +576,6 @@
 <translation id="5402791055281059602">התראה שמוצגת בחלון קופץ</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{נקודה ופסיק}two{# סימני נקודה ופסיק}many{# סימני נקודה ופסיק}other{# סימני נקודה ופסיק}}</translation>
 <translation id="5411891038905756502">אין נקודת דילוג קודמת.</translation>
-<translation id="5417034931411865818">לחץ על הפריט שמתחת למפתח הניתוב $1</translation>
 <translation id="5435274640623994081">הפעלת רישום ביומן של צלילי התראה</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{סימן ‘קטן מ‘}two{# סימני ‘קטן מ‘}many{# סימני ‘קטן מ‘}other{# סימני ‘קטן מ‘}}</translation>
 <translation id="5444587279251314700">(פעיל)</translation>
@@ -676,7 +673,6 @@
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">רווח</translation>
 <translation id="6132506484792346370">תיבת רשימה או תיבה משולבת</translation>
-<translation id="6138576064440631958">אקורד $1</translation>
 <translation id="6142308968191113180">כותרת 4</translation>
 <translation id="6164829606128959761">מד</translation>
 <translation id="6169420925157477918">תמונה עם תיאור ארוך</translation>
@@ -698,7 +694,6 @@
 <translation id="6355910664415701303">אין פריט קודם ברשימה.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">הכותרת הקודמת</translation>
-<translation id="6378565991815958969">העתק את $1.</translation>
 <translation id="6385591741672306837">עמודה</translation>
 <translation id="6387719785439924554">aside</translation>
 <translation id="6411426777058107714">אין לחצן בחירה קודם.</translation>
@@ -898,7 +893,6 @@
 <translation id="820469951249669083">מעבר לשורה הבאה</translation>
 <translation id="8215202828671303819">בחירה מרובה</translation>
 <translation id="826825447994856889">מבוא</translation>
-<translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">דלג לפריט הקודם הניתן למיקוד</translation>
 <translation id="8278417001922463147">אין סעיף קודם.</translation>
 <translation id="8283603667300770666">השדה הבא בטופס</translation>
@@ -980,7 +974,6 @@
 <translation id="9082874451376019682">אין מחוון קודם.</translation>
 <translation id="9087707351856729768">יש להקליד כדי להשלים באופן אוטומטי.</translation>
 <translation id="9089864840575085222">הד הקלדה מחזורית</translation>
-<translation id="9105227991373418255">גזור את $1.</translation>
 <translation id="9107530006868467849">אין ווידג'ט למדיה הקודמת.</translation>
 <translation id="9108370397979208512">math</translation>
 <translation id="9108589040018540527">scbr</translation>

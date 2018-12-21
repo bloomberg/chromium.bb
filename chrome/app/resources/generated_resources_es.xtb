@@ -1600,7 +1600,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3470502288861289375">Copiando...</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3475447146579922140">Hoja de cálculo de Google</translation>
-<translation id="3475538074809281797">{LINE_COUNT,plural, =1{&lt;No se muestra 1 línea&gt;}other{&lt;No se muestran $1 líneas&gt;}}</translation>
 <translation id="3475843873335999118">Sigue sin reconocerse tu huella digital. Introduce la contraseña.</translation>
 <translation id="347670947055184738">¡Vaya! El sistema no ha podido recuperar la política para tu dispositivo.</translation>
 <translation id="347785443197175480">Seguir permitiendo que <ph name="HOST" /> acceda a la cámara y al micrófono</translation>
@@ -2729,7 +2728,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5266113311903163739">Error de importación de la entidad emisora de certificados</translation>
 <translation id="5269977353971873915">Error de impresión</translation>
 <translation id="5270167208902136840">Mostrar <ph name="NUMBER_OF_MORE_APPS" /> aplicaciones más</translation>
-<translation id="5272654297705279635">Configuración personalizada</translation>
 <translation id="5275352920323889391">Perro</translation>
 <translation id="5275973617553375938">Archivos recuperados de Google Drive</translation>
 <translation id="527605982717517565">Permitir siempre JavaScript en <ph name="HOST" /></translation>

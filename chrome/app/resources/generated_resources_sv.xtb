@@ -1601,7 +1601,6 @@
 <translation id="3470502288861289375">Kopierar ...</translation>
 <translation id="3473479545200714844">Skärmförstorare</translation>
 <translation id="3475447146579922140">Kalkylark i Google Dokument</translation>
-<translation id="3475538074809281797">{LINE_COUNT,plural, =1{&lt;1 rad visas inte&gt;}other{&lt;$1 rader visas inte&gt;}}</translation>
 <translation id="3475843873335999118">Fingeravtrycket känns fortfarande inte igen. Ange ditt lösenord.</translation>
 <translation id="347670947055184738">Hoppsan! Det gick inte att hämta enhetsprincipen.</translation>
 <translation id="347785443197175480">Fortsätt tillåta att <ph name="HOST" /> använder kameran och mikrofonen</translation>
@@ -2731,7 +2730,6 @@
 <translation id="5266113311903163739">Fel vid import av certifikatutfärdare</translation>
 <translation id="5269977353971873915">Det gick inte att skriva ut dokumentet</translation>
 <translation id="5270167208902136840">Visa <ph name="NUMBER_OF_MORE_APPS" /> fler appar</translation>
-<translation id="5272654297705279635">Anpassade inställningar</translation>
 <translation id="5275352920323889391">Hund</translation>
 <translation id="5275973617553375938">Återställda filer från Google Drive</translation>
 <translation id="527605982717517565">Tillåt alltid JavaScript på <ph name="HOST" /></translation>

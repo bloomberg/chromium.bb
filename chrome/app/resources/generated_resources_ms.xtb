@@ -1603,7 +1603,6 @@
 <translation id="3470502288861289375">Menyalin...</translation>
 <translation id="3473479545200714844">Penggadang skrin</translation>
 <translation id="3475447146579922140">Hamparan Google</translation>
-<translation id="3475538074809281797">{LINE_COUNT,plural, =1{&lt;1 baris tidak ditunjukkan&gt;}other{&lt;$1 baris tidak ditunjukkan&gt;}}</translation>
 <translation id="3475843873335999118">Maaf, cap jari anda masih tidak dikenali. Sila masukkan kata laluan anda.</translation>
 <translation id="347670947055184738">Op!  Sistem gagal mengambil dasar untuk peranti anda.</translation>
 <translation id="347785443197175480">Teruskan membenarkan <ph name="HOST" /> untuk mengakses kamera dan mikrofon anda</translation>
@@ -2733,7 +2732,6 @@
 <translation id="5266113311903163739">Ralat Import Pihak Berkuasa Pensijilan</translation>
 <translation id="5269977353971873915">Cetakan Gagal</translation>
 <translation id="5270167208902136840">Tunjukkan <ph name="NUMBER_OF_MORE_APPS" /> lagi apl</translation>
-<translation id="5272654297705279635">Tetapan tersuai</translation>
 <translation id="5275352920323889391">Anjing</translation>
 <translation id="5275973617553375938">Fail yang diperoleh semula dari Google Drive</translation>
 <translation id="527605982717517565">Sentiasa benarkan JavaScript di <ph name="HOST" /></translation>

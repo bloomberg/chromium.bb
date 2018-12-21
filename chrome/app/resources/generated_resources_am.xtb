@@ -1601,7 +1601,6 @@
 <translation id="3470502288861289375">በመቅዳት ላይ...</translation>
 <translation id="3473479545200714844">የማያ ገጽ ማጉያ</translation>
 <translation id="3475447146579922140">Google ተመን ሉህ</translation>
-<translation id="3475538074809281797">{LINE_COUNT,plural, =1{&lt;1 መስመር አይታይም&gt;}one{&lt;$1 መስመሮች አይታዩም&gt;}other{&lt;$1 መስመሮች አይታዩም&gt;}}</translation>
 <translation id="3475843873335999118">ይቅርታ፣ የጣት አሻራዎ አሁንም አልታወቀም። እባክዎ የይለፍ ቃልዎን ያስገቡት።</translation>
 <translation id="347670947055184738">ውይ!  ሥርዓቱ ለመሣሪያዎ መመሪያን ማግኘት አልተሳካለትም።</translation>
 <translation id="347785443197175480"><ph name="HOST" /> ካሜራዎን እና ማይክሮፎንዎን እንዲደርስ መፍቀዱን ይቀጥሉ</translation>
@@ -2729,7 +2728,6 @@
 <translation id="5266113311903163739">የእውቅና ማረጋገጫ ስልጣን የማስመጣት ስህተት</translation>
 <translation id="5269977353971873915">ማተም አልተሳካም</translation>
 <translation id="5270167208902136840"><ph name="NUMBER_OF_MORE_APPS" /> ተጨማሪ መተግበሪያዎችን አሳይ</translation>
-<translation id="5272654297705279635">ብጁ ቅንብሮች</translation>
 <translation id="5275352920323889391">ውሻ</translation>
 <translation id="5275973617553375938">ከGoogle Drive መልሰው የተገኙ ፋይሎች</translation>
 <translation id="527605982717517565">ሁልጊዜ በ<ph name="HOST" /> ላይ ጃቫስክሪፕት ፍቀድ</translation>

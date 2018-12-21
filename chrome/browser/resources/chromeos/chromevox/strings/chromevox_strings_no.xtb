@@ -337,7 +337,6 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="3392045790598181549"><ph name="NAME" />, menyelement</translation>
 <translation id="3393605254399152980">Dra én finger for å høre hva du trykker på</translation>
 <translation id="3406283310380167331">Vis skjemalisten</translation>
-<translation id="3423495725743882470">rad $1 kolonne $2</translation>
 <translation id="3457000393508828486">Delvis trykket på</translation>
 <translation id="3458865416877308321"><ph name="NAME" />-bryteren er av</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, knapp</translation>
@@ -376,7 +375,6 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Autofullføringsliste</translation>
 <translation id="3810838688059735925">Video</translation>
-<translation id="3812237531158591503">lim inn $1.</translation>
 <translation id="3816633764618089385">Neste media</translation>
 <translation id="3819376190738087562">Det finnes ingenting å gå til.</translation>
 <translation id="385383972552776628">Åpne siden med alternativer</translation>
@@ -578,7 +576,6 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="5402791055281059602">Et modalt varsel</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{semikolon}other{# semikolontegn}}</translation>
 <translation id="5411891038905756502">Det finnes ingen tidligere punkter å gå til.</translation>
-<translation id="5417034931411865818">Klikk på elementet under rutertasten $1</translation>
 <translation id="5435274640623994081">Slå på loggføring av lydikon</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{mindre enn}other{# mindre enn-tegn}}</translation>
 <translation id="5444587279251314700">(aktiv)</translation>
@@ -676,7 +673,6 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">Mellomrom</translation>
 <translation id="6132506484792346370">En listeboks eller et kombinasjonsfelt</translation>
-<translation id="6138576064440631958">$1 akkord</translation>
 <translation id="6142308968191113180">Overskrift 4</translation>
 <translation id="6164829606128959761">måler</translation>
 <translation id="6169420925157477918">Bilde med lang beskrivelse</translation>
@@ -698,7 +694,6 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="6355910664415701303">Det finnes ingen tidligere listeelementer.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Forrige overskrift</translation>
-<translation id="6378565991815958969">kopiér $1.</translation>
 <translation id="6385591741672306837">kol.</translation>
 <translation id="6387719785439924554">aside</translation>
 <translation id="6411426777058107714">Det finnes ingen tidligere alternativknapper.</translation>
@@ -898,7 +893,6 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="820469951249669083">Gå til den neste raden</translation>
 <translation id="8215202828671303819">Flervalg</translation>
 <translation id="826825447994856889">Innledning</translation>
-<translation id="826991282343985864">r$1k$2</translation>
 <translation id="8276439074553447000">Gå til forrige fokuserbare element</translation>
 <translation id="8278417001922463147">Ingen tidligere artikler.</translation>
 <translation id="8283603667300770666">Neste skjemafelt</translation>
@@ -980,7 +974,6 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="9082874451376019682">Det fins ingen tidligere glidebrytere.</translation>
 <translation id="9087707351856729768">Skriv for å få automatiske fullføringer.</translation>
 <translation id="9089864840575085222">Slå av eller på innskrivingsekko</translation>
-<translation id="9105227991373418255">klipp ut $1.</translation>
 <translation id="9107530006868467849">Det finnes ingen tidligere mediemoduler.</translation>
 <translation id="9108370397979208512">math</translation>
 <translation id="9108589040018540527">scbr</translation>

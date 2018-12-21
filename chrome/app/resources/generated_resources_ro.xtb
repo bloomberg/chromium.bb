@@ -792,7 +792,7 @@
 <translation id="2199719347983604670">Datele din Sincronizarea Chrome</translation>
 <translation id="2200094388063410062">E-mail</translation>
 <translation id="2200356397587687044">Chrome are nevoie de permisiune pentru a continua</translation>
-<translation id="2200603218210188859">Preferințe dispozitiv USB</translation>
+<translation id="2200603218210188859">Preferințe pentru dispozitivele USB</translation>
 <translation id="220138918934036434">Ascunde butonul</translation>
 <translation id="2202898655984161076">A apărut o problemă la listarea imprimantelor. Este posibil ca unele dintre imprimante să nu fi fost înregistrate la <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Motorul de căutare folosit în <ph name="BEGIN_LINK" />bara de adrese<ph name="END_LINK" /></translation>
@@ -1602,7 +1602,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3470502288861289375">Se copiază...</translation>
 <translation id="3473479545200714844">Lupă de ecran</translation>
 <translation id="3475447146579922140">Foaie de calcul Google</translation>
-<translation id="3475538074809281797">{LINE_COUNT,plural, =1{&lt;O linie nu este afișată&gt;}few{&lt;$1 linii nu sunt afișate&gt;}other{&lt;$1 de linii nu sunt afișate&gt;}}</translation>
 <translation id="3475843873335999118">Ne pare rău, amprenta nu este recunoscută. Introdu parola.</translation>
 <translation id="347670947055184738">Hopa! Sistemul nu a putut prelua politica pentru dispozitivul tău.</translation>
 <translation id="347785443197175480">Permiteți în continuare accesul <ph name="HOST" /> la camera și microfonul dvs.</translation>
@@ -2676,7 +2675,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5185386675596372454">Cea mai nouă versiune a „<ph name="EXTENSION_NAME" />” a fost dezactivată, deoarece necesită permisiuni suplimentare.</translation>
 <translation id="5187295959347858724">Acum sunteți conectat(ă) la <ph name="SHORT_PRODUCT_NAME" />. Marcajele dvs., istoricul și alte setări sunt sincronizate cu Contul dvs. Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
-<translation id="5187892128515678283">Distribuie un dispozitiv USB cu Linux prin activarea comutării. Distribuirea va dura numai atât timp cât dispozitivul este detașat.</translation>
+<translation id="5187892128515678283">Permite accesul Linux la un dispozitiv USB folosind comutatorul. Permiterea accesului va dura numai până când dispozitivul este detașat.</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> vrea să descarce mai multe fișiere</translation>
 <translation id="5204673965307125349">Folosește funcția Powerwash pe dispozitiv și încearcă din nou.</translation>
 <translation id="5204967432542742771">Introdu parola</translation>
@@ -2732,7 +2731,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5266113311903163739">Eroare la importarea Autorității de certificare</translation>
 <translation id="5269977353971873915">Printarea a eșuat</translation>
 <translation id="5270167208902136840">Afișează încă <ph name="NUMBER_OF_MORE_APPS" /> aplicații</translation>
-<translation id="5272654297705279635">Setări personalizate</translation>
 <translation id="5275352920323889391">Câine</translation>
 <translation id="5275973617553375938">Fișiere recuperate din Google Drive</translation>
 <translation id="527605982717517565">Permite întotdeauna JavaScript pe <ph name="HOST" /></translation>
@@ -3727,7 +3725,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6777817260680419853">Redirecționarea a fost blocată</translation>
 <translation id="677965093459947883">Foarte mică</translation>
 <translation id="6780439250949340171">gestionați alte setări</translation>
-<translation id="6781284683813954823">Link Doodle</translation>
+<translation id="6781284683813954823">Linkul doodle-ului</translation>
 <translation id="6782111308708962316">Împiedică site-urile terță parte să salveze și să citească datele asociate cookie-urilor</translation>
 <translation id="6786747875388722282">Extensii</translation>
 <translation id="6787839852456839824">Comenzi rapide de la tastatură</translation>

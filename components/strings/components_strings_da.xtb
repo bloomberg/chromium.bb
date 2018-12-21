@@ -452,7 +452,6 @@
 <translation id="3890664840433101773">Tilføj mail</translation>
 <translation id="3901925938762663762">Kortet er udløbet</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3945915738023014686">Uploadet nedbruds-id <ph name="CRASH_ID" /> (lokalt nedbruds-id: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">Spørg altid på dette website</translation>
 <translation id="3947577358805392297">Gem siden til senere</translation>
 <translation id="3949571496842715403">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da sikkerhedscertifikatet ikke angiver alternative navne på emner. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
@@ -1061,7 +1060,6 @@ Yderligere oplysninger:
 <translation id="8149426793427495338">Din computer gik i dvale.</translation>
 <translation id="8150722005171944719">Filen i <ph name="URL" /> kan ikke læses. Den kan være blevet fjernet, flyttet, eller også forhindrer filtilladelser muligvis adgangen.</translation>
 <translation id="8184538546369750125">Brug global standard (tillad)</translation>
-<translation id="8191494405820426728">Lokalt nedbruds-id <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">&amp;Fortryd flytning</translation>
 <translation id="8197543752516192074">Oversæt side</translation>
 <translation id="8201077131113104583">Ugyldig webadresse til opdatering for udvidelse med id'et "<ph name="EXTENSION_ID" />".</translation>

@@ -452,7 +452,6 @@
 <translation id="3890664840433101773">メールを追加</translation>
 <translation id="3901925938762663762">カードの有効期限が切れています</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3945915738023014686">クラッシュ レポート ID <ph name="CRASH_ID" /> がアップロードされました（ローカルのクラッシュ ID: <ph name="CRASH_LOCAL_ID" />）</translation>
 <translation id="3946209740501886391">このサイトでは常に確認</translation>
 <translation id="3947577358805392297">ページを保存しておく</translation>
 <translation id="3949571496842715403">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書で SAN（サブジェクトの別名）が指定されていません。設定が不適切であるか、悪意のあるユーザーによって接続が妨害されている可能性があります。</translation>
@@ -1061,7 +1060,6 @@
 <translation id="8149426793427495338">パソコンがスリープ状態です。</translation>
 <translation id="8150722005171944719"><ph name="URL" /> のファイルを読むことができません。削除されたか移動された可能性があります。ファイルに対するアクセス権がない場合もあります。</translation>
 <translation id="8184538546369750125">グローバルのデフォルト値（[許可]）を使用</translation>
-<translation id="8191494405820426728">ローカルのクラッシュ ID <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">移動の取り消し（&amp;U）</translation>
 <translation id="8197543752516192074">ページを翻訳する</translation>
 <translation id="8201077131113104583">ID「<ph name="EXTENSION_ID" />」の拡張機能に対する無効な更新 URL です。</translation>

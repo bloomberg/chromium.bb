@@ -448,7 +448,6 @@
 <translation id="3890664840433101773">E-mailadres toevoegen</translation>
 <translation id="3901925938762663762">De kaart is verlopen</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3945915738023014686">Crashrapport-ID <ph name="CRASH_ID" /> (lokale crash-ID: <ph name="CRASH_LOCAL_ID" />) geüpload</translation>
 <translation id="3946209740501886391">Altijd vragen op deze site</translation>
 <translation id="3947577358805392297">Pagina opslaan voor later</translation>
 <translation id="3949571496842715403">Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. In het bijbehorende beveiligingscertificaat worden geen 'Subject Alternative Names' gespecificeerd. Dit kan worden veroorzaakt door een verkeerde configuratie of door een aanvaller die je verbinding heeft onderschept.</translation>
@@ -1056,7 +1055,6 @@ Aanvullende informatie:
 <translation id="8149426793427495338">De slaapstand van je computer is geactiveerd.</translation>
 <translation id="8150722005171944719">Het bestand op <ph name="URL" /> is onleesbaar. Het bestand is mogelijk verwijderd of verplaatst of de bestandsrechten zorgen ervoor dat het bestand niet kan worden geopend.</translation>
 <translation id="8184538546369750125">Algemene standaardinstelling gebruiken (Toestaan)</translation>
-<translation id="8191494405820426728">Lokale crash-ID <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">&amp;Verplaatsen ongedaan maken</translation>
 <translation id="8197543752516192074">Pagina vertalen</translation>
 <translation id="8201077131113104583">Ongeldige update-URL voor de extensie met de ID '<ph name="EXTENSION_ID" />'.</translation>

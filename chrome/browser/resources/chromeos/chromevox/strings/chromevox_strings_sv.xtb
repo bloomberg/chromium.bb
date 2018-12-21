@@ -337,7 +337,6 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="3392045790598181549"><ph name="NAME" />, menyalternativ</translation>
 <translation id="3393605254399152980">Dra med fingret och få det du rör vid uppläst</translation>
 <translation id="3406283310380167331">Visa formulärlistan</translation>
-<translation id="3423495725743882470">rad $1 kolumn $2</translation>
 <translation id="3457000393508828486">Delvis nedtryckt</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, inaktivera</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, knapp</translation>
@@ -376,7 +375,6 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Autoslutför med lista</translation>
 <translation id="3810838688059735925">Video</translation>
-<translation id="3812237531158591503">klistra in $1.</translation>
 <translation id="3816633764618089385">Nästa media</translation>
 <translation id="3819376190738087562">Det finns inga hopp.</translation>
 <translation id="385383972552776628">Öppna alternativsidan</translation>
@@ -578,7 +576,6 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="5402791055281059602">En modal avisering</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{semikolon}other{# semikolon}}</translation>
 <translation id="5411891038905756502">Det finns inga tidigare punkter att hoppa till.</translation>
-<translation id="5417034931411865818">Klicka på objektet under markörhämtaren $1</translation>
 <translation id="5435274640623994081">Aktivera loggning av ljudikoner</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{mindre än-tecken}other{# mindre än-tecken}}</translation>
 <translation id="5444587279251314700">(aktiv)</translation>
@@ -676,7 +673,6 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="6122013438240733403">knapp</translation>
 <translation id="6129953537138746214">Blanksteg</translation>
 <translation id="6132506484792346370">En listruta eller kombinationsruta</translation>
-<translation id="6138576064440631958">Ackordet $1</translation>
 <translation id="6142308968191113180">Rubrik 4</translation>
 <translation id="6164829606128959761">mätare</translation>
 <translation id="6169420925157477918">Bild med lång beskrivning</translation>
@@ -698,7 +694,6 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="6355910664415701303">Det finns ingen föregående post i listan.</translation>
 <translation id="6364795331201459219">rubr6</translation>
 <translation id="6368143427468974988">Föregående rubrik</translation>
-<translation id="6378565991815958969">kopiera $1.</translation>
 <translation id="6385591741672306837">kolumn</translation>
 <translation id="6387719785439924554">sidoruta</translation>
 <translation id="6411426777058107714">Det finns ingen föregående alternativknapp.</translation>
@@ -898,7 +893,6 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="820469951249669083">Fortsätt till nästa rad</translation>
 <translation id="8215202828671303819">Flerval</translation>
 <translation id="826825447994856889">Inledning</translation>
-<translation id="826991282343985864">r$1 k$2</translation>
 <translation id="8276439074553447000">Hoppa till föregående fokuserbara objekt</translation>
 <translation id="8278417001922463147">Det finns ingen föregående artikel.</translation>
 <translation id="8283603667300770666">Nästa formulärfält</translation>
@@ -980,7 +974,6 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="9082874451376019682">Det finns inget föregående skjutreglage.</translation>
 <translation id="9087707351856729768">Autoslutföranden visas när du skriver.</translation>
 <translation id="9089864840575085222">eko för inmatning</translation>
-<translation id="9105227991373418255">klipp ut $1.</translation>
 <translation id="9107530006868467849">Det finns ingen föregående mediewidget.</translation>
 <translation id="9108370397979208512">matte</translation>
 <translation id="9108589040018540527">rullningslist</translation>

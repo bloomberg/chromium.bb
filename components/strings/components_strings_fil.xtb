@@ -452,7 +452,6 @@
 <translation id="3890664840433101773">Magdagdag ng email</translation>
 <translation id="3901925938762663762">Na-expire na ang card</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3945915738023014686">ID ng Na-upload na Ulat ng Pag-crash <ph name="CRASH_ID" /> (ID ng Lokal na Pag-crash: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">Palaging hilingin sa site na ito</translation>
 <translation id="3947577358805392297">I-save ang page para sa ibang pagkakataon</translation>
 <translation id="3949571496842715403">Hindi mapatunayan ng server na ito na <ph name="DOMAIN" /> ito; hindi tinutukoy ng certificate ng seguridad nito ang Mga Alternatibong Pangalan ng Subject. Maaaring dahil ito sa isang maling configuration o sa isang umaatake na humahadlang sa iyong koneksyon.</translation>
@@ -1061,7 +1060,6 @@ Mga karagdagang detalye:
 <translation id="8149426793427495338">Nag-sleep ang iyong computer.</translation>
 <translation id="8150722005171944719">Hindi nababasa ang file sa <ph name="URL" />. Maaaring ito ay naalis, nalipat, o maaaring pinipigilan ng mga pagpapahintulot ng file ang access.</translation>
 <translation id="8184538546369750125">Gamitin ang pangkalahatang default (Payagan)</translation>
-<translation id="8191494405820426728">ID ng Lokal na Pag-crash <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">&amp;I-undo ang Paglilipat</translation>
 <translation id="8197543752516192074">Isalin ang Page</translation>
 <translation id="8201077131113104583">Di-wastong URL ng update para sa extension na may ID na "<ph name="EXTENSION_ID" />."</translation>

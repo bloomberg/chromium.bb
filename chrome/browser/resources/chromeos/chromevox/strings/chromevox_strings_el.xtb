@@ -337,7 +337,6 @@
 <translation id="3392045790598181549"><ph name="NAME" />, στοιχείο μενού</translation>
 <translation id="3393605254399152980">Σύρετε ένα δάκτυλο για να ακούσετε τι αγγίζετε</translation>
 <translation id="3406283310380167331">Εμφάνιση λίστας φορμών</translation>
-<translation id="3423495725743882470">σειρά $1 στήλη $2</translation>
 <translation id="3457000393508828486">Έχει πατηθεί μερικώς</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, απενεργοποίηση</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, κουμπί</translation>
@@ -376,7 +375,6 @@
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Λίστα αυτόματης συμπλήρωσης</translation>
 <translation id="3810838688059735925">Βίντεο</translation>
-<translation id="3812237531158591503">επικόλληση $1.</translation>
 <translation id="3816633764618089385">Επόμενο μέσο</translation>
 <translation id="3819376190738087562">Δεν υπάρχουν μεταβάσεις.</translation>
 <translation id="385383972552776628">Άνοιγμα σελίδας επιλογών</translation>
@@ -578,7 +576,6 @@
 <translation id="5402791055281059602">Μια αποκλειστική ειδοποίηση</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{ερωτηματικό}other{# ερωτηματικά}}</translation>
 <translation id="5411891038905756502">Δεν υπάρχει προηγούμενο σημείο μετάβασης.</translation>
-<translation id="5417034931411865818">Κάντε κλικ στο στοιχείο κάτω από το πλήκτρο δρομολόγησης $1</translation>
 <translation id="5435274640623994081">Ενεργοποίηση καταγραφής ηχητικών μηνυμάτων</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{σύμβολο "μικρότερο από"}other{# σύμβολα "μικρότερο από"}}</translation>
 <translation id="5444587279251314700">(ενεργή)</translation>
@@ -676,7 +673,6 @@
 <translation id="6122013438240733403">κουμπί</translation>
 <translation id="6129953537138746214">Κενό</translation>
 <translation id="6132506484792346370">Ένα πλαίσιο λίστας ή ένα σύνθετο πλαίσιο</translation>
-<translation id="6138576064440631958">συγχορδία $1</translation>
 <translation id="6142308968191113180">Επικεφαλίδα 4</translation>
 <translation id="6164829606128959761">μετρητής</translation>
 <translation id="6169420925157477918">Εικόνα με εκτενή περιγραφή</translation>
@@ -698,7 +694,6 @@
 <translation id="6355910664415701303">Δεν υπάρχει προηγούμενο στοιχείο στη λίστα.</translation>
 <translation id="6364795331201459219">κεφαλίδα 6</translation>
 <translation id="6368143427468974988">Προηγούμενη επικεφαλίδα</translation>
-<translation id="6378565991815958969">αντιγραφή $1.</translation>
 <translation id="6385591741672306837">στήλη</translation>
 <translation id="6387719785439924554">εκτός</translation>
 <translation id="6411426777058107714">Δεν υπάρχει προηγούμενο κουμπί επιλογής.</translation>
@@ -899,7 +894,6 @@
 <translation id="820469951249669083">Μετάβαση στην επόμενη σειρά</translation>
 <translation id="8215202828671303819">Πολλαπλής επιλογής</translation>
 <translation id="826825447994856889">Εισαγωγή</translation>
-<translation id="826991282343985864">σ$1στ$2</translation>
 <translation id="8276439074553447000">Μετάβαση στο προηγούμενο αντικείμενο με δυνατότητα εστίασης</translation>
 <translation id="8278417001922463147">Δεν υπάρχει προηγούμενο αντικείμενο.</translation>
 <translation id="8283603667300770666">Επόμενο πεδίο φόρμας</translation>
@@ -981,7 +975,6 @@
 <translation id="9082874451376019682">Δεν υπάρχει προηγούμενο ρυθμιστικό.</translation>
 <translation id="9087707351856729768">Πληκτρολογήστε για αυτόματη συμπλήρωση.</translation>
 <translation id="9089864840575085222">Επανάληψη εκφώνησης πληκτρολόγησης</translation>
-<translation id="9105227991373418255">αποκοπή $1.</translation>
 <translation id="9107530006868467849">Δεν υπάρχει γραφικό στοιχείο προηγούμενου μέσου.</translation>
 <translation id="9108370397979208512">μαθηματικά</translation>
 <translation id="9108589040018540527">γραμμή κύλισης</translation>

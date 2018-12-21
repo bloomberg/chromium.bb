@@ -1602,7 +1602,6 @@
 <translation id="3470502288861289375">நகலெடுக்கிறது...</translation>
 <translation id="3473479545200714844">திரை உருப்பெருக்கி</translation>
 <translation id="3475447146579922140">Google விரிதாள்</translation>
-<translation id="3475538074809281797">{LINE_COUNT,plural, =1{&lt;1 வரி காட்டப்படவில்லை&gt;}other{&lt;$1 வரிகள் காட்டப்படவில்லை&gt;}}</translation>
 <translation id="3475843873335999118">உங்கள் கைரேகையை இன்னும் அடையாளங்காண முடியவில்லை. கடவுச்சொல்லை உள்ளிடவும்.</translation>
 <translation id="347670947055184738">அச்சச்சோ!  உங்கள் சாதனத்திற்கான கொள்கையைப் பெற முடியவில்லை.</translation>
 <translation id="347785443197175480">உங்கள் கேமராவையும் மைக்ரோஃபோனையும் அணுக <ph name="HOST" /> ஐத் தொடர்ந்து அனுமதி</translation>
@@ -2732,7 +2731,6 @@
 <translation id="5266113311903163739">சான்றளிக்கும் மைய இறக்குமதி பிழை</translation>
 <translation id="5269977353971873915">அச்சிடுதல் தோல்வி</translation>
 <translation id="5270167208902136840">மேலும் <ph name="NUMBER_OF_MORE_APPS" /> ஆப்ஸைக் காட்டு</translation>
-<translation id="5272654297705279635">தனிப்பயன் அமைப்புகள்</translation>
 <translation id="5275352920323889391">நாய்</translation>
 <translation id="5275973617553375938">Google இயக்கத்திலிருந்து மீட்கப்பட்ட கோப்புகள்</translation>
 <translation id="527605982717517565"><ph name="HOST" /> இல் JavaScript ஐ எப்போதும் அனுமதி</translation>

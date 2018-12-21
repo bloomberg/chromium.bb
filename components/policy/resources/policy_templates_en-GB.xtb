@@ -24,6 +24,16 @@
       When this policy is set to false or unset, cookies set by the IdP are transferred to the user's profile during their first login on a device only.
 
       This policy affects users whose domain matches the device's enrolment domain only. For all other users, cookies set by the IdP are transferred to the user's profile during their first login on the device only.</translation>
+<translation id="1030120600562044329">Enables anonymous reporting of usage and crash-related data about <ph name="PRODUCT_NAME" /> to Google, and prevents users from changing this setting.
+
+      If this setting is enabled, anonymous reporting of usage and crash-related
+      data is sent to Google.  If it is disabled, this information is not sent
+      to Google.  In both cases, users cannot change or override the setting.
+      If this policy is left not set, the setting will be what the user chose
+      upon installation/first run.
+
+      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.
+      (For Chrome OS, see DeviceMetricsReportingEnabled.)</translation>
 <translation id="1035385378988781231">This policy controls whether the Network File Shares feature for <ph name="PRODUCT_NAME" /> will use NTLM for authentication.
 
       When this policy is set to True, NTLM will be used for authentication to SMB shares if necessary.
@@ -70,6 +80,11 @@
       For more information on secure contexts, see
       https://www.w3.org/TR/secure-contexts/.
       </translation>
+<translation id="1107764601871839136">Specifies the lifetime (in hours) of the Group Policy Object (GPO) cache. Instead of re-downloading GPOs on every policy fetch, the system may reuse cached GPOs as long as their version does not change. This policy specifies the maximum duration for which cached GPOs may be reused before they are re-downloaded. Rebooting and logging out clears the cache.
+
+      If the policy is unset, cached GPOs may be reused for up to 25 hours.
+
+      If the policy is set to 0, GPO caching is turned off. Note that this increases server load since GPOs are re-downloaded on every policy fetch, even if they did not change.</translation>
 <translation id="1117535567637097036">The protocol handlers set via this policy are not used when handling Android intents.</translation>
 <translation id="1118093128235245168">Allow sites to ask the user to grant access to a connected USB device</translation>
 <translation id="1128903365609589950">Configures the directory that <ph name="PRODUCT_NAME" /> will use for storing cached files on the disk.
@@ -167,6 +182,19 @@
 <translation id="142346659686073702">Allow unaffiliated users to use Crostini</translation>
 <translation id="1426410128494586442">Yes</translation>
 <translation id="1427655258943162134">Address or URL of proxy server</translation>
+<translation id="1431272318313028342">Enables <ph name="PRODUCT_NAME" />'s Safe Browsing feature and prevents users from changing this setting.
+
+      If you enable this setting, Safe Browsing is always active.
+
+      If you disable this setting, Safe Browsing is never active.
+
+      If you enable or disable this setting, users cannot change or override the 'Enable phishing and malware protection' setting in <ph name="PRODUCT_NAME" />.
+
+      If this policy is left not set, this will be enabled but the user will be able to change it.
+
+      See https://developers.google.com/safe-browsing for more info on Safe Browsing.
+
+      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="1435659902881071157">Device-level network configuration</translation>
 <translation id="1438739959477268107">Default key generation setting</translation>
 <translation id="1454846751303307294">Allows you to set a list of url patterns that specify sites which are not allowed to run JavaScript.
@@ -274,9 +302,25 @@
 <translation id="1675002386741412210">Supported on:</translation>
 <translation id="1689963000958717134">Allows pushing network configuration to be applied for all users of a <ph name="PRODUCT_OS_NAME" /> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Set the restriction on the fetching of the Variations seed</translation>
+<translation id="1717817358640580294">If unset, should Chrome Clean-Up detect unwanted software, it may report metadata about the scan to Google, in accordance with policy set by SafeBrowsingExtendedReportingEnabled. Chrome Clean-Up will then ask the user if they wish to clean up the unwanted software. The user can choose to share results of the clean up with Google to assist with future unwanted software detection. These results contain file metadata, automatically installed extensions and registry keys as described by the Chrome Privacy Whitepaper.
+
+      If disabled, should Chrome Clean-Up detect unwanted software, it will not report metadata about the scan to Google, overriding any policy set by SafeBrowsingExtendedReportingEnabled. Chrome Clean-Up will ask the user if they wish to clean up the unwanted software.  Results of the clean up will not be reported to Google and the user will not have the option to do so.
+
+      If enabled, should Chrome Clean-Up detect unwanted software, it may report metadata about the scan to Google, in accordance with policy set by SafeBrowsingExtendedReportingEnabled. Chrome Clean-Up will ask the user if they wish to clean up the unwanted software.  Results of the clean up will be reported to Google and the user will not have the option to prevent it.
+
+      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="172374442286684480">Allow all sites to set local data.</translation>
 <translation id="1734716591049455502">Configure remote access options</translation>
 <translation id="1736269219679256369">Allow proceeding from the SSL warning page</translation>
+<translation id="1745780278307622857">Identify if <ph name="PRODUCT_NAME" /> can allow download without Safe Browsing checks when it's from a trusted source.
+
+      When False, downloaded files will not be sent to be analysed by Safe Browsing when it's from a trusted source.
+
+      When not set (or set to True), downloaded files are sent to be analysed by Safe Browsing, even when it's from a trusted source.
+
+      Note that these restrictions apply to downloads triggered from web page content, as well as the 'download link…' context menu option. These restrictions do not apply to the save/download of the currently displayed page, nor does it apply to saving as PDF from the printing options.
+
+      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="1749815929501097806">Sets the Terms of Service that the user must accept before starting a device-local account session.
 
       If this policy is set, <ph name="PRODUCT_OS_NAME" /> will download the Terms of Service and present them to the user whenever a device-local account session is starting. The user will only be allowed into the session after accepting the Terms of Service.
@@ -287,6 +331,7 @@
 <translation id="1750315445671978749">Block all downloads</translation>
 <translation id="1781356041596378058">This policy also controls access to Android Developer Options. If you set this policy to true, users cannot access Developer Options. If you set this policy to false or leave it unset, users can access Developer Options by tapping seven times on the build number in the Android settings app.</translation>
 <translation id="1797233582739332495">Show a recurring prompt to the user indicating that a relaunch is required</translation>
+<translation id="1798559516913615713">GPO cache lifetime</translation>
 <translation id="1803646570632580723">List of pinned apps to show in the launcher</translation>
 <translation id="1808715480127969042">Block cookies on these sites</translation>
 <translation id="1810261428246410396">Allow Instant Tethering to be used.</translation>
@@ -294,6 +339,13 @@
 
       The policy should be specified as a string that expresses the URL and hash in the JSON format.</translation>
 <translation id="1827523283178827583">Use fixed proxy servers</translation>
+<translation id="1831495419375964631">This policy is a URL that points to an XML file in the same format as Internet Explorer's <ph name="IEEM_SITELIST_POLICY" /> policy. This loads rules from an XML file, without sharing those rules with Internet Explorer.
+
+      When this policy is left unset, or not set to a valid URL, <ph name="PRODUCT_NAME" /> does not use it as a source of rules for switching browsers.
+
+      When this policy is set to a valid URL, <ph name="PRODUCT_NAME" /> downloads the site list from that URL, and applies the rules as if they had been configured with the <ph name="SITELIST_POLICY_NAME" /> policy.
+
+      For more information on Internet Explorer's <ph name="IEEM_SITELIST_POLICY" /> policy: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="1843117931376765605">Refresh rate for user policy</translation>
 <translation id="1844620919405873871">Configures quick unlock related policies.</translation>
 <translation id="1847960418907100918">Specifies the parameters used when doing instant search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {searchTerms} in above example, it will be replaced with real search terms data.
@@ -346,6 +398,12 @@
       If set to false, metrics and diagnostic data reporting will be disabled.
 
       If not configured, metrics and diagnostic data reporting will be disabled on unmanaged devices, and enabled on managed devices.</translation>
+<translation id="1907431809333268751">Configure the list of enterprise login URLs (HTTP and HTTPS schemes only). Fingerprint of password will be captured on these URLs and used for password reuse detection.
+      In order for <ph name="PRODUCT_NAME" /> to correctly capture password fingerprints, please make sure that your login pages follow the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      If this setting is enabled, then password protection service will capture fingerprint of password on these URLs for password reuse detection purpose.
+      If this setting is disabled or not set, then password protection service will only capture password fingerprint on https://accounts.google.com.
+      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="1920046221095339924">Allow managed session on device</translation>
 <translation id="1929709556673267855">Provides configurations for enterprise printers bound to devices.
 
@@ -419,6 +477,9 @@
 <translation id="209586405398070749">Stable channel</translation>
 <translation id="2098658257603918882">Enable reporting of usage and crash-related data</translation>
 <translation id="2104418465060359056">Report Extensions and Plug-in information</translation>
+<translation id="2107601598727098402">
+        This policy is deprecated in M72. Please use CloudManagementEnrollmentToken instead.
+        </translation>
 <translation id="2111016292707172233">Enables the availability of Tap to Search in <ph name="PRODUCT_NAME" />'s content view.
 
       If you enable this setting, Tap to Search will be available to the user and they can choose to turn the feature on or off.
@@ -614,6 +675,20 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this setting is disabled, users cannot print from <ph name="PRODUCT_NAME" />. Printing is disabled in the wrench menu, extensions, JavaScript applications etc. It is still possible to print from plugins that bypass <ph name="PRODUCT_NAME" /> while printing. For example, certain Flash applications have the print option in their context menu, which is not covered by this policy.</translation>
 <translation id="2518231489509538392">Allow playing audio</translation>
 <translation id="2521581787935130926">Show the apps shortcut in the bookmark bar</translation>
+<translation id="2529659024053332711">Allows you to specify the behaviour on start-up.
+
+          If you choose 'Open new tab page' the new tab page will always be opened when you start <ph name="PRODUCT_NAME" />.
+
+          If you choose 'Restore the last session', the URLs that were open last time <ph name="PRODUCT_NAME" /> was closed will be re-opened and the browsing session will be restored as it was left.
+          Choosing this option disables some settings that rely on sessions or that perform actions on exit (such as Clear browsing data on exit or session-only cookies).
+
+          If you choose 'Open a list of URLs', the list of 'URLs to open on start-up' will be opened when a user starts <ph name="PRODUCT_NAME" />.
+
+          If you enable this setting, users cannot change or override it in <ph name="PRODUCT_NAME" />.
+
+          Disabling this setting is equivalent to leaving it not configured. The user will still be able to change it in <ph name="PRODUCT_NAME" />.
+
+          This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="2529880111512635313">Configure the list of force-installed apps and extensions</translation>
 <translation id="253135976343875019">Idle warning delay when running on AC power</translation>
 <translation id="2536525645274582300">User decides whether to enable Google Location services</translation>
@@ -781,6 +856,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           |created_time_millis| is the UTC timestamp for the override creation; it is sent as a String because the timestamp wouldn't fit in an integer. It is used to determine whether this override should still be applied. If the current active time limit feature (time usage limit or time window limit) started after the override was created, it should not take action. Also, if the override was created before the last change of the active time_window_limit or time_usage_window, it should not be applied.
 
           Multiple overrides may be sent; the newest valid entry is the one that is going to be applied.</translation>
+<translation id="2905984450136807296">Authentication data cache lifetime</translation>
 <translation id="2906874737073861391">List of AppPack extensions</translation>
 <translation id="2907992746861405243">Controls which printers from the <ph name="BULK_PRINTERS_POLICY" /> are available to users.
 
@@ -813,6 +889,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2987227569419001736">Control use of the Web Bluetooth API</translation>
 <translation id="3016255526521614822">Whitelist note-taking apps allowed on the <ph name="PRODUCT_OS_NAME" /> lock screen</translation>
 <translation id="3021562480854470924">Number of milestones roll-back is allowed</translation>
+<translation id="3023572080620427845">URL of an XML file that contains URLs to load in an alternative browser.</translation>
 <translation id="3030000825273123558">Enable metrics reporting</translation>
 <translation id="3034580675120919256">Allows you to set whether websites are allowed to run JavaScript. Running JavaScript can be either allowed for all websites or denied for all websites.
 
@@ -866,6 +943,12 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If the policy is not set, or is set to false, then DHE cipher suites in TLS will not be enabled. Otherwise it may be set to true to enable DHE cipher suites and retain compatibility with an outdated server. This is a stopgap measure and the server should be reconfigured.
 
       Servers are encouraged to migrate to ECDHE cipher suites. If these are unavailable, ensure a cipher suite using RSA key exchange is enabled.</translation>
+<translation id="3117706142826400449">If disabled, prevents Chrome Clean-Up from scanning the system for unwanted software and performing clean ups. Manually triggering Chrome Clean-Up from chrome://settings/cleanup is disabled.
+
+      If enabled or unset, Chrome Clean-Up periodically scans the system for unwanted software and should any be found, will ask the user if they wish to remove it. Manually triggering Chrome Clean-Up from chrome://settings is enabled.
+
+      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
+<translation id="3165808775394012744">These policies are included here to make them easy to remove.</translation>
 <translation id="316778957754360075">This setting has been retired as of <ph name="PRODUCT_NAME" /> version 29. The recommended way to set up organisation-hosted extension/app collections is to include the site hosting the CRX packages in ExtensionInstallSources and put direct download links to the packages on a web page. A launcher for that web page can be created using the ExtensionInstallForcelist policy.</translation>
 <translation id="3171369832001535378">Device network hostname template</translation>
 <translation id="3185009703220253572">since version <ph name="SINCE_VERSION" /></translation>
@@ -1570,6 +1653,19 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="5058573563327660283">Select the strategy used to free up disk space during automatic clean-up (deprecated)</translation>
 <translation id="5067143124345820993">Login user white list</translation>
 <translation id="5068140065960598044"><ph name="PRODUCT_NAME" /> cloud policy overrides Machine policy.</translation>
+<translation id="5076274878326940940">Enables the use of a default search provider.
+
+          If you enable this setting, a default search is performed when the user types text in to the omnibox that is not a URL.
+
+          You can specify the default search provider to be used by setting the rest of the default search policies. If these are left empty, the user can choose the default provider.
+
+          If you disable this setting, no search is performed when the user enters non-URL text in to the omnibox.
+
+          If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME" />.
+
+          If this policy is left not set, the default search provider is enabled, and the user will be able to set the search provider list.
+
+          This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="5085647276663819155">Disable Print Preview</translation>
 <translation id="5090209345759901501">Extend Flash content setting to all content</translation>
 <translation id="5093540029655764852">Specifies the rate (in days) at which a client changes their machine account password. The password is randomly generated by the client and not visible to the user.
@@ -1583,6 +1679,15 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       Note that passwords might get older than the specified number of days if the client has been offline for a longer period of time.</translation>
 <translation id="5105313908130842249">Screen lock delay when running on battery power</translation>
 <translation id="5108031557082757679">Disabled enterprise device printers</translation>
+<translation id="5113732180192599620">This policy controls the list of websites that will never cause a browser switch.
+
+      Note that elements can also be added to this list through the <ph name="USE_IE_SITELIST_POLICY_NAME" /> and <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" /> policies.
+
+      When this policy is left unset, no websites are added to the list.
+
+      When this policy is set, each item is treated as a rule, similar to the <ph name="URL_LIST_POLICY_NAME" /> policy. However, the logic is reversed: rules that match will not open an alternative browser.
+
+      Unlike <ph name="URL_LIST_POLICY_NAME" />, rules apply to both directions. That is, when the Internet Explorer add-in is present and enabled, it also controls whether <ph name="IE_PRODUCT_NAME" /> should open these URLs in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5130288486815037971">Whether RC4 cipher suites in TLS are enabled</translation>
 <translation id="5141670636904227950">Set the default screen magnifier type enabled on the login screen</translation>
 <translation id="5142301680741828703">Always render the following URL patterns in <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1621,6 +1726,15 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If the policy is set to false then tab lifecycles are disabled, and all tabs will be left running normally.
 
       If the policy is set to true or left unspecified then tab life cycles are enabled.</translation>
+<translation id="5207823059027350538">Configures the default new tab page URL and prevents users from changing it.
+
+          The new tab page is the page opened when new tabs are created (including the one opened in new windows).
+
+          This policy does not decide which pages are to be opened on start up. Those are controlled by the <ph name="RESTORE_ON_STARTUP_POLICY_NAME" /> policies. Yet this policy does affect the homepage if that is set to open the new tab page, as well as the start-up page if that is set to open the new tab page.
+
+          If the policy is not set or left empty the default new tab page is used.
+
+          This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="5208240613060747912">Allows you to set a list of url patterns that specify sites which are not allowed to display notifications.
 
           If this policy is left unset the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
@@ -1741,6 +1855,17 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="546726650689747237">Screen dim delay when running on AC power</translation>
 <translation id="5469143988693423708">User is enabled to run Crostini</translation>
 <translation id="5469825884154817306">Block images on these sites</translation>
+<translation id="5472668698895343595">This policy controls the list of websites to open in an alternative browser.
+
+      Note that elements can also be added to this list through the <ph name="USE_IE_SITELIST_POLICY_NAME" /> and <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" /> policies.
+
+      When this policy is left unset, no websites are added to the list.
+
+      When this policy is set, each item is treated as a rule for something to open in an alternative browser. <ph name="PRODUCT_NAME" /> uses those rules when choosing if a URL should open in an alternative browser.
+
+      When the Internet Explorer add-in is present and enabled, Internet Explorer switches back to <ph name="PRODUCT_NAME" /> when the rules do not match.
+
+      If rules contradict each other, <ph name="PRODUCT_NAME" /> uses the most specific rule.</translation>
 <translation id="5475361623548884387">Enable printing</translation>
 <translation id="547601067149622666">Do not allow ads on sites with intrusive ads</translation>
 <translation id="5499375345075963939">This policy is active in retail mode only.
@@ -1819,6 +1944,13 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If this setting is disabled or not configured then users can use all supported types of external storage on their device.</translation>
 <translation id="5697306356229823047">Report device users</translation>
+<translation id="5699487516670033016">Specifies the lifetime (in hours) of the authentication data cache. The cache is used to speed up sign-in. It contains general data (workgroup name etc.) about affiliated realms, i.e. realms trusted by the machine realm. No user-specific data and no data for unaffiliated realms is cached. Rebooting the device clears the cache.
+
+      If the policy is unset, cached authentication data may be reused for up to 73 hours.
+
+      If the policy is set to 0, authentication data caching is turned off. This can significantly slow down sign-in of affiliated users since realm-specific data has to be fetched on every sign-in.
+
+      Note that realm data is cached even for ephemeral users. The cache should be turned off if tracing the realm of ephemeral users is to be prevented.</translation>
 <translation id="570062449808736508">When this policy is set to a non-empty string, the WebView will read URL restrictions from the content provider with the given authority name.</translation>
 <translation id="5701714006401683963">If this policy is set to false, managed guest session will behave as documented in https://support.google.com/chrome/a/answer/3017014 – the standard 'Public Session'.
 
@@ -1870,6 +2002,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If the policy is disabled, downloads will start immediately, and the user will not be asked where to save the file.
       If the policy is not configured, the user will be able to change this setting.
       </translation>
+<translation id="5832274826894536455">Deprecated policies</translation>
 <translation id="5835124959204887277">Specifies URLs and domains for which no prompt will be shown when attestation certificates from Security Keys are requested. Additionally, a signal will be sent to the Security Key indicating that individual attestation may be used. Without this, users will be prompted in Chrome 65+ when sites request attestation of Security Keys.
 
       URLs (like https://example.com/some/path) will only match as U2F appIDs. Domains (like example.com) only match as webauthn RP IDs. Thus, to cover both U2F and webauthn APIs for a given site, both the appID URL and domain would need to be listed.</translation>
@@ -2119,6 +2252,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If the policy is set to false, the users will not be reported.</translation>
 <translation id="6394350458541421998">This policy has been retired as of <ph name="PRODUCT_OS_NAME" /> version 29. Please use the PresentationScreenDimDelayScale policy instead.</translation>
 <translation id="6401669939808766804">Log the user out</translation>
+<translation id="6406448383934634215">If 'Open a list of URLs' is selected as the start-up action, this allows you to specify the list of URLs that are opened. If left not set, no URL will be opened on start up.
+
+          This policy only works if the 'RestoreOnStartup' policy is set to 'RestoreOnStartupIsURLs'.
+
+          This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="6426205278746959912">You cannot force Android apps to use a proxy. A subset of proxy settings is made available to Android apps, which they may voluntarily choose to honour:
 
           If you choose to never use a proxy server, Android apps are informed that no proxy is configured.
@@ -2134,7 +2272,26 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="645425387487868471">Enable force sign-in for <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Enable AutoFill for addresses</translation>
 <translation id="6473623140202114570">Configure the list of domains on which Safe Browsing will not trigger warnings.</translation>
+<translation id="6488627892044759800">Configures the type of the default homepage in <ph name="PRODUCT_NAME" /> and prevents users from changing homepage preferences. The homepage can either be set to a URL that you specify, or set to the new tab page.
+
+          If you enable this setting, the new tab page is always used for the homepage, and the homepage URL location is ignored.
+
+          If you disable this setting, the user's homepage will never be the new tab page, unless its URL is set to 'chrome://newtab'.
+
+          If you enable or disable this setting, users cannot change their homepage type in <ph name="PRODUCT_NAME" />.
+
+          Leaving this policy not set will allow the user to choose whether the new tab page is their homepage on their own.
+
+          This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="6491139795995924304">Allow bluetooth on device</translation>
+<translation id="6495328383950074966">Configure the list of domains which Safe Browsing will trust. This means:
+      Safe Browsing will not check for dangerous resources (e.g. phishing, malware or unwanted software) if their URLs match these domains.
+      Safe Browsing's download protection service will not check downloads hosted on these domains.
+      Safe Browsing's password protection service will not check for password reuse if the page URL matches these domains.
+
+      If this setting is enabled, then Safe Browsing will trust these domains.
+      If this setting is disabled or not set, then default Safe Browsing protection is applied to all resources.
+      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="6520802717075138474">Import search engines from default browser on first run</translation>
 <translation id="6525955212636890608">If you enable this setting, all Flash content embedded on websites that have been set to allow Flash in content settings – either by the user or by enterprise policy – will be run, including content from other origins or small content.
 
@@ -2248,6 +2405,13 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If this policy is not set, or the value after substitution is not a valid hostname, no hostname will be set in DHCP request. </translation>
 <translation id="6835883744948188639">Show a recurring prompt to the user indicating that a relaunch is recommended</translation>
+<translation id="6837480141980366278">Controls whether the built-in DNS client is used in <ph name="PRODUCT_NAME" />.
+
+      If this policy is set to true, the built-in DNS client will be used, if available.
+
+      If this policy is set to false, the built-in DNS client will never be used.
+
+      If this policy is left not set, the built-in DNS client will be enabled by default on MacOS, Android (when neither Private DNS nor VPN are enabled) and ChromeOS, and the users will be able to change whether the built-in DNS client is used by editing chrome://flags or specifying a command-line flag.</translation>
 <translation id="6838056959556423778">Overrides <ph name="PRODUCT_NAME" /> default printer selection rules.
 
       This policy determines the rules for selecting the default printer in <ph name="PRODUCT_NAME" /> which happens the first time that the print function is used with a profile.
@@ -2279,6 +2443,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       Printers connected to <ph name="CLOUD_PRINT_NAME" /> are considered <ph name="PRINTER_TYPE_CLOUD" />; the rest of the printers are classified as <ph name="PRINTER_TYPE_LOCAL" />.
       Omitting a field means all values match. For example, not specifying connectivity will cause Print Preview to initiate the discovery of all kinds of printers: local and cloud.
       Regular expression patterns must follow the JavaScript RegExp syntax and matches are case sensitive.</translation>
+<translation id="6843296367238757293">This policy is deprecated. Its usage is discouraged. Read more at https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">This policy was removed in <ph name="PRODUCT_NAME" /> 68 and replaced by <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">This policy is deprecated and removed in M66, because it was used only for internal testing and it is a security liability.
 
@@ -2464,6 +2629,17 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           Automatic playback is only allowed for domains explicitly listed in the <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> policy. If you want to enabled automatic playback for all sites, consider adding http://* and https://* to this list.
 
           If this policy is left not set, the user will be able to change this setting manually.</translation>
+<translation id="7229876938563670511">Configures the default homepage URL in <ph name="PRODUCT_NAME" /> and prevents users from changing it.
+
+          The homepage is the page opened by the Home button. The pages that open on start-up are controlled by the RestoreOnStartup policies.
+
+          The homepage type can either be set to a URL that you specify here or set to the new tab page. If you select the new tab page, then this policy does not take effect.
+
+          If you enable this setting, users cannot change their homepage URL in <ph name="PRODUCT_NAME" />, but they can still choose the new tab page as their home page.
+
+          Leaving this policy not set will also allow the user to choose their own homepage if HomepageIsNewTabPage is not set.
+
+          This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="7229975860249300121">Contains a regular expression which is used to determine which Google accounts can be set as browser primary accounts in <ph name="PRODUCT_NAME" /> (i.e. the account that is chosen during the Sync opt-in flow).
 
       An appropriate error is displayed if a user tries to set a browser primary account with a username that does not match this pattern.
@@ -2804,6 +2980,17 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="793473937901685727">Set certificate availability for ARC-apps</translation>
 <translation id="7937766917976512374">Allow or deny video capture</translation>
 <translation id="7941975817681987555">Do not predict network actions on any network connection</translation>
+<translation id="7952002811557367112">This policy prevents the user from loading web pages from blacklisted URLs. The blacklist provides a list of URL patterns that specify which URLs will be blacklisted.
+
+      A URL pattern has to be formatted according to https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Exceptions can be defined in the URL whitelist policy. These policies are limited to 1,000 entries; subsequent entries will be ignored.
+
+      Note that it is not recommended to block internal 'chrome://*' URLs after this may lead to unexpected errors.
+
+      Note that this policy does not prevent the page updating dynamically through JavaScript. For example, if you block 'example.com/abc', users might still be able to visit 'example.com' and click on a link to visit 'example.com/abc', as long as the page does not refresh.
+
+      If this policy is not set, no URL will be blacklisted in the browser.</translation>
 <translation id="7953256619080733119">Managed user manual exception hosts</translation>
 <translation id="7961779417826583251">Disable Certificate Transparency enforcement for a list of Legacy Certificate Authorities</translation>
 <translation id="7974114691960514888">This policy is no longer supported.
@@ -2983,6 +3170,12 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8367209241899435947">Enable Chrome Cleanup on Windows</translation>
 <translation id="8369602308428138533">Screen off delay when running on AC power</translation>
 <translation id="8371178326720637170">Enables managed extensions to use the Enterprise Hardware Platform API</translation>
+<translation id="8377433219608936819">
+      If the policy is set to true, cloud  policy takes precedence if it conflicts with machine policy.
+      If the policy is set to false or not configured, machine policy takes precedence if it conflicts with cloud policy.
+      For more details about policy priority, please visit: https://support.google.com/chrome?p=set_chrome_policies_for_devices
+
+      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="8382184662529825177">Enable the use of remote attestation for content protection for the device</translation>
 <translation id="838870586332499308">Enable data roaming</translation>
 <translation id="8390049129576938611">Disables the internal PDF viewer in <ph name="PRODUCT_NAME" />. Instead, it treats it as download and allows the user to open PDF files with the default application.
@@ -3155,6 +3348,12 @@ The recommended way to configure policy on Windows is via GPO, although provisio
           If you enable this setting, CNAME lookup will be skipped and the server name will be used as entered.
 
           If you disable this setting or leave it unset, the canonical name of the server will be determined via CNAME lookup.</translation>
+<translation id="8765776988041674792">Configure the change password URL (HTTP and HTTPS schemes only). Password protection service will send users to this URL to change their password after seeing a warning in the browser.
+      In order for <ph name="PRODUCT_NAME" /> to correctly capture the new password fingerprint on this change password page, please make sure that your change password page follows the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      If this setting is enabled, then password protection service will send users to this URL to change their password after seeing a warning in the browser.
+      If this setting is disabled or not set, then password protection service will send users to https://myaccounts.google.com to change their password.
+      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="8782750230688364867">Specifies the percentage by which the screen dim delay is scaled when the device is in presentation mode.
 
           If this policy is set, it specifies the percentage by which the screen dim delay is scaled when the device is in presentation mode. When the screen dim delay is scaled, the screen off, screen lock and idle delays get adjusted to maintain the same distances from the screen dim delay as originally configured.

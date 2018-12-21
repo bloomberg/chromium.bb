@@ -336,7 +336,6 @@
 <translation id="3392045790598181549">รายการเมนู <ph name="NAME" /></translation>
 <translation id="3393605254399152980">ใช้นิ้วเดียวลากเพื่อฟังสิ่งที่แตะอยู่</translation>
 <translation id="3406283310380167331">แสดงรายการฟอร์ม</translation>
-<translation id="3423495725743882470">แถว $1 คอลัมน์ $2</translation>
 <translation id="3457000393508828486">กดบางส่วน</translation>
 <translation id="3458865416877308321"><ph name="NAME" /> ปิดอยู่</translation>
 <translation id="3462439746547587373">ปุ่ม <ph name="NAME" /></translation>
@@ -375,7 +374,6 @@
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">รายการเติมข้อความอัตโนมัติ</translation>
 <translation id="3810838688059735925">วิดีโอ</translation>
-<translation id="3812237531158591503">วาง $1</translation>
 <translation id="3816633764618089385">สื่อถัดไป</translation>
 <translation id="3819376190738087562">ไม่มีการข้าม</translation>
 <translation id="385383972552776628">เปิดหน้าตัวเลือก</translation>
@@ -577,7 +575,6 @@
 <translation id="5402791055281059602">การแจ้งเตือนแบบโมดัล</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{เครื่องหมายอัฒภาค}other{# เครื่องหมายอัฒภาค}}</translation>
 <translation id="5411891038905756502">ไม่มีจุดสำหรับข้ามก่อนหน้า</translation>
-<translation id="5417034931411865818">คลิกรายการใต้แป้นกำหนดเส้นทาง $1</translation>
 <translation id="5435274640623994081">เปิดใช้การบันทึกเอียร์คอน</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{เครื่องหมายน้อยกว่า}other{# เครื่องหมายน้อยกว่า}}</translation>
 <translation id="5444587279251314700">(ใช้งานอยู่)</translation>
@@ -675,7 +672,6 @@
 <translation id="6122013438240733403">ปุ่ม</translation>
 <translation id="6129953537138746214">ช่องว่าง</translation>
 <translation id="6132506484792346370">ช่องรายการหรือช่องตัวเลือกรวม</translation>
-<translation id="6138576064440631958">$1 คอร์ด</translation>
 <translation id="6142308968191113180">ส่วนหัวระดับ 4</translation>
 <translation id="6164829606128959761">เมตร</translation>
 <translation id="6169420925157477918">ภาพมีคำอธิบายยาว</translation>
@@ -697,7 +693,6 @@
 <translation id="6355910664415701303">ไม่มีรายการก่อนหน้า</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">ส่วนหัวก่อนหน้า</translation>
-<translation id="6378565991815958969">คัดลอก $1</translation>
 <translation id="6385591741672306837">คอลัมน์</translation>
 <translation id="6387719785439924554">ส่วนที่ไม่เกี่ยวข้อง</translation>
 <translation id="6411426777058107714">ไม่มีปุ่มตัวเลือกก่อนหน้า</translation>
@@ -897,7 +892,6 @@
 <translation id="820469951249669083">ไปที่แถวถัดไป</translation>
 <translation id="8215202828671303819">เลือกหลายรายการ</translation>
 <translation id="826825447994856889">บทนำ</translation>
-<translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">ข้ามไปยังรายการที่สามารถโฟกัสก่อนหน้า</translation>
 <translation id="8278417001922463147">ไม่มีบทความก่อนหน้า</translation>
 <translation id="8283603667300770666">ช่องฟอร์มถัดไป</translation>
@@ -979,7 +973,6 @@
 <translation id="9082874451376019682">ไม่มีแถบเลื่อนก่อนหน้า</translation>
 <translation id="9087707351856729768">พิมพ์เพื่อเติมคำอัตโนมัติ</translation>
 <translation id="9089864840575085222">พูดรอบการพิมพ์</translation>
-<translation id="9105227991373418255">ตัด $1</translation>
 <translation id="9107530006868467849">ไม่มีวิดเจ็ตสื่อก่อนหน้า</translation>
 <translation id="9108370397979208512">คณิตศาสตร์</translation>
 <translation id="9108589040018540527">scbr</translation>

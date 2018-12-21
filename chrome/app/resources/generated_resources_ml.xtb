@@ -1599,7 +1599,6 @@
 <translation id="3470502288861289375">പകർത്തുന്നു...</translation>
 <translation id="3473479545200714844">സ്‌ക്രീൻ മാഗ്‌നിഫയർ</translation>
 <translation id="3475447146579922140">Google സ്‌പ്രെഡ്‌ഷീറ്റ്</translation>
-<translation id="3475538074809281797">{LINE_COUNT,plural, =1{&lt;ഒരു വരി കാണിച്ചിട്ടില്ല&gt;}other{&lt;$1 വരികൾ കാണിച്ചിട്ടില്ല&gt;}}</translation>
 <translation id="3475843873335999118">ക്ഷമിക്കണം, ഇതുവരെ നിങ്ങളുടെ വിരലടയാളം തിരിച്ചറിയാനായില്ല. പാസ്‌വേഡ് നൽകുക.</translation>
 <translation id="347670947055184738">ക്ഷമിക്കണം! സിസ്‌റ്റത്തിന് നിങ്ങളുടെ ഉപകരണത്തിനുള്ള നയം ലഭ്യമാക്കാനായില്ല.</translation>
 <translation id="347785443197175480">നിങ്ങളുടെ ക്യാമറയും മൈക്രോഫോണും ആക്‌സസ്സുചെയ്യുന്നതിന് <ph name="HOST" /> എന്നതിനെ അനുവദിക്കുന്നത് തുടരുക</translation>
@@ -2728,7 +2727,6 @@
 <translation id="5266113311903163739">സര്‍ട്ടിഫിക്കേഷന്‍ അതോറിറ്റി ഇറക്കുമതി പിശക്</translation>
 <translation id="5269977353971873915">പ്രിന്റുചെയ്യൽ പരാജയപ്പെട്ടു</translation>
 <translation id="5270167208902136840"><ph name="NUMBER_OF_MORE_APPS" /> ആപ്പുകൾ കൂടി കാണിക്കുക</translation>
-<translation id="5272654297705279635">ഇഷ്‌ടാനുസൃത ക്രമീകരണം</translation>
 <translation id="5275352920323889391">നായ</translation>
 <translation id="5275973617553375938">Google ഡ്രൈവിൽ നിന്നും ഫയലുകൾ വീണ്ടെടുത്തു</translation>
 <translation id="527605982717517565"><ph name="HOST" /> ല്‍‌ എല്ലായ്‌പ്പോഴുംJavaScript അനുവദിക്കുക </translation>

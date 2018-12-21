@@ -336,7 +336,6 @@
 <translation id="3392045790598181549"><ph name="NAME" />, മെനു ഇനം</translation>
 <translation id="3393605254399152980">നിങ്ങൾ സ്‌പർശിക്കുന്നത് എന്താണെന്ന് കേൾക്കാൻ വിരൽ ഉപയോഗിച്ച് വലിക്കുക</translation>
 <translation id="3406283310380167331">ഫോമുകളുടെ ലിസ്റ്റ് കാണിക്കുക</translation>
-<translation id="3423495725743882470">വരി $1 കോളം $2</translation>
 <translation id="3457000393508828486">ഭാഗികമായി അമർത്തിയത്</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, സ്വിച്ച് ഓഫാണ്</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, ബട്ടൺ</translation>
@@ -375,7 +374,6 @@
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">യാന്ത്രികപൂർത്തീകരണം ലിസ്റ്റ്</translation>
 <translation id="3810838688059735925">വീഡിയോ</translation>
-<translation id="3812237531158591503">$1 ഒട്ടിക്കുക.</translation>
 <translation id="3816633764618089385">അടുത്ത മീഡിയ</translation>
 <translation id="3819376190738087562">ജംപുകൾ ഒന്നുമില്ല.</translation>
 <translation id="385383972552776628">ഓപ്ഷനുകളുടെ പേജ് തുറക്കുക</translation>
@@ -577,7 +575,6 @@
 <translation id="5402791055281059602">ഒരു മോഡൽ അലേർട്ട്</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{അർദ്ധവിരാമം}other{# അർദ്ധവിരാമങ്ങൾ}}</translation>
 <translation id="5411891038905756502">മുൻ ജംപ് പോയിന്റ് ഒന്നുമില്ല.</translation>
-<translation id="5417034931411865818">$1 റൂട്ടിംഗ് കീയിലുള്ള ഇനം ക്ലിക്കുചെയ്യുക</translation>
 <translation id="5435274640623994081">ഇയർകോൺ ലോഗിംഗ് പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{ആരോഹണ ചിഹ്നം}other{# ആരോഹണ ചിഹ്നങ്ങൾ}}</translation>
 <translation id="5444587279251314700">(സജീവം)</translation>
@@ -675,7 +672,6 @@
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">സ്പെയ്സ്</translation>
 <translation id="6132506484792346370">ഒരു ലിസ്‌റ്റ് ബോക്‌സ്‌ അല്ലെങ്കിൽ കോംബോ ബോക്‌സ്</translation>
-<translation id="6138576064440631958">$1 കോർഡ്</translation>
 <translation id="6142308968191113180">ശീർഷകം 4</translation>
 <translation id="6164829606128959761">മീറ്റർ</translation>
 <translation id="6169420925157477918">ദൈർഘ്യമേറിയ വിവരണമുള്ള ചിത്രം</translation>
@@ -697,7 +693,6 @@
 <translation id="6355910664415701303">മുൻ ലിസ്റ്റ് ഇനം ഒന്നുമില്ല.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">മുൻ ശീർഷകം</translation>
-<translation id="6378565991815958969">$1 പകർത്തുക.</translation>
 <translation id="6385591741672306837">കോളം</translation>
 <translation id="6387719785439924554">അരികിൽ</translation>
 <translation id="6411426777058107714">മുൻ റേഡിയോ ബട്ടൺ ഒന്നുമില്ല.</translation>
@@ -897,7 +892,6 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="820469951249669083">അടുത്ത വരിയിലേക്ക് പോവുക</translation>
 <translation id="8215202828671303819">ഒന്നിലധികം തിരഞ്ഞെടുക്കൽ</translation>
 <translation id="826825447994856889">ആമുഖം</translation>
-<translation id="826991282343985864">വ$1നി$2</translation>
 <translation id="8276439074553447000">ഫോക്കസ് ചെയ്യാനാകുന്ന മുമ്പത്തെ ഇനത്തിലേക്ക് പോകുക</translation>
 <translation id="8278417001922463147">മുമ്പത്തെ ലേഖനമൊന്നുമില്ല.</translation>
 <translation id="8283603667300770666">അടുത്ത ഫോം ഫീൽഡ്</translation>
@@ -979,7 +973,6 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="9082874451376019682">മുൻ സ്ലൈഡർ ഒന്നുമില്ല.</translation>
 <translation id="9087707351856729768">സ്വമേധയാ പൂർത്തിയാക്കാൻ ടൈപ്പ് ചെയ്യുക.</translation>
 <translation id="9089864840575085222">സൈക്കിൾ ടൈപ്പുചെയ്യൽ എക്കൊ</translation>
-<translation id="9105227991373418255">$1 മുറിക്കുക.</translation>
 <translation id="9107530006868467849">മുമ്പത്തെ മീഡിയ വിജറ്റൊന്നുമില്ല.</translation>
 <translation id="9108370397979208512">മാത്ത്</translation>
 <translation id="9108589040018540527">scbr</translation>

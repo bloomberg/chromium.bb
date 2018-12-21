@@ -2622,8 +2622,8 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       |future_config|, erişim kodu doğrulamak için kullanılan birincil yapılandırmadır.
       |old_configs| yalnızca erişim kodunun |future_config| veya |current_config| ile doğrulanamadığı zamanlarda erişim kodu doğrulamak için kullanılmalıdır.
 
-      Bu politika kullanılırken erişim kodu yapılandırmanın yavaş yavaş döndürülmesi beklenir. Yeni yapılandırma her zaman |future_config|'in içine koyulur. Aynı zamanda
-      mevcut değer de |current_config|'in içine taşınır. |current_config|'in önceki değerleri |old_configs|'e taşınır ve rotasyon döngüsü bittikten sonra kaldırılır.
+      Bu politika kullanılırken erişim kodu yapılandırmanın yavaş yavaş döndürülmesi beklenir. Yeni yapılandırma her zaman |future_config| yapılandırmasının içine koyulur. Aynı zamanda
+      mevcut değer de |current_config| yapılandırmasının içine taşınır. |current_config| yapılandırmasının önceki değerleri |old_configs| yapılandırmasına taşınır ve rotasyon döngüsü bittikten sonra kaldırılır.
 
       Bu politika yalnızca çocuk kullanıcılar için geçerlidir.
       Bu politika ayarlandığında, Ebeveyn Erişim Kodu çocuk kullanıcının cihazında doğrulanabilir.
