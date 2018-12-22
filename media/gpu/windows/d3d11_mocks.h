@@ -44,11 +44,17 @@
 #define MOCK_STDCALL_METHOD9(Name, Types) \
   MOCK_METHOD9_WITH_CALLTYPE(STDMETHODCALLTYPE, Name, Types)
 
+// Helper ON_CALL and EXPECT_CALL for Microsoft::WRL::ComPtr, e.g.
+//   COM_EXPECT_CALL(foo_, Bar());
+// where |foo_| is ComPtr<D3D11FooMock>.
+#define COM_ON_CALL(obj, call) ON_CALL(*obj.Get(), call)
+#define COM_EXPECT_CALL(obj, call) EXPECT_CALL(*obj.Get(), call)
+
 namespace media {
 
 // Use this action when using SetArgPointee with COM pointers.
 // e.g.
-// EXPECT_CALL(*device_mock_.Get(), QueryInterface(IID_ID3D11VideoDevice, _))
+// COM_EXPECT_CALL(device_mock_, QueryInterface(IID_ID3D11VideoDevice, _))
 //  .WillRepeatedly(DoAll(
 //     SetComPointee<1>(video_device_mock_.Get()), Return(S_OK)));
 ACTION_TEMPLATE(SetComPointee,
@@ -60,7 +66,7 @@ ACTION_TEMPLATE(SetComPointee,
 
 // Same as above, but returns S_OK for convenience.
 // e.g.
-// EXPECT_CALL(*device_mock_.Get(), QueryInterface(IID_ID3D11VideoDevice, _))
+// COM_EXPECT_CALL(device_mock_, QueryInterface(IID_ID3D11VideoDevice, _))
 //  .WillRepeatedly(SetComPointeeAndReturnOk<1>(video_device_mock_.Get()));
 ACTION_TEMPLATE(SetComPointeeAndReturnOk,
                 HAS_1_TEMPLATE_PARAMS(int, k),
