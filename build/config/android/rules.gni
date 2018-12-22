@@ -2006,14 +2006,20 @@ if (enable_java_templates) {
           rebase_path(_final_apk_path_no_ext, root_build_dir) + ".ap_"
     }
 
-    _version_code = android_default_version_code
-    if (defined(invoker.version_code)) {
+    if (android_override_version_code != "") {
+      _version_code = android_override_version_code
+    } else if (defined(invoker.version_code)) {
       _version_code = invoker.version_code
+    } else {
+      _version_code = android_default_version_code
     }
 
-    _version_name = android_default_version_name
-    if (defined(invoker.version_name)) {
+    if (android_override_version_name != "") {
+      _version_name = android_override_version_name
+    } else if (defined(invoker.version_name)) {
       _version_name = invoker.version_name
+    } else {
+      _version_name = android_default_version_name
     }
 
     _deps = []

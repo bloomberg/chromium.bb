@@ -16,7 +16,7 @@ trichrome_jinja_variables = [
   "min_sdk_version=28",
   "target_sdk_version=$android_sdk_version",
   "trichrome_library=$trichrome_library_package",
-  "trichrome_version=$android_default_version_code",
+  "trichrome_version=$trichrome_version_code",
   "trichrome_certdigest=$trichrome_certdigest",
 ]
 
@@ -44,6 +44,7 @@ template("trichrome_library_apk_tmpl") {
     use_chromium_linker = false
     uncompress_shared_libraries = true
     version_name = chrome_version_name
+    version_code = trichrome_version_code
 
     # Only try to generate the native library version in configurations that
     # include a native library.

@@ -15,9 +15,11 @@
 
 # Give version.py a pattern that will expand to a GN scope consisting of
 # all values we need at once.
-_version_dictionary_template = "full = \"@MAJOR@.@MINOR@.@BUILD@.@PATCH@\" " +
-                               "major = \"@MAJOR@\" minor = \"@MINOR@\" " +
-                               "build = \"@BUILD@\" patch = \"@PATCH@\" "
+_version_dictionary_template =
+    "full = \"@MAJOR@.@MINOR@.@BUILD@.@PATCH@\" " +
+    "major = \"@MAJOR@\" minor = \"@MINOR@\" " +
+    "build = \"@BUILD@\" patch = \"@PATCH@\" " + "version_id = @VERSION_ID@ " +
+    "patch_hi = @PATCH_HI@ " + "patch_lo = @PATCH_LO@ "
 
 # The file containing the Chrome version number.
 chrome_version_file = "//chrome/VERSION"
@@ -28,6 +30,12 @@ _result = exec_script("version.py",
                         rebase_path(chrome_version_file, root_build_dir),
                         "-t",
                         _version_dictionary_template,
+                        "-e",
+                        "VERSION_ID='%s%03d00' % (BUILD, int(PATCH))",
+                        "-e",
+                        "PATCH_HI=int(PATCH)/256",
+                        "-e",
+                        "PATCH_LO=int(PATCH)%256",
                       ],
                       "scope",
                       [ chrome_version_file ])
@@ -40,20 +48,11 @@ chrome_version_major = _result.major
 chrome_version_minor = _result.minor
 chrome_version_build = _result.build
 chrome_version_patch = _result.patch
+chrome_version_id = _result.version_id
+chrome_version_patch_hi = _result.patch_hi
+chrome_version_patch_lo = _result.patch_lo
 
 if (is_mac) {
-  _result = exec_script("version.py",
-                        [
-                          "-f",
-                          rebase_path(chrome_version_file, root_build_dir),
-                          "-t",
-                          "@BUILD@.@PATCH_HI@.@PATCH_LO@",
-                          "-e",
-                          "PATCH_HI=int(PATCH)/256",
-                          "-e",
-                          "PATCH_LO=int(PATCH)%256",
-                        ],
-                        "trim string",
-                        [ chrome_version_file ])
-  chrome_dylib_version = _result
+  chrome_dylib_version = "$chrome_version_build.$chrome_version_patch_hi" +
+                         ".$chrome_version_patch_lo"
 }
