@@ -441,26 +441,8 @@ void ChildProcessSecurityPolicyImpl::Add(int child_id) {
 }
 
 void ChildProcessSecurityPolicyImpl::Remove(int child_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::AutoLock lock(lock_);
-
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
-    return;
-
-  pending_remove_state_[child_id] = std::move(state->second);
   security_state_.erase(child_id);
-
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&ChildProcessSecurityPolicyImpl::RemovePendingIDOnIOThread,
-                     base::Unretained(this), child_id));
-}
-
-void ChildProcessSecurityPolicyImpl::RemovePendingIDOnIOThread(int child_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::AutoLock lock(lock_);
-  pending_remove_state_.erase(child_id);
 }
 
 void ChildProcessSecurityPolicyImpl::RegisterWebSafeScheme(
@@ -1169,20 +1151,21 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
       SiteInstanceImpl::DetermineProcessLockURL(nullptr, url);
 
   base::AutoLock lock(lock_);
-  SecurityState* security_state = GetSecurityState(child_id);
-
-  bool can_access = security_state && security_state->CanAccessDataForOrigin(
-                                          expected_process_lock);
+  auto state = security_state_.find(child_id);
+  if (state == security_state_.end()) {
+    // TODO(nick): Returning true instead of false here is a temporary
+    // workaround for https://crbug.com/600441
+    return true;
+  }
+  bool can_access =
+      state->second->CanAccessDataForOrigin(expected_process_lock);
   if (!can_access) {
     // Returning false here will result in a renderer kill.  Set some crash
     // keys that will help understand the circumstances of that kill.
     base::debug::SetCrashKeyString(bad_message::GetRequestedSiteURLKey(),
                                    expected_process_lock.spec());
-
     base::debug::SetCrashKeyString(bad_message::GetKilledProcessOriginLockKey(),
-                                   security_state
-                                       ? security_state->origin_lock().spec()
-                                       : "(child id not found)");
+                                   state->second->origin_lock().spec());
 
     static auto* requested_origin_key = base::debug::AllocateCrashKeyString(
         "requested_origin", base::debug::CrashKeySize::Size64);
@@ -1382,24 +1365,6 @@ void ChildProcessSecurityPolicyImpl::RemoveIsolatedOriginForTesting(
   isolated_origins_[key].erase(origin);
   if (isolated_origins_[key].empty())
     isolated_origins_.erase(key);
-}
-
-ChildProcessSecurityPolicyImpl::SecurityState*
-ChildProcessSecurityPolicyImpl::GetSecurityState(int child_id) {
-  auto itr = security_state_.find(child_id);
-  if (itr != security_state_.end())
-    return itr->second.get();
-
-  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    // Checking to see if |child_id| is in the pending removal map since this
-    // may be a call that was already on the IO thread task queue when the
-    // Remove() call occurred on the UI thread.
-    itr = pending_remove_state_.find(child_id);
-    if (itr != pending_remove_state_.end())
-      return itr->second.get();
-  }
-
-  return nullptr;
 }
 
 }  // namespace content
