@@ -96,9 +96,9 @@ class WebContentsViewAuraTest : public RenderViewHostTestHarness {
 TEST_F(WebContentsViewAuraTest, EnableDisableOverscroll) {
   WebContentsViewAura* wcva = view();
   wcva->SetOverscrollControllerEnabled(false);
-  EXPECT_FALSE(wcva->navigation_overlay_);
+  EXPECT_FALSE(wcva->gesture_nav_simple_);
   wcva->SetOverscrollControllerEnabled(true);
-  EXPECT_TRUE(wcva->navigation_overlay_);
+  EXPECT_TRUE(wcva->gesture_nav_simple_);
 }
 
 TEST_F(WebContentsViewAuraTest, ShowHideParent) {
