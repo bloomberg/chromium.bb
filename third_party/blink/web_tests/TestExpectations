@@ -5755,6 +5755,7 @@ crbug.com/914441 external/wpt/user-timing/mark-measure-feature-detection.html [ 
 # The below is only supported with network service.
 crbug.com/896924 http/tests/inspector-protocol/network/interception-multiclient.js [ Skip ]
 crbug.com/899303 http/tests/inspector-protocol/fetch/fetch-basic.js [ Timeout ]
+crbug.com/899303 http/tests/inspector-protocol/fetch/fetch-renderer.js [ Timeout ]
 
 # New rebaselines because LayoutNG is more correct
 crbug.com/902591 [ Linux ] svg/zoom/page/zoom-svg-float-border-padding.xml [ Failure ]

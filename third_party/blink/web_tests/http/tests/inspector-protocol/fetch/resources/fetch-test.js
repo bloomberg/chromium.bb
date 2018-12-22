@@ -43,11 +43,11 @@ class FetchHandler {
 };
 
 class FetchHelper {
-  constructor(testRunner, pageProtocol) {
+  constructor(testRunner, targetProtocol, pageProtocol) {
     this._handlers = [];
     this._onceHandlers = [];
     this._testRunner = testRunner;
-    this._protocol = testRunner.browserP();
+    this._protocol = targetProtocol;
     this._pageProtocol = pageProtocol;
     this._protocol.Fetch.onRequestPaused(event => {
       this._logRequest(event);

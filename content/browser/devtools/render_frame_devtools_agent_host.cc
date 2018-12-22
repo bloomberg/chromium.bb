@@ -22,6 +22,7 @@
 #include "content/browser/devtools/protocol/browser_handler.h"
 #include "content/browser/devtools/protocol/dom_handler.h"
 #include "content/browser/devtools/protocol/emulation_handler.h"
+#include "content/browser/devtools/protocol/fetch_handler.h"
 #include "content/browser/devtools/protocol/input_handler.h"
 #include "content/browser/devtools/protocol/inspector_handler.h"
 #include "content/browser/devtools/protocol/io_handler.h"
@@ -288,6 +289,8 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
       frame_tree_node_ ? frame_tree_node_->devtools_frame_token()
                        : base::UnguessableToken(),
       GetIOContext())));
+  session->AddHandler(
+      base::WrapUnique(new protocol::FetchHandler(GetIOContext())));
   session->AddHandler(base::WrapUnique(new protocol::SchemaHandler()));
   session->AddHandler(base::WrapUnique(new protocol::ServiceWorkerHandler()));
   session->AddHandler(base::WrapUnique(new protocol::StorageHandler()));

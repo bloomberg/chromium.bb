@@ -191,36 +191,57 @@ void ApplyNetworkRequestOverrides(FrameTreeNode* frame_tree_node,
   begin_params->headers = headers.ToString();
 }
 
+namespace {
+template <typename HandlerType>
+bool MaybeCreateProxyForInterception(
+    DevToolsAgentHostImpl* agent_host,
+    RenderFrameHostImpl* rfh,
+    bool is_navigation,
+    bool is_download,
+    network::mojom::URLLoaderFactoryRequest* target_factory_request) {
+  if (!agent_host)
+    return false;
+  bool had_interceptors = false;
+  for (auto* handler : HandlerType::ForAgentHost(agent_host)) {
+    had_interceptors =
+        handler->MaybeCreateProxyForInterception(
+            rfh, is_navigation, is_download, target_factory_request) ||
+        had_interceptors;
+  }
+  return had_interceptors;
+}
+
+}  // namespace
 bool WillCreateURLLoaderFactory(
     RenderFrameHostImpl* rfh,
     bool is_navigation,
     bool is_download,
     network::mojom::URLLoaderFactoryRequest* target_factory_request) {
   DCHECK(!is_download || is_navigation);
-  bool had_interceptors = false;
-  // TODO(caseq): assure deterministic order of browser agents (or sessions).
-  for (auto* agent_host : BrowserDevToolsAgentHost::Instances()) {
-    const auto& fetch_handlers =
-        protocol::FetchHandler::ForAgentHost(agent_host);
-    for (auto it = fetch_handlers.rbegin(); it != fetch_handlers.rend(); ++it) {
-      had_interceptors =
-          (*it)->MaybeCreateProxyForInterception(
-              rfh, is_navigation, is_download, target_factory_request) ||
-          had_interceptors;
-    }
-  }
-  DevToolsAgentHostImpl* agent_host =
+
+  // Order of targets and sessions matters -- the latter proxy is created,
+  // the closer it is to the network. So start with frame's NetworkHandler,
+  // then process frame's FetchHandler and then browser's FetchHandler.
+  // Within the target, the agents added earlier are closer to network.
+
+  DevToolsAgentHostImpl* frame_agent_host =
       RenderFrameDevToolsAgentHost::GetFor(rfh->frame_tree_node());
-  if (!agent_host)
-    return had_interceptors;
-  const auto& network_handlers =
-      protocol::NetworkHandler::ForAgentHost(agent_host);
-  for (auto it = network_handlers.rbegin(); it != network_handlers.rend();
-       ++it) {
-    had_interceptors =
-        (*it)->MaybeCreateProxyForInterception(rfh, is_navigation, is_download,
-                                               target_factory_request) ||
-        had_interceptors;
+
+  bool had_interceptors =
+      MaybeCreateProxyForInterception<protocol::NetworkHandler>(
+          frame_agent_host, rfh, is_navigation, is_download,
+          target_factory_request);
+  had_interceptors = MaybeCreateProxyForInterception<protocol::FetchHandler>(
+                         frame_agent_host, rfh, is_navigation, is_download,
+                         target_factory_request) ||
+                     had_interceptors;
+
+  // TODO(caseq): assure deterministic order of browser agents (or sessions).
+  for (auto* browser_agent_host : BrowserDevToolsAgentHost::Instances()) {
+    had_interceptors = MaybeCreateProxyForInterception<protocol::FetchHandler>(
+                           browser_agent_host, rfh, is_navigation, is_download,
+                           target_factory_request) ||
+                       had_interceptors;
   }
   return had_interceptors;
 }
