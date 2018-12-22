@@ -70,6 +70,7 @@ class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {
                 const VideoTrackAdapterSettings& track_adapter_settings,
                 const VideoCaptureDeliverFrameCB& frame_callback,
                 const VideoTrackSettingsCallback& settings_callback,
+                const VideoTrackFormatCallback& format_callback,
                 const ConstraintsCallback& callback);
   void RemoveTrack(MediaStreamVideoTrack* track, base::OnceClosure callback);
 
@@ -272,6 +273,7 @@ class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {
         MediaStreamVideoTrack* track,
         const VideoCaptureDeliverFrameCB& frame_callback,
         const VideoTrackSettingsCallback& settings_callback,
+        const VideoTrackFormatCallback& format_callback,
         std::unique_ptr<VideoTrackAdapterSettings> adapter_settings,
         const ConstraintsCallback& callback);
     PendingTrackInfo(PendingTrackInfo&& other);
@@ -281,6 +283,7 @@ class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {
     MediaStreamVideoTrack* track;
     VideoCaptureDeliverFrameCB frame_callback;
     VideoTrackSettingsCallback settings_callback;
+    VideoTrackFormatCallback format_callback;
     // TODO(guidou): Make |adapter_settings| a regular field instead of a
     // unique_ptr.
     std::unique_ptr<VideoTrackAdapterSettings> adapter_settings;
