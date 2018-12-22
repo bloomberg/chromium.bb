@@ -47,15 +47,6 @@ const double kFrameRateChangeIntervalInSeconds = 1;
 const double kFrameRateChangeRate = 0.01;
 const double kFrameRateUpdateIntervalInSeconds = 5;
 
-struct ComputedSettings {
-  gfx::Size frame_size;
-  double frame_rate = MediaStreamVideoSource::kDefaultFrameRate;
-  double last_updated_frame_rate = MediaStreamVideoSource::kDefaultFrameRate;
-  base::TimeDelta prev_frame_timestamp = base::TimeDelta::Max();
-  base::TimeTicks new_frame_rate_timestamp;
-  base::TimeTicks last_update_timestamp;
-};
-
 // Empty method used for keeping a reference to the original media::VideoFrame
 // in VideoFrameResolutionAdapter::DeliverFrame if cropping is needed.
 // The reference to |frame| is kept in the closure that calls this method.
@@ -64,53 +55,6 @@ void TrackReleaseOriginalFrame(const scoped_refptr<media::VideoFrame>& frame) {}
 int ClampToValidDimension(int dimension) {
   return std::min(static_cast<int>(media::limits::kMaxDimension),
                   std::max(0, dimension));
-}
-
-void ComputeFrameRate(const base::TimeDelta& frame_timestamp,
-                      double* frame_rate,
-                      base::TimeDelta* prev_frame_timestamp) {
-  const double delta_ms =
-      (frame_timestamp - *prev_frame_timestamp).InMillisecondsF();
-  *prev_frame_timestamp = frame_timestamp;
-  if (delta_ms < 0)
-    return;
-
-  *frame_rate = 200 / delta_ms + 0.8 * *frame_rate;
-}
-
-// Controls the frequency of settings updates based on frame rate changes.
-// Returns |true| if over the last second the computed frame rate is
-// consistently kFrameRateChangeRate different than the last reported value,
-// or if there hasn't been any update in the last
-// kFrameRateUpdateIntervalInSeconds seconds.
-bool MaybeUpdateFrameRate(ComputedSettings* settings) {
-  base::TimeTicks now = base::TimeTicks::Now();
-
-  // Update frame rate if over the last second the computed frame rate has been
-  // consistently kFrameRateChangeIntervalInSeconds different than the last
-  // reported value.
-  if (std::abs(settings->frame_rate - settings->last_updated_frame_rate) >
-      settings->last_updated_frame_rate * kFrameRateChangeRate) {
-    if ((now - settings->new_frame_rate_timestamp).InSecondsF() >
-        kFrameRateChangeIntervalInSeconds) {
-      settings->new_frame_rate_timestamp = now;
-      settings->last_update_timestamp = now;
-      settings->last_updated_frame_rate = settings->frame_rate;
-      return true;
-    }
-  } else {
-    settings->new_frame_rate_timestamp = now;
-  }
-
-  // Update frame rate if it hasn't been updated in the last
-  // kFrameRateUpdateIntervalInSeconds seconds.
-  if ((now - settings->last_update_timestamp).InSecondsF() >
-      kFrameRateUpdateIntervalInSeconds) {
-    settings->last_update_timestamp = now;
-    settings->last_updated_frame_rate = settings->frame_rate;
-    return true;
-  }
-  return false;
 }
 
 }  // anonymous namespace
@@ -124,7 +68,6 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
   struct VideoTrackCallbacks {
     VideoCaptureDeliverFrameCB frame_callback;
     VideoTrackSettingsCallback settings_callback;
-    VideoTrackFormatCallback format_callback;
   };
   // Setting |max_frame_rate| to 0.0, means that no frame rate limitation
   // will be done.
@@ -137,8 +80,7 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
   // |frame_callback| will however be released on the main render thread.
   void AddCallbacks(const MediaStreamVideoTrack* track,
                     VideoCaptureDeliverFrameCB frame_callback,
-                    VideoTrackSettingsCallback settings_callback,
-                    VideoTrackFormatCallback format_callback);
+                    VideoTrackSettingsCallback settings_callback);
 
   // Removes the callbacks associated with |track| if |track| has been added. It
   // is ok to call RemoveCallbacks() even if |track| has not been added.
@@ -180,9 +122,14 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
       const VideoTrackSettingsCallback& settings_callback,
       const scoped_refptr<media::VideoFrame>& frame);
 
-  // Updates computed source format for all tracks if either frame width, height
-  // or frame rate have changed since last update.
-  void MaybeUpdateTracksFormat(const scoped_refptr<media::VideoFrame>& frame);
+  void ComputeFrameRate(const base::TimeDelta& frame_timestamp);
+
+  // Controls the frequency of track settings updates based on frame rate
+  // changes. Returns |true| if over the last second the computed frame rate
+  // is consistently kFrameRateChangeRate different than the last reported
+  // value, or if there hasn't been any update in the last
+  // kFrameRateUpdateIntervalInSeconds seconds.
+  bool MaybeUpdateFrameRate();
 
   // Bound to the IO-thread.
   THREAD_CHECKER(io_thread_checker_);
@@ -196,8 +143,12 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
   base::TimeDelta last_time_stamp_;
   double keep_frame_counter_;
 
-  ComputedSettings track_settings_;
-  ComputedSettings source_format_settings_;
+  gfx::Size frame_size_;
+  double computed_frame_rate_;
+  double last_updated_frame_rate_;
+  base::TimeDelta prev_frame_timestamp_;
+  base::TimeTicks new_frame_rate_timestamp_;
+  base::TimeTicks last_update_timestamp_;
 
   base::flat_map<const MediaStreamVideoTrack*, VideoTrackCallbacks> callbacks_;
 
@@ -211,7 +162,10 @@ VideoTrackAdapter::VideoFrameResolutionAdapter::VideoFrameResolutionAdapter(
       settings_(settings),
       frame_rate_(MediaStreamVideoSource::kDefaultFrameRate),
       last_time_stamp_(base::TimeDelta::Max()),
-      keep_frame_counter_(0.0) {
+      keep_frame_counter_(0.0),
+      computed_frame_rate_(MediaStreamVideoSource::kDefaultFrameRate),
+      last_updated_frame_rate_(MediaStreamVideoSource::kDefaultFrameRate),
+      prev_frame_timestamp_(base::TimeDelta::Max()) {
   DCHECK(renderer_task_runner_.get());
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   CHECK_NE(0, settings_.max_aspect_ratio());
@@ -240,12 +194,10 @@ VideoFrameResolutionAdapter::~VideoFrameResolutionAdapter() {
 void VideoTrackAdapter::VideoFrameResolutionAdapter::AddCallbacks(
     const MediaStreamVideoTrack* track,
     VideoCaptureDeliverFrameCB frame_callback,
-    VideoTrackSettingsCallback settings_callback,
-    VideoTrackFormatCallback format_callback) {
+    VideoTrackSettingsCallback settings_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
-  callbacks_.insert({track,
-                     {std::move(frame_callback), std::move(settings_callback),
-                      std::move(format_callback)}});
+  callbacks_.insert(
+      {track, {std::move(frame_callback), std::move(settings_callback)}});
 }
 
 void VideoTrackAdapter::VideoFrameResolutionAdapter::RemoveCallbacks(
@@ -278,10 +230,6 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
     DLOG(ERROR) << "Incoming frame is not valid.";
     return;
   }
-
-  ComputeFrameRate(frame->timestamp(), &source_format_settings_.frame_rate,
-                   &source_format_settings_.prev_frame_timestamp);
-  MaybeUpdateTracksFormat(frame);
 
   double frame_rate;
   if (!frame->metadata()->GetDouble(media::VideoFrameMetadata::FRAME_RATE,
@@ -411,33 +359,62 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeUpdateTrackSettings(
     const VideoTrackSettingsCallback& settings_callback,
     const scoped_refptr<media::VideoFrame>& frame) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
-  ComputeFrameRate(frame->timestamp(), &track_settings_.frame_rate,
-                   &track_settings_.prev_frame_timestamp);
-  if (MaybeUpdateFrameRate(&track_settings_) ||
-      frame->natural_size() != track_settings_.frame_size) {
-    track_settings_.frame_size = frame->natural_size();
-    settings_callback.Run(track_settings_.frame_size,
-                          track_settings_.frame_rate);
+  ComputeFrameRate(frame->timestamp());
+  if (MaybeUpdateFrameRate() || frame->natural_size() != frame_size_) {
+    frame_size_ = frame->natural_size();
+    settings_callback.Run(frame_size_.width(), frame_size_.height(),
+                          computed_frame_rate_);
   }
 }
-void VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeUpdateTracksFormat(
-    const scoped_refptr<media::VideoFrame>& frame) {
+
+void VideoTrackAdapter::VideoFrameResolutionAdapter::ComputeFrameRate(
+    const base::TimeDelta& frame_timestamp) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
-  if (MaybeUpdateFrameRate(&source_format_settings_) ||
-      frame->natural_size() != track_settings_.frame_size) {
-    source_format_settings_.frame_size = frame->natural_size();
-    media::VideoCaptureFormat source_format;
-    source_format.frame_size = source_format_settings_.frame_size;
-    source_format.frame_rate = source_format_settings_.frame_rate;
-    for (const auto& callback : callbacks_)
-      callback.second.format_callback.Run(source_format);
+  const double delta_ms =
+      (frame_timestamp - prev_frame_timestamp_).InMillisecondsF();
+  prev_frame_timestamp_ = frame_timestamp;
+  if (delta_ms < 0)
+    return;
+
+  computed_frame_rate_ = 200 / delta_ms + 0.8 * computed_frame_rate_;
+}
+
+bool VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeUpdateFrameRate() {
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
+  base::TimeTicks now = base::TimeTicks::Now();
+
+  // Update frame rate if over the last second the computed frame rate has been
+  // consistently kFrameRateChangeIntervalInSeconds different than the last
+  // reported value.
+  if (std::abs(computed_frame_rate_ - last_updated_frame_rate_) >
+      last_updated_frame_rate_ * kFrameRateChangeRate) {
+    if ((now - new_frame_rate_timestamp_).InSecondsF() >
+        kFrameRateChangeIntervalInSeconds) {
+      new_frame_rate_timestamp_ = now;
+      last_update_timestamp_ = now;
+      last_updated_frame_rate_ = computed_frame_rate_;
+      return true;
+    }
+  } else {
+    new_frame_rate_timestamp_ = now;
   }
+
+  // Update frame rate if it hasn't been updated in the last
+  // kFrameRateUpdateIntervalInSeconds seconds.
+  if ((now - last_update_timestamp_).InSecondsF() >
+      kFrameRateUpdateIntervalInSeconds) {
+    last_update_timestamp_ = now;
+    last_updated_frame_rate_ = computed_frame_rate_;
+    return true;
+  }
+  return false;
 }
 
 void VideoTrackAdapter::VideoFrameResolutionAdapter::ResetFrameRate() {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   for (const auto& callback : callbacks_) {
-    callback.second.settings_callback.Run(track_settings_.frame_size, 0.0);
+    callback.second.settings_callback.Run(frame_size_.width(),
+                                          frame_size_.height(), 0.0);
   }
 }
 
@@ -502,22 +479,19 @@ VideoTrackAdapter::~VideoTrackAdapter() {
 void VideoTrackAdapter::AddTrack(const MediaStreamVideoTrack* track,
                                  VideoCaptureDeliverFrameCB frame_callback,
                                  VideoTrackSettingsCallback settings_callback,
-                                 VideoTrackFormatCallback format_callback,
                                  const VideoTrackAdapterSettings& settings) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   io_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VideoTrackAdapter::AddTrackOnIO, this, track,
-                     std::move(frame_callback), std::move(settings_callback),
-                     std::move(format_callback), settings));
+      FROM_HERE, base::BindOnce(&VideoTrackAdapter::AddTrackOnIO, this, track,
+                                std::move(frame_callback),
+                                std::move(settings_callback), settings));
 }
 
 void VideoTrackAdapter::AddTrackOnIO(
     const MediaStreamVideoTrack* track,
     VideoCaptureDeliverFrameCB frame_callback,
     VideoTrackSettingsCallback settings_callback,
-    VideoTrackFormatCallback format_callback,
     const VideoTrackAdapterSettings& settings) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   scoped_refptr<VideoFrameResolutionAdapter> adapter;
@@ -533,8 +507,7 @@ void VideoTrackAdapter::AddTrackOnIO(
   }
 
   adapter->AddCallbacks(track, std::move(frame_callback),
-                        std::move(settings_callback),
-                        std::move(format_callback));
+                        std::move(settings_callback));
 }
 
 void VideoTrackAdapter::RemoveTrack(const MediaStreamVideoTrack* track) {
@@ -707,8 +680,7 @@ void VideoTrackAdapter::ReconfigureTrackOnIO(
   // If the track was found, re-add it with new settings.
   if (!track_callbacks.frame_callback.is_null())
     AddTrackOnIO(track, std::move(track_callbacks.frame_callback),
-                 std::move(track_callbacks.settings_callback),
-                 std::move(track_callbacks.format_callback), settings);
+                 std::move(track_callbacks.settings_callback), settings);
 }
 
 void VideoTrackAdapter::DeliverFrameOnIO(

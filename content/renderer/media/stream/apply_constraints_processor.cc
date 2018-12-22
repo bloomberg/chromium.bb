@@ -110,8 +110,13 @@ void ApplyConstraintsProcessor::ProcessVideoRequest() {
   const MediaStreamDevice& device_info = video_source_->device();
   if (device_info.type == MEDIA_DEVICE_VIDEO_CAPTURE) {
     ProcessVideoDeviceRequest();
-  } else {
+  } else if (video_source_->GetCurrentFormat()) {
+    // Non-device capture just requires adjusting track settings.
     FinalizeVideoRequest();
+  } else {
+    // It is impossible to enforce minimum constraints for sources that do not
+    // provide the video format, so reject applyConstraints() in this case.
+    CannotApplyConstraints("applyConstraints not supported for this track");
   }
 }
 
@@ -217,14 +222,9 @@ void ApplyConstraintsProcessor::FinalizeVideoRequest() {
   if (AbortIfVideoRequestStateInvalid())
     return;
 
-  media::VideoCaptureFormat format;
-  if (video_source_->GetCurrentFormat()) {
-    format = *video_source_->GetCurrentFormat();
-  } else {
-    format = GetCurrentVideoTrack()->GetComputedSourceFormat();
-  }
-  VideoCaptureSettings settings = SelectVideoSettings({format});
-
+  DCHECK(video_source_->GetCurrentFormat());
+  VideoCaptureSettings settings =
+      SelectVideoSettings({*video_source_->GetCurrentFormat()});
   if (settings.HasValue()) {
     video_source_->ReconfigureTrack(GetCurrentVideoTrack(),
                                     settings.track_adapter_settings());
@@ -254,6 +254,7 @@ VideoCaptureSettings ApplyConstraintsProcessor::SelectVideoSettings(
                               : media::MEDIA_VIDEO_FACING_NONE;
   device_capabilities->formats = std::move(formats);
 
+  DCHECK(video_source_->GetCurrentCaptureParams());
   VideoDeviceCaptureCapabilities video_capabilities;
   video_capabilities.noise_reduction_capabilities.push_back(
       GetCurrentVideoTrack()->noise_reduction());
