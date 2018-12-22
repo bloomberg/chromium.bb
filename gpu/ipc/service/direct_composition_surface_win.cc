@@ -1026,8 +1026,28 @@ bool DCLayerTree::SwapChainPresenter::PresentToDecodeSwapChain(
   RECT target_rect = gfx::Rect(swap_chain_size).ToRECT();
   decode_swap_chain_->SetTargetRect(&target_rect);
 
-  // TODO(sunnyps): Set color space on swap chain.  Setting Rec 709 color space
-  // on the swap chain seems to produce incorrect colors.
+  gfx::ColorSpace color_space = image_dxgi->color_space();
+  if (!color_space.IsValid())
+    color_space = gfx::ColorSpace::CreateREC709();
+
+  // TODO(sunnyps): Move this to gfx::ColorSpaceWin helper where we can access
+  // internal color space state and do a better job.
+  // Common color spaces have primaries and transfer function similar to BT 709
+  // and there are no other choices anyway.
+  int flags = DXGI_MULTIPLANE_OVERLAY_YCbCr_FLAG_BT709;
+  // Proper Rec 709 and 601 have limited or nominal color range.
+  if (color_space == gfx::ColorSpace::CreateREC709() ||
+      color_space == gfx::ColorSpace::CreateREC601()) {
+    flags |= DXGI_MULTIPLANE_OVERLAY_YCbCr_FLAG_NOMINAL_RANGE;
+  }
+  // xvYCC allows colors outside nominal range to encode negative colors that
+  // allows for a wider gamut.
+  if (color_space.FullRangeEncodedValues()) {
+    flags |= DXGI_MULTIPLANE_OVERLAY_YCbCr_FLAG_xvYCC;
+  }
+  decode_swap_chain_->SetColorSpace(
+      static_cast<DXGI_MULTIPLANE_OVERLAY_YCbCr_FLAGS>(flags));
+
   HRESULT hr = decode_swap_chain_->PresentBuffer(image_dxgi->level(), 1, 0);
   base::UmaHistogramSparse("GPU.DirectComposition.DecodeSwapChainPresentResult",
                            hr);
