@@ -90,7 +90,7 @@ public class ArCoreJavaUtils {
     private static String getArCoreShimLibraryPath() {
         try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
             return ((BaseDexClassLoader) ContextUtils.getApplicationContext().getClassLoader())
-                    .findLibrary("arcore_sdk_c");
+                    .findLibrary("arcore_sdk_c_minimal");
         }
     }
 
@@ -203,7 +203,6 @@ public class ArCoreJavaUtils {
                 break;
         }
 
-        // TODO(https://crbug.com/916651) - use ARCore SDK's InstallActivity to install ARCore
         SimpleConfirmInfoBarBuilder.Listener listener = new SimpleConfirmInfoBarBuilder.Listener() {
             @Override
             public void onInfoBarDismissed() {
@@ -229,7 +228,7 @@ public class ArCoreJavaUtils {
     private boolean shouldRequestInstallArModule() {
         try {
             // Try to find class in AR module that has not been obfuscated.
-            Class.forName("com.google.ar.core.ArCoreApk");
+            Class.forName("com.google.vr.dynamite.client.UsedByNative");
             return false;
         } catch (ClassNotFoundException e) {
             return true;
