@@ -871,9 +871,9 @@ var availableTests = [
     // Connecting to wifi2 should set wifi1 to offline. Connected or Connecting
     // networks should be listed first, sorted by type.
     var expected = ['stub_ethernet_guid',
-                    'stub_wifi2_guid',
                     'stub_wimax_guid',
                     'stub_vpn1_guid',
+                    'stub_wifi2_guid',
                     'stub_wifi1_guid',
                     'stub_vpn2_guid'];
     var done = chrome.test.callbackAdded();
