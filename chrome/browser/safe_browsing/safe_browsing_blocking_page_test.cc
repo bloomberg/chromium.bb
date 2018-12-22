@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -52,6 +53,7 @@
 #include "components/safe_browsing/renderer/threat_dom_details.h"
 #include "components/safe_browsing/web_ui/constants.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_interstitials/core/urls.h"
@@ -100,6 +102,10 @@ const char kPageWithCrossOriginMaliciousIframe[] =
 const char kCrossOriginMaliciousIframeHost[] = "malware.test";
 const char kMaliciousIframe[] = "/safe_browsing/malware_iframe.html";
 const char kUnrelatedUrl[] = "https://www.google.com";
+
+bool AreCommittedMainFrameInterstitialsEnabled() {
+  return base::FeatureList::IsEnabled(kCommittedSBInterstitials);
+}
 
 // A SafeBrowsingDatabaseManager class that allows us to inject the malicious
 // URLs.
@@ -548,12 +554,19 @@ class SafeBrowsingBlockingPageBrowserTest
     ASSERT_FALSE(contents->ShowingInterstitialPage());
   }
 
-  bool YesInterstitial() {
+  bool IsShowingInterstitial() {
     WebContents* contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    InterstitialPage* interstitial_page = InterstitialPage::GetInterstitialPage(
-        contents);
-    return interstitial_page != NULL;
+    if (AreCommittedMainFrameInterstitialsEnabled()) {
+      security_interstitials::SecurityInterstitialTabHelper* helper =
+          security_interstitials::SecurityInterstitialTabHelper::
+              FromWebContents(contents);
+      return helper &&
+             (helper
+                  ->GetBlockingPageForCurrentlyCommittedNavigationForTesting() !=
+              nullptr);
+    }
+    return InterstitialPage::GetInterstitialPage(contents) != nullptr;
   }
 
   void SetReportSentCallback(const base::Closure& callback) {
@@ -607,6 +620,11 @@ class SafeBrowsingBlockingPageBrowserTest
 
   bool WaitForReady(Browser* browser) {
     WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();
+    if (AreCommittedMainFrameInterstitialsEnabled()) {
+      if (!content::WaitForRenderFrameReady(contents->GetMainFrame()))
+        return false;
+      return IsShowingInterstitial();
+    }
     content::WaitForInterstitialAttach(contents);
     InterstitialPage* interstitial = contents->GetInterstitialPage();
     if (!interstitial)
@@ -840,7 +858,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, RedirectCanceled) {
   MalwareRedirectCancelAndProceed("openWin");
   // Clicking proceed won't do anything if the main request is cancelled
   // already.  See crbug.com/76460.
-  EXPECT_TRUE(YesInterstitial());
+  EXPECT_TRUE(IsShowingInterstitial());
 }
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, HardcodedUrls) {
@@ -917,7 +935,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, VisitWhitePaper) {
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
   EXPECT_EQ(interstitial_tab,
             browser()->tab_strip_model()->GetActiveWebContents());
-  EXPECT_TRUE(YesInterstitial());
+  EXPECT_TRUE(IsShowingInterstitial());
 }
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, Proceed) {
@@ -1272,7 +1290,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, LearnMore) {
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
   EXPECT_EQ(interstitial_tab,
             browser()->tab_strip_model()->GetActiveWebContents());
-  EXPECT_TRUE(YesInterstitial());
+  EXPECT_TRUE(IsShowingInterstitial());
 }
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
@@ -1705,7 +1723,23 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   base::RunLoop().RunUntilIdle();
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(content::WaitForRenderFrameReady(contents->GetMainFrame()));
-  EXPECT_FALSE(YesInterstitial());
+  EXPECT_FALSE(IsShowingInterstitial());
+}
+
+// TODO(crbug.com/916683): Once interstitial bindings are hooked with committed
+// interstitials, all other tests should run with committed interstitials
+// enabled. At that point this test will become redundant and should be removed.
+// Test that an main frame interstitial is displayed with committed
+// interstitials enabled.
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
+                       CommittedInterstitialShows) {
+  base::test::ScopedFeatureList feature_list;
+  std::vector<base::Feature> enable;
+  enable.push_back(kCommittedSBInterstitials);
+  enable.push_back(kCheckByURLLoaderThrottle);
+  feature_list.InitWithFeatures(enable, std::vector<base::Feature>());
+  SetupWarningAndNavigate(browser());
+  EXPECT_TRUE(IsShowingInterstitial());
 }
 
 INSTANTIATE_TEST_CASE_P(
