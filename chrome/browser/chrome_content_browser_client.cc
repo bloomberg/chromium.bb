@@ -105,6 +105,7 @@
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
+#include "chrome/browser/safe_browsing/safe_browsing_navigation_throttle.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/safe_browsing/url_checker_delegate_impl.h"
@@ -4238,6 +4239,11 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       PreviewsLitePageDecider::MaybeCreateThrottleFor(handle);
   if (previews_lite_page_throttle)
     throttles.push_back(std::move(previews_lite_page_throttle));
+  if (base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials)) {
+    throttles.push_back(
+        std::make_unique<safe_browsing::SafeBrowsingNavigationThrottle>(
+            handle));
+  }
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))

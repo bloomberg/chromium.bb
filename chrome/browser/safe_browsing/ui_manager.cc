@@ -152,6 +152,26 @@ void SafeBrowsingUIManager::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void SafeBrowsingUIManager::AddUnsafeResource(
+    GURL url,
+    security_interstitials::UnsafeResource resource) {
+  unsafe_resources_.push_back(std::make_pair(url, resource));
+}
+
+bool SafeBrowsingUIManager::PopUnsafeResourceForURL(
+    GURL url,
+    security_interstitials::UnsafeResource* resource) {
+  for (auto it = unsafe_resources_.begin(); it != unsafe_resources_.end();
+       it++) {
+    if (it->first == url) {
+      *resource = it->second;
+      unsafe_resources_.erase(it);
+      return true;
+    }
+  }
+  return false;
+}
+
 const std::string SafeBrowsingUIManager::app_locale() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return g_browser_process->GetApplicationLocale();
