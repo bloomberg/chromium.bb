@@ -92,7 +92,6 @@ ParsedFeaturePolicy HTMLFrameElement::ConstructContainerPolicy(
   ParsedFeaturePolicyDeclaration allowlist;
   allowlist.feature = mojom::FeaturePolicyFeature::kFullscreen;
   allowlist.matches_all_origins = false;
-  allowlist.disposition = mojom::FeaturePolicyDisposition::kEnforce;
   container_policy.push_back(allowlist);
   return container_policy;
 }

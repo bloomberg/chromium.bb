@@ -140,6 +140,10 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   void InitializeFeaturePolicy(const ParsedFeaturePolicy& parsed_header,
                                const ParsedFeaturePolicy& container_policy,
                                const FeaturePolicy* parent_feature_policy);
+  void AddReportOnlyFeaturePolicy(
+      const ParsedFeaturePolicy& parsed_report_only_header,
+      const ParsedFeaturePolicy& container_policy,
+      const FeaturePolicy* parent_feature_policy);
 
   // Tests whether the policy-controlled feature is enabled in this frame.
   // Optionally sends a report to any registered reporting observers or

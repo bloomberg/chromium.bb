@@ -34,12 +34,10 @@ ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration(
     mojom::FeaturePolicyFeature feature,
     bool matches_all_origins,
     bool matches_opaque_src,
-    mojom::FeaturePolicyDisposition disposition,
     std::vector<url::Origin> origins)
     : feature(feature),
       matches_all_origins(matches_all_origins),
       matches_opaque_src(matches_opaque_src),
-      disposition(disposition),
       origins(std::move(origins)) {}
 
 ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration(
@@ -54,23 +52,9 @@ bool operator==(const ParsedFeaturePolicyDeclaration& lhs,
                 const ParsedFeaturePolicyDeclaration& rhs) {
   if (lhs.feature != rhs.feature)
     return false;
-  if (lhs.disposition != rhs.disposition)
-    return false;
   if (lhs.matches_all_origins != rhs.matches_all_origins)
     return false;
   return lhs.matches_all_origins || (lhs.origins == rhs.origins);
-}
-
-std::unique_ptr<ParsedFeaturePolicy> DirectivesWithDisposition(
-    mojom::FeaturePolicyDisposition disposition,
-    const ParsedFeaturePolicy& policy) {
-  std::unique_ptr<ParsedFeaturePolicy> filtered_policy =
-      std::make_unique<ParsedFeaturePolicy>();
-  for (const auto& directive : policy) {
-    if (directive.disposition == disposition)
-      filtered_policy->push_back(directive);
-  }
-  return filtered_policy;
 }
 
 FeaturePolicy::Allowlist::Allowlist() : matches_all_origins_(false) {}

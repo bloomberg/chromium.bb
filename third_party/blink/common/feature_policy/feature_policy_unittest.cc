@@ -146,7 +146,6 @@ TEST_F(FeaturePolicyTest, TestCrossOriginChildCannotEnableFeature) {
   policy2->SetHeaderPolicy({{{kDefaultSelfFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_b_}}}});
   EXPECT_FALSE(policy2->IsFeatureEnabled(kDefaultSelfFeature));
 }
@@ -172,7 +171,6 @@ TEST_F(FeaturePolicyTest, TestFrameSelfInheritance) {
   policy1->SetHeaderPolicy({{{kDefaultSelfFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_a_}}}});
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentPolicy(policy1.get(), origin_a_);
@@ -208,7 +206,6 @@ TEST_F(FeaturePolicyTest, TestReflexiveFrameSelfInheritance) {
   policy1->SetHeaderPolicy({{{kDefaultSelfFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_a_}}}});
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentPolicy(policy1.get(), origin_b_);
@@ -239,7 +236,6 @@ TEST_F(FeaturePolicyTest, TestSelectiveFrameInheritance) {
   policy1->SetHeaderPolicy({{{kDefaultSelfFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_b_}}}});
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentPolicy(policy1.get(), origin_b_);
@@ -261,7 +257,6 @@ TEST_F(FeaturePolicyTest, TestPolicyCanBlockSelf) {
   std::unique_ptr<FeaturePolicy> policy1 =
       CreateFromParentPolicy(nullptr, origin_a_);
   policy1->SetHeaderPolicy({{{kDefaultOnFeature, false, false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               std::vector<url::Origin>()}}});
   EXPECT_FALSE(policy1->IsFeatureEnabled(kDefaultOnFeature));
 }
@@ -279,7 +274,6 @@ TEST_F(FeaturePolicyTest, TestParentPolicyBlocksSameOriginChildPolicy) {
   std::unique_ptr<FeaturePolicy> policy1 =
       CreateFromParentPolicy(nullptr, origin_a_);
   policy1->SetHeaderPolicy({{{kDefaultOnFeature, false, false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               std::vector<url::Origin>()}}});
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentPolicy(policy1.get(), origin_a_);
@@ -301,7 +295,6 @@ TEST_F(FeaturePolicyTest, TestChildPolicyCanBlockSelf) {
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentPolicy(policy1.get(), origin_b_);
   policy2->SetHeaderPolicy({{{kDefaultOnFeature, false, false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               std::vector<url::Origin>()}}});
   EXPECT_FALSE(policy2->IsFeatureEnabled(kDefaultOnFeature));
 }
@@ -328,7 +321,6 @@ TEST_F(FeaturePolicyTest, TestChildPolicyCanBlockChildren) {
   policy2->SetHeaderPolicy({{{kDefaultOnFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_b_}}}});
   std::unique_ptr<FeaturePolicy> policy3 =
       CreateFromParentPolicy(policy2.get(), origin_c_);
@@ -349,7 +341,6 @@ TEST_F(FeaturePolicyTest, TestParentPolicyBlocksCrossOriginChildPolicy) {
   std::unique_ptr<FeaturePolicy> policy1 =
       CreateFromParentPolicy(nullptr, origin_a_);
   policy1->SetHeaderPolicy({{{kDefaultOnFeature, false, false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               std::vector<url::Origin>()}}});
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentPolicy(policy1.get(), origin_b_);
@@ -373,7 +364,6 @@ TEST_F(FeaturePolicyTest, TestEnableForAllOrigins) {
   std::unique_ptr<FeaturePolicy> policy1 =
       CreateFromParentPolicy(nullptr, origin_a_);
   policy1->SetHeaderPolicy({{{kDefaultSelfFeature, true, false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               std::vector<url::Origin>()}}});
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentPolicy(policy1.get(), origin_b_);
@@ -403,7 +393,6 @@ TEST_F(FeaturePolicyTest, TestDefaultOnEnablesForAllAncestors) {
   policy1->SetHeaderPolicy({{{kDefaultOnFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_b_}}}});
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentPolicy(policy1.get(), origin_b_);
@@ -436,7 +425,6 @@ TEST_F(FeaturePolicyTest, TestDefaultSelfRespectsSameOriginEmbedding) {
   policy1->SetHeaderPolicy({{{kDefaultSelfFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_b_}}}});
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentPolicy(policy1.get(), origin_b_);
@@ -469,14 +457,12 @@ TEST_F(FeaturePolicyTest, TestDefaultOffMustBeDelegatedToAllCrossOriginFrames) {
   policy1->SetHeaderPolicy({{{kDefaultOffFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_b_}}}});
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentPolicy(policy1.get(), origin_b_);
   policy2->SetHeaderPolicy({{{kDefaultOffFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_b_}}}});
   std::unique_ptr<FeaturePolicy> policy3 =
       CreateFromParentPolicy(policy2.get(), origin_b_);
@@ -485,7 +471,6 @@ TEST_F(FeaturePolicyTest, TestDefaultOffMustBeDelegatedToAllCrossOriginFrames) {
   policy4->SetHeaderPolicy({{{kDefaultOffFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_c_}}}});
   EXPECT_FALSE(policy1->IsFeatureEnabled(kDefaultOffFeature));
   EXPECT_TRUE(policy2->IsFeatureEnabled(kDefaultOffFeature));
@@ -510,12 +495,10 @@ TEST_F(FeaturePolicyTest, TestReenableForAllOrigins) {
   std::unique_ptr<FeaturePolicy> policy1 =
       CreateFromParentPolicy(nullptr, origin_a_);
   policy1->SetHeaderPolicy({{{kDefaultSelfFeature, true, false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               std::vector<url::Origin>()}}});
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentPolicy(policy1.get(), origin_b_);
   policy2->SetHeaderPolicy({{{kDefaultSelfFeature, true, false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               std::vector<url::Origin>()}}});
   std::unique_ptr<FeaturePolicy> policy3 =
       CreateFromParentPolicy(policy2.get(), origin_a_);
@@ -543,12 +526,10 @@ TEST_F(FeaturePolicyTest, TestBlockedFrameCannotReenable) {
   policy1->SetHeaderPolicy({{{kDefaultSelfFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_a_}}}});
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentPolicy(policy1.get(), origin_b_);
   policy2->SetHeaderPolicy({{{kDefaultSelfFeature, true, false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               std::vector<url::Origin>()}}});
   std::unique_ptr<FeaturePolicy> policy3 =
       CreateFromParentPolicy(policy2.get(), origin_a_);
@@ -579,14 +560,12 @@ TEST_F(FeaturePolicyTest, TestEnabledFrameCanDelegate) {
   policy1->SetHeaderPolicy({{{kDefaultSelfFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_a_, origin_b_}}}});
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentPolicy(policy1.get(), origin_b_);
   policy2->SetHeaderPolicy({{{kDefaultSelfFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_b_, origin_c_}}}});
   std::unique_ptr<FeaturePolicy> policy3 =
       CreateFromParentPolicy(policy2.get(), origin_c_);
@@ -614,7 +593,6 @@ TEST_F(FeaturePolicyTest, TestEnabledFrameCanDelegateByDefault) {
   policy1->SetHeaderPolicy({{{kDefaultOnFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_a_, origin_b_}}}});
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentPolicy(policy1.get(), origin_b_);
@@ -648,7 +626,6 @@ TEST_F(FeaturePolicyTest, TestNonNestedFeaturesDontDelegateByDefault) {
   policy1->SetHeaderPolicy({{{kDefaultSelfFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_a_, origin_b_}}}});
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentPolicy(policy1.get(), origin_b_);
@@ -684,21 +661,16 @@ TEST_F(FeaturePolicyTest, TestFeaturesAreIndependent) {
   policy1->SetHeaderPolicy({{{kDefaultSelfFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_a_, origin_b_}},
                              {kDefaultOnFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_a_}}}});
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentPolicy(policy1.get(), origin_b_);
   policy2->SetHeaderPolicy(
-      {{{kDefaultSelfFeature, true, false,
-         mojom::FeaturePolicyDisposition::kEnforce, std::vector<url::Origin>()},
-        {kDefaultOnFeature, true, false,
-         mojom::FeaturePolicyDisposition::kEnforce,
-         std::vector<url::Origin>()}}});
+      {{{kDefaultSelfFeature, true, false, std::vector<url::Origin>()},
+        {kDefaultOnFeature, true, false, std::vector<url::Origin>()}}});
   std::unique_ptr<FeaturePolicy> policy3 =
       CreateFromParentPolicy(policy2.get(), origin_c_);
   EXPECT_TRUE(policy1->IsFeatureEnabled(kDefaultSelfFeature));
@@ -721,7 +693,6 @@ TEST_F(FeaturePolicyTest, TestFeatureEnabledForOrigin) {
   policy1->SetHeaderPolicy({{{kDefaultOffFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_a_, origin_b_}}}});
   EXPECT_TRUE(
       policy1->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_a_));
@@ -754,7 +725,6 @@ TEST_F(FeaturePolicyTest, TestSimpleFramePolicy) {
       {{kDefaultSelfFeature,
         false,
         false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         {origin_b_}}}};
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy, origin_b_);
@@ -791,7 +761,6 @@ TEST_F(FeaturePolicyTest, TestAllOriginFramePolicy) {
       CreateFromParentPolicy(nullptr, origin_a_);
   ParsedFeaturePolicy frame_policy = {
       {{kDefaultSelfFeature, true, false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy, origin_b_);
@@ -841,7 +810,6 @@ TEST_F(FeaturePolicyTest, TestFramePolicyCanBeFurtherDelegated) {
       {{kDefaultSelfFeature,
         false,
         false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         {origin_b_}}}};
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy1, origin_b_);
@@ -849,7 +817,6 @@ TEST_F(FeaturePolicyTest, TestFramePolicyCanBeFurtherDelegated) {
       {{kDefaultSelfFeature,
         false,
         false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         {origin_c_}}}};
   std::unique_ptr<FeaturePolicy> policy3 =
       CreateFromParentWithFramePolicy(policy2.get(), frame_policy2, origin_c_);
@@ -892,13 +859,11 @@ TEST_F(FeaturePolicyTest, TestDefaultOnCanBeDisabledByFramePolicy) {
       CreateFromParentPolicy(nullptr, origin_a_);
   ParsedFeaturePolicy frame_policy1 = {
       {{kDefaultOnFeature, false, false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy1, origin_a_);
   ParsedFeaturePolicy frame_policy2 = {
       {{kDefaultOnFeature, false, false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy3 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy2, origin_b_);
@@ -943,13 +908,11 @@ TEST_F(FeaturePolicyTest, TestDefaultOffMustBeEnabledByChildFrame) {
   policy1->SetHeaderPolicy({{{kDefaultOffFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_a_}}}});
   ParsedFeaturePolicy frame_policy1 = {
       {{kDefaultOffFeature,
         false,
         false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         {origin_a_}}}};
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy1, origin_a_);
@@ -957,7 +920,6 @@ TEST_F(FeaturePolicyTest, TestDefaultOffMustBeEnabledByChildFrame) {
       {{kDefaultOffFeature,
         false,
         false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         {origin_b_}}}};
   std::unique_ptr<FeaturePolicy> policy3 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy2, origin_b_);
@@ -1006,33 +968,28 @@ TEST_F(FeaturePolicyTest, TestDefaultOffCanBeEnabledByChildFrame) {
   policy1->SetHeaderPolicy({{{kDefaultOffFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_a_}}}});
   ParsedFeaturePolicy frame_policy1 = {
       {{kDefaultOffFeature,
         false,
         false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         {origin_a_}}}};
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy1, origin_a_);
   policy2->SetHeaderPolicy({{{kDefaultOffFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_a_}}}});
   ParsedFeaturePolicy frame_policy2 = {
       {{kDefaultOffFeature,
         false,
         false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         {origin_b_}}}};
   std::unique_ptr<FeaturePolicy> policy3 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy2, origin_b_);
   policy3->SetHeaderPolicy({{{kDefaultOffFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_b_}}}});
   EXPECT_TRUE(
       policy1->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_a_));
@@ -1080,24 +1037,20 @@ TEST_F(FeaturePolicyTest, TestFramePolicyModifiesHeaderPolicy) {
   policy1->SetHeaderPolicy({{{kDefaultSelfFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_a_, origin_b_}}}});
   ParsedFeaturePolicy frame_policy1 = {
       {{kDefaultSelfFeature, false, false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy1, origin_b_);
   ParsedFeaturePolicy frame_policy2 = {
       {{kDefaultSelfFeature, false, false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy3 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy2, origin_b_);
   policy3->SetHeaderPolicy({{{kDefaultSelfFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_b_}}}});
   EXPECT_FALSE(
       policy2->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_b_));
@@ -1136,16 +1089,13 @@ TEST_F(FeaturePolicyTest, TestCombineFrameAndHeaderPolicies) {
       {{kDefaultSelfFeature,
         false,
         false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         {origin_b_}}}};
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy1, origin_b_);
   policy2->SetHeaderPolicy({{{kDefaultSelfFeature, true, false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               std::vector<url::Origin>()}}});
   ParsedFeaturePolicy frame_policy2 = {
       {{kDefaultSelfFeature, false, false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy3 =
       CreateFromParentWithFramePolicy(policy2.get(), frame_policy2, origin_c_);
@@ -1182,19 +1132,16 @@ TEST_F(FeaturePolicyTest, TestFeatureDeclinedAtTopLevel) {
   std::unique_ptr<FeaturePolicy> policy1 =
       CreateFromParentPolicy(nullptr, origin_a_);
   policy1->SetHeaderPolicy({{{kDefaultSelfFeature, false, false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               std::vector<url::Origin>()}}});
   ParsedFeaturePolicy frame_policy1 = {
       {{kDefaultSelfFeature,
         false,
         false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         {origin_b_}}}};
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy1, origin_b_);
   ParsedFeaturePolicy frame_policy2 = {
       {{kDefaultSelfFeature, true, false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy3 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy2, origin_a_);
@@ -1236,13 +1183,11 @@ TEST_F(FeaturePolicyTest, TestFeatureDelegatedAndAllowed) {
   policy1->SetHeaderPolicy({{{kDefaultSelfFeature,
                               false,
                               false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               {origin_b_}}}});
   ParsedFeaturePolicy frame_policy1 = {
       {{kDefaultSelfFeature,
         false,
         false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         {origin_a_}}}};
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy1, origin_b_);
@@ -1250,13 +1195,11 @@ TEST_F(FeaturePolicyTest, TestFeatureDelegatedAndAllowed) {
       {{kDefaultSelfFeature,
         false,
         false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         {origin_b_}}}};
   std::unique_ptr<FeaturePolicy> policy3 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy2, origin_b_);
   ParsedFeaturePolicy frame_policy3 = {
       {{kDefaultSelfFeature, true, false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy4 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy3, origin_b_);
@@ -1324,7 +1267,6 @@ TEST_F(FeaturePolicyTest, TestSandboxedFramePolicyForAllOrigins) {
   url::Origin sandboxed_origin = url::Origin();
   ParsedFeaturePolicy frame_policy = {
       {{kDefaultSelfFeature, true, false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy2 = CreateFromParentWithFramePolicy(
       policy1.get(), frame_policy, sandboxed_origin);
@@ -1357,7 +1299,6 @@ TEST_F(FeaturePolicyTest, TestSandboxedFramePolicyForOpaqueSrcOrigin) {
   url::Origin sandboxed_origin = url::Origin();
   ParsedFeaturePolicy frame_policy = {
       {{kDefaultSelfFeature, false, true,
-        mojom::FeaturePolicyDisposition::kEnforce,
         std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy2 = CreateFromParentWithFramePolicy(
       policy1.get(), frame_policy, sandboxed_origin);
@@ -1387,12 +1328,10 @@ TEST_F(FeaturePolicyTest, TestSandboxedFrameFromHeaderPolicy) {
   std::unique_ptr<FeaturePolicy> policy1 =
       CreateFromParentPolicy(nullptr, origin_a_);
   policy1->SetHeaderPolicy({{{kDefaultSelfFeature, true, false,
-                              mojom::FeaturePolicyDisposition::kEnforce,
                               std::vector<url::Origin>()}}});
   url::Origin sandboxed_origin = url::Origin();
   ParsedFeaturePolicy frame_policy = {
       {{kDefaultSelfFeature, false, true,
-        mojom::FeaturePolicyDisposition::kEnforce,
         std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy2 = CreateFromParentWithFramePolicy(
       policy1.get(), frame_policy, sandboxed_origin);
@@ -1427,7 +1366,6 @@ TEST_F(FeaturePolicyTest, TestSandboxedPolicyIsNotInherited) {
   url::Origin sandboxed_origin_2 = url::Origin();
   ParsedFeaturePolicy frame_policy = {
       {{kDefaultSelfFeature, true, false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy2 = CreateFromParentWithFramePolicy(
       policy1.get(), frame_policy, sandboxed_origin_1);
@@ -1473,13 +1411,11 @@ TEST_F(FeaturePolicyTest, TestSandboxedPolicyCanBePropagated) {
   url::Origin sandboxed_origin_2 = sandboxed_origin_1.DeriveNewOpaqueOrigin();
   ParsedFeaturePolicy frame_policy_1 = {
       {{kDefaultSelfFeature, true, false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy2 = CreateFromParentWithFramePolicy(
       policy1.get(), frame_policy_1, sandboxed_origin_1);
   ParsedFeaturePolicy frame_policy_2 = {
       {{kDefaultSelfFeature, true, false,
-        mojom::FeaturePolicyDisposition::kEnforce,
         std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy3 = CreateFromParentWithFramePolicy(
       policy2.get(), frame_policy_2, sandboxed_origin_2);
@@ -1512,10 +1448,8 @@ TEST_F(FeaturePolicyTest, TestUndefinedFeaturesInFramePolicy) {
       CreateFromParentPolicy(nullptr, origin_a_);
   ParsedFeaturePolicy frame_policy = {
       {{mojom::FeaturePolicyFeature::kNotFound, false, true,
-        mojom::FeaturePolicyDisposition::kEnforce, std::vector<url::Origin>()},
-       {kUnavailableFeature, false, true,
-        mojom::FeaturePolicyDisposition::kEnforce,
-        std::vector<url::Origin>()}}};
+        std::vector<url::Origin>()},
+       {kUnavailableFeature, false, true, std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy, origin_b_);
   EXPECT_FALSE(PolicyContainsInheritedValue(
@@ -1526,21 +1460,6 @@ TEST_F(FeaturePolicyTest, TestUndefinedFeaturesInFramePolicy) {
       policy2.get(), mojom::FeaturePolicyFeature::kNotFound));
   EXPECT_FALSE(
       PolicyContainsInheritedValue(policy2.get(), kUnavailableFeature));
-}
-
-TEST_F(FeaturePolicyTest, TestReportOnlyFeaturesIncludedInHeader) {
-  // +---------------------------------------------------+
-  // |(1)Origin A                                        |
-  // |Feature-Policy: default-self-report-only 'none'    |
-  // +---------------------------------------------------+
-  // A feature which is tagged as '-report-only' should be included in the
-  // reporting policy.
-  std::unique_ptr<FeaturePolicy> policy1 =
-      CreateFromParentPolicy(nullptr, origin_a_);
-  policy1->SetHeaderPolicy({{{kDefaultSelfFeature, false, false,
-                              mojom::FeaturePolicyDisposition::kReport,
-                              std::vector<url::Origin>()}}});
-  EXPECT_FALSE(policy1->IsFeatureEnabled(kDefaultSelfFeature));
 }
 
 }  // namespace blink

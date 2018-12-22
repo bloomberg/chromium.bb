@@ -1296,6 +1296,14 @@ void DocumentLoader::InstallNewDocument(
   MergeFeaturesFromOriginPolicy(feature_policy, request_.GetOriginPolicy());
   document->ApplyFeaturePolicyFromHeader(feature_policy);
 
+  if (RuntimeEnabledFeatures::FeaturePolicyReportingEnabled()) {
+    WTF::String report_only_feature_policy(
+        response_.HttpHeaderField(http_names::kFeaturePolicyReportOnly));
+    // TODO(iclelland): Add Feature-Policy-Report-Only to Origin Policy.
+    document->ApplyReportOnlyFeaturePolicyFromHeader(
+        report_only_feature_policy);
+  }
+
   GetFrameLoader().DispatchDidClearDocumentOfWindowObject();
 }
 

@@ -111,9 +111,6 @@ void SecurityContext::SetFeaturePolicy(
   feature_policy_ = std::move(feature_policy);
 }
 
-// Uses the parent enforcing policy; parsed_header and container_policy can
-// both contain report-only directives, which will be used to construct the
-// report-only policy for this context.
 void SecurityContext::InitializeFeaturePolicy(
     const ParsedFeaturePolicy& parsed_header,
     const ParsedFeaturePolicy& container_policy,
@@ -126,21 +123,21 @@ void SecurityContext::InitializeFeaturePolicy(
   }
 
   feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
-      parent_feature_policy,
-      *DirectivesWithDisposition(mojom::FeaturePolicyDisposition::kEnforce,
-                                 container_policy),
-      security_origin_->ToUrlOrigin());
-  feature_policy_->SetHeaderPolicy(*DirectivesWithDisposition(
-      mojom::FeaturePolicyDisposition::kEnforce, parsed_header));
-  if (RuntimeEnabledFeatures::FeaturePolicyReportingEnabled()) {
-    report_only_feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
-        parent_feature_policy,
-        *DirectivesWithDisposition(mojom::FeaturePolicyDisposition::kReport,
-                                   container_policy),
-        security_origin_->ToUrlOrigin());
-    report_only_feature_policy_->SetHeaderPolicy(*DirectivesWithDisposition(
-        mojom::FeaturePolicyDisposition::kReport, parsed_header));
-  }
+      parent_feature_policy, container_policy, security_origin_->ToUrlOrigin());
+  feature_policy_->SetHeaderPolicy(parsed_header);
+}
+
+// Uses the parent enforcing policy as the basis for the report-only policy.
+void SecurityContext::AddReportOnlyFeaturePolicy(
+    const ParsedFeaturePolicy& parsed_report_only_header,
+    const ParsedFeaturePolicy& container_policy,
+    const FeaturePolicy* parent_feature_policy) {
+  if (!RuntimeEnabledFeatures::FeaturePolicyReportingEnabled())
+    return;
+
+  report_only_feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
+      parent_feature_policy, container_policy, security_origin_->ToUrlOrigin());
+  report_only_feature_policy_->SetHeaderPolicy(parsed_report_only_header);
 }
 
 bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,

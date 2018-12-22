@@ -93,7 +93,6 @@ struct BLINK_COMMON_EXPORT ParsedFeaturePolicyDeclaration {
   ParsedFeaturePolicyDeclaration(mojom::FeaturePolicyFeature feature,
                                  bool matches_all_origins,
                                  bool matches_opaque_src,
-                                 mojom::FeaturePolicyDisposition disposition,
                                  std::vector<url::Origin> origins);
   ParsedFeaturePolicyDeclaration(const ParsedFeaturePolicyDeclaration& rhs);
   ParsedFeaturePolicyDeclaration& operator=(
@@ -108,7 +107,6 @@ struct BLINK_COMMON_EXPORT ParsedFeaturePolicyDeclaration {
   // of the iframe to be present in |origins|, but for sandboxed iframes, this
   // flag is set instead.
   bool matches_opaque_src;
-  mojom::FeaturePolicyDisposition disposition;
   // An alphabetically sorted list of all the origins allowed.
   std::vector<url::Origin> origins;
 };
@@ -117,13 +115,6 @@ using ParsedFeaturePolicy = std::vector<ParsedFeaturePolicyDeclaration>;
 
 bool BLINK_COMMON_EXPORT operator==(const ParsedFeaturePolicyDeclaration& lhs,
                                     const ParsedFeaturePolicyDeclaration& rhs);
-
-// ParsedFeaturePolicy objects can contain directives of both enforcing and
-// report-only dispositions. This utility function will extract just the items
-// of one disposition or the other.
-BLINK_COMMON_EXPORT std::unique_ptr<ParsedFeaturePolicy>
-DirectivesWithDisposition(mojom::FeaturePolicyDisposition disposition,
-                          const ParsedFeaturePolicy& policy);
 
 class BLINK_COMMON_EXPORT FeaturePolicy {
  public:

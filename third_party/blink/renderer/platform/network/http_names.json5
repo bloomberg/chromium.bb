@@ -35,6 +35,7 @@
     "Expires",
     "Date",
     "Feature-Policy",
+    "Feature-Policy-Report-Only",
     "If-Match",
     "If-Modified-Since",
     "If-None-Match",
