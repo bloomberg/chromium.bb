@@ -74,9 +74,9 @@ void ContentServiceManagerMainDelegate::OverrideMojoConfiguration(
     config->is_broker_process = true;
 }
 
-std::unique_ptr<base::Value>
-ContentServiceManagerMainDelegate::CreateServiceCatalog() {
-  return nullptr;
+std::vector<service_manager::Manifest>
+ContentServiceManagerMainDelegate::GetServiceManifests() {
+  return std::vector<service_manager::Manifest>();
 }
 
 bool ContentServiceManagerMainDelegate::ShouldLaunchAsServiceProcess(

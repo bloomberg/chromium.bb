@@ -149,7 +149,7 @@ bool ChildProcessLauncher::TerminateProcess(const base::Process& process,
 // static
 void ChildProcessLauncher::SetRegisteredFilesForService(
     const std::string& service_name,
-    catalog::RequiredFileMap required_files) {
+    std::map<std::string, base::FilePath> required_files) {
   ChildProcessLauncherHelper::SetRegisteredFilesForService(
       service_name, std::move(required_files));
 }

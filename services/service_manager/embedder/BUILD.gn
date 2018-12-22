@@ -2,19 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-component("embedder") {
-  public = [
-    "manifest_utils.h",
-  ]
-
-  sources = [
-    "manifest_utils.cc",
-  ]
-
-  # iOS embeds the Service Manager but does not use service_manager::Main() (and
-  # cannot use or even build it as-is).
-  if (!is_ios) {
-    public += [
+if (!is_ios) {
+  # iOS embeds the Service Manager but does not use anything in this library.
+  # This avoids having an empty component library target, which can otherwise be
+  # problematic.
+  component("embedder") {
+    public = [
       "main.h",
       "main_delegate.h",
       "process_type.h",
@@ -22,41 +15,42 @@ component("embedder") {
       "set_process_title_linux.h",
       "shared_file_util.h",
     ]
-    sources += [
+
+    sources = [
       "main.cc",
       "main_delegate.cc",
       "set_process_title.cc",
       "set_process_title_linux.cc",
       "shared_file_util.cc",
     ]
-  }
 
-  if (is_mac) {
-    sources += [
-      "mac_init.h",
-      "mac_init.mm",
-    ]
+    if (is_mac) {
+      sources += [
+        "mac_init.h",
+        "mac_init.mm",
+      ]
 
-    libs = [ "Foundation.framework" ]
-  }
+      libs = [ "Foundation.framework" ]
+    }
 
-  deps = [
-    "//base:base_static",
-    "//base:i18n",
-  ]
-
-  public_deps = [
-    ":embedder_result_codes",
-    "//base",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/mojom",
-  ]
-
-  if (!is_ios) {
-    # deps of ServiceManager::Main and related functionality.
-    deps += [
+    deps = [
+      "//base:base_static",
+      "//base:i18n",
       "//base/allocator:buildflags",
       "//components/tracing:startup_tracing",
+    ]
+
+    public_deps = [
+      ":embedder_result_codes",
+      ":embedder_switches",
+      "//base",
+      "//mojo/core/embedder",
+      "//services/service_manager/background:lib",
+      "//services/service_manager/public/cpp",
+      "//services/service_manager/public/cpp/service_executable:support",
+      "//services/service_manager/public/mojom",
+      "//services/service_manager/runner:init",
+      "//services/service_manager/runner/common",
     ]
 
     if (!is_nacl) {
@@ -65,17 +59,8 @@ component("embedder") {
       deps += [ "//ui/base" ]
     }
 
-    public_deps += [
-      ":embedder_switches",
-      "//mojo/core/embedder",
-      "//services/service_manager/background:lib",
-      "//services/service_manager/public/cpp/service_executable:support",
-      "//services/service_manager/runner:init",
-      "//services/service_manager/runner/common",
-    ]
+    defines = [ "IS_SERVICE_MANAGER_EMBEDDER_IMPL" ]
   }
-
-  defines = [ "IS_SERVICE_MANAGER_EMBEDDER_IMPL" ]
 }
 
 component("embedder_switches") {
@@ -92,20 +77,5 @@ component("embedder_switches") {
 source_set("embedder_result_codes") {
   sources = [
     "result_codes.h",
-  ]
-}
-
-source_set("unittests") {
-  testonly = true
-
-  sources = [
-    "manifest_utils_unittest.cc",
-  ]
-
-  deps = [
-    ":embedder",
-    "//base",
-    "//base/test:test_support",
-    "//testing/gtest",
   ]
 }

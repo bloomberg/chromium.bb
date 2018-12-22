@@ -16,10 +16,6 @@
 #include "services/catalog/service_options.h"
 #include "services/service_manager/public/cpp/interface_provider_spec.h"
 
-namespace base {
-class Value;
-}
-
 namespace catalog {
 
 // Static information about a service package known to the Catalog.
@@ -28,8 +24,6 @@ class COMPONENT_EXPORT(CATALOG) Entry {
   Entry();
   explicit Entry(const std::string& name);
   ~Entry();
-
-  static std::unique_ptr<Entry> Deserialize(const base::Value& manifest_root);
 
   bool ProvidesCapability(const std::string& capability) const;
 

@@ -164,7 +164,7 @@ void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
 // static
 void ChildProcessLauncherHelper::SetRegisteredFilesForService(
     const std::string& service_name,
-    catalog::RequiredFileMap required_files) {
+    std::map<std::string, base::FilePath> required_files) {
   SetFilesToShareForServicePosix(service_name, std::move(required_files));
 }
 

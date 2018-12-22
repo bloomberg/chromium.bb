@@ -10,7 +10,6 @@
 #include "base/values.h"
 #include "services/catalog/entry.h"
 #include "services/catalog/entry_cache.h"
-#include "services/catalog/manifest_provider.h"
 
 namespace catalog {
 namespace {
@@ -24,12 +23,9 @@ void AddEntry(const Entry& entry, std::vector<mojom::EntryPtr>* ary) {
 
 }  // namespace
 
-Instance::Instance(EntryCache* system_cache,
-                   ManifestProvider* service_manifest_provider)
-    : system_cache_(system_cache),
-      service_manifest_provider_(service_manifest_provider) {}
+Instance::Instance(EntryCache* system_cache) : system_cache_(system_cache) {}
 
-Instance::~Instance() {}
+Instance::~Instance() = default;
 
 void Instance::BindCatalog(mojom::CatalogRequest request) {
   catalog_bindings_.AddBinding(this, std::move(request));
@@ -41,25 +37,8 @@ const Entry* Instance::Resolve(const std::string& service_name) {
   if (cached_entry)
     return cached_entry;
 
-  std::unique_ptr<base::Value> new_manifest;
-  if (service_manifest_provider_)
-    new_manifest = service_manifest_provider_->GetManifest(service_name);
-
-  if (!new_manifest) {
-    LOG(ERROR) << "Unable to locate service manifest for " << service_name;
-    return nullptr;
-  }
-
-  auto new_entry = Entry::Deserialize(*new_manifest);
-  if (!new_entry) {
-    LOG(ERROR) << "Malformed manifest for " << service_name;
-    return nullptr;
-  }
-
-  cached_entry = const_cast<const Entry*>(new_entry.get());
-  bool added = system_cache_->AddRootEntry(std::move(new_entry));
-  DCHECK(added);
-  return cached_entry;
+  LOG(ERROR) << "Unable to locate service manifest for " << service_name;
+  return nullptr;
 }
 
 void Instance::GetEntries(const base::Optional<std::vector<std::string>>& names,
