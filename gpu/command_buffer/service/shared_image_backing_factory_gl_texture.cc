@@ -814,24 +814,23 @@ scoped_refptr<gl::GLImage> SharedImageBackingFactoryGLTexture::MakeGLImage(
     gfx::BufferFormat format,
     SurfaceHandle surface_handle,
     const gfx::Size& size) {
+  if (handle.type == gfx::SHARED_MEMORY_BUFFER) {
+    if (!base::IsValueInRangeForNumericType<size_t>(handle.stride))
+      return nullptr;
+    auto image = base::MakeRefCounted<gl::GLImageSharedMemory>(size);
+    if (!image->Initialize(handle.region, handle.id, format, handle.offset,
+                           handle.stride)) {
+      return nullptr;
+    }
+
+    return image;
+  }
+
   if (!image_factory_)
     return nullptr;
-  switch (handle.type) {
-    case gfx::SHARED_MEMORY_BUFFER: {
-      if (!base::IsValueInRangeForNumericType<size_t>(handle.stride))
-        return nullptr;
-      auto image = base::MakeRefCounted<gl::GLImageSharedMemory>(size);
-      if (!image->Initialize(handle.region, handle.id, format, handle.offset,
-                             handle.stride)) {
-        return nullptr;
-      }
 
-      return image;
-    }
-    default:
-      return image_factory_->CreateImageForGpuMemoryBuffer(
-          std::move(handle), size, format, client_id, surface_handle);
-  }
+  return image_factory_->CreateImageForGpuMemoryBuffer(
+      std::move(handle), size, format, client_id, surface_handle);
 }
 
 std::unique_ptr<SharedImageBacking>
