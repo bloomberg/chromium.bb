@@ -24,6 +24,7 @@
 #include "media/base/media_log.h"
 #include "media/base/media_util.h"
 #include "media/base/overlay_info.h"
+#include "media/base/video_decoder_config.h"
 #include "media/base/video_types.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/webrtc/api/video/video_frame.h"
@@ -140,15 +141,25 @@ std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(
   }
 #endif  // defined(OS_WIN)
 
-  // Short circuit known-unsupported codecs.
+  // Bail early for unknown codecs.
   if (ToVideoCodec(video_codec_type) == media::kUnknownVideoCodec)
     return nullptr;
 
-  std::unique_ptr<RTCVideoDecoderAdapter> rtc_video_decoder_adapter =
-      base::WrapUnique(new RTCVideoDecoderAdapter(gpu_factories, format));
+  // Avoid the thread hop if the decoder is known not to support the config.
+  // TODO(sandersd): Predict size from level.
+  media::VideoDecoderConfig config(
+      ToVideoCodec(webrtc::PayloadStringToCodecType(format.name)),
+      GuessVideoCodecProfile(format), kDefaultPixelFormat,
+      media::VideoColorSpace(), media::VIDEO_ROTATION_0, kDefaultSize,
+      gfx::Rect(kDefaultSize), kDefaultSize, media::EmptyExtraData(),
+      media::Unencrypted());
+  if (!gpu_factories->IsDecoderConfigSupported(config))
+    return nullptr;
 
   // Synchronously verify that the decoder can be initialized.
-  if (!rtc_video_decoder_adapter->InitializeSync()) {
+  std::unique_ptr<RTCVideoDecoderAdapter> rtc_video_decoder_adapter =
+      base::WrapUnique(new RTCVideoDecoderAdapter(gpu_factories, format));
+  if (!rtc_video_decoder_adapter->InitializeSync(config)) {
     gpu_factories->GetTaskRunner()->DeleteSoon(
         FROM_HERE, std::move(rtc_video_decoder_adapter));
     return nullptr;
@@ -174,7 +185,8 @@ RTCVideoDecoderAdapter::~RTCVideoDecoderAdapter() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 }
 
-bool RTCVideoDecoderAdapter::InitializeSync() {
+bool RTCVideoDecoderAdapter::InitializeSync(
+    const media::VideoDecoderConfig& config) {
   DVLOG(3) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
 
@@ -186,7 +198,8 @@ bool RTCVideoDecoderAdapter::InitializeSync() {
   if (media_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&RTCVideoDecoderAdapter::InitializeOnMediaThread,
-                         base::Unretained(this), std::move(init_cb)))) {
+                         base::Unretained(this), base::ConstRef(config),
+                         base::ConstRef(init_cb)))) {
     waiter.Wait();
   }
   return result;
@@ -290,7 +303,8 @@ const char* RTCVideoDecoderAdapter::ImplementationName() const {
 }
 
 void RTCVideoDecoderAdapter::InitializeOnMediaThread(
-    media::VideoDecoder::InitCB init_cb) {
+    const media::VideoDecoderConfig& config,
+    const media::VideoDecoder::InitCB& init_cb) {
   DVLOG(3) << __func__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
@@ -307,14 +321,6 @@ void RTCVideoDecoderAdapter::InitializeOnMediaThread(
     return;
   }
 
-  // We don't know much about the media that is coming.
-  media::VideoDecoderConfig config(
-      ToVideoCodec(webrtc::PayloadStringToCodecType(format_.name)),
-      GuessVideoCodecProfile(format_), kDefaultPixelFormat,
-      media::VideoColorSpace(), media::VIDEO_ROTATION_0, kDefaultSize,
-      gfx::Rect(kDefaultSize), kDefaultSize, media::EmptyExtraData(),
-      media::Unencrypted());
-
   // In practice this is ignored by hardware decoders.
   bool low_delay = true;
 
@@ -324,8 +330,8 @@ void RTCVideoDecoderAdapter::InitializeOnMediaThread(
   media::VideoDecoder::OutputCB output_cb =
       base::BindRepeating(&RTCVideoDecoderAdapter::OnOutput, weak_this_);
 
-  video_decoder_->Initialize(config, low_delay, cdm_context, std::move(init_cb),
-                             std::move(output_cb), base::DoNothing());
+  video_decoder_->Initialize(config, low_delay, cdm_context, init_cb, output_cb,
+                             base::DoNothing());
 }
 
 void RTCVideoDecoderAdapter::DecodeOnMediaThread() {

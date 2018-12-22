@@ -157,6 +157,11 @@ RTCVideoDecoderFactory::RTCVideoDecoderFactory(
     media::GpuVideoAcceleratorFactories* gpu_factories)
     : gpu_factories_(gpu_factories) {
   DVLOG(2) << __func__;
+
+  // RTCVideoDecoderAdapter does not use |supported_formats_|.
+  if (base::FeatureList::IsEnabled(media::kRTCVideoDecoderAdapter))
+    return;
+
   const media::VideoDecodeAccelerator::SupportedProfiles profiles =
       gpu_factories_->GetVideoDecodeAcceleratorCapabilities()
           .supported_profiles;
@@ -170,6 +175,7 @@ RTCVideoDecoderFactory::RTCVideoDecoderFactory(
 
 std::vector<webrtc::SdpVideoFormat>
 RTCVideoDecoderFactory::GetSupportedFormats() const {
+  DCHECK(!base::FeatureList::IsEnabled(media::kRTCVideoDecoderAdapter));
   return supported_formats_;
 }
 

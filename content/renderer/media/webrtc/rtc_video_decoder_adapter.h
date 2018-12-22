@@ -30,6 +30,7 @@ namespace media {
 class DecoderBuffer;
 class GpuVideoAcceleratorFactories;
 class MediaLog;
+class VideoDecoderConfig;
 class VideoFrame;
 }  // namespace media
 
@@ -85,8 +86,9 @@ class CONTENT_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   RTCVideoDecoderAdapter(media::GpuVideoAcceleratorFactories* gpu_factories,
                          const webrtc::SdpVideoFormat& format);
 
-  bool InitializeSync();
-  void InitializeOnMediaThread(media::VideoDecoder::InitCB init_cb);
+  bool InitializeSync(const media::VideoDecoderConfig& config);
+  void InitializeOnMediaThread(const media::VideoDecoderConfig& config,
+                               const media::VideoDecoder::InitCB& init_cb);
   void DecodeOnMediaThread();
   void OnDecodeDone(media::DecodeStatus status);
   void OnOutput(const scoped_refptr<media::VideoFrame>& frame);
