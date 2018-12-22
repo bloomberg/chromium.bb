@@ -35,6 +35,7 @@ namespace {
   CALL(ArPose_destroy)                   \
   CALL(ArPose_getMatrix)                 \
   CALL(ArPose_getPoseRaw)                \
+  CALL(ArSession_checkSupported)         \
   CALL(ArSession_configure)              \
   CALL(ArSession_create)                 \
   CALL(ArSession_destroy)                \
@@ -78,13 +79,13 @@ bool LoadArCoreSdk(const std::string& libraryPath) {
   if (!sdk_handle) {
     char* error_string = nullptr;
     error_string = dlerror();
-    LOG(ERROR) << "Could not open libarcore_sdk_c.so: " << error_string;
+    LOG(ERROR) << "Could not open libarcore_sdk_c_minimal.so: " << error_string;
     return false;
   } else {
     VLOG(2) << "Opened shim shared library.";
   }
 
-  // TODO(https://crbug.com/914999): check SDK version.
+  // TODO(vollick): check SDK version.
   arcore_api = new ArCoreApi();
 
 #define CALL(fn) LoadFunction(sdk_handle, #fn, &arcore_api->impl_##fn);
@@ -253,6 +254,11 @@ void ArPose_getPoseRaw(const ArSession* session,
                        const ArPose* pose,
                        float* out_pose_raw) {
   arcore_api->impl_ArPose_getPoseRaw(session, pose, out_pose_raw);
+}
+
+ArStatus ArSession_checkSupported(const ArSession* session,
+                                  const ArConfig* config) {
+  return arcore_api->impl_ArSession_checkSupported(session, config);
 }
 
 ArStatus ArSession_configure(ArSession* session, const ArConfig* config) {
