@@ -16,6 +16,7 @@ aggregate_vector_icons("components_vector_icons") {
     "close.icon",
     "close_rounded.icon",
     "edit.icon",
+    "error.icon",
     "ethernet.icon",
     "folder.icon",
     "folder_managed.icon",
