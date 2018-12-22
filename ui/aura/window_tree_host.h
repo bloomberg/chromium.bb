@@ -268,7 +268,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   void CreateCompositor(
       const viz::FrameSinkId& frame_sink_id = viz::FrameSinkId(),
       bool force_software_compositor = false,
-      bool external_begin_frames_enabled = false,
+      ui::ExternalBeginFrameClient* external_begin_frame_client = nullptr,
       bool are_events_in_pixels = true,
       const char* trace_environment_name = nullptr);
 

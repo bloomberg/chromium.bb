@@ -78,9 +78,10 @@ void HostContextFactoryPrivate::ConfigureCompositor(
 
   // Initialize ExternalBeginFrameController client if enabled.
   compositor_data.external_begin_frame_controller_client.reset();
-  if (compositor->external_begin_frames_enabled()) {
+  if (compositor->external_begin_frame_client()) {
     compositor_data.external_begin_frame_controller_client =
-        std::make_unique<ExternalBeginFrameControllerClientImpl>(compositor);
+        std::make_unique<ExternalBeginFrameControllerClientImpl>(
+            compositor->external_begin_frame_client());
     root_params->external_begin_frame_controller =
         compositor_data.external_begin_frame_controller_client
             ->GetControllerRequest();

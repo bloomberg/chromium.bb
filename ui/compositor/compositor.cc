@@ -63,20 +63,21 @@ const char* kDefaultTraceEnvironmentName = "browser";
 
 }  // namespace
 
-Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
-                       ui::ContextFactory* context_factory,
-                       ui::ContextFactoryPrivate* context_factory_private,
-                       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                       bool enable_pixel_canvas,
-                       bool external_begin_frames_enabled,
-                       bool force_software_compositor,
-                       const char* trace_environment_name)
+Compositor::Compositor(
+    const viz::FrameSinkId& frame_sink_id,
+    ui::ContextFactory* context_factory,
+    ui::ContextFactoryPrivate* context_factory_private,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    bool enable_pixel_canvas,
+    ui::ExternalBeginFrameClient* external_begin_frame_client,
+    bool force_software_compositor,
+    const char* trace_environment_name)
     : context_factory_(context_factory),
       context_factory_private_(context_factory_private),
       frame_sink_id_(frame_sink_id),
       task_runner_(task_runner),
       vsync_manager_(new CompositorVSyncManager()),
-      external_begin_frames_enabled_(external_begin_frames_enabled),
+      external_begin_frame_client_(external_begin_frame_client),
       force_software_compositor_(force_software_compositor),
       layer_animator_collection_(this),
       is_pixel_canvas_(enable_pixel_canvas),
@@ -502,36 +503,6 @@ gfx::AcceleratedWidget Compositor::widget() const {
 
 scoped_refptr<CompositorVSyncManager> Compositor::vsync_manager() const {
   return vsync_manager_;
-}
-
-void Compositor::IssueExternalBeginFrame(const viz::BeginFrameArgs& args) {
-  TRACE_EVENT1("ui", "Compositor::IssueExternalBeginFrame", "args",
-               args.AsValue());
-  DCHECK(external_begin_frames_enabled_);
-  if (context_factory_private_)
-    context_factory_private_->IssueExternalBeginFrame(this, args);
-}
-
-void Compositor::SetExternalBeginFrameClient(ExternalBeginFrameClient* client) {
-  DCHECK(external_begin_frames_enabled_);
-  external_begin_frame_client_ = client;
-  if (needs_external_begin_frames_ && external_begin_frame_client_)
-    external_begin_frame_client_->OnNeedsExternalBeginFrames(true);
-}
-
-void Compositor::OnDisplayDidFinishFrame(const viz::BeginFrameAck& ack) {
-  DCHECK(external_begin_frames_enabled_);
-  if (external_begin_frame_client_)
-    external_begin_frame_client_->OnDisplayDidFinishFrame(ack);
-}
-
-void Compositor::OnNeedsExternalBeginFrames(bool needs_begin_frames) {
-  DCHECK(external_begin_frames_enabled_);
-  if (external_begin_frame_client_) {
-    external_begin_frame_client_->OnNeedsExternalBeginFrames(
-        needs_begin_frames);
-  }
-  needs_external_begin_frames_ = needs_begin_frames;
 }
 
 void Compositor::AddObserver(CompositorObserver* observer) {

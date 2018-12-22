@@ -57,10 +57,10 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
   // In other cases, let a valid FrameSinkId be selected by
   // context_factory_private().
   const bool force_software_compositor = false;
-  const bool external_begin_frames_enabled = false;
+  ui::ExternalBeginFrameClient* external_begin_frame_client = nullptr;
   const bool are_events_in_pixels = false;
   CreateCompositor(window_mus->GenerateFrameSinkIdFromServerId(),
-                   force_software_compositor, external_begin_frames_enabled,
+                   force_software_compositor, external_begin_frame_client,
                    are_events_in_pixels);
   gfx::AcceleratedWidget accelerated_widget;
 // We need accelerated widget numbers to be different for each window and

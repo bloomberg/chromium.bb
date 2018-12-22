@@ -550,10 +550,10 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       external_begin_frame_controller_client;
 
   viz::BeginFrameSource* begin_frame_source = nullptr;
-  if (compositor->external_begin_frames_enabled()) {
+  if (compositor->external_begin_frame_client()) {
     external_begin_frame_controller_client =
         std::make_unique<ui::ExternalBeginFrameControllerClientImpl>(
-            compositor.get());
+            compositor->external_begin_frame_client());
     // We don't bind the controller mojo interface, since we only use the
     // ExternalBeginFrameSourceMojo directly and not via mojo (plus, as it
     // is an associated interface, binding it would require a separate pipe).
@@ -571,12 +571,12 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
                 compositor->task_runner().get()));
     begin_frame_source = synthetic_begin_frame_source.get();
   } else {
-      synthetic_begin_frame_source =
-          std::make_unique<viz::DelayBasedBeginFrameSource>(
-              std::make_unique<viz::DelayBasedTimeSource>(
-                  compositor->task_runner().get()),
-              viz::BeginFrameSource::kNotRestartableId);
-      begin_frame_source = synthetic_begin_frame_source.get();
+    synthetic_begin_frame_source =
+        std::make_unique<viz::DelayBasedBeginFrameSource>(
+            std::make_unique<viz::DelayBasedTimeSource>(
+                compositor->task_runner().get()),
+            viz::BeginFrameSource::kNotRestartableId);
+    begin_frame_source = synthetic_begin_frame_source.get();
   }
 
   if (data->synthetic_begin_frame_source) {
