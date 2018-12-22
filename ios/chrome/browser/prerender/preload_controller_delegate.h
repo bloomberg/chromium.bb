@@ -18,12 +18,6 @@
 // Returns YES if the given |url| should be backed by a native controller.
 - (BOOL)preloadHasNativeControllerForURL:(const GURL&)url;
 
-// Called to retrieve the height of any header that is overlaying on top of the
-// native content.
-- (CGFloat)
-nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
-                                     webState:(web::WebState*)webState;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_PRERENDER_PRELOAD_CONTROLLER_DELEGATE_H_

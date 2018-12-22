@@ -2347,9 +2347,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
   return _webViewProxy;
 }
 
-- (CGFloat)nativeContentHeaderHeightForContainerView:
+- (UIEdgeInsets)nativeContentInsetsForContainerView:
     (CRWWebControllerContainerView*)containerView {
-  return [_nativeProvider nativeContentHeaderHeightForWebState:self.webState];
+  return [self.nativeProvider nativeContentInsetForWebState:self.webState];
 }
 
 #pragma mark -
