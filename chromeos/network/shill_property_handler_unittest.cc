@@ -388,12 +388,12 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServicePropertyChanged) {
   EXPECT_EQ(1, listener_->property_updates(
       shill::kServiceCompleteListProperty)[kTestServicePath]);
 
-  // Change the visibility of a service. This will trigger a service list
-  // updates.
+  // Set the state of the service to Connected. This will trigger a service list
+  // update.
   listener_->reset_list_updates();
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
-      dbus::ObjectPath(kTestServicePath), shill::kVisibleProperty,
-      base::Value(false), base::DoNothing(),
+      dbus::ObjectPath(kTestServicePath), shill::kStateProperty,
+      base::Value(shill::kStateReady), base::DoNothing(),
       base::Bind(&ErrorCallbackFunction));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, listener_->list_updates(shill::kServiceCompleteListProperty));
