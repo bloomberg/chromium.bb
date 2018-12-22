@@ -57,7 +57,6 @@
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/frame_host/navigation_entry_screenshot_manager.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"  // Temporary
@@ -478,7 +477,6 @@ NavigationControllerImpl::NavigationControllerImpl(
       in_navigate_to_pending_entry_(false),
       pending_reload_(ReloadType::NONE),
       get_timestamp_callback_(base::Bind(&base::Time::Now)),
-      screenshot_manager_(new NavigationEntryScreenshotManager(this)),
       last_committed_reload_type_(ReloadType::NONE) {
   DCHECK(browser_context_);
 }
@@ -738,18 +736,6 @@ NavigationEntryImpl* NavigationControllerImpl::GetEntryAtOffset(
 
 int NavigationControllerImpl::GetIndexForOffset(int offset) const {
   return GetCurrentEntryIndex() + offset;
-}
-
-void NavigationControllerImpl::TakeScreenshot() {
-  screenshot_manager_->TakeScreenshot();
-}
-
-void NavigationControllerImpl::SetScreenshotManager(
-    std::unique_ptr<NavigationEntryScreenshotManager> manager) {
-  if (manager.get())
-    screenshot_manager_ = std::move(manager);
-  else
-    screenshot_manager_.reset(new NavigationEntryScreenshotManager(this));
 }
 
 bool NavigationControllerImpl::CanGoBack() const {
@@ -2184,10 +2170,6 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
 
   render_frame_host->frame_tree_node()->navigator()->Navigate(
       std::move(request), ReloadType::NONE, RestoreType::NONE);
-}
-
-void NavigationControllerImpl::ClearAllScreenshots() {
-  screenshot_manager_->ClearAllScreenshots();
 }
 
 void NavigationControllerImpl::SetSessionStorageNamespace(

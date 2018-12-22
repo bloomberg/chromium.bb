@@ -15,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -664,7 +663,6 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
   copy->timestamp_ = timestamp_;
   copy->http_status_code_ = http_status_code_;
   // ResetForCommit: post_data_
-  copy->screenshot_ = screenshot_;
   copy->extra_headers_ = extra_headers_;
   copy->base_url_for_data_url_ = base_url_for_data_url_;
 #if defined(OS_ANDROID)
@@ -923,13 +921,6 @@ void NavigationEntryImpl::RemoveEntryForFrame(FrameTreeNode* frame_tree_node,
     CHECK(it != parent_node->children.end());
     parent_node->children.erase(it);
   }
-}
-
-void NavigationEntryImpl::SetScreenshotPNGData(
-    scoped_refptr<base::RefCountedBytes> png_data) {
-  screenshot_ = png_data;
-  if (screenshot_.get())
-    UMA_HISTOGRAM_MEMORY_KB("Overscroll.ScreenshotSize", screenshot_->size());
 }
 
 GURL NavigationEntryImpl::GetHistoryURLForDataURL() const {

@@ -480,10 +480,6 @@ class NavigationController {
   virtual void DeleteNavigationEntries(
       const DeletionPredicate& deletionPredicate) = 0;
 
-  // Clears all screenshots associated with navigation entries in this
-  // controller. Useful to reduce memory consumption in low-memory situations.
-  virtual void ClearAllScreenshots() = 0;
-
  private:
   // This interface should only be implemented inside content.
   friend class NavigationControllerImpl;
