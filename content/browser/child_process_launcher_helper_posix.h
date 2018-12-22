@@ -5,11 +5,11 @@
 #ifndef CONTENT_BROWSER_CHILD_PROCESS_LAUNCHER_HELPER_POSIX_H_
 #define CONTENT_BROWSER_CHILD_PROCESS_LAUNCHER_HELPER_POSIX_H_
 
+#include <map>
 #include <memory>
 
 #include "base/files/file.h"
 #include "base/files/memory_mapped_file.h"
-#include "services/catalog/public/cpp/manifest_parsing_util.h"
 
 namespace base {
 class CommandLine;
@@ -38,8 +38,9 @@ std::unique_ptr<PosixFileDescriptorInfo> CreateDefaultPosixFilesToMap(
 
 // Called by the service manager to register the files that should be mapped for
 // a service in the child process.
-void SetFilesToShareForServicePosix(const std::string& service_name,
-                                    catalog::RequiredFileMap required_files);
+void SetFilesToShareForServicePosix(
+    const std::string& service_name,
+    std::map<std::string, base::FilePath> required_files);
 
 // Called from unit_tests in order to reset all previously registered files.
 void ResetFilesToShareForTestingPosix();

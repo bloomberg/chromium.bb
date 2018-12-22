@@ -234,7 +234,7 @@ int RunServiceManager(MainDelegate* delegate) {
   ServiceProcessLauncherDelegateImpl service_process_launcher_delegate(
       delegate);
   service_manager::BackgroundServiceManager background_service_manager(
-      &service_process_launcher_delegate, delegate->CreateServiceCatalog());
+      &service_process_launcher_delegate, delegate->GetServiceManifests());
 
   base::RunLoop run_loop;
   delegate->OnServiceManagerInitialized(run_loop.QuitClosure(),

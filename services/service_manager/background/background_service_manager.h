@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/threading/thread.h"
-#include "base/values.h"
 #include "build/build_config.h"
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
@@ -32,8 +31,6 @@ class ServiceManager;
 class BackgroundServiceManager {
  public:
   BackgroundServiceManager(ServiceProcessLauncherDelegate* launcher_delegate,
-                           std::unique_ptr<base::Value> catalog_contents);
-  BackgroundServiceManager(ServiceProcessLauncherDelegate* launcher_delegate,
                            const std::vector<Manifest>& manifests);
   ~BackgroundServiceManager();
 
@@ -50,7 +47,6 @@ class BackgroundServiceManager {
  private:
   void InitializeOnBackgroundThread(
       ServiceProcessLauncherDelegate* launcher_delegate,
-      std::unique_ptr<base::Value> catalog_contents,
       const std::vector<Manifest>& manifests);
   void ShutDownOnBackgroundThread(base::WaitableEvent* done_event);
   void RegisterServiceOnBackgroundThread(

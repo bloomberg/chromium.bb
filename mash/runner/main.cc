@@ -25,18 +25,12 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "mash/mash_catalog_source.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
 #include "services/service_manager/runner/init.h"
 #include "services/service_manager/standalone/context.h"
 #include "services/service_manager/switches.h"
-
-namespace {
-
-const base::FilePath::CharType kMashCatalogFilename[] =
-    FILE_PATH_LITERAL("mash_catalog.json");
-
-}  // namespace
 
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
@@ -54,19 +48,11 @@ int main(int argc, char** argv) {
 #endif
   base::PlatformThread::SetName("service_manager");
 
-  std::string catalog_contents;
-  base::FilePath exe_path;
-  base::PathService::Get(base::DIR_EXE, &exe_path);
-  base::FilePath catalog_path = exe_path.Append(kMashCatalogFilename);
-  bool result = base::ReadFileToString(catalog_path, &catalog_contents);
-  DCHECK(result);
-  std::unique_ptr<base::Value> manifest_value =
-      base::JSONReader::Read(catalog_contents);
-  DCHECK(manifest_value);
-
 #if defined(OS_WIN) && defined(COMPONENT_BUILD)
   // In Windows component builds, ensure that loaded service binaries always
   // search this exe's dir for DLLs.
+  base::FilePath exe_path;
+  base::PathService::Get(base::DIR_EXE, &exe_path);
   SetDllDirectory(exe_path.value().c_str());
 #endif
 
@@ -86,7 +72,7 @@ int main(int argc, char** argv) {
 
   base::test::ScopedTaskEnvironment scoped_task_environment;
   service_manager::Context service_manager_context(nullptr,
-                                                   std::move(manifest_value));
+                                                   CreateMashCatalog());
   base::RunLoop loop;
   scoped_task_environment.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE,

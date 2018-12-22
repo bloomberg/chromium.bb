@@ -13,13 +13,10 @@ executable("runner") {
     "//base",
     "//base:i18n",
     "//base/test:test_support",
+    "//mash:mash_catalog_source",
     "//mojo/core/embedder",
     "//services/service_manager",
     "//services/service_manager/runner:init",
     "//services/service_manager/standalone",
-  ]
-
-  data_deps = [
-    "//mash:mash_catalog",
   ]
 }
