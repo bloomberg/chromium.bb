@@ -4,6 +4,7 @@
 
 import("//base/android/linker/config.gni")
 import("//base/android/proguard/proguard.gni")
+import("//build/config/android/chrome_version.gni")
 import("//build/config/android/extract_unwind_tables.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/compiler/compiler.gni")
@@ -108,6 +109,10 @@ template("chrome_public_common_apk_or_module_tmpl") {
   assert(_is_modern || !_is_modern)  # Mark as used.
 
   _is_monochrome = defined(invoker.is_monochrome) && invoker.is_monochrome
+
+  _use_trichrome_library =
+      defined(invoker.use_trichrome_library) && invoker.use_trichrome_library
+  assert(_use_trichrome_library || !_use_trichrome_library)  # Mark as used.
 
   if (defined(invoker.enable_multidex)) {
     _enable_multidex = invoker.enable_multidex
@@ -230,6 +235,19 @@ template("chrome_public_common_apk_or_module_tmpl") {
     if (enable_vr && (_target_type == "android_apk" || !modularize_vr)) {
       deps += [ "//chrome/browser/android/vr:java" ]
     }
+
+    if (!defined(version_code)) {
+      if (_use_trichrome_library) {
+        version_code = trichrome_version_code
+      } else if (_is_monochrome) {
+        version_code = monochrome_version_code
+      } else if (_is_modern) {
+        version_code = chrome_modern_version_code
+      } else {
+        # For chrome without the modern design, used on pre-L devices
+        version_code = chrome_version_code
+      }
+    }
   }
 }
 
@@ -243,9 +261,10 @@ template("monochrome_public_common_apk_or_module_tmpl") {
   }
   chrome_public_common_apk_or_module_tmpl(target_name) {
     is_monochrome = true
+    use_trichrome_library =
+        defined(invoker.use_trichrome_library) && invoker.use_trichrome_library
 
-    if (!defined(invoker.use_trichrome_library) ||
-        !invoker.use_trichrome_library) {
+    if (!use_trichrome_library) {
       if (invoker.target_type == "android_app_bundle_module") {
         _suffix = bundle_library_suffix
       } else {

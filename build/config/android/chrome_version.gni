@@ -14,3 +14,51 @@ if (chrome_version_name == "Developer Build") {
   # builders (which currently set the version number with this GN arg).
   chrome_version_name = chrome_version_full
 }
+
+_version_code = chrome_version_id
+
+# The architecture preference is encoded into the version_code for devices
+# that support multiple architectures
+if (target_cpu == "arm") {
+  _arch_preference = 0
+} else if (target_cpu == "x86") {
+  _arch_preference = 10
+} else if (target_cpu == "mipsel") {
+  _arch_preference = 20
+} else if (target_cpu == "arm64") {
+  _arch_preference = 50
+} else if (target_cpu == "x64") {
+  _arch_preference = 60
+} else {
+  assert(false, "Error: Unrecognized target_cpu: " + target_cpu)
+}
+_version_code += _arch_preference
+
+if (!public_android_sdk) {
+  # Match downstream logic for next builds
+  _version_code += 5
+}
+
+webview_version_code = "$_version_code"
+chrome_version_code = "$_version_code"
+
+_version_code += 1
+chrome_modern_version_code = "$_version_code"
+
+_version_code += 1
+monochrome_version_code = "$_version_code"
+
+_version_code += 1
+trichrome_version_code = "$_version_code"
+
+if (android_override_version_code != "") {
+  webview_version_code = android_override_version_code
+  chrome_version_code = android_override_version_code
+  chrome_modern_version_code = android_override_version_code
+  monochrome_version_code = android_override_version_code
+  trichrome_version_code = android_override_version_code
+}
+
+if (android_override_version_name != "") {
+  chrome_version_name = android_override_version_name
+}

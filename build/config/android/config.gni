@@ -159,6 +159,12 @@ if (is_android || is_chromeos) {
     # Android versionName for android_apk()s that don't explicitly set one.
     android_default_version_name = "Developer Build"
 
+    # Forced Android versionCode
+    android_override_version_code = ""
+
+    # Forced Android versionName
+    android_override_version_name = ""
+
     # The path to the keystore to use for signing builds.
     android_keystore_path = default_android_keystore_path
 

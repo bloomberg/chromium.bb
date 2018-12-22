@@ -1802,6 +1802,8 @@ if (modularize_ar) {
     manifest_package = manifest_package
     module_name = "ArPublic"
     base_module_target = ":monochrome_public_base_module"
+    version_code = monochrome_version_code
+    version_name = chrome_version_name
   }
 }
 
@@ -1810,6 +1812,8 @@ if (modularize_vr) {
     manifest_package = manifest_package
     module_name = "VrPublic"
     base_module_target = ":chrome_modern_public_base_module"
+    version_code = chrome_modern_version_code
+    version_name = chrome_version_name
   }
 }
 
