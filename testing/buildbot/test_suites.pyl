@@ -2715,6 +2715,7 @@
 
     'fuchsia_gtests': {
       'base_unittests': {},
+      'castrunner_tests': {},
       'content_unittests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter',
@@ -2750,6 +2751,7 @@
         ],
       },
       'webrunner_browsertests': {},
+      'webrunner_smoketests': {},
       'webrunner_unittests': {},
     },
 

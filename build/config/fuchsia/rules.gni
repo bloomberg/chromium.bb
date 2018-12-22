@@ -38,7 +38,6 @@ template("fuchsia_package_runner") {
              "/" + _pkg_shortname
   _manifest_path = "$_pkg_dir/${_pkg_shortname}.archive_manifest"
   _package_path = "$_pkg_dir/${_pkg_shortname}.far"
-  _package_info_path = "$_pkg_dir/package"
 
   if (!defined(runner_script)) {
     runner_script = "//build/fuchsia/exe_runner.py"
@@ -85,7 +84,6 @@ template("fuchsia_package_runner") {
       data = [
         script_path,
         _manifest_path,
-        _package_info_path,
         "//build/fuchsia/",
         "//build/util/lib/",
         "${qemu_root}/",

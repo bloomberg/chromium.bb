@@ -43,6 +43,7 @@ template("fuchsia_package") {
   _meta_far_file = "$_pkg_out_dir/meta.far"
   _combined_far_file = "$_pkg_out_dir/${pkg.package_name}-0.far"
   _final_far_file = "$_pkg_out_dir/${pkg.package_name}.far"
+  _package_info_path = "$_pkg_out_dir/package"
 
   _write_manifest_target = "${pkg.package_name}__write_manifest"
   _generate_key_target = "${pkg.package_name}__genkey"
@@ -197,6 +198,7 @@ template("fuchsia_package") {
 
     data = [
       _final_far_file,
+      _package_info_path,
     ]
 
     sources = [

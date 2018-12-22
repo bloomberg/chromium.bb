@@ -3925,6 +3925,12 @@
         "test": "base_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "castrunner_tests"
+      },
+      {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter"
         ],
@@ -4019,6 +4025,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "webrunner_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "webrunner_smoketests"
       },
       {
         "swarming": {
@@ -4045,6 +4057,17 @@
         "test": "base_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1"
+            }
+          ]
+        },
+        "test": "castrunner_tests"
+      },
+      {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter"
         ],
@@ -4209,6 +4232,17 @@
           ]
         },
         "test": "webrunner_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1"
+            }
+          ]
+        },
+        "test": "webrunner_smoketests"
       },
       {
         "swarming": {
@@ -4238,6 +4272,17 @@
           ]
         },
         "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1"
+            }
+          ]
+        },
+        "test": "castrunner_tests"
       },
       {
         "args": [
@@ -4418,6 +4463,17 @@
           ]
         },
         "test": "webrunner_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1"
+            }
+          ]
+        },
+        "test": "webrunner_smoketests"
       },
       {
         "swarming": {

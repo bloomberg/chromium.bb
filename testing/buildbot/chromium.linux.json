@@ -665,6 +665,20 @@
       },
       {
         "args": [
+          "--qemu-require-kvm"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1"
+            }
+          ]
+        },
+        "test": "castrunner_tests"
+      },
+      {
+        "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter",
           "--qemu-require-kvm"
         ],
@@ -862,6 +876,20 @@
           ]
         },
         "test": "webrunner_browsertests"
+      },
+      {
+        "args": [
+          "--qemu-require-kvm"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1"
+            }
+          ]
+        },
+        "test": "webrunner_smoketests"
       },
       {
         "args": [
