@@ -265,7 +265,8 @@ void ArCoreGl::ProduceFrame(
   gl_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&ArCoreGl::ProcessFrame, weak_ptr_factory_.GetWeakPtr(),
-                     base::Passed(&frame_data), base::Passed(&callback)));
+                     base::Passed(&frame_data), frame_size,
+                     base::Passed(&callback)));
 }
 
 void ArCoreGl::RequestHitTest(
@@ -283,6 +284,7 @@ void ArCoreGl::RequestHitTest(
 
 void ArCoreGl::ProcessFrame(
     mojom::XRFrameDataPtr frame_data,
+    const gfx::Size& frame_size,
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   DCHECK(IsOnGlThread());
   DCHECK(is_initialized_);
@@ -302,7 +304,7 @@ void ArCoreGl::ProcessFrame(
   // obvious how the timing between the results and the frame should go.
   for (auto& request : hit_test_requests_) {
     std::vector<mojom::XRHitResultPtr> results;
-    if (arcore_->RequestHitTest(request->ray, &results)) {
+    if (arcore_->RequestHitTest(request->ray, frame_size, &results)) {
       std::move(request->callback).Run(std::move(results));
     } else {
       // Hit test failed, i.e. unprojected location was offscreen.

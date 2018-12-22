@@ -67,7 +67,9 @@ class ArCoreGl {
   base::WeakPtr<ArCoreGl> GetWeakPtr();
 
  private:
+  // TODO(https://crbug/835948): remove frame_size.
   void ProcessFrame(mojom::XRFrameDataPtr frame_data,
+                    const gfx::Size& frame_size,
                     mojom::XRFrameDataProvider::GetFrameDataCallback callback);
 
   bool InitializeGl();
