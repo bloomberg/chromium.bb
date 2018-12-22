@@ -59,7 +59,7 @@ WindowTreeHostPlatform::WindowTreeHostPlatform(
   bounds_ = properties.bounds;
   CreateCompositor(viz::FrameSinkId(),
                    /* force_software_compositor */ false,
-                   /* external_begin_frames_enabled */ false,
+                   /* external_begin_frames_enabled */ nullptr,
                    /* are_events_in_pixels */ true, trace_environment_name);
   CreateAndSetPlatformWindow(std::move(properties));
 }

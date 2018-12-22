@@ -387,11 +387,12 @@ void WindowTreeHost::DestroyDispatcher() {
   //window()->RemoveOrDestroyChildren();
 }
 
-void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id,
-                                      bool force_software_compositor,
-                                      bool external_begin_frames_enabled,
-                                      bool are_events_in_pixels,
-                                      const char* trace_environment_name) {
+void WindowTreeHost::CreateCompositor(
+    const viz::FrameSinkId& frame_sink_id,
+    bool force_software_compositor,
+    ui::ExternalBeginFrameClient* external_begin_frame_client,
+    bool are_events_in_pixels,
+    const char* trace_environment_name) {
   DCHECK(window()->env());
   Env* env = window()->env();
   ui::ContextFactory* context_factory = env->context_factory();
@@ -404,7 +405,7 @@ void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id,
           : context_factory_private->AllocateFrameSinkId(),
       context_factory, context_factory_private,
       base::ThreadTaskRunnerHandle::Get(), ui::IsPixelCanvasRecordingEnabled(),
-      external_begin_frames_enabled, force_software_compositor,
+      external_begin_frame_client, force_software_compositor,
       trace_environment_name);
 #if defined(OS_CHROMEOS)
   compositor_->AddObserver(this);
