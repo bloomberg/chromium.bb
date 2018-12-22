@@ -60,7 +60,7 @@ Polymer({
   onDeclineClick_: function() {
     if (this.finalized_)
       return;
-    this.finalized_ = true;
+
     this.browserProxy_.recordSkip();
     this.finished_();
   },
@@ -69,7 +69,7 @@ Polymer({
   onSetDefaultClick_: function() {
     if (this.finalized_)
       return;
-    this.finalized_ = true;
+
     this.browserProxy_.recordBeginSetDefault();
     this.browserProxy_.setAsDefault();
   },
@@ -88,6 +88,8 @@ Polymer({
 
   /** @private */
   finished_: function() {
+    this.finalized_ = true;
+
     welcome.navigateToNextStep();
   },
 });
