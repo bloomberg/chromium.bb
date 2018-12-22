@@ -267,7 +267,7 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Manifest {
   // Amends this Manifest with a subset of |other|. Namely, exposed and required
   // capabilities, exposed and required interface filter capabilities, packaged
   // services, and preloaded files are all added from |other| if present.
-  void Amend(Manifest other);
+  Manifest& Amend(Manifest other);
 
   std::string service_name;
   DisplayName display_name;
