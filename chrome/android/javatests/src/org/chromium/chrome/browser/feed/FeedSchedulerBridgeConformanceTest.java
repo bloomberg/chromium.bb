@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.feed;
 
-import static org.mockito.Mockito.mock;
-
 import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
 
@@ -19,6 +17,7 @@ import org.junit.Rule;
 import org.junit.rules.RuleChain;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 
 import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
@@ -57,6 +56,10 @@ public final class FeedSchedulerBridgeConformanceTest extends SchedulerConforman
                 }
             });
 
+    @Mock
+    private RequestManager mRequestManager;
+    @Mock
+    private SessionManager mSessionManager;
     private boolean mUseRequestManager;
 
     public FeedSchedulerBridgeConformanceTest(boolean useRequestManager) {
@@ -69,8 +72,7 @@ public final class FeedSchedulerBridgeConformanceTest extends SchedulerConforman
         scheduler = new FeedSchedulerBridge(Profile.getLastUsedProfile());
         if (mUseRequestManager) {
             ((FeedSchedulerBridge) scheduler)
-                    .initializeFeedDependencies(
-                            mock(RequestManager.class), mock(SessionManager.class));
+                    .initializeFeedDependencies(mRequestManager, mSessionManager);
         }
     }
 
