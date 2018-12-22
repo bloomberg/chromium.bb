@@ -1449,10 +1449,11 @@ void NetworkStateHandler::SortNetworkList(bool ensure_cellular) {
 
   // Note: usually active networks will precede inactive networks, however
   // this may briefly be untrue during state transitions (e.g. a network may
-  // transition to idle before the list is updated). Also separate Cellular
-  // networks (see below).
-  ManagedStateList cellular, active, non_wifi_visible, wifi_visible, hidden,
-      new_networks;
+  // transition to idle before the list is updated). Also separate inactive
+  // Mobile and VPN networks (see below).
+  ManagedStateList active, non_wifi_visible, wifi_visible, hidden, new_networks;
+  int cellular_count = 0;
+  bool have_default_cellular = false;
   for (ManagedStateList::iterator iter = network_list_.begin();
        iter != network_list_.end(); ++iter) {
     NetworkState* network = (*iter)->AsNetworkState();
@@ -1463,30 +1464,36 @@ void NetworkStateHandler::SortNetworkList(bool ensure_cellular) {
       continue;
     }
     if (NetworkTypePattern::Cellular().MatchesType(network->type())) {
-      cellular.push_back(std::move(*iter));
-      continue;
+      ++cellular_count;
+      if ((*iter)->AsNetworkState()->IsDefaultCellular())
+        have_default_cellular = true;
     }
     if (network->IsConnectingOrConnected()) {
       active.push_back(std::move(*iter));
       continue;
     }
-    if (network->visible()) {
-      if (NetworkTypePattern::WiFi().MatchesType(network->type()))
-        wifi_visible.push_back(std::move(*iter));
-      else
-        non_wifi_visible.push_back(std::move(*iter));
-    } else {
+    if (!network->visible()) {
       hidden.push_back(std::move(*iter));
+      continue;
     }
+    if (NetworkTypePattern::WiFi().MatchesType(network->type()))
+      wifi_visible.push_back(std::move(*iter));
+    else
+      non_wifi_visible.push_back(std::move(*iter));
   }
-  if (ensure_cellular)
-    EnsureCellularNetwork(&cellular);
-  // List active non Cellular network first.
+
+  // List active networks first (will always include Ethernet).
   network_list_ = std::move(active);
-  // Ethernet is always active so list any Cellular network next.
-  std::move(cellular.begin(), cellular.end(),
-            std::back_inserter(network_list_));
-  // List any other non WiFi visible networks (i.e. WiMAX).
+
+  // If a default Cellular network is required, add it next.
+  if (ensure_cellular && cellular_count == 0) {
+    std::unique_ptr<NetworkState> default_cellular =
+        MaybeCreateDefaultCellularNetwork();
+    if (default_cellular)
+      network_list_.push_back(std::move(default_cellular));
+  }
+
+  // List non wifi visible networks next (Mobile and VPN).
   std::move(non_wifi_visible.begin(), non_wifi_visible.end(),
             std::back_inserter(network_list_));
   // List WiFi networks last.
@@ -1498,6 +1505,11 @@ void NetworkStateHandler::SortNetworkList(bool ensure_cellular) {
   std::move(new_networks.begin(), new_networks.end(),
             std::back_inserter(network_list_));
   network_list_sorted_ = true;
+
+  // If we have > 1 Cellular NetworkState and we have created a default Cellular
+  // NetworkState, remove it.
+  if (ensure_cellular && cellular_count > 1 && have_default_cellular)
+    RemoveDefaultCellularNetwork();
 }
 
 void NetworkStateHandler::UpdateNetworkStats() {
@@ -1622,40 +1634,30 @@ void NetworkStateHandler::UpdateCaptivePortalProvider(NetworkState* network) {
                                     portal_iter->second.name);
 }
 
-void NetworkStateHandler::EnsureCellularNetwork(
-    ManagedStateList* cellular_networks) {
+std::unique_ptr<NetworkState>
+NetworkStateHandler::MaybeCreateDefaultCellularNetwork() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(!notifying_network_observers_);
   const DeviceState* device =
       GetDeviceStateByType(NetworkTypePattern::Cellular());
-  if (!device) {
-    cellular_networks->clear();
-    return;
-  }
-  if (cellular_networks->empty()) {
-    // If no SIM is present there will not be useful user facing Device
-    // information, so do not create a default Cellular network.
-    if (device->IsSimAbsent())
-      return;
-    // Create a default Cellular network. Properties from the associated Device
-    // will be provided to the UI.
-    std::unique_ptr<NetworkState> network =
-        NetworkState::CreateDefaultCellular(device->path());
-    network->set_name(device->GetName());
-    UpdateGuid(network.get());
-    cellular_networks->push_back(std::move(network));
-    return;
-  }
-  if (cellular_networks->size() == 1)
-    return;
-  // If we have > 1 Cellular NetworkState, then Shill provided a Cellular
-  // Service after the default Cellular NetworkState was created, so remove the
-  // default state.
-  for (auto iter = cellular_networks->begin(); iter != cellular_networks->end();
-       ++iter) {
+  // If no SIM is present there will not be useful user facing Device
+  // information, so do not create a default Cellular network.
+  if (!device || device->IsSimAbsent())
+    return nullptr;
+  // Create a default Cellular network. Properties from the associated Device
+  // will be provided to the UI.
+  std::unique_ptr<NetworkState> network =
+      NetworkState::CreateDefaultCellular(device->path());
+  network->set_name(device->GetName());
+  UpdateGuid(network.get());
+  return network;
+}
+
+void NetworkStateHandler::RemoveDefaultCellularNetwork() {
+  for (auto iter = network_list_.begin(); iter != network_list_.end(); ++iter) {
     if ((*iter)->AsNetworkState()->IsDefaultCellular()) {
-      cellular_networks->erase(iter);
-      break;  // There will only ever be one default Cellular network.
+      network_list_.erase(iter);
+      return;  // There will only ever be one default Cellular network.
     }
   }
 }

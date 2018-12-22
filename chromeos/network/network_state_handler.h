@@ -479,10 +479,13 @@ class CHROMEOS_EXPORT NetworkStateHandler
   void UpdateCaptivePortalProvider(NetworkState* network);
 
   // Cellular networks may not have an associated Shill Service (e.g. when the
-  // SIM is locked or a mobile network is not available). To simplify the UI,
-  // if a Cellular Device exists |cellular_networks| will be modified to contain
-  // exactly one network, creating a default network if necessary.
-  void EnsureCellularNetwork(ManagedStateList* cellular_networks);
+  // SIM is locked or a mobile network is not available). This returns a new
+  // default cellular network if necessary.
+  std::unique_ptr<NetworkState> MaybeCreateDefaultCellularNetwork();
+
+  // Removes the default Cellular network if it exists. Called when there is
+  // more than one Cellular network in the list.
+  void RemoveDefaultCellularNetwork();
 
   // Sends NetworkListChanged() to observers and logs an event.
   void NotifyNetworkListChanged();
