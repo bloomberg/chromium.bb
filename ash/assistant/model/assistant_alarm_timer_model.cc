@@ -38,6 +38,12 @@ void AssistantAlarmTimerModel::RemoveAllAlarmsTimers() {
   NotifyAllAlarmsTimersRemoved();
 }
 
+const AlarmTimer* AssistantAlarmTimerModel::GetAlarmTimerById(
+    const std::string& id) const {
+  auto it = alarms_timers_.find(id);
+  return it != alarms_timers_.end() ? &it->second : nullptr;
+}
+
 void AssistantAlarmTimerModel::Tick() {
   const base::TimeTicks now = base::TimeTicks::Now();
 

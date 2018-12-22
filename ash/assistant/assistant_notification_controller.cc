@@ -27,6 +27,32 @@ constexpr char kNotifierId[] = "assistant";
 
 // Helpers ---------------------------------------------------------------------
 
+std::unique_ptr<message_center::Notification> CreateSystemNotification(
+    const message_center::NotifierId& notifier_id,
+    const chromeos::assistant::mojom::AssistantNotification* notification) {
+  const base::string16 title = base::UTF8ToUTF16(notification->title);
+  const base::string16 message = base::UTF8ToUTF16(notification->message);
+  const base::string16 display_source =
+      l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_NOTIFICATION_DISPLAY_SOURCE);
+
+  message_center::RichNotificationData data;
+  for (const auto& button : notification->buttons) {
+    data.buttons.push_back(
+        message_center::ButtonInfo(base::UTF8ToUTF16(button->label)));
+  }
+
+  std::unique_ptr<message_center::Notification> system_notification =
+      ash::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, notification->client_id,
+          title, message, display_source, GURL(), notifier_id, data,
+          /*delegate=*/nullptr, kNotificationAssistantIcon,
+          message_center::SystemNotificationWarningLevel::NORMAL);
+
+  system_notification->set_priority(message_center::DEFAULT_PRIORITY);
+
+  return system_notification;
+}
+
 message_center::NotifierId GetNotifierId() {
   return message_center::NotifierId(
       message_center::NotifierType::SYSTEM_COMPONENT, kNotifierId);
@@ -77,9 +103,9 @@ void AssistantNotificationController::SetAssistant(
 
 // mojom::AssistantNotificationController --------------------------------------
 
-void AssistantNotificationController::AddNotification(
+void AssistantNotificationController::AddOrUpdateNotification(
     AssistantNotificationPtr notification) {
-  model_.AddNotification(std::move(notification));
+  model_.AddOrUpdateNotification(std::move(notification));
 }
 
 void AssistantNotificationController::RemoveNotificationById(
@@ -102,35 +128,23 @@ void AssistantNotificationController::RemoveAllNotifications(bool from_server) {
 
 void AssistantNotificationController::OnNotificationAdded(
     const AssistantNotification* notification) {
-  DCHECK(assistant_);
-
-  // Do not show system notification if the setting is false.
+  // Do not show system notifications if the setting is disabled.
   if (!Shell::Get()->voice_interaction_controller()->notification_enabled())
     return;
 
-  // Create the specified system |notification|.
-  const base::string16 title = base::UTF8ToUTF16(notification->title);
-  const base::string16 message = base::UTF8ToUTF16(notification->message);
-  const base::string16 display_source =
-      l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_NOTIFICATION_DISPLAY_SOURCE);
-
-  message_center::RichNotificationData data;
-  for (const auto& button : notification->buttons) {
-    data.buttons.push_back(
-        message_center::ButtonInfo(base::UTF8ToUTF16(button->label)));
-  }
-
-  std::unique_ptr<message_center::Notification> system_notification =
-      ash::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, notification->client_id,
-          title, message, display_source, GURL(), notifier_id_, data,
-          /*delegate=*/nullptr, kNotificationAssistantIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL);
-
-  system_notification->set_priority(message_center::DEFAULT_PRIORITY);
-
   message_center::MessageCenter::Get()->AddNotification(
-      std::move(system_notification));
+      CreateSystemNotification(notifier_id_, notification));
+}
+
+void AssistantNotificationController::OnNotificationUpdated(
+    const AssistantNotification* notification) {
+  // Do not show system notifications if the setting is disabled.
+  if (!Shell::Get()->voice_interaction_controller()->notification_enabled())
+    return;
+
+  message_center::MessageCenter::Get()->UpdateNotification(
+      notification->client_id,
+      CreateSystemNotification(notifier_id_, notification));
 }
 
 void AssistantNotificationController::OnNotificationRemoved(

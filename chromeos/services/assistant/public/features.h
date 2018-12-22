@@ -36,11 +36,21 @@ extern const base::Feature kEnableStereoAudioInput;
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kTimerNotification;
 
+// Enables timer ticks. This feature causes alarms/timers tracked by the
+// AssistantAlarmTimerController to tick at a fixed interval, delivering updates
+// to AssistantAlarmTimerModelObservers of time remaining/elapsed since expiry.
+// When enabled in conjunction with |kTimerNotification|, Assistant alarm/timer
+// notifications will be updated at each tick.
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+extern const base::Feature kTimerTicks;
+
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsDspHotwordEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsStereoAudioInputEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsTimerNotificationEnabled();
+
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsTimerTicksEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsWarmerWelcomeEnabled();
 

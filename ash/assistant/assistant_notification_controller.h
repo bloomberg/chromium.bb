@@ -49,7 +49,7 @@ class ASH_EXPORT AssistantNotificationController
   void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
 
   // mojom::AssistantNotificationController:
-  void AddNotification(AssistantNotificationPtr notification) override;
+  void AddOrUpdateNotification(AssistantNotificationPtr notification) override;
   void RemoveNotificationById(const std::string& id, bool from_server) override;
   void RemoveNotificationByGroupingKey(const std::string& grouping_id,
                                        bool from_server) override;
@@ -57,6 +57,8 @@ class ASH_EXPORT AssistantNotificationController
 
   // AssistantNotificationModelObserver:
   void OnNotificationAdded(const AssistantNotification* notification) override;
+  void OnNotificationUpdated(
+      const AssistantNotification* notification) override;
   void OnNotificationRemoved(const AssistantNotification* notification,
                              bool from_server) override;
   void OnAllNotificationsRemoved(bool from_server) override;
@@ -67,6 +69,7 @@ class ASH_EXPORT AssistantNotificationController
       const std::string& id,
       const base::Optional<int>& button_index,
       const base::Optional<base::string16>& reply) override;
+  void OnNotificationUpdated(const std::string& notification) override {}
   void OnNotificationRemoved(const std::string& notification_id,
                              bool by_user) override;
 

@@ -42,6 +42,8 @@ class AssistantAlarmTimerController
   // AssistantAlarmTimerModelObserver:
   void OnAlarmTimerAdded(const AlarmTimer& alarm_timer,
                          const base::TimeDelta& time_remaining) override;
+  void OnAlarmsTimersTicked(
+      const std::map<std::string, base::TimeDelta>& times_remaining) override;
   void OnAllAlarmsTimersRemoved() override;
 
  private:

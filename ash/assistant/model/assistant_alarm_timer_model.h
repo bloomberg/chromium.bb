@@ -24,6 +24,9 @@ struct AlarmTimer {
   std::string id;
   AlarmTimerType type;
   base::TimeTicks end_time;
+
+  // Returns true if this alarm/timer has expired.
+  bool expired() const { return base::TimeTicks::Now() >= end_time; }
 };
 
 // The model belonging to AssistantAlarmTimerController which tracks alarm/timer
@@ -42,6 +45,9 @@ class AssistantAlarmTimerModel {
 
   // Remove all alarms/timers from the model.
   void RemoveAllAlarmsTimers();
+
+  // Returns the alarm/timer uniquely identified by |id|.
+  const AlarmTimer* GetAlarmTimerById(const std::string& id) const;
 
   // Invoke to tick any alarms/timers and to notify observers of time remaining.
   void Tick();
