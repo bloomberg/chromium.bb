@@ -13,4 +13,10 @@ std::string GetVersionString() {
   return version_info::GetVersionStringWithModifier(GetChannelName());
 }
 
+version_info::Channel GetChannel() {
+  if (!version_info::IsChannelSet())
+    version_info::SetChannel(channel_info_internal::InitChannel());
+  return version_info::GetChannel();
+}
+
 }  // namespace chrome

@@ -24,8 +24,12 @@ std::string GetChannelName() {
   return std::string();
 }
 
-version_info::Channel GetChannel() {
+namespace channel_info_internal {
+
+version_info::Channel InitChannel() {
   return version_info::android::GetChannel();
 }
+
+}  // namespace channel_info_internal
 
 }  // namespace chrome

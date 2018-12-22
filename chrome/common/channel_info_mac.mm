@@ -55,8 +55,12 @@ version_info::Channel GetChannelByName(const std::string& channel) {
   return version_info::Channel::UNKNOWN;
 }
 
-version_info::Channel GetChannel() {
+namespace channel_info_internal {
+
+version_info::Channel InitChannel() {
   return GetChannelByName(GetChannelName());
 }
+
+}  // namespace channel_info_internal
 
 }  // namespace chrome

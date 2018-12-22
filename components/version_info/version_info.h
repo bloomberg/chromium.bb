@@ -39,6 +39,19 @@ bool IsOfficialBuild();
 // Returns the OS type, e.g. "Windows", "Linux", "FreeBDS", ...
 std::string GetOSType();
 
+// Returns whether SetChannel() has been called or not.
+bool IsChannelSet();
+
+// Must be called before calling GetChannel(). Subsequent calls are no-ops.
+// Ideally, there should be only one caller to SetChannel(). In situations where
+// there are multiple callers, then the first caller "wins". To prevent
+// inconsistencies with GetChannel(), all the callers should pass in the same
+// |channel| value.
+void SetChannel(Channel channel);
+
+// Gets the channel. DCHECKs if SetChannel() never got called.
+Channel GetChannel();
+
 // Returns a string equivalent of |channel|, indenpendent of whether the build
 // is branded or not and without any additional modifiers.
 std::string GetChannelString(Channel channel);

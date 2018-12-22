@@ -67,8 +67,12 @@ std::string GetChannelSuffixForDataDir() {
 }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
-version_info::Channel GetChannel() {
+namespace channel_info_internal {
+
+version_info::Channel InitChannel() {
   return GetChannelImpl(nullptr, nullptr);
 }
+
+}  // namespace channel_info_internal
 
 }  // namespace chrome

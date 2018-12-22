@@ -12,6 +12,13 @@
 
 namespace version_info {
 
+namespace {
+
+bool g_is_channel_set = false;
+Channel g_channel = Channel::UNKNOWN;
+
+}  // namespace
+
 std::string GetProductNameAndVersionForUserAgent() {
   return "Chrome/" + GetVersionNumber();
 }
@@ -63,6 +70,23 @@ std::string GetOSType() {
 #else
   return "Unknown";
 #endif
+}
+
+bool IsChannelSet() {
+  return g_is_channel_set;
+}
+
+void SetChannel(Channel channel) {
+  if (g_is_channel_set)
+    return;
+
+  g_is_channel_set = true;
+  g_channel = channel;
+}
+
+Channel GetChannel() {
+  DCHECK(g_is_channel_set);
+  return g_channel;
 }
 
 std::string GetChannelString(Channel channel) {
