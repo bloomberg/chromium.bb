@@ -319,8 +319,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void ClientDroppedNavigation() override;
   void MarkAsLoading() override;
   bool CreatePlaceholderDocumentLoader(
-      std::unique_ptr<WebNavigationParams>,
-      WebNavigationType,
+      const WebNavigationInfo&,
       std::unique_ptr<WebDocumentLoader::ExtraData>) override;
 
   void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);

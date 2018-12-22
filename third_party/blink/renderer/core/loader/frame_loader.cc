@@ -1121,8 +1121,7 @@ mojom::CommitResult FrameLoader::CommitSameDocumentNavigation(
 }
 
 bool FrameLoader::CreatePlaceholderDocumentLoader(
-    std::unique_ptr<WebNavigationParams> navigation_params,
-    WebNavigationType navigation_type,
+    const WebNavigationInfo& info,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   if (!CancelProvisionalLoaderForNewNavigation(
           true /* cancel_scheduled_navigations */,
@@ -1130,8 +1129,14 @@ bool FrameLoader::CreatePlaceholderDocumentLoader(
     return false;
   }
 
-  provisional_document_loader_ = CreateDocumentLoader(
-      navigation_type, std::move(navigation_params), std::move(extra_data));
+  auto navigation_params = std::make_unique<WebNavigationParams>();
+  navigation_params->request = info.url_request;
+  navigation_params->frame_load_type = info.frame_load_type;
+  navigation_params->is_client_redirect = info.is_client_redirect;
+  navigation_params->navigation_timings.input_start = info.input_start;
+  provisional_document_loader_ =
+      CreateDocumentLoader(info.navigation_type, std::move(navigation_params),
+                           std::move(extra_data));
   provisional_document_loader_->AppendRedirect(
       provisional_document_loader_->Url());
   frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
