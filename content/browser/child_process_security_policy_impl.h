@@ -162,10 +162,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   // Upon destruction, child processess should unregister themselves by caling
   // this method exactly once.
-  //
-  // Note: IO thread is expected to keep pre-Remove() permissions until
-  // RemovePendingIDOnIOThread() runs on the IO thread. The UI thread is
-  // expected to have no permissions after Remove() returns.
   void Remove(int child_id);
 
   // Whenever the browser processes commands the child process to commit a URL,
@@ -371,14 +367,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
       const std::string& filesystem_id,
       int permission);
 
-  // Removes |child_id| from |pending_remove_state_| on the IO thread.
-  void RemovePendingIDOnIOThread(int child_id);
-
-  // Gets the SecurityState object associated with |child_id|.
-  // Note: Returned object is only valid for the duration the caller holds
-  // |lock_|.
-  SecurityState* GetSecurityState(int child_id) EXCLUSIVE_LOCKS_REQUIRED(lock_);
-
   // You must acquire this lock before reading or writing any members of this
   // class.  You must not block while holding this lock.
   base::Lock lock_;
@@ -399,13 +387,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // owned by this object and are protected by |lock_|.  References to them must
   // not escape this class.
   SecurityStateMap security_state_ GUARDED_BY(lock_);
-
-  // This map holds the SecurityState for a child process after Remove()
-  // is called on the UI thread and until RemovePendingIDOnIOThread() is
-  // called on the IO thread. This is necessary to provide consistent
-  // security decisions and avoid races between the UI & IO threads during
-  // child process shutdown.
-  SecurityStateMap pending_remove_state_ GUARDED_BY(lock_);
 
   FileSystemPermissionPolicyMap file_system_policy_map_ GUARDED_BY(lock_);
 

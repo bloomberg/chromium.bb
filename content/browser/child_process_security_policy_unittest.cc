@@ -7,8 +7,6 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/synchronization/waitable_event.h"
-#include "base/test/bind_test_util.h"
 #include "base/test/mock_log.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/site_instance_impl.h"
@@ -61,9 +59,7 @@ class ChildProcessSecurityPolicyTestBrowserClient
 
 class ChildProcessSecurityPolicyTest : public testing::Test {
  public:
-  ChildProcessSecurityPolicyTest()
-      : thread_bundle_(TestBrowserThreadBundle::REAL_IO_THREAD),
-        old_browser_client_(nullptr) {}
+  ChildProcessSecurityPolicyTest() : old_browser_client_(nullptr) {}
 
   void SetUp() override {
     old_browser_client_ = SetBrowserClientForTesting(&test_browser_client_);
@@ -995,85 +991,6 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace) {
   EXPECT_TRUE(p->CanRedirectToURL(url));
   EXPECT_FALSE(p->CanReadFile(kRendererID, file));
   EXPECT_FALSE(p->HasWebUIBindings(kRendererID));
-}
-
-TEST_F(ChildProcessSecurityPolicyTest, RemoveRace_CanAccessDataForOrigin) {
-  ChildProcessSecurityPolicyImpl* p =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-
-  GURL url("file:///etc/passwd");
-
-  p->Add(kRendererID);
-
-  base::WaitableEvent ready_for_remove_event;
-  base::WaitableEvent remove_called_event;
-  base::WaitableEvent pending_remove_complete_event;
-
-  bool io_before_remove = false;
-  bool io_while_remove_pending = false;
-  bool io_after_remove_complete = false;
-  bool ui_before_remove = false;
-  bool ui_while_remove_pending = false;
-  bool ui_after_remove_complete = false;
-
-  // Post a task that will run on the IO thread before the task that
-  // Remove() will post to the IO thread.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO}, base::BindLambdaForTesting([&]() {
-        // Capture state on the IO thread before Remove() is called.
-        io_before_remove = p->CanAccessDataForOrigin(kRendererID, url);
-
-        // Tell the UI thread we are ready for Remove() to be called.
-        ready_for_remove_event.Signal();
-
-        // Wait for Remove() to be called on the UI thread.
-        remove_called_event.Wait();
-
-        // Capture state after Remove() is called, but before its task on
-        // the IO thread runs.
-        io_while_remove_pending = p->CanAccessDataForOrigin(kRendererID, url);
-      }));
-
-  ready_for_remove_event.Wait();
-
-  ui_before_remove = p->CanAccessDataForOrigin(kRendererID, url);
-
-  p->Remove(kRendererID);
-
-  // Post a task to run after the task Remove() posted on the IO thread.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO}, base::BindLambdaForTesting([&]() {
-        io_after_remove_complete = p->CanAccessDataForOrigin(kRendererID, url);
-
-        // Tell the UI thread that the task from Remove() has completed on the
-        // IO thread.
-        pending_remove_complete_event.Signal();
-      }));
-
-  // Capture state after Remove() has been called, but before its IO thread
-  // task has run. We know the IO thread task hasn't run yet because the
-  // task we posted before the Remove() call is waiting for us to signal
-  // |remove_called_event|.
-  ui_while_remove_pending = p->CanAccessDataForOrigin(kRendererID, url);
-
-  // Unblock the IO thread so the pending remove events can run.
-  remove_called_event.Signal();
-
-  pending_remove_complete_event.Wait();
-
-  ui_after_remove_complete = p->CanAccessDataForOrigin(kRendererID, url);
-
-  // Verify expected states at various parts of the removal.
-  // Note: IO thread is expected to keep pre-Remove() permissions until its
-  // remove task runs on the IO thread. The UI thread is expected to have no
-  // permissions after Remove() returns.
-  EXPECT_TRUE(io_before_remove);
-  EXPECT_TRUE(io_while_remove_pending);
-  EXPECT_FALSE(io_after_remove_complete);
-
-  EXPECT_TRUE(ui_before_remove);
-  EXPECT_FALSE(ui_while_remove_pending);
-  EXPECT_FALSE(ui_after_remove_complete);
 }
 
 // Test the granting of origin permissions, and their interactions with
