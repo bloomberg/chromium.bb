@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/views/apps/app_window_desktop_window_tree_host_win.h"
 
+#include <windows.h>
+
 #include <dwmapi.h>
+#include <uxtheme.h>
 
 #include "base/win/windows_version.h"
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_win.h"
@@ -39,43 +42,29 @@ bool AppWindowDesktopWindowTreeHostWin::GetClientAreaInsets(
   return true;
 }
 
+bool AppWindowDesktopWindowTreeHostWin::GetDwmFrameInsetsInPixels(
+    gfx::Insets* insets) const {
+  // If there's no glass view we never need to change DWM frame insets.
+  if (!GetWidget()->client_view() || !app_window_->glass_frame_view() ||
+      !DesktopWindowTreeHostWin::ShouldUseNativeFrame())
+    return false;
+
+  if (GetWidget()->IsFullscreen()) {
+    *insets = gfx::Insets();
+  } else {
+    // If the opaque frame is visible, we use the default (zero) margins.
+    // Otherwise, we need to figure out how to extend the glass in.
+    *insets = app_window_->glass_frame_view()->GetGlassInsets();
+    // The DWM API's expect values in pixels. We need to convert from DIP to
+    // pixels here.
+    *insets = insets->Scale(display::win::GetDPIScale());
+  }
+  return true;
+}
+
 void AppWindowDesktopWindowTreeHostWin::HandleFrameChanged() {
   // We need to update the glass region on or off before the base class adjusts
   // the window region.
   app_window_->OnCanHaveAlphaEnabledChanged();
-  UpdateDWMFrame();
   DesktopWindowTreeHostWin::HandleFrameChanged();
-}
-
-void AppWindowDesktopWindowTreeHostWin::PostHandleMSG(UINT message,
-                                                      WPARAM w_param,
-                                                      LPARAM l_param) {
-  switch (message) {
-    case WM_WINDOWPOSCHANGED: {
-      UpdateDWMFrame();
-      break;
-    }
-  }
-}
-
-void AppWindowDesktopWindowTreeHostWin::UpdateDWMFrame() {
-  if (!GetWidget()->client_view() || !app_window_->glass_frame_view())
-    return;
-
-  MARGINS margins = {0};
-
-  // If the opaque frame is visible, we use the default (zero) margins.
-  // Otherwise, we need to figure out how to extend the glass in.
-  if (app_window_->glass_frame_view()) {
-    gfx::Insets insets = app_window_->glass_frame_view()->GetGlassInsets();
-    // The DWM API's expect values in pixels. We need to convert from DIP to
-    // pixels here.
-    insets = insets.Scale(display::win::GetDPIScale());
-    margins.cxLeftWidth = insets.left();
-    margins.cxRightWidth = insets.right();
-    margins.cyBottomHeight = insets.bottom();
-    margins.cyTopHeight = insets.top();
-  }
-
-  DwmExtendFrameIntoClientArea(GetHWND(), &margins);
 }
