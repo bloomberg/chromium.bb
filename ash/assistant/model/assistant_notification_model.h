@@ -32,8 +32,10 @@ class AssistantNotificationModel {
   void AddObserver(AssistantNotificationModelObserver* observer);
   void RemoveObserver(AssistantNotificationModelObserver* observer);
 
-  // Adds the specified |notification| to the model.
-  void AddNotification(AssistantNotificationPtr notification);
+  // Adds or updates the specified |notification| in the model. If there is an
+  // existing notification with the same |client_id|, an update will occur.
+  // Otherwise a new notification will be added.
+  void AddOrUpdateNotification(AssistantNotificationPtr notification);
 
   // Removes the notification uniquely identified by |id|. If |from_server| is
   // true the request to remove was initiated by the server.
@@ -51,8 +53,13 @@ class AssistantNotificationModel {
   // Returns the notification uniquely identified by |id|.
   const AssistantNotification* GetNotificationById(const std::string& id) const;
 
+  // Returns true if the model contains a notification uniquely identified by
+  // |id|, otherwise false.
+  bool HasNotificationForId(const std::string& id) const;
+
  private:
   void NotifyNotificationAdded(const AssistantNotification* notification);
+  void NotifyNotificationUpdated(const AssistantNotification* notification);
   void NotifyNotificationRemoved(const AssistantNotification* notification,
                                  bool from_server);
   void NotifyAllNotificationsRemoved(bool from_server);

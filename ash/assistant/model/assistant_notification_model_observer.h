@@ -27,6 +27,10 @@ class AssistantNotificationModelObserver : public base::CheckedObserver {
   // Invoked when the specified |notification| has been added.
   virtual void OnNotificationAdded(const AssistantNotification* notification) {}
 
+  // Invoked when the specified |notification| has been updated.
+  virtual void OnNotificationUpdated(
+      const AssistantNotification* notification) {}
+
   // Invoked when the specified |notification| has been removed. If
   // |from_server| is true the request to remove was initiated by the server.
   virtual void OnNotificationRemoved(const AssistantNotification* notification,

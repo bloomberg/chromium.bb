@@ -972,7 +972,7 @@ void AssistantManagerServiceImpl::OnOpenUrlOnMainThread(
 
 void AssistantManagerServiceImpl::OnShowNotificationOnMainThread(
     const mojom::AssistantNotificationPtr& notification) {
-  service_->assistant_notification_controller()->AddNotification(
+  service_->assistant_notification_controller()->AddOrUpdateNotification(
       notification.Clone());
 }
 

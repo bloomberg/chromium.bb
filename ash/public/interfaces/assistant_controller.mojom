@@ -44,13 +44,14 @@ interface AssistantAlarmTimerController {
 // AssistantController. Currently used by the Assistant service to modify
 // Assistant notification state in Ash in response to LibAssistant events.
 interface AssistantNotificationController {
-  // Requests that the specified |notification| be added.
-  AddNotification(chromeos.assistant.mojom.AssistantNotification notification);
+  // Requests that the specified |notification| be added or updated. If the
+  // |client_id| for |notification| matches that of an existing notification,
+  // an update will occur. Otherwise, a new notification will be added.
+  AddOrUpdateNotification(
+    chromeos.assistant.mojom.AssistantNotification notification);
 
-  // Requests that the notification uniquely identified by |id| be removed.
-  // Note that |id| refers to the notification's client id which may or may not
-  // be the same as its server id. If |from_server| is true the request to
-  // remove was initiated by the server.
+  // Requests that the notification uniquely identified by |id| be removed. If
+  // |from_server| is true the request to remove was initiated by the server.
   RemoveNotificationById(string id, bool from_server);
 
   // Requests that all notifications associated with the given |grouping_key|

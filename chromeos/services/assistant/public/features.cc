@@ -28,6 +28,9 @@ const base::Feature kEnableStereoAudioInput{"AssistantEnableStereoAudioInput",
 const base::Feature kTimerNotification{"ChromeOSAssistantTimerNotification",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kTimerTicks{"ChromeOSAssistantTimerTicks",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsDspHotwordEnabled() {
   return base::FeatureList::IsEnabled(kEnableDspHotword);
 }
@@ -38,6 +41,10 @@ bool IsStereoAudioInputEnabled() {
 
 bool IsTimerNotificationEnabled() {
   return base::FeatureList::IsEnabled(kTimerNotification);
+}
+
+bool IsTimerTicksEnabled() {
+  return base::FeatureList::IsEnabled(kTimerTicks);
 }
 
 bool IsWarmerWelcomeEnabled() {

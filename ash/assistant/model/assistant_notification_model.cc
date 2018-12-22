@@ -23,15 +23,19 @@ void AssistantNotificationModel::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void AssistantNotificationModel::AddNotification(
+void AssistantNotificationModel::AddOrUpdateNotification(
     AssistantNotificationPtr notification) {
   AssistantNotification* ptr = notification.get();
 
   DCHECK(!ptr->client_id.empty());
-  DCHECK(!base::ContainsKey(notifications_, ptr->client_id));
+  bool is_update = HasNotificationForId(ptr->client_id);
 
   notifications_[ptr->client_id] = std::move(notification);
-  NotifyNotificationAdded(ptr);
+
+  if (is_update)
+    NotifyNotificationUpdated(ptr);
+  else
+    NotifyNotificationAdded(ptr);
 }
 
 void AssistantNotificationModel::RemoveNotificationById(const std::string& id,
@@ -74,10 +78,21 @@ AssistantNotificationModel::GetNotificationById(const std::string& id) const {
   return it != notifications_.end() ? it->second.get() : nullptr;
 }
 
+bool AssistantNotificationModel::HasNotificationForId(
+    const std::string& id) const {
+  return base::ContainsKey(notifications_, id);
+}
+
 void AssistantNotificationModel::NotifyNotificationAdded(
     const AssistantNotification* notification) {
   for (auto& observer : observers_)
     observer.OnNotificationAdded(notification);
+}
+
+void AssistantNotificationModel::NotifyNotificationUpdated(
+    const AssistantNotification* notification) {
+  for (auto& observer : observers_)
+    observer.OnNotificationUpdated(notification);
 }
 
 void AssistantNotificationModel::NotifyNotificationRemoved(
