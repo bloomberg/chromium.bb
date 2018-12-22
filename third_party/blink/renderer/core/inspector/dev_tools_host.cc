@@ -44,7 +44,6 @@
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/inspector/inspector_frontend_client.h"
-#include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
@@ -213,27 +212,6 @@ void DevToolsHost::ShowContextMenu(LocalFrame* target_frame,
         target_frame, x * zoom, y * zoom, menu_provider);
   }
 }
-
-String DevToolsHost::getSelectionBackgroundColor() {
-  return LayoutTheme::GetTheme().ActiveSelectionBackgroundColor().Serialized();
-}
-
-String DevToolsHost::getSelectionForegroundColor() {
-  return LayoutTheme::GetTheme().ActiveSelectionForegroundColor().Serialized();
-}
-
-String DevToolsHost::getInactiveSelectionBackgroundColor() {
-  return LayoutTheme::GetTheme()
-      .InactiveSelectionBackgroundColor()
-      .Serialized();
-}
-
-String DevToolsHost::getInactiveSelectionForegroundColor() {
-  return LayoutTheme::GetTheme()
-      .InactiveSelectionForegroundColor()
-      .Serialized();
-}
-
 
 bool DevToolsHost::isHostedMode() {
   return false;
