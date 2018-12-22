@@ -15,12 +15,10 @@
 #include "content/browser/renderer_host/render_widget_host_view_event_handler.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
-#include "content/public/browser/overscroll_configuration.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
-#include "content/public/test/scoped_overscroll_modes.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -864,80 +862,6 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest, HiddenOnScroll) {
             rwhva->selection_controller()->active_status());
   EXPECT_FALSE(selection_controller_test_api.temporarily_hidden());
   EXPECT_TRUE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
-}
-
-// Tests that touch selection gets deactivated after an overscroll completes.
-// This only happens in the gesture nav with parallax effect.
-IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest,
-                       HiddenAfterOverscroll) {
-  ScopedHistoryNavigationMode scoped_mode(
-      OverscrollConfig::HistoryNavigationMode::kParallaxUi);
-
-  // Set the page up.
-  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/touch_selection.html"));
-  InitSelectionController();
-
-  RenderWidgetHostViewAura* rwhva = GetRenderWidgetHostViewAura();
-  EXPECT_EQ(ui::TouchSelectionController::INACTIVE,
-            rwhva->selection_controller()->active_status());
-  EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
-
-  // Long-press on the text and wait for touch handles to appear.
-  selection_controller_client()->InitWaitForSelectionEvent(
-      ui::SELECTION_HANDLES_SHOWN);
-
-  gfx::PointF point;
-  ASSERT_TRUE(GetPointInsideText(&point));
-  ui::GestureEventDetails long_press_details(ui::ET_GESTURE_LONG_PRESS);
-  long_press_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
-  ui::GestureEvent long_press(point.x(), point.y(), 0, ui::EventTimeForNow(),
-                              long_press_details);
-  rwhva->OnGestureEvent(&long_press);
-
-  selection_controller_client()->Wait();
-
-  EXPECT_EQ(ui::TouchSelectionController::SELECTION_ACTIVE,
-            rwhva->selection_controller()->active_status());
-  EXPECT_TRUE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
-
-  // Scroll such that an overscroll is initiated and wait for it to complete:
-  // touch selection should not be active at the end.
-  selection_controller_client()->InitWaitForSelectionEvent(
-      ui::SELECTION_HANDLES_CLEARED);
-
-  float event_x = 10.f;
-  const float event_y = 10.f;
-  ui::GestureEventDetails scroll_begin_details(ui::ET_GESTURE_SCROLL_BEGIN);
-  scroll_begin_details.set_device_type(
-      ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
-  ui::GestureEvent scroll_begin(event_x, event_y, 0, ui::EventTimeForNow(),
-                                scroll_begin_details);
-  rwhva->OnGestureEvent(&scroll_begin);
-
-  const int window_width = rwhva->GetNativeView()->bounds().width();
-  const float overscroll_threshold = OverscrollConfig::GetThreshold(
-      OverscrollConfig::Threshold::kStartTouchscreen);
-  const float scroll_amount = window_width * overscroll_threshold + 1;
-  event_x += scroll_amount;
-  ui::GestureEventDetails scroll_update_details(ui::ET_GESTURE_SCROLL_UPDATE,
-                                                scroll_amount, 0);
-  scroll_update_details.set_device_type(
-      ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
-  ui::GestureEvent scroll_update(event_x, event_y, 0, ui::EventTimeForNow(),
-                                 scroll_update_details);
-  rwhva->OnGestureEvent(&scroll_update);
-
-  ui::GestureEventDetails scroll_end_details(ui::ET_GESTURE_SCROLL_END);
-  scroll_end_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
-  ui::GestureEvent scroll_end(event_x, event_y, 0, ui::EventTimeForNow(),
-                              scroll_end_details);
-  rwhva->OnGestureEvent(&scroll_end);
-
-  selection_controller_client()->Wait();
-
-  EXPECT_EQ(ui::TouchSelectionController::INACTIVE,
-            rwhva->selection_controller()->active_status());
-  EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
 }
 
 class TouchSelectionControllerClientAuraScaleFactorTest

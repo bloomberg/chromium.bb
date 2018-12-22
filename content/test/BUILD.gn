@@ -1631,9 +1631,6 @@ test("content_unittests") {
     "../browser/tracing/background_tracing_config_unittest.cc",
     "../browser/tracing/tracing_ui_unittest.cc",
     "../browser/web_contents/aura/gesture_nav_simple_unittest.cc",
-    "../browser/web_contents/aura/overscroll_navigation_overlay_unittest.cc",
-    "../browser/web_contents/aura/overscroll_window_animation_unittest.cc",
-    "../browser/web_contents/aura/overscroll_window_delegate_unittest.cc",
     "../browser/web_contents/web_contents_delegate_unittest.cc",
     "../browser/web_contents/web_contents_impl_unittest.cc",
     "../browser/web_contents/web_contents_user_data_unittest.cc",
@@ -2146,9 +2143,6 @@ test("content_unittests") {
     sources -= [
       "../browser/renderer_host/render_widget_host_view_aura_unittest.cc",
       "../browser/web_contents/aura/gesture_nav_simple_unittest.cc",
-      "../browser/web_contents/aura/overscroll_navigation_overlay_unittest.cc",
-      "../browser/web_contents/aura/overscroll_window_animation_unittest.cc",
-      "../browser/web_contents/aura/overscroll_window_delegate_unittest.cc",
       "../browser/web_contents/web_contents_view_aura_unittest.cc",
     ]
   }

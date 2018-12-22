@@ -22,7 +22,6 @@
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/dip_util.h"
-#include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/input/touch_selection_controller_client_aura.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
@@ -31,7 +30,6 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/web_contents/aura/gesture_nav_simple.h"
-#include "content/browser/web_contents/aura/overscroll_navigation_overlay.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/guest_mode.h"
@@ -73,7 +71,6 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/layer.h"
-#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/blink/web_input_event.h"
 #include "ui/events/event.h"
@@ -570,9 +567,6 @@ WebContentsViewAura::WebContentsViewAura(WebContentsImpl* web_contents,
                             MSG_ROUTING_NONE),
       drag_start_process_id_(ChildProcessHost::kInvalidUniqueID),
       drag_start_view_id_(ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE),
-      current_overscroll_gesture_(OVERSCROLL_NONE),
-      completed_overscroll_gesture_(OVERSCROLL_NONE),
-      navigation_overlay_(nullptr),
       init_rwhv_with_null_parent_for_testing_(false) {}
 
 void WebContentsViewAura::SetDelegateForTesting(
@@ -654,31 +648,18 @@ void WebContentsViewAura::InstallOverscrollControllerDelegate(
       OverscrollConfig::GetHistoryNavigationMode();
   switch (mode) {
     case OverscrollConfig::HistoryNavigationMode::kDisabled:
-      navigation_overlay_.reset();
+      gesture_nav_simple_.reset();
       break;
     case OverscrollConfig::HistoryNavigationMode::kParallaxUi:
-      view->overscroll_controller()->set_delegate(this);
-      if (!navigation_overlay_ && !is_mus_browser_plugin_guest_) {
-        navigation_overlay_.reset(
-            new OverscrollNavigationOverlay(web_contents_, window_.get()));
-      }
+      NOTREACHED();
       break;
     case OverscrollConfig::HistoryNavigationMode::kSimpleUi:
-      navigation_overlay_.reset();
       if (!gesture_nav_simple_)
-        gesture_nav_simple_.reset(new GestureNavSimple(web_contents_));
-      view->overscroll_controller()->set_delegate(gesture_nav_simple_.get());
+        gesture_nav_simple_ = std::make_unique<GestureNavSimple>(web_contents_);
       break;
   }
-}
-
-void WebContentsViewAura::CompleteOverscrollNavigation(OverscrollMode mode) {
-  if (!web_contents_->GetRenderWidgetHostView())
-    return;
-  navigation_overlay_->relay_delegate()->OnOverscrollComplete(mode);
-  ui::TouchSelectionController* selection_controller = GetSelectionController();
-  if (selection_controller)
-    selection_controller->HideAndDisallowShowingAutomatically();
+  if (view)
+    view->overscroll_controller()->set_delegate(gesture_nav_simple_.get());
 }
 
 ui::TouchSelectionController* WebContentsViewAura::GetSelectionController()
@@ -964,24 +945,12 @@ void WebContentsViewAura::RenderViewHostChanged(RenderViewHost* old_host,
 void WebContentsViewAura::SetOverscrollControllerEnabled(bool enabled) {
   RenderWidgetHostViewAura* view =
       ToRenderWidgetHostViewAura(web_contents_->GetRenderWidgetHostView());
-  if (view) {
+  if (view)
     view->SetOverscrollControllerEnabled(enabled);
-    if (enabled)
-      InstallOverscrollControllerDelegate(view);
-  }
-
-  if (!enabled) {
-    navigation_overlay_.reset();
-  } else if (!navigation_overlay_) {
-    if (is_mus_browser_plugin_guest_) {
-      // |is_mus_browser_plugin_guest_| implies this WebContentsViewAura is
-      // held inside a WebContentsViewGuest, which does not forward this call.
-      NOTREACHED();
-    } else {
-      navigation_overlay_.reset(
-          new OverscrollNavigationOverlay(web_contents_, window_.get()));
-    }
-  }
+  if (enabled)
+    InstallOverscrollControllerDelegate(view);
+  else
+    gesture_nav_simple_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1091,48 +1060,6 @@ void WebContentsViewAura::TakeFocus(bool reverse) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WebContentsViewAura, OverscrollControllerDelegate implementation:
-
-gfx::Size WebContentsViewAura::GetDisplaySize() const {
-  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
-  if (!rwhv)
-    return gfx::Size();
-
-  return display::Screen::GetScreen()
-      ->GetDisplayNearestView(rwhv->GetNativeView())
-      .size();
-}
-
-bool WebContentsViewAura::OnOverscrollUpdate(float delta_x, float delta_y) {
-  if (current_overscroll_gesture_ != OVERSCROLL_EAST &&
-      current_overscroll_gesture_ != OVERSCROLL_WEST) {
-    return false;
-  }
-
-  return navigation_overlay_->relay_delegate()->OnOverscrollUpdate(delta_x,
-                                                                   delta_y);
-}
-
-void WebContentsViewAura::OnOverscrollComplete(OverscrollMode mode) {
-  CompleteOverscrollNavigation(mode);
-}
-
-void WebContentsViewAura::OnOverscrollModeChange(
-    OverscrollMode old_mode,
-    OverscrollMode new_mode,
-    OverscrollSource source,
-    cc::OverscrollBehavior behavior) {
-  current_overscroll_gesture_ = new_mode;
-  navigation_overlay_->relay_delegate()->OnOverscrollModeChange(
-      old_mode, new_mode, source, behavior);
-  completed_overscroll_gesture_ = OVERSCROLL_NONE;
-}
-
-base::Optional<float> WebContentsViewAura::GetMaxOverscrollDelta() const {
-  return navigation_overlay_->relay_delegate()->GetMaxOverscrollDelta();
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, aura::WindowDelegate implementation:
 
 gfx::Size WebContentsViewAura::GetMinimumSize() const {
@@ -1196,14 +1123,7 @@ void WebContentsViewAura::OnDeviceScaleFactorChanged(
     float old_device_scale_factor,
     float new_device_scale_factor) {}
 
-void WebContentsViewAura::OnWindowDestroying(aura::Window* window) {
-  // This means the destructor is going to be called soon. If there is an
-  // overscroll gesture in progress (i.e. |overscroll_window_| is not NULL),
-  // then destroying it in the WebContentsViewAura destructor can trigger other
-  // virtual functions to be called (e.g. OnImplicitAnimationsCompleted()). So
-  // destroy the overscroll window here.
-  navigation_overlay_.reset();
-}
+void WebContentsViewAura::OnWindowDestroying(aura::Window* window) {}
 
 void WebContentsViewAura::OnWindowDestroyed(aura::Window* window) {
 }
