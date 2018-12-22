@@ -1019,6 +1019,11 @@ bool NGBoxFragmentPainter::NodeAtPoint(
   // Now hit test ourselves.
   if (hit_test_self && VisibleToHitTestRequest(result.GetHitTestRequest())) {
     LayoutRect bounds_rect(physical_offset, size);
+    if (UNLIKELY(result.GetHitTestRequest().GetType() &
+                 HitTestRequest::kHitTestVisualOverflow)) {
+      bounds_rect = PhysicalFragment().SelfInkOverflow().ToLayoutRect();
+      bounds_rect.MoveBy(physical_offset);
+    }
     if (location_in_container.Intersects(bounds_rect)) {
       Node* node = box_fragment_.NodeForHitTest();
       if (!result.InnerNode() && node) {
@@ -1067,6 +1072,12 @@ bool NGBoxFragmentPainter::HitTestTextFragment(
 
   // TODO(layout-dev): Clip to line-top/bottom.
   LayoutRect rect = LayoutRect(PixelSnappedIntRect(border_rect));
+  if (UNLIKELY(result.GetHitTestRequest().GetType() &
+               HitTestRequest::kHitTestVisualOverflow)) {
+    rect = text_paint_fragment.SelfInkOverflow();
+    rect.MoveBy(border_rect.Location());
+  }
+
   if (FragmentVisibleToHitTestRequest(text_paint_fragment,
                                       result.GetHitTestRequest()) &&
       location_in_container.Intersects(rect)) {
