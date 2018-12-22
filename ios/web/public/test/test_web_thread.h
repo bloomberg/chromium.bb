@@ -12,18 +12,29 @@
 
 namespace base {
 class MessageLoop;
+class Thread;
 }
 
 namespace web {
 
-class TestWebThreadImpl;
+class WebSubThread;
+class WebThreadImpl;
 
 // DEPRECATED: use TestWebThreadBundle instead.
 // A WebThread for unit tests; this lets unit tests outside of web create
 // WebThread instances.
 class TestWebThread {
  public:
+  // Constructs a TestWebThread with a |real_thread_| and starts it (with a
+  // MessageLoopForIO if |identifier == WebThread::IO|).
   explicit TestWebThread(WebThread::ID identifier);
+
+  // Constructs a TestWebThread "running" on |thread_runner| (no
+  // |real_thread_|).
+  TestWebThread(WebThread::ID identifier,
+                scoped_refptr<base::SingleThreadTaskRunner> thread_runner);
+
+  // Constructs a TestWebThread based on |message_loop| (no |real_thread_|).
   TestWebThread(WebThread::ID identifier, base::MessageLoop* message_loop);
 
   ~TestWebThread();
@@ -33,21 +44,30 @@ class TestWebThread {
   // WebThread, do no provide the full Thread interface.
 
   // Starts the thread with a generic message loop.
-  bool Start();
+  void Start();
 
   // Starts the thread with an IOThread message loop.
-  bool StartIOThread();
+  void StartIOThread();
+
+  // Together these are the same as StartIOThread(). They can be called in
+  // phases to test binding WebThread::IO after its underlying thread was
+  // started.
+  void StartIOThreadUnregistered();
+  void RegisterAsWebThread();
 
   // Stops the thread.
   void Stop();
 
-  // Returns true if the thread is running.
-  bool IsRunning();
-
  private:
-  std::unique_ptr<TestWebThreadImpl> impl_;
-
   const WebThread::ID identifier_;
+
+  // A real thread which represents |identifier_| when constructor #1 is used
+  // (null otherwise).
+  std::unique_ptr<WebSubThread> real_thread_;
+
+  // Binds |identifier_| to |message_loop| when constructor #2 is used (null
+  // otherwise).
+  std::unique_ptr<WebThreadImpl> fake_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebThread);
 };

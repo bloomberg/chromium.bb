@@ -6,28 +6,30 @@
 #define IOS_WEB_WEB_THREAD_IMPL_H_
 
 #include "base/callback.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/threading/thread.h"
 #include "ios/web/public/web_thread.h"
 
 namespace web {
 
-class WebTestSuiteListener;
+class TestWebThread;
+class WebMainLoop;
+class WebSubThread;
 
-class WebThreadImpl : public WebThread, public base::Thread {
+// WebThreadImpl is a scoped object which maps a SingleThreadTaskRunner to a
+// WebThread::ID. On ~WebThreadImpl() that ID enters a SHUTDOWN state
+// (in which WebThread::IsThreadInitialized() returns false) but the mapping
+// isn't undone to avoid shutdown races (the task runner is free to stop
+// accepting tasks however).
+//
+// Very few users should use this directly. To mock WebThreads, tests should
+// use TestWebThreadBundle instead.
+class WebThreadImpl : public WebThread {
  public:
-  // Construct a WebThreadImpl with the supplied identifier.  It is an error
-  // to construct a WebThreadImpl that already exists.
-  explicit WebThreadImpl(WebThread::ID identifier);
+  ~WebThreadImpl();
 
-  // Special constructor for the main (UI) thread and unittests. If a
-  // |message_loop| is provied, we use a dummy thread here since the main
-  // thread already exists.
-  WebThreadImpl(WebThread::ID identifier, base::MessageLoop* message_loop);
-  ~WebThreadImpl() override;
-
-  bool Start();
-  bool StartWithOptions(const Options& options);
-  bool StartAndWaitForTesting();
+  // Returns the thread name for |identifier|.
+  static const char* GetThreadName(WebThread::ID identifier);
 
   // Creates and registers a TaskExecutor that facilitates posting tasks to a
   // WebThread via //base/task/post_task.h.
@@ -46,29 +48,19 @@ class WebThreadImpl : public WebThread, public base::Thread {
   // Also unregisters and deletes the TaskExecutor.
   static void ResetGlobalsForTesting(WebThread::ID identifier);
 
- protected:
-  void Init() override;
-  void Run(base::RunLoop* run_loop) override;
-  void CleanUp() override;
-
  private:
-  // This class implements all the functionality of the public WebThread
-  // functions, but state is stored in the WebThreadImpl to keep
-  // the API cleaner. Therefore make WebThread a friend class.
-  friend class WebThread;
+  // Restrict instantiation to WebSubThread as it performs important
+  // initialization that shouldn't be bypassed (except by WebMainLoop for
+  // the main thread).
+  friend class WebSubThread;
+  friend class WebMainLoop;
+  // TestWebThread is also allowed to construct this when instantiating fake
+  // threads.
+  friend class TestWebThread;
 
-  // The following are unique function names that makes it possible to tell
-  // the thread id from the callstack alone in crash dumps.
-  void UIThreadRun(base::RunLoop* run_loop);
-  void IOThreadRun(base::RunLoop* run_loop);
-
-  // Common initialization code for the constructors.
-  void Initialize();
-
-  // For testing.
-  friend class TestWebThreadBundle;
-  friend class TestWebThreadBundleImpl;
-  friend class WebTestSuiteListener;
+  // Binds |identifier| to |task_runner| for the web_thread.h API.
+  WebThreadImpl(WebThread::ID identifier,
+                scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // The identifier of this thread.  Only one thread can exist with a given
   // identifier at a given time.

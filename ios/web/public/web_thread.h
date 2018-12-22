@@ -95,9 +95,9 @@ class WebThread {
   // Only one delegate may be registered at a time. Delegates may be
   // unregistered by providing a nullptr pointer.
   //
-  // If the caller unregisters a delegate before CleanUp has been
-  // called, it must perform its own locking to ensure the delegate is
-  // not deleted while unregistering.
+  // The delegate can only be registered through this call before
+  // WebThreadImpl(WebThread::IO) is created and unregistered after
+  // it was destroyed and its underlying thread shutdown.
   static void SetIOThreadDelegate(WebThreadDelegate* delegate);
 
   // Returns an appropriate error message for when DCHECK_CURRENTLY_ON() fails.

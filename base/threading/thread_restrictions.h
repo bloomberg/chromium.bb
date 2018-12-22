@@ -234,6 +234,10 @@ namespace vr {
 class VrShell;
 }
 
+namespace web {
+class WebSubThread;
+}
+
 namespace webrtc {
 class DesktopConfigurationMonitor;
 }
@@ -317,6 +321,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class mojo::CoreLibraryInitializer;
   friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703
   friend class ui::MaterialDesignController;
+  friend class web::WebSubThread;
   friend class StackSamplingProfiler;
 
   ScopedAllowBlocking() EMPTY_BODY_IF_DCHECK_IS_OFF;

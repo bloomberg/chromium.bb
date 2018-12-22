@@ -130,7 +130,9 @@ int WebMainLoop::CreateThreads(
   base::Thread::Options io_message_loop_options;
   io_message_loop_options.message_loop_type = base::MessageLoop::TYPE_IO;
   io_thread_ = std::make_unique<WebSubThread>(WebThread::IO);
-  io_thread_->StartWithOptions(io_message_loop_options);
+  if (!io_thread_->StartWithOptions(io_message_loop_options))
+    LOG(FATAL) << "Failed to start WebThread::IO";
+  io_thread_->RegisterAsWebThread();
 
   // Only start IO thread above as this is the only WebThread besides UI (which
   // is the main thread).
@@ -196,8 +198,10 @@ void WebMainLoop::InitializeMainThread() {
   base::PlatformThread::SetName("CrWebMain");
 
   // Register the main thread by instantiating it, but don't call any methods.
+  DCHECK(base::ThreadTaskRunnerHandle::IsSet());
   main_thread_.reset(new WebThreadImpl(
-      WebThread::UI, ios_global_state::GetMainThreadMessageLoop()));
+      WebThread::UI,
+      ios_global_state::GetMainThreadMessageLoop()->task_runner()));
 }
 
 int WebMainLoop::WebThreadsStarted() {
