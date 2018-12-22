@@ -6706,15 +6706,7 @@ std::unique_ptr<base::DictionaryValue> GetDevToolsInitiator(
 
 bool RenderFrameImpl::CreatePlaceholderDocumentLoader(
     const blink::WebNavigationInfo& info) {
-  auto navigation_params = blink::WebNavigationParams::CreateFromInfo(info);
-  // We need the provider to be non-null, otherwise Blink crashes, even though
-  // the provider should not be used for any actual networking.
-  navigation_params->service_worker_network_provider =
-      BuildServiceWorkerNetworkProviderForNavigation(
-          nullptr /* request_params */,
-          nullptr /* controller_service_worker_info */);
-  return frame_->CreatePlaceholderDocumentLoader(
-      std::move(navigation_params), info.navigation_type, BuildDocumentState());
+  return frame_->CreatePlaceholderDocumentLoader(info, BuildDocumentState());
 }
 
 void RenderFrameImpl::BeginNavigationInternal(

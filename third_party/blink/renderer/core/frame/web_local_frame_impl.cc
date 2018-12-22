@@ -2195,13 +2195,12 @@ void WebLocalFrameImpl::MarkAsLoading() {
 }
 
 bool WebLocalFrameImpl::CreatePlaceholderDocumentLoader(
-    std::unique_ptr<WebNavigationParams> navigation_params,
-    WebNavigationType navigation_type,
+    const WebNavigationInfo& info,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
-  DCHECK(!navigation_params->request.IsNull());
-  DCHECK(!navigation_params->request.Url().ProtocolIs("javascript"));
+  DCHECK(!info.url_request.IsNull());
+  DCHECK(!info.url_request.Url().ProtocolIs("javascript"));
   return GetFrame()->Loader().CreatePlaceholderDocumentLoader(
-      std::move(navigation_params), navigation_type, std::move(extra_data));
+      info, std::move(extra_data));
 }
 
 void WebLocalFrameImpl::SendOrientationChangeEvent() {

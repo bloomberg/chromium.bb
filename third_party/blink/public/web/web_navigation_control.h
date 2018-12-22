@@ -17,6 +17,7 @@ namespace blink {
 class WebURL;
 struct WebURLError;
 class WebHistoryItem;
+struct WebNavigationInfo;
 struct WebNavigationParams;
 
 // This interface gives control to navigation-related functionality of
@@ -92,8 +93,7 @@ class WebNavigationControl : public WebLocalFrame {
   // is actually being handled by the client.
   // TODO(dgozman): remove this together with placeholder document loader.
   virtual bool CreatePlaceholderDocumentLoader(
-      std::unique_ptr<WebNavigationParams>,
-      WebNavigationType,
+      const WebNavigationInfo&,
       std::unique_ptr<WebDocumentLoader::ExtraData>) = 0;
 
  protected:

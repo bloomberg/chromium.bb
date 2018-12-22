@@ -66,6 +66,7 @@ class ResourceRequest;
 class SerializedScriptValue;
 class TracedValue;
 struct FrameLoadRequest;
+struct WebNavigationInfo;
 struct WebNavigationParams;
 
 namespace mojom {
@@ -125,8 +126,7 @@ class CORE_EXPORT FrameLoader final {
   // lives temporarily so that the rest of Blink code knows the navigation
   // is in place.
   bool CreatePlaceholderDocumentLoader(
-      std::unique_ptr<WebNavigationParams>,
-      WebNavigationType,
+      const WebNavigationInfo&,
       std::unique_ptr<WebDocumentLoader::ExtraData>);
 
   // This runs the "stop document loading" algorithm in HTML:
