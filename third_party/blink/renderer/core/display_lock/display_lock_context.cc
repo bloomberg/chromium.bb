@@ -139,8 +139,8 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
 }
 
 ScriptPromise DisplayLockContext::update(ScriptState* script_state) {
-  // Reject if we're unlocked.
-  if (state_ == kUnlocked)
+  // Reject if we're unlocked or disconnected.
+  if (state_ == kUnlocked || !element_->isConnected())
     return GetRejectedPromise(script_state);
 
   // If we have a resolver, then we're at least updating already, just return
@@ -151,16 +151,13 @@ ScriptPromise DisplayLockContext::update(ScriptState* script_state) {
   }
 
   update_resolver_ = ScriptPromiseResolver::Create(script_state);
-  // We only need to kick off an Update if we're in a locked state, all other
-  // states are already updating.
-  if (state_ == kLocked)
-    StartUpdate();
+  StartUpdateIfNeeded();
   return update_resolver_->Promise();
 }
 
 ScriptPromise DisplayLockContext::commit(ScriptState* script_state) {
-  // Reject if we're unlocked.
-  if (state_ == kUnlocked)
+  // Reject if we're unlocked or disonnected.
+  if (state_ == kUnlocked || !element_->isConnected())
     return GetRejectedPromise(script_state);
 
   // If we have a resolver, we must be committing already, just return the same
@@ -391,12 +388,19 @@ void DisplayLockContext::StartCommit() {
       layout_invalidation_reason::kDisplayLockCommitting);
 }
 
-void DisplayLockContext::StartUpdate() {
-  DCHECK_EQ(state_, kLocked);
-  state_ = kUpdating;
+void DisplayLockContext::StartUpdateIfNeeded() {
+  // We should not be calling this if we're unlocked.
+  DCHECK_NE(state_, kUnlocked);
+  // Any state other than kLocked means that we are already in the process of
+  // updating/committing, so we can piggy back on that process without kicking
+  // off any new updates.
+  if (state_ != kLocked)
+    return;
+
   // We don't need to mark anything dirty since the budget will take care of
   // that for us.
   update_budget_ = CreateNewBudget();
+  state_ = kUpdating;
   ScheduleAnimation();
 }
 
@@ -509,6 +513,8 @@ void DisplayLockContext::DidFinishLifecycleUpdate() {
 }
 
 void DisplayLockContext::ScheduleAnimation() {
+  DCHECK(element_->isConnected());
+
   // Schedule an animation to perform the lifecycle phases.
   element_->GetDocument().GetPage()->Animator().ScheduleVisualUpdate(
       element_->GetDocument().GetFrame());
