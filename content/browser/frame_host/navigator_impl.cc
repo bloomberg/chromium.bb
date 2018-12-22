@@ -197,21 +197,6 @@ void NavigatorImpl::DidNavigate(
 
   if (ui::PageTransitionIsMainFrame(params.transition)) {
     if (delegate_) {
-      // When overscroll navigation gesture is enabled, a screenshot of the page
-      // in its current state is taken so that it can be used during the
-      // nav-gesture. It is necessary to take the screenshot here, before
-      // calling RenderFrameHostManager::DidNavigateMainFrame, because that can
-      // change WebContents::GetRenderViewHost to return the new host, instead
-      // of the one that may have just been swapped out.
-      if (delegate_->CanOverscrollContent()) {
-        // Don't take screenshots if we are staying on the same document. We
-        // want same-document navigations to be super fast, and taking a
-        // screenshot currently blocks GPU for a longer time than we are willing
-        // to tolerate in this use case.
-        if (!was_within_same_document)
-          controller_->TakeScreenshot();
-      }
-
       // Run tasks that must execute just before the commit.
       delegate_->DidNavigateMainFramePreCommit(is_same_document_navigation);
     }

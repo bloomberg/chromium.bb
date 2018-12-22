@@ -30,7 +30,6 @@ namespace content {
 enum class WasActivatedOption;
 class FrameTreeNode;
 class RenderFrameHostImpl;
-class NavigationEntryScreenshotManager;
 class SiteInstance;
 struct LoadCommittedDetails;
 
@@ -118,8 +117,6 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       scoped_refptr<network::ResourceRequestBody> post_body,
       const std::string& extra_headers,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
-
-  void ClearAllScreenshots() override;
 
   // Whether this is the initial navigation in an unmodified new tab.  In this
   // case, we know there is no content displayed in the page.
@@ -224,14 +221,6 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   void SetGetTimestampCallbackForTest(
       const base::Callback<base::Time()>& get_timestamp_callback);
 
-  // Takes a screenshot of the page at the current state.
-  void TakeScreenshot();
-
-  // Sets the screenshot manager for this NavigationControllerImpl. Setting a
-  // NULL manager recreates the default screenshot manager and uses that.
-  void SetScreenshotManager(
-      std::unique_ptr<NavigationEntryScreenshotManager> manager);
-
   // Discards only the pending entry. |was_failure| should be set if the pending
   // entry is being discarded because it failed to load.
   void DiscardPendingEntry(bool was_failure);
@@ -252,8 +241,6 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
  private:
   friend class RestoreHelper;
 
-  FRIEND_TEST_ALL_PREFIXES(NavigationControllerTest,
-                           PurgeScreenshot);
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, Basic);
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, SingleDuplicate);
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, ManyDuplicates);
@@ -538,8 +525,6 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // the timer resolution, leading to things sometimes showing up in
   // the wrong order in the history view.
   TimeSmoother time_smoother_;
-
-  std::unique_ptr<NavigationEntryScreenshotManager> screenshot_manager_;
 
   // Used for tracking consecutive reload requests.  If the last user-initiated
   // navigation (either browser-initiated or renderer-initiated with a user

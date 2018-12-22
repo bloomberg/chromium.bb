@@ -26,7 +26,6 @@
 #include "content/browser/browser_url_handler_impl.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/frame_host/navigation_entry_screenshot_manager.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
@@ -82,50 +81,6 @@ bool DoImagesMatch(const gfx::Image& a, const gfx::Image& b) {
   return memcmp(a_bitmap.getPixels(), b_bitmap.getPixels(),
                 a_bitmap.computeByteSize()) == 0;
 }
-
-class MockScreenshotManager : public content::NavigationEntryScreenshotManager {
- public:
-  explicit MockScreenshotManager(content::NavigationControllerImpl* owner)
-      : content::NavigationEntryScreenshotManager(owner),
-        encoding_screenshot_in_progress_(false) {
-  }
-
-  ~MockScreenshotManager() override {}
-
-  void TakeScreenshotFor(content::NavigationEntryImpl* entry) {
-    SkBitmap bitmap;
-    bitmap.allocPixels(SkImageInfo::Make(
-        1, 1, kAlpha_8_SkColorType, kPremul_SkAlphaType));
-    bitmap.eraseARGB(0, 0, 0, 0);
-    encoding_screenshot_in_progress_ = true;
-    OnScreenshotTaken(entry->GetUniqueID(), bitmap);
-    WaitUntilScreenshotIsReady();
-  }
-
-  int GetScreenshotCount() {
-    return content::NavigationEntryScreenshotManager::GetScreenshotCount();
-  }
-
-  void WaitUntilScreenshotIsReady() {
-    if (!encoding_screenshot_in_progress_)
-      return;
-    message_loop_runner_ = new content::MessageLoopRunner;
-    message_loop_runner_->Run();
-  }
-
- private:
-  void OnScreenshotSet(content::NavigationEntryImpl* entry) override {
-    encoding_screenshot_in_progress_ = false;
-    NavigationEntryScreenshotManager::OnScreenshotSet(entry);
-    if (message_loop_runner_.get())
-      message_loop_runner_->Quit();
-  }
-
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-  bool encoding_screenshot_in_progress_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockScreenshotManager);
-};
 
 int64_t GenerateSequenceNumber() {
   // Based on how Blink generates sequence numbers.
@@ -4745,93 +4700,6 @@ TEST_F(NavigationControllerTest, BackNavigationDoesNotClearFavicon) {
   EXPECT_TRUE(entry);
   EXPECT_EQ(kUrl1, entry->GetURL());
   EXPECT_TRUE(DoImagesMatch(favicon_image, entry->GetFavicon().image));
-}
-
-// The test crashes on android: http://crbug.com/170449
-#if defined(OS_ANDROID)
-#define MAYBE_PurgeScreenshot DISABLED_PurgeScreenshot
-#else
-#define MAYBE_PurgeScreenshot PurgeScreenshot
-#endif
-// Tests that screenshot are purged correctly.
-TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
-  NavigationControllerImpl& controller = controller_impl();
-
-  NavigationEntryImpl* entry;
-
-  // Navigate enough times to make sure that some screenshots are purged.
-  for (int i = 0; i < 12; ++i) {
-    const GURL url(base::StringPrintf("http://foo%d/", i));
-    NavigateAndCommit(url);
-    EXPECT_EQ(i, controller.GetCurrentEntryIndex());
-  }
-
-  MockScreenshotManager* screenshot_manager =
-      new MockScreenshotManager(&controller);
-  controller.SetScreenshotManager(base::WrapUnique(screenshot_manager));
-  for (int i = 0; i < controller.GetEntryCount(); ++i) {
-    entry = controller.GetEntryAtIndex(i);
-    screenshot_manager->TakeScreenshotFor(entry);
-    EXPECT_TRUE(entry->screenshot().get());
-  }
-
-  NavigateAndCommit(GURL("https://foo/"));
-  EXPECT_EQ(13, controller.GetEntryCount());
-  entry = controller.GetEntryAtIndex(11);
-  screenshot_manager->TakeScreenshotFor(entry);
-
-  for (int i = 0; i < 2; ++i) {
-    entry = controller.GetEntryAtIndex(i);
-    EXPECT_FALSE(entry->screenshot().get()) << "Screenshot " << i
-                                            << " not purged";
-  }
-
-  for (int i = 2; i < controller.GetEntryCount() - 1; ++i) {
-    entry = controller.GetEntryAtIndex(i);
-    EXPECT_TRUE(entry->screenshot().get()) << "Screenshot not found for " << i;
-  }
-
-  // Navigate to index 5 and then try to assign screenshot to all entries.
-  controller.GoToIndex(5);
-  contents()->CommitPendingNavigation();
-  EXPECT_EQ(5, controller.GetCurrentEntryIndex());
-  for (int i = 0; i < controller.GetEntryCount() - 1; ++i) {
-    entry = controller.GetEntryAtIndex(i);
-    screenshot_manager->TakeScreenshotFor(entry);
-  }
-
-  for (int i = 10; i <= 12; ++i) {
-    entry = controller.GetEntryAtIndex(i);
-    EXPECT_FALSE(entry->screenshot().get()) << "Screenshot " << i
-                                            << " not purged";
-    screenshot_manager->TakeScreenshotFor(entry);
-  }
-
-  // Navigate to index 7 and assign screenshot to all entries.
-  controller.GoToIndex(7);
-  contents()->CommitPendingNavigation();
-  EXPECT_EQ(7, controller.GetCurrentEntryIndex());
-  for (int i = 0; i < controller.GetEntryCount() - 1; ++i) {
-    entry = controller.GetEntryAtIndex(i);
-    screenshot_manager->TakeScreenshotFor(entry);
-  }
-
-  for (int i = 0; i < 2; ++i) {
-    entry = controller.GetEntryAtIndex(i);
-    EXPECT_FALSE(entry->screenshot().get()) << "Screenshot " << i
-                                            << " not purged";
-  }
-
-  // Clear all screenshots.
-  EXPECT_EQ(13, controller.GetEntryCount());
-  EXPECT_EQ(10, screenshot_manager->GetScreenshotCount());
-  controller.ClearAllScreenshots();
-  EXPECT_EQ(0, screenshot_manager->GetScreenshotCount());
-  for (int i = 0; i < controller.GetEntryCount(); ++i) {
-    entry = controller.GetEntryAtIndex(i);
-    EXPECT_FALSE(entry->screenshot().get()) << "Screenshot " << i
-                                            << " not cleared";
-  }
 }
 
 TEST_F(NavigationControllerTest, PushStateUpdatesTitleAndFavicon) {

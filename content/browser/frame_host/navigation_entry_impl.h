@@ -370,11 +370,6 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
     should_replace_entry_ = should_replace_entry;
   }
 
-  void SetScreenshotPNGData(scoped_refptr<base::RefCountedBytes> png_data);
-  const scoped_refptr<base::RefCountedBytes> screenshot() const {
-    return screenshot_;
-  }
-
   // Whether this (pending) navigation should clear the session history. Resets
   // to false after commit.
   bool should_clear_history_list() const {
@@ -462,15 +457,6 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   // information is stored in PageState. It is also only shallow copied with
   // compiler provided copy constructor.  Cleared in |ResetForCommit|.
   scoped_refptr<network::ResourceRequestBody> post_data_;
-
-  // This is also a transient member (i.e. is not persisted with session
-  // restore). The screenshot of a page is taken when navigating away from the
-  // page. This screenshot is displayed during an overscroll-navigation
-  // gesture. |screenshot_| will be NULL when the screenshot is not available
-  // (e.g. after a session restore, or if taking the screenshot of a page
-  // failed). The UI is responsible for dealing with missing screenshots
-  // appropriately (e.g. display a placeholder image instead).
-  scoped_refptr<base::RefCountedBytes> screenshot_;
 
   // This member is not persisted with session restore.
   std::string extra_headers_;
