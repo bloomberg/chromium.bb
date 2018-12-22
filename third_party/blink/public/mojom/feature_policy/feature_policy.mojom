@@ -121,6 +121,5 @@ enum FeaturePolicyDisposition {
 struct ParsedFeaturePolicyDeclaration {
   FeaturePolicyFeature feature;
   bool matches_all_origins;
-  FeaturePolicyDisposition disposition;
   array<url.mojom.Origin> origins;
 };

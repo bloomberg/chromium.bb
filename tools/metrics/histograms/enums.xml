@@ -21142,6 +21142,7 @@ Called by update_net_error_codes.py.-->
   <int value="2717" label="CanvasCaptureStream"/>
   <int value="2718" label="V8HTMLMediaElement_CanPlayType_Method"/>
   <int value="2719" label="HistoryLength"/>
+  <int value="2720" label="FeaturePolicyReportOnlyHeader"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

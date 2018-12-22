@@ -1380,9 +1380,14 @@ class CORE_EXPORT Document : public ContainerNode,
   service_manager::InterfaceProvider* GetInterfaceProvider() final;
 
   // Set an explicit feature policy on this document in response to an HTTP
-  // Feature Policy header. This will be relayed to the embedder through the
+  // Feature-Policy header. This will be relayed to the embedder through the
   // LocalFrameClient.
   void ApplyFeaturePolicyFromHeader(const String& feature_policy_header);
+
+  // Set the report-only feature policy on this document in response to an HTTP
+  // Feature-Policy-Report-Only header.
+  void ApplyReportOnlyFeaturePolicyFromHeader(
+      const String& feature_policy_report_only_header);
 
   const AtomicString& bgColor() const;
   void setBgColor(const AtomicString&);
@@ -1613,6 +1618,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   const AtomicString& BodyAttributeValue(const QualifiedName&) const;
   void SetBodyAttribute(const QualifiedName&, const AtomicString&);
+
+  const ParsedFeaturePolicy GetOwnerContainerPolicy() const;
+  const FeaturePolicy* GetParentFeaturePolicy() const;
 
   // Set the feature policy on this document, inheriting as necessary from the
   // parent document and frame owner (if they exist). The caller must ensure

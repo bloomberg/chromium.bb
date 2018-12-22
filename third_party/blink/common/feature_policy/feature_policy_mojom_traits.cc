@@ -13,7 +13,6 @@ bool StructTraits<blink::mojom::ParsedFeaturePolicyDeclarationDataView,
     Read(blink::mojom::ParsedFeaturePolicyDeclarationDataView in,
          blink::ParsedFeaturePolicyDeclaration* out) {
   out->matches_all_origins = in.matches_all_origins();
-  out->disposition = in.disposition();
 
   return in.ReadOrigins(&out->origins) && in.ReadFeature(&out->feature);
 }

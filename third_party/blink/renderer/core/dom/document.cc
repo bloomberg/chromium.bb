@@ -6289,23 +6289,25 @@ void Document::ApplyFeaturePolicyFromHeader(
   }
 }
 
+const ParsedFeaturePolicy Document::GetOwnerContainerPolicy() const {
+  // If this frame is not the main frame, then get the container policy from its
+  // owner.
+  if (frame_ && frame_->Owner())
+    return frame_->Owner()->ContainerPolicy();
+  return ParsedFeaturePolicy();
+}
+
+const FeaturePolicy* Document::GetParentFeaturePolicy() const {
+  // If this frame is not the main frame, then get the feature policy from its
+  // parent.
+  if (frame_ && !frame_->IsMainFrame())
+    return frame_->Tree().Parent()->GetSecurityContext()->GetFeaturePolicy();
+  return nullptr;
+}
+
 void Document::ApplyFeaturePolicy(const ParsedFeaturePolicy& declared_policy) {
-  FeaturePolicy* parent_feature_policy = nullptr;
-  ParsedFeaturePolicy container_policy;
-
-  // If this frame is not the main frame, then get the appropriate parent policy
-  // and container policy to construct the policy for this frame.
-  if (frame_) {
-    if (!frame_->IsMainFrame()) {
-      parent_feature_policy =
-          frame_->Tree().Parent()->GetSecurityContext()->GetFeaturePolicy();
-    }
-    if (frame_->Owner())
-      container_policy = frame_->Owner()->ContainerPolicy();
-  }
-
-  InitializeFeaturePolicy(declared_policy, container_policy,
-                          parent_feature_policy);
+  InitializeFeaturePolicy(declared_policy, GetOwnerContainerPolicy(),
+                          GetParentFeaturePolicy());
 
   // At this point, the document will not have been installed in the frame's
   // LocalDOMWindow, so we cannot call frame_->IsFeatureEnabled. This calls
@@ -6316,6 +6318,23 @@ void Document::ApplyFeaturePolicy(const ParsedFeaturePolicy& declared_policy) {
       RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
       !GetFeaturePolicy()->IsFeatureEnabled(
           mojom::FeaturePolicyFeature::kVerticalScroll);
+}
+
+void Document::ApplyReportOnlyFeaturePolicyFromHeader(
+    const String& feature_policy_report_only_header) {
+  if (!feature_policy_report_only_header.IsEmpty())
+    UseCounter::Count(*this, WebFeature::kFeaturePolicyReportOnlyHeader);
+  Vector<String> messages;
+  const ParsedFeaturePolicy& report_only_policy = ParseFeaturePolicyHeader(
+      feature_policy_report_only_header, GetSecurityOrigin(), &messages);
+  for (auto& message : messages) {
+    AddConsoleMessage(ConsoleMessage::Create(
+        kSecurityMessageSource, kErrorMessageLevel,
+        "Error with Feature-Policy-Report-Only header: " + message));
+  }
+
+  AddReportOnlyFeaturePolicy(report_only_policy, GetOwnerContainerPolicy(),
+                             GetParentFeaturePolicy());
 }
 
 bool Document::AllowedToUseDynamicMarkUpInsertion(

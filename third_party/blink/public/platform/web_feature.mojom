@@ -2158,6 +2158,7 @@ enum WebFeature {
   kCanvasCaptureStream = 2717,
   kV8HTMLMediaElement_CanPlayType_Method = 2718,
   kHistoryLength = 2719,
+  kFeaturePolicyReportOnlyHeader = 2720,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

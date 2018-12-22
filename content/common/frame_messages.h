@@ -537,7 +537,6 @@ IPC_STRUCT_TRAITS_BEGIN(blink::ParsedFeaturePolicyDeclaration)
   IPC_STRUCT_TRAITS_MEMBER(feature)
   IPC_STRUCT_TRAITS_MEMBER(matches_all_origins)
   IPC_STRUCT_TRAITS_MEMBER(matches_opaque_src)
-  IPC_STRUCT_TRAITS_MEMBER(disposition)
   IPC_STRUCT_TRAITS_MEMBER(origins)
 IPC_STRUCT_TRAITS_END()
 
