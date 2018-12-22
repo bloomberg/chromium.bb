@@ -240,8 +240,8 @@ TEST_F(AccessibilityObjectModelTest, Grid) {
 
   auto* ax_cell = cache->GetOrCreate(cell);
   EXPECT_TRUE(ax_cell->IsTableCellLikeRole());
-  EXPECT_EQ(8U, ax_cell->AriaColumnIndex());
-  EXPECT_EQ(5U, ax_cell->AriaRowIndex());
+  EXPECT_EQ(0U, ax_cell->AriaColumnIndex());
+  EXPECT_EQ(0U, ax_cell->AriaRowIndex());
 
   auto* ax_cell2 = cache->GetOrCreate(cell2);
   EXPECT_TRUE(ax_cell2->IsTableCellLikeRole());
