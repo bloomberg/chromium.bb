@@ -69,11 +69,6 @@ class CORE_EXPORT DevToolsHost final : public ScriptWrappable {
                        WebVector<WebMenuItemInfo> items);
   void sendMessageToEmbedder(const String& message);
 
-  String getSelectionBackgroundColor();
-  String getSelectionForegroundColor();
-  String getInactiveSelectionBackgroundColor();
-  String getInactiveSelectionForegroundColor();
-
   bool isHostedMode();
 
   LocalFrame* FrontendFrame() { return frontend_frame_; }
