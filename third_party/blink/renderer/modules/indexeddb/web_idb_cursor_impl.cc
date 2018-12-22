@@ -48,9 +48,6 @@ void WebIDBCursorImpl::Advance(uint32_t count, WebIDBCallbacks* callbacks_ptr) {
   }
   ResetPrefetchCache();
 
-  // Reset all cursor prefetch caches except for this cursor.
-  IndexedDBDispatcher::ResetCursorPrefetchCaches(transaction_id_, this);
-
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       std::move(callbacks), transaction_id_, weak_factory_.GetWeakPtr());
   cursor_->Advance(count, GetCallbacksProxy(std::move(callbacks_impl)));
@@ -93,9 +90,6 @@ void WebIDBCursorImpl::CursorContinue(const IDBKey* key,
     // Key argument supplied. We couldn't prefetch this.
     ResetPrefetchCache();
   }
-
-  // Reset all cursor prefetch caches except for this cursor.
-  IndexedDBDispatcher::ResetCursorPrefetchCaches(transaction_id_, this);
 
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       std::move(callbacks), transaction_id_, weak_factory_.GetWeakPtr());
