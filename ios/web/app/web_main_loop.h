@@ -83,7 +83,7 @@ class WebMainLoop {
   // This must get destroyed after other threads that are created in parts_.
   std::unique_ptr<WebThreadImpl> main_thread_;
 
-  // Members initialized in |RunMainMessageLoopParts()| ------------------------
+  // Members initialized in |CreateThreads()| ------------------------
   std::unique_ptr<WebSubThread> io_thread_;
 
   // Members initialized in |WebThreadsStarted()| --------------------------

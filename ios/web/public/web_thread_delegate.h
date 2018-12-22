@@ -13,14 +13,17 @@ namespace web {
 // If registered as such, it will schedule to run Init() before the
 // message loop begins, and receive a CleanUp() call right after the message
 // loop ends (and before the WebThread has done its own clean-up).
+
+// A delegate for //web embedders to perform extra initialization/cleanup on
+// WebThread::IO.
 class WebThreadDelegate {
  public:
   virtual ~WebThreadDelegate() {}
 
-  // Called prior to starting the message loop
+  // Called prior to completing initialization of WebThread::IO.
   virtual void Init() = 0;
 
-  // Called just after the message loop ends.
+  // Called during teardown of WebThread::IO.
   virtual void CleanUp() = 0;
 };
 
