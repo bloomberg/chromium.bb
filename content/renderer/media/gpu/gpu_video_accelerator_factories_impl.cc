@@ -138,6 +138,7 @@ void GpuVideoAcceleratorFactoriesImpl::BindOnTaskRunner(
 void GpuVideoAcceleratorFactoriesImpl::OnSupportedDecoderConfigs(
     std::vector<media::mojom::SupportedVideoDecoderConfigPtr>
         supported_configs) {
+  base::AutoLock lock(supported_decoder_configs_lock_);
   supported_decoder_configs_ = std::move(supported_configs);
   video_decoder_.reset();
 }
@@ -191,6 +192,8 @@ int32_t GpuVideoAcceleratorFactoriesImpl::GetCommandBufferRouteId() {
 
 bool GpuVideoAcceleratorFactoriesImpl::IsDecoderConfigSupported(
     const media::VideoDecoderConfig& config) {
+  base::AutoLock lock(supported_decoder_configs_lock_);
+
   // If GetSupportedConfigs() has not completed (or was never started), report
   // that all configs are supported. Clients will find out that configs are not
   // supported when VideoDecoder::Initialize() fails.

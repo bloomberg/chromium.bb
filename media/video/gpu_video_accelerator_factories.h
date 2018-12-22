@@ -81,6 +81,8 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
 
   // Return true if |config| is potentially supported by a decoder created with
   // CreateVideoDecoder().
+  //
+  // May be called on any thread.
   virtual bool IsDecoderConfigSupported(const VideoDecoderConfig& config) = 0;
 
   virtual std::unique_ptr<media::VideoDecoder> CreateVideoDecoder(

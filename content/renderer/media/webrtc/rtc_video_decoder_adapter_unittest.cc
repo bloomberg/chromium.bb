@@ -100,6 +100,10 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
         .WillByDefault(Return(media_thread_.task_runner()));
     EXPECT_CALL(gpu_factories_, GetTaskRunner()).Times(AtLeast(0));
 
+    ON_CALL(gpu_factories_, IsDecoderConfigSupported(_))
+        .WillByDefault(Return(true));
+    EXPECT_CALL(gpu_factories_, IsDecoderConfigSupported(_)).Times(AtLeast(0));
+
     ON_CALL(gpu_factories_, CreateVideoDecoder(_, _, _))
         .WillByDefault(
             [this](media::MediaLog* media_log,
@@ -199,15 +203,32 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
       base::RepeatingCallback<void(const webrtc::VideoFrame&)>>>
       decoded_cb_;
 
- private:
   StrictMock<media::MockGpuVideoAcceleratorFactories> gpu_factories_;
   std::unique_ptr<RTCVideoDecoderAdapter> rtc_video_decoder_adapter_;
+
+ private:
   std::unique_ptr<StrictMock<MockVideoDecoder>> owned_video_decoder_;
   DecodedImageCallback decoded_image_callback_;
   media::VideoDecoder::OutputCB output_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCVideoDecoderAdapterTest);
 };
+
+TEST_F(RTCVideoDecoderAdapterTest, Create_UnknownFormat) {
+  rtc_video_decoder_adapter_ = RTCVideoDecoderAdapter::Create(
+      &gpu_factories_, webrtc::SdpVideoFormat(webrtc::CodecTypeToPayloadString(
+                           webrtc::kVideoCodecGeneric)));
+  ASSERT_FALSE(rtc_video_decoder_adapter_);
+}
+
+TEST_F(RTCVideoDecoderAdapterTest, Create_UnsupportedFormat) {
+  EXPECT_CALL(gpu_factories_, IsDecoderConfigSupported(_))
+      .WillOnce(Return(false));
+  rtc_video_decoder_adapter_ = RTCVideoDecoderAdapter::Create(
+      &gpu_factories_, webrtc::SdpVideoFormat(webrtc::CodecTypeToPayloadString(
+                           webrtc::kVideoCodecVP9)));
+  ASSERT_FALSE(rtc_video_decoder_adapter_);
+}
 
 TEST_F(RTCVideoDecoderAdapterTest, Lifecycle) {
   ASSERT_TRUE(BasicSetup());
