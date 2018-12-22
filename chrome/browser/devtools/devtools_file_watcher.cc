@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <unordered_map>
 
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
@@ -42,9 +43,8 @@ class DevToolsFileWatcher::SharedFileWatcher :
       DevToolsFileWatcher::SharedFileWatcher>;
   ~SharedFileWatcher();
 
-  using FilePathTimesMap = std::map<base::FilePath, base::Time>;
-  void GetModificationTimes(const base::FilePath& path,
-                            FilePathTimesMap* file_path_times);
+  using FilePathTimesMap = std::unordered_map<base::FilePath, base::Time>;
+  FilePathTimesMap GetModificationTimes(const base::FilePath& path);
   void DirectoryChanged(const base::FilePath& path, bool error);
   void DispatchNotifications();
 
@@ -99,25 +99,28 @@ void DevToolsFileWatcher::SharedFileWatcher::AddWatch(
   if (!success)
     return;
 
-  GetModificationTimes(path, &file_path_times_[path]);
+  file_path_times_[path] = GetModificationTimes(path);
 }
 
-void DevToolsFileWatcher::SharedFileWatcher::GetModificationTimes(
-    const base::FilePath& path,
-    FilePathTimesMap* times_map) {
+DevToolsFileWatcher::SharedFileWatcher::FilePathTimesMap
+DevToolsFileWatcher::SharedFileWatcher::GetModificationTimes(
+    const base::FilePath& path) {
+  FilePathTimesMap times_map;
   base::FileEnumerator enumerator(path, true, base::FileEnumerator::FILES);
   base::FilePath file_path = enumerator.Next();
   while (!file_path.empty()) {
     base::FileEnumerator::FileInfo file_info = enumerator.GetInfo();
-    (*times_map)[file_path] = file_info.GetLastModifiedTime();
+    times_map[std::move(file_path)] = file_info.GetLastModifiedTime();
     file_path = enumerator.Next();
   }
+  return times_map;
 }
 
 void DevToolsFileWatcher::SharedFileWatcher::RemoveWatch(
     const base::FilePath& path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   watchers_.erase(path);
+  file_path_times_.erase(path);
 }
 
 void DevToolsFileWatcher::SharedFileWatcher::DirectoryChanged(
@@ -154,8 +157,7 @@ void DevToolsFileWatcher::SharedFileWatcher::DispatchNotifications() {
 
   for (const auto& path : pending_paths_) {
     FilePathTimesMap& old_times = file_path_times_[path];
-    FilePathTimesMap current_times;
-    GetModificationTimes(path, &current_times);
+    FilePathTimesMap current_times = GetModificationTimes(path);
     for (const auto& path_time : current_times) {
       const base::FilePath& path = path_time.first;
       auto old_timestamp = old_times.find(path);
