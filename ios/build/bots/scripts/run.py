@@ -86,6 +86,8 @@ def main():
           shards=args.shards,
           test_args=test_args,
           test_cases=args.test_cases,
+          use_trusted_cert=args.use_trusted_cert,
+          wpr_tools_path=args.wpr_tools_path,
           xcode_path=args.xcode_path,
           xctest=args.xctest,
       )
@@ -142,6 +144,13 @@ def parse_args():
     required='-x' not in sys.argv and '--xcode-parallelization' not in sys.argv,
   )
   parser.add_argument(
+    '-b',
+    '--xcode-build-version',
+    help='Xcode build version to install.',
+    required=True,
+    metavar='build_id',
+  )
+  parser.add_argument(
     '-e',
     '--env-var',
     action='append',
@@ -162,6 +171,12 @@ def parse_args():
     metavar='{}',
   )
   parser.add_argument(
+    '--mac-toolchain-cmd',
+    help='Command to run mac_toolchain tool. Default: %(default)s.',
+    default='mac_toolchain',
+    metavar='mac_toolchain',
+  )
+  parser.add_argument(
     '-o',
     '--out-dir',
     help='Directory to store all test data in.',
@@ -173,6 +188,14 @@ def parse_args():
     '--platform',
     help='Platform to simulate.',
     metavar='sim',
+  )
+  parser.add_argument(
+    '--replay-path',
+    help=('Path to a directory containing WPR replay and recipe files, for '
+          'use with WprProxySimulatorTestRunner to replay a test suite'
+          ' against multiple saved website interactions. Default: %(default)s'),
+    default='NO_PATH',
+    metavar='replay-path',
   )
   parser.add_argument(
     '--restart',
@@ -202,25 +225,23 @@ def parse_args():
     metavar='testcase',
   )
   parser.add_argument(
+    '--use-trusted-cert',
+    action='store_true',
+    help=('Whether to install a cert to the simulator to allow for local HTTPS'
+         'testing.'),
+  )
+  parser.add_argument(
     '-v',
     '--version',
     help='Version of iOS the simulator should run.',
     metavar='ver',
   )
   parser.add_argument(
-    '-b',
-    '--xcode-build-version',
-    help='Xcode build version to install.',
-    required=True,
-    metavar='build_id',
-  )
-  parser.add_argument(
-    '--replay-path',
-    help=('Path to a directory containing WPR replay and recipe files, for '
-          'use with WprProxySimulatorTestRunner to replay a test suite'
-          ' against multiple saved website interactions. Default: %(default)s'),
+    '--wpr-tools-path',
+    help=('Location of WPR test tools (should be preinstalled, e.g. as part of '
+         'a swarming task requirement). Default: %(default)s.'),
     default='NO_PATH',
-    metavar='replay-path',
+    metavar='wpr-tools-path',
   )
   parser.add_argument(
     '--xcode-path',
@@ -230,19 +251,6 @@ def parse_args():
           'overwritten! This folder is intended to be a cached CIPD '
           'installation.'),
     default='Xcode.app',
-  )
-  parser.add_argument(
-    '--mac-toolchain-cmd',
-    help='Command to run mac_toolchain tool. Default: %(default)s.',
-    default='mac_toolchain',
-    metavar='mac_toolchain',
-  )
-  parser.add_argument(
-    '--wpr-tools-path',
-    help=('Location of WPR test tools (should be preinstalled, e.g. as part of '
-         'a swarming task requirement). Default: %(default)s.'),
-    default='NO_PATH',
-    metavar='wpr-tools-path',
   )
   parser.add_argument(
     '--xctest',

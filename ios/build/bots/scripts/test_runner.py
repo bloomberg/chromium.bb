@@ -118,11 +118,16 @@ class XcodePathNotFoundError(TestRunnerError):
 
 
 class ReplayPathNotFoundError(TestRunnerError):
-  """The requested app was not found."""
+  """The replay path was not found."""
   def __init__(self, replay_path):
     super(ReplayPathNotFoundError, self).__init__(
         'Replay path does not exist: %s' % replay_path)
 
+class CertPathNotFoundError(TestRunnerError):
+  """The certificate path was not found."""
+  def __init__(self, replay_path):
+    super(CertPathNotFoundError, self).__init__(
+        'Cert path does not exist: %s' % replay_path)
 
 class WprToolsNotFoundError(TestRunnerError):
   """wpr_tools_path is not specified."""
@@ -637,6 +642,8 @@ class SimulatorTestRunner(TestRunner):
       shards=None,
       test_args=None,
       test_cases=None,
+      use_trusted_cert=False,
+      wpr_tools_path='',
       xcode_path='',
       xctest=False,
   ):
@@ -658,6 +665,9 @@ class SimulatorTestRunner(TestRunner):
         launching.
       test_cases: List of tests to be included in the test run. None or [] to
         include all tests.
+      use_trusted_cert: Whether to install to the sim a cert that allows for
+        HTTPS tests to run locally.
+      wpr_tools_path: Path to pre-installed WPR-related tools
       xcode_path: Path to Xcode.app folder where its contents will be installed.
       xctest: Whether or not this is an XCTest.
 
@@ -690,6 +700,8 @@ class SimulatorTestRunner(TestRunner):
     self.start_time = None
     self.version = version
     self.shards = shards
+    self.use_trusted_cert = use_trusted_cert
+    self.wpr_tools_path = wpr_tools_path
 
   @staticmethod
   def kill_simulators():
@@ -868,6 +880,14 @@ class SimulatorTestRunner(TestRunner):
     udid = subprocess.check_output([
       'xcrun', 'simctl', 'create', name, device_type_id, runtime_id]).rstrip()
     print udid
+
+    if self.use_trusted_cert:
+      if not os.path.exists(self.wpr_tools_path):
+        raise WprToolsNotFoundError(self.wpr_tools_path)
+
+      cert_path = "{}/TrustStore_trust.sqlite3".format(self.wpr_tools_path)
+      self.copy_trusted_certificate(cert_path)
+
     return udid
 
   def deleteSimulator(self, udid=None):
@@ -943,6 +963,9 @@ class SimulatorTestRunner(TestRunner):
         cert_path: Path to the certificate to copy to all emulators
     '''
 
+    if not os.path.exists(cert_path):
+      raise CertPathNotFoundError(cert_path)
+
     trustStores = glob.glob(
         '{}/Library/Developer/CoreSimulator/Devices/*/data/Library'.
         format(os.path.expanduser('~')))
@@ -985,6 +1008,7 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
         by running "iossim -l". e.g. "iPhone 5s", "iPad Retina".
       version: Version of iOS the platform should be running. Supported values
         can be found by running "iossim -l". e.g. "9.3", "8.2", "7.1".
+      wpr_tools_path: Path to pre-installed (from CIPD) WPR-related tools
       xcode_build_version: Xcode build version to install before running tests.
       out_dir: Directory to emit test data into.
       env_vars: List of environment variables to pass to the test itself.
@@ -994,7 +1018,6 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
         launching.
       test_cases: List of tests to be included in the test run. None or [] to
         include all tests.
-      wpr_tools_path: Path to pre-installed (from CIPD) WPR-related tools
       xcode_path: Path to Xcode.app folder where its contents will be installed.
       xctest: Whether or not this is an XCTest.
 
@@ -1017,9 +1040,11 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
       shards=shards,
       test_args=test_args,
       test_cases=test_cases,
+      wpr_tools_path=wpr_tools_path,
       xcode_path=xcode_path,
       xctest=xctest,
     )
+    self.use_trusted_cert = True
 
     replay_path = os.path.abspath(replay_path)
     if not os.path.exists(replay_path):
@@ -1028,7 +1053,6 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
 
     if not os.path.exists(wpr_tools_path):
       raise WprToolsNotFoundError(wpr_tools_path)
-    self.wpr_tools_path = wpr_tools_path
 
     self.proxy_process = None
     self.wprgo_process = None
@@ -1164,7 +1188,6 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
     result = gtest_utils.GTestResult(cmd)
     completed_without_failure = True
     total_returncode = 0
-
     if shards > 1:
       # TODO(crbug.com/881096): reimplement sharding in the future
       raise ShardingDisabledError()
@@ -1175,8 +1198,6 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
       # Create a simulator for these tests, and prepare it with the
       # certificate needed for HTTPS proxying.
       udid = self.getSimulator()
-      cert_path = "{}/TrustStore_trust.sqlite3".format(self.wpr_tools_path)
-      self.copy_trusted_certificate(cert_path)
 
       for recipe_path in glob.glob('{}/*.test'.format(self.replay_path)):
         base_name = os.path.basename(recipe_path)
