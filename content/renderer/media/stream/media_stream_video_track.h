@@ -110,23 +110,13 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   // Setting information about the track size.
   // Passed as callback on MediaStreamVideoTrack::AddTrack, and run from
   // VideoFrameResolutionAdapter on frame delivery to update track settings.
-  void SetSizeAndComputedFrameRate(gfx::Size frame_size, double frame_rate) {
-    width_ = frame_size.width();
-    height_ = frame_size.height();
+  void SetSizeAndComputedFrameRate(int width, int height, double frame_rate) {
+    width_ = width;
+    height_ = height;
     computed_frame_rate_ = frame_rate;
   }
 
-  // Setting information about the source format. The format is computed based
-  // on incoming frames and it's used for applying constraints for remote video
-  // tracks. Passed as callback on MediaStreamVideoTrack::AddTrack, and run from
-  // VideoFrameResolutionAdapter on frame delivery.
-  void set_computed_source_format(const media::VideoCaptureFormat& format) {
-    computed_source_format_ = format;
-  }
-
   void SetTrackAdapterSettings(const VideoTrackAdapterSettings& settings);
-
-  media::VideoCaptureFormat GetComputedSourceFormat();
 
   MediaStreamVideoSource* source() const { return source_.get(); }
 
@@ -176,7 +166,6 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   int height_ = 0;
   double frame_rate_ = 0.0;
   base::Optional<double> computed_frame_rate_;
-  media::VideoCaptureFormat computed_source_format_;
 
   base::WeakPtrFactory<MediaStreamVideoTrack> weak_factory_;
 

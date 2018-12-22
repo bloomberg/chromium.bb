@@ -49,7 +49,6 @@ void MediaStreamVideoSource::AddTrack(
     const VideoTrackAdapterSettings& track_adapter_settings,
     const VideoCaptureDeliverFrameCB& frame_callback,
     const VideoTrackSettingsCallback& settings_callback,
-    const VideoTrackFormatCallback& format_callback,
     const ConstraintsCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!base::ContainsValue(tracks_, track));
@@ -57,7 +56,7 @@ void MediaStreamVideoSource::AddTrack(
   secure_tracker_.Add(track, true);
 
   pending_tracks_.push_back(PendingTrackInfo(
-      track, frame_callback, settings_callback, format_callback,
+      track, frame_callback, settings_callback,
       std::make_unique<VideoTrackAdapterSettings>(track_adapter_settings),
       callback));
 
@@ -369,7 +368,6 @@ void MediaStreamVideoSource::FinalizeAddPendingTracks() {
     if (result == MEDIA_DEVICE_OK) {
       track_adapter_->AddTrack(track_info.track, track_info.frame_callback,
                                track_info.settings_callback,
-                               track_info.format_callback,
                                *track_info.adapter_settings);
       UpdateTrackSettings(track_info.track, *track_info.adapter_settings);
     }
@@ -436,13 +434,11 @@ MediaStreamVideoSource::PendingTrackInfo::PendingTrackInfo(
     MediaStreamVideoTrack* track,
     const VideoCaptureDeliverFrameCB& frame_callback,
     const VideoTrackSettingsCallback& settings_callback,
-    const VideoTrackFormatCallback& format_callback,
     std::unique_ptr<VideoTrackAdapterSettings> adapter_settings,
     const ConstraintsCallback& callback)
     : track(track),
       frame_callback(frame_callback),
       settings_callback(settings_callback),
-      format_callback(format_callback),
       adapter_settings(std::move(adapter_settings)),
       callback(callback) {}
 
