@@ -1,0 +1,14 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    /* Output options */
+    "module": "esnext",
+    "outDir": "out/",
+    "isolatedModules": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "framework": ["../framework/src"],
+    },
+  },
+}

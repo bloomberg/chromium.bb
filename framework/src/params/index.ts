@@ -1,6 +1,6 @@
 export type ParamIterable = Iterable<object>;
 export type ParamIterator = IterableIterator<object>;
 
-export * from "./combine";
-export * from "./options";
-export * from "./unit";
+export * from "./combine.js";
+export * from "./options.js";
+export * from "./unit.js";

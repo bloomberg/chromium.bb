@@ -1,4 +1,4 @@
-import { ParamIterable, ParamIterator } from ".";
+import { ParamIterable, ParamIterator } from "./index.js";
 
 export function poptions(name: string, values: any[]) { return new POptions(name, values); }
 

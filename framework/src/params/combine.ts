@@ -1,4 +1,4 @@
-import { ParamIterable, ParamIterator, punit } from ".";
+import { ParamIterable, ParamIterator, punit } from "./index.js";
 
 export function pcombine(params: ParamIterable[]) { return new PCombine(params); }
 export class PCombine implements ParamIterable {

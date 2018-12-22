@@ -3,11 +3,10 @@
     "target": "esnext",
     "lib": ["dom", "esnext"],
 
-    /* Using Babel for code generation instead */
-    "noEmit": true,
-    "module": "commonjs",
+    /* Output options */
+    "sourceMap": true,
 
-    /* Strict Type-Checking Options */
+    /* Strict type-checking options */
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -16,15 +15,13 @@
     "strictPropertyInitialization": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
+    "allowJs": false,
 
-    /* Additional Checks */
+    /* Additional checks */
     "noFallthroughCasesInSwitch": true,
 
     /* Module Options */
     "moduleResolution": "node",
-    //"isolatedModules": true,
     "esModuleInterop": true,
-
-    "baseUrl": "src"
-  }
+  },
 }

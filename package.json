@@ -4,30 +4,24 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "check": "tsc",
     "lint": "tslint -p .",
-    "fix": "if git diff-index --quiet HEAD ; then tslint --fix -p . ; else echo 'Uncommitted changes may be overwritten'; fi",
-    "build": "node build.js",
-    "clean": "rm -rf out/",
-    "cts": "ts-node run.js ./src"
+    "fix": "if git diff-index --quiet HEAD ; then tslint --fix -p . ; else echo 'Uncommitted changes may be overwritten'; fi"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kainino0x/cts-experiment.git"
   },
   "author": "Kai Ninomiya <kainino@chromium.org>",
-  "license": "",
+  "license": "W3C 3-clause BSD License",
   "bugs": {
     "url": "https://github.com/kainino0x/cts-experiment/issues"
   },
   "homepage": "https://github.com/kainino0x/cts-experiment#readme",
-  "dependencies": {},
   "devDependencies": {
-    "aliasify": "^2.1.0",
-    "browserify": "^16.2.3",
+    "@types/node": "^10.12.18",
+    "fast-glob": "^2.2.4",
     "module-alias": "^2.1.0",
     "ts-node": "^7.0.1",
-    "tsify": "^4.0.1",
     "tslint": "^5.12.0",
     "typescript": "^3.2.2"
   },
@@ -35,5 +29,6 @@
     "aliases": {
       "framework": "src/framework"
     }
-  }
+  },
+  "dependencies": {}
 }

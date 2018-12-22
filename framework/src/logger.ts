@@ -1,4 +1,4 @@
-import { getStackTrace } from "./util";
+import { getStackTrace } from "./util.js";
 
 export abstract class Logger {
   protected namespacePath: string[] = [];

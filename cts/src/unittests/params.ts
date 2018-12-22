@@ -1,4 +1,3 @@
-export const name = "params";
 export const description = `
 Unit tests for parameterization system.
 `;
@@ -10,7 +9,7 @@ import {
   poptions,
   punit,
   TestTree,
-} from "framework";
+} from "../../../framework/src/index.js";
 
 export function add(tree: TestTree) {
   tree.test("test_sync", (log) => {

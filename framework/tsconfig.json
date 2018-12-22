@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    /* Output options */
+    "module": "system",
+    "outFile": "out/framework.js",
+
+    "baseUrl": ".",
+  },
+}
