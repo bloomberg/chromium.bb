@@ -18,8 +18,18 @@ sys.path.append(os.path.join(
     "build", "android", "gyp"))
 from util import build_utils
 
+
 _H_FILE_TEMPLATE = "catalog.h.tmpl"
 _CC_FILE_TEMPLATE = "catalog.cc.tmpl"
+
+
+eater_relative = "../../../../../tools/json_comment_eater"
+eater_relative = os.path.join(os.path.abspath(__file__), eater_relative)
+sys.path.insert(0, os.path.normpath(eater_relative))
+try:
+  import json_comment_eater
+finally:
+  sys.path.pop(0)
 
 
 # Disable lint check for finding modules:
@@ -44,49 +54,38 @@ import jinja2
 
 
 def ApplyTemplate(path_to_template, output_path, global_vars, **kwargs):
-  def make_ascii(maybe_unicode):
-    if type(maybe_unicode) is str:
-      return maybe_unicode
-    assert type(maybe_unicode) is unicode
-    return maybe_unicode.encode("ascii", "ignore")
-
   with build_utils.AtomicOutput(output_path) as output_file:
     jinja_env = jinja2.Environment(
         loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
         keep_trailing_newline=True, **kwargs)
     jinja_env.globals.update(global_vars)
-    jinja_env.filters.update({
-      "is_dict": lambda x : type(x) is dict,
-      "is_list": lambda x : type(x) is list,
-      "is_number": lambda x : type(x) is int or type(x) is float,
-      "is_bool": lambda x: type(x) is bool,
-      "is_string": lambda x: type(x) is str,
-      "is_unicode": lambda x: type(x) is unicode,
-      "make_ascii": make_ascii,
-    })
     output_file.write(jinja_env.get_template(path_to_template).render())
 
 
 def main():
   parser = argparse.ArgumentParser(
       description="Generates a C++ constant containing a catalog manifest.")
-  parser.add_argument("--input")
+  parser.add_argument("--root-manifest")
+  parser.add_argument("--submanifest-info")
   parser.add_argument("--output-filename-base")
   parser.add_argument("--output-function-name")
   parser.add_argument("--module-path")
   args, _ = parser.parse_known_args()
 
-  if args.input is None:
-    raise Exception("--input is required")
+  if args.submanifest_info is None:
+    raise Exception("--submanifest-info required")
   if args.output_filename_base is None:
     raise Exception("--output-filename-base is required")
   if args.output_function_name is None:
     raise Exception("--output-function-name is required")
   if args.module_path is None:
-    raise Exception("--module-path is required")
+    args.module_path = args.output_filename_base
 
-  with open(args.input, "r") as input_file:
-    catalog = json.load(input_file)
+  if args.root_manifest:
+    with open(args.root_manifest, "r") as input_file:
+      root_manifest = json.loads(json_comment_eater.Nom(input_file.read()))
+  else:
+    root_manifest = None
 
   qualified_function_name = args.output_function_name.split("::")
   namespaces = qualified_function_name[0:-1]
@@ -95,8 +94,23 @@ def main():
   def raise_error(error, value):
     raise Exception(error)
 
+  overlays = []
+  packaged_services = []
+  with open(args.submanifest_info, "r") as info_file:
+    for line in info_file.readlines():
+      submanifest_type, namespace_file, header_base = line.strip().split("@", 3)
+      with open(namespace_file, "r") as namespace_file:
+        namespace = namespace_file.readline().strip()
+      info = { "namespace": namespace, "header": header_base + ".h" }
+      if submanifest_type == "overlay":
+        overlays.append(info)
+      else:
+        packaged_services.append(info)
+
   global_vars = {
-    "catalog": catalog,
+    "root_manifest": root_manifest,
+    "overlays": overlays,
+    "packaged_services": packaged_services,
     "function_name": function_name,
     "namespaces": namespaces,
     "path": args.module_path,

@@ -56,7 +56,6 @@
 #include "mojo/public/cpp/system/invitation.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/service_factory.h"
-#include "services/catalog/public/mojom/constants.mojom.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/device/device_service.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -562,7 +561,6 @@ ServiceManagerContext::ServiceManagerContext(
         {mojom::kPluginServiceName, IDR_MOJO_CONTENT_PLUGIN_MANIFEST},
         {mojom::kRendererServiceName, IDR_MOJO_CONTENT_RENDERER_MANIFEST},
         {mojom::kUtilityServiceName, IDR_MOJO_CONTENT_UTILITY_MANIFEST},
-        {catalog::mojom::kServiceName, IDR_MOJO_CATALOG_MANIFEST},
     };
     std::vector<service_manager::Manifest> manifests;
     for (const auto& manifest_info : kManifestInfo) {

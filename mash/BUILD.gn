@@ -35,15 +35,13 @@ catalog("catalog") {
   standalone_services = [
     "//components/services/leveldb:manifest",
     "//mash/catalog_viewer:manifest",
+    "//mash/example/views_examples:manifest",
+    "//mash/example/window_type_launcher:manifest",
     "//mash/session:manifest",
     "//mash/task_viewer:manifest",
     "//services/ws/ime/test_ime_driver:manifest",
     "//services/viz:manifest",
   ]
-
-  executable_overrides = [ "content_packaged_services:@EXE_DIR/chrome" ]
-
-  catalog_deps = [ "//mash/example:catalog" ]
 
   if (is_chromeos) {
     standalone_services += [

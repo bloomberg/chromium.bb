@@ -26,7 +26,6 @@
       <include name="IDR_INDEXED_DB_INTERNALS_CSS" file="browser/resources/indexed_db/indexeddb_internals.css" flattenhtml="true" compress="gzip" type="BINDATA" />
       <include name="IDR_MEDIA_INTERNALS_HTML" file="browser/resources/media/media_internals.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
       <include name="IDR_MEDIA_INTERNALS_JS" file="browser/resources/media/media_internals.js" flattenhtml="true" compress="gzip" type="BINDATA" />
-      <include name="IDR_MOJO_CATALOG_MANIFEST" file="../services/catalog/manifest.json" type="BINDATA" />
       <include name="IDR_MOJO_CONTENT_BROWSER_MANIFEST" file="${root_gen_dir}/content/public/app/browser_manifest.json" use_base_dir="false" type="BINDATA" />
       <include name="IDR_MOJO_CONTENT_GPU_MANIFEST" file="${root_gen_dir}/content/public/app/gpu_manifest.json" use_base_dir="false" type="BINDATA" />
       <include name="IDR_MOJO_CONTENT_PACKAGED_SERVICES_MANIFEST" file="${root_gen_dir}/content/public/app/packaged_services_manifest.json" use_base_dir="false" type="BINDATA" />
