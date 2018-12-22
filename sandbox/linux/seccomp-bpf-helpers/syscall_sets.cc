@@ -100,7 +100,7 @@ bool SyscallSets::IsFileSystem(int sysno) {
     case __NR_stat:  // EPERM not a valid errno.
     case __NR_symlink:
     case __NR_unlink:
-#if !defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_64_BITS)
+#if !(defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_64_BITS))
     case __NR_uselib:  // Neither EPERM, nor ENOENT are valid errno.
 #endif
     case __NR_ustat:   // Same as above. Deprecated.
@@ -483,7 +483,7 @@ bool SyscallSets::IsDeniedGetOrModifySocket(int sysno) {
 // Big multiplexing system call for sockets.
 bool SyscallSets::IsSocketCall(int sysno) {
   switch (sysno) {
-#if !defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_64_BITS)
+#if !(defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_64_BITS))
     case __NR_socketcall:
       return true;
 #endif
@@ -881,7 +881,7 @@ bool SyscallSets::IsSystemVMessageQueue(int sysno) {
 // Big system V multiplexing system call.
 bool SyscallSets::IsSystemVIpc(int sysno) {
   switch (sysno) {
-#if !defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_64_BITS)
+#if !(defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_64_BITS))
     case __NR_ipc:
       return true;
 #endif
@@ -1090,7 +1090,7 @@ bool SyscallSets::IsMipsPrivate(int sysno) {
 bool SyscallSets::IsMipsMisc(int sysno) {
   switch (sysno) {
     case __NR_sysmips:
-#if !defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_64_BITS)
+#if !(defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_64_BITS))
     case __NR_unused150:
 #endif
       return true;
