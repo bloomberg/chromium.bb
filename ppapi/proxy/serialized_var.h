@@ -62,7 +62,7 @@ class VarSerializationRules;
 // some cases, so our system must be designed so that this stuff will work.
 // This is challenging when the SerializedVar must do some cleanup after the
 // message is sent. To work around this, we create an inner class using a
-// linked_ptr so all copies of a SerializedVar can share and we can guarantee
+// scoped_refptr so all copies of a SerializedVar can share and we can guarantee
 // that the actual data will get cleaned up on shutdown.
 //
 // Constness
