@@ -458,11 +458,21 @@ bool EventDeviceInfo::HasGamepad() const {
 
 // static
 ui::InputDeviceType EventDeviceInfo::GetInputDeviceTypeFromId(input_id id) {
-  constexpr uint16_t kGoogleVendorId = 0x18d1;
-  constexpr uint16_t kHammerProductId = 0x5030;
-  if (id.bustype == BUS_USB && id.vendor == kGoogleVendorId &&
-      id.product == kHammerProductId)
-    return InputDeviceType::INPUT_DEVICE_INTERNAL;
+  static constexpr struct {
+    uint16_t vid;
+    uint16_t pid;
+  } kUSBInternalDevices[] = {
+    { 0x18d1, 0x5030 }, // Google, Hammer PID
+    { 0x1fd2, 0x8103 }  // LG, Internal TouchScreen PID
+  };
+
+  if (id.bustype == BUS_USB) {
+    for (size_t i = 0; i < arraysize(kUSBInternalDevices); ++i) {
+      if (id.vendor == kUSBInternalDevices[i].vid &&
+          id.product == kUSBInternalDevices[i].pid)
+        return InputDeviceType::INPUT_DEVICE_INTERNAL;
+    }
+  }
 
   switch (id.bustype) {
     case BUS_I2C:
