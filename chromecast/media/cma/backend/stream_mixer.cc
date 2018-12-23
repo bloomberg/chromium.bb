@@ -486,8 +486,6 @@ void StreamMixer::AddInputOnThread(MixerInput::Source* input_source) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   DCHECK(input_source);
 
-  LOG(INFO) << "Add input " << input_source;
-
   // If the new input is a primary one (or there were no inputs previously), we
   // may need to change the output sample rate to match the input sample rate.
   // We only change the output rate if it is not set to a fixed value.
@@ -506,6 +504,8 @@ void StreamMixer::AddInputOnThread(MixerInput::Source* input_source) {
       mixer_pipeline_->GetInputGroup(input_source->device_id());
   DCHECK(input_group) << "Could not find a processor for "
                       << input_source->device_id();
+
+  LOG(INFO) << "Add input " << input_source << " to " << input_group->name();
 
   auto input = std::make_unique<MixerInput>(
       input_source, output_samples_per_second_, frames_per_write_,

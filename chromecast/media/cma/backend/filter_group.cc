@@ -20,36 +20,29 @@ namespace media {
 
 FilterGroup::FilterGroup(int num_channels,
                          const std::string& name,
-                         std::unique_ptr<PostProcessingPipeline> pipeline,
-                         const base::flat_set<std::string>& device_ids,
-                         const std::vector<FilterGroup*>& mixed_inputs)
+                         std::unique_ptr<PostProcessingPipeline> pipeline)
     : num_channels_(num_channels),
       name_(name),
-      device_ids_(device_ids),
-      mixed_inputs_(mixed_inputs),
       playout_channel_selection_(kChannelAll),
       output_samples_per_second_(0),
       frames_zeroed_(0),
       last_volume_(0.0),
       delay_frames_(0),
       content_type_(AudioContentType::kMedia),
-      post_processing_pipeline_(std::move(pipeline)) {
-  for (auto* const m : mixed_inputs) {
-    DCHECK_EQ(m->GetOutputChannelCount(), num_channels);
-  }
-}
+      post_processing_pipeline_(std::move(pipeline)) {}
 
 FilterGroup::~FilterGroup() = default;
+
+void FilterGroup::AddMixedInput(FilterGroup* input) {
+  mixed_inputs_.push_back(input);
+  DCHECK_EQ(input->GetOutputChannelCount(), num_channels_);
+}
 
 void FilterGroup::Initialize(int output_samples_per_second) {
   output_samples_per_second_ = output_samples_per_second;
   CHECK(post_processing_pipeline_->SetSampleRate(output_samples_per_second));
   post_processing_pipeline_->SetContentType(content_type_);
   active_inputs_.clear();
-}
-
-bool FilterGroup::CanProcessInput(const std::string& input_device_id) {
-  return !(device_ids_.find(input_device_id) == device_ids_.end());
 }
 
 void FilterGroup::AddInput(MixerInput* input) {
@@ -233,6 +226,16 @@ void FilterGroup::UpdatePlayoutChannel(int playout_channel) {
     playout_channel_selection_ = playout_channel;
   }
   post_processing_pipeline_->UpdatePlayoutChannel(playout_channel);
+}
+
+void FilterGroup::PrintTopology() const {
+  std::string input_groups;
+  for (const FilterGroup* mixed_input : mixed_inputs_) {
+    mixed_input->PrintTopology();
+    input_groups += mixed_input->name() + ", ";
+  }
+
+  LOG(INFO) << input_groups << " -> " << num_channels_ << "ch -> " << name_;
 }
 
 }  // namespace media

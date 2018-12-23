@@ -15,7 +15,7 @@
 #include "chromecast/public/volume_control.h"
 
 namespace base {
-class ListValue;
+class Value;
 }  // namespace base
 
 namespace chromecast {
@@ -28,7 +28,7 @@ class AudioPostProcessor2;
 class PostProcessingPipelineImpl : public PostProcessingPipeline {
  public:
   PostProcessingPipelineImpl(const std::string& name,
-                             const base::ListValue* filter_description_list,
+                             const base::Value* filter_description_list,
                              int channels);
   ~PostProcessingPipelineImpl() override;
 
@@ -87,7 +87,7 @@ class PostProcessingPipelineFactoryImpl : public PostProcessingPipelineFactory {
   // PostProcessingPipelineFactory interface.
   std::unique_ptr<PostProcessingPipeline> CreatePipeline(
       const std::string& name,
-      const base::ListValue* filter_description_list,
+      const base::Value* filter_description_list,
       int num_channels) override;
 };
 

@@ -169,9 +169,7 @@ class FilterGroupTest : public testing::Test {
     EXPECT_CALL(*post_processor_, SetContentType(kDefaultContentType));
     EXPECT_CALL(*post_processor_, UpdatePlayoutChannel(kDefaultPlayoutChannel));
     filter_group_ = std::make_unique<FilterGroup>(
-        kNumInputChannels, "test_filter", std::move(post_processor),
-        base::flat_set<std::string>() /* device_ids */,
-        std::vector<FilterGroup*>());
+        kNumInputChannels, "test_filter", std::move(post_processor));
     filter_group_->Initialize(kInputSampleRate);
     filter_group_->AddInput(&input_);
     filter_group_->UpdatePlayoutChannel(kChannelAll);

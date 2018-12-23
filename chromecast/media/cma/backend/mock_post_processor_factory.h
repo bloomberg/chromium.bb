@@ -13,6 +13,10 @@
 #include "chromecast/media/cma/backend/post_processing_pipeline.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+namespace base {
+class Value;
+}  // namespace base
+
 namespace chromecast {
 namespace media {
 
@@ -21,7 +25,7 @@ class MockPostProcessor : public PostProcessingPipeline {
  public:
   MockPostProcessor(MockPostProcessorFactory* factory,
                     const std::string& name,
-                    const base::ListValue* filter_description_list,
+                    const base::Value* filter_description_list,
                     int channels);
   ~MockPostProcessor() override;
   MOCK_METHOD4(
@@ -64,7 +68,7 @@ class MockPostProcessorFactory : public PostProcessingPipelineFactory {
   ~MockPostProcessorFactory() override;
   std::unique_ptr<PostProcessingPipeline> CreatePipeline(
       const std::string& name,
-      const base::ListValue* filter_description_list,
+      const base::Value* filter_description_list,
       int channels) override;
 
   std::unordered_map<std::string, MockPostProcessor*> instances;

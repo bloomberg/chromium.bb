@@ -11,7 +11,7 @@
 #include "chromecast/public/volume_control.h"
 
 namespace base {
-class ListValue;
+class Value;
 }  // namespace base
 
 namespace chromecast {
@@ -41,7 +41,7 @@ class PostProcessingPipelineFactory {
 
   virtual std::unique_ptr<PostProcessingPipeline> CreatePipeline(
       const std::string& name,
-      const base::ListValue* filter_description_list,
+      const base::Value* filter_description_list,
       int num_channels) = 0;
 };
 
