@@ -22,13 +22,19 @@ class GpuDriverBugWorkarounds;
 struct GpuFeatureInfo;
 struct Mailbox;
 
+namespace raster {
+struct RasterDecoderContextState;
+}  // namespace raster
+
 // Implementation of SharedImageBackingFactory that produces AHardwareBuffer
 // backed SharedImages. This is meant to be used on Android only.
 class GPU_GLES2_EXPORT SharedImageBackingFactoryAHB
     : public SharedImageBackingFactory {
  public:
-  SharedImageBackingFactoryAHB(const GpuDriverBugWorkarounds& workarounds,
-                               const GpuFeatureInfo& gpu_feature_info);
+  SharedImageBackingFactoryAHB(
+      const GpuDriverBugWorkarounds& workarounds,
+      const GpuFeatureInfo& gpu_feature_info,
+      raster::RasterDecoderContextState* context_state);
   ~SharedImageBackingFactoryAHB() override;
 
   // SharedImageBackingFactory implementation.
@@ -77,6 +83,7 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryAHB
 
   // Used to limit the max size of AHardwareBuffer.
   int32_t max_gl_texture_size_ = 0;
+  raster::RasterDecoderContextState* context_state_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SharedImageBackingFactoryAHB);
 };
