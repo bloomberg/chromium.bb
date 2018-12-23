@@ -360,10 +360,10 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
 
   ++ack_pending_count_;
 
-  base::ScopedClosureRunner frame_rejected_callback(base::BindOnce(
-      &CompositorFrameSinkSupport::DidRejectCompositorFrame,
-      weak_factory_.GetWeakPtr(), frame.metadata.frame_token,
-      frame.metadata.request_presentation_feedback, frame.resource_list));
+  base::ScopedClosureRunner frame_rejected_callback(
+      base::BindOnce(&CompositorFrameSinkSupport::DidRejectCompositorFrame,
+                     weak_factory_.GetWeakPtr(), frame.metadata.frame_token,
+                     frame.resource_list));
 
   compositor_frame_callback_ = std::move(callback);
   if (compositor_frame_callback_) {
@@ -488,11 +488,8 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
 
   bool result = current_surface->QueueFrame(
       std::move(frame), frame_index, std::move(frame_rejected_callback),
-      frame.metadata.request_presentation_feedback
-          ? base::BindOnce(
-                &CompositorFrameSinkSupport::DidPresentCompositorFrame,
-                weak_factory_.GetWeakPtr(), frame.metadata.frame_token)
-          : Surface::PresentedCallback());
+      base::BindOnce(&CompositorFrameSinkSupport::DidPresentCompositorFrame,
+                     weak_factory_.GetWeakPtr(), frame.metadata.frame_token));
   if (!result) {
     TRACE_EVENT_INSTANT0("viz", "QueueFrame failed", TRACE_EVENT_SCOPE_THREAD);
     return SubmitResult::SURFACE_INVARIANTS_VIOLATION;
@@ -549,16 +546,13 @@ void CompositorFrameSinkSupport::DidPresentCompositorFrame(
 
 void CompositorFrameSinkSupport::DidRejectCompositorFrame(
     uint32_t presentation_token,
-    bool request_presentation_feedback,
     std::vector<TransferableResource> frame_resource_list) {
   std::vector<ReturnedResource> resources =
       TransferableResource::ReturnResources(frame_resource_list);
   ReturnResources(resources);
   DidReceiveCompositorFrameAck();
-  if (request_presentation_feedback) {
-    DidPresentCompositorFrame(presentation_token,
-                              gfx::PresentationFeedback::Failure());
-  }
+  DidPresentCompositorFrame(presentation_token,
+                            gfx::PresentationFeedback::Failure());
 }
 
 void CompositorFrameSinkSupport::UpdateDisplayRootReference(

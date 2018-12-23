@@ -137,11 +137,6 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   // wants to do something after a particular frame is processed.
   bool send_frame_token_to_embedder = false;
 
-  // Once the display compositor presents a frame with
-  // |request_presentation_feedback| flag turned on, a presentation feedback
-  // will be provided to CompositorFrameSinkClient.
-  bool request_presentation_feedback = true;
-
   // These limits can be used together with the scroll/scale fields above to
   // determine if scrolling/scaling in a particular direction is possible.
   float min_page_scale_factor = 0.f;

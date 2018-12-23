@@ -48,10 +48,6 @@ const char kCheckDamageEarly[] = "check-damage-early";
 // Enables the GPU benchmarking extension
 const char kEnableGpuBenchmarking[] = "enable-gpu-benchmarking";
 
-// Always asks the display compositor to send back presentation times.
-const char kAlwaysRequestPresentationTime[] =
-    "always-request-presentation-time";
-
 // Renders a border around compositor layers to help debug and study
 // layer compositing.
 const char kShowCompositedLayerBorders[] = "show-composited-layer-borders";

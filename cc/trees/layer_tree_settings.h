@@ -145,10 +145,6 @@ class CC_EXPORT LayerTreeSettings {
   // Whether to use edge anti-aliasing for all layer types that supports it.
   bool enable_edge_anti_aliasing = true;
 
-  // Whether to request presentation time regardless if existence of
-  // presentation time callbacks.
-  bool always_request_presentation_time = false;
-
   // Whether SetViewportSizeAndScale should update the painted scale factor or
   // the device scale factor.
   bool use_painted_device_scale_factor = false;

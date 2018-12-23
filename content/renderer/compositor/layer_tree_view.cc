@@ -110,10 +110,8 @@ ReportTimeSwapPromise::~ReportTimeSwapPromise() {}
 
 void ReportTimeSwapPromise::WillSwap(viz::CompositorFrameMetadata* metadata) {
   DCHECK_GT(metadata->frame_token, 0u);
-  // Request a presentation timestamp for this frame. The interval between the
-  // current swap and its presentation time is reported in UMA (see
-  // corresponding code in DidSwap() below).
-  metadata->request_presentation_feedback = true;
+  // The interval between the current swap and its presentation time is reported
+  // in UMA (see corresponding code in DidSwap() below).
   frame_token_ = metadata->frame_token;
 }
 

@@ -1928,9 +1928,7 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
   metadata.root_background_color = active_tree_->background_color();
   metadata.content_source_id = active_tree_->content_source_id();
 
-  metadata.request_presentation_feedback = true;
-  if (active_tree_->has_presentation_callbacks() ||
-      settings_.always_request_presentation_time) {
+  if (active_tree_->has_presentation_callbacks()) {
     frame_token_infos_.emplace_back(metadata.frame_token,
                                     CurrentBeginFrameArgs().frame_time,
                                     active_tree_->TakePresentationCallbacks());

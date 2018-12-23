@@ -58,10 +58,8 @@ class CompositorFrameBuilder {
   CompositorFrameBuilder& SetActivationDependencies(
       std::vector<SurfaceId> activation_dependencies);
   CompositorFrameBuilder& SetDeadline(const FrameDeadline& deadline);
-  CompositorFrameBuilder& SetFrameToken(uint32_t frame_token);
   CompositorFrameBuilder& SetContentSourceId(uint32_t content_source_id);
   CompositorFrameBuilder& SetSendFrameTokenToEmbedder(bool send);
-  CompositorFrameBuilder& SetRequestPresentationFeedback(bool request);
 
  private:
   CompositorFrame MakeInitCompositorFrame() const;

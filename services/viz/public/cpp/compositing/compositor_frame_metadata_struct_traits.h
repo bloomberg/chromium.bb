@@ -92,11 +92,6 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
     return metadata.send_frame_token_to_embedder;
   }
 
-  static bool request_presentation_feedback(
-      const viz::CompositorFrameMetadata& metadata) {
-    return metadata.request_presentation_feedback;
-  }
-
   static float min_page_scale_factor(
       const viz::CompositorFrameMetadata& metadata) {
     return metadata.min_page_scale_factor;

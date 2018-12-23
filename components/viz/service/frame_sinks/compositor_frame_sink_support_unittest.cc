@@ -1120,12 +1120,12 @@ TEST_F(CompositorFrameSinkSupportTest,
 TEST_F(CompositorFrameSinkSupportTest,
        OnFrameTokenUpdateAfterFirstSurfaceActivation) {
   LocalSurfaceId local_surface_id(1, kArbitraryToken);
-  uint32_t frame_token = 2u;
   auto frame = CompositorFrameBuilder()
                    .AddDefaultRenderPass()
-                   .SetFrameToken(frame_token)
                    .SetSendFrameTokenToEmbedder(true)
                    .Build();
+  uint32_t frame_token = frame.metadata.frame_token;
+  ASSERT_NE(frame_token, 0u);
 
   testing::InSequence sequence;
   EXPECT_CALL(frame_sink_manager_client_, OnFirstSurfaceActivation(_));

@@ -2890,9 +2890,6 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
   settings.enable_image_animation_resync =
       !cmd.HasSwitch(switches::kDisableImageAnimationResync);
 
-  settings.always_request_presentation_time =
-      cmd.HasSwitch(cc::switches::kAlwaysRequestPresentationTime);
-
   settings.send_compositor_frame_ack = false;
 
   return settings;

@@ -7849,55 +7849,15 @@ class LayerTreeHostTestPaintedDeviceScaleFactor : public LayerTreeHostTest {
 };
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPaintedDeviceScaleFactor);
 
-// Makes sure that presentation-time requests are correctly propagated to the
-// frame's metadata.
-class LayerTreeHostTestPresentationTimeRequest : public LayerTreeHostTest {
+// Tests that a presentation-timestamps are received for a frame.
+class LayerTreeHostTestPresentationTime : public LayerTreeHostTest {
  protected:
   void BeginTest() override {
-    layer_tree_host()->RequestPresentationTimeForNextFrame(base::DoNothing());
     PostSetNeedsCommitToMainThread();
   }
 
   void DisplayReceivedCompositorFrameOnThread(
       const viz::CompositorFrame& frame) override {
-    EXPECT_TRUE(frame.metadata.request_presentation_feedback);
-    EndTest();
-  }
-
-  void AfterTest() override {}
-};
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPresentationTimeRequest);
-
-// A SwapPromise that turns on |request_presentation_feedback| during
-// WillSwap().
-class RequestPresentationFeedbackSwapPromise : public SwapPromise {
- public:
-  RequestPresentationFeedbackSwapPromise() = default;
-  ~RequestPresentationFeedbackSwapPromise() override = default;
-
-  // SwapPromise:
-  void DidActivate() override {}
-  void WillSwap(viz::CompositorFrameMetadata* metadata) override {
-    metadata->request_presentation_feedback = true;
-  }
-  void DidSwap() override {}
-  void DidNotSwap(DidNotSwapReason reason) override {}
-  int64_t TraceId() const override { return 0; }
-};
-
-// Tests that a presentation-token can be requested during swap.
-class LayerTreeHostTestPresentationTimeRequestDuringSwap
-    : public LayerTreeHostTest {
- protected:
-  void BeginTest() override {
-    layer_tree_host()->QueueSwapPromise(
-        std::make_unique<RequestPresentationFeedbackSwapPromise>());
-    PostSetNeedsCommitToMainThread();
-  }
-
-  void DisplayReceivedCompositorFrameOnThread(
-      const viz::CompositorFrame& frame) override {
-    EXPECT_TRUE(frame.metadata.request_presentation_feedback);
     frame_token_ = frame.metadata.frame_token;
   }
 
@@ -7914,8 +7874,7 @@ class LayerTreeHostTestPresentationTimeRequestDuringSwap
  private:
   uint32_t frame_token_ = 0;
 };
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostTestPresentationTimeRequestDuringSwap);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPresentationTime);
 
 // Makes sure that viz::LocalSurfaceId is propagated to the LayerTreeFrameSink.
 class LayerTreeHostTestLocalSurfaceId : public LayerTreeHostTest {

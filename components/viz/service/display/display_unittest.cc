@@ -3282,7 +3282,6 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
     CompositorFrame frame =
         CompositorFrameBuilder()
             .AddRenderPass(gfx::Rect(sub_surface_size), gfx::Rect())
-            .SetRequestPresentationFeedback(true)
             .Build();
     EXPECT_CALL(sub_client, DidReceiveCompositorFrameAck(_)).Times(1);
     frame_token_1 = frame.metadata.frame_token;
@@ -3332,7 +3331,6 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
     CompositorFrame frame = CompositorFrameBuilder()
                                 .AddRenderPass(gfx::Rect(sub_surface_size),
                                                gfx::Rect(sub_surface_size))
-                                .SetRequestPresentationFeedback(true)
                                 .Build();
     frame_token_2 = frame.metadata.frame_token;
 
@@ -3352,7 +3350,6 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
     CompositorFrame frame =
         CompositorFrameBuilder()
             .AddRenderPass(gfx::Rect(sub_surface_size), gfx::Rect())
-            .SetRequestPresentationFeedback(true)
             .Build();
 
     EXPECT_CALL(sub_client, DidReceiveCompositorFrameAck(_)).Times(1);
