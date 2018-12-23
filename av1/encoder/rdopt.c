@@ -4650,6 +4650,8 @@ static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   const TX_SIZE uv_tx_size = av1_get_tx_size(AOM_PLANE_U, xd);
   int plane;
   int is_cost_valid = 1;
+  const int is_inter = is_inter_block(mbmi);
+  int64_t this_rd = 0, skip_rd = 0;
   av1_init_rd_stats(rd_stats);
 
   if (ref_best_rd < 0) is_cost_valid = 0;
@@ -4658,7 +4660,7 @@ static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   bsize = scale_chroma_bsize(bsize, pd->subsampling_x, pd->subsampling_y);
 
-  if (is_inter_block(mbmi) && is_cost_valid) {
+  if (is_inter && is_cost_valid) {
     for (plane = 1; plane < MAX_MB_PLANE; ++plane)
       av1_subtract_plane(x, bsize, plane);
   }
@@ -4666,15 +4668,26 @@ static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   if (is_cost_valid) {
     for (plane = 1; plane < MAX_MB_PLANE; ++plane) {
       RD_STATS pn_rd_stats;
-      txfm_rd_in_plane(x, cpi, &pn_rd_stats, ref_best_rd, 0, plane, bsize,
-                       uv_tx_size, cpi->sf.use_fast_coef_costing, FTXS_NONE);
+      int64_t chroma_ref_best_rd = ref_best_rd;
+      // For inter blocks, refined ref_best_rd is used for early exit
+      // For intra blocks, even though current rd crosses ref_best_rd, early
+      // exit is not recommended as current rd is used for gating subsequent
+      // modes as well (say, for angular modes)
+      // TODO(any): Extend the early exit mechanism for intra modes as well
+      if (cpi->sf.perform_best_rd_based_gating_for_chroma && is_inter &&
+          chroma_ref_best_rd != INT64_MAX)
+        chroma_ref_best_rd = ref_best_rd - AOMMIN(this_rd, skip_rd);
+      txfm_rd_in_plane(x, cpi, &pn_rd_stats, chroma_ref_best_rd, 0, plane,
+                       bsize, uv_tx_size, cpi->sf.use_fast_coef_costing,
+                       FTXS_NONE);
       if (pn_rd_stats.rate == INT_MAX) {
         is_cost_valid = 0;
         break;
       }
       av1_merge_rd_stats(rd_stats, &pn_rd_stats);
-      if (RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist) > ref_best_rd &&
-          RDCOST(x->rdmult, 0, rd_stats->sse) > ref_best_rd) {
+      this_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
+      skip_rd = RDCOST(x->rdmult, 0, rd_stats->sse);
+      if (AOMMIN(this_rd, skip_rd) > ref_best_rd) {
         is_cost_valid = 0;
         break;
       }
@@ -8859,8 +8872,15 @@ static int txfm_search(const AV1_COMP *cpi, const TileDataEnc *tile_data,
   av1_init_rd_stats(rd_stats_uv);
   const int num_planes = av1_num_planes(cm);
   if (num_planes > 1) {
+    int64_t ref_best_chroma_rd = ref_best_rd;
+    // Calculate best rd cost possible for chroma
+    if (cpi->sf.perform_best_rd_based_gating_for_chroma &&
+        (ref_best_chroma_rd != INT64_MAX)) {
+      ref_best_chroma_rd =
+          (ref_best_chroma_rd - AOMMIN(non_skip_rdcosty, skip_rdcosty));
+    }
     const int is_cost_valid_uv =
-        super_block_uvrd(cpi, x, rd_stats_uv, bsize, ref_best_rd);
+        super_block_uvrd(cpi, x, rd_stats_uv, bsize, ref_best_chroma_rd);
     if (!is_cost_valid_uv) {
       mbmi->ref_frame[1] = ref_frame_1;
       return 0;

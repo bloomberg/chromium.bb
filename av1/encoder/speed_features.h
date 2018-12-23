@@ -659,6 +659,9 @@ typedef struct SPEED_FEATURES {
   // mask for skip evaluation of certain interp_filter type.
   INTERP_FILTER_MASK interp_filter_search_mask;
 
+  // Flag used to control the ref_best_rd based gating for chroma
+  int perform_best_rd_based_gating_for_chroma;
+
   // Enable/disable interintra wedge search.
   int disable_wedge_interintra_search;
 
