@@ -20,12 +20,11 @@ const char kConfigFileContent[] =
 }
 
 TEST(CameraConfigChromeOSTest, ParseSuccessfully) {
-  const char file_name[] = "fake_camera_characteristics.conf";
-  base::WriteFile(base::FilePath(file_name), kConfigFileContent,
-                  sizeof(kConfigFileContent));
+  base::FilePath conf_path;
+  ASSERT_TRUE(base::CreateTemporaryFile(&conf_path));
+  base::WriteFile(conf_path, kConfigFileContent, sizeof(kConfigFileContent));
 
-  std::string file_name_str(file_name);
-  CameraConfigChromeOS camera_config(file_name_str);
+  CameraConfigChromeOS camera_config(conf_path.value());
   EXPECT_EQ(VideoFacingMode::MEDIA_VIDEO_FACING_ENVIRONMENT,
             camera_config.GetCameraFacing(std::string("/dev/video2"),
                                           std::string("04f2:b53a")));
