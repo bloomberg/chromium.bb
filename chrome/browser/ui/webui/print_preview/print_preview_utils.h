@@ -32,7 +32,7 @@ extern const char kVendorCapabilityKey[];
 void ConvertPrinterListForCallback(
     const PrinterHandler::AddedPrintersCallback& callback,
     PrinterHandler::GetPrintersDoneCallback done_callback,
-    const printing::PrinterList& printer_list);
+    const PrinterList& printer_list);
 
 // Returns a unique_ptr to a sanitized version of |cdd| to prevent possible JS
 // errors in Print Preview. Will remove null items from lists or options lists

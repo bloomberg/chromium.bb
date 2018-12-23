@@ -20,6 +20,8 @@
 #include "chrome/browser/ui/webui/print_preview/local_printer_handler_default.h"
 #endif
 
+namespace printing {
+
 // static
 std::unique_ptr<PrinterHandler> PrinterHandler::CreateForCloudPrinters() {
   return std::make_unique<CloudPrinterHandler>();
@@ -47,7 +49,7 @@ std::unique_ptr<PrinterHandler> PrinterHandler::CreateForLocalPrinters(
 std::unique_ptr<PrinterHandler> PrinterHandler::CreateForPdfPrinter(
     Profile* profile,
     content::WebContents* preview_web_contents,
-    printing::StickySettings* sticky_settings) {
+    StickySettings* sticky_settings) {
   return std::make_unique<PdfPrinterHandler>(profile, preview_web_contents,
                                              sticky_settings);
 }
@@ -68,3 +70,5 @@ void PrinterHandler::StartGrantPrinterAccess(const std::string& printer_id,
                                              GetPrinterInfoCallback callback) {
   NOTREACHED();
 }
+
+}  // namespace printing

@@ -13,7 +13,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-class PrintPreviewUI;
 struct PrintHostMsg_DidPreviewDocument_Params;
 struct PrintHostMsg_DidPreviewPage_Params;
 struct PrintHostMsg_DidStartPreview_Params;
@@ -36,6 +35,7 @@ class Rect;
 
 namespace printing {
 
+class PrintPreviewUI;
 struct PageSizeMargins;
 
 // Manages the print preview handling for a WebContents.

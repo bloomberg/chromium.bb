@@ -21,7 +21,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
-class PrintPreviewHandler;
 struct PrintHostMsg_DidStartPreview_Params;
 struct PrintHostMsg_PreviewIds;
 struct PrintHostMsg_RequestPrintPreview_Params;
@@ -38,8 +37,9 @@ class Rect;
 }
 
 namespace printing {
+
+class PrintPreviewHandler;
 struct PageSizeMargins;
-}
 
 class PrintPreviewUI : public ConstrainedWebDialogUI {
  public:
@@ -48,8 +48,7 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   ~PrintPreviewUI() override;
 
   // Gets the print preview |data|. |index| is zero-based, and can be
-  // |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to get the entire preview
-  // document.
+  // |COMPLETE_PREVIEW_DOCUMENT_INDEX| to get the entire preview document.
   virtual void GetPrintPreviewDataForIndex(
       int index,
       scoped_refptr<base::RefCountedMemory>* data) const;
@@ -106,7 +105,7 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
 
   // Notifies the Web UI of the default page layout according to the currently
   // selected printer and page size.
-  void OnDidGetDefaultPageLayout(const printing::PageSizeMargins& page_layout,
+  void OnDidGetDefaultPageLayout(const PageSizeMargins& page_layout,
                                  const gfx::Rect& printable_area,
                                  bool has_custom_page_size_style,
                                  int request_id);
@@ -211,11 +210,9 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
  private:
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewDialogControllerUnitTest,
                            TitleAfterReload);
-  friend class FakePrintPreviewUI;
 
   // Sets the print preview |data|. |index| is zero-based, and can be
-  // |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to set the entire preview
-  // document.
+  // |COMPLETE_PREVIEW_DOCUMENT_INDEX| to set the entire preview document.
   void SetPrintPreviewDataForIndex(int index,
                                    scoped_refptr<base::RefCountedMemory> data);
 
@@ -267,5 +264,7 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewUI);
 };
+
+}  // namespace printing
 
 #endif  // CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_PRINT_PREVIEW_UI_H_

@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 
+namespace printing {
+
 // Implementation of PrinterHandler interface
 class CloudPrinterHandler : public PrinterHandler {
  public:
@@ -35,4 +37,7 @@ class CloudPrinterHandler : public PrinterHandler {
  private:
   DISALLOW_COPY_AND_ASSIGN(CloudPrinterHandler);
 };
+
+}  // namespace printing
+
 #endif  // CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_CLOUD_PRINTER_HANDLER_H_

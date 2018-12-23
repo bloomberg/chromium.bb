@@ -26,6 +26,8 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace printing {
+
 namespace {
 // Timeout for searching for privet printers, in seconds.
 const int kSearchTimeoutSec = 5;
@@ -198,11 +200,10 @@ void PrivetPrinterHandler::OnGotCapabilities(
                                       std::move(printer_info));
   std::unique_ptr<base::DictionaryValue> capabilities_copy =
       capabilities->CreateDeepCopy();
-  printer_info_and_caps.SetDictionary(printing::kSettingCapabilities,
+  printer_info_and_caps.SetDictionary(kSettingCapabilities,
                                       std::move(capabilities_copy));
   std::move(capabilities_callback_)
-      .Run(std::move(
-          *printing::ValidateCddForPrintPreview(printer_info_and_caps)));
+      .Run(std::move(*ValidateCddForPrintPreview(printer_info_and_caps)));
   privet_capabilities_operation_.reset();
 }
 
@@ -280,3 +281,5 @@ void PrivetPrinterHandler::CreateHTTP(
   privet_http_resolution_ = privet_http_factory_->CreatePrivetHTTP(name);
   privet_http_resolution_->Start(device_description->address, callback);
 }
+
+}  // namespace printing

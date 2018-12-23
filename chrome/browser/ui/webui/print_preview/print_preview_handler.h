@@ -22,10 +22,6 @@
 #include "printing/backend/print_backend.h"
 #include "printing/buildflags/buildflags.h"
 
-class PdfPrinterHandler;
-class PrinterHandler;
-class PrintPreviewUI;
-
 namespace base {
 class DictionaryValue;
 class RefCountedMemory;
@@ -37,6 +33,10 @@ class WebContents;
 
 namespace printing {
 
+class PdfPrinterHandler;
+class PrinterHandler;
+class PrintPreviewUI;
+
 // Must match print_preview.PrinterType in
 // chrome/browser/resources/print_preview/native_layer.js
 enum PrinterType {
@@ -46,8 +46,6 @@ enum PrinterType {
   kLocalPrinter,
   kCloudPrinter
 };
-
-}  // namespace printing
 
 // The handler for Javascript messages related to the print preview dialog.
 class PrintPreviewHandler
@@ -126,7 +124,7 @@ class PrintPreviewHandler
 
  protected:
   // Protected so unit tests can override.
-  virtual PrinterHandler* GetPrinterHandler(printing::PrinterType printer_type);
+  virtual PrinterHandler* GetPrinterHandler(PrinterType printer_type);
 
   // Shuts down the initiator renderer. Called when a bad IPC message is
   // received.
@@ -280,7 +278,7 @@ class PrintPreviewHandler
   // |printer_type|: The type of printers that were added.
   // |printers|: A non-empty list containing information about the printer or
   //     printers that have been added.
-  void OnAddedPrinters(printing::PrinterType printer_type,
+  void OnAddedPrinters(PrinterType printer_type,
                        const base::ListValue& printers);
 
   // Called when printer search is done for some destination type.
@@ -354,5 +352,7 @@ class PrintPreviewHandler
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewHandler);
 };
+
+}  // namespace printing
 
 #endif  // CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_PRINT_PREVIEW_HANDLER_H_

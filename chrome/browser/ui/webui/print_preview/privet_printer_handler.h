@@ -26,6 +26,8 @@ namespace gfx {
 class Size;
 }
 
+namespace printing {
+
 // Implementation of PrinterHandler interface
 class PrivetPrinterHandler
     : public PrinterHandler,
@@ -113,4 +115,7 @@ class PrivetPrinterHandler
 
   DISALLOW_COPY_AND_ASSIGN(PrivetPrinterHandler);
 };
+
+}  // namespace printing
+
 #endif  // CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_PRIVET_PRINTER_HANDLER_H_

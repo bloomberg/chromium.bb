@@ -610,7 +610,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (url.host_piece() == chrome::kChromeUIPrintHost &&
       !profile->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled)) {
-    return &NewWebUI<PrintPreviewUI>;
+    return &NewWebUI<printing::PrintPreviewUI>;
   }
 #endif
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)

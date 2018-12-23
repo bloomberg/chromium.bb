@@ -66,7 +66,8 @@
 #endif
 
 using content::WebContents;
-using printing::PageSizeMargins;
+
+namespace printing {
 
 namespace {
 
@@ -136,7 +137,7 @@ base::LazyInstance<base::IDMap<PrintPreviewUI*>>::DestructorAtExit
 // Parameters (< > required):
 //    <PrintPreviewUIID> = PrintPreview UI ID
 //    <PageIndex> = Page index is zero-based or
-//                  |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to represent
+//                  |COMPLETE_PREVIEW_DOCUMENT_INDEX| to represent
 //                  a print ready PDF.
 //
 // Example:
@@ -562,7 +563,7 @@ base::Optional<int32_t> PrintPreviewUI::GetIDForPrintPreviewUI() const {
 
 void PrintPreviewUI::OnPrintPreviewDialogClosed() {
   WebContents* preview_dialog = web_ui()->GetWebContents();
-  printing::BackgroundPrintingManager* background_printing_manager =
+  BackgroundPrintingManager* background_printing_manager =
       g_browser_process->background_printing_manager();
   if (background_printing_manager->HasPrintPreviewDialog(preview_dialog))
     return;
@@ -573,7 +574,7 @@ void PrintPreviewUI::OnInitiatorClosed() {
   // Should only get here if the initiator was still tracked by the Print
   // Preview Dialog Controller, so the print job has not yet been sent.
   WebContents* preview_dialog = web_ui()->GetWebContents();
-  printing::BackgroundPrintingManager* background_printing_manager =
+  BackgroundPrintingManager* background_printing_manager =
       g_browser_process->background_printing_manager();
   if (background_printing_manager->HasPrintPreviewDialog(preview_dialog)) {
     // Dialog is hidden but is still generating the preview. Cancel the print
@@ -632,18 +633,16 @@ void PrintPreviewUI::OnDidGetDefaultPageLayout(
   printable_area_ = printable_area;
 
   base::DictionaryValue layout;
-  layout.SetDouble(printing::kSettingMarginTop, page_layout.margin_top);
-  layout.SetDouble(printing::kSettingMarginLeft, page_layout.margin_left);
-  layout.SetDouble(printing::kSettingMarginBottom, page_layout.margin_bottom);
-  layout.SetDouble(printing::kSettingMarginRight, page_layout.margin_right);
-  layout.SetDouble(printing::kSettingContentWidth, page_layout.content_width);
-  layout.SetDouble(printing::kSettingContentHeight, page_layout.content_height);
-  layout.SetInteger(printing::kSettingPrintableAreaX, printable_area.x());
-  layout.SetInteger(printing::kSettingPrintableAreaY, printable_area.y());
-  layout.SetInteger(printing::kSettingPrintableAreaWidth,
-                    printable_area.width());
-  layout.SetInteger(printing::kSettingPrintableAreaHeight,
-                    printable_area.height());
+  layout.SetDouble(kSettingMarginTop, page_layout.margin_top);
+  layout.SetDouble(kSettingMarginLeft, page_layout.margin_left);
+  layout.SetDouble(kSettingMarginBottom, page_layout.margin_bottom);
+  layout.SetDouble(kSettingMarginRight, page_layout.margin_right);
+  layout.SetDouble(kSettingContentWidth, page_layout.content_width);
+  layout.SetDouble(kSettingContentHeight, page_layout.content_height);
+  layout.SetInteger(kSettingPrintableAreaX, printable_area.x());
+  layout.SetInteger(kSettingPrintableAreaY, printable_area.y());
+  layout.SetInteger(kSettingPrintableAreaWidth, printable_area.width());
+  layout.SetInteger(kSettingPrintableAreaHeight, printable_area.height());
   handler_->SendPageLayoutReady(layout, has_custom_page_size_style, request_id);
 }
 
@@ -687,8 +686,7 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(
     initial_preview_start_time_ = base::TimeTicks();
   }
 
-  SetPrintPreviewDataForIndex(printing::COMPLETE_PREVIEW_DOCUMENT_INDEX,
-                              std::move(data));
+  SetPrintPreviewDataForIndex(COMPLETE_PREVIEW_DOCUMENT_INDEX, std::move(data));
 
   handler_->OnPrintPreviewReady(*id_, preview_request_id);
 }
@@ -707,7 +705,7 @@ void PrintPreviewUI::OnInvalidPrinterSettings(int request_id) {
 
 void PrintPreviewUI::OnHidePreviewDialog() {
   WebContents* preview_dialog = web_ui()->GetWebContents();
-  printing::BackgroundPrintingManager* background_printing_manager =
+  BackgroundPrintingManager* background_printing_manager =
       g_browser_process->background_printing_manager();
   if (background_printing_manager->HasPrintPreviewDialog(preview_dialog))
     return;
@@ -779,3 +777,5 @@ void PrintPreviewUI::SetPreviewUIId() {
   id_ = g_print_preview_ui_id_map.Get().Add(this);
   g_print_preview_request_id_map.Get().Set(*id_, -1);
 }
+
+}  // namespace printing
