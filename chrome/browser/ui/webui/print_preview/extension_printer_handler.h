@@ -21,8 +21,6 @@ class ListValue;
 class RefCountedMemory;
 }
 
-class Profile;
-
 namespace cloud_devices {
 class CloudDeviceDescription;
 }
@@ -35,9 +33,11 @@ namespace gfx {
 class Size;
 }
 
+class Profile;
+
 namespace printing {
+
 class PwgRasterConverter;
-}
 
 // Implementation of PrinterHandler interface backed by printerProvider
 // extension API.
@@ -70,7 +70,7 @@ class ExtensionPrinterHandler : public PrinterHandler {
   friend class ExtensionPrinterHandlerTest;
 
   void SetPwgRasterConverterForTesting(
-      std::unique_ptr<printing::PwgRasterConverter> pwg_raster_converter);
+      std::unique_ptr<PwgRasterConverter> pwg_raster_converter);
 
   // Converts |data| to PWG raster format (from PDF) for a printer described
   // by |printer_description|.
@@ -107,12 +107,14 @@ class ExtensionPrinterHandler : public PrinterHandler {
   Profile* const profile_;
   GetPrintersDoneCallback done_callback_;
   PrintJobCallback print_job_callback_;
-  std::unique_ptr<printing::PwgRasterConverter> pwg_raster_converter_;
+  std::unique_ptr<PwgRasterConverter> pwg_raster_converter_;
   int pending_enumeration_count_ = 0;
 
   base::WeakPtrFactory<ExtensionPrinterHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPrinterHandler);
 };
+
+}  // namespace printing
 
 #endif  // CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_EXTENSION_PRINTER_HANDLER_H_

@@ -18,6 +18,8 @@ namespace content {
 class WebContents;
 }
 
+namespace printing {
+
 class LocalPrinterHandlerDefault : public PrinterHandler {
  public:
   explicit LocalPrinterHandlerDefault(
@@ -44,5 +46,7 @@ class LocalPrinterHandlerDefault : public PrinterHandler {
 
   DISALLOW_COPY_AND_ASSIGN(LocalPrinterHandlerDefault);
 };
+
+}  // namespace printing
 
 #endif  // CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_LOCAL_PRINTER_HANDLER_DEFAULT_H_

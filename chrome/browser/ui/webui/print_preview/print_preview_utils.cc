@@ -205,9 +205,9 @@ void StartLocalPrint(const std::string& ticket_json,
   }
 
   bool system_dialog = false;
-  job_settings->GetBoolean(printing::kSettingShowSystemDialog, &system_dialog);
+  job_settings->GetBoolean(kSettingShowSystemDialog, &system_dialog);
   bool open_in_pdf = false;
-  job_settings->GetBoolean(printing::kSettingOpenPDFInPreview, &open_in_pdf);
+  job_settings->GetBoolean(kSettingOpenPDFInPreview, &open_in_pdf);
   if (system_dialog || open_in_pdf) {
     // Run the callback early, or the modal dialogs will prevent the preview
     // from closing until they do.

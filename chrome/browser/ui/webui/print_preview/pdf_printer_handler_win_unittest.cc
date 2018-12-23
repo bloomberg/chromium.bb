@@ -20,6 +20,8 @@
 
 using content::WebContents;
 
+namespace printing {
+
 namespace {
 
 void ExecuteCancelledSelectFileDialog(
@@ -39,7 +41,7 @@ class FakePdfPrinterHandler : public PdfPrinterHandler {
  public:
   FakePdfPrinterHandler(Profile* profile,
                         content::WebContents* contents,
-                        printing::StickySettings* sticky_settings)
+                        StickySettings* sticky_settings)
       : PdfPrinterHandler(profile, contents, sticky_settings),
         save_failed_(false) {}
 
@@ -126,3 +128,5 @@ TEST_F(PdfPrinterHandlerWinTest, TestSaveAsPdfLongFileName) {
       L"1111111111111111111111111111111111111111111111111.html");
   EXPECT_TRUE(pdf_printer_->save_failed());
 }
+
+}  // namespace printing

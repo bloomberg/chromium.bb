@@ -123,14 +123,14 @@ class TabsAddedNotificationObserver
 };
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-class ScopedPreviewTestingDelegate : PrintPreviewUI::TestingDelegate {
+class ScopedPreviewTestingDelegate : printing::PrintPreviewUI::TestingDelegate {
  public:
   ScopedPreviewTestingDelegate() {
-    PrintPreviewUI::SetDelegateForTesting(this);
+    printing::PrintPreviewUI::SetDelegateForTesting(this);
   }
 
   ~ScopedPreviewTestingDelegate() {
-    PrintPreviewUI::SetDelegateForTesting(NULL);
+    printing::PrintPreviewUI::SetDelegateForTesting(NULL);
   }
 
   // PrintPreviewUI::TestingDelegate implementation.

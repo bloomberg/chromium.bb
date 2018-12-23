@@ -42,7 +42,8 @@ using extensions::Extension;
 using extensions::ExtensionRegistry;
 using extensions::ListBuilder;
 using extensions::UsbPrinterManifestData;
-using printing::PwgRasterConverter;
+
+namespace printing {
 
 namespace {
 
@@ -241,7 +242,7 @@ void ExtensionPrinterHandler::ConvertToPWGRaster(
   if (!pwg_raster_converter_)
     pwg_raster_converter_ = PwgRasterConverter::CreateDefault();
 
-  printing::PwgRasterSettings bitmap_settings =
+  PwgRasterSettings bitmap_settings =
       PwgRasterConverter::GetBitmapSettings(printer_description, ticket);
   pwg_raster_converter_->Start(
       data.get(),
@@ -286,10 +287,10 @@ void ExtensionPrinterHandler::WrapGetCapabilityCallback(
     const base::DictionaryValue& capability) {
   base::Value capabilities(base::Value::Type::DICTIONARY);
   std::unique_ptr<base::DictionaryValue> cdd =
-      printing::ValidateCddForPrintPreview(capability);
+      ValidateCddForPrintPreview(capability);
   // Leave |capabilities| empty if |cdd| is empty.
   if (!cdd->empty()) {
-    capabilities.SetKey(printing::kSettingCapabilities,
+    capabilities.SetKey(kSettingCapabilities,
                         base::Value::FromUniquePtrValue(std::move(cdd)));
   }
   std::move(callback).Run(std::move(capabilities));
@@ -360,3 +361,5 @@ void ExtensionPrinterHandler::OnUsbDevicesEnumerated(
   if (pending_enumeration_count_ == 0)
     std::move(done_callback_).Run();
 }
+
+}  // namespace printing

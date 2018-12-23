@@ -39,11 +39,13 @@
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
+namespace printing {
+
 namespace {
 
 constexpr base::FilePath::CharType kPdfExtension[] = FILE_PATH_LITERAL("pdf");
 
-class PrintingContextDelegate : public printing::PrintingContext::Delegate {
+class PrintingContextDelegate : public PrintingContext::Delegate {
  public:
   // PrintingContext::Delegate methods.
   gfx::NativeView GetParentView() override { return NULL; }
@@ -54,15 +56,14 @@ class PrintingContextDelegate : public printing::PrintingContext::Delegate {
 
 gfx::Size GetDefaultPdfMediaSizeMicrons() {
   PrintingContextDelegate delegate;
-  std::unique_ptr<printing::PrintingContext> printing_context(
-      printing::PrintingContext::Create(&delegate));
-  if (printing::PrintingContext::OK != printing_context->UsePdfSettings() ||
+  auto printing_context(PrintingContext::Create(&delegate));
+  if (PrintingContext::OK != printing_context->UsePdfSettings() ||
       printing_context->settings().device_units_per_inch() <= 0) {
     return gfx::Size();
   }
   gfx::Size pdf_media_size = printing_context->GetPdfPaperSizeDeviceUnits();
   float device_microns_per_device_unit =
-      static_cast<float>(printing::kMicronsPerInch) /
+      static_cast<float>(kMicronsPerInch) /
       printing_context->settings().device_units_per_inch();
   return gfx::Size(pdf_media_size.width() * device_microns_per_device_unit,
                    pdf_media_size.height() * device_microns_per_device_unit);
@@ -82,7 +83,7 @@ std::unique_ptr<base::DictionaryValue> GetPdfCapabilities(
   ColorCapability color;
   {
     Color standard_color(STANDARD_COLOR);
-    standard_color.vendor_id = base::IntToString(printing::COLOR);
+    standard_color.vendor_id = base::IntToString(COLOR);
     color.AddDefaultOption(standard_color, true);
   }
   color.SaveTo(&description);
@@ -145,7 +146,7 @@ base::FilePath SelectSaveDirectory(const base::FilePath& path,
 
 PdfPrinterHandler::PdfPrinterHandler(Profile* profile,
                                      content::WebContents* preview_web_contents,
-                                     printing::StickySettings* sticky_settings)
+                                     StickySettings* sticky_settings)
     : preview_web_contents_(preview_web_contents),
       profile_(profile),
       sticky_settings_(sticky_settings),
@@ -169,9 +170,8 @@ void PdfPrinterHandler::StartGetPrinters(
 void PdfPrinterHandler::StartGetCapability(const std::string& destination_id,
                                            GetCapabilityCallback callback) {
   base::Value printer_info(base::Value::Type::DICTIONARY);
-  printer_info.SetKey(printing::kSettingDeviceName,
-                      base::Value(destination_id));
-  printer_info.SetKey(printing::kSettingCapabilities,
+  printer_info.SetKey(kSettingDeviceName, base::Value(destination_id));
+  printer_info.SetKey(kSettingCapabilities,
                       std::move(*GetPdfCapabilities(
                           g_browser_process->GetApplicationLocale())));
   std::move(callback).Run(std::move(printer_info));
@@ -202,8 +202,8 @@ void PdfPrinterHandler::StartPrint(
   DCHECK(!print_callback_);
   print_callback_ = std::move(callback);
 
-  printing::PrintPreviewDialogController* dialog_controller =
-      printing::PrintPreviewDialogController::GetInstance();
+  PrintPreviewDialogController* dialog_controller =
+      PrintPreviewDialogController::GetInstance();
   content::WebContents* initiator =
       dialog_controller ? dialog_controller->GetInitiator(preview_web_contents_)
                         : nullptr;
@@ -387,3 +387,5 @@ void PdfPrinterHandler::OnDirectorySelected(const base::FilePath& filename,
       &file_type_info, 0, base::FilePath::StringType(),
       platform_util::GetTopLevel(preview_web_contents_->GetNativeView()), NULL);
 }
+
+}  // namespace printing

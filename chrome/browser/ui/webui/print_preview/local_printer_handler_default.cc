@@ -22,30 +22,30 @@
 #include "components/printing/common/printer_capabilities_mac.h"
 #endif
 
+namespace printing {
+
 namespace {
 
-printing::PrinterList EnumeratePrintersAsync() {
+PrinterList EnumeratePrintersAsync() {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
-  scoped_refptr<printing::PrintBackend> print_backend(
-      printing::PrintBackend::CreateInstance(nullptr));
+  scoped_refptr<PrintBackend> print_backend(
+      PrintBackend::CreateInstance(nullptr));
 
-  printing::PrinterList printer_list;
+  PrinterList printer_list;
   print_backend->EnumeratePrinters(&printer_list);
   return printer_list;
 }
 
 base::Value FetchCapabilitiesAsync(const std::string& device_name) {
-  printing::PrinterSemanticCapsAndDefaults::Papers additional_papers;
+  PrinterSemanticCapsAndDefaults::Papers additional_papers;
 #if defined(OS_MACOSX)
-  if (base::FeatureList::IsEnabled(
-          printing::features::kEnableCustomMacPaperSizes)) {
-    additional_papers = printing::GetMacCustomPaperSizes();
-  }
+  if (base::FeatureList::IsEnabled(features::kEnableCustomMacPaperSizes))
+    additional_papers = GetMacCustomPaperSizes();
 #endif
 
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
-  scoped_refptr<printing::PrintBackend> print_backend(
-      printing::PrintBackend::CreateInstance(nullptr));
+  scoped_refptr<PrintBackend> print_backend(
+      PrintBackend::CreateInstance(nullptr));
 
   VLOG(1) << "Get printer capabilities start for " << device_name;
 
@@ -54,18 +54,18 @@ base::Value FetchCapabilitiesAsync(const std::string& device_name) {
     return base::Value();
   }
 
-  printing::PrinterBasicInfo basic_info;
+  PrinterBasicInfo basic_info;
   if (!print_backend->GetPrinterBasicInfo(device_name, &basic_info))
     return base::Value();
 
-  return std::move(*printing::GetSettingsOnBlockingPool(
+  return std::move(*GetSettingsOnBlockingPool(
       device_name, basic_info, additional_papers, print_backend));
 }
 
 std::string GetDefaultPrinterAsync() {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
-  scoped_refptr<printing::PrintBackend> print_backend(
-      printing::PrintBackend::CreateInstance(nullptr));
+  scoped_refptr<PrintBackend> print_backend(
+      PrintBackend::CreateInstance(nullptr));
 
   std::string default_printer = print_backend->GetDefaultPrinterName();
   VLOG(1) << "Default Printer: " << default_printer;
@@ -101,7 +101,7 @@ void LocalPrinterHandlerDefault::StartGetPrinters(
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&EnumeratePrintersAsync),
-      base::BindOnce(&printing::ConvertPrinterListForCallback, callback,
+      base::BindOnce(&ConvertPrinterListForCallback, callback,
                      std::move(done_callback)));
 }
 
@@ -124,6 +124,8 @@ void LocalPrinterHandlerDefault::StartPrint(
     const gfx::Size& page_size,
     const scoped_refptr<base::RefCountedMemory>& print_data,
     PrintCallback callback) {
-  printing::StartLocalPrint(ticket_json, print_data, preview_web_contents_,
-                            std::move(callback));
+  StartLocalPrint(ticket_json, print_data, preview_web_contents_,
+                  std::move(callback));
 }
+
+}  // namespace printing
