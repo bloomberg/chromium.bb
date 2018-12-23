@@ -13,11 +13,10 @@ namespace media {
 using testing::_;
 using testing::NiceMock;
 
-MockPostProcessor::MockPostProcessor(
-    MockPostProcessorFactory* factory,
-    const std::string& name,
-    const base::ListValue* filter_description_list,
-    int channels)
+MockPostProcessor::MockPostProcessor(MockPostProcessorFactory* factory,
+                                     const std::string& name,
+                                     const base::Value* filter_description_list,
+                                     int channels)
     : factory_(factory), name_(name), num_output_channels_(channels) {
   DCHECK(factory_);
   CHECK(factory_->instances.insert({name_, this}).second);
@@ -32,23 +31,32 @@ MockPostProcessor::MockPostProcessor(
   }
 
   // Parse |filter_description_list| for parameters.
-  for (size_t i = 0; i < filter_description_list->GetSize(); ++i) {
-    const base::DictionaryValue* description_dict;
-    CHECK(filter_description_list->GetDictionary(i, &description_dict));
-    std::string solib;
-    CHECK(description_dict->GetString("processor", &solib));
-    // This will initially be called with the actual pipeline on creation.
-    // Ignore and wait for the call to ResetPostProcessorsForTest.
-    const std::string kDelayModuleSolib = "delay.so";
-    if (solib == kDelayModuleSolib) {
-      const base::DictionaryValue* processor_config_dict;
-      CHECK(description_dict->GetDictionary("config", &processor_config_dict));
-      int module_delay;
-      CHECK(processor_config_dict->GetInteger("delay", &module_delay));
-      rendering_delay_ += module_delay;
-      processor_config_dict->GetBoolean("ringing", &ringing_);
-      processor_config_dict->GetInteger("output_channels",
-                                        &num_output_channels_);
+  for (const base::Value& elem : filter_description_list->GetList()) {
+    CHECK(elem.is_dict());
+    const base::Value* processor_val =
+        elem.FindKeyOfType("processor", base::Value::Type::STRING);
+    CHECK(processor_val);
+    std::string solib = processor_val->GetString();
+
+    if (solib == "delay.so") {
+      const base::Value* processor_config_dict =
+          elem.FindKeyOfType("config", base::Value::Type::DICTIONARY);
+      CHECK(processor_config_dict);
+      const base::Value* delay_val = processor_config_dict->FindKeyOfType(
+          "delay", base::Value::Type::INTEGER);
+      CHECK(delay_val);
+      rendering_delay_ += delay_val->GetInt();
+      const base::Value* ringing_val = processor_config_dict->FindKeyOfType(
+          "ringing", base::Value::Type::BOOLEAN);
+      if (ringing_val) {
+        ringing_ = ringing_val->GetBool();
+      }
+
+      const base::Value* output_ch_val = processor_config_dict->FindKeyOfType(
+          "output_channels", base::Value::Type::INTEGER);
+      if (output_ch_val) {
+        num_output_channels_ = output_ch_val->GetInt();
+      }
     }
   }
 }
@@ -60,7 +68,7 @@ MockPostProcessor::~MockPostProcessor() {
 std::unique_ptr<PostProcessingPipeline>
 MockPostProcessorFactory::CreatePipeline(
     const std::string& name,
-    const base::ListValue* filter_description_list,
+    const base::Value* filter_description_list,
     int channels) {
   return std::make_unique<testing::NiceMock<MockPostProcessor>>(
       this, name, filter_description_list, channels);

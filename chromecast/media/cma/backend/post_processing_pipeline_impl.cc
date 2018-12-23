@@ -42,7 +42,7 @@ PostProcessingPipelineFactoryImpl::~PostProcessingPipelineFactoryImpl() =
 std::unique_ptr<PostProcessingPipeline>
 PostProcessingPipelineFactoryImpl::CreatePipeline(
     const std::string& name,
-    const base::ListValue* filter_description_list,
+    const base::Value* filter_description_list,
     int num_channels) {
   return std::make_unique<PostProcessingPipelineImpl>(
       name, filter_description_list, num_channels);
@@ -50,7 +50,7 @@ PostProcessingPipelineFactoryImpl::CreatePipeline(
 
 PostProcessingPipelineImpl::PostProcessingPipelineImpl(
     const std::string& name,
-    const base::ListValue* filter_description_list,
+    const base::Value* filter_description_list,
     int channels)
     : name_(name), sample_rate_(kNoSampleRate), num_output_channels_(channels) {
   if (!filter_description_list) {

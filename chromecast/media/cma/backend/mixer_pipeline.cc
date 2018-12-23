@@ -32,15 +32,13 @@ bool IsOutputDeviceId(const std::string& device) {
 std::unique_ptr<FilterGroup> CreateFilterGroup(
     int input_channels,
     const std::string& name,
-    const base::ListValue* filter_list,
-    const base::flat_set<std::string>& device_ids,
-    const std::vector<FilterGroup*>& mixed_inputs,
+    const base::Value* filter_list,
     PostProcessingPipelineFactory* ppp_factory) {
   DCHECK(ppp_factory);
   auto pipeline =
       ppp_factory->CreatePipeline(name, filter_list, input_channels);
-  return std::make_unique<FilterGroup>(
-      input_channels, name, std::move(pipeline), device_ids, mixed_inputs);
+  return std::make_unique<FilterGroup>(input_channels, name,
+                                       std::move(pipeline));
 }
 
 }  // namespace
@@ -64,85 +62,100 @@ bool MixerPipeline::BuildPipeline(PostProcessingPipelineParser* config,
                                   PostProcessingPipelineFactory* factory) {
   DCHECK(config);
   DCHECK(factory);
-  base::flat_set<std::string> used_streams;
+  int mix_group_input_channels = -1;
+
+  // Create "stream" processor groups:
   for (auto& stream_pipeline : config->GetStreamPipelines()) {
-    const auto& device_ids = stream_pipeline.stream_types;
-    for (const std::string& stream_type : device_ids) {
-      if (!IsOutputDeviceId(stream_type)) {
-        LOG(ERROR) << stream_type
-                   << " is not a stream type. Stream types are listed "
-                   << "in chromecast/media/base/audio_device_ids.cc and "
-                   << "media/audio/audio_device_description.cc";
-        return false;
-      }
-      if (!used_streams.insert(stream_type).second) {
-        LOG(ERROR) << "Multiple instances of stream type '" << stream_type
-                   << "' in " << config->GetFilePath() << ".";
-        return false;
-      }
-      filter_groups_.push_back(CreateFilterGroup(
-          kNumInputChannels, *device_ids.begin() /* name */,
-          stream_pipeline.pipeline, device_ids,
-          std::vector<FilterGroup*>() /* mixed_inputs */, factory));
-      if (device_ids.find(::media::AudioDeviceDescription::kDefaultDeviceId) !=
-          device_ids.end()) {
-        default_stream_group_ = filter_groups_.back().get();
-      }
+    const base::Value* device_ids = stream_pipeline.stream_types;
+
+    DCHECK(!device_ids->GetList().empty());
+    DCHECK(device_ids->GetList()[0].is_string());
+    filter_groups_.push_back(CreateFilterGroup(
+        kNumInputChannels, device_ids->GetList()[0].GetString() /* name */,
+        stream_pipeline.pipeline, factory));
+
+    if (!SetGroupDeviceIds(device_ids, filter_groups_.back().get())) {
+      return false;
+    }
+
+    if (mix_group_input_channels == -1) {
+      mix_group_input_channels = filter_groups_.back()->GetOutputChannelCount();
+    } else if (mix_group_input_channels !=
+               filter_groups_.back()->GetOutputChannelCount()) {
+      LOG(ERROR)
+          << "All output stream mixers must have the same number of channels"
+          << filter_groups_.back()->name() << " has "
+          << filter_groups_.back()->GetOutputChannelCount()
+          << " but others have " << mix_group_input_channels;
+      return false;
     }
   }
 
-  if (!filter_groups_.empty()) {
-    std::vector<FilterGroup*> filter_group_ptrs(filter_groups_.size());
-    int mix_group_input_channels = filter_groups_[0]->GetOutputChannelCount();
-    for (size_t i = 0; i < filter_groups_.size(); ++i) {
-      if (mix_group_input_channels !=
-          filter_groups_[i]->GetOutputChannelCount()) {
-        LOG(ERROR)
-            << "All output stream mixers must have the same number of channels"
-            << filter_groups_[i]->name() << " has "
-            << filter_groups_[i]->GetOutputChannelCount() << " but others have "
-            << mix_group_input_channels;
-        return false;
-      }
-      filter_group_ptrs[i] = filter_groups_[i].get();
-    }
-
-    filter_groups_.push_back(CreateFilterGroup(
-        mix_group_input_channels, "mix", config->GetMixPipeline(),
-        base::flat_set<std::string>() /* device_ids */, filter_group_ptrs,
-        factory));
-  } else {
-    // Mix group directly mixes all inputs.
-    std::string kDefaultDeviceId =
-        ::media::AudioDeviceDescription::kDefaultDeviceId;
-    filter_groups_.push_back(CreateFilterGroup(
-        kNumInputChannels, "mix", config->GetMixPipeline(),
-        base::flat_set<std::string>({kDefaultDeviceId}),
-        std::vector<FilterGroup*>() /* mixed_inputs */, factory));
-    default_stream_group_ = filter_groups_.back().get();
+  if (mix_group_input_channels == -1) {
+    mix_group_input_channels = kNumInputChannels;
   }
 
-  loopback_output_group_ = filter_groups_.back().get();
+  // Create "mix" processor group:
+  const auto mix_pipeline = config->GetMixPipeline();
+  std::unique_ptr<FilterGroup> mix_filter = CreateFilterGroup(
+      mix_group_input_channels, "mix", mix_pipeline.pipeline, factory);
+  for (std::unique_ptr<FilterGroup>& group : filter_groups_) {
+    mix_filter->AddMixedInput(group.get());
+  }
+  if (!SetGroupDeviceIds(mix_pipeline.stream_types, mix_filter.get())) {
+    return false;
+  }
+  loopback_output_group_ = mix_filter.get();
+  filter_groups_.push_back(std::move(mix_filter));
 
-  filter_groups_.push_back(CreateFilterGroup(
-      loopback_output_group_->GetOutputChannelCount(), "linearize",
-      config->GetLinearizePipeline(),
-      base::flat_set<std::string>() /* device_ids */,
-      std::vector<FilterGroup*>({loopback_output_group_}), factory));
+  // Create "linearize" processor group:
+  const auto linearize_pipeline = config->GetLinearizePipeline();
+  filter_groups_.push_back(
+      CreateFilterGroup(loopback_output_group_->GetOutputChannelCount(),
+                        "linearize", linearize_pipeline.pipeline, factory));
   output_group_ = filter_groups_.back().get();
-
-  LOG(INFO) << "PostProcessor configuration:";
-  if (default_stream_group_ == loopback_output_group_) {
-    LOG(INFO) << "Stream layer: none";
-  } else {
-    LOG(INFO) << "Stream layer: "
-              << default_stream_group_->GetOutputChannelCount() << " channels";
+  output_group_->AddMixedInput(loopback_output_group_);
+  if (!SetGroupDeviceIds(linearize_pipeline.stream_types, output_group_)) {
+    return false;
   }
-  LOG(INFO) << "Mix filter: " << loopback_output_group_->GetOutputChannelCount()
-            << " channels";
-  LOG(INFO) << "Linearize filter: " << output_group_->GetOutputChannelCount()
-            << " channels";
 
+  // If no default group is provided, use the "mix" group.
+  if (stream_sinks_.find(::media::AudioDeviceDescription::kDefaultDeviceId) ==
+      stream_sinks_.end()) {
+    stream_sinks_[::media::AudioDeviceDescription::kDefaultDeviceId] =
+        loopback_output_group_;
+  }
+
+  output_group_->PrintTopology();
+
+  return true;
+}
+
+bool MixerPipeline::SetGroupDeviceIds(const base::Value* ids,
+                                      FilterGroup* filter_group) {
+  if (!ids) {
+    return true;
+  }
+  DCHECK(filter_group);
+  DCHECK(ids->is_list());
+
+  for (const base::Value& stream_type_val : ids->GetList()) {
+    DCHECK(stream_type_val.is_string());
+    const std::string& stream_type = stream_type_val.GetString();
+    if (!IsOutputDeviceId(stream_type)) {
+      LOG(ERROR) << stream_type
+                 << " is not a stream type. Stream types are listed "
+                 << "in chromecast/media/base/audio_device_ids.cc and "
+                 << "media/audio/audio_device_description.cc";
+      return false;
+    }
+    if (stream_sinks_.find(stream_type) != stream_sinks_.end()) {
+      LOG(ERROR) << "Multiple instances of stream type '" << stream_type
+                 << "' in cast_audio.json";
+      return false;
+    }
+    stream_sinks_[stream_type] = filter_group;
+  }
   return true;
 }
 
@@ -153,19 +166,12 @@ void MixerPipeline::Initialize(int output_samples_per_second_) {
 }
 
 FilterGroup* MixerPipeline::GetInputGroup(const std::string& device_id) {
-  for (auto&& filter_group : filter_groups_) {
-    if (filter_group->CanProcessInput(device_id)) {
-      return filter_group.get();
-      break;
-    }
+  auto got = stream_sinks_.find(device_id);
+  if (got != stream_sinks_.end()) {
+    return got->second;
   }
 
-  if (default_stream_group_) {
-    return default_stream_group_;
-  }
-
-  NOTREACHED() << "Could not find a filter group to re-attach " << device_id;
-  return nullptr;
+  return stream_sinks_[::media::AudioDeviceDescription::kDefaultDeviceId];
 }
 
 void MixerPipeline::MixAndFilter(

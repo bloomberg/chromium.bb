@@ -15,7 +15,7 @@
 
 namespace base {
 class DictionaryValue;
-class ListValue;
+class Value;
 }  // namespace base
 
 namespace chromecast {
@@ -29,11 +29,11 @@ struct StreamPipelineDescriptor {
   //   {"processor": "PATH_TO_SHARED_OBJECT",
   //    "config": "CONFIGURATION_STRING"},
   //    ... ]
-  const base::ListValue* pipeline;
-  base::flat_set<std::string> stream_types;
+  const base::Value* pipeline;
+  const base::Value* stream_types;
 
-  StreamPipelineDescriptor(const base::ListValue* pipeline_in,
-                           const base::flat_set<std::string>& stream_types_in);
+  StreamPipelineDescriptor(const base::Value* pipeline_in,
+                           const base::Value* stream_types_in);
   ~StreamPipelineDescriptor();
   StreamPipelineDescriptor(const StreamPipelineDescriptor& other);
   StreamPipelineDescriptor operator=(const StreamPipelineDescriptor& other) =
@@ -55,14 +55,14 @@ class PostProcessingPipelineParser {
 
   // Gets the list of processors for the mix/linearize stages.
   // Same format as StreamPipelineDescriptor.pipeline
-  const base::ListValue* GetMixPipeline();
-  const base::ListValue* GetLinearizePipeline();
+  StreamPipelineDescriptor GetMixPipeline();
+  StreamPipelineDescriptor GetLinearizePipeline();
 
   // Returns the file path used to load this object.
   base::FilePath GetFilePath() const;
 
  private:
-  const base::ListValue* GetPipelineByKey(const std::string& key);
+  StreamPipelineDescriptor GetPipelineByKey(const std::string& key);
 
   const base::FilePath file_path_;
   std::unique_ptr<base::DictionaryValue> config_dict_;

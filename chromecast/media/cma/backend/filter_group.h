@@ -37,31 +37,21 @@ class PostProcessingPipeline;
 class FilterGroup {
  public:
   // |num_channels| indicates number of input audio channels.
-  // |type| indicates where in the pipeline this FilterGroup sits.
   // |name| is used for debug printing
   // |pipeline| - processing pipeline.
-  // |device_ids| is a set of strings that is used as a filter to determine
-  //   if an InputQueue belongs to this group (InputQueue->name() must exactly
-  //   match an entry in |device_ids| to be processed by this group).
-  // |mixed_inputs| are FilterGroups that will be mixed into this FilterGroup.
-  //   ex: the final mix ("mix") FilterGroup mixes all other filter groups.
-  // FilterGroups currently use either InputQueues OR FilterGroups as inputs,
-  //   but there is no technical limitation preventing mixing input classes.
-
   FilterGroup(int num_channels,
               const std::string& name,
-              std::unique_ptr<PostProcessingPipeline> pipeline,
-              const base::flat_set<std::string>& device_ids,
-              const std::vector<FilterGroup*>& mixed_inputs);
+              std::unique_ptr<PostProcessingPipeline> pipeline);
 
   ~FilterGroup();
 
+  // |input| will be recursively mixed into this FilterGroup's input buffer when
+  // MixAndFilter() is called. Registering a FilterGroup as an input to more
+  // than one FilterGroup will result in incorrect behavior.
+  void AddMixedInput(FilterGroup* input);
+
   // Sets the sample rate of the post-processors.
   void Initialize(int output_samples_per_second);
-
-  // Returns |true| if this FilterGroup is appropriate to process an input with
-  // the given |input_device_id|.
-  bool CanProcessInput(const std::string& input_device_id);
 
   // Adds/removes |input| from |active_inputs_|.
   void AddInput(MixerInput* input);
@@ -108,6 +98,9 @@ class FilterGroup {
   // Get content type
   AudioContentType content_type() const { return content_type_; }
 
+  // Recursively print the layout of the pipeline.
+  void PrintTopology() const;
+
  private:
   // Resizes temp_ and mixed_ if they are too small to hold |num_frames| frames.
   // Returns |true| if |num_frames| is larger than all previous |num_frames|.
@@ -116,7 +109,6 @@ class FilterGroup {
 
   const int num_channels_;
   const std::string name_;
-  const base::flat_set<std::string> device_ids_;
   std::vector<FilterGroup*> mixed_inputs_;
   base::flat_set<MixerInput*> active_inputs_;
 

@@ -26,8 +26,8 @@ const char kStreamsKey[] = "streams";
 }  // namespace
 
 StreamPipelineDescriptor::StreamPipelineDescriptor(
-    const base::ListValue* pipeline_in,
-    const base::flat_set<std::string>& stream_types_in)
+    const base::Value* pipeline_in,
+    const base::Value* stream_types_in)
     : pipeline(pipeline_in), stream_types(stream_types_in) {}
 
 StreamPipelineDescriptor::~StreamPipelineDescriptor() = default;
@@ -69,57 +69,60 @@ PostProcessingPipelineParser::~PostProcessingPipelineParser() = default;
 std::vector<StreamPipelineDescriptor>
 PostProcessingPipelineParser::GetStreamPipelines() {
   std::vector<StreamPipelineDescriptor> descriptors;
-  const base::ListValue* pipelines_list;
-  if (!postprocessor_config_ ||
-      !postprocessor_config_->GetList(kOutputStreamsKey, &pipelines_list)) {
+  if (!postprocessor_config_) {
+    return descriptors;
+  }
+  const base::Value* pipelines_list = postprocessor_config_->FindKeyOfType(
+      kOutputStreamsKey, base::Value::Type::LIST);
+  if (!pipelines_list) {
     LOG(WARNING) << "No post-processors found for streams (key = "
                  << kOutputStreamsKey
                  << ").\n No stream-specific processing will occur.";
     return descriptors;
   }
-  for (size_t i = 0; i < pipelines_list->GetSize(); ++i) {
-    const base::DictionaryValue* pipeline_description_dict;
-    CHECK(pipelines_list->GetDictionary(i, &pipeline_description_dict));
+  for (const base::Value& pipeline_description_dict :
+       pipelines_list->GetList()) {
+    CHECK(pipeline_description_dict.is_dict());
 
-    const base::ListValue* processors_list;
-    CHECK(pipeline_description_dict->GetList(kProcessorsKey, &processors_list));
+    const base::Value* processors_list =
+        pipeline_description_dict.FindKeyOfType(kProcessorsKey,
+                                                base::Value::Type::LIST);
+    CHECK(processors_list);
 
-    const base::ListValue* streams_list;
-    CHECK(pipeline_description_dict->GetList(kStreamsKey, &streams_list));
-    base::flat_set<std::string> streams_set;
-    for (size_t stream = 0; stream < streams_list->GetSize(); ++stream) {
-      std::string stream_name;
-      CHECK(streams_list->GetString(stream, &stream_name));
-      CHECK(streams_set.insert(stream_name).second)
-          << "Duplicate stream type: " << stream_name;
-    }
+    const base::Value* streams_list = pipeline_description_dict.FindKeyOfType(
+        kStreamsKey, base::Value::Type::LIST);
+    CHECK(streams_list);
 
-    descriptors.emplace_back(processors_list, std::move(streams_set));
+    descriptors.emplace_back(processors_list, streams_list);
   }
   return descriptors;
 }
 
-const base::ListValue* PostProcessingPipelineParser::GetMixPipeline() {
+StreamPipelineDescriptor PostProcessingPipelineParser::GetMixPipeline() {
   return GetPipelineByKey(kMixPipelineKey);
 }
 
-const base::ListValue* PostProcessingPipelineParser::GetLinearizePipeline() {
+StreamPipelineDescriptor PostProcessingPipelineParser::GetLinearizePipeline() {
   return GetPipelineByKey(kLinearizePipelineKey);
 }
 
-const base::ListValue* PostProcessingPipelineParser::GetPipelineByKey(
+StreamPipelineDescriptor PostProcessingPipelineParser::GetPipelineByKey(
     const std::string& key) {
   const base::DictionaryValue* stream_dict;
   if (!postprocessor_config_ ||
       !postprocessor_config_->GetDictionary(key, &stream_dict)) {
     LOG(WARNING) << "No post-processor description found for \"" << key
                  << "\" in " << file_path_ << ". Using passthrough.";
-    return nullptr;
+    return StreamPipelineDescriptor(nullptr, nullptr);
   }
-  const base::ListValue* out_list;
-  CHECK(stream_dict->GetList(kProcessorsKey, &out_list));
+  const base::Value* processors_list =
+      stream_dict->FindKeyOfType(kProcessorsKey, base::Value::Type::LIST);
+  CHECK(processors_list);
 
-  return out_list;
+  const base::Value* streams_list =
+      stream_dict->FindKeyOfType(kStreamsKey, base::Value::Type::LIST);
+
+  return StreamPipelineDescriptor(processors_list, streams_list);
 }
 
 base::FilePath PostProcessingPipelineParser::GetFilePath() const {
