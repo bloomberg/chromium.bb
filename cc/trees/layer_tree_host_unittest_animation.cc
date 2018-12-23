@@ -1061,8 +1061,7 @@ class LayerTreeHostPresentationDuringAnimation
 
   void DisplayReceivedCompositorFrameOnThread(
       const viz::CompositorFrame& frame) override {
-    if (frame.metadata.request_presentation_feedback)
-      received_token_ = frame.metadata.frame_token;
+    received_token_ = frame.metadata.frame_token;
   }
 
   void AfterTest() override {

@@ -271,7 +271,6 @@ TEST_F(HostFrameSinkManagerLocalTest, CreateMojomCompositorFrameSink) {
 TEST_F(HostFrameSinkManagerLocalTest, CommunicateFrameToken) {
   FakeHostFrameSinkClient host_client_parent;
   FakeHostFrameSinkClient host_client_child;
-  uint32_t frame_token1 = 10u;
   FrameSinkId kParentFrameSink(3, 0);
   FrameSinkId kChildFrameSink1(65563, 0);
   const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
@@ -285,10 +284,11 @@ TEST_F(HostFrameSinkManagerLocalTest, CommunicateFrameToken) {
 
   CompositorFrame compositor_frame = CompositorFrameBuilder()
                                          .AddDefaultRenderPass()
-                                         .SetFrameToken(frame_token1)
                                          .SetSendFrameTokenToEmbedder(true)
                                          .SetActivationDependencies({child_id1})
                                          .Build();
+  uint32_t frame_token = compositor_frame.metadata.frame_token;
+  ASSERT_NE(frame_token, 0u);
   support->SubmitCompositorFrame(parent_id1.local_surface_id(),
                                  std::move(compositor_frame));
 
@@ -306,7 +306,7 @@ TEST_F(HostFrameSinkManagerLocalTest, CommunicateFrameToken) {
   EXPECT_FALSE(parent_surface->HasPendingFrame());
   // Since the frame is now activated, |frame_token| is sent to
   // HostFrameSinkClient.
-  EXPECT_EQ(10u, host_client_parent.last_frame_token_seen());
+  EXPECT_EQ(frame_token, host_client_parent.last_frame_token_seen());
 }
 
 // Verify that that creating two CompositorFrameSinkSupports works.

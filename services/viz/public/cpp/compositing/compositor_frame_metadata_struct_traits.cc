@@ -32,7 +32,6 @@ bool StructTraits<viz::mojom::CompositorFrameMetadataDataView,
   out->content_source_id = data.content_source_id();
   out->frame_token = data.frame_token();
   out->send_frame_token_to_embedder = data.send_frame_token_to_embedder();
-  out->request_presentation_feedback = data.request_presentation_feedback();
   out->root_background_color = data.root_background_color();
   out->min_page_scale_factor = data.min_page_scale_factor();
   out->top_controls_height = data.top_controls_height();

@@ -35,13 +35,14 @@ TEST(SurfaceTest, PresentationCallback) {
   auto support = std::make_unique<CompositorFrameSinkSupport>(
       &client, &frame_sink_manager, kArbitraryFrameSinkId, kIsRoot,
       kNeedsSyncPoints);
+  uint32_t frame_token = 0;
   {
     CompositorFrame frame =
         CompositorFrameBuilder()
             .AddRenderPass(gfx::Rect(kSurfaceSize), kDamageRect)
-            .SetFrameToken(1)
-            .SetRequestPresentationFeedback(true)
             .Build();
+    frame_token = frame.metadata.frame_token;
+    ASSERT_NE(frame_token, 0u);
     EXPECT_CALL(client, DidReceiveCompositorFrameAck(testing::_)).Times(1);
     support->SubmitCompositorFrame(local_surface_id, std::move(frame));
     testing::Mock::VerifyAndClearExpectations(&client);
@@ -53,13 +54,11 @@ TEST(SurfaceTest, PresentationCallback) {
     CompositorFrame frame =
         CompositorFrameBuilder()
             .AddRenderPass(gfx::Rect(kSurfaceSize), kDamageRect)
-            .SetFrameToken(2)
-            .SetRequestPresentationFeedback(true)
             .Build();
     EXPECT_CALL(client, DidReceiveCompositorFrameAck(testing::_)).Times(1);
     support->SubmitCompositorFrame(local_surface_id, std::move(frame));
     ASSERT_EQ(1u, support->presentation_feedbacks().size());
-    EXPECT_EQ(1u, support->presentation_feedbacks().begin()->first);
+    EXPECT_EQ(frame_token, support->presentation_feedbacks().begin()->first);
     testing::Mock::VerifyAndClearExpectations(&client);
   }
 }

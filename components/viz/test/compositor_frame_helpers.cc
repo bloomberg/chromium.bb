@@ -115,12 +115,6 @@ CompositorFrameBuilder& CompositorFrameBuilder::SetReferencedSurfaces(
   return *this;
 }
 
-CompositorFrameBuilder& CompositorFrameBuilder::SetFrameToken(
-    uint32_t frame_token) {
-  frame_->metadata.frame_token = frame_token;
-  return *this;
-}
-
 CompositorFrameBuilder& CompositorFrameBuilder::SetContentSourceId(
     uint32_t content_source_id) {
   frame_->metadata.content_source_id = content_source_id;
@@ -131,13 +125,6 @@ CompositorFrameBuilder& CompositorFrameBuilder::SetSendFrameTokenToEmbedder(
     bool send) {
   DCHECK(frame_->metadata.frame_token);
   frame_->metadata.send_frame_token_to_embedder = send;
-  return *this;
-}
-
-CompositorFrameBuilder& CompositorFrameBuilder::SetRequestPresentationFeedback(
-    bool request) {
-  DCHECK(frame_->metadata.frame_token);
-  frame_->metadata.request_presentation_feedback = request;
   return *this;
 }
 

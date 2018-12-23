@@ -190,9 +190,6 @@ Compositor::Compositor(
     settings.enable_latency_recovery = false;
   }
 
-  settings.always_request_presentation_time =
-      command_line->HasSwitch(cc::switches::kAlwaysRequestPresentationTime);
-
   animation_host_ = cc::AnimationHost::CreateMainInstance();
 
   cc::LayerTreeHost::InitParams params;

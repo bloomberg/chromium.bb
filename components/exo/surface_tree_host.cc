@@ -220,7 +220,6 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
                                                  &presentation_callbacks_);
   frame.metadata.frame_token = ++next_token_;
   if (!presentation_callbacks_.empty()) {
-    frame.metadata.request_presentation_feedback = true;
     DCHECK_EQ(active_presentation_callbacks_.count(*next_token_), 0u);
     active_presentation_callbacks_[*next_token_] =
         std::move(presentation_callbacks_);

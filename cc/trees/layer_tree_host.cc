@@ -305,14 +305,11 @@ void LayerTreeHost::FinishCommitOnImplThread(
   }
 
   sync_tree->set_source_frame_number(SourceFrameNumber());
-  bool request_presentation_time =
-      settings_.always_request_presentation_time ||
-      !pending_presentation_time_callbacks_.empty();
-  if (request_presentation_time && pending_presentation_time_callbacks_.empty())
-    pending_presentation_time_callbacks_.push_back(base::DoNothing());
-  sync_tree->AddPresentationCallbacks(
-      std::move(pending_presentation_time_callbacks_));
-  pending_presentation_time_callbacks_.clear();
+  if (!pending_presentation_time_callbacks_.empty()) {
+    sync_tree->AddPresentationCallbacks(
+        std::move(pending_presentation_time_callbacks_));
+    pending_presentation_time_callbacks_.clear();
+  }
 
   if (needs_full_tree_sync_)
     TreeSynchronizer::SynchronizeTrees(root_layer(), sync_tree);
