@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -234,7 +234,7 @@ TEST(GURLTest, IsValid) {
     "http:/path",
     "http:path",
   };
-  for (size_t i = 0; i < arraysize(valid_cases); i++) {
+  for (size_t i = 0; i < base::size(valid_cases); i++) {
     EXPECT_TRUE(GURL(valid_cases[i]).is_valid())
         << "Case: " << valid_cases[i];
   }
@@ -247,7 +247,7 @@ TEST(GURLTest, IsValid) {
     "://google.com",
     "path",
   };
-  for (size_t i = 0; i < arraysize(invalid_cases); i++) {
+  for (size_t i = 0; i < base::size(invalid_cases); i++) {
     EXPECT_FALSE(GURL(invalid_cases[i]).is_valid())
         << "Case: " << invalid_cases[i];
   }
@@ -306,7 +306,7 @@ TEST(GURLTest, Resolve) {
     {"filesystem:http://www.google.com/type/", "../foo.html", true, "filesystem:http://www.google.com/type/foo.html"},
   };
 
-  for (size_t i = 0; i < arraysize(resolve_cases); i++) {
+  for (size_t i = 0; i < base::size(resolve_cases); i++) {
     // 8-bit code path.
     GURL input(resolve_cases[i].base);
     GURL output = input.Resolve(resolve_cases[i].relative);
@@ -343,7 +343,7 @@ TEST(GURLTest, GetOrigin) {
       {"blob:null/guid-goes-here", ""},
       {"blob:http://origin/guid-goes-here", "" /* should be http://origin/ */},
   };
-  for (size_t i = 0; i < arraysize(cases); i++) {
+  for (size_t i = 0; i < base::size(cases); i++) {
     GURL url(cases[i].input);
     GURL origin = url.GetOrigin();
     EXPECT_EQ(cases[i].expected, origin.spec());
@@ -366,7 +366,7 @@ TEST(GURLTest, GetAsReferrer) {
     {"file:///tmp/test.html", ""},
     {"https://www.google.com", "https://www.google.com/"},
   };
-  for (size_t i = 0; i < arraysize(cases); i++) {
+  for (size_t i = 0; i < base::size(cases); i++) {
     GURL url(cases[i].input);
     GURL origin = url.GetAsReferrer();
     EXPECT_EQ(cases[i].expected, origin.spec());
@@ -385,7 +385,7 @@ TEST(GURLTest, GetWithEmptyPath) {
     {"filesystem:file:///temporary/bar.html?baz=22", "filesystem:file:///temporary/"},
   };
 
-  for (size_t i = 0; i < arraysize(cases); i++) {
+  for (size_t i = 0; i < base::size(cases); i++) {
     GURL url(cases[i].input);
     GURL empty_path = url.GetWithEmptyPath();
     EXPECT_EQ(cases[i].expected, empty_path.spec());
@@ -431,7 +431,7 @@ TEST(GURLTest, GetWithoutFilename) {
     {"foobar", ""},
   };
 
-  for (size_t i = 0; i < arraysize(cases); i++) {
+  for (size_t i = 0; i < base::size(cases); i++) {
     GURL url(cases[i].input);
     GURL without_filename = url.GetWithoutFilename();
     EXPECT_EQ(cases[i].expected, without_filename.spec()) << i;
@@ -473,7 +473,7 @@ TEST(GURLTest, Replacements) {
        "filesystem:http://www.google.com/foo/bar.html?foo#bar"},
   };
 
-  for (size_t i = 0; i < arraysize(replace_cases); i++) {
+  for (size_t i = 0; i < base::size(replace_cases); i++) {
     const ReplaceCase& cur = replace_cases[i];
     GURL url(cur.base);
     GURL::Replacements repl;
@@ -537,7 +537,7 @@ TEST(GURLTest, PathForRequest) {
     {"filesystem:http://www.google.com/temporary/foo/bar.html?query", "/foo/bar.html?query", "/temporary"},
   };
 
-  for (size_t i = 0; i < arraysize(cases); i++) {
+  for (size_t i = 0; i < base::size(cases); i++) {
     GURL url(cases[i].input);
     std::string path_request = url.PathForRequest();
     EXPECT_EQ(cases[i].expected, path_request);
@@ -585,7 +585,7 @@ TEST(GURLTest, EffectiveIntPort) {
     {"filesystem:file:///t/foo", PORT_UNSPECIFIED},
   };
 
-  for (size_t i = 0; i < arraysize(port_tests); i++) {
+  for (size_t i = 0; i < base::size(port_tests); i++) {
     GURL url(port_tests[i].spec);
     EXPECT_EQ(port_tests[i].expected_int_port, url.EffectiveIntPort());
   }
@@ -606,7 +606,7 @@ TEST(GURLTest, IPAddress) {
     {"some random input!", false},
   };
 
-  for (size_t i = 0; i < arraysize(ip_tests); i++) {
+  for (size_t i = 0; i < base::size(ip_tests); i++) {
     GURL url(ip_tests[i].spec);
     EXPECT_EQ(ip_tests[i].expected_ip, url.HostIsIPAddress());
   }
@@ -631,7 +631,7 @@ TEST(GURLTest, HostNoBrackets) {
     {"http://]/", "]", "]"},
     {"", "", ""},
   };
-  for (size_t i = 0; i < arraysize(cases); i++) {
+  for (size_t i = 0; i < base::size(cases); i++) {
     GURL url(cases[i].input);
     EXPECT_EQ(cases[i].expected_host, url.host());
     EXPECT_EQ(cases[i].expected_plainhost, url.HostNoBrackets());
