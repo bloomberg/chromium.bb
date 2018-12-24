@@ -19,7 +19,7 @@
     },
     {
       "name": "LayoutBlockFlow DIV class='box'",
-      "bounds": [138, 138],
+      "bounds": [160, 160],
       "backgroundColor": "#0000FF",
       "transform": 1
     }
@@ -31,7 +31,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [39, 31, 0, 1]
+        [28, 20, 0, 1]
       ]
     }
   ]

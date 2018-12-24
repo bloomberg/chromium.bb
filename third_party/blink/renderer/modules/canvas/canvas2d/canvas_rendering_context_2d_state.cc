@@ -432,7 +432,7 @@ SkDrawLooper* CanvasRenderingContext2DState::ShadowAndForegroundDrawLooper()
 sk_sp<PaintFilter> CanvasRenderingContext2DState::ShadowOnlyImageFilter()
     const {
   if (!shadow_only_image_filter_) {
-    double sigma = SkBlurRadiusToSigma(shadow_blur_);
+    const auto sigma = BlurRadiusToStdDev(shadow_blur_);
     shadow_only_image_filter_ = sk_make_sp<DropShadowPaintFilter>(
         shadow_offset_.Width(), shadow_offset_.Height(), sigma, sigma,
         shadow_color_, SkDropShadowImageFilter::kDrawShadowOnly_ShadowMode,
@@ -444,7 +444,7 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::ShadowOnlyImageFilter()
 sk_sp<PaintFilter>
 CanvasRenderingContext2DState::ShadowAndForegroundImageFilter() const {
   if (!shadow_and_foreground_image_filter_) {
-    double sigma = SkBlurRadiusToSigma(shadow_blur_);
+    const auto sigma = BlurRadiusToStdDev(shadow_blur_);
     shadow_and_foreground_image_filter_ = sk_make_sp<DropShadowPaintFilter>(
         shadow_offset_.Width(), shadow_offset_.Height(), sigma, sigma,
         shadow_color_,

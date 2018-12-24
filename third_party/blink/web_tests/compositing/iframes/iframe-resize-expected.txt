@@ -19,8 +19,8 @@
     },
     {
       "name": "LayoutIFrame IFRAME id='parent-iframe' class='bigger'",
-      "position": [9, 9],
-      "bounds": [468, 188]
+      "position": [-2, -2],
+      "bounds": [490, 210]
     },
     {
       "name": "LayoutView #document",

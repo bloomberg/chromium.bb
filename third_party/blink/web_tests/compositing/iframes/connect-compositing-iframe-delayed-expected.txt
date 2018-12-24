@@ -21,8 +21,8 @@ When the parent document becomes composited, the layer trees should get connecte
     },
     {
       "name": "LayoutIFrame IFRAME id='iframe'",
-      "position": [9, 109],
-      "bounds": [368, 218]
+      "position": [-2, 98],
+      "bounds": [390, 240]
     },
     {
       "name": "LayoutView #document",
