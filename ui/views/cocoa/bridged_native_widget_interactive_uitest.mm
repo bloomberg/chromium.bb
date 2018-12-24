@@ -16,6 +16,7 @@
 #import "ui/base/test/windowed_nsnotification_observer.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/views/cocoa/bridged_native_widget_host_impl.h"
+#include "ui/views/test/views_interactive_ui_test_base.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/window/native_frame_view.h"
@@ -40,15 +41,14 @@ class ResizableDelegateView : public WidgetDelegateView {
 
 }  // namespace
 
-class BridgedNativeWidgetUITest : public WidgetTest {
+class BridgedNativeWidgetUITest : public test::WidgetTest {
  public:
   BridgedNativeWidgetUITest() = default;
 
   // testing::Test:
   void SetUp() override {
-    SetUpForInteractiveTests();
+    ViewsInteractiveUITestBase::InteractiveSetUp();
     WidgetTest::SetUp();
-
     Widget::InitParams init_params =
         CreateParams(Widget::InitParams::TYPE_WINDOW);
     init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;

@@ -3560,6 +3560,8 @@
         ],
       },
       'ui_chromeos_unittests': {},
+      'views_mus_unittests': {},
+      'views_mus_interactive_ui_tests': {},
       'wayland_client_perftests': {},
     },
 

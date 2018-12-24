@@ -28,7 +28,6 @@ class RemoteViewProviderTest : public aura::test::AuraTestBase {
 
   // aura::test::AuraTestBase
   void SetUp() override {
-    env_ = aura::Env::CreateInstance();
     EnableMusWithTestWindowTree();
     AuraTestBase::SetUp();
 
@@ -111,7 +110,6 @@ class RemoteViewProviderTest : public aura::test::AuraTestBase {
   }
 
  protected:
-  std::unique_ptr<aura::Env> env_;
   std::unique_ptr<aura::Window> embedded_;
   std::unique_ptr<RemoteViewProvider> provider_;
 

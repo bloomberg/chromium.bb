@@ -1562,7 +1562,7 @@ TEST_F(NativeWidgetMacTest, NoopReparentNativeView) {
 
   [parent close];
 
-  Widget* parent_widget = CreateTopLevelNativeWidget();
+  Widget* parent_widget = CreateNativeDesktopWidget();
   parent = parent_widget->GetNativeWindow().GetNativeNSWindow();
   dialog = views::DialogDelegate::CreateDialogWidget(
       new DialogDelegateView, nullptr, [parent contentView]);
@@ -1680,7 +1680,7 @@ TEST_F(NativeWidgetMacTest, NoParentDelegateDuringTeardown) {
 // Tests Cocoa properties that should be given to particular widget types.
 TEST_F(NativeWidgetMacTest, NativeProperties) {
   // Create a regular widget (TYPE_WINDOW).
-  Widget* regular_widget = CreateTopLevelNativeWidget();
+  Widget* regular_widget = CreateNativeDesktopWidget();
   EXPECT_TRUE([regular_widget->GetNativeWindow().GetNativeNSWindow()
                    canBecomeKeyWindow]);
   EXPECT_TRUE([regular_widget->GetNativeWindow().GetNativeNSWindow()

@@ -17,7 +17,6 @@
 
 #include <stdint.h>
 
-#include <array>
 #include <memory>
 #include <string>
 
@@ -25,6 +24,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,22 +58,20 @@ namespace ui {
 template <typename ClipboardTraits>
 class ClipboardTest : public PlatformTest {
  public:
-  ClipboardTest() {}
-  ~ClipboardTest() override = default;
-
-  // PlatformTest:
-  void SetUp() override {
-    PlatformTest::SetUp();
 #if defined(USE_AURA)
-    event_source_ = ClipboardTraits::GetEventSource();
+  ClipboardTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        event_source_(ClipboardTraits::GetEventSource()),
+        clipboard_(ClipboardTraits::Create()) {}
+#else
+  ClipboardTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        clipboard_(ClipboardTraits::Create()) {}
 #endif
-    clipboard_ = ClipboardTraits::Create();
-  }
 
-  void TearDown() override {
-    ClipboardTraits::Destroy(clipboard_);
-    PlatformTest::TearDown();
-  }
+  ~ClipboardTest() override { ClipboardTraits::Destroy(clipboard_); }
 
  protected:
   Clipboard& clipboard() { return *clipboard_; }
@@ -86,11 +84,12 @@ class ClipboardTest : public PlatformTest {
   }
 
  private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 #if defined(USE_AURA)
   std::unique_ptr<PlatformEventSource> event_source_;
 #endif
   // ui::Clipboard has a protected destructor, so scoped_ptr doesn't work here.
-  Clipboard* clipboard_ = nullptr;
+  Clipboard* const clipboard_;
 };
 
 // Hack for tests that need to call static methods of ClipboardTest.
@@ -99,9 +98,7 @@ struct NullClipboardTraits {
   static void Destroy(Clipboard*) {}
 };
 
-// |NamesOfTypesToTest| provides a way to differentiate between different
-// clipboard tests that include this file. See docs in gtest-typed-test.h
-TYPED_TEST_CASE(ClipboardTest, TypesToTest, NamesOfTypesToTest);
+TYPED_TEST_CASE(ClipboardTest, TypesToTest);
 
 TYPED_TEST(ClipboardTest, ClearTest) {
   {

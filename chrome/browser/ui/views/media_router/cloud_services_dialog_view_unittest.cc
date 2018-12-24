@@ -23,9 +23,8 @@ class CloudServicesDialogViewTest : public ChromeViewsTestBase {
   void SetUp() override {
     ChromeViewsTestBase::SetUp();
 
-    profile_ = std::make_unique<TestingProfile>();
     window_ = std::make_unique<TestBrowserWindow>();
-    Browser::CreateParams browser_params(profile_.get(), true);
+    Browser::CreateParams browser_params(&profile_, true);
     browser_params.window = window_.get();
     browser_ = std::make_unique<Browser>(browser_params);
 
@@ -42,7 +41,6 @@ class CloudServicesDialogViewTest : public ChromeViewsTestBase {
     anchor_widget_.reset();
     browser_.reset();
     window_.reset();
-    profile_.reset();
 
     ChromeViewsTestBase::TearDown();
   }
@@ -69,7 +67,7 @@ class CloudServicesDialogViewTest : public ChromeViewsTestBase {
   std::unique_ptr<BrowserWindow> window_;
   std::unique_ptr<Browser> browser_;
   std::unique_ptr<views::Widget> anchor_widget_;
-  std::unique_ptr<TestingProfile> profile_;
+  TestingProfile profile_;
 };
 
 TEST_F(CloudServicesDialogViewTest, Enable) {
