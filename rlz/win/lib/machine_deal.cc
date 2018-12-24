@@ -10,7 +10,7 @@
 #include <stddef.h>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -174,7 +174,7 @@ bool MachineDealCode::GetNewCodeFromPingResponse(const char* response,
 
   // Get the current DCC value to compare to later)
   char stored_dcc[kMaxDccLength + 1];
-  if (!Get(stored_dcc, arraysize(stored_dcc)))
+  if (!Get(stored_dcc, base::size(stored_dcc)))
     stored_dcc[0] = 0;
 
   int search_index = 0;
@@ -217,7 +217,7 @@ bool MachineDealCode::SetFromPingResponse(const char* response) {
   char new_dcc[kMaxDccLength + 1];
 
   bool response_valid = GetNewCodeFromPingResponse(
-      response, &has_new_dcc, new_dcc, arraysize(new_dcc));
+      response, &has_new_dcc, new_dcc, base::size(new_dcc));
 
   if (response_valid && has_new_dcc)
     return Set(new_dcc);
@@ -290,7 +290,7 @@ bool MachineDealCode::Clear() {
 
   // Verify deletion.
   wchar_t dcc[kMaxDccLength + 1];
-  DWORD dcc_size = arraysize(dcc);
+  DWORD dcc_size = base::size(dcc);
   if (dcc_key.ReadValue(kDccValueName, dcc, &dcc_size, NULL) == ERROR_SUCCESS) {
     ASSERT_STRING("MachineDealCode::Clear: Could not delete the DCC value.");
     return false;
