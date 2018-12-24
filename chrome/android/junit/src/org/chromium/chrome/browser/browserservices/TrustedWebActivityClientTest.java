@@ -79,8 +79,9 @@ public class TrustedWebActivityClientTest {
     public void usesIconFromService_IfStatusBarIconNotSet() {
         setHasStatusBarBitmap(false);
         postNotification();
-        verify(mNotificationBuilder).setStatusBarIconForUntrustedRemoteApp(
-                SERVICE_SMALL_ICON_ID, mServiceSmallIconBitmap, CLIENT_PACKAGE_NAME);
+        verify(mNotificationBuilder)
+                .setStatusBarIconForRemoteApp(
+                        SERVICE_SMALL_ICON_ID, mServiceSmallIconBitmap, CLIENT_PACKAGE_NAME);
     }
 
 
@@ -89,22 +90,21 @@ public class TrustedWebActivityClientTest {
         setHasStatusBarBitmap(true);
         postNotification();
         verify(mNotificationBuilder, never())
-                .setStatusBarIconForUntrustedRemoteApp(anyInt(), any(), anyString());
+                .setStatusBarIconForRemoteApp(anyInt(), any(), anyString());
     }
 
     @Test
     public void usesIconFromService_IfContentSmallIconNotSet() {
         setHasContentBitmap(false);
         postNotification();
-        verify(mNotificationBuilder)
-                .setContentSmallIconForUntrustedRemoteApp(mServiceSmallIconBitmap);
+        verify(mNotificationBuilder).setContentSmallIconForRemoteApp(mServiceSmallIconBitmap);
     }
 
     @Test
     public void doesntUseIconFromService_IfContentSmallIconSet() {
         setHasContentBitmap(true);
         postNotification();
-        verify(mNotificationBuilder, never()).setContentSmallIconForUntrustedRemoteApp(any());
+        verify(mNotificationBuilder, never()).setContentSmallIconForRemoteApp(any());
     }
 
 
