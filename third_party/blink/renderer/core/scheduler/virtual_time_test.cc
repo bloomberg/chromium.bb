@@ -149,13 +149,12 @@ TEST_F(VirtualTimeTest,
   EXPECT_TRUE(WebView().Scheduler()->VirtualTimeAllowedToAdvance());
 
   SimRequest main_resource("https://example.com/test.html", "text/html");
-  SimRequest css_resource("https://example.com/test.css", "text/css");
+  SimSubresourceRequest css_resource("https://example.com/test.css",
+                                     "text/css");
 
   // Loading, virtual time should not advance.
   LoadURL("https://example.com/test.html");
   EXPECT_FALSE(WebView().Scheduler()->VirtualTimeAllowedToAdvance());
-
-  main_resource.Start();
 
   // Still Loading, virtual time should not advance.
   main_resource.Write("<!DOCTYPE html><link rel=stylesheet href=test.css>");

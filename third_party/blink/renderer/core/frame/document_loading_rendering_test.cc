@@ -25,8 +25,6 @@ TEST_F(DocumentLoadingRenderingTest,
 
   LoadURL("https://example.com/test.html");
 
-  main_resource.Start();
-
   // Still in the head, should not resume commits.
   main_resource.Write("<!DOCTYPE html>");
   EXPECT_TRUE(Compositor().DeferMainFrameUpdate());
@@ -46,11 +44,10 @@ TEST_F(DocumentLoadingRenderingTest,
 TEST_F(DocumentLoadingRenderingTest,
        ShouldResumeCommitsAfterBodyIfSheetsLoaded) {
   SimRequest main_resource("https://example.com/test.html", "text/html");
-  SimRequest css_resource("https://example.com/test.css", "text/css");
+  SimSubresourceRequest css_resource("https://example.com/test.css",
+                                     "text/css");
 
   LoadURL("https://example.com/test.html");
-
-  main_resource.Start();
 
   // Still in the head, should not resume commits.
   main_resource.Write("<!DOCTYPE html><link rel=stylesheet href=test.css>");
@@ -76,11 +73,10 @@ TEST_F(DocumentLoadingRenderingTest,
 
 TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterSheetsLoaded) {
   SimRequest main_resource("https://example.com/test.html", "text/html");
-  SimRequest css_resource("https://example.com/test.css", "text/css");
+  SimSubresourceRequest css_resource("https://example.com/test.css",
+                                     "text/css");
 
   LoadURL("https://example.com/test.html");
-
-  main_resource.Start();
 
   // Still in the head, should not resume commits.
   main_resource.Write("<!DOCTYPE html><link rel=stylesheet href=test.css>");
@@ -107,11 +103,10 @@ TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterSheetsLoaded) {
 TEST_F(DocumentLoadingRenderingTest,
        ShouldResumeCommitsAfterDocumentElementWithNoSheets) {
   SimRequest main_resource("https://example.com/test.svg", "image/svg+xml");
-  SimRequest css_resource("https://example.com/test.css", "text/css");
+  SimSubresourceRequest css_resource("https://example.com/test.css",
+                                     "text/css");
 
   LoadURL("https://example.com/test.svg");
-
-  main_resource.Start();
 
   // Sheet loading and no documentElement, so don't resume.
   main_resource.Write("<?xml-stylesheet type='text/css' href='test.css'?>");
@@ -132,11 +127,10 @@ TEST_F(DocumentLoadingRenderingTest,
 
 TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterSheetsLoadForXml) {
   SimRequest main_resource("https://example.com/test.svg", "image/svg+xml");
-  SimRequest css_resource("https://example.com/test.css", "text/css");
+  SimSubresourceRequest css_resource("https://example.com/test.css",
+                                     "text/css");
 
   LoadURL("https://example.com/test.svg");
-
-  main_resource.Start();
 
   // Not done parsing.
   main_resource.Write("<?xml-stylesheet type='text/css' href='test.css'?>");
@@ -165,8 +159,6 @@ TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterFinishParsingXml) {
 
   LoadURL("https://example.com/test.svg");
 
-  main_resource.Start();
-
   // Finish parsing, no sheets loading so resume.
   main_resource.Finish();
   EXPECT_FALSE(Compositor().DeferMainFrameUpdate());
@@ -177,7 +169,6 @@ TEST_F(DocumentLoadingRenderingTest, ShouldResumeImmediatelyForImageDocuments) {
 
   LoadURL("https://example.com/test.png");
 
-  main_resource.Start();
   EXPECT_TRUE(Compositor().DeferMainFrameUpdate());
 
   // Not really a valid image but enough for the test. ImageDocuments should
@@ -191,12 +182,12 @@ TEST_F(DocumentLoadingRenderingTest, ShouldResumeImmediatelyForImageDocuments) {
 
 TEST_F(DocumentLoadingRenderingTest, ShouldScheduleFrameAfterSheetsLoaded) {
   SimRequest main_resource("https://example.com/test.html", "text/html");
-  SimRequest first_css_resource("https://example.com/first.css", "text/css");
-  SimRequest second_css_resource("https://example.com/second.css", "text/css");
+  SimSubresourceRequest first_css_resource("https://example.com/first.css",
+                                           "text/css");
+  SimSubresourceRequest second_css_resource("https://example.com/second.css",
+                                            "text/css");
 
   LoadURL("https://example.com/test.html");
-
-  main_resource.Start();
 
   // Load a stylesheet.
   main_resource.Write(
@@ -228,7 +219,8 @@ TEST_F(DocumentLoadingRenderingTest,
        ShouldNotPaintIframeContentWithPendingSheets) {
   SimRequest main_resource("https://example.com/test.html", "text/html");
   SimRequest frame_resource("https://example.com/frame.html", "text/html");
-  SimRequest css_resource("https://example.com/test.css", "text/css");
+  SimSubresourceRequest css_resource("https://example.com/test.css",
+                                     "text/css");
 
   LoadURL("https://example.com/test.html");
 
@@ -313,7 +305,8 @@ TEST_F(DocumentLoadingRenderingTest,
        ShouldThrottleIframeLifecycleUntilPendingSheetsLoaded) {
   SimRequest main_resource("https://example.com/main.html", "text/html");
   SimRequest frame_resource("https://example.com/frame.html", "text/html");
-  SimRequest css_resource("https://example.com/frame.css", "text/css");
+  SimSubresourceRequest css_resource("https://example.com/frame.css",
+                                     "text/css");
 
   LoadURL("https://example.com/main.html");
 
@@ -359,12 +352,12 @@ TEST_F(DocumentLoadingRenderingTest,
 TEST_F(DocumentLoadingRenderingTest,
        ShouldContinuePaintingWhenSheetsStartedAfterBody) {
   SimRequest main_resource("https://example.com/test.html", "text/html");
-  SimRequest css_head_resource("https://example.com/testHead.css", "text/css");
-  SimRequest css_body_resource("https://example.com/testBody.css", "text/css");
+  SimSubresourceRequest css_head_resource("https://example.com/testHead.css",
+                                          "text/css");
+  SimSubresourceRequest css_body_resource("https://example.com/testBody.css",
+                                          "text/css");
 
   LoadURL("https://example.com/test.html");
-
-  main_resource.Start();
 
   // Still in the head, should not paint.
   main_resource.Write("<!DOCTYPE html><link rel=stylesheet href=testHead.css>");
@@ -399,13 +392,12 @@ TEST_F(DocumentLoadingRenderingTest,
 TEST_F(DocumentLoadingRenderingTest,
        returnBoundingClientRectCorrectlyWhileLoadingImport) {
   SimRequest main_resource("https://example.com/test.html", "text/html");
-  SimRequest import_resource("https://example.com/import.css", "text/css");
+  SimSubresourceRequest import_resource("https://example.com/import.css",
+                                        "text/css");
 
   LoadURL("https://example.com/test.html");
 
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
-
-  main_resource.Start();
 
   main_resource.Write(R"HTML(
     <html><body>
@@ -436,11 +428,10 @@ TEST_F(DocumentLoadingRenderingTest,
 
 TEST_F(DocumentLoadingRenderingTest, StableSVGStopStylingWhileLoadingImport) {
   SimRequest main_resource("https://example.com/test.html", "text/html");
-  SimRequest import_resource("https://example.com/import.css", "text/css");
+  SimSubresourceRequest import_resource("https://example.com/import.css",
+                                        "text/css");
 
   LoadURL("https://example.com/test.html");
-
-  main_resource.Start();
 
   main_resource.Write(R"HTML(
     <html><body>

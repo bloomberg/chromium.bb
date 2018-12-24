@@ -15,11 +15,11 @@ class LinkElementLoadingTest : public SimTest {};
 TEST_F(LinkElementLoadingTest,
        ShouldCancelLoadingStyleSheetIfLinkElementIsDisconnected) {
   SimRequest main_resource("https://example.com/test.html", "text/html");
-  SimRequest css_resource("https://example.com/test.css", "text/css");
+  SimSubresourceRequest css_resource("https://example.com/test.css",
+                                     "text/css");
 
   LoadURL("https://example.com/test.html");
 
-  main_resource.Start();
   main_resource.Write(
       "<!DOCTYPE html><link id=link rel=stylesheet href=test.css>");
 

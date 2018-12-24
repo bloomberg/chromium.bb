@@ -12,11 +12,14 @@
 
 namespace blink {
 
-SimRequest::SimRequest(String url, String mime_type)
+SimRequestBase::SimRequestBase(String url,
+                               String mime_type,
+                               bool start_immediately)
     : url_(url),
+      start_immediately_(start_immediately),
+      started_(false),
       client_(nullptr),
-      total_encoded_data_length_(0),
-      is_ready_(false) {
+      total_encoded_data_length_(0) {
   KURL full_url(url);
   WebURLResponse response(full_url);
   response.SetMIMEType(mime_type);
@@ -26,43 +29,51 @@ SimRequest::SimRequest(String url, String mime_type)
   SimNetwork::Current().AddRequest(*this);
 }
 
-SimRequest::~SimRequest() {
-  DCHECK(!is_ready_);
+SimRequestBase::~SimRequestBase() {
+  DCHECK(!client_);
 }
 
-void SimRequest::DidReceiveResponse(WebURLLoaderClient* client,
-                                    const WebURLResponse& response) {
+void SimRequestBase::DidReceiveResponse(WebURLLoaderClient* client,
+                                        const WebURLResponse& response) {
   client_ = client;
   response_ = response;
-  is_ready_ = true;
+  started_ = false;
+  if (start_immediately_)
+    StartInternal();
 }
 
-void SimRequest::DidFail(const WebURLError& error) {
+void SimRequestBase::DidFail(const WebURLError& error) {
   error_ = error;
 }
 
-void SimRequest::Start() {
-  SimNetwork::Current().ServePendingRequests();
-  DCHECK(is_ready_);
+void SimRequestBase::StartInternal() {
+  DCHECK(!started_);
+  started_ = true;
   client_->DidReceiveResponse(response_);
 }
 
-void SimRequest::Write(const String& data) {
-  DCHECK(is_ready_);
+void SimRequestBase::Write(const String& data) {
+  if (!started_)
+    ServePending();
+  DCHECK(started_);
   DCHECK(!error_);
   total_encoded_data_length_ += data.length();
   client_->DidReceiveData(data.Utf8().data(), data.length());
 }
 
-void SimRequest::Write(const Vector<char>& data) {
-  DCHECK(is_ready_);
+void SimRequestBase::Write(const Vector<char>& data) {
+  if (!started_)
+    ServePending();
+  DCHECK(started_);
   DCHECK(!error_);
   total_encoded_data_length_ += data.size();
   client_->DidReceiveData(data.data(), data.size());
 }
 
-void SimRequest::Finish() {
-  DCHECK(is_ready_);
+void SimRequestBase::Finish() {
+  if (!started_)
+    ServePending();
+  DCHECK(started_);
   if (error_) {
     client_->DidFail(*error_, total_encoded_data_length_,
                      total_encoded_data_length_, total_encoded_data_length_);
@@ -76,26 +87,50 @@ void SimRequest::Finish() {
   Reset();
 }
 
-void SimRequest::Complete(const String& data) {
-  Start();
+void SimRequestBase::Complete(const String& data) {
+  if (!started_)
+    ServePending();
+  if (!started_)
+    StartInternal();
   if (!data.IsEmpty())
     Write(data);
   Finish();
 }
 
-void SimRequest::Complete(const Vector<char>& data) {
-  Start();
+void SimRequestBase::Complete(const Vector<char>& data) {
+  if (!started_)
+    ServePending();
+  if (!started_)
+    StartInternal();
   if (!data.IsEmpty())
     Write(data);
   Finish();
 }
 
-void SimRequest::Reset() {
-  is_ready_ = false;
+void SimRequestBase::Reset() {
+  started_ = false;
   client_ = nullptr;
   Platform::Current()->GetURLLoaderMockFactory()->UnregisterURL(KURL(url_));
-
   SimNetwork::Current().RemoveRequest(*this);
+}
+
+void SimRequestBase::ServePending() {
+  SimNetwork::Current().ServePendingRequests();
+}
+
+SimRequest::SimRequest(String url, String mime_type)
+    : SimRequestBase(url, mime_type, true /* start_immediately */) {}
+
+SimRequest::~SimRequest() = default;
+
+SimSubresourceRequest::SimSubresourceRequest(String url, String mime_type)
+    : SimRequestBase(url, mime_type, false /* start_immediately */) {}
+
+SimSubresourceRequest::~SimSubresourceRequest() = default;
+
+void SimSubresourceRequest::Start() {
+  ServePending();
+  StartInternal();
 }
 
 }  // namespace blink

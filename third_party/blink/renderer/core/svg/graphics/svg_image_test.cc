@@ -201,7 +201,8 @@ class SVGImagePageVisibilityTest : public SimTest {};
 
 TEST_F(SVGImagePageVisibilityTest, PageVisibilityHiddenToVisible) {
   SimRequest main_resource("https://example.com/", "text/html");
-  SimRequest image_resource("https://example.com/image.svg", "image/svg+xml");
+  SimSubresourceRequest image_resource("https://example.com/image.svg",
+                                       "image/svg+xml");
   LoadURL("https://example.com/");
   main_resource.Complete("<img src='image.svg' width='100' id='image'>");
   image_resource.Complete(kAnimatedDocument);

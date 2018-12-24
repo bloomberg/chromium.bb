@@ -18,8 +18,6 @@ TEST_F(WebMeaningfulLayoutsTest, VisuallyNonEmptyTextCharacters) {
 
   LoadURL("https://example.com/index.html");
 
-  main_resource.Start();
-
   // Write 201 characters.
   const char* ten_characters = "0123456789";
   for (int i = 0; i < 20; ++i)
@@ -37,8 +35,6 @@ TEST_F(WebMeaningfulLayoutsTest, VisuallyNonEmptyTextCharactersEventually) {
   SimRequest main_resource("https://example.com/index.html", "text/html");
 
   LoadURL("https://example.com/index.html");
-
-  main_resource.Start();
 
   // Write 200 characters.
   const char* ten_characters = "0123456789";
@@ -68,8 +64,6 @@ TEST_F(WebMeaningfulLayoutsTest, VisuallyNonEmptyMissingPump) {
   SimRequest main_resource("https://example.com/index.html", "text/html");
 
   LoadURL("https://example.com/index.html");
-
-  main_resource.Start();
 
   // Write <200 characters.
   main_resource.Write("less than 200 characters.");
@@ -118,7 +112,8 @@ TEST_F(WebMeaningfulLayoutsTest, FinishedLoading) {
 
 TEST_F(WebMeaningfulLayoutsTest, FinishedParsingThenLoading) {
   SimRequest main_resource("https://example.com/index.html", "text/html");
-  SimRequest image_resource("https://example.com/cat.png", "image/png");
+  SimSubresourceRequest image_resource("https://example.com/cat.png",
+                                       "image/png");
 
   LoadURL("https://example.com/index.html");
 
@@ -172,11 +167,11 @@ TEST_F(WebMeaningfulLayoutsTest, WithIFrames) {
 TEST_F(WebMeaningfulLayoutsTest,
        NoOverflowInIncrementVisuallyNonEmptyPixelCount) {
   SimRequest main_resource("https://example.com/test.html", "text/html");
-  SimRequest svg_resource("https://example.com/test.svg", "image/svg+xml");
+  SimSubresourceRequest svg_resource("https://example.com/test.svg",
+                                     "image/svg+xml");
 
   LoadURL("https://example.com/test.html");
 
-  main_resource.Start();
   main_resource.Write("<DOCTYPE html><body><img src=\"test.svg\">");
   // Run pending tasks to initiate the request to test.svg.
   test::RunPendingTasks();
@@ -201,7 +196,8 @@ TEST_F(WebMeaningfulLayoutsTest,
 // a pending stylesheet if a layout is triggered before it loads.
 TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingRenderBlockingStylesheet) {
   SimRequest main_resource("https://example.com/index.html", "text/html");
-  SimRequest style_resource("https://example.com/style.css", "text/css");
+  SimSubresourceRequest style_resource("https://example.com/style.css",
+                                       "text/css");
 
   LoadURL("https://example.com/index.html");
 
@@ -221,7 +217,8 @@ TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingRenderBlockingStylesheet) {
 // be considered a pending stylesheet if a layout is triggered before it loads.
 TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingScriptBlockingStylesheet) {
   SimRequest main_resource("https://example.com/index.html", "text/html");
-  SimRequest style_resource("https://example.com/style.css", "text/css");
+  SimSubresourceRequest style_resource("https://example.com/style.css",
+                                       "text/css");
 
   LoadURL("https://example.com/index.html");
 
@@ -240,7 +237,8 @@ TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingScriptBlockingStylesheet) {
 // a pending stylesheet if a layout is triggered before it loads.
 TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingImportInHead) {
   SimRequest main_resource("https://example.com/index.html", "text/html");
-  SimRequest import_resource("https://example.com/import.html", "text/html");
+  SimSubresourceRequest import_resource("https://example.com/import.html",
+                                        "text/html");
 
   LoadURL("https://example.com/index.html");
 
@@ -262,7 +260,8 @@ TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingImportInHead) {
 // a pending stylesheet if a layout is triggered before it loads.
 TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingImportInBody) {
   SimRequest main_resource("https://example.com/index.html", "text/html");
-  SimRequest import_resource("https://example.com/import.html", "text/html");
+  SimSubresourceRequest import_resource("https://example.com/import.html",
+                                        "text/html");
 
   LoadURL("https://example.com/index.html");
 

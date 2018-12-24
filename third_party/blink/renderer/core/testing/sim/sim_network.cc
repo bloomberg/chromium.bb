@@ -86,12 +86,12 @@ void SimNetwork::DidFinishLoading(WebURLLoaderClient* client,
   current_request_ = nullptr;
 }
 
-void SimNetwork::AddRequest(SimRequest& request) {
-  requests_.insert(request.Url(), &request);
+void SimNetwork::AddRequest(SimRequestBase& request) {
+  requests_.insert(request.url_, &request);
 }
 
-void SimNetwork::RemoveRequest(SimRequest& request) {
-  requests_.erase(request.Url());
+void SimNetwork::RemoveRequest(SimRequestBase& request) {
+  requests_.erase(request.url_);
 }
 
 }  // namespace blink

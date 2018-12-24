@@ -241,7 +241,8 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureExtract) {
 TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframe) {
   SimRequest main_resource("https://example.com/page1", "text/html");
   SimRequest iframe_resource("https://example.com/iframe.html", "text/html");
-  SimRequest image_resource("https://example.com/cat.png", "image/png");
+  SimSubresourceRequest image_resource("https://example.com/cat.png",
+                                       "image/png");
 
   LoadURL("https://example.com/page1");
 
@@ -314,7 +315,8 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframe) {
 TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframeNonHttp) {
   SimRequest main_resource("content://example.com/page1", "text/html");
   SimRequest iframe_resource("https://example.com/iframe.html", "text/html");
-  SimRequest image_resource("https://example.com/cat.png", "image/png");
+  SimSubresourceRequest image_resource("https://example.com/cat.png",
+                                       "image/png");
 
   LoadURL("content://example.com/page1");
 
