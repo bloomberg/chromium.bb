@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/settings/cells/encryption_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
+#import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
@@ -55,6 +56,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeDetailText,
   ItemTypeSettingsSwitch1,
   ItemTypeSettingsSwitch2,
+  ItemTypeSyncSwitch,
   ItemTypeAutofillEditItem,
   ItemTypeAutofillData,
   ItemTypeAccount,
@@ -176,17 +178,26 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   SettingsSwitchItem* settingsSwitchItem =
       [[SettingsSwitchItem alloc] initWithType:ItemTypeSettingsSwitch1];
-  settingsSwitchItem.text = @"This is a switch item";
+  settingsSwitchItem.text = @"This is a settings switch item";
   [model addItem:settingsSwitchItem
       toSectionWithIdentifier:SectionIdentifierSettings];
 
   SettingsSwitchItem* settingsSwitchItem2 =
       [[SettingsSwitchItem alloc] initWithType:ItemTypeSettingsSwitch2];
-  settingsSwitchItem2.text = @"This is a disabled switch item";
+  settingsSwitchItem2.text = @"This is a disabled settings switch item";
   settingsSwitchItem2.detailText = @"This is a switch item with detail text";
   settingsSwitchItem2.on = YES;
   settingsSwitchItem2.enabled = NO;
   [model addItem:settingsSwitchItem2
+      toSectionWithIdentifier:SectionIdentifierSettings];
+
+  SyncSwitchItem* syncSwitchItem =
+      [[SyncSwitchItem alloc] initWithType:ItemTypeSyncSwitch];
+  syncSwitchItem.text = @"This is a sync switch item";
+  syncSwitchItem.detailText = @"This is a sync switch item with detail text";
+  syncSwitchItem.on = YES;
+  syncSwitchItem.enabled = NO;
+  [model addItem:syncSwitchItem
       toSectionWithIdentifier:SectionIdentifierSettings];
 
   EncryptionItem* encryptionChecked =
