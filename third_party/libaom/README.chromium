@@ -4,7 +4,7 @@ URL: https://aomedia.googlesource.com/aom/
 Version: 0
 Date: Friday December 21 2018
 Branch: master
-Commit: f90004a14ea8c2990e6cdb0961517760a6a2ffa9
+Commit: 20a747b9ce5ec99ad2f78dd206a3fc1b8abf6850
 License: BSD
 License File: source/libaom/LICENSE
 Security Critical: yes
