@@ -474,4 +474,25 @@ public class WebContentsAccessibilityTest {
         Assert.assertEquals(textNode.isContentInvalid(), false);
         Assert.assertEquals(textNode.getError(), "");
     }
+
+    /**
+     * ContentEditable elements should get a class name of EditText.
+     **/
+    @Test
+    @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void testContentEditableClassName() throws Throwable {
+        final String data = "<div contenteditable>Edit This</div>";
+
+        mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(data));
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
+        AccessibilityNodeProvider provider = enableAccessibilityAndWaitForNodeProvider();
+        int textNodeVirtualViewId = waitForNodeWithClassName(provider, "android.widget.EditText");
+        AccessibilityNodeInfo editableNode =
+                provider.createAccessibilityNodeInfo(textNodeVirtualViewId);
+        Assert.assertNotNull(editableNode);
+        Assert.assertEquals(editableNode.isEditable(), true);
+        Assert.assertEquals(editableNode.getText().toString(), "Edit This");
+    }
 }

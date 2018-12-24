@@ -423,8 +423,14 @@ bool BrowserAccessibilityAndroid::CanOpenPopup() const {
 }
 
 const char* BrowserAccessibilityAndroid::GetClassName() const {
-  return ui::AXRoleToAndroidClassName(GetRole(),
-                                      PlatformGetParent() != nullptr);
+  ax::mojom::Role role = GetRole();
+
+  // On Android, contenteditable needs to be handled the same as any
+  // other text field.
+  if (IsPlainTextField() || IsRichTextField())
+    role = ax::mojom::Role::kTextField;
+
+  return ui::AXRoleToAndroidClassName(role, PlatformGetParent() != nullptr);
 }
 
 base::string16 BrowserAccessibilityAndroid::GetText() const {
