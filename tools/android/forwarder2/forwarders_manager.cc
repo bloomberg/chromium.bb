@@ -14,9 +14,9 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/stl_util.h"
 #include "tools/android/forwarder2/forwarder.h"
 #include "tools/android/forwarder2/socket.h"
 
@@ -81,7 +81,7 @@ void ForwardersManager::WaitForEventsOnInternalThread() {
     deletion_notifier_.receiver_fd(),
   };
 
-  for (size_t i = 0; i < arraysize(notifier_fds); ++i) {
+  for (size_t i = 0; i < base::size(notifier_fds); ++i) {
     const int notifier_fd = notifier_fds[i];
     DCHECK_GT(notifier_fd, -1);
     FD_SET(notifier_fd, &read_fds);

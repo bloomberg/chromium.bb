@@ -15,8 +15,8 @@
 #include <unistd.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/stl_util.h"
 #include "tools/android/common/net.h"
 
 namespace tools {
@@ -39,19 +39,19 @@ int ConnectAdbHostSocket(const char* forward_to) {
   const size_t kLengthOfLength = 4;
 
   const char kAddressPrefix[] = { 't', 'c', 'p', ':' };
-  size_t address_length = arraysize(kAddressPrefix) + strlen(forward_to);
+  size_t address_length = base::size(kAddressPrefix) + strlen(forward_to);
   if (address_length > kBufferMaxLength - kLengthOfLength) {
     LOG(ERROR) << "Forward to address is too long: " << forward_to;
     return -1;
   }
 
   char request[kBufferMaxLength];
-  memcpy(request + kLengthOfLength, kAddressPrefix, arraysize(kAddressPrefix));
-  memcpy(request + kLengthOfLength + arraysize(kAddressPrefix),
-         forward_to, strlen(forward_to));
+  memcpy(request + kLengthOfLength, kAddressPrefix, base::size(kAddressPrefix));
+  memcpy(request + kLengthOfLength + base::size(kAddressPrefix), forward_to,
+         strlen(forward_to));
 
   char length_buffer[kLengthOfLength + 1];
-  snprintf(length_buffer, arraysize(length_buffer), "%04X",
+  snprintf(length_buffer, base::size(length_buffer), "%04X",
            static_cast<int>(address_length));
   memcpy(request, length_buffer, kLengthOfLength);
 
