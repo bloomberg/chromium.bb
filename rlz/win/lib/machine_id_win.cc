@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "rlz/lib/assert.h"
 
@@ -85,7 +85,7 @@ bool GetRawMachineId(base::string16* sid_string, int* volume_id) {
   // Calculate the Windows SID.
 
   wchar_t computer_name[MAX_COMPUTERNAME_LENGTH + 1] = {0};
-  DWORD size = arraysize(computer_name);
+  DWORD size = base::size(computer_name);
 
   if (GetComputerNameW(computer_name, &size)) {
     char sid_buffer[SECURITY_MAX_SID_SIZE];

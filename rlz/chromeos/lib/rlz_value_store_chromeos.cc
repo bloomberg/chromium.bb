@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
@@ -173,7 +174,7 @@ bool RlzValueStoreChromeOS::WriteAccessPointRlz(AccessPoint access_point,
   // contain both install and first search cohorts.  Ignoring the second
   // means the first search cohort will never be stored.
   char dummy[kMaxRlzLength + 1];
-  if (ReadAccessPointRlz(access_point, dummy, arraysize(dummy)) &&
+  if (ReadAccessPointRlz(access_point, dummy, base::size(dummy)) &&
       dummy[0] != 0) {
     return true;
   }
