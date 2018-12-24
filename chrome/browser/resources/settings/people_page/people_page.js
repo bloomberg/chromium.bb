@@ -138,10 +138,11 @@ Polymer({
       value: function() {
         const map = new Map();
         if (settings.routes.SYNC) {
-          const syncId = loadTimeData.getBoolean('unifiedConsentEnabled') ?
-              '#sync-setup' :
-              '#sync-status';
-          map.set(settings.routes.SYNC.path, `${syncId} .subpage-arrow button`);
+          map.set(
+              settings.routes.SYNC.path,
+              loadTimeData.getBoolean('unifiedConsentEnabled') ?
+                  '#sync-setup' :
+                  '#sync-status .subpage-arrow button');
         }
         // <if expr="not chromeos">
         if (settings.routes.MANAGE_PROFILE) {
