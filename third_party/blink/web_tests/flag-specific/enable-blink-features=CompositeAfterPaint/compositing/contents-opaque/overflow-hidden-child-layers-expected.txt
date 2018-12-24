@@ -8,8 +8,8 @@
     },
     {
       "name": "LayoutBlockFlow DIV class='box'",
-      "position": [-19, -19],
-      "bounds": [138, 138],
+      "position": [-30, -30],
+      "bounds": [160, 160],
       "backgroundColor": "#0000FF",
       "transform": 1
     }

@@ -19,13 +19,12 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='outer A'",
-      "position": [6, 6],
-      "bounds": [340, 282]
+      "bounds": [352, 294]
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='scroller'",
-      "position": [38, 38],
-      "bounds": [278, 218],
+      "position": [32, 32],
+      "bounds": [290, 230],
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -54,13 +53,13 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='outer B'",
-      "position": [355, 6],
-      "bounds": [340, 282]
+      "position": [349, 0],
+      "bounds": [352, 294]
     },
     {
       "name": "LayoutBlockFlow DIV class='scroller'",
-      "position": [387, 38],
-      "bounds": [278, 218],
+      "position": [381, 32],
+      "bounds": [290, 230],
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -96,13 +95,13 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='outer C'",
-      "position": [6, 297],
-      "bounds": [340, 282]
+      "position": [0, 291],
+      "bounds": [352, 294]
     },
     {
       "name": "LayoutBlockFlow DIV class='scroller'",
-      "position": [37, 328],
-      "bounds": [278, 218],
+      "position": [31, 322],
+      "bounds": [290, 230],
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -138,8 +137,8 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='outer D'",
-      "position": [355, 297],
-      "bounds": [340, 282]
+      "position": [349, 291],
+      "bounds": [352, 294]
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='clipper'",
@@ -148,8 +147,8 @@
     },
     {
       "name": "LayoutBlockFlow DIV class='scroller'",
-      "position": [386, 328],
-      "bounds": [278, 218],
+      "position": [380, 322],
+      "bounds": [290, 230],
       "backgroundColor": "#FFFFFF"
     },
     {

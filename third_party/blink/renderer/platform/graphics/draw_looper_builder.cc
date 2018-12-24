@@ -91,7 +91,7 @@ void DrawLooperBuilder::AddShadow(const FloatSize& offset,
   SkPaint* paint = sk_draw_looper_builder_.addLayerOnTop(info);
 
   if (blur) {
-    const SkScalar sigma = SkBlurRadiusToSigma(blur);
+    const auto sigma = BlurRadiusToStdDev(blur);
     const bool respectCTM = shadow_transform_mode != kShadowIgnoresTransforms;
     paint->setMaskFilter(
         SkMaskFilter::MakeBlur(kNormal_SkBlurStyle, sigma, respectCTM));

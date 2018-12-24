@@ -129,13 +129,18 @@ InterpolationQuality ComputeInterpolationQuality(float src_width,
                                                  float dest_height,
                                                  bool is_data_complete = true);
 
-// This replicates the old skia behavior when it used to take radius for blur.
-// Now it takes sigma.
-inline SkScalar SkBlurRadiusToSigma(SkScalar radius) {
-  SkASSERT(radius >= 0);
-  if (radius == 0)
-    return 0.0f;
-  return 0.288675f * radius + 0.5f;
+// Technically, this is driven by the CSS/Canvas2D specs and unrelated to Skia.
+// It should probably live in the CSS layer, but the notion of a "blur radius"
+// leaks into platform/graphics currently (ideally we should only deal with
+// sigma at this level).
+// TODO(fmalita): find a better home for this helper.
+inline float BlurRadiusToStdDev(float radius) {
+  DCHECK_GE(radius, 0);
+
+  // Per spec, sigma is exactly half the blur radius:
+  // https://www.w3.org/TR/css-backgrounds-3/#shadow-blur
+  // https://html.spec.whatwg.org/multipage/canvas.html#when-shadows-are-drawn
+  return radius * 0.5f;
 }
 
 template <typename PrimitiveType>

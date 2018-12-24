@@ -19,12 +19,12 @@
     },
     {
       "name": "LayoutIFrame IFRAME id='iframe' class='composited'",
-      "bounds": [368, 218],
+      "bounds": [390, 240],
       "transform": 1
     },
     {
       "name": "LayoutView #document",
-      "position": [34, 34],
+      "position": [45, 45],
       "bounds": [300, 150],
       "drawsContent": false,
       "backgroundColor": "#C0C0C0",
@@ -32,14 +32,14 @@
     },
     {
       "name": "Scrolling Layer",
-      "position": [34, 34],
+      "position": [45, 45],
       "bounds": [285, 150],
       "drawsContent": false,
       "transform": 1
     },
     {
       "name": "Scrolling Contents Layer",
-      "position": [34, 34],
+      "position": [45, 45],
       "bounds": [285, 230],
       "backgroundColor": "#C0C0C0",
       "transform": 1
@@ -53,14 +53,14 @@
     },
     {
       "name": "Overflow Controls Host Layer",
-      "position": [34, 34],
+      "position": [45, 45],
       "bounds": [300, 150],
       "drawsContent": false,
       "transform": 1
     },
     {
       "name": "Vertical Scrollbar Layer",
-      "position": [319, 34],
+      "position": [330, 45],
       "bounds": [15, 150],
       "drawsContent": false,
       "transform": 1
@@ -73,7 +73,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [9, 9, 0, 1]
+        [-2, -2, 0, 1]
       ]
     },
     {
@@ -83,7 +83,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [52, 44, 0, 1]
+        [63, 55, 0, 1]
       ]
     }
   ]

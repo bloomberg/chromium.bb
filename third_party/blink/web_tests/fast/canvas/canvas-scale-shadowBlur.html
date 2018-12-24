@@ -50,29 +50,29 @@ function testPixelShadowBlur(x, y, color)
 
 var testPixelShadowBlurScenarios = [
     ['Verify top left 1', 250, 250, [255, 0, 0, 255]],
-    ['Verify top left 2', 250, 175, [0, 0, 0, 0]],
-    ['Verify top left 3', 250, 325, [0, 0, 0, 0]],
-    ['Verify top left 4', 175, 250, [0, 0, 0, 0]],
-    ['Verify top left 5', 325, 250, [0, 0, 0, 0]],
+    ['Verify top left 2', 250, 160, [0, 0, 0, 0]],
+    ['Verify top left 3', 250, 340, [0, 0, 0, 0]],
+    ['Verify top left 4', 160, 250, [0, 0, 0, 0]],
+    ['Verify top left 5', 340, 250, [0, 0, 0, 0]],
 
     ['Verify bottom left 1', 250, 450, [255, 0, 0, 126, 20]],
-    ['Verify bottom left 2', 250, 375, [0, 0, 0, 0]],
-    ['Verify bottom left 3', 250, 525, [0, 0, 0, 0]],
-    ['Verify bottom left 4', 175, 450, [0, 0, 0, 0]],
-    ['Verify bottom left 5', 325, 450, [0, 0, 0, 0]],
+    ['Verify bottom left 2', 250, 360, [0, 0, 0, 0]],
+    ['Verify bottom left 3', 250, 540, [0, 0, 0, 0]],
+    ['Verify bottom left 4', 160, 450, [0, 0, 0, 0]],
+    ['Verify bottom left 5', 340, 450, [0, 0, 0, 0]],
     ['Verify bottom left 6', 250, 250, [255, 0, 0, 255, 20]],
 
     ['Verify top right 1', 450, 250, [255, 0, 0, 255, 20]],
-    ['Verify top right 2', 450, 175, [0, 0, 0, 0]],
-    ['Verify top right 3', 450, 325, [0, 0, 0, 0]],
-    ['Verify top right 4', 375, 250, [0, 0, 0, 0]],
-    ['Verify top right 5', 525, 250, [0, 0, 0, 0]],
+    ['Verify top right 2', 450, 160, [0, 0, 0, 0]],
+    ['Verify top right 3', 450, 340, [0, 0, 0, 0]],
+    ['Verify top right 4', 360, 250, [0, 0, 0, 0]],
+    ['Verify top right 5', 540, 250, [0, 0, 0, 0]],
 
     ['Verify bottom right 1', 450, 450, [255, 0, 0, 126, 20]],
-    ['Verify bottom right 2', 450, 375, [0, 0, 0, 0]],
-    ['Verify bottom right 3', 450, 525, [0, 0, 0, 0]],
-    ['Verify bottom right 4', 375, 450, [0, 0, 0, 0]],
-    ['Verify bottom right 5', 525, 450, [0, 0, 0, 0]],
+    ['Verify bottom right 2', 450, 360, [0, 0, 0, 0]],
+    ['Verify bottom right 3', 450, 540, [0, 0, 0, 0]],
+    ['Verify bottom right 4', 360, 450, [0, 0, 0, 0]],
+    ['Verify bottom right 5', 540, 450, [0, 0, 0, 0]],
 ];
 
 generate_tests(testPixelShadowBlur, testPixelShadowBlurScenarios);
