@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
@@ -253,10 +253,10 @@ TEST_F(SchemeHostPortTest, Comparison) {
       {"https", "b", 81},
   };
 
-  for (size_t i = 0; i < arraysize(tuples); i++) {
+  for (size_t i = 0; i < base::size(tuples); i++) {
     url::SchemeHostPort current(tuples[i].scheme, tuples[i].host,
                                 tuples[i].port);
-    for (size_t j = i; j < arraysize(tuples); j++) {
+    for (size_t j = i; j < base::size(tuples); j++) {
       url::SchemeHostPort to_compare(tuples[j].scheme, tuples[j].host,
                                      tuples[j].port);
       EXPECT_EQ(i < j, current < to_compare) << i << " < " << j;

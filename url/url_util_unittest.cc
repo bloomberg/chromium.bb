@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
@@ -220,7 +220,7 @@ TEST_F(URLUtilTest, DecodeURLEscapeSequences) {
       {"%e4%bd%a0%e5%a5%bd", "\xe4\xbd\xa0\xe5\xa5\xbd"},
   };
 
-  for (size_t i = 0; i < arraysize(decode_cases); i++) {
+  for (size_t i = 0; i < base::size(decode_cases); i++) {
     const char* input = decode_cases[i].input;
     RawCanonOutputT<base::char16> output;
     DecodeURLEscapeSequences(input, strlen(input),
@@ -303,7 +303,7 @@ TEST_F(URLUtilTest, TestEncodeURIComponent) {
      "pqrstuvwxyz%7B%7C%7D~%7F"},
   };
 
-  for (size_t i = 0; i < arraysize(encode_cases); i++) {
+  for (size_t i = 0; i < base::size(encode_cases); i++) {
     const char* input = encode_cases[i].input;
     RawCanonOutputT<char> buffer;
     EncodeURIComponent(input, strlen(input), &buffer);
@@ -380,7 +380,7 @@ TEST_F(URLUtilTest, TestResolveRelativeWithNonStandardBase) {
       // adding the requested dot doesn't seem wrong either.
       {"aaa://a\\", "aaa:.", true, "aaa://a\\."}};
 
-  for (size_t i = 0; i < arraysize(resolve_non_standard_cases); i++) {
+  for (size_t i = 0; i < base::size(resolve_non_standard_cases); i++) {
     const ResolveRelativeCase& test_data = resolve_non_standard_cases[i];
     Parsed base_parsed;
     ParsePathURL(test_data.base, strlen(test_data.base), false, &base_parsed);
