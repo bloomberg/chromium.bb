@@ -272,12 +272,10 @@ static AOM_FORCE_INLINE int get_nz_map_ctx_from_stats(
       const int row = coeff_idx >> bwl;
       const int col = coeff_idx - (row << bwl);
       return ctx + nz_map_ctx_offset_1d[col];
-      break;
     }
     case TX_CLASS_VERT: {
       const int row = coeff_idx >> bwl;
       return ctx + nz_map_ctx_offset_1d[row];
-      break;
     }
     default: break;
   }

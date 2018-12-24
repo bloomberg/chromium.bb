@@ -223,18 +223,19 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       break;
   }
 
-  if (k_eob_offset_bits[eob_pt] > 0) {
+  const int eob_offset_bits = k_eob_offset_bits[eob_pt];
+  if (eob_offset_bits > 0) {
     const int eob_ctx = eob_pt - 3;
     int bit = aom_read_symbol(
         r, ec_ctx->eob_extra_cdf[txs_ctx][plane_type][eob_ctx], 2, ACCT_STR);
     if (bit) {
-      eob_extra += (1 << (k_eob_offset_bits[eob_pt] - 1));
+      eob_extra += (1 << (eob_offset_bits - 1));
     }
 
-    for (int i = 1; i < k_eob_offset_bits[eob_pt]; i++) {
+    for (int i = 1; i < eob_offset_bits; i++) {
       bit = aom_read_bit(r, ACCT_STR);
       if (bit) {
-        eob_extra += (1 << (k_eob_offset_bits[eob_pt] - 1 - i));
+        eob_extra += (1 << (eob_offset_bits - 1 - i));
       }
     }
   }
@@ -252,11 +253,9 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     int level = aom_read_symbol(r, cdf, nsymbs, ACCT_STR) + 1;
     if (level > NUM_BASE_LEVELS) {
       const int br_ctx = get_br_ctx(levels, pos, bwl, tx_class);
+      cdf = ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_32X32)][plane_type][br_ctx];
       for (int idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
-        const int k = aom_read_symbol(
-            r,
-            ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_32X32)][plane_type][br_ctx],
-            BR_CDF_SIZE, ACCT_STR);
+        const int k = aom_read_symbol(r, cdf, BR_CDF_SIZE, ACCT_STR);
         level += k;
         if (k < BR_CDF_SIZE - 1) break;
       }
