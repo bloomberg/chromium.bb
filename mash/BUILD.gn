@@ -13,6 +13,7 @@ group("all") {
   testonly = true
 
   deps = [
+    ":mash_catalog",
     "//components/services/leveldb",
     "//mash/catalog_viewer",
     "//mash/example",
@@ -64,8 +65,13 @@ catalog("catalog") {
   }
 }
 
-catalog_cpp_source("mash_catalog_source") {
+copy("mash_catalog") {
   testonly = true
-  catalog = ":catalog"
-  generated_function_name = "CreateMashCatalog"
+  sources = get_target_outputs(":catalog")
+  outputs = [
+    "$root_out_dir/mash_catalog.json",
+  ]
+  deps = [
+    ":catalog",
+  ]
 }

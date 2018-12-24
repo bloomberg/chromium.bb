@@ -70,7 +70,21 @@ const char kService[] = "service";
 
 Context::Context(
     ServiceProcessLauncherDelegate* service_process_launcher_delegate,
-    const std::vector<Manifest>& manifests) {
+    const std::vector<Manifest>& manifests)
+    : Context(service_process_launcher_delegate, nullptr, manifests) {}
+
+Context::Context(
+    ServiceProcessLauncherDelegate* service_process_launcher_delegate,
+    std::unique_ptr<base::Value> catalog_contents)
+    : Context(service_process_launcher_delegate,
+              std::move(catalog_contents),
+              std::vector<Manifest>()) {}
+
+Context::Context(
+    ServiceProcessLauncherDelegate* service_process_launcher_delegate,
+    std::unique_ptr<base::Value> catalog_contents,
+    const std::vector<Manifest>& manifests)
+    : main_entry_time_(base::Time::Now()) {
   TRACE_EVENT0("service_manager", "Context::Context");
 
   std::unique_ptr<ServiceProcessLauncherFactory>
@@ -83,8 +97,14 @@ Context::Context(
       std::make_unique<ServiceProcessLauncherFactoryImpl>(
           service_process_launcher_delegate);
 #endif
-  service_manager_ = std::make_unique<ServiceManager>(
-      std::move(service_process_launcher_factory), manifests);
+  if (!manifests.empty()) {
+    service_manager_ = std::make_unique<ServiceManager>(
+        std::move(service_process_launcher_factory), manifests, nullptr);
+  } else {
+    service_manager_ = std::make_unique<ServiceManager>(
+        std::move(service_process_launcher_factory),
+        std::move(catalog_contents), nullptr);
+  }
 }
 
 Context::~Context() = default;

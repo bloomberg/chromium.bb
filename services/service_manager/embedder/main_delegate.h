@@ -6,7 +6,6 @@
 #define SERVICES_SERVICE_MANAGER_EMBEDDER_MAIN_DELEGATE_H_
 
 #include <memory>
-#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/component_export.h"
@@ -16,12 +15,12 @@
 #include "services/service_manager/background/background_service_manager.h"
 #include "services/service_manager/embedder/process_type.h"
 #include "services/service_manager/public/cpp/identity.h"
-#include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace base {
 class CommandLine;
+class Value;
 namespace mac {
 class ScopedNSAutoreleasePool;
 }
@@ -74,10 +73,9 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_EMBEDDER) MainDelegate {
   // Allows the embedder to override the process-wide Mojop configuration.
   virtual void OverrideMojoConfiguration(mojo::core::Configuration* config);
 
-  // Gets the list of service manifests with which to initialize the Service
-  // Manager. This list must describe the complete set of usable services in
-  // the system and remains fixed for the lifetime of the Service Manager.
-  virtual std::vector<Manifest> GetServiceManifests();
+  // Create the service catalog to be used by the Service Manager. May return
+  // null to use the default (empty) catalog, if you're into that.
+  virtual std::unique_ptr<base::Value> CreateServiceCatalog();
 
   // Indicates whether a process started by the service manager for a given
   // target service identity should be run as a real service process (|true|)

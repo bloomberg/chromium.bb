@@ -210,7 +210,7 @@ class CONTENT_EXPORT ChildProcessLauncher {
   // for the service |service_name|.
   static void SetRegisteredFilesForService(
       const std::string& service_name,
-      std::map<std::string, base::FilePath> required_files);
+      catalog::RequiredFileMap required_files);
 
   // Resets all files registered by |SetRegisteredFilesForService|. Used to
   // support multiple shell context creation in unit_tests.
