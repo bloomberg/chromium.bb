@@ -112,7 +112,7 @@ void BackgroundFetchDelegateImpl::JobDetails::UpdateOfflineItem() {
   DCHECK_GT(fetch_description->total_parts, 0);
 
   if (ShouldReportProgressBySize()) {
-    offline_item.progress.value = fetch_description->completed_parts_size;
+    offline_item.progress.value = GetProcessedDataSize();
     // If we have completed all downloads, update progress max to
     // completed_parts_size in case total_parts_size was set too high. This
     // avoid unnecessary jumping in the progress bar.
@@ -150,6 +150,10 @@ void BackgroundFetchDelegateImpl::JobDetails::UpdateOfflineItem() {
   }
 }
 
+uint64_t BackgroundFetchDelegateImpl::JobDetails::GetProcessedDataSize() const {
+  return fetch_description->completed_parts_size + in_progress_parts_size;
+}
+
 bool BackgroundFetchDelegateImpl::JobDetails::ShouldReportProgressBySize() {
   if (!fetch_description->total_parts_size) {
     // total_parts_size was not set. Cannot report by size.
@@ -157,8 +161,7 @@ bool BackgroundFetchDelegateImpl::JobDetails::ShouldReportProgressBySize() {
   }
 
   if (fetch_description->completed_parts < fetch_description->total_parts &&
-      fetch_description->completed_parts_size >
-          fetch_description->total_parts_size) {
+      GetProcessedDataSize() > fetch_description->total_parts_size) {
     // total_parts_size was set too low.
     return false;
   }
@@ -402,10 +405,10 @@ void BackgroundFetchDelegateImpl::OnDownloadUpdated(
   // This will update the progress bar.
   DCHECK(job_details_map_.count(job_unique_id));
   JobDetails& job_details = job_details_map_.find(job_unique_id)->second;
-  job_details.fetch_description->completed_parts_size = bytes_downloaded;
+  job_details.in_progress_parts_size = bytes_downloaded;
   if (job_details.fetch_description->total_parts_size &&
       job_details.fetch_description->total_parts_size <
-          job_details.fetch_description->completed_parts_size) {
+          job_details.GetProcessedDataSize()) {
     // Fail the fetch if total download size was set too low.
     // We only do this if total download size is specified. If not specified,
     // this check is skipped. This is to allow for situations when the
@@ -436,6 +439,8 @@ void BackgroundFetchDelegateImpl::OnDownloadFailed(
   const std::string& job_unique_id = download_job_unique_id_iter->second;
   JobDetails& job_details = job_details_map_.find(job_unique_id)->second;
   ++job_details.fetch_description->completed_parts;
+  job_details.in_progress_parts_size = 0u;
+
   UpdateOfflineItemAndUpdateObservers(&job_details);
 
   // The client cancelled or aborted the download so no need to notify it.
@@ -468,10 +473,12 @@ void BackgroundFetchDelegateImpl::OnDownloadSucceeded(
   const std::string& job_unique_id = download_job_unique_id_iter->second;
   JobDetails& job_details = job_details_map_.find(job_unique_id)->second;
   ++job_details.fetch_description->completed_parts;
+  job_details.in_progress_parts_size = 0u;
 
-  job_details.fetch_description->completed_parts_size =
+  job_details.fetch_description->completed_parts_size +=
       profile_->IsOffTheRecord() ? result->blob_handle->size()
                                  : result->file_size;
+
   UpdateOfflineItemAndUpdateObservers(&job_details);
 
   if (job_details.client) {
