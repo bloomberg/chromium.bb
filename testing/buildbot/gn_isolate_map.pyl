@@ -2560,6 +2560,14 @@
     "label": "//media/gpu:video_decode_accelerator_unittest",
     "type": "raw",
   },
+  "views_mus_interactive_ui_tests": {
+    "label": "//ui/views/mus:views_mus_interactive_ui_tests",
+    "type": "windowed_test_launcher",
+  },
+  "views_mus_unittests": {
+    "label": "//ui/views/mus:views_mus_unittests",
+    "type": "windowed_test_launcher",
+  },
   "views_perftests": {
     "args": [
       "--xvfb",

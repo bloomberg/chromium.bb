@@ -46,6 +46,11 @@ using WidgetTestTest = WidgetTest;
 // Ensure that Widgets with various root windows are correctly reported by
 // WidgetTest::GetAllWidgets().
 TEST_F(WidgetTestTest, GetAllWidgets) {
+  // TODO: this test transitively uses GetContext(). That should go away for
+  // aura-mus client. http://crbug.com/663781.
+  if (IsMus())
+    return;
+
   // Note Widget::Widgets is a std::set ordered by pointer value, so the order
   // that |expected| is updated below is not important.
   Widget::Widgets expected;
@@ -67,32 +72,7 @@ TEST_F(WidgetTestTest, GetAllWidgets) {
   Widget* native_child = CreateChildNativeWidgetWithParent(native);
   ExpectAdd(&expected, native_child, "native_child");
 
-  ExpectClose(&expected, {native, native_child}, "native");
-  ExpectClose(&expected, {platform, platform_child}, "platform");
-  ExpectClose(&expected, {frameless}, "frameless");
-}
-
-using DesktopWidgetTestTest = DesktopWidgetTest;
-
-// As above, but with desktop native widgets (i.e. DesktopNativeWidgetAura on
-// Aura).
-TEST_F(DesktopWidgetTestTest, GetAllWidgets) {
-  // Note Widget::Widgets is a std::set ordered by pointer value, so the order
-  // that |expected| is updated below is not important.
-  Widget::Widgets expected;
-
-  EXPECT_EQ(expected, GetAllWidgets());
-
-  Widget* frameless = CreateTopLevelFramelessPlatformWidget();
-  ExpectAdd(&expected, frameless, "frameless");
-
-  Widget* native = CreateTopLevelNativeWidget();
-  ExpectAdd(&expected, native, "native");
-
-  Widget* native_child = CreateChildNativeWidgetWithParent(native);
-  ExpectAdd(&expected, native_child, "native_child");
-
-  Widget* desktop = CreateTopLevelNativeWidget();
+  Widget* desktop = CreateNativeDesktopWidget();
   ExpectAdd(&expected, desktop, "desktop");
 
   Widget* desktop_child = CreateChildNativeWidgetWithParent(desktop);
@@ -110,6 +90,7 @@ TEST_F(DesktopWidgetTestTest, GetAllWidgets) {
 
   ExpectClose(&expected, {desktop, desktop_child}, "desktop");
   ExpectClose(&expected, {native, native_child}, "native");
+  ExpectClose(&expected, {platform, platform_child}, "platform");
   ExpectClose(&expected, {frameless}, "frameless");
 }
 

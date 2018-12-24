@@ -4,7 +4,6 @@
 
 #include "ui/views/corewm/tooltip_controller.h"
 
-#include "base/at_exit.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -61,6 +60,9 @@ views::Widget* CreateWidget(aura::Window* root) {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
 #if defined(OS_CHROMEOS)
   params.parent = root;
+#else
+  params.native_widget = ::views::test::CreatePlatformDesktopNativeWidgetImpl(
+      params, widget, nullptr);
 #endif
   params.bounds = gfx::Rect(0, 0, 200, 100);
   widget->Init(params);
@@ -77,14 +79,10 @@ TooltipController* GetController(Widget* widget) {
 
 class TooltipControllerTest : public ViewsTestBase {
  public:
-  TooltipControllerTest() = default;
+  TooltipControllerTest() : view_(NULL) {}
   ~TooltipControllerTest() override {}
 
   void SetUp() override {
-#if !defined(OS_CHROMEOS)
-    set_native_widget_type(NativeWidgetType::kDesktop);
-#endif
-
     ViewsTestBase::SetUp();
 
     aura::Window* root_window = GetContext();
@@ -158,7 +156,7 @@ class TooltipControllerTest : public ViewsTestBase {
   }
 
   std::unique_ptr<views::Widget> widget_;
-  TooltipTestView* view_ = nullptr;
+  TooltipTestView* view_;
   std::unique_ptr<TooltipControllerTestHelper> helper_;
   std::unique_ptr<ui::test::EventGenerator> generator_;
 
@@ -238,6 +236,11 @@ TEST_F(TooltipControllerTest, DontShowTooltipOnTouch) {
 #if defined(OS_CHROMEOS)
 // crbug.com/664370.
 TEST_F(TooltipControllerTest, MaxWidth) {
+  // This test relies on TooltipAura being created, which does not happen in
+  // this test with mus (it happens in DesktopNativeWidgetAura).
+  if (IsMus())
+    return;
+
   base::string16 text = base::ASCIIToUTF16(
       "Really really realy long long long long  long tooltips that exceeds max "
       "width");
@@ -479,7 +482,8 @@ class TooltipControllerCaptureTest : public TooltipControllerTest {
   }
 
   void TearDown() override {
-    aura::client::SetScreenPositionClient(GetRootWindow(), NULL);
+    if (!IsMus())
+      aura::client::SetScreenPositionClient(GetRootWindow(), NULL);
     TooltipControllerTest::TearDown();
   }
 
@@ -518,6 +522,11 @@ TEST_F(TooltipControllerCaptureTest, DISABLED_CloseOnCaptureLost) {
 #endif
 // Verifies the correct window is found for tooltips when there is a capture.
 TEST_F(TooltipControllerCaptureTest, MAYBE_Capture) {
+  // This test doesn't make sense with mus as it creates two widgets and
+  // expects to move the mouse between them.
+  if (IsMus())
+    return;
+
   const base::string16 tooltip_text(ASCIIToUTF16("1"));
   const base::string16 tooltip_text2(ASCIIToUTF16("2"));
 
@@ -601,7 +610,6 @@ class TooltipControllerTest2 : public aura::test::AuraTestBase {
   ~TooltipControllerTest2() override {}
 
   void SetUp() override {
-    at_exit_manager_ = std::make_unique<base::ShadowingAtExitManager>();
     aura::test::AuraTestBase::SetUp();
     new wm::DefaultActivationClient(root_window());
     controller_.reset(
@@ -619,7 +627,6 @@ class TooltipControllerTest2 : public aura::test::AuraTestBase {
     generator_.reset();
     helper_.reset();
     aura::test::AuraTestBase::TearDown();
-    at_exit_manager_.reset();
   }
 
  protected:
@@ -629,14 +636,17 @@ class TooltipControllerTest2 : public aura::test::AuraTestBase {
   std::unique_ptr<ui::test::EventGenerator> generator_;
 
  private:
-  // Needed to make sure the InputDeviceManager is cleaned up between test runs.
-  std::unique_ptr<base::ShadowingAtExitManager> at_exit_manager_;
   std::unique_ptr<TooltipController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipControllerTest2);
 };
 
 TEST_F(TooltipControllerTest2, VerifyLeadingTrailingWhitespaceStripped) {
+  // This test does not have a real connection to mus (because it's using
+  // AuraTestBase, not ViewsTestBase), so it can't use EventGenerator.
+  if (ViewsTestBase::IsMus())
+    return;
+
   aura::test::TestWindowDelegate test_delegate;
   std::unique_ptr<aura::Window> window(
       CreateNormalWindow(100, root_window(), &test_delegate));
@@ -650,6 +660,11 @@ TEST_F(TooltipControllerTest2, VerifyLeadingTrailingWhitespaceStripped) {
 
 // Verifies that tooltip is hidden and tooltip window closed upon cancel mode.
 TEST_F(TooltipControllerTest2, CloseOnCancelMode) {
+  // This test does not have a real connection to mus (because it's using
+  // AuraTestBase, not ViewsTestBase), so it can't use EventGenerator.
+  if (ViewsTestBase::IsMus())
+    return;
+
   aura::test::TestWindowDelegate test_delegate;
   std::unique_ptr<aura::Window> window(
       CreateNormalWindow(100, root_window(), &test_delegate));
@@ -676,11 +691,12 @@ class TooltipControllerTest3 : public ViewsTestBase {
   ~TooltipControllerTest3() override = default;
 
   void SetUp() override {
-#if !defined(OS_CHROMEOS)
-    set_native_widget_type(NativeWidgetType::kDesktop);
-#endif
-
     ViewsTestBase::SetUp();
+
+    // This test assumes a hierarchy like that of Ash, which doesn't make sense
+    // with mus.
+    if (IsMus())
+      return;
 
     aura::Window* root_window = GetContext();
     new wm::DefaultActivationClient(root_window);
@@ -705,13 +721,15 @@ class TooltipControllerTest3 : public ViewsTestBase {
   }
 
   void TearDown() override {
-    GetRootWindow()->RemovePreTargetHandler(controller_.get());
-    wm::SetTooltipClient(GetRootWindow(), NULL);
+    if (!IsMus()) {
+      GetRootWindow()->RemovePreTargetHandler(controller_.get());
+      wm::SetTooltipClient(GetRootWindow(), NULL);
 
-    controller_.reset();
-    generator_.reset();
-    helper_.reset();
-    widget_.reset();
+      controller_.reset();
+      generator_.reset();
+      helper_.reset();
+      widget_.reset();
+    }
     ViewsTestBase::TearDown();
   }
 
@@ -738,6 +756,11 @@ class TooltipControllerTest3 : public ViewsTestBase {
 };
 
 TEST_F(TooltipControllerTest3, TooltipPositionChangesOnTwoViewsWithSameLabel) {
+  // See comment in TooltipControllerTest3::SetUp() for why this does nothing in
+  // mus.
+  if (IsMus())
+    return;
+
   // Owned by |view_|.
   // These two views have the same tooltip text
   TooltipTestView* v1 = new TooltipTestView;

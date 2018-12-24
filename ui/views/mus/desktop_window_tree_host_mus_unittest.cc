@@ -34,7 +34,6 @@
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/mus_client_test_api.h"
 #include "ui/views/mus/screen_mus.h"
-#include "ui/views/test/native_widget_factory.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -47,14 +46,9 @@ namespace views {
 class DesktopWindowTreeHostMusTest : public ViewsTestBase,
                                      public WidgetObserver {
  public:
-  DesktopWindowTreeHostMusTest() = default;
-  ~DesktopWindowTreeHostMusTest() override = default;
-
-  // ViewsTestBase:
-  void SetUp() override {
-    set_native_widget_type(NativeWidgetType::kDesktop);
-    ViewsTestBase::SetUp();
-  }
+  DesktopWindowTreeHostMusTest()
+      : widget_activated_(nullptr), widget_deactivated_(nullptr) {}
+  ~DesktopWindowTreeHostMusTest() override {}
 
   // Creates a test widget. Takes ownership of |delegate|.
   std::unique_ptr<Widget> CreateWidget(WidgetDelegate* delegate = nullptr,
@@ -84,8 +78,8 @@ class DesktopWindowTreeHostMusTest : public ViewsTestBase,
     }
   }
 
-  Widget* widget_activated_ = nullptr;
-  Widget* widget_deactivated_ = nullptr;
+  Widget* widget_activated_;
+  Widget* widget_deactivated_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostMusTest);
 };
@@ -413,7 +407,7 @@ TEST_F(DesktopWindowTreeHostMusTest, CreateFullscreenWidget) {
 
   for (auto widget_type : kWidgetTypes) {
     Widget widget;
-    Widget::InitParams params = CreateParams(widget_type);
+    Widget::InitParams params(widget_type);
     params.show_state = ui::SHOW_STATE_FULLSCREEN;
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     widget.Init(params);

@@ -4,26 +4,16 @@
 
 #include "ui/base/mojo/clipboard_client.h"
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/views/test/views_interactive_ui_test_base.h"
+#include "ui/views/mus/mus_client.h"
+#include "ui/views/test/scoped_views_test_helper.h"
 
 namespace ui {
 
 namespace {
 
-views::ViewsTestBase* g_test_base = nullptr;
-
-// This class is necessary to allow the Mus version of ClipboardTest to
-// initialize itself as if it's a ViewsTestBase (which creates the MusClient and
-// does other necessary setup). TODO(crbug/917180): improve this.
-class ViewsTestBaseNoTest : public views::ViewsInteractiveUITestBase {
- public:
-  ViewsTestBaseNoTest() = default;
-  ~ViewsTestBaseNoTest() override = default;
-
-  // views::ViewsInteractiveUITestBase:
-  void TestBody() override {}
-};
+std::unique_ptr<views::ScopedViewsTestHelper> g_scoped_views_test_helper;
 
 }  // namespace
 
@@ -33,27 +23,18 @@ struct PlatformClipboardTraits {
   }
 
   static Clipboard* Create() {
-    g_test_base = new ViewsTestBaseNoTest();
-    g_test_base->SetUp();
-
+    g_scoped_views_test_helper =
+        std::make_unique<views::ScopedViewsTestHelper>();
+    EXPECT_TRUE(views::MusClient::Exists());
     return Clipboard::GetForCurrentThread();
   }
 
   static void Destroy(Clipboard* clipboard) {
-    g_test_base->TearDown();
-    g_test_base = nullptr;
+    g_scoped_views_test_helper.reset();
   }
 };
 
 using TypesToTest = PlatformClipboardTraits;
-
-class NamesOfTypesToTest {
- public:
-  template <typename T>
-  static std::string GetName(int index) {
-    return "MusClipboardTest";
-  }
-};
 
 }  // namespace ui
 

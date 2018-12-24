@@ -131,7 +131,7 @@ std::unique_ptr<Widget> CreateTestWidget() {
   return widget;
 }
 
-using AXRemoteHostTest = ViewsTestWithDesktopNativeWidget;
+using AXRemoteHostTest = ViewsTestBase;
 
 TEST_F(AXRemoteHostTest, CreateRemote) {
   TestAXHostService service(false /*automation_enabled*/);

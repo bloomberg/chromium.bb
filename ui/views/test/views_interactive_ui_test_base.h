@@ -15,6 +15,8 @@ class ViewsInteractiveUITestBase : public ViewsTestBase {
   ViewsInteractiveUITestBase();
   ~ViewsInteractiveUITestBase() override;
 
+  static void InteractiveSetUp();
+
   // ViewsTestBase:
   void SetUp() override;
 

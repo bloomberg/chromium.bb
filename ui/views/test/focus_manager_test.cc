@@ -14,9 +14,14 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // FocusManagerTest, public:
 
-FocusManagerTest::FocusManagerTest() : contents_view_(new View) {}
+FocusManagerTest::FocusManagerTest()
+    : contents_view_(new View),
+      focus_change_listener_(NULL),
+      widget_focus_change_listener_(NULL) {
+}
 
-FocusManagerTest::~FocusManagerTest() = default;
+FocusManagerTest::~FocusManagerTest() {
+}
 
 FocusManager* FocusManagerTest::GetFocusManager() {
   return GetWidget()->GetFocusManager();
