@@ -328,7 +328,7 @@ cr.define('settings_sync_account_control', function() {
         disabled: false,
       };
 
-      assertVisible(testElement.$$('#turn-off'), false);
+      assertVisible(testElement.$$('#turn-off'), true);
       assertVisible(testElement.$$('#sync-error-button'), false);
 
       testElement.embeddedInSubpage = true;
@@ -340,7 +340,7 @@ cr.define('settings_sync_account_control', function() {
         statusAction: settings.StatusAction.REAUTHENTICATE,
         disabled: false,
       };
-      assertVisible(testElement.$$('#turn-off'), false);
+      assertVisible(testElement.$$('#turn-off'), true);
       assertVisible(testElement.$$('#sync-error-button'), true);
 
       testElement.embeddedInSubpage = true;
@@ -352,7 +352,7 @@ cr.define('settings_sync_account_control', function() {
         statusAction: settings.StatusAction.REAUTHENTICATE,
         disabled: false,
       };
-      assertVisible(testElement.$$('#turn-off'), false);
+      assertVisible(testElement.$$('#turn-off'), true);
       assertVisible(testElement.$$('#sync-error-button'), true);
 
       testElement.embeddedInSubpage = true;
@@ -364,7 +364,7 @@ cr.define('settings_sync_account_control', function() {
         statusAction: settings.StatusAction.ENTER_PASSPHRASE,
         disabled: false,
       };
-      assertVisible(testElement.$$('#turn-off'), false);
+      assertVisible(testElement.$$('#turn-off'), true);
       // Don't show passphrase error button on embedded page.
       assertVisible(testElement.$$('#sync-error-button'), false);
 
@@ -377,7 +377,7 @@ cr.define('settings_sync_account_control', function() {
         statusAction: settings.StatusAction.NO_ACTION,
         disabled: false,
       };
-      assertVisible(testElement.$$('#turn-off'), false);
+      assertVisible(testElement.$$('#turn-off'), true);
       assertVisible(testElement.$$('#sync-error-button'), false);
     });
 

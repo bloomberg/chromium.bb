@@ -250,8 +250,7 @@ Polymer({
    * @private
    */
   shouldShowTurnOffButton_: function() {
-    return !this.hideButtons && !!this.syncStatus.signedIn &&
-        !this.embeddedInSubpage;
+    return !this.hideButtons && !!this.syncStatus.signedIn;
   },
 
   /**
