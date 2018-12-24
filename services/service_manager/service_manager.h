@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
+#include "base/values.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/catalog/catalog.h"
@@ -28,6 +29,11 @@
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/service_manager/runner/host/service_process_launcher_factory.h"
+#include "services/service_manager/service_overrides.h"
+
+namespace catalog {
+class ManifestProvider;
+}
 
 namespace service_manager {
 
@@ -44,9 +50,25 @@ class ServiceManager : public Service {
   // |service_process_launcher_factory| is an instance of an object capable of
   // vending implementations of ServiceProcessLauncher, e.g. for out-of-process
   // execution.
-  explicit ServiceManager(std::unique_ptr<ServiceProcessLauncherFactory>
-                              service_process_launcher_factory,
-                          const std::vector<Manifest>& manifests);
+  explicit ServiceManager(
+      std::unique_ptr<ServiceProcessLauncherFactory>
+          service_process_launcher_factory,
+      const std::vector<Manifest>& manifests,
+      catalog::ManifestProvider* manifest_provider = nullptr);
+
+  // |service_process_launcher_factory| is an instance of an object capable of
+  // vending implementations of ServiceProcessLauncher, e.g. for out-of-process
+  // execution.
+  //
+  // |catalog_contents|, if not null, will be used to prepoulate the service
+  // manager catalog with a fixed data set. |manifest_provider|, if not null,
+  // will be consulted for dynamic manifest resolution if a manifest is not
+  // found within the catalog; if used, |manifest_provider| is not owned and
+  // must outlive this ServiceManager.
+  ServiceManager(std::unique_ptr<ServiceProcessLauncherFactory>
+                     service_process_launcher_factory,
+                 std::unique_ptr<base::Value> catalog_contents,
+                 catalog::ManifestProvider* manifest_provider);
   ~ServiceManager() override;
 
   // Provide a callback to be notified whenever an instance is destroyed.
@@ -105,6 +127,8 @@ class ServiceManager : public Service {
     // resolving the Identity.
     kSingleton,
   };
+
+  void InitBuiltinServices();
 
   // Called when |instance| encounters an error. Deletes |instance|.
   void OnInstanceError(Instance* instance);

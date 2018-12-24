@@ -53,6 +53,7 @@ class PlatformTestHelperMus::ServiceManagerConnection {
   ServiceManagerConnection()
       : thread_("Persistent service_manager connections"),
         default_service_binding_(&default_service_) {
+    catalog::Catalog::SetDefaultCatalogManifest(CreateViewsUnittestsCatalog());
     base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     base::Thread::Options options;
@@ -108,8 +109,8 @@ class PlatformTestHelperMus::ServiceManagerConnection {
 
   void SetUpConnectionsOnBackgroundThread(base::WaitableEvent* wait) {
     background_service_manager_ =
-        std::make_unique<service_manager::BackgroundServiceManager>(
-            nullptr, CreateViewsUnittestsCatalog());
+        std::make_unique<service_manager::BackgroundServiceManager>(nullptr,
+                                                                    nullptr);
     service_manager::mojom::ServicePtr service;
     default_service_binding_.Bind(mojo::MakeRequest(&service));
     background_service_manager_->RegisterService(

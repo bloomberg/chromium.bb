@@ -26,13 +26,26 @@ namespace service_manager {
 
 BackgroundServiceManager::BackgroundServiceManager(
     ServiceProcessLauncherDelegate* launcher_delegate,
+    std::unique_ptr<base::Value> catalog_contents)
+    : background_thread_("service_manager") {
+  background_thread_.Start();
+  background_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&BackgroundServiceManager::InitializeOnBackgroundThread,
+                     base::Unretained(this), launcher_delegate,
+                     std::move(catalog_contents), std::vector<Manifest>()));
+}
+
+BackgroundServiceManager::BackgroundServiceManager(
+    ServiceProcessLauncherDelegate* launcher_delegate,
     const std::vector<Manifest>& manifests)
     : background_thread_("service_manager") {
   background_thread_.Start();
   background_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&BackgroundServiceManager::InitializeOnBackgroundThread,
-                     base::Unretained(this), launcher_delegate, manifests));
+                     base::Unretained(this), launcher_delegate, nullptr,
+                     manifests));
 }
 
 BackgroundServiceManager::~BackgroundServiceManager() {
@@ -61,8 +74,14 @@ void BackgroundServiceManager::RegisterService(
 
 void BackgroundServiceManager::InitializeOnBackgroundThread(
     ServiceProcessLauncherDelegate* launcher_delegate,
+    std::unique_ptr<base::Value> catalog_contents,
     const std::vector<Manifest>& manifests) {
-  context_ = std::make_unique<Context>(launcher_delegate, manifests);
+  if (!manifests.empty()) {
+    context_ = std::make_unique<Context>(launcher_delegate, manifests);
+  } else {
+    context_ = std::make_unique<Context>(launcher_delegate,
+                                         std::move(catalog_contents));
+  }
 }
 
 void BackgroundServiceManager::ShutDownOnBackgroundThread(

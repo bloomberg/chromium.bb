@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/runner/host/service_process_launcher_delegate.h"
 
@@ -22,6 +23,11 @@ class ServiceManager;
 class Context {
  public:
   Context(ServiceProcessLauncherDelegate* launcher_delegate,
+          const std::vector<Manifest>& manifests);
+  Context(ServiceProcessLauncherDelegate* launcher_delegate,
+          std::unique_ptr<base::Value> catalog_contents);
+  Context(ServiceProcessLauncherDelegate* launcher_delegate,
+          std::unique_ptr<base::Value> catalog_contents,
           const std::vector<Manifest>& manifests);
   ~Context();
 

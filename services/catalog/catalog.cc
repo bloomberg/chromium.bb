@@ -32,9 +32,85 @@ namespace catalog {
 
 namespace {
 
+const char kCatalogServicesKey[] = "services";
+const char kCatalogServiceEmbeddedKey[] = "embedded";
+const char kCatalogServiceExecutableKey[] = "executable";
+const char kCatalogServiceManifestKey[] = "manifest";
+
 std::vector<service_manager::Manifest>& GetDefaultManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests;
   return *manifests;
+}
+
+void LoadCatalogManifestIntoCache(const base::Value* root, EntryCache* cache) {
+  DCHECK(root);
+  const base::DictionaryValue* catalog = nullptr;
+  if (!root->GetAsDictionary(&catalog)) {
+    LOG(ERROR) << "Catalog manifest is not a dictionary value.";
+    return;
+  }
+  DCHECK(catalog);
+
+  const base::DictionaryValue* services = nullptr;
+  if (!catalog->GetDictionary(kCatalogServicesKey, &services)) {
+    LOG(ERROR) << "Catalog manifest \"services\" is not a dictionary value.";
+    return;
+  }
+
+  for (base::DictionaryValue::Iterator it(*services); !it.IsAtEnd();
+       it.Advance()) {
+    const base::DictionaryValue* service_entry = nullptr;
+    if (!it.value().GetAsDictionary(&service_entry)) {
+      LOG(ERROR) << "Catalog service entry for \"" << it.key()
+                 << "\" is not a dictionary value.";
+      continue;
+    }
+
+    bool is_embedded = false;
+    service_entry->GetBoolean(kCatalogServiceEmbeddedKey, &is_embedded);
+
+    base::FilePath executable_path;
+    std::string executable_path_string;
+    if (service_entry->GetString(kCatalogServiceExecutableKey,
+                                 &executable_path_string)) {
+      base::FilePath exe_dir;
+      CHECK(base::PathService::Get(base::DIR_EXE, &exe_dir));
+#if defined(OS_WIN)
+      executable_path_string += ".exe";
+      base::ReplaceFirstSubstringAfterOffset(
+          &executable_path_string, 0, "@EXE_DIR",
+          base::UTF16ToUTF8(exe_dir.value()));
+      executable_path =
+          base::FilePath(base::UTF8ToUTF16(executable_path_string));
+#else
+      base::ReplaceFirstSubstringAfterOffset(
+          &executable_path_string, 0, "@EXE_DIR", exe_dir.value());
+      executable_path = base::FilePath(executable_path_string);
+#endif
+    }
+
+    const base::DictionaryValue* manifest = nullptr;
+    if (!service_entry->GetDictionary(kCatalogServiceManifestKey, &manifest)) {
+      LOG(ERROR) << "Catalog entry for \"" << it.key() << "\" has an invalid "
+                 << "\"manifest\" value.";
+      continue;
+    }
+
+    DCHECK(!(is_embedded && !executable_path.empty()));
+
+    if (is_embedded)
+      executable_path = base::CommandLine::ForCurrentProcess()->GetProgram();
+
+    auto entry = Entry::Deserialize(*manifest);
+    if (entry) {
+      if (!executable_path.empty())
+        entry->set_path(std::move(executable_path));
+      bool added = cache->AddRootEntry(std::move(entry));
+      DCHECK(added);
+    } else {
+      LOG(ERROR) << "Failed to read manifest entry for \"" << it.key() << "\".";
+    }
+  }
 }
 
 }  // namespace
@@ -67,8 +143,13 @@ class Catalog::DirectoryThreadState
   DISALLOW_COPY_AND_ASSIGN(DirectoryThreadState);
 };
 
-Catalog::Catalog(const std::vector<service_manager::Manifest>& manifests) {
-  if (!manifests.empty()) {
+Catalog::Catalog(std::unique_ptr<base::Value> catalog_contents,
+                 const std::vector<service_manager::Manifest>& manifests,
+                 ManifestProvider* service_manifest_provider)
+    : service_manifest_provider_(service_manifest_provider) {
+  if (catalog_contents) {
+    LoadCatalogManifestIntoCache(catalog_contents.get(), &system_cache_);
+  } else if (!manifests.empty()) {
     for (const auto& manifest : manifests)
       system_cache_.AddRootEntryFromManifest(manifest);
   } else {
@@ -100,8 +181,9 @@ Instance* Catalog::GetInstanceForGroup(const base::Token& instance_group) {
   if (it != instances_.end())
     return it->second.get();
 
-  auto result = instances_.emplace(instance_group,
-                                   std::make_unique<Instance>(&system_cache_));
+  auto result = instances_.emplace(
+      instance_group,
+      std::make_unique<Instance>(&system_cache_, service_manifest_provider_));
   return result.first->second.get();
 }
 

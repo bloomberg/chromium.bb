@@ -28,6 +28,8 @@ source_set("service_manager") {
     "connect_params.h",
     "service_manager.cc",
     "service_manager.h",
+    "service_overrides.cc",
+    "service_overrides.h",
     "switches.cc",
     "switches.h",
   ]

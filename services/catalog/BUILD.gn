@@ -31,6 +31,7 @@ component("lib") {
     "entry_cache.h",
     "instance.cc",
     "instance.h",
+    "manifest_provider.h",
     "service_options.h",
   ]
 
@@ -58,4 +59,20 @@ component("lib") {
 service_manifest("manifest") {
   name = "catalog"
   source = "manifest.json"
+}
+
+source_set("unittests") {
+  testonly = true
+  sources = [
+    "entry_unittest.cc",
+  ]
+  data = [
+    "//services/catalog/test_data/",
+  ]
+  deps = [
+    ":lib",
+    "//base",
+    "//services/service_manager/public/cpp",
+    "//testing/gtest",
+  ]
 }
