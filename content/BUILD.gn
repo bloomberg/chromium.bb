@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//tools/grit/grit_rule.gni")
 import("//build/config/nacl/config.gni")
 import("//ppapi/buildflags/buildflags.gni")
-import("//tools/grit/grit_rule.gni")
 
 # Applied by targets internal to content.
 config("content_implementation") {
@@ -128,6 +128,7 @@ grit("resources") {
     "//content/public/app:plugin_manifest",
     "//content/public/app:renderer_manifest",
     "//content/public/app:utility_manifest",
+    "//services/catalog:manifest",
   ]
 }
 

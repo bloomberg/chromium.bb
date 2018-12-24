@@ -519,3 +519,70 @@ group("chrome_content_manifest_overlays") {
     ":chrome_content_utility_manifest_overlay",
   ]
 }
+
+if (use_aura || enable_ipc_fuzzer) {
+  # NOTE: These rules generate compiled versions of the content service
+  # manifests with Chrome's overlays applied. These are only used at run-time,
+  # and only when running Chrome inside the Mash environment. In production
+  # Chrome, the content manifests and Chrome's overlays are baked into browser
+  # resources and merged at runtime.
+
+  service_manifest("chrome_content_packaged_services_manifest") {
+    source_manifest = "//content/public/app:packaged_services_manifest"
+    overlays = [ ":chrome_content_packaged_services_manifest_overlay" ]
+  }
+
+  service_manifest("chrome_content_browser_manifest") {
+    source_manifest = "//content/public/app:browser_manifest"
+    overlays = [ ":chrome_content_browser_manifest_overlay" ]
+  }
+
+  service_manifest("chrome_test_browser_manifest") {
+    source_manifest = ":chrome_content_browser_manifest"
+    overlays = [ ":chrome_test_browser_overlay" ]
+  }
+
+  service_manifest("chrome_content_gpu_manifest") {
+    source_manifest = "//content/public/app:gpu_manifest"
+    overlays = [ ":chrome_content_gpu_manifest_overlay" ]
+  }
+
+  service_manifest("chrome_content_plugin_manifest") {
+    source_manifest = "//content/public/app:plugin_manifest"
+    overlays = [ ":chrome_content_plugin_manifest_overlay" ]
+  }
+
+  service_manifest("chrome_content_renderer_manifest") {
+    source_manifest = "//content/public/app:renderer_manifest"
+    overlays = [ ":chrome_content_renderer_manifest_overlay" ]
+  }
+
+  service_manifest("chrome_content_utility_manifest") {
+    source_manifest = "//content/public/app:utility_manifest"
+    overlays = [ ":chrome_content_utility_manifest_overlay" ]
+  }
+
+  group("service_manifests") {
+    deps = [
+      ":chrome_content_browser_manifest",
+      ":chrome_content_gpu_manifest",
+      ":chrome_content_plugin_manifest",
+      ":chrome_content_renderer_manifest",
+      ":chrome_content_utility_manifest",
+    ]
+  }
+
+  chrome_embedded_services = [
+    ":chrome_content_browser_manifest",
+    ":chrome_content_gpu_manifest",
+    ":chrome_content_plugin_manifest",
+    ":chrome_content_renderer_manifest",
+    ":chrome_content_utility_manifest",
+    ":chrome_renderer_manifest",
+  ]
+
+  catalog("catalog") {
+    embedded_services = chrome_embedded_services +
+                        [ ":chrome_content_packaged_services_manifest" ]
+  }
+}

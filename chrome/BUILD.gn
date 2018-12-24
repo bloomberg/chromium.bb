@@ -123,6 +123,9 @@ if (!is_android && !is_mac) {
       public_deps += [ ":reorder_imports" ]
       data_deps += [ ":reorder_imports" ]
     }
+    if (use_aura && (is_win || is_linux)) {
+      data_deps += [ "//chrome/app:service_manifests" ]
+    }
     if (is_chromeos) {
       data_deps += [ "//sandbox/linux:chrome_sandbox" ]
     }
@@ -1225,9 +1228,13 @@ if (is_win) {
     ]
 
     if (is_chrome_branded) {
-      framework_contents += [ "Default Apps" ]
+      framework_contents += [
+        "Default Apps",
+      ]
       if (enable_keystone_registration_framework) {
-        framework_contents += [ "Frameworks" ]  # For KeystoneRegistration.framework.
+        framework_contents += [
+          "Frameworks",  # For KeystoneRegistration.framework.
+        ]
       }
     }
 
