@@ -10,10 +10,8 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.RemoteInput;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -24,7 +22,6 @@ import android.os.Build;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
@@ -248,32 +245,13 @@ public abstract class NotificationBuilderBase {
 
     /**
      * Sets the status bar icon for a notification that will be displayed by a different app.
-     * The icon must come from a trusted app because this involves decoding a Bitmap from its
-     * resources.
-     * @param iconId An iconId for a resource in the package that will display the notification.
-     * @param packageName The package name of the package that will display the notification.
-     */
-    public NotificationBuilderBase setStatusBarIconForTrustedRemoteApp(
-            int iconId, String packageName) {
-        setStatusBarIconForRemoteApp(iconId, decodeImageResource(packageName, iconId), packageName);
-        return this;
-    }
-
-    /**
-     * Sets the status bar icon for a notification that will be displayed by a different app.
-     * Unlike {@link #setStatusBarIconForTrustedRemoteApp} this is safe to use for any app.
+     * This is safe to use for any app.
      * @param iconId An iconId for a resource in the package that will display the notification.
      * @param iconBitmap The decoded bitmap. Depending on the device we need either id or bitmap.
      * @param packageName The package name of the package that will display the notification.
      */
-    public NotificationBuilderBase setStatusBarIconForUntrustedRemoteApp(
+    public NotificationBuilderBase setStatusBarIconForRemoteApp(
             int iconId, @Nullable Bitmap iconBitmap, String packageName) {
-        setStatusBarIconForRemoteApp(iconId, iconBitmap, packageName);
-        return this;
-    }
-
-    private void setStatusBarIconForRemoteApp(int iconId, @Nullable Bitmap iconBitmap,
-            String packageName) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             // On Android M+, the small icon has to be from the resources of the app whose context
             // is passed to the Notification.Builder constructor. Thus we can't use iconId directly,
@@ -292,6 +270,7 @@ public abstract class NotificationBuilderBase {
             // NotificationManager is used in NotificationManager#notify.
             setSmallIconId(iconId);
         }
+        return this;
     }
 
     private static boolean usingRemoteAppContextAllowed() {
@@ -301,20 +280,9 @@ public abstract class NotificationBuilderBase {
 
     /**
      * Sets the small icon to be shown inside a notification that will be displayed by a different
-     * app. The icon must come from a trusted app.
+     * app. This is safe to use for any app.
      */
-    public NotificationBuilderBase setContentSmallIconForTrustedRemoteApp(
-            int iconId, String packageName) {
-        setSmallIconForContent(decodeImageResource(packageName, iconId));
-        return this;
-    }
-
-    /**
-     * Sets the small icon to be shown inside a notification that will be displayed by a different
-     * app. Unlike {@link #setContentSmallIconForTrustedRemoteApp} this is safe to use for any app.
-     */
-    public NotificationBuilderBase setContentSmallIconForUntrustedRemoteApp(
-            @Nullable Bitmap bitmap) {
+    public NotificationBuilderBase setContentSmallIconForRemoteApp(@Nullable Bitmap bitmap) {
         setSmallIconForContent(bitmap);
         return this;
     }
@@ -645,17 +613,5 @@ public abstract class NotificationBuilderBase {
         int cornerRadiusPx = Math.min(largeIconWidthPx, largeIconHeightPx) / 2;
         return new RoundedIconGenerator(largeIconWidthPx, largeIconHeightPx, cornerRadiusPx,
                 NOTIFICATION_ICON_BG_COLOR, NOTIFICATION_ICON_TEXT_SIZE_DP * density);
-    }
-
-    /** Decodes into a Bitmap an Image resource stored in another package. */
-    @Nullable
-    private static Bitmap decodeImageResource(String otherPackage, int resourceId) {
-        PackageManager packageManager = ContextUtils.getApplicationContext().getPackageManager();
-        try {
-            Resources resources = packageManager.getResourcesForApplication(otherPackage);
-            return BitmapFactory.decodeResource(resources, resourceId);
-        } catch (PackageManager.NameNotFoundException e) {
-            return null;
-        }
     }
 }
