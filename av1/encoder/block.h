@@ -187,6 +187,18 @@ typedef struct {
   COMPOUND_TYPE comp_type;
 } INTERPOLATION_FILTER_STATS;
 
+#define MAX_COMP_RD_STATS 64
+typedef struct {
+  int32_t rate[COMPOUND_TYPES];
+  int64_t dist[COMPOUND_TYPES];
+  int_mv mv[2];
+  int8_t ref_frames[2];
+  PREDICTION_MODE mode;
+  InterpFilters filter;
+  int ref_mv_idx;
+  int is_global[2];
+} COMP_RD_STATS;
+
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
 struct inter_modes_info;
 #endif
@@ -405,6 +417,10 @@ struct macroblock {
   // detection). For reference, 556 is the value returned for a solid
   // vertical black/white edge.
   uint16_t edge_strength;
+
+  // [Saved stat index]
+  COMP_RD_STATS comp_rd_stats[MAX_COMP_RD_STATS];
+  int comp_rd_stats_idx;
 };
 
 static INLINE int is_rect_tx_allowed_bsize(BLOCK_SIZE bsize) {
