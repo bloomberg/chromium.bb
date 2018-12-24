@@ -149,7 +149,7 @@ class CORE_EXPORT DisplayLockContext final
   // Initiate a commit.
   void StartCommit();
   // Initiate an update.
-  void StartUpdateIfNeeded();
+  void StartUpdate();
 
   // The following functions propagate dirty bits from the locked element up to
   // the ancestors in order to be reached. They return true if the element or
