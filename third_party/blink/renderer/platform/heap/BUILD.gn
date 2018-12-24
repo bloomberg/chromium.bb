@@ -120,7 +120,6 @@ jumbo_source_set("blink_heap_unittests_sources") {
     "heap_test.cc",
     "heap_test_utilities.cc",
     "heap_test_utilities.h",
-    "heap_thread_test.cc",
     "heap_traits_test.cc",
     "incremental_marking_test.cc",
     "name_trait_test.cc",
