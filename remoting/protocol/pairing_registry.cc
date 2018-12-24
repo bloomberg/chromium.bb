@@ -13,8 +13,8 @@
 #include "base/guid.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -53,8 +53,8 @@ PairingRegistry::Pairing PairingRegistry::Pairing::Create(
   std::string client_id = base::GenerateGUID();
   std::string shared_secret;
   char buffer[kKeySize];
-  crypto::RandBytes(buffer, arraysize(buffer));
-  base::Base64Encode(base::StringPiece(buffer, arraysize(buffer)),
+  crypto::RandBytes(buffer, base::size(buffer));
+  base::Base64Encode(base::StringPiece(buffer, base::size(buffer)),
                      &shared_secret);
   return Pairing(created_time, client_name, client_id, shared_secret);
 }

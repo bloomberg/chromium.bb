@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "remoting/base/running_samples.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,7 +22,7 @@ static void TestFramework(int windowSize, TestFunction testFn) {
   EXPECT_EQ(0, samples.Average());
   EXPECT_EQ(0, samples.Max());
 
-  for (size_t i = 0; i < arraysize(kTestValues); ++i) {
+  for (size_t i = 0; i < base::size(kTestValues); ++i) {
     samples.Record(kTestValues[i]);
     testFn(i, samples);
   }
@@ -48,15 +48,15 @@ TEST(RunningSamplesTest, AverageTwoElementWindow) {
 
 // Average across all the elements if the window size exceeds the element count.
 TEST(RunningSamplesTest, AverageLongWindow) {
-  TestFramework(arraysize(kTestValues) + 1,
-      [](size_t i, RunningSamples& samples) {
-    double expected = 0.0;
-    for (size_t j = 0; j <= i; ++j)
-      expected += kTestValues[j];
-    expected /= i + 1;
+  TestFramework(base::size(kTestValues) + 1,
+                [](size_t i, RunningSamples& samples) {
+                  double expected = 0.0;
+                  for (size_t j = 0; j <= i; ++j)
+                    expected += kTestValues[j];
+                  expected /= i + 1;
 
-    EXPECT_EQ(expected, samples.Average());
-  });
+                  EXPECT_EQ(expected, samples.Average());
+                });
 }
 
 // Max of a single element, i.e. just return the most recent.
@@ -79,14 +79,14 @@ TEST(RunningSamplesTest, MaxTwoElementWindow) {
 
 // Max of all the elements if the window size exceeds the element count.
 TEST(RunningSamplesTest, MaxLongWindow) {
-  TestFramework(arraysize(kTestValues) + 1,
-      [](size_t i, RunningSamples& samples) {
-    int64_t expected = -1;
-    for (size_t j = 0; j <= i; ++j)
-      expected = expected > kTestValues[j] ? expected : kTestValues[j];
+  TestFramework(
+      base::size(kTestValues) + 1, [](size_t i, RunningSamples& samples) {
+        int64_t expected = -1;
+        for (size_t j = 0; j <= i; ++j)
+          expected = expected > kTestValues[j] ? expected : kTestValues[j];
 
-    EXPECT_EQ(expected, samples.Max());
-  });
+        EXPECT_EQ(expected, samples.Max());
+      });
 }
 
 }  // namespace remoting

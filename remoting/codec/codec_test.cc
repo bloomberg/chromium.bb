@@ -13,7 +13,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "remoting/base/util.h"
 #include "remoting/codec/video_decoder.h"
 #include "remoting/codec/video_encoder.h"
@@ -225,8 +225,8 @@ void TestVideoEncoder(VideoEncoder* encoder, bool strict) {
 
   VideoEncoderTester tester;
 
-  for (size_t xi = 0; xi < arraysize(kSizes); ++xi) {
-    for (size_t yi = 0; yi < arraysize(kSizes); ++yi) {
+  for (size_t xi = 0; xi < base::size(kSizes); ++xi) {
+    for (size_t yi = 0; yi < base::size(kSizes); ++yi) {
       DesktopSize size(kSizes[xi], kSizes[yi]);
       std::unique_ptr<DesktopFrame> frame = PrepareFrame(size);
       for (const DesktopRegion& region : MakeTestRegionLists(size)) {

@@ -5,6 +5,7 @@
 #include "remoting/client/audio/audio_player_android.h"
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 
 namespace remoting {
@@ -80,7 +81,7 @@ bool AudioPlayerAndroid::ResetAudioPlayer(
   const SLboolean reqs[] = {SL_BOOLEAN_TRUE};
 
   if ((*engine_)->CreateAudioPlayer(engine_, &player_object_, &source, &sink,
-                                    arraysize(ids), ids,
+                                    base::size(ids), ids,
                                     reqs) != SL_RESULT_SUCCESS ||
       (*player_object_)->Realize(player_object_, SL_BOOLEAN_FALSE) !=
           SL_RESULT_SUCCESS ||

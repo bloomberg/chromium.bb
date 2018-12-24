@@ -7,6 +7,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "remoting/base/telemetry_log_writer.h"
 
@@ -241,7 +242,7 @@ void ClientTelemetryLogger::FillEventContext(ChromotingEvent* event) const {
 void ClientTelemetryLogger::GenerateSessionId() {
   session_id_.resize(kSessionIdLength);
   for (int i = 0; i < kSessionIdLength; i++) {
-    const int alphabet_size = arraysize(kSessionIdAlphabet) - 1;
+    const int alphabet_size = base::size(kSessionIdAlphabet) - 1;
     session_id_[i] = kSessionIdAlphabet[base::RandGenerator(alphabet_size)];
   }
   session_id_generation_time_ = base::TimeTicks::Now();

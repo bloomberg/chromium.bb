@@ -13,11 +13,11 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
@@ -178,7 +178,7 @@ void SetLockStates(base::Optional<bool> caps_lock,
     if (client_capslock_state != host_capslock_state) {
       input[0].ki.wVk = VK_CAPITAL;
       input[1].ki.wVk = VK_CAPITAL;
-      SendInput(arraysize(input), input, sizeof(INPUT));
+      SendInput(base::size(input), input, sizeof(INPUT));
     }
   }
 
@@ -189,7 +189,7 @@ void SetLockStates(base::Optional<bool> caps_lock,
     if (client_numlock_state != host_numlock_state) {
       input[0].ki.wVk = VK_NUMLOCK;
       input[1].ki.wVk = VK_NUMLOCK;
-      SendInput(arraysize(input), input, sizeof(INPUT));
+      SendInput(base::size(input), input, sizeof(INPUT));
     }
   }
 }

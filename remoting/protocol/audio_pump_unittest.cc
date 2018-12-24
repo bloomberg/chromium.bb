@@ -10,10 +10,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "remoting/codec/audio_encoder.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/protocol/audio_source.h"
@@ -170,7 +170,7 @@ TEST_F(AudioPumpTest, DownmixAudioPacket) {
     AudioPacket::CHANNELS_MONO,
   };
 
-  for (size_t i = 0; i < arraysize(kChannels); i++) {
+  for (size_t i = 0; i < base::size(kChannels); i++) {
     source_->callback().Run(MakeAudioPacket(kChannels[i]));
     // Run message loop to let the pump processes the audio packet and send it
     // to the encoder.
@@ -182,7 +182,7 @@ TEST_F(AudioPumpTest, DownmixAudioPacket) {
     base::RunLoop().RunUntilIdle();
   }
 
-  ASSERT_EQ(sent_packets_.size(), arraysize(kChannels));
+  ASSERT_EQ(sent_packets_.size(), base::size(kChannels));
 }
 
 }  // namespace protocol
