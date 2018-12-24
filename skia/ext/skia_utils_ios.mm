@@ -12,7 +12,7 @@
 #include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
 
 namespace {
@@ -21,10 +21,10 @@ const uint8_t kICOHeaderMagic[4] = {0x00, 0x00, 0x01, 0x00};
 
 // Returns whether the data encodes an ico image.
 bool EncodesIcoImage(NSData* image_data) {
-  if (image_data.length < arraysize(kICOHeaderMagic))
+  if (image_data.length < base::size(kICOHeaderMagic))
     return false;
   return memcmp(kICOHeaderMagic, image_data.bytes,
-                arraysize(kICOHeaderMagic)) == 0;
+                base::size(kICOHeaderMagic)) == 0;
 }
 
 }  // namespace

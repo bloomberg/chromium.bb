@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "skia/ext/convolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -146,7 +146,7 @@ TEST(Convolver, AddFilter) {
 
   // An all-zero filter is handled correctly, all factors ignored
   static const float factors1[] = { 0.0f, 0.0f, 0.0f };
-  filter.AddFilter(11, factors1, arraysize(factors1));
+  filter.AddFilter(11, factors1, base::size(factors1));
   ASSERT_EQ(0, filter.max_filter());
   ASSERT_EQ(1, filter.num_values());
 
@@ -157,7 +157,7 @@ TEST(Convolver, AddFilter) {
 
   // Zeroes on the left are ignored
   static const float factors2[] = { 0.0f, 1.0f, 1.0f, 1.0f, 1.0f };
-  filter.AddFilter(22, factors2, arraysize(factors2));
+  filter.AddFilter(22, factors2, base::size(factors2));
   ASSERT_EQ(4, filter.max_filter());
   ASSERT_EQ(2, filter.num_values());
 
@@ -168,7 +168,7 @@ TEST(Convolver, AddFilter) {
 
   // Zeroes on the right are ignored
   static const float factors3[] = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f };
-  filter.AddFilter(33, factors3, arraysize(factors3));
+  filter.AddFilter(33, factors3, base::size(factors3));
   ASSERT_EQ(5, filter.max_filter());
   ASSERT_EQ(3, filter.num_values());
 
@@ -179,7 +179,7 @@ TEST(Convolver, AddFilter) {
 
   // Zeroes in leading & trailing positions
   static const float factors4[] = { 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f };
-  filter.AddFilter(44, factors4, arraysize(factors4));
+  filter.AddFilter(44, factors4, base::size(factors4));
   ASSERT_EQ(5, filter.max_filter());  // No change from existing value.
   ASSERT_EQ(4, filter.num_values());
 
@@ -192,7 +192,7 @@ TEST(Convolver, AddFilter) {
   static const float factors5[] = { 0.0f, 0.0f,
                                     1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
                                     0.0f };
-  filter.AddFilter(55, factors5, arraysize(factors5));
+  filter.AddFilter(55, factors5, base::size(factors5));
   ASSERT_EQ(6, filter.max_filter());
   ASSERT_EQ(5, filter.num_values());
 
@@ -203,7 +203,7 @@ TEST(Convolver, AddFilter) {
 
   // All-zero filters after the first one also work
   static const float factors6[] = { 0.0f };
-  filter.AddFilter(66, factors6, arraysize(factors6));
+  filter.AddFilter(66, factors6, base::size(factors6));
   ASSERT_EQ(6, filter.max_filter());
   ASSERT_EQ(6, filter.num_values());
 
@@ -223,16 +223,16 @@ void VerifySIMD(unsigned int source_width,
   for (unsigned int p = 0; p < dest_width; ++p) {
     unsigned int offset = source_width * p / dest_width;
     EXPECT_LT(offset, source_width);
-    x_filter.AddFilter(offset, filter,
-                       std::min<int>(arraysize(filter),
-                                     source_width - offset));
+    x_filter.AddFilter(
+        offset, filter,
+        std::min<int>(base::size(filter), source_width - offset));
   }
   x_filter.PaddingForSIMD();
   for (unsigned int p = 0; p < dest_height; ++p) {
     unsigned int offset = source_height * p / dest_height;
-    y_filter.AddFilter(offset, filter,
-                       std::min<int>(arraysize(filter),
-                                     source_height - offset));
+    y_filter.AddFilter(
+        offset, filter,
+        std::min<int>(base::size(filter), source_height - offset));
   }
   y_filter.PaddingForSIMD();
 
@@ -317,10 +317,10 @@ TEST(Convolver, VerifySIMDPrecision) {
   srand(static_cast<unsigned int>(time(0)));
 
   // Loop over some specific source and destination dimensions.
-  for (unsigned int i = 0; i < arraysize(source_sizes); ++i) {
+  for (unsigned int i = 0; i < base::size(source_sizes); ++i) {
     unsigned int source_width = source_sizes[i][0];
     unsigned int source_height = source_sizes[i][1];
-    for (unsigned int j = 0; j < arraysize(dest_sizes); ++j) {
+    for (unsigned int j = 0; j < base::size(dest_sizes); ++j) {
       unsigned int dest_width = dest_sizes[j][0];
       unsigned int dest_height = dest_sizes[j][1];
       VerifySIMD(source_width, source_height, dest_width, dest_height);

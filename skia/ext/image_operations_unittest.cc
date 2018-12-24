@@ -12,8 +12,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/numerics/math_constants.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "skia/ext/image_operations.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -206,7 +206,7 @@ void CheckResampleToSame(skia::ImageOperations::ResizeMethod method) {
 }
 
 // Types defined outside of the ResizeShouldAverageColors test to allow
-// use of the arraysize() macro.
+// use of the base::size() macro.
 //
 // 'max_color_distance_override' is used in a max() call together with
 // the value of 'max_color_distance' defined in a TestedPixel instance.
@@ -263,8 +263,7 @@ void CheckResizeMethodShouldAverageGrid(
   float max_observed_distance = 0.0f;
   bool all_pixels_ok = true;
 
-  for (size_t pixel_index = 0;
-       pixel_index < arraysize(tested_pixels);
+  for (size_t pixel_index = 0; pixel_index < base::size(tested_pixels);
        ++pixel_index) {
     const TestedPixel& tested_pixel = tested_pixels[pixel_index];
 
@@ -465,7 +464,7 @@ TEST(ImageOperations, ResizeShouldAverageColors) {
 
   // Compute the expected (average) color
   const SkColor colors[] = { checker_color1, checker_color2 };
-  const SkColor average_color = AveragePixel(colors, arraysize(colors));
+  const SkColor average_color = AveragePixel(colors, base::size(colors));
 
   static const TestedResizeMethod tested_methods[] = {
     { skia::ImageOperations::RESIZE_GOOD,     "GOOD",     0.0f },
@@ -487,8 +486,7 @@ TEST(ImageOperations, ResizeShouldAverageColors) {
   // and check each tested pixel against the expected average color.
   bool all_methods_ok = true;
 
-  for (size_t method_index = 0;
-       method_index < arraysize(tested_methods);
+  for (size_t method_index = 0; method_index < base::size(tested_methods);
        ++method_index) {
     bool pass = true;
     CheckResizeMethodShouldAverageGrid(src,
