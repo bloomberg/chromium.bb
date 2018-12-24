@@ -1463,7 +1463,6 @@ TEST_F(RootScrollerSimTest, RootScrollerDoesntAffectVisualViewport) {
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Start();
   request.Write(R"HTML(
           <!DOCTYPE html>
           <style>
@@ -1525,7 +1524,6 @@ TEST_F(RootScrollerSimTest, ResizeFromResizeAfterLayout) {
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Start();
   request.Write(R"HTML(
           <!DOCTYPE html>
           <style>
@@ -2268,7 +2266,6 @@ TEST_F(ImplicitRootScrollerSimTest, NavigateToValidRemainsRootScroller) {
   WebView().MainFrameImpl()->FirstChild()->ToWebLocalFrame()->StartNavigation(
       request);
 
-  child_request2.Start();
   child_request2.Write(R"HTML(
         <!DOCTYPE html>
   )HTML");

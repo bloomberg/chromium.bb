@@ -59,7 +59,6 @@ TEST_F(ResizeObserverUnitTest, ResizeObservationSize) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
 
-  main_resource.Start();
   main_resource.Write(R"HTML(
     <div id='domTarget' style='width:100px;height:100px'>yo</div>
     <svg height='200' width='200'>

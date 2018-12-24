@@ -17,18 +17,11 @@ class SimNetwork;
 class WebURLLoaderClient;
 
 // Simulates a single request for a resource from the server. Requires a
-// SimNetwork to have been created first. Use the start(), write() and finish()
-// methods to simulate the response from the server. Note that all started
-// requests must be finished.
-class SimRequest final {
+// SimNetwork to have been created first. Use the Write(), Finish() and
+// Complete() methods to simulate the response from the server.
+// Note that all requests must be finished.
+class SimRequestBase {
  public:
-  SimRequest(String url, String mime_type);
-  ~SimRequest();
-
-  // Starts the response from the server, this is as if the headers and 200 OK
-  // reply had been received but no response body yet.
-  void Start();
-
   // Write a chunk of the response body.
   void Write(const String& data);
   void Write(const Vector<char>& data);
@@ -40,8 +33,12 @@ class SimRequest final {
   void Complete(const String& data = String());
   void Complete(const Vector<char>& data);
 
-  const String& Url() const { return url_; }
-  const WebURLResponse& GetResponse() const { return response_; }
+ protected:
+  SimRequestBase(String url, String mime_type, bool start_immediately);
+  ~SimRequestBase();
+
+  void StartInternal();
+  void ServePending();
 
  private:
   friend class SimNetwork;
@@ -53,11 +50,34 @@ class SimRequest final {
   void DidFail(const WebURLError&);
 
   String url_;
+  bool start_immediately_;
+  bool started_;
   WebURLResponse response_;
   base::Optional<WebURLError> error_;
   WebURLLoaderClient* client_;
   unsigned total_encoded_data_length_;
-  bool is_ready_;
+};
+
+// This request can be used as a main resource request for navigation.
+// It does not allow starting asynchronously, because that's not how
+// navigations work in reality.
+// TODO(dgozman): rename this to SimNavigationRequest or something.
+class SimRequest final : public SimRequestBase {
+ public:
+  SimRequest(String url, String mime_type);
+  ~SimRequest();
+};
+
+// This request can be started asynchronously, suited for simulating
+// delayed load of subresources.
+class SimSubresourceRequest final : public SimRequestBase {
+ public:
+  SimSubresourceRequest(String url, String mime_type);
+  ~SimSubresourceRequest();
+
+  // Starts the response from the server, this is as if the headers and 200 OK
+  // reply had been received but no response body yet.
+  void Start();
 };
 
 }  // namespace blink

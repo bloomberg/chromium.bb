@@ -273,7 +273,8 @@ TEST_F(LocalFrameViewSimTest, CSSFragmentIdentifierEmptySelector) {
 // See https://crbug.com/851338.
 TEST_F(LocalFrameViewSimTest, FragmentNavChangesFocusWhileRenderingBlocked) {
   SimRequest main_resource("https://example.com/test.html", "text/html");
-  SimRequest css_resource("https://example.com/sheet.css", "text/css");
+  SimSubresourceRequest css_resource("https://example.com/sheet.css",
+                                     "text/css");
   LoadURL("https://example.com/test.html");
 
   main_resource.Complete(R"HTML(

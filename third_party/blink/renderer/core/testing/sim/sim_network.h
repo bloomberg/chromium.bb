@@ -13,26 +13,27 @@
 
 namespace blink {
 
-class SimRequest;
+class SimRequestBase;
 class WebURLLoaderClient;
 class WebURLResponse;
 
 // Simulates a network with precise flow control so you can make requests
 // return, write data, and finish in a specific order in a unit test. One of
-// these must be created before using the SimRequest to issue requests.
+// these must be created before using the SimRequestBase to issue requests.
 class SimNetwork final : public WebURLLoaderTestDelegate {
  public:
   SimNetwork();
   ~SimNetwork() override;
 
  private:
-  friend class SimRequest;
+  friend class SimRequestBase;
+  friend class SimSubresourceRequest;
 
   static SimNetwork& Current();
 
   void ServePendingRequests();
-  void AddRequest(SimRequest&);
-  void RemoveRequest(SimRequest&);
+  void AddRequest(SimRequestBase&);
+  void RemoveRequest(SimRequestBase&);
 
   // WebURLLoaderTestDelegate
   void DidReceiveResponse(WebURLLoaderClient*, const WebURLResponse&) override;
@@ -50,8 +51,8 @@ class SimNetwork final : public WebURLLoaderTestDelegate {
                         int64_t total_encoded_body_length,
                         int64_t total_decoded_body_length) override;
 
-  SimRequest* current_request_;
-  HashMap<String, SimRequest*> requests_;
+  SimRequestBase* current_request_;
+  HashMap<String, SimRequestBase*> requests_;
 };
 
 }  // namespace blink
