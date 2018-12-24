@@ -11,8 +11,8 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "base/win/scoped_bstr.h"
@@ -384,7 +384,7 @@ void DaemonControllerDelegateWin::UpdateConfig(
     std::unique_ptr<base::DictionaryValue> config,
     const DaemonController::CompletionCallback& done) {
   // Check for bad keys.
-  for (size_t i = 0; i < arraysize(kReadonlyKeys); ++i) {
+  for (size_t i = 0; i < base::size(kReadonlyKeys); ++i) {
     if (config->HasKey(kReadonlyKeys[i])) {
       LOG(ERROR) << "Cannot update config: '" << kReadonlyKeys[i]
                  << "' is read only.";

@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "remoting/protocol/content_description.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -506,7 +506,7 @@ TEST(JingleMessageReplyTest, ToXml) {
        kTestIncomingMessage2},
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::unique_ptr<XmlElement> incoming_message(
         XmlElement::ForStr(tests[i].incoming_message));
     ASSERT_TRUE(incoming_message.get());

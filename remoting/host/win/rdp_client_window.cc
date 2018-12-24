@@ -12,7 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_local.h"
@@ -76,7 +76,7 @@ HWND FindWindowRecursively(HWND parent, const base::string16& class_name) {
     while (child != nullptr) {
       // See if the window class name matches |class_name|.
       WCHAR name[kMaxWindowClassLength];
-      int length = GetClassName(child, name, arraysize(name));
+      int length = GetClassName(child, name, base::size(name));
       if (base::string16(name, length)  == class_name)
         return child;
 

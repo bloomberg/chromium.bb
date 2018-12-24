@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -136,7 +136,7 @@ bool GetControlText(HWND control, base::string16* text) {
   // GetWindowText truncates the text if it is longer than can fit into
   // the buffer.
   WCHAR buffer[256];
-  int result = GetWindowText(control, buffer, arraysize(buffer));
+  int result = GetWindowText(control, buffer, base::size(buffer));
   if (!result)
     return false;
 

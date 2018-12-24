@@ -9,7 +9,7 @@
 
 #include <algorithm>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
@@ -36,7 +36,7 @@ TEST(GetKeySymsForUnicode, Map) {
     { 0x4444, { 0x01004444, 0 } },
   };
 
-  for (size_t i = 0; i < arraysize(kTests); ++i) {
+  for (size_t i = 0; i < base::size(kTests); ++i) {
     std::vector<uint32_t> keysyms = GetKeySymsForUnicode(kTests[i].code_point);
 
     std::vector<uint32_t> expected(

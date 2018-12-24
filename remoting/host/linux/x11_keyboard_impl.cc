@@ -4,6 +4,7 @@
 
 #include "remoting/host/linux/x11_keyboard_impl.h"
 
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "remoting/host/linux/unicode_to_keysym.h"
 #include "ui/gfx/x/x11.h"
@@ -29,7 +30,7 @@ bool FindKeycodeForKeySym(Display* display,
   };
 
   // TODO(sergeyu): Is there a better way to find modifiers state?
-  for (size_t i = 0; i < arraysize(kModifiersToTry); ++i) {
+  for (size_t i = 0; i < base::size(kModifiersToTry); ++i) {
     unsigned long key_sym_with_mods;
     if (XkbLookupKeySym(display, found_keycode, kModifiersToTry[i], nullptr,
                         &key_sym_with_mods) &&

@@ -10,8 +10,8 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "remoting/base/logging.h"
 
 namespace {
@@ -159,8 +159,8 @@ bool DesktopResizerMac::GetSoleDisplayId(CGDirectDisplayID* display) {
   // to allow the multi-monitor case to be detected.
   CGDirectDisplayID displays[2];
   uint32_t num_displays;
-  CGError err = CGGetActiveDisplayList(arraysize(displays),
-                                       displays, &num_displays);
+  CGError err =
+      CGGetActiveDisplayList(base::size(displays), displays, &num_displays);
   if (err != kCGErrorSuccess || num_displays != 1) {
     return false;
   }
