@@ -5362,6 +5362,300 @@ TEST(HeapTest, IndirectStrongToWeak) {
   EXPECT_EQ(0u, map->size());
 }
 
+static Mutex& MainThreadMutex() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, main_mutex, ());
+  return main_mutex;
+}
+
+static ThreadCondition& MainThreadCondition() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadCondition, main_condition,
+                                  (MainThreadMutex()));
+  return main_condition;
+}
+
+static void ParkMainThread() {
+  MainThreadCondition().Wait();
+}
+
+static void WakeMainThread() {
+  MutexLocker locker(MainThreadMutex());
+  MainThreadCondition().Signal();
+}
+
+static Mutex& WorkerThreadMutex() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, worker_mutex, ());
+  return worker_mutex;
+}
+
+static ThreadCondition& WorkerThreadCondition() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadCondition, worker_condition,
+                                  (WorkerThreadMutex()));
+  return worker_condition;
+}
+
+static void ParkWorkerThread() {
+  WorkerThreadCondition().Wait();
+}
+
+static void WakeWorkerThread() {
+  MutexLocker locker(WorkerThreadMutex());
+  WorkerThreadCondition().Signal();
+}
+
+class ThreadedStrongificationTester {
+ public:
+  static void Test() {
+    IntWrapper::destructor_calls_ = 0;
+
+    MutexLocker locker(MainThreadMutex());
+    std::unique_ptr<Thread> worker_thread = Platform::Current()->CreateThread(
+        ThreadCreationParams(WebThreadType::kTestThread)
+            .SetThreadNameForTest("Test Worker Thread"));
+    PostCrossThreadTask(*worker_thread->GetTaskRunner(), FROM_HERE,
+                        CrossThreadBind(WorkerThreadMain));
+
+    // Wait for the worker thread initialization. The worker
+    // allocates a weak collection where both collection and
+    // contents are kept alive via persistent pointers.
+    ParkMainThread();
+
+    // Perform two garbage collections where the worker thread does
+    // not wake up in between. This will cause us to remove marks
+    // and mark unmarked objects dead. The collection on the worker
+    // heap is found through the persistent and the backing should
+    // be marked.
+    PreciselyCollectGarbage();
+    PreciselyCollectGarbage();
+
+    // Wake up the worker thread so it can continue. It will sweep
+    // and perform another GC where the backing store of its
+    // collection should be strongified.
+    WakeWorkerThread();
+
+    // Wait for the worker thread to sweep its heaps before checking.
+    ParkMainThread();
+  }
+
+ private:
+  using WeakCollectionType =
+      HeapHashMap<WeakMember<IntWrapper>, Member<IntWrapper>>;
+
+  static WeakCollectionType* AllocateCollection() {
+    // Create a weak collection that is kept alive by a persistent
+    // and keep the contents alive with a persistents as
+    // well.
+    Persistent<IntWrapper> wrapper1 = IntWrapper::Create(32);
+    Persistent<IntWrapper> wrapper2 = IntWrapper::Create(32);
+    Persistent<IntWrapper> wrapper3 = IntWrapper::Create(32);
+    Persistent<IntWrapper> wrapper4 = IntWrapper::Create(32);
+    Persistent<IntWrapper> wrapper5 = IntWrapper::Create(32);
+    Persistent<IntWrapper> wrapper6 = IntWrapper::Create(32);
+    Persistent<WeakCollectionType> weak_collection =
+        MakeGarbageCollected<WeakCollectionType>();
+    weak_collection->insert(wrapper1, wrapper1);
+    weak_collection->insert(wrapper2, wrapper2);
+    weak_collection->insert(wrapper3, wrapper3);
+    weak_collection->insert(wrapper4, wrapper4);
+    weak_collection->insert(wrapper5, wrapper5);
+    weak_collection->insert(wrapper6, wrapper6);
+
+    // Signal the main thread that the worker is done with its allocation.
+    WakeMainThread();
+
+    // Wait for the main thread to do two GCs without sweeping
+    // this thread heap.
+    ParkWorkerThread();
+
+    return weak_collection;
+  }
+
+  static void WorkerThreadMain() {
+    MutexLocker locker(WorkerThreadMutex());
+
+    ThreadState::AttachCurrentThread();
+
+    {
+      Persistent<WeakCollectionType> collection = AllocateCollection();
+      {
+        // Prevent weak processing with an iterator and GC.
+        WeakCollectionType::iterator it = collection->begin();
+        ConservativelyCollectGarbage();
+
+        // The backing should be strongified because of the iterator.
+        EXPECT_EQ(6u, collection->size());
+        EXPECT_EQ(32, it->value->Value());
+      }
+
+      // Disregarding the iterator but keeping the collection alive
+      // with a persistent should lead to weak processing.
+      PreciselyCollectGarbage();
+      EXPECT_EQ(0u, collection->size());
+    }
+
+    WakeMainThread();
+    ThreadState::DetachCurrentThread();
+  }
+
+  static volatile uintptr_t worker_object_pointer_;
+};
+
+#if defined(THREAD_SANITIZER)
+// https://crbug.com/915200
+#define MAYBE_ThreadedStrongification DISABLED_ThreadedStrongification
+#else
+#define MAYBE_ThreadedStrongification ThreadedStrongification
+#endif
+
+TEST(HeapTest, MAYBE_ThreadedStrongification) {
+  ThreadedStrongificationTester::Test();
+}
+
+class MemberSameThreadCheckTester {
+ public:
+  void Test() {
+    IntWrapper::destructor_calls_ = 0;
+
+    MutexLocker locker(MainThreadMutex());
+    std::unique_ptr<Thread> worker_thread = Platform::Current()->CreateThread(
+        ThreadCreationParams(WebThreadType::kTestThread)
+            .SetThreadNameForTest("Test Worker Thread"));
+    PostCrossThreadTask(
+        *worker_thread->GetTaskRunner(), FROM_HERE,
+        CrossThreadBind(&MemberSameThreadCheckTester::WorkerThreadMain,
+                        CrossThreadUnretained(this)));
+
+    ParkMainThread();
+  }
+
+ private:
+  Member<IntWrapper> wrapper_;
+
+  void WorkerThreadMain() {
+    MutexLocker locker(WorkerThreadMutex());
+
+    ThreadState::AttachCurrentThread();
+
+    // Setting an object created on the worker thread to a Member allocated on
+    // the main thread is not allowed.
+    wrapper_ = IntWrapper::Create(42);
+
+    WakeMainThread();
+    ThreadState::DetachCurrentThread();
+  }
+};
+
+#if DCHECK_IS_ON()
+// TODO(keishi) This test is flaky on mac_chromium_rel_ng bot.
+// crbug.com/709069
+#if !defined(OS_MACOSX)
+TEST(HeapDeathTest, MemberSameThreadCheck) {
+  EXPECT_DEATH(MemberSameThreadCheckTester().Test(), "");
+}
+#endif
+#endif
+
+class PersistentSameThreadCheckTester {
+ public:
+  void Test() {
+    IntWrapper::destructor_calls_ = 0;
+
+    MutexLocker locker(MainThreadMutex());
+    std::unique_ptr<Thread> worker_thread = Platform::Current()->CreateThread(
+        ThreadCreationParams(WebThreadType::kTestThread)
+            .SetThreadNameForTest("Test Worker Thread"));
+    PostCrossThreadTask(
+        *worker_thread->GetTaskRunner(), FROM_HERE,
+        CrossThreadBind(&PersistentSameThreadCheckTester::WorkerThreadMain,
+                        CrossThreadUnretained(this)));
+
+    ParkMainThread();
+  }
+
+ private:
+  Persistent<IntWrapper> wrapper_;
+
+  void WorkerThreadMain() {
+    MutexLocker locker(WorkerThreadMutex());
+
+    ThreadState::AttachCurrentThread();
+
+    // Setting an object created on the worker thread to a Persistent allocated
+    // on the main thread is not allowed.
+    wrapper_ = IntWrapper::Create(42);
+
+    WakeMainThread();
+    ThreadState::DetachCurrentThread();
+  }
+};
+
+#if DCHECK_IS_ON()
+// TODO(keishi) This test is flaky on mac_chromium_rel_ng bot.
+// crbug.com/709069
+#if !defined(OS_MACOSX)
+TEST(HeapDeathTest, PersistentSameThreadCheck) {
+  EXPECT_DEATH(PersistentSameThreadCheckTester().Test(), "");
+}
+#endif
+#endif
+
+class MarkingSameThreadCheckTester {
+ public:
+  void Test() {
+    IntWrapper::destructor_calls_ = 0;
+
+    MutexLocker locker(MainThreadMutex());
+    std::unique_ptr<Thread> worker_thread = Platform::Current()->CreateThread(
+        ThreadCreationParams(WebThreadType::kTestThread)
+            .SetThreadNameForTest("Test Worker Thread"));
+    Persistent<MainThreadObject> main_thread_object =
+        MakeGarbageCollected<MainThreadObject>();
+    PostCrossThreadTask(
+        *worker_thread->GetTaskRunner(), FROM_HERE,
+        CrossThreadBind(&MarkingSameThreadCheckTester::WorkerThreadMain,
+                        CrossThreadUnretained(this),
+                        WrapCrossThreadPersistent(main_thread_object.Get())));
+    ParkMainThread();
+    // This will try to mark MainThreadObject when it tries to mark IntWrapper
+    // it should crash.
+    PreciselyCollectGarbage();
+  }
+
+ private:
+  class MainThreadObject : public GarbageCollectedFinalized<MainThreadObject> {
+   public:
+    void Trace(blink::Visitor* visitor) { visitor->Trace(wrapper_set_); }
+    void AddToSet(IntWrapper* wrapper) { wrapper_set_.insert(42, wrapper); }
+
+   private:
+    HeapHashMap<int, Member<IntWrapper>> wrapper_set_;
+  };
+
+  void WorkerThreadMain(MainThreadObject* main_thread_object) {
+    MutexLocker locker(WorkerThreadMutex());
+
+    ThreadState::AttachCurrentThread();
+
+    // Adding a reference to an object created on the worker thread to a
+    // HeapHashMap created on the main thread is not allowed.
+    main_thread_object->AddToSet(IntWrapper::Create(42));
+
+    WakeMainThread();
+    ThreadState::DetachCurrentThread();
+  }
+};
+
+#if DCHECK_IS_ON()
+// TODO(keishi) This test is flaky on mac_chromium_rel_ng bot.
+// crbug.com/709069
+#if !defined(OS_MACOSX)
+TEST(HeapDeathTest, MarkingSameThreadCheck) {
+  // This will crash during marking, at the DCHECK in Visitor::markHeader() or
+  // earlier.
+  EXPECT_DEATH(MarkingSameThreadCheckTester().Test(), "");
+}
+#endif
+#endif
+
 static bool AllocateAndReturnBool() {
   ConservativelyCollectGarbage();
   return true;
@@ -5419,6 +5713,24 @@ TEST(HeapTest, GarbageCollectionDuringMixinConstruction) {
       MakeGarbageCollected<ClassWithGarbageCollectingMixinConstructor>();
   a->Verify();
 }
+
+class DestructorLockingObject
+    : public GarbageCollectedFinalized<DestructorLockingObject> {
+ public:
+  static DestructorLockingObject* Create() {
+    return MakeGarbageCollected<DestructorLockingObject>();
+  }
+
+  DestructorLockingObject() = default;
+  virtual ~DestructorLockingObject() {
+    ++destructor_calls_;
+  }
+
+  static int destructor_calls_;
+  void Trace(blink::Visitor* visitor) {}
+};
+
+int DestructorLockingObject::destructor_calls_ = 0;
 
 template <typename T>
 class TraceIfNeededTester
@@ -6053,6 +6365,78 @@ TEST(HeapTest, WeakPersistent) {
   object = nullptr;
   PreciselyCollectGarbage();
   EXPECT_FALSE(holder->Object());
+}
+
+namespace {
+
+void WorkerThreadMainForCrossThreadWeakPersistentTest(
+    DestructorLockingObject** object) {
+  // Step 2: Create an object and store the pointer.
+  MutexLocker locker(WorkerThreadMutex());
+  ThreadState::AttachCurrentThread();
+  *object = DestructorLockingObject::Create();
+  WakeMainThread();
+  ParkWorkerThread();
+
+  // Step 4: Run a GC.
+  ThreadState::Current()->CollectGarbage(
+      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
+      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
+  WakeMainThread();
+  ParkWorkerThread();
+
+  // Step 6: Finish.
+  ThreadState::DetachCurrentThread();
+  WakeMainThread();
+}
+
+}  // anonymous namespace
+
+#if defined(THREAD_SANITIZER)
+// https://crbug.com/915200
+#define MAYBE_CrossThreadWeakPersistent DISABLED_CrossThreadWeakPersistent
+#else
+#define MAYBE_CrossThreadWeakPersistent CrossThreadWeakPersistent
+#endif
+
+TEST(HeapTest, MAYBE_CrossThreadWeakPersistent) {
+  // Create an object in the worker thread, have a CrossThreadWeakPersistent
+  // pointing to it on the main thread, clear the reference in the worker
+  // thread, run a GC in the worker thread, and see if the
+  // CrossThreadWeakPersistent is cleared.
+
+  DestructorLockingObject::destructor_calls_ = 0;
+
+  // Step 1: Initiate a worker thread, and wait for |object| to get allocated on
+  // the worker thread.
+  MutexLocker main_thread_mutex_locker(MainThreadMutex());
+  std::unique_ptr<Thread> worker_thread = Platform::Current()->CreateThread(
+      ThreadCreationParams(WebThreadType::kTestThread)
+          .SetThreadNameForTest("Test Worker Thread"));
+  DestructorLockingObject* object = nullptr;
+  PostCrossThreadTask(
+      *worker_thread->GetTaskRunner(), FROM_HERE,
+      CrossThreadBind(WorkerThreadMainForCrossThreadWeakPersistentTest,
+                      CrossThreadUnretained(&object)));
+  ParkMainThread();
+
+  // Step 3: Set up a CrossThreadWeakPersistent.
+  ASSERT_TRUE(object);
+  CrossThreadWeakPersistent<DestructorLockingObject>
+      cross_thread_weak_persistent(object);
+  object = nullptr;
+  EXPECT_EQ(0, DestructorLockingObject::destructor_calls_);
+
+  // Pretend we have no pointers on stack during the step 4.
+  WakeWorkerThread();
+  ParkMainThread();
+
+  // Step 5: Make sure the weak persistent is cleared.
+  EXPECT_FALSE(cross_thread_weak_persistent.Get());
+  EXPECT_EQ(1, DestructorLockingObject::destructor_calls_);
+
+  WakeWorkerThread();
+  ParkMainThread();
 }
 
 namespace {
