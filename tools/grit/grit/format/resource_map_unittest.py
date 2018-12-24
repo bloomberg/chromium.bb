@@ -64,7 +64,7 @@ extern const size_t kTheRcHeaderSize;''', output)
     self.assertEqual('''\
 #include "the_resource_map_header.h"
 #include <stddef.h>
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "the_rc_header.h"
 const GritResourceMap kTheRcHeader[] = {
   {"IDC_KLONKMENU", IDC_KLONKMENU},
@@ -72,13 +72,13 @@ const GritResourceMap kTheRcHeader[] = {
   {"IDS_LANGUAGESPECIFIC", IDS_LANGUAGESPECIFIC},
   {"IDS_THIRDPRESENT", IDS_THIRDPRESENT},
 };
-const size_t kTheRcHeaderSize = arraysize(kTheRcHeader);''', output)
+const size_t kTheRcHeaderSize = base::size(kTheRcHeader);''', output)
     output = util.StripBlankLinesAndComments(''.join(
         resource_map.GetFormatter('resource_file_map_source')(grd, 'en', '.')))
     self.assertEqual('''\
 #include "the_resource_map_header.h"
 #include <stddef.h>
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "the_rc_header.h"
 const GritResourceMap kTheRcHeader[] = {
   {"grit/testdata/klonk.rc", IDC_KLONKMENU},
@@ -86,7 +86,7 @@ const GritResourceMap kTheRcHeader[] = {
   {"ghi", IDS_LANGUAGESPECIFIC},
   {"mno", IDS_THIRDPRESENT},
 };
-const size_t kTheRcHeaderSize = arraysize(kTheRcHeader);''', output)
+const size_t kTheRcHeaderSize = base::size(kTheRcHeader);''', output)
 
   def testGzippedMapHeaderAndFileSource(self):
     grd = util.ParseGrdForUnittest('''\
@@ -128,13 +128,13 @@ extern const size_t kTheRcHeaderSize;''', output)
     self.assertEqual('''\
 #include "gzipped_resource_map_header.h"
 #include <stddef.h>
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "the_rc_header.h"
 const GzippedGritResourceMap kTheRcHeader[] = {
   {"grit/testdata/klonk.rc", IDC_KLONKMENU, true},
   {"abc", IDS_FIRSTPRESENT, false},
 };
-const size_t kTheRcHeaderSize = arraysize(kTheRcHeader);''', output)
+const size_t kTheRcHeaderSize = base::size(kTheRcHeader);''', output)
 
   def testFormatResourceMapWithOutputAllEqualsFalseForStructures(self):
     grd = util.ParseGrdForUnittest('''
@@ -195,7 +195,7 @@ extern const size_t kTheRcHeaderSize;''', output)
     self.assertEqual('''\
 #include "the_resource_map_header.h"
 #include <stddef.h>
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "the_rc_header.h"
 const GritResourceMap kTheRcHeader[] = {
   {"IDR_KLONKMENU", IDR_KLONKMENU},
@@ -203,13 +203,13 @@ const GritResourceMap kTheRcHeader[] = {
   {"IDR_METEOR", IDR_METEOR},
   {"IDR_LAST", IDR_LAST},
 };
-const size_t kTheRcHeaderSize = arraysize(kTheRcHeader);''', output)
+const size_t kTheRcHeaderSize = base::size(kTheRcHeader);''', output)
     output = util.StripBlankLinesAndComments(''.join(
         resource_map.GetFormatter('resource_map_source')(grd, 'en', '.')))
     self.assertEqual('''\
 #include "the_resource_map_header.h"
 #include <stddef.h>
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "the_rc_header.h"
 const GritResourceMap kTheRcHeader[] = {
   {"IDR_KLONKMENU", IDR_KLONKMENU},
@@ -217,7 +217,7 @@ const GritResourceMap kTheRcHeader[] = {
   {"IDR_METEOR", IDR_METEOR},
   {"IDR_LAST", IDR_LAST},
 };
-const size_t kTheRcHeaderSize = arraysize(kTheRcHeader);''', output)
+const size_t kTheRcHeaderSize = base::size(kTheRcHeader);''', output)
 
   def testFormatResourceMapWithOutputAllEqualsFalseForIncludes(self):
     grd = util.ParseGrdForUnittest('''
@@ -274,7 +274,7 @@ extern const size_t kTheRcHeaderSize;''', output)
     self.assertEqual('''\
 #include "the_resource_map_header.h"
 #include <stddef.h>
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "the_rc_header.h"
 const GritResourceMap kTheRcHeader[] = {
   {"IDC_KLONKMENU", IDC_KLONKMENU},
@@ -284,13 +284,13 @@ const GritResourceMap kTheRcHeader[] = {
   {"IDS_METEOR", IDS_METEOR},
   {"IDS_LAST", IDS_LAST},
 };
-const size_t kTheRcHeaderSize = arraysize(kTheRcHeader);''', output)
+const size_t kTheRcHeaderSize = base::size(kTheRcHeader);''', output)
     output = util.StripBlankLinesAndComments(''.join(
         resource_map.GetFormatter('resource_file_map_source')(grd, 'en', '.')))
     self.assertEqual('''\
 #include "the_resource_map_header.h"
 #include <stddef.h>
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "the_rc_header.h"
 const GritResourceMap kTheRcHeader[] = {
   {"grit/testdata/klonk.rc", IDC_KLONKMENU},
@@ -300,7 +300,7 @@ const GritResourceMap kTheRcHeader[] = {
   {"meteor", IDS_METEOR},
   {"xyz", IDS_LAST},
 };
-const size_t kTheRcHeaderSize = arraysize(kTheRcHeader);''', output)
+const size_t kTheRcHeaderSize = base::size(kTheRcHeader);''', output)
 
   def testFormatStringResourceMap(self):
     grd = util.ParseGrdForUnittest('''
@@ -347,13 +347,13 @@ extern const size_t kTheRcHeaderSize;''', output)
     self.assertEqual('''\
 #include "the_rc_map_header.h"
 #include <stddef.h>
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "the_rc_header.h"
 const GritResourceMap kTheRcHeader[] = {
   {"IDS_PRODUCT_NAME", IDS_PRODUCT_NAME},
   {"IDS_DEFAULT_TAB_TITLE_TITLE_CASE", IDS_DEFAULT_TAB_TITLE_TITLE_CASE},
 };
-const size_t kTheRcHeaderSize = arraysize(kTheRcHeader);''', output)
+const size_t kTheRcHeaderSize = base::size(kTheRcHeader);''', output)
 
 
 if __name__ == '__main__':

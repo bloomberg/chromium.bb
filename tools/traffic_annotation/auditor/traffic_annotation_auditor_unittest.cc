@@ -201,7 +201,7 @@ TEST_F(TrafficAnnotationAuditorTest, GetFilesFromGit) {
 
   const std::vector<std::string> git_files = filter.git_files();
 
-  EXPECT_EQ(git_files.size(), arraysize(kRelevantFiles));
+  EXPECT_EQ(git_files.size(), base::size(kRelevantFiles));
   for (const char* filepath : kRelevantFiles) {
     EXPECT_TRUE(base::ContainsValue(git_files, filepath));
   }

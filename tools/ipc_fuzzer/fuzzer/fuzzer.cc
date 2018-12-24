@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory_handle.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/unguessable_token.h"
 #include "base/values.h"
@@ -907,10 +907,10 @@ template <>
 struct FuzzTraits<gfx::Transform> {
   static bool Fuzz(gfx::Transform* p, Fuzzer* fuzzer) {
     SkMScalar matrix[16];
-    for (size_t i = 0; i < arraysize(matrix); i++) {
+    for (size_t i = 0; i < base::size(matrix); i++) {
       matrix[i] = p->matrix().get(i / 4, i % 4);
     }
-    if (!FuzzParamArray(&matrix[0], arraysize(matrix), fuzzer))
+    if (!FuzzParamArray(&matrix[0], base::size(matrix), fuzzer))
       return false;
     *p = gfx::Transform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4],
                         matrix[5], matrix[6], matrix[7], matrix[8], matrix[9],

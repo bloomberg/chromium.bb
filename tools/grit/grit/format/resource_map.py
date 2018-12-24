@@ -97,7 +97,7 @@ def _FormatSourceHeader(root, output_dir, include_gzipped):
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 
 #include "%(rc_header_file)s"
 
@@ -114,7 +114,7 @@ def _FormatSourceFooter(root):
   return '''\
 };
 
-const size_t %(map_name)sSize = arraysize(%(map_name)s);
+const size_t %(map_name)sSize = base::size(%(map_name)s);
 ''' % { 'map_name': GetMapName(root) }
 
 
