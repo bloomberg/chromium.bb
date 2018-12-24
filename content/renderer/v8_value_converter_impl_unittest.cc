@@ -276,7 +276,7 @@ TEST_F(V8ValueConverterImplTest, BasicRoundTrip) {
   ASSERT_FALSE(v8_object.IsEmpty());
 
   EXPECT_EQ(static_cast<const base::DictionaryValue&>(*original_root).size(),
-            v8_object->GetPropertyNames()->Length());
+            v8_object->GetPropertyNames(context).ToLocalChecked()->Length());
   EXPECT_TRUE(v8_object
                   ->Get(v8::String::NewFromUtf8(
                             isolate_, "null", v8::NewStringType::kInternalized)
@@ -418,7 +418,7 @@ TEST_F(V8ValueConverterImplTest, ObjectExceptions) {
   v8::Local<v8::Object> copy =
       converter.ToV8Value(converted.get(), context).As<v8::Object>();
   EXPECT_FALSE(copy.IsEmpty());
-  EXPECT_EQ(2u, copy->GetPropertyNames()->Length());
+  EXPECT_EQ(2u, copy->GetPropertyNames(context).ToLocalChecked()->Length());
   EXPECT_EQ("foo", GetString(copy, "foo"));
   EXPECT_EQ("bar", GetString(copy, "bar"));
 }
@@ -560,7 +560,8 @@ TEST_F(V8ValueConverterImplTest, ObjectPrototypeSetter) {
   EXPECT_EQ(1, GetInt(result, "getters"));
   EXPECT_EQ(1, GetInt(result, "setters"));
 
-  EXPECT_EQ(1u, converted->GetPropertyNames()->Length());
+  EXPECT_EQ(1u,
+            converted->GetPropertyNames(context).ToLocalChecked()->Length());
   EXPECT_EQ("good value", GetString(converted, "foo"));
 
   // Getters/setters shouldn't be triggered while accessing existing values.
@@ -578,7 +579,8 @@ TEST_F(V8ValueConverterImplTest, ObjectPrototypeSetter) {
   EXPECT_EQ(1, GetInt(result, "getters"));
   EXPECT_EQ(1, GetInt(result, "setters"));
 
-  EXPECT_EQ(1u, converted2->GetPropertyNames()->Length());
+  EXPECT_EQ(1u,
+            converted2->GetPropertyNames(context).ToLocalChecked()->Length());
   EXPECT_EQ("hello", GetString(converted2, "otherkey"));
 
   // Missing key = should trigger getter upon access.
