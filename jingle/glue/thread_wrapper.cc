@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_local.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/webrtc/rtc_base/nullsocketserver.h"
@@ -200,7 +200,7 @@ void JingleThreadWrapper::Send(const rtc::Location& posted_from,
   while (!pending_send.done_event.IsSignaled()) {
     base::WaitableEvent* events[] = {&pending_send.done_event,
                                      &current_thread->pending_send_event_};
-    size_t event = base::WaitableEvent::WaitMany(events, arraysize(events));
+    size_t event = base::WaitableEvent::WaitMany(events, base::size(events));
     DCHECK(event == 0 || event == 1);
 
     if (event == 1)

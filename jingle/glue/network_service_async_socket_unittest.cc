@@ -12,11 +12,11 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_default.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -912,7 +912,7 @@ TEST_F(NetworkServiceAsyncSocketTest, SyncWrite) {
   async_socket_data_provider_.AddWrite(
       net::MockWrite(net::SYNCHRONOUS, kWriteData + 3, 5));
   async_socket_data_provider_.AddWrite(net::MockWrite(
-      net::SYNCHRONOUS, kWriteData + 8, arraysize(kWriteData) - 8));
+      net::SYNCHRONOUS, kWriteData + 8, base::size(kWriteData) - 8));
   DoOpenClosed();
 
   EXPECT_TRUE(ns_async_socket_->Write(kWriteData, 3));
@@ -920,7 +920,7 @@ TEST_F(NetworkServiceAsyncSocketTest, SyncWrite) {
   EXPECT_TRUE(ns_async_socket_->Write(kWriteData + 3, 5));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(
-      ns_async_socket_->Write(kWriteData + 8, arraysize(kWriteData) - 8));
+      ns_async_socket_->Write(kWriteData + 8, base::size(kWriteData) - 8));
   base::RunLoop().RunUntilIdle();
 
   ExpectNoSignal();
@@ -936,14 +936,14 @@ TEST_F(NetworkServiceAsyncSocketTest, AsyncWrite) {
   async_socket_data_provider_.AddWrite(
       net::MockWrite(net::ASYNC, kWriteData + 3, 5));
   async_socket_data_provider_.AddWrite(
-      net::MockWrite(net::ASYNC, kWriteData + 8, arraysize(kWriteData) - 8));
+      net::MockWrite(net::ASYNC, kWriteData + 8, base::size(kWriteData) - 8));
 
   EXPECT_TRUE(ns_async_socket_->Write(kWriteData, 3));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(ns_async_socket_->Write(kWriteData + 3, 5));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(
-      ns_async_socket_->Write(kWriteData + 8, arraysize(kWriteData) - 8));
+      ns_async_socket_->Write(kWriteData + 8, base::size(kWriteData) - 8));
   base::RunLoop().RunUntilIdle();
 
   ExpectNoSignal();
@@ -966,7 +966,7 @@ TEST_F(NetworkServiceAsyncSocketTest, AsyncWriteError) {
   EXPECT_TRUE(ns_async_socket_->Write(kWriteData + 3, 5));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(
-      ns_async_socket_->Write(kWriteData + 8, arraysize(kWriteData) - 8));
+      ns_async_socket_->Write(kWriteData + 8, base::size(kWriteData) - 8));
   base::RunLoop().RunUntilIdle();
 
   ExpectSignalSocketState(SignalSocketState(
@@ -1164,7 +1164,7 @@ TEST_F(NetworkServiceAsyncSocketTest, SSLSyncWrite) {
   async_socket_data_provider_.AddWrite(
       net::MockWrite(net::SYNCHRONOUS, kWriteData + 3, 5));
   async_socket_data_provider_.AddWrite(net::MockWrite(
-      net::SYNCHRONOUS, kWriteData + 8, arraysize(kWriteData) - 8));
+      net::SYNCHRONOUS, kWriteData + 8, base::size(kWriteData) - 8));
   DoSSLOpenClosed();
 
   EXPECT_TRUE(ns_async_socket_->Write(kWriteData, 3));
@@ -1172,7 +1172,7 @@ TEST_F(NetworkServiceAsyncSocketTest, SSLSyncWrite) {
   EXPECT_TRUE(ns_async_socket_->Write(kWriteData + 3, 5));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(
-      ns_async_socket_->Write(kWriteData + 8, arraysize(kWriteData) - 8));
+      ns_async_socket_->Write(kWriteData + 8, base::size(kWriteData) - 8));
   base::RunLoop().RunUntilIdle();
 
   ExpectNoSignal();
@@ -1188,14 +1188,14 @@ TEST_F(NetworkServiceAsyncSocketTest, SSLAsyncWrite) {
   async_socket_data_provider_.AddWrite(
       net::MockWrite(net::ASYNC, kWriteData + 3, 5));
   async_socket_data_provider_.AddWrite(
-      net::MockWrite(net::ASYNC, kWriteData + 8, arraysize(kWriteData) - 8));
+      net::MockWrite(net::ASYNC, kWriteData + 8, base::size(kWriteData) - 8));
 
   EXPECT_TRUE(ns_async_socket_->Write(kWriteData, 3));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(ns_async_socket_->Write(kWriteData + 3, 5));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(
-      ns_async_socket_->Write(kWriteData + 8, arraysize(kWriteData) - 8));
+      ns_async_socket_->Write(kWriteData + 8, base::size(kWriteData) - 8));
   base::RunLoop().RunUntilIdle();
 
   ExpectNoSignal();
