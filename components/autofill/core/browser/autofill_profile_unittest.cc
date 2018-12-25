@@ -11,7 +11,6 @@
 
 #include "base/format_macros.h"
 #include "base/guid.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
@@ -290,7 +289,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_CH) {
   };
 
   std::vector<base::string16> labels;
-  for (size_t i = 0; i < arraysize(kExpectedLabels); ++i) {
+  for (size_t i = 0; i < base::size(kExpectedLabels); ++i) {
     AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), nullptr,
                                           UNKNOWN_TYPE, i, "en-US", &labels);
     ASSERT_FALSE(labels.empty());
@@ -329,7 +328,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_FR) {
   };
 
   std::vector<base::string16> labels;
-  for (size_t i = 0; i < arraysize(kExpectedLabels); ++i) {
+  for (size_t i = 0; i < base::size(kExpectedLabels); ++i) {
     AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), nullptr,
                                           UNKNOWN_TYPE, i, "en-US", &labels);
     ASSERT_FALSE(labels.empty());
@@ -373,7 +372,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_KR) {
   };
 
   std::vector<base::string16> labels;
-  for (size_t i = 0; i < arraysize(kExpectedLabels); ++i) {
+  for (size_t i = 0; i < base::size(kExpectedLabels); ++i) {
     AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), nullptr,
                                           UNKNOWN_TYPE, i, "en-US", &labels);
     ASSERT_FALSE(labels.empty());
@@ -410,7 +409,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_JP_Latn) {
   };
 
   std::vector<base::string16> labels;
-  for (size_t i = 0; i < arraysize(kExpectedLabels); ++i) {
+  for (size_t i = 0; i < base::size(kExpectedLabels); ++i) {
     AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), nullptr,
                                           UNKNOWN_TYPE, i, "en-US", &labels);
     ASSERT_FALSE(labels.empty());
@@ -443,7 +442,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_JP_ja) {
   };
 
   std::vector<base::string16> labels;
-  for (size_t i = 0; i < arraysize(kExpectedLabels); ++i) {
+  for (size_t i = 0; i < base::size(kExpectedLabels); ++i) {
     AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), nullptr,
                                           UNKNOWN_TYPE, i, "en-US", &labels);
     ASSERT_FALSE(labels.empty());

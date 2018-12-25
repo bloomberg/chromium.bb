@@ -12,6 +12,7 @@
 
 #include "base/format_macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -677,8 +678,8 @@ TEST_P(LogDnsClientTest, CanPerformQueriesInParallel) {
   // Check that 3 queries can be performed in parallel.
   constexpr size_t kNumOfParallelQueries = 3;
   ASSERT_THAT(kNumOfParallelQueries,
-              AllOf(Le(arraysize(kLeafIndexQnames)),
-                    Le(arraysize(kLeafIndices)), Le(arraysize(kTreeSizes))))
+              AllOf(Le(base::size(kLeafIndexQnames)),
+                    Le(base::size(kLeafIndices)), Le(base::size(kTreeSizes))))
       << "Not enough test data for this many parallel queries";
 
   std::unique_ptr<LogDnsClient> log_client =

@@ -15,6 +15,7 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
@@ -70,7 +71,7 @@ constexpr const char* kArcSchemes[] = {url::kHttpScheme, url::kHttpsScheme,
                                        url::kMailToScheme};
 
 // mojom::ChromePage::LAST returns the ammout of valid entries - 1.
-static_assert(arraysize(kMapping) ==
+static_assert(base::size(kMapping) ==
                   static_cast<size_t>(mojom::ChromePage::LAST) + 1,
               "kMapping is out of sync");
 

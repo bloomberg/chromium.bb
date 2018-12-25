@@ -8,6 +8,7 @@
 #include "components/cbor/reader.h"
 
 #include "base/containers/span.h"
+#include "base/stl_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -742,7 +743,7 @@ TEST(CBORReaderTest, TestReadMapWithMixedKeys) {
   ASSERT_EQ(cbor->type(), Value::Type::MAP);
   ASSERT_EQ(cbor->GetMap().size(), 6u);
   EXPECT_EQ(error_code, Reader::DecoderError::CBOR_NO_ERROR);
-  EXPECT_EQ(num_bytes_consumed, arraysize(kMapTestCase));
+  EXPECT_EQ(num_bytes_consumed, base::size(kMapTestCase));
 }
 
 TEST(CBORReaderTest, TestReadNestedMap) {

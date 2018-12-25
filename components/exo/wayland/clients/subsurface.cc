@@ -5,6 +5,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "components/exo/wayland/clients/client_base.h"
 #include "components/exo/wayland/clients/client_helper.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -110,7 +111,7 @@ void SubSurfaceClient::Run(const ClientBase::InitParams& params) {
       Buffer* buffer = buffers_.front().get();
       SkCanvas* canvas = buffer->sk_surface->getCanvas();
       static const SkColor kColors[] = {SK_ColorRED, SK_ColorBLACK};
-      canvas->clear(kColors[frame_count % arraysize(kColors)]);
+      canvas->clear(kColors[frame_count % base::size(kColors)]);
       if (gr_context_) {
         gr_context_->flush();
         glFinish();

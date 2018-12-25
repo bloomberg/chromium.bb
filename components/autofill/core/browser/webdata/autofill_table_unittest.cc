@@ -13,7 +13,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -243,8 +242,8 @@ TEST_F(AutofillTableTest, Autofill) {
                    AutofillKey(ASCIIToUTF16("Favorite Color"),
                                ASCIIToUTF16("Green"))),
   };
-  EXPECT_EQ(arraysize(kExpectedChanges), changes.size());
-  for (size_t i = 0; i < arraysize(kExpectedChanges); ++i) {
+  EXPECT_EQ(base::size(kExpectedChanges), changes.size());
+  for (size_t i = 0; i < base::size(kExpectedChanges); ++i) {
     EXPECT_EQ(kExpectedChanges[i], changes[i]);
   }
 
@@ -468,7 +467,7 @@ TEST_F(AutofillTableTest, Autofill_UpdateNullTerminated) {
   const char kName[] = "foo";
   const char kValue[] = "bar";
   // A value which contains terminating character.
-  std::string value(kValue, arraysize(kValue));
+  std::string value(kValue, base::size(kValue));
 
   AutofillEntry entry0(MakeAutofillEntry(kName, kValue, 1, -1));
   AutofillEntry entry1(MakeAutofillEntry(kName, value, 2, 3));

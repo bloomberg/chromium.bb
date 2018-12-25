@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -37,14 +36,14 @@ std::vector<std::string> WhitelistedSchemes() {
 std::vector<std::string> WhitelistedSchemes(const char* scheme1,
                                             const char* scheme2) {
   const char* schemes[] = {scheme1, scheme2};
-  return std::vector<std::string>(schemes, schemes + arraysize(schemes));
+  return std::vector<std::string>(schemes, schemes + base::size(schemes));
 }
 
 std::vector<std::string> WhitelistedSchemes(const char* scheme1,
                                             const char* scheme2,
                                             const char* scheme3) {
   const char* schemes[] = {scheme1, scheme2, scheme3};
-  return std::vector<std::string>(schemes, schemes + arraysize(schemes));
+  return std::vector<std::string>(schemes, schemes + base::size(schemes));
 }
 
 std::set<ContentSetting> ValidSettings() {
@@ -54,14 +53,14 @@ std::set<ContentSetting> ValidSettings() {
 std::set<ContentSetting> ValidSettings(ContentSetting setting1,
                                        ContentSetting setting2) {
   ContentSetting settings[] = {setting1, setting2};
-  return std::set<ContentSetting>(settings, settings + arraysize(settings));
+  return std::set<ContentSetting>(settings, settings + base::size(settings));
 }
 
 std::set<ContentSetting> ValidSettings(ContentSetting setting1,
                                        ContentSetting setting2,
                                        ContentSetting setting3) {
   ContentSetting settings[] = {setting1, setting2, setting3};
-  return std::set<ContentSetting>(settings, settings + arraysize(settings));
+  return std::set<ContentSetting>(settings, settings + base::size(settings));
 }
 
 std::set<ContentSetting> ValidSettings(ContentSetting setting1,
@@ -69,7 +68,7 @@ std::set<ContentSetting> ValidSettings(ContentSetting setting1,
                                        ContentSetting setting3,
                                        ContentSetting setting4) {
   ContentSetting settings[] = {setting1, setting2, setting3, setting4};
-  return std::set<ContentSetting>(settings, settings + arraysize(settings));
+  return std::set<ContentSetting>(settings, settings + base::size(settings));
 }
 
 ContentSetting GetInitialDefaultContentSettingForProtectedMediaIdentifier() {

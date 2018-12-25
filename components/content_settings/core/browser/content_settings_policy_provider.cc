@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
@@ -211,7 +211,7 @@ std::unique_ptr<RuleIterator> PolicyProvider::GetRuleIterator(
 
 void PolicyProvider::GetContentSettingsFromPreferences(
     OriginIdentifierValueMap* value_map) {
-  for (size_t i = 0; i < arraysize(kPrefsForManagedContentSettingsMap); ++i) {
+  for (size_t i = 0; i < base::size(kPrefsForManagedContentSettingsMap); ++i) {
     const char* pref_name = kPrefsForManagedContentSettingsMap[i].pref_name;
     // Skip unset policies.
     if (!prefs_->HasPrefPath(pref_name)) {

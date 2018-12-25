@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_timeouts.h"
@@ -538,7 +539,7 @@ TEST_F(StaleHostResolverTest, MAYBE_StaleUsability) {
 
   SetStaleDelay(kNoStaleDelaySec);
 
-  for (size_t i = 0; i < arraysize(kUsabilityTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kUsabilityTestCases); ++i) {
     const auto& test_case = kUsabilityTestCases[i];
 
     SetStaleUsability(test_case.max_expired_time_sec, test_case.max_stale_uses,

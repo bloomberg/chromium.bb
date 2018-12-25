@@ -6,6 +6,7 @@
 
 #include <gtest/gtest.h>
 
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 
 namespace feedback {
@@ -155,7 +156,7 @@ TEST_F(AnonymizerToolTest, AnonymizeCustomPatterns) {
     "rtsp://root@example.com/",
     "https://aaaaaaaaaaaaaaaa.com",
   };
-  for (size_t i = 0; i < arraysize(kURLs); ++i) {
+  for (size_t i = 0; i < base::size(kURLs); ++i) {
     SCOPED_TRACE(kURLs[i]);
     std::string got = AnonymizeCustomPatterns(kURLs[i]);
     EXPECT_TRUE(

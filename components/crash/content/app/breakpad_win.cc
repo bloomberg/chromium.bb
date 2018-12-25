@@ -24,9 +24,9 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -210,7 +210,7 @@ std::wstring GetProfileType() {
       { PT_ROAMING, L"roaming" },
       { PT_TEMPORARY, L"temporary" },
     };
-    for (size_t i = 0; i < arraysize(kBitNames); ++i) {
+    for (size_t i = 0; i < base::size(kBitNames); ++i) {
       const DWORD this_bit = kBitNames[i].bit;
       if ((profile_bits & this_bit) != 0) {
         profile_type.append(kBitNames[i].name);

@@ -8,9 +8,9 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "net/http/http_content_disposition.h"
@@ -418,7 +418,7 @@ const int64_t kHighBandwidthBytesPerSecond = 30 * 1024 * 1024;
 
 // Maps extensions to their matching UMA histogram int value.
 int GetDangerousFileType(const base::FilePath& file_path) {
-  for (size_t i = 0; i < arraysize(kDangerousFileTypes); ++i) {
+  for (size_t i = 0; i < base::size(kDangerousFileTypes); ++i) {
     if (file_path.MatchesExtension(kDangerousFileTypes[i]))
       return i + 1;
   }

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 
@@ -782,7 +783,7 @@ const StaticCountryData kCountryData[] = {
 // based on |kCountryData|.
 std::vector<std::string> GetCountryCodes() {
   std::vector<std::string> country_codes;
-  country_codes.reserve(arraysize(kCountryData));
+  country_codes.reserve(base::size(kCountryData));
   for (const auto& static_data : kCountryData) {
     country_codes.push_back(static_data.country_code);
   }

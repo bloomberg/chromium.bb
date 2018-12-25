@@ -44,10 +44,10 @@
 #include "base/cancelable_callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/free_deleter.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -468,12 +468,12 @@ void shm_pool_create_buffer(wl_client* client,
                             uint32_t format) {
   const auto* supported_format =
       std::find_if(shm_supported_formats,
-                   shm_supported_formats + arraysize(shm_supported_formats),
+                   shm_supported_formats + base::size(shm_supported_formats),
                    [format](const shm_supported_format& supported_format) {
                      return supported_format.shm_format == format;
                    });
   if (supported_format ==
-      (shm_supported_formats + arraysize(shm_supported_formats))) {
+      (shm_supported_formats + base::size(shm_supported_formats))) {
     wl_resource_post_error(resource, WL_SHM_ERROR_INVALID_FORMAT,
                            "invalid format 0x%x", format);
     return;

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/i18n/time_formatting.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
@@ -38,7 +38,7 @@ const CrashesUILocalizedString kCrashesUILocalizedStrings[] = {
 };
 
 const size_t kCrashesUILocalizedStringsCount =
-    arraysize(kCrashesUILocalizedStrings);
+    base::size(kCrashesUILocalizedStrings);
 
 const char kCrashesUICrashesJS[] = "crashes.js";
 const char kCrashesUIRequestCrashList[] = "requestCrashList";

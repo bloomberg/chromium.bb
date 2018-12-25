@@ -8,7 +8,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "components/domain_reliability/config.h"
 
 namespace domain_reliability {
@@ -561,7 +561,7 @@ static std::unique_ptr<DomainReliabilityConfig> CreateGoogleConfig(
     config->collectors.push_back(
         std::make_unique<GURL>(config->origin.ReplaceComponents(replacements)));
   }
-  for (size_t i = 0; i < arraysize(kGoogleStandardCollectors); i++)
+  for (size_t i = 0; i < base::size(kGoogleStandardCollectors); i++)
     config->collectors.push_back(
         std::make_unique<GURL>(kGoogleStandardCollectors[i]));
   config->success_sample_rate = 0.05;

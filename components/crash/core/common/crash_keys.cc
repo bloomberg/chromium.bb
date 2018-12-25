@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -130,7 +131,7 @@ static PrinterInfoKey printer_info_keys[] = {
 ScopedPrinterInfo::ScopedPrinterInfo(base::StringPiece data) {
   std::vector<base::StringPiece> info = base::SplitStringPiece(
       data, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  for (size_t i = 0; i < arraysize(printer_info_keys); ++i) {
+  for (size_t i = 0; i < base::size(printer_info_keys); ++i) {
     if (i < info.size())
       printer_info_keys[i].Set(info[i]);
     else

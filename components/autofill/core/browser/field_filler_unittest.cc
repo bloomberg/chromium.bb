@@ -10,8 +10,8 @@
 
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1139,10 +1139,10 @@ TEST_F(AutofillFieldFillerTest, FillCreditCardNumberWithEqualSizeSplits) {
   test.card_number_ = "5187654321098765";
   test.total_splits_ = 4;
   int splits[] = {4, 4, 4, 4};
-  test.splits_ = std::vector<int>(splits, splits + arraysize(splits));
+  test.splits_ = std::vector<int>(splits, splits + base::size(splits));
   std::string results[] = {"5187", "6543", "2109", "8765"};
   test.expected_results_ =
-      std::vector<std::string>(results, results + arraysize(results));
+      std::vector<std::string>(results, results + base::size(results));
 
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
   for (size_t i = 0; i < test.total_splits_; ++i) {
@@ -1181,10 +1181,10 @@ TEST_F(AutofillFieldFillerTest, FillCreditCardNumberWithUnequalSizeSplits) {
   test.card_number_ = "423456789012345";
   test.total_splits_ = 3;
   int splits[] = {4, 6, 5};
-  test.splits_ = std::vector<int>(splits, splits + arraysize(splits));
+  test.splits_ = std::vector<int>(splits, splits + base::size(splits));
   std::string results[] = {"4234", "567890", "12345"};
   test.expected_results_ =
-      std::vector<std::string>(results, results + arraysize(results));
+      std::vector<std::string>(results, results + base::size(results));
 
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
   // Start executing test cases to verify parts and full credit card number.

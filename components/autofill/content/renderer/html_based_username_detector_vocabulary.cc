@@ -4,7 +4,7 @@
 
 #include "components/autofill/content/renderer/html_based_username_detector_vocabulary.h"
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 
 namespace autofill {
 
@@ -23,7 +23,7 @@ const char* const kNegativeLatin[] = {
     "second", "passwort", "middlename", "paroladordine",
     "codice", "pasvorto", "familyname", "inomboloyokuvula",
     "modpas", "salasana", "motdepasse", "numeraeleiloaesesi"};
-const int kNegativeLatinSize = arraysize(kNegativeLatin);
+const int kNegativeLatinSize = base::size(kNegativeLatin);
 
 const char* const kNegativeNonLatin[] = {"fjalëkalim",
                                          "የይለፍቃል",
@@ -74,7 +74,7 @@ const char* const kNegativeNonLatin[] = {"fjalëkalim",
                                          "mậtkhẩu",
                                          "פּאַראָל",
                                          "ọrọigbaniwọle"};
-const int kNegativeNonLatinSize = arraysize(kNegativeNonLatin);
+const int kNegativeNonLatinSize = base::size(kNegativeNonLatin);
 
 const char* const kUsernameLatin[] = {
     "gatti",      "uzantonomo",   "solonanarana",    "nombredeusuario",
@@ -86,7 +86,7 @@ const char* const kUsernameLatin[] = {
     "mosebedisi", "kasutajanimi", "ainmcleachdaidh", "igamalomsebenzisi",
     "nomdusuari", "lomsebenzisi", "jenengpanganggo", "ingoakaiwhakamahi",
     "nomeutente", "namapengguna"};
-const int kUsernameLatinSize = arraysize(kUsernameLatin);
+const int kUsernameLatinSize = base::size(kUsernameLatin);
 
 const char* const kUsernameNonLatin[] = {"用户名",
                                          "کاتيجونالو",
@@ -146,7 +146,7 @@ const char* const kUsernameNonLatin[] = {"用户名",
                                          "ব্যবহারকারীরনাম",
                                          "užívateľskémeno",
                                          "ឈ្មោះអ្នកប្រើប្រាស់"};
-const int kUsernameNonLatinSize = arraysize(kUsernameNonLatin);
+const int kUsernameNonLatinSize = base::size(kUsernameNonLatin);
 
 const char* const kUserLatin[] = {
     "user",   "wosuta",   "gebruiker",  "utilizator",
@@ -159,7 +159,7 @@ const char* const kUserLatin[] = {
     "usuari", "kasutaja", "defnyddiwr", "kaiwhakamahi",
     "utente", "korisnik", "mosebedisi", "foydalanuvchi",
     "uzanto", "pengguna", "mushandisi"};
-const int kUserLatinSize = arraysize(kUserLatin);
+const int kUserLatinSize = base::size(kUserLatin);
 
 const char* const kUserNonLatin[] = {"用户",
                                      "użytkownik",
@@ -218,7 +218,7 @@ const char* const kUserNonLatin[] = {"用户",
                                      "пайдаланушы",
                                      "အသုံးပြုသူကို",
                                      "käyttäjä"};
-const int kUserNonLatinSize = arraysize(kUserNonLatin);
+const int kUserNonLatinSize = base::size(kUserNonLatin);
 
 const char* const kTechnicalWords[] = {
     "uid",         "newtel",     "uaccount",   "regaccount",  "ureg",
@@ -226,9 +226,9 @@ const char* const kTechnicalWords[] = {
     "loginname",   "membername", "uname",      "ucreate",     "loginmail",
     "accountname", "umail",      "loginreg",   "accountid",   "loginaccount",
     "ulogin",      "regemail",   "newmobile",  "accountlogin"};
-const int kTechnicalWordsSize = arraysize(kTechnicalWords);
+const int kTechnicalWordsSize = base::size(kTechnicalWords);
 
 const char* const kWeakWords[] = {"id", "login", "mail"};
-const int kWeakWordsSize = arraysize(kWeakWords);
+const int kWeakWordsSize = base::size(kWeakWords);
 
 }  // namespace autofill

@@ -14,9 +14,9 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
+#include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
@@ -755,7 +755,7 @@ TEST_F(DataReductionProxyBypassStatsEndToEndTest,
       {true, "HTTP/1.1 404 Not Found\n", 404, -1},
       {false, "HTTP/1.1 404 Not Found\n", -1, 404}};
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     base::HistogramTester histogram_tester;
     std::string raw_headers(test_cases[i].headers);
     HeadersToRaw(&raw_headers);

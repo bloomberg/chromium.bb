@@ -14,8 +14,8 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -59,7 +59,7 @@ GLenum GLInternalFormat(gfx::BufferFormat format) {
       GL_RGB_YCBCR_420V_CHROMIUM,          // YUV_420_BIPLANAR
       GL_RGB_YCBCR_422_CHROMIUM,           // UYVY_422
   };
-  static_assert(arraysize(kGLInternalFormats) ==
+  static_assert(base::size(kGLInternalFormats) ==
                     (static_cast<int>(gfx::BufferFormat::LAST) + 1),
                 "BufferFormat::LAST must be last value of kGLInternalFormats");
 

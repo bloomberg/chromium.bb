@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/crx_file/crx3.pb.h"
 #include "components/crx_file/crx_file.h"
@@ -74,7 +75,8 @@ bool ReadHashAndVerifyArchive(base::File* file,
                               const VerifierCollection& verifiers) {
   uint8_t buffer[1 << 12] = {};
   size_t len = 0;
-  while ((len = ReadAndHashBuffer(buffer, arraysize(buffer), file, hash)) > 0) {
+  while ((len = ReadAndHashBuffer(buffer, base::size(buffer), file, hash)) >
+         0) {
     for (auto& verifier : verifiers)
       verifier->VerifyUpdate(base::make_span(buffer, len));
   }

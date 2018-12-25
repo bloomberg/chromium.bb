@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/feature_list.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/feature_engagement/buildflags.h"
 #include "components/feature_engagement/public/feature_constants.h"
@@ -40,7 +41,7 @@ namespace {
 #define VARIATION_ENTRY(base_feature)                                \
   {                                                                  \
     base_feature##Variation[0].param_value, base_feature##Variation, \
-        arraysize(base_feature##Variation), nullptr                  \
+        base::size(base_feature##Variation), nullptr                 \
   }
 
 // Defines a flags_ui::FeatureEntry::FeatureParam for each feature.

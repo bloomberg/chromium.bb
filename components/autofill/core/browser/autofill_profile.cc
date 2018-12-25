@@ -15,7 +15,6 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"
@@ -151,9 +150,9 @@ void GetFieldsForDistinguishingProfiles(
 
   std::vector<ServerFieldType> default_fields;
   if (!suggested_fields) {
-    default_fields.assign(
-        kDefaultDistinguishingFields,
-        kDefaultDistinguishingFields + arraysize(kDefaultDistinguishingFields));
+    default_fields.assign(kDefaultDistinguishingFields,
+                          kDefaultDistinguishingFields +
+                              base::size(kDefaultDistinguishingFields));
     if (excluded_field == UNKNOWN_TYPE) {
       distinguishing_fields->swap(default_fields);
       return;

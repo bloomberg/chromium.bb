@@ -13,9 +13,9 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/string_search.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/drive/chromeos/drive_test_util.h"
@@ -464,7 +464,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_ExcludeDirectory) {
 // "drive", "drive/root", "drive/other" should be excluded.
 TEST_F(SearchMetadataTest, SearchMetadata_ExcludeSpecialDirectories) {
   const char* const kQueries[] = { "drive", "root", "other" };
-  for (size_t i = 0; i < arraysize(kQueries); ++i) {
+  for (size_t i = 0; i < base::size(kQueries); ++i) {
     FileError error = FILE_ERROR_FAILED;
     std::unique_ptr<MetadataSearchResultVector> result;
 
