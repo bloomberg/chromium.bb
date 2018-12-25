@@ -16,7 +16,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/timer/timer.h"
 #include "ui/display/display.h"
 #include "ui/display/display_change_notifier.h"
@@ -312,7 +312,7 @@ class ScreenMac : public Screen {
     // doesn't hurt.
     CGDirectDisplayID online_displays[128];
     CGDisplayCount online_display_count = 0;
-    if (CGGetOnlineDisplayList(arraysize(online_displays), online_displays,
+    if (CGGetOnlineDisplayList(base::size(online_displays), online_displays,
                                &online_display_count) != kCGErrorSuccess) {
       return std::vector<Display>(1, BuildPrimaryDisplay());
     }

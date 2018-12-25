@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,7 +50,7 @@ TEST(TextUtilsTest, RemoveAcceleratorChar) {
       "Test\xF0\x9D\x92\x9C\xF0\x9D\x92\x9Cing" },
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     int accelerated_char_pos;
     int accelerated_char_span;
     base::string16 result = RemoveAcceleratorChar(

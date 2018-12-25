@@ -12,7 +12,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/composition_text.h"
 
@@ -118,7 +118,7 @@ void CompareImeTextSpan(const ImeTextSpan& a, const ui::ImeTextSpan& b) {
 }
 
 TEST(CompositionTextUtilPangoTest, ExtractCompositionText) {
-  for (size_t i = 0; i < arraysize(kTestData); ++i) {
+  for (size_t i = 0; i < base::size(kTestData); ++i) {
     const char* text = kTestData[i].text;
     const AttributeInfo* attrs = kTestData[i].attrs;
     SCOPED_TRACE(testing::Message() << "Testing:" << i

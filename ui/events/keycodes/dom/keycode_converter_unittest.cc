@@ -10,6 +10,7 @@
 #include <map>
 #include <set>
 
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -29,7 +30,7 @@ const size_t expected_mapped_key_count[] = {
   118, // mac
 };
 
-const size_t kNativeColumns = arraysize(expected_mapped_key_count);
+const size_t kNativeColumns = base::size(expected_mapped_key_count);
 
 struct KeycodeConverterData {
   uint32_t usb_keycode;

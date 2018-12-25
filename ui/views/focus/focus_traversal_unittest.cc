@@ -4,8 +4,8 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/models/combobox_model.h"
@@ -455,10 +455,10 @@ void FocusTraversalTest::InitContentView() {
                              CAMPING_LINK_ID,    BRICE_DE_NICE_LINK_ID,
                              TAXI_LINK_ID,       ASTERIX_LINK_ID};
 
-  DCHECK(arraysize(kTitles) == arraysize(kIDs));
+  DCHECK(base::size(kTitles) == base::size(kIDs));
 
   y = 5;
-  for (size_t i = 0; i < arraysize(kTitles); ++i) {
+  for (size_t i = 0; i < base::size(kTitles); ++i) {
     Link* link = new Link(ASCIIToUTF16(kTitles[i]));
     link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     link->set_id(kIDs[i]);
@@ -704,7 +704,7 @@ TEST_F(FocusTraversalTest, TraversalWithNonEnabledViews) {
   SCOPED_TRACE("TraversalWithNonEnabledViews");
 
   // Let's disable some views.
-  for (size_t i = 0; i < arraysize(kDisabledIDs); i++) {
+  for (size_t i = 0; i < base::size(kDisabledIDs); i++) {
     View* v = FindViewByID(kDisabledIDs[i]);
     ASSERT_TRUE(v != NULL);
     v->SetEnabled(false);
@@ -744,7 +744,7 @@ TEST_F(FocusTraversalTest, TraversalWithInvisibleViews) {
   SCOPED_TRACE("TraversalWithInvisibleViews");
 
   // Let's make some views invisible.
-  for (size_t i = 0; i < arraysize(kInvisibleIDs); i++) {
+  for (size_t i = 0; i < base::size(kInvisibleIDs); i++) {
     View* v = FindViewByID(kInvisibleIDs[i]);
     ASSERT_TRUE(v != NULL);
     v->SetVisible(false);

@@ -6,7 +6,7 @@
 
 #include <cmath>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/quaternion.h"
 #include "ui/gfx/geometry/vector3d_f.h"
@@ -55,7 +55,7 @@ TEST(QuatTest, AxisAngleWithZeroLengthAxis) {
 
 TEST(QuatTest, Addition) {
   double values[] = {0, 1, 100};
-  for (size_t i = 0; i < arraysize(values); ++i) {
+  for (size_t i = 0; i < base::size(values); ++i) {
     float t = values[i];
     Quaternion a(t, 2 * t, 3 * t, 4 * t);
     Quaternion b(5 * t, 4 * t, 3 * t, 2 * t);
@@ -80,7 +80,7 @@ TEST(QuatTest, Multiplication) {
        Quaternion(32, 32, 56, -6)},
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     Quaternion product = cases[i].a * cases[i].b;
     CompareQuaternions(cases[i].expected, product);
   }
@@ -88,7 +88,7 @@ TEST(QuatTest, Multiplication) {
 
 TEST(QuatTest, Scaling) {
   double values[] = {0, 10, 100};
-  for (size_t i = 0; i < arraysize(values); ++i) {
+  for (size_t i = 0; i < base::size(values); ++i) {
     double s = values[i];
     Quaternion q(1, 2, 3, 4);
     Quaternion expected(s, 2 * s, 3 * s, 4 * s);

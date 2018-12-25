@@ -22,7 +22,6 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_macros.h"
@@ -627,8 +626,7 @@ bool WindowContainsPoint(XID window, gfx::Point screen_loc) {
   // included in both the default input region and the client bounding region
   // will not be included in the effective input region on the screen.
   int rectangle_kind[] = {ShapeInput, ShapeBounding};
-  for (size_t kind_index = 0;
-       kind_index < arraysize(rectangle_kind);
+  for (size_t kind_index = 0; kind_index < base::size(rectangle_kind);
        kind_index++) {
     int dummy;
     int shape_rects_size = 0;
@@ -1002,7 +1000,7 @@ bool GetWindowDesktop(XID window, int* desktop) {
 
 std::string GetX11ErrorString(XDisplay* display, int err) {
   char buffer[256];
-  XGetErrorText(display, err, buffer, arraysize(buffer));
+  XGetErrorText(display, err, buffer, base::size(buffer));
   return buffer;
 }
 

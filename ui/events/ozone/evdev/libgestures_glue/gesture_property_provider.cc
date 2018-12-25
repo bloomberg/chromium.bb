@@ -17,8 +17,8 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
@@ -487,10 +487,10 @@ std::string GetDeviceNodePath(
 // Check if a match criteria is currently implemented. Note that we didn't
 // implemented all of them as some are inapplicable in the non-X world.
 bool IsMatchTypeSupported(const std::string& match_type) {
-  for (size_t i = 0; i < arraysize(kSupportedMatchTypes); ++i)
+  for (size_t i = 0; i < base::size(kSupportedMatchTypes); ++i)
     if (match_type == kSupportedMatchTypes[i])
       return true;
-  for (size_t i = 0; i < arraysize(kUnsupportedMatchTypes); ++i) {
+  for (size_t i = 0; i < base::size(kUnsupportedMatchTypes); ++i) {
     if (match_type == kUnsupportedMatchTypes[i]) {
       LOG(ERROR) << "Unsupported gestures input class match type: "
                  << match_type;
@@ -507,11 +507,11 @@ bool IsMatchDeviceType(const std::string& match_type) {
 
 // Parse a boolean value keyword (e.g., on/off, true/false).
 int ParseBooleanKeyword(const std::string& value) {
-  for (size_t i = 0; i < arraysize(kTrue); ++i) {
+  for (size_t i = 0; i < base::size(kTrue); ++i) {
     if (base::LowerCaseEqualsASCII(value, kTrue[i]))
       return 1;
   }
-  for (size_t i = 0; i < arraysize(kFalse); ++i) {
+  for (size_t i = 0; i < base::size(kFalse); ++i) {
     if (base::LowerCaseEqualsASCII(value, kFalse[i]))
       return -1;
   }

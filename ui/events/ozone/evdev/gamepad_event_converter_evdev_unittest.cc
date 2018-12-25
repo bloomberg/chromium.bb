@@ -17,9 +17,9 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
-#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -169,7 +169,7 @@ TEST_F(GamepadEventConverterEvdevTest, XboxGamepadEvents) {
       {GamepadEventType::BUTTON, 1, 0},      {GamepadEventType::FRAME, 0, 0},
       {GamepadEventType::BUTTON, 2, 1},      {GamepadEventType::FRAME, 0, 0}};
 
-  for (unsigned i = 0; i < arraysize(mock_kernel_queue); ++i) {
+  for (unsigned i = 0; i < base::size(mock_kernel_queue); ++i) {
     dev->ProcessEvent(mock_kernel_queue[i]);
   }
 
@@ -306,7 +306,7 @@ TEST_F(GamepadEventConverterEvdevTest, iBuffaloGamepadEvents) {
       {GamepadEventType::BUTTON, 12, 0}, {GamepadEventType::FRAME, 0, 0},
       {GamepadEventType::BUTTON, 13, 1}, {GamepadEventType::FRAME, 0, 0}};
 
-  for (unsigned i = 0; i < arraysize(mock_kernel_queue); ++i) {
+  for (unsigned i = 0; i < base::size(mock_kernel_queue); ++i) {
     dev->ProcessEvent(mock_kernel_queue[i]);
   }
 

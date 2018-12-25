@@ -7,8 +7,8 @@
 
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
-#include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_target.h"
@@ -369,7 +369,7 @@ EventGeneratorDelegateMac::EventGeneratorDelegateMac(
       {@"Paste", @selector(paste:), @"v"},
       {@"Select All", @selector(selectAll:), @"a"},
   };
-  for (size_t i = 0; i < arraysize(fake_menu_item); ++i) {
+  for (size_t i = 0; i < base::size(fake_menu_item); ++i) {
     [fake_menu_ insertItemWithTitle:fake_menu_item[i].title
                              action:fake_menu_item[i].action
                       keyEquivalent:fake_menu_item[i].key_equivalent

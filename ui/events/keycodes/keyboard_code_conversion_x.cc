@@ -9,7 +9,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -556,7 +556,7 @@ bool IsTtyFunctionOrSpaceKey(KeySym keysym) {
     XK_space
   };
 
-  for (size_t i = 0; i < arraysize(keysyms); ++i) {
+  for (size_t i = 0; i < base::size(keysyms); ++i) {
     if (keysyms[i] == keysym)
       return true;
   }
@@ -620,12 +620,12 @@ KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
       !IsCursorKey(keysym) && !IsPFKey(keysym) && !IsFunctionKey(keysym) &&
       !IsModifierKey(keysym)) {
     MAP0 key0 = {keysym & 0xFFFF, 0};
-    keycode = FindVK(key0, map0, arraysize(map0));
+    keycode = FindVK(key0, map0, base::size(map0));
     if (keycode != VKEY_UNKNOWN)
       return keycode;
 
     MAP1 key1 = {keysym & 0xFFFF, xkey->keycode, 0};
-    keycode = FindVK(key1, map1, arraysize(map1));
+    keycode = FindVK(key1, map1, base::size(map1));
     if (keycode != VKEY_UNKNOWN)
       return keycode;
 
@@ -633,7 +633,7 @@ KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
     xkey->state |= ShiftMask;
     XLookupString(xkey, NULL, 0, &keysym_shift, NULL);
     MAP2 key2 = {keysym & 0xFFFF, xkey->keycode, keysym_shift & 0xFFFF, 0};
-    keycode = FindVK(key2, map2, arraysize(map2));
+    keycode = FindVK(key2, map2, base::size(map2));
     if (keycode != VKEY_UNKNOWN)
       return keycode;
 
@@ -643,7 +643,7 @@ KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
     XLookupString(xkey, NULL, 0, &keysym_altgr, NULL);
     MAP3 key3 = {keysym & 0xFFFF, xkey->keycode, keysym_shift & 0xFFFF,
                  keysym_altgr & 0xFFFF, 0};
-    keycode = FindVK(key3, map3, arraysize(map3));
+    keycode = FindVK(key3, map3, base::size(map3));
     if (keycode != VKEY_UNKNOWN)
       return keycode;
 
@@ -653,9 +653,9 @@ KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
     MAP3 key4 = {keysym & 0xFFFF, xkey->keycode, keysym_shift & 0xFFFF, 0,
                  0};
     const MAP3* p =
-        std::lower_bound(map3, map3 + arraysize(map3), key4, MAP3());
-    if (p != map3 + arraysize(map3) && p->ch0 == key4.ch0 && p->sc == key4.sc &&
-        p->ch1 == key4.ch1)
+        std::lower_bound(map3, map3 + base::size(map3), key4, MAP3());
+    if (p != map3 + base::size(map3) && p->ch0 == key4.ch0 &&
+        p->sc == key4.sc && p->ch1 == key4.ch1)
       return static_cast<KeyboardCode>(p->vk);
   }
 
@@ -1150,7 +1150,7 @@ KeyboardCode DefaultKeyboardCodeFromHardwareKeycode(
       VKEY_COMPOSE,            // 0x87: KEY_COMPOSE          Menu
   };
 
-  if (hardware_code >= arraysize(kHardwareKeycodeMap)) {
+  if (hardware_code >= base::size(kHardwareKeycodeMap)) {
     // Additional keycodes used by the Chrome OS top row special function keys.
     switch (hardware_code) {
       case 0xA6:  // KEY_BACK

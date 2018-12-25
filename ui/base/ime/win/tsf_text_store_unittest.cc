@@ -10,8 +10,8 @@
 #include <OleCtl.h>
 #include <wrl/client.h>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_variant.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -1239,11 +1239,11 @@ TEST_F(TSFTextStoreTest, RequestSupportedAttrs) {
 
   const TS_ATTRID kUnknownAttributes[] = {GUID_NULL};
   EXPECT_HRESULT_FAILED(text_store_->RequestSupportedAttrs(
-      0, arraysize(kUnknownAttributes), kUnknownAttributes))
+      0, base::size(kUnknownAttributes), kUnknownAttributes))
       << "Must fail for unknown attributes";
 
   const TS_ATTRID kAttributes[] = {GUID_NULL, GUID_PROP_INPUTSCOPE, GUID_NULL};
-  EXPECT_EQ(S_OK, text_store_->RequestSupportedAttrs(0, arraysize(kAttributes),
+  EXPECT_EQ(S_OK, text_store_->RequestSupportedAttrs(0, base::size(kAttributes),
                                                      kAttributes))
       << "InputScope must be supported";
 
@@ -1253,7 +1253,7 @@ TEST_F(TSFTextStoreTest, RequestSupportedAttrs) {
     text_store_->SetFocusedTextInputClient(nullptr, nullptr);
     EXPECT_HRESULT_FAILED(text_store_->RequestSupportedAttrs(0, 0, nullptr));
     EXPECT_HRESULT_FAILED(text_store_->RequestSupportedAttrs(
-        0, arraysize(kAttributes), kAttributes));
+        0, base::size(kAttributes), kAttributes));
   }
 }
 
@@ -1271,7 +1271,7 @@ TEST_F(TSFTextStoreTest, RetrieveRequestedAttrs) {
     SCOPED_TRACE("Make sure if InputScope is supported");
     TS_ATTRVAL buffer[2] = {};
     num_copied = 0xfffffff;
-    ASSERT_EQ(S_OK, text_store_->RetrieveRequestedAttrs(arraysize(buffer),
+    ASSERT_EQ(S_OK, text_store_->RetrieveRequestedAttrs(base::size(buffer),
                                                         buffer, &num_copied));
     bool input_scope_found = false;
     for (size_t i = 0; i < num_copied; ++i) {
@@ -1296,7 +1296,7 @@ TEST_F(TSFTextStoreTest, RetrieveRequestedAttrs) {
     num_copied = 0xfffffff;
     TS_ATTRVAL buffer[2] = {};
     EXPECT_HRESULT_FAILED(text_store_->RetrieveRequestedAttrs(
-        arraysize(buffer), buffer, &num_copied));
+        base::size(buffer), buffer, &num_copied));
   }
 }
 

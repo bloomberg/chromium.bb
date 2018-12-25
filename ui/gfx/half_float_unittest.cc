@@ -4,7 +4,7 @@
 
 #include <math.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/half_float.h"
 
@@ -75,7 +75,7 @@ TEST_F(HalfFloatTest, SimpleTest) {
       0.0f,    1.0f,    10.0f,    1000.0f,  65503.0f,
       1.0E-3f, 1.0E-6f, 1.0E-20f, 1.0E-44f,
   };
-  for (size_t i = 0; i < arraysize(test); i++) {
+  for (size_t i = 0; i < base::size(test); i++) {
     EXPECT_EQ(ConvertTruth(test[i]), Convert(test[i])) << " float = "
                                                        << test[i];
     if (test[i] != 0.0) {

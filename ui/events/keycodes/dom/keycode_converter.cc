@@ -5,7 +5,6 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "build/build_config.h"
@@ -34,7 +33,7 @@ namespace {
 #undef USB_KEYMAP
 #undef USB_KEYMAP_DECLARATION
 
-const size_t kKeycodeMapEntries = arraysize(usb_keycode_map);
+const size_t kKeycodeMapEntries = base::size(usb_keycode_map);
 
 // Table of DomKey enum values and DOM Level 3 |key| strings.
 struct DomKeyMapEntry {
@@ -50,7 +49,7 @@ struct DomKeyMapEntry {
 #undef DOM_KEY_MAP
 #undef DOM_KEY_UNI
 
-const size_t kDomKeyMapEntries = arraysize(dom_key_map);
+const size_t kDomKeyMapEntries = base::size(dom_key_map);
 
 }  // namespace
 

@@ -9,8 +9,8 @@
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1582,7 +1582,7 @@ void DesktopWindowTreeHostX11::InitX11Window(
     const unsigned char kDarkGtkThemeVariant[] = "dark";
     XChangeProperty(xdisplay_, xwindow_, gfx::GetAtom("_GTK_THEME_VARIANT"),
                     gfx::GetAtom("UTF8_STRING"), 8, PropModeReplace,
-                    kDarkGtkThemeVariant, arraysize(kDarkGtkThemeVariant) - 1);
+                    kDarkGtkThemeVariant, base::size(kDarkGtkThemeVariant) - 1);
   }
 
   // Always composite Chromium windows if a compositing WM is used.  Sometimes,

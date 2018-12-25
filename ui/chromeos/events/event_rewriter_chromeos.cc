@@ -10,7 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -479,7 +479,7 @@ int EventRewriterChromeOS::GetRemappedModifierMasks(const ui::Event& event,
                                                     int original_flags) const {
   int unmodified_flags = original_flags;
   int rewritten_flags = pressed_modifier_latches_ | latched_modifier_latches_;
-  for (size_t i = 0; unmodified_flags && (i < arraysize(kModifierRemappings));
+  for (size_t i = 0; unmodified_flags && (i < base::size(kModifierRemappings));
        ++i) {
     const ModifierRemapping* remapped_key = nullptr;
     if (!(unmodified_flags & kModifierRemappings[i].flag))
@@ -977,8 +977,9 @@ void EventRewriterChromeOS::RewriteExtendedKeys(const ui::KeyEvent& key_event,
     bool skip_search_key_remapping =
         delegate_ && delegate_->IsSearchKeyAcceleratorReserved();
     if (!skip_search_key_remapping &&
-        RewriteWithKeyboardRemappings(
-            kSearchRemappings, arraysize(kSearchRemappings), incoming, state)) {
+        RewriteWithKeyboardRemappings(kSearchRemappings,
+                                      base::size(kSearchRemappings), incoming,
+                                      state)) {
       return;
     }
   }
@@ -1003,8 +1004,8 @@ void EventRewriterChromeOS::RewriteExtendedKeys(const ui::KeyEvent& key_event,
          {ui::EF_NONE, ui::DomCode::PAGE_DOWN, ui::DomKey::PAGE_DOWN,
           ui::VKEY_NEXT}}};
     if (RewriteWithKeyboardRemappings(kNonSearchRemappings,
-                                      arraysize(kNonSearchRemappings), incoming,
-                                      state)) {
+                                      base::size(kNonSearchRemappings),
+                                      incoming, state)) {
       return;
     }
   }
@@ -1108,12 +1109,12 @@ void EventRewriterChromeOS::RewriteFunctionKeys(const ui::KeyEvent& key_event,
       switch (layout) {
         case kKbdTopRowLayout2:
           mapping = kFkeysToSystemKeys2;
-          mappingSize = arraysize(kFkeysToSystemKeys2);
+          mappingSize = base::size(kFkeysToSystemKeys2);
           break;
         case kKbdTopRowLayout1:
         default:
           mapping = kFkeysToSystemKeys1;
-          mappingSize = arraysize(kFkeysToSystemKeys1);
+          mappingSize = base::size(kFkeysToSystemKeys1);
           break;
       }
 

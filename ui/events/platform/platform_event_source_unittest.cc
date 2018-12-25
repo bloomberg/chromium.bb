@@ -12,10 +12,10 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
@@ -185,8 +185,8 @@ TEST_F(PlatformEventTest, DispatcherOrder) {
   }
   std::unique_ptr<PlatformEvent> event = CreatePlatformEvent();
   source()->Dispatch(*event);
-  ASSERT_EQ(arraysize(sequence), list_dispatcher.size());
-  EXPECT_EQ(std::vector<int>(sequence, sequence + arraysize(sequence)),
+  ASSERT_EQ(base::size(sequence), list_dispatcher.size());
+  EXPECT_EQ(std::vector<int>(sequence, sequence + base::size(sequence)),
             list_dispatcher);
 }
 
@@ -243,8 +243,8 @@ TEST_F(PlatformEventTest, ObserverOrder) {
   }
   std::unique_ptr<PlatformEvent> event = CreatePlatformEvent();
   source()->Dispatch(*event);
-  ASSERT_EQ(arraysize(sequence), list_observer.size());
-  EXPECT_EQ(std::vector<int>(sequence, sequence + arraysize(sequence)),
+  ASSERT_EQ(base::size(sequence), list_observer.size());
+  EXPECT_EQ(std::vector<int>(sequence, sequence + base::size(sequence)),
             list_observer);
 }
 
@@ -258,7 +258,7 @@ TEST_F(PlatformEventTest, DispatcherAndObserverOrder) {
   std::unique_ptr<PlatformEvent> event = CreatePlatformEvent();
   source()->Dispatch(*event);
   const int expected[] = {10, 20, 12, 23};
-  EXPECT_EQ(std::vector<int>(expected, expected + arraysize(expected)), list);
+  EXPECT_EQ(std::vector<int>(expected, expected + base::size(expected)), list);
 }
 
 // Tests that an overridden dispatcher receives events before the default

@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -185,11 +185,11 @@ void LabelExample::AddCustomLabel(View* container) {
   textfield_->set_controller(this);
   layout->AddView(textfield_);
 
-  alignment_ = AddCombobox(layout, "Alignment: ", kAlignments,
-                           arraysize(kAlignments));
+  alignment_ =
+      AddCombobox(layout, "Alignment: ", kAlignments, base::size(kAlignments));
   elide_behavior_ = AddCombobox(
       layout, "Elide Behavior: ", ExamplePreferredSizeLabel::kElideBehaviors,
-      arraysize(ExamplePreferredSizeLabel::kElideBehaviors));
+      base::size(ExamplePreferredSizeLabel::kElideBehaviors));
 
   column_set = layout->AddColumnSet(1);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING,

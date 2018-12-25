@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
@@ -47,7 +47,7 @@ class CandidateViewTest : public views::ViewsTestBase,
     container_ = init_params.delegate->GetContentsView();
     container_->SetLayoutManager(
         std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
-    for (size_t i = 0; i < arraysize(kDummyCandidates); ++i) {
+    for (size_t i = 0; i < base::size(kDummyCandidates); ++i) {
       CandidateView* candidate = new CandidateView(
           this, ui::CandidateWindow::VERTICAL);
       ui::CandidateWindow::Entry entry;

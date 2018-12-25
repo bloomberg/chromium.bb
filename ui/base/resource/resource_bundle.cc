@@ -15,7 +15,6 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
@@ -940,12 +939,12 @@ base::string16 ResourceBundle::GetLocalizedStringImpl(int resource_id) {
 // static
 bool ResourceBundle::PNGContainsFallbackMarker(const unsigned char* buf,
                                                size_t size) {
-  if (size < arraysize(kPngMagic) ||
-      memcmp(buf, kPngMagic, arraysize(kPngMagic)) != 0) {
+  if (size < base::size(kPngMagic) ||
+      memcmp(buf, kPngMagic, base::size(kPngMagic)) != 0) {
     // Data invalid or a JPEG.
     return false;
   }
-  size_t pos = arraysize(kPngMagic);
+  size_t pos = base::size(kPngMagic);
 
   // Scan for custom chunks until we find one, find the IDAT chunk, or run out
   // of chunks.
@@ -956,13 +955,12 @@ bool ResourceBundle::PNGContainsFallbackMarker(const unsigned char* buf,
     base::ReadBigEndian(reinterpret_cast<const char*>(buf + pos), &length);
     if (size - pos - kPngChunkMetadataSize < length)
       break;
-    if (length == 0 &&
-        memcmp(buf + pos + sizeof(uint32_t), kPngScaleChunkType,
-               arraysize(kPngScaleChunkType)) == 0) {
+    if (length == 0 && memcmp(buf + pos + sizeof(uint32_t), kPngScaleChunkType,
+                              base::size(kPngScaleChunkType)) == 0) {
       return true;
     }
     if (memcmp(buf + pos + sizeof(uint32_t), kPngDataChunkType,
-               arraysize(kPngDataChunkType)) == 0) {
+               base::size(kPngDataChunkType)) == 0) {
       // Stop looking for custom chunks, any custom chunks should be before an
       // IDAT chunk.
       break;

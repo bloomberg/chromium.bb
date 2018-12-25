@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDeferredDisplayListRecorder.h"
@@ -171,7 +171,7 @@ bool SurfacelessSkiaGlRenderer::Initialize() {
   else
     primary_plane_rect_ = gfx::Rect(size_);
 
-  for (size_t i = 0; i < arraysize(buffers_); ++i) {
+  for (size_t i = 0; i < base::size(buffers_); ++i) {
     buffers_[i].reset(new BufferWrapper());
     if (!buffers_[i]->Initialize(gr_context_.get(), widget_,
                                  primary_plane_rect_.size()))
@@ -180,7 +180,7 @@ bool SurfacelessSkiaGlRenderer::Initialize() {
 
   if (command_line->HasSwitch(kEnableOverlay)) {
     gfx::Size overlay_size = gfx::Size(size_.width() / 8, size_.height() / 8);
-    for (size_t i = 0; i < arraysize(overlay_buffer_); ++i) {
+    for (size_t i = 0; i < base::size(overlay_buffer_); ++i) {
       overlay_buffer_[i].reset(new BufferWrapper());
       overlay_buffer_[i]->Initialize(gr_context_.get(),
                                      gfx::kNullAcceleratedWidget, overlay_size);
@@ -269,7 +269,7 @@ void SurfacelessSkiaGlRenderer::PostRenderFrameTask(
     std::unique_ptr<gfx::GpuFence> gpu_fence) {
   switch (result) {
     case gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS:
-      for (size_t i = 0; i < arraysize(buffers_); ++i) {
+      for (size_t i = 0; i < base::size(buffers_); ++i) {
         buffers_[i].reset(new BufferWrapper());
         if (!buffers_[i]->Initialize(gr_context_.get(), widget_,
                                      primary_plane_rect_.size()))

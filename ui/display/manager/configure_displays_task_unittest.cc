@@ -5,9 +5,9 @@
 #include <stddef.h>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/manager/configure_displays_task.h"
 #include "ui/display/manager/fake_display_snapshot.h"
@@ -101,7 +101,7 @@ TEST_F(ConfigureDisplaysTaskTest, ConfigureWithTwoDisplay) {
       &ConfigureDisplaysTaskTest::ConfigureCallback, base::Unretained(this));
 
   std::vector<DisplayConfigureRequest> requests;
-  for (size_t i = 0; i < arraysize(displays_); ++i) {
+  for (size_t i = 0; i < base::size(displays_); ++i) {
     requests.push_back(DisplayConfigureRequest(
         displays_[i].get(), displays_[i]->native_mode(), gfx::Point()));
   }
@@ -166,7 +166,7 @@ TEST_F(ConfigureDisplaysTaskTest, ConfigureWithTwoDisplayFails) {
   delegate_.set_max_configurable_pixels(1);
 
   std::vector<DisplayConfigureRequest> requests;
-  for (size_t i = 0; i < arraysize(displays_); ++i) {
+  for (size_t i = 0; i < base::size(displays_); ++i) {
     requests.push_back(DisplayConfigureRequest(
         displays_[i].get(), displays_[i]->native_mode(), gfx::Point()));
   }
@@ -192,7 +192,7 @@ TEST_F(ConfigureDisplaysTaskTest, ConfigureWithTwoDisplaysPartialSuccess) {
   delegate_.set_max_configurable_pixels(small_mode_.size().GetArea());
 
   std::vector<DisplayConfigureRequest> requests;
-  for (size_t i = 0; i < arraysize(displays_); ++i) {
+  for (size_t i = 0; i < base::size(displays_); ++i) {
     requests.push_back(DisplayConfigureRequest(
         displays_[i].get(), displays_[i]->native_mode(), gfx::Point()));
   }
@@ -219,7 +219,7 @@ TEST_F(ConfigureDisplaysTaskTest, AsyncConfigureWithTwoDisplaysPartialSuccess) {
   delegate_.set_max_configurable_pixels(small_mode_.size().GetArea());
 
   std::vector<DisplayConfigureRequest> requests;
-  for (size_t i = 0; i < arraysize(displays_); ++i) {
+  for (size_t i = 0; i < base::size(displays_); ++i) {
     requests.push_back(DisplayConfigureRequest(
         displays_[i].get(), displays_[i]->native_mode(), gfx::Point()));
   }

@@ -11,8 +11,8 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/icu_test_util.h"
@@ -111,7 +111,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
       "fr", "he", "nb",          "pt-BR", "pt-PT", "zh-CN", "zh-TW",
   };
 
-  for (size_t i = 0; i < arraysize(filenames); ++i) {
+  for (size_t i = 0; i < base::size(filenames); ++i) {
     base::FilePath filename = new_locale_dir.AppendASCII(
         filenames[i] + ".pak");
     base::WriteFile(filename, "", 0);

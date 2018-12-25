@@ -9,7 +9,7 @@
 #include <map>
 
 #include "base/lazy_instance.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 
 namespace ui {
 
@@ -160,7 +160,7 @@ const struct KeyCodeTable {
 class KeyCodeMap {
  public:
   KeyCodeMap() {
-    for (size_t i = 0; i < arraysize(kKeyCodeTable); ++i) {
+    for (size_t i = 0; i < base::size(kKeyCodeTable); ++i) {
       map_dom_key_[kKeyCodeTable[i].dom_code] = kKeyCodeTable[i].keyboard_code;
       map_key_dom_[kKeyCodeTable[i].keyboard_code] = kKeyCodeTable[i].dom_code;
     }

@@ -9,7 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
@@ -116,7 +116,7 @@ ComponentExtensionIMEManagerDelegate::~ComponentExtensionIMEManagerDelegate() {
 }
 
 ComponentExtensionIMEManager::ComponentExtensionIMEManager() {
-  for (size_t i = 0; i < arraysize(kLoginLayoutWhitelist); ++i) {
+  for (size_t i = 0; i < base::size(kLoginLayoutWhitelist); ++i) {
     login_layout_set_.insert(kLoginLayoutWhitelist[i]);
   }
 }

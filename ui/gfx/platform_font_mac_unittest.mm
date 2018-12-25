@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #include "base/mac/mac_util.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/font.h"
 
@@ -286,7 +286,7 @@ TEST(PlatformFontMacTest, ValidateFontHeight) {
   gfx::Font::FontStyle styles[] = {gfx::Font::NORMAL, gfx::Font::ITALIC,
                                    gfx::Font::UNDERLINE};
 
-  for (size_t i = 0; i < arraysize(styles); ++i) {
+  for (size_t i = 0; i < base::size(styles); ++i) {
     SCOPED_TRACE(testing::Message() << "Font::FontStyle: " << styles[i]);
     // Include the range of sizes used by ResourceBundle::FontStyle (-1 to +8).
     for (int delta = -1; delta <= 8; ++delta) {

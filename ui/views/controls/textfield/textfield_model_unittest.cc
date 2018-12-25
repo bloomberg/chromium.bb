@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/auto_reset.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -1881,9 +1881,9 @@ TEST_F(TextfieldModelTest, Transpose) {
 
   TextfieldModel model(nullptr);
 
-  EXPECT_EQ(all_tests.size(), arraysize(test_strings));
+  EXPECT_EQ(all_tests.size(), base::size(test_strings));
 
-  for (size_t i = 0; i < arraysize(test_strings); i++) {
+  for (size_t i = 0; i < base::size(test_strings); i++) {
     for (size_t j = 0; j < all_tests[i].size(); j++) {
       SCOPED_TRACE(testing::Message() << "Testing case " << i << ", " << j
                                       << " with string " << test_strings[i]);

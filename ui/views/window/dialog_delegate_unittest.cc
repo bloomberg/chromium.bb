@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event_processor.h"
@@ -227,7 +227,7 @@ TEST_F(DialogTest, HitTest_HiddenTitle) {
       {1000, HTNOWHERE},
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     gfx::Point point(cases[i].point, cases[i].point);
     EXPECT_EQ(cases[i].hit, frame->NonClientHitTest(point))
         << " case " << i << " at point " << cases[i].point;
@@ -250,7 +250,7 @@ TEST_F(DialogTest, HitTest_HiddenTitleNoCloseButton) {
       {50, HTCLIENT}, {60, HTCLIENT},  {1000, HTNOWHERE},
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     gfx::Point point(cases[i].point, cases[i].point);
     EXPECT_EQ(cases[i].hit, frame->NonClientHitTest(point))
         << " case " << i << " at point " << cases[i].point;
@@ -272,7 +272,7 @@ TEST_F(DialogTest, HitTest_WithTitle) {
       {50, HTCLIENT}, {60, HTCLIENT},  {1000, HTNOWHERE},
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     gfx::Point point(cases[i].point, cases[i].point);
     EXPECT_EQ(cases[i].hit, frame->NonClientHitTest(point))
         << " at point " << cases[i].point;

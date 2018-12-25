@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_node.h"
@@ -62,7 +62,7 @@ TEST(AXGeneratedTreeTest, TestTreeGeneratorNoPermutations) {
   };
 
   int n = generator.UniqueTreeCount();
-  ASSERT_EQ(static_cast<int>(arraysize(EXPECTED_TREES)), n);
+  ASSERT_EQ(static_cast<int>(base::size(EXPECTED_TREES)), n);
 
   for (int i = 0; i < n; ++i) {
     AXTree tree;
@@ -96,7 +96,7 @@ TEST(AXGeneratedTreeTest, TestTreeGeneratorWithPermutations) {
   };
 
   int n = generator.UniqueTreeCount();
-  ASSERT_EQ(static_cast<int>(arraysize(EXPECTED_TREES)), n);
+  ASSERT_EQ(static_cast<int>(base::size(EXPECTED_TREES)), n);
 
   for (int i = 0; i < n; i++) {
     AXTree tree;

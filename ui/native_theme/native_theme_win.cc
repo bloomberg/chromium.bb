@@ -12,7 +12,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
@@ -980,7 +980,7 @@ HRESULT NativeThemeWin::PaintScrollbarArrow(
   if (handle && draw_theme_) {
     int index = part - kScrollbarDownArrow;
     DCHECK_GE(index, 0);
-    DCHECK_LT(static_cast<size_t>(index), arraysize(state_id_matrix));
+    DCHECK_LT(static_cast<size_t>(index), base::size(state_id_matrix));
     int state_id = state_id_matrix[index][state];
 
     // Hovering means that the cursor is over the scroolbar, but not over the

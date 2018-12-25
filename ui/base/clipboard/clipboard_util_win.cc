@@ -9,7 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -54,15 +54,11 @@ bool GetUrlFromHDrop(IDataObject* data_object,
       return false;
 
     wchar_t filename[MAX_PATH];
-    if (DragQueryFileW(hdrop.get(), 0, filename, arraysize(filename))) {
+    if (DragQueryFileW(hdrop.get(), 0, filename, base::size(filename))) {
       wchar_t url_buffer[INTERNET_MAX_URL_LENGTH];
       if (0 == _wcsicmp(PathFindExtensionW(filename), L".url") &&
-          GetPrivateProfileStringW(L"InternetShortcut",
-                                   L"url",
-                                   0,
-                                   url_buffer,
-                                   arraysize(url_buffer),
-                                   filename)) {
+          GetPrivateProfileStringW(L"InternetShortcut", L"url", 0, url_buffer,
+                                   base::size(url_buffer), filename)) {
         *url = GURL(url_buffer);
         PathRemoveExtension(filename);
         title->assign(PathFindFileName(filename));

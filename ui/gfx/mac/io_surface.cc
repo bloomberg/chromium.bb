@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/mach_logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/icc_profile.h"
@@ -45,7 +45,7 @@ int32_t BytesPerElement(gfx::BufferFormat format, int plane) {
       return 8;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       static int32_t bytes_per_element[] = {1, 2};
-      DCHECK_LT(static_cast<size_t>(plane), arraysize(bytes_per_element));
+      DCHECK_LT(static_cast<size_t>(plane), base::size(bytes_per_element));
       return bytes_per_element[plane];
     case gfx::BufferFormat::R_16:
     case gfx::BufferFormat::RG_88:

@@ -8,8 +8,8 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
@@ -2307,7 +2307,7 @@ TEST_F(WindowTreeClientTest, ModalTypeSuccess) {
   // MODAL_TYPE_NONE, and make sure it succeeds each time.
   ui::ModalType kModalTypes[] = {ui::MODAL_TYPE_WINDOW, ui::MODAL_TYPE_SYSTEM,
                                  ui::MODAL_TYPE_NONE};
-  for (size_t i = 0; i < arraysize(kModalTypes); i++) {
+  for (size_t i = 0; i < base::size(kModalTypes); i++) {
     window.SetProperty(client::kModalKey, kModalTypes[i]);
     // Ack change as succeeding.
     ASSERT_TRUE(window_tree()->AckSingleChangeOfType(

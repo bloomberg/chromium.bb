@@ -14,8 +14,8 @@
 
 #include "base/format_macros.h"
 #include "base/i18n/break_iterator.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -500,7 +500,7 @@ TEST_F(RenderTextTest, DefaultStyles) {
   RenderText* render_text = GetRenderText();
   EXPECT_TRUE(render_text->text().empty());
   const char* const cases[] = {kWeak, kLtr, "Hello", kRtl, "", ""};
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     EXPECT_TRUE(test_api()->colors().EqualsValueForTesting(SK_ColorBLACK));
     EXPECT_TRUE(test_api()->baselines().EqualsValueForTesting(NORMAL_BASELINE));
     EXPECT_TRUE(test_api()->font_size_overrides().EqualsValueForTesting(0));
@@ -519,7 +519,7 @@ TEST_F(RenderTextTest, SetStyles) {
   render_text->SetWeight(Font::Weight::BOLD);
   render_text->SetStyle(UNDERLINE, false);
   const char* const cases[] = {kWeak, kLtr, "Hello", kRtl, "", ""};
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     EXPECT_TRUE(test_api()->colors().EqualsValueForTesting(color));
     EXPECT_TRUE(test_api()->baselines().EqualsValueForTesting(SUPERSCRIPT));
     EXPECT_TRUE(
@@ -736,7 +736,7 @@ TEST_F(RenderTextTest, ObscuredText) {
       "hop on pop",                              // Check LTR word boundaries.
       "\u05d0\u05d1 \u05d0\u05d2 \u05d1\u05d2",  // Check RTL word boundaries.
   };
-  for (size_t i = 0; i < arraysize(texts); ++i) {
+  for (size_t i = 0; i < base::size(texts); ++i) {
     base::string16 text = UTF8ToUTF16(texts[i]);
     TestVisualCursorMotionInObscuredField(render_text, text, SELECTION_NONE);
     TestVisualCursorMotionInObscuredField(render_text, text, SELECTION_RETAIN);
@@ -904,7 +904,7 @@ TEST_F(RenderTextTest, ElidedText) {
   render_text->SetFontList(FontList("serif, Sans serif, 12px"));
   render_text->SetElideBehavior(ELIDE_TAIL);
 
-  for (size_t i = 0; i < arraysize(cases); i++) {
+  for (size_t i = 0; i < base::size(cases); i++) {
     SCOPED_TRACE(base::StringPrintf("Testing cases[%" PRIuS "] '%ls'", i,
                                     cases[i].text));
 
@@ -1122,7 +1122,7 @@ TEST_F(RenderTextTest, TruncatedText) {
 
   RenderText* render_text = GetRenderText();
   render_text->set_truncate_length(5);
-  for (size_t i = 0; i < arraysize(cases); i++) {
+  for (size_t i = 0; i < base::size(cases); i++) {
     render_text->SetText(WideToUTF16(cases[i].text));
     EXPECT_EQ(WideToUTF16(cases[i].text), render_text->text());
     EXPECT_EQ(WideToUTF16(cases[i].display_text), render_text->GetDisplayText())
@@ -1554,7 +1554,7 @@ TEST_F(RenderTextTest, GetDisplayTextDirection) {
         base::i18n::RIGHT_TO_LEFT : base::i18n::LEFT_TO_RIGHT;
 
     // Ensure that directionality modes yield the correct text directions.
-    for (size_t j = 0; j < arraysize(cases); j++) {
+    for (size_t j = 0; j < base::size(cases); j++) {
       render_text->SetText(UTF8ToUTF16(cases[j].text));
       render_text->SetDirectionalityMode(DIRECTIONALITY_FROM_TEXT);
       EXPECT_EQ(render_text->GetDisplayTextDirection(),cases[j].text_direction);
@@ -1827,7 +1827,7 @@ TEST_F(RenderTextTest, GraphemePositions) {
   };
 
   RenderText* render_text = GetRenderText();
-  for (size_t i = 0; i < arraysize(cases); i++) {
+  for (size_t i = 0; i < base::size(cases); i++) {
     SCOPED_TRACE(base::StringPrintf("Testing cases[%" PRIuS "]", i));
     render_text->SetText(cases[i].text);
 
@@ -1851,7 +1851,7 @@ TEST_F(RenderTextTest, MidGraphemeSelectionBounds) {
 
   RenderText* render_text = GetRenderText();
   render_text->SetDisplayRect(Rect(100, 1000));
-  for (size_t i = 0; i < arraysize(cases); i++) {
+  for (size_t i = 0; i < base::size(cases); i++) {
     SCOPED_TRACE(base::StringPrintf("Testing cases[%" PRIuS "]", i));
     render_text->SetText(cases[i]);
     EXPECT_TRUE(render_text->IsValidLogicalIndex(1));
@@ -1881,7 +1881,7 @@ TEST_F(RenderTextTest, FindCursorPosition) {
   const char* kTestStrings[] = {kLtrRtl, kLtrRtlLtr, kRtlLtr, kRtlLtrRtl};
   RenderText* render_text = GetRenderText();
   render_text->SetDisplayRect(Rect(0, 0, 100, 20));
-  for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
+  for (size_t i = 0; i < base::size(kTestStrings); ++i) {
     SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));
     render_text->SetText(UTF8ToUTF16(kTestStrings[i]));
     for (size_t j = 0; j < render_text->text().length(); ++j) {
@@ -1905,7 +1905,7 @@ TEST_F(RenderTextTest, FindCursorPositionMultiline) {
   render_text->SetDisplayRect(Rect(25, 1000));
   render_text->SetMultiline(true);
 
-  for (size_t i = 0; i < arraysize(kTestStrings); i++) {
+  for (size_t i = 0; i < base::size(kTestStrings); i++) {
     render_text->SetText(UTF8ToUTF16(kTestStrings[i]));
     test_api()->EnsureLayout();
     EXPECT_EQ(2u, test_api()->lines().size());
@@ -1947,7 +1947,7 @@ TEST_F(RenderTextTest, FindCursorPosition_GraphemeBoundaries) {
 
   RenderText* render_text = GetRenderText();
   render_text->SetDisplayRect(gfx::Rect(100, 30));
-  for (size_t i = 0; i < arraysize(cases); i++) {
+  for (size_t i = 0; i < base::size(cases); i++) {
     SCOPED_TRACE(base::StringPrintf("Testing case %" PRIuS "", i));
     render_text->SetText(cases[i].text);
     test_api()->EnsureLayout();
@@ -1985,7 +1985,7 @@ TEST_F(RenderTextTest, EdgeSelectionModels) {
   };
 
   RenderText* render_text = GetRenderText();
-  for (size_t i = 0; i < arraysize(cases); i++) {
+  for (size_t i = 0; i < base::size(cases); i++) {
     render_text->SetText(cases[i].text);
     bool ltr = (cases[i].expected_text_direction == base::i18n::LEFT_TO_RIGHT);
 
@@ -2017,7 +2017,7 @@ TEST_F(RenderTextTest, SelectAll) {
     EXPECT_EQ(render_text->selection_model(), SelectionModel());
 
     // Test the weak, LTR, RTL, and Bidi string cases.
-    for (size_t j = 0; j < arraysize(cases); j++) {
+    for (size_t j = 0; j < base::size(cases); j++) {
       render_text->SetText(UTF8ToUTF16(cases[j]));
       render_text->SelectAll(false);
       EXPECT_EQ(render_text->selection_model(), expected_forwards);
@@ -2637,7 +2637,7 @@ TEST_F(RenderTextTest, StringSizeHeight) {
   const FontList& larger_font_list = default_font_list.DeriveWithSizeDelta(24);
   EXPECT_GT(larger_font_list.GetHeight(), default_font_list.GetHeight());
 
-  for (size_t i = 0; i < arraysize(cases); i++) {
+  for (size_t i = 0; i < base::size(cases); i++) {
     ResetRenderTextInstance();
     RenderText* render_text = GetRenderText();
     render_text->SetFontList(default_font_list);
@@ -2781,7 +2781,7 @@ TEST_F(RenderTextTest, SetDisplayOffset) {
     { ALIGN_CENTER, kEnlargement },
   };
 
-  for (size_t i = 0; i < arraysize(small_content_cases); i++) {
+  for (size_t i = 0; i < base::size(small_content_cases); i++) {
     render_text->SetHorizontalAlignment(small_content_cases[i].alignment);
     render_text->SetDisplayOffset(small_content_cases[i].offset);
     EXPECT_EQ(0, render_text->GetUpdatedDisplayOffset().x());
@@ -2816,7 +2816,7 @@ TEST_F(RenderTextTest, SetDisplayOffset) {
     { ALIGN_CENTER, kEnlargement, (kEnlargement - 1) / 2 },
   };
 
-  for (size_t i = 0; i < arraysize(large_content_cases); i++) {
+  for (size_t i = 0; i < base::size(large_content_cases); i++) {
     render_text->SetHorizontalAlignment(large_content_cases[i].alignment);
     render_text->SetDisplayOffset(large_content_cases[i].offset);
     EXPECT_EQ(large_content_cases[i].expected_offset,
@@ -2864,14 +2864,14 @@ TEST_F(RenderTextTest, SameFontForParentheses) {
   };
 
   RenderText* render_text = GetRenderText();
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     base::string16 text = cases[i].text;
     const size_t start_paren_char_index = text.find('(');
     ASSERT_NE(base::string16::npos, start_paren_char_index);
     const size_t end_paren_char_index = text.find(')');
     ASSERT_NE(base::string16::npos, end_paren_char_index);
 
-    for (size_t j = 0; j < arraysize(punctuation_pairs); ++j) {
+    for (size_t j = 0; j < base::size(punctuation_pairs); ++j) {
       text[start_paren_char_index] = punctuation_pairs[j].left_char;
       text[end_paren_char_index] = punctuation_pairs[j].right_char;
       render_text->SetText(text);
@@ -2935,7 +2935,7 @@ TEST_F(RenderTextTest, SelectWord) {
     { 16, 13, 16 },
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     render_text->SetCursorPosition(cases[i].cursor);
     render_text->SelectWord();
     EXPECT_EQ(Range(cases[i].selection_start, cases[i].selection_end),
@@ -3106,7 +3106,7 @@ TEST_F(RenderTextTest, SelectionKeepsLigatures) {
   RenderText* render_text = GetRenderText();
   render_text->set_selection_color(SK_ColorRED);
 
-  for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
+  for (size_t i = 0; i < base::size(kTestStrings); ++i) {
     render_text->SetText(UTF8ToUTF16(kTestStrings[i]));
     const int expected_width = render_text->GetStringSize().width();
     render_text->SelectRange({0, 1});
@@ -3168,7 +3168,7 @@ TEST_F(RenderTextTest, Multiline_MinWidth) {
   render_text->SetMultiline(true);
   render_text->SetWordWrapBehavior(WRAP_LONG_WORDS);
 
-  for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
+  for (size_t i = 0; i < base::size(kTestStrings); ++i) {
     SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
     render_text->SetText(UTF8ToUTF16(kTestStrings[i]));
     render_text->Draw(canvas());
@@ -3225,7 +3225,7 @@ TEST_F(RenderTextTest, Multiline_NormalWidth) {
   render_text->SetWordWrapBehavior(WRAP_LONG_WORDS);
   render_text->SetHorizontalAlignment(ALIGN_TO_HEAD);
 
-  for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
+  for (size_t i = 0; i < base::size(kTestStrings); ++i) {
     SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
     render_text->SetText(UTF8ToUTF16(kTestStrings[i].text));
     DrawVisualText();
@@ -3270,7 +3270,7 @@ TEST_F(RenderTextTest, Multiline_SufficientWidth) {
   render_text->SetDisplayRect(Rect(1000, 1000));
   render_text->SetMultiline(true);
 
-  for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
+  for (size_t i = 0; i < base::size(kTestStrings); ++i) {
     SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
     render_text->SetText(UTF8ToUTF16(kTestStrings[i]));
     render_text->Draw(canvas());
@@ -3297,7 +3297,7 @@ TEST_F(RenderTextTest, Multiline_Newline) {
   render_text->SetDisplayRect(Rect(200, 1000));
   render_text->SetMultiline(true);
 
-  for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
+  for (size_t i = 0; i < base::size(kTestStrings); ++i) {
     SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
     render_text->SetText(UTF8ToUTF16(kTestStrings[i].text));
     render_text->Draw(canvas());
@@ -3343,7 +3343,7 @@ TEST_F(RenderTextTest, Multiline_NewlineCharacterReplacement) {
       "abc\ndef", "a \n b ", "ab\n", "a\n\nb", "\nab", "\n",
   };
 
-  for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
+  for (size_t i = 0; i < base::size(kTestStrings); ++i) {
     SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
     ResetRenderTextInstance();
     RenderText* render_text = GetRenderText();
@@ -3399,7 +3399,7 @@ TEST_F(RenderTextTest, Multiline_HorizontalAlignment) {
   render_text->SetDisplayRect(Rect(100, 1000));
   render_text->SetMultiline(true);
 
-  for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
+  for (size_t i = 0; i < base::size(kTestStrings); ++i) {
     SCOPED_TRACE(testing::Message("kTestStrings[")
                  << i << "] = " << kTestStrings[i].text);
     render_text->SetText(UTF8ToUTF16(kTestStrings[i].text));
@@ -3453,7 +3453,7 @@ TEST_F(RenderTextTest, Multiline_WordWrapBehavior) {
   SetGlyphWidth(kGlyphSize);
   render_text->SetDisplayRect(Rect(0, 0, kGlyphSize * 4, 0));
 
-  for (size_t i = 0; i < arraysize(kTestScenarios); ++i) {
+  for (size_t i = 0; i < base::size(kTestScenarios); ++i) {
     SCOPED_TRACE(base::StringPrintf(
         "kTestScenarios[%" PRIuS "] %d", i, kTestScenarios[i].behavior));
     render_text->SetWordWrapBehavior(kTestScenarios[i].behavior);
@@ -3511,7 +3511,7 @@ TEST_F(RenderTextTest, Multiline_LineBreakerBehavior) {
   SetGlyphWidth(kGlyphSize);
   render_text->SetDisplayRect(Rect(0, 0, kGlyphSize * 4, 0));
 
-  for (size_t i = 0; i < arraysize(kTestScenarios); ++i) {
+  for (size_t i = 0; i < base::size(kTestScenarios); ++i) {
     SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
     render_text->SetText(UTF8ToUTF16(kTestScenarios[i].text));
     render_text->SetWordWrapBehavior(kTestScenarios[i].behavior);
@@ -3574,7 +3574,7 @@ TEST_F(RenderTextTest, Multiline_SurrogatePairsOrCombiningChars) {
         { Range(0, 2), Range(2, 3), Range(3, 5) } },
   };
 
-  for (size_t i = 0; i < arraysize(kTestScenarios); ++i) {
+  for (size_t i = 0; i < base::size(kTestScenarios); ++i) {
     SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
     render_text->SetText(kTestScenarios[i].text);
     render_text->SetDisplayRect(Rect(0, 0, kTestScenarios[i].display_width, 0));
@@ -3618,7 +3618,7 @@ TEST_F(RenderTextTest, Multiline_ZeroWidthChars) {
 
   EXPECT_EQ(3u, test_api()->lines().size());
   for (size_t j = 0;
-       j < std::min(arraysize(char_ranges), test_api()->lines().size()); ++j) {
+       j < std::min(base::size(char_ranges), test_api()->lines().size()); ++j) {
     SCOPED_TRACE(base::StringPrintf("%" PRIuS "-th line", j));
     int segment_size = test_api()->lines()[j].segments.size();
     ASSERT_GT(segment_size, 0);
@@ -3637,7 +3637,7 @@ TEST_F(RenderTextTest, NewlineWithoutMultilineFlag) {
   RenderText* render_text = GetRenderText();
   render_text->SetDisplayRect(Rect(200, 1000));
 
-  for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
+  for (size_t i = 0; i < base::size(kTestStrings); ++i) {
     SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
     render_text->SetText(UTF8ToUTF16(kTestStrings[i]));
     render_text->Draw(canvas());
@@ -3659,7 +3659,7 @@ TEST_F(RenderTextTest, HarfBuzz_HorizontalPositions) {
 
   RenderTextHarfBuzz* render_text = GetRenderText();
 
-  for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
+  for (size_t i = 0; i < base::size(kTestStrings); ++i) {
     SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
     render_text->SetText(UTF8ToUTF16(kTestStrings[i].text));
 
@@ -3726,7 +3726,7 @@ TEST_F(RenderTextTest, HarfBuzz_Clusters) {
   run.shape.glyph_count = 4;
   run.shape.glyph_to_char.resize(4);
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     std::copy(cases[i].glyph_to_char, cases[i].glyph_to_char + 4,
               run.shape.glyph_to_char.begin());
     run.font_params.is_rtl = cases[i].is_rtl;
@@ -3769,7 +3769,7 @@ TEST_F(RenderTextTest, HarfBuzz_SubglyphGraphemeCases) {
 
   RenderTextHarfBuzz* render_text = GetRenderText();
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     SCOPED_TRACE(base::StringPrintf("Case %" PRIuS, i));
 
     base::string16 text = UTF8ToUTF16(cases[i]);
@@ -3825,7 +3825,7 @@ TEST_F(RenderTextTest, HarfBuzz_SubglyphGraphemePartition) {
   RenderTextHarfBuzz* render_text = GetRenderText();
   render_text->SetText(UTF8ToUTF16("abcd"));
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     std::copy(cases[i].glyph_to_char, cases[i].glyph_to_char + 2,
               run.shape.glyph_to_char.begin());
     run.font_params.is_rtl = cases[i].is_rtl;
@@ -4141,7 +4141,7 @@ TEST_F(RenderTextTest, GlyphBounds) {
                                 "\u0645\u0631\u062D\u0628\u0627"};
   RenderText* render_text = GetRenderText();
 
-  for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
+  for (size_t i = 0; i < base::size(kTestStrings); ++i) {
     render_text->SetText(UTF8ToUTF16(kTestStrings[i]));
     test_api()->EnsureLayout();
 
@@ -4875,7 +4875,7 @@ TEST_F(RenderTextTest, LineEndSelections) {
   render_text->SetMultiline(true);
   render_text->SetDisplayRect(Rect(200, 1000));
 
-  for (size_t i = 0; i < arraysize(cases); i++) {
+  for (size_t i = 0; i < base::size(cases); i++) {
     SCOPED_TRACE(base::StringPrintf("Testing case %" PRIuS "", i));
     render_text->SetText(UTF8ToUTF16(cases[i].text));
     test_api()->EnsureLayout();

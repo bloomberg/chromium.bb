@@ -14,8 +14,8 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -87,12 +87,11 @@ class MockResourceBundleDelegate : public ui::ResourceBundle::Delegate {
 // Returns |bitmap_data| with |custom_chunk| inserted after the IHDR chunk.
 void AddCustomChunk(const base::StringPiece& custom_chunk,
                     std::vector<unsigned char>* bitmap_data) {
-  EXPECT_LT(arraysize(kPngMagic) + kPngChunkMetadataSize, bitmap_data->size());
-  EXPECT_TRUE(std::equal(
-      bitmap_data->begin(),
-      bitmap_data->begin() + arraysize(kPngMagic),
-      kPngMagic));
-  auto ihdr_start = bitmap_data->begin() + arraysize(kPngMagic);
+  EXPECT_LT(base::size(kPngMagic) + kPngChunkMetadataSize, bitmap_data->size());
+  EXPECT_TRUE(std::equal(bitmap_data->begin(),
+                         bitmap_data->begin() + base::size(kPngMagic),
+                         kPngMagic));
+  auto ihdr_start = bitmap_data->begin() + base::size(kPngMagic);
   char ihdr_length_data[sizeof(uint32_t)];
   for (size_t i = 0; i < sizeof(uint32_t); ++i)
     ihdr_length_data[i] = *(ihdr_start + i);
@@ -516,9 +515,10 @@ TEST_F(ResourceBundleImageTest, GetImageNamedFallback1x) {
   CreateDataPackWithSingleBitmap(data_path, 10, base::StringPiece());
   // 2x data pack bitmap has custom chunk to indicate that the 2x bitmap is not
   // available and that GRIT fell back to 1x.
-  CreateDataPackWithSingleBitmap(data_2x_path, 10, base::StringPiece(
-      reinterpret_cast<const char*>(kPngScaleChunk),
-      arraysize(kPngScaleChunk)));
+  CreateDataPackWithSingleBitmap(
+      data_2x_path, 10,
+      base::StringPiece(reinterpret_cast<const char*>(kPngScaleChunk),
+                        base::size(kPngScaleChunk)));
 
   // Load the regular and 2x pak files.
   ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
@@ -554,12 +554,14 @@ TEST_F(ResourceBundleImageTest, GetImageNamedFallback1xRounding) {
 
   CreateDataPackWithSingleBitmap(data_path, 8, base::StringPiece());
   // Mark 140% and 180% images as requiring 1x fallback.
-  CreateDataPackWithSingleBitmap(data_140P_path, 8, base::StringPiece(
-    reinterpret_cast<const char*>(kPngScaleChunk),
-    arraysize(kPngScaleChunk)));
-  CreateDataPackWithSingleBitmap(data_180P_path, 8, base::StringPiece(
-    reinterpret_cast<const char*>(kPngScaleChunk),
-    arraysize(kPngScaleChunk)));
+  CreateDataPackWithSingleBitmap(
+      data_140P_path, 8,
+      base::StringPiece(reinterpret_cast<const char*>(kPngScaleChunk),
+                        base::size(kPngScaleChunk)));
+  CreateDataPackWithSingleBitmap(
+      data_180P_path, 8,
+      base::StringPiece(reinterpret_cast<const char*>(kPngScaleChunk),
+                        base::size(kPngScaleChunk)));
 
   ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
   resource_bundle->AddDataPackFromPath(data_path, SCALE_FACTOR_100P);

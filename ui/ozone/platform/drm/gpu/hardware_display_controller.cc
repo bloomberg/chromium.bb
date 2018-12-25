@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/libdrm/src/include/drm/drm_fourcc.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -356,7 +357,7 @@ void HardwareDisplayController::AllocateCursorBuffers() {
   gfx::Size max_cursor_size = GetMaximumCursorSize(GetDrmDevice()->get_fd());
   SkImageInfo info = SkImageInfo::MakeN32Premul(max_cursor_size.width(),
                                                 max_cursor_size.height());
-  for (size_t i = 0; i < arraysize(cursor_buffers_); ++i) {
+  for (size_t i = 0; i < base::size(cursor_buffers_); ++i) {
     cursor_buffers_[i] = std::make_unique<DrmDumbBuffer>(GetDrmDevice());
     // Don't register a framebuffer for cursors since they are special (they
     // aren't modesetting buffers and drivers may fail to register them due to

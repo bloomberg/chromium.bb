@@ -17,9 +17,9 @@
 #include "base/files/file_path.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/pickle.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_hglobal.h"
@@ -1000,7 +1000,7 @@ static void CreateValidFileNameFromTitle(const GURL& url,
     base::i18n::ReplaceIllegalCharactersInPath(validated, '-');
   }
   static const wchar_t extension[] = L".url";
-  static const size_t max_length = MAX_PATH - arraysize(extension);
+  static const size_t max_length = MAX_PATH - base::size(extension);
   if (validated->size() > max_length)
     validated->erase(max_length);
   *validated += extension;

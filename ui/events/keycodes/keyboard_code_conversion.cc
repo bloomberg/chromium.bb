@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
@@ -254,7 +254,7 @@ DomCode UsLayoutKeyboardCodeToDomCode(KeyboardCode key_code) {
 
 KeyboardCode DomCodeToUsLayoutKeyboardCode(DomCode dom_code) {
   const DomCodeToKeyboardCodeEntry* end =
-      kDomCodeToKeyboardCodeMap + arraysize(kDomCodeToKeyboardCodeMap);
+      kDomCodeToKeyboardCodeMap + base::size(kDomCodeToKeyboardCodeMap);
   const DomCodeToKeyboardCodeEntry* found = std::lower_bound(
       kDomCodeToKeyboardCodeMap, end, dom_code,
       [](const DomCodeToKeyboardCodeEntry& a, DomCode b) {

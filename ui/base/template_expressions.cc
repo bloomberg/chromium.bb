@@ -7,12 +7,13 @@
 #include <stddef.h>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "net/base/escape.h"
 
 namespace {
 const char kLeader[] = "$i18n";
-const size_t kLeaderSize = arraysize(kLeader) - 1;
+const size_t kLeaderSize = base::size(kLeader) - 1;
 const char kKeyOpen = '{';
 const char kKeyClose = '}';
 

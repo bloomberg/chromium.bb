@@ -9,7 +9,7 @@
 #include <cmath>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libpng/png.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -923,13 +923,13 @@ TEST(PNGCodec, EncodeWithComment) {
       "\x00\x00\x00\x18tEXthave some\x00spaces in both\x8d\x69\x34\x2d";
 
   EXPECT_NE(std::search(encoded.begin(), encoded.end(), kExpected1,
-                        kExpected1 + arraysize(kExpected1)),
+                        kExpected1 + base::size(kExpected1)),
             encoded.end());
   EXPECT_NE(std::search(encoded.begin(), encoded.end(), kExpected2,
-                        kExpected2 + arraysize(kExpected2)),
+                        kExpected2 + base::size(kExpected2)),
             encoded.end());
   EXPECT_NE(std::search(encoded.begin(), encoded.end(), kExpected3,
-                        kExpected3 + arraysize(kExpected3)),
+                        kExpected3 + base::size(kExpected3)),
             encoded.end());
 }
 
