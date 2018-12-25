@@ -8,6 +8,7 @@
 
 #include "apps/switches.h"
 #include "base/process/launch.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
@@ -53,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
   base::CommandLine new_cmdline(cmdline.GetProgram());
   new_cmdline.CopySwitchesFrom(cmdline, kSwitchesToCopy,
-                               arraysize(kSwitchesToCopy));
+                               base::size(kSwitchesToCopy));
 
   base::FilePath app_path = test_data_dir_
       .AppendASCII("platform_apps")
@@ -89,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
   base::CommandLine new_cmdline(cmdline.GetProgram());
   new_cmdline.CopySwitchesFrom(cmdline, kSwitchesToCopy,
-                               arraysize(kSwitchesToCopy));
+                               base::size(kSwitchesToCopy));
 
   base::FilePath app_path = test_data_dir_
       .AppendASCII("platform_apps")
