@@ -7,7 +7,7 @@
 #include <cmath>
 #include <limits>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 
@@ -34,7 +34,7 @@ TEST(ScrollOffsetTest, Add) {
     { ScrollOffset(3.1f - 4.3f, 5.1f + 1.3f), f1 - f2 }
   };
 
-  for (size_t i = 0; i < arraysize(scroll_offset_tests); ++i)
+  for (size_t i = 0; i < base::size(scroll_offset_tests); ++i)
     EXPECT_EQ(scroll_offset_tests[i].expected.ToString(),
               scroll_offset_tests[i].actual.ToString());
 }
@@ -50,7 +50,7 @@ TEST(ScrollOffsetTest, Negative) {
     { ScrollOffset(0.3f, -0.3f), -ScrollOffset(-0.3f, 0.3f) }
   };
 
-  for (size_t i = 0; i < arraysize(scroll_offset_tests); ++i)
+  for (size_t i = 0; i < base::size(scroll_offset_tests); ++i)
     EXPECT_EQ(scroll_offset_tests[i].expected.ToString(),
               scroll_offset_tests[i].actual.ToString());
 }
@@ -68,7 +68,7 @@ TEST(ScrollOffsetTest, Scale) {
     { 0, 1.2f, 3.3f, 5.6f }
   };
 
-  for (size_t i = 0; i < arraysize(float_values); ++i) {
+  for (size_t i = 0; i < base::size(float_values); ++i) {
     ScrollOffset v(float_values[i][0], float_values[i][1]);
     v.Scale(float_values[i][2], float_values[i][3]);
     EXPECT_EQ(v.x(), float_values[i][0] * float_values[i][2]);
@@ -87,7 +87,7 @@ TEST(ScrollOffsetTest, Scale) {
     { 0, 1.2f, 3.3f }
   };
 
-  for (size_t i = 0; i < arraysize(single_values); ++i) {
+  for (size_t i = 0; i < base::size(single_values); ++i) {
     ScrollOffset v(single_values[i][0], single_values[i][1]);
     v.Scale(single_values[i][2]);
     EXPECT_EQ(v.x(), single_values[i][0] * single_values[i][2]);

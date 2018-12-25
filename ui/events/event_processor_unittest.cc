@@ -5,8 +5,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/event_target_iterator.h"
@@ -403,8 +403,8 @@ TEST_F(EventProcessorTest, HandlerSequence) {
 
   std::string expected[] = { "PreR", "PreC", "PreG", "G", "PostG", "PostC",
       "PostR", "PreR", "PreC", "C", "PostC", "PostR", "PreR", "R", "PostR" };
-  EXPECT_EQ(std::vector<std::string>(
-      expected, expected + arraysize(expected)), recorder);
+  EXPECT_EQ(std::vector<std::string>(expected, expected + base::size(expected)),
+            recorder);
 
   root()->RemovePreTargetHandler(&pre_root);
   child_r->RemovePreTargetHandler(&pre_child);

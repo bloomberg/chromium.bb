@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
@@ -182,7 +182,7 @@ TEST_F(InputMethodUtilTest, GetInputMethodMediumNameTest) {
         "xkb:us:colemak:eng",    "xkb:de:neo:ger",    "xkb:es:cat:cat",
         "xkb:gb:dvorak:eng",
     };
-    const int len = arraysize(input_method_id);
+    const int len = base::size(input_method_id);
     for (int i = 0; i < len; ++i) {
       InputMethodDescriptor desc = GetDesc(input_method_id[i], "", "", "");
       base::string16 medium_name = util_.GetInputMethodMediumName(desc);
@@ -195,7 +195,7 @@ TEST_F(InputMethodUtilTest, GetInputMethodMediumNameTest) {
     const char* const input_method_id[] = {
         pinyin_ime_id, zhuyin_ime_id,
     };
-    const int len = arraysize(input_method_id);
+    const int len = base::size(input_method_id);
     for (int i = 0; i < len; ++i) {
       InputMethodDescriptor desc = GetDesc(input_method_id[i], "", "", "");
       base::string16 medium_name = util_.GetInputMethodMediumName(desc);
@@ -495,15 +495,15 @@ TEST_F(InputMethodUtilTest, TestInputMethodIDMigration) {
       {"unknown", "unknown"},
   };
   std::vector<std::string> input_method_ids;
-  for (size_t i = 0; i < arraysize(migration_cases); ++i)
+  for (size_t i = 0; i < base::size(migration_cases); ++i)
     input_method_ids.push_back(migration_cases[i][0]);
   // Duplicated hangul_2set.
   input_method_ids.push_back("ime:ko:hangul_2set");
 
   util_.MigrateInputMethods(&input_method_ids);
 
-  EXPECT_EQ(arraysize(migration_cases), input_method_ids.size());
-  for (size_t i = 0; i < arraysize(migration_cases); ++i) {
+  EXPECT_EQ(base::size(migration_cases), input_method_ids.size());
+  for (size_t i = 0; i < base::size(migration_cases); ++i) {
     EXPECT_EQ(
         extension_ime_util::GetInputMethodIDByEngineID(migration_cases[i][1]),
         input_method_ids[i]);

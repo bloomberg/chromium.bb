@@ -9,10 +9,10 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/env.h"
@@ -222,7 +222,7 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
 
   XDisplay* display = gfx::GetXDisplay();
   unsigned int esc_keycode = XKeysymToKeycode(display, XK_Escape);
-  for (size_t i = 0; i < arraysize(kModifiersMasks); ++i) {
+  for (size_t i = 0; i < base::size(kModifiersMasks); ++i) {
     XUngrabKey(display, esc_keycode, kModifiersMasks[i], grab_input_window_);
   }
 
@@ -254,7 +254,7 @@ bool X11WholeScreenMoveLoop::GrabPointer(gfx::NativeCursor cursor) {
 void X11WholeScreenMoveLoop::GrabEscKey() {
   XDisplay* display = gfx::GetXDisplay();
   unsigned int esc_keycode = XKeysymToKeycode(display, XK_Escape);
-  for (size_t i = 0; i < arraysize(kModifiersMasks); ++i) {
+  for (size_t i = 0; i < base::size(kModifiersMasks); ++i) {
     XGrabKey(display, esc_keycode, kModifiersMasks[i], grab_input_window_,
              x11::False, GrabModeAsync, GrabModeAsync);
   }

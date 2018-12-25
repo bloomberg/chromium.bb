@@ -5,6 +5,7 @@
 #import "ui/views/controls/scrollbar/cocoa_scroll_bar.h"
 
 #import "base/mac/sdk_forward_declarations.h"
+#include "base/stl_util.h"
 #include "cc/paint/paint_shader.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -259,7 +260,7 @@ void CocoaScrollBar::OnPaint(gfx::Canvas* canvas) {
   cc::PaintFlags gradient;
   gradient.setShader(cc::PaintShader::MakeLinearGradient(
       gradient_bounds, kScrollerTrackGradientColors, nullptr,
-      arraysize(kScrollerTrackGradientColors), SkShader::kClamp_TileMode));
+      base::size(kScrollerTrackGradientColors), SkShader::kClamp_TileMode));
   canvas->DrawRect(track_rect, gradient);
 
   // Draw the inner border: top if horizontal, left if vertical.

@@ -8,8 +8,8 @@
 #include <string.h>
 #include <cmath>
 
-#include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -45,7 +45,7 @@ unsigned int UpdateX11EventFlags(int ui_flags, unsigned int old_x_flags) {
       {ui::EF_RIGHT_MOUSE_BUTTON, Button3Mask},
   };
   unsigned int new_x_flags = old_x_flags;
-  for (size_t i = 0; i < arraysize(flags); ++i) {
+  for (size_t i = 0; i < base::size(flags); ++i) {
     if (ui_flags & flags[i].ui)
       new_x_flags |= flags[i].x;
     else

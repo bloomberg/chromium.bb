@@ -118,7 +118,7 @@ def dump_capabilities(out, dev, identifier=None):
 
   if has_abs:
     out.write('    %s,\n' % absinfo_identifier)
-    out.write('    arraysize(%s),\n' % absinfo_identifier)
+    out.write('    base::size(%s),\n' % absinfo_identifier)
 
   out.write('};\n')
 

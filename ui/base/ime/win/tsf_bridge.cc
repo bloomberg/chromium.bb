@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/win/scoped_variant.h"
 #include "ui/base/ime/text_input_client.h"
@@ -354,7 +355,7 @@ bool TSFBridgeImpl::InitializeDocumentMapInternal() {
       TEXT_INPUT_TYPE_EMAIL,     TEXT_INPUT_TYPE_NUMBER,
       TEXT_INPUT_TYPE_TELEPHONE, TEXT_INPUT_TYPE_URL,
   };
-  for (size_t i = 0; i < arraysize(kTextInputTypes); ++i) {
+  for (size_t i = 0; i < base::size(kTextInputTypes); ++i) {
     const TextInputType input_type = kTextInputTypes[i];
     Microsoft::WRL::ComPtr<ITfContext> context;
     Microsoft::WRL::ComPtr<ITfDocumentMgr> document_manager;

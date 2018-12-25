@@ -18,8 +18,8 @@
 #include "base/containers/flat_map.h"
 #include "base/debug/alias.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -92,7 +92,7 @@ HRESULT FindDirectWriteFontForLOGFONT(IDWriteFactory* factory,
   if (SUCCEEDED(hr)) {
     hr = font_collection->GetFontFromFontFace(font_face.Get(), dwrite_font);
     if (SUCCEEDED(hr)) {
-      wcscpy_s(font_info->lfFaceName, arraysize(font_info->lfFaceName),
+      wcscpy_s(font_info->lfFaceName, base::size(font_info->lfFaceName),
                converted_font.lfFaceName);
     }
   }
@@ -155,12 +155,12 @@ HRESULT GetMatchingDirectWriteFont(LOGFONT* font_info,
     }
 
     if (wcsncmp(font_info->lfFaceName, metrics.lfMessageFont.lfFaceName,
-                arraysize(font_info->lfFaceName))) {
+                base::size(font_info->lfFaceName))) {
       // First try the GDI compat route to get a matching DirectWrite font. If
       // that succeeds we are good. If not find a matching font from the font
       // collection.
-      wcscpy_s(font_info->lfFaceName, arraysize(font_info->lfFaceName),
-                metrics.lfMessageFont.lfFaceName);
+      wcscpy_s(font_info->lfFaceName, base::size(font_info->lfFaceName),
+               metrics.lfMessageFont.lfFaceName);
       hr = FindDirectWriteFontForLOGFONT(factory, font_info, dwrite_font);
       if (SUCCEEDED(hr))
         return hr;
@@ -219,7 +219,7 @@ HRESULT GetMatchingDirectWriteFont(LOGFONT* font_info,
 
   base::string16 font_name;
   gfx::GetFamilyNameFromDirectWriteFont(*dwrite_font, &font_name);
-  wcscpy_s(font_info->lfFaceName, arraysize(font_info->lfFaceName),
+  wcscpy_s(font_info->lfFaceName, base::size(font_info->lfFaceName),
            font_name.c_str());
   return hr;
 }
@@ -377,7 +377,7 @@ HRESULT GetFamilyNameFromDirectWriteFont(IDWriteFont* dwrite_font,
   // Add support for retrieving the family for the current locale.
   wchar_t family_name_for_locale[MAX_PATH] = {0};
   hr = family_names->GetString(0, family_name_for_locale,
-                               arraysize(family_name_for_locale));
+                               base::size(family_name_for_locale));
   if (FAILED(hr))
     CHECK(false);
 
@@ -513,7 +513,7 @@ std::string PlatformFontWin::GetLocalizedFontName() const {
   // locale, GetTextFace() returns the localized name.
   base::win::ScopedSelectObject font(memory_dc.Get(), font_ref_->hfont());
   wchar_t localized_font_name[LF_FACESIZE];
-  int length = GetTextFace(memory_dc.Get(), arraysize(localized_font_name),
+  int length = GetTextFace(memory_dc.Get(), base::size(localized_font_name),
                            &localized_font_name[0]);
   if (length <= 0)
     return GetFontName();

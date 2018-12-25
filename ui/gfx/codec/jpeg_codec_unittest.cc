@@ -6,7 +6,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 
@@ -174,9 +174,8 @@ TEST(JPEGCodec, InvalidRead) {
   std::vector<unsigned char> output;
   int outw, outh;
   JPEGCodec::Decode(kTopSitesMigrationTestImage,
-                    arraysize(kTopSitesMigrationTestImage),
-                    JPEGCodec::FORMAT_RGBA, &output,
-                    &outw, &outh);
+                    base::size(kTopSitesMigrationTestImage),
+                    JPEGCodec::FORMAT_RGBA, &output, &outw, &outh);
 }
 
 }  // namespace gfx

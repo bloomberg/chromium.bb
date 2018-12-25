@@ -8,7 +8,7 @@
 #include <map>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/gamepad/static_gamepad_mapping.h"
 #include "ui/events/ozone/gamepad/webgamepad_constants.h"
@@ -20,9 +20,9 @@ typedef bool (*GamepadMapperFunction)(uint16_t key,
                                       GamepadEventType* mapped_type,
                                       uint16_t* mapped_code);
 
-#define DO_MAPPING                                                   \
-  DoGamepadMapping(key_mapping, arraysize(key_mapping), abs_mapping, \
-                   arraysize(abs_mapping), type, code, mapped_type,  \
+#define DO_MAPPING                                                    \
+  DoGamepadMapping(key_mapping, base::size(key_mapping), abs_mapping, \
+                   base::size(abs_mapping), type, code, mapped_type,  \
                    mapped_code)
 
 bool DoGamepadMapping(const KeyMapEntry* key_mapping,
@@ -523,7 +523,7 @@ class StaticGamepadMapper : public GamepadMapper {
 };
 
 GamepadMapper* GetStaticGamepadMapper(uint16_t vendor_id, uint16_t product_id) {
-  for (size_t i = 0; i < arraysize(AvailableMappings); i++) {
+  for (size_t i = 0; i < base::size(AvailableMappings); i++) {
     if (AvailableMappings[i].vendor_id == vendor_id &&
         AvailableMappings[i].product_id == product_id) {
       return new StaticGamepadMapper(AvailableMappings[i].mapper);

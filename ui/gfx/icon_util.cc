@@ -9,7 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/resource_util.h"
 #include "base/win/scoped_gdi_object.h"
@@ -159,7 +159,7 @@ const int IconUtil::kIconDimensions[] = {
   256   // Used by Vista onwards for large icons.
 };
 
-const size_t IconUtil::kNumIconDimensions = arraysize(kIconDimensions);
+const size_t IconUtil::kNumIconDimensions = base::size(kIconDimensions);
 const size_t IconUtil::kNumIconDimensionsUpToMediumSize = 9;
 
 base::win::ScopedHICON IconUtil::CreateHICONFromSkBitmap(

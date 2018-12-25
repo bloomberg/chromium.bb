@@ -4,7 +4,7 @@
 
 #include "ui/views/examples/bubble_example.h"
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -95,7 +95,7 @@ void BubbleExample::CreateExampleView(View* container) {
 
 void BubbleExample::ButtonPressed(Button* sender, const ui::Event& event) {
   static int arrow_index = 0, color_index = 0;
-  static const int count = arraysize(arrows);
+  static const int count = base::size(arrows);
   arrow_index = (arrow_index + count + (event.IsShiftDown() ? -1 : 1)) % count;
   BubbleBorder::Arrow arrow = arrows[arrow_index];
   if (event.IsControlDown())
@@ -104,7 +104,7 @@ void BubbleExample::ButtonPressed(Button* sender, const ui::Event& event) {
     arrow = BubbleBorder::FLOAT;
 
   ExampleBubble* bubble = new ExampleBubble(sender, arrow);
-  bubble->set_color(colors[(color_index++) % arraysize(colors)]);
+  bubble->set_color(colors[(color_index++) % base::size(colors)]);
 
   if (sender == no_shadow_)
     bubble->set_shadow(BubbleBorder::NO_SHADOW);

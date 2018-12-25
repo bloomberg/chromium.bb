@@ -6,7 +6,7 @@
 
 #include <xf86drmMode.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
@@ -33,7 +33,7 @@ const ContentProtectionMapping kContentProtectionStates[] = {
 uint32_t GetContentProtectionValue(drmModePropertyRes* property,
                                    display::HDCPState state) {
   std::string name;
-  for (size_t i = 0; i < arraysize(kContentProtectionStates); ++i) {
+  for (size_t i = 0; i < base::size(kContentProtectionStates); ++i) {
     if (kContentProtectionStates[i].state == state) {
       name = kContentProtectionStates[i].name;
       break;
@@ -141,7 +141,7 @@ bool DrmDisplay::GetHDCPState(display::HDCPState* state) {
 
   std::string name =
       GetEnumNameForProperty(connector.get(), hdcp_property.get());
-  for (size_t i = 0; i < arraysize(kContentProtectionStates); ++i) {
+  for (size_t i = 0; i < base::size(kContentProtectionStates); ++i) {
     if (name == kContentProtectionStates[i].name) {
       *state = kContentProtectionStates[i].state;
       VLOG(3) << "HDCP state: " << *state << " (" << name << ")";

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/files/scoped_file.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_fence.h"
@@ -193,7 +194,7 @@ bool GLImageNativePixmap::Initialize(gfx::NativePixmap* pixmap,
       if (has_dma_buf_import_modifier &&
           pixmap->GetDmaBufModifier(0) != gfx::NativePixmapPlane::kNoModifier) {
         uint64_t modifier = pixmap->GetDmaBufModifier(pixmap_plane);
-        DCHECK(attrs_plane < arraysize(kLinuxDrmModifiers));
+        DCHECK(attrs_plane < base::size(kLinuxDrmModifiers));
         attrs.push_back(kLinuxDrmModifiers[attrs_plane]);
         attrs.push_back(modifier & 0xffffffff);
         attrs.push_back(kLinuxDrmModifiers[attrs_plane] + 1);

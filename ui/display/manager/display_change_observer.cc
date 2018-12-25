@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/display/display.h"
@@ -316,7 +317,7 @@ ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
 
 // static
 float DisplayChangeObserver::FindDeviceScaleFactor(float dpi) {
-  for (size_t i = 0; i < arraysize(kThresholdTableForInternal); ++i) {
+  for (size_t i = 0; i < base::size(kThresholdTableForInternal); ++i) {
     if (dpi > kThresholdTableForInternal[i].dpi)
       return kThresholdTableForInternal[i].device_scale_factor;
   }

@@ -5,8 +5,8 @@
 #include "ui/keyboard/resources/keyboard_resource_util.h"
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/keyboard/grit/keyboard_resources.h"
 #include "ui/keyboard/grit/keyboard_resources_map.h"
@@ -93,7 +93,7 @@ const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
       {"keyboard/sounds/keypress-standard.wav",
        IDR_KEYBOARD_SOUNDS_KEYPRESS_STANDARD},
   };
-  *size = arraysize(kKeyboardResources);
+  *size = base::size(kKeyboardResources);
   return kKeyboardResources;
 }
 

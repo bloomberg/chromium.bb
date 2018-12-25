@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -269,7 +269,7 @@ TEST(EventTest, KeyEvent) {
     { VKEY_OEM_3, EF_SHIFT_DOWN, '~' },
   };
 
-  for (size_t i = 0; i < arraysize(kTestData); ++i) {
+  for (size_t i = 0; i < base::size(kTestData); ++i) {
     KeyEvent key(ET_KEY_PRESSED,
                  kTestData[i].key_code,
                  kTestData[i].flags);

@@ -4,7 +4,7 @@
 
 #include "ui/base/accelerators/accelerator_manager.h"
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accelerators/test_accelerator_target.h"
 #include "ui/events/event_constants.h"
@@ -26,7 +26,7 @@ const int kAcceleratorModifiers[] = {EF_SHIFT_DOWN, EF_CONTROL_DOWN,
 // kAcceleratorModifiers used to determine which flags are set.
 int BuildAcceleratorModifier(int id) {
   int result = 0;
-  for (size_t i = 0; i < arraysize(kAcceleratorModifiers); ++i) {
+  for (size_t i = 0; i < base::size(kAcceleratorModifiers); ++i) {
     if (((1 << i) & id) != 0)
       result |= kAcceleratorModifiers[i];
   }
@@ -124,7 +124,7 @@ TEST_F(AcceleratorManagerTest, Process) {
   TestAcceleratorTarget target;
 
   // Test all cases of possible modifiers.
-  for (size_t i = 0; i < (1 << arraysize(kAcceleratorModifiers)); ++i) {
+  for (size_t i = 0; i < (1 << base::size(kAcceleratorModifiers)); ++i) {
     const int modifiers = BuildAcceleratorModifier(i);
     Accelerator accelerator(GetAccelerator(VKEY_A, modifiers));
     manager_.Register({accelerator}, AcceleratorManager::kNormalPriority,
@@ -146,7 +146,7 @@ TEST_F(AcceleratorManagerTest, Process) {
     EXPECT_FALSE(manager_.Process(GetAccelerator(VKEY_SHIFT, modifiers)))
         << i;  // different vkey
 
-    for (size_t test_i = 0; test_i < (1 << arraysize(kAcceleratorModifiers));
+    for (size_t test_i = 0; test_i < (1 << base::size(kAcceleratorModifiers));
          ++test_i) {
       if (test_i == i)
         continue;

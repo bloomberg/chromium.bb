@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chromeos/ime/input_methods.h"
@@ -21,7 +21,7 @@ namespace input_method {
 const char kLanguageDelimiter[] = ",";
 
 InputMethodWhitelist::InputMethodWhitelist() {
-  for (size_t i = 0; i < arraysize(kInputMethods); ++i) {
+  for (size_t i = 0; i < base::size(kInputMethods); ++i) {
     supported_input_methods_.insert(kInputMethods[i].input_method_id);
   }
 }
@@ -38,8 +38,8 @@ std::unique_ptr<InputMethodDescriptors>
 InputMethodWhitelist::GetSupportedInputMethods() const {
   std::unique_ptr<InputMethodDescriptors> input_methods(
       new InputMethodDescriptors);
-  input_methods->reserve(arraysize(kInputMethods));
-  for (size_t i = 0; i < arraysize(kInputMethods); ++i) {
+  input_methods->reserve(base::size(kInputMethods));
+  for (size_t i = 0; i < base::size(kInputMethods); ++i) {
     std::vector<std::string> layouts;
     layouts.push_back(kInputMethods[i].xkb_layout_id);
 

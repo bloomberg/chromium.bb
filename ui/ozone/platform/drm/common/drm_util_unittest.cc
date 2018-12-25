@@ -9,6 +9,7 @@
 
 #include <map>
 
+#include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
@@ -324,7 +325,7 @@ TEST_F(DrmUtilTest, GetColorSpaceFromEdid) {
   SkMatrix44 expected_hpz32x_toXYZ50_matrix;
   expected_hpz32x_primaries.toXYZD50(&expected_hpz32x_toXYZ50_matrix);
   const std::vector<uint8_t> hpz32x_edid(kHPz32x,
-                                         kHPz32x + arraysize(kHPz32x) - 1);
+                                         kHPz32x + base::size(kHPz32x) - 1);
   const gfx::ColorSpace expected_hpz32x_color_space =
       gfx::ColorSpace::CreateCustom(
           expected_hpz32x_toXYZ50_matrix,
@@ -348,7 +349,8 @@ TEST_F(DrmUtilTest, GetColorSpaceFromEdid) {
                                                               .fWY = 0.329102f};
   SkMatrix44 expected_samus_toXYZ50_matrix;
   expected_samus_primaries.toXYZD50(&expected_samus_toXYZ50_matrix);
-  const std::vector<uint8_t> samus_edid(kSamus, kSamus + arraysize(kSamus) - 1);
+  const std::vector<uint8_t> samus_edid(kSamus,
+                                        kSamus + base::size(kSamus) - 1);
   const gfx::ColorSpace expected_samus_color_space =
       gfx::ColorSpace::CreateCustom(
           expected_samus_toXYZ50_matrix,
@@ -372,7 +374,7 @@ TEST_F(DrmUtilTest, GetColorSpaceFromEdid) {
                                                             .fWY = 0.328125f};
   SkMatrix44 expected_eve_toXYZ50_matrix;
   expected_eve_primaries.toXYZD50(&expected_eve_toXYZ50_matrix);
-  const std::vector<uint8_t> eve_edid(kEve, kEve + arraysize(kEve) - 1);
+  const std::vector<uint8_t> eve_edid(kEve, kEve + base::size(kEve) - 1);
   const gfx::ColorSpace expected_eve_color_space =
       gfx::ColorSpace::CreateCustom(
           expected_eve_toXYZ50_matrix,
@@ -387,7 +389,7 @@ TEST_F(DrmUtilTest, GetColorSpaceFromEdid) {
 
   // Test with gamma marked as non-existent.
   const std::vector<uint8_t> no_gamma_edid(
-      kEdidWithNoGamma, kEdidWithNoGamma + arraysize(kEdidWithNoGamma) - 1);
+      kEdidWithNoGamma, kEdidWithNoGamma + base::size(kEdidWithNoGamma) - 1);
   const gfx::ColorSpace no_gamma_color_space =
       GetColorSpaceFromEdid(display::EdidParser(no_gamma_edid));
   EXPECT_FALSE(no_gamma_color_space.IsValid());
@@ -412,7 +414,7 @@ TEST_F(DrmUtilTest, GetInvalidColorSpaceFromEdid) {
       1);
 
   const std::vector<uint8_t> invalid_edid(
-      kInvalidEdid, kInvalidEdid + arraysize(kInvalidEdid) - 1);
+      kInvalidEdid, kInvalidEdid + base::size(kInvalidEdid) - 1);
   const gfx::ColorSpace invalid_color_space =
       GetColorSpaceFromEdid(display::EdidParser(invalid_edid));
   EXPECT_FALSE(invalid_color_space.IsValid());
@@ -423,7 +425,7 @@ TEST_F(DrmUtilTest, GetInvalidColorSpaceFromEdid) {
       2);
 
   const std::vector<uint8_t> sst210_edid(kSST210,
-                                         kSST210 + arraysize(kSST210) - 1);
+                                         kSST210 + base::size(kSST210) - 1);
   const gfx::ColorSpace sst210_color_space =
       GetColorSpaceFromEdid(display::EdidParser(sst210_edid));
   EXPECT_FALSE(sst210_color_space.IsValid()) << sst210_color_space.ToString();
@@ -434,7 +436,7 @@ TEST_F(DrmUtilTest, GetInvalidColorSpaceFromEdid) {
       1);
 
   const std::vector<uint8_t> sst210_edid_2(
-      kSST210Corrected, kSST210Corrected + arraysize(kSST210Corrected) - 1);
+      kSST210Corrected, kSST210Corrected + base::size(kSST210Corrected) - 1);
   const gfx::ColorSpace sst210_color_space_2 =
       GetColorSpaceFromEdid(display::EdidParser(sst210_edid_2));
   EXPECT_FALSE(sst210_color_space_2.IsValid())
@@ -447,7 +449,7 @@ TEST_F(DrmUtilTest, GetInvalidColorSpaceFromEdid) {
 
   const std::vector<uint8_t> broken_blue_edid(
       kBrokenBluePrimaries,
-      kBrokenBluePrimaries + arraysize(kBrokenBluePrimaries) - 1);
+      kBrokenBluePrimaries + base::size(kBrokenBluePrimaries) - 1);
   const gfx::ColorSpace broken_blue_color_space =
       GetColorSpaceFromEdid(display::EdidParser(broken_blue_edid));
   EXPECT_FALSE(broken_blue_color_space.IsValid())

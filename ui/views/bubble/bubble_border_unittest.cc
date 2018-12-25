@@ -8,7 +8,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
@@ -281,7 +281,7 @@ TEST_F(BubbleBorderTest, GetSizeForContentsSizeTest) {
       {BubbleBorder::NONE, kMediumSize, kMediumNoArrow},
       {BubbleBorder::FLOAT, kMediumSize, kMediumNoArrow}};
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     SCOPED_TRACE(base::StringPrintf("i=%d arrow=%d",
         static_cast<int>(i), cases[i].arrow));
 
@@ -355,7 +355,7 @@ TEST_F(BubbleBorderTest, GetBoundsOriginTest) {
          kAnchor.y() + (kAnchor.height() - kTotalSize.height()) / 2},
     };
 
-    for (size_t i = 0; i < arraysize(cases); ++i) {
+    for (size_t i = 0; i < base::size(cases); ++i) {
       SCOPED_TRACE(base::StringPrintf("shadow=%d i=%d arrow=%d",
                                       static_cast<int>(shadow),
                                       static_cast<int>(i), cases[i].arrow));

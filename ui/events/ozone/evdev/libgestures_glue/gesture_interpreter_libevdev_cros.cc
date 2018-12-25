@@ -8,7 +8,7 @@
 #include <libevdev/libevdev.h>
 #include <linux/input.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/timer/timer.h"
 #include "ui/events/base_event_utils.h"
@@ -462,7 +462,7 @@ void GestureInterpreterLibevdevCros::DispatchChangedKeys(
   unsigned long key_state_diff[EVDEV_BITS_TO_LONGS(KEY_CNT)];
 
   // Find changed keys.
-  for (unsigned long i = 0; i < arraysize(key_state_diff); ++i)
+  for (unsigned long i = 0; i < base::size(key_state_diff); ++i)
     key_state_diff[i] = new_key_state[i] ^ prev_key_state_[i];
 
   // Dispatch events for changed keys.

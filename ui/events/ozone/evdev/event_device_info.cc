@@ -8,7 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "ui/events/devices/device_util_linux.h"
 
@@ -198,35 +198,35 @@ bool EventDeviceInfo::Initialize(int fd, const base::FilePath& path) {
 }
 
 void EventDeviceInfo::SetEventTypes(const unsigned long* ev_bits, size_t len) {
-  AssignBitset(ev_bits, len, ev_bits_, arraysize(ev_bits_));
+  AssignBitset(ev_bits, len, ev_bits_, base::size(ev_bits_));
 }
 
 void EventDeviceInfo::SetKeyEvents(const unsigned long* key_bits, size_t len) {
-  AssignBitset(key_bits, len, key_bits_, arraysize(key_bits_));
+  AssignBitset(key_bits, len, key_bits_, base::size(key_bits_));
 }
 
 void EventDeviceInfo::SetRelEvents(const unsigned long* rel_bits, size_t len) {
-  AssignBitset(rel_bits, len, rel_bits_, arraysize(rel_bits_));
+  AssignBitset(rel_bits, len, rel_bits_, base::size(rel_bits_));
 }
 
 void EventDeviceInfo::SetAbsEvents(const unsigned long* abs_bits, size_t len) {
-  AssignBitset(abs_bits, len, abs_bits_, arraysize(abs_bits_));
+  AssignBitset(abs_bits, len, abs_bits_, base::size(abs_bits_));
 }
 
 void EventDeviceInfo::SetMscEvents(const unsigned long* msc_bits, size_t len) {
-  AssignBitset(msc_bits, len, msc_bits_, arraysize(msc_bits_));
+  AssignBitset(msc_bits, len, msc_bits_, base::size(msc_bits_));
 }
 
 void EventDeviceInfo::SetSwEvents(const unsigned long* sw_bits, size_t len) {
-  AssignBitset(sw_bits, len, sw_bits_, arraysize(sw_bits_));
+  AssignBitset(sw_bits, len, sw_bits_, base::size(sw_bits_));
 }
 
 void EventDeviceInfo::SetLedEvents(const unsigned long* led_bits, size_t len) {
-  AssignBitset(led_bits, len, led_bits_, arraysize(led_bits_));
+  AssignBitset(led_bits, len, led_bits_, base::size(led_bits_));
 }
 
 void EventDeviceInfo::SetProps(const unsigned long* prop_bits, size_t len) {
-  AssignBitset(prop_bits, len, prop_bits_, arraysize(prop_bits_));
+  AssignBitset(prop_bits, len, prop_bits_, base::size(prop_bits_));
 }
 
 void EventDeviceInfo::SetAbsInfo(unsigned int code,

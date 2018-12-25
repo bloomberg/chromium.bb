@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -170,15 +170,15 @@ void TextExample::CreateExampleView(View* container) {
   column_set->AddPaddingColumn(0, 8);
 
   h_align_cb_ = AddCombobox(layout, "H-Align", kHorizontalAligments,
-                            arraysize(kHorizontalAligments));
+                            base::size(kHorizontalAligments));
   eliding_cb_ = AddCombobox(layout, "Eliding", kElideBehaviors,
-                            arraysize(kElideBehaviors));
-  prefix_cb_ = AddCombobox(layout, "Prefix", kPrefixOptions,
-                           arraysize(kPrefixOptions));
+                            base::size(kElideBehaviors));
+  prefix_cb_ =
+      AddCombobox(layout, "Prefix", kPrefixOptions, base::size(kPrefixOptions));
   text_cb_ = AddCombobox(layout, "Example Text", kTextExamples,
-                         arraysize(kTextExamples));
+                         base::size(kTextExamples));
   weight_cb_ = AddCombobox(layout, "Font Weight", kWeightLabels,
-                           arraysize(kWeightLabels));
+                           base::size(kWeightLabels));
   weight_cb_->SelectValue(base::ASCIIToUTF16("Normal"));
 
   layout->StartRow(0, 0);

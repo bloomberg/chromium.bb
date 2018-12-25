@@ -15,8 +15,8 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/ports/SkTypeface_mac.h"
@@ -317,7 +317,7 @@ base::ScopedCFTypeRef<CTLineRef> RenderTextMac::EnsureLayoutInternal(
   const void* keys[] = {kCTFontAttributeName};
   const void* values[] = {ct_font};
   base::ScopedCFTypeRef<CFDictionaryRef> attributes(
-      CFDictionaryCreate(NULL, keys, values, arraysize(keys), NULL,
+      CFDictionaryCreate(NULL, keys, values, base::size(keys), NULL,
                          &kCFTypeDictionaryValueCallBacks));
 
   base::ScopedCFTypeRef<CFStringRef> cf_text(base::SysUTF16ToCFStringRef(text));

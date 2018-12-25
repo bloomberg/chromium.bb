@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -48,7 +49,7 @@ class GLImageIOSurfaceTestDelegate : public GLImageTestDelegateBase {
       corrected_color[2] = color[0];
       corrected_color[3] = color[3];
     } else {
-      memcpy(corrected_color, color, arraysize(corrected_color));
+      memcpy(corrected_color, color, base::size(corrected_color));
     }
 
     for (size_t plane = 0; plane < NumberOfPlanesForBufferFormat(format);

@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -313,7 +312,7 @@ TEST_F(CharacterComposerTest, HexadecimalComposition) {
   ExpectUnicodeKeyComposed(
       VKEY_RETURN, DomCode::ENTER, EF_NONE, '\r',
       base::string16(kMusicalKeyboard,
-                     kMusicalKeyboard + arraysize(kMusicalKeyboard)));
+                     kMusicalKeyboard + base::size(kMusicalKeyboard)));
 }
 
 TEST_F(CharacterComposerTest, HexadecimalCompositionPreedit) {

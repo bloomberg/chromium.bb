@@ -5,7 +5,7 @@
 #include <math.h>
 #include <stdint.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/codec/chromeos/jpeg_codec_robust_slow.h"
 
@@ -94,10 +94,10 @@ TEST(JPEGCodecRobustSlow, InvalidRead) {
   std::vector<unsigned char> output;
   int outw, outh;
   ASSERT_TRUE(JPEGCodecRobustSlow::Decode(
-      kTopSitesMigrationTestImage, arraysize(kTopSitesMigrationTestImage),
+      kTopSitesMigrationTestImage, base::size(kTopSitesMigrationTestImage),
       JPEGCodecRobustSlow::FORMAT_RGB, &output, &outw, &outh));
   ASSERT_TRUE(JPEGCodecRobustSlow::Decode(
-      kTopSitesMigrationTestImage, arraysize(kTopSitesMigrationTestImage),
+      kTopSitesMigrationTestImage, base::size(kTopSitesMigrationTestImage),
       JPEGCodecRobustSlow::FORMAT_RGBA, &output, &outw, &outh));
 }
 
