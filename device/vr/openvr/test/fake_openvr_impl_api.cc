@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <D3D11_1.h>
+#include <DXGI1_4.h>
+#include <wrl.h>
+#include <memory>
+
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "device/vr/openvr/test/test_helper.h"
 #include "device/vr/openvr/test/test_hook.h"
 #include "third_party/openvr/src/headers/openvr.h"
 #include "third_party/openvr/src/src/ivrclientcore.h"
-
-#include <D3D11_1.h>
-#include <DXGI1_4.h>
-#include <wrl.h>
-#include <memory>
 
 // TODO(https://crbug.com/892717): Update argument names to be consistent with
 // Chromium style guidelines.
@@ -440,7 +441,7 @@ void TestVRSystem::GetDXGIOutputInfo(int32_t* adapter_index) {
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> d3d11_device_context;
     if (SUCCEEDED(D3D11CreateDevice(
             adapter.Get(), D3D_DRIVER_TYPE_UNKNOWN, NULL, flags, feature_levels,
-            arraysize(feature_levels), D3D11_SDK_VERSION,
+            base::size(feature_levels), D3D11_SDK_VERSION,
             d3d11_device.GetAddressOf(), &feature_level_out,
             d3d11_device_context.GetAddressOf()))) {
       *adapter_index = i;

@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -77,7 +78,7 @@ void GamepadPlatformDataFetcherLinux::UpdateGamepadStrings(
   base::TruncateUTF8ToByteSize(id, Gamepad::kIdLengthCap - 1, &id);
   base::string16 tmp16 = base::UTF8ToUTF16(id);
   memset(pad->id, 0, sizeof(pad->id));
-  tmp16.copy(pad->id, arraysize(pad->id) - 1);
+  tmp16.copy(pad->id, base::size(pad->id) - 1);
 
   // Set the mapper string to "standard" if the gamepad has a standard mapping,
   // or the empty string otherwise.
@@ -87,7 +88,7 @@ void GamepadPlatformDataFetcherLinux::UpdateGamepadStrings(
                                  &mapping);
     tmp16 = base::UTF8ToUTF16(mapping);
     memset(pad->mapping, 0, sizeof(pad->mapping));
-    tmp16.copy(pad->mapping, arraysize(pad->mapping) - 1);
+    tmp16.copy(pad->mapping, base::size(pad->mapping) - 1);
   } else {
     pad->mapping[0] = 0;
   }

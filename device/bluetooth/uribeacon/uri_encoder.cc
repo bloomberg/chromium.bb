@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
 #include "uri_encoder.h"
+#include "base/stl_util.h"
 
 using base::StringPiece;
 
@@ -70,26 +70,26 @@ struct expansion* CommonLookupExpansionByValue(struct expansion* table,
 struct expansion* LookupExpansionByValue(const std::string& input,
                                          int input_index) {
   return CommonLookupExpansionByValue(
-      expansions_list, arraysize(expansions_list), input, input_index);
+      expansions_list, base::size(expansions_list), input, input_index);
 }
 
 struct expansion* LookupPrefixExpansionByValue(const std::string& input,
                                                int input_index) {
   return CommonLookupExpansionByValue(prefix_expansions_list,
-                                      arraysize(prefix_expansions_list), input,
+                                      base::size(prefix_expansions_list), input,
                                       input_index);
 }
 
 struct expansion* LookupExpansionByCode(const std::vector<uint8_t>& input,
                                         int input_index) {
-  if (input[input_index] >= arraysize(expansions_list))
+  if (input[input_index] >= base::size(expansions_list))
     return NULL;
   return &expansions_list[input[input_index]];
 }
 
 struct expansion* LookupPrefixExpansionByCode(const std::vector<uint8_t>& input,
                                               int input_index) {
-  if (input[input_index] >= arraysize(prefix_expansions_list))
+  if (input[input_index] >= base::size(prefix_expansions_list))
     return NULL;
   return &prefix_expansions_list[input[input_index]];
 }

@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -65,7 +64,7 @@ TEST(BluetoothDeviceTest, CanonicalizeAddressFormat_AcceptsAllValidFormats) {
     "1a2b3c4d5e6f",
   };
 
-  for (size_t i = 0; i < arraysize(kValidFormats); ++i) {
+  for (size_t i = 0; i < base::size(kValidFormats); ++i) {
     SCOPED_TRACE(std::string("Input format: '") + kValidFormats[i] + "'");
     EXPECT_EQ("1A:2B:3C:4D:5E:6F",
               BluetoothDevice::CanonicalizeAddress(kValidFormats[i]));
@@ -90,7 +89,7 @@ TEST(BluetoothDeviceTest, CanonicalizeAddressFormat_RejectsInvalidFormats) {
     "1:A2:B3:C4:D5:E6F",
   };
 
-  for (size_t i = 0; i < arraysize(kValidFormats); ++i) {
+  for (size_t i = 0; i < base::size(kValidFormats); ++i) {
     SCOPED_TRACE(std::string("Input format: '") + kValidFormats[i] + "'");
     EXPECT_EQ(std::string(),
               BluetoothDevice::CanonicalizeAddress(kValidFormats[i]));

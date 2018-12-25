@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "device/vr/windows/d3d11_texture_helper.h"
+#include "base/stl_util.h"
 #include "mojo/public/c/system/platform_handle.h"
 
 namespace {
@@ -559,8 +560,9 @@ bool D3D11TextureHelper::EnsureInitialized() {
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device;
   HRESULT hr = D3D11CreateDevice(
       adapter.Get(), D3D_DRIVER_TYPE_UNKNOWN, NULL, flags, feature_levels,
-      arraysize(feature_levels), D3D11_SDK_VERSION, d3d11_device.GetAddressOf(),
-      &feature_level_out, render_state_.d3d11_device_context_.GetAddressOf());
+      base::size(feature_levels), D3D11_SDK_VERSION,
+      d3d11_device.GetAddressOf(), &feature_level_out,
+      render_state_.d3d11_device_context_.GetAddressOf());
   if (SUCCEEDED(hr)) {
     hr = d3d11_device.As(&render_state_.d3d11_device_);
     if (FAILED(hr)) {
