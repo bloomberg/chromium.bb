@@ -11,6 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -210,7 +211,7 @@ bool ParseServerResponse(const GURL& server_url,
   }
 
   bool found = false;
-  for (size_t i = 0; i < arraysize(statusString2Enum); ++i) {
+  for (size_t i = 0; i < base::size(statusString2Enum); ++i) {
     if (status != statusString2Enum[i].string)
       continue;
 
@@ -426,13 +427,9 @@ std::string TimeZoneResponseData::ToStringForDebug() const {
   return base::StringPrintf(
       "dstOffset=%f, rawOffset=%f, timeZoneId='%s', timeZoneName='%s', "
       "error_message='%s', status=%u (%s)",
-      dstOffset,
-      rawOffset,
-      timeZoneId.c_str(),
-      timeZoneName.c_str(),
-      error_message.c_str(),
-      (unsigned)status,
-      (status < arraysize(status2string) ? status2string[status] : "unknown"));
+      dstOffset, rawOffset, timeZoneId.c_str(), timeZoneName.c_str(),
+      error_message.c_str(), (unsigned)status,
+      (status < base::size(status2string) ? status2string[status] : "unknown"));
 }
 
 }  // namespace chromeos

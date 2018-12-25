@@ -748,8 +748,8 @@ void FakeCryptohomeClient::NotifyLowDiskSpace(uint64_t disk_free_bytes) {
 // static
 std::vector<uint8_t> FakeCryptohomeClient::GetStubSystemSalt() {
   const char kStubSystemSalt[] = "stub_system_salt";
-  return std::vector<uint8_t>(kStubSystemSalt,
-                              kStubSystemSalt + arraysize(kStubSystemSalt) - 1);
+  return std::vector<uint8_t>(
+      kStubSystemSalt, kStubSystemSalt + base::size(kStubSystemSalt) - 1);
 }
 
 void FakeCryptohomeClient::ReturnProtobufMethodCallback(

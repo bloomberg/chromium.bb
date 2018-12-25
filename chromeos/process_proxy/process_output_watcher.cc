@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/third_party/icu/icu_utf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -58,7 +59,7 @@ ProcessOutputWatcher::ProcessOutputWatcher(
       weak_factory_(this) {
   CHECK_GE(out_fd, 0);
   // We want to be sure we will be able to add 0 at the end of the input, so -1.
-  read_buffer_capacity_ = arraysize(read_buffer_) - 1;
+  read_buffer_capacity_ = base::size(read_buffer_) - 1;
 }
 
 ProcessOutputWatcher::~ProcessOutputWatcher() = default;

@@ -14,10 +14,10 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -363,12 +363,12 @@ bool AccelerometerFileReader::InitializeAccelerometer(
     const base::FilePath& name,
     const std::string& location) {
   size_t config_index = 0;
-  for (; config_index < arraysize(kAccelerometerNames); ++config_index) {
+  for (; config_index < base::size(kAccelerometerNames); ++config_index) {
     if (location == kAccelerometerNames[config_index])
       break;
   }
 
-  if (config_index >= arraysize(kAccelerometerNames)) {
+  if (config_index >= base::size(kAccelerometerNames)) {
     LOG(ERROR) << "Unrecognized location: " << location << " for device "
                << name.MaybeAsASCII() << "\n";
     return false;
@@ -378,7 +378,7 @@ bool AccelerometerFileReader::InitializeAccelerometer(
   if (!ReadFileToDouble(iio_path.Append(kAccelerometerScaleFileName), &scale))
     return false;
 
-  const int kNumberAxes = arraysize(kAccelerometerAxes);
+  const int kNumberAxes = base::size(kAccelerometerAxes);
   for (size_t i = 0; i < kNumberAxes; ++i) {
     std::string accelerometer_index_path = base::StringPrintf(
         kAccelerometerScanIndexPathFormatString, kAccelerometerAxes[i]);
@@ -412,7 +412,7 @@ bool AccelerometerFileReader::InitializeLegacyAccelerometers(
       base::FilePath(kAccelerometerDevicePath).Append(name.BaseName());
   // Read configuration of each accelerometer axis from each accelerometer from
   // /sys/bus/iio/devices/iio:deviceX/.
-  for (size_t i = 0; i < arraysize(kAccelerometerNames); ++i) {
+  for (size_t i = 0; i < base::size(kAccelerometerNames); ++i) {
     configuration_.has[i] = false;
     // Read scale of accelerometer.
     std::string accelerometer_scale_path = base::StringPrintf(
@@ -430,7 +430,7 @@ bool AccelerometerFileReader::InitializeLegacyAccelerometers(
     }
 
     configuration_.has[i] = true;
-    for (size_t j = 0; j < arraysize(kLegacyAccelerometerAxes); ++j) {
+    for (size_t j = 0; j < base::size(kLegacyAccelerometerAxes); ++j) {
       configuration_.scale[i][j] = kMeanGravity / scale_divisor;
       std::string accelerometer_index_path = base::StringPrintf(
           kLegacyAccelerometerScanIndexPathFormatString,

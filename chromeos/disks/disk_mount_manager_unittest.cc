@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -574,10 +575,10 @@ class DiskMountManagerTest : public testing::Test {
   void InitDisksAndMountPoints() {
     // Disks should be  added first (when adding device mount points it is
     // expected that the corresponding disk is already added).
-    for (size_t i = 0; i < arraysize(kTestDisks); i++)
+    for (size_t i = 0; i < base::size(kTestDisks); i++)
       AddTestDisk(kTestDisks[i]);
 
-    for (size_t i = 0; i < arraysize(kTestMountPoints); i++)
+    for (size_t i = 0; i < base::size(kTestMountPoints); i++)
       AddTestMountPoint(kTestMountPoints[i]);
   }
 
