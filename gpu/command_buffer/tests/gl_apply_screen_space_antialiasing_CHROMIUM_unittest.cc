@@ -13,6 +13,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/stl_util.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -160,7 +161,7 @@ TEST_F(GLApplyScreenSpaceAntialiasingCHROMIUMTest, InternalFormat) {
 
   GLint formats[] = {GL_RGB, GL_RGBA, GL_ALPHA, GL_LUMINANCE,
                      GL_LUMINANCE_ALPHA};
-  for (size_t index = 0; index < arraysize(formats); index++) {
+  for (size_t index = 0; index < base::size(formats); index++) {
     glTexImage2D(GL_TEXTURE_2D, 0, formats[index], 1, 1, 0, formats[index],
                  GL_UNSIGNED_BYTE, nullptr);
     EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());

@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include "base/numerics/safe_math.h"
+#include "base/stl_util.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 
 namespace gpu {
@@ -212,7 +213,7 @@ RETURN_TYPE GetImmediateDataAs(const volatile COMMAND_TYPE& pod) {
 error::Error CommonDecoder::DoCommonCommand(unsigned int command,
                                             unsigned int arg_count,
                                             const volatile void* cmd_data) {
-  if (command < arraysize(command_info)) {
+  if (command < base::size(command_info)) {
     const CommandInfo& info = command_info[command];
     unsigned int info_arg_count = static_cast<unsigned int>(info.arg_count);
     if ((info.arg_flags == cmd::kFixed && arg_count == info_arg_count) ||

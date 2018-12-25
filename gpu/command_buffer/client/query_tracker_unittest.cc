@@ -13,6 +13,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/stl_util.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/mapped_memory.h"
@@ -59,7 +60,7 @@ TEST_F(QuerySyncManagerTest, Basic) {
   QuerySyncManager::QueryInfo infos[4];
   memset(&infos, 0xBD, sizeof(infos));
 
-  for (size_t ii = 0; ii < arraysize(infos); ++ii) {
+  for (size_t ii = 0; ii < base::size(infos); ++ii) {
     EXPECT_TRUE(sync_manager_->Alloc(&infos[ii]));
     ASSERT_TRUE(infos[ii].sync != nullptr);
     EXPECT_EQ(0, infos[ii].sync->process_count);
@@ -67,7 +68,7 @@ TEST_F(QuerySyncManagerTest, Basic) {
     EXPECT_EQ(0, infos[ii].submit_count);
   }
 
-  for (size_t ii = 0; ii < arraysize(infos); ++ii) {
+  for (size_t ii = 0; ii < base::size(infos); ++ii) {
     sync_manager_->Free(infos[ii]);
   }
 }
@@ -76,7 +77,7 @@ TEST_F(QuerySyncManagerTest, DontFree) {
   QuerySyncManager::QueryInfo infos[4];
   memset(&infos, 0xBD, sizeof(infos));
 
-  for (size_t ii = 0; ii < arraysize(infos); ++ii) {
+  for (size_t ii = 0; ii < base::size(infos); ++ii) {
     EXPECT_TRUE(sync_manager_->Alloc(&infos[ii]));
   }
 }

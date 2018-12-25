@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/error_state_mock.h"
@@ -174,7 +175,7 @@ void TestHelper::SetupTextureInitializationExpectations(
           GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
           GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
         };
-        for (size_t ii = 0; ii < arraysize(faces); ++ii) {
+        for (size_t ii = 0; ii < base::size(faces); ++ii) {
           EXPECT_CALL(*gl, TexImage2D(faces[ii], 0, GL_RGBA, 1, 1, 0, GL_RGBA,
                                       GL_UNSIGNED_BYTE, _))
               .Times(1)
@@ -954,7 +955,7 @@ void TestHelper::SetupProgramSuccessExpectations(
 
         static const GLenum kPropsArray[] = {GL_LOCATION, GL_TYPE,
                                              GL_ARRAY_SIZE};
-        static const size_t kPropsSize = arraysize(kPropsArray);
+        static const size_t kPropsSize = base::size(kPropsArray);
         EXPECT_CALL(
             *gl, GetProgramResourceiv(
                      service_id, GL_FRAGMENT_INPUT_NV, ii, kPropsSize,

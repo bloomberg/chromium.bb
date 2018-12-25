@@ -1,6 +1,7 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -13,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -173,7 +175,7 @@ constexpr const char* kExtensions[] = {
     "GL_OES_texture_half_float_linear",
     "GL_OES_texture_npot",
     "GL_OES_vertex_array_object"};
-constexpr size_t kExtensionCount = arraysize(kExtensions);
+constexpr size_t kExtensionCount = base::size(kExtensions);
 
 #if defined(GPU_FUZZER_USE_STUB)
 constexpr const char* kDriverVersions[] = {"OpenGL ES 2.0", "OpenGL ES 3.1",

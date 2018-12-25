@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/decoder_client.h"
@@ -608,7 +609,7 @@ GLES2Decoder::Error GLES2DecoderPassthroughImpl::DoCommandsImpl(
 
     const unsigned int arg_count = size - 1;
     unsigned int command_index = command - kFirstGLES2Command;
-    if (command_index < arraysize(command_info)) {
+    if (command_index < base::size(command_info)) {
       const CommandInfo& info = command_info[command_index];
       unsigned int info_arg_count = static_cast<unsigned int>(info.arg_count);
       if ((info.arg_flags == cmd::kFixed && arg_count == info_arg_count) ||
@@ -707,7 +708,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
     };
     RequestExtensions(api(), requestable_extensions,
                       kRequiredFunctionalityExtensions,
-                      arraysize(kRequiredFunctionalityExtensions));
+                      base::size(kRequiredFunctionalityExtensions));
 
     if (request_optional_extensions_) {
       static constexpr const char* kOptionalFunctionalityExtensions[] = {
@@ -754,7 +755,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
       };
       RequestExtensions(api(), requestable_extensions,
                         kOptionalFunctionalityExtensions,
-                        arraysize(kOptionalFunctionalityExtensions));
+                        base::size(kOptionalFunctionalityExtensions));
     }
 
     context->ReinitializeDynamicBindings();

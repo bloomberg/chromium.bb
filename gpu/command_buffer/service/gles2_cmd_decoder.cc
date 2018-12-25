@@ -30,6 +30,7 @@
 #include "base/numerics/ranges.h"
 #include "base/numerics/safe_math.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -5823,7 +5824,7 @@ error::Error GLES2DecoderImpl::DoCommandsImpl(unsigned int num_commands,
 
     const unsigned int arg_count = size - 1;
     unsigned int command_index = command - kFirstGLES2Command;
-    if (command_index < arraysize(command_info)) {
+    if (command_index < base::size(command_info)) {
       const CommandInfo& info = command_info[command_index];
       unsigned int info_arg_count = static_cast<unsigned int>(info.arg_count);
       if ((info.arg_flags == cmd::kFixed && arg_count == info_arg_count) ||
@@ -14026,7 +14027,7 @@ const CompressedFormatInfo kCompressedFormatInfoArray[] = {
 };
 
 const CompressedFormatInfo* GetCompressedFormatInfo(GLenum format) {
-  for (size_t i = 0; i < arraysize(kCompressedFormatInfoArray); i++) {
+  for (size_t i = 0; i < base::size(kCompressedFormatInfoArray); i++) {
     if (kCompressedFormatInfoArray[i].format == format) {
       return &kCompressedFormatInfoArray[i];
     }

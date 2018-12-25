@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -31,7 +32,7 @@ constexpr const char* kGpuTraceSourceNames[] = {
     "TraceCmd",       // kTraceDecoder,
     "Disjoint",       // kTraceDisjoint, // Used internally.
 };
-static_assert(NUM_TRACER_SOURCES == arraysize(kGpuTraceSourceNames),
+static_assert(NUM_TRACER_SOURCES == base::size(kGpuTraceSourceNames),
               "Trace source names must match enumeration.");
 
 TraceMarker::TraceMarker(const std::string& category, const std::string& name)

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/stl_util.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/error_state_mock.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -526,7 +527,7 @@ TEST_F(BufferManagerTest, BindBufferConflicts) {
       GL_TRANSFORM_FEEDBACK_BUFFER,
       GL_UNIFORM_BUFFER
     };
-    for (size_t ii = 0; ii < arraysize(kTargets); ++ii) {
+    for (size_t ii = 0; ii < base::size(kTargets); ++ii) {
       client_id++;
       service_id++;
       manager_->CreateBuffer(client_id, service_id);
@@ -534,7 +535,7 @@ TEST_F(BufferManagerTest, BindBufferConflicts) {
       ASSERT_TRUE(buffer != nullptr);
 
       EXPECT_TRUE(manager_->SetTarget(buffer, kTargets[ii]));
-      for (size_t jj = 0; jj < arraysize(kTargets); ++jj) {
+      for (size_t jj = 0; jj < base::size(kTargets); ++jj) {
         EXPECT_TRUE(manager_->SetTarget(buffer, kTargets[jj]));
       }
       EXPECT_EQ(kTargets[ii], GetInitialTarget(buffer));
@@ -553,7 +554,7 @@ TEST_F(BufferManagerTest, BindBufferConflicts) {
       GL_TRANSFORM_FEEDBACK_BUFFER,
       GL_UNIFORM_BUFFER
     };
-    for (size_t ii = 0; ii < arraysize(kTargets); ++ii) {
+    for (size_t ii = 0; ii < base::size(kTargets); ++ii) {
       client_id++;
       service_id++;
       manager_->CreateBuffer(client_id, service_id);
@@ -561,7 +562,7 @@ TEST_F(BufferManagerTest, BindBufferConflicts) {
       ASSERT_TRUE(buffer != nullptr);
 
       EXPECT_TRUE(manager_->SetTarget(buffer, kTargets[ii]));
-      for (size_t jj = 0; jj < arraysize(kTargets); ++jj) {
+      for (size_t jj = 0; jj < base::size(kTargets); ++jj) {
         EXPECT_TRUE(manager_->SetTarget(buffer, kTargets[jj]));
       }
     }

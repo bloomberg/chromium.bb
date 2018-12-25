@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 
 namespace gpu {
@@ -19,7 +20,7 @@ Mailbox::Mailbox() {
 }
 
 bool Mailbox::IsZero() const {
-  for (size_t i = 0; i < arraysize(name); ++i) {
+  for (size_t i = 0; i < base::size(name); ++i) {
     if (name[i])
       return false;
   }
