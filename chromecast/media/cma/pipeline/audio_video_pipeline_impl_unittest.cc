@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/media/base/decrypt_context_impl.h"
@@ -242,7 +243,7 @@ class PipelineHelper {
     frame_provider->Configure(
         std::vector<bool>(
             provider_delayed_pattern,
-            provider_delayed_pattern + arraysize(provider_delayed_pattern)),
+            provider_delayed_pattern + base::size(provider_delayed_pattern)),
         std::move(frame_generator));
     frame_provider->SetDelayFlush(true);
     return std::move(frame_provider);

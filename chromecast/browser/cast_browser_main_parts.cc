@@ -13,12 +13,12 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -147,7 +147,7 @@ void RunClosureOnSignal(int signum) {
 
 void RegisterClosureOnSignal(const base::Closure& closure) {
   DCHECK(!g_signal_closure);
-  DCHECK_GT(arraysize(kSignalsToRunClosure), 0U);
+  DCHECK_GT(base::size(kSignalsToRunClosure), 0U);
 
   // Memory leak on purpose, since |g_signal_closure| should live until
   // process exit.

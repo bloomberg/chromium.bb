@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
@@ -168,7 +168,7 @@ void PreregisterHistogram(const char* name,
 } // namespace
 
 void PreregisterAllGroupedHistograms() {
-  for (size_t i = 0; i < arraysize(kHistogramsToGroup); ++i) {
+  for (size_t i = 0; i < base::size(kHistogramsToGroup); ++i) {
     PreregisterHistogram(
         kHistogramsToGroup[i].name,
         kHistogramsToGroup[i].minimum,

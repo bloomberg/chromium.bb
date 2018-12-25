@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "chromecast/common/mojom/constants.mojom.h"
@@ -543,7 +544,7 @@ TEST_F(CastAudioOutputStreamTest, Format) {
   ::media::AudioParameters::Format format[] = {
       ::media::AudioParameters::AUDIO_PCM_LINEAR,
       ::media::AudioParameters::AUDIO_PCM_LOW_LATENCY};
-  for (size_t i = 0; i < arraysize(format); ++i) {
+  for (size_t i = 0; i < base::size(format); ++i) {
     format_ = format[i];
     ::media::AudioOutputStream* stream = CreateStream();
     ASSERT_TRUE(stream);
@@ -564,7 +565,7 @@ TEST_F(CastAudioOutputStreamTest, Format) {
 TEST_F(CastAudioOutputStreamTest, ChannelLayout) {
   ::media::ChannelLayout layout[] = {::media::CHANNEL_LAYOUT_MONO,
                                      ::media::CHANNEL_LAYOUT_STEREO};
-  for (size_t i = 0; i < arraysize(layout); ++i) {
+  for (size_t i = 0; i < base::size(layout); ++i) {
     channel_layout_ = layout[i];
     ::media::AudioOutputStream* stream = CreateStream();
     ASSERT_TRUE(stream);
