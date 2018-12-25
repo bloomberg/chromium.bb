@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/stl_util.h"
 
 namespace device {
 namespace {
@@ -24,7 +25,7 @@ struct UUIDs {
         "0x2900", "0x2901", "0x2902", "0x2903", "0x2904", "0x2905"
     };
 
-    for (size_t i = 0; i < arraysize(strings); ++i)
+    for (size_t i = 0; i < base::size(strings); ++i)
       uuids.push_back(BluetoothUUID(strings[i]));
 
     return uuids;

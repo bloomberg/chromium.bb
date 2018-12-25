@@ -12,8 +12,8 @@
 #include <sstream>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "device/bluetooth/dbus/bluetooth_media_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
@@ -44,7 +44,7 @@ ObjectPath GenerateTransportPath() {
 }
 
 #define UINT8_VECTOR_FROM_ARRAY(array) \
-  std::vector<uint8_t>(array, array + arraysize(array))
+  std::vector<uint8_t>(array, array + base::size(array))
 
 }  // namespace
 
@@ -57,7 +57,7 @@ const uint8_t FakeBluetoothMediaTransportClient::kTransportCodec = 0x00;
 const uint8_t FakeBluetoothMediaTransportClient::kTransportConfiguration[] = {
     0x21, 0x15, 0x33, 0x2C};
 const uint8_t FakeBluetoothMediaTransportClient::kTransportConfigurationLength =
-    arraysize(FakeBluetoothMediaTransportClient::kTransportConfiguration);
+    base::size(FakeBluetoothMediaTransportClient::kTransportConfiguration);
 const uint16_t FakeBluetoothMediaTransportClient::kTransportDelay = 5;
 const uint16_t FakeBluetoothMediaTransportClient::kTransportVolume = 50;
 const uint16_t FakeBluetoothMediaTransportClient::kDefaultReadMtu = 20;

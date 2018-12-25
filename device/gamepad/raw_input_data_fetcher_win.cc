@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "device/gamepad/gamepad_standard_mappings.h"
@@ -43,7 +43,7 @@ void RawInputDataFetcher::OnAddedToProvider() {
 }
 
 RAWINPUTDEVICE* RawInputDataFetcher::GetRawInputDevices(DWORD flags) {
-  size_t usage_count = arraysize(DeviceUsages);
+  size_t usage_count = base::size(DeviceUsages);
   std::unique_ptr<RAWINPUTDEVICE[]> devices(new RAWINPUTDEVICE[usage_count]);
   for (size_t i = 0; i < usage_count; ++i) {
     devices[i].dwFlags = flags;
@@ -78,7 +78,7 @@ void RawInputDataFetcher::StartMonitor() {
   // Register to receive raw HID input.
   std::unique_ptr<RAWINPUTDEVICE[]> devices(
       GetRawInputDevices(RIDEV_INPUTSINK));
-  if (!::RegisterRawInputDevices(devices.get(), arraysize(DeviceUsages),
+  if (!::RegisterRawInputDevices(devices.get(), base::size(DeviceUsages),
                                  sizeof(RAWINPUTDEVICE))) {
     PLOG(ERROR) << "RegisterRawInputDevices() failed for RIDEV_INPUTSINK";
     window_.reset();
@@ -96,7 +96,7 @@ void RawInputDataFetcher::StopMonitor() {
   DCHECK(window_);
   std::unique_ptr<RAWINPUTDEVICE[]> devices(GetRawInputDevices(RIDEV_REMOVE));
 
-  if (!::RegisterRawInputDevices(devices.get(), arraysize(DeviceUsages),
+  if (!::RegisterRawInputDevices(devices.get(), base::size(DeviceUsages),
                                  sizeof(RAWINPUTDEVICE))) {
     PLOG(INFO) << "RegisterRawInputDevices() failed for RIDEV_REMOVE";
   }

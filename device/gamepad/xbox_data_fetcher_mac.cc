@@ -16,6 +16,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 
@@ -314,9 +315,9 @@ void XboxDataFetcher::AddController(XboxControllerMac* controller) {
   controller->SetLEDPattern((XboxControllerMac::LEDPattern)(
       XboxControllerMac::LED_FLASH_TOP_LEFT + controller->location_id()));
 
-  CopyToUString(state->data.id, arraysize(state->data.id),
+  CopyToUString(state->data.id, base::size(state->data.id),
                 base::UTF8ToUTF16(controller->GetIdString()));
-  CopyToUString(state->data.mapping, arraysize(state->data.mapping),
+  CopyToUString(state->data.mapping, base::size(state->data.mapping),
                 base::UTF8ToUTF16("standard"));
 
   state->data.connected = true;
@@ -376,7 +377,7 @@ void XboxDataFetcher::XboxControllerGotData(
     pad.buttons[16].pressed = data.buttons[14];
     pad.buttons[16].value = data.buttons[14] ? 1.0f : 0.0f;
   }
-  for (size_t i = 0; i < arraysize(data.axes); i++) {
+  for (size_t i = 0; i < base::size(data.axes); i++) {
     pad.axes[i] = data.axes[i];
   }
 
