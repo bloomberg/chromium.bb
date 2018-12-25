@@ -15,10 +15,10 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -568,7 +568,7 @@ TEST_F(ExpireHistoryTest, DeleteURLs) {
   std::vector<GURL> urls;
   // Push back a bogus URL (which shouldn't change anything).
   urls.push_back(GURL());
-  for (size_t i = 0; i < arraysize(rows); ++i) {
+  for (size_t i = 0; i < base::size(rows); ++i) {
     ASSERT_TRUE(main_db_->GetURLRow(url_ids[i], &rows[i]));
     favicon_ids[i] =
         GetFavicon(rows[i].url(), favicon_base::IconType::kFavicon);

@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -408,7 +408,7 @@ TEST_F(SubresourceFilterComputeActivationStateTest,
        MakeState(true, true)},
   };
 
-  for (size_t i = 0, size = arraysize(kTestCases); i != size; ++i) {
+  for (size_t i = 0, size = base::size(kTestCases); i != size; ++i) {
     SCOPED_TRACE(::testing::Message() << "Test number: " << i);
     const auto& test_case = kTestCases[i];
 

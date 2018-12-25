@@ -13,8 +13,8 @@
 #include <sys/un.h>
 
 #include "base/files/scoped_file.h"
-#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
@@ -129,7 +129,7 @@ void GraphicsMemoryDumpProvider::ParseResponseAndAddToDump(
 
     // Append a row to the memory dump.
     std::string dump_name;
-    dump_name.reserve(arraysize(kDumpBaseName) + row_name.size() + 1);
+    dump_name.reserve(base::size(kDumpBaseName) + row_name.size() + 1);
     dump_name.assign(kDumpBaseName);
     row_name.AppendToString(&dump_name);
     MemoryAllocatorDump* mad = pmd->GetOrCreateAllocatorDump(dump_name);

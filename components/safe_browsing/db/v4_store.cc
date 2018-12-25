@@ -668,7 +668,7 @@ ApplyUpdateResult V4Store::MergeUpdate(const HashPrefixMap& old_prefixes_map,
       if (checksum[i] != expected_checksum[i]) {
 #if DCHECK_IS_ON()
         std::string checksum_b64, expected_checksum_b64;
-        base::Base64Encode(base::StringPiece(checksum, arraysize(checksum)),
+        base::Base64Encode(base::StringPiece(checksum, base::size(checksum)),
                            &checksum_b64);
         base::Base64Encode(expected_checksum, &expected_checksum_b64);
         DVLOG(1) << "Failure: Checksum mismatch: calculated: " << checksum_b64
@@ -848,7 +848,7 @@ bool V4Store::VerifyChecksum() {
                               store_path_);
 #if DCHECK_IS_ON()
       std::string checksum_b64, expected_checksum_b64;
-      base::Base64Encode(base::StringPiece(checksum, arraysize(checksum)),
+      base::Base64Encode(base::StringPiece(checksum, base::size(checksum)),
                          &checksum_b64);
       base::Base64Encode(expected_checksum_, &expected_checksum_b64);
       DVLOG(1) << "Failure: Checksum mismatch: calculated: " << checksum_b64

@@ -8,10 +8,10 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/stl_util.h"
 #include "components/language_usage_metrics/language_usage_metrics.h"
 
 namespace translate {
@@ -58,7 +58,7 @@ const MetricsEntry kMetricsEntries[] = {
     kTranslateTargetLanguage },
 };
 
-static_assert(arraysize(kMetricsEntries) == TranslateBrowserMetrics::UMA_MAX,
+static_assert(base::size(kMetricsEntries) == TranslateBrowserMetrics::UMA_MAX,
               "kMetricsEntries should have UMA_MAX elements");
 
 }  // namespace
@@ -105,7 +105,7 @@ void ReportTranslateTargetLanguage(const std::string& language) {
 }
 
 const char* GetMetricsName(MetricsNameIndex index) {
-  for (size_t i = 0; i < arraysize(kMetricsEntries); ++i) {
+  for (size_t i = 0; i < base::size(kMetricsEntries); ++i) {
     if (kMetricsEntries[i].index == index)
       return kMetricsEntries[i].name;
   }

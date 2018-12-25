@@ -13,7 +13,7 @@
 
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/spellcheck/renderer/spellcheck.h"
@@ -141,7 +141,7 @@ void SpellcheckCharAttribute::CreateRuleSets(const std::string& language) {
   UErrorCode error = U_ZERO_ERROR;
   UScriptCode script_code[8];
   int scripts = uscript_getCode(language.c_str(), script_code,
-                                arraysize(script_code), &error);
+                                base::size(script_code), &error);
   if (U_SUCCESS(error) && scripts >= 1)
     script_code_ = script_code[0];
 

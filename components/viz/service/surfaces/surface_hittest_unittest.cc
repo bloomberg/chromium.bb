@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "base/stl_util.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -162,7 +163,7 @@ TEST_F(SurfaceHittestTest, Hittest_SingleSurface) {
        gfx::Point(100, 100), false},
   };
 
-  RunTests(nullptr, surface_manager(), tests, arraysize(tests));
+  RunTests(nullptr, surface_manager(), tests, base::size(tests));
 }
 
 TEST_F(SurfaceHittestTest, Hittest_ChildSurface) {
@@ -224,7 +225,7 @@ TEST_F(SurfaceHittestTest, Hittest_ChildSurface) {
                       {root_surface_id, gfx::Point(290, 290), root_surface_id,
                        gfx::Point(290, 290), false}};
 
-  RunTests(nullptr, surface_manager(), tests, arraysize(tests));
+  RunTests(nullptr, surface_manager(), tests, base::size(tests));
 
   // Submit another root frame, with a slightly perturbed child Surface.
   root_frame = CreateCompositorFrame(root_rect, &root_pass);
@@ -329,7 +330,7 @@ TEST_F(SurfaceHittestTest, Hittest_OccludedChildSurface) {
                       {root_surface_id, gfx::Point(290, 290), root_surface_id,
                        gfx::Point(290, 290), false}};
 
-  RunTests(nullptr, surface_manager(), tests, arraysize(tests));
+  RunTests(nullptr, surface_manager(), tests, base::size(tests));
 }
 
 // This test verifies that hit testing will progress to the next quad if it
@@ -398,7 +399,7 @@ TEST_F(SurfaceHittestTest, Hittest_InvalidRenderPassDrawQuad) {
                       {root_surface_id, gfx::Point(290, 290), root_surface_id,
                        gfx::Point(290, 290), false}};
 
-  RunTests(nullptr, surface_manager(), tests, arraysize(tests));
+  RunTests(nullptr, surface_manager(), tests, base::size(tests));
 }
 
 TEST_F(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
@@ -462,7 +463,7 @@ TEST_F(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
                       {root_surface_id, gfx::Point(100, 100), root_surface_id,
                        gfx::Point(100, 100), false}};
 
-  RunTests(nullptr, surface_manager(), tests, arraysize(tests));
+  RunTests(nullptr, surface_manager(), tests, base::size(tests));
 }
 
 TEST_F(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
@@ -528,7 +529,7 @@ TEST_F(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
 
   TestSurfaceHittestDelegate empty_delegate;
   RunTests(&empty_delegate, surface_manager(), test_expectations_without_insets,
-           arraysize(test_expectations_without_insets));
+           base::size(test_expectations_without_insets));
 
   // Verify that insets have NOT affected hit targeting.
   EXPECT_EQ(0, empty_delegate.reject_target_overrides());
@@ -560,7 +561,7 @@ TEST_F(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
                                             gfx::Insets(10, 10, 10, 10));
   RunTests(&reject_delegate, surface_manager(),
            test_expectations_with_reject_insets,
-           arraysize(test_expectations_with_reject_insets));
+           base::size(test_expectations_with_reject_insets));
 
   // Verify that insets have affected hit targeting.
   EXPECT_EQ(4, reject_delegate.reject_target_overrides());
@@ -587,7 +588,7 @@ TEST_F(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
                                             gfx::Insets(5, 5, 5, 5));
   RunTests(&accept_delegate, surface_manager(),
            test_expectations_with_accept_insets,
-           arraysize(test_expectations_with_accept_insets));
+           base::size(test_expectations_with_accept_insets));
 
   // Verify that insets have affected hit targeting.
   EXPECT_EQ(0, accept_delegate.reject_target_overrides());
@@ -655,7 +656,7 @@ TEST_F(SurfaceHittestTest, Hittest_ChildSurfaceWithNonFlatTransform) {
                       {root_surface_id, gfx::Point(290, 290), root_surface_id,
                        gfx::Point(290, 290), false}};
 
-  RunTests(nullptr, surface_manager(), tests, arraysize(tests));
+  RunTests(nullptr, surface_manager(), tests, base::size(tests));
 
   // Submit another root frame, with a slightly perturbed child Surface.
   root_frame = CreateCompositorFrame(root_rect, &root_pass);

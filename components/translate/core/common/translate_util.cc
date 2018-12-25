@@ -11,7 +11,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "url/gurl.h"
@@ -60,7 +60,7 @@ const LanguageCodePair kLanguageCodeChineseCompatiblePairs[] = {
 const char kSecurityOrigin[] = "https://translate.googleapis.com/";
 
 void ToTranslateLanguageSynonym(std::string* language) {
-  for (size_t i = 0; i < arraysize(kLanguageCodeSimilitudes); ++i) {
+  for (size_t i = 0; i < base::size(kLanguageCodeSimilitudes); ++i) {
     if (*language == kLanguageCodeSimilitudes[i].chrome_language) {
       *language = kLanguageCodeSimilitudes[i].translate_language;
       return;
@@ -79,7 +79,7 @@ void ToTranslateLanguageSynonym(std::string* language) {
   // instead of the main_part.
   // Note that "zh" does not have any mapping and as such we leave it as is. See
   // https://crbug/798512 for more info.
-  for (size_t i = 0; i < arraysize(kLanguageCodeChineseCompatiblePairs); ++i) {
+  for (size_t i = 0; i < base::size(kLanguageCodeChineseCompatiblePairs); ++i) {
     if (*language == kLanguageCodeChineseCompatiblePairs[i].chrome_language) {
       *language = kLanguageCodeChineseCompatiblePairs[i].translate_language;
       return;
@@ -90,7 +90,7 @@ void ToTranslateLanguageSynonym(std::string* language) {
   }
 
   // Apply linear search here because number of items in the list is just four.
-  for (size_t i = 0; i < arraysize(kLanguageCodeSynonyms); ++i) {
+  for (size_t i = 0; i < base::size(kLanguageCodeSynonyms); ++i) {
     if (main_part == kLanguageCodeSynonyms[i].chrome_language) {
       main_part = std::string(kLanguageCodeSynonyms[i].translate_language);
       break;
@@ -101,7 +101,7 @@ void ToTranslateLanguageSynonym(std::string* language) {
 }
 
 void ToChromeLanguageSynonym(std::string* language) {
-  for (size_t i = 0; i < arraysize(kLanguageCodeSimilitudes); ++i) {
+  for (size_t i = 0; i < base::size(kLanguageCodeSimilitudes); ++i) {
     if (*language == kLanguageCodeSimilitudes[i].translate_language) {
       *language = kLanguageCodeSimilitudes[i].chrome_language;
       return;
@@ -114,7 +114,7 @@ void ToChromeLanguageSynonym(std::string* language) {
     return;
 
   // Apply liner search here because number of items in the list is just four.
-  for (size_t i = 0; i < arraysize(kLanguageCodeSynonyms); ++i) {
+  for (size_t i = 0; i < base::size(kLanguageCodeSynonyms); ++i) {
     if (main_part == kLanguageCodeSynonyms[i].translate_language) {
       main_part = std::string(kLanguageCodeSynonyms[i].chrome_language);
       break;

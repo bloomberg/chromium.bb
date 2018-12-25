@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/containers/circular_deque.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -164,7 +165,7 @@ template <typename C, typename ImmutableC>
 void RunTokenContainerTest(const char* token) {
   SCOPED_TRACE(token);
   const Token tokens[] = {Token(), Token(token)};
-  const size_t token_count = arraysize(tokens);
+  const size_t token_count = base::size(tokens);
   C c(tokens, tokens + token_count);
   const int copy_count = c.begin()->GetCopyCount();
   EXPECT_GT(copy_count, 0);

@@ -11,9 +11,9 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
@@ -402,7 +402,7 @@ TEST_F(SpellCheckTest, SpellCheckStrings_EN_US) {
     {L"3.141592653", true},
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     size_t input_length = 0;
     if (kTestCases[i].input)
       input_length = wcslen(kTestCases[i].input);
@@ -824,7 +824,7 @@ TEST_F(SpellCheckTest, SpellCheckText) {
     },
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     ReinitializeSpellCheck(kTestCases[i].language);
     size_t input_length = 0;
     if (kTestCases[i].input)
@@ -883,7 +883,7 @@ TEST_F(SpellCheckTest, MisspelledWords) {
     },
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     ReinitializeSpellCheck(kTestCases[i].language);
 
     base::string16 word(base::WideToUTF16(kTestCases[i].input));
@@ -1291,9 +1291,9 @@ TEST_F(SpellCheckTest, EnglishWords) {
 
   static const char* const kLocales[] = { "en-GB", "en-US", "en-CA", "en-AU" };
 
-  for (size_t j = 0; j < arraysize(kLocales); ++j) {
+  for (size_t j = 0; j < base::size(kLocales); ++j) {
     ReinitializeSpellCheck(kLocales[j]);
-    for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    for (size_t i = 0; i < base::size(kTestCases); ++i) {
       size_t input_length = 0;
       if (kTestCases[i].input)
         input_length = strlen(kTestCases[i].input);
@@ -1424,7 +1424,7 @@ TEST_F(SpellCheckTest, SpellingEngine_CheckSpelling) {
   InitializeIfNeeded();
   ASSERT_FALSE(InitializeIfNeeded());
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     bool result = CheckSpelling(kTestCases[i].word, 0);
     EXPECT_EQ(kTestCases[i].expected_result, result) <<
         "Failed test for " << kTestCases[i].word;
@@ -1442,7 +1442,7 @@ TEST_F(SpellCheckTest, LogicalSuggestions) {
     { "accidently", "accidentally" }
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     int misspelling_start = 0;
     int misspelling_length = 0;
     std::vector<base::string16> suggestions;
@@ -1470,9 +1470,9 @@ TEST_F(SpellCheckTest, IsValidContraction) {
       L"in" TYPOGRAPHICAL_APOSTROPHE L"n" TYPOGRAPHICAL_APOSTROPHE L"out",
   };
 
-  for (size_t i = 0; i < arraysize(kLanguages); ++i) {
+  for (size_t i = 0; i < base::size(kLanguages); ++i) {
     ReinitializeSpellCheck(kLanguages[i]);
-    for (size_t j = 0; j < arraysize(kWords); ++j)
+    for (size_t j = 0; j < base::size(kWords); ++j)
       EXPECT_TRUE(IsValidContraction(base::WideToUTF16(kWords[j]), 0));
   }
 }

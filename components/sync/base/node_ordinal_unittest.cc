@@ -10,7 +10,7 @@
 #include <limits>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -59,7 +59,7 @@ const int64_t kTestValues[] = {0LL,
                                INT64_MIN + 1,
                                INT64_MAX - 1};
 
-const size_t kNumTestValues = arraysize(kTestValues);
+const size_t kNumTestValues = base::size(kTestValues);
 
 // Convert each test value to an ordinal.  All ordinals should be
 // valid.

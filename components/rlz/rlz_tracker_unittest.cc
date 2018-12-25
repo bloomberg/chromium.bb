@@ -6,9 +6,9 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -334,7 +334,7 @@ void RlzLibTest::InvokeDelayedInit() {
 
 void RlzLibTest::ExpectEventRecorded(const char* event_name, bool expected) {
   char cgi[rlz_lib::kMaxCgiLength];
-  GetProductEventsAsCgi(rlz_lib::CHROME, cgi, arraysize(cgi));
+  GetProductEventsAsCgi(rlz_lib::CHROME, cgi, base::size(cgi));
   if (expected) {
     EXPECT_STR_CONTAINS(cgi, event_name);
   } else {

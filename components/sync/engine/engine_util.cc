@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/protocol/password_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -71,7 +71,7 @@ void ServerNameToSyncAPIName(const std::string& server_name, std::string* out) {
 // also illegal, but are not considered here.
 bool IsNameServerIllegalAfterTrimming(const std::string& name) {
   size_t untrimmed_count = name.find_last_not_of(' ') + 1;
-  for (size_t i = 0; i < arraysize(kForbiddenServerNames); ++i) {
+  for (size_t i = 0; i < base::size(kForbiddenServerNames); ++i) {
     if (name.compare(0, untrimmed_count, kForbiddenServerNames[i]) == 0)
       return true;
   }

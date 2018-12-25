@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "components/webcrypto/algorithm_dispatch.h"
 #include "components/webcrypto/algorithms/test_helpers.h"
@@ -82,7 +82,7 @@ TEST_F(WebCryptoAesCtrTest, InvalidCounterBlockLength) {
   std::vector<uint8_t> input(32);
   std::vector<uint8_t> output;
 
-  for (size_t i = 0; i < arraysize(kBadCounterBlockLengthBytes); ++i) {
+  for (size_t i = 0; i < base::size(kBadCounterBlockLengthBytes); ++i) {
     std::vector<uint8_t> bad_counter(kBadCounterBlockLengthBytes[i]);
 
     EXPECT_EQ(Status::ErrorIncorrectSizeAesCtrCounter(),
@@ -108,7 +108,7 @@ TEST_F(WebCryptoAesCtrTest, InvalidCounterLength) {
   std::vector<uint8_t> input(32);
   std::vector<uint8_t> output;
 
-  for (size_t i = 0; i < arraysize(kBadCounterLengthBits); ++i) {
+  for (size_t i = 0; i < base::size(kBadCounterLengthBits); ++i) {
     uint8_t bad_counter_length_bits = kBadCounterLengthBits[i];
 
     EXPECT_EQ(Status::ErrorInvalidAesCtrCounterLength(),
@@ -146,7 +146,7 @@ TEST_F(WebCryptoAesCtrTest, OverflowAndRepeatCounter) {
 
   std::vector<uint8_t> output;
 
-  for (size_t i = 0; i < arraysize(kStartCounter); ++i) {
+  for (size_t i = 0; i < base::size(kStartCounter); ++i) {
     std::vector<uint8_t> counter(16);
     counter[15] = kStartCounter[i];
 

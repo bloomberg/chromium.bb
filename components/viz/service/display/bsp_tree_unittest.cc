@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/containers/circular_deque.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "components/viz/service/display/bsp_walk_action.h"
 #include "components/viz/service/display/draw_polygon.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,7 +26,7 @@ namespace {
   } while (false);
 
 #define INT_VECTOR_FROM_ARRAY(array) \
-  std::vector<int>(array, array + arraysize(array))
+  std::vector<int>(array, array + base::size(array))
 
 #define CREATE_DRAW_POLYGON(vertex_vector, normal, polygon_id) \
   new DrawPolygon(NULL, vertex_vector, normal, polygon_id)

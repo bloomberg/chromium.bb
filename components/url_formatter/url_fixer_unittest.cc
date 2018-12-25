@@ -9,7 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -246,7 +246,7 @@ TEST(URLFixerTest, SegmentURL) {
   std::string result;
   url::Parsed parts;
 
-  for (size_t i = 0; i < arraysize(segment_cases); ++i) {
+  for (size_t i = 0; i < base::size(segment_cases); ++i) {
     SegmentCase value = segment_cases[i];
     result = url_formatter::SegmentURL(value.input, &parts);
     EXPECT_EQ(value.result, result);
@@ -356,7 +356,7 @@ struct FixupCase {
 };
 
 TEST(URLFixerTest, FixupURL) {
-  for (size_t i = 0; i < arraysize(fixup_cases); ++i) {
+  for (size_t i = 0; i < base::size(fixup_cases); ++i) {
     FixupCase value = fixup_cases[i];
     EXPECT_EQ(value.output,
               url_formatter::FixupURL(value.input, "").possibly_invalid_spec())
@@ -401,7 +401,7 @@ TEST(URLFixerTest, FixupURL) {
       {"http://somedomainthatwillnotbeagtld:123",
        "http://www.somedomainthatwillnotbeagtld.com:123/"},
   };
-  for (size_t i = 0; i < arraysize(tld_cases); ++i) {
+  for (size_t i = 0; i < base::size(tld_cases); ++i) {
     FixupCase value = tld_cases[i];
     EXPECT_EQ(value.output, url_formatter::FixupURL(value.input, "com")
                                 .possibly_invalid_spec());
@@ -487,7 +487,7 @@ TEST(URLFixerTest, FixupFile) {
   };
 #endif
 
-  for (size_t i = 0; i < arraysize(cases); i++) {
+  for (size_t i = 0; i < base::size(cases); i++) {
     EXPECT_EQ(cases[i].output,
               url_formatter::FixupURL(cases[i].input, std::string())
                   .possibly_invalid_spec());
@@ -507,7 +507,7 @@ TEST(URLFixerTest, FixupRelativeFile) {
   ASSERT_FALSE(full_path.empty());
 
   // make sure we pass through good URLs
-  for (size_t i = 0; i < arraysize(fixup_cases); ++i) {
+  for (size_t i = 0; i < base::size(fixup_cases); ++i) {
     FixupCase value = fixup_cases[i];
     base::FilePath input = base::FilePath::FromUTF8Unsafe(value.input);
     EXPECT_EQ(value.output,
