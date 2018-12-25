@@ -17,7 +17,7 @@
 #include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -101,7 +101,7 @@ base::FilePath ExtractDrivePath(const base::FilePath& path) {
   if (components[1] != FILE_PATH_LITERAL("special"))
     return base::FilePath();
   static const base::FilePath::CharType kPrefix[] = FILE_PATH_LITERAL("drive");
-  if (components[2].compare(0, arraysize(kPrefix) - 1, kPrefix) != 0)
+  if (components[2].compare(0, base::size(kPrefix) - 1, kPrefix) != 0)
     return base::FilePath();
 
   base::FilePath drive_path = GetDriveGrandRootPath();

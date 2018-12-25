@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/extensions/wallpaper_function_base.h"
 
-#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/task/lazy_task_runner.h"
 #include "base/task/task_traits.h"
@@ -31,7 +31,7 @@ const char* const kWallpaperLayoutArrays[] = {
   "TILE"
 };
 
-const int kWallpaperLayoutCount = arraysize(kWallpaperLayoutArrays);
+const int kWallpaperLayoutCount = base::size(kWallpaperLayoutArrays);
 
 base::LazySequencedTaskRunner g_blocking_task_runner =
     LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(

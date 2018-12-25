@@ -12,8 +12,8 @@
 #include "base/format_macros.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
@@ -378,7 +378,7 @@ TEST_F(ProxyConfigServiceImplTest, NetworkProxy) {
   SetUpPrivateWiFi();
   // Create a ProxyConfigServiceImpl like for the system request context.
   SetUpProxyConfigService(nullptr /* no profile prefs */);
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "] %s", i,
                                     tests[i].description.c_str()));
 
@@ -422,7 +422,7 @@ TEST_F(ProxyConfigServiceImplTest, DynamicPrefsOverride) {
     { 8, 7, 6, },
     { 7, 6, 8, },
   };
-  for (size_t i = 0; i < arraysize(proxies); ++i) {
+  for (size_t i = 0; i < base::size(proxies); ++i) {
     const TestParams& managed_params = tests[proxies[i][0]];
     const TestParams& recommended_params = tests[proxies[i][1]];
     const TestParams& network_params = tests[proxies[i][2]];

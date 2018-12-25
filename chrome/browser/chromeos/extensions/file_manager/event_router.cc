@@ -13,7 +13,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -96,7 +96,7 @@ bool IsRecoveryToolRunning(Profile* profile) {
       "jndclpdbaamdhonoechobihbbiimdgai"   // Recovery tool prod
   };
 
-  for (size_t i = 0; i < arraysize(kRecoveryToolIds); ++i) {
+  for (size_t i = 0; i < base::size(kRecoveryToolIds); ++i) {
     const std::string extension_id = kRecoveryToolIds[i];
     if (extension_prefs->IsExtensionRunning(extension_id))
       return true;

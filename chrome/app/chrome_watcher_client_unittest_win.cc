@@ -11,8 +11,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/process/process_handle.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -101,7 +101,7 @@ MULTIPROCESS_TEST_MAIN(ChromeWatcherClientTestProcess) {
     // or one times before exit_event, never more.
     HANDLE handles[] = {exit_event.Get(), initialize_event.Get()};
     DWORD result =
-        ::WaitForMultipleObjects(arraysize(handles), handles, FALSE, INFINITE);
+        ::WaitForMultipleObjects(base::size(handles), handles, FALSE, INFINITE);
     switch (result) {
       case WAIT_OBJECT_0:
         // exit_event

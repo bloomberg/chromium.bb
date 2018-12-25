@@ -17,7 +17,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -70,7 +70,7 @@ std::string GetDiskUuid() {
 
   // Look for first device name matching an entry of |kDeviceNames|.
   std::string result;
-  for (size_t i = 0; i < arraysize(kDeviceNames); i++) {
+  for (size_t i = 0; i < base::size(kDeviceNames); i++) {
     DiskEntries::iterator it = disk_uuids.find(base::FilePath(kDeviceNames[i]));
     if (it != disk_uuids.end()) {
       DVLOG(1) << "Returning uuid: \"" << it->second.value()
@@ -162,7 +162,7 @@ std::string GetMacAddress(
   MacAddressProcessor processor(is_valid_mac_address);
   for (struct ifaddrs* ifa = ifaddrs; ifa; ifa = ifa->ifa_next) {
     bool keep_going = processor.ProcessInterface(
-        ifa, kNetDeviceNamePrefixes, arraysize(kNetDeviceNamePrefixes));
+        ifa, kNetDeviceNamePrefixes, base::size(kNetDeviceNamePrefixes));
     if (!keep_going)
       break;
   }

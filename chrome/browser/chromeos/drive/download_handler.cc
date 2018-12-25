@@ -11,7 +11,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/supports_user_data.h"
 #include "base/task/post_task.h"
@@ -125,7 +125,7 @@ bool IsPersistedDriveDownload(const base::FilePath& drive_tmp_download_path,
 // 'default' fallback choice on the HTTP server. In such a case, we ignore the
 // type so that our logic can guess by its own while uploading to Drive.
 std::string FilterOutGenericMimeType(const std::string& mime_type) {
-  for (size_t i = 0; i < arraysize(kGenericMimeTypes); ++i) {
+  for (size_t i = 0; i < base::size(kGenericMimeTypes); ++i) {
     if (base::LowerCaseEqualsASCII(mime_type, kGenericMimeTypes[i]))
       return std::string();
   }

@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
@@ -36,7 +37,7 @@ struct {
 class LoginUITest : public chromeos::LoginManagerTest {
  public:
   LoginUITest() : LoginManagerTest(false, true /* should_initialize_webui */) {
-    for (size_t i = 0; i < arraysize(kTestUsers); ++i) {
+    for (size_t i = 0; i < base::size(kTestUsers); ++i) {
       test_users_.emplace_back(AccountId::FromUserEmailGaiaId(
           kTestUsers[i].email, kTestUsers[i].gaia_id));
     }

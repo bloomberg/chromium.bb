@@ -13,9 +13,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/version.h"
 #include "chrome/browser/media/media_engagement_preloaded_list.h"
@@ -114,7 +114,7 @@ void MediaEngagementPreloadComponentInstallerPolicy::GetHash(
     std::vector<uint8_t>* hash) const {
   hash->assign(
       kMeiPreloadPublicKeySHA256,
-      kMeiPreloadPublicKeySHA256 + arraysize(kMeiPreloadPublicKeySHA256));
+      kMeiPreloadPublicKeySHA256 + base::size(kMeiPreloadPublicKeySHA256));
 }
 
 std::string MediaEngagementPreloadComponentInstallerPolicy::GetName() const {

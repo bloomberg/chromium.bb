@@ -12,8 +12,8 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread_restrictions.h"
@@ -949,7 +949,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, IsPlatformCompliantWithApp) {
       {"1234.1.1", false}, {"1234.1.3", false},
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     scoped_refptr<extensions::Extension> app = MakeKioskApp(
         "App Name", "1.0", kAppId, kTestCases[i].required_platform_version);
     EXPECT_EQ(kTestCases[i].expected_compliant,
@@ -960,7 +960,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, IsPlatformCompliantWithApp) {
 
   // If an app is not auto launched with zero delay, it is always compliant.
   const char kNoneAutoLaucnhedAppId[] = "none_auto_launch_app_id";
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     scoped_refptr<extensions::Extension> app =
         MakeKioskApp("App Name", "1.0", kNoneAutoLaucnhedAppId,
                      kTestCases[i].required_platform_version);

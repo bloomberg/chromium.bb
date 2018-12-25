@@ -7,8 +7,8 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -371,7 +371,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_NormalKeyEvents) {
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
 
   int tab_index = browser()->tab_strip_model()->active_index();
-  for (size_t i = 0; i < arraysize(kTestNoInput); ++i) {
+  for (size_t i = 0; i < base::size(kTestNoInput); ++i) {
     EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestNoInput[i]))
         << "kTestNoInput[" << i << "] failed:\n"
         << GetTestDataDescription(kTestNoInput[i]);
@@ -379,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_NormalKeyEvents) {
 
   // Input in normal text box.
   ASSERT_NO_FATAL_FAILURE(SetFocusedElement(tab_index, L"A"));
-  for (size_t i = 0; i < arraysize(kTestWithInput); ++i) {
+  for (size_t i = 0; i < base::size(kTestWithInput); ++i) {
     EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestWithInput[i]))
         << "kTestWithInput[" << i << "] in text box failed:\n"
         << GetTestDataDescription(kTestWithInput[i]);
@@ -388,7 +388,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_NormalKeyEvents) {
 
   // Input in password box.
   ASSERT_NO_FATAL_FAILURE(SetFocusedElement(tab_index, L"B"));
-  for (size_t i = 0; i < arraysize(kTestWithInput); ++i) {
+  for (size_t i = 0; i < base::size(kTestWithInput); ++i) {
     EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestWithInput[i]))
         << "kTestWithInput[" << i << "] in password box failed:\n"
         << GetTestDataDescription(kTestWithInput[i]);

@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -141,7 +141,7 @@ TEST_F(BrowsingDataQuotaHelperTest, FetchData) {
       {"http://example2.com/", StorageType::kTemporary, 1000},
   };
 
-  RegisterClient(kOrigins, arraysize(kOrigins));
+  RegisterClient(kOrigins, base::size(kOrigins));
   StartFetching();
   content::RunAllTasksUntilIdle();
   EXPECT_TRUE(fetching_completed());
@@ -170,7 +170,7 @@ TEST_F(BrowsingDataQuotaHelperTest, IgnoreExtensionsAndDevTools) {
        StorageType::kPersistent, 100000},
   };
 
-  RegisterClient(kOrigins, arraysize(kOrigins));
+  RegisterClient(kOrigins, base::size(kOrigins));
   StartFetching();
   content::RunAllTasksUntilIdle();
   EXPECT_TRUE(fetching_completed());

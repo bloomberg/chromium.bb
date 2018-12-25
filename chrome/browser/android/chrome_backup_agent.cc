@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/android/jni_array.h"
+#include "base/stl_util.h"
 #include "chrome/browser/android/chrome_backup_agent.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
@@ -56,7 +57,7 @@ JNI_ChromeBackupAgent_GetBoolBackupValues(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller) {
   PrefService* prefs = ProfileManager::GetLastUsedProfile()->GetPrefs();
-  constexpr int pref_count = arraysize(backed_up_preferences_);
+  constexpr int pref_count = base::size(backed_up_preferences_);
   jboolean values[pref_count];
 
   for (int i = 0; i < pref_count; i++) {

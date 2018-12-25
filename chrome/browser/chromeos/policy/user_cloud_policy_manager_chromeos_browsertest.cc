@@ -6,7 +6,7 @@
 #include <string>
 #include <utility>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest, StartSession) {
 
   TabStripModel* tabs = browser->tab_strip_model();
   ASSERT_TRUE(tabs);
-  const int expected_tab_count = static_cast<int>(arraysize(kStartupURLs));
+  const int expected_tab_count = static_cast<int>(base::size(kStartupURLs));
   EXPECT_EQ(expected_tab_count, tabs->count());
   for (int i = 0; i < expected_tab_count && i < tabs->count(); ++i) {
     EXPECT_EQ(GURL(kStartupURLs[i]),
