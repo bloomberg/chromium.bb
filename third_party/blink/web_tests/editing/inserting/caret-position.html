@@ -4,12 +4,25 @@
 <script src="../../resources/testharnessreport.js"></script>
 <script>
 
-function testCaretPosition(elementId, caretPosition) {
+function testLtrCaretPosition(elementId, caretPosition) {
   test(() => {
     assert_own_property(window, 'textInputController');
     e = document.getElementById(elementId);
     e.focus();
     var caretRect = textInputController.firstRectForCharacterRange(0, 0);
+    assert_equals(caretRect[0], caretPosition);
+  }, `${elementId} ${caretPosition}`);
+}
+
+function testRtlCaretPosition(elementId, caretPosition) {
+  test(() => {
+    assert_own_property(window, 'textInputController');
+    e = document.getElementById(elementId);
+    e.focus();
+    // Asserts the visual location of the text's right edge, whose logical
+    // offset differs with the bidi caret affinity flag.
+    var caretOffset = internals.runtimeFlags.bidiCaretAffinityEnabled ? 1 : 0;
+    var caretRect = textInputController.firstRectForCharacterRange(caretOffset, 0);
     assert_equals(caretRect[0], caretPosition);
   }, `${elementId} ${caretPosition}`);
 }
@@ -25,15 +38,15 @@ function runTest() {
     assert_equals(caretRect[0], 208);
   }, 'right-align-div 208 after typing');
 
-  testCaretPosition("rtl-div", 208);
-  testCaretPosition("0-right-padding-rtl-textarea", 206);
-  testCaretPosition("ltr-div", 9);
-  testCaretPosition("ltr-textarea", 10);
-  testCaretPosition("no-wrapping-right-align-div", 208);
-  testCaretPosition("no-wrapping-rtl-div", 208);
-  testCaretPosition("no-wrapping-0-right-padding-rtl-textarea", 206);
-  testCaretPosition("no-wrapping-ltr-div", 9);
-  testCaretPosition("no-wrapping-ltr-textarea", 10);
+  testRtlCaretPosition("rtl-div", 208);
+  testRtlCaretPosition("0-right-padding-rtl-textarea", 206);
+  testLtrCaretPosition("ltr-div", 9);
+  testLtrCaretPosition("ltr-textarea", 10);
+  testLtrCaretPosition("no-wrapping-right-align-div", 208);
+  testRtlCaretPosition("no-wrapping-rtl-div", 208);
+  testRtlCaretPosition("no-wrapping-0-right-padding-rtl-textarea", 206);
+  testLtrCaretPosition("no-wrapping-ltr-div", 9);
+  testLtrCaretPosition("no-wrapping-ltr-textarea", 10);
 }
 
 </script>
