@@ -14,7 +14,6 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
@@ -302,7 +301,7 @@ SniffingResult CrossOriginReadBlocking::SniffForHTML(StringPiece data) {
     AdvancePastWhitespace(&data);
 
     SniffingResult signature_match =
-        MatchesSignature(&data, kHtmlSignatures, arraysize(kHtmlSignatures),
+        MatchesSignature(&data, kHtmlSignatures, base::size(kHtmlSignatures),
                          base::CompareCase::INSENSITIVE_ASCII);
     if (signature_match != kNo)
       return signature_match;
@@ -322,7 +321,7 @@ SniffingResult CrossOriginReadBlocking::SniffForXML(base::StringPiece data) {
   // initializer.
   AdvancePastWhitespace(&data);
   static const StringPiece kXmlSignatures[] = {StringPiece("<?xml")};
-  return MatchesSignature(&data, kXmlSignatures, arraysize(kXmlSignatures),
+  return MatchesSignature(&data, kXmlSignatures, base::size(kXmlSignatures),
                           base::CompareCase::SENSITIVE);
 }
 
@@ -427,7 +426,7 @@ SniffingResult CrossOriginReadBlocking::SniffForFetchOnlyResource(
       StringPiece("while (1);"),
   };
   SniffingResult has_parser_breaker = MatchesSignature(
-      &data, kScriptBreakingPrefixes, arraysize(kScriptBreakingPrefixes),
+      &data, kScriptBreakingPrefixes, base::size(kScriptBreakingPrefixes),
       base::CompareCase::SENSITIVE);
   if (has_parser_breaker != kNo)
     return has_parser_breaker;

@@ -19,6 +19,7 @@
 #include "base/process/memory.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_config.h"
@@ -125,7 +126,7 @@ void SetupSignalHandlers() {
   static const int signals_to_reset[] = {
       SIGHUP,  SIGINT,  SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV,
       SIGALRM, SIGTERM, SIGCHLD, SIGBUS, SIGTRAP};  // SIGPIPE is set below.
-  for (unsigned i = 0; i < arraysize(signals_to_reset); i++) {
+  for (unsigned i = 0; i < base::size(signals_to_reset); i++) {
     CHECK_EQ(0, sigaction(signals_to_reset[i], &sigact, NULL));
   }
 

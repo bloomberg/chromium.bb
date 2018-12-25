@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -36,7 +36,7 @@ void CleanupDeprecatedTrackedPreferences(
       "default_search_provider.search_url", "default_search_provider.name",
       "default_search_provider.keyword"};
 
-  for (size_t i = 0; i < arraysize(kDeprecatedTrackedPreferences); ++i) {
+  for (size_t i = 0; i < base::size(kDeprecatedTrackedPreferences); ++i) {
     const char* key = kDeprecatedTrackedPreferences[i];
     pref_store_contents->Remove(key, NULL);
     hash_store_transaction->ClearHash(key);

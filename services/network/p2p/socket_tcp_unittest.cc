@@ -7,8 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
@@ -178,7 +178,7 @@ TEST_F(P2PSocketTcpTest, ReceiveStun) {
     size_t step_size = std::min(step_sizes[step], received_data.size() - pos);
     socket_->AppendInputData(&received_data[pos], step_size);
     pos += step_size;
-    if (++step >= arraysize(step_sizes))
+    if (++step >= base::size(step_sizes))
       step = 0;
   }
 
@@ -406,7 +406,7 @@ TEST_F(P2PSocketStunTcpTest, ReceiveStun) {
     size_t step_size = std::min(step_sizes[step], received_data.size() - pos);
     socket_->AppendInputData(&received_data[pos], step_size);
     pos += step_size;
-    if (++step >= arraysize(step_sizes))
+    if (++step >= base::size(step_sizes))
       step = 0;
   }
 

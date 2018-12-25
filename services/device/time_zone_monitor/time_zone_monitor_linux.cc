@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
@@ -107,7 +106,7 @@ class TimeZoneMonitorLinuxImpl
     const char* const kFilesToWatch[] = {
         "/etc/localtime", "/etc/timezone", "/etc/TZ",
     };
-    for (size_t index = 0; index < arraysize(kFilesToWatch); ++index) {
+    for (size_t index = 0; index < base::size(kFilesToWatch); ++index) {
       file_path_watchers_.push_back(std::make_unique<base::FilePathWatcher>());
       file_path_watchers_.back()->Watch(base::FilePath(kFilesToWatch[index]),
                                         false, callback);

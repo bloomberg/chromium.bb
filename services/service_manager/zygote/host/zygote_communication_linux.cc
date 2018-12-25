@@ -16,6 +16,7 @@
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket.h"
+#include "base/stl_util.h"
 #include "services/service_manager/embedder/result_codes.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/sandbox/switches.h"
@@ -244,7 +245,7 @@ void ZygoteCommunication::Init(
       service_manager::switches::kNoSandbox,
   };
   cmd_line.CopySwitchesFrom(browser_command_line, kForwardSwitches,
-                            arraysize(kForwardSwitches));
+                            base::size(kForwardSwitches));
 
   pid_ = std::move(launcher).Run(&cmd_line, &control_fd_);
 
