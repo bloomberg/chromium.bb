@@ -12,7 +12,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/mac/scoped_aedesc.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -234,7 +234,7 @@ TEST_F(AppleEventUtilTest, ValueToAppleEventDescriptor) {
       typeAEList },
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     std::unique_ptr<base::Value> value =
         base::JSONReader::Read(cases[i].json_input);
     NSAppleEventDescriptor* descriptor =

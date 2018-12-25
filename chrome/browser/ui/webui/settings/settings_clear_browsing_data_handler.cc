@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_important_sites_util.h"
@@ -239,7 +239,7 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
         BrowsingDataType::FORM_DATA,      BrowsingDataType::HOSTED_APPS_DATA,
         BrowsingDataType::MEDIA_LICENSES,
     };
-    static size_t num_other_types = arraysize(other_types);
+    static size_t num_other_types = base::size(other_types);
     int checked_other_types =
         std::count_if(other_types, other_types + num_other_types,
                       [&data_types](BrowsingDataType type) {

@@ -12,11 +12,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -99,7 +99,7 @@ void LogIncidentDataType(IncidentDisposition disposition,
       "SBIRS.DiscardedIncident",
       "SBIRS.NoDownloadIncident",
   };
-  static_assert(arraysize(kHistogramNames) == NUM_DISPOSITIONS,
+  static_assert(base::size(kHistogramNames) == NUM_DISPOSITIONS,
                 "Keep kHistogramNames in sync with enum IncidentDisposition.");
   DCHECK_GE(disposition, 0);
   DCHECK_LT(disposition, NUM_DISPOSITIONS);

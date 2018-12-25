@@ -11,7 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/search/instant_service.h"
@@ -116,7 +116,7 @@ TEST_F(SearchTest, ShouldAssignURLToInstantRenderer) {
       {"https://foo.com/", false, "Instant support was removed"},
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     const SearchTestCase& test = kTestCases[i];
     EXPECT_EQ(test.expected_result,
               ShouldAssignURLToInstantRenderer(GURL(test.url), profile()))
@@ -141,7 +141,7 @@ TEST_F(SearchTest, ShouldUseProcessPerSiteForInstantURL) {
       {"https://foo.com/", false, "Non-exact path"},
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     const SearchTestCase& test = kTestCases[i];
     EXPECT_EQ(test.expected_result,
               ShouldUseProcessPerSiteForInstantURL(GURL(test.url), profile()))
@@ -178,7 +178,7 @@ const struct ProcessIsolationTestCase {
 };
 
 TEST_F(SearchTest, ProcessIsolation) {
-  for (size_t i = 0; i < arraysize(kProcessIsolationTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kProcessIsolationTestCases); ++i) {
     const ProcessIsolationTestCase& test = kProcessIsolationTestCases[i];
     AddTab(browser(), GURL("chrome://blank"));
     content::WebContents* contents =
@@ -215,7 +215,7 @@ TEST_F(SearchTest, ProcessIsolation) {
 }
 
 TEST_F(SearchTest, ProcessIsolation_RendererInitiated) {
-  for (size_t i = 0; i < arraysize(kProcessIsolationTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kProcessIsolationTestCases); ++i) {
     const ProcessIsolationTestCase& test = kProcessIsolationTestCases[i];
     AddTab(browser(), GURL("chrome://blank"));
     content::WebContents* contents =

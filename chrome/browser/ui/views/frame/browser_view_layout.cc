@@ -6,8 +6,8 @@
 
 #include <algorithm>
 
-#include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -206,7 +206,7 @@ gfx::Size BrowserViewLayout::GetMinimumSize(const views::View* host) const {
         bookmark_bar_size.width(),
         infobar_container_size.width(),
         contents_size.width() };
-  int min_width = *std::max_element(&widths[0], &widths[arraysize(widths)]);
+  int min_width = *std::max_element(&widths[0], &widths[base::size(widths)]);
   return gfx::Size(min_width, min_height);
 }
 

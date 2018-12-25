@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_url_handlers.h"
@@ -27,8 +27,7 @@ TEST_F(UpdateURLManifestTest, UpdateUrls) {
     Testcase("update_url_valid_4.json", extensions::Manifest::INTERNAL,
              Extension::NO_FLAGS)
   };
-  RunTestcases(testcases, arraysize(testcases),
-               EXPECT_TYPE_SUCCESS);
+  RunTestcases(testcases, base::size(testcases), EXPECT_TYPE_SUCCESS);
 
   // Test some invalid update urls
   Testcase testcases2[] = {
@@ -39,6 +38,5 @@ TEST_F(UpdateURLManifestTest, UpdateUrls) {
     Testcase("update_url_invalid_3.json", errors::kInvalidUpdateURL,
              extensions::Manifest::INTERNAL, Extension::NO_FLAGS)
   };
-  RunTestcases(testcases2, arraysize(testcases2),
-               EXPECT_TYPE_ERROR);
+  RunTestcases(testcases2, base::size(testcases2), EXPECT_TYPE_ERROR);
 }

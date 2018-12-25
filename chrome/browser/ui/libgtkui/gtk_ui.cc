@@ -20,7 +20,6 @@
 #include "base/environment.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/protected_memory.h"
 #include "base/memory/protected_memory_cfi.h"
 #include "base/nix/mime_util_xdg.h"
@@ -565,7 +564,7 @@ gfx::Image GtkUi::GetIconForContentType(const std::string& content_type,
 
   std::string content_types[] = {content_type, kUnknownContentType};
 
-  for (size_t i = 0; i < arraysize(content_types); ++i) {
+  for (size_t i = 0; i < base::size(content_types); ++i) {
     ScopedGIcon icon(g_content_type_get_icon(content_types[i].c_str()));
     ScopedGtkIconInfo icon_info(gtk_icon_theme_lookup_by_gicon(
         theme, icon.get(), size,
@@ -629,7 +628,7 @@ std::unique_ptr<views::Border> GtkUi::CreateNativeBorder(
       },
   };
 
-  for (unsigned i = 0; i < arraysize(paintstate); i++) {
+  for (unsigned i = 0; i < base::size(paintstate); i++) {
     gtk_border->SetPainter(
         paintstate[i].focus, paintstate[i].state,
         border->PaintsButtonState(paintstate[i].focus, paintstate[i].state)

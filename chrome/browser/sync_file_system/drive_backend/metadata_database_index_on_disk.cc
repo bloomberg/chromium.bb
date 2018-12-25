@@ -8,7 +8,6 @@
 
 #include "base/format_macros.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -732,7 +731,7 @@ int64_t MetadataDatabaseIndexOnDisk::DeleteTrackerIndexes() {
   };
 
   int64_t num_deletes_before = db_->num_deletes();
-  for (size_t i = 0; i < arraysize(kIndexPrefixes); ++i)
+  for (size_t i = 0; i < base::size(kIndexPrefixes); ++i)
     DeleteKeyStartsWith(kIndexPrefixes[i]);
   num_dirty_trackers_ = 0;
   return db_->num_deletes() - num_deletes_before;

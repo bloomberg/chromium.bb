@@ -12,9 +12,9 @@
 
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/scoped_native_library.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/pe_image.h"
 #include "components/safe_browsing/proto/csd.pb.h"
@@ -320,8 +320,8 @@ bool VerifyModule(
 
   WCHAR module_path[MAX_PATH] = {};
   DWORD length =
-      GetModuleFileName(module_handle, module_path, arraysize(module_path));
-  if (!length || length == arraysize(module_path))
+      GetModuleFileName(module_handle, module_path, base::size(module_path));
+  if (!length || length == base::size(module_path))
     return false;
 
   base::MemoryMappedFile mapped_module;

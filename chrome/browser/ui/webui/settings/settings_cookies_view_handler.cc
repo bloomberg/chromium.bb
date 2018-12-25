@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/number_formatting.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
@@ -104,7 +104,7 @@ int GetCategoryLabelID(CookieTreeNode::DetailedInfo::NodeType node_type) {
   };
   // Before optimizing, consider the data size and the cost of L2 cache misses.
   // A linear search over a couple dozen integers is very fast.
-  for (size_t i = 0; i < arraysize(kCategoryLabels); ++i) {
+  for (size_t i = 0; i < base::size(kCategoryLabels); ++i) {
     if (kCategoryLabels[i].node_type == node_type) {
       return kCategoryLabels[i].id;
     }

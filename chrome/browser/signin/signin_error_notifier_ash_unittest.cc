@@ -9,7 +9,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
@@ -149,12 +148,12 @@ TEST_F(SigninErrorNotifierTest, AuthStatusEnumerateAllErrors) {
     { GoogleServiceAuthError::SERVICE_ERROR, true },
     { GoogleServiceAuthError::WEB_LOGIN_REQUIRED, true },
   };
-  static_assert(arraysize(table) == GoogleServiceAuthError::NUM_STATES,
-      "table size should match number of auth error types");
+  static_assert(base::size(table) == GoogleServiceAuthError::NUM_STATES,
+                "table size should match number of auth error types");
   std::string account_id =
       identity_test_env()->MakeAccountAvailable(kTestEmail).account_id;
 
-  for (size_t i = 0; i < arraysize(table); ++i) {
+  for (size_t i = 0; i < base::size(table); ++i) {
     if (GoogleServiceAuthError::IsDeprecated(table[i].error_state))
       continue;
 

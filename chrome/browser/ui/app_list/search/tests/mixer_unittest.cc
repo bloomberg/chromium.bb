@@ -12,7 +12,7 @@
 
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -205,7 +205,7 @@ TEST_F(MixerTest, Basic) {
       {0, 0, 0, ""},
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     app_provider()->set_count(kTestCases[i].app_results);
     omnibox_provider()->set_count(kTestCases[i].omnibox_results);
     webstore_provider()->set_count(kTestCases[i].webstore_results);

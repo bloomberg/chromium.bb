@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/device_chooser_content_view.h"
 
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -225,7 +226,7 @@ gfx::ImageSkia DeviceChooserContentView::GetIcon(int row) {
     return gfx::ImageSkia();
 
   DCHECK_GE(level, 0);
-  DCHECK_LT(level, static_cast<int>(arraysize(kSignalStrengthLevelImageIds)));
+  DCHECK_LT(level, static_cast<int>(base::size(kSignalStrengthLevelImageIds)));
 
   return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       kSignalStrengthLevelImageIds[level]);

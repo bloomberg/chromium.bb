@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -165,7 +165,7 @@ TEST_F(StackedTabStripLayoutTest, InitialLayout) {
     { 0, 300, 100, 10, 1, 0, 6, "", "0 1 2 3 4 20 110 200" },
     { 0, 300, 100, 10, 1, 0, 4, "", "0 1 2 3 4 94 184 199 200" },
   };
-  for (size_t i = 0; i < arraysize(test_data); ++i) {
+  for (size_t i = 0; i < base::size(test_data); ++i) {
     CreateLayout(test_data[i]);
     EXPECT_EQ(test_data[i].expected_bounds, BoundsString()) << " at " << i;
   }
@@ -273,7 +273,7 @@ TEST_F(StackedTabStripLayoutTest, DragActiveTabExisting) {
     { { 0, 150, 100, 10, 2, 0, 2, "0 2 10 16 25 50", "0 2 11 17 26 50" }, 1 },
   };
 
-  for (size_t i = 0; i < arraysize(test_data); ++i) {
+  for (size_t i = 0; i < base::size(test_data); ++i) {
     CreateLayout(test_data[i].common_data);
     layout_->DragActiveTab(test_data[i].delta);
     EXPECT_EQ(test_data[i].common_data.expected_bounds, BoundsString()) <<
@@ -296,7 +296,7 @@ TEST_F(StackedTabStripLayoutTest, SizeToFit) {
     { 0, 240, 100, 10, 2, 0, 1, "0 49 89 140", "0 49 89 139" },
   };
 
-  for (size_t i = 0; i < arraysize(test_data); ++i) {
+  for (size_t i = 0; i < base::size(test_data); ++i) {
     CreateLayout(test_data[i]);
     SetBoundsFromString(test_data[i].expected_bounds);
     layout_->SizeToFit();
@@ -372,7 +372,7 @@ TEST_F(StackedTabStripLayoutTest, AddTab) {
     { { 0, 200, 100, 10, 2, 0, 2, "0 2 10 100", "0 90 96 98 100"},
       0, true, false },
   };
-  for (size_t i = 0; i < arraysize(test_data); ++i) {
+  for (size_t i = 0; i < base::size(test_data); ++i) {
     CreateLayout(test_data[i].common_data);
     int add_types = 0;
     if (test_data[i].add_active)
@@ -429,7 +429,7 @@ TEST_F(StackedTabStripLayoutTest, RemoveTab) {
     { { 0, 200, 100, 10, 2, 0, 0, "0 90 94 96 98 100", "0 90 94 96 100" },
       5, 0 },
   };
-  for (size_t i = 0; i < arraysize(test_data); ++i) {
+  for (size_t i = 0; i < base::size(test_data); ++i) {
     CreateLayout(test_data[i].common_data);
     int old_x = view_model_.ideal_bounds(test_data[i].remove_index).x();
     view_model_.Remove(test_data[i].remove_index);
@@ -523,7 +523,7 @@ TEST_F(StackedTabStripLayoutTest, SetWidth) {
     { { 0, 200, 100, 10, 2, 0, 2, "0 90 92 100", "0 2 78 80"}, 180 },
 
   };
-  for (size_t i = 0; i < arraysize(test_data); ++i) {
+  for (size_t i = 0; i < base::size(test_data); ++i) {
     CreateLayout(test_data[i].common_data);
     layout_->SetWidth(test_data[i].new_width);
     EXPECT_EQ(test_data[i].common_data.expected_bounds, BoundsString()) <<
@@ -544,7 +544,7 @@ TEST_F(StackedTabStripLayoutTest, SetActiveIndex) {
     { { 4, 250, 100, 10, 2, 1, 2, "0 4 8 98 148 150", "0 4 94 146 148 150"},
       0 },
   };
-  for (size_t i = 0; i < arraysize(test_data); ++i) {
+  for (size_t i = 0; i < base::size(test_data); ++i) {
     CreateLayout(test_data[i].common_data);
     layout_->SetActiveIndex(test_data[i].new_index);
     EXPECT_EQ(test_data[i].common_data.expected_bounds, BoundsString()) <<
@@ -589,7 +589,7 @@ TEST_F(StackedTabStripLayoutTest, MoveTab) {
     { { 0, 200, 100, 10, 2, 0, 4, "0 2 4 6 96 98 100", "0 2 4 6 8 10 100" },
       0, 6, 6, 0, 0 },
   };
-  for (size_t i = 0; i < arraysize(test_data); ++i) {
+  for (size_t i = 0; i < base::size(test_data); ++i) {
     CreateLayout(test_data[i].common_data);
     view_model_.MoveViewOnly(test_data[i].from, test_data[i].to);
     for (int j = 0; j < test_data[i].new_pinned_tab_count; ++j) {
@@ -654,7 +654,7 @@ TEST_F(StackedTabStripLayoutTest, SetActiveTabLocation) {
     // Location can be honored.
     { { 0, 300, 100, 10, 2, 0, 3, "", "0 2 4 40 130 198 200" }, 40 },
   };
-  for (size_t i = 0; i < arraysize(test_data); ++i) {
+  for (size_t i = 0; i < base::size(test_data); ++i) {
     CreateLayout(test_data[i].common_data);
     layout_->SetActiveTabLocation(test_data[i].location);
     EXPECT_EQ(test_data[i].common_data.expected_bounds, BoundsString()) <<

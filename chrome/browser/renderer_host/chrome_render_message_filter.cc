@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -53,7 +53,7 @@ const uint32_t kRenderFilteredMessageClasses[] = {
 ChromeRenderMessageFilter::ChromeRenderMessageFilter(int render_process_id,
                                                      Profile* profile)
     : BrowserMessageFilter(kRenderFilteredMessageClasses,
-                           arraysize(kRenderFilteredMessageClasses)),
+                           base::size(kRenderFilteredMessageClasses)),
       render_process_id_(render_process_id),
       preconnect_manager_initialized_(false),
       cookie_settings_(CookieSettingsFactory::GetForProfile(profile)) {

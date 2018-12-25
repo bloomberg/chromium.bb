@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
@@ -62,7 +62,7 @@ const int kPermissionButtonTextIDPolicyManaged[] = {
     IDS_PAGE_INFO_PERMISSION_ASK_BY_POLICY,
     kInvalidResourceID,
     kInvalidResourceID};
-static_assert(arraysize(kPermissionButtonTextIDPolicyManaged) ==
+static_assert(base::size(kPermissionButtonTextIDPolicyManaged) ==
                   CONTENT_SETTING_NUM_SETTINGS,
               "kPermissionButtonTextIDPolicyManaged array size is incorrect");
 
@@ -75,7 +75,7 @@ const int kPermissionButtonTextIDExtensionManaged[] = {
     IDS_PAGE_INFO_PERMISSION_ASK_BY_EXTENSION,
     kInvalidResourceID,
     kInvalidResourceID};
-static_assert(arraysize(kPermissionButtonTextIDExtensionManaged) ==
+static_assert(base::size(kPermissionButtonTextIDExtensionManaged) ==
                   CONTENT_SETTING_NUM_SETTINGS,
               "kPermissionButtonTextIDExtensionManaged array size is "
               "incorrect");
@@ -89,7 +89,7 @@ const int kPermissionButtonTextIDUserManaged[] = {
     IDS_PAGE_INFO_BUTTON_TEXT_ASK_BY_USER,
     kInvalidResourceID,
     IDS_PAGE_INFO_BUTTON_TEXT_DETECT_IMPORTANT_CONTENT_BY_USER};
-static_assert(arraysize(kPermissionButtonTextIDUserManaged) ==
+static_assert(base::size(kPermissionButtonTextIDUserManaged) ==
                   CONTENT_SETTING_NUM_SETTINGS,
               "kPermissionButtonTextIDUserManaged array size is incorrect");
 

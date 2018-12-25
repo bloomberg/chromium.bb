@@ -7,8 +7,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -283,7 +283,7 @@ TEST_F(ChromeOmniboxNavigationObserverTest, AlternateNavInfoBar) {
         kNoResponse},
        true},
   };
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     SCOPED_TRACE("case #" + base::IntToString(i));
     const Case& test_case = cases[i];
     const Response& response = test_case.response;

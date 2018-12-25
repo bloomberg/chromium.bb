@@ -14,11 +14,11 @@
 
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -831,7 +831,7 @@ void PageInfo::PresentSitePermissions() {
   ChosenObjectInfoList chosen_object_info_list;
 
   PageInfoUI::PermissionInfo permission_info;
-  for (size_t i = 0; i < arraysize(kPermissionType); ++i) {
+  for (size_t i = 0; i < base::size(kPermissionType); ++i) {
     permission_info.type = kPermissionType[i];
 
     content_settings::SettingInfo info;
@@ -971,7 +971,7 @@ void PageInfo::PresentSiteIdentity() {
 
 std::vector<ContentSettingsType> PageInfo::GetAllPermissionsForTesting() {
   std::vector<ContentSettingsType> permission_list;
-  for (size_t i = 0; i < arraysize(kPermissionType); ++i) {
+  for (size_t i = 0; i < base::size(kPermissionType); ++i) {
 #if !defined(OS_ANDROID)
     if (kPermissionType[i] == CONTENT_SETTINGS_TYPE_AUTOPLAY)
       continue;

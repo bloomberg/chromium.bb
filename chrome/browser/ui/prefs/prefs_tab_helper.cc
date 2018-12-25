@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -88,7 +88,7 @@ ALL_FONT_SCRIPTS(WEBKIT_WEBPREFS_FONTS_STANDARD)
 #undef EXPAND_SCRIPT_FONT
   };
 
-  for (size_t i = 0; i < arraysize(kFontFamilyMap); ++i) {
+  for (size_t i = 0; i < base::size(kFontFamilyMap); ++i) {
     const char* pref_name = kFontFamilyMap[i];
     if (fonts_with_defaults.find(pref_name) == fonts_with_defaults.end()) {
       // We haven't already set a default value for this font preference, so set
@@ -192,7 +192,7 @@ const FontDefault kFontDefaults[] = {
 #endif
 };
 
-const size_t kFontDefaultsLength = arraysize(kFontDefaults);
+const size_t kFontDefaultsLength = base::size(kFontDefaults);
 
 // Returns the script of the font pref |pref_name|.  For example, suppose
 // |pref_name| is "webkit.webprefs.fonts.serif.Hant".  Since the script code for

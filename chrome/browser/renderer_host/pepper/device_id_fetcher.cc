@@ -5,7 +5,7 @@
 #include "chrome/browser/renderer_host/pepper/device_id_fetcher.h"
 
 #include "base/files/file_util.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
@@ -115,9 +115,9 @@ void DeviceIDFetcher::CheckPrefsOnUIThread() {
   std::string salt = profile->GetPrefs()->GetString(prefs::kDRMSalt);
   if (salt.empty()) {
     uint8_t salt_bytes[kSaltLength];
-    crypto::RandBytes(salt_bytes, arraysize(salt_bytes));
+    crypto::RandBytes(salt_bytes, base::size(salt_bytes));
     // Since it will be stored in a string pref, convert it to hex.
-    salt = base::HexEncode(salt_bytes, arraysize(salt_bytes));
+    salt = base::HexEncode(salt_bytes, base::size(salt_bytes));
     profile->GetPrefs()->SetString(prefs::kDRMSalt, salt);
   }
 

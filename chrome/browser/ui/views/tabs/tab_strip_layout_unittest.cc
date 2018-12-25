@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
@@ -96,7 +96,7 @@ TEST(TabStripLayoutTest, Tests) {
       {1, 3, 0, 0, 10, "0 10, 6 14, 16 14", 20, 14},
   };
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     int active_width;
     int inactive_width;
     std::vector<gfx::Rect> tabs_bounds = CalculateBounds(

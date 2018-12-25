@@ -10,8 +10,8 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
@@ -60,7 +60,7 @@ ChromeExtensionMessageFilter::ChromeExtensionMessageFilter(
     int render_process_id,
     Profile* profile)
     : BrowserMessageFilter(kExtensionFilteredMessageClasses,
-                           arraysize(kExtensionFilteredMessageClasses)),
+                           base::size(kExtensionFilteredMessageClasses)),
       render_process_id_(render_process_id),
       profile_(profile),
       activity_log_(extensions::ActivityLog::GetInstance(profile)),

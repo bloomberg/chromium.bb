@@ -4,6 +4,7 @@
 
 #include "chrome/browser/vr/renderers/textured_quad_renderer.h"
 
+#include "base/stl_util.h"
 #include "chrome/browser/vr/vr_gl_util.h"
 #include "ui/gfx/transform.h"
 
@@ -320,7 +321,7 @@ void TexturedQuadRenderer::Flush() {
       glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT,
                      VOID_OFFSET(kInnerRectOffset));
     } else {
-      glDrawElements(GL_TRIANGLES, arraysize(kIndices), GL_UNSIGNED_SHORT, 0);
+      glDrawElements(GL_TRIANGLES, base::size(kIndices), GL_UNSIGNED_SHORT, 0);
     }
 
     quad_queue_.pop();
@@ -346,11 +347,11 @@ void TexturedQuadRenderer::CreateBuffers() {
   index_buffer_ = buffers[1];
 
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
-  glBufferData(GL_ARRAY_BUFFER, arraysize(kVertices) * sizeof(float), kVertices,
-               GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, base::size(kVertices) * sizeof(float),
+               kVertices, GL_STATIC_DRAW);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, arraysize(kIndices) * sizeof(GLushort),
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, base::size(kIndices) * sizeof(GLushort),
                kIndices, GL_STATIC_DRAW);
 }
 
@@ -371,7 +372,7 @@ GLuint TexturedQuadRenderer::IndexBuffer() {
 }
 
 int TexturedQuadRenderer::NumQuadIndices() {
-  return arraysize(kIndices);
+  return base::size(kIndices);
 }
 
 }  // namespace vr

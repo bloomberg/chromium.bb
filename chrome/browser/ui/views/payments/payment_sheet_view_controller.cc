@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/i18n/message_formatter.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -844,7 +844,7 @@ PaymentSheetViewController::CreateContactInfoRow() {
     } else if (state()->contact_profiles().size() == 1) {
       base::string16 truncated_content =
           state()->contact_profiles()[0]->ConstructInferredLabel(
-              kLabelFields, arraysize(kLabelFields), arraysize(kLabelFields),
+              kLabelFields, base::size(kLabelFields), base::size(kLabelFields),
               state()->GetApplicationLocale());
       return builder.CreateWithButton(truncated_content,
                                       l10n_util::GetStringUTF16(IDS_CHOOSE),
@@ -852,7 +852,7 @@ PaymentSheetViewController::CreateContactInfoRow() {
     } else {
       base::string16 preview =
           state()->contact_profiles()[0]->ConstructInferredLabel(
-              kLabelFields, arraysize(kLabelFields), arraysize(kLabelFields),
+              kLabelFields, base::size(kLabelFields), base::size(kLabelFields),
               state()->GetApplicationLocale());
       base::string16 format = l10n_util::GetPluralStringFUTF16(
           IDS_PAYMENT_REQUEST_CONTACTS_PREVIEW,

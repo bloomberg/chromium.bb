@@ -5,6 +5,7 @@
 #include "chrome/browser/vr/elements/controller.h"
 
 #include "base/numerics/math_constants.h"
+#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
@@ -278,9 +279,9 @@ Controller::Renderer::Renderer()
   opacity_handle_ = glGetUniformLocation(program_handle_, "u_Opacity");
 
   auto body_alpha_curve =
-      CreateAlphaCurve(kBodyAlphaStops, arraysize(kBodyAlphaStops));
+      CreateAlphaCurve(kBodyAlphaStops, base::size(kBodyAlphaStops));
   auto top_alpha_curve =
-      CreateAlphaCurve(kTopAlphaStops, arraysize(kTopAlphaStops));
+      CreateAlphaCurve(kTopAlphaStops, base::size(kTopAlphaStops));
 
   gfx::Transform transform;
   transform.Translate3d(0.0, 0.0, (kControllerLength - kControllerWidth) / 2);

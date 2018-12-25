@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/extension.h"
@@ -27,8 +27,7 @@ TEST_F(HomepageURLManifestTest, ParseHomepageURLs) {
     Testcase("homepage_bad_schema.json",
              errors::kInvalidHomepageURL)
   };
-  RunTestcases(testcases, arraysize(testcases),
-               EXPECT_TYPE_ERROR);
+  RunTestcases(testcases, base::size(testcases), EXPECT_TYPE_ERROR);
 }
 
 TEST_F(HomepageURLManifestTest, GetHomepageURL) {

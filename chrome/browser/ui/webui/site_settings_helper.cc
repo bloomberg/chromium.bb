@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/feature_list.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
@@ -102,7 +103,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {CONTENT_SETTINGS_TYPE_BACKGROUND_FETCH, nullptr},
     {CONTENT_SETTINGS_TYPE_INTENT_PICKER_DISPLAY, nullptr},
 };
-static_assert(arraysize(kContentSettingsTypeGroupNames) ==
+static_assert(base::size(kContentSettingsTypeGroupNames) ==
                   // ContentSettingsType starts at -1, so add 1 here.
                   static_cast<int>(CONTENT_SETTINGS_NUM_TYPES) + 1,
               "kContentSettingsTypeGroupNames should have "
@@ -124,7 +125,7 @@ const SiteSettingSourceStringMapping kSiteSettingSourceStringMapping[] = {
     {SiteSettingSource::kPolicy, "policy"},
     {SiteSettingSource::kPreference, "preference"},
 };
-static_assert(arraysize(kSiteSettingSourceStringMapping) ==
+static_assert(base::size(kSiteSettingSourceStringMapping) ==
                   static_cast<int>(SiteSettingSource::kNumSources),
               "kSiteSettingSourceStringMapping should have "
               "SiteSettingSource::kNumSources elements");
@@ -214,7 +215,7 @@ const ChooserTypeNameEntry kChooserTypeGroupNames[] = {
 }  // namespace
 
 bool HasRegisteredGroupName(ContentSettingsType type) {
-  for (size_t i = 0; i < arraysize(kContentSettingsTypeGroupNames); ++i) {
+  for (size_t i = 0; i < base::size(kContentSettingsTypeGroupNames); ++i) {
     if (type == kContentSettingsTypeGroupNames[i].type &&
         kContentSettingsTypeGroupNames[i].name != nullptr) {
       return true;
@@ -224,7 +225,7 @@ bool HasRegisteredGroupName(ContentSettingsType type) {
 }
 
 ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
-  for (size_t i = 0; i < arraysize(kContentSettingsTypeGroupNames); ++i) {
+  for (size_t i = 0; i < base::size(kContentSettingsTypeGroupNames); ++i) {
     if (name == kContentSettingsTypeGroupNames[i].name)
       return kContentSettingsTypeGroupNames[i].type;
   }
@@ -234,7 +235,7 @@ ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
 }
 
 std::string ContentSettingsTypeToGroupName(ContentSettingsType type) {
-  for (size_t i = 0; i < arraysize(kContentSettingsTypeGroupNames); ++i) {
+  for (size_t i = 0; i < base::size(kContentSettingsTypeGroupNames); ++i) {
     if (type == kContentSettingsTypeGroupNames[i].type) {
       const char* name = kContentSettingsTypeGroupNames[i].name;
       if (name != nullptr)

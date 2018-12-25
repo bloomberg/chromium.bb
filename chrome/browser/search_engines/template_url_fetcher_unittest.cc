@@ -12,9 +12,9 @@
 
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/test/base/testing_profile.h"
@@ -225,7 +225,7 @@ TEST_F(TemplateURLFetcherTest, DuplicatesThrownAway) {
        keyword},
   };
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     StartDownload(test_cases[i].keyword, test_cases[i].osdd_file_name, false);
     EXPECT_EQ(1, template_url_fetcher()->requests_count())
         << test_cases[i].description;
