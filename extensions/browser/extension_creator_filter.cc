@@ -9,7 +9,7 @@
 #include <set>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "extensions/common/constants.h"
 
@@ -44,7 +44,7 @@ bool ExtensionCreatorFilter::ShouldPackageFile(
       FILE_PATH_LITERAL(".svn"),        FILE_PATH_LITERAL("__MACOSX"),
       FILE_PATH_LITERAL("desktop.ini"), FILE_PATH_LITERAL("Thumbs.db")};
   std::set<base::FilePath::StringType> names_to_exclude_set(
-      names_to_exclude, names_to_exclude + arraysize(names_to_exclude));
+      names_to_exclude, names_to_exclude + base::size(names_to_exclude));
   std::vector<base::FilePath::StringType> components;
   file_path.GetComponents(&components);
   for (size_t i = 0; i < components.size(); i++) {

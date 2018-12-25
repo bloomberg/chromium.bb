@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/stl_util.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/api/messaging/message.h"
@@ -120,7 +121,7 @@ void JSRendererMessagingService::DispatchOnConnectToListeners(
 
   // Note: this can execute asynchronously if JS is suspended.
   script_context->module_system()->CallModuleMethodSafe(
-      "messaging", "dispatchOnConnect", arraysize(arguments), arguments);
+      "messaging", "dispatchOnConnect", base::size(arguments), arguments);
 }
 
 void JSRendererMessagingService::DispatchOnMessageToListeners(

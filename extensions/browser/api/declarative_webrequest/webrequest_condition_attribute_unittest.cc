@@ -10,9 +10,9 @@
 #include <utility>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/previews_state.h"
@@ -284,7 +284,7 @@ TEST(WebRequestConditionAttributeTest, Stages) {
 
   // Check that exactly all active stages are considered in this test.
   unsigned int covered_stages = 0;
-  for (size_t i = 0; i < arraysize(active_stages); ++i)
+  for (size_t i = 0; i < base::size(active_stages); ++i)
     covered_stages |= active_stages[i].first;
   EXPECT_EQ(kActiveStages, covered_stages);
 
@@ -302,7 +302,7 @@ TEST(WebRequestConditionAttributeTest, Stages) {
 
   // Create an attribute with all possible applicable stages.
   base::ListValue all_stages;
-  for (size_t i = 0; i < arraysize(active_stages); ++i)
+  for (size_t i = 0; i < base::size(active_stages); ++i)
     all_stages.AppendString(active_stages[i].second);
   scoped_refptr<const WebRequestConditionAttribute> attribute_with_all =
       WebRequestConditionAttribute::Create(keys::kStagesKey,
@@ -316,7 +316,7 @@ TEST(WebRequestConditionAttributeTest, Stages) {
   std::vector<scoped_refptr<const WebRequestConditionAttribute> >
       one_stage_attributes;
 
-  for (size_t i = 0; i < arraysize(active_stages); ++i) {
+  for (size_t i = 0; i < base::size(active_stages); ++i) {
     base::ListValue single_stage_list;
     single_stage_list.AppendString(active_stages[i].second);
     one_stage_attributes.push_back(
@@ -335,7 +335,7 @@ TEST(WebRequestConditionAttributeTest, Stages) {
                             TRAFFIC_ANNOTATION_FOR_TESTS));
   WebRequestInfo request_info(url_request.get());
 
-  for (size_t i = 0; i < arraysize(active_stages); ++i) {
+  for (size_t i = 0; i < base::size(active_stages); ++i) {
     EXPECT_FALSE(empty_attribute->IsFulfilled(
         WebRequestData(&request_info, active_stages[i].first)));
 
@@ -477,7 +477,7 @@ TEST(WebRequestConditionAttributeTest, RequestHeaders) {
     keys::kValueSuffixKey, "alue",
     keys::kValuePrefixKey, "custom/value"
   };
-  const size_t kPassingConditionSizes[] = { arraysize(kPassingCondition) };
+  const size_t kPassingConditionSizes[] = {base::size(kPassingCondition)};
   GetArrayAsVector(kPassingCondition, kPassingConditionSizes, 1u, &tests);
   // Positive filter, passing (conjunction of tests).
   MatchAndCheck(
@@ -572,7 +572,7 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
     keys::kValueContainsKey, "alu",
     keys::kValueEqualsKey, "custom/value"
   };
-  const size_t kPassingConditionSizes[] = { arraysize(kPassingCondition) };
+  const size_t kPassingConditionSizes[] = {base::size(kPassingCondition)};
   GetArrayAsVector(kPassingCondition, kPassingConditionSizes, 1u, &tests);
   MatchAndCheck(tests, keys::kResponseHeadersKey, stage, url_request.get(),
                 &result);
@@ -596,7 +596,7 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
     keys::kNameSuffixKey, "Header-B",
     keys::kValueEqualsKey, "custom/value"
   };
-  const size_t kMixingConditionSizes[] = { arraysize(kMixingCondition) };
+  const size_t kMixingConditionSizes[] = {base::size(kMixingCondition)};
   GetArrayAsVector(kMixingCondition, kMixingConditionSizes, 1u, &tests);
   MatchAndCheck(tests, keys::kResponseHeadersKey, stage, url_request.get(),
                 &result);
@@ -607,7 +607,7 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
     keys::kNameEqualsKey, "Custom-header-b",
     keys::kValueEqualsKey, "valueA"
   };
-  const size_t kMoreValues1Sizes[] = { arraysize(kMoreValues1) };
+  const size_t kMoreValues1Sizes[] = {base::size(kMoreValues1)};
   GetArrayAsVector(kMoreValues1, kMoreValues1Sizes, 1u, &tests);
   MatchAndCheck(tests, keys::kResponseHeadersKey, stage, url_request.get(),
                 &result);
@@ -616,7 +616,7 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
     keys::kNameEqualsKey, "Custom-header-b",
     keys::kValueEqualsKey, "valueB"
   };
-  const size_t kMoreValues2Sizes[] = { arraysize(kMoreValues2) };
+  const size_t kMoreValues2Sizes[] = {base::size(kMoreValues2)};
   GetArrayAsVector(kMoreValues2, kMoreValues2Sizes, 1u, &tests);
   MatchAndCheck(tests, keys::kResponseHeadersKey, stage, url_request.get(),
                 &result);
@@ -634,7 +634,7 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
                 &result);
   EXPECT_TRUE(result);
   // Then conjunction, conflict.
-  const size_t kConflictSizes[] = { arraysize(kConflict) };
+  const size_t kConflictSizes[] = {base::size(kConflict)};
   GetArrayAsVector(kConflict, kConflictSizes, 1u, &tests);
   MatchAndCheck(tests, keys::kResponseHeadersKey, stage, url_request.get(),
                 &result);
@@ -645,7 +645,7 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
     keys::kNameSuffixKey, "Header-C",
     keys::kValueEqualsKey, "valueC, valueD"
   };
-  const size_t kCommaSizes[] = { arraysize(kComma) };
+  const size_t kCommaSizes[] = {base::size(kComma)};
   GetArrayAsVector(kComma, kCommaSizes, 1u, &tests);
   MatchAndCheck(tests, keys::kResponseHeadersKey, stage, url_request.get(),
                 &result);
@@ -656,7 +656,7 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
     keys::kNameEqualsKey, "custom-header-d",
     keys::kValueEqualsKey, ""
   };
-  const size_t kEmptySizes[] = { arraysize(kEmpty) };
+  const size_t kEmptySizes[] = {base::size(kEmpty)};
   GetArrayAsVector(kEmpty, kEmptySizes, 1u, &tests);
   MatchAndCheck(tests, keys::kResponseHeadersKey, stage, url_request.get(),
                 &result);
@@ -686,7 +686,7 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
     keys::kNameEqualsKey, "CUSTOM-HEADER-B",
     keys::kNameContainsKey, "CUSTOM-HEADER-B"
   };
-  const size_t kUppercaseSizes[] = { arraysize(kUppercase) };  // Conjunction.
+  const size_t kUppercaseSizes[] = {base::size(kUppercase)};  // Conjunction.
   GetArrayAsVector(kUppercase, kUppercaseSizes, 1u, &tests);
   MatchAndCheck(tests, keys::kResponseHeadersKey, stage, url_request.get(),
                 &result);
@@ -710,7 +710,7 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
     keys::kNameEqualsKey, "Non-existing",
     keys::kValueEqualsKey, "void"
   };
-  const size_t kNonExistentSizes[] = { arraysize(kNonExistent) };
+  const size_t kNonExistentSizes[] = {base::size(kNonExistent)};
   GetArrayAsVector(kNonExistent, kNonExistentSizes, 1u, &tests);
   MatchAndCheck(tests, keys::kExcludeResponseHeadersKey, stage,
                 url_request.get(), &result);
@@ -721,7 +721,7 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
     keys::kNameEqualsKey, "custom-header-b",
     keys::kValueEqualsKey, "valueB"
   };
-  const size_t kExistingSize[] = { arraysize(kExisting) };
+  const size_t kExistingSize[] = {base::size(kExisting)};
   GetArrayAsVector(kExisting, kExistingSize, 1u, &tests);
   MatchAndCheck(tests, keys::kExcludeResponseHeadersKey, stage,
                 url_request.get(), &result);
@@ -756,7 +756,7 @@ TEST(WebRequestConditionAttributeTest, HideResponseHeaders) {
   bool result;
   const RequestStage stage = ON_HEADERS_RECEIVED;
   const std::string kCondition[] = {keys::kValueEqualsKey, "custom/value"};
-  const size_t kConditionSizes[] = {arraysize(kCondition)};
+  const size_t kConditionSizes[] = {base::size(kCondition)};
   GetArrayAsVector(kCondition, kConditionSizes, 1u, &tests);
 
   {

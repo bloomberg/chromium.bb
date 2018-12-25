@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "extensions/common/manifest_handlers/csp_info.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/version_info/channel.h"
 #include "extensions/common/error_utils.h"
@@ -82,7 +83,7 @@ TEST_F(CSPInfoUnitTest, SandboxedPages) {
                errors::kInvalidSandboxedPagesCSP),
       Testcase("sandboxed_pages_invalid_5.json",
                errors::kInvalidSandboxedPagesCSP)};
-  RunTestcases(testcases, arraysize(testcases), EXPECT_TYPE_ERROR);
+  RunTestcases(testcases, base::size(testcases), EXPECT_TYPE_ERROR);
 }
 
 TEST_F(CSPInfoUnitTest, CSPStringKey) {
@@ -145,7 +146,7 @@ TEST_F(CSPInfoUnitTest, CSPDictionaryKey) {
                  GetInvalidManifestKeyError(kExtensionPagesKey)),
         Testcase("csp_invalid_3.json",
                  GetInvalidManifestKeyError(kExtensionPagesKey))};
-    RunTestcases(testcases, arraysize(testcases), EXPECT_TYPE_ERROR);
+    RunTestcases(testcases, base::size(testcases), EXPECT_TYPE_ERROR);
   }
 }
 

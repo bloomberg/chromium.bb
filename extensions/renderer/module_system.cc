@@ -8,8 +8,8 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/timer/elapsed_timer.h"
@@ -798,7 +798,7 @@ v8::Local<v8::Value> ModuleSystem::LoadModuleWithNativeAPIBridge(
   {
     v8::TryCatch try_catch(GetIsolate());
     try_catch.SetCaptureMessage(true);
-    context_->SafeCallFunction(func, arraysize(args), args);
+    context_->SafeCallFunction(func, base::size(args), args);
     if (try_catch.HasCaught()) {
       HandleException(try_catch);
       return v8::Undefined(GetIsolate());

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 
@@ -32,7 +33,7 @@ constexpr struct {
     {"other", WebRequestResourceType::OTHER},
 };
 
-constexpr size_t kResourceTypesLength = arraysize(kResourceTypes);
+constexpr size_t kResourceTypesLength = base::size(kResourceTypes);
 
 static_assert(kResourceTypesLength ==
                   base::strict_cast<size_t>(WebRequestResourceType::OTHER) + 1,

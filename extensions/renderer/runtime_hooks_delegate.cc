@@ -5,6 +5,7 @@
 #include "extensions/renderer/runtime_hooks_delegate.h"
 
 #include "base/containers/span.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/renderer/render_frame.h"
@@ -78,7 +79,7 @@ void GetBackgroundPageCallback(
           isolate, script_context->extension()->id());
   v8::Local<v8::Value> args[] = {background_page};
   script_context->SafeCallFunction(info.Data().As<v8::Function>(),
-                                   arraysize(args), args);
+                                   base::size(args), args);
 }
 
 }  // namespace

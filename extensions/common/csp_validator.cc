@@ -14,7 +14,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -300,7 +300,7 @@ std::string GetAppSandboxSecureDirectiveValues(
 
 // Returns true if the |plugin_type| is one of the fully sandboxed plugin types.
 bool PluginTypeAllowed(base::StringPiece plugin_type) {
-  for (size_t i = 0; i < arraysize(kSandboxedPluginTypes); ++i) {
+  for (size_t i = 0; i < base::size(kSandboxedPluginTypes); ++i) {
     if (plugin_type == kSandboxedPluginTypes[i])
       return true;
   }
@@ -522,7 +522,7 @@ bool ContentSecurityPolicyIsLegal(const std::string& policy) {
   // representing the content security policy as an HTTP header.
   const char kBadChars[] = {',', '\r', '\n', '\0'};
 
-  return policy.find_first_of(kBadChars, 0, arraysize(kBadChars)) ==
+  return policy.find_first_of(kBadChars, 0, base::size(kBadChars)) ==
          std::string::npos;
 }
 

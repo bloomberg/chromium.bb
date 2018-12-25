@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
@@ -550,7 +549,7 @@ void FileSystemChooseEntryFunction::ConfirmDirectoryAccessAsync(
     return;
   }
 
-  for (size_t i = 0; i < arraysize(kGraylistedPaths); i++) {
+  for (size_t i = 0; i < base::size(kGraylistedPaths); i++) {
     base::FilePath graylisted_path;
     if (!base::PathService::Get(kGraylistedPaths[i], &graylisted_path))
       continue;

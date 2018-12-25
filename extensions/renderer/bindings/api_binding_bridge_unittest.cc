@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/bindings/api_binding_bridge.h"
 
+#include "base/stl_util.h"
 #include "extensions/renderer/bindings/api_binding_hooks.h"
 #include "extensions/renderer/bindings/api_binding_test.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
@@ -33,7 +34,7 @@ TEST_F(APIBindingBridgeTest, TestUseAfterContextInvalidation) {
   v8::Local<v8::Function> function = FunctionFromString(
       context, "(function(obj) { obj.registerCustomHook(function() {}); })");
   v8::Local<v8::Value> args[] = {bridge_object};
-  RunFunctionAndExpectError(function, context, arraysize(args), args,
+  RunFunctionAndExpectError(function, context, base::size(args), args,
                             "Uncaught Error: Extension context invalidated.");
 }
 

@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/web_request_hooks.h"
 
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/api/web_request.h"
@@ -78,7 +79,7 @@ bool WebRequestHooks::CreateCustomEvent(
   v8::TryCatch try_catch(isolate);
   v8::Local<v8::Value> event;
   if (!JSRunner::Get(context)
-           ->RunJSFunctionSync(get_event, context, arraysize(args), args)
+           ->RunJSFunctionSync(get_event, context, base::size(args), args)
            .ToLocal(&event)) {
     // TODO(devlin): Do we care about the error? In theory, this should never
     // happen, so probably not.

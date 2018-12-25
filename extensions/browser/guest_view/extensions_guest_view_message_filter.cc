@@ -5,8 +5,8 @@
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
 
 #include "base/guid.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/guest_view/browser/bad_message.h"
@@ -294,7 +294,7 @@ ExtensionsGuestViewMessageFilter::ExtensionsGuestViewMessageFilter(
     int render_process_id,
     BrowserContext* context)
     : GuestViewMessageFilter(kFilteredMessageClasses,
-                             arraysize(kFilteredMessageClasses),
+                             base::size(kFilteredMessageClasses),
                              render_process_id,
                              context),
       content::BrowserAssociatedInterface<mojom::GuestView>(this, this) {

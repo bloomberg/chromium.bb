@@ -10,7 +10,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "net/base/escape.h"
@@ -27,7 +27,7 @@ namespace extensions {
 namespace {
 
 const char kContentDisposition[] = "content-disposition:";
-const size_t kContentDispositionLength = arraysize(kContentDisposition) - 1;
+const size_t kContentDispositionLength = base::size(kContentDisposition) - 1;
 // kCharacterPattern is an allowed character in a URL encoding. Definition is
 // from RFC 1738, end of section 2.2.
 const char kCharacterPattern[] =

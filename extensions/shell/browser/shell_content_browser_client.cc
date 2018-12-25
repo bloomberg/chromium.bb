@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "components/guest_view/browser/guest_view_message_filter.h"
 #include "components/nacl/common/buildflags.h"
@@ -352,7 +352,7 @@ void ShellContentBrowserClient::AppendRendererSwitches(
       switches::kExtensionProcess,
   };
   command_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
-                                 kSwitchNames, arraysize(kSwitchNames));
+                                 kSwitchNames, base::size(kSwitchNames));
 
 #if BUILDFLAG(ENABLE_NACL)
   // NOTE: app_shell does not support non-SFI mode, so it does not pass through
@@ -361,7 +361,8 @@ void ShellContentBrowserClient::AppendRendererSwitches(
       ::switches::kEnableNaClDebug,
   };
   command_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
-                                 kNaclSwitchNames, arraysize(kNaclSwitchNames));
+                                 kNaclSwitchNames,
+                                 base::size(kNaclSwitchNames));
 #endif  // BUILDFLAG(ENABLE_NACL)
 }
 

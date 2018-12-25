@@ -10,10 +10,10 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/metrics/user_metrics.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -65,7 +65,7 @@ std::string StripFakepath(const std::string& path) {
   constexpr char kFakePathStr[] = "C:\\fakepath\\";
   if (base::StartsWith(path, kFakePathStr,
                        base::CompareCase::INSENSITIVE_ASCII))
-    return path.substr(arraysize(kFakePathStr) - 1);
+    return path.substr(base::size(kFakePathStr) - 1);
   return path;
 }
 

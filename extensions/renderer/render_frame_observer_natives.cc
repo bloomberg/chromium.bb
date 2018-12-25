@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -107,7 +107,7 @@ void RenderFrameObserverNatives::InvokeCallback(
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Value> args[] = {v8::Boolean::New(isolate, succeeded)};
   context()->SafeCallFunction(v8::Local<v8::Function>::New(isolate, callback),
-                              arraysize(args), args);
+                              base::size(args), args);
 }
 
 }  // namespace extensions

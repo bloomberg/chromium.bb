@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -52,7 +52,7 @@ MimeTypesHandlerInfo::~MimeTypesHandlerInfo() {
 // static
 std::vector<std::string> MimeTypesHandler::GetMIMETypeWhitelist() {
   std::vector<std::string> whitelist;
-  for (size_t i = 0; i < arraysize(kMIMETypeHandlersWhitelist); ++i)
+  for (size_t i = 0; i < base::size(kMIMETypeHandlersWhitelist); ++i)
     whitelist.push_back(kMIMETypeHandlersWhitelist[i]);
   return whitelist;
 }

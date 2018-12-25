@@ -16,9 +16,9 @@
 #include "base/debug/alias.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -465,7 +465,7 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
       // The logging module.
       logging->NewInstance(),
   };
-  context->SafeCallFunction(main_function, arraysize(args), args);
+  context->SafeCallFunction(main_function, base::size(args), args);
 
   const base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
   UMA_HISTOGRAM_TIMES(
@@ -867,11 +867,8 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
     std::string& error = extension_load_errors_[extension_id];
     char minidump[256];
     base::debug::Alias(&minidump);
-    base::snprintf(minidump,
-                   arraysize(minidump),
-                   "e::dispatcher:%s:%s",
-                   extension_id.c_str(),
-                   error.c_str());
+    base::snprintf(minidump, base::size(minidump), "e::dispatcher:%s:%s",
+                   extension_id.c_str(), error.c_str());
     LOG(FATAL) << extension_id << " was never loaded: " << error;
   }
 
