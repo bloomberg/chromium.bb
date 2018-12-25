@@ -16,6 +16,7 @@
 #include "base/format_macros.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -258,11 +259,11 @@ class FormatTypeValidator {
         {GL_RED, GL_RED, GL_UNSIGNED_SHORT},
     };
 
-    for (size_t ii = 0; ii < arraysize(kSupportedFormatTypes); ++ii) {
+    for (size_t ii = 0; ii < base::size(kSupportedFormatTypes); ++ii) {
       supported_combinations_.insert(kSupportedFormatTypes[ii]);
     }
 
-    for (size_t ii = 0; ii < arraysize(kSupportedFormatTypesES2Only); ++ii) {
+    for (size_t ii = 0; ii < base::size(kSupportedFormatTypesES2Only); ++ii) {
       supported_combinations_es2_only_.insert(kSupportedFormatTypesES2Only[ii]);
     }
   }
@@ -312,7 +313,7 @@ static const Texture::CompatibilitySwizzle kSwizzledFormats[] = {
 
 const Texture::CompatibilitySwizzle* GetCompatibilitySwizzleInternal(
     GLenum format) {
-  size_t count = arraysize(kSwizzledFormats);
+  size_t count = base::size(kSwizzledFormats);
   for (size_t i = 0; i < count; ++i) {
     if (kSwizzledFormats[i].format == format)
       return &kSwizzledFormats[i];
@@ -494,7 +495,7 @@ void TextureManager::Destroy() {
   }
 
   if (have_context_) {
-    glDeleteTextures(arraysize(black_texture_ids_), black_texture_ids_);
+    glDeleteTextures(base::size(black_texture_ids_), black_texture_ids_);
   }
 
   DCHECK_EQ(0u, memory_type_tracker_->GetMemRepresented());

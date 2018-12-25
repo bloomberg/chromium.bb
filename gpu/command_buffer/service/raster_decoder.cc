@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -1229,7 +1230,7 @@ error::Error RasterDecoderImpl::DoCommandsImpl(unsigned int num_commands,
 
     const unsigned int arg_count = size - 1;
     unsigned int command_index = command - kFirstRasterCommand;
-    if (command_index < arraysize(command_info)) {
+    if (command_index < base::size(command_info)) {
       const CommandInfo& info = command_info[command_index];
       if (sk_surface_) {
         if (!AllowedBetweenBeginEndRaster(command)) {

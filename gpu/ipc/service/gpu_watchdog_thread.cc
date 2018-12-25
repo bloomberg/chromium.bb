@@ -15,12 +15,12 @@
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -525,7 +525,7 @@ void GpuWatchdogThread::SetupXServer() {
 void GpuWatchdogThread::SetupXChangeProp() {
   DCHECK(display_);
   XChangeProperty(display_, window_, atom_, XA_STRING, 8, PropModeReplace, text,
-                  (arraysize(text) - 1));
+                  (base::size(text) - 1));
 }
 
 bool GpuWatchdogThread::MatchXEventAtom(XEvent* event) {

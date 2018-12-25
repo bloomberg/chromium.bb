@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
@@ -58,7 +59,7 @@ void NormalizeInitState(gpu::gles2::GLES2DecoderTestBase::InitState* init) {
       "GL_APPLE_vertex_array_object"
   };
   bool contains_vao_extension = false;
-  for (size_t ii = 0; ii < arraysize(kVAOExtensions); ++ii) {
+  for (size_t ii = 0; ii < base::size(kVAOExtensions); ++ii) {
     if (init->extensions.find(kVAOExtensions[ii]) != std::string::npos) {
       contains_vao_extension = true;
       break;
@@ -291,9 +292,9 @@ void GLES2DecoderTestBase::InitDecoderWithWorkarounds(
   static GLuint fixed_attrib_buffer_id[] = {
     kServiceFixedAttribBufferId,
   };
-  EXPECT_CALL(*gl_, GenBuffersARB(arraysize(attrib_0_id), _))
+  EXPECT_CALL(*gl_, GenBuffersARB(base::size(attrib_0_id), _))
       .WillOnce(SetArrayArgument<1>(attrib_0_id,
-                                    attrib_0_id + arraysize(attrib_0_id)))
+                                    attrib_0_id + base::size(attrib_0_id)))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, kServiceAttrib0BufferId))
       .Times(1)
@@ -304,10 +305,10 @@ void GLES2DecoderTestBase::InitDecoderWithWorkarounds(
   EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, 0))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GenBuffersARB(arraysize(fixed_attrib_buffer_id), _))
+  EXPECT_CALL(*gl_, GenBuffersARB(base::size(fixed_attrib_buffer_id), _))
       .WillOnce(SetArrayArgument<1>(
           fixed_attrib_buffer_id,
-          fixed_attrib_buffer_id + arraysize(fixed_attrib_buffer_id)))
+          fixed_attrib_buffer_id + base::size(fixed_attrib_buffer_id)))
       .RetiresOnSaturation();
 
   for (GLint tt = 0; tt < TestHelper::kNumTextureUnits; ++tt) {
@@ -421,13 +422,13 @@ void GLES2DecoderTestBase::InitDecoderWithWorkarounds(
   };
   EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VIEWPORT_DIMS, _))
       .WillOnce(SetArrayArgument<1>(
-          max_viewport_dims, max_viewport_dims + arraysize(max_viewport_dims)))
-        .RetiresOnSaturation();
+          max_viewport_dims, max_viewport_dims + base::size(max_viewport_dims)))
+      .RetiresOnSaturation();
 
   static GLfloat line_width_range[] = { 1.0f, 2.0f };
   EXPECT_CALL(*gl_, GetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, _))
       .WillOnce(SetArrayArgument<1>(
-          line_width_range, line_width_range + arraysize(line_width_range)))
+          line_width_range, line_width_range + base::size(line_width_range)))
       .RetiresOnSaturation();
 
   if (group_->feature_info()->feature_flags().ext_window_rectangles) {
@@ -1054,10 +1055,10 @@ void GLES2DecoderTestBase::SetupShaderForUniform(GLenum uniform_type) {
   const GLuint kServiceVertexShaderId = 6001;
   const GLuint kClientFragmentShaderId = 5002;
   const GLuint kServiceFragmentShaderId = 6002;
-  SetupShader(attribs, arraysize(attribs), uniforms, arraysize(uniforms),
-              client_program_id_, kServiceProgramId,
-              kClientVertexShaderId, kServiceVertexShaderId,
-              kClientFragmentShaderId, kServiceFragmentShaderId);
+  SetupShader(attribs, base::size(attribs), uniforms, base::size(uniforms),
+              client_program_id_, kServiceProgramId, kClientVertexShaderId,
+              kServiceVertexShaderId, kClientFragmentShaderId,
+              kServiceFragmentShaderId);
 
   EXPECT_CALL(*gl_, UseProgram(kServiceProgramId))
       .Times(1)
@@ -1965,10 +1966,10 @@ void GLES2DecoderTestBase::SetupDefaultProgram() {
         kUniform8FakeLocation, kUniform8RealLocation,
         kUniform8DesiredLocation },
     };
-    SetupShader(attribs, arraysize(attribs), uniforms, arraysize(uniforms),
-                client_program_id_, kServiceProgramId,
-                client_vertex_shader_id_, kServiceVertexShaderId,
-                client_fragment_shader_id_, kServiceFragmentShaderId);
+    SetupShader(attribs, base::size(attribs), uniforms, base::size(uniforms),
+                client_program_id_, kServiceProgramId, client_vertex_shader_id_,
+                kServiceVertexShaderId, client_fragment_shader_id_,
+                kServiceFragmentShaderId);
   }
 
   {
@@ -2011,10 +2012,10 @@ void GLES2DecoderTestBase::SetupCubemapProgram() {
         kUniform7FakeLocation, kUniform7RealLocation,
         kUniform7DesiredLocation },
     };
-    SetupShader(attribs, arraysize(attribs), uniforms, arraysize(uniforms),
-                client_program_id_, kServiceProgramId,
-                client_vertex_shader_id_, kServiceVertexShaderId,
-                client_fragment_shader_id_, kServiceFragmentShaderId);
+    SetupShader(attribs, base::size(attribs), uniforms, base::size(uniforms),
+                client_program_id_, kServiceProgramId, client_vertex_shader_id_,
+                kServiceVertexShaderId, client_fragment_shader_id_,
+                kServiceFragmentShaderId);
   }
 
   {
@@ -2057,10 +2058,10 @@ void GLES2DecoderTestBase::SetupSamplerExternalProgram() {
         kUniform7FakeLocation, kUniform7RealLocation,
         kUniform7DesiredLocation },
     };
-    SetupShader(attribs, arraysize(attribs), uniforms, arraysize(uniforms),
-                client_program_id_, kServiceProgramId,
-                client_vertex_shader_id_, kServiceVertexShaderId,
-                client_fragment_shader_id_, kServiceFragmentShaderId);
+    SetupShader(attribs, base::size(attribs), uniforms, base::size(uniforms),
+                client_program_id_, kServiceProgramId, client_vertex_shader_id_,
+                kServiceVertexShaderId, client_fragment_shader_id_,
+                kServiceFragmentShaderId);
   }
 
   {
@@ -2278,7 +2279,7 @@ void GLES2DecoderTestBase::SetupIndexBuffer() {
                client_element_buffer_id_,
                kServiceElementBufferId);
   static const GLshort indices[] = {100, 1, 2, 3, 4, 5, 6, 7, 100, 9};
-  static_assert(arraysize(indices) == kNumIndices,
+  static_assert(base::size(indices) == kNumIndices,
                 "indices should have kNumIndices elements");
   DoBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices));
   DoBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, 2, indices);

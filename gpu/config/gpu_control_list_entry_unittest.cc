@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_control_list.h"
 #include "gpu/config/gpu_control_list_testing_data.h"
@@ -87,7 +88,7 @@ TEST_F(GpuControlListEntryTest, VendorOnAllOsEntry) {
   EXPECT_EQ(kOsAny, entry.conditions.os_type);
   const GpuControlList::OsType os_type[] = {kOsMacosx, kOsWin, kOsLinux,
                                             kOsChromeOS, kOsAndroid};
-  for (size_t i = 0; i < arraysize(os_type); ++i)
+  for (size_t i = 0; i < base::size(os_type); ++i)
     EXPECT_TRUE(entry.Contains(os_type[i], "10.6", gpu_info()));
 }
 
@@ -96,7 +97,7 @@ TEST_F(GpuControlListEntryTest, VendorOnLinuxEntry) {
   EXPECT_EQ(kOsLinux, entry.conditions.os_type);
   const GpuControlList::OsType os_type[] = {kOsMacosx, kOsWin, kOsChromeOS,
                                             kOsAndroid};
-  for (size_t i = 0; i < arraysize(os_type); ++i)
+  for (size_t i = 0; i < base::size(os_type); ++i)
     EXPECT_FALSE(entry.Contains(os_type[i], "10.6", gpu_info()));
   EXPECT_TRUE(entry.Contains(kOsLinux, "10.6", gpu_info()));
 }
@@ -107,7 +108,7 @@ TEST_F(GpuControlListEntryTest, AllExceptNVidiaOnLinuxEntry) {
   EXPECT_EQ(kOsLinux, entry.conditions.os_type);
   const GpuControlList::OsType os_type[] = {kOsMacosx, kOsWin, kOsLinux,
                                             kOsChromeOS, kOsAndroid};
-  for (size_t i = 0; i < arraysize(os_type); ++i)
+  for (size_t i = 0; i < base::size(os_type); ++i)
     EXPECT_FALSE(entry.Contains(os_type[i], "10.6", gpu_info()));
 }
 
@@ -117,7 +118,7 @@ TEST_F(GpuControlListEntryTest, AllExceptIntelOnLinuxEntry) {
   EXPECT_EQ(kOsLinux, entry.conditions.os_type);
   const GpuControlList::OsType os_type[] = {kOsMacosx, kOsWin, kOsChromeOS,
                                             kOsAndroid};
-  for (size_t i = 0; i < arraysize(os_type); ++i)
+  for (size_t i = 0; i < base::size(os_type); ++i)
     EXPECT_FALSE(entry.Contains(os_type[i], "10.6", gpu_info()));
   EXPECT_TRUE(entry.Contains(kOsLinux, "10.6", gpu_info()));
 }
@@ -139,7 +140,7 @@ TEST_F(GpuControlListEntryTest, MultipleDevicesEntry) {
   EXPECT_EQ(kOsAny, entry.conditions.os_type);
   const GpuControlList::OsType os_type[] = {kOsMacosx, kOsWin, kOsLinux,
                                             kOsChromeOS, kOsAndroid};
-  for (size_t i = 0; i < arraysize(os_type); ++i)
+  for (size_t i = 0; i < base::size(os_type); ++i)
     EXPECT_TRUE(entry.Contains(os_type[i], "10.6", gpu_info()));
 }
 
@@ -148,7 +149,7 @@ TEST_F(GpuControlListEntryTest, ChromeOSEntry) {
   EXPECT_EQ(kOsChromeOS, entry.conditions.os_type);
   const GpuControlList::OsType os_type[] = {kOsMacosx, kOsWin, kOsLinux,
                                             kOsAndroid};
-  for (size_t i = 0; i < arraysize(os_type); ++i)
+  for (size_t i = 0; i < base::size(os_type); ++i)
     EXPECT_FALSE(entry.Contains(os_type[i], "10.6", gpu_info()));
   EXPECT_TRUE(entry.Contains(kOsChromeOS, "10.6", gpu_info()));
 }
@@ -548,7 +549,7 @@ TEST_F(GpuControlListEntryTest, OsComparison) {
     const Entry& entry = GetEntry(kGpuControlListEntryTest_OsComparisonAny);
     const GpuControlList::OsType os_type[] = {kOsWin, kOsLinux, kOsMacosx,
                                               kOsChromeOS, kOsAndroid};
-    for (size_t i = 0; i < arraysize(os_type); ++i) {
+    for (size_t i = 0; i < base::size(os_type); ++i) {
       EXPECT_TRUE(entry.Contains(os_type[i], std::string(), gpu_info()));
       EXPECT_TRUE(entry.Contains(os_type[i], "7.8", gpu_info()));
     }

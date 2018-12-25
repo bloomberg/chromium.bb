@@ -1584,8 +1584,8 @@ std::string GLES2Util::GetStringError(uint32_t value) {
   static EnumToString string_table[] = {
     { GL_NONE, "GL_NONE" },
   };
-  return GLES2Util::GetQualifiedEnumString(
-      string_table, arraysize(string_table), value);
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           base::size(string_table), value);
 }
 
 std::string GLES2Util::GetStringBool(uint32_t value) {

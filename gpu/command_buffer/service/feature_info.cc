@@ -11,6 +11,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
@@ -1721,8 +1722,8 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
       GLenum formats[] = {
           GL_RED, GL_RG, GL_RGBA, GL_RED, GL_RG, GL_RGB,
       };
-      DCHECK_EQ(arraysize(internal_formats), arraysize(formats));
-      for (size_t i = 0; i < arraysize(formats); ++i) {
+      DCHECK_EQ(base::size(internal_formats), base::size(formats));
+      for (size_t i = 0; i < base::size(formats); ++i) {
         glTexImage2D(GL_TEXTURE_2D, 0, internal_formats[i], width, width, 0,
                      formats[i], GL_FLOAT, nullptr);
         full_float_support &= glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) ==

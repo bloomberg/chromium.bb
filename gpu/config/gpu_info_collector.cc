@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -294,16 +295,16 @@ void IdentifyActiveGPU(GPUInfo* gpu_info) {
   uint32_t active_vendor_id = 0;
   if (!gpu_info->gl_vendor.empty()) {
     std::string gl_vendor_lower = base::ToLowerASCII(gpu_info->gl_vendor);
-    int index = StringContainsName(
-        gl_vendor_lower, kVendorNames, arraysize(kVendorNames));
+    int index = StringContainsName(gl_vendor_lower, kVendorNames,
+                                   base::size(kVendorNames));
     if (index >= 0) {
       active_vendor_id = kVendorIDs[index];
     }
   }
   if (active_vendor_id == 0 && !gpu_info->gl_renderer.empty()) {
     std::string gl_renderer_lower = base::ToLowerASCII(gpu_info->gl_renderer);
-    int index = StringContainsName(
-        gl_renderer_lower, kVendorNames, arraysize(kVendorNames));
+    int index = StringContainsName(gl_renderer_lower, kVendorNames,
+                                   base::size(kVendorNames));
     if (index >= 0) {
       active_vendor_id = kVendorIDs[index];
     }

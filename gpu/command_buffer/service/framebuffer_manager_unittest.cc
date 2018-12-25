@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/stl_util.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/service/error_state_mock.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -1081,7 +1082,7 @@ TEST_F(FramebufferInfoTest, DrawBuffers) {
               framebuffer_->GetDrawBuffer(i));
   }
 
-  for (size_t ii = 0; ii < arraysize(kTextureClientId); ++ii) {
+  for (size_t ii = 0; ii < base::size(kTextureClientId); ++ii) {
     texture_manager_->CreateTexture(
         kTextureClientId[ii], kTextureServiceId[ii]);
     scoped_refptr<TextureRef> texture(
@@ -1184,7 +1185,7 @@ TEST_F(FramebufferInfoTest, DrawBufferMasks) {
       GL_FLOAT,
       GL_UNSIGNED_INT};
 
-  for (size_t ii = 0; ii < arraysize(kTextureClientId); ++ii) {
+  for (size_t ii = 0; ii < base::size(kTextureClientId); ++ii) {
     texture_manager_->CreateTexture(
         kTextureClientId[ii], kTextureServiceId[ii]);
     scoped_refptr<TextureRef> texture(

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/command_line.h"
+#include "base/stl_util.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest.h"
@@ -1377,7 +1378,7 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
 
   const GLuint kPaths[] = {client_path_id_, client_path_id_ + 5,
                            client_path_id_, client_path_id_ + 18};
-  const GLsizei kPathCount = arraysize(kPaths);
+  const GLsizei kPathCount = base::size(kPaths);
 
   struct {
     GLenum fill_mode;
@@ -1393,7 +1394,7 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
 
   GLuint* paths = GetSharedMemoryAs<GLuint*>();
 
-  for (size_t i = 0; i < arraysize(testcases); ++i) {
+  for (size_t i = 0; i < base::size(testcases); ++i) {
     memcpy(paths, kPaths, sizeof(kPaths));
     sfi_cmd.Init(kPathCount, GL_UNSIGNED_INT, shared_memory_id_,
                  shared_memory_offset_, 0, testcases[i].fill_mode,
@@ -1421,7 +1422,7 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
 
   const GLuint kPaths[] = {client_path_id_, client_path_id_ + 5,
                            client_path_id_, client_path_id_ + 18};
-  const GLsizei kPathCount = arraysize(kPaths);
+  const GLsizei kPathCount = base::size(kPaths);
 
   static const GLenum kFillModes[] = {GL_INVERT, GL_COUNT_UP_CHROMIUM,
                                       GL_COUNT_DOWN_CHROMIUM};
@@ -1429,7 +1430,7 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
 
   GLuint* paths = GetSharedMemoryAs<GLuint*>();
 
-  for (size_t i = 0; i < arraysize(kFillModes); ++i) {
+  for (size_t i = 0; i < base::size(kFillModes); ++i) {
     memcpy(paths, kPaths, sizeof(kPaths));
     EXPECT_CALL(*gl_, StencilFillPathInstancedNV(kPathCount, GL_UNSIGNED_INT, _,
                                                  0, kFillModes[i], kMask,
@@ -1458,7 +1459,7 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, InstancedCalls) {
   SetupExpectationsForApplyingDefaultDirtyState();
 
   const GLuint kPaths[] = {0, client_path_id_, 15, client_path_id_};
-  const GLsizei kPathCount = arraysize(kPaths);
+  const GLsizei kPathCount = base::size(kPaths);
 
   // The path base will be client_path_id_, and so 0 is a
   // valid path.
@@ -1561,7 +1562,7 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, InstancedCalls) {
 
   };
 
-  for (size_t i = 0; i < arraysize(testcases); ++i) {
+  for (size_t i = 0; i < base::size(testcases); ++i) {
     SCOPED_TRACE(testing::Message() << "InstancedCalls testcase " << i);
     CallAllInstancedCommands(testcases[i]);
   }
@@ -1569,7 +1570,7 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, InstancedCalls) {
 
 TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, InstancedNoCalls) {
   const GLuint kPaths[] = {1, client_path_id_, 5, client_path_id_};
-  const GLsizei kPathCount = arraysize(kPaths);
+  const GLsizei kPathCount = base::size(kPaths);
 
   const GLenum kFillMode = GL_INVERT;
   const GLuint kMask = 0x80;
@@ -1634,7 +1635,7 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, InstancedNoCalls) {
        GL_NO_ERROR, false},
 
   };
-  for (size_t i = 0; i < arraysize(testcases); ++i) {
+  for (size_t i = 0; i < base::size(testcases); ++i) {
     SCOPED_TRACE(testing::Message() << "InstancedNoCalls testcase " << i);
     CallAllInstancedCommands(testcases[i]);
   }
@@ -1642,7 +1643,7 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, InstancedNoCalls) {
 
 TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, InstancedInvalidSHMValues) {
   const GLuint kPaths[] = {1, client_path_id_, 5, client_path_id_};
-  const GLsizei kPathCount = arraysize(kPaths);
+  const GLsizei kPathCount = base::size(kPaths);
   GLfloat transform_values[12 * kPathCount];
   for (GLsizei i = 0; i < kPathCount; ++i) {
     for (int j = 0; j < 12; ++j) {

@@ -10,6 +10,7 @@
 #include <cmath>
 
 #include "base/command_line.h"
+#include "base/stl_util.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
@@ -132,8 +133,8 @@ class CHROMIUMPathRenderingDrawTest : public CHROMIUMPathRenderingTest {
                                       25.0f,
                                       75.0f};
 
-    glPathCommandsCHROMIUM(path, arraysize(kCommands), kCommands,
-                           arraysize(kCoords), GL_FLOAT, kCoords);
+    glPathCommandsCHROMIUM(path, base::size(kCommands), kCommands,
+                           base::size(kCoords), GL_FLOAT, kCoords);
 
     glPathParameterfCHROMIUM(path, GL_PATH_STROKE_WIDTH_CHROMIUM, 5.0f);
     glPathParameterfCHROMIUM(path, GL_PATH_MITER_LIMIT_CHROMIUM, 1.0f);
@@ -150,7 +151,7 @@ class CHROMIUMPathRenderingDrawTest : public CHROMIUMPathRenderingTest {
                                         28.0f, 66.0f, 63.0f};
     static const uint8_t kBlue[] = {0, 0, 255, 255};
 
-    for (size_t i = 0; i < arraysize(kFillCoords); i += 2) {
+    for (size_t i = 0; i < base::size(kFillCoords); i += 2) {
       float fx = kFillCoords[i];
       float fy = kFillCoords[i + 1];
 
@@ -165,7 +166,7 @@ class CHROMIUMPathRenderingDrawTest : public CHROMIUMPathRenderingTest {
     const float kBackgroundCoords[] = {80.0f, 80.0f, 20.0f, 20.0f, 90.0f, 1.0f};
     const uint8_t kExpectedColor[] = {0, 0, 0, 0};
 
-    for (size_t i = 0; i < arraysize(kBackgroundCoords); i += 2) {
+    for (size_t i = 0; i < base::size(kBackgroundCoords); i += 2) {
       float bx = kBackgroundCoords[i];
       float by = kBackgroundCoords[i + 1];
 
@@ -227,7 +228,7 @@ TEST_F(CHROMIUMPathRenderingTest, TestMatrix) {
   static const GLenum kGetMatrixModes[] = {GL_PATH_MODELVIEW_MATRIX_CHROMIUM,
                                            GL_PATH_PROJECTION_MATRIX_CHROMIUM};
 
-  for (size_t i = 0; i < arraysize(kMatrixModes); ++i) {
+  for (size_t i = 0; i < base::size(kMatrixModes); ++i) {
     GLfloat mf[16];
     GLint mi[16];
     memset(mf, 0, sizeof(mf));
@@ -317,8 +318,8 @@ TEST_F(CHROMIUMPathRenderingTest, TestSimpleCalls) {
   EXPECT_FALSE(glIsPathCHROMIUM(path));
   GLubyte commands[] = {GL_MOVE_TO_CHROMIUM, GL_CLOSE_PATH_CHROMIUM};
   GLfloat coords[] = {50.0f, 50.0f};
-  glPathCommandsCHROMIUM(path, arraysize(commands), commands, arraysize(coords),
-                         GL_FLOAT, coords);
+  glPathCommandsCHROMIUM(path, base::size(commands), commands,
+                         base::size(coords), GL_FLOAT, coords);
   EXPECT_TRUE(glIsPathCHROMIUM(path));
   glDeletePathsCHROMIUM(path, 1);
   EXPECT_FALSE(glIsPathCHROMIUM(path));
@@ -441,8 +442,8 @@ TEST_F(CHROMIUMPathRenderingTest, TestPathObjectState) {
   EXPECT_FALSE(glIsPathCHROMIUM(path));
   GLubyte commands[] = {GL_MOVE_TO_CHROMIUM, GL_CLOSE_PATH_CHROMIUM};
   GLfloat coords[] = {50.0f, 50.0f};
-  glPathCommandsCHROMIUM(path, arraysize(commands), commands, arraysize(coords),
-                         GL_FLOAT, coords);
+  glPathCommandsCHROMIUM(path, base::size(commands), commands,
+                         base::size(coords), GL_FLOAT, coords);
   EXPECT_TRUE(glIsPathCHROMIUM(path));
   glPathCommandsCHROMIUM(path, 0, nullptr, 0, GL_FLOAT, nullptr);
   EXPECT_TRUE(glIsPathCHROMIUM(path));  // The surprise.
@@ -473,8 +474,8 @@ TEST_F(CHROMIUMPathRenderingTest, TestUnnamedPathsErrors) {
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
   GLubyte commands[] = {GL_MOVE_TO_CHROMIUM, GL_CLOSE_PATH_CHROMIUM};
   GLfloat coords[] = {50.0f, 50.0f};
-  glPathCommandsCHROMIUM(555, arraysize(commands), commands, arraysize(coords),
-                         GL_FLOAT, coords);
+  glPathCommandsCHROMIUM(555, base::size(commands), commands,
+                         base::size(coords), GL_FLOAT, coords);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
 
   // PathParameter*: Using non-existing path object produces error.
@@ -497,24 +498,24 @@ TEST_F(CHROMIUMPathRenderingTest, TestPathCommandsErrors) {
   GLubyte commands[] = {GL_MOVE_TO_CHROMIUM, GL_CLOSE_PATH_CHROMIUM};
   GLfloat coords[] = {50.0f, 50.0f};
 
-  glPathCommandsCHROMIUM(path, arraysize(commands), commands, -4, GL_FLOAT,
+  glPathCommandsCHROMIUM(path, base::size(commands), commands, -4, GL_FLOAT,
                          coords);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), glGetError());
 
-  glPathCommandsCHROMIUM(path, -1, commands, arraysize(coords), GL_FLOAT,
+  glPathCommandsCHROMIUM(path, -1, commands, base::size(coords), GL_FLOAT,
                          coords);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), glGetError());
 
-  glPathCommandsCHROMIUM(path, arraysize(commands), commands, arraysize(coords),
-                         kInvalidCoordType, coords);
+  glPathCommandsCHROMIUM(path, base::size(commands), commands,
+                         base::size(coords), kInvalidCoordType, coords);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_ENUM), glGetError());
 
   // These can not distinquish between the check that should fail them.
   // This should fail due to coord count * float size overflow.
-  glPathCommandsCHROMIUM(path, arraysize(commands), commands,
+  glPathCommandsCHROMIUM(path, base::size(commands), commands,
                          std::numeric_limits<GLsizei>::max(), GL_FLOAT, coords);
   // This should fail due to cmd count + coord count * short size.
-  glPathCommandsCHROMIUM(path, arraysize(commands), commands,
+  glPathCommandsCHROMIUM(path, base::size(commands), commands,
                          std::numeric_limits<GLsizei>::max(), GL_SHORT, coords);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
 
@@ -684,7 +685,7 @@ TEST_F(CHROMIUMPathRenderingDrawTest, TestPathRenderingInstanced) {
   SetupPathStateForTestPattern(path);
 
   const GLuint kPaths[] = {1, 1, 1, 1, 1};
-  const GLsizei kPathCount = arraysize(kPaths);
+  const GLsizei kPathCount = base::size(kPaths);
   const GLfloat kShapeSize = 80.0f;
   static const GLfloat kTransforms[kPathCount * 12] = {
       1.0f, 0.0f, 0.0f, 0.0f,           1.0f,       0.0f,
@@ -761,7 +762,7 @@ TEST_F(CHROMIUMPathRenderingDrawTest, TestPathRenderingThenFunctionsInstanced) {
   SetupPathStateForTestPattern(path);
 
   const GLuint kPaths[] = {1, 1, 1, 1, 1};
-  const GLsizei kPathCount = arraysize(kPaths);
+  const GLsizei kPathCount = base::size(kPaths);
   const GLfloat kShapeSize = 80.0f;
   static const GLfloat kTransforms[] = {
       0.0f, 0.0f, kShapeSize, 0.0f,       kShapeSize * 2,
@@ -910,8 +911,8 @@ class CHROMIUMPathRenderingWithTexturingTest
     };
 
     GLuint path = glGenPathsCHROMIUM(1);
-    glPathCommandsCHROMIUM(path, arraysize(kCommands), kCommands,
-                           arraysize(kCoords), GL_FLOAT, kCoords);
+    glPathCommandsCHROMIUM(path, base::size(kCommands), kCommands,
+                           base::size(kCoords), GL_FLOAT, kCoords);
     EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
     GLfloat path_model_translate[16] = {
@@ -1076,7 +1077,7 @@ TEST_P(CHROMIUMPathRenderingWithTexturingTest,
 
   for (int j = 0; j < kTestRows; ++j) {
     for (int i = 0; i < kTestColumns; ++i) {
-      for (size_t k = 0; k < arraysize(kFillCoords); k += 2) {
+      for (size_t k = 0; k < base::size(kFillCoords); k += 2) {
         SCOPED_TRACE(testing::Message() << "Verifying fill for shape " << i
                                         << ", " << j << " coord " << k);
         float fx = kFillCoords[k];
@@ -1176,7 +1177,7 @@ TEST_P(CHROMIUMPathRenderingWithTexturingTest,
 
   for (int j = 0; j < kTestRows; ++j) {
     for (int i = 0; i < kTestColumns; ++i) {
-      for (size_t k = 0; k < arraysize(kFillCoords); k += 2) {
+      for (size_t k = 0; k < base::size(kFillCoords); k += 2) {
         SCOPED_TRACE(testing::Message() << "Verifying fill for shape " << i
                                         << ", " << j << " coord " << k);
         float fx = kFillCoords[k];
@@ -1291,7 +1292,7 @@ TEST_P(CHROMIUMPathRenderingWithTexturingTest,
 
   for (size_t ii = 0; ii < sizeof(variables) / sizeof(variables[0]); ++ii) {
     for (GLint components = 0; components <= 4; ++components) {
-      for (size_t jj = 0; jj < arraysize(kGenModes); ++jj) {
+      for (size_t jj = 0; jj < base::size(kGenModes); ++jj) {
         GLenum gen_mode = kGenModes[jj];
         SCOPED_TRACE(testing::Message()
                      << "Testing glProgramPathFragmentInputGenCHROMIUM "
@@ -1579,7 +1580,7 @@ TEST_P(CHROMIUMPathRenderingWithTexturingTest,
     DrawTestPattern();
     for (int j = 0; j < kTestRows; ++j) {
       for (int i = 0; i < kTestColumns; ++i) {
-        for (size_t k = 0; k < arraysize(kFillCoords); k += 2) {
+        for (size_t k = 0; k < base::size(kFillCoords); k += 2) {
           SCOPED_TRACE(testing::Message() << "Verifying fill for shape " << i
                                           << ", " << j << " coord " << k);
           float fx = kFillCoords[k];
@@ -1673,7 +1674,7 @@ TEST_P(CHROMIUMPathRenderingWithTexturingTest,
 
   for (int j = 0; j < kTestRows; ++j) {
     for (int i = 0; i < kTestColumns; ++i) {
-      for (size_t k = 0; k < arraysize(kFillCoords); k += 2) {
+      for (size_t k = 0; k < base::size(kFillCoords); k += 2) {
         SCOPED_TRACE(testing::Message() << "Verifying fill for shape " << i
                                         << ", " << j << " coord " << k);
         float fx = kFillCoords[k];

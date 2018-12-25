@@ -15,6 +15,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/stl_util.h"
 #include "cc/paint/raw_memory_transfer_cache_entry.h"
 #include "cc/paint/transfer_cache_serialize_helper.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
@@ -404,11 +405,11 @@ TEST_F(RasterImplementationTest, BeginEndQueryEXT) {
     GLuint data[2];
   };
   GenCmds expected_gen_cmds;
-  expected_gen_cmds.gen.Init(arraysize(expected_ids), &expected_ids[0]);
-  GLuint ids[arraysize(expected_ids)] = {
+  expected_gen_cmds.gen.Init(base::size(expected_ids), &expected_ids[0]);
+  GLuint ids[base::size(expected_ids)] = {
       0,
   };
-  gl_->GenQueriesEXT(arraysize(expected_ids), &ids[0]);
+  gl_->GenQueriesEXT(base::size(expected_ids), &ids[0]);
   EXPECT_EQ(0,
             memcmp(&expected_gen_cmds, commands_, sizeof(expected_gen_cmds)));
   GLuint id1 = ids[0];
@@ -613,7 +614,7 @@ TEST_F(RasterImplementationTest, VerifySyncTokensCHROMIUM) {
   EXPECT_CALL(*gpu_control_, CanWaitUnverifiedSyncToken(sync_token))
       .WillOnce(Return(true));
   EXPECT_CALL(*gpu_control_, EnsureWorkVisible());
-  gl_->VerifySyncTokensCHROMIUM(sync_token_datas, arraysize(sync_token_datas));
+  gl_->VerifySyncTokensCHROMIUM(sync_token_datas, base::size(sync_token_datas));
   EXPECT_TRUE(NoCommandsWritten());
   EXPECT_EQ(GL_NO_ERROR, CheckError());
 
@@ -670,7 +671,7 @@ TEST_F(RasterImplementationTest, VerifySyncTokensCHROMIUM_Sequence) {
       .InSequence(sequence)
       .WillOnce(Return(true));
   EXPECT_CALL(*gpu_control_, EnsureWorkVisible()).InSequence(sequence);
-  gl_->VerifySyncTokensCHROMIUM(sync_token_datas, arraysize(sync_token_datas));
+  gl_->VerifySyncTokensCHROMIUM(sync_token_datas, base::size(sync_token_datas));
   EXPECT_EQ(GL_NO_ERROR, CheckError());
 
   EXPECT_TRUE(sync_token1.verified_flush());
@@ -693,7 +694,7 @@ TEST_F(RasterImplementationTest, VerifySyncTokensCHROMIUM_EmptySyncToken) {
   // Ensure proper sequence of checking and validating.
   EXPECT_CALL(*gpu_control_, CanWaitUnverifiedSyncToken(_)).Times(0);
   EXPECT_CALL(*gpu_control_, EnsureWorkVisible()).Times(0);
-  gl_->VerifySyncTokensCHROMIUM(sync_token_datas, arraysize(sync_token_datas));
+  gl_->VerifySyncTokensCHROMIUM(sync_token_datas, base::size(sync_token_datas));
   EXPECT_TRUE(NoCommandsWritten());
   EXPECT_EQ(GL_NO_ERROR, CheckError());
 

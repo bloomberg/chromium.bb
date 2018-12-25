@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -99,7 +100,7 @@ bool IsBuiltInFragmentVarying(const std::string& name) {
       "gl_FrontFacing",
       "gl_PointCoord"
   };
-  for (size_t ii = 0; ii < arraysize(kBuiltInVaryings); ++ii) {
+  for (size_t ii = 0; ii < base::size(kBuiltInVaryings); ++ii) {
     if (name == kBuiltInVaryings[ii])
       return true;
   }
@@ -1040,14 +1041,14 @@ void Program::UpdateFragmentInputs() {
     // Unlike when binding uniforms, we expect the driver to give correct
     // names: "name" for simple variable, "name[0]" for an array.
     GLsizei query_length = 0;
-    GLint query_results[arraysize(kQueryProperties)] = {
+    GLint query_results[base::size(kQueryProperties)] = {
         0,
     };
     glGetProgramResourceiv(service_id_, GL_FRAGMENT_INPUT_NV, ii,
-                           arraysize(kQueryProperties), kQueryProperties,
-                           arraysize(query_results), &query_length,
+                           base::size(kQueryProperties), kQueryProperties,
+                           base::size(query_results), &query_length,
                            query_results);
-    DCHECK(query_length == arraysize(kQueryProperties));
+    DCHECK(query_length == base::size(kQueryProperties));
 
     GLenum type = static_cast<GLenum>(query_results[1]);
     GLsizei size = static_cast<GLsizei>(query_results[2]);
@@ -2532,7 +2533,7 @@ bool Program::GetUniformsES3(CommonDecoder::Bucket* bucket) const {
     GL_UNIFORM_IS_ROW_MAJOR,
   };
   const GLint kDefaultValue[] = { -1, -1, -1, -1, 0 };
-  const size_t kNumPnames = arraysize(kPname);
+  const size_t kNumPnames = base::size(kPname);
   std::vector<GLuint> indices(count);
   for (GLsizei ii = 0; ii < count; ++ii) {
     indices[ii] = ii;

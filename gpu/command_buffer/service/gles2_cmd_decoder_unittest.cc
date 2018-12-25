@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/command_line.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -925,7 +926,7 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
 }
 
 TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTBadMemoryIdFails) {
-  for (size_t i = 0; i < arraysize(kQueryTypes); ++i) {
+  for (size_t i = 0; i < base::size(kQueryTypes); ++i) {
     CheckBeginEndQueryBadMemoryFails(this, kNewClientId, kQueryTypes[i],
                                      kInvalidSharedMemoryId,
                                      kSharedMemoryOffset);
@@ -933,7 +934,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTBadMemoryIdFails) {
 }
 
 TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTBadMemoryOffsetFails) {
-  for (size_t i = 0; i < arraysize(kQueryTypes); ++i) {
+  for (size_t i = 0; i < base::size(kQueryTypes); ++i) {
     // Out-of-bounds.
     CheckBeginEndQueryBadMemoryFails(this, kNewClientId, kQueryTypes[i],
                                      shared_memory_id_,
@@ -945,7 +946,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTBadMemoryOffsetFails) {
 }
 
 TEST_P(GLES2DecoderManualInitTest, QueryReuseTest) {
-  for (size_t i = 0; i < arraysize(kQueryTypes); ++i) {
+  for (size_t i = 0; i < base::size(kQueryTypes); ++i) {
     const QueryType& query_type = kQueryTypes[i];
 
     GLES2DecoderTestBase::InitState init;
@@ -1256,7 +1257,7 @@ TEST_P(GLES2DecoderTest, IsEnabledReturnsCachedValue) {
   static const GLenum kStates[] = {
       GL_DEPTH_TEST, GL_STENCIL_TEST,
   };
-  for (size_t ii = 0; ii < arraysize(kStates); ++ii) {
+  for (size_t ii = 0; ii < base::size(kStates); ++ii) {
     Enable enable_cmd;
     GLenum state = kStates[ii];
     enable_cmd.Init(state);
