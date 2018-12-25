@@ -14,7 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -203,11 +203,10 @@ class NativeMediaFileUtilTest : public testing::Test {
 };
 
 TEST_F(NativeMediaFileUtilTest, DirectoryExistsAndFileExistsFiltering) {
-  PopulateDirectoryWithTestCases(root_path(),
-                                 kFilteringTestCases,
-                                 arraysize(kFilteringTestCases));
+  PopulateDirectoryWithTestCases(root_path(), kFilteringTestCases,
+                                 base::size(kFilteringTestCases));
 
-  for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kFilteringTestCases); ++i) {
     FileSystemURL url = CreateURL(kFilteringTestCases[i].path);
 
     base::File::Error expectation =
@@ -229,9 +228,8 @@ TEST_F(NativeMediaFileUtilTest, DirectoryExistsAndFileExistsFiltering) {
 }
 
 TEST_F(NativeMediaFileUtilTest, ReadDirectoryFiltering) {
-  PopulateDirectoryWithTestCases(root_path(),
-                                 kFilteringTestCases,
-                                 arraysize(kFilteringTestCases));
+  PopulateDirectoryWithTestCases(root_path(), kFilteringTestCases,
+                                 base::size(kFilteringTestCases));
 
   std::set<base::FilePath::StringType> content;
   FileSystemURL url = CreateURL(FPL(""));
@@ -242,7 +240,7 @@ TEST_F(NativeMediaFileUtilTest, ReadDirectoryFiltering) {
   EXPECT_TRUE(completed);
   EXPECT_EQ(6u, content.size());
 
-  for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kFilteringTestCases); ++i) {
     base::FilePath::StringType name =
         base::FilePath(kFilteringTestCases[i].path).BaseName().value();
     auto found = content.find(name);
@@ -254,7 +252,7 @@ TEST_F(NativeMediaFileUtilTest, CreateDirectoryFiltering) {
   // Run the loop twice. The second loop attempts to create directories that are
   // pre-existing. Though the result should be the same.
   for (int loop_count = 0; loop_count < 2; ++loop_count) {
-    for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+    for (size_t i = 0; i < base::size(kFilteringTestCases); ++i) {
       if (kFilteringTestCases[i].is_directory) {
         FileSystemURL root_url = CreateURL(FPL(""));
         FileSystemURL url = CreateURL(kFilteringTestCases[i].path);
@@ -282,11 +280,10 @@ TEST_F(NativeMediaFileUtilTest, CopySourceFiltering) {
   // Run the loop twice. The first run has no source files. The second run does.
   for (int loop_count = 0; loop_count < 2; ++loop_count) {
     if (loop_count == 1) {
-      PopulateDirectoryWithTestCases(root_path(),
-                                     kFilteringTestCases,
-                                     arraysize(kFilteringTestCases));
+      PopulateDirectoryWithTestCases(root_path(), kFilteringTestCases,
+                                     base::size(kFilteringTestCases));
     }
-    for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+    for (size_t i = 0; i < base::size(kFilteringTestCases); ++i) {
       // Always start with an empty destination directory.
       // Copying to a non-empty destination directory is an invalid operation.
       ASSERT_TRUE(base::DeleteFile(dest_path, true));
@@ -324,9 +321,8 @@ TEST_F(NativeMediaFileUtilTest, CopyDestFiltering) {
       // directories and create new ones that should pre-exist.
       ASSERT_TRUE(base::DeleteFile(root_path(), true));
       ASSERT_TRUE(base::CreateDirectory(root_path()));
-      PopulateDirectoryWithTestCases(root_path(),
-                                     kFilteringTestCases,
-                                     arraysize(kFilteringTestCases));
+      PopulateDirectoryWithTestCases(root_path(), kFilteringTestCases,
+                                     base::size(kFilteringTestCases));
     }
 
     // Always create a dummy source data file.
@@ -336,7 +332,7 @@ TEST_F(NativeMediaFileUtilTest, CopyDestFiltering) {
     ASSERT_EQ(static_cast<int>(strlen(kDummyData)),
               base::WriteFile(src_path, kDummyData, strlen(kDummyData)));
 
-    for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+    for (size_t i = 0; i < base::size(kFilteringTestCases); ++i) {
       if (loop_count == 0 && kFilteringTestCases[i].is_directory) {
         // These directories do not exist in this case, so Copy() will not
         // treat them as directories. Thus invalidating these test cases.
@@ -388,11 +384,10 @@ TEST_F(NativeMediaFileUtilTest, MoveSourceFiltering) {
   // Run the loop twice. The first run has no source files. The second run does.
   for (int loop_count = 0; loop_count < 2; ++loop_count) {
     if (loop_count == 1) {
-      PopulateDirectoryWithTestCases(root_path(),
-                                     kFilteringTestCases,
-                                     arraysize(kFilteringTestCases));
+      PopulateDirectoryWithTestCases(root_path(), kFilteringTestCases,
+                                     base::size(kFilteringTestCases));
     }
-    for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+    for (size_t i = 0; i < base::size(kFilteringTestCases); ++i) {
       // Always start with an empty destination directory.
       // Moving to a non-empty destination directory is an invalid operation.
       ASSERT_TRUE(base::DeleteFile(dest_path, true));
@@ -430,12 +425,11 @@ TEST_F(NativeMediaFileUtilTest, MoveDestFiltering) {
       // directories and create new ones that should pre-exist.
       ASSERT_TRUE(base::DeleteFile(root_path(), true));
       ASSERT_TRUE(base::CreateDirectory(root_path()));
-      PopulateDirectoryWithTestCases(root_path(),
-                                     kFilteringTestCases,
-                                     arraysize(kFilteringTestCases));
+      PopulateDirectoryWithTestCases(root_path(), kFilteringTestCases,
+                                     base::size(kFilteringTestCases));
     }
 
-    for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+    for (size_t i = 0; i < base::size(kFilteringTestCases); ++i) {
       if (loop_count == 0 && kFilteringTestCases[i].is_directory) {
         // These directories do not exist in this case, so Copy() will not
         // treat them as directories. Thus invalidating these test cases.
@@ -492,11 +486,10 @@ TEST_F(NativeMediaFileUtilTest, GetMetadataFiltering) {
   // Run the loop twice. The first run has no files. The second run does.
   for (int loop_count = 0; loop_count < 2; ++loop_count) {
     if (loop_count == 1) {
-      PopulateDirectoryWithTestCases(root_path(),
-                                     kFilteringTestCases,
-                                     arraysize(kFilteringTestCases));
+      PopulateDirectoryWithTestCases(root_path(), kFilteringTestCases,
+                                     base::size(kFilteringTestCases));
     }
-    for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+    for (size_t i = 0; i < base::size(kFilteringTestCases); ++i) {
       FileSystemURL root_url = CreateURL(FPL(""));
       FileSystemURL url = CreateURL(kFilteringTestCases[i].path);
 
@@ -520,11 +513,10 @@ TEST_F(NativeMediaFileUtilTest, RemoveFileFiltering) {
   // Run the loop twice. The first run has no files. The second run does.
   for (int loop_count = 0; loop_count < 2; ++loop_count) {
     if (loop_count == 1) {
-      PopulateDirectoryWithTestCases(root_path(),
-                                     kFilteringTestCases,
-                                     arraysize(kFilteringTestCases));
+      PopulateDirectoryWithTestCases(root_path(), kFilteringTestCases,
+                                     base::size(kFilteringTestCases));
     }
-    for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+    for (size_t i = 0; i < base::size(kFilteringTestCases); ++i) {
       FileSystemURL root_url = CreateURL(FPL(""));
       FileSystemURL url = CreateURL(kFilteringTestCases[i].path);
 
@@ -553,10 +545,9 @@ void CreateSnapshotCallback(base::File::Error* error,
 }
 
 TEST_F(NativeMediaFileUtilTest, CreateSnapshot) {
-  PopulateDirectoryWithTestCases(root_path(),
-                                 kFilteringTestCases,
-                                 arraysize(kFilteringTestCases));
-  for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+  PopulateDirectoryWithTestCases(root_path(), kFilteringTestCases,
+                                 base::size(kFilteringTestCases));
+  for (size_t i = 0; i < base::size(kFilteringTestCases); ++i) {
     if (kFilteringTestCases[i].is_directory ||
         !kFilteringTestCases[i].visible) {
       continue;

@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 
 WinsockLayeredServiceProvider::WinsockLayeredServiceProvider() {
@@ -93,7 +93,7 @@ void GetWinsockLayeredServiceProviders(
     // http://msdn.microsoft.com/en-us/library/ms742239%28v=VS.85%29.aspx
 
     wchar_t path[MAX_PATH];
-    int path_length = arraysize(path);
+    int path_length = base::size(path);
     if (0 == WSCGetProviderPath(&service_providers[i].ProviderId, path,
                                 &path_length, &error)) {
       service_provider.path = path;

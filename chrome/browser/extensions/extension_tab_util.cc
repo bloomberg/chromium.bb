@@ -8,8 +8,8 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -634,7 +634,7 @@ bool ExtensionTabUtil::IsKillURL(const GURL& url) {
     return false;
 
   base::StringPiece fixed_host = fixed_url.host_piece();
-  for (size_t i = 0; i < arraysize(kill_hosts); ++i) {
+  for (size_t i = 0; i < base::size(kill_hosts); ++i) {
     if (fixed_host == kill_hosts[i])
       return true;
   }

@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/json/json_reader.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/values_test_util.h"
@@ -664,14 +663,14 @@ TEST_F(WebRequestRulesRegistryTest, GetMatchesDifferentUrls) {
   };
   // Which rules should match in subsequent test iterations.
   const char* const matchingRuleIds[] = { kRuleId1, kRuleId2 };
-  static_assert(arraysize(urls) == arraysize(firstPartyUrls),
+  static_assert(base::size(urls) == base::size(firstPartyUrls),
                 "urls and firstPartyUrls must have the same number "
                 "of elements");
-  static_assert(arraysize(urls) == arraysize(matchingRuleIds),
+  static_assert(base::size(urls) == base::size(matchingRuleIds),
                 "urls and matchingRuleIds must have the same number "
                 "of elements");
 
-  for (size_t i = 0; i < arraysize(matchingRuleIds); ++i) {
+  for (size_t i = 0; i < base::size(matchingRuleIds); ++i) {
     // Construct the inputs.
     WebRequestInfo http_request_info = CreateRequest(urls[i]);
     http_request_info.site_for_cookies = firstPartyUrls[i];

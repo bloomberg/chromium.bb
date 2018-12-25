@@ -12,7 +12,6 @@
 #include "base/base_paths_posix.h"
 #include "base/callback.h"
 #include "base/i18n/time_formatting.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -507,7 +506,7 @@ void MediaGalleriesPreferences::AddDefaultGalleries() {
     {chrome::DIR_USER_VIDEOS, MediaGalleryPrefInfo::kVideosDefault},
   };
 
-  for (size_t i = 0; i < arraysize(kDirectories); ++i) {
+  for (size_t i = 0; i < base::size(kDirectories); ++i) {
     base::FilePath path;
     if (!base::PathService::Get(kDirectories[i].directory_key, &path))
       continue;

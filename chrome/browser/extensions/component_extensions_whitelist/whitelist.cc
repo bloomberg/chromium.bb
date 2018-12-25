@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -39,7 +39,7 @@ bool IsComponentExtensionWhitelisted(const std::string& extension_id) {
 #endif
   };
 
-  for (size_t i = 0; i < arraysize(kAllowed); ++i) {
+  for (size_t i = 0; i < base::size(kAllowed); ++i) {
     if (extension_id == kAllowed[i])
       return true;
   }

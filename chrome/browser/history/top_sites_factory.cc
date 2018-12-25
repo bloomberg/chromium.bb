@@ -11,8 +11,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
@@ -74,8 +74,8 @@ void InitializePrepopulatedPageList(
 #if !defined(OS_ANDROID)
   DCHECK(prepopulated_pages);
   bool hide_web_store_icon = prefs->GetBoolean(prefs::kHideWebStoreIcon);
-  prepopulated_pages->reserve(arraysize(kRawPrepopulatedPages));
-  for (size_t i = 0; i < arraysize(kRawPrepopulatedPages); ++i) {
+  prepopulated_pages->reserve(base::size(kRawPrepopulatedPages));
+  for (size_t i = 0; i < base::size(kRawPrepopulatedPages); ++i) {
     const RawPrepopulatedPage& page = kRawPrepopulatedPages[i];
     if (hide_web_store_icon && page.url_id == IDS_WEBSTORE_URL)
       continue;

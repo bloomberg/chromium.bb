@@ -15,8 +15,8 @@
 #include "base/debug/crash_logging.h"
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/crash/core/common/crash_key.h"
 
@@ -58,11 +58,11 @@ size_t BinForException(NSException* exception) {
   };
 
   // Make sure our array hasn't outgrown our abilities to track it.
-  static_assert(arraysize(kKnownNSExceptionNames) < kKnownNSExceptionCount,
+  static_assert(base::size(kKnownNSExceptionNames) < kKnownNSExceptionCount,
                 "Cannot track more exceptions");
 
   NSString* name = [exception name];
-  for (size_t i = 0; i < arraysize(kKnownNSExceptionNames); ++i) {
+  for (size_t i = 0; i < base::size(kKnownNSExceptionNames); ++i) {
     if (name == kKnownNSExceptionNames[i]) {
       return i;
     }

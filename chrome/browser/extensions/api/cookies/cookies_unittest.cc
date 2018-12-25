@@ -10,7 +10,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/cookies/cookies_api_constants.h"
 #include "chrome/browser/extensions/api/cookies/cookies_helpers.h"
@@ -165,7 +165,7 @@ TEST_F(ExtensionCookiesTest, DomainMatching) {
       {".bar.com", ".foo.bar.com", true}, {".bar.com", "baz.foo.bar.com", true},
       {"foo.bar.com", ".bar.com", false}};
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     // Build up the Params struct.
     base::ListValue args;
     auto dict = std::make_unique<base::DictionaryValue>();

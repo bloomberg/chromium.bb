@@ -13,8 +13,8 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -122,9 +122,9 @@ const char* const kRemotingIt2MeOrigins[] = {
 
 static const BuiltInHost kBuiltInHost[] = {
     {"com.google.chrome.test.echo",  // ScopedTestNativeMessagingHost::kHostName
-     kEchoHostOrigins, arraysize(kEchoHostOrigins), &EchoHost::Create},
+     kEchoHostOrigins, base::size(kEchoHostOrigins), &EchoHost::Create},
     {"com.google.chrome.remote_assistance", kRemotingIt2MeOrigins,
-     arraysize(kRemotingIt2MeOrigins), &CreateIt2MeHost},
+     base::size(kRemotingIt2MeOrigins), &CreateIt2MeHost},
     {arc::ArcSupportMessageHost::kHostName,
      arc::ArcSupportMessageHost::kHostOrigin, 1,
      &arc::ArcSupportMessageHost::Create},
@@ -150,7 +150,7 @@ std::unique_ptr<NativeMessageHost> NativeMessageHost::Create(
     const std::string& native_host_name,
     bool allow_user_level,
     std::string* error) {
-  for (unsigned int i = 0; i < arraysize(kBuiltInHost); i++) {
+  for (unsigned int i = 0; i < base::size(kBuiltInHost); i++) {
     const BuiltInHost& host = kBuiltInHost[i];
     std::string name(host.name);
     if (name == native_host_name) {

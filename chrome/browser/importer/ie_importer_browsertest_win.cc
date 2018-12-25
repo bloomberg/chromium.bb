@@ -21,8 +21,8 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -235,8 +235,8 @@ class TestObserver : public ProfileWriter,
   void ImportEnded() override {
     base::RunLoop::QuitCurrentWhenIdleDeprecated();
     if (importer_items_ & importer::FAVORITES) {
-      EXPECT_EQ(arraysize(kIEBookmarks), bookmark_count_);
-      EXPECT_EQ(arraysize(kIEFaviconGroup), favicon_count_);
+      EXPECT_EQ(base::size(kIEBookmarks), bookmark_count_);
+      EXPECT_EQ(base::size(kIEFaviconGroup), favicon_count_);
     }
     if (importer_items_ & importer::HISTORY)
       EXPECT_EQ(2u, history_count_);
@@ -280,7 +280,7 @@ class TestObserver : public ProfileWriter,
 
   void AddBookmarks(const std::vector<ImportedBookmarkEntry>& bookmarks,
                     const base::string16& top_level_folder_name) override {
-    ASSERT_LE(bookmark_count_ + bookmarks.size(), arraysize(kIEBookmarks));
+    ASSERT_LE(bookmark_count_ + bookmarks.size(), base::size(kIEBookmarks));
     // Importer should import the IE Favorites folder the same as the list,
     // in the same order.
     for (size_t i = 0; i < bookmarks.size(); ++i) {
@@ -293,10 +293,10 @@ class TestObserver : public ProfileWriter,
 
   void AddFavicons(const favicon_base::FaviconUsageDataList& usage) override {
     // Importer should group the favicon information for each favicon URL.
-    for (size_t i = 0; i < arraysize(kIEFaviconGroup); ++i) {
+    for (size_t i = 0; i < base::size(kIEFaviconGroup); ++i) {
       GURL favicon_url(kIEFaviconGroup[i].favicon_url);
       std::set<GURL> urls;
-      for (size_t j = 0; j < arraysize(kIEFaviconGroup[i].site_url); ++j)
+      for (size_t j = 0; j < base::size(kIEFaviconGroup[i].site_url); ++j)
         urls.insert(GURL(kIEFaviconGroup[i].site_url[j]));
 
       SCOPED_TRACE(testing::Message() << "Expected Favicon: " << favicon_url);
@@ -344,7 +344,7 @@ class MalformedFavoritesRegistryTestObserver
   void ImportItemEnded(importer::ImportItem item) override {}
   void ImportEnded() override {
     base::RunLoop::QuitCurrentWhenIdleDeprecated();
-    EXPECT_EQ(arraysize(kIESortedBookmarks), bookmark_count_);
+    EXPECT_EQ(base::size(kIESortedBookmarks), bookmark_count_);
   }
 
   // ProfileWriter:
@@ -358,7 +358,7 @@ class MalformedFavoritesRegistryTestObserver
   void AddBookmarks(const std::vector<ImportedBookmarkEntry>& bookmarks,
                     const base::string16& top_level_folder_name) override {
     ASSERT_LE(bookmark_count_ + bookmarks.size(),
-              arraysize(kIESortedBookmarks));
+              base::size(kIESortedBookmarks));
     for (size_t i = 0; i < bookmarks.size(); ++i) {
       EXPECT_NO_FATAL_FAILURE(
           TestEqualBookmarkEntry(bookmarks[i],
@@ -440,10 +440,10 @@ IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, IEImporter) {
     L"a",
     L"SubFolder.url",
   };
-  ASSERT_TRUE(CreateOrderBlob(
-      base::FilePath(path), L"",
-      std::vector<base::string16>(root_links,
-                                  root_links + arraysize(root_links))));
+  ASSERT_TRUE(
+      CreateOrderBlob(base::FilePath(path), L"",
+                      std::vector<base::string16>(
+                          root_links, root_links + base::size(root_links))));
 
   // Sets up a special history link.
   Microsoft::WRL::ComPtr<IUrlHistoryStg2> url_history_stg2;
@@ -524,7 +524,7 @@ IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest,
 
   // Verify malformed registry data are safely ignored and alphabetical
   // sort is performed.
-  for (size_t i = 0; i < arraysize(kBadBinary); ++i) {
+  for (size_t i = 0; i < base::size(kBadBinary); ++i) {
     base::string16 key_path(importer::GetIEFavoritesOrderKey());
     base::win::RegKey key;
     ASSERT_EQ(ERROR_SUCCESS,

@@ -18,7 +18,6 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -225,7 +224,7 @@ const int kNotificationsObserved[] = {
 class NotificationsObserver : public content::NotificationObserver {
  public:
   NotificationsObserver() {
-    for (size_t i = 0; i < arraysize(kNotificationsObserved); ++i) {
+    for (size_t i = 0; i < base::size(kNotificationsObserved); ++i) {
       count_[i] = 0;
       registrar_.Add(this,
                      kNotificationsObserved[i],
@@ -234,7 +233,7 @@ class NotificationsObserver : public content::NotificationObserver {
   }
 
   ~NotificationsObserver() override {
-    for (size_t i = 0; i < arraysize(kNotificationsObserved); ++i) {
+    for (size_t i = 0; i < base::size(kNotificationsObserved); ++i) {
       registrar_.Remove(this,
                         kNotificationsObserved[i],
                         content::NotificationService::AllSources());
@@ -262,7 +261,7 @@ class NotificationsObserver : public content::NotificationObserver {
                const content::NotificationDetails& details) override {
     if (!quit_closure_.is_null())
       quit_closure_.Run();
-    for (size_t i = 0; i < arraysize(kNotificationsObserved); ++i) {
+    for (size_t i = 0; i < base::size(kNotificationsObserved); ++i) {
       if (kNotificationsObserved[i] == type) {
         count_[i]++;
         if (type == extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND) {
@@ -276,7 +275,7 @@ class NotificationsObserver : public content::NotificationObserver {
   }
 
   content::NotificationRegistrar registrar_;
-  size_t count_[arraysize(kNotificationsObserved)];
+  size_t count_[base::size(kNotificationsObserved)];
   std::set<std::string> updated_;
   base::Closure quit_closure_;
 
@@ -1889,8 +1888,8 @@ class ExtensionUpdaterTest : public testing::Test {
     // rollcall and active pings.
     int ping_cases[] = { ManifestFetchData::kNeverPinged, 0, 1, 5 };
 
-    for (size_t i = 0; i < arraysize(ping_cases); i++) {
-      for (size_t j = 0; j < arraysize(ping_cases); j++) {
+    for (size_t i = 0; i < base::size(ping_cases); i++) {
+      for (size_t j = 0; j < base::size(ping_cases); j++) {
         for (size_t k = 0; k < 2; k++) {
           int rollcall_ping_days = ping_cases[i];
           int active_ping_days = ping_cases[j];

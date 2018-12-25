@@ -11,8 +11,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
@@ -242,7 +242,7 @@ TEST_F(PushMessagingServiceTest, NormalizeSenderInfo) {
   PushMessagingServiceImpl* push_service = profile()->GetPushMessagingService();
   ASSERT_TRUE(push_service);
 
-  std::string p256dh(kTestP256Key, kTestP256Key + arraysize(kTestP256Key));
+  std::string p256dh(kTestP256Key, kTestP256Key + base::size(kTestP256Key));
   ASSERT_EQ(65u, p256dh.size());
 
   // NIST P-256 public keys in uncompressed format will be encoded using the

@@ -12,6 +12,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/string_compare.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -248,7 +249,7 @@ bool ProfileAttributesStorage::IsDefaultProfileName(
     return true;
 
   // Check if it's one of the old-style profile names.
-  for (size_t i = 0; i < arraysize(kDefaultNames); ++i) {
+  for (size_t i = 0; i < base::size(kDefaultNames); ++i) {
     if (name == l10n_util::GetStringUTF16(kDefaultNames[i]))
       return true;
   }

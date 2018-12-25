@@ -8,9 +8,9 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/ip_address.h"
@@ -138,7 +138,7 @@ TEST_F(DialServiceTest, TestNotifyOnError) {
 
 TEST_F(DialServiceTest, TestOnDeviceDiscovered) {
   dial_service_.discovery_active_ = true;
-  int response_size = arraysize(kValidResponse) - 1;
+  int response_size = base::size(kValidResponse) - 1;
   dial_socket_->recv_buffer_ =
       base::MakeRefCounted<net::IOBufferWithSize>(response_size);
   strncpy(dial_socket_->recv_buffer_->data(), kValidResponse, response_size);

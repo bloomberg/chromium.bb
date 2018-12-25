@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/callback_helpers.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
@@ -134,7 +134,7 @@ void XmlConfigParser::CharactersImpl(void* ctx, const xmlChar* ch, int len) {
 
 bool XmlConfigParser::IsParsingData() const {
   const std::string data_path[] = {"response", "app", "data"};
-  return elements_.size() == arraysize(data_path) &&
+  return elements_.size() == base::size(data_path) &&
          std::equal(elements_.begin(), elements_.end(), data_path);
 }
 

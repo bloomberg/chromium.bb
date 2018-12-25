@@ -25,6 +25,7 @@
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
@@ -150,7 +151,7 @@ DWORD CredentialBufferValidator::IsValid(ULONG auth_package,
   LUID luid;
   HANDLE token;
 
-  strcpy_s(source.SourceName, arraysize(source.SourceName), "Chrome");
+  strcpy_s(source.SourceName, base::size(source.SourceName), "Chrome");
   if (!AllocateLocallyUniqueId(&source.SourceIdentifier))
     return GetLastError();
 
@@ -456,7 +457,7 @@ bool AuthenticateUserNew(gfx::NativeWindow window,
                          password_manager::ReauthPurpose purpose) {
   bool retval = false;
   WCHAR cur_username[CREDUI_MAX_USERNAME_LENGTH + 1] = {};
-  DWORD cur_username_length = arraysize(cur_username);
+  DWORD cur_username_length = base::size(cur_username);
 
   // If this is a standlone workstation, it's possible the current user has no
   // password, so check here and allow it.

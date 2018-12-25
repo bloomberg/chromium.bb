@@ -10,8 +10,8 @@
 
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -588,7 +588,7 @@ TEST(WebRequestActionTest, GetName) {
     "declarativeWebRequest.IgnoreRules",
   };
   std::unique_ptr<WebRequestActionSet> action_set(CreateSetOfActions(kActions));
-  ASSERT_EQ(arraysize(kExpectedNames), action_set->actions().size());
+  ASSERT_EQ(base::size(kExpectedNames), action_set->actions().size());
   size_t index = 0;
   for (auto it = action_set->actions().cbegin();
        it != action_set->actions().cend(); ++it) {

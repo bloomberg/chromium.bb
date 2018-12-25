@@ -23,7 +23,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -33,6 +32,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -3290,7 +3290,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   FlushBlacklistPolicy();
   // All bbb.com URLs are blocked, and "aaa.com" is still unblocked.
   CheckCanOpenURL(browser(), kURLS[0]);
-  for (size_t i = 1; i < arraysize(kURLS); ++i)
+  for (size_t i = 1; i < base::size(kURLS); ++i)
     CheckURLIsBlocked(browser(), kURLS[i]);
 
   // Whitelist some sites of bbb.com.
@@ -3337,7 +3337,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklistIncognito) {
   FlushBlacklistPolicy();
   // All bbb.com URLs are blocked, and "aaa.com" is still unblocked.
   CheckCanOpenURL(incognito_browser, kURLS[0]);
-  for (size_t i = 1; i < arraysize(kURLS); ++i)
+  for (size_t i = 1; i < base::size(kURLS); ++i)
     CheckURLIsBlocked(incognito_browser, kURLS[i]);
 
   // Whitelist some sites of bbb.com.
@@ -4026,13 +4026,13 @@ class RestoreOnStartupPolicyTest
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(RedirectHostsToTestData, kRestoredURLs,
-                       arraysize(kRestoredURLs)));
+                       base::size(kRestoredURLs)));
   }
 
   void ListOfURLs() {
     // Verifies that policy can set the startup pages to a list of URLs.
     base::ListValue urls;
-    for (size_t i = 0; i < arraysize(kRestoredURLs); ++i) {
+    for (size_t i = 0; i < base::size(kRestoredURLs); ++i) {
       urls.AppendString(kRestoredURLs[i]);
       expected_urls_.push_back(GURL(kRestoredURLs[i]));
     }
@@ -4070,7 +4070,7 @@ class RestoreOnStartupPolicyTest
         nullptr);
     provider_.UpdateChromePolicy(policies);
     // This should restore the tabs opened at PRE_RunTest below.
-    for (size_t i = 0; i < arraysize(kRestoredURLs); ++i)
+    for (size_t i = 0; i < base::size(kRestoredURLs); ++i)
       expected_urls_.push_back(GURL(kRestoredURLs[i]));
   }
 
@@ -4091,7 +4091,7 @@ class RestoreOnStartupPolicyTest
     // This should restore the tabs opened at PRE_RunTest below, yet all should
     // be blocked.
     blocked_ = true;
-    for (size_t i = 0; i < arraysize(kRestoredURLs); ++i)
+    for (size_t i = 0; i < base::size(kRestoredURLs); ++i)
       expected_urls_.emplace_back(kRestoredURLs[i]);
   }
 
@@ -4117,7 +4117,7 @@ IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, PRE_RunTest) {
   // Most policy settings override this, except kPrefValueLast which enforces
   // a restore.
   ui_test_utils::NavigateToURL(browser(), GURL(kRestoredURLs[0]));
-  for (size_t i = 1; i < arraysize(kRestoredURLs); ++i) {
+  for (size_t i = 1; i < base::size(kRestoredURLs); ++i) {
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
@@ -4476,7 +4476,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
       nullptr,
   };
 
-  for (size_t i = 0; i < arraysize(allow_pattern); ++i) {
+  for (size_t i = 0; i < base::size(allow_pattern); ++i) {
     PolicyMap policies;
     ConfigurePolicyMap(&policies, key::kAudioCaptureAllowed,
                        key::kAudioCaptureAllowedUrls, allow_pattern[i]);
@@ -4534,7 +4534,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
       nullptr,
   };
 
-  for (size_t i = 0; i < arraysize(allow_pattern); ++i) {
+  for (size_t i = 0; i < base::size(allow_pattern); ++i) {
     PolicyMap policies;
     ConfigurePolicyMap(&policies, key::kVideoCaptureAllowed,
                        key::kVideoCaptureAllowedUrls, allow_pattern[i]);

@@ -15,10 +15,10 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
@@ -153,7 +153,7 @@ class ProfilePrefStoreManagerTest : public testing::Test,
 
     ProfilePrefStoreManager::RegisterProfilePrefs(profile_pref_registry_.get());
     for (const prefs::TrackedPreferenceMetadata* it = kConfiguration;
-         it != kConfiguration + arraysize(kConfiguration); ++it) {
+         it != kConfiguration + base::size(kConfiguration); ++it) {
       if (it->strategy == PrefTrackingStrategy::ATOMIC) {
         profile_pref_registry_->RegisterStringPref(it->name, std::string());
       } else {

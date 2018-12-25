@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -221,8 +222,8 @@ bool PrivetTrafficDetector::Helper::IsPrivetPacket(
 
   static const char kPrivetDeviceTypeDnsString[] = "\x07_privet";
   const char* substring_begin = kPrivetDeviceTypeDnsString;
-  const char* substring_end = substring_begin +
-                              arraysize(kPrivetDeviceTypeDnsString) - 1;
+  const char* substring_end =
+      substring_begin + base::size(kPrivetDeviceTypeDnsString) - 1;
   // Check for expected substring, any Privet device must include this.
   return std::search(buffer_begin, buffer_end, substring_begin,
                      substring_end) != buffer_end;

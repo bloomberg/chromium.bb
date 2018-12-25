@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -654,7 +655,7 @@ void IdentityGetAuthTokenFunction::StartDeviceLoginAccessTokenRequest() {
 bool IdentityGetAuthTokenFunction::IsOriginWhitelistedInPublicSession() {
   DCHECK(extension());
   GURL extension_url = extension()->url();
-  for (size_t i = 0; i < arraysize(kPublicSessionAllowedOrigins); i++) {
+  for (size_t i = 0; i < base::size(kPublicSessionAllowedOrigins); i++) {
     URLPattern allowed_origin(URLPattern::SCHEME_ALL,
                               kPublicSessionAllowedOrigins[i]);
     if (allowed_origin.MatchesSecurityOrigin(extension_url)) {

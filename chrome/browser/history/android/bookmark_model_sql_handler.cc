@@ -5,7 +5,7 @@
 #include "chrome/browser/history/android/bookmark_model_sql_handler.h"
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -93,11 +93,9 @@ BookmarkModel* BookmarkModelSQLHandler::Task::GetBookmarkModel() {
   return BookmarkModelFactory::GetForBrowserContext(profile);
 }
 
-BookmarkModelSQLHandler::BookmarkModelSQLHandler(
-    URLDatabase* url_database)
-    : SQLHandler(kInterestingColumns, arraysize(kInterestingColumns)),
-      url_database_(url_database) {
-}
+BookmarkModelSQLHandler::BookmarkModelSQLHandler(URLDatabase* url_database)
+    : SQLHandler(kInterestingColumns, base::size(kInterestingColumns)),
+      url_database_(url_database) {}
 
 BookmarkModelSQLHandler::~BookmarkModelSQLHandler() {
 }

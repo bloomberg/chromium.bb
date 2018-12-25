@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -362,8 +362,8 @@ TEST_F(ExtensionSpecialStoragePolicyTest, NotificationTest) {
     SpecialStoragePolicy::STORAGE_UNLIMITED,
   };
 
-  ASSERT_EQ(arraysize(apps), arraysize(change_flags));
-  for (size_t i = 0; i < arraysize(apps); ++i) {
+  ASSERT_EQ(base::size(apps), base::size(change_flags));
+  for (size_t i = 0; i < base::size(apps); ++i) {
     SCOPED_TRACE(testing::Message() << "i: " << i);
     observer.ExpectGrant(apps[i]->id(), change_flags[i]);
     policy_->GrantRightsForExtension(apps[i].get(), NULL);
@@ -371,14 +371,14 @@ TEST_F(ExtensionSpecialStoragePolicyTest, NotificationTest) {
     EXPECT_TRUE(observer.IsCompleted());
   }
 
-  for (size_t i = 0; i < arraysize(apps); ++i) {
+  for (size_t i = 0; i < base::size(apps); ++i) {
     SCOPED_TRACE(testing::Message() << "i: " << i);
     policy_->GrantRightsForExtension(apps[i].get(), NULL);
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(observer.IsCompleted());
   }
 
-  for (size_t i = 0; i < arraysize(apps); ++i) {
+  for (size_t i = 0; i < base::size(apps); ++i) {
     SCOPED_TRACE(testing::Message() << "i: " << i);
     observer.ExpectRevoke(apps[i]->id(), change_flags[i]);
     policy_->RevokeRightsForExtension(apps[i].get());
@@ -386,7 +386,7 @@ TEST_F(ExtensionSpecialStoragePolicyTest, NotificationTest) {
     EXPECT_TRUE(observer.IsCompleted());
   }
 
-  for (size_t i = 0; i < arraysize(apps); ++i) {
+  for (size_t i = 0; i < base::size(apps); ++i) {
     SCOPED_TRACE(testing::Message() << "i: " << i);
     policy_->RevokeRightsForExtension(apps[i].get());
     base::RunLoop().RunUntilIdle();

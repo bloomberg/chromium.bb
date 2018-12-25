@@ -10,9 +10,9 @@
 
 #include "base/lazy_instance.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -521,7 +521,7 @@ ExtensionActionSetBadgeBackgroundColorFunction::RunExtensionAction() {
     EXTENSION_FUNCTION_VALIDATE(list->GetSize() == 4);
 
     int color_array[4] = {0};
-    for (size_t i = 0; i < arraysize(color_array); ++i) {
+    for (size_t i = 0; i < base::size(color_array); ++i) {
       EXTENSION_FUNCTION_VALIDATE(list->GetInteger(i, &color_array[i]));
     }
 

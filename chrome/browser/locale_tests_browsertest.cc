@@ -8,7 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/environment.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/base/ui_base_switches.h"
@@ -35,7 +35,7 @@ class ScopedLocale {
       { "zh-TW", "zh_TW.UTF-8" }
     };
     bool found_locale = false;
-    for (size_t i = 0; i < arraysize(kLocales); ++i) {
+    for (size_t i = 0; i < base::size(kLocales); ++i) {
       if (kLocales[i].chrome_locale == locale) {
         found_locale = true;
         setenv("LC_ALL", kLocales[i].system_locale, 1);

@@ -17,7 +17,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -64,7 +64,8 @@ void ShowItemInFolderOnWorkerThread(const base::FilePath& full_path) {
 
   const ITEMIDLIST* highlight[] = {file_item};
 
-  hr = SHOpenFolderAndSelectItems(dir_item, arraysize(highlight), highlight, 0);
+  hr =
+      SHOpenFolderAndSelectItems(dir_item, base::size(highlight), highlight, 0);
   if (FAILED(hr)) {
     // On some systems, the above call mysteriously fails with "file not
     // found" even though the file is there.  In these cases, ShellExecute()

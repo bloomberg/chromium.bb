@@ -13,10 +13,10 @@
 #include "base/cancelable_callback.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
@@ -430,7 +430,7 @@ TEST_F(ThreadWatcherTest, ThreadNamesOnlyArgs) {
   // Verify the data.
   base::CStringTokenizer tokens(
       kCrashOnHangThreadNames,
-      kCrashOnHangThreadNames + (arraysize(kCrashOnHangThreadNames) - 1), ",");
+      kCrashOnHangThreadNames + (base::size(kCrashOnHangThreadNames) - 1), ",");
   while (tokens.GetNext()) {
     std::vector<base::StringPiece> values = base::SplitStringPiece(
         tokens.token_piece(), ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
@@ -459,7 +459,7 @@ TEST_F(ThreadWatcherTest, CrashOnHangThreadsAllArgs) {
   // Verify the data.
   base::CStringTokenizer tokens(
       kCrashOnHangThreadData,
-      kCrashOnHangThreadData + (arraysize(kCrashOnHangThreadData) - 1), ",");
+      kCrashOnHangThreadData + (base::size(kCrashOnHangThreadData) - 1), ",");
   while (tokens.GetNext()) {
     std::vector<base::StringPiece> values = base::SplitStringPiece(
         tokens.token_piece(), ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);

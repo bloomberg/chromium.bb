@@ -14,7 +14,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
@@ -81,7 +81,7 @@ void BrailleControllerImpl::TryLoadLibBrlApi() {
     "libbrlapi.so.0.5",
     "libbrlapi.so.0.6"
   };
-  for (size_t i = 0; i < arraysize(kSupportedVersions); ++i) {
+  for (size_t i = 0; i < base::size(kSupportedVersions); ++i) {
     if (libbrlapi_loader_.Load(kSupportedVersions[i]))
       return;
   }

@@ -9,8 +9,8 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
@@ -168,7 +168,7 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
 
   static void RetrieveActions_ArgUrlApiCalls(
       std::unique_ptr<std::vector<scoped_refptr<Action>>> actions) {
-    size_t api_calls_size = arraysize(kUrlApiCalls);
+    size_t api_calls_size = base::size(kUrlApiCalls);
     const base::DictionaryValue* other = NULL;
     int dom_verb = -1;
 
@@ -364,7 +364,7 @@ TEST_F(ActivityLogTest, ArgUrlApiCalls) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   base::Time now = base::Time::Now();
-  int api_calls_size = arraysize(kUrlApiCalls);
+  int api_calls_size = base::size(kUrlApiCalls);
   scoped_refptr<Action> action;
 
   for (int i = 0; i < api_calls_size; i++) {

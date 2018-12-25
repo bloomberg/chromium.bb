@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,7 +18,7 @@ TEST(SwitchUtilsTest, RemoveSwitches) {
       FILE_PATH_LITERAL("--make-default-browser"),
       FILE_PATH_LITERAL("--foo"),
       FILE_PATH_LITERAL("--bar")};
-  base::CommandLine cmd_line(arraysize(argv), argv);
+  base::CommandLine cmd_line(base::size(argv), argv);
   EXPECT_FALSE(cmd_line.GetCommandLineString().empty());
 
   base::CommandLine::SwitchMap switches = cmd_line.GetSwitches();
@@ -58,7 +58,7 @@ TEST(SwitchUtilsTest, RemovePrefetchSwitch) {
       FILE_PATH_LITERAL("--foo"),
       FILE_PATH_LITERAL("/prefetch:1"),
       FILE_PATH_LITERAL("--bar")};
-  base::CommandLine cmd_line(arraysize(argv), argv);
+  base::CommandLine cmd_line(base::size(argv), argv);
   EXPECT_FALSE(cmd_line.GetCommandLineString().empty());
 
   base::CommandLine::SwitchMap switches = cmd_line.GetSwitches();
@@ -77,7 +77,7 @@ TEST(SwitchUtilsTest, RemovePrefetchSwitchAndNormalSwitch) {
       FILE_PATH_LITERAL("/prefetch:1"),
       FILE_PATH_LITERAL("--force-first-run"),
       FILE_PATH_LITERAL("--bar")};
-  base::CommandLine cmd_line(arraysize(argv), argv);
+  base::CommandLine cmd_line(base::size(argv), argv);
   EXPECT_FALSE(cmd_line.GetCommandLineString().empty());
 
   base::CommandLine::SwitchMap switches = cmd_line.GetSwitches();

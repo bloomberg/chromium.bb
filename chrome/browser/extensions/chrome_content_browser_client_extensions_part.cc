@@ -15,6 +15,7 @@
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
@@ -897,7 +898,7 @@ void ChromeContentBrowserClientExtensionsPart::RecordShouldAllowOpenURLFailure(
       "last",
   };
 
-  static_assert(arraysize(kSchemeNames) == SCHEME_LAST + 1,
+  static_assert(base::size(kSchemeNames) == SCHEME_LAST + 1,
                 "kSchemeNames should have SCHEME_LAST + 1 elements");
 
   ShouldAllowOpenURLFailureScheme scheme = SCHEME_UNKNOWN;
