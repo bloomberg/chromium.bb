@@ -6,9 +6,9 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -754,8 +754,8 @@ TEST_F(OAuth2TokenServiceTest, RequestParametersOrderTest) {
       OAuth2TokenService::RequestParameters("1", "1", set_1),
   };
 
-  for (size_t i = 0; i < arraysize(params); i++) {
-    for (size_t j = 0; j < arraysize(params); j++) {
+  for (size_t i = 0; i < base::size(params); i++) {
+    for (size_t j = 0; j < base::size(params); j++) {
       if (i == j) {
         EXPECT_FALSE(params[i] < params[j]) << " i=" << i << ", j=" << j;
         EXPECT_FALSE(params[j] < params[i]) << " i=" << i << ", j=" << j;

@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/json/json_value_converter.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -685,7 +685,7 @@ bool ChangeResource::Parse(const base::Value& value) {
 // static
 bool ChangeResource::GetType(base::StringPiece type_name,
                              ChangeResource::ChangeType* result) {
-  for (size_t i = 0; i < arraysize(kChangeTypeMap); i++) {
+  for (size_t i = 0; i < base::size(kChangeTypeMap); i++) {
     if (type_name == kChangeTypeMap[i].type_name) {
       *result = kChangeTypeMap[i].type;
       return true;

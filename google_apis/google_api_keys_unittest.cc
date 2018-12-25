@@ -12,7 +12,7 @@
 
 #include "google_apis/google_api_keys_unittest.h"
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "google_apis/gaia/gaia_switches.h"
 
@@ -64,7 +64,7 @@ GoogleAPIKeysTest::~GoogleAPIKeysTest() {}
 void GoogleAPIKeysTest::SetUp() {
   // Unset all environment variables that can affect these tests,
   // for the duration of the tests.
-  for (size_t i = 0; i < arraysize(env_cache_); ++i) {
+  for (size_t i = 0; i < base::size(env_cache_); ++i) {
     EnvironmentCache& cache = env_cache_[i];
     cache.was_set = env_->HasVar(cache.variable_name);
     cache.value.clear();
@@ -77,7 +77,7 @@ void GoogleAPIKeysTest::SetUp() {
 
 void GoogleAPIKeysTest::TearDown() {
   // Restore environment.
-  for (size_t i = 0; i < arraysize(env_cache_); ++i) {
+  for (size_t i = 0; i < base::size(env_cache_); ++i) {
     EnvironmentCache& cache = env_cache_[i];
     if (cache.was_set) {
       env_->SetVar(cache.variable_name, cache.value);
