@@ -5526,21 +5526,20 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
        mi_col < tile_info->mi_col_end; mi_col += mib_size, sb_col_in_tile++) {
     (*(cpi->row_mt_sync_read_ptr))(&tile_data->row_mt_sync, sb_row,
                                    sb_col_in_tile);
-    if ((cpi->row_mt == 1) && (tile_info->mi_row_start != mi_row)) {
+    if (tile_data->allow_update_cdf && (cpi->row_mt == 1) &&
+        (tile_info->mi_row_start != mi_row)) {
       if ((tile_info->mi_col_start == mi_col)) {
         // restore frame context of 1st column sb
         memcpy(xd->tile_ctx, x->row_ctx, sizeof(*xd->tile_ctx));
       } else {
-        if (tile_data->allow_update_cdf) {
-          int wt_left = AVG_CDF_WEIGHT_LEFT;
-          int wt_tr = AVG_CDF_WEIGHT_TOP_RIGHT;
-          if (tile_info->mi_col_end > (mi_col + mib_size))
-            avg_cdf_symbols(xd->tile_ctx, x->row_ctx + sb_col_in_tile, wt_left,
-                            wt_tr);
-          else
-            avg_cdf_symbols(xd->tile_ctx, x->row_ctx + sb_col_in_tile - 1,
-                            wt_left, wt_tr);
-        }
+        int wt_left = AVG_CDF_WEIGHT_LEFT;
+        int wt_tr = AVG_CDF_WEIGHT_TOP_RIGHT;
+        if (tile_info->mi_col_end > (mi_col + mib_size))
+          avg_cdf_symbols(xd->tile_ctx, x->row_ctx + sb_col_in_tile, wt_left,
+                          wt_tr);
+        else
+          avg_cdf_symbols(xd->tile_ctx, x->row_ctx + sb_col_in_tile - 1,
+                          wt_left, wt_tr);
       }
     }
     av1_fill_coeff_costs(&td->mb, xd->tile_ctx, num_planes);
@@ -5647,7 +5646,8 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       av1_inter_mode_data_fit(tile_data, x->rdmult);
     }
 #endif
-    if ((cpi->row_mt == 1) && (tile_info->mi_row_end > (mi_row + mib_size))) {
+    if (tile_data->allow_update_cdf && (cpi->row_mt == 1) &&
+        (tile_info->mi_row_end > (mi_row + mib_size))) {
       if (sb_cols_in_tile == 1)
         memcpy(x->row_ctx, xd->tile_ctx, sizeof(*xd->tile_ctx));
       else if (sb_col_in_tile >= 1)
