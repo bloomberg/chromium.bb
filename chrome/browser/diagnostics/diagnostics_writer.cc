@@ -10,7 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -86,7 +86,7 @@ class WinConsole : public SimpleConsole {
     SetColor(SimpleConsole::DEFAULT);
     Write(L"Press [enter] to continue\n");
     wchar_t buf[256];
-    DWORD read = arraysize(buf);
+    DWORD read = base::size(buf);
     ::ReadConsoleW(std_in_, buf, read, &read, NULL);
   }
 

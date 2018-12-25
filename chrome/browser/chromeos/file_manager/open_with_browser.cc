@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
@@ -58,7 +58,7 @@ constexpr const base::FilePath::CharType* kFileExtensionsViewableInBrowser[] = {
 
 // Returns true if |file_path| is viewable in the browser (ex. HTML file).
 bool IsViewableInBrowser(const base::FilePath& file_path) {
-  for (size_t i = 0; i < arraysize(kFileExtensionsViewableInBrowser); i++) {
+  for (size_t i = 0; i < base::size(kFileExtensionsViewableInBrowser); i++) {
     if (file_path.MatchesExtension(kFileExtensionsViewableInBrowser[i]))
       return true;
   }

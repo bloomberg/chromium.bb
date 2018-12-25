@@ -8,8 +8,8 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_switches.h"
 
@@ -49,7 +49,7 @@ bool IsCommandAllowedInAppMode(int command_id) {
       IDC_ZOOM_MINUS,
   };
 
-  for (size_t i = 0; i < arraysize(kAllowed); ++i) {
+  for (size_t i = 0; i < base::size(kAllowed); ++i) {
     if (kAllowed[i] == command_id)
       return true;
   }

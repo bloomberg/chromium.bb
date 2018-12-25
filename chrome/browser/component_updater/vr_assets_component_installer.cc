@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
@@ -185,7 +184,7 @@ base::FilePath VrAssetsComponentInstallerPolicy::GetRelativeInstallDir() const {
 void VrAssetsComponentInstallerPolicy::GetHash(
     std::vector<uint8_t>* hash) const {
   hash->assign(kVrAssetsPublicKeySHA256,
-               kVrAssetsPublicKeySHA256 + arraysize(kVrAssetsPublicKeySHA256));
+               kVrAssetsPublicKeySHA256 + base::size(kVrAssetsPublicKeySHA256));
 }
 
 std::string VrAssetsComponentInstallerPolicy::GetName() const {

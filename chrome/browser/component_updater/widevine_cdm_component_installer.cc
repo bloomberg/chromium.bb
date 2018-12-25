@@ -18,9 +18,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/native_library.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -62,7 +62,7 @@ const uint8_t kWidevineSha2Hash[] = {
     0xe8, 0xce, 0xcf, 0x42, 0x06, 0xd0, 0x93, 0x49, 0x6d, 0xd9, 0x89,
     0xe1, 0x41, 0x04, 0x86, 0x4a, 0x8f, 0xbd, 0x86, 0x12, 0xb9, 0x58,
     0x9b, 0xfb, 0x4f, 0xbb, 0x1b, 0xa9, 0xd3, 0x85, 0x37, 0xef};
-static_assert(arraysize(kWidevineSha2Hash) == crypto::kSHA256Length,
+static_assert(base::size(kWidevineSha2Hash) == crypto::kSHA256Length,
               "Wrong hash length");
 
 // Name of the Widevine CDM OS in the component manifest.
@@ -492,7 +492,7 @@ base::FilePath WidevineCdmComponentInstallerPolicy::GetRelativeInstallDir()
 void WidevineCdmComponentInstallerPolicy::GetHash(
     std::vector<uint8_t>* hash) const {
   hash->assign(kWidevineSha2Hash,
-               kWidevineSha2Hash + arraysize(kWidevineSha2Hash));
+               kWidevineSha2Hash + base::size(kWidevineSha2Hash));
 }
 
 std::string WidevineCdmComponentInstallerPolicy::GetName() const {

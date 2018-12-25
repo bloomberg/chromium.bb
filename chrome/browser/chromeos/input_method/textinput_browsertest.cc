@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "chrome/browser/chromeos/input_method/textinput_test_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -256,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
     { "contenteditable_id", ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE },
   };  // The order should be same as tab order in all_input_node.html.
 
-  for (size_t i = 0; i < arraysize(expectations); ++i) {
+  for (size_t i = 0; i < base::size(expectations); ++i) {
     content::SimulateKeyPress(tab, ui::DomKey::TAB, ui::DomCode::TAB,
                               ui::VKEY_TAB, false, false, false, false);
 
@@ -264,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
     EXPECT_EQ(expectations[i].type, helper.GetTextInputType());
   }
 
-  for (size_t i = 0; i < arraysize(expectations); ++i) {
+  for (size_t i = 0; i < base::size(expectations); ++i) {
     helper.ClickElement(expectations[i].node_id, tab);
 
     helper.WaitForTextInputStateChanged(expectations[i].type);

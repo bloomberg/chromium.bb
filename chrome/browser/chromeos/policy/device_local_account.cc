@@ -11,7 +11,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -115,7 +115,7 @@ bool IsDeviceLocalAccountUser(const std::string& user_id,
     return false;
 
   const std::string domain_prefix = domain.substr(
-      0, domain.size() - arraysize(kDeviceLocalAccountDomainSuffix) + 1);
+      0, domain.size() - base::size(kDeviceLocalAccountDomainSuffix) + 1);
 
   if (domain_prefix == kPublicAccountDomainPrefix) {
     if (type)

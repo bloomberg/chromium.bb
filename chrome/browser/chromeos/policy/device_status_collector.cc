@@ -21,9 +21,9 @@
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/optional.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -1473,14 +1473,14 @@ bool DeviceStatusCollector::GetNetworkInterfaces(
   for (device = device_list.begin(); device != device_list.end(); ++device) {
     // Determine the type enum constant for |device|.
     size_t type_idx = 0;
-    for (; type_idx < arraysize(kDeviceTypeMap); ++type_idx) {
+    for (; type_idx < base::size(kDeviceTypeMap); ++type_idx) {
       if ((*device)->type() == kDeviceTypeMap[type_idx].type_string)
         break;
     }
 
     // If the type isn't in |kDeviceTypeMap|, the interface is not relevant for
     // reporting. This filters out VPN devices.
-    if (type_idx >= arraysize(kDeviceTypeMap))
+    if (type_idx >= base::size(kDeviceTypeMap))
       continue;
 
     em::NetworkInterface* interface = status->add_network_interface();
@@ -1515,7 +1515,7 @@ bool DeviceStatusCollector::GetNetworkInterfaces(
     em::NetworkState::ConnectionState connection_state_enum =
         em::NetworkState::UNKNOWN;
     const std::string connection_state_string(state->connection_state());
-    for (size_t i = 0; i < arraysize(kConnectionStateMap); ++i) {
+    for (size_t i = 0; i < base::size(kConnectionStateMap); ++i) {
       if (connection_state_string == kConnectionStateMap[i].state_string) {
         connection_state_enum = kConnectionStateMap[i].state_constant;
         break;

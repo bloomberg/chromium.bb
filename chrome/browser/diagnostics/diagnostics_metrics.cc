@@ -6,8 +6,8 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "chrome/browser/diagnostics/diagnostics_test.h"
 
 namespace diagnostics {
@@ -55,7 +55,7 @@ const TestNameInfo kTestNameInfo[] = {
     // Add new entries in the same order as DiagnosticsTestId.
 };
 
-static_assert(arraysize(kTestNameInfo) == DIAGNOSTICS_TEST_ID_COUNT,
+static_assert(base::size(kTestNameInfo) == DIAGNOSTICS_TEST_ID_COUNT,
               "diagnostics test info mismatch");
 
 const TestNameInfo* FindTestInfo(DiagnosticsTestId id) {
