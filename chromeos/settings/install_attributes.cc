@@ -12,11 +12,11 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -224,7 +224,7 @@ void InstallAttributes::ReadAttributesIfReady(const base::Closure& callback,
         kAttrConsumerKioskEnabled,
       };
       std::map<std::string, std::string> attr_map;
-      for (size_t i = 0; i < arraysize(kEnterpriseAttributes); ++i) {
+      for (size_t i = 0; i < base::size(kEnterpriseAttributes); ++i) {
         std::string value;
         if (tpm_util::InstallAttributesGet(kEnterpriseAttributes[i], &value))
           attr_map[kEnterpriseAttributes[i]] = value;

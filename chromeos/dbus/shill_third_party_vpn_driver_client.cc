@@ -12,7 +12,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "chromeos/dbus/shill_third_party_vpn_observer.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -135,7 +135,7 @@ ShillThirdPartyVpnDriverClientImpl::HelperInfo::HelperInfo(
 
 ShillThirdPartyVpnDriverClientImpl::ShillThirdPartyVpnDriverClientImpl()
     : bus_(nullptr) {
-  for (uint32_t i = 0; i < arraysize(kSetParametersKeyList); ++i) {
+  for (uint32_t i = 0; i < base::size(kSetParametersKeyList); ++i) {
     valid_keys_.insert(kSetParametersKeyList[i]);
   }
 }

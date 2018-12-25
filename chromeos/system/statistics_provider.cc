@@ -15,10 +15,10 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/cancellation_flag.h"
@@ -523,11 +523,9 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
   NameValuePairsParser parser(&machine_info_);
   if (base::SysInfo::IsRunningOnChromeOS()) {
     // Parse all of the key/value pairs from the crossystem tool.
-    if (!parser.ParseNameValuePairsFromTool(arraysize(kCrosSystemTool),
-                                            kCrosSystemTool,
-                                            kCrosSystemEq,
-                                            kCrosSystemDelim,
-                                            kCrosSystemCommentDelim)) {
+    if (!parser.ParseNameValuePairsFromTool(
+            base::size(kCrosSystemTool), kCrosSystemTool, kCrosSystemEq,
+            kCrosSystemDelim, kCrosSystemCommentDelim)) {
       LOG(ERROR) << "Errors parsing output from: " << kCrosSystemTool;
     }
     // Drop useless "(error)" values so they don't displace valid values

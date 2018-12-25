@@ -10,11 +10,11 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -332,7 +332,7 @@ TEST_F(SystemTPMTokenInfoGetterTest, TpmEnabledCallFails) {
 
   const int64_t kExpectedDelays[] = {100};
   EXPECT_EQ(std::vector<int64_t>(kExpectedDelays,
-                                 kExpectedDelays + arraysize(kExpectedDelays)),
+                                 kExpectedDelays + base::size(kExpectedDelays)),
             delays_);
 }
 
@@ -357,7 +357,7 @@ TEST_F(SystemTPMTokenInfoGetterTest, GetTpmTokenInfoInitiallyNotReady) {
 
   const int64_t kExpectedDelays[] = {100};
   EXPECT_EQ(std::vector<int64_t>(kExpectedDelays,
-                                 kExpectedDelays + arraysize(kExpectedDelays)),
+                                 kExpectedDelays + base::size(kExpectedDelays)),
             delays_);
 }
 
@@ -382,7 +382,7 @@ TEST_F(SystemTPMTokenInfoGetterTest, GetTpmTokenInfoInitiallyFails) {
 
   const int64_t kExpectedDelays[] = {100};
   EXPECT_EQ(std::vector<int64_t>(kExpectedDelays,
-                                 kExpectedDelays + arraysize(kExpectedDelays)),
+                                 kExpectedDelays + base::size(kExpectedDelays)),
             delays_);
 }
 
@@ -409,7 +409,7 @@ TEST_F(SystemTPMTokenInfoGetterTest, RetryDelaysIncreaseExponentially) {
 
   int64_t kExpectedDelays[] = {100, 200, 400, 800, 1600, 3200};
   ASSERT_EQ(std::vector<int64_t>(kExpectedDelays,
-                                 kExpectedDelays + arraysize(kExpectedDelays)),
+                                 kExpectedDelays + base::size(kExpectedDelays)),
             delays_);
 }
 
@@ -438,7 +438,7 @@ TEST_F(SystemTPMTokenInfoGetterTest, RetryDelayBounded) {
                                3200,   6400,   12800,  25600,  51200,
                                102400, 204800, 300000, 300000, 300000};
   ASSERT_EQ(std::vector<int64_t>(kExpectedDelays,
-                                 kExpectedDelays + arraysize(kExpectedDelays)),
+                                 kExpectedDelays + base::size(kExpectedDelays)),
             delays_);
 }
 
@@ -483,7 +483,7 @@ TEST_F(UserTPMTokenInfoGetterTest, GetTpmTokenInfoInitiallyFails) {
 
   const int64_t kExpectedDelays[] = {100};
   EXPECT_EQ(std::vector<int64_t>(kExpectedDelays,
-                                 kExpectedDelays + arraysize(kExpectedDelays)),
+                                 kExpectedDelays + base::size(kExpectedDelays)),
             delays_);
 }
 
@@ -508,7 +508,7 @@ TEST_F(UserTPMTokenInfoGetterTest, GetTpmTokenInfoInitiallyNotReady) {
 
   const int64_t kExpectedDelays[] = {100};
   EXPECT_EQ(std::vector<int64_t>(kExpectedDelays,
-                                 kExpectedDelays + arraysize(kExpectedDelays)),
+                                 kExpectedDelays + base::size(kExpectedDelays)),
             delays_);
 }
 

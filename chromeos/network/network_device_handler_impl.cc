@@ -14,6 +14,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
@@ -283,7 +284,7 @@ void NetworkDeviceHandlerImpl::SetDeviceProperty(
       // Must only be changed by policy/owner through.
       shill::kCellularAllowRoamingProperty};
 
-  for (size_t i = 0; i < arraysize(property_blacklist); ++i) {
+  for (size_t i = 0; i < base::size(property_blacklist); ++i) {
     if (property_name == property_blacklist[i]) {
       InvokeErrorCallback(
           device_path, error_callback,
