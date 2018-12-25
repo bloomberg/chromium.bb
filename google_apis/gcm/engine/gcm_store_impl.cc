@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
@@ -123,7 +122,7 @@ std::string MakeRegistrationKey(const std::string& app_id) {
 }
 
 std::string ParseRegistrationKey(const std::string& key) {
-  return key.substr(arraysize(kRegistrationKeyStart) - 1);
+  return key.substr(base::size(kRegistrationKeyStart) - 1);
 }
 
 std::string MakeIncomingKey(const std::string& persistent_id) {
@@ -135,7 +134,7 @@ std::string MakeOutgoingKey(const std::string& persistent_id) {
 }
 
 std::string ParseOutgoingKey(const std::string& key) {
-  return key.substr(arraysize(kOutgoingMsgKeyStart) - 1);
+  return key.substr(base::size(kOutgoingMsgKeyStart) - 1);
 }
 
 std::string MakeGServiceSettingKey(const std::string& setting_name) {
@@ -143,7 +142,7 @@ std::string MakeGServiceSettingKey(const std::string& setting_name) {
 }
 
 std::string ParseGServiceSettingKey(const std::string& key) {
-  return key.substr(arraysize(kGServiceSettingKeyStart) - 1);
+  return key.substr(base::size(kGServiceSettingKeyStart) - 1);
 }
 
 std::string MakeAccountKey(const std::string& account_id) {
@@ -151,7 +150,7 @@ std::string MakeAccountKey(const std::string& account_id) {
 }
 
 std::string ParseAccountKey(const std::string& key) {
-  return key.substr(arraysize(kAccountKeyStart) - 1);
+  return key.substr(base::size(kAccountKeyStart) - 1);
 }
 
 std::string MakeHeartbeatKey(const std::string& scope) {
@@ -159,7 +158,7 @@ std::string MakeHeartbeatKey(const std::string& scope) {
 }
 
 std::string ParseHeartbeatKey(const std::string& key) {
-  return key.substr(arraysize(kHeartbeatKeyStart) - 1);
+  return key.substr(base::size(kHeartbeatKeyStart) - 1);
 }
 
 std::string MakeInstanceIDKey(const std::string& app_id) {
@@ -167,7 +166,7 @@ std::string MakeInstanceIDKey(const std::string& app_id) {
 }
 
 std::string ParseInstanceIDKey(const std::string& key) {
-  return key.substr(arraysize(kInstanceIDKeyStart) - 1);
+  return key.substr(base::size(kInstanceIDKeyStart) - 1);
 }
 
 // Note: leveldb::Slice keeps a pointer to the data in |s|, which must therefore

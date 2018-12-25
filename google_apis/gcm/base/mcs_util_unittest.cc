@@ -10,8 +10,8 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -52,7 +52,7 @@ TEST(MCSUtilTest, PersistentIds) {
     kIqStanzaTag,
     kDataMessageStanzaTag
   };
-  for (size_t i = 0; i < arraysize(kTagsWithPersistentIds); ++i) {
+  for (size_t i = 0; i < base::size(kTagsWithPersistentIds); ++i) {
     int tag = kTagsWithPersistentIds[i];
     std::unique_ptr<google::protobuf::MessageLite> protobuf =
         BuildProtobufFromTag(tag);
@@ -74,7 +74,7 @@ TEST(MCSUtilTest, StreamIds) {
     kHeartbeatAckTag,
     kLoginResponseTag,
   };
-  for (size_t i = 0; i < arraysize(kTagsWithStreamIds); ++i) {
+  for (size_t i = 0; i < base::size(kTagsWithStreamIds); ++i) {
     int tag = kTagsWithStreamIds[i];
     std::unique_ptr<google::protobuf::MessageLite> protobuf =
         BuildProtobufFromTag(tag);

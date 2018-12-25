@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/metrics/histogram.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -256,8 +256,8 @@ RegistrationRequest::Status RegistrationRequest::ParseResponse(
   // some errors will have HTTP_OK response code!
   size_t error_pos = response.find(kErrorPrefix);
   if (error_pos != std::string::npos) {
-    std::string error = response.substr(
-        error_pos + arraysize(kErrorPrefix) - 1);
+    std::string error =
+        response.substr(error_pos + base::size(kErrorPrefix) - 1);
     DVLOG(1) << "Registration response error message: " << error;
     return GetStatusFromError(error);
   }
@@ -278,7 +278,7 @@ RegistrationRequest::Status RegistrationRequest::ParseResponse(
 
   size_t token_pos = response.find(kTokenPrefix);
   if (token_pos != std::string::npos) {
-    *token = response.substr(token_pos + arraysize(kTokenPrefix) - 1);
+    *token = response.substr(token_pos + base::size(kTokenPrefix) - 1);
     return SUCCESS;
   }
 
