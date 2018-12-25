@@ -74,36 +74,6 @@ typedef size_t uintptr_t;
 
 #define NELEMENTS(x) (int)(sizeof(x) / sizeof(x[0]))
 
-/*!\brief force enum to be unsigned 1 byte*/
-#define UENUM1BYTE(enumvar) \
-  ;                         \
-  typedef uint8_t enumvar
-
-/*!\brief force enum to be signed 1 byte*/
-#define SENUM1BYTE(enumvar) \
-  ;                         \
-  typedef int8_t enumvar
-
-/*!\brief force enum to be unsigned 2 byte*/
-#define UENUM2BYTE(enumvar) \
-  ;                         \
-  typedef uint16_t enumvar
-
-/*!\brief force enum to be signed 2 byte*/
-#define SENUM2BYTE(enumvar) \
-  ;                         \
-  typedef int16_t enumvar
-
-/*!\brief force enum to be unsigned 4 byte*/
-#define UENUM4BYTE(enumvar) \
-  ;                         \
-  typedef uint32_t enumvar
-
-/*!\brief force enum to be unsigned 4 byte*/
-#define SENUM4BYTE(enumvar) \
-  ;                         \
-  typedef int32_t enumvar
-
 #if defined(__cplusplus)
 extern "C" {
 #endif  // __cplusplus

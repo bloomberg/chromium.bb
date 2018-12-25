@@ -18,6 +18,7 @@
 #include "aom/aom_codec.h"
 #include "aom/aom_image.h"
 #include "aom/aom_integer.h"
+#include "aom_ports/mem.h"
 #include "aom_ports/msvc.h"
 
 #if CONFIG_AV1_ENCODER

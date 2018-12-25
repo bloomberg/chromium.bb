@@ -98,7 +98,7 @@ extern "C" {
 #define AOM_CODEC_ABI_VERSION (3 + AOM_IMAGE_ABI_VERSION) /**<\hideinitializer*/
 
 /*!\brief Algorithm return codes */
-enum {
+typedef enum {
   /*!\brief Operation completed without error */
   AOM_CODEC_OK,
 
@@ -150,7 +150,7 @@ enum {
    */
   AOM_CODEC_LIST_END
 
-} UENUM1BYTE(aom_codec_err_t); /**< enum type algorithm return codes */
+} aom_codec_err_t;
 
 /*! \brief Codec capabilities bitfield
  *
@@ -221,11 +221,11 @@ typedef struct aom_codec_ctx {
  * *
  * This enumeration determines the bit depth of the codec.
  */
-enum {
-  AOM_BITS_8 = 8,              /**<  8 bits */
-  AOM_BITS_10 = 10,            /**< 10 bits */
-  AOM_BITS_12 = 12,            /**< 12 bits */
-} SENUM1BYTE(aom_bit_depth_t); /**< enum type for codec bit depth*/
+typedef enum aom_bit_depth {
+  AOM_BITS_8 = 8,   /**<  8 bits */
+  AOM_BITS_10 = 10, /**< 10 bits */
+  AOM_BITS_12 = 12, /**< 12 bits */
+} aom_bit_depth_t;
 
 /*!\brief Superblock size selection.
  *
@@ -233,11 +233,11 @@ enum {
  * either be fixed at 64x64 or 128x128 pixels, or it can be dynamically
  * selected by the encoder for each frame.
  */
-enum {
-  AOM_SUPERBLOCK_SIZE_64X64,         /**< Always use 64x64 superblocks. */
-  AOM_SUPERBLOCK_SIZE_128X128,       /**< Always use 128x128 superblocks. */
-  AOM_SUPERBLOCK_SIZE_DYNAMIC        /**< Select superblock size dynamically. */
-} SENUM1BYTE(aom_superblock_size_t); /**<enum type super block size selection*/
+typedef enum aom_superblock_size {
+  AOM_SUPERBLOCK_SIZE_64X64,   /**< Always use 64x64 superblocks. */
+  AOM_SUPERBLOCK_SIZE_128X128, /**< Always use 128x128 superblocks. */
+  AOM_SUPERBLOCK_SIZE_DYNAMIC  /**< Select superblock size dynamically. */
+} aom_superblock_size_t;
 
 /*
  * Library Version Number Interface
@@ -475,7 +475,7 @@ aom_codec_err_t aom_codec_control_(aom_codec_ctx_t *ctx, int ctrl_id, ...);
 #endif
 
 /*!\brief OBU types. */
-enum {
+typedef enum ATTRIBUTE_PACKED {
   OBU_SEQUENCE_HEADER = 1,
   OBU_TEMPORAL_DELIMITER = 2,
   OBU_FRAME_HEADER = 3,
@@ -485,17 +485,17 @@ enum {
   OBU_REDUNDANT_FRAME_HEADER = 7,
   OBU_TILE_LIST = 8,
   OBU_PADDING = 15,
-} SENUM1BYTE(OBU_TYPE); /**< enum type for OBU*/
+} OBU_TYPE;
 
 /*!\brief OBU metadata types. */
-enum {
+typedef enum {
   OBU_METADATA_TYPE_AOM_RESERVED_0 = 0,
   OBU_METADATA_TYPE_HDR_CLL = 1,
   OBU_METADATA_TYPE_HDR_MDCV = 2,
   OBU_METADATA_TYPE_SCALABILITY = 3,
   OBU_METADATA_TYPE_ITUT_T35 = 4,
   OBU_METADATA_TYPE_TIMECODE = 5,
-} UENUM1BYTE(OBU_METADATA_TYPE); /**< enum type for OBU metadata*/
+} OBU_METADATA_TYPE;
 
 /*!\brief Returns string representation of OBU_TYPE.
  *

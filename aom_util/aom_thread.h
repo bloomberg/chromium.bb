@@ -363,11 +363,11 @@ static INLINE int pthread_cond_wait(pthread_cond_t *const condition,
 #endif  // CONFIG_MULTITHREAD
 
 // State of the worker thread object
-enum {
+typedef enum {
   NOT_OK = 0,  // object is unusable
   OK,          // ready to work
   WORK         // busy finishing the current task
-} UENUM1BYTE(AVxWorkerStatus);
+} AVxWorkerStatus;
 
 // Function to be called by the worker thread. Takes two opaque pointers as
 // arguments (data1 and data2). Should return true on success and return false

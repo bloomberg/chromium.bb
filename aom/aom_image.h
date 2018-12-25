@@ -55,7 +55,7 @@ typedef enum aom_img_fmt {
 } aom_img_fmt_t; /**< alias for enum aom_img_fmt */
 
 /*!\brief List of supported color primaries */
-enum {
+typedef enum aom_color_primaries {
   AOM_CICP_CP_RESERVED_0 = 0,  /**< For future use */
   AOM_CICP_CP_BT_709 = 1,      /**< BT.709 */
   AOM_CICP_CP_UNSPECIFIED = 2, /**< Unspecified */
@@ -66,17 +66,17 @@ enum {
   AOM_CICP_CP_SMPTE_240 = 7,   /**< SMPTE 240 */
   AOM_CICP_CP_GENERIC_FILM =
       8, /**< Generic film (color filters using illuminant C) */
-  AOM_CICP_CP_BT_2020 = 9,           /**< BT.2020, BT.2100 */
-  AOM_CICP_CP_XYZ = 10,              /**< SMPTE 428 (CIE 1921 XYZ) */
-  AOM_CICP_CP_SMPTE_431 = 11,        /**< SMPTE RP 431-2 */
-  AOM_CICP_CP_SMPTE_432 = 12,        /**< SMPTE EG 432-1  */
-  AOM_CICP_CP_RESERVED_13 = 13,      /**< For future use (values 13 - 21)  */
-  AOM_CICP_CP_EBU_3213 = 22,         /**< EBU Tech. 3213-E  */
-  AOM_CICP_CP_RESERVED_23 = 23       /**< For future use (values 23 - 255)  */
-} UENUM1BYTE(aom_color_primaries_t); /**< alias for enum aom_color_primaries */
+  AOM_CICP_CP_BT_2020 = 9,      /**< BT.2020, BT.2100 */
+  AOM_CICP_CP_XYZ = 10,         /**< SMPTE 428 (CIE 1921 XYZ) */
+  AOM_CICP_CP_SMPTE_431 = 11,   /**< SMPTE RP 431-2 */
+  AOM_CICP_CP_SMPTE_432 = 12,   /**< SMPTE EG 432-1  */
+  AOM_CICP_CP_RESERVED_13 = 13, /**< For future use (values 13 - 21)  */
+  AOM_CICP_CP_EBU_3213 = 22,    /**< EBU Tech. 3213-E  */
+  AOM_CICP_CP_RESERVED_23 = 23  /**< For future use (values 23 - 255)  */
+} aom_color_primaries_t;        /**< alias for enum aom_color_primaries */
 
 /*!\brief List of supported transfer functions */
-enum {
+typedef enum aom_transfer_characteristics {
   AOM_CICP_TC_RESERVED_0 = 0,  /**< For future use */
   AOM_CICP_TC_BT_709 = 1,      /**< BT.709 */
   AOM_CICP_TC_UNSPECIFIED = 2, /**< Unspecified */
@@ -98,10 +98,10 @@ enum {
   AOM_CICP_TC_SMPTE_428 = 17,      /**< SMPTE ST 428 */
   AOM_CICP_TC_HLG = 18,            /**< BT.2100 HLG, ARIB STD-B67 */
   AOM_CICP_TC_RESERVED_19 = 19     /**< For future use (values 19-255) */
-} UENUM1BYTE(aom_transfer_characteristics_t); /**<transfer characteristics*/
+} aom_transfer_characteristics_t;  /**< alias for enum aom_transfer_function */
 
 /*!\brief List of supported matrix coefficients */
-enum {
+typedef enum aom_matrix_coefficients {
   AOM_CICP_MC_IDENTITY = 0,    /**< Identity matrix */
   AOM_CICP_MC_BT_709 = 1,      /**< BT.709 */
   AOM_CICP_MC_UNSPECIFIED = 2, /**< Unspecified */
@@ -120,22 +120,22 @@ enum {
   AOM_CICP_MC_CHROMAT_CL = 13, /**< Chromaticity-derived constant luminance */
   AOM_CICP_MC_ICTCP = 14,      /**< BT.2100 ICtCp */
   AOM_CICP_MC_RESERVED_15 = 15 /**< For future use (values 15-255)  */
-} SENUM1BYTE(aom_matrix_coefficients_t); /**<enum type Matrix Coefficients*/
+} aom_matrix_coefficients_t;
 
 /*!\brief List of supported color range */
-enum {
-  AOM_CR_STUDIO_RANGE = 0,       /**< Y [16..235], UV [16..240] */
-  AOM_CR_FULL_RANGE = 1          /**< YUV/RGB [0..255] */
-} UENUM1BYTE(aom_color_range_t); /**< alias for enum aom_color_range */
+typedef enum aom_color_range {
+  AOM_CR_STUDIO_RANGE = 0, /**< Y [16..235], UV [16..240] */
+  AOM_CR_FULL_RANGE = 1    /**< YUV/RGB [0..255] */
+} aom_color_range_t;       /**< alias for enum aom_color_range */
 
 /*!\brief List of chroma sample positions */
-enum {
-  AOM_CSP_UNKNOWN = 0,   /**< Unknown */
-  AOM_CSP_VERTICAL = 1,  /**< Horizontally co-located with luma(0, 0)*/
-                         /**< sample, between two vertical samples */
-  AOM_CSP_COLOCATED = 2, /**< Co-located with luma(0, 0) sample */
-  AOM_CSP_RESERVED = 3   /**< Reserved value */
-} UENUM1BYTE(aom_chroma_sample_position_t); /**<chroma sample positions*/
+typedef enum aom_chroma_sample_position {
+  AOM_CSP_UNKNOWN = 0,          /**< Unknown */
+  AOM_CSP_VERTICAL = 1,         /**< Horizontally co-located with luma(0, 0)*/
+                                /**< sample, between two vertical samples */
+  AOM_CSP_COLOCATED = 2,        /**< Co-located with luma(0, 0) sample */
+  AOM_CSP_RESERVED = 3          /**< Reserved value */
+} aom_chroma_sample_position_t; /**< alias for enum aom_transfer_function */
 
 /**\brief Image Descriptor */
 typedef struct aom_image {

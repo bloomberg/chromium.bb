@@ -150,7 +150,7 @@ extern aom_codec_iface_t *aom_codec_av1_cx(void);
  *
  * \sa #aom_codec_control
  */
-enum {
+enum aome_enc_control_id {
   /*!\brief Codec control function to set which reference frame encoder can use.
    */
   AOME_USE_REFERENCE = 7,
@@ -976,18 +976,18 @@ enum {
   /*!\brief Control to select maximum height for the GF group pyramid structure
    * (valid values: 1 - 4) */
   AV1E_SET_GF_MAX_PYRAMID_HEIGHT,
-} UENUM1BYTE(aome_enc_control_id); /**<enum type encoder control function*/
+};
 
 /*!\brief aom 1-D scaling mode
  *
  * This set of constants define 1-D aom scaling modes
  */
-enum {
+typedef enum aom_scaling_mode_1d {
   AOME_NORMAL = 0,
   AOME_FOURFIVE = 1,
   AOME_THREEFIVE = 2,
   AOME_ONETWO = 3
-} UENUM1BYTE(AOM_SCALING_MODE); /**< enum type 1-D scaling mode*/
+} AOM_SCALING_MODE;
 
 /*!\brief Max number of segments
  *
@@ -1040,30 +1040,30 @@ typedef struct aom_scaling_mode {
 } aom_scaling_mode_t;
 
 /*!brief AV1 encoder content type */
-enum {
+typedef enum {
   AOM_CONTENT_DEFAULT,
   AOM_CONTENT_SCREEN,
   AOM_CONTENT_INVALID
-} SENUM1BYTE(aom_tune_content); /**< anum type encoder content type*/
+} aom_tune_content;
 
 /*!brief AV1 encoder timing info type signaling */
-enum {
+typedef enum {
   AOM_TIMING_UNSPECIFIED,
   AOM_TIMING_EQUAL,
   AOM_TIMING_DEC_MODEL
-} SENUM1BYTE(aom_timing_info_type_t); /**<encoder timing info type signaling*/
+} aom_timing_info_type_t;
 
 /*!\brief Model tuning parameters
  *
  * Changes the encoder to tune for certain types of input material.
  *
  */
-enum {
+typedef enum {
   AOM_TUNE_PSNR,
   AOM_TUNE_SSIM,
   AOM_TUNE_CDEF_DIST,
   AOM_TUNE_DAALA_DIST
-} SENUM1BYTE(aom_tune_metric); /**< enum type model tuning parameters*/
+} aom_tune_metric;
 
 /*!\cond */
 /*!\brief Encoder control function parameter type

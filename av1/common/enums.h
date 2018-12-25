@@ -16,6 +16,7 @@
 
 #include "aom/aom_codec.h"
 #include "aom/aom_integer.h"
+#include "aom_ports/mem.h"
 
 #ifdef __cplusplus
 extern "C" {
