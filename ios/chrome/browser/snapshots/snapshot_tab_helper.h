@@ -11,8 +11,10 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "components/infobars/core/infobar_manager.h"
-#import "ios/web/public/web_state/web_state_observer.h"
+#import "ios/web/public/web_state/web_state.h"
+#include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
 
 @class SnapshotGenerator;
@@ -87,6 +89,10 @@ class SnapshotTabHelper : public web::WebStateObserver,
 
   web::WebState* web_state_ = nullptr;
   SnapshotGenerator* snapshot_generator_ = nil;
+
+  // Manages this object as an observer of |web_state_|.
+  ScopedObserver<web::WebState, web::WebStateObserver> web_state_observer_;
+
   std::unique_ptr<infobars::InfoBarManager::Observer> infobar_observer_;
   bool ignore_next_load_ = false;
 

@@ -165,7 +165,9 @@ UIImage* SnapshotTabHelper::GetDefaultSnapshotImage() {
 
 SnapshotTabHelper::SnapshotTabHelper(web::WebState* web_state,
                                      NSString* session_id)
-    : web_state_(web_state), weak_ptr_factory_(this) {
+    : web_state_(web_state),
+      web_state_observer_(this),
+      weak_ptr_factory_(this) {
   snapshot_generator_ = [[SnapshotGenerator alloc] initWithWebState:web_state_
                                                   snapshotSessionId:session_id];
 
@@ -176,7 +178,7 @@ SnapshotTabHelper::SnapshotTabHelper(web::WebState* web_state,
         std::make_unique<SnapshotInfobarObserver>(this, infobar_manager);
   }
 
-  web_state_->AddObserver(this);
+  web_state_observer_.Add(web_state_);
 }
 
 void SnapshotTabHelper::DidStartLoading(web::WebState* web_state) {
@@ -203,7 +205,7 @@ void SnapshotTabHelper::PageLoaded(
 }
 
 void SnapshotTabHelper::WebStateDestroyed(web::WebState* web_state) {
-  DCHECK_EQ(web_state_, web_state_);
-  web_state_->RemoveObserver(this);
+  DCHECK_EQ(web_state_, web_state);
+  web_state_observer_.Remove(web_state);
   web_state_ = nullptr;
 }
