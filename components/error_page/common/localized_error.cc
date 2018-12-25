@@ -12,9 +12,9 @@
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -459,12 +459,11 @@ const LocalizedErrorMap* LookupErrorMap(const std::string& error_domain,
     // history to an uncached page created by a POST.
     if (is_post && error_code == net::ERR_CACHE_MISS)
       return &repost_error;
-    return FindErrorMapInArray(net_error_options,
-                               arraysize(net_error_options),
+    return FindErrorMapInArray(net_error_options, base::size(net_error_options),
                                error_code);
   } else if (error_domain == Error::kHttpErrorDomain) {
     const LocalizedErrorMap* map = FindErrorMapInArray(
-        http_error_options, arraysize(http_error_options), error_code);
+        http_error_options, base::size(http_error_options), error_code);
     // Handle miscellaneous 400/500 errors.
     return !map && error_code >= 400 && error_code < 600
                ? &generic_4xx_5xx_error
@@ -472,8 +471,7 @@ const LocalizedErrorMap* LookupErrorMap(const std::string& error_domain,
   } else if (error_domain == Error::kDnsProbeErrorDomain) {
     const LocalizedErrorMap* map =
         FindErrorMapInArray(dns_probe_error_options,
-                            arraysize(dns_probe_error_options),
-                            error_code);
+                            base::size(dns_probe_error_options), error_code);
     DCHECK(map);
     return map;
   } else {

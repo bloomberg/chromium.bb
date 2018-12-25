@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -68,7 +69,7 @@ net::OptRecordRdata::Opt OptToDisableClientSubnetExtension() {
   const uint16_t kIanaAddressFamilyIpV4 = 1;
 
   char buf[4];
-  base::BigEndianWriter writer(buf, arraysize(buf));
+  base::BigEndianWriter writer(buf, base::size(buf));
   // family - address is empty so the value of this is irrelevant, so long as
   // it's valid (see https://tools.ietf.org/html/rfc7871#section-7.1.2).
   writer.WriteU16(kIanaAddressFamilyIpV4);
@@ -79,7 +80,7 @@ net::OptRecordRdata::Opt OptToDisableClientSubnetExtension() {
   // no address - don't want a client subnet in the query.
 
   return net::OptRecordRdata::Opt(kClientSubnetExtensionCode,
-                                  base::StringPiece(buf, arraysize(buf)));
+                                  base::StringPiece(buf, base::size(buf)));
 }
 
 // Parses the DNS response and extracts a single string from the TXT RDATA.

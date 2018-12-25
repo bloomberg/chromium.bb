@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
@@ -539,7 +538,7 @@ TEST_F(DataReductionProxyProtocolTest, TestIdempotency) {
       { "POST", false },
       { "CONNECT", false },
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::unique_ptr<net::URLRequest> request(context.CreateRequest(
         GURL("http://www.google.com/"), net::DEFAULT_PRIORITY, nullptr,
         TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -582,7 +581,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassRetryOnPostConnectionErrors) {
                              .proxy_server()
                              .host_port_pair()
                              .ToString();
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     base::HistogramTester histogram_tester;
 
     ConfigureTestDependencies(
@@ -1035,7 +1034,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
                              .proxy_server()
                              .host_port_pair()
                              .ToString();
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     ConfigureTestDependencies(
         ProxyResolutionService::CreateFixedFromPacResult(
             net::ProxyServer::FromURI(primary, net::ProxyServer::SCHEME_HTTP)

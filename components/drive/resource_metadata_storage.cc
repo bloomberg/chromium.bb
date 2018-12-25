@@ -15,11 +15,11 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_api_util.h"
@@ -100,7 +100,7 @@ bool IsChildEntryKey(const leveldb::Slice& key) {
 bool IsCacheEntryKey(const leveldb::Slice& key) {
   // A cache entry key should end with |kDBKeyDelimeter + kCacheEntryKeySuffix|.
   const leveldb::Slice expected_suffix(kCacheEntryKeySuffix,
-                                       arraysize(kCacheEntryKeySuffix) - 1);
+                                       base::size(kCacheEntryKeySuffix) - 1);
   if (key.size() < 1 + expected_suffix.size() ||
       key[key.size() - expected_suffix.size() - 1] != kDBKeyDelimeter)
     return false;
@@ -114,7 +114,7 @@ bool IsCacheEntryKey(const leveldb::Slice& key) {
 std::string GetIdFromCacheEntryKey(const leveldb::Slice& key) {
   DCHECK(IsCacheEntryKey(key));
   // Drop the suffix |kDBKeyDelimeter + kCacheEntryKeySuffix| from the key.
-  const size_t kSuffixLength = arraysize(kCacheEntryKeySuffix) - 1;
+  const size_t kSuffixLength = base::size(kCacheEntryKeySuffix) - 1;
   const int id_length = key.size() - 1 - kSuffixLength;
   return std::string(key.data(), id_length);
 }
@@ -134,7 +134,7 @@ bool IsIdEntryKey(const leveldb::Slice& key) {
   // A resource-ID-to-local-ID entry key should start with
   // |kDBKeyDelimeter + kIdEntryKeyPrefix + kDBKeyDelimeter|.
   const leveldb::Slice expected_prefix(kIdEntryKeyPrefix,
-                                       arraysize(kIdEntryKeyPrefix) - 1);
+                                       base::size(kIdEntryKeyPrefix) - 1);
   if (key.size() < 2 + expected_prefix.size())
     return false;
   const leveldb::Slice key_substring(key.data() + 1, expected_prefix.size());
@@ -148,7 +148,7 @@ std::string GetResourceIdFromIdEntryKey(const leveldb::Slice& key) {
   DCHECK(IsIdEntryKey(key));
   // Drop the prefix |kDBKeyDelimeter + kIdEntryKeyPrefix + kDBKeyDelimeter|
   // from the key.
-  const size_t kPrefixLength = arraysize(kIdEntryKeyPrefix) - 1;
+  const size_t kPrefixLength = base::size(kIdEntryKeyPrefix) - 1;
   const int offset = kPrefixLength + 2;
   return std::string(key.data() + offset, key.size() - offset);
 }

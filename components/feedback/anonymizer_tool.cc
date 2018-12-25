@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -229,15 +230,15 @@ bool FindAndConsumeAndGetSkipped(re2::StringPiece* input,
                                  Arg*... match_groups) {
   re2::StringPiece* args[] = {match_groups...};
   return FindAndConsumeAndGetSkippedN(input, pattern, skipped_input, args,
-                                      arraysize(args));
+                                      base::size(args));
 }
 
 }  // namespace
 
 AnonymizerTool::AnonymizerTool()
-    : custom_patterns_with_context_(arraysize(kCustomPatternsWithContext)),
+    : custom_patterns_with_context_(base::size(kCustomPatternsWithContext)),
       custom_patterns_without_context_(
-          arraysize(kCustomPatternsWithoutContext)) {
+          base::size(kCustomPatternsWithoutContext)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -313,12 +314,12 @@ std::string AnonymizerTool::AnonymizeMACAddresses(const std::string& input) {
 }
 
 std::string AnonymizerTool::AnonymizeCustomPatterns(std::string input) {
-  for (size_t i = 0; i < arraysize(kCustomPatternsWithContext); i++) {
+  for (size_t i = 0; i < base::size(kCustomPatternsWithContext); i++) {
     input =
         AnonymizeCustomPatternWithContext(input, kCustomPatternsWithContext[i],
                                           &custom_patterns_with_context_[i]);
   }
-  for (size_t i = 0; i < arraysize(kCustomPatternsWithoutContext); i++) {
+  for (size_t i = 0; i < base::size(kCustomPatternsWithoutContext); i++) {
     input = AnonymizeCustomPatternWithoutContext(
         input, kCustomPatternsWithoutContext[i],
         &custom_patterns_without_context_[i]);

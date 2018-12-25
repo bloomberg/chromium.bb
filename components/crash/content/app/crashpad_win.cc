@@ -10,6 +10,7 @@
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -30,7 +31,7 @@ void GetPlatformCrashpadAnnotations(
     std::map<std::string, std::string>* annotations) {
   CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
   wchar_t exe_file[MAX_PATH] = {};
-  CHECK(::GetModuleFileName(nullptr, exe_file, arraysize(exe_file)));
+  CHECK(::GetModuleFileName(nullptr, exe_file, base::size(exe_file)));
   base::string16 product_name, version, special_build, channel_name;
   crash_reporter_client->GetProductNameAndVersion(
       exe_file, &product_name, &version, &special_build, &channel_name);
@@ -96,7 +97,7 @@ base::FilePath PlatformCrashpadInitialization(
     if (exe_file.empty()) {
       wchar_t exe_file_path[MAX_PATH] = {};
       CHECK(::GetModuleFileName(nullptr, exe_file_path,
-                                arraysize(exe_file_path)));
+                                base::size(exe_file_path)));
 
       exe_file = base::FilePath(exe_file_path);
     }

@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/version.h"
@@ -97,10 +98,10 @@ const char* ChromiumVersion() {
   // properly formed, e.g. the version string is at least as long as "0.0.0.0",
   // and starts and ends with numeric digits. This is to prevent another
   // regression like http://crbug.com/595471.
-  static_assert(arraysize(PRODUCT_VERSION) >= arraysize("0.0.0.0") &&
+  static_assert(base::size(PRODUCT_VERSION) >= base::size("0.0.0.0") &&
                     '0' <= PRODUCT_VERSION[0] && PRODUCT_VERSION[0] <= '9' &&
-                    '0' <= PRODUCT_VERSION[arraysize(PRODUCT_VERSION) - 2] &&
-                    PRODUCT_VERSION[arraysize(PRODUCT_VERSION) - 2] <= '9',
+                    '0' <= PRODUCT_VERSION[base::size(PRODUCT_VERSION) - 2] &&
+                    PRODUCT_VERSION[base::size(PRODUCT_VERSION) - 2] <= '9',
                 "PRODUCT_VERSION must be a string of the form "
                 "'MAJOR.MINOR.BUILD.PATCH', e.g. '1.2.3.4'. "
                 "PRODUCT_VERSION='" PRODUCT_VERSION "' is badly formed.");

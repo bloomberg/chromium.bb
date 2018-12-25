@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "components/content_settings/core/common/content_settings_pattern_parser.h"
@@ -30,7 +30,7 @@ const char* const kSchemeNames[] = {"wildcard",       "other",
                                     url::kFileScheme, "chrome-extension",
                                     "chrome-search"};
 
-static_assert(arraysize(kSchemeNames) == ContentSettingsPattern::SCHEME_MAX,
+static_assert(base::size(kSchemeNames) == ContentSettingsPattern::SCHEME_MAX,
               "kSchemeNames should have SCHEME_MAX elements");
 
 std::string GetDefaultPort(const std::string& scheme) {
@@ -514,7 +514,7 @@ ContentSettingsPattern::SchemeType ContentSettingsPattern::GetScheme() const {
   if (parts_.is_scheme_wildcard)
     return SCHEME_WILDCARD;
 
-  for (size_t i = 2; i < arraysize(kSchemeNames); ++i) {
+  for (size_t i = 2; i < base::size(kSchemeNames); ++i) {
     if (parts_.scheme == kSchemeNames[i])
       return static_cast<SchemeType>(i);
   }

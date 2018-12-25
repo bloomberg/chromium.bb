@@ -13,6 +13,7 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -125,7 +126,7 @@ data_reduction_proxy::TransformDirective ParsePagePolicyDirective(
 
     // Check policy directive for empty-image entry.
     base::StringPiece page_policies_value = base::StringPiece(directive).substr(
-        arraysize(kChromeProxyPagePoliciesDirective));
+        base::size(kChromeProxyPagePoliciesDirective));
     for (const auto& policy :
          base::SplitStringPiece(page_policies_value, "|", base::TRIM_WHITESPACE,
                                 base::SPLIT_WANT_NONEMPTY)) {
@@ -356,7 +357,7 @@ bool HasDataReductionProxyViaHeader(const net::HttpResponseHeaders& headers,
   // 'Via: 1.1 Chrome-Compression-Proxy'
   while (headers.EnumerateHeader(&iter, "via", &value)) {
     if (base::StringPiece(value).substr(
-            kVersionSize, arraysize(kDataReductionProxyViaValue) - 1) ==
+            kVersionSize, base::size(kDataReductionProxyViaValue) - 1) ==
         kDataReductionProxyViaValue) {
       if (has_intermediary)
         // We assume intermediary exists if there is another Via header after

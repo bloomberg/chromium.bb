@@ -10,8 +10,8 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
@@ -63,7 +63,7 @@ TEST(DataReductionProxyHeadersTest, IsEmptyImagePreview) {
           false,
       },
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<net::HttpResponseHeaders> parsed(
@@ -132,7 +132,7 @@ TEST(DataReductionProxyHeadersTest, IsLitePagePreview) {
           false,
       },
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<net::HttpResponseHeaders> parsed(
@@ -219,7 +219,7 @@ TEST(DataReductionProxyHeadersTest, GetDataReductionProxyActionValue) {
       "",
     },
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<net::HttpResponseHeaders> parsed(
@@ -469,7 +469,7 @@ TEST(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
       false,
     },
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<net::HttpResponseHeaders> parsed(
@@ -580,7 +580,7 @@ TEST(DataReductionProxyHeadersTest, HasDataReductionProxyViaHeader) {
       false,
     },
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<net::HttpResponseHeaders> parsed(
@@ -774,7 +774,7 @@ TEST(DataReductionProxyHeadersTest, GetDataReductionProxyBypassEventType) {
                    "Via: 1.1 Chrome-Compression-Proxy\n",
                    BYPASS_EVENT_TYPE_MAX,
                }};
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<net::HttpResponseHeaders> parsed(

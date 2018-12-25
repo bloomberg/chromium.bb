@@ -4,6 +4,7 @@
 
 #include "components/feature_engagement/public/feature_list.h"
 
+#include "base/stl_util.h"
 #include "components/feature_engagement/buildflags.h"
 #include "components/feature_engagement/public/feature_constants.h"
 
@@ -59,7 +60,7 @@ const char kIPHDemoModeFeatureChoiceParam[] = "chosen_feature";
 
 std::vector<const base::Feature*> GetAllFeatures() {
   return std::vector<const base::Feature*>(
-      kAllFeatures, kAllFeatures + arraysize(kAllFeatures));
+      kAllFeatures, kAllFeatures + base::size(kAllFeatures));
 }
 
 }  // namespace feature_engagement

@@ -10,8 +10,8 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
@@ -346,7 +346,7 @@ TEST_F(ContentLoFiDeciderTest, AcceptTransformPerResourceType) {
                {content::RESOURCE_TYPE_CSP_REPORT},
                {content::RESOURCE_TYPE_PLUGIN_RESOURCE}};
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::unique_ptr<net::URLRequest> request = CreateRequestByType(
         tests[i].resource_type, false,
         content::SERVER_LOFI_ON | content::SERVER_LITE_PAGE_ON);
@@ -375,7 +375,7 @@ TEST_F(ContentLoFiDeciderTest, ProxyIsNotDataReductionProxy) {
       {content::PREVIEWS_OFF}, {content::SERVER_LOFI_ON},
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::unique_ptr<net::URLRequest> request =
         CreateRequest(false, tests[i].previews_state);
     net::HttpRequestHeaders headers;

@@ -5,8 +5,8 @@
 #include "components/client_update_protocol/ecdsa.h"
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -49,7 +49,7 @@ bool ParseETagHeader(const base::StringPiece& etag_header_value_in,
   // Remove the weak prefix, then remove the begin and the end quotes.
   const char kWeakETagPrefix[] = "W/";
   if (etag_header_value.starts_with(kWeakETagPrefix))
-    etag_header_value.remove_prefix(arraysize(kWeakETagPrefix) - 1);
+    etag_header_value.remove_prefix(base::size(kWeakETagPrefix) - 1);
   if (etag_header_value.size() >= 2 && etag_header_value.starts_with("\"") &&
       etag_header_value.ends_with("\"")) {
     etag_header_value.remove_prefix(1);

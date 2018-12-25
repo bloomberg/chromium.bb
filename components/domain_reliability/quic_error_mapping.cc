@@ -4,6 +4,8 @@
 
 #include "components/domain_reliability/quic_error_mapping.h"
 
+#include "base/stl_util.h"
+
 namespace domain_reliability {
 
 namespace {
@@ -311,7 +313,7 @@ const int kDeprecatedQuicErrorCount = 5;
 const int kActiveQuicErrorCount =
     quic::QUIC_LAST_ERROR - kDeprecatedQuicErrorCount;
 
-static_assert(arraysize(kQuicErrorMap) == kActiveQuicErrorCount,
+static_assert(base::size(kQuicErrorMap) == kActiveQuicErrorCount,
               "quic_error_map is not in sync with quic protocol!");
 
 }  // namespace
@@ -322,7 +324,7 @@ bool GetDomainReliabilityBeaconQuicError(quic::QuicErrorCode quic_error,
   if (quic_error != quic::QUIC_NO_ERROR) {
     // Convert a QUIC error.
     // TODO(juliatuttle): Consider sorting and using binary search?
-    for (size_t i = 0; i < arraysize(kQuicErrorMap); i++) {
+    for (size_t i = 0; i < base::size(kQuicErrorMap); i++) {
       if (kQuicErrorMap[i].quic_error == quic_error) {
         *beacon_quic_error_out = kQuicErrorMap[i].beacon_quic_error;
         return true;

@@ -5,6 +5,7 @@
 #include "components/dom_distiller/content/renderer/distillability_agent.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "components/dom_distiller/content/common/distillability_service.mojom.h"
 #include "components/dom_distiller/core/distillable_page_detector.h"
@@ -66,7 +67,7 @@ bool IsLast(bool is_loaded) {
 }
 
 bool IsBlacklisted(const GURL& url) {
-  for (size_t i = 0; i < arraysize(kBlacklist); ++i) {
+  for (size_t i = 0; i < base::size(kBlacklist); ++i) {
     if (base::LowerCaseEqualsASCII(url.host(), kBlacklist[i])) {
       return true;
     }

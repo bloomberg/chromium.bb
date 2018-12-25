@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "net/base/request_priority.h"
 #include "net/nqe/effective_connection_type.h"
@@ -121,7 +122,7 @@ TEST_F(DataReductionProxyDataTest, DeepCopy) {
       },
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     static const char kSessionKey[] = "test-key";
     static const GURL kTestURL("test-url");
     std::unique_ptr<DataReductionProxyData> data(new DataReductionProxyData());

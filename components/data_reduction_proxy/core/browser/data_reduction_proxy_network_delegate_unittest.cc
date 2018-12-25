@@ -15,12 +15,12 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/safe_sprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -913,7 +913,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
   // Enable Lo-Fi.
   bool is_data_reduction_proxy_enabled[] = {false, true};
 
-  for (size_t i = 0; i < arraysize(is_data_reduction_proxy_enabled); ++i) {
+  for (size_t i = 0; i < base::size(is_data_reduction_proxy_enabled); ++i) {
     net::ProxyInfo data_reduction_proxy_info;
     std::string proxy;
     if (is_data_reduction_proxy_enabled[i]) {

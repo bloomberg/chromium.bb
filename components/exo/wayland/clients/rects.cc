@@ -20,10 +20,10 @@
 #include "base/command_line.h"
 #include "base/containers/circular_deque.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/scoped_generic.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -419,7 +419,7 @@ int RectsClient::Run(const ClientBase::InitParams& params,
                                    SK_ColorRED,  SK_ColorYELLOW,
                                    SK_ColorCYAN, SK_ColorMAGENTA};
         SkPaint paint;
-        paint.setColor(SkColorSetA(kColors[i % arraysize(kColors)], 0xA0));
+        paint.setColor(SkColorSetA(kColors[i % base::size(kColors)], 0xA0));
         canvas->rotate(rotation / num_rects);
         canvas->drawIRect(rect, paint);
       }

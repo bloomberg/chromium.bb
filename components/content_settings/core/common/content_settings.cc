@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
@@ -85,7 +84,7 @@ ContentSetting IntToContentSetting(int content_setting) {
 
 int ContentSettingTypeToHistogramValue(ContentSettingsType content_setting,
                                        size_t* num_values) {
-  *num_values = arraysize(kHistogramValue);
+  *num_values = base::size(kHistogramValue);
 
   // Verify the array is sorted by enum type and contains all values.
   DCHECK(std::is_sorted(std::begin(kHistogramValue), std::end(kHistogramValue),

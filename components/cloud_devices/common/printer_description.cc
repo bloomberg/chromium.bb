@@ -12,7 +12,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/cloud_devices/common/cloud_device_description_consts.h"
@@ -345,7 +345,7 @@ const struct MediaDefinition {
 #undef MAP_CLOUD_PRINT_MEDIA_TYPE
 
 const MediaDefinition& FindMediaByType(MediaType type) {
-  for (size_t i = 0; i < arraysize(kMediaDefinitions); ++i) {
+  for (size_t i = 0; i < base::size(kMediaDefinitions); ++i) {
     if (kMediaDefinitions[i].id == type)
       return kMediaDefinitions[i];
   }
@@ -355,7 +355,7 @@ const MediaDefinition& FindMediaByType(MediaType type) {
 
 const MediaDefinition* FindMediaBySize(int32_t width_um, int32_t height_um) {
   const MediaDefinition* result = nullptr;
-  for (size_t i = 0; i < arraysize(kMediaDefinitions); ++i) {
+  for (size_t i = 0; i < base::size(kMediaDefinitions); ++i) {
     int32_t diff =
         std::max(std::abs(width_um - kMediaDefinitions[i].width_um),
                  std::abs(height_um - kMediaDefinitions[i].height_um));
@@ -367,7 +367,7 @@ const MediaDefinition* FindMediaBySize(int32_t width_um, int32_t height_um) {
 
 template <class T, class IdType>
 std::string TypeToString(const T& names, IdType id) {
-  for (size_t i = 0; i < arraysize(names); ++i) {
+  for (size_t i = 0; i < base::size(names); ++i) {
     if (id == names[i].id)
       return names[i].json_name;
   }
@@ -377,7 +377,7 @@ std::string TypeToString(const T& names, IdType id) {
 
 template <class T, class IdType>
 bool TypeFromString(const T& names, const std::string& type, IdType* id) {
-  for (size_t i = 0; i < arraysize(names); ++i) {
+  for (size_t i = 0; i < base::size(names); ++i) {
     if (type == names[i].json_name) {
       *id = names[i].id;
       return true;

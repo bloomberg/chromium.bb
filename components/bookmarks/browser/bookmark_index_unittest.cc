@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -192,7 +192,7 @@ TEST_F(BookmarkIndexTest, GetBookmarksMatching) {
     // Prefix match on subsequent terms.
     { "abc def",                    "abc d",    "" },
   };
-  for (size_t i = 0; i < arraysize(data); ++i) {
+  for (size_t i = 0; i < base::size(data); ++i) {
     std::vector<TitleAndURL> bookmarks;
     for (const std::string& title : base::SplitString(
              data[i].titles, ";",
@@ -253,7 +253,7 @@ TEST_F(BookmarkIndexTest, GetBookmarksMatchingAlwaysPrefixSearch) {
     // Exact and prefix match.
     { "ab cdef;abcd;abcd cdefg",    "ab cdef",  "ab cdef;abcd cdefg" },
   };
-  for (size_t i = 0; i < arraysize(data); ++i) {
+  for (size_t i = 0; i < base::size(data); ++i) {
     std::vector<TitleAndURL> bookmarks;
     for (const std::string& title : base::SplitString(
              data[i].titles, ";",
@@ -321,7 +321,7 @@ TEST_F(BookmarkIndexTest, GetBookmarksMatchingWithURLs) {
     { "foo bar", "Baz Bur",      "http://foo.com/blah/flub",    false }
   };
 
-  for (size_t i = 0; i < arraysize(data); ++i) {
+  for (size_t i = 0; i < base::size(data); ++i) {
     model_ = TestBookmarkClient::CreateModel();
     std::vector<TitleAndURL> bookmarks;
     bookmarks.push_back(TitleAndURL(data[i].title, data[i].url));
@@ -355,7 +355,7 @@ TEST_F(BookmarkIndexTest, Normalization) {
   };
 
   GURL url(kAboutBlankURL);
-  for (size_t i = 0; i < arraysize(data); ++i) {
+  for (size_t i = 0; i < base::size(data); ++i) {
     model_->AddURL(model_->other_node(), 0, UTF8ToUTF16(data[i].title), url);
     std::vector<TitledUrlMatch> matches;
     model_->GetBookmarksMatching(UTF8ToUTF16(data[i].query), 10, &matches);
@@ -381,7 +381,7 @@ TEST_F(BookmarkIndexTest, MatchPositionsTitles) {
     { "foobar foobar",            "foobar foo",   "0,6:7,13" },
     { "foobar foobar",            "foo foobar",   "0,6:7,13" },
   };
-  for (size_t i = 0; i < arraysize(data); ++i) {
+  for (size_t i = 0; i < base::size(data); ++i) {
     std::vector<TitleAndURL> bookmarks;
     TitleAndURL bookmark(data[i].title, kAboutBlankURL);
     bookmarks.push_back(bookmark);
@@ -432,7 +432,7 @@ TEST_F(BookmarkIndexTest, MatchPositionsURLs) {
                                                          "130,134:139,143"  }
   };
 
-  for (size_t i = 0; i < arraysize(data); ++i) {
+  for (size_t i = 0; i < base::size(data); ++i) {
     model_ = TestBookmarkClient::CreateModel();
     std::vector<TitleAndURL> bookmarks;
     TitleAndURL bookmark("123456", data[i].url);
@@ -454,7 +454,7 @@ TEST_F(BookmarkIndexTest, MatchPositionsURLs) {
 TEST_F(BookmarkIndexTest, Remove) {
   const char* titles[] = { "a", "b" };
   const char* urls[] = {kAboutBlankURL, kAboutBlankURL};
-  AddBookmarks(titles, urls, arraysize(titles));
+  AddBookmarks(titles, urls, base::size(titles));
 
   // Remove the node and make sure we don't get back any results.
   model_->Remove(model_->other_node()->GetChild(0));
@@ -465,12 +465,12 @@ TEST_F(BookmarkIndexTest, Remove) {
 TEST_F(BookmarkIndexTest, ChangeTitle) {
   const char* titles[] = { "a", "b" };
   const char* urls[] = {kAboutBlankURL, kAboutBlankURL};
-  AddBookmarks(titles, urls, arraysize(titles));
+  AddBookmarks(titles, urls, base::size(titles));
 
   // Remove the node and make sure we don't get back any results.
   const char* expected[] = { "blah" };
   model_->SetTitle(model_->other_node()->GetChild(0), ASCIIToUTF16("blah"));
-  ExpectMatches("BlAh", expected, arraysize(expected));
+  ExpectMatches("BlAh", expected, base::size(expected));
 }
 
 // Makes sure index is updated when a node's URL is changed.
@@ -478,18 +478,18 @@ TEST_F(BookmarkIndexTest, ChangeURL) {
   const char* titles[] = { "a", "b" };
   const char* urls[] = {"http://fizz",
                         "http://fuzz"};
-  AddBookmarks(titles, urls, arraysize(titles));
+  AddBookmarks(titles, urls, base::size(titles));
 
   const char* expected[] = { "a" };
   model_->SetURL(model_->other_node()->GetChild(0), GURL("http://blah"));
-  ExpectMatches("blah", expected, arraysize(expected));
+  ExpectMatches("blah", expected, base::size(expected));
 }
 
 // Makes sure no more than max queries is returned.
 TEST_F(BookmarkIndexTest, HonorMax) {
   const char* titles[] = { "abcd", "abcde" };
   const char* urls[] = {kAboutBlankURL, kAboutBlankURL};
-  AddBookmarks(titles, urls, arraysize(titles));
+  AddBookmarks(titles, urls, base::size(titles));
 
   std::vector<TitledUrlMatch> matches;
   model_->GetBookmarksMatching(ASCIIToUTF16("ABc"), 1, &matches);
@@ -523,14 +523,14 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
   };
 
   std::map<GURL, int> typed_count_map;
-  for (size_t i = 0; i < arraysize(data); ++i)
+  for (size_t i = 0; i < base::size(data); ++i)
     typed_count_map.insert(std::make_pair(data[i].url, data[i].typed_count));
 
   std::unique_ptr<BookmarkModel> model =
       TestBookmarkClient::CreateModelWithClient(
           std::make_unique<BookmarkClientMock>(typed_count_map));
 
-  for (size_t i = 0; i < arraysize(data); ++i)
+  for (size_t i = 0; i < base::size(data); ++i)
     // Populate the bookmark index.
     model->AddURL(
         model->other_node(), i, UTF8ToUTF16(data[i].title), data[i].url);

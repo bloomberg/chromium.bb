@@ -4,6 +4,7 @@
 
 #include "components/autofill/content/renderer/form_autofill_util.h"
 
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -324,7 +325,7 @@ TEST_F(FormAutofillUtilsTest, IsEnabled) {
   } kExpectedFields[] = {
       {"name1", true}, {"name2", false}, {"name3", true}, {"name4", false},
   };
-  const size_t number_of_cases = arraysize(kExpectedFields);
+  const size_t number_of_cases = base::size(kExpectedFields);
   ASSERT_EQ(number_of_cases, target.fields.size());
   for (size_t i = 0; i < number_of_cases; ++i) {
     EXPECT_EQ(base::UTF8ToUTF16(kExpectedFields[i].name),
@@ -363,7 +364,7 @@ TEST_F(FormAutofillUtilsTest, IsReadonly) {
   } kExpectedFields[] = {
       {"name1", false}, {"name2", true}, {"name3", false}, {"name4", true},
   };
-  const size_t number_of_cases = arraysize(kExpectedFields);
+  const size_t number_of_cases = base::size(kExpectedFields);
   ASSERT_EQ(number_of_cases, target.fields.size());
   for (size_t i = 0; i < number_of_cases; ++i) {
     EXPECT_EQ(base::UTF8ToUTF16(kExpectedFields[i].name),

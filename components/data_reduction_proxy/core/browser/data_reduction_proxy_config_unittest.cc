@@ -17,10 +17,10 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/safe_sprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -657,7 +657,7 @@ TEST_F(DataReductionProxyConfigTest, AreProxiesBypassed) {
                                    .host_port_pair()
                                    .ToString());
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     net::ProxyConfig::ProxyRules rules;
     std::vector<std::string> proxies;
 
