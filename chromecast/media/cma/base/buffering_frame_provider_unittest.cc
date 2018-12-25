@@ -12,12 +12,12 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chromecast/media/cma/test/frame_generator_for_test.h"
@@ -121,14 +121,13 @@ TEST_F(BufferingFrameProviderTest, FastProviderSlowConsumer) {
   bool consumer_delayed_pattern[] = { true };
 
   const size_t frame_count = 100u;
-  Configure(
-      frame_count,
-      std::vector<bool>(
-          provider_delayed_pattern,
-          provider_delayed_pattern + arraysize(provider_delayed_pattern)),
-      std::vector<bool>(
-          consumer_delayed_pattern,
-          consumer_delayed_pattern + arraysize(consumer_delayed_pattern)));
+  Configure(frame_count,
+            std::vector<bool>(provider_delayed_pattern,
+                              provider_delayed_pattern +
+                                  base::size(provider_delayed_pattern)),
+            std::vector<bool>(consumer_delayed_pattern,
+                              consumer_delayed_pattern +
+                                  base::size(consumer_delayed_pattern)));
 
   std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   message_loop->task_runner()->PostTask(
@@ -142,14 +141,13 @@ TEST_F(BufferingFrameProviderTest, SlowProviderFastConsumer) {
   bool consumer_delayed_pattern[] = { false };
 
   const size_t frame_count = 100u;
-  Configure(
-      frame_count,
-      std::vector<bool>(
-          provider_delayed_pattern,
-          provider_delayed_pattern + arraysize(provider_delayed_pattern)),
-      std::vector<bool>(
-          consumer_delayed_pattern,
-          consumer_delayed_pattern + arraysize(consumer_delayed_pattern)));
+  Configure(frame_count,
+            std::vector<bool>(provider_delayed_pattern,
+                              provider_delayed_pattern +
+                                  base::size(provider_delayed_pattern)),
+            std::vector<bool>(consumer_delayed_pattern,
+                              consumer_delayed_pattern +
+                                  base::size(consumer_delayed_pattern)));
 
   std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   message_loop->task_runner()->PostTask(
@@ -170,14 +168,13 @@ TEST_F(BufferingFrameProviderTest, SlowFastProducerConsumer) {
   };
 
   const size_t frame_count = 100u;
-  Configure(
-      frame_count,
-      std::vector<bool>(
-          provider_delayed_pattern,
-          provider_delayed_pattern + arraysize(provider_delayed_pattern)),
-      std::vector<bool>(
-          consumer_delayed_pattern,
-          consumer_delayed_pattern + arraysize(consumer_delayed_pattern)));
+  Configure(frame_count,
+            std::vector<bool>(provider_delayed_pattern,
+                              provider_delayed_pattern +
+                                  base::size(provider_delayed_pattern)),
+            std::vector<bool>(consumer_delayed_pattern,
+                              consumer_delayed_pattern +
+                                  base::size(consumer_delayed_pattern)));
 
   std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   message_loop->task_runner()->PostTask(

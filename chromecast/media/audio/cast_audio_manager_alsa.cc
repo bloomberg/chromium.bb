@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/memory/free_deleter.h"
+#include "base/stl_util.h"
 #include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "media/audio/alsa/alsa_input.h"
 #include "media/audio/alsa/alsa_wrapper.h"
@@ -188,7 +189,7 @@ bool CastAudioManagerAlsa::IsAlsaDeviceAvailable(StreamType type,
   // it or not.
   if (type == kStreamCapture) {
     // Check if the device is in the list of invalid devices.
-    for (size_t i = 0; i < arraysize(kInvalidAudioInputDevices); ++i) {
+    for (size_t i = 0; i < base::size(kInvalidAudioInputDevices); ++i) {
       if (strncmp(kInvalidAudioInputDevices[i], device_name,
                   strlen(kInvalidAudioInputDevices[i])) == 0)
         return false;
@@ -202,7 +203,7 @@ bool CastAudioManagerAlsa::IsAlsaDeviceAvailable(StreamType type,
     // TODO(joi): Should we prefer "hw" instead?
     static const char kDeviceTypeDesired[] = "plughw";
     return strncmp(kDeviceTypeDesired, device_name,
-                   arraysize(kDeviceTypeDesired) - 1) == 0;
+                   base::size(kDeviceTypeDesired) - 1) == 0;
   }
 }
 
