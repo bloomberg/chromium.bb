@@ -11,7 +11,6 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -261,7 +260,7 @@ TEST(ServiceWorkerDatabaseTest, GetNextAvailableIds) {
   EXPECT_EQ(
       ServiceWorkerDatabase::STATUS_OK,
       database->WriteUncommittedResourceIds(std::set<int64_t>(
-          kUncommittedIds, kUncommittedIds + arraysize(kUncommittedIds))));
+          kUncommittedIds, kUncommittedIds + base::size(kUncommittedIds))));
   EXPECT_EQ(
       ServiceWorkerDatabase::STATUS_OK,
       database->GetNextAvailableIds(&ids.reg_id, &ids.ver_id, &ids.res_id));
@@ -273,7 +272,7 @@ TEST(ServiceWorkerDatabaseTest, GetNextAvailableIds) {
   const int64_t kPurgeableIds[] = {4, 12, 16, 17, 20};
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database->WriteUncommittedResourceIds(std::set<int64_t>(
-                kPurgeableIds, kPurgeableIds + arraysize(kPurgeableIds))));
+                kPurgeableIds, kPurgeableIds + base::size(kPurgeableIds))));
   EXPECT_EQ(
       ServiceWorkerDatabase::STATUS_OK,
       database->GetNextAvailableIds(&ids.reg_id, &ids.ver_id, &ids.res_id));

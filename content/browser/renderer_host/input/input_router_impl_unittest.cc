@@ -14,9 +14,9 @@
 
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -952,7 +952,7 @@ TEST_P(InputRouterImplTest, MAYBE_GestureTypesIgnoringAck) {
       WebInputEvent::kGestureScrollBegin, WebInputEvent::kGestureScrollUpdate,
       WebInputEvent::kGesturePinchBegin,  WebInputEvent::kGesturePinchUpdate,
       WebInputEvent::kGesturePinchEnd,    WebInputEvent::kGestureScrollEnd};
-  for (size_t i = 0; i < arraysize(eventTypes); ++i) {
+  for (size_t i = 0; i < base::size(eventTypes); ++i) {
     WebInputEvent::Type type = eventTypes[i];
     if (ShouldBlockEventStream(GetEventWithType(type))) {
       PressAndSetTouchActionAuto();
@@ -1046,7 +1046,7 @@ TEST_P(InputRouterImplTest, RequiredEventAckTypes) {
       WebInputEvent::kGesturePinchUpdate,
       WebInputEvent::kTouchStart,
       WebInputEvent::kTouchMove};
-  for (size_t i = 0; i < arraysize(kRequiredEventAckTypes); ++i) {
+  for (size_t i = 0; i < base::size(kRequiredEventAckTypes); ++i) {
     const WebInputEvent::Type required_ack_type = kRequiredEventAckTypes[i];
     ASSERT_TRUE(ShouldBlockEventStream(GetEventWithType(required_ack_type)));
   }

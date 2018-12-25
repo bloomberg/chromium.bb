@@ -13,9 +13,9 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/numerics/ranges.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
@@ -210,8 +210,8 @@ const GpuFeatureData GetGpuFeatureData(
        !features::IsUsingSkiaRenderer(),
        "Skia renderer is not used by default.", false, false},
   };
-  DCHECK(index < arraysize(kGpuFeatureData));
-  *eof = (index == arraysize(kGpuFeatureData) - 1);
+  DCHECK(index < base::size(kGpuFeatureData));
+  *eof = (index == base::size(kGpuFeatureData) - 1);
   return kGpuFeatureData[index];
 }
 

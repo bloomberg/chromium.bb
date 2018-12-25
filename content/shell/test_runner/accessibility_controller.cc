@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
@@ -199,7 +199,7 @@ void AccessibilityController::NotificationReceived(
   };
   local_frame->CallFunctionEvenIfScriptDisabled(
       v8::Local<v8::Function>::New(isolate, notification_callback_),
-      context->Global(), arraysize(argv), argv);
+      context->Global(), base::size(argv), argv);
 }
 
 void AccessibilityController::LogAccessibilityEvents() {

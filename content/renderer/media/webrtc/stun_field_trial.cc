@@ -9,9 +9,9 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -42,7 +42,7 @@ enum NatType {
 // This needs to match "NatType" in histograms.xml.
 const char* const NatTypeNames[] =
     {"NoNAT", "UnknownNAT", "SymNAT", "NonSymNAT"};
-static_assert(arraysize(NatTypeNames) == NAT_TYPE_MAX,
+static_assert(base::size(NatTypeNames) == NAT_TYPE_MAX,
               "NatType enums must match names");
 
 NatType GetNatType(stunprober::NatType nat_type) {

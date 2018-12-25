@@ -15,7 +15,6 @@
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
-#include "base/macros.h"
 #include "base/process/kill.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -3087,7 +3086,7 @@ const uint32_t
 SynchronizeVisualPropertiesMessageFilter::
     SynchronizeVisualPropertiesMessageFilter()
     : content::BrowserMessageFilter(kMessageClassesToFilter,
-                                    arraysize(kMessageClassesToFilter)),
+                                    base::size(kMessageClassesToFilter)),
       screen_space_rect_run_loop_(std::make_unique<base::RunLoop>()),
       screen_space_rect_received_(false) {}
 

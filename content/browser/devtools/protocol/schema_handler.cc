@@ -4,6 +4,8 @@
 
 #include "content/browser/devtools/protocol/schema_handler.h"
 
+#include "base/stl_util.h"
+
 namespace content {
 namespace protocol {
 
@@ -33,7 +35,7 @@ Response SchemaHandler::GetDomains(
       "HeapProfiler",  "Schema",     "Target",        "Overlay",
       "Performance",   "Audits",     "HeadlessExperimental"};
   *domains = protocol::Array<Schema::Domain>::create();
-  for (size_t i = 0; i < arraysize(kDomains); ++i) {
+  for (size_t i = 0; i < base::size(kDomains); ++i) {
     (*domains)->addItem(Schema::Domain::Create()
         .SetName(kDomains[i])
         .SetVersion(kVersion)

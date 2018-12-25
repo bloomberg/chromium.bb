@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #include "base/feature_list.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -389,7 +389,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, NoContent) {
       new network::ResourceResponse);
   const char kNoContentHeaders[] = "HTTP/1.1 204 No Content\0\0";
   response->head.headers = new net::HttpResponseHeaders(
-      std::string(kNoContentHeaders, arraysize(kNoContentHeaders)));
+      std::string(kNoContentHeaders, base::size(kNoContentHeaders)));
   GetLoaderForNavigationRequest(main_request)
       ->CallOnResponseStarted(response, nullptr);
 
@@ -414,7 +414,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, NoContent) {
   response = new network::ResourceResponse;
   const char kResetContentHeaders[] = "HTTP/1.1 205 Reset Content\0\0";
   response->head.headers = new net::HttpResponseHeaders(
-      std::string(kResetContentHeaders, arraysize(kResetContentHeaders)));
+      std::string(kResetContentHeaders, base::size(kResetContentHeaders)));
   GetLoaderForNavigationRequest(main_request)
       ->CallOnResponseStarted(response, nullptr);
 

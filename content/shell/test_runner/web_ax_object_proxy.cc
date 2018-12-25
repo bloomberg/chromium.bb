@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "gin/handle.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
@@ -851,7 +851,7 @@ void WebAXObjectProxy::NotificationReceived(
   };
   frame->CallFunctionEvenIfScriptDisabled(
       v8::Local<v8::Function>::New(isolate, notification_callback_),
-      context->Global(), arraysize(argv), argv);
+      context->Global(), base::size(argv), argv);
 }
 
 void WebAXObjectProxy::Reset() {

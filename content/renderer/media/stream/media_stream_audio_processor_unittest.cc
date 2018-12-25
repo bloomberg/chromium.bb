@@ -12,10 +12,10 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -250,7 +250,7 @@ TEST_F(MediaStreamAudioProcessorTest, MAYBE_TestAllSampleRates) {
 
   static const int kSupportedSampleRates[] =
       { 8000, 16000, 22050, 32000, 44100, 48000 };
-  for (size_t i = 0; i < arraysize(kSupportedSampleRates); ++i) {
+  for (size_t i = 0; i < base::size(kSupportedSampleRates); ++i) {
     int buffer_size = kSupportedSampleRates[i] / 100;
     media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                   media::CHANNEL_LAYOUT_STEREO,

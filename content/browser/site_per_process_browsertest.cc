@@ -29,6 +29,7 @@
 #include "base/scoped_observer.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -3791,10 +3792,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                  embedded_test_server()->GetURL("b.com", "/tall_page.html")};
   const std::string scrolling_values[] = {"yes", "auto", "no"};
 
-  for (size_t i = 0; i < arraysize(scrolling_values); ++i) {
+  for (size_t i = 0; i < base::size(scrolling_values); ++i) {
     bool expect_scrollbar = scrolling_values[i] != "no";
     set_scrolling_property(root->current_frame_host(), scrolling_values[i]);
-    for (size_t j = 0; j < arraysize(urls); ++j) {
+    for (size_t j = 0; j < base::size(urls); ++j) {
       NavigateFrameToURL(child, urls[j]);
       EXPECT_EQ(expect_scrollbar, has_scrollbar(child->current_frame_host()));
     }
@@ -3839,7 +3840,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Before each navigation, we change the marginwidth and marginheight
   // properties of the frame. We then check whether those properties are applied
   // correctly after the navigation has completed.
-  for (size_t i = 0; i < arraysize(urls); ++i) {
+  for (size_t i = 0; i < base::size(urls); ++i) {
     // Change marginwidth and marginheight before navigating.
     EXPECT_TRUE(ExecJs(
         root,
@@ -3899,7 +3900,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessEmbedderCSPEnforcementBrowserTest,
   // Before each navigation, we change the csp property of the frame.
   // We then check whether that property is applied
   // correctly after the navigation has completed.
-  for (size_t i = 0; i < arraysize(urls); ++i) {
+  for (size_t i = 0; i < base::size(urls); ++i) {
     // Change csp before navigating.
     EXPECT_TRUE(ExecuteScript(
         root,
@@ -7733,7 +7734,7 @@ const uint32_t kMessageClasses[] = {ViewMsgStart, FrameMsgStart};
 class PendingWidgetMessageFilter : public BrowserMessageFilter {
  public:
   PendingWidgetMessageFilter()
-      : BrowserMessageFilter(kMessageClasses, arraysize(kMessageClasses)),
+      : BrowserMessageFilter(kMessageClasses, base::size(kMessageClasses)),
         routing_id_(MSG_ROUTING_NONE) {}
 
   bool OnMessageReceived(const IPC::Message& message) override {

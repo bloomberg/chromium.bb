@@ -7,7 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/proxy/serialized_structs.h"
@@ -31,7 +31,7 @@ const PP_TrueTypeFontWeight_Dev kPepperFontWeights[] = {
     PP_TRUETYPEFONTWEIGHT_ULTRABOLD,
     PP_TRUETYPEFONTWEIGHT_HEAVY,
 };
-const NSInteger kPepperFontWeightsLength = arraysize(kPepperFontWeights);
+const NSInteger kPepperFontWeightsLength = base::size(kPepperFontWeights);
 
 }  // namespace
 

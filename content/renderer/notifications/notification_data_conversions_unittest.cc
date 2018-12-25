@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,10 +39,11 @@ const char kAction2IconUrl[] = "https://example.com/action_icon_2.png";
 TEST(NotificationDataConversionsTest, ToWebNotificationData) {
   std::vector<int> vibration_pattern(
       kNotificationVibrationPattern,
-      kNotificationVibrationPattern + arraysize(kNotificationVibrationPattern));
+      kNotificationVibrationPattern +
+          base::size(kNotificationVibrationPattern));
 
   std::vector<char> developer_data(
-      kNotificationData, kNotificationData + arraysize(kNotificationData));
+      kNotificationData, kNotificationData + base::size(kNotificationData));
 
   blink::PlatformNotificationData platform_data;
   platform_data.title = base::ASCIIToUTF16(kNotificationTitle);

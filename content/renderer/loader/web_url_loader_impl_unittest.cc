@@ -11,10 +11,10 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
@@ -364,9 +364,9 @@ class WebURLLoaderImplTest : public testing::Test {
   void DoCompleteRequest() {
     EXPECT_FALSE(client()->did_finish());
     network::URLLoaderCompletionStatus status(net::OK);
-    status.encoded_data_length = arraysize(kTestData);
-    status.encoded_body_length = arraysize(kTestData);
-    status.decoded_body_length = arraysize(kTestData);
+    status.encoded_data_length = base::size(kTestData);
+    status.encoded_body_length = base::size(kTestData);
+    status.decoded_body_length = base::size(kTestData);
     peer()->OnCompletedRequest(status);
     EXPECT_TRUE(client()->did_finish());
     // There should be no error.
@@ -376,9 +376,9 @@ class WebURLLoaderImplTest : public testing::Test {
   void DoFailRequest() {
     EXPECT_FALSE(client()->did_finish());
     network::URLLoaderCompletionStatus status(net::ERR_FAILED);
-    status.encoded_data_length = arraysize(kTestData);
-    status.encoded_body_length = arraysize(kTestData);
-    status.decoded_body_length = arraysize(kTestData);
+    status.encoded_data_length = base::size(kTestData);
+    status.encoded_body_length = base::size(kTestData);
+    status.decoded_body_length = base::size(kTestData);
     peer()->OnCompletedRequest(status);
     EXPECT_FALSE(client()->did_finish());
     ASSERT_TRUE(client()->error());

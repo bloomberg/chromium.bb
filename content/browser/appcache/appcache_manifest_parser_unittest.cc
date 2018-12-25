@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "content/browser/appcache/appcache_manifest_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -42,7 +42,7 @@ TEST(AppCacheManifestParserTest, CheckSignature) {
     "\xEF\xBE\xBF" "CACHE MANIFEST\r",  // bad UTF-8 BOM value
   };
 
-  for (size_t i = 0; i < arraysize(kBadSignatures); ++i) {
+  for (size_t i = 0; i < base::size(kBadSignatures); ++i) {
     const std::string bad = kBadSignatures[i];
     EXPECT_FALSE(ParseManifest(url, bad.c_str(), bad.length(),
                                PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES,
@@ -61,7 +61,7 @@ TEST(AppCacheManifestParserTest, CheckSignature) {
     "\xEF\xBB\xBF" "CACHE MANIFEST \r\n",   // BOM present
   };
 
-  for (size_t i = 0; i < arraysize(kGoodSignatures); ++i) {
+  for (size_t i = 0; i < base::size(kGoodSignatures); ++i) {
     const std::string good = kGoodSignatures[i];
     EXPECT_TRUE(ParseManifest(url, good.c_str(), good.length(),
                               PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES,

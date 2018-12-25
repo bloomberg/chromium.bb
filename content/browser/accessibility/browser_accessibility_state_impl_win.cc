@@ -12,8 +12,8 @@
 #include <memory>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 
@@ -125,7 +125,7 @@ void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
   size_t module_count = bytes_required / sizeof(HMODULE);
   for (size_t i = 0; i < module_count; i++) {
     TCHAR filename[MAX_PATH];
-    GetModuleFileName(modules[i], filename, arraysize(filename));
+    GetModuleFileName(modules[i], filename, base::size(filename));
     base::string16 module_name(base::FilePath(filename).BaseName().value());
     if (base::LowerCaseEqualsASCII(module_name, "fsdomsrv.dll"))
       jaws = true;

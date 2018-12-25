@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/command_line.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/public/browser/context_factory.h"
@@ -209,7 +209,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     static const ui::KeyboardCode keys[] = { ui::VKEY_F5,
                                              ui::VKEY_BROWSER_BACK,
                                              ui::VKEY_BROWSER_FORWARD };
-    for (size_t i = 0; i < arraysize(keys); ++i) {
+    for (size_t i = 0; i < base::size(keys); ++i) {
       GetFocusManager()->RegisterAccelerator(
         ui::Accelerator(keys[i], ui::EF_NONE),
         ui::AcceleratorManager::kNormalPriority,

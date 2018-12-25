@@ -14,8 +14,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/win/direct_write.h"
 
@@ -59,7 +59,7 @@ bool CheckLayoutSystemDeps() {
       {&metrics.lfStatusFont, &metrics.lfMenuFont, &metrics.lfSmCaptionFont};
   const wchar_t required_font[] = L"Segoe UI";
   int required_font_size = -12;
-  for (size_t i = 0; i < arraysize(system_fonts); ++i) {
+  for (size_t i = 0; i < base::size(system_fonts); ++i) {
     if (system_fonts[i]->lfHeight != required_font_size ||
         wcscmp(required_font, system_fonts[i]->lfFaceName)) {
       errors.push_back("Must use either the Aero or Basic theme.");

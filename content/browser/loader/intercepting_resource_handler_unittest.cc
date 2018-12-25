@@ -12,9 +12,9 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/loader/mock_resource_loader.h"
 #include "content/browser/loader/resource_controller.h"
@@ -371,7 +371,7 @@ TEST_F(InterceptingResourceHandlerTest, DeferredOperations) {
   const char kPayload[] = "The long long long long long payload";
   // This should be less than half the size of the payload, so it needs at least
   // 3 reads to receive.
-  const int kOldHandlerBufferSize = arraysize(kPayload) / 3;
+  const int kOldHandlerBufferSize = base::size(kPayload) / 3;
 
   // When sending a payload to the old ResourceHandler, the
   // InterceptingResourceHandler doesn't send a final EOF read.

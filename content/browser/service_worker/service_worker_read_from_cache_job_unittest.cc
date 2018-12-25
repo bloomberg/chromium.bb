@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -112,8 +113,8 @@ class ServiceWorkerReadFromCacheJobTest : public testing::Test {
   bool WriteResource(int64_t resource_id) {
     const char kHttpHeaders[] = "HTTP/1.0 200 OK\0Content-Length: 5\0\0";
     const char kHttpBody[] = "Hello";
-    const int length = arraysize(kHttpBody);
-    std::string headers(kHttpHeaders, arraysize(kHttpHeaders));
+    const int length = base::size(kHttpBody);
+    std::string headers(kHttpHeaders, base::size(kHttpHeaders));
     scoped_refptr<net::IOBuffer> body =
         base::MakeRefCounted<net::WrappedIOBuffer>(kHttpBody);
 

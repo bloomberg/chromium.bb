@@ -9,10 +9,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache_response.h"
@@ -162,7 +162,7 @@ class AppCacheServiceImplTest : public testing::Test {
     info->response_time = base::Time::Now();
     info->was_cached = false;
     info->headers = new net::HttpResponseHeaders(
-        std::string(kMockHeaders, arraysize(kMockHeaders)));
+        std::string(kMockHeaders, base::size(kMockHeaders)));
     return info;
   }
 

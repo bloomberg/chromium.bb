@@ -5,6 +5,7 @@
 #include "content/shell/common/shell_origin_trial_policy.h"
 
 #include "base/feature_list.h"
+#include "base/stl_util.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 
@@ -27,7 +28,7 @@ static const uint8_t kOriginTrialPublicKey[] = {
 ShellOriginTrialPolicy::ShellOriginTrialPolicy()
     : public_key_(base::StringPiece(
           reinterpret_cast<const char*>(kOriginTrialPublicKey),
-          arraysize(kOriginTrialPublicKey))) {}
+          base::size(kOriginTrialPublicKey))) {}
 
 ShellOriginTrialPolicy::~ShellOriginTrialPolicy() {}
 

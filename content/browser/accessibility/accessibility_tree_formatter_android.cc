@@ -10,7 +10,7 @@
 #include "base/android/jni_string.h"
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -188,14 +188,14 @@ base::string16 AccessibilityTreeFormatterAndroid::ProcessTreeForOutput(
         &line);
   }
 
-  for (unsigned i = 0; i < arraysize(BOOL_ATTRIBUTES); i++) {
+  for (unsigned i = 0; i < base::size(BOOL_ATTRIBUTES); i++) {
     const char* attribute_name = BOOL_ATTRIBUTES[i];
     bool value;
     if (dict.GetBoolean(attribute_name, &value) && value)
       WriteAttribute(true, attribute_name, &line);
   }
 
-  for (unsigned i = 0; i < arraysize(STRING_ATTRIBUTES); i++) {
+  for (unsigned i = 0; i < base::size(STRING_ATTRIBUTES); i++) {
     const char* attribute_name = STRING_ATTRIBUTES[i];
     std::string value;
     if (!dict.GetString(attribute_name, &value) || value.empty())
@@ -205,7 +205,7 @@ base::string16 AccessibilityTreeFormatterAndroid::ProcessTreeForOutput(
                    &line);
   }
 
-  for (unsigned i = 0; i < arraysize(INT_ATTRIBUTES); i++) {
+  for (unsigned i = 0; i < base::size(INT_ATTRIBUTES); i++) {
     const char* attribute_name = INT_ATTRIBUTES[i];
     int value;
     if (!dict.GetInteger(attribute_name, &value) || value == 0)

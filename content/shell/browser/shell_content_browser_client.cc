@@ -13,8 +13,8 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/public/browser/client_certificate_delegate.h"
@@ -182,7 +182,7 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
       url::kDataScheme,
       url::kFileScheme,
   };
-  for (size_t i = 0; i < arraysize(kProtocolList); ++i) {
+  for (size_t i = 0; i < base::size(kProtocolList); ++i) {
     if (url.scheme() == kProtocolList[i])
       return true;
   }

@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/i18n/base_i18n_switches.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -398,7 +399,7 @@ bool UtilityProcessHost::StartProcess() {
 #endif
     };
     cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
-                               arraysize(kSwitchNames));
+                               base::size(kSwitchNames));
 
     network_session_configurator::CopyNetworkSwitches(browser_command_line,
                                                       cmd_line.get());

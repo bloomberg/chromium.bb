@@ -10,8 +10,8 @@
 #include <string>
 
 #include "base/containers/queue.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -378,13 +378,13 @@ TEST_F(ServiceWorkerCacheWriterTest, CompareDataManyOkAsync) {
       "abcdef", "ghijkl", "mnopqr", "stuvwxyz",
   };
   size_t response_size = 0;
-  for (size_t i = 0; i < arraysize(expected_data); ++i)
+  for (size_t i = 0; i < base::size(expected_data); ++i)
     response_size += expected_data[i].size();
 
   MockServiceWorkerResponseReader* reader = ExpectReader();
 
   reader->ExpectReadInfoOk(response_size, true);
-  for (size_t i = 0; i < arraysize(expected_data); ++i) {
+  for (size_t i = 0; i < base::size(expected_data); ++i) {
     reader->ExpectReadDataOk(expected_data[i], true);
   }
   Initialize(false /* pause_when_not_identical */);
@@ -393,7 +393,7 @@ TEST_F(ServiceWorkerCacheWriterTest, CompareDataManyOkAsync) {
   EXPECT_EQ(net::ERR_IO_PENDING, error);
   reader->CompletePendingRead();
 
-  for (size_t i = 0; i < arraysize(expected_data); ++i) {
+  for (size_t i = 0; i < base::size(expected_data); ++i) {
     error = WriteData(expected_data[i]);
     EXPECT_EQ(net::ERR_IO_PENDING, error);
     reader->CompletePendingRead();

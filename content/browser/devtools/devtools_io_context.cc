@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/devtools/devtools_stream_blob.h"
@@ -66,7 +67,7 @@ bool DevToolsIOContext::IsTextMimeType(const std::string& mime_type) {
   static const char* kTextMIMETypePrefixes[] = {
       "text/", "application/x-javascript", "application/json",
       "application/xml"};
-  for (size_t i = 0; i < arraysize(kTextMIMETypePrefixes); ++i) {
+  for (size_t i = 0; i < base::size(kTextMIMETypePrefixes); ++i) {
     if (base::StartsWith(mime_type, kTextMIMETypePrefixes[i],
                          base::CompareCase::INSENSITIVE_ASCII))
       return true;
