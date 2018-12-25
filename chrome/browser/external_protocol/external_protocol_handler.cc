@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -175,13 +175,13 @@ ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
   }
 
   // Always block the hard-coded denied schemes.
-  for (size_t i = 0; i < arraysize(kDeniedSchemes); ++i) {
+  for (size_t i = 0; i < base::size(kDeniedSchemes); ++i) {
     if (kDeniedSchemes[i] == scheme)
       return BLOCK;
   }
 
   // Always allow the hard-coded allowed schemes.
-  for (size_t i = 0; i < arraysize(kAllowedSchemes); ++i) {
+  for (size_t i = 0; i < base::size(kAllowedSchemes); ++i) {
     if (kAllowedSchemes[i] == scheme)
       return DONT_BLOCK;
   }

@@ -13,6 +13,7 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
@@ -125,10 +126,10 @@ bool ChromeCommandLinePrefStore::ValidateProxySwitches() {
 
 void ChromeCommandLinePrefStore::ApplySimpleSwitches() {
   // Look for each switch we know about and set its preference accordingly.
-  ApplyStringSwitches(string_switch_map_, arraysize(string_switch_map_));
-  ApplyPathSwitches(path_switch_map_, arraysize(path_switch_map_));
-  ApplyIntegerSwitches(integer_switch_map_, arraysize(integer_switch_map_));
-  ApplyBooleanSwitches(boolean_switch_map_, arraysize(boolean_switch_map_));
+  ApplyStringSwitches(string_switch_map_, base::size(string_switch_map_));
+  ApplyPathSwitches(path_switch_map_, base::size(path_switch_map_));
+  ApplyIntegerSwitches(integer_switch_map_, base::size(integer_switch_map_));
+  ApplyBooleanSwitches(boolean_switch_map_, base::size(boolean_switch_map_));
 }
 
 void ChromeCommandLinePrefStore::ApplyProxyMode() {

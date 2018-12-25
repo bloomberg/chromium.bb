@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -129,7 +129,7 @@ void ProfileResetter::Reset(
   };
 
   ResettableFlags reset_triggered_for_flags = 0;
-  for (size_t i = 0; i < arraysize(flagToMethod); ++i) {
+  for (size_t i = 0; i < base::size(flagToMethod); ++i) {
     if (resettable_flags & flagToMethod[i].flag) {
       reset_triggered_for_flags |= flagToMethod[i].flag;
       (this->*flagToMethod[i].method)();

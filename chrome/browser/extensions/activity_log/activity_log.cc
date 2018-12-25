@@ -14,7 +14,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
@@ -187,7 +187,7 @@ class ApiInfoDatabase {
 
  private:
   ApiInfoDatabase() {
-    for (size_t i = 0; i < arraysize(kApiInfoTable); i++) {
+    for (size_t i = 0; i < base::size(kApiInfoTable); i++) {
       const ApiInfo* info = &kApiInfoTable[i];
       api_database_[info->api_name] = info;
     }

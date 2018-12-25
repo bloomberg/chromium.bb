@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
@@ -372,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
   ASSERT_TRUE(history_url.SchemeIs(content::kChromeUIScheme));
   ASSERT_TRUE(ntp_url.SchemeIs(chrome::kChromeSearchScheme));
   GURL start_urls[] = {history_url, ntp_url};
-  for (size_t i = 0; i < arraysize(start_urls); i++) {
+  for (size_t i = 0; i < base::size(start_urls); i++) {
     ui_test_utils::NavigateToURL(browser(), start_urls[i]);
     EXPECT_EQ(start_urls[i], tab->GetMainFrame()->GetLastCommittedURL());
 

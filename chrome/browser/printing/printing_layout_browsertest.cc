@@ -7,12 +7,12 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
@@ -379,11 +379,11 @@ IN_PROC_BROWSER_TEST_F(PrintingLayoutTest, DISABLED_ManyTimes) {
 
   DismissTheWindow dismisser;
 
-  ASSERT_GT(arraysize(kTestPool), 0u);
-  for (int i = 0; i < arraysize(kTestPool); ++i) {
+  ASSERT_GT(base::size(kTestPool), 0u);
+  for (int i = 0; i < base::size(kTestPool); ++i) {
     if (i)
       CleanupDumpDirectory();
-    const TestPool& test = kTestPool[i % arraysize(kTestPool)];
+    const TestPool& test = kTestPool[i % base::size(kTestPool)];
     ui_test_utils::NavigateToURL(browser(),
                                  embedded_test_server()->GetURL(test.source));
     base::DelegateSimpleThread close_printdlg_thread1(&dismisser,

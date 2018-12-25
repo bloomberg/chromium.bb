@@ -16,8 +16,8 @@
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -801,7 +801,7 @@ ProfileShortcutManager* ProfileShortcutManager::Create(
 
 ProfileShortcutManagerWin::ProfileShortcutManagerWin(ProfileManager* manager)
     : profile_manager_(manager) {
-  DCHECK_EQ(arraysize(kProfileAvatarIconResources2x),
+  DCHECK_EQ(base::size(kProfileAvatarIconResources2x),
             profiles::GetDefaultAvatarIconCount());
 
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,

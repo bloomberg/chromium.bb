@@ -24,6 +24,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
@@ -343,7 +344,7 @@ void GetExecutableVersionDetails(base::string16* product_name,
   DCHECK_NE(nullptr, channel_name);
 
   wchar_t exe_file[MAX_PATH] = {};
-  CHECK(::GetModuleFileName(nullptr, exe_file, arraysize(exe_file)));
+  CHECK(::GetModuleFileName(nullptr, exe_file, base::size(exe_file)));
 
   base::string16 unused_special_build;
   install_static::GetExecutableVersionDetails(

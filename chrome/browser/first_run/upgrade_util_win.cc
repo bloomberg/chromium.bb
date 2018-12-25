@@ -18,10 +18,10 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/win/registry.h"
@@ -148,8 +148,7 @@ bool IsRunningOldChrome() {
 
   if (!::GetMappedFileName(::GetCurrentProcess(),
                            reinterpret_cast<void*>(::GetModuleHandle(NULL)),
-                           mapped_file_name,
-                           arraysize(mapped_file_name))) {
+                           mapped_file_name, base::size(mapped_file_name))) {
     return false;
   }
 

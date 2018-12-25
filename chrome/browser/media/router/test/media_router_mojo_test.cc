@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "chrome/browser/media/router/event_page_request_manager_factory.h"
 #include "extensions/common/extension_builder.h"
 
@@ -359,13 +360,13 @@ void MediaRouterMojoTest::TestSendRouteMessage() {
 void MediaRouterMojoTest::TestSendRouteBinaryMessage() {
   ProvideTestRoute(MediaRouteProviderId::EXTENSION, kRouteId);
   auto expected_binary_data = std::make_unique<std::vector<uint8_t>>(
-      kBinaryMessage, kBinaryMessage + arraysize(kBinaryMessage));
+      kBinaryMessage, kBinaryMessage + base::size(kBinaryMessage));
   EXPECT_CALL(mock_extension_provider_, SendRouteBinaryMessage(kRouteId, _))
-      .WillOnce(
-          [](const MediaRoute::Id& route_id, const std::vector<uint8_t>& data) {
-            EXPECT_EQ(0, memcmp(kBinaryMessage, &(data[0]),
-                                arraysize(kBinaryMessage)));
-          });
+      .WillOnce([](const MediaRoute::Id& route_id,
+                   const std::vector<uint8_t>& data) {
+        EXPECT_EQ(
+            0, memcmp(kBinaryMessage, &(data[0]), base::size(kBinaryMessage)));
+      });
 
   router()->SendRouteBinaryMessage(kRouteId, std::move(expected_binary_data));
   base::RunLoop().RunUntilIdle();

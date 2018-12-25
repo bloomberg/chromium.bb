@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -43,8 +42,8 @@ const float kConfidenceCutoff[] = {
   0.5f
 };
 
-static_assert(arraysize(kConfidenceCutoff) ==
-              predictors::AutocompleteActionPredictor::LAST_PREDICT_ACTION,
+static_assert(base::size(kConfidenceCutoff) ==
+                  predictors::AutocompleteActionPredictor::LAST_PREDICT_ACTION,
               "kConfidenceCutoff count should match LAST_PREDICT_ACTION");
 
 const int kMinimumNumberOfHits = 3;

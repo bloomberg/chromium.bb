@@ -10,8 +10,8 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/test/power_monitor_test_base.h"
@@ -406,7 +406,7 @@ TEST_P(ExtensionProtocolsTest, IncognitoRequest) {
     {"split enabled", true, true, true, false},
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     scoped_refptr<Extension> extension =
         CreateTestExtension(cases[i].name, cases[i].incognito_split_mode);
     AddExtension(extension, cases[i].incognito_enabled, false);

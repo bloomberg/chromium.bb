@@ -10,9 +10,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/common/chrome_paths.h"
@@ -77,7 +77,7 @@ TEST_F(FileSelectHelperTest, ZipPackage) {
   const char* files_to_verify[] = {"Contents/Info.plist",
                                    "Contents/MacOS/Calculator",
                                    "Contents/_CodeSignature/CodeResources"};
-  size_t file_count = arraysize(files_to_verify);
+  size_t file_count = base::size(files_to_verify);
   for (size_t i = 0; i < file_count; i++) {
     const char* relative_path = files_to_verify[i];
     base::FilePath orig_file = src.Append(relative_path);

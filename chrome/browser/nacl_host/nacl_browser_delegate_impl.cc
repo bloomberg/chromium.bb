@@ -8,8 +8,8 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
@@ -54,7 +54,7 @@ NaClBrowserDelegateImpl::NaClBrowserDelegateImpl(
     ProfileManager* profile_manager)
     : profile_manager_(profile_manager), inverse_debug_patterns_(false) {
   DCHECK(profile_manager_);
-  for (size_t i = 0; i < arraysize(kAllowedNonSfiOrigins); ++i) {
+  for (size_t i = 0; i < base::size(kAllowedNonSfiOrigins); ++i) {
     allowed_nonsfi_origins_.insert(kAllowedNonSfiOrigins[i]);
   }
 }

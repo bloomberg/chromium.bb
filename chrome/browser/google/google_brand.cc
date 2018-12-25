@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <string>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
@@ -119,7 +118,7 @@ bool IsOrganic(const std::string& brand) {
       "CHOU", "CHOX", "CHOY", "CHOZ", "CHPD", "CHPE", "CHPF", "CHPG", "ECBA",
       "ECBB", "ECDA", "ECDB", "ECSA", "ECSB", "ECVA", "ECVB", "ECWA", "ECWB",
       "ECWC", "ECWD", "ECWE", "ECWF", "EUBB", "EUBC", "GGLA", "GGLS"};
-  const char* const* end = &kOrganicBrands[arraysize(kOrganicBrands)];
+  const char* const* end = &kOrganicBrands[base::size(kOrganicBrands)];
   if (std::binary_search(&kOrganicBrands[0], end, brand))
     return true;
 

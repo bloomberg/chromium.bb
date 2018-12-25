@@ -13,8 +13,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -251,7 +251,7 @@ TEST(ExtensionFromWebApp, Basic) {
   web_app.scope = GURL("http://aaronboodman.com/gearpad/");
 
   const int sizes[] = {16, 48, 128};
-  for (size_t i = 0; i < arraysize(sizes); ++i) {
+  for (size_t i = 0; i < base::size(sizes); ++i) {
     GURL icon_url(
         web_app.app_url.Resolve(base::StringPrintf("%i.png", sizes[i])));
     web_app.icons.push_back(GetIconInfo(icon_url, sizes[i]));

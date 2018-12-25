@@ -11,7 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -168,7 +168,8 @@ TEST_F(PlatformNotificationServiceTest, DisplayPersistentThenClose) {
 TEST_F(PlatformNotificationServiceTest, DisplayNonPersistentPropertiesMatch) {
   std::vector<int> vibration_pattern(
       kNotificationVibrationPattern,
-      kNotificationVibrationPattern + arraysize(kNotificationVibrationPattern));
+      kNotificationVibrationPattern +
+          base::size(kNotificationVibrationPattern));
 
   PlatformNotificationData data;
   data.title = base::ASCIIToUTF16("My notification's title");
@@ -200,7 +201,8 @@ TEST_F(PlatformNotificationServiceTest, DisplayNonPersistentPropertiesMatch) {
 TEST_F(PlatformNotificationServiceTest, DisplayPersistentPropertiesMatch) {
   std::vector<int> vibration_pattern(
       kNotificationVibrationPattern,
-      kNotificationVibrationPattern + arraysize(kNotificationVibrationPattern));
+      kNotificationVibrationPattern +
+          base::size(kNotificationVibrationPattern));
 
   PlatformNotificationData data;
   data.title = base::ASCIIToUTF16("My notification's title");

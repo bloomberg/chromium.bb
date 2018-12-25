@@ -40,8 +40,8 @@
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
@@ -170,7 +170,7 @@ CountingPolicy::CountingPolicy(Profile* profile)
       string_table_("string_ids"),
       url_table_("url_ids"),
       retention_time_(base::TimeDelta::FromHours(60)) {
-  for (size_t i = 0; i < arraysize(kAlwaysLog); i++) {
+  for (size_t i = 0; i < base::size(kAlwaysLog); i++) {
     api_arg_whitelist_.insert(
         std::make_pair(kAlwaysLog[i].type, kAlwaysLog[i].name));
   }
@@ -185,11 +185,9 @@ bool CountingPolicy::InitDatabase(sql::Database* db) {
     return false;
 
   // Create the unified activity log entry table.
-  if (!ActivityDatabase::InitializeTable(db,
-                                         kTableName,
-                                         kTableContentFields,
+  if (!ActivityDatabase::InitializeTable(db, kTableName, kTableContentFields,
                                          kTableFieldTypes,
-                                         arraysize(kTableContentFields)))
+                                         base::size(kTableContentFields)))
     return false;
 
   // Create a view for easily accessing the uncompressed form of the data, and
@@ -271,14 +269,14 @@ bool CountingPolicy::FlushDatabase(sql::Database* db) {
       " SET count = count + ?, time = max(?, time)"
       " WHERE rowid = ?";
 
-  for (size_t i = 0; i < arraysize(matched_columns); i++) {
+  for (size_t i = 0; i < base::size(matched_columns); i++) {
     locate_str = base::StringPrintf(
         "%s AND %s IS ?", locate_str.c_str(), matched_columns[i]);
     insert_str =
         base::StringPrintf("%s, %s", insert_str.c_str(), matched_columns[i]);
   }
   insert_str += ") VALUES (?, ?";
-  for (size_t i = 0; i < arraysize(matched_columns); i++) {
+  for (size_t i = 0; i < base::size(matched_columns); i++) {
     insert_str += ", ?";
   }
   locate_str += " ORDER BY time DESC LIMIT 1";

@@ -11,7 +11,7 @@
 #include "base/mac/authorization_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_authorizationref.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "chrome/grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -26,7 +26,7 @@ bool AuthenticateUser(password_manager::ReauthPurpose purpose) {
   // kAuthorizationRuleAuthenticateAsSessionUser, to ensure that the session
   // user password, as opposed to an admin's password, is required.
   AuthorizationItem right_items[] = {{"system.login.screensaver", 0, NULL, 0}};
-  AuthorizationRights rights = {arraysize(right_items), right_items};
+  AuthorizationRights rights = {base::size(right_items), right_items};
 
   NSString* prompt;
   switch (purpose) {

@@ -5,6 +5,7 @@
 #include "extensions/browser/api/web_request/web_request_event_details.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
@@ -69,7 +70,7 @@ TEST(WebRequestEventDetailsTest, WhitelistedCopyForPublicSession) {
   EXPECT_EQ("http://www.foo.bar/", url);
 
   // Extras are filtered out (+1 for url).
-  EXPECT_EQ(arraysize(safe_attributes) + 1, copy->dict_.size());
+  EXPECT_EQ(base::size(safe_attributes) + 1, copy->dict_.size());
 }
 
 TEST(WebRequestEventDetailsTest, SetResponseHeaders) {

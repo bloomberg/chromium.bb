@@ -6,8 +6,8 @@
 #include <stddef.h>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/chrome_command_line_pref_store.h"
@@ -194,7 +194,7 @@ TEST(ChromeCommandLinePrefStoreTest, DisableSSLCipherSuites) {
     "0x0005",
   };
   store1->VerifySSLCipherSuites(expected_ciphers1,
-                                arraysize(expected_ciphers1));
+                                base::size(expected_ciphers1));
 
   base::CommandLine cl2(base::CommandLine::NO_PROGRAM);
   cl2.AppendSwitchASCII(switches::kCipherSuiteBlacklist,
@@ -207,7 +207,7 @@ TEST(ChromeCommandLinePrefStoreTest, DisableSSLCipherSuites) {
     "0x0005",
   };
   store2->VerifySSLCipherSuites(expected_ciphers2,
-                                arraysize(expected_ciphers2));
+                                base::size(expected_ciphers2));
 
   base::CommandLine cl3(base::CommandLine::NO_PROGRAM);
   cl3.AppendSwitchASCII(switches::kCipherSuiteBlacklist,
@@ -218,5 +218,5 @@ TEST(ChromeCommandLinePrefStoreTest, DisableSSLCipherSuites) {
     "0x0004;MOAR;0x0005"
   };
   store3->VerifySSLCipherSuites(expected_ciphers3,
-                                arraysize(expected_ciphers3));
+                                base::size(expected_ciphers3));
 }

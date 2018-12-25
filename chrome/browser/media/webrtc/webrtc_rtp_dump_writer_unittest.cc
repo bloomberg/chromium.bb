@@ -14,9 +14,9 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -149,9 +149,9 @@ class WebRtcRtpDumpWriterTest : public testing::Test {
     size_t dump_pos = 0;
 
     // Verifies the first line.
-    EXPECT_EQ(memcmp(&dump[0], kFirstLine, arraysize(kFirstLine) - 1), 0);
+    EXPECT_EQ(memcmp(&dump[0], kFirstLine, base::size(kFirstLine) - 1), 0);
 
-    dump_pos += arraysize(kFirstLine) - 1;
+    dump_pos += base::size(kFirstLine) - 1;
     EXPECT_GT(dump.size(), dump_pos);
 
     // Skips the file header.

@@ -5,8 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -304,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(VpnProviderApiTest, VpnSuccess) {
   EXPECT_EQ(1, test_client_->send_packet_counter_);
   EXPECT_EQ(api_vpn::VPN_CONNECTION_STATE_CONNECTED,
             test_client_->update_connection_state_counter_);
-  for (size_t i = 0; i < arraysize(kParameterValues); ++i) {
+  for (size_t i = 0; i < base::size(kParameterValues); ++i) {
     std::string value;
     EXPECT_TRUE(
         test_client_->parameters_->GetString(kParameterKeys[i], &value));

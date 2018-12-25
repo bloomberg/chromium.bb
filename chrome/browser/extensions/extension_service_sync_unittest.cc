@@ -12,10 +12,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/stl_util.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -2494,7 +2494,7 @@ TEST_F(ExtensionServiceSyncTest, SyncUninstallByCustodianSkipsPolicy) {
 
   // Create a sync deletion for each extension.
   SyncChangeList list;
-  for (size_t i = 0; i < arraysize(extensions); i++) {
+  for (size_t i = 0; i < base::size(extensions); i++) {
     const std::string& id = extensions[i]->id();
     sync_pb::EntitySpecifics specifics;
     sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();

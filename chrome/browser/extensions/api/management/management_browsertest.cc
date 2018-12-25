@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -258,7 +257,7 @@ class NotificationListener : public content::NotificationObserver {
   NotificationListener() : started_(false), finished_(false) {
     int types[] = {extensions::NOTIFICATION_EXTENSION_UPDATING_STARTED,
                    extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND};
-    for (size_t i = 0; i < arraysize(types); i++) {
+    for (size_t i = 0; i < base::size(types); i++) {
       registrar_.Add(
           this, types[i], content::NotificationService::AllSources());
     }

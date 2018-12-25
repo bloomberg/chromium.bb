@@ -9,9 +9,9 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
@@ -116,7 +116,7 @@ testing::AssertionResult CheckSessionModels(const base::ListValue& devices,
     // Only the tabs are interesting.
     const base::ListValue* tabs = NULL;
     EXPECT_TRUE(window->GetList("tabs", &tabs));
-    EXPECT_EQ(arraysize(kTabIDs), tabs->GetSize());
+    EXPECT_EQ(base::size(kTabIDs), tabs->GetSize());
     for (size_t j = 0; j < tabs->GetSize(); ++j) {
       const base::DictionaryValue* tab = NULL;
       EXPECT_TRUE(tabs->GetDictionary(j, &tab));
@@ -217,12 +217,12 @@ void ExtensionSessionsTest::CreateSessionModels() {
                                      activation_response->type_processor.get());
 
   syncer::SyncDataList initial_data;
-  for (size_t index = 0; index < arraysize(kSessionTags); ++index) {
+  for (size_t index = 0; index < base::size(kSessionTags); ++index) {
     // Fill an instance of session specifics with a foreign session's data.
     sync_pb::EntitySpecifics header_entity;
     BuildSessionSpecifics(kSessionTags[index], header_entity.mutable_session());
     std::vector<SessionID::id_type> tab_list(kTabIDs,
-                                             kTabIDs + arraysize(kTabIDs));
+                                             kTabIDs + base::size(kTabIDs));
     BuildWindowSpecifics(index, tab_list, header_entity.mutable_session());
     std::vector<sync_pb::SessionSpecifics> tabs(tab_list.size());
     for (size_t i = 0; i < tab_list.size(); ++i) {
