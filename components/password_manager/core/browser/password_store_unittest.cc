@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -188,7 +188,7 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
 
   // Build the forms vector and add the forms to the store.
   std::vector<std::unique_ptr<PasswordForm>> all_forms;
-  for (size_t i = 0; i < arraysize(form_data); ++i) {
+  for (size_t i = 0; i < base::size(form_data); ++i) {
     all_forms.push_back(FillPasswordFormWithData(form_data[i]));
     store->AddLogin(*all_forms.back());
   }
@@ -386,7 +386,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   std::vector<std::unique_ptr<PasswordForm>> all_credentials;
-  for (size_t i = 0; i < arraysize(kTestCredentials); ++i) {
+  for (size_t i = 0; i < base::size(kTestCredentials); ++i) {
     all_credentials.push_back(FillPasswordFormWithData(kTestCredentials[i]));
     store->AddLogin(*all_credentials.back());
   }
@@ -659,7 +659,7 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
 
       // Set up the initial test data set.
       std::vector<std::unique_ptr<PasswordForm>> all_credentials;
-      for (size_t i = 0; i < arraysize(kTestCredentials); ++i) {
+      for (size_t i = 0; i < base::size(kTestCredentials); ++i) {
         all_credentials.push_back(
             FillPasswordFormWithData(kTestCredentials[i]));
         all_credentials.back()->date_synced =

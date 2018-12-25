@@ -18,7 +18,6 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
@@ -26,6 +25,7 @@
 #include "base/posix/unix_domain_socket.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "components/nacl/common/nacl_nonsfi_util.h"
@@ -230,7 +230,7 @@ void NaClForkDelegate::Init(const int sandboxdesc,
       const base::CommandLine& current_cmd_line =
           *base::CommandLine::ForCurrentProcess();
       cmd_line.CopySwitchesFrom(current_cmd_line, kForwardSwitches,
-                                arraysize(kForwardSwitches));
+                                base::size(kForwardSwitches));
 
       // The command line needs to be tightly controlled to use
       // |helper_bootstrap_exe|. So from now on, argv_to_launch should be

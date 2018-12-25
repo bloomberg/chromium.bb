@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/stl_util.h"
 #include "base/time/clock.h"
 #include "components/ntp_snippets/category_rankers/click_based_category_ranker.h"
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
@@ -156,7 +157,7 @@ const base::Feature kContentSuggestionsDebugLog{
 std::vector<const base::Feature*> GetAllFeatures() {
   // Skip the last feature as it's a nullptr.
   return std::vector<const base::Feature*>(
-      kAllFeatures, kAllFeatures + arraysize(kAllFeatures));
+      kAllFeatures, kAllFeatures + base::size(kAllFeatures));
 }
 
 // Default referrer for the content suggestions.

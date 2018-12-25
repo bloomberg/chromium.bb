@@ -16,7 +16,6 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -128,7 +127,7 @@ void ProcessQueryToConditions(
 
 bool BypassBlacklistWildcardForURL(const GURL& url) {
   const std::string& scheme = url.scheme();
-  for (size_t i = 0; i < arraysize(kBypassBlacklistWildcardForSchemes); ++i) {
+  for (size_t i = 0; i < base::size(kBypassBlacklistWildcardForSchemes); ++i) {
     if (scheme == kBypassBlacklistWildcardForSchemes[i])
       return true;
   }

@@ -8,9 +8,9 @@
 #include <random>
 #include <string>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/history/core/browser/history_backend.h"
@@ -33,7 +33,7 @@ std::string GenerateFakeHashedString(size_t sym_count) {
       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,/=+?#";
   static base::NoDestructor<std::mt19937> engine;
   std::uniform_int_distribution<size_t> index_distribution(
-      0, arraysize(kSyms) - 2 /* trailing \0 */);
+      0, base::size(kSyms) - 2 /* trailing \0 */);
 
   std::string res;
   res.reserve(sym_count);

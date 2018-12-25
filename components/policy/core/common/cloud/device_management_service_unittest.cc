@@ -10,9 +10,9 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "base/test/scoped_task_environment.h"
@@ -41,7 +41,7 @@ const char kServiceUrl[] = "https://example.com/management_service";
 // Encoded empty response messages for testing the error code paths.
 const char kResponseEmpty[] = "\x08\x00";
 
-#define PROTO_STRING(name) (std::string(name, arraysize(name) - 1))
+#define PROTO_STRING(name) (std::string(name, base::size(name) - 1))
 
 // Some helper constants.
 const char kGaiaAuthToken[] = "gaia-auth-token";

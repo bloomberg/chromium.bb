@@ -11,9 +11,9 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -83,8 +83,8 @@ bool MatchDomain(const base::string16& domain, const base::string16& pattern,
     DLOG(ERROR) << "Possible invalid domain pattern: " << pattern
                 << " - Error: " << status;
     ReportRegexSuccessMetric(false);
-    UMA_HISTOGRAM_ENUMERATION("Enterprise.DomainWhitelistRegexFailure",
-                              index, arraysize(kNonManagedDomainPatterns));
+    UMA_HISTOGRAM_ENUMERATION("Enterprise.DomainWhitelistRegexFailure", index,
+                              base::size(kNonManagedDomainPatterns));
     base::UmaHistogramSparse("Enterprise.DomainWhitelistRegexFailureStatus",
                              status);
     return false;
@@ -144,7 +144,7 @@ bool BrowserPolicyConnector::IsNonEnterpriseUser(const std::string& username) {
   }
   const base::string16 domain = base::UTF8ToUTF16(
       gaia::ExtractDomainName(gaia::CanonicalizeEmail(username)));
-  for (size_t i = 0; i < arraysize(kNonManagedDomainPatterns); i++) {
+  for (size_t i = 0; i < base::size(kNonManagedDomainPatterns); i++) {
     base::string16 pattern = base::WideToUTF16(kNonManagedDomainPatterns[i]);
     if (MatchDomain(domain, pattern, i))
       return true;

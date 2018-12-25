@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -34,12 +34,12 @@ TEST(BrowserPolicyConnectorTest, IsNonEnterpriseUser) {
     "user@hotmail.enterprise.com",
   };
 
-  for (unsigned int i = 0; i < arraysize(kNonEnterpriseUsers); ++i) {
+  for (unsigned int i = 0; i < base::size(kNonEnterpriseUsers); ++i) {
     std::string username(kNonEnterpriseUsers[i]);
     EXPECT_TRUE(BrowserPolicyConnector::IsNonEnterpriseUser(username)) <<
         "IsNonEnterpriseUser returned false for " << username;
   }
-  for (unsigned int i = 0; i < arraysize(kEnterpriseUsers); ++i) {
+  for (unsigned int i = 0; i < base::size(kEnterpriseUsers); ++i) {
     std::string username(kEnterpriseUsers[i]);
     EXPECT_FALSE(BrowserPolicyConnector::IsNonEnterpriseUser(username)) <<
         "IsNonEnterpriseUser returned true for " << username;

@@ -5,7 +5,7 @@
 #include "components/omnibox/browser/autocomplete_match_type.h"
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -45,7 +45,7 @@ std::string AutocompleteMatchType::ToString(AutocompleteMatchType::Type type) {
     "pedal",
   };
   // clang-format on
-  static_assert(arraysize(strings) == AutocompleteMatchType::NUM_TYPES,
+  static_assert(base::size(strings) == AutocompleteMatchType::NUM_TYPES,
                 "strings array must have NUM_TYPES elements");
   return strings[type];
 }
@@ -130,7 +130,7 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
       // TODO(orinj): Determine appropriate accessibility labels for Pedals
       0,  // PEDAL
   };
-  static_assert(arraysize(message_ids) == AutocompleteMatchType::NUM_TYPES,
+  static_assert(base::size(message_ids) == AutocompleteMatchType::NUM_TYPES,
                 "message_ids must have NUM_TYPES elements");
 
   if (label_prefix_length)

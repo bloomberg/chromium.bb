@@ -10,8 +10,8 @@
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/system/sys_info.h"
 #import "components/open_from_clipboard/clipboard_recent_content_impl_ios.h"
@@ -30,7 +30,7 @@ const char* kAuthorizedSchemes[] = {
 NSSet<NSString*>* getAuthorizedSchemeList(
     const std::string& application_scheme) {
   NSMutableSet<NSString*>* schemes = [NSMutableSet set];
-  for (size_t i = 0; i < arraysize(kAuthorizedSchemes); ++i) {
+  for (size_t i = 0; i < base::size(kAuthorizedSchemes); ++i) {
     [schemes addObject:base::SysUTF8ToNSString(kAuthorizedSchemes[i])];
   }
   if (!application_scheme.empty()) {

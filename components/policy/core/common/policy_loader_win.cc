@@ -23,7 +23,6 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
@@ -146,7 +145,7 @@ void FilterUntrustedPolicy(PolicyMap* policy) {
     }
   }
 
-  for (size_t i = 0; i < arraysize(kInsecurePolicies); ++i) {
+  for (size_t i = 0; i < base::size(kInsecurePolicies); ++i) {
     if (policy->Get(kInsecurePolicies[i])) {
       // TODO(pastarmovj): Surface this issue in the about:policy page.
       policy->Erase(kInsecurePolicies[i]);
@@ -367,7 +366,7 @@ std::unique_ptr<PolicyBundle> PolicyLoaderWin::Load() {
   std::unique_ptr<PolicyBundle> bundle(new PolicyBundle());
   PolicyMap* chrome_policy =
       &bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
-  for (size_t i = 0; i < arraysize(kScopes); ++i) {
+  for (size_t i = 0; i < base::size(kScopes); ++i) {
     PolicyScope scope = kScopes[i].scope;
     PolicyLoadStatusUmaReporter status;
     RegistryDict gpo_dict;
@@ -425,7 +424,7 @@ void PolicyLoaderWin::Load3rdPartyPolicy(const RegistryDict* gpo_dict,
       {POLICY_LEVEL_RECOMMENDED, kKeyRecommended},
   };
 
-  for (size_t i = 0; i < arraysize(k3rdPartyDomains); i++) {
+  for (size_t i = 0; i < base::size(k3rdPartyDomains); i++) {
     const char* name = k3rdPartyDomains[i].name;
     const PolicyDomain domain = k3rdPartyDomains[i].domain;
     const RegistryDict* domain_dict = gpo_dict->GetKey(name);
@@ -445,7 +444,7 @@ void PolicyLoaderWin::Load3rdPartyPolicy(const RegistryDict* gpo_dict,
       Schema schema = *schema_from_map;
 
       // Parse policy.
-      for (size_t j = 0; j < arraysize(kLevels); j++) {
+      for (size_t j = 0; j < base::size(kLevels); j++) {
         const RegistryDict* policy_dict =
             component->second->GetKey(kLevels[j].path);
         if (!policy_dict)

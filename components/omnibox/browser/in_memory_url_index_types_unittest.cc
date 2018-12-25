@@ -8,7 +8,7 @@
 
 #include <algorithm>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,7 +50,7 @@ TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
   EXPECT_EQ(UTF8ToUTF16("brammy"), string_vec[6]);
   // Verify the word starts.
   size_t expected_starts_a[] = {0, 7, 11, 18, 23, 31, 35};
-  EXPECT_TRUE(IntArraysEqual(expected_starts_a, arraysize(expected_starts_a),
+  EXPECT_TRUE(IntArraysEqual(expected_starts_a, base::size(expected_starts_a),
                              actual_starts_a));
 
   WordStarts actual_starts_b;
@@ -62,7 +62,7 @@ TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
   EXPECT_EQ(UTF8ToUTF16("the"), string_vec[3]);
   EXPECT_EQ(UTF8ToUTF16("brammy"), string_vec[4]);
   size_t expected_starts_b[] = {0, 7, 23, 31, 35};
-  EXPECT_TRUE(IntArraysEqual(expected_starts_b, arraysize(expected_starts_b),
+  EXPECT_TRUE(IntArraysEqual(expected_starts_b, base::size(expected_starts_b),
                              actual_starts_b));
 
   base::string16 string_c(base::ASCIIToUTF16(
@@ -72,7 +72,7 @@ TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
   ASSERT_EQ(8U, string_vec.size());
   // Note that we stop collecting words and word starts at kMaxSignificantChars.
   size_t expected_starts_c[] = {1, 7, 16, 22, 32, 43, 52, 55};
-  EXPECT_TRUE(IntArraysEqual(expected_starts_c, arraysize(expected_starts_c),
+  EXPECT_TRUE(IntArraysEqual(expected_starts_c, base::size(expected_starts_c),
                              actual_starts_c));
 
   base::string16 string_d(
@@ -88,7 +88,7 @@ TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
   EXPECT_EQ(UTF8ToUTF16("the"), string_vec[5]);
   EXPECT_EQ(UTF8ToUTF16("brammy"), string_vec[6]);
   size_t expected_starts_d[] = {0, 7, 11, 18, 22, 29, 33};
-  EXPECT_TRUE(IntArraysEqual(expected_starts_d, arraysize(expected_starts_d),
+  EXPECT_TRUE(IntArraysEqual(expected_starts_d, base::size(expected_starts_d),
                              actual_starts_d));
 
   // Test String16SetFromString16
@@ -104,7 +104,7 @@ TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
   EXPECT_TRUE(string_set.find(UTF8ToUTF16("search")) != string_set.end());
   EXPECT_TRUE(string_set.find(UTF8ToUTF16("web")) != string_set.end());
   size_t expected_starts_e[] = {0, 7, 11, 18, 22, 29, 36, 40};
-  EXPECT_TRUE(IntArraysEqual(expected_starts_e, arraysize(expected_starts_e),
+  EXPECT_TRUE(IntArraysEqual(expected_starts_e, base::size(expected_starts_e),
                              actual_starts_e));
 
   // Test SortMatches and DeoverlapMatches.
@@ -136,8 +136,8 @@ TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
   TermMatches matches_g = MatchTermInString(
       UTF8ToUTF16("x"), UTF8ToUTF16("axbxcxdxex fxgx/hxixjx.kx"), 123);
   const size_t expected_offsets[] = { 1, 3, 5, 7, 9, 12, 14, 17, 19, 21, 24 };
-  ASSERT_EQ(arraysize(expected_offsets), matches_g.size());
-  for (size_t i = 0; i < arraysize(expected_offsets); ++i)
+  ASSERT_EQ(base::size(expected_offsets), matches_g.size());
+  for (size_t i = 0; i < base::size(expected_offsets); ++i)
     EXPECT_EQ(expected_offsets[i], matches_g[i].offset);
 }
 
@@ -151,7 +151,7 @@ TEST_F(InMemoryURLIndexTypesTest, OffsetsAndTermMatches) {
   matches_a.push_back(TermMatch(4, 14, 5));
   std::vector<size_t> offsets = OffsetsFromTermMatches(matches_a);
   const size_t expected_offsets_a[] = {1, 3, 4, 7, 9, 10, 10, 11, 14, 19};
-  ASSERT_EQ(offsets.size(), arraysize(expected_offsets_a));
+  ASSERT_EQ(offsets.size(), base::size(expected_offsets_a));
   for (size_t i = 0; i < offsets.size(); ++i)
     EXPECT_EQ(expected_offsets_a[i], offsets[i]);
 
@@ -159,7 +159,7 @@ TEST_F(InMemoryURLIndexTypesTest, OffsetsAndTermMatches) {
   offsets[4] = base::string16::npos;  // offset of third term
   TermMatches matches_b = ReplaceOffsetsInTermMatches(matches_a, offsets);
   const size_t expected_offsets_b[] = {1, 4, 10, 14};
-  ASSERT_EQ(arraysize(expected_offsets_b), matches_b.size());
+  ASSERT_EQ(base::size(expected_offsets_b), matches_b.size());
   for (size_t i = 0; i < matches_b.size(); ++i)
     EXPECT_EQ(expected_offsets_b[i], matches_b[i].offset);
 }

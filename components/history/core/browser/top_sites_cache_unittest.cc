@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -81,7 +81,7 @@ const char* kTopSitesSpecBasic[] = {
 };
 
 TEST_F(TopSitesCacheTest, GetCanonicalURL) {
-  InitTopSiteCache(kTopSitesSpecBasic, arraysize(kTopSitesSpecBasic));
+  InitTopSiteCache(kTopSitesSpecBasic, base::size(kTopSitesSpecBasic));
   struct {
     const char* expected;
     const char* query;
@@ -105,7 +105,7 @@ TEST_F(TopSitesCacheTest, GetCanonicalURL) {
     // Prefix should not work: as-is.
     {"http://www.youtube.com/a", "http://www.youtube.com/a"},
   };
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     std::string expected(test_cases[i].expected);
     std::string query(test_cases[i].query);
     EXPECT_EQ(expected, cache_.GetCanonicalURL(GURL(query)).spec())
@@ -114,7 +114,7 @@ TEST_F(TopSitesCacheTest, GetCanonicalURL) {
 }
 
 TEST_F(TopSitesCacheTest, IsKnownUrl) {
-  InitTopSiteCache(kTopSitesSpecBasic, arraysize(kTopSitesSpecBasic));
+  InitTopSiteCache(kTopSitesSpecBasic, base::size(kTopSitesSpecBasic));
   // Matches.
   EXPECT_TRUE(cache_.IsKnownURL(GURL("http://www.google.com")));
   EXPECT_TRUE(cache_.IsKnownURL(GURL("http://www.gooogle.com")));

@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -259,7 +259,7 @@ metrics::OmniboxInputType AutocompleteInput::Parse(
         &http_parts.query,
         &http_parts.ref,
       };
-      for (size_t i = 0; i < arraysize(components); ++i) {
+      for (size_t i = 0; i < base::size(components); ++i) {
         url_formatter::OffsetComponent(
             -static_cast<int>(http_scheme_prefix.length()), components[i]);
       }
