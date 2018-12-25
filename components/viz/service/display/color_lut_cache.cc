@@ -8,6 +8,7 @@
 #include <cmath>
 #include <vector>
 
+#include "base/stl_util.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/color_transform.h"
@@ -27,7 +28,7 @@ ColorLUTCache::~ColorLUTCache() {
   size_t n = 0;
   for (const auto& cache_entry : lut_cache_) {
     textures[n++] = cache_entry.second.lut.texture;
-    if (n == arraysize(textures)) {
+    if (n == base::size(textures)) {
       gl_->DeleteTextures(n, textures);
       n = 0;
     }

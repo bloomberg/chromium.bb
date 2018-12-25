@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -1079,7 +1079,7 @@ TEST(UrlFormatterTest, IDNToUnicode) {
       test::kTopDomainsRootPosition};
   IDNSpoofChecker::SetTrieParamsForTesting(trie_params);
 
-  for (size_t i = 0; i < arraysize(idn_cases); i++) {
+  for (size_t i = 0; i < base::size(idn_cases); i++) {
     base::string16 output(IDNToUnicode(idn_cases[i].input));
     base::string16 expected(idn_cases[i].unicode_allowed
                                 ? WideToUTF16(idn_cases[i].unicode_output)
@@ -1374,7 +1374,7 @@ TEST(UrlFormatterTest, FormatUrl) {
   };
   // clang-format on
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     size_t prefix_len;
     base::string16 formatted = FormatUrl(
         GURL(tests[i].input), tests[i].format_types, tests[i].escape_rules,

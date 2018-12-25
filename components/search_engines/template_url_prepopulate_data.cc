@@ -5,7 +5,7 @@
 #include "components/search_engines/template_url_prepopulate_data.h"
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/country_codes/country_codes.h"
 #include "components/google/core/common/google_util.h"
@@ -989,10 +989,10 @@ std::vector<std::unique_ptr<TemplateURLData>> GetPrepopulationSetFromCountryID(
   switch (country_id) {
 #define UNHANDLED_COUNTRY(code1, code2) \
   case country_codes::CountryCharsToCountryID((#code1)[0], (#code2)[0]):
-#define END_UNHANDLED_COUNTRIES(code1, code2)\
-      engines = engines_##code1##code2;\
-      num_engines = arraysize(engines_##code1##code2);\
-      break;
+#define END_UNHANDLED_COUNTRIES(code1, code2)       \
+  engines = engines_##code1##code2;                 \
+  num_engines = base::size(engines_##code1##code2); \
+  break;
 #define DECLARE_COUNTRY(code1, code2)\
     UNHANDLED_COUNTRY(code1, code2)\
     END_UNHANDLED_COUNTRIES(code1, code2)
@@ -1444,7 +1444,7 @@ SearchEngineType GetEngineType(const GURL& url) {
     return google.type;
 
   // Now check the rest of the prepopulate data.
-  for (size_t i = 0; i < arraysize(kAllEngines); ++i) {
+  for (size_t i = 0; i < base::size(kAllEngines); ++i) {
     // First check the main search URL.
     if (SameDomain(url, GURL(kAllEngines[i]->search_url)))
       return kAllEngines[i]->type;

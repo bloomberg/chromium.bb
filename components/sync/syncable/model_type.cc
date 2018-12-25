@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
 #include "components/sync/protocol/app_notification_specifics.pb.h"
@@ -159,7 +159,7 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
      sync_pb::EntitySpecifics::kExperimentsFieldNumber, 19},
 };
 
-static_assert(arraysize(kModelTypeInfoMap) == MODEL_TYPE_COUNT,
+static_assert(base::size(kModelTypeInfoMap) == MODEL_TYPE_COUNT,
               "kModelTypeInfoMap should have MODEL_TYPE_COUNT elements");
 
 static_assert(43 == syncer::MODEL_TYPE_COUNT,
@@ -549,7 +549,7 @@ std::unique_ptr<base::Value> ModelTypeToValue(ModelType model_type) {
 ModelType ModelTypeFromString(const std::string& model_type_string) {
   if (model_type_string != "Unspecified" &&
       model_type_string != "Top Level Folder") {
-    for (size_t i = 0; i < arraysize(kModelTypeInfoMap); ++i) {
+    for (size_t i = 0; i < base::size(kModelTypeInfoMap); ++i) {
       if (kModelTypeInfoMap[i].model_type_string == model_type_string)
         return kModelTypeInfoMap[i].model_type;
     }
@@ -639,7 +639,7 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     *model_type = UNSPECIFIED;
     return false;
   }
-  for (size_t i = 0; i < arraysize(kModelTypeInfoMap); ++i) {
+  for (size_t i = 0; i < base::size(kModelTypeInfoMap); ++i) {
     if (kModelTypeInfoMap[i].notification_type == notification_type) {
       *model_type = kModelTypeInfoMap[i].model_type;
       return true;

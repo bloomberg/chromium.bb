@@ -9,7 +9,7 @@
 
 #include "base/format_macros.h"
 #include "base/i18n/break_iterator.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -156,7 +156,7 @@ TEST(SpellcheckWordIteratorTest, SplitWord) {
     },
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     SCOPED_TRACE(base::StringPrintf("kTestCases[%" PRIuS "]: language=%s", i,
                                     kTestCases[i].language));
 
@@ -261,7 +261,7 @@ TEST(SpellcheckWordIteratorTest, TreatNumbersAsWordCharacters) {
     },
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     SCOPED_TRACE(base::StringPrintf("kTestCases[%" PRIuS "]: language=%s", i,
                                     kTestCases[i].language));
 
@@ -308,7 +308,7 @@ TEST(SpellcheckWordIteratorTest, TypographicalApostropheIsPartOfWord) {
       {"en-US", L"....you\x2019re", L"you\x2019re"},
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     SpellcheckCharAttribute attributes;
     attributes.SetDefaultLanguage(kTestCases[i].language);
 

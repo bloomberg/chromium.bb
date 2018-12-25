@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "components/viz/test/test_gles2_interface.h"
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
@@ -61,7 +62,7 @@ class TestGLES2InterfaceForContextProvider : public TestGLES2Interface {
     return nullptr;
   }
   const GrGLubyte* GetStringi(GrGLenum name, GrGLuint i) override {
-    if (name == GL_EXTENSIONS && i < arraysize(kExtensions))
+    if (name == GL_EXTENSIONS && i < base::size(kExtensions))
       return reinterpret_cast<const GLubyte*>(kExtensions[i]);
     return nullptr;
   }
@@ -94,7 +95,7 @@ class TestGLES2InterfaceForContextProvider : public TestGLES2Interface {
  private:
   static std::string BuildExtensionString(std::string additional_extensions) {
     std::string extension_string = kExtensions[0];
-    for (size_t i = 1; i < arraysize(kExtensions); ++i) {
+    for (size_t i = 1; i < base::size(kExtensions); ++i) {
       extension_string += " ";
       extension_string += kExtensions[i];
     }

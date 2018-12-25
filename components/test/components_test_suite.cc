@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
@@ -97,7 +97,7 @@ class ComponentsTestSuite : public base::TestSuite {
 
     ContentSettingsPattern::SetNonWildcardDomainNonPortSchemes(
         kNonWildcardDomainNonPortSchemes,
-        arraysize(kNonWildcardDomainNonPortSchemes));
+        base::size(kNonWildcardDomainNonPortSchemes));
   }
 
   void Shutdown() override {

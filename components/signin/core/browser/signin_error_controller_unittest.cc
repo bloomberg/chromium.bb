@@ -9,8 +9,8 @@
 #include <functional>
 #include <memory>
 
-#include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "base/stl_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -160,8 +160,8 @@ TEST(SigninErrorControllerTest, AuthStatusEnumerateAllErrors) {
       GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE,
       GoogleServiceAuthError::SERVICE_ERROR,
       GoogleServiceAuthError::WEB_LOGIN_REQUIRED};
-  static_assert(arraysize(table) == GoogleServiceAuthError::NUM_STATES,
-      "table array does not match the number of auth error types");
+  static_assert(base::size(table) == GoogleServiceAuthError::NUM_STATES,
+                "table array does not match the number of auth error types");
 
   for (GoogleServiceAuthError::State state : table) {
     if (GoogleServiceAuthError::IsDeprecated(state))

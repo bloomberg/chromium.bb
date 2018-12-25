@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/cycle/status_controller.h"
@@ -138,7 +139,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, NewBookmarkTag) {
   std::unique_ptr<sync_pb::SyncEntity> e =
       CreateUpdate(SyncableIdToProto(server_id), root, BOOKMARKS);
   e->set_originator_cache_guid(
-      std::string(kCacheGuid, arraysize(kCacheGuid) - 1));
+      std::string(kCacheGuid, base::size(kCacheGuid) - 1));
   Id client_id = Id::CreateFromClientString("-2");
   e->set_originator_client_item_id(client_id.GetServerId());
   e->set_position_in_parent(0);

@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -523,8 +524,8 @@ TEST_P(YUVReadbackPixelTest, Test) {
   unsigned int x = std::get<2>(GetParam());
   unsigned int y = std::get<3>(GetParam());
 
-  for (unsigned int ox = x; ox < arraysize(kYUVReadbackSizes); ox++) {
-    for (unsigned int oy = y; oy < arraysize(kYUVReadbackSizes); oy++) {
+  for (unsigned int ox = x; ox < base::size(kYUVReadbackSizes); ox++) {
+    for (unsigned int oy = y; oy < base::size(kYUVReadbackSizes); oy++) {
       // If output is a subsection of the destination frame, (letterbox)
       // then try different variations of where the subsection goes.
       for (Margin xm = x < ox ? MarginLeft : MarginRight; xm <= MarginRight;
@@ -555,8 +556,8 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Combine(
         ::testing::Bool(),
         ::testing::Bool(),
-        ::testing::Range<unsigned int>(0, arraysize(kYUVReadbackSizes)),
-        ::testing::Range<unsigned int>(0, arraysize(kYUVReadbackSizes))));
+        ::testing::Range<unsigned int>(0, base::size(kYUVReadbackSizes)),
+        ::testing::Range<unsigned int>(0, base::size(kYUVReadbackSizes))));
 
 }  // namespace viz
 

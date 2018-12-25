@@ -7,8 +7,8 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
 #include "third_party/icu/source/common/unicode/urename.h"
@@ -174,9 +174,9 @@ void GetISOLanguageCountryCodeFromLocale(const std::string& locale,
   if (!locale.empty()) {
     UErrorCode error = U_ZERO_ERROR;
     char id[ULOC_LANG_CAPACITY + ULOC_SCRIPT_CAPACITY + ULOC_COUNTRY_CAPACITY];
-    uloc_addLikelySubtags(locale.c_str(), id, arraysize(id), &error);
+    uloc_addLikelySubtags(locale.c_str(), id, base::size(id), &error);
     error = U_ZERO_ERROR;
-    uloc_getLanguage(id, language, arraysize(language), &error);
+    uloc_getLanguage(id, language, base::size(language), &error);
     country = uloc_getISO3Country(id);
   }
   *language_code = std::string(language);

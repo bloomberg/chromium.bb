@@ -20,8 +20,8 @@
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -395,7 +395,7 @@ void GLRenderer::DiscardPixels() {
       output_surface_->capabilities().uses_default_gl_framebuffer;
   GLenum attachments[] = {static_cast<GLenum>(
       using_default_framebuffer ? GL_COLOR_EXT : GL_COLOR_ATTACHMENT0_EXT)};
-  gl_->DiscardFramebufferEXT(GL_FRAMEBUFFER, arraysize(attachments),
+  gl_->DiscardFramebufferEXT(GL_FRAMEBUFFER, base::size(attachments),
                              attachments);
 }
 
@@ -3579,7 +3579,7 @@ void GLRenderer::FlushOverdrawFeedback(const gfx::Rect& output_rect) {
 
   OverdrawFeedbackCallback overdraw_feedback_callback = base::Bind(
       &GLRenderer::ProcessOverdrawFeedback, weak_ptr_factory_.GetWeakPtr(),
-      base::Owned(new std::vector<int>), arraysize(stencil_tests), max_result);
+      base::Owned(new std::vector<int>), base::size(stencil_tests), max_result);
 
   for (const auto& test : stencil_tests) {
     GLuint query = 0;

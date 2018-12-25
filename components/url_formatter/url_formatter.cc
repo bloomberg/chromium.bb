@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_offset_string_conversions.h"
@@ -202,7 +202,7 @@ base::string16 FormatViewSourceUrl(
     base::OffsetAdjuster::Adjustments* adjustments) {
   DCHECK(new_parsed);
   const char kViewSource[] = "view-source:";
-  const size_t kViewSourceLength = arraysize(kViewSource) - 1;
+  const size_t kViewSourceLength = base::size(kViewSource) - 1;
 
   // Format the underlying URL and record adjustments.
   const std::string& url_str(url.possibly_invalid_spec());
@@ -365,7 +365,7 @@ IDNConversionStatus IDNToUnicodeOneComponent(const base::char16* comp,
   IDNConversionStatus idn_status = NO_IDN;
   // Only transform if the input can be an IDN component.
   static const base::char16 kIdnPrefix[] = {'x', 'n', '-', '-'};
-  if ((comp_len > arraysize(kIdnPrefix)) &&
+  if ((comp_len > base::size(kIdnPrefix)) &&
       !memcmp(comp, kIdnPrefix, sizeof(kIdnPrefix))) {
     UIDNA* uidna = g_uidna.Get().value;
     DCHECK(uidna != nullptr);

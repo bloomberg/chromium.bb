@@ -19,9 +19,9 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -1333,20 +1333,20 @@ INSTANTIATE_TEST_CASE_P(
     ,
     GLHelperPixelReadbackTest,
     ::testing::Combine(
-        ::testing::Range<unsigned int>(0, arraysize(kQualities)),
-        ::testing::Range<unsigned int>(0, arraysize(kRGBReadBackSizes)),
-        ::testing::Range<unsigned int>(0, arraysize(kRGBReadBackSizes)),
-        ::testing::Range<unsigned int>(0, arraysize(kRGBReadBackSizes)),
-        ::testing::Range<unsigned int>(0, arraysize(kRGBReadBackSizes))));
+        ::testing::Range<unsigned int>(0, base::size(kQualities)),
+        ::testing::Range<unsigned int>(0, base::size(kRGBReadBackSizes)),
+        ::testing::Range<unsigned int>(0, base::size(kRGBReadBackSizes)),
+        ::testing::Range<unsigned int>(0, base::size(kRGBReadBackSizes)),
+        ::testing::Range<unsigned int>(0, base::size(kRGBReadBackSizes))));
 
 // Validate that all scaling generates valid pipelines.
 TEST_F(GLHelperTest, ValidateScalerPipelines) {
   int sizes[] = {7, 99, 128, 256, 512, 719, 720, 721, 1920, 2011, 3217, 4096};
-  for (size_t q = 0; q < arraysize(kQualities); q++) {
-    for (size_t x = 0; x < arraysize(sizes); x++) {
-      for (size_t y = 0; y < arraysize(sizes); y++) {
-        for (size_t dst_x = 0; dst_x < arraysize(sizes); dst_x++) {
-          for (size_t dst_y = 0; dst_y < arraysize(sizes); dst_y++) {
+  for (size_t q = 0; q < base::size(kQualities); q++) {
+    for (size_t x = 0; x < base::size(sizes); x++) {
+      for (size_t y = 0; y < base::size(sizes); y++) {
+        for (size_t dst_x = 0; dst_x < base::size(sizes); dst_x++) {
+          for (size_t dst_y = 0; dst_y < base::size(sizes); dst_y++) {
             TestScalerPipeline(q, sizes[x], sizes[y], sizes[dst_x],
                                sizes[dst_y]);
             if (HasFailure()) {

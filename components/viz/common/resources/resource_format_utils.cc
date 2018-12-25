@@ -5,7 +5,7 @@
 #include "components/viz/common/resources/resource_format_utils.h"
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/buffer_types.h"
@@ -114,7 +114,7 @@ unsigned int GLDataType(ResourceFormat format) {
       GL_ZERO,                             // YUV_420_BIPLANAR
       GL_ZERO,                             // UYVY_422
   };
-  static_assert(arraysize(format_gl_data_type) == (RESOURCE_FORMAT_MAX + 1),
+  static_assert(base::size(format_gl_data_type) == (RESOURCE_FORMAT_MAX + 1),
                 "format_gl_data_type does not handle all cases.");
 
   return format_gl_data_type[format];
@@ -144,7 +144,7 @@ unsigned int GLDataFormat(ResourceFormat format) {
       GL_ZERO,           // YUV_420_BIPLANAR
       GL_ZERO,           // UYVY_422
   };
-  static_assert(arraysize(format_gl_data_format) == (RESOURCE_FORMAT_MAX + 1),
+  static_assert(base::size(format_gl_data_format) == (RESOURCE_FORMAT_MAX + 1),
                 "format_gl_data_format does not handle all cases.");
 
   return format_gl_data_format[format];
@@ -194,7 +194,7 @@ unsigned int GLCopyTextureInternalFormat(ResourceFormat format) {
       GL_ZERO,       // UYVY_422
   };
 
-  static_assert(arraysize(format_gl_data_format) == (RESOURCE_FORMAT_MAX + 1),
+  static_assert(base::size(format_gl_data_format) == (RESOURCE_FORMAT_MAX + 1),
                 "format_gl_data_format does not handle all cases.");
 
   return format_gl_data_format[format];

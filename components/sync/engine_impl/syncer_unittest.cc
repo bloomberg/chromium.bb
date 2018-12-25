@@ -19,6 +19,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
@@ -425,7 +426,7 @@ class SyncerTest : public testing::Test,
         const base::Time& now_minus_2h =
             base::Time::Now() - base::TimeDelta::FromHours(2);
         entry.PutMtime(now_plus_30s);
-        for (size_t i = 0; i < arraysize(test->features); ++i) {
+        for (size_t i = 0; i < base::size(test->features); ++i) {
           switch (test->features[i]) {
             case LIST_END:
               break;

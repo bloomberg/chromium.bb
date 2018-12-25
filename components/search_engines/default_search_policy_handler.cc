@@ -8,7 +8,6 @@
 
 #include <utility>
 
-#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
@@ -147,7 +146,7 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     return;
 
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  for (size_t i = 0; i < arraysize(kDefaultSearchPolicyDataMap); ++i) {
+  for (size_t i = 0; i < base::size(kDefaultSearchPolicyDataMap); ++i) {
     const char* policy_name = kDefaultSearchPolicyDataMap[i].policy_name;
     // kDefaultSearchProviderEnabled has already been handled.
     if (policy_name == key::kDefaultSearchProviderEnabled)

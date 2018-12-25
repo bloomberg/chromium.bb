@@ -11,7 +11,6 @@
 #include "base/base64url.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -80,7 +79,7 @@ const JwkToWebCryptoUsageMapping kJwkWebCryptoUsageMap[] = {
 
 bool JwkKeyOpToWebCryptoUsage(const std::string& key_op,
                               blink::WebCryptoKeyUsage* usage) {
-  for (size_t i = 0; i < arraysize(kJwkWebCryptoUsageMap); ++i) {
+  for (size_t i = 0; i < base::size(kJwkWebCryptoUsageMap); ++i) {
     if (kJwkWebCryptoUsageMap[i].jwk_key_op == key_op) {
       *usage = kJwkWebCryptoUsageMap[i].webcrypto_usage;
       return true;
@@ -93,7 +92,7 @@ bool JwkKeyOpToWebCryptoUsage(const std::string& key_op,
 std::unique_ptr<base::ListValue> CreateJwkKeyOpsFromWebCryptoUsages(
     blink::WebCryptoKeyUsageMask usages) {
   std::unique_ptr<base::ListValue> jwk_key_ops(new base::ListValue());
-  for (size_t i = 0; i < arraysize(kJwkWebCryptoUsageMap); ++i) {
+  for (size_t i = 0; i < base::size(kJwkWebCryptoUsageMap); ++i) {
     if (usages & kJwkWebCryptoUsageMap[i].webcrypto_usage)
       jwk_key_ops->AppendString(kJwkWebCryptoUsageMap[i].jwk_key_op);
   }

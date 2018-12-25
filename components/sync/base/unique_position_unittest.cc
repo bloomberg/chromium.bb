@@ -411,9 +411,10 @@ static const char kCacheGuidStr2[] = "yaKb7zHtY06aue9a0vlZgw==";
 class PositionScenariosTest : public UniquePositionTest {
  public:
   PositionScenariosTest()
-      : generator1_(std::string(kCacheGuidStr1, arraysize(kCacheGuidStr1) - 1)),
+      : generator1_(
+            std::string(kCacheGuidStr1, base::size(kCacheGuidStr1) - 1)),
         generator2_(
-            std::string(kCacheGuidStr2, arraysize(kCacheGuidStr2) - 1)) {}
+            std::string(kCacheGuidStr2, base::size(kCacheGuidStr2) - 1)) {}
 
   std::string NextClient1Suffix() { return generator1_.NextSuffix(); }
 
@@ -499,8 +500,8 @@ INSTANTIATE_TEST_CASE_P(
 class PositionFromIntTest : public UniquePositionTest {
  public:
   PositionFromIntTest()
-      : generator_(std::string(kCacheGuidStr1, arraysize(kCacheGuidStr1) - 1)) {
-  }
+      : generator_(
+            std::string(kCacheGuidStr1, base::size(kCacheGuidStr1) - 1)) {}
 
  protected:
   static const int64_t kTestValues[];
@@ -555,7 +556,7 @@ const int64_t PositionFromIntTest::kTestValues[] = {0LL,
                                                     INT64_MAX - 1};
 
 const size_t PositionFromIntTest::kNumTestValues =
-    arraysize(PositionFromIntTest::kTestValues);
+    base::size(PositionFromIntTest::kTestValues);
 
 TEST_F(PositionFromIntTest, IsValid) {
   for (size_t i = 0; i < kNumTestValues; ++i) {
