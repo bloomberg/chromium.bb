@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -276,9 +275,9 @@ TEST_F(AutocompleteResultTest, CopyOldMatches) {
     { 1, 1, 399,  true },
   };
 
-  ASSERT_NO_FATAL_FAILURE(RunCopyOldMatchesTest(last, arraysize(last),
-                                                current, arraysize(current),
-                                                result, arraysize(result)));
+  ASSERT_NO_FATAL_FAILURE(RunCopyOldMatchesTest(last, base::size(last), current,
+                                                base::size(current), result,
+                                                base::size(result)));
 }
 
 // Tests that if the new results have a lower max relevance score than last,
@@ -302,9 +301,9 @@ TEST_F(AutocompleteResultTest, CopyOldMatchesAllowedToBeDefault) {
     { 2, 1, 899,  true },
   };
 
-  ASSERT_NO_FATAL_FAILURE(RunCopyOldMatchesTest(last, arraysize(last),
-                                                current, arraysize(current),
-                                                result, arraysize(result)));
+  ASSERT_NO_FATAL_FAILURE(RunCopyOldMatchesTest(last, base::size(last), current,
+                                                base::size(current), result,
+                                                base::size(result)));
 }
 
 // Tests that matches are copied correctly from two distinct providers.
@@ -331,9 +330,9 @@ TEST_F(AutocompleteResultTest, CopyOldMatchesMultipleProviders) {
     { 4, 1, 499,  false  },
   };
 
-  ASSERT_NO_FATAL_FAILURE(RunCopyOldMatchesTest(last, arraysize(last),
-                                                current, arraysize(current),
-                                                result, arraysize(result)));
+  ASSERT_NO_FATAL_FAILURE(RunCopyOldMatchesTest(last, base::size(last), current,
+                                                base::size(current), result,
+                                                base::size(result)));
 }
 
 // Tests that matches are copied correctly from two distinct providers when
@@ -359,9 +358,9 @@ TEST_F(AutocompleteResultTest, CopyOldMatchesWithOneProviderWithoutDefault) {
     { 7, 1, 500,  true  },
   };
 
-  ASSERT_NO_FATAL_FAILURE(RunCopyOldMatchesTest(last, arraysize(last),
-                                                current, arraysize(current),
-                                                result, arraysize(result)));
+  ASSERT_NO_FATAL_FAILURE(RunCopyOldMatchesTest(last, base::size(last), current,
+                                                base::size(current), result,
+                                                base::size(result)));
 }
 
 // Tests that matches with empty destination URLs aren't treated as duplicates
@@ -376,7 +375,7 @@ TEST_F(AutocompleteResultTest, SortAndCullEmptyDestinationURLs) {
   };
 
   ACMatches matches;
-  PopulateAutocompleteMatches(data, arraysize(data), &matches);
+  PopulateAutocompleteMatches(data, base::size(data), &matches);
   matches[1].destination_url = GURL();
   matches[3].destination_url = GURL();
   matches[4].destination_url = GURL();
@@ -417,7 +416,7 @@ TEST_F(AutocompleteResultTest, SortAndCullTailSuggestions) {
   // clang-format on
 
   ACMatches matches;
-  PopulateAutocompleteMatches(data, arraysize(data), &matches);
+  PopulateAutocompleteMatches(data, base::size(data), &matches);
   // These will get sorted up, but still removed.
   matches[3].type = AutocompleteMatchType::SEARCH_SUGGEST_TAIL;
   matches[4].type = AutocompleteMatchType::SEARCH_SUGGEST_TAIL;
@@ -450,7 +449,7 @@ TEST_F(AutocompleteResultTest, SortAndCullKeepDefaultTailSuggestions) {
   // clang-format on
 
   ACMatches matches;
-  PopulateAutocompleteMatches(data, arraysize(data), &matches);
+  PopulateAutocompleteMatches(data, base::size(data), &matches);
   // Make sure that even bad tail suggestions, if the only default match,
   // are kept.
   matches[0].type = AutocompleteMatchType::SEARCH_SUGGEST_TAIL;
@@ -485,7 +484,7 @@ TEST_F(AutocompleteResultTest, SortAndCullKeepMoreDefaultTailSuggestions) {
   // clang-format on
 
   ACMatches matches;
-  PopulateAutocompleteMatches(data, arraysize(data), &matches);
+  PopulateAutocompleteMatches(data, base::size(data), &matches);
   // Make sure that even a bad non-tail default suggestion is kept.
   for (size_t i = 1; i < 5; ++i)
     matches[i].type = AutocompleteMatchType::SEARCH_SUGGEST_TAIL;
@@ -522,7 +521,7 @@ TEST_F(AutocompleteResultTest, SortAndCullOnlyTailSuggestions) {
   // clang-format on
 
   ACMatches matches;
-  PopulateAutocompleteMatches(data, arraysize(data), &matches);
+  PopulateAutocompleteMatches(data, base::size(data), &matches);
   // These will not be removed.
   for (size_t i = 1; i < 5; ++i)
     matches[i].type = AutocompleteMatchType::SEARCH_SUGGEST_TAIL;
@@ -559,7 +558,7 @@ TEST_F(AutocompleteResultTest, SortAndCullDuplicateSearchURLs) {
   };
 
   ACMatches matches;
-  PopulateAutocompleteMatches(data, arraysize(data), &matches);
+  PopulateAutocompleteMatches(data, base::size(data), &matches);
   matches[0].destination_url = GURL("http://www.foo.com/s?q=foo");
   matches[1].destination_url = GURL("http://www.foo.com/s?q=foo2");
   matches[2].destination_url = GURL("http://www.foo.com/s?q=foo&oq=f");
@@ -609,7 +608,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithMatchDups) {
   };
 
   ACMatches matches;
-  PopulateAutocompleteMatches(data, arraysize(data), &matches);
+  PopulateAutocompleteMatches(data, base::size(data), &matches);
   matches[0].destination_url = GURL("http://www.foo.com/s?q=foo");
   matches[1].destination_url = GURL("http://www.foo.com/s?q=foo2");
   matches[2].destination_url = GURL("http://www.foo.com/s?q=foo&oq=f");
@@ -654,7 +653,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
     { "http://history-title/", AutocompleteMatchType::HISTORY_TITLE },
     { "http://search-history/", AutocompleteMatchType::SEARCH_HISTORY },
   };
-  PopulateAutocompleteMatchesFromTestData(data, arraysize(data), &matches);
+  PopulateAutocompleteMatchesFromTestData(data, base::size(data), &matches);
 
   // Demote the search history match relevance score.
   matches.back().relevance = 500;
@@ -699,7 +698,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithMatchDupsAndDemotionsByType) {
     { "http://search-url/", AutocompleteMatchType::SEARCH_SUGGEST },
     { "http://history-url/", AutocompleteMatchType::HISTORY_URL },
   };
-  PopulateAutocompleteMatchesFromTestData(data, arraysize(data), &matches);
+  PopulateAutocompleteMatchesFromTestData(data, base::size(data), &matches);
 
   // Add a rule demoting HISTORY_URL.
   {
@@ -751,7 +750,7 @@ TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
     // is already a legal default match (which is the default from
     // PopulateAutocompleteMatches()).
     ACMatches matches;
-    PopulateAutocompleteMatches(data, arraysize(data), &matches);
+    PopulateAutocompleteMatches(data, base::size(data), &matches);
     AutocompleteInput input(base::ASCIIToUTF16("a"),
                             metrics::OmniboxEventProto::HOME_PAGE,
                             test_scheme_classifier);
@@ -764,7 +763,7 @@ TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
   {
     // Check that reorder swaps up a result appropriately.
     ACMatches matches;
-    PopulateAutocompleteMatches(data, arraysize(data), &matches);
+    PopulateAutocompleteMatches(data, base::size(data), &matches);
     matches[0].allowed_to_be_default_match = false;
     matches[1].allowed_to_be_default_match = false;
     AutocompleteInput input(base::ASCIIToUTF16("a"),
@@ -972,7 +971,7 @@ TEST_F(AutocompleteResultTest, InlineTailPrefixes) {
   AutocompleteResult result;
   result.AppendMatches(AutocompleteInput(), matches);
   result.InlineTailPrefixes();
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     EXPECT_EQ(result.match_at(i)->contents,
               base::UTF8ToUTF16(cases[i].after_contents));
     EXPECT_TRUE(EqualClassifications(result.match_at(i)->contents_class,

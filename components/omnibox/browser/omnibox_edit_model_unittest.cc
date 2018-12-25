@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
@@ -134,7 +135,7 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
        "https://a.de/b", "a.de/b"},
   };
 
-  for (size_t i = 0; i < arraysize(input); ++i) {
+  for (size_t i = 0; i < base::size(input); ++i) {
     location_bar_model()->set_formatted_full_url(
         base::ASCIIToUTF16(input[i].url_for_editing));
     location_bar_model()->set_url_for_display(

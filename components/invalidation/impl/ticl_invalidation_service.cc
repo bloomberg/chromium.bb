@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/invalidation/impl/gcm_invalidation_bridge.h"
 #include "components/invalidation/impl/invalidation_service_util.h"
@@ -199,7 +199,7 @@ void TiclInvalidationService::RequestAccessToken() {
     return;
   request_access_token_retry_timer_.Stop();
   OAuth2TokenService::ScopeSet oauth2_scopes;
-  for (size_t i = 0; i < arraysize(kOAuth2Scopes); i++)
+  for (size_t i = 0; i < base::size(kOAuth2Scopes); i++)
     oauth2_scopes.insert(kOAuth2Scopes[i]);
   // Invalidate previous token, otherwise the identity provider will return the
   // same token again.

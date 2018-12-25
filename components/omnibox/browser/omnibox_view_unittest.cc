@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <utility>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -94,7 +94,7 @@ TEST_F(OmniboxViewTest, TestStripSchemasUnsafeForPaste) {
       "alert(5)"   // Embedded control characters unsafe.
   };
 
-  for (size_t i = 0; i < arraysize(urls); i++) {
+  for (size_t i = 0; i < base::size(urls); i++) {
     EXPECT_EQ(ASCIIToUTF16(expecteds[i]),
               OmniboxView::StripJavascriptSchemas(base::UTF8ToUTF16(urls[i])));
   }

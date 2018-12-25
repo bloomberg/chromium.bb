@@ -12,9 +12,9 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "components/policy/core/common/async_policy_provider.h"
@@ -171,9 +171,8 @@ TEST_F(PolicyLoaderMacTest, Invalid) {
       base::SysUTF8ToCFStringRef(test_keys::kKeyString));
   const char buffer[] = "binary \xde\xad\xbe\xef data";
   ScopedCFTypeRef<CFDataRef> invalid_data(
-      CFDataCreate(kCFAllocatorDefault,
-                   reinterpret_cast<const UInt8 *>(buffer),
-                   arraysize(buffer)));
+      CFDataCreate(kCFAllocatorDefault, reinterpret_cast<const UInt8*>(buffer),
+                   base::size(buffer)));
   ASSERT_TRUE(invalid_data);
   prefs_->AddTestItem(name, invalid_data.get(), true);
   prefs_->AddTestItem(name, invalid_data.get(), false);

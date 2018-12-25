@@ -17,7 +17,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -243,7 +242,7 @@ void LogPasswordReuseMetrics(const std::vector<std::string>& signon_realms) {
   enum Scheme { SCHEME_HTTP, SCHEME_HTTPS };
   const Scheme kAllSchemes[] = {SCHEME_HTTP, SCHEME_HTTPS};
 
-  StatisticsPerScheme statistics[arraysize(kAllSchemes)];
+  StatisticsPerScheme statistics[base::size(kAllSchemes)];
   std::map<std::string, std::string> domain_to_registry_controlled_domain;
 
   for (const std::string& signon_realm : signon_realms) {
@@ -262,7 +261,7 @@ void LogPasswordReuseMetrics(const std::vector<std::string>& signon_realms) {
         domain_to_registry_controlled_domain[domain];
 
     Scheme scheme = SCHEME_HTTP;
-    static_assert(arraysize(kAllSchemes) == 2, "Update this logic");
+    static_assert(base::size(kAllSchemes) == 2, "Update this logic");
     if (signon_realm_url.SchemeIs(url::kHttpsScheme))
       scheme = SCHEME_HTTPS;
     else if (!signon_realm_url.SchemeIs(url::kHttpScheme))
@@ -284,11 +283,11 @@ void LogPasswordReuseMetrics(const std::vector<std::string>& signon_realms) {
           domain_to_registry_controlled_domain[domain];
 
       Scheme other_scheme = scheme == SCHEME_HTTP ? SCHEME_HTTPS : SCHEME_HTTP;
-      static_assert(arraysize(kAllSchemes) == 2, "Update |other_scheme|");
+      static_assert(base::size(kAllSchemes) == 2, "Update |other_scheme|");
 
       // Discount the account at hand from the number of accounts with the same
       // domain and scheme.
-      int num_accounts_for_same_domain[arraysize(kAllSchemes)] = {};
+      int num_accounts_for_same_domain[base::size(kAllSchemes)] = {};
       num_accounts_for_same_domain[scheme] =
           statistics[scheme].num_accounts_per_domain[domain] - 1;
       num_accounts_for_same_domain[other_scheme] =
@@ -302,7 +301,7 @@ void LogPasswordReuseMetrics(const std::vector<std::string>& signon_realms) {
 
       // Discount PSL matches from the number of accounts with different domains
       // but the same scheme.
-      int num_accounts_for_different_domain[arraysize(kAllSchemes)] = {};
+      int num_accounts_for_different_domain[base::size(kAllSchemes)] = {};
       num_accounts_for_different_domain[scheme] =
           statistics[scheme].num_total_accounts -
           statistics[scheme].num_accounts_per_registry_controlled_domain
@@ -313,7 +312,7 @@ void LogPasswordReuseMetrics(const std::vector<std::string>& signon_realms) {
 
       std::string source_realm_kind =
           scheme == SCHEME_HTTP ? "FromHttpRealm" : "FromHttpsRealm";
-      static_assert(arraysize(kAllSchemes) == 2, "Update |source_realm_kind|");
+      static_assert(base::size(kAllSchemes) == 2, "Update |source_realm_kind|");
 
       // So far, the calculation has been carried out once per "source" domain,
       // but the metrics need to be recorded on a per-account basis. The set of

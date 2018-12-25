@@ -4,6 +4,7 @@
 
 #include "components/language/content/browser/regional_language_code_locator.h"
 
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "third_party/s2cellid/src/s2/s2cellid.h"
 #include "third_party/s2cellid/src/s2/s2latlng.h"
@@ -16,7 +17,7 @@ namespace {
 RegionalLanguageCodeLocator::RegionalLanguageCodeLocator() {
   int pos = 0;
   int index = 0;
-  std::vector<std::pair<uint32_t, char>> items(arraysize(kDistrictPositions));
+  std::vector<std::pair<uint32_t, char>> items(base::size(kDistrictPositions));
   for (const uint16_t language_count : kLanguageCodeCounts) {
     for (int i = 0; i < language_count; ++i) {
       items[pos] = std::make_pair(kDistrictPositions[pos], index);

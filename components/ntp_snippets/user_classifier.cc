@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/clock.h"
 #include "components/ntp_snippets/features.h"
@@ -82,15 +83,15 @@ const char* kInitialHoursBetweenEventsParams[] = {
     "user_classifier_default_interval_suggestions_shown",
     "user_classifier_default_interval_suggestions_used"};
 
-static_assert(arraysize(kMetrics) ==
+static_assert(base::size(kMetrics) ==
                       static_cast<int>(UserClassifier::Metric::COUNT) &&
-                  arraysize(kMetricKeys) ==
+                  base::size(kMetricKeys) ==
                       static_cast<int>(UserClassifier::Metric::COUNT) &&
-                  arraysize(kLastTimeKeys) ==
+                  base::size(kLastTimeKeys) ==
                       static_cast<int>(UserClassifier::Metric::COUNT) &&
-                  arraysize(kInitialHoursBetweenEvents) ==
+                  base::size(kInitialHoursBetweenEvents) ==
                       static_cast<int>(UserClassifier::Metric::COUNT) &&
-                  arraysize(kInitialHoursBetweenEventsParams) ==
+                  base::size(kInitialHoursBetweenEventsParams) ==
                       static_cast<int>(UserClassifier::Metric::COUNT),
               "Fill in info for all metrics.");
 

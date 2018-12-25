@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,7 +63,7 @@ TEST_F(ClipboardRecentContentGenericTest, RecognizesURLs) {
 
   ClipboardRecentContentGeneric recent_content;
   base::Time now = base::Time::Now();
-  for (size_t i = 0; i < arraysize(test_data); ++i) {
+  for (size_t i = 0; i < base::size(test_data); ++i) {
     test_clipboard_->WriteText(test_data[i].clipboard.data(),
                                test_data[i].clipboard.length());
     test_clipboard_->SetLastModifiedTime(now -

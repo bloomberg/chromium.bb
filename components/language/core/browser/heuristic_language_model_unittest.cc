@@ -7,7 +7,7 @@
 #include <cmath>
 
 #include "base/json/json_reader.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "components/language/core/browser/url_language_histogram.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -242,11 +242,11 @@ std::vector<LanguageModel::LanguageDetails> TestModel(
     const std::vector<std::vector<std::string>>& input_langs) {
   const float delta = 0.01f;
   const float weights[] = {2.0f, 1.1f, 1.0f, 0.5f};
-  CHECK_EQ(arraysize(weights), input_langs.size());
+  CHECK_EQ(base::size(weights), input_langs.size());
 
   // Construct input to model.
   std::vector<std::pair<float, std::vector<std::string>>> input;
-  for (unsigned long i = 0; i < arraysize(weights); ++i)
+  for (unsigned long i = 0; i < base::size(weights); ++i)
     input.push_back({weights[i], input_langs[i]});
 
   // Construct model itself.

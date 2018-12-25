@@ -4,7 +4,7 @@
 
 #include "components/history/core/browser/visit_tracker.h"
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace history {
@@ -58,7 +58,7 @@ TEST(VisitTracker, SimpleTransitions) {
   };
 
   VisitTracker tracker;
-  RunTest(&tracker, test_simple, arraysize(test_simple));
+  RunTest(&tracker, test_simple, base::size(test_simple));
 }
 
 // Test that referrer is properly computed when there are different frame
@@ -80,7 +80,7 @@ TEST(VisitTracker, Frames) {
   };
 
   VisitTracker tracker;
-  RunTest(&tracker, test_frames, arraysize(test_frames));
+  RunTest(&tracker, test_frames, base::size(test_frames));
 }
 
 // Test frame navigation to make sure that the referrer is properly computed
@@ -102,7 +102,7 @@ TEST(VisitTracker, MultiProcess) {
   };
 
   VisitTracker tracker;
-  RunTest(&tracker, test_processes, arraysize(test_processes));
+  RunTest(&tracker, test_processes, base::size(test_processes));
 }
 
 // Test that processes get removed properly.
@@ -114,7 +114,7 @@ TEST(VisitTracker, ProcessRemove) {
   };
 
   VisitTracker tracker;
-  RunTest(&tracker, part1, arraysize(part1));
+  RunTest(&tracker, part1, base::size(part1));
 
   // Say that context has been invalidated.
   tracker.ClearCachedDataForContextID(reinterpret_cast<ContextID>(1));
@@ -124,7 +124,7 @@ TEST(VisitTracker, ProcessRemove) {
   VisitToTest part2[] = {
       {1, 1, "http://images.google.com/", 2, "http://www.google.com/", 0},
   };
-  RunTest(&tracker, part2, arraysize(part2));
+  RunTest(&tracker, part2, base::size(part2));
 }
 
 }  // namespace history

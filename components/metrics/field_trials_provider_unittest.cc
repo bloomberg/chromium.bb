@@ -4,6 +4,7 @@
 
 #include "components/metrics/field_trials_provider.h"
 
+#include "base/stl_util.h"
 #include "components/variations/active_field_trials.h"
 #include "components/variations/synthetic_trial_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,18 +35,18 @@ class TestProvider : public FieldTrialsProvider {
 // Check that the values in |system_values| correspond to the test data
 // defined at the top of this file.
 void CheckSystemProfile(const metrics::SystemProfileProto& system_profile) {
-  ASSERT_EQ(arraysize(kFieldTrialIds) + arraysize(kSyntheticTrials),
+  ASSERT_EQ(base::size(kFieldTrialIds) + base::size(kSyntheticTrials),
             static_cast<size_t>(system_profile.field_trial_size()));
-  for (size_t i = 0; i < arraysize(kFieldTrialIds); ++i) {
+  for (size_t i = 0; i < base::size(kFieldTrialIds); ++i) {
     const metrics::SystemProfileProto::FieldTrial& field_trial =
         system_profile.field_trial(i);
     EXPECT_EQ(kFieldTrialIds[i].name, field_trial.name_id());
     EXPECT_EQ(kFieldTrialIds[i].group, field_trial.group_id());
   }
   // Verify the right data is present for the synthetic trials.
-  for (size_t i = 0; i < arraysize(kSyntheticTrials); ++i) {
+  for (size_t i = 0; i < base::size(kSyntheticTrials); ++i) {
     const metrics::SystemProfileProto::FieldTrial& field_trial =
-        system_profile.field_trial(i + arraysize(kFieldTrialIds));
+        system_profile.field_trial(i + base::size(kFieldTrialIds));
     EXPECT_EQ(kSyntheticTrials[i].name, field_trial.name_id());
     EXPECT_EQ(kSyntheticTrials[i].group, field_trial.group_id());
   }

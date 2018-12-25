@@ -11,8 +11,8 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_bundle.h"
@@ -43,7 +43,7 @@ void RemapProxyPolicies(PolicyMap* policies) {
   PolicySource inherited_source = POLICY_SOURCE_ENTERPRISE_DEFAULT;
   std::unique_ptr<base::DictionaryValue> proxy_settings(
       new base::DictionaryValue);
-  for (size_t i = 0; i < arraysize(kProxyPolicies); ++i) {
+  for (size_t i = 0; i < base::size(kProxyPolicies); ++i) {
     const PolicyMap::Entry* entry = policies->Get(kProxyPolicies[i]);
     if (entry) {
       if (entry->has_higher_priority_than(current_priority)) {

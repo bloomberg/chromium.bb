@@ -11,10 +11,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -646,7 +646,7 @@ TEST_F(AutocompleteProviderTest, RedundantKeywordsIgnoredInResult) {
 
     SCOPED_TRACE("Duplicate url");
     RunKeywordTest(base::ASCIIToUTF16("fo"), duplicate_url,
-                   arraysize(duplicate_url));
+                   base::size(duplicate_url));
   }
 
   {
@@ -658,7 +658,7 @@ TEST_F(AutocompleteProviderTest, RedundantKeywordsIgnoredInResult) {
 
     SCOPED_TRACE("Duplicate url with keyword match");
     RunKeywordTest(base::ASCIIToUTF16("fo"), keyword_match,
-                   arraysize(keyword_match));
+                   base::size(keyword_match));
   }
 
   {
@@ -673,7 +673,7 @@ TEST_F(AutocompleteProviderTest, RedundantKeywordsIgnoredInResult) {
 
     SCOPED_TRACE("Duplicate url with multiple keywords");
     RunKeywordTest(base::ASCIIToUTF16("fo"), multiple_keyword,
-                   arraysize(multiple_keyword));
+                   base::size(multiple_keyword));
   }
 }
 
@@ -690,7 +690,7 @@ TEST_F(AutocompleteProviderTest, ExactMatchKeywords) {
 
     SCOPED_TRACE("keyword match as usual");
     RunKeywordTest(base::ASCIIToUTF16("fo"), keyword_match,
-                   arraysize(keyword_match));
+                   base::size(keyword_match));
   }
 
   // The same result set with an input of "f" (versus "fo") should get
@@ -705,7 +705,7 @@ TEST_F(AutocompleteProviderTest, ExactMatchKeywords) {
 
     SCOPED_TRACE("keyword exact match");
     RunKeywordTest(base::ASCIIToUTF16("f"), keyword_match,
-                   arraysize(keyword_match));
+                   base::size(keyword_match));
   }
 }
 
@@ -727,7 +727,7 @@ TEST_F(AutocompleteProviderTest, UpdateAssistedQueryStats) {
       { AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, "chrome..69i57" }
     };
     SCOPED_TRACE("One match");
-    RunAssistedQueryStatsTest(test_data, arraysize(test_data));
+    RunAssistedQueryStatsTest(test_data, base::size(test_data));
   }
 
   {
@@ -750,7 +750,7 @@ TEST_F(AutocompleteProviderTest, UpdateAssistedQueryStats) {
         "chrome.7.69i57j69i58j5l2j0l3j69i59" },
     };
     SCOPED_TRACE("Multiple matches");
-    RunAssistedQueryStatsTest(test_data, arraysize(test_data));
+    RunAssistedQueryStatsTest(test_data, base::size(test_data));
   }
 }
 

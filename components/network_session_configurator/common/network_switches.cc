@@ -5,6 +5,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 
 #include "base/command_line.h"
+#include "base/stl_util.h"
 
 namespace switches {
 
@@ -25,7 +26,7 @@ void CopyNetworkSwitches(const base::CommandLine& src_command_line,
   };
 
   dest_command_line->CopySwitchesFrom(src_command_line, kSwitchNames,
-                                      arraysize(kSwitchNames));
+                                      base::size(kSwitchNames));
 }
 
 }  // namespace network_session_configurator
