@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
@@ -97,7 +97,7 @@ class ModalWindow : public views::WidgetDelegateView,
       : modal_type_(modal_type),
         color_(g_colors[g_color_index]),
         open_button_(MdTextButton::Create(this, base::ASCIIToUTF16("Moar!"))) {
-    ++g_color_index %= arraysize(g_colors);
+    ++g_color_index %= base::size(g_colors);
     AddChildView(open_button_);
   }
   ~ModalWindow() override = default;
@@ -152,7 +152,7 @@ class NonModalTransient : public views::WidgetDelegateView {
  public:
   NonModalTransient()
       : color_(g_colors[g_color_index]) {
-    ++g_color_index %= arraysize(g_colors);
+    ++g_color_index %= base::size(g_colors);
   }
   ~NonModalTransient() override = default;
 
