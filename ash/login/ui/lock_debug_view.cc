@@ -25,6 +25,7 @@
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -531,7 +532,7 @@ class LockDebugView::DebugLoginDetachableBaseModel
   // Calculates the debugging detachable base ID that should become the paired
   // base in the model when the button for cycling paired bases is clicked.
   int NextBaseId() const {
-    return (base_id_ + 1) % arraysize(kDebugDetachableBases);
+    return (base_id_ + 1) % base::size(kDebugDetachableBases);
   }
 
   // Gets the descripting text for currently paired base, if any.
@@ -550,7 +551,7 @@ class LockDebugView::DebugLoginDetachableBaseModel
     pairing_status_ = pairing_status;
     if (pairing_status == DetachableBasePairingStatus::kAuthenticated) {
       CHECK_GE(base_id, 0);
-      CHECK_LT(base_id, static_cast<int>(arraysize(kDebugDetachableBases)));
+      CHECK_LT(base_id, static_cast<int>(base::size(kDebugDetachableBases)));
       base_id_ = base_id;
     } else {
       base_id_ = kNullBaseId;

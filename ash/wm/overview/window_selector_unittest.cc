@@ -1440,7 +1440,7 @@ TEST_F(WindowSelectorTest, BasicArrowKeyNavigation) {
       {9, 8, 7, 6, 5, 4, 3, 2, 1, 9}   // Up (same as Left)
   };
 
-  for (size_t key_index = 0; key_index < arraysize(arrow_keys); key_index++) {
+  for (size_t key_index = 0; key_index < base::size(arrow_keys); key_index++) {
     ToggleOverview();
     const std::vector<std::unique_ptr<WindowSelectorItem>>& overview_windows =
         GetWindowItemsForRoot(0);

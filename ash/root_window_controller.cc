@@ -58,8 +58,8 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/aura/client/aura_constants.h"
@@ -209,7 +209,7 @@ void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
   };
   std::vector<int> container_ids(
       kContainerIdsToMove,
-      kContainerIdsToMove + arraysize(kContainerIdsToMove));
+      kContainerIdsToMove + base::size(kContainerIdsToMove));
   // Check the display mode as this is also necessary when trasitioning between
   // mirror and unified mode.
   if (Shell::Get()->display_manager()->current_default_multi_display_mode() ==

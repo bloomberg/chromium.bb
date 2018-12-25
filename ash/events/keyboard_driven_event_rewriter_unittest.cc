@@ -8,7 +8,7 @@
 
 #include "ash/events/keyboard_driven_event_rewriter.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
@@ -79,7 +79,7 @@ TEST_F(KeyboardDrivenEventRewriterTest, PassThrough) {
     { ui::VKEY_RETURN, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN },
   };
 
-  for (size_t i = 0; i < arraysize(kTests); ++i) {
+  for (size_t i = 0; i < base::size(kTests); ++i) {
     EXPECT_EQ(GetExpectedResultAsString(kTests[i].ui_flags,
                                         ui::EVENT_REWRITE_CONTINUE),
               GetRewrittenEventAsString(kTests[i].ui_keycode,
@@ -104,7 +104,7 @@ TEST_F(KeyboardDrivenEventRewriterTest, Rewrite) {
     { ui::VKEY_F6, kModifierMask },
   };
 
-  for (size_t i = 0; i < arraysize(kTests); ++i) {
+  for (size_t i = 0; i < base::size(kTests); ++i) {
     EXPECT_EQ(GetExpectedResultAsString(ui::EF_NONE,
                                         ui::EVENT_REWRITE_REWRITTEN),
               GetRewrittenEventAsString(kTests[i].ui_keycode,

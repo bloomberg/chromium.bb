@@ -12,6 +12,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/callback.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -58,12 +59,12 @@ constexpr int kRepeatingBackspaceDelayMs = 150;
 constexpr int kRippleSizeDp = 54;
 
 base::string16 GetButtonLabelForNumber(int value) {
-  DCHECK(value >= 0 && value < int{arraysize(kPinLabels)});
+  DCHECK(value >= 0 && value < int{base::size(kPinLabels)});
   return base::ASCIIToUTF16(std::to_string(value));
 }
 
 base::string16 GetButtonSubLabelForNumber(int value) {
-  DCHECK(value >= 0 && value < int{arraysize(kPinLabels)});
+  DCHECK(value >= 0 && value < int{base::size(kPinLabels)});
   return base::ASCIIToUTF16(kPinLabels[value]);
 }
 
