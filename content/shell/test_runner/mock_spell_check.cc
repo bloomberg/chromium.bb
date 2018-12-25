@@ -9,7 +9,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "content/shell/test_runner/test_common.h"
 
 namespace test_runner {
@@ -158,7 +158,7 @@ bool MockSpellCheck::InitializeIfNeeded() {
       "ifmmp", "qwertyuiopasd", "qwertyuiopasdf", "upper case", "wellcome"};
 
   misspelled_words_.clear();
-  for (size_t i = 0; i < arraysize(misspelled_words); ++i)
+  for (size_t i = 0; i < base::size(misspelled_words); ++i)
     misspelled_words_.push_back(
         base::string16(misspelled_words[i],
                        misspelled_words[i] + strlen(misspelled_words[i])));

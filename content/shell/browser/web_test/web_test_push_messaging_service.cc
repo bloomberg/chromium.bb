@@ -6,7 +6,7 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/common/push_messaging_status.mojom.h"
@@ -83,9 +83,9 @@ void WebTestPushMessagingService::SubscribeFromWorker(
 
   if (permission_status == blink::mojom::PermissionStatus::GRANTED) {
     std::vector<uint8_t> p256dh(kTestP256Key,
-                                kTestP256Key + arraysize(kTestP256Key));
+                                kTestP256Key + base::size(kTestP256Key));
     std::vector<uint8_t> auth(kAuthentication,
-                              kAuthentication + arraysize(kAuthentication));
+                              kAuthentication + base::size(kAuthentication));
 
     subscribed_service_worker_registration_ = service_worker_registration_id;
     callback.Run("layoutTestRegistrationId", p256dh, auth,
@@ -104,9 +104,9 @@ void WebTestPushMessagingService::GetSubscriptionInfo(
     const std::string& subscription_id,
     const SubscriptionInfoCallback& callback) {
   std::vector<uint8_t> p256dh(kTestP256Key,
-                              kTestP256Key + arraysize(kTestP256Key));
+                              kTestP256Key + base::size(kTestP256Key));
   std::vector<uint8_t> auth(kAuthentication,
-                            kAuthentication + arraysize(kAuthentication));
+                            kAuthentication + base::size(kAuthentication));
 
   callback.Run(true /* is_valid */, p256dh, auth);
 }

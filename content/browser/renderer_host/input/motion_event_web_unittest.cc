@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/numerics/math_constants.h"
+#include "base/stl_util.h"
 #include "content/browser/renderer_host/input/motion_event_web.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/blink/blink_event_util.h"
@@ -32,7 +33,7 @@ TEST(MotionEventWebTest, Constructor) {
   PointerProperties pp;
   MotionEventGeneric generic_event(MotionEvent::Action::MOVE, event_time, pp);
   for (MotionEvent::ToolType tool_type : tool_types) {
-    for (size_t i = 0; i < arraysize(tilts_x); ++i) {
+    for (size_t i = 0; i < base::size(tilts_x); ++i) {
       const float tilt_x = tilts_x[i];
       const float tilt_y = tilts_y[i];
       const float orientation = orientations[i];
@@ -84,7 +85,7 @@ TEST(MotionEventWebTest, Constructor) {
       }
 
       generic_event.RemovePointerAt(pointer_index);
-  }
+    }
 }
 }
 

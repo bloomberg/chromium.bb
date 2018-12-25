@@ -11,6 +11,7 @@
 
 #include <fontconfig/fontconfig.h>
 
+#include "base/stl_util.h"
 #include "base/values.h"
 
 namespace content {
@@ -38,7 +39,7 @@ std::unique_ptr<base::ListValue> GetFontList_SlowBlocking() {
   // See https://www.freetype.org/freetype2/docs/reference/ft2-font_formats.html
   // for the list of possible formats.
   const char* allowed_formats[] = { "TrueType", "CFF" };
-  for (size_t i = 0; i < arraysize(allowed_formats); ++i) {
+  for (size_t i = 0; i < base::size(allowed_formats); ++i) {
     auto format_pattern = CreateFormatPattern(allowed_formats[i]);
     std::unique_ptr<FcFontSet, decltype(&FcFontSetDestroy)> fontset(
         FcFontList(nullptr, format_pattern.get(), object_set.get()),

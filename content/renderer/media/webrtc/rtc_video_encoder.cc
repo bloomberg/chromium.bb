@@ -14,10 +14,10 @@
 #include "base/containers/circular_deque.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
@@ -611,7 +611,7 @@ void RTCVideoEncoder::Impl::LogAndNotifyError(
   static const char* const kErrorNames[] = {
       "kIllegalStateError", "kInvalidArgumentError", "kPlatformFailureError"};
   static_assert(
-      arraysize(kErrorNames) == media::VideoEncodeAccelerator::kErrorMax + 1,
+      base::size(kErrorNames) == media::VideoEncodeAccelerator::kErrorMax + 1,
       "Different number of errors and textual descriptions");
   DLOG(ERROR) << location.ToString() << kErrorNames[error] << " - " << str;
   NotifyError(error);

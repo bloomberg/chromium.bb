@@ -17,11 +17,11 @@
 #include "base/containers/stack.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
@@ -341,7 +341,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   void WriteBasicResponse() {
     scoped_refptr<IOBuffer> body =
         base::MakeRefCounted<WrappedIOBuffer>(kHttpBasicBody);
-    std::string raw_headers(kHttpBasicHeaders, arraysize(kHttpBasicHeaders));
+    std::string raw_headers(kHttpBasicHeaders, base::size(kHttpBasicHeaders));
     WriteResponse(
         MakeHttpResponseInfo(raw_headers), body.get(), strlen(kHttpBasicBody));
   }
@@ -709,7 +709,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
     char* p = body->data();
     for (int i = 0; i < 3; ++i, p += kBlockSize)
       FillData(i + 1, p, kBlockSize);
-    std::string raw_headers(kHttpHeaders, arraysize(kHttpHeaders));
+    std::string raw_headers(kHttpHeaders, base::size(kHttpHeaders));
     WriteResponse(
         MakeHttpResponseInfo(raw_headers), body.get(), kBlockSize * 3);
   }

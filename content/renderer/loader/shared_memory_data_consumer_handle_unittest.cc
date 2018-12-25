@@ -14,9 +14,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/task_runner.h"
 #include "base/test/scoped_task_environment.h"
@@ -379,31 +379,31 @@ TEST_F(SharedMemoryDataConsumerHandleTest, AddMultipleData) {
 
   auto reader = handle_->ObtainReader(
       nullptr, blink::scheduler::GetSingleThreadTaskRunnerForTesting());
-  std::fill(&buffer[0], &buffer[arraysize(buffer)], 0);
+  std::fill(&buffer[0], &buffer[base::size(buffer)], 0);
   result = reader->Read(buffer, 6, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(6u, read);
   EXPECT_STREQ("Once u", buffer);
 
-  std::fill(&buffer[0], &buffer[arraysize(buffer)], 0);
+  std::fill(&buffer[0], &buffer[base::size(buffer)], 0);
   result = reader->Read(buffer, 2, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(2u, read);
   EXPECT_STREQ("po", buffer);
 
-  std::fill(&buffer[0], &buffer[arraysize(buffer)], 0);
+  std::fill(&buffer[0], &buffer[base::size(buffer)], 0);
   result = reader->Read(buffer, 9, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(9u, read);
   EXPECT_STREQ("n a time ", buffer);
 
-  std::fill(&buffer[0], &buffer[arraysize(buffer)], 0);
+  std::fill(&buffer[0], &buffer[base::size(buffer)], 0);
   result = reader->Read(buffer, 3, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(3u, read);
   EXPECT_STREQ("the", buffer);
 
-  std::fill(&buffer[0], &buffer[arraysize(buffer)], 0);
+  std::fill(&buffer[0], &buffer[base::size(buffer)], 0);
   result = reader->Read(buffer, 20, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(9u, read);
@@ -424,19 +424,19 @@ TEST_F(SharedMemoryDataConsumerHandleTest, AddMultipleDataInteractively) {
 
   auto reader = handle_->ObtainReader(
       nullptr, blink::scheduler::GetSingleThreadTaskRunnerForTesting());
-  std::fill(&buffer[0], &buffer[arraysize(buffer)], 0);
+  std::fill(&buffer[0], &buffer[base::size(buffer)], 0);
   result = reader->Read(buffer, 6, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(6u, read);
   EXPECT_STREQ("Once u", buffer);
 
-  std::fill(&buffer[0], &buffer[arraysize(buffer)], 0);
+  std::fill(&buffer[0], &buffer[base::size(buffer)], 0);
   result = reader->Read(buffer, 2, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(2u, read);
   EXPECT_STREQ("po", buffer);
 
-  std::fill(&buffer[0], &buffer[arraysize(buffer)], 0);
+  std::fill(&buffer[0], &buffer[base::size(buffer)], 0);
   result = reader->Read(buffer, 9, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(2u, read);
@@ -444,7 +444,7 @@ TEST_F(SharedMemoryDataConsumerHandleTest, AddMultipleDataInteractively) {
 
   writer_->AddData(NewFixedData("a "));
 
-  std::fill(&buffer[0], &buffer[arraysize(buffer)], 0);
+  std::fill(&buffer[0], &buffer[base::size(buffer)], 0);
   result = reader->Read(buffer, 1, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(1u, read);
@@ -456,13 +456,13 @@ TEST_F(SharedMemoryDataConsumerHandleTest, AddMultipleDataInteractively) {
   writer_->AddData(NewFixedData("a "));
   writer_->Close();
 
-  std::fill(&buffer[0], &buffer[arraysize(buffer)], 0);
+  std::fill(&buffer[0], &buffer[base::size(buffer)], 0);
   result = reader->Read(buffer, 9, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(9u, read);
   EXPECT_STREQ(" time the", buffer);
 
-  std::fill(&buffer[0], &buffer[arraysize(buffer)], 0);
+  std::fill(&buffer[0], &buffer[base::size(buffer)], 0);
   result = reader->Read(buffer, 20, kNone, &read);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(9u, read);

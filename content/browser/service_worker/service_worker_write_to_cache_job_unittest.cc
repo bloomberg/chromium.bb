@@ -9,10 +9,10 @@
 
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -65,18 +65,16 @@ std::string GenerateLongResponse() {
 net::URLRequestJob* CreateNormalURLRequestJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) {
-  return new net::URLRequestTestJob(request,
-                                    network_delegate,
-                                    std::string(kHeaders, arraysize(kHeaders)),
-                                    kScriptCode,
-                                    true);
+  return new net::URLRequestTestJob(request, network_delegate,
+                                    std::string(kHeaders, base::size(kHeaders)),
+                                    kScriptCode, true);
 }
 
 net::URLRequestJob* CreateResponseJob(const std::string& response_data,
                                       net::URLRequest* request,
                                       net::NetworkDelegate* network_delegate) {
   return new net::URLRequestTestJob(request, network_delegate,
-                                    std::string(kHeaders, arraysize(kHeaders)),
+                                    std::string(kHeaders, base::size(kHeaders)),
                                     response_data, true);
 }
 
@@ -97,11 +95,9 @@ net::URLRequestJob* CreateInvalidMimeTypeJob(
       "Expires: Thu, 1 Jan 2100 20:00:00 GMT\n"
       "\n";
   return new net::URLRequestTestJob(
-      request,
-      network_delegate,
-      std::string(kPlainTextHeaders, arraysize(kPlainTextHeaders)),
-      kScriptCode,
-      true);
+      request, network_delegate,
+      std::string(kPlainTextHeaders, base::size(kPlainTextHeaders)),
+      kScriptCode, true);
 }
 
 class SSLCertificateErrorJob : public net::URLRequestTestJob {
@@ -141,11 +137,9 @@ class SSLCertificateErrorJob : public net::URLRequestTestJob {
 net::URLRequestJob* CreateSSLCertificateErrorJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) {
-  return new SSLCertificateErrorJob(request,
-                                    network_delegate,
-                                    std::string(kHeaders, arraysize(kHeaders)),
-                                    kScriptCode,
-                                    true);
+  return new SSLCertificateErrorJob(request, network_delegate,
+                                    std::string(kHeaders, base::size(kHeaders)),
+                                    kScriptCode, true);
 }
 
 class CertStatusErrorJob : public net::URLRequestTestJob {
@@ -172,11 +166,9 @@ class CertStatusErrorJob : public net::URLRequestTestJob {
 net::URLRequestJob* CreateCertStatusErrorJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) {
-  return new CertStatusErrorJob(request,
-                                network_delegate,
-                                std::string(kHeaders, arraysize(kHeaders)),
-                                kScriptCode,
-                                true);
+  return new CertStatusErrorJob(request, network_delegate,
+                                std::string(kHeaders, base::size(kHeaders)),
+                                kScriptCode, true);
 }
 
 class MockHttpProtocolHandler

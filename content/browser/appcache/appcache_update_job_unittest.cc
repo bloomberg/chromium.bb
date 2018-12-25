@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -125,46 +124,46 @@ class MockHttpServer {
         "\n";
 
     if (path == "/files/missing-mime-manifest") {
-      (*headers) = std::string(ok_headers, arraysize(ok_headers));
+      (*headers) = std::string(ok_headers, base::size(ok_headers));
       (*body) = "CACHE MANIFEST\n";
     } else if (path == "/files/bad-manifest") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
       (*body) = "BAD CACHE MANIFEST";
     } else if (path == "/files/empty1") {
-      (*headers) = std::string(ok_headers, arraysize(ok_headers));
+      (*headers) = std::string(ok_headers, base::size(ok_headers));
       (*body) = "";
     } else if (path == "/files/empty-file-manifest") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
       (*body) = "CACHE MANIFEST\n"
                 "empty1\n";
     } else if (path == "/files/empty-manifest") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
       (*body) = "CACHE MANIFEST\n";
     } else if (path == "/files/explicit1") {
-      (*headers) = std::string(ok_headers, arraysize(ok_headers));
+      (*headers) = std::string(ok_headers, base::size(ok_headers));
       (*body) = "explicit1";
     } else if (path == "/files/explicit2") {
-      (*headers) = std::string(ok_headers, arraysize(ok_headers));
+      (*headers) = std::string(ok_headers, base::size(ok_headers));
       (*body) = "explicit2";
     } else if (path == "/files/fallback1a") {
-      (*headers) = std::string(ok_headers, arraysize(ok_headers));
+      (*headers) = std::string(ok_headers, base::size(ok_headers));
       (*body) = "fallback1a";
     } else if (path == "/files/intercept1a") {
-      (*headers) = std::string(ok_headers, arraysize(ok_headers));
+      (*headers) = std::string(ok_headers, base::size(ok_headers));
       (*body) = "intercept1a";
     } else if (path == "/files/gone") {
-      (*headers) = std::string(gone_headers, arraysize(gone_headers));
+      (*headers) = std::string(gone_headers, base::size(gone_headers));
       (*body) = "";
     } else if (path == "/files/manifest1") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
       (*body) = kManifest1Contents;
     } else if (path == "/files/manifest1-with-notmodified") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
       (*body) = kManifest1Contents;
       (*body).append("CACHE:\n"
                      "notmodified\n");
     } else if (path == "/files/manifest-fb-404") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
       (*body) = "CACHE MANIFEST\n"
                 "explicit1\n"
                 "FALLBACK:\n"
@@ -173,7 +172,7 @@ class MockHttpServer {
                 "NETWORK:\n"
                 "online1\n";
     } else if (path == "/files/manifest-merged-types") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
       (*body) = "CACHE MANIFEST\n"
                 "explicit1\n"
                 "# manifest is also an explicit entry\n"
@@ -184,7 +183,7 @@ class MockHttpServer {
                 "NETWORK:\n"
                 "online1\n";
     } else if (path == "/files/manifest-with-404") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
       (*body) = "CACHE MANIFEST\n"
                 "explicit-404\n"
                 "explicit1\n"
@@ -195,32 +194,31 @@ class MockHttpServer {
                 "NETWORK:\n"
                 "online1\n";
     } else if (path == "/files/manifest-with-intercept") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
       (*body) = "CACHE MANIFEST\n"
                 "CHROMIUM-INTERCEPT:\n"
                 "intercept1 return intercept1a\n";
     } else if (path == "/files/notmodified") {
-      (*headers) = std::string(not_modified_headers,
-                               arraysize(not_modified_headers));
+      (*headers) =
+          std::string(not_modified_headers, base::size(not_modified_headers));
       (*body) = "";
     } else if (path == "/files/servererror") {
-      (*headers) = std::string(error_headers,
-                               arraysize(error_headers));
+      (*headers) = std::string(error_headers, base::size(error_headers));
       (*body) = "error";
     } else if (path == "/files/valid_cross_origin_https_manifest") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
       (*body) = "CACHE MANIFEST\n"
                 "https://cross_origin_host/files/explicit1\n";
     } else if (path == "/files/invalid_cross_origin_https_manifest") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
       (*body) = "CACHE MANIFEST\n"
                 "https://cross_origin_host/files/no-store-headers\n";
     } else if (path == "/files/no-store-headers") {
-      (*headers) = std::string(no_store_headers, arraysize(no_store_headers));
+      (*headers) = std::string(no_store_headers, base::size(no_store_headers));
       (*body) = "no-store";
     } else {
-      (*headers) = std::string(not_found_headers,
-                               arraysize(not_found_headers));
+      (*headers) =
+          std::string(not_found_headers, base::size(not_found_headers));
       (*body) = "";
     }
   }
@@ -453,12 +451,12 @@ class RetryRequestTestJob : public net::URLRequestTestJob {
 
     switch (retry_after_) {
       case NO_RETRY_AFTER:
-        return std::string(no_retry_after, arraysize(no_retry_after));
+        return std::string(no_retry_after, base::size(no_retry_after));
       case NONZERO_RETRY_AFTER:
-        return std::string(nonzero, arraysize(nonzero));
+        return std::string(nonzero, base::size(nonzero));
       case RETRY_AFTER_0:
       default:
-        return std::string(retry_after_0, arraysize(retry_after_0));
+        return std::string(retry_after_0, base::size(retry_after_0));
     }
   }
 
@@ -467,7 +465,7 @@ class RetryRequestTestJob : public net::URLRequestTestJob {
         "HTTP/1.1 200 OK\n"
         "Content-type: text/cache-manifest\n"
         "\n";
-    return std::string(headers, arraysize(headers));
+    return std::string(headers, base::size(headers));
   }
 
   static std::string data() {
@@ -1785,7 +1783,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         "HTTP/1.1 200 OK\0"
         "Last-Modified: Sat, 29 Oct 1994 19:43:31 GMT\0"
         "\0";
-    const std::string kRawHeaders(kData, arraysize(kData));
+    const std::string kRawHeaders(kData, base::size(kData));
     MakeAppCacheResponseInfo(kManifestUrl, 444, kRawHeaders);
     MakeAppCacheResponseInfo(kManifestUrl, 555, kRawHeaders);
 
@@ -2222,7 +2220,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         "Content-type: text/cache-manifest\0"
         "Last-Modified: Sat, 29 Oct 1994 19:43:31 GMT\0"
         "\0";
-    const std::string kRawHeaders(kData, arraysize(kData));
+    const std::string kRawHeaders(kData, base::size(kData));
     MakeAppCacheResponseInfo(kManifestUrl, kManifestResponseId, kRawHeaders);
 
     group_ = new AppCacheGroup(
@@ -3077,7 +3075,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         "HTTP/1.1 200 OK\0"
         "\0";
     net::HttpResponseHeaders* headers =
-        new net::HttpResponseHeaders(std::string(data, arraysize(data)));
+        new net::HttpResponseHeaders(std::string(data, base::size(data)));
     net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
     response_info->headers = headers;  // adds ref to headers
 
@@ -3129,7 +3127,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         "Last-Modified: Sat, 29 Oct 1994 19:43:31 GMT\0"
         "\0";
     net::HttpResponseHeaders* headers2 =
-        new net::HttpResponseHeaders(std::string(data2, arraysize(data2)));
+        new net::HttpResponseHeaders(std::string(data2, base::size(data2)));
     net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
     response_info->headers = headers2;
 
@@ -3336,7 +3334,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         "ETag: \"LadeDade\"\0"
         "\0";
     net::HttpResponseHeaders* headers =
-        new net::HttpResponseHeaders(std::string(data, arraysize(data)));
+        new net::HttpResponseHeaders(std::string(data, base::size(data)));
     net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
     response_info->headers = headers;  // adds ref to headers
 
@@ -3390,7 +3388,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         "ETag: \"LadeDade\"\0"
         "\0";
     net::HttpResponseHeaders* headers =
-        new net::HttpResponseHeaders(std::string(data, arraysize(data)));
+        new net::HttpResponseHeaders(std::string(data, base::size(data)));
     net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
     response_info->headers = headers;  // adds ref to headers
 

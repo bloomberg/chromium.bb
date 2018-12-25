@@ -7,9 +7,9 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
@@ -944,7 +944,7 @@ void WriteStringResponse(ServiceWorkerStorage* storage,
   scoped_refptr<IOBuffer> body_buffer =
       base::MakeRefCounted<WrappedIOBuffer>(body.data());
   const char kHttpHeaders[] = "HTTP/1.0 200 HONKYDORY\0\0";
-  std::string headers(kHttpHeaders, arraysize(kHttpHeaders));
+  std::string headers(kHttpHeaders, base::size(kHttpHeaders));
   WriteResponse(storage, id, headers, body_buffer.get(), body.length());
 }
 

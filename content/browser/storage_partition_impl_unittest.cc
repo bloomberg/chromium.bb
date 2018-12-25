@@ -7,9 +7,9 @@
 
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
@@ -254,8 +254,8 @@ class RemoveLocalStorageTester {
     auto serialized_origin =
         leveldb::StdStringToUint8Vector(origin.Serialize());
     std::vector<uint8_t> key;
-    key.reserve(arraysize(kMetaPrefix) + serialized_origin.size());
-    key.insert(key.end(), kMetaPrefix, kMetaPrefix + arraysize(kMetaPrefix));
+    key.reserve(base::size(kMetaPrefix) + serialized_origin.size());
+    key.insert(key.end(), kMetaPrefix, kMetaPrefix + base::size(kMetaPrefix));
     key.insert(key.end(), serialized_origin.begin(), serialized_origin.end());
     return key;
   }
@@ -1477,8 +1477,8 @@ TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataWhileWriting) {
   const char test_data[] = {0, 1, 2, 3, 4, 5};
   base::File file = tester.OpenClearKeyFileForWrite();
   EXPECT_TRUE(file.IsValid());
-  EXPECT_EQ(static_cast<int>(arraysize(test_data)),
-            file.Write(0, test_data, arraysize(test_data)));
+  EXPECT_EQ(static_cast<int>(base::size(test_data)),
+            file.Write(0, test_data, base::size(test_data)));
 
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1490,8 +1490,8 @@ TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataWhileWriting) {
   EXPECT_FALSE(tester.DataExistsForOrigin(kOrigin2));
 
   const char more_data[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  EXPECT_EQ(static_cast<int>(arraysize(more_data)),
-            file.WriteAtCurrentPos(more_data, arraysize(more_data)));
+  EXPECT_EQ(static_cast<int>(base::size(more_data)),
+            file.WriteAtCurrentPos(more_data, base::size(more_data)));
 
   base::File file2 = tester.OpenClearKeyFileForWrite();
   EXPECT_FALSE(file2.IsValid());

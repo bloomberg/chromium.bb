@@ -13,12 +13,12 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/browser/loader/test_resource_handler.h"
@@ -251,7 +251,7 @@ class MockHTTPSJobURLRequestInterceptor : public net::URLRequestInterceptor {
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     std::string headers =
-        redirect_ ? std::string(kRedirectHeaders, arraysize(kRedirectHeaders))
+        redirect_ ? std::string(kRedirectHeaders, base::size(kRedirectHeaders))
                   : net::URLRequestTestJob::test_headers();
     return new MockHTTPSURLRequestJob(request, network_delegate, headers,
                                       "dummy response", true);

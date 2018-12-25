@@ -14,8 +14,8 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
-#include "base/macros.h"
 #include "base/numerics/safe_math.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -89,7 +89,7 @@ RenderMessageFilter::RenderMessageFilter(
     RenderWidgetHelper* render_widget_helper,
     MediaInternals* media_internals)
     : BrowserMessageFilter(kRenderFilteredMessageClasses,
-                           arraysize(kRenderFilteredMessageClasses)),
+                           base::size(kRenderFilteredMessageClasses)),
       BrowserAssociatedInterface<mojom::RenderMessageFilter>(this, this),
       resource_dispatcher_host_(ResourceDispatcherHostImpl::Get()),
       resource_context_(browser_context->GetResourceContext()),
@@ -97,7 +97,6 @@ RenderMessageFilter::RenderMessageFilter(
       render_process_id_(render_process_id),
       media_internals_(media_internals),
       weak_ptr_factory_(this) {
-
   if (render_widget_helper)
     render_widget_helper_->Init(render_process_id_, resource_dispatcher_host_);
 }

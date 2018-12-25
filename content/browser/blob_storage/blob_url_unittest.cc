@@ -11,10 +11,10 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/url_loader_factory_getter.h"
@@ -169,17 +169,17 @@ class BlobURLRequestJobTest : public testing::TestWithParam<RequestTestType> {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     temp_file1_ = temp_dir_.GetPath().AppendASCII("BlobFile1.dat");
-    ASSERT_EQ(static_cast<int>(arraysize(kTestFileData1) - 1),
+    ASSERT_EQ(static_cast<int>(base::size(kTestFileData1) - 1),
               base::WriteFile(temp_file1_, kTestFileData1,
-                              arraysize(kTestFileData1) - 1));
+                              base::size(kTestFileData1) - 1));
     base::File::Info file_info1;
     base::GetFileInfo(temp_file1_, &file_info1);
     temp_file_modification_time1_ = file_info1.last_modified;
 
     temp_file2_ = temp_dir_.GetPath().AppendASCII("BlobFile2.dat");
-    ASSERT_EQ(static_cast<int>(arraysize(kTestFileData2) - 1),
+    ASSERT_EQ(static_cast<int>(base::size(kTestFileData2) - 1),
               base::WriteFile(temp_file2_, kTestFileData2,
-                              arraysize(kTestFileData2) - 1));
+                              base::size(kTestFileData2) - 1));
     base::File::Info file_info2;
     base::GetFileInfo(temp_file2_, &file_info2);
     temp_file_modification_time2_ = file_info2.last_modified;
@@ -217,12 +217,12 @@ class BlobURLRequestJobTest : public testing::TestWithParam<RequestTestType> {
     const char kFilename1[] = "FileSystemFile1.dat";
     temp_file_system_file1_ = GetFileSystemURL(kFilename1);
     WriteFileSystemFile(kFilename1, kTestFileSystemFileData1,
-                        arraysize(kTestFileSystemFileData1) - 1,
+                        base::size(kTestFileSystemFileData1) - 1,
                         &temp_file_system_file_modification_time1_);
     const char kFilename2[] = "FileSystemFile2.dat";
     temp_file_system_file2_ = GetFileSystemURL(kFilename2);
     WriteFileSystemFile(kFilename2, kTestFileSystemFileData2,
-                        arraysize(kTestFileSystemFileData2) - 1,
+                        base::size(kTestFileSystemFileData2) - 1,
                         &temp_file_system_file_modification_time2_);
   }
 
@@ -443,13 +443,13 @@ class BlobURLRequestJobTest : public testing::TestWithParam<RequestTestType> {
 
 TEST_P(BlobURLRequestJobTest, TestGetSimpleDataRequest) {
   blob_data_->AppendData(kTestData1);
-  TestSuccessNonrangeRequest(kTestData1, arraysize(kTestData1) - 1);
+  TestSuccessNonrangeRequest(kTestData1, base::size(kTestData1) - 1);
 }
 
 TEST_P(BlobURLRequestJobTest, TestGetSimpleFileRequest) {
   blob_data_->AppendFile(temp_file1_, 0, std::numeric_limits<uint64_t>::max(),
                          base::Time());
-  TestSuccessNonrangeRequest(kTestFileData1, arraysize(kTestFileData1) - 1);
+  TestSuccessNonrangeRequest(kTestFileData1, base::size(kTestFileData1) - 1);
 }
 
 TEST_P(BlobURLRequestJobTest, TestGetLargeFileRequest) {
@@ -494,7 +494,7 @@ TEST_P(BlobURLRequestJobTest, TestGetSimpleFileSystemFileRequest) {
                                    std::numeric_limits<uint64_t>::max(),
                                    base::Time(), file_system_context_);
   TestSuccessNonrangeRequest(kTestFileSystemFileData1,
-                             arraysize(kTestFileSystemFileData1) - 1);
+                             base::size(kTestFileSystemFileData1) - 1);
 }
 
 TEST_P(BlobURLRequestJobTest, TestGetLargeFileSystemFileRequest) {
@@ -554,7 +554,7 @@ TEST_P(BlobURLRequestJobTest, TestGetSimpleDiskCacheRequest) {
                                    disk_cache_entry_.get(),
                                    kTestDiskCacheStreamIndex);
   TestSuccessNonrangeRequest(kTestDiskCacheData1,
-                             arraysize(kTestDiskCacheData1) - 1);
+                             base::size(kTestDiskCacheData1) - 1);
 }
 
 TEST_P(BlobURLRequestJobTest, TestGetComplicatedDataFileAndDiskCacheRequest) {
@@ -658,7 +658,7 @@ TEST_P(BlobURLRequestJobTest, TestSideData) {
   expected_status_code_ = 200;
   expected_response_ = kTestDiskCacheData2;
   TestRequest("GET", net::HttpRequestHeaders());
-  EXPECT_EQ(static_cast<int>(arraysize(kTestDiskCacheData2) - 1),
+  EXPECT_EQ(static_cast<int>(base::size(kTestDiskCacheData2) - 1),
             response_headers_->GetContentLength());
 
   EXPECT_EQ(std::string(kTestDiskCacheSideData), response_metadata_);
@@ -675,7 +675,7 @@ TEST_P(BlobURLRequestJobTest, TestZeroSizeSideData) {
   expected_status_code_ = 200;
   expected_response_ = kTestDiskCacheData2;
   TestRequest("GET", net::HttpRequestHeaders());
-  EXPECT_EQ(static_cast<int>(arraysize(kTestDiskCacheData2) - 1),
+  EXPECT_EQ(static_cast<int>(base::size(kTestDiskCacheData2) - 1),
             response_headers_->GetContentLength());
 
   EXPECT_TRUE(response_metadata_.empty());

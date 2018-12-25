@@ -9,8 +9,8 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -194,7 +194,7 @@ static const struct {
 };
 
 TEST_F(SavePackageTest, TestSuccessfullyGenerateSavePackageFilename) {
-  for (size_t i = 0; i < arraysize(kGeneratedFiles); ++i) {
+  for (size_t i = 0; i < base::size(kGeneratedFiles); ++i) {
     base::FilePath::StringType file_name;
     bool ok = GetGeneratedFilename(true,
                                    kGeneratedFiles[i].disposition,
@@ -207,7 +207,7 @@ TEST_F(SavePackageTest, TestSuccessfullyGenerateSavePackageFilename) {
 }
 
 TEST_F(SavePackageTest, TestUnSuccessfullyGenerateSavePackageFilename) {
-  for (size_t i = 0; i < arraysize(kGeneratedFiles); ++i) {
+  for (size_t i = 0; i < base::size(kGeneratedFiles); ++i) {
     base::FilePath::StringType file_name;
     bool ok = GetGeneratedFilename(false,
                                    kGeneratedFiles[i].disposition,

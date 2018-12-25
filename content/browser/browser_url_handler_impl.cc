@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/webui/web_ui_impl.h"
@@ -37,7 +37,7 @@ static bool HandleViewSource(GURL* url, BrowserContext* browser_context) {
     // Merge all the schemes for which view-source is allowed by default, with
     // the view-source schemes defined by the ContentBrowserClient.
     std::vector<std::string> all_allowed_sub_schemes;
-    for (size_t i = 0; i < arraysize(default_allowed_sub_schemes); ++i)
+    for (size_t i = 0; i < base::size(default_allowed_sub_schemes); ++i)
       all_allowed_sub_schemes.push_back(default_allowed_sub_schemes[i]);
     GetContentClient()->browser()->GetAdditionalViewSourceSchemes(
         &all_allowed_sub_schemes);

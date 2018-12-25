@@ -7,6 +7,7 @@
 #include <cmath>
 #include <string>
 
+#include "base/stl_util.h"
 #include "content/renderer/media/stream/media_stream_source.h"
 #include "content/renderer/media/stream/mock_constraint_factory.h"
 #include "media/base/limits.h"
@@ -2020,13 +2021,13 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedDeviceID) {
   blink::WebString id_vector1[] = {blink::WebString::FromASCII(kDeviceID1),
                                    blink::WebString::FromASCII(kDeviceID2)};
   advanced1.device_id.SetExact(
-      blink::WebVector<blink::WebString>(id_vector1, arraysize(id_vector1)));
+      blink::WebVector<blink::WebString>(id_vector1, base::size(id_vector1)));
   blink::WebString id_vector2[] = {blink::WebString::FromASCII(kDeviceID2),
                                    blink::WebString::FromASCII(kDeviceID3)};
   blink::WebMediaTrackConstraintSet& advanced2 =
       constraint_factory_.AddAdvanced();
   advanced2.device_id.SetExact(
-      blink::WebVector<blink::WebString>(id_vector2, arraysize(id_vector2)));
+      blink::WebVector<blink::WebString>(id_vector2, base::size(id_vector2)));
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kDeviceID2 must be selected because it is the only one that satisfies both
@@ -2047,13 +2048,13 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   blink::WebString id_vector1[] = {blink::WebString::FromASCII(kDeviceID1),
                                    blink::WebString::FromASCII(kDeviceID2)};
   advanced1.device_id.SetExact(
-      blink::WebVector<blink::WebString>(id_vector1, arraysize(id_vector1)));
+      blink::WebVector<blink::WebString>(id_vector1, base::size(id_vector1)));
   blink::WebString id_vector2[] = {blink::WebString::FromASCII(kDeviceID3),
                                    blink::WebString::FromASCII(kDeviceID4)};
   blink::WebMediaTrackConstraintSet& advanced2 =
       constraint_factory_.AddAdvanced();
   advanced2.device_id.SetExact(
-      blink::WebVector<blink::WebString>(id_vector2, arraysize(id_vector2)));
+      blink::WebVector<blink::WebString>(id_vector2, base::size(id_vector2)));
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // The second advanced set must be ignored because it contradicts the first
@@ -2072,12 +2073,12 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedIdealDeviceID) {
   blink::WebString id_vector1[] = {blink::WebString::FromASCII(kDeviceID1),
                                    blink::WebString::FromASCII(kDeviceID2)};
   advanced.device_id.SetExact(
-      blink::WebVector<blink::WebString>(id_vector1, arraysize(id_vector1)));
+      blink::WebVector<blink::WebString>(id_vector1, base::size(id_vector1)));
 
   blink::WebString id_vector2[] = {blink::WebString::FromASCII(kDeviceID2),
                                    blink::WebString::FromASCII(kDeviceID3)};
   constraint_factory_.basic().device_id.SetIdeal(
-      blink::WebVector<blink::WebString>(id_vector2, arraysize(id_vector2)));
+      blink::WebVector<blink::WebString>(id_vector2, base::size(id_vector2)));
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // Should select kDeviceID2, which appears in ideal and satisfies the advanced

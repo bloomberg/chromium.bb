@@ -10,6 +10,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -1119,7 +1120,7 @@ TEST_P(WebMediaPlayerMSTest, RotationChange) {
 
   // Change rotation.
   tokens[0] = 33;
-  timestamps = std::vector<int>(tokens, tokens + arraysize(tokens));
+  timestamps = std::vector<int>(tokens, tokens + base::size(tokens));
   provider->QueueFrames(timestamps, false, false, 17, media::VIDEO_ROTATION_0);
   if (enable_surface_layer_for_video_) {
     EXPECT_CALL(*submitter_ptr_, SetRotation(media::VIDEO_ROTATION_0));
@@ -1153,7 +1154,7 @@ TEST_P(WebMediaPlayerMSTest, OpacityChange) {
   // Push one opaque frame.
   const int kTestBrake = static_cast<int>(FrameType::TEST_BRAKE);
   int tokens[] = {0, kTestBrake};
-  std::vector<int> timestamps(tokens, tokens + arraysize(tokens));
+  std::vector<int> timestamps(tokens, tokens + base::size(tokens));
   provider->QueueFrames(timestamps, true);
 
   if (enable_surface_layer_for_video_) {
@@ -1181,7 +1182,7 @@ TEST_P(WebMediaPlayerMSTest, OpacityChange) {
 
   // Push one transparent frame.
   tokens[0] = 33;
-  timestamps = std::vector<int>(tokens, tokens + arraysize(tokens));
+  timestamps = std::vector<int>(tokens, tokens + base::size(tokens));
   provider->QueueFrames(timestamps, false);
   if (enable_surface_layer_for_video_) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
@@ -1196,7 +1197,7 @@ TEST_P(WebMediaPlayerMSTest, OpacityChange) {
 
   // Push another transparent frame.
   tokens[0] = 66;
-  timestamps = std::vector<int>(tokens, tokens + arraysize(tokens));
+  timestamps = std::vector<int>(tokens, tokens + base::size(tokens));
   provider->QueueFrames(timestamps, true);
   if (enable_surface_layer_for_video_) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(true));

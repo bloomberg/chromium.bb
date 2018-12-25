@@ -7,7 +7,7 @@
 #import <objc/runtime.h>
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac.h"
 
@@ -181,7 +181,7 @@ NSString* RenderWidgetHostViewMacEditCommandHelper::CommandNameForSelector(
 
 RenderWidgetHostViewMacEditCommandHelper::
     RenderWidgetHostViewMacEditCommandHelper() {
-  for (size_t i = 0; i < arraysize(kEditCommands); ++i) {
+  for (size_t i = 0; i < base::size(kEditCommands); ++i) {
     edit_command_set_.insert(kEditCommands[i]);
   }
 }
@@ -192,7 +192,7 @@ RenderWidgetHostViewMacEditCommandHelper::
 // Dynamically adds Selectors to the aformentioned class.
 void RenderWidgetHostViewMacEditCommandHelper::AddEditingSelectorsToClass(
     Class klass) {
-  for (size_t i = 0; i < arraysize(kEditCommands); ++i) {
+  for (size_t i = 0; i < base::size(kEditCommands); ++i) {
     // Append trailing ':' to command name to get selector name.
     NSString* sel_str = [NSString stringWithFormat: @"%s:", kEditCommands[i]];
 
@@ -228,7 +228,7 @@ bool RenderWidgetHostViewMacEditCommandHelper::IsMenuItemEnabled(
 }
 
 NSArray* RenderWidgetHostViewMacEditCommandHelper::GetEditSelectorNames() {
-  size_t num_edit_commands = arraysize(kEditCommands);
+  size_t num_edit_commands = base::size(kEditCommands);
   NSMutableArray* ret = [NSMutableArray arrayWithCapacity:num_edit_commands];
 
   for (size_t i = 0; i < num_edit_commands; ++i) {

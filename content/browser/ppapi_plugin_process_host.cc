@@ -12,8 +12,8 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -372,7 +372,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
     switches::kVModule
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kCommonForwardSwitches,
-                             arraysize(kCommonForwardSwitches));
+                             base::size(kCommonForwardSwitches));
 
   if (!is_broker_) {
     static const char* const kPluginForwardSwitches[] = {
@@ -384,7 +384,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
       switches::kPpapiStartupDialog,
     };
     cmd_line->CopySwitchesFrom(browser_command_line, kPluginForwardSwitches,
-                               arraysize(kPluginForwardSwitches));
+                               base::size(kPluginForwardSwitches));
 
     // Copy any flash args over if necessary.
     // TODO(vtl): Stop passing flash args in the command line, or windows is

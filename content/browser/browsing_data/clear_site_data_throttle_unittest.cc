@@ -8,6 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_command_line.h"
@@ -626,7 +627,7 @@ TEST_F(ClearSiteDataThrottleTest, FormattedConsoleOutput) {
     bool defer;
     throttle->WillStartRequest(&defer);
 
-    for (size_t i = 0; i < arraysize(kTestCases); i++) {
+    for (size_t i = 0; i < base::size(kTestCases); i++) {
       throttle->SetResponseHeaders(std::string(kClearSiteDataHeaderPrefix) +
                                    kTestCases[i].header);
 
@@ -635,7 +636,7 @@ TEST_F(ClearSiteDataThrottleTest, FormattedConsoleOutput) {
       throttle->SetCurrentURLForTesting(GURL(kTestCases[i].url));
 
       net::RedirectInfo redirect_info;
-      if (i < arraysize(kTestCases) - 1)
+      if (i < base::size(kTestCases) - 1)
         throttle->WillRedirectRequest(redirect_info, &defer);
       else
         throttle->WillProcessResponse(&defer);

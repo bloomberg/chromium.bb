@@ -15,10 +15,10 @@
 #include "base/callback.h"
 #include "base/containers/stack.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
@@ -554,7 +554,7 @@ class AppCacheRequestHandlerTest
         "\0";
     net::HttpResponseInfo info;
     info.headers = new net::HttpResponseHeaders(
-        std::string(kOverrideHeaders, arraysize(kOverrideHeaders)));
+        std::string(kOverrideHeaders, base::size(kOverrideHeaders)));
     SimulateResponseInfo(info);
 
     SetAppCacheJob(handler_->MaybeLoadFallbackForResponse(nullptr));

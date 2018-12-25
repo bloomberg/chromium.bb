@@ -16,10 +16,10 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -91,14 +91,14 @@ class MockHttpServer {
         "\n";
 
     if (path == "/manifest") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
       (*body) = "CACHE MANIFEST\n";
     } else if (path == "/empty.html") {
-      (*headers) = std::string(page_headers, arraysize(page_headers));
+      (*headers) = std::string(page_headers, base::size(page_headers));
       (*body) = "";
     } else {
-      (*headers) = std::string(not_found_headers,
-                               arraysize(not_found_headers));
+      (*headers) =
+          std::string(not_found_headers, base::size(not_found_headers));
       (*body) = "";
     }
   }

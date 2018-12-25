@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
@@ -166,7 +166,7 @@ bool MediaRecorderHandler::CanSupportMimeType(
   static const char* const kAudioCodecs[] = {"opus", "pcm"};
   const char* const* codecs = video ? &kVideoCodecs[0] : &kAudioCodecs[0];
   const int codecs_count =
-      video ? arraysize(kVideoCodecs) : arraysize(kAudioCodecs);
+      video ? base::size(kVideoCodecs) : base::size(kAudioCodecs);
 
   std::vector<std::string> codecs_list;
   media::SplitCodecs(web_codecs.Utf8(), &codecs_list);

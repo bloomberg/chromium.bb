@@ -11,7 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
@@ -290,7 +290,7 @@ void TestRunnerForSpecificView::CapturePixelsCallback(
   argv[2] = blink::WebArrayBufferConverter::ToV8Value(
       &buffer, context->Global(), isolate);
 
-  PostV8CallbackWithArgs(std::move(callback), arraysize(argv), argv);
+  PostV8CallbackWithArgs(std::move(callback), base::size(argv), argv);
 }
 
 void TestRunnerForSpecificView::CopyImageAtAndCapturePixelsAsyncThen(

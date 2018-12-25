@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
@@ -326,7 +327,7 @@ TEST_F(RenderFrameImplTest, EffectiveConnectionType) {
                {blink::WebEffectiveConnectionType::kType2G},
                {blink::WebEffectiveConnectionType::kType4G}};
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     SetEffectionConnectionType(GetMainRenderFrame(), tests[i].type);
     SetEffectionConnectionType(frame(), tests[i].type);
 

@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -71,7 +71,7 @@ static const struct {
 #endif
 };
 
-static_assert(arraysize(kPreferredCodecIdAndVEAProfiles) ==
+static_assert(base::size(kPreferredCodecIdAndVEAProfiles) ==
                   static_cast<int>(CodecId::LAST),
               "|kPreferredCodecIdAndVEAProfiles| should consider all CodecIds");
 

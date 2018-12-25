@@ -9,8 +9,8 @@
 #include <map>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
@@ -76,7 +76,7 @@ CONTENT_EXPORT base::string16 IAccessibleRoleToString(int32_t ia_role) {
       QUOTE(ROLE_SYSTEM_WHITESPACE),     QUOTE(ROLE_SYSTEM_WINDOW),
   };
 
-  return GetNameForPlatformConstant(ia_table, arraysize(ia_table), ia_role);
+  return GetNameForPlatformConstant(ia_table, base::size(ia_table), ia_role);
 }
 
 CONTENT_EXPORT base::string16 IAccessible2RoleToString(int32_t ia2_role) {
@@ -136,7 +136,7 @@ CONTENT_EXPORT base::string16 IAccessible2RoleToString(int32_t ia2_role) {
       QUOTE(IA2_ROLE_CONTENT_INSERTION),
   };
 
-  return GetNameForPlatformConstant(ia2_table, arraysize(ia2_table), ia2_role);
+  return GetNameForPlatformConstant(ia2_table, base::size(ia2_table), ia2_role);
 }
 
 CONTENT_EXPORT base::string16 AccessibilityEventToString(int32_t event) {
@@ -210,7 +210,8 @@ CONTENT_EXPORT base::string16 AccessibilityEventToString(int32_t event) {
       QUOTE(IA2_EVENT_VISIBLE_DATA_CHANGED),
   };
 
-  return GetNameForPlatformConstant(event_table, arraysize(event_table), event);
+  return GetNameForPlatformConstant(event_table, base::size(event_table),
+                                    event);
 }
 
 void IAccessibleStateToStringVector(int32_t ia_state,

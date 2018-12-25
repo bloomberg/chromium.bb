@@ -14,7 +14,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -4385,7 +4384,7 @@ TEST_F(NavigationControllerTest, CopyRestoredStateAndNavigate) {
   const GURL kInitialUrl("http://site3.com");
 
   std::vector<std::unique_ptr<NavigationEntry>> entries;
-  for (size_t i = 0; i < arraysize(kRestoredUrls); ++i) {
+  for (size_t i = 0; i < base::size(kRestoredUrls); ++i) {
     std::unique_ptr<NavigationEntry> entry =
         NavigationController::CreateNavigationEntry(
             kRestoredUrls[i], Referrer(), ui::PAGE_TRANSITION_RELOAD, false,

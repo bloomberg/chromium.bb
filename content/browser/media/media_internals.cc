@@ -11,7 +11,6 @@
 
 #include "base/containers/adapters.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -67,7 +66,7 @@ std::string EffectsToString(int effects) {
   };
 
   std::string ret;
-  for (size_t i = 0; i < arraysize(flags); ++i) {
+  for (size_t i = 0; i < base::size(flags); ++i) {
     if (effects & flags[i].flag) {
       if (!ret.empty())
         ret += " | ";

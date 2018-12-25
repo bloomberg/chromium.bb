@@ -9,7 +9,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/notification_database_data.h"
@@ -82,7 +82,7 @@ class NotificationDatabaseTest : public ::testing::Test {
   // their origin and Service Worker registration id.
   void PopulateDatabaseWithExampleData(NotificationDatabase* database) {
     std::string notification_id;
-    for (size_t i = 0; i < arraysize(kExampleNotificationData); ++i) {
+    for (size_t i = 0; i < base::size(kExampleNotificationData); ++i) {
       ASSERT_NO_FATAL_FAILURE(CreateAndWriteNotification(
           database, GURL(kExampleNotificationData[i].origin),
           kExampleNotificationData[i].tag,
@@ -504,7 +504,7 @@ TEST_F(NotificationDatabaseTest, ReadAllNotificationData) {
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->ReadAllNotificationData(&notifications));
 
-  EXPECT_EQ(arraysize(kExampleNotificationData), notifications.size());
+  EXPECT_EQ(base::size(kExampleNotificationData), notifications.size());
 }
 
 TEST_F(NotificationDatabaseTest, ReadAllNotificationDataEmpty) {

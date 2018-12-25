@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_histograms.h"
@@ -167,8 +167,8 @@ const IndexInfo kIndexes[] = {
     true },
 };
 
-const int kTableCount = arraysize(kTables);
-const int kIndexCount = arraysize(kIndexes);
+const int kTableCount = base::size(kTables);
+const int kIndexCount = base::size(kIndexes);
 
 bool CreateTable(sql::Database* db, const TableInfo& info) {
   std::string sql("CREATE TABLE ");
