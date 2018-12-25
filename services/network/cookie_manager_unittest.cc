@@ -7,9 +7,9 @@
 #include <algorithm>
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
 #include "base/task/task_scheduler/task_scheduler.h"
@@ -1152,7 +1152,7 @@ TEST_F(CookieManagerTest, DeleteDetails_Consumer) {
   };
   mojom::CookieDeletionFilter test_filter;
   test_filter.including_domains = std::vector<std::string>();
-  for (int i = 0; i < static_cast<int>(arraysize(filter_domains)); ++i)
+  for (int i = 0; i < static_cast<int>(base::size(filter_domains)); ++i)
     test_filter.including_domains->push_back(filter_domains[i]);
 
   struct TestCase {
@@ -1189,7 +1189,7 @@ TEST_F(CookieManagerTest, DeleteDetails_Consumer) {
   };
 
   mojom::CookieDeletionFilter clear_filter;
-  for (int i = 0; i < static_cast<int>(arraysize(test_cases)); ++i) {
+  for (int i = 0; i < static_cast<int>(base::size(test_cases)); ++i) {
     TestCase& test_case(test_cases[i]);
 
     // Clear store.

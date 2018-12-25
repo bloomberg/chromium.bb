@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "gin/array_buffer.h"
 #include "gin/public/isolate_holder.h"
 #include "services/data_decoder/image_decoder_impl.h"
@@ -124,7 +125,7 @@ TEST_F(ImageDecoderImplTest, DecodeImageSizeLimit) {
   int heights[] = {max_height_for_msg - 10, max_height_for_msg + 10,
                    2 * max_height_for_msg + 10};
   int widths[] = {heights[0] * 3 / 2, heights[1] * 3 / 2, heights[2] * 3 / 2};
-  for (size_t i = 0; i < arraysize(heights); i++) {
+  for (size_t i = 0; i < base::size(heights); i++) {
     std::vector<unsigned char> jpg;
     ASSERT_TRUE(CreateJPEGImage(widths[i], heights[i], SK_ColorRED, &jpg));
 
