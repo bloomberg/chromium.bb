@@ -9,6 +9,7 @@
 #include "ash/system/audio/unified_volume_slider_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "base/stl_util.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
@@ -39,7 +40,7 @@ const gfx::VectorIcon* const kVolumeLevelIcons[] = {
 };
 
 // The maximum index of kVolumeLevelIcons.
-constexpr int kVolumeLevels = arraysize(kVolumeLevelIcons) - 1;
+constexpr int kVolumeLevels = base::size(kVolumeLevelIcons) - 1;
 
 // Get vector icon reference that corresponds to the given volume level. |level|
 // is between 0.0 to 1.0.

@@ -5,6 +5,7 @@
 #include "ash/components/tap_visualizer/tap_renderer.h"
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -80,7 +81,7 @@ class TouchPointView : public views::View, public gfx::AnimationDelegate {
     stroke_flags_.setAlpha(alpha);
     fill_flags_.setShader(cc::PaintShader::MakeRadialGradient(
         gradient_center_, SkIntToScalar(kPointRadius), gradient_colors_,
-        gradient_pos_, arraysize(gradient_colors_),
+        gradient_pos_, base::size(gradient_colors_),
         SkShader::kMirror_TileMode));
     canvas->DrawCircle(circle_center_, SkIntToScalar(kPointRadius),
                        fill_flags_);

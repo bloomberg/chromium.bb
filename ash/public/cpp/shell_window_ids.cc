@@ -4,7 +4,7 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 
 namespace ash {
 
@@ -28,7 +28,7 @@ const int32_t kActivatableShellWindowIds[] = {
 };
 
 const size_t kNumActivatableShellWindowIds =
-    arraysize(kActivatableShellWindowIds);
+    base::size(kActivatableShellWindowIds);
 
 bool IsActivatableShellWindowId(int32_t id) {
   for (size_t i = 0; i < kNumActivatableShellWindowIds; i++) {

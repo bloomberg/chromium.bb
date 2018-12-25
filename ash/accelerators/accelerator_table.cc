@@ -5,7 +5,7 @@
 #include "ash/accelerators/accelerator_table.h"
 
 #include "ash/strings/grit/ash_strings.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 
 namespace ash {
 
@@ -43,7 +43,8 @@ const AcceleratorData kDeprecatedAccelerators[] = {
     {true, ui::VKEY_H, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
      TOGGLE_HIGH_CONTRAST}};
 
-const size_t kDeprecatedAcceleratorsLength = arraysize(kDeprecatedAccelerators);
+const size_t kDeprecatedAcceleratorsLength =
+    base::size(kDeprecatedAccelerators);
 
 const DeprecatedAcceleratorData kDeprecatedAcceleratorsData[] = {
     {
@@ -67,7 +68,7 @@ const DeprecatedAcceleratorData kDeprecatedAcceleratorsData[] = {
     }};
 
 const size_t kDeprecatedAcceleratorsDataLength =
-    arraysize(kDeprecatedAcceleratorsData);
+    base::size(kDeprecatedAcceleratorsData);
 
 const AcceleratorData kDebugAcceleratorData[] = {
     {true, ui::VKEY_N, kDebugModifier, TOGGLE_WIFI},
@@ -90,7 +91,7 @@ const AcceleratorData kDebugAcceleratorData[] = {
     {true, ui::VKEY_K, kDebugModifier, DEBUG_TRIGGER_CRASH},
 };
 
-const size_t kDebugAcceleratorDataLength = arraysize(kDebugAcceleratorData);
+const size_t kDebugAcceleratorDataLength = base::size(kDebugAcceleratorData);
 
 const AcceleratorData kDeveloperAcceleratorData[] = {
     // Extra shortcut for debug build to control magnifier on Linux desktop.
@@ -122,7 +123,7 @@ const AcceleratorData kDeveloperAcceleratorData[] = {
 };
 
 const size_t kDeveloperAcceleratorDataLength =
-    arraysize(kDeveloperAcceleratorData);
+    base::size(kDeveloperAcceleratorData);
 
 const AcceleratorAction kPreferredActions[] = {
     // Window cycling accelerators.
@@ -130,13 +131,13 @@ const AcceleratorAction kPreferredActions[] = {
     CYCLE_FORWARD_MRU,   // Alt+Tab
 };
 
-const size_t kPreferredActionsLength = arraysize(kPreferredActions);
+const size_t kPreferredActionsLength = base::size(kPreferredActions);
 
 const AcceleratorAction kReservedActions[] = {
     POWER_PRESSED, POWER_RELEASED, SUSPEND,
 };
 
-const size_t kReservedActionsLength = arraysize(kReservedActions);
+const size_t kReservedActionsLength = base::size(kReservedActions);
 
 const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
     BRIGHTNESS_DOWN,
@@ -184,21 +185,21 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
 };
 
 const size_t kActionsAllowedAtLoginOrLockScreenLength =
-    arraysize(kActionsAllowedAtLoginOrLockScreen);
+    base::size(kActionsAllowedAtLoginOrLockScreen);
 
 const AcceleratorAction kActionsAllowedAtLockScreen[] = {
     EXIT, SUSPEND,
 };
 
 const size_t kActionsAllowedAtLockScreenLength =
-    arraysize(kActionsAllowedAtLockScreen);
+    base::size(kActionsAllowedAtLockScreen);
 
 const AcceleratorAction kActionsAllowedAtPowerMenu[] = {
     BRIGHTNESS_DOWN, BRIGHTNESS_UP, VOLUME_DOWN, VOLUME_UP, VOLUME_MUTE,
 };
 
 const size_t kActionsAllowedAtPowerMenuLength =
-    arraysize(kActionsAllowedAtPowerMenu);
+    base::size(kActionsAllowedAtPowerMenu);
 
 const AcceleratorAction kActionsAllowedAtModalWindow[] = {
     BRIGHTNESS_DOWN,
@@ -247,7 +248,7 @@ const AcceleratorAction kActionsAllowedAtModalWindow[] = {
 };
 
 const size_t kActionsAllowedAtModalWindowLength =
-    arraysize(kActionsAllowedAtModalWindow);
+    base::size(kActionsAllowedAtModalWindow);
 
 const AcceleratorAction kRepeatableActions[] = {
     BRIGHTNESS_DOWN,
@@ -265,7 +266,7 @@ const AcceleratorAction kRepeatableActions[] = {
     VOLUME_UP,
 };
 
-const size_t kRepeatableActionsLength = arraysize(kRepeatableActions);
+const size_t kRepeatableActionsLength = base::size(kRepeatableActions);
 
 const AcceleratorAction kActionsAllowedInAppModeOrPinnedMode[] = {
     BRIGHTNESS_DOWN,
@@ -309,7 +310,7 @@ const AcceleratorAction kActionsAllowedInAppModeOrPinnedMode[] = {
 };
 
 const size_t kActionsAllowedInAppModeOrPinnedModeLength =
-    arraysize(kActionsAllowedInAppModeOrPinnedMode);
+    base::size(kActionsAllowedInAppModeOrPinnedMode);
 
 const AcceleratorAction kActionsAllowedInPinnedMode[] = {
     LOCK_SCREEN,
@@ -321,7 +322,7 @@ const AcceleratorAction kActionsAllowedInPinnedMode[] = {
 };
 
 const size_t kActionsAllowedInPinnedModeLength =
-    arraysize(kActionsAllowedInPinnedMode);
+    base::size(kActionsAllowedInPinnedMode);
 
 const AcceleratorAction kActionsNeedingWindow[] = {
     CYCLE_BACKWARD_MRU,
@@ -336,7 +337,7 @@ const AcceleratorAction kActionsNeedingWindow[] = {
     WINDOW_POSITION_CENTER,
 };
 
-const size_t kActionsNeedingWindowLength = arraysize(kActionsNeedingWindow);
+const size_t kActionsNeedingWindowLength = base::size(kActionsNeedingWindow);
 
 const AcceleratorAction kActionsKeepingMenuOpen[] = {
     BRIGHTNESS_DOWN,
@@ -368,6 +369,7 @@ const AcceleratorAction kActionsKeepingMenuOpen[] = {
     VOLUME_UP,
 };
 
-const size_t kActionsKeepingMenuOpenLength = arraysize(kActionsKeepingMenuOpen);
+const size_t kActionsKeepingMenuOpenLength =
+    base::size(kActionsKeepingMenuOpen);
 
 }  // namespace ash

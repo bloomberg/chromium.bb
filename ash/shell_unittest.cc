@@ -27,7 +27,7 @@
 #include "ash/window_factory.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/account_id/account_id.h"
@@ -72,7 +72,7 @@ aura::Window* GetAlwaysOnTopContainer() {
 // Expect ALL the containers!
 void ExpectAllContainers() {
   // Validate no duplicate container IDs.
-  const size_t all_shell_container_ids_size = arraysize(kAllShellContainerIds);
+  const size_t all_shell_container_ids_size = base::size(kAllShellContainerIds);
   std::set<int32_t> container_ids;
   for (size_t i = 0; i < all_shell_container_ids_size; ++i)
     EXPECT_TRUE(container_ids.insert(kAllShellContainerIds[i]).second);

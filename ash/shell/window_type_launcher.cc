@@ -13,6 +13,7 @@
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/wm/test_child_modal_parent.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -50,7 +51,7 @@ class ModalWindow : public views::WidgetDelegateView,
       : modal_type_(modal_type),
         color_(kColors[g_color_index]),
         open_button_(MdTextButton::Create(this, base::ASCIIToUTF16("Moar!"))) {
-    ++g_color_index %= arraysize(kColors);
+    ++g_color_index %= base::size(kColors);
     AddChildView(open_button_);
   }
   ~ModalWindow() override = default;
@@ -100,7 +101,7 @@ class ModalWindow : public views::WidgetDelegateView,
 class NonModalTransient : public views::WidgetDelegateView {
  public:
   NonModalTransient() : color_(kColors[g_color_index]) {
-    ++g_color_index %= arraysize(kColors);
+    ++g_color_index %= base::size(kColors);
   }
   ~NonModalTransient() override = default;
 

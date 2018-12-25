@@ -4,7 +4,7 @@
 
 #include "ash/public/cpp/accelerators.h"
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 
 namespace ash {
 
@@ -175,6 +175,6 @@ const AcceleratorData kAcceleratorData[] = {
     // VKEY_MEDIA_LAUNCH_MAIL.
 };
 
-const size_t kAcceleratorDataLength = arraysize(kAcceleratorData);
+const size_t kAcceleratorDataLength = base::size(kAcceleratorData);
 
 }  // namespace ash
