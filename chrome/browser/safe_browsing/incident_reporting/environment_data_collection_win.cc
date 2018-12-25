@@ -11,9 +11,9 @@
 #include <string>
 
 #include "base/i18n/case_conversion.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -299,12 +299,12 @@ void CollectPlatformProcessData(
     ClientIncidentReport_EnvironmentData_Process* process) {
   CollectDlls(process);
   RecordLspFeature(process);
-  CollectModuleVerificationData(
-      kModulesToVerify, arraysize(kModulesToVerify), process);
+  CollectModuleVerificationData(kModulesToVerify, base::size(kModulesToVerify),
+                                process);
 }
 
 void CollectPlatformOSData(ClientIncidentReport_EnvironmentData_OS* os_data) {
-  CollectRegistryData(kRegKeysToCollect, arraysize(kRegKeysToCollect),
+  CollectRegistryData(kRegKeysToCollect, base::size(kRegKeysToCollect),
                       os_data->mutable_registry_key());
   CollectDomainEnrollmentData(os_data);
 }

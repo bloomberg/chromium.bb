@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "apps/ui/views/app_window_frame_view.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
@@ -163,8 +162,8 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
   // registered. This CHECK catches the case.
   CHECK(!is_kiosk_app_mode ||
         accelerator_table.size() ==
-            arraysize(kAppWindowAcceleratorMap) +
-                arraysize(kAppWindowKioskAppModeAcceleratorMap));
+            base::size(kAppWindowAcceleratorMap) +
+                base::size(kAppWindowKioskAppModeAcceleratorMap));
 
   // Ensure there is a ZoomController in kiosk mode, otherwise the processing
   // of the accelerators will cause a crash. Note CHECK here because DCHECK

@@ -4,8 +4,8 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
@@ -39,8 +39,7 @@ TEST_F(ContentScriptsManifestTest, MatchPattern) {
                ErrorUtils::FormatErrorMessage(
                    errors::kInvalidMatch, base::IntToString(0),
                    base::IntToString(0), errors::kExpectString))};
-  RunTestcases(testcases, arraysize(testcases),
-               EXPECT_TYPE_ERROR);
+  RunTestcases(testcases, base::size(testcases), EXPECT_TYPE_ERROR);
 
   LoadAndExpectSuccess("ports_in_content_scripts.json");
 }

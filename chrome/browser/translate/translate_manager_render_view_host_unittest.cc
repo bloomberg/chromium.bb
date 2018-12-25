@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
@@ -547,7 +546,7 @@ static const char* kServerLanguageList[] = {
 // Test the fetching of languages from the translate server
 TEST_F(TranslateManagerRenderViewHostTest, FetchLanguagesFromTranslateServer) {
   std::vector<std::string> server_languages;
-  for (size_t i = 0; i < arraysize(kServerLanguageList); ++i)
+  for (size_t i = 0; i < base::size(kServerLanguageList); ++i)
     server_languages.push_back(kServerLanguageList[i]);
 
   // First, get the default languages list. Note that calling

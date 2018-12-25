@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -135,13 +135,13 @@ TEST_F(SigninGlobalErrorTest, AuthStatusEnumerateAllErrors) {
     { GoogleServiceAuthError::SERVICE_ERROR, true },
     { GoogleServiceAuthError::WEB_LOGIN_REQUIRED, true },
   };
-  static_assert(arraysize(table) == GoogleServiceAuthError::NUM_STATES,
-      "table size should match number of auth error types");
+  static_assert(base::size(table) == GoogleServiceAuthError::NUM_STATES,
+                "table size should match number of auth error types");
 
   // Mark the profile with an active timestamp so profile_metrics logs it.
   testing_profile_manager()->UpdateLastUser(profile());
 
-  for (size_t i = 0; i < arraysize(table); ++i) {
+  for (size_t i = 0; i < base::size(table); ++i) {
     if (GoogleServiceAuthError::IsDeprecated(table[i].error_state))
       continue;
     SetAuthError(GoogleServiceAuthError::NONE);

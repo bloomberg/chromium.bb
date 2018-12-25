@@ -15,9 +15,9 @@
 
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
-#include "base/macros.h"
 #include "base/native_library.h"
 #include "base/scoped_native_library.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/pe_image.h"
 #include "build/build_config.h"
@@ -111,8 +111,8 @@ class SafeBrowsingModuleVerifierWinTest : public testing::Test {
 
     WCHAR module_path[MAX_PATH] = {};
     DWORD length =
-        GetModuleFileName(module_handle, module_path, arraysize(module_path));
-    ASSERT_NE(arraysize(module_path), length);
+        GetModuleFileName(module_handle, module_path, base::size(module_path));
+    ASSERT_NE(base::size(module_path), length);
     ASSERT_TRUE(disk_dll_handle_.Initialize(base::FilePath(module_path)));
   }
 

@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
@@ -132,7 +132,7 @@ void BrowserActionsBarBrowserTest::LoadExtensions() {
       extensions::ExtensionRegistry::Get(profile());
   // Add each, and verify that it is both correctly added to the extension
   // registry and to the browser actions container.
-  for (size_t i = 0; i < arraysize(extensions); ++i) {
+  for (size_t i = 0; i < base::size(extensions); ++i) {
     extension_service()->AddExtension(extensions[i]);
     EXPECT_TRUE(registry->enabled_extensions().GetByID(extensions[i]->id())) <<
         extensions[i]->name();

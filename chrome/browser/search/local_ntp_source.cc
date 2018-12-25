@@ -15,6 +15,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -496,7 +497,7 @@ bool ShouldServiceRequestIOThread(const GURL& url,
   if (url.SchemeIs(chrome::kChromeSearchScheme)) {
     std::string filename;
     webui::ParsePathAndScale(url, &filename, nullptr);
-    for (size_t i = 0; i < arraysize(kResources); ++i) {
+    for (size_t i = 0; i < base::size(kResources); ++i) {
       if (filename == kResources[i].filename)
         return true;
     }
@@ -981,7 +982,7 @@ void LocalNtpSource::StartDataRequest(
       GURL(GetLocalNtpPath() + stripped_path), &filename, &scale);
   ui::ScaleFactor scale_factor = ui::GetSupportedScaleFactor(scale);
 
-  for (size_t i = 0; i < arraysize(kResources); ++i) {
+  for (size_t i = 0; i < base::size(kResources); ++i) {
     if (filename == kResources[i].filename) {
       scoped_refptr<base::RefCountedMemory> response(
           ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
@@ -996,7 +997,7 @@ void LocalNtpSource::StartDataRequest(
 std::string LocalNtpSource::GetMimeType(
     const std::string& path) const {
   const std::string stripped_path = StripParameters(path);
-  for (size_t i = 0; i < arraysize(kResources); ++i) {
+  for (size_t i = 0; i < base::size(kResources); ++i) {
     if (stripped_path == kResources[i].filename)
       return kResources[i].mime_type;
   }

@@ -11,10 +11,10 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -106,7 +106,7 @@ bool ImageSource::IsWhitelisted(const std::string& path) const {
   if (components.empty())
     return false;
 
-  for (size_t i = 0; i < arraysize(kWhitelistedDirectories); i++) {
+  for (size_t i = 0; i < base::size(kWhitelistedDirectories); i++) {
     if (components[0] == kWhitelistedDirectories[i])
       return true;
   }

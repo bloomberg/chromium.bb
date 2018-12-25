@@ -11,7 +11,7 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_pref_names.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
@@ -46,7 +46,7 @@ const char* kDefaultPinnedApps[] = {
 
 std::unique_ptr<base::ListValue> CreateDefaultPinnedAppsList() {
   std::unique_ptr<base::ListValue> apps(new base::ListValue);
-  for (size_t i = 0; i < arraysize(kDefaultPinnedApps); ++i)
+  for (size_t i = 0; i < base::size(kDefaultPinnedApps); ++i)
     apps->Append(CreateAppDict(kDefaultPinnedApps[i]));
 
   return apps;
@@ -329,7 +329,7 @@ std::vector<std::string> ImportLegacyPinnedApps(
   }
 
   // Now process default apps.
-  for (size_t i = 0; i < arraysize(kDefaultPinnedApps); ++i) {
+  for (size_t i = 0; i < base::size(kDefaultPinnedApps); ++i) {
     const std::string& app_id = kDefaultPinnedApps[i];
     // Check if it is already imported.
     if (app_service->GetPinPosition(app_id).IsValid())

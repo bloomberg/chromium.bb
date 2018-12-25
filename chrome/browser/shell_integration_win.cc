@@ -21,12 +21,12 @@
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -182,7 +182,7 @@ base::string16 GetAppForProtocolUsingAssocQuery(const GURL& url) {
   // populate the external protocol dialog box the user sees when invoking
   // an unknown external protocol.
   wchar_t out_buffer[1024];
-  DWORD buffer_size = arraysize(out_buffer);
+  DWORD buffer_size = base::size(out_buffer);
   HRESULT hr =
       AssocQueryString(ASSOCF_IS_PROTOCOL, ASSOCSTR_FRIENDLYAPPNAME,
                        url_scheme.c_str(), NULL, out_buffer, &buffer_size);

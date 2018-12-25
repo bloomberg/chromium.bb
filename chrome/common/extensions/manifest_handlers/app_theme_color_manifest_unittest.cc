@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
@@ -17,20 +17,20 @@ TEST_F(ThemeColorMatchesManifestTest, ThemeColor) {
       Testcase("theme_color.json", std::string(),
                extensions::Manifest::INTERNAL, Extension::FROM_BOOKMARK),
   };
-  RunTestcases(testcases, arraysize(testcases), EXPECT_TYPE_SUCCESS);
+  RunTestcases(testcases, base::size(testcases), EXPECT_TYPE_SUCCESS);
 
   Testcase failure_testcases[] = {
       Testcase("theme_color_wrong_type.json",
                extensions::manifest_errors::kInvalidAppThemeColor),
   };
-  RunTestcases(failure_testcases, arraysize(failure_testcases),
+  RunTestcases(failure_testcases, base::size(failure_testcases),
                EXPECT_TYPE_ERROR);
 
   Testcase warning_testcases[] = {
       Testcase("theme_color.json",
                extensions::manifest_errors::kInvalidThemeColorAppType),
   };
-  RunTestcases(warning_testcases, arraysize(warning_testcases),
+  RunTestcases(warning_testcases, base::size(warning_testcases),
                EXPECT_TYPE_WARNING);
 }
 

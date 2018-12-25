@@ -11,9 +11,9 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -242,7 +242,7 @@ TEST_F(ProfileSigninConfirmationHelperTest,
   // history items.
   char buf[18];
   for (int i = 0; i < 10; i++) {
-    base::snprintf(buf, arraysize(buf), "http://foo.com/%d", i);
+    base::snprintf(buf, base::size(buf), "http://foo.com/%d", i);
     history->AddPage(
         GURL(std::string(buf)), base::Time::Now(), NULL, 1,
         GURL(), history::RedirectList(), ui::PAGE_TRANSITION_LINK,

@@ -7,9 +7,9 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -336,7 +336,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
   void SetupHistory() {
     // Add enough history pages containing |kSearchText| to trigger
     // open history page url in autocomplete result.
-    for (size_t i = 0; i < arraysize(kHistoryEntries); i++) {
+    for (size_t i = 0; i < base::size(kHistoryEntries); i++) {
       // Add everything in order of time. We don't want to have a time that
       // is "right now" or it will nondeterministically appear in the results.
       base::Time t = base::Time::Now() - base::TimeDelta::FromHours(i + 1);
@@ -345,7 +345,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
   }
 
   void SetupHostResolver() {
-    for (size_t i = 0; i < arraysize(kBlockedHostnames); ++i)
+    for (size_t i = 0; i < base::size(kBlockedHostnames); ++i)
       host_resolver()->AddSimulatedFailure(kBlockedHostnames[i]);
   }
 
@@ -537,7 +537,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BackspaceInKeywordMode) {
 
   // Should stay in keyword mode while deleting search text by pressing
   // backspace.
-  for (size_t i = 0; i < arraysize(kSearchText) - 1; ++i) {
+  for (size_t i = 0; i < base::size(kSearchText) - 1; ++i) {
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
     ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
     ASSERT_EQ(kSearchKeyword, UTF16ToUTF8(omnibox_view->model()->keyword()));
@@ -725,7 +725,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EscapeToDefaultMatch) {
   base::string16 old_text = omnibox_view->GetText();
 
   // Make sure inline autocomplete is triggerred.
-  EXPECT_GT(old_text.length(), arraysize(kInlineAutocompleteText) - 1);
+  EXPECT_GT(old_text.length(), base::size(kInlineAutocompleteText) - 1);
 
   size_t old_selected_line = popup_model->selected_line();
   EXPECT_EQ(0U, old_selected_line);
@@ -1442,7 +1442,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
   base::string16 old_text = omnibox_view->GetText();
 
   // Make sure inline autocomplete is triggerred.
-  EXPECT_GT(old_text.length(), arraysize(kInlineAutocompleteText) - 1);
+  EXPECT_GT(old_text.length(), base::size(kInlineAutocompleteText) - 1);
 
   // Press ctrl key.
   omnibox_view->model()->OnControlKeyChanged(true);

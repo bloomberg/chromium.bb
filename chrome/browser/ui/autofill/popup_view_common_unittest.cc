@@ -8,7 +8,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "chrome/browser/ui/autofill/popup_view_test_helpers.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/web_contents.h"
@@ -67,7 +67,7 @@ TEST_F(PopupViewCommonTest, CalculatePopupBounds) {
                  desired_height)},
   };
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     gfx::Rect actual_popup_bounds = view_common.CalculatePopupBounds(
         desired_width, desired_height, test_cases[i].element_bounds,
         web_contents()->GetNativeView(), /* is_rtl= */ false);

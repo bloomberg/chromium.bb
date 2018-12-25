@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/features/simple_feature.h"
@@ -44,7 +44,7 @@ TEST_F(PlatformAppsManifestTest, PlatformApps) {
              ErrorUtils::FormatErrorMessage(
                  errors::kInvalidManifestVersionOld, "2", "apps")),
   };
-  RunTestcases(error_testcases, arraysize(error_testcases), EXPECT_TYPE_ERROR);
+  RunTestcases(error_testcases, base::size(error_testcases), EXPECT_TYPE_ERROR);
 
   Testcase warning_testcases[] = {
       Testcase(
@@ -64,8 +64,8 @@ TEST_F(PlatformAppsManifestTest, PlatformApps) {
                "apps, "
                "but this is a packaged app."),
   };
-  RunTestcases(
-      warning_testcases, arraysize(warning_testcases), EXPECT_TYPE_WARNING);
+  RunTestcases(warning_testcases, base::size(warning_testcases),
+               EXPECT_TYPE_WARNING);
 }
 
 TEST_F(PlatformAppsManifestTest, PlatformAppContentSecurityPolicy) {
@@ -80,8 +80,8 @@ TEST_F(PlatformAppsManifestTest, PlatformAppContentSecurityPolicy) {
         "'app.content_security_policy' is not allowed for specified extension "
             "ID.")
   };
-  RunTestcases(
-      warning_testcases, arraysize(warning_testcases), EXPECT_TYPE_WARNING);
+  RunTestcases(warning_testcases, base::size(warning_testcases),
+               EXPECT_TYPE_WARNING);
 
   // Allowlisted ones can (this is the ID corresponding to the base 64 encoded
   // key in the init_platform_app_csp.json manifest.)

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -290,7 +291,7 @@ TEST_F(LayoutProviderTest, TypographyLineHeight) {
                             {CONTEXT_BODY_TEXT_LARGE, 2, 4},
                             {CONTEXT_BODY_TEXT_SMALL, 4, 5}};
 
-  for (size_t i = 0; i < arraysize(kExpectedIncreases); ++i) {
+  for (size_t i = 0; i < base::size(kExpectedIncreases); ++i) {
     SCOPED_TRACE(testing::Message() << "Testing index: " << i);
     const auto& increase = kExpectedIncreases[i];
     const gfx::FontList& font = views::style::GetFont(increase.context, kStyle);
@@ -331,7 +332,7 @@ TEST_F(LayoutProviderTest, ExplicitTypographyLineHeight) {
                          {CONTEXT_BODY_TEXT_LARGE, kBodyLineHeight},
                          {CONTEXT_BODY_TEXT_SMALL, kBodyLineHeight}};
 
-  for (size_t i = 0; i < arraysize(kHarmonyHeights); ++i) {
+  for (size_t i = 0; i < base::size(kHarmonyHeights); ++i) {
     SCOPED_TRACE(testing::Message() << "Testing index: " << i);
     EXPECT_EQ(kHarmonyHeights[i].line_height,
               views::style::GetLineHeight(kHarmonyHeights[i].context, kStyle));

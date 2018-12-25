@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/ime_driver/input_method_bridge_chromeos.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -184,7 +184,7 @@ TEST_F(InputMethodBridgeChromeOSTest, HexadecimalComposition) {
   };
 
   // Send the Ctrl-Shift-U,3,4,0,2 sequence.
-  for (size_t i = 0; i < arraysize(kTestSequence); i++) {
+  for (size_t i = 0; i < base::size(kTestSequence); i++) {
     EXPECT_TRUE(ProcessKeyEvent(
         UnicodeKeyPress(kTestSequence[i].vkey, kTestSequence[i].code,
                         kTestSequence[i].flags, kTestSequence[i].character)));

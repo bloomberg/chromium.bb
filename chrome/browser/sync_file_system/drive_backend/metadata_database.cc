@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -1638,8 +1637,8 @@ std::unique_ptr<base::ListValue> MetadataDatabase::DumpTrackers() {
     "active", "dirty", "folder_listing", "demoted",
     "title", "kind", "md5", "etag", "missing", "change_id",
   };
-  std::vector<std::string> key_strings(
-      trackerKeys, trackerKeys + arraysize(trackerKeys));
+  std::vector<std::string> key_strings(trackerKeys,
+                                       trackerKeys + base::size(trackerKeys));
   auto keys = std::make_unique<base::ListValue>();
   keys->AppendStrings(key_strings);
   metadata->SetString("title", "Trackers");
@@ -1700,8 +1699,8 @@ std::unique_ptr<base::ListValue> MetadataDatabase::DumpMetadata() {
     "file_id", "title", "type", "md5", "etag", "missing",
     "change_id", "parents"
   };
-  std::vector<std::string> key_strings(
-      fileKeys, fileKeys + arraysize(fileKeys));
+  std::vector<std::string> key_strings(fileKeys,
+                                       fileKeys + base::size(fileKeys));
   auto keys = std::make_unique<base::ListValue>();
   keys->AppendStrings(key_strings);
   metadata->SetString("title", "Metadata");

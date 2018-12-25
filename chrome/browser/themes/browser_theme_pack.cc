@@ -13,7 +13,6 @@
 
 #include "base/containers/flat_set.h"
 #include "base/files/file.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
@@ -142,7 +141,7 @@ const PersistingImagesTable kPersistingImages[] = {
     {PRS_THEME_WINDOW_CONTROL_BACKGROUND, IDR_THEME_WINDOW_CONTROL_BACKGROUND,
      "theme_window_control_background"},
 };
-const size_t kPersistingImagesLength = arraysize(kPersistingImages);
+const size_t kPersistingImagesLength = base::size(kPersistingImages);
 
 int GetPersistentIDByNameHelper(const std::string& key,
                                 const PersistingImagesTable* image_table,
@@ -229,7 +228,7 @@ const StringToIntTable kTintTable[] = {
     {"frame_incognito_inactive", TP::TINT_FRAME_INCOGNITO_INACTIVE},
     {"background_tab", TP::TINT_BACKGROUND_TAB},
 };
-const size_t kTintTableLength = arraysize(kTintTable);
+const size_t kTintTableLength = base::size(kTintTable);
 
 // Strings used by themes to identify colors in the JSON.
 constexpr StringToIntTable kOverwritableColorTable[] = {
@@ -280,7 +279,7 @@ const StringToIntTable kDisplayProperties[] = {
     {"ntp_background_repeat", TP::NTP_BACKGROUND_TILING},
     {"ntp_logo_alternate", TP::NTP_LOGO_ALTERNATE},
 };
-const size_t kDisplayPropertiesSize = arraysize(kDisplayProperties);
+const size_t kDisplayPropertiesSize = base::size(kDisplayProperties);
 
 int GetIntForString(const std::string& key,
                     const StringToIntTable* table,
@@ -677,7 +676,7 @@ void BrowserThemePack::BuildFromExtension(
 
   // Generate raw images (for new-tab-page attribution and background) for
   // any missing scale from an available scale image.
-  for (size_t i = 0; i < arraysize(kPreloadIDs); ++i) {
+  for (size_t i = 0; i < base::size(kPreloadIDs); ++i) {
     pack->GenerateRawImageForAllSupportedScales(kPreloadIDs[i]);
   }
 
@@ -1194,7 +1193,7 @@ bool BrowserThemePack::LoadRawBitmapsTo(
     // Some images need to go directly into |image_memory_|. No modification is
     // necessary or desirable.
     bool is_copyable = false;
-    for (size_t i = 0; i < arraysize(kPreloadIDs); ++i) {
+    for (size_t i = 0; i < base::size(kPreloadIDs); ++i) {
       if (kPreloadIDs[i] == prs_id) {
         is_copyable = true;
         break;
@@ -1248,7 +1247,7 @@ bool BrowserThemePack::LoadRawBitmapsTo(
 }
 
 void BrowserThemePack::CropImages(ImageCache* images) const {
-  for (size_t i = 0; i < arraysize(kImagesToCrop); ++i) {
+  for (size_t i = 0; i < base::size(kImagesToCrop); ++i) {
     int prs_id = kImagesToCrop[i].prs_id;
     auto it = images->find(prs_id);
     if (it == images->end())
@@ -1453,7 +1452,7 @@ void BrowserThemePack::CreateTabBackgroundImagesAndColors(ImageCache* images) {
   };
 
   ImageCache temp_output;
-  for (size_t i = 0; i < arraysize(kTabBackgroundMap); ++i) {
+  for (size_t i = 0; i < base::size(kTabBackgroundMap); ++i) {
     const int tab_id = kTabBackgroundMap[i].tab_id;
     ImageCache::const_iterator tab_it = images->find(tab_id);
 

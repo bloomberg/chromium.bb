@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -132,7 +132,7 @@ const struct {
 
 // Test for GetSavePasswordDialogTitleTextAndLinkRange().
 TEST(ManagePasswordsViewUtilTest, GetSavePasswordDialogTitleTextAndLinkRange) {
-  for (size_t i = 0; i < arraysize(kDomainsTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kDomainsTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "user_visible_url = "
                                     << kDomainsTestCases[i].user_visible_url
                                     << ", form_origin_url = "
@@ -189,7 +189,7 @@ TEST(ManagePasswordsViewUtilTest,
 }
 
 TEST(ManagePasswordsViewUtilTest, GetManagePasswordsDialogTitleText) {
-  for (size_t i = 0; i < arraysize(kDomainsTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kDomainsTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "user_visible_url = "
                                     << kDomainsTestCases[i].user_visible_url
                                     << ", password_origin_url = "

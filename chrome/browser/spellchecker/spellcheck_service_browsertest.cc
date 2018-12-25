@@ -7,9 +7,9 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -461,8 +461,8 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT) {
     base::ScopedAllowBlockingForTesting allow_blocking;
     size_t actual = base::WriteFile(
         bdict_path, reinterpret_cast<const char*>(kCorruptedBDICT),
-        arraysize(kCorruptedBDICT));
-    EXPECT_EQ(arraysize(kCorruptedBDICT), actual);
+        base::size(kCorruptedBDICT));
+    EXPECT_EQ(base::size(kCorruptedBDICT), actual);
   }
 
   // Attach an event to the SpellcheckService object so we can receive its

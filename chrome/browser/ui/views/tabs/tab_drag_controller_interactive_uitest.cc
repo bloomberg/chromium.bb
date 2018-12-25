@@ -15,11 +15,11 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -2356,7 +2356,7 @@ const float kDeviceScaleFactorExpectations[] = {
 };
 
 static_assert(
-    arraysize(kDragPoints) == arraysize(kDeviceScaleFactorExpectations),
+    base::size(kDragPoints) == base::size(kDeviceScaleFactorExpectations),
     "kDragPoints and kDeviceScaleFactorExpectations must have the same "
     "number of elements");
 
@@ -2368,7 +2368,7 @@ void CursorDeviceScaleFactorStep(
   ASSERT_FALSE(not_attached_tab_strip->IsDragSessionActive());
   ASSERT_TRUE(TabDragController::IsActive());
 
-  if (index < arraysize(kDragPoints)) {
+  if (index < base::size(kDragPoints)) {
     EXPECT_EQ(kDeviceScaleFactorExpectations[index],
               test->GetCursorDeviceScaleFactor());
     const DragPoint p = kDragPoints[index];

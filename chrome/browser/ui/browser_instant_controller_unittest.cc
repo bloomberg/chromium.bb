@@ -7,9 +7,9 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_unittest_base.h"
@@ -101,7 +101,7 @@ class FakeWebContentsObserver : public content::WebContentsObserver {
 };
 
 TEST_F(BrowserInstantControllerTest, DefaultSearchProviderChanged) {
-  size_t num_tests = arraysize(kTabReloadTestCasesFinalProviderNotGoogle);
+  size_t num_tests = base::size(kTabReloadTestCasesFinalProviderNotGoogle);
   std::vector<std::unique_ptr<FakeWebContentsObserver>> observers;
   for (size_t i = 0; i < num_tests; ++i) {
     const TabReloadTestCase& test =
@@ -149,7 +149,7 @@ TEST_F(BrowserInstantControllerTest, DefaultSearchProviderChanged) {
 }
 
 TEST_F(BrowserInstantControllerTest, GoogleBaseURLUpdated) {
-  const size_t num_tests = arraysize(kTabReloadTestCasesFinalProviderGoogle);
+  const size_t num_tests = base::size(kTabReloadTestCasesFinalProviderGoogle);
   std::vector<std::unique_ptr<FakeWebContentsObserver>> observers;
   for (size_t i = 0; i < num_tests; ++i) {
     const TabReloadTestCase& test = kTabReloadTestCasesFinalProviderGoogle[i];

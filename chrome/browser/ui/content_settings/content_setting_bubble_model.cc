@@ -11,7 +11,6 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -191,11 +190,11 @@ void ContentSettingSimpleBubbleModel::SetTitle() {
       {CONTENT_SETTINGS_TYPE_SENSORS, IDS_ALLOWED_SENSORS_TITLE},
   };
   const ContentSettingsTypeIdEntry* title_ids = kBlockedTitleIDs;
-  size_t num_title_ids = arraysize(kBlockedTitleIDs);
+  size_t num_title_ids = base::size(kBlockedTitleIDs);
   if (content_settings->IsContentAllowed(content_type()) &&
       !content_settings->IsContentBlocked(content_type())) {
     title_ids = kAccessedTitleIDs;
-    num_title_ids = arraysize(kAccessedTitleIDs);
+    num_title_ids = base::size(kAccessedTitleIDs);
   }
   int title_id = GetIdForContentType(title_ids, num_title_ids, content_type());
   if (title_id)
@@ -225,11 +224,11 @@ void ContentSettingSimpleBubbleModel::SetMessage() {
       {CONTENT_SETTINGS_TYPE_SENSORS, IDS_ALLOWED_SENSORS_MESSAGE},
   };
   const ContentSettingsTypeIdEntry* message_ids = kBlockedMessageIDs;
-  size_t num_message_ids = arraysize(kBlockedMessageIDs);
+  size_t num_message_ids = base::size(kBlockedMessageIDs);
   if (content_settings->IsContentAllowed(content_type()) &&
       !content_settings->IsContentBlocked(content_type())) {
     message_ids = kAccessedMessageIDs;
-    num_message_ids = arraysize(kAccessedMessageIDs);
+    num_message_ids = base::size(kAccessedMessageIDs);
   }
   int message_id =
       GetIdForContentType(message_ids, num_message_ids, content_type());
@@ -262,7 +261,7 @@ void ContentSettingSimpleBubbleModel::SetCustomLink() {
     {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, IDS_ALLOW_INSECURE_CONTENT_BUTTON},
   };
   int custom_link_id =
-      GetIdForContentType(kCustomIDs, arraysize(kCustomIDs), content_type());
+      GetIdForContentType(kCustomIDs, base::size(kCustomIDs), content_type());
   if (custom_link_id)
     set_custom_link(l10n_util::GetStringUTF16(custom_link_id));
 }
@@ -790,11 +789,11 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   base::string16 radio_allow_label;
   if (allowed) {
     int resource_id = GetIdForContentType(
-        kAllowedAllowIDs, arraysize(kAllowedAllowIDs), content_type());
+        kAllowedAllowIDs, base::size(kAllowedAllowIDs), content_type());
     radio_allow_label = l10n_util::GetStringUTF16(resource_id);
   } else {
     radio_allow_label = l10n_util::GetStringFUTF16(
-        GetIdForContentType(kBlockedAllowIDs, arraysize(kBlockedAllowIDs),
+        GetIdForContentType(kBlockedAllowIDs, base::size(kBlockedAllowIDs),
                             content_type()),
         display_host);
   }
@@ -819,11 +818,11 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   base::string16 radio_block_label;
   if (allowed) {
     int resource_id = GetIdForContentType(
-        kAllowedBlockIDs, arraysize(kAllowedBlockIDs), content_type());
+        kAllowedBlockIDs, base::size(kAllowedBlockIDs), content_type());
     radio_block_label = l10n_util::GetStringFUTF16(resource_id, display_host);
   } else {
     radio_block_label = l10n_util::GetStringUTF16(GetIdForContentType(
-        kBlockedBlockIDs, arraysize(kBlockedBlockIDs), content_type()));
+        kBlockedBlockIDs, base::size(kBlockedBlockIDs), content_type()));
   }
 
   radio_group.radio_items = {radio_allow_label, radio_block_label};

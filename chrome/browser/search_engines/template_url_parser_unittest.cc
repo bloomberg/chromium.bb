@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/search_engines/template_url_parser.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
-#include "components/search_engines/template_url_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -262,6 +262,6 @@ TEST_F(TemplateURLParserTest, InvalidInput) {
     </Url>
     </OpenSearchDescription>
   )";
-  TemplateURLParser::Parse(SearchTermsData(), char_data, arraysize(char_data),
+  TemplateURLParser::Parse(SearchTermsData(), char_data, base::size(char_data),
                            &filter);
 }

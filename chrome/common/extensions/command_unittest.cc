@@ -9,7 +9,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -226,7 +225,7 @@ TEST(CommandTest, ExtensionCommandParsing) {
   all_platforms.push_back("mac");
   all_platforms.push_back("windows");
 
-  for (size_t i = 0; i < arraysize(kTests); ++i)
+  for (size_t i = 0; i < base::size(kTests); ++i)
     CheckParse(kTests[i], i, false, all_platforms);
 }
 
@@ -330,7 +329,7 @@ TEST(CommandTest, ExtensionCommandParsingPlatformSpecific) {
 
   std::vector<std::string> chromeos;
   chromeos.push_back("chromeos");
-  for (size_t i = 0; i < arraysize(kChromeOsTests); ++i)
+  for (size_t i = 0; i < base::size(kChromeOsTests); ++i)
     CheckParse(kChromeOsTests[i], i, true, chromeos);
 
   ConstCommandsTestData kNonChromeOsSearchTests[] = {
@@ -342,7 +341,7 @@ TEST(CommandTest, ExtensionCommandParsingPlatformSpecific) {
   non_chromeos.push_back("mac");
   non_chromeos.push_back("linux");
 
-  for (size_t i = 0; i < arraysize(kNonChromeOsSearchTests); ++i)
+  for (size_t i = 0; i < base::size(kNonChromeOsSearchTests); ++i)
     CheckParse(kNonChromeOsSearchTests[i], i, true, non_chromeos);
 }
 

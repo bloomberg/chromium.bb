@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -396,7 +395,7 @@ int FindUMAEnumValueForCommand(int id, UmaEnumIdLookupType enum_lookup_type) {
     return 1;
 
   id = CollapseCommandsForUMA(id);
-  const size_t kMappingSize = arraysize(kUmaEnumToControlId);
+  const size_t kMappingSize = base::size(kUmaEnumToControlId);
   for (size_t i = 0; i < kMappingSize; ++i) {
     if (kUmaEnumToControlId[i].control_id == id) {
       if (enum_lookup_type == GENERAL_ENUM_ID)
@@ -893,7 +892,7 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
     return;
   }
 
-  const size_t kMappingSize = arraysize(kUmaEnumToControlId);
+  const size_t kMappingSize = base::size(kUmaEnumToControlId);
   UMA_HISTOGRAM_EXACT_LINEAR("RenderViewContextMenu.Used", enum_id,
                              kUmaEnumToControlId[kMappingSize - 1].enum_id);
   // Record to additional context specific histograms.
@@ -925,7 +924,7 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
 void RenderViewContextMenu::RecordShownItem(int id) {
   int enum_id = FindUMAEnumValueForCommand(id, GENERAL_ENUM_ID);
   if (enum_id != -1) {
-    const size_t kMappingSize = arraysize(kUmaEnumToControlId);
+    const size_t kMappingSize = base::size(kUmaEnumToControlId);
     UMA_HISTOGRAM_EXACT_LINEAR("RenderViewContextMenu.Shown", enum_id,
                                kUmaEnumToControlId[kMappingSize - 1].enum_id);
   } else {
