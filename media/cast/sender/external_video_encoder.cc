@@ -10,9 +10,9 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -848,7 +848,7 @@ double QuantizerEstimator::EstimateForKeyFrame(const VideoFrame& frame) {
   // histogram and return it.
   const int num_samples = (size.width() - 1) * rows_in_subset;
   return ToQuantizerEstimate(ComputeEntropyFromHistogram(
-      histogram, arraysize(histogram), num_samples));
+      histogram, base::size(histogram), num_samples));
 }
 
 double QuantizerEstimator::EstimateForDeltaFrame(const VideoFrame& frame) {
@@ -893,7 +893,7 @@ double QuantizerEstimator::EstimateForDeltaFrame(const VideoFrame& frame) {
   // histogram and return it.
   const int num_samples = size.width() * rows_in_subset;
   return ToQuantizerEstimate(ComputeEntropyFromHistogram(
-      histogram, arraysize(histogram), num_samples));
+      histogram, base::size(histogram), num_samples));
 }
 
 // static

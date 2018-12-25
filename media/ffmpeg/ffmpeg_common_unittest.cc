@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/media.h"
 #include "media/base/media_util.h"
@@ -53,7 +53,7 @@ void TestConfigConvertExtraData(
 
   // Valid combination: extra_data = non-nullptr && size > 0.
   codec_parameters->extradata = &kExtraData[0];
-  codec_parameters->extradata_size = arraysize(kExtraData);
+  codec_parameters->extradata_size = base::size(kExtraData);
   EXPECT_TRUE(converter_fn.Run(stream, decoder_config));
   EXPECT_EQ(static_cast<size_t>(codec_parameters->extradata_size),
             decoder_config->extra_data().size());
@@ -196,7 +196,7 @@ TEST_F(FFmpegCommonTest, TimeBaseConversions) {
       {1, 2, 1, 500000, 1}, {1, 3, 1, 333333, 1}, {1, 3, 2, 666667, 2},
   };
 
-  for (size_t i = 0; i < arraysize(test_data); ++i) {
+  for (size_t i = 0; i < base::size(test_data); ++i) {
     SCOPED_TRACE(i);
 
     AVRational time_base;

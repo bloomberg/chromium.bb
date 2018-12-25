@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/timestamp_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -132,7 +132,7 @@ TEST_F(AudioTimestampHelperTest, GetDuration) {
 
   int frame_count = 5;
   int64_t expected_durations[] = {113, 113, 114, 113, 113, 114};
-  for (size_t i = 0; i < arraysize(expected_durations); ++i) {
+  for (size_t i = 0; i < base::size(expected_durations); ++i) {
     base::TimeDelta duration = helper_.GetFrameDuration(frame_count);
     EXPECT_EQ(expected_durations[i], duration.InMicroseconds());
 

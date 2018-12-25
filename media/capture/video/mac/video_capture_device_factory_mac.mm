@@ -11,8 +11,8 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #import "media/capture/video/mac/video_capture_device_avfoundation_mac.h"
@@ -45,7 +45,7 @@ static bool IsDeviceBlacklisted(
     const VideoCaptureDeviceDescriptor& descriptor) {
   bool is_device_blacklisted = false;
   for (size_t i = 0;
-       !is_device_blacklisted && i < arraysize(kBlacklistedCamerasIdSignature);
+       !is_device_blacklisted && i < base::size(kBlacklistedCamerasIdSignature);
        ++i) {
     is_device_blacklisted =
         base::EndsWith(descriptor.device_id, kBlacklistedCamerasIdSignature[i],

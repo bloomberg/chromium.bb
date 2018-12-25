@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/test/perf_test_suite.h"
 #include "media/formats/mp2t/timestamp_unroller.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,7 +52,7 @@ TEST(TimestampUnrollerTest, SingleStream) {
   };
 
   std::vector<int64_t> timestamps_vector(timestamps,
-                                         timestamps + arraysize(timestamps));
+                                         timestamps + base::size(timestamps));
   RunUnrollTest(timestamps_vector);
 }
 

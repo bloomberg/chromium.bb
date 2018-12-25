@@ -18,9 +18,9 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
@@ -162,7 +162,7 @@ class KeySystemManager {
 KeySystemManager::KeySystemManager() {
   // Widevine is always supported in Android.
   key_system_uuid_map_[kWidevineKeySystem] =
-      UUID(kWidevineUuid, kWidevineUuid + arraysize(kWidevineUuid));
+      UUID(kWidevineUuid, kWidevineUuid + base::size(kWidevineUuid));
   MediaDrmBridgeClient* client = GetMediaDrmBridgeClient();
   if (client)
     client->AddKeySystemUUIDMappings(&key_system_uuid_map_);

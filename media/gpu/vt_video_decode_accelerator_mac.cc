@@ -17,7 +17,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -210,8 +209,8 @@ bool InitializeVideoToolboxInternal() {
                                 0x3d, 0xa1, 0x00, 0x00, 0x03, 0x00, 0x01, 0x00,
                                 0x00, 0x03, 0x00, 0x30, 0x8f, 0x16, 0x2d, 0x9a};
   const uint8_t pps_normal[] = {0x68, 0xe9, 0x7b, 0xcb};
-  if (!CreateVideoToolboxSession(sps_normal, arraysize(sps_normal), pps_normal,
-                                 arraysize(pps_normal), true)) {
+  if (!CreateVideoToolboxSession(sps_normal, base::size(sps_normal), pps_normal,
+                                 base::size(pps_normal), true)) {
     DVLOG(1) << "Hardware decoding with VideoToolbox is not supported";
     return false;
   }
@@ -222,8 +221,8 @@ bool InitializeVideoToolboxInternal() {
                                0x22, 0x10, 0x00, 0x00, 0x3e, 0x90, 0x00, 0x0e,
                                0xa6, 0x08, 0xf1, 0x22, 0x59, 0xa0};
   const uint8_t pps_small[] = {0x68, 0xe9, 0x79, 0x72, 0xc0};
-  if (!CreateVideoToolboxSession(sps_small, arraysize(sps_small), pps_small,
-                                 arraysize(pps_small), false)) {
+  if (!CreateVideoToolboxSession(sps_small, base::size(sps_small), pps_small,
+                                 base::size(pps_small), false)) {
     DLOG(WARNING) << "Software decoding with VideoToolbox is not supported";
     return false;
   }
@@ -314,7 +313,7 @@ gfx::ColorSpace GetImageBufferColorSpace(CVImageBufferRef image_buffer) {
       },
   };
   if (!GetImageBufferProperty(image_buffer, kCVImageBufferColorPrimariesKey,
-                              primaries, arraysize(primaries), &primary_id)) {
+                              primaries, base::size(primaries), &primary_id)) {
     DLOG(ERROR) << "Filed to find CVImageBufferRef primaries.";
   }
 
@@ -339,7 +338,7 @@ gfx::ColorSpace GetImageBufferColorSpace(CVImageBufferRef image_buffer) {
       },
   };
   if (!GetImageBufferProperty(image_buffer, kCVImageBufferTransferFunctionKey,
-                              transfers, arraysize(transfers), &transfer_id)) {
+                              transfers, base::size(transfers), &transfer_id)) {
     DLOG(ERROR) << "Filed to find CVImageBufferRef transfer.";
   }
 
@@ -382,7 +381,7 @@ gfx::ColorSpace GetImageBufferColorSpace(CVImageBufferRef image_buffer) {
                       gfx::ColorSpace::MatrixID::SMPTE240M,
                   }};
   if (!GetImageBufferProperty(image_buffer, kCVImageBufferYCbCrMatrixKey,
-                              matrices, arraysize(matrices), &matrix_id)) {
+                              matrices, base::size(matrices), &matrix_id)) {
     DLOG(ERROR) << "Filed to find CVImageBufferRef YUV matrix.";
   }
 

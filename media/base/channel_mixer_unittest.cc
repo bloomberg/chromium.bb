@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
@@ -166,35 +166,35 @@ INSTANTIATE_TEST_CASE_P(
     testing::Values(ChannelMixerTestData(CHANNEL_LAYOUT_STEREO,
                                          CHANNEL_LAYOUT_MONO,
                                          kStereoToMonoValues,
-                                         arraysize(kStereoToMonoValues),
+                                         base::size(kStereoToMonoValues),
                                          0.5f),
                     ChannelMixerTestData(CHANNEL_LAYOUT_MONO,
                                          CHANNEL_LAYOUT_STEREO,
                                          kMonoToStereoValues,
-                                         arraysize(kMonoToStereoValues),
+                                         base::size(kMonoToStereoValues),
                                          1.0f),
                     ChannelMixerTestData(CHANNEL_LAYOUT_5_1,
                                          CHANNEL_LAYOUT_MONO,
                                          kFiveOneToMonoValues,
-                                         arraysize(kFiveOneToMonoValues),
+                                         base::size(kFiveOneToMonoValues),
                                          ChannelMixer::kHalfPower),
                     ChannelMixerTestData(CHANNEL_LAYOUT_DISCRETE,
                                          2,
                                          CHANNEL_LAYOUT_DISCRETE,
                                          2,
                                          kStereoToMonoValues,
-                                         arraysize(kStereoToMonoValues)),
+                                         base::size(kStereoToMonoValues)),
                     ChannelMixerTestData(CHANNEL_LAYOUT_DISCRETE,
                                          2,
                                          CHANNEL_LAYOUT_DISCRETE,
                                          5,
                                          kStereoToMonoValues,
-                                         arraysize(kStereoToMonoValues)),
+                                         base::size(kStereoToMonoValues)),
                     ChannelMixerTestData(CHANNEL_LAYOUT_DISCRETE,
                                          5,
                                          CHANNEL_LAYOUT_DISCRETE,
                                          2,
                                          kFiveDiscreteValues,
-                                         arraysize(kFiveDiscreteValues))));
+                                         base::size(kFiveDiscreteValues))));
 
 }  // namespace media

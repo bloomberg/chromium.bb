@@ -32,7 +32,6 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
@@ -1052,7 +1051,7 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
     flags |= D3D11_CREATE_DEVICE_DEBUG;
 
     hr = D3D11CreateDevice(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, flags,
-                           feature_levels, arraysize(feature_levels),
+                           feature_levels, base::size(feature_levels),
                            D3D11_SDK_VERSION, d3d11_device_.GetAddressOf(),
                            &feature_level_out,
                            d3d11_device_context_.GetAddressOf());
@@ -1066,7 +1065,7 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
 #endif
     if (!d3d11_device_context_) {
       hr = D3D11CreateDevice(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, flags,
-                             feature_levels, arraysize(feature_levels),
+                             feature_levels, base::size(feature_levels),
                              D3D11_SDK_VERSION, d3d11_device_.GetAddressOf(),
                              &feature_level_out,
                              d3d11_device_context_.GetAddressOf());

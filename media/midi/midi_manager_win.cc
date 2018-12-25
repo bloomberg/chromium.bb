@@ -18,6 +18,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -643,7 +644,7 @@ MidiManagerWin::PortManager::HandleMidiInCallback(HMIDIIN hmi,
         static_cast<uint8_t>((param1 >> 16) & 0xff);
     const uint8_t kData[] = {status_byte, first_data_byte, second_data_byte};
     const size_t len = GetMessageLength(status_byte);
-    DCHECK_LE(len, arraysize(kData));
+    DCHECK_LE(len, base::size(kData));
     std::vector<uint8_t> data;
     data.assign(kData, kData + len);
     manager->PostReplyTask(base::BindOnce(

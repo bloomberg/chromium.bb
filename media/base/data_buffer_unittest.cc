@@ -8,7 +8,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -49,7 +49,7 @@ TEST(DataBufferTest, Constructor_ScopedArray) {
 
 TEST(DataBufferTest, CopyFrom) {
   const uint8_t kTestData[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77};
-  const int kTestDataSize = arraysize(kTestData);
+  const int kTestDataSize = base::size(kTestData);
 
   scoped_refptr<DataBuffer> buffer =
       DataBuffer::CopyFrom(kTestData, kTestDataSize);
@@ -99,9 +99,9 @@ TEST(DataBufferTest, Duration) {
 
 TEST(DataBufferTest, ReadingWriting) {
   const char kData[] = "hello";
-  const int kDataSize = arraysize(kData);
+  const int kDataSize = base::size(kData);
   const char kNewData[] = "chromium";
-  const int kNewDataSize = arraysize(kNewData);
+  const int kNewDataSize = base::size(kNewData);
 
   // Create a DataBuffer.
   scoped_refptr<DataBuffer> buffer(new DataBuffer(kDataSize));

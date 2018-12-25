@@ -14,8 +14,8 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/power_monitor/power_monitor.h"
+#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "media/base/mac/video_frame_mac.h"
@@ -241,14 +241,14 @@ void H264VideoToolboxEncoder::ResetCompressionSession() {
   CFTypeRef buffer_attributes_keys[] = {kCVPixelBufferPixelFormatTypeKey,
                                         kCVBufferPropagatedAttachmentsKey};
   CFTypeRef buffer_attributes_values[] = {
-      video_toolbox::ArrayWithIntegers(format, arraysize(format)).release(),
+      video_toolbox::ArrayWithIntegers(format, base::size(format)).release(),
       video_toolbox::DictionaryWithKeysAndValues(
-          attachments_keys, attachments_values, arraysize(attachments_keys))
+          attachments_keys, attachments_values, base::size(attachments_keys))
           .release()};
   const base::ScopedCFTypeRef<CFDictionaryRef> buffer_attributes =
       video_toolbox::DictionaryWithKeysAndValues(
           buffer_attributes_keys, buffer_attributes_values,
-          arraysize(buffer_attributes_keys));
+          base::size(buffer_attributes_keys));
   for (auto* v : buffer_attributes_values)
     CFRelease(v);
 

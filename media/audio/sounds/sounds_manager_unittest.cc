@@ -6,8 +6,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -63,7 +63,7 @@ TEST_F(SoundsManagerTest, Play) {
 
   ASSERT_TRUE(SoundsManager::Get()->Initialize(
       kTestAudioKey,
-      base::StringPiece(kTestAudioData, arraysize(kTestAudioData))));
+      base::StringPiece(kTestAudioData, base::size(kTestAudioData))));
   ASSERT_EQ(20,
             SoundsManager::Get()->GetDuration(kTestAudioKey).InMicroseconds());
   ASSERT_TRUE(SoundsManager::Get()->Play(kTestAudioKey));
@@ -86,7 +86,7 @@ TEST_F(SoundsManagerTest, Stop) {
 
   ASSERT_TRUE(SoundsManager::Get()->Initialize(
       kTestAudioKey,
-      base::StringPiece(kTestAudioData, arraysize(kTestAudioData))));
+      base::StringPiece(kTestAudioData, base::size(kTestAudioData))));
 
   // This overrides the wav data set by kTestAudioData and results in
   // a never-ending sine wave being played.

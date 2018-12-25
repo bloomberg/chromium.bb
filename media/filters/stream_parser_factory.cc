@@ -7,8 +7,8 @@
 #include <stddef.h>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -446,7 +446,7 @@ static bool CheckTypeAndCodecs(
     std::vector<CodecInfo::HistogramTag>* audio_codecs,
     std::vector<CodecInfo::HistogramTag>* video_codecs) {
   // Search for the SupportedTypeInfo for |type|.
-  for (size_t i = 0; i < arraysize(kSupportedTypeInfo); ++i) {
+  for (size_t i = 0; i < base::size(kSupportedTypeInfo); ++i) {
     const SupportedTypeInfo& type_info = kSupportedTypeInfo[i];
     if (type == type_info.type) {
       if (codecs.empty()) {

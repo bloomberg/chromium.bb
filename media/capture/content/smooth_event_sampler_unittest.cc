@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -369,7 +369,8 @@ TEST(SmoothEventSamplerTest, DrawingAt24FpsWith60HzVsyncSampledAt30Hertz) {
                                           {false, 0}};
 
   SmoothEventSampler sampler(base::TimeDelta::FromSeconds(1) / 30);
-  ReplayCheckingSamplerDecisions(data_points, arraysize(data_points), &sampler);
+  ReplayCheckingSamplerDecisions(data_points, base::size(data_points),
+                                 &sampler);
 }
 
 TEST(SmoothEventSamplerTest, DrawingAt30FpsWith60HzVsyncSampledAt30Hertz) {
@@ -478,7 +479,8 @@ TEST(SmoothEventSamplerTest, DrawingAt30FpsWith60HzVsyncSampledAt30Hertz) {
                                           {true, 33.44}};
 
   SmoothEventSampler sampler(base::TimeDelta::FromSeconds(1) / 30);
-  ReplayCheckingSamplerDecisions(data_points, arraysize(data_points), &sampler);
+  ReplayCheckingSamplerDecisions(data_points, base::size(data_points),
+                                 &sampler);
 }
 
 TEST(SmoothEventSamplerTest, DrawingAt60FpsWith60HzVsyncSampledAt30Hertz) {
@@ -611,7 +613,8 @@ TEST(SmoothEventSamplerTest, DrawingAt60FpsWith60HzVsyncSampledAt30Hertz) {
                                           {true, 50.16}};
 
   SmoothEventSampler sampler(base::TimeDelta::FromSeconds(1) / 30);
-  ReplayCheckingSamplerDecisions(data_points, arraysize(data_points), &sampler);
+  ReplayCheckingSamplerDecisions(data_points, base::size(data_points),
+                                 &sampler);
 }
 
 }  // namespace media

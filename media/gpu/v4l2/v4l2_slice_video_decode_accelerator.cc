@@ -20,10 +20,10 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -2015,8 +2015,8 @@ V4L2SliceVideoDecodeAccelerator::GetSupportedProfiles() {
   if (!device)
     return SupportedProfiles();
 
-  return device->GetSupportedDecodeProfiles(arraysize(supported_input_fourccs_),
-                                            supported_input_fourccs_);
+  return device->GetSupportedDecodeProfiles(
+      base::size(supported_input_fourccs_), supported_input_fourccs_);
 }
 
 }  // namespace media

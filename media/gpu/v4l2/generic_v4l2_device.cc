@@ -19,8 +19,8 @@
 #include <memory>
 
 #include "base/files/scoped_file.h"
-#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -208,9 +208,9 @@ bool GenericV4L2Device::CanCreateEGLImageFrom(uint32_t v4l2_pixfmt) {
 
   return std::find(
              kEGLImageDrmFmtsSupported,
-             kEGLImageDrmFmtsSupported + arraysize(kEGLImageDrmFmtsSupported),
+             kEGLImageDrmFmtsSupported + base::size(kEGLImageDrmFmtsSupported),
              V4L2PixFmtToDrmFormat(v4l2_pixfmt)) !=
-         kEGLImageDrmFmtsSupported + arraysize(kEGLImageDrmFmtsSupported);
+         kEGLImageDrmFmtsSupported + base::size(kEGLImageDrmFmtsSupported);
 }
 
 EGLImageKHR GenericV4L2Device::CreateEGLImage(

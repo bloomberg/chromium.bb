@@ -6,6 +6,7 @@
 
 #include <tuple>
 
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/media_util.h"
@@ -87,7 +88,7 @@ TEST_P(AudioTimestampValidatorTest, WarnForEraticTimes) {
     // Ping-pong between two random offsets to prevent validator from
     // stabilizing timestamp pattern.
     base::TimeDelta randomOffset =
-        kRandomOffsets[i % arraysize(kRandomOffsets)];
+        kRandomOffsets[i % base::size(kRandomOffsets)];
     encoded_buffer->set_timestamp(i * kBufferDuration + randomOffset);
 
     if (i == 0) {

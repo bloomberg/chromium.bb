@@ -13,8 +13,8 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
@@ -190,8 +190,9 @@ void FakeDemuxerStream::DoRead() {
   // TODO(xhwang): Output out-of-order buffers if needed.
   if (is_encrypted_) {
     buffer->set_decrypt_config(DecryptConfig::CreateCencConfig(
-        std::string(kKeyId, kKeyId + arraysize(kKeyId)),
-        std::string(kIv, kIv + arraysize(kIv)), std::vector<SubsampleEntry>()));
+        std::string(kKeyId, kKeyId + base::size(kKeyId)),
+        std::string(kIv, kIv + base::size(kIv)),
+        std::vector<SubsampleEntry>()));
   }
   buffer->set_timestamp(current_timestamp_);
   buffer->set_duration(duration_);

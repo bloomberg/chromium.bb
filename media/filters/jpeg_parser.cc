@@ -6,7 +6,7 @@
 
 #include "base/big_endian.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 
 using base::BigEndianReader;
 
@@ -149,7 +149,7 @@ static bool ParseSOF(const char* buffer,
     return false;
   }
   if (!InRange(frame_header->num_components, 1,
-               arraysize(frame_header->components))) {
+               base::size(frame_header->components))) {
     DLOG(ERROR) << "num_components="
                 << static_cast<int>(frame_header->num_components)
                 << " is not supported";
@@ -268,7 +268,7 @@ static bool ParseDHT(const char* buffer,
     size_t count = 0;
     if (!reader.ReadBytes(&table->code_length, sizeof(table->code_length)))
       return false;
-    for (size_t i = 0; i < arraysize(table->code_length); i++)
+    for (size_t i = 0; i < base::size(table->code_length); i++)
       count += table->code_length[i];
 
     if (!InRange(count, 0, sizeof(table->code_value))) {

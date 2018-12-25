@@ -14,6 +14,7 @@
 #include "base/big_endian.h"
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/filters/jpeg_parser.h"
 #include "media/gpu/macros.h"
@@ -389,7 +390,7 @@ bool V4L2JpegDecodeAccelerator::CreateInputBuffers() {
     buffer.index = i;
     buffer.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
     buffer.m.planes = planes;
-    buffer.length = arraysize(planes);
+    buffer.length = base::size(planes);
     buffer.memory = V4L2_MEMORY_MMAP;
     IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYBUF, &buffer);
     if (buffer.length != kMaxInputPlanes) {
@@ -466,7 +467,7 @@ bool V4L2JpegDecodeAccelerator::CreateOutputBuffers() {
     buffer.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
     buffer.memory = V4L2_MEMORY_MMAP;
     buffer.m.planes = planes;
-    buffer.length = arraysize(planes);
+    buffer.length = base::size(planes);
     IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYBUF, &buffer);
 
     if (output_buffer_num_planes_ != buffer.length) {
@@ -759,7 +760,7 @@ void V4L2JpegDecodeAccelerator::Dequeue() {
     memset(planes, 0, sizeof(planes));
     dqbuf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
     dqbuf.memory = V4L2_MEMORY_MMAP;
-    dqbuf.length = arraysize(planes);
+    dqbuf.length = base::size(planes);
     dqbuf.m.planes = planes;
     if (device_->Ioctl(VIDIOC_DQBUF, &dqbuf) != 0) {
       if (errno == EAGAIN) {
@@ -796,7 +797,7 @@ void V4L2JpegDecodeAccelerator::Dequeue() {
     // USERPTR. Also, client doesn't need to consider the buffer alignment and
     // JpegDecodeAccelerator API will be simpler.
     dqbuf.memory = V4L2_MEMORY_MMAP;
-    dqbuf.length = arraysize(planes);
+    dqbuf.length = base::size(planes);
     dqbuf.m.planes = planes;
     if (device_->Ioctl(VIDIOC_DQBUF, &dqbuf) != 0) {
       if (errno == EAGAIN) {
@@ -943,7 +944,7 @@ bool V4L2JpegDecodeAccelerator::EnqueueInputRecord() {
   qbuf.index = index;
   qbuf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
   qbuf.memory = V4L2_MEMORY_MMAP;
-  qbuf.length = arraysize(planes);
+  qbuf.length = base::size(planes);
   // There is only one plane for V4L2_PIX_FMT_JPEG.
   planes[0].bytesused = input_record.length[0];
   qbuf.m.planes = planes;
@@ -972,7 +973,7 @@ bool V4L2JpegDecodeAccelerator::EnqueueOutputRecord() {
   qbuf.index = index;
   qbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   qbuf.memory = V4L2_MEMORY_MMAP;
-  qbuf.length = arraysize(planes);
+  qbuf.length = base::size(planes);
   qbuf.m.planes = planes;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);
   output_record.at_device = true;

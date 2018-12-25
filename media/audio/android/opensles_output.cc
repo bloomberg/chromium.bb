@@ -6,7 +6,7 @@
 
 #include "base/android/build_info.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -303,13 +303,9 @@ bool OpenSLESOutputStream::CreatePlayer() {
   const SLboolean interface_required[] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE,
                                           SL_BOOLEAN_TRUE};
   LOG_ON_FAILURE_AND_RETURN(
-      (*engine)->CreateAudioPlayer(engine,
-                                   player_object_.Receive(),
-                                   &audio_source,
-                                   &audio_sink,
-                                   arraysize(interface_id),
-                                   interface_id,
-                                   interface_required),
+      (*engine)->CreateAudioPlayer(
+          engine, player_object_.Receive(), &audio_source, &audio_sink,
+          base::size(interface_id), interface_id, interface_required),
       false);
 
   // Create AudioPlayer and specify SL_IID_ANDROIDCONFIGURATION.

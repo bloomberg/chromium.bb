@@ -14,8 +14,8 @@
 #include "base/bits.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/aligned_memory.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
@@ -756,7 +756,7 @@ int VideoFrame::BytesPerElement(VideoPixelFormat format, size_t plane) {
     case PIXEL_FORMAT_NV21:
     case PIXEL_FORMAT_MT21: {
       static const int bytes_per_element[] = {1, 2};
-      DCHECK_LT(plane, arraysize(bytes_per_element));
+      DCHECK_LT(plane, base::size(bytes_per_element));
       return bytes_per_element[plane];
     }
     case PIXEL_FORMAT_YV12:

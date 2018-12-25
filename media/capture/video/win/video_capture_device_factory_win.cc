@@ -15,7 +15,6 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -75,7 +74,7 @@ const char* const kBlacklistedCameraNames[] = {
     // The following software WebCams cause crashes.
     "IP Camera [JPEG/MJPEG]", "CyberLink Webcam Splitter", "EpocCam",
 };
-static_assert(arraysize(kBlacklistedCameraNames) == BLACKLISTED_CAMERA_MAX + 1,
+static_assert(base::size(kBlacklistedCameraNames) == BLACKLISTED_CAMERA_MAX + 1,
               "kBlacklistedCameraNames should be same size as "
               "BlacklistedCameraNames enum");
 
@@ -113,7 +112,7 @@ bool LoadMediaFoundationDlls() {
 
   for (const wchar_t* kMfDLL : kMfDLLs) {
     wchar_t path[MAX_PATH] = {0};
-    ExpandEnvironmentStringsW(kMfDLL, path, arraysize(path));
+    ExpandEnvironmentStringsW(kMfDLL, path, base::size(path));
     if (!LoadLibraryExW(path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH))
       return false;
   }
@@ -146,7 +145,7 @@ bool CreateVideoCaptureDeviceMediaFoundation(const Descriptor& descriptor,
                                              IMFMediaSource** source) {
   ComPtr<IMFAttributes> attributes;
   static_assert(
-      arraysize(kMfAttributes) == 2,
+      base::size(kMfAttributes) == 2,
       "Implementation here asumes that kMfAttributes has size of two.");
   DCHECK_EQ(kMfAttributes[0].first, VideoCaptureApi::WIN_MEDIA_FOUNDATION);
   const auto& attributes_data =
@@ -168,8 +167,8 @@ bool CreateVideoCaptureDeviceMediaFoundation(const Descriptor& descriptor,
 
 bool IsDeviceBlackListed(const std::string& name) {
   DCHECK_EQ(BLACKLISTED_CAMERA_MAX + 1,
-            static_cast<int>(arraysize(kBlacklistedCameraNames)));
-  for (size_t i = 0; i < arraysize(kBlacklistedCameraNames); ++i) {
+            static_cast<int>(base::size(kBlacklistedCameraNames)));
+  for (size_t i = 0; i < base::size(kBlacklistedCameraNames); ++i) {
     if (base::StartsWith(name, kBlacklistedCameraNames[i],
                          base::CompareCase::INSENSITIVE_ASCII)) {
       DVLOG(1) << "Enumerated blacklisted device: " << name;

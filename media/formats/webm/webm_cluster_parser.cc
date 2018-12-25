@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/numerics/checked_math.h"
+#include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/timestamp_constants.h"
@@ -243,7 +243,7 @@ base::TimeDelta WebMClusterParser::ReadOpusDuration(const uint8_t* data,
 
   int opusConfig = (data[0] & kTocConfigMask) >> 3;
   CHECK_GE(opusConfig, 0);
-  CHECK_LT(opusConfig, static_cast<int>(arraysize(kOpusFrameDurationsMu)));
+  CHECK_LT(opusConfig, static_cast<int>(base::size(kOpusFrameDurationsMu)));
 
   DCHECK_GT(frame_count, 0);
   base::TimeDelta duration = base::TimeDelta::FromMicroseconds(
