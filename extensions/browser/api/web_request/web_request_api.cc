@@ -16,7 +16,6 @@
 #include "base/feature_list.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
@@ -193,7 +192,7 @@ bool IsWebRequestEvent(const std::string& event_name) {
         0, strlen(webview::kWebViewEventPrefix), kWebRequestEventPrefix);
   }
   auto* const* web_request_events_end =
-      kWebRequestEvents + arraysize(kWebRequestEvents);
+      kWebRequestEvents + base::size(kWebRequestEvents);
   return std::find(kWebRequestEvents, web_request_events_end,
                    web_request_event_name) != web_request_events_end;
 }
@@ -352,7 +351,7 @@ events::HistogramValue GetEventHistogramValue(const std::string& event_name) {
       {events::WEB_REQUEST_ON_AUTH_REQUIRED, keys::kOnAuthRequiredEvent},
       {events::WEB_REQUEST_ON_RESPONSE_STARTED, keys::kOnResponseStartedEvent},
       {events::WEB_REQUEST_ON_HEADERS_RECEIVED, keys::kOnHeadersReceivedEvent}};
-  static_assert(arraysize(kWebRequestEvents) == arraysize(values_and_names),
+  static_assert(base::size(kWebRequestEvents) == base::size(values_and_names),
                 "kWebRequestEvents and values_and_names must be the same");
   for (const ValueAndName& value_and_name : values_and_names) {
     if (value_and_name.event_name == event_name)
@@ -577,7 +576,7 @@ WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
       request_id_generator_(base::MakeRefCounted<RequestIDGenerator>()),
       may_have_proxies_(MayHaveProxies()) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
-  for (size_t i = 0; i < arraysize(kWebRequestEvents); ++i) {
+  for (size_t i = 0; i < base::size(kWebRequestEvents); ++i) {
     // Observe the webRequest event.
     std::string event_name = kWebRequestEvents[i];
     event_router->RegisterObserver(this, event_name);

@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -120,7 +120,7 @@ const char kPTStopCommand[] = {0x81, 0x01, 0x06, 0x01, 0x03,
                                0x03, 0x03, 0x03, 0xFF};
 
 #define CHAR_VECTOR_FROM_ARRAY(array) \
-  std::vector<char>(array, array + arraysize(array))
+  std::vector<char>(array, array + base::size(array))
 
 int ShiftResponseLowerBits(char c, size_t shift) {
   return static_cast<int>(c & 0x0F) << shift;

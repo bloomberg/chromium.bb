@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/storage_area.h"
 
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
@@ -43,7 +44,7 @@ TEST_F(StorageAreaTest, TestUnboundedUse) {
       FunctionFromString(context, kRunStorageGet);
   v8::Local<v8::Value> args[] = {storage_get};
   RunFunctionAndExpectError(
-      run_storage_get, context, arraysize(args), args,
+      run_storage_get, context, base::size(args), args,
       "Uncaught TypeError: Illegal invocation: Function must be called on "
       "an object of type StorageArea");
 }
@@ -71,12 +72,12 @@ TEST_F(StorageAreaTest, TestUseAfterInvalidation) {
   v8::Local<v8::Function> run_storage_get =
       FunctionFromString(context, kRunStorageGet);
   v8::Local<v8::Value> args[] = {storage};
-  RunFunction(run_storage_get, context, arraysize(args), args);
+  RunFunction(run_storage_get, context, base::size(args), args);
 
   DisposeContext(context);
 
   EXPECT_FALSE(binding::IsContextValid(context));
-  RunFunctionAndExpectError(run_storage_get, context, arraysize(args), args,
+  RunFunctionAndExpectError(run_storage_get, context, base::size(args), args,
                             "Uncaught Error: Extension context invalidated.");
 }
 

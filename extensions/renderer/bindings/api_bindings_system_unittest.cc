@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -271,7 +270,7 @@ TEST_F(APIBindingsSystemTest, TestInitializationAndCallbacks) {
     v8::Local<v8::Function> function = FunctionFromString(context, kTestCall);
     v8::Local<v8::Value> args[] = {alpha_api};
     RunFunctionAndExpectError(
-        function, context, arraysize(args), args,
+        function, context, base::size(args), args,
         "Uncaught TypeError: " +
             api_errors::InvocationError(
                 "alpha.functionWithEnum", "alpha.enumRef e",
@@ -392,7 +391,7 @@ TEST_F(APIBindingsSystemTest, TestSetCustomCallback) {
   v8::Local<v8::Object> js_hooks = hooks->GetJSHookInterface(context);
   v8::Local<v8::Function> function = FunctionFromString(context, kHook);
   v8::Local<v8::Value> args[] = {js_hooks};
-  RunFunctionOnGlobal(function, context, arraysize(args), args);
+  RunFunctionOnGlobal(function, context, base::size(args), args);
 
   {
     const char kTestCall[] =

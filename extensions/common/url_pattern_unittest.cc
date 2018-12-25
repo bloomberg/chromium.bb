@@ -8,7 +8,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,7 +45,7 @@ TEST(ExtensionURLPatternTest, ParseInvalid) {
       {"http://bar", URLPattern::ParseResult::kEmptyPath},
       {"http://foo.*/bar", URLPattern::ParseResult::kInvalidHostWildcard}};
 
-  for (size_t i = 0; i < arraysize(kInvalidPatterns); ++i) {
+  for (size_t i = 0; i < base::size(kInvalidPatterns); ++i) {
     URLPattern pattern(URLPattern::SCHEME_ALL);
     EXPECT_EQ(kInvalidPatterns[i].expected_result,
               pattern.Parse(kInvalidPatterns[i].pattern))
@@ -88,7 +88,7 @@ TEST(ExtensionURLPatternTest, Ports) {
       {"http://foo/bar:1234/path", URLPattern::ParseResult::kSuccess, "*"},
       {"http://*.foo.*/:1234", URLPattern::ParseResult::kSuccess, "*"}};
 
-  for (size_t i = 0; i < arraysize(kTestPatterns); ++i) {
+  for (size_t i = 0; i < base::size(kTestPatterns); ++i) {
     URLPattern pattern(URLPattern::SCHEME_ALL);
     EXPECT_EQ(kTestPatterns[i].expected_result,
               pattern.Parse(kTestPatterns[i].pattern,
@@ -389,7 +389,7 @@ static const struct MatchPatterns {
 
 // SCHEME_ALL and specific schemes.
 TEST(ExtensionURLPatternTest, Match13) {
-  for (size_t i = 0; i < arraysize(kMatch13UrlPatternTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kMatch13UrlPatternTestCases); ++i) {
     URLPattern pattern(URLPattern::SCHEME_ALL);
     EXPECT_EQ(URLPattern::ParseResult::kSuccess,
               pattern.Parse(kMatch13UrlPatternTestCases[i].pattern))
@@ -568,7 +568,7 @@ static const struct GetAsStringPatterns {
 };
 
 TEST(ExtensionURLPatternTest, GetAsString) {
-  for (size_t i = 0; i < arraysize(kGetAsStringTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kGetAsStringTestCases); ++i) {
     URLPattern pattern(URLPattern::SCHEME_ALL);
     EXPECT_EQ(URLPattern::ParseResult::kSuccess,
               pattern.Parse(kGetAsStringTestCases[i].pattern))
@@ -785,7 +785,7 @@ TEST(ExtensionURLPatternTest, Equals) {
     }
   };
 
-  for (size_t i = 0; i < arraysize(kEqualsTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kEqualsTestCases); ++i) {
     std::string message = kEqualsTestCases[i].pattern1;
     message += " ";
     message += kEqualsTestCases[i].pattern2;

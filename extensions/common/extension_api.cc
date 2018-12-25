@@ -15,7 +15,7 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -47,7 +47,7 @@ std::unique_ptr<base::DictionaryValue> LoadSchemaDictionary(
 
   // Tracking down http://crbug.com/121424
   char buf[128];
-  base::snprintf(buf, arraysize(buf), "%s: (%d) '%s'", name.c_str(),
+  base::snprintf(buf, base::size(buf), "%s: (%d) '%s'", name.c_str(),
                  result.get() ? static_cast<int>(result->type()) : -1,
                  error_message.c_str());
 
@@ -75,7 +75,7 @@ const base::DictionaryValue* GetSchemaChild(
     const base::DictionaryValue* schema_node,
     const std::string& child_name) {
   const base::DictionaryValue* child_node = NULL;
-  for (size_t i = 0; i < arraysize(kChildKinds); ++i) {
+  for (size_t i = 0; i < base::size(kChildKinds); ++i) {
     const base::ListValue* list_node = NULL;
     if (!schema_node->GetList(kChildKinds[i], &list_node))
       continue;
@@ -156,7 +156,7 @@ ExtensionAPI::~ExtensionAPI() {
 
 void ExtensionAPI::InitDefaultConfiguration() {
   const char* names[] = {"api", "manifest", "permission"};
-  for (size_t i = 0; i < arraysize(names); ++i)
+  for (size_t i = 0; i < base::size(names); ++i)
     RegisterDependencyProvider(names[i], FeatureProvider::GetByName(names[i]));
 
   default_configuration_initialized_ = true;

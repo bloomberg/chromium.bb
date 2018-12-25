@@ -5,6 +5,7 @@
 #include "extensions/renderer/bindings/exception_handler.h"
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/supports_user_data.h"
 #include "extensions/renderer/bindings/get_per_context_data.h"
@@ -77,7 +78,7 @@ void ExceptionHandler::HandleException(v8::Local<v8::Context> context,
     v8::TryCatch handler_try_catch(isolate);
     handler_try_catch.SetVerbose(true);
     JSRunner::Get(context)->RunJSFunction(handler, context,
-                                          arraysize(arguments), arguments);
+                                          base::size(arguments), arguments);
   } else {
     add_console_error_.Run(context, full_message);
   }

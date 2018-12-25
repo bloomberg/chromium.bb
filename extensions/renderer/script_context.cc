@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -365,7 +364,7 @@ void ScriptContext::OnResponseReceived(const std::string& name,
           .ToLocalChecked()};
 
   module_system()->CallModuleMethodSafe("sendRequest", "handleResponse",
-                                        arraysize(argv), argv);
+                                        base::size(argv), argv);
 }
 
 bool ScriptContext::HasAPIPermission(APIPermission::ID permission) const {

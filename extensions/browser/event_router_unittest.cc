@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
 #include "content/public/browser/browser_context.h"
@@ -366,7 +366,7 @@ TEST_F(EventRouterFilterTest, Basic) {
   const std::string kExtensionId = "mbflcebpggnecokmikipoihdbecnjfoj";
   const std::string kHostSuffixes[] = {"foo.com", "bar.com", "baz.com"};
   std::vector<std::unique_ptr<DictionaryValue>> filters;
-  for (size_t i = 0; i < arraysize(kHostSuffixes); ++i) {
+  for (size_t i = 0; i < base::size(kHostSuffixes); ++i) {
     std::unique_ptr<base::DictionaryValue> filter =
         CreateHostSuffixFilter(kHostSuffixes[i]);
     event_router()->AddFilteredEventListener(kEventName, render_process_host(),

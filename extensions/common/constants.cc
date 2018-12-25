@@ -4,6 +4,8 @@
 
 #include "extensions/common/constants.h"
 
+#include "base/stl_util.h"
+
 namespace extensions {
 
 const char kExtensionScheme[] = "chrome-extension";
@@ -81,7 +83,7 @@ const uint8_t kWebstoreSignaturesPublicKey[] = {
     0xcd, 0x02, 0x03, 0x01, 0x00, 0x01};
 
 const size_t kWebstoreSignaturesPublicKeySize =
-    arraysize(kWebstoreSignaturesPublicKey);
+    base::size(kWebstoreSignaturesPublicKey);
 
 const int kMainThreadId = 0;
 

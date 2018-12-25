@@ -399,7 +399,7 @@ TEST_F(APIBindingUnittest, IOThreadCalls) {
     SCOPED_TRACE(base::StringPrintf("Testing case-%s", test_case.func_name));
     v8::Local<v8::Function> func = FunctionFromString(
         context, base::StringPrintf(kFunctionCall, test_case.func_name));
-    RunFunction(func, context, arraysize(argv), argv);
+    RunFunction(func, context, base::size(argv), argv);
     ASSERT_TRUE(last_request());
     EXPECT_EQ(test_case.thread, last_request()->thread);
     reset_last_request();
@@ -614,10 +614,10 @@ TEST_F(APIBindingUnittest, TestEventCreation) {
       context, "(function(e) { e.addListener(function() {}); })");
   v8::Local<v8::Value> args[] = {
       GetPropertyFromObject(binding_object, context, "onBaz")};
-  RunFunction(add_listener, context, arraysize(args), args);
+  RunFunction(add_listener, context, base::size(args), args);
   EXPECT_EQ(1u, event_handler()->GetNumEventListenersForTesting("test.onBaz",
                                                                 context));
-  RunFunctionAndExpectError(add_listener, context, arraysize(args), args,
+  RunFunctionAndExpectError(add_listener, context, base::size(args), args,
                             "Uncaught TypeError: Too many listeners.");
   EXPECT_EQ(1u, event_handler()->GetNumEventListenersForTesting("test.onBaz",
                                                                 context));
@@ -739,7 +739,7 @@ TEST_F(APIBindingUnittest, TestDisposedContext) {
   v8::Local<v8::Value> argv[] = {binding_object};
   DisposeContext(context);
 
-  RunFunctionAndExpectError(func, context, arraysize(argv), argv,
+  RunFunctionAndExpectError(func, context, base::size(argv), argv,
                             "Uncaught Error: Extension context invalidated.");
 
   EXPECT_FALSE(HandlerWasInvoked());
@@ -761,7 +761,7 @@ TEST_F(APIBindingUnittest, TestInvalidatedContext) {
   v8::Local<v8::Value> argv[] = {binding_object};
   binding::InvalidateContext(context);
 
-  RunFunctionAndExpectError(func, context, arraysize(argv), argv,
+  RunFunctionAndExpectError(func, context, base::size(argv), argv,
                             "Uncaught Error: Extension context invalidated.");
 
   EXPECT_FALSE(HandlerWasInvoked());
@@ -850,7 +850,7 @@ TEST_F(APIBindingUnittest, TestJSCustomHook) {
     v8::Local<v8::Function> function =
         FunctionFromString(context, kRegisterHook);
     v8::Local<v8::Value> args[] = {js_hooks};
-    RunFunctionOnGlobal(function, context, arraysize(args), args);
+    RunFunctionOnGlobal(function, context, base::size(args), args);
   }
 
   SetFunctions(kFunctions);
@@ -903,7 +903,7 @@ TEST_F(APIBindingUnittest, TestUpdateArgumentsPreValidate) {
   v8::Local<v8::Object> js_hooks = hooks->GetJSHookInterface(context);
   v8::Local<v8::Function> function = FunctionFromString(context, kRegisterHook);
   v8::Local<v8::Value> args[] = {js_hooks};
-  RunFunctionOnGlobal(function, context, arraysize(args), args);
+  RunFunctionOnGlobal(function, context, base::size(args), args);
 
   SetHooks(std::move(hooks));
   SetFunctions(kFunctions);
@@ -947,7 +947,7 @@ TEST_F(APIBindingUnittest, TestThrowInUpdateArgumentsPreValidate) {
     v8::Local<v8::Function> function =
         FunctionFromString(context, kRegisterHook);
     v8::Local<v8::Value> args[] = {js_hooks};
-    RunFunctionOnGlobal(function, context, arraysize(args), args);
+    RunFunctionOnGlobal(function, context, base::size(args), args);
   }
 
   SetHooks(std::move(hooks));
@@ -963,7 +963,7 @@ TEST_F(APIBindingUnittest, TestThrowInUpdateArgumentsPreValidate) {
   {
     TestJSRunner::AllowErrors allow_errors;
     RunFunctionAndExpectError(function, context, v8::Undefined(isolate()),
-                              arraysize(args), args,
+                              base::size(args), args,
                               "Uncaught Error: Custom Hook Error");
   }
 
@@ -990,7 +990,7 @@ TEST_F(APIBindingUnittest, TestReturningResultFromCustomJSHook) {
     v8::Local<v8::Function> function =
         FunctionFromString(context, kRegisterHook);
     v8::Local<v8::Value> args[] = {js_hooks};
-    RunFunctionOnGlobal(function, context, arraysize(args), args);
+    RunFunctionOnGlobal(function, context, base::size(args), args);
   }
 
   SetHooks(std::move(hooks));
@@ -1004,7 +1004,7 @@ TEST_F(APIBindingUnittest, TestReturningResultFromCustomJSHook) {
                          "(function(obj) { return obj.oneString('ping'); })");
   v8::Local<v8::Value> args[] = {binding_object};
   v8::Local<v8::Value> result =
-      RunFunction(function, context, arraysize(args), args);
+      RunFunction(function, context, base::size(args), args);
   ASSERT_FALSE(result.IsEmpty());
   std::unique_ptr<base::Value> json_result = V8ToBaseValue(result, context);
   ASSERT_TRUE(json_result);
@@ -1029,7 +1029,7 @@ TEST_F(APIBindingUnittest, TestThrowingFromCustomJSHook) {
     v8::Local<v8::Function> function =
         FunctionFromString(context, kRegisterHook);
     v8::Local<v8::Value> args[] = {js_hooks};
-    RunFunctionOnGlobal(function, context, arraysize(args), args);
+    RunFunctionOnGlobal(function, context, base::size(args), args);
   }
 
   SetHooks(std::move(hooks));
@@ -1045,7 +1045,7 @@ TEST_F(APIBindingUnittest, TestThrowingFromCustomJSHook) {
 
   TestJSRunner::AllowErrors allow_errors;
   RunFunctionAndExpectError(function, context, v8::Undefined(isolate()),
-                            arraysize(args), args,
+                            base::size(args), args,
                             "Uncaught Error: Custom Hook Error");
 }
 
@@ -1096,7 +1096,7 @@ TEST_F(APIBindingUnittest,
             context, "(function(obj) { return obj.oneString('throw'); })");
     v8::Local<v8::Value> args[] = {binding_object};
     RunFunctionAndExpectError(function, context, v8::Undefined(isolate()),
-                              arraysize(args), args,
+                              base::size(args), args,
                               "Uncaught Error: Custom Hook Error");
   }
 
@@ -1107,7 +1107,7 @@ TEST_F(APIBindingUnittest,
                            "(function(obj) { return obj.oneString('ping'); })");
     v8::Local<v8::Value> args[] = {binding_object};
     v8::Local<v8::Value> result =
-        RunFunction(function, context, arraysize(args), args);
+        RunFunction(function, context, base::size(args), args);
     ASSERT_FALSE(result.IsEmpty());
     std::unique_ptr<base::Value> json_result = V8ToBaseValue(result, context);
     ASSERT_TRUE(json_result);
@@ -1134,7 +1134,7 @@ TEST_F(APIBindingUnittest, TestUpdateArgumentsPostValidate) {
     v8::Local<v8::Function> function =
         FunctionFromString(context, kRegisterHook);
     v8::Local<v8::Value> args[] = {js_hooks};
-    RunFunctionOnGlobal(function, context, arraysize(args), args);
+    RunFunctionOnGlobal(function, context, base::size(args), args);
   }
 
   SetHooks(std::move(hooks));
@@ -1182,7 +1182,7 @@ TEST_F(APIBindingUnittest, TestUpdateArgumentsPostValidateViolatingSchema) {
     v8::Local<v8::Function> function =
         FunctionFromString(context, kRegisterHook);
     v8::Local<v8::Value> args[] = {js_hooks};
-    RunFunctionOnGlobal(function, context, arraysize(args), args);
+    RunFunctionOnGlobal(function, context, base::size(args), args);
   }
 
   SetHooks(std::move(hooks));
@@ -1212,13 +1212,13 @@ TEST_F(APIBindingUnittest, TestUserGestures) {
 
   v8::Local<v8::Value> argv[] = {binding_object};
 
-  RunFunction(function, context, arraysize(argv), argv);
+  RunFunction(function, context, base::size(argv), argv);
   ASSERT_TRUE(last_request());
   EXPECT_FALSE(last_request()->has_user_gesture);
   reset_last_request();
 
   ScopedTestUserActivation test_user_activation;
-  RunFunction(function, context, arraysize(argv), argv);
+  RunFunction(function, context, base::size(argv), argv);
   ASSERT_TRUE(last_request());
   EXPECT_TRUE(last_request()->has_user_gesture);
 
@@ -1274,10 +1274,10 @@ TEST_F(APIBindingUnittest, FilteredEvents) {
         GetPropertyFromObject(binding_object, context, name);
     v8::Local<v8::Value> args[] = {event};
     if (expect_supports) {
-      RunFunction(function, context, context->Global(), arraysize(args), args);
+      RunFunction(function, context, context->Global(), base::size(args), args);
     } else {
       RunFunctionAndExpectError(
-          function, context, context->Global(), arraysize(args), args,
+          function, context, context->Global(), base::size(args), args,
           "Uncaught TypeError: This event does not support filters");
     }
   };
@@ -1487,7 +1487,7 @@ TEST_F(APIBindingUnittest, TestSendingRequestsAndSilentRequestsWithHooks) {
     v8::TryCatch try_catch(context->GetIsolate());
     // The throwException call will throw an exception; ignore it.
     ignore_result(call->Call(context, v8::Undefined(context->GetIsolate()),
-                             arraysize(args), args));
+                             base::size(args), args));
   };
 
   call_api_method("modifyArgs", "");
@@ -1610,7 +1610,7 @@ TEST_F(APIBindingUnittest, AccessAPIMethodsAndEventsAfterInvalidation) {
   binding::InvalidateContext(context);
 
   v8::Local<v8::Value> argv[] = {binding_object};
-  RunFunctionAndExpectError(function, context, arraysize(argv), argv,
+  RunFunctionAndExpectError(function, context, base::size(argv), argv,
                             "Uncaught Error: Extension context invalidated.");
 }
 

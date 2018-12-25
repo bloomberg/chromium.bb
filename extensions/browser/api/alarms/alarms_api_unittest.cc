@@ -8,6 +8,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
 #include "content/public/browser/web_contents.h"
@@ -682,7 +683,7 @@ TEST_F(ExtensionAlarmsSchedulingTest, PollFrequencyFromStoredAlarm) {
   };
 
   // Test once for unpacked and once for crx extension.
-  for (size_t i = 0; i < arraysize(test_data); ++i) {
+  for (size_t i = 0; i < base::size(test_data); ++i) {
     test_clock_.SetNow(base::Time::FromDoubleT(10));
 
     // Mimic retrieving an alarm from StateStore.

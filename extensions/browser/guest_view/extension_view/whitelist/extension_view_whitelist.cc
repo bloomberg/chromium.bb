@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 
 namespace extensions {
 
@@ -30,7 +30,7 @@ const char* const kWhitelist[] = {
 
 // static
 bool IsExtensionIdWhitelisted(const std::string& extension_id) {
-  for (size_t i = 0; i < arraysize(kWhitelist); ++i) {
+  for (size_t i = 0; i < base::size(kWhitelist); ++i) {
     if (extension_id == kWhitelist[i])
       return true;
   }

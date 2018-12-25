@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "components/onc/onc_constants.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -77,10 +78,10 @@ std::vector<std::string> FilterProperties(base::DictionaryValue* properties,
   size_t filter_size = 0;
   if (type == PropertiesType::GET) {
     filter = kPrivatePropertiesForGet;
-    filter_size = arraysize(kPrivatePropertiesForGet);
+    filter_size = base::size(kPrivatePropertiesForGet);
   } else {
     filter = kPrivatePropertiesForSet;
-    filter_size = arraysize(kPrivatePropertiesForSet);
+    filter_size = base::size(kPrivatePropertiesForSet);
   }
 
   std::vector<std::string> removed_properties;

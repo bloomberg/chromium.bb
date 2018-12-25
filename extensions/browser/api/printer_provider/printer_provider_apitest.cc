@@ -9,9 +9,9 @@
 
 #include "base/bind.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -136,7 +136,7 @@ class PrinterProviderApiTest : public ShellApiTest {
     job.content_type = "application/pdf";
     const unsigned char kDocumentBytes[] = {'b', 'y', 't', 'e', 's'};
     job.document_bytes =
-        new base::RefCountedBytes(kDocumentBytes, arraysize(kDocumentBytes));
+        new base::RefCountedBytes(kDocumentBytes, base::size(kDocumentBytes));
 
     PrinterProviderAPIFactory::GetInstance()
         ->GetForBrowserContext(browser_context())

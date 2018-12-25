@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/file_handler_info.h"
 #include "extensions/common/manifest_test.h"
@@ -35,7 +35,7 @@ TEST_F(FileHandlersManifestTest, InvalidFileHandlers) {
       Testcase("file_handlers_invalid_verb.json",
                errors::kInvalidFileHandlerVerb),
   };
-  RunTestcases(testcases, arraysize(testcases), EXPECT_TYPE_ERROR);
+  RunTestcases(testcases, base::size(testcases), EXPECT_TYPE_ERROR);
 }
 
 TEST_F(FileHandlersManifestTest, ValidFileHandlers) {

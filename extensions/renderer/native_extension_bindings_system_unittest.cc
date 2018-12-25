@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/native_extension_bindings_system_test_base.h"
 
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "components/crx_file/id_util.h"
@@ -431,7 +432,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestEventRegistration) {
               SendAddUnfilteredEventListenerIPC(script_context, kEventName))
       .Times(1);
   v8::Local<v8::Value> argv[] = {listener};
-  RunFunction(add_listener, context, arraysize(argv), argv);
+  RunFunction(add_listener, context, base::size(argv), argv);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
   EXPECT_TRUE(bindings_system()->HasEventListenerInContext(
       "idle.onStateChanged", script_context));
@@ -446,7 +447,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestEventRegistration) {
       .Times(1);
   v8::Local<v8::Function> remove_listener =
       FunctionFromString(context, kRemoveListener);
-  RunFunction(remove_listener, context, arraysize(argv), argv);
+  RunFunction(remove_listener, context, base::size(argv), argv);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
   EXPECT_FALSE(bindings_system()->HasEventListenerInContext(
       "idle.onStateChanged", script_context));
@@ -852,7 +853,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestUpdatingPermissions) {
     // Trying to run a chrome.idle function should fail.
     v8::Local<v8::Value> args[] = {initial_idle};
     RunFunctionAndExpectError(
-        run_idle, context, arraysize(args), args,
+        run_idle, context, base::size(args), args,
         "Uncaught Error: 'idle.queryState' is not available in this context.");
     EXPECT_FALSE(has_last_params());
   }
@@ -886,7 +887,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestUpdatingPermissions) {
   {
     // Trying to run a chrome.idle function should now succeed.
     v8::Local<v8::Value> args[] = {initial_idle};
-    RunFunction(run_idle, context, arraysize(args), args);
+    RunFunction(run_idle, context, base::size(args), args);
     EXPECT_EQ("idle.queryState", last_params().name);
   }
 }
@@ -1123,7 +1124,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, APIIsInitializedByOwningContext) {
 
     v8::Context::Scope context_scope(second_context);
     v8::Local<v8::Value> args[] = {chrome};
-    RunFunction(get_idle, second_context, arraysize(args), args);
+    RunFunction(get_idle, second_context, base::size(args), args);
   }
 
   // The apiBridge should have been created in the owning (original) context,

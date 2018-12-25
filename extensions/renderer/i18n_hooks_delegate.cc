@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/i18n_hooks_delegate.h"
 
+#include "base/stl_util.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension.h"
@@ -112,7 +113,7 @@ RequestResult I18nHooksDelegate::HandleDetectLanguage(
   v8::Local<v8::Value> callback_args[] = {detected_languages};
   JSRunner::Get(v8_context)
       ->RunJSFunction(parsed_arguments[1].As<v8::Function>(),
-                      script_context->v8_context(), arraysize(callback_args),
+                      script_context->v8_context(), base::size(callback_args),
                       callback_args);
 
   return RequestResult(RequestResult::HANDLED);

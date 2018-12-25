@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -132,7 +133,7 @@ void EventBindings::DispatchEventInContext(
   };
 
   context->module_system()->CallModuleMethodSafe(
-      kEventBindings, "dispatchEvent", arraysize(v8_args), v8_args);
+      kEventBindings, "dispatchEvent", base::size(v8_args), v8_args);
 }
 
 void EventBindings::AttachEventHandler(
