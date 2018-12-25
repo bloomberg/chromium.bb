@@ -6,9 +6,9 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "jingle/glue/task_pump.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,15 +49,15 @@ class WeakXmppClientTest : public testing::Test {
   void ExpectSignalCalls() {
     EXPECT_CALL(mock_xmpp_delegate_, OnStateChange(kState));
     EXPECT_CALL(mock_xmpp_delegate_,
-                OnInputLog(kInputLog, arraysize(kInputLog)));
+                OnInputLog(kInputLog, base::size(kInputLog)));
     EXPECT_CALL(mock_xmpp_delegate_,
-                OnOutputLog(kOutputLog, arraysize(kOutputLog)));
+                OnOutputLog(kOutputLog, base::size(kOutputLog)));
   }
 
   void RaiseSignals(buzz::XmppClient* xmpp_client) {
     xmpp_client->SignalStateChange(kState);
-    xmpp_client->SignalLogInput(kInputLog, arraysize(kInputLog));
-    xmpp_client->SignalLogOutput(kOutputLog, arraysize(kOutputLog));
+    xmpp_client->SignalLogInput(kInputLog, base::size(kInputLog));
+    xmpp_client->SignalLogOutput(kOutputLog, base::size(kOutputLog));
   }
 
   // Needed by TaskPump.

@@ -11,7 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -73,12 +73,12 @@ scoped_refptr<net::DrainableIOBuffer> NewDrainableIOBufferWithSize(int size) {
 
 base::StringPiece FakeSSLClientSocket::GetSslClientHello() {
   return base::StringPiece(reinterpret_cast<const char*>(kSslClientHello),
-                           arraysize(kSslClientHello));
+                           base::size(kSslClientHello));
 }
 
 base::StringPiece FakeSSLClientSocket::GetSslServerHello() {
   return base::StringPiece(reinterpret_cast<const char*>(kSslServerHello),
-                           arraysize(kSslServerHello));
+                           base::size(kSslServerHello));
 }
 
 FakeSSLClientSocket::FakeSSLClientSocket(
@@ -86,10 +86,10 @@ FakeSSLClientSocket::FakeSSLClientSocket(
     : transport_socket_(std::move(transport_socket)),
       next_handshake_state_(STATE_NONE),
       handshake_completed_(false),
-      write_buf_(NewDrainableIOBufferWithSize(arraysize(kSslClientHello))),
-      read_buf_(NewDrainableIOBufferWithSize(arraysize(kSslServerHello))) {
+      write_buf_(NewDrainableIOBufferWithSize(base::size(kSslClientHello))),
+      read_buf_(NewDrainableIOBufferWithSize(base::size(kSslServerHello))) {
   CHECK(transport_socket_.get());
-  std::memcpy(write_buf_->data(), kSslClientHello, arraysize(kSslClientHello));
+  std::memcpy(write_buf_->data(), kSslClientHello, base::size(kSslClientHello));
 }
 
 FakeSSLClientSocket::~FakeSSLClientSocket() {}
@@ -294,7 +294,7 @@ net::Error FakeSSLClientSocket::ProcessVerifyServerHelloDone(size_t read) {
     return net::ERR_UNEXPECTED;
   }
   const uint8_t* expected_data_start =
-      &kSslServerHello[arraysize(kSslServerHello) -
+      &kSslServerHello[base::size(kSslServerHello) -
                        read_buf_->BytesRemaining()];
   if (std::memcmp(expected_data_start, read_buf_->data(), read) != 0) {
     return net::ERR_UNEXPECTED;

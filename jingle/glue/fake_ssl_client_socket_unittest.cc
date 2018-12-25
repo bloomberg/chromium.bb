@@ -13,9 +13,9 @@
 #include <vector>
 
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/test_completion_callback.h"
@@ -173,9 +173,9 @@ class FakeSSLClientSocketTest : public testing::Test {
       AddChunkedOps(ssl_server_hello, read_chunk_size, mode, &reads);
       AddChunkedOps(ssl_client_hello, write_chunk_size, mode, &writes);
       reads.push_back(
-          net::MockRead(mode, kReadTestData, arraysize(kReadTestData)));
+          net::MockRead(mode, kReadTestData, base::size(kReadTestData)));
       writes.push_back(
-          net::MockWrite(mode, kWriteTestData, arraysize(kWriteTestData)));
+          net::MockWrite(mode, kWriteTestData, base::size(kWriteTestData)));
     }
     SetData(mock_connect, &reads, &writes);
 
@@ -191,7 +191,7 @@ class FakeSSLClientSocketTest : public testing::Test {
       }
       ExpectStatus(mode, net::OK, status, &test_completion_callback);
       if (fake_ssl_client_socket.IsConnected()) {
-        int read_len = arraysize(kReadTestData);
+        int read_len = base::size(kReadTestData);
         int read_buf_len = 2 * read_len;
         auto read_buf = base::MakeRefCounted<net::IOBuffer>(read_buf_len);
         int read_status = fake_ssl_client_socket.Read(
@@ -201,9 +201,9 @@ class FakeSSLClientSocketTest : public testing::Test {
         auto write_buf =
             base::MakeRefCounted<net::StringIOBuffer>(kWriteTestData);
         int write_status = fake_ssl_client_socket.Write(
-            write_buf.get(), arraysize(kWriteTestData),
+            write_buf.get(), base::size(kWriteTestData),
             test_completion_callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
-        ExpectStatus(mode, arraysize(kWriteTestData), write_status,
+        ExpectStatus(mode, base::size(kWriteTestData), write_status,
                      &test_completion_callback);
       } else {
         ADD_FAILURE();
@@ -251,7 +251,7 @@ class FakeSSLClientSocketTest : public testing::Test {
         if (error == ERR_MALFORMED_SERVER_HELLO) {
           static const char kBadData[] = "BAD_DATA";
           reads[index].data = kBadData;
-          reads[index].data_len = arraysize(kBadData);
+          reads[index].data_len = base::size(kBadData);
         } else {
           reads[index].result = error;
           reads[index].data = NULL;
