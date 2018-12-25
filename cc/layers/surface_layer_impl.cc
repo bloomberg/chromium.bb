@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/stl_util.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/layers/append_quads_data.h"
@@ -211,7 +212,7 @@ void SurfaceLayerImpl::AppendRainbowDebugBorder(viz::RenderPass* render_pass) {
       0x800000ff,  // Blue.
       0x80ee82ee,  // Violet.
   };
-  const int kNumColors = arraysize(colors);
+  const int kNumColors = base::size(colors);
 
   const int kStripeWidth = 300;
   const int kStripeHeight = 300;

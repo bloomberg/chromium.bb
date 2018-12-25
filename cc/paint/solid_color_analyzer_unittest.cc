@@ -6,6 +6,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_filter.h"
 #include "cc/paint/record_paint_canvas.h"
@@ -351,7 +352,7 @@ TEST_F(SolidColorAnalyzerTest, ClipRRectCoversCanvas) {
 
   for (int case_scale = 0; case_scale < 2; ++case_scale) {
     bool scaled = case_scale > 0;
-    for (size_t i = 0; i < arraysize(cases); ++i) {
+    for (size_t i = 0; i < base::size(cases); ++i) {
       Reset();
       Initialize(canvas_rect);
 

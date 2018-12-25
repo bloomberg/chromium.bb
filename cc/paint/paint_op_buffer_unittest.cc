@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "cc/paint/paint_op_buffer.h"
+
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "cc/paint/decoded_draw_image.h"
 #include "cc/paint/display_item_list.h"
@@ -2468,11 +2470,11 @@ TEST(PaintOpBufferTest, ValidateSkBlendMode) {
       static_cast<SkBlendMode>(static_cast<uint32_t>(~0)),
   };
 
-  for (size_t i = 0; i < arraysize(bad_modes_for_draw_color); ++i) {
+  for (size_t i = 0; i < base::size(bad_modes_for_draw_color); ++i) {
     buffer.push<DrawColorOp>(SK_ColorMAGENTA, bad_modes_for_draw_color[i]);
   }
 
-  for (size_t i = 0; i < arraysize(bad_modes_for_flags); ++i) {
+  for (size_t i = 0; i < base::size(bad_modes_for_flags); ++i) {
     PaintFlags flags = test_flags[i % test_flags.size()];
     flags.setBlendMode(bad_modes_for_flags[i]);
     buffer.push<DrawRectOp>(test_rects[i % test_rects.size()], flags);

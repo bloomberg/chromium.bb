@@ -13,6 +13,7 @@
 
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"
 #include "cc/base/math_util.h"
@@ -3242,7 +3243,7 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
     while (std::abs(tile->contents_scale_key() - expected_scales[scale_index]) >
            std::numeric_limits<float>::epsilon()) {
       ++scale_index;
-      ASSERT_LT(scale_index, arraysize(expected_scales));
+      ASSERT_LT(scale_index, base::size(expected_scales));
     }
 
     EXPECT_FLOAT_EQ(tile->contents_scale_key(), expected_scales[scale_index]);
@@ -3290,7 +3291,7 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
     while (std::abs(tile->contents_scale_key() - expected_scales[scale_index]) >
            std::numeric_limits<float>::epsilon()) {
       ++scale_index;
-      ASSERT_LT(scale_index, arraysize(expected_scales));
+      ASSERT_LT(scale_index, base::size(expected_scales));
     }
 
     EXPECT_FLOAT_EQ(tile->contents_scale_key(), expected_scales[scale_index]);
