@@ -1746,7 +1746,7 @@ TEST_F(PixelInspectTileManagerTest, LowResHasNoImage) {
   gfx::Size size(10, 12);
   TileResolution resolutions[] = {HIGH_RESOLUTION, LOW_RESOLUTION};
 
-  for (size_t i = 0; i < arraysize(resolutions); ++i) {
+  for (size_t i = 0; i < base::size(resolutions); ++i) {
     SCOPED_TRACE(resolutions[i]);
 
     // Make a RasterSource that will draw a blue bitmap image.

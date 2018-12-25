@@ -9,6 +9,7 @@
 #include <limits>
 #include <vector>
 
+#include "base/stl_util.h"
 #include "cc/test/geometry_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/tween.h"
@@ -1028,7 +1029,7 @@ TEST(TransformOperationTest, BlendedBoundsForRotationTrivial) {
   // Since we're rotating 360 degrees, any box with dimensions between 0 and
   // 2 * sqrt(2) should give the same result.
   float sizes[] = { 0.f, 0.1f, sqrt_2, 2.f * sqrt_2 };
-  for (size_t i = 0; i < arraysize(sizes); ++i) {
+  for (size_t i = 0; i < base::size(sizes); ++i) {
     box.set_size(sizes[i], sizes[i], 0.f);
     SkMScalar min_progress = 0.f;
     SkMScalar max_progress = 1.f;
@@ -1123,7 +1124,7 @@ TEST(TransformOperationTest, BlendedBoundsForRotationProblematicAxes) {
                {0.f, 1.f, 1.f, gfx::BoxF(-1.f, dim1, dim1, 2.f, dim2, dim2)},
                {1.f, 0.f, 1.f, gfx::BoxF(dim1, -1.f, dim1, dim2, 2.f, dim2)}};
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     float x = tests[i].x;
     float y = tests[i].y;
     float z = tests[i].z;
@@ -1262,9 +1263,9 @@ TEST(TransformOperationTest, BlendedBoundsForRotationEmpiricalTests) {
         {0.f, 1.f}, {-.25f, 1.25f},
     };
 
-  for (size_t i = 0; i < arraysize(axes); ++i) {
-    for (size_t j = 0; j < arraysize(angles); ++j) {
-      for (size_t k = 0; k < arraysize(progress); ++k) {
+  for (size_t i = 0; i < base::size(axes); ++i) {
+    for (size_t j = 0; j < base::size(angles); ++j) {
+      for (size_t k = 0; k < base::size(progress); ++k) {
         float x = axes[i].x;
         float y = axes[i].y;
         float z = axes[i].z;
@@ -1325,8 +1326,8 @@ TEST(TransformOperationTest, BlendedBoundsForPerspective) {
         {0.f, 1.f}, {-0.1f, 1.1f},
     };
 
-  for (size_t i = 0; i < arraysize(perspective_depths); ++i) {
-    for (size_t j = 0; j < arraysize(progress); ++j) {
+  for (size_t i = 0; i < base::size(perspective_depths); ++i) {
+    for (size_t j = 0; j < base::size(progress); ++j) {
       TransformOperations operations_from;
       operations_from.AppendPerspective(perspective_depths[i].from_depth);
       TransformOperations operations_to;
@@ -1356,8 +1357,8 @@ TEST(TransformOperationTest, BlendedBoundsForSkew) {
         {0.f, 1.f}, {-0.1f, 1.1f},
     };
 
-  for (size_t i = 0; i < arraysize(skews); ++i) {
-    for (size_t j = 0; j < arraysize(progress); ++j) {
+  for (size_t i = 0; i < base::size(skews); ++i) {
+    for (size_t j = 0; j < base::size(progress); ++j) {
       TransformOperations operations_from;
       operations_from.AppendSkew(skews[i].from_x, skews[i].from_y);
       TransformOperations operations_to;

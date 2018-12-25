@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -25,7 +26,7 @@ static const char* const s_runStateNames[] = {"WAITING_FOR_TARGET_AVAILABILITY",
                                               "ABORTED_BUT_NEEDS_COMPLETION"};
 
 static_assert(static_cast<int>(cc::KeyframeModel::LAST_RUN_STATE) + 1 ==
-                  arraysize(s_runStateNames),
+                  base::size(s_runStateNames),
               "RunStateEnumSize should equal the number of elements in "
               "s_runStateNames");
 
@@ -33,7 +34,7 @@ static const char* const s_curveTypeNames[] = {
     "COLOR", "FLOAT", "TRANSFORM", "FILTER", "SCROLL_OFFSET", "SIZE"};
 
 static_assert(static_cast<int>(cc::AnimationCurve::LAST_CURVE_TYPE) + 1 ==
-                  arraysize(s_curveTypeNames),
+                  base::size(s_curveTypeNames),
               "CurveType enum should equal the number of elements in "
               "s_runStateNames");
 

@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "cc/layers/picture_image_layer.h"
 #include "cc/layers/solid_color_layer.h"
@@ -55,7 +56,7 @@ SkColor kCSSTestColors[] = {
     0x00000000   // transparent
 };
 
-const int kCSSTestColorsCount = arraysize(kCSSTestColors);
+const int kCSSTestColorsCount = base::size(kCSSTestColors);
 
 using RenderPassOptions = uint32_t;
 const uint32_t kUseMasks = 1 << 0;

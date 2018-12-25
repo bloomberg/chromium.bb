@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -36,8 +37,8 @@ TEST(OcclusionTest, HasOcclusion) {
 #define EXPECT_OCCLUSION(occlusion, rects, ...)              \
   {                                                          \
     bool expected[] = {__VA_ARGS__};                         \
-    ASSERT_EQ(arraysize(rects), arraysize(expected));        \
-    for (size_t i = 0; i < arraysize(rects); ++i)            \
+    ASSERT_EQ(base::size(rects), base::size(expected));      \
+    for (size_t i = 0; i < base::size(rects); ++i)           \
       EXPECT_EQ(expected[i], occlusion.IsOccluded(rects[i])) \
           << "Test failed for index " << i << ".";           \
   }

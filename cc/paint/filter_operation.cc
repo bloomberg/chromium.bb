@@ -9,6 +9,7 @@
 #include "cc/paint/filter_operation.h"
 
 #include "base/numerics/ranges.h"
+#include "base/stl_util.h"
 #include "base/trace_event/traced_value.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
@@ -300,7 +301,7 @@ void FilterOperation::AsValueInto(base::trace_event::TracedValue* value) const {
       break;
     case FilterOperation::COLOR_MATRIX: {
       value->BeginArray("matrix");
-      for (size_t i = 0; i < arraysize(matrix_); ++i)
+      for (size_t i = 0; i < base::size(matrix_); ++i)
         value->AppendDouble(matrix_[i]);
       value->EndArray();
       break;

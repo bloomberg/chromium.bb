@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/simple_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -274,8 +274,8 @@ TYPED_TEST_P(SingleThreadTaskGraphRunnerTest, Priority) {
         TaskInfo(i, 0u, 2u, 1u, 0u, 1u),  // Priority 1
         TaskInfo(i, 1u, 3u, 1u, 0u, 0u)   // Priority 0
     };
-    this->ScheduleTasks(i,
-                        std::vector<TaskInfo>(tasks, tasks + arraysize(tasks)));
+    this->ScheduleTasks(
+        i, std::vector<TaskInfo>(tasks, tasks + base::size(tasks)));
   }
 
   for (int i = 0; i < kNamespaceCount; ++i) {

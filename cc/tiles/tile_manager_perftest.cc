@@ -7,6 +7,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "cc/base/lap_timer.h"
@@ -80,7 +81,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
       std::unique_ptr<RasterTilePriorityQueue> queue(
           host_impl()->BuildRasterQueue(priorities[priority_count],
                                         RasterTilePriorityQueue::Type::ALL));
-      priority_count = (priority_count + 1) % arraysize(priorities);
+      priority_count = (priority_count + 1) % base::size(priorities);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
@@ -115,7 +116,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
         ASSERT_TRUE(queue->Top().tile());
         queue->Pop();
       }
-      priority_count = (priority_count + 1) % arraysize(priorities);
+      priority_count = (priority_count + 1) % base::size(priorities);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
@@ -148,7 +149,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
     do {
       std::unique_ptr<EvictionTilePriorityQueue> queue(
           host_impl()->BuildEvictionQueue(priorities[priority_count]));
-      priority_count = (priority_count + 1) % arraysize(priorities);
+      priority_count = (priority_count + 1) % base::size(priorities);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
@@ -188,7 +189,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
         ASSERT_TRUE(queue->Top().tile());
         queue->Pop();
       }
-      priority_count = (priority_count + 1) % arraysize(priorities);
+      priority_count = (priority_count + 1) % base::size(priorities);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
