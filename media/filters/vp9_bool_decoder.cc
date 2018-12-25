@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "media/base/bit_reader.h"
 
 namespace media {
@@ -111,7 +112,7 @@ bool Vp9BoolDecoder::ReadBool(int prob) {
 
   // Need to fill |count| bits next time in order to make |bool_range_| >=
   // 128.
-  DCHECK_LT(bool_range_, arraysize(kCountToShiftTo128));
+  DCHECK_LT(bool_range_, base::size(kCountToShiftTo128));
   DCHECK_GT(bool_range_, 0u);
   int count = kCountToShiftTo128[bool_range_];
   bool_range_ <<= count;

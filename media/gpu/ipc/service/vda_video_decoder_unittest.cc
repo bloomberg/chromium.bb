@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
@@ -43,7 +43,7 @@ namespace media {
 namespace {
 
 constexpr uint8_t kData[] = "foo";
-constexpr size_t kDataSize = arraysize(kData);
+constexpr size_t kDataSize = base::size(kData);
 
 scoped_refptr<DecoderBuffer> CreateDecoderBuffer(base::TimeDelta timestamp) {
   scoped_refptr<DecoderBuffer> buffer =

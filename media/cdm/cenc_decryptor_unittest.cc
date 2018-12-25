@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/containers/span.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
@@ -25,11 +26,11 @@ namespace {
 // Keys and IVs have to be 128 bits.
 const uint8_t kKey[] = {0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b,
                         0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13};
-static_assert(arraysize(kKey) * 8 == 128, "kKey must be 128 bits");
+static_assert(base::size(kKey) * 8 == 128, "kKey must be 128 bits");
 
 const uint8_t kIv[] = {0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27,
                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-static_assert(arraysize(kIv) * 8 == 128, "kIv must be 128 bits");
+static_assert(base::size(kIv) * 8 == 128, "kIv must be 128 bits");
 
 const uint8_t kOneBlock[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
                              'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p'};
@@ -65,11 +66,11 @@ class CencDecryptorTest : public testing::Test {
   CencDecryptorTest()
       : key_(crypto::SymmetricKey::Import(
             crypto::SymmetricKey::AES,
-            std::string(kKey, kKey + arraysize(kKey)))),
-        iv_(kIv, kIv + arraysize(kIv)),
-        one_block_(kOneBlock, kOneBlock + arraysize(kOneBlock)),
+            std::string(kKey, kKey + base::size(kKey)))),
+        iv_(kIv, kIv + base::size(kIv)),
+        one_block_(kOneBlock, kOneBlock + base::size(kOneBlock)),
         partial_block_(kPartialBlock,
-                       kPartialBlock + arraysize(kPartialBlock)) {}
+                       kPartialBlock + base::size(kPartialBlock)) {}
 
   // Excrypt |original| using AES-CTR encryption with |key| and |iv|.
   std::vector<uint8_t> Encrypt(const std::vector<uint8_t>& original,
@@ -207,7 +208,7 @@ TEST_F(CencDecryptorTest, InvalidIv) {
 
 TEST_F(CencDecryptorTest, InvalidKey) {
   std::unique_ptr<crypto::SymmetricKey> bad_key = crypto::SymmetricKey::Import(
-      crypto::SymmetricKey::AES, std::string(arraysize(kKey), 'b'));
+      crypto::SymmetricKey::AES, std::string(base::size(kKey), 'b'));
   auto encrypted_block = Encrypt(one_block_, *key_, iv_);
 
   std::vector<SubsampleEntry> subsamples = {

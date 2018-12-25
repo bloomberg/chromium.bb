@@ -6,8 +6,8 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "media/base/media_log.h"
@@ -887,7 +887,7 @@ TEST_F(MultibufferDataSourceTest, StopDuringRead) {
   InitializeWith206Response();
 
   uint8_t buffer[256];
-  data_source_->Read(kDataSize, arraysize(buffer), buffer,
+  data_source_->Read(kDataSize, base::size(buffer), buffer,
                      base::Bind(&MultibufferDataSourceTest::ReadCallback,
                                 base::Unretained(this)));
 

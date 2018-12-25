@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace midi {
@@ -51,10 +51,11 @@ void PushToVector(const T (&data)[N], std::vector<T>* buffer) {
 
 TEST(MidiMessageUtilTest, GetMessageLength) {
   // Check basic functionarity
-  EXPECT_EQ(arraysize(kNoteOn), GetMessageLength(kNoteOn[0]));
-  EXPECT_EQ(arraysize(kChannelPressure), GetMessageLength(kChannelPressure[0]));
-  EXPECT_EQ(arraysize(kTimingClock), GetMessageLength(kTimingClock[0]));
-  EXPECT_EQ(arraysize(kSystemCommonMessageTuneRequest),
+  EXPECT_EQ(base::size(kNoteOn), GetMessageLength(kNoteOn[0]));
+  EXPECT_EQ(base::size(kChannelPressure),
+            GetMessageLength(kChannelPressure[0]));
+  EXPECT_EQ(base::size(kTimingClock), GetMessageLength(kTimingClock[0]));
+  EXPECT_EQ(base::size(kSystemCommonMessageTuneRequest),
             GetMessageLength(kSystemCommonMessageTuneRequest[0]));
 
   // SysEx message should be mapped to 0-length

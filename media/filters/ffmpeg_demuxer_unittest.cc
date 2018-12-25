@@ -12,10 +12,10 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
@@ -445,12 +445,12 @@ TEST_F(FFmpegDemuxerTest, Initialize_Multitrack) {
 #endif
 
 TEST_F(FFmpegDemuxerTest, Initialize_Encrypted) {
-  EXPECT_CALL(*this,
-              OnEncryptedMediaInitData(
-                  EmeInitDataType::WEBM,
-                  std::vector<uint8_t>(kEncryptedMediaInitData,
-                                       kEncryptedMediaInitData +
-                                           arraysize(kEncryptedMediaInitData))))
+  EXPECT_CALL(
+      *this, OnEncryptedMediaInitData(
+                 EmeInitDataType::WEBM,
+                 std::vector<uint8_t>(kEncryptedMediaInitData,
+                                      kEncryptedMediaInitData +
+                                          base::size(kEncryptedMediaInitData))))
       .Times(Exactly(2));
 
   CreateDemuxer("bear-320x240-av_enc-av.webm");
@@ -770,7 +770,7 @@ TEST_F(FFmpegDemuxerTest, Read_AudioNegativeStartTimeAndOpusDiscard_Sync) {
 
   // Run the test twice with a seek in between.
   for (int i = 0; i < 2; ++i) {
-    for (size_t j = 0; j < arraysize(kTestExpectations); ++j) {
+    for (size_t j = 0; j < base::size(kTestExpectations); ++j) {
       audio->Read(NewReadCB(FROM_HERE, kTestExpectations[j][0],
                             kTestExpectations[j][1], true));
       base::RunLoop().Run();
@@ -844,7 +844,7 @@ TEST_F(FFmpegDemuxerTest,
         FROM_HERE, 408, 0, base::TimeDelta::FromMicroseconds(6500), true));
     base::RunLoop().Run();
 
-    for (size_t j = 0; j < arraysize(kTestExpectations); ++j) {
+    for (size_t j = 0; j < base::size(kTestExpectations); ++j) {
       audio->Read(NewReadCB(FROM_HERE, kTestExpectations[j][0],
                             kTestExpectations[j][1], true));
       base::RunLoop().Run();
@@ -1255,7 +1255,7 @@ TEST_F(FFmpegDemuxerTest, IsValidAnnexB) {
     "bear-1280x720-av_with-aud-nalus_frag.mp4"
   };
 
-  for (size_t i = 0; i < arraysize(files); ++i) {
+  for (size_t i = 0; i < base::size(files); ++i) {
     DVLOG(1) << "Testing " << files[i];
     CreateDemuxer(files[i]);
     InitializeDemuxer();
@@ -1549,7 +1549,7 @@ TEST_F(FFmpegDemuxerTest, UTCDateToTime_Invalid) {
       "2012-11-1012:34:56",
   };
 
-  for (size_t i = 0; i < arraysize(invalid_date_strings); ++i) {
+  for (size_t i = 0; i < base::size(invalid_date_strings); ++i) {
     const char* date_string = invalid_date_strings[i];
     base::Time result;
     EXPECT_FALSE(base::Time::FromUTCString(date_string, &result))

@@ -699,7 +699,7 @@ bool VASupportedProfiles::GetMaxResolution_Locked(
 VAProfile ProfileToVAProfile(VideoCodecProfile profile,
                              VaapiWrapper::CodecMode mode) {
   VAProfile va_profile = VAProfileNone;
-  for (size_t i = 0; i < arraysize(kProfileMap); ++i) {
+  for (size_t i = 0; i < base::size(kProfileMap); ++i) {
     if (kProfileMap[i].profile == profile) {
       va_profile = kProfileMap[i].va_profile;
       break;
@@ -854,7 +854,7 @@ VaapiWrapper::GetSupportedEncodeProfiles() {
   const std::vector<VASupportedProfiles::ProfileInfo>& encode_profile_infos =
       VASupportedProfiles::Get().GetSupportedProfileInfosForCodecMode(kEncode);
 
-  for (size_t i = 0; i < arraysize(kProfileMap); ++i) {
+  for (size_t i = 0; i < base::size(kProfileMap); ++i) {
     VAProfile va_profile = ProfileToVAProfile(kProfileMap[i].profile, kEncode);
     if (va_profile == VAProfileNone)
       continue;
@@ -880,7 +880,7 @@ VaapiWrapper::GetSupportedDecodeProfiles() {
   const std::vector<VASupportedProfiles::ProfileInfo>& decode_profile_infos =
       VASupportedProfiles::Get().GetSupportedProfileInfosForCodecMode(kDecode);
 
-  for (size_t i = 0; i < arraysize(kProfileMap); ++i) {
+  for (size_t i = 0; i < base::size(kProfileMap); ++i) {
     VAProfile va_profile = ProfileToVAProfile(kProfileMap[i].profile, kDecode);
     if (va_profile == VAProfileNone)
       continue;

@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/system/system_monitor.h"
 #include "base/win/wrapped_window_proc.h"
 #include "media/audio/win/core_audio_util_win.h"
@@ -43,7 +43,7 @@ class SystemMessageWindowWin::DeviceNotifications {
     filter.dbcc_size = sizeof(filter);
     filter.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
     bool core_audio_support = media::CoreAudioUtil::IsSupported();
-    for (size_t i = 0; i < arraysize(kDeviceCategoryMap); ++i) {
+    for (size_t i = 0; i < base::size(kDeviceCategoryMap); ++i) {
       // If CoreAudio is supported, AudioDeviceListenerWin will
       // take care of monitoring audio devices.
       if (core_audio_support &&
@@ -61,7 +61,7 @@ class SystemMessageWindowWin::DeviceNotifications {
   }
 
   void Unregister() {
-    for (size_t i = 0; i < arraysize(notifications_); ++i) {
+    for (size_t i = 0; i < base::size(notifications_); ++i) {
       if (notifications_[i]) {
         UnregisterDeviceNotification(notifications_[i]);
         notifications_[i] = NULL;
@@ -70,7 +70,7 @@ class SystemMessageWindowWin::DeviceNotifications {
   }
 
  private:
-  HDEVNOTIFY notifications_[arraysize(kDeviceCategoryMap)];
+  HDEVNOTIFY notifications_[base::size(kDeviceCategoryMap)];
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DeviceNotifications);
 };

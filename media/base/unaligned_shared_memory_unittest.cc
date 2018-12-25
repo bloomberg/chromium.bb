@@ -10,8 +10,8 @@
 #include <limits>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/shared_memory.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -19,11 +19,11 @@ namespace media {
 namespace {
 
 const uint8_t kUnalignedData[] = "XXXhello";
-const size_t kUnalignedDataSize = arraysize(kUnalignedData);
+const size_t kUnalignedDataSize = base::size(kUnalignedData);
 const off_t kUnalignedOffset = 3;
 
 const uint8_t kData[] = "hello";
-const size_t kDataSize = arraysize(kData);
+const size_t kDataSize = base::size(kData);
 
 base::SharedMemoryHandle CreateHandle(const uint8_t* data, size_t size) {
   base::SharedMemory shm;

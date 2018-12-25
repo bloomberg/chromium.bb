@@ -16,9 +16,9 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
@@ -1404,7 +1404,7 @@ bool V4L2VideoEncodeAccelerator::CreateOutputBuffers() {
     buffer.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
     buffer.memory = V4L2_MEMORY_MMAP;
     buffer.m.planes = planes;
-    buffer.length = arraysize(planes);
+    buffer.length = base::size(planes);
     IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYBUF, &buffer);
     void* address = device_->Mmap(NULL,
                                   buffer.m.planes[0].length,

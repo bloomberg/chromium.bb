@@ -4,6 +4,7 @@
 
 #include "media/gpu/vaapi/vaapi_vp9_accelerator.h"
 
+#include "base/stl_util.h"
 #include "media/gpu/decode_surface_handler.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_common.h"
@@ -55,8 +56,8 @@ bool VaapiVP9Accelerator::SubmitDecode(
   pic_param.frame_height =
       base::checked_cast<uint16_t>(frame_hdr->frame_height);
 
-  CHECK_EQ(ref_pictures.size(), arraysize(pic_param.reference_frames));
-  for (size_t i = 0; i < arraysize(pic_param.reference_frames); ++i) {
+  CHECK_EQ(ref_pictures.size(), base::size(pic_param.reference_frames));
+  for (size_t i = 0; i < base::size(pic_param.reference_frames); ++i) {
     if (ref_pictures[i]) {
       pic_param.reference_frames[i] =
           ref_pictures[i]->AsVaapiVP9Picture()->GetVASurfaceID();
@@ -122,7 +123,7 @@ bool VaapiVP9Accelerator::SubmitDecode(
   static_assert(arraysize(Vp9SegmentationParams::feature_enabled) ==
                     arraysize(slice_param.seg_param),
                 "seg_param array of incorrect size");
-  for (size_t i = 0; i < arraysize(slice_param.seg_param); ++i) {
+  for (size_t i = 0; i < base::size(slice_param.seg_param); ++i) {
     VASegmentParameterVP9& seg_param = slice_param.seg_param[i];
 #define SEG_TO_SP_SF(a, b) seg_param.segment_flags.fields.a = b
     SEG_TO_SP_SF(

@@ -16,10 +16,10 @@
 #include "base/bind.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/safe_strerror.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -847,7 +847,7 @@ void MidiManagerAlsa::EventLoop() {
   pfd[1].fd = device::udev_monitor_get_fd(udev_monitor_.get());
   pfd[1].events = POLLIN;
 
-  int err = HANDLE_EINTR(poll(pfd, arraysize(pfd), -1));
+  int err = HANDLE_EINTR(poll(pfd, base::size(pfd), -1));
   if (err < 0) {
     VLOG(1) << "poll fails: " << base::safe_strerror(errno);
     loop_again = false;

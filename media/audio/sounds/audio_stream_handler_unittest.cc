@@ -10,9 +10,9 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/audio/audio_io.h"
@@ -35,7 +35,7 @@ class AudioStreamHandlerTest : public testing::Test {
         AudioManager::CreateForTesting(std::make_unique<TestAudioThread>());
     base::RunLoop().RunUntilIdle();
 
-    base::StringPiece data(kTestAudioData, arraysize(kTestAudioData));
+    base::StringPiece data(kTestAudioData, base::size(kTestAudioData));
     audio_stream_handler_.reset(new AudioStreamHandler(data));
   }
 

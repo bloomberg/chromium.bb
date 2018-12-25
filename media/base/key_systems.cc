@@ -10,7 +10,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -332,7 +332,7 @@ KeySystemsImpl* KeySystemsImpl::GetInstance() {
 KeySystemsImpl::KeySystemsImpl()
     : audio_codec_mask_(EME_CODEC_AUDIO_ALL),
       video_codec_mask_(EME_CODEC_VIDEO_ALL) {
-  for (size_t i = 0; i < arraysize(kMimeTypeToCodecsMap); ++i) {
+  for (size_t i = 0; i < base::size(kMimeTypeToCodecsMap); ++i) {
     RegisterMimeType(kMimeTypeToCodecsMap[i].mime_type,
                      kMimeTypeToCodecsMap[i].codecs);
   }

@@ -560,7 +560,7 @@ void AudioManagerCras::GetSystemAecGroupIdOnMainThread(
 
 void AudioManagerCras::WaitEventOrShutdown(base::WaitableEvent* event) {
   base::WaitableEvent* waitables[] = {event, &on_shutdown_};
-  base::WaitableEvent::WaitMany(waitables, arraysize(waitables));
+  base::WaitableEvent::WaitMany(waitables, base::size(waitables));
 }
 
 }  // namespace media

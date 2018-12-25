@@ -5,7 +5,7 @@
 #include "media/audio/win/avrt_wrapper_win.h"
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 
 namespace avrt {
 
@@ -24,7 +24,7 @@ bool Initialize() {
     // The avrt.dll is available on Windows Vista and later.
     wchar_t path[MAX_PATH] = {0};
     ExpandEnvironmentStrings(L"%WINDIR%\\system32\\avrt.dll", path,
-        arraysize(path));
+                             base::size(path));
     g_avrt = LoadLibraryExW(path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
     if (!g_avrt)
       return false;

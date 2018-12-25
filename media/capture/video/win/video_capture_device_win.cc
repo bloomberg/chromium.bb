@@ -13,7 +13,7 @@
 #include <utility>
 
 #include "base/feature_list.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_variant.h"
@@ -340,7 +340,7 @@ VideoPixelFormat VideoCaptureDeviceWin::TranslateMediaSubtypeToPixelFormat(
   }
 #ifndef NDEBUG
   WCHAR guid_str[128];
-  StringFromGUID2(sub_type, guid_str, arraysize(guid_str));
+  StringFromGUID2(sub_type, guid_str, base::size(guid_str));
   DVLOG(2) << "Device (also) supports an unknown media type " << guid_str;
 #endif
   return PIXEL_FORMAT_UNKNOWN;

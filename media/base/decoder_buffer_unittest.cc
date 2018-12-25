@@ -9,8 +9,8 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/shared_memory.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,7 +37,7 @@ TEST(DecoderBufferTest, CreateEOSBuffer) {
 
 TEST(DecoderBufferTest, CopyFrom) {
   const uint8_t kData[] = "hello";
-  const size_t kDataSize = arraysize(kData);
+  const size_t kDataSize = base::size(kData);
 
   scoped_refptr<DecoderBuffer> buffer2(DecoderBuffer::CopyFrom(
       reinterpret_cast<const uint8_t*>(&kData), kDataSize));
@@ -64,7 +64,7 @@ TEST(DecoderBufferTest, CopyFrom) {
 
 TEST(DecoderBufferTest, FromSharedMemoryHandle) {
   const uint8_t kData[] = "hello";
-  const size_t kDataSize = arraysize(kData);
+  const size_t kDataSize = base::size(kData);
 
   base::SharedMemory mem;
   ASSERT_TRUE(mem.CreateAndMapAnonymous(kDataSize));
@@ -81,7 +81,7 @@ TEST(DecoderBufferTest, FromSharedMemoryHandle) {
 
 TEST(DecoderBufferTest, FromSharedMemoryHandle_Unaligned) {
   const uint8_t kData[] = "XXXhello";
-  const size_t kDataSize = arraysize(kData);
+  const size_t kDataSize = base::size(kData);
   const off_t kDataOffset = 3;
 
   base::SharedMemory mem;
@@ -100,7 +100,7 @@ TEST(DecoderBufferTest, FromSharedMemoryHandle_Unaligned) {
 
 TEST(DecoderBufferTest, FromSharedMemoryHandle_ZeroSize) {
   const uint8_t kData[] = "hello";
-  const size_t kDataSize = arraysize(kData);
+  const size_t kDataSize = base::size(kData);
 
   base::SharedMemory mem;
   ASSERT_TRUE(mem.CreateAndMapAnonymous(kDataSize));
@@ -114,7 +114,7 @@ TEST(DecoderBufferTest, FromSharedMemoryHandle_ZeroSize) {
 #if !defined(OS_ANDROID)
 TEST(DecoderBufferTest, PaddingAlignment) {
   const uint8_t kData[] = "hello";
-  const size_t kDataSize = arraysize(kData);
+  const size_t kDataSize = base::size(kData);
   scoped_refptr<DecoderBuffer> buffer2(DecoderBuffer::CopyFrom(
       reinterpret_cast<const uint8_t*>(&kData), kDataSize));
   ASSERT_TRUE(buffer2.get());
@@ -142,7 +142,7 @@ TEST(DecoderBufferTest, PaddingAlignment) {
 
 TEST(DecoderBufferTest, ReadingWriting) {
   const char kData[] = "hello";
-  const size_t kDataSize = arraysize(kData);
+  const size_t kDataSize = base::size(kData);
 
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(kDataSize));
   ASSERT_TRUE(buffer.get());

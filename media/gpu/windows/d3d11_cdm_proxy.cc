@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_observer.h"
+#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/win/object_watcher.h"
 #include "media/base/callback_registry.h"
@@ -285,7 +286,7 @@ void D3D11CdmProxy::Initialize(Client* client, InitializeCB init_cb) {
       nullptr,                            // No adapter.
       D3D_DRIVER_TYPE_HARDWARE, nullptr,  // No software rasterizer.
       0,                                  // flags, none.
-      feature_levels, arraysize(feature_levels), D3D11_SDK_VERSION,
+      feature_levels, base::size(feature_levels), D3D11_SDK_VERSION,
       device_.GetAddressOf(), nullptr, device_context_.GetAddressOf());
   if (FAILED(hresult)) {
     DLOG(ERROR) << "Failed to create the D3D11Device:" << hresult;

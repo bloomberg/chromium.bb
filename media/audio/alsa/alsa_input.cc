@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "media/audio/alsa/alsa_output.h"
 #include "media/audio/alsa/alsa_util.h"
 #include "media/audio/alsa/alsa_wrapper.h"
@@ -64,7 +64,7 @@ bool AlsaPcmInputStream::Open() {
 
   if (device_name_ == kAutoSelectDevice) {
     const char* device_names[] = { kDefaultDevice1, kDefaultDevice2 };
-    for (size_t i = 0; i < arraysize(device_names); ++i) {
+    for (size_t i = 0; i < base::size(device_names); ++i) {
       device_handle_ = alsa_util::OpenCaptureDevice(
           wrapper_, device_names[i], params_.channels(), params_.sample_rate(),
           kAlsaSampleFormat, buffer_us, packet_us);

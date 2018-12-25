@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "media/audio/sounds/test_data.h"
 #include "media/base/audio_bus.h"
@@ -47,7 +47,7 @@ TEST(WavAudioHandlerTest, SampleDataTest) {
 
   ASSERT_EQ(4U, handler->data().size());
   const char kData[] = "\x01\x00\x01\x00";
-  ASSERT_EQ(base::StringPiece(kData, arraysize(kData) - 1), handler->data());
+  ASSERT_EQ(base::StringPiece(kData, base::size(kData) - 1), handler->data());
 
   std::unique_ptr<AudioBus> bus =
       AudioBus::Create(handler->num_channels(),
@@ -106,7 +106,7 @@ TEST(WavAudioHandlerTest, TestTooBigTotalSizeIsOkay) {
 
   ASSERT_EQ(4U, handler->data().size());
   const char kData[] = "\x01\x00\x01\x00";
-  ASSERT_EQ(base::StringPiece(kData, arraysize(kData) - 1), handler->data());
+  ASSERT_EQ(base::StringPiece(kData, base::size(kData) - 1), handler->data());
 }
 
 TEST(WavAudioHandlerTest, TestTooBigDataChunkSizeIsOkay) {
@@ -128,7 +128,7 @@ TEST(WavAudioHandlerTest, TestTooBigDataChunkSizeIsOkay) {
 
   ASSERT_EQ(4U, handler->data().size());
   const char kData[] = "\x01\x00\x01\x00";
-  ASSERT_EQ(base::StringPiece(kData, arraysize(kData) - 1), handler->data());
+  ASSERT_EQ(base::StringPiece(kData, base::size(kData) - 1), handler->data());
 }
 
 TEST(WavAudioHandlerTest, TestTooSmallFormatSizeIsNotValid) {

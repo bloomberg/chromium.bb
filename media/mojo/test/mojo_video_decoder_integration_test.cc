@@ -12,9 +12,9 @@
 #include "base/callback_forward.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
@@ -281,8 +281,9 @@ class MojoVideoDecoderIntegrationTest : public ::testing::Test {
     const uint8_t kFakeIv[DecryptConfig::kDecryptionKeySize] = {0};
     buffer->set_decrypt_config(DecryptConfig::CreateCencConfig(
         std::string(reinterpret_cast<const char*>(kFakeKeyId),
-                    arraysize(kFakeKeyId)),
-        std::string(reinterpret_cast<const char*>(kFakeIv), arraysize(kFakeIv)),
+                    base::size(kFakeKeyId)),
+        std::string(reinterpret_cast<const char*>(kFakeIv),
+                    base::size(kFakeIv)),
         {}));
 
     return buffer;

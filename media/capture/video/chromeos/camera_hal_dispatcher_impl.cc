@@ -16,6 +16,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
@@ -62,7 +63,7 @@ bool WaitForSocketReadable(int raw_socket_fd, int raw_cancel_fd) {
       {raw_socket_fd, POLLIN, 0}, {raw_cancel_fd, POLLIN, 0},
   };
 
-  if (HANDLE_EINTR(poll(fds, arraysize(fds), -1)) <= 0) {
+  if (HANDLE_EINTR(poll(fds, base::size(fds), -1)) <= 0) {
     PLOG(ERROR) << "poll()";
     return false;
   }

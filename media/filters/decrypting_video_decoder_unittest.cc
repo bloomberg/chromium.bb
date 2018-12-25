@@ -9,9 +9,9 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/gmock_callback_support.h"
@@ -39,8 +39,8 @@ static scoped_refptr<DecoderBuffer> CreateFakeEncryptedBuffer() {
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(buffer_size));
   buffer->set_decrypt_config(DecryptConfig::CreateCencConfig(
       std::string(reinterpret_cast<const char*>(kFakeKeyId),
-                  arraysize(kFakeKeyId)),
-      std::string(reinterpret_cast<const char*>(kFakeIv), arraysize(kFakeIv)),
+                  base::size(kFakeKeyId)),
+      std::string(reinterpret_cast<const char*>(kFakeIv), base::size(kFakeIv)),
       {}));
   return buffer;
 }

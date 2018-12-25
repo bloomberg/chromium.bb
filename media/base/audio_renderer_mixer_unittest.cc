@@ -14,7 +14,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/platform_thread.h"
@@ -540,19 +540,19 @@ INSTANTIATE_TEST_CASE_P(
 
         // Downsampling, multuple input sample rates.
         std::make_tuple(static_cast<const int* const>(kTestInput3Rates),
-                        arraysize(kTestInput3Rates),
+                        base::size(kTestInput3Rates),
                         kTestInput3Rates[0],
                         0.01),
 
         // Upsampling, multiple sinput sample rates.
         std::make_tuple(static_cast<const int* const>(kTestInput3Rates),
-                        arraysize(kTestInput3Rates),
+                        base::size(kTestInput3Rates),
                         kTestInput3Rates[2],
                         0.01),
 
         // Both downsampling and upsampling, multiple input sample rates
         std::make_tuple(static_cast<const int* const>(kTestInput3Rates),
-                        arraysize(kTestInput3Rates),
+                        base::size(kTestInput3Rates),
                         kTestInput3Rates[1],
                         0.01)));
 
