@@ -126,7 +126,7 @@ MigratableCardView::GetMigratableCardDescriptionView(
     case MigratableCreditCard::MigrationStatus::FAILURE_ON_UPLOAD: {
       auto* migration_failed_image = new views::ImageView();
       migration_failed_image->SetImage(
-          gfx::CreateVectorIcon(kBrowserToolsErrorIcon,
+          gfx::CreateVectorIcon(vector_icons::kErrorIcon,
                                 kMigrationResultImageSize, gfx::kGoogleRed700));
       migratable_card_description_view->AddChildView(migration_failed_image);
       break;
