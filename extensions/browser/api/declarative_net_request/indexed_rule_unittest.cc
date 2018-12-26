@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
