@@ -19,11 +19,8 @@ namespace views {
 
 namespace {
 
-const char kViewsTextServicesContextMenuHistogram[] =
-    "ContextMenu.ViewsTextServices.Used";
-
-// Do not change the values in this enum as they are used by UMA.
-enum class Command { kEmoji = 0, kMaxValue = kEmoji };
+const char kViewsTextServicesContextMenuEmoji[] =
+    "ContextMenu.ViewsTextServices.Emoji";
 
 }  // namespace
 
@@ -83,8 +80,7 @@ bool ViewsTextServicesContextMenuBase::IsCommandIdEnabled(
 void ViewsTextServicesContextMenuBase::ExecuteCommand(int command_id) {
   if (command_id == IDS_CONTENT_CONTEXT_EMOJI) {
     ui::ShowEmojiPanel();
-    UMA_HISTOGRAM_ENUMERATION(kViewsTextServicesContextMenuHistogram,
-                              Command::kEmoji);
+    UMA_HISTOGRAM_BOOLEAN(kViewsTextServicesContextMenuEmoji, true);
   }
 }
 
