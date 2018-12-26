@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
@@ -219,7 +219,7 @@ TEST_F(WTFTypesTest, SendStringArray) {
   // arrs[1] is null.
   arrs[2] = ConstructStringArray();
 
-  for (size_t i = 0; i < arraysize(arrs); ++i) {
+  for (size_t i = 0; i < base::size(arrs); ++i) {
     base::RunLoop loop;
     // Test that a base::Optional<WTF::Vector<WTF::String>> is unchanged after
     // the following conversion:
@@ -245,7 +245,7 @@ TEST_F(WTFTypesTest, SendStringMap) {
   // maps[1] is null.
   maps[2] = ConstructStringMap();
 
-  for (size_t i = 0; i < arraysize(maps); ++i) {
+  for (size_t i = 0; i < base::size(maps); ++i) {
     base::RunLoop loop;
     // Test that a base::Optional<WTF::HashMap<WTF::String, WTF::String>> is
     // unchanged after the following conversion:

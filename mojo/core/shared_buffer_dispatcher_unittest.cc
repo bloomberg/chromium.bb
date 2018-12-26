@@ -9,10 +9,10 @@
 
 #include <limits>
 
-#include "base/macros.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/writable_shared_memory_region.h"
+#include "base/stl_util.h"
 #include "mojo/core/dispatcher.h"
 #include "mojo/core/platform_shared_memory_mapping.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -65,7 +65,7 @@ TEST_F(SharedBufferDispatcherTest, ValidateCreateOptionsValid) {
   // Different flags.
   MojoCreateSharedBufferFlags flags_values[] = {
       MOJO_CREATE_SHARED_BUFFER_FLAG_NONE};
-  for (size_t i = 0; i < arraysize(flags_values); i++) {
+  for (size_t i = 0; i < base::size(flags_values); i++) {
     const MojoCreateSharedBufferFlags flags = flags_values[i];
 
     // Different capacities (size 1).
