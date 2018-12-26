@@ -38,8 +38,10 @@ public class ProfilingProcessHostAndroidTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.Add({"memlog=browser", "memlog-stack-mode=native-include-thread-names"})
-    public void testModeBrowser() throws Exception {
+    @CommandLineFlags.Add({"memlog=browser", "memlog-stack-mode=native-include-thread-names",
+            "memlog-sampling-rate=1"})
+    public void
+    testModeBrowser() throws Exception {
         HeapProfilingTestShim shim = new HeapProfilingTestShim();
         Assert.assertTrue(
                 shim.runTestForMode("browser", false, "native-include-thread-names", false, false));
@@ -67,7 +69,8 @@ public class ProfilingProcessHostAndroidTest {
     @DisabledTest
     @Test
     @MediumTest
-    @CommandLineFlags.Add({"memlog=all-renderers", "memlog-stack-mode=pseudo"})
+    @CommandLineFlags.
+    Add({"memlog=all-renderers", "memlog-stack-mode=pseudo", "memlog-sampling-rate=1"})
     public void testModeRendererPseudo() throws Exception {
         HeapProfilingTestShim shim = new HeapProfilingTestShim();
         Assert.assertTrue(shim.runTestForMode("all-renderers", false, "pseudo", false, false));
@@ -75,7 +78,7 @@ public class ProfilingProcessHostAndroidTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.Add({"memlog=gpu", "memlog-stack-mode=pseudo"})
+    @CommandLineFlags.Add({"memlog=gpu", "memlog-stack-mode=pseudo", "memlog-sampling-rate=1"})
     public void testModeGpuPseudo() throws Exception {
         HeapProfilingTestShim shim = new HeapProfilingTestShim();
         Assert.assertTrue(shim.runTestForMode("gpu", false, "native", false, false));

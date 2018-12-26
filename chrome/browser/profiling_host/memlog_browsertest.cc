@@ -54,6 +54,11 @@ class MemlogBrowserTest : public InProcessBrowserTest,
         NOTREACHED();
       }
 
+      if (!GetParam().should_sample) {
+        command_line->AppendSwitchASCII(heap_profiling::kMemlogSamplingRate,
+                                        "1");
+      }
+
       if (GetParam().stack_mode == mojom::StackMode::PSEUDO) {
         command_line->AppendSwitchASCII(heap_profiling::kMemlogStackMode,
                                         heap_profiling::kMemlogStackModePseudo);
@@ -82,8 +87,9 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
   LOG(INFO) << "Memlog mode: " << static_cast<int>(GetParam().mode);
   LOG(INFO) << "Memlog stack mode: " << static_cast<int>(GetParam().stack_mode);
   LOG(INFO) << "Started via command line flag: "
-            << static_cast<int>(
-                   GetParam().start_profiling_with_command_line_flag);
+            << GetParam().start_profiling_with_command_line_flag;
+  LOG(INFO) << "Should sample: " << GetParam().should_sample;
+  LOG(INFO) << "Sample everything: " << GetParam().sample_everything;
   TestDriver driver;
   TestDriver::Options options;
   options.mode = GetParam().mode;

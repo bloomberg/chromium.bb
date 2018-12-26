@@ -25,8 +25,8 @@ const char kOOPHeapProfilingFeatureStackMode[] = "stack-mode";
 const char kOOPHeapProfilingFeatureSampling[] = "sampling";
 const char kOOPHeapProfilingFeatureSamplingRate[] = "sampling-rate";
 
-const uint32_t kDefaultSamplingRate = 10000;
-const bool kDefaultShouldSample = false;
+const uint32_t kDefaultSamplingRate = 100000;
+const bool kDefaultShouldSample = true;
 
 bool RecordAllAllocationsForStartup() {
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
