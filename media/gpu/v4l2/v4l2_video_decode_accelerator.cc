@@ -2392,14 +2392,17 @@ bool V4L2VideoDecodeAccelerator::CreateImageProcessor() {
     return false;
   }
 
-  // Unretained is safe because |this| owns image processor and there will be
-  // no callbacks after processor destroys.
+  // Unretained(this) is safe in creating ErrorCB because |image_processor_|
+  // is destructed by Destroy(), which posts DestroyTask() to |decoder_thread_|,
+  // which is the same thread ErrorCB being called. In DestroyTask(), it
+  // destructs |image_processor_| so no more ErrorCB is invoked after
+  // DestroyTask() is called.
   image_processor_ = V4L2ImageProcessor::Create(
       image_processor_device_, VideoFrame::STORAGE_DMABUFS,
       VideoFrame::STORAGE_DMABUFS, image_processor_output_mode, *input_layout,
       *output_layout, visible_size_, visible_size_, output_buffer_map_.size(),
-      base::Bind(&V4L2VideoDecodeAccelerator::ImageProcessorError,
-                 base::Unretained(this)));
+      base::BindRepeating(&V4L2VideoDecodeAccelerator::ImageProcessorError,
+                          base::Unretained(this)));
 
   if (!image_processor_) {
     VLOGF(1) << "Initialize image processor failed";
@@ -2451,8 +2454,13 @@ bool V4L2VideoDecodeAccelerator::ProcessFrame(int32_t bitstream_buffer_id,
     if (output_fds.empty())
       return false;
   }
-  // Unretained is safe because |this| owns image processor and there will
-  // be no callbacks after processor destroys.
+  // Unretained(this) is safe in creating FrameReadyCB because
+  // |image_processor_| is destructed by Destroy(), which posts DestroyTask() to
+  // |decoder_thread_|, which is the same thread ErrorCB being called. In
+  // DestroyTask(), it destructs |image_processor_| so no more ErrorCB is
+  // invoked after DestroyTask() is called. Unretained is safe because |this|
+  // owns image processor and there will be no callbacks after processor
+  // destroys.
   image_processor_->Process(
       input_frame, output_buffer_index, std::move(output_fds),
       base::BindOnce(&V4L2VideoDecodeAccelerator::FrameProcessed,
