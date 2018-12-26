@@ -22,7 +22,7 @@ OmniboxUI::OmniboxUI(content::WebUI* web_ui) : ui::MojoWebUIController(web_ui) {
                           IDR_OMNIBOX_COLUMN_WIDTHS_CSS);
   source->AddResourcePath("omnibox.css", IDR_OMNIBOX_CSS);
   source->AddResourcePath("omnibox_element.js", IDR_OMNIBOX_ELEMENT_JS);
-  source->AddResourcePath("omnibox_inputs.js", IDR_OMNIBOX_INPUTS_JS);
+  source->AddResourcePath("omnibox_input.js", IDR_OMNIBOX_INPUT_JS);
   source->AddResourcePath("omnibox_output.js", IDR_OMNIBOX_OUTPUT_JS);
   source->AddResourcePath("omnibox.js", IDR_OMNIBOX_JS);
   source->AddResourcePath(

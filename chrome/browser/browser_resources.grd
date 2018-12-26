@@ -401,7 +401,7 @@
       <include name="IDR_OMNIBOX_COLUMN_WIDTHS_CSS" file="resources\omnibox\omnibox_column_widths.css" type="BINDATA" compress="gzip" />
       <include name="IDR_OMNIBOX_CSS" file="resources\omnibox\omnibox.css" type="BINDATA" compress="gzip" />
       <include name="IDR_OMNIBOX_ELEMENT_JS" file="resources\omnibox\omnibox_element.js" type="BINDATA" compress="gzip" />
-      <include name="IDR_OMNIBOX_INPUTS_JS" file="resources\omnibox\omnibox_inputs.js" type="BINDATA" compress="gzip" />
+      <include name="IDR_OMNIBOX_INPUT_JS" file="resources\omnibox\omnibox_input.js" type="BINDATA" compress="gzip" />
       <include name="IDR_OMNIBOX_OUTPUT_JS" file="resources\omnibox\omnibox_output.js" type="BINDATA" compress="gzip" />
       <include name="IDR_OMNIBOX_JS" file="resources\omnibox\omnibox.js" type="BINDATA" compress="gzip" />
       <include name="IDR_OMNIBOX_MOJO_JS" file="${root_gen_dir}\chrome\browser\ui\webui\omnibox\omnibox.mojom-lite.js" use_base_dir="false" type="BINDATA" compress="gzip" />

@@ -23,11 +23,11 @@ let QueryInputs;
  */
 let DisplayInputs;
 
-class OmniboxInputs extends OmniboxElement {
+class OmniboxInput extends OmniboxElement {
   constructor() {
-    super('omnibox-inputs-template');
+    super('omnibox-input-template');
 
-    const displayInputs = OmniboxInputs.defaultDisplayInputs;
+    const displayInputs = OmniboxInput.defaultDisplayInputs;
     this.$$('show-incomplete-results').checked =
         displayInputs.showIncompleteResults;
     this.$$('show-details').checked = displayInputs.showDetails;
@@ -134,4 +134,4 @@ class OmniboxInputs extends OmniboxElement {
   }
 }
 
-customElements.define('omnibox-inputs', OmniboxInputs);
+customElements.define('omnibox-input', OmniboxInput);

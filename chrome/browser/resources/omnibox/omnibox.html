@@ -10,13 +10,13 @@
   <script src="chrome://resources/js/util.js"></script>
   <script src="chrome/browser/ui/webui/omnibox/omnibox.mojom-lite.js"></script>
   <script src="omnibox_element.js"></script>
-  <script src="omnibox_inputs.js"></script>
+  <script src="omnibox_input.js"></script>
   <script src="omnibox_output.js"></script>
   <script src="omnibox.js"></script>
 </head>
 
 <body>
-  <template id="omnibox-inputs-template">
+  <template id="omnibox-input-template">
     <link rel="stylesheet" href="omnibox.css">
 
     <div class="top text">
@@ -150,7 +150,7 @@
     <p>host = <span class="host"></span>, has isTypedHost = <span class="is-typed-host"></span></p>
   </template>
 
-  <omnibox-inputs id="omnibox-inputs"></omnibox-inputs>
+  <omnibox-input id="omnibox-input"></omnibox-input>
   <omnibox-output id="omnibox-output"></omnibox-output>
 </body>
 </html>

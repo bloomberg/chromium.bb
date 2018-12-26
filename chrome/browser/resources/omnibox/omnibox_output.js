@@ -23,7 +23,7 @@ cr.define('omnibox_output', function() {
       /** @private {!QueryInputs} */
       this.queryInputs_ = /** @type {!QueryInputs} */ ({});
       /** @private {!DisplayInputs} */
-      this.displayInputs_ = OmniboxInputs.defaultDisplayInputs;
+      this.displayInputs_ = OmniboxInput.defaultDisplayInputs;
       /** @private {string} */
       this.filterText_ = '';
     }

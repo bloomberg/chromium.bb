@@ -207,7 +207,7 @@ tbody:not(:first-of-type) td.cell-provider-and-type .pair-item:first-child {
   border: 1px solid;
 }
 
-omnibox-inputs {
+omnibox-input {
   --action-color: rgb(66, 133, 244);
   --hover-color: #f2f2f2;
   --input-alignment-indentation: 9px;

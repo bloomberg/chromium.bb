@@ -14,7 +14,7 @@ js_library("omnibox") {
   deps = [
     "//ui/webui/resources/js:util",
     ":omnibox_element",
-    ":omnibox_inputs",
+    ":omnibox_input",
     ":omnibox_output",
   ]
   extra_deps = [ "//chrome/browser/ui/webui/omnibox:mojo_bindings_js" ]
@@ -28,7 +28,7 @@ js_library("omnibox") {
 js_library("omnibox_element") {
 }
 
-js_library("omnibox_inputs") {
+js_library("omnibox_input") {
 }
 
 js_library("omnibox_output") {
