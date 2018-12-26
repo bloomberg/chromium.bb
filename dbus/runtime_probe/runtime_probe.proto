@@ -43,8 +43,33 @@ message AudioCodec {
 message Battery {
   // TODO(itspeter): Add more fileds for battery.
   message Fields {
+    // (1) Most fields are following the naming of exposed ACPI interface.
+    // (2) Most units is in µ because of this unexplained kernel patch:
+    // https://chromium.git.corp.google.com/chromiumos/third_party/kernel/+/d7380965752505951668e85de59c128d1d6fd21f%5E%21/#F1
+
     // Index number of this battery, starts from 1.
     int32 index = 1;
+    // Manufacturer for length not exceeding EC_COMM_TEXT_MAX.
+    string manufacturer = 2;
+    // Model name for length not exceeding EC_COMM_TEXT_MAX.
+    string model_name = 3;
+    // Serial number for length not exceeding EC_COMM_TEXT_MAX.
+    string serial_number = 4;
+    // Design Capacity (µAh).
+    int32 charge_full_design = 5;
+    // Full Capacity (µAh, might change occasionally).
+    int32 charge_full = 6;
+    // Remaining capacity (µAh)
+    int32 charge_now = 7;
+    // Current Battery voltage (µV)
+    int32 voltage_now = 8;
+    // Smart Battery Cycle Count in http://sbs-forum.org/specs/sbdat110.pdf
+    int32 cycle_count_smart = 9;
+    // Smart Battery Status defined in http://sbs-forum.org/specs/sbdat110.pdf
+    int32 status_smart = 10;
+    // Temperature in 0.1°K as Smart Battery Temperature defined in
+    // http://sbs-forum.org/specs/sbdat110.pdf
+    int32 temperature_smart = 11;
   }
   string name = 1;    // Component alias
   Fields values = 2;  // Component's details
