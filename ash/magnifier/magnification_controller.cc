@@ -22,6 +22,7 @@
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/dip_util.h"
@@ -83,9 +84,15 @@ void MoveCursorTo(aura::WindowTreeHost* host, const gfx::Point& root_location) {
 }
 
 ui::InputMethod* GetInputMethod(aura::Window* root_window) {
+  ui::IMEBridge* bridge = ui::IMEBridge::Get();
+  if (bridge && bridge->GetInputContextHandler())
+    return bridge->GetInputContextHandler()->GetInputMethod();
+
   if (root_window->GetHost())
     return root_window->GetHost()->GetInputMethod();
-  return nullptr;
+
+  // Needed by a handful of browser tests that use MockInputMethod.
+  return Shell::GetRootWindowForNewWindows()->GetHost()->GetInputMethod();
 }
 
 }  // namespace
@@ -121,6 +128,8 @@ MagnificationController::MagnificationController()
   Shell::Get()->AddPreTargetHandler(this);
   root_window_->AddObserver(this);
   root_window_->GetHost()->GetEventSource()->AddEventRewriter(this);
+  if (ui::IMEBridge::Get())
+    ui::IMEBridge::Get()->AddObserver(this);
 
   point_of_interest_in_root_ = root_window_->bounds().CenterPoint();
 
@@ -130,9 +139,11 @@ MagnificationController::MagnificationController()
 }
 
 MagnificationController::~MagnificationController() {
-  ui::InputMethod* input_method = GetInputMethod(root_window_);
-  if (input_method)
-    input_method->RemoveObserver(this);
+  if (input_method_)
+    input_method_->RemoveObserver(this);
+  input_method_ = nullptr;
+  if (ui::IMEBridge::Get())
+    ui::IMEBridge::Get()->RemoveObserver(this);
 
   root_window_->GetHost()->GetEventSource()->RemoveEventRewriter(this);
   root_window_->RemoveObserver(this);
@@ -141,11 +152,12 @@ MagnificationController::~MagnificationController() {
 }
 
 void MagnificationController::SetEnabled(bool enabled) {
-  ui::InputMethod* input_method = GetInputMethod(root_window_);
   if (enabled) {
-    if (!is_enabled_ && input_method)
-      input_method->AddObserver(this);
-
+    if (!is_enabled_) {
+      input_method_ = GetInputMethod(root_window_);
+      if (input_method_)
+        input_method_->AddObserver(this);
+    }
     Shell* shell = Shell::Get();
     float scale =
         shell->accessibility_delegate()->GetSavedScreenMagnifierScale();
@@ -165,8 +177,9 @@ void MagnificationController::SetEnabled(bool enabled) {
     if (!is_enabled_)
       return;
 
-    if (input_method)
-      input_method->RemoveObserver(this);
+    if (input_method_)
+      input_method_->RemoveObserver(this);
+    input_method_ = nullptr;
 
     RedrawKeepingMousePosition(kNonMagnifiedScale, true, false);
     is_enabled_ = enabled;
@@ -301,6 +314,18 @@ gfx::Transform MagnificationController::GetMagnifierTransform() const {
   return transform;
 }
 
+void MagnificationController::OnInputContextHandlerChanged() {
+  auto* new_input_method = GetInputMethod(root_window_);
+  if (!is_enabled_ || new_input_method == input_method_)
+    return;
+
+  if (input_method_)
+    input_method_->RemoveObserver(this);
+  input_method_ = new_input_method;
+  if (input_method_)
+    input_method_->AddObserver(this);
+}
+
 void MagnificationController::OnCaretBoundsChanged(
     const ui::TextInputClient* client) {
   // caret bounds in screen coordinates.
@@ -355,6 +380,13 @@ void MagnificationController::OnCaretBoundsChanged(
       base::TimeDelta::FromMilliseconds(
           disable_move_magnifier_delay_ ? 0 : kMoveMagnifierDelayInMs),
       this, &MagnificationController::OnMoveMagnifierTimer);
+}
+
+void MagnificationController::OnInputMethodDestroyed(
+    const ui::InputMethod* input_method) {
+  DCHECK_EQ(input_method, input_method_);
+  input_method_->RemoveObserver(this);
+  input_method_ = nullptr;
 }
 
 void MagnificationController::OnImplicitAnimationsCompleted() {

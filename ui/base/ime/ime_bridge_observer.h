@@ -5,17 +5,19 @@
 #ifndef UI_BASE_IME_IME_BRIDGE_OBSERVER_H_
 #define UI_BASE_IME_IME_BRIDGE_OBSERVER_H_
 
+#include "base/observer_list_types.h"
 #include "ui/base/ime/ui_base_ime_export.h"
 
 namespace ui {
 
-// A interface to .
-class UI_BASE_IME_EXPORT IMEBridgeObserver {
+// A interface to observe changes in the IMEBridge.
+class UI_BASE_IME_EXPORT IMEBridgeObserver : public base::CheckedObserver {
  public:
-  virtual ~IMEBridgeObserver() {}
-
   // Called when requesting to switch the engine handler from ui::InputMethod.
   virtual void OnRequestSwitchEngine() = 0;
+
+  // Called when the input context handler has changed, a signal of IME change.
+  virtual void OnInputContextHandlerChanged() = 0;
 };
 
 }  // namespace ui
