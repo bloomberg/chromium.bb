@@ -601,6 +601,7 @@ class ChromeSDKCommand(command.CliCommand):
       'LD',
       'NM',
       'RANLIB',
+      'READELF',
 
       # Compiler flags.
       'CFLAGS',
@@ -882,10 +883,9 @@ class ChromeSDKCommand(command.CliCommand):
       env['CXXFLAGS'] = ' '.join(env['CXXFLAGS'].split() + clang_append_flags)
       env['LD'] = env['CXX']
 
-    # Use cros nm for the target builds. TODO: Delete it after Sept 2018 since
-    # NM env variable should already be set, https://crbug.com/862831.
-    if 'NM' not in env:
-      env['NM'] = sdk_ctx.target_tc + '-nm'
+    # Use cros readelf for the target builds. TODO: Delete it after Jan 2019 since
+    # READELF env variable should already be set, https://crbug.com/917193.
+    env.setdefault('READELF', sdk_ctx.target_tc + '-readelf')
 
     # For host compiler, we use the compiler that comes with Chrome
     # instead of the target compiler.
@@ -896,6 +896,7 @@ class ChromeSDKCommand(command.CliCommand):
     binutils_path = os.path.join(options.chrome_src, self._HOST_BINUTILS_DIR)
     env['AR_host'] = os.path.join(binutils_path, 'ar')
     env['NM_host'] = os.path.join(binutils_path, 'nm')
+    env['READELF_host'] = os.path.join(binutils_path, 'readelf')
 
   def _ModifyPathForGomaBuild(self, compiler, tc_path=None):
     """Modify toolchain path for goma build.
@@ -1018,6 +1019,7 @@ class ChromeSDKCommand(command.CliCommand):
     gn_args['cros_target_cxx'] = modified_env_cxx.split()[0]
     gn_args['cros_target_ld'] = env['LD']
     gn_args['cros_target_nm'] = env['NM']
+    gn_args['cros_target_readelf'] = env['READELF']
     gn_args['cros_target_extra_cflags'] = ' '.join(
         [env.get('CFLAGS', '')] + modified_env_cc.split()[1:])
     gn_args['cros_target_extra_cxxflags'] = ' '.join(
@@ -1027,6 +1029,7 @@ class ChromeSDKCommand(command.CliCommand):
     gn_args['cros_host_ld'] = env['LD_host']
     gn_args['cros_host_nm'] = env['NM_host']
     gn_args['cros_host_ar'] = env['AR_host']
+    gn_args['cros_host_readelf'] = env['READELF_host']
     gn_args['cros_v8_snapshot_cc'] = self._ModifyPathForGomaBuild(
         env['CC_host'])
     gn_args['cros_v8_snapshot_cxx'] = self._ModifyPathForGomaBuild(
@@ -1034,6 +1037,7 @@ class ChromeSDKCommand(command.CliCommand):
     gn_args['cros_v8_snapshot_ld'] = env['LD_host']
     gn_args['cros_v8_snapshot_nm'] = env['NM_host']
     gn_args['cros_v8_snapshot_ar'] = env['AR_host']
+    gn_args['cros_v8_snapshot_readelf'] = env['READELF_host']
     # No need to adjust CFLAGS and CXXFLAGS for GN since the only
     # adjustment made in _SetupTCEnvironment is for split debug which
     # is done with 'use_debug_fission'.

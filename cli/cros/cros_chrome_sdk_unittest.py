@@ -199,6 +199,7 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
       'CC': 'x86_64-cros-linux-gnu-clang -B /path/to/gold',
       'LD': 'x86_64-cros-linux-gnu-clang++ -B /path/to/gold',
       'NM': 'x86_64-cros-linux-gnu-nm',
+      'READELF': 'x86_64-cros-linux-gnu-readelf',
       'CFLAGS': '-O2',
       'CXXFLAGS': '-O2',
   }
