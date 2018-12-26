@@ -37,24 +37,15 @@ constexpr int kWorkspaceAreaAutoHideInset = 5;
 // Portion of the shelf that's within the screen bounds when auto-hidden.
 ASH_EXPORT constexpr int kHiddenShelfInScreenPortion = 3;
 
-// Animation duration for switching black shelf and dock background on and off.
-ASH_EXPORT constexpr int kTimeToSwitchBackgroundMs = 1000;
-
 // The default base color of the shelf to which different alpha values are
 // applied based on the desired shelf opacity level.
 ASH_EXPORT constexpr SkColor kShelfDefaultBaseColor = SK_ColorBLACK;
 
 // Size allocated for each app button on the shelf.
-ASH_EXPORT constexpr int kShelfButtonSize = 56;
+ASH_EXPORT constexpr int kShelfButtonSize = kShelfSize;
 
 // Size of the space between buttons on the shelf.
 ASH_EXPORT constexpr int kShelfButtonSpacing = 8;
-
-// Highlight color used for shelf button activated states.
-// TODO(bruthig|mohsen): Use of this color is temporary. Draw the active state
-// using the material design ripple animation.
-ASH_EXPORT constexpr SkColor kShelfButtonActivatedHighlightColor =
-    SkColorSetA(SK_ColorWHITE, 100);
 
 // Ink drop color for shelf items.
 constexpr SkColor kShelfInkDropBaseColor = SK_ColorWHITE;
@@ -81,17 +72,8 @@ constexpr int kShelfTranslucentColorDarkenAlpha = 178;
 // The alpha value used to darken a colorized shelf when the shelf is opaque.
 constexpr int kShelfOpaqueColorDarkenAlpha = 178;
 
-// The width and height of the material design overflow button.
-constexpr int kOverflowButtonSize = 32;
-
-// The radius of the rounded corners of the overflow button.
-constexpr int kOverflowButtonCornerRadiusOldUi = 2;
-
 // The distance between the edge of the shelf and the status indicators.
 constexpr int kStatusIndicatorOffsetFromShelfEdge = 1;
-
-// The direction of the focus cycling.
-enum CycleDirection { CYCLE_FORWARD, CYCLE_BACKWARD };
 
 class ShelfConstants {
  public:
