@@ -202,10 +202,11 @@ bool MaybeCreateProxyForInterception(
   if (!agent_host)
     return false;
   bool had_interceptors = false;
-  for (auto* handler : HandlerType::ForAgentHost(agent_host)) {
+  const auto& handlers = HandlerType::ForAgentHost(agent_host);
+  for (auto it = handlers.rbegin(); it != handlers.rend(); ++it) {
     had_interceptors =
-        handler->MaybeCreateProxyForInterception(
-            rfh, is_navigation, is_download, target_factory_request) ||
+        (*it)->MaybeCreateProxyForInterception(rfh, is_navigation, is_download,
+                                               target_factory_request) ||
         had_interceptors;
   }
   return had_interceptors;
@@ -231,6 +232,7 @@ bool WillCreateURLLoaderFactory(
       MaybeCreateProxyForInterception<protocol::NetworkHandler>(
           frame_agent_host, rfh, is_navigation, is_download,
           target_factory_request);
+
   had_interceptors = MaybeCreateProxyForInterception<protocol::FetchHandler>(
                          frame_agent_host, rfh, is_navigation, is_download,
                          target_factory_request) ||
