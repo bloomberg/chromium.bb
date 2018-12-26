@@ -326,11 +326,17 @@ InputMethodPrivateGetSurroundingTextFunction::Run() {
 
   auto ret = std::make_unique<base::DictionaryValue>();
   ui::SurroundingTextInfo info = input_context->GetSurroundingTextInfo();
-  uint32_t text_before_end = info.selection_range.start();
+  uint32_t selection_start = info.selection_range.start();
+  uint32_t selection_end = info.selection_range.end();
+  // Makes sure |selection_start| is less or equals to |selection_end|.
+  if (selection_start > selection_end)
+    std::swap(selection_start, selection_end);
+
+  uint32_t text_before_end = selection_start;
   uint32_t text_before_start = text_before_end > param_before_length
                                    ? text_before_end - param_before_length
                                    : 0;
-  uint32_t text_after_start = info.selection_range.end();
+  uint32_t text_after_start = selection_end;
   uint32_t text_after_end =
       text_after_start + param_after_length < info.surrounding_text.length()
           ? text_after_start + param_after_length
