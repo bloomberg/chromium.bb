@@ -133,11 +133,12 @@ std::unique_ptr<base::DictionaryValue> CreateCapabilities(
   } else {
     caps->SetBoolean("setWindowRect", true);
   }
-  caps->SetInteger("timeouts.script", session->script_timeout.InMilliseconds());
-  caps->SetInteger("timeouts.pageLoad",
-                   session->page_load_timeout.InMilliseconds());
-  caps->SetInteger("timeouts.implicit",
-                   session->implicit_wait.InMilliseconds());
+  SetSafeInt(caps.get(), "timeouts.script",
+             session->script_timeout.InMilliseconds());
+  SetSafeInt(caps.get(), "timeouts.pageLoad",
+             session->page_load_timeout.InMilliseconds());
+  SetSafeInt(caps.get(), "timeouts.implicit",
+             session->implicit_wait.InMilliseconds());
   caps->SetBoolean("strictFileInteractability",
                     session->strict_file_interactability);
   caps->SetString(session->w3c_compliant ? "unhandledPromptBehavior"
@@ -715,10 +716,12 @@ Status ExecuteSetTimeoutsW3C(Session* session,
                              const base::DictionaryValue& params,
                              std::unique_ptr<base::Value>* value) {
   for (const auto& setting : params.DictItems()) {
-    int timeout_ms;
-    if (!setting.second.GetAsInteger(&timeout_ms) || timeout_ms < 0)
+    int64_t timeout_ms_int64 = -1;
+    if (!GetOptionalSafeInt(&params, setting.first, &timeout_ms_int64) ||
+        timeout_ms_int64 < 0)
       return Status(kInvalidArgument, "value must be a non-negative integer");
-    base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(timeout_ms);
+    base::TimeDelta timeout =
+                    base::TimeDelta::FromMilliseconds(timeout_ms_int64);
     const std::string& type = setting.first;
     if (type == "script") {
       session->script_timeout = timeout;
@@ -750,9 +753,10 @@ Status ExecuteGetTimeouts(Session* session,
                           const base::DictionaryValue& params,
                           std::unique_ptr<base::Value>* value) {
   base::DictionaryValue timeouts;
-  timeouts.SetInteger("script", session->script_timeout.InMilliseconds());
-  timeouts.SetInteger("pageLoad", session->page_load_timeout.InMilliseconds());
-  timeouts.SetInteger("implicit", session->implicit_wait.InMilliseconds());
+  SetSafeInt(&timeouts, "script", session->script_timeout.InMilliseconds());
+  SetSafeInt(&timeouts, "pageLoad",
+                        session->page_load_timeout.InMilliseconds());
+  SetSafeInt(&timeouts, "implicit", session->implicit_wait.InMilliseconds());
 
   value->reset(timeouts.DeepCopy());
   return Status(kOk);

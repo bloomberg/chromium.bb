@@ -88,4 +88,8 @@ bool GetOptionalSafeInt(const base::DictionaryValue* dict,
                         int64_t* out_value,
                         bool* has_value = nullptr);
 
+bool SetSafeInt(base::DictionaryValue* dict,
+                const base::StringPiece path,
+                int64_t in_value_64);
+
 #endif  // CHROME_TEST_CHROMEDRIVER_UTIL_H_
