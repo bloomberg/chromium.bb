@@ -120,6 +120,9 @@ initWithCollectionController:
     return;
   }
 
+  if (CGSizeEqualToSize(self.collectionView.contentSize, CGSizeZero))
+    [self.collectionView layoutIfNeeded];
+
   CGFloat pinnedOffsetY = [self.headerController pinnedOffsetY];
   self.collectionShiftingOffset =
       MAX(0, pinnedOffsetY - self.collectionView.contentOffset.y);
