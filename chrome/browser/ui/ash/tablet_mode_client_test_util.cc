@@ -10,6 +10,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/test/mus/change_completion_waiter.h"
 
 namespace test {
 
@@ -57,6 +58,7 @@ void SetAndWaitForTabletMode(bool enabled) {
 
   TestTabletModeClientObserver observer(enabled);
   observer.run_loop()->Run();
+  aura::test::WaitForAllChangesToComplete();
 
   ASSERT_EQ(enabled, TabletModeClient::Get()->tablet_mode_enabled());
 }
