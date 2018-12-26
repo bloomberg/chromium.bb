@@ -2344,6 +2344,8 @@ TEST_F(NavigationControllerTest, BackSubframe) {
       FrameOwnerProperties(), blink::FrameOwnerElementType::kIframe);
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
+  RenderFrameHostManager* subframe_rfhm =
+      subframe->frame_tree_node()->render_manager();
   const GURL subframe_url("http://foo1/subframe");
 
   // Compute the sequence number assigned by Blink.
@@ -2355,6 +2357,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
     params.nav_entry_id = 0;
     params.did_create_new_entry = false;
     params.url = subframe_url;
+    params.origin = url::Origin::Create(subframe_url);
     params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
     params.should_update_history = false;
     params.gesture = NavigationGestureUser;
@@ -2382,6 +2385,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   params.nav_entry_id = 0;
   params.did_create_new_entry = true;
   params.url = url2;
+  params.origin = url::Origin::Create(url2);
   params.transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
   params.should_update_history = false;
   params.gesture = NavigationGestureUser;
@@ -2394,6 +2398,12 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   // This should generate a new entry.
   subframe->SendRendererInitiatedNavigationRequest(url2, false);
   subframe->PrepareForCommit();
+  // If the navigation is cross-process, the commit comes from the speculative
+  // RenderFrame.
+  if (subframe_rfhm->speculative_frame_host()) {
+    subframe = static_cast<TestRenderFrameHost*>(
+        subframe_rfhm->speculative_frame_host());
+  }
   subframe->SendNavigateWithParams(&params, false);
   NavigationEntryImpl* entry2 = controller.GetLastCommittedEntry();
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
@@ -2411,6 +2421,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   params.nav_entry_id = 0;
   params.did_create_new_entry = true;
   params.url = url3;
+  params.origin = url::Origin::Create(url3);
   params.transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
   params.item_sequence_number = item_sequence_number3;
   params.document_sequence_number = document_sequence_number3;
@@ -2418,6 +2429,10 @@ TEST_F(NavigationControllerTest, BackSubframe) {
     url3, item_sequence_number3, document_sequence_number3);
   subframe->SendRendererInitiatedNavigationRequest(url3, false);
   subframe->PrepareForCommit();
+  if (subframe_rfhm->speculative_frame_host()) {
+    subframe = static_cast<TestRenderFrameHost*>(
+        subframe_rfhm->speculative_frame_host());
+  }
   subframe->SendNavigateWithParams(&params, false);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
@@ -2434,12 +2449,17 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   params.nav_entry_id = entry2->GetUniqueID();
   params.did_create_new_entry = false;
   params.url = url2;
+  params.origin = url::Origin::Create(url2);
   params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
   params.page_state = PageState::CreateForTestingWithSequenceNumbers(
     url2, item_sequence_number2, document_sequence_number2);
   params.item_sequence_number = item_sequence_number2;
   params.document_sequence_number = document_sequence_number2;
   subframe->PrepareForCommit();
+  if (subframe_rfhm->speculative_frame_host()) {
+    subframe = static_cast<TestRenderFrameHost*>(
+        subframe_rfhm->speculative_frame_host());
+  }
   subframe->SendNavigateWithParams(&params, false);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
@@ -2454,12 +2474,17 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   params.nav_entry_id = entry1->GetUniqueID();
   params.did_create_new_entry = false;
   params.url = subframe_url;
+  params.origin = url::Origin::Create(subframe_url);
   params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
   params.page_state = PageState::CreateForTestingWithSequenceNumbers(
     subframe_url, item_sequence_number1, document_sequence_number1);
   params.item_sequence_number = item_sequence_number1;
   params.document_sequence_number = document_sequence_number1;
   subframe->PrepareForCommit();
+  if (subframe_rfhm->speculative_frame_host()) {
+    subframe = static_cast<TestRenderFrameHost*>(
+        subframe_rfhm->speculative_frame_host());
+  }
   subframe->SendNavigateWithParams(&params, false);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
@@ -2510,6 +2535,7 @@ TEST_F(NavigationControllerTest, SameDocument) {
   self_params.did_create_new_entry = true;
   self_params.should_replace_current_entry = true;
   self_params.url = url1;
+  self_params.origin = url::Origin::Create(url1);
   self_params.transition = ui::PAGE_TRANSITION_LINK;
   self_params.should_update_history = false;
   self_params.gesture = NavigationGestureUser;
@@ -2537,6 +2563,7 @@ TEST_F(NavigationControllerTest, SameDocument) {
   params.nav_entry_id = 0;
   params.did_create_new_entry = true;
   params.url = url2;
+  params.origin = url::Origin::Create(url2);
   params.transition = ui::PAGE_TRANSITION_LINK;
   params.should_update_history = false;
   params.gesture = NavigationGestureUser;
@@ -2598,13 +2625,17 @@ TEST_F(NavigationControllerTest, SameDocument) {
   params.nav_entry_id = 0;
   params.did_create_new_entry = true;
   params.url = url3;
+  params.origin = url::Origin::Create(url3);
   params.item_sequence_number = 0;
   params.document_sequence_number = 0;
   params.page_state = PageState::CreateFromURL(url3);
   navigation_entry_committed_counter_ = 0;
   main_test_rfh()->SendRendererInitiatedNavigationRequest(url3, false);
   main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigateWithParams(&params, false);
+  TestRenderFrameHost* navigating_rfh = contents()->GetPendingMainFrame()
+                                            ? contents()->GetPendingMainFrame()
+                                            : main_test_rfh();
+  navigating_rfh->SendNavigateWithParams(&params, false);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
   EXPECT_FALSE(observer.is_same_document());
@@ -2677,6 +2708,7 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterSameDocumentNavigation) {
     params.did_create_new_entry = false;
     params.should_replace_current_entry = true;
     params.url = url;
+    params.origin = url::Origin::Create(url);
     params.transition = ui::PAGE_TRANSITION_LINK;
     params.redirects.push_back(url);
     params.should_update_history = true;
@@ -4795,6 +4827,7 @@ TEST_F(NavigationControllerTest, PostThenReplaceStateThenReload) {
   params.nav_entry_id = 0;
   params.did_create_new_entry = true;
   params.url = url;
+  params.origin = url::Origin::Create(url);
   params.transition = ui::PAGE_TRANSITION_FORM_SUBMIT;
   params.gesture = NavigationGestureUser;
   params.page_state = PageState::CreateFromURL(url);
@@ -4809,6 +4842,7 @@ TEST_F(NavigationControllerTest, PostThenReplaceStateThenReload) {
   params.nav_entry_id = 0;
   params.did_create_new_entry = false;
   params.url = replace_url;
+  params.origin = url::Origin::Create(replace_url);
   params.transition = ui::PAGE_TRANSITION_LINK;
   params.gesture = NavigationGestureUser;
   params.page_state = PageState::CreateFromURL(replace_url);
