@@ -26,23 +26,18 @@
 
 namespace base {
 class SequencedTaskRunner;
-class Value;
 }
 
 namespace catalog {
 
 class Instance;
-class ManifestProvider;
 
 // Creates and owns an instance of the catalog. Exposes a ServicePtr that
 // can be passed to the service manager, potentially in a different process.
 class COMPONENT_EXPORT(CATALOG) Catalog : public service_manager::Service {
  public:
-  // Constructs a catalog over a set of Manifests and optionally a
-  // ManifestProvider for dynamic manifest lookup.
-  explicit Catalog(std::unique_ptr<base::Value> catalog_contents,
-                   const std::vector<service_manager::Manifest>& manifests,
-                   ManifestProvider* service_manifest_provider = nullptr);
+  // Constructs a catalog over a set of Manifests to use for lookup.
+  explicit Catalog(const std::vector<service_manager::Manifest>& manifests);
   ~Catalog() override;
 
   void BindServiceRequest(service_manager::mojom::ServiceRequest request);
@@ -79,7 +74,6 @@ class COMPONENT_EXPORT(CATALOG) Catalog : public service_manager::Service {
       const service_manager::BindSourceInfo&>
       registry_;
 
-  ManifestProvider* service_manifest_provider_;
   EntryCache system_cache_;
   std::map<base::Token, std::unique_ptr<Instance>> instances_;
 
