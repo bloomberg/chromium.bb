@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/ime/ime_bridge_observer.h"
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/events/event_handler.h"
@@ -47,6 +48,7 @@ namespace ash {
 class ASH_EXPORT MagnificationController : public ui::EventHandler,
                                            public ui::ImplicitAnimationObserver,
                                            public aura::WindowObserver,
+                                           public ui::IMEBridgeObserver,
                                            public ui::InputMethodObserver,
                                            public ui::GestureConsumer,
                                            public ui::EventRewriter {
@@ -118,12 +120,16 @@ class ASH_EXPORT MagnificationController : public ui::EventHandler,
   // magnification is disabled, return an empty Transform.
   gfx::Transform GetMagnifierTransform() const;
 
+  // ui::IMEBridgeObserver:
+  void OnRequestSwitchEngine() override {}
+  void OnInputContextHandlerChanged() override;
+
   // ui::InputMethodObserver:
   void OnFocus() override {}
   void OnBlur() override {}
   void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
   void OnTextInputStateChanged(const ui::TextInputClient* client) override {}
-  void OnInputMethodDestroyed(const ui::InputMethod* input_method) override {}
+  void OnInputMethodDestroyed(const ui::InputMethod* input_method) override;
   void OnShowVirtualKeyboardIfEnabled() override {}
 
   // Returns the last mouse cursor (or last touched) location.
@@ -248,6 +254,9 @@ class ASH_EXPORT MagnificationController : public ui::EventHandler,
 
   // Target root window. This must not be NULL.
   aura::Window* root_window_;
+
+  // The currently active input method, observed for caret bounds changes.
+  ui::InputMethod* input_method_ = nullptr;
 
   // True if the magnified window is currently animating a change. Otherwise,
   // false.

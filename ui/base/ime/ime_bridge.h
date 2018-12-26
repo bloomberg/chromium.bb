@@ -64,8 +64,9 @@ class UI_BASE_IME_EXPORT IMEBridge {
   virtual const IMEEngineHandlerInterface::InputContext&
   GetCurrentInputContext() const = 0;
 
-  // Sets the observer that observes the switching engine event.
-  virtual void SetObserver(ui::IMEBridgeObserver* observer) = 0;
+  // Add or remove observers of events such as switching engines, etc.
+  virtual void AddObserver(ui::IMEBridgeObserver* observer) = 0;
+  virtual void RemoveObserver(ui::IMEBridgeObserver* observer) = 0;
 
   // Switches the engine handler upon top level window focus change.
   virtual void MaybeSwitchEngine() = 0;
