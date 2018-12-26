@@ -17,15 +17,6 @@
 // Opens the passphrase dialog.
 - (void)openPassphraseDialog;
 
-// Opens the "Google Activity Controls" dialog.
-- (void)openGoogleActivityControlsDialog;
-
-// Opens the "Encryption" dialog.
-- (void)openEncryptionDialog;
-
-// Opens the "Manage Synced Data" web page.
-- (void)openManageSyncedDataWebPage;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_SETTINGS_LOCAL_COMMANDS_H_

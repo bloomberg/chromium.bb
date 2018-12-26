@@ -7,18 +7,12 @@
 #include "base/auto_reset.h"
 #include "base/mac/foundation_util.h"
 #include "components/autofill/core/common/autofill_prefs.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/metrics/metrics_pref_names.h"
-#import "components/prefs/ios/pref_observer_bridge.h"
-#include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/unified_consent/pref_names.h"
-#include "components/unified_consent/unified_consent_service.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
-#include "ios/chrome/browser/sync/sync_observer_bridge.h"
-#include "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_sync_switch_item.h"
@@ -44,8 +38,6 @@ namespace {
 // List of sections.
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SyncFeedbackSectionIdentifier = kSectionIdentifierEnumZero,
-  SyncEverythingSectionIdentifier,
-  PersonalizedSectionIdentifier,
   NonPersonalizedSectionIdentifier,
 };
 
@@ -53,20 +45,6 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 typedef NS_ENUM(NSInteger, ItemType) {
   // SyncErrorSectionIdentifier,
   SyncErrorItemType = kItemTypeEnumZero,
-  // SyncEverythingSectionIdentifier section.
-  SyncEverythingItemType,
-  // PersonalizedSectionIdentifier section.
-  SyncBookmarksItemType,
-  SyncHistoryItemType,
-  SyncPasswordsItemType,
-  SyncOpenTabsItemType,
-  SyncAutofillItemType,
-  SyncSettingsItemType,
-  SyncReadingListItemType,
-  AutocompleteWalletItemType,
-  SyncGoogleActivityControlsItemType,
-  EncryptionItemType,
-  ManageSyncedDataItemType,
   // NonPersonalizedSectionIdentifier section.
   AutocompleteSearchesAndURLsItemType,
   PreloadPagesItemType,
@@ -76,10 +54,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface GoogleServicesSettingsMediator ()<BooleanObserver,
-                                             SyncObserverModelBridge> {
-  std::unique_ptr<SyncObserverBridge> _syncObserver;
-}
+@interface GoogleServicesSettingsMediator () <BooleanObserver>
 
 // Unified consent service.
 @property(nonatomic, assign)
@@ -122,8 +97,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @property(nonatomic, assign) BOOL personalizedSectionBeingAnimated;
 // Item to display the sync error.
 @property(nonatomic, strong) SettingsImageDetailTextItem* syncErrorItem;
-// Item for "Sync Everything" section.
-@property(nonatomic, strong, readonly) LegacySyncSwitchItem* syncEverythingItem;
 // All the items for the personalized section.
 @property(nonatomic, strong, readonly) ItemArray personalizedItems;
 // Item for the autocomplete wallet feature.
@@ -136,26 +109,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @implementation GoogleServicesSettingsMediator
 
-@synthesize unifiedConsentService = _unifiedConsentService;
-@synthesize consumer = _consumer;
-@synthesize authService = _authService;
-@synthesize syncSetupService = _syncSetupService;
-@synthesize autocompleteWalletPreference = _autocompleteWalletPreference;
-@synthesize autocompleteSearchPreference = _autocompleteSearchPreference;
-@synthesize preloadPagesPreference = _preloadPagesPreference;
-@synthesize preloadPagesWifiOnlyPreference = _preloadPagesWifiOnlyPreference;
-@synthesize sendDataUsagePreference = _sendDataUsagePreference;
-@synthesize sendDataUsageWifiOnlyPreference = _sendDataUsageWifiOnlyPreference;
-@synthesize anonymizedDataCollectionPreference =
-    _anonymizedDataCollectionPreference;
-@synthesize syncEverythingSwitchBeingAnimated =
-    _syncEverythingSwitchBeingAnimated;
-@synthesize personalizedSectionBeingAnimated =
-    _personalizedSectionBeingAnimated;
-@synthesize syncErrorItem = _syncErrorItem;
-@synthesize syncEverythingItem = _syncEverythingItem;
-@synthesize personalizedItems = _personalizedItems;
-@synthesize autocompleteWalletItem = _autocompleteWalletItem;
 @synthesize nonPersonalizedItems = _nonPersonalizedItems;
 
 #pragma mark - Load model
@@ -163,7 +116,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (instancetype)
 initWithUserPrefService:(PrefService*)userPrefService
        localPrefService:(PrefService*)localPrefService
-            syncService:(browser_sync::ProfileSyncService*)syncService
        syncSetupService:(SyncSetupService*)syncSetupService
   unifiedConsentService:
       (unified_consent::UnifiedConsentService*)unifiedConsentService {
@@ -171,12 +123,10 @@ initWithUserPrefService:(PrefService*)userPrefService
   if (self) {
     DCHECK(userPrefService);
     DCHECK(localPrefService);
-    DCHECK(syncService);
     DCHECK(syncSetupService);
     DCHECK(unifiedConsentService);
     _syncSetupService = syncSetupService;
     _unifiedConsentService = unifiedConsentService;
-    _syncObserver.reset(new SyncObserverBridge(self, syncService));
     _autocompleteWalletPreference = [[PrefBackedBoolean alloc]
         initWithPrefService:userPrefService
                    prefName:autofill::prefs::kAutofillWalletImportEnabled];
@@ -206,24 +156,6 @@ initWithUserPrefService:(PrefService*)userPrefService
     _anonymizedDataCollectionPreference.observer = self;
   }
   return self;
-}
-
-// Loads SyncEverythingSectionIdentifier section.
-- (void)loadSyncEverythingSection {
-  CollectionViewModel* model = self.consumer.collectionViewModel;
-  [model addSectionWithIdentifier:SyncEverythingSectionIdentifier];
-  [model addItem:self.syncEverythingItem
-      toSectionWithIdentifier:SyncEverythingSectionIdentifier];
-}
-
-// Loads PersonalizedSectionIdentifier section.
-- (void)loadPersonalizedSection {
-  CollectionViewModel* model = self.consumer.collectionViewModel;
-  [model addSectionWithIdentifier:PersonalizedSectionIdentifier];
-  for (CollectionViewItem* item in self.personalizedItems) {
-    [model addItem:item toSectionWithIdentifier:PersonalizedSectionIdentifier];
-  }
-  [self updatePersonalizedSection];
 }
 
 // Loads NonPersonalizedSectionIdentifier section.
@@ -258,112 +190,6 @@ initWithUserPrefService:(PrefService*)userPrefService
     }
   }
   return _syncErrorItem;
-}
-
-- (CollectionViewItem*)syncEverythingItem {
-  if (!_syncEverythingItem) {
-    _syncEverythingItem = [self
-        switchItemWithItemType:SyncEverythingItemType
-                  textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_EVERYTHING
-                detailStringID:0
-                     commandID:
-                         GoogleServicesSettingsCommandIDToggleSyncEverything
-                      dataType:0];
-  }
-  return _syncEverythingItem;
-}
-
-- (ItemArray)personalizedItems {
-  if (!_personalizedItems) {
-    LegacySyncSwitchItem* syncBookmarksItem = [self
-        switchItemWithItemType:SyncBookmarksItemType
-                  textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_BOOKMARKS_TEXT
-                detailStringID:0
-                     commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
-                      dataType:SyncSetupService::kSyncBookmarks];
-    LegacySyncSwitchItem* syncHistoryItem = [self
-        switchItemWithItemType:SyncHistoryItemType
-                  textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_HISTORY_TEXT
-                detailStringID:0
-                     commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
-                      dataType:SyncSetupService::kSyncOmniboxHistory];
-    LegacySyncSwitchItem* syncPasswordsItem = [self
-        switchItemWithItemType:SyncPasswordsItemType
-                  textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_PASSWORD_TEXT
-                detailStringID:0
-                     commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
-                      dataType:SyncSetupService::kSyncPasswords];
-    LegacySyncSwitchItem* syncOpenTabsItem = [self
-        switchItemWithItemType:SyncOpenTabsItemType
-                  textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_OPENTABS_TEXT
-                detailStringID:0
-                     commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
-                      dataType:SyncSetupService::kSyncOpenTabs];
-    LegacySyncSwitchItem* syncAutofillItem = [self
-        switchItemWithItemType:SyncAutofillItemType
-                  textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOFILL_TEXT
-                detailStringID:0
-                     commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
-                      dataType:SyncSetupService::kSyncAutofill];
-    LegacySyncSwitchItem* syncSettingsItem = [self
-        switchItemWithItemType:SyncAutofillItemType
-                  textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_SETTINGS_TEXT
-                detailStringID:0
-                     commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
-                      dataType:SyncSetupService::kSyncPreferences];
-    LegacySyncSwitchItem* syncReadingListItem = [self
-        switchItemWithItemType:SyncReadingListItemType
-                  textStringID:
-                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_READING_LIST_TEXT
-                detailStringID:0
-                     commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
-                      dataType:SyncSetupService::kSyncReadingList];
-    CollectionViewTextItem* syncGoogleActivityControlsItem = [self
-        textItemWithItemType:SyncGoogleActivityControlsItemType
-                textStringID:
-                    IDS_IOS_GOOGLE_SERVICES_SETTINGS_GOOGLE_ACTIVITY_CONTROL_TEXT
-              detailStringID:
-                  IDS_IOS_GOOGLE_SERVICES_SETTINGS_GOOGLE_ACTIVITY_CONTROL_DETAIL
-               accessoryType:MDCCollectionViewCellAccessoryDisclosureIndicator
-                   commandID:
-                       GoogleServicesSettingsCommandIDOpenGoogleActivityControlsDialog];
-    CollectionViewTextItem* encryptionItem = [self
-        textItemWithItemType:EncryptionItemType
-                textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_ENCRYPTION_TEXT
-              detailStringID:0
-               accessoryType:MDCCollectionViewCellAccessoryDisclosureIndicator
-                   commandID:
-                       GoogleServicesSettingsCommandIDOpenEncryptionDialog];
-    CollectionViewTextItem* manageSyncedDataItem = [self
-        textItemWithItemType:ManageSyncedDataItemType
-                textStringID:
-                    IDS_IOS_GOOGLE_SERVICES_SETTINGS_MANAGED_SYNC_DATA_TEXT
-              detailStringID:0
-               accessoryType:MDCCollectionViewCellAccessoryNone
-                   commandID:
-                       GoogleServicesSettingsCommandIDOpenManageSyncedDataWebPage];
-    _personalizedItems = @[
-      syncBookmarksItem, syncHistoryItem, syncPasswordsItem, syncOpenTabsItem,
-      syncAutofillItem, syncSettingsItem, syncReadingListItem,
-      self.autocompleteWalletItem, syncGoogleActivityControlsItem,
-      encryptionItem, manageSyncedDataItem
-    ];
-  }
-  return _personalizedItems;
-}
-
-- (LegacySyncSwitchItem*)autocompleteWalletItem {
-  if (!_autocompleteWalletItem) {
-    _autocompleteWalletItem = [self
-        switchItemWithItemType:AutocompleteWalletItemType
-                  textStringID:
-                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_WALLET
-                detailStringID:0
-                     commandID:
-                         GoogleServicesSettingsCommandIDAutocompleteWalletService
-                      dataType:0];
-  }
-  return _autocompleteWalletItem;
 }
 
 - (ItemArray)nonPersonalizedItems {
@@ -510,22 +336,6 @@ textItemWithItemType:(NSInteger)itemType
   }
 }
 
-// Updates the personalized section according to the user consent.
-- (void)updatePersonalizedSection {
-  BOOL enabled = self.isAuthenticated;
-  [self updateSectionWithItems:self.personalizedItems
-             switchItemEnabled:enabled
-               textItemEnabled:self.isAuthenticated];
-  syncer::ModelType autofillModelType =
-      _syncSetupService->GetModelType(SyncSetupService::kSyncAutofill);
-  BOOL isAutofillOn = _syncSetupService->IsDataTypePreferred(autofillModelType);
-  self.autocompleteWalletItem.enabled = enabled && isAutofillOn;
-  if (!isAutofillOn) {
-    // Autocomplete wallet item should be disabled when autofill is off.
-    self.autocompleteWalletItem.on = false;
-  }
-}
-
 // Updates the non-personalized section according to the user consent.
 - (void)updateNonPersonalizedSection {
   BOOL enabled = YES;
@@ -543,18 +353,6 @@ textItemWithItemType:(NSInteger)itemType
       LegacySyncSwitchItem* switchItem =
           base::mac::ObjCCast<LegacySyncSwitchItem>(item);
       switch (switchItem.commandID) {
-        case GoogleServicesSettingsCommandIDToggleDataTypeSync: {
-          SyncSetupService::SyncableDatatype dataType =
-              static_cast<SyncSetupService::SyncableDatatype>(
-                  switchItem.dataType);
-          syncer::ModelType modelType =
-              self.syncSetupService->GetModelType(dataType);
-          switchItem.on = self.syncSetupService->IsDataTypePreferred(modelType);
-          break;
-        }
-        case GoogleServicesSettingsCommandIDAutocompleteWalletService:
-          switchItem.on = self.autocompleteWalletPreference.value;
-          break;
         case GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService:
           switchItem.on = self.autocompleteSearchPreference.value;
           break;
@@ -566,11 +364,6 @@ textItemWithItemType:(NSInteger)itemType
           break;
         case GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService:
           switchItem.on = self.anonymizedDataCollectionPreference.value;
-          break;
-        case GoogleServicesSettingsCommandIDOpenGoogleActivityControlsDialog:
-        case GoogleServicesSettingsCommandIDOpenEncryptionDialog:
-        case GoogleServicesSettingsCommandIDOpenManageSyncedDataWebPage:
-          NOTREACHED();
           break;
       }
       switchItem.enabled = switchItemEnabled;
@@ -589,9 +382,6 @@ textItemWithItemType:(NSInteger)itemType
 - (void)googleServicesSettingsViewControllerLoadModel:
     (GoogleServicesSettingsViewController*)controller {
   DCHECK_EQ(self.consumer, controller);
-  if (self.isAuthenticated)
-    [self loadSyncEverythingSection];
-  [self loadPersonalizedSection];
   [self loadNonPersonalizedSection];
   [self updateSyncErrorSectionAndNotifyConsumer:NO];
 }
@@ -639,28 +429,6 @@ textItemWithItemType:(NSInteger)itemType
 
 - (void)toggleBetterSearchAndBrowsingServiceWithValue:(BOOL)value {
   self.anonymizedDataCollectionPreference.value = value;
-}
-
-#pragma mark - SyncObserverModelBridge
-
-- (void)onSyncStateChanged {
-  [self updatePersonalizedSection];
-  // TODO(crbug.com/899791): Should reloads only the updated items (instead of
-  // reload the full section), and get ride of
-  // |self.personalizedSectionBeingAnimated|. This will get a smoother animation
-  // for "Autocomplete wall" switch switch when being tapped by the user.
-  if (!self.personalizedSectionBeingAnimated) {
-    CollectionViewModel* model = self.consumer.collectionViewModel;
-    NSMutableIndexSet* sectionIndexToReload = [NSMutableIndexSet indexSet];
-    [sectionIndexToReload addIndex:[model sectionForSectionIdentifier:
-                                              PersonalizedSectionIdentifier]];
-    [self.consumer reloadSections:sectionIndexToReload];
-  } else {
-    // |self.autocompleteWalletItem| needs to be reloaded in case the autofill
-    // data type changed state.
-    [self.consumer reloadItem:self.autocompleteWalletItem];
-  }
-  [self updateSyncErrorSectionAndNotifyConsumer:YES];
 }
 
 #pragma mark - BooleanObserver
