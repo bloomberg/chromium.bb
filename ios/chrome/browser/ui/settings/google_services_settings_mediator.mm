@@ -13,8 +13,6 @@
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
@@ -89,9 +87,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @property(nonatomic, strong, readonly)
     PrefBackedBoolean* anonymizedDataCollectionPreference;
 
-// YES if the switch for |syncEverythingItem| is currently animating from one
-// state to another.
-@property(nonatomic, assign) BOOL syncEverythingSwitchBeingAnimated;
 // YES if at least one switch in the personalized section is currently animating
 // from one state to another.
 @property(nonatomic, assign) BOOL personalizedSectionBeingAnimated;
@@ -256,23 +251,6 @@ initWithUserPrefService:(PrefService*)userPrefService
   return switchItem;
 }
 
-// Creates a CollectionViewTextItem instance.
-- (CollectionViewTextItem*)
-textItemWithItemType:(NSInteger)itemType
-        textStringID:(int)textStringID
-      detailStringID:(int)detailStringID
-       accessoryType:(MDCCollectionViewCellAccessoryType)accessoryType
-           commandID:(NSInteger)commandID {
-  CollectionViewTextItem* textItem =
-      [[CollectionViewTextItem alloc] initWithType:itemType];
-  textItem.text = GetNSString(textStringID);
-  textItem.accessoryType = accessoryType;
-  if (detailStringID)
-    textItem.detailText = GetNSString(detailStringID);
-  textItem.commandID = commandID;
-  return textItem;
-}
-
 // Reloads the sync feedback section. If |notifyConsummer| is YES, the consomer
 // is notified to add or remove the sync error section.
 - (void)updateSyncErrorSectionAndNotifyConsumer:(BOOL)notifyConsummer {
@@ -338,17 +316,7 @@ textItemWithItemType:(NSInteger)itemType
 
 // Updates the non-personalized section according to the user consent.
 - (void)updateNonPersonalizedSection {
-  BOOL enabled = YES;
-  [self updateSectionWithItems:self.nonPersonalizedItems
-             switchItemEnabled:enabled
-               textItemEnabled:enabled];
-}
-
-// Updates |items| using |switchItemEnabled| and |textItemEnabled|.
-- (void)updateSectionWithItems:(ItemArray)items
-             switchItemEnabled:(BOOL)switchItemEnabled
-               textItemEnabled:(BOOL)textItemEnabled {
-  for (CollectionViewItem* item in items) {
+  for (CollectionViewItem* item in self.nonPersonalizedItems) {
     if ([item isKindOfClass:[LegacySyncSwitchItem class]]) {
       LegacySyncSwitchItem* switchItem =
           base::mac::ObjCCast<LegacySyncSwitchItem>(item);
@@ -366,11 +334,6 @@ textItemWithItemType:(NSInteger)itemType
           switchItem.on = self.anonymizedDataCollectionPreference.value;
           break;
       }
-      switchItem.enabled = switchItemEnabled;
-    } else if ([item isKindOfClass:[CollectionViewTextItem class]]) {
-      CollectionViewTextItem* textItem =
-          base::mac::ObjCCast<CollectionViewTextItem>(item);
-      textItem.enabled = textItemEnabled;
     } else {
       NOTREACHED();
     }
@@ -387,21 +350,6 @@ textItemWithItemType:(NSInteger)itemType
 }
 
 #pragma mark - GoogleServicesSettingsServiceDelegate
-
-- (void)toggleSyncEverythingWithValue:(BOOL)value {
-  if (!value)
-    return;
-  // Mark the switch has being animated to avoid being reloaded.
-  base::AutoReset<BOOL> autoReset(&_syncEverythingSwitchBeingAnimated, YES);
-}
-
-- (void)toggleSyncDataSync:(NSInteger)dataTypeInt withValue:(BOOL)value {
-  base::AutoReset<BOOL> autoReset(&_personalizedSectionBeingAnimated, YES);
-  SyncSetupService::SyncableDatatype dataType =
-      static_cast<SyncSetupService::SyncableDatatype>(dataTypeInt);
-  syncer::ModelType modelType = self.syncSetupService->GetModelType(dataType);
-  self.syncSetupService->SetDataTypeEnabled(modelType, value);
-}
 
 - (void)toggleAutocompleteWalletServiceWithValue:(BOOL)value {
   self.autocompleteWalletPreference.value = value;
