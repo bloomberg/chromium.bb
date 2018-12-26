@@ -30,11 +30,6 @@ constexpr NSInteger kSectionOffset = 1000;
 
 @implementation GoogleServicesSettingsViewController
 
-@synthesize presentationDelegate = _presentationDelegate;
-@synthesize modelDelegate = _modelDelegate;
-@synthesize serviceDelegate = _serviceDelegate;
-@synthesize localDispatcher = _localDispatcher;
-
 - (instancetype)initWithLayout:(UICollectionViewLayout*)layout
                          style:(CollectionViewControllerStyle)style {
   self = [super initWithLayout:layout style:style];
@@ -67,16 +62,6 @@ constexpr NSInteger kSectionOffset = 1000;
   GoogleServicesSettingsCommandID commandID =
       static_cast<GoogleServicesSettingsCommandID>(syncSwitchItem.commandID);
   switch (commandID) {
-    case GoogleServicesSettingsCommandIDToggleSyncEverything:
-      [self.serviceDelegate toggleSyncEverythingWithValue:isOn];
-      break;
-    case GoogleServicesSettingsCommandIDToggleDataTypeSync:
-      [self.serviceDelegate toggleSyncDataSync:syncSwitchItem.dataType
-                                     withValue:isOn];
-      break;
-    case GoogleServicesSettingsCommandIDAutocompleteWalletService:
-      [self.serviceDelegate toggleAutocompleteWalletServiceWithValue:isOn];
-      break;
     case GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService:
       [self.serviceDelegate toggleAutocompleteSearchesServiceWithValue:isOn];
       break;
@@ -93,9 +78,6 @@ constexpr NSInteger kSectionOffset = 1000;
     case GoogleServicesSettingsReauthDialogAsSyncIsInAuthError:
     case GoogleServicesSettingsCommandIDShowPassphraseDialog:
     case GoogleServicesSettingsCommandIDNoOp:
-    case GoogleServicesSettingsCommandIDOpenGoogleActivityControlsDialog:
-    case GoogleServicesSettingsCommandIDOpenEncryptionDialog:
-    case GoogleServicesSettingsCommandIDOpenManageSyncedDataWebPage:
       // Command ID not related with switch action.
       NOTREACHED();
       break;
@@ -246,19 +228,7 @@ constexpr NSInteger kSectionOffset = 1000;
     case GoogleServicesSettingsCommandIDShowPassphraseDialog:
       [self.localDispatcher openPassphraseDialog];
       break;
-    case GoogleServicesSettingsCommandIDOpenGoogleActivityControlsDialog:
-      [self.localDispatcher openGoogleActivityControlsDialog];
-      break;
-    case GoogleServicesSettingsCommandIDOpenEncryptionDialog:
-      [self.localDispatcher openEncryptionDialog];
-      break;
-    case GoogleServicesSettingsCommandIDOpenManageSyncedDataWebPage:
-      [self.localDispatcher openManageSyncedDataWebPage];
-      break;
     case GoogleServicesSettingsCommandIDNoOp:
-    case GoogleServicesSettingsCommandIDToggleSyncEverything:
-    case GoogleServicesSettingsCommandIDToggleDataTypeSync:
-    case GoogleServicesSettingsCommandIDAutocompleteWalletService:
     case GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService:
     case GoogleServicesSettingsCommandIDTogglePreloadPagesService:
     case GoogleServicesSettingsCommandIDToggleImproveChromeService:

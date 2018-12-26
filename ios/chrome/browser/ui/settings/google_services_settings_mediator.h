@@ -17,9 +17,6 @@ class AuthenticationService;
 class PrefService;
 class SyncSetupService;
 
-namespace browser_sync {
-class ProfileSyncService;
-}  // namespace browser_sync
 namespace unified_consent {
 class UnifiedConsentService;
 }  // namespace unified_consent
@@ -40,7 +37,6 @@ class UnifiedConsentService;
 - (instancetype)
 initWithUserPrefService:(PrefService*)userPrefService
        localPrefService:(PrefService*)localPrefService
-            syncService:(browser_sync::ProfileSyncService*)syncService
        syncSetupService:(SyncSetupService*)syncSetupService
   unifiedConsentService:
       (unified_consent::UnifiedConsentService*)unifiedConsentService
