@@ -12941,6 +12941,8 @@ Called by update_net_error_codes.py.-->
   <int value="17" label="Password entry: Pairing added"/>
   <int value="18" label="Password entry: No screenlock state handler"/>
   <int value="19" label="Password entry: Phone locked and tx power too high"/>
+  <int value="20" label="Password entry: Forced re-auth"/>
+  <int value="21" label="Password entry: Required for login"/>
 </enum>
 
 <enum name="EasyUnlockBluetoothType">
