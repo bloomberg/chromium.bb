@@ -42,25 +42,29 @@ class MockContentBrowserClient final : public ContentBrowserClient {
 class DoNotTrackTest : public ContentBrowserTest {
  protected:
   void SetUpOnMainThread() override {
-    original_client_ = SetBrowserClientForTesting(&client_);
-  }
-  void TearDownOnMainThread() override {
-    SetBrowserClientForTesting(original_client_);
-  }
-
-  // Returns false if we cannot enable do not track. It happens only when
-  // Android Kitkat or older systems.
-  // TODO(crbug.com/864403): It seems that we call unsupported Android APIs on
-  // KitKat when we set a ContentBrowserClient. Don't call such APIs and make
-  // this test available on KitKat.
-  bool EnableDoNotTrack() {
 #if defined(OS_ANDROID)
+    // TODO(crbug.com/864403): It seems that we call unsupported Android APIs on
+    // KitKat when we set a ContentBrowserClient. Don't call such APIs and make
+    // this test available on KitKat.
     int32_t major_version = 0, minor_version = 0, bugfix_version = 0;
     base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
                                                  &bugfix_version);
     if (major_version < 5)
-      return false;
+      return;
 #endif
+
+    original_client_ = SetBrowserClientForTesting(&client_);
+  }
+  void TearDownOnMainThread() override {
+    if (original_client_)
+      SetBrowserClientForTesting(original_client_);
+  }
+
+  // Returns false if we cannot enable do not track. It happens only when
+  // Android Kitkat or older systems.
+  bool EnableDoNotTrack() {
+    if (!original_client_)
+      return false;
     client_.EnableDoNotTrack();
     RendererPreferences* prefs =
         shell()->web_contents()->GetMutableRendererPrefs();
@@ -117,13 +121,7 @@ CaptureHeaderHandlerAndReturnScript(
 }
 
 // Checks that the DNT header is not sent by default.
-// Disabled on Android due to test failures: crbug.com/916978
-#if defined(OS_ANDROID)
-#define MAYBE_NotEnabled DISABLED_NotEnabled
-#else
-#define MAYBE_NotEnabled NotEnabled
-#endif
-IN_PROC_BROWSER_TEST_F(DoNotTrackTest, MAYBE_NotEnabled) {
+IN_PROC_BROWSER_TEST_F(DoNotTrackTest, NotEnabled) {
   ASSERT_TRUE(embedded_test_server()->Start());
   EXPECT_TRUE(NavigateToURL(shell(), GetURL("/echoheader?DNT")));
   ExpectPageTextEq("None");
