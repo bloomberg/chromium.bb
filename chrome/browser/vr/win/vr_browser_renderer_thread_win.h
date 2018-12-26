@@ -9,6 +9,7 @@
 #include "chrome/browser/vr/browser_renderer.h"
 #include "chrome/browser/vr/model/web_vr_model.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "content/public/browser/web_contents.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -47,7 +48,7 @@ class MaybeThread : public base::Thread {
 
 #endif
 
-class VRBrowserRendererThreadWin : public MaybeThread {
+class VR_EXPORT VRBrowserRendererThreadWin : public MaybeThread {
  public:
   VRBrowserRendererThreadWin();
   ~VRBrowserRendererThreadWin() override;

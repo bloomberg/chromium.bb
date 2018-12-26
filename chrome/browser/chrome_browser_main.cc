@@ -301,6 +301,9 @@
 #if BUILDFLAG(ENABLE_VR)
 #include "chrome/browser/component_updater/vr_assets_component_installer.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
+#if defined(OS_WIN)
+#include "chrome/browser/vr/ui_host/vr_ui_host_impl.h"
+#endif
 #endif
 
 #if BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
@@ -1069,7 +1072,11 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 #if BUILDFLAG(ENABLE_VR)
   content::WebvrServiceProvider::SetWebvrServiceCallback(
       base::Bind(&vr::VRServiceImpl::Create));
-#endif
+
+#if defined(OS_WIN)
+  vr::VRUiHost::SetFactory(&vr::VRUiHostImpl::Create);
+#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(ENABLE_VR)
 
   // Enable Navigation Tracing only if a trace upload url is specified.
   if (parsed_command_line_.HasSwitch(switches::kEnableNavigationTracing) &&

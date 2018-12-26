@@ -2,32 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_WIN_VR_UI_HOST_IMPL_H_
-#define CHROME_BROWSER_VR_WIN_VR_UI_HOST_IMPL_H_
+#ifndef CHROME_BROWSER_VR_UI_HOST_VR_UI_HOST_IMPL_H_
+#define CHROME_BROWSER_VR_UI_HOST_VR_UI_HOST_IMPL_H_
 
-#include "base/threading/thread.h"
+#include "base/macros.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
+#include "chrome/browser/vr/service/vr_ui_host.h"
 #include "content/public/browser/web_contents.h"
-#include "device/vr/public/mojom/isolated_xr_service.mojom.h"
-#include "device/vr/public/mojom/vr_service.mojom.h"
 
 namespace vr {
 
 class VRBrowserRendererThreadWin;
 
-class VRUiHostImpl : public BrowserXRRuntimeObserver {
+// Concrete implementation of VRBrowserRendererHost, part of the "browser"
+// component. Used on the browser's main thread.
+class VRUiHostImpl : public VRUiHost, public BrowserXRRuntimeObserver {
  public:
-  // Called by IsolatedDeviceProvider when devices are added/removed.  These
-  // manage the lifetime of VRBrowserRendererHostWin instances.
-  static void AddCompositor(device::mojom::VRDisplayInfoPtr info,
-                            device::mojom::XRCompositorHostPtr compositor);
-  static void RemoveCompositor(device::mojom::XRDeviceId id);
-
- private:
   VRUiHostImpl(device::mojom::VRDisplayInfoPtr info,
                device::mojom::XRCompositorHostPtr compositor);
   ~VRUiHostImpl() override;
 
+  // Factory for use with VRUiHost::{Set,Get}Factory
+  static std::unique_ptr<VRUiHost> Create(
+      device::mojom::VRDisplayInfoPtr info,
+      device::mojom::XRCompositorHostPtr compositor);
+
+ private:
   // BrowserXRRuntimeObserver implementation.
   void SetWebXRWebContents(content::WebContents* contents) override;
   void SetVRDisplayInfo(device::mojom::VRDisplayInfoPtr display_info) override;
@@ -40,8 +41,12 @@ class VRUiHostImpl : public BrowserXRRuntimeObserver {
   device::mojom::XRCompositorHostPtr compositor_;
   std::unique_ptr<VRBrowserRendererThreadWin> ui_rendering_thread_;
   device::mojom::VRDisplayInfoPtr info_;
+
+  THREAD_CHECKER(thread_checker_);
+
+  DISALLOW_COPY_AND_ASSIGN(VRUiHostImpl);
 };
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_WIN_VR_UI_HOST_IMPL_H_
+#endif  // CHROME_BROWSER_VR_UI_HOST_VR_UI_HOST_IMPL_H_
