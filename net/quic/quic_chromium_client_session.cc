@@ -1027,7 +1027,7 @@ int QuicChromiumClientSession::TryCreateStream(StreamRequest* request) {
   }
 
   bool can_open_next;
-  if (!quic::GetQuicReloadableFlag(quic_use_common_stream_check) &&
+  if (!GetQuicReloadableFlag(quic_use_common_stream_check) &&
       connection()->transport_version() != quic::QUIC_VERSION_99) {
     can_open_next = (GetNumOpenOutgoingStreams() <
                      stream_id_manager().max_open_outgoing_streams());
@@ -1063,7 +1063,7 @@ bool QuicChromiumClientSession::ShouldCreateOutgoingBidirectionalStream() {
     DVLOG(1) << "Encryption not active so no outgoing stream created.";
     return false;
   }
-  if (!quic::GetQuicReloadableFlag(quic_use_common_stream_check) &&
+  if (!GetQuicReloadableFlag(quic_use_common_stream_check) &&
       connection()->transport_version() != quic::QUIC_VERSION_99) {
     if (GetNumOpenOutgoingStreams() >=
         stream_id_manager().max_open_outgoing_streams()) {

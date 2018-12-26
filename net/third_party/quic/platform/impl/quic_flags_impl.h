@@ -24,7 +24,6 @@
 #undef QUIC_FLAG
 
 // API compatibility with new-style flags.
-namespace quic {
 
 inline bool GetQuicFlagImpl(bool flag) {
   return flag;
@@ -69,6 +68,8 @@ inline void SetQuicFlagImpl(double* f, double v) {
 inline void SetQuicFlagImpl(std::string* f, const std::string& v) {
   *f = v;
 }
+
+namespace quic {
 
 // ------------------------------------------------------------------------
 // DEFINE_QUIC_COMMAND_LINE_FLAG implementation.

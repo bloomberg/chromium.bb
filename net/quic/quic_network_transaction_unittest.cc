@@ -2284,7 +2284,7 @@ TEST_P(QuicNetworkTransactionTest, QuicFailsOnBothNetworksWhileTCPSucceeds) {
 
   // Fire the retransmission alarm, from this point, connection will idle
   // timeout after 4 seconds.
-  if (!quic::GetQuicReloadableFlag(
+  if (!GetQuicReloadableFlag(
           quic_fix_time_of_first_packet_sent_after_receiving)) {
     quic_task_runner_->RunNextTask();
   }
@@ -2415,7 +2415,7 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
 
   // Fire the retransmission alarm, after which connection will idle
   // timeout after 4 seconds.
-  if (!quic::GetQuicReloadableFlag(
+  if (!GetQuicReloadableFlag(
           quic_fix_time_of_first_packet_sent_after_receiving)) {
     quic_task_runner_->RunNextTask();
   }
@@ -2550,7 +2550,7 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPHanging) {
 
   // Pump the message loop to get the request started.
   base::RunLoop().RunUntilIdle();
-  if (!quic::GetQuicReloadableFlag(
+  if (!GetQuicReloadableFlag(
           quic_fix_time_of_first_packet_sent_after_receiving)) {
     quic_task_runner_->RunNextTask();
   }
@@ -3397,7 +3397,7 @@ TEST_P(QuicNetworkTransactionTest,
                        11, quic::QuicUtils::GetHeadersStreamId(version_), false,
                        false, settings_offset, settings_data));
 
-  if (quic::GetQuicReloadableFlag(
+  if (GetQuicReloadableFlag(
           quic_fix_time_of_first_packet_sent_after_receiving)) {
     quic_data.AddWrite(
         SYNCHRONOUS,
