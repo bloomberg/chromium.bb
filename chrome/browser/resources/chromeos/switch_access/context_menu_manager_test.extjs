@@ -1,0 +1,132 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+GEN_INCLUDE(['switch_access_e2e_test_base.js']);
+
+/**
+ * @constructor
+ * @extends {SwitchAccessE2ETest}
+ */
+function SwitchAccessContextMenuManagerTest() {
+  SwitchAccessE2ETest.call(this);
+}
+
+SwitchAccessContextMenuManagerTest.prototype = {
+  __proto__: SwitchAccessE2ETest.prototype,
+
+  /** @override */
+  setUp: function() {
+    this.contextMenuManager =
+        switchAccess.navigationManager_.contextMenuManager_;
+  },
+
+  runAndWaitForContextMenuLoad: function(website, callback) {
+    callback = this.newCallback(callback);
+
+    this.runWithLoadedTree(website, (desktop) => {
+      this.navigateToWebpage(desktop);
+
+      const onMenuReady = (e) => {
+        // The menu shows up with an unknown role. If we see a different role,
+        // ignore the event.
+        if (e.target.role !== 'unknown')
+          return;
+
+        assertNotEquals(this.contextMenuManager.desktop_,
+                        this.contextMenuManager.menuNode());
+        callback(desktop);
+      };
+
+      // Prepare to wait for the context menu to load.
+      desktop.addEventListener('childrenChanged', onMenuReady);
+
+      assertFalse(this.contextMenuManager.inContextMenu_);
+      // Enter the context menu.
+      switchAccess.enterContextMenu();
+    });
+  }
+}
+
+function currentNode() {
+  return switchAccess.navigationManager_.node_;
+}
+
+function currentMenuItemNode() {
+  return switchAccess.navigationManager_
+                    .contextMenuManager_.calculateCurrentNode();
+}
+
+TEST_F('SwitchAccessContextMenuManagerTest', 'EnterMenu', function() {
+  const website = `data:text/html;charset=utf-8,
+                  <button>button1</button>`;
+  this.runAndWaitForContextMenuLoad(website, (desktop) => {
+    assertTrue(this.contextMenuManager.inContextMenu_);
+    assertNotEquals(desktop, this.contextMenuManager.menuNode());
+  });
+});
+
+TEST_F('SwitchAccessContextMenuManagerTest', 'NavigationInMenu', function() {
+  const website = `data:text/html;charset=utf-8,
+                  <button>button1</button>`;
+
+  this.runAndWaitForContextMenuLoad(website, (desktop) => {
+    assertTrue(this.contextMenuManager.inContextMenu_);
+    const startNode = currentNode();
+    let menuRoot = currentMenuItemNode();
+    assertEquals(this.contextMenuManager.menuNode(), menuRoot);
+
+    // Because we are in the context menu, navigation commands should be
+    // forwarded to the ContextMenuManager.
+    switchAccess.moveForward();
+    // The NavigationManager should still be on the node we opened the menu on
+    // while we navigate within the menu.
+    assertEquals(startNode, currentNode());
+
+    let firstMenuItem = currentMenuItemNode();
+    assertNotEquals(menuRoot, currentMenuItemNode());
+
+    // Move to the second menu item.
+    switchAccess.moveForward();
+    assertEquals(startNode, currentNode());
+    assertNotEquals(menuRoot, currentMenuItemNode());
+    assertNotEquals(firstMenuItem, currentMenuItemNode());
+
+    // Move back to the first menu item.
+    switchAccess.moveBackward();
+    assertEquals(startNode, currentNode());
+    assertEquals(firstMenuItem, currentMenuItemNode());
+
+    // Move back to the menu itself.
+    switchAccess.moveBackward();
+    assertEquals(startNode, currentNode());
+    assertEquals(menuRoot, currentMenuItemNode());
+
+    // Move back to the final item.
+    switchAccess.moveBackward();
+    assertEquals(startNode, currentNode());
+    assertNotEquals(menuRoot, currentMenuItemNode());
+    assertNotEquals(firstMenuItem, currentMenuItemNode());
+
+    // Move forward to the menu itself.
+    switchAccess.moveForward();
+    assertEquals(startNode, currentNode());
+    assertEquals(menuRoot, currentMenuItemNode());
+  });
+});
+
+TEST_F('SwitchAccessContextMenuManagerTest', 'ExitMenu', function() {
+  const website = `data:text/html;charset=utf-8,
+                  <button>button1</button>`;
+
+  this.runAndWaitForContextMenuLoad(website, (desktop) => {
+    assertTrue(this.contextMenuManager.inContextMenu_);
+    assertNotEquals(desktop, currentMenuItemNode());
+
+    // Switch Access users exit the context menu without performing an
+    // action by selecting the whole menu.
+    assertEquals(this.contextMenuManager.menuNode(), currentMenuItemNode());
+    switchAccess.selectCurrentNode();
+    assertFalse(this.contextMenuManager.inContextMenu_);
+  });
+});
