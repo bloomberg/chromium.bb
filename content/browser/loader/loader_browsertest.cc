@@ -1084,11 +1084,6 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, CrossOriginNested) {
 // bypass cookies SameSite=Strict protections by navigating a new window twice.
 IN_PROC_BROWSER_TEST_F(LoaderBrowserTest,
                        CookieSameSiteStrictOpenNewNamedWindowTwice) {
-  // TODO(lukasza): https://crbug.com/417518: Get tests working with
-  // --site-per-process.
-  if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites())
-    return;
-
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // 1) Add cookies for 'a.com', one of them with the "SameSite=Strict" option.
