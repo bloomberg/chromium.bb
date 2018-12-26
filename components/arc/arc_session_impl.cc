@@ -510,8 +510,6 @@ void ArcSessionImpl::OnSocketCreated(base::ScopedFD socket_fd) {
         upgrade_params_.demo_session_apps_path.value());
   }
 
-  request.set_create_socket_in_chrome(true);
-
   client_->UpgradeArc(
       request,
       base::BindOnce(&ArcSessionImpl::OnUpgraded, weak_factory_.GetWeakPtr(),
