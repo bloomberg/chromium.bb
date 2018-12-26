@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/stl_util.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "sandbox/mac/sandbox_compiler.h"
@@ -26,7 +27,7 @@ const char kSandboxProfile[] =
     "(allow file-read* (extension \"com.apple.app-sandbox.read\"))";
 
 const char kTestData[] = "hello world";
-constexpr int kTestDataLen = arraysize(kTestData);
+constexpr int kTestDataLen = base::size(kTestData);
 
 const char kSwitchFile[] = "test-file";
 const char kSwitchExtension[] = "test-extension";

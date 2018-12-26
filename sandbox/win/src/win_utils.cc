@@ -12,8 +12,8 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/numerics/safe_math.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/win/pe_image.h"
@@ -26,7 +26,7 @@ namespace {
 const size_t kDriveLetterLen = 3;
 
 constexpr wchar_t kNTDotPrefix[] = L"\\\\.\\";
-const size_t kNTDotPrefixLen = arraysize(kNTDotPrefix) - 1;
+const size_t kNTDotPrefixLen = base::size(kNTDotPrefix) - 1;
 
 // Holds the information about a known registry key.
 struct KnownReservedKey {
@@ -103,7 +103,7 @@ bool IsDevicePath(const base::string16& path, base::string16* trimmed_path) {
 // "\Device\HarddiskVolumeX" in |path|.
 size_t PassHarddiskVolume(const base::string16& path) {
   static constexpr wchar_t pattern[] = L"\\Device\\HarddiskVolume";
-  const size_t patternLen = arraysize(pattern) - 1;
+  const size_t patternLen = base::size(pattern) - 1;
 
   // First, check for |pattern|.
   if ((path.size() < patternLen) || (!EqualPath(path, pattern, patternLen)))
@@ -156,14 +156,14 @@ bool IsPipe(const base::string16& path) {
     start = sandbox::kNTPrefixLen;
 
   const wchar_t kPipe[] = L"pipe\\";
-  if (path.size() < start + arraysize(kPipe) - 1)
+  if (path.size() < start + base::size(kPipe) - 1)
     return false;
 
-  return EqualPath(path, start, kPipe, arraysize(kPipe) - 1);
+  return EqualPath(path, start, kPipe, base::size(kPipe) - 1);
 }
 
 HKEY GetReservedKeyFromName(const base::string16& name) {
-  for (size_t i = 0; i < arraysize(kKnownKey); ++i) {
+  for (size_t i = 0; i < base::size(kKnownKey); ++i) {
     if (name == kKnownKey[i].name)
       return kKnownKey[i].key;
   }
@@ -172,7 +172,7 @@ HKEY GetReservedKeyFromName(const base::string16& name) {
 }
 
 bool ResolveRegistryName(base::string16 name, base::string16* resolved_name) {
-  for (size_t i = 0; i < arraysize(kKnownKey); ++i) {
+  for (size_t i = 0; i < base::size(kKnownKey); ++i) {
     if (name.find(kKnownKey[i].name) == 0) {
       HKEY key;
       DWORD disposition;

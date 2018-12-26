@@ -9,6 +9,7 @@
 #include <stdlib.h>
 
 #include "base/process/process_metrics.h"
+#include "base/stl_util.h"
 #include "base/win/win_util.h"
 #include "sandbox/win/src/crosscall_client.h"
 #include "sandbox/win/src/filesystem_interception.h"
@@ -335,7 +336,7 @@ TEST(IPCTest, IPCLeak) {
                    {TESTIPC_NTOPENKEY, "TESTIPC_NTOPENKEY", nullptr},
                    {TESTIPC_NTCREATEKEY, "TESTIPC_NTCREATEEY", nullptr}};
 
-  static_assert(arraysize(test_data) == TESTIPC_LAST, "Not enough tests.");
+  static_assert(base::size(test_data) == TESTIPC_LAST, "Not enough tests.");
   for (auto test : test_data) {
     TestRunner runner;
     EXPECT_TRUE(runner.AddRule(TargetPolicy::SUBSYS_REGISTRY,

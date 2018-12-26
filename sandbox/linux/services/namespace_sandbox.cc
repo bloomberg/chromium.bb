@@ -19,10 +19,10 @@
 #include "base/environment.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_utils.h"
@@ -78,7 +78,7 @@ void TerminationSignalHandler(int sig) {
   // Return a special exit code so that the process is detected as terminated by
   // a signal.
   const size_t sig_idx = static_cast<size_t>(sig);
-  if (sig_idx < arraysize(g_signal_exit_codes)) {
+  if (sig_idx < base::size(g_signal_exit_codes)) {
     _exit(g_signal_exit_codes[sig_idx]);
   }
 
@@ -265,7 +265,7 @@ bool NamespaceSandbox::InstallTerminationSignalHandler(
   }
 
   const size_t sig_idx = static_cast<size_t>(sig);
-  CHECK_LT(sig_idx, arraysize(g_signal_exit_codes));
+  CHECK_LT(sig_idx, base::size(g_signal_exit_codes));
 
   DCHECK_GE(exit_code, 0);
   DCHECK_LT(exit_code, 256);
