@@ -14,6 +14,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
@@ -180,7 +181,7 @@ void SetSeccompCrashKey(const struct sandbox::arch_seccomp_data& args) {
   memset(crash_key, '\0', crash_key_length);
 
   size_t offset = 0;
-  for (size_t i = 0; i < arraysize(values); ++i) {
+  for (size_t i = 0; i < base::size(values); ++i) {
     const char* strings[2] = { prefixes[i], values[i] };
     for (auto* string : strings) {
       size_t string_len = strlen(string);

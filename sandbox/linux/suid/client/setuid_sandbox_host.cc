@@ -20,11 +20,11 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/launch.h"
 #include "base/process/process_metrics.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "sandbox/linux/suid/common/sandbox.h"
 #include "sandbox/linux/suid/common/suid_unsafe_environment_variables.h"
@@ -51,7 +51,7 @@ void UnsetExpectedEnvironmentVariables(base::EnvironmentMap* env_map) {
       kSandboxNETNSEnvironmentVarName,
   };
 
-  for (size_t i = 0; i < arraysize(environment_vars); ++i) {
+  for (size_t i = 0; i < base::size(environment_vars); ++i) {
     // Setting values in EnvironmentMap to an empty-string will make
     // sure that they get unset from the environment via AlterEnvironment().
     (*env_map)[environment_vars[i]] = base::NativeEnvironmentString();

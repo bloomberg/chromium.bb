@@ -21,9 +21,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/launch.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "sandbox/linux/services/namespace_utils.h"
 #include "sandbox/linux/services/proc_util.h"
@@ -228,7 +228,7 @@ bool Credentials::HasAnyCapability() {
 
   PCHECK(sys_capget(&hdr, data) == 0);
 
-  for (size_t i = 0; i < arraysize(data); ++i) {
+  for (size_t i = 0; i < base::size(data); ++i) {
     if (data[i].effective || data[i].permitted || data[i].inheritable) {
       return true;
     }
