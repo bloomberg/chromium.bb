@@ -537,3 +537,13 @@ bool GetOptionalSafeInt(const base::DictionaryValue* dict,
     *has_value = true;
   return true;
 }
+
+bool SetSafeInt(base::DictionaryValue* dict,
+                const base::StringPiece path,
+                int64_t in_value_64) {
+  int int_value = static_cast<int>(in_value_64);
+  if (in_value_64 == int_value)
+    return dict->SetInteger(path, in_value_64);
+  else
+    return dict->SetDouble(path, in_value_64);
+}

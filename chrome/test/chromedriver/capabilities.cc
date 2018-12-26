@@ -25,6 +25,7 @@
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/logging.h"
 #include "chrome/test/chromedriver/session.h"
+#include "chrome/test/chromedriver/util.h"
 
 namespace {
 
@@ -222,22 +223,24 @@ Status ParseTimeouts(const base::Value& option, Capabilities* capabilities) {
   const base::DictionaryValue* timeouts;
   if (!option.GetAsDictionary(&timeouts))
     return Status(kInvalidArgument, "'timeouts' must be a JSON object");
-
-  std::map<std::string, Parser> parser_map;
-  parser_map["script"] =
-      base::BindRepeating(&ParseTimeDelta, &capabilities->script_timeout);
-  parser_map["pageLoad"] =
-      base::BindRepeating(&ParseTimeDelta, &capabilities->page_load_timeout);
-  parser_map["implicit"] = base::BindRepeating(
-      &ParseTimeDelta, &capabilities->implicit_wait_timeout);
-
   for (const auto& it : timeouts->DictItems()) {
-    if (parser_map.find(it.first) == parser_map.end())
+    int64_t timeout_ms_int64 = -1;
+    if (!GetOptionalSafeInt(timeouts, it.first, &timeout_ms_int64)
+        || timeout_ms_int64 < 0)
+      return Status(kInvalidArgument, "value must be a non-negative integer");
+    base::TimeDelta timeout =
+                          base::TimeDelta::FromMilliseconds(timeout_ms_int64);
+    const std::string& type = it.first;
+    if (type == "script") {
+      capabilities->script_timeout = timeout;
+    } else if (type == "pageLoad") {
+      capabilities->page_load_timeout = timeout;
+    } else if (type == "implicit") {
+      capabilities->implicit_wait_timeout = timeout;
+    } else {
       return Status(kInvalidArgument,
-                    "unrecognized 'timeouts' option: " + it.first);
-    Status status = parser_map[it.first].Run(it.second, capabilities);
-    if (status.IsError())
-      return Status(kInvalidArgument, "cannot parse " + it.first, status);
+                    "unrecognized 'timeouts' option: " + type);
+    }
   }
   return Status(kOk);
 }
