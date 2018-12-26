@@ -460,22 +460,14 @@ void ResourceFetcher::RequestLoadStarted(unsigned long identifier,
 void ResourceFetcher::DidLoadResourceFromMemoryCache(
     unsigned long identifier,
     Resource* resource,
-    const ResourceRequest& original_resource_request) {
-  ResourceRequest resource_request(resource->Url());
-  resource_request.SetFrameType(original_resource_request.GetFrameType());
-  resource_request.SetRequestContext(
-      original_resource_request.GetRequestContext());
-  if (original_resource_request.IsAdResource())
-    resource_request.SetIsAdResource();
+    const ResourceRequest& original_request) {
+  ResourceRequest request = original_request;
 
-  Context().DispatchDidLoadResourceFromMemoryCache(identifier, resource_request,
-                                                   resource->GetResponse());
   Context().DispatchWillSendRequest(
-      identifier, resource_request, ResourceResponse() /* redirects */,
+      identifier, request, ResourceResponse() /* redirects */,
       resource->GetType(), resource->Options().initiator_info);
   Context().DispatchDidReceiveResponse(
-      identifier, resource->GetResponse(), resource_request.GetFrameType(),
-      resource_request.GetRequestContext(), resource,
+      identifier, request, resource->GetResponse(), resource,
       FetchContext::ResourceResponseType::kFromMemoryCache);
 
   if (resource->EncodedSize() > 0) {

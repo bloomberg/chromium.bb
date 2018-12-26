@@ -139,17 +139,16 @@ class PLATFORM_EXPORT FetchContext
       const ResourceResponse& redirect_response,
       ResourceType,
       const FetchInitiatorInfo& = FetchInitiatorInfo());
-  virtual void DispatchDidLoadResourceFromMemoryCache(unsigned long identifier,
-                                                      const ResourceRequest&,
-                                                      const ResourceResponse&);
   enum class ResourceResponseType { kNotFromMemoryCache, kFromMemoryCache };
-  virtual void DispatchDidReceiveResponse(
-      unsigned long identifier,
-      const ResourceResponse&,
-      network::mojom::RequestContextFrameType,
-      mojom::RequestContextType,
-      Resource*,
-      ResourceResponseType);
+  // |request| and |resource| are provided separately because when it's from
+  // the memory cache |request| and |resource->GetResourceRequest()| don't
+  // match. |response| may not yet be set to |resource| when this function is
+  // called.
+  virtual void DispatchDidReceiveResponse(unsigned long identifier,
+                                          const ResourceRequest& request,
+                                          const ResourceResponse& response,
+                                          Resource* resource,
+                                          ResourceResponseType);
   virtual void DispatchDidReceiveData(unsigned long identifier,
                                       const char* data,
                                       size_t data_length);

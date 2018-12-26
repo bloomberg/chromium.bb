@@ -99,18 +99,11 @@ void FetchContext::DispatchWillSendRequest(unsigned long,
                                            ResourceType,
                                            const FetchInitiatorInfo&) {}
 
-void FetchContext::DispatchDidLoadResourceFromMemoryCache(
-    unsigned long,
-    const ResourceRequest&,
-    const ResourceResponse&) {}
-
-void FetchContext::DispatchDidReceiveResponse(
-    unsigned long,
-    const ResourceResponse&,
-    network::mojom::RequestContextFrameType FrameType,
-    mojom::RequestContextType,
-    Resource*,
-    ResourceResponseType) {}
+void FetchContext::DispatchDidReceiveResponse(unsigned long,
+                                              const ResourceRequest&,
+                                              const ResourceResponse&,
+                                              Resource*,
+                                              ResourceResponseType) {}
 
 void FetchContext::DispatchDidReceiveData(unsigned long, const char*, size_t) {}
 

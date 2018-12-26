@@ -84,9 +84,8 @@ class WorkerFetchContext final : public BaseFetchContext {
                                ResourceType,
                                const FetchInitiatorInfo&) override;
   void DispatchDidReceiveResponse(unsigned long identifier,
+                                  const ResourceRequest&,
                                   const ResourceResponse&,
-                                  network::mojom::RequestContextFrameType,
-                                  mojom::RequestContextType,
                                   Resource*,
                                   ResourceResponseType) override;
   void DispatchDidReceiveData(unsigned long identifier,

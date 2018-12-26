@@ -265,15 +265,15 @@ void WorkerFetchContext::DispatchWillSendRequest(
 
 void WorkerFetchContext::DispatchDidReceiveResponse(
     unsigned long identifier,
+    const ResourceRequest& request,
     const ResourceResponse& response,
-    network::mojom::RequestContextFrameType frame_type,
-    mojom::RequestContextType request_context,
     Resource* resource,
     ResourceResponseType) {
   if (response.HasMajorCertificateErrors()) {
     WebMixedContentContextType context_type =
         WebMixedContent::ContextTypeFromRequestContext(
-            request_context, false /* strictMixedContentCheckingForPlugin */);
+            request.GetRequestContext(),
+            false /* strictMixedContentCheckingForPlugin */);
     if (context_type == WebMixedContentContextType::kBlockable) {
       web_context_->DidRunContentWithCertificateErrors();
     } else {

@@ -922,8 +922,7 @@ void ResourceLoader::DidReceiveResponse(
 
   // FrameType never changes during the lifetime of a request.
   Context().DispatchDidReceiveResponse(
-      resource_->Identifier(), response_to_pass, initial_request.GetFrameType(),
-      request_context, resource_,
+      resource_->Identifier(), initial_request, response_to_pass, resource_,
       FetchContext::ResourceResponseType::kNotFromMemoryCache);
 
   // When streaming, unpause virtual time early to prevent deadlocking
