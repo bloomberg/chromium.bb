@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/ui/settings/cells/import_data_multiline_detail_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_multiline_detail_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -45,8 +45,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSString* _toEmail;
   BOOL _isSignedIn;
   ShouldClearData _shouldClearData;
-  ImportDataMultilineDetailItem* _importDataItem;
-  ImportDataMultilineDetailItem* _keepDataSeparateItem;
+  SettingsMultilineDetailItem* _importDataItem;
+  SettingsMultilineDetailItem* _keepDataSeparateItem;
 }
 
 #pragma mark - Initialization
@@ -127,8 +127,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return item;
 }
 
-- (ImportDataMultilineDetailItem*)importDataItem {
-  ImportDataMultilineDetailItem* item = [[ImportDataMultilineDetailItem alloc]
+- (SettingsMultilineDetailItem*)importDataItem {
+  SettingsMultilineDetailItem* item = [[SettingsMultilineDetailItem alloc]
       initWithType:ItemTypeOptionImportData];
   item.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_IMPORT_TITLE);
   item.detailText =
@@ -140,8 +140,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return item;
 }
 
-- (ImportDataMultilineDetailItem*)keepDataSeparateItem {
-  ImportDataMultilineDetailItem* item = [[ImportDataMultilineDetailItem alloc]
+- (SettingsMultilineDetailItem*)keepDataSeparateItem {
+  SettingsMultilineDetailItem* item = [[SettingsMultilineDetailItem alloc]
       initWithType:ItemTypeOptionKeepDataSeparate];
   item.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_KEEP_TITLE);
   if (_isSignedIn) {

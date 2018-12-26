@@ -7,7 +7,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/settings/cells/card_multiline_item.h"
-#import "ios/chrome/browser/ui/settings/cells/import_data_multiline_detail_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_multiline_detail_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -125,12 +125,12 @@ TEST_F(ImportDataTableViewControllerTest, TestUniqueBoxChecked) {
   NSIndexPath* importIndexPath = [NSIndexPath indexPathForItem:0 inSection:1];
   NSIndexPath* keepSeparateIndexPath = [NSIndexPath indexPathForItem:1
                                                            inSection:1];
-  ImportDataMultilineDetailItem* importItem =
-      base::mac::ObjCCastStrict<ImportDataMultilineDetailItem>(
+  SettingsMultilineDetailItem* importItem =
+      base::mac::ObjCCastStrict<SettingsMultilineDetailItem>(
           [import_data_controller.tableViewModel
               itemAtIndexPath:importIndexPath]);
-  ImportDataMultilineDetailItem* keepSeparateItem =
-      base::mac::ObjCCastStrict<ImportDataMultilineDetailItem>(
+  SettingsMultilineDetailItem* keepSeparateItem =
+      base::mac::ObjCCastStrict<SettingsMultilineDetailItem>(
           [import_data_controller.tableViewModel
               itemAtIndexPath:keepSeparateIndexPath]);
 

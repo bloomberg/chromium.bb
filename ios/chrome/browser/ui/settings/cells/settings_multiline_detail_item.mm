@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/cells/import_data_multiline_detail_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_multiline_detail_item.h"
 
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
@@ -13,7 +13,7 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation ImportDataMultilineDetailItem
+@implementation SettingsMultilineDetailItem
 
 @synthesize text = _text;
 @synthesize detailText = _detailText;
@@ -21,14 +21,14 @@
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
-    self.cellClass = [ImportDataMultilineDetailCell class];
+    self.cellClass = [SettingsMultilineDetailCell class];
   }
   return self;
 }
 
 #pragma mark CollectionViewItem
 
-- (void)configureCell:(ImportDataMultilineDetailCell*)cell
+- (void)configureCell:(SettingsMultilineDetailCell*)cell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
   cell.textLabel.text = self.text;
@@ -37,7 +37,7 @@
 
 @end
 
-@implementation ImportDataMultilineDetailCell
+@implementation SettingsMultilineDetailCell
 
 @synthesize textLabel = _textLabel;
 @synthesize detailTextLabel = _detailTextLabel;
