@@ -7,7 +7,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/android/jni_utils.h"
-#include "base/stl_util.h"
 #include "chrome/app/android/chrome_android_initializer.h"
 #include "content/public/app/content_jni_onload.h"
 #include "device/vr/buildflags/buildflags.h"
@@ -36,7 +35,7 @@ bool OnJNIOnLoadRegisterJNI(JNIEnv* env) {
   // Register manually when on the browser process.
   if (!base::android::IsSelectiveJniRegistrationEnabled(env)) {
     return RegisterNativeMethods(env, kChromeRegisteredMethods,
-                                 base::size(kChromeRegisteredMethods));
+                                 arraysize(kChromeRegisteredMethods));
   }
 #endif
   return true;

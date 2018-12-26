@@ -4,8 +4,8 @@
 
 #include <stddef.h>
 
+#include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
@@ -431,6 +431,6 @@ INSTANTIATE_TEST_CASE_P(
     StructSequence,
     OobeLocalizationTest,
     testing::Range(&oobe_localization_test_parameters[0],
-                   &oobe_localization_test_parameters[base::size(
+                   &oobe_localization_test_parameters[arraysize(
                        oobe_localization_test_parameters)]));
 }  // namespace chromeos

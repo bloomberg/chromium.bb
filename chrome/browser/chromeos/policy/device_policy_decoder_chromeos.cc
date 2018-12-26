@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/syslog_logging.h"
 #include "base/values.h"
@@ -101,7 +101,7 @@ std::unique_ptr<base::Value> DecodeConnectionType(int value) {
       shill::kTypeBluetooth, shill::kTypeCellular,
   };
 
-  if (value < 0 || value >= static_cast<int>(base::size(kConnectionTypes)))
+  if (value < 0 || value >= static_cast<int>(arraysize(kConnectionTypes)))
     return nullptr;
 
   return std::make_unique<base::Value>(kConnectionTypes[value]);

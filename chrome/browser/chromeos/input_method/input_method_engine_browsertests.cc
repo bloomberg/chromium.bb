@@ -5,8 +5,8 @@
 #include <stddef.h>
 
 #include "base/bind_helpers.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -414,7 +414,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     { ui::VKEY_F9, "F9", "AudioVolumeDown" },
     { ui::VKEY_F10, "F10", "AudioVolumeUp" },
   };
-  for (size_t i = 0; i < base::size(kMediaKeyCases); ++i) {
+  for (size_t i = 0; i < arraysize(kMediaKeyCases); ++i) {
     SCOPED_TRACE(std::string("KeyDown, ") + kMediaKeyCases[i].code);
     KeyEventDoneCallback callback(false);
     const std::string expected_value =

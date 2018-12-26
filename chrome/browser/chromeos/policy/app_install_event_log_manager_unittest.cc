@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
@@ -161,7 +160,7 @@ class AppInstallEventLogManagerTest : public testing::Test {
 
   void AddLogEntry(int app_index) {
     ASSERT_GE(app_index, 0);
-    ASSERT_LT(app_index, static_cast<int>(base::size(kPackageNames)));
+    ASSERT_LT(app_index, static_cast<int>(arraysize(kPackageNames)));
     const std::string package_name = kPackageNames[app_index];
     events_[package_name].push_back(event_);
     manager_->Add({kPackageNames[app_index]}, event_);
@@ -470,7 +469,7 @@ TEST_F(AppInstallEventLogManagerTest, AddToTriggerTotalSizeExpedited) {
   FastForwardTo(offset);
   int i = 0;
   while (i <= kTotalSizeExpeditedUploadThreshold) {
-    for (int j = 0; j < static_cast<int>(base::size(kPackageNames)); ++i, ++j) {
+    for (int j = 0; j < static_cast<int>(arraysize(kPackageNames)); ++i, ++j) {
       AddLogEntry(j /* app_index */);
     }
   }
@@ -508,7 +507,7 @@ TEST_F(AppInstallEventLogManagerTest,
   const base::TimeDelta offset = base::TimeDelta::FromMinutes(20);
   FastForwardTo(offset);
   for (int i = 0; i <= kTotalSizeExpeditedUploadThreshold;
-       i += base::size(kPackageNames)) {
+       i += arraysize(kPackageNames)) {
     AddLogEntryForAllApps();
   }
 

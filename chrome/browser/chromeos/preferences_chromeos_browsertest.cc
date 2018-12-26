@@ -7,7 +7,7 @@
 
 #include "ash/public/cpp/ash_switches.h"
 #include "base/command_line.h"
-#include "base/stl_util.h"
+#include "base/macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager_impl.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
@@ -41,7 +41,7 @@ class PreferencesTest : public LoginManagerTest {
       const char* gaia_id;
     } const kTestUsers[] = {{"test-user1@gmail.com", "1111111111"},
                             {"test-user2@gmail.com", "2222222222"}};
-    for (size_t i = 0; i < base::size(kTestUsers); ++i) {
+    for (size_t i = 0; i < arraysize(kTestUsers); ++i) {
       test_users_.push_back(AccountId::FromUserEmailGaiaId(
           kTestUsers[i].email, kTestUsers[i].gaia_id));
     }

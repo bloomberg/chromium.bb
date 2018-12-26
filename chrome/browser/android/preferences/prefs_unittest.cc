@@ -4,7 +4,7 @@
 
 #include "chrome/browser/android/preferences/prefs.h"
 
-#include "base/stl_util.h"
+#include "base/macros.h"
 #include "chrome/browser/android/preferences/pref_service_bridge.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,7 +26,7 @@ TEST_F(PrefsTest, TestIndex) {
 
   // If one of these checks fails, most likely the Pref enum and
   // |kPrefExposedToJava| are out of sync.
-  EXPECT_EQ(Pref::PREF_NUM_PREFS, base::size(kPrefsExposedToJava));
+  EXPECT_EQ(Pref::PREF_NUM_PREFS, arraysize(kPrefsExposedToJava));
 
   EXPECT_EQ(prefs::kAllowDeletingBrowserHistory,
             GetPrefName(ALLOW_DELETING_BROWSER_HISTORY));

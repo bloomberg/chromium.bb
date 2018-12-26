@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "chromeos/chromeos_switches.h"
@@ -67,7 +68,7 @@ const char* kScreenNames[] = {
 };
 
 static_assert(static_cast<size_t>(OobeScreen::SCREEN_UNKNOWN) ==
-                  base::size(kScreenNames) - 1,
+                  arraysize(kScreenNames) - 1,
               "Missing element in OobeScreen or kScreenNames");
 
 }  // namespace
@@ -78,7 +79,7 @@ std::string GetOobeScreenName(OobeScreen screen) {
 }
 
 OobeScreen GetOobeScreenFromName(const std::string& name) {
-  for (size_t i = 0; i < base::size(kScreenNames); ++i) {
+  for (size_t i = 0; i < arraysize(kScreenNames); ++i) {
     if (name == kScreenNames[i])
       return static_cast<OobeScreen>(i);
   }

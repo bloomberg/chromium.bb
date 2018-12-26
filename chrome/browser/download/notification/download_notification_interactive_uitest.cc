@@ -6,9 +6,9 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -852,7 +852,7 @@ class MultiProfileDownloadNotificationTest
   // This is used for preparing all accounts in PRE_ test setup, and for testing
   // actual login behavior.
   void AddAllUsers() {
-    for (size_t i = 0; i < base::size(kTestAccounts); ++i) {
+    for (size_t i = 0; i < arraysize(kTestAccounts); ++i) {
       // The primary account was already set up in SetUpOnMainThread, so skip it
       // here.
       if (i == PRIMARY_ACCOUNT_INDEX)

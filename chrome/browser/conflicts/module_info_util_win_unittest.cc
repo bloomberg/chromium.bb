@@ -17,7 +17,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_environment_variable_override.h"
 #include "base/win/pe_image.h"
@@ -115,7 +114,7 @@ TEST(ModuleInfoUtilTest, CollapseMatchingPrefixInPath) {
       std::make_pair(L"c:\\foo\\bar", L"%x%"),
   };
 
-  for (size_t i = 0; i < base::size(kCollapsePathList); ++i) {
+  for (size_t i = 0; i < arraysize(kCollapsePathList); ++i) {
     base::string16 test_case = kCollapsePathList[i].test_case;
     CollapseMatchingPrefixInPath(string_mapping, &test_case);
     EXPECT_EQ(kCollapsePathList[i].expected_result, test_case);
