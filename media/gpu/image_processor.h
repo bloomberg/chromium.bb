@@ -50,7 +50,21 @@ class ImageProcessor {
   // Callback to be used to return the index of a processed image to the
   // client. After the client is done with the frame, call Process with the
   // index to return the output buffer to the image processor.
+  // FrameReadyCB shall be executed on the thread that creates ImageProcessor.
+  // ImageProcessor has to bind its weak pointer to the task to execute
+  // FrameReadyCB so that the task will not be called after ImageProcessor
+  // instance is destructed. Note that ImageProcessor client instance should
+  // have the same lifetime of or outlive ImageProcessor.
   using FrameReadyCB = base::OnceCallback<void(scoped_refptr<VideoFrame>)>;
+
+  // Callback to be used to notify client when ImageProcess encounters error.
+  // It should be assigned in subclass's factory method.
+  // ErrorCB shall be executed on the thread that creates ImageProcessor.
+  // ImageProcessor has to bind its weak pointer to the task to execute ErrorCB
+  // so that the task will not be called after ImageProcessor instance is
+  // destructed. Note that ImageProcessor client instance should have the same
+  // lifetime of or outlive ImageProcessor.
+  using ErrorCB = base::RepeatingClosure;
 
   // Called by client to process |frame|. The resulting processed frame will be
   // stored in |output_buffer_index| output buffer and notified via |cb|. The

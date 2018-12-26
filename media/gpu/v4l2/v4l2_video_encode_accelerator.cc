@@ -223,8 +223,10 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
     // Convert from |config.input_format| to |device_input_layout_->format()|,
     // keeping the size at |visible_size_| and requiring the output buffers to
     // be of at least |device_input_layout_->coded_size()|.
-    // Unretained is safe because |this| owns image processor and there will be
-    // no callbacks after processor destroys.
+    // Unretained(this) is safe in creating ErrorCB because |image_processor_|
+    // is destructed by Destroy() and Destroy() is posted in child_task_runner_,
+    // which is the same thread ErrorCB being called. So after Destroy() is
+    // called, no more ErrorCB will be invoked.
     // |input_storage_type| can be STORAGE_SHMEM and
     // STORAGE_MOJO_SHARED_BUFFER. However, it doesn't matter
     // VideoFrame::STORAGE_OWNED_MEMORY is specified for |input_storage_type|
@@ -235,8 +237,8 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
         VideoFrame::STORAGE_DMABUFS, ImageProcessor::OutputMode::ALLOCATE,
         *input_layout, *device_input_layout_, visible_size_, visible_size_,
         kImageProcBufferCount,
-        base::Bind(&V4L2VideoEncodeAccelerator::ImageProcessorError,
-                   base::Unretained(this)));
+        base::BindRepeating(&V4L2VideoEncodeAccelerator::ImageProcessorError,
+                            base::Unretained(this)));
     if (!image_processor_) {
       VLOGF(1) << "Failed initializing image processor";
       return false;
@@ -315,8 +317,11 @@ void V4L2VideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
     if (free_image_processor_output_buffers_.size() > 0) {
       int output_buffer_index = free_image_processor_output_buffers_.back();
       free_image_processor_output_buffers_.pop_back();
-      // Unretained is safe because |this| owns image processor and there will
-      // be no callbacks after processor destroys.
+      // Unretained(this) is safe in creating FrameReadyCB because
+      // |image_processor_| is destructed by Destroy() and Destroy() is posted
+      // in child_task_runner_, which is the same thread FrameReadyCB being
+      // called. So after Destroy() is called, no more FrameReadyCB will be
+      // invoked.
       if (!image_processor_->Process(
               frame, output_buffer_index, std::vector<base::ScopedFD>(),
               base::BindOnce(&V4L2VideoEncodeAccelerator::FrameProcessed,

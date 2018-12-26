@@ -67,8 +67,8 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   // input_format to output_format. Caller shall provide input and output
   // storage type as well as output mode. The number of input buffers and output
   // buffers will be |num_buffers|. Provided |error_cb| will be posted to the
-  // child thread if an error occurs after initialization. Returns nullptr if
-  // V4L2ImageProcessor fails to create.
+  // same thread Create() is called if an error occurs after initialization.
+  // Returns nullptr if V4L2ImageProcessor fails to create.
   // Note: output_mode will be removed once all its clients use import mode.
   static std::unique_ptr<V4L2ImageProcessor> Create(
       scoped_refptr<V4L2Device> device,
@@ -80,7 +80,7 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
       gfx::Size input_visible_size,
       gfx::Size output_visible_size,
       size_t num_buffers,
-      const base::Closure& error_cb);
+      ErrorCB error_cb);
 
  private:
   // Record for input buffers.
@@ -130,7 +130,7 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
                      gfx::Size input_visible_size,
                      gfx::Size output_visible_size,
                      size_t num_buffers,
-                     const base::Closure& error_cb);
+                     ErrorCB error_cb);
 
   bool Initialize();
   void EnqueueInput();
@@ -143,8 +143,12 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   void DestroyInputBuffers();
   void DestroyOutputBuffers();
 
+  // Posts error on |client_task_runner_| thread. This must be called in a
+  // thread |client_task_runner_| doesn't belong to.
   void NotifyError();
-  void NotifyErrorOnChildThread(const base::Closure& error_cb);
+  // Invokes ErrorCB given by factory method. This must be called in
+  // |client_task_runner_|'s thread.
+  void NotifyErrorOnClientThread();
 
   void ProcessTask(std::unique_ptr<JobRecord> job_record);
   void ServiceDeviceTask();
@@ -176,8 +180,9 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   const VideoFrame::StorageType output_storage_type_;
   const OutputMode output_mode_;
 
-  // Our original calling task runner for the child thread.
-  const scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;
+  // The task runner which belongs to the thread where V4L2ImageProcessor is
+  // created.
+  const scoped_refptr<base::SingleThreadTaskRunner> client_task_runner_;
 
   // V4L2 device in use.
   scoped_refptr<V4L2Device> device_;
@@ -211,17 +216,19 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   const size_t num_buffers_;
 
   // Error callback to the client.
-  base::Closure error_cb_;
+  ErrorCB error_cb_;
 
   // WeakPtr<> pointing to |this| for use in posting tasks from the device
-  // worker threads back to the child thread.  Because the worker threads
-  // are members of this class, any task running on those threads is guaranteed
-  // that this object is still alive.  As a result, tasks posted from the child
-  // thread to the device thread should use base::Unretained(this),
-  // and tasks posted the other way should use |weak_this_|.
+  // worker threads back to the the thread where V4L2ImageProcessor is created.
+  // Because the worker threads are members of this class, any task running on
+  // those threads is guaranteed that this object is still alive.  As a result,
+  // tasks posted from |client_task_runner_|'s thread to the device thread
+  // should use base::Unretained(this), and tasks posted the other way should
+  // use |weak_this_|.
   base::WeakPtr<V4L2ImageProcessor> weak_this_;
 
-  // Weak factory for producing weak pointers on the child thread.
+  // Weak factory for producing weak pointers on the |client_task_runner_|'s
+  // thread.
   base::WeakPtrFactory<V4L2ImageProcessor> weak_this_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(V4L2ImageProcessor);

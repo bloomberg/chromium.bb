@@ -74,7 +74,7 @@ V4L2ImageProcessor::V4L2ImageProcessor(
     gfx::Size input_visible_size,
     gfx::Size output_visible_size,
     size_t num_buffers,
-    const base::Closure& error_cb)
+    ErrorCB error_cb)
     : input_layout_(input_layout),
       input_visible_size_(input_visible_size),
       input_memory_type_(input_memory_type),
@@ -84,7 +84,7 @@ V4L2ImageProcessor::V4L2ImageProcessor(
       output_memory_type_(output_memory_type),
       output_storage_type_(output_storage_type),
       output_mode_(output_mode),
-      child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      client_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       device_(device),
       device_thread_("V4L2ImageProcessorThread"),
       device_poll_thread_("V4L2ImageProcessorDevicePollThread"),
@@ -99,7 +99,7 @@ V4L2ImageProcessor::V4L2ImageProcessor(
 }
 
 V4L2ImageProcessor::~V4L2ImageProcessor() {
-  DCHECK(child_task_runner_->BelongsToCurrentThread());
+  DCHECK(client_task_runner_->BelongsToCurrentThread());
 
   Destroy();
 
@@ -112,15 +112,14 @@ V4L2ImageProcessor::~V4L2ImageProcessor() {
 
 void V4L2ImageProcessor::NotifyError() {
   VLOGF(1);
-  DCHECK(!child_task_runner_->BelongsToCurrentThread());
-  child_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2ImageProcessor::NotifyErrorOnChildThread,
-                                weak_this_, error_cb_));
+  DCHECK(!client_task_runner_->BelongsToCurrentThread());
+  client_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&V4L2ImageProcessor::NotifyErrorOnClientThread,
+                                weak_this_));
 }
 
-void V4L2ImageProcessor::NotifyErrorOnChildThread(
-    const base::Closure& error_cb) {
-  DCHECK(child_task_runner_->BelongsToCurrentThread());
+void V4L2ImageProcessor::NotifyErrorOnClientThread() {
+  DCHECK(client_task_runner_->BelongsToCurrentThread());
   error_cb_.Run();
 }
 
@@ -144,16 +143,16 @@ v4l2_memory InputStorageTypeToV4L2Memory(VideoFrame::StorageType storage_type) {
 
 // static
 std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
-      scoped_refptr<V4L2Device> device,
-      VideoFrame::StorageType input_storage_type,
-      VideoFrame::StorageType output_storage_type,
-      OutputMode output_mode,
-      const VideoFrameLayout& input_layout,
-      const VideoFrameLayout& output_layout,
-      gfx::Size input_visible_size,
-      gfx::Size output_visible_size,
-      size_t num_buffers,
-      const base::Closure& error_cb) {
+    scoped_refptr<V4L2Device> device,
+    VideoFrame::StorageType input_storage_type,
+    VideoFrame::StorageType output_storage_type,
+    OutputMode output_mode,
+    const VideoFrameLayout& input_layout,
+    const VideoFrameLayout& output_layout,
+    gfx::Size input_visible_size,
+    gfx::Size output_visible_size,
+    size_t num_buffers,
+    ErrorCB error_cb) {
   VLOGF(2);
   DCHECK_GT(num_buffers, 0u);
   if (!device) {
@@ -450,7 +449,7 @@ void V4L2ImageProcessor::ProcessTask(std::unique_ptr<JobRecord> job_record) {
 
 bool V4L2ImageProcessor::Reset() {
   VLOGF(2);
-  DCHECK(child_task_runner_->BelongsToCurrentThread());
+  DCHECK(client_task_runner_->BelongsToCurrentThread());
   DCHECK(device_thread_.IsRunning());
 
   weak_this_factory_.InvalidateWeakPtrs();
@@ -472,7 +471,7 @@ bool V4L2ImageProcessor::Reset() {
 
 void V4L2ImageProcessor::Destroy() {
   VLOGF(2);
-  DCHECK(child_task_runner_->BelongsToCurrentThread());
+  DCHECK(client_task_runner_->BelongsToCurrentThread());
 
   weak_this_factory_.InvalidateWeakPtrs();
 
@@ -491,7 +490,7 @@ void V4L2ImageProcessor::Destroy() {
 
 bool V4L2ImageProcessor::CreateInputBuffers() {
   VLOGF(2);
-  DCHECK(child_task_runner_->BelongsToCurrentThread());
+  DCHECK(client_task_runner_->BelongsToCurrentThread());
   DCHECK(!input_streamon_);
 
   struct v4l2_control control;
@@ -558,7 +557,7 @@ bool V4L2ImageProcessor::CreateInputBuffers() {
 
 bool V4L2ImageProcessor::CreateOutputBuffers() {
   VLOGF(2);
-  DCHECK(child_task_runner_->BelongsToCurrentThread());
+  DCHECK(client_task_runner_->BelongsToCurrentThread());
   DCHECK(!output_streamon_);
 
   struct v4l2_rect visible_rect;
@@ -615,7 +614,7 @@ bool V4L2ImageProcessor::CreateOutputBuffers() {
 
 void V4L2ImageProcessor::DestroyInputBuffers() {
   VLOGF(2);
-  DCHECK(child_task_runner_->BelongsToCurrentThread());
+  DCHECK(client_task_runner_->BelongsToCurrentThread());
   DCHECK(!input_streamon_);
 
   struct v4l2_requestbuffers reqbufs;
@@ -631,7 +630,7 @@ void V4L2ImageProcessor::DestroyInputBuffers() {
 
 void V4L2ImageProcessor::DestroyOutputBuffers() {
   VLOGF(2);
-  DCHECK(child_task_runner_->BelongsToCurrentThread());
+  DCHECK(client_task_runner_->BelongsToCurrentThread());
   DCHECK(!output_streamon_);
 
   output_buffer_map_.clear();
@@ -807,7 +806,7 @@ void V4L2ImageProcessor::Dequeue() {
 
     DVLOGF(4) << "Processing finished, returning frame, index=" << dqbuf.index;
 
-    child_task_runner_->PostTask(
+    client_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&V4L2ImageProcessor::FrameReady, weak_this_,
                                   std::move(job_record->ready_cb),
                                   job_record->output_frame));
@@ -985,7 +984,7 @@ void V4L2ImageProcessor::StopDevicePoll() {
 
 void V4L2ImageProcessor::FrameReady(FrameReadyCB cb,
                                     scoped_refptr<VideoFrame> frame) {
-  DCHECK(child_task_runner_->BelongsToCurrentThread());
+  DCHECK(client_task_runner_->BelongsToCurrentThread());
   std::move(cb).Run(frame);
 }
 
