@@ -2230,10 +2230,7 @@ config("symbols") {
       # it all. This flag is incompatible with /PROFILE
       ldflags = [ "/DEBUG:FASTLINK" ]
     } else if (is_clang && use_lld && use_ghash) {
-      cflags += [
-        "-mllvm",
-        "-emit-codeview-ghash-section",
-      ]
+      cflags += [ "-gcodeview-ghash" ]
       ldflags = [ "/DEBUG:GHASH" ]
     } else {
       ldflags = [ "/DEBUG" ]
