@@ -361,7 +361,7 @@ bool ServiceUtilityProcessHost::StartProcess(bool sandbox) {
   // "content_utility". This is all set up here.
   service_manager_ = std::make_unique<service_manager::ServiceManager>(
       std::make_unique<NullServiceProcessLauncherFactory>(),
-      CreateServiceProcessCatalog(), nullptr);
+      CreateServiceProcessCatalog());
 
   service_manager::mojom::ServicePtr browser_proxy;
   service_manager_connection_ = content::ServiceManagerConnection::Create(

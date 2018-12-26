@@ -4,8 +4,6 @@
 
 source_set("cpp") {
   sources = [
-    "manifest_parsing_util.cc",
-    "manifest_parsing_util.h",
     "resource_loader.cc",
     "resource_loader.h",
   ]

@@ -17,14 +17,11 @@
 namespace catalog {
 
 class EntryCache;
-class ManifestProvider;
 
 class COMPONENT_EXPORT(CATALOG) Instance : public mojom::Catalog {
  public:
-  // Neither |system_cache| nor |service_manifest_provider| is owned.
-  // |service_manifest_provider| may be null
-  Instance(EntryCache* system_cache,
-           ManifestProvider* service_manifest_provider);
+  // |system_cache| is not owned.
+  explicit Instance(EntryCache* system_cache);
   ~Instance() override;
 
   void BindCatalog(mojom::CatalogRequest request);
@@ -45,10 +42,6 @@ class COMPONENT_EXPORT(CATALOG) Instance : public mojom::Catalog {
   // that are visible to all users).
   // TODO(beng): eventually add per-user applications.
   EntryCache* const system_cache_;
-
-  // A runtime interface the embedder can use to provide dynamic manifest data
-  // to be queried on-demand if something can't be found in |system_cache_|.
-  ManifestProvider* const service_manifest_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(Instance);
 };

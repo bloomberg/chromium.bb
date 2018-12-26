@@ -40,7 +40,7 @@ bool ChildProcessLauncherHelper::TerminateProcess(const base::Process& process,
 // static
 void ChildProcessLauncherHelper::SetRegisteredFilesForService(
     const std::string& service_name,
-    catalog::RequiredFileMap required_files) {
+    std::map<std::string, base::FilePath> required_files) {
   // TODO(fuchsia): Implement this. (crbug.com/707031)
   NOTIMPLEMENTED();
 }
