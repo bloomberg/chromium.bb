@@ -109,7 +109,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // Called on the main thread after Start().
   void EvaluateClassicScript(const KURL& script_url,
                              const String& source_code,
-                             std::unique_ptr<Vector<char>> cached_meta_data,
+                             std::unique_ptr<Vector<uint8_t>> cached_meta_data,
                              const v8_inspector::V8StackTraceId& stack_id);
 
   // Posts a task to import a top-level classic script on the worker thread.
@@ -292,7 +292,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   void EvaluateClassicScriptOnWorkerThread(
       const KURL& script_url,
       String source_code,
-      std::unique_ptr<Vector<char>> cached_meta_data,
+      std::unique_ptr<Vector<uint8_t>> cached_meta_data,
       const v8_inspector::V8StackTraceId& stack_id);
   void ImportClassicScriptOnWorkerThread(
       const KURL& script_url,

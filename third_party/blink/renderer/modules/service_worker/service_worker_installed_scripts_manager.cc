@@ -284,12 +284,12 @@ ServiceWorkerInstalledScriptsManager::GetScriptData(const KURL& script_url) {
   for (const auto& chunk : raw_script_data->ScriptTextChunks())
     source_text_builder.Append(decoder->Decode(chunk.data(), chunk.size()));
 
-  std::unique_ptr<Vector<char>> meta_data;
+  std::unique_ptr<Vector<uint8_t>> meta_data;
   if (raw_script_data->MetaDataChunks().size() > 0) {
     size_t total_metadata_size = 0;
     for (const auto& chunk : raw_script_data->MetaDataChunks())
       total_metadata_size += chunk.size();
-    meta_data = std::make_unique<Vector<char>>();
+    meta_data = std::make_unique<Vector<uint8_t>>();
     meta_data->ReserveInitialCapacity(
         SafeCast<wtf_size_t>(total_metadata_size));
     for (const auto& chunk : raw_script_data->MetaDataChunks())

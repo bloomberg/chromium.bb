@@ -158,14 +158,14 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   void EvaluateClassicScriptInternal(
       const KURL& script_url,
       String source_code,
-      std::unique_ptr<Vector<char>> cached_meta_data) override;
+      std::unique_ptr<Vector<uint8_t>> cached_meta_data) override;
 
  private:
   void importScripts(const HeapVector<StringOrTrustedScriptURL>& urls,
                      ExceptionState&) override;
   SingleCachedMetadataHandler* CreateWorkerScriptCachedMetadataHandler(
       const KURL& script_url,
-      const Vector<char>* meta_data) override;
+      const Vector<uint8_t>* meta_data) override;
   void ExceptionThrown(ErrorEvent*) override;
 
   // Counts the |script_size| and |cached_metadata_size| for UMA to measure the

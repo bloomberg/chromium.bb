@@ -9,7 +9,7 @@
 namespace blink {
 
 scoped_refptr<CachedMetadata> CachedMetadata::CreateFromSerializedData(
-    const char* data,
+    const uint8_t* data,
     size_t size) {
   // Ensure the data is big enough, otherwise discard the data.
   if (size < kCachedMetaDataStart ||
@@ -24,7 +24,7 @@ scoped_refptr<CachedMetadata> CachedMetadata::CreateFromSerializedData(
   return base::AdoptRef(
       new CachedMetadata(data, static_cast<wtf_size_t>(size)));
 }
-CachedMetadata::CachedMetadata(const char* data, wtf_size_t size) {
+CachedMetadata::CachedMetadata(const uint8_t* data, wtf_size_t size) {
   // Serialized metadata should have non-empty data.
   DCHECK_GT(size, kCachedMetaDataStart);
   DCHECK(data);
@@ -37,7 +37,7 @@ CachedMetadata::CachedMetadata(const char* data, wtf_size_t size) {
 }
 
 CachedMetadata::CachedMetadata(uint32_t data_type_id,
-                               const char* data,
+                               const uint8_t* data,
                                wtf_size_t size) {
   // Don't allow an ID of 0, it is used internally to indicate errors.
   DCHECK(data_type_id);
@@ -45,9 +45,9 @@ CachedMetadata::CachedMetadata(uint32_t data_type_id,
 
   serialized_data_.ReserveInitialCapacity(kCachedMetaDataStart + size);
   uint32_t marker = CachedMetadataHandler::kSingleEntry;
-  serialized_data_.Append(reinterpret_cast<const char*>(&marker),
+  serialized_data_.Append(reinterpret_cast<const uint8_t*>(&marker),
                           sizeof(uint32_t));
-  serialized_data_.Append(reinterpret_cast<const char*>(&data_type_id),
+  serialized_data_.Append(reinterpret_cast<const uint8_t*>(&data_type_id),
                           sizeof(uint32_t));
   serialized_data_.Append(data, size);
 }

@@ -69,7 +69,7 @@ class MockDigestWebCrypto : public WebCrypto {
 struct CacheMetadataEntry {
   CacheMetadataEntry(const WebURL& url,
                      base::Time response_time,
-                     const char* data,
+                     const uint8_t* data,
                      wtf_size_t data_size)
       : url(url), response_time(response_time) {
     this->data.Append(data, data_size);
@@ -77,7 +77,7 @@ struct CacheMetadataEntry {
 
   WebURL url;
   base::Time response_time;
-  Vector<char> data;
+  Vector<uint8_t> data;
 };
 
 // Mock Platform implementation that provides basic crypto and caching.
@@ -92,7 +92,7 @@ class SourceKeyedCachedMetadataHandlerMockPlatform final
   void CacheMetadata(blink::mojom::CodeCacheType cache_type,
                      const WebURL& url,
                      base::Time response_time,
-                     const char* data,
+                     const uint8_t* data,
                      size_t data_size) override {
     cache_entries_.emplace_back(url, response_time, data,
                                 SafeCast<wtf_size_t>(data_size));
@@ -127,7 +127,7 @@ class MockCachedMetadataSender final : public CachedMetadataSender {
  public:
   MockCachedMetadataSender(KURL response_url) : response_url_(response_url) {}
 
-  void Send(const char* data, size_t size) override {
+  void Send(const uint8_t* data, size_t size) override {
     Platform::Current()->CacheMetadata(blink::mojom::CodeCacheType::kJavascript,
                                        response_url_, response_time_, data,
                                        size);
@@ -144,7 +144,7 @@ template <size_t N>
 ::testing::AssertionResult CachedMetadataFailure(
     const char* failure_msg,
     const char* actual_expression,
-    const std::array<char, N>& expected,
+    const std::array<uint8_t, N>& expected,
     const scoped_refptr<CachedMetadata>& actual) {
   ::testing::Message msg;
   msg << failure_msg << " for " << actual_expression;
@@ -174,7 +174,7 @@ template <size_t N>
 ::testing::AssertionResult CachedMetadataEqual(
     const char* expected_expression,
     const char* actual_expression,
-    const std::array<char, N>& expected,
+    const std::array<uint8_t, N>& expected,
     const scoped_refptr<CachedMetadata>& actual) {
   if (!actual) {
     return CachedMetadataFailure("Expected non-null data", actual_expression,
@@ -184,7 +184,7 @@ template <size_t N>
     return CachedMetadataFailure("Wrong size", actual_expression, expected,
                                  actual);
   }
-  const char* actual_data = actual->Data();
+  const uint8_t* actual_data = actual->Data();
   for (size_t i = 0; i < N; ++i) {
     if (actual_data[i] != expected[i]) {
       return CachedMetadataFailure("Wrong data", actual_expression, expected,
@@ -242,7 +242,7 @@ TEST(SourceKeyedCachedMetadataHandlerTest,
   SingleCachedMetadataHandler* source2_handler =
       handler->HandlerForSource(source2);
 
-  std::array<char, 3> data1 = {1, 2, 3};
+  std::array<uint8_t, 3> data1 = {1, 2, 3};
   source1_handler->SetCachedMetadata(0xbeef, data1.data(), data1.size());
 
   EXPECT_NE(nullptr, source1_handler);
@@ -269,10 +269,10 @@ TEST(SourceKeyedCachedMetadataHandlerTest, HandlerForSource_BothHandlersSet) {
   SingleCachedMetadataHandler* source2_handler =
       handler->HandlerForSource(source2);
 
-  std::array<char, 3> data1 = {1, 2, 3};
+  std::array<uint8_t, 3> data1 = {1, 2, 3};
   source1_handler->SetCachedMetadata(0xbeef, data1.data(), data1.size());
 
-  std::array<char, 4> data2 = {3, 4, 5, 6};
+  std::array<uint8_t, 4> data2 = {3, 4, 5, 6};
   source2_handler->SetCachedMetadata(0x5eed, data2.data(), data2.size());
 
   EXPECT_NE(nullptr, source1_handler);
@@ -318,10 +318,10 @@ TEST(SourceKeyedCachedMetadataHandlerTest, Serialize_EachSetDoesSend) {
   SingleCachedMetadataHandler* source2_handler =
       handler->HandlerForSource(source2);
 
-  std::array<char, 3> data1 = {1, 2, 3};
+  std::array<uint8_t, 3> data1 = {1, 2, 3};
   source1_handler->SetCachedMetadata(0xbeef, data1.data(), data1.size());
 
-  std::array<char, 4> data2 = {3, 4, 5, 6};
+  std::array<uint8_t, 4> data2 = {3, 4, 5, 6};
   source2_handler->SetCachedMetadata(0x5eed, data2.data(), data2.size());
 
   // Load from platform
@@ -348,11 +348,11 @@ TEST(SourceKeyedCachedMetadataHandlerTest, Serialize_SetWithNoSendDoesNotSend) {
   SingleCachedMetadataHandler* source2_handler =
       handler->HandlerForSource(source2);
 
-  std::array<char, 3> data1 = {1, 2, 3};
+  std::array<uint8_t, 3> data1 = {1, 2, 3};
   source1_handler->SetCachedMetadata(0xbeef, data1.data(), data1.size(),
                                      CachedMetadataHandler::kCacheLocally);
 
-  std::array<char, 4> data2 = {3, 4, 5, 6};
+  std::array<uint8_t, 4> data2 = {3, 4, 5, 6};
   source2_handler->SetCachedMetadata(0x5eed, data2.data(), data2.size());
 
   // Load from platform
@@ -416,8 +416,8 @@ TEST(SourceKeyedCachedMetadataHandlerTest,
   KURL url("http://SourceKeyedCachedMetadataHandlerTest.com");
   WTF::String source1("source1");
   WTF::String source2("source2");
-  std::array<char, 3> data1 = {1, 2, 3};
-  std::array<char, 4> data2 = {3, 4, 5, 6};
+  std::array<uint8_t, 3> data1 = {1, 2, 3};
+  std::array<uint8_t, 4> data2 = {3, 4, 5, 6};
   {
     SourceKeyedCachedMetadataHandler* handler =
         MakeGarbageCollected<SourceKeyedCachedMetadataHandler>(

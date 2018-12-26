@@ -21,7 +21,7 @@ class MockCacheHandler : public CachedMetadataHandler {
  public:
   MockCacheHandler(std::unique_ptr<CachedMetadataSender> send_callback);
 
-  void Set(const char* data, size_t);
+  void Set(const uint8_t* data, size_t);
   void ClearCachedMetadata(CachedMetadataHandler::CacheType) override;
   void Send();
 
@@ -30,7 +30,7 @@ class MockCacheHandler : public CachedMetadataHandler {
 
  private:
   std::unique_ptr<CachedMetadataSender> send_callback_;
-  base::Optional<Vector<char>> data_;
+  base::Optional<Vector<uint8_t>> data_;
 };
 
 // Mocked Resource sub-class for testing. MockResource class can pretend a type
@@ -48,11 +48,11 @@ class MockResource final : public Resource {
 
   CachedMetadataHandler* CreateCachedMetadataHandler(
       std::unique_ptr<CachedMetadataSender> send_callback) override;
-  void SetSerializedCachedMetadata(const char*, size_t) override;
+  void SetSerializedCachedMetadata(const uint8_t*, size_t) override;
 
   MockCacheHandler* CacheHandler();
 
-  void SendCachedMetadata(const char*, size_t);
+  void SendCachedMetadata(const uint8_t*, size_t);
 };
 
 }  // namespace blink

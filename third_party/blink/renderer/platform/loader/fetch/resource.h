@@ -92,7 +92,7 @@ enum class ResourceType : uint8_t {
 class CachedMetadataSender {
  public:
   virtual ~CachedMetadataSender() = default;
-  virtual void Send(const char*, size_t) = 0;
+  virtual void Send(const uint8_t*, size_t) = 0;
 
   // IsServedFromCacheStorage is used to alter caching strategy to be more
   // aggressive. See ScriptController.cpp CacheOptions() for an example.
@@ -283,7 +283,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   // Sets the serialized metadata retrieved from the platform's cache.
   // Subclasses of Resource that support cached metadata should override this
   // method with one that fills the current CachedMetadataHandler.
-  virtual void SetSerializedCachedMetadata(const char*, size_t);
+  virtual void SetSerializedCachedMetadata(const uint8_t*, size_t);
 
   AtomicString HttpContentType() const;
 

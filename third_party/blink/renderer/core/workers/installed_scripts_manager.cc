@@ -13,7 +13,7 @@ namespace blink {
 InstalledScriptsManager::ScriptData::ScriptData(
     const KURL& script_url,
     String source_text,
-    std::unique_ptr<Vector<char>> meta_data,
+    std::unique_ptr<Vector<uint8_t>> meta_data,
     std::unique_ptr<CrossThreadHTTPHeaderMapData> header_data)
     : script_url_(script_url),
       source_text_(std::move(source_text)),

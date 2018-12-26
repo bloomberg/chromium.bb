@@ -85,7 +85,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void CacheMetadata(blink::mojom::CodeCacheType cache_type,
                      const blink::WebURL&,
                      base::Time,
-                     const char*,
+                     const uint8_t*,
                      size_t) override;
   void FetchCachedCode(
       blink::mojom::CodeCacheType cache_type,
@@ -97,7 +97,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void CacheMetadataInCacheStorage(
       const blink::WebURL&,
       base::Time,
-      const char*,
+      const uint8_t*,
       size_t,
       const blink::WebSecurityOrigin& cacheStorageOrigin,
       const blink::WebString& cacheStorageCacheName) override;

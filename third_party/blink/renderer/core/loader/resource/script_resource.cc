@@ -194,7 +194,7 @@ CachedMetadataHandler* ScriptResource::CreateCachedMetadataHandler(
       Encoding(), std::move(send_callback));
 }
 
-void ScriptResource::SetSerializedCachedMetadata(const char* data,
+void ScriptResource::SetSerializedCachedMetadata(const uint8_t* data,
                                                  size_t size) {
   Resource::SetSerializedCachedMetadata(data, size);
   ScriptCachedMetadataHandler* cache_handler =

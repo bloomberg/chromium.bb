@@ -912,13 +912,14 @@ void ThreadableLoader::ResponseReceived(
 }
 
 void ThreadableLoader::SetSerializedCachedMetadata(Resource*,
-                                                   const char* data,
+                                                   const uint8_t* data,
                                                    size_t size) {
   checker_.SetSerializedCachedMetadata();
 
   if (!actual_request_.IsNull())
     return;
-  client_->DidReceiveCachedMetadata(data, SafeCast<int>(size));
+  client_->DidReceiveCachedMetadata(reinterpret_cast<const char*>(data),
+                                    SafeCast<int>(size));
 }
 
 void ThreadableLoader::DataReceived(Resource* resource,

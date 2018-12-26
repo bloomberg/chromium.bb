@@ -311,7 +311,7 @@ TEST_F(ScriptStreamingTest, SuppressingStreaming) {
   SingleCachedMetadataHandler* cache_handler = GetResource()->CacheHandler();
   EXPECT_TRUE(cache_handler);
   cache_handler->SetCachedMetadata(V8CodeCache::TagForCodeCache(cache_handler),
-                                   "X", 1,
+                                   reinterpret_cast<const uint8_t*>("X"), 1,
                                    CachedMetadataHandler::kCacheLocally);
 
   AppendPadding();

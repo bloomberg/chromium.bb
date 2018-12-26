@@ -394,7 +394,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
 
   std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params;
   String source_code;
-  std::unique_ptr<Vector<char>> cached_meta_data;
+  std::unique_ptr<Vector<uint8_t>> cached_meta_data;
 
   // |main_script_loader_| isn't created if the InstalledScriptsManager had the
   // script.

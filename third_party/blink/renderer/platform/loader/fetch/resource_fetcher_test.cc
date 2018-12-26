@@ -419,7 +419,7 @@ class ServeRequestsOnCompleteClient final
                         std::unique_ptr<WebDataConsumerHandle>) override {
     ASSERT_TRUE(false);
   }
-  void SetSerializedCachedMetadata(Resource*, const char*, size_t) override {
+  void SetSerializedCachedMetadata(Resource*, const uint8_t*, size_t) override {
     ASSERT_TRUE(false);
   }
   void DataReceived(Resource*, const char*, size_t) override {

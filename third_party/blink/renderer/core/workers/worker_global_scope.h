@@ -81,7 +81,7 @@ class CORE_EXPORT WorkerGlobalScope
   // Returns null if caching is not supported.
   virtual SingleCachedMetadataHandler* CreateWorkerScriptCachedMetadataHandler(
       const KURL& script_url,
-      const Vector<char>* meta_data) {
+      const Vector<uint8_t>* meta_data) {
     return nullptr;
   }
 
@@ -146,7 +146,7 @@ class CORE_EXPORT WorkerGlobalScope
   // is paused.
   void EvaluateClassicScript(const KURL& script_url,
                              String source_code,
-                             std::unique_ptr<Vector<char>> cached_meta_data,
+                             std::unique_ptr<Vector<uint8_t>> cached_meta_data,
                              const v8_inspector::V8StackTraceId& stack_id);
   void ImportClassicScript(
       const KURL& script_url,
@@ -195,7 +195,7 @@ class CORE_EXPORT WorkerGlobalScope
   virtual void EvaluateClassicScriptInternal(
       const KURL& script_url,
       String source_code,
-      std::unique_ptr<Vector<char>> cached_meta_data);
+      std::unique_ptr<Vector<uint8_t>> cached_meta_data);
 
   mojom::ScriptType GetScriptType() const { return script_type_; }
 
@@ -230,7 +230,7 @@ class CORE_EXPORT WorkerGlobalScope
       const KURL& script_url,
       KURL* out_response_url,
       String* out_source_code,
-      std::unique_ptr<Vector<char>>* out_cached_meta_data);
+      std::unique_ptr<Vector<uint8_t>>* out_cached_meta_data);
 
   // Tries to load the script synchronously from the WorkerClassicScriptLoader,
   // which requests the script from the browser. This blocks until the script is
@@ -239,7 +239,7 @@ class CORE_EXPORT WorkerGlobalScope
       const KURL& script_url,
       KURL* out_response_url,
       String* out_source_code,
-      std::unique_ptr<Vector<char>>* out_cached_meta_data);
+      std::unique_ptr<Vector<uint8_t>>* out_cached_meta_data);
 
   // ExecutionContext
   EventTarget* ErrorEventTarget() final { return this; }

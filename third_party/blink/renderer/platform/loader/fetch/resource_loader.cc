@@ -754,7 +754,8 @@ bool ResourceLoader::WillFollowRedirect(
 
 void ResourceLoader::DidReceiveCachedMetadata(const char* data, int length) {
   DCHECK(!should_use_isolated_code_cache_);
-  resource_->SetSerializedCachedMetadata(data, length);
+  resource_->SetSerializedCachedMetadata(reinterpret_cast<const uint8_t*>(data),
+                                         length);
 }
 
 blink::mojom::CodeCacheType ResourceLoader::GetCodeCacheType() const {
@@ -762,7 +763,8 @@ blink::mojom::CodeCacheType ResourceLoader::GetCodeCacheType() const {
 }
 
 void ResourceLoader::SendCachedCodeToResource(const char* data, int length) {
-  resource_->SetSerializedCachedMetadata(data, length);
+  resource_->SetSerializedCachedMetadata(reinterpret_cast<const uint8_t*>(data),
+                                         length);
 }
 
 void ResourceLoader::ClearCachedCode() {

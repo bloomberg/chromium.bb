@@ -156,7 +156,7 @@ void WorkerThread::Start(
 void WorkerThread::EvaluateClassicScript(
     const KURL& script_url,
     const String& source_code,
-    std::unique_ptr<Vector<char>> cached_meta_data,
+    std::unique_ptr<Vector<uint8_t>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
@@ -497,7 +497,7 @@ void WorkerThread::InitializeOnWorkerThread(
 void WorkerThread::EvaluateClassicScriptOnWorkerThread(
     const KURL& script_url,
     String source_code,
-    std::unique_ptr<Vector<char>> cached_meta_data,
+    std::unique_ptr<Vector<uint8_t>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
   To<WorkerGlobalScope>(GlobalScope())
       ->EvaluateClassicScript(script_url, std::move(source_code),

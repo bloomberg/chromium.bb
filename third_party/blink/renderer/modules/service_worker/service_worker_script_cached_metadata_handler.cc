@@ -14,7 +14,7 @@ ServiceWorkerScriptCachedMetadataHandler::
     ServiceWorkerScriptCachedMetadataHandler(
         WorkerGlobalScope* worker_global_scope,
         const KURL& script_url,
-        const Vector<char>* meta_data)
+        const Vector<uint8_t>* meta_data)
     : worker_global_scope_(worker_global_scope), script_url_(script_url) {
   if (meta_data)
     cached_metadata_ = CachedMetadata::CreateFromSerializedData(
@@ -31,13 +31,13 @@ void ServiceWorkerScriptCachedMetadataHandler::Trace(blink::Visitor* visitor) {
 
 void ServiceWorkerScriptCachedMetadataHandler::SetCachedMetadata(
     uint32_t data_type_id,
-    const char* data,
+    const uint8_t* data,
     size_t size,
     CacheType type) {
   if (type != kSendToPlatform)
     return;
   cached_metadata_ = CachedMetadata::Create(data_type_id, data, size);
-  const Vector<char>& serialized_data = cached_metadata_->SerializedData();
+  const Vector<uint8_t>& serialized_data = cached_metadata_->SerializedData();
   ServiceWorkerGlobalScopeClient::From(worker_global_scope_)
       ->SetCachedMetadata(script_url_, serialized_data.data(),
                           serialized_data.size());

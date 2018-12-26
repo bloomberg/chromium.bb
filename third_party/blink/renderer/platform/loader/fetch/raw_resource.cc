@@ -250,7 +250,8 @@ CachedMetadataHandler* RawResource::CreateCachedMetadataHandler(
   return Resource::CreateCachedMetadataHandler(std::move(send_callback));
 }
 
-void RawResource::SetSerializedCachedMetadata(const char* data, size_t size) {
+void RawResource::SetSerializedCachedMetadata(const uint8_t* data,
+                                              size_t size) {
   Resource::SetSerializedCachedMetadata(data, size);
 
   if (GetType() == ResourceType::kMainResource) {

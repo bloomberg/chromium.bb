@@ -378,7 +378,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual void CacheMetadata(blink::mojom::CodeCacheType cache_type,
                              const WebURL&,
                              base::Time response_time,
-                             const char* data,
+                             const uint8_t* data,
                              size_t data_size) {}
 
   // A request to fetch contents associated with this URL from metadata cache.
@@ -394,7 +394,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual void CacheMetadataInCacheStorage(
       const WebURL&,
       base::Time response_time,
-      const char* data,
+      const uint8_t* data,
       size_t data_size,
       const blink::WebSecurityOrigin& cache_storage_origin,
       const WebString& cache_storage_cache_name) {}
