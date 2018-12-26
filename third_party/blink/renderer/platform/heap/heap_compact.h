@@ -105,6 +105,8 @@ class PLATFORM_EXPORT HeapCompact final {
   void StartThreadCompaction();
   void FinishThreadCompaction();
 
+  void CancelCompaction();
+
   // Perform any relocation post-processing after having completed compacting
   // the given arena. The number of pages that were freed together with the
   // total size (in bytes) of freed heap storage, are passed in as arguments.
