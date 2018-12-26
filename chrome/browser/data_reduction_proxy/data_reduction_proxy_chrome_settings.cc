@@ -11,7 +11,6 @@
 #include "base/base64.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -91,7 +90,7 @@ bool GetEmbeddedPacScript(base::StringPiece pac_url, std::string* pac_script) {
       "data:application/x-ns-proxy-autoconfig;base64,";
   return base::StartsWith(pac_url, kPacURLPrefix,
                           base::CompareCase::SENSITIVE) &&
-         base::Base64Decode(pac_url.substr(base::size(kPacURLPrefix) - 1),
+         base::Base64Decode(pac_url.substr(arraysize(kPacURLPrefix) - 1),
                             pac_script);
 }
 

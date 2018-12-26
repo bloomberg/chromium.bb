@@ -11,9 +11,9 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/launch.h"
-#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
@@ -212,7 +212,7 @@ void DeriveCommandLine(const GURL& start_url,
     wm::switches::kWindowAnimationsDisabled,
   };
   command_line->CopySwitchesFrom(base_command_line, kForwardSwitches,
-                                 base::size(kForwardSwitches));
+                                 arraysize(kForwardSwitches));
 
   if (start_url.is_valid())
     command_line->AppendArg(start_url.spec());

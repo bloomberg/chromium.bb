@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/i18n/base_i18n_switches.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/metrics_hashes.h"
@@ -628,11 +629,11 @@ const FeatureEntry::FeatureParam
 const FeatureEntry::FeatureVariation
     kContentSuggestionsCategoryOrderFeatureVariations[] = {
         {"(general)", kContentSuggestionsCategoryOrderFeatureVariationGeneral,
-         base::size(kContentSuggestionsCategoryOrderFeatureVariationGeneral),
+         arraysize(kContentSuggestionsCategoryOrderFeatureVariationGeneral),
          nullptr},
         {"(emerging markets oriented)",
          kContentSuggestionsCategoryOrderFeatureVariationEMOriented,
-         base::size(kContentSuggestionsCategoryOrderFeatureVariationEMOriented),
+         arraysize(kContentSuggestionsCategoryOrderFeatureVariationEMOriented),
          nullptr}};
 
 const FeatureEntry::FeatureParam
@@ -651,12 +652,11 @@ const FeatureEntry::FeatureVariation
     kContentSuggestionsCategoryRankerFeatureVariations[] = {
         {"(constant)",
          kContentSuggestionsCategoryRankerFeatureVariationConstant,
-         base::size(kContentSuggestionsCategoryRankerFeatureVariationConstant),
+         arraysize(kContentSuggestionsCategoryRankerFeatureVariationConstant),
          nullptr},
         {"(click based)",
          kContentSuggestionsCategoryRankerFeatureVariationClickBased,
-         base::size(
-             kContentSuggestionsCategoryRankerFeatureVariationClickBased),
+         arraysize(kContentSuggestionsCategoryRankerFeatureVariationClickBased),
          nullptr}};
 #endif  // OS_ANDROID
 
@@ -669,7 +669,7 @@ const FeatureEntry::FeatureVariation
     kContentSuggestionsNotificationsFeatureVariations[] = {
         {"(notify always, server side)", nullptr, 0, "3313312"},
         {"(notify always, client side)", kForceFetchedSuggestionsNotifications,
-         base::size(kForceFetchedSuggestionsNotifications), nullptr}};
+         arraysize(kForceFetchedSuggestionsNotifications), nullptr}};
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
@@ -843,7 +843,7 @@ const FeatureEntry::Choice kForceEffectiveConnectionTypeChoices[] = {
 // Ensure that all effective connection types returned by Network Quality
 // Estimator (NQE) are also exposed via flags.
 static_assert(net::EFFECTIVE_CONNECTION_TYPE_LAST + 2 ==
-                  base::size(kForceEffectiveConnectionTypeChoices),
+                  arraysize(kForceEffectiveConnectionTypeChoices),
               "ECT enum value is not handled.");
 static_assert(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN == 0,
               "ECT enum value is not handled.");
@@ -872,19 +872,18 @@ const FeatureEntry::FeatureParam
 const FeatureEntry::FeatureVariation
     kAutofillKeyboardAccessoryFeatureVariations[] = {
         {"Animate", kAutofillKeyboardAccessoryFeatureVariationAnimationDuration,
-         base::size(
-             kAutofillKeyboardAccessoryFeatureVariationAnimationDuration),
+         arraysize(kAutofillKeyboardAccessoryFeatureVariationAnimationDuration),
          nullptr},
         {"Limit label width",
          kAutofillKeyboardAccessoryFeatureVariationLimitLabelWidth,
-         base::size(kAutofillKeyboardAccessoryFeatureVariationLimitLabelWidth),
+         arraysize(kAutofillKeyboardAccessoryFeatureVariationLimitLabelWidth),
          nullptr},
         {"Show hint", kAutofillKeyboardAccessoryFeatureVariationShowHint,
-         base::size(kAutofillKeyboardAccessoryFeatureVariationShowHint),
+         arraysize(kAutofillKeyboardAccessoryFeatureVariationShowHint),
          nullptr},
         {"Animate with hint",
          kAutofillKeyboardAccessoryFeatureVariationAnimateWithHint,
-         base::size(kAutofillKeyboardAccessoryFeatureVariationAnimateWithHint),
+         arraysize(kAutofillKeyboardAccessoryFeatureVariationAnimateWithHint),
          nullptr}};
 #endif  // OS_ANDROID
 
@@ -943,19 +942,19 @@ const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches12[] = {
 const FeatureEntry::FeatureVariation
     kOmniboxUIMaxAutocompleteMatchesVariations[] = {
         {"3 matches", kOmniboxUIMaxAutocompleteMatches3,
-         base::size(kOmniboxUIMaxAutocompleteMatches3), nullptr},
+         arraysize(kOmniboxUIMaxAutocompleteMatches3), nullptr},
         {"4 matches", kOmniboxUIMaxAutocompleteMatches4,
-         base::size(kOmniboxUIMaxAutocompleteMatches4), nullptr},
+         arraysize(kOmniboxUIMaxAutocompleteMatches4), nullptr},
         {"5 matches", kOmniboxUIMaxAutocompleteMatches5,
-         base::size(kOmniboxUIMaxAutocompleteMatches5), nullptr},
+         arraysize(kOmniboxUIMaxAutocompleteMatches5), nullptr},
         {"6 matches", kOmniboxUIMaxAutocompleteMatches6,
-         base::size(kOmniboxUIMaxAutocompleteMatches6), nullptr},
+         arraysize(kOmniboxUIMaxAutocompleteMatches6), nullptr},
         {"8 matches", kOmniboxUIMaxAutocompleteMatches8,
-         base::size(kOmniboxUIMaxAutocompleteMatches8), nullptr},
+         arraysize(kOmniboxUIMaxAutocompleteMatches8), nullptr},
         {"10 matches", kOmniboxUIMaxAutocompleteMatches10,
-         base::size(kOmniboxUIMaxAutocompleteMatches10), nullptr},
+         arraysize(kOmniboxUIMaxAutocompleteMatches10), nullptr},
         {"12 matches", kOmniboxUIMaxAutocompleteMatches12,
-         base::size(kOmniboxUIMaxAutocompleteMatches12), nullptr}};
+         arraysize(kOmniboxUIMaxAutocompleteMatches12), nullptr}};
 
 const FeatureEntry::Choice kAsyncImageDecodingChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -1019,13 +1018,13 @@ const FeatureEntry::FeatureParam kWebXrRenderPathChoiceSharedBuffer[] = {
 const FeatureEntry::FeatureVariation kWebXrRenderPathVariations[] = {
     {flag_descriptions::kWebXrRenderPathChoiceClientWaitDescription,
      kWebXrRenderPathChoiceClientWait,
-     base::size(kWebXrRenderPathChoiceClientWait), nullptr},
+     arraysize(kWebXrRenderPathChoiceClientWait), nullptr},
     {flag_descriptions::kWebXrRenderPathChoiceGpuFenceDescription,
-     kWebXrRenderPathChoiceGpuFence, base::size(kWebXrRenderPathChoiceGpuFence),
+     kWebXrRenderPathChoiceGpuFence, arraysize(kWebXrRenderPathChoiceGpuFence),
      nullptr},
     {flag_descriptions::kWebXrRenderPathChoiceSharedBufferDescription,
      kWebXrRenderPathChoiceSharedBuffer,
-     base::size(kWebXrRenderPathChoiceSharedBuffer), nullptr}};
+     arraysize(kWebXrRenderPathChoiceSharedBuffer), nullptr}};
 #endif  // defined(OS_ANDROID) && BUILDFLAG(ENABLE_VR)
 
 const FeatureEntry::FeatureParam kSimplifyHttpsIndicatorEvToSecure[] = {
@@ -1068,11 +1067,11 @@ const FeatureEntry::FeatureVariation
     kTranslateForceTriggerOnEnglishVariations[] = {
         {"(Heuristic model without Ranker)",
          kTranslateForceTriggerOnEnglishHeuristic,
-         base::size(kTranslateForceTriggerOnEnglishHeuristic), nullptr},
+         arraysize(kTranslateForceTriggerOnEnglishHeuristic), nullptr},
         {"(Geo model without Ranker)", kTranslateForceTriggerOnEnglishGeo,
-         base::size(kTranslateForceTriggerOnEnglishGeo), nullptr},
+         arraysize(kTranslateForceTriggerOnEnglishGeo), nullptr},
         {"(Zero threshold)", kTranslateForceTriggerOnEnglishBackoff,
-         base::size(kTranslateForceTriggerOnEnglishBackoff), nullptr}};
+         arraysize(kTranslateForceTriggerOnEnglishBackoff), nullptr}};
 #endif  // defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
@@ -4323,7 +4322,7 @@ const FeatureEntry kFeatureEntries[] = {
 class FlagsStateSingleton {
  public:
   FlagsStateSingleton()
-      : flags_state_(kFeatureEntries, base::size(kFeatureEntries)) {}
+      : flags_state_(kFeatureEntries, arraysize(kFeatureEntries)) {}
   ~FlagsStateSingleton() {}
 
   static FlagsStateSingleton* GetInstance() {
@@ -4520,7 +4519,7 @@ namespace testing {
 const base::HistogramBase::Sample kBadSwitchFormatHistogramId = 0;
 
 const FeatureEntry* GetFeatureEntries(size_t* count) {
-  *count = base::size(kFeatureEntries);
+  *count = arraysize(kFeatureEntries);
   return kFeatureEntries;
 }
 

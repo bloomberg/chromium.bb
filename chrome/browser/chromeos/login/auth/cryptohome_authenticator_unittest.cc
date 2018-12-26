@@ -12,9 +12,9 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -118,12 +118,12 @@ const uint8_t kOwnerPublicKey[] = {
 
 std::vector<uint8_t> GetOwnerPublicKey() {
   return std::vector<uint8_t>(kOwnerPublicKey,
-                              kOwnerPublicKey + base::size(kOwnerPublicKey));
+                              kOwnerPublicKey + arraysize(kOwnerPublicKey));
 }
 
 bool CreateOwnerKeyInSlot(PK11SlotInfo* slot) {
   const std::vector<uint8_t> key(
-      kOwnerPrivateKey, kOwnerPrivateKey + base::size(kOwnerPrivateKey));
+      kOwnerPrivateKey, kOwnerPrivateKey + arraysize(kOwnerPrivateKey));
   return crypto::ImportNSSKeyFromPrivateKeyInfo(
              slot, key, true /* permanent */) != nullptr;
 }

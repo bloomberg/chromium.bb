@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/bind.h"
-#include "base/stl_util.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -222,7 +222,7 @@ std::vector<base::string16> ChromeAutocompleteProviderClient::GetBuiltinURLs() {
 #if !defined(OS_ANDROID)
   base::string16 settings(base::ASCIIToUTF16(chrome::kChromeUISettingsHost) +
                           base::ASCIIToUTF16("/"));
-  for (size_t i = 0; i < base::size(kChromeSettingsSubPages); i++) {
+  for (size_t i = 0; i < arraysize(kChromeSettingsSubPages); i++) {
     builtins.push_back(settings +
                        base::ASCIIToUTF16(kChromeSettingsSubPages[i]));
   }

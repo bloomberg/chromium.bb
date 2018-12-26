@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -110,7 +110,7 @@ void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread(
   std::list<FileSystemInfo> result;
   typedef std::map<GURL, FileSystemInfo> OriginInfoMap;
   OriginInfoMap file_system_info_map;
-  for (size_t i = 0; i < base::size(types); ++i) {
+  for (size_t i = 0; i < arraysize(types); ++i) {
     storage::FileSystemType type = types[i];
     storage::FileSystemQuotaUtil* quota_util =
         filesystem_context_->GetQuotaUtil(type);

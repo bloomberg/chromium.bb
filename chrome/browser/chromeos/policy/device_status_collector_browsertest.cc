@@ -16,9 +16,9 @@
 #include "base/environment.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/test/scoped_feature_list.h"
@@ -1677,7 +1677,7 @@ TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatusUpToDate) {
 
   const char* kRequiredPlatformVersions[] = {"1234", "1234.0", "1234.0.0"};
 
-  for (size_t i = 0; i < base::size(kRequiredPlatformVersions); ++i) {
+  for (size_t i = 0; i < arraysize(kRequiredPlatformVersions); ++i) {
     MockAutoLaunchKioskAppWithRequiredPlatformVersion(
         fake_kiosk_device_local_account_, kRequiredPlatformVersions[i]);
 
@@ -1714,7 +1714,7 @@ TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatus) {
           chromeos::UpdateEngineClient::UPDATE_STATUS_FINALIZING,
       };
 
-  for (size_t i = 0; i < base::size(kUpdateEngineOps); ++i) {
+  for (size_t i = 0; i < arraysize(kUpdateEngineOps); ++i) {
     update_status.status = kUpdateEngineOps[i];
     update_status.new_version = "1235.1.2";
     update_engine_client_->PushLastStatus(update_status);
@@ -2241,7 +2241,7 @@ class DeviceStatusCollectorNetworkInterfacesTest
         false,  // visible_only,
         0,      // no limit to number of results
         &state_list);
-    ASSERT_EQ(base::size(kFakeNetworks), state_list.size());
+    ASSERT_EQ(arraysize(kFakeNetworks), state_list.size());
   }
 
   void TearDown() override {
@@ -2281,7 +2281,7 @@ class DeviceStatusCollectorNetworkInterfacesTest
     EXPECT_EQ(count, device_status_.network_interface_size());
 
     // Now make sure network state list is correct.
-    EXPECT_EQ(base::size(kFakeNetworks),
+    EXPECT_EQ(arraysize(kFakeNetworks),
               static_cast<size_t>(device_status_.network_state_size()));
     for (const FakeNetworkState& state : kFakeNetworks) {
       bool found_match = false;

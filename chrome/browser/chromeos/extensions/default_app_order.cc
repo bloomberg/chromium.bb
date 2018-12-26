@@ -12,8 +12,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/macros.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -132,13 +132,13 @@ std::string GetLocaleSpecificStringImpl(
 
 // Gets built-in default app order.
 void GetDefault(std::vector<std::string>* app_ids) {
-  for (size_t i = 0; i < base::size(kDefaultAppOrder); ++i)
+  for (size_t i = 0; i < arraysize(kDefaultAppOrder); ++i)
     app_ids->push_back(std::string(kDefaultAppOrder[i]));
 }
 
 }  // namespace
 
-const size_t kDefaultAppOrderCount = base::size(kDefaultAppOrder);
+const size_t kDefaultAppOrderCount = arraysize(kDefaultAppOrder);
 
 ExternalLoader::ExternalLoader(bool async)
     : loaded_(base::WaitableEvent::ResetPolicy::MANUAL,

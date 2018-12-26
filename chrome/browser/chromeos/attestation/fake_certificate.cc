@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "base/stl_util.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "crypto/rsa_private_key.h"
 #include "net/cert/x509_certificate.h"
@@ -61,7 +61,7 @@ bool GetFakeCertificateDER(const base::TimeDelta& expiry,
   }
   std::unique_ptr<crypto::RSAPrivateKey> test_key(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(std::vector<uint8_t>(
-          &kTestKeyData[0], &kTestKeyData[base::size(kTestKeyData)])));
+          &kTestKeyData[0], &kTestKeyData[arraysize(kTestKeyData)])));
   if (!test_key.get()) {
     return false;
   }

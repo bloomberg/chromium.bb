@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
@@ -137,7 +136,7 @@ TEST_F(SigninManagerAndroidTest, DeleteGoogleServiceWorkerCaches) {
   for (const TestCase& test_case : kTestCases)
     helper->AddCacheStorage(GURL(test_case.worker_url));
 
-  ASSERT_EQ(base::size(kTestCases), helper->GetCacheStorageCount());
+  ASSERT_EQ(arraysize(kTestCases), helper->GetCacheStorageCount());
 
   // Delete service workers and wait for completion.
   base::RunLoop run_loop;

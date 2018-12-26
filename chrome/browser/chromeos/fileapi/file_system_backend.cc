@@ -11,7 +11,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/chromeos/fileapi/file_access_permissions.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
@@ -229,7 +228,7 @@ bool FileSystemBackend::IsAccessAllowed(
 
   const std::string& extension_id = url.origin().host();
   if (url.type() == storage::kFileSystemTypeRestrictedNativeLocal) {
-    for (size_t i = 0; i < base::size(kOemAccessibleExtensions); ++i) {
+    for (size_t i = 0; i < arraysize(kOemAccessibleExtensions); ++i) {
       if (extension_id == kOemAccessibleExtensions[i])
         return true;
     }

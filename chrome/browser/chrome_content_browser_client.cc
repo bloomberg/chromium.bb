@@ -17,11 +17,11 @@
 #include "base/i18n/base_i18n_switches.h"
 #include "base/i18n/character_encoding.h"
 #include "base/json/json_reader.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -1040,11 +1040,11 @@ ChromeContentBrowserClient::ChromeContentBrowserClient(
     : chrome_feature_list_creator_(chrome_feature_list_creator),
       weak_factory_(this) {
 #if BUILDFLAG(ENABLE_PLUGINS)
-  for (size_t i = 0; i < base::size(kPredefinedAllowedDevChannelOrigins); ++i)
+  for (size_t i = 0; i < arraysize(kPredefinedAllowedDevChannelOrigins); ++i)
     allowed_dev_channel_origins_.insert(kPredefinedAllowedDevChannelOrigins[i]);
-  for (size_t i = 0; i < base::size(kPredefinedAllowedFileHandleOrigins); ++i)
+  for (size_t i = 0; i < arraysize(kPredefinedAllowedFileHandleOrigins); ++i)
     allowed_file_handle_origins_.insert(kPredefinedAllowedFileHandleOrigins[i]);
-  for (size_t i = 0; i < base::size(kPredefinedAllowedSocketOrigins); ++i)
+  for (size_t i = 0; i < arraysize(kPredefinedAllowedSocketOrigins); ++i)
     allowed_socket_origins_.insert(kPredefinedAllowedSocketOrigins[i]);
 
   extra_parts_.push_back(new ChromeContentBrowserClientPluginsPart);
@@ -1967,14 +1967,14 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     switches::kUserDataDir,  // Make logs go to the right file.
   };
   command_line->CopySwitchesFrom(browser_command_line, kCommonSwitchNames,
-                                 base::size(kCommonSwitchNames));
+                                 arraysize(kCommonSwitchNames));
 
   static const char* const kDinosaurEasterEggSwitches[] = {
       error_page::switches::kDisableDinosaurEasterEgg,
   };
   command_line->CopySwitchesFrom(browser_command_line,
                                  kDinosaurEasterEggSwitches,
-                                 base::size(kDinosaurEasterEggSwitches));
+                                 arraysize(kDinosaurEasterEggSwitches));
 
 #if defined(OS_CHROMEOS)
   // On Chrome OS need to pass primary user homedir (in multi-profiles session).
@@ -2143,7 +2143,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     };
 
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
-                                   base::size(kSwitchNames));
+                                   arraysize(kSwitchNames));
   } else if (process_type == switches::kUtilityProcess) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     static const char* const kSwitchNames[] = {
@@ -2154,7 +2154,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     };
 
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
-                                   base::size(kSwitchNames));
+                                   arraysize(kSwitchNames));
 #endif
   } else if (process_type == service_manager::switches::kZygoteProcess) {
     static const char* const kSwitchNames[] = {
@@ -2171,7 +2171,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     };
 
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
-                                   base::size(kSwitchNames));
+                                   arraysize(kSwitchNames));
   } else if (process_type == switches::kGpuProcess) {
     // If --ignore-gpu-blacklist is passed in, don't send in crash reports
     // because GPU is expected to be unreliable.
@@ -4400,8 +4400,9 @@ void ChromeContentBrowserClient::MaybeCopyDisableWebRtcEncryptionSwitch(
     static const char* const kWebRtcDevSwitchNames[] = {
       switches::kDisableWebRtcEncryption,
     };
-    to_command_line->CopySwitchesFrom(from_command_line, kWebRtcDevSwitchNames,
-                                      base::size(kWebRtcDevSwitchNames));
+    to_command_line->CopySwitchesFrom(from_command_line,
+                                      kWebRtcDevSwitchNames,
+                                      arraysize(kWebRtcDevSwitchNames));
   }
 }
 

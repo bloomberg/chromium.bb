@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/base64.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
@@ -280,7 +280,7 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
       }
     };
 
-    for (size_t i = 0; i < base::size(kTestMountPoints); i++) {
+    for (size_t i = 0; i < arraysize(kTestMountPoints); i++) {
       mount_points_.insert(DiskMountManager::MountPointMap::value_type(
           kTestMountPoints[i].mount_path,
           DiskMountManager::MountPointInfo(kTestMountPoints[i].source_path,
@@ -290,8 +290,8 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
       ));
       int disk_info_index = kTestMountPoints[i].disk_info_index;
       if (kTestMountPoints[i].disk_info_index >= 0) {
-        EXPECT_GT(base::size(kTestDisks), static_cast<size_t>(disk_info_index));
-        if (static_cast<size_t>(disk_info_index) >= base::size(kTestDisks))
+        EXPECT_GT(arraysize(kTestDisks), static_cast<size_t>(disk_info_index));
+        if (static_cast<size_t>(disk_info_index) >= arraysize(kTestDisks))
           return;
 
         std::unique_ptr<Disk> disk =

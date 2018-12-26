@@ -8,6 +8,7 @@
 
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -267,7 +268,7 @@ LocaleChangeGuard::GetSkipShowNotificationLanguagesForTesting() {
 
 // static
 size_t LocaleChangeGuard::GetSkipShowNotificationLanguagesSizeForTesting() {
-  return base::size(kSkipShowNotificationLanguages);
+  return arraysize(kSkipShowNotificationLanguages);
 }
 
 }  // namespace chromeos

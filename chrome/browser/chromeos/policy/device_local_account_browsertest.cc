@@ -25,12 +25,12 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -1006,7 +1006,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
       SessionStartupPref::kPrefValueURLs);
   em::StringListPolicyProto* startup_urls_proto =
       device_local_account_policy_.payload().mutable_restoreonstartupurls();
-  for (size_t i = 0; i < base::size(kStartupURLs); ++i)
+  for (size_t i = 0; i < arraysize(kStartupURLs); ++i)
     startup_urls_proto->mutable_value()->add_entries(kStartupURLs[i]);
   UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
@@ -1024,7 +1024,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
 
   TabStripModel* tabs = browser->tab_strip_model();
   ASSERT_TRUE(tabs);
-  int expected_tab_count = static_cast<int>(base::size(kStartupURLs));
+  int expected_tab_count = static_cast<int>(arraysize(kStartupURLs));
   EXPECT_EQ(expected_tab_count, tabs->count());
   for (int i = 0; i < expected_tab_count && i < tabs->count(); ++i) {
     EXPECT_EQ(GURL(kStartupURLs[i]),
@@ -1773,7 +1773,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, NoRecommendedLocaleSwitch) {
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, OneRecommendedLocale) {
   // Specify a recommended locale.
   SetRecommendedLocales(kSingleRecommendedLocale,
-                        base::size(kSingleRecommendedLocale));
+                        arraysize(kSingleRecommendedLocale));
   UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
 
@@ -1802,7 +1802,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, OneRecommendedLocale) {
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
   // Specify recommended locales.
-  SetRecommendedLocales(kRecommendedLocales1, base::size(kRecommendedLocales1));
+  SetRecommendedLocales(kRecommendedLocales1, arraysize(kRecommendedLocales1));
   UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
   AddPublicSessionToDevicePolicy(kAccountId2);
@@ -1829,10 +1829,10 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
   const base::ListValue* locales = NULL;
   ASSERT_TRUE(value_ptr);
   ASSERT_TRUE(value_ptr->GetAsList(&locales));
-  EXPECT_LT(base::size(kRecommendedLocales1), locales->GetSize());
+  EXPECT_LT(arraysize(kRecommendedLocales1), locales->GetSize());
 
   // Verify that the list starts with the recommended locales, in correct order.
-  for (size_t i = 0; i < base::size(kRecommendedLocales1); ++i) {
+  for (size_t i = 0; i < arraysize(kRecommendedLocales1); ++i) {
     std::string locale;
     EXPECT_TRUE(locales->GetString(i, &locale));
     EXPECT_EQ(kRecommendedLocales1[i], locale);
@@ -1841,9 +1841,9 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
   // Verify that the recommended locales do not appear again in the remainder of
   // the list.
   std::set<std::string> recommended_locales;
-  for (size_t i = 0; i < base::size(kRecommendedLocales1); ++i)
+  for (size_t i = 0; i < arraysize(kRecommendedLocales1); ++i)
     recommended_locales.insert(kRecommendedLocales1[i]);
-  for (size_t i = base::size(kRecommendedLocales1); i < locales->GetSize();
+  for (size_t i = arraysize(kRecommendedLocales1); i < locales->GetSize();
        ++i) {
     std::string locale;
     EXPECT_TRUE(locales->GetString(i, &locale));
@@ -1863,7 +1863,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
   EXPECT_EQ(kRecommendedLocales1[0], selected_locale);
 
   // Change the list of recommended locales.
-  SetRecommendedLocales(kRecommendedLocales2, base::size(kRecommendedLocales2));
+  SetRecommendedLocales(kRecommendedLocales2, arraysize(kRecommendedLocales2));
 
   // Also change the display name as it is easy to ensure that policy has been
   // updated by waiting for a display name change.
@@ -1887,8 +1887,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
   locales = NULL;
   ASSERT_TRUE(value_ptr);
   ASSERT_TRUE(value_ptr->GetAsList(&locales));
-  EXPECT_LT(base::size(kRecommendedLocales2), locales->GetSize());
-  for (size_t i = 0; i < base::size(kRecommendedLocales2); ++i) {
+  EXPECT_LT(arraysize(kRecommendedLocales2), locales->GetSize());
+  for (size_t i = 0; i < arraysize(kRecommendedLocales2); ++i) {
     std::string locale;
     EXPECT_TRUE(locales->GetString(i, &locale));
     EXPECT_EQ(kRecommendedLocales2[i], locale);
@@ -1913,7 +1913,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
           account_id_1_.Serialize().c_str(), kPublicSessionLocale)));
 
   // Change the list of recommended locales.
-  SetRecommendedLocales(kRecommendedLocales2, base::size(kRecommendedLocales2));
+  SetRecommendedLocales(kRecommendedLocales2, arraysize(kRecommendedLocales2));
   device_local_account_policy_.payload().mutable_userdisplayname()->set_value(
       kDisplayName1);
   UploadAndInstallDeviceLocalAccountPolicy();
@@ -2003,7 +2003,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, InvalidRecommendedLocale) {
   // Specify an invalid recommended locale.
   SetRecommendedLocales(kInvalidRecommendedLocale,
-                        base::size(kInvalidRecommendedLocale));
+                        arraysize(kInvalidRecommendedLocale));
   UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
 
@@ -2047,7 +2047,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LocaleWithIME) {
   // Specify a locale that has real IMEs in addition to a keyboard layout one.
   const char* const kSingleLocaleWithIME[] = {"ja"};
   RunWithRecommendedLocale(kSingleLocaleWithIME,
-                           base::size(kSingleLocaleWithIME));
+                           arraysize(kSingleLocaleWithIME));
 
   EXPECT_GT(chromeos::input_method::InputMethodManager::Get()
                 ->GetActiveIMEState()
@@ -2059,7 +2059,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LocaleWithNoIME) {
   // Specify a locale that has only keyboard layout.
   const char* const kSingleLocaleWithNoIME[] = {"de"};
   RunWithRecommendedLocale(kSingleLocaleWithNoIME,
-                           base::size(kSingleLocaleWithNoIME));
+                           arraysize(kSingleLocaleWithNoIME));
 
   EXPECT_EQ(1u, chromeos::input_method::InputMethodManager::Get()
                     ->GetActiveIMEState()
@@ -2086,7 +2086,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest,
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest,
                        AutoLoginWithRecommendedLocales) {
   // Specify recommended locales.
-  SetRecommendedLocales(kRecommendedLocales1, base::size(kRecommendedLocales1));
+  SetRecommendedLocales(kRecommendedLocales1, arraysize(kRecommendedLocales1));
   UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
   EnableAutoLogin();

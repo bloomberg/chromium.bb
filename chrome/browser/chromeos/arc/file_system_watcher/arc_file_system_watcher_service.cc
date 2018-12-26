@@ -17,7 +17,6 @@
 #include "base/files/file_path_watcher.h"
 #include "base/memory/singleton.h"
 #include "base/sequence_checker.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -223,7 +222,7 @@ const char* kAndroidSupportedMediaExtensions[] = {
     ".xmf",    // FILE_TYPE_MID, audio/midi
 };
 const int kAndroidSupportedMediaExtensionsSize =
-    base::size(kAndroidSupportedMediaExtensions);
+    arraysize(kAndroidSupportedMediaExtensions);
 
 bool HasAndroidSupportedMediaExtension(const base::FilePath& path) {
   const std::string extension = base::ToLowerASCII(path.Extension());

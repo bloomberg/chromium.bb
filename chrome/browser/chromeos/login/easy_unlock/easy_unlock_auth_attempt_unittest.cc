@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/command_line.h"
-#include "base/stl_util.h"
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
@@ -36,17 +36,17 @@ const unsigned char kWrappedSecret[] = {
 
 std::string GetSecret() {
   return std::string(reinterpret_cast<const char*>(kSecret),
-                     base::size(kSecret));
+                     arraysize(kSecret));
 }
 
 std::string GetWrappedSecret() {
   return std::string(reinterpret_cast<const char*>(kWrappedSecret),
-                     base::size(kWrappedSecret));
+                     arraysize(kWrappedSecret));
 }
 
 std::string GetSessionKey() {
   return std::string(reinterpret_cast<const char*>(kSessionKey),
-                     base::size(kSessionKey));
+                     arraysize(kSessionKey));
 }
 
 // Fake lock handler to be used in these tests.
