@@ -5,10 +5,8 @@
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/snapshots/snapshot_generator.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -18,80 +16,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-
-// SnapshotInfobarObserver watches an InfobarManager for InfoBar insertions,
-// removals or replacements and updates the page snapshot in response.
-class SnapshotInfobarObserver : public infobars::InfoBarManager::Observer {
- public:
-  SnapshotInfobarObserver(SnapshotTabHelper* owner,
-                          infobars::InfoBarManager* manager);
-  ~SnapshotInfobarObserver() override;
-
-  // infobars::InfoBarManager::Observer implementation.
-  void OnInfoBarAdded(infobars::InfoBar* infobar) override;
-  void OnInfoBarRemoved(infobars::InfoBar* infobar, bool animate) override;
-  void OnInfoBarReplaced(infobars::InfoBar* old_infobar,
-                         infobars::InfoBar* new_infobar) override;
-  void OnManagerShuttingDown(infobars::InfoBarManager* manager) override;
-
- private:
-  void OnInfoBarChanges();
-
-  SnapshotTabHelper* owner_ = nullptr;
-  infobars::InfoBarManager* manager_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(SnapshotInfobarObserver);
-};
-
-SnapshotInfobarObserver::SnapshotInfobarObserver(
-    SnapshotTabHelper* owner,
-    infobars::InfoBarManager* manager)
-    : owner_(owner), manager_(manager) {
-  DCHECK(owner_);
-  DCHECK(manager_);
-  manager_->AddObserver(this);
-}
-
-SnapshotInfobarObserver::~SnapshotInfobarObserver() {
-  if (manager_) {
-    manager_->RemoveObserver(this);
-    manager_ = nullptr;
-  }
-}
-
-void SnapshotInfobarObserver::OnInfoBarAdded(infobars::InfoBar* infobar) {
-  OnInfoBarChanges();
-}
-
-void SnapshotInfobarObserver::OnInfoBarRemoved(infobars::InfoBar* infobar,
-                                               bool animate) {
-  OnInfoBarChanges();
-}
-
-void SnapshotInfobarObserver::OnInfoBarReplaced(
-    infobars::InfoBar* old_infobar,
-    infobars::InfoBar* new_infobar) {
-  OnInfoBarChanges();
-}
-
-void SnapshotInfobarObserver::OnInfoBarChanges() {
-  // Update the page snapshot on any infobar change.
-  owner_->UpdateSnapshot();
-}
-
-void SnapshotInfobarObserver::OnManagerShuttingDown(
-    infobars::InfoBarManager* manager) {
-  // The InfoBarManager delete itself when the WebState is destroyed, so
-  // the observer needs to unregister itself when OnManagerShuttingDown
-  // is invoked.
-  DCHECK_EQ(manager_, manager);
-  manager_->RemoveObserver(this);
-  manager_ = nullptr;
-}
-
-}  // namespace;
 
 SnapshotTabHelper::~SnapshotTabHelper() {
   DCHECK(!web_state_);
@@ -167,18 +91,17 @@ SnapshotTabHelper::SnapshotTabHelper(web::WebState* web_state,
                                      NSString* session_id)
     : web_state_(web_state),
       web_state_observer_(this),
+      infobar_observer_(this),
       weak_ptr_factory_(this) {
   snapshot_generator_ = [[SnapshotGenerator alloc] initWithWebState:web_state_
                                                   snapshotSessionId:session_id];
+  web_state_observer_.Add(web_state_);
 
   // Supports missing InfoBarManager to make testing easier.
-  if (infobars::InfoBarManager* infobar_manager =
-          InfoBarManagerImpl::FromWebState(web_state_)) {
-    infobar_observer_ =
-        std::make_unique<SnapshotInfobarObserver>(this, infobar_manager);
+  infobar_manager_ = InfoBarManagerImpl::FromWebState(web_state_);
+  if (infobar_manager_) {
+    infobar_observer_.Add(infobar_manager_);
   }
-
-  web_state_observer_.Add(web_state_);
 }
 
 void SnapshotTabHelper::DidStartLoading(web::WebState* web_state) {
@@ -208,4 +131,25 @@ void SnapshotTabHelper::WebStateDestroyed(web::WebState* web_state) {
   DCHECK_EQ(web_state_, web_state);
   web_state_observer_.Remove(web_state);
   web_state_ = nullptr;
+}
+
+void SnapshotTabHelper::OnInfoBarAdded(infobars::InfoBar* infobar) {
+  UpdateSnapshotWithCallback(nil);
+}
+
+void SnapshotTabHelper::OnInfoBarRemoved(infobars::InfoBar* infobar,
+                                         bool animate) {
+  UpdateSnapshotWithCallback(nil);
+}
+
+void SnapshotTabHelper::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
+                                          infobars::InfoBar* new_infobar) {
+  UpdateSnapshotWithCallback(nil);
+}
+
+void SnapshotTabHelper::OnManagerShuttingDown(
+    infobars::InfoBarManager* manager) {
+  DCHECK_EQ(infobar_manager_, manager);
+  infobar_observer_.Remove(manager);
+  infobar_manager_ = nullptr;
 }
