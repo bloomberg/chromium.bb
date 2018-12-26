@@ -20,7 +20,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
-import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.components.sync.SyncConstants;
@@ -68,11 +67,10 @@ public class InvalidationGcmUpstreamSender extends GcmUpstreamSenderService {
         }
 
         // Attempt to retrieve a token for the user.
-        OAuth2TokenService.getOAuth2AccessToken(this, account,
-                SyncConstants.CHROME_SYNC_OAUTH2_SCOPE,
-                new AccountManagerFacade.GetAuthTokenCallback() {
+        OAuth2TokenService.getAccessToken(account, SyncConstants.CHROME_SYNC_OAUTH2_SCOPE,
+                new OAuth2TokenService.GetAccessTokenCallback() {
                     @Override
-                    public void tokenAvailable(final String token) {
+                    public void onGetTokenSuccess(final String token) {
                         new AsyncTask<Void>() {
                             @Override
                             protected Void doInBackground() {
@@ -84,7 +82,7 @@ public class InvalidationGcmUpstreamSender extends GcmUpstreamSenderService {
                     }
 
                     @Override
-                    public void tokenUnavailable(boolean isTransientError) {
+                    public void onGetTokenFailure(boolean isTransientError) {
                         GcmUma.recordGcmUpstreamHistogram(ContextUtils.getApplicationContext(),
                                 GcmUma.UMA_UPSTREAM_TOKEN_REQUEST_FAILED);
                     }
