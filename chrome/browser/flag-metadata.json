@@ -2146,6 +2146,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "use_messages_google_com_domain",
+    "owners": [ "azeemarshad", "khorimoto" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable_android_messages_prod_endpoint",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

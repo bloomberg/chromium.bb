@@ -53,6 +53,11 @@ const char kAndroidMessagesIntegrationName[] = "Android Messages integration";
 const char kAndroidMessagesIntegrationDescription[] =
     "Enables Chrome OS integration with Android messages.";
 
+const char kUseMessagesGoogleComDomainName[] = "Use messages.google.com domain";
+const char kUseMessagesGoogleComDomainDescription[] =
+    "Use the messages.google.com domain as part of the \"Messages\" "
+    "feature under \"Connected Devices\" settings.";
+
 const char kAndroidMessagesProdEndpointName[] =
     "Use Android Messages prod endpoint";
 const char kAndroidMessagesProdEndpointDescription[] =
