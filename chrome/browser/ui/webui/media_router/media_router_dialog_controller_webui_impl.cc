@@ -114,6 +114,13 @@ MediaRouterDialogControllerImplBase::GetOrCreateForWebContents(
   return MediaRouterDialogControllerWebUIImpl::GetOrCreateForWebContents(
       web_contents);
 }
+
+// static
+MediaRouterDialogControllerImplBase*
+MediaRouterDialogControllerImplBase::FromWebContents(
+    content::WebContents* web_contents) {
+  return MediaRouterDialogControllerWebUIImpl::FromWebContents(web_contents);
+}
 #endif  // !defined(TOOLKIT_VIEWS)
 
 class MediaRouterDialogControllerWebUIImpl::DialogWebContentsObserver

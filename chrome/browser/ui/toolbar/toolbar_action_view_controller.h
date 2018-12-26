@@ -64,6 +64,9 @@ class ToolbarActionViewController {
   // Returns true if the action has a popup for the given |web_contents|.
   virtual bool HasPopup(content::WebContents* web_contents) const = 0;
 
+  // Returns whether there is currently a popup visible.
+  virtual bool IsShowingPopup() const = 0;
+
   // Hides the current popup, if one is visible.
   virtual void HidePopup() = 0;
 

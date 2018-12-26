@@ -28,6 +28,7 @@ class TestToolbarActionViewController : public ToolbarActionViewController {
   bool IsEnabled(content::WebContents* web_contents) const override;
   bool WantsToRun(content::WebContents* web_contents) const override;
   bool HasPopup(content::WebContents* web_contents) const override;
+  bool IsShowingPopup() const override;
   void HidePopup() override;
   gfx::NativeView GetPopupNativeView() override;
   ui::MenuModel* GetContextMenu() override;
@@ -72,6 +73,9 @@ class TestToolbarActionViewController : public ToolbarActionViewController {
 
   // The number of times the action would have been executed.
   int execute_action_count_ = 0;
+
+  // True if a popup is (supposedly) currently showing.
+  bool popup_showing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestToolbarActionViewController);
 };

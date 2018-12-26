@@ -73,8 +73,12 @@ class TestMediaRouterAction : public MediaRouterAction {
 
  private:
   // MediaRouterAction:
-  MediaRouterDialogControllerWebUIImpl* GetMediaRouterDialogController()
-      override {
+  media_router::MediaRouterDialogControllerImplBase*
+  GetMediaRouterDialogController() override {
+    return controller_;
+  }
+  const media_router::MediaRouterDialogControllerImplBase*
+  GetMediaRouterDialogController() const override {
     return controller_;
   }
 

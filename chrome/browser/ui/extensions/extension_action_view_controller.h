@@ -60,6 +60,7 @@ class ExtensionActionViewController
   bool IsEnabled(content::WebContents* web_contents) const override;
   bool WantsToRun(content::WebContents* web_contents) const override;
   bool HasPopup(content::WebContents* web_contents) const override;
+  bool IsShowingPopup() const override;
   void HidePopup() override;
   gfx::NativeView GetPopupNativeView() override;
   ui::MenuModel* GetContextMenu() override;
@@ -84,7 +85,6 @@ class ExtensionActionViewController
   ExtensionAction* extension_action() { return extension_action_; }
   const ExtensionAction* extension_action() const { return extension_action_; }
   ToolbarActionViewDelegate* view_delegate() { return view_delegate_; }
-  bool is_showing_popup() const { return popup_host_ != nullptr; }
 
   std::unique_ptr<IconWithBadgeImageSource> GetIconImageSourceForTesting(
       content::WebContents* web_contents,

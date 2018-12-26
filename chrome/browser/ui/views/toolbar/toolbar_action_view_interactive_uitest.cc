@@ -319,7 +319,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
       static_cast<ExtensionActionViewController*>(
           toolbar_action_view->view_controller());
   EXPECT_EQ(view_controller, toolbar_actions_bar->popup_owner());
-  EXPECT_TRUE(view_controller->is_showing_popup());
+  EXPECT_TRUE(view_controller->IsShowingPopup());
 
   {
     // Click down on the action button; this should close the popup.
@@ -336,13 +336,13 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
     observer.Wait();  // Wait for the popup to fully close.
   }
 
-  EXPECT_FALSE(view_controller->is_showing_popup());
+  EXPECT_FALSE(view_controller->IsShowingPopup());
   EXPECT_EQ(nullptr, toolbar_actions_bar->popup_owner());
 
   // Releasing the mouse shouldn't result in the popup being shown again.
   EXPECT_TRUE(
       ui_test_utils::SendMouseEventsSync(ui_controls::LEFT, ui_controls::UP));
-  EXPECT_FALSE(view_controller->is_showing_popup());
+  EXPECT_FALSE(view_controller->IsShowingPopup());
   EXPECT_EQ(nullptr, toolbar_actions_bar->popup_owner());
 }
 

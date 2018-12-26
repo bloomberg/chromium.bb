@@ -29,6 +29,15 @@ MediaRouterDialogControllerImplBase::GetOrCreateForWebContents(
       web_contents);
 }
 
+// static
+MediaRouterDialogControllerImplBase*
+MediaRouterDialogControllerImplBase::FromWebContents(
+    content::WebContents* web_contents) {
+  if (ShouldUseViewsDialog())
+    return MediaRouterDialogControllerViews::FromWebContents(web_contents);
+  return MediaRouterDialogControllerWebUIImpl::FromWebContents(web_contents);
+}
+
 MediaRouterDialogControllerViews::~MediaRouterDialogControllerViews() {
   Reset();
   if (dialog_widget_) {
