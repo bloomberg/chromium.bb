@@ -68,9 +68,8 @@ TEST_F(ClipboardRecentContentGenericTest, RecognizesURLs) {
                                test_data[i].clipboard.length());
     test_clipboard_->SetLastModifiedTime(now -
                                          base::TimeDelta::FromSeconds(10));
-    GURL url;
     EXPECT_EQ(test_data[i].expected_get_recent_url_value,
-              recent_content.GetRecentURLFromClipboard(&url))
+              recent_content.GetRecentURLFromClipboard().has_value())
         << "for input " << test_data[i].clipboard;
   }
 }
@@ -81,11 +80,10 @@ TEST_F(ClipboardRecentContentGenericTest, OlderURLsNotSuggested) {
   std::string text = "http://example.com/";
   test_clipboard_->WriteText(text.data(), text.length());
   test_clipboard_->SetLastModifiedTime(now - base::TimeDelta::FromSeconds(10));
-  GURL url;
-  EXPECT_TRUE(recent_content.GetRecentURLFromClipboard(&url));
+  EXPECT_TRUE(recent_content.GetRecentURLFromClipboard().has_value());
   // If the last modified time is days ago, the URL shouldn't be suggested.
   test_clipboard_->SetLastModifiedTime(now - base::TimeDelta::FromDays(2));
-  EXPECT_FALSE(recent_content.GetRecentURLFromClipboard(&url));
+  EXPECT_FALSE(recent_content.GetRecentURLFromClipboard().has_value());
 }
 
 TEST_F(ClipboardRecentContentGenericTest, GetClipboardContentAge) {
@@ -108,16 +106,15 @@ TEST_F(ClipboardRecentContentGenericTest, SuppressClipboardContent) {
   std::string text = "http://example.com/";
   test_clipboard_->WriteText(text.data(), text.length());
   test_clipboard_->SetLastModifiedTime(now - base::TimeDelta::FromSeconds(10));
-  GURL url;
-  EXPECT_TRUE(recent_content.GetRecentURLFromClipboard(&url));
+  EXPECT_TRUE(recent_content.GetRecentURLFromClipboard().has_value());
 
   // After suppressing it, it shouldn't be suggested.
   recent_content.SuppressClipboardContent();
-  EXPECT_FALSE(recent_content.GetRecentURLFromClipboard(&url));
+  EXPECT_FALSE(recent_content.GetRecentURLFromClipboard().has_value());
 
   // If the clipboard changes, even if to the same thing again, the content
   // should be suggested again.
   test_clipboard_->WriteText(text.data(), text.length());
   test_clipboard_->SetLastModifiedTime(now);
-  EXPECT_TRUE(recent_content.GetRecentURLFromClipboard(&url));
+  EXPECT_TRUE(recent_content.GetRecentURLFromClipboard().has_value());
 }

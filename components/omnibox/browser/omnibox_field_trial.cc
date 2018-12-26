@@ -224,6 +224,16 @@ const base::Feature kDocumentProvider{"OmniboxDocumentProvider",
 const base::Feature kOmniboxPopupShortcutIconsInZeroState{
     "OmniboxPopupShortcutIconsInZeroState", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature to differentiate between a copied url and copied text
+const base::Feature kCopiedTextBehavior {
+  "CopiedTextBehavior",
+#if defined(OS_IOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
 }  // namespace omnibox
 
 namespace {

@@ -27,6 +27,13 @@ class ClipboardURLProvider : public AutocompleteProvider {
  private:
   ~ClipboardURLProvider() override;
 
+  // If there is a url copied to the clipboard, use it to create a match.
+  base::Optional<AutocompleteMatch> CreateURLMatch(
+      const AutocompleteInput& input);
+  // If there is text copied to the clipboard, use it to create a match.
+  base::Optional<AutocompleteMatch> CreateTextMatch(
+      const AutocompleteInput& input);
+
   AutocompleteProviderClient* client_;
   ClipboardRecentContent* clipboard_content_;
 

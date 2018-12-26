@@ -35,6 +35,10 @@
 // been supressed. Otherwise, returns nil.
 - (NSURL*)recentURLFromClipboard;
 
+// Returns the copied string if the clipboard contains a recent string that has
+// not been suppresed. Otherwise, returns nil.
+- (NSString*)recentTextFromClipboard;
+
 // Returns how old the content of the clipboard is.
 - (NSTimeInterval)clipboardContentAge;
 

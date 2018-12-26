@@ -6,6 +6,7 @@
 
 #include "base/ios/ios_util.h"
 #include "base/metrics/user_metrics.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -429,7 +430,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
     // when it's the first time setting the first responder.
     dispatch_async(dispatch_get_main_queue(), ^{
       UIMenuController* menu = [UIMenuController sharedMenuController];
-      if (base::FeatureList::IsEnabled(kCopiedTextBehavior)) {
+      if (base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior)) {
         UIMenuItem* visitCopiedLink = [[UIMenuItem alloc]
             initWithTitle:l10n_util::GetNSString(IDS_IOS_VISIT_COPIED_LINK)
                    action:@selector(visitCopiedLink:)];
@@ -458,15 +459,15 @@ typedef NS_ENUM(int, TrailingButtonState) {
   UIPasteboard* pasteboard = UIPasteboard.generalPasteboard;
   // remove along with flag kCopiedTextBehavior
   if (action == @selector(pasteAndGo:)) {
-    DCHECK(!base::FeatureList::IsEnabled(kCopiedTextBehavior));
+    DCHECK(!base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior));
     return UIPasteboard.generalPasteboard.string.length > 0;
   }
   if (action == @selector(visitCopiedLink:)) {
-    DCHECK(base::FeatureList::IsEnabled(kCopiedTextBehavior));
+    DCHECK(base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior));
     return pasteboard.hasURLs;
   }
   if (action == @selector(searchCopiedText:)) {
-    DCHECK(base::FeatureList::IsEnabled(kCopiedTextBehavior));
+    DCHECK(base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior));
     return !pasteboard.hasURLs && pasteboard.hasStrings;
   }
   return NO;

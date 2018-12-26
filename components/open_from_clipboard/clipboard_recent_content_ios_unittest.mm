@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #import "components/open_from_clipboard/clipboard_recent_content_impl_ios.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -132,107 +133,131 @@ class ClipboardRecentContentIOSTest : public ::testing::Test {
   std::unique_ptr<ClipboardRecentContentIOSWithFakeUptime> clipboard_content_;
   ClipboardRecentContentImplIOSWithFakeUptime*
       clipboard_content_implementation_;
+
+  void VerifyClipboardURLExists(const char* expected_url) {
+    base::Optional<GURL> optional_gurl =
+        clipboard_content_->GetRecentURLFromClipboard();
+    EXPECT_TRUE(optional_gurl.has_value());
+    EXPECT_STREQ(expected_url, optional_gurl.value().spec().c_str());
+  }
+
+  void VerifyClipboardURLDoesNotExist() {
+    EXPECT_FALSE(clipboard_content_->GetRecentURLFromClipboard().has_value());
+  }
+
+  void VerifyClipboardTextExists(const char* expected_text) {
+    base::Optional<base::string16> optional_text =
+        clipboard_content_->GetRecentTextFromClipboard();
+    EXPECT_TRUE(optional_text.has_value());
+    EXPECT_STREQ(expected_text,
+                 base::UTF16ToUTF8(optional_text.value()).c_str());
+  }
+
+  void VerifyClipboardTextDoesNotExist() {
+    EXPECT_FALSE(clipboard_content_->GetRecentTextFromClipboard().has_value());
+  }
 };
 
 TEST_F(ClipboardRecentContentIOSTest, SchemeFiltering) {
-  GURL gurl;
-
   // Test unrecognized URL.
   SetPasteboardContent(kUnrecognizedURL);
-  EXPECT_FALSE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
+  VerifyClipboardURLDoesNotExist();
 
   // Test recognized URL.
   SetPasteboardContent(kRecognizedURL);
-  EXPECT_TRUE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
-  EXPECT_STREQ(kRecognizedURL, gurl.spec().c_str());
+  VerifyClipboardURLExists(kRecognizedURL);
 
   // Test URL with app specific scheme.
   SetPasteboardContent(kAppSpecificURL);
-  EXPECT_TRUE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
-  EXPECT_STREQ(kAppSpecificURL, gurl.spec().c_str());
+  VerifyClipboardURLExists(kAppSpecificURL);
 
   // Test URL without app specific scheme.
   ResetClipboardRecentContent(std::string(), base::TimeDelta::FromDays(10));
 
   SetPasteboardContent(kAppSpecificURL);
-  EXPECT_FALSE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
+  VerifyClipboardURLDoesNotExist();
 }
 
 TEST_F(ClipboardRecentContentIOSTest, PasteboardURLObsolescence) {
-  GURL gurl;
   SetPasteboardContent(kRecognizedURL);
 
   // Test that recent pasteboard data is provided.
-  EXPECT_TRUE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
-  EXPECT_STREQ(kRecognizedURL, gurl.spec().c_str());
+  VerifyClipboardURLExists(kRecognizedURL);
+  VerifyClipboardTextExists(kRecognizedURL);
 
   // Test that old pasteboard data is not provided.
   SetStoredPasteboardChangeDate(
       [NSDate dateWithTimeIntervalSinceNow:-kLongerThanMaxAge]);
-  EXPECT_FALSE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
+  VerifyClipboardURLDoesNotExist();
+  VerifyClipboardTextDoesNotExist();
 
   // Tests that if chrome is relaunched, old pasteboard data is still
   // not provided.
   ResetClipboardRecentContent(kAppSpecificScheme,
                               base::TimeDelta::FromDays(10));
-  EXPECT_FALSE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
+  VerifyClipboardURLDoesNotExist();
+  VerifyClipboardTextDoesNotExist();
 
   SimulateDeviceRestart();
   // Tests that if the device is restarted, old pasteboard data is still
   // not provided.
-  EXPECT_FALSE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
+  VerifyClipboardURLDoesNotExist();
+  VerifyClipboardTextDoesNotExist();
 }
 
 TEST_F(ClipboardRecentContentIOSTest, SupressedPasteboard) {
-  GURL gurl;
   SetPasteboardContent(kRecognizedURL);
 
   // Test that recent pasteboard data is provided.
-  EXPECT_TRUE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
+  VerifyClipboardURLExists(kRecognizedURL);
+  VerifyClipboardTextExists(kRecognizedURL);
 
   // Suppress the content of the pasteboard.
   clipboard_content_->SuppressClipboardContent();
 
   // Check that the pasteboard content is suppressed.
-  EXPECT_FALSE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
+  VerifyClipboardURLDoesNotExist();
+  VerifyClipboardTextDoesNotExist();
 
   // Create a new clipboard content to test persistence.
   ResetClipboardRecentContent(kAppSpecificScheme,
                               base::TimeDelta::FromDays(10));
 
   // Check that the pasteboard content is still suppressed.
-  EXPECT_FALSE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
+  VerifyClipboardURLDoesNotExist();
+  VerifyClipboardTextDoesNotExist();
 
   // Check that even if the device is restarted, pasteboard content is
   // still suppressed.
   SimulateDeviceRestart();
-  EXPECT_FALSE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
+  VerifyClipboardURLDoesNotExist();
+  VerifyClipboardTextDoesNotExist();
 
   // Check that if the pasteboard changes, the new content is not
   // supressed anymore.
   SetPasteboardContent(kRecognizedURL2);
-  EXPECT_TRUE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
+  VerifyClipboardURLExists(kRecognizedURL2);
+  VerifyClipboardTextExists(kRecognizedURL2);
 }
 
 // Checks that if user copies something other than a string we don't cache the
 // string in pasteboard.
 TEST_F(ClipboardRecentContentIOSTest, AddingNonStringRemovesCachedString) {
-  GURL gurl;
   SetPasteboardContent(kRecognizedURL);
 
-  // Test that recent pasteboard data is provided.
-  EXPECT_TRUE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
-  EXPECT_STREQ(kRecognizedURL, gurl.spec().c_str());
+  // Test that recent pasteboard data is provided as text and url.
+  VerifyClipboardURLExists(kRecognizedURL);
+  VerifyClipboardTextExists(kRecognizedURL);
 
   // Overwrite pasteboard with an image.
-  base::scoped_nsobject<UIImage> image([[UIImage alloc] init]);
   SetPasteboardImage(TestUIImage());
 
-  // Pasteboard should appear empty.
-  EXPECT_FALSE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
+  // Url and text pasteboard should appear empty.
+  VerifyClipboardURLDoesNotExist();
+  VerifyClipboardTextDoesNotExist();
 
   // Tests that if URL is added again, pasteboard provides it normally.
   SetPasteboardContent(kRecognizedURL);
-  EXPECT_TRUE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
-  EXPECT_STREQ(kRecognizedURL, gurl.spec().c_str());
+  VerifyClipboardURLExists(kRecognizedURL);
+  VerifyClipboardTextExists(kRecognizedURL);
 }
