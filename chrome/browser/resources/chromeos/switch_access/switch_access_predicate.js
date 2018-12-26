@@ -185,15 +185,35 @@ const SwitchAccessPredicate = {
     }
 
     // Check various indicators that the node is actionable.
-    if (defaultActionVerb && defaultActionVerb !== 'none' &&
-        defaultActionVerb !== DefaultActionVerb.CLICK_ANCESTOR)
-      return true;
-
-    if (node.inputType)
-      return true;
-
     if (role === RoleType.BUTTON)
       return true;
+
+    if (node.inputType && node.inputType !== 'full-page')
+      return true;
+
+    if (defaultActionVerb &&
+        (defaultActionVerb === DefaultActionVerb.ACTIVATE ||
+         defaultActionVerb === DefaultActionVerb.CHECK ||
+         defaultActionVerb === DefaultActionVerb.OPEN ||
+         defaultActionVerb === DefaultActionVerb.PRESS ||
+         defaultActionVerb === DefaultActionVerb.SELECT ||
+         defaultActionVerb === DefaultActionVerb.UNCHECK)) {
+      return true;
+    }
+
+    if (role === RoleType.LIST_ITEM &&
+        defaultActionVerb === DefaultActionVerb.CLICK) {
+      return true;
+    }
+
+    // Focusable items should be surfaced as either groups or actionable.
+    // Current heuristic is to show as actionble any focusable item where no
+    // child is an interesting subtree.
+    if (state[StateType.FOCUSABLE]) {
+      return !(
+          node.children &&
+          node.children.some(SwitchAccessPredicate.isInterestingSubtree));
+    }
 
     return false;
   },
