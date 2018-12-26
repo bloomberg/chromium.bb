@@ -1093,7 +1093,7 @@ TEST_F(FrameFetchContextTest, ChangeDataSaverConfig) {
 // Tests that the embedder gets correct notification when a resource is loaded
 // from the memory cache.
 TEST_F(FrameFetchContextMockedLocalFrameClientTest,
-       DispatchDidLoadResourceFromMemoryCache) {
+       LoadResourceFromMemoryCache) {
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
   resource_request.SetFetchCredentialsMode(
@@ -1109,8 +1109,9 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
               testing::Property(&ResourceRequest::GetRequestContext,
                                 mojom::RequestContextType::IMAGE)),
           testing::Property(&ResourceResponse::IsNull, true)));
-  fetch_context->DispatchDidLoadResourceFromMemoryCache(
-      CreateUniqueIdentifier(), resource_request, resource->GetResponse());
+  fetch_context->DispatchDidReceiveResponse(
+      CreateUniqueIdentifier(), resource_request, resource->GetResponse(),
+      resource, FetchContext::ResourceResponseType::kFromMemoryCache);
 }
 
 // Tests that when a resource with certificate errors is loaded from the memory
@@ -1126,8 +1127,9 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
   Resource* resource = MockResource::Create(resource_request);
   resource->SetResponse(response);
   EXPECT_CALL(*client, DidDisplayContentWithCertificateErrors());
-  fetch_context->DispatchDidLoadResourceFromMemoryCache(
-      CreateUniqueIdentifier(), resource_request, resource->GetResponse());
+  fetch_context->DispatchDidReceiveResponse(
+      CreateUniqueIdentifier(), resource_request, resource->GetResponse(),
+      resource, FetchContext::ResourceResponseType::kFromMemoryCache);
 }
 
 TEST_F(FrameFetchContextSubresourceFilterTest, Filter) {
@@ -1251,18 +1253,6 @@ TEST_F(FrameFetchContextTest, DispatchWillSendRequestWhenDetached) {
   // Should not crash.
 }
 
-TEST_F(FrameFetchContextTest,
-       DispatchDidLoadResourceFromMemoryCacheWhenDetached) {
-  ResourceRequest request(KURL("https://www.example.com/"));
-  ResourceResponse response;
-  FetchInitiatorInfo initiator_info;
-
-  dummy_page_holder = nullptr;
-
-  fetch_context->DispatchDidLoadResourceFromMemoryCache(8, request, response);
-  // Should not crash.
-}
-
 TEST_F(FrameFetchContextTest, DispatchDidReceiveResponseWhenDetached) {
   ResourceRequest request(KURL("https://www.example.com/"));
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
@@ -1272,8 +1262,7 @@ TEST_F(FrameFetchContextTest, DispatchDidReceiveResponseWhenDetached) {
   dummy_page_holder = nullptr;
 
   fetch_context->DispatchDidReceiveResponse(
-      3, response, network::mojom::RequestContextFrameType::kTopLevel,
-      mojom::RequestContextType::FETCH, resource,
+      3, request, response, resource,
       FetchContext::ResourceResponseType::kNotFromMemoryCache);
   // Should not crash.
 }

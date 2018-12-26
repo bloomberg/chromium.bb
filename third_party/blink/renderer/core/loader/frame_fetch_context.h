@@ -104,13 +104,9 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
       const ResourceResponse& redirect_response,
       ResourceType,
       const FetchInitiatorInfo& = FetchInitiatorInfo()) override;
-  void DispatchDidLoadResourceFromMemoryCache(unsigned long identifier,
-                                              const ResourceRequest&,
-                                              const ResourceResponse&) override;
   void DispatchDidReceiveResponse(unsigned long identifier,
+                                  const ResourceRequest&,
                                   const ResourceResponse&,
-                                  network::mojom::RequestContextFrameType,
-                                  mojom::RequestContextType,
                                   Resource*,
                                   ResourceResponseType) override;
   void DispatchDidReceiveData(unsigned long identifier,

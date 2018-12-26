@@ -602,9 +602,8 @@ void FrameFetchContext::DispatchWillSendRequest(
 
 void FrameFetchContext::DispatchDidReceiveResponse(
     unsigned long identifier,
+    const ResourceRequest& request,
     const ResourceResponse& response,
-    network::mojom::RequestContextFrameType frame_type,
-    mojom::RequestContextType request_context,
     Resource* resource,
     ResourceResponseType response_type) {
   if (IsDetached())
@@ -620,6 +619,9 @@ void FrameFetchContext::DispatchDidReceiveResponse(
                                           MasterDocumentLoader());
 
   if (response_type == ResourceResponseType::kFromMemoryCache) {
+    GetLocalFrameClient()->DispatchDidLoadResourceFromMemoryCache(
+        resource->GetResourceRequest(), response);
+
     // Note: probe::willSendRequest needs to precede before this probe method.
     probe::markResourceAsCached(GetFrame(), MasterDocumentLoader(), identifier);
     if (response.IsNull())
@@ -662,7 +664,8 @@ void FrameFetchContext::DispatchDidReceiveResponse(
 
   if (response.HasMajorCertificateErrors()) {
     MixedContentChecker::HandleCertificateError(GetFrame(), response,
-                                                frame_type, request_context);
+                                                request.GetFrameType(),
+                                                request.GetRequestContext());
   }
 
   if (response.IsLegacySymantecCert()) {
@@ -779,17 +782,6 @@ void FrameFetchContext::DispatchDidFail(const KURL& url,
     GetFrame()->Console().DidFailLoading(MasterDocumentLoader(), identifier,
                                          error);
   }
-}
-
-void FrameFetchContext::DispatchDidLoadResourceFromMemoryCache(
-    unsigned long identifier,
-    const ResourceRequest& resource_request,
-    const ResourceResponse& resource_response) {
-  if (IsDetached())
-    return;
-
-  GetLocalFrameClient()->DispatchDidLoadResourceFromMemoryCache(
-      resource_request, resource_response);
 }
 
 bool FrameFetchContext::ShouldLoadNewResource(ResourceType type) const {
