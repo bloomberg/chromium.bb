@@ -120,6 +120,8 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
     auto params = content::mojom::NavigableContentsParams::New();
     params->enable_view_auto_resize = true;
     params->suppress_navigations = true;
+    params->override_background_color = true;
+    params->background_color = SK_ColorTRANSPARENT;
     contents_ = std::make_unique<content::NavigableContents>(
         contents_factory_.get(), std::move(params));
     contents_->AddObserver(this);
