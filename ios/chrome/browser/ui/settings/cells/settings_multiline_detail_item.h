@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_IMPORT_DATA_MULTILINE_DETAIL_ITEM_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_IMPORT_DATA_MULTILINE_DETAIL_ITEM_H_
+#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_SETTINGS_MULTILINE_DETAIL_ITEM_H_
+#define IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_SETTINGS_MULTILINE_DETAIL_ITEM_H_
 
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
-// ImportDataMultilineDetailItem is a model class that uses
-// ImportDataMultilineDetailCell.
-@interface ImportDataMultilineDetailItem : TableViewItem
+// SettingsMultilineDetailItem is a model class that uses
+// SettingsMultilineDetailCell.
+@interface SettingsMultilineDetailItem : TableViewItem
 
 // The main text string.
 @property(nonatomic, copy) NSString* text;
@@ -21,11 +21,11 @@
 
 @end
 
-// ImportDataMultilineDetailCell implements an UITableViewCell
+// SettingsMultilineDetailCell implements an UITableViewCell
 // subclass containing two text labels: a "main" label and a "detail" label.
 // The two labels are laid out on top of each other and can span on multiple
-// lines. This is to be used with a ImportDataMultilineDetailItem.
-@interface ImportDataMultilineDetailCell : UITableViewCell
+// lines. This is to be used with a SettingsMultilineDetailItem.
+@interface SettingsMultilineDetailCell : UITableViewCell
 
 // UILabels corresponding to |text| and |detailText| from the item.
 @property(nonatomic, readonly, strong) UILabel* textLabel;
@@ -33,4 +33,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_IMPORT_DATA_MULTILINE_DETAIL_ITEM_H_
+#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_SETTINGS_MULTILINE_DETAIL_ITEM_H_
