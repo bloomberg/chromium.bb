@@ -137,7 +137,7 @@ class GpuProcessTransportFactory;
 class NestedMessagePumpAndroid;
 class SandboxHostLinux;
 class ScopedAllowWaitForDebugURL;
-class ServiceWorkerSubresourceLoader;
+class ServiceWorkerContextClient;
 class SessionStorageDatabase;
 class SoftwareOutputDeviceMus;
 class SynchronousCompositor;
@@ -369,7 +369,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class base::GetAppOutputScopedAllowBaseSyncPrimitives;
   friend class content::BrowserMainLoop;
   friend class content::BrowserProcessSubThread;
-  friend class content::ServiceWorkerSubresourceLoader;
+  friend class content::ServiceWorkerContextClient;
   friend class content::SessionStorageDatabase;
   friend class functions::ExecScriptScopedAllowBaseSyncPrimitives;
   friend class internal::TaskTracker;

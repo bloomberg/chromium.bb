@@ -282,22 +282,8 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
   params->request = blink::mojom::FetchAPIRequest::From(resource_request_);
   params->client_id = controller_connector_->client_id();
 
-  // S13nServiceWorker without NetworkService:
-  // BlobPtr for each blob data element in the request body needs to be created
-  // before dispatching the fetch event for keeping the blob alive.
-  if (resource_request_.request_body &&
-      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // We need this as GetBlobFromUUID is a sync IPC.
-    // TODO(kinuko): Remove the friend for ScopedAllowBaseSyncPrimitives
-    // in //base as well when we remove this code.
-    base::ScopedAllowBaseSyncPrimitives allow_sync_primitives;
-    params->request_body_blob_ptrs =
-        GetBlobPtrsForRequestBody(*resource_request_.request_body);
-  }
-
   // TODO(falken): Grant the controller service worker's process access to files
   // in the body, like ServiceWorkerFetchDispatcher::DispatchFetchEvent() does.
-
   controller->DispatchFetchEvent(
       std::move(params), std::move(response_callback_ptr),
       base::BindOnce(&ServiceWorkerSubresourceLoader::OnFetchEventFinished,

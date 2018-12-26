@@ -20,24 +20,6 @@ struct DispatchFetchEventParams {
   // FetchEvent#request.
   FetchAPIRequest request;
 
-  // The following fields are used to create FetchEvent#request#body, depending
-  // on whether S13nServiceWorker/NetworkService are enabled.
-
-  // (A) S13nServiceWorker with NetworkService on:
-  // All information about the request body is provided in |request.body|, and
-  // |request.blob| is null.
-
-  // (B) S13nServiceWorker with NetworkService off:
-  // All information about the request body except for BlobPtrs is provided in
-  // |request.body|. These BlobPtrs need to be passed separately.
-  // Once the NetworkService is enabled, this will be no longer used since all
-  // Blobs are passed as data pipes which can live in |request.body|.
-  array<Blob> request_body_blob_ptrs;
-
-  // (C) non-S13nServiceWorker:
-  // All information to create the request body is packed into |request.blob|,
-  // and |request.body| is null.
-
   // FetchEvent#clientId.
   string client_id;
   // FetchEvent#preloadResponse.
