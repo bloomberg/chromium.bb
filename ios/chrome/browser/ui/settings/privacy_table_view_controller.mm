@@ -22,7 +22,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/pref_names.h"
-#import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"

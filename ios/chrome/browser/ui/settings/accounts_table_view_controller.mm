@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/accounts_table_view_controller.h"
 
 #import "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
@@ -26,21 +26,19 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
-#import "ios/chrome/browser/ui/authentication/cells/legacy_account_control_item.h"
+#import "ios/chrome/browser/ui/authentication/cells/account_control_item.h"
+#import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
 #import "ios/chrome/browser/ui/authentication/resized_avatar_cache.h"
-#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_account_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_style.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
-#import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
+#import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -56,13 +54,13 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kSettingsAccountsId = @"kSettingsAccountsId";
-NSString* const kSettingsHeaderId = @"kSettingsHeaderId";
-NSString* const kSettingsAccountsAddAccountCellId =
-    @"kSettingsAccountsAddAccountCellId";
-NSString* const kSettingsAccountsSignoutCellId =
-    @"kSettingsAccountsSignoutCellId";
-NSString* const kSettingsAccountsSyncCellId = @"kSettingsAccountsSyncCellId";
+NSString* const kSettingsAccountsTableViewId = @"kSettingsAccountsTableViewId";
+NSString* const kSettingsAccountsTableViewAddAccountCellId =
+    @"kSettingsAccountsTableViewAddAccountCellId";
+NSString* const kSettingsAccountsTableViewSignoutCellId =
+    @"kSettingsAccountsTableViewSignoutCellId";
+NSString* const kSettingsAccountsTableViewSyncCellId =
+    @"kSettingsAccountsTableViewSyncCellId";
 
 namespace {
 
@@ -83,7 +81,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface AccountsCollectionViewController ()<
+@interface AccountsTableViewController () <
     ChromeIdentityServiceObserver,
     ChromeIdentityBrowserOpener,
     OAuth2TokenServiceObserverBridgeDelegate,
@@ -105,7 +103,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
 
   // Enable lookup of item corresponding to a given identity GAIA ID string.
-  NSDictionary<NSString*, CollectionViewItem*>* _identityMap;
+  NSDictionary<NSString*, TableViewItem*>* _identityMap;
 }
 
 // The SigninInteractionCoordinator that presents Sign In UI for the Accounts
@@ -119,7 +117,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @end
 
-@implementation AccountsCollectionViewController
+@implementation AccountsTableViewController
 
 @synthesize dispatcher = _dispatcher;
 @synthesize signinInteractionCoordinator = _signinInteractionCoordinator;
@@ -128,9 +126,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
            closeSettingsOnAddAccount:(BOOL)closeSettingsOnAddAccount {
   DCHECK(browserState);
   DCHECK(!browserState->IsOffTheRecord());
-  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
   self =
-      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
+      [super initWithTableViewStyle:UITableViewStyleGrouped
+                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
   if (self) {
     _browserState = browserState;
     _closeSettingsOnAddAccount = closeSettingsOnAddAccount;
@@ -154,16 +152,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
            selector:@selector(didFinishSwitchAccount)
                name:kSwitchAccountDidFinishNotification
              object:nil];
-    self.collectionViewAccessibilityIdentifier = kSettingsAccountsId;
     _avatarCache = [[ResizedAvatarCache alloc] init];
     _identityServiceObserver.reset(
         new ChromeIdentityServiceObserverBridge(self));
-    // TODO(crbug.com/764578): -loadModel should not be called from
-    // initializer. A possible fix is to move this call to -viewDidLoad.
-    [self loadModel];
   }
 
   return self;
+}
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  self.tableView.accessibilityIdentifier = kSettingsAccountsTableViewId;
+
+  [self loadModel];
 }
 
 - (void)stopBrowserStateServiceObservers {
@@ -179,13 +180,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self stopBrowserStateServiceObservers];
 }
 
-#pragma mark - SettingsRootCollectionViewController
+#pragma mark - SettingsRootTableViewController
 
 - (void)reloadData {
-  if (![self authService]->IsAuthenticated()) {
-    // This accounts collection view will be popped or dismissed when the user
+  if (![self authService] -> IsAuthenticated()) {
+    // This accounts table view will be popped or dismissed when the user
     // is signed out. Avoid reloading it in that case as that would lead to an
-    // empty collection view.
+    // empty table view.
     return;
   }
   [super reloadData];
@@ -194,7 +195,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)loadModel {
   // Update the title with the name with the currently signed-in account.
   ChromeIdentity* authenticatedIdentity =
-      [self authService]->GetAuthenticatedIdentity();
+      [self authService] -> GetAuthenticatedIdentity();
   NSString* title = nil;
   if (authenticatedIdentity) {
     title = [authenticatedIdentity userFullName];
@@ -206,12 +207,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   [super loadModel];
 
-  if (![self authService]->IsAuthenticated())
+  if (![self authService] -> IsAuthenticated())
     return;
 
-  CollectionViewModel* model = self.collectionViewModel;
+  TableViewModel* model = self.tableViewModel;
 
-  NSMutableDictionary<NSString*, CollectionViewItem*>* mutableIdentityMap =
+  NSMutableDictionary<NSString*, TableViewItem*>* mutableIdentityMap =
       [[NSMutableDictionary alloc] init];
 
   // Account cells.
@@ -227,7 +228,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     ChromeIdentity* identity = ios::GetChromeBrowserProvider()
                                    ->GetChromeIdentityService()
                                    ->GetIdentityWithGaiaID(account.gaia);
-    CollectionViewItem* item = [self accountItem:identity];
+    TableViewItem* item = [self accountItem:identity];
     [model addItem:item toSectionWithIdentifier:SectionIdentifierAccounts];
 
     [mutableIdentityMap setObject:item forKey:identity.gaiaID];
@@ -256,56 +257,51 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - Model objects
 
-- (CollectionViewItem*)header {
-  SettingsTextItem* header =
-      [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
+- (TableViewTextHeaderFooterItem*)header {
+  TableViewTextHeaderFooterItem* header =
+      [[TableViewTextHeaderFooterItem alloc] initWithType:ItemTypeHeader];
   header.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_DESCRIPTION);
-  header.accessibilityIdentifier = kSettingsHeaderId;
-  header.textColor = [[MDCPalette greyPalette] tint500];
   return header;
 }
 
-- (CollectionViewItem*)accountItem:(ChromeIdentity*)identity {
-  CollectionViewAccountItem* item =
-      [[CollectionViewAccountItem alloc] initWithType:ItemTypeAccount];
-  item.cellStyle = CollectionViewCellStyle::kUIKit;
+- (TableViewItem*)accountItem:(ChromeIdentity*)identity {
+  TableViewAccountItem* item =
+      [[TableViewAccountItem alloc] initWithType:ItemTypeAccount];
   [self updateAccountItem:item withIdentity:identity];
   return item;
 }
 
-- (void)updateAccountItem:(CollectionViewAccountItem*)item
+- (void)updateAccountItem:(TableViewAccountItem*)item
              withIdentity:(ChromeIdentity*)identity {
   item.image = [_avatarCache resizedAvatarForIdentity:identity];
   item.text = identity.userEmail;
   item.chromeIdentity = identity;
-  item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+  item.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
 }
 
-- (CollectionViewItem*)addAccountItem {
-  CollectionViewAccountItem* item =
-      [[CollectionViewAccountItem alloc] initWithType:ItemTypeAddAccount];
-  item.cellStyle = CollectionViewCellStyle::kUIKit;
+- (TableViewItem*)addAccountItem {
+  TableViewAccountItem* item =
+      [[TableViewAccountItem alloc] initWithType:ItemTypeAddAccount];
   item.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_ADD_ACCOUNT_BUTTON);
-  item.accessibilityIdentifier = kSettingsAccountsAddAccountCellId;
+  item.accessibilityIdentifier = kSettingsAccountsTableViewAddAccountCellId;
   item.image = [UIImage imageNamed:@"settings_accounts_add_account"];
   return item;
 }
 
-- (CollectionViewItem*)syncItem {
-  LegacyAccountControlItem* item =
-      [[LegacyAccountControlItem alloc] initWithType:ItemTypeSync];
-  item.cellStyle = CollectionViewCellStyle::kUIKit;
+- (TableViewItem*)syncItem {
+  AccountControlItem* item =
+      [[AccountControlItem alloc] initWithType:ItemTypeSync];
   item.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_SYNC_TITLE);
-  item.accessibilityIdentifier = kSettingsAccountsSyncCellId;
+  item.accessibilityIdentifier = kSettingsAccountsTableViewSyncCellId;
   [self updateSyncItem:item];
-  item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+  item.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   return item;
 }
 
 // Updates the sync item according to the sync status (in progress, sync error,
 // mdm error, sync disabled or sync enabled).
-- (void)updateSyncItem:(LegacyAccountControlItem*)syncItem {
+- (void)updateSyncItem:(AccountControlItem*)syncItem {
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(_browserState);
   if (!syncSetupService->HasFinishedInitialSetup()) {
@@ -316,7 +312,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return;
   }
 
-  ChromeIdentity* identity = [self authService]->GetAuthenticatedIdentity();
+  ChromeIdentity* identity = [self authService] -> GetAuthenticatedIdentity();
   if (!IsTransientSyncError(syncSetupService->GetSyncServiceState())) {
     // Sync error.
     syncItem.shouldDisplayError = YES;
@@ -325,7 +321,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     DCHECK(errorMessage);
     syncItem.image = [UIImage imageNamed:@"settings_error"];
     syncItem.detailText = errorMessage;
-  } else if ([self authService]->HasCachedMDMErrorForIdentity(identity)) {
+  } else if ([self authService] -> HasCachedMDMErrorForIdentity(identity)) {
     // MDM error.
     syncItem.shouldDisplayError = YES;
     syncItem.image = [UIImage imageNamed:@"settings_error"];
@@ -347,23 +343,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 }
 
-- (CollectionViewItem*)googleActivityControlsItem {
-  LegacyAccountControlItem* item = [[LegacyAccountControlItem alloc]
-      initWithType:ItemTypeGoogleActivityControls];
-  item.cellStyle = CollectionViewCellStyle::kUIKit;
+- (TableViewItem*)googleActivityControlsItem {
+  AccountControlItem* item =
+      [[AccountControlItem alloc] initWithType:ItemTypeGoogleActivityControls];
   item.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_GOOGLE_TITLE);
   item.detailText =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_GOOGLE_DESCRIPTION);
   item.image = ios::GetChromeBrowserProvider()
                    ->GetBrandedImageProvider()
                    ->GetAccountsListActivityControlsImage();
-  item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+  item.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   return item;
 }
 
-- (CollectionViewItem*)signOutItem {
-  SettingsTextItem* item =
-      [[SettingsTextItem alloc] initWithType:ItemTypeSignOut];
+- (TableViewItem*)signOutItem {
+  TableViewDetailTextItem* item =
+      [[TableViewDetailTextItem alloc] initWithType:ItemTypeSignOut];
   if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
     item.text =
         l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_SIGN_OUT_TURN_OFF_SYNC);
@@ -371,24 +366,23 @@ typedef NS_ENUM(NSInteger, ItemType) {
     item.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_SIGNOUT);
   }
   item.accessibilityTraits |= UIAccessibilityTraitButton;
-  item.accessibilityIdentifier = kSettingsAccountsSignoutCellId;
+  item.accessibilityIdentifier = kSettingsAccountsTableViewSignoutCellId;
   return item;
 }
 
-#pragma mark - UICollectionViewDelegate
+#pragma mark - UITableViewDelegate
 
-- (void)collectionView:(UICollectionView*)collectionView
-    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  [super tableView:tableView didSelectRowAtIndexPath:indexPath];
 
-  NSInteger itemType =
-      [self.collectionViewModel itemTypeForIndexPath:indexPath];
+  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
 
   switch (itemType) {
     case ItemTypeAccount: {
-      CollectionViewAccountItem* item =
-          base::mac::ObjCCastStrict<CollectionViewAccountItem>(
-              [self.collectionViewModel itemAtIndexPath:indexPath]);
+      TableViewAccountItem* item =
+          base::mac::ObjCCastStrict<TableViewAccountItem>(
+              [self.tableViewModel itemAtIndexPath:indexPath]);
       DCHECK(item.chromeIdentity);
       [self showAccountDetails:item.chromeIdentity];
       break;
@@ -408,45 +402,30 @@ typedef NS_ENUM(NSInteger, ItemType) {
     default:
       break;
   }
-}
 
-#pragma mark - MDCCollectionViewStylingDelegate
-
-- (CGFloat)collectionView:(UICollectionView*)collectionView
-    cellHeightAtIndexPath:(NSIndexPath*)indexPath {
-  CollectionViewItem* item =
-      [self.collectionViewModel itemAtIndexPath:indexPath];
-  if (item.type == ItemTypeGoogleActivityControls ||
-      item.type == ItemTypeSync) {
-    return [MDCCollectionViewCell
-        cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
-                           forItem:item];
-  } else if (item.type == ItemTypeSignOut) {
-    return MDCCellDefaultOneLineHeight;
-  }
-  return MDCCellDefaultTwoLineHeight;
+  [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 #pragma mark - SyncObserverModelBridge
 
 - (void)onSyncStateChanged {
-  if (![self authService]->IsAuthenticated()) {
+  if (![self authService] -> IsAuthenticated()) {
     // Ignore sync state changed notification if signed out.
     return;
   }
 
   NSIndexPath* index =
-      [self.collectionViewModel indexPathForItemType:ItemTypeSync
-                                   sectionIdentifier:SectionIdentifierSync];
+      [self.tableViewModel indexPathForItemType:ItemTypeSync
+                              sectionIdentifier:SectionIdentifierSync];
 
-  CollectionViewModel* model = self.collectionViewModel;
+  TableViewModel* model = self.tableViewModel;
   if ([model numberOfSections] > index.section &&
       [model numberOfItemsInSection:index.section] > index.row) {
-    LegacyAccountControlItem* item =
-        base::mac::ObjCCastStrict<LegacyAccountControlItem>(
-            [model itemAtIndexPath:index]);
+    AccountControlItem* item = base::mac::ObjCCastStrict<AccountControlItem>(
+        [model itemAtIndexPath:index]);
     [self updateSyncItem:item];
-    [self.collectionView reloadItemsAtIndexPaths:@[ index ]];
+    [self.tableView reloadRowsAtIndexPaths:@[ index ]
+                          withRowAnimation:UITableViewRowAnimationAutomatic];
   }
 }
 
@@ -455,7 +434,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)onEndBatchChanges {
   [self reloadData];
   [self popViewIfSignedOut];
-  if (![self authService]->IsAuthenticated() && _settingsDetails) {
+  if (![self authService] -> IsAuthenticated() && _settingsDetails) {
     [_settingsDetails dismissViewControllerAnimated:YES completion:nil];
     _settingsDetails = nil;
   }
@@ -467,8 +446,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if ([_alertCoordinator isVisible])
     return;
 
-  if ([self authService]->ShowMDMErrorDialogForIdentity(
-          [self authService]->GetAuthenticatedIdentity())) {
+  if ([self authService]
+      -> ShowMDMErrorDialogForIdentity(
+          [self authService] -> GetAuthenticatedIdentity())) {
     // If there is an MDM error for the synced identity, show it instead.
     return;
   }
@@ -490,7 +470,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       ios::GetChromeBrowserProvider()
           ->GetChromeIdentityService()
           ->CreateWebAndAppSettingDetailsController(
-              [self authService]->GetAuthenticatedIdentity(), self);
+              [self authService] -> GetAuthenticatedIdentity(), self);
   UIImage* closeIcon = [ChromeIcon closeIcon];
   SEL action = @selector(closeGoogleActivitySettings:);
   [settingsDetails.topViewController navigationItem].leftBarButtonItem =
@@ -524,7 +504,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // |_authenticationOperationInProgress| is reset when the signin operation is
   // completed.
   _authenticationOperationInProgress = YES;
-  __weak AccountsCollectionViewController* weakSelf = self;
+  __weak AccountsTableViewController* weakSelf = self;
   [self.signinInteractionCoordinator
       addAccountWithAccessPoint:signin_metrics::AccessPoint::
                                     ACCESS_POINT_SETTINGS
@@ -573,7 +553,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       l10n_util::GetNSString(IDS_IOS_DISCONNECT_DIALOG_INFO_MOBILE);
   NSString* continueButtonTitle =
       l10n_util::GetNSString(IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
-  if ([self authService]->IsAuthenticatedIdentityManaged()) {
+  if ([self authService] -> IsAuthenticatedIdentityManaged()) {
     std::string hosted_domain =
         IdentityManagerFactory::GetForBrowserState(_browserState)
             ->GetPrimaryAccountInfo()
@@ -608,7 +588,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [_alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
                                action:nil
                                 style:UIAlertActionStyleCancel];
-  __weak AccountsCollectionViewController* weakSelf = self;
+  __weak AccountsTableViewController* weakSelf = self;
   [_alertCoordinator addItemWithTitle:continueButtonTitle
                                action:^{
                                  [weakSelf handleDisconnect];
@@ -633,7 +613,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 // Sets |_authenticationOperationInProgress| to NO and pops this accounts
-// collection view controller if the user is signed out.
+// table view controller if the user is signed out.
 - (void)handleAuthenticationOperationDidFinish {
   DCHECK(_authenticationOperationInProgress);
   _authenticationOperationInProgress = NO;
@@ -641,7 +621,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)popViewIfSignedOut {
-  if ([self authService]->IsAuthenticated()) {
+  if ([self authService] -> IsAuthenticated()) {
     return;
   }
   if (_authenticationOperationInProgress) {
@@ -694,15 +674,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - ChromeIdentityServiceObserver
 
 - (void)profileUpdate:(ChromeIdentity*)identity {
-  CollectionViewAccountItem* item =
-      base::mac::ObjCCastStrict<CollectionViewAccountItem>(
-          [_identityMap objectForKey:identity.gaiaID]);
+  TableViewAccountItem* item = base::mac::ObjCCastStrict<TableViewAccountItem>(
+      [_identityMap objectForKey:identity.gaiaID]);
   if (!item) {
     return;
   }
   [self updateAccountItem:item withIdentity:identity];
-  NSIndexPath* indexPath = [self.collectionViewModel indexPathForItem:item];
-  [self.collectionView reloadItemsAtIndexPaths:@[ indexPath ]];
+  NSIndexPath* indexPath = [self.tableViewModel indexPathForItem:item];
+  [self.tableView reloadRowsAtIndexPaths:@[ indexPath ]
+                        withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 
 - (void)chromeIdentityServiceWillBeDestroyed {

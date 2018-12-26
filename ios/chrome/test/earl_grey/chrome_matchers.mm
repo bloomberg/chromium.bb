@@ -23,7 +23,7 @@
 #import "ios/chrome/browser/ui/payments/payment_request_picker_view_controller.h"
 #import "ios/chrome/browser/ui/payments/payment_request_view_controller.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
-#import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
@@ -336,11 +336,11 @@ id<GREYMatcher> AccountConsistencyConfirmationOkButton() {
 }
 
 id<GREYMatcher> AddAccountButton() {
-  return grey_accessibilityID(kSettingsAccountsAddAccountCellId);
+  return grey_accessibilityID(kSettingsAccountsTableViewAddAccountCellId);
 }
 
 id<GREYMatcher> SignOutAccountsButton() {
-  return grey_accessibilityID(kSettingsAccountsSignoutCellId);
+  return grey_accessibilityID(kSettingsAccountsTableViewSignoutCellId);
 }
 
 id<GREYMatcher> ClearBrowsingDataCell() {
@@ -392,7 +392,7 @@ id<GREYMatcher> SettingsAccountButton() {
 }
 
 id<GREYMatcher> SettingsAccountsCollectionView() {
-  return grey_accessibilityID(kSettingsAccountsId);
+  return grey_accessibilityID(kSettingsAccountsTableViewId);
 }
 
 id<GREYMatcher> SettingsImportDataImportButton() {
@@ -408,7 +408,7 @@ id<GREYMatcher> SettingsSyncManageSyncedDataButton() {
 }
 
 id<GREYMatcher> AccountsSyncButton() {
-  return grey_allOf(grey_accessibilityID(kSettingsAccountsSyncCellId),
+  return grey_allOf(grey_accessibilityID(kSettingsAccountsTableViewSyncCellId),
                     grey_sufficientlyVisible(), nil);
 }
 

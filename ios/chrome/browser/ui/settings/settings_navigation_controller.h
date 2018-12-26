@@ -55,7 +55,7 @@ newSettingsMainControllerWithBrowserState:(ios::ChromeBrowserState*)browserState
                                      (id<SettingsNavigationControllerDelegate>)
                                          delegate;
 
-// Creates a new AccountsCollectionViewController and the chrome around it.
+// Creates a new AccountsTableViewController and the chrome around it.
 // |browserState| is used to personalize some settings aspects and should not be
 // nil. |delegate| may be nil.
 + (SettingsNavigationController*)

@@ -13,7 +13,7 @@
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/material_components/app_bar_view_controller_presenting.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
-#import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill_credit_card_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill_profile_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_coordinator.h"
@@ -131,9 +131,9 @@ newSettingsMainControllerWithBrowserState:(ios::ChromeBrowserState*)browserState
 + (SettingsNavigationController*)
 newAccountsController:(ios::ChromeBrowserState*)browserState
              delegate:(id<SettingsNavigationControllerDelegate>)delegate {
-  AccountsCollectionViewController* controller = [
-      [AccountsCollectionViewController alloc] initWithBrowserState:browserState
-                                          closeSettingsOnAddAccount:YES];
+  AccountsTableViewController* controller =
+      [[AccountsTableViewController alloc] initWithBrowserState:browserState
+                                      closeSettingsOnAddAccount:YES];
   controller.dispatcher = [delegate dispatcherForSettings];
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
@@ -498,10 +498,9 @@ initWithRootViewController:(UIViewController*)rootViewController
 // TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
 - (void)showAccountsSettingsFromViewController:
     (UIViewController*)baseViewController {
-  AccountsCollectionViewController* controller =
-      [[AccountsCollectionViewController alloc]
-               initWithBrowserState:mainBrowserState_
-          closeSettingsOnAddAccount:NO];
+  AccountsTableViewController* controller = [[AccountsTableViewController alloc]
+           initWithBrowserState:mainBrowserState_
+      closeSettingsOnAddAccount:NO];
   controller.dispatcher = [delegate_ dispatcherForSettings];
   [self pushViewController:controller animated:YES];
 }

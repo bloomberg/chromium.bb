@@ -43,7 +43,7 @@
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/settings_main_page_commands.h"
 #import "ios/chrome/browser/ui/settings/about_chrome_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill_credit_card_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill_profile_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/bandwidth_management_table_view_controller.h"
@@ -824,7 +824,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
                         completion:nil];
       break;
     case ItemTypeAccount:
-      controller = [[AccountsCollectionViewController alloc]
+      controller = [[AccountsTableViewController alloc]
                initWithBrowserState:_browserState
           closeSettingsOnAddAccount:NO];
       break;
