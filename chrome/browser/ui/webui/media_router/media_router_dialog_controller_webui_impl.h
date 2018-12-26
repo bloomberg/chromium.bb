@@ -26,6 +26,8 @@ class MediaRouterDialogControllerWebUIImpl
  public:
   static MediaRouterDialogControllerWebUIImpl* GetOrCreateForWebContents(
       content::WebContents* web_contents);
+  using content::WebContentsUserData<
+      MediaRouterDialogControllerWebUIImpl>::FromWebContents;
 
   ~MediaRouterDialogControllerWebUIImpl() override;
 

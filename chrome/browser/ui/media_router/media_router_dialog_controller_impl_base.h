@@ -24,6 +24,8 @@ class MediaRouterDialogControllerImplBase : public MediaRouterDialogController,
 
   static MediaRouterDialogControllerImplBase* GetOrCreateForWebContents(
       content::WebContents* web_contents);
+  static MediaRouterDialogControllerImplBase* FromWebContents(
+      content::WebContents* web_contents);
 
   // Sets the action to notify when a dialog gets shown or hidden.
   void SetMediaRouterAction(const base::WeakPtr<MediaRouterAction>& action);

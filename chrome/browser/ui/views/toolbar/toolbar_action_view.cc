@@ -210,7 +210,7 @@ gfx::Size ToolbarActionView::CalculatePreferredSize() const {
 }
 
 bool ToolbarActionView::OnMousePressed(const ui::MouseEvent& event) {
-  if (event.IsOnlyLeftMouseButton() && !pressed_lock_) {
+  if (event.IsOnlyLeftMouseButton() && !view_controller()->IsShowingPopup()) {
     // This event is likely to trigger the MenuButton action.
     // TODO(bruthig): The ACTION_PENDING triggering logic should be in
     // MenuButton::OnPressed() however there is a bug with the pressed state

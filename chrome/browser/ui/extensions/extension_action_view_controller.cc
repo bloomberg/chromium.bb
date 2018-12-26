@@ -65,7 +65,7 @@ ExtensionActionViewController::ExtensionActionViewController(
 }
 
 ExtensionActionViewController::~ExtensionActionViewController() {
-  DCHECK(!is_showing_popup());
+  DCHECK(!IsShowingPopup());
 }
 
 std::string ExtensionActionViewController::GetId() const {
@@ -177,8 +177,12 @@ bool ExtensionActionViewController::HasPopup(
   return tab_id.is_valid() ? extension_action_->HasPopup(tab_id.id()) : false;
 }
 
+bool ExtensionActionViewController::IsShowingPopup() const {
+  return popup_host_ != nullptr;
+}
+
 void ExtensionActionViewController::HidePopup() {
-  if (is_showing_popup()) {
+  if (IsShowingPopup()) {
     popup_host_->Close();
     // We need to do these actions synchronously (instead of closing and then
     // performing the rest of the cleanup in OnExtensionHostDestroyed()) because
@@ -214,8 +218,7 @@ ui::MenuModel* ExtensionActionViewController::GetContextMenu() {
 
 void ExtensionActionViewController::OnContextMenuClosed() {
   if (toolbar_actions_bar_ &&
-      toolbar_actions_bar_->popped_out_action() == this &&
-      !is_showing_popup()) {
+      toolbar_actions_bar_->popped_out_action() == this && !IsShowingPopup()) {
     toolbar_actions_bar_->UndoPopOut();
   }
 }
@@ -374,7 +377,7 @@ bool ExtensionActionViewController::TriggerPopupWithUrl(
   if (!ExtensionIsValid())
     return false;
 
-  bool already_showing = is_showing_popup();
+  bool already_showing = IsShowingPopup();
 
   // Always hide the current popup, even if it's not owned by this extension.
   // Only one popup should be visible at a time.

@@ -64,7 +64,12 @@ bool TestToolbarActionViewController::HasPopup(
   return true;
 }
 
+bool TestToolbarActionViewController::IsShowingPopup() const {
+  return popup_showing_;
+}
+
 void TestToolbarActionViewController::HidePopup() {
+  popup_showing_ = false;
   delegate_->OnPopupClosed();
 }
 
@@ -90,6 +95,7 @@ bool TestToolbarActionViewController::DisabledClickOpensMenu() const {
 }
 
 void TestToolbarActionViewController::ShowPopup(bool by_user) {
+  popup_showing_ = true;
   delegate_->OnPopupShown(by_user);
 }
 

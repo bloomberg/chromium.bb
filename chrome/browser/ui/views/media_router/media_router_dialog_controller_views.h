@@ -25,6 +25,8 @@ class MediaRouterDialogControllerViews
 
   static MediaRouterDialogControllerViews* GetOrCreateForWebContents(
       content::WebContents* web_contents);
+  using content::WebContentsUserData<
+      MediaRouterDialogControllerViews>::FromWebContents;
 
   // MediaRouterDialogController:
   void CreateMediaRouterDialog() override;
