@@ -230,7 +230,7 @@ Manifest Manifest::FromValueDeprecated(std::unique_ptr<base::Value> value_ptr) {
   return manifest;
 }
 
-void Manifest::Amend(Manifest other) {
+Manifest& Manifest::Amend(Manifest other) {
   for (auto& other_capability : other.exposed_capabilities) {
     auto it = std::find_if(
         exposed_capabilities.begin(), exposed_capabilities.end(),
@@ -272,6 +272,8 @@ void Manifest::Amend(Manifest other) {
     packaged_services.emplace_back(std::move(manifest));
   for (auto& file_info : other.preloaded_files)
     preloaded_files.emplace_back(std::move(file_info));
+
+  return *this;
 }
 
 }  // namespace service_manager
