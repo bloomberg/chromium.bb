@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <cstring>
 
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/content_constants.h"
 
@@ -125,25 +125,25 @@ PluginUMAReporter::PluginType PluginUMAReporter::SrcToPluginType(
   std::string file_extension;
   ExtractFileExtension(src, &file_extension);
   if (CStringArrayContainsCString(kWindowsMediaPlayerExtensions,
-                                  arraysize(kWindowsMediaPlayerExtensions),
+                                  base::size(kWindowsMediaPlayerExtensions),
                                   file_extension.c_str())) {
     return WINDOWS_MEDIA_PLAYER;
   }
 
   if (CStringArrayContainsCString(kQuickTimeExtensions,
-                                  arraysize(kQuickTimeExtensions),
+                                  base::size(kQuickTimeExtensions),
                                   file_extension.c_str())) {
     return QUICKTIME;
   }
 
   if (CStringArrayContainsCString(kRealPlayerExtensions,
-                                  arraysize(kRealPlayerExtensions),
+                                  base::size(kRealPlayerExtensions),
                                   file_extension.c_str())) {
     return REALPLAYER;
   }
 
   if (CStringArrayContainsCString(kShockwaveFlashExtensions,
-                                  arraysize(kShockwaveFlashExtensions),
+                                  base::size(kShockwaveFlashExtensions),
                                   file_extension.c_str())) {
     return SHOCKWAVE_FLASH;
   }

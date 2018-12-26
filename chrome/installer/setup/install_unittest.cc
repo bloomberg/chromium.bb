@@ -16,8 +16,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -82,8 +82,8 @@ class CreateVisualElementsManifestTest
   // Creates a dummy test file at |path|.
   void CreateTestFile(const base::FilePath& path) {
     static constexpr char kBlah[] = "blah";
-    ASSERT_EQ(static_cast<int>(arraysize(kBlah) - 1),
-              base::WriteFile(path, &kBlah[0], arraysize(kBlah) - 1));
+    ASSERT_EQ(static_cast<int>(base::size(kBlah) - 1),
+              base::WriteFile(path, &kBlah[0], base::size(kBlah) - 1));
   }
 
   // Creates the VisualElements directory and a light asset, if testing such.
@@ -288,7 +288,7 @@ class InstallShortcutTest : public testing::Test {
     };
 
     std::string master_prefs("{\"distribution\":{");
-    for (size_t i = 0; i < arraysize(desired_prefs); ++i) {
+    for (size_t i = 0; i < base::size(desired_prefs); ++i) {
       master_prefs += (i == 0 ? "\"" : ",\"");
       master_prefs += desired_prefs[i].pref_name;
       master_prefs += "\":";

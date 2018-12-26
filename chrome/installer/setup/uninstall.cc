@@ -20,7 +20,6 @@
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/stl_util.h"
@@ -547,7 +546,7 @@ void UninstallActiveSetupEntries(const InstallerState& installer_state) {
   // but doesn't seem to do so when manually deleting the user-level keys it
   // created.
   base::string16 alternate_active_setup_path(active_setup_path);
-  alternate_active_setup_path.insert(arraysize("Software\\") - 1,
+  alternate_active_setup_path.insert(base::size("Software\\") - 1,
                                      L"Wow6432Node\\");
 
   VLOG(1) << "Uninstall per-user Active Setup keys.";

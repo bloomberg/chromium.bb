@@ -135,12 +135,12 @@ std::wstring GetCurrentTranslation() {
 
 int GetBaseMessageIdForMode(int base_message_id) {
 // Generate the constants holding the mode-specific resource ID arrays.
-#define HANDLE_MODE_STRING(id, ...)                                   \
-  static constexpr int k##id##Strings[] = {__VA_ARGS__};              \
-  static_assert(                                                      \
-      arraysize(k##id##Strings) == install_static::NUM_INSTALL_MODES, \
-      "resource " #id                                                 \
-      " has the wrong number of mode-specific "                       \
+#define HANDLE_MODE_STRING(id, ...)                                    \
+  static constexpr int k##id##Strings[] = {__VA_ARGS__};               \
+  static_assert(                                                       \
+      base::size(k##id##Strings) == install_static::NUM_INSTALL_MODES, \
+      "resource " #id                                                  \
+      " has the wrong number of mode-specific "                        \
       "strings.");
   DO_MODE_STRINGS
 #undef HANDLE_MODE_STRING

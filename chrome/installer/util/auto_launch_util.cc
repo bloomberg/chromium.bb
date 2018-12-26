@@ -11,8 +11,8 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -42,9 +42,9 @@ base::string16 GetAutoLaunchKeyName() {
 
   std::string input(path.AsUTF8Unsafe());
   uint8_t hash[16];
-  crypto::SHA256HashString(input, hash, arraysize(hash));
+  crypto::SHA256HashString(input, hash, base::size(hash));
   return base::string16(kAutolaunchKeyValue) + base::ASCIIToUTF16("_") +
-         base::ASCIIToUTF16(base::HexEncode(hash, arraysize(hash)));
+         base::ASCIIToUTF16(base::HexEncode(hash, base::size(hash)));
 }
 
 }  // namespace

@@ -17,6 +17,7 @@
 #include "base/process/launch.h"
 #include "base/process/process_info.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/win/registry.h"
@@ -272,7 +273,7 @@ void BeginUserExperiment(const InstallerState& installer_state,
       kExperimentRetryDelay,
   };
   setup_command.CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
-                                 kSwitchesToCopy, arraysize(kSwitchesToCopy));
+                                 kSwitchesToCopy, base::size(kSwitchesToCopy));
 
   if (user_context) {
     // This is either a per-user install or a per-machine install run via

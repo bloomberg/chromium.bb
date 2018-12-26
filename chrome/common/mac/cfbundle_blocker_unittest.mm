@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mach_override/mach_override.h"
 
@@ -78,7 +78,7 @@ TEST(CFBundleBlockerTest, IsBundleAllowed) {
     { @"com.stclairsoft.DefaultFolderX.CocoaPatcher", @"4.4.3", true },
   };
 
-  for (size_t index = 0; index < arraysize(kTestcases); ++index) {
+  for (size_t index = 0; index < base::size(kTestcases); ++index) {
     const IsBundleAllowedTestcase& testcase = kTestcases[index];
     NSString* bundle_id = testcase.bundle_id;
     NSString* version = testcase.version;

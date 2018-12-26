@@ -9,7 +9,7 @@
 #include <map>
 #include <string>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "chrome/common/search/instant_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -130,7 +130,7 @@ TEST(SearchBoxUtilTest, ParseViewIdAndRestrictedIdFailure) {
     "blahblah",
     "0xA/0x10",
   };
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     int view_id = -1;
     InstantRestrictedID rid = -1;
     EXPECT_FALSE(ParseViewIdAndRestrictedId(test_cases[i], &view_id, &rid))
@@ -151,7 +151,7 @@ TEST(SearchBoxUtilTest, ParseIconRestrictedUrlFaviconSuccess) {
       {"chrome-search://favicon/size/16@2x/3/4", "size/16@2x/", 3, 4},
       {"chrome-search://favicon/iconurl/9/10", "iconurl/", 9, 10},
   };
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     std::string param_part = "(unwritten)";
     int view_id = -1;
     InstantRestrictedID rid = -1;
@@ -177,7 +177,7 @@ TEST(SearchBoxUtilTest, ParseIconRestrictedUrlFailure) {
       {"chrome-search://favicon/largest/http://www.google.com"},
       {"chrome-search://favicon/size/16@2x/-1/10"},
   };
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     std::string param_part = "(unwritten)";
     int view_id = -1;
     InstantRestrictedID rid = -1;
@@ -208,7 +208,7 @@ TEST(SearchBoxUtilTest, TranslateIconRestrictedUrlSuccess) {
   };
 
   MockIconURLHelper helper;
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     GURL url;
     GURL transient_url(test_cases[i].transient_url_str);
     TranslateIconRestrictedUrl(transient_url, helper, &url);

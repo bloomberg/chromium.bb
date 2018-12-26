@@ -7,9 +7,9 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/optional.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -1997,7 +1997,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, InputEvent_AcceptTouchEvent) {
                                    "InputEvent_AcceptTouchEvent_4"
                                  };
 
-  for (size_t i = 0; i < arraysize(positive_tests); ++i) {
+  for (size_t i = 0; i < base::size(positive_tests); ++i) {
     RunTest(positive_tests[i]);
     RenderViewHost* host = browser()->tab_strip_model()->
         GetActiveWebContents()->GetRenderViewHost();

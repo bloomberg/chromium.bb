@@ -15,7 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/logging_win.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/event_trace_consumer.h"
@@ -54,7 +54,7 @@ const struct {
   { &kChromeTestsProvider, 255, 0 },
 };
 
-static_assert((1 << arraysize(kProviders)) - 1 ==
+static_assert((1 << base::size(kProviders)) - 1 ==
                   FileLogger::kAllEventProviders,
               "size of kProviders is inconsistent with kAllEventProviders");
 
@@ -96,7 +96,7 @@ bool FileLogger::EnableProviders() {
     logging::LogEventProvider::Initialize(kChromeTestsProvider);
 
   HRESULT hr = S_OK;
-  for (size_t i = 0; i < arraysize(kProviders); ++i) {
+  for (size_t i = 0; i < base::size(kProviders); ++i) {
     if (event_provider_mask_ & (1 << i)) {
       hr = controller_.EnableProvider(*kProviders[i].provider_name,
                                       kProviders[i].level,
@@ -115,7 +115,7 @@ bool FileLogger::EnableProviders() {
 
 void FileLogger::DisableProviders() {
   HRESULT hr = S_OK;
-  for (size_t i = 0; i < arraysize(kProviders); ++i) {
+  for (size_t i = 0; i < base::size(kProviders); ++i) {
     if (event_provider_mask_ & (1 << i)) {
       hr = controller_.DisableProvider(*kProviders[i].provider_name);
       LOG_IF(ERROR, FAILED(hr)) << "Failed to disable event provider "

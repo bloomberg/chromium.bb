@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/util_constants.h"
@@ -57,7 +57,7 @@ enum ModifierIndex {
   NUM_MODIFIERS
 };
 
-static_assert(NUM_MODIFIERS == arraysize(kModifiers),
+static_assert(NUM_MODIFIERS == base::size(kModifiers),
               "kModifiers disagrees with ModifierIndex; they must match!");
 
 // Returns true if the modifier is found, in which case |position| holds the

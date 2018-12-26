@@ -14,7 +14,7 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -51,7 +51,7 @@ const char* const kLevelToName[] = {
 const char* LevelToName(Log::Level level) {
   const int index = level - Log::kAll;
   CHECK_GE(index, 0);
-  CHECK_LT(static_cast<size_t>(index), arraysize(kLevelToName));
+  CHECK_LT(static_cast<size_t>(index), base::size(kLevelToName));
   return kLevelToName[index];
 }
 
@@ -134,7 +134,7 @@ const char WebDriverLog::kPerformanceType[] = "performance";
 const char WebDriverLog::kDevToolsType[] = "devtools";
 
 bool WebDriverLog::NameToLevel(const std::string& name, Log::Level* out_level) {
-  for (size_t i = 0; i < arraysize(kNameToLevel); ++i) {
+  for (size_t i = 0; i < base::size(kNameToLevel); ++i) {
     if (name == kNameToLevel[i].name) {
       *out_level = kNameToLevel[i].level;
       return true;

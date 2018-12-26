@@ -30,10 +30,10 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/md5.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -155,7 +155,7 @@ UserSpecificRegistrySuffix::UserSpecificRegistrySuffix() {
   base::MD5Sum(user_sid_ascii.c_str(), user_sid_ascii.length(), &md5_digest);
   std::string base32_md5 = base32::Base32Encode(
       base::StringPiece(reinterpret_cast<char*>(md5_digest.a),
-                        arraysize(md5_digest.a)),
+                        base::size(md5_digest.a)),
       base32::Base32EncodePolicy::OMIT_PADDING);
   // The value returned by the base32 algorithm above must never change.
   DCHECK_EQ(base32_md5.length(), 26U);
@@ -1396,7 +1396,7 @@ bool ShortcutOpListOrRemoveUnknownArgs(
   };
   base::CommandLine desired_args(base::CommandLine::NO_PROGRAM);
   desired_args.CopySwitchesFrom(current_args, kept_switches,
-                                arraysize(kept_switches));
+                                base::size(kept_switches));
   if (desired_args.argv().size() == current_args.argv().size())
     return true;
   if (shortcuts)
@@ -1926,7 +1926,7 @@ ShellUtil::DefaultState ShellUtil::GetChromeDefaultStateFromPath(
   // to show up in Add/Remove programs for us.
   static const wchar_t* const kChromeProtocols[] = { L"http", L"https" };
   DefaultState default_state = ProbeProtocolHandlers(
-      chrome_exe, kChromeProtocols, arraysize(kChromeProtocols));
+      chrome_exe, kChromeProtocols, base::size(kChromeProtocols));
   UpdateDefaultBrowserBeaconWithState(default_state);
   return default_state;
 }
@@ -1943,9 +1943,7 @@ ShellUtil::DefaultState ShellUtil::GetChromeDefaultProtocolClientState(
   }
 
   const wchar_t* const protocols[] = { protocol.c_str() };
-  return ProbeProtocolHandlers(chrome_exe,
-                               protocols,
-                               arraysize(protocols));
+  return ProbeProtocolHandlers(chrome_exe, protocols, base::size(protocols));
 }
 
 // static
@@ -2372,7 +2370,7 @@ bool ShellUtil::GetUserSpecificRegistrySuffix(base::string16* suffix) {
 
 bool ShellUtil::GetOldUserSpecificRegistrySuffix(base::string16* suffix) {
   wchar_t user_name[256];
-  DWORD size = arraysize(user_name);
+  DWORD size = base::size(user_name);
   if (::GetUserName(user_name, &size) == 0 || size < 1) {
     NOTREACHED();
     return false;

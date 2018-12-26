@@ -16,8 +16,8 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -1304,7 +1304,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsReceivedBeforeProbe) {
 
   // Corrections are retrieved.
   NavigationCorrectionsLoadSuccess(kDefaultCorrections,
-                                   arraysize(kDefaultCorrections));
+                                   base::size(kDefaultCorrections));
   EXPECT_EQ(1, error_html_update_count());
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
   ExpectDefaultNavigationCorrections();
@@ -1357,7 +1357,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsRetrievedAfterProbes) {
   // Corrections are retrieved.
   EXPECT_TRUE(is_url_being_fetched());
   NavigationCorrectionsLoadSuccess(kDefaultCorrections,
-                                   arraysize(kDefaultCorrections));
+                                   base::size(kDefaultCorrections));
   EXPECT_EQ(1, error_html_update_count());
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
   ExpectDefaultNavigationCorrections();
@@ -1634,7 +1634,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsInterrupted) {
 
   // Corrections request succeeds.
   NavigationCorrectionsLoadSuccess(kDefaultCorrections,
-                                   arraysize(kDefaultCorrections));
+                                   base::size(kDefaultCorrections));
   EXPECT_EQ(1, error_html_update_count());
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
   ExpectDefaultNavigationCorrections();
@@ -1746,7 +1746,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsDisabledBeforeFetch) {
 
   // Corrections are retrieved.
   NavigationCorrectionsLoadSuccess(kDefaultCorrections,
-                                   arraysize(kDefaultCorrections));
+                                   base::size(kDefaultCorrections));
   EXPECT_EQ(1, error_html_update_count());
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
   EXPECT_FALSE(is_url_being_fetched());
@@ -1789,7 +1789,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsDisabledDuringFetch) {
 
   // Corrections are retrieved.
   NavigationCorrectionsLoadSuccess(kDefaultCorrections,
-                                   arraysize(kDefaultCorrections));
+                                   base::size(kDefaultCorrections));
   EXPECT_EQ(1, error_html_update_count());
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
   EXPECT_FALSE(is_url_being_fetched());
@@ -1831,7 +1831,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsWithoutSearch) {
   EXPECT_FALSE(last_error_page_params());
 
   // Corrections are retrieved.
-  NavigationCorrectionsLoadSuccess(kCorrections, arraysize(kCorrections));
+  NavigationCorrectionsLoadSuccess(kCorrections, base::size(kCorrections));
   EXPECT_EQ(1, error_html_update_count());
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
   EXPECT_FALSE(is_url_being_fetched());
@@ -1879,7 +1879,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsOnlySearchSuggestion) {
   EXPECT_FALSE(last_error_page_params());
 
   // Corrections are retrieved.
-  NavigationCorrectionsLoadSuccess(kCorrections, arraysize(kCorrections));
+  NavigationCorrectionsLoadSuccess(kCorrections, base::size(kCorrections));
   EXPECT_EQ(1, error_html_update_count());
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
   EXPECT_FALSE(is_url_being_fetched());
@@ -2004,7 +2004,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionClickTracking) {
 
   // Corrections are retrieved.
   NavigationCorrectionsLoadSuccess(kDefaultCorrections,
-                                   arraysize(kDefaultCorrections));
+                                   base::size(kDefaultCorrections));
   EXPECT_EQ(1, error_html_update_count());
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
   ExpectDefaultNavigationCorrections();
@@ -2020,10 +2020,10 @@ TEST_F(NetErrorHelperCoreTest, CorrectionClickTracking) {
 
   // Invalid clicks should be ignored.
   core()->TrackClick(-1);
-  core()->TrackClick(arraysize(kDefaultCorrections));
+  core()->TrackClick(base::size(kDefaultCorrections));
   EXPECT_EQ(0, tracking_request_count());
 
-  for (size_t i = 0; i < arraysize(kDefaultCorrections); ++i) {
+  for (size_t i = 0; i < base::size(kDefaultCorrections); ++i) {
     // Skip links that do not appear in the page.
     if (kDefaultCorrections[i].is_porn || kDefaultCorrections[i].is_soft_porn)
       continue;
@@ -2047,7 +2047,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionClickTracking) {
   }
 
   // Make sure duplicate tracking requests are ignored.
-  for (size_t i = 0; i < arraysize(kDefaultCorrections); ++i) {
+  for (size_t i = 0; i < base::size(kDefaultCorrections); ++i) {
     // Skip links that do not appear in the page.
     if (kDefaultCorrections[i].is_porn || kDefaultCorrections[i].is_soft_porn)
       continue;

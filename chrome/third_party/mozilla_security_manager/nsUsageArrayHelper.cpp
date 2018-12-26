@@ -39,7 +39,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -65,7 +65,7 @@ void GetCertUsageStrings(CERTCertificate* cert, std::vector<std::string>* out) {
       {certificateUsageSSLCA, IDS_CERT_USAGE_SSL_CA},
       {certificateUsageStatusResponder, IDS_CERT_USAGE_STATUS_RESPONDER},
     };
-    for (size_t i = 0; i < arraysize(usage_string_map); ++i) {
+    for (size_t i = 0; i < base::size(usage_string_map); ++i) {
       if (usages & usage_string_map[i].usage)
         out->push_back(l10n_util::GetStringUTF8(
             usage_string_map[i].string_id));

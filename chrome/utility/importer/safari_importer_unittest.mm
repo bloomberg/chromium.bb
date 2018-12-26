@@ -10,8 +10,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -141,7 +141,7 @@ TEST_F(SafariImporterTest, BookmarkImport) {
   std::vector<ImportedBookmarkEntry> bookmarks;
   importer->ParseBookmarks(ASCIIToUTF16("Toolbar"), &bookmarks);
   size_t num_bookmarks = bookmarks.size();
-  ASSERT_EQ(arraysize(kImportedBookmarksData), num_bookmarks);
+  ASSERT_EQ(base::size(kImportedBookmarksData), num_bookmarks);
 
   for (size_t i = 0; i < num_bookmarks; ++i) {
     ImportedBookmarkEntry& entry = bookmarks[i];
@@ -206,7 +206,7 @@ TEST_F(SafariImporterTest, BookmarkImportWithEmptyBookmarksMenu) {
   std::vector<ImportedBookmarkEntry> bookmarks;
   importer->ParseBookmarks(ASCIIToUTF16("Toolbar"), &bookmarks);
   size_t num_bookmarks = bookmarks.size();
-  ASSERT_EQ(arraysize(kImportedBookmarksData), num_bookmarks);
+  ASSERT_EQ(base::size(kImportedBookmarksData), num_bookmarks);
 
   for (size_t i = 0; i < num_bookmarks; ++i) {
     ImportedBookmarkEntry& entry = bookmarks[i];

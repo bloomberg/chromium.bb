@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,7 +43,7 @@ TEST(WebAppInfo, ParseIconSizes) {
     { " 10x11 ",    true, false, 1, 10, 11, 0, 0 },
     { " 10x11 1x2", true, false, 2, 10, 11, 1, 2 },
   };
-  for (size_t i = 0; i < arraysize(data); ++i) {
+  for (size_t i = 0; i < base::size(data); ++i) {
     bool is_any;
     std::vector<gfx::Size> sizes;
     bool result = web_apps::ParseIconSizes(

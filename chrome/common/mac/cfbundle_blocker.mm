@@ -14,7 +14,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #import "base/mac/scoped_nsobject.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "third_party/mach_override/mach_override.h"
 
@@ -59,8 +59,8 @@ NSArray* BlockedPaths() {
       // printer drivers or Internet plugins.
     };
 
-    NSUInteger blocked_paths_count = [blocked_prefixes count] *
-                                     arraysize(blocked_suffixes);
+    NSUInteger blocked_paths_count =
+        [blocked_prefixes count] * base::size(blocked_suffixes);
 
     // Not autoreleased here, because the enclosing pool is scoped too
     // narrowly.
@@ -70,7 +70,7 @@ NSArray* BlockedPaths() {
     // Build a flat list by adding each suffix to each prefix.
     for (NSString* blocked_prefix in blocked_prefixes) {
       for (size_t blocked_suffix_index = 0;
-           blocked_suffix_index < arraysize(blocked_suffixes);
+           blocked_suffix_index < base::size(blocked_suffixes);
            ++blocked_suffix_index) {
         NSString* blocked_suffix = blocked_suffixes[blocked_suffix_index];
         NSString* blocked_path =
@@ -264,7 +264,7 @@ bool IsBundleAllowed(NSString* bundle_id, NSString* version) {
     { @"com.surteesstudios.BartenderHelperBundle", @"1.2.20" },
   };
 
-  for (size_t index = 0; index < arraysize(kAllowedBundles); ++index) {
+  for (size_t index = 0; index < base::size(kAllowedBundles); ++index) {
     const AllowedBundle& allowed_bundle = kAllowedBundles[index];
     NSString* allowed_bundle_id = allowed_bundle.bundle_id;
     NSUInteger allowed_bundle_id_length = [allowed_bundle_id length];

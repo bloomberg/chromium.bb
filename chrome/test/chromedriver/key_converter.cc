@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/format_macros.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/chromedriver/chrome/status.h"
@@ -128,8 +128,8 @@ bool IsModifierKey(base::char16 key) {
 bool KeyCodeFromSpecialWebDriverKey(base::char16 key,
                                     ui::KeyboardCode* key_code) {
   int index = static_cast<int>(key) - 0xE000U;
-  bool is_special_key = index >= 0 &&
-      index < static_cast<int>(arraysize(kSpecialWebDriverKeys));
+  bool is_special_key =
+      index >= 0 && index < static_cast<int>(base::size(kSpecialWebDriverKeys));
   if (is_special_key)
     *key_code = kSpecialWebDriverKeys[index];
   return is_special_key;

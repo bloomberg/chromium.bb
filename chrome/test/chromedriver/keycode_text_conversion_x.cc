@@ -9,7 +9,7 @@
 #include <string.h>
 #include <algorithm>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 #include "ui/base/x/x11_util.h"
@@ -139,9 +139,9 @@ int KeyboardCodeToXKeyCode(ui::KeyboardCode key_code) {
   KeyCodeAndXKeyCode find;
   find.key_code = key_code;
   const KeyCodeAndXKeyCode* found = std::lower_bound(
-      kKeyCodeToXKeyCode, kKeyCodeToXKeyCode + arraysize(kKeyCodeToXKeyCode),
+      kKeyCodeToXKeyCode, kKeyCodeToXKeyCode + base::size(kKeyCodeToXKeyCode),
       find);
-  if (found >= kKeyCodeToXKeyCode + arraysize(kKeyCodeToXKeyCode) ||
+  if (found >= kKeyCodeToXKeyCode + base::size(kKeyCodeToXKeyCode) ||
       found->key_code != key_code)
     return -1;
   return found->x_key_code;
@@ -244,7 +244,7 @@ bool ConvertCharToKeyCode(
   int test_modifiers;
   *error_msg = std::string();
   std::string conv_string;
-  for (size_t i = 0; i < arraysize(kKeyCodeToXKeyCode); ++i) {
+  for (size_t i = 0; i < base::size(kKeyCodeToXKeyCode); ++i) {
     test_code = kKeyCodeToXKeyCode[i].key_code;
     // Skip the numpad keys.
     if (test_code >= ui::VKEY_NUMPAD0 && test_code <= ui::VKEY_DIVIDE)
