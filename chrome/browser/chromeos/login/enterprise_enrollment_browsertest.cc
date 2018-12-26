@@ -5,7 +5,6 @@
 #include "base/base64.h"
 #include "base/json/json_reader.h"
 #include "base/json/string_escape.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -834,7 +833,7 @@ TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
       authpolicy::KerberosEncryptionTypes::ENC_TYPES_STRONG,
       std::vector<std::string>(
           kAdOrganizationlUnit,
-          kAdOrganizationlUnit + arraysize(kAdOrganizationlUnit)),
+          kAdOrganizationlUnit + base::size(kAdOrganizationlUnit)),
       kAdTestUser, kDMToken);
   SubmitActiveDirectoryCredentials("machine_name", kAdMachineDomainDN,
                                    "" /* encryption_types */, kAdTestUser,

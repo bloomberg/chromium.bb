@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
@@ -949,7 +949,7 @@ class MultiProfileFilesAppBrowserTest : public FileManagerBrowserTestBase {
   // This is used for preparing all accounts in PRE_ test setup, and for testing
   // actual login behavior.
   void AddAllUsers() {
-    for (size_t i = 0; i < arraysize(kTestAccounts); ++i) {
+    for (size_t i = 0; i < base::size(kTestAccounts); ++i) {
       // The primary account was already set up in SetUpOnMainThread, so skip it
       // here.
       if (i == PRIMARY_ACCOUNT_INDEX)

@@ -21,6 +21,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
@@ -151,7 +152,7 @@ void SetupStabilityDebugging() {
         browser_watcher::StabilityRecordEvent::kGotTracker);
     // Record product, version, channel, special build and platform.
     wchar_t exe_file[MAX_PATH] = {};
-    CHECK(::GetModuleFileName(nullptr, exe_file, arraysize(exe_file)));
+    CHECK(::GetModuleFileName(nullptr, exe_file, base::size(exe_file)));
 
     base::string16 product_name;
     base::string16 version_number;
