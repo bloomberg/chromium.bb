@@ -298,7 +298,7 @@ bool ServiceWorkerGlobalScope::AddEventListenerInternal(
 void ServiceWorkerGlobalScope::EvaluateClassicScriptInternal(
     const KURL& script_url,
     String source_code,
-    std::unique_ptr<Vector<char>> cached_meta_data) {
+    std::unique_ptr<Vector<uint8_t>> cached_meta_data) {
   DCHECK(IsContextThread());
 
   if (!evaluate_script_ready_) {
@@ -419,7 +419,7 @@ void ServiceWorkerGlobalScope::importScripts(
 SingleCachedMetadataHandler*
 ServiceWorkerGlobalScope::CreateWorkerScriptCachedMetadataHandler(
     const KURL& script_url,
-    const Vector<char>* meta_data) {
+    const Vector<uint8_t>* meta_data) {
   return ServiceWorkerScriptCachedMetadataHandler::Create(this, script_url,
                                                           meta_data);
 }

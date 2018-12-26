@@ -30,7 +30,7 @@ class MockPlatform final : public TestingPlatformSupportWithMockScheduler {
   void CacheMetadata(blink::mojom::CodeCacheType cache_type,
                      const WebURL& url,
                      Time,
-                     const char*,
+                     const uint8_t*,
                      size_t) override {
     cached_urls_.push_back(url);
   }
@@ -48,7 +48,7 @@ ResourceResponse CreateTestResourceResponse() {
 }
 
 void CreateTestResourceAndSetCachedMetadata(const ResourceResponse& response) {
-  const char kTestData[] = "test data";
+  const uint8_t kTestData[] = {1, 2, 3, 4, 5};
   MockResource* resource = MockResource::Create(response.CurrentRequestUrl());
   resource->SetResponse(response);
   resource->SendCachedMetadata(kTestData, sizeof(kTestData));

@@ -393,7 +393,7 @@ void RendererBlinkPlatformImpl::CacheMetadata(
     blink::mojom::CodeCacheType cache_type,
     const blink::WebURL& url,
     base::Time response_time,
-    const char* data,
+    const uint8_t* data,
     size_t size) {
   // Only cache WebAssembly if we have isolated code caches.
   // TODO(bbudge) Remove this check when isolated code caches are on by default.
@@ -425,7 +425,7 @@ void RendererBlinkPlatformImpl::ClearCodeCacheEntry(
 void RendererBlinkPlatformImpl::CacheMetadataInCacheStorage(
     const blink::WebURL& url,
     base::Time response_time,
-    const char* data,
+    const uint8_t* data,
     size_t size,
     const blink::WebSecurityOrigin& cacheStorageOrigin,
     const blink::WebString& cacheStorageCacheName) {

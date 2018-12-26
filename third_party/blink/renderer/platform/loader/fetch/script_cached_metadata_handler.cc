@@ -20,7 +20,7 @@ void ScriptCachedMetadataHandler::Trace(blink::Visitor* visitor) {
 
 void ScriptCachedMetadataHandler::SetCachedMetadata(
     uint32_t data_type_id,
-    const char* data,
+    const uint8_t* data,
     size_t size,
     CachedMetadataHandler::CacheType cache_type) {
   // Currently, only one type of cached metadata per resource is supported. If
@@ -46,8 +46,9 @@ scoped_refptr<CachedMetadata> ScriptCachedMetadataHandler::GetCachedMetadata(
   return cached_metadata_;
 }
 
-void ScriptCachedMetadataHandler::SetSerializedCachedMetadata(const char* data,
-                                                              size_t size) {
+void ScriptCachedMetadataHandler::SetSerializedCachedMetadata(
+    const uint8_t* data,
+    size_t size) {
   // We only expect to receive cached metadata from the platform once. If this
   // triggers, it indicates an efficiency problem which is most likely
   // unexpected in code designed to improve performance.
@@ -65,7 +66,7 @@ bool ScriptCachedMetadataHandler::IsServedFromCacheStorage() const {
 
 void ScriptCachedMetadataHandler::SendToPlatform() {
   if (cached_metadata_) {
-    const Vector<char>& serialized_data = cached_metadata_->SerializedData();
+    const Vector<uint8_t>& serialized_data = cached_metadata_->SerializedData();
     sender_->Send(serialized_data.data(), serialized_data.size());
   } else {
     sender_->Send(nullptr, 0);

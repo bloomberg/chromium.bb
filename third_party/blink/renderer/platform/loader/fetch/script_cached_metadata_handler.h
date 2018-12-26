@@ -34,7 +34,7 @@ class PLATFORM_EXPORT ScriptCachedMetadataHandler final
                               std::unique_ptr<CachedMetadataSender>);
   ~ScriptCachedMetadataHandler() override = default;
   void Trace(blink::Visitor*) override;
-  void SetCachedMetadata(uint32_t, const char*, size_t, CacheType) override;
+  void SetCachedMetadata(uint32_t, const uint8_t*, size_t, CacheType) override;
   void ClearCachedMetadata(CacheType) override;
   scoped_refptr<CachedMetadata> GetCachedMetadata(uint32_t) const override;
 
@@ -49,7 +49,7 @@ class PLATFORM_EXPORT ScriptCachedMetadataHandler final
   bool IsServedFromCacheStorage() const override;
 
   // Sets the serialized metadata retrieved from the platform's cache.
-  void SetSerializedCachedMetadata(const char*, size_t);
+  void SetSerializedCachedMetadata(const uint8_t*, size_t);
 
  private:
   void SendToPlatform();

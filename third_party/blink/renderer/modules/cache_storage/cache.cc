@@ -409,7 +409,7 @@ class Cache::CodeCacheHandleCallbackForPut final
       barrier_callback_->OnSuccess(index_, std::move(batch_operation));
       return;
     }
-    const Vector<char>& serialized_data = cached_metadata->SerializedData();
+    const Vector<uint8_t>& serialized_data = cached_metadata->SerializedData();
     std::unique_ptr<BlobData> side_data_blob_data = BlobData::Create();
     side_data_blob_data->AppendBytes(serialized_data.data(),
                                      serialized_data.size());

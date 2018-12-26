@@ -119,7 +119,7 @@ class CachedMetadataSenderImpl : public CachedMetadataSender {
   CachedMetadataSenderImpl(const Resource*);
   ~CachedMetadataSenderImpl() override = default;
 
-  void Send(const char*, size_t) override;
+  void Send(const uint8_t*, size_t) override;
   bool IsServedFromCacheStorage() override { return false; }
 
  private:
@@ -135,7 +135,7 @@ CachedMetadataSenderImpl::CachedMetadataSenderImpl(const Resource* resource)
   DCHECK(resource->GetResponse().CacheStorageCacheName().IsNull());
 }
 
-void CachedMetadataSenderImpl::Send(const char* data, size_t size) {
+void CachedMetadataSenderImpl::Send(const uint8_t* data, size_t size) {
   Platform::Current()->CacheMetadata(
       Resource::ResourceTypeToCodeCacheType(resource_type_), response_url_,
       response_time_, data, size);
@@ -147,7 +147,7 @@ class NullCachedMetadataSender : public CachedMetadataSender {
   NullCachedMetadataSender() = default;
   ~NullCachedMetadataSender() override = default;
 
-  void Send(const char*, size_t) override {}
+  void Send(const uint8_t*, size_t) override {}
   bool IsServedFromCacheStorage() override { return false; }
 };
 
@@ -158,7 +158,7 @@ class ServiceWorkerCachedMetadataSender : public CachedMetadataSender {
   ServiceWorkerCachedMetadataSender(const Resource*, const SecurityOrigin*);
   ~ServiceWorkerCachedMetadataSender() override = default;
 
-  void Send(const char*, size_t) override;
+  void Send(const uint8_t*, size_t) override;
   bool IsServedFromCacheStorage() override { return true; }
 
  private:
@@ -179,7 +179,7 @@ ServiceWorkerCachedMetadataSender::ServiceWorkerCachedMetadataSender(
   DCHECK(!cache_storage_cache_name_.IsNull());
 }
 
-void ServiceWorkerCachedMetadataSender::Send(const char* data, size_t size) {
+void ServiceWorkerCachedMetadataSender::Send(const uint8_t* data, size_t size) {
   Platform::Current()->CacheMetadataInCacheStorage(
       response_url_, response_time_, data, size,
       WebSecurityOrigin(security_origin_), cache_storage_cache_name_);
@@ -578,7 +578,7 @@ void Resource::ResponseReceived(const ResourceResponse& response,
     SetEncoding(encoding);
 }
 
-void Resource::SetSerializedCachedMetadata(const char* data, size_t size) {
+void Resource::SetSerializedCachedMetadata(const uint8_t* data, size_t size) {
   DCHECK(!is_revalidating_);
   DCHECK(!GetResponse().IsNull());
 }

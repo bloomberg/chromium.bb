@@ -27,7 +27,7 @@ class SourceKeyedCachedMetadataHandler::SingleKeyHandler final
       : parent_(parent), key_(key) {}
 
   void SetCachedMetadata(uint32_t data_type_id,
-                         const char* data,
+                         const uint8_t* data,
                          size_t size,
                          CacheType cache_type) override {
     DCHECK(!parent_->cached_metadata_map_.Contains(key_));
@@ -120,7 +120,7 @@ namespace {
 // should inline and optimize to the same code as *reinterpret_cast<T>(data),
 // but without the risk of undefined behaviour.
 template <typename T>
-T ReadVal(const char* data) {
+T ReadVal(const uint8_t* data) {
   static_assert(base::is_trivially_copyable<T>::value,
                 "ReadVal requires the value type to be copyable");
   T ret;
@@ -130,7 +130,7 @@ T ReadVal(const char* data) {
 }  // namespace
 
 void SourceKeyedCachedMetadataHandler::SetSerializedCachedMetadata(
-    const char* data,
+    const uint8_t* data,
     size_t size) {
   // We only expect to receive cached metadata from the platform once. If this
   // triggers, it indicates an efficiency problem which is most likely
@@ -199,16 +199,16 @@ void SourceKeyedCachedMetadataHandler::SendToPlatform() {
   if (cached_metadata_map_.IsEmpty()) {
     sender_->Send(nullptr, 0);
   } else {
-    Vector<char> serialized_data;
+    Vector<uint8_t> serialized_data;
     uint32_t marker = CachedMetadataHandler::kSourceKeyedMap;
-    serialized_data.Append(reinterpret_cast<char*>(&marker), sizeof(marker));
+    serialized_data.Append(reinterpret_cast<uint8_t*>(&marker), sizeof(marker));
     int num_entries = cached_metadata_map_.size();
-    serialized_data.Append(reinterpret_cast<char*>(&num_entries),
+    serialized_data.Append(reinterpret_cast<uint8_t*>(&num_entries),
                            sizeof(num_entries));
     for (const auto& metadata : cached_metadata_map_) {
       serialized_data.Append(metadata.key.data(), kKeySize);
       size_t entry_size = metadata.value->SerializedData().size();
-      serialized_data.Append(reinterpret_cast<const char*>(&entry_size),
+      serialized_data.Append(reinterpret_cast<const uint8_t*>(&entry_size),
                              sizeof(entry_size));
       serialized_data.AppendVector(metadata.value->SerializedData());
     }

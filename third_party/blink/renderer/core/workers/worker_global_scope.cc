@@ -200,7 +200,7 @@ void WorkerGlobalScope::importScriptsFromStrings(
   for (const KURL& complete_url : completed_urls) {
     KURL response_url;
     String source_code;
-    std::unique_ptr<Vector<char>> cached_meta_data;
+    std::unique_ptr<Vector<uint8_t>> cached_meta_data;
     LoadResult result = LoadResult::kNotHandled;
     result = LoadScriptFromInstalledScriptsManager(
         complete_url, &response_url, &source_code, &cached_meta_data);
@@ -254,7 +254,7 @@ WorkerGlobalScope::LoadScriptFromInstalledScriptsManager(
     const KURL& script_url,
     KURL* out_response_url,
     String* out_source_code,
-    std::unique_ptr<Vector<char>>* out_cached_meta_data) {
+    std::unique_ptr<Vector<uint8_t>>* out_cached_meta_data) {
   if (!GetThread()->GetInstalledScriptsManager() ||
       !GetThread()->GetInstalledScriptsManager()->IsScriptInstalled(
           script_url)) {
@@ -276,7 +276,7 @@ WorkerGlobalScope::LoadScriptFromClassicScriptLoader(
     const KURL& script_url,
     KURL* out_response_url,
     String* out_source_code,
-    std::unique_ptr<Vector<char>>* out_cached_meta_data) {
+    std::unique_ptr<Vector<uint8_t>>* out_cached_meta_data) {
   ExecutionContext* execution_context = GetExecutionContext();
   WorkerClassicScriptLoader* classic_script_loader =
       MakeGarbageCollected<WorkerClassicScriptLoader>();
@@ -345,7 +345,7 @@ ExecutionContext* WorkerGlobalScope::GetExecutionContext() const {
 void WorkerGlobalScope::EvaluateClassicScript(
     const KURL& script_url,
     String source_code,
-    std::unique_ptr<Vector<char>> cached_meta_data,
+    std::unique_ptr<Vector<uint8_t>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(!IsContextPaused());
   ThreadDebugger* debugger = ThreadDebugger::From(GetThread()->GetIsolate());
@@ -464,7 +464,7 @@ void WorkerGlobalScope::ReceiveMessage(BlinkTransferableMessage message) {
 void WorkerGlobalScope::EvaluateClassicScriptInternal(
     const KURL& script_url,
     String source_code,
-    std::unique_ptr<Vector<char>> cached_meta_data) {
+    std::unique_ptr<Vector<uint8_t>> cached_meta_data) {
   DCHECK(IsContextThread());
   SingleCachedMetadataHandler* handler =
       CreateWorkerScriptCachedMetadataHandler(script_url,

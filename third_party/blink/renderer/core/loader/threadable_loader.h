@@ -156,7 +156,7 @@ class CORE_EXPORT ThreadableLoader final
   void ResponseReceived(Resource*,
                         const ResourceResponse&,
                         std::unique_ptr<WebDataConsumerHandle>) override;
-  void SetSerializedCachedMetadata(Resource*, const char*, size_t) override;
+  void SetSerializedCachedMetadata(Resource*, const uint8_t*, size_t) override;
   void DataReceived(Resource*, const char* data, size_t data_length) override;
   bool RedirectReceived(Resource*,
                         const ResourceRequest&,

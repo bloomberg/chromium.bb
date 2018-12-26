@@ -38,7 +38,7 @@ class PLATFORM_EXPORT SourceKeyedCachedMetadataHandler final
     return sender_->IsServedFromCacheStorage();
   }
 
-  void SetSerializedCachedMetadata(const char*, size_t);
+  void SetSerializedCachedMetadata(const uint8_t*, size_t);
 
  private:
   // Keys are SHA-256, which are 256/8 = 32 bytes.

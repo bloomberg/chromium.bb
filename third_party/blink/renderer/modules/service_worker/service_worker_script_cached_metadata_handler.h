@@ -22,18 +22,18 @@ class ServiceWorkerScriptCachedMetadataHandler
   static ServiceWorkerScriptCachedMetadataHandler* Create(
       WorkerGlobalScope* worker_global_scope,
       const KURL& script_url,
-      const Vector<char>* meta_data) {
+      const Vector<uint8_t>* meta_data) {
     return MakeGarbageCollected<ServiceWorkerScriptCachedMetadataHandler>(
         worker_global_scope, script_url, meta_data);
   }
 
   ServiceWorkerScriptCachedMetadataHandler(WorkerGlobalScope*,
                                            const KURL& script_url,
-                                           const Vector<char>* meta_data);
+                                           const Vector<uint8_t>* meta_data);
   ~ServiceWorkerScriptCachedMetadataHandler() override;
   void Trace(blink::Visitor*) override;
   void SetCachedMetadata(uint32_t data_type_id,
-                         const char*,
+                         const uint8_t*,
                          size_t,
                          CacheType) override;
   void ClearCachedMetadata(CacheType) override;

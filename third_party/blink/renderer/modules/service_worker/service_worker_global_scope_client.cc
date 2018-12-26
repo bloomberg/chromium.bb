@@ -109,7 +109,7 @@ void ServiceWorkerGlobalScopeClient::OpenWindowForPaymentHandler(
 }
 
 void ServiceWorkerGlobalScopeClient::SetCachedMetadata(const KURL& url,
-                                                       const char* data,
+                                                       const uint8_t* data,
                                                        size_t size) {
   Vector<uint8_t> meta_data;
   meta_data.Append(data, SafeCast<wtf_size_t>(size));

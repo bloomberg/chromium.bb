@@ -95,7 +95,7 @@ class CORE_EXPORT ScriptResource final : public TextResource {
   void OnMemoryDump(WebMemoryDumpLevelOfDetail,
                     WebProcessMemoryDump*) const override;
 
-  void SetSerializedCachedMetadata(const char*, size_t) override;
+  void SetSerializedCachedMetadata(const uint8_t*, size_t) override;
 
   // Returns true if streaming was successfully started (or if an active
   // streamer is already running)

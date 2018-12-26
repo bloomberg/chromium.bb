@@ -236,7 +236,7 @@ void WorkerClassicScriptLoader::DidReceiveData(const char* data, unsigned len) {
 
 void WorkerClassicScriptLoader::DidReceiveCachedMetadata(const char* data,
                                                          int size) {
-  cached_metadata_ = std::make_unique<Vector<char>>(size);
+  cached_metadata_ = std::make_unique<Vector<uint8_t>>(size);
   memcpy(cached_metadata_->data(), data, size);
 }
 

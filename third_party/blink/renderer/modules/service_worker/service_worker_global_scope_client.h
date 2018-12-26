@@ -79,7 +79,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient final
                   GetClientsCallback);
   void OpenWindowForClients(const KURL&, ScriptPromiseResolver*);
   void OpenWindowForPaymentHandler(const KURL&, ScriptPromiseResolver*);
-  void SetCachedMetadata(const KURL&, const char*, size_t);
+  void SetCachedMetadata(const KURL&, const uint8_t*, size_t);
   void ClearCachedMetadata(const KURL&);
   void PostMessageToClient(const String& client_uuid, BlinkTransferableMessage);
   void SkipWaiting(SkipWaitingCallback);

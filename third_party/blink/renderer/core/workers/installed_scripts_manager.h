@@ -25,13 +25,13 @@ class InstalledScriptsManager {
     ScriptData() = default;
     ScriptData(const KURL& script_url,
                String source_text,
-               std::unique_ptr<Vector<char>> meta_data,
+               std::unique_ptr<Vector<uint8_t>> meta_data,
                std::unique_ptr<CrossThreadHTTPHeaderMapData>);
     ScriptData(ScriptData&& other) = default;
     ScriptData& operator=(ScriptData&& other) = default;
 
     String TakeSourceText() { return std::move(source_text_); }
-    std::unique_ptr<Vector<char>> TakeMetaData() {
+    std::unique_ptr<Vector<uint8_t>> TakeMetaData() {
       return std::move(meta_data_);
     }
 
@@ -43,7 +43,7 @@ class InstalledScriptsManager {
    private:
     KURL script_url_;
     String source_text_;
-    std::unique_ptr<Vector<char>> meta_data_;
+    std::unique_ptr<Vector<uint8_t>> meta_data_;
     HTTPHeaderMap headers_;
 
     DISALLOW_COPY_AND_ASSIGN(ScriptData);

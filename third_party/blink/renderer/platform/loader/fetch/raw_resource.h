@@ -90,7 +90,7 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   bool WillFollowRedirect(const ResourceRequest&,
                           const ResourceResponse&) override;
 
-  void SetSerializedCachedMetadata(const char*, size_t) override;
+  void SetSerializedCachedMetadata(const uint8_t*, size_t) override;
 
   // Used for code caching of scripts with source code inline in the HTML.
   // Returns a cache handler which can store multiple cache metadata entries,
@@ -191,7 +191,7 @@ class PLATFORM_EXPORT RawResourceClient : public ResourceClient {
   virtual void ResponseReceived(Resource*,
                                 const ResourceResponse&,
                                 std::unique_ptr<WebDataConsumerHandle>) {}
-  virtual void SetSerializedCachedMetadata(Resource*, const char*, size_t) {}
+  virtual void SetSerializedCachedMetadata(Resource*, const uint8_t*, size_t) {}
   virtual bool RedirectReceived(Resource*,
                                 const ResourceRequest&,
                                 const ResourceResponse&) {
