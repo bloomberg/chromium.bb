@@ -223,6 +223,7 @@ if (standalone_supported) {
   service_manifest("standalone_unittest_manifest") {
     name = "audio_unittests"
     source = "test/service_unittest_manifest.json"
+    generated_namespace = "standalone_audio_unittest"
   }
 
   catalog("standalone_unittest_catalog") {

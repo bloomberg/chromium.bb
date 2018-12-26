@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 group("catalog") {
@@ -53,9 +52,4 @@ component("lib") {
   output_name = "catalog_lib"
 
   defines = [ "IS_CATALOG_IMPL" ]
-}
-
-service_manifest("manifest") {
-  name = "catalog"
-  source = "manifest.json"
 }

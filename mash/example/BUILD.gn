@@ -18,10 +18,3 @@ group("example") {
     deps += [ "//ash:ash_service" ]
   }
 }
-
-catalog("catalog") {
-  standalone_services = [
-    "//mash/example/views_examples:manifest",
-    "//mash/example/window_type_launcher:manifest",
-  ]
-}
