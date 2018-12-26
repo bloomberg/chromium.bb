@@ -302,6 +302,8 @@ component("vr_common") {
     sources += [
       "service/isolated_device_provider.cc",
       "service/isolated_device_provider.h",
+      "service/vr_ui_host.cc",
+      "service/vr_ui_host.h",
       "win/graphics_delegate_win.cc",
       "win/graphics_delegate_win.h",
       "win/input_delegate_win.cc",
@@ -310,8 +312,6 @@ component("vr_common") {
       "win/scheduler_delegate_win.h",
       "win/vr_browser_renderer_thread_win.cc",
       "win/vr_browser_renderer_thread_win.h",
-      "win/vr_ui_host_impl.cc",
-      "win/vr_ui_host_impl.h",
     ]
 
     deps += [ "//services/ws/public/cpp/gpu" ]
