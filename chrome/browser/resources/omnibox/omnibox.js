@@ -44,17 +44,17 @@
 
   /** @type {!BrowserProxy} */
   const browserProxy = new BrowserProxy();
-  /** @type {!OmniboxInputs} */
-  let omniboxInputs;
+  /** @type {!OmniboxInput} */
+  let omniboxInput;
   /** @type {!omnibox_output.OmniboxOutput} */
   let omniboxOutput;
 
   document.addEventListener('DOMContentLoaded', () => {
-    omniboxInputs = /** @type {!OmniboxInputs} */ ($('omnibox-inputs'));
+    omniboxInput = /** @type {!OmniboxInput} */ ($('omnibox-input'));
     omniboxOutput =
         /** @type {!omnibox_output.OmniboxOutput} */ ($('omnibox-output'));
 
-    omniboxInputs.addEventListener('query-inputs-changed', event => {
+    omniboxInput.addEventListener('query-inputs-changed', event => {
       omniboxOutput.clearAutocompleteResponses();
       omniboxOutput.updateQueryInputs(event.detail);
       browserProxy.makeRequest(
@@ -67,13 +67,13 @@
           event.detail.currentUrl,
           event.detail.pageClassification);
     });
-    omniboxInputs.addEventListener(
+    omniboxInput.addEventListener(
         'display-inputs-changed',
         event => omniboxOutput.updateDisplayInputs(event.detail));
-    omniboxInputs.addEventListener(
+    omniboxInput.addEventListener(
         'filter-input-changed',
         event => omniboxOutput.updateFilterText(event.detail));
-    omniboxInputs.addEventListener('copy-request', event => {
+    omniboxInput.addEventListener('copy-request', event => {
       event.detail === 'text' ? omniboxOutput.copyDelegate.copyTextOutput() :
                                 omniboxOutput.copyDelegate.copyJsonOutput();
     });
