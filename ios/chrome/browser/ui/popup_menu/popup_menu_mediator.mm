@@ -11,6 +11,7 @@
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #import "ios/chrome/browser/ui/activity_services/canonical_url_retriever.h"
@@ -586,10 +587,12 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   NSMutableArray* items = [NSMutableArray array];
 
   if (base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior)) {
+    ClipboardRecentContent* clipboardRecentContent =
+        ClipboardRecentContent::GetInstance();
     NSNumber* titleID = nil;
-    if ([UIPasteboard generalPasteboard].hasURLs) {
+    if (clipboardRecentContent->GetRecentURLFromClipboard()) {
       titleID = [NSNumber numberWithInt:IDS_IOS_TOOLS_MENU_VISIT_COPIED_LINK];
-    } else if ([UIPasteboard generalPasteboard].hasStrings) {
+    } else if (clipboardRecentContent->GetRecentTextFromClipboard()) {
       titleID = [NSNumber numberWithInt:IDS_IOS_TOOLS_MENU_SEARCH_COPIED_TEXT];
     }
 

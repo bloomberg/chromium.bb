@@ -41,6 +41,7 @@ source_set("popup_menu") {
     "//components/bookmarks/browser",
     "//components/feature_engagement/public",
     "//components/omnibox/browser:browser",
+    "//components/open_from_clipboard",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/bookmarks",

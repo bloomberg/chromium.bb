@@ -8,7 +8,9 @@
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/strings/sys_string_conversions.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/open_from_clipboard/clipboard_recent_content.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
@@ -131,8 +133,15 @@ using base::UserMetricsAction;
       RecordAction(UserMetricsAction("MobileMenuPasteAndGo"));
       NSString* query;
       if (base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior)) {
-        query = [UIPasteboard generalPasteboard].URL.absoluteString
-                    ?: [UIPasteboard generalPasteboard].string;
+        ClipboardRecentContent* clipboardRecentContent =
+            ClipboardRecentContent::GetInstance();
+        if (base::Optional<GURL> optional_url =
+                clipboardRecentContent->GetRecentURLFromClipboard()) {
+          query = base::SysUTF8ToNSString(optional_url.value().spec());
+        } else if (base::Optional<base::string16> optional_text =
+                       clipboardRecentContent->GetRecentTextFromClipboard()) {
+          query = base::SysUTF16ToNSString(optional_text.value());
+        }
       } else {
         query = [UIPasteboard generalPasteboard].string;
       }
