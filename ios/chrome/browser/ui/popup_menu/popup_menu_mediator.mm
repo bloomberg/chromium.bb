@@ -10,6 +10,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #import "ios/chrome/browser/ui/activity_services/canonical_url_retriever.h"
@@ -24,7 +25,6 @@
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_consumer.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notification_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -585,7 +585,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 - (void)createSearchMenuItems {
   NSMutableArray* items = [NSMutableArray array];
 
-  if (base::FeatureList::IsEnabled(kCopiedTextBehavior)) {
+  if (base::FeatureList::IsEnabled(omnibox::kCopiedTextBehavior)) {
     NSNumber* titleID = nil;
     if ([UIPasteboard generalPasteboard].hasURLs) {
       titleID = [NSNumber numberWithInt:IDS_IOS_TOOLS_MENU_VISIT_COPIED_LINK];

@@ -158,6 +158,14 @@ NSData* WeakMD5FromNSString(NSString* string) {
   return [self URLFromPasteboard];
 }
 
+- (NSString*)recentTextFromClipboard {
+  [self updateIfNeeded];
+  if ([self clipboardContentAge] > self.maximumAgeOfClipboard) {
+    return nil;
+  }
+  return [UIPasteboard generalPasteboard].string;
+}
+
 - (NSTimeInterval)clipboardContentAge {
   return -[self.lastPasteboardChangeDate timeIntervalSinceNow];
 }
@@ -185,9 +193,7 @@ NSData* WeakMD5FromNSString(NSString* string) {
 }
 
 - (NSURL*)URLFromPasteboard {
-  NSString* clipboardString = [UIPasteboard generalPasteboard].string;
-
-  NSURL* url = [NSURL URLWithString:clipboardString];
+  NSURL* url = [UIPasteboard generalPasteboard].URL;
   if (![self.authorizedSchemes containsObject:url.scheme]) {
     return nil;
   }

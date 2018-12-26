@@ -49,6 +49,7 @@ extern const base::Feature kUIExperimentVerticalMargin;
 extern const base::Feature kSpeculativeServiceWorkerStartOnQueryInput;
 extern const base::Feature kDocumentProvider;
 extern const base::Feature kOmniboxPopupShortcutIconsInZeroState;
+extern const base::Feature kCopiedTextBehavior;
 
 }  // namespace omnibox
 

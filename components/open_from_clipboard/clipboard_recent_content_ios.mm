@@ -69,15 +69,24 @@ ClipboardRecentContentIOS::ClipboardRecentContentIOS(
   implementation_.reset(implementation);
 }
 
-bool ClipboardRecentContentIOS::GetRecentURLFromClipboard(GURL* url) {
-  DCHECK(url);
+base::Optional<GURL> ClipboardRecentContentIOS::GetRecentURLFromClipboard() {
   NSURL* url_from_pasteboard = [implementation_ recentURLFromClipboard];
   GURL converted_url = net::GURLWithNSURL(url_from_pasteboard);
-  if (converted_url.is_valid()) {
-    *url = std::move(converted_url);
-    return true;
+  if (!converted_url.is_valid()) {
+    return base::nullopt;
   }
-  return false;
+
+  return converted_url;
+}
+
+base::Optional<base::string16>
+ClipboardRecentContentIOS::GetRecentTextFromClipboard() {
+  NSString* text_from_pasteboard = [implementation_ recentTextFromClipboard];
+  if (!text_from_pasteboard) {
+    return base::nullopt;
+  }
+
+  return base::SysNSStringToUTF16(text_from_pasteboard);
 }
 
 ClipboardRecentContentIOS::~ClipboardRecentContentIOS() {}

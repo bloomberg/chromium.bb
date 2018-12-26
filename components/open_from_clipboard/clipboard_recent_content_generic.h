@@ -22,7 +22,8 @@ class ClipboardRecentContentGeneric : public ClipboardRecentContent {
   explicit ClipboardRecentContentGeneric();
 
   // ClipboardRecentContent implementation.
-  bool GetRecentURLFromClipboard(GURL* url) override;
+  base::Optional<GURL> GetRecentURLFromClipboard() override;
+  base::Optional<base::string16> GetRecentTextFromClipboard() override;
   base::TimeDelta GetClipboardContentAge() const override;
   void SuppressClipboardContent() override;
 
