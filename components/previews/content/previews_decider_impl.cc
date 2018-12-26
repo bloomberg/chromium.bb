@@ -48,6 +48,9 @@ void LogPreviewsEligibilityReason(PreviewsEligibilityReason status,
 void LogTriggeredPreviewEffectiveConnectionType(
     net::EffectiveConnectionType navigation_ect,
     PreviewsType type) {
+  UMA_HISTOGRAM_ENUMERATION("Previews.Triggered.EffectiveConnectionType",
+                            navigation_ect,
+                            net::EFFECTIVE_CONNECTION_TYPE_LAST);
   int32_t max_limit = static_cast<int32_t>(net::EFFECTIVE_CONNECTION_TYPE_LAST);
   base::LinearHistogram::FactoryGet(
       base::StringPrintf("Previews.Triggered.EffectiveConnectionType.%s",
@@ -406,6 +409,9 @@ bool PreviewsDeciderImpl::ShouldCommitPreview(PreviewsUserData* previews_data,
       return false;
     }
   }
+
+  LogTriggeredPreviewEffectiveConnectionType(previews_data->navigation_ect(),
+                                             type);
   return true;
 }
 
@@ -509,10 +515,6 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
   }
   passed_reasons->push_back(
       PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION);
-
-  LogTriggeredPreviewEffectiveConnectionType(previews_data->navigation_ect(),
-                                             type);
-
   return PreviewsEligibilityReason::ALLOWED;
 }
 

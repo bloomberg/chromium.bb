@@ -937,6 +937,9 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
 
     // Triggered ECT logged.
     histogram_tester.ExpectUniqueSample(
+        "Previews.Triggered.EffectiveConnectionType",
+        static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_2G), 1);
+    histogram_tester.ExpectUniqueSample(
         "Previews.Triggered.EffectiveConnectionType.NoScript",
         static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_2G), 1);
   }
@@ -1191,6 +1194,9 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsCommitTimeWhitelistCheck) {
         "Previews.EligibilityReason.ResourceLoadingHints", 0);
 
     // Triggered ECT logged.
+    histogram_tester.ExpectUniqueSample(
+        "Previews.Triggered.EffectiveConnectionType",
+        static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_2G), 1);
     histogram_tester.ExpectUniqueSample(
         "Previews.Triggered.EffectiveConnectionType.ResourceLoadingHints",
         static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_2G), 1);
