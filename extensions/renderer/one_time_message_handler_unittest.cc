@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"

@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"

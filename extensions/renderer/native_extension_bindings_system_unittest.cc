@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/native_extension_bindings_system_test_base.h"
 
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"

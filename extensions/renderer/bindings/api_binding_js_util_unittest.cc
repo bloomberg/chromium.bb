@@ -5,6 +5,7 @@
 #include "extensions/renderer/bindings/api_binding_js_util.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
