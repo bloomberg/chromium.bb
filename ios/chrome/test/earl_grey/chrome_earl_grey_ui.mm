@@ -8,7 +8,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
-#import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_ui_constants.h"
 #import "ios/chrome/browser/ui/settings/privacy_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
@@ -150,7 +150,7 @@ id<GREYAction> ScrollDown() {
 + (void)tapAccountsMenuButton:(id<GREYMatcher>)buttonMatcher {
   [[[EarlGrey selectElementWithMatcher:buttonMatcher]
          usingSearchAction:ScrollDown()
-      onElementWithMatcher:grey_accessibilityID(kSettingsAccountsId)]
+      onElementWithMatcher:grey_accessibilityID(kSettingsAccountsTableViewId)]
       performAction:grey_tap()];
 }
 
