@@ -226,6 +226,11 @@ class CONTENT_EXPORT ServiceWorkerContextClient
                            DispatchOrQueueFetchEvent_NotRequestedTermination);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextClientTest, TaskInServiceWorker);
 
+  static void ToWebServiceWorkerRequestForFetchEvent(
+      blink::mojom::FetchAPIRequestPtr request,
+      const std::string& client_id,
+      blink::WebServiceWorkerRequest* web_request);
+
   // Get routing_id for sending message to the ServiceWorkerVersion
   // in the browser process.
   int GetRoutingID() const { return embedded_worker_id_; }
