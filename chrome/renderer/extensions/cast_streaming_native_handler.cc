@@ -17,8 +17,8 @@
 
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -743,7 +743,7 @@ void CastStreamingNativeHandler::CallGetRawEventsCallback(
   v8::Local<v8::Value> callback_args[] = {V8ValueConverter::Create()->ToV8Value(
       raw_events.get(), context()->v8_context())};
   context()->SafeCallFunction(v8::Local<v8::Function>::New(isolate, it->second),
-                              arraysize(callback_args), callback_args);
+                              base::size(callback_args), callback_args);
   get_raw_events_callbacks_.erase(it);
 }
 
@@ -761,7 +761,7 @@ void CastStreamingNativeHandler::CallGetStatsCallback(
   v8::Local<v8::Value> callback_args[] = {V8ValueConverter::Create()->ToV8Value(
       stats.get(), context()->v8_context())};
   context()->SafeCallFunction(v8::Local<v8::Function>::New(isolate, it->second),
-                              arraysize(callback_args), callback_args);
+                              base::size(callback_args), callback_args);
   get_stats_callbacks_.erase(it);
 }
 

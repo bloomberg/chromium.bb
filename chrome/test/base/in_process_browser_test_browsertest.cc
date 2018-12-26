@@ -6,8 +6,8 @@
 #include <string.h>
 
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -77,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, ExternalConnectionFail) {
     "http://www.google.com/",
     "http://www.cnn.com/"
   };
-  for (size_t i = 0; i < arraysize(kURLs); ++i) {
+  for (size_t i = 0; i < base::size(kURLs); ++i) {
     GURL url(kURLs[i]);
     LoadFailObserver observer(contents);
     ui_test_utils::NavigateToURL(browser(), url);

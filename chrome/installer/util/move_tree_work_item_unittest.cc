@@ -12,7 +12,7 @@
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/installer/util/installer_util_test_common.h"
@@ -47,7 +47,7 @@ std::wstring ReadTextFile(const base::FilePath& path) {
   std::wifstream file;
   file.open(base::UTF16ToASCII(path.value()).c_str());
   EXPECT_TRUE(file.is_open());
-  file.getline(contents, arraysize(contents));
+  file.getline(contents, base::size(contents));
   file.close();
   return std::wstring(contents);
 }

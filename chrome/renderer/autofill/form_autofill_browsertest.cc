@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "base/format_macros.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -572,9 +572,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
         "some multi-\nline value",
         "Go\naway!"},
     };
-    TestFormFillFunctions(html, unowned, url_override,
-                          field_cases, arraysize(field_cases),
-                          FillForm, &GetValueWrapper);
+    TestFormFillFunctions(html, unowned, url_override, field_cases,
+                          base::size(field_cases), FillForm, &GetValueWrapper);
     // Verify preview selection.
     WebInputElement firstname = GetInputElementById("firstname");
     EXPECT_EQ(16, firstname.SelectionStart());
@@ -648,9 +647,9 @@ class FormAutofillTest : public ChromeRenderViewTest {
         "suggested multi-\nline value",
         ""},
     };
-    TestFormFillFunctions(html, unowned, url_override,
-                          field_cases, arraysize(field_cases),
-                          &PreviewForm, &GetSuggestedValueWrapper);
+    TestFormFillFunctions(html, unowned, url_override, field_cases,
+                          base::size(field_cases), &PreviewForm,
+                          &GetSuggestedValueWrapper);
 
     // Verify preview selection.
     WebInputElement firstname = GetInputElementById("firstname");
@@ -2783,7 +2782,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldAutocompletetype) {
   };
 
   WebDocument document = frame->GetDocument();
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     WebFormControlElement element = GetFormControlElementById(
         WebString::FromASCII(test_cases[i].element_id));
     FormFieldData result;
@@ -3731,10 +3730,9 @@ TEST_F(FormAutofillTest, FillFormIncludingNonFocusableElements) {
        "some multi-\nline value",
        "some multi-\nline value"},
   };
-  TestFormFillFunctions(kFormHtml, false, nullptr,
-                        field_cases, arraysize(field_cases),
-                        &FillFormIncludingNonFocusableElementsWrapper,
-                        &GetValueWrapper);
+  TestFormFillFunctions(
+      kFormHtml, false, nullptr, field_cases, base::size(field_cases),
+      &FillFormIncludingNonFocusableElementsWrapper, &GetValueWrapper);
 }
 
 TEST_F(FormAutofillTest, PreviewForm) {

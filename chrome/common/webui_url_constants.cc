@@ -4,7 +4,7 @@
 
 #include "chrome/common/webui_url_constants.h"
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/safe_browsing/web_ui/constants.h"
 #include "extensions/buildflags/buildflags.h"
@@ -439,7 +439,7 @@ const char* const kChromeHostURLs[] = {
 #endif
     kChromeUIWebRtcLogsHost,
 };
-const size_t kNumberOfChromeHostURLs = arraysize(kChromeHostURLs);
+const size_t kNumberOfChromeHostURLs = base::size(kChromeHostURLs);
 
 const char* const kChromeDebugURLs[] = {
     content::kChromeUIBadCastCrashURL,
@@ -465,6 +465,6 @@ const char* const kChromeDebugURLs[] = {
 #endif
     kChromeUIQuitURL,
     kChromeUIRestartURL};
-const size_t kNumberOfChromeDebugURLs = arraysize(kChromeDebugURLs);
+const size_t kNumberOfChromeDebugURLs = base::size(kChromeDebugURLs);
 
 }  // namespace chrome

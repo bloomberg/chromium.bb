@@ -20,7 +20,6 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -377,7 +376,7 @@ int main(int argc, char *argv[]) {
         "comma-separated whitelist of remote IP addresses "
         "which are allowed to connect to ChromeDriver",
     };
-    for (size_t i = 0; i < arraysize(kOptionAndDescriptions) - 1; i += 2) {
+    for (size_t i = 0; i < base::size(kOptionAndDescriptions) - 1; i += 2) {
       options += base::StringPrintf(
           "  --%-30s%s\n",
           kOptionAndDescriptions[i], kOptionAndDescriptions[i + 1]);

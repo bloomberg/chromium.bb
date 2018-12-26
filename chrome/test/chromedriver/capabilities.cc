@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
@@ -300,7 +300,7 @@ Status ParseProxy(bool w3c_compliant,
     const std::string kSocksProxy = "socksProxy";
     const base::Value* option_value = NULL;
     std::string proxy_servers;
-    for (size_t i = 0; i < arraysize(proxy_servers_options); ++i) {
+    for (size_t i = 0; i < base::size(proxy_servers_options); ++i) {
       if (!proxy_dict->Get(proxy_servers_options[i][0], &option_value) ||
           option_value->is_none()) {
         continue;

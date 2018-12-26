@@ -29,8 +29,8 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/process/launch.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -345,7 +345,7 @@ BOOL CALLBACK ChromeWindowEnumProc(HWND hwnd, LPARAM lparam) {
   SetWindowPosParams* params = reinterpret_cast<SetWindowPosParams*>(lparam);
 
   if (!params->shunted_hwnds.count(hwnd) &&
-      ::GetClassName(hwnd, window_class, arraysize(window_class)) &&
+      ::GetClassName(hwnd, window_class, base::size(window_class)) &&
       base::StartsWith(window_class, kChromeWindowClassPrefix,
                        base::CompareCase::INSENSITIVE_ASCII) &&
       ::SetWindowPos(hwnd, params->window_insert_after, params->x, params->y,

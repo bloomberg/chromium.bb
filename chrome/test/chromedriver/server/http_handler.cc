@@ -14,8 +14,8 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"  // For CHECK macros.
-#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -786,8 +786,7 @@ HttpHandler::HttpHandler(
           kPost, "session/:sessionId/touch/pinch",
           WrapToCommand("TouchPinch", base::BindRepeating(&ExecuteTouchPinch))),
   };
-  command_map_.reset(
-      new CommandMap(commands, commands + arraysize(commands)));
+  command_map_.reset(new CommandMap(commands, commands + base::size(commands)));
 }
 
 HttpHandler::~HttpHandler() {}

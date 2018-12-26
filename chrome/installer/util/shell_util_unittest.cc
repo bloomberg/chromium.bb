@@ -17,8 +17,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/md5.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/cancellation_flag.h"
@@ -820,7 +820,7 @@ class ShellUtilRegistryTest : public testing::Test {
 
   static std::set<base::string16> FileExtensions() {
     std::set<base::string16> file_extensions;
-    for (size_t i = 0; i < arraysize(kTestFileExtensions); ++i)
+    for (size_t i = 0; i < base::size(kTestFileExtensions); ++i)
       file_extensions.insert(kTestFileExtensions[i]);
     return file_extensions;
   }
@@ -977,7 +977,7 @@ TEST(ShellUtilTest, GetOldUserSpecificRegistrySuffix) {
   ASSERT_TRUE(base::StartsWith(suffix, L".", base::CompareCase::SENSITIVE));
 
   wchar_t user_name[256];
-  DWORD size = arraysize(user_name);
+  DWORD size = base::size(user_name);
   ASSERT_NE(0, ::GetUserName(user_name, &size));
   ASSERT_GE(size, 1U);
   ASSERT_STREQ(user_name, suffix.substr(1).c_str());

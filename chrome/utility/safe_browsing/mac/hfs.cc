@@ -13,8 +13,8 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/numerics/safe_math.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/utility/safe_browsing/mac/convert_big_endian.h"
 #include "chrome/utility/safe_browsing/mac/read_stream.h"
@@ -29,7 +29,7 @@ static void ConvertBigEndian(HFSPlusForkData* fork) {
   ConvertBigEndian(&fork->logicalSize);
   ConvertBigEndian(&fork->clumpSize);
   ConvertBigEndian(&fork->totalBlocks);
-  for (size_t i = 0; i < arraysize(fork->extents); ++i) {
+  for (size_t i = 0; i < base::size(fork->extents); ++i) {
     ConvertBigEndian(&fork->extents[i].startBlock);
     ConvertBigEndian(&fork->extents[i].blockCount);
   }
@@ -352,7 +352,7 @@ bool HFSForkReadStream::Read(uint8_t* buffer,
   if (fork_logical_offset_ == fork_.logicalSize)
     return true;
 
-  for (; current_extent_ < arraysize(fork_.extents); ++current_extent_) {
+  for (; current_extent_ < base::size(fork_.extents); ++current_extent_) {
     // If the buffer is out of space, do not attempt any reads. Check this
     // here, so that current_extent_ is advanced by the loop if the last
     // extent was fully read.
@@ -425,7 +425,7 @@ off_t HFSForkReadStream::Seek(off_t offset, int whence) {
   DCHECK(offset == 0 || static_cast<uint64_t>(offset) < fork_.logicalSize);
   size_t target_block = offset / hfs_->block_size();
   size_t block_count = 0;
-  for (size_t i = 0; i < arraysize(fork_.extents); ++i) {
+  for (size_t i = 0; i < base::size(fork_.extents); ++i) {
     const HFSPlusExtentDescriptor* extent = &fork_.extents[i];
 
     // An empty extent indicates end-of-fork.

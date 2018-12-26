@@ -13,8 +13,8 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/process/process.h"
+#include "base/stl_util.h"
 #include "chrome/test/base/process_inspector_win.h"
 #include "chrome/test/base/save_desktop_snapshot_win.h"
 #include "ui/display/win/screen_win.h"
@@ -141,9 +141,9 @@ bool WindowEnumerator::IsTopmostWindow(HWND hwnd) {
 // static
 base::string16 WindowEnumerator::GetWindowClass(HWND hwnd) {
   wchar_t buffer[257];  // Max is 256.
-  buffer[arraysize(buffer) - 1] = L'\0';
-  int name_len = ::GetClassName(hwnd, &buffer[0], arraysize(buffer));
-  if (name_len <= 0 || static_cast<size_t>(name_len) >= arraysize(buffer))
+  buffer[base::size(buffer) - 1] = L'\0';
+  int name_len = ::GetClassName(hwnd, &buffer[0], base::size(buffer));
+  if (name_len <= 0 || static_cast<size_t>(name_len) >= base::size(buffer))
     return base::string16();
   return base::string16(&buffer[0], name_len);
 }

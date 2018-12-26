@@ -7,7 +7,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 
 #if !defined(NDEBUG)
@@ -22,7 +22,7 @@ void TraceImpl(const wchar_t* format, ...) {
   va_list args = {};
 
   va_start(args, format);
-  if (vswprintf(buffer, arraysize(buffer), format, args) > 0) {
+  if (vswprintf(buffer, base::size(buffer), format, args) > 0) {
     OutputDebugString(buffer);
   } else {
     base::string16 error_string(L"Format error for string: ");

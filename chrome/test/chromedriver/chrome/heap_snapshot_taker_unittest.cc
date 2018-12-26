@@ -11,7 +11,7 @@
 #include <string>
 #include <utility>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/stub_devtools_client.h"
@@ -42,7 +42,7 @@ class DummyDevToolsClient : public StubDevToolsClient {
   Status SendAddHeapSnapshotChunkEvent() {
     base::DictionaryValue event_params;
     event_params.SetInteger("uid", uid_);
-    for (size_t i = 0; i < arraysize(chunks); ++i) {
+    for (size_t i = 0; i < base::size(chunks); ++i) {
       event_params.SetString("chunk", chunks[i]);
       Status status = listeners_.front()->OnEvent(
           this, "HeapProfiler.addHeapSnapshotChunk", event_params);

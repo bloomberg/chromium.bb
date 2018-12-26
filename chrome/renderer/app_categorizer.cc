@@ -4,7 +4,7 @@
 
 #include "chrome/renderer/app_categorizer.h"
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "url/gurl.h"
 
@@ -36,12 +36,10 @@ bool IsInWhitelistedDomain(
 bool AppCategorizer::IsHangoutsUrl(const GURL& url) {
   // Whitelisted apps must be served over https.
   return url.SchemeIsCryptographic() &&
-      base::StartsWith(url.path(), "/hangouts/",
-                       base::CompareCase::INSENSITIVE_ASCII) &&
-      IsInWhitelistedDomain(
-          url,
-          kPredefinedHangoutsDomains,
-          arraysize(kPredefinedHangoutsDomains));
+         base::StartsWith(url.path(), "/hangouts/",
+                          base::CompareCase::INSENSITIVE_ASCII) &&
+         IsInWhitelistedDomain(url, kPredefinedHangoutsDomains,
+                               base::size(kPredefinedHangoutsDomains));
 }
 
 bool AppCategorizer::IsWhitelistedApp(

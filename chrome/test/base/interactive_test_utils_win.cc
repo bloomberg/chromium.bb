@@ -8,7 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/test/base/interactive_test_utils_aura.h"
 #include "ui/aura/window_tree_host.h"
@@ -63,7 +63,7 @@ bool ShowAndFocusNativeWindow(gfx::NativeWindow window) {
       CloseHandle(process_handle);
     }
   }
-  GetWindowText(foreground_window, window_title, arraysize(window_title));
+  GetWindowText(foreground_window, window_title, base::size(window_title));
   LOG(ERROR) << "ShowAndFocusNativeWindow failed. foreground window: "
              << foreground_window << ", title: " << window_title << ", path: "
              << path_str;

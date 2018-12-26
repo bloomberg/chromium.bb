@@ -11,6 +11,7 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/content_features.h"
@@ -27,7 +28,7 @@ static const uint8_t kDefaultPublicKey[] = {
 
 ChromeOriginTrialPolicy::ChromeOriginTrialPolicy()
     : public_key_(std::string(reinterpret_cast<const char*>(kDefaultPublicKey),
-                              arraysize(kDefaultPublicKey))) {
+                              base::size(kDefaultPublicKey))) {
   // Set the public key and disabled feature list for the origin trial key
   // manager, based on the command line flags which were passed to this process.
   // If the flags are not present, or are incorrectly formatted, the defaults

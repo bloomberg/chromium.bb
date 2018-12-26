@@ -6,9 +6,9 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/sha1.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/common/chrome_content_client.h"
@@ -75,11 +75,11 @@ PepperUMAHost::PepperUMAHost(content::RendererPpapiHost* host,
         host->GetPluginInstance(instance)->GetModulePath().BaseName();
   }
 
-  for (size_t i = 0; i < arraysize(kPredefinedAllowedUMAOrigins); ++i)
+  for (size_t i = 0; i < base::size(kPredefinedAllowedUMAOrigins); ++i)
     allowed_origins_.insert(kPredefinedAllowedUMAOrigins[i]);
-  for (size_t i = 0; i < arraysize(kWhitelistedHistogramPrefixes); ++i)
+  for (size_t i = 0; i < base::size(kWhitelistedHistogramPrefixes); ++i)
     allowed_histogram_prefixes_.insert(kWhitelistedHistogramPrefixes[i]);
-  for (size_t i = 0; i < arraysize(kWhitelistedPluginBaseNames); ++i)
+  for (size_t i = 0; i < base::size(kWhitelistedPluginBaseNames); ++i)
     allowed_plugin_base_names_.insert(kWhitelistedPluginBaseNames[i]);
 }
 

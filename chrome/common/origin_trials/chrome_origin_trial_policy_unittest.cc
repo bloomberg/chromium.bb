@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -79,13 +79,13 @@ class ChromeOriginTrialPolicyTest : public testing::Test {
   ChromeOriginTrialPolicyTest()
       : token1_signature_(
             std::string(reinterpret_cast<const char*>(kToken1Signature),
-                        arraysize(kToken1Signature))),
+                        base::size(kToken1Signature))),
         token2_signature_(
             std::string(reinterpret_cast<const char*>(kToken2Signature),
-                        arraysize(kToken2Signature))),
+                        base::size(kToken2Signature))),
         token3_signature_(
             std::string(reinterpret_cast<const char*>(kToken3Signature),
-                        arraysize(kToken3Signature))),
+                        base::size(kToken3Signature))),
         two_disabled_tokens_(
             base::JoinString({kToken1SignatureEncoded, kToken2SignatureEncoded},
                              kTokenSeparator)),
@@ -96,7 +96,7 @@ class ChromeOriginTrialPolicyTest : public testing::Test {
         manager_(base::WrapUnique(new ChromeOriginTrialPolicy())),
         default_key_(manager_->GetPublicKey().as_string()),
         test_key_(std::string(reinterpret_cast<const char*>(kTestPublicKey),
-                              arraysize(kTestPublicKey))) {}
+                              base::size(kTestPublicKey))) {}
 
   ChromeOriginTrialPolicy* manager() { return manager_.get(); }
   base::StringPiece default_key() { return default_key_; }

@@ -10,8 +10,8 @@
 #include <memory>
 
 #include "base/base_paths.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_reg_util_win.h"
@@ -244,20 +244,20 @@ TEST_F(GoogleUpdateSettingsTest, UpdateGoogleUpdateApKey) {
     L"1.1-full",
     L"1.1-dev-full"
   };
-  static_assert(arraysize(full) == arraysize(plain), "bad full array size");
+  static_assert(base::size(full) == base::size(plain), "bad full array size");
   const wchar_t* const multifail[] = {
     L"-multifail",
     L"1.1-multifail",
     L"1.1-dev-multifail"
   };
-  static_assert(arraysize(multifail) == arraysize(plain),
+  static_assert(base::size(multifail) == base::size(plain),
                 "bad multifail array size");
   const wchar_t* const multifail_full[] = {
     L"-multifail-full",
     L"1.1-multifail-full",
     L"1.1-dev-multifail-full"
   };
-  static_assert(arraysize(multifail_full) == arraysize(plain),
+  static_assert(base::size(multifail_full) == base::size(plain),
                 "bad multifail_full array size");
   const wchar_t* const* input_arrays[] = {
     plain,
@@ -290,7 +290,7 @@ TEST_F(GoogleUpdateSettingsTest, UpdateGoogleUpdateApKey) {
           else
             outputs = plain;
         }
-        for (size_t input_idx = 0; input_idx < arraysize(plain); ++input_idx) {
+        for (size_t input_idx = 0; input_idx < base::size(plain); ++input_idx) {
           const wchar_t* input = inputs[input_idx];
           const wchar_t* output = outputs[input_idx];
 

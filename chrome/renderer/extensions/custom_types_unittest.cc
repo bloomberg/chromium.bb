@@ -5,6 +5,7 @@
 #include "extensions/renderer/storage_area.h"
 
 #include "base/command_line.h"
+#include "base/stl_util.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/features/simple_feature.h"
@@ -59,12 +60,12 @@ class CustomTypesTest : public NativeExtensionBindingsSystemUnittest {
     v8::Local<v8::Function> use_api =
         FunctionFromString(context, use_api_script);
     v8::Local<v8::Value> args[] = {api_object};
-    RunFunction(use_api, context, arraysize(args), args);
+    RunFunction(use_api, context, base::size(args), args);
 
     DisposeContext(context);
 
     EXPECT_FALSE(binding::IsContextValid(context));
-    RunFunctionAndExpectError(use_api, context, arraysize(args), args,
+    RunFunctionAndExpectError(use_api, context, base::size(args), args,
                               "Uncaught Error: Extension context invalidated.");
   }
 

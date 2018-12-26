@@ -9,9 +9,9 @@
 #include <map>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "components/pdf/renderer/pepper_pdf_host.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
@@ -307,7 +307,7 @@ int32_t PepperFlashRendererHost::OnNavigate(
   std::map<std::string, FlashNavigateUsage>& rejected_headers =
       GetRejectedHeaders();
   if (rejected_headers.empty()) {
-    for (size_t i = 0; i < arraysize(kRejectedHttpRequestHeaders); ++i)
+    for (size_t i = 0; i < base::size(kRejectedHttpRequestHeaders); ++i)
       rejected_headers[kRejectedHttpRequestHeaders[i]] =
           static_cast<FlashNavigateUsage>(i);
   }

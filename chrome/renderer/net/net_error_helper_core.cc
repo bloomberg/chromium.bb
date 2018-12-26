@@ -22,9 +22,9 @@
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -123,8 +123,8 @@ struct NavigationCorrectionResponse {
 base::TimeDelta GetAutoReloadTime(size_t reload_count) {
   static const int kDelaysMs[] = {0,      5000,   30000,  60000,
                                   300000, 600000, 1800000};
-  if (reload_count >= arraysize(kDelaysMs))
-    reload_count = arraysize(kDelaysMs) - 1;
+  if (reload_count >= base::size(kDelaysMs))
+    reload_count = base::size(kDelaysMs) - 1;
   return base::TimeDelta::FromMilliseconds(kDelaysMs[reload_count]);
 }
 
@@ -339,7 +339,7 @@ std::unique_ptr<error_page::ErrorPageParams> CreateErrorPageParams(
 
     size_t correction_index;
     for (correction_index = 0;
-         correction_index < arraysize(kCorrectionResourceTable);
+         correction_index < base::size(kCorrectionResourceTable);
          ++correction_index) {
       if ((*it)->correction_type !=
           kCorrectionResourceTable[correction_index].correction_type) {
@@ -403,7 +403,7 @@ void TrackClickUMA(std::string type_id) {
 
   size_t correction_index;
   for (correction_index = 0;
-       correction_index < arraysize(kCorrectionResourceTable);
+       correction_index < base::size(kCorrectionResourceTable);
        ++correction_index) {
     if (kCorrectionResourceTable[correction_index].correction_type == type_id) {
       UMA_HISTOGRAM_ENUMERATION(

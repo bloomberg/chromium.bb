@@ -17,12 +17,12 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -428,7 +428,7 @@ bool ServiceUtilityProcessHost::Launch(base::CommandLine* cmd_line,
       switches::kVModule,
   };
   cmd_line->CopySwitchesFrom(service_command_line, kForwardSwitches,
-                             arraysize(kForwardSwitches));
+                             base::size(kForwardSwitches));
 
   if (sandbox) {
     mojo::PlatformChannel channel;

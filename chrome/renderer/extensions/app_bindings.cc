@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "extensions/renderer/script_context.h"
 #include "v8/include/v8.h"
 
@@ -76,7 +77,7 @@ void AppBindings::OnAppInstallStateResponse(int callback_id,
           .ToLocalChecked(),
       v8::Integer::New(isolate, callback_id)};
   context()->module_system()->CallModuleMethodSafe(
-      "app", "onInstallStateResponse", arraysize(argv), argv);
+      "app", "onInstallStateResponse", base::size(argv), argv);
 }
 
 }  // namespace extensions

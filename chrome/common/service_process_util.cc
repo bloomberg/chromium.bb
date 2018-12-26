@@ -13,10 +13,10 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "base/sha1.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -188,8 +188,7 @@ std::unique_ptr<base::CommandLine> CreateServiceProcessCommandLine() {
   };
 
   command_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
-                                 kSwitchesToCopy,
-                                 arraysize(kSwitchesToCopy));
+                                 kSwitchesToCopy, base::size(kSwitchesToCopy));
   return command_line;
 }
 

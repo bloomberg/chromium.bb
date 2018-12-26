@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/format_macros.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/capabilities.h"
@@ -30,7 +30,7 @@ const char* const kAllWdLevels[] = {
 
 TEST(Logging, NameLevelConversionHappy) {
   // All names map to a valid enum value.
-  for (int i = 0; static_cast<size_t>(i) < arraysize(kAllWdLevels); ++i) {
+  for (int i = 0; static_cast<size_t>(i) < base::size(kAllWdLevels); ++i) {
     Log::Level level = static_cast<Log::Level>(-1);
     EXPECT_TRUE(WebDriverLog::NameToLevel(kAllWdLevels[i], &level));
     EXPECT_LE(Log::kAll, level);
