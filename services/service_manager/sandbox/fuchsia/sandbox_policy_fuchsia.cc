@@ -177,9 +177,8 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
     options->paths_to_clone.push_back(base::FilePath("/config/ssl"));
 
   if (config.features & kProvideVulkanResources) {
-    // /system/lib is used to load Vulkan libraries. /dev/class/gpu and
-    // /config/vulkan/icd.d are to used configure and access the GPU.
-    options->paths_to_clone.push_back(base::FilePath("/system/lib"));
+    // /dev/class/gpu and /config/vulkan/icd.d are to used configure and
+    // access the GPU.
     options->paths_to_clone.push_back(base::FilePath("/dev/class/gpu"));
     const auto vulkan_icd_path = base::FilePath("/config/vulkan/icd.d");
     if (base::PathExists(vulkan_icd_path))
