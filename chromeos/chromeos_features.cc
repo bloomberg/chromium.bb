@@ -76,6 +76,11 @@ const base::Feature kInstantTethering{"InstantTethering",
 const base::Feature kVideoPlayerNativeControls{
     "VideoPlayerNativeControls", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Use the messages.google.com domain as part of the "Messages" feature under
+// "Connected Devices" settings.
+const base::Feature kUseMessagesGoogleComDomain{
+    "UseMessagesGoogleComDomain", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables user activity prediction for power management on
 // Chrome OS.
 // Defined here rather than in //chrome alongside other related features so that
