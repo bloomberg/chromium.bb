@@ -80,8 +80,5 @@ message UpgradeArcContainerRequest {
   // a non-supervised state, and vice-versa.
   optional SupervisionTransition supervision_transition = 11;
 
-  // Temporary flag to support transition.
-  optional bool create_socket_in_chrome = 12 [default = false];
-
   // Next ID to use: 13
 }
