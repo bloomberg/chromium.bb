@@ -87,7 +87,7 @@ void AndroidAccessTokenFetcher::Start(const std::string& client_id,
                      weak_factory_.GetWeakPtr())));
 
   // Call into Java to get a new token.
-  Java_OAuth2TokenService_getOAuth2AuthToken(
+  Java_OAuth2TokenService_getAccessTokenFromNative(
       env, j_username, j_scope,
       reinterpret_cast<intptr_t>(heap_callback.release()));
 }
@@ -264,7 +264,7 @@ void OAuth2TokenServiceDelegateAndroid::InvalidateAccessToken(
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_access_token =
       ConvertUTF8ToJavaString(env, access_token);
-  Java_OAuth2TokenService_invalidateOAuth2AuthToken(env, j_access_token);
+  Java_OAuth2TokenService_invalidateAccessToken(env, j_access_token);
 }
 
 void OAuth2TokenServiceDelegateAndroid::ValidateAccounts(

@@ -128,8 +128,8 @@ public class OAuth2TokenServiceTest {
                                               .build();
         mAccountManager.addAccountHolderBlocking(accountHolder);
 
-        String accessToken = OAuth2TokenService.getOAuth2AccessTokenWithTimeout(
-                mContext, account, scope, 5, TimeUnit.SECONDS);
+        String accessToken =
+                OAuth2TokenService.getAccessTokenWithTimeout(account, scope, 5, TimeUnit.SECONDS);
         Assert.assertEquals(expectedToken, accessToken);
     }
 }

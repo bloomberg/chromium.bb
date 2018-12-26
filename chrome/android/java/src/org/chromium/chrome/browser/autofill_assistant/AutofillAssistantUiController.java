@@ -19,6 +19,7 @@ import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentOptions;
 
@@ -389,17 +390,17 @@ public class AutofillAssistantUiController extends AbstractAutofillAssistantUiCo
             return;
         }
 
-        AccountManagerFacade.get().getAuthToken(
-                mAccount, AUTH_TOKEN_TYPE, new AccountManagerFacade.GetAuthTokenCallback() {
+        OAuth2TokenService.getAccessToken(
+                mAccount, AUTH_TOKEN_TYPE, new OAuth2TokenService.GetAccessTokenCallback() {
                     @Override
-                    public void tokenAvailable(String token) {
+                    public void onGetTokenSuccess(String token) {
                         if (mUiControllerAndroid != 0) {
                             nativeOnAccessToken(mUiControllerAndroid, true, token);
                         }
                     }
 
                     @Override
-                    public void tokenUnavailable(boolean isTransientError) {
+                    public void onGetTokenFailure(boolean isTransientError) {
                         if (!isTransientError && mUiControllerAndroid != 0) {
                             nativeOnAccessToken(mUiControllerAndroid, false, "");
                         }
@@ -413,7 +414,7 @@ public class AutofillAssistantUiController extends AbstractAutofillAssistantUiCo
             return;
         }
 
-        AccountManagerFacade.get().invalidateAuthToken(accessToken);
+        OAuth2TokenService.invalidateAccessToken(accessToken);
     }
 
     @CalledByNative
