@@ -512,6 +512,16 @@ void HeapCompact::FinishThreadCompaction() {
   do_compact_ = false;
 }
 
+void HeapCompact::CancelCompaction() {
+  if (!do_compact_)
+    return;
+
+  last_fixup_count_for_testing_ = 0;
+  traced_slots_.clear();
+  fixups_.reset();
+  do_compact_ = false;
+}
+
 void HeapCompact::AddCompactingPage(BasePage* page) {
   DCHECK(do_compact_);
   DCHECK(IsCompactingArena(page->Arena()->ArenaIndex()));

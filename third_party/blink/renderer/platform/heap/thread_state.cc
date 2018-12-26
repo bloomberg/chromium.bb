@@ -1700,6 +1700,11 @@ void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
 void ThreadState::AtomicPausePrologue(BlinkGC::StackState stack_state,
                                       BlinkGC::MarkingType marking_type,
                                       BlinkGC::GCReason reason) {
+  // Compaction needs to be canceled when incremental marking ends with a
+  // conservative GC.
+  if (stack_state == BlinkGC::kHeapPointersOnStack)
+    Heap().Compaction()->CancelCompaction();
+
   if (IsMarkingInProgress()) {
     // Incremental marking is already in progress. Only update the state
     // that is necessary to update.

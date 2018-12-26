@@ -1730,8 +1730,26 @@ TEST(IncrementalMarkingTest, WeakHashMapHeapCompaction) {
   persistent->insert(Object::Create());
   driver.FinishGC();
 
-  // Weak caallback should register the slot.
+  // Weak callback should register the slot.
   EXPECT_EQ(driver.GetHeapCompactLastFixupCount(), 1u);
+}
+
+TEST(IncrementalMarkingTest, ConservativeGCWhileCompactionScheduled) {
+  using Store = HeapVector<Member<Object>>;
+  Persistent<Store> persistent(MakeGarbageCollected<Store>());
+  persistent->push_back(Object::Create());
+
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  HeapCompact::ScheduleCompactionGCForTesting(true);
+  driver.Start();
+  driver.FinishSteps();
+  ThreadState::Current()->CollectGarbage(
+      BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking,
+      BlinkGC::kLazySweeping, BlinkGC::GCReason::kConservativeGC);
+
+  // Heap compaction should be canceled if incremental marking finishes with a
+  // conservative GC.
+  EXPECT_EQ(driver.GetHeapCompactLastFixupCount(), 0u);
 }
 
 namespace {
