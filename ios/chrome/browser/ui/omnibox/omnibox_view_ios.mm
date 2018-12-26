@@ -901,25 +901,28 @@ bool OmniboxViewIOS::ShouldIgnoreUserInputDueToPendingVoiceSearch() {
 }
 
 void OmniboxViewIOS::EndEditing() {
-  CloseOmniboxPopup();
-  model()->OnWillKillFocus();
-  model()->OnKillFocus();
-  if ([field_ isPreEditing])
-    [field_ exitPreEditState];
+  if (model()->has_focus()) {
+    CloseOmniboxPopup();
 
-  UpdateRightDecorations();
+    model()->OnWillKillFocus();
+    model()->OnKillFocus();
+    if ([field_ isPreEditing])
+      [field_ exitPreEditState];
 
-  // The controller looks at the current pre-edit state, so the call to
-  // OnKillFocus() must come after exiting pre-edit.
-  controller_->OnKillFocus();
+    UpdateRightDecorations();
 
-  // Blow away any in-progress edits.
-  RevertAll();
-  DCHECK(![field_ hasAutocompleteText]);
+    // The controller looks at the current pre-edit state, so the call to
+    // OnKillFocus() must come after exiting pre-edit.
+    controller_->OnKillFocus();
 
-  if (!omnibox_interacted_while_focused_) {
-    RecordAction(
-        UserMetricsAction("Mobile_FocusedDefocusedOmnibox_WithNoAction"));
+    // Blow away any in-progress edits.
+    RevertAll();
+    DCHECK(![field_ hasAutocompleteText]);
+
+    if (!omnibox_interacted_while_focused_) {
+      RecordAction(
+          UserMetricsAction("Mobile_FocusedDefocusedOmnibox_WithNoAction"));
+    }
   }
 }
 
