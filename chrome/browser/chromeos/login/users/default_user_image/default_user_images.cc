@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -107,7 +107,7 @@ const int kDefaultImageResourceIDs[] = {
 };
 // clang-format on
 
-const int kDefaultImagesCount = arraysize(kDefaultImageResourceIDs);
+const int kDefaultImagesCount = base::size(kDefaultImageResourceIDs);
 
 const int kFirstDefaultImageIndex = 34;
 
@@ -170,7 +170,7 @@ const int kDefaultImageAuthorIDs[] = {
 };
 // clang-format on
 
-const int kDefaultImageAuthorMaxID = arraysize(kDefaultImageAuthorIDs);
+const int kDefaultImageAuthorMaxID = base::size(kDefaultImageAuthorIDs);
 
 // clang-format off
 const int kDefaultImageWebsiteIDs[] = {
@@ -210,7 +210,7 @@ const int kDefaultImageWebsiteIDs[] = {
     IDS_LOGIN_DEFAULT_USER_WEBSITE_33,
 };
 
-const int kDefaultImageWebsiteMaxID = arraysize(kDefaultImageWebsiteIDs);
+const int kDefaultImageWebsiteMaxID = base::size(kDefaultImageWebsiteIDs);
 // clang-format on
 
 // IDs of default user image descriptions.
@@ -288,7 +288,8 @@ const int kDefaultImageDescriptions[] = {
     IDS_LOGIN_DEFAULT_USER_DESC_70,
 };
 
-const int kDefaultImageDescriptionsMaxID = arraysize(kDefaultImageDescriptions);
+const int kDefaultImageDescriptionsMaxID =
+    base::size(kDefaultImageDescriptions);
 
 // Returns true if the string specified consists of the prefix and one of
 // the default images indices. Returns the index of the image in |image_id|

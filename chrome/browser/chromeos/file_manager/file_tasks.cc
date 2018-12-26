@@ -11,8 +11,8 @@
 
 #include "apps/launcher.h"
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -132,7 +132,7 @@ bool IsFallbackFileHandler(const file_tasks::TaskDescriptor& task) {
       extension_misc::kQuickOfficeInternalExtensionId,
       extension_misc::kQuickOfficeExtensionId};
 
-  for (size_t i = 0; i < arraysize(kBuiltInApps); ++i) {
+  for (size_t i = 0; i < base::size(kBuiltInApps); ++i) {
     if (task.app_id == kBuiltInApps[i])
       return true;
   }

@@ -25,6 +25,7 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -449,7 +450,7 @@ int DoUninstallTasks(bool chrome_still_running) {
           ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
           ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR,
       };
-      for (size_t i = 0; i < arraysize(user_shortcut_locations); ++i) {
+      for (size_t i = 0; i < base::size(user_shortcut_locations); ++i) {
         if (!ShellUtil::RemoveShortcuts(user_shortcut_locations[i],
                                         ShellUtil::CURRENT_USER, chrome_exe)) {
           VLOG(1) << "Failed to delete shortcut at location "

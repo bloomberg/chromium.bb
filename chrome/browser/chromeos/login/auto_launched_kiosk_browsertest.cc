@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
@@ -131,7 +132,7 @@ class PersistentSessionManagerClient : public FakeSessionManagerClient {
     login_args_ = {{"login-manager", ""}};
 
     extra_args_ = {{switches::kPolicySwitchesBegin, ""}};
-    for (size_t i = 0; i < arraysize(kDefaultPolicySwitches); ++i) {
+    for (size_t i = 0; i < base::size(kDefaultPolicySwitches); ++i) {
       extra_args_.push_back(
           {kDefaultPolicySwitches[i].name, kDefaultPolicySwitches[i].value});
     }
@@ -470,7 +471,7 @@ class AutoLaunchedKioskTest : public extensions::ExtensionApiTest {
 
   void ExpectCommandLineHasDefaultPolicySwitches(
       const base::CommandLine& cmd_line) {
-    for (size_t i = 0u; i < arraysize(kDefaultPolicySwitches); ++i) {
+    for (size_t i = 0u; i < base::size(kDefaultPolicySwitches); ++i) {
       EXPECT_TRUE(cmd_line.HasSwitch(kDefaultPolicySwitches[i].name))
           << "Missing flag " << kDefaultPolicySwitches[i].name;
       EXPECT_EQ(kDefaultPolicySwitches[i].value,

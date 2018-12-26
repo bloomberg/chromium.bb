@@ -359,7 +359,7 @@ NoteTakingHelper::NoteTakingHelper()
   }
   whitelisted_chrome_app_ids_.insert(whitelisted_chrome_app_ids_.end(),
                                      kExtensionIds,
-                                     kExtensionIds + arraysize(kExtensionIds));
+                                     kExtensionIds + base::size(kExtensionIds));
 
   // Track profiles so we can observe their extension registries.
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,

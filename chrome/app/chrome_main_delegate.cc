@@ -13,11 +13,11 @@
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/memory.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -178,7 +178,7 @@ extern int CloudPrintServiceProcessMain(const content::MainFunctionParams&);
 const char* const ChromeMainDelegate::kNonWildcardDomainNonPortSchemes[] = {
     extensions::kExtensionScheme, chrome::kChromeSearchScheme};
 const size_t ChromeMainDelegate::kNonWildcardDomainNonPortSchemesSize =
-    arraysize(kNonWildcardDomainNonPortSchemes);
+    base::size(kNonWildcardDomainNonPortSchemes);
 
 namespace {
 
@@ -380,9 +380,9 @@ void InitializeUserDataDir(base::CommandLine* command_line) {
   wchar_t user_data_dir_buf[MAX_PATH], invalid_user_data_dir_buf[MAX_PATH];
 
   // In tests this may return false, implying the user data dir should be unset.
-  if (GetUserDataDirectoryThunk(user_data_dir_buf, arraysize(user_data_dir_buf),
-                                invalid_user_data_dir_buf,
-                                arraysize(invalid_user_data_dir_buf))) {
+  if (GetUserDataDirectoryThunk(
+          user_data_dir_buf, base::size(user_data_dir_buf),
+          invalid_user_data_dir_buf, base::size(invalid_user_data_dir_buf))) {
     base::FilePath user_data_dir(user_data_dir_buf);
     if (invalid_user_data_dir_buf[0] != 0) {
       chrome::SetInvalidSpecifiedUserDataDir(
@@ -660,8 +660,8 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
       command_line.HasSwitch(switches::kDiagnosticsRecovery)) {
     base::CommandLine interim_command_line(command_line.GetProgram());
     const char* const kSwitchNames[] = {switches::kUserDataDir, };
-    interim_command_line.CopySwitchesFrom(
-        command_line, kSwitchNames, arraysize(kSwitchNames));
+    interim_command_line.CopySwitchesFrom(command_line, kSwitchNames,
+                                          base::size(kSwitchNames));
     interim_command_line.AppendSwitch(switches::kDiagnostics);
     interim_command_line.AppendSwitch(switches::kDiagnosticsRecovery);
 
@@ -890,7 +890,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
       kAndroidChrome100PercentPakDescriptor,
       kAndroidUIResourcesPakDescriptor,
     };
-    for (size_t i = 0; i < arraysize(extra_pak_keys); ++i) {
+    for (size_t i = 0; i < base::size(extra_pak_keys); ++i) {
       pak_fd = global_descriptors->Get(extra_pak_keys[i]);
       pak_region = global_descriptors->GetRegion(extra_pak_keys[i]);
       ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
@@ -996,7 +996,7 @@ int ChromeMainDelegate::RunProcess(
 #endif
   };
 
-  for (size_t i = 0; i < arraysize(kMainFunctions); ++i) {
+  for (size_t i = 0; i < base::size(kMainFunctions); ++i) {
     if (process_type == kMainFunctions[i].name)
       return kMainFunctions[i].function(main_function_params);
   }

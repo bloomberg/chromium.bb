@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_cache_storage_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_cookie_helper.h"
@@ -60,14 +61,14 @@ class SiteDataSizeCollectorTest : public testing::Test {
         new MockBrowsingDataFlashLSOHelper(profile_.get());
 
     base::WriteFile(profile_->GetPath().Append(chrome::kCookieFilename),
-                    kCookieFileData, arraysize(kCookieFileData));
+                    kCookieFileData, base::size(kCookieFileData));
     const base::FilePath flash_data_dir = profile_->GetPath().Append(
         content::kPepperDataDirname);
     base::CreateDirectory(flash_data_dir);
-    base::WriteFile(flash_data_dir.Append(kFlashDataFilename0),
-                    kFlashData0, arraysize(kFlashData0));
-    base::WriteFile(flash_data_dir.Append(kFlashDataFilename1),
-                    kFlashData1, arraysize(kFlashData1));
+    base::WriteFile(flash_data_dir.Append(kFlashDataFilename0), kFlashData0,
+                    base::size(kFlashData0));
+    base::WriteFile(flash_data_dir.Append(kFlashDataFilename1), kFlashData1,
+                    base::size(kFlashData1));
 
     fetched_size_ = -1;
   }
@@ -129,7 +130,7 @@ TEST_F(SiteDataSizeCollectorTest, FetchCookie) {
   mock_browsing_data_cookie_helper_->Notify();
   // Wait until reading files on blocking pool finishes.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(static_cast<int64_t>(arraysize(kCookieFileData)), fetched_size_);
+  EXPECT_EQ(static_cast<int64_t>(base::size(kCookieFileData)), fetched_size_);
 }
 
 TEST_F(SiteDataSizeCollectorTest, FetchCookieWithoutEntry) {
@@ -246,7 +247,7 @@ TEST_F(SiteDataSizeCollectorTest, FetchFlashLSO) {
   // Wait until reading files on blocking pool finishes.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(
-      static_cast<int64_t>(arraysize(kFlashData0) + arraysize(kFlashData1)),
+      static_cast<int64_t>(base::size(kFlashData0) + base::size(kFlashData1)),
       fetched_size_);
 }
 

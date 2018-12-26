@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -91,7 +91,7 @@ const BrowserDescriptor kBrowserDescriptors[] = {
 };
 
 const BrowserDescriptor* FindBrowserDescriptor(const std::string& package) {
-  size_t count = arraysize(kBrowserDescriptors);
+  size_t count = base::size(kBrowserDescriptors);
   for (size_t i = 0; i < count; i++) {
     if (kBrowserDescriptors[i].package == package)
       return &kBrowserDescriptors[i];
@@ -101,7 +101,7 @@ const BrowserDescriptor* FindBrowserDescriptor(const std::string& package) {
 
 bool BrowserCompare(const AndroidDeviceManager::BrowserInfo& a,
                     const AndroidDeviceManager::BrowserInfo& b) {
-  size_t count = arraysize(kBrowserDescriptors);
+  size_t count = base::size(kBrowserDescriptors);
   for (size_t i = 0; i < count; i++) {
     bool isA = kBrowserDescriptors[i].display_name == a.display_name;
     bool isB = kBrowserDescriptors[i].display_name == b.display_name;

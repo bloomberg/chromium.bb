@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "ash/public/cpp/ash_pref_names.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
@@ -40,7 +40,7 @@ class UserAddingScreenTest : public LoginManagerTest,
     } const kTestUsers[] = {{"test-user1@gmail.com", "1111111111"},
                             {"test-user2@gmail.com", "2222222222"},
                             {"test-user3@gmail.com", "3333333333"}};
-    for (size_t i = 0; i < arraysize(kTestUsers); ++i) {
+    for (size_t i = 0; i < base::size(kTestUsers); ++i) {
       test_users_.emplace_back(AccountId::FromUserEmailGaiaId(
           kTestUsers[i].email, kTestUsers[i].gaia_id));
     }

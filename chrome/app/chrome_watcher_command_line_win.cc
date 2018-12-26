@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -163,7 +164,7 @@ base::CommandLine GenerateChromeWatcherCommandLine(
   base::CommandLine current_command_line =
       *base::CommandLine::ForCurrentProcess();
   command_line.CopySwitchesFrom(current_command_line, kSwitchNames,
-                                arraysize(kSwitchNames));
+                                base::size(kSwitchNames));
 
   return command_line;
 }

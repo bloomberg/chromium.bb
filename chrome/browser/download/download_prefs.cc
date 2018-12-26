@@ -14,9 +14,9 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -129,7 +129,7 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
       prefs::kSaveFileDefaultDirectory,
       prefs::kDownloadDefaultDirectory
   };
-  for (size_t i = 0; i < arraysize(path_pref); ++i) {
+  for (size_t i = 0; i < base::size(path_pref); ++i) {
     const base::FilePath current = prefs->GetFilePath(path_pref[i]);
     base::FilePath migrated;
     if (!current.empty() &&

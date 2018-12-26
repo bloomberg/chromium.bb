@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/network/proxy/ui_proxy_config.h"
@@ -103,7 +103,7 @@ const char* const kProxySettings[] = {
 
 // We have to explicitly export this because the arraysize macro doesn't like
 // extern arrays as their size is not known on compile time.
-const size_t kProxySettingsCount = arraysize(kProxySettings);
+const size_t kProxySettingsCount = base::size(kProxySettings);
 
 bool IsProxyPref(const std::string& path) {
   return base::StartsWith(path, kProxyPrefsPrefix,

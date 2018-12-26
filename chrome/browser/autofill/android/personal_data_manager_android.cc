@@ -13,6 +13,7 @@
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/preferences/prefs.h"
@@ -473,7 +474,7 @@ PersonalDataManagerAndroid::GetBillingAddressLabelForPaymentRequest(
 
   return ConvertUTF16ToJavaString(
       env, profile.ConstructInferredLabel(
-               kLabelFields, arraysize(kLabelFields), arraysize(kLabelFields),
+               kLabelFields, base::size(kLabelFields), base::size(kLabelFields),
                g_browser_process->GetApplicationLocale()));
 }
 
@@ -855,7 +856,7 @@ PersonalDataManagerAndroid::GetShippingAddressLabelForPaymentRequest(
       ADDRESS_HOME_ZIP,     ADDRESS_HOME_SORTING_CODE,
       ADDRESS_HOME_COUNTRY,
   };
-  size_t kLabelFields_size = arraysize(kLabelFields);
+  size_t kLabelFields_size = base::size(kLabelFields);
   if (!include_country_in_label)
     --kLabelFields_size;
 
