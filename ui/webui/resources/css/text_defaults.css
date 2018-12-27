@@ -16,6 +16,7 @@
  * Otherwise its placeholders won't be expanded. */
 
 html {
+  /* TODO(dbeam): remove this soon. Prefer dir= in HTML. */
   direction: $i18n{textDirection};
 }
 
