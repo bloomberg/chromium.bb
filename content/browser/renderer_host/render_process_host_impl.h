@@ -233,6 +233,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void LockToOrigin(const GURL& lock_url) override;
   void BindCacheStorage(blink::mojom::CacheStorageRequest request,
                         const url::Origin& origin) override;
+  void BindIndexedDB(blink::mojom::IDBFactoryRequest request,
+                     const url::Origin& origin) override;
   void CleanupCorbExceptionForPluginUponDestruction() override;
 
   mojom::RouteProvider* GetRemoteRouteProvider();

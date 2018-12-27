@@ -150,6 +150,12 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
         static_cast<RenderProcessHostImpl*>(host)->BindCacheStorage(
             std::move(request), origin);
       }));
+  parameterized_binder_registry_.AddInterface(base::BindRepeating(
+      [](blink::mojom::IDBFactoryRequest request, RenderProcessHost* host,
+         const url::Origin& origin) {
+        static_cast<RenderProcessHostImpl*>(host)->BindIndexedDB(
+            std::move(request), origin);
+      }));
   // TODO(https://crbug.com/873661): Pass origin to FileSystemMananger.
   parameterized_binder_registry_.AddInterface(base::BindRepeating(
       [](blink::mojom::FileSystemManagerRequest request,

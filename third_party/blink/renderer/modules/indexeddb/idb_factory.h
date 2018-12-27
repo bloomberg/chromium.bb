@@ -78,7 +78,7 @@ class MODULES_EXPORT IDBFactory final : public ScriptWrappable {
   ScriptPromise GetDatabaseInfo(ScriptState*, ExceptionState&);
 
  private:
-  WebIDBFactory* GetFactory();
+  WebIDBFactory* GetFactory(ExecutionContext* execution_context);
 
   IDBOpenDBRequest* OpenInternal(ScriptState*,
                                  const String& name,
