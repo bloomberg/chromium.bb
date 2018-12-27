@@ -108,6 +108,53 @@ void UpdateCodecParameters(SdpMessage* sdp_message, bool incoming) {
   }
 }
 
+// Returns true if the RTC stats report indicates a relay connection. If the
+// connection type cannot be determined (which should never happen with a valid
+// RTCStatsReport), this returns false.
+bool IsConnectionRelayed(
+    const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
+  auto transport_stats_list =
+      report->GetStatsOfType<webrtc::RTCTransportStats>();
+  if (transport_stats_list.size() != 1) {
+    LOG(ERROR) << "Unexpected number of transport stats: "
+               << transport_stats_list.size();
+    return false;
+  }
+  std::string selected_candidate_pair_id =
+      *(transport_stats_list[0]->selected_candidate_pair_id);
+  const webrtc::RTCStats* selected_candidate_pair =
+      report->Get(selected_candidate_pair_id);
+  if (!selected_candidate_pair) {
+    LOG(ERROR) << "Expected to find RTC stats for id: "
+               << selected_candidate_pair;
+    return false;
+  }
+  std::string local_candidate_id =
+      *(selected_candidate_pair->cast_to<webrtc::RTCIceCandidatePairStats>()
+            .local_candidate_id);
+  const webrtc::RTCStats* local_candidate = report->Get(local_candidate_id);
+  if (!local_candidate) {
+    LOG(ERROR) << "Expected to find RTC stats for id: " << local_candidate_id;
+    return false;
+  }
+  std::string local_candidate_type =
+      *(local_candidate->cast_to<webrtc::RTCLocalIceCandidateStats>()
+            .candidate_type);
+  std::string remote_candidate_id =
+      *(selected_candidate_pair->cast_to<webrtc::RTCIceCandidatePairStats>()
+            .remote_candidate_id);
+  const webrtc::RTCStats* remote_candidate = report->Get(remote_candidate_id);
+  if (!remote_candidate) {
+    LOG(ERROR) << "Expected to find RTC stats for id: " << remote_candidate_id;
+    return false;
+  }
+  std::string remote_candidate_type =
+      *(remote_candidate->cast_to<webrtc::RTCRemoteIceCandidateStats>()
+            .candidate_type);
+
+  return local_candidate_type == "relay" || remote_candidate_type == "relay";
+}
+
 // A webrtc::CreateSessionDescriptionObserver implementation used to receive the
 // results of creating descriptions for this end of the PeerConnection.
 class CreateSessionDescriptionObserver
@@ -506,6 +553,29 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
   return true;
 }
 
+void WebrtcTransport::Close(ErrorCode error) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!peer_connection_wrapper_)
+    return;
+
+  weak_factory_.InvalidateWeakPtrs();
+
+  // Close and delete PeerConnection asynchronously. PeerConnection may be on
+  // the stack and so it must be destroyed later.
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+      FROM_HERE, peer_connection_wrapper_.release());
+
+  if (error != OK)
+    event_handler_->OnWebrtcTransportError(error);
+}
+
+void WebrtcTransport::ApplySessionOptions(const SessionOptions& options) {
+  base::Optional<std::string> video_codec = options.Get("Video-Codec");
+  if (video_codec) {
+    preferred_video_codec_ = *video_codec;
+  }
+}
+
 void WebrtcTransport::OnLocalSessionDescriptionCreated(
     std::unique_ptr<webrtc::SessionDescriptionInterface> description,
     const std::string& error) {
@@ -651,17 +721,6 @@ void WebrtcTransport::OnRenegotiationNeeded() {
   }
 }
 
-void WebrtcTransport::RequestNegotiation() {
-  DCHECK(transport_context_->role() == TransportRole::SERVER);
-
-  if (!negotiation_pending_) {
-    negotiation_pending_ = true;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&WebrtcTransport::SendOffer, weak_factory_.GetWeakPtr()));
-  }
-}
-
 void WebrtcTransport::OnIceConnectionChange(
     webrtc::PeerConnectionInterface::IceConnectionState new_state) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -715,47 +774,7 @@ void WebrtcTransport::OnIceCandidate(
 
 void WebrtcTransport::OnStatsDelivered(
     const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
-  auto transport_stats_list =
-      report->GetStatsOfType<webrtc::RTCTransportStats>();
-  if (transport_stats_list.size() != 1) {
-    LOG(ERROR) << "Unexpected number of transport stats: "
-               << transport_stats_list.size();
-    return;
-  }
-  std::string selected_candidate_pair_id =
-      *(transport_stats_list[0]->selected_candidate_pair_id);
-  const webrtc::RTCStats* selected_candidate_pair =
-      report->Get(selected_candidate_pair_id);
-  if (!selected_candidate_pair) {
-    LOG(ERROR) << "Expected to find RTC stats for id: "
-               << selected_candidate_pair;
-    return;
-  }
-  std::string local_candidate_id =
-      *(selected_candidate_pair->cast_to<webrtc::RTCIceCandidatePairStats>()
-            .local_candidate_id);
-  const webrtc::RTCStats* local_candidate = report->Get(local_candidate_id);
-  if (!local_candidate) {
-    LOG(ERROR) << "Expected to find RTC stats for id: " << local_candidate_id;
-    return;
-  }
-  std::string local_candidate_type =
-      *(local_candidate->cast_to<webrtc::RTCLocalIceCandidateStats>()
-            .candidate_type);
-  std::string remote_candidate_id =
-      *(selected_candidate_pair->cast_to<webrtc::RTCIceCandidatePairStats>()
-            .remote_candidate_id);
-  const webrtc::RTCStats* remote_candidate = report->Get(remote_candidate_id);
-  if (!remote_candidate) {
-    LOG(ERROR) << "Expected to find RTC stats for id: " << remote_candidate_id;
-    return;
-  }
-  std::string remote_candidate_type =
-      *(remote_candidate->cast_to<webrtc::RTCRemoteIceCandidateStats>()
-            .candidate_type);
-
-  bool is_relay =
-      local_candidate_type == "relay" || remote_candidate_type == "relay";
+  bool is_relay = IsConnectionRelayed(report);
   VLOG(0) << "Relay connection: " << (is_relay ? "true" : "false");
 
   if (is_relay) {
@@ -769,30 +788,57 @@ void WebrtcTransport::OnStatsDelivered(
     // Apply the suggested bitrate cap to prevent large amounts of packet loss.
     // The Google TURN/relay server limits the connection speed by dropping
     // packets, which may interact badly with WebRTC's bandwidth-estimation.
-    auto senders = peer_connection()->GetSenders();
-    for (rtc::scoped_refptr<webrtc::RtpSenderInterface> sender : senders) {
-      // x-google-max-bitrate is only set for video codecs in the SDP exchange.
-      // So avoid setting a very large bitrate cap on the audio sender.
-      if (sender->media_type() != cricket::MediaType::MEDIA_TYPE_VIDEO) {
-        continue;
-      }
-
-      webrtc::RtpParameters parameters = sender->GetParameters();
-      if (parameters.encodings.empty()) {
-        LOG(ERROR) << "No encodings found for sender " << sender->id();
-        continue;
-      }
-
-      if (parameters.encodings.size() != 1) {
-        LOG(ERROR) << "Unexpected number of encodings ("
-                   << parameters.encodings.size() << ") for sender "
-                   << sender->id();
-      }
-
-      parameters.encodings[0].max_bitrate_bps = max_bitrate_kbps * 1000;
-      sender->SetParameters(parameters);
+    // Only set the cap on the VideoSender, because the AudioSender (via the
+    // Opus codec) is already configured with a lower bitrate.
+    rtc::scoped_refptr<webrtc::RtpSenderInterface> sender = GetVideoSender();
+    if (!sender) {
+      LOG(ERROR) << "Video sender not found.";
+      return;
     }
+
+    webrtc::RtpParameters parameters = sender->GetParameters();
+    if (parameters.encodings.empty()) {
+      LOG(ERROR) << "No encodings found for sender " << sender->id();
+      return;
+    }
+
+    if (parameters.encodings.size() != 1) {
+      LOG(ERROR) << "Unexpected number of encodings ("
+                 << parameters.encodings.size() << ") for sender "
+                 << sender->id();
+    }
+
+    parameters.encodings[0].max_bitrate_bps = max_bitrate_kbps * 1000;
+    sender->SetParameters(parameters);
   }
+}
+
+void WebrtcTransport::RequestNegotiation() {
+  DCHECK(transport_context_->role() == TransportRole::SERVER);
+
+  if (!negotiation_pending_) {
+    negotiation_pending_ = true;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&WebrtcTransport::SendOffer,
+                                  weak_factory_.GetWeakPtr()));
+  }
+}
+
+void WebrtcTransport::SendOffer() {
+  DCHECK(transport_context_->role() == TransportRole::SERVER);
+
+  DCHECK(negotiation_pending_);
+  negotiation_pending_ = false;
+
+  webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+  options.offer_to_receive_video = true;
+  options.offer_to_receive_audio = false;
+  options.ice_restart = want_ice_restart_;
+  peer_connection()->CreateOffer(
+      CreateSessionDescriptionObserver::Create(base::BindRepeating(
+          &WebrtcTransport::OnLocalSessionDescriptionCreated,
+          weak_factory_.GetWeakPtr())),
+      options);
 }
 
 void WebrtcTransport::EnsurePendingTransportInfoMessage() {
@@ -813,23 +859,6 @@ void WebrtcTransport::EnsurePendingTransportInfoMessage() {
         FROM_HERE, base::TimeDelta::FromMilliseconds(kTransportInfoSendDelayMs),
         this, &WebrtcTransport::SendTransportInfo);
   }
-}
-
-void WebrtcTransport::SendOffer() {
-  DCHECK(transport_context_->role() == TransportRole::SERVER);
-
-  DCHECK(negotiation_pending_);
-  negotiation_pending_ = false;
-
-  webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
-  options.offer_to_receive_video = true;
-  options.offer_to_receive_audio = false;
-  options.ice_restart = want_ice_restart_;
-  peer_connection()->CreateOffer(
-      CreateSessionDescriptionObserver::Create(
-          base::Bind(&WebrtcTransport::OnLocalSessionDescriptionCreated,
-                     weak_factory_.GetWeakPtr())),
-      options);
 }
 
 void WebrtcTransport::SendTransportInfo() {
@@ -855,27 +884,15 @@ void WebrtcTransport::AddPendingCandidatesIfPossible() {
   }
 }
 
-void WebrtcTransport::Close(ErrorCode error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!peer_connection_wrapper_)
-    return;
-
-  weak_factory_.InvalidateWeakPtrs();
-
-  // Close and delete PeerConnection asynchronously. PeerConnection may be on
-  // the stack and so it must be destroyed later.
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
-      FROM_HERE, peer_connection_wrapper_.release());
-
-  if (error != OK)
-    event_handler_->OnWebrtcTransportError(error);
-}
-
-void WebrtcTransport::ApplySessionOptions(const SessionOptions& options) {
-  base::Optional<std::string> video_codec = options.Get("Video-Codec");
-  if (video_codec) {
-    preferred_video_codec_ = *video_codec;
+rtc::scoped_refptr<webrtc::RtpSenderInterface>
+WebrtcTransport::GetVideoSender() {
+  auto senders = peer_connection()->GetSenders();
+  for (rtc::scoped_refptr<webrtc::RtpSenderInterface> sender : senders) {
+    if (sender->media_type() == cricket::MediaType::MEDIA_TYPE_VIDEO) {
+      return sender;
+    }
   }
+  return nullptr;
 }
 
 }  // namespace protocol
