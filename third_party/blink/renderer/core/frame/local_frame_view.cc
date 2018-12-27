@@ -628,10 +628,7 @@ void LocalFrameView::PerformPreLayoutTasks() {
 
 void LocalFrameView::LayoutFromRootObject(LayoutObject& root) {
   LayoutState layout_state(root);
-  if (!root.IsBoxModelObject())
-    root.UpdateLayout();
-  else
-    ToLayoutBoxModelObject(root).UpdateLayout();
+  root.UpdateLayout();
 }
 
 void LocalFrameView::PrepareLayoutAnalyzer() {
