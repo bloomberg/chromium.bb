@@ -5,14 +5,14 @@
 #ifndef SQL_SQL_FEATURES_H_
 #define SQL_SQL_FEATURES_H_
 
+#include "base/component_export.h"
 #include "base/feature_list.h"
-#include "sql/sql_export.h"
 
 namespace sql {
 
 namespace features {
 
-SQL_EXPORT extern const base::Feature kSqlTempStoreMemory;
+COMPONENT_EXPORT(SQL) extern const base::Feature kSqlTempStoreMemory;
 
 }  // namespace features
 

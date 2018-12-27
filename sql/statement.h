@@ -9,12 +9,12 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 #include "sql/database.h"
-#include "sql/sql_export.h"
 
 namespace sql {
 
@@ -43,7 +43,7 @@ enum ColType {
 // Step() and Run() just return true to signal success. If you want to handle
 // specific errors such as database corruption, install an error handler in
 // in the connection object using set_error_delegate().
-class SQL_EXPORT Statement {
+class COMPONENT_EXPORT(SQL) Statement {
  public:
   // Creates an uninitialized statement. The statement will be invalid until
   // you initialize it via Assign.

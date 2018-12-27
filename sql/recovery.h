@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "sql/database.h"
 
@@ -62,7 +63,7 @@ namespace sql {
 // If Recovered() is not called, then RazeAndClose() is called on
 // orig_db.
 
-class SQL_EXPORT Recovery {
+class COMPONENT_EXPORT(SQL) Recovery {
  public:
   ~Recovery();
 

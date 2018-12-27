@@ -15,6 +15,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -24,7 +25,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/tick_clock.h"
 #include "sql/internal_api_token.h"
-#include "sql/sql_export.h"
 #include "sql/statement_id.h"
 
 struct sqlite3;
@@ -64,7 +64,7 @@ class DatabaseTestPeer;
 // TODO(pwnall): This should be renamed to Database. Class instances are
 // typically named "db_" / "db", and the class' equivalents in other systems
 // used by Chrome are named LevelDB::DB and blink::IDBDatabase.
-class SQL_EXPORT Database {
+class COMPONENT_EXPORT(SQL) Database {
  private:
   class StatementRef;  // Forward declaration, see real one below.
 
@@ -583,7 +583,8 @@ class SQL_EXPORT Database {
   //
   // The Database may revoke a StatementRef in some error cases, so callers
   // should always check validity before using.
-  class SQL_EXPORT StatementRef : public base::RefCounted<StatementRef> {
+  class COMPONENT_EXPORT(SQL) StatementRef
+      : public base::RefCounted<StatementRef> {
    public:
     REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
 
