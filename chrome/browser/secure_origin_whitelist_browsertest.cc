@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_P(SecureOriginWhitelistBrowsertest, Simple) {
 }
 
 // Tests that whitelisted insecure origins are correctly set as security level
-// NONE instead of the default level DANGEROUS.
+// NONE instead of the default level HTTPS_SHOW_WARNING.
 IN_PROC_BROWSER_TEST_P(SecureOriginWhitelistBrowsertest, SecurityIndicators) {
   ui_test_utils::NavigateToURL(
       browser(),
@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_P(SecureOriginWhitelistBrowsertest, SecurityIndicators) {
 
   if (GetParam() == TestVariant::kPolicyOldAndNew) {
     // When both policies are set, the new policy overrides the old policy.
-    EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+    EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
     ui_test_utils::NavigateToURL(
         browser(),
         embedded_test_server()->GetURL(
@@ -189,7 +189,7 @@ IN_PROC_BROWSER_TEST_P(SecureOriginWhitelistBrowsertest, SecurityIndicators) {
     EXPECT_EQ(security_state::NONE, security_info.security_level);
   } else {
     EXPECT_EQ(ExpectSecureContext() ? security_state::NONE
-                                    : security_state::DANGEROUS,
+                                    : security_state::HTTP_SHOW_WARNING,
               security_info.security_level);
   }
 }
