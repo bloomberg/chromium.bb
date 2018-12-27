@@ -26,6 +26,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -74,6 +75,8 @@ public class StatusView extends LinearLayout {
     private StatusViewAnimator mLocationBarSecurityButtonShowAnimator;
     private StatusViewAnimator mLocationBarNavigationIconShowAnimator;
     private StatusViewAnimator mLocationBarClearAnimator;
+
+    private @StringRes int mSecurityIconAccessibilityDescription;
 
     /**
      * Class animating transition between FrameLayout children.
@@ -163,6 +166,7 @@ public class StatusView extends LinearLayout {
         assert mNavigationButton != null : "Missing navigation type view.";
 
         configureLocationBarIconAnimations();
+        configureAccessibilityDescriptions();
     }
 
     /**
@@ -191,6 +195,20 @@ public class StatusView extends LinearLayout {
         // Animation clearing up all location bar icons.
         mLocationBarClearAnimator = new StatusViewAnimator(
                 new View[] {}, new View[] {mNavigationButton, mSecurityButton});
+    }
+
+    /**
+     * Configure accessibility toasts.
+     */
+    void configureAccessibilityDescriptions() {
+        mSecurityButton.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                Context context = getContext();
+                return AccessibilityUtil.showAccessibilityToast(
+                        context, view, context.getResources().getString(R.string.menu_page_info));
+            }
+        });
     }
 
     /**

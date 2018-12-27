@@ -57,7 +57,6 @@ public class ToolbarTablet extends ToolbarLayout
     private ImageButton mReloadButton;
     private ImageButton mBookmarkButton;
     private ImageButton mSaveOfflineButton;
-    private ImageButton mSecurityButton;
     private ToggleTabStackButton mAccessibilitySwitcherButton;
 
     private OnClickListener mBookmarkListener;
@@ -109,7 +108,6 @@ public class ToolbarTablet extends ToolbarLayout
         DrawableCompat.setTintList(reloadIcon,
                 AppCompatResources.getColorStateList(getContext(), R.color.dark_mode_tint));
         mReloadButton.setImageDrawable(reloadIcon);
-        mSecurityButton = findViewById(R.id.security_button);
         mShowTabStack = AccessibilityUtil.isAccessibilityEnabled()
                 && isAccessibilityTabSwitcherPreferenceEnabled();
 
@@ -258,8 +256,6 @@ public class ToolbarTablet extends ToolbarLayout
 
         mSaveOfflineButton.setOnClickListener(this);
         mSaveOfflineButton.setOnLongClickListener(this);
-
-        mSecurityButton.setOnLongClickListener(this);
     }
 
     @Override
@@ -333,8 +329,6 @@ public class ToolbarTablet extends ToolbarLayout
             description = resources.getString(R.string.menu_bookmark);
         } else if (v == mSaveOfflineButton) {
             description = resources.getString(R.string.menu_download);
-        } else if (v == mSecurityButton) {
-            description = resources.getString(R.string.menu_page_info);
         }
         return AccessibilityUtil.showAccessibilityToast(context, v, description);
     }
