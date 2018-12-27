@@ -12,10 +12,6 @@ namespace features {
 const base::Feature kAndroidMessagesIntegration{
     "AndroidMessagesIntegration", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Point to the production Android Messages URL instead of sandbox.
-const base::Feature kAndroidMessagesProdEndpoint{
-    "AndroidMessagesProdEndpoint", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables auto screen-brightness adjustment when ambient light
 // changes.
 const base::Feature kAutoScreenBrightness{"AutoScreenBrightness",

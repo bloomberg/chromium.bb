@@ -58,12 +58,6 @@ const char kUseMessagesGoogleComDomainDescription[] =
     "Use the messages.google.com domain as part of the \"Messages\" "
     "feature under \"Connected Devices\" settings.";
 
-const char kAndroidMessagesProdEndpointName[] =
-    "Use Android Messages prod endpoint";
-const char kAndroidMessagesProdEndpointDescription[] =
-    "For Android Messages integration, point to the prod endpoint instead of "
-    "sandbox.";
-
 const char kAndroidSiteSettingsUIRefreshName[] =
     "Android Site Settings UI changes.";
 const char kAndroidSiteSettingsUIRefreshDescription[] =

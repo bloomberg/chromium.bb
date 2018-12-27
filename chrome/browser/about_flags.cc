@@ -1577,10 +1577,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseMessagesGoogleComDomainName,
      flag_descriptions::kUseMessagesGoogleComDomainDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kUseMessagesGoogleComDomain)},
-    {"enable_android_messages_prod_endpoint",
-     flag_descriptions::kAndroidMessagesProdEndpointName,
-     flag_descriptions::kAndroidMessagesProdEndpointDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kAndroidMessagesProdEndpoint)},
     {
         "enable-background-blur",
         flag_descriptions::kEnableBackgroundBlurName,
