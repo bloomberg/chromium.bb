@@ -1156,9 +1156,18 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSecondaryAccountSyncTest,
   EXPECT_NE(nullptr, GetPaymentsCustomerData(profile_data).get());
 }
 
+#if defined(THREAD_SANITIZER)
+// Web Database thread and history DB thread access sqlite concurrently,
+// https://crbug.com/917380
+#define MAYBE_SwitchesFromAccountToProfileStorageOnSyncOptInWithAdvancedSetup \
+  DISABLED_SwitchesFromAccountToProfileStorageOnSyncOptInWithAdvancedSetup
+#else
+#define MAYBE_SwitchesFromAccountToProfileStorageOnSyncOptInWithAdvancedSetup \
+  SwitchesFromAccountToProfileStorageOnSyncOptInWithAdvancedSetup
+#endif
 IN_PROC_BROWSER_TEST_F(
     SingleClientWalletSecondaryAccountSyncTest,
-    SwitchesFromAccountToProfileStorageOnSyncOptInWithAdvancedSetup) {
+    MAYBE_SwitchesFromAccountToProfileStorageOnSyncOptInWithAdvancedSetup) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   GetPersonalDataManager(0)->OnSyncServiceInitialized(GetSyncService(0));
 
