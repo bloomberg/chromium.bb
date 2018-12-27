@@ -145,7 +145,10 @@ namespace {
 class MockAppShimHost : public AppShimHost {
  public:
   MockAppShimHost()
-      : AppShimHost("app", base::FilePath("Profile")), weak_factory_(this) {}
+      : AppShimHost("app",
+                    base::FilePath("Profile"),
+                    false /* uses_remote_views */),
+        weak_factory_(this) {}
   ~MockAppShimHost() override {}
 
   MOCK_METHOD0(OnAppUnhideWithoutActivation, void());

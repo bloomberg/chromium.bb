@@ -69,7 +69,8 @@ class TestingAppShimHost : public AppShimHost {
  public:
   TestingAppShimHost(const std::string& app_id,
                      const base::FilePath& profile_path)
-      : AppShimHost(app_id, profile_path), test_weak_factory_(this) {}
+      : AppShimHost(app_id, profile_path, false /* uses_remote_views */),
+        test_weak_factory_(this) {}
 
   base::WeakPtr<TestingAppShimHost> GetWeakPtr() {
     return test_weak_factory_.GetWeakPtr();

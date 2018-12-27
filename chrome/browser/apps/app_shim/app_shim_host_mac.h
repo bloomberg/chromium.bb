@@ -33,7 +33,11 @@ class AppShimHostBootstrap;
 // connected to the app shim is closed.
 class AppShimHost : public chrome::mojom::AppShimHost {
  public:
-  AppShimHost(const std::string& app_id, const base::FilePath& profile_path);
+  AppShimHost(const std::string& app_id,
+              const base::FilePath& profile_path,
+              bool uses_remote_views);
+
+  bool UsesRemoteViews() const { return uses_remote_views_; }
 
   // Returns true if an AppShimHostBootstrap has already connected to this
   // host.
@@ -106,6 +110,7 @@ class AppShimHost : public chrome::mojom::AppShimHost {
 
   std::string app_id_;
   base::FilePath profile_path_;
+  const bool uses_remote_views_;
 
   // This class is only ever to be used on the UI thread.
   THREAD_CHECKER(thread_checker_);

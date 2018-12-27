@@ -95,11 +95,6 @@ bool FocusHostedAppWindows(const std::set<Browser*>& browsers) {
   if (browsers.empty())
     return false;
 
-  // If the NSWindows for the app are in the app shim process, then don't steal
-  // focus from the app shim.
-  if (features::HostWindowsInAppShimProcess())
-    return true;
-
   std::set<gfx::NativeWindow> native_windows;
   for (const Browser* browser : browsers)
     native_windows.insert(browser->window()->GetNativeWindow());
@@ -215,7 +210,8 @@ bool ExtensionAppShimHandler::Delegate::AllowShimToConnect(
 AppShimHost* ExtensionAppShimHandler::Delegate::CreateHost(
     Profile* profile,
     const extensions::Extension* extension) {
-  return new AppShimHost(extension->id(), profile->GetPath());
+  return new AppShimHost(extension->id(), profile->GetPath(),
+                         extension->is_hosted_app());
 }
 
 void ExtensionAppShimHandler::Delegate::EnableExtension(
@@ -629,6 +625,9 @@ void ExtensionAppShimHandler::OnShimFocus(
     AppShimHost* host,
     AppShimFocusType focus_type,
     const std::vector<base::FilePath>& files) {
+  if (host->UsesRemoteViews())
+    return;
+
   Profile* profile;
   const Extension* extension = MaybeGetExtensionOrCloseHost(host, &profile);
   if (!extension)
@@ -657,6 +656,9 @@ void ExtensionAppShimHandler::OnShimFocus(
 }
 
 void ExtensionAppShimHandler::OnShimSetHidden(AppShimHost* host, bool hidden) {
+  if (host->UsesRemoteViews())
+    return;
+
   Profile* profile;
   const Extension* extension = MaybeGetExtensionOrCloseHost(host, &profile);
   if (!extension)
@@ -669,6 +671,9 @@ void ExtensionAppShimHandler::OnShimSetHidden(AppShimHost* host, bool hidden) {
 }
 
 void ExtensionAppShimHandler::OnShimQuit(AppShimHost* host) {
+  if (host->UsesRemoteViews())
+    return;
+
   DCHECK(delegate_->ProfileExistsForPath(host->GetProfilePath()));
   Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
 

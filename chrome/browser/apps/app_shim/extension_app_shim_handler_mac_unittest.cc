@@ -212,7 +212,7 @@ class TestHost : public AppShimHost {
   TestHost(const base::FilePath& profile_path,
            const std::string& app_id,
            TestingExtensionAppShimHandler* handler)
-      : AppShimHost(app_id, profile_path),
+      : AppShimHost(app_id, profile_path, false /* uses_remote_views */),
         handler_(handler),
         weak_factory_(this) {}
 
