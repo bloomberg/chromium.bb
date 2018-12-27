@@ -2507,6 +2507,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     public void startActivity(Intent intent, Bundle options) {
         if (VrModuleProvider.getDelegate().canLaunch2DIntents()
                 || VrModuleProvider.getIntentDelegate().isVrIntent(intent)) {
+            if (VrModuleProvider.getDelegate().isInVr()) {
+                VrModuleProvider.getIntentDelegate().setupVrIntent(intent);
+            }
             super.startActivity(intent, options);
             return;
         }
