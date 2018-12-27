@@ -18,7 +18,6 @@ class String;
 }
 
 namespace blink {
-class WebSecurityOrigin;
 
 class WebIDBFactoryImpl : public blink::WebIDBFactory {
  public:
@@ -28,23 +27,19 @@ class WebIDBFactoryImpl : public blink::WebIDBFactory {
   // See WebIDBFactory.h for documentation on these functions.
   void GetDatabaseInfo(
       blink::WebIDBCallbacks* callbacks,
-      const blink::WebSecurityOrigin& origin,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void GetDatabaseNames(
       blink::WebIDBCallbacks* callbacks,
-      const blink::WebSecurityOrigin& origin,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void Open(const WTF::String& name,
             long long version,
             long long transaction_id,
             blink::WebIDBCallbacks* callbacks,
             blink::WebIDBDatabaseCallbacks* databaseCallbacks,
-            const blink::WebSecurityOrigin& origin,
             scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void DeleteDatabase(
       const WTF::String& name,
       blink::WebIDBCallbacks* callbacks,
-      const blink::WebSecurityOrigin& origin,
       bool force_close,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
 

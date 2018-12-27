@@ -112,8 +112,8 @@ struct TestDatabaseConnection {
 
   void Open(IDBFactory* factory) {
     factory->Open(open_callbacks->CreateInterfacePtrAndBind(),
-                  connection_callbacks->CreateInterfacePtrAndBind(), origin,
-                  db_name, version, upgrade_txn_id);
+                  connection_callbacks->CreateInterfacePtrAndBind(), db_name,
+                  version, upgrade_txn_id);
   }
 
   url::Origin origin;
@@ -490,7 +490,6 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWithConnection) {
     ::testing::InSequence dummy;
     base::RunLoop loop;
     base::Closure quit_closure = base::BarrierClosure(3, loop.QuitClosure());
-    const url::Origin origin = url::Origin::Create(GURL(kOrigin));
 
     EXPECT_CALL(*connection.connection_callbacks, Complete(kTransactionId))
         .Times(1)
@@ -502,9 +501,8 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWithConnection) {
         .WillOnce(RunClosure(quit_closure));
 
     connection.database->Commit(kTransactionId);
-    idb_mojo_factory_->AbortTransactionsAndCompactDatabase(
-        origin, base::BindOnce(&StatusCallback, std::move(quit_closure),
-                               &callback_result));
+    idb_mojo_factory_->AbortTransactionsAndCompactDatabase(base::BindOnce(
+        &StatusCallback, std::move(quit_closure), &callback_result));
 
     loop.Run();
   }
@@ -550,7 +548,6 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileDoingTransaction) {
     ::testing::InSequence dummy;
     base::RunLoop loop;
     base::Closure quit_closure = base::BarrierClosure(4, loop.QuitClosure());
-    const url::Origin origin = url::Origin::Create(GURL(kOrigin));
 
     EXPECT_CALL(
         *connection.connection_callbacks,
@@ -569,9 +566,8 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileDoingTransaction) {
     connection.database->CreateObjectStore(kTransactionId, kObjectStoreId,
                                            base::UTF8ToUTF16(kObjectStoreName),
                                            blink::IndexedDBKeyPath(), false);
-    idb_mojo_factory_->AbortTransactionsAndCompactDatabase(
-        origin, base::BindOnce(&StatusCallback, std::move(quit_closure),
-                               &callback_result));
+    idb_mojo_factory_->AbortTransactionsAndCompactDatabase(base::BindOnce(
+        &StatusCallback, std::move(quit_closure), &callback_result));
 
     loop.Run();
   }
@@ -615,7 +611,6 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileUpgrading) {
     ::testing::InSequence dummy;
     base::RunLoop loop;
     base::Closure quit_closure = base::BarrierClosure(4, loop.QuitClosure());
-    const url::Origin origin = url::Origin::Create(GURL(kOrigin));
 
     EXPECT_CALL(
         *connection.connection_callbacks,
@@ -631,9 +626,8 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileUpgrading) {
         .WillOnce(RunClosure(quit_closure));
 
     ASSERT_TRUE(connection.database.is_bound());
-    idb_mojo_factory_->AbortTransactionsAndCompactDatabase(
-        origin, base::BindOnce(&StatusCallback, std::move(quit_closure),
-                               &callback_result));
+    idb_mojo_factory_->AbortTransactionsAndCompactDatabase(base::BindOnce(
+        &StatusCallback, std::move(quit_closure), &callback_result));
 
     loop.Run();
   }
@@ -678,7 +672,6 @@ TEST_F(IndexedDBDispatcherHostTest,
     ::testing::InSequence dummy;
     base::RunLoop loop;
     base::Closure quit_closure = base::BarrierClosure(4, loop.QuitClosure());
-    const url::Origin origin = url::Origin::Create(GURL(kOrigin));
 
     EXPECT_CALL(*connection.connection_callbacks, Complete(kTransactionId))
         .Times(1)
@@ -693,9 +686,8 @@ TEST_F(IndexedDBDispatcherHostTest,
         .WillOnce(RunClosure(quit_closure));
 
     connection.database->Commit(kTransactionId);
-    idb_mojo_factory_->AbortTransactionsForDatabase(
-        origin, base::BindOnce(&StatusCallback, std::move(quit_closure),
-                               &callback_result));
+    idb_mojo_factory_->AbortTransactionsForDatabase(base::BindOnce(
+        &StatusCallback, std::move(quit_closure), &callback_result));
 
     loop.Run();
   }
@@ -741,7 +733,6 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileDoingTransaction) {
     ::testing::InSequence dummy;
     base::RunLoop loop;
     base::Closure quit_closure = base::BarrierClosure(4, loop.QuitClosure());
-    const url::Origin origin = url::Origin::Create(GURL(kOrigin));
 
     EXPECT_CALL(
         *connection.connection_callbacks,
@@ -760,9 +751,8 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileDoingTransaction) {
     connection.database->CreateObjectStore(kTransactionId, kObjectStoreId,
                                            base::UTF8ToUTF16(kObjectStoreName),
                                            blink::IndexedDBKeyPath(), false);
-    idb_mojo_factory_->AbortTransactionsForDatabase(
-        origin, base::BindOnce(&StatusCallback, std::move(quit_closure),
-                               &callback_result));
+    idb_mojo_factory_->AbortTransactionsForDatabase(base::BindOnce(
+        &StatusCallback, std::move(quit_closure), &callback_result));
 
     loop.Run();
   }
@@ -806,7 +796,6 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileUpgrading) {
     ::testing::InSequence dummy;
     base::RunLoop loop;
     base::Closure quit_closure = base::BarrierClosure(4, loop.QuitClosure());
-    const url::Origin origin = url::Origin::Create(GURL(kOrigin));
 
     EXPECT_CALL(
         *connection.connection_callbacks,
@@ -822,9 +811,8 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileUpgrading) {
         .WillOnce(RunClosure(quit_closure));
 
     ASSERT_TRUE(connection.database.is_bound());
-    idb_mojo_factory_->AbortTransactionsForDatabase(
-        origin, base::BindOnce(&StatusCallback, std::move(quit_closure),
-                               &callback_result));
+    idb_mojo_factory_->AbortTransactionsForDatabase(base::BindOnce(
+        &StatusCallback, std::move(quit_closure), &callback_result));
 
     loop.Run();
   }

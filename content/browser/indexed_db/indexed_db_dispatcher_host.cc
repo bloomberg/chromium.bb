@@ -170,8 +170,7 @@ void IndexedDBDispatcherHost::RenderProcessExited(
 }
 
 void IndexedDBDispatcherHost::GetDatabaseInfo(
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
-    const url::Origin& origin) {
+    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   const auto& context = bindings_.dispatch_context();
@@ -190,8 +189,7 @@ void IndexedDBDispatcherHost::GetDatabaseInfo(
 }
 
 void IndexedDBDispatcherHost::GetDatabaseNames(
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
-    const url::Origin& origin) {
+    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   const auto& context = bindings_.dispatch_context();
@@ -212,7 +210,6 @@ void IndexedDBDispatcherHost::GetDatabaseNames(
 void IndexedDBDispatcherHost::Open(
     blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
     blink::mojom::IDBDatabaseCallbacksAssociatedPtrInfo database_callbacks_info,
-    const url::Origin& origin,
     const base::string16& name,
     int64_t version,
     int64_t transaction_id) {
@@ -240,7 +237,6 @@ void IndexedDBDispatcherHost::Open(
 
 void IndexedDBDispatcherHost::DeleteDatabase(
     blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
-    const url::Origin& origin,
     const base::string16& name,
     bool force_close) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -262,7 +258,6 @@ void IndexedDBDispatcherHost::DeleteDatabase(
 }
 
 void IndexedDBDispatcherHost::AbortTransactionsAndCompactDatabase(
-    const url::Origin& origin,
     AbortTransactionsAndCompactDatabaseCallback mojo_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -284,7 +279,6 @@ void IndexedDBDispatcherHost::AbortTransactionsAndCompactDatabase(
 }
 
 void IndexedDBDispatcherHost::AbortTransactionsForDatabase(
-    const url::Origin& origin,
     AbortTransactionsForDatabaseCallback mojo_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

@@ -44,29 +44,24 @@ namespace blink {
 
 class WebIDBCallbacks;
 class WebIDBDatabaseCallbacks;
-class WebSecurityOrigin;
 
 class MODULES_EXPORT WebIDBFactory {
  public:
   virtual ~WebIDBFactory() = default;
 
   virtual void GetDatabaseInfo(WebIDBCallbacks*,
-                               const WebSecurityOrigin&,
                                scoped_refptr<base::SingleThreadTaskRunner>) = 0;
   virtual void GetDatabaseNames(
       WebIDBCallbacks*,
-      const WebSecurityOrigin&,
       scoped_refptr<base::SingleThreadTaskRunner>) = 0;
   virtual void Open(const WTF::String& name,
                     long long version,
                     long long transaction_id,
                     WebIDBCallbacks*,
                     WebIDBDatabaseCallbacks*,
-                    const WebSecurityOrigin&,
                     scoped_refptr<base::SingleThreadTaskRunner>) = 0;
   virtual void DeleteDatabase(const WTF::String& name,
                               WebIDBCallbacks*,
-                              const WebSecurityOrigin&,
                               bool force_close,
                               scoped_refptr<base::SingleThreadTaskRunner>) = 0;
 };
