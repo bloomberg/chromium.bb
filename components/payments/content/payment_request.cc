@@ -555,17 +555,12 @@ void PaymentRequest::RecordFirstAbortReason(
 }
 
 void PaymentRequest::CanMakePaymentCallback(bool can_make_payment) {
-  if (!spec_ || CanMakePaymentQueryFactory::GetInstance()
-                    ->GetForContext(web_contents_->GetBrowserContext())
-                    ->CanQuery(top_level_origin_, frame_origin_,
-                               spec_->stringified_method_data())) {
-    RespondToCanMakePaymentQuery(can_make_payment, false);
-  } else if (OriginSecurityChecker::IsOriginLocalhostOrFile(frame_origin_)) {
-    RespondToCanMakePaymentQuery(can_make_payment, true);
-  } else {
-    client_->OnCanMakePayment(
-        mojom::CanMakePaymentQueryResult::QUERY_QUOTA_EXCEEDED);
-  }
+  client_->OnCanMakePayment(
+      can_make_payment ? mojom::CanMakePaymentQueryResult::CAN_MAKE_PAYMENT
+                       : mojom::CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT);
+
+  // TODO(https://crbug.com/915907): emit JourneyLogger event once the event
+  // names are updated.
 
   if (observer_for_testing_)
     observer_for_testing_->OnCanMakePaymentReturned();
@@ -589,21 +584,6 @@ void PaymentRequest::HasEnrolledInstrumentCallback(
 
   if (observer_for_testing_)
     observer_for_testing_->OnHasEnrolledInstrumentReturned();
-}
-
-void PaymentRequest::RespondToCanMakePaymentQuery(bool can_make_payment,
-                                                  bool warn_localhost_or_file) {
-  mojom::CanMakePaymentQueryResult positive =
-      warn_localhost_or_file
-          ? mojom::CanMakePaymentQueryResult::WARNING_CAN_MAKE_PAYMENT
-          : mojom::CanMakePaymentQueryResult::CAN_MAKE_PAYMENT;
-  mojom::CanMakePaymentQueryResult negative =
-      warn_localhost_or_file
-          ? mojom::CanMakePaymentQueryResult::WARNING_CANNOT_MAKE_PAYMENT
-          : mojom::CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT;
-
-  client_->OnCanMakePayment(can_make_payment ? positive : negative);
-  journey_logger_.SetCanMakePaymentValue(can_make_payment);
 }
 
 void PaymentRequest::RespondToHasEnrolledInstrumentQuery(

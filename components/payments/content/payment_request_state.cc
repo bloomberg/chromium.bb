@@ -147,6 +147,10 @@ void PaymentRequestState::FinishedGetAllSWPaymentInstruments() {
   are_requested_methods_supported_ |= !available_instruments_.empty();
   NotifyOnGetAllPaymentInstrumentsFinished();
 
+  // Fulfill the pending CanMakePayment call.
+  if (can_make_payment_callback_)
+    CheckCanMakePayment(std::move(can_make_payment_callback_));
+
   // Fulfill the pending HasEnrolledInstrument call.
   if (has_enrolled_instrument_callback_)
     CheckHasEnrolledInstrument(std::move(has_enrolled_instrument_callback_));
@@ -196,17 +200,26 @@ void PaymentRequestState::OnSpecUpdated() {
 }
 
 void PaymentRequestState::CanMakePayment(StatusCallback callback) {
-  // TODO(https://crbug.com/915907): Implement new CanMakePayment.
-  NOTREACHED();
+  if (!get_all_instruments_finished_) {
+    DCHECK(!can_make_payment_callback_);
+    can_make_payment_callback_ = std::move(callback);
+    return;
+  }
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&PaymentRequestState::CheckCanMakePayment,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void PaymentRequestState::CheckCanMakePayment(StatusCallback callback) {
-  // TODO(https://crbug.com/915907): Implement new CanMakePayment.
-  NOTREACHED();
+  DCHECK(get_all_instruments_finished_);
+  std::move(callback).Run(are_requested_methods_supported_);
 }
 
 void PaymentRequestState::HasEnrolledInstrument(StatusCallback callback) {
   if (!get_all_instruments_finished_) {
+    DCHECK(!has_enrolled_instrument_callback_);
     has_enrolled_instrument_callback_ = std::move(callback);
     return;
   }

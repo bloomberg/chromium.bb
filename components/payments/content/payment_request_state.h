@@ -292,6 +292,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   autofill::PersonalDataManager* personal_data_manager_;
   JourneyLogger* journey_logger_;
 
+  StatusCallback can_make_payment_callback_;
   StatusCallback has_enrolled_instrument_callback_;
   StatusCallback are_requested_methods_supported_callback_;
   bool are_requested_methods_supported_;

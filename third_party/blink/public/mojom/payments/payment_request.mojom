@@ -41,12 +41,6 @@ enum PaymentErrorReason {
 enum CanMakePaymentQueryResult {
   CAN_MAKE_PAYMENT,
   CANNOT_MAKE_PAYMENT,
-  QUERY_QUOTA_EXCEEDED,
-
-  // Used only on localhost and file:// schemes to warn web developer that the
-  // query quota has been exceeded, but Chrome is returning an answer anyway.
-  WARNING_CAN_MAKE_PAYMENT,
-  WARNING_CANNOT_MAKE_PAYMENT,
 };
 
 enum HasEnrolledInstrumentQueryResult {
