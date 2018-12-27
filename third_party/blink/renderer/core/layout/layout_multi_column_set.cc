@@ -522,8 +522,9 @@ LayoutRect LayoutMultiColumnSet::FragmentsBoundingBox(
 }
 
 void LayoutMultiColumnSet::ComputeVisualOverflow(
-    const LayoutRect& previous_visual_overflow_rect,
     bool recompute_floats) {
+  LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
+  ClearVisualOverflow();
   AddVisualOverflowFromChildren();
 
   AddVisualEffectOverflow();
@@ -534,8 +535,11 @@ void LayoutMultiColumnSet::ComputeVisualOverflow(
     AddVisualOverflowFromFloats();
 
   if (VisualOverflowRect() != previous_visual_overflow_rect) {
-    if (Layer())
-      Layer()->SetNeedsCompositingInputsUpdate();
+    if (Layer()) {
+      Layer()->SetNeedsCompositingInputsUpdate(
+          PaintLayer::DoesNotNeedDescendantDependentUpdate);
+    }
+    SetShouldCheckForPaintInvalidation();
     GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
   }
 }
@@ -685,7 +689,7 @@ void LayoutMultiColumnSet::UpdateFromNG() {
   DCHECK_EQ(fragmentainer_groups_.size(), 1U);
   auto& group = fragmentainer_groups_[0];
   group.UpdateFromNG(LogicalHeight());
-  ComputeOverflow(LogicalHeight());
+  ComputeLayoutOverflow(LogicalHeight());
 }
 
 }  // namespace blink

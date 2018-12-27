@@ -859,10 +859,10 @@ void LayoutView::UpdateFromStyle() {
     SetHasBoxDecorationBackground(true);
 }
 
-bool LayoutView::RecalcOverflow() {
-  if (!NeedsOverflowRecalc())
+bool LayoutView::RecalcLayoutOverflow() {
+  if (!NeedsLayoutOverflowRecalc())
     return false;
-  bool result = LayoutBlockFlow::RecalcOverflow();
+  bool result = LayoutBlockFlow::RecalcLayoutOverflow();
   if (result) {
     // Changing overflow should notify scrolling coordinator to ensures that it
     // updates non-fast scroll rects even if there is no layout.

@@ -519,25 +519,20 @@ void LayoutBlock::AddLayoutOverflowFromChildren() {
     AddLayoutOverflowFromBlockChildren();
 }
 
-void LayoutBlock::ComputeOverflow(LayoutUnit old_client_after_edge,
-                                  bool recompute_floats) {
+void LayoutBlock::ComputeVisualOverflow(bool) {
   LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
-  ClearAllOverflows();
-  ComputeLayoutOverflow(old_client_after_edge, recompute_floats);
-  ComputeVisualOverflow(previous_visual_overflow_rect, recompute_floats);
-}
-
-void LayoutBlock::ComputeVisualOverflow(
-    const LayoutRect& previous_visual_overflow_rect,
-    bool) {
+  ClearVisualOverflow();
   AddVisualOverflowFromChildren();
 
   AddVisualEffectOverflow();
   AddVisualOverflowFromTheme();
 
   if (VisualOverflowRect() != previous_visual_overflow_rect) {
-    if (Layer())
-      Layer()->SetNeedsCompositingInputsUpdate();
+    if (Layer()) {
+      Layer()->SetNeedsCompositingInputsUpdate(
+          PaintLayer::DoesNotNeedDescendantDependentUpdate);
+    }
+    SetShouldCheckForPaintInvalidation();
     GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
   }
 }
@@ -545,6 +540,8 @@ void LayoutBlock::ComputeVisualOverflow(
 DISABLE_CFI_PERF
 void LayoutBlock::ComputeLayoutOverflow(LayoutUnit old_client_after_edge,
                                         bool) {
+  ClearSelfNeedsLayoutOverflowRecalc();
+  ClearLayoutOverflow();
   AddLayoutOverflowFromChildren();
   AddLayoutOverflowFromPositionedObjects();
 
@@ -583,7 +580,6 @@ void LayoutBlock::AddVisualOverflowFromBlockChildren() {
     if (child->IsLayoutBlockFlow() &&
         ToLayoutBlockFlow(child)->ContainsInlineWithOutlineAndContinuation())
       ToLayoutBlockFlow(child)->AddVisualOverflowFromInlineChildren();
-
     AddVisualOverflowFromChild(*child);
   }
 }
@@ -744,7 +740,7 @@ bool LayoutBlock::SimplifiedLayout() {
     // bottom edge before we clamp our height. Since this information isn't
     // available during simplifiedLayout, we cache the value in m_overflow.
     LayoutUnit old_client_after_edge = LayoutClientAfterEdge();
-    ComputeOverflow(old_client_after_edge, true);
+    ComputeLayoutOverflow(old_client_after_edge, true);
   }
 
   UpdateAfterLayout();
@@ -2101,77 +2097,147 @@ void LayoutBlock::SetCachedConstraintSpace(const NGConstraintSpace& space) {
   cached_constraint_space_.reset(new NGConstraintSpace(space));
 }
 
-bool LayoutBlock::RecalcNormalFlowChildOverflowIfNeeded(
+bool LayoutBlock::RecalcNormalFlowChildLayoutOverflowIfNeeded(
     LayoutObject* layout_object) {
   if (layout_object->IsOutOfFlowPositioned())
     return false;
-  return layout_object->RecalcOverflow();
+  return layout_object->RecalcLayoutOverflow();
 }
 
-bool LayoutBlock::RecalcChildOverflow() {
-  DCHECK(!IsTable());
-  DCHECK(ChildNeedsOverflowRecalc());
-  ClearChildNeedsLayoutOverflowRecalc();
-  ClearChildNeedsVisualOverflowRecalc();
+bool LayoutBlock::RecalcNormalFlowChildVisualOverflowIfNeeded(
+    LayoutObject* layout_object) {
+  if (layout_object->IsOutOfFlowPositioned() ||
+      (layout_object->HasLayer() &&
+       ToLayoutBoxModelObject(layout_object)->HasSelfPaintingLayer()))
+    return false;
+  return layout_object->RecalcVisualOverflow();
+}
 
-  bool children_overflow_changed = false;
+bool LayoutBlock::RecalcChildLayoutOverflow() {
+  DCHECK(!IsTable());
+  DCHECK(ChildNeedsLayoutOverflowRecalc());
+  ClearChildNeedsLayoutOverflowRecalc();
+
+  bool children_layout_overflow_changed = false;
 
   if (ChildrenInline()) {
     SECURITY_DCHECK(IsLayoutBlockFlow());
-    children_overflow_changed =
-        ToLayoutBlockFlow(this)->RecalcInlineChildrenOverflow();
+    children_layout_overflow_changed =
+        ToLayoutBlockFlow(this)->RecalcInlineChildrenLayoutOverflow();
   } else {
     for (LayoutBox* box = FirstChildBox(); box; box = box->NextSiblingBox()) {
-      if (RecalcNormalFlowChildOverflowIfNeeded(box))
-        children_overflow_changed = true;
+      if (RecalcNormalFlowChildLayoutOverflowIfNeeded(box))
+        children_layout_overflow_changed = true;
     }
   }
 
-  return RecalcPositionedDescendantsOverflow() || children_overflow_changed;
+  return RecalcPositionedDescendantsLayoutOverflow() ||
+         children_layout_overflow_changed;
 }
 
-bool LayoutBlock::RecalcPositionedDescendantsOverflow() {
-  bool children_overflow_changed = false;
+bool LayoutBlock::RecalcChildVisualOverflow() {
+  DCHECK(!IsTable());
+  DCHECK(ChildNeedsVisualOverflowRecalc());
+  ClearChildNeedsVisualOverflowRecalc();
+
+  bool children_visual_overflow_changed = false;
+
+  if (ChildrenInline()) {
+    SECURITY_DCHECK(IsLayoutBlockFlow());
+    children_visual_overflow_changed =
+        ToLayoutBlockFlow(this)->RecalcInlineChildrenVisualOverflow();
+  } else {
+    for (LayoutBox* box = FirstChildBox(); box; box = box->NextSiblingBox()) {
+      if (RecalcNormalFlowChildVisualOverflowIfNeeded(box))
+        children_visual_overflow_changed = true;
+    }
+  }
+
+  return RecalcPositionedDescendantsVisualOverflow() ||
+         children_visual_overflow_changed;
+}
+
+bool LayoutBlock::RecalcPositionedDescendantsLayoutOverflow() {
+  bool children_layout_overflow_changed = false;
 
   TrackedLayoutBoxListHashSet* positioned_descendants = PositionedObjects();
   if (!positioned_descendants)
-    return children_overflow_changed;
+    return children_layout_overflow_changed;
 
   for (auto* box : *positioned_descendants) {
-    if (box->RecalcOverflow())
-      children_overflow_changed = true;
+    if (box->RecalcLayoutOverflow())
+      children_layout_overflow_changed = true;
   }
-  return children_overflow_changed;
+  return children_layout_overflow_changed;
 }
 
-bool LayoutBlock::RecalcOverflow() {
-  bool children_overflow_changed = false;
-  if (ChildNeedsOverflowRecalc())
-    children_overflow_changed = RecalcChildOverflow();
+bool LayoutBlock::RecalcPositionedDescendantsVisualOverflow() {
+  bool children_visual_overflow_changed = false;
 
-  bool self_needs_overflow_recalc = SelfNeedsOverflowRecalc();
-  if (!self_needs_overflow_recalc && !children_overflow_changed)
+  TrackedLayoutBoxListHashSet* positioned_descendants = PositionedObjects();
+  if (!positioned_descendants)
+    return children_visual_overflow_changed;
+
+  for (auto* box : *positioned_descendants) {
+    if (box->HasLayer() && box->HasSelfPaintingLayer())
+      continue;
+    if (box->RecalcVisualOverflow())
+      children_visual_overflow_changed = true;
+  }
+  return children_visual_overflow_changed;
+}
+
+bool LayoutBlock::RecalcLayoutOverflow() {
+  bool children_layout_overflow_changed = false;
+  if (ChildNeedsLayoutOverflowRecalc())
+    children_layout_overflow_changed = RecalcChildLayoutOverflow();
+
+  bool self_needs_overflow_recalc = SelfNeedsLayoutOverflowRecalc();
+  if (!self_needs_overflow_recalc && !children_layout_overflow_changed)
     return false;
 
-  return RecalcSelfOverflow();
+  return RecalcSelfLayoutOverflow();
 }
 
-bool LayoutBlock::RecalcSelfOverflow() {
-  bool self_needs_overflow_recalc = SelfNeedsOverflowRecalc();
-  ClearSelfNeedsLayoutOverflowRecalc();
+bool LayoutBlock::RecalcVisualOverflow() {
+  if (!NeedsVisualOverflowRecalc())
+    return false;
+  bool visual_overflow_changed = false;
+  if (ChildNeedsVisualOverflowRecalc())
+    visual_overflow_changed = RecalcChildVisualOverflow();
+
+  if (SelfNeedsVisualOverflowRecalc())
+    visual_overflow_changed = true;
+
+  if (RecalcSelfVisualOverflow())
+    visual_overflow_changed = true;
+
+  ClearChildNeedsVisualOverflowRecalc();
   ClearSelfNeedsVisualOverflowRecalc();
+
+  return visual_overflow_changed;
+}
+
+bool LayoutBlock::RecalcSelfLayoutOverflow() {
+  bool self_needs_layout_overflow_recalc = SelfNeedsLayoutOverflowRecalc();
   // If the current block needs layout, overflow will be recalculated during
   // layout time anyway. We can safely exit here.
   if (NeedsLayout())
     return false;
 
   LayoutUnit old_client_after_edge = LayoutClientAfterEdge();
-  ComputeOverflow(old_client_after_edge, true);
-
+  ComputeLayoutOverflow(old_client_after_edge, true);
   if (HasOverflowClip())
     Layer()->GetScrollableArea()->UpdateAfterOverflowRecalc();
 
-  return !HasOverflowClip() || self_needs_overflow_recalc;
+  return !HasOverflowClip() || self_needs_layout_overflow_recalc;
+}
+
+bool LayoutBlock::RecalcSelfVisualOverflow() {
+  ComputeVisualOverflow(true);
+  // TODO(chrishtr): what does it have to do with HasOverflowClip()? Why
+  // not just return true if the visual overflow actually changed?
+  return !HasOverflowClip();
 }
 
 // Called when a positioned object moves but doesn't necessarily change size.

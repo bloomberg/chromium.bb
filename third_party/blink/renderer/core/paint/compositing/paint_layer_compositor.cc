@@ -232,7 +232,13 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
   // InCompositingUpdate.
   EnableCompositingModeIfNeeded();
 
+#if DCHECK_IS_ON()
+  view->SetIsUpdatingDescendantDependentFlags(true);
+#endif
   RootLayer()->UpdateDescendantDependentFlags();
+#if DCHECK_IS_ON()
+  view->SetIsUpdatingDescendantDependentFlags(false);
+#endif
 
   layout_view_.CommitPendingSelection();
 
@@ -300,6 +306,10 @@ void PaintLayerCompositor::SetNeedsCompositingUpdate(
   pending_update_type_ = std::max(pending_update_type_, update_type);
   if (Page* page = GetPage())
     page->Animator().ScheduleVisualUpdate(layout_view_.GetFrame());
+
+  if (layout_view_.DocumentBeingDestroyed())
+    return;
+
   Lifecycle().EnsureStateAtMost(DocumentLifecycle::kLayoutClean);
 }
 

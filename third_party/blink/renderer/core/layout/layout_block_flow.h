@@ -111,9 +111,9 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   void UpdateBlockLayout(bool relayout_children) override;
 
-  void ComputeVisualOverflow(const LayoutRect&, bool recompute_floats) override;
+  void ComputeVisualOverflow(bool recompute_floats) override;
   void ComputeLayoutOverflow(LayoutUnit old_client_after_edge,
-                             bool recompute_floats) override;
+                             bool recompute_floats = false) override;
 
   void DeleteLineBoxTree();
 
@@ -424,7 +424,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   void SetShouldDoFullPaintInvalidationForFirstLine();
 
   void SimplifiedNormalFlowInlineLayout();
-  bool RecalcInlineChildrenOverflow();
+  bool RecalcInlineChildrenLayoutOverflow();
+  bool RecalcInlineChildrenVisualOverflow();
 
   PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
 

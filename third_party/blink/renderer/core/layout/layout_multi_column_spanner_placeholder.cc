@@ -94,6 +94,16 @@ bool LayoutMultiColumnSpannerPlaceholder::NeedsPreferredWidthsRecalculation()
   return layout_object_in_flow_thread_->NeedsPreferredWidthsRecalculation();
 }
 
+bool LayoutMultiColumnSpannerPlaceholder::RecalcVisualOverflow() {
+  LayoutRect old_contents_overflow = ContentsVisualOverflowRect();
+  bool visual_overflow_changed = LayoutBox::RecalcVisualOverflow();
+  ClearVisualOverflow();
+  AddContentsVisualOverflow(
+      layout_object_in_flow_thread_->VisualOverflowRect());
+  return visual_overflow_changed ||
+         old_contents_overflow != ContentsVisualOverflowRect();
+}
+
 LayoutUnit LayoutMultiColumnSpannerPlaceholder::MinPreferredLogicalWidth()
     const {
   return layout_object_in_flow_thread_->MinPreferredLogicalWidth();
@@ -123,9 +133,7 @@ void LayoutMultiColumnSpannerPlaceholder::UpdateLayout() {
 
   // Take the overflow from the spanner, so that it gets propagated to the
   // multicol container and beyond.
-  ClearAllOverflows();
-  AddContentsVisualOverflow(
-      layout_object_in_flow_thread_->VisualOverflowRect());
+  ClearLayoutOverflow();
   AddLayoutOverflow(layout_object_in_flow_thread_->LayoutOverflowRect());
 
   ClearNeedsLayout();

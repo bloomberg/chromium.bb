@@ -73,14 +73,18 @@ const NGPhysicalBoxFragment* LayoutNGMixin<Base>::CurrentFragment() const {
 
 template <typename Base>
 void LayoutNGMixin<Base>::ComputeVisualOverflow(
-    const LayoutRect& previous_visual_overflow_rect,
     bool recompute_floats) {
-  Base::ComputeVisualOverflow(previous_visual_overflow_rect, recompute_floats);
+  LayoutRect previous_visual_overflow_rect = Base::VisualOverflowRect();
+  Base::ClearVisualOverflow();
+  Base::ComputeVisualOverflow(recompute_floats);
   AddVisualOverflowFromChildren();
 
   if (Base::VisualOverflowRect() != previous_visual_overflow_rect) {
-    if (Base::Layer())
-      Base::Layer()->SetNeedsCompositingInputsUpdate();
+    if (Base::Layer()) {
+      Base::Layer()->SetNeedsCompositingInputsUpdate(
+          PaintLayer::DoesNotNeedDescendantDependentUpdate);
+    }
+    Base::SetShouldCheckForPaintInvalidation();
     Base::GetFrameView()->SetIntersectionObservationState(
         LocalFrameView::kDesired);
   }

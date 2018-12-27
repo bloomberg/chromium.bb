@@ -204,6 +204,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   virtual void TransformText();
 
+  bool RecalcVisualOverflow() override;
+
   LayoutRect LocalSelectionRect() const final;
   LayoutRect LocalCaretRect(
       const InlineBox*,

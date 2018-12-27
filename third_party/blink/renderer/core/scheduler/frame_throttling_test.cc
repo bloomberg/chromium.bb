@@ -286,13 +286,27 @@ TEST_P(FrameThrottlingTest, ThrottledLifecycleUpdate) {
   // ran.
   frame_element->setAttribute(kWidthAttr, "50");
   CompositeFrame();
-  EXPECT_EQ(DocumentLifecycle::kPaintClean,
-            frame_document->Lifecycle().GetState());
 
-  // A hit test will not force a complete lifecycle update.
-  WebView().HitTestResultAt(gfx::Point());
-  EXPECT_EQ(DocumentLifecycle::kPaintClean,
-            frame_document->Lifecycle().GetState());
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    EXPECT_EQ(DocumentLifecycle::kPaintClean,
+              frame_document->Lifecycle().GetState());
+
+    // A hit test will not force a complete lifecycle update.
+    WebView().HitTestResultAt(gfx::Point());
+    EXPECT_EQ(DocumentLifecycle::kPaintClean,
+              frame_document->Lifecycle().GetState());
+  } else {
+    // Resets to kLayoutClean due to a call to SetNeedsCompositingInputsUpdate.
+    // TODO(chrishtr): fix this test by manually resetting to
+    // kVisualUpdatePending before call to CompositeFrame.
+    EXPECT_EQ(DocumentLifecycle::kLayoutClean,
+              frame_document->Lifecycle().GetState());
+
+    // A hit test will not force a complete lifecycle update.
+    WebView().HitTestResultAt(gfx::Point());
+    EXPECT_EQ(DocumentLifecycle::kLayoutClean,
+              frame_document->Lifecycle().GetState());
+  }
 }
 
 TEST_P(FrameThrottlingTest, UnthrottlingFrameSchedulesAnimation) {

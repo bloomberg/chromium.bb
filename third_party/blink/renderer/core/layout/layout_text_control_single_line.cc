@@ -129,8 +129,10 @@ void LayoutTextControlSingleLine::UpdateLayout() {
     // The placeholder gets layout last, after the parent text control and its
     // other children, so in order to get the correct overflow from the
     // placeholder we need to recompute it now.
-    if (needed_layout)
-      ComputeOverflow(ClientLogicalBottom());
+    if (needed_layout) {
+      SetNeedsOverflowRecalc();
+      ComputeLayoutOverflow(ClientLogicalBottom());
+    }
   }
 }
 
@@ -317,8 +319,8 @@ HTMLInputElement* LayoutTextControlSingleLine::InputElement() const {
 }
 
 void LayoutTextControlSingleLine::ComputeVisualOverflow(
-    const LayoutRect& previous_visual_overflow_rect,
     bool recompute_floats) {
+  LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
   AddVisualOverflowFromChildren();
 
   AddVisualEffectOverflow();
@@ -329,8 +331,11 @@ void LayoutTextControlSingleLine::ComputeVisualOverflow(
     AddVisualOverflowFromFloats();
 
   if (VisualOverflowRect() != previous_visual_overflow_rect) {
-    if (Layer())
-      Layer()->SetNeedsCompositingInputsUpdate();
+    if (Layer()) {
+      Layer()->SetNeedsCompositingInputsUpdate(
+          PaintLayer::DoesNotNeedDescendantDependentUpdate);
+    }
+    SetShouldCheckForPaintInvalidation();
     GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
   }
 }

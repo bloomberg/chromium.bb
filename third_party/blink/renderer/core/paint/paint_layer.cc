@@ -450,7 +450,7 @@ void PaintLayer::UpdateTransform(const ComputedStyle* old_style,
 
   if (had3d_transform != Has3DTransform()) {
     SetNeedsCompositingInputsUpdateInternal();
-    MarkAncestorChainForDescendantDependentFlagsUpdate();
+    MarkAncestorChainForFlagsUpdate();
   }
 
   if (LocalFrameView* frame_view = GetLayoutObject().GetDocument().View())
@@ -636,18 +636,27 @@ void PaintLayer::MapRectInPaintInvalidationContainerToBacking(
 }
 
 void PaintLayer::DirtyVisibleContentStatus() {
-  MarkAncestorChainForDescendantDependentFlagsUpdate();
+  MarkAncestorChainForFlagsUpdate();
   // Non-self-painting layers paint into their ancestor layer, and count as part
   // of the "visible contents" of the parent, so we need to dirty it.
   if (!IsSelfPaintingLayer())
     Parent()->DirtyVisibleContentStatus();
 }
 
-void PaintLayer::MarkAncestorChainForDescendantDependentFlagsUpdate() {
+void PaintLayer::MarkAncestorChainForFlagsUpdate(
+    DescendantDependentFlagsUpdateFlag flag) {
+#if DCHECK_IS_ON()
+  DCHECK(flag == DoesNotNeedDescendantDependentUpdate ||
+         !layout_object_.GetDocument()
+              .View()
+              ->IsUpdatingDescendantDependentFlags());
+#endif
   for (PaintLayer* layer = this; layer; layer = layer->Parent()) {
-    if (layer->needs_descendant_dependent_flags_update_)
+    if (layer->needs_descendant_dependent_flags_update_ &&
+        layer->GetLayoutObject().NeedsPaintPropertyUpdate())
       break;
-    layer->needs_descendant_dependent_flags_update_ = true;
+    if (flag == NeedsDescendantDependentUpdate)
+      layer->needs_descendant_dependent_flags_update_ = true;
     layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
   }
 }
@@ -724,6 +733,9 @@ void PaintLayer::UpdateDescendantDependentFlags() {
         static_cast<bool>(has_non_isolated_descendant_with_blend_mode_))
       GetLayoutObject().SetNeedsPaintPropertyUpdate();
     needs_descendant_dependent_flags_update_ = false;
+
+    if (GetLayoutObject().NeedsVisualOverflowRecalc() && IsSelfPaintingLayer())
+      GetLayoutObject().RecalcVisualOverflow();
   }
 
   bool previously_has_visible_content = has_visible_content_;
@@ -1052,14 +1064,15 @@ PaintLayer* PaintLayer::EnclosingLayerForPaintInvalidation() const {
   return nullptr;
 }
 
-void PaintLayer::SetNeedsCompositingInputsUpdate() {
+void PaintLayer::SetNeedsCompositingInputsUpdate(
+    DescendantDependentFlagsUpdateFlag flag) {
   SetNeedsCompositingInputsUpdateInternal();
 
   // TODO(chrishtr): These are a bit of a heavy hammer, because not all
   // things which require compositing inputs update require a descendant-
   // dependent flags update. Reduce call sites after CAP launch allows
   /// removal of CompositingInputsUpdater.
-  MarkAncestorChainForDescendantDependentFlagsUpdate();
+  MarkAncestorChainForFlagsUpdate(flag);
 }
 
 void PaintLayer::SetNeedsCompositingInputsUpdateInternal() {
@@ -1314,7 +1327,7 @@ void PaintLayer::AddChild(PaintLayer* child, PaintLayer* before_child) {
     // building up generated content layers. This is ok, since the lists will
     // start off dirty in that case anyway.
     PaintLayerStackingNode::DirtyStackingContextZOrderLists(child);
-    MarkAncestorChainForDescendantDependentFlagsUpdate();
+    MarkAncestorChainForFlagsUpdate();
   }
 
   // Non-self-painting children paint into this layer, so the visible contents
@@ -1322,7 +1335,7 @@ void PaintLayer::AddChild(PaintLayer* child, PaintLayer* before_child) {
   if (!child->IsSelfPaintingLayer())
     DirtyVisibleContentStatus();
 
-  MarkAncestorChainForDescendantDependentFlagsUpdate();
+  MarkAncestorChainForFlagsUpdate();
 
   // Need to force requirements update, due to change of stacking order.
   SetNeedsCompositingRequirementsUpdate();
@@ -1368,7 +1381,7 @@ PaintLayer* PaintLayer::RemoveChild(PaintLayer* old_child) {
     old_child->RemoveAncestorOverflowLayer(old_child->AncestorOverflowLayer());
 
   if (old_child->has_visible_content_ || old_child->has_visible_descendant_)
-    MarkAncestorChainForDescendantDependentFlagsUpdate();
+    MarkAncestorChainForFlagsUpdate();
 
   if (old_child->EnclosingPaginationLayer())
     old_child->ClearPaginationRecursive();
@@ -1388,7 +1401,7 @@ void PaintLayer::RemoveOnlyThisLayerAfterStyleChange(
 
   if (old_style && old_style->IsStacked()) {
     PaintLayerStackingNode::DirtyStackingContextZOrderLists(this);
-    MarkAncestorChainForDescendantDependentFlagsUpdate();
+    MarkAncestorChainForFlagsUpdate();
   }
 
   bool did_set_paint_invalidation = false;
@@ -2914,7 +2927,7 @@ void PaintLayer::UpdateSelfPaintingLayer() {
   MarkCompositingContainerChainForNeedsRepaint();
 
   if (PaintLayer* parent = Parent()) {
-    parent->MarkAncestorChainForDescendantDependentFlagsUpdate();
+    parent->MarkAncestorChainForFlagsUpdate();
 
     if (PaintLayer* enclosing_self_painting_layer =
             parent->EnclosingSelfPaintingLayer()) {
@@ -3081,7 +3094,7 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
   }
 
   if (PaintLayerStackingNode::StyleDidChange(this, old_style))
-    MarkAncestorChainForDescendantDependentFlagsUpdate();
+    MarkAncestorChainForFlagsUpdate();
 
   if (RequiresScrollableArea()) {
     DCHECK(scrollable_area_);
@@ -3130,7 +3143,7 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
 
   // HasNonContainedAbsolutePositionDescendant depends on position changes.
   if (!old_style || old_style->GetPosition() != new_style.GetPosition())
-    MarkAncestorChainForDescendantDependentFlagsUpdate();
+    MarkAncestorChainForFlagsUpdate();
 
   UpdateTransform(old_style, new_style);
   UpdateFilters(old_style, new_style);

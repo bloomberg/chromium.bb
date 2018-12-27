@@ -217,6 +217,9 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
       PaintInvalidationReason::kAppeared);
   new_child->AddSubtreePaintPropertyUpdateReason(
       SubtreePaintPropertyUpdateReason::kContainerChainMayChange);
+  new_child->SetChildNeedsLayoutOverflowRecalc();
+  new_child->SetChildNeedsVisualOverflowRecalc();
+
   if (!owner->NormalChildNeedsLayout()) {
     owner->SetChildNeedsLayout();  // We may supply the static position for an
                                    // absolute positioned child.

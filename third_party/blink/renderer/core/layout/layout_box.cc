@@ -5386,7 +5386,7 @@ void LayoutBox::ClearLayoutOverflow() {
     return;
 
   if (!HasSelfVisualOverflow() && ContentsVisualOverflowRect().IsEmpty()) {
-    ClearAllOverflows();
+    overflow_.reset();
     return;
   }
 
@@ -5398,7 +5398,7 @@ void LayoutBox::ClearVisualOverflow() {
     return;
 
   if (!HasLayoutOverflow()) {
-    ClearAllOverflows();
+    overflow_.reset();
     return;
   }
 

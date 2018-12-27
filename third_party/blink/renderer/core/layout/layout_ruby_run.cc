@@ -261,7 +261,7 @@ void LayoutRubyRun::UpdateLayout() {
   }
 
   // Update our overflow to account for the new LayoutRubyText position.
-  ComputeOverflow(ClientLogicalBottom());
+  ComputeLayoutOverflow(ClientLogicalBottom());
 }
 
 void LayoutRubyRun::GetOverhang(bool first_line,

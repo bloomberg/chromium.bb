@@ -252,7 +252,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   // (which is responsible for painting the tickmarks).
   void InvalidatePaintForTickmarks();
 
-  bool RecalcOverflow() override;
+  bool RecalcLayoutOverflow() final;
 
   // The visible background area, in the local coordinates. The view background
   // will be painted in this rect. It's also the positioning area of fixed-

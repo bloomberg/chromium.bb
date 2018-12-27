@@ -1414,16 +1414,34 @@ const LayoutBoxModelObject& LayoutObject::ContainerForPaintInvalidation()
   return *layout_view;
 }
 
-bool LayoutObject::RecalcOverflow() {
-  if (!ChildNeedsOverflowRecalc())
+bool LayoutObject::RecalcLayoutOverflow() {
+  if (!ChildNeedsLayoutOverflowRecalc())
     return false;
-  bool children_overflow_changed = false;
+  ClearChildNeedsLayoutOverflowRecalc();
+  bool children_layout_overflow_changed = false;
   for (LayoutObject* current = SlowFirstChild(); current;
        current = current->NextSibling()) {
-    if (current->RecalcOverflow())
-      children_overflow_changed = true;
+    if (current->RecalcLayoutOverflow())
+      children_layout_overflow_changed = true;
   }
-  return children_overflow_changed;
+  return children_layout_overflow_changed;
+}
+
+bool LayoutObject::RecalcVisualOverflow() {
+  if (!NeedsVisualOverflowRecalc())
+    return false;
+  bool visual_overflow_changed = SelfNeedsVisualOverflowRecalc();
+  for (LayoutObject* current = SlowFirstChild(); current;
+       current = current->NextSibling()) {
+    if (current->HasLayer() &&
+        ToLayoutBoxModelObject(current)->HasSelfPaintingLayer())
+      continue;
+    if (current->RecalcVisualOverflow())
+      visual_overflow_changed = true;
+  }
+  ClearChildNeedsVisualOverflowRecalc();
+  ClearSelfNeedsVisualOverflowRecalc();
+  return visual_overflow_changed;
 }
 
 const LayoutBoxModelObject* LayoutObject::EnclosingCompositedContainer() const {
@@ -1976,6 +1994,11 @@ void LayoutObject::FirstLineStyleDidChange(const ComputedStyle& old_style,
 
 void LayoutObject::MarkContainerChainForOverflowRecalcIfNeeded() {
   LayoutObject* object = this;
+  bool found_layer = false;
+  if (HasLayer()) {
+    ToLayoutBoxModelObject(this)->Layer()->SetNeedsCompositingInputsUpdate();
+    found_layer = true;
+  }
   do {
     // Cell and row need to propagate the flag to their containing section and
     // row as their containing block is the table wrapper.
@@ -1986,12 +2009,21 @@ void LayoutObject::MarkContainerChainForOverflowRecalcIfNeeded() {
     if (object) {
       object->SetChildNeedsLayoutOverflowRecalc();
       object->SetChildNeedsVisualOverflowRecalc();
+
+      if (object->HasLayer() && !found_layer) {
+        ToLayoutBoxModelObject(object)
+            ->Layer()
+            ->SetNeedsCompositingInputsUpdate();
+        found_layer = true;
+      }
     }
+
   } while (object);
 }
 
 void LayoutObject::SetNeedsOverflowRecalc() {
-  bool needed_recalc = NeedsLayoutOverflowRecalc();
+  bool needed_recalc =
+      NeedsLayoutOverflowRecalc() && NeedsVisualOverflowRecalc();
   SetSelfNeedsLayoutOverflowRecalc();
   SetSelfNeedsVisualOverflowRecalc();
   SetShouldCheckForPaintInvalidation();
@@ -2301,7 +2333,8 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
       MarkContainerChainForLayout();
 
     // Ditto.
-    if (NeedsOverflowRecalc() &&
+    // TODO(chrishtr): review this. Why are we checking Needs* at all?
+    if ((NeedsLayoutOverflowRecalc() || NeedsVisualOverflowRecalc()) &&
         old_style->GetPosition() != style_->GetPosition())
       MarkContainerChainForOverflowRecalcIfNeeded();
 

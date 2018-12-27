@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/layout/layout_table_row.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/subtree_layout_scope.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/table_section_painter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -1273,14 +1274,14 @@ void LayoutTableSection::LayoutRows() {
       }
     }
     if (row)
-      row->ComputeOverflow();
+      row->ComputeLayoutOverflow();
   }
 
   DCHECK(!NeedsLayout());
 
   SetLogicalHeight(LayoutUnit(row_pos_[total_rows]));
 
-  ComputeOverflowFromDescendants();
+  ComputeLayoutOverflowFromDescendants();
 }
 
 void LayoutTableSection::UpdateLogicalWidthForCollapsedCells(
@@ -1316,7 +1317,7 @@ void LayoutTableSection::UpdateLogicalWidthForCollapsedCells(
         if (collapsed_width != 0)
           cell->SetIsSpanningCollapsedColumn(true);
         // Recompute overflow in case overflow clipping is necessary.
-        cell->ComputeOverflow(cell->ClientLogicalBottom());
+        cell->ComputeLayoutOverflow(cell->ClientLogicalBottom(), false);
         DCHECK_GE(cell->LogicalWidth(), 0);
       }
     }
@@ -1358,23 +1359,13 @@ int LayoutTableSection::PaginationStrutForRow(LayoutTableRow* row,
   return pagination_strut.Ceil();
 }
 
-void LayoutTableSection::ComputeOverflowFromDescendants() {
+void LayoutTableSection::ComputeVisualOverflowFromDescendants() {
   auto old_self_visual_overflow_rect = SelfVisualOverflowRect();
-  ClearAllOverflows();
-  overflowing_cells_.clear();
+  ClearVisualOverflow();
+
+  visually_overflowing_cells_.clear();
   force_full_paint_ = false;
 
-  ComputeVisualOverflowFromDescendants();
-
-  // Overflow rect contributes to the visual rect, so if it has changed then we
-  // need to signal a possible paint invalidation.
-  if (old_self_visual_overflow_rect != SelfVisualOverflowRect())
-    SetShouldCheckForPaintInvalidation();
-
-  ComputeLayoutOverflowFromDescendants();
-}
-
-void LayoutTableSection::ComputeVisualOverflowFromDescendants() {
   // These 2 variables are used to balance the memory consumption vs the paint
   // time on big sections with overflowing cells:
   // 1. For small sections, don't track overflowing cells because for them the
@@ -1397,7 +1388,6 @@ void LayoutTableSection::ComputeVisualOverflowFromDescendants() {
 #if DCHECK_IS_ON()
   bool has_overflowing_cell = false;
 #endif
-
   for (auto* row = FirstRow(); row; row = row->NextRow()) {
     AddVisualOverflowFromChild(*row);
 
@@ -1421,56 +1411,81 @@ void LayoutTableSection::ComputeVisualOverflowFromDescendants() {
 #if DCHECK_IS_ON()
       has_overflowing_cell = true;
 #endif
-      if (overflowing_cells_.size() >= max_overflowing_cell_count) {
+      if (visually_overflowing_cells_.size() >= max_overflowing_cell_count) {
         force_full_paint_ = true;
         // The full paint path does not make any use of the overflowing cells
         // info, so don't hold on to the memory.
-        overflowing_cells_.clear();
+        visually_overflowing_cells_.clear();
         continue;
       }
 
-      overflowing_cells_.insert(cell);
+      visually_overflowing_cells_.insert(cell);
     }
   }
 
 #if DCHECK_IS_ON()
-  DCHECK_EQ(has_overflowing_cell, HasOverflowingCell());
+  DCHECK_EQ(has_overflowing_cell, HasVisuallyOverflowingCell());
 #endif
+
+  // Overflow rect contributes to the visual rect, so if it has changed then we
+  // need to signal a possible paint invalidation.
+  if (old_self_visual_overflow_rect != SelfVisualOverflowRect())
+    SetShouldCheckForPaintInvalidation();
 }
 
 void LayoutTableSection::ComputeLayoutOverflowFromDescendants() {
+  ClearLayoutOverflow();
   for (auto* row = FirstRow(); row; row = row->NextRow())
     AddLayoutOverflowFromChild(*row);
 }
 
-bool LayoutTableSection::RecalcOverflow() {
-  if (!ChildNeedsOverflowRecalc())
+bool LayoutTableSection::RecalcLayoutOverflow() {
+  if (!ChildNeedsLayoutOverflowRecalc())
     return false;
   ClearChildNeedsLayoutOverflowRecalc();
-  ClearChildNeedsVisualOverflowRecalc();
   unsigned total_rows = grid_.size();
-  bool children_overflow_changed = false;
+  bool children_layout_overflow_changed = false;
   for (unsigned r = 0; r < total_rows; r++) {
     LayoutTableRow* row_layouter = RowLayoutObjectAt(r);
-    if (!row_layouter || !row_layouter->ChildNeedsOverflowRecalc())
+    if (!row_layouter || !row_layouter->ChildNeedsLayoutOverflowRecalc())
       continue;
     row_layouter->ClearChildNeedsLayoutOverflowRecalc();
-    row_layouter->ClearChildNeedsVisualOverflowRecalc();
-    bool row_children_overflow_changed = false;
+    bool row_children_layout_overflow_changed = false;
     unsigned n_cols = NumCols(r);
     for (unsigned c = 0; c < n_cols; c++) {
       auto* cell = OriginatingCellAt(r, c);
       if (!cell)
         continue;
-      row_children_overflow_changed |= cell->RecalcOverflow();
+      row_children_layout_overflow_changed |= cell->RecalcLayoutOverflow();
     }
-    if (row_children_overflow_changed)
-      row_layouter->ComputeOverflow();
-    children_overflow_changed |= row_children_overflow_changed;
+    if (row_children_layout_overflow_changed)
+      row_layouter->ComputeLayoutOverflow();
+    children_layout_overflow_changed |= row_children_layout_overflow_changed;
   }
-  if (children_overflow_changed)
-    ComputeOverflowFromDescendants();
-  return children_overflow_changed;
+  if (children_layout_overflow_changed)
+    ComputeLayoutOverflowFromDescendants();
+
+  return children_layout_overflow_changed;
+}
+
+bool LayoutTableSection::RecalcVisualOverflow() {
+  if (!ChildNeedsVisualOverflowRecalc())
+    return false;
+  ClearChildNeedsVisualOverflowRecalc();
+  unsigned total_rows = grid_.size();
+  bool children_visual_overflow_changed = false;
+  for (unsigned r = 0; r < total_rows; r++) {
+    LayoutTableRow* row_layouter = RowLayoutObjectAt(r);
+    if (!row_layouter || (row_layouter->HasLayer() &&
+                          row_layouter->Layer()->IsSelfPaintingLayer()))
+      continue;
+    if (row_layouter->RecalcVisualOverflow())
+      children_visual_overflow_changed = true;
+  }
+  if (children_visual_overflow_changed)
+    ComputeVisualOverflowFromDescendants();
+  AddVisualEffectOverflow();
+  return children_visual_overflow_changed;
 }
 
 void LayoutTableSection::MarkAllCellsWidthsDirtyAndOrNeedsLayout(
@@ -1806,7 +1821,7 @@ bool LayoutTableSection::NodeAtPoint(
       !location_in_container.Intersects(OverflowClipRect(adjusted_location)))
     return false;
 
-  if (HasOverflowingCell()) {
+  if (HasVisuallyOverflowingCell()) {
     for (LayoutTableRow* row = LastRow(); row; row = row->PreviousRow()) {
       // FIXME: We have to skip over inline flows, since they can show up inside
       // table rows at the moment (a demoted inline <form> for example). If we

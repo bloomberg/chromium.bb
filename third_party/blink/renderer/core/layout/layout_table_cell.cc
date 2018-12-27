@@ -383,10 +383,8 @@ void LayoutTableCell::SetIsSpanningCollapsedColumn(
 }
 
 void LayoutTableCell::ComputeVisualOverflow(
-    const LayoutRect& previous_visual_overflow_rect,
     bool recompute_floats) {
-  LayoutBlockFlow::ComputeVisualOverflow(previous_visual_overflow_rect,
-                                         recompute_floats);
+  LayoutBlockFlow::ComputeVisualOverflow(recompute_floats);
 
   UpdateCollapsedBorderValues();
   if (!collapsed_border_values_)
