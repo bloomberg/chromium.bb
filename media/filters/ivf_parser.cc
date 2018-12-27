@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
-#include "base/sys_byteorder.h"
 #include "media/filters/ivf_parser.h"
+
+#include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
+#include "base/sys_byteorder.h"
 
 namespace media {
 
@@ -34,6 +36,7 @@ bool IvfParser::Initialize(const uint8_t* stream,
   DCHECK(file_header);
   ptr_ = stream;
   end_ = stream + size;
+  CHECK_GE(end_, ptr_);
 
   if (size < sizeof(IvfFileHeader)) {
     DLOG(ERROR) << "EOF before file header";
@@ -65,8 +68,9 @@ bool IvfParser::ParseNextFrame(IvfFrameHeader* frame_header,
                                const uint8_t** payload) {
   DCHECK(ptr_);
   DCHECK(payload);
+  CHECK_GE(end_, ptr_);
 
-  if (end_ < ptr_ + sizeof(IvfFrameHeader)) {
+  if (base::checked_cast<size_t>(end_ - ptr_) < sizeof(IvfFrameHeader)) {
     DLOG_IF(ERROR, ptr_ != end_) << "Incomplete frame header";
     return false;
   }
@@ -75,7 +79,7 @@ bool IvfParser::ParseNextFrame(IvfFrameHeader* frame_header,
   frame_header->ByteSwap();
   ptr_ += sizeof(IvfFrameHeader);
 
-  if (end_ < ptr_ + frame_header->frame_size) {
+  if (base::checked_cast<uint32_t>(end_ - ptr_) < frame_header->frame_size) {
     DLOG(ERROR) << "Not enough frame data";
     return false;
   }
