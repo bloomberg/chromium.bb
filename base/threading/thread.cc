@@ -143,7 +143,8 @@ bool Thread::WaitUntilThreadStarted() const {
   DCHECK(owning_sequence_checker_.CalledOnValidSequence());
   if (!message_loop_)
     return false;
-  base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait;
+  // https://crbug.com/918039
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   start_event_.Wait();
   return true;
 }
