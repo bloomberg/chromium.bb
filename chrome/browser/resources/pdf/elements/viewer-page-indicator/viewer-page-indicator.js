@@ -37,12 +37,16 @@ Polymer({
         percent * (document.documentElement.clientHeight - this.offsetHeight) +
         'px';
     // <if expr="is_macosx">
-    // On the Mac, if overlay scrollbars are enabled, prevent them from
-    // overlapping the triangle.
+    // If overlay scrollbars are enabled, prevent them from overlapping the
+    // triangle. TODO(dbeam): various platforms can enable overlay scrolling,
+    // not just Mac. The scrollbars seem to have different widths/appearances on
+    // those platforms, though.
+    assert(document.documentElement.dir);
+    const endEdge = isRTL() ? 'left' : 'right';
     if (window.innerWidth == document.scrollingElement.scrollWidth)
-      this.style.right = '16px';
+      this.style[endEdge] = '16px';
     else
-      this.style.right = '0px';
+      this.style[endEdge] = '0px';
     // </if>
     this.style.opacity = 1;
     clearTimeout(this.timerId);
