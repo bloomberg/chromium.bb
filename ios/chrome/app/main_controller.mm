@@ -1488,7 +1488,8 @@ enum class ShowTabSwitcherSnapshotResult {
       // because the currentTab will change after the switch.
       Tab* currentTab = self.currentTabModel.currentTab;
       if (currentTab) {
-        SnapshotTabHelper::FromWebState(currentTab.webState)->UpdateSnapshot();
+        SnapshotTabHelper::FromWebState(currentTab.webState)
+            ->UpdateSnapshotWithCallback(nil);
       }
       // Not for this browser state, send it on its way.
       [self switchModesAndOpenNewTab:command];

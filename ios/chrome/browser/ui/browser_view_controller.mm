@@ -1180,7 +1180,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // opened from an incognito tab. A different BVC is displayed, which may not
   // have enough time to finish appearing before a snapshot is requested.
   if (self.currentWebState && self.viewVisible) {
-    SnapshotTabHelper::FromWebState(self.currentWebState)->UpdateSnapshot();
+    SnapshotTabHelper::FromWebState(self.currentWebState)
+        ->UpdateSnapshotWithCallback(nil);
   }
 
   [self.tabModel
@@ -3075,7 +3076,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Requested web state should not be blocked from opening.
   Tab* currentTab = LegacyTabHelper::GetTabForWebState(webState);
-  SnapshotTabHelper::FromWebState(currentTab.webState)->UpdateSnapshot();
+  SnapshotTabHelper::FromWebState(currentTab.webState)
+      ->UpdateSnapshotWithCallback(nil);
 
   Tab* childTab = [[self tabModel] insertOpenByDOMTabWithOpener:currentTab];
 
@@ -4044,7 +4046,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         // If the page has finished loading, take a snapshot.  If the page is
         // still loading, do nothing, as the tab helper will automatically take
         // a snapshot once the load completes.
-        SnapshotTabHelper::FromWebState(newTab.webState)->UpdateSnapshot();
+        SnapshotTabHelper::FromWebState(newTab.webState)
+            ->UpdateSnapshotWithCallback(nil);
       }
 
       if (typed_or_generated_transition) {
@@ -4509,6 +4512,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // TODO(crbug.com/688003): Evaluate if a screenshot of the tab is needed on
   // iPad.
   UIImageView* exitingPage = [self pageOpenCloseAnimationView];
+  // TODO(crbug.com/917929): Refactor to remove usage of UpdateSnapshot().
   exitingPage.image =
       SnapshotTabHelper::FromWebState(self.currentWebState)->UpdateSnapshot();
 
@@ -4768,6 +4772,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       newPage.userInteractionEnabled = NO;
     } else {
       UIImageView* pageScreenshot = [self pageOpenCloseAnimationView];
+      // TODO(crbug.com/917929): Refactor to remove usage of UpdateSnapshot().
       pageScreenshot.image =
           SnapshotTabHelper::FromWebState(tab.webState)->UpdateSnapshot();
       newPage = pageScreenshot;
