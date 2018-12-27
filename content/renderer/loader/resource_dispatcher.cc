@@ -332,7 +332,6 @@ void ResourceDispatcher::OnReceivedResponse(
   std::unique_ptr<NavigationResponseOverrideParameters> response_override =
       std::move(request_info->navigation_response_override);
   if (response_override) {
-    CHECK(IsBrowserSideNavigationEnabled());
     response_head = response_override->response;
   } else {
     response_head = initial_response_head;

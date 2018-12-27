@@ -86,7 +86,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   int GetFrameTreeNodeId() const override;
   bool IsMainFrame() const override;
   ResourceType GetResourceType() const override;
-  int GetProcessType() const override;
   network::mojom::ReferrerPolicy GetReferrerPolicy() const override;
   bool IsPrerendering() const override;
   ui::PageTransition GetPageTransition() const override;

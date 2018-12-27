@@ -363,12 +363,9 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
 
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
-  // With PlzNavigate for frame navigations this check is done in the
+  // For frame navigations this check is done in the
   // NavigationRequest::OnReceivedRedirect() function.
-  bool check_handled_elsewhere = IsBrowserSideNavigationEnabled() &&
-      IsResourceTypeFrame(info->GetResourceType());
-
-  if (!check_handled_elsewhere) {
+  if (!IsResourceTypeFrame(info->GetResourceType())) {
     if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
             info->GetChildID(), redirect_info.new_url)) {
       DVLOG(1) << "Denied unauthorized request for "

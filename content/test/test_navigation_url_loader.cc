@@ -28,7 +28,6 @@ TestNavigationURLLoader::TestNavigationURLLoader(
       delegate_(delegate),
       redirect_count_(0),
       response_proceeded_(false) {
-  DCHECK(IsBrowserSideNavigationEnabled());
 }
 
 void TestNavigationURLLoader::FollowRedirect(
