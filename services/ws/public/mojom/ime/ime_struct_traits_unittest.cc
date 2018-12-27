@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -138,7 +139,7 @@ TEST_F(IMEStructTraitsTest, TextInputMode) {
   };
 
   mojom::IMEStructTraitsTestPtr proxy = GetTraitsTestProxy();
-  for (size_t i = 0; i < arraysize(kTextInputModes); i++) {
+  for (size_t i = 0; i < base::size(kTextInputModes); i++) {
     ui::TextInputMode mode_out;
     ASSERT_TRUE(proxy->EchoTextInputMode(kTextInputModes[i], &mode_out));
     EXPECT_EQ(kTextInputModes[i], mode_out);
@@ -167,7 +168,7 @@ TEST_F(IMEStructTraitsTest, TextInputType) {
   };
 
   mojom::IMEStructTraitsTestPtr proxy = GetTraitsTestProxy();
-  for (size_t i = 0; i < arraysize(kTextInputTypes); i++) {
+  for (size_t i = 0; i < base::size(kTextInputTypes); i++) {
     ui::TextInputType type_out;
     ASSERT_TRUE(proxy->EchoTextInputType(kTextInputTypes[i], &type_out));
     EXPECT_EQ(kTextInputTypes[i], type_out);
