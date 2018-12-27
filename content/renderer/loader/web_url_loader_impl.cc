@@ -996,19 +996,6 @@ bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally(
   // NOTE: We special case MIME types we can render both for performance
   // reasons as well as to support unit tests.
 
-#if defined(OS_ANDROID)
-  // For compatibility reasons on Android we need to expose top-level data://
-  // to the browser. In tests resource_dispatcher_ can be null, and test pages
-  // need to be loaded locally.
-  // For PlzNavigate, navigation requests were already checked in the browser.
-  if (resource_dispatcher_ &&
-      request.GetFrameType() ==
-          network::mojom::RequestContextFrameType::kTopLevel) {
-    if (!IsBrowserSideNavigationEnabled())
-      return false;
-  }
-#endif
-
   if (request.GetFrameType() !=
           network::mojom::RequestContextFrameType::kTopLevel &&
       request.GetFrameType() !=

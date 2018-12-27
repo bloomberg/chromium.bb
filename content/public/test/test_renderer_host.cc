@@ -297,15 +297,11 @@ void RenderViewHostTestHarness::SetUp() {
   browser_context_.reset(CreateBrowserContext());
 
   SetContents(CreateTestWebContents());
-
-  if (IsBrowserSideNavigationEnabled())
-    BrowserSideNavigationSetUp();
+  BrowserSideNavigationSetUp();
 }
 
 void RenderViewHostTestHarness::TearDown() {
-  if (IsBrowserSideNavigationEnabled())
-    BrowserSideNavigationTearDown();
-
+  BrowserSideNavigationTearDown();
   DeleteContents();
 #if defined(USE_AURA)
   aura_test_helper_->TearDown();

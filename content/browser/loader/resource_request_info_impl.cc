@@ -214,7 +214,6 @@ ResourceRequestInfoImpl::GetWebContentsGetterForRequest() const {
   // RenderProcessHost and RenderFrameHost IDs. The FrameTreeNode ID should be
   // used to access the WebContents.
   if (frame_tree_node_id_ != RenderFrameHost::kNoFrameTreeNodeId) {
-    DCHECK(IsBrowserSideNavigationEnabled());
     return base::Bind(WebContents::FromFrameTreeNodeId, frame_tree_node_id_);
   }
 
@@ -234,7 +233,6 @@ ResourceRequestInfoImpl::GetWebContentsGetterForRequest() const {
 ResourceRequestInfo::FrameTreeNodeIdGetter
 ResourceRequestInfoImpl::GetFrameTreeNodeIdGetterForRequest() const {
   if (frame_tree_node_id_ != -1) {
-    DCHECK(IsBrowserSideNavigationEnabled());
     return base::Bind([](int id) { return id; }, frame_tree_node_id_);
   }
 
@@ -283,11 +281,6 @@ bool ResourceRequestInfoImpl::IsMainFrame() const {
 
 ResourceType ResourceRequestInfoImpl::GetResourceType() const {
   return resource_type_;
-}
-
-int ResourceRequestInfoImpl::GetProcessType() const {
-  return requester_info_->IsBrowserSideNavigation() ? PROCESS_TYPE_BROWSER
-                                                    : PROCESS_TYPE_RENDERER;
 }
 
 network::mojom::ReferrerPolicy ResourceRequestInfoImpl::GetReferrerPolicy()

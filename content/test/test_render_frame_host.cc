@@ -186,7 +186,7 @@ void TestRenderFrameHost::SimulateNavigationCommit(const GURL& url) {
 void TestRenderFrameHost::SimulateNavigationStop() {
   if (is_loading()) {
     OnDidStopLoading();
-  } else if (IsBrowserSideNavigationEnabled()) {
+  } else {
     // Even if the RenderFrameHost is not loading, there may still be an
     // ongoing navigation in the FrameTreeNode. Cancel this one as well.
     frame_tree_node()->ResetNavigationRequest(false, true);
@@ -482,10 +482,8 @@ void TestRenderFrameHost::PrepareForCommitInternal(
 }
 
 void TestRenderFrameHost::PrepareForCommitIfNecessary() {
-  if (!IsBrowserSideNavigationEnabled() ||
-      frame_tree_node()->navigation_request()) {
+  if (frame_tree_node()->navigation_request())
     PrepareForCommit();
-  }
 }
 
 void TestRenderFrameHost::SimulateCommitProcessed(int64_t navigation_id,

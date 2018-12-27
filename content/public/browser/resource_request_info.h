@@ -136,9 +136,6 @@ class ResourceRequestInfo {
   // Returns the associated resource type.
   virtual ResourceType GetResourceType() const = 0;
 
-  // Returns the process type that initiated this request.
-  virtual int GetProcessType() const = 0;
-
   // Returns the associated referrer policy.
   virtual network::mojom::ReferrerPolicy GetReferrerPolicy() const = 0;
 
