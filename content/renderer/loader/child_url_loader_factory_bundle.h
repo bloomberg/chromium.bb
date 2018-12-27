@@ -99,8 +99,8 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
 
   // Does the same as Clone(), but without cloning the appcache_factory_.
   // This is used for creating a bundle for network fallback loading with
-  // Service Workers (where AppCache must be skipped).
-  // TODO(kinuko): See if this is really needed and remove otherwise.
+  // Service Workers (where AppCache must be skipped), and only when
+  // claim() is called.
   virtual std::unique_ptr<network::SharedURLLoaderFactoryInfo>
   CloneWithoutAppCacheFactory();
 
