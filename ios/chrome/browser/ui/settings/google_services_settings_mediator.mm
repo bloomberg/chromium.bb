@@ -13,8 +13,8 @@
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_sync_switch_item.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #import "ios/chrome/browser/ui/settings/utils/observable_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
@@ -91,7 +91,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // from one state to another.
 @property(nonatomic, assign) BOOL personalizedSectionBeingAnimated;
 // Item to display the sync error.
-@property(nonatomic, strong) SettingsImageDetailTextItem* syncErrorItem;
+@property(nonatomic, strong) LegacySettingsImageDetailTextItem* syncErrorItem;
 // All the items for the personalized section.
 @property(nonatomic, strong, readonly) ItemArray personalizedItems;
 // Item for the autocomplete wallet feature.
@@ -170,10 +170,10 @@ initWithUserPrefService:(PrefService*)userPrefService
   return self.authService->IsAuthenticated();
 }
 
-- (SettingsImageDetailTextItem*)syncErrorItem {
+- (LegacySettingsImageDetailTextItem*)syncErrorItem {
   if (!_syncErrorItem) {
-    _syncErrorItem =
-        [[SettingsImageDetailTextItem alloc] initWithType:SyncErrorItemType];
+    _syncErrorItem = [[LegacySettingsImageDetailTextItem alloc]
+        initWithType:SyncErrorItemType];
     {
       // TODO(crbug.com/889470): Needs asset for the sync error.
       CGSize size = CGSizeMake(40, 40);

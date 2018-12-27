@@ -35,11 +35,11 @@
 #import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/passphrase_error_item.h"
 #import "ios/chrome/browser/ui/settings/cells/password_details_item.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_multiline_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_search_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
@@ -245,7 +245,7 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
       toSectionWithIdentifier:SectionIdentifierMultilineCell];
   [model addItem:[self settingsImageDetailTextItem]
       toSectionWithIdentifier:SectionIdentifierMultilineCell];
-  SettingsImageDetailTextItem* settingsImageDetailTextItem =
+  LegacySettingsImageDetailTextItem* settingsImageDetailTextItem =
       [self settingsImageDetailTextItem];
   settingsImageDetailTextItem.text = @"Short title";
   [model addItem:settingsImageDetailTextItem
@@ -798,9 +798,9 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
   return articleItem;
 }
 
-- (SettingsImageDetailTextItem*)settingsImageDetailTextItem {
-  SettingsImageDetailTextItem* settingsImageDetailTextItem =
-      [[SettingsImageDetailTextItem alloc]
+- (LegacySettingsImageDetailTextItem*)settingsImageDetailTextItem {
+  LegacySettingsImageDetailTextItem* settingsImageDetailTextItem =
+      [[LegacySettingsImageDetailTextItem alloc]
           initWithType:ItemTypeImageDetailTextItem];
   settingsImageDetailTextItem.image =
       [UIImage imageNamed:@"ios_default_avatar"];

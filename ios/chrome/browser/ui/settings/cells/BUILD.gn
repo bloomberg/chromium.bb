@@ -28,8 +28,6 @@ source_set("cells") {
     "settings_cells_constants.mm",
     "settings_detail_item.h",
     "settings_detail_item.mm",
-    "settings_image_detail_text_item.h",
-    "settings_image_detail_text_item.mm",
     "settings_multiline_detail_item.h",
     "settings_multiline_detail_item.mm",
     "settings_search_item.h",
