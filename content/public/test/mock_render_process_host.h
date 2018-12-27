@@ -160,6 +160,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   void LockToOrigin(const GURL& lock_url) override;
   void BindCacheStorage(blink::mojom::CacheStorageRequest request,
                         const url::Origin& origin) override;
+  void BindIndexedDB(blink::mojom::IDBFactoryRequest request,
+                     const url::Origin& origin) override;
   void CleanupCorbExceptionForPluginUponDestruction() override;
 
   // IPC::Sender via RenderProcessHost.
@@ -230,6 +232,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool is_renderer_locked_to_site_ = false;
   network::mojom::URLLoaderFactory* url_loader_factory_;
   blink::mojom::CacheStorageRequest cache_storage_request_;
+  blink::mojom::IDBFactoryRequest idb_factory_request_;
   base::WeakPtrFactory<MockRenderProcessHost> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);

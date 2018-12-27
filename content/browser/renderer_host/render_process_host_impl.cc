@@ -2041,6 +2041,20 @@ void RenderProcessHostImpl::BindCacheStorage(
                      origin));
 }
 
+void RenderProcessHostImpl::BindIndexedDB(
+    blink::mojom::IDBFactoryRequest request,
+    const url::Origin& origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Send the binding to IO thread to let IndexedDB handle Mojo IPC on the IO
+  // thread.
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&IndexedDBDispatcherHost::AddBinding,
+                     base::Unretained(indexed_db_factory_.get()),
+                     std::move(request), origin));
+}
+
 void RenderProcessHostImpl::BindFileSystemManager(
     blink::mojom::FileSystemManagerRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -2183,10 +2197,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
     registry->AddInterface(base::BindRepeating(
         &viz::GpuClient::Add, base::Unretained(gpu_client_.get())));
   }
-
-  registry->AddInterface(
-      base::BindRepeating(&IndexedDBDispatcherHost::AddBinding,
-                          base::Unretained(indexed_db_factory_.get())));
 
   registry->AddInterface(
       base::Bind(

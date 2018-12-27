@@ -190,7 +190,8 @@ class IndexedDBDispatcherHostTest : public testing::Test {
   }
 
   void SetUp() override {
-    host_->AddBinding(::mojo::MakeRequest(&idb_mojo_factory_));
+    host_->AddBinding(::mojo::MakeRequest(&idb_mojo_factory_),
+                      {url::Origin::Create(GURL(kOrigin))});
   }
 
  protected:

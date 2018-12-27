@@ -47,7 +47,8 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
       scoped_refptr<IndexedDBContextImpl> indexed_db_context,
       scoped_refptr<ChromeBlobStorageContext> blob_storage_context);
 
-  void AddBinding(blink::mojom::IDBFactoryRequest request);
+  void AddBinding(blink::mojom::IDBFactoryRequest request,
+                  const url::Origin& origin);
 
   void AddDatabaseBinding(std::unique_ptr<blink::mojom::IDBDatabase> database,
                           blink::mojom::IDBDatabaseAssociatedRequest request);
@@ -117,7 +118,12 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   // Used to set file permissions for blob storage.
   const int ipc_process_id_;
 
-  mojo::BindingSet<blink::mojom::IDBFactory> bindings_;
+  // State for each client held in |bindings_|.
+  struct BindingState {
+    url::Origin origin;
+  };
+
+  mojo::BindingSet<blink::mojom::IDBFactory, BindingState> bindings_;
 
   mojo::StrongAssociatedBindingSet<blink::mojom::IDBDatabase>
       database_bindings_;

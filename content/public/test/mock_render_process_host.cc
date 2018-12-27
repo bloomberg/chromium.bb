@@ -450,6 +450,12 @@ void MockRenderProcessHost::BindCacheStorage(
   cache_storage_request_ = std::move(request);
 }
 
+void MockRenderProcessHost::BindIndexedDB(
+    blink::mojom::IDBFactoryRequest request,
+    const url::Origin& origin) {
+  idb_factory_request_ = std::move(request);
+}
+
 void MockRenderProcessHost::CleanupCorbExceptionForPluginUponDestruction() {}
 
 void MockRenderProcessHost::FilterURL(bool empty_allowed, GURL* url) {
