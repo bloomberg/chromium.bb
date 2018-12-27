@@ -542,8 +542,8 @@ void PrinterProviderAPIImpl::DispatchGetPrintersRequested(
   // This callback is called synchronously during |BroadcastEvent|, so
   // Unretained is safe.
   event->will_dispatch_callback =
-      base::Bind(&PrinterProviderAPIImpl::WillRequestPrinters,
-                 base::Unretained(this), request_id);
+      base::BindRepeating(&PrinterProviderAPIImpl::WillRequestPrinters,
+                          base::Unretained(this), request_id);
 
   event_router->BroadcastEvent(std::move(event));
 }

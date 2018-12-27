@@ -396,10 +396,10 @@ struct Event {
   // This callback should return true if the event should be dispatched to the
   // given context and extension, and false otherwise.
   using WillDispatchCallback =
-      base::Callback<bool(content::BrowserContext*,
-                          const Extension*,
-                          Event*,
-                          const base::DictionaryValue*)>;
+      base::RepeatingCallback<bool(content::BrowserContext*,
+                                   const Extension*,
+                                   Event*,
+                                   const base::DictionaryValue*)>;
 
   // The identifier for the event, for histograms. In most cases this
   // correlates 1:1 with |event_name|, in some cases events will generate

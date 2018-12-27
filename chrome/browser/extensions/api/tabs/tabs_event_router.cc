@@ -517,7 +517,7 @@ void TabsEventRouter::TabCreatedAt(WebContents* contents,
                                        std::move(args), profile);
   event->user_gesture = EventRouter::USER_GESTURE_NOT_ENABLED;
   event->will_dispatch_callback =
-      base::Bind(&WillDispatchTabCreatedEvent, contents, active);
+      base::BindRepeating(&WillDispatchTabCreatedEvent, contents, active);
   EventRouter::Get(profile)->BroadcastEvent(std::move(event));
 
   RegisterForTabNotifications(contents);
@@ -594,8 +594,8 @@ void TabsEventRouter::DispatchTabUpdatedEvent(
                                        std::move(args_base), profile);
   event->user_gesture = EventRouter::USER_GESTURE_NOT_ENABLED;
   event->will_dispatch_callback =
-      base::Bind(&WillDispatchTabUpdatedEvent, contents,
-                 std::move(changed_property_names));
+      base::BindRepeating(&WillDispatchTabUpdatedEvent, contents,
+                          std::move(changed_property_names));
   EventRouter::Get(profile)->BroadcastEvent(std::move(event));
 }
 

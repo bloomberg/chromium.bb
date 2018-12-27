@@ -279,7 +279,7 @@ void WindowsEventRouter::OnActiveWindowChanged(
       events::WINDOWS_ON_FOCUS_CHANGED, windows::OnFocusChanged::kEventName,
       std::make_unique<base::ListValue>());
   event->will_dispatch_callback =
-      base::Bind(&WillDispatchWindowFocusedEvent, window_controller);
+      base::BindRepeating(&WillDispatchWindowFocusedEvent, window_controller);
   EventRouter::Get(profile_)->BroadcastEvent(std::move(event));
 }
 
@@ -291,7 +291,7 @@ void WindowsEventRouter::DispatchEvent(events::HistogramValue histogram_value,
       std::make_unique<Event>(histogram_value, event_name, std::move(args),
                               window_controller->profile());
   event->will_dispatch_callback =
-      base::Bind(&WillDispatchWindowEvent, window_controller);
+      base::BindRepeating(&WillDispatchWindowEvent, window_controller);
   EventRouter::Get(profile_)->BroadcastEvent(std::move(event));
 }
 

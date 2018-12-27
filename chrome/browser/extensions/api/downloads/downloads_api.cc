@@ -2000,7 +2000,7 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
     events::HistogramValue histogram_value,
     const std::string& event_name,
     bool include_incognito,
-    const Event::WillDispatchCallback& will_dispatch_callback,
+    Event::WillDispatchCallback will_dispatch_callback,
     std::unique_ptr<base::Value> arg) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!EventRouter::Get(profile_))
@@ -2023,7 +2023,7 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
   auto event =
       std::make_unique<Event>(histogram_value, event_name, std::move(args),
                               restrict_to_browser_context);
-  event->will_dispatch_callback = will_dispatch_callback;
+  event->will_dispatch_callback = std::move(will_dispatch_callback);
   EventRouter::Get(profile_)->BroadcastEvent(std::move(event));
   DownloadsNotificationSource notification_source;
   notification_source.event_name = event_name;

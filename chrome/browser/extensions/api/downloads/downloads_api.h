@@ -388,12 +388,11 @@ class ExtensionDownloadsEventRouter
   void CheckForHistoryFilesRemoval();
 
  private:
-  void DispatchEvent(
-      events::HistogramValue histogram_value,
-      const std::string& event_name,
-      bool include_incognito,
-      const extensions::Event::WillDispatchCallback& will_dispatch_callback,
-      std::unique_ptr<base::Value> json_arg);
+  void DispatchEvent(events::HistogramValue histogram_value,
+                     const std::string& event_name,
+                     bool include_incognito,
+                     Event::WillDispatchCallback will_dispatch_callback,
+                     std::unique_ptr<base::Value> json_arg);
 
   // extensions::ExtensionRegistryObserver.
   void OnExtensionUnloaded(content::BrowserContext* browser_context,

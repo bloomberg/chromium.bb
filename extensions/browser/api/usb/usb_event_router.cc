@@ -119,7 +119,7 @@ void UsbEventRouter::DispatchEvent(const std::string& event_name,
     }
 
     event->will_dispatch_callback =
-        base::Bind(&WillDispatchDeviceEvent, device);
+        base::BindRepeating(&WillDispatchDeviceEvent, device);
     event_router->BroadcastEvent(std::move(event));
   }
 }
