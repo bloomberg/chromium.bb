@@ -12,6 +12,7 @@
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 
+#include <numeric>
 #include <utility>
 
 #include "base/callback.h"
@@ -28,8 +29,8 @@
 #include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
 #include "media/gpu/gpu_video_encode_accelerator_helpers.h"
+#include "media/gpu/image_processor_factory.h"
 #include "media/gpu/macros.h"
-#include "media/gpu/v4l2/v4l2_image_processor.h"
 #include "media/video/h264_parser.h"
 
 #define NOTIFY_ERROR(x)                      \
@@ -201,11 +202,6 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
              << "by the HW. Will try to convert to "
              << device_input_layout_->format();
 
-    if (!V4L2ImageProcessor::IsSupported()) {
-      VLOGF(1) << "Image processor not available";
-      return false;
-    }
-
     // It is necessary to set strides and buffers even with dummy values,
     // because VideoFrameLayout::num_buffers() specifies v4l2 pix format
     // associated with |config.input_format| is multi-planar.
@@ -223,19 +219,24 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
     // Convert from |config.input_format| to |device_input_layout_->format()|,
     // keeping the size at |visible_size_| and requiring the output buffers to
     // be of at least |device_input_layout_->coded_size()|.
-    // Unretained(this) is safe in creating ErrorCB because |image_processor_|
-    // is destructed by Destroy() and Destroy() is posted in child_task_runner_,
-    // which is the same thread ErrorCB being called. So after Destroy() is
-    // called, no more ErrorCB will be invoked.
-    // |input_storage_type| can be STORAGE_SHMEM and
-    // STORAGE_MOJO_SHARED_BUFFER. However, it doesn't matter
-    // VideoFrame::STORAGE_OWNED_MEMORY is specified for |input_storage_type|
-    // here, as long as VideoFrame on Process()'s data can be accessed by
-    // VideoFrame::data().
-    image_processor_ = V4L2ImageProcessor::Create(
-        V4L2Device::Create(), VideoFrame::STORAGE_OWNED_MEMORY,
-        VideoFrame::STORAGE_DMABUFS, ImageProcessor::OutputMode::ALLOCATE,
-        *input_layout, *device_input_layout_, visible_size_, visible_size_,
+    // Unretained(this) is safe in creating ErrorCB because
+    // V4L2VideoEncodeAccelerator instance outlives |image_processor_| and
+    // ImageProcessor invalidates posted ErrorCB when its Reset() or destructor
+    // is called.
+    // |input_storage_type| can be STORAGE_SHMEM and STORAGE_MOJO_SHARED_BUFFER.
+    // However, it doesn't matter VideoFrame::STORAGE_OWNED_MEMORY is specified
+    // for |input_storage_type| here, as long as VideoFrame on Process()'s data
+    // can be accessed by VideoFrame::data().
+    image_processor_ = ImageProcessorFactory::Create(
+        ImageProcessor::PortConfig(*input_layout, visible_size_,
+                                   {VideoFrame::STORAGE_OWNED_MEMORY}),
+        ImageProcessor::PortConfig(
+            *device_input_layout_, visible_size_,
+            {VideoFrame::STORAGE_DMABUFS, VideoFrame::STORAGE_OWNED_MEMORY}),
+        // Try OutputMode::ALLOCATE first because we want v4l2IP chooses
+        // ALLOCATE mode. For libyuvIP, it accepts only IMPORT.
+        {ImageProcessor::OutputMode::ALLOCATE,
+         ImageProcessor::OutputMode::IMPORT},
         kImageProcBufferCount,
         base::BindRepeating(&V4L2VideoEncodeAccelerator::ImageProcessorError,
                             base::Unretained(this)));
@@ -259,28 +260,23 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
       return false;
     }
 
-    for (int i = 0; i < kImageProcBufferCount; i++)
-      free_image_processor_output_buffers_.push_back(i);
+    // Initialize |free_image_processor_output_buffer_indices_|.
+    free_image_processor_output_buffer_indices_.resize(kImageProcBufferCount);
+    std::iota(free_image_processor_output_buffer_indices_.begin(),
+              free_image_processor_output_buffer_indices_.end(), 0);
+
+    if (!AllocateImageProcessorOutputBuffers())
+      return false;
   }
+
+  if (!InitInputMemoryType(config))
+    return false;
 
   if (!InitControls(config))
     return false;
 
   if (!CreateOutputBuffers())
     return false;
-
-  if (!image_processor_) {
-    switch (config.storage_type.value_or(Config::StorageType::kShmem)) {
-      case Config::StorageType::kShmem:
-        input_memory_type_ = V4L2_MEMORY_USERPTR;
-        break;
-      case Config::StorageType::kDmabuf:
-        input_memory_type_ = V4L2_MEMORY_DMABUF;
-        break;
-    }
-  } else {
-    input_memory_type_ = V4L2_MEMORY_DMABUF;
-  }
 
   if (!encoder_thread_.Start()) {
     VLOGF(1) << "encoder thread failed to start";
@@ -303,6 +299,61 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
   return true;
 }
 
+bool V4L2VideoEncodeAccelerator::AllocateImageProcessorOutputBuffers() {
+  DCHECK(image_processor_);
+  // Allocate VideoFrames for image processor output if its mode is IMPORT.
+  if (image_processor_->output_mode() != ImageProcessor::OutputMode::IMPORT) {
+    return true;
+  }
+
+  image_processor_output_buffers_.resize(kImageProcBufferCount);
+  const auto output_storage_type = image_processor_->output_storage_type();
+  for (size_t i = 0; i < kImageProcBufferCount; i++) {
+    switch (output_storage_type) {
+      case VideoFrame::STORAGE_OWNED_MEMORY:
+        image_processor_output_buffers_[i] = VideoFrame::CreateFrameWithLayout(
+            *device_input_layout_, gfx::Rect(visible_size_), visible_size_,
+            base::TimeDelta(), true);
+        if (!image_processor_output_buffers_[i]) {
+          VLOG(1) << "Failed to create VideoFrame";
+          return false;
+        }
+        break;
+      // TODO(crbug.com/910590): Support VideoFrame::STORAGE_DMABUFS.
+      default:
+        VLOGF(1) << "Unsupported output storage type of image processor: "
+                 << output_storage_type;
+        return false;
+    }
+  }
+  return true;
+}
+
+bool V4L2VideoEncodeAccelerator::InitInputMemoryType(const Config& config) {
+  if (image_processor_) {
+    const auto storage_type = image_processor_->output_storage_type();
+    if (storage_type == VideoFrame::STORAGE_DMABUFS) {
+      input_memory_type_ = V4L2_MEMORY_DMABUF;
+    } else if (VideoFrame::IsStorageTypeMappable(storage_type)) {
+      input_memory_type_ = V4L2_MEMORY_USERPTR;
+    } else {
+      VLOGF(1) << "Unsupported image processor's output StorageType: "
+               << storage_type;
+      return false;
+    }
+  } else {
+    switch (config.storage_type.value_or(Config::StorageType::kShmem)) {
+      case Config::StorageType::kShmem:
+        input_memory_type_ = V4L2_MEMORY_USERPTR;
+        break;
+      case Config::StorageType::kDmabuf:
+        input_memory_type_ = V4L2_MEMORY_DMABUF;
+        break;
+    }
+  }
+  return true;
+}
+
 void V4L2VideoEncodeAccelerator::ImageProcessorError() {
   VLOGF(1) << "Image processor error";
   NOTIFY_ERROR(kPlatformFailureError);
@@ -314,20 +365,41 @@ void V4L2VideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   if (image_processor_) {
-    if (free_image_processor_output_buffers_.size() > 0) {
-      int output_buffer_index = free_image_processor_output_buffers_.back();
-      free_image_processor_output_buffers_.pop_back();
-      // Unretained(this) is safe in creating FrameReadyCB because
-      // |image_processor_| is destructed by Destroy() and Destroy() is posted
-      // in child_task_runner_, which is the same thread FrameReadyCB being
-      // called. So after Destroy() is called, no more FrameReadyCB will be
-      // invoked.
-      if (!image_processor_->Process(
-              frame, output_buffer_index, std::vector<base::ScopedFD>(),
-              base::BindOnce(&V4L2VideoEncodeAccelerator::FrameProcessed,
-                             base::Unretained(this), force_keyframe,
-                             frame->timestamp(), output_buffer_index))) {
-        NOTIFY_ERROR(kPlatformFailureError);
+    if (!free_image_processor_output_buffer_indices_.empty()) {
+      // Create a VideoFrame by wrapping an instance from
+      // |image_processor_output_buffers_|. The new VideoFrame has its own life
+      // cycle but shares underlying payload from the VideoFrame being wrapped.
+      // When the VideoEncodeAccelerator finish processing ImageProcessor's
+      // output frame, the frame is no longer referenced, hence trigger
+      // destruction observer to recycle the frame.
+      const size_t output_buffer_index =
+          free_image_processor_output_buffer_indices_.back();
+      free_image_processor_output_buffer_indices_.pop_back();
+      if (image_processor_->output_mode() ==
+          ImageProcessor::OutputMode::IMPORT) {
+        const auto& buf = image_processor_output_buffers_[output_buffer_index];
+        auto output_frame = VideoFrame::WrapVideoFrame(
+            buf, buf->format(), buf->visible_rect(), buf->natural_size());
+
+        // Unretained(this) is safe in creating FrameReadyCB because
+        // V4L2VideoEncodeAccelerator instance outlives |image_processor_| and
+        // ImageProcessor invalidates posted FrameReadyCB when its Reset() or
+        // destructor is called.
+        if (!image_processor_->Process(
+                frame, std::move(output_frame),
+                base::BindOnce(&V4L2VideoEncodeAccelerator::FrameProcessed,
+                               base::Unretained(this), force_keyframe,
+                               frame->timestamp(), output_buffer_index))) {
+          NOTIFY_ERROR(kPlatformFailureError);
+        }
+      } else {
+        if (!image_processor_->Process(
+                frame, output_buffer_index, std::vector<base::ScopedFD>(),
+                base::BindOnce(&V4L2VideoEncodeAccelerator::FrameProcessed,
+                               base::Unretained(this), force_keyframe,
+                               frame->timestamp(), output_buffer_index))) {
+          NOTIFY_ERROR(kPlatformFailureError);
+        }
       }
     } else {
       image_processor_input_queue_.emplace(frame, force_keyframe);
@@ -426,7 +498,7 @@ void V4L2VideoEncodeAccelerator::FlushTask(FlushCallback flush_callback) {
 
   if (flush_callback_ || encoder_state_ != kEncoding) {
     VLOGF(1) << "Flush failed: there is a pending flush, "
-             << "or VEA is not in kEncoding state";
+             << "or VideoEncodeAccelerator is not in kEncoding state";
     NOTIFY_ERROR(kIllegalStateError);
     child_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(flush_callback), false));
@@ -473,7 +545,7 @@ void V4L2VideoEncodeAccelerator::ReuseImageProcessorOutputBuffer(
     int output_buffer_index) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DVLOGF(4) << "output_buffer_index=" << output_buffer_index;
-  free_image_processor_output_buffers_.push_back(output_buffer_index);
+  free_image_processor_output_buffer_indices_.push_back(output_buffer_index);
   if (!image_processor_input_queue_.empty()) {
     InputFrameInfo frame_info = image_processor_input_queue_.front();
     image_processor_input_queue_.pop();
@@ -868,7 +940,7 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
 
     switch (input_memory_type_) {
       case V4L2_MEMORY_USERPTR:
-        // Use buffer_size VEA HW requested by S_FMT.
+        // Use buffer_size VideoEncodeAccelerator HW requested by S_FMT.
         qbuf.m.planes[i].length = device_input_layout_->buffer_sizes()[i];
         qbuf.m.planes[i].m.userptr =
             reinterpret_cast<unsigned long>(frame->data(i));

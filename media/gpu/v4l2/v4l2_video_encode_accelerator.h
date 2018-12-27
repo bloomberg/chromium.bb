@@ -213,6 +213,10 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // false otherwise.
   bool IsCtrlExposed(uint32_t ctrl_id);
 
+  // Allocates video frames for image processor's output buffers.
+  // Returns false if there's something wrong.
+  bool AllocateImageProcessorOutputBuffers();
+
   // Recycle output buffer of image processor with |output_buffer_index|.
   void ReuseImageProcessorOutputBuffer(int output_buffer_index);
 
@@ -223,6 +227,9 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   size_t CopyIntoOutputBuffer(const uint8_t* bitstream_data,
                               size_t bitstream_size,
                               std::unique_ptr<BitstreamBufferRef> buffer_ref);
+
+  // Initializes input_memory_type_.
+  bool InitInputMemoryType(const Config& config);
 
   // Our original calling task runner for the child thread.
   const scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;
@@ -294,14 +301,18 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
 
   // Image processor, if one is in use.
   std::unique_ptr<ImageProcessor> image_processor_;
+  // Video frames for image processor output / VideoEncodeAccelerator input.
+  // Only accessed on child thread.
+  std::vector<scoped_refptr<VideoFrame>> image_processor_output_buffers_;
   // Indexes of free image processor output buffers. Only accessed on child
   // thread.
-  std::vector<int> free_image_processor_output_buffers_;
+  std::vector<size_t> free_image_processor_output_buffer_indices_;
   // Video frames ready to be processed. Only accessed on child thread.
   base::queue<InputFrameInfo> image_processor_input_queue_;
 
-  // This thread services tasks posted from the VEA API entry points by the
-  // child thread and device service callbacks posted from the device thread.
+  // This thread services tasks posted from the VideoEncodeAccelerator API entry
+  // points by the child thread and device service callbacks posted from the
+  // device thread.
   base::Thread encoder_thread_;
 
   // The device polling thread handles notifications of V4L2 device changes.
