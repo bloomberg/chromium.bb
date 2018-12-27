@@ -67,7 +67,12 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
     : public network::mojom::NetworkServiceTest,
       public base::MessageLoopCurrent::DestructionObserver {
  public:
-  NetworkServiceTestImpl() {
+  NetworkServiceTestImpl()
+      : memory_pressure_listener_(
+            base::DoNothing(),
+            base::BindRepeating(&NetworkServiceTestHelper::
+                                    NetworkServiceTestImpl::OnMemoryPressure,
+                                base::Unretained(this))) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kUseMockCertVerifierForTesting)) {
       mock_cert_verifier_ = std::make_unique<net::MockCertVerifier>();
@@ -177,6 +182,11 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
         base::BindRepeating(CrashResolveHost, host));
   }
 
+  void GetLatestMemoryPressureLevel(
+      GetLatestMemoryPressureLevelCallback callback) override {
+    std::move(callback).Run(latest_memory_pressure_level_);
+  }
+
   void BindRequest(network::mojom::NetworkServiceTestRequest request) {
     bindings_.AddBinding(this, std::move(request));
     if (!registered_as_destruction_observer_) {
@@ -192,12 +202,21 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
   }
 
  private:
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+    latest_memory_pressure_level_ = memory_pressure_level;
+  }
+
   bool registered_as_destruction_observer_ = false;
   mojo::BindingSet<network::mojom::NetworkServiceTest> bindings_;
   TestHostResolver test_host_resolver_;
   std::unique_ptr<net::MockCertVerifier> mock_cert_verifier_;
   std::unique_ptr<net::ScopedTransportSecurityStateSource>
       transport_security_state_source_;
+  base::MemoryPressureListener memory_pressure_listener_;
+  base::MemoryPressureListener::MemoryPressureLevel
+      latest_memory_pressure_level_ =
+          base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceTestImpl);
 };

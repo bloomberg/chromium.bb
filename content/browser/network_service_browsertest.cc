@@ -15,6 +15,8 @@
 #include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -28,6 +30,8 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/network_service_test.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"
@@ -179,7 +183,7 @@ class NetworkServiceBrowserTest : public ContentBrowserTest {
     std::unique_ptr<network::ResourceRequest> request =
         std::make_unique<network::ResourceRequest>();
     request->url = url;
-    content::SimpleURLLoaderTestHelper simple_loader_helper;
+    SimpleURLLoaderTestHelper simple_loader_helper;
     std::unique_ptr<network::SimpleURLLoader> simple_loader =
         network::SimpleURLLoader::Create(std::move(request),
                                          TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -290,13 +294,42 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
   base::android::ApplicationStatusListener::NotifyApplicationStateChange(
       base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES);
   base::RunLoop().RunUntilIdle();
-  content::FlushNetworkServiceInstanceForTesting();
+  FlushNetworkServiceInstanceForTesting();
   disk_cache::FlushCacheThreadForTesting();
 
   EXPECT_GT(base::ComputeDirectorySize(GetCacheIndexDirectory()),
             directory_size);
 }
 #endif
+
+IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
+                       MemoryPressureSentToNetworkProcess) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
+
+  network::mojom::NetworkServiceTestPtr network_service_test;
+  ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
+      mojom::kNetworkServiceName, &network_service_test);
+  // TODO(crbug.com/901026): Make sure the network process is started to avoid a
+  // deadlock on Android.
+  network_service_test.FlushForTesting();
+
+  mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+  base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level =
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
+  network_service_test->GetLatestMemoryPressureLevel(&memory_pressure_level);
+  EXPECT_EQ(memory_pressure_level,
+            base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE);
+
+  base::MemoryPressureListener::NotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  base::RunLoop().RunUntilIdle();
+  FlushNetworkServiceInstanceForTesting();
+
+  network_service_test->GetLatestMemoryPressureLevel(&memory_pressure_level);
+  EXPECT_EQ(memory_pressure_level,
+            base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+}
 
 class NetworkServiceInProcessBrowserTest : public ContentBrowserTest {
  public:

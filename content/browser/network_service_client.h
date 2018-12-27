@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_NETWORK_SERVICE_IMPL_H_
 
 #include "base/macros.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -89,12 +90,17 @@ class CONTENT_EXPORT NetworkServiceClient
   // net::CertDatabase::Observer implementation:
   void OnCertDBChanged() override;
 
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_presure_level);
+
 #if defined(OS_ANDROID)
   void OnApplicationStateChange(base::android::ApplicationState state);
 #endif
 
  private:
   mojo::Binding<network::mojom::NetworkServiceClient> binding_;
+
+  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
 #if defined(OS_ANDROID)
   std::unique_ptr<base::android::ApplicationStatusListener>

@@ -62,4 +62,41 @@ bool EnumTraits<network::mojom::ApplicationState,
 }
 #endif
 
+network::mojom::MemoryPressureLevel
+EnumTraits<network::mojom::MemoryPressureLevel,
+           base::MemoryPressureListener::MemoryPressureLevel>::
+    ToMojom(base::MemoryPressureListener::MemoryPressureLevel input) {
+  switch (input) {
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
+      return network::mojom::MemoryPressureLevel::NONE;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
+      return network::mojom::MemoryPressureLevel::MODERATE;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
+      return network::mojom::MemoryPressureLevel::CRITICAL;
+  }
+  NOTREACHED();
+  return static_cast<network::mojom::MemoryPressureLevel>(input);
+}
+
+bool EnumTraits<network::mojom::MemoryPressureLevel,
+                base::MemoryPressureListener::MemoryPressureLevel>::
+    FromMojom(network::mojom::MemoryPressureLevel input,
+              base::MemoryPressureListener::MemoryPressureLevel* output) {
+  switch (input) {
+    case network::mojom::MemoryPressureLevel::NONE:
+      *output = base::MemoryPressureListener::MemoryPressureLevel::
+          MEMORY_PRESSURE_LEVEL_NONE;
+      return true;
+    case network::mojom::MemoryPressureLevel::MODERATE:
+      *output = base::MemoryPressureListener::MemoryPressureLevel::
+          MEMORY_PRESSURE_LEVEL_MODERATE;
+      return true;
+    case network::mojom::MemoryPressureLevel::CRITICAL:
+      *output = base::MemoryPressureListener::MemoryPressureLevel::
+          MEMORY_PRESSURE_LEVEL_CRITICAL;
+      return true;
+  }
+  return false;
+}
+
 }  // namespace mojo
