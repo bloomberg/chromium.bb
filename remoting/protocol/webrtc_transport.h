@@ -127,6 +127,10 @@ class WebrtcTransport : public Transport {
   void SendTransportInfo();
   void AddPendingCandidatesIfPossible();
 
+  // Returns the VideoSender for this connection, or nullptr if it hasn't
+  // been created yet.
+  rtc::scoped_refptr<webrtc::RtpSenderInterface> GetVideoSender();
+
   base::ThreadChecker thread_checker_;
 
   scoped_refptr<TransportContext> transport_context_;
