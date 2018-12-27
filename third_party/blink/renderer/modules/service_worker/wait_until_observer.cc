@@ -161,17 +161,11 @@ void WaitUntilObserver::WaitUntil(ScriptState* script_state,
   }
 
   IncrementPendingPromiseCount();
-
-  // Call Then() separately for fulfilled and rejected cases. This ensures
-  // throwing an exception in |on_promise_fulfilled| doesn't invoke
-  // |on_promise_rejected|.
   script_promise.Then(
       ThenFunction::CreateFunction(script_state, this, ThenFunction::kFulfilled,
                                    std::move(on_promise_fulfilled)),
-      {});
-  script_promise.Then({}, ThenFunction::CreateFunction(
-                              script_state, this, ThenFunction::kRejected,
-                              std::move(on_promise_rejected)));
+      ThenFunction::CreateFunction(script_state, this, ThenFunction::kRejected,
+                                   std::move(on_promise_rejected)));
 }
 
 bool WaitUntilObserver::IsEventActive(ScriptState* script_state) const {
