@@ -23,7 +23,6 @@ component("common") {
     "fileapi/file_system_util.cc",
     "fileapi/file_system_util.h",
     "quota/quota_limit_type.h",
-    "storage_common_export.h",
     "storage_histograms.cc",
     "storage_histograms.h",
   ]
@@ -34,7 +33,7 @@ component("common") {
     "//build/config/compiler:wexit_time_destructors",
   ]
 
-  defines = [ "STORAGE_COMMON_IMPLEMENTATION" ]
+  defines = [ "IS_STORAGE_COMMON_IMPL" ]
 
   public_deps = [
     "//components/services/filesystem/public/interfaces",
