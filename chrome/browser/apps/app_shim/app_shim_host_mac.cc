@@ -25,15 +25,17 @@ uint64_t g_next_host_id = 1000;
 }  // namespace
 
 AppShimHost::AppShimHost(const std::string& app_id,
-                         const base::FilePath& profile_path)
+                         const base::FilePath& profile_path,
+                         bool uses_remote_views)
     : host_binding_(this),
       app_shim_request_(mojo::MakeRequest(&app_shim_)),
       app_id_(app_id),
       profile_path_(profile_path),
+      uses_remote_views_(uses_remote_views),
       weak_factory_(this) {
   // Create the interfaces used to host windows, so that browser windows may be
   // created before the host process finishes launching.
-  if (features::HostWindowsInAppShimProcess()) {
+  if (uses_remote_views_) {
     uint64_t host_id = g_next_host_id++;
 
     // Create the interface that will be used by views::NativeWidgetMac to
@@ -179,14 +181,20 @@ void AppShimHost::OnAppClosed() {
 }
 
 void AppShimHost::OnAppHide() {
+  if (uses_remote_views_)
+    return;
   app_shim_->Hide();
 }
 
 void AppShimHost::OnAppUnhideWithoutActivation() {
+  if (uses_remote_views_)
+    return;
   app_shim_->UnhideWithoutActivation();
 }
 
 void AppShimHost::OnAppRequestUserAttention(apps::AppShimAttentionType type) {
+  if (uses_remote_views_)
+    return;
   app_shim_->SetUserAttention(type);
 }
 
