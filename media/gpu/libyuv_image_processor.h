@@ -36,11 +36,6 @@ class MEDIA_GPU_EXPORT LibYUVImageProcessor : public ImageProcessor {
  public:
   // ImageProcessor override
   ~LibYUVImageProcessor() override;
-  gfx::Size input_allocated_size() const override;
-  gfx::Size output_allocated_size() const override;
-  VideoFrame::StorageType input_storage_type() const override;
-  VideoFrame::StorageType output_storage_type() const override;
-  OutputMode output_mode() const override;
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
   bool Process(scoped_refptr<VideoFrame> frame,
                int output_buffer_index,
@@ -70,6 +65,7 @@ class MEDIA_GPU_EXPORT LibYUVImageProcessor : public ImageProcessor {
                        const VideoFrameLayout& output_layout,
                        const gfx::Size& output_visible_size,
                        VideoFrame::StorageType output_storage_type,
+                       OutputMode output_mode,
                        ErrorCB error_cb);
 
   void ProcessTask(scoped_refptr<VideoFrame> input_frame,
@@ -88,12 +84,8 @@ class MEDIA_GPU_EXPORT LibYUVImageProcessor : public ImageProcessor {
   static bool IsFormatSupported(VideoPixelFormat input_format,
                                 VideoPixelFormat output_format);
 
-  const VideoFrameLayout input_layout_;
   const gfx::Rect input_visible_rect_;
-  VideoFrame::StorageType input_storage_type_;
-  const VideoFrameLayout output_layout_;
   const gfx::Rect output_visible_rect_;
-  VideoFrame::StorageType output_storage_type_;
 
   // Error callback to the client.
   ErrorCB error_cb_;

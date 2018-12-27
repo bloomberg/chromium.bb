@@ -21,13 +21,15 @@ LibYUVImageProcessor::LibYUVImageProcessor(
     const VideoFrameLayout& output_layout,
     const gfx::Size& output_visible_size,
     VideoFrame::StorageType output_storage_type,
+    OutputMode output_mode,
     ErrorCB error_cb)
-    : input_layout_(input_layout),
+    : ImageProcessor(input_layout,
+                     input_storage_type,
+                     output_layout,
+                     output_storage_type,
+                     output_mode),
       input_visible_rect_(input_visible_size),
-      input_storage_type_(input_storage_type),
-      output_layout_(output_layout),
       output_visible_rect_(output_visible_size),
-      output_storage_type_(output_storage_type),
       error_cb_(error_cb),
       client_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       process_thread_("LibYUVImageProcessorThread"),
@@ -91,7 +93,7 @@ std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
   auto processor = base::WrapUnique(new LibYUVImageProcessor(
       input_config.layout, input_config.visible_size, input_storage_type,
       output_config.layout, output_config.visible_size, output_storage_type,
-      std::move(error_cb)));
+      output_mode, std::move(error_cb)));
   if (!processor->process_thread_.Start()) {
     VLOGF(1) << "Failed to start processing thread";
     return nullptr;
@@ -176,26 +178,6 @@ bool LibYUVImageProcessor::Reset() {
     return false;
   }
   return true;
-}
-
-gfx::Size LibYUVImageProcessor::input_allocated_size() const {
-  return input_layout_.coded_size();
-}
-
-gfx::Size LibYUVImageProcessor::output_allocated_size() const {
-  return output_layout_.coded_size();
-}
-
-VideoFrame::StorageType LibYUVImageProcessor::input_storage_type() const {
-  return input_storage_type_;
-}
-
-VideoFrame::StorageType LibYUVImageProcessor::output_storage_type() const {
-  return output_storage_type_;
-}
-
-ImageProcessor::OutputMode LibYUVImageProcessor::output_mode() const {
-  return OutputMode::IMPORT;
 }
 
 void LibYUVImageProcessor::NotifyError() {

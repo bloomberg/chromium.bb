@@ -16,4 +16,15 @@ ImageProcessor::PortConfig::PortConfig(
 
 ImageProcessor::PortConfig::~PortConfig() {}
 
+ImageProcessor::ImageProcessor(const VideoFrameLayout& input_layout,
+                               VideoFrame::StorageType input_storage_type,
+                               const VideoFrameLayout& output_layout,
+                               VideoFrame::StorageType output_storage_type,
+                               OutputMode output_mode)
+    : input_layout_(input_layout),
+      input_storage_type_(input_storage_type),
+      output_layout_(output_layout),
+      output_storage_type_(output_storage_type),
+      output_mode_(output_mode) {}
+
 }  // namespace media
