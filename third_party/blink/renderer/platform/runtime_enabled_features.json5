@@ -989,6 +989,9 @@
       status: "experimental",
     },
     {
+      name: "PaymentRequestHasEnrolledInstrument",
+    },
+    {
       name: "PaymentRetry",
       status: "experimental",
     },
