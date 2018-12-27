@@ -18,8 +18,9 @@ extern NSString* const kSettingsToolbarDeleteButtonId;
 // into the Settings UI.  It handles the configuration and display of the MDC
 // AppBar.
 @interface SettingsRootTableViewController
-    : ChromeTableViewController <SettingsRootViewControlling,
-                                 TableViewLinkHeaderFooterItemDelegate>
+    : ChromeTableViewController<AppBarViewControllerPresenting,
+                                SettingsRootViewControlling,
+                                TableViewLinkHeaderFooterItemDelegate>
 
 // Whether this table view controller should hide the "Done" button (the right
 // navigation bar button). Default is NO.

@@ -103,8 +103,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
                   (id<ReauthenticationProtocol>)reauthenticationModule {
   DCHECK(delegate);
   DCHECK(reauthenticationModule);
-  self = [super initWithTableViewStyle:UITableViewStyleGrouped
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self =
+      [super initWithTableViewStyle:UITableViewStyleGrouped
+                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
   if (self) {
     _delegate = delegate;
     _weakReauthenticationModule = reauthenticationModule;

@@ -518,13 +518,9 @@ void TapSuppressDialogsButton() {
 
   // Show settings.
   [ChromeEarlGreyUI openSettingsMenu];
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(
-                                              l10n_util::GetNSString(
-                                                  IDS_IOS_SETTINGS_TITLE)),
-                                          grey_accessibilityTrait(
-                                              UIAccessibilityTraitHeader),
-                                          nil)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          StaticTextWithAccessibilityLabelId(
+                                              IDS_IOS_SETTINGS_TITLE)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Show an alert.

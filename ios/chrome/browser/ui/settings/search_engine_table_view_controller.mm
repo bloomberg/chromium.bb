@@ -64,8 +64,9 @@ const char kUmaSelectDefaultSearchEngine[] =
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
   DCHECK(browserState);
-  self = [super initWithTableViewStyle:UITableViewStyleGrouped
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self =
+      [super initWithTableViewStyle:UITableViewStyleGrouped
+                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
   if (self) {
     _templateURLService =
         ios::TemplateURLServiceFactory::GetForBrowserState(browserState);

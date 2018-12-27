@@ -68,7 +68,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (instancetype)init {
   if ((self = [super
            initWithTableViewStyle:UITableViewStyleGrouped
-                      appBarStyle:ChromeTableViewControllerStyleNoAppBar])) {
+                      appBarStyle:ChromeTableViewControllerStyleWithAppBar])) {
   }
   return self;
 }

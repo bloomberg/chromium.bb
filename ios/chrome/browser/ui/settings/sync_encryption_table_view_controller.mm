@@ -58,8 +58,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
   DCHECK(browserState);
-  self = [super initWithTableViewStyle:UITableViewStyleGrouped
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self =
+      [super initWithTableViewStyle:UITableViewStyleGrouped
+                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
   if (self) {
     self.title = l10n_util::GetNSString(IDS_IOS_SYNC_ENCRYPTION_TITLE);
     _browserState = browserState;

@@ -121,9 +121,8 @@ NSString* const kSettingsToolbarDeleteButtonId =
   self.tableView.estimatedSectionFooterHeight = kEstimatedHeaderFooterHeight;
   self.tableView.separatorInset =
       UIEdgeInsetsMake(0, kTableViewSeparatorInset, 0, 0);
-
-  self.navigationItem.largeTitleDisplayMode =
-      UINavigationItemLargeTitleDisplayModeNever;
+  // Do not set the estimated height of the footer/header as if there is no
+  // header/footer, there is an empty space.
 }
 
 - (void)viewWillAppear:(BOOL)animated {

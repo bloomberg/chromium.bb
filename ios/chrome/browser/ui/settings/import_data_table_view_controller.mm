@@ -57,8 +57,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
                       isSignedIn:(BOOL)isSignedIn {
   DCHECK(fromEmail);
   DCHECK(toEmail);
-  self = [super initWithTableViewStyle:UITableViewStyleGrouped
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self =
+      [super initWithTableViewStyle:UITableViewStyleGrouped
+                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
   if (self) {
     _delegate = delegate;
     _fromEmail = [fromEmail copy];

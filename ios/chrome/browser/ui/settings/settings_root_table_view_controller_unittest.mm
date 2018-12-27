@@ -24,7 +24,7 @@ class SettingsRootTableViewControllerTest : public PlatformTest {
   SettingsRootTableViewController* Controller() {
     return [[SettingsRootTableViewController alloc]
         initWithTableViewStyle:UITableViewStylePlain
-                   appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+                   appBarStyle:ChromeTableViewControllerStyleWithAppBar];
   }
 
   SettingsNavigationController* NavigationController() {
@@ -56,11 +56,8 @@ TEST_F(SettingsRootTableViewControllerTest, TestUpdateEditButton) {
   // |shouldShowEditButton|.
   controller.tableView.editing = NO;
   [controller updateEditButton];
-  UIBarButtonItem* item = [[UIBarButtonItem alloc]
-      initWithBarButtonSystemItem:UIBarButtonSystemItemDone
-                           target:nil
-                           action:nil];
-  EXPECT_NSEQ(item.title, controller.navigationItem.rightBarButtonItem.title);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON),
+              controller.navigationItem.rightBarButtonItem.title);
 
   // Check that there the OK button if the table view is being edited and the
   // controller has the default behavior for |shouldShowEditButton|.

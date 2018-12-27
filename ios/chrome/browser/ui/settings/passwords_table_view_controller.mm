@@ -213,8 +213,9 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
   DCHECK(browserState);
-  self = [super initWithTableViewStyle:UITableViewStyleGrouped
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self =
+      [super initWithTableViewStyle:UITableViewStyleGrouped
+                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
   if (self) {
     browserState_ = browserState;
     reauthenticationModule_ = [[ReauthenticationModule alloc]

@@ -102,22 +102,6 @@ id<GREYMatcher> SettingsSwitchIsEnabled(BOOL is_enabled, BOOL use_new_cell) {
                                               descriptionBlock:describe];
 }
 
-// Returns the subview of |parentView| corresponding to the
-// ContentSuggestionsViewController. Returns nil if it is not in its subviews.
-UIView* SubviewWithAccessibilityIdentifier(NSString* accessibilityID,
-                                           UIView* parentView) {
-  if (parentView.accessibilityIdentifier == accessibilityID) {
-    return parentView;
-  }
-  for (UIView* view in parentView.subviews) {
-    UIView* resultView =
-        SubviewWithAccessibilityIdentifier(accessibilityID, view);
-    if (resultView)
-      return resultView;
-  }
-  return nil;
-}
-
 }  // namespace
 
 namespace chrome_test_util {
@@ -332,9 +316,7 @@ id<GREYMatcher> OpenLinkInNewTabButton() {
 }
 
 id<GREYMatcher> NavigationBarDoneButton() {
-  return grey_allOf(
-      ButtonWithAccessibilityLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON),
-      grey_userInteractionEnabled(), nil);
+  return ButtonWithAccessibilityLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
 }
 
 id<GREYMatcher> BookmarksNavigationBarDoneButton() {
@@ -439,15 +421,8 @@ id<GREYMatcher> GoogleServicesSettingsButton() {
 }
 
 id<GREYMatcher> SettingsMenuBackButton() {
-  UINavigationBar* navBar = base::mac::ObjCCastStrict<UINavigationBar>(
-      SubviewWithAccessibilityIdentifier(
-          @"SettingNavigationBar",
-          [[UIApplication sharedApplication] keyWindow]));
-  return grey_allOf(grey_anyOf(grey_accessibilityLabel(navBar.backItem.title),
-                               grey_accessibilityLabel(@"Back"), nil),
-                    grey_kindOfClass([UIButton class]),
-                    grey_ancestor(grey_kindOfClass([UINavigationBar class])),
-                    nil);
+  return grey_allOf(grey_accessibilityID(@"ic_arrow_back"),
+                    grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
 }
 
 id<GREYMatcher> SettingsMenuPrivacyButton() {
