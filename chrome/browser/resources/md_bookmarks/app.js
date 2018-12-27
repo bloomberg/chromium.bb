@@ -43,6 +43,10 @@ Polymer({
       return state.folderOpenState;
     });
 
+    this.addEventListener('select-toolbar-search', () => {
+      this.$$('bookmarks-toolbar').searchField.showAndFocus();
+    });
+
     chrome.bookmarks.getTree((results) => {
       const nodeMap = bookmarks.util.normalizeNodes(results[0]);
       const initialState = bookmarks.util.createEmptyState();

@@ -82,6 +82,8 @@ cr.define('bookmarks', function() {
       this.addShortcut_(Command.COPY, 'Ctrl|c', 'Meta|c');
       this.addShortcut_(Command.PASTE, 'Ctrl|v', 'Meta|v');
 
+      this.addShortcut_(Command.FIND, 'Ctrl|f', 'Meta|f');
+
       /** @private {!Map<string, Function>} */
       this.boundListeners_ = new Map();
 
@@ -187,6 +189,7 @@ cr.define('bookmarks', function() {
           return this.globalCanEdit_;
         case Command.SELECT_ALL:
         case Command.DESELECT_ALL:
+        case Command.FIND:
           return true;
         case Command.COPY:
           return itemIds.size > 0;
@@ -409,6 +412,9 @@ cr.define('bookmarks', function() {
           break;
         case Command.HELP_CENTER:
           window.open('https://support.google.com/chrome/?p=bookmarks');
+          break;
+        case Command.FIND:
+          this.fire('select-toolbar-search');
           break;
         default:
           assert(false);
