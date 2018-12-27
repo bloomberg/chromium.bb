@@ -2122,7 +2122,7 @@
             ]
         }
     ],
-    "HTTPReallyBadFinal": [
+    "HTTPBadPhase3": [
         {
             "platforms": [
                 "android",
@@ -2134,9 +2134,9 @@
             ],
             "experiments": [
                 {
-                    "name": "enabled",
+                    "name": "NotSecureWarning",
                     "params": {
-                        "treatment": "dangerous"
+                        "treatment": "warning"
                     },
                     "enable_features": [
                         "MarkHttpAs"
