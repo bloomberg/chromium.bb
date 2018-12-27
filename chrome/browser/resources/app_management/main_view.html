@@ -33,6 +33,11 @@
         padding-inline-end: 8px;
         padding-inline-start: 24px;
       }
+
+      .permission-row-sublabel {
+        display: flex;
+        flex-direction: column;
+      }
     </style>
 
     <div class="card-container">
@@ -54,6 +59,22 @@
             <iron-icon icon="[[getCollapsedIcon_(listExpanded_)]]">
             </iron-icon>
           </button>
+        </paper-icon-button-light>
+      </div>
+    </div>
+
+    <div class="card-container">
+      <div class="permission-row">
+        <div class="permission-row-sublabel">
+          <div class="header-text">
+              $i18n{notifications}
+          </div>
+          <div class="secondary-text">
+              [[getNotificationSublabel_(notificationApps_)]]
+          </div>
+        </div>
+        <paper-icon-button-light class="subpage-arrow" actionable>
+          <button></button>
         </paper-icon-button-light>
       </div>
     </div>

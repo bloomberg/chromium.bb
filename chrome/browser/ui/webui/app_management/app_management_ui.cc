@@ -31,6 +31,8 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("back", IDS_APP_MANAGEMENT_BACK);
   source->AddLocalizedString("lessApps", IDS_APP_MANAGEMENT_LESS_APPS);
   source->AddLocalizedString("moreApps", IDS_APP_MANAGEMENT_MORE_APPS);
+  source->AddLocalizedString("notificationSublabel",
+                             IDS_APP_MANAGEMENT_NOTIFICATIONS_SUBLABEL);
   source->AddLocalizedString("notifications", IDS_APP_MANAGEMENT_NOTIFICATIONS);
   source->AddLocalizedString("openSiteSettings",
                              IDS_APP_MANAGEMENT_SITE_SETTING);

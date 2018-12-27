@@ -16,6 +16,9 @@
   <message name="IDS_APP_MANAGEMENT_NOTIFICATIONS" desc="Label for notifications section in app settings page.">
     Notifications
   </message>
+  <message name="IDS_APP_MANAGEMENT_NOTIFICATIONS_SUBLABEL" desc="Sublabel for the Notifications item in the main App Management view">
+    <ph name="NUMBER_OF_MORE_APPS">$1<ex>4</ex></ph> apps
+  </message>
   <message name="IDS_APP_MANAGEMENT_PERMISSIONS" desc="Label for permissions section in app settings page.">
     Permissions
   </message>
