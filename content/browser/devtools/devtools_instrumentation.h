@@ -54,6 +54,12 @@ bool WillCreateURLLoaderFactory(
     bool is_download,
     network::mojom::URLLoaderFactoryRequest* loader_factory_request);
 
+bool WillCreateURLLoaderFactory(
+    RenderFrameHostImpl* rfh,
+    bool is_navigation,
+    bool is_download,
+    std::unique_ptr<network::mojom::URLLoaderFactory>* factory);
+
 void OnResetNavigationRequest(NavigationRequest* navigation_request);
 void OnNavigationRequestWillBeSent(const NavigationRequest& navigation_request);
 void OnNavigationResponseReceived(const NavigationRequest& nav_request,

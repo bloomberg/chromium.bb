@@ -1,18 +1,30 @@
 (async function(testRunner) {
-  var {page, session, dp} = await testRunner.startBlank(`Verify that request interception doesn't mess mime types`);
+  var {page, session, dp} = await testRunner.startBlank(`Verify that interception works for file URLs`);
 
   await dp.Network.enable();
   await dp.Network.setRequestInterception({
     patterns: [{ urlPattern: '*' }]
   });
-  dp.Network.onRequestIntercepted(event => {
-    dp.Network.continueInterceptedRequest({
-      interceptionId: event.params.interceptionId
-    });
-  });
   await dp.Runtime.enable();
-  await session.navigate('./resources/simple.html');
+  const navigationPromise = session.navigate('./resources/simple.html');
+  const mainResource = (await dp.Network.onceRequestIntercepted()).params;
+  testRunner.log(`Intercepted: ${testRunner.trimURL(mainResource.request.url)}`);
+  dp.Network.continueInterceptedRequest({
+    interceptionId: mainResource.interceptionId
+  });
+  await navigationPromise;
   // If resource is interpreted as text/plain instead of text/html, the HTML will be escaped.
   testRunner.log(await session.evaluate(() => document.body.innerHTML));
+  session.evaluate(`(() => {
+    let script = document.createElement('script');
+    script.src = 'simple.js';
+    document.body.appendChild(script);
+  })()`);
+  const subresource = (await dp.Network.onceRequestIntercepted()).params;
+  testRunner.log(`Intercepted: ${testRunner.trimURL(subresource.request.url)}`);
+  dp.Network.continueInterceptedRequest({
+    interceptionId: subresource.interceptionId
+  });
+
   testRunner.completeTest();
 })

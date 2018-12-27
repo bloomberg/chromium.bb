@@ -64,6 +64,35 @@ class DevToolsURLLoaderInterceptor {
   DISALLOW_COPY_AND_ASSIGN(DevToolsURLLoaderInterceptor);
 };
 
+// The purpose of this class is to have a thin wrapper around
+// InterfacePtr<URLLoaderFactory> that is held by the client as
+// unique_ptr<network::mojom::URLLoaderFactory>, since this is the
+// way some clients pass the factory. We prefer wrapping a mojo proxy
+// rather than exposing original DevToolsURLLoaderFactoryProxy because
+// this takes care of thread hopping when necessary.
+class DevToolsURLLoaderFactoryAdapter
+    : public network::mojom::URLLoaderFactory {
+ public:
+  DevToolsURLLoaderFactoryAdapter() = delete;
+  explicit DevToolsURLLoaderFactoryAdapter(
+      network::mojom::URLLoaderFactoryPtr factory);
+  ~DevToolsURLLoaderFactoryAdapter() override;
+
+ private:
+  // network::mojom::URLLoaderFactory implementation
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override;
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override;
+
+  network::mojom::URLLoaderFactoryPtr factory_;
+};
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_URL_LOADER_INTERCEPTOR_H_
