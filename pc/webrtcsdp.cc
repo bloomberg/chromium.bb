@@ -2559,14 +2559,7 @@ bool ParseMediaDescription(const std::string& message,
                                           : MediaProtocolType::kRtp,
                      content_rejected, bundle_only, content.release());
     // Create TransportInfo with the media level "ice-pwd" and "ice-ufrag".
-    TransportInfo transport_info(content_name, transport);
-
-    if (!desc->AddTransportInfo(transport_info)) {
-      rtc::StringBuilder description;
-      description << "Failed to AddTransportInfo with content name: "
-                  << content_name;
-      return ParseFailed("", description.str(), error);
-    }
+    desc->AddTransportInfo(TransportInfo(content_name, transport));
   }
 
   desc->set_msid_signaling(msid_signaling);
