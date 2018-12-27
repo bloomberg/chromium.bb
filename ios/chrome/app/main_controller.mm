@@ -464,8 +464,6 @@ enum class ShowTabSwitcherSnapshotResult {
 // Completes the process of dismissing the tab switcher, removing it from the
 // screen and showing the appropriate BVC.
 - (void)finishDismissingTabSwitcher;
-// Sets up self.currentBVC for testing by closing existing tabs.
-- (void)setUpCurrentBVCForTesting;
 // Opens an url from a link in the settings UI.
 - (void)openUrlFromSettings:(OpenNewTabCommand*)command;
 // Switches to show either regular or incognito tabs, and then opens
@@ -2550,13 +2548,6 @@ enum class ShowTabSwitcherSnapshotResult {
       IdentityManagerFactory::GetForBrowserState(browserState);
   std::string username = identity_manager->GetPrimaryAccountInfo().email;
   return username.empty() ? nil : base::SysUTF8ToNSString(username);
-}
-
-#pragma mark - UI Automation Testing
-
-- (void)setUpCurrentBVCForTesting {
-  [self.otrTabModel closeAllTabs];
-  [self.mainTabModel closeAllTabs];
 }
 
 #pragma mark - GoogleServicesNavigationCoordinatorDelegate
