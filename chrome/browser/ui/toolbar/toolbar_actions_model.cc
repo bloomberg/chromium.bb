@@ -552,8 +552,6 @@ void ToolbarActionsModel::Populate() {
       "ExtensionToolbarModel.BrowserActionsPermanentlyHidden", hidden);
   UMA_HISTOGRAM_COUNTS_100("ExtensionToolbarModel.BrowserActionsCount",
                            browser_actions_count);
-  UMA_HISTOGRAM_COUNTS_100("Toolbar.ActionsModel.ComponentActionsCount",
-                           component_actions_count);
   UMA_HISTOGRAM_COUNTS_100("Toolbar.ActionsModel.OverallActionsCount",
                            toolbar_items_.size());
 
