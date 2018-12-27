@@ -336,8 +336,11 @@ public class OverviewListLayoutTest {
 
         CriteriaHelper.pollInstrumentationThread(new ChildCountCriteria(0));
         CriteriaHelper.pollInstrumentationThread(new TabModelCountCountCriteria(false, 0));
-        Assert.assertFalse(
-                mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button).isEnabled());
+        Assert.assertFalse(mActivityTestRule.getActivity()
+                                   .findViewById(R.id.tab_switcher_mode_tab_switcher_button)
+                                   .isEnabled());
+        Assert.assertTrue(
+                mActivityTestRule.getActivity().findViewById(R.id.new_tab_button).isEnabled());
     }
 
     @Test
@@ -357,16 +360,20 @@ public class OverviewListLayoutTest {
         CriteriaHelper.pollInstrumentationThread(new TabModelCountCountCriteria(true, 0));
 
         CriteriaHelper.pollInstrumentationThread(new ChildCountCriteria(4));
-        Assert.assertTrue(
-                mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button).isEnabled());
+        Assert.assertTrue(mActivityTestRule.getActivity()
+                                  .findViewById(R.id.tab_switcher_mode_tab_switcher_button)
+                                  .isEnabled());
 
         MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), R.id.close_all_tabs_menu_id);
 
         CriteriaHelper.pollInstrumentationThread(new ChildCountCriteria(0));
         CriteriaHelper.pollInstrumentationThread(new TabModelCountCountCriteria(false, 0));
-        Assert.assertFalse(
-                mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button).isEnabled());
+        Assert.assertFalse(mActivityTestRule.getActivity()
+                                   .findViewById(R.id.tab_switcher_mode_tab_switcher_button)
+                                   .isEnabled());
+        Assert.assertTrue(
+                mActivityTestRule.getActivity().findViewById(R.id.new_tab_button).isEnabled());
     }
 
     @Test
