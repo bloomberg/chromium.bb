@@ -17,6 +17,7 @@
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_requirements_service.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 
 using autofill::AutofillField;
 using autofill::FieldSignature;
@@ -83,6 +84,10 @@ void PasswordGenerationManager::ProcessPasswordRequirements(
 
 void PasswordGenerationManager::DetectFormsEligibleForGeneration(
     const std::vector<autofill::FormStructure*>& forms) {
+  if (base::FeatureList::IsEnabled(features::kNewPasswordFormParsing)) {
+    // NewPasswordFormManager sends this information to the renderer.
+    return;
+  }
   // IsGenerationEnabled is called multiple times and it is sufficient to
   // log debug data once. This is it!
   if (!IsGenerationEnabled(/*log_debug_data=*/true))

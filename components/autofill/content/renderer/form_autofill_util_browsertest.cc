@@ -424,6 +424,23 @@ TEST_F(FormAutofillUtilsTest, FindFormByUniqueId) {
           .IsNull());
 }
 
+TEST_F(FormAutofillUtilsTest, FindFormControlByUniqueId) {
+  LoadHTML(
+      "<body><form id='form1'><input id='i1'></form><input id='i2'></body>");
+  WebDocument doc = GetMainFrame()->GetDocument();
+  auto input1 = doc.GetElementById("i1").To<WebInputElement>();
+  auto input2 = doc.GetElementById("i2").To<WebInputElement>();
+  uint32_t non_existing_id = input2.UniqueRendererFormControlId() + 1000;
+  using autofill::form_util::FindFormControlElementsByUniqueRendererId;
+
+  EXPECT_EQ(input1, FindFormControlElementsByUniqueRendererId(
+                        doc, input1.UniqueRendererFormControlId()));
+  EXPECT_EQ(input2, FindFormControlElementsByUniqueRendererId(
+                        doc, input2.UniqueRendererFormControlId()));
+  EXPECT_TRUE(
+      FindFormControlElementsByUniqueRendererId(doc, non_existing_id).IsNull());
+}
+
 TEST_F(FormAutofillUtilsTest, FindFormControlElementsByUniqueIdNoForm) {
   LoadHTML("<body><input id='i1'><input id='i2'><input id='i3'></body>");
   WebDocument doc = GetMainFrame()->GetDocument();

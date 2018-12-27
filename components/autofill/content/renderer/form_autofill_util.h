@@ -286,6 +286,12 @@ ButtonTitleList InferButtonTitlesForTesting(
 blink::WebFormElement FindFormByUniqueRendererId(blink::WebDocument doc,
                                                  uint32_t form_renderer_id);
 
+// Returns form control element by unique renderer id. Return null element if
+// there is no element with given renderer id.
+blink::WebFormControlElement FindFormControlElementsByUniqueRendererId(
+    blink::WebDocument doc,
+    uint32_t form_control_renderer_id);
+
 // Note: The vector-based API of the following two functions is a tax for limiting
 // the frequency and duration of retrieving a lot of DOM elements. Alternative
 // solutions have been discussed on https://crrev.com/c/1108201.

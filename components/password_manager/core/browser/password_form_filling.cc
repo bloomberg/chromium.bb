@@ -115,7 +115,12 @@ LikelyFormFilling SendFillInformationToRenderer(
   DCHECK(driver);
   DCHECK_EQ(PasswordForm::SCHEME_HTML, observed_form.scheme);
 
-  if (!is_blacklisted)
+  const bool new_parsing_enabled =
+      base::FeatureList::IsEnabled(features::kNewPasswordFormParsing);
+
+  // No need to inform the renderer about form blacklisting.
+  // NewPasswordFormManager sends all needed information to the renderer.
+  if (!new_parsing_enabled && !is_blacklisted)
     driver->AllowPasswordGenerationForForm(observed_form);
 
   if (best_matches.empty()) {
@@ -136,8 +141,7 @@ LikelyFormFilling SendFillInformationToRenderer(
   // password field ID, then PasswordAutofillAgent has no way to fill the
   // password anywhere.
   const bool form_good_for_filling =
-      base::FeatureList::IsEnabled(features::kNewPasswordFormParsing) ||
-      !observed_form.IsPossibleChangePasswordForm();
+      new_parsing_enabled || !observed_form.IsPossibleChangePasswordForm();
 
   // Wait for the username before filling passwords in case the
   // fill-on-account-select-http feature is active and the main frame is

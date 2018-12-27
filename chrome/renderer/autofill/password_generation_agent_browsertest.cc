@@ -1291,4 +1291,40 @@ TEST_F(PasswordGenerationAgentTest, ShortPasswordMaskedAfterChangingFocus) {
   EXPECT_FALSE(input.ShouldRevealPassword());
 }
 
+TEST_F(PasswordGenerationAgentTest, GenerationAvailableByRendererIds) {
+  LoadHTMLWithUserGesture(kMultipleAccountCreationFormHTML);
+
+  constexpr const char* kPasswordElementsIds[] = {"password", "first_password",
+                                                  "second_password"};
+
+  WebDocument document = GetMainFrame()->GetDocument();
+  std::vector<WebInputElement> password_elements;
+  for (const char* id : kPasswordElementsIds) {
+    WebElement element = document.GetElementById(WebString::FromUTF8(id));
+    WebInputElement* input = ToWebInputElement(&element);
+    ASSERT_TRUE(input);
+    password_elements.push_back(*input);
+  }
+
+  // Simulate that the browser informs about eligible for generation form.
+  // Check that generation is available only on new password field of this form.
+  NewPasswordFormGenerationData generation_data = {
+      .new_password_renderer_id =
+          password_elements[0].UniqueRendererFormControlId()};
+
+  password_generation_->FoundFormEligibleForGeneration(generation_data);
+  ExpectAutomaticGenerationAvailable(kPasswordElementsIds[0], true);
+  ExpectAutomaticGenerationAvailable(kPasswordElementsIds[1], false);
+  ExpectAutomaticGenerationAvailable(kPasswordElementsIds[2], false);
+
+  // Simulate that the browser informs about the second eligible for generation
+  // form. Check that generation is available on both forms.
+  generation_data.new_password_renderer_id =
+      password_elements[2].UniqueRendererFormControlId();
+  password_generation_->FoundFormEligibleForGeneration(generation_data);
+  ExpectAutomaticGenerationAvailable(kPasswordElementsIds[0], true);
+  ExpectAutomaticGenerationAvailable(kPasswordElementsIds[1], false);
+  ExpectAutomaticGenerationAvailable(kPasswordElementsIds[2], true);
+}
+
 }  // namespace autofill

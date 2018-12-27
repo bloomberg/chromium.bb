@@ -2072,6 +2072,23 @@ WebFormElement FindFormByUniqueRendererId(WebDocument doc,
   return WebFormElement();
 }
 
+WebFormControlElement FindFormControlElementsByUniqueRendererId(
+    WebDocument doc,
+    uint32_t form_control_renderer_id) {
+  WebElementCollection elements = doc.All();
+
+  for (WebElement element = elements.FirstItem(); !element.IsNull();
+       element = elements.NextItem()) {
+    if (!element.IsFormControlElement())
+      continue;
+    WebFormControlElement control = element.To<WebFormControlElement>();
+    if (form_control_renderer_id == control.UniqueRendererFormControlId())
+      return control;
+  }
+
+  return WebFormControlElement();
+}
+
 std::vector<WebFormControlElement> FindFormControlElementsByUniqueRendererId(
     WebDocument doc,
     const std::vector<uint32_t>& form_control_renderer_ids) {
