@@ -287,100 +287,16 @@ if (custom_toolchain != "") {
 # aix or one of the BSDs. If you need to check these, just check the
 # current_os value directly.
 
-if (current_os == "win" || current_os == "winuwp") {
-  is_android = false
-  is_chromeos = false
-  is_fuchsia = false
-  is_ios = false
-  is_linux = false
-  is_mac = false
-  is_nacl = false
-  is_posix = false
-  is_win = true
-} else if (current_os == "mac") {
-  is_android = false
-  is_chromeos = false
-  is_fuchsia = false
-  is_ios = false
-  is_linux = false
-  is_mac = true
-  is_nacl = false
-  is_posix = true
-  is_win = false
-} else if (current_os == "android") {
-  is_android = true
-  is_chromeos = false
-  is_fuchsia = false
-  is_ios = false
-  is_linux = false
-  is_mac = false
-  is_nacl = false
-  is_posix = true
-  is_win = false
-} else if (current_os == "chromeos") {
-  is_android = false
-  is_chromeos = true
-  is_fuchsia = false
-  is_ios = false
-  is_linux = true
-  is_mac = false
-  is_nacl = false
-  is_posix = true
-  is_win = false
-} else if (current_os == "nacl") {
-  # current_os == "nacl" will be passed by the nacl toolchain definition.
-  # It is not set by default or on the command line. We treat is as a
-  # Posix variant.
-  is_android = false
-  is_chromeos = false
-  is_fuchsia = false
-  is_ios = false
-  is_linux = false
-  is_mac = false
-  is_nacl = true
-  is_posix = true
-  is_win = false
-} else if (current_os == "fuchsia") {
-  is_android = false
-  is_chromeos = false
-  is_fuchsia = true
-  is_ios = false
-  is_linux = false
-  is_mac = false
-  is_nacl = false
-  is_posix = false
-  is_win = false
-} else if (current_os == "ios") {
-  is_android = false
-  is_chromeos = false
-  is_fuchsia = false
-  is_ios = true
-  is_linux = false
-  is_mac = false
-  is_nacl = false
-  is_posix = true
-  is_win = false
-} else if (current_os == "linux") {
-  is_android = false
-  is_chromeos = false
-  is_fuchsia = false
-  is_ios = false
-  is_linux = true
-  is_mac = false
-  is_nacl = false
-  is_posix = true
-  is_win = false
-} else if (current_os == "aix") {
-  is_android = false
-  is_chromeos = false
-  is_fuchsia = false
-  is_ios = false
-  is_linux = false
-  is_mac = false
-  is_nacl = false
-  is_posix = true
-  is_win = false
-}
+is_android = current_os == "android"
+is_chromeos = current_os == "chromeos"
+is_fuchsia = current_os == "fuchsia"
+is_ios = current_os == "ios"
+is_linux = current_os == "chromeos" || current_os == "linux"
+is_mac = current_os == "mac"
+is_nacl = current_os == "nacl"
+is_win = current_os == "win" || current_os == "winuwp"
+
+is_posix = !is_win && !is_fuchsia
 
 # =============================================================================
 # SOURCES FILTERS
