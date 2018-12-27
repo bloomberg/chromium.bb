@@ -35,12 +35,12 @@
         margin-inline-start: var(--cr-section-indent-width);
       }
     </style>
-    <div id="section-heading">$i18n{hostPermissionsHeading}</div>
+    <div id="section-heading">$i18n{hostPermissionsDescription}</div>
     <div class="toggle-section">
       <extensions-toggle-row checked="[[allowedOnAllHosts_(permissions.*)]]"
           id="allHostsToggle"
           on-change="onAllHostsToggleChanged_">
-        <span>$i18n{itemAllowOnAllSites}</span>
+        <span>$i18n{itemAllowOnFollowingSites}</span>
       </extensions-toggle-row>
     </div>
     <template is="dom-repeat" items="[[getSortedHosts_(permissions.*)]]">
