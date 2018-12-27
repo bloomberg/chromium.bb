@@ -775,7 +775,14 @@ void PasswordManager::CreatePendingLoginManagers(
                       pending_login_managers_.size());
   }
 
-  if (is_only_new_parser_enabled_)
+  bool html_scheme =
+      !forms.empty() && forms[0].scheme == PasswordForm::SCHEME_HTML;
+
+  // Create PasswordFormManager for non-html scheme even if
+  // |is_only_new_parser_enabled_|.
+  // TODO(https://crbug.com/915161) Implement support of non-html schemes in
+  // NewPasswordFormManager.
+  if (html_scheme && is_only_new_parser_enabled_)
     return;
 
   for (const PasswordForm& form : forms) {
@@ -1313,6 +1320,13 @@ PasswordFormManager* PasswordManager::GetMatchingPendingManager(
 }
 
 PasswordFormManagerInterface* PasswordManager::GetSubmittedManager() const {
+  // TODO(https://crbug.com/915161) Implement support of non-html schemes in
+  // NewPasswordFormManager remove using PasswordFormManager for such forms.
+  if (provisional_save_manager_ &&
+      provisional_save_manager_->GetPendingCredentials().scheme !=
+          PasswordForm::SCHEME_HTML)
+    return provisional_save_manager_.get();
+
   if (!is_new_form_parsing_for_saving_enabled_)
     return provisional_save_manager_.get();
 
@@ -1330,6 +1344,13 @@ PasswordFormManagerInterface* PasswordManager::GetSubmittedManager() const {
 
 std::unique_ptr<PasswordFormManagerForUI>
 PasswordManager::MoveOwnedSubmittedManager() {
+  // TODO(https://crbug.com/915161) Implement support of non-html schemes in
+  // NewPasswordFormManager remove using PasswordFormManager for such forms.
+  if (provisional_save_manager_ &&
+      provisional_save_manager_->GetPendingCredentials().scheme !=
+          PasswordForm::SCHEME_HTML)
+    return std::move(provisional_save_manager_);
+
   if (!is_new_form_parsing_for_saving_enabled_)
     return std::move(provisional_save_manager_);
 
