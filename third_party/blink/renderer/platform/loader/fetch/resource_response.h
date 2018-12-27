@@ -151,8 +151,8 @@ class PLATFORM_EXPORT ResourceResponse final {
   // https://fetch.spec.whatwg.org/#concept-request-current-url
   //
   // Beware that this might not be the same the response URL, so it is usually
-  // incorrect to use this in security checks. Use FetchResponseType() to
-  // determine origin sameness.
+  // incorrect to use this in security checks. Use GetType() to determine origin
+  // sameness.
   //
   // Specifically, if a service worker responded to the request for this
   // resource, it may have fetched an entirely different URL and responded with
@@ -174,6 +174,9 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   // The response URL of this resource. Corresponds to:
   // https://fetch.spec.whatwg.org/#concept-response-url
+  //
+  // This returns the same URL as CurrentRequestUrl() unless a service worker
+  // responded to the request. See the comments for that function.
   KURL ResponseUrl() const;
 
   const AtomicString& MimeType() const;
@@ -310,7 +313,6 @@ class PLATFORM_EXPORT ResourceResponse final {
   void SetType(network::mojom::FetchResponseType value) {
     response_type_ = value;
   }
-  bool IsOpaqueResponseFromServiceWorker() const;
   // https://html.spec.whatwg.org/#cors-same-origin
   bool IsCorsSameOrigin() const {
     return network::cors::IsCorsSameOriginResponseType(response_type_);
