@@ -765,12 +765,23 @@ TEST_P(VisualRectMappingTest, FloatUnderInline) {
 
   LayoutRect rect = target_visual_rect;
   EXPECT_TRUE(target->MapToVisualRectInAncestorSpace(&GetLayoutView(), rect));
-  EXPECT_EQ(LayoutRect(66, 55, 33, 44), rect);
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    // LayoutNG inline-level floats are children of their inline-level
+    // containers. As such they are positioned relative to their inline-level
+    // container, (and shifted by an additional 200,100 in this case).
+    EXPECT_EQ(LayoutRect(266, 155, 33, 44), rect);
+  } else {
+    EXPECT_EQ(LayoutRect(66, 55, 33, 44), rect);
+  }
   EXPECT_EQ(rect, target->FirstFragment().VisualRect());
 
   rect = target_visual_rect;
 
-  CheckVisualRect(*target, *span, rect, LayoutRect(-200, -100, 33, 44));
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    CheckVisualRect(*target, *span, rect, LayoutRect(0, 0, 33, 44));
+  } else {
+    CheckVisualRect(*target, *span, rect, LayoutRect(-200, -100, 33, 44));
+  }
 }
 
 TEST_P(VisualRectMappingTest, ShouldAccountForPreserve3d) {

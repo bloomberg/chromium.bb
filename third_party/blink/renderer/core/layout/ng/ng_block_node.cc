@@ -85,6 +85,38 @@ bool IsFloatFragment(const NGPhysicalFragment& fragment) {
   return layout_object && layout_object->IsFloating() && fragment.IsBox();
 }
 
+// Creates a blink::FloatingObject (if needed), and populates it with the
+// position information needed by the existing layout tree.
+void CopyFloatChildFragmentPosition(LayoutBox* floating_box,
+                                    const NGPhysicalOffset offset,
+                                    bool has_flipped_x_axis) {
+  DCHECK(floating_box->IsFloating());
+
+  LayoutBlock* containing_block = floating_box->ContainingBlock();
+  DCHECK(containing_block);
+
+  // Floats need an associated FloatingObject for painting.
+  FloatingObject* floating_object =
+      ToLayoutBlockFlow(containing_block)->InsertFloatingObject(*floating_box);
+  floating_object->SetShouldPaint(!floating_box->HasSelfPaintingLayer());
+  LayoutUnit horizontal_margin_edge_offset = offset.left;
+  if (has_flipped_x_axis)
+    horizontal_margin_edge_offset -= floating_box->MarginRight();
+  else
+    horizontal_margin_edge_offset -= floating_box->MarginLeft();
+  floating_object->SetX(horizontal_margin_edge_offset);
+  floating_object->SetY(offset.top - floating_box->MarginTop());
+#if DCHECK_IS_ON()
+  // Being "placed" is a legacy thing. Make sure the flags remain unset in NG.
+  DCHECK(!floating_object->IsPlaced());
+  DCHECK(!floating_object->IsInPlacedTree());
+
+  // Set this flag to tell the float machinery that it's safe to read out
+  // position data.
+  floating_object->SetHasGeometry();
+#endif
+}
+
 void UpdateLegacyMultiColumnFlowThread(
     NGBlockNode node,
     LayoutMultiColumnFlowThread* flow_thread,
@@ -707,28 +739,9 @@ void NGBlockNode::CopyChildFragmentPosition(
   layout_box->SetLocation(LayoutPoint(
       horizontal_offset, fragment_offset.top + additional_offset.top));
 
-  // Floats need an associated FloatingObject for painting.
-  if (IsFloatFragment(fragment) && containing_block->IsLayoutBlockFlow()) {
-    FloatingObject* floating_object =
-        ToLayoutBlockFlow(containing_block)->InsertFloatingObject(*layout_box);
-    floating_object->SetShouldPaint(!layout_box->HasSelfPaintingLayer());
-    LayoutUnit horizontal_margin_edge_offset = horizontal_offset;
-    if (has_flipped_x_axis)
-      horizontal_margin_edge_offset -= layout_box->MarginRight();
-    else
-      horizontal_margin_edge_offset -= layout_box->MarginLeft();
-    floating_object->SetX(horizontal_margin_edge_offset);
-    floating_object->SetY(fragment_offset.top + additional_offset.top -
-                          layout_box->MarginTop());
-#if DCHECK_IS_ON()
-    // Being "placed" is a legacy thing. Make sure the flags remain unset in NG.
-    DCHECK(!floating_object->IsPlaced());
-    DCHECK(!floating_object->IsInPlacedTree());
-
-    // Set this flag to tell the float machinery that it's safe to read out
-    // position data.
-    floating_object->SetHasGeometry();
-#endif
+  if (IsFloatFragment(fragment)) {
+    CopyFloatChildFragmentPosition(
+        layout_box, fragment_offset + additional_offset, has_flipped_x_axis);
   }
 }
 
@@ -756,6 +769,11 @@ void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
                                       maybe_flipped_offset.left;
         }
         layout_box.SetLocation(maybe_flipped_offset.ToLayoutPoint());
+
+        if (IsFloatFragment(*child)) {
+          CopyFloatChildFragmentPosition(&layout_box, maybe_flipped_offset,
+                                         initial_container_is_flipped);
+        }
       }
 
       // Legacy compatibility. This flag is used in paint layer for

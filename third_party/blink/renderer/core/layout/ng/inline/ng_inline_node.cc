@@ -240,6 +240,9 @@ void CollectInlinesInternal(LayoutBlockFlow* block,
       if (builder->ShouldAbort())
         return;
 
+      if (update_layout)
+        ClearInlineFragment(node);
+
     } else if (node->IsOutOfFlowPositioned()) {
       builder->AppendOutOfFlowPositioned(node);
       if (builder->ShouldAbort())
@@ -877,8 +880,7 @@ void NGInlineNode::ClearAssociatedFragments(
   for (unsigned i = break_token ? break_token->ItemIndex() : 0;
        i < items.size(); i++) {
     const NGInlineItem& item = items[i];
-    if (item.Type() == NGInlineItem::kFloating ||
-        item.Type() == NGInlineItem::kOutOfFlowPositioned ||
+    if (item.Type() == NGInlineItem::kOutOfFlowPositioned ||
         item.Type() == NGInlineItem::kListMarker)
       continue;
     LayoutObject* object = item.GetLayoutObject();
@@ -965,21 +967,20 @@ static LayoutUnit ComputeContentSize(
           .SetIsIntermediateLayout(true)
           .ToConstraintSpace();
 
-  Vector<NGPositionedFloat> positioned_floats;
-  NGUnpositionedFloatVector unpositioned_floats;
-
   NGExclusionSpace empty_exclusion_space;
+  NGPositionedFloatVector empty_leading_floats;
+  Vector<LayoutObject*> floats_for_min_max;
   NGLineLayoutOpportunity line_opportunity(available_inline_size);
   LayoutUnit result;
   LayoutUnit previous_floats_inline_size =
       input.float_left_inline_size + input.float_right_inline_size;
   DCHECK_GE(previous_floats_inline_size, 0);
   NGLineBreaker line_breaker(
-      node, mode, space, &positioned_floats, &unpositioned_floats,
-      nullptr /* container_builder */, &empty_exclusion_space, 0u,
-      line_opportunity, nullptr /* break_token */);
+      node, mode, space, line_opportunity, empty_leading_floats,
+      /* handled_leading_floats_index */ 0u,
+      /* break_token */ nullptr, &empty_exclusion_space, &floats_for_min_max);
   do {
-    unpositioned_floats.Shrink(0);
+    floats_for_min_max.Shrink(0);
 
     NGLineInfo line_info;
     line_breaker.NextLine(&line_info);
@@ -988,9 +989,6 @@ static LayoutUnit ComputeContentSize(
 
     LayoutUnit inline_size = line_info.Width();
     DCHECK_EQ(inline_size, line_info.ComputeWidth().ClampNegativeToZero());
-
-    // There should be no positioned floats while determining the min/max sizes.
-    DCHECK_EQ(positioned_floats.size(), 0u);
 
     // These variables are only used for the max-content calculation.
     LayoutUnit floats_inline_size = mode == NGLineBreakerMode::kMaxContent
@@ -1002,8 +1000,10 @@ static LayoutUnit ComputeContentSize(
     // them now.
     previous_floats_inline_size = LayoutUnit();
 
-    for (const auto& unpositioned_float : unpositioned_floats) {
-      NGBlockNode float_node = unpositioned_float.node;
+    for (auto* floating_object : floats_for_min_max) {
+      DCHECK(floating_object->IsFloating());
+
+      NGBlockNode float_node(ToLayoutBox(floating_object));
       const ComputedStyle& float_style = float_node.Style();
 
       MinMaxSizeInput zero_input;  // Floats don't intrude into floats.

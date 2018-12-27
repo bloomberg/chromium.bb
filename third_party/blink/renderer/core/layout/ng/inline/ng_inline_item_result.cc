@@ -18,13 +18,15 @@ NGInlineItemResult::NGInlineItemResult(const NGInlineItem* item,
                                        unsigned start,
                                        unsigned end,
                                        bool break_anywhere_if_overflow,
-                                       bool should_create_line_box)
+                                       bool should_create_line_box,
+                                       bool has_unpositioned_floats)
     : item(item),
       item_index(index),
       start_offset(start),
       end_offset(end),
       break_anywhere_if_overflow(break_anywhere_if_overflow),
-      should_create_line_box(should_create_line_box) {}
+      should_create_line_box(should_create_line_box),
+      has_unpositioned_floats(has_unpositioned_floats) {}
 
 void NGLineInfo::SetLineStyle(const NGInlineNode& node,
                               const NGInlineItemsData& items_data,

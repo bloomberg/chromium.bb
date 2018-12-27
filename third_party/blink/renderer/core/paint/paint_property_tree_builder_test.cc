@@ -4923,7 +4923,11 @@ TEST_P(PaintPropertyTreeBuilderTest, FloatUnderInline) {
   EXPECT_EQ(0.5f, effect->Opacity());
 
   LayoutObject* target = GetLayoutObjectByElementId("target");
-  EXPECT_EQ(LayoutPoint(66, 55), target->FirstFragment().PaintOffset());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(LayoutPoint(266, 155), target->FirstFragment().PaintOffset());
+  } else {
+    EXPECT_EQ(LayoutPoint(66, 55), target->FirstFragment().PaintOffset());
+  }
   EXPECT_EQ(effect,
             target->FirstFragment().LocalBorderBoxProperties().Effect());
 }

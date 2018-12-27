@@ -265,15 +265,15 @@ void NGBoxFragmentPainter::PaintObject(
 
   if (paint_phase != PaintPhase::kSelfOutlineOnly) {
     if (PhysicalFragment().ChildrenInline()) {
-      if (PhysicalFragment().IsBlockFlow()) {
+      if (PhysicalFragment().IsBlockFlow())
         PaintBlockFlowContents(paint_info, paint_offset);
-        if (paint_phase == PaintPhase::kFloat ||
-            paint_phase == PaintPhase::kSelection ||
-            paint_phase == PaintPhase::kTextClip)
-          PaintFloats(paint_info);
-      } else {
+      else
         PaintInlineChildren(box_fragment_.Children(), paint_info, paint_offset);
-      }
+
+      if (paint_phase == PaintPhase::kFloat ||
+          paint_phase == PaintPhase::kSelection ||
+          paint_phase == PaintPhase::kTextClip)
+        PaintFloats(paint_info);
     } else {
       PaintBlockChildren(paint_info);
     }

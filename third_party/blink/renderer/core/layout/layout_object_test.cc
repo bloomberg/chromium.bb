@@ -278,8 +278,13 @@ TEST_F(LayoutObjectTest, InlineFloatMismatch) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("float_obj"));
   LayoutObject* span =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("span"));
-  // 10px for margin, -40px because float is to the left of the span.
-  EXPECT_EQ(LayoutSize(-30, 0), float_obj->OffsetFromAncestor(span));
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    // 10px for margin.
+    EXPECT_EQ(LayoutSize(10, 0), float_obj->OffsetFromAncestor(span));
+  } else {
+    // 10px for margin, -40px because float is to the left of the span.
+    EXPECT_EQ(LayoutSize(-30, 0), float_obj->OffsetFromAncestor(span));
+  }
 }
 
 TEST_F(LayoutObjectTest, FloatUnderInline) {
@@ -303,17 +308,30 @@ TEST_F(LayoutObjectTest, FloatUnderInline) {
 
   EXPECT_EQ(layered_div->Layer(), layered_div->PaintingLayer());
   EXPECT_EQ(layered_span->Layer(), layered_span->PaintingLayer());
-  EXPECT_EQ(layered_div->Layer(), floating->PaintingLayer());
-  EXPECT_EQ(container, floating->Container());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    // LayoutNG inline-level floats are children of their inline-level
+    // containers. As such LayoutNG paints these within the correct
+    // inline-level layer.
+    EXPECT_EQ(layered_span->Layer(), floating->PaintingLayer());
+    EXPECT_EQ(layered_span, floating->Container());
+  } else {
+    EXPECT_EQ(layered_div->Layer(), floating->PaintingLayer());
+    EXPECT_EQ(container, floating->Container());
+  }
   EXPECT_EQ(container, floating->ContainingBlock());
 
   LayoutObject::AncestorSkipInfo skip_info(layered_span);
-  EXPECT_EQ(container, floating->Container(&skip_info));
-  EXPECT_TRUE(skip_info.AncestorSkipped());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(layered_span, floating->Container(&skip_info));
+    EXPECT_FALSE(skip_info.AncestorSkipped());
+  } else {
+    EXPECT_EQ(container, floating->Container(&skip_info));
+    EXPECT_TRUE(skip_info.AncestorSkipped());
 
-  skip_info = LayoutObject::AncestorSkipInfo(container);
-  EXPECT_EQ(container, floating->Container(&skip_info));
-  EXPECT_FALSE(skip_info.AncestorSkipped());
+    skip_info = LayoutObject::AncestorSkipInfo(container);
+    EXPECT_EQ(container, floating->Container(&skip_info));
+    EXPECT_FALSE(skip_info.AncestorSkipped());
+  }
 }
 
 TEST_F(LayoutObjectTest, MutableForPaintingClearPaintFlags) {

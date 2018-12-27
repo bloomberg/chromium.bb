@@ -1391,12 +1391,6 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
       container_builder_.SetIsPushedByFloats();
   }
 
-  // A line-box may have a list of floats which we add as children.
-  if (child.IsInline() && (container_builder_.BfcBlockOffset() ||
-                           ConstraintSpace().FloatsBfcBlockOffset())) {
-    AddPositionedFloats(layout_result->PositionedFloats());
-  }
-
   // We must have an actual fragment at this stage.
   DCHECK(layout_result->PhysicalFragment());
   const auto& physical_fragment = *layout_result->PhysicalFragment();

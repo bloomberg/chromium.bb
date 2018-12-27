@@ -461,7 +461,8 @@ TEST_F(NGColumnLayoutAlgorithmTest, UnusedSpaceInBlock) {
   EXPECT_EQ(expectation, dump);
 }
 
-TEST_F(NGColumnLayoutAlgorithmTest, FloatInOneColumn) {
+// TODO(crbug.com/915929): Fix inline-level float fragmentation.
+TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_FloatInOneColumn) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -490,7 +491,8 @@ TEST_F(NGColumnLayoutAlgorithmTest, FloatInOneColumn) {
   EXPECT_EQ(expectation, dump);
 }
 
-TEST_F(NGColumnLayoutAlgorithmTest, TwoFloatsInOneColumn) {
+// TODO(crbug.com/915929): Fix inline-level float fragmentation.
+TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_TwoFloatsInOneColumn) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -521,7 +523,8 @@ TEST_F(NGColumnLayoutAlgorithmTest, TwoFloatsInOneColumn) {
   EXPECT_EQ(expectation, dump);
 }
 
-TEST_F(NGColumnLayoutAlgorithmTest, TwoFloatsInTwoColumns) {
+// TODO(crbug.com/915929): Fix inline-level float fragmentation.
+TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_TwoFloatsInTwoColumns) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -1333,7 +1336,8 @@ TEST_F(NGColumnLayoutAlgorithmTest, LineAtColumnBoundaryInFirstBlock) {
   EXPECT_EQ(expectation, dump);
 }
 
-TEST_F(NGColumnLayoutAlgorithmTest, LinesAndFloatsMulticol) {
+// TODO(crbug.com/915929): Fix inline-level float fragmentation.
+TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_LinesAndFloatsMulticol) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -1386,7 +1390,8 @@ TEST_F(NGColumnLayoutAlgorithmTest, LinesAndFloatsMulticol) {
   EXPECT_EQ(expectation, dump);
 }
 
-TEST_F(NGColumnLayoutAlgorithmTest, FloatBelowLastLineInColumn) {
+// TODO(crbug.com/915929): Fix inline-level float fragmentation.
+TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_FloatBelowLastLineInColumn) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -1738,7 +1743,8 @@ TEST_F(NGColumnLayoutAlgorithmTest, UnsatisfiableOrphansAndWidows) {
   EXPECT_EQ(expectation, dump);
 }
 
-TEST_F(NGColumnLayoutAlgorithmTest, FloatInBlockMovedByOrphans) {
+// TODO(crbug.com/915929): Fix inline-level float fragmentation.
+TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_FloatInBlockMovedByOrphans) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -1781,7 +1787,8 @@ TEST_F(NGColumnLayoutAlgorithmTest, FloatInBlockMovedByOrphans) {
   EXPECT_EQ(expectation, dump);
 }
 
-TEST_F(NGColumnLayoutAlgorithmTest, FloatMovedWithWidows) {
+// TODO(crbug.com/915929): Fix inline-level float fragmentation.
+TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_FloatMovedWithWidows) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {

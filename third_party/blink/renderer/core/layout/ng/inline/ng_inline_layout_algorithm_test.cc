@@ -361,8 +361,8 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundInlineFloatThatFitsOnLine) {
   const NGPhysicalBoxFragment* block_box = block_flow->CurrentFragment();
   ASSERT_TRUE(block_box);
 
-  // float plus two lines.
-  EXPECT_EQ(3u, block_box->Children().size());
+  // Two lines.
+  EXPECT_EQ(2u, block_box->Children().size());
   NGPhysicalOffset first_line_offset = block_box->Children()[1].Offset();
 
   // 30 == narrow-float's width.

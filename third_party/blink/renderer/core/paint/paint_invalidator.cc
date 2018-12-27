@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/layout/layout_table_section.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
+#include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 #include "third_party/blink/renderer/core/paint/find_paint_offset_and_visual_rect_needing_update.h"
@@ -192,12 +193,20 @@ void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
     context.painting_layer = ToLayoutBoxModelObject(object).Layer();
   } else if (object.IsColumnSpanAll() ||
              object.IsFloatingWithNonContainingBlockParent()) {
-    // See LayoutObject::paintingLayer() for the special-cases of floating under
+    // See |LayoutObject::PaintingLayer| for the special-cases of floating under
     // inline and multicolumn.
+    // Post LayoutNG the |LayoutObject::IsFloatingWithNonContainingBlockParent|
+    // check can be removed as floats will be painted by the correct layer.
     context.painting_layer = object.PaintingLayer();
   }
 
-  if (object.IsLayoutBlockFlow() && ToLayoutBlockFlow(object).ContainsFloats())
+  if (object.IsLayoutBlockFlow() && !object.IsLayoutNGBlockFlow() &&
+      ToLayoutBlockFlow(object).ContainsFloats())
+    context.painting_layer->SetNeedsPaintPhaseFloat();
+
+  if (object.IsFloating() &&
+      (object.IsInLayoutNGInlineFormattingContext() ||
+       IsLayoutNGContainingBlock(object.ContainingBlock())))
     context.painting_layer->SetNeedsPaintPhaseFloat();
 
   // Table collapsed borders are painted in PaintPhaseDescendantBlockBackgrounds
@@ -246,10 +255,12 @@ void PaintInvalidator::UpdatePaintInvalidationContainer(
     // this frame's paintInvalidationContainer.
     context.paint_invalidation_container_for_stacked_contents =
         context.paint_invalidation_container;
-  } else if (object.IsFloatingWithNonContainingBlockParent() ||
-             object.IsColumnSpanAll()) {
+  } else if (object.IsColumnSpanAll() ||
+             object.IsFloatingWithNonContainingBlockParent()) {
     // In these cases, the object may belong to an ancestor of the current
     // paint invalidation container, in paint order.
+    // Post LayoutNG the |LayoutObject::IsFloatingWithNonContainingBlockParent|
+    // check can be removed as floats will be painted by the correct layer.
     context.paint_invalidation_container =
         &object.ContainerForPaintInvalidation();
   } else if (object.StyleRef().IsStacked() &&

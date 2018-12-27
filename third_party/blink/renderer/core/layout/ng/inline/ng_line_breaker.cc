@@ -41,18 +41,21 @@ inline bool ShouldCreateLineBox(const NGInlineItemResults& item_results) {
   return !item_results.IsEmpty() && item_results.back().should_create_line_box;
 }
 
+inline bool HasUnpositionedFloats(const NGInlineItemResults& item_results) {
+  return !item_results.IsEmpty() && item_results.back().has_unpositioned_floats;
+}
+
 }  // namespace
 
 NGLineBreaker::NGLineBreaker(NGInlineNode node,
                              NGLineBreakerMode mode,
                              const NGConstraintSpace& space,
-                             Vector<NGPositionedFloat>* positioned_floats,
-                             NGUnpositionedFloatVector* unpositioned_floats,
-                             NGContainerFragmentBuilder* container_builder,
-                             NGExclusionSpace* exclusion_space,
-                             unsigned handled_float_index,
                              const NGLineLayoutOpportunity& line_opportunity,
-                             const NGInlineBreakToken* break_token)
+                             const NGPositionedFloatVector& leading_floats,
+                             unsigned handled_leading_floats_index,
+                             const NGInlineBreakToken* break_token,
+                             NGExclusionSpace* exclusion_space,
+                             Vector<LayoutObject*>* out_floats_for_min_max)
     : line_opportunity_(line_opportunity),
       node_(node),
       is_first_formatted_line_((!break_token || (!break_token->ItemIndex() &&
@@ -67,14 +70,13 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
       items_data_(node.ItemsData(use_first_line_style_)),
       mode_(mode),
       constraint_space_(space),
-      positioned_floats_(positioned_floats),
-      unpositioned_floats_(unpositioned_floats),
-      container_builder_(container_builder),
       exclusion_space_(exclusion_space),
       break_iterator_(items_data_.text_content),
       shaper_(items_data_.text_content),
       spacing_(items_data_.text_content),
-      handled_floats_end_item_index_(handled_float_index),
+      leading_floats_(leading_floats),
+      handled_leading_floats_index_(handled_leading_floats_index),
+      out_floats_for_min_max_(out_floats_for_min_max),
       base_direction_(node_.BaseDirection()) {
   break_iterator_.SetBreakSpace(BreakSpaceType::kBeforeSpaceRun);
 
@@ -98,7 +100,8 @@ inline NGInlineItemResult* NGLineBreaker::AddItem(const NGInlineItem& item,
   DCHECK_LE(end_offset, item.EndOffset());
   return &item_results_->emplace_back(&item, item_index_, offset_, end_offset,
                                       break_anywhere_if_overflow_,
-                                      ShouldCreateLineBox(*item_results_));
+                                      ShouldCreateLineBox(*item_results_),
+                                      HasUnpositionedFloats(*item_results_));
 }
 
 inline NGInlineItemResult* NGLineBreaker::AddItem(const NGInlineItem& item) {
@@ -908,24 +911,31 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
   NGInlineItemResult* item_result = AddItem(item);
   ComputeCanBreakAfter(item_result);
   MoveToNextOf(item);
-  if (item_index_ <= handled_floats_end_item_index_ || ignore_floats_)
+
+  // If we are currently computing our min/max-content size simply append to
+  // the unpositioned floats list and abort.
+  if (mode_ != NGLineBreakerMode::kContent) {
+    DCHECK(out_floats_for_min_max_);
+    out_floats_for_min_max_->push_back(item.GetLayoutObject());
+    return;
+  }
+
+  if (ignore_floats_)
     return;
 
-  NGBlockNode node(ToLayoutBox(item.GetLayoutObject()));
-
-  const ComputedStyle& float_style = node.Style();
+  // Make sure we populate the positioned_float inside the |item_result|.
+  if (item_index_ <= handled_leading_floats_index_ &&
+      !leading_floats_.IsEmpty()) {
+    DCHECK_LT(leading_floats_index_, leading_floats_.size());
+    item_result->positioned_float = leading_floats_[leading_floats_index_++];
+    return;
+  }
 
   // TODO(ikilpatrick): Add support for float break tokens inside an inline
   // layout context.
-  NGUnpositionedFloat unpositioned_float(node, /* break_token */ nullptr);
-
-  // If we are currently computing our min/max-content size simply append
-  // to the unpositioned floats list and abort.
-  if (mode_ != NGLineBreakerMode::kContent) {
-    AddUnpositionedFloat(unpositioned_floats_, container_builder_,
-                         std::move(unpositioned_float), constraint_space_);
-    return;
-  }
+  NGUnpositionedFloat unpositioned_float(
+      NGBlockNode(ToLayoutBox(item.GetLayoutObject())),
+      /* break_token */ nullptr);
 
   LayoutUnit inline_margin_size =
       ComputeMarginBoxInlineSizeForUnpositionedFloat(
@@ -955,15 +965,13 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
   bool float_after_line =
       !can_fit_float ||
       exclusion_space_->LastFloatBlockStart() > bfc_block_offset ||
-      exclusion_space_->ClearanceOffset(
-          ResolvedClear(float_style.Clear(), constraint_space_.Direction())) >
-          bfc_block_offset;
+      exclusion_space_->ClearanceOffset(unpositioned_float.ClearType(
+          constraint_space_.Direction())) > bfc_block_offset;
 
   // Check if we already have a pending float. That's because a float cannot be
   // higher than any block or floated box generated before.
-  if (!unpositioned_floats_->IsEmpty() || float_after_line) {
-    AddUnpositionedFloat(unpositioned_floats_, container_builder_,
-                         std::move(unpositioned_float), constraint_space_);
+  if (HasUnpositionedFloats(*item_results_) || float_after_line) {
+    item_result->has_unpositioned_floats = true;
   } else {
     NGPositionedFloat positioned_float = PositionFloat(
         constraint_space_.AvailableSize(),
@@ -972,7 +980,8 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
         {constraint_space_.BfcOffset().line_offset, bfc_block_offset},
         &unpositioned_float, constraint_space_, node_.Style(),
         exclusion_space_);
-    positioned_floats_->push_back(positioned_float);
+
+    item_result->positioned_float = positioned_float;
 
     NGLayoutOpportunity opportunity = exclusion_space_->FindLayoutOpportunity(
         {constraint_space_.BfcOffset().line_offset, bfc_block_offset},
@@ -1217,20 +1226,17 @@ void NGLineBreaker::Rewind(unsigned new_end) {
   // rewinding them needs to remove from these lists too.
   for (unsigned i = item_results.size(); i > new_end;) {
     NGInlineItemResult& rewind = item_results[--i];
-    if (rewind.item->Type() == NGInlineItem::kFloating) {
-      NGBlockNode float_node(ToLayoutBox(rewind.item->GetLayoutObject()));
-      if (!RemoveUnpositionedFloat(unpositioned_floats_, float_node)) {
-        // TODO(kojii): We do not have mechanism to remove once positioned
-        // floats yet, and that rewinding them may lay it out twice. For now,
-        // prohibit rewinding positioned floats. This may results in incorrect
-        // layout, but still better than rewinding them.
-        new_end = i + 1;
-        if (new_end == item_results.size()) {
-          UpdatePosition();
-          return;
-        }
-        break;
+    if (rewind.positioned_float) {
+      // TODO(kojii): We do not have mechanism to remove once positioned floats
+      // yet, and that rewinding them may lay it out twice. For now, prohibit
+      // rewinding positioned floats. This may results in incorrect layout, but
+      // still better than rewinding them.
+      new_end = i + 1;
+      if (new_end == item_results.size()) {
+        UpdatePosition();
+        return;
       }
+      break;
     }
   }
 

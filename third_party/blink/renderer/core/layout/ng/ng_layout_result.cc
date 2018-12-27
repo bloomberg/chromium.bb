@@ -70,7 +70,6 @@ NGLayoutResult::NGLayoutResult(
       status_(kSuccess) {
   root_fragment_.fragment_ = std::move(physical_fragment);
   oof_positioned_descendants_ = std::move(builder->oof_positioned_descendants_);
-  positioned_floats_ = std::move(builder->positioned_floats_);
 }
 
 // We can't use =default here because RefCounted can't be copied.
@@ -78,7 +77,6 @@ NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
                                base::Optional<LayoutUnit> bfc_block_offset)
     : root_fragment_(other.root_fragment_),
       oof_positioned_descendants_(other.oof_positioned_descendants_),
-      positioned_floats_(other.positioned_floats_),
       unpositioned_list_marker_(other.unpositioned_list_marker_),
       exclusion_space_(other.exclusion_space_),
       bfc_line_offset_(other.bfc_line_offset_),

@@ -18,10 +18,8 @@
 namespace blink {
 
 class Hyphenation;
-class NGContainerFragmentBuilder;
 class NGInlineBreakToken;
 class NGInlineItem;
-struct NGPositionedFloat;
 
 // The line breaker needs to know which mode its in to properly handle floats.
 enum class NGLineBreakerMode { kContent, kMinContent, kMaxContent };
@@ -37,13 +35,12 @@ class CORE_EXPORT NGLineBreaker {
   NGLineBreaker(NGInlineNode,
                 NGLineBreakerMode,
                 const NGConstraintSpace&,
-                Vector<NGPositionedFloat>*,
-                NGUnpositionedFloatVector*,
-                NGContainerFragmentBuilder* container_builder,
-                NGExclusionSpace*,
-                unsigned handled_float_index,
                 const NGLineLayoutOpportunity&,
-                const NGInlineBreakToken* = nullptr);
+                const NGPositionedFloatVector& leading_floats,
+                unsigned handled_leading_floats_index,
+                const NGInlineBreakToken*,
+                NGExclusionSpace*,
+                Vector<LayoutObject*>* out_floats_for_min_max = nullptr);
   ~NGLineBreaker();
 
   // Compute the next line break point and produces NGInlineItemResults for
@@ -209,9 +206,6 @@ class CORE_EXPORT NGLineBreaker {
 
   NGLineBreakerMode mode_;
   const NGConstraintSpace& constraint_space_;
-  Vector<NGPositionedFloat>* positioned_floats_;
-  NGUnpositionedFloatVector* unpositioned_floats_;
-  NGContainerFragmentBuilder* container_builder_; /* May be nullptr */
   NGExclusionSpace* exclusion_space_;
   scoped_refptr<const ComputedStyle> current_style_;
 
@@ -230,7 +224,11 @@ class CORE_EXPORT NGLineBreaker {
   base::Optional<TrailingCollapsibleSpace> trailing_collapsible_space_;
 
   // Keep track of handled float items. See HandleFloat().
-  unsigned handled_floats_end_item_index_;
+  const NGPositionedFloatVector& leading_floats_;
+  unsigned leading_floats_index_ = 0u;
+  unsigned handled_leading_floats_index_;
+
+  Vector<LayoutObject*>* out_floats_for_min_max_;
 
   // The current base direction for the bidi algorithm.
   // This is copied from NGInlineNode, then updated after each forced line break

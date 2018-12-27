@@ -459,8 +459,7 @@ void NGPaintFragment::PopulateDescendants(
                       std::move(previous_child), &populate_children);
 
     if (children_are_inline) {
-      if (!child_fragment->IsFloating() &&
-          !child_fragment->IsOutOfFlowPositioned() &&
+      if (!child_fragment->IsOutOfFlowPositioned() &&
           !child_fragment->IsListMarker()) {
         if (LayoutObject* layout_object = child_fragment->GetLayoutObject())
           child->AssociateWithLayoutObject(layout_object, last_fragment_map);
@@ -487,7 +486,7 @@ void NGPaintFragment::AssociateWithLayoutObject(
     HashMap<const LayoutObject*, NGPaintFragment*>* last_fragment_map) {
   DCHECK(layout_object);
   DCHECK(!next_for_same_layout_object_);
-  DCHECK(layout_object->IsInline());
+  DCHECK(layout_object->IsInline() || layout_object->IsFloating());
 
   auto add_result = last_fragment_map->insert(layout_object, this);
   if (add_result.is_new_entry) {
@@ -806,6 +805,9 @@ PositionWithAffinity NGPaintFragment::PositionForPointInInlineLevelBox(
   LayoutUnit closest_child_after_inline_offset = LayoutUnit::Max();
 
   for (const NGPaintFragment* child : Children()) {
+    if (child->PhysicalFragment().IsFloating())
+      continue;
+
     const LayoutUnit child_inline_min =
         ChildLogicalOffsetInParent(*child).inline_offset;
     const LayoutUnit child_inline_max =
