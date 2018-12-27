@@ -694,33 +694,33 @@ void D3D11VideoDecoder::SetCreateDeviceCallbackForTesting(
   create_device_func_ = std::move(callback);
 }
 
-void D3D11VideoDecoder::SetWasSupportedReason(
-    D3D11VideoNotSupportedReason enum_value) {
+void D3D11VideoDecoder::ReportNotSupportedReason(
+    NotSupportedReason enum_value) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   UMA_HISTOGRAM_ENUMERATION("Media.D3D11.WasVideoSupported", enum_value);
 
   const char* reason = nullptr;
   switch (enum_value) {
-    case D3D11VideoNotSupportedReason::kVideoIsSupported:
+    case NotSupportedReason::kVideoIsSupported:
       reason = "Playback is supported by D3D11VideoDecoder";
       break;
-    case D3D11VideoNotSupportedReason::kInsufficientD3D11FeatureLevel:
+    case NotSupportedReason::kInsufficientD3D11FeatureLevel:
       reason = "Insufficient D3D11 feature level";
       break;
-    case D3D11VideoNotSupportedReason::kProfileNotSupported:
+    case NotSupportedReason::kProfileNotSupported:
       reason = "Video profile is not supported by D3D11VideoDecoder";
       break;
-    case D3D11VideoNotSupportedReason::kCodecNotSupported:
+    case NotSupportedReason::kCodecNotSupported:
       reason = "H264 is required for D3D11VideoDecoder";
       break;
-    case D3D11VideoNotSupportedReason::kZeroCopyNv12Required:
+    case NotSupportedReason::kZeroCopyNv12Required:
       reason = "Must allow zero-copy NV12 for D3D11VideoDecoder";
       break;
-    case D3D11VideoNotSupportedReason::kZeroCopyVideoRequired:
+    case NotSupportedReason::kZeroCopyVideoRequired:
       reason = "Must allow zero-copy video for D3D11VideoDecoder";
       break;
-    case D3D11VideoNotSupportedReason::kEncryptedMedia:
+    case NotSupportedReason::kEncryptedMedia:
       reason = "Encrypted media is not enabled for D3D11VideoDecoder";
       break;
   }
@@ -738,30 +738,30 @@ bool D3D11VideoDecoder::IsPotentiallySupported(
 
   // Must allow zero-copy of nv12 textures.
   if (!gpu_preferences_.enable_zero_copy_dxgi_video) {
-    SetWasSupportedReason(D3D11VideoNotSupportedReason::kZeroCopyNv12Required);
+    ReportNotSupportedReason(NotSupportedReason::kZeroCopyNv12Required);
     return false;
   }
 
   if (gpu_workarounds_.disable_dxgi_zero_copy_video) {
-    SetWasSupportedReason(D3D11VideoNotSupportedReason::kZeroCopyVideoRequired);
+    ReportNotSupportedReason(NotSupportedReason::kZeroCopyVideoRequired);
     return false;
   }
 
   if (config.profile() == H264PROFILE_HIGH10PROFILE) {
     // H264 HIGH10 is never supported.
-    SetWasSupportedReason(D3D11VideoNotSupportedReason::kProfileNotSupported);
+    ReportNotSupportedReason(NotSupportedReason::kProfileNotSupported);
     return false;
   }
 
   if (IsUnsupportedVP9Profile(config)) {
-    SetWasSupportedReason(D3D11VideoNotSupportedReason::kProfileNotSupported);
+    ReportNotSupportedReason(NotSupportedReason::kProfileNotSupported);
     return false;
   }
 
   bool encrypted_stream = config.is_encrypted();
 
   if (encrypted_stream && !base::FeatureList::IsEnabled(kD3D11EncryptedMedia)) {
-    SetWasSupportedReason(D3D11VideoNotSupportedReason::kEncryptedMedia);
+    ReportNotSupportedReason(NotSupportedReason::kEncryptedMedia);
     return false;
   }
 
@@ -772,7 +772,7 @@ bool D3D11VideoDecoder::IsPotentiallySupported(
   // If we got the empty guid, fail.
   GUID empty_guid = {};
   if (decoder_GUID == empty_guid) {
-    SetWasSupportedReason(D3D11VideoNotSupportedReason::kCodecNotSupported);
+    ReportNotSupportedReason(NotSupportedReason::kCodecNotSupported);
     return false;
   }
 
@@ -789,21 +789,21 @@ bool D3D11VideoDecoder::IsPotentiallySupported(
       D3D11_SDK_VERSION, nullptr, &usable_feature_level_, nullptr);
 
   if (FAILED(hr)) {
-    SetWasSupportedReason(
-        D3D11VideoNotSupportedReason::kInsufficientD3D11FeatureLevel);
+    ReportNotSupportedReason(
+        NotSupportedReason::kInsufficientD3D11FeatureLevel);
     return false;
   }
 
   if (encrypted_stream && usable_feature_level_ == D3D_FEATURE_LEVEL_11_0) {
-    SetWasSupportedReason(
-        D3D11VideoNotSupportedReason::kInsufficientD3D11FeatureLevel);
+    ReportNotSupportedReason(
+        NotSupportedReason::kInsufficientD3D11FeatureLevel);
     return false;
   }
 
   // TODO(liberato): dxva checks IsHDR() in the target colorspace, but we don't
   // have the target colorspace.  It's commented as being for vpx, though, so
   // we skip it here for now.
-  SetWasSupportedReason(D3D11VideoNotSupportedReason::kVideoIsSupported);
+  ReportNotSupportedReason(NotSupportedReason::kVideoIsSupported);
   return true;
 }
 
