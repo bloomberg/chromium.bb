@@ -26,7 +26,6 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/common/url_loader_factory_bundle.mojom.h"
 #include "content/common/url_schemes.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -40,6 +39,7 @@
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
+#include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "url/gurl.h"
@@ -100,10 +100,10 @@ void NotifyWorkerVersionDoomedOnUI(int worker_process_id, int worker_route_id) {
 // it may also include scheme-specific factories that don't go to network.
 //
 // The network factory does not support reconnection to the network service.
-std::unique_ptr<URLLoaderFactoryBundleInfo> CreateFactoryBundle(
+std::unique_ptr<blink::URLLoaderFactoryBundleInfo> CreateFactoryBundle(
     RenderProcessHost* rph,
     const url::Origin& origin) {
-  auto factory_bundle = std::make_unique<URLLoaderFactoryBundleInfo>();
+  auto factory_bundle = std::make_unique<blink::URLLoaderFactoryBundleInfo>();
   network::mojom::URLLoaderFactoryRequest default_factory_request =
       mojo::MakeRequest(&factory_bundle->default_factory_info());
   network::mojom::TrustedURLLoaderHeaderClientPtrInfo default_header_client;
@@ -162,9 +162,9 @@ using SetupProcessCallback = base::OnceCallback<void(
     std::unique_ptr<ServiceWorkerProcessManager::AllocatedProcessInfo>,
     std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy>,
     std::unique_ptr<
-        URLLoaderFactoryBundleInfo> /* factory_bundle_for_browser */,
+        blink::URLLoaderFactoryBundleInfo> /* factory_bundle_for_browser */,
     std::unique_ptr<
-        URLLoaderFactoryBundleInfo> /* factory_bundle_for_renderer */,
+        blink::URLLoaderFactoryBundleInfo> /* factory_bundle_for_renderer */,
     blink::mojom::CacheStoragePtrInfo)>;
 
 // Allocates a renderer process for starting a worker and does setup like
@@ -187,8 +187,9 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
   auto process_info =
       std::make_unique<ServiceWorkerProcessManager::AllocatedProcessInfo>();
   std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy;
-  std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle_for_browser;
-  std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle_for_renderer;
+  std::unique_ptr<blink::URLLoaderFactoryBundleInfo> factory_bundle_for_browser;
+  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+      factory_bundle_for_renderer;
 
   if (!process_manager) {
     base::PostTaskWithTraits(
@@ -543,8 +544,10 @@ class EmbeddedWorkerInstance::StartTask {
       std::unique_ptr<ServiceWorkerProcessManager::AllocatedProcessInfo>
           process_info,
       std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy,
-      std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle_for_browser,
-      std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle_for_renderer,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          factory_bundle_for_browser,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          factory_bundle_for_renderer,
       blink::mojom::CacheStoragePtrInfo cache_storage) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -594,8 +597,9 @@ class EmbeddedWorkerInstance::StartTask {
     scoped_refptr<network::SharedURLLoaderFactory> factory_for_new_scripts;
     if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
       DCHECK(factory_bundle_for_browser);
-      factory_for_new_scripts = base::MakeRefCounted<URLLoaderFactoryBundle>(
-          std::move(factory_bundle_for_browser));
+      factory_for_new_scripts =
+          base::MakeRefCounted<blink::URLLoaderFactoryBundle>(
+              std::move(factory_bundle_for_browser));
 
       // Send the factory bundle for subresource loading from the service worker
       // (i.e. fetch()).

@@ -1335,7 +1335,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Creates initiator-specific URLLoaderFactory objects for
   // |initiator_origins|.
-  URLLoaderFactoryBundleInfo::OriginMap
+  blink::URLLoaderFactoryBundleInfo::OriginMap
   CreateInitiatorSpecificURLLoaderFactories(
       const base::flat_set<url::Origin>& initiator_origins);
 

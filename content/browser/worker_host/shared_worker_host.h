@@ -32,6 +32,7 @@ class GURL;
 
 namespace blink {
 class MessagePortChannel;
+class URLLoaderFactoryBundleInfo;
 }
 
 namespace content {
@@ -40,7 +41,6 @@ class AppCacheNavigationHandle;
 class SharedWorkerContentSettingsProxyImpl;
 class SharedWorkerInstance;
 class SharedWorkerServiceImpl;
-class URLLoaderFactoryBundleInfo;
 struct SubresourceLoaderParams;
 
 // The SharedWorkerHost is the interface that represents the browser side of
@@ -96,7 +96,8 @@ class CONTENT_EXPORT SharedWorkerHost
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           main_script_loader_factory,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          subresource_loader_factories,
       base::Optional<SubresourceLoaderParams> subresource_loader_params);
 
   void AllowFileSystem(const GURL& url,

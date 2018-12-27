@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_URL_LOADER_FACTORY_BUNDLE_H_
-#define CONTENT_COMMON_URL_LOADER_FACTORY_BUNDLE_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_LOADER_URL_LOADER_FACTORY_BUNDLE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_LOADER_URL_LOADER_FACTORY_BUNDLE_H_
 
 #include <map>
 #include <memory>
@@ -11,20 +11,20 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "content/common/content_export.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/common/common_export.h"
 #include "url/origin.h"
 
 namespace network {
 struct ResourceRequest;
 };
 
-namespace content {
+namespace blink {
 
 // Holds the internal state of a URLLoaderFactoryBundle in a form that is safe
 // to pass across sequences.
-class CONTENT_EXPORT URLLoaderFactoryBundleInfo
+class BLINK_COMMON_EXPORT URLLoaderFactoryBundleInfo
     : public network::SharedURLLoaderFactoryInfo {
  public:
   // Map from URL scheme to URLLoaderFactoryPtrInfo for handling URL requests
@@ -82,7 +82,7 @@ class CONTENT_EXPORT URLLoaderFactoryBundleInfo
 
 // Encapsulates a collection of URLLoaderFactoryPtrs which can be usd to acquire
 // loaders for various types of resource requests.
-class CONTENT_EXPORT URLLoaderFactoryBundle
+class BLINK_COMMON_EXPORT URLLoaderFactoryBundle
     : public network::SharedURLLoaderFactory {
  public:
   URLLoaderFactoryBundle();
@@ -154,6 +154,6 @@ class CONTENT_EXPORT URLLoaderFactoryBundle
   bool bypass_redirect_checks_ = false;
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_COMMON_URL_LOADER_FACTORY_BUNDLE_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_LOADER_URL_LOADER_FACTORY_BUNDLE_H_

@@ -23,7 +23,6 @@
 #include "content/browser/worker_host/worker_script_loader_factory.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/navigation_subresource_loader_params.h"
-#include "content/common/url_loader_factory_bundle.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -38,6 +37,7 @@
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/common/loader//url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "url/origin.h"
@@ -68,12 +68,12 @@ void WorkerScriptFetchInitiator::Start(
   // chrome-extension:// URLs. One factory bundle is consumed by the browser
   // for WorkerScriptLoaderFactory, and one is sent to the renderer for
   // subresource loading.
-  std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle_for_browser =
-      CreateFactoryBundle(process_id, storage_partition,
-                          constructor_uses_file_url);
-  std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories =
-      CreateFactoryBundle(process_id, storage_partition,
-                          constructor_uses_file_url);
+  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+      factory_bundle_for_browser = CreateFactoryBundle(
+          process_id, storage_partition, constructor_uses_file_url);
+  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+      subresource_loader_factories = CreateFactoryBundle(
+          process_id, storage_partition, constructor_uses_file_url);
 
   // NetworkService (PlzWorker):
   // Create a resource request for initiating shared worker script fetch from
@@ -106,7 +106,7 @@ void WorkerScriptFetchInitiator::Start(
           std::move(callback)));
 }
 
-std::unique_ptr<URLLoaderFactoryBundleInfo>
+std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
 WorkerScriptFetchInitiator::CreateFactoryBundle(
     int process_id,
     StoragePartitionImpl* storage_partition,
@@ -120,7 +120,7 @@ WorkerScriptFetchInitiator::CreateFactoryBundle(
       ->RegisterNonNetworkSubresourceURLLoaderFactories(
           process_id, MSG_ROUTING_NONE, &non_network_factories);
 
-  auto factory_bundle = std::make_unique<URLLoaderFactoryBundleInfo>();
+  auto factory_bundle = std::make_unique<blink::URLLoaderFactoryBundleInfo>();
   for (auto& pair : non_network_factories) {
     const std::string& scheme = pair.first;
     std::unique_ptr<network::mojom::URLLoaderFactory> factory =
@@ -221,8 +221,10 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
     int process_id,
     std::unique_ptr<network::ResourceRequest> resource_request,
     scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,
-    std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle_for_browser_info,
-    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+        factory_bundle_for_browser_info,
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+        subresource_loader_factories,
     scoped_refptr<ServiceWorkerContextWrapper> context,
     AppCacheNavigationHandleCore* appcache_handle_core,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
@@ -261,7 +263,7 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
       factory_bundle_for_browser_info->default_factory_info() =
           network_factory_ptr.PassInterface();
     }
-    url_loader_factory = base::MakeRefCounted<URLLoaderFactoryBundle>(
+    url_loader_factory = base::MakeRefCounted<blink::URLLoaderFactoryBundle>(
         std::move(factory_bundle_for_browser_info));
   }
 
@@ -319,7 +321,8 @@ void WorkerScriptFetchInitiator::DidCreateScriptLoaderOnIO(
         service_worker_provider_info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         main_script_loader_factory,
-    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+        subresource_loader_factories,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     base::Optional<SubresourceLoaderParams> subresource_loader_params,
     bool success) {

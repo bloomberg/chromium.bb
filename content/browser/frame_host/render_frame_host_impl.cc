@@ -114,7 +114,6 @@
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/swapped_out_messages.h"
-#include "content/common/url_loader_factory_bundle.mojom.h"
 #include "content/common/widget.mojom.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_accessibility_state.h"
@@ -179,6 +178,7 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 #include "third_party/blink/public/platform/modules/webauthn/virtual_authenticator.mojom.h"
@@ -453,10 +453,10 @@ service_manager::Connector* MaybeGetFrameResourceCoordinator() {
   return connection->GetConnector();
 }
 
-std::unique_ptr<URLLoaderFactoryBundleInfo> CloneFactoryBundle(
-    scoped_refptr<URLLoaderFactoryBundle> bundle) {
-  return base::WrapUnique(
-      static_cast<URLLoaderFactoryBundleInfo*>(bundle->Clone().release()));
+std::unique_ptr<blink::URLLoaderFactoryBundleInfo> CloneFactoryBundle(
+    scoped_refptr<blink::URLLoaderFactoryBundle> bundle) {
+  return base::WrapUnique(static_cast<blink::URLLoaderFactoryBundleInfo*>(
+      bundle->Clone().release()));
 }
 
 }  // namespace
@@ -1169,8 +1169,9 @@ void RenderFrameHostImpl::MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
   //    bundle before).
   if (push_to_renderer_now && insertion_took_place &&
       has_committed_any_navigation_) {
-    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories =
-        std::make_unique<URLLoaderFactoryBundleInfo>();
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+        subresource_loader_factories =
+            std::make_unique<blink::URLLoaderFactoryBundleInfo>();
     subresource_loader_factories->initiator_specific_factory_infos() =
         CreateInitiatorSpecificURLLoaderFactories(request_initiators);
     GetNavigationControl()->UpdateSubresourceLoaderFactories(
@@ -1182,10 +1183,10 @@ bool RenderFrameHostImpl::IsSandboxed(blink::WebSandboxFlags flags) const {
   return static_cast<int>(active_sandbox_flags_) & static_cast<int>(flags);
 }
 
-URLLoaderFactoryBundleInfo::OriginMap
+blink::URLLoaderFactoryBundleInfo::OriginMap
 RenderFrameHostImpl::CreateInitiatorSpecificURLLoaderFactories(
     const base::flat_set<url::Origin>& initiator_origins) {
-  URLLoaderFactoryBundleInfo::OriginMap result;
+  blink::URLLoaderFactoryBundleInfo::OriginMap result;
   for (const url::Origin& initiator : initiator_origins) {
     network::mojom::URLLoaderFactoryPtrInfo factory_info;
     CreateNetworkServiceDefaultFactoryAndObserve(
@@ -4535,12 +4536,13 @@ void RenderFrameHostImpl::CommitNavigation(
   const bool is_same_document =
       FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type);
 
-  std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories;
+  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+      subresource_loader_factories;
   if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
       (!is_same_document || is_first_navigation)) {
     recreate_default_url_loader_factory_after_network_service_crash_ = false;
     subresource_loader_factories =
-        std::make_unique<URLLoaderFactoryBundleInfo>();
+        std::make_unique<blink::URLLoaderFactoryBundleInfo>();
     BrowserContext* browser_context = GetSiteInstance()->GetBrowserContext();
     // NOTE: On Network Service navigations, we want to ensure that a frame is
     // given everything it will need to load any accessible subresources. We
@@ -4696,11 +4698,12 @@ void RenderFrameHostImpl::CommitNavigation(
       }
     }
 
-    std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle_for_prefetch;
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+        factory_bundle_for_prefetch;
     network::mojom::URLLoaderFactoryPtr prefetch_loader_factory;
     if (subresource_loader_factories) {
       // Clone the factory bundle for prefetch.
-      auto bundle = base::MakeRefCounted<URLLoaderFactoryBundle>(
+      auto bundle = base::MakeRefCounted<blink::URLLoaderFactoryBundle>(
           std::move(subresource_loader_factories));
       subresource_loader_factories = CloneFactoryBundle(bundle);
       factory_bundle_for_prefetch = CloneFactoryBundle(bundle);
@@ -4709,7 +4712,7 @@ void RenderFrameHostImpl::CommitNavigation(
                (!is_same_document || is_first_navigation)) {
       DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
       factory_bundle_for_prefetch =
-          std::make_unique<URLLoaderFactoryBundleInfo>();
+          std::make_unique<blink::URLLoaderFactoryBundleInfo>();
       network::mojom::URLLoaderFactoryPtrInfo factory_info;
       CreateNetworkServiceDefaultFactoryInternal(
           url::Origin(), mojo::MakeRequest(&factory_info));
@@ -4811,15 +4814,18 @@ void RenderFrameHostImpl::FailedNavigation(
   // later on.
   url::Origin origin = url::Origin();
 
-  std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories;
+  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+      subresource_loader_factories;
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
     bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
         origin, mojo::MakeRequest(&default_factory_info));
-    subresource_loader_factories = std::make_unique<URLLoaderFactoryBundleInfo>(
-        std::move(default_factory_info),
-        URLLoaderFactoryBundleInfo::SchemeMap(),
-        URLLoaderFactoryBundleInfo::OriginMap(), bypass_redirect_checks);
+    subresource_loader_factories =
+        std::make_unique<blink::URLLoaderFactoryBundleInfo>(
+            std::move(default_factory_info),
+            blink::URLLoaderFactoryBundleInfo::SchemeMap(),
+            blink::URLLoaderFactoryBundleInfo::OriginMap(),
+            bypass_redirect_checks);
   }
 
   auto find_request = navigation_requests_.find(navigation_id);
@@ -5327,13 +5333,14 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
         last_committed_origin_, mojo::MakeRequest(&default_factory_info));
   }
 
-  std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories =
-      std::make_unique<URLLoaderFactoryBundleInfo>(
-          std::move(default_factory_info),
-          URLLoaderFactoryBundleInfo::SchemeMap(),
-          CreateInitiatorSpecificURLLoaderFactories(
-              initiators_requiring_separate_url_loader_factory_),
-          bypass_redirect_checks);
+  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+      subresource_loader_factories =
+          std::make_unique<blink::URLLoaderFactoryBundleInfo>(
+              std::move(default_factory_info),
+              blink::URLLoaderFactoryBundleInfo::SchemeMap(),
+              CreateInitiatorSpecificURLLoaderFactories(
+                  initiators_requiring_separate_url_loader_factory_),
+              bypass_redirect_checks);
   GetNavigationControl()->UpdateSubresourceLoaderFactories(
       std::move(subresource_loader_factories));
 }

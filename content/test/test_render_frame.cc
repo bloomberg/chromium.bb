@@ -161,7 +161,7 @@ void TestRenderFrame::Navigate(const network::ResourceResponseHead& head,
   CommitNavigation(
       head, common_params, request_params,
       network::mojom::URLLoaderClientEndpointsPtr(),
-      std::make_unique<URLLoaderFactoryBundleInfo>(), base::nullopt,
+      std::make_unique<blink::URLLoaderFactoryBundleInfo>(), base::nullopt,
       blink::mojom::ControllerServiceWorkerInfoPtr(),
       network::mojom::URLLoaderFactoryPtr(), base::UnguessableToken::Create(),
       CommitNavigationCallback());
