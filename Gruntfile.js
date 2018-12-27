@@ -9,17 +9,18 @@ module.exports = function(grunt) {
           tsconfig: "tsconfig.json",
           passThrough: true,
         },
-        outDir: "out-web/",
+        options: {
+          additionalFlags: "--noEmit false --outDir out-web/",
+        }
       },
       "out-node": {
         tsconfig: {
           tsconfig: "tsconfig.json",
           passThrough: true,
         },
-        outDir: "out-node/",
         options: {
-          module: "commonjs",
-        },
+          additionalFlags: "--noEmit false --outDir out-node/ --module commonjs",
+        }
       },
     },
 
