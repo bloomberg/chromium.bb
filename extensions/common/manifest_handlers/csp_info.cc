@@ -119,68 +119,60 @@ CSPHandler::~CSPHandler() {
 
 bool CSPHandler::Parse(Extension* extension, base::string16* error) {
   const std::string key = Keys()[0];
-  if (!extension->manifest()->HasPath(key))
-    return SetDefaultExtensionPagesCSP(extension);
-
   // The "content_security_policy" manifest key can either be a string or a
   // dictionary of the format
   // "content_security_policy" : {
   //     "extension_pages" : ""
   //  }
-  const base::DictionaryValue* csp_dict = nullptr;
-  std::string content_security_policy;
+  const base::Value* csp = nullptr;
+  bool result = extension->manifest()->Get(key, &csp);
+  DCHECK_EQ(result, !!csp);
 
   // TODO(crbug.com/914224): Remove the channel check once the support for the
   // dictionary key is launched to other channels.
   bool csp_dictionary_supported =
       !is_platform_app_ &&
       GetCurrentChannel() == version_info::Channel::UNKNOWN;
-  if (csp_dictionary_supported &&
-      extension->manifest()->GetDictionary(key, &csp_dict))
-    return ParseCSPDictionary(extension, error, *csp_dict);
+  if (csp_dictionary_supported && csp && csp->is_dict())
+    return ParseCSPDictionary(extension, error, *csp);
 
-  if (extension->manifest()->GetString(key, &content_security_policy)) {
-    return ParseExtensionPagesCSP(extension, error, key,
-                                  content_security_policy);
-  }
-
-  *error = GetInvalidManifestKeyError(key);
-  return false;
+  return ParseExtensionPagesCSP(extension, error, key, csp);
 }
 
 bool CSPHandler::ParseCSPDictionary(Extension* extension,
                                     base::string16* error,
                                     const base::Value& csp_dict) {
   DCHECK(csp_dict.is_dict());
-
-  auto* extension_pages_csp = csp_dict.FindKey(kExtensionPagesKey);
-  if (!extension_pages_csp)
-    return SetDefaultExtensionPagesCSP(extension);
-
-  if (!extension_pages_csp->is_string()) {
-    *error = GetInvalidManifestKeyError(kExtensionPagesPath);
-    return false;
-  }
-
   return ParseExtensionPagesCSP(extension, error, kExtensionPagesPath,
-                                extension_pages_csp->GetString());
+                                csp_dict.FindKey(kExtensionPagesKey));
 }
 
 bool CSPHandler::ParseExtensionPagesCSP(
     Extension* extension,
     base::string16* error,
     const std::string& manifest_key,
-    const std::string& content_security_policy) {
-  if (!ContentSecurityPolicyIsLegal(content_security_policy)) {
+    const base::Value* content_security_policy) {
+  if (!content_security_policy)
+    return SetDefaultExtensionPagesCSP(extension);
+
+  if (!content_security_policy->is_string()) {
     *error = GetInvalidManifestKeyError(manifest_key);
     return false;
   }
+
+  const std::string& content_security_policy_str =
+      content_security_policy->GetString();
+  if (!ContentSecurityPolicyIsLegal(content_security_policy_str)) {
+    *error = GetInvalidManifestKeyError(manifest_key);
+    return false;
+  }
+
   std::vector<InstallWarning> warnings;
   // TODO(crbug.com/914224): For manifest V3, instead of sanitizing the
   // extension provided csp value and raising install warnings, see if we want
   // to raise errors and prevent the extension from loading.
   std::string sanitized_content_security_policy = SanitizeContentSecurityPolicy(
-      content_security_policy, GetValidatorOptions(extension), &warnings);
+      content_security_policy_str, GetValidatorOptions(extension), &warnings);
   extension->AddInstallWarnings(std::move(warnings));
 
   extension->SetManifestData(
