@@ -5276,8 +5276,7 @@ crbug.com/831796 fast/events/autoscroll-in-textfield.html [ Failure Pass ]
 crbug.com/831685 [ Linux ] external/wpt/2dcontext/compositing/2d.composite.canvas.lighter.html [ Pass Timeout ]
 crbug.com/831673 http/tests/devtools/reveal-objects.js [ Pass Timeout ]
 crbug.com/831496 virtual/gpu/fast/canvas/fillrect_gradient.html [ Pass Timeout ]
-# TODO (michaelludwig): Restore after skia roll, crbug.com/917379
-#crbug.com/831482 [ Linux ] virtual/gpu-rasterization/images/cross-fade-background-size.html [ Pass Timeout ]
+crbug.com/831482 [ Linux ] virtual/gpu-rasterization/images/cross-fade-background-size.html [ Pass Timeout ]
 crbug.com/831249 [ Linux ] virtual/gpu/fast/canvas/canvas-filter-svg-inline.html [ Pass Timeout ]
 crbug.com/829952 fast/webgl/texImage-imageBitmap-from-image-resize.html [ Pass Timeout ]
 crbug.com/829938 [ Linux ] css3/filters/blur-filter-page-scroll.html [ Pass Timeout ]
@@ -5945,21 +5944,6 @@ crbug.com/v8/8381 http/tests/devtools/coverage/coverage-view-filter.js [ Pass Fa
 crbug.com/v8/8381 http/tests/devtools/coverage/coverage-view.js [ Pass Failure ]
 crbug.com/v8/8381 http/tests/devtools/coverage/multiple-instances-merge.js [ Pass Failure ]
 crbug.com/v8/8381 http/tests/devtools/coverage/coverage-export.js [ Pass Failure ]
-
-# TODO (michaelludwig): Todo after Skia roll and rebaseline
-crbug.com/917379 media/video-layer-crash.html [ Pass Failure ]
-crbug.com/917379 virtual/gpu-rasterization/images/color-profile-background-image-cover.html [ Pass Failure ]
-crbug.com/917379 virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Pass Failure ]
-crbug.com/917379 virtual/gpu-rasterization/images/cross-fade-background-size.html [ Pass Failure ]
-crbug.com/917379 virtual/gpu-rasterization/images/feature-policy-oversized-images-styles.html [ Pass Failure ]
-crbug.com/917379 virtual/gpu-rasterization/images/image-map-anchor-children.html [ Pass Failure ]
-crbug.com/917379 virtual/gpu-rasterization/images/sprite-no-bleed.html [ Pass Failure ]
-crbug.com/917379 virtual/gpu/fast/canvas/canvas-drawImage-antiAlias.html [ Pass Failure ]
-crbug.com/917379 virtual/gpu/fast/canvas/canvas-imageSmoothingEnabled-patterns.html [ Pass Failure ]
-crbug.com/917379 [ Android ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ Pass Failure ]
-crbug.com/917379 [ Linux ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ Pass Failure ]
-crbug.com/917379 [ Mac ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ Pass Failure ]
-crbug.com/917379 virtual/video-surface-layer/media/video-layer-crash.html [ Pass Failure ]
 
 # ssauleau 2018-12-20
 crbug.com/v8/8319 external/wpt/wasm/jsapi/global/constructor.any.html [ Pass Failure ]
