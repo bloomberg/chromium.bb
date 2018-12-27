@@ -8,7 +8,7 @@ suite('SettingsSlider', function() {
   let slider;
 
   /**
-   * paper-slider instance wrapped by settings-slider.
+   * cr-slider instance wrapped by settings-slider.
    * @type {!CrSliderElement}
    */
   let crSlider;
