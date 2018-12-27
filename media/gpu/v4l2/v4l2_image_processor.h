@@ -36,11 +36,6 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
  public:
   // ImageProcessor implementation.
   ~V4L2ImageProcessor() override;
-  gfx::Size input_allocated_size() const override;
-  gfx::Size output_allocated_size() const override;
-  VideoFrame::StorageType input_storage_type() const override;
-  VideoFrame::StorageType output_storage_type() const override;
-  OutputMode output_mode() const override;
   bool Process(scoped_refptr<VideoFrame> frame,
                int output_buffer_index,
                std::vector<base::ScopedFD> output_dmabuf_fds,
@@ -169,18 +164,13 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   // callbacks will be invoked.
   void Destroy();
 
-  // Stores input frame's format, coded_size, buffer and plane layout.
-  const VideoFrameLayout input_layout_;
+  // Stores input frame's visible size and v4l2_memory type.
   const gfx::Size input_visible_size_;
   const v4l2_memory input_memory_type_;
-  const VideoFrame::StorageType input_storage_type_;
 
-  // Stores input frame's format, coded_size, buffer and plane layout.
-  const VideoFrameLayout output_layout_;
+  // Stores output frame's visible size and v4l2_memory type.
   const gfx::Size output_visible_size_;
   const v4l2_memory output_memory_type_;
-  const VideoFrame::StorageType output_storage_type_;
-  const OutputMode output_mode_;
 
   // A task runner belongs to a thread where V4L2ImageProcessor is created.
   const scoped_refptr<base::SingleThreadTaskRunner> client_task_runner_;

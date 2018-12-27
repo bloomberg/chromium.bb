@@ -2414,14 +2414,14 @@ bool V4L2VideoDecodeAccelerator::CreateImageProcessor() {
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
-  VLOGF(2) << "image_processor_->output_allocated_size()="
-           << image_processor_->output_allocated_size().ToString();
-  DCHECK(image_processor_->output_allocated_size() == egl_image_size_);
-  if (image_processor_->input_allocated_size() != coded_size_) {
+  VLOGF(2) << "image_processor_->output_layout().coded_size()="
+           << image_processor_->output_layout().coded_size().ToString();
+  DCHECK(image_processor_->output_layout().coded_size() == egl_image_size_);
+  if (image_processor_->input_layout().coded_size() != coded_size_) {
     VLOGF(1) << "Image processor should be able to take the output coded "
              << "size of decoder " << coded_size_.ToString()
              << " without adjusting to "
-             << image_processor_->input_allocated_size().ToString();
+             << image_processor_->input_layout().coded_size().ToString();
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }

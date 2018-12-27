@@ -74,15 +74,15 @@ V4L2ImageProcessor::V4L2ImageProcessor(
     gfx::Size output_visible_size,
     size_t num_buffers,
     ErrorCB error_cb)
-    : input_layout_(input_layout),
+    : ImageProcessor(input_layout,
+                     input_storage_type,
+                     output_layout,
+                     output_storage_type,
+                     output_mode),
       input_visible_size_(input_visible_size),
       input_memory_type_(input_memory_type),
-      input_storage_type_(input_storage_type),
-      output_layout_(output_layout),
       output_visible_size_(output_visible_size),
       output_memory_type_(output_memory_type),
-      output_storage_type_(output_storage_type),
-      output_mode_(output_mode),
       client_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       device_(device),
       device_thread_("V4L2ImageProcessorThread"),
@@ -385,26 +385,6 @@ bool V4L2ImageProcessor::TryOutputFormat(uint32_t input_pixelformat,
   VLOGF(2) << "adjusted output coded size=" << size->ToString()
            << ", num_planes=" << *num_planes;
   return true;
-}
-
-gfx::Size V4L2ImageProcessor::input_allocated_size() const {
-  return input_layout_.coded_size();
-}
-
-gfx::Size V4L2ImageProcessor::output_allocated_size() const {
-  return output_layout_.coded_size();
-}
-
-VideoFrame::StorageType V4L2ImageProcessor::input_storage_type() const {
-  return input_storage_type_;
-}
-
-VideoFrame::StorageType V4L2ImageProcessor::output_storage_type() const {
-  return output_storage_type_;
-}
-
-ImageProcessor::OutputMode V4L2ImageProcessor::output_mode() const {
-  return output_mode_;
 }
 
 bool V4L2ImageProcessor::Process(scoped_refptr<VideoFrame> frame,
@@ -875,7 +855,7 @@ bool V4L2ImageProcessor::EnqueueInputRecord() {
   for (size_t i = 0; i < input_layout_.num_buffers(); ++i) {
     qbuf.m.planes[i].bytesused =
         VideoFrame::PlaneSize(input_record.frame->format(), i,
-                              input_allocated_size())
+                              input_layout_.coded_size())
             .GetArea();
     qbuf.m.planes[i].length = qbuf.m.planes[i].bytesused;
     switch (input_memory_type_) {

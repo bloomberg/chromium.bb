@@ -249,12 +249,12 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
     // Output coded height of processor can be larger but not smaller than the
     // input coded height of encoder. For example, suppose input size of encoder
     // is 320x193. It is OK if the output of processor is 320x208.
-    if (image_processor_->output_allocated_size().width() !=
+    if (image_processor_->output_layout().coded_size().width() !=
             device_input_layout_->coded_size().width() ||
-        image_processor_->output_allocated_size().height() <
+        image_processor_->output_layout().coded_size().height() <
             device_input_layout_->coded_size().height()) {
       VLOGF(1) << "Invalid image processor output coded size "
-               << image_processor_->output_allocated_size().ToString()
+               << image_processor_->output_layout().coded_size().ToString()
                << ", encode input coded size is "
                << device_input_layout_->coded_size().ToString();
       return false;
@@ -293,7 +293,7 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
       FROM_HERE,
       base::Bind(&Client::RequireBitstreamBuffers, client_, kInputBufferCount,
                  image_processor_.get()
-                     ? image_processor_->input_allocated_size()
+                     ? image_processor_->input_layout().coded_size()
                      : device_input_layout_->coded_size(),
                  output_buffer_byte_size_));
   return true;

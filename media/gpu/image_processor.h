@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/scoped_file.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "media/base/video_frame.h"
@@ -68,20 +69,28 @@ class ImageProcessor {
   // lifetime of or outlive ImageProcessor.
   using ErrorCB = base::RepeatingClosure;
 
-  // Returns input allocated size required by the processor to be fed with.
-  virtual gfx::Size input_allocated_size() const = 0;
+  virtual ~ImageProcessor() = default;
 
-  // Returns output allocated size required by the processor.
-  virtual gfx::Size output_allocated_size() const = 0;
+  // Returns input layout of the processor.
+  const VideoFrameLayout& input_layout() const { return input_layout_; }
+
+  // Returns output layout of the processor.
+  const VideoFrameLayout& output_layout() const { return output_layout_; }
 
   // Returns input storage type.
-  virtual VideoFrame::StorageType input_storage_type() const = 0;
+  VideoFrame::StorageType input_storage_type() const {
+    return input_storage_type_;
+  }
 
   // Returns output storage type.
-  virtual VideoFrame::StorageType output_storage_type() const = 0;
+  VideoFrame::StorageType output_storage_type() const {
+    return output_storage_type_;
+  }
 
   // Returns output mode.
-  virtual OutputMode output_mode() const = 0;
+  // TODO(crbug.com/907767): Remove it once ImageProcessor always works as
+  // IMPORT mode for output.
+  OutputMode output_mode() const { return output_mode_; }
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
   // Called by client to process |frame|. The resulting processed frame will be
@@ -118,7 +127,25 @@ class ImageProcessor {
   // Reset() must be called on the same thread that creates ImageProcessor.
   virtual bool Reset() = 0;
 
-  virtual ~ImageProcessor() = default;
+ protected:
+  ImageProcessor(const VideoFrameLayout& input_layout,
+                 VideoFrame::StorageType input_storage_type,
+                 const VideoFrameLayout& output_layout,
+                 VideoFrame::StorageType output_storage_type,
+                 OutputMode output_mode);
+
+  // Stores input frame's layout and storage type.
+  const VideoFrameLayout input_layout_;
+  const VideoFrame::StorageType input_storage_type_;
+
+  // Stores output frame's layout, storage type and output mode.
+  // TODO(crbug.com/907767): Remove |output_mode_| once ImageProcessor always
+  // works as IMPORT mode for output.
+  const VideoFrameLayout output_layout_;
+  const VideoFrame::StorageType output_storage_type_;
+  const OutputMode output_mode_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ImageProcessor);
 };
 
 }  // namespace media
