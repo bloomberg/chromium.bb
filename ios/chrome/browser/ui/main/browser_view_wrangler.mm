@@ -368,17 +368,17 @@
   breakpad::StopMonitoringTabStateForTabModel(_mainTabModel);
   breakpad::StopMonitoringTabStateForTabModel(_otrTabModel);
 
-  // Normally other objects will take care of unhooking the tab models from
-  // the browser state, but this code should ensure that it happens regardless.
-  [_mainTabModel browserStateDestroyed];
-  [_otrTabModel browserStateDestroyed];
-
   // At this stage, new BrowserCoordinators shouldn't be lazily constructed by
   // calling their property getters.
   [_mainBrowserCoordinator stop];
   _mainBrowserCoordinator = nil;
   [_incognitoBrowserCoordinator stop];
   _incognitoBrowserCoordinator = nil;
+
+  // Normally other objects will take care of unhooking the tab models from
+  // the browser state, but this code should ensure that it happens regardless.
+  [_mainTabModel browserStateDestroyed];
+  [_otrTabModel browserStateDestroyed];
 
   _browserState = nullptr;
 }

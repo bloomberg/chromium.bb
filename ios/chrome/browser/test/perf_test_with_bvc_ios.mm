@@ -138,7 +138,6 @@ void PerfTestWithBVC::TearDown() {
   // Documented example of how to clear out the browser view controller
   // and its associated data.
   window_ = nil;
-  [bvc_ browserStateDestroyed];
   [bvc_ shutdown];
   bvc_ = nil;
   bvc_factory_ = nil;
