@@ -55,6 +55,7 @@ import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsStatics;
 import org.chromium.mojo.system.MojoException;
+import org.chromium.payments.mojom.CanMakePaymentQueryResult;
 import org.chromium.payments.mojom.HasEnrolledInstrumentQueryResult;
 import org.chromium.payments.mojom.PaymentComplete;
 import org.chromium.payments.mojom.PaymentCurrencyAmount;
@@ -219,6 +220,7 @@ public class PaymentRequestImpl
     private final boolean mIsIncognito;
 
     private PaymentRequestClient mClient;
+    private boolean mIsCanMakePaymentResponsePending;
     private boolean mIsHasEnrolledInstrumentResponsePending;
     private boolean mIsCurrentPaymentRequestShowing;
 
@@ -682,6 +684,10 @@ public class PaymentRequestImpl
                 mArePaymentMethodsSupported = true;
                 queryApps.put(app, appMethods);
             }
+        }
+
+        if (mIsCanMakePaymentResponsePending) {
+            respondCanMakePaymentQuery(mArePaymentMethodsSupported);
         }
 
         if (mIsHasEnrolledInstrumentResponsePending && queryApps.isEmpty()) {
@@ -1519,8 +1525,28 @@ public class PaymentRequestImpl
      */
     @Override
     public void canMakePayment() {
-        // TODO(https://crbug.com/915907): Implement new canMakePayment.
-        assert false;
+        if (mClient == null) return;
+
+        if (isFinishedQueryingPaymentApps()) {
+            respondCanMakePaymentQuery(mArePaymentMethodsSupported);
+        } else {
+            mIsCanMakePaymentResponsePending = true;
+        }
+    }
+
+    private void respondCanMakePaymentQuery(boolean response) {
+        if (mClient == null) return;
+
+        mIsCanMakePaymentResponsePending = false;
+        mClient.onCanMakePayment(response ? CanMakePaymentQueryResult.CAN_MAKE_PAYMENT
+                                          : CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
+
+        // TODO(https://crbug.com/915907): emit JourneyLogger event once the event names are
+        // updated.
+
+        if (sObserverForTest != null) {
+            sObserverForTest.onPaymentRequestServiceCanMakePaymentQueryResponded();
+        }
     }
 
     /**

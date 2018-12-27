@@ -149,9 +149,13 @@ TEST_F(PaymentRequestStateTest, HasEnrolledInstrument) {
       base::BindOnce([](bool has_enrolled_instrument) {
         EXPECT_TRUE(has_enrolled_instrument);
       }));
+
+  // CanMakePayment returns true because the requested method is supported.
+  state()->CanMakePayment(base::BindOnce(
+      [](bool can_make_payment) { EXPECT_TRUE(can_make_payment); }));
 }
 
-TEST_F(PaymentRequestStateTest, HasEnrolledInstrument_CannotMakePayment) {
+TEST_F(PaymentRequestStateTest, CanMakePayment_NoEnrolledInstrument) {
   // The method data requires MasterCard.
   std::vector<mojom::PaymentMethodDataPtr> method_data;
   mojom::PaymentMethodDataPtr entry = mojom::PaymentMethodData::New();
@@ -167,6 +171,33 @@ TEST_F(PaymentRequestStateTest, HasEnrolledInstrument_CannotMakePayment) {
       base::BindOnce([](bool has_enrolled_instrument) {
         EXPECT_FALSE(has_enrolled_instrument);
       }));
+
+  // CanMakePayment returns true because the requested method is supported, even
+  // though the payment instrument is not ready to pay.
+  state()->CanMakePayment(base::BindOnce(
+      [](bool can_make_payment) { EXPECT_TRUE(can_make_payment); }));
+}
+
+TEST_F(PaymentRequestStateTest, CanMakePayment_UnsupportedPaymentMethod) {
+  std::vector<mojom::PaymentMethodDataPtr> method_data;
+  mojom::PaymentMethodDataPtr entry = mojom::PaymentMethodData::New();
+  entry->supported_method = "unsupported_method";
+  method_data.push_back(std::move(entry));
+  RecreateStateWithOptionsAndDetails(mojom::PaymentOptions::New(),
+                                     mojom::PaymentDetails::New(),
+                                     std::move(method_data));
+
+  // HasEnrolledInstrument returns false because the method data requires
+  // MasterCard, and the user doesn't have such an instrument.
+  state()->HasEnrolledInstrument(
+      base::BindOnce([](bool has_enrolled_instrument) {
+        EXPECT_FALSE(has_enrolled_instrument);
+      }));
+
+  // CanMakePayment returns true because the requested method is supported, even
+  // though the payment instrument is not ready to pay.
+  state()->CanMakePayment(base::BindOnce(
+      [](bool can_make_payment) { EXPECT_FALSE(can_make_payment); }));
 }
 
 TEST_F(PaymentRequestStateTest, HasEnrolledInstrument_OnlyBasicCard) {
@@ -185,6 +216,10 @@ TEST_F(PaymentRequestStateTest, HasEnrolledInstrument_OnlyBasicCard) {
       base::BindOnce([](bool has_enrolled_instrument) {
         EXPECT_TRUE(has_enrolled_instrument);
       }));
+
+  // CanMakePayment returns true because the requested method is supported.
+  state()->CanMakePayment(base::BindOnce(
+      [](bool can_make_payment) { EXPECT_TRUE(can_make_payment); }));
 }
 
 TEST_F(PaymentRequestStateTest,
@@ -205,6 +240,10 @@ TEST_F(PaymentRequestStateTest,
       base::BindOnce([](bool has_enrolled_instrument) {
         EXPECT_TRUE(has_enrolled_instrument);
       }));
+
+  // CanMakePayment returns true because the requested method is supported.
+  state()->CanMakePayment(base::BindOnce(
+      [](bool can_make_payment) { EXPECT_TRUE(can_make_payment); }));
 }
 
 TEST_F(PaymentRequestStateTest,
@@ -225,6 +264,11 @@ TEST_F(PaymentRequestStateTest,
       base::BindOnce([](bool has_enrolled_instrument) {
         EXPECT_FALSE(has_enrolled_instrument);
       }));
+
+  // CanMakePayment returns true because the requested method is supported, even
+  // though there is no enrolled instrument.
+  state()->CanMakePayment(base::BindOnce(
+      [](bool can_make_payment) { EXPECT_TRUE(can_make_payment); }));
 }
 
 TEST_F(PaymentRequestStateTest,
@@ -245,6 +289,11 @@ TEST_F(PaymentRequestStateTest,
       base::BindOnce([](bool has_enrolled_instrument) {
         EXPECT_FALSE(has_enrolled_instrument);
       }));
+
+  // CanMakePayment returns true because the requested method is supported, even
+  // though there is no enrolled instrument.
+  state()->CanMakePayment(base::BindOnce(
+      [](bool can_make_payment) { EXPECT_TRUE(can_make_payment); }));
 }
 
 TEST_F(PaymentRequestStateTest, ReadyToPay_DefaultSelections) {
