@@ -4194,7 +4194,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   bool oldTabIsNTPWithoutHistory =
       IsNTPWithoutHistory(webStateList->GetActiveWebState());
 
-  if (!webStateList->ContainsIndex(newWebStateIndex)) {
+  if (newWebStateIndex == WebStateList::kInvalidIndex) {
     // If the tab containing the URL has been closed.
     if (oldTabIsNTPWithoutHistory) {
       // It is NTP, just load the URL.
