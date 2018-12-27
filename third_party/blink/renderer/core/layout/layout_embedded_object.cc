@@ -92,8 +92,7 @@ void LayoutEmbeddedObject::UpdateLayout() {
   UpdateLogicalWidth();
   UpdateLogicalHeight();
 
-  ClearAllOverflows();
-  AddVisualEffectOverflow();
+  ClearLayoutOverflow();
 
   UpdateAfterLayout();
 

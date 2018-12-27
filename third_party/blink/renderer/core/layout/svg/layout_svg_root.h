@@ -85,7 +85,7 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
 
   bool ShouldApplyViewportClip() const;
 
-  LayoutRect VisualOverflowRect() const override;
+  bool RecalcVisualOverflow() override;
 
   bool HasNonIsolatedBlendingDescendants() const final;
 

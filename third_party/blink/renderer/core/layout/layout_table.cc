@@ -568,32 +568,57 @@ void LayoutTable::SimplifiedNormalFlowLayout() {
        section = SectionBelow(section)) {
     section->LayoutIfNeeded();
     section->LayoutRows();
-    section->ComputeOverflowFromDescendants();
+    section->ComputeLayoutOverflowFromDescendants();
     section->UpdateAfterLayout();
-    section->AddVisualEffectOverflow();
   }
 }
 
-bool LayoutTable::RecalcOverflow() {
-  RecalcSelfOverflow();
+bool LayoutTable::RecalcLayoutOverflow() {
+  RecalcSelfLayoutOverflow();
 
-  if (!ChildNeedsOverflowRecalc())
+  if (!ChildNeedsLayoutOverflowRecalc())
     return false;
   ClearChildNeedsLayoutOverflowRecalc();
-  ClearChildNeedsVisualOverflowRecalc();
 
   // If the table sections we keep pointers to have gone away then the table
   // will be rebuilt and overflow will get recalculated anyway so return early.
   if (NeedsSectionRecalc())
     return false;
 
-  bool children_overflow_changed = false;
+  bool children_layout_overflow_changed = false;
   for (LayoutTableSection* section = TopSection(); section;
        section = SectionBelow(section)) {
-    children_overflow_changed =
-        section->RecalcOverflow() || children_overflow_changed;
+    children_layout_overflow_changed =
+        section->RecalcLayoutOverflow() || children_layout_overflow_changed;
   }
-  return RecalcPositionedDescendantsOverflow() || children_overflow_changed;
+  return RecalcPositionedDescendantsLayoutOverflow() ||
+         children_layout_overflow_changed;
+}
+
+bool LayoutTable::RecalcVisualOverflow() {
+  if (!NeedsVisualOverflowRecalc())
+    return false;
+  bool visual_overflow_changed = false;
+  if (ChildNeedsVisualOverflowRecalc()) {
+    for (auto* caption : captions_)
+      caption->RecalcVisualOverflow();
+
+    for (LayoutTableSection* section = TopSection(); section;
+         section = SectionBelow(section)) {
+      if (section->RecalcVisualOverflow())
+        visual_overflow_changed = true;
+    }
+    if (RecalcPositionedDescendantsVisualOverflow())
+      visual_overflow_changed = true;
+  }
+  if (SelfNeedsVisualOverflowRecalc())
+    visual_overflow_changed = true;
+  ClearChildNeedsVisualOverflowRecalc();
+  ClearSelfNeedsVisualOverflowRecalc();
+
+  if (RecalcSelfVisualOverflow())
+    visual_overflow_changed = true;
+  return visual_overflow_changed;
 }
 
 void LayoutTable::UpdateLayout() {
@@ -794,7 +819,6 @@ void LayoutTable::UpdateLayout() {
       SetLogicalHeight(LogicalHeight() + section->LogicalHeight());
 
       section->UpdateAfterLayout();
-      section->AddVisualEffectOverflow();
 
       section = SectionBelow(section);
     }
@@ -815,7 +839,7 @@ void LayoutTable::UpdateLayout() {
                              old_logical_height != LogicalHeight();
     LayoutPositionedObjects(dimension_changed);
 
-    ComputeOverflow(ClientLogicalBottom());
+    ComputeLayoutOverflow(ClientLogicalBottom());
     UpdateAfterLayout();
 
     if (state.IsPaginated() && IsPageLogicalHeightKnown()) {
@@ -909,17 +933,19 @@ void LayoutTable::InvalidateCollapsedBordersForAllCellsIfNeeded() {
   }
 }
 
-void LayoutTable::ComputeVisualOverflow(
-    const LayoutRect& previous_visual_overflow_rect,
-    bool recompute_floats) {
+void LayoutTable::ComputeVisualOverflow(bool) {
+  LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
   AddVisualOverflowFromChildren();
 
   AddVisualEffectOverflow();
   AddVisualOverflowFromTheme();
 
   if (VisualOverflowRect() != previous_visual_overflow_rect) {
-    if (Layer())
-      Layer()->SetNeedsCompositingInputsUpdate();
+    if (Layer()) {
+      Layer()->SetNeedsCompositingInputsUpdate(
+          PaintLayer::DoesNotNeedDescendantDependentUpdate);
+    }
+    SetShouldCheckForPaintInvalidation();
     GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
   }
 }

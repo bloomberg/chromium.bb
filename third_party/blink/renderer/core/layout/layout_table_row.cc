@@ -205,8 +205,7 @@ void LayoutTableRow::UpdateLayout() {
       Section()->UpdateFragmentationInfoForChild(*cell);
   }
 
-  ClearAllOverflows();
-  AddVisualEffectOverflow();
+  ClearLayoutOverflow();
   // We do not call addOverflowFromCell here. The cell are laid out to be
   // measured above and will be sized correctly in a follow-up phase.
 
@@ -287,17 +286,59 @@ LayoutTableRow* LayoutTableRow::CreateAnonymousWithParent(
   return new_row;
 }
 
-void LayoutTableRow::ComputeOverflow() {
-  const auto& old_visual_rect = SelfVisualOverflowRect();
-  ClearAllOverflows();
-  AddVisualEffectOverflow();
+void LayoutTableRow::ComputeLayoutOverflow() {
+  ClearLayoutOverflow();
   for (LayoutTableCell* cell = FirstCell(); cell; cell = cell->NextCell())
-    AddOverflowFromCell(cell);
-  if (old_visual_rect != SelfVisualOverflowRect())
-    SetShouldCheckForPaintInvalidation();
+    AddLayoutOverflowFromCell(cell);
 }
 
-void LayoutTableRow::AddOverflowFromCell(const LayoutTableCell* cell) {
+bool LayoutTableRow::RecalcVisualOverflow() {
+  if (!NeedsVisualOverflowRecalc())
+    return false;
+  bool visual_overflow_changed = SelfNeedsVisualOverflowRecalc();
+  unsigned n_cols = Section()->NumCols(RowIndex());
+  for (unsigned c = 0; c < n_cols; c++) {
+    auto* cell = Section()->OriginatingCellAt(RowIndex(), c);
+    if (!cell)
+      continue;
+    if (cell->RecalcVisualOverflow())
+      visual_overflow_changed = true;
+  }
+  ClearChildNeedsVisualOverflowRecalc();
+  ClearSelfNeedsVisualOverflowRecalc();
+  if (!visual_overflow_changed)
+    return false;
+  return ComputeVisualOverflow();
+}
+
+bool LayoutTableRow::ComputeVisualOverflow() {
+  const auto& old_visual_rect = VisualOverflowRect();
+  ClearVisualOverflow();
+  AddVisualEffectOverflow();
+
+  for (LayoutTableCell* cell = FirstCell(); cell; cell = cell->NextCell())
+    AddVisualOverflowFromCell(cell);
+  if (old_visual_rect != VisualOverflowRect()) {
+    SetShouldCheckForPaintInvalidation();
+    return true;
+  }
+  return false;
+}
+
+void LayoutTableRow::AddLayoutOverflowFromCell(const LayoutTableCell* cell) {
+  LayoutRect cell_layout_overflow_rect =
+      cell->LayoutOverflowRectForPropagation(this);
+
+  // The cell and the row share the section's coordinate system. However
+  // the visual overflow should be determined in the coordinate system of
+  // the row, that's why we shift the rects by cell_row_offset below.
+  LayoutSize cell_row_offset = cell->Location() - Location();
+
+  cell_layout_overflow_rect.Move(cell_row_offset);
+  AddLayoutOverflow(cell_layout_overflow_rect);
+}
+
+void LayoutTableRow::AddVisualOverflowFromCell(const LayoutTableCell* cell) {
   // Table row paints its background behind cells. If the cell spans multiple
   // rows, the row's visual rect should be expanded to cover the cell.
   // Here don't check background existence to avoid requirement to invalidate
@@ -332,11 +373,6 @@ void LayoutTableRow::AddOverflowFromCell(const LayoutTableCell* cell) {
       cell->VisualOverflowRectForPropagation();
   cell_visual_overflow_rect.Move(cell_row_offset);
   AddContentsVisualOverflow(cell_visual_overflow_rect);
-
-  LayoutRect cell_layout_overflow_rect =
-      cell->LayoutOverflowRectForPropagation(this);
-  cell_layout_overflow_rect.Move(cell_row_offset);
-  AddLayoutOverflow(cell_layout_overflow_rect);
 }
 
 bool LayoutTableRow::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {

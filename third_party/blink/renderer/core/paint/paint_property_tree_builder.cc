@@ -1479,7 +1479,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
             viewport_container.LocalToSVGParentTransform().Inverse().MapRect(
                 viewport_container.Viewport()));
       }
-
       const ClipPaintPropertyNode* existing = properties_->OverflowClip();
       bool equal_ignoring_hit_test_rects =
           !!existing &&

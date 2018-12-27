@@ -918,15 +918,18 @@ void InlineFlowBox::PlaceBoxesInBlockDirection(
   }
 }
 
-void InlineFlowBox::OverrideVisualOverflowFromLogicalRect(
+bool InlineFlowBox::OverrideVisualOverflowFromLogicalRect(
     const LayoutRect& logical_visual_overflow,
     LayoutUnit line_top,
     LayoutUnit line_bottom) {
   // If we are setting an overflow, then we can't pretend not to have an
   // overflow.
   ClearKnownToHaveNoOverflow();
+  LayoutRect old_visual_overflow_rect =
+      VisualOverflowRect(line_top, line_bottom);
   SetVisualOverflowFromLogicalRect(logical_visual_overflow, line_top,
                                    line_bottom);
+  return VisualOverflowRect(line_top, line_bottom) != old_visual_overflow_rect;
 }
 
 void InlineFlowBox::OverrideLayoutOverflowFromLogicalRect(
@@ -1121,23 +1124,10 @@ inline void InlineFlowBox::AddTextBoxVisualOverflow(
     text_box->SetLogicalOverflowRect(logical_visual_overflow);
 }
 
-inline void InlineFlowBox::AddReplacedChildOverflow(
+inline void InlineFlowBox::AddReplacedChildLayoutOverflow(
     const InlineBox* inline_box,
-    LayoutRect& logical_layout_overflow,
-    LayoutRect& logical_visual_overflow) {
+    LayoutRect& logical_layout_overflow) {
   LineLayoutBox box = LineLayoutBox(inline_box->GetLineLayoutItem());
-
-  // Visual overflow only propagates if the box doesn't have a self-painting
-  // layer. This rectangle does not include transforms or relative positioning
-  // (since those objects always have self-painting layers), but it does need to
-  // be adjusted for writing-mode differences.
-  if (!box.HasSelfPaintingLayer()) {
-    LayoutRect child_logical_visual_overflow =
-        box.LogicalVisualOverflowRectForPropagation();
-    child_logical_visual_overflow.Move(inline_box->LogicalLeft(),
-                                       inline_box->LogicalTop());
-    logical_visual_overflow.Unite(child_logical_visual_overflow);
-  }
 
   // Layout overflow internal to the child box only propagates if the child box
   // doesn't have overflow clip set. Otherwise the child border box propagates
@@ -1148,6 +1138,34 @@ inline void InlineFlowBox::AddReplacedChildOverflow(
   child_logical_layout_overflow.Move(inline_box->LogicalLeft(),
                                      inline_box->LogicalTop());
   logical_layout_overflow.Unite(child_logical_layout_overflow);
+}
+
+void InlineFlowBox::AddReplacedChildrenVisualOverflow(LayoutUnit line_top,
+                                                      LayoutUnit line_bottom) {
+  LayoutRect logical_visual_overflow =
+      VisualOverflowRect(line_top, line_bottom);
+  for (InlineBox* curr = FirstChild(); curr; curr = curr->NextOnLine()) {
+    const LineLayoutItem& item = curr->GetLineLayoutItem();
+    if (item.IsOutOfFlowPositioned() || item.IsText() || item.IsLayoutInline())
+      continue;
+
+    LineLayoutBox box = LineLayoutBox(curr->GetLineLayoutItem());
+
+    // Visual overflow only propagates if the box doesn't have a self-painting
+    // layer. This rectangle does not include transforms or relative positioning
+    // (since those objects always have self-painting layers), but it does need
+    // to be adjusted for writing-mode differences.
+    if (!box.HasSelfPaintingLayer()) {
+      LayoutRect child_logical_visual_overflow =
+          box.LogicalVisualOverflowRectForPropagation();
+      child_logical_visual_overflow.Move(curr->LogicalLeft(),
+                                         curr->LogicalTop());
+      logical_visual_overflow.Unite(child_logical_visual_overflow);
+      ClearKnownToHaveNoOverflow();
+    }
+  }
+  SetVisualOverflowFromLogicalRect(logical_visual_overflow, line_top,
+                                   line_bottom);
 }
 
 static void ComputeGlyphOverflow(
@@ -1250,8 +1268,7 @@ void InlineFlowBox::ComputeOverflow(
         logical_layout_overflow =
             LogicalFrameRectIncludingLineHeight(line_top, line_bottom);
       }
-      AddReplacedChildOverflow(curr, logical_layout_overflow,
-                               logical_visual_overflow);
+      AddReplacedChildLayoutOverflow(curr, logical_layout_overflow);
     }
   }
 

@@ -353,7 +353,7 @@ void LayoutFlexibleBox::UpdateBlockLayout(bool relayout_children) {
 
     // FIXME: css3/flexbox/repaint-rtl-column.html seems to issue paint
     // invalidations for more overflow than it needs to.
-    ComputeOverflow(ClientLogicalBottomAfterRepositioning());
+    ComputeLayoutOverflow(ClientLogicalBottomAfterRepositioning());
   }
 
   // We have to reset this, because changes to our ancestors' style can affect

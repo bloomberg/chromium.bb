@@ -706,6 +706,7 @@ PaintResult PaintLayerPainter::PaintChildren(
     return result;
   if (!paint_layer_.StackingNode())
     return result;
+
 #if DCHECK_IS_ON()
   LayerListMutationDetector mutation_checker(paint_layer_.StackingNode());
 #endif
@@ -715,7 +716,6 @@ PaintResult PaintLayerPainter::PaintChildren(
   PaintLayer* child = iterator.Next();
   if (!child)
     return result;
-
   for (; child; child = iterator.Next()) {
     // If this Layer should paint into its own backing or a grouped backing,
     // that will be done via CompositedLayerMapping::PaintContents() and
@@ -816,7 +816,6 @@ void PaintLayerPainter::PaintFragmentWithPhase(
                            ? fragment.fragment_data->LogicalTopInFlowThread()
                            : LayoutUnit(),
                        suppress_painting_descendants);
-
   paint_layer_.GetLayoutObject().Paint(paint_info);
 }
 

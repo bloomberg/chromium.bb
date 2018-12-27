@@ -2299,7 +2299,7 @@ void Document::UpdateStyle() {
 
   PropagateStyleToViewport();
   View()->UpdateCountersAfterStyleChange();
-  GetLayoutView()->RecalcOverflow();
+  GetLayoutView()->RecalcLayoutOverflow();
 
   DCHECK(!NeedsStyleRecalc());
   DCHECK(!ChildNeedsStyleRecalc());

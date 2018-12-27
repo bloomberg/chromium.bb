@@ -374,7 +374,7 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
 
     LayoutPositionedObjects(relayout_children || IsDocumentElement());
 
-    ComputeOverflow(old_client_after_edge);
+    ComputeLayoutOverflow(old_client_after_edge);
   }
 
   UpdateAfterLayout();

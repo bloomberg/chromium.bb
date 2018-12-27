@@ -245,6 +245,11 @@ TEST_F(DisplayLockBudgetTest,
 
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kLayout));
   budget.DidPerformPhase(DisplayLockBudget::Phase::kLayout);
+  EXPECT_TRUE(budget.NeedsLifecycleUpdates());
+
+  budget.WillStartLifecycleUpdate();
+  EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kPrePaint));
+  budget.DidPerformPhase(DisplayLockBudget::Phase::kPrePaint);
 
   // Note that since the layout was indicated as done (from the budget
   // perspective), it will no longer need updates even though the true layout is

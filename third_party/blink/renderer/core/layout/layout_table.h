@@ -426,7 +426,10 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void SimplifiedNormalFlowLayout() override;
-  bool RecalcOverflow() override;
+
+  bool RecalcLayoutOverflow() final;
+  bool RecalcVisualOverflow() final;
+
   void EnsureIsReadyForPaintInvalidation() override;
   void InvalidatePaint(const PaintInvalidatorContext&) const override;
   bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
@@ -474,7 +477,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
       OverlayScrollbarClipBehavior =
           kIgnorePlatformOverlayScrollbarSize) const override;
 
-  void ComputeVisualOverflow(const LayoutRect&, bool recompute_floats) final;
+  void ComputeVisualOverflow(bool recompute_floats) final;
 
   void AddVisualOverflowFromChildren();
   void AddLayoutOverflowFromChildren() override;

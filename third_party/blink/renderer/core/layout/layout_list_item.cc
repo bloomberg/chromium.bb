@@ -287,9 +287,29 @@ bool LayoutListItem::UpdateMarkerLocation() {
   return false;
 }
 
-void LayoutListItem::ComputeVisualOverflow(
-    const LayoutRect& previous_visual_overflow_rect,
-    bool recompute_floats) {
+bool LayoutListItem::RecalcVisualOverflow() {
+  if (!NeedsVisualOverflowRecalc())
+    return false;
+  bool visual_overflow_changed = false;
+  if (ChildNeedsVisualOverflowRecalc())
+    visual_overflow_changed = RecalcChildVisualOverflow();
+  // UpdateOverflow may override the visual overflow rect for inline boxes.
+
+  if (SelfNeedsVisualOverflowRecalc())
+    visual_overflow_changed = true;
+  if (RecalcSelfVisualOverflow())
+    visual_overflow_changed = true;
+
+  ClearChildNeedsVisualOverflowRecalc();
+  ClearSelfNeedsVisualOverflowRecalc();
+
+  return visual_overflow_changed;
+}
+
+void LayoutListItem::ComputeVisualOverflow(bool recompute_floats) {
+  LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
+  ClearVisualOverflow();
+
   AddVisualOverflowFromChildren();
 
   AddVisualEffectOverflow();
@@ -300,20 +320,18 @@ void LayoutListItem::ComputeVisualOverflow(
     AddVisualOverflowFromFloats();
 
   if (VisualOverflowRect() != previous_visual_overflow_rect) {
-    if (Layer())
-      Layer()->SetNeedsCompositingInputsUpdate();
+    if (Layer()) {
+      Layer()->SetNeedsCompositingInputsUpdate(
+          PaintLayer::DoesNotNeedDescendantDependentUpdate);
+    }
+    SetShouldCheckForPaintInvalidation();
     GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
   }
 }
 
-void LayoutListItem::AddVisualOverflowFromChildren() {
-  LayoutBlockFlow::AddVisualOverflowFromChildren();
-  UpdateOverflow(Visual);
-}
-
 void LayoutListItem::AddLayoutOverflowFromChildren() {
   LayoutBlockFlow::AddLayoutOverflowFromChildren();
-  UpdateOverflow(Layout);
+  UpdateOverflow();
 }
 
 // Align marker_inline_box in block direction according to line_box_root's
@@ -387,7 +405,7 @@ void LayoutListItem::AlignMarkerInBlockDirection() {
   }
 }
 
-void LayoutListItem::UpdateOverflow(OverflowType overflow_type) {
+void LayoutListItem::UpdateOverflow() {
   if (!marker_ || !marker_->Parent() || !marker_->Parent()->IsBox() ||
       marker_->IsInside() || !marker_->InlineBoxWrapper())
     return;
@@ -428,39 +446,39 @@ void LayoutListItem::UpdateOverflow(OverflowType overflow_type) {
                                           kDoNotIndentText, LayoutUnit()));
     marker_logical_left = marker_line_offset - line_offset - PaddingStart() -
                           BorderStart() + marker_->MarginStart();
+
     marker_inline_box->MoveInInlineDirection(marker_logical_left -
                                              marker_old_logical_left);
+
     for (InlineFlowBox* box = marker_inline_box->Parent(); box;
          box = box->Parent()) {
-      if (overflow_type == Visual) {
-        LayoutRect new_logical_visual_overflow_rect =
-            box->LogicalVisualOverflowRect(line_top, line_bottom);
-        if (marker_logical_left < new_logical_visual_overflow_rect.X() &&
-            !hit_self_painting_layer) {
-          new_logical_visual_overflow_rect.SetWidth(
-              new_logical_visual_overflow_rect.MaxX() - marker_logical_left);
-          new_logical_visual_overflow_rect.SetX(marker_logical_left);
-          if (box == root)
-            adjust_overflow = true;
-        }
-        box->OverrideVisualOverflowFromLogicalRect(
-            new_logical_visual_overflow_rect, line_top, line_bottom);
-
-        if (box->BoxModelObject().HasSelfPaintingLayer())
-          hit_self_painting_layer = true;
-      } else {
-        LayoutRect new_logical_layout_overflow_rect =
-            box->LogicalLayoutOverflowRect(line_top, line_bottom);
-        if (marker_logical_left < new_logical_layout_overflow_rect.X()) {
-          new_logical_layout_overflow_rect.SetWidth(
-              new_logical_layout_overflow_rect.MaxX() - marker_logical_left);
-          new_logical_layout_overflow_rect.SetX(marker_logical_left);
-          if (box == root)
-            adjust_overflow = true;
-        }
-        box->OverrideLayoutOverflowFromLogicalRect(
-            new_logical_layout_overflow_rect, line_top, line_bottom);
+      box->AddReplacedChildrenVisualOverflow(line_top, line_bottom);
+      LayoutRect new_logical_visual_overflow_rect =
+          box->LogicalVisualOverflowRect(line_top, line_bottom);
+      if (marker_logical_left < new_logical_visual_overflow_rect.X() &&
+          !hit_self_painting_layer) {
+        new_logical_visual_overflow_rect.SetWidth(
+            new_logical_visual_overflow_rect.MaxX() - marker_logical_left);
+        new_logical_visual_overflow_rect.SetX(marker_logical_left);
+        if (box == root)
+          adjust_overflow = true;
       }
+      box->OverrideVisualOverflowFromLogicalRect(
+          new_logical_visual_overflow_rect, line_top, line_bottom);
+
+      if (box->BoxModelObject().HasSelfPaintingLayer())
+        hit_self_painting_layer = true;
+      LayoutRect new_logical_layout_overflow_rect =
+          box->LogicalLayoutOverflowRect(line_top, line_bottom);
+      if (marker_logical_left < new_logical_layout_overflow_rect.X()) {
+        new_logical_layout_overflow_rect.SetWidth(
+            new_logical_layout_overflow_rect.MaxX() - marker_logical_left);
+        new_logical_layout_overflow_rect.SetX(marker_logical_left);
+        if (box == root)
+          adjust_overflow = true;
+      }
+      box->OverrideLayoutOverflowFromLogicalRect(
+          new_logical_layout_overflow_rect, line_top, line_bottom);
     }
   } else {
     LayoutUnit marker_line_offset =
@@ -469,41 +487,41 @@ void LayoutListItem::UpdateOverflow(OverflowType overflow_type) {
                                            kDoNotIndentText, LayoutUnit()));
     marker_logical_left = marker_line_offset - line_offset + PaddingStart() +
                           BorderStart() + marker_->MarginEnd();
+
     marker_inline_box->MoveInInlineDirection(marker_logical_left -
                                              marker_old_logical_left);
+
     for (InlineFlowBox* box = marker_inline_box->Parent(); box;
          box = box->Parent()) {
-      if (overflow_type == Visual) {
-        LayoutRect new_logical_visual_overflow_rect =
-            box->LogicalVisualOverflowRect(line_top, line_bottom);
-        if (marker_logical_left + marker_->LogicalWidth() >
-                new_logical_visual_overflow_rect.MaxX() &&
-            !hit_self_painting_layer) {
-          new_logical_visual_overflow_rect.SetWidth(
-              marker_logical_left + marker_->LogicalWidth() -
-              new_logical_visual_overflow_rect.X());
-          if (box == root)
-            adjust_overflow = true;
-        }
-        box->OverrideVisualOverflowFromLogicalRect(
-            new_logical_visual_overflow_rect, line_top, line_bottom);
-
-        if (box->BoxModelObject().HasSelfPaintingLayer())
-          hit_self_painting_layer = true;
-      } else {
-        LayoutRect new_logical_layout_overflow_rect =
-            box->LogicalLayoutOverflowRect(line_top, line_bottom);
-        if (marker_logical_left + marker_->LogicalWidth() >
-            new_logical_layout_overflow_rect.MaxX()) {
-          new_logical_layout_overflow_rect.SetWidth(
-              marker_logical_left + marker_->LogicalWidth() -
-              new_logical_layout_overflow_rect.X());
-          if (box == root)
-            adjust_overflow = true;
-        }
-        box->OverrideLayoutOverflowFromLogicalRect(
-            new_logical_layout_overflow_rect, line_top, line_bottom);
+      box->AddReplacedChildrenVisualOverflow(line_top, line_bottom);
+      LayoutRect new_logical_visual_overflow_rect =
+          box->LogicalVisualOverflowRect(line_top, line_bottom);
+      if (marker_logical_left + marker_->LogicalWidth() >
+              new_logical_visual_overflow_rect.MaxX() &&
+          !hit_self_painting_layer) {
+        new_logical_visual_overflow_rect.SetWidth(
+            marker_logical_left + marker_->LogicalWidth() -
+            new_logical_visual_overflow_rect.X());
+        if (box == root)
+          adjust_overflow = true;
       }
+      box->OverrideVisualOverflowFromLogicalRect(
+          new_logical_visual_overflow_rect, line_top, line_bottom);
+
+      if (box->BoxModelObject().HasSelfPaintingLayer())
+        hit_self_painting_layer = true;
+      LayoutRect new_logical_layout_overflow_rect =
+          box->LogicalLayoutOverflowRect(line_top, line_bottom);
+      if (marker_logical_left + marker_->LogicalWidth() >
+          new_logical_layout_overflow_rect.MaxX()) {
+        new_logical_layout_overflow_rect.SetWidth(
+            marker_logical_left + marker_->LogicalWidth() -
+            new_logical_layout_overflow_rect.X());
+        if (box == root)
+          adjust_overflow = true;
+      }
+      box->OverrideLayoutOverflowFromLogicalRect(
+          new_logical_layout_overflow_rect, line_top, line_bottom);
     }
   }
 
@@ -517,28 +535,25 @@ void LayoutListItem::UpdateOverflow(OverflowType overflow_type) {
         marker_->Size());
     if (!StyleRef().IsHorizontalWritingMode())
       marker_rect = marker_rect.TransposedRect();
-    LayoutBox* o = marker_;
+    LayoutBox* object = marker_;
 
-    if (overflow_type == Visual) {
-      do {
-        o = o->ParentBox();
-        if (o->IsLayoutBlock())
-          ToLayoutBlock(o)->AddContentsVisualOverflow(marker_rect);
-        if (o->HasOverflowClip() || o->HasSelfPaintingLayer())
-          break;
-        marker_rect.MoveBy(-o->Location());
-      } while (o != this);
-    } else {
-      do {
-        o = o->ParentBox();
-        if (o->IsLayoutBlock()) {
-          ToLayoutBlock(o)->AddLayoutOverflow(marker_rect);
-        }
-        if (o->HasOverflowClip())
-          break;
-        marker_rect.MoveBy(-o->Location());
-      } while (o != this);
-    }
+    bool found_self_painting_layer = false;
+    do {
+      object = object->ParentBox();
+      if (object->IsLayoutBlock()) {
+        if (!found_self_painting_layer)
+          ToLayoutBlock(object)->AddContentsVisualOverflow(marker_rect);
+        ToLayoutBlock(object)->AddLayoutOverflow(marker_rect);
+      }
+
+      if (object->HasOverflowClip())
+        break;
+
+      if (object->HasSelfPaintingLayer())
+        found_self_painting_layer = true;
+
+      marker_rect.MoveBy(-object->Location());
+    } while (object != this);
   }
 }
 

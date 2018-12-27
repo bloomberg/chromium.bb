@@ -57,7 +57,7 @@ class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
     target.setAttribute(
         html_names::kStyleAttr,
         target.getAttribute(html_names::kStyleAttr) + "; width: 200px");
-    GetDocument().View()->UpdateLifecycleToLayoutClean();
+    GetDocument().View()->UpdateLifecycleToCompositingInputsClean();
     // Simulate that PaintInvalidator updates visual rect.
     box.GetMutableForPainting().SetVisualRect(
         LayoutRect(visual_rect.Location(), box.Size()));

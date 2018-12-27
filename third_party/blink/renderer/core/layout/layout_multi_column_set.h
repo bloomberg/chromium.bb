@@ -255,7 +255,7 @@ class CORE_EXPORT LayoutMultiColumnSet : public LayoutBlockFlow {
   void PaintObject(const PaintInfo&,
                    const LayoutPoint& paint_offset) const override;
 
-  void ComputeVisualOverflow(const LayoutRect&, bool recompute_floats) final;
+  void ComputeVisualOverflow(bool recompute_floats) final;
 
   void AddVisualOverflowFromChildren();
   void AddLayoutOverflowFromChildren() override;

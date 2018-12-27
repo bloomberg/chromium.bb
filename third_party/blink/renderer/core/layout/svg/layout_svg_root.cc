@@ -210,11 +210,7 @@ void LayoutSVGRoot::UpdateLayout() {
   }
 
   const auto& old_overflow_rect = VisualOverflowRect();
-  ClearAllOverflows();
-  AddVisualEffectOverflow();
-
-  if (!ShouldApplyViewportClip())
-    AddContentsVisualOverflow(ComputeContentsVisualOverflow());
+  ClearLayoutOverflow();
 
   // The scale of one or more of the SVG elements may have changed, content
   // (the entire SVG) could have moved or new content may have been exposed, so
@@ -245,11 +241,19 @@ bool LayoutSVGRoot::ShouldApplyViewportClip() const {
          StyleRef().OverflowX() == EOverflow::kScroll || IsDocumentElement();
 }
 
-LayoutRect LayoutSVGRoot::VisualOverflowRect() const {
-  LayoutRect rect = LayoutReplaced::SelfVisualOverflowRect();
-  if (!ShouldApplyViewportClip())
-    rect.Unite(ContentsVisualOverflowRect());
-  return rect;
+bool LayoutSVGRoot::RecalcVisualOverflow() {
+  if (!NeedsVisualOverflowRecalc())
+    return false;
+  bool visual_overflow_changed = LayoutReplaced::RecalcVisualOverflow();
+  UpdateCachedBoundaries();
+  if (!ShouldApplyViewportClip()) {
+    LayoutRect old_contents_overflow = ContentsVisualOverflowRect();
+    AddContentsVisualOverflow(ComputeContentsVisualOverflow());
+    visual_overflow_changed =
+        visual_overflow_changed ||
+        old_contents_overflow != ContentsVisualOverflowRect();
+  }
+  return visual_overflow_changed;
 }
 
 LayoutRect LayoutSVGRoot::ComputeContentsVisualOverflow() const {

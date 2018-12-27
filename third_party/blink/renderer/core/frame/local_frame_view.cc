@@ -249,7 +249,12 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       paint_frame_count_(0),
       unique_id_(NewUniqueObjectId()),
       jank_tracker_(std::make_unique<JankTracker>(this)),
-      paint_timing_detector_(MakeGarbageCollected<PaintTimingDetector>(this)) {
+      paint_timing_detector_(MakeGarbageCollected<PaintTimingDetector>(this))
+#if DCHECK_IS_ON()
+      ,
+      is_updating_descendant_dependent_flags_(false)
+#endif
+{
   // Propagate the marginwidth/height and scrolling modes to the view.
   if (frame_->Owner() &&
       frame_->Owner()->ScrollingMode() == kScrollbarAlwaysOff)
@@ -623,21 +628,10 @@ void LocalFrameView::PerformPreLayoutTasks() {
 
 void LocalFrameView::LayoutFromRootObject(LayoutObject& root) {
   LayoutState layout_state(root);
-  if (!root.IsBoxModelObject()) {
+  if (!root.IsBoxModelObject())
     root.UpdateLayout();
-  } else {
-    // Laying out the root may change its visual overflow. If so, that
-    // visual overflow needs to propagate to its containing block.
-    LayoutBoxModelObject& box_object = ToLayoutBoxModelObject(root);
-    LayoutRect previous_visual_overflow_rect = box_object.VisualOverflowRect();
-    box_object.UpdateLayout();
-    if (box_object.VisualOverflowRect() != previous_visual_overflow_rect) {
-      // TODO(chrishtr): this can probably just set the dirty bit for
-      // visual overflow, not layout overflow.
-      box_object.SetNeedsOverflowRecalc();
-      GetLayoutView()->RecalcOverflow();
-    }
-  }
+  else
+    ToLayoutBoxModelObject(root).UpdateLayout();
 }
 
 void LocalFrameView::PrepareLayoutAnalyzer() {
@@ -2128,9 +2122,6 @@ bool LocalFrameView::UpdateLifecycleToCompositingCleanPlusScrolling() {
 
 // TODO(schenney): Pass a LifecycleUpdateReason in here
 bool LocalFrameView::UpdateLifecycleToCompositingInputsClean() {
-  // When CAP is enabled, the standard compositing lifecycle steps do not
-  // exist; compositing is done after paint instead.
-  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
       DocumentLifecycle::kCompositingInputsClean,
       DocumentLifecycle::LifecycleUpdateReason::kOther);
@@ -2478,10 +2469,16 @@ bool LocalFrameView::RunCompositingLifecyclePhase(
                              LocalFrameUkmAggregator::kCompositing);
     layout_view->Compositor()->UpdateIfNeededRecursive(target_state);
   } else {
+#if DCHECK_IS_ON()
+    SetIsUpdatingDescendantDependentFlags(true);
+#endif
     ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
       frame_view.GetLayoutView()->Layer()->UpdateDescendantDependentFlags();
       frame_view.GetLayoutView()->CommitPendingSelection();
     });
+#if DCHECK_IS_ON()
+    SetIsUpdatingDescendantDependentFlags(false);
+#endif
   }
 
   // We may be in kCompositingInputsClean clean, which does not need to notify

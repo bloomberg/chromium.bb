@@ -246,9 +246,16 @@ class InlineFlowBox : public InlineBox {
   LayoutUnit ComputeUnderAnnotationAdjustment(
       LayoutUnit allowed_position) const;
 
+  // Computes all layout overflow, plus visual overflow not due to replaced
+  // children. Visual overflow due to replaced children is computed during
+  // the RecalcVisualOverflow tree walk. Other visual overflow is computed
+  // during layout for performance reasons.
   void ComputeOverflow(LayoutUnit line_top,
                        LayoutUnit line_bottom,
                        GlyphOverflowAndFallbackFontsMap&);
+  // Adds visual flow to the current visual overflow for replaced children.
+  void AddReplacedChildrenVisualOverflow(LayoutUnit line_top,
+                                         LayoutUnit line_bottom);
 
   void RemoveChild(InlineBox* child, MarkLineBoxes);
 
@@ -378,7 +385,7 @@ class InlineFlowBox : public InlineBox {
     is_first_after_page_break_ = is_first_after_page_break;
   }
 
-  void OverrideVisualOverflowFromLogicalRect(
+  bool OverrideVisualOverflowFromLogicalRect(
       const LayoutRect& logical_visual_overflow,
       LayoutUnit line_top,
       LayoutUnit line_bottom);
@@ -419,9 +426,8 @@ class InlineFlowBox : public InlineBox {
   void AddTextBoxVisualOverflow(InlineTextBox*,
                                 GlyphOverflowAndFallbackFontsMap&,
                                 LayoutRect& logical_visual_overflow);
-  void AddReplacedChildOverflow(const InlineBox*,
-                                LayoutRect& logical_layout_overflow,
-                                LayoutRect& logical_visual_overflow);
+  void AddReplacedChildLayoutOverflow(const InlineBox*,
+                                      LayoutRect& logical_layout_overflow);
   bool HasEmphasisMarkBefore(const InlineTextBox*) const;
   bool HasEmphasisMarkOver(const InlineTextBox*) const;
   bool HasEmphasisMarkUnder(const InlineTextBox*) const;

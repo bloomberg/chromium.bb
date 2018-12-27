@@ -183,7 +183,6 @@ TEST_P(TablePainterTest, CollapsedBorderAndOverflow) {
   )HTML");
 
   auto& cell = *ToLayoutTableCell(GetLayoutObjectByElementId("cell"));
-
   InvalidateAll(RootPaintController());
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // Intersects the overflowing part of cell but not border box.

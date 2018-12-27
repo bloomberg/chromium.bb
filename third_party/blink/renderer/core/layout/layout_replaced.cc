@@ -99,8 +99,7 @@ void LayoutReplaced::UpdateLayout() {
   UpdateLogicalWidth();
   UpdateLogicalHeight();
 
-  ClearAllOverflows();
-  AddVisualEffectOverflow();
+  ClearLayoutOverflow();
   UpdateAfterLayout();
 
   ClearNeedsLayout();
@@ -151,6 +150,21 @@ static inline bool LayoutObjectHasAspectRatio(
   DCHECK(layout_object);
   return layout_object->IsImage() || layout_object->IsCanvas() ||
          layout_object->IsVideo();
+}
+
+bool LayoutReplaced::RecalcVisualOverflow() {
+  if (!NeedsVisualOverflowRecalc())
+    return false;
+  LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
+  bool visual_overflow_changed = SelfNeedsVisualOverflowRecalc();
+
+  if (LayoutObject::RecalcVisualOverflow())
+    visual_overflow_changed = true;
+
+  ClearVisualOverflow();
+  AddVisualEffectOverflow();
+  return visual_overflow_changed ||
+         previous_visual_overflow_rect != VisualOverflowRect();
 }
 
 void LayoutReplaced::ComputeIntrinsicSizingInfoForReplacedContent(

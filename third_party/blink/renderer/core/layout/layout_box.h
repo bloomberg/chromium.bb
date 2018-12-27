@@ -551,7 +551,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void SetLayoutClientAfterEdge(LayoutUnit client_after_edge);
   LayoutUnit LayoutClientAfterEdge() const;
 
-  void ClearAllOverflows() { overflow_.reset(); }
   void ClearLayoutOverflow();
   void ClearVisualOverflow();
 

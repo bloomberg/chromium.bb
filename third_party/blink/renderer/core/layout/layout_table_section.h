@@ -120,8 +120,8 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   int VBorderSpacingBeforeFirstRow() const;
   int CalcRowLogicalHeight();
   void LayoutRows();
-  void ComputeOverflowFromDescendants();
-  bool RecalcOverflow() override;
+  bool RecalcLayoutOverflow() final;
+  bool RecalcVisualOverflow() final;
 
   void MarkAllCellsWidthsDirtyAndOrNeedsLayout(LayoutTable::WhatToMarkAllCells);
 
@@ -237,11 +237,11 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
                                       CellSpan& rows,
                                       CellSpan& columns) const;
 
-  const HashSet<const LayoutTableCell*>& OverflowingCells() const {
-    return overflowing_cells_;
+  const HashSet<const LayoutTableCell*>& VisuallyOverflowingCells() const {
+    return visually_overflowing_cells_;
   }
-  bool HasOverflowingCell() const {
-    return overflowing_cells_.size() || force_full_paint_;
+  bool HasVisuallyOverflowingCell() const {
+    return visually_overflowing_cells_.size() || force_full_paint_;
   }
   bool HasMultipleCellLevels() const { return has_multiple_cell_levels_; }
 
@@ -291,6 +291,9 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   void UpdateLogicalWidthForCollapsedCells(
       const Vector<int>& col_collapsed_width);
 
+  void ComputeVisualOverflowFromDescendants();
+  void ComputeLayoutOverflowFromDescendants();
+
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   bool NodeAtPoint(HitTestResult&,
@@ -299,9 +302,6 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
                    HitTestAction) override;
 
  private:
-  void ComputeVisualOverflowFromDescendants();
-  void ComputeLayoutOverflowFromDescendants();
-
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectTableSection || LayoutBox::IsOfType(type);
   }
@@ -450,8 +450,8 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   // This HashSet holds the overflowing cells for the partial paint path. If we
   // have too many overflowing cells, it will be empty and force_full_paint_
-  // will be set to save memory. See ComputeOverflowFromDescendants().
-  HashSet<const LayoutTableCell*> overflowing_cells_;
+  // will be set to save memory. See ComputeVisualOverflowFromDescendants().
+  HashSet<const LayoutTableCell*> visually_overflowing_cells_;
   bool force_full_paint_;
 
   // This boolean tracks if we have cells overlapping due to rowspan / colspan

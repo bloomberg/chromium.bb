@@ -704,6 +704,15 @@ class CORE_EXPORT LocalFrameView final
   // Return the UKM aggregator for this frame, creating it if necessary.
   LocalFrameUkmAggregator& EnsureUkmAggregator();
 
+#if DCHECK_IS_ON()
+  void SetIsUpdatingDescendantDependentFlags(bool val) {
+    is_updating_descendant_dependent_flags_ = val;
+  }
+  bool IsUpdatingDescendantDependentFlags() const {
+    return is_updating_descendant_dependent_flags_;
+  }
+#endif
+
   void RegisterForLifecycleNotifications(LifecycleNotificationObserver*);
   void UnregisterFromLifecycleNotifications(LifecycleNotificationObserver*);
 
@@ -998,6 +1007,10 @@ class CORE_EXPORT LocalFrameView final
   Member<PaintTimingDetector> paint_timing_detector_;
 
   HeapHashSet<WeakMember<LifecycleNotificationObserver>> lifecycle_observers_;
+
+#if DCHECK_IS_ON()
+  bool is_updating_descendant_dependent_flags_;
+#endif
 
   FRIEND_TEST_ALL_PREFIXES(WebViewTest, DeviceEmulationResetScrollbars);
 };

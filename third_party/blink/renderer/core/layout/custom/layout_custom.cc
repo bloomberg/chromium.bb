@@ -266,7 +266,7 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
       relayout_children = true;
 
     LayoutPositionedObjects(relayout_children || IsDocumentElement());
-    ComputeOverflow(old_client_after_edge);
+    ComputeLayoutOverflow(old_client_after_edge);
   }
 
   UpdateAfterLayout();

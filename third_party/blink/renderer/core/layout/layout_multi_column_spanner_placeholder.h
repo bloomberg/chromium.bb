@@ -55,6 +55,7 @@ class LayoutMultiColumnSpannerPlaceholder final : public LayoutBox {
   void InsertedIntoTree() override;
   void WillBeRemovedFromTree() override;
   bool NeedsPreferredWidthsRecalculation() const override;
+  bool RecalcVisualOverflow() override;
   LayoutUnit MinPreferredLogicalWidth() const override;
   LayoutUnit MaxPreferredLogicalWidth() const override;
   void UpdateLayout() override;

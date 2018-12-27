@@ -106,7 +106,9 @@ class CORE_EXPORT LayoutTableRow final : public LayoutTableBoxComponent {
 
   PaginationBreakability GetPaginationBreakability() const final;
 
-  void ComputeOverflow();
+  void ComputeLayoutOverflow();
+
+  bool RecalcVisualOverflow() override;
 
   const char* GetName() const override { return "LayoutTableRow"; }
 
@@ -123,7 +125,9 @@ class CORE_EXPORT LayoutTableRow final : public LayoutTableBoxComponent {
   bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
 
  private:
-  void AddOverflowFromCell(const LayoutTableCell*);
+  bool ComputeVisualOverflow();
+  void AddLayoutOverflowFromCell(const LayoutTableCell*);
+  void AddVisualOverflowFromCell(const LayoutTableCell*);
 
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectTableRow ||

@@ -525,7 +525,7 @@ void LayoutBlockFlow::UpdateBlockLayout(bool relayout_children) {
   LayoutPositionedObjects(relayout_children, behavior);
 
   // Add overflow from children.
-  ComputeOverflow(unconstrained_client_after_edge);
+  ComputeLayoutOverflow(unconstrained_client_after_edge, false);
 
   descendants_with_floats_marked_for_layout_ = false;
 
@@ -2570,8 +2570,9 @@ void LayoutBlockFlow::UpdatePaintFragmentFromCachedLayoutResult(
     NGPhysicalOffset) {}
 
 void LayoutBlockFlow::ComputeVisualOverflow(
-    const LayoutRect& previous_visual_overflow_rect,
     bool recompute_floats) {
+  LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
+  ClearVisualOverflow();
   AddVisualOverflowFromChildren();
 
   AddVisualEffectOverflow();
@@ -2580,10 +2581,12 @@ void LayoutBlockFlow::ComputeVisualOverflow(
   if (recompute_floats || CreatesNewFormattingContext() ||
       HasSelfPaintingLayer())
     AddVisualOverflowFromFloats();
-
   if (VisualOverflowRect() != previous_visual_overflow_rect) {
-    if (Layer())
-      Layer()->SetNeedsCompositingInputsUpdate();
+    if (Layer()) {
+      Layer()->SetNeedsCompositingInputsUpdate(
+          PaintLayer::DoesNotNeedDescendantDependentUpdate);
+    }
+    SetShouldCheckForPaintInvalidation();
     GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
   }
 }
@@ -4659,15 +4662,17 @@ void LayoutBlockFlow::SimplifiedNormalFlowInlineLayout() {
   }
 }
 
-bool LayoutBlockFlow::RecalcInlineChildrenOverflow() {
+bool LayoutBlockFlow::RecalcInlineChildrenLayoutOverflow() {
   DCHECK(ChildrenInline());
-  bool children_overflow_changed = false;
+  bool children_layout_overflow_changed = false;
   ListHashSet<RootInlineBox*> line_boxes;
   for (InlineWalker walker(LineLayoutBlockFlow(this)); !walker.AtEnd();
        walker.Advance()) {
     LayoutObject* layout_object = walker.Current().GetLayoutObject();
-    if (RecalcNormalFlowChildOverflowIfNeeded(layout_object)) {
-      children_overflow_changed = true;
+    if (RecalcNormalFlowChildLayoutOverflowIfNeeded(layout_object)) {
+      children_layout_overflow_changed = true;
+      // TODO(chrishtr): should this be IsBox()? Non-blocks can be
+      // inline and have line box wrappers.
       if (layout_object->IsLayoutBlock()) {
         if (InlineBox* inline_box_wrapper =
                 ToLayoutBlock(layout_object)->InlineBoxWrapper())
@@ -4685,7 +4690,35 @@ bool LayoutBlockFlow::RecalcInlineChildrenOverflow() {
     box->ClearKnownToHaveNoOverflow();
     box->ComputeOverflow(box->LineTop(), box->LineBottom(), text_box_data_map);
   }
-  return children_overflow_changed;
+  return children_layout_overflow_changed;
+}
+
+bool LayoutBlockFlow::RecalcInlineChildrenVisualOverflow() {
+  DCHECK(ChildrenInline());
+  bool children_visual_overflow_changed = false;
+  ListHashSet<RootInlineBox*> line_boxes;
+  for (InlineWalker walker(LineLayoutBlockFlow(this)); !walker.AtEnd();
+       walker.Advance()) {
+    LayoutObject* layout_object = walker.Current().GetLayoutObject();
+    if (RecalcNormalFlowChildVisualOverflowIfNeeded(layout_object)) {
+      children_visual_overflow_changed = true;
+      if (layout_object->IsBox()) {
+        if (InlineBox* inline_box_wrapper =
+                ToLayoutBox(layout_object)->InlineBoxWrapper())
+          line_boxes.insert(&inline_box_wrapper->Root());
+      }
+    }
+  }
+
+  // Child inline boxes' self visual overflow is already computed at the same
+  // time as layout overflow. But we need to add replaced children visual rects.
+  for (ListHashSet<RootInlineBox*>::const_iterator it = line_boxes.begin();
+       it != line_boxes.end(); ++it) {
+    RootInlineBox* box = *it;
+    box->AddReplacedChildrenVisualOverflow(box->LineTop(), box->LineBottom());
+  }
+
+  return children_visual_overflow_changed;
 }
 
 PositionWithAffinity LayoutBlockFlow::PositionForPoint(

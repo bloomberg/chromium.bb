@@ -915,18 +915,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return bitfields_.PreferredLogicalWidthsDirty();
   }
 
-  bool NeedsOverflowRecalc() const {
-    return SelfNeedsOverflowRecalc() || ChildNeedsOverflowRecalc();
-  }
-  bool SelfNeedsOverflowRecalc() const {
-    return bitfields_.SelfNeedsLayoutOverflowRecalc() ||
-           bitfields_.SelfNeedsVisualOverflowRecalc();
-  }
-  bool ChildNeedsOverflowRecalc() const {
-    return bitfields_.ChildNeedsLayoutOverflowRecalc() ||
-           bitfields_.ChildNeedsVisualOverflowRecalc();
-  }
-
   bool NeedsLayoutOverflowRecalc() const {
     return bitfields_.SelfNeedsLayoutOverflowRecalc() ||
            bitfields_.ChildNeedsLayoutOverflowRecalc();
@@ -1262,7 +1250,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   virtual void Paint(const PaintInfo&) const;
 
-  virtual bool RecalcOverflow();
+  virtual bool RecalcLayoutOverflow();
+  virtual bool RecalcVisualOverflow();
 
   // Subclasses must reimplement this method to compute the size and position
   // of this object and all its descendants.
@@ -2993,6 +2982,7 @@ inline void LayoutObject::SetNeedsLayout(
 #endif
   bool already_needed_layout = bitfields_.SelfNeedsLayout();
   SetSelfNeedsLayout(true);
+  SetNeedsOverflowRecalc();
   MarkContainerNeedsCollectInlines();
   if (!already_needed_layout) {
     TRACE_EVENT_INSTANT1(
@@ -3039,6 +3029,7 @@ inline void LayoutObject::SetChildNeedsLayout(MarkingBehavior mark_parents,
   DCHECK(!IsSetNeedsLayoutForbidden());
 #endif
   bool already_needed_layout = NormalChildNeedsLayout();
+  SetNeedsOverflowRecalc();
   SetNormalChildNeedsLayout(true);
   MarkContainerNeedsCollectInlines();
   // FIXME: Replace MarkOnlyThis with the SubtreeLayoutScope code path and
@@ -3050,6 +3041,7 @@ inline void LayoutObject::SetChildNeedsLayout(MarkingBehavior mark_parents,
 
 inline void LayoutObject::SetNeedsPositionedMovementLayout() {
   bool already_needed_layout = NeedsPositionedMovementLayout();
+  SetNeedsOverflowRecalc();
   SetNeedsPositionedMovementLayout(true);
 #if DCHECK_IS_ON()
   DCHECK(!IsSetNeedsLayoutForbidden());
