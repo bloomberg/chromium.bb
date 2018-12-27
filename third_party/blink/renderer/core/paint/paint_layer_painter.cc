@@ -74,13 +74,11 @@ bool PaintLayerPainter::PaintedOutputInvisible(
     if (style.Opacity())
       return false;
 
-    const auto* effect = paint_layer_.GetLayoutObject()
-                             .FirstFragment()
-                             .PaintProperties()
-                             ->Effect();
-    if (effect && effect->RequiresCompositingForAnimation()) {
+    const auto* properties =
+        paint_layer_.GetLayoutObject().FirstFragment().PaintProperties();
+    if (properties && properties->Effect() &&
+        properties->Effect()->RequiresCompositingForAnimation())
       return false;
-    }
   }
 
   // 0.0004f < 1/2048. With 10-bit color channels (only available on the
