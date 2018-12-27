@@ -8,8 +8,8 @@
 #include <stdint.h>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "sql/sql_export.h"
 
 namespace sql {
 
@@ -22,7 +22,7 @@ class Statement;
 // * Helper methods to assist in database schema version control.
 // * Historical data on past attempts to mmap the database to make it possible
 //   to avoid unconditionally retrying to load broken databases.
-class SQL_EXPORT MetaTable {
+class COMPONENT_EXPORT(SQL) MetaTable {
  public:
   MetaTable();
   ~MetaTable();

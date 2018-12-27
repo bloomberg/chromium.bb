@@ -7,7 +7,7 @@
 
 #include <cstddef>
 
-#include "sql/sql_export.h"
+#include "base/component_export.h"
 
 namespace sql {
 
@@ -18,7 +18,7 @@ namespace sql {
 //
 // StatementID instances should be constructed by using the SQL_FROM_HERE
 // macro, which produces an unique ID based on the source file name and line.
-class SQL_EXPORT StatementID {
+class COMPONENT_EXPORT(SQL) StatementID {
  public:
   // Creates an ID representing a line in the source tree.
   //

@@ -5,7 +5,7 @@
 #ifndef SQL_INITIALIZATION_H_
 #define SQL_INITIALIZATION_H_
 
-#include "sql/sql_export.h"
+#include "base/component_export.h"
 
 namespace sql {
 
@@ -16,7 +16,7 @@ namespace sql {
 //
 // The function is exposed for other components that use SQLite indirectly, such
 // as Blink.
-SQL_EXPORT void EnsureSqliteInitialized();
+COMPONENT_EXPORT(SQL) void EnsureSqliteInitialized();
 
 }  // namespace sql
 

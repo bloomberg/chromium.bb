@@ -20,7 +20,6 @@ component("sql") {
     "meta_table.h",
     "recovery.cc",
     "recovery.h",
-    "sql_export.h",
     "sql_features.cc",
     "sql_features.h",
     "sql_memory_dump_provider.cc",
@@ -35,7 +34,7 @@ component("sql") {
     "vfs_wrapper.h",
   ]
 
-  defines = [ "SQL_IMPLEMENTATION" ]
+  defines = [ "IS_SQL_IMPL" ]
 
   deps = [
     "//base",

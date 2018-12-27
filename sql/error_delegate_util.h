@@ -7,14 +7,14 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
-#include "sql/sql_export.h"
 
 namespace sql {
 
 // Returns true if it is highly unlikely that the database can recover from
 // |error|.
-SQL_EXPORT bool IsErrorCatastrophic(int error);
+COMPONENT_EXPORT(SQL) bool IsErrorCatastrophic(int error);
 
 // Gets diagnostic info of the given |corrupted_file_path| that can be appended
 // to a corrupt database diagnostics info. The file info are not localized as
@@ -22,7 +22,8 @@ SQL_EXPORT bool IsErrorCatastrophic(int error);
 // Also the full file path is not appended as it might contain some PII. Instead
 // only the last two components of the path are appended to distinguish between
 // default and user profiles.
-SQL_EXPORT std::string GetCorruptFileDiagnosticsInfo(
+COMPONENT_EXPORT(SQL)
+std::string GetCorruptFileDiagnosticsInfo(
     const base::FilePath& corrupted_file_path);
 
 }  // namespace sql
