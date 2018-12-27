@@ -23,7 +23,6 @@ namespace blink {
 class NGBoxFragmentBuilder;
 class NGExclusionSpace;
 class NGLineBoxFragmentBuilder;
-struct NGPositionedFloat;
 
 // The NGLayoutResult stores the resulting data from layout. This includes
 // geometry information in form of a NGPhysicalFragment, which is kept around
@@ -56,14 +55,6 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   const Vector<NGOutOfFlowPositionedDescendant>&
   OutOfFlowPositionedDescendants() const {
     return oof_positioned_descendants_;
-  }
-
-  // A line-box can have a list of positioned floats. These should be added to
-  // the line-box's parent fragment (as floats which occur within a line-box do
-  // not appear a children).
-  const Vector<NGPositionedFloat>& PositionedFloats() const {
-    DCHECK(root_fragment_->Type() == NGPhysicalFragment::kFragmentLineBox);
-    return positioned_floats_;
   }
 
   const NGUnpositionedListMarker& UnpositionedListMarker() const {
@@ -137,8 +128,6 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 
   NGLink root_fragment_;
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
-
-  Vector<NGPositionedFloat> positioned_floats_;
 
   NGUnpositionedListMarker unpositioned_list_marker_;
 

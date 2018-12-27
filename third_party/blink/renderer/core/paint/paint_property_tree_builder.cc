@@ -2052,7 +2052,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
     return;
   }
 
-  if (object_.IsFloating())
+  if (object_.IsFloating() && !object_.IsInLayoutNGInlineFormattingContext())
     context_.current.paint_offset = context_.paint_offset_for_float;
 
   // Multicolumn spanners are painted starting at the multicolumn container (but

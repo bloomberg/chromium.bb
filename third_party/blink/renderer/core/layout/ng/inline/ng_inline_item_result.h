@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_end_effect.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -48,6 +49,11 @@ struct CORE_EXPORT NGInlineItemResult {
 
   // NGLayoutResult for atomic inline items.
   scoped_refptr<NGLayoutResult> layout_result;
+
+  // NGPositionedFloat for floating inline items. Should only be present for
+  // positioned floats (not unpositioned). It indicates where it was placed
+  // within the BFC.
+  base::Optional<NGPositionedFloat> positioned_float;
 
   // Margins, borders, and padding for open tags.
   // Margins are set for atomic inlines too.
@@ -96,6 +102,11 @@ struct CORE_EXPORT NGInlineItemResult {
   // correctly determine that we don't need a line box.
   bool should_create_line_box = false;
 
+  // The field should be initialized and maintained like
+  // |should_create_line_box|. It indicates if there are (at the current
+  // position) any unpositioned floats.
+  bool has_unpositioned_floats = false;
+
   // End effects for text items.
   // The effects are included in |shape_result|, but not in text content.
   NGTextEndEffect text_end_effect = NGTextEndEffect::kNone;
@@ -106,7 +117,8 @@ struct CORE_EXPORT NGInlineItemResult {
                      unsigned start,
                      unsigned end,
                      bool break_anywhere_if_overflow,
-                     bool should_create_line_box);
+                     bool should_create_line_box,
+                     bool has_unpositioned_floats);
 
 #if DCHECK_IS_ON()
   void CheckConsistency(bool during_line_break = false) const;

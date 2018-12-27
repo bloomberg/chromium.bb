@@ -590,7 +590,11 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloatUnderInlineLayer) {
       GetDocument().getElementById("span")->GetLayoutObject());
   PaintLayer& span_layer = *span.Layer();
   ASSERT_TRUE(&span_layer == float_div.EnclosingLayer());
-  ASSERT_FALSE(span_layer.NeedsPaintPhaseFloat());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    ASSERT_TRUE(span_layer.NeedsPaintPhaseFloat());
+  } else {
+    ASSERT_FALSE(span_layer.NeedsPaintPhaseFloat());
+  }
   LayoutBoxModelObject& self_painting_layer_object = *ToLayoutBoxModelObject(
       GetDocument().getElementById("self-painting-layer")->GetLayoutObject());
   PaintLayer& self_painting_layer = *self_painting_layer_object.Layer();
@@ -602,9 +606,14 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloatUnderInlineLayer) {
            ->Layer();
   ASSERT_FALSE(non_self_painting_layer.IsSelfPaintingLayer());
 
-  EXPECT_TRUE(self_painting_layer.NeedsPaintPhaseFloat());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_FALSE(self_painting_layer.NeedsPaintPhaseFloat());
+    EXPECT_TRUE(span_layer.NeedsPaintPhaseFloat());
+  } else {
+    EXPECT_TRUE(self_painting_layer.NeedsPaintPhaseFloat());
+    EXPECT_FALSE(span_layer.NeedsPaintPhaseFloat());
+  }
   EXPECT_FALSE(non_self_painting_layer.NeedsPaintPhaseFloat());
-  EXPECT_FALSE(span_layer.NeedsPaintPhaseFloat());
   EXPECT_TRUE(DisplayItemListContains(
       RootPaintController().GetDisplayItemList(), float_div,
       DisplayItem::kBoxDecorationBackground));

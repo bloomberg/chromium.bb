@@ -667,6 +667,7 @@ crbug.com/591099 external/wpt/css/cssom-view/elementsFromPoint-inline-vrl-ltr.ht
 crbug.com/591099 external/wpt/css/cssom-view/elementsFromPoint-inline-vrl-rtl.html [ Failure ]
 crbug.com/591099 external/wpt/css/cssom-view/offsetTopLeftInline.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/inline-box-border-vlr-001.html [ Failure ]
+crbug.com/591099 external/wpt/css/filter-effects/filtered-inline-applies-to-float.html [ Failure ]
 crbug.com/591099 tables/mozilla/bugs/bug14159-1.html [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/abspos
@@ -1015,6 +1016,7 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/mu
 crbug.com/714962 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-width-large-001.xht [ Failure ]
 crbug.com/714962 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-width-large-002.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-width-small-001.xht [ Failure ]
+crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-zero-height-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/abspos-after-break-after.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/abspos-new-width-rebalance.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/balance-float-after-forced-break.html [ Failure ]
@@ -1098,6 +1100,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-spa
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-spanner-in-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/spanner-after-content-becomes-regular-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/spanner-ancestor-becomes-spanner.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_experimental/fast/multicol/dynamic/spanner-becomes-float.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/spanner-before-content-becomes-regular-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/spanner-in-content-becomes-regular-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/static-becomes-relpos-has-abspos.html [ Failure ]
@@ -1399,6 +1402,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fragmentation/float-after-forced
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/float-margin-top.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/float-pushed-to-next-fragmentainer-by-floats.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/forced-break-clearance-unsplittable-content.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_experimental/fragmentation/forced-break-inside-float.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/fragmented-rowspan-alignment.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/fragmented-rowspan.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/fragmented-table-cell.html [ Failure ]

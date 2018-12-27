@@ -41,22 +41,18 @@ class NGLineBreakerTest : public NGLayoutTest {
             .SetAvailableSize({available_width, NGSizeIndefinite})
             .ToConstraintSpace();
 
-    Vector<NGPositionedFloat> positioned_floats;
-    NGUnpositionedFloatVector unpositioned_floats;
-
     scoped_refptr<NGInlineBreakToken> break_token;
 
     Vector<NGLineInfo> line_infos;
     trailing_whitespaces_.resize(0);
     NGExclusionSpace exclusion_space;
+    NGPositionedFloatVector leading_floats;
     NGLineLayoutOpportunity line_opportunity(available_width);
     while (!break_token || !break_token->IsFinished()) {
       NGLineInfo& line_info = line_infos.emplace_back();
       NGLineBreaker line_breaker(node, NGLineBreakerMode::kContent, space,
-                                 &positioned_floats, &unpositioned_floats,
-                                 /* container_builder */ nullptr,
-                                 &exclusion_space, 0u, line_opportunity,
-                                 break_token.get());
+                                 line_opportunity, leading_floats, 0u,
+                                 break_token.get(), &exclusion_space);
       line_breaker.NextLine(&line_info);
       trailing_whitespaces_.push_back(
           line_breaker.TrailingWhitespaceForTesting());

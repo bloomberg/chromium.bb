@@ -344,6 +344,11 @@ bool LayoutNGMixin<Base>::AreCachedLinesValidFor(
   if (constraint_space.HasFloats() || cached_constraint_space.HasFloats())
     return false;
 
+  // Any floats might need to move, causing lines to wrap differently, needing
+  // re-layout.
+  if (!cached_result_->ExclusionSpace().IsEmpty())
+    return false;
+
   // Propagating OOF needs re-layout.
   if (!cached_result_->OutOfFlowPositionedDescendants().IsEmpty())
     return false;

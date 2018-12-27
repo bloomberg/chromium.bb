@@ -882,8 +882,12 @@ TEST_P(PaintLayerTest, CompositingContainerNonStackedFloatUnderStackingInline) {
   )HTML");
 
   PaintLayer* target = GetPaintLayerByElementId("target");
-  EXPECT_EQ(GetPaintLayerByElementId("containingBlock"),
-            target->CompositingContainer());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(GetPaintLayerByElementId("span"), target->CompositingContainer());
+  } else {
+    EXPECT_EQ(GetPaintLayerByElementId("containingBlock"),
+              target->CompositingContainer());
+  }
 
   // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
   // CAP.
@@ -907,14 +911,23 @@ TEST_P(PaintLayerTest,
   )HTML");
 
   PaintLayer* target = GetPaintLayerByElementId("target");
-  EXPECT_EQ(GetPaintLayerByElementId("containingBlock"),
-            target->CompositingContainer());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(GetPaintLayerByElementId("span"), target->CompositingContainer());
+  } else {
+    EXPECT_EQ(GetPaintLayerByElementId("containingBlock"),
+              target->CompositingContainer());
+  }
 
   // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
   // CAP.
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(GetPaintLayerByElementId("compositedContainer"),
-              target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
+    if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+      EXPECT_EQ(GetPaintLayerByElementId("span"),
+                target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
+    } else {
+      EXPECT_EQ(GetPaintLayerByElementId("compositedContainer"),
+                target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
+    }
   }
 }
 
@@ -987,8 +1000,12 @@ TEST_P(PaintLayerTest,
   )HTML");
 
   PaintLayer* target = GetPaintLayerByElementId("target");
-  EXPECT_EQ(GetPaintLayerByElementId("containingBlock"),
-            target->CompositingContainer());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(GetPaintLayerByElementId("span"), target->CompositingContainer());
+  } else {
+    EXPECT_EQ(GetPaintLayerByElementId("containingBlock"),
+              target->CompositingContainer());
+  }
 
   // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
   // CAP.
@@ -1014,14 +1031,23 @@ TEST_P(PaintLayerTest,
   )HTML");
 
   PaintLayer* target = GetPaintLayerByElementId("target");
-  EXPECT_EQ(GetPaintLayerByElementId("containingBlock"),
-            target->CompositingContainer());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(GetPaintLayerByElementId("span"), target->CompositingContainer());
+  } else {
+    EXPECT_EQ(GetPaintLayerByElementId("containingBlock"),
+              target->CompositingContainer());
+  }
 
   // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
   // CAP.
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(GetPaintLayerByElementId("compositedContainer"),
-              target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
+    if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+      EXPECT_EQ(GetPaintLayerByElementId("span"),
+                target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
+    } else {
+      EXPECT_EQ(GetPaintLayerByElementId("compositedContainer"),
+                target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
+    }
   }
 }
 
@@ -1047,20 +1073,35 @@ TEST_P(PaintLayerTest, FloatLayerAndAbsoluteUnderInlineLayer) {
   PaintLayer* container = GetPaintLayerByElementId("container");
 
   EXPECT_EQ(span, floating->Parent());
-  EXPECT_EQ(container, floating->ContainingLayer());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(span, floating->ContainingLayer());
+  } else {
+    EXPECT_EQ(container, floating->ContainingLayer());
+  }
   EXPECT_EQ(span, absolute->Parent());
   EXPECT_EQ(span, absolute->ContainingLayer());
   EXPECT_EQ(container, span->Parent());
   EXPECT_EQ(container, span->ContainingLayer());
 
-  EXPECT_EQ(LayoutPoint(83, 83), floating->Location());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(LayoutPoint(50, 50), floating->Location());
+  } else {
+    EXPECT_EQ(LayoutPoint(83, 83), floating->Location());
+  }
   EXPECT_EQ(LayoutPoint(50, 50), absolute->Location());
   EXPECT_EQ(LayoutPoint(133, 133), span->Location());
   EXPECT_EQ(LayoutPoint(20, 20), container->Location());
 
-  EXPECT_EQ(LayoutPoint(-50, -50), floating->VisualOffsetFromAncestor(span));
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(LayoutPoint(50, 50), floating->VisualOffsetFromAncestor(span));
+    EXPECT_EQ(LayoutPoint(183, 183),
+              floating->VisualOffsetFromAncestor(container));
+  } else {
+    EXPECT_EQ(LayoutPoint(-50, -50), floating->VisualOffsetFromAncestor(span));
+    EXPECT_EQ(LayoutPoint(83, 83),
+              floating->VisualOffsetFromAncestor(container));
+  }
   EXPECT_EQ(LayoutPoint(50, 50), absolute->VisualOffsetFromAncestor(span));
-  EXPECT_EQ(LayoutPoint(83, 83), floating->VisualOffsetFromAncestor(container));
   EXPECT_EQ(LayoutPoint(183, 183),
             absolute->VisualOffsetFromAncestor(container));
 }
@@ -1084,16 +1125,26 @@ TEST_P(PaintLayerTest, FloatLayerUnderInlineLayerScrolled) {
                                                   kProgrammaticScroll);
 
   EXPECT_EQ(span, floating->Parent());
-  EXPECT_EQ(container, floating->ContainingLayer());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(span, floating->ContainingLayer());
+  } else {
+    EXPECT_EQ(container, floating->ContainingLayer());
+  }
   EXPECT_EQ(container, span->Parent());
   EXPECT_EQ(container, span->ContainingLayer());
 
-  EXPECT_EQ(LayoutPoint(50, -350), floating->Location());
   EXPECT_EQ(LayoutPoint(100, -300), span->Location());
-
-  EXPECT_EQ(LayoutPoint(-50, -50), floating->VisualOffsetFromAncestor(span));
-  EXPECT_EQ(LayoutPoint(50, -350),
-            floating->VisualOffsetFromAncestor(container));
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(LayoutPoint(50, 50), floating->Location());
+    EXPECT_EQ(LayoutPoint(50, 50), floating->VisualOffsetFromAncestor(span));
+    EXPECT_EQ(LayoutPoint(150, -250),
+              floating->VisualOffsetFromAncestor(container));
+  } else {
+    EXPECT_EQ(LayoutPoint(50, -350), floating->Location());
+    EXPECT_EQ(LayoutPoint(-50, -50), floating->VisualOffsetFromAncestor(span));
+    EXPECT_EQ(LayoutPoint(50, -350),
+              floating->VisualOffsetFromAncestor(container));
+  }
 }
 
 TEST_P(PaintLayerTest, FloatLayerUnderBlockUnderInlineLayer) {
@@ -1137,13 +1188,24 @@ TEST_P(PaintLayerTest, FloatLayerUnderFloatUnderInlineLayer) {
   PaintLayer* span = GetPaintLayerByElementId("span");
 
   EXPECT_EQ(span, floating->Parent());
-  EXPECT_EQ(span->Parent(), floating->ContainingLayer());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(span, floating->ContainingLayer());
+  } else {
+    EXPECT_EQ(span->Parent(), floating->ContainingLayer());
+  }
 
   EXPECT_EQ(LayoutPoint(83, 83), floating->Location());
   EXPECT_EQ(LayoutPoint(100, 100), span->Location());
-  EXPECT_EQ(LayoutPoint(-17, -17), floating->VisualOffsetFromAncestor(span));
-  EXPECT_EQ(LayoutPoint(83, 83), floating->VisualOffsetFromAncestor(
-                                     GetDocument().GetLayoutView()->Layer()));
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(LayoutPoint(83, 83), floating->VisualOffsetFromAncestor(span));
+    EXPECT_EQ(LayoutPoint(183, 183),
+              floating->VisualOffsetFromAncestor(
+                  GetDocument().GetLayoutView()->Layer()));
+  } else {
+    EXPECT_EQ(LayoutPoint(-17, -17), floating->VisualOffsetFromAncestor(span));
+    EXPECT_EQ(LayoutPoint(83, 83), floating->VisualOffsetFromAncestor(
+                                       GetDocument().GetLayoutView()->Layer()));
+  }
 }
 
 TEST_P(PaintLayerTest, FloatLayerUnderFloatLayerUnderInlineLayer) {
@@ -1166,16 +1228,29 @@ TEST_P(PaintLayerTest, FloatLayerUnderFloatLayerUnderInlineLayer) {
   EXPECT_EQ(floating_parent, floating->Parent());
   EXPECT_EQ(floating_parent, floating->ContainingLayer());
   EXPECT_EQ(span, floating_parent->Parent());
-  EXPECT_EQ(span->Parent(), floating_parent->ContainingLayer());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(span, floating_parent->ContainingLayer());
+  } else {
+    EXPECT_EQ(span->Parent(), floating_parent->ContainingLayer());
+  }
 
   EXPECT_EQ(LayoutPoint(50, 50), floating->Location());
   EXPECT_EQ(LayoutPoint(33, 33), floating_parent->Location());
   EXPECT_EQ(LayoutPoint(100, 100), span->Location());
-  EXPECT_EQ(LayoutPoint(-17, -17), floating->VisualOffsetFromAncestor(span));
-  EXPECT_EQ(LayoutPoint(-67, -67),
-            floating_parent->VisualOffsetFromAncestor(span));
-  EXPECT_EQ(LayoutPoint(83, 83), floating->VisualOffsetFromAncestor(
-                                     GetDocument().GetLayoutView()->Layer()));
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(LayoutPoint(83, 83), floating->VisualOffsetFromAncestor(span));
+    EXPECT_EQ(LayoutPoint(33, 33),
+              floating_parent->VisualOffsetFromAncestor(span));
+    EXPECT_EQ(LayoutPoint(183, 183),
+              floating->VisualOffsetFromAncestor(
+                  GetDocument().GetLayoutView()->Layer()));
+  } else {
+    EXPECT_EQ(LayoutPoint(-17, -17), floating->VisualOffsetFromAncestor(span));
+    EXPECT_EQ(LayoutPoint(-67, -67),
+              floating_parent->VisualOffsetFromAncestor(span));
+    EXPECT_EQ(LayoutPoint(83, 83), floating->VisualOffsetFromAncestor(
+                                       GetDocument().GetLayoutView()->Layer()));
+  }
 }
 
 TEST_P(PaintLayerTest, LayerUnderFloatUnderInlineLayer) {
@@ -1195,13 +1270,25 @@ TEST_P(PaintLayerTest, LayerUnderFloatUnderInlineLayer) {
   PaintLayer* span = GetPaintLayerByElementId("span");
 
   EXPECT_EQ(span, child->Parent());
-  EXPECT_EQ(span->Parent(), child->ContainingLayer());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(span, child->ContainingLayer());
+  } else {
+    EXPECT_EQ(span->Parent(), child->ContainingLayer());
+  }
 
   EXPECT_EQ(LayoutPoint(83, 83), child->Location());
   EXPECT_EQ(LayoutPoint(100, 100), span->Location());
-  EXPECT_EQ(LayoutPoint(-17, -17), child->VisualOffsetFromAncestor(span));
-  EXPECT_EQ(LayoutPoint(83, 83), child->VisualOffsetFromAncestor(
-                                     GetDocument().GetLayoutView()->Layer()));
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(LayoutPoint(83, 83), child->VisualOffsetFromAncestor(span));
+    EXPECT_EQ(LayoutPoint(183, 183),
+              child->VisualOffsetFromAncestor(
+                  GetDocument().GetLayoutView()->Layer()));
+
+  } else {
+    EXPECT_EQ(LayoutPoint(-17, -17), child->VisualOffsetFromAncestor(span));
+    EXPECT_EQ(LayoutPoint(83, 83), child->VisualOffsetFromAncestor(
+                                       GetDocument().GetLayoutView()->Layer()));
+  }
 }
 
 TEST_P(PaintLayerTest, CompositingContainerFloatingIframe) {
@@ -1223,8 +1310,12 @@ TEST_P(PaintLayerTest, CompositingContainerFloatingIframe) {
   // A non-positioned iframe still gets a PaintLayer because PaintLayers are
   // forced for all LayoutEmbeddedContent objects. However, such PaintLayers are
   // not stacked.
-  PaintLayer* containing_block = GetPaintLayerByElementId("containingBlock");
-  EXPECT_EQ(containing_block, target->CompositingContainer());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(GetPaintLayerByElementId("span"), target->CompositingContainer());
+  } else {
+    EXPECT_EQ(GetPaintLayerByElementId("containingBlock"),
+              target->CompositingContainer());
+  }
   PaintLayer* composited_container =
       GetPaintLayerByElementId("compositedContainer");
 
@@ -1252,7 +1343,11 @@ TEST_P(PaintLayerTest, CompositingContainerSelfPaintingNonStackedFloat) {
 
   PaintLayer* container = GetPaintLayerByElementId("container");
   PaintLayer* span = GetPaintLayerByElementId("span");
-  EXPECT_EQ(container, target->ContainingLayer());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(span, target->ContainingLayer());
+  } else {
+    EXPECT_EQ(container, target->ContainingLayer());
+  }
   EXPECT_EQ(span, target->CompositingContainer());
 }
 
@@ -1335,7 +1430,11 @@ TEST_P(PaintLayerTest, NeedsRepaintOnSelfPaintingStatusChange) {
                                "overflow: hidden; float: left");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_FALSE(target_layer->IsSelfPaintingLayer());
-  EXPECT_EQ(span_layer->Parent(), target_layer->CompositingContainer());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(span_layer, target_layer->CompositingContainer());
+  } else {
+    EXPECT_EQ(span_layer->Parent(), target_layer->CompositingContainer());
+  }
   EXPECT_TRUE(target_layer->NeedsRepaint());
   EXPECT_TRUE(target_layer->CompositingContainer()->NeedsRepaint());
   EXPECT_TRUE(span_layer->NeedsRepaint());

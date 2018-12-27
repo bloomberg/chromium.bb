@@ -691,8 +691,12 @@ PaintLayer* LayoutObject::PaintingLayer() const {
        // Use containingBlock instead of parentCrossingFrames for floating
        // objects to omit any self-painting layers of inline objects that don't
        // paint the floating object.
-       current = current->IsFloating() ? current->ContainingBlock()
-                                       : current->ParentCrossingFrames()) {
+       // This is only needed for inline-level floats not managed by LayoutNG.
+       // LayoutNG floats are painted by the correct painting layer.
+       current = (current->IsFloating() &&
+                  !current->IsInLayoutNGInlineFormattingContext())
+                     ? current->ContainingBlock()
+                     : current->ParentCrossingFrames()) {
     if (current->HasLayer() &&
         ToLayoutBoxModelObject(current)->Layer()->IsSelfPaintingLayer()) {
       return ToLayoutBoxModelObject(current)->Layer();
@@ -3091,7 +3095,7 @@ LayoutObject* LayoutObject::Container(AncestorSkipInfo* skip_info) const {
     return multicol_container;
   }
 
-  if (IsFloating())
+  if (IsFloating() && !IsInLayoutNGInlineFormattingContext())
     return ContainingBlock(skip_info);
 
   return Parent();
