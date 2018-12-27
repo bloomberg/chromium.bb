@@ -2332,12 +2332,6 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
     if (NeedsLayout() && old_style->GetPosition() != style_->GetPosition())
       MarkContainerChainForLayout();
 
-    // Ditto.
-    // TODO(chrishtr): review this. Why are we checking Needs* at all?
-    if ((NeedsLayoutOverflowRecalc() || NeedsVisualOverflowRecalc()) &&
-        old_style->GetPosition() != style_->GetPosition())
-      MarkContainerChainForOverflowRecalcIfNeeded();
-
     SetNeedsLayoutAndPrefWidthsRecalc(layout_invalidation_reason::kStyleChange);
   } else if (diff.NeedsPositionedMovementLayout()) {
     SetNeedsPositionedMovementLayout();
