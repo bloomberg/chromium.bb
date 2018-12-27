@@ -1441,27 +1441,15 @@ public class TabsTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @RetryOnFailure
     public void testNewTabButton() throws InterruptedException {
-        MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), R.id.close_all_tabs_menu_id);
-        UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
-
-        CriteriaHelper.pollInstrumentationThread(new Criteria("Should be in overview mode") {
-            @Override
-            public boolean isSatisfied() {
-                return mActivityTestRule.getActivity().isInOverviewMode();
-            }
-        });
-
         int initialTabCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
-        Assert.assertEquals(
-                "Tab count is expected to be 0 after closing all the tabs", 0, initialTabCount);
+        showOverviewAndWaitForAnimation();
 
         ChromeTabUtils.clickNewTabButton(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
 
         int newTabCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
-        Assert.assertEquals(
-                "Tab count is expected to be 1 after clicking Newtab button", 1, newTabCount);
+        Assert.assertEquals("Tab count is expected to increment by 1 after clicking new tab button",
+                initialTabCount + 1, newTabCount);
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
         CriteriaHelper.pollInstrumentationThread(new Criteria("Should not be in overview mode") {
             @Override
