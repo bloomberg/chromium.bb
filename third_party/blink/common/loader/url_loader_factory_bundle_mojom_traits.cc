@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/url_loader_factory_bundle_struct_traits.h"
+#include "third_party/blink/public/common/loader/url_loader_factory_bundle_mojom_traits.h"
 
 #include <memory>
 #include <utility>
@@ -11,9 +11,8 @@
 
 namespace mojo {
 
-using Traits =
-    StructTraits<content::mojom::URLLoaderFactoryBundleDataView,
-                 std::unique_ptr<content::URLLoaderFactoryBundleInfo>>;
+using Traits = StructTraits<blink::mojom::URLLoaderFactoryBundleDataView,
+                            std::unique_ptr<blink::URLLoaderFactoryBundleInfo>>;
 
 // static
 network::mojom::URLLoaderFactoryPtrInfo Traits::default_factory(
@@ -28,13 +27,13 @@ network::mojom::URLLoaderFactoryPtrInfo Traits::appcache_factory(
 }
 
 // static
-content::URLLoaderFactoryBundleInfo::SchemeMap
-Traits::scheme_specific_factories(BundleInfoType& bundle) {
+blink::URLLoaderFactoryBundleInfo::SchemeMap Traits::scheme_specific_factories(
+    BundleInfoType& bundle) {
   return std::move(bundle->scheme_specific_factory_infos());
 }
 
 // static
-content::URLLoaderFactoryBundleInfo::OriginMap
+blink::URLLoaderFactoryBundleInfo::OriginMap
 Traits::initiator_specific_factories(BundleInfoType& bundle) {
   return std::move(bundle->initiator_specific_factory_infos());
 }
@@ -45,9 +44,9 @@ bool Traits::bypass_redirect_checks(BundleInfoType& bundle) {
 }
 
 // static
-bool Traits::Read(content::mojom::URLLoaderFactoryBundleDataView data,
+bool Traits::Read(blink::mojom::URLLoaderFactoryBundleDataView data,
                   BundleInfoType* out_bundle) {
-  *out_bundle = std::make_unique<content::URLLoaderFactoryBundleInfo>();
+  *out_bundle = std::make_unique<blink::URLLoaderFactoryBundleInfo>();
 
   (*out_bundle)->default_factory_info() =
       data.TakeDefaultFactory<network::mojom::URLLoaderFactoryPtrInfo>();

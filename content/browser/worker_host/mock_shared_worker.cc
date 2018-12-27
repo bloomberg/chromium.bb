@@ -4,9 +4,9 @@
 
 #include "content/browser/worker_host/mock_shared_worker.h"
 
-#include "content/common/url_loader_factory_bundle.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -109,7 +109,8 @@ void MockSharedWorkerFactory::CreateSharedWorker(
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         main_script_loader_factory,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+        subresource_loader_factories,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     blink::mojom::SharedWorkerHostPtr host,
     blink::mojom::SharedWorkerRequest request,

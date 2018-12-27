@@ -37,12 +37,12 @@ class WebSharedWorker;
 
 namespace blink {
 class MessagePortChannel;
+class URLLoaderFactoryBundleInfo;
 }
 
 namespace content {
 
 class HostChildURLLoaderFactoryBundle;
-class URLLoaderFactoryBundleInfo;
 class WebApplicationCacheHostImpl;
 struct NavigationResponseOverrideParameters;
 
@@ -71,7 +71,8 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           main_script_loader_factory,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          subresource_loader_factories,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       blink::mojom::SharedWorkerHostPtr host,
       blink::mojom::SharedWorkerRequest request,

@@ -78,7 +78,8 @@ class SharedWorkerHostTest : public testing::Test {
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         main_script_loader_factory;
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params;
-    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories;
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+        subresource_loader_factories;
     base::Optional<SubresourceLoaderParams> subresource_loader_params;
 
     // Set up various mocks based on NetworkService/S13nServiceWorker
@@ -91,7 +92,8 @@ class SharedWorkerHostTest : public testing::Test {
           &provider_info);
 
       main_script_load_params = blink::mojom::WorkerMainScriptLoadParams::New();
-      subresource_loader_factories.reset(new URLLoaderFactoryBundleInfo());
+      subresource_loader_factories.reset(
+          new blink::URLLoaderFactoryBundleInfo());
       subresource_loader_params = SubresourceLoaderParams();
 
       network::mojom::URLLoaderFactoryPtr loader_factory_ptr;
@@ -116,10 +118,10 @@ class SharedWorkerHostTest : public testing::Test {
       mojo::MakeStrongBinding(
           std::make_unique<NotImplementedNetworkURLLoaderFactory>(),
           mojo::MakeRequest(&default_factory_ptr));
-      subresource_loader_factories.reset(new URLLoaderFactoryBundleInfo(
+      subresource_loader_factories.reset(new blink::URLLoaderFactoryBundleInfo(
           default_factory_ptr.PassInterface(),
-          URLLoaderFactoryBundleInfo::SchemeMap(),
-          URLLoaderFactoryBundleInfo::OriginMap(),
+          blink::URLLoaderFactoryBundleInfo::SchemeMap(),
+          blink::URLLoaderFactoryBundleInfo::OriginMap(),
           true /* bypass_redirect_checks */));
     }
 

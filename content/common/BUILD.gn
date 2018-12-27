@@ -255,8 +255,6 @@ source_set("common") {
     "throttling_url_loader.h",
     "unique_name_helper.cc",
     "unique_name_helper.h",
-    "url_loader_factory_bundle.cc",
-    "url_loader_factory_bundle.h",
     "url_schemes.cc",
     "url_schemes.h",
     "user_agent.cc",
@@ -510,7 +508,6 @@ mojom("mojo_bindings") {
     "renderer_host.mojom",
     "service_worker/embedded_worker.mojom",
     "shared_worker/shared_worker_factory.mojom",
-    "url_loader_factory_bundle.mojom",
     "widget.mojom",
   ]
 

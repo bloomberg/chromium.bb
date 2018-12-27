@@ -5,9 +5,9 @@
 #include "content/renderer/shared_worker/shared_worker_factory_impl.h"
 
 #include "base/memory/ptr_util.h"
-#include "content/common/url_loader_factory_bundle.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 
 namespace content {
 
@@ -33,7 +33,8 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         main_script_loader_factory,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+        subresource_loader_factories,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     blink::mojom::SharedWorkerHostPtr host,
     blink::mojom::SharedWorkerRequest request,

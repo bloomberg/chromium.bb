@@ -10,8 +10,11 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 
-namespace content {
+namespace blink {
 class URLLoaderFactoryBundleInfo;
+}  // namespace blink
+
+namespace content {
 
 class SharedWorkerFactoryImpl : public mojom::SharedWorkerFactory {
  public:
@@ -34,7 +37,8 @@ class SharedWorkerFactoryImpl : public mojom::SharedWorkerFactory {
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           main_script_loader_factory,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          subresource_loader_factories,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       blink::mojom::SharedWorkerHostPtr host,
       blink::mojom::SharedWorkerRequest request,

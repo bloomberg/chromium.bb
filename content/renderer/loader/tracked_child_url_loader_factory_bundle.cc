@@ -174,12 +174,12 @@ HostChildURLLoaderFactoryBundle::CloneWithoutAppCacheFactory() {
 }
 
 void HostChildURLLoaderFactoryBundle::UpdateThisAndAllClones(
-    std::unique_ptr<URLLoaderFactoryBundleInfo> info) {
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {
   DCHECK(RenderThread::Get()) << "Should run on the main renderer thread";
   DCHECK(observer_list_);
 
   auto partial_bundle = base::MakeRefCounted<ChildURLLoaderFactoryBundle>();
-  static_cast<URLLoaderFactoryBundle*>(partial_bundle.get())
+  static_cast<blink::URLLoaderFactoryBundle*>(partial_bundle.get())
       ->Update(std::move(info));
 
   for (const auto& iter : *observer_list_) {

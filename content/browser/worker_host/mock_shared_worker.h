@@ -21,8 +21,11 @@
 
 class GURL;
 
-namespace content {
+namespace blink {
 class URLLoaderFactoryBundleInfo;
+}  // namespace blink
+
+namespace content {
 
 class MockSharedWorker : public blink::mojom::SharedWorker {
  public:
@@ -78,7 +81,8 @@ class MockSharedWorkerFactory : public mojom::SharedWorkerFactory {
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           main_script_loader_factory,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          subresource_loader_factories,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       blink::mojom::SharedWorkerHostPtr host,
       blink::mojom::SharedWorkerRequest request,

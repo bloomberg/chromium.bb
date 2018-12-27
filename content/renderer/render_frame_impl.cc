@@ -3199,7 +3199,8 @@ void RenderFrameImpl::CommitNavigation(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+        subresource_loader_factories,
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
@@ -3338,7 +3339,8 @@ void RenderFrameImpl::CommitFailedNavigation(
     bool has_stale_copy_in_cache,
     int error_code,
     const base::Optional<std::string>& error_page_content,
-    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+        subresource_loader_factories,
     CommitFailedNavigationCallback callback) {
   TRACE_EVENT1("navigation,benchmark,rail",
                "RenderFrameImpl::CommitFailedNavigation", "id", routing_id_);
@@ -3584,7 +3586,7 @@ void RenderFrameImpl::HandleRendererDebugURL(const GURL& url) {
 }
 
 void RenderFrameImpl::UpdateSubresourceLoaderFactories(
-    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders) {
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders) {
   DCHECK(loader_factories_);
   DCHECK(loader_factories_->IsHostChildURLLoaderFactoryBundle());
   static_cast<HostChildURLLoaderFactoryBundle*>(loader_factories_.get())
@@ -6522,7 +6524,7 @@ ChildURLLoaderFactoryBundle* RenderFrameImpl::GetLoaderFactoryBundle() {
 }
 
 void RenderFrameImpl::SetupLoaderFactoryBundle(
-    std::unique_ptr<URLLoaderFactoryBundleInfo> info,
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info,
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     network::mojom::URLLoaderFactoryPtr prefetch_loader_factory) {

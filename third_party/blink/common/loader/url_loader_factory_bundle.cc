@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/url_loader_factory_bundle.h"
+#include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 
 #include <utility>
 
@@ -10,7 +10,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -112,7 +112,7 @@ URLLoaderFactoryBundle::Clone() {
   if (default_factory_)
     default_factory_->Clone(mojo::MakeRequest(&default_factory_info));
 
-  auto info = std::make_unique<URLLoaderFactoryBundleInfo>(
+  auto info = std::make_unique<blink::URLLoaderFactoryBundleInfo>(
       std::move(default_factory_info),
       ClonePtrMapToPtrInfoMap(scheme_specific_factories_),
       ClonePtrMapToPtrInfoMap(initiator_specific_factories_),
@@ -141,4 +141,4 @@ void URLLoaderFactoryBundle::Update(
   bypass_redirect_checks_ = info->bypass_redirect_checks();
 }
 
-}  // namespace content
+}  // namespace blink
