@@ -53,7 +53,7 @@ class CSPHandler : public ManifestHandler {
   bool ParseExtensionPagesCSP(Extension* extension,
                               base::string16* error,
                               const std::string& manifest_key,
-                              const std::string& content_security_policy);
+                              const base::Value* content_security_policy);
 
   // Sets the default CSP value for the extension.
   bool SetDefaultExtensionPagesCSP(Extension* extension);
