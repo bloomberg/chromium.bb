@@ -18,19 +18,31 @@ namespace android_sms {
 
 namespace {
 
-const char kAndroidMessagesProdUrl[] = "https://messages.android.com/";
+const char kAndroidMessagesUrl[] = "https://messages.android.com/";
+const char kGoogleMessagesUrl[] = "https://messages.google.com/";
+
+GURL GetAndroidMessagesURL(bool use_google_url_if_applicable) {
+  // If a custom URL was passed via a command line argument, use it.
+  std::string url_from_command_line_arg =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kAlternateAndroidMessagesUrl);
+  if (!url_from_command_line_arg.empty())
+    return GURL(url_from_command_line_arg);
+
+  return use_google_url_if_applicable ? GURL(kGoogleMessagesUrl)
+                                      : GURL(kAndroidMessagesUrl);
+}
 
 }  // namespace
 
 GURL GetAndroidMessagesURL() {
-  std::string url_from_command_line_arg =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kAlternateAndroidMessagesUrl);
+  return GetAndroidMessagesURL(
+      base::FeatureList::IsEnabled(features::kUseMessagesGoogleComDomain));
+}
 
-  if (!url_from_command_line_arg.empty())
-    return GURL(url_from_command_line_arg);
-
-  return GURL(kAndroidMessagesProdUrl);
+GURL GetAndroidMessagesURLOld() {
+  return GetAndroidMessagesURL(
+      !base::FeatureList::IsEnabled(features::kUseMessagesGoogleComDomain));
 }
 
 }  // namespace android_sms
