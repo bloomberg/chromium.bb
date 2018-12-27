@@ -28,6 +28,7 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/renderer/platform/fonts/text_run_paint_info.h"
@@ -57,6 +58,34 @@
 #include "third_party/skia/include/utils/SkNullCanvas.h"
 
 namespace blink {
+
+class GraphicsContext::HighContrastFlags final {
+  STACK_ALLOCATED();
+
+ public:
+  // This helper's lifetime should never exceed |flags|'.
+  HighContrastFlags(const GraphicsContext* gc, const PaintFlags& flags) {
+    if (!gc->high_contrast_filter_) {
+      flags_ = &flags;
+    } else {
+      high_contrast_flags_ = flags;
+      if (flags.HasShader()) {
+        high_contrast_flags_->setColorFilter(gc->high_contrast_filter_);
+      } else {
+        high_contrast_flags_->setColor(
+            gc->high_contrast_filter_->filterColor(flags.getColor()));
+      }
+
+      flags_ = &high_contrast_flags_.value();
+    }
+  }
+
+  operator const PaintFlags&() const { return *flags_; }
+
+ private:
+  const PaintFlags* flags_;
+  base::Optional<PaintFlags> high_contrast_flags_;
+};
 
 GraphicsContext::GraphicsContext(PaintController& paint_controller,
                                  DisabledMode disable_context_or_painting,
@@ -637,7 +666,7 @@ void GraphicsContext::DrawLine(const IntPoint& point1, const IntPoint& point2) {
   // probably worth the speed up of no square root, which also won't be exact.
   FloatSize disp = p2 - p1;
   int length = SkScalarRoundToInt(disp.Width() + disp.Height());
-  PaintFlags flags(ImmutableState()->StrokeFlags(length));
+  const HighContrastFlags flags(this, ImmutableState()->StrokeFlags(length));
 
   if (pen_style == kDottedStroke) {
     if (StrokeData::StrokeIsDashed(width, pen_style)) {
@@ -664,8 +693,7 @@ void GraphicsContext::DrawLine(const IntPoint& point1, const IntPoint& point2) {
   }
 
   AdjustLineToPixelBoundaries(p1, p2, width);
-  canvas_->drawLine(p1.X(), p1.Y(), p2.X(), p2.Y(),
-                    ApplyHighContrastFilter(flags));
+  canvas_->drawLine(p1.X(), p1.Y(), p2.X(), p2.Y(), flags);
 }
 
 void GraphicsContext::DrawLineForText(const FloatPoint& pt, float width) {
@@ -743,7 +771,7 @@ void GraphicsContext::DrawTextInternal(const Font& font,
     return;
 
   font.DrawText(canvas_, text_info, point, device_scale_factor_,
-                ApplyHighContrastFilter(flags));
+                HighContrastFlags(this, flags));
 }
 
 void GraphicsContext::DrawText(const Font& font,
@@ -788,7 +816,7 @@ void GraphicsContext::DrawTextInternal(const Font& font,
 
   DrawTextPasses([&font, &text_info, &point, this](const PaintFlags& flags) {
     font.DrawText(canvas_, text_info, point, device_scale_factor_,
-                  ApplyHighContrastFilter(flags));
+                  HighContrastFlags(this, flags));
   });
 }
 
@@ -816,7 +844,7 @@ void GraphicsContext::DrawEmphasisMarksInternal(const Font& font,
       [&font, &text_info, &mark, &point, this](const PaintFlags& flags) {
         font.DrawEmphasisMarks(canvas_, text_info, mark, point,
                                device_scale_factor_,
-                               ApplyHighContrastFilter(flags));
+                               HighContrastFlags(this, flags));
       });
 }
 
@@ -847,7 +875,7 @@ void GraphicsContext::DrawBidiText(
                   this](const PaintFlags& flags) {
     if (font.DrawBidiText(canvas_, run_info, point,
                           custom_font_not_ready_action, device_scale_factor_,
-                          ApplyHighContrastFilter(flags)))
+                          HighContrastFlags(this, flags)))
       paint_controller_.SetTextPainted();
   });
 }
@@ -1011,7 +1039,7 @@ void GraphicsContext::DrawOval(const SkRect& oval, const PaintFlags& flags) {
     return;
   DCHECK(canvas_);
 
-  canvas_->drawOval(oval, ApplyHighContrastFilter(flags));
+  canvas_->drawOval(oval, HighContrastFlags(this, flags));
 }
 
 void GraphicsContext::DrawPath(const SkPath& path, const PaintFlags& flags) {
@@ -1019,7 +1047,7 @@ void GraphicsContext::DrawPath(const SkPath& path, const PaintFlags& flags) {
     return;
   DCHECK(canvas_);
 
-  canvas_->drawPath(path, ApplyHighContrastFilter(flags));
+  canvas_->drawPath(path, HighContrastFlags(this, flags));
 }
 
 void GraphicsContext::DrawRect(const SkRect& rect, const PaintFlags& flags) {
@@ -1027,7 +1055,7 @@ void GraphicsContext::DrawRect(const SkRect& rect, const PaintFlags& flags) {
     return;
   DCHECK(canvas_);
 
-  canvas_->drawRect(rect, ApplyHighContrastFilter(flags));
+  canvas_->drawRect(rect, HighContrastFlags(this, flags));
 }
 
 void GraphicsContext::DrawRRect(const SkRRect& rrect, const PaintFlags& flags) {
@@ -1035,7 +1063,7 @@ void GraphicsContext::DrawRRect(const SkRRect& rrect, const PaintFlags& flags) {
     return;
   DCHECK(canvas_);
 
-  canvas_->drawRRect(rrect, ApplyHighContrastFilter(flags));
+  canvas_->drawRRect(rrect, HighContrastFlags(this, flags));
 }
 
 void GraphicsContext::FillPath(const Path& path_to_fill) {
@@ -1424,19 +1452,6 @@ Color GraphicsContext::ApplyHighContrastFilter(const Color& input) const {
   if (!high_contrast_filter_)
     return input;
   return Color(high_contrast_filter_->filterColor(input.Rgb()));
-}
-
-PaintFlags GraphicsContext::ApplyHighContrastFilter(
-    const PaintFlags& input) const {
-  PaintFlags output(input);
-  if (!high_contrast_filter_)
-    return output;
-  if (output.HasShader()) {
-    output.setColorFilter(high_contrast_filter_);
-  } else {
-    output.setColor(high_contrast_filter_->filterColor(output.getColor()));
-  }
-  return output;
 }
 
 }  // namespace blink
