@@ -4,7 +4,7 @@ Unit tests for namespaced logging system.
 Also serves as a larger test of async test functions, and of the logging system.
 `;
 
-import { StringLogger, TestTree } from "../../../framework/src/index.js";
+import { StringLogger, TestTree } from "../../framework/index.js";
 
 export function add(tree: TestTree) {
   tree.test("namespace_path", (log) => {

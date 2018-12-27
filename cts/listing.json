@@ -1,7 +1,0 @@
-{
-  "unittests/": {
-    "description": "Unit tests for CTS framework."
-  },
-  "unittests/logger": {},
-  "unittests/params": {}
-}

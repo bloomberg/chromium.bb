@@ -9,7 +9,7 @@ import {
   poptions,
   punit,
   TestTree,
-} from "../../../framework/src/index.js";
+} from "../../framework/index.js";
 
 export function add(tree: TestTree) {
   tree.test("test_sync", (log) => {
