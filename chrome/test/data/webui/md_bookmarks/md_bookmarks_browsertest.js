@@ -54,6 +54,7 @@ MaterialBookmarksAppTest.prototype = {
 
   extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
     'app_test.js',
+    ROOT_PATH + 'ui/webui/resources/js/util.js',
   ]),
 };
 
@@ -67,6 +68,7 @@ MaterialBookmarksCommandManagerTest.prototype = {
   __proto__: MaterialBookmarksBrowserTest.prototype,
 
   extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+    '../settings/test_util.js',
     'command_manager_test.js',
   ]),
 };

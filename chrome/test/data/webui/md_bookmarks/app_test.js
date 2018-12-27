@@ -89,4 +89,12 @@ suite('<bookmarks-app>', function() {
     MockInteractions.keyDownOn(item, 40, [], 'ArrowDown');
     assertEquals(null, getFocusAttribute());
   });
+
+  test('when select-toolbar-search is fired, focus on search input', () => {
+    const searchInput =
+        app.$$('bookmarks-toolbar').searchField.getSearchInput();
+    assertNotEquals(searchInput, getDeepActiveElement());
+    app.dispatchEvent(new Event('select-toolbar-search'));
+    assertEquals(searchInput, getDeepActiveElement());
+  });
 });
