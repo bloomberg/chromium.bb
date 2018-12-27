@@ -588,7 +588,7 @@ void NewPasswordFormManager::Fill() {
   if (!driver_)
     return;
 
-  if (!IsBlacklisted() && observed_password_form->is_new_password_reliable) {
+  if (observed_password_form->is_new_password_reliable && !IsBlacklisted()) {
     driver_->FormEligibleForGenerationFound(
         {.new_password_renderer_id =
              observed_password_form->new_password_element_renderer_id,

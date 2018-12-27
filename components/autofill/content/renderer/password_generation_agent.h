@@ -156,6 +156,11 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // Stops treating a password as generated.
   void PasswordNoLongerGenerated();
 
+  // Creates |current_generation_item_| for |element| if |element| is a
+  // generation enabled element. If |current_generation_item_| is already
+  // created for |element| it is not recreated.
+  void MaybeCreateCurrentGenerationItem(const blink::WebInputElement& element);
+
   // Runs HTML parsing based classifier and saves its outcome to proto.
   // TODO(crbug.com/621442): Remove client-side form classifier when server-side
   // classifier is ready.
@@ -201,6 +206,10 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // element after the user triggered a generation request, it is better to save
   // the last focused password element.
   blink::WebInputElement last_focused_password_element_;
+
+  // Contains correspondence between generaiton enabled element and data for
+  // generation.
+  std::map<uint32_t, NewPasswordFormGenerationData> generation_enabled_fields_;
 
   // If this feature is enabled. Controlled by Finch.
   bool enabled_;

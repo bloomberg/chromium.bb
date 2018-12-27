@@ -186,7 +186,6 @@ TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestion) {
     if (!test_case.current_password_present)
       observed_form.password_element.clear();
 
-    EXPECT_CALL(driver_, AllowPasswordGenerationForForm(observed_form));
     PasswordFormFillData fill_data;
     EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
     EXPECT_CALL(client_, PasswordWasAutofilled(_, _, _));
@@ -198,7 +197,6 @@ TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestion) {
     // In all cases, fill on load should not be prevented. If there is no
     // current-password field, the renderer will not fill anyway.
     EXPECT_EQ(LikelyFormFilling::kFillOnPageLoad, likely_form_filling);
-    EXPECT_FALSE(fill_data.wait_for_username);
   }
 }
 

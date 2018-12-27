@@ -308,6 +308,7 @@ void PasswordGenerationAgent::DidCommitProvisionalLoad(
   automatic_generation_element_.Reset();
   current_generation_item_.reset();
   last_focused_password_element_.Reset();
+  generation_enabled_fields_.clear();
 }
 
 void PasswordGenerationAgent::DidFinishDocumentLoad() {
@@ -488,7 +489,7 @@ void PasswordGenerationAgent::FoundFormsEligibleForGeneration(
 
 void PasswordGenerationAgent::FoundFormEligibleForGeneration(
     const NewPasswordFormGenerationData& form) {
-  // TODO(https://crbug.com/866444): Implement processing |form|.
+  generation_enabled_fields_[form.new_password_renderer_id] = form;
 }
 
 void PasswordGenerationAgent::UserTriggeredGeneratePassword() {
@@ -649,7 +650,12 @@ bool PasswordGenerationAgent::FocusedNodeHasChanged(
   if (element && element->IsPasswordFieldForAutofill())
     last_focused_password_element_ = *element;
 
-  if (!element || !current_generation_item_ ||
+  if (!element)
+    return false;
+
+  MaybeCreateCurrentGenerationItem(*element);
+
+  if (!current_generation_item_ ||
       *element != current_generation_item_->generation_element_) {
     return false;
   }
@@ -819,6 +825,42 @@ void PasswordGenerationAgent::PasswordNoLongerGenerated() {
   std::unique_ptr<PasswordForm> presaved_form(CreatePasswordFormToPresave());
   if (presaved_form)
     GetPasswordManagerClient()->PasswordNoLongerGenerated(*presaved_form);
+}
+
+void PasswordGenerationAgent::MaybeCreateCurrentGenerationItem(
+    const WebInputElement& element) {
+  // Do not create |current_generation_item_| if it already is created for
+  // |element| or the user accepted generated password. So if the user accepted
+  // the generated password, generation is not offered on any other field.
+  if (current_generation_item_ &&
+      (current_generation_item_->generation_element_ == element ||
+       current_generation_item_->password_is_generated_))
+    return;
+
+  auto it =
+      generation_enabled_fields_.find(element.UniqueRendererFormControlId());
+  if (it == generation_enabled_fields_.end())
+    return;
+
+  std::unique_ptr<PasswordForm> password_form =
+      element.Form().IsNull()
+          ? password_agent_->GetPasswordFormFromUnownedInputElements()
+          : password_agent_->GetPasswordFormFromWebForm(element.Form());
+
+  std::vector<blink::WebInputElement> passwords = {element};
+
+  WebFormControlElement confirmation_password =
+      form_util::FindFormControlElementsByUniqueRendererId(
+          element.GetDocument(), it->second.confirmation_password_renderer_id);
+
+  if (!confirmation_password.IsNull()) {
+    WebInputElement* input = ToWebInputElement(&confirmation_password);
+    if (input)
+      passwords.push_back(*input);
+  }
+
+  current_generation_item_.reset(new GenerationItemInfo(
+      element, std::move(*password_form), std::move(passwords)));
 }
 
 const mojom::PasswordManagerDriverAssociatedPtr&
