@@ -16,6 +16,7 @@
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/common/navigation_params.mojom.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/ssl/ssl_info.h"
@@ -213,6 +214,7 @@ bool MaybeCreateProxyForInterception(
 }
 
 }  // namespace
+
 bool WillCreateURLLoaderFactory(
     RenderFrameHostImpl* rfh,
     bool is_navigation,
@@ -246,6 +248,22 @@ bool WillCreateURLLoaderFactory(
                        had_interceptors;
   }
   return had_interceptors;
+}
+
+bool WillCreateURLLoaderFactory(
+    RenderFrameHostImpl* rfh,
+    bool is_navigation,
+    bool is_download,
+    std::unique_ptr<network::mojom::URLLoaderFactory>* factory) {
+  network::mojom::URLLoaderFactoryPtrInfo proxied_factory;
+  network::mojom::URLLoaderFactoryRequest request =
+      mojo::MakeRequest(&proxied_factory);
+  if (!WillCreateURLLoaderFactory(rfh, is_navigation, is_download, &request))
+    return false;
+  mojo::MakeStrongBinding(std::move(*factory), std::move(request));
+  *factory = std::make_unique<DevToolsURLLoaderFactoryAdapter>(
+      mojo::MakeProxy(std::move(proxied_factory)));
+  return true;
 }
 
 void OnNavigationRequestWillBeSent(

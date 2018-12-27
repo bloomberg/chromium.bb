@@ -1676,8 +1676,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
         true /* is_navigation */, navigation_request_initiator,
         &factory_request, &header_client, &bypass_redirect_checks);
     if (devtools_instrumentation::WillCreateURLLoaderFactory(
-            frame_tree_node->current_frame_host(), true, false,
-            &factory_request)) {
+            frame_tree_node->current_frame_host(), true /* is_navigation */,
+            false /* is_download */, &factory_request)) {
       use_proxy = true;
     }
     if (use_proxy) {
@@ -1696,7 +1696,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   non_network_url_loader_factories_[url::kAboutScheme] =
       std::make_unique<AboutURLLoaderFactory>();
 
-  non_network_url_loader_factories_[url::kFileScheme] =
+  std::unique_ptr<network::mojom::URLLoaderFactory> file_url_loader_factory =
       std::make_unique<FileURLLoaderFactory>(
           partition->browser_context()->GetPath(),
           BrowserContext::GetSharedCorsOriginAccessList(
@@ -1704,6 +1704,15 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
           base::CreateSequencedTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+
+  if (frame_tree_node) {  // May be nullptr in some unit tests.
+    devtools_instrumentation::WillCreateURLLoaderFactory(
+        frame_tree_node->current_frame_host(), true /* is_navigation */,
+        false /* is_download */, &file_url_loader_factory);
+  }
+
+  non_network_url_loader_factories_[url::kFileScheme] =
+      std::move(file_url_loader_factory);
 
 #if defined(OS_ANDROID)
   non_network_url_loader_factories_[url::kContentScheme] =
