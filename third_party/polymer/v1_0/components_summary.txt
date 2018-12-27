@@ -208,12 +208,6 @@ Tree: v2.0.1
 Revision: d0884e8508263e680fd9ee6c11b52c74a416f27f
 Tree link: https://github.com/PolymerElements/paper-ripple/tree/v2.0.1
 
-Name: paper-slider
-Repository: https://github.com/PolymerElements/paper-slider.git
-Tree: v2.0.2
-Revision: 2abcf4052ce04ad450b06f6800f11055cb26ce5b
-Tree link: https://github.com/PolymerElements/paper-slider/tree/v2.0.2
-
 Name: paper-spinner
 Repository: https://github.com/PolymerElements/paper-spinner.git
 Tree: v2.0.0

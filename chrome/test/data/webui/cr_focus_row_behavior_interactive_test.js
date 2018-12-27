@@ -34,11 +34,6 @@ CrFocusRowBehaviorTest.prototype = {
     PolymerTest.prototype.setUp.call(this);
     // We aren't loading the main document.
     this.accessibilityAuditConfig.ignoreSelectors('humanLangMissing', 'html');
-
-    // TODO(michaelpg): Re-enable after bringing in fix for
-    // https://github.com/PolymerElements/paper-slider/issues/131.
-    this.accessibilityAuditConfig.ignoreSelectors(
-        'badAriaAttributeValue', 'paper-slider');
   },
 };
 

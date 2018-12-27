@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview
- * settings-slider wraps a paper-slider. It maps the slider's values from a
+ * settings-slider wraps a cr-slider. It maps the slider's values from a
  * linear UI range to a range of real values.  When |value| does not map exactly
  * to a tick mark, it interpolates to the nearest tick.
  */
@@ -27,9 +27,9 @@ Polymer({
     },
 
     /**
-     * A scale factor used to support fractional pref values since paper-slider
-     * only supports integers. This is not compatible with |ticks|,
-     * i.e. if |scale| is not 1 then |ticks| must be empty.
+     * A scale factor used to support fractional pref values. This is not
+     * compatible with |ticks|, i.e. if |scale| is not 1 then |ticks| must be
+     * empty.
      */
     scale: {
       type: Number,

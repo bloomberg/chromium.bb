@@ -121,67 +121,6 @@ index 082b0c1e4af2..d985829702a2 100644
 \ No newline at end of file
 +</body></html>
 \ No newline at end of file
-diff --git a/components-chromium/paper-slider/paper-slider.html b/components-chromium/paper-slider/paper-slider.html
-index 233808adc822..4117f3590a61 100644
---- a/components-chromium/paper-slider/paper-slider.html
-+++ b/components-chromium/paper-slider/paper-slider.html
-@@ -12,7 +12,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
- <link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html">
- <link rel="import" href="../iron-range-behavior/iron-range-behavior.html">
- <link rel="import" href="../paper-behaviors/paper-inky-focus-behavior.html">
--<link rel="import" href="../paper-input/paper-input.html">
- <link rel="import" href="../paper-progress/paper-progress.html">
- <link rel="import" href="../paper-styles/color.html">
- 
-@@ -279,6 +278,7 @@ Custom property | Description | Default
- 
-       .pin.expand > .slider-knob > .slider-knob-inner::after {
-         transform: scale(1) translate(0, -17px);
-+        @apply --paper-slider-pin-text;
-       }
- 
-       /* paper-input */
-@@ -330,11 +330,6 @@ Custom property | Description | Default
-           <div class="slider-knob-inner" value$="[[immediateValue]]"></div>
-       </div>
-     </div>
--
--    <template is="dom-if" if="[[editable]]">
--      <paper-input id="input" type="number" step="[[step]]" min="[[min]]" max="[[max]]" class="slider-input" disabled$="[[disabled]]" value="[[immediateValue]]" on-change="_changeValue" on-keydown="_inputKeyDown" no-label-float="">
--      </paper-input>
--    </template>
-   </template>
- 
-   </dom-module>
-diff --git a/components-chromium/paper-slider/paper-slider-extracted.js b/components-chromium/paper-slider/paper-slider-extracted.js
-index 2e63d3731be1..217c7ff1414c 100644
---- a/components-chromium/paper-slider/paper-slider-extracted.js
-+++ b/components-chromium/paper-slider/paper-slider-extracted.js
-@@ -385,24 +385,6 @@ Polymer({
-         this._rippleContainer = this.$.sliderKnob;
-         return Polymer.PaperInkyFocusBehaviorImpl._createRipple.call(this);
-       },
--
--      // Hide the ripple when user is not interacting with keyboard.
--      // This behavior is different from other ripple-y controls, but is
--      // according to spec: https://www.google.com/design/spec/components/sliders.html
--      _focusedChanged: function(receivedFocusFromKeyboard) {
--        if (receivedFocusFromKeyboard) {
--          this.ensureRipple();
--        }
--        if (this.hasRipple()) {
--          // note, ripple must be un-hidden prior to setting `holdDown`
--          if (receivedFocusFromKeyboard) {
--            this._ripple.style.display = '';
--          } else {
--            this._ripple.style.display = 'none';
--          }
--          this._ripple.holdDown = receivedFocusFromKeyboard;
--        }
--      }
-     });
- 
-     /**
 diff --git a/components-chromium/paper-input/paper-input-container.html b/components-chromium/paper-input/paper-input-container.html
 index 55714942c93c..46fb9adf6a04 100644
 --- a/components-chromium/paper-input/paper-input-container.html
@@ -189,7 +128,7 @@ index 55714942c93c..46fb9adf6a04 100644
 @@ -254,8 +254,8 @@ This element is `display:block` by default, but you can set the `inline` attribu
          @apply --paper-input-container-label-floating;
        }
- 
+
 -      :host(:dir(rtl)) .input-content.label-is-floating ::slotted(label),
 -      :host(:dir(rtl)) .input-content.label-is-floating ::slotted(.paper-input-label) {
 +      :host-context([dir="rtl"]) .input-content.label-is-floating ::slotted(label),
@@ -218,6 +157,6 @@ index 7306c651407e..9c88699a3924 100644
       */
 -    const legacyElementBase = Polymer.DirMixin(Polymer.GestureEventListeners(Polymer.ElementMixin(base)));
 +    const legacyElementBase = Polymer.GestureEventListeners(Polymer.ElementMixin(base));
- 
+
      /**
       * Map of simple names to touch action names

@@ -666,8 +666,7 @@ cr.define('device_page_tests', function() {
             expectEquals(500, keyboardPage.$$('#delaySlider').pref.value);
             expectEquals(500, keyboardPage.$$('#repeatRateSlider').pref.value);
 
-            // Test interaction with the settings-slider's underlying
-            // paper-slider.
+            // Test interaction with the settings-slider's underlying cr-slider.
             MockInteractions.pressAndReleaseKeyOn(
                 keyboardPage.$$('#delaySlider').$$('cr-slider'), 37 /* left */,
                 [], 'ArrowLeft');
