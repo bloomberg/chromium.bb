@@ -211,8 +211,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
               allowSwitchSyncAccount:(BOOL)allowSwitchSyncAccount {
   DCHECK(browserState);
   UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
-  self =
-      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
+  self = [super initWithLayout:layout
+                         style:CollectionViewControllerStyleDefault];
   if (self) {
     _allowSwitchSyncAccount = allowSwitchSyncAccount;
     _browserState = browserState;

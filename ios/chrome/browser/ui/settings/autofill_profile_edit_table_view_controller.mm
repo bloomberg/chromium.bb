@@ -95,9 +95,8 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
             personalDataManager:(autofill::PersonalDataManager*)dataManager {
   DCHECK(dataManager);
 
-  self =
-      [super initWithTableViewStyle:UITableViewStyleGrouped
-                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
+  self = [super initWithTableViewStyle:UITableViewStyleGrouped
+                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     _personalDataManager = dataManager;
     _autofillProfile = profile;

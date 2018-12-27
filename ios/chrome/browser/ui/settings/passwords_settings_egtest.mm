@@ -219,6 +219,13 @@ id<GREYMatcher> DeleteButtonAtBottom() {
   return grey_accessibilityID(kSettingsToolbarDeleteButtonId);
 }
 
+// Return the edit button from the navigation bar.
+id<GREYMatcher> NavigationBarEditButton() {
+  return grey_allOf(chrome_test_util::ButtonWithAccessibilityLabelId(
+                        IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON),
+                    grey_userInteractionEnabled(), nil);
+}
+
 // This is similar to grey_ancestor, but only limited to the immediate parent.
 id<GREYMatcher> MatchParentWith(id<GREYMatcher> parentMatcher) {
   MatchesBlock matches = ^BOOL(id element) {
@@ -401,9 +408,7 @@ void OpenPasswordSettings() {
 
 // Tap Edit in any settings view.
 void TapEdit() {
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
+  [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       performAction:grey_tap()];
 }
 
@@ -670,9 +675,7 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 
   // Finally, verify that the Edit button is visible and disabled, because there
   // are no other password entries left for deletion via the "Edit" mode.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
+  [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
                                    grey_not(grey_enabled()), nil)];
 
@@ -732,9 +735,7 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 
   // Finally, verify that the Edit button is visible and disabled, because there
   // are no other password entries left for deletion via the "Edit" mode.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
+  [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
                                    grey_not(grey_enabled()), nil)];
 
@@ -787,9 +788,7 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 
   // Finally, verify that the Edit button is visible and disabled, because there
   // are no other password entries left for deletion via the "Edit" mode.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
+  [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
                                    grey_not(grey_enabled()), nil)];
 
@@ -1473,9 +1472,7 @@ PasswordForm CreateSampleFormWithIndex(int index) {
       performAction:grey_tap()];
 
   // Verify that the Edit button is visible and disabled.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
+  [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
                                    grey_not(grey_enabled()), nil)];
 

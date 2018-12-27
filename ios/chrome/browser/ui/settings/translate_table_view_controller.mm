@@ -68,9 +68,8 @@ NSString* const kTranslateSettingsCategory = @"ChromeTranslateSettings";
 
 - (instancetype)initWithPrefs:(PrefService*)prefs {
   DCHECK(prefs);
-  self =
-      [super initWithTableViewStyle:UITableViewStyleGrouped
-                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
+  self = [super initWithTableViewStyle:UITableViewStyleGrouped
+                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     _prefs = prefs;
     _translationEnabled = [[PrefBackedBoolean alloc]

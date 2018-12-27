@@ -64,9 +64,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (instancetype)initWithCreditCard:(const autofill::CreditCard&)creditCard
                personalDataManager:(autofill::PersonalDataManager*)dataManager {
-  self =
-      [super initWithTableViewStyle:UITableViewStyleGrouped
-                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
+  self = [super initWithTableViewStyle:UITableViewStyleGrouped
+                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     DCHECK(dataManager);
 
