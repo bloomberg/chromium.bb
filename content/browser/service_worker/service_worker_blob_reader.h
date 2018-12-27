@@ -11,6 +11,10 @@
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
 
+namespace storage {
+class BlobDataHandle;
+}
+
 namespace content {
 
 // Reads a blob response for ServiceWorkerURLRequestJob.

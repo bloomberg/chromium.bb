@@ -128,11 +128,9 @@ struct FetchAPIRequest {
   FetchAPIRequestHeaders headers;
 
   // Note: |blob| and |body| are mutually exclusive.
-  // |blob| is used in implementing Background Fetch APIs, also used to
-  // represent the FetchEvent#request#body dispatched to service workers for
-  // non-S13nServiceWorker case.
-  // |body| is used only to represent the FetchEvent#request#body dispatched to
-  // service workers for S13nServiceWorker case.
+  // |blob| is used in implementing Background Fetch APIs.
+  // |body| is used to represent the FetchEvent#request#body dispatched to
+  // service workers.
   // TODO(crbug.com/911930): Remove |blob| and use |body| instead everywhere.
   SerializedBlob? blob;
   network.mojom.URLRequestBody? body;

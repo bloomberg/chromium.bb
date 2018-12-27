@@ -40,13 +40,6 @@ FetchRequestData* FetchRequestData::Create(
         MakeGarbageCollected<FormDataBytesConsumer>(
             ExecutionContext::From(script_state), std::move(body)),
         nullptr /* AbortSignal */));
-  } else if (web_request.GetBlobDataHandle()) {
-    request->SetBuffer(MakeGarbageCollected<BodyStreamBuffer>(
-        script_state,
-        MakeGarbageCollected<BlobBytesConsumer>(
-            ExecutionContext::From(script_state),
-            web_request.GetBlobDataHandle()),
-        nullptr /* AbortSignal */));
   }
   request->SetContext(web_request.GetRequestContext());
   request->SetReferrerString(web_request.ReferrerUrl().GetString());
