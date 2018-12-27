@@ -120,7 +120,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   // main thread.
   void CreatePictureBuffers();
 
-  enum class D3D11VideoNotSupportedReason {
+  enum class NotSupportedReason {
     kVideoIsSupported = 0,
 
     // D3D11 version 11.1 required.
@@ -165,9 +165,9 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
     kError,
   };
 
-  // Record a UMA about why IsPotentiallySupported returned false, or that it
-  // returned true.  Also will add a MediaLog entry, etc.
-  void SetWasSupportedReason(D3D11VideoNotSupportedReason enum_value);
+  // Reports why IsPotentiallySupported() returned false, or that it returned
+  // true. It is reported to UMA and MediaLog, etc.
+  void ReportNotSupportedReason(NotSupportedReason enum_value);
 
   // Callback to notify that new CdmContext event is available.
   void OnCdmContextEvent(CdmContext::Event event);
