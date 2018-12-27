@@ -47,7 +47,7 @@
   GoogleServicesSettingsViewController* viewController =
       [[GoogleServicesSettingsViewController alloc]
           initWithLayout:layout
-                   style:CollectionViewControllerStyleDefault];
+                   style:CollectionViewControllerStyleAppBar];
   viewController.presentationDelegate = self;
   viewController.localDispatcher = self;
   self.viewController = viewController;

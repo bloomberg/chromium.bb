@@ -129,12 +129,8 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
                                           IDS_IOS_FIRSTRUN_PRIVACY_TITLE))]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"ic_arrow_back"),
-                                   grey_accessibilityTrait(
-                                       UIAccessibilityTraitButton),
-                                   nil)] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
 
   // Ensure we went back to the First Run screen.
   [[EarlGrey selectElementWithMatcher:privacyLink]
@@ -154,12 +150,8 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
                                           IDS_IOS_FIRSTRUN_TERMS_TITLE))]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"ic_arrow_back"),
-                                   grey_accessibilityTrait(
-                                       UIAccessibilityTraitButton),
-                                   nil)] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
 
   // Ensure we went back to the First Run screen.
   [[EarlGrey selectElementWithMatcher:termsOfServiceLink]

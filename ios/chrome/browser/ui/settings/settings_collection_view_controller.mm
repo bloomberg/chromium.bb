@@ -274,8 +274,8 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
                           dispatcher:(id<ApplicationCommands>)dispatcher {
   DCHECK(!browserState->IsOffTheRecord());
   UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
-  self = [super initWithLayout:layout
-                         style:CollectionViewControllerStyleDefault];
+  self =
+      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
   if (self) {
     _browserState = browserState;
     self.title = l10n_util::GetNSStringWithFixup(IDS_IOS_SETTINGS_TITLE);
@@ -352,9 +352,6 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   const CGFloat kSettingsSeparatorLeadingInset = 56;
   self.styler.separatorInset =
       UIEdgeInsetsMake(0, kSettingsSeparatorLeadingInset, 0, 0);
-
-  self.navigationItem.largeTitleDisplayMode =
-      UINavigationItemLargeTitleDisplayModeAlways;
 }
 
 // TODO(crbug.com/661915): Refactor TemplateURLObserver and re-implement this so

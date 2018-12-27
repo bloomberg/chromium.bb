@@ -215,12 +215,10 @@ class ScopedBlockPopupsException {
   [[EarlGrey selectElementWithMatcher:grey_text(base::SysUTF8ToNSString(
                                           allowedPattern))]
       assertWithMatcher:grey_notVisible()];
-  [[EarlGrey selectElementWithMatcher:
-                 grey_allOf(chrome_test_util::ButtonWithAccessibilityLabelId(
-                                IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON),
-                            grey_not(grey_accessibilityTrait(
-                                UIAccessibilityTraitNotEnabled)),
-                            nil)] assertWithMatcher:grey_notVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
+                                   IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON))]
+      assertWithMatcher:grey_notVisible()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
@@ -232,12 +230,10 @@ class ScopedBlockPopupsException {
   [[EarlGrey selectElementWithMatcher:grey_text(base::SysUTF8ToNSString(
                                           allowedPattern))]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:
-                 grey_allOf(chrome_test_util::ButtonWithAccessibilityLabelId(
-                                IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON),
-                            grey_not(grey_accessibilityTrait(
-                                UIAccessibilityTraitNotEnabled)),
-                            nil)] assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
+                                   IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON))]
+      assertWithMatcher:grey_sufficientlyVisible()];
 
   // Close the settings menu.
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]

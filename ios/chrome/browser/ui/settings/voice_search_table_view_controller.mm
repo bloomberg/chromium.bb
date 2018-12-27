@@ -51,8 +51,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @implementation VoiceSearchTableViewController
 
 - (instancetype)initWithPrefs:(PrefService*)prefs {
-  self = [super initWithTableViewStyle:UITableViewStyleGrouped
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self =
+      [super initWithTableViewStyle:UITableViewStyleGrouped
+                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
   if (self) {
     self.title = l10n_util::GetNSString(IDS_IOS_VOICE_SEARCH_SETTING_TITLE);
     _prefs = prefs;

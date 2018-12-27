@@ -70,8 +70,8 @@ static_assert(
 initWithPrefs:(PrefService*)prefs
      delegate:(id<TimeRangeSelectorCollectionViewControllerDelegate>)delegate {
   UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
-  self = [super initWithLayout:layout
-                         style:CollectionViewControllerStyleDefault];
+  self =
+      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
   if (self) {
     _weakDelegate = delegate;
     self.title = l10n_util::GetNSString(

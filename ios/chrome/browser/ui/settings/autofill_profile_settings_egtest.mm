@@ -85,13 +85,6 @@ NSString* GetTextFieldForID(int categoryId) {
       stringWithFormat:@"%@_textField", l10n_util::GetNSString(categoryId)];
 }
 
-// Return the edit button from the navigation bar.
-id<GREYMatcher> NavigationBarEditButton() {
-  return grey_allOf(
-      ButtonWithAccessibilityLabelId(IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON),
-      grey_not(grey_accessibilityTrait(UIAccessibilityTraitNotEnabled)), nil);
-}
-
 }  // namespace
 
 // Various tests for the Autofill profiles section of the settings.
@@ -198,7 +191,8 @@ id<GREYMatcher> NavigationBarEditButton() {
   // Keep editing the Country field and verify that validation works.
   for (const UserTypedCountryExpectedResultPair& expectation : kCountryTests) {
     // Switch on edit mode.
-    [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
+    [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                            IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
         performAction:grey_tap()];
 
     // Replace the text field with the user-version of the country.
@@ -247,7 +241,8 @@ id<GREYMatcher> NavigationBarEditButton() {
   [self openEditProfile:kProfileLabel];
 
   // Switch on edit mode.
-  [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
       performAction:grey_tap()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 
@@ -265,7 +260,8 @@ id<GREYMatcher> NavigationBarEditButton() {
   [self openAutofillProfilesSettings];
 
   // Switch on edit mode.
-  [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
       performAction:grey_tap()];
 
   // Check the Autofill profile switch is disabled.
