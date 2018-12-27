@@ -44,7 +44,23 @@ Polymer({
     listExpanded_: {
       type: Boolean,
       value: false,
-    }
+    },
+
+    /**
+     * List of apps with the notification permission.
+     * @private {Array<appManagement.mojom.App>}
+     */
+     notificationApps_: {
+      type: Array,
+      value: function() {
+        const apps = [];
+        for (let i = 0; i < NUMBER_OF_APPS_DISPLAYED_DEFAULT; i++) {
+          apps.push(
+          app_management.FakePageHandler.createApp('Notified' + i));
+        }
+        return apps;
+      },
+    },
   },
 
   attached: function() {
@@ -94,4 +110,14 @@ Polymer({
   getCollapsedIcon_: function(listExpanded) {
     return listExpanded ? 'cr:expand-less' : 'cr:expand-more';
   },
+
+  /**
+   * @param {Array<appManagement.mojom.App>} notificationApps
+   * @return {string}
+   * @private
+   */
+   getNotificationSublabel_: function(notificationApps){
+    return loadTimeData.getStringF(
+        'notificationSublabel', notificationApps.length);
+   }
 });
