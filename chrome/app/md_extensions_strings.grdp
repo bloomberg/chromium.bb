@@ -7,6 +7,9 @@
   <message name="IDS_EXTENSIONS_ALLOW_ON_ALL_URLS" desc="The checkbox for allowing an extension to run scripts on all websites without explicit permission.">
     Allow on all websites
   </message>
+  <message name="IDS_EXTENSIONS_ALLOW_ON_FOLLOWING_SITES" desc="The label for the option to allow the extension to automatically access all sites listed below.">
+    Automatically allow access on the following sites
+  </message>
   <message name="IDS_EXTENSIONS_VIEW_ACTIVITY_LOG" desc="The label of the button to click to view recent extension activity.">
     View activity log
   </message>
@@ -89,6 +92,9 @@
     {LINE_COUNT, plural,
       =1 {&lt;1 line not shown&gt;}
       other {&lt;<ph name="NUMBER_OF_LINES">$1<ex>4</ex></ph> lines not shown&gt;}}
+  </message>
+  <message name="IDS_MD_EXTENSIONS_HOST_PERMISSIONS_DESCRIPTION" desc="The explanatory text for adjusting which websites an extension is allowed to run on.">
+    This extension can read and change your data on sites. You can control which sites the extension can access.
   </message>
   <!-- TODO(devlin): Unify this with IDS_SETTINGS_EDIT. -->
   <message name="IDS_MD_EXTENSIONS_HOST_PERMISSIONS_EDIT" desc="The label of the button used to edit an extension's access to a given website.">
