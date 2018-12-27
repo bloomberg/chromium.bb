@@ -5977,3 +5977,8 @@ crbug.com/v8/8319 external/wpt/wasm/jsapi/table/grow.any.worker.html [ Pass Fail
 
 # Sheriff 2018-12-27
 crbug.com/917944 [ Mac10.10 Mac10.11 ] paint/invalidation/forms/textarea-caret.html [ Failure ]
+
+# Failing when NetworkService is not enabled.
+crbug.com/917284 external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
+crbug.com/917284 virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
+crbug.com/917284 virtual/outofblink-cors/external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
