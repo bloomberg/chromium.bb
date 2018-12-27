@@ -304,28 +304,43 @@ struct FrameFetchContext::FrozenState final
   }
 };
 
-ResourceFetcher* FrameFetchContext::CreateFetcher(DocumentLoader* loader,
-                                                  Document* document) {
-  FrameFetchContext* context =
-      MakeGarbageCollected<FrameFetchContext>(loader, document);
-  // |document| is null or detached.
-  DCHECK(!document || !document->GetFrame());
+ResourceFetcher* FrameFetchContext::CreateFetcher(DocumentLoader* loader) {
+  DCHECK(loader);
+  FrameFetchContext* context = MakeGarbageCollected<FrameFetchContext>(loader);
   ConsoleLogger* logger = &context->GetFrame()->Console();
   return MakeGarbageCollected<ResourceFetcher>(context, logger);
 }
 
-FrameFetchContext::FrameFetchContext(DocumentLoader* loader, Document* document)
+ResourceFetcher* FrameFetchContext::CreateFetcherForImportedDocument(
+    Document* document) {
+  DCHECK(document);
+  FrameFetchContext* context =
+      MakeGarbageCollected<FrameFetchContext>(document);
+  // |document| is detached.
+  DCHECK(!document->GetFrame());
+  ConsoleLogger* logger = &context->GetFrame()->Console();
+  return MakeGarbageCollected<ResourceFetcher>(context, logger);
+}
+
+FrameFetchContext::FrameFetchContext(DocumentLoader* loader)
     : BaseFetchContext(
-          document
-              ? document->GetTaskRunner(blink::TaskType::kNetworking)
-              : loader->GetFrame()->GetTaskRunner(blink::TaskType::kNetworking),
-          document
-              ? *MakeGarbageCollected<FetchClientSettingsObjectImpl>(*document)
-              : CreateFetchClientSettingsObjectForNavigation()),
+          loader->GetFrame()->GetTaskRunner(blink::TaskType::kNetworking),
+          CreateFetchClientSettingsObjectForNavigation()),
       document_loader_(loader),
+      save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled() &&
+                         !GetSettings()->GetDataSaverHoldbackWebApi()) {
+  DCHECK(loader);
+  DCHECK(GetFrame());
+}
+
+FrameFetchContext::FrameFetchContext(Document* document)
+    : BaseFetchContext(
+          document->GetTaskRunner(blink::TaskType::kNetworking),
+          *MakeGarbageCollected<FetchClientSettingsObjectImpl>(*document)),
       document_(document),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled() &&
                          !GetSettings()->GetDataSaverHoldbackWebApi()) {
+  DCHECK(document);
   DCHECK(GetFrame());
 }
 

@@ -64,19 +64,15 @@ struct WebEnabledClientHints;
 
 class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
  public:
-  static ResourceFetcher* CreateFetcherFromDocumentLoader(
-      DocumentLoader* loader) {
-    return CreateFetcher(loader, nullptr);
-  }
+  static ResourceFetcher* CreateFetcher(DocumentLoader* loader);
   // Used for creating a FrameFetchContext for an imported Document.
   // |document_loader_| will be set to nullptr.
-  static ResourceFetcher* CreateFetcherFromDocument(Document* document) {
-    return CreateFetcher(nullptr, document);
-  }
+  static ResourceFetcher* CreateFetcherForImportedDocument(Document* document);
 
   void ProvideDocumentToContext(Document*);
 
-  FrameFetchContext(DocumentLoader*, Document*);
+  explicit FrameFetchContext(DocumentLoader*);
+  explicit FrameFetchContext(Document*);
   ~FrameFetchContext() override;
 
   bool IsFrameFetchContext() const override { return true; }
@@ -184,8 +180,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   friend class FrameFetchContextTest;
 
   struct FrozenState;
-
-  static ResourceFetcher* CreateFetcher(DocumentLoader*, Document*);
 
   // Convenient accessors below can be used to transparently access the
   // relevant document loader or frame in either cases without null-checks.

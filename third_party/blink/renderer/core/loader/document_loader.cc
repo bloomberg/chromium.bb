@@ -117,7 +117,7 @@ DocumentLoader::DocumentLoader(
     std::unique_ptr<WebNavigationParams> navigation_params)
     : request_(navigation_params->request.ToResourceRequest()),
       frame_(frame),
-      fetcher_(FrameFetchContext::CreateFetcherFromDocumentLoader(this)),
+      fetcher_(FrameFetchContext::CreateFetcher(this)),
       original_url_(request_.Url()),
       original_referrer_(request_.HttpReferrer()),
       load_type_(navigation_params->frame_load_type),

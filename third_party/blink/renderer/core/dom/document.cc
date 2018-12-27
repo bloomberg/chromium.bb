@@ -715,7 +715,7 @@ Document::Document(const DocumentInit& initializer,
     if (registry && registration_context_)
       registry->Entangle(registration_context_);
   } else if (imports_controller_) {
-    fetcher_ = FrameFetchContext::CreateFetcherFromDocument(this);
+    fetcher_ = FrameFetchContext::CreateFetcherForImportedDocument(this);
   } else {
     fetcher_ = MakeGarbageCollected<ResourceFetcher>(nullptr);
   }
