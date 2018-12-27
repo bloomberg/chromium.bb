@@ -24,11 +24,6 @@
 - (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
                            dismissOmnibox:(BOOL)dismissOmnibox;
 
-// Called when the browser state provided to this instance is being destroyed.
-// At this point the browser will no longer ever be active, and will likely be
-// deallocated soon.
-- (void)browserStateDestroyed;
-
 // Called before the instance is deallocated.
 - (void)shutdown;
 

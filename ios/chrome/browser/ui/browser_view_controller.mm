@@ -1364,19 +1364,28 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
-- (void)browserStateDestroyed {
+- (void)shutdown {
+  DCHECK(!_isShutdown);
+  _isShutdown = YES;
+
   [self setActive:NO];
   [_paymentRequestManager close];
   _paymentRequestManager = nil;
   [self.tabModel browserStateDestroyed];
 
-  TextToSpeechPlaybackControllerFactory::GetInstance()
-      ->GetForBrowserState(_browserState)
-      ->SetWebStateList(nullptr);
+  if (_browserState) {
+    TextToSpeechPlaybackController* controller =
+        TextToSpeechPlaybackControllerFactory::GetInstance()
+            ->GetForBrowserState(_browserState);
+    if (controller)
+      controller->SetWebStateList(nullptr);
 
-  WebStateListWebUsageEnablerFactory::GetInstance()
-      ->GetForBrowserState(_browserState)
-      ->SetWebStateList(nullptr);
+    WebStateListWebUsageEnabler* webUsageEnabler =
+        WebStateListWebUsageEnablerFactory::GetInstance()->GetForBrowserState(
+            _browserState);
+    if (webUsageEnabler)
+      webUsageEnabler->SetWebStateList(nullptr);
+  }
 
   // Disconnect child coordinators.
   [_activityServiceCoordinator disconnect];
@@ -1388,11 +1397,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   _browserState = nullptr;
   [self.commandDispatcher stopDispatchingToTarget:self];
   self.commandDispatcher = nil;
-}
 
-- (void)shutdown {
-  DCHECK(!_isShutdown);
-  _isShutdown = YES;
   [self.tabStripCoordinator stop];
   self.tabStripCoordinator = nil;
   [self.primaryToolbarCoordinator stop];
@@ -2476,6 +2481,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)dismissPopups {
+  // The dispatcher may not be fully connected during shutdown, so selectors may
+  // be unrecognized.
+  if (_isShutdown)
+    return;
   [self.dispatcher hidePageInfo];
   [self.dispatcher dismissPopupMenuAnimated:NO];
   [self.bubblePresenter dismissBubbles];
@@ -4311,7 +4320,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     _locationBarEditCancelledLoad = NO;
 
     web::WebState* webState = self.currentWebState;
-    if (webState && ![self.helper isToolbarLoading:webState])
+    if (!_isShutdown && webState && ![self.helper isToolbarLoading:webState])
       webState->GetNavigationManager()->Reload(web::ReloadType::NORMAL,
                                                false /* check_for_repost */);
   }
