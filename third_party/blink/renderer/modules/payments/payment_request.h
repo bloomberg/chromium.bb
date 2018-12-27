@@ -80,6 +80,7 @@ class MODULES_EXPORT PaymentRequest final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(paymentmethodchange, kPaymentmethodchange);
 
   ScriptPromise canMakePayment(ScriptState*);
+  ScriptPromise hasEnrolledInstrument(ScriptState*);
 
   // ScriptWrappable:
   bool HasPendingActivity() const override;
@@ -152,6 +153,7 @@ class MODULES_EXPORT PaymentRequest final
   Member<ScriptPromiseResolver> retry_resolver_;
   Member<ScriptPromiseResolver> abort_resolver_;
   Member<ScriptPromiseResolver> can_make_payment_resolver_;
+  Member<ScriptPromiseResolver> has_enrolled_instrument_resolver_;
   payments::mojom::blink::PaymentRequestPtr payment_provider_;
   mojo::Binding<payments::mojom::blink::PaymentRequestClient> client_binding_;
   TaskRunnerTimer<PaymentRequest> complete_timer_;
