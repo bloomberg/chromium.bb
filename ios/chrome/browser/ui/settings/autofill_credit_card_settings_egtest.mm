@@ -50,6 +50,13 @@ const DisplayStringIDToExpectedResult kExpectedFields[] = {
 
 NSString* const kCreditCardLabelTemplate = @"Test User, %@";
 
+// Return the edit button from the navigation bar.
+id<GREYMatcher> NavigationBarEditButton() {
+  return grey_allOf(
+      ButtonWithAccessibilityLabelId(IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON),
+      grey_not(grey_accessibilityTrait(UIAccessibilityTraitNotEnabled)), nil);
+}
+
 }  // namespace
 
 // Various tests for the Autofill credit cards section of the settings.
@@ -171,8 +178,7 @@ NSString* const kCreditCardLabelTemplate = @"Test User, %@";
   [self openEditCreditCard:[self creditCardLabel:creditCard]];
 
   // Switch on edit mode.
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
+  [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       performAction:grey_tap()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 
@@ -190,8 +196,7 @@ NSString* const kCreditCardLabelTemplate = @"Test User, %@";
   [self openCreditCardsSettings];
 
   // Switch on edit mode.
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
+  [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       performAction:grey_tap()];
 
   // Check the Autofill credit card switch is disabled.

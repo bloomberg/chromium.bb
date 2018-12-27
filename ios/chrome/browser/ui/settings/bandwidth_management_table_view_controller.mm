@@ -58,9 +58,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @implementation BandwidthManagementTableViewController
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
-  self =
-      [super initWithTableViewStyle:UITableViewStyleGrouped
-                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
+  self = [super initWithTableViewStyle:UITableViewStyleGrouped
+                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     self.title = l10n_util::GetNSString(IDS_IOS_BANDWIDTH_MANAGEMENT_SETTINGS);
     _browserState = browserState;
