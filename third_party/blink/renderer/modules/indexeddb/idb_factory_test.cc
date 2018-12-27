@@ -65,7 +65,7 @@ TEST_F(IDBFactoryTest, WebIDBGetDBInfoCallbacksResolvesPromise) {
       SecurityOrigin::Create(KURL("https://example.com")));
   std::unique_ptr<MockWebIDBFactory> web_factory = MockWebIDBFactory::Create();
   std::unique_ptr<WebIDBCallbacks> callbacks;
-  EXPECT_CALL(*web_factory, GetDatabaseInfo(testing::_, testing::_, testing::_))
+  EXPECT_CALL(*web_factory, GetDatabaseInfo(testing::_, testing::_))
       .Times(1)
       .WillOnce(SaveUniquePointer<0>(&callbacks));
   IDBFactory* factory = IDBFactory::CreateForTest(std::move(web_factory));
@@ -100,7 +100,7 @@ TEST_F(IDBFactoryTest, WebIDBGetDBNamesCallbacksRejectsPromise) {
       SecurityOrigin::Create(KURL("https://example.com")));
   std::unique_ptr<MockWebIDBFactory> web_factory = MockWebIDBFactory::Create();
   std::unique_ptr<WebIDBCallbacks> callbacks;
-  EXPECT_CALL(*web_factory, GetDatabaseInfo(testing::_, testing::_, testing::_))
+  EXPECT_CALL(*web_factory, GetDatabaseInfo(testing::_, testing::_))
       .Times(1)
       .WillOnce(SaveUniquePointer<0>(&callbacks));
   IDBFactory* factory = IDBFactory::CreateForTest(std::move(web_factory));

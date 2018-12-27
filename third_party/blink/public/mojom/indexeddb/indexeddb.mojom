@@ -370,17 +370,15 @@ interface IDBDatabase {
 };
 
 interface IDBFactory {
-  GetDatabaseInfo(associated IDBCallbacks callbacks, url.mojom.Origin origin);
-  GetDatabaseNames(associated IDBCallbacks callbacks, url.mojom.Origin origin);
+  GetDatabaseInfo(associated IDBCallbacks callbacks);
+  GetDatabaseNames(associated IDBCallbacks callbacks);
   Open(associated IDBCallbacks callbacks,
        associated IDBDatabaseCallbacks database_callbacks,
-       url.mojom.Origin origin,
        mojo_base.mojom.String16 name,
        int64 version,
        int64 transaction_id);
-  DeleteDatabase(associated IDBCallbacks callbacks, url.mojom.Origin origin,
+  DeleteDatabase(associated IDBCallbacks callbacks,
                  mojo_base.mojom.String16 name, bool force_close);
-  AbortTransactionsAndCompactDatabase(url.mojom.Origin origin) =>
-                                     (IDBStatus status);
-  AbortTransactionsForDatabase(url.mojom.Origin origin) => (IDBStatus status);
+  AbortTransactionsAndCompactDatabase() => (IDBStatus status);
+  AbortTransactionsForDatabase() => (IDBStatus status);
 };

@@ -84,28 +84,22 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
 
   // blink::mojom::IDBFactory implementation:
   void GetDatabaseInfo(
-      blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
-      const url::Origin& origin) override;
+      blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) override;
   void GetDatabaseNames(
-      blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
-      const url::Origin& origin) override;
+      blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) override;
   void Open(blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
             blink::mojom::IDBDatabaseCallbacksAssociatedPtrInfo
                 database_callbacks_info,
-            const url::Origin& origin,
             const base::string16& name,
             int64_t version,
             int64_t transaction_id) override;
   void DeleteDatabase(
       blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
-      const url::Origin& origin,
       const base::string16& name,
       bool force_close) override;
   void AbortTransactionsAndCompactDatabase(
-      const url::Origin& origin,
       AbortTransactionsAndCompactDatabaseCallback callback) override;
   void AbortTransactionsForDatabase(
-      const url::Origin& origin,
       AbortTransactionsForDatabaseCallback callback) override;
 
   void InvalidateWeakPtrsAndClearBindings();

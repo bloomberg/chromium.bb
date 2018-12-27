@@ -36,7 +36,6 @@
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -227,7 +226,6 @@ ScriptPromise IDBFactory::GetDatabaseInfo(ScriptState* script_state,
   }
   factory->GetDatabaseInfo(
       WebIDBGetDBNamesCallbacksImpl::Create(resolver).release(),
-      WebSecurityOrigin(execution_context->GetSecurityOrigin()),
       execution_context->GetTaskRunner(TaskType::kInternalIndexedDB));
   ScriptPromise promise = resolver->Promise();
   return promise;
@@ -270,7 +268,6 @@ IDBRequest* IDBFactory::GetDatabaseNames(ScriptState* script_state,
   }
   factory->GetDatabaseNames(
       request->CreateWebCallbacks().release(),
-      WebSecurityOrigin(execution_context->GetSecurityOrigin()),
       execution_context->GetTaskRunner(TaskType::kInternalIndexedDB));
   return request;
 }
@@ -330,7 +327,6 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
   factory->Open(name, version, transaction_id,
                 request->CreateWebCallbacks().release(),
                 database_callbacks->CreateWebCallbacks().release(),
-                WebSecurityOrigin(execution_context->GetSecurityOrigin()),
                 execution_context->GetTaskRunner(TaskType::kInternalIndexedDB));
   return request;
 }
@@ -398,8 +394,7 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
     return nullptr;
   }
   factory->DeleteDatabase(
-      name, request->CreateWebCallbacks().release(),
-      WebSecurityOrigin(execution_context->GetSecurityOrigin()), force_close,
+      name, request->CreateWebCallbacks().release(), force_close,
       execution_context->GetTaskRunner(TaskType::kInternalIndexedDB));
   return request;
 }

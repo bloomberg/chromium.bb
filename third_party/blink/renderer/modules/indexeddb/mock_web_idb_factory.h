@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_factory.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
@@ -25,7 +24,6 @@ namespace blink {
 
 class WebIDBCallbacks;
 class WebIDBDatabaseCallbacks;
-class WebSecurityOrigin;
 
 class MockWebIDBFactory : public testing::StrictMock<blink::WebIDBFactory> {
  public:
@@ -33,26 +31,22 @@ class MockWebIDBFactory : public testing::StrictMock<blink::WebIDBFactory> {
 
   static std::unique_ptr<MockWebIDBFactory> Create();
 
-  MOCK_METHOD3(GetDatabaseInfo,
+  MOCK_METHOD2(GetDatabaseInfo,
                void(WebIDBCallbacks*,
-                    const WebSecurityOrigin&,
                     scoped_refptr<base::SingleThreadTaskRunner>));
-  MOCK_METHOD3(GetDatabaseNames,
+  MOCK_METHOD2(GetDatabaseNames,
                void(WebIDBCallbacks*,
-                    const WebSecurityOrigin&,
                     scoped_refptr<base::SingleThreadTaskRunner>));
-  MOCK_METHOD7(Open,
+  MOCK_METHOD6(Open,
                void(const WTF::String& name,
                     long long version,
                     long long transaction_id,
                     WebIDBCallbacks*,
                     WebIDBDatabaseCallbacks*,
-                    const WebSecurityOrigin&,
                     scoped_refptr<base::SingleThreadTaskRunner>));
-  MOCK_METHOD5(DeleteDatabase,
+  MOCK_METHOD4(DeleteDatabase,
                void(const WTF::String& name,
                     WebIDBCallbacks*,
-                    const WebSecurityOrigin&,
                     bool force_close,
                     scoped_refptr<base::SingleThreadTaskRunner>));
 
