@@ -1426,9 +1426,9 @@ static void highbd_filter_selectively_horiz(
                                                lfi->hev_thr, lfin->mblim,
                                                lfin->lim, lfin->hev_thr, bd);
           } else {
-            aom_highbd_lpf_horizontal_14_dual_c(s, pitch, lfi->mblim, lfi->lim,
-                                                lfi->hev_thr, lfin->mblim,
-                                                lfin->lim, lfin->hev_thr, bd);
+            aom_highbd_lpf_horizontal_14_dual(s, pitch, lfi->mblim, lfi->lim,
+                                              lfi->hev_thr, lfin->mblim,
+                                              lfin->lim, lfin->hev_thr, bd);
           }
           count = 2;
         } else {
