@@ -422,7 +422,6 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class base::MessageLoopImpl;
   friend class base::ScopedAllowThreadRecallForStackSamplingProfiler;
   friend class base::StackSamplingProfiler;
-  friend class base::Thread;
   friend class content::DesktopCaptureDevice;
   friend class content::SandboxHostLinux;
   friend class content::ScopedAllowWaitForDebugURL;
@@ -438,6 +437,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
 
   // Usage that should be fixed:
   friend class ::chromeos::BlockingMethodCaller;  // http://crbug.com/125360
+  friend class base::Thread;                      // http://crbug.com/918039
   friend class cc::CompletionEvent;              // http://crbug.com/902653
   friend class cc::SingleThreadTaskGraphRunner;  // http://crbug.com/902823
   friend class content::
