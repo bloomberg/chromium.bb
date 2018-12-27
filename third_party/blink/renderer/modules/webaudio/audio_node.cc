@@ -24,7 +24,6 @@
  */
 
 #include "third_party/blink/renderer/modules/webaudio/audio_node.h"
-
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
@@ -78,15 +77,6 @@ AudioHandler::AudioHandler(NodeType node_type,
 
 AudioHandler::~AudioHandler() {
   DCHECK(IsMainThread());
-  DCHECK(!GetNode())
-      << "The AudioNode should have been cleared by weak processing";
-  deferred_task_handler_->AssertGraphOwner();
-  deferred_task_handler_->RemoveChangedChannelCountMode(this);
-  deferred_task_handler_->RemoveChangedChannelInterpretation(this);
-  deferred_task_handler_->RemoveAutomaticPullNode(this);
-  for (auto& output : outputs_)
-    output->Dispose();
-
   InstanceCounters::DecrementCounter(InstanceCounters::kAudioHandlerCounter);
 #if DEBUG_AUDIONODE_REFERENCES
   --node_count_[GetNodeType()];
@@ -112,7 +102,14 @@ void AudioHandler::Uninitialize() {
 }
 
 void AudioHandler::Dispose() {
-  // TODO(jbroman): Remove this when derived classes don't need it.
+  DCHECK(IsMainThread());
+  deferred_task_handler_->AssertGraphOwner();
+
+  deferred_task_handler_->RemoveChangedChannelCountMode(this);
+  deferred_task_handler_->RemoveChangedChannelInterpretation(this);
+  deferred_task_handler_->RemoveAutomaticPullNode(this);
+  for (auto& output : outputs_)
+    output->Dispose();
 }
 
 AudioNode* AudioHandler::GetNode() const {
@@ -122,10 +119,6 @@ AudioNode* AudioHandler::GetNode() const {
 
 BaseAudioContext* AudioHandler::Context() const {
   return context_;
-}
-
-void AudioHandler::ClearContext() {
-  context_ = nullptr;
 }
 
 String AudioHandler::NodeTypeName() const {
@@ -443,7 +436,7 @@ void AudioHandler::DisableOutputsIfNecessary() {
   // The case of 1 is from AudioNodeInput::disable() where we want to disable
   // outputs when there's only one connection left because we're ready to go
   // away, but can't quite yet.
-  if (connection_ref_count_ <= 1 && !is_disabled_ && !IsDoomed()) {
+  if (connection_ref_count_ <= 1 && !is_disabled_) {
     // Still may have JavaScript references, but no more "active" connection
     // references, so put all of our outputs in a "dormant" disabled state.
     // Garbage collection may take a very long time after this time, so the
@@ -593,7 +586,6 @@ unsigned AudioHandler::NumberOfOutputChannels() const {
             << GetNodeType();
   return 1;
 }
-
 // ----------------------------------------------------------------
 
 AudioNode::AudioNode(BaseAudioContext& context)
