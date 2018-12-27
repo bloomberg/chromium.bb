@@ -4,7 +4,6 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <linux/videodev2.h>
 #include <poll.h>
 #include <string.h>
 #include <sys/eventfd.h>
@@ -144,19 +143,43 @@ v4l2_memory InputStorageTypeToV4L2Memory(VideoFrame::StorageType storage_type) {
 // static
 std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
     scoped_refptr<V4L2Device> device,
-    VideoFrame::StorageType input_storage_type,
-    VideoFrame::StorageType output_storage_type,
-    OutputMode output_mode,
-    const VideoFrameLayout& input_layout,
-    const VideoFrameLayout& output_layout,
-    gfx::Size input_visible_size,
-    gfx::Size output_visible_size,
+    const ImageProcessor::PortConfig& input_config,
+    const ImageProcessor::PortConfig& output_config,
+    const ImageProcessor::OutputMode output_mode,
     size_t num_buffers,
     ErrorCB error_cb) {
   VLOGF(2);
   DCHECK_GT(num_buffers, 0u);
   if (!device) {
-    VLOGF(1) << "Failed creating V4L2Device";
+    VLOGF(2) << "Failed creating V4L2Device";
+    return nullptr;
+  }
+
+  // V4L2ImageProcessor supports either DmaBuf-backed or memory-based video
+  // frame for input.
+  VideoFrame::StorageType input_storage_type = VideoFrame::STORAGE_UNKNOWN;
+  for (auto input_type : input_config.preferred_storage_types) {
+    if (input_type == VideoFrame::STORAGE_DMABUFS ||
+        VideoFrame::IsStorageTypeMappable(input_type)) {
+      input_storage_type = input_type;
+      break;
+    }
+  }
+  if (input_storage_type == VideoFrame::STORAGE_UNKNOWN) {
+    VLOGF(2) << "Unsupported input storage type";
+    return nullptr;
+  }
+
+  // V4L2ImageProcessor only supports DmaBuf-backed video frame for output.
+  VideoFrame::StorageType output_storage_type = VideoFrame::STORAGE_UNKNOWN;
+  for (auto output_type : output_config.preferred_storage_types) {
+    if (output_type == VideoFrame::STORAGE_DMABUFS) {
+      output_storage_type = output_type;
+      break;
+    }
+  }
+  if (output_storage_type == VideoFrame::STORAGE_UNKNOWN) {
+    VLOGF(2) << "Unsupported output storage type";
     return nullptr;
   }
 
@@ -167,12 +190,6 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
     return nullptr;
   }
 
-  // Note that for v4l2 IP, output storage type must be STORAGE_DMABUFS.
-  // And output_memory_type depends on its output mode.
-  if (output_storage_type != VideoFrame::STORAGE_DMABUFS) {
-    VLOGF(1) << "Unsupported output storage type: " << output_storage_type;
-    return nullptr;
-  }
   const v4l2_memory output_memory_type =
       output_mode == ImageProcessor::OutputMode::ALLOCATE ? V4L2_MEMORY_MMAP
                                                           : V4L2_MEMORY_DMABUF;
@@ -181,6 +198,8 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
     VLOGF(1) << "V4L2ImageProcessor not supported in this platform";
     return nullptr;
   }
+
+  const VideoFrameLayout& input_layout = input_config.layout;
   const uint32_t input_format_fourcc =
       V4L2Device::VideoFrameLayoutToV4L2PixFmt(input_layout);
   if (!input_format_fourcc) {
@@ -216,14 +235,15 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
   DCHECK_LE(negotiated_input_layout->num_buffers(),
             static_cast<size_t>(VIDEO_MAX_PLANES));
   if (!gfx::Rect(negotiated_input_layout->coded_size())
-      .Contains(gfx::Rect(input_visible_size))) {
+           .Contains(gfx::Rect(input_config.visible_size))) {
     VLOGF(1) << "Negotiated input allocated size: "
              << negotiated_input_layout->coded_size().ToString()
              << " should contain visible size: "
-             << input_visible_size.ToString();
+             << input_config.visible_size.ToString();
     return nullptr;
   }
 
+  const VideoFrameLayout& output_layout = output_config.layout;
   const uint32_t output_format_fourcc =
       V4L2Device::VideoFrameLayoutToV4L2PixFmt(output_layout);
   if (!output_format_fourcc) {
@@ -256,20 +276,20 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
   DCHECK_LE(negotiated_output_layout->num_buffers(),
             static_cast<size_t>(VIDEO_MAX_PLANES));
   if (!gfx::Rect(negotiated_output_layout->coded_size())
-      .Contains(gfx::Rect(output_layout.coded_size()))) {
+           .Contains(gfx::Rect(output_layout.coded_size()))) {
     VLOGF(1) << "Negotiated output allocated size: "
              << negotiated_output_layout->coded_size().ToString()
              << " should contain original output allocated size: "
              << output_layout.coded_size().ToString();
     return nullptr;
-
   }
 
   auto processor = base::WrapUnique(new V4L2ImageProcessor(
       std::move(device), input_storage_type, output_storage_type,
       input_memory_type, output_memory_type, output_mode,
-      *negotiated_input_layout, *negotiated_output_layout, input_visible_size,
-      output_visible_size, num_buffers, std::move(error_cb)));
+      *negotiated_input_layout, *negotiated_output_layout,
+      input_config.visible_size, output_config.visible_size, num_buffers,
+      std::move(error_cb)));
   if (!processor->Initialize()) {
     VLOGF(1) << "Failed to initialize V4L2ImageProcessor";
     return nullptr;
@@ -435,6 +455,13 @@ bool V4L2ImageProcessor::Process(scoped_refptr<VideoFrame> frame,
       FROM_HERE, base::BindOnce(&V4L2ImageProcessor::ProcessTask,
                                 base::Unretained(this), std::move(job_record)));
   return true;
+}
+
+bool V4L2ImageProcessor::Process(scoped_refptr<VideoFrame> input_frame,
+                                 scoped_refptr<VideoFrame> output_frame,
+                                 FrameReadyCB cb) {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 void V4L2ImageProcessor::ProcessTask(std::unique_ptr<JobRecord> job_record) {

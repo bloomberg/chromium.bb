@@ -13,9 +13,11 @@
 
 #include <linux/videodev2.h>
 
+#include "base/callback_forward.h"
 #include "base/containers/queue.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "media/base/video_frame.h"
@@ -23,6 +25,7 @@
 #include "media/gpu/image_processor.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/v4l2_device.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 
@@ -42,8 +45,10 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
                int output_buffer_index,
                std::vector<base::ScopedFD> output_dmabuf_fds,
                FrameReadyCB cb) override;
+  bool Process(scoped_refptr<VideoFrame> input_frame,
+               scoped_refptr<VideoFrame> output_frame,
+               FrameReadyCB cb) override;
   bool Reset() override;
-
 
   // Returns true if image processing is supported on this platform.
   static bool IsSupported();
@@ -64,21 +69,19 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
                               size_t* num_planes);
 
   // Factory method to create V4L2ImageProcessor to convert from
-  // input_format to output_format. Caller shall provide input and output
-  // storage type as well as output mode. The number of input buffers and output
+  // input_config to output_config. The number of input buffers and output
   // buffers will be |num_buffers|. Provided |error_cb| will be posted to the
   // same thread Create() is called if an error occurs after initialization.
   // Returns nullptr if V4L2ImageProcessor fails to create.
   // Note: output_mode will be removed once all its clients use import mode.
+  // TODO(crbug.com/917798): remove |device| parameter once
+  //     V4L2VideoDecodeAccelerator no longer creates and uses
+  //     |image_processor_device_| before V4L2ImageProcessor is created.
   static std::unique_ptr<V4L2ImageProcessor> Create(
       scoped_refptr<V4L2Device> device,
-      VideoFrame::StorageType input_storage_type,
-      VideoFrame::StorageType output_storage_type,
-      OutputMode output_mode,
-      const VideoFrameLayout& input_layout,
-      const VideoFrameLayout& output_layout,
-      gfx::Size input_visible_size,
-      gfx::Size output_visible_size,
+      const ImageProcessor::PortConfig& input_config,
+      const ImageProcessor::PortConfig& output_config,
+      const ImageProcessor::OutputMode output_mode,
       size_t num_buffers,
       ErrorCB error_cb);
 
@@ -146,8 +149,7 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   // Posts error on |client_task_runner_| thread. This must be called in a
   // thread |client_task_runner_| doesn't belong to.
   void NotifyError();
-  // Invokes ErrorCB given by factory method. This must be called in
-  // |client_task_runner_|'s thread.
+  // Invokes |erro_cb_|. This must be called in |client_task_runner_|'s thread.
   void NotifyErrorOnClientThread();
 
   void ProcessTask(std::unique_ptr<JobRecord> job_record);
@@ -180,8 +182,7 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   const VideoFrame::StorageType output_storage_type_;
   const OutputMode output_mode_;
 
-  // The task runner which belongs to the thread where V4L2ImageProcessor is
-  // created.
+  // A task runner belongs to a thread where V4L2ImageProcessor is created.
   const scoped_refptr<base::SingleThreadTaskRunner> client_task_runner_;
 
   // V4L2 device in use.
@@ -218,17 +219,19 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   // Error callback to the client.
   ErrorCB error_cb_;
 
-  // WeakPtr<> pointing to |this| for use in posting tasks from the device
-  // worker threads back to the the thread where V4L2ImageProcessor is created.
-  // Because the worker threads are members of this class, any task running on
-  // those threads is guaranteed that this object is still alive.  As a result,
-  // tasks posted from |client_task_runner_|'s thread to the device thread
-  // should use base::Unretained(this), and tasks posted the other way should
-  // use |weak_this_|.
+  // Emits weak pointer to |this| for tasks from |processor_thread_| to the
+  // thread that creates V4L2ImageProcessor. So the tasks are cancelled if
+  // |this| is invalidated, which leads to avoid calling FrameReadyCB and
+  // ErrorCB of the invalidated client (e.g. V4L2VideoEncodeAccelerator).
+  // On the other hand, since |device_thread_| is the member of this class, it
+  // is guaranteed this instance is alive when a task on the thread is executed.
+  // Therefore, base::Unretained(this) is safe for |device_thread_| tasks
+  // posted from |client_task_runner_|'s thread.
+  // NOTE: |weak_this_| must always be dereferenced and invalidated on the
+  // thread that creates V4L2ImageProcessor.
   base::WeakPtr<V4L2ImageProcessor> weak_this_;
 
-  // Weak factory for producing weak pointers on the |client_task_runner_|'s
-  // thread.
+  // The WeakPtrFactory for |weak_this_|.
   base::WeakPtrFactory<V4L2ImageProcessor> weak_this_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(V4L2ImageProcessor);

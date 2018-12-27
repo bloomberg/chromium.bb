@@ -83,7 +83,12 @@ component("gpu") {
     "gpu_video_decode_accelerator_factory.h",
     "gpu_video_encode_accelerator_factory.cc",
     "gpu_video_encode_accelerator_factory.h",
+    "image_processor.cc",
     "image_processor.h",
+    "image_processor_factory.cc",
+    "image_processor_factory.h",
+    "libyuv_image_processor.cc",
+    "libyuv_image_processor.h",
     "platform_video_frame.cc",
     "platform_video_frame.h",
   ]
@@ -227,6 +232,7 @@ component("gpu") {
       "v4l2/v4l2_vp9_accelerator.cc",
       "v4l2/v4l2_vp9_accelerator.h",
     ]
+
     libs = [
       "EGL",
       "GLESv2",

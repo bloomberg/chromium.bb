@@ -29,6 +29,7 @@
 #include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
+#include "media/gpu/image_processor_factory.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_image_processor.h"
 #include "media/video/h264_parser.h"
@@ -2392,15 +2393,19 @@ bool V4L2VideoDecodeAccelerator::CreateImageProcessor() {
     return false;
   }
 
-  // Unretained(this) is safe in creating ErrorCB because |image_processor_|
-  // is destructed by Destroy(), which posts DestroyTask() to |decoder_thread_|,
-  // which is the same thread ErrorCB being called. In DestroyTask(), it
-  // destructs |image_processor_| so no more ErrorCB is invoked after
-  // DestroyTask() is called.
+  // Unretained(this) is safe in creating ErrorCB because
+  // V4L2VideoDecodeAccelerator instance outlives |image_processor_| and
+  // ImageProcessor invalidates posted ErrorCB when its Reset() or destructor is
+  // called.
+  // TODO(crbug.com/917798): Use ImageProcessorFactory::Create() once we remove
+  //     |image_processor_device_| from V4L2VideoDecodeAccelerator.
   image_processor_ = V4L2ImageProcessor::Create(
-      image_processor_device_, VideoFrame::STORAGE_DMABUFS,
-      VideoFrame::STORAGE_DMABUFS, image_processor_output_mode, *input_layout,
-      *output_layout, visible_size_, visible_size_, output_buffer_map_.size(),
+      image_processor_device_,
+      ImageProcessor::PortConfig(*input_layout, visible_size_,
+                                 {VideoFrame::STORAGE_DMABUFS}),
+      ImageProcessor::PortConfig(*output_layout, visible_size_,
+                                 {VideoFrame::STORAGE_DMABUFS}),
+      image_processor_output_mode, output_buffer_map_.size(),
       base::BindRepeating(&V4L2VideoDecodeAccelerator::ImageProcessorError,
                           base::Unretained(this)));
 
@@ -2455,12 +2460,9 @@ bool V4L2VideoDecodeAccelerator::ProcessFrame(int32_t bitstream_buffer_id,
       return false;
   }
   // Unretained(this) is safe in creating FrameReadyCB because
-  // |image_processor_| is destructed by Destroy(), which posts DestroyTask() to
-  // |decoder_thread_|, which is the same thread ErrorCB being called. In
-  // DestroyTask(), it destructs |image_processor_| so no more ErrorCB is
-  // invoked after DestroyTask() is called. Unretained is safe because |this|
-  // owns image processor and there will be no callbacks after processor
-  // destroys.
+  // V4L2VideoDecodeAccelerator instance outlives |image_processor_| and
+  // ImageProcessor invalidates posted FrameReadyCB when its Reset() or
+  // destructor is called.
   image_processor_->Process(
       input_frame, output_buffer_index, std::move(output_fds),
       base::BindOnce(&V4L2VideoDecodeAccelerator::FrameProcessed,
