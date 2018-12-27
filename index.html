@@ -1,13 +1,31 @@
-<script module>
+<script type="module">
 "use strict";
+
+import { Logger } from "./out/framework/index.js";
+
 (async () => {
   const listing = await (await fetch("out/cts/listing.json")).json();
 
+  const log = new Logger();
+
   for (const {path, description} of listing) {
+    console.log("");
     console.log(path, description);
-    if (!path.endsWith("/")) {
-      const mod = await import("./out/cts/" + path + ".js")
+    if (path.endsWith("/")) {
+      continue;
+    }
+
+    const mod = await import("./out/cts/" + path + ".js")
+
+    const [tres, trec] = log.record(path);
+    for (const t of mod.test.iterate(trec)) {
+      const res = await t();
+      console.log(path, res);
+      if (res.status === "fail") {
+        return;
+      }
     }
   }
+  console.log(JSON.stringify(log.results, undefined, 2));
 })();
 </script>

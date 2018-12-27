@@ -1,50 +1,132 @@
-import { getStackTrace } from "./util.js";
+import { getStackTrace, now } from "./util.js";
 
-export abstract class Logger {
-  protected namespacePath: string[] = [];
+type Status = "running" | "pass" | "warn" | "fail";
+interface ITestLog {
+  path: string[],
+  cases: IResult[],
+}
+export interface IResult {
+  name: string,
+  params?: object,
+  status: Status,
+  logs?: ILogEntry[],
+  timems: number,
+}
+interface ILogEntry {
+}
 
-  public push(namespace: string) {
-    if (namespace.indexOf("\n") !== -1) {
-      throw new Error("namespace should not have newlines");
+export class Logger {
+  public readonly results: ITestLog[] = [];
+
+  constructor() {
+  }
+
+  public record(path: string[]): [ITestLog, TestRecorder] {
+    const cases: IResult[] = [];
+    const test: ITestLog = { path, cases };
+    this.results.push(test);
+    return [test, new TestRecorder(test)];
+  }
+}
+
+export class TestRecorder {
+  private test: ITestLog;
+
+  constructor(test: ITestLog) {
+    this.test = test;
+  }
+
+  public record(name: string, params?: object): [IResult, CaseRecorder] {
+    const result: IResult = { name, status: "running", timems: -1 };
+    if (params) {
+      result.params = params;
     }
-    this.namespacePath.push(namespace);
+    this.test.cases.push(result);
+    return [result, new CaseRecorder(result)];
+  }
+}
+
+export class CaseRecorder {
+  private result: IResult;
+  private failed: boolean = false;
+  private warned: boolean = false;
+  private startTime: number = -1;
+  private logs: ILogEntry[] = [];
+
+  constructor(result: IResult) {
+    this.result = result;
   }
 
-  public pop() {
-    this.namespacePath.pop();
+  public start() {
+    this.startTime = now();
   }
 
-  public path() {
-    return this.namespacePath.slice();
+  public finish() {
+    if (this.startTime < 0) {
+      throw new Error("finish() before start()");
+    }
+    const endTime = now();
+    this.result.timems = endTime - this.startTime;
+    this.result.status = this.failed ? "fail" :
+        this.warned ? "warn" : "pass";
+
+    if (this.failed || this.warned) {
+      this.result.logs = this.logs;
+    }
+  }
+
+  public log(msg: string) {
+    this.logs.push(msg);
+  }
+
+  public fail(msg?: string) {
+    this.failImpl(msg);
+  }
+
+  public warn(msg?: string) {
+    this.warned = true;
+    if (msg) {
+      this.log("WARN: " + msg);
+    } else {
+      this.log("WARN");
+    }
+    this.log(getStackTrace());
+  }
+
+  public ok(msg?: string) {
+    if (msg) {
+      this.log("PASS: " + msg);
+    } else {
+      this.log("PASS");
+    }
   }
 
   public expect(cond: boolean, msg?: string) {
     if (cond) {
-      this.log("PASS");
+      this.ok(msg)
     } else {
-      if (msg) {
-        this.log("FAIL: " + msg);
-      } else {
-        this.log("FAIL");
-      }
-      this.log(getStackTrace());
+      this.failImpl(msg);
     }
   }
 
-  public abstract log(s: string): void;
+  private failImpl(msg?: string) {
+    this.failed = true;
+    let m = "FAIL";
+    if (msg) {
+      m += ": " + msg;
+    }
+    m += " " + getStackTrace();
+    this.log(m);
+  }
 }
 
+/*
 function applyIndent(indent: string, s: string) {
   const lines = s.split("\n");
   return indent + lines.join("\n" + indent);
 }
 
 abstract class TextLogger extends Logger {
-  public push(namespace: string) {
-    this.out(applyIndent(this.mkIndent(), "* " + namespace));
-    super.push(namespace);
-  }
-
   public log(s: string) {
     this.out(applyIndent(this.mkIndent() + "| ", s));
   }
@@ -74,3 +156,4 @@ export class ConsoleLogger extends TextLogger {
     console.log(s);
   }
 }
+*/

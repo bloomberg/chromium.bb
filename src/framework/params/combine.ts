@@ -1,4 +1,7 @@
-import { ParamIterable, ParamIterator, punit } from "./index.js";
+import {
+  ParamIterable,
+  ParamIterator,
+} from "./index.js";
 
 export function pcombine(params: ParamIterable[]) { return new PCombine(params); }
 export class PCombine implements ParamIterable {
@@ -14,7 +17,7 @@ export class PCombine implements ParamIterable {
 
   private static * cartesian(iters: Array<Iterable<object>>): ParamIterator {
     if (iters.length === 0) {
-      yield* punit();
+      yield {};
       return;
     }
     if (iters.length === 1) {

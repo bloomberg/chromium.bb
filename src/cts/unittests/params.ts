@@ -3,46 +3,43 @@ Unit tests for parameterization system.
 `;
 
 import {
-  Logger,
-  ParamIterable,
+  CaseRecorder,
+  Test,
   pcombine,
   poptions,
-  punit,
-  TestTree,
 } from "../../framework/index.js";
 
-export function add(tree: TestTree) {
-  tree.test("test_sync", (log) => {
-  });
-  tree.test("test_async", async (log) => {
-  });
-  tree.ptest("ptest_sync", punit(), (log, p) => {
-    log.log(JSON.stringify(p));
-  });
-  tree.ptest("ptest_async", punit(), async (log, p) => {
-    log.log(JSON.stringify(p));
-  });
+export const test = new Test();
 
-  function ptestSimple(n: string, params: ParamIterable) {
-    // tslint:disable-next-line:no-console
-    tree.ptest(n, params, (log, p) => log.log(JSON.stringify(p)));
-  }
+test.case("test_sync", (log) => {
+});
+test.case("test_async", async (log) => {
+});
+test.caseP("ptest_sync", [{}], (log, p) => {
+  log.log(JSON.stringify(p));
+});
+test.caseP("ptest_async", [{}], async (log, p) => {
+  log.log(JSON.stringify(p));
+});
 
-  ptestSimple("list", poptions("hello", [1, 2, 3]));
-  ptestSimple("unit", punit());
-  ptestSimple("combine_none", pcombine([]));
-  ptestSimple("combine_unit_unit", pcombine([punit(), punit()]));
-  ptestSimple("combine_lists", pcombine([
-    poptions("x", [1, 2]),
-    poptions("y", ["a", "b"]),
-    punit(),
-  ]));
-  ptestSimple("combine_arrays", pcombine([
-    [{x: 1, y: 2}, {x: 10, y: 20}],
-    [{z: "z"}, {w: "w"}],
-  ]));
-  ptestSimple("combine_mixed", pcombine([
-    poptions("x", [1, 2]),
-    [{z: "z"}, {w: "w"}],
-  ]));
+function print(log: CaseRecorder, p: object) {
+  log.log(JSON.stringify(p));
 }
+
+test.caseP("literal", [{hello: 1}, {hello: 2}], print);
+test.caseP("list", poptions("hello", [1, 2, 3]), print);
+test.caseP("combine_none", pcombine([]), print);
+test.caseP("combine_unit_unit", pcombine([[{}], [{}]]), print);
+test.caseP("combine_lists", pcombine([
+  poptions("x", [1, 2]),
+  poptions("y", ["a", "b"]),
+  [{}],
+]), print);
+test.caseP("combine_arrays", pcombine([
+  [{x: 1, y: 2}, {x: 10, y: 20}],
+  [{z: "z"}, {w: "w"}],
+]), print);
+test.caseP("combine_mixed", pcombine([
+  poptions("x", [1, 2]),
+  [{z: "z"}, {w: "w"}],
+]), print);

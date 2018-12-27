@@ -4,57 +4,85 @@ Unit tests for namespaced logging system.
 Also serves as a larger test of async test functions, and of the logging system.
 `;
 
-import { StringLogger, TestTree } from "../../framework/index.js";
+import { Logger, Test } from "../../framework/index.js";
 
-export function add(tree: TestTree) {
-  tree.test("namespace_path", (log) => {
-    const mylog = new StringLogger();
+export const test = new Test();
 
-    log.expect(mylog.path().length === 0);
-    {
-      mylog.push("hello");
-      log.expect(mylog.path().join("/") === "hello");
-      {
-        mylog.push("world");
-        log.expect(mylog.path().join("/") === "hello/world");
-        mylog.pop();
-      }
-      log.expect(mylog.path().join("/") === "hello");
-      mylog.pop();
-    }
-    log.expect(mylog.path().length === 0);
+test.case("construct", (log) => {
+  const mylog = new Logger();
+  const [testres, testrec] = mylog.record(["foo", "bar"]);
+  const [res1, rec1] = testrec.record("baz");
+  const params2 = {};
+  const [res2, rec2] = testrec.record("qux", params2);
 
-    log.log(mylog.getContents());
-    log.expect(mylog.getContents() === `\
-* hello
-  * world`);
-  });
+  log.expect(testres.path.length === 2);
+  log.expect(testres.path[0] === "foo");
+  log.expect(testres.path[1] === "bar");
+  log.expect(testres.cases.length === 2);
+  log.expect(testres.cases[0] === res1);
+  log.expect(testres.cases[1] === res2);
+  log.expect(res1.name === "baz");
+  log.expect(res1.params === undefined);
+  log.expect(res1.logs === undefined);
+  log.expect(res1.status === "running");
+  log.expect(res1.timems < 0);
+  log.expect(res2.name === "qux");
+  log.expect(res2.params === params2);
+  log.expect(res2.logs === undefined);
+  log.expect(res2.status === "running");
+  log.expect(res2.timems < 0);
+});
 
-  tree.test("log_multiline", (log) => {
-    const mylog = new StringLogger();
+test.case("empty", (log) => {
+  const mylog = new Logger();
+  const [testres, testrec] = mylog.record(["foo", "bar"]);
+  const [res, rec] = testrec.record("baz");
 
-    {
-      mylog.push("hello");
-      mylog.log("a\nb");
-      mylog.pop();
-    }
-    mylog.log("c");
+  rec.start();
+  log.expect(res.status === "running");
+  rec.finish();
+  log.expect(res.status === "pass");
+  log.expect(res.timems > 0);
+});
 
-    log.log(mylog.getContents());
-    log.expect(mylog.getContents() === `\
-* hello
-  | a
-  | b
-| c`);
-  });
+test.case("pass", (log) => {
+  const mylog = new Logger();
+  const [testres, testrec] = mylog.record(["foo", "bar"]);
+  const [res, rec] = testrec.record("baz");
 
-  tree.test("push_multiline", (log) => {
-    const mylog = new StringLogger();
+  rec.start();
+  rec.expect(true);
+  rec.ok();
+  log.expect(res.status === "running");
+  rec.finish();
+  log.expect(res.status === "pass");
+  log.expect(res.timems > 0);
+});
 
-    try {
-      mylog.push("hello\nworld");
-      log.expect(false);
-    } catch (e) {
-    }
-  });
-}
+test.case("warn", (log) => {
+  const mylog = new Logger();
+  const [testres, testrec] = mylog.record(["foo", "bar"]);
+  const [res, rec] = testrec.record("baz");
+
+  rec.start();
+  rec.warn();
+  log.expect(res.status === "running");
+  rec.finish();
+  log.expect(res.status === "warn");
+  log.expect(res.timems > 0);
+});
+
+test.case("fail", (log) => {
+  const mylog = new Logger();
+  const [testres, testrec] = mylog.record(["foo", "bar"]);
+  const [res, rec] = testrec.record("baz");
+
+  rec.start();
+  rec.fail("bye");
+  rec.expect(true, "still shouldn't pass");
+  rec.ok("still shouldn't pass");
+  log.expect(res.status === "running");
+  rec.finish();
+  log.expect(res.status === "fail");
+  log.expect(res.timems > 0);
+});

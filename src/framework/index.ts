@@ -1,3 +1,3 @@
 export * from "./logger.js";
 export * from "./params/index.js";
-export * from "./test_tree.js";
+export * from "./test.js";

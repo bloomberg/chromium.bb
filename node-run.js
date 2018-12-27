@@ -7,7 +7,7 @@ const process = require("process");
 function die() {
   console.error("");
   console.error("Usage:");
-  console.error("  node node-run");
+  console.error("  node node-run --run");
   console.error("  node node-run --generate-listing out-web/cts/listing.json");
   process.exit(1);
 }
@@ -19,13 +19,17 @@ if (!fs.existsSync("out-node/")) {
 
 const args = parseArgs(process.argv.slice(2));
 let outFile;
-if (args["generate-listing"]) {
+if (args.hasOwnProperty("generate-listing")) {
   try {
     outFile = path.normalize(args["generate-listing"]);
   } catch (e) {
     console.error(e);
     die();
   }
+}
+let shouldRun = args.hasOwnProperty("run");
+if (!outFile && !shouldRun) {
+  die();
 }
 
 const prefix = "src/cts/";
@@ -42,10 +46,9 @@ for (const entry of files) {
   if (f.endsWith(".ts")) {
     const testPath = f.substring(0, f.length - 3);
     const mod = modules[testPath] = require("./out-node/cts/" + testPath);
-    const description = mod.description.trim();
     listing.push({
       path: testPath,
-      description
+      description: mod.description.trim(),
     });
   } else if (f.endsWith("/README.txt")) {
     // ignore
@@ -70,11 +73,27 @@ if (outFile) {
   process.exit(0);
 }
 
-for (const {path, description} of listing) {
-  console.log(path, description);
-  if (!path.endsWith("/")) {
-    console.log(modules[path].add);
-  }
-}
+if (shouldRun) {
+  const { Logger } = require("./out-node/framework");
+  (async () => {
+    const log = new Logger();
 
-// TODO: implement --run
+    for (const {path, description} of listing) {
+      console.error("");
+      console.error(path, description);
+      if (path.endsWith("/")) {
+        continue;
+      }
+
+      const [tres, trec] = log.record(path);
+      for (const t of modules[path].test.iterate(trec)) {
+        const res = await t();
+        console.error(path, res);
+        if (res.status === "fail") {
+          return;
+        }
+      }
+    }
+    console.log(JSON.stringify(log.results, undefined, 2));
+  })();
+}
