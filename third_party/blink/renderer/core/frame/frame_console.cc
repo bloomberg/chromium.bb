@@ -146,6 +146,7 @@ void FrameConsole::DidFailLoading(DocumentLoader* loader,
 
 void FrameConsole::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
+  ConsoleLoggerImplBase::Trace(visitor);
 }
 
 }  // namespace blink

@@ -50,6 +50,7 @@
 namespace blink {
 
 class ArchiveResource;
+class ConsoleLogger;
 class MHTMLArchive;
 class KURL;
 class Resource;
@@ -75,6 +76,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
  public:
   ResourceFetcher(FetchContext*);
+  ResourceFetcher(FetchContext*, ConsoleLogger*);
   virtual ~ResourceFetcher();
   virtual void Trace(blink::Visitor*);
 
@@ -107,6 +109,11 @@ class PLATFORM_EXPORT ResourceFetcher
 
   FetchContext& Context() const;
   void ClearContext();
+  ConsoleLogger* GetConsoleLogger() { return console_logger_; }
+  void SetConsoleLogger(ConsoleLogger* console_logger) {
+    DCHECK(console_logger);
+    console_logger_ = console_logger;
+  }
 
   int BlockingRequestCount() const;
   int NonblockingRequestCount() const;
@@ -286,6 +293,7 @@ class PLATFORM_EXPORT ResourceFetcher
   void RevalidateStaleResource(Resource* stale_resource);
 
   Member<FetchContext> context_;
+  Member<ConsoleLogger> console_logger_;
   Member<ResourceLoadScheduler> scheduler_;
 
   DocumentResourceMap cached_resources_map_;

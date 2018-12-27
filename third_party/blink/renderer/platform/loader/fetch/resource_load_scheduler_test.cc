@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
@@ -92,7 +93,7 @@ TEST_F(ResourceLoadSchedulerTest, StopStoppableRequest) {
   ResourceLoadScheduler::ClientId id1 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client1, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kMedium, 0 /* intra_priority */,
-                       &id1);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id1);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id1);
   EXPECT_FALSE(client1->WasRun());
 
@@ -102,7 +103,7 @@ TEST_F(ResourceLoadSchedulerTest, StopStoppableRequest) {
   ResourceLoadScheduler::ClientId id2 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client2, ThrottleOption::kStoppable,
                        ResourceLoadPriority::kMedium, 0 /* intra_priority */,
-                       &id2);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id2);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id2);
   EXPECT_FALSE(client2->WasRun());
 
@@ -112,7 +113,7 @@ TEST_F(ResourceLoadSchedulerTest, StopStoppableRequest) {
   ResourceLoadScheduler::ClientId id3 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client3, ThrottleOption::kCanNotBeStoppedOrThrottled,
                        ResourceLoadPriority::kMedium, 0 /* intra_priority */,
-                       &id3);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id3);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id3);
   EXPECT_TRUE(client3->WasRun());
 
@@ -140,7 +141,7 @@ TEST_F(ResourceLoadSchedulerTest, ThrottleThrottleableRequest) {
   ResourceLoadScheduler::ClientId id1 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client1, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kMedium, 0 /* intra_priority */,
-                       &id1);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id1);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id1);
   EXPECT_FALSE(client1->WasRun());
 
@@ -150,7 +151,7 @@ TEST_F(ResourceLoadSchedulerTest, ThrottleThrottleableRequest) {
   ResourceLoadScheduler::ClientId id2 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client2, ThrottleOption::kStoppable,
                        ResourceLoadPriority::kMedium, 0 /* intra_priority */,
-                       &id2);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id2);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id2);
   EXPECT_TRUE(client2->WasRun());
 
@@ -160,7 +161,7 @@ TEST_F(ResourceLoadSchedulerTest, ThrottleThrottleableRequest) {
   ResourceLoadScheduler::ClientId id3 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client3, ThrottleOption::kCanNotBeStoppedOrThrottled,
                        ResourceLoadPriority::kMedium, 0 /* intra_priority */,
-                       &id3);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id3);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id3);
   EXPECT_TRUE(client3->WasRun());
 
@@ -184,7 +185,7 @@ TEST_F(ResourceLoadSchedulerTest, Throttled) {
   ResourceLoadScheduler::ClientId id1 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client1, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kMedium, 0 /* intra_priority */,
-                       &id1);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id1);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id1);
   EXPECT_TRUE(client1->WasRun());
 
@@ -193,7 +194,7 @@ TEST_F(ResourceLoadSchedulerTest, Throttled) {
   ResourceLoadScheduler::ClientId id2 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client2, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kMedium, 0 /* intra_priority */,
-                       &id2);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id2);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id2);
   EXPECT_FALSE(client2->WasRun());
 
@@ -202,7 +203,7 @@ TEST_F(ResourceLoadSchedulerTest, Throttled) {
   ResourceLoadScheduler::ClientId id3 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client3, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kMedium, 0 /* intra_priority */,
-                       &id3);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id3);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id3);
   EXPECT_FALSE(client3->WasRun());
 
@@ -210,7 +211,7 @@ TEST_F(ResourceLoadSchedulerTest, Throttled) {
   ResourceLoadScheduler::ClientId id4 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client4, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kMedium, 0 /* intra_priority */,
-                       &id4);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id4);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id4);
   EXPECT_FALSE(client4->WasRun());
 
@@ -236,7 +237,7 @@ TEST_F(ResourceLoadSchedulerTest, Unthrottle) {
   ResourceLoadScheduler::ClientId id1 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client1, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kMedium, 0 /* intra_priority */,
-                       &id1);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id1);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id1);
   EXPECT_TRUE(client1->WasRun());
 
@@ -244,7 +245,7 @@ TEST_F(ResourceLoadSchedulerTest, Unthrottle) {
   ResourceLoadScheduler::ClientId id2 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client2, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kMedium, 0 /* intra_priority */,
-                       &id2);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id2);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id2);
   EXPECT_FALSE(client2->WasRun());
 
@@ -252,7 +253,7 @@ TEST_F(ResourceLoadSchedulerTest, Unthrottle) {
   ResourceLoadScheduler::ClientId id3 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client3, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kMedium, 0 /* intra_priority */,
-                       &id3);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id3);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id3);
   EXPECT_FALSE(client3->WasRun());
 
@@ -273,7 +274,7 @@ TEST_F(ResourceLoadSchedulerTest, Stopped) {
   ResourceLoadScheduler::ClientId id1 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client1, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kMedium, 0 /* intra_priority */,
-                       &id1);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id1);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id1);
   EXPECT_TRUE(client1->WasRun());
 
@@ -281,7 +282,7 @@ TEST_F(ResourceLoadSchedulerTest, Stopped) {
   ResourceLoadScheduler::ClientId id2 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client2, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kMedium, 0 /* intra_priority */,
-                       &id2);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id2);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id2);
   EXPECT_FALSE(client2->WasRun());
 
@@ -289,7 +290,7 @@ TEST_F(ResourceLoadSchedulerTest, Stopped) {
   ResourceLoadScheduler::ClientId id3 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client3, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kMedium, 0 /* intra_priority */,
-                       &id3);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id3);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id3);
   EXPECT_FALSE(client3->WasRun());
 
@@ -318,28 +319,28 @@ TEST_F(ResourceLoadSchedulerTest, PriorityIsConsidered) {
   ResourceLoadScheduler::ClientId id1 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client1, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kLowest, 10 /* intra_priority */,
-                       &id1);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id1);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id1);
 
   MockClient* client2 = MakeGarbageCollected<MockClient>();
   ResourceLoadScheduler::ClientId id2 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client2, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kLow, 1 /* intra_priority */,
-                       &id2);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id2);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id2);
 
   MockClient* client3 = MakeGarbageCollected<MockClient>();
   ResourceLoadScheduler::ClientId id3 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client3, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kLow, 3 /* intra_priority */,
-                       &id3);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id3);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id3);
 
   MockClient* client4 = MakeGarbageCollected<MockClient>();
   ResourceLoadScheduler::ClientId id4 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client4, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kHigh, 0 /* intra_priority */,
-                       &id4);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id4);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id4);
 
   EXPECT_FALSE(client1->WasRun());
@@ -393,13 +394,13 @@ TEST_F(ResourceLoadSchedulerTest, AllowedRequestsRunInPriorityOrder) {
   ResourceLoadScheduler::ClientId id1 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client1, ThrottleOption::kStoppable,
                        ResourceLoadPriority::kLowest, 10 /* intra_priority */,
-                       &id1);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id1);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id1);
 
   ResourceLoadScheduler::ClientId id2 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client2, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kHigh, 1 /* intra_priority */,
-                       &id2);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id2);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id2);
 
   EXPECT_FALSE(client1->WasRun());
@@ -434,21 +435,21 @@ TEST_F(ResourceLoadSchedulerTest, StoppableRequestResumesWhenThrottled) {
   ResourceLoadScheduler::ClientId id1 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client1, ThrottleOption::kStoppable,
                        ResourceLoadPriority::kLowest, 10 /* intra_priority */,
-                       &id1);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id1);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id1);
 
   MockClient* client2 = MakeGarbageCollected<MockClient>();
   ResourceLoadScheduler::ClientId id2 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client2, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kHigh, 1 /* intra_priority */,
-                       &id2);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id2);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id2);
 
   MockClient* client3 = MakeGarbageCollected<MockClient>();
   ResourceLoadScheduler::ClientId id3 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client3, ThrottleOption::kStoppable,
                        ResourceLoadPriority::kLowest, 10 /* intra_priority */,
-                       &id3);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id3);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id3);
 
   EXPECT_FALSE(client1->WasRun());
@@ -485,21 +486,21 @@ TEST_F(ResourceLoadSchedulerTest, SetPriority) {
   ResourceLoadScheduler::ClientId id1 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client1, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kLowest, 0 /* intra_priority */,
-                       &id1);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id1);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id1);
 
   MockClient* client2 = MakeGarbageCollected<MockClient>();
   ResourceLoadScheduler::ClientId id2 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client2, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kLow, 5 /* intra_priority */,
-                       &id2);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id2);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id2);
 
   MockClient* client3 = MakeGarbageCollected<MockClient>();
   ResourceLoadScheduler::ClientId id3 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client3, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kLow, 10 /* intra_priority */,
-                       &id3);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id3);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id3);
 
   EXPECT_FALSE(client1->WasRun());
@@ -538,28 +539,28 @@ TEST_F(ResourceLoadSchedulerTest, LoosenThrottlingPolicy) {
   ResourceLoadScheduler::ClientId id1 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client1, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kLowest, 0 /* intra_priority */,
-                       &id1);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id1);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id1);
 
   MockClient* client2 = MakeGarbageCollected<MockClient>();
   ResourceLoadScheduler::ClientId id2 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client2, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kLowest, 0 /* intra_priority */,
-                       &id2);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id2);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id2);
 
   MockClient* client3 = MakeGarbageCollected<MockClient>();
   ResourceLoadScheduler::ClientId id3 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client3, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kLowest, 0 /* intra_priority */,
-                       &id3);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id3);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id3);
 
   MockClient* client4 = MakeGarbageCollected<MockClient>();
   ResourceLoadScheduler::ClientId id4 = ResourceLoadScheduler::kInvalidClientId;
   Scheduler()->Request(client4, ThrottleOption::kThrottleable,
                        ResourceLoadPriority::kLowest, 0 /* intra_priority */,
-                       &id4);
+                       MakeGarbageCollected<NullConsoleLogger>(), &id4);
   EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id4);
 
   Scheduler()->SetPriority(id2, ResourceLoadPriority::kLow, 0);

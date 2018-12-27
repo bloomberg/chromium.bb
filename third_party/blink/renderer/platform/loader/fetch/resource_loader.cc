@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors_error_string.h"
+#include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
@@ -415,7 +416,8 @@ void ResourceLoader::Start() {
         ResourceLoadScheduler::ThrottleOption::kCanNotBeStoppedOrThrottled;
   }
   scheduler_->Request(this, throttle_option, request.Priority(),
-                      request.IntraPriorityValue(), &scheduler_client_id_);
+                      request.IntraPriorityValue(), GetConsoleLogger(),
+                      &scheduler_client_id_);
 }
 
 void ResourceLoader::Run() {
@@ -1069,12 +1071,12 @@ void ResourceLoader::HandleError(const ResourceError& error) {
     return;
   }
   if (error.CorsErrorStatus()) {
-    Context().AddErrorConsoleMessage(
+    GetConsoleLogger()->AddErrorMessage(
+        ConsoleLogger::Source::kScript,
         cors::GetErrorString(
             *error.CorsErrorStatus(), resource_->GetResourceRequest().Url(),
             resource_->LastResourceRequest().Url(), *resource_->GetOrigin(),
-            resource_->GetType(), resource_->Options().initiator_info.name),
-        FetchContext::kJSSource);
+            resource_->GetType(), resource_->Options().initiator_info.name));
   }
 
   Release(ResourceLoadScheduler::ReleaseOption::kReleaseAndSchedule,
@@ -1231,9 +1233,13 @@ void ResourceLoader::FinishedCreatingBlob(
   }
 }
 
+ConsoleLogger* ResourceLoader::GetConsoleLogger() {
+  return fetcher_->GetConsoleLogger();
+}
+
 base::Optional<ResourceRequestBlockedReason>
 ResourceLoader::CheckResponseNosniff(mojom::RequestContextType request_context,
-                                     const ResourceResponse& response) const {
+                                     const ResourceResponse& response) {
   bool sniffing_allowed =
       ParseContentTypeOptionsHeader(response.HttpHeaderField(
           http_names::kXContentTypeOptions)) != kContentTypeOptionsNosniff;
@@ -1243,13 +1249,13 @@ ResourceLoader::CheckResponseNosniff(mojom::RequestContextType request_context,
   String mime_type = response.HttpContentType();
   if (request_context == mojom::RequestContextType::STYLE &&
       !MIMETypeRegistry::IsSupportedStyleSheetMIMEType(mime_type)) {
-    Context().AddErrorConsoleMessage(
+    GetConsoleLogger()->AddErrorMessage(
+        ConsoleLogger::Source::kSecurity,
         "Refused to apply style from '" +
             response.CurrentRequestUrl().ElidedString() +
             "' because its MIME type ('" + mime_type + "') " +
             "is not a supported stylesheet MIME type, and strict MIME checking "
-            "is enabled.",
-        FetchContext::kSecuritySource);
+            "is enabled.");
     return ResourceRequestBlockedReason::kContentType;
   }
   // TODO(mkwst): Move the 'nosniff' bit of 'AllowedByNosniff::MimeTypeAsScript'

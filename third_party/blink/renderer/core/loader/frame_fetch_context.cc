@@ -308,7 +308,10 @@ ResourceFetcher* FrameFetchContext::CreateFetcher(DocumentLoader* loader,
                                                   Document* document) {
   FrameFetchContext* context =
       MakeGarbageCollected<FrameFetchContext>(loader, document);
-  return MakeGarbageCollected<ResourceFetcher>(context);
+  // |document| is null or detached.
+  DCHECK(!document || !document->GetFrame());
+  ConsoleLogger* logger = &context->GetFrame()->Console();
+  return MakeGarbageCollected<ResourceFetcher>(context, logger);
 }
 
 FrameFetchContext::FrameFetchContext(DocumentLoader* loader, Document* document)
@@ -1549,9 +1552,9 @@ base::Optional<ResourceRequestBlockedReason> FrameFetchContext::CanRequest(
     ResourceRequest::RedirectStatus redirect_status) const {
   if (document_ && document_->IsFreezingInProgress() &&
       !resource_request.GetKeepalive()) {
-    AddErrorConsoleMessage(
-        "Only fetch keepalive is allowed during onfreeze: " + url.GetString(),
-        kJSSource);
+    AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kErrorMessageLevel,
+        "Only fetch keepalive is allowed during onfreeze: " + url.GetString()));
     return ResourceRequestBlockedReason::kOther;
   }
   return BaseFetchContext::CanRequest(type, resource_request, url, options,

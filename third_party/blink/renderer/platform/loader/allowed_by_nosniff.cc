@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/loader/allowed_by_nosniff.h"
 
+#include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
@@ -130,6 +131,7 @@ bool AllowMimeTypeAsScript(const String& mime_type,
 }  // namespace
 
 bool AllowedByNosniff::MimeTypeAsScript(FetchContext& context,
+                                        ConsoleLogger* console_logger,
                                         const ResourceResponse& response,
                                         MimeTypeCheck mime_type_check_mode,
                                         bool is_worker_global_scope) {
@@ -150,12 +152,12 @@ bool AllowedByNosniff::MimeTypeAsScript(FetchContext& context,
   if (!(ParseContentTypeOptionsHeader(response.HttpHeaderField(
             http_names::kXContentTypeOptions)) != kContentTypeOptionsNosniff ||
         MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type))) {
-    context.AddErrorConsoleMessage(
+    console_logger->AddErrorMessage(
+        ConsoleLogger::Source::kSecurity,
         "Refused to execute script from '" +
             response.CurrentRequestUrl().ElidedString() +
             "' because its MIME type ('" + mime_type +
-            "') is not executable, and strict MIME type checking is enabled.",
-        FetchContext::kSecuritySource);
+            "') is not executable, and strict MIME type checking is enabled.");
     return false;
   }
 
@@ -190,11 +192,11 @@ bool AllowedByNosniff::MimeTypeAsScript(FetchContext& context,
   if (!allow || warn) {
     const char* msg =
         allow ? "Deprecated: Future versions will refuse" : "Refused";
-    context.AddErrorConsoleMessage(
+    console_logger->AddErrorMessage(
+        ConsoleLogger::Source::kSecurity,
         String() + msg + " to execute script from '" +
             response.CurrentRequestUrl().ElidedString() +
-            "' because its MIME type ('" + mime_type + "') is not executable.",
-        FetchContext::kSecuritySource);
+            "' because its MIME type ('" + mime_type + "') is not executable.");
   }
   return allow;
 }

@@ -88,18 +88,6 @@ class PLATFORM_EXPORT FetchContext
   FetchContext(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                FetchClientSettingsObject&);
 
-  // This enum corresponds to blink::MessageSource. We have this not to
-  // introduce any dependency to core/.
-  //
-  // Currently only kJSMessageSource, kSecurityMessageSource and
-  // kOtherMessageSource are used, but not to impress readers that
-  // AddConsoleMessage() call from FetchContext() should always use them,
-  // which is not true, we ask users of the Add.*ConsoleMessage() methods
-  // to explicitly specify the MessageSource to use.
-  //
-  // Extend this when needed.
-  enum LogSource { kJSSource, kSecuritySource, kOtherSource };
-
   static FetchContext& NullInstance(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
@@ -210,10 +198,6 @@ class PLATFORM_EXPORT FetchContext
   virtual bool UpdateTimingInfoForIFrameNavigation(ResourceTimingInfo*) {
     return false;
   }
-
-  virtual void AddInfoConsoleMessage(const String&, LogSource) const;
-  virtual void AddWarningConsoleMessage(const String&, LogSource) const;
-  virtual void AddErrorConsoleMessage(const String&, LogSource) const;
 
   virtual void CountUsage(mojom::WebFeature) const = 0;
   virtual void CountDeprecation(mojom::WebFeature) const = 0;

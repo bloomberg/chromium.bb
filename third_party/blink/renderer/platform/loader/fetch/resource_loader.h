@@ -47,6 +47,7 @@
 
 namespace blink {
 
+class ConsoleLogger;
 class FetchContext;
 class ResourceError;
 class ResourceFetcher;
@@ -182,10 +183,11 @@ class PLATFORM_EXPORT ResourceLoader final
   void FinishedCreatingBlob(const scoped_refptr<BlobDataHandle>&);
 
   bool GetCorsFlag() const { return resource_->Options().cors_flag; }
+  ConsoleLogger* GetConsoleLogger();
 
   base::Optional<ResourceRequestBlockedReason> CheckResponseNosniff(
       mojom::RequestContextType,
-      const ResourceResponse&) const;
+      const ResourceResponse&);
 
   bool ShouldCheckCorsInResourceLoader() const;
 

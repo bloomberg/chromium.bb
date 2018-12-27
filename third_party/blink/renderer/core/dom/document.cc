@@ -706,6 +706,7 @@ Document::Document(const DocumentInit& initializer,
 
     fetcher_ = frame_->Loader().GetDocumentLoader()->Fetcher();
     To<FrameFetchContext>(fetcher_->Context()).ProvideDocumentToContext(this);
+    fetcher_->SetConsoleLogger(this);
 
     // TODO(dcheng): Why does this need to check that DOMWindow is non-null?
     CustomElementRegistry* registry =

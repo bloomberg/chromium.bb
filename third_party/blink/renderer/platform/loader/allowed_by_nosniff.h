@@ -9,6 +9,7 @@
 
 namespace blink {
 
+class ConsoleLogger;
 class FetchContext;
 class ResourceResponse;
 
@@ -17,6 +18,7 @@ class PLATFORM_EXPORT AllowedByNosniff final {
   enum class MimeTypeCheck { kStrict, kLax };
 
   static bool MimeTypeAsScript(FetchContext&,
+                               ConsoleLogger*,
                                const ResourceResponse&,
                                MimeTypeCheck mime_type_check_mode,
                                bool is_worker_global_scope);

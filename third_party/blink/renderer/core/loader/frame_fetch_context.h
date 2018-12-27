@@ -180,6 +180,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   void DispatchNetworkQuiet() override;
 
  private:
+  class FrameConsoleLogger;
   friend class FrameFetchContextTest;
 
   struct FrozenState;
