@@ -1317,16 +1317,10 @@ void ServiceWorkerContextClient::ToWebServiceWorkerRequestForFetchEvent(
     }
   }
 
-  // Non-S13nServiceWorker: The body is provided as a blob.
-  if (request->blob) {
-    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-    web_request->SetBlob(blink::WebString::FromASCII(request->blob->uuid),
-                         request->blob->size, request->blob->blob.PassHandle());
-  }
-  // S13nServiceWorker: The body is provided in |request->body|.
-  else if (request->body.has_value()) {
+  // The body is provided in |request->body|.
+  DCHECK(!request->blob);
+  if (request->body.has_value()) {
     DCHECK(request->body.value());
-    DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
     std::vector<blink::mojom::BlobPtrInfo> blob_ptrs;
     if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       // We need this as GetBlobFromUUID is a sync IPC.

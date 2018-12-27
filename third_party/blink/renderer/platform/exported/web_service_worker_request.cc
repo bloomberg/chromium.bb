@@ -9,7 +9,6 @@
 #include "third_party/blink/public/platform/web_http_header_visitor.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -23,7 +22,6 @@ class WebServiceWorkerRequestPrivate
   WebString method_;
   HTTPHeaderMap headers_;
   scoped_refptr<EncodedFormData> http_body;
-  scoped_refptr<BlobDataHandle> blob_data_handle;
   Referrer referrer_;
   network::mojom::FetchRequestMode mode_ =
       network::mojom::FetchRequestMode::kNoCors;
@@ -120,31 +118,6 @@ void WebServiceWorkerRequest::SetBody(const WebHTTPBody& body) {
 
 WebHTTPBody WebServiceWorkerRequest::Body() const {
   return private_->http_body;
-}
-
-void WebServiceWorkerRequest::SetBlob(const WebString& uuid,
-                                      long long size,
-                                      mojo::ScopedMessagePipeHandle blob_pipe) {
-  SetBlob(uuid, size,
-          mojom::blink::BlobPtrInfo(std::move(blob_pipe),
-                                    mojom::blink::Blob::Version_));
-}
-
-void WebServiceWorkerRequest::SetBlob(const WebString& uuid,
-                                      long long size,
-                                      mojom::blink::BlobPtrInfo blob_info) {
-  private_->blob_data_handle =
-      BlobDataHandle::Create(uuid, String(), size, std::move(blob_info));
-}
-
-void WebServiceWorkerRequest::SetBlobDataHandle(
-    scoped_refptr<BlobDataHandle> blob_data_handle) {
-  private_->blob_data_handle = std::move(blob_data_handle);
-}
-
-scoped_refptr<BlobDataHandle> WebServiceWorkerRequest::GetBlobDataHandle()
-    const {
-  return private_->blob_data_handle;
 }
 
 void WebServiceWorkerRequest::SetReferrer(

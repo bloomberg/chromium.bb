@@ -15,7 +15,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/numerics/safe_conversions.h"
@@ -115,109 +114,7 @@ net::NetLogEventType RequestJobResultToNetEventType(
   return n::FAILED;
 }
 
-// Does file IO. Use with base::MayBlock().
-std::vector<int64_t> GetFileSizes(std::vector<base::FilePath> file_paths) {
-  std::vector<int64_t> sizes;
-  sizes.reserve(file_paths.size());
-  for (const base::FilePath& path : file_paths) {
-    base::File::Info file_info;
-    if (!base::GetFileInfo(path, &file_info) || file_info.is_directory)
-      return std::vector<int64_t>();
-    sizes.push_back(file_info.size);
-  }
-  return sizes;
-}
-
 }  // namespace
-
-// Sets the size on each DataElement in the request body that is a file with
-// unknown size. This ensures ServiceWorkerURLRequestJob::CreateRequestBodyBlob
-// can successfuly create a blob from the data elements, as files with unknown
-// sizes are not supported by the blob storage system.
-class ServiceWorkerURLRequestJob::FileSizeResolver {
- public:
-  explicit FileSizeResolver(ServiceWorkerURLRequestJob* owner)
-      : owner_(owner), weak_factory_(this) {
-    TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker", "FileSizeResolver", this, "URL",
-                             owner_->request()->url().spec());
-    owner_->request()->net_log().BeginEvent(
-        net::NetLogEventType::SERVICE_WORKER_WAITING_FOR_REQUEST_BODY_FILES);
-  }
-
-  ~FileSizeResolver() {
-    owner_->request()->net_log().EndEvent(
-        net::NetLogEventType::SERVICE_WORKER_WAITING_FOR_REQUEST_BODY_FILES,
-        net::NetLog::BoolCallback("success", phase_ == Phase::SUCCESS));
-    TRACE_EVENT_ASYNC_END1("ServiceWorker", "FileSizeResolver", this, "Success",
-                           phase_ == Phase::SUCCESS);
-  }
-
-  void Resolve(base::OnceCallback<void(bool /* success */)> callback) {
-    DCHECK_EQ(static_cast<int>(Phase::INITIAL), static_cast<int>(phase_));
-    DCHECK(file_elements_.empty());
-    phase_ = Phase::WAITING;
-    body_ = owner_->body_;
-    callback_ = std::move(callback);
-
-    std::vector<base::FilePath> file_paths;
-    for (network::DataElement& element : *body_->elements_mutable()) {
-      if (element.type() == network::DataElement::TYPE_FILE &&
-          element.length() == network::DataElement::kUnknownSize) {
-        file_elements_.push_back(&element);
-        file_paths.push_back(element.path());
-      }
-    }
-    if (file_elements_.empty()) {
-      Complete(true);
-      return;
-    }
-
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE,
-        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-        base::BindOnce(&GetFileSizes, std::move(file_paths)),
-        base::BindOnce(
-            &ServiceWorkerURLRequestJob::FileSizeResolver::OnFileSizesResolved,
-            weak_factory_.GetWeakPtr()));
-  }
-
- private:
-  enum class Phase { INITIAL, WAITING, SUCCESS, FAIL };
-
-  void OnFileSizesResolved(std::vector<int64_t> sizes) {
-    bool success = !sizes.empty();
-    if (success) {
-      DCHECK_EQ(sizes.size(), file_elements_.size());
-      size_t num_elements = file_elements_.size();
-      for (size_t i = 0; i < num_elements; i++) {
-        network::DataElement* element = file_elements_[i];
-        element->SetToFilePathRange(element->path(), element->offset(),
-                                    base::checked_cast<uint64_t>(sizes[i]),
-                                    element->expected_modification_time());
-      }
-      file_elements_.clear();
-    }
-    Complete(success);
-  }
-
-  void Complete(bool success) {
-    DCHECK_EQ(static_cast<int>(Phase::WAITING), static_cast<int>(phase_));
-    phase_ = success ? Phase::SUCCESS : Phase::FAIL;
-    // Destroys |this|.
-    std::move(callback_).Run(success);
-  }
-
-  // Owns and must outlive |this|.
-  ServiceWorkerURLRequestJob* owner_;
-
-  scoped_refptr<network::ResourceRequestBody> body_;
-  std::vector<network::DataElement*> file_elements_;
-  base::OnceCallback<void(bool /* success */)> callback_;
-  Phase phase_ = Phase::INITIAL;
-  base::WeakPtrFactory<FileSizeResolver> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileSizeResolver);
-};
 
 // A helper for recording navigation preload UMA. The UMA is recorded
 // after both service worker preparation finished and the
@@ -345,7 +242,6 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
 
 ServiceWorkerURLRequestJob::~ServiceWorkerURLRequestJob() {
   data_pipe_reader_.reset();
-  file_size_resolver_.reset();
 
   if (!ShouldRecordResult())
     return;
@@ -527,16 +423,7 @@ void ServiceWorkerURLRequestJob::StartRequest() {
       return;
 
     case ResponseType::FORWARD_TO_SERVICE_WORKER:
-      if (HasRequestBody()) {
-        DCHECK(!file_size_resolver_);
-        file_size_resolver_.reset(new FileSizeResolver(this));
-        file_size_resolver_->Resolve(base::BindOnce(
-            &ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved,
-            GetWeakPtr()));
-        return;
-      }
-
-      RequestBodyFileSizesResolved(true);
+      ForwardRequestToServiceWorker();
       return;
   }
 
@@ -583,29 +470,6 @@ ServiceWorkerURLRequestJob::CreateResourceRequest() {
         base::make_optional(provider_host_->fetch_request_window_id());
   }
   return request;
-}
-
-blink::mojom::BlobPtr ServiceWorkerURLRequestJob::CreateRequestBodyBlob(
-    std::string* blob_uuid,
-    uint64_t* blob_size) {
-  DCHECK(HasRequestBody());
-  auto blob_builder =
-      std::make_unique<storage::BlobDataBuilder>(base::GenerateGUID());
-  for (const network::DataElement& element : (*body_->elements())) {
-    blob_builder->AppendIPCDataElement(element,
-                                       blob_storage_context_->registry());
-  }
-
-  *blob_uuid = blob_builder->uuid();
-  request_body_blob_data_handle_ =
-      blob_storage_context_->AddFinishedBlob(std::move(blob_builder));
-  *blob_size = request_body_blob_data_handle_->size();
-
-  blink::mojom::BlobPtr blob_ptr;
-  storage::BlobImpl::Create(std::make_unique<storage::BlobDataHandle>(
-                                *request_body_blob_data_handle_),
-                            MakeRequest(&blob_ptr));
-  return blob_ptr;
 }
 
 bool ServiceWorkerURLRequestJob::ShouldRecordNavigationMetrics(
@@ -951,22 +815,10 @@ bool ServiceWorkerURLRequestJob::IsMainResourceLoad() const {
 bool ServiceWorkerURLRequestJob::HasRequestBody() {
   // URLRequest::has_upload() must be checked since its upload data may have
   // been cleared while handling a redirect.
-  return request_->has_upload() && body_.get() && blob_storage_context_;
+  return request_->has_upload() && body_.get();
 }
 
-void ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved(bool success) {
-  file_size_resolver_.reset();
-  if (!success) {
-    RecordResult(
-        ServiceWorkerMetrics::REQUEST_JOB_ERROR_REQUEST_BODY_BLOB_FAILED);
-    // TODO(falken): This and below should probably be NotifyStartError, not
-    // DeliverErrorResponse. But changing it causes
-    // ServiceWorkerURLRequestJobTest.DeletedProviderHostBeforeFetchEvent to
-    // fail.
-    DeliverErrorResponse();
-    return;
-  }
-
+void ServiceWorkerURLRequestJob::ForwardRequestToServiceWorker() {
   ServiceWorkerMetrics::URLRequestJobResult result =
       ServiceWorkerMetrics::REQUEST_JOB_ERROR_BAD_DELEGATE;
   ServiceWorkerVersion* active_worker =
@@ -989,26 +841,10 @@ void ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved(bool success) {
 
   std::unique_ptr<network::ResourceRequest> resource_request =
       CreateResourceRequest();
-  std::string blob_uuid;
-  uint64_t blob_size = 0;
-  blink::mojom::BlobPtr blob;
-  if (HasRequestBody()) {
-    // TODO(falken): Could we just set |resource_request->request_body| to
-    // |body_| directly, and not construct a new blob? But I think the
-    // renderer-side might need to know the size of the body.
-    blob = CreateRequestBodyBlob(&blob_uuid, &blob_size);
-  }
-
   auto fetch_api_request =
       blink::mojom::FetchAPIRequest::From(*resource_request);
-  // Use |fetch_api_request->blob| to represent body for non-S13nServiceWorker
-  // case, please see dispatch_fetch_event_params.mojom for details.
-  // TODO(crbug.com/911930): Use |fetch_api_request->body| instead.
-  fetch_api_request->body.reset();
-  DCHECK(!fetch_api_request->blob);
-  if (blob) {
-    fetch_api_request->blob = blink::mojom::SerializedBlob::New(
-        blob_uuid, std::string(), blob_size, blob.PassInterface());
+  if (HasRequestBody()) {
+    fetch_api_request->body = std::move(body_);
   }
   DCHECK(!fetch_dispatcher_);
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(

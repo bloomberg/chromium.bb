@@ -47,7 +47,6 @@ class ResourceRequestBody;
 }
 
 namespace storage {
-class BlobDataHandle;
 class BlobStorageContext;
 }  // namespace storage
 
@@ -150,7 +149,6 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
  private:
   using ResponseHeaderMap = base::flat_map<std::string, std::string>;
 
-  class FileSizeResolver;
   class NavigationPreloadMetrics;
   friend class service_worker_url_request_job_unittest::DelayHelper;
   friend class ServiceWorkerURLRequestJobTest;
@@ -172,14 +170,6 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   // Creates a ResourceRequest from |request_|. Does not populate the request
   // body.
   std::unique_ptr<network::ResourceRequest> CreateResourceRequest();
-
-  // Creates BlobDataHandle of the request body from |body_|. This handle
-  // |request_body_blob_data_handle_| will be deleted when
-  // ServiceWorkerURLRequestJob is deleted.
-  // This must not be called until all files in |body_| with unknown size have
-  // their sizes populated.
-  blink::mojom::BlobPtr CreateRequestBodyBlob(std::string* blob_uuid,
-                                              uint64_t* blob_size);
 
   // Returns true if this job performed a navigation that should be logged to
   // performance-related UMA. It returns false in certain cases that are not
@@ -242,9 +232,8 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
 
   bool IsMainResourceLoad() const;
 
-  // For waiting for files sizes of request body files with unknown sizes.
   bool HasRequestBody();
-  void RequestBodyFileSizesResolved(bool success);
+  void ForwardRequestToServiceWorker();
 
   // Called back from
   // ServiceWorkerFetchEventDispatcher::MaybeStartNavigationPreload when the
@@ -323,10 +312,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   blink::mojom::RequestContextType request_context_type_;
   network::mojom::RequestContextFrameType frame_type_;
   bool fall_back_required_;
-  // ResourceRequestBody has a collection of BlobDataHandles attached to it
-  // using the userdata mechanism. So we have to keep it not to free the blobs.
   scoped_refptr<network::ResourceRequestBody> body_;
-  std::unique_ptr<storage::BlobDataHandle> request_body_blob_data_handle_;
 
   ResponseBodyType response_body_type_ = UNKNOWN;
   bool did_record_result_ = false;
@@ -335,8 +321,6 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   std::string response_cache_storage_cache_name_;
 
   ServiceWorkerHeaderList cors_exposed_header_names_;
-
-  std::unique_ptr<FileSizeResolver> file_size_resolver_;
 
   base::WeakPtrFactory<ServiceWorkerURLRequestJob> weak_factory_;
 
