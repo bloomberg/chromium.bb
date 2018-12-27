@@ -1,12 +1,12 @@
 <script module>
 "use strict";
 (async () => {
-  const listing = await (await fetch("cts/listing.json")).json();
+  const listing = await (await fetch("out/cts/listing.json")).json();
 
   for (const {path, description} of listing) {
     console.log(path, description);
     if (!path.endsWith("/")) {
-      console.log(await import("./cts/" + path + ".js"));
+      const mod = await import("./out/cts/" + path + ".js")
     }
   }
 })();

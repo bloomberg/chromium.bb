@@ -1,6 +1,9 @@
-out-web/
+out/
 out-node/
 *.code-workspace
+
+.tscache/
+*.tmp.txt
 
 # Created by https://www.gitignore.io/api/node
 # Edit at https://www.gitignore.io/?templates=node
