@@ -349,24 +349,8 @@
   DCHECK(!_isShutdown);
   _isShutdown = YES;
 
-  if (_tabModelObserver) {
-    [_mainTabModel removeObserver:_tabModelObserver];
-    [_otrTabModel removeObserver:_tabModelObserver];
-    _tabModelObserver = nil;
-  }
-
-  [_mainTabModel removeObserver:self];
-  [_otrTabModel removeObserver:self];
-
   // Disconnect the DeviceSharingManager.
   [self cleanDeviceSharingManager];
-
-  // Stop URL monitoring of the main tab model.
-  breakpad::StopMonitoringURLsForTabModel(_mainTabModel);
-
-  // Stop Breakpad state monitoring of both tab models (if necessary).
-  breakpad::StopMonitoringTabStateForTabModel(_mainTabModel);
-  breakpad::StopMonitoringTabStateForTabModel(_otrTabModel);
 
   // At this stage, new BrowserCoordinators shouldn't be lazily constructed by
   // calling their property getters.
@@ -375,10 +359,11 @@
   [_incognitoBrowserCoordinator stop];
   _incognitoBrowserCoordinator = nil;
 
-  // Normally other objects will take care of unhooking the tab models from
-  // the browser state, but this code should ensure that it happens regardless.
-  [_mainTabModel browserStateDestroyed];
-  [_otrTabModel browserStateDestroyed];
+  [_mainTabModel closeAllTabs];
+  [_otrTabModel closeAllTabs];
+  // Handles removing observers and stopping breakpad monitoring.
+  [self setMainTabModel:nil];
+  [self setOtrTabModel:nil];
 
   _browserState = nullptr;
 }

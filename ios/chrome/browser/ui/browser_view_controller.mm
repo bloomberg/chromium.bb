@@ -1371,7 +1371,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self setActive:NO];
   [_paymentRequestManager close];
   _paymentRequestManager = nil;
-  [self.tabModel browserStateDestroyed];
 
   if (_browserState) {
     TextToSpeechPlaybackController* controller =
@@ -1418,7 +1417,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self.tabModel removeObserver:self];
   if (_voiceSearchController)
     _voiceSearchController->SetDispatcher(nil);
-  [self.tabModel closeAllTabs];
   [_paymentRequestManager setActiveWebState:nullptr];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   DCHECK(_ntpCoordinatorsForWebStates.empty());
