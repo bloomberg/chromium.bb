@@ -859,7 +859,6 @@ modules_testing_dependency_idl_files =
         [
           "accessibility/testing/internals_accessibility.idl",
           "mediastream/testing/internals_media_stream.idl",
-          "navigatorcontentutils/testing/internals_navigator_content_utils.idl",
           "peerconnection/testing/internals_rtc_certificate.idl",
           "peerconnection/testing/internals_rtc_peer_connection.idl",
           "service_worker/testing/internals_service_worker.idl",
