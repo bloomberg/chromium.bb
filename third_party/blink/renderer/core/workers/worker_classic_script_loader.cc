@@ -177,7 +177,8 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
     return;
   }
   if (!AllowedByNosniff::MimeTypeAsScript(
-          fetch_client_settings_object_fetcher_->Context(), response,
+          fetch_client_settings_object_fetcher_->Context(),
+          fetch_client_settings_object_fetcher_->GetConsoleLogger(), response,
           fetch_client_settings_object_fetcher_->Context()
               .GetFetchClientSettingsObject()
               ->MimeTypeCheckForClassicWorkerScript(),
@@ -189,8 +190,8 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
   if (is_top_level_script_) {
     String error = CheckSameOriginEnforcement(url_, response);
     if (!error.IsNull()) {
-      fetch_client_settings_object_fetcher_->Context().AddErrorConsoleMessage(
-          error, FetchContext::kSecuritySource);
+      fetch_client_settings_object_fetcher_->GetConsoleLogger()
+          ->AddErrorMessage(ConsoleLogger::Source::kSecurity, error);
       NotifyError();
       return;
     }

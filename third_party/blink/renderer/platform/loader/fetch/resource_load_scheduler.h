@@ -17,6 +17,7 @@
 
 namespace blink {
 
+class ConsoleLogger;
 class FetchContext;
 
 // Client interface to use the throttling/scheduling functionality that
@@ -172,6 +173,7 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
                ThrottleOption,
                ResourceLoadPriority,
                int intra_priority,
+               ConsoleLogger* console_logger,
                ClientId*);
 
   // Updates the priority information of the given client. This function may

@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/aggregated_metric_reporter.h"
@@ -414,6 +415,7 @@ void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,
                                     ThrottleOption option,
                                     ResourceLoadPriority priority,
                                     int intra_priority,
+                                    ConsoleLogger* console_logger,
                                     ResourceLoadScheduler::ClientId* id) {
   *id = GenerateClientId();
   if (is_shutdown_)
@@ -442,13 +444,13 @@ void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,
       pending_request_map_.find(client_id) != pending_request_map_.end()) {
     // Note that this doesn't show the message when a frame is stopped (vs.
     // this DOES when throttled).
-    context_->AddInfoConsoleMessage(
+    console_logger->AddInfoMessage(
+        ConsoleLogger::Source::kOther,
         "Active resource loading counts reached a per-frame limit while the "
         "tab was in background. Network requests will be delayed until a "
         "previous loading finishes, or the tab is brought to the foreground. "
         "See https://www.chromestatus.com/feature/5527160148197376 for more "
-        "details",
-        FetchContext::kOtherSource);
+        "details");
     omit_console_log_ = true;
   }
 }

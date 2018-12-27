@@ -6,6 +6,7 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -33,7 +34,16 @@ class CountUsageMockFetchContext : public MockFetchContext {
         std::move(security_origin));
   }
   MOCK_CONST_METHOD1(CountUsage, void(mojom::WebFeature));
-  MOCK_CONST_METHOD2(AddErrorConsoleMessage, void(const String&, LogSource));
+};
+
+class MockConsoleLogger : public GarbageCollectedFinalized<MockConsoleLogger>,
+                          public ConsoleLogger {
+  USING_GARBAGE_COLLECTED_MIXIN(MockConsoleLogger);
+
+ public:
+  MOCK_METHOD2(AddInfoMessage, void(Source, const String&));
+  MOCK_METHOD2(AddWarningMessage, void(Source, const String&));
+  MOCK_METHOD2(AddErrorMessage, void(Source, const String&));
 };
 
 }  // namespace
@@ -94,6 +104,8 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
     const KURL url("https://bla.com/");
     auto* context =
         CountUsageMockFetchContext::Create(SecurityOrigin::Create(url));
+    Persistent<MockConsoleLogger> logger =
+        MakeGarbageCollected<MockConsoleLogger>();
     ResourceResponse response(url);
     response.SetHTTPHeaderField("Content-Type", testcase.mimetype);
 
@@ -103,18 +115,18 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
     RuntimeEnabledFeatures::SetWorkerNosniffWarnEnabled(false);
     EXPECT_CALL(*context, CountUsage(_)).Times(::testing::AnyNumber());
     if (!testcase.allowed)
-      EXPECT_CALL(*context, AddErrorConsoleMessage(_, _));
+      EXPECT_CALL(*logger, AddErrorMessage(_, _));
     EXPECT_EQ(testcase.allowed,
-              AllowedByNosniff::MimeTypeAsScript(*context, response,
+              AllowedByNosniff::MimeTypeAsScript(*context, logger, response,
                                                  MimeTypeCheck::kLax, false));
     ::testing::Mock::VerifyAndClear(context);
 
     EXPECT_CALL(*context, CountUsage(_)).Times(::testing::AnyNumber());
     if (!testcase.allowed)
-      EXPECT_CALL(*context, AddErrorConsoleMessage(_, _));
+      EXPECT_CALL(*logger, AddErrorMessage(_, _));
     EXPECT_EQ(testcase.allowed,
               AllowedByNosniff::MimeTypeAsScript(
-                  *context, response, MimeTypeCheck::kStrict, false));
+                  *context, logger, response, MimeTypeCheck::kStrict, false));
     ::testing::Mock::VerifyAndClear(context);
 
     // Nosniff worker blocked: Workers follow the 'strict_allow' setting.
@@ -124,18 +136,18 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
 
     EXPECT_CALL(*context, CountUsage(_)).Times(::testing::AnyNumber());
     if (!testcase.allowed)
-      EXPECT_CALL(*context, AddErrorConsoleMessage(_, _));
+      EXPECT_CALL(*logger, AddErrorMessage(_, _));
     EXPECT_EQ(testcase.allowed,
-              AllowedByNosniff::MimeTypeAsScript(*context, response,
+              AllowedByNosniff::MimeTypeAsScript(*context, logger, response,
                                                  MimeTypeCheck::kLax, false));
     ::testing::Mock::VerifyAndClear(context);
 
     EXPECT_CALL(*context, CountUsage(_)).Times(::testing::AnyNumber());
     if (!testcase.strict_allowed)
-      EXPECT_CALL(*context, AddErrorConsoleMessage(_, _));
+      EXPECT_CALL(*logger, AddErrorMessage(_, _));
     EXPECT_EQ(testcase.strict_allowed,
               AllowedByNosniff::MimeTypeAsScript(
-                  *context, response, MimeTypeCheck::kStrict, false));
+                  *context, logger, response, MimeTypeCheck::kStrict, false));
     ::testing::Mock::VerifyAndClear(context);
 
     // Nosniff 'legacy', but with warnings. The allowed setting follows the
@@ -145,18 +157,18 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
 
     EXPECT_CALL(*context, CountUsage(_)).Times(::testing::AnyNumber());
     if (!testcase.allowed)
-      EXPECT_CALL(*context, AddErrorConsoleMessage(_, _));
+      EXPECT_CALL(*logger, AddErrorMessage(_, _));
     EXPECT_EQ(testcase.allowed,
-              AllowedByNosniff::MimeTypeAsScript(*context, response,
+              AllowedByNosniff::MimeTypeAsScript(*context, logger, response,
                                                  MimeTypeCheck::kLax, false));
     ::testing::Mock::VerifyAndClear(context);
 
     EXPECT_CALL(*context, CountUsage(_)).Times(::testing::AnyNumber());
     if (!testcase.strict_allowed)
-      EXPECT_CALL(*context, AddErrorConsoleMessage(_, _));
+      EXPECT_CALL(*logger, AddErrorMessage(_, _));
     EXPECT_EQ(testcase.allowed,
               AllowedByNosniff::MimeTypeAsScript(
-                  *context, response, MimeTypeCheck::kStrict, false));
+                  *context, logger, response, MimeTypeCheck::kStrict, false));
     ::testing::Mock::VerifyAndClear(context);
   }
 }
@@ -199,14 +211,16 @@ TEST_F(AllowedByNosniffTest, Counters) {
                                     << "\n  webfeature: " << testcase.expected);
     auto* context = CountUsageMockFetchContext::Create(
         SecurityOrigin::Create(KURL(testcase.origin)));
+    Persistent<MockConsoleLogger> logger =
+        MakeGarbageCollected<MockConsoleLogger>();
     ResourceResponse response(KURL(testcase.url));
     response.SetHTTPHeaderField("Content-Type", testcase.mimetype);
 
     EXPECT_CALL(*context, CountUsage(testcase.expected));
     EXPECT_CALL(*context, CountUsage(::testing::Ne(testcase.expected)))
         .Times(::testing::AnyNumber());
-    AllowedByNosniff::MimeTypeAsScript(*context, response, MimeTypeCheck::kLax,
-                                       false);
+    AllowedByNosniff::MimeTypeAsScript(*context, logger, response,
+                                       MimeTypeCheck::kLax, false);
     ::testing::Mock::VerifyAndClear(context);
   }
 }
@@ -238,15 +252,16 @@ TEST_F(AllowedByNosniffTest, AllTheSchemes) {
 
   for (auto& testcase : data) {
     auto* context = CountUsageMockFetchContext::Create(nullptr);
-    EXPECT_CALL(*context, AddErrorConsoleMessage(_, _))
-        .Times(::testing::AnyNumber());
+    Persistent<MockConsoleLogger> logger =
+        MakeGarbageCollected<MockConsoleLogger>();
+    EXPECT_CALL(*logger, AddErrorMessage(_, _)).Times(::testing::AnyNumber());
     SCOPED_TRACE(testing::Message() << "\n  url: " << testcase.url
                                     << "\n  allowed: " << testcase.allowed);
     ResourceResponse response(KURL(testcase.url));
     response.SetHTTPHeaderField("Content-Type", "invalid");
     response.SetHTTPHeaderField("X-Content-Type-Options", "nosniff");
     EXPECT_EQ(testcase.allowed,
-              AllowedByNosniff::MimeTypeAsScript(*context, response,
+              AllowedByNosniff::MimeTypeAsScript(*context, logger, response,
                                                  MimeTypeCheck::kLax, false));
   }
 }

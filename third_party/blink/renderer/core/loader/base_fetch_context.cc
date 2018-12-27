@@ -89,21 +89,6 @@ const char* GetDestinationFromContext(mojom::RequestContextType context) {
   return "";
 }
 
-MessageSource ConvertLogSourceToMessageSource(FetchContext::LogSource source) {
-  // When LogSource is extended, this switch statement should be modified to
-  // convert LogSource to blink::MessageSource.
-  switch (source) {
-    case FetchContext::kJSSource:
-      return kJSMessageSource;
-    case FetchContext::kSecuritySource:
-      return kSecurityMessageSource;
-    case FetchContext::kOtherSource:
-      return kOtherMessageSource;
-  }
-  NOTREACHED();
-  return kOtherMessageSource;
-}
-
 }  // namespace
 
 BaseFetchContext::BaseFetchContext(
@@ -199,24 +184,6 @@ base::Optional<ResourceRequestBlockedReason> BaseFetchContext::CanRequest(
                             blocked_reason.value(), type);
   }
   return blocked_reason;
-}
-
-void BaseFetchContext::AddInfoConsoleMessage(const String& message,
-                                             LogSource source) const {
-  AddConsoleMessage(ConsoleMessage::Create(
-      ConvertLogSourceToMessageSource(source), kInfoMessageLevel, message));
-}
-
-void BaseFetchContext::AddWarningConsoleMessage(const String& message,
-                                                LogSource source) const {
-  AddConsoleMessage(ConsoleMessage::Create(
-      ConvertLogSourceToMessageSource(source), kWarningMessageLevel, message));
-}
-
-void BaseFetchContext::AddErrorConsoleMessage(const String& message,
-                                              LogSource source) const {
-  AddConsoleMessage(ConsoleMessage::Create(
-      ConvertLogSourceToMessageSource(source), kErrorMessageLevel, message));
 }
 
 bool BaseFetchContext::IsAdResource(
@@ -318,8 +285,9 @@ BaseFetchContext::CanRequestInternal(
   if (request_mode != network::mojom::FetchRequestMode::kNavigate &&
       !origin->CanDisplay(url)) {
     if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
-      AddErrorConsoleMessage(
-          "Not allowed to load local resource: " + url.GetString(), kJSSource);
+      AddConsoleMessage(ConsoleMessage::Create(
+          kJSMessageSource, kErrorMessageLevel,
+          "Not allowed to load local resource: " + url.GetString()));
     }
     RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::requestResource URL was not "
                                  "allowed by SecurityOrigin::CanDisplay";

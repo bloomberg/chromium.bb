@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/loader/console_logger_impl_base.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/https_state.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -53,7 +54,6 @@ class InterfaceProvider;
 
 namespace blink {
 
-class ConsoleMessage;
 class ContentSecurityPolicy;
 class ContentSecurityPolicyDelegate;
 class CoreProbeSink;
@@ -103,7 +103,8 @@ enum class SecureContextMode { kInsecureContext, kSecureContext };
 // by an extension developer, but these share an ExecutionContext (the document)
 // in common.
 class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
-                                     public Supplementable<ExecutionContext> {
+                                     public Supplementable<ExecutionContext>,
+                                     public ConsoleLoggerImplBase {
   MERGE_GARBAGE_COLLECTED_MIXINS();
 
  public:
@@ -171,7 +172,6 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
   void DispatchErrorEvent(ErrorEvent*, SanitizeScriptErrors);
 
-  virtual void AddConsoleMessage(ConsoleMessage*) = 0;
   virtual void ExceptionThrown(ErrorEvent*) = 0;
 
   PublicURLManager& GetPublicURLManager();

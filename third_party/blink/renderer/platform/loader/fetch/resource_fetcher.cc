@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
+#include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
@@ -371,7 +372,12 @@ mojom::RequestContextType ResourceFetcher::DetermineRequestContext(
 }
 
 ResourceFetcher::ResourceFetcher(FetchContext* new_context)
+    : ResourceFetcher(new_context, MakeGarbageCollected<NullConsoleLogger>()) {}
+
+ResourceFetcher::ResourceFetcher(FetchContext* new_context,
+                                 ConsoleLogger* console_logger)
     : context_(new_context),
+      console_logger_(console_logger),
       scheduler_(ResourceLoadScheduler::Create(&Context())),
       archive_(Context().IsMainFrame() ? nullptr : Context().Archive()),
       resource_timing_report_timer_(
@@ -383,6 +389,7 @@ ResourceFetcher::ResourceFetcher(FetchContext* new_context)
       allow_stale_resources_(false),
       image_fetched_(false),
       stale_while_revalidate_enabled_(false) {
+  DCHECK(console_logger);
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceFetcherCounter);
   if (IsMainThread())
     MainThreadFetchersSet().insert(this);
@@ -1179,8 +1186,8 @@ void ResourceFetcher::PrintPreloadWarning(Resource* resource,
       builder.Append("due to different image placeholder policies.");
       break;
   }
-  Context().AddWarningConsoleMessage(builder.ToString(),
-                                     FetchContext::kOtherSource);
+  console_logger_->AddWarningMessage(ConsoleLogger::Source::kOther,
+                                     builder.ToString());
 }
 
 void ResourceFetcher::InsertAsPreloadIfNecessary(Resource* resource,
@@ -1465,6 +1472,7 @@ void ResourceFetcher::ClearContext() {
   scheduler_->Shutdown();
   ClearPreloads(ResourceFetcher::kClearAllPreloads);
   context_ = Context().Detach();
+  console_logger_ = MakeGarbageCollected<NullConsoleLogger>();
 
   // Make sure the only requests still going are keepalive requests.
   // Callers of ClearContext() should be calling StopFetching() prior
@@ -1541,19 +1549,19 @@ Vector<KURL> ResourceFetcher::GetUrlsOfUnusedPreloads() {
 ArchiveResource* ResourceFetcher::CreateArchive(Resource* resource) {
   // Only the top-frame can load MHTML.
   if (!Context().IsMainFrame()) {
-    Context().AddErrorConsoleMessage(
+    console_logger_->AddErrorMessage(
+        ConsoleLogger::Source::kScript,
         "Attempted to load a multipart archive into an subframe: " +
-            resource->Url().GetString(),
-        FetchContext::kJSSource);
+            resource->Url().GetString());
     return nullptr;
   }
 
   archive_ = MHTMLArchive::Create(resource->Url(), resource->ResourceBuffer());
   if (!archive_) {
     // Log if attempting to load an invalid archive resource.
-    Context().AddErrorConsoleMessage(
-        "Malformed multipart archive: " + resource->Url().GetString(),
-        FetchContext::kJSSource);
+    console_logger_->AddErrorMessage(
+        ConsoleLogger::Source::kScript,
+        "Malformed multipart archive: " + resource->Url().GetString());
     return nullptr;
   }
 
@@ -1955,6 +1963,7 @@ void ResourceFetcher::RevalidateStaleResource(Resource* stale_resource) {
 
 void ResourceFetcher::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_);
+  visitor->Trace(console_logger_);
   visitor->Trace(scheduler_);
   visitor->Trace(archive_);
   visitor->Trace(loaders_);

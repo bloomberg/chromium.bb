@@ -27,6 +27,7 @@ blink_platform_sources("loader") {
     "fetch/cached_metadata_handler.h",
     "fetch/client_hints_preferences.cc",
     "fetch/client_hints_preferences.h",
+    "fetch/console_logger.h",
     "fetch/fetch_client_settings_object.h",
     "fetch/fetch_client_settings_object_snapshot.cc",
     "fetch/fetch_client_settings_object_snapshot.h",
