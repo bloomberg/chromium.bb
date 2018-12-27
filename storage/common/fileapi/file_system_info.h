@@ -7,8 +7,8 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "storage/common/fileapi/file_system_types.h"
-#include "storage/common/storage_common_export.h"
 #include "url/gurl.h"
 
 namespace storage {
@@ -16,7 +16,7 @@ namespace storage {
 // This struct is used to send the necessary information for Blink to create a
 // DOMFileSystem.  Since Blink side only uses mount_type (rather than
 // detailed/cracked filesystem type) this only contains mount_type but not type.
-struct STORAGE_COMMON_EXPORT FileSystemInfo {
+struct COMPONENT_EXPORT(STORAGE_COMMON) FileSystemInfo {
   FileSystemInfo();
   FileSystemInfo(const std::string& filesystem_name,
                  const GURL& root_url,

@@ -5,14 +5,15 @@
 #ifndef STORAGE_COMMON_BLOB_STORAGE_BLOB_HANDLE_H_
 #define STORAGE_COMMON_BLOB_STORAGE_BLOB_HANDLE_H_
 
+#include "base/component_export.h"
 #include "base/memory/ref_counted.h"
-#include "storage/common/storage_common_export.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
 namespace storage {
 
 // Refcounted wrapper around a mojom::BlobPtr.
-class STORAGE_COMMON_EXPORT BlobHandle : public base::RefCounted<BlobHandle> {
+class COMPONENT_EXPORT(STORAGE_COMMON) BlobHandle
+    : public base::RefCounted<BlobHandle> {
  public:
   explicit BlobHandle(blink::mojom::BlobPtr blob);
 
