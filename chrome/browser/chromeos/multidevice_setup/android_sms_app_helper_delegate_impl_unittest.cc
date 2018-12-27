@@ -148,7 +148,7 @@ TEST_F(AndroidSmsAppHelperDelegateImplTest, TestInstallMessagesApp) {
   std::vector<web_app::PendingAppManager::AppInfo> expected_apps_to_install;
 
   web_app::PendingAppManager::AppInfo info(
-      chromeos::android_sms::GetAndroidMessagesURLWithParams(),
+      chromeos::android_sms::GetAndroidMessagesURL(),
       web_app::LaunchContainer::kWindow, web_app::InstallSource::kInternal);
   info.override_previous_user_uninstall = true;
   info.bypass_service_worker_check = true;

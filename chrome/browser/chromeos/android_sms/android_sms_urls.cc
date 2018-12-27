@@ -18,38 +18,19 @@ namespace android_sms {
 
 namespace {
 
-// NOTE: Using internal staging server until changes roll out to prod.
-const char kAndroidMessagesSandboxUrl[] =
-    "https://android-messages.sandbox.google.com/";
-
 const char kAndroidMessagesProdUrl[] = "https://messages.android.com/";
-
-const char kUrlParams[] = "?DefaultToPersistent=true";
-
-GURL GetURLInternal(bool with_params) {
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  std::string url_string =
-      command_line->GetSwitchValueASCII(switches::kAlternateAndroidMessagesUrl);
-
-  bool use_prod_url = base::FeatureList::IsEnabled(
-      chromeos::features::kAndroidMessagesProdEndpoint);
-  if (url_string.empty())
-    url_string = std::string(use_prod_url ? kAndroidMessagesProdUrl
-                                          : kAndroidMessagesSandboxUrl);
-  if (with_params)
-    url_string += kUrlParams;
-  return GURL(url_string);
-}
 
 }  // namespace
 
 GURL GetAndroidMessagesURL() {
-  return GetURLInternal(false /* with_params */);
-}
+  std::string url_from_command_line_arg =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kAlternateAndroidMessagesUrl);
 
-GURL GetAndroidMessagesURLWithParams() {
-  return GetURLInternal(true /* with_params */);
+  if (!url_from_command_line_arg.empty())
+    return GURL(url_from_command_line_arg);
+
+  return GURL(kAndroidMessagesProdUrl);
 }
 
 }  // namespace android_sms

@@ -16,7 +16,6 @@ namespace features {
 // alongside the definition of their values in the .cc file.
 
 CHROMEOS_EXPORT extern const base::Feature kAndroidMessagesIntegration;
-CHROMEOS_EXPORT extern const base::Feature kAndroidMessagesProdEndpoint;
 CHROMEOS_EXPORT extern const base::Feature kAutoScreenBrightness;
 CHROMEOS_EXPORT extern const base::Feature
     kAutoScreenBrightnessContinuedAdjustment;
