@@ -15,6 +15,12 @@ enum ErrorCode {
 
   // Not able to read the ProbeResult as DBus signature indicated.
   RUNTIME_PROBE_ERROR_PROBE_REQUEST_INVALID = 1;
+  // Not able to find default probe config in the rootfs image.
+  RUNTIME_PROBE_ERROR_DEFAULT_PROBE_CONFIG_NOT_FOUND = 2;
+  // Assigned probe config is not holding a corret JSON format.
+  RUNTIME_PROBE_ERROR_PROBE_CONFIG_SYNTAX_ERROR = 3;
+  // Assigned probe config contains functions not able to be constructed.
+  RUNTIME_PROBE_ERROR_PROBE_CONFIG_INCOMPLETE_PROBE_FUNCTION = 4;
 }
 
 // Request from client that indicates what categories to probe. Category must
@@ -24,6 +30,7 @@ message ProbeRequest {
     // The name style here is on purposely align with factory probe output.
     audio_codec = 0;
     battery = 1;
+    storage = 2;
   }
   // repeated string categories = 1;
   repeated SupportCategory categories = 1;
@@ -75,6 +82,37 @@ message Battery {
   Fields values = 2;  // Component's details
 }
 
+// Things about storage
+message Storage {
+  // TODO(itspeter): Add more fileds for storage.
+  // Those fields are for eMMC now.
+  message Fields {
+    // Number of sectors of this storage, traditionally 1 sector = 512 Bytes.
+    int64 sectors = 1;
+    // Storage type, could be MMC / NVMe / ATA
+    // TODO(b/122027599): NVMe/ATA is still underdevelopment.
+    string type = 2;
+
+    // Below are based on JEDEC Standard No. 84-B51, and kernel MMC driver
+    // exposed in sysfs:
+    //   https://chromium.googlesource.com/chromiumos/third_party/kernel/+/v3.18/include/linux/mmc/card.h#17
+    //   https://chromium.googlesource.com/chromiumos/third_party/kernel/+/v3.18/Documentation/mmc/mmc-dev-attrs.txt
+
+    // MID: Manufacturer ID, 8 bits.
+    uint32 manfid = 3;
+    // PNM: Product name, ASCII characters for 6 bytes.
+    string name = 4;
+    // PRV: Product revision, 8 bits
+    uint32 prv = 5;
+    // PSN: Product serial number, 32 bits
+    uint32 serial = 6;
+    // OID: OEM/Application ID, 8 bits
+    uint32 oemid = 7;
+  }
+  string name = 1;    // Component alias
+  Fields values = 2;  // Component's details
+}
+
 // A ProbeResult contains all potential probe results. For category not existed
 // or not requested for probing, field is expected to be empty.
 message ProbeResult {
@@ -83,4 +121,5 @@ message ProbeResult {
   ErrorCode error = 1;
   repeated AudioCodec audio_codec = 2;
   repeated Battery battery = 3;
+  repeated Storage storage = 4;
 }
