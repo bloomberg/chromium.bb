@@ -235,6 +235,7 @@ class VrShell;
 }
 
 namespace web {
+class WebMainLoop;
 class WebSubThread;
 }
 
@@ -573,6 +574,7 @@ class BASE_EXPORT ThreadRestrictions {
   friend class content::CategorizedWorkerPool;
   friend class remoting::AutoThread;
   friend class ui::WindowResizeHelperMac;
+  friend class web::WebMainLoop;
   friend class MessagePumpDefault;
   friend class SimpleThread;
   friend class Thread;
