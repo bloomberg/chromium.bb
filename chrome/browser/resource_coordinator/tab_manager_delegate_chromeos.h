@@ -56,6 +56,8 @@ enum class ProcessType {
   // and PROTECTED_BACKGROUND_TAB are now in PROTECTED_BACKGROUND, processes
   // previously in either BACKGROUND_APP or BACKGROUND_TAB are now BACKGROUND.
   // CACHED_APP marks Android processes which are cached or empty.
+  // Currently these types are only used on systems where the NewProcessTypes
+  // feature is enabled.
   PROTECTED_BACKGROUND = 7,
   BACKGROUND = 8,
   CACHED_APP = 9,

@@ -79,6 +79,11 @@ void OnSetOomScoreAdj(bool success, const std::string& output) {
     LOG(WARNING) << "Set OOM score: " << output;
 }
 
+bool IsNewProcessTypesEnabled() {
+  return base::FeatureList::IsEnabled(features::kNewProcessTypes) &&
+         !base::FeatureList::IsEnabled(features::kTabRanker);
+}
+
 }  // namespace
 
 // static
@@ -134,7 +139,7 @@ bool TabManagerDelegate::Candidate::operator<(
     return *app() < *rhs.app();
   if (lifecycle_unit() && rhs.lifecycle_unit())
     return lifecycle_unit_sort_key_ > rhs.lifecycle_unit_sort_key_;
-  // When TabRanker experiment is turned on and using old ProcessType
+  // When NewProcessTypes feature is turned off and using old ProcessType
   // categories, tabs and apps are in separate categories so this is an
   // impossible case. Otherwise, tabs and apps are compared using last active
   // time.
@@ -155,18 +160,18 @@ TimeTicks TabManagerDelegate::Candidate::GetLastActiveTime() const {
 }
 
 ProcessType TabManagerDelegate::Candidate::GetProcessTypeInternal() const {
-  bool tab_ranker_active = base::FeatureList::IsEnabled(features::kTabRanker);
+  const bool use_new_proc_types = IsNewProcessTypesEnabled();
   if (app()) {
     if (app()->is_focused())
       return ProcessType::FOCUSED_APP;
-    if (tab_ranker_active && app()->IsImportant())
-      return ProcessType::IMPORTANT_APP;
-    if (!tab_ranker_active && app()->IsBackgroundProtected())
+    if (!use_new_proc_types) {
+      return app()->IsImportant() ? ProcessType::IMPORTANT_APP
+                                  : ProcessType::BACKGROUND_APP;
+    }
+    if (app()->IsBackgroundProtected())
       return ProcessType::PROTECTED_BACKGROUND;
-    if (!tab_ranker_active && app()->IsCached())
+    if (app()->IsCached())
       return ProcessType::CACHED_APP;
-    if (tab_ranker_active)
-      return ProcessType::BACKGROUND_APP;
     return ProcessType::BACKGROUND;
   }
   if (lifecycle_unit()) {
@@ -176,11 +181,11 @@ ProcessType TabManagerDelegate::Candidate::GetProcessTypeInternal() const {
     if (!lifecycle_unit()->CanDiscard(
             ::mojom::LifecycleUnitDiscardReason::PROACTIVE,
             &decision_details)) {
-      return tab_ranker_active ? ProcessType::PROTECTED_BACKGROUND_TAB
-                               : ProcessType::PROTECTED_BACKGROUND;
+      return use_new_proc_types ? ProcessType::PROTECTED_BACKGROUND
+                                : ProcessType::PROTECTED_BACKGROUND_TAB;
     }
-    return tab_ranker_active ? ProcessType::BACKGROUND_TAB
-                             : ProcessType::BACKGROUND;
+    return use_new_proc_types ? ProcessType::BACKGROUND
+                              : ProcessType::BACKGROUND_TAB;
   }
   return ProcessType::UNKNOWN_TYPE;
 }
@@ -723,9 +728,9 @@ void TabManagerDelegate::AdjustOomPrioritiesImpl(
   // Find some pivot point. For now (roughly) apps are in the first half and
   // tabs are in the second half.
   auto lower_priority_part = candidates.end();
-  ProcessType pivot_type = base::FeatureList::IsEnabled(features::kTabRanker)
-                               ? ProcessType::BACKGROUND_TAB
-                               : ProcessType::BACKGROUND;
+  bool use_new_proc_types = IsNewProcessTypesEnabled();
+  ProcessType pivot_type = use_new_proc_types ? ProcessType::BACKGROUND
+                                              : ProcessType::BACKGROUND_TAB;
   for (auto it = candidates.begin(); it != candidates.end(); ++it) {
     if (it->process_type() >= pivot_type) {
       lower_priority_part = it;

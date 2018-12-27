@@ -74,11 +74,11 @@ TEST_F(TabManagerDelegateTest, CandidatesSorted) {
   // visible app 2, last_activity_time less than visible app 1.
   ASSERT_TRUE(candidates[3].app());
   EXPECT_EQ("visible2", candidates[3].app()->process_name());
-  // protected LifecycleUnit
-  EXPECT_EQ(candidates[4].lifecycle_unit(), &protected_lifecycle_unit);
   // background service.
-  ASSERT_TRUE(candidates[5].app());
-  EXPECT_EQ("service", candidates[5].app()->process_name());
+  ASSERT_TRUE(candidates[4].app());
+  EXPECT_EQ("service", candidates[4].app()->process_name());
+  // protected LifecycleUnit
+  EXPECT_EQ(candidates[5].lifecycle_unit(), &protected_lifecycle_unit);
   // non-focused LifecycleUnits, sorted by last focused time.
   EXPECT_EQ(candidates[6].lifecycle_unit(), &other_non_focused_lifecycle_unit);
   EXPECT_EQ(candidates[7].lifecycle_unit(), &non_focused_lifecycle_unit);
@@ -232,10 +232,10 @@ TEST_F(TabManagerDelegateTest, SetOomScoreAdj) {
 
   // Sorted order (by GetSortedCandidates):
   // app "focused"       pid: 10
-  // app "visible1"      pid: 20
-  // app "visible2"      pid: 40
   // app "persistent"    pid: 50
   // app "persistent_ui" pid: 60
+  // app "visible1"      pid: 20
+  // app "visible2"      pid: 40
   // app "service"       pid: 30
   // tab3                pid: 12
   // tab4                pid: 12
@@ -256,13 +256,13 @@ TEST_F(TabManagerDelegateTest, SetOomScoreAdj) {
 
   // Higher priority part.
   EXPECT_EQ(300, oom_score_map[10]);
-  EXPECT_EQ(417, oom_score_map[20]);
-  EXPECT_EQ(533, oom_score_map[40]);
+  EXPECT_EQ(388, oom_score_map[20]);
+  EXPECT_EQ(475, oom_score_map[40]);
+  EXPECT_EQ(563, oom_score_map[30]);
 
   // Lower priority part.
-  EXPECT_EQ(650, oom_score_map[30]);
-  EXPECT_EQ(708, oom_score_map[12]);
-  EXPECT_EQ(767, oom_score_map[11]);
+  EXPECT_EQ(650, oom_score_map[12]);
+  EXPECT_EQ(720, oom_score_map[11]);
 }
 
 TEST_F(TabManagerDelegateTest, IsRecentlyKilledArcProcess) {
@@ -390,15 +390,14 @@ TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
   // tab2              pid: 11  id 2
   memory_stat->SetTargetMemoryToFreeKB(250000);
   // Entities to be killed.
-  // TODO(wvk) For now the estimation of freed memory for tabs is 0, but we
-  // probably want to fix it later by properly implementing 
-  // TestLifecycleUnit::GetEstimatedMemoryFreedOnDiscardKB.
-  memory_stat->SetProcessPss(20, 30000);
+  memory_stat->SetProcessPss(11, 50000);
+  memory_stat->SetProcessPss(12, 30000);
   memory_stat->SetProcessPss(30, 10000);
-  memory_stat->SetProcessPss(40, 50000);
   memory_stat->SetProcessPss(50, 60000);
-  // Should not be killed.
+  // Should not be used.
   memory_stat->SetProcessPss(60, 500000);
+  memory_stat->SetProcessPss(40, 50000);
+  memory_stat->SetProcessPss(20, 30000);
   memory_stat->SetProcessPss(10, 100000);
 
   tab_manager_delegate.LowMemoryKillImpl(
@@ -408,13 +407,10 @@ TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
   auto killed_arc_processes = tab_manager_delegate.GetKilledArcProcesses();
   auto killed_tabs = tab_manager_delegate.GetKilledTabs();
 
-  // Killed apps and their nspid. Should be all of the apps except the
-  // the focused app and the app marked as persistent
-  ASSERT_EQ(4U, killed_arc_processes.size());
+  // Killed apps and their nspid.
+  ASSERT_EQ(2U, killed_arc_processes.size());
   EXPECT_EQ(3, killed_arc_processes[0]);
   EXPECT_EQ(5, killed_arc_processes[1]);
-  EXPECT_EQ(4, killed_arc_processes[2]);
-  EXPECT_EQ(2, killed_arc_processes[3]);
   // Killed tabs and their content id.
   // Note that process with pid 11 is counted twice and pid 12 is counted 3
   // times. But so far I don't have a good way to estimate the memory freed
@@ -429,11 +425,9 @@ TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
   // Check that killed apps are in the map.
   const TabManagerDelegate::KilledArcProcessesMap& processes_map =
       tab_manager_delegate.recently_killed_arc_processes_;
-  EXPECT_EQ(4U, processes_map.size());
+  EXPECT_EQ(2U, processes_map.size());
   EXPECT_EQ(1U, processes_map.count("service"));
   EXPECT_EQ(1U, processes_map.count("not-visible"));
-  EXPECT_EQ(1U, processes_map.count("visible1"));
-  EXPECT_EQ(1U, processes_map.count("visible2"));
 }
 
 }  // namespace resource_coordinator
