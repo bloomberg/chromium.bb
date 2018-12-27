@@ -17,7 +17,6 @@
 #include "base/files/file_util.h"
 #include "base/hash.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
@@ -25,6 +24,7 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/sha1.h"
+#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -185,12 +185,12 @@ bool AddDirectory(int path,
 // Compares the loaded |module| file name matches |module_name|.
 bool IsExpandedModuleName(HMODULE module, const wchar_t* module_name) {
   wchar_t path[MAX_PATH];
-  DWORD sz = ::GetModuleFileNameW(module, path, arraysize(path));
-  if ((sz == arraysize(path)) || (sz == 0)) {
+  DWORD sz = ::GetModuleFileNameW(module, path, base::size(path));
+  if ((sz == base::size(path)) || (sz == 0)) {
     // XP does not set the last error properly, so we bail out anyway.
     return false;
   }
-  if (!::GetLongPathName(path, path, arraysize(path)))
+  if (!::GetLongPathName(path, path, base::size(path)))
     return false;
   base::FilePath fname(path);
   return (fname.BaseName().value() == module_name);
@@ -239,7 +239,7 @@ void BlacklistAddOneDll(const wchar_t* module_name,
 // Eviction of injected DLLs is done by the sandbox so that the injected module
 // does not get a chance to execute any code.
 void AddGenericDllEvictionPolicy(sandbox::TargetPolicy* policy) {
-  for (int ix = 0; ix != arraysize(kTroublesomeDlls); ++ix)
+  for (int ix = 0; ix != base::size(kTroublesomeDlls); ++ix)
     BlacklistAddOneDll(kTroublesomeDlls[ix], true, policy);
 }
 
