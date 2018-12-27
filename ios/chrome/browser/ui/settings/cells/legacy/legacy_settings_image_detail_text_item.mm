@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_image_detail_text_item.h"
 
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -27,16 +27,16 @@ const CGFloat kHorizontalImagePadding = 10;
 
 }  // namespace
 
-@interface SettingsImageDetailTextCell ()
+@interface LegacySettingsImageDetailTextCell ()
 
 // Container view which contains |self.textLabel| and |self.detailTextLabel|.
 @property(nonatomic, strong) UIStackView* textStackView;
 
 @end
 
-#pragma mark - SettingsImageDetailTextItem
+#pragma mark - LegacySettingsImageDetailTextItem
 
-@implementation SettingsImageDetailTextItem
+@implementation LegacySettingsImageDetailTextItem
 
 @synthesize image = _image;
 @synthesize text = _text;
@@ -46,12 +46,12 @@ const CGFloat kHorizontalImagePadding = 10;
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
-    self.cellClass = [SettingsImageDetailTextCell class];
+    self.cellClass = [LegacySettingsImageDetailTextCell class];
   }
   return self;
 }
 
-- (void)configureCell:(SettingsImageDetailTextCell*)cell {
+- (void)configureCell:(LegacySettingsImageDetailTextCell*)cell {
   [super configureCell:cell];
   cell.isAccessibilityElement = YES;
   cell.textLabel.text = self.text;
@@ -61,9 +61,9 @@ const CGFloat kHorizontalImagePadding = 10;
 
 @end
 
-#pragma mark - SettingsImageDetailTextCell
+#pragma mark - LegacySettingsImageDetailTextCell
 
-@implementation SettingsImageDetailTextCell
+@implementation LegacySettingsImageDetailTextCell
 
 @synthesize imageView = _imageView;
 @synthesize textLabel = _textLabel;

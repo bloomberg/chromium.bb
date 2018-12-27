@@ -6,8 +6,8 @@
 
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_sync_switch_item.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_local_commands.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_service_delegate.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller_model_delegate.h"
@@ -180,7 +180,7 @@ constexpr NSInteger kSectionOffset = 1000;
       [self.collectionViewModel itemAtIndexPath:indexPath];
   if ([item isKindOfClass:[LegacySyncSwitchItem class]]) {
     return NO;
-  } else if ([item isKindOfClass:[SettingsImageDetailTextItem class]]) {
+  } else if ([item isKindOfClass:[LegacySettingsImageDetailTextItem class]]) {
     return YES;
   }
   // The highlight of an item should be explicitly defined. If the item can be
@@ -198,9 +198,9 @@ constexpr NSInteger kSectionOffset = 1000;
       [self.collectionViewModel itemAtIndexPath:indexPath];
   GoogleServicesSettingsCommandID commandID =
       GoogleServicesSettingsCommandIDNoOp;
-  if ([item isKindOfClass:[SettingsImageDetailTextItem class]]) {
-    SettingsImageDetailTextItem* imageDetailTextItem =
-        base::mac::ObjCCast<SettingsImageDetailTextItem>(item);
+  if ([item isKindOfClass:[LegacySettingsImageDetailTextItem class]]) {
+    LegacySettingsImageDetailTextItem* imageDetailTextItem =
+        base::mac::ObjCCast<LegacySettingsImageDetailTextItem>(item);
     commandID = static_cast<GoogleServicesSettingsCommandID>(
         imageDetailTextItem.commandID);
   } else {
