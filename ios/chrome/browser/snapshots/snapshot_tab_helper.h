@@ -57,6 +57,8 @@ class SnapshotTabHelper : public infobars::InfoBarManager::Observer,
   // runs |callback| with the new snapshot image.
   void UpdateSnapshotWithCallback(void (^callback)(UIImage*));
 
+  // DEPRECATED(crbug.com/917929): Use the asynchronous function
+  // |UpdateSnapshotWithCallback()| for all new callsites.
   // Generates a new snapshot, updates the snapshot cache, and returns the new
   // snapshot image.
   UIImage* UpdateSnapshot();

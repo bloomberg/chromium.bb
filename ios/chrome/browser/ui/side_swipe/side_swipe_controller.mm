@@ -335,7 +335,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
         FullscreenControllerFactory::GetInstance()->GetForBrowserState(
             browserState_));
     SnapshotTabHelper::FromWebState([model_ currentTab].webState)
-        ->UpdateSnapshot();
+        ->UpdateSnapshotWithCallback(nil);
     [[NSNotificationCenter defaultCenter]
         postNotificationName:kSideSwipeWillStartNotification
                       object:nil];
@@ -527,7 +527,8 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     }
 
     // Ensure that there's an up-to-date snapshot of the current tab.
-    SnapshotTabHelper::FromWebState(currentTab.webState)->UpdateSnapshot();
+    SnapshotTabHelper::FromWebState(currentTab.webState)
+        ->UpdateSnapshotWithCallback(nil);
 
     // Hide the infobar after snapshot has been updated (see the previous line)
     // to avoid it obscuring the cards in the side swipe view.

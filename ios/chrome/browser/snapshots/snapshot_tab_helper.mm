@@ -113,16 +113,11 @@ void SnapshotTabHelper::PageLoaded(
     web::PageLoadCompletionStatus load_completion_status) {
   if (!ignore_next_load_ &&
       load_completion_status == web::PageLoadCompletionStatus::SUCCESS) {
-    if (web_state->ContentIsHTML()) {
       base::PostDelayedTaskWithTraits(
           FROM_HERE, {web::WebThread::UI},
           base::BindOnce(&SnapshotTabHelper::UpdateSnapshotWithCallback,
                          weak_ptr_factory_.GetWeakPtr(), /*callback=*/nil),
           base::TimeDelta::FromSeconds(1));
-      return;
-    }
-    // Native content cannot utilize the WKWebView snapshotting API.
-    UpdateSnapshot();
   }
   ignore_next_load_ = false;
 }
