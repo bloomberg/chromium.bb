@@ -358,8 +358,8 @@ void HidDeviceManager::DispatchEvent(
   // The |event->will_dispatch_callback| will be called synchronously, it is
   // safe to pass |device_info| by reference.
   event->will_dispatch_callback =
-      base::Bind(&WillDispatchDeviceEvent, weak_factory_.GetWeakPtr(),
-                 base::ConstRef(device_info));
+      base::BindRepeating(&WillDispatchDeviceEvent, weak_factory_.GetWeakPtr(),
+                          base::ConstRef(device_info));
   event_router_->BroadcastEvent(std::move(event));
 }
 

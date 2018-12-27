@@ -36,7 +36,7 @@ class LazyEventDispatcher {
       std::unique_ptr<LazyContextTaskQueue::ContextInfo>)>;
 
   LazyEventDispatcher(content::BrowserContext* browser_context,
-                      const DispatchFunction& dispatch_function);
+                      DispatchFunction dispatch_function);
   ~LazyEventDispatcher();
 
   // Dispatches the lazy |event| to |extension_id|.

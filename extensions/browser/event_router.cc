@@ -135,9 +135,9 @@ void EventRouter::DispatchEventToSender(IPC::Sender* ipc_sender,
     // TODO(lazyboy): Skip this entirely: http://crbug.com/488747.
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(&EventRouter::DoDispatchEventToSenderBookkeepingOnUI,
-                   browser_context_id, extension_id, event_id, histogram_value,
-                   event_name));
+        base::BindOnce(&EventRouter::DoDispatchEventToSenderBookkeepingOnUI,
+                       browser_context_id, extension_id, event_id,
+                       histogram_value, event_name));
   }
 
   DispatchExtensionMessage(ipc_sender,

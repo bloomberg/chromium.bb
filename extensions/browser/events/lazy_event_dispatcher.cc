@@ -17,11 +17,10 @@ using content::BrowserContext;
 
 namespace extensions {
 
-LazyEventDispatcher::LazyEventDispatcher(
-    BrowserContext* browser_context,
-    const DispatchFunction& dispatch_function)
+LazyEventDispatcher::LazyEventDispatcher(BrowserContext* browser_context,
+                                         DispatchFunction dispatch_function)
     : browser_context_(browser_context),
-      dispatch_function_(dispatch_function) {}
+      dispatch_function_(std::move(dispatch_function)) {}
 
 LazyEventDispatcher::~LazyEventDispatcher() {}
 
