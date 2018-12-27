@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
+#include "media/gpu/media_gpu_export.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -27,7 +28,7 @@ namespace media {
 // The threading model of ImageProcessor:
 // Process(), Reset(), and callbacks: FrameReadyCB, ErrorCB, should be run in
 // the same thread that creates ImageProcessor.
-class ImageProcessor {
+class MEDIA_GPU_EXPORT ImageProcessor {
  public:
   // OutputMode is used as intermediate stage. The ultimate goal is to make
   // ImageProcessor's clients all use IMPORT output mode.
@@ -39,7 +40,7 @@ class ImageProcessor {
   };
 
   // Encapsulates ImageProcessor input / output configurations.
-  struct PortConfig {
+  struct MEDIA_GPU_EXPORT PortConfig {
     PortConfig() = delete;
     PortConfig(
         const VideoFrameLayout& layout,
