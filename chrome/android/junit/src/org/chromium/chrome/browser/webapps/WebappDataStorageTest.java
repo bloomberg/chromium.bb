@@ -218,9 +218,11 @@ public class WebappDataStorageTest {
         final long backgroundColor = 3;
         final String splashScreenUrl = "splashy";
         final boolean isIconGenerated = false;
+        final boolean isIconAdaptive = false;
         Intent shortcutIntent = ShortcutHelper.createWebappShortcutIntent(id, action, url, scope,
                 name, shortName, encodedIcon, ShortcutHelper.WEBAPP_SHORTCUT_VERSION, displayMode,
-                orientation, themeColor, backgroundColor, splashScreenUrl, isIconGenerated);
+                orientation, themeColor, backgroundColor, splashScreenUrl, isIconGenerated,
+                isIconAdaptive);
 
         WebappDataStorage storage = WebappDataStorage.open("test");
         storage.updateFromShortcutIntent(shortcutIntent);
@@ -242,6 +244,8 @@ public class WebappDataStorageTest {
                 mSharedPreferences.getString(WebappDataStorage.KEY_SPLASH_SCREEN_URL, null));
         assertEquals(isIconGenerated,
                 mSharedPreferences.getBoolean(WebappDataStorage.KEY_IS_ICON_GENERATED, true));
+        assertEquals(isIconAdaptive,
+                mSharedPreferences.getBoolean(WebappDataStorage.KEY_IS_ICON_ADAPTIVE, true));
 
         // Wipe out the data and ensure that it is all gone.
         mSharedPreferences.edit()
@@ -257,6 +261,7 @@ public class WebappDataStorageTest {
                 .remove(WebappDataStorage.KEY_BACKGROUND_COLOR)
                 .remove(WebappDataStorage.KEY_SPLASH_SCREEN_URL)
                 .remove(WebappDataStorage.KEY_IS_ICON_GENERATED)
+                .remove(WebappDataStorage.KEY_IS_ICON_ADAPTIVE)
                 .apply();
 
         assertEquals(null, mSharedPreferences.getString(WebappDataStorage.KEY_ACTION, null));
@@ -273,6 +278,8 @@ public class WebappDataStorageTest {
                 null, mSharedPreferences.getString(WebappDataStorage.KEY_SPLASH_SCREEN_URL, null));
         assertEquals(true,
                 mSharedPreferences.getBoolean(WebappDataStorage.KEY_IS_ICON_GENERATED, true));
+        assertEquals(true,
+                mSharedPreferences.getBoolean(WebappDataStorage.KEY_IS_ICON_ADAPTIVE, true));
 
         // Update again from the intent and ensure that the data is restored.
         storage.updateFromShortcutIntent(shortcutIntent);
@@ -293,6 +300,8 @@ public class WebappDataStorageTest {
         assertEquals(splashScreenUrl,
                 mSharedPreferences.getString(WebappDataStorage.KEY_SPLASH_SCREEN_URL, null));
         assertEquals(isIconGenerated,
+                mSharedPreferences.getBoolean(WebappDataStorage.KEY_IS_ICON_GENERATED, true));
+        assertEquals(isIconAdaptive,
                 mSharedPreferences.getBoolean(WebappDataStorage.KEY_IS_ICON_GENERATED, true));
     }
 
