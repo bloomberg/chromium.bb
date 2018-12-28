@@ -30,7 +30,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DraggedFileUtil : public LocalFileUtil {
                                 base::FilePath* platform_path) override;
   std::unique_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
-      const FileSystemURL& root_url) override;
+      const FileSystemURL& root_url,
+      bool recursive) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DraggedFileUtil);

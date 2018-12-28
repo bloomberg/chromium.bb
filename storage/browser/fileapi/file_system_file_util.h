@@ -101,7 +101,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemFileUtil {
   // instance.
   virtual std::unique_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
-      const FileSystemURL& root_url) = 0;
+      const FileSystemURL& root_url,
+      bool recursive) = 0;
 
   // Maps |file_system_url| given |context| into |local_file_path|
   // which represents physical file location on the host OS.

@@ -652,6 +652,8 @@ bool FileManagerPrivateRenameVolumeFunction::RunAsync() {
   return true;
 }
 
+namespace {
+
 // Obtains file size of URL.
 void GetFileMetadataOnIOThread(
     scoped_refptr<storage::FileSystemContext> file_system_context,
@@ -664,11 +666,15 @@ void GetFileMetadataOnIOThread(
       base::BindOnce(&GetFileMetadataRespondOnUIThread, std::move(callback)));
 }
 
-// Checks if the available space of the |path| is enough for required |bytes|.
-bool CheckLocalDiskSpace(const base::FilePath& path, int64_t bytes) {
-  return bytes <= base::SysInfo::AmountOfFreeDiskSpace(path) -
-                      cryptohome::kMinFreeSpaceInBytes;
+// Gets the available space of the |path|.
+int64_t GetLocalDiskSpace(const base::FilePath& path) {
+  if (!base::PathExists(path)) {
+    return std::numeric_limits<int64_t>::min();
+  }
+  return base::SysInfo::AmountOfFreeDiskSpace(path);
 }
+
+}  // namespace
 
 bool FileManagerPrivateInternalStartCopyFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -704,25 +710,16 @@ bool FileManagerPrivateInternalStartCopyFunction::RunAsync() {
     return false;
   }
 
-  // Check if the destination directory is downloads. If so, secure available
-  // spece by freeing drive caches.
-  if (destination_url_.filesystem_id() ==
-      file_manager::util::GetDownloadsMountPointName(GetProfile())) {
-    return base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &GetFileMetadataOnIOThread, file_system_context, source_url_,
-            storage::FileSystemOperation::GET_METADATA_FIELD_SIZE,
-            base::BindOnce(&FileManagerPrivateInternalStartCopyFunction::
-                               RunAfterGetFileMetadata,
-                           this)));
-  }
-
+  // Check how much space we need for the copy operation.
   return base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
-          &FileManagerPrivateInternalStartCopyFunction::RunAfterFreeDiskSpace,
-          this, true));
+          &GetFileMetadataOnIOThread, file_system_context, source_url_,
+          storage::FileSystemOperation::GET_METADATA_FIELD_SIZE |
+              storage::FileSystemOperation::GET_METADATA_FIELD_TOTAL_SIZE,
+          base::BindOnce(&FileManagerPrivateInternalStartCopyFunction::
+                             RunAfterGetFileMetadata,
+                         this)));
 }
 
 void FileManagerPrivateInternalStartCopyFunction::RunAfterGetFileMetadata(
@@ -736,24 +733,57 @@ void FileManagerPrivateInternalStartCopyFunction::RunAfterGetFileMetadata(
     return;
   }
 
-  drive::FileSystemInterface* const drive_file_system =
-      drive::util::GetFileSystemByProfile(GetProfile());
-  if (drive_file_system) {
-    drive_file_system->FreeDiskSpaceIfNeededFor(
-        file_info.size,
-        base::Bind(
-            &FileManagerPrivateInternalStartCopyFunction::RunAfterFreeDiskSpace,
-            this));
+  base::FilePath destination_dir;
+  if (destination_url_.filesystem_id() ==
+      drive::util::GetDriveMountPointPath(GetProfile()).BaseName().value()) {
+    // Google Drive's cache is limited by the available space on the local disk.
+    destination_dir =
+        file_manager::util::GetMyFilesFolderForProfile(GetProfile());
   } else {
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock()},
-        base::BindOnce(
-            &CheckLocalDiskSpace,
-            file_manager::util::GetMyFilesFolderForProfile(GetProfile()),
-            file_info.size),
-        base::BindOnce(
-            &FileManagerPrivateInternalStartCopyFunction::RunAfterFreeDiskSpace,
-            this));
+    destination_dir = destination_url_.path().DirName();
+  }
+
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&GetLocalDiskSpace, destination_dir),
+      base::BindOnce(
+          &FileManagerPrivateInternalStartCopyFunction::RunAfterCheckDiskSpace,
+          this, file_info.size));
+}
+
+void FileManagerPrivateInternalStartCopyFunction::RunAfterCheckDiskSpace(
+    int64_t space_needed,
+    int64_t space_available) {
+  if (space_available < 0) {
+    // It might be a virtual path. In this case we just assume that it has
+    // enough space.
+    RunAfterFreeDiskSpace(true);
+  } else if (destination_url_.filesystem_id() ==
+                 file_manager::util::GetDownloadsMountPointName(GetProfile()) ||
+             destination_url_.filesystem_id() ==
+                 drive::util::GetDriveMountPointPath(GetProfile())
+                     .BaseName()
+                     .value()) {
+    // If the destination directory is local hard drive or Google Drive we
+    // must leave some additional space to make sure we don't break the system.
+    if (space_available - cryptohome::kMinFreeSpaceInBytes > space_needed) {
+      RunAfterFreeDiskSpace(true);
+    } else {
+      // Also we can try to secure needed space by freeing Drive caches.
+      drive::FileSystemInterface* const drive_file_system =
+          drive::util::GetFileSystemByProfile(GetProfile());
+      if (!drive_file_system) {
+        RunAfterFreeDiskSpace(false);
+      } else {
+        drive_file_system->FreeDiskSpaceIfNeededFor(
+            space_needed,
+            base::Bind(&FileManagerPrivateInternalStartCopyFunction::
+                           RunAfterFreeDiskSpace,
+                       this));
+      }
+    }
+  } else {
+    RunAfterFreeDiskSpace(space_available > space_needed);
   }
 }
 

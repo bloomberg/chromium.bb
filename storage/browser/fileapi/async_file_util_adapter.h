@@ -58,7 +58,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) AsyncFileUtilAdapter
                        StatusCallback callback) override;
   void GetFileInfo(std::unique_ptr<FileSystemOperationContext> context,
                    const FileSystemURL& url,
-                   int /* fields */,
+                   int fields,
                    GetFileInfoCallback callback) override;
   void ReadDirectory(std::unique_ptr<FileSystemOperationContext> context,
                      const FileSystemURL& url,
