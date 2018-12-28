@@ -4,6 +4,8 @@
 
 #include "media/filters/vp9_uncompressed_header_parser.h"
 
+#include <type_traits>
+
 #include "base/logging.h"
 
 namespace media {
@@ -990,7 +992,7 @@ bool Vp9UncompressedHeaderParser::Parse(const uint8_t* stream,
     } else {
       fhdr->refresh_frame_flags = reader_.ReadLiteral(8);
 
-      static_assert(arraysize(fhdr->ref_frame_sign_bias) >=
+      static_assert(std::extent<decltype(fhdr->ref_frame_sign_bias)>() >=
                         Vp9RefType::VP9_FRAME_LAST + kVp9NumRefsPerFrame,
                     "ref_frame_sign_bias is not big enough");
       for (size_t i = 0; i < kVp9NumRefsPerFrame; i++) {

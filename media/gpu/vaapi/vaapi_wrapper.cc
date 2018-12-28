@@ -4,6 +4,8 @@
 
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 
+#include <type_traits>
+
 #include <dlfcn.h>
 #include <string.h>
 
@@ -503,7 +505,8 @@ VASupportedProfiles::VASupportedProfiles()
       report_error_to_uma_cb_(base::DoNothing()) {
   VADisplayState* display_state = VADisplayState::Get();
 
-  static_assert(arraysize(supported_profiles_) == VaapiWrapper::kCodecModeMax,
+  static_assert(std::extent<decltype(supported_profiles_)>() ==
+                    VaapiWrapper::kCodecModeMax,
                 "The array size of supported profile is incorrect.");
 
   if (!display_state->Initialize())

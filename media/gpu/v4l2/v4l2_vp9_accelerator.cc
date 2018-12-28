@@ -4,10 +4,13 @@
 
 #include "media/gpu/v4l2/v4l2_vp9_accelerator.h"
 
+#include <type_traits>
+
 #include <linux/videodev2.h>
 #include <string.h>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_decode_surface.h"
 #include "media/gpu/v4l2/v4l2_decode_surface_handler.h"
@@ -68,13 +71,14 @@ void FillV4L2VP9SegmentationParams(
   SafeArrayMemcpy(v4l2_segm_params->pred_probs, vp9_segm_params.pred_probs);
   SafeArrayMemcpy(v4l2_segm_params->feature_data, vp9_segm_params.feature_data);
 
-  static_assert(arraysize(v4l2_segm_params->feature_enabled) ==
-                        arraysize(vp9_segm_params.feature_enabled) &&
-                    arraysize(v4l2_segm_params->feature_enabled[0]) ==
-                        arraysize(vp9_segm_params.feature_enabled[0]),
-                "feature_enabled arrays must be of same size");
-  for (size_t i = 0; i < arraysize(v4l2_segm_params->feature_enabled); ++i) {
-    for (size_t j = 0; j < arraysize(v4l2_segm_params->feature_enabled[i]);
+  static_assert(
+      std::extent<decltype(v4l2_segm_params->feature_enabled)>() ==
+              std::extent<decltype(vp9_segm_params.feature_enabled)>() &&
+          std::extent<decltype(v4l2_segm_params->feature_enabled[0])>() ==
+              std::extent<decltype(vp9_segm_params.feature_enabled[0])>(),
+      "feature_enabled arrays must be of same size");
+  for (size_t i = 0; i < base::size(v4l2_segm_params->feature_enabled); ++i) {
+    for (size_t j = 0; j < base::size(v4l2_segm_params->feature_enabled[i]);
          ++j) {
       v4l2_segm_params->feature_enabled[i][j] =
           vp9_segm_params.feature_enabled[i][j];
@@ -270,7 +274,7 @@ bool V4L2VP9Accelerator::SubmitDecode(
 
   struct v4l2_ctrl_vp9_decode_param v4l2_decode_param;
   memset(&v4l2_decode_param, 0, sizeof(v4l2_decode_param));
-  DCHECK_EQ(ref_pictures.size(), arraysize(v4l2_decode_param.ref_frames));
+  DCHECK_EQ(ref_pictures.size(), base::size(v4l2_decode_param.ref_frames));
 
   std::vector<scoped_refptr<V4L2DecodeSurface>> ref_surfaces;
   for (size_t i = 0; i < ref_pictures.size(); ++i) {
@@ -285,11 +289,11 @@ bool V4L2VP9Accelerator::SubmitDecode(
     }
   }
 
-  static_assert(arraysize(v4l2_decode_param.active_ref_frames) ==
-                    arraysize(frame_hdr->ref_frame_idx),
+  static_assert(std::extent<decltype(v4l2_decode_param.active_ref_frames)>() ==
+                    std::extent<decltype(frame_hdr->ref_frame_idx)>(),
                 "active reference frame array sizes mismatch");
 
-  for (size_t i = 0; i < arraysize(frame_hdr->ref_frame_idx); ++i) {
+  for (size_t i = 0; i < base::size(frame_hdr->ref_frame_idx); ++i) {
     uint8_t idx = frame_hdr->ref_frame_idx[i];
     if (idx >= ref_pictures.size())
       return false;

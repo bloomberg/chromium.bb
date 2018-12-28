@@ -4,6 +4,8 @@
 
 #include "media/gpu/vaapi/vaapi_vp9_accelerator.h"
 
+#include <type_traits>
+
 #include "base/stl_util.h"
 #include "media/gpu/decode_surface_handler.h"
 #include "media/gpu/macros.h"
@@ -120,9 +122,10 @@ bool VaapiVP9Accelerator::SubmitDecode(
   slice_param.slice_data_offset = 0;
   slice_param.slice_data_flag = VA_SLICE_DATA_FLAG_ALL;
 
-  static_assert(arraysize(Vp9SegmentationParams::feature_enabled) ==
-                    arraysize(slice_param.seg_param),
-                "seg_param array of incorrect size");
+  static_assert(
+      std::extent<decltype(Vp9SegmentationParams::feature_enabled)>() ==
+          std::extent<decltype(slice_param.seg_param)>(),
+      "seg_param array of incorrect size");
   for (size_t i = 0; i < base::size(slice_param.seg_param); ++i) {
     VASegmentParameterVP9& seg_param = slice_param.seg_param[i];
 #define SEG_TO_SP_SF(a, b) seg_param.segment_flags.fields.a = b
