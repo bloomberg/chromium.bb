@@ -101,6 +101,7 @@ class PLATFORM_EXPORT DisplayItem {
 
     kForeignLayerFirst,
     kForeignLayerCanvas = kForeignLayerFirst,
+    kForeignLayerDevToolsOverlay,
     kForeignLayerPlugin,
     kForeignLayerVideo,
     kForeignLayerWrapper,

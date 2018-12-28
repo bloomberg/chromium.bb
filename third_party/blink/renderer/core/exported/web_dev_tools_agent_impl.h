@@ -45,6 +45,7 @@
 namespace blink {
 
 class ClientMessageLoopAdapter;
+class GraphicsContext;
 class GraphicsLayer;
 class InspectedFrames;
 class InspectorNetworkAgent;
@@ -80,7 +81,11 @@ class CORE_EXPORT WebDevToolsAgentImpl final
 
   void WillBeDestroyed();
   void FlushProtocolNotifications();
+
+  bool HasOverlays() const { return !overlay_agents_.IsEmpty(); }
   void UpdateOverlays();
+  void PaintOverlays(GraphicsContext&);  // For CompositeAfterPaint.
+
   bool HandleInputEvent(const WebInputEvent&);
   void DispatchBufferedTouchEvents();
   void BindRequest(mojom::blink::DevToolsAgentHostAssociatedPtrInfo,

@@ -34,6 +34,7 @@
 
 #include "base/auto_reset.h"
 #include "build/build_config.h"
+#include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_data.h"
@@ -69,6 +70,8 @@
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -142,23 +145,64 @@ const int kCtrlOrMeta = WebInputEvent::kControlKey;
 }  // namespace
 
 class InspectorOverlayAgent::InspectorPageOverlayDelegate final
-    : public FrameOverlay::Delegate {
+    : public FrameOverlay::Delegate,
+      public cc::ContentLayerClient {
  public:
   explicit InspectorPageOverlayDelegate(InspectorOverlayAgent& overlay)
-      : overlay_(&overlay) {}
+      : overlay_(&overlay) {
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      layer_ = cc::PictureLayer::Create(this);
+      layer_->SetIsDrawable(true);
+    }
+  }
+  ~InspectorPageOverlayDelegate() override {
+    if (layer_)
+      layer_->ClearClient();
+  }
 
-  void PaintFrameOverlay(const FrameOverlay&,
+  void PaintFrameOverlay(const FrameOverlay& frame_overlay,
                          GraphicsContext& graphics_context,
-                         const IntSize& web_view_size) const override {
+                         const IntSize&) const override {
     if (overlay_->IsEmpty())
       return;
+
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      layer_->SetBounds(gfx::Size(frame_overlay.Size()));
+      RecordForeignLayer(graphics_context,
+                         DisplayItem::kForeignLayerDevToolsOverlay, layer_,
+                         PropertyTreeState::Root());
+      return;
+    }
 
     LocalFrameView* view = overlay_->OverlayMainFrame()->View();
     view->PaintOutsideOfLifecycle(graphics_context, kGlobalPaintNormalPhase);
   }
 
+  void Invalidate() override {
+    if (layer_)
+      layer_->SetNeedsDisplay();
+  }
+
  private:
+  // cc::ContentLayerClient implementation
+  gfx::Rect PaintableRegion() override { return gfx::Rect(layer_->bounds()); }
+  bool FillsBoundsCompletely() const override { return false; }
+  size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
+
+  scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList(
+      PaintingControlSetting) override {
+    auto display_list = base::MakeRefCounted<cc::DisplayItemList>();
+    display_list->StartPaint();
+    display_list->push<cc::DrawRecordOp>(
+        overlay_->OverlayMainFrame()->View()->GetPaintRecord());
+    display_list->EndPaintOfUnpaired(PaintableRegion());
+    display_list->Finalize();
+    return display_list;
+  }
+
   Persistent<InspectorOverlayAgent> overlay_;
+  // For CompositeAfterPaint.
+  scoped_refptr<cc::PictureLayer> layer_;
 };
 
 class InspectorOverlayAgent::InspectorOverlayChromeClient final
@@ -505,8 +549,15 @@ void InspectorOverlayAgent::UpdateAllOverlayLifecyclePhases() {
         DocumentLifecycle::LifecycleUpdateReason::kOther);
   }
 
-  if (frame_overlay_ && frame_overlay_->GetGraphicsLayer())
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() && frame_overlay_ &&
+      frame_overlay_->GetGraphicsLayer())
     frame_overlay_->GetGraphicsLayer()->Paint(nullptr);
+}
+
+void InspectorOverlayAgent::PaintOverlay(GraphicsContext& context) {
+  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  if (frame_overlay_)
+    frame_overlay_->Paint(context);
 }
 
 bool InspectorOverlayAgent::IsInspectorLayer(GraphicsLayer* layer) {

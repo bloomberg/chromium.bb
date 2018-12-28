@@ -1847,9 +1847,19 @@ void WebLocalFrameImpl::DidChangeContentsSize(const IntSize& size) {
     GetTextFinder()->IncreaseMarkerVersion();
 }
 
+bool WebLocalFrameImpl::HasDevToolsOverlays() const {
+  return dev_tools_agent_ && dev_tools_agent_->HasOverlays();
+}
+
 void WebLocalFrameImpl::UpdateDevToolsOverlays() {
   if (dev_tools_agent_)
     dev_tools_agent_->UpdateOverlays();
+}
+
+void WebLocalFrameImpl::PaintDevToolsOverlays(GraphicsContext& context) {
+  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  if (dev_tools_agent_)
+    dev_tools_agent_->PaintOverlays(context);
 }
 
 void WebLocalFrameImpl::CreateFrameView() {

@@ -481,6 +481,12 @@ void WebDevToolsAgentImpl::UpdateOverlays() {
     it.value->UpdateAllOverlayLifecyclePhases();
 }
 
+void WebDevToolsAgentImpl::PaintOverlays(GraphicsContext& context) {
+  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  for (auto& it : overlay_agents_)
+    it.value->PaintOverlay(context);
+}
+
 void WebDevToolsAgentImpl::DispatchBufferedTouchEvents() {
   for (auto& it : overlay_agents_)
     it.value->DispatchBufferedTouchEvents();

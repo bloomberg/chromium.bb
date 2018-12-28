@@ -69,8 +69,10 @@ FrameOverlay::~FrameOverlay() {
 }
 
 void FrameOverlay::Update() {
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    delegate_->Invalidate();
     return;
+  }
 
   auto* local_root_frame_widget =
       WebLocalFrameImpl::FromFrame(frame_)->LocalRootFrameWidget();

@@ -2716,7 +2716,12 @@ void LocalFrameView::PaintTree() {
     if (!paint_controller_)
       paint_controller_ = PaintController::Create();
 
-    if (GetLayoutView()->Layer()->NeedsRepaint()) {
+    // TODO(crbug.com/917911): Painting of overlays should not force repainting
+    // of the frame contents.
+    auto* web_local_frame_impl = WebLocalFrameImpl::FromFrame(frame_);
+    bool has_dev_tools_overlays =
+        web_local_frame_impl && web_local_frame_impl->HasDevToolsOverlays();
+    if (GetLayoutView()->Layer()->NeedsRepaint() || has_dev_tools_overlays) {
       GraphicsContext graphics_context(*paint_controller_);
       if (RuntimeEnabledFeatures::PrintBrowserEnabled())
         graphics_context.SetPrinting(true);
@@ -2742,6 +2747,13 @@ void LocalFrameView::PaintTree() {
       ForAllChildLocalFrameViews([&graphics_context](LocalFrameView& view) {
         view.frame_->PaintFrameColorOverlay(graphics_context);
       });
+
+      // Devtools overlays query the inspected page's paint data so this update
+      // needs to be after other paintings.
+      if (has_dev_tools_overlays) {
+        web_local_frame_impl->UpdateDevToolsOverlays();
+        web_local_frame_impl->PaintDevToolsOverlays(graphics_context);
+      }
 
       paint_controller_->CommitNewDisplayItems();
     }
@@ -2782,6 +2794,12 @@ void LocalFrameView::PaintTree() {
     frame_->PaintFrameColorOverlay();
     ForAllChildLocalFrameViews(
         [](LocalFrameView& view) { view.frame_->PaintFrameColorOverlay(); });
+
+    // Devtools overlays query the inspected page's paint data so this update
+    // needs to be after other paintings. Because devtools overlays can add
+    // layers, this needs to be before layers are collected.
+    if (auto* web_local_frame_impl = WebLocalFrameImpl::FromFrame(frame_))
+      web_local_frame_impl->UpdateDevToolsOverlays();
   }
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
@@ -2789,12 +2807,6 @@ void LocalFrameView::PaintTree() {
     if (auto* layout_view = frame_view.GetLayoutView())
       layout_view->Layer()->ClearNeedsRepaintRecursively();
   });
-
-  // Devtools overlays query the inspected page's paint data so this update
-  // needs to be after the lifecycle advance to kPaintClean. Because devtools
-  // overlays can add layers, this needs to be before layers are collected.
-  if (auto* web_local_frame_impl = WebLocalFrameImpl::FromFrame(frame_))
-    web_local_frame_impl->UpdateDevToolsOverlays();
 
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
       !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
