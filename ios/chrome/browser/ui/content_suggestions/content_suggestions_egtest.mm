@@ -423,6 +423,23 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
       performAction:grey_tap()];
 
   // Check the tile is back.
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey
+        selectElementWithMatcher:
+            grey_allOf(
+                chrome_test_util::StaticTextWithAccessibilityLabel(pageTitle),
+                grey_sufficientlyVisible(), nil)]
+        assertWithMatcher:grey_notNil()
+                    error:&error];
+    return error == nil;
+  };
+  NSString* errorMessage =
+      @"The tile wasn't added back after hitting 'Undo' on the snackbar";
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 base::test::ios::kWaitForUIElementTimeout, condition),
+             errorMessage);
+
   [[EarlGrey selectElementWithMatcher:
                  grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabel(
                                 pageTitle),
