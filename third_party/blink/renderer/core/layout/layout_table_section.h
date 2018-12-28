@@ -291,7 +291,6 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   void UpdateLogicalWidthForCollapsedCells(
       const Vector<int>& col_collapsed_width);
 
-  void ComputeVisualOverflowFromDescendants();
   void ComputeLayoutOverflowFromDescendants();
 
  protected:
@@ -302,6 +301,8 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
                    HitTestAction) override;
 
  private:
+  void ComputeVisualOverflowFromDescendants();
+
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectTableSection || LayoutBox::IsOfType(type);
   }

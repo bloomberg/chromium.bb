@@ -1469,23 +1469,32 @@ bool LayoutTableSection::RecalcLayoutOverflow() {
 }
 
 bool LayoutTableSection::RecalcVisualOverflow() {
-  if (!ChildNeedsVisualOverflowRecalc())
+  if (!NeedsVisualOverflowRecalc())
     return false;
-  ClearChildNeedsVisualOverflowRecalc();
+
   unsigned total_rows = grid_.size();
-  bool children_visual_overflow_changed = false;
+  bool child_visual_overflow_changed = false;
   for (unsigned r = 0; r < total_rows; r++) {
     LayoutTableRow* row_layouter = RowLayoutObjectAt(r);
     if (!row_layouter || (row_layouter->HasLayer() &&
                           row_layouter->Layer()->IsSelfPaintingLayer()))
       continue;
     if (row_layouter->RecalcVisualOverflow())
-      children_visual_overflow_changed = true;
+      child_visual_overflow_changed = true;
   }
-  if (children_visual_overflow_changed)
+
+  LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
+
+  if (child_visual_overflow_changed || SelfNeedsVisualOverflowRecalc())
     ComputeVisualOverflowFromDescendants();
-  AddVisualEffectOverflow();
-  return children_visual_overflow_changed;
+  if (SelfNeedsVisualOverflowRecalc())
+    AddVisualEffectOverflow();
+
+  ClearChildNeedsVisualOverflowRecalc();
+  ClearSelfNeedsVisualOverflowRecalc();
+
+  return child_visual_overflow_changed ||
+         previous_visual_overflow_rect != VisualOverflowRect();
 }
 
 void LayoutTableSection::MarkAllCellsWidthsDirtyAndOrNeedsLayout(
@@ -1737,6 +1746,7 @@ void LayoutTableSection::RowLogicalHeightChanged(LayoutTableRow* row) {
 
 void LayoutTableSection::SetNeedsCellRecalc() {
   needs_cell_recalc_ = true;
+  SetNeedsOverflowRecalc();
   if (LayoutTable* t = Table())
     t->SetNeedsSectionRecalc();
 }
