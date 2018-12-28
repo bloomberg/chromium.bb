@@ -13,7 +13,6 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
-import android.support.annotation.IntDef;
 import android.support.annotation.StringRes;
 import android.util.AttributeSet;
 import android.view.View;
@@ -26,24 +25,10 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
 /**
  * StatusView is a location bar's view displaying status (icons and/or text).
  */
 public class StatusView extends LinearLayout {
-    /**
-     * Specifies the types of buttons shown to signify different types of navigation elements.
-     */
-    @IntDef({NavigationButtonType.PAGE, NavigationButtonType.MAGNIFIER, NavigationButtonType.EMPTY})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface NavigationButtonType {
-        int PAGE = 0;
-        int MAGNIFIER = 1;
-        int EMPTY = 2;
-    }
-
     private ImageView mIconView;
     private TextView mVerboseStatusTextView;
     private View mSeparatorView;
@@ -108,7 +93,7 @@ public class StatusView extends LinearLayout {
      *
      * @param listener Instance of View.OnClickListener or null.
      */
-    public void setStatusClickListener(View.OnClickListener listener) {
+    void setStatusClickListener(View.OnClickListener listener) {
         mIconView.setOnClickListener(listener);
         mVerboseStatusTextView.setOnClickListener(listener);
     }
@@ -215,8 +200,9 @@ public class StatusView extends LinearLayout {
         mVerboseStatusTextView.setMaxWidth(width);
     }
 
-    // TODO(ender): replace these with methods manipulating views directly.
-    // Do not depend on these when creating new code!
+    // TODO(ender): The final last purpose of this method is to allow
+    // ToolbarButtonInProductHelpController set up help bubbles. This dependency is about to
+    // change. Do not depend on this method when creating new code.
     View getSecurityButton() {
         return mIconView;
     }

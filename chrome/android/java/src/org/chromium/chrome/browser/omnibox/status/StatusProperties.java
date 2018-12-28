@@ -16,44 +16,41 @@ import org.chromium.chrome.browser.modelutil.PropertyModel.WritableObjectPropert
  */
 class StatusProperties {
     /** Enables / disables animations. */
-    public static final WritableBooleanPropertyKey ANIMATIONS_ENABLED =
-            new WritableBooleanPropertyKey();
+    static final WritableBooleanPropertyKey ANIMATIONS_ENABLED = new WritableBooleanPropertyKey();
 
     /** Specifies navigation icon resource type .*/
-    public static final WritableIntPropertyKey STATUS_ICON_RES = new WritableIntPropertyKey();
+    static final WritableIntPropertyKey STATUS_ICON_RES = new WritableIntPropertyKey();
 
     /** Specifies color tint for navigation icon. */
-    public static final WritableIntPropertyKey STATUS_ICON_TINT_RES = new WritableIntPropertyKey();
+    static final WritableIntPropertyKey STATUS_ICON_TINT_RES = new WritableIntPropertyKey();
 
     /** Specifies accessibility string presented to user upon long click on security icon. */
     public static final WritableIntPropertyKey STATUS_ICON_ACCESSIBILITY_TOAST_RES =
             new WritableIntPropertyKey();
 
     /** Specifies string resource holding content description for security icon. */
-    public static final WritableIntPropertyKey STATUS_ICON_DESCRIPTION_RES =
-            new WritableIntPropertyKey();
+    static final WritableIntPropertyKey STATUS_ICON_DESCRIPTION_RES = new WritableIntPropertyKey();
 
     /** Specifies status separator color. */
-    public static final WritableIntPropertyKey SEPARATOR_COLOR_RES = new WritableIntPropertyKey();
+    static final WritableIntPropertyKey SEPARATOR_COLOR_RES = new WritableIntPropertyKey();
 
     /** Specifies object to receive status click events. */
-    public static final WritableObjectPropertyKey<View.OnClickListener> STATUS_CLICK_LISTENER =
+    static final WritableObjectPropertyKey<View.OnClickListener> STATUS_CLICK_LISTENER =
             new WritableObjectPropertyKey<>();
 
-    public static final WritableIntPropertyKey VERBOSE_STATUS_TEXT_COLOR_RES =
+    static final WritableIntPropertyKey VERBOSE_STATUS_TEXT_COLOR_RES =
             new WritableIntPropertyKey();
 
     /** Specifies content of the verbose status text field. */
-    public static final WritableIntPropertyKey VERBOSE_STATUS_TEXT_STRING_RES =
+    static final WritableIntPropertyKey VERBOSE_STATUS_TEXT_STRING_RES =
             new WritableIntPropertyKey();
 
     /** Specifies whether verbose status text view is visible. */
-    public static final WritableBooleanPropertyKey VERBOSE_STATUS_TEXT_VISIBLE =
+    static final WritableBooleanPropertyKey VERBOSE_STATUS_TEXT_VISIBLE =
             new WritableBooleanPropertyKey();
 
     /** Specifies width of the verbose status text view. */
-    public static final WritableIntPropertyKey VERBOSE_STATUS_TEXT_WIDTH =
-            new WritableIntPropertyKey();
+    static final WritableIntPropertyKey VERBOSE_STATUS_TEXT_WIDTH = new WritableIntPropertyKey();
 
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {ANIMATIONS_ENABLED,
             STATUS_ICON_ACCESSIBILITY_TOAST_RES, STATUS_ICON_RES, STATUS_ICON_TINT_RES,

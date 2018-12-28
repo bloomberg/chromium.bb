@@ -8,21 +8,35 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.IntDef;
 import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
-import org.chromium.chrome.browser.omnibox.status.StatusView.NavigationButtonType;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * A component for displaying a status icon (e.g. security icon or navigation icon) and optional
  * verbose status text.
  */
 public class StatusViewCoordinator implements View.OnClickListener {
+    /**
+     * Specifies the types of buttons shown to signify different types of navigation elements.
+     */
+    @IntDef({NavigationButtonType.PAGE, NavigationButtonType.MAGNIFIER, NavigationButtonType.EMPTY})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface NavigationButtonType {
+        int PAGE = 0;
+        int MAGNIFIER = 1;
+        int EMPTY = 2;
+    }
+
     private final StatusView mStatusView;
     private final StatusMediator mMediator;
     private final PropertyModel mModel;
@@ -141,7 +155,21 @@ public class StatusViewCoordinator implements View.OnClickListener {
      * @param buttonType The type of navigation button to be shown.
      */
     public void setNavigationButtonType(@NavigationButtonType int buttonType) {
-        mMediator.setNavigationButtonType(buttonType);
+        @DrawableRes
+        int imageRes = 0;
+        switch (buttonType) {
+            case NavigationButtonType.PAGE:
+                imageRes = R.drawable.ic_omnibox_page;
+                break;
+            case NavigationButtonType.MAGNIFIER:
+                imageRes = R.drawable.omnibox_search;
+                break;
+            case NavigationButtonType.EMPTY:
+                break;
+            default:
+                assert false : "Invalid navigation button type";
+        }
+        mMediator.setNavigationButtonType(imageRes);
     }
 
     /**

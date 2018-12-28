@@ -11,7 +11,6 @@ import android.view.View;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
-import org.chromium.chrome.browser.omnibox.status.StatusView.NavigationButtonType;
 
 /**
  * Contains the controller logic of the Status component.
@@ -52,23 +51,7 @@ class StatusMediator {
     /**
      * Specify navigation button image type.
      */
-    void setNavigationButtonType(@NavigationButtonType int buttonType) {
-        @DrawableRes
-        int imageRes = 0;
-
-        switch (buttonType) {
-            case NavigationButtonType.PAGE:
-                imageRes = R.drawable.ic_omnibox_page;
-                break;
-            case NavigationButtonType.MAGNIFIER:
-                imageRes = R.drawable.omnibox_search;
-                break;
-            case NavigationButtonType.EMPTY:
-                break;
-            default:
-                assert false : "Invalid navigation button type";
-        }
-
+    void setNavigationButtonType(@DrawableRes int imageRes) {
         mNavigationIconRes = imageRes;
         updateLocationBarIcon();
     }
