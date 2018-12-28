@@ -13,6 +13,7 @@
 
 @class PreloadController;
 @protocol PreloadControllerDelegate;
+@class TabModel;
 
 namespace ios {
 class ChromeBrowserState;
@@ -50,6 +51,15 @@ class PrerenderService : public KeyedService {
                       ui::PageTransition transition,
                       bool immediately);
 
+  // If |url| is prerendered, loads the prerendered web state into |tab_model|
+  // at the active index, replacing the existing active web state. If not, or if
+  // it isn't possible to replace the active web state, cancels the active
+  // preload. Metrics and snapshots are appropriately updated. Returns true if
+  // the active webstate was replaced, false otherwise.
+  bool MaybeLoadPrerenderedURL(const GURL& url,
+                               ui::PageTransition transition,
+                               TabModel* tab_model);
+
   // Cancels any outstanding prerender requests and destroys any prerendered
   // pages.
   void CancelPrerender();
@@ -59,9 +69,6 @@ class PrerenderService : public KeyedService {
 
   // Returns true if the given |web_state| is being prerendered.
   bool IsWebStatePrerendered(web::WebState* web_state);
-
-  // Returns the WebState containing the prerendered contents.
-  std::unique_ptr<web::WebState> ReleasePrerenderContents();
 
   // KeyedService implementation.
   void Shutdown() override;

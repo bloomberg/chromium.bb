@@ -4002,67 +4002,20 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     return;
   }
 
-  bool typed_or_generated_transition =
-      PageTransitionCoreTypeIs(params.transition_type,
-                               ui::PAGE_TRANSITION_TYPED) ||
-      PageTransitionCoreTypeIs(params.transition_type,
-                               ui::PAGE_TRANSITION_GENERATED);
-
+  // Set _insertedTabWasPrerenderedTab to YES, so that if a prerendered tab is
+  // inserted, the correct toolbar height is used and animations are played.
+  _insertedTabWasPrerenderedTab = YES;
+  // Ask the prerender service to load this URL if it can, and return if it does
+  // so.
   PrerenderService* prerenderService =
       PrerenderServiceFactory::GetForBrowserState(self.browserState);
-  if (prerenderService && prerenderService->HasPrerenderForUrl(params.url)) {
-    std::unique_ptr<web::WebState> newWebState =
-        prerenderService->ReleasePrerenderContents();
-    DCHECK(newWebState);
-
-    int lastIndex = self.currentWebState->GetNavigationManager()
-                        ->GetLastCommittedItemIndex();
-    UMA_HISTOGRAM_COUNTS_100("Prerender.PrerenderLoadedOnIndex", lastIndex);
-
-    BOOL onFirstNTP =
-        IsVisibleURLNewTabPage(self.currentWebState) && lastIndex == 0;
-    UMA_HISTOGRAM_BOOLEAN("Prerender.PrerenderLoadedOnFirstNTP", onFirstNTP);
-
-    Tab* oldTab = self.tabModel.currentTab;
-    Tab* newTab = LegacyTabHelper::GetTabForWebState(newWebState.get());
-    DCHECK(oldTab);
-    DCHECK(newTab);
-
-    bool canPruneItems =
-        [newTab navigationManager]->CanPruneAllButLastCommittedItem();
-
-    if (canPruneItems) {
-      [newTab navigationManager]->CopyStateFromAndPrune(
-          [oldTab navigationManager]);
-
-      // Set _insertedTabWasPrerenderedTab to YES while the Tab is inserted
-      // so that the correct toolbar height is used and animation are played.
-      _insertedTabWasPrerenderedTab = YES;
-      self.tabModel.webStateList->ReplaceWebStateAt(
-          [self.tabModel indexOfTab:oldTab], std::move(newWebState));
-      _insertedTabWasPrerenderedTab = NO;
-
-      if (!newTab.webState->IsLoading()) {
-        // If the page has finished loading, take a snapshot.  If the page is
-        // still loading, do nothing, as the tab helper will automatically take
-        // a snapshot once the load completes.
-        SnapshotTabHelper::FromWebState(newTab.webState)
-            ->UpdateSnapshotWithCallback(nil);
-      }
-
-      if (typed_or_generated_transition) {
-        LoadTimingTabHelper::FromWebState(newTab.webState)
-            ->DidPromotePrerenderTab();
-      }
-
-      [self.tabModel saveSessionImmediately:NO];
-      return;
-    }
+  if (prerenderService &&
+      prerenderService->MaybeLoadPrerenderedURL(
+          params.url, params.transition_type, self.tabModel)) {
+    _insertedTabWasPrerenderedTab = NO;
+    return;
   }
-
-  if (prerenderService) {
-    prerenderService->CancelPrerender();
-  }
+  _insertedTabWasPrerenderedTab = NO;
 
   // Some URLs are not allowed while in incognito.  If we are in incognito and
   // load a disallowed URL, instead create a new tab not in the incognito state.
@@ -4076,8 +4029,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [self webPageOrderedOpen:command];
     return;
   }
-
-  if (typed_or_generated_transition) {
+  BOOL typedOrGeneratedTransition =
+      PageTransitionCoreTypeIs(params.transition_type,
+                               ui::PAGE_TRANSITION_TYPED) ||
+      PageTransitionCoreTypeIs(params.transition_type,
+                               ui::PAGE_TRANSITION_GENERATED);
+  if (typedOrGeneratedTransition) {
     LoadTimingTabHelper::FromWebState(self.currentWebState)
         ->DidInitiatePageLoad();
   }
