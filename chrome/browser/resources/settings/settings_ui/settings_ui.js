@@ -187,6 +187,7 @@ Polymer({
 
   /** @override */
   detached: function() {
+    this.removeSelfAsFindShortcutListener();
     settings.resetRouteForTesting();
   },
 

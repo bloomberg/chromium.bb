@@ -110,6 +110,8 @@ Polymer({
 
     /** @private */
     tooltipText_: String,
+
+    searchFilter: String,
   },
 
   // <if expr="chromeos">
@@ -213,7 +215,15 @@ Polymer({
    * @private
    */
   hasSites_: function() {
-    return !!this.sites.length;
+    return this.sites.length > 0;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  showNoSearchResults_: function() {
+    return this.sites.length > 0 && this.getFilteredSites_().length == 0;
   },
 
   /**
@@ -443,5 +453,23 @@ Polymer({
         /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'));
     if (actionMenu.open)
       actionMenu.close();
+  },
+
+  /**
+   * @return {!Array<!SiteException>}
+   * @private
+   */
+  getFilteredSites_: function() {
+    if (!this.searchFilter)
+      return this.sites.slice();
+
+    const propNames = [
+      'displayName',
+      'origin',
+    ];
+    const searchFilter = this.searchFilter.toLowerCase();
+    return this.sites.filter(
+        site => propNames.some(
+            propName => site[propName].toLowerCase().includes(searchFilter)));
   },
 });
