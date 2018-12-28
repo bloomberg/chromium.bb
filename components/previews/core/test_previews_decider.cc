@@ -25,7 +25,7 @@ bool TestPreviewsDecider::ShouldCommitPreview(PreviewsUserData* previews_data,
   return allow_previews_;
 }
 
-bool TestPreviewsDecider::LoadResourceHints(const GURL& url) {
+bool TestPreviewsDecider::LoadPageHints(const GURL& url) {
   return true;
 }
 

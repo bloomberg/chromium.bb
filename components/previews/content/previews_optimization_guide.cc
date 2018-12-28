@@ -64,47 +64,14 @@ bool PreviewsOptimizationGuide::IsBlacklisted(const GURL& url,
 }
 
 void PreviewsOptimizationGuide::OnLoadedHint(
-    ResourceLoadingHintsCallback callback,
     const GURL& document_url,
     const optimization_guide::proto::Hint& loaded_hint) const {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
-  // TODO(dougarnett): Drop this load callback.
-  const optimization_guide::proto::PageHint* matched_page_hint =
-      PreviewsHints::FindPageHint(document_url, loaded_hint);
-  if (!matched_page_hint)
-    return;
-
-  // Retrieve the resource patterns to be blocked from the page hint.
-  std::vector<std::string> resource_patterns_to_block;
-  for (const auto& optimization :
-       matched_page_hint->whitelisted_optimizations()) {
-    if (optimization.optimization_type() !=
-        optimization_guide::proto::RESOURCE_LOADING) {
-      continue;
-    }
-
-    // TODO(jegray): When persistence is added for hints, address handling of
-    // disabled experimental optimizations.
-    for (const auto& resource_loading_hint :
-         optimization.resource_loading_hints()) {
-      if (!resource_loading_hint.resource_pattern().empty() &&
-          resource_loading_hint.loading_optimization_type() ==
-              optimization_guide::proto::LOADING_BLOCK_RESOURCE) {
-        resource_patterns_to_block.push_back(
-            resource_loading_hint.resource_pattern());
-      }
-    }
-    break;
-  }
-  if (!resource_patterns_to_block.empty()) {
-    std::move(callback).Run(document_url, resource_patterns_to_block);
-  }
+  // TODO(dougarnett): Consider UMA to capture here else drop this callback.
 }
 
-bool PreviewsOptimizationGuide::MaybeLoadOptimizationHints(
-    const GURL& url,
-    ResourceLoadingHintsCallback callback) {
+bool PreviewsOptimizationGuide::MaybeLoadOptimizationHints(const GURL& url) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   if (!hints_)
@@ -112,8 +79,7 @@ bool PreviewsOptimizationGuide::MaybeLoadOptimizationHints(
 
   return hints_->MaybeLoadOptimizationHints(
       url, base::BindOnce(&PreviewsOptimizationGuide::OnLoadedHint,
-                          ui_weak_ptr_factory_.GetWeakPtr(),
-                          std::move(callback), url));
+                          ui_weak_ptr_factory_.GetWeakPtr(), url));
 }
 
 bool PreviewsOptimizationGuide::GetResourceLoadingHints(

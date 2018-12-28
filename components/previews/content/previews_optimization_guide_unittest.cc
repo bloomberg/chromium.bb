@@ -88,26 +88,12 @@ class PreviewsOptimizationGuideTest : public testing::Test {
     guide_->OnHintsComponentAvailable(info);
   }
 
-  void MaybeLoadOptimizationHintsCallback(
-      const GURL& document_gurl,
-      const std::vector<std::string>& resource_patterns) {
-    loaded_hints_document_gurl_ = document_gurl;
-    loaded_hints_resource_patterns_ = resource_patterns;
-  }
-
   void ResetGuide() {
     guide_.reset();
     RunUntilIdle();
   }
 
   base::FilePath temp_dir() const { return temp_dir_.GetPath(); }
-
-  const GURL& loaded_hints_document_gurl() const {
-    return loaded_hints_document_gurl_;
-  }
-  const std::vector<std::string>& loaded_hints_resource_patterns() const {
-    return loaded_hints_resource_patterns_;
-  }
 
  protected:
   void RunUntilIdle() {
@@ -152,9 +138,6 @@ class PreviewsOptimizationGuideTest : public testing::Test {
 
   std::unique_ptr<PreviewsOptimizationGuide> guide_;
   std::unique_ptr<TestOptimizationGuideService> optimization_guide_service_;
-
-  GURL loaded_hints_document_gurl_;
-  std::vector<std::string> loaded_hints_resource_patterns_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsOptimizationGuideTest);
 };
@@ -879,15 +862,12 @@ TEST_F(PreviewsOptimizationGuideTest, MaybeLoadOptimizationHints) {
 
   InitializeFixedCountResourceLoadingHints();
 
+  EXPECT_TRUE(
+      guide()->MaybeLoadOptimizationHints(GURL("https://somedomain.org/")));
   EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain.org/"), base::DoNothing()));
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.somedomain.org/news/football"),
-      base::BindOnce(
-          &PreviewsOptimizationGuideTest::MaybeLoadOptimizationHintsCallback,
-          base::Unretained(this))));
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.unknown.com"), base::DoNothing()));
+      GURL("https://www.somedomain.org/news/football")));
+  EXPECT_FALSE(
+      guide()->MaybeLoadOptimizationHints(GURL("https://www.unknown.com")));
 
   RunUntilIdle();
   histogram_tester.ExpectUniqueSample(
@@ -896,12 +876,6 @@ TEST_F(PreviewsOptimizationGuideTest, MaybeLoadOptimizationHints) {
       "ResourceLoadingHints.ResourceHints.TotalReceived", 3, 1);
   histogram_tester.ExpectUniqueSample(
       "ResourceLoadingHints.PageHints.TotalReceived", 2, 1);
-
-  // Verify loaded hint data for www.somedomain.org
-  EXPECT_EQ(GURL("https://www.somedomain.org/news/football"),
-            loaded_hints_document_gurl());
-  EXPECT_EQ(1ul, loaded_hints_resource_patterns().size());
-  EXPECT_EQ("news_cruft.js", loaded_hints_resource_patterns().front());
 
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
@@ -927,15 +901,12 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   InitializeFixedCountResourceLoadingHintsWithTwoExperiments();
 
+  EXPECT_FALSE(
+      guide()->MaybeLoadOptimizationHints(GURL("https://somedomain.org/")));
   EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain.org/"), base::DoNothing()));
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.somedomain.org/news/football"),
-      base::BindOnce(
-          &PreviewsOptimizationGuideTest::MaybeLoadOptimizationHintsCallback,
-          base::Unretained(this))));
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.unknown.com"), base::DoNothing()));
+      GURL("https://www.somedomain.org/news/football")));
+  EXPECT_FALSE(
+      guide()->MaybeLoadOptimizationHints(GURL("https://www.unknown.com")));
 
   RunUntilIdle();
   histogram_tester.ExpectUniqueSample(
@@ -944,10 +915,6 @@ TEST_F(PreviewsOptimizationGuideTest,
       "ResourceLoadingHints.ResourceHints.TotalReceived", 0, 1);
   histogram_tester.ExpectUniqueSample(
       "ResourceLoadingHints.PageHints.TotalReceived", 0, 1);
-
-  // Verify loaded hint data for www.somedomain.org
-  EXPECT_EQ(GURL(), loaded_hints_document_gurl());
-  EXPECT_EQ(0ul, loaded_hints_resource_patterns().size());
 
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
@@ -978,15 +945,12 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   InitializeFixedCountResourceLoadingHintsWithTwoExperiments();
 
+  EXPECT_TRUE(
+      guide()->MaybeLoadOptimizationHints(GURL("https://somedomain.org/")));
   EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain.org/"), base::DoNothing()));
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.somedomain.org/news/football"),
-      base::BindOnce(
-          &PreviewsOptimizationGuideTest::MaybeLoadOptimizationHintsCallback,
-          base::Unretained(this))));
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.unknown.com"), base::DoNothing()));
+      GURL("https://www.somedomain.org/news/football")));
+  EXPECT_FALSE(
+      guide()->MaybeLoadOptimizationHints(GURL("https://www.unknown.com")));
 
   RunUntilIdle();
   histogram_tester.ExpectUniqueSample(
@@ -995,12 +959,6 @@ TEST_F(PreviewsOptimizationGuideTest,
       "ResourceLoadingHints.ResourceHints.TotalReceived", 1, 1);
   histogram_tester.ExpectUniqueSample(
       "ResourceLoadingHints.PageHints.TotalReceived", 1, 1);
-
-  // Verify loaded hint data for www.somedomain.org
-  EXPECT_EQ(GURL("https://www.somedomain.org/news/football"),
-            loaded_hints_document_gurl());
-  EXPECT_EQ(1ul, loaded_hints_resource_patterns().size());
-  EXPECT_EQ("news_cruft.js", loaded_hints_resource_patterns().front());
 
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
@@ -1031,15 +989,12 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   InitializeFixedCountResourceLoadingHintsWithTwoExperiments();
 
+  EXPECT_TRUE(
+      guide()->MaybeLoadOptimizationHints(GURL("https://somedomain.org/")));
   EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain.org/"), base::DoNothing()));
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.somedomain.org/news/football"),
-      base::BindOnce(
-          &PreviewsOptimizationGuideTest::MaybeLoadOptimizationHintsCallback,
-          base::Unretained(this))));
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.unknown.com"), base::DoNothing()));
+      GURL("https://www.somedomain.org/news/football")));
+  EXPECT_FALSE(
+      guide()->MaybeLoadOptimizationHints(GURL("https://www.unknown.com")));
 
   RunUntilIdle();
   histogram_tester.ExpectUniqueSample(
@@ -1048,12 +1003,6 @@ TEST_F(PreviewsOptimizationGuideTest,
       "ResourceLoadingHints.ResourceHints.TotalReceived", 1, 1);
   histogram_tester.ExpectUniqueSample(
       "ResourceLoadingHints.PageHints.TotalReceived", 1, 1);
-
-  // Verify loaded hint data for www.somedomain.org
-  EXPECT_EQ(GURL("https://www.somedomain.org/news/football"),
-            loaded_hints_document_gurl());
-  EXPECT_EQ(1ul, loaded_hints_resource_patterns().size());
-  EXPECT_EQ("football_cruft.js", loaded_hints_resource_patterns().front());
 
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
@@ -1085,15 +1034,12 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   InitializeFixedCountResourceLoadingHintsWithTwoExperiments();
 
+  EXPECT_TRUE(
+      guide()->MaybeLoadOptimizationHints(GURL("https://somedomain.org/")));
   EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain.org/"), base::DoNothing()));
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.somedomain.org/news/football"),
-      base::BindOnce(
-          &PreviewsOptimizationGuideTest::MaybeLoadOptimizationHintsCallback,
-          base::Unretained(this))));
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.unknown.com"), base::DoNothing()));
+      GURL("https://www.somedomain.org/news/football")));
+  EXPECT_FALSE(
+      guide()->MaybeLoadOptimizationHints(GURL("https://www.unknown.com")));
 
   RunUntilIdle();
   histogram_tester.ExpectUniqueSample(
@@ -1102,12 +1048,6 @@ TEST_F(PreviewsOptimizationGuideTest,
       "ResourceLoadingHints.ResourceHints.TotalReceived", 1, 1);
   histogram_tester.ExpectUniqueSample(
       "ResourceLoadingHints.PageHints.TotalReceived", 1, 1);
-
-  // Verify loaded hint data for www.somedomain.org
-  EXPECT_EQ(GURL("https://www.somedomain.org/news/football"),
-            loaded_hints_document_gurl());
-  EXPECT_EQ(1ul, loaded_hints_resource_patterns().size());
-  EXPECT_EQ("news_cruft.js", loaded_hints_resource_patterns().front());
 
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
@@ -1148,20 +1088,20 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   InitializeMultipleResourceLoadingHints(key_count, page_patterns_per_key);
 
+  EXPECT_TRUE(
+      guide()->MaybeLoadOptimizationHints(GURL("https://somedomain0.org/")));
   EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain0.org/"), base::DoNothing()));
+      GURL("https://somedomain0.org/news0/football")));
+  EXPECT_TRUE(
+      guide()->MaybeLoadOptimizationHints(GURL("https://somedomain19.org/")));
   EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain0.org/news0/football"), base::DoNothing()));
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain19.org/"), base::DoNothing()));
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain19.org/news0/football"), base::DoNothing()));
+      GURL("https://somedomain19.org/news0/football")));
+  EXPECT_FALSE(
+      guide()->MaybeLoadOptimizationHints(GURL("https://somedomain20.org/")));
   EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain20.org/"), base::DoNothing()));
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain20.org/news0/football"), base::DoNothing()));
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.unknown.com"), base::DoNothing()));
+      GURL("https://somedomain20.org/news0/football")));
+  EXPECT_FALSE(
+      guide()->MaybeLoadOptimizationHints(GURL("https://www.unknown.com")));
 
   EXPECT_TRUE(guide()->IsWhitelisted(
       &user_data, GURL("https://www.somedomain0.org/news0/football"),
@@ -1228,8 +1168,8 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   InitializeMultipleResourceLoadingHints(key_count, page_patterns_per_key);
 
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain0.org/"), base::DoNothing()));
+  EXPECT_TRUE(
+      guide()->MaybeLoadOptimizationHints(GURL("https://somedomain0.org/")));
   EXPECT_TRUE(guide()->IsWhitelisted(
       &user_data, GURL("https://www.somedomain0.org/news0/football"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
@@ -1240,8 +1180,8 @@ TEST_F(PreviewsOptimizationGuideTest,
       &user_data, GURL("https://www.somedomain0.org/news25/football"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
 
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain19.org/"), base::DoNothing()));
+  EXPECT_TRUE(
+      guide()->MaybeLoadOptimizationHints(GURL("https://somedomain19.org/")));
   EXPECT_TRUE(guide()->IsWhitelisted(
       &user_data, GURL("https://www.somedomain19.org/news0/football"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
@@ -1254,8 +1194,8 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   // The last page pattern should be dropped since it exceeds the threshold
   // count.
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain20.org/"), base::DoNothing()));
+  EXPECT_FALSE(
+      guide()->MaybeLoadOptimizationHints(GURL("https://somedomain20.org/")));
   EXPECT_FALSE(guide()->IsWhitelisted(
       &user_data, GURL("https://www.somedomain20.org/news0/football"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
@@ -1298,8 +1238,8 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   InitializeMultipleResourceLoadingHints(key_count, page_patterns_per_key);
 
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain0.org/"), base::DoNothing()));
+  EXPECT_TRUE(
+      guide()->MaybeLoadOptimizationHints(GURL("https://somedomain0.org/")));
   EXPECT_TRUE(guide()->IsWhitelisted(
       &user_data, GURL("https://www.somedomain0.org/news0/football"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
@@ -1312,8 +1252,8 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   // The third to last page pattern has all of its resource loading hints fall
   // within the threshold.
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain18.org/"), base::DoNothing()));
+  EXPECT_TRUE(
+      guide()->MaybeLoadOptimizationHints(GURL("https://somedomain18.org/")));
   EXPECT_TRUE(guide()->IsWhitelisted(
       &user_data, GURL("https://www.somedomain18.org/news0/football"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
@@ -1326,8 +1266,8 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   // The second to last page pattern had some of its resource loading hints
   // fall within the threshold.
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain19.org/"), base::DoNothing()));
+  EXPECT_TRUE(
+      guide()->MaybeLoadOptimizationHints(GURL("https://somedomain19.org/")));
   EXPECT_TRUE(guide()->IsWhitelisted(
       &user_data, GURL("https://www.somedomain19.org/news0/football"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
@@ -1340,8 +1280,8 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   // The last page pattern should be dropped since all of its resource loading
   // hints exceeds the threshold count.
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain20.org/"), base::DoNothing()));
+  EXPECT_FALSE(
+      guide()->MaybeLoadOptimizationHints(GURL("https://somedomain20.org/")));
   EXPECT_FALSE(guide()->IsWhitelisted(
       &user_data, GURL("https://www.somedomain20.org/news0/football"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
@@ -1373,8 +1313,8 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   InitializeFixedCountResourceLoadingHints();
 
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.somedomain.org"), base::DoNothing()));
+  EXPECT_FALSE(
+      guide()->MaybeLoadOptimizationHints(GURL("https://www.somedomain.org")));
 
   RunUntilIdle();
   PreviewsUserData user_data(kDefaultPageId);

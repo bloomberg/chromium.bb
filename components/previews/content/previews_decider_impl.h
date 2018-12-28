@@ -116,7 +116,7 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   void SetIgnoreLongTermBlackListForServerPreviews(
       bool ignore_long_term_blacklist_for_server_previews);
 
-  bool LoadResourceHints(const GURL& url) override;
+  bool LoadPageHints(const GURL& url) override;
 
   bool GetResourceLoadingHints(
       const GURL& url,
@@ -132,11 +132,6 @@ class PreviewsDeciderImpl : public PreviewsDecider,
       net::EffectiveConnectionType effective_connection_type);
 
  protected:
-  // Posts a task to deliver the resource patterns to the PreviewsUIService.
-  void OnResourceLoadingHints(
-      const GURL& document_gurl,
-      const std::vector<std::string>& patterns_to_block);
-
   // Sets a blacklist for testing.
   void SetPreviewsBlacklistForTesting(
       std::unique_ptr<PreviewsBlackList> previews_back_list);

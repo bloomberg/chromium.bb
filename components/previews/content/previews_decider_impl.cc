@@ -158,13 +158,6 @@ void PreviewsDeciderImpl::OnBlacklistCleared(base::Time time) {
   previews_ui_service_->OnBlacklistCleared(time);
 }
 
-void PreviewsDeciderImpl::OnResourceLoadingHints(
-    const GURL& document_gurl,
-    const std::vector<std::string>& patterns_to_block) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(dougarnett): Add metrics or deprecate.
-}
-
 void PreviewsDeciderImpl::SetPreviewsBlacklistForTesting(
     std::unique_ptr<PreviewsBlackList> previews_back_list) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -348,11 +341,9 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
   return PreviewsEligibilityReason::ALLOWED;
 }
 
-bool PreviewsDeciderImpl::LoadResourceHints(const GURL& url) {
+bool PreviewsDeciderImpl::LoadPageHints(const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return previews_opt_guide_->MaybeLoadOptimizationHints(
-      url, base::BindOnce(&PreviewsDeciderImpl::OnResourceLoadingHints,
-                          weak_factory_.GetWeakPtr()));
+  return previews_opt_guide_->MaybeLoadOptimizationHints(url);
 }
 
 bool PreviewsDeciderImpl::GetResourceLoadingHints(
