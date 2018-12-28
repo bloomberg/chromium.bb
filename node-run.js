@@ -75,6 +75,8 @@ if (outFile) {
 
 if (shouldRun) {
   const { Logger } = require("./out-node/framework");
+  const failed = [];
+  const warned = [];
   (async () => {
     const log = new Logger();
 
@@ -86,14 +88,31 @@ if (shouldRun) {
       }
 
       const [tres, trec] = log.record(path);
-      for (const t of modules[path].test.iterate(trec)) {
-        const res = await t();
-        console.error(path, res);
+      for (const {name, params, run} of modules[path].test.iterate(trec)) {
+        const res = await run();
         if (res.status === "fail") {
-          return;
+          failed.push(res);
+        }
+        if (res.status === "warn") {
+          warned.push(res);
         }
       }
     }
     console.log(JSON.stringify(log.results, undefined, 2));
+
+    if (warned.length) {
+      console.error("");
+      console.error("** Warnings **");
+      for (const r of warned) {
+        console.error(r);
+      }
+    }
+    if (failed.length) {
+      console.error("");
+      console.error("** Failures **");
+      for (const r of failed) {
+        console.error(r);
+      }
+    }
   })();
 }

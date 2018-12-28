@@ -3,12 +3,15 @@ import { ParamIterable } from "./params";
 
 type CasePFn = (log: CaseRecorder, param: object) => (Promise<void> | void);
 type CaseFn = (log: CaseRecorder) => (Promise<void> | void);
-type RunCase = () => Promise<IResult>;
-
 interface ICase {
   name: string;
   params?: object;
   run: CaseFn;
+}
+interface RunCase {
+  name: string;
+  params?: object;
+  run: () => Promise<IResult>;
 }
 
 export class Test {
@@ -30,12 +33,12 @@ export class Test {
   public * iterate(log: TestRecorder): Iterable<RunCase> {
     for (const t of this.tests) {
       const [res, rec] = log.record(t.name, t.params);
-      yield async () => {
+      yield {name: t.name, params: t.params, run: async () => {
         rec.start();
         await t.run(rec);
         rec.finish();
         return res;
-      };
+      }};
     }
   }
 }

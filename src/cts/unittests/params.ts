@@ -11,6 +11,10 @@ import {
 
 export const test = new Test();
 
+test.case("test_fail", (log) => {
+  log.fail();
+});
+
 test.case("test_sync", (log) => {
 });
 test.case("test_async", async (log) => {

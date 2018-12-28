@@ -1,7 +1,167 @@
+<html>
+<head>
+<title></title>
+<script src="third_party/jquery/jquery-3.3.1.min.js"></script>
+<style>
+#resultsVis {
+}
+.test {
+  border-width: 1px 0 0 1px;
+  border-style: solid;
+  border-color: gray;
+}
+.testrun {
+  display: inline-block;
+  font-size: 10pt;
+  padding: 0 3pt 0 3pt;
+}
+.testname {
+  display: inline-block;
+  margin-left: 2pt;
+}
+.testdesc {
+  margin-left: 1.8em;
+}
+.testcases {
+  margin-left: 8pt;
+}
+.testcase {
+  border-width: 1px 0 0 1px;
+  border-style: solid;
+  border-color: gray;
+  background: white;
+}
+.casehead {
+  overflow: auto;
+}
+.caserun {
+  display: inline-block;
+  font-size: 10pt;
+  padding: 0 3pt 0 3pt;
+}
+.casename {
+  display: inline-block;
+  margin-left: 2pt;
+  width: 65%;
+}
+.casetime {
+  width: 20%;
+  float: right;
+}
+.caselogs {
+  margin-left: 8pt;
+  width: 100%;
+  border-width: 0 0 0 1px;
+  border-style: solid;
+  border-color: gray;
+  background: white;
+}
+.caselog {
+  margin-left: 2pt;
+}
+
+.fail {
+  background: #fcc;
+}
+.warn {
+  background: #ffb;
+}
+.pass {
+  background: #cfc;
+}
+</style>
+</head>
+<body>
+<div id="resultsVis"></div>
+
 <script type="module">
 "use strict";
 
 import { Logger } from "./out/framework/index.js";
+
+const resultsVis = document.getElementById("resultsVis");
+function mkTest(path, description) {
+  const test = $("<div>")
+    .addClass("test")
+    .appendTo(resultsVis);
+
+  const testrun = $("<button>")
+    .addClass("testrun")
+    .html("&#9654;")
+    .appendTo(test);
+
+  const testname = $("<div>")
+    .addClass("testname")
+    .text(path)
+    .appendTo(test);
+
+  const testdesc = $("<div>")
+    .addClass("testdesc")
+    .text(description)
+    .appendTo(test);
+
+  const testcases = $("<div>")
+    .addClass("testcases")
+    .appendTo(test);
+
+  testrun.click(async () => {
+    for (const el of test.find(".caserun")) {
+      await el.runCase();
+    }
+  });
+
+  return testcases;
+}
+
+function mkCase(testcases, {name, params, run}) {
+  const testcase = $("<div>")
+    .addClass("testcase")
+    .appendTo(testcases);
+  const casehead = $("<div>")
+    .addClass("casehead")
+    .appendTo(testcase);
+
+  const caserun = $("<button>")
+    .addClass("caserun")
+    .html("&#9654;")
+    .appendTo(casehead);
+  let s = name;
+  if (params) {
+    s += " " + JSON.stringify(params);
+  }
+  $("<div>")
+    .addClass("casename")
+    .appendTo(casehead)
+    .text(s);
+  const casetime = $("<div>")
+    .addClass("casetime")
+    .appendTo(casehead);
+
+  const caselogs = $("<div>", { class: "caselogs" })
+    .appendTo(testcase);
+
+  const runCase = async () => {
+    const res = await run();
+
+    casetime.text(res.timems.toFixed(4));
+
+    testcase.removeClass("pass");
+    testcase.removeClass("warn");
+    testcase.removeClass("fail");
+    testcase.addClass(res.status);
+
+    if (res.logs) {
+      caselogs.empty();
+      for (const l of res.logs) {
+        $("<div>", { class: "caselog" })
+          .appendTo(caselogs)
+          .text(l);
+      }
+    }
+  };
+  caserun[0].runCase = runCase;
+  caserun.click(runCase);
+}
 
 (async () => {
   const listing = await (await fetch("out/cts/listing.json")).json();
@@ -15,17 +175,15 @@ import { Logger } from "./out/framework/index.js";
       continue;
     }
 
+    const testcasesVis = mkTest(path, description);
     const mod = await import("./out/cts/" + path + ".js")
 
     const [tres, trec] = log.record(path);
     for (const t of mod.test.iterate(trec)) {
-      const res = await t();
-      console.log(path, res);
-      if (res.status === "fail") {
-        return;
-      }
+      mkCase(testcasesVis, t);
     }
   }
-  console.log(JSON.stringify(log.results, undefined, 2));
 })();
 </script>
+</body>
+</html>

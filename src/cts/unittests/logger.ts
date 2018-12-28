@@ -10,14 +10,12 @@ export const test = new Test();
 
 test.case("construct", (log) => {
   const mylog = new Logger();
-  const [testres, testrec] = mylog.record(["foo", "bar"]);
+  const [testres, testrec] = mylog.record("foo/bar");
   const [res1, rec1] = testrec.record("baz");
   const params2 = {};
   const [res2, rec2] = testrec.record("qux", params2);
 
-  log.expect(testres.path.length === 2);
-  log.expect(testres.path[0] === "foo");
-  log.expect(testres.path[1] === "bar");
+  log.expect(testres.path == "foo/bar");
   log.expect(testres.cases.length === 2);
   log.expect(testres.cases[0] === res1);
   log.expect(testres.cases[1] === res2);
@@ -35,19 +33,19 @@ test.case("construct", (log) => {
 
 test.case("empty", (log) => {
   const mylog = new Logger();
-  const [testres, testrec] = mylog.record(["foo", "bar"]);
+  const [testres, testrec] = mylog.record("");
   const [res, rec] = testrec.record("baz");
 
   rec.start();
   log.expect(res.status === "running");
   rec.finish();
   log.expect(res.status === "pass");
-  log.expect(res.timems > 0);
+  log.expect(res.timems >= 0);
 });
 
 test.case("pass", (log) => {
   const mylog = new Logger();
-  const [testres, testrec] = mylog.record(["foo", "bar"]);
+  const [testres, testrec] = mylog.record("");
   const [res, rec] = testrec.record("baz");
 
   rec.start();
@@ -56,12 +54,12 @@ test.case("pass", (log) => {
   log.expect(res.status === "running");
   rec.finish();
   log.expect(res.status === "pass");
-  log.expect(res.timems > 0);
+  log.expect(res.timems >= 0);
 });
 
 test.case("warn", (log) => {
   const mylog = new Logger();
-  const [testres, testrec] = mylog.record(["foo", "bar"]);
+  const [testres, testrec] = mylog.record("");
   const [res, rec] = testrec.record("baz");
 
   rec.start();
@@ -69,12 +67,12 @@ test.case("warn", (log) => {
   log.expect(res.status === "running");
   rec.finish();
   log.expect(res.status === "warn");
-  log.expect(res.timems > 0);
+  log.expect(res.timems >= 0);
 });
 
 test.case("fail", (log) => {
   const mylog = new Logger();
-  const [testres, testrec] = mylog.record(["foo", "bar"]);
+  const [testres, testrec] = mylog.record("");
   const [res, rec] = testrec.record("baz");
 
   rec.start();
@@ -84,5 +82,5 @@ test.case("fail", (log) => {
   log.expect(res.status === "running");
   rec.finish();
   log.expect(res.status === "fail");
-  log.expect(res.timems > 0);
+  log.expect(res.timems >= 0);
 });
