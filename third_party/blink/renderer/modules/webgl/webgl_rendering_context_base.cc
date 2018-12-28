@@ -28,6 +28,7 @@
 #include <memory>
 
 #include "base/numerics/checked_math.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
@@ -1053,9 +1054,9 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
     disabled_extensions_.insert(entry);
   }
 
-#define ADD_VALUES_TO_SET(set, values)             \
-  for (size_t i = 0; i < arraysize(values); ++i) { \
-    set.insert(values[i]);                         \
+#define ADD_VALUES_TO_SET(set, values)              \
+  for (size_t i = 0; i < base::size(values); ++i) { \
+    set.insert(values[i]);                          \
   }
 
   ADD_VALUES_TO_SET(supported_internal_formats_, kSupportedFormatsES2);

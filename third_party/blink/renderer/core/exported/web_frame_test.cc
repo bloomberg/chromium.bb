@@ -1882,7 +1882,7 @@ TEST_F(WebFrameTest, SmallPermanentInitialPageScaleFactorIsClobbered) {
       "viewport-auto-initial-scale.html",
       "viewport-target-densitydpi-device-and-fixed-width.html"};
   float page_scale_factors[] = {0.5f, 1.0f};
-  for (size_t i = 0; i < arraysize(pages); ++i)
+  for (size_t i = 0; i < base::size(pages); ++i)
     RegisterMockedHttpURLLoad(pages[i]);
 
   FixedLayoutTestWebViewClient client;
@@ -1891,7 +1891,7 @@ TEST_F(WebFrameTest, SmallPermanentInitialPageScaleFactorIsClobbered) {
   int viewport_height = 300;
   float enforced_page_scale_factor = 0.75f;
 
-  for (size_t i = 0; i < arraysize(pages); ++i) {
+  for (size_t i = 0; i < base::size(pages); ++i) {
     for (int quirk_enabled = 0; quirk_enabled <= 1; ++quirk_enabled) {
       frame_test_helpers::WebViewHelper web_view_helper;
       web_view_helper.InitializeAndLoad(base_url_ + pages[i], nullptr, &client,
@@ -1904,7 +1904,7 @@ TEST_F(WebFrameTest, SmallPermanentInitialPageScaleFactorIsClobbered) {
       web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
       float expected_page_scale_factor =
-          quirk_enabled && i < arraysize(page_scale_factors)
+          quirk_enabled && i < base::size(page_scale_factors)
               ? page_scale_factors[i]
               : enforced_page_scale_factor;
       EXPECT_EQ(expected_page_scale_factor,
@@ -2756,7 +2756,7 @@ TEST_F(WebFrameTest, targetDensityDpiHigh) {
   int viewport_width = 640;
   int viewport_height = 480;
 
-  for (size_t i = 0; i < arraysize(device_scale_factors); ++i) {
+  for (size_t i = 0; i < base::size(device_scale_factors); ++i) {
     float device_scale_factor = device_scale_factors[i];
     float device_dpi = device_scale_factor * 160.0f;
     client.screen_info_.device_scale_factor = device_scale_factor;
@@ -2804,7 +2804,7 @@ TEST_F(WebFrameTest, targetDensityDpiDevice) {
   int viewport_width = 640;
   int viewport_height = 480;
 
-  for (size_t i = 0; i < arraysize(device_scale_factors); ++i) {
+  for (size_t i = 0; i < base::size(device_scale_factors); ++i) {
     client.screen_info_.device_scale_factor = device_scale_factors[i];
 
     frame_test_helpers::WebViewHelper web_view_helper;
@@ -2847,7 +2847,7 @@ TEST_F(WebFrameTest, targetDensityDpiDeviceAndFixedWidth) {
   int viewport_width = 640;
   int viewport_height = 480;
 
-  for (size_t i = 0; i < arraysize(device_scale_factors); ++i) {
+  for (size_t i = 0; i < base::size(device_scale_factors); ++i) {
     client.screen_info_.device_scale_factor = device_scale_factors[i];
 
     frame_test_helpers::WebViewHelper web_view_helper;

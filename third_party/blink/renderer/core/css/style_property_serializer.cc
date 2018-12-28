@@ -24,6 +24,8 @@
 #include "third_party/blink/renderer/core/css/style_property_serializer.h"
 
 #include <bitset>
+
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_markup.h"
@@ -1037,7 +1039,7 @@ String StylePropertySerializer::BorderPropertyValue(
     const StylePropertyShorthand& color) const {
   const StylePropertyShorthand properties[3] = {width, style, color};
   StringBuilder result;
-  for (size_t i = 0; i < arraysize(properties); ++i) {
+  for (size_t i = 0; i < base::size(properties); ++i) {
     String value = GetCommonValue(properties[i]);
     if (value.IsNull())
       return String();
@@ -1056,7 +1058,7 @@ String StylePropertySerializer::BorderImagePropertyValue() const {
       &GetCSSPropertyBorderImageSource(), &GetCSSPropertyBorderImageSlice(),
       &GetCSSPropertyBorderImageWidth(), &GetCSSPropertyBorderImageOutset(),
       &GetCSSPropertyBorderImageRepeat()};
-  size_t length = arraysize(properties);
+  size_t length = base::size(properties);
   for (size_t i = 0; i < length; ++i) {
     const CSSValue& value = *property_set_.GetPropertyCSSValue(*properties[i]);
     if (!result.IsEmpty())

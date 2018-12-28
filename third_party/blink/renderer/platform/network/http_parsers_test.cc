@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
@@ -304,7 +305,7 @@ TEST(HTTPParsersTest, ParseMultipartHeadersResult) {
       {"Foo: bar\r\nBaz:\n", false, 0},
       {"\r\n", true, 2},
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     ResourceResponse response;
     wtf_size_t end = 0;
     bool result = ParseMultipartHeadersFromBody(

@@ -78,6 +78,8 @@
 #include <algorithm>
 #include <limits>
 #include <memory>
+
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -613,7 +615,7 @@ static double ParseDateFromNullTerminatedCharacters(const char* date_string,
       }
       have_tz = true;
     } else {
-      for (size_t i = 0; i < arraysize(known_zones); ++i) {
+      for (size_t i = 0; i < base::size(known_zones); ++i) {
         if (0 == strncasecmp(date_string, known_zones[i].tz_name,
                              strlen(known_zones[i].tz_name))) {
           offset = known_zones[i].tz_offset;

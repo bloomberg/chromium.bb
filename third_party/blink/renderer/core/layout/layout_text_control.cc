@@ -22,6 +22,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_text_control.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
@@ -204,7 +205,7 @@ bool LayoutTextControl::HasValidAvgCharWidth(const SimpleFontData* font_data,
   if (!font_families_with_invalid_char_width_map) {
     font_families_with_invalid_char_width_map = new HashSet<AtomicString>;
 
-    for (size_t i = 0; i < arraysize(kFontFamiliesWithInvalidCharWidth); ++i)
+    for (size_t i = 0; i < base::size(kFontFamiliesWithInvalidCharWidth); ++i)
       font_families_with_invalid_char_width_map->insert(
           AtomicString(kFontFamiliesWithInvalidCharWidth[i]));
   }

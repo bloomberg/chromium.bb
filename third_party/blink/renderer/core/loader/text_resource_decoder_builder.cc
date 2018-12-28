@@ -31,6 +31,8 @@
 #include "third_party/blink/renderer/core/loader/text_resource_decoder_builder.h"
 
 #include <memory>
+
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -78,7 +80,7 @@ static const WTF::TextEncoding GetEncodingFromDomain(const KURL& url) {
   url.Host().Split(".", tokens);
   if (!tokens.IsEmpty()) {
     auto tld = tokens.back();
-    for (size_t i = 0; i < arraysize(kEncodings); i++) {
+    for (size_t i = 0; i < base::size(kEncodings); i++) {
       if (tld == kEncodings[i].domain)
         return WTF::TextEncoding(kEncodings[i].encoding);
     }

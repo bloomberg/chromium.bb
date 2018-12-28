@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/editing/editing_style.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
@@ -98,7 +99,7 @@ static const Vector<const CSSProperty*>& AllEditingProperties() {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
   if (properties.IsEmpty()) {
     CSSProperty::FilterEnabledCSSPropertiesIntoVector(
-        kStaticEditingProperties, arraysize(kStaticEditingProperties),
+        kStaticEditingProperties, base::size(kStaticEditingProperties),
         properties);
     for (wtf_size_t index = 0; index < properties.size(); index++) {
       if (properties[index]->IDEquals(CSSPropertyTextDecoration)) {
@@ -114,7 +115,7 @@ static const Vector<const CSSProperty*>& InheritableEditingProperties() {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
   if (properties.IsEmpty()) {
     CSSProperty::FilterEnabledCSSPropertiesIntoVector(
-        kStaticEditingProperties, arraysize(kStaticEditingProperties),
+        kStaticEditingProperties, base::size(kStaticEditingProperties),
         properties);
     for (wtf_size_t index = 0; index < properties.size();) {
       if (!properties[index]->IsInherited()) {
@@ -712,7 +713,7 @@ static Vector<const CSSProperty*>& BlockPropertiesVector() {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
   if (properties.IsEmpty()) {
     CSSProperty::FilterEnabledCSSPropertiesIntoVector(
-        kStaticBlockProperties, arraysize(kStaticBlockProperties), properties);
+        kStaticBlockProperties, base::size(kStaticBlockProperties), properties);
   }
   return properties;
 }
@@ -837,7 +838,7 @@ EditingTriState EditingStyle::TriStateOfStyle(
   };
   if (should_ignore_text_only_properties == kIgnoreTextOnlyProperties) {
     difference->RemovePropertiesInSet(kTextOnlyProperties,
-                                      arraysize(kTextOnlyProperties));
+                                      base::size(kTextOnlyProperties));
   }
 
   if (difference->IsEmpty())

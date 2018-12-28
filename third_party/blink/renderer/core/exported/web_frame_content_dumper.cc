@@ -4,6 +4,7 @@
 
 #include "third_party/blink/public/web/web_frame_content_dumper.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
@@ -47,7 +48,7 @@ void FrameContentAsPlainText(size_t max_chars,
 
   // The separator between frames when the frames are converted to plain text.
   const LChar kFrameSeparator[] = {'\n', '\n'};
-  const size_t frame_separator_length = arraysize(kFrameSeparator);
+  const size_t frame_separator_length = base::size(kFrameSeparator);
 
   // Recursively walk the children.
   const FrameTree& frame_tree = frame->Tree();

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/notifications/notification_data.h"
 
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/modules/notifications/notification.h"
@@ -78,7 +79,7 @@ class NotificationDataTest : public testing::Test {
 
 TEST_F(NotificationDataTest, ReflectProperties) {
   Vector<unsigned> vibration_pattern;
-  for (size_t i = 0; i < arraysize(kNotificationVibration); ++i)
+  for (size_t i = 0; i < base::size(kNotificationVibration); ++i)
     vibration_pattern.push_back(kNotificationVibration[i]);
 
   UnsignedLongOrUnsignedLongSequence vibration_sequence;
@@ -157,7 +158,7 @@ TEST_F(NotificationDataTest, ReflectProperties) {
 
 TEST_F(NotificationDataTest, SilentNotificationWithVibration) {
   Vector<unsigned> vibration_pattern;
-  for (size_t i = 0; i < arraysize(kNotificationVibration); ++i)
+  for (size_t i = 0; i < base::size(kNotificationVibration); ++i)
     vibration_pattern.push_back(kNotificationVibration[i]);
 
   UnsignedLongOrUnsignedLongSequence vibration_sequence;
@@ -240,7 +241,7 @@ TEST_F(NotificationDataTest, InvalidIconUrls) {
 
 TEST_F(NotificationDataTest, VibrationNormalization) {
   Vector<unsigned> unnormalized_pattern;
-  for (size_t i = 0; i < arraysize(kNotificationVibrationUnnormalized); ++i)
+  for (size_t i = 0; i < base::size(kNotificationVibrationUnnormalized); ++i)
     unnormalized_pattern.push_back(kNotificationVibrationUnnormalized[i]);
 
   UnsignedLongOrUnsignedLongSequence vibration_sequence;
@@ -255,7 +256,7 @@ TEST_F(NotificationDataTest, VibrationNormalization) {
   EXPECT_FALSE(exception_state.HadException());
 
   Vector<int> normalized_pattern;
-  for (size_t i = 0; i < arraysize(kNotificationVibrationNormalized); ++i)
+  for (size_t i = 0; i < base::size(kNotificationVibrationNormalized); ++i)
     normalized_pattern.push_back(kNotificationVibrationNormalized[i]);
 
   ASSERT_EQ(normalized_pattern.size(),

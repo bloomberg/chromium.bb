@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 #include <utility>
+
 #include "base/location.h"
+#include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
@@ -414,7 +416,7 @@ void SetAndroidPayMethodData(const ScriptValue& input,
 
     for (const String& allowed_card_network :
          android_pay->allowedCardNetworks()) {
-      for (size_t i = 0; i < arraysize(kAndroidPayNetwork); ++i) {
+      for (size_t i = 0; i < base::size(kAndroidPayNetwork); ++i) {
         if (allowed_card_network == kAndroidPayNetwork[i].name) {
           output->allowed_card_networks.push_back(kAndroidPayNetwork[i].code);
           break;
@@ -438,7 +440,7 @@ void SetAndroidPayMethodData(const ScriptValue& input,
           {AndroidPayTokenization::GATEWAY_TOKEN, "GATEWAY_TOKEN"},
           {AndroidPayTokenization::NETWORK_TOKEN, "NETWORK_TOKEN"}};
 
-      for (size_t i = 0; i < arraysize(kAndroidPayTokenization); ++i) {
+      for (size_t i = 0; i < base::size(kAndroidPayTokenization); ++i) {
         if (tokenization->tokenizationType() ==
             kAndroidPayTokenization[i].name) {
           output->tokenization_type = kAndroidPayTokenization[i].code;

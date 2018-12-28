@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/test/simple_test_clock.h"
@@ -561,19 +561,19 @@ class TrialTokenTest : public testing::TestWithParam<const char*> {
         invalid_timestamp_(base::Time::FromDoubleT(kInvalidTimestamp)),
         expected_signature_(
             std::string(reinterpret_cast<const char*>(kSampleTokenSignature),
-                        arraysize(kSampleTokenSignature))),
+                        base::size(kSampleTokenSignature))),
         expected_subdomain_signature_(std::string(
             reinterpret_cast<const char*>(kSampleSubdomainTokenSignature),
-            arraysize(kSampleSubdomainTokenSignature))),
+            base::size(kSampleSubdomainTokenSignature))),
         expected_nonsubdomain_signature_(std::string(
             reinterpret_cast<const char*>(kSampleNonSubdomainTokenSignature),
-            arraysize(kSampleNonSubdomainTokenSignature))),
+            base::size(kSampleNonSubdomainTokenSignature))),
         correct_public_key_(
             base::StringPiece(reinterpret_cast<const char*>(kTestPublicKey),
-                              arraysize(kTestPublicKey))),
+                              base::size(kTestPublicKey))),
         incorrect_public_key_(
             base::StringPiece(reinterpret_cast<const char*>(kTestPublicKey2),
-                              arraysize(kTestPublicKey2))) {}
+                              base::size(kTestPublicKey2))) {}
 
  protected:
   OriginTrialTokenStatus Extract(const std::string& token_text,
@@ -712,7 +712,7 @@ TEST_F(TrialTokenTest, ExtractLargeToken) {
   ASSERT_EQ(OriginTrialTokenStatus::kSuccess, status);
   std::string expected_signature(
       std::string(reinterpret_cast<const char*>(kLargeValidTokenSignature),
-                  arraysize(kLargeValidTokenSignature)));
+                  base::size(kLargeValidTokenSignature)));
   EXPECT_EQ(expected_signature, token_signature);
 }
 

@@ -29,6 +29,8 @@
 #include <algorithm>
 #include <tuple>
 #include <utility>
+
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/core/css/css_calculation_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
@@ -1203,7 +1205,7 @@ FloatSize RadiusToCorner(const FloatPoint& point,
 
   unsigned corner_index = 0;
   float distance = (point - corners[corner_index]).DiagonalLength();
-  for (unsigned i = 1; i < arraysize(corners); ++i) {
+  for (unsigned i = 1; i < base::size(corners); ++i) {
     float new_distance = (point - corners[i]).DiagonalLength();
     if (compare(new_distance, distance)) {
       corner_index = i;

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/editing/state_machines/state_machine_util.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/platform/text/character.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
@@ -27,7 +28,7 @@ const uint32_t kIndicSyllabicCategoryViramaList[] = {
 // Returns true if the code point has Indic_Syllabic_Category=Virama property.
 // See http://www.unicode.org/Public/9.0.0/ucd/IndicSyllabicCategory-9.0.0d2.txt
 bool IsIndicSyllabicCategoryVirama(uint32_t code_point) {
-  const int length = arraysize(kIndicSyllabicCategoryViramaList);
+  const int length = base::size(kIndicSyllabicCategoryViramaList);
   return std::binary_search(kIndicSyllabicCategoryViramaList,
                             kIndicSyllabicCategoryViramaList + length,
                             code_point);

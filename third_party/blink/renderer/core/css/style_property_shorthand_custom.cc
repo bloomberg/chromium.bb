@@ -21,6 +21,8 @@
 
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
+#include "base/stl_util.h"
+
 namespace blink {
 
 const StylePropertyShorthand& animationShorthandForParsing() {
@@ -44,7 +46,7 @@ const StylePropertyShorthand& animationShorthandForParsing() {
       &GetCSSPropertyAnimationName()};
   static StylePropertyShorthand webkit_animation_longhands_for_parsing(
       CSSPropertyAnimation, kAnimationPropertiesForParsing,
-      arraysize(kAnimationPropertiesForParsing));
+      base::size(kAnimationPropertiesForParsing));
   return webkit_animation_longhands_for_parsing;
 }
 
@@ -57,7 +59,7 @@ const StylePropertyShorthand& transitionShorthandForParsing() {
       &GetCSSPropertyTransitionDelay(), &GetCSSPropertyTransitionProperty()};
   static StylePropertyShorthand transition_longhands(
       CSSPropertyTransition, kTransitionProperties,
-      arraysize(kTransitionProperties));
+      base::size(kTransitionProperties));
   return transition_longhands;
 }
 

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/animationworklet/animator.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/animationworklet/animator_definition.h"
@@ -65,7 +66,7 @@ bool Animator::Animate(
   v8::Local<v8::Value> argv[] = {v8_current_time, v8_effect};
 
   V8ScriptRunner::CallFunction(animate, ExecutionContext::From(script_state),
-                               instance, arraysize(argv), argv, isolate);
+                               instance, base::size(argv), argv, isolate);
 
   // The animate function may have produced an error!
   // TODO(majidvp): We should probably just throw here.

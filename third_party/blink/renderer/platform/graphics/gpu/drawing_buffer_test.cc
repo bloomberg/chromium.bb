@@ -31,7 +31,9 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 
 #include <memory>
+
 #include "base/memory/scoped_refptr.h"
+#include "base/stl_util.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
@@ -635,7 +637,7 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported) {
       DepthStencilTestCase(true, true, 1, "both"),
   };
 
-  for (size_t i = 0; i < arraysize(cases); i++) {
+  for (size_t i = 0; i < base::size(cases); i++) {
     SCOPED_TRACE(cases[i].test_case_name);
     auto gl = std::make_unique<DepthStencilTrackingGLES2Interface>();
     DepthStencilTrackingGLES2Interface* tracking_gl = gl.get();

@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/core/css/computed_style_css_value_mapping.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
@@ -199,7 +200,7 @@ CSSComputedStyleDeclaration::ComputableProperties() {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
   if (properties.IsEmpty()) {
     CSSProperty::FilterEnabledCSSPropertiesIntoVector(
-        kComputedPropertyArray, arraysize(kComputedPropertyArray), properties);
+        kComputedPropertyArray, base::size(kComputedPropertyArray), properties);
   }
   return properties;
 }

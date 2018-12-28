@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 
 #include "base/auto_reset.h"
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/animation/effect_stack.h"
@@ -502,7 +503,7 @@ CSSPropertyID SVGElement::CssPropertyIdForSVGAttributeName(
         &kWordSpacingAttr,
         &kWritingModeAttr,
     };
-    for (size_t i = 0; i < arraysize(attr_names); i++) {
+    for (size_t i = 0; i < base::size(attr_names); i++) {
       CSSPropertyID property_id = cssPropertyID(attr_names[i]->LocalName());
       DCHECK_GT(property_id, 0);
       property_name_to_id_map->Set(attr_names[i]->LocalName().Impl(),
@@ -786,7 +787,7 @@ AnimatedPropertyType SVGElement::AnimatedPropertyTypeForCSSAttribute(
         {kVisibilityAttr, kAnimatedString},
         {kWordSpacingAttr, kAnimatedLength},
     };
-    for (size_t i = 0; i < arraysize(attr_to_types); i++)
+    for (size_t i = 0; i < base::size(attr_to_types); i++)
       css_property_map.Set(attr_to_types[i].attr, attr_to_types[i].prop_type);
   }
   return css_property_map.at(attribute_name);

@@ -5,8 +5,10 @@
 #include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context_base.h"
 
 #include <memory>
+
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/bindings/modules/v8/webgl_any.h"
@@ -149,7 +151,7 @@ WebGL2RenderingContextBase::WebGL2RenderingContextBase(
   supported_internal_formats_storage_.insert(
       kSupportedInternalFormatsStorage,
       kSupportedInternalFormatsStorage +
-          arraysize(kSupportedInternalFormatsStorage));
+          base::size(kSupportedInternalFormatsStorage));
 }
 
 void WebGL2RenderingContextBase::DestroyContext() {

@@ -37,6 +37,7 @@
 #include <memory>
 
 #include "base/auto_reset.h"
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/cdata_section.h"
 #include "third_party/blink/renderer/core/dom/comment.h"
@@ -1371,7 +1372,7 @@ static xmlEntityPtr GetXHTMLEntity(const xmlChar* name) {
     return nullptr;
 
   constexpr size_t kSharedXhtmlEntityResultLength =
-      arraysize(g_shared_xhtml_entity_result);
+      base::size(g_shared_xhtml_entity_result);
   size_t entity_length_in_utf8;
   // Unlike HTML parser, XML parser parses the content of named
   // entities. So we need to escape '&' and '<'.

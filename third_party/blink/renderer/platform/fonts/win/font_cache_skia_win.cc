@@ -35,6 +35,7 @@
 #include <utility>
 
 #include "base/debug/alias.h"
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/platform/fonts/bitmap_glyphs_blacklist.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_face_creation_params.h"
@@ -215,10 +216,10 @@ scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
   int num_fonts = 0;
   if (script == USCRIPT_HAN) {
     pan_uni_fonts = kCjkFonts;
-    num_fonts = arraysize(kCjkFonts);
+    num_fonts = base::size(kCjkFonts);
   } else {
     pan_uni_fonts = kCommonFonts;
-    num_fonts = arraysize(kCommonFonts);
+    num_fonts = base::size(kCommonFonts);
   }
   // Font returned from getFallbackFamily may not cover |character|
   // because it's based on script to font mapping. This problem is
@@ -294,7 +295,7 @@ static bool TypefacesHasWeightSuffix(const AtomicString& family,
       {L" ultrabold", 10, FontSelectionValue(800)},
       {L" black", 6, FontSelectionValue(900)},
       {L" heavy", 6, FontSelectionValue(900)}};
-  size_t num_variants = arraysize(kVariantForSuffix);
+  size_t num_variants = base::size(kVariantForSuffix);
   for (size_t i = 0; i < num_variants; i++) {
     const FamilyWeightSuffix& entry = kVariantForSuffix[i];
     if (family.EndsWith(entry.suffix, kTextCaseUnicodeInsensitive)) {
@@ -331,7 +332,7 @@ static bool TypefacesHasStretchSuffix(const AtomicString& family,
       {L" expanded", 9, ExpandedWidthValue()},
       {L" extraexpanded", 14, ExtraExpandedWidthValue()},
       {L" ultraexpanded", 14, UltraExpandedWidthValue()}};
-  size_t num_variants = arraysize(kVariantForSuffix);
+  size_t num_variants = base::size(kVariantForSuffix);
   for (size_t i = 0; i < num_variants; i++) {
     const FamilyStretchSuffix& entry = kVariantForSuffix[i];
     if (family.EndsWith(entry.suffix, kTextCaseUnicodeInsensitive)) {

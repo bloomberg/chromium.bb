@@ -31,6 +31,8 @@
 #include "third_party/blink/renderer/platform/graphics/logging_canvas.h"
 
 #include <unicode/unistr.h>
+
+#include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
@@ -234,7 +236,7 @@ std::unique_ptr<JSONObject> ObjectForSkPath(const SkPath& path) {
     std::unique_ptr<JSONObject> path_point_item = JSONObject::Create();
     path_point_item->SetString("verb", verb_params.name);
     DCHECK_LE(verb_params.point_count + verb_params.point_offset,
-              arraysize(points));
+              base::size(points));
     path_point_item->SetArray(
         "points", ArrayForSkPoints(verb_params.point_count,
                                    points + verb_params.point_offset));

@@ -25,7 +25,10 @@
 #include "third_party/blink/renderer/platform/graphics/filters/fe_component_transfer.h"
 
 #include <algorithm>
+
 #include "SkTableColorFilter.h"
+
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
@@ -161,7 +164,7 @@ void FEComponentTransfer::GetValues(unsigned char r_values[256],
 
   for (unsigned channel = 0; channel < 4; channel++) {
     SECURITY_DCHECK(static_cast<size_t>(transfer_function[channel].type) <
-                    arraysize(call_effect));
+                    base::size(call_effect));
     (*call_effect[transfer_function[channel].type])(tables[channel],
                                                     transfer_function[channel]);
   }

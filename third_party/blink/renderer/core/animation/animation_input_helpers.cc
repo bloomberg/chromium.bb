@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/animation/animation_input_helpers.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/core/animation/property_handle.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
@@ -200,7 +201,7 @@ const AttributeNameMap& GetSupportedAttributes() {
         &svg_names::kYChannelSelectorAttr,
         &svg_names::kZAttr,
     };
-    for (size_t i = 0; i < arraysize(attributes); i++) {
+    for (size_t i = 0; i < base::size(attributes); i++) {
       DCHECK(!SVGElement::IsAnimatableCSSProperty(*attributes[i]));
       supported_attributes.Set(*attributes[i], attributes[i]);
     }

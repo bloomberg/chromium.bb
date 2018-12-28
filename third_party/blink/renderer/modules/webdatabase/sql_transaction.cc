@@ -28,6 +28,7 @@
 
 #include "third_party/blink/renderer/modules/webdatabase/sql_transaction.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/modules/webdatabase/database.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_authorizer.h"
@@ -152,7 +153,7 @@ SQLTransaction::StateFunction SQLTransaction::StateFunctionFor(
       &SQLTransaction::DeliverSuccessCallback            // 12.
   };
 
-  DCHECK(arraysize(kStateFunctions) ==
+  DCHECK(base::size(kStateFunctions) ==
          static_cast<int>(SQLTransactionState::kNumberOfStates));
   DCHECK(state < SQLTransactionState::kNumberOfStates);
 

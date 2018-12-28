@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/private/frame_client_hints_preferences_context.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 
 namespace blink {
@@ -23,7 +24,7 @@ static constexpr WebFeature kWebFeatureMapping[] = {
 };
 
 static_assert(static_cast<int>(mojom::WebClientHintsType::kMaxValue) + 1 ==
-                  arraysize(kWebFeatureMapping),
+                  base::size(kWebFeatureMapping),
               "unhandled client hint type");
 
 }  // namespace

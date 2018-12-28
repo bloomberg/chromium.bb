@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/loader/subresource_integrity.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/public/platform/web_crypto.h"
 #include "third_party/blink/public/platform/web_crypto_algorithm.h"
 #include "third_party/blink/renderer/platform/crypto.h"
@@ -321,7 +322,7 @@ SubresourceIntegrity::ParseAttributeAlgorithm(const UChar*& begin,
   // The last algorithm prefix is the ed25519 signature algorithm, which should
   // only be enabled if kSignatures is requested. We'll implement this by
   // adjusting the last_prefix index into the array.
-  size_t last_prefix = arraysize(kPrefixes);
+  size_t last_prefix = base::size(kPrefixes);
   if (features != IntegrityFeatures::kSignatures)
     last_prefix--;
 
@@ -335,7 +336,7 @@ SubresourceIntegrity::ParseIntegrityHeaderAlgorithm(
     IntegrityAlgorithm& algorithm) {
   static const AlgorithmPrefixPair kPrefixes[] = {
       {"ed25519", IntegrityAlgorithm::kEd25519}};
-  return ParseAlgorithmPrefix(begin, end, kPrefixes, arraysize(kPrefixes),
+  return ParseAlgorithmPrefix(begin, end, kPrefixes, base::size(kPrefixes),
                               algorithm);
 }
 

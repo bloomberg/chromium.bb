@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/stl_util.h"
 #include "cc/paint/decode_stashing_image_provider.h"
 #include "cc/tiles/software_image_decode_cache.h"
 #include "components/viz/common/resources/resource_format_utils.h"
@@ -498,23 +499,23 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
   switch (usage) {
     case kSoftwareResourceUsage:
       resource_type_fallback_list = kSoftwareFallbackList;
-      list_length = arraysize(kSoftwareFallbackList);
+      list_length = base::size(kSoftwareFallbackList);
       break;
     case kSoftwareCompositedResourceUsage:
       resource_type_fallback_list = kSoftwareCompositedFallbackList;
-      list_length = arraysize(kSoftwareCompositedFallbackList);
+      list_length = base::size(kSoftwareCompositedFallbackList);
       break;
     case kAcceleratedResourceUsage:
       resource_type_fallback_list = kAcceleratedFallbackList;
-      list_length = arraysize(kAcceleratedFallbackList);
+      list_length = base::size(kAcceleratedFallbackList);
       break;
     case kAcceleratedCompositedResourceUsage:
       resource_type_fallback_list = kAcceleratedCompositedFallbackList;
-      list_length = arraysize(kAcceleratedCompositedFallbackList);
+      list_length = base::size(kAcceleratedCompositedFallbackList);
       break;
     case kAcceleratedDirectResourceUsage:
       resource_type_fallback_list = kAcceleratedDirectFallbackList;
-      list_length = arraysize(kAcceleratedDirectFallbackList);
+      list_length = base::size(kAcceleratedDirectFallbackList);
       break;
   }
 

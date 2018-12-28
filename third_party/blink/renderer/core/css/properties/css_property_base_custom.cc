@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/svg_computed_style.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
@@ -16,8 +17,9 @@ const StylePropertyShorthand& CSSProperty::BorderDirections() {
   static const CSSProperty* kProperties[4] = {
       &GetCSSPropertyBorderTop(), &GetCSSPropertyBorderRight(),
       &GetCSSPropertyBorderBottom(), &GetCSSPropertyBorderLeft()};
-  DEFINE_STATIC_LOCAL(StylePropertyShorthand, border_directions,
-                      (CSSPropertyBorder, kProperties, arraysize(kProperties)));
+  DEFINE_STATIC_LOCAL(
+      StylePropertyShorthand, border_directions,
+      (CSSPropertyBorder, kProperties, base::size(kProperties)));
   return border_directions;
 }
 
