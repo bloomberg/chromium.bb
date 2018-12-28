@@ -13,6 +13,12 @@
         width: var(--card-width);
       }
 
+      .permission-view-header {
+        align-items: center;
+        border-top: var(--card-separator);
+        display: flex;
+      }
+
       .permission-view-header-icon {
         height: 26px;
         margin-inline-end: 8px;
@@ -25,15 +31,17 @@
         font-weight: var(--secondary-font-weight);
       }
 
-      .secondary-text {
-        color: var(--secondary-text-color);
-        font-weight: var(--secondary-font-weight);
+      .app-title {
+        flex: 1;
+        font-size: 16px;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .permission-row {
         align-items: center;
         border-top: var(--card-separator);
-        display: flex;
+        display: inline-flex;
         height: 62px;
         justify-content: space-between;
         padding: 0 24px;
@@ -46,6 +54,11 @@
       .permission-row-controls {
         align-items: center;
         display: inline-flex;
+      }
+
+      .secondary-text {
+        color: var(--secondary-text-color);
+        font-weight: var(--secondary-font-weight);
       }
     </style>
   </template>

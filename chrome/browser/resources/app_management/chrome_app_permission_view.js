@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 Polymer({
-  is: 'app-management-pwa-permission-view',
+  is: 'app-management-chrome-app-permission-view',
+
   properties: {
     /**
      * @type {appManagement.mojom.App}
@@ -12,24 +13,9 @@ Polymer({
       type: Object,
       value: function() {
         return app_management.FakePageHandler.createApp(
-            'blpcfgokakmgnkcojhhkbfbldkacnbeo');
+            'ahfgeienlihckogmohjhadlkjgocpleb');
       },
     },
-
-    /**
-     * @private {boolean}
-     */
-    listExpanded_: {
-      type: Boolean,
-      value: false,
-    },
-  },
-
-  /**
-   * @private
-   */
-  toggleListExpanded_: function() {
-    this.listExpanded_ = !this.listExpanded_;
   },
 
   /**
@@ -39,14 +25,5 @@ Polymer({
    */
   iconUrlFromId_: function(app) {
     return app_management.util.getAppIcon(app);
-  },
-
-  /**
-   * @param {boolean} listExpanded
-   * @return {string}
-   * @private
-   */
-  getCollapsedIcon_: function(listExpanded) {
-    return listExpanded ? 'cr:expand-less' : 'cr:expand-more';
   },
 });
