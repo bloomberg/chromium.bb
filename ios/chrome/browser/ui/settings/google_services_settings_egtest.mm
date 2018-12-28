@@ -49,8 +49,6 @@ using chrome_test_util::SettingsDoneButton;
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 
   // Close settings.
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
-      performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }

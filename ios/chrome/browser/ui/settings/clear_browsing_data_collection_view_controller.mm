@@ -124,8 +124,8 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
   DCHECK(browserState);
   UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
-  self =
-      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
+  self = [super initWithLayout:layout
+                         style:CollectionViewControllerStyleDefault];
   if (self) {
     self.accessibilityTraits |= UIAccessibilityTraitButton;
 
