@@ -1339,9 +1339,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   CreateInitiatorSpecificURLLoaderFactories(
       const base::flat_set<url::Origin>& initiator_origins);
 
-  // Based on the termination |status|, may generate a crash report to be routed
-  // to the Reporting API.
-  void MaybeGenerateCrashReport(base::TerminationStatus status);
+  // Based on the termination |status| and |exit_code|, may generate a crash
+  // report to be routed to the Reporting API.
+  void MaybeGenerateCrashReport(base::TerminationStatus status, int exit_code);
 
   // Move every child frame into the pending deletion state.
   // For each process, send the command to delete the local subtree and execute
