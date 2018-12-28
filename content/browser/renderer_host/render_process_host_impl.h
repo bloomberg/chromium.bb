@@ -16,6 +16,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -365,14 +366,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static void RegisterRendererMainThreadFactory(
       RendererMainThreadFactoryFunction create);
 
-  // Allows external code to supply a function which creates a
-  // StoragePartitionService. Used for supplying test versions of the
+  // Allows external code to supply a callback which handles a
+  // StoragePartitionServiceRequest. Used for supplying test versions of the
   // service.
-  using CreateStoragePartitionServiceFunction =
-      void (*)(RenderProcessHostImpl* rph,
-               blink::mojom::StoragePartitionServiceRequest request);
-  static void SetCreateStoragePartitionServiceFunction(
-      CreateStoragePartitionServiceFunction function);
+  using StoragePartitionServiceRequestHandler = base::RepeatingCallback<void(
+      RenderProcessHostImpl* rph,
+      blink::mojom::StoragePartitionServiceRequest request)>;
+  static void SetStoragePartitionServiceRequestHandlerForTesting(
+      StoragePartitionServiceRequestHandler handler);
 
   RenderFrameMessageFilter* render_frame_message_filter_for_testing() const {
     return render_frame_message_filter_.get();

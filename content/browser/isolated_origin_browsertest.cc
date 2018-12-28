@@ -4,6 +4,7 @@
 
 #include <sstream>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
@@ -11,8 +12,10 @@
 #include "build/build_config.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/common/content_features.h"
@@ -1005,7 +1008,9 @@ class StoragePartitonInterceptor
  public:
   StoragePartitonInterceptor(
       RenderProcessHostImpl* rph,
-      blink::mojom::StoragePartitionServiceRequest request) {
+      blink::mojom::StoragePartitionServiceRequest request,
+      const url::Origin& origin_to_inject)
+      : origin_to_inject_(origin_to_inject) {
     StoragePartitionImpl* storage_partition =
         static_cast<StoragePartitionImpl*>(rph->GetStoragePartition());
 
@@ -1043,9 +1048,7 @@ class StoragePartitonInterceptor
   // security checks can be tested.
   void OpenLocalStorage(const url::Origin& origin,
                         blink::mojom::StorageAreaRequest request) override {
-    url::Origin mismatched_origin =
-        url::Origin::Create(GURL("http://abc.foo.com"));
-    GetForwardingInterface()->OpenLocalStorage(mismatched_origin,
+    GetForwardingInterface()->OpenLocalStorage(origin_to_inject_,
                                                std::move(request));
   }
 
@@ -1054,27 +1057,63 @@ class StoragePartitonInterceptor
   // calls can be forwarded to it.
   blink::mojom::StoragePartitionService* storage_partition_service_;
 
+  url::Origin origin_to_inject_;
+
   DISALLOW_COPY_AND_ASSIGN(StoragePartitonInterceptor);
 };
 
 void CreateTestStoragePartitionService(
+    const url::Origin& origin_to_inject,
     RenderProcessHostImpl* rph,
     blink::mojom::StoragePartitionServiceRequest request) {
   // This object will register as RenderProcessHostObserver, so it will
   // clean itself automatically on process exit.
-  new StoragePartitonInterceptor(rph, std::move(request));
+  new StoragePartitonInterceptor(rph, std::move(request), origin_to_inject);
 }
 
 // Verify that an isolated renderer process cannot read localStorage of an
 // origin outside of its isolated site.
 // TODO(nasko): Write a test to verify the opposite - any non-isolated renderer
 // process cannot access data of an isolated site.
-IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, LocalStorageOriginEnforcement) {
-  RenderProcessHostImpl::SetCreateStoragePartitionServiceFunction(
-      CreateTestStoragePartitionService);
+IN_PROC_BROWSER_TEST_F(
+    IsolatedOriginTest,
+    LocalStorageOriginEnforcement_IsolatedAccessingNonIsolated) {
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+
+  auto mismatched_origin = url::Origin::Create(GURL("http://abc.foo.com"));
+  EXPECT_FALSE(policy->IsIsolatedOrigin(mismatched_origin));
+  RenderProcessHostImpl::SetStoragePartitionServiceRequestHandlerForTesting(
+      base::BindRepeating(&CreateTestStoragePartitionService,
+                          mismatched_origin));
 
   GURL isolated_url(
       embedded_test_server()->GetURL("isolated.foo.com", "/title1.html"));
+  EXPECT_TRUE(policy->IsIsolatedOrigin(url::Origin::Create(isolated_url)));
+  EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
+
+  content::RenderProcessHostKillWaiter kill_waiter(
+      shell()->web_contents()->GetMainFrame()->GetProcess());
+  // Use ignore_result here, since on Android the renderer process is
+  // terminated, but ExecuteScript still returns true. It properly returns
+  // false on all other platforms.
+  ignore_result(ExecuteScript(shell()->web_contents()->GetMainFrame(),
+                              "localStorage.length;"));
+  EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
+}
+
+// Verify that an IPC request for reading localStorage of an *opaque* origin
+// will be rejected.
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
+                       LocalStorageOriginEnforcement_OpaqueOrigin) {
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+
+  url::Origin opaque_origin;
+  RenderProcessHostImpl::SetStoragePartitionServiceRequestHandlerForTesting(
+      base::BindRepeating(&CreateTestStoragePartitionService, opaque_origin));
+
+  GURL isolated_url(
+      embedded_test_server()->GetURL("isolated.foo.com", "/title1.html"));
+  EXPECT_TRUE(policy->IsIsolatedOrigin(url::Origin::Create(isolated_url)));
   EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
 
   content::RenderProcessHostKillWaiter kill_waiter(

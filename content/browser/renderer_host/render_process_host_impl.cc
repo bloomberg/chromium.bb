@@ -289,8 +289,6 @@ size_t g_max_renderer_count_override = 0;
 bool g_run_renderer_in_process = false;
 
 RendererMainThreadFactoryFunction g_renderer_main_thread_factory = nullptr;
-RenderProcessHostImpl::CreateStoragePartitionServiceFunction
-    g_create_storage_partition = nullptr;
 
 base::Thread* g_in_process_thread;
 
@@ -1237,6 +1235,14 @@ void OnNetworkServiceCrashForCorb() {
     network_service->AddCorbExceptionForPlugin(process_id);
 }
 
+RenderProcessHostImpl::StoragePartitionServiceRequestHandler&
+GetStoragePartitionServiceRequestHandler() {
+  static base::NoDestructor<
+      RenderProcessHostImpl::StoragePartitionServiceRequestHandler>
+      instance;
+  return *instance;
+}
+
 void RemoveCorbExceptionForPluginOnIOThread(int process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -1673,9 +1679,9 @@ void RenderProcessHostImpl::RegisterRendererMainThreadFactory(
   g_renderer_main_thread_factory = create;
 }
 
-void RenderProcessHostImpl::SetCreateStoragePartitionServiceFunction(
-    CreateStoragePartitionServiceFunction function) {
-  g_create_storage_partition = function;
+void RenderProcessHostImpl::SetStoragePartitionServiceRequestHandlerForTesting(
+    StoragePartitionServiceRequestHandler handler) {
+  GetStoragePartitionServiceRequestHandler() = handler;
 }
 
 RenderProcessHostImpl::~RenderProcessHostImpl() {
@@ -2372,8 +2378,8 @@ void RenderProcessHostImpl::BindCompositingModeReporter(
 
 void RenderProcessHostImpl::CreateStoragePartitionService(
     blink::mojom::StoragePartitionServiceRequest request) {
-  if (g_create_storage_partition) {
-    g_create_storage_partition(this, std::move(request));
+  if (!GetStoragePartitionServiceRequestHandler().is_null()) {
+    GetStoragePartitionServiceRequestHandler().Run(this, std::move(request));
     return;
   }
 
