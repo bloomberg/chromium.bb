@@ -25,6 +25,7 @@
 #include "chrome/test/chromedriver/devtools_events_logger.h"
 #include "chrome/test/chromedriver/performance_logger.h"
 #include "chrome/test/chromedriver/session.h"
+#include "chrome/test/chromedriver/version.h"
 
 #if defined(OS_POSIX)
 #include <fcntl.h>
@@ -253,6 +254,7 @@ bool InitLogging() {
       printf("Failed to redirect stderr to log file.\n");
       return false;
     }
+    VLOG(0) << "Starting ChromeDriver " << kChromeDriverVersion;
   }
 
   Log::truncate_logged_params = !cmd_line->HasSwitch("replayable");
