@@ -238,7 +238,7 @@ void av1_convolve_2d_copy_sr_c(const uint8_t *src, int src_stride, uint8_t *dst,
   (void)conv_params;
 
   for (int y = 0; y < h; ++y) {
-    memcpy(dst + y * dst_stride, src + y * src_stride, w * sizeof(src[0]));
+    memmove(dst + y * dst_stride, src + y * src_stride, w * sizeof(src[0]));
   }
 }
 
@@ -632,7 +632,7 @@ void av1_highbd_convolve_2d_copy_sr_c(
   (void)bd;
 
   for (int y = 0; y < h; ++y) {
-    memcpy(dst + y * dst_stride, src + y * src_stride, w * sizeof(src[0]));
+    memmove(dst + y * dst_stride, src + y * src_stride, w * sizeof(src[0]));
   }
 }
 
