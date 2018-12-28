@@ -648,7 +648,7 @@ TEST_P(StreamMemberLifetimeTest, Basic) {
   chlo.SetVector(kCOPT, QuicTagVector{kSREJ});
   std::vector<ParsedQuicVersion> packet_version_list = {GetParam()};
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
-      QuicConnectionIdFromUInt64(1), EmptyQuicConnectionId(), true, false, 1,
+      TestConnectionId(1), EmptyQuicConnectionId(), true, false, 1,
       QuicString(chlo.GetSerialized().AsStringPiece()),
       PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID,
       PACKET_4BYTE_PACKET_NUMBER, &packet_version_list));
@@ -656,7 +656,7 @@ TEST_P(StreamMemberLifetimeTest, Basic) {
   EXPECT_CALL(stream_helper_, CanAcceptClientHello(_, _, _, _, _))
       .WillOnce(testing::Return(true));
   EXPECT_CALL(stream_helper_, GenerateConnectionIdForReject(_))
-      .WillOnce(testing::Return(QuicConnectionIdFromUInt64(12345)));
+      .WillOnce(testing::Return(TestConnectionId(12345)));
 
   // Set the current packet
   QuicConnectionPeer::SetCurrentPacket(session_->connection(),

@@ -125,7 +125,7 @@ QuicEndpoint::~QuicEndpoint() {
     // TODO(dschinazi) b/120240679 - convert directly from CID to string
     QuicString identifier =
         QuicStrCat(perspective_prefix,
-                   QuicConnectionIdToUInt64(connection_.connection_id()));
+                   test::TestConnectionIdToUInt64(connection_.connection_id()));
     QuicRecordTestOutput(identifier,
                          trace_visitor_->trace()->SerializeAsString());
   }

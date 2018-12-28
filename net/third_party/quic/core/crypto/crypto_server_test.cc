@@ -314,12 +314,12 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
       const char* error_substr) {
     QuicSocketAddress server_address;
     QuicConnectionId server_designated_connection_id =
-        QuicConnectionIdFromUInt64(rand_for_id_generation_.RandUint64());
+        TestConnectionId(rand_for_id_generation_.RandUint64());
     bool called;
     config_.ProcessClientHello(
         result, /*reject_only=*/false,
-        /*connection_id=*/QuicConnectionIdFromUInt64(1), server_address,
-        client_address_, supported_versions_.front(), supported_versions_,
+        /*connection_id=*/TestConnectionId(1), server_address, client_address_,
+        supported_versions_.front(), supported_versions_,
         use_stateless_rejects_, server_designated_connection_id, &clock_, rand_,
         &compressed_certs_cache_, params_, signed_config_,
         /*total_framing_overhead=*/50, chlo_packet_size_,

@@ -219,7 +219,7 @@ const size_t kConnectionIdLengthSize = 1;
 const size_t kQuicConnectionIdLength = 8;
 
 // Minimum length of random bytes in IETF stateless reset packet.
-const size_t kMinRandomBytesLengthInStatelessReset = 20;
+const size_t kMinRandomBytesLengthInStatelessReset = 24;
 
 // Maximum length allowed for the token in a NEW_TOKEN frame.
 const size_t kMaxNewTokenTokenLength = 0xffff;

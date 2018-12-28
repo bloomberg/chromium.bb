@@ -132,7 +132,7 @@ class QuicTimeWaitListManagerTest : public QuicTest {
  protected:
   QuicTimeWaitListManagerTest()
       : time_wait_list_manager_(&writer_, &visitor_, &clock_, &alarm_factory_),
-        connection_id_(QuicConnectionIdFromUInt64(45)),
+        connection_id_(TestConnectionId(45)),
         peer_address_(TestPeerIPAddress(), kTestPort),
         writer_is_blocked_(false) {}
 
@@ -352,7 +352,7 @@ TEST_F(QuicTimeWaitListManagerTest, CleanUpOldConnectionIds) {
 
   // Add connection_ids such that their expiry time is time_wait_period_.
   for (uint64_t conn_id = 1; conn_id <= kOldConnectionIdCount; ++conn_id) {
-    QuicConnectionId connection_id = QuicConnectionIdFromUInt64(conn_id);
+    QuicConnectionId connection_id = TestConnectionId(conn_id);
     EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(connection_id));
     AddConnectionId(connection_id, QuicTimeWaitListManager::DO_NOTHING);
   }
@@ -365,7 +365,7 @@ TEST_F(QuicTimeWaitListManagerTest, CleanUpOldConnectionIds) {
   clock_.AdvanceTime(time_wait_period);
   for (uint64_t conn_id = kOldConnectionIdCount + 1;
        conn_id <= kConnectionIdCount; ++conn_id) {
-    QuicConnectionId connection_id = QuicConnectionIdFromUInt64(conn_id);
+    QuicConnectionId connection_id = TestConnectionId(conn_id);
     EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(connection_id));
     AddConnectionId(connection_id, QuicTimeWaitListManager::DO_NOTHING);
   }
@@ -381,7 +381,7 @@ TEST_F(QuicTimeWaitListManagerTest, CleanUpOldConnectionIds) {
 
   time_wait_list_manager_.CleanUpOldConnectionIds();
   for (uint64_t conn_id = 1; conn_id <= kConnectionIdCount; ++conn_id) {
-    QuicConnectionId connection_id = QuicConnectionIdFromUInt64(conn_id);
+    QuicConnectionId connection_id = TestConnectionId(conn_id);
     EXPECT_EQ(conn_id > kOldConnectionIdCount,
               IsConnectionIdInTimeWait(connection_id))
         << "kOldConnectionIdCount: " << kOldConnectionIdCount
@@ -392,7 +392,7 @@ TEST_F(QuicTimeWaitListManagerTest, CleanUpOldConnectionIds) {
 }
 
 TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
-  QuicConnectionId connection_id = QuicConnectionIdFromUInt64(1);
+  QuicConnectionId connection_id = TestConnectionId(1);
   EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(connection_id));
   AddConnectionId(connection_id, QuicTimeWaitListManager::SEND_STATELESS_RESET);
   QuicPacketNumber packet_number = 234;
@@ -418,7 +418,7 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
 
   // write packet should not be called since we are write blocked but the
   // should be queued.
-  QuicConnectionId other_connection_id = QuicConnectionIdFromUInt64(2);
+  QuicConnectionId other_connection_id = TestConnectionId(2);
   EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(other_connection_id));
   AddConnectionId(other_connection_id,
                   QuicTimeWaitListManager::SEND_STATELESS_RESET);
@@ -483,9 +483,8 @@ TEST_F(QuicTimeWaitListManagerTest, ConnectionIdsOrderedByTime) {
   // Simple randomization: the values of connection_ids are randomly swapped.
   // If the container is broken, the test will be 50% flaky.
   const uint64_t conn_id1 = QuicRandom::GetInstance()->RandUint64() % 2;
-  const QuicConnectionId connection_id1 = QuicConnectionIdFromUInt64(conn_id1);
-  const QuicConnectionId connection_id2 =
-      QuicConnectionIdFromUInt64(1 - conn_id1);
+  const QuicConnectionId connection_id1 = TestConnectionId(conn_id1);
+  const QuicConnectionId connection_id2 = TestConnectionId(1 - conn_id1);
 
   // 1 will hash lower than 2, but we add it later. They should come out in the
   // add order, not hash order.
@@ -517,8 +516,7 @@ TEST_F(QuicTimeWaitListManagerTest, MaxConnectionsTest) {
   // Add exactly the maximum number of connections
   for (int64_t i = 0; i < FLAGS_quic_time_wait_list_max_connections; ++i) {
     ++current_conn_id;
-    QuicConnectionId current_connection_id =
-        QuicConnectionIdFromUInt64(current_conn_id);
+    QuicConnectionId current_connection_id = TestConnectionId(current_conn_id);
     EXPECT_FALSE(IsConnectionIdInTimeWait(current_connection_id));
     EXPECT_CALL(visitor_,
                 OnConnectionAddedToTimeWaitList(current_connection_id));
@@ -531,9 +529,8 @@ TEST_F(QuicTimeWaitListManagerTest, MaxConnectionsTest) {
   // will evict the oldest one.
   for (int64_t i = 0; i < FLAGS_quic_time_wait_list_max_connections; ++i) {
     ++current_conn_id;
-    QuicConnectionId current_connection_id =
-        QuicConnectionIdFromUInt64(current_conn_id);
-    const QuicConnectionId id_to_evict = QuicConnectionIdFromUInt64(
+    QuicConnectionId current_connection_id = TestConnectionId(current_conn_id);
+    const QuicConnectionId id_to_evict = TestConnectionId(
         current_conn_id - FLAGS_quic_time_wait_list_max_connections);
     EXPECT_TRUE(IsConnectionIdInTimeWait(id_to_evict));
     EXPECT_FALSE(IsConnectionIdInTimeWait(current_connection_id));

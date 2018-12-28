@@ -73,14 +73,10 @@ QuicSession::QuicSession(QuicConnection* connection,
       is_handshake_confirmed_(false),
       goaway_sent_(false),
       goaway_received_(false),
-      faster_get_stream_(GetQuicReloadableFlag(quic_session_faster_get_stream)),
       control_frame_manager_(this),
       last_message_id_(0),
       closed_streams_clean_up_alarm_(nullptr),
       supported_versions_(supported_versions) {
-  if (faster_get_stream_) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_session_faster_get_stream);
-  }
   closed_streams_clean_up_alarm_ =
       QuicWrapUnique<QuicAlarm>(connection_->alarm_factory()->CreateAlarm(
           new ClosedStreamsCleanUpDelegate(this)));
@@ -110,14 +106,13 @@ QuicSession::~QuicSession() {
 void QuicSession::RegisterStaticStream(QuicStreamId id, QuicStream* stream) {
   static_stream_map_[id] = stream;
 
-  if (faster_get_stream_) {
-    QUIC_BUG_IF(id >
-                largest_static_stream_id_ +
-                    QuicUtils::StreamIdDelta(connection_->transport_version()))
-        << ENDPOINT << "Static stream registered out of order: " << id
-        << " vs: " << largest_static_stream_id_;
-    largest_static_stream_id_ = std::max(id, largest_static_stream_id_);
-  }
+  QUIC_BUG_IF(id >
+              largest_static_stream_id_ +
+                  QuicUtils::StreamIdDelta(connection_->transport_version()))
+      << ENDPOINT << "Static stream registered out of order: " << id
+      << " vs: " << largest_static_stream_id_;
+  largest_static_stream_id_ = std::max(id, largest_static_stream_id_);
+
   if (connection_->transport_version() == QUIC_VERSION_99) {
     v99_streamid_manager_.RegisterStaticStream(id);
   }
@@ -1219,19 +1214,13 @@ void QuicSession::OnStreamDoneWaitingForAcks(QuicStreamId id) {
 }
 
 QuicStream* QuicSession::GetStream(QuicStreamId id) const {
-  if (faster_get_stream_) {
-    if (id <= largest_static_stream_id_) {
-      auto static_stream = static_stream_map_.find(id);
-      if (static_stream != static_stream_map_.end()) {
-        return static_stream->second;
-      }
-    }
-  } else {
+  if (id <= largest_static_stream_id_) {
     auto static_stream = static_stream_map_.find(id);
     if (static_stream != static_stream_map_.end()) {
       return static_stream->second;
     }
   }
+
   auto active_stream = dynamic_stream_map_.find(id);
   if (active_stream != dynamic_stream_map_.end()) {
     return active_stream->second.get();

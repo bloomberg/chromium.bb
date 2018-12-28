@@ -113,12 +113,6 @@ class QuartcSessionTest : public QuicTest {
   ~QuartcSessionTest() override {}
 
   void Init() {
-    // To enable SendMessage.
-    // TODO(b/119779614): Currently QuartcSession test creates quic connection
-    // directly, so we have to set version to enable SendMessag. QuartcSession
-    // test should use QuartcFactory, which already sets required version.
-    SetQuicReloadableFlag(quic_enable_version_45, true);
-
     client_transport_ =
         QuicMakeUnique<simulator::SimulatedQuartcPacketTransport>(
             &simulator_, "client_transport", "server_transport",
@@ -136,11 +130,6 @@ class QuartcSessionTest : public QuicTest {
         QuicBandwidth::FromKBitsPerSecond(10 * 1000),
         QuicTime::Delta::FromMilliseconds(10));
 
-    client_writer_ = QuicMakeUnique<QuartcPacketWriter>(client_transport_.get(),
-                                                        kDefaultMaxPacketSize);
-    server_writer_ = QuicMakeUnique<QuartcPacketWriter>(server_transport_.get(),
-                                                        kDefaultMaxPacketSize);
-
     client_stream_delegate_ = QuicMakeUnique<FakeQuartcStreamDelegate>();
     client_session_delegate_ = QuicMakeUnique<FakeQuartcSessionDelegate>(
         client_stream_delegate_.get());
@@ -148,42 +137,30 @@ class QuartcSessionTest : public QuicTest {
     server_stream_delegate_ = QuicMakeUnique<FakeQuartcStreamDelegate>();
     server_session_delegate_ = QuicMakeUnique<FakeQuartcSessionDelegate>(
         server_stream_delegate_.get());
+
+    QuartcFactoryConfig factory_config;
+    factory_config.alarm_factory = simulator_.GetAlarmFactory();
+    factory_config.clock = simulator_.GetClock();
+    quartc_factory_ = QuicMakeUnique<QuartcFactory>(factory_config);
   }
 
-  // The parameters are used to control whether the handshake will success or
-  // not.
-  void CreateClientAndServerSessions() {
+  // Note that input session config will apply to both server and client.
+  // Perspective and packet_transport will be overwritten.
+  void CreateClientAndServerSessions(
+      const QuartcSessionConfig& session_config) {
     Init();
-    client_peer_ =
-        CreateSession(Perspective::IS_CLIENT, std::move(client_writer_));
+
+    QuartcSessionConfig client_session_config = session_config;
+    client_session_config.perspective = Perspective::IS_CLIENT;
+    client_session_config.packet_transport = client_transport_.get();
+    client_peer_ = quartc_factory_->CreateQuartcSession(client_session_config);
     client_peer_->SetDelegate(client_session_delegate_.get());
-    server_peer_ =
-        CreateSession(Perspective::IS_SERVER, std::move(server_writer_));
+
+    QuartcSessionConfig server_session_config = session_config;
+    server_session_config.perspective = Perspective::IS_SERVER;
+    server_session_config.packet_transport = server_transport_.get();
+    server_peer_ = quartc_factory_->CreateQuartcSession(server_session_config);
     server_peer_->SetDelegate(server_session_delegate_.get());
-  }
-
-  std::unique_ptr<QuartcSession> CreateSession(
-      Perspective perspective,
-      std::unique_ptr<QuartcPacketWriter> writer) {
-    std::unique_ptr<QuicConnection> quic_connection =
-        CreateConnection(perspective, writer.get());
-    QuicString remote_fingerprint_value = "value";
-    QuicConfig config;
-
-    return QuicMakeUnique<QuartcSession>(
-        std::move(quic_connection), config, CurrentSupportedVersions(),
-        remote_fingerprint_value, perspective, &simulator_,
-        simulator_.GetClock(), std::move(writer));
-  }
-
-  std::unique_ptr<QuicConnection> CreateConnection(Perspective perspective,
-                                                   QuartcPacketWriter* writer) {
-    QuicIpAddress ip;
-    ip.FromString("0.0.0.0");
-    return QuicMakeUnique<QuicConnection>(
-        EmptyQuicConnectionId(), QuicSocketAddress(ip, 0), &simulator_,
-        simulator_.GetAlarmFactory(), writer, /*owns_writer=*/false,
-        perspective, ParsedVersionOfIndex(CurrentSupportedVersions(), 0));
   }
 
   // Runs all tasks scheduled in the next 200 ms.
@@ -344,13 +321,13 @@ class QuartcSessionTest : public QuicTest {
  protected:
   simulator::Simulator simulator_;
 
+  std::unique_ptr<QuartcFactory> quartc_factory_;
+
   std::unique_ptr<simulator::SimulatedQuartcPacketTransport> client_transport_;
   std::unique_ptr<simulator::SimulatedQuartcPacketTransport> server_transport_;
   std::unique_ptr<simulator::CountingPacketFilter> client_filter_;
   std::unique_ptr<simulator::SymmetricLink> client_server_link_;
 
-  std::unique_ptr<QuartcPacketWriter> client_writer_;
-  std::unique_ptr<QuartcPacketWriter> server_writer_;
   std::unique_ptr<QuartcSession> client_peer_;
   std::unique_ptr<QuartcSession> server_peer_;
 
@@ -361,32 +338,32 @@ class QuartcSessionTest : public QuicTest {
 };
 
 TEST_F(QuartcSessionTest, SendReceiveStreams) {
-  CreateClientAndServerSessions();
+  CreateClientAndServerSessions(QuartcSessionConfig());
   StartHandshake();
   TestSendReceiveStreams();
 }
 
 TEST_F(QuartcSessionTest, SendReceiveMessages) {
-  CreateClientAndServerSessions();
+  CreateClientAndServerSessions(QuartcSessionConfig());
   StartHandshake();
   TestSendReceiveMessage();
 }
 
 TEST_F(QuartcSessionTest, SendReceiveQueuedMessages) {
-  CreateClientAndServerSessions();
+  CreateClientAndServerSessions(QuartcSessionConfig());
   StartHandshake();
   TestSendReceiveQueuedMessages(/*direction_from_server=*/true);
   TestSendReceiveQueuedMessages(/*direction_from_server=*/false);
 }
 
 TEST_F(QuartcSessionTest, SendMessageFails) {
-  CreateClientAndServerSessions();
+  CreateClientAndServerSessions(QuartcSessionConfig());
   StartHandshake();
   TestSendLongMessage();
 }
 
 TEST_F(QuartcSessionTest, PreSharedKeyHandshake) {
-  CreateClientAndServerSessions();
+  CreateClientAndServerSessions(QuartcSessionConfig());
   client_peer_->SetPreSharedKey("foo");
   server_peer_->SetPreSharedKey("foo");
   StartHandshake();
@@ -396,13 +373,13 @@ TEST_F(QuartcSessionTest, PreSharedKeyHandshake) {
 
 // Test that data streams are not created before handshake.
 TEST_F(QuartcSessionTest, CannotCreateDataStreamBeforeHandshake) {
-  CreateClientAndServerSessions();
+  CreateClientAndServerSessions(QuartcSessionConfig());
   EXPECT_EQ(nullptr, server_peer_->CreateOutgoingBidirectionalStream());
   EXPECT_EQ(nullptr, client_peer_->CreateOutgoingBidirectionalStream());
 }
 
 TEST_F(QuartcSessionTest, CancelQuartcStream) {
-  CreateClientAndServerSessions();
+  CreateClientAndServerSessions(QuartcSessionConfig());
   StartHandshake();
   ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
   ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
@@ -424,7 +401,7 @@ TEST_F(QuartcSessionTest, CancelQuartcStream) {
 // QuartcPacketTransport and remove
 // SimulatedQuartcPacketTransport::last_packet_number().
 TEST_F(QuartcSessionTest, WriterGivesPacketNumberToTransport) {
-  CreateClientAndServerSessions();
+  CreateClientAndServerSessions(QuartcSessionConfig());
   StartHandshake();
   ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
   ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
@@ -445,7 +422,7 @@ TEST_F(QuartcSessionTest, WriterGivesPacketNumberToTransport) {
 }
 
 TEST_F(QuartcSessionTest, CloseConnection) {
-  CreateClientAndServerSessions();
+  CreateClientAndServerSessions(QuartcSessionConfig());
   StartHandshake();
   ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
   ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
@@ -457,7 +434,7 @@ TEST_F(QuartcSessionTest, CloseConnection) {
 }
 
 TEST_F(QuartcSessionTest, StreamRetransmissionEnabled) {
-  CreateClientAndServerSessions();
+  CreateClientAndServerSessions(QuartcSessionConfig());
   StartHandshake();
   ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
   ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
@@ -481,7 +458,16 @@ TEST_F(QuartcSessionTest, StreamRetransmissionEnabled) {
 }
 
 TEST_F(QuartcSessionTest, StreamRetransmissionDisabled) {
-  CreateClientAndServerSessions();
+  // Disable tail loss probe, otherwise test maybe flaky because dropped
+  // message will be retransmitted to detect tail loss.
+  QuartcSessionConfig session_config;
+  session_config.enable_tail_loss_probe = false;
+  CreateClientAndServerSessions(session_config);
+
+  // Disable probing retransmissions, otherwise test maybe flaky because dropped
+  // message will be retransmitted to to probe for more bandwidth.
+  client_peer_->connection()->set_fill_up_link_during_probing(false);
+
   StartHandshake();
   ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
   ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());

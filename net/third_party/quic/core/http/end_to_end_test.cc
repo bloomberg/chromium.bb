@@ -2253,8 +2253,8 @@ TEST_P(EndToEndTestWithTls, ServerSendPublicResetWithDifferentConnectionId) {
     stateless_reset_token = config->ReceivedStatelessResetToken();
   }
   // Send the public reset.
-  QuicConnectionId incorrect_connection_id = QuicConnectionIdFromUInt64(
-      QuicConnectionIdToUInt64(client_connection->connection_id()) + 1);
+  QuicConnectionId incorrect_connection_id = TestConnectionId(
+      TestConnectionIdToUInt64(client_connection->connection_id()) + 1);
   QuicPublicResetPacket header;
   header.connection_id = incorrect_connection_id;
   QuicFramer framer(server_supported_versions_, QuicTime::Zero(),
@@ -2302,8 +2302,8 @@ TEST_P(EndToEndTestWithTls, ClientSendPublicResetWithDifferentConnectionId) {
   ASSERT_TRUE(Initialize());
 
   // Send the public reset.
-  QuicConnectionId incorrect_connection_id = QuicConnectionIdFromUInt64(
-      QuicConnectionIdToUInt64(
+  QuicConnectionId incorrect_connection_id = TestConnectionId(
+      TestConnectionIdToUInt64(
           client_->client()->client_session()->connection()->connection_id()) +
       1);
   QuicPublicResetPacket header;
@@ -2333,8 +2333,8 @@ TEST_P(EndToEndTestWithTls,
   // Send the version negotiation packet.
   QuicConnection* client_connection =
       client_->client()->client_session()->connection();
-  QuicConnectionId incorrect_connection_id = QuicConnectionIdFromUInt64(
-      QuicConnectionIdToUInt64(client_connection->connection_id()) + 1);
+  QuicConnectionId incorrect_connection_id = TestConnectionId(
+      TestConnectionIdToUInt64(client_connection->connection_id()) + 1);
   std::unique_ptr<QuicEncryptedPacket> packet(
       QuicFramer::BuildVersionNegotiationPacket(
           incorrect_connection_id,
@@ -3214,7 +3214,7 @@ TEST_P(EndToEndTest, SendStatelessResetTokenInShlo) {
   QuicConfig* config = client_->client()->session()->config();
   EXPECT_TRUE(config->HasReceivedStatelessResetToken());
   // TODO(dschinazi) b/120240679 - convert connection ID to UInt128
-  EXPECT_EQ(QuicConnectionIdToUInt64(
+  EXPECT_EQ(TestConnectionIdToUInt64(
                 client_->client()->session()->connection()->connection_id()),
             config->ReceivedStatelessResetToken());
   client_->Disconnect();
