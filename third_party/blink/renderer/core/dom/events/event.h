@@ -308,6 +308,13 @@ class CORE_EXPORT Event : public ScriptWrappable {
     legacy_did_listeners_throw_flag_ = true;
   }
 
+  // In general, event listeners do not run when related execution contexts are
+  // paused.  However, when this function returns true, event listeners ignore
+  // the pause and run.
+  virtual bool ShouldDispatchEvenWhenExecutionContextIsPaused() const {
+    return false;
+  }
+
   virtual DispatchEventResult DispatchEvent(EventDispatcher&);
 
   void Trace(blink::Visitor*) override;

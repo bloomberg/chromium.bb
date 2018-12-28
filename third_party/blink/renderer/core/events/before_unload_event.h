@@ -52,6 +52,13 @@ class BeforeUnloadEvent final : public Event {
     return event_interface_names::kBeforeUnloadEvent;
   }
 
+  // A confirmation dialog for leaving a page is expected to be shown
+  // regardless of the state of the page.  So, beforeunload's event
+  // listeners should always run regardless of pause.
+  bool ShouldDispatchEvenWhenExecutionContextIsPaused() const override {
+    return true;
+  }
+
   void Trace(blink::Visitor*) override;
 
  private:

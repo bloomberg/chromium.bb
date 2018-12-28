@@ -104,15 +104,8 @@ void JSEventHandler::InvokeInternal(EventTarget& event_target,
     arguments = {ScriptValue::From(script_state_of_listener, js_event)};
   }
 
-  const bool is_beforeunload_event =
-      event.IsBeforeUnloadEvent() &&
-      event.type() == event_type_names::kBeforeunload;
-  const bool is_print_event =
-      // TODO(yukishiino): Should check event.Is{Before,After}PrintEvent.
-      event.type() == event_type_names::kBeforeprint ||
-      event.type() == event_type_names::kAfterprint;
   if (!event_handler_->IsRunnableOrThrowException(
-          (is_beforeunload_event || is_print_event)
+          event.ShouldDispatchEvenWhenExecutionContextIsPaused()
               ? V8EventHandlerNonNull::IgnorePause::kIgnore
               : V8EventHandlerNonNull::IgnorePause::kDontIgnore)) {
     return;
@@ -164,6 +157,9 @@ void JSEventHandler::InvokeInternal(EventTarget& event_target,
   //             then return value will never be false, since in such cases
   //             return value will have been coerced into either null or a
   //             DOMString.
+  const bool is_beforeunload_event =
+      event.IsBeforeUnloadEvent() &&
+      event.type() == event_type_names::kBeforeunload;
   if (is_beforeunload_event) {
     if (result_for_beforeunload) {
       event.preventDefault();
