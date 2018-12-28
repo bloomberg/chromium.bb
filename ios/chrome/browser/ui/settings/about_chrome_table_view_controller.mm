@@ -53,9 +53,8 @@ const CGFloat kDefaultHeight = 70;
 #pragma mark - Public
 
 - (instancetype)init {
-  self =
-      [super initWithTableViewStyle:UITableViewStyleGrouped
-                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
+  self = [super initWithTableViewStyle:UITableViewStyleGrouped
+                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     self.title = l10n_util::GetNSString(IDS_IOS_ABOUT_PRODUCT_NAME);
   }

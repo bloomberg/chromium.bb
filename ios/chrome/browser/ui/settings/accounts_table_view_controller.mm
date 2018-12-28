@@ -126,9 +126,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
            closeSettingsOnAddAccount:(BOOL)closeSettingsOnAddAccount {
   DCHECK(browserState);
   DCHECK(!browserState->IsOffTheRecord());
-  self =
-      [super initWithTableViewStyle:UITableViewStyleGrouped
-                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
+  self = [super initWithTableViewStyle:UITableViewStyleGrouped
+                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     _browserState = browserState;
     _closeSettingsOnAddAccount = closeSettingsOnAddAccount;
