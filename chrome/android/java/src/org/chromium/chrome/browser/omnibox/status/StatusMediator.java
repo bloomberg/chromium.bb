@@ -12,7 +12,6 @@ import android.view.View;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.omnibox.status.StatusView.NavigationButtonType;
-import org.chromium.chrome.browser.omnibox.status.StatusView.StatusButtonType;
 
 /**
  * Contains the controller logic of the Status component.
@@ -32,6 +31,12 @@ class StatusMediator {
     private int mVerboseStatusTextMinWidth;
 
     private @DrawableRes int mSecurityIconRes;
+    private @DrawableRes int mSecurityIconTintRes;
+    private @StringRes int mSecurityIconDescriptionRes;
+    private @DrawableRes int mNavigationIconRes;
+    private @DrawableRes int mNavigationIconTintRes;
+
+    private boolean mTestingIsSecurityButtonShown;
 
     StatusMediator(PropertyModel model) {
         mModel = model;
@@ -63,7 +68,8 @@ class StatusMediator {
             default:
                 assert false : "Invalid navigation button type";
         }
-        mModel.set(StatusProperties.NAVIGATION_ICON_RES, imageRes);
+
+        mNavigationIconRes = imageRes;
         updateLocationBarIcon();
     }
 
@@ -93,7 +99,6 @@ class StatusMediator {
      * Specify icon displayed by the security chip.
      */
     void setSecurityIconResource(@DrawableRes int securityIcon) {
-        if (mSecurityIconRes == securityIcon) return;
         mSecurityIconRes = securityIcon;
         updateLocationBarIcon();
     }
@@ -102,14 +107,16 @@ class StatusMediator {
      * Specify tint of icon displayed by the security chip.
      */
     void setSecurityIconTint(@ColorRes int tintList) {
-        mModel.set(StatusProperties.SECURITY_ICON_TINT_RES, tintList);
+        mSecurityIconTintRes = tintList;
+        updateLocationBarIcon();
     }
 
     /**
      * Specify tint of icon displayed by the security chip.
      */
     void setSecurityIconDescription(@StringRes int desc) {
-        mModel.set(StatusProperties.SECURITY_ICON_DESCRIPTION_RES, desc);
+        mSecurityIconDescriptionRes = desc;
+        updateLocationBarIcon();
     }
 
     /**
@@ -249,10 +256,18 @@ class StatusMediator {
         @ColorRes
         int tintColor = mDarkTheme ? R.color.dark_mode_tint : R.color.light_mode_tint;
 
-        mModel.set(StatusProperties.NAVIGATION_ICON_TINT_RES, tintColor);
         mModel.set(StatusProperties.SEPARATOR_COLOR_RES, separatorColor);
-
+        mNavigationIconTintRes = tintColor;
         if (textColor != 0) mModel.set(StatusProperties.VERBOSE_STATUS_TEXT_COLOR_RES, textColor);
+
+        updateLocationBarIcon();
+    }
+
+    /**
+     * Reports whether security icon is shown.
+     */
+    boolean testIsSecurityButtonShown() {
+        return mTestingIsSecurityButtonShown;
     }
 
     /**
@@ -268,16 +283,26 @@ class StatusMediator {
      */
     private void updateLocationBarIcon() {
         if (mUrlHasFocus && mTabletMode) {
-            mModel.set(StatusProperties.STATUS_BUTTON_TYPE, StatusButtonType.NAVIGATION_ICON);
+            mModel.set(StatusProperties.STATUS_ICON_RES, mNavigationIconRes);
+            mModel.set(StatusProperties.STATUS_ICON_TINT_RES, mNavigationIconTintRes);
+            mModel.set(StatusProperties.STATUS_ICON_DESCRIPTION_RES,
+                    R.string.accessibility_toolbar_btn_site_info);
+            mModel.set(StatusProperties.STATUS_ICON_ACCESSIBILITY_TOAST_RES, 0);
+            mTestingIsSecurityButtonShown = false;
             return;
         }
 
         if (!mUrlHasFocus && mSecurityIconRes != 0) {
-            mModel.set(StatusProperties.SECURITY_ICON_RES, mSecurityIconRes);
-            mModel.set(StatusProperties.STATUS_BUTTON_TYPE, StatusButtonType.SECURITY_ICON);
+            mModel.set(StatusProperties.STATUS_ICON_RES, mSecurityIconRes);
+            mModel.set(StatusProperties.STATUS_ICON_TINT_RES, mSecurityIconTintRes);
+            mModel.set(StatusProperties.STATUS_ICON_DESCRIPTION_RES, mSecurityIconDescriptionRes);
+            mModel.set(
+                    StatusProperties.STATUS_ICON_ACCESSIBILITY_TOAST_RES, R.string.menu_page_info);
+            mTestingIsSecurityButtonShown = true;
             return;
         }
 
-        mModel.set(StatusProperties.STATUS_BUTTON_TYPE, StatusButtonType.NONE);
+        mTestingIsSecurityButtonShown = false;
+        mModel.set(StatusProperties.STATUS_ICON_RES, 0);
     }
 }

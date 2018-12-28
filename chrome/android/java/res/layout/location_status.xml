@@ -2,8 +2,6 @@
 <!-- Copyright 2018 The Chromium Authors. All rights reserved.
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
-
-<!-- Layout for the LocationBar's StatusView for most devices -->
 <merge
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
@@ -13,35 +11,40 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent">
 
-        <FrameLayout android:id="@+id/location_bar_icon"
+        <org.chromium.ui.widget.ChromeImageButton
+            android:id="@+id/location_bar_status_icon"
+            style="@style/LocationBarButton"
             android:layout_width="@dimen/location_bar_start_icon_width"
             android:layout_height="match_parent"
-            android:paddingEnd="4dp"
-            android:visibility="gone" >
-
-        <ImageView android:id="@+id/navigation_button"
-            style="@style/LocationBarButton"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:scaleType="center"
-            android:contentDescription="@string/accessibility_toolbar_btn_site_info" />
+            android:contentDescription="@string/accessibility_toolbar_btn_site_info"
+            android:scaleType="center" />
 
-        <org.chromium.ui.widget.ChromeImageButton
-            android:id="@+id/security_button"
-            style="@style/LocationBarButton"
-            android:layout_width="match_parent"
+        <TextView android:id="@+id/location_bar_verbose_status"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:scaleType="center"
-            android:layout_gravity="center"
-            android:alpha="0"
-            android:visibility="invisible"
-            app:tint="@color/dark_mode_tint" />
+            android:paddingEnd="8dp"
+            android:gravity="center_vertical"
+            android:textAlignment="viewStart"
+            android:textAppearance="@style/TextAppearance.OmniboxVerboseStatus"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:visibility="gone" />
 
-        </FrameLayout>
+        <!-- Separator is going to be shown or hidden together with the status defined above. -->
+        <View android:id="@+id/location_bar_verbose_status_separator"
+            android:layout_width="@dimen/location_bar_status_separator_width"
+            android:layout_height="24dp"
+            android:layout_gravity="center_vertical"
+            android:background="@color/black_alpha_12"
+            android:visibility="gone" />
 
-        <include layout="@layout/location_bar_status" />
+        <!-- This space follows the verbose status and compliments the space that follows
+            the status. -->
+        <Space android:id="@+id/location_bar_verbose_status_extra_space"
+            android:layout_width="@dimen/location_bar_status_separator_spacer"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
 
     </org.chromium.chrome.browser.omnibox.status.StatusView>
-
 </merge>

@@ -20,34 +20,26 @@ class StatusProperties {
             new WritableBooleanPropertyKey();
 
     /** Specifies navigation icon resource type .*/
-    public static final WritableIntPropertyKey NAVIGATION_ICON_RES = new WritableIntPropertyKey();
+    public static final WritableIntPropertyKey STATUS_ICON_RES = new WritableIntPropertyKey();
 
     /** Specifies color tint for navigation icon. */
-    public static final WritableIntPropertyKey NAVIGATION_ICON_TINT_RES =
+    public static final WritableIntPropertyKey STATUS_ICON_TINT_RES = new WritableIntPropertyKey();
+
+    /** Specifies accessibility string presented to user upon long click on security icon. */
+    public static final WritableIntPropertyKey STATUS_ICON_ACCESSIBILITY_TOAST_RES =
             new WritableIntPropertyKey();
 
     /** Specifies string resource holding content description for security icon. */
-    public static final WritableIntPropertyKey SECURITY_ICON_DESCRIPTION_RES =
-            new WritableIntPropertyKey();
-
-    /** Specifies resource displayed by security chip. */
-    public static final WritableIntPropertyKey SECURITY_ICON_RES = new WritableIntPropertyKey();
-
-    /** Specifies color tint list for icon displayed by security chip. */
-    public static final WritableIntPropertyKey SECURITY_ICON_TINT_RES =
+    public static final WritableIntPropertyKey STATUS_ICON_DESCRIPTION_RES =
             new WritableIntPropertyKey();
 
     /** Specifies status separator color. */
     public static final WritableIntPropertyKey SEPARATOR_COLOR_RES = new WritableIntPropertyKey();
 
-    /** Specifies current selection of the location bar button type. */
-    public static final WritableIntPropertyKey STATUS_BUTTON_TYPE = new WritableIntPropertyKey();
-
     /** Specifies object to receive status click events. */
     public static final WritableObjectPropertyKey<View.OnClickListener> STATUS_CLICK_LISTENER =
             new WritableObjectPropertyKey<>();
 
-    /** Specifies verbose status text color. */
     public static final WritableIntPropertyKey VERBOSE_STATUS_TEXT_COLOR_RES =
             new WritableIntPropertyKey();
 
@@ -64,10 +56,10 @@ class StatusProperties {
             new WritableIntPropertyKey();
 
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {ANIMATIONS_ENABLED,
-            NAVIGATION_ICON_RES, NAVIGATION_ICON_TINT_RES, SECURITY_ICON_RES,
-            SECURITY_ICON_DESCRIPTION_RES, SECURITY_ICON_TINT_RES, SEPARATOR_COLOR_RES,
-            STATUS_BUTTON_TYPE, STATUS_CLICK_LISTENER, VERBOSE_STATUS_TEXT_COLOR_RES,
-            VERBOSE_STATUS_TEXT_STRING_RES, VERBOSE_STATUS_TEXT_VISIBLE, VERBOSE_STATUS_TEXT_WIDTH};
+            STATUS_ICON_ACCESSIBILITY_TOAST_RES, STATUS_ICON_RES, STATUS_ICON_TINT_RES,
+            STATUS_ICON_DESCRIPTION_RES, SEPARATOR_COLOR_RES, STATUS_CLICK_LISTENER,
+            VERBOSE_STATUS_TEXT_COLOR_RES, VERBOSE_STATUS_TEXT_STRING_RES,
+            VERBOSE_STATUS_TEXT_VISIBLE, VERBOSE_STATUS_TEXT_WIDTH};
 
     private StatusProperties() {}
 }
