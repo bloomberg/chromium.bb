@@ -564,8 +564,9 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_EQ(kLocalBillingAddressId, credit_cards[0]->billing_address_id());
 }
 
+// Disabled due to flakiness: https://crbug.com/917498.
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
-                       ServerAddressConvertsToSameLocalAddress) {
+                       DISABLED_ServerAddressConvertsToSameLocalAddress) {
   InitWithDefaultFeatures();
 
   GetFakeServer()->SetWalletData(
