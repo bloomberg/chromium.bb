@@ -14,12 +14,12 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "storage/browser/quota/quota_callbacks.h"
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_task.h"
 #include "storage/browser/quota/special_storage_policy.h"
-#include "storage/browser/storage_browser_export.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
 
@@ -31,7 +31,8 @@ class StorageMonitor;
 // A helper class that gathers and tracks the amount of data stored in
 // all quota clients.
 // An instance of this class is created per storage type.
-class STORAGE_EXPORT UsageTracker : public QuotaTaskObserver {
+class COMPONENT_EXPORT(STORAGE_BROWSER) UsageTracker
+    : public QuotaTaskObserver {
  public:
   UsageTracker(const std::vector<QuotaClient*>& clients,
                blink::mojom::StorageType type,

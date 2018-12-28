@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
+#include "base/component_export.h"
 #include "net/base/completion_once_callback.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace base {
 class FilePath;
@@ -28,11 +28,11 @@ class FileStreamWriter {
 
   // Creates a writer for the existing file in the path |file_path| starting
   // from |initial_offset|. Uses |task_runner| for async file operations.
-  STORAGE_EXPORT static FileStreamWriter* CreateForLocalFile(
-      base::TaskRunner* task_runner,
-      const base::FilePath& file_path,
-      int64_t initial_offset,
-      OpenOrCreate open_or_create);
+  COMPONENT_EXPORT(STORAGE_BROWSER)
+  static FileStreamWriter* CreateForLocalFile(base::TaskRunner* task_runner,
+                                              const base::FilePath& file_path,
+                                              int64_t initial_offset,
+                                              OpenOrCreate open_or_create);
 
   // Closes the file. If there's an in-flight operation, it is canceled (i.e.,
   // the callback function associated with the operation is not called).

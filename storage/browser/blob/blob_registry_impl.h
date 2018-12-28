@@ -6,12 +6,12 @@
 #define STORAGE_BROWSER_BLOB_BLOB_REGISTRY_IMPL_H_
 
 #include <memory>
+#include "base/component_export.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/storage_browser_export.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 
 namespace storage {
@@ -21,7 +21,8 @@ class BlobDataHandle;
 class BlobStorageContext;
 class FileSystemURL;
 
-class STORAGE_EXPORT BlobRegistryImpl : public blink::mojom::BlobRegistry {
+class COMPONENT_EXPORT(STORAGE_BROWSER) BlobRegistryImpl
+    : public blink::mojom::BlobRegistry {
  public:
   // Per binding delegate, used for security checks for requests coming in on
   // specific bindings/from specific processes.

@@ -12,6 +12,7 @@
 #include <set>
 #include <utility>
 
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
@@ -22,7 +23,6 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
-#include "storage/browser/storage_browser_export.h"
 #include "storage/common/database/database_connections.h"
 
 namespace content {
@@ -42,15 +42,15 @@ class SpecialStoragePolicy;
 
 namespace storage {
 
-STORAGE_EXPORT extern const base::FilePath::CharType
-    kDatabaseDirectoryName[];
-STORAGE_EXPORT extern const base::FilePath::CharType
-    kTrackerDatabaseFileName[];
+COMPONENT_EXPORT(STORAGE_BROWSER)
+extern const base::FilePath::CharType kDatabaseDirectoryName[];
+COMPONENT_EXPORT(STORAGE_BROWSER)
+extern const base::FilePath::CharType kTrackerDatabaseFileName[];
 
 class DatabasesTable;
 
 // This class is used to store information about all databases in an origin.
-class STORAGE_EXPORT OriginInfo {
+class COMPONENT_EXPORT(STORAGE_BROWSER) OriginInfo {
  public:
   OriginInfo();
   OriginInfo(const OriginInfo& origin_info);
@@ -77,7 +77,7 @@ class STORAGE_EXPORT OriginInfo {
 // should be called on the task runner returned by |task_runner()|. The only
 // exceptions are the ctor(), the dtor() and the database_directory() and
 // quota_manager_proxy() getters.
-class STORAGE_EXPORT DatabaseTracker
+class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseTracker
     : public base::RefCountedThreadSafe<DatabaseTracker> {
  public:
   class Observer {

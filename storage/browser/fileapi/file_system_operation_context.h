@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "base/threading/thread_checker.h"
 #include "storage/browser/fileapi/task_runner_bound_observer_list.h"
-#include "storage/browser/storage_browser_export.h"
 #include "storage/common/quota/quota_limit_type.h"
 
 namespace base {
@@ -29,7 +29,7 @@ class FileSystemContext;
 // the same context (e.g. use the same task runner, share the quota etc).
 // Note that the remaining quota bytes (allowed_bytes_growth) may be
 // updated during the execution of write operations.
-class STORAGE_EXPORT FileSystemOperationContext
+class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationContext
     : public base::SupportsUserData {
  public:
   explicit FileSystemOperationContext(FileSystemContext* context);

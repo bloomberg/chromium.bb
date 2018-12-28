@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -18,7 +19,6 @@
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_system_url.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace base {
 class FilePath;
@@ -37,7 +37,7 @@ class FileSystemContext;
 // remote filesystem should implement its own reader rather than relying
 // on FileSystemOperation::GetSnapshotFile() which may force downloading
 // the entire contents for remote files.
-class STORAGE_EXPORT FileSystemFileStreamReader
+class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemFileStreamReader
     : public storage::FileStreamReader {
  public:
   ~FileSystemFileStreamReader() override;

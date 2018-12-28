@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/component_export.h"
 #include "base/time/time.h"
 #include "storage/browser/quota/quota_client.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
@@ -16,9 +17,9 @@ namespace storage {
 
 // This interface is implemented by observers that wish to monitor storage
 // events, such as changes in quota or usage.
-class STORAGE_EXPORT StorageObserver {
+class COMPONENT_EXPORT(STORAGE_BROWSER) StorageObserver {
  public:
-  struct STORAGE_EXPORT Filter {
+  struct COMPONENT_EXPORT(STORAGE_BROWSER) Filter {
     // The storage type to monitor. This must not be kUnknown or
     // kQuotaNotManaged.
     blink::mojom::StorageType storage_type;
@@ -31,7 +32,7 @@ class STORAGE_EXPORT StorageObserver {
     bool operator==(const Filter& other) const;
   };
 
-  struct STORAGE_EXPORT MonitorParams {
+  struct COMPONENT_EXPORT(STORAGE_BROWSER) MonitorParams {
     // Storage type and origin to monitor.
     Filter filter;
 
@@ -53,7 +54,7 @@ class STORAGE_EXPORT StorageObserver {
                   bool get_initial_state);
   };
 
-  struct STORAGE_EXPORT Event {
+  struct COMPONENT_EXPORT(STORAGE_BROWSER) Event {
     // The storage type and origin monitored.
     Filter filter;
 

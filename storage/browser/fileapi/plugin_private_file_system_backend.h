@@ -11,6 +11,7 @@
 #include <set>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -37,7 +38,7 @@ class ObfuscatedFileUtil;
 class SpecialStoragePolicy;
 class WatcherManager;
 
-class STORAGE_EXPORT PluginPrivateFileSystemBackend
+class COMPONENT_EXPORT(STORAGE_BROWSER) PluginPrivateFileSystemBackend
     : public FileSystemBackend,
       public FileSystemQuotaUtil {
  public:

@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/fileapi/quota/quota_reservation_manager.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend_delegate.h"
-#include "storage/browser/storage_browser_export.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
 
@@ -31,7 +31,7 @@ class ObfuscatedFileUtil;
 class QuotaManagerProxy;
 
 // An instance of this class is owned by QuotaReservationManager.
-class STORAGE_EXPORT QuotaBackendImpl
+class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaBackendImpl
     : public QuotaReservationManager::QuotaBackend {
  public:
   using ReserveQuotaCallback = QuotaReservationManager::ReserveQuotaCallback;

@@ -14,9 +14,9 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/unguessable_token.h"
-#include "storage/browser/storage_browser_export.h"
 #include "storage/common/blob_storage/blob_storage_constants.h"
 
 class GURL;
@@ -29,7 +29,7 @@ class BlobEntry;
 // Implementation notes:
 // * When removing a uuid registration, we do not check for URL mappings to that
 //   uuid. The user must keep track of these.
-class STORAGE_EXPORT BlobStorageRegistry {
+class COMPONENT_EXPORT(STORAGE_BROWSER) BlobStorageRegistry {
  public:
   BlobStorageRegistry();
   ~BlobStorageRegistry();

@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -21,7 +22,6 @@
 #include "storage/browser/blob/shareable_blob_data_item.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace disk_cache {
 class Entry;
@@ -41,7 +41,7 @@ class BlobStorageRegistry;
 // bytes item, but we don't have the memory or file yet. See AppendFuture* and
 // PopulateFuture* methods for more description. Use
 // BlobDataHandle::GetBlobStatus to check for an error after creating the blob.
-class STORAGE_EXPORT BlobDataBuilder {
+class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataBuilder {
  public:
   using DataHandle = BlobDataItem::DataHandle;
   using ItemCopyEntry = BlobEntry::ItemCopyEntry;
@@ -69,7 +69,7 @@ class STORAGE_EXPORT BlobDataBuilder {
   void AppendData(const char* data, size_t length);
 
   // Represents a piece of unpopulated data.
-  class STORAGE_EXPORT FutureData {
+  class COMPONENT_EXPORT(STORAGE_BROWSER) FutureData {
    public:
     FutureData(FutureData&&);
     FutureData& operator=(FutureData&&);
@@ -104,7 +104,7 @@ class STORAGE_EXPORT BlobDataBuilder {
   FutureData AppendFutureData(size_t length);
 
   // Represents an unpopulated file.
-  class STORAGE_EXPORT FutureFile {
+  class COMPONENT_EXPORT(STORAGE_BROWSER) FutureFile {
    public:
     FutureFile(FutureFile&&);
     FutureFile& operator=(FutureFile&&);
@@ -232,8 +232,9 @@ class STORAGE_EXPORT BlobDataBuilder {
 
  private:
   friend class BlobStorageContext;
-  friend STORAGE_EXPORT void PrintTo(const BlobDataBuilder& x,
-                                     ::std::ostream* os);
+  friend COMPONENT_EXPORT(STORAGE_BROWSER) void PrintTo(
+      const BlobDataBuilder& x,
+      ::std::ostream* os);
   friend class BlobSliceTest;
 
   void SliceBlob(const BlobEntry* entry,

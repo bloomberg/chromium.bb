@@ -8,11 +8,11 @@
 #include <set>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "storage/browser/quota/quota_client.h"
-#include "storage/browser/storage_browser_export.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
 
@@ -23,7 +23,8 @@ class DatabaseTracker;
 // A QuotaClient implementation to integrate WebSQLDatabases
 // with the quota  management system. This interface is used
 // on the IO thread by the quota manager.
-class STORAGE_EXPORT DatabaseQuotaClient : public storage::QuotaClient {
+class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseQuotaClient
+    : public storage::QuotaClient {
  public:
   DatabaseQuotaClient(scoped_refptr<DatabaseTracker> tracker);
   ~DatabaseQuotaClient() override;

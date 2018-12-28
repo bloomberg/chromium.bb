@@ -13,11 +13,11 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "storage/browser/storage_browser_export.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
 
@@ -35,9 +35,9 @@ namespace storage {
 class SpecialStoragePolicy;
 
 // All the methods of this class must run on the DB thread.
-class STORAGE_EXPORT QuotaDatabase {
+class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
  public:
-  struct STORAGE_EXPORT OriginInfoTableEntry {
+  struct COMPONENT_EXPORT(STORAGE_BROWSER) OriginInfoTableEntry {
     OriginInfoTableEntry();
     OriginInfoTableEntry(const url::Origin& origin,
                          blink::mojom::StorageType type,
@@ -134,7 +134,7 @@ class STORAGE_EXPORT QuotaDatabase {
   bool SetOriginDatabaseBootstrapped(bool bootstrap_flag);
 
  private:
-  struct STORAGE_EXPORT QuotaTableEntry {
+  struct COMPONENT_EXPORT(STORAGE_BROWSER) QuotaTableEntry {
     QuotaTableEntry();
     QuotaTableEntry(const std::string& host,
                     blink::mojom::StorageType type,
@@ -143,10 +143,12 @@ class STORAGE_EXPORT QuotaDatabase {
     blink::mojom::StorageType type;
     int64_t quota;
   };
-  friend STORAGE_EXPORT bool operator <(
-      const QuotaTableEntry& lhs, const QuotaTableEntry& rhs);
-  friend STORAGE_EXPORT bool operator <(
-      const OriginInfoTableEntry& lhs, const OriginInfoTableEntry& rhs);
+  friend COMPONENT_EXPORT(STORAGE_BROWSER) bool operator<(
+      const QuotaTableEntry& lhs,
+      const QuotaTableEntry& rhs);
+  friend COMPONENT_EXPORT(STORAGE_BROWSER) bool operator<(
+      const OriginInfoTableEntry& lhs,
+      const OriginInfoTableEntry& rhs);
 
   // Structures used for CreateSchema.
   struct TableSchema {

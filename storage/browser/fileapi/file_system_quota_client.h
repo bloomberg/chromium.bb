@@ -10,12 +10,12 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "storage/browser/fileapi/file_system_quota_util.h"
 #include "storage/browser/quota/quota_client.h"
-#include "storage/browser/storage_browser_export.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
@@ -33,7 +33,8 @@ class FileSystemContext;
 // is called.
 // All of the public methods of this class are called by the quota manager
 // (except for the constructor/destructor).
-class STORAGE_EXPORT FileSystemQuotaClient : public storage::QuotaClient {
+class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemQuotaClient
+    : public storage::QuotaClient {
  public:
   FileSystemQuotaClient(
       FileSystemContext* file_system_context,

@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -30,7 +31,6 @@
 #include "storage/browser/quota/quota_task.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/browser/quota/storage_observer.h"
-#include "storage/browser/storage_browser_export.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 namespace base {
@@ -61,7 +61,7 @@ class UsageTracker;
 struct QuotaManagerDeleter;
 
 // An interface called by QuotaTemporaryStorageEvictor.
-class STORAGE_EXPORT QuotaEvictionHandler {
+class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaEvictionHandler {
  public:
   using EvictionRoundInfoCallback =
       base::OnceCallback<void(blink::mojom::QuotaStatusCode status,
@@ -103,7 +103,7 @@ struct UsageInfo {
 //
 // Methods must be called on the IO thread, except for the constructor and
 // proxy().
-class STORAGE_EXPORT QuotaManager
+class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
     : public QuotaTaskObserver,
       public QuotaEvictionHandler,
       public base::RefCountedThreadSafe<QuotaManager, QuotaManagerDeleter> {

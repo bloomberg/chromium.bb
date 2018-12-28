@@ -6,8 +6,8 @@
 #define STORAGE_BROWSER_BLOB_BLOB_TRANSPORT_STRATEGY_H_
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "storage/browser/blob/blob_memory_controller.h"
-#include "storage/browser/storage_browser_export.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 
 namespace storage {
@@ -17,7 +17,7 @@ class BlobDataBuilder;
 // This class is responsible for transporting bytes for an under-construction
 // blob, using a specified transport strategy. This is used by BlobRegistryImpl
 // for the actual transportation of bytes.
-class STORAGE_EXPORT BlobTransportStrategy {
+class COMPONENT_EXPORT(STORAGE_BROWSER) BlobTransportStrategy {
  public:
   using ResultCallback = base::OnceCallback<void(BlobStatus)>;
 

@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -23,7 +24,6 @@
 #include "storage/browser/blob/blob_entry.h"
 #include "storage/browser/blob/blob_memory_controller.h"
 #include "storage/browser/blob/blob_storage_registry.h"
-#include "storage/browser/storage_browser_export.h"
 #include "storage/common/blob_storage/blob_storage_constants.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
@@ -45,7 +45,7 @@ class BlobDataSnapshot;
 // This class handles the logistics of blob storage within the browser process.
 // This class is not threadsafe, access on IO thread. In Chromium there is one
 // instance per profile.
-class STORAGE_EXPORT BlobStorageContext
+class COMPONENT_EXPORT(STORAGE_BROWSER) BlobStorageContext
     : public base::trace_event::MemoryDumpProvider {
  public:
   using TransportAllowedCallback = BlobEntry::TransportAllowedCallback;

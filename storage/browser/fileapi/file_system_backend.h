@@ -13,12 +13,12 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "storage/browser/fileapi/file_permission_policy.h"
 #include "storage/browser/fileapi/open_file_system_mode.h"
 #include "storage/browser/fileapi/task_runner_bound_observer_list.h"
-#include "storage/browser/storage_browser_export.h"
 #include "storage/common/fileapi/file_system_types.h"
 
 class GURL;
@@ -48,7 +48,7 @@ const int64_t kMaximumLength = INT64_MAX;
 // NOTE: when you implement a new FileSystemBackend for your own
 // FileSystem module, please contact to kinuko@chromium.org.
 //
-class STORAGE_EXPORT FileSystemBackend {
+class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemBackend {
  public:
   // Callback for InitializeFileSystem.
   using OpenFileSystemCallback =

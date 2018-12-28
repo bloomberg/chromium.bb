@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace base {
 class FilePath;
@@ -18,7 +18,7 @@ class FilePath;
 
 namespace storage {
 
-class STORAGE_EXPORT VfsBackend {
+class COMPONENT_EXPORT(STORAGE_BROWSER) VfsBackend {
  public:
    static base::File OpenFile(const base::FilePath& file_path,
                               int desired_flags);

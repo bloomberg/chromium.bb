@@ -197,10 +197,9 @@ jumbo_component("browser") {
     "quota/storage_observer.h",
     "quota/usage_tracker.cc",
     "quota/usage_tracker.h",
-    "storage_browser_export.h",
   ]
 
-  defines = [ "STORAGE_BROWSER_IMPLEMENTATION" ]
+  defines = [ "IS_STORAGE_BROWSER_IMPL" ]
   configs += [
     "//build/config:precompiled_headers",
 

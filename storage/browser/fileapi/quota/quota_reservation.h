@@ -9,13 +9,13 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/fileapi/quota/quota_reservation_manager.h"
-#include "storage/browser/storage_browser_export.h"
 #include "storage/common/fileapi/file_system_types.h"
 
 namespace url {
@@ -28,7 +28,7 @@ class QuotaReservationBuffer;
 class OpenFileHandle;
 
 // Represents a unit of quota reservation.
-class STORAGE_EXPORT QuotaReservation
+class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaReservation
     : public base::RefCounted<QuotaReservation> {
  public:
   using StatusCallback = base::OnceCallback<void(base::File::Error error)>;
