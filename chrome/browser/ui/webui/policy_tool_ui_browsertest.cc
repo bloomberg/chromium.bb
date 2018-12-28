@@ -225,7 +225,8 @@ std::unique_ptr<base::DictionaryValue> PolicyToolUITest::ExtractPolicyValues(
   if (need_status) {
     javascript +=
         "  var status = entries[i].getElementsByClassName('status-column')[0]"
-        "                         .getElementsByTagName('div')[0].textContent;"
+        "                         "
+        ".getElementsByClassName('status')[0].textContent;"
         "  policies.chromePolicies[name] = {'value': value, 'status': status};";
   } else {
     javascript += "  policies.chromePolicies[name] = {'value': value};";

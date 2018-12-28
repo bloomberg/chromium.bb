@@ -84,9 +84,15 @@
             <div class="name elide"></div>
           </td>
           <td class="value-column">
-            <div class="value-container">
-              <span class="value"></span>
-              <a is="action-link" class="toggle-expanded-value"></a>
+            <div class="value-container collapsible-cell"
+                 data-expandable-row=".expanded-value-container">
+              <span class="value cell-text"></span>
+              <a is="action-link"
+                 class="toggle-expanded-value overflow-link"
+                 data-show="showExpandedValue"
+                 data-hide="hideExpandedValue"
+                 hidden>
+              </a>
               <button class="edit-button">$i18n{edit}</button>
               <form class="value-edit-form">
                 <input class="value-edit-field" type="text">
@@ -96,12 +102,23 @@
             </div>
           </td>
           <td class="status-column">
-            <div class="status elide"></div>
+            <div class="status-container collapsible-cell"
+                 data-expandable-row=".expanded-status-container">
+              <span class="status preformatted cell-text"></span>
+              <a is="action-link"
+                 class="toggle-expanded-status overflow-link"
+                 data-show="showExpandedStatus"
+                 data-hide="hideExpandedStatus">
+              </a>
+            </div>
           </td>
         </tr>
-        <tr class="expanded-value-container">
-          <td class="expanded-value" colspan=3></td>
-        </tr>
+        <tr class="expanded-value-container" hidden>
+            <td class="expanded-text" colspan=3></td>
+          </tr>
+          <tr class="expanded-status-container" hidden>
+            <td class="expanded-text" colspan=3></td>
+          </tr>
       </tbody>
     </table>
   </div>

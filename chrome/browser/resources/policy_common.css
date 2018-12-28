@@ -112,30 +112,19 @@ th {
 }
 
 div.elide,
-span.value {
+span.value,
+span.status {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.toggle-expanded-value {
+.overflow-link {
   padding: 0;
 }
 
-tbody.has-overflowed-value span.value {
-  display: none;
-}
 
-tbody:not(.has-overflowed-value) .toggle-expanded-value {
-  display: none;
-}
-
-tbody:not(.has-overflowed-value) > tr.expanded-value-container,
-tbody:not(.show-overflowed-value) > tr.expanded-value-container {
-  display: none;
-}
-
-td.expanded-value {
+td.expanded-text {
   white-space: pre;
   word-wrap: break-word;
 }

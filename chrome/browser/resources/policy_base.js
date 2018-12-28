@@ -129,9 +129,14 @@ cr.define('policy', function() {
      * Initialization function for the cr.ui framework.
      */
     decorate: function() {
-      this.updateToggleExpandedValueText_();
+      const links = this.querySelectorAll('.overflow-link');
+      for (let i = 0; i < links.length; i++) {
+        this.setExpandedText_(links[i], true);
+      }
       this.querySelector('.toggle-expanded-value')
-          .addEventListener('click', this.toggleExpandedValue_.bind(this));
+          .addEventListener('click', this.toggleExpanded_);
+      this.querySelector('.toggle-expanded-status')
+          .addEventListener('click', this.toggleExpanded_);
     },
 
     /**
@@ -167,7 +172,8 @@ cr.define('policy', function() {
         this.querySelector('.source').textContent =
             loadTimeData.getString(value.source);
         this.querySelector('.value').textContent = value.value;
-        this.querySelector('.expanded-value').textContent = value.value;
+        this.querySelector('.expanded-value-container .expanded-text')
+            .textContent = value.value;
       }
 
       // Populate the status column.
@@ -187,89 +193,98 @@ cr.define('policy', function() {
         status = loadTimeData.getString('ok');
       }
       this.querySelector('.status').textContent = status;
-
+      this.querySelector('.expanded-status-container .expanded-text')
+          .textContent = status;
       if (isMobilePage()) {
         // The number of columns which are hidden by the css file for the mobile
         // (Android) version of this page.
         /** @const */ const HIDDEN_COLUMNS_IN_MOBILE_VERSION = 2;
-
-        const expandedValue = this.querySelector('.expanded-value');
-        expandedValue.setAttribute(
-            'colspan',
-            expandedValue.colSpan - HIDDEN_COLUMNS_IN_MOBILE_VERSION);
+        const expandedCells = this.querySelector('.expanded-text');
+        for (const cell in expandedCells) {
+          cell.setAttribute(
+              'colspan', cell.colSpan - HIDDEN_COLUMNS_IN_MOBILE_VERSION);
+        }
       }
     },
 
     /*
-     * Get value width of the value container.
-     * @param {Object} valueContainer Container for the value.
+     * Get width of a DOM element inside a container.
+     * @param {Object} container Container for the element.
+     * @param {string} elemClass Class of the element containing text.
      * @private
      */
-    getValueWidth_: function(valueContainer) {
-      return valueContainer.querySelector('.value').offsetWidth;
+    getElementWidth_: function(container, elemClass) {
+      return container.querySelector(elemClass).offsetWidth;
     },
 
     /*
-     * Update the value width for the value container if necessary.
-     * @param {Object} valueContainer Container for the value.
+     * Update the value width for a container if necessary.
+     * @param {Object} container Container for the DOM element.
+     * @param {string} elemClass Class of the element containing text.
      * @private
      */
-    updateValueWidth_: function(valueContainer) {
-      if (valueContainer.valueWidth == undefined) {
-        valueContainer.valueWidth = this.getValueWidth_(valueContainer);
+    updateContainerWidth_: function(container, elemClass) {
+      if (container.valueWidth == undefined) {
+        container.valueWidth = this.getElementWidth_(container, elemClass);
       }
     },
+
     /**
      * Check the table columns for overflow. Most columns are automatically
-     * elided when overflow occurs. The only action required is to add a tooltip
-     * that shows the complete content. The value column is an exception. If
-     * overflow occurs here, the contents is replaced with a link that toggles
-     * the visibility of an additional row containing the complete value.
+     * elided when overflow occurs. The only action required is to add a
+     * tooltip that shows the complete content. The value and status columns
+     * are exceptions. If overflow occurs here, the contents are replaced links
+     * that toggle the visibility of additional rows containing the complete
+     * value and/or status texts.
      */
     checkOverflow: function() {
-      // Set a tooltip on all overflowed columns except the value column.
+      // Set a tooltip on all overflowed columns except the columns value and
+      // status.
       const divs = this.querySelectorAll('div.elide');
       for (let i = 0; i < divs.length; i++) {
         const div = divs[i];
         div.title = div.offsetWidth < div.scrollWidth ? div.textContent : '';
       }
-
-      // Cache the width of the value column's contents when it is first shown.
-      // This is required to be able to check whether the contents would still
-      // overflow the column once it has been hidden and replaced by a link.
-      const valueContainer = this.querySelector('.value-container');
-      this.updateValueWidth_(valueContainer);
-
-      // Determine whether the contents of the value column overflows. The
-      // visibility of the contents, replacement link and additional row
-      // containing the complete value that depend on this are handled by CSS.
-      if (valueContainer.offsetWidth <= valueContainer.valueWidth)
-        this.classList.add('has-overflowed-value');
-      else
-        this.classList.remove('has-overflowed-value');
+      const collapsibleCells = this.querySelectorAll('.collapsible-cell');
+      for (let i = 0; i < collapsibleCells.length; i++) {
+        const cell = collapsibleCells[i];
+        // Cache the width of the column's contents when it is first shown.
+        // This is required to be able to check whether the contents would still
+        // overflow the column once it has been hidden and replaced by a link.
+        this.updateContainerWidth_(cell, '.cell-text');
+        // Determine whether the contents of the column overflows.
+        if (cell.offsetWidth <= cell.valueWidth) {
+          cell.querySelector('.cell-text').hidden = true;
+          cell.querySelector('.overflow-link').hidden = false;
+        } else {
+          cell.querySelector('.cell-text').hidden = false;
+          cell.querySelector('.overflow-link').hidden = true;
+          this.querySelector(cell.dataset.expandableRow).hidden = true;
+          this.setExpandedText_(cell.querySelector('.overflow-link'), true);
+        }
+      }
     },
 
     /**
-     * Update the text of the link that toggles the visibility of an additional
-     * row containing the complete policy value, depending on the toggle state.
-     * @private
+     * Sets the text for a toggle link with hide/show modes.
+     * @param {Object} link The DOM element to set the text for.
+     * @param {bool} show Indicates if the link is in show of hide mode.
      */
-    updateToggleExpandedValueText_: function(event) {
-      this.querySelector('.toggle-expanded-value').textContent =
-          loadTimeData.getString(
-              this.classList.contains('show-overflowed-value') ?
-                  'hideExpandedValue' :
-                  'showExpandedValue');
+    setExpandedText_: function(link, show) {
+      link.textContent =
+          loadTimeData.getString(show ? link.dataset.show : link.dataset.hide);
     },
 
     /**
-     * Toggle the visibility of an additional row containing the complete policy
-     * value.
+     * Toggle the visibility of an additional row containing the complete text.
      * @private
      */
-    toggleExpandedValue_: function() {
-      this.classList.toggle('show-overflowed-value');
-      this.updateToggleExpandedValueText_();
+    toggleExpanded_: function() {
+      const cell = this.parentElement;
+      // get the expandable row corresponding to this collapsed cell
+      row = cell.closest('tbody').querySelector(cell.dataset.expandableRow);
+      row.hidden = !row.hidden;
+      this.setExpandedText_(this, !row.hidden);
     },
   };
 
