@@ -2556,7 +2556,7 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
   }
 
   if (base::FeatureList::IsEnabled(features::kCrashReporting))
-    MaybeGenerateCrashReport(termination_status);
+    MaybeGenerateCrashReport(termination_status, exit_code);
 
   // When a frame's process dies, its RenderFrame no longer exists, which means
   // that its child frames must be cleaned up as well.
@@ -6182,7 +6182,8 @@ RenderFrameHostImpl::CommitAsTracedValue(
 }
 
 void RenderFrameHostImpl::MaybeGenerateCrashReport(
-    base::TerminationStatus status) {
+    base::TerminationStatus status,
+    int exit_code) {
   if (!last_committed_url_.SchemeIsHTTPOrHTTPS())
     return;
 
@@ -6195,7 +6196,16 @@ void RenderFrameHostImpl::MaybeGenerateCrashReport(
   std::string reason;
   switch (status) {
     case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
+      break;
     case base::TERMINATION_STATUS_PROCESS_CRASHED:
+      if (exit_code == RESULT_CODE_HUNG)
+        reason = "unresponsive";
+      break;
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
+      if (exit_code == RESULT_CODE_HUNG)
+        reason = "unresponsive";
+      else
+        return;
       break;
     case base::TERMINATION_STATUS_OOM:
 #if defined(OS_CHROMEOS)

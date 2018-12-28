@@ -1597,6 +1597,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       instance_weak_factory_(
           new base::WeakPtrFactory<RenderProcessHostImpl>(this)),
       frame_sink_provider_(id_),
+      shutdown_exit_code_(-1),
       weak_factory_(this) {
   for (size_t i = 0; i < kNumKeepAliveClients; i++)
     keep_alive_client_count_[i] = 0;
@@ -3246,6 +3247,7 @@ bool RenderProcessHostImpl::Shutdown(int exit_code) {
   if (!child_process_launcher_.get())
     return false;
 
+  shutdown_exit_code_ = exit_code;
   return child_process_launcher_->Terminate(exit_code);
 }
 
@@ -4176,6 +4178,10 @@ void RenderProcessHostImpl::ProcessDied(
   within_process_died_observer_ = false;
 
   RemoveUserData(kSessionStorageHolderKey);
+
+  // RenderProcessGone relies on the exit code set during shutdown.
+  if (shutdown_exit_code_ != -1)
+    info.exit_code = shutdown_exit_code_;
 
   base::IDMap<IPC::Listener*>::iterator iter(&listeners_);
   while (!iter.IsAtEnd()) {

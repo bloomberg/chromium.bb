@@ -876,6 +876,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Fields for recording MediaStream UMA.
   bool has_recorded_media_stream_frame_depth_metric_ = false;
 
+  // If the RenderProcessHost is being shutdown via Shutdown(), this records the
+  // exit code.
+  int shutdown_exit_code_;
+
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostImpl);
