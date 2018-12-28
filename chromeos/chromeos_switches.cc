@@ -52,7 +52,7 @@ const base::Feature kAssistantFeature{"ChromeOSAssistant",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kShowLanguageToggleInDemoMode{
-    "ShowLanguageToggleInDemoMode", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ShowLanguageToggleInDemoMode", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kShowPlayInDemoMode{"ShowPlayInDemoMode",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
