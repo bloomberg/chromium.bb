@@ -339,11 +339,11 @@ ExecutionContext* Bluetooth::GetExecutionContext() const {
 }
 
 void Bluetooth::ContextDestroyed(ExecutionContext*) {
-  Dispose();
+  client_bindings_.CloseAllBindings();
 }
 
 void Bluetooth::Dispose() {
-  client_bindings_.CloseAllBindings();
+  DCHECK(client_bindings_.empty());
 }
 
 void Bluetooth::Trace(blink::Visitor* visitor) {
