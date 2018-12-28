@@ -11,7 +11,6 @@
 
 @class GoogleServicesSettingsViewController;
 @protocol GoogleServicesSettingsServiceDelegate;
-@protocol GoogleServicesSettingsLocalCommands;
 @protocol GoogleServicesSettingsViewControllerModelDelegate;
 
 // Delegate for presentation events related to
@@ -38,9 +37,6 @@
 // Handler for GoogleServicesSettingsCommand.
 @property(nonatomic, weak) id<GoogleServicesSettingsServiceDelegate>
     serviceDelegate;
-// Local command dispatcher.
-@property(nonatomic, weak) id<GoogleServicesSettingsLocalCommands>
-    localDispatcher;
 
 @end
 

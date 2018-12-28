@@ -14,7 +14,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/settings/google_services_settings_local_commands.h"
+#import "ios/chrome/browser/ui/settings/google_services_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller.h"
 #include "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
@@ -24,8 +24,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface GoogleServicesSettingsCoordinator ()<
-    GoogleServicesSettingsLocalCommands,
+@interface GoogleServicesSettingsCoordinator () <
+    GoogleServicesSettingsCommandHandler,
     GoogleServicesSettingsViewControllerPresentationDelegate>
 
 // Google services settings mediator.
@@ -49,7 +49,6 @@
           initWithLayout:layout
                    style:CollectionViewControllerStyleDefault];
   viewController.presentationDelegate = self;
-  viewController.localDispatcher = self;
   self.viewController = viewController;
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(self.browserState);
@@ -62,6 +61,7 @@
         unifiedConsentService:unifiedConsentService];
   self.mediator.consumer = viewController;
   self.mediator.authService = self.authService;
+  self.mediator.commandHandler = self;
   viewController.modelDelegate = self.mediator;
   viewController.serviceDelegate = self.mediator;
   DCHECK(self.navigationController);
@@ -86,7 +86,7 @@
       self.viewController);
 }
 
-#pragma mark - GoogleServicesSettingsLocalCommands
+#pragma mark - GoogleServicesSettingsCommandHandler
 
 - (void)restartAuthenticationFlow {
   ChromeIdentity* authenticatedIdentity =

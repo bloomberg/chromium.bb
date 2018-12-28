@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_sync_switch_item.h"
+#import "ios/chrome/browser/ui/settings/google_services_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #import "ios/chrome/browser/ui/settings/utils/observable_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
@@ -42,7 +43,9 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 // List of items.
 typedef NS_ENUM(NSInteger, ItemType) {
   // SyncErrorSectionIdentifier,
-  SyncErrorItemType = kItemTypeEnumZero,
+  RestartAuthenticationFlowErrorItemType = kItemTypeEnumZero,
+  ReauthDialogAsSyncIsInAuthErrorItemType,
+  ShowPassphraseDialogErrorItemType,
   // NonPersonalizedSectionIdentifier section.
   AutocompleteSearchesAndURLsItemType,
   PreloadPagesItemType,
@@ -90,8 +93,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // YES if at least one switch in the personalized section is currently animating
 // from one state to another.
 @property(nonatomic, assign) BOOL personalizedSectionBeingAnimated;
-// Item to display the sync error.
-@property(nonatomic, strong) LegacySettingsImageDetailTextItem* syncErrorItem;
 // All the items for the personalized section.
 @property(nonatomic, strong, readonly) ItemArray personalizedItems;
 // Item for the autocomplete wallet feature.
@@ -170,23 +171,6 @@ initWithUserPrefService:(PrefService*)userPrefService
   return self.authService->IsAuthenticated();
 }
 
-- (LegacySettingsImageDetailTextItem*)syncErrorItem {
-  if (!_syncErrorItem) {
-    _syncErrorItem = [[LegacySettingsImageDetailTextItem alloc]
-        initWithType:SyncErrorItemType];
-    {
-      // TODO(crbug.com/889470): Needs asset for the sync error.
-      CGSize size = CGSizeMake(40, 40);
-      UIGraphicsBeginImageContextWithOptions(size, YES, 0);
-      [[UIColor grayColor] setFill];
-      UIRectFill(CGRectMake(0, 0, size.width, size.height));
-      _syncErrorItem.image = UIGraphicsGetImageFromCurrentImageContext();
-      UIGraphicsEndImageContext();
-    }
-  }
-  return _syncErrorItem;
-}
-
 - (ItemArray)nonPersonalizedItems {
   if (!_nonPersonalizedItems) {
     LegacySyncSwitchItem* autocompleteSearchesAndURLsItem = [self
@@ -195,8 +179,6 @@ initWithUserPrefService:(PrefService*)userPrefService
                       IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_TEXT
                 detailStringID:
                     IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_DETAIL
-                     commandID:
-                         GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService
                       dataType:0];
     LegacySyncSwitchItem* preloadPagesItem = [self
         switchItemWithItemType:PreloadPagesItemType
@@ -204,8 +186,6 @@ initWithUserPrefService:(PrefService*)userPrefService
                       IDS_IOS_GOOGLE_SERVICES_SETTINGS_PRELOAD_PAGES_TEXT
                 detailStringID:
                     IDS_IOS_GOOGLE_SERVICES_SETTINGS_PRELOAD_PAGES_DETAIL
-                     commandID:
-                         GoogleServicesSettingsCommandIDTogglePreloadPagesService
                       dataType:0];
     LegacySyncSwitchItem* improveChromeItem = [self
         switchItemWithItemType:ImproveChromeItemType
@@ -213,8 +193,6 @@ initWithUserPrefService:(PrefService*)userPrefService
                       IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_TEXT
                 detailStringID:
                     IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_DETAIL
-                     commandID:
-                         GoogleServicesSettingsCommandIDToggleImproveChromeService
                       dataType:0];
     LegacySyncSwitchItem* betterSearchAndBrowsingItemType = [self
         switchItemWithItemType:BetterSearchAndBrowsingItemType
@@ -222,8 +200,6 @@ initWithUserPrefService:(PrefService*)userPrefService
                       IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_TEXT
                 detailStringID:
                     IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_DETAIL
-                     commandID:
-                         GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService
                       dataType:0];
     _nonPersonalizedItems = @[
       autocompleteSearchesAndURLsItem, preloadPagesItem, improveChromeItem,
@@ -239,34 +215,55 @@ initWithUserPrefService:(PrefService*)userPrefService
 - (LegacySyncSwitchItem*)switchItemWithItemType:(NSInteger)itemType
                                    textStringID:(int)textStringID
                                  detailStringID:(int)detailStringID
-                                      commandID:(NSInteger)commandID
                                        dataType:(NSInteger)dataType {
   LegacySyncSwitchItem* switchItem =
       [[LegacySyncSwitchItem alloc] initWithType:itemType];
   switchItem.text = GetNSString(textStringID);
   if (detailStringID)
     switchItem.detailText = GetNSString(detailStringID);
-  switchItem.commandID = commandID;
   switchItem.dataType = dataType;
   return switchItem;
+}
+
+// Creates a item to display the sync error.
+- (LegacySettingsImageDetailTextItem*)createSyncErrorItemWithItemType:
+    (NSInteger)itemType {
+  LegacySettingsImageDetailTextItem* syncErrorItem =
+      [[LegacySettingsImageDetailTextItem alloc] initWithType:itemType];
+  syncErrorItem.text = l10n_util::GetNSString(IDS_IOS_SYNC_ERROR_TITLE);
+  syncErrorItem.detailText =
+      GetSyncErrorDescriptionForSyncSetupService(self.syncSetupService);
+  {
+    // TODO(crbug.com/889470): Needs asset for the sync error.
+    CGSize size = CGSizeMake(40, 40);
+    UIGraphicsBeginImageContextWithOptions(size, YES, 0);
+    [[UIColor grayColor] setFill];
+    UIRectFill(CGRectMake(0, 0, size.width, size.height));
+    syncErrorItem.image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+  }
+  return syncErrorItem;
 }
 
 // Reloads the sync feedback section. If |notifyConsummer| is YES, the consomer
 // is notified to add or remove the sync error section.
 - (void)updateSyncErrorSectionAndNotifyConsumer:(BOOL)notifyConsummer {
   CollectionViewModel* model = self.consumer.collectionViewModel;
-  GoogleServicesSettingsCommandID commandID =
-      GoogleServicesSettingsCommandIDNoOp;
+  BOOL hasError = NO;
+  ItemType type;
   if (self.isAuthenticated) {
     switch (self.syncSetupService->GetSyncServiceState()) {
       case SyncSetupService::kSyncServiceUnrecoverableError:
-        commandID = GoogleServicesSettingsCommandIDRestartAuthenticationFlow;
+        type = RestartAuthenticationFlowErrorItemType;
+        hasError = YES;
         break;
       case SyncSetupService::kSyncServiceSignInNeedsUpdate:
-        commandID = GoogleServicesSettingsReauthDialogAsSyncIsInAuthError;
+        type = ReauthDialogAsSyncIsInAuthErrorItemType;
+        hasError = YES;
         break;
       case SyncSetupService::kSyncServiceNeedsPassphrase:
-        commandID = GoogleServicesSettingsCommandIDShowPassphraseDialog;
+        type = ShowPassphraseDialogErrorItemType;
+        hasError = YES;
         break;
       case SyncSetupService::kNoSyncServiceError:
       case SyncSetupService::kSyncServiceCouldNotConnect:
@@ -274,7 +271,7 @@ initWithUserPrefService:(PrefService*)userPrefService
         break;
     }
   }
-  if (commandID == GoogleServicesSettingsCommandIDNoOp) {
+  if (!hasError) {
     // No action to do, therefore the sync error section should not be visibled.
     if ([model hasSectionForSectionIdentifier:SyncFeedbackSectionIdentifier]) {
       // Remove the sync error item if it exists.
@@ -291,25 +288,28 @@ initWithUserPrefService:(PrefService*)userPrefService
   // Add the sync error item and its section (if it doesn't already exist) and
   // reload them.
   BOOL sectionAdded = NO;
+  LegacySettingsImageDetailTextItem* syncErrorItem =
+      [self createSyncErrorItemWithItemType:type];
   if (![model hasSectionForSectionIdentifier:SyncFeedbackSectionIdentifier]) {
     // Adding the sync error item and its section.
     [model insertSectionWithIdentifier:SyncFeedbackSectionIdentifier atIndex:0];
-    [model addItem:self.syncErrorItem
+    [model addItem:syncErrorItem
         toSectionWithIdentifier:SyncFeedbackSectionIdentifier];
     sectionAdded = YES;
+  } else {
+    [model
+        deleteAllItemsFromSectionWithIdentifier:SyncFeedbackSectionIdentifier];
+    [model addItem:syncErrorItem
+        toSectionWithIdentifier:SyncFeedbackSectionIdentifier];
   }
-  NSUInteger sectionIndex =
-      [model sectionForSectionIdentifier:SyncFeedbackSectionIdentifier];
-  self.syncErrorItem.text = l10n_util::GetNSString(IDS_IOS_SYNC_ERROR_TITLE);
-  self.syncErrorItem.detailText =
-      GetSyncErrorDescriptionForSyncSetupService(self.syncSetupService);
-  self.syncErrorItem.commandID = commandID;
   if (notifyConsummer) {
+    NSUInteger sectionIndex =
+        [model sectionForSectionIdentifier:SyncFeedbackSectionIdentifier];
+    NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:sectionIndex];
     if (sectionAdded) {
-      NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:sectionIndex];
       [self.consumer insertSections:indexSet];
     } else {
-      [self.consumer reloadItem:self.syncErrorItem];
+      [self.consumer reloadSections:indexSet];
     }
   }
 }
@@ -317,25 +317,27 @@ initWithUserPrefService:(PrefService*)userPrefService
 // Updates the non-personalized section according to the user consent.
 - (void)updateNonPersonalizedSection {
   for (CollectionViewItem* item in self.nonPersonalizedItems) {
-    if ([item isKindOfClass:[LegacySyncSwitchItem class]]) {
-      LegacySyncSwitchItem* switchItem =
-          base::mac::ObjCCast<LegacySyncSwitchItem>(item);
-      switch (switchItem.commandID) {
-        case GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService:
-          switchItem.on = self.autocompleteSearchPreference.value;
-          break;
-        case GoogleServicesSettingsCommandIDTogglePreloadPagesService:
-          switchItem.on = self.preloadPagesPreference.value;
-          break;
-        case GoogleServicesSettingsCommandIDToggleImproveChromeService:
-          switchItem.on = self.sendDataUsagePreference.value;
-          break;
-        case GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService:
-          switchItem.on = self.anonymizedDataCollectionPreference.value;
-          break;
-      }
-    } else {
-      NOTREACHED();
+    ItemType type = static_cast<ItemType>(item.type);
+    LegacySyncSwitchItem* switchItem =
+        base::mac::ObjCCastStrict<LegacySyncSwitchItem>(item);
+    switch (type) {
+      case AutocompleteSearchesAndURLsItemType:
+        switchItem.on = self.autocompleteSearchPreference.value;
+        break;
+      case PreloadPagesItemType:
+        switchItem.on = self.preloadPagesPreference.value;
+        break;
+      case ImproveChromeItemType:
+        switchItem.on = self.sendDataUsagePreference.value;
+        break;
+      case BetterSearchAndBrowsingItemType:
+        switchItem.on = self.anonymizedDataCollectionPreference.value;
+        break;
+      case RestartAuthenticationFlowErrorItemType:
+      case ReauthDialogAsSyncIsInAuthErrorItemType:
+      case ShowPassphraseDialogErrorItemType:
+        NOTREACHED();
+        break;
     }
   }
 }
@@ -351,32 +353,74 @@ initWithUserPrefService:(PrefService*)userPrefService
 
 #pragma mark - GoogleServicesSettingsServiceDelegate
 
-- (void)toggleAutocompleteWalletServiceWithValue:(BOOL)value {
-  self.autocompleteWalletPreference.value = value;
-}
-
-- (void)toggleAutocompleteSearchesServiceWithValue:(BOOL)value {
-  self.autocompleteSearchPreference.value = value;
-}
-
-- (void)togglePreloadPagesServiceWithValue:(BOOL)value {
-  self.preloadPagesPreference.value = value;
-  if (value) {
-    // Should be wifi only, until https://crbug.com/872101 is fixed.
-    self.preloadPagesWifiOnlyPreference.value = YES;
+- (void)toggleSwitchItem:(LegacySyncSwitchItem*)switchItem
+               withValue:(BOOL)value {
+  ItemType type = static_cast<ItemType>(switchItem.type);
+  switch (type) {
+    case AutocompleteSearchesAndURLsItemType:
+      self.autocompleteSearchPreference.value = value;
+      break;
+    case PreloadPagesItemType:
+      self.preloadPagesPreference.value = value;
+      if (value) {
+        // Should be wifi only, until https://crbug.com/872101 is fixed.
+        self.preloadPagesWifiOnlyPreference.value = YES;
+      }
+      break;
+    case ImproveChromeItemType:
+      self.sendDataUsagePreference.value = value;
+      if (value) {
+        // Should be wifi only, until https://crbug.com/872101 is fixed.
+        self.sendDataUsageWifiOnlyPreference.value = YES;
+      }
+      break;
+    case BetterSearchAndBrowsingItemType:
+      self.anonymizedDataCollectionPreference.value = value;
+      break;
+    case RestartAuthenticationFlowErrorItemType:
+    case ReauthDialogAsSyncIsInAuthErrorItemType:
+    case ShowPassphraseDialogErrorItemType:
+      NOTREACHED();
+      break;
   }
 }
 
-- (void)toggleImproveChromeServiceWithValue:(BOOL)value {
-  self.sendDataUsagePreference.value = value;
-  if (value) {
-    // Should be wifi only, until https://crbug.com/872101 is fixed.
-    self.sendDataUsageWifiOnlyPreference.value = YES;
+- (BOOL)shouldHighlightItem:(CollectionViewItem*)item {
+  ItemType type = static_cast<ItemType>(item.type);
+  switch (type) {
+    case RestartAuthenticationFlowErrorItemType:
+    case ReauthDialogAsSyncIsInAuthErrorItemType:
+    case ShowPassphraseDialogErrorItemType:
+      return YES;
+      break;
+    case AutocompleteSearchesAndURLsItemType:
+    case PreloadPagesItemType:
+    case ImproveChromeItemType:
+    case BetterSearchAndBrowsingItemType:
+      return NO;
+      break;
   }
 }
 
-- (void)toggleBetterSearchAndBrowsingServiceWithValue:(BOOL)value {
-  self.anonymizedDataCollectionPreference.value = value;
+- (void)didSelectItem:(CollectionViewItem*)item {
+  ItemType type = static_cast<ItemType>(item.type);
+  switch (type) {
+    case RestartAuthenticationFlowErrorItemType:
+      [self.commandHandler restartAuthenticationFlow];
+      break;
+    case ReauthDialogAsSyncIsInAuthErrorItemType:
+      [self.commandHandler openReauthDialogAsSyncIsInAuthError];
+      break;
+    case ShowPassphraseDialogErrorItemType:
+      [self.commandHandler openPassphraseDialog];
+      break;
+    case AutocompleteSearchesAndURLsItemType:
+    case PreloadPagesItemType:
+    case ImproveChromeItemType:
+    case BetterSearchAndBrowsingItemType:
+      NOTREACHED();
+      break;
+  }
 }
 
 #pragma mark - BooleanObserver

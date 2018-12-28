@@ -5,49 +5,21 @@
 #ifndef IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_SETTINGS_SERVICE_DELEGATE_H_
 #define IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_SETTINGS_SERVICE_DELEGATE_H_
 
-// List of Google Services Settings commands.
-typedef NS_ENUM(NSInteger, GoogleServicesSettingsCommandID) {
-  // Does nothing.
-  GoogleServicesSettingsCommandIDNoOp,
+@class CollectionViewItem;
+@class LegacySyncSwitchItem;
 
-  // Restarts the sign-in authentication flow. Related to error:
-  // SyncSetupService::kSyncServiceUnrecoverableError.
-  GoogleServicesSettingsCommandIDRestartAuthenticationFlow,
-  // Opens the reauth sync dialog. Related to error:
-  // SyncSetupService::kSyncServiceNeedsPassphrase.
-  GoogleServicesSettingsReauthDialogAsSyncIsInAuthError,
-  // Opens the passphrase dialog. Related to error:
-  // SyncSetupService::kSyncServiceNeedsPassphrase.
-  GoogleServicesSettingsCommandIDShowPassphraseDialog,
-
-  // Non-personalized section.
-  // Enable/disabble autocomplete searches service.
-  GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService,
-  // Enable/disabble preload pages service.
-  GoogleServicesSettingsCommandIDTogglePreloadPagesService,
-  // Enable/disabble improve chrome service.
-  GoogleServicesSettingsCommandIDToggleImproveChromeService,
-  // Enable/disabble better search and browsing service.
-  GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService,
-};
-
-// Protocol to handle Google services settings commands.
+// Protocol to handle user actions from the Google services settings view.
 @protocol GoogleServicesSettingsServiceDelegate<NSObject>
 
-// Non-personalized section.
-// Called when GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService
-// is triggered.
-- (void)toggleAutocompleteSearchesServiceWithValue:(BOOL)value;
-// Called when GoogleServicesSettingsCommandIDTogglePreloadPagesService is
-// triggered.
-- (void)togglePreloadPagesServiceWithValue:(BOOL)value;
-// Called when GoogleServicesSettingsCommandIDToggleImproveChromeService is
-// triggered.
-- (void)toggleImproveChromeServiceWithValue:(BOOL)value;
-// Called when
-// GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService is
-// triggered.
-- (void)toggleBetterSearchAndBrowsingServiceWithValue:(BOOL)value;
+// Called when the UISwitch from the LegacySyncSwitchItem is toggled.
+- (void)toggleSwitchItem:(LegacySyncSwitchItem*)switchItem
+               withValue:(BOOL)value;
+
+// Returns YES if the item can be highlighted;
+- (BOOL)shouldHighlightItem:(CollectionViewItem*)item;
+
+// Called when cell is tapped.
+- (void)didSelectItem:(CollectionViewItem*)item;
 
 @end
 
