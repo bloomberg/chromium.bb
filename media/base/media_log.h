@@ -74,7 +74,8 @@ class MEDIA_EXPORT MediaLog {
   // with whitespace in the latter kind of events.
   static std::string MediaEventToMessageString(const MediaLogEvent& event);
 
-  MediaLog();
+  // Constructor is protected, see below.
+
   virtual ~MediaLog();
 
   // Add an event to this log.  Inheritors should override AddEventLocked to
@@ -139,6 +140,9 @@ class MEDIA_EXPORT MediaLog {
   virtual std::unique_ptr<MediaLog> Clone();
 
  protected:
+  // Ensures only subclasses and factories (e.g. Clone()) can create MediaLog.
+  MediaLog();
+
   // Methods that may be overridden by inheritors.  All calls may arrive on any
   // thread, but will be synchronized with respect to any other *Locked calls on
   // any other thread, and with any parent log invalidation.
@@ -175,9 +179,7 @@ class MEDIA_EXPORT MediaLog {
   MediaLog(scoped_refptr<ParentLogRecord> parent_log_record);
 
  private:
-  // The underlying media log.
-  scoped_refptr<ParentLogRecord> parent_log_record_;
-
+  // Allows MediaLogTest to construct MediaLog directly for testing.
   friend class MediaLogTest;
   FRIEND_TEST_ALL_PREFIXES(MediaLogTest, EventsAreForwarded);
   FRIEND_TEST_ALL_PREFIXES(MediaLogTest, EventsAreNotForwardedAfterInvalidate);
@@ -191,6 +193,9 @@ class MEDIA_EXPORT MediaLog {
   // untrusted renderer. This method truncates to |kMaxUrlLength| before storing
   // the event, and sets the last 3 characters to an ellipsis.
   static std::string TruncateUrlString(std::string log_string);
+
+  // The underlying media log.
+  scoped_refptr<ParentLogRecord> parent_log_record_;
 
   // A unique (to this process) id for this MediaLog.
   int32_t id_;
