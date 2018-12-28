@@ -34,8 +34,8 @@ class APIBindingHooks;
 class APIBindingsSystem {
  public:
   using GetAPISchemaMethod =
-      base::Callback<const base::DictionaryValue&(const std::string&)>;
-  using CustomTypeHandler = base::Callback<v8::Local<v8::Object>(
+      base::RepeatingCallback<const base::DictionaryValue&(const std::string&)>;
+  using CustomTypeHandler = base::RepeatingCallback<v8::Local<v8::Object>(
       v8::Isolate* isolate,
       const std::string& property_name,
       const base::ListValue* property_values,
@@ -44,17 +44,16 @@ class APIBindingsSystem {
       APITypeReferenceMap* type_refs,
       const BindingAccessChecker* access_checker)>;
 
-  APIBindingsSystem(
-      const GetAPISchemaMethod& get_api_schema,
-      const BindingAccessChecker::AvailabilityCallback& is_available,
-      const APIRequestHandler::SendRequestMethod& send_request,
-      const APIRequestHandler::GetUserActivationState&
-          get_user_activation_state_callback,
-      const APIEventListeners::ListenersUpdated& event_listeners_changed,
-      const APIEventHandler::ContextOwnerIdGetter& context_owner_getter,
-      const APIBinding::OnSilentRequest& on_silent_request,
-      const binding::AddConsoleError& add_console_error,
-      APILastError last_error);
+  APIBindingsSystem(GetAPISchemaMethod get_api_schema,
+                    BindingAccessChecker::AvailabilityCallback is_available,
+                    APIRequestHandler::SendRequestMethod send_request,
+                    APIRequestHandler::GetUserActivationState
+                        get_user_activation_state_callback,
+                    APIEventListeners::ListenersUpdated event_listeners_changed,
+                    APIEventHandler::ContextOwnerIdGetter context_owner_getter,
+                    APIBinding::OnSilentRequest on_silent_request,
+                    binding::AddConsoleError add_console_error,
+                    APILastError last_error);
   ~APIBindingsSystem();
 
   // Returns a new v8::Object representing the api specified by |api_name|.
@@ -89,7 +88,7 @@ class APIBindingsSystem {
   // |type_name|, where |type_name| is the fully-qualified type (e.g.
   // storage.StorageArea).
   void RegisterCustomType(const std::string& type_name,
-                          const CustomTypeHandler& function);
+                          CustomTypeHandler function);
 
   // Handles any cleanup necessary before releasing the given |context|.
   void WillReleaseContext(v8::Local<v8::Context> context);

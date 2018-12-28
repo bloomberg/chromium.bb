@@ -198,12 +198,12 @@ class APIBindingUnittest : public APIBindingTest {
     if (!on_silent_request_)
       on_silent_request_ = base::DoNothing();
     if (!availability_callback_)
-      availability_callback_ = base::Bind(&AllowAllFeatures);
+      availability_callback_ = base::BindRepeating(&AllowAllFeatures);
     auto get_context_owner = [](v8::Local<v8::Context>) {
       return std::string("context");
     };
     event_handler_ = std::make_unique<APIEventHandler>(
-        base::Bind(&OnEventListenersChanged),
+        base::BindRepeating(&OnEventListenersChanged),
         base::BindRepeating(get_context_owner), nullptr);
     access_checker_ =
         std::make_unique<BindingAccessChecker>(availability_callback_);
@@ -551,7 +551,7 @@ TEST_F(APIBindingUnittest, RestrictedAPIs) {
     EXPECT_TRUE(allowed.count(name) || restricted.count(name)) << name;
     return allowed.count(name) != 0;
   };
-  SetAvailabilityCallback(base::Bind(is_available));
+  SetAvailabilityCallback(base::BindRepeating(is_available));
 
   InitializeBinding();
 
@@ -712,7 +712,7 @@ TEST_F(APIBindingUnittest, TestRefProperties) {
     return result;
   };
 
-  SetCreateCustomType(base::Bind(create_custom_type));
+  SetCreateCustomType(base::BindRepeating(create_custom_type));
 
   InitializeBinding();
 
@@ -811,7 +811,7 @@ TEST_F(APIBindingUnittest, TestCustomHooks) {
     EXPECT_EQ("foo", gin::V8ToString(context->GetIsolate(), arguments->at(0)));
     return result;
   };
-  hooks->AddHandler("test.oneString", base::Bind(hook, &did_call));
+  hooks->AddHandler("test.oneString", base::BindRepeating(hook, &did_call));
   SetHooksDelegate(std::move(hooks));
 
   InitializeBinding();
@@ -1082,7 +1082,7 @@ TEST_F(APIBindingUnittest,
         gin::StringToV8(context->GetIsolate(), arg_value + " pong");
     return result;
   };
-  hooks->AddHandler("test.oneString", base::Bind(hook, &did_call));
+  hooks->AddHandler("test.oneString", base::BindRepeating(hook, &did_call));
 
   SetHooksDelegate(std::move(hooks));
   SetFunctions(kFunctions);
@@ -1301,7 +1301,7 @@ TEST_F(APIBindingUnittest, HooksTemplateInitializer) {
     object_template->Set(gin::StringToSymbol(isolate, "hookedProperty"),
                          gin::ConvertToV8(isolate, 42));
   };
-  hooks->SetTemplateInitializer(base::Bind(hook));
+  hooks->SetTemplateInitializer(base::BindRepeating(hook));
   SetHooksDelegate(std::move(hooks));
 
   InitializeBinding();
@@ -1338,7 +1338,7 @@ TEST_F(APIBindingUnittest, HooksInstanceInitializer) {
     }
   };
 
-  hooks->SetInstanceInitializer(base::Bind(hook, &count));
+  hooks->SetInstanceInitializer(base::BindRepeating(hook, &count));
   SetHooksDelegate(std::move(hooks));
 
   InitializeBinding();
@@ -1413,28 +1413,31 @@ TEST_F(APIBindingUnittest, TestSendingRequestsAndSilentRequestsWithHooks) {
   auto hooks = std::make_unique<APIBindingHooksTestDelegate>();
   hooks->AddHandler(
       "test.modifyArgs",
-      base::Bind(basic_handler, RequestResult::ARGUMENTS_UPDATED));
+      base::BindRepeating(basic_handler, RequestResult::ARGUMENTS_UPDATED));
   hooks->AddHandler(
       "test.invalidInvocation",
-      base::Bind(basic_handler, RequestResult::INVALID_INVOCATION));
-  hooks->AddHandler("test.dontHandle",
-                    base::Bind(basic_handler, RequestResult::NOT_HANDLED));
+      base::BindRepeating(basic_handler, RequestResult::INVALID_INVOCATION));
+  hooks->AddHandler(
+      "test.dontHandle",
+      base::BindRepeating(basic_handler, RequestResult::NOT_HANDLED));
   hooks->AddHandler("test.handle",
-                    base::Bind(basic_handler, RequestResult::HANDLED));
+                    base::BindRepeating(basic_handler, RequestResult::HANDLED));
   hooks->AddHandler(
       "test.throwException",
-      base::Bind([](const APISignature*, v8::Local<v8::Context> context,
-                    std::vector<v8::Local<v8::Value>>* arguments,
-                    const APITypeReferenceMap& map) {
+      base::BindRepeating([](const APISignature*,
+                             v8::Local<v8::Context> context,
+                             std::vector<v8::Local<v8::Value>>* arguments,
+                             const APITypeReferenceMap& map) {
         context->GetIsolate()->ThrowException(
             gin::StringToV8(context->GetIsolate(), "some error"));
         return RequestResult(RequestResult::THROWN);
       }));
   hooks->AddHandler(
       "test.handleWithArgs",
-      base::Bind([](const APISignature*, v8::Local<v8::Context> context,
-                    std::vector<v8::Local<v8::Value>>* arguments,
-                    const APITypeReferenceMap& map) {
+      base::BindRepeating([](const APISignature*,
+                             v8::Local<v8::Context> context,
+                             std::vector<v8::Local<v8::Value>>* arguments,
+                             const APITypeReferenceMap& map) {
         arguments->push_back(v8::Integer::New(context->GetIsolate(), 42));
         return RequestResult(RequestResult::HANDLED);
       }));
@@ -1450,8 +1453,9 @@ TEST_F(APIBindingUnittest, TestSendingRequestsAndSilentRequestsWithHooks) {
             v8::Local<v8::Function>(), binding::RequestThread::UI);
         return RequestResult(RequestResult::HANDLED);
       };
-  hooks->AddHandler("test.handleAndSendRequest",
-                    base::Bind(handle_and_send_request, request_handler()));
+  hooks->AddHandler(
+      "test.handleAndSendRequest",
+      base::BindRepeating(handle_and_send_request, request_handler()));
 
   SetHooksDelegate(std::move(hooks));
 
@@ -1468,8 +1472,8 @@ TEST_F(APIBindingUnittest, TestSendingRequestsAndSilentRequestsWithHooks) {
       };
   base::Optional<std::string> silent_request;
   base::Optional<std::vector<std::string>> request_arguments;
-  SetOnSilentRequest(
-      base::Bind(on_silent_request, &silent_request, &request_arguments));
+  SetOnSilentRequest(base::BindRepeating(on_silent_request, &silent_request,
+                                         &request_arguments));
 
   InitializeBinding();
 
@@ -1571,7 +1575,8 @@ TEST_F(APIBindingUnittest, TestHooksWithCustomCallback) {
             APIBindingHooks::RequestResult::NOT_HANDLED, custom_callback);
         return result;
       };
-  hooks->AddHandler("test.oneString", base::Bind(hook_with_custom_callback));
+  hooks->AddHandler("test.oneString",
+                    base::BindRepeating(hook_with_custom_callback));
   SetHooksDelegate(std::move(hooks));
 
   InitializeBinding();

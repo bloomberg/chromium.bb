@@ -21,23 +21,23 @@ bool APIBindingHooksTestDelegate::CreateCustomEvent(
 }
 
 void APIBindingHooksTestDelegate::AddHandler(base::StringPiece name,
-                                             const RequestHandler& handler) {
-  request_handlers_[name.as_string()] = handler;
+                                             RequestHandler handler) {
+  request_handlers_[name.as_string()] = std::move(handler);
 }
 
 void APIBindingHooksTestDelegate::SetCustomEvent(
-    const CustomEventFactory& custom_event) {
-  custom_event_ = custom_event;
+    CustomEventFactory custom_event) {
+  custom_event_ = std::move(custom_event);
 }
 
 void APIBindingHooksTestDelegate::SetTemplateInitializer(
-    const TemplateInitializer& initializer) {
-  template_initializer_ = initializer;
+    TemplateInitializer initializer) {
+  template_initializer_ = std::move(initializer);
 }
 
 void APIBindingHooksTestDelegate::SetInstanceInitializer(
-    const InstanceInitializer& initializer) {
-  instance_initializer_ = initializer;
+    InstanceInitializer initializer) {
+  instance_initializer_ = std::move(initializer);
 }
 
 APIBindingHooks::RequestResult APIBindingHooksTestDelegate::HandleRequest(

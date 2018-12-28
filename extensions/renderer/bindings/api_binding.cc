@@ -203,8 +203,8 @@ APIBinding::APIBinding(const std::string& api_name,
                        const base::ListValue* type_definitions,
                        const base::ListValue* event_definitions,
                        const base::DictionaryValue* property_definitions,
-                       const CreateCustomType& create_custom_type,
-                       const OnSilentRequest& on_silent_request,
+                       CreateCustomType create_custom_type,
+                       OnSilentRequest on_silent_request,
                        std::unique_ptr<APIBindingHooks> binding_hooks,
                        APITypeReferenceMap* type_refs,
                        APIRequestHandler* request_handler,
@@ -212,8 +212,8 @@ APIBinding::APIBinding(const std::string& api_name,
                        BindingAccessChecker* access_checker)
     : api_name_(api_name),
       property_definitions_(property_definitions),
-      create_custom_type_(create_custom_type),
-      on_silent_request_(on_silent_request),
+      create_custom_type_(std::move(create_custom_type)),
+      on_silent_request_(std::move(on_silent_request)),
       binding_hooks_(std::move(binding_hooks)),
       type_refs_(type_refs),
       request_handler_(request_handler),
@@ -417,8 +417,8 @@ void APIBinding::InitializeTemplate(v8::Isolate* isolate) {
     MethodData& method = *key_value.second;
     DCHECK(method.callback.is_null());
     method.callback =
-        base::Bind(&APIBinding::HandleCall, weak_factory_.GetWeakPtr(),
-                   method.full_name, method.signature, method.thread);
+        base::BindRepeating(&APIBinding::HandleCall, weak_factory_.GetWeakPtr(),
+                            method.full_name, method.signature, method.thread);
 
     object_template->Set(
         gin::StringToSymbol(isolate, key_value.first),

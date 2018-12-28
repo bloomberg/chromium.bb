@@ -46,20 +46,20 @@ enum class RequestThread;
 // contexts.
 class APIBinding {
  public:
-  using CreateCustomType = base::Callback<v8::Local<v8::Object>(
+  using CreateCustomType = base::RepeatingCallback<v8::Local<v8::Object>(
       v8::Isolate* isolate,
       const std::string& type_name,
       const std::string& property_name,
       const base::ListValue* property_values)>;
 
   // Called when a request is handled without notifying the browser.
-  using OnSilentRequest =
-      base::Callback<void(v8::Local<v8::Context>,
-                          const std::string& name,
-                          const std::vector<v8::Local<v8::Value>>& arguments)>;
+  using OnSilentRequest = base::RepeatingCallback<void(
+      v8::Local<v8::Context>,
+      const std::string& name,
+      const std::vector<v8::Local<v8::Value>>& arguments)>;
 
   // The callback type for handling an API call.
-  using HandlerCallback = base::Callback<void(gin::Arguments*)>;
+  using HandlerCallback = base::RepeatingCallback<void(gin::Arguments*)>;
 
   // The APITypeReferenceMap is required to outlive this object.
   // |function_definitions|, |type_definitions| and |event_definitions|
@@ -69,8 +69,8 @@ class APIBinding {
              const base::ListValue* type_definitions,
              const base::ListValue* event_definitions,
              const base::DictionaryValue* property_definitions,
-             const CreateCustomType& create_custom_type,
-             const OnSilentRequest& on_silent_request,
+             CreateCustomType create_custom_type,
+             OnSilentRequest on_silent_request,
              std::unique_ptr<APIBindingHooks> binding_hooks,
              APITypeReferenceMap* type_refs,
              APIRequestHandler* request_handler,

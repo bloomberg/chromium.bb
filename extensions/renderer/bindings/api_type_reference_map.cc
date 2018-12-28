@@ -9,9 +9,8 @@
 
 namespace extensions {
 
-APITypeReferenceMap::APITypeReferenceMap(
-    const InitializeTypeCallback& initialize_type)
-    : initialize_type_(initialize_type) {}
+APITypeReferenceMap::APITypeReferenceMap(InitializeTypeCallback initialize_type)
+    : initialize_type_(std::move(initialize_type)) {}
 APITypeReferenceMap::~APITypeReferenceMap() = default;
 
 void APITypeReferenceMap::AddSpec(const std::string& name,
