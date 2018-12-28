@@ -144,6 +144,8 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_USE_LEGACY_DISTANCE_FIELDS
 #endif
 
+#define SK_LEGACY_TESSELLATOR_CPU_COVERAGE
+
 #ifndef SK_SUPPORT_LEGACY_PAINT_TEXTMEASURE
 #define SK_SUPPORT_LEGACY_PAINT_TEXTMEASURE
 #endif
