@@ -2872,8 +2872,7 @@ bool PaintLayer::BackgroundIsKnownToBeOpaqueInRect(
   if (Transform() && GetCompositingState() != kPaintsIntoOwnBacking)
     return false;
 
-  if (!RuntimeEnabledFeatures::CompositeOpaqueFixedPositionEnabled() &&
-      GetLayoutObject().StyleRef().GetPosition() == EPosition::kFixed &&
+  if (GetLayoutObject().StyleRef().GetPosition() == EPosition::kFixed &&
       GetCompositingState() != kPaintsIntoOwnBacking)
     return false;
 
