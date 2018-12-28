@@ -26,6 +26,7 @@
 #include "ui/base/window_open_disposition.h"
 
 namespace {
+
 const char kDefaultToPersistCookieName[] = "default_to_persist";
 const char kDefaultToPersistCookieValue[] = "true";
 
@@ -36,11 +37,32 @@ network::mojom::CookieManager* GetCookieManager(Profile* profile) {
   return partition->GetCookieManagerForBrowserProcess();
 }
 
+void OnAppUninstallResult(const GURL& app_url, bool succeeded) {
+  if (succeeded)
+    return;
+
+  PA_LOG(ERROR) << "Failed to uninstall messages app; URL: " << app_url;
+  // TODO(khorimoto): Add metrics for failed uninstallations.
+}
+
 }  // namespace
 
 namespace chromeos {
 
 namespace multidevice_setup {
+
+AndroidSmsAppHelperDelegateImpl::PwaFetcherDelegate::PwaFetcherDelegate() =
+    default;
+
+AndroidSmsAppHelperDelegateImpl::PwaFetcherDelegate::~PwaFetcherDelegate() =
+    default;
+
+const extensions::Extension*
+AndroidSmsAppHelperDelegateImpl::PwaFetcherDelegate::GetPwaForUrl(
+    Profile* profile,
+    GURL gurl) {
+  return extensions::util::GetInstalledPwaForUrl(profile, gurl);
+}
 
 AndroidSmsAppHelperDelegateImpl::AndroidSmsAppHelperDelegateImpl(
     Profile* profile)
@@ -50,6 +72,7 @@ AndroidSmsAppHelperDelegateImpl::AndroidSmsAppHelperDelegateImpl(
       host_content_settings_map_(
           HostContentSettingsMapFactory::GetForProfile(profile)),
       cookie_manager_(GetCookieManager(profile)),
+      pwa_fetcher_delegate_(std::make_unique<PwaFetcherDelegate>()),
       weak_ptr_factory_(this) {}
 
 AndroidSmsAppHelperDelegateImpl::AndroidSmsAppHelperDelegateImpl(
@@ -64,6 +87,28 @@ AndroidSmsAppHelperDelegateImpl::AndroidSmsAppHelperDelegateImpl(
 AndroidSmsAppHelperDelegateImpl::~AndroidSmsAppHelperDelegateImpl() = default;
 
 void AndroidSmsAppHelperDelegateImpl::SetUpAndroidSmsApp(
+    bool launch_on_install) {
+  // Before setting up the new app, check to see whether an app exists for the
+  // old URL (i.e., the URL used before the kUseMessagesGoogleComDomain flag
+  // was flipped).
+  const GURL old_messages_url =
+      chromeos::android_sms::GetAndroidMessagesURLOld();
+  const extensions::Extension* old_android_sms_pwa =
+      pwa_fetcher_delegate_->GetPwaForUrl(profile_, old_messages_url);
+  if (old_android_sms_pwa) {
+    PA_LOG(INFO) << "Messages PWA exists for old URL (" << old_messages_url
+                 << "); uninstalling before continuing.";
+    pending_app_manager_->UninstallApps(
+        std::vector<GURL>{old_messages_url},
+        base::BindRepeating(&OnAppUninstallResult));
+    TearDownAndroidSmsAppAtUrl(old_messages_url);
+  }
+
+  // Now that the old app has been uninstalled, continue.
+  SetUpAndroidSmsAppWithNoOldApp(launch_on_install);
+}
+
+void AndroidSmsAppHelperDelegateImpl::SetUpAndroidSmsAppWithNoOldApp(
     bool launch_on_install) {
   PA_LOG(INFO) << "Setting DefaultToPersist Cookie";
   cookie_manager_->SetCanonicalCookie(
@@ -110,8 +155,8 @@ void AndroidSmsAppHelperDelegateImpl::SetUpAndroidSmsApp() {
 
 void AndroidSmsAppHelperDelegateImpl::SetUpAndLaunchAndroidSmsApp() {
   const extensions::Extension* android_sms_pwa =
-      extensions::util::GetInstalledPwaForUrl(
-          profile_, chromeos::android_sms::GetAndroidMessagesURL());
+      pwa_fetcher_delegate_->GetPwaForUrl(profile_,
+                                          android_sms::GetAndroidMessagesURL());
   if (!android_sms_pwa) {
     PA_LOG(VERBOSE) << "No Messages app found. Installing it.";
     SetUpAndroidSmsApp(true /* launch_on_install */);
@@ -123,8 +168,8 @@ void AndroidSmsAppHelperDelegateImpl::SetUpAndLaunchAndroidSmsApp() {
 
 void AndroidSmsAppHelperDelegateImpl::LaunchAndroidSmsApp() {
   const extensions::Extension* android_sms_pwa =
-      extensions::util::GetInstalledPwaForUrl(
-          profile_, chromeos::android_sms::GetAndroidMessagesURL());
+      pwa_fetcher_delegate_->GetPwaForUrl(profile_,
+                                          android_sms::GetAndroidMessagesURL());
   DCHECK(android_sms_pwa);
 
   PA_LOG(VERBOSE) << "Messages app Launching...";
@@ -160,12 +205,21 @@ void AndroidSmsAppHelperDelegateImpl::OnAppInstalled(
 }
 
 void AndroidSmsAppHelperDelegateImpl::TearDownAndroidSmsApp() {
+  TearDownAndroidSmsAppAtUrl(chromeos::android_sms::GetAndroidMessagesURL());
+}
+
+void AndroidSmsAppHelperDelegateImpl::TearDownAndroidSmsAppAtUrl(GURL pwa_url) {
   PA_LOG(INFO) << "Clearing DefaultToPersist Cookie";
   network::mojom::CookieDeletionFilterPtr filter(
       network::mojom::CookieDeletionFilter::New());
-  filter->url = chromeos::android_sms::GetAndroidMessagesURL();
+  filter->url = pwa_url;
   filter->cookie_name = kDefaultToPersistCookieName;
   cookie_manager_->DeleteCookies(std::move(filter), base::DoNothing());
+}
+
+void AndroidSmsAppHelperDelegateImpl::SetPwaFetcherDelegateForTesting(
+    std::unique_ptr<PwaFetcherDelegate> test_pwa_fetcher_delegate) {
+  pwa_fetcher_delegate_ = std::move(test_pwa_fetcher_delegate);
 }
 
 }  // namespace multidevice_setup
