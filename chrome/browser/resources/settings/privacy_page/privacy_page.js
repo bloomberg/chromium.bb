@@ -169,6 +169,9 @@ Polymer({
 
     /** @private */
     showSignoutDialog_: Boolean,
+
+    /** @private */
+    searchFilter_: String,
   },
 
   /** @override */

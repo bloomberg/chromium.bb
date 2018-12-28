@@ -67,12 +67,16 @@ cr.define('settings', function() {
     },
 
     becomeActiveFindShortcutListener() {
-      assert(listeners.length == 0 || listeners[listeners.length - 1] != this);
+      assert(
+          listeners.indexOf(this) == -1,
+          'Already listening for find shortcuts.');
       listeners.push(this);
     },
 
     removeSelfAsFindShortcutListener() {
-      assert(listeners.pop() == this);
+      const index = listeners.indexOf(this);
+      assert(index > -1, 'Find shortcut listener not found.');
+      listeners.splice(index, 1);
     },
   };
 

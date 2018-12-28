@@ -100,6 +100,10 @@ Polymer({
     if (!this.searchLabel)
       return;
 
+    const searchField = this.$$('cr-search-field');
+    if (searchField)
+      searchField.setValue('');
+
     if (this.active_)
       this.becomeActiveFindShortcutListener();
     else

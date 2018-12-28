@@ -88,8 +88,11 @@ suite('find-shortcut', () => {
     const resolver = new PromiseResolver();
     const handler = e => {
       window.removeEventListener('keydown', handler);
-      if (e.defaultPrevented == defaultPrevented)
+      if (e.defaultPrevented == defaultPrevented) {
         resolver.resolve();
+      } else {
+        resolver.reject();
+      }
     };
     window.addEventListener('keydown', handler);
     return resolver.promise;
@@ -161,6 +164,20 @@ suite('find-shortcut', () => {
     ]);
   });
 
+  test('can remove listeners out of order', () => {
+    document.body.innerHTML = `
+        <find-shortcut-element></find-shortcut-element>
+        <find-shortcut-element></find-shortcut-element>`;
+    const testElements =
+        document.body.querySelectorAll('find-shortcut-element');
+    testElements[0].becomeActiveFindShortcutListener();
+    testElements[1].becomeActiveFindShortcutListener();
+    testElements[0].removeSelfAsFindShortcutListener();
+    return check(testElements[1]).then(() => {
+      testElements[1].removeSelfAsFindShortcutListener();
+    });
+  });
+
   test('removing self when not active throws exception', () => {
     document.body.innerHTML = `<find-shortcut-element></find-shortcut-element>`;
     const testElement = document.body.querySelector('find-shortcut-element');
@@ -173,6 +190,19 @@ suite('find-shortcut', () => {
     return listenScope(testElement)(() => {
       assertThrows(() => testElement.becomeActiveFindShortcutListener());
     });
+  });
+
+  test('becoming active when an inactive listener throws exception', () => {
+    document.body.innerHTML = `
+        <find-shortcut-element></find-shortcut-element>
+        <find-shortcut-element></find-shortcut-element>`;
+    const testElements =
+        document.body.querySelectorAll('find-shortcut-element');
+    return listenScope(testElements[0])(
+        () => listenScope(testElements[1])(() => {
+          assertThrows(
+              () => testElements[0].becomeActiveFindShortcutListener());
+        }));
   });
 
   test('cmd+ctrl+f bubbles up (defaultPrevented=false)', () => {

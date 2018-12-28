@@ -294,6 +294,7 @@ suite('SiteList', function() {
     settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     testElement = document.createElement('site-list');
+    testElement.searchFilter = '';
     document.body.appendChild(testElement);
 
     if (cr.isChromeOS) {
