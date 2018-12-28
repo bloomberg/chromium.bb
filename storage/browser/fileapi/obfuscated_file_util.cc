@@ -409,16 +409,8 @@ base::File::Error ObfuscatedFileUtil::GetFileInfo(
   if (!db->GetFileWithPath(url.path(), &file_id))
     return base::File::FILE_ERROR_NOT_FOUND;
   FileInfo local_info;
-  return GetFileInfoInternal(db, context, url,
-                             file_id, &local_info,
-                             file_info, platform_file_path);
-}
-
-std::unique_ptr<FileSystemFileUtil::AbstractFileEnumerator>
-ObfuscatedFileUtil::CreateFileEnumerator(FileSystemOperationContext* context,
-                                         const FileSystemURL& root_url) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return CreateFileEnumerator(context, root_url, false /* recursive */);
+  return GetFileInfoInternal(db, context, url, file_id, &local_info, file_info,
+                             platform_file_path);
 }
 
 base::File::Error ObfuscatedFileUtil::GetLocalFilePath(

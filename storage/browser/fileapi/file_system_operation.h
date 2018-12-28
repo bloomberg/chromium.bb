@@ -226,9 +226,18 @@ class FileSystemOperation {
   // Fields requested for the GetMetadata method. Used as a bitmask.
   enum GetMetadataField {
     GET_METADATA_FIELD_NONE = 0,
+
+    // Returns the size of the target. Undefined for directories.
+    // See also GET_METADATA_FIELD_TOTAL_SIZE.
     GET_METADATA_FIELD_SIZE = 1 << 0,
+
     GET_METADATA_FIELD_IS_DIRECTORY = 1 << 1,
-    GET_METADATA_FIELD_LAST_MODIFIED = 1 << 2
+
+    GET_METADATA_FIELD_LAST_MODIFIED = 1 << 2,
+
+    // If the target is directory, then total size of directory contents
+    // is returned, otherwise it's identical to GET_METADATA_FIELD_SIZE.
+    GET_METADATA_FIELD_TOTAL_SIZE = 1 << 3,
   };
 
   // Used for Write().

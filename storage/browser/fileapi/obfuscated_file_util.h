@@ -122,7 +122,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
                                 base::FilePath* platform_file) override;
   std::unique_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
-      const FileSystemURL& root_url) override;
+      const FileSystemURL& root_url,
+      bool recursive) override;
   base::File::Error GetLocalFilePath(FileSystemOperationContext* context,
                                      const FileSystemURL& file_system_url,
                                      base::FilePath* local_path) override;
@@ -151,12 +152,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
       base::File::Error* error,
       base::File::Info* file_info,
       base::FilePath* platform_path) override;
-
-  // Same as the other CreateFileEnumerator, but with recursive support.
-  std::unique_ptr<AbstractFileEnumerator> CreateFileEnumerator(
-      FileSystemOperationContext* context,
-      const FileSystemURL& root_url,
-      bool recursive);
 
   // Returns true if the directory |url| is empty.
   bool IsDirectoryEmpty(

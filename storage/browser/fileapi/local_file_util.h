@@ -47,7 +47,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) LocalFileUtil
                                 base::FilePath* platform_file) override;
   std::unique_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
-      const FileSystemURL& root_url) override;
+      const FileSystemURL& root_url,
+      bool recursive) override;
   base::File::Error GetLocalFilePath(FileSystemOperationContext* context,
                                      const FileSystemURL& file_system_url,
                                      base::FilePath* local_file_path) override;

@@ -257,6 +257,10 @@ class FileManagerPrivateInternalStartCopyFunction
   void RunAfterGetFileMetadata(base::File::Error result,
                                const base::File::Info& file_info);
 
+  // Part of RunAsync(). Called after the amount of space on the destination
+  // is known.
+  void RunAfterCheckDiskSpace(int64_t space_needed, int64_t space_available);
+
   // Part of RunAsync(). Called after FreeDiskSpaceIfNeededFor() is completed on
   // IO thread.
   void RunAfterFreeDiskSpace(bool available);
