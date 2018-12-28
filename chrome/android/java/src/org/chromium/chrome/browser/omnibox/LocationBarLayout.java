@@ -46,7 +46,6 @@ import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.omnibox.status.StatusViewCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator.AutocompleteDelegate;
-import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsList;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -570,28 +569,12 @@ public class LocationBarLayout extends FrameLayout
         return mToolbarDataProvider;
     }
 
-    private static @StatusViewCoordinator.NavigationButtonType
-    int suggestionTypeToNavigationButtonType(OmniboxSuggestion suggestion) {
-        if (suggestion.isUrlSuggestion()) {
-            return StatusViewCoordinator.NavigationButtonType.PAGE;
-        } else {
-            return StatusViewCoordinator.NavigationButtonType.MAGNIFIER;
-        }
-    }
-
-    // Updates the navigation button based on the URL string
-    private void updateNavigationButton() {
-        @StatusViewCoordinator.NavigationButtonType
-        int type = StatusViewCoordinator.NavigationButtonType.EMPTY;
-        if (mIsTablet && mAutocompleteCoordinator.getSuggestionCount() > 0) {
-            // If there are suggestions showing, show the icon for the default suggestion.
-            type = suggestionTypeToNavigationButtonType(
-                    mAutocompleteCoordinator.getSuggestionAt(0));
-        } else if (mIsTablet) {
-            type = StatusViewCoordinator.NavigationButtonType.PAGE;
-        }
-
-        mStatusViewCoordinator.setNavigationButtonType(type);
+    /**
+     * Updates the navigation button based on the URL string.
+     */
+    protected void updateNavigationButton() {
+        mStatusViewCoordinator.setNavigationButtonType(
+                StatusViewCoordinator.NavigationButtonType.EMPTY);
     }
 
     /**

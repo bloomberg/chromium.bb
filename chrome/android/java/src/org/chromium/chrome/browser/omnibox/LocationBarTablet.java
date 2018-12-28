@@ -19,6 +19,8 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.omnibox.status.StatusViewCoordinator;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.top.ToolbarTablet;
 import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
@@ -257,6 +259,29 @@ public class LocationBarTablet extends LocationBarLayout {
             updateMicButtonVisibility(mUrlFocusChangePercent);
         } else {
             mMicButton.setVisibility(shouldShowMicButton() ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    @Override
+    protected void updateNavigationButton() {
+        @StatusViewCoordinator.NavigationButtonType
+        int type = StatusViewCoordinator.NavigationButtonType.PAGE;
+
+        if (mAutocompleteCoordinator.getSuggestionCount() > 0) {
+            // If there are suggestions showing, show the icon for the default suggestion.
+            type = suggestionTypeToNavigationButtonType(
+                    mAutocompleteCoordinator.getSuggestionAt(0));
+        }
+
+        mStatusViewCoordinator.setNavigationButtonType(type);
+    }
+
+    private static @StatusViewCoordinator.NavigationButtonType
+    int suggestionTypeToNavigationButtonType(OmniboxSuggestion suggestion) {
+        if (suggestion.isUrlSuggestion()) {
+            return StatusViewCoordinator.NavigationButtonType.PAGE;
+        } else {
+            return StatusViewCoordinator.NavigationButtonType.MAGNIFIER;
         }
     }
 
