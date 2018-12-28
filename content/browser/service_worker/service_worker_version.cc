@@ -1560,7 +1560,8 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   DCHECK_EQ(EmbeddedWorkerStatus::STOPPED, running_status());
   DCHECK(inflight_requests_.IsEmpty());
   DCHECK(request_timeouts_.empty());
-  DCHECK(start_worker_first_purpose_);
+  // TODO(crbug.com/877359): Temporary CHECK for the linked bug.
+  CHECK(start_worker_first_purpose_);
 
   if (!ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(site_for_uma_) &&
       start_worker_first_purpose_.value() ==
