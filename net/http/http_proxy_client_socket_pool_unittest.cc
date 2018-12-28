@@ -13,6 +13,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -49,7 +50,7 @@ const int kMaxSocketsPerGroup = 6;
 const char * const kAuthHeaders[] = {
   "proxy-authorization", "Basic Zm9vOmJhcg=="
 };
-const int kAuthHeadersSize = arraysize(kAuthHeaders) / 2;
+const int kAuthHeadersSize = base::size(kAuthHeaders) / 2;
 
 enum HttpProxyType {
   HTTP,
@@ -709,7 +710,7 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupRedirect) {
     "location", redirectTarget.c_str(),
     "set-cookie", "foo=bar",
   };
-  const int responseHeadersSize = arraysize(responseHeaders) / 2;
+  const int responseHeadersSize = base::size(responseHeaders) / 2;
   spdy::SpdySerializedFrame resp(spdy_util_.ConstructSpdyReplyError(
       "302", responseHeaders, responseHeadersSize, 1));
   MockRead spdy_reads[] = {

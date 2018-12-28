@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "net/base/load_flags.h"
@@ -75,7 +76,7 @@ URLRequestJob* URLRequestJobManager::CreateJob(
     return job;
 
   // See if the request should be handled by a built-in protocol factory.
-  for (size_t i = 0; i < arraysize(kBuiltinFactories); ++i) {
+  for (size_t i = 0; i < base::size(kBuiltinFactories); ++i) {
     if (scheme == kBuiltinFactories[i].scheme) {
       URLRequestJob* new_job =
           (kBuiltinFactories[i].factory)(request, network_delegate, scheme);
@@ -143,7 +144,7 @@ URLRequestJob* URLRequestJobManager::MaybeInterceptResponse(
 
 // static
 bool URLRequestJobManager::SupportsScheme(const std::string& scheme) {
-  for (size_t i = 0; i < arraysize(kBuiltinFactories); ++i) {
+  for (size_t i = 0; i < base::size(kBuiltinFactories); ++i) {
     if (base::LowerCaseEqualsASCII(scheme, kBuiltinFactories[i].scheme))
       return true;
   }

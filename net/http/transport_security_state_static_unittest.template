@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 
+#include "base/stl_util.h"
 #include "net/http/transport_security_state_source.h"
 
 [[SPKI_HASHES]]
@@ -37,5 +38,5 @@ static const net::TransportSecurityStateSource kHSTSSource = {
   kHSTSRootPosition,
   kExpectCTReportURIs,
   kPinsets,
-  arraysize(kPinsets)
+  base::size(kPinsets)
 };

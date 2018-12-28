@@ -94,7 +94,7 @@ std::string URLRequestTestJob::test_headers() {
       "HTTP/1.1 200 OK\n"
       "Content-type: text/html\n"
       "\n";
-  return std::string(kHeaders, arraysize(kHeaders));
+  return std::string(kHeaders, base::size(kHeaders));
 }
 
 // static getter for redirect response headers
@@ -103,7 +103,7 @@ std::string URLRequestTestJob::test_redirect_headers() {
       "HTTP/1.1 302 MOVED\n"
       "Location: somewhere\n"
       "\n";
-  return std::string(kHeaders, arraysize(kHeaders));
+  return std::string(kHeaders, base::size(kHeaders));
 }
 
 // static getter for redirect response headers
@@ -133,7 +133,7 @@ std::string URLRequestTestJob::test_error_headers() {
   static const char kHeaders[] =
       "HTTP/1.1 500 BOO HOO\n"
       "\n";
-  return std::string(kHeaders, arraysize(kHeaders));
+  return std::string(kHeaders, base::size(kHeaders));
 }
 
 // static

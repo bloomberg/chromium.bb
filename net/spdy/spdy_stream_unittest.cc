@@ -16,6 +16,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_request_info.h"
@@ -50,7 +51,7 @@ namespace {
 
 const char kPushUrl[] = "https://www.example.org/push";
 const char kPostBody[] = "\0hello!\xff";
-const size_t kPostBodyLength = arraysize(kPostBody);
+const size_t kPostBodyLength = base::size(kPostBody);
 const base::StringPiece kPostBodyStringPiece(kPostBody, kPostBodyLength);
 
 static base::TimeTicks g_time_now;
@@ -571,7 +572,7 @@ TEST_F(SpdyStreamTest, UpperCaseHeaders) {
 
   const char* const kExtraHeaders[] = {"X-UpperCase", "yes"};
   spdy::SpdySerializedFrame reply(spdy_util_.ConstructSpdyGetReply(
-      kExtraHeaders, arraysize(kExtraHeaders) / 2, 1));
+      kExtraHeaders, base::size(kExtraHeaders) / 2, 1));
   AddRead(reply);
 
   spdy::SpdySerializedFrame rst(
@@ -625,7 +626,7 @@ TEST_F(SpdyStreamTest, UpperCaseHeadersOnPush) {
 
   const char* const kExtraHeaders[] = {"X-UpperCase", "yes"};
   spdy::SpdySerializedFrame push(spdy_util_.ConstructSpdyPush(
-      kExtraHeaders, arraysize(kExtraHeaders) / 2, 2, 1, kPushUrl));
+      kExtraHeaders, base::size(kExtraHeaders) / 2, 2, 1, kPushUrl));
   AddRead(push);
 
   spdy::SpdySerializedFrame priority(

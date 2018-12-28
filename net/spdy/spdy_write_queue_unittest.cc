@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/request_priority.h"
 #include "net/log/net_log_with_source.h"
@@ -51,7 +52,7 @@ std::unique_ptr<SpdyBufferProducer> IntToProducer(int i) {
 class RequeingBufferProducer : public SpdyBufferProducer {
  public:
   explicit RequeingBufferProducer(SpdyWriteQueue* queue) {
-    buffer_ = std::make_unique<SpdyBuffer>(kOriginal, arraysize(kOriginal));
+    buffer_ = std::make_unique<SpdyBuffer>(kOriginal, base::size(kOriginal));
     buffer_->AddConsumeCallback(
         base::Bind(RequeingBufferProducer::ConsumeCallback, queue));
   }
@@ -68,7 +69,8 @@ class RequeingBufferProducer : public SpdyBufferProducer {
   static void ConsumeCallback(SpdyWriteQueue* queue,
                               size_t size,
                               SpdyBuffer::ConsumeSource source) {
-    auto buffer = std::make_unique<SpdyBuffer>(kRequeued, arraysize(kRequeued));
+    auto buffer =
+        std::make_unique<SpdyBuffer>(kRequeued, base::size(kRequeued));
     auto buffer_producer =
         std::make_unique<SimpleBufferProducer>(std::move(buffer));
 
@@ -267,13 +269,13 @@ TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStreamsAfter) {
 
   for (int i = 0; i < 100; ++i) {
     write_queue.Enqueue(DEFAULT_PRIORITY, spdy::SpdyFrameType::HEADERS,
-                        IntToProducer(i), streams[i % arraysize(streams)],
+                        IntToProducer(i), streams[i % base::size(streams)],
                         TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
   write_queue.RemovePendingWritesForStreamsAfter(stream1->stream_id());
 
-  for (int i = 0; i < 100; i += arraysize(streams)) {
+  for (int i = 0; i < 100; i += base::size(streams)) {
     spdy::SpdyFrameType frame_type = spdy::SpdyFrameType::DATA;
     std::unique_ptr<SpdyBufferProducer> frame_producer;
     base::WeakPtr<SpdyStream> stream;

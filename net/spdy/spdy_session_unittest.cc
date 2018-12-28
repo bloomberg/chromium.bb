@@ -65,7 +65,7 @@ const char kHttpsURLFromAnotherOrigin[] = "https://www.example2.org/b.dat";
 const char kPushedUrl[] = "https://www.example.org/a.dat";
 
 const char kBodyData[] = "Body data";
-const size_t kBodyDataSize = arraysize(kBodyData);
+const size_t kBodyDataSize = base::size(kBodyData);
 const base::StringPiece kBodyDataStringPiece(kBodyData, kBodyDataSize);
 
 static base::TimeDelta g_time_delta;
@@ -6891,7 +6891,7 @@ TEST(RecordPushedStreamHistogramTest, VaryResponseHeader) {
                     {1, {"vary", "fooaccept-encoding"}, 5},
                     {1, {"vary", "foo, accept-encodingbar"}, 5}};
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     spdy::SpdyHeaderBlock headers;
     for (size_t j = 0; j < test_cases[i].num_headers; ++j) {
       headers[test_cases[i].headers[2 * j]] = test_cases[i].headers[2 * j + 1];

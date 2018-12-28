@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/stl_util.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_response.h"
@@ -52,7 +53,7 @@ static const char* const kT0IpAddresses[] = {
 static const char kT0CanonName[] = "www.l.google.com";
 static const int kT0TTL = 0x000000e4;
 // +1 for the CNAME record.
-static const unsigned kT0RecordCount = arraysize(kT0IpAddresses) + 1;
+static const unsigned kT0RecordCount = base::size(kT0IpAddresses) + 1;
 
 //-----------------------------------------------------------------------------
 // Query/response set for codereview.chromium.org, ID is fixed to 1.
@@ -82,7 +83,7 @@ static const char* const kT1IpAddresses[] = {
 static const char kT1CanonName[] = "ghs.l.google.com";
 static const int kT1TTL = 0x0000010b;
 // +1 for the CNAME record.
-static const unsigned kT1RecordCount = arraysize(kT1IpAddresses) + 1;
+static const unsigned kT1RecordCount = base::size(kT1IpAddresses) + 1;
 
 //-----------------------------------------------------------------------------
 // Query/response set for www.ccs.neu.edu, ID is fixed to 2.
@@ -111,7 +112,7 @@ static const char* const kT2IpAddresses[] = {
 static const char kT2CanonName[] = "vulcan.ccs.neu.edu";
 static const int kT2TTL = 0x0000012c;
 // +1 for the CNAME record.
-static const unsigned kT2RecordCount = arraysize(kT2IpAddresses) + 1;
+static const unsigned kT2RecordCount = base::size(kT2IpAddresses) + 1;
 
 //-----------------------------------------------------------------------------
 // Query/response set for www.google.az, ID is fixed to 3.
@@ -153,7 +154,7 @@ static const char* const kT3IpAddresses[] = {
 static const char kT3CanonName[] = "www.l.google.com";
 static const int kT3TTL = 0x00000015;
 // +2 for the CNAME records, +1 for TXT record.
-static const unsigned kT3RecordCount = arraysize(kT3IpAddresses) + 3;
+static const unsigned kT3RecordCount = base::size(kT3IpAddresses) + 3;
 
 class AddressSorter;
 class DnsClient;

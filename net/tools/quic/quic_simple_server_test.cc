@@ -4,6 +4,7 @@
 
 #include "net/tools/quic/quic_simple_server.h"
 
+#include "base/stl_util.h"
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/core/quic_crypto_stream.h"
 #include "net/third_party/quic/core/quic_utils.h"
@@ -72,7 +73,7 @@ TEST_F(QuicChromeServerDispatchPacketTest, DispatchPacket) {
                                   // private flags
                                   0x00};
   quic::QuicReceivedPacket encrypted_valid_packet(
-      reinterpret_cast<char*>(valid_packet), arraysize(valid_packet),
+      reinterpret_cast<char*>(valid_packet), base::size(valid_packet),
       quic::QuicTime::Zero(), false);
 
   EXPECT_CALL(dispatcher_, ProcessPacket(_, _, _)).Times(1);

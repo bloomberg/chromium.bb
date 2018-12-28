@@ -11,10 +11,10 @@
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/md5.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -232,7 +232,7 @@ class StreamCommandMarshal final : public CommandMarshal {
       return "";
     std::cout.flush();
     size_t command_id = static_cast<size_t>(std::cin.get());
-    if (command_id >= arraysize(kCommandNames)) {
+    if (command_id >= base::size(kCommandNames)) {
       ReturnFailure("Unknown command.");
       return "";
     }

@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/client_socket_factory.h"
@@ -251,11 +252,11 @@ bool CompareDestinations(const std::unique_ptr<DestinationInfo>& dst_a,
 AddressSorterPosix::AddressSorterPosix(ClientSocketFactory* socket_factory)
     : socket_factory_(socket_factory),
       precedence_table_(LoadPolicy(kDefaultPrecedenceTable,
-                                   arraysize(kDefaultPrecedenceTable))),
-      label_table_(LoadPolicy(kDefaultLabelTable,
-                              arraysize(kDefaultLabelTable))),
+                                   base::size(kDefaultPrecedenceTable))),
+      label_table_(
+          LoadPolicy(kDefaultLabelTable, base::size(kDefaultLabelTable))),
       ipv4_scope_table_(LoadPolicy(kDefaultIPv4ScopeTable,
-                              arraysize(kDefaultIPv4ScopeTable))) {
+                                   base::size(kDefaultIPv4ScopeTable))) {
   NetworkChangeNotifier::AddIPAddressObserver(this);
   OnIPAddressChanged();
 }

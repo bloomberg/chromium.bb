@@ -5,6 +5,7 @@
 #include "net/ftp/ftp_directory_listing_parser_unittest.h"
 
 #include "base/format_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/ftp/ftp_directory_listing_parser_windows.h"
@@ -58,7 +59,7 @@ TEST_F(FtpDirectoryListingParserWindowsTest, Good) {
       FtpDirectoryListingEntry::DIRECTORY, "Christmas Midday", -1,
       2010, 12, 25, 12, 0 },
   };
-  for (size_t i = 0; i < arraysize(good_cases); i++) {
+  for (size_t i = 0; i < base::size(good_cases); i++) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s", i,
                                     good_cases[i].input));
 
@@ -77,7 +78,7 @@ TEST_F(FtpDirectoryListingParserWindowsTest, Ignored) {
     "11-02-09  05:32         <DIR>",
     "11-02-09  05:32PM       <DIR>",
   };
-  for (size_t i = 0; i < arraysize(ignored_cases); i++) {
+  for (size_t i = 0; i < base::size(ignored_cases); i++) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s", i,
                                     ignored_cases[i]));
 
@@ -111,7 +112,7 @@ TEST_F(FtpDirectoryListingParserWindowsTest, Bad) {
     "12-25-10  12:99AM                  0   minutes out of range",
     "12-25-10  12:00ZM                  0   what does ZM mean",
   };
-  for (size_t i = 0; i < arraysize(bad_cases); i++) {
+  for (size_t i = 0; i < base::size(bad_cases); i++) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s", i,
                                     bad_cases[i]));
 

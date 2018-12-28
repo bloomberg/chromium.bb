@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "net/base/io_buffer.h"
 #include "net/log/net_log.h"
@@ -348,7 +349,7 @@ const std::string SOCKSClientSocket::BuildHandshakeWriteBuffer() const {
 
   std::string handshake_data(reinterpret_cast<char*>(&request),
                              sizeof(request));
-  handshake_data.append(kEmptyUserId, arraysize(kEmptyUserId));
+  handshake_data.append(kEmptyUserId, base::size(kEmptyUserId));
 
   return handshake_data;
 }

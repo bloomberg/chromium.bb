@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -159,7 +160,7 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
             kAuthResponse)   // Output token
     };
 
-    for (size_t i = 0; i < arraysize(queries); ++i) {
+    for (size_t i = 0; i < base::size(queries); ++i) {
       mock_library->ExpectSecurityContext(queries[i].expected_package,
                                           queries[i].response_code,
                                           queries[i].minor_response_code,

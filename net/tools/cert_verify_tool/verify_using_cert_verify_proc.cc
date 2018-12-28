@@ -6,6 +6,7 @@
 
 #include <iostream>
 
+#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -50,7 +51,7 @@ bool DumpX509CertificateChain(const base::FilePath& file_path,
 std::string FingerPrintCryptoBuffer(const CRYPTO_BUFFER* cert_handle) {
   net::SHA256HashValue hash =
       net::X509Certificate::CalculateFingerprint256(cert_handle);
-  return base::HexEncode(hash.data, arraysize(hash.data));
+  return base::HexEncode(hash.data, base::size(hash.data));
 }
 
 // Returns a textual representation of the Subject of |cert|.

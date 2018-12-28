@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/json/json_reader.h"
+#include "base/stl_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -81,7 +82,7 @@ TEST_F(ReportingHeaderParserTest, Invalid) {
        "{\"max_age\":1, \"endpoints\": [{\"url\":\"https://b/\"}]}]",
        "wrapped in list"}};
 
-  for (size_t i = 0; i < arraysize(kInvalidHeaderTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kInvalidHeaderTestCases); ++i) {
     auto& test_case = kInvalidHeaderTestCases[i];
     ParseHeader(kUrl_, test_case.header_value);
 

@@ -5,6 +5,7 @@
 #include "net/ftp/ftp_directory_listing_parser_unittest.h"
 
 #include "base/format_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/ftp/ftp_directory_listing_parser_ls.h"
@@ -153,7 +154,7 @@ TEST_F(FtpDirectoryListingParserLsTest, Good) {
       FtpDirectoryListingEntry::FILE, "README", 528,
       2007, 11, 1, 0, 0 },
   };
-  for (size_t i = 0; i < arraysize(good_cases); i++) {
+  for (size_t i = 0; i < base::size(good_cases); i++) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s", i,
                                     good_cases[i].input));
 
@@ -180,7 +181,7 @@ TEST_F(FtpDirectoryListingParserLsTest, Ignored) {
     "drwxr-xr-x 3 ftp     4096 May 15 18:11",
     "drwxr-xr-x   folder     0 May 15 18:11",
   };
-  for (size_t i = 0; i < arraysize(ignored_cases); i++) {
+  for (size_t i = 0; i < base::size(ignored_cases); i++) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s", i,
                                     ignored_cases[i]));
 
@@ -205,7 +206,7 @@ TEST_F(FtpDirectoryListingParserLsTest, Bad) {
     // Invalid month value (30).
     "drwxrwxrwx 2 root root  4096 2012-30-07 00:31 notas_servico",
   };
-  for (size_t i = 0; i < arraysize(bad_cases); i++) {
+  for (size_t i = 0; i < base::size(bad_cases); i++) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s", i,
                                     bad_cases[i]));
 

@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "net/base/completion_once_callback.h"
@@ -920,7 +920,7 @@ TEST_F(TransportClientSocketPoolTest, BackupSocketConnect) {
     case2_types
   };
 
-  for (size_t index = 0; index < arraysize(cases); ++index) {
+  for (size_t index = 0; index < base::size(cases); ++index) {
     client_socket_factory_.set_client_socket_types(cases[index], 2);
 
     EXPECT_EQ(0, pool_.IdleSocketCount());

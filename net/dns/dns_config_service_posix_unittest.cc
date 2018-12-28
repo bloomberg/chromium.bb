@@ -9,6 +9,7 @@
 #include "base/cancelable_callback.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
@@ -72,7 +73,7 @@ void InitializeResState(res_state res) {
   res->dnsrch[0] = res->defdname;
   res->dnsrch[1] = res->defdname + sizeof("chromium.org");
 
-  for (unsigned i = 0; i < arraysize(kNameserversIPv4) && i < MAXNS; ++i) {
+  for (unsigned i = 0; i < base::size(kNameserversIPv4) && i < MAXNS; ++i) {
     struct sockaddr_in sa;
     sa.sin_family = AF_INET;
     sa.sin_port = base::HostToNet16(NS_DEFAULTPORT + i);
@@ -84,7 +85,7 @@ void InitializeResState(res_state res) {
 #if defined(OS_LINUX)
   // Install IPv6 addresses, replacing the corresponding IPv4 addresses.
   unsigned nscount6 = 0;
-  for (unsigned i = 0; i < arraysize(kNameserversIPv6) && i < MAXNS; ++i) {
+  for (unsigned i = 0; i < base::size(kNameserversIPv6) && i < MAXNS; ++i) {
     if (!kNameserversIPv6[i])
       continue;
     // Must use malloc to mimick res_ninit.
@@ -121,14 +122,14 @@ void InitializeExpectedConfig(DnsConfig* config) {
   config->search.push_back("example.com");
 
   config->nameservers.clear();
-  for (unsigned i = 0; i < arraysize(kNameserversIPv4) && i < MAXNS; ++i) {
+  for (unsigned i = 0; i < base::size(kNameserversIPv4) && i < MAXNS; ++i) {
     IPAddress ip;
     EXPECT_TRUE(ip.AssignFromIPLiteral(kNameserversIPv4[i]));
     config->nameservers.push_back(IPEndPoint(ip, NS_DEFAULTPORT + i));
   }
 
 #if defined(OS_LINUX)
-  for (unsigned i = 0; i < arraysize(kNameserversIPv6) && i < MAXNS; ++i) {
+  for (unsigned i = 0; i < base::size(kNameserversIPv6) && i < MAXNS; ++i) {
     if (!kNameserversIPv6[i])
       continue;
     IPAddress ip;

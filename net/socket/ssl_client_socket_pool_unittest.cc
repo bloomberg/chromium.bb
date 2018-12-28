@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -850,7 +851,7 @@ TEST_F(SSLClientSocketPoolTest, IPPooling) {
   };
 
   host_resolver_.set_synchronous_mode(true);
-  for (size_t i = 0; i < arraysize(test_hosts); i++) {
+  for (size_t i = 0; i < base::size(test_hosts); i++) {
     host_resolver_.rules()->AddIPLiteralRule(
         test_hosts[i].name, test_hosts[i].iplist, std::string());
 
@@ -910,7 +911,7 @@ void SSLClientSocketPoolTest::TestIPPoolingDisabled(
   };
 
   host_resolver_.set_synchronous_mode(true);
-  for (size_t i = 0; i < arraysize(test_hosts); i++) {
+  for (size_t i = 0; i < base::size(test_hosts); i++) {
     host_resolver_.rules()->AddIPLiteralRule(
         test_hosts[i].name, test_hosts[i].iplist, std::string());
 

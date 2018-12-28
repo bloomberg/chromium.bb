@@ -13,9 +13,9 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "net/base/completion_once_callback.h"
@@ -493,7 +493,7 @@ CapturePreconnectsSSLSocketPool::CapturePreconnectsSocketPool(
 using HttpStreamFactoryTest = TestWithScopedTaskEnvironment;
 
 TEST_F(HttpStreamFactoryTest, PreconnectDirect) {
-  for (size_t i = 0; i < arraysize(kTests); ++i) {
+  for (size_t i = 0; i < base::size(kTests); ++i) {
     SpdySessionDependencies session_deps(
         ProxyResolutionService::CreateDirect());
     std::unique_ptr<HttpNetworkSession> session(
@@ -524,7 +524,7 @@ TEST_F(HttpStreamFactoryTest, PreconnectDirect) {
 }
 
 TEST_F(HttpStreamFactoryTest, PreconnectHttpProxy) {
-  for (size_t i = 0; i < arraysize(kTests); ++i) {
+  for (size_t i = 0; i < base::size(kTests); ++i) {
     SpdySessionDependencies session_deps(ProxyResolutionService::CreateFixed(
         "http_proxy", TRAFFIC_ANNOTATION_FOR_TESTS));
     std::unique_ptr<HttpNetworkSession> session(
@@ -558,7 +558,7 @@ TEST_F(HttpStreamFactoryTest, PreconnectHttpProxy) {
 }
 
 TEST_F(HttpStreamFactoryTest, PreconnectSocksProxy) {
-  for (size_t i = 0; i < arraysize(kTests); ++i) {
+  for (size_t i = 0; i < base::size(kTests); ++i) {
     SpdySessionDependencies session_deps(ProxyResolutionService::CreateFixed(
         "socks4://socks_proxy:1080", TRAFFIC_ANNOTATION_FOR_TESTS));
     std::unique_ptr<HttpNetworkSession> session(
@@ -592,7 +592,7 @@ TEST_F(HttpStreamFactoryTest, PreconnectSocksProxy) {
 }
 
 TEST_F(HttpStreamFactoryTest, PreconnectDirectWithExistingSpdySession) {
-  for (size_t i = 0; i < arraysize(kTests); ++i) {
+  for (size_t i = 0; i < base::size(kTests); ++i) {
     SpdySessionDependencies session_deps(
         ProxyResolutionService::CreateDirect());
     std::unique_ptr<HttpNetworkSession> session(
@@ -776,7 +776,7 @@ const int quic_proxy_test_mock_errors[] = {
 
 // Tests that a bad QUIC proxy is added to the list of bad proxies.
 TEST_F(HttpStreamFactoryTest, QuicProxyMarkedAsBad) {
-  for (size_t i = 0; i < arraysize(quic_proxy_test_mock_errors); ++i) {
+  for (size_t i = 0; i < base::size(quic_proxy_test_mock_errors); ++i) {
     std::unique_ptr<ProxyResolutionService> proxy_resolution_service;
     proxy_resolution_service = ProxyResolutionService::CreateFixedFromPacResult(
         "QUIC bad:99; DIRECT", TRAFFIC_ANNOTATION_FOR_TESTS);

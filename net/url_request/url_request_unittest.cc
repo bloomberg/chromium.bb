@@ -30,7 +30,6 @@
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
@@ -38,6 +37,7 @@
 #include "base/power_monitor/power_monitor_source.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -3960,7 +3960,7 @@ class URLRequestTestHTTP : public URLRequestTest {
       req->set_upload(CreateSimpleUploadData(kData));
       HttpRequestHeaders headers;
       headers.SetHeader(HttpRequestHeaders::kContentLength,
-                        base::NumberToString(arraysize(kData) - 1));
+                        base::NumberToString(base::size(kData) - 1));
       headers.SetHeader(HttpRequestHeaders::kContentType, "text/plain");
       req->SetExtraRequestHeaders(headers);
     }
@@ -4211,7 +4211,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateBlockAsynchronously) {
     BlockingNetworkDelegate::ON_BEFORE_SEND_HEADERS,
     BlockingNetworkDelegate::ON_HEADERS_RECEIVED
   };
-  static const size_t blocking_stages_length = arraysize(blocking_stages);
+  static const size_t blocking_stages_length = base::size(blocking_stages);
 
   ASSERT_TRUE(http_test_server()->Start());
 
@@ -4497,7 +4497,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestPost) {
     r->set_upload(CreateSimpleUploadData(kData));
     HttpRequestHeaders headers;
     headers.SetHeader(HttpRequestHeaders::kContentLength,
-                      base::NumberToString(arraysize(kData) - 1));
+                      base::NumberToString(base::size(kData) - 1));
     r->SetExtraRequestHeaders(headers);
 
     // Quit after hitting the redirect, so can check the headers.
@@ -5249,7 +5249,7 @@ TEST_F(URLRequestTestHTTP, GetZippedTest) {
   // M - Medium length (between C & U).
   // S - Small length (smaller than both C & U).
   const char test_parameters[] = "CULMS";
-  const int num_tests = arraysize(test_parameters)- 1;  // Skip NULL.
+  const int num_tests = base::size(test_parameters) - 1;  // Skip NULL.
   // C & U should be OK.
   // L & M are larger than the data sent, and show an error.
   // S has too little data, but we seem to accept it.
@@ -8186,7 +8186,7 @@ TEST_F(URLRequestTestHTTP, InterceptPost302RedirectGet) {
   req->set_upload(CreateSimpleUploadData(kData));
   HttpRequestHeaders headers;
   headers.SetHeader(HttpRequestHeaders::kContentLength,
-                    base::NumberToString(arraysize(kData) - 1));
+                    base::NumberToString(base::size(kData) - 1));
   req->SetExtraRequestHeaders(headers);
 
   std::unique_ptr<URLRequestRedirectJob> job(new URLRequestRedirectJob(
@@ -8213,7 +8213,7 @@ TEST_F(URLRequestTestHTTP, InterceptPost307RedirectPost) {
   req->set_upload(CreateSimpleUploadData(kData));
   HttpRequestHeaders headers;
   headers.SetHeader(HttpRequestHeaders::kContentLength,
-                    base::NumberToString(arraysize(kData) - 1));
+                    base::NumberToString(base::size(kData) - 1));
   req->SetExtraRequestHeaders(headers);
 
   std::unique_ptr<URLRequestRedirectJob> job(new URLRequestRedirectJob(
@@ -8396,7 +8396,7 @@ TEST_F(URLRequestTestHTTP, EmptyHttpUserAgentSettings) {
                {"/echoheader?Accept-Charset", "None"},
                {"/echoheader?User-Agent", ""}};
 
-  for (size_t i = 0; i < arraysize(tests); i++) {
+  for (size_t i = 0; i < base::size(tests); i++) {
     TestDelegate d;
     std::unique_ptr<URLRequest> req(context.CreateRequest(
         http_test_server()->GetURL(tests[i].request), DEFAULT_PRIORITY, &d,

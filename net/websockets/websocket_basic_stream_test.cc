@@ -15,7 +15,7 @@
 
 #include "base/big_endian.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/test_net_log.h"
 #include "net/socket/socket_tag.h"
@@ -33,7 +33,7 @@ namespace {
 
 #define WEBSOCKET_BASIC_STREAM_TEST_DEFINE_CONSTANT(name, value) \
   const char k##name[] = value;                                  \
-  const size_t k##name##Size = arraysize(k##name) - 1;
+  const size_t k##name##Size = base::size(k##name) - 1;
 
 WEBSOCKET_BASIC_STREAM_TEST_DEFINE_CONSTANT(SampleFrame, "\x81\x06Sample");
 WEBSOCKET_BASIC_STREAM_TEST_DEFINE_CONSTANT(
@@ -828,7 +828,7 @@ TEST_F(WebSocketBasicStreamSocketChunkedReadTest, OneMegFrame) {
 // reserved flag(s) set on the first chunk when split.
 TEST_F(WebSocketBasicStreamSocketChunkedReadTest, ReservedFlagCleared) {
   static const char kReservedFlagFrame[] = "\x41\x05Hello";
-  const size_t kReservedFlagFrameSize = arraysize(kReservedFlagFrame) - 1;
+  const size_t kReservedFlagFrameSize = base::size(kReservedFlagFrame) - 1;
   const size_t kChunkSize = 5;
 
   CreateChunkedRead(ASYNC,

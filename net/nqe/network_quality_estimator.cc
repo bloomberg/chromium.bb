@@ -93,11 +93,11 @@ const char* GetHistogramSuffixObservedRTT(const base::TimeDelta& observed_rtt) {
   static const char* const kSuffixes[] = {
       "0_20",     "20_60",     "60_140",    "140_300",      "300_620",
       "620_1260", "1260_2540", "2540_5100", "5100_Infinity"};
-  for (size_t i = 0; i < arraysize(kSuffixes) - 1; ++i) {
+  for (size_t i = 0; i < base::size(kSuffixes) - 1; ++i) {
     if (rtt_milliseconds <= (20 * (2 << i) - 20))
       return kSuffixes[i];
   }
-  return kSuffixes[arraysize(kSuffixes) - 1];
+  return kSuffixes[base::size(kSuffixes) - 1];
 }
 
 // Returns the suffix of the histogram that should be used for recording the
@@ -113,11 +113,11 @@ const char* GetHistogramSuffixObservedThroughput(
   static const char* const kSuffixes[] = {
       "0_20",     "20_60",     "60_140",    "140_300",      "300_620",
       "620_1260", "1260_2540", "2540_5100", "5100_Infinity"};
-  for (size_t i = 0; i < arraysize(kSuffixes) - 1; ++i) {
+  for (size_t i = 0; i < base::size(kSuffixes) - 1; ++i) {
     if (observed_throughput_kbps <= (20 * (2 << i) - 20))
       return kSuffixes[i];
   }
-  return kSuffixes[arraysize(kSuffixes) - 1];
+  return kSuffixes[base::size(kSuffixes) - 1];
 }
 
 void RecordRTTAccuracy(base::StringPiece prefix,

@@ -584,7 +584,7 @@ TEST(HostCacheTest, KeyComparators) {
        -1},
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]", i));
 
     const HostCache::Key& key1 = tests[i].key1;

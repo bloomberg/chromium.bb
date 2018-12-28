@@ -6,6 +6,7 @@
 
 #include "base/test/fuzzed_data_provider.h"
 
+#include "base/stl_util.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/do_nothing_ct_verifier.h"
@@ -57,7 +58,7 @@ struct Env {
     cert_verifier = std::make_unique<MockCertVerifier>();
     cert_transparency_verifier = std::make_unique<DoNothingCTVerifier>();
     verify_details.cert_verify_result.verified_cert =
-        X509Certificate::CreateFromBytes(kCertData, arraysize(kCertData));
+        X509Certificate::CreateFromBytes(kCertData, base::size(kCertData));
     CHECK(verify_details.cert_verify_result.verified_cert);
     verify_details.cert_verify_result.is_issued_by_known_root = true;
   }

@@ -11,6 +11,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -441,17 +442,17 @@ void DiskCacheBackendTest::BackendKeying() {
   entry2->Close();
 
   char buffer[30];
-  base::strlcpy(buffer, kName1, arraysize(buffer));
+  base::strlcpy(buffer, kName1, base::size(buffer));
   ASSERT_THAT(OpenEntry(buffer, &entry2), IsOk());
   EXPECT_TRUE(entry1 == entry2);
   entry2->Close();
 
-  base::strlcpy(buffer + 1, kName1, arraysize(buffer) - 1);
+  base::strlcpy(buffer + 1, kName1, base::size(buffer) - 1);
   ASSERT_THAT(OpenEntry(buffer + 1, &entry2), IsOk());
   EXPECT_TRUE(entry1 == entry2);
   entry2->Close();
 
-  base::strlcpy(buffer + 3, kName1, arraysize(buffer) - 3);
+  base::strlcpy(buffer + 3, kName1, base::size(buffer) - 3);
   ASSERT_THAT(OpenEntry(buffer + 3, &entry2), IsOk());
   EXPECT_TRUE(entry1 == entry2);
   entry2->Close();

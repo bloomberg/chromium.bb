@@ -21,10 +21,10 @@
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"  // For HexEncode.
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"  // For LowerCaseEqualsASCII.
@@ -202,7 +202,7 @@ HttpCache::Transaction::Transaction(RequestPriority priority, HttpCache* cache)
       weak_factory_(this) {
   TRACE_EVENT0("io", "HttpCacheTransaction::Transaction");
   static_assert(HttpCache::Transaction::kNumValidationHeaders ==
-                    arraysize(kValidationHeaders),
+                    base::size(kValidationHeaders),
                 "invalid number of validation headers");
 
   io_callback_ = base::BindRepeating(&Transaction::OnIOComplete,
@@ -2354,7 +2354,7 @@ void HttpCache::Transaction::SetRequest(const NetLogWithSource& net_log) {
   if (request_->extra_headers.HasHeader(HttpRequestHeaders::kRange))
     range_found = true;
 
-  for (size_t i = 0; i < arraysize(kSpecialHeaders); ++i) {
+  for (size_t i = 0; i < base::size(kSpecialHeaders); ++i) {
     if (HeaderMatches(request_->extra_headers, kSpecialHeaders[i].search)) {
       effective_load_flags_ |= kSpecialHeaders[i].load_flag;
       special_headers = true;
@@ -2364,7 +2364,7 @@ void HttpCache::Transaction::SetRequest(const NetLogWithSource& net_log) {
 
   // Check for conditionalization headers which may correspond with a
   // cache validation request.
-  for (size_t i = 0; i < arraysize(kValidationHeaders); ++i) {
+  for (size_t i = 0; i < base::size(kValidationHeaders); ++i) {
     const ValidationHeaderInfo& info = kValidationHeaders[i];
     std::string validation_value;
     if (request_->extra_headers.GetHeader(
@@ -2620,7 +2620,7 @@ int HttpCache::Transaction::BeginExternallyConditionalizedRequest() {
   DCHECK_EQ(UPDATE, mode_);
   DCHECK(external_validation_.initialized);
 
-  for (size_t i = 0;  i < arraysize(kValidationHeaders); i++) {
+  for (size_t i = 0; i < base::size(kValidationHeaders); i++) {
     if (external_validation_.values[i].empty())
       continue;
     // Retrieve either the cached response's "etag" or "last-modified" header.

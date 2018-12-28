@@ -20,10 +20,10 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/completion_once_callback.h"
@@ -128,7 +128,7 @@ const char kBinaryBlob[] = {'\n',   '\r',    // BACKWARDS CRNL
                             '\b',            // backspace
                             '\'',            // single-quote, special in PHP
 };
-const size_t kBinaryBlobSize = arraysize(kBinaryBlob);
+const size_t kBinaryBlobSize = base::size(kBinaryBlob);
 
 // The amount of quota a new connection gets by default.
 // TODO(ricea): If kDefaultSendQuotaHighWaterMark changes, then this value will

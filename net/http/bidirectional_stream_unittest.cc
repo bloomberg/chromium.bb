@@ -52,7 +52,7 @@ namespace net {
 namespace {
 
 const char kBodyData[] = "Body data";
-const size_t kBodyDataSize = arraysize(kBodyData);
+const size_t kBodyDataSize = base::size(kBodyData);
 const std::string kBodyDataString(kBodyData, kBodyDataSize);
 // Size of the buffer to be allocated for each read.
 const size_t kReadBufferSize = 4096;
