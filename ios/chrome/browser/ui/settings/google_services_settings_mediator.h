@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller_model_delegate.h"
 
 class AuthenticationService;
+@protocol GoogleServicesSettingsCommandHandler;
 @class GoogleServicesSettingsViewController;
 class PrefService;
 class SyncSetupService;
@@ -23,13 +24,16 @@ class UnifiedConsentService;
 
 // Mediator for the Google services settings.
 @interface GoogleServicesSettingsMediator
-    : NSObject<GoogleServicesSettingsServiceDelegate,
-               GoogleServicesSettingsViewControllerModelDelegate>
+    : NSObject <GoogleServicesSettingsServiceDelegate,
+                GoogleServicesSettingsViewControllerModelDelegate>
 
 // View controller.
 @property(nonatomic, weak) id<GoogleServicesSettingsConsumer> consumer;
 // Authentication service.
 @property(nonatomic, assign) AuthenticationService* authService;
+// Command handler.
+@property(nonatomic, weak) id<GoogleServicesSettingsCommandHandler>
+    commandHandler;
 
 // Designated initializer. All the paramters should not be null.
 // |userPrefService|: preference service from the browser state.

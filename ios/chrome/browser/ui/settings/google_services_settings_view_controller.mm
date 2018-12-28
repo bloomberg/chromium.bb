@@ -6,9 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
-#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_sync_switch_item.h"
-#import "ios/chrome/browser/ui/settings/google_services_settings_local_commands.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_service_delegate.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller_model_delegate.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -56,30 +54,7 @@ constexpr NSInteger kSectionOffset = 1000;
   LegacySyncSwitchItem* syncSwitchItem =
       base::mac::ObjCCastStrict<LegacySyncSwitchItem>(
           [self.collectionViewModel itemAtIndexPath:indexPath]);
-  BOOL isOn = sender.isOn;
-  GoogleServicesSettingsCommandID commandID =
-      static_cast<GoogleServicesSettingsCommandID>(syncSwitchItem.commandID);
-  switch (commandID) {
-    case GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService:
-      [self.serviceDelegate toggleAutocompleteSearchesServiceWithValue:isOn];
-      break;
-    case GoogleServicesSettingsCommandIDTogglePreloadPagesService:
-      [self.serviceDelegate togglePreloadPagesServiceWithValue:isOn];
-      break;
-    case GoogleServicesSettingsCommandIDToggleImproveChromeService:
-      [self.serviceDelegate toggleImproveChromeServiceWithValue:isOn];
-      break;
-    case GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService:
-      [self.serviceDelegate toggleBetterSearchAndBrowsingServiceWithValue:isOn];
-      break;
-    case GoogleServicesSettingsCommandIDRestartAuthenticationFlow:
-    case GoogleServicesSettingsReauthDialogAsSyncIsInAuthError:
-    case GoogleServicesSettingsCommandIDShowPassphraseDialog:
-    case GoogleServicesSettingsCommandIDNoOp:
-      // Command ID not related with switch action.
-      NOTREACHED();
-      break;
-  }
+  [self.serviceDelegate toggleSwitchItem:syncSwitchItem withValue:sender.isOn];
 }
 
 #pragma mark - UICollectionViewDataSource
@@ -178,17 +153,7 @@ constexpr NSInteger kSectionOffset = 1000;
       shouldHighlightItemAtIndexPath:indexPath];
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
-  if ([item isKindOfClass:[LegacySyncSwitchItem class]]) {
-    return NO;
-  } else if ([item isKindOfClass:[LegacySettingsImageDetailTextItem class]]) {
-    return YES;
-  }
-  // The highlight of an item should be explicitly defined. If the item can be
-  // highlighted, then a command ID should be defined in
-  // -[GoogleServicesSettingsViewController collectionView:
-  // didSelectItemAtIndexPath:].
-  NOTREACHED();
-  return NO;
+  return [self.serviceDelegate shouldHighlightItem:item];
 }
 
 - (void)collectionView:(UICollectionView*)collectionView
@@ -196,36 +161,7 @@ constexpr NSInteger kSectionOffset = 1000;
   [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
-  GoogleServicesSettingsCommandID commandID =
-      GoogleServicesSettingsCommandIDNoOp;
-  if ([item isKindOfClass:[LegacySettingsImageDetailTextItem class]]) {
-    LegacySettingsImageDetailTextItem* imageDetailTextItem =
-        base::mac::ObjCCast<LegacySettingsImageDetailTextItem>(item);
-    commandID = static_cast<GoogleServicesSettingsCommandID>(
-        imageDetailTextItem.commandID);
-  } else {
-    // A command ID should be defined when the cell is selected.
-    NOTREACHED();
-  }
-  switch (commandID) {
-    case GoogleServicesSettingsCommandIDRestartAuthenticationFlow:
-      [self.localDispatcher restartAuthenticationFlow];
-      break;
-    case GoogleServicesSettingsReauthDialogAsSyncIsInAuthError:
-      [self.localDispatcher openReauthDialogAsSyncIsInAuthError];
-      break;
-    case GoogleServicesSettingsCommandIDShowPassphraseDialog:
-      [self.localDispatcher openPassphraseDialog];
-      break;
-    case GoogleServicesSettingsCommandIDNoOp:
-    case GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService:
-    case GoogleServicesSettingsCommandIDTogglePreloadPagesService:
-    case GoogleServicesSettingsCommandIDToggleImproveChromeService:
-    case GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService:
-      // Command ID not related with cell selection.
-      NOTREACHED();
-      break;
-  }
+  [self.serviceDelegate didSelectItem:item];
 }
 
 @end
