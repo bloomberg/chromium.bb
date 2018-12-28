@@ -8,13 +8,13 @@
 #include <string>
 #include <vector>
 
-#include "storage/browser/storage_browser_export.h"
+#include "base/component_export.h"
 
 namespace storage {
 
 // Provides runtime options that may change FileSystem API behavior.
 // This object is copyable.
-class STORAGE_EXPORT FileSystemOptions {
+class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOptions {
  public:
   enum ProfileMode {
     PROFILE_MODE_NORMAL = 0,

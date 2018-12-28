@@ -5,9 +5,9 @@
 #ifndef STORAGE_BROWSER_BLOB_BLOB_URL_LOADER_FACTORY_H_
 #define STORAGE_BROWSER_BLOB_BLOB_URL_LOADER_FACTORY_H_
 
+#include "base/component_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "storage/browser/storage_browser_export.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
 
 namespace storage {
@@ -18,7 +18,7 @@ class BlobStorageContext;
 // URLLoaderFactory that can create loaders for exactly one url, loading the
 // blob that was passed to its constructor. This factory keeps the blob alive.
 // Self destroys when no more bindings exist.
-class STORAGE_EXPORT BlobURLLoaderFactory
+class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLLoaderFactory
     : public network::mojom::URLLoaderFactory {
  public:
   static void Create(std::unique_ptr<BlobDataHandle> handle,

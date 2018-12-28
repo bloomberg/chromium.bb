@@ -10,17 +10,17 @@
 #include <map>
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace storage {
 
-class STORAGE_EXPORT FileSystemUsageCache {
+class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemUsageCache {
  public:
   FileSystemUsageCache();
   ~FileSystemUsageCache();

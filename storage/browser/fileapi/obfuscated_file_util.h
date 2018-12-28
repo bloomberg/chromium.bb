@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -24,7 +25,6 @@
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/fileapi/sandbox_directory_database.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend_delegate.h"
-#include "storage/browser/storage_browser_export.h"
 #include "storage/common/fileapi/file_system_types.h"
 
 namespace content {
@@ -66,7 +66,8 @@ class SandboxOriginDatabaseInterface;
 //
 // This class must be deleted on the FILE thread, because that's where
 // DropDatabases needs to be called.
-class STORAGE_EXPORT ObfuscatedFileUtil : public FileSystemFileUtil {
+class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
+    : public FileSystemFileUtil {
  public:
   // Origin enumerator interface.
   // An instance of this interface is assumed to be called on the file thread.

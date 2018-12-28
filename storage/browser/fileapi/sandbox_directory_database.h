@@ -11,11 +11,11 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace content {
 class SandboxDirectoryDatabaseTest;
@@ -43,11 +43,11 @@ namespace storage {
 // TODO(ericu): Safe mode, which does more checks such as the above on debug
 // builds.
 // TODO(ericu): Add a method that will give a unique filename for a data file.
-class STORAGE_EXPORT SandboxDirectoryDatabase {
+class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxDirectoryDatabase {
  public:
   using FileId = int64_t;
 
-  struct STORAGE_EXPORT FileInfo {
+  struct COMPONENT_EXPORT(STORAGE_BROWSER) FileInfo {
     FileInfo();
     ~FileInfo();
 

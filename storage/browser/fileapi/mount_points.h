@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "storage/browser/storage_browser_export.h"
 #include "storage/common/fileapi/file_system_util.h"
 
 class GURL;
@@ -23,9 +23,9 @@ class FileSystemURL;
 namespace storage {
 
 // Represents a set of mount points for File API.
-class STORAGE_EXPORT MountPoints {
+class COMPONENT_EXPORT(STORAGE_BROWSER) MountPoints {
  public:
-  struct STORAGE_EXPORT MountPointInfo {
+  struct COMPONENT_EXPORT(STORAGE_BROWSER) MountPointInfo {
     MountPointInfo();
     MountPointInfo(const std::string& name, const base::FilePath& path);
 

@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -17,14 +18,14 @@
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "net/url_request/url_request_job.h"
 #include "storage/browser/fileapi/file_system_url.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace storage {
 
 class FileSystemContext;
 
 // A request job that handles reading filesystem: URLs for directories.
-class STORAGE_EXPORT FileSystemDirURLRequestJob : public net::URLRequestJob {
+class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemDirURLRequestJob
+    : public net::URLRequestJob {
  public:
   FileSystemDirURLRequestJob(
       net::URLRequest* request,

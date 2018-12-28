@@ -8,10 +8,10 @@
 #include <map>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace base {
 class TaskRunner;
@@ -25,7 +25,7 @@ namespace storage {
 //
 // TODO(kinuko): Probably this can be moved under base or somewhere more
 // common place.
-class STORAGE_EXPORT ScopedFile {
+class COMPONENT_EXPORT(STORAGE_BROWSER) ScopedFile {
  public:
   using ScopeOutCallback = base::OnceCallback<void(const base::FilePath&)>;
   enum ScopeOutPolicy {

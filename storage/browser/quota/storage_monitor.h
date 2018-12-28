@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -28,7 +29,7 @@ class QuotaManager;
 
 // This class dispatches storage events to observers of a common
 // StorageObserver::Filter.
-class STORAGE_EXPORT StorageObserverList {
+class COMPONENT_EXPORT(STORAGE_BROWSER) StorageObserverList {
  public:
   StorageObserverList();
   virtual ~StorageObserverList();
@@ -53,7 +54,7 @@ class STORAGE_EXPORT StorageObserverList {
   void ScheduleUpdateForObserver(StorageObserver* observer);
 
  private:
-  struct STORAGE_EXPORT ObserverState {
+  struct COMPONENT_EXPORT(STORAGE_BROWSER) ObserverState {
     url::Origin origin;
     base::TimeTicks last_notification_time;
     base::TimeDelta rate;
@@ -73,10 +74,9 @@ class STORAGE_EXPORT StorageObserverList {
   DISALLOW_COPY_AND_ASSIGN(StorageObserverList);
 };
 
-
 // Manages the storage observers of a common host. Caches the usage and quota of
 // the host to avoid accumulating for every change.
-class STORAGE_EXPORT HostStorageObservers {
+class COMPONENT_EXPORT(STORAGE_BROWSER) HostStorageObservers {
  public:
   explicit HostStorageObservers(QuotaManager* quota_manager);
   virtual ~HostStorageObservers();
@@ -121,9 +121,8 @@ class STORAGE_EXPORT HostStorageObservers {
   DISALLOW_COPY_AND_ASSIGN(HostStorageObservers);
 };
 
-
 // Manages the observers of a common storage type.
-class STORAGE_EXPORT StorageTypeObservers {
+class COMPONENT_EXPORT(STORAGE_BROWSER) StorageTypeObservers {
  public:
   explicit StorageTypeObservers(QuotaManager* quota_manager);
   virtual ~StorageTypeObservers();
@@ -147,9 +146,8 @@ class STORAGE_EXPORT StorageTypeObservers {
   DISALLOW_COPY_AND_ASSIGN(StorageTypeObservers);
 };
 
-
 // Storage monitor manages observers and dispatches storage events to them.
-class STORAGE_EXPORT StorageMonitor {
+class COMPONENT_EXPORT(STORAGE_BROWSER) StorageMonitor {
  public:
   explicit StorageMonitor(QuotaManager* quota_manager);
   virtual ~StorageMonitor();

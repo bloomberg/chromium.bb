@@ -12,19 +12,19 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "storage/browser/blob/blob_memory_controller.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace storage {
 class BlobDataHandle;
 class ShareableBlobDataItem;
 
 // Represents a blob in BlobStorageRegistry. Exported only for unit tests.
-class STORAGE_EXPORT BlobEntry {
+class COMPONENT_EXPORT(STORAGE_BROWSER) BlobEntry {
  public:
   using TransportAllowedCallback = base::OnceCallback<
       void(BlobStatus, std::vector<BlobMemoryController::FileCreationInfo>)>;
@@ -32,7 +32,7 @@ class STORAGE_EXPORT BlobEntry {
 
   // Records a copy from a referenced blob. Copies happen after referenced blobs
   // are complete & quota for the copies is granted.
-  struct STORAGE_EXPORT ItemCopyEntry {
+  struct COMPONENT_EXPORT(STORAGE_BROWSER) ItemCopyEntry {
     ItemCopyEntry(scoped_refptr<ShareableBlobDataItem> source_item,
                   size_t source_item_offset,
                   scoped_refptr<ShareableBlobDataItem> dest_item);
@@ -53,7 +53,7 @@ class STORAGE_EXPORT BlobEntry {
   // 2. Waiting for user population of data after quota (PENDING_TRANSPORT)
   // 3. Waiting for blobs we reference to complete & quota granted for possible
   //    copies. (PENDING_INTERNALS)
-  struct STORAGE_EXPORT BuildingState {
+  struct COMPONENT_EXPORT(STORAGE_BROWSER) BuildingState {
     // |transport_allowed_callback| is not null when data needs population. See
     // BlobStorageContext::BuildBlob for when the callback is called.
     BuildingState(bool transport_items_present,

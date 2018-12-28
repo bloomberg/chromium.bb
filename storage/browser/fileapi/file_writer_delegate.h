@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -19,14 +20,13 @@
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "storage/browser/blob/blob_reader.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace storage {
 
 class FileStreamWriter;
 enum class FlushPolicy;
 
-class STORAGE_EXPORT FileWriterDelegate {
+class COMPONENT_EXPORT(STORAGE_BROWSER) FileWriterDelegate {
  public:
   enum WriteProgressStatus {
     SUCCESS_IO_PENDING,

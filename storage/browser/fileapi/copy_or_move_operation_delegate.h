@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
@@ -45,7 +46,7 @@ class CopyOrMoveOperationDelegate
 
   // Helper to copy a file by reader and writer streams.
   // Export for testing.
-  class STORAGE_EXPORT StreamCopyHelper {
+  class COMPONENT_EXPORT(STORAGE_BROWSER) StreamCopyHelper {
    public:
     StreamCopyHelper(
         std::unique_ptr<storage::FileStreamReader> reader,

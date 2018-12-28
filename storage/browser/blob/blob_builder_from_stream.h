@@ -5,12 +5,12 @@
 #ifndef STORAGE_BROWSER_BLOB_BLOB_BUILDER_FROM_STREAM_H
 #define STORAGE_BROWSER_BLOB_BLOB_BUILDER_FROM_STREAM_H
 
+#include "base/component_export.h"
 #include "base/containers/queue.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/shareable_blob_data_item.h"
-#include "storage/browser/storage_browser_export.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 
 namespace storage {
@@ -44,7 +44,7 @@ namespace storage {
 // TODO(mek): Actually deal with length_hint.
 //
 // If destroyed before building has finished this will not create a blob.
-class STORAGE_EXPORT BlobBuilderFromStream {
+class COMPONENT_EXPORT(STORAGE_BROWSER) BlobBuilderFromStream {
  public:
   using ResultCallback =
       base::OnceCallback<void(BlobBuilderFromStream*,

@@ -10,13 +10,13 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace base {
 class TaskRunner;
@@ -34,7 +34,8 @@ namespace storage {
 
 // A thin wrapper of net::FileStream with range support for sliced file
 // handling.
-class STORAGE_EXPORT LocalFileStreamReader : public FileStreamReader {
+class COMPONENT_EXPORT(STORAGE_BROWSER) LocalFileStreamReader
+    : public FileStreamReader {
  public:
   ~LocalFileStreamReader() override;
 

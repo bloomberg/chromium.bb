@@ -10,10 +10,10 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace base {
 class Time;
@@ -25,7 +25,7 @@ class FileSystemOperationContext;
 class FileSystemURL;
 
 // An instance of this class is created and owned by *FileSystemBackend.
-class STORAGE_EXPORT LocalFileUtil
+class COMPONENT_EXPORT(STORAGE_BROWSER) LocalFileUtil
     : public FileSystemFileUtil {
  public:
   LocalFileUtil();

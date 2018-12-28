@@ -10,11 +10,11 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "storage/browser/fileapi/mount_points.h"
-#include "storage/browser/storage_browser_export.h"
 #include "storage/common/fileapi/file_system_mount_option.h"
 #include "storage/common/fileapi/file_system_types.h"
 
@@ -32,7 +32,7 @@ class FileSystemURL;
 //
 //   filesystem:<origin>/external/<mount_name>/relative/path
 //
-class STORAGE_EXPORT ExternalMountPoints
+class COMPONENT_EXPORT(STORAGE_BROWSER) ExternalMountPoints
     : public base::RefCountedThreadSafe<ExternalMountPoints>,
       public MountPoints {
  public:

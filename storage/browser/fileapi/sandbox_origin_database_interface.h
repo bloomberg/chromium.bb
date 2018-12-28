@@ -8,14 +8,14 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace storage {
 
-class STORAGE_EXPORT SandboxOriginDatabaseInterface {
+class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxOriginDatabaseInterface {
  public:
-  struct STORAGE_EXPORT OriginRecord {
+  struct COMPONENT_EXPORT(STORAGE_BROWSER) OriginRecord {
     std::string origin;
     base::FilePath path;
 

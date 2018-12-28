@@ -11,13 +11,13 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/process/process.h"
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "storage/browser/blob/blob_reader.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace base {
 class Time;
@@ -56,7 +56,8 @@ class FileWriterDelegate;
 // it gets called.
 class FileSystemOperation {
  public:
-  STORAGE_EXPORT static FileSystemOperation* Create(
+  COMPONENT_EXPORT(STORAGE_BROWSER)
+  static FileSystemOperation* Create(
       const FileSystemURL& url,
       FileSystemContext* file_system_context,
       std::unique_ptr<FileSystemOperationContext> operation_context);

@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -21,7 +22,6 @@
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_task.h"
 #include "storage/browser/quota/special_storage_policy.h"
-#include "storage/browser/storage_browser_export.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
 
@@ -33,7 +33,7 @@ class SingleThreadTaskRunner;
 namespace storage {
 
 // The proxy may be called and finally released on any thread.
-class STORAGE_EXPORT QuotaManagerProxy
+class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerProxy
     : public base::RefCountedThreadSafe<QuotaManagerProxy> {
  public:
   using UsageAndQuotaCallback = QuotaManager::UsageAndQuotaCallback;

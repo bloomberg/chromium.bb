@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "storage/browser/fileapi/sandbox_origin_database_interface.h"
@@ -23,7 +24,7 @@ class ObfuscatedFileUtil;
 class SandboxIsolatedOriginDatabase;
 class SandboxOriginDatabase;
 
-class STORAGE_EXPORT SandboxPrioritizedOriginDatabase
+class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxPrioritizedOriginDatabase
     : public SandboxOriginDatabaseInterface {
  public:
   static const base::FilePath::CharType* const kPrimaryDirectory;

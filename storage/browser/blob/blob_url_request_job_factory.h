@@ -8,11 +8,11 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace net {
 class URLRequestContext;
@@ -23,7 +23,7 @@ namespace storage {
 class BlobDataHandle;
 class BlobStorageContext;
 
-class STORAGE_EXPORT BlobProtocolHandler
+class COMPONENT_EXPORT(STORAGE_BROWSER) BlobProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   // A helper to manufacture an URLRequest to retrieve the given blob.

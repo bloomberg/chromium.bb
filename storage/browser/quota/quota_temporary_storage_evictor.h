@@ -11,12 +11,12 @@
 #include <set>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
-#include "storage/browser/storage_browser_export.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 namespace content {
@@ -32,7 +32,7 @@ namespace storage {
 class QuotaEvictionHandler;
 struct QuotaSettings;
 
-class STORAGE_EXPORT QuotaTemporaryStorageEvictor {
+class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaTemporaryStorageEvictor {
  public:
   struct Statistics {
     Statistics()

@@ -10,9 +10,9 @@
 #include <set>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/memory/scoped_refptr.h"
-#include "storage/browser/storage_browser_export.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "url/gurl.h"
 
@@ -29,7 +29,7 @@ class QuotaReservation;
 // for file_system_quota_client.
 // All the methods of this class are synchronous and need to be called on
 // the thread that the method name implies.
-class STORAGE_EXPORT FileSystemQuotaUtil {
+class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemQuotaUtil {
  public:
   virtual ~FileSystemQuotaUtil() {}
 

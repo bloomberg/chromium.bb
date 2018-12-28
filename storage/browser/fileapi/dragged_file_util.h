@@ -7,9 +7,9 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "storage/browser/fileapi/local_file_util.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace storage {
 
@@ -18,7 +18,7 @@ class FileSystemOperationContext;
 // Dragged file system is a specialized LocalFileUtil where read access to
 // the virtual root directory (i.e. empty cracked path case) is allowed
 // and single isolated context may be associated with multiple file paths.
-class STORAGE_EXPORT DraggedFileUtil : public LocalFileUtil {
+class COMPONENT_EXPORT(STORAGE_BROWSER) DraggedFileUtil : public LocalFileUtil {
  public:
   DraggedFileUtil();
   ~DraggedFileUtil() override {}

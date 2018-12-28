@@ -18,6 +18,7 @@
 
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
+#include "base/component_export.h"
 #include "base/containers/mru_cache.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -28,7 +29,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "storage/browser/storage_browser_export.h"
 #include "storage/common/blob_storage/blob_storage_constants.h"
 
 namespace base {
@@ -52,7 +52,7 @@ class ShareableFileReference;
 // * Maintaining an LRU of memory items to choose candidates to page to disk
 //   (NotifyMemoryItemsUsed).
 // This class can only be interacted with on the IO thread.
-class STORAGE_EXPORT BlobMemoryController {
+class COMPONENT_EXPORT(STORAGE_BROWSER) BlobMemoryController {
  public:
   enum class Strategy {
     // We don't have enough memory for this blob.
@@ -65,7 +65,7 @@ class STORAGE_EXPORT BlobMemoryController {
     FILE
   };
 
-  struct STORAGE_EXPORT FileCreationInfo {
+  struct COMPONENT_EXPORT(STORAGE_BROWSER) FileCreationInfo {
     FileCreationInfo();
     ~FileCreationInfo();
     FileCreationInfo(FileCreationInfo&& other);

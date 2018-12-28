@@ -8,10 +8,10 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "services/network/session_cleanup_cookie_store.h"
-#include "storage/browser/storage_browser_export.h"
 
 class GURL;
 
@@ -23,7 +23,7 @@ namespace storage {
 // is currently installed in the extensions system.
 // The IsSomething() methods must be thread-safe, however Observers should
 // only be notified, added, and removed on the IO thead.
-class STORAGE_EXPORT SpecialStoragePolicy
+class COMPONENT_EXPORT(STORAGE_BROWSER) SpecialStoragePolicy
     : public base::RefCountedThreadSafe<SpecialStoragePolicy> {
  public:
   using StoragePolicy = int;
@@ -32,7 +32,7 @@ class STORAGE_EXPORT SpecialStoragePolicy
     STORAGE_UNLIMITED = 1 << 1,
   };
 
-  class STORAGE_EXPORT Observer {
+  class COMPONENT_EXPORT(STORAGE_BROWSER) Observer {
    public:
     virtual void OnGranted(const GURL& origin, int change_flags) = 0;
     virtual void OnRevoked(const GURL& origin, int change_flags) = 0;
