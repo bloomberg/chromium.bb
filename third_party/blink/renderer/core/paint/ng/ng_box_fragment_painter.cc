@@ -148,14 +148,18 @@ NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPaintFragment& box)
 }
 
 void NGBoxFragmentPainter::Paint(const PaintInfo& paint_info) {
+  if (PhysicalFragment().IsAtomicInline())
+    PaintAtomicInline(paint_info);
+  else
+    PaintInternal(paint_info);
+}
+
+void NGBoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
   ScopedPaintState paint_state(box_fragment_, paint_info);
   if (!ShouldPaint(paint_state))
     return;
 
   PaintInfo& info = paint_state.MutablePaintInfo();
-  if (PhysicalFragment().IsAtomicInline())
-    return PaintAtomicInline(info);
-
   LayoutPoint paint_offset = paint_state.PaintOffset();
   PaintPhase original_phase = info.phase;
 
@@ -660,53 +664,39 @@ void NGBoxFragmentPainter::PaintInlineChildBoxUsingLegacyFallback(
 }
 
 void NGBoxFragmentPainter::PaintAllPhasesAtomically(
-    const PaintInfo& paint_info,
-    bool is_self_painting) {
-  ScopedPaintState paint_state(box_fragment_, paint_info);
-  auto paint_offset = paint_state.PaintOffset();
-  PaintInfo& local_paint_info = paint_state.MutablePaintInfo();
-
+    const PaintInfo& paint_info) {
   // Pass PaintPhaseSelection and PaintPhaseTextClip is handled by the regular
   // foreground paint implementation. We don't need complete painting for these
   // phases.
   PaintPhase phase = paint_info.phase;
   if (phase == PaintPhase::kSelection || phase == PaintPhase::kTextClip)
-    return PaintObject(local_paint_info, paint_offset);
+    return PaintInternal(paint_info);
 
-  if (paint_info.phase == PaintPhase::kSelfBlockBackgroundOnly &&
-      is_self_painting) {
-    PaintObject(local_paint_info, paint_offset);
-    PaintOverflowControlsIfNeeded(local_paint_info, paint_offset);
-    return;
-  }
+  // Self-painting AtomicInlines must paint their background in background
+  // phase.
+  bool is_self_painting_atomic_inline =
+      PhysicalFragment().IsAtomicInline() && PhysicalFragment().Layer() &&
+      PhysicalFragment().Layer()->IsSelfPaintingLayer();
+  if (phase == PaintPhase::kSelfBlockBackgroundOnly &&
+      is_self_painting_atomic_inline)
+    return PaintInternal(paint_info);
 
   if (phase != PaintPhase::kForeground)
     return;
 
-  if (!is_self_painting) {
+  PaintInfo local_paint_info(paint_info);
+  if (!is_self_painting_atomic_inline) {
     local_paint_info.phase = PaintPhase::kBlockBackground;
-    PaintObject(local_paint_info, paint_offset);
+    PaintInternal(local_paint_info);
   }
   local_paint_info.phase = PaintPhase::kFloat;
-  PaintObject(local_paint_info, paint_offset);
+  PaintInternal(local_paint_info);
 
   local_paint_info.phase = PaintPhase::kForeground;
-  if (box_fragment_.GetLayoutObject()->IsBox()) {
-    ScopedBoxContentsPaintState contents_paint_state(
-        paint_state, ToLayoutBox(*box_fragment_.GetLayoutObject()));
-    PaintObject(contents_paint_state.GetPaintInfo(),
-                contents_paint_state.PaintOffset());
-  } else {
-    PaintObject(local_paint_info, paint_offset);
-  }
+  PaintInternal(local_paint_info);
 
   local_paint_info.phase = PaintPhase::kOutline;
-  PaintObject(local_paint_info, paint_offset);
-
-  if (!is_self_painting) {
-    local_paint_info.phase = PaintPhase::kBlockBackground;
-    PaintOverflowControlsIfNeeded(local_paint_info, paint_offset);
-  }
+  PaintInternal(local_paint_info);
 }
 
 void NGBoxFragmentPainter::PaintLineBoxChildren(
@@ -785,7 +775,7 @@ void NGBoxFragmentPainter::PaintAtomicInlineChild(const NGPaintFragment& child,
       FragmentRequiresLegacyFallback(fragment)) {
     PaintInlineChildBoxUsingLegacyFallback(fragment, paint_info);
   } else {
-    NGBoxFragmentPainter(child).PaintAllPhasesAtomically(paint_info, false);
+    NGBoxFragmentPainter(child).PaintAllPhasesAtomically(paint_info);
   }
 }
 
@@ -841,20 +831,13 @@ void NGBoxFragmentPainter::PaintSymbol(const NGPaintFragment& fragment,
                                  rect);
 }
 
-// Follows BlockPainter::PaintInlineBox
 void NGBoxFragmentPainter::PaintAtomicInline(const PaintInfo& paint_info) {
-  if (paint_info.phase != PaintPhase::kForeground &&
-      paint_info.phase != PaintPhase::kSelection &&
-      paint_info.phase != PaintPhase::kSelfBlockBackgroundOnly)
-    return;
-
   // Text clips are painted only for the direct inline children of the object
   // that has a text clip style on it, not block children.
-  DCHECK(paint_info.phase != PaintPhase::kTextClip);
+  if (paint_info.phase == PaintPhase::kTextClip)
+    return;
 
-  bool is_self_painting = PhysicalFragment().Layer() &&
-                          PhysicalFragment().Layer()->IsSelfPaintingLayer();
-  PaintAllPhasesAtomically(paint_info, is_self_painting);
+  PaintAllPhasesAtomically(paint_info);
 }
 
 bool NGBoxFragmentPainter::IsPaintingScrollingBackground(

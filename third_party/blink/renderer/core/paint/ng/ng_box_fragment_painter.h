@@ -73,8 +73,8 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                                             const LayoutRect&);
   bool BackgroundIsKnownToBeOpaque(const PaintInfo&);
 
-  void PaintAllPhasesAtomically(const PaintInfo&,
-                                bool is_self_painting);
+  void PaintInternal(const PaintInfo&);
+  void PaintAllPhasesAtomically(const PaintInfo&);
   void PaintBlockChildren(const PaintInfo&);
   void PaintLineBoxChildren(NGPaintFragment::ChildList,
                             const PaintInfo&,
