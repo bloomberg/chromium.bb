@@ -180,7 +180,7 @@ static void FillIQMatrix(const JpegQuantizationTable* q_table,
                          VAIQMatrixBufferJPEGBaseline* iq_matrix) {
   memset(iq_matrix, 0, sizeof(*iq_matrix));
   static_assert(kJpegMaxQuantizationTableNum ==
-                    base::size(decltype(iq_matrix->load_quantiser_table){}),
+                    std::extent<decltype(iq_matrix->load_quantiser_table)>(),
                 "max number of quantization table mismatched");
   static_assert(
       sizeof(iq_matrix->quantiser_table[0]) == sizeof(q_table[0].value),
@@ -212,7 +212,7 @@ static void FillHuffmanTable(const JpegHuffmanTable* dc_table,
   }
 
   static_assert(kJpegMaxHuffmanTableNumBaseline ==
-                    base::size(decltype(huffman_table->load_huffman_table){}),
+                    std::extent<decltype(huffman_table->load_huffman_table)>(),
                 "max number of huffman table mismatched");
   static_assert(sizeof(huffman_table->huffman_table[0].num_dc_codes) ==
                     sizeof(dc_table[0].code_length),

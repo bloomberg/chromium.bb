@@ -4,7 +4,10 @@
 
 #include "media/gpu/v4l2/v4l2_h264_accelerator.h"
 
+#include <type_traits>
+
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_decode_surface.h"
 #include "media/gpu/v4l2/v4l2_decode_surface_handler.h"
@@ -65,7 +68,7 @@ void V4L2H264Accelerator::H264DPBToV4L2DPB(
   memset(v4l2_decode_param_.dpb, 0, sizeof(v4l2_decode_param_.dpb));
   size_t i = 0;
   for (const auto& pic : dpb) {
-    if (i >= arraysize(v4l2_decode_param_.dpb)) {
+    if (i >= base::size(v4l2_decode_param_.dpb)) {
       VLOGF(1) << "Invalid DPB size";
       break;
     }
@@ -123,10 +126,10 @@ H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitFrameMetadata(
   SPS_TO_V4L2SPS(offset_for_top_to_bottom_field);
   SPS_TO_V4L2SPS(num_ref_frames_in_pic_order_cnt_cycle);
 
-  static_assert(arraysize(v4l2_sps.offset_for_ref_frame) ==
-                    arraysize(sps->offset_for_ref_frame),
+  static_assert(std::extent<decltype(v4l2_sps.offset_for_ref_frame)>() ==
+                    std::extent<decltype(sps->offset_for_ref_frame)>(),
                 "offset_for_ref_frame arrays must be same size");
-  for (size_t i = 0; i < arraysize(v4l2_sps.offset_for_ref_frame); ++i)
+  for (size_t i = 0; i < base::size(v4l2_sps.offset_for_ref_frame); ++i)
     v4l2_sps.offset_for_ref_frame[i] = sps->offset_for_ref_frame[i];
   SPS_TO_V4L2SPS(max_num_ref_frames);
   SPS_TO_V4L2SPS(pic_width_in_mbs_minus1);
@@ -198,24 +201,26 @@ H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitFrameMetadata(
   struct v4l2_ctrl_h264_scaling_matrix v4l2_scaling_matrix;
   memset(&v4l2_scaling_matrix, 0, sizeof(v4l2_scaling_matrix));
 
-  static_assert(arraysize(v4l2_scaling_matrix.scaling_list_4x4) <=
-                        arraysize(pps->scaling_list4x4) &&
-                    arraysize(v4l2_scaling_matrix.scaling_list_4x4[0]) <=
-                        arraysize(pps->scaling_list4x4[0]) &&
-                    arraysize(v4l2_scaling_matrix.scaling_list_8x8) <=
-                        arraysize(pps->scaling_list8x8) &&
-                    arraysize(v4l2_scaling_matrix.scaling_list_8x8[0]) <=
-                        arraysize(pps->scaling_list8x8[0]),
-                "scaling_lists must be of correct size");
-  static_assert(arraysize(v4l2_scaling_matrix.scaling_list_4x4) <=
-                        arraysize(sps->scaling_list4x4) &&
-                    arraysize(v4l2_scaling_matrix.scaling_list_4x4[0]) <=
-                        arraysize(sps->scaling_list4x4[0]) &&
-                    arraysize(v4l2_scaling_matrix.scaling_list_8x8) <=
-                        arraysize(sps->scaling_list8x8) &&
-                    arraysize(v4l2_scaling_matrix.scaling_list_8x8[0]) <=
-                        arraysize(sps->scaling_list8x8[0]),
-                "scaling_lists must be of correct size");
+  static_assert(
+      std::extent<decltype(v4l2_scaling_matrix.scaling_list_4x4)>() <=
+              std::extent<decltype(pps->scaling_list4x4)>() &&
+          std::extent<decltype(v4l2_scaling_matrix.scaling_list_4x4[0])>() <=
+              std::extent<decltype(pps->scaling_list4x4[0])>() &&
+          std::extent<decltype(v4l2_scaling_matrix.scaling_list_8x8)>() <=
+              std::extent<decltype(pps->scaling_list8x8)>() &&
+          std::extent<decltype(v4l2_scaling_matrix.scaling_list_8x8[0])>() <=
+              std::extent<decltype(pps->scaling_list8x8[0])>(),
+      "scaling_lists must be of correct size");
+  static_assert(
+      std::extent<decltype(v4l2_scaling_matrix.scaling_list_4x4)>() <=
+              std::extent<decltype(sps->scaling_list4x4)>() &&
+          std::extent<decltype(v4l2_scaling_matrix.scaling_list_4x4[0])>() <=
+              std::extent<decltype(sps->scaling_list4x4[0])>() &&
+          std::extent<decltype(v4l2_scaling_matrix.scaling_list_8x8)>() <=
+              std::extent<decltype(sps->scaling_list8x8)>() &&
+          std::extent<decltype(v4l2_scaling_matrix.scaling_list_8x8[0])>() <=
+              std::extent<decltype(sps->scaling_list8x8[0])>(),
+      "scaling_lists must be of correct size");
 
   const auto* scaling_list4x4 = &sps->scaling_list4x4[0];
   const auto* scaling_list8x8 = &sps->scaling_list8x8[0];
@@ -224,14 +229,16 @@ H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitFrameMetadata(
     scaling_list8x8 = &pps->scaling_list8x8[0];
   }
 
-  for (size_t i = 0; i < arraysize(v4l2_scaling_matrix.scaling_list_4x4); ++i) {
-    for (size_t j = 0; j < arraysize(v4l2_scaling_matrix.scaling_list_4x4[i]);
+  for (size_t i = 0; i < base::size(v4l2_scaling_matrix.scaling_list_4x4);
+       ++i) {
+    for (size_t j = 0; j < base::size(v4l2_scaling_matrix.scaling_list_4x4[i]);
          ++j) {
       v4l2_scaling_matrix.scaling_list_4x4[i][j] = scaling_list4x4[i][j];
     }
   }
-  for (size_t i = 0; i < arraysize(v4l2_scaling_matrix.scaling_list_8x8); ++i) {
-    for (size_t j = 0; j < arraysize(v4l2_scaling_matrix.scaling_list_8x8[i]);
+  for (size_t i = 0; i < base::size(v4l2_scaling_matrix.scaling_list_8x8);
+       ++i) {
+    for (size_t j = 0; j < base::size(v4l2_scaling_matrix.scaling_list_8x8[i]);
          ++j) {
       v4l2_scaling_matrix.scaling_list_8x8[i][j] = scaling_list8x8[i][j];
     }

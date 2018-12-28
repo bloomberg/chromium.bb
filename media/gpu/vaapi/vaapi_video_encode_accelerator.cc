@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <type_traits>
 #include <utility>
 
 #include <va/va.h>
@@ -1090,16 +1091,17 @@ bool VaapiVideoEncodeAccelerator::VP8Accelerator::SubmitFrameParameters(
   if (frame_header->IsKeyframe())
     pic_param.pic_flags.bits.forced_lf_adjustment = true;
 
-  static_assert(
-      arraysize(pic_param.loop_filter_level) ==
-              arraysize(pic_param.ref_lf_delta) &&
-          arraysize(pic_param.ref_lf_delta) ==
-              arraysize(pic_param.mode_lf_delta) &&
-          arraysize(pic_param.ref_lf_delta) ==
-              arraysize(frame_header->loopfilter_hdr.ref_frame_delta) &&
-          arraysize(pic_param.mode_lf_delta) ==
-              arraysize(frame_header->loopfilter_hdr.mb_mode_delta),
-      "Invalid loop filter array sizes");
+  static_assert(std::extent<decltype(pic_param.loop_filter_level)>() ==
+                        std::extent<decltype(pic_param.ref_lf_delta)>() &&
+                    std::extent<decltype(pic_param.ref_lf_delta)>() ==
+                        std::extent<decltype(pic_param.mode_lf_delta)>() &&
+                    std::extent<decltype(pic_param.ref_lf_delta)>() ==
+                        std::extent<decltype(
+                            frame_header->loopfilter_hdr.ref_frame_delta)>() &&
+                    std::extent<decltype(pic_param.mode_lf_delta)>() ==
+                        std::extent<decltype(
+                            frame_header->loopfilter_hdr.mb_mode_delta)>(),
+                "Invalid loop filter array sizes");
 
   for (size_t i = 0; i < base::size(pic_param.loop_filter_level); ++i) {
     pic_param.loop_filter_level[i] = frame_header->loopfilter_hdr.level;
