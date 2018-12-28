@@ -64,7 +64,8 @@ class SmartDimModelImplTest : public testing::Test {
   float CalculateInactivityScore(const UserActivityEvent::Features& features) {
     float inactivity_score;
     SmartDimModelResult result =
-        smart_dim_model_.CalculateInactivityScore(features, &inactivity_score);
+        smart_dim_model_.CalculateInactivityScoreTfNative(features,
+                                                          &inactivity_score);
     EXPECT_EQ(SmartDimModelResult::kSuccess, result);
     return inactivity_score;
   }

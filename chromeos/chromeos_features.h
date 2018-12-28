@@ -32,6 +32,7 @@ CHROMEOS_EXPORT extern const base::Feature kInstantTethering;
 CHROMEOS_EXPORT extern const base::Feature kVideoPlayerNativeControls;
 CHROMEOS_EXPORT extern const base::Feature kUseMessagesGoogleComDomain;
 CHROMEOS_EXPORT extern const base::Feature kUserActivityPrediction;
+CHROMEOS_EXPORT extern const base::Feature kUserActivityPredictionMlService;
 
 }  // namespace features
 
