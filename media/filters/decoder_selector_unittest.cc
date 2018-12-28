@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/gmock_callback_support.h"
+#include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "media/filters/decoder_selector.h"
@@ -288,7 +289,7 @@ class DecoderSelectorTest : public ::testing::Test {
   void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  MediaLog media_log_;
+  NullMediaLog media_log_;
 
   std::unique_ptr<StreamTraits> traits_;
   StrictMock<MockDemuxerStream> demuxer_stream_;

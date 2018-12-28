@@ -507,7 +507,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
   AudioParameters hardware_params_;
   base::test::ScopedTaskEnvironment task_environment_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-  MediaLog media_log_;
+  NullMediaLog media_log_;
   std::unique_ptr<AudioRendererImpl> renderer_;
   scoped_refptr<FakeAudioRendererSink> sink_;
   base::SimpleTestTickClock tick_clock_;

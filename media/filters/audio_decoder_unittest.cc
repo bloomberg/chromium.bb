@@ -394,7 +394,7 @@ class AudioDecoderTest
 
   base::MessageLoop message_loop_;
 
-  MediaLog media_log_;
+  NullMediaLog media_log_;
   scoped_refptr<DecoderBuffer> data_;
   std::unique_ptr<InMemoryUrlProtocol> protocol_;
   std::unique_ptr<AudioFileReader> reader_;

@@ -19,7 +19,6 @@
 #include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media.h"
-#include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/media_util.h"
 #include "media/cast/common/rtp_time.h"
@@ -166,7 +165,7 @@ class EndToEndFrameChecker
   friend class base::RefCountedThreadSafe<EndToEndFrameChecker>;
   virtual ~EndToEndFrameChecker() {}
 
-  MediaLog media_log_;
+  NullMediaLog media_log_;
   FFmpegVideoDecoder decoder_;
   base::queue<scoped_refptr<VideoFrame>> expectations_;
   int count_frames_checked_;

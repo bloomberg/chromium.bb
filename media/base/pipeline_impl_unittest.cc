@@ -22,7 +22,7 @@
 #include "base/time/clock.h"
 #include "media/base/fake_text_track_stream.h"
 #include "media/base/gmock_callback_support.h"
-#include "media/base/media_log.h"
+#include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "media/base/text_renderer.h"
@@ -322,7 +322,7 @@ class PipelineImplTest : public ::testing::Test {
   StrictMock<CallbackHelper> callbacks_;
   base::SimpleTestTickClock test_tick_clock_;
   base::MessageLoop message_loop_;
-  MediaLog media_log_;
+  NullMediaLog media_log_;
   std::unique_ptr<PipelineImpl> pipeline_;
 
   std::unique_ptr<StrictMock<MockDemuxer>> demuxer_;

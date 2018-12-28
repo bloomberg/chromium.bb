@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "media/base/media_log.h"
 #include "media/mojo/services/mojo_decryptor_service.h"
 #include "media/mojo/services/mojo_media_client.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -43,13 +42,9 @@ namespace media {
 
 InterfaceFactoryImpl::InterfaceFactoryImpl(
     service_manager::mojom::InterfaceProviderPtr interfaces,
-    MediaLog* media_log,
     std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref,
     MojoMediaClient* mojo_media_client)
     :
-#if BUILDFLAG(ENABLE_MOJO_RENDERER)
-      media_log_(media_log),
-#endif
 #if BUILDFLAG(ENABLE_MOJO_CDM)
       interfaces_(std::move(interfaces)),
 #endif
@@ -116,7 +111,7 @@ void InterfaceFactoryImpl::CreateRenderer(
   // audio device ID. See interface_factory.mojom.
   const std::string& audio_device_id = type_specific_id;
   auto renderer = mojo_media_client_->CreateRenderer(
-      interfaces_.get(), base::ThreadTaskRunnerHandle::Get(), media_log_,
+      interfaces_.get(), base::ThreadTaskRunnerHandle::Get(), &media_log_,
       audio_device_id);
   if (!renderer) {
     DLOG(ERROR) << "Renderer creation failed.";

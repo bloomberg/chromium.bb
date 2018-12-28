@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "media/base/media_log.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "media/mojo/interfaces/media_service.mojom.h"
 #include "media/mojo/services/deferred_destroy_strong_binding_set.h"
@@ -46,7 +45,6 @@ class MEDIA_MOJO_EXPORT MediaService : public service_manager::Service,
       mojom::InterfaceFactoryRequest request,
       service_manager::mojom::InterfaceProviderPtr host_interfaces) final;
 
-  MediaLog media_log_;
   service_manager::ServiceBinding service_binding_;
   service_manager::ServiceKeepalive keepalive_;
 
@@ -58,8 +56,6 @@ class MEDIA_MOJO_EXPORT MediaService : public service_manager::Service,
   // |mojo_media_client_| must be destructed before |ref_factory_|.
   std::unique_ptr<MojoMediaClient> mojo_media_client_;
 
-  // Note: Since |&media_log_| is passed to bindings, the bindings must be
-  // destructed first.
   DeferredDestroyStrongBindingSet<mojom::InterfaceFactory>
       interface_factory_bindings_;
 

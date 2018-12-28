@@ -28,6 +28,7 @@
 #include "media/base/channel_layout.h"
 #include "media/base/channel_mixer.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_util.h"
 #include "media/base/sample_format.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 
@@ -292,7 +293,7 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
                                                              result);
   }
 
-  ::media::MediaLog media_log_;
+  ::media::NullMediaLog media_log_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   InitializedCallback initialized_callback_;
   OutputFormat output_format_;
