@@ -50,8 +50,6 @@ typedef void (*cfl_store_inter_block_visitor_fn_t)(AV1_COMMON *const cm,
 typedef struct ThreadData {
   aom_reader *bit_reader;
   DECLARE_ALIGNED(32, MACROBLOCKD, xd);
-  /* dqcoeff are shared by all the planes. So planes must be decoded serially */
-  DECLARE_ALIGNED(32, tran_low_t, dqcoeff[MAX_TX_SQUARE]);
   CB_BUFFER cb_buffer_base;
   uint8_t *mc_buf[2];
   int32_t mc_buf_size;

@@ -153,13 +153,10 @@ static void inverse_transform_block(MACROBLOCKD *xd, int plane,
                                     const TX_SIZE tx_size, uint8_t *dst,
                                     int stride, int reduced_tx_set) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
-  tran_low_t *const dqcoeff = pd->dqcoeff;
+  tran_low_t *const dqcoeff = pd->dqcoeff_block + xd->cb_offset[plane];
   eob_info *eob_data = pd->eob_data + xd->txb_offset[plane];
   uint16_t scan_line = eob_data->max_scan_line;
   uint16_t eob = eob_data->eob;
-
-  memcpy(dqcoeff, pd->dqcoeff_block + xd->cb_offset[plane],
-         (scan_line + 1) * sizeof(dqcoeff[0]));
   av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, dst, stride,
                               eob, reduced_tx_set);
   memset(dqcoeff, 0, (scan_line + 1) * sizeof(dqcoeff[0]));
@@ -3220,7 +3217,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
         continue;
 
       td->bit_reader = &tile_data->bit_reader;
-      av1_zero(td->dqcoeff);
+      av1_zero(td->cb_buffer_base.dqcoeff);
       av1_tile_init(&td->xd.tile, cm, row, col);
       td->xd.current_qindex = cm->base_qindex;
       setup_bool_decoder(tile_bs_buf->data, data_end, tile_bs_buf->size,
@@ -3234,7 +3231,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
         td->bit_reader->accounting = NULL;
       }
 #endif
-      av1_init_macroblockd(cm, &td->xd, td->dqcoeff);
+      av1_init_macroblockd(cm, &td->xd, NULL);
       av1_init_above_context(cm, &td->xd, row);
 
       // Initialise the tile context from the frame context
@@ -3291,7 +3288,7 @@ static void tile_worker_hook_init(AV1Decoder *const pbi,
   int tile_col = tile_data->tile_info.tile_col;
 
   td->bit_reader = &tile_data->bit_reader;
-  av1_zero(td->dqcoeff);
+  av1_zero(td->cb_buffer_base.dqcoeff);
   av1_tile_init(&td->xd.tile, cm, tile_row, tile_col);
   td->xd.current_qindex = cm->base_qindex;
   setup_bool_decoder(tile_buffer->data, thread_data->data_end,
@@ -3306,7 +3303,7 @@ static void tile_worker_hook_init(AV1Decoder *const pbi,
     td->bit_reader->accounting = NULL;
   }
 #endif
-  av1_init_macroblockd(cm, &td->xd, td->dqcoeff);
+  av1_init_macroblockd(cm, &td->xd, NULL);
   td->xd.error_info = &thread_data->error_info;
   av1_init_above_context(cm, &td->xd, tile_row);
 
@@ -3630,7 +3627,7 @@ static int row_mt_worker_hook(void *arg1, void *arg2) {
     TileInfo tile_info = tile_data->tile_info;
 
     av1_tile_init(&td->xd.tile, cm, tile_row, tile_col);
-    av1_init_macroblockd(cm, &td->xd, td->dqcoeff);
+    av1_init_macroblockd(cm, &td->xd, NULL);
     td->xd.error_info = &thread_data->error_info;
 
     decode_tile_sb_row(pbi, td, tile_info, mi_row);
@@ -3970,6 +3967,7 @@ static void dec_alloc_cb_buf(AV1Decoder *pbi) {
     av1_dec_free_cb_buf(pbi);
     CHECK_MEM_ERROR(cm, pbi->cb_buffer_base,
                     aom_memalign(32, sizeof(*pbi->cb_buffer_base) * size));
+    memset(pbi->cb_buffer_base, 0, sizeof(*pbi->cb_buffer_base) * size);
     pbi->cb_buffer_alloc_size = size;
   }
 }

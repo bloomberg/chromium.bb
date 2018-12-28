@@ -278,13 +278,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     }
   }
 
-  int16_t num_zero_coeffs = 0;
-  for (int c = 0; c < *eob; ++c) {
-    const int pos = scan[c];
-    num_zero_coeffs = AOMMAX(num_zero_coeffs, pos);
-  }
-  memset(tcoeffs, 0, (num_zero_coeffs + 1) * sizeof(tcoeffs[0]));
-
   for (int c = 0; c < *eob; ++c) {
     const int pos = scan[c];
     uint8_t sign;
