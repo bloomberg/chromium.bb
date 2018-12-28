@@ -31,6 +31,9 @@ class ResourceRequestInfo;
 class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor,
                                       public DevToolsNetworkInterceptor {
  public:
+  static std::unique_ptr<DevToolsURLRequestInterceptor> MaybeCreate(
+      BrowserContext* browser_context);
+
   static bool IsNavigationRequest(ResourceType resource_type);
 
   explicit DevToolsURLRequestInterceptor(BrowserContext* browser_context);
