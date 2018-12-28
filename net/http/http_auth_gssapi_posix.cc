@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
@@ -441,7 +441,7 @@ base::NativeLibrary GSSAPISharedLibrary::LoadSharedLibrary() {
 #endif
     };
     library_names = kDefaultLibraryNames;
-    num_lib_names = arraysize(kDefaultLibraryNames);
+    num_lib_names = base::size(kDefaultLibraryNames);
   }
 
   for (size_t i = 0; i < num_lib_names; ++i) {

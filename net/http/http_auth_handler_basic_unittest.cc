@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
@@ -39,7 +40,7 @@ TEST(HttpAuthHandlerBasicTest, GenerateAuthToken) {
   };
   GURL origin("http://www.example.com");
   HttpAuthHandlerBasic::Factory factory;
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::string challenge = "Basic realm=\"Atlantis\"";
     SSLInfo null_ssl_info;
     std::unique_ptr<HttpAuthHandler> basic;
@@ -101,7 +102,7 @@ TEST(HttpAuthHandlerBasicTest, HandleAnotherChallenge) {
                     tests[0].challenge, HttpAuth::AUTH_SERVER, null_ssl_info,
                     origin, NetLogWithSource(), &basic));
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::string challenge(tests[i].challenge);
     HttpAuthChallengeTokenizer tok(challenge.begin(),
                                    challenge.end());
@@ -194,7 +195,7 @@ TEST(HttpAuthHandlerBasicTest, InitFromChallenge) {
   };
   HttpAuthHandlerBasic::Factory factory;
   GURL origin("http://www.example.com");
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::string challenge = tests[i].challenge;
     SSLInfo null_ssl_info;
     std::unique_ptr<HttpAuthHandler> basic;

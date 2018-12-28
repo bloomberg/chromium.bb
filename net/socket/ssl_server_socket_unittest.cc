@@ -26,9 +26,9 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -1177,7 +1177,7 @@ TEST_F(SSLServerSocketTest, RequireEcdheFlag) {
       0xcca9,  // ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
   };
   client_ssl_config_.disabled_cipher_suites.assign(
-      kEcdheCiphers, kEcdheCiphers + arraysize(kEcdheCiphers));
+      kEcdheCiphers, kEcdheCiphers + base::size(kEcdheCiphers));
 
   // Legacy RSA key exchange ciphers only exist in TLS 1.2 and below.
   client_ssl_config_.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
@@ -1255,7 +1255,7 @@ TEST_F(SSLServerSocketTest, HandshakeServerSSLPrivateKeyRequireEcdhe) {
       0xcca9,  // ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
   };
   client_ssl_config_.disabled_cipher_suites.assign(
-      kEcdheCiphers, kEcdheCiphers + arraysize(kEcdheCiphers));
+      kEcdheCiphers, kEcdheCiphers + base::size(kEcdheCiphers));
   // TLS 1.3 always works with SSLPrivateKey.
   client_ssl_config_.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
 

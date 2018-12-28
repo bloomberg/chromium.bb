@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/request_priority.h"
@@ -37,7 +37,7 @@ const int kRangeLastPosition = 8;
 static_assert(kRangeFirstPosition > 0 &&
                   kRangeFirstPosition < kRangeLastPosition &&
                   kRangeLastPosition <
-                      static_cast<int>(arraysize(kTestData) - 1),
+                      static_cast<int>(base::size(kTestData) - 1),
               "invalid range");
 
 class MockSimpleJob : public URLRequestSimpleJob {

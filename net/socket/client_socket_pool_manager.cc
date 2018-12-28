@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_proxy_client_socket_pool.h"
@@ -30,7 +31,7 @@ int g_max_sockets_per_pool[] = {
   256   // WEBSOCKET_SOCKET_POOL
 };
 
-static_assert(arraysize(g_max_sockets_per_pool) ==
+static_assert(base::size(g_max_sockets_per_pool) ==
                   HttpNetworkSession::NUM_SOCKET_POOL_TYPES,
               "max sockets per pool length mismatch");
 
@@ -47,7 +48,7 @@ int g_max_sockets_per_group[] = {
     255  // WEBSOCKET_SOCKET_POOL
 };
 
-static_assert(arraysize(g_max_sockets_per_group) ==
+static_assert(base::size(g_max_sockets_per_group) ==
                   HttpNetworkSession::NUM_SOCKET_POOL_TYPES,
               "max sockets per group length mismatch");
 
@@ -59,7 +60,7 @@ int g_max_sockets_per_proxy_server[] = {
   kDefaultMaxSocketsPerProxyServer   // WEBSOCKET_SOCKET_POOL
 };
 
-static_assert(arraysize(g_max_sockets_per_proxy_server) ==
+static_assert(base::size(g_max_sockets_per_proxy_server) ==
                   HttpNetworkSession::NUM_SOCKET_POOL_TYPES,
               "max sockets per proxy server length mismatch");
 

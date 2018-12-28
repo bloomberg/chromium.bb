@@ -15,6 +15,7 @@
 #include "base/pickle.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -178,7 +179,7 @@ class SimpleIndexFileTest : public net::TestWithScopedTaskEnvironment {
 TEST_F(SimpleIndexFileTest, Serialize) {
   SimpleIndex::EntrySet entries;
   static const uint64_t kHashes[] = {11, 22, 33};
-  static const size_t kNumHashes = arraysize(kHashes);
+  static const size_t kNumHashes = base::size(kHashes);
   EntryMetadata metadata_entries[kNumHashes];
 
   SimpleIndexFile::IndexMetadata index_metadata(
@@ -219,9 +220,9 @@ TEST_F(SimpleIndexFileTest, Serialize) {
 TEST_F(SimpleIndexFileTest, ReadV7Format) {
   static const uint64_t kHashes[] = {11, 22, 33};
   static const uint32_t kSizes[] = {394, 594, 495940};
-  static_assert(arraysize(kHashes) == arraysize(kSizes),
+  static_assert(base::size(kHashes) == base::size(kSizes),
                 "Need same number of hashes and sizes");
-  static const size_t kNumHashes = arraysize(kHashes);
+  static const size_t kNumHashes = base::size(kHashes);
 
   V7IndexMetadataForTest v7_metadata(kNumHashes, 100 * 1024 * 1024);
 
@@ -298,7 +299,7 @@ TEST_F(SimpleIndexFileTest, WriteThenLoadIndex) {
 
   SimpleIndex::EntrySet entries;
   static const uint64_t kHashes[] = {11, 22, 33};
-  static const size_t kNumHashes = arraysize(kHashes);
+  static const size_t kNumHashes = base::size(kHashes);
   EntryMetadata metadata_entries[kNumHashes];
   for (size_t i = 0; i < kNumHashes; ++i) {
     uint64_t hash = kHashes[i];

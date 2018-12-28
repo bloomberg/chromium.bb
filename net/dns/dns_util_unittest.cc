@@ -4,6 +4,7 @@
 
 #include "net/dns/dns_util.h"
 
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -103,7 +104,7 @@ TEST_F(DNSUtilTest, IsValidDNSDomain) {
   // change the calls to from |IsValidDNSDomainName| to |IsValidDNSDomain|, and
   // remove |IsValidDNSDomainName| (defined above).
 
-  for (size_t i = 0; i < arraysize(bad_hostnames); ++i) {
+  for (size_t i = 0; i < base::size(bad_hostnames); ++i) {
     EXPECT_FALSE(IsValidDNSDomainName(bad_hostnames[i]));
   }
 
@@ -113,7 +114,7 @@ TEST_F(DNSUtilTest, IsValidDNSDomain) {
       "www_.noodles.blorg",  "www.noodles.blorg.", "_privet._tcp.local",
   };
 
-  for (size_t i = 0; i < arraysize(good_hostnames); ++i) {
+  for (size_t i = 0; i < base::size(good_hostnames); ++i) {
     EXPECT_TRUE(IsValidDNSDomainName(good_hostnames[i]));
   }
 }

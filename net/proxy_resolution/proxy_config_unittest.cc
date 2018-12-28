@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/proxy_resolution/proxy_config.h"
+#include "base/stl_util.h"
 #include "net/proxy_resolution/proxy_config_service_common_unittest.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -308,7 +309,7 @@ TEST(ProxyConfigTest, ParseProxyRules) {
 
   ProxyConfig config;
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     config.proxy_rules().ParseFromString(tests[i].proxy_rules);
 
     EXPECT_EQ(tests[i].type, config.proxy_rules().type);

@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_file_util.h"
@@ -2198,7 +2199,7 @@ TEST_F(SpdyNetworkTransactionTest, ResetPushWithTransferEncoding) {
     "transfer-encoding", "chunked"
   };
   spdy::SpdySerializedFrame push(spdy_util_.ConstructSpdyPush(
-      headers, arraysize(headers) / 2, 2, 1, "https://www.example.org/1"));
+      headers, base::size(headers) / 2, 2, 1, "https://www.example.org/1"));
   spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
       CreateMockRead(resp, 1), CreateMockRead(push, 2), CreateMockRead(body, 4),
@@ -2313,7 +2314,7 @@ TEST_F(SpdyNetworkTransactionTest, StartTransactionOnReadCallback) {
       CreateMockRead(resp, 1),
       MockRead(ASYNC, ERR_IO_PENDING, 2),  // Force a pause
       MockRead(ASYNC, reinterpret_cast<const char*>(kGetBodyFrame2),
-               arraysize(kGetBodyFrame2), 3),
+               base::size(kGetBodyFrame2), 3),
       MockRead(ASYNC, ERR_IO_PENDING, 4),  // Force a pause
       MockRead(ASYNC, 0, 0, 5),            // EOF
   };
@@ -2553,7 +2554,7 @@ TEST_F(SpdyNetworkTransactionTest, RedirectGetRequest) {
   const char* const kExtraHeaders[] = {"location",
                                        "https://www.foo.com/index.php"};
   spdy::SpdySerializedFrame resp0(spdy_util_.ConstructSpdyReplyError(
-      "301", kExtraHeaders, arraysize(kExtraHeaders) / 2, 1));
+      "301", kExtraHeaders, base::size(kExtraHeaders) / 2, 1));
   MockRead reads0[] = {CreateMockRead(resp0, 1), MockRead(ASYNC, 0, 3)};
 
   SequencedSocketData data0(reads0, writes0);
@@ -3921,7 +3922,7 @@ TEST_F(SpdyNetworkTransactionTest, ResponseHeaders) {
        3,
        {"status", "200", "hello", "bye", "cookie", "val1; val2"}}};
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     SpdyTestUtil spdy_test_util;
     spdy::SpdySerializedFrame req(
         spdy_test_util.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
@@ -4007,7 +4008,7 @@ TEST_F(SpdyNetworkTransactionTest, ResponseHeadersVary) {
         {spdy::kHttp2StatusHeader, "200", spdy::kHttp2PathHeader, "/index.php",
          "vary", "friend,enemy", nullptr}}}};
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     SpdyTestUtil spdy_test_util;
 
     // Construct the request.
@@ -4106,7 +4107,7 @@ TEST_F(SpdyNetworkTransactionTest, InvalidResponseHeaders) {
       },
   };
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     SpdyTestUtil spdy_test_util;
 
     spdy::SpdySerializedFrame req(
@@ -5115,12 +5116,13 @@ TEST_F(SpdyNetworkTransactionTest, ProxyConnect) {
   spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
 
   MockWrite writes[] = {
-      MockWrite(SYNCHRONOUS, kConnect443, arraysize(kConnect443) - 1, 0),
+      MockWrite(SYNCHRONOUS, kConnect443, base::size(kConnect443) - 1, 0),
       CreateMockWrite(req, 2),
   };
   MockRead reads[] = {
-      MockRead(SYNCHRONOUS, kHTTP200, arraysize(kHTTP200) - 1, 1),
-      CreateMockRead(resp, 3), CreateMockRead(body, 4),
+      MockRead(SYNCHRONOUS, kHTTP200, base::size(kHTTP200) - 1, 1),
+      CreateMockRead(resp, 3),
+      CreateMockRead(body, 4),
       MockRead(ASYNC, 0, 0, 5),
   };
   SequencedSocketData data(reads, writes);
@@ -5228,11 +5230,11 @@ TEST_F(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   spdy::SpdySerializedFrame body2(spdy_util_2.ConstructSpdyDataFrame(1, true));
 
   MockWrite writes2[] = {
-      MockWrite(SYNCHRONOUS, kConnect443, arraysize(kConnect443) - 1, 0),
+      MockWrite(SYNCHRONOUS, kConnect443, base::size(kConnect443) - 1, 0),
       CreateMockWrite(req2, 2),
   };
   MockRead reads2[] = {
-      MockRead(SYNCHRONOUS, kHTTP200, arraysize(kHTTP200) - 1, 1),
+      MockRead(SYNCHRONOUS, kHTTP200, base::size(kHTTP200) - 1, 1),
       CreateMockRead(resp2, 3), CreateMockRead(body2, 4),
       MockRead(ASYNC, 0, 5)  // EOF
   };
@@ -5370,7 +5372,7 @@ TEST_F(SpdyNetworkTransactionTest, SpdyBasicAuth) {
     "authorization", "Basic Zm9vOmJhcg=="
   };
   spdy::SpdySerializedFrame req_get_authorization(spdy_util_.ConstructSpdyGet(
-      kExtraAuthorizationHeaders, arraysize(kExtraAuthorizationHeaders) / 2, 3,
+      kExtraAuthorizationHeaders, base::size(kExtraAuthorizationHeaders) / 2, 3,
       LOWEST));
   MockWrite spdy_writes[] = {
       CreateMockWrite(req_get, 0), CreateMockWrite(req_get_authorization, 3),
@@ -5386,7 +5388,7 @@ TEST_F(SpdyNetworkTransactionTest, SpdyBasicAuth) {
   spdy::SpdySerializedFrame resp_authentication(
       spdy_util_.ConstructSpdyReplyError(
           "401", kExtraAuthenticationHeaders,
-          arraysize(kExtraAuthenticationHeaders) / 2, 1));
+          base::size(kExtraAuthenticationHeaders) / 2, 1));
   spdy::SpdySerializedFrame body_authentication(
       spdy_util_.ConstructSpdyDataFrame(1, true));
   spdy::SpdySerializedFrame resp_data(
@@ -7470,10 +7472,10 @@ TEST_F(SpdyNetworkTransactionTest, IgnoreUnsupportedOriginFrame) {
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {MockRead(ASYNC, origin_frame_on_stream_zero,
-                               arraysize(origin_frame_on_stream_zero), 1),
+                               base::size(origin_frame_on_stream_zero), 1),
                       CreateMockRead(resp, 2),
                       MockRead(ASYNC, origin_frame_on_stream_one,
-                               arraysize(origin_frame_on_stream_one), 3),
+                               base::size(origin_frame_on_stream_one), 3),
                       CreateMockRead(body, 4), MockRead(ASYNC, 0, 5)};
 
   SequencedSocketData data(reads, writes);

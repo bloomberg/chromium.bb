@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -353,7 +354,7 @@ void SpdySessionPoolTest::RunIPPoolingTest(
   };
 
   session_deps_.host_resolver->set_synchronous_mode(true);
-  for (size_t i = 0; i < arraysize(test_hosts); i++) {
+  for (size_t i = 0; i < base::size(test_hosts); i++) {
     session_deps_.host_resolver->rules()->AddIPLiteralRule(
         test_hosts[i].name, test_hosts[i].iplist, std::string());
 
@@ -545,7 +546,7 @@ TEST_F(SpdySessionPoolTest, IPPoolingNetLog) {
 
   // Populate the HostResolver cache.
   session_deps_.host_resolver->set_synchronous_mode(true);
-  for (size_t i = 0; i < arraysize(test_hosts); i++) {
+  for (size_t i = 0; i < base::size(test_hosts); i++) {
     session_deps_.host_resolver->rules()->AddIPLiteralRule(
         test_hosts[i].name, test_hosts[i].iplist, std::string());
 
@@ -627,7 +628,7 @@ TEST_F(SpdySessionPoolTest, IPPoolingDisabled) {
 
   // Populate the HostResolver cache.
   session_deps_.host_resolver->set_synchronous_mode(true);
-  for (size_t i = 0; i < arraysize(test_hosts); i++) {
+  for (size_t i = 0; i < base::size(test_hosts); i++) {
     session_deps_.host_resolver->rules()->AddIPLiteralRule(
         test_hosts[i].name, test_hosts[i].iplist, std::string());
 
@@ -996,7 +997,7 @@ TEST_F(SpdySessionPoolTest, FindAvailableSessionForWebSocket) {
 
   // Populate the HostResolver cache.
   session_deps_.host_resolver->set_synchronous_mode(true);
-  for (size_t i = 0; i < arraysize(test_hosts); i++) {
+  for (size_t i = 0; i < base::size(test_hosts); i++) {
     session_deps_.host_resolver->rules()->AddIPLiteralRule(
         test_hosts[i].name, test_hosts[i].iplist, std::string());
 

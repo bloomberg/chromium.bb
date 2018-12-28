@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/stl_util.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_auth_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,7 +55,7 @@ TEST(URLSecurityManager, UseDefaultCredentials) {
   url_security_manager->SetDefaultWhitelist(std::move(auth_filter));
   ASSERT_TRUE(url_security_manager.get());
 
-  for (size_t i = 0; i < arraysize(kTestDataList); ++i) {
+  for (size_t i = 0; i < base::size(kTestDataList); ++i) {
     GURL gurl(kTestDataList[i].url);
     bool can_use_default =
         url_security_manager->CanUseDefaultCredentials(gurl);
@@ -74,7 +75,7 @@ TEST(URLSecurityManager, CanDelegate) {
   url_security_manager->SetDelegateWhitelist(std::move(auth_filter));
   ASSERT_TRUE(url_security_manager.get());
 
-  for (size_t i = 0; i < arraysize(kTestDataList); ++i) {
+  for (size_t i = 0; i < base::size(kTestDataList); ++i) {
     GURL gurl(kTestDataList[i].url);
     bool can_delegate = url_security_manager->CanDelegate(gurl);
     EXPECT_EQ(kTestDataList[i].succeeds_in_whitelist, can_delegate)
@@ -88,7 +89,7 @@ TEST(URLSecurityManager, CanDelegate_NoWhitelist) {
       URLSecurityManager::Create());
   ASSERT_TRUE(url_security_manager.get());
 
-  for (size_t i = 0; i < arraysize(kTestDataList); ++i) {
+  for (size_t i = 0; i < base::size(kTestDataList); ++i) {
     GURL gurl(kTestDataList[i].url);
     bool can_delegate = url_security_manager->CanDelegate(gurl);
     EXPECT_FALSE(can_delegate);

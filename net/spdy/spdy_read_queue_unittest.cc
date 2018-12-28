@@ -20,7 +20,7 @@ namespace test {
 namespace {
 
 const char kData[] = "SPDY read queue test data.\0Some more data.";
-const size_t kDataSize = arraysize(kData);
+const size_t kDataSize = base::size(kData);
 
 // Enqueues |data| onto |queue| in chunks of at most |max_buffer_size|
 // bytes.

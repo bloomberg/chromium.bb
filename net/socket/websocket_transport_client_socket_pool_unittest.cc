@@ -10,9 +10,9 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -499,7 +499,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
       MockTransportClientSocketFactory::MOCK_PENDING_CLIENT_SOCKET};
 
   client_socket_factory_.set_client_socket_types(case_types,
-                                                 arraysize(case_types));
+                                                 base::size(case_types));
 
   EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
   EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
@@ -663,7 +663,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, IPv6InstantFail) {
       MockTransportClientSocketFactory::MOCK_CLIENT_SOCKET};
 
   client_socket_factory_.set_client_socket_types(case_types,
-                                                 arraysize(case_types));
+                                                 base::size(case_types));
 
   // Resolve an AddressList with two IPv6 addresses and then an IPv4 address.
   host_resolver_->rules()->AddIPLiteralRule(
@@ -698,7 +698,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, IPv6RapidFail) {
       MockTransportClientSocketFactory::MOCK_CLIENT_SOCKET};
 
   client_socket_factory_.set_client_socket_types(case_types,
-                                                 arraysize(case_types));
+                                                 base::size(case_types));
 
   // Resolve an AddressList with two IPv6 addresses and then an IPv4 address.
   host_resolver_->rules()->AddIPLiteralRule(
@@ -955,7 +955,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
     MockTransportClientSocketFactory::MOCK_PENDING_CLIENT_SOCKET
   };
   client_socket_factory_.set_client_socket_types(first_type,
-                                                 arraysize(first_type));
+                                                 base::size(first_type));
   // The rest of the sockets will connect synchronously.
   client_socket_factory_.set_default_client_socket_type(
       MockTransportClientSocketFactory::MOCK_CLIENT_SOCKET);
@@ -1022,7 +1022,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
       MockTransportClientSocketFactory::MOCK_CLIENT_SOCKET,
       MockTransportClientSocketFactory::MOCK_STALLED_CLIENT_SOCKET};
   client_socket_factory_.set_client_socket_types(socket_types,
-                                                 arraysize(socket_types));
+                                                 base::size(socket_types));
   EXPECT_THAT(StartRequest("a", kDefaultPriority), IsOk());
   // Socket has been "handed out".
   EXPECT_TRUE(request(0)->handle()->socket());
@@ -1046,7 +1046,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, CancelRequestReclaimsSockets) {
       MockTransportClientSocketFactory::MOCK_CLIENT_SOCKET};
 
   client_socket_factory_.set_client_socket_types(socket_types,
-                                                 arraysize(socket_types));
+                                                 base::size(socket_types));
 
   EXPECT_THAT(StartRequest("a", kDefaultPriority), IsError(ERR_IO_PENDING));
 

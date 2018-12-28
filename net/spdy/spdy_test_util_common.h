@@ -13,8 +13,8 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
@@ -62,7 +62,7 @@ class TransportSecurityState;
 // data frames.
 const char kDefaultUrl[] = "https://www.example.org/";
 const char kUploadData[] = "hello!";
-const int kUploadDataSize = arraysize(kUploadData)-1;
+const int kUploadDataSize = base::size(kUploadData) - 1;
 
 // While HTTP/2 protocol defines default SETTINGS_MAX_HEADER_LIST_SIZE_FOR_TEST
 // to be unlimited, BufferedSpdyFramer constructor requires a value.

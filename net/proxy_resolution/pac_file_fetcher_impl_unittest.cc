@@ -10,12 +10,12 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -441,7 +441,7 @@ TEST_F(PacFileFetcherImplTest, TooLarge) {
 
   // Try fetching URLs that are 101 bytes large. We should abort the request
   // after 50 bytes have been read, and fail with a too large error.
-  for (size_t i = 0; i < arraysize(urls); ++i) {
+  for (size_t i = 0; i < base::size(urls); ++i) {
     const GURL& url = urls[i];
     base::string16 text;
     TestCompletionCallback callback;

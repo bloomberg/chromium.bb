@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
 #include "net/base/proxy_server.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -131,7 +131,7 @@ TEST(ProxyServerTest, FromURI) {
        "HTTPS 1.2.3.4:10"},
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     ProxyServer uri =
         ProxyServer::FromURI(tests[i].input_uri, ProxyServer::SCHEME_HTTP);
     EXPECT_TRUE(uri.is_valid());
@@ -172,7 +172,7 @@ TEST(ProxyServerTest, Invalid) {
     "http:",  // ambiguous, but will fail because of bad port.
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     ProxyServer uri = ProxyServer::FromURI(tests[i], ProxyServer::SCHEME_HTTP);
     EXPECT_FALSE(uri.is_valid());
     EXPECT_FALSE(uri.is_direct());
@@ -189,7 +189,7 @@ TEST(ProxyServerTest, Whitespace) {
     "  \tfoopy:80  ",
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     ProxyServer uri = ProxyServer::FromURI(tests[i], ProxyServer::SCHEME_HTTP);
     EXPECT_EQ("foopy:80", uri.ToURI());
   }
@@ -247,7 +247,7 @@ TEST(ProxyServerTest, FromPACString) {
     },
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     ProxyServer uri = ProxyServer::FromPacString(tests[i].input_pac);
     EXPECT_TRUE(uri.is_valid());
     EXPECT_EQ(tests[i].expected_uri, uri.ToURI());
@@ -263,7 +263,7 @@ TEST(ProxyServerTest, FromPACStringInvalid) {
     "DIRECT foopy:10",  // direct cannot have host/port.
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     ProxyServer uri = ProxyServer::FromPacString(tests[i]);
     EXPECT_FALSE(uri.is_valid());
   }
@@ -303,7 +303,7 @@ TEST(ProxyServerTest, ComparatorAndEquality) {
     },
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     // Parse the expected inputs to ProxyServer instances.
     const ProxyServer server1 =
         ProxyServer::FromURI(tests[i].server1, ProxyServer::SCHEME_HTTP);

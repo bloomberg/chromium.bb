@@ -22,6 +22,7 @@
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner_util.h"
@@ -360,7 +361,7 @@ ClientCertIdentityList GetClientCertsOnBackgroundThread(
       kSecClassIdentity, kSecMatchLimitAll, kCFBooleanTrue, kCFBooleanTrue,
   };
   ScopedCFTypeRef<CFDictionaryRef> query(CFDictionaryCreate(
-      kCFAllocatorDefault, kKeys, kValues, arraysize(kValues),
+      kCFAllocatorDefault, kKeys, kValues, base::size(kValues),
       &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks));
   ScopedCFTypeRef<CFArrayRef> result;
   {

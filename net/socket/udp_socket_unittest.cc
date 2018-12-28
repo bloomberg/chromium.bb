@@ -9,11 +9,11 @@
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/scoped_clear_last_error.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "net/base/io_buffer.h"
@@ -501,7 +501,7 @@ TEST_F(UDPSocketTest, ClientGetLocalPeerAddresses) {
     {"2001:db8:0::42", "::1", true},
 #endif
   };
-  for (size_t i = 0; i < arraysize(tests); i++) {
+  for (size_t i = 0; i < base::size(tests); i++) {
     SCOPED_TRACE(std::string("Connecting from ") + tests[i].local_address +
                  std::string(" to ") + tests[i].remote_address);
 

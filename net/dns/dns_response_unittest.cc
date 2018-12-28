@@ -8,6 +8,7 @@
 
 #include "base/big_endian.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
@@ -573,36 +574,44 @@ TEST(DnsResponseTest, ParseToAddressList) {
     int expected_ttl_sec;
   } cases[] = {
       {
-        kT0QuerySize,
-        kT0ResponseDatagram, arraysize(kT0ResponseDatagram),
-        kT0IpAddresses, arraysize(kT0IpAddresses),
-        kT0CanonName,
-        kT0TTL,
+          kT0QuerySize,
+          kT0ResponseDatagram,
+          base::size(kT0ResponseDatagram),
+          kT0IpAddresses,
+          base::size(kT0IpAddresses),
+          kT0CanonName,
+          kT0TTL,
       },
       {
-        kT1QuerySize,
-        kT1ResponseDatagram, arraysize(kT1ResponseDatagram),
-        kT1IpAddresses, arraysize(kT1IpAddresses),
-        kT1CanonName,
-        kT1TTL,
+          kT1QuerySize,
+          kT1ResponseDatagram,
+          base::size(kT1ResponseDatagram),
+          kT1IpAddresses,
+          base::size(kT1IpAddresses),
+          kT1CanonName,
+          kT1TTL,
       },
       {
-        kT2QuerySize,
-        kT2ResponseDatagram, arraysize(kT2ResponseDatagram),
-        kT2IpAddresses, arraysize(kT2IpAddresses),
-        kT2CanonName,
-        kT2TTL,
+          kT2QuerySize,
+          kT2ResponseDatagram,
+          base::size(kT2ResponseDatagram),
+          kT2IpAddresses,
+          base::size(kT2IpAddresses),
+          kT2CanonName,
+          kT2TTL,
       },
       {
-        kT3QuerySize,
-        kT3ResponseDatagram, arraysize(kT3ResponseDatagram),
-        kT3IpAddresses, arraysize(kT3IpAddresses),
-        kT3CanonName,
-        kT3TTL,
+          kT3QuerySize,
+          kT3ResponseDatagram,
+          base::size(kT3ResponseDatagram),
+          kT3IpAddresses,
+          base::size(kT3IpAddresses),
+          kT3CanonName,
+          kT3TTL,
       },
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     const TestCase& t = cases[i];
     DnsResponse response(t.response_data, t.response_size, t.query_size);
     AddressList addr_list;
@@ -707,26 +716,26 @@ TEST(DnsResponseTest, ParseToAddressListFail) {
     size_t size;
     DnsResponse::Result expected_result;
   } cases[] = {
-    { kResponseTruncatedRecord, arraysize(kResponseTruncatedRecord),
-      DnsResponse::DNS_MALFORMED_RESPONSE },
-    { kResponseTruncatedCNAME, arraysize(kResponseTruncatedCNAME),
-      DnsResponse::DNS_MALFORMED_CNAME },
-    { kResponseNameMismatch, arraysize(kResponseNameMismatch),
-      DnsResponse::DNS_NAME_MISMATCH },
-    { kResponseNameMismatchInChain, arraysize(kResponseNameMismatchInChain),
-      DnsResponse::DNS_NAME_MISMATCH },
-    { kResponseSizeMismatch, arraysize(kResponseSizeMismatch),
-      DnsResponse::DNS_SIZE_MISMATCH },
-    { kResponseCNAMEAfterAddress, arraysize(kResponseCNAMEAfterAddress),
-      DnsResponse::DNS_CNAME_AFTER_ADDRESS },
-    // Not actually a failure, just an empty result.
-    { kResponseNoAddresses, arraysize(kResponseNoAddresses),
-      DnsResponse::DNS_PARSE_OK },
+      {kResponseTruncatedRecord, base::size(kResponseTruncatedRecord),
+       DnsResponse::DNS_MALFORMED_RESPONSE},
+      {kResponseTruncatedCNAME, base::size(kResponseTruncatedCNAME),
+       DnsResponse::DNS_MALFORMED_CNAME},
+      {kResponseNameMismatch, base::size(kResponseNameMismatch),
+       DnsResponse::DNS_NAME_MISMATCH},
+      {kResponseNameMismatchInChain, base::size(kResponseNameMismatchInChain),
+       DnsResponse::DNS_NAME_MISMATCH},
+      {kResponseSizeMismatch, base::size(kResponseSizeMismatch),
+       DnsResponse::DNS_SIZE_MISMATCH},
+      {kResponseCNAMEAfterAddress, base::size(kResponseCNAMEAfterAddress),
+       DnsResponse::DNS_CNAME_AFTER_ADDRESS},
+      // Not actually a failure, just an empty result.
+      {kResponseNoAddresses, base::size(kResponseNoAddresses),
+       DnsResponse::DNS_PARSE_OK},
   };
 
   const size_t kQuerySize = 12 + 7;
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     const TestCase& t = cases[i];
 
     DnsResponse response(t.data, t.size, kQuerySize);

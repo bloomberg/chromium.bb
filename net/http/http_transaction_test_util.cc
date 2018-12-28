@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
@@ -153,7 +154,7 @@ const MockTransaction* FindMockTransaction(const GURL& url) {
     return it->second;
 
   // look for builtins:
-  for (size_t i = 0; i < arraysize(kBuiltinMockTransactions); ++i) {
+  for (size_t i = 0; i < base::size(kBuiltinMockTransactions); ++i) {
     if (url == GURL(kBuiltinMockTransactions[i]->url))
       return kBuiltinMockTransactions[i];
   }

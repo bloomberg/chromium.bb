@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
@@ -130,7 +131,7 @@ TEST(HttpAuthTest, ChooseBestChallenge) {
   http_auth_handler_factory->SetHttpAuthPreferences(kNegotiateAuthScheme,
                                                     &http_auth_preferences);
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     // Make a HttpResponseHeaders object.
     std::string headers_with_status_line("HTTP/1.1 401 Unauthorized\n");
     headers_with_status_line += tests[i].headers;

@@ -9,6 +9,7 @@
 
 #include <stdint.h>
 
+#include "base/stl_util.h"
 #include "net/http/transport_security_state_source.h"
 
 // These are SubjectPublicKeyInfo hashes for public key pinning. The
@@ -46,7 +47,7 @@ static const net::TransportSecurityStateSource kHSTSSource = {
   kHSTSRootPosition,
   kExpectCTReportURIs,
   kPinsets,
-  arraysize(kPinsets)
+  base::size(kPinsets)
 };
 
 #endif  // NET_HTTP_TRANSPORT_SECURITY_STATE_STATIC_H_

@@ -13,7 +13,7 @@
 #include "base/debug/leak_annotations.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -470,7 +470,7 @@ class ProxyResolverV8::Context {
     v8::TryCatch try_catch(isolate_);
     v8::Local<v8::Value> ret;
     if (!v8::Function::Cast(*function)
-             ->Call(context, context->Global(), arraysize(argv), argv)
+             ->Call(context, context->Global(), base::size(argv), argv)
              .ToLocal(&ret)) {
       DCHECK(try_catch.HasCaught());
       HandleError(try_catch.Message());

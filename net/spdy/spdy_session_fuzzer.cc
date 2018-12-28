@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/fuzzed_data_provider.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -109,7 +109,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   net::SSLSocketDataProvider ssl_provider(net::ASYNC, net::OK);
   ssl_provider.ssl_info.cert =
-      net::X509Certificate::CreateFromBytes(kCertData, arraysize(kCertData));
+      net::X509Certificate::CreateFromBytes(kCertData, base::size(kCertData));
   CHECK(ssl_provider.ssl_info.cert);
   socket_factory.AddSSLSocketDataProvider(&ssl_provider);
 

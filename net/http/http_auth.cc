@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/stl_util.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "net/base/net_errors.h"
@@ -133,7 +134,7 @@ const char* HttpAuth::SchemeToString(Scheme scheme) {
   static const char* const kSchemeNames[] = {
       kBasicAuthScheme,     kDigestAuthScheme,    kNtlmAuthScheme,
       kNegotiateAuthScheme, kSpdyProxyAuthScheme, kMockAuthScheme};
-  static_assert(arraysize(kSchemeNames) == AUTH_SCHEME_MAX,
+  static_assert(base::size(kSchemeNames) == AUTH_SCHEME_MAX,
                 "http auth scheme names incorrect size");
   if (scheme < AUTH_SCHEME_BASIC || scheme >= AUTH_SCHEME_MAX) {
     NOTREACHED();

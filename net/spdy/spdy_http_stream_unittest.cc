@@ -596,7 +596,7 @@ TEST_F(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
 // chunk becomes available while a write is pending.
 TEST_F(SpdyHttpStreamTest, DelayedSendChunkedPost) {
   const char kUploadData1[] = "12345678";
-  const int kUploadData1Size = arraysize(kUploadData1)-1;
+  const int kUploadData1Size = base::size(kUploadData1) - 1;
   spdy::SpdySerializedFrame req(
       spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
   spdy::SpdySerializedFrame chunk1(spdy_util_.ConstructSpdyDataFrame(1, false));

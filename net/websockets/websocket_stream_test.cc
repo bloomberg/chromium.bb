@@ -11,11 +11,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -207,7 +207,7 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
         "user-agent",      "",        "accept-encoding", "gzip, deflate",
         "accept-language", "en-us,fr"};
     frames_.push_back(spdy_util_.ConstructSpdyGet(
-        kExtraRequestHeaders, arraysize(kExtraRequestHeaders) / 2, 1,
+        kExtraRequestHeaders, base::size(kExtraRequestHeaders) / 2, 1,
         DEFAULT_PRIORITY));
     AddWrite(&frames_.back());
 

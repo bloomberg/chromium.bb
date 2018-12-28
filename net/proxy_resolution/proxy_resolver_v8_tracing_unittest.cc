@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
@@ -1021,7 +1022,7 @@ TEST_F(ProxyResolverV8TracingTest, MultipleResolvers) {
       resolver0.get(), resolver1.get(), resolver2.get(), resolver3.get(),
   };
 
-  const size_t kNumResolvers = arraysize(resolver);
+  const size_t kNumResolvers = base::size(resolver);
   const size_t kNumIterations = 20;
   const size_t kNumResults = kNumResolvers * kNumIterations;
   TestCompletionCallback callback[kNumResults];

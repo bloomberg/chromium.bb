@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -297,7 +298,7 @@ TEST_P(QuicChromiumClientStreamTest, Handle) {
   handle_->OnFinRead();
 
   const char kData1[] = "hello world";
-  const size_t kDataLen = arraysize(kData1);
+  const size_t kDataLen = base::size(kData1);
 
   // All data written.
   EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
@@ -624,7 +625,7 @@ TEST_P(QuicChromiumClientStreamTest, ReadAfterTrailersReceivedButNotDelivered) {
 
 TEST_P(QuicChromiumClientStreamTest, WriteStreamData) {
   const char kData1[] = "hello world";
-  const size_t kDataLen = arraysize(kData1);
+  const size_t kDataLen = base::size(kData1);
 
   // All data written.
   EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
@@ -637,7 +638,7 @@ TEST_P(QuicChromiumClientStreamTest, WriteStreamData) {
 
 TEST_P(QuicChromiumClientStreamTest, WriteStreamDataAsync) {
   const char kData1[] = "hello world";
-  const size_t kDataLen = arraysize(kData1);
+  const size_t kDataLen = base::size(kData1);
 
   // No data written.
   EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
@@ -752,7 +753,7 @@ TEST_P(QuicChromiumClientStreamTest, HeadersAndDataBeforeHandle) {
   base::RunLoop().RunUntilIdle();
 
   // Now explicitly read the data.
-  int data_len = arraysize(data) - 1;
+  int data_len = base::size(data) - 1;
   scoped_refptr<IOBuffer> buffer = base::MakeRefCounted<IOBuffer>(data_len + 1);
   ASSERT_EQ(data_len, stream2->Read(buffer.get(), data_len + 1));
   EXPECT_EQ(quic::QuicStringPiece(data),

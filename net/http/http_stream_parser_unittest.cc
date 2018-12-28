@@ -16,6 +16,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -271,7 +272,7 @@ TEST(HttpStreamParser, InitAsynchronousUploadDataStream) {
                                    callback1.callback());
   EXPECT_EQ(ERR_IO_PENDING, result1);
   base::RunLoop().RunUntilIdle();
-  upload_data_stream.AppendData(kChunk, arraysize(kChunk) - 1, true);
+  upload_data_stream.AppendData(kChunk, base::size(kChunk) - 1, true);
 
   // Check progress after read completes.
   progress = upload_data_stream.GetUploadProgress();
@@ -648,11 +649,11 @@ TEST(HttpStreamParser, SentBytesChunkedPostError) {
                                                &response, callback.callback()));
 
   base::RunLoop().RunUntilIdle();
-  upload_data_stream.AppendData(kChunk, arraysize(kChunk) - 1, false);
+  upload_data_stream.AppendData(kChunk, base::size(kChunk) - 1, false);
 
   base::RunLoop().RunUntilIdle();
   // This write should fail.
-  upload_data_stream.AppendData(kChunk, arraysize(kChunk) - 1, false);
+  upload_data_stream.AppendData(kChunk, base::size(kChunk) - 1, false);
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_FAILED));
 
   EXPECT_EQ(CountWriteBytes(writes), parser.sent_bytes());
@@ -725,7 +726,7 @@ TEST(HttpStreamParser, AsyncSingleChunkAndAsyncSocket) {
   ASSERT_FALSE(callback.have_result());
 
   // Now append the only chunk and wait for the callback.
-  upload_stream.AppendData(kChunk, arraysize(kChunk) - 1, true);
+  upload_stream.AppendData(kChunk, base::size(kChunk) - 1, true);
   ASSERT_THAT(callback.WaitForResult(), IsOk());
 
   // Attempt to read the response status and the response headers.
@@ -777,7 +778,7 @@ TEST(HttpStreamParser, SyncSingleChunkAndAsyncSocket) {
                                  NetLogWithSource()),
               IsOk());
   // Append the only chunk.
-  upload_stream.AppendData(kChunk, arraysize(kChunk) - 1, true);
+  upload_stream.AppendData(kChunk, base::size(kChunk) - 1, true);
 
   SequencedSocketData data(reads, writes);
   std::unique_ptr<ClientSocketHandle> socket_handle =
@@ -859,7 +860,7 @@ TEST(HttpStreamParser, AsyncChunkAndAsyncSocketWithMultipleChunks) {
   };
 
   ChunkedUploadDataStream upload_stream(0);
-  upload_stream.AppendData(kChunk1, arraysize(kChunk1) - 1, false);
+  upload_stream.AppendData(kChunk1, base::size(kChunk1) - 1, false);
   ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback(),
                                  NetLogWithSource()),
               IsOk());
@@ -896,12 +897,12 @@ TEST(HttpStreamParser, AsyncChunkAndAsyncSocketWithMultipleChunks) {
   ASSERT_FALSE(callback.have_result());
 
   // Now append another chunk.
-  upload_stream.AppendData(kChunk2, arraysize(kChunk2) - 1, false);
+  upload_stream.AppendData(kChunk2, base::size(kChunk2) - 1, false);
   ASSERT_FALSE(callback.have_result());
 
   // Add the final chunk, while the write for the second is still pending,
   // which should not confuse the state machine.
-  upload_stream.AppendData(kChunk3, arraysize(kChunk3) - 1, true);
+  upload_stream.AppendData(kChunk3, base::size(kChunk3) - 1, true);
   ASSERT_FALSE(callback.have_result());
 
   // Wait for writes to complete.
@@ -1132,7 +1133,7 @@ TEST(HttpStreamParser, TruncatedHeaders) {
   for (size_t protocol = 0; protocol < NUM_PROTOCOLS; protocol++) {
     SCOPED_TRACE(protocol);
 
-    for (size_t i = 0; i < arraysize(reads); i++) {
+    for (size_t i = 0; i < base::size(reads); i++) {
       SCOPED_TRACE(i);
       SequencedSocketData data(reads[i], writes);
       std::unique_ptr<ClientSocketHandle> socket_handle(
@@ -1161,7 +1162,7 @@ TEST(HttpStreamParser, TruncatedHeaders) {
 
       int rv = parser.ReadResponseHeaders(callback.callback());
       EXPECT_EQ(CountWriteBytes(writes), parser.sent_bytes());
-      if (i == arraysize(reads) - 1) {
+      if (i == base::size(reads) - 1) {
         EXPECT_THAT(rv, IsOk());
         EXPECT_TRUE(response_info.headers.get());
         EXPECT_EQ(CountReadBytes(reads[i]), parser.received_bytes());

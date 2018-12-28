@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
@@ -358,7 +359,7 @@ TEST(HttpAuthHandlerDigestTest, ParseChallenge) {
   GURL origin("http://www.example.com");
   std::unique_ptr<HttpAuthHandlerDigest::Factory> factory(
       new HttpAuthHandlerDigest::Factory());
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     SSLInfo null_ssl_info;
     std::unique_ptr<HttpAuthHandler> handler;
     int rv = factory->CreateAuthHandlerFromString(
@@ -522,7 +523,7 @@ TEST(HttpAuthHandlerDigestTest, AssembleCredentials) {
   GURL origin("http://www.example.com");
   std::unique_ptr<HttpAuthHandlerDigest::Factory> factory(
       new HttpAuthHandlerDigest::Factory());
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     SSLInfo null_ssl_info;
     std::unique_ptr<HttpAuthHandler> handler;
     int rv = factory->CreateAuthHandlerFromString(

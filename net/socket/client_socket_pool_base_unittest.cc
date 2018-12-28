@@ -13,12 +13,12 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
@@ -1232,7 +1232,7 @@ TEST_F(ClientSocketPoolBaseTest, StallAndThenCancelAndTriggerAvailableSocket) {
                         callback.callback(), pool_.get(), NetLogWithSource()));
 
   ClientSocketHandle handles[4];
-  for (size_t i = 0; i < arraysize(handles); ++i) {
+  for (size_t i = 0; i < base::size(handles); ++i) {
     TestCompletionCallback callback;
     EXPECT_EQ(
         ERR_IO_PENDING,
@@ -1244,7 +1244,7 @@ TEST_F(ClientSocketPoolBaseTest, StallAndThenCancelAndTriggerAvailableSocket) {
   // One will be stalled, cancel all the handles now.
   // This should hit the OnAvailableSocketSlot() code where we previously had
   // stalled groups, but no longer have any.
-  for (size_t i = 0; i < arraysize(handles); ++i)
+  for (size_t i = 0; i < base::size(handles); ++i)
     handles[i].Reset();
 }
 

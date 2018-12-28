@@ -11,6 +11,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -1336,7 +1337,7 @@ TEST_P(QuicHttpStreamTest, SendPostRequestAndReceiveSoloFin) {
             stream_->ReadResponseBody(read_buffer_.get(), read_buffer_->size(),
                                       callback_.callback()));
   ProcessPacket(ConstructServerDataPacket(4, false, kFin,
-                                          arraysize(kResponseBody) - 1, ""));
+                                          base::size(kResponseBody) - 1, ""));
   EXPECT_EQ(0,
             stream_->ReadResponseBody(read_buffer_.get(), read_buffer_->size(),
                                       callback_.callback()));

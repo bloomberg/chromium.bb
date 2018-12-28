@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
@@ -142,7 +143,7 @@ const struct {
 void GetPhaseAndTypeFromNetError(Error error,
                                  std::string* phase_out,
                                  std::string* type_out) {
-  for (size_t i = 0; i < arraysize(kErrorTypes); ++i) {
+  for (size_t i = 0; i < base::size(kErrorTypes); ++i) {
     DCHECK(kErrorTypes[i].phase != nullptr);
     DCHECK(kErrorTypes[i].type != nullptr);
     if (kErrorTypes[i].error == error) {

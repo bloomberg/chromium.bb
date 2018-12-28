@@ -189,7 +189,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, JavascriptError) {
   log.GetEntries(&entries_list[0]);
   request_log.GetEntries(&entries_list[1]);
 
-  for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
+  for (size_t list_i = 0; list_i < base::size(entries_list); list_i++) {
     const TestNetLogEntry::List& entries = entries_list[list_i];
     EXPECT_EQ(2u, entries.size());
     EXPECT_TRUE(LogContainsEvent(entries, 0,
@@ -244,7 +244,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, TooManyAlerts) {
   log.GetEntries(&entries_list[0]);
   request_log.GetEntries(&entries_list[1]);
 
-  for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
+  for (size_t list_i = 0; list_i < base::size(entries_list); list_i++) {
     const TestNetLogEntry::List& entries = entries_list[list_i];
     EXPECT_EQ(50u, entries.size());
     for (size_t i = 0; i < entries.size(); ++i) {
@@ -291,7 +291,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, TooManyEmptyAlerts) {
   log.GetEntries(&entries_list[0]);
   request_log.GetEntries(&entries_list[1]);
 
-  for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
+  for (size_t list_i = 0; list_i < base::size(entries_list); list_i++) {
     const TestNetLogEntry::List& entries = entries_list[list_i];
     EXPECT_EQ(1000u, entries.size());
     for (size_t i = 0; i < entries.size(); ++i) {
@@ -367,7 +367,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, Dns) {
   log.GetEntries(&entries_list[0]);
   request_log.GetEntries(&entries_list[1]);
 
-  for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
+  for (size_t list_i = 0; list_i < base::size(entries_list); list_i++) {
     const TestNetLogEntry::List& entries = entries_list[list_i];
     EXPECT_EQ(1u, entries.size());
     EXPECT_TRUE(LogContainsEvent(entries, 0,
@@ -474,7 +474,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, FallBackToSynchronous1) {
   log.GetEntries(&entries_list[0]);
   request_log.GetEntries(&entries_list[1]);
 
-  for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
+  for (size_t list_i = 0; list_i < base::size(entries_list); list_i++) {
     const TestNetLogEntry::List& entries = entries_list[list_i];
     EXPECT_EQ(1u, entries.size());
     EXPECT_TRUE(LogContainsEvent(entries, 0,
@@ -1143,7 +1143,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, MultipleResolvers) {
       resolver0.get(), resolver1.get(), resolver2.get(), resolver3.get(),
   };
 
-  const size_t kNumResolvers = arraysize(resolver);
+  const size_t kNumResolvers = base::size(resolver);
   const size_t kNumIterations = 20;
   const size_t kNumResults = kNumResolvers * kNumIterations;
   TestCompletionCallback callback[kNumResults];

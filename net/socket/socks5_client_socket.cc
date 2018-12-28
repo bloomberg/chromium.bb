@@ -9,6 +9,7 @@
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 #include "base/trace_event/trace_event.h"
@@ -281,8 +282,8 @@ int SOCKS5ClientSocket::DoGreetWrite() {
   }
 
   if (buffer_.empty()) {
-    buffer_ = std::string(kSOCKS5GreetWriteData,
-                          arraysize(kSOCKS5GreetWriteData));
+    buffer_ =
+        std::string(kSOCKS5GreetWriteData, base::size(kSOCKS5GreetWriteData));
     bytes_sent_ = 0;
   }
 
