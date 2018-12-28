@@ -20,6 +20,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_transform.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -202,7 +203,7 @@ String SVGTransform::ValueAsString() const {
       arguments[argument_count++] = angle_;
       break;
   }
-  DCHECK_LE(argument_count, arraysize(arguments));
+  DCHECK_LE(argument_count, base::size(arguments));
 
   StringBuilder builder;
   builder.Append(TransformTypePrefixForParsing(transform_type_));

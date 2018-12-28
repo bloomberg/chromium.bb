@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/editing/iterators/search_buffer.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
@@ -71,7 +72,7 @@ TEST_F(SearchBufferTest, FindPlainTextInvalidTarget) {
 
   static const UChar* invalid_u_strings[] = {kInvalid1, kInvalid2, kInvalid3};
 
-  for (size_t i = 0; i < arraysize(invalid_u_strings); ++i) {
+  for (size_t i = 0; i < base::size(invalid_u_strings); ++i) {
     String invalid_target(invalid_u_strings[i]);
     EphemeralRange found_range =
         FindPlainText(EphemeralRange(range), invalid_target, 0);

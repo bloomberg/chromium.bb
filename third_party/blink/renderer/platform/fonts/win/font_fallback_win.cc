@@ -34,6 +34,7 @@
 #include <unicode/uchar.h>
 #include <limits>
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/text/icu_error.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -376,13 +377,13 @@ const UChar* GetFontBasedOnUnicodeBlock(UBlockCode block_code,
   static const UChar* math_font = 0;
   static bool initialized = false;
   if (!initialized) {
-    for (size_t i = 0; i < arraysize(kEmojiFonts); i++) {
+    for (size_t i = 0; i < base::size(kEmojiFonts); i++) {
       if (IsFontPresent(kEmojiFonts[i], font_manager)) {
         emoji_font = kEmojiFonts[i];
         break;
       }
     }
-    for (size_t i = 0; i < arraysize(kMathFonts); i++) {
+    for (size_t i = 0; i < base::size(kMathFonts); i++) {
       if (IsFontPresent(kMathFonts[i], font_manager)) {
         math_font = kMathFonts[i];
         break;

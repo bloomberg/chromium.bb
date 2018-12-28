@@ -34,6 +34,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "third_party/blink/public/platform/web_crypto_algorithm_params.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -343,7 +344,7 @@ WebCryptoAlgorithm WebCryptoAlgorithm::AdoptParamsAndCreate(
 const WebCryptoAlgorithmInfo* WebCryptoAlgorithm::LookupAlgorithmInfo(
     WebCryptoAlgorithmId id) {
   const unsigned id_int = id;
-  if (id_int >= arraysize(kAlgorithmIdToInfo))
+  if (id_int >= base::size(kAlgorithmIdToInfo))
     return nullptr;
   return &kAlgorithmIdToInfo[id];
 }

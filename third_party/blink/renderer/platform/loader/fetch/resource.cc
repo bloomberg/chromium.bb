@@ -31,6 +31,7 @@
 #include <memory>
 
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -99,12 +100,12 @@ const char* const kHeaderPrefixesToIgnoreAfterRevalidation[] = {
 
 static inline bool ShouldUpdateHeaderAfterRevalidation(
     const AtomicString& header) {
-  for (size_t i = 0; i < arraysize(kHeadersToIgnoreAfterRevalidation); i++) {
+  for (size_t i = 0; i < base::size(kHeadersToIgnoreAfterRevalidation); i++) {
     if (DeprecatedEqualIgnoringCase(header,
                                     kHeadersToIgnoreAfterRevalidation[i]))
       return false;
   }
-  for (size_t i = 0; i < arraysize(kHeaderPrefixesToIgnoreAfterRevalidation);
+  for (size_t i = 0; i < base::size(kHeaderPrefixesToIgnoreAfterRevalidation);
        i++) {
     if (header.StartsWithIgnoringASCIICase(
             kHeaderPrefixesToIgnoreAfterRevalidation[i]))

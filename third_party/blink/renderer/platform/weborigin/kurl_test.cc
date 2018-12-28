@@ -35,6 +35,7 @@
 
 #include <stdint.h>
 
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
@@ -85,7 +86,7 @@ TEST(KURLTest, Getters) {
        "xn--6qqa088eba", 0, "", nullptr, "/", nullptr, nullptr, nullptr, false},
   };
 
-  for (size_t i = 0; i < arraysize(cases); i++) {
+  for (size_t i = 0; i < base::size(cases); i++) {
     const GetterCase& c = cases[i];
 
     const String& url = String::FromUTF8(c.url);
@@ -176,7 +177,7 @@ TEST(KURLTest, Setters) {
        nullptr, "http://goo.com:92/#b"},
   };
 
-  for (size_t i = 0; i < arraysize(cases); i++) {
+  for (size_t i = 0; i < base::size(cases); i++) {
     KURL kurl(cases[i].url);
 
     kurl.SetProtocol(cases[i].protocol);
@@ -232,7 +233,7 @@ TEST(KURLTest, DecodeURLEscapeSequences) {
       {"%e4%bd%a0%e5%a5%bd", "\xe4\xbd\xa0\xe5\xa5\xbd"},
   };
 
-  for (size_t i = 0; i < arraysize(decode_cases); i++) {
+  for (size_t i = 0; i < base::size(decode_cases); i++) {
     String input(decode_cases[i].input);
     String str =
         DecodeURLEscapeSequences(input, DecodeURLMode::kUTF8OrIsomorphic);
@@ -248,7 +249,7 @@ TEST(KURLTest, DecodeURLEscapeSequences) {
   String decoded = DecodeURLEscapeSequences("%e6%bc%a2%e5%ad%97",
                                             DecodeURLMode::kUTF8OrIsomorphic);
   const UChar kDecodedExpected[] = {0x6F22, 0x5b57};
-  EXPECT_EQ(String(kDecodedExpected, arraysize(kDecodedExpected)), decoded);
+  EXPECT_EQ(String(kDecodedExpected, base::size(kDecodedExpected)), decoded);
 
   // Test the error behavior for invalid UTF-8 (we differ from WebKit here).
   // %e4 %a0 are invalid for UTF-8, but %e5%a5%bd is valid.
@@ -279,7 +280,7 @@ TEST(KURLTest, EncodeWithURLEscapeSequences) {
       {"pqrstuvwxyz{|}~\x7f", "pqrstuvwxyz%7B%7C%7D~%7F"},
   };
 
-  for (size_t i = 0; i < arraysize(encode_cases); i++) {
+  for (size_t i = 0; i < base::size(encode_cases); i++) {
     String input(encode_cases[i].input);
     String expected_output(encode_cases[i].output);
     String output = EncodeWithURLEscapeSequences(input);
@@ -870,7 +871,7 @@ TEST(KURLTest, strippedForUseAsReferrer) {
       {"https://www.google.com/#", "https://www.google.com/"},
   };
 
-  for (size_t i = 0; i < arraysize(referrer_cases); i++) {
+  for (size_t i = 0; i < base::size(referrer_cases); i++) {
     const KURL kurl(referrer_cases[i].input);
     String referrer = kurl.StrippedForUseAsReferrer();
     EXPECT_STREQ(referrer_cases[i].output, referrer.Utf8().data());

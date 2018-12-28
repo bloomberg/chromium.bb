@@ -31,6 +31,7 @@
 
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
@@ -121,7 +122,7 @@ TEST(StringBuilderTest, Append) {
   EXPECT_EQ(3U, builder_for_u_char32_append.length());
   const UChar result_array[] = {U16_LEAD(fraktur_a_char),
                                 U16_TRAIL(fraktur_a_char), 'A'};
-  ExpectBuilderContent(String(result_array, arraysize(result_array)),
+  ExpectBuilderContent(String(result_array, base::size(result_array)),
                        builder_for_u_char32_append);
 }
 

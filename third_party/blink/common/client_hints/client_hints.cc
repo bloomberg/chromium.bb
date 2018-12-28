@@ -4,7 +4,7 @@
 
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 
 namespace blink {
 
@@ -13,7 +13,7 @@ const char* const kClientHintsHeaderMapping[] = {
     "rtt",           "downlink", "ect"};
 
 const size_t kClientHintsHeaderMappingCount =
-    arraysize(kClientHintsHeaderMapping);
+    base::size(kClientHintsHeaderMapping);
 
 const char* const kWebEffectiveConnectionTypeMapping[] = {
     "4g" /* Unknown */, "4g" /* Offline */, "slow-2g" /* Slow 2G */,
@@ -21,6 +21,6 @@ const char* const kWebEffectiveConnectionTypeMapping[] = {
 };
 
 const size_t kWebEffectiveConnectionTypeMappingCount =
-    arraysize(kWebEffectiveConnectionTypeMapping);
+    base::size(kWebEffectiveConnectionTypeMapping);
 
 }  // namespace blink

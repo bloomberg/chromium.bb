@@ -33,6 +33,8 @@
 #include <unicode/uobject.h>
 #include <unicode/uscript.h>
 #include <algorithm>
+
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/platform/text/character_property_data.h"
 #include "third_party/blink/renderer/platform/text/icu_error.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -61,9 +63,9 @@ static icu::UnicodeSet* createUnicodeSet(const UChar32* characters,
   return unicodeSet;
 }
 
-#define CREATE_UNICODE_SET(name)                                      \
-  createUnicodeSet(name##Array, arraysize(name##Array), name##Ranges, \
-                   arraysize(name##Ranges))
+#define CREATE_UNICODE_SET(name)                                       \
+  createUnicodeSet(name##Array, base::size(name##Array), name##Ranges, \
+                   base::size(name##Ranges))
 
 #define RETURN_HAS_PROPERTY(c, name)            \
   static icu::UnicodeSet* unicodeSet = nullptr; \

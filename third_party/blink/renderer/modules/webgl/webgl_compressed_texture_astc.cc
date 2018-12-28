@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/webgl/webgl_compressed_texture_astc.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
 
 namespace blink {
@@ -32,7 +33,8 @@ WebGLCompressedTextureASTC::WebGLCompressedTextureASTC(
       GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR - GL_COMPRESSED_RGBA_ASTC_4x4_KHR;
 
   for (size_t i = 0;
-       i < arraysize(WebGLCompressedTextureASTC::kBlockSizeCompressASTC); i++) {
+       i < base::size(WebGLCompressedTextureASTC::kBlockSizeCompressASTC);
+       i++) {
     /* GL_COMPRESSED_RGBA_ASTC(0x93B0 ~ 0x93BD) */
     context->AddCompressedTextureFormat(
         WebGLCompressedTextureASTC::kBlockSizeCompressASTC[i].compress_type);

@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/html/track/vtt/buffered_line_reader.h"
 
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
@@ -173,12 +174,12 @@ TEST(BufferedLineReaderTest, BufferSizes) {
   const char* lines[] = {"aaaaaaaaaaaaaaaa", "bbbbbbbbbb", "ccccccccccccc", "",
                          "dddddd",           "",           "eeeeeeeeee"};
   const NewlineType kBreaks[] = {kLf, kLf, kLf, kLf, kLf, kLf, kLf};
-  const size_t num_test_lines = arraysize(lines);
-  static_assert(num_test_lines == arraysize(kBreaks),
+  const size_t num_test_lines = base::size(lines);
+  static_assert(num_test_lines == base::size(kBreaks),
                 "number of test lines and breaks should be the same");
   String data = MakeTestData(lines, kBreaks, num_test_lines);
 
-  for (size_t k = 0; k < arraysize(kBlockSizes); ++k) {
+  for (size_t k = 0; k < base::size(kBlockSizes); ++k) {
     size_t line_count = 0;
     BufferedLineReader reader;
     wtf_size_t block_size = kBlockSizes[k];
@@ -200,12 +201,12 @@ TEST(BufferedLineReaderTest, BufferSizesMixedEndings) {
       "aaaaaaaaaaaaaaaa", "bbbbbbbbbb", "ccccccccccccc",      "",
       "dddddd",           "eeeeeeeeee", "fffffffffffffffffff"};
   const NewlineType kBreaks[] = {kCr, kLf, kCrLf, kCr, kLf, kCrLf, kLf};
-  const size_t num_test_lines = arraysize(lines);
-  static_assert(num_test_lines == arraysize(kBreaks),
+  const size_t num_test_lines = base::size(lines);
+  static_assert(num_test_lines == base::size(kBreaks),
                 "number of test lines and breaks should be the same");
   String data = MakeTestData(lines, kBreaks, num_test_lines);
 
-  for (size_t k = 0; k < arraysize(kBlockSizes); ++k) {
+  for (size_t k = 0; k < base::size(kBlockSizes); ++k) {
     size_t line_count = 0;
     BufferedLineReader reader;
     wtf_size_t block_size = kBlockSizes[k];

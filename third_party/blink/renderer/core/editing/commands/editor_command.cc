@@ -90,7 +90,7 @@ const CommandNameEntry kCommandNameEntries[] = {
 };
 // Handles all commands except WebEditingCommandType::Invalid.
 static_assert(
-    arraysize(kCommandNameEntries) + 1 ==
+    base::size(kCommandNameEntries) + 1 ==
         static_cast<size_t>(WebEditingCommandType::kNumberOfCommandTypes),
     "must handle all valid WebEditingCommandType");
 
@@ -1787,7 +1787,7 @@ static const EditorInternalCommand* InternalCommand(
   };
   // Handles all commands except WebEditingCommandType::Invalid.
   static_assert(
-      arraysize(kEditorCommands) + 1 ==
+      base::size(kEditorCommands) + 1 ==
           static_cast<size_t>(WebEditingCommandType::kNumberOfCommandTypes),
       "must handle all valid WebEditingCommandType");
 
@@ -1798,7 +1798,7 @@ static const EditorInternalCommand* InternalCommand(
 
   int command_index = static_cast<int>(command_type) - 1;
   DCHECK(command_index >= 0 &&
-         command_index < static_cast<int>(arraysize(kEditorCommands)));
+         command_index < static_cast<int>(base::size(kEditorCommands)));
   return &kEditorCommands[command_index];
 }
 

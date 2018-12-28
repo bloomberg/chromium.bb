@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/modules/crypto/subtle_crypto.h"
 
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_crypto.h"
@@ -149,7 +150,7 @@ static bool ParseJsonWebKey(const Dictionary& dict,
 
   const char* const kPropertyNames[] = {"d",  "n",  "e", "p",   "q", "dp",
                                         "dq", "qi", "k", "crv", "x", "y"};
-  for (unsigned i = 0; i < arraysize(kPropertyNames); ++i)
+  for (unsigned i = 0; i < base::size(kPropertyNames); ++i)
     CopyStringProperty(kPropertyNames[i], dict, json_object.get());
 
   String json = json_object->ToJSONString();

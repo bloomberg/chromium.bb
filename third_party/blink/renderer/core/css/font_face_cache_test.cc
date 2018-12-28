@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/renderer/core/css/font_face_cache.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_font_face_src_value.h"
 #include "third_party/blink/renderer/core/css/css_font_family_value.h"
@@ -11,7 +13,6 @@
 #include "third_party/blink/renderer/core/css/css_segmented_font_face.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/font_face.h"
-#include "third_party/blink/renderer/core/css/font_face_cache.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 
@@ -70,7 +71,7 @@ void FontFaceCacheTest::AppendTestFaceForCapabilities(const CSSValue& stretch,
       CSSPropertyValue(GetCSSPropertyFontFamily(), *family_name),
       CSSPropertyValue(GetCSSPropertySrc(), *src_value_list)};
   MutableCSSPropertyValueSet* font_face_descriptor =
-      MutableCSSPropertyValueSet::Create(properties, arraysize(properties));
+      MutableCSSPropertyValueSet::Create(properties, base::size(properties));
 
   font_face_descriptor->SetProperty(CSSPropertyFontStretch, stretch);
   font_face_descriptor->SetProperty(CSSPropertyFontStyle, style);

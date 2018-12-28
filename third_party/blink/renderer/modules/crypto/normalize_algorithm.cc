@@ -32,6 +32,8 @@
 
 #include <algorithm>
 #include <memory>
+
+#include "base/stl_util.h"
 #include "third_party/blink/public/platform/web_crypto_algorithm_params.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
@@ -86,7 +88,7 @@ const AlgorithmNameMapping kAlgorithmNameMappings[] = {
 // Reminder to update the table mapping names to IDs whenever adding a new
 // algorithm ID.
 static_assert(kWebCryptoAlgorithmIdLast + 1 ==
-                  arraysize(kAlgorithmNameMappings),
+                  base::size(kAlgorithmNameMappings),
               "algorithmNameMappings needs to be updated");
 
 #if DCHECK_IS_ON()
@@ -177,7 +179,7 @@ bool LookupAlgorithmIdByName(const String& algorithm_name,
                              WebCryptoAlgorithmId& id) {
   const AlgorithmNameMapping* begin = kAlgorithmNameMappings;
   const AlgorithmNameMapping* end =
-      kAlgorithmNameMappings + arraysize(kAlgorithmNameMappings);
+      kAlgorithmNameMappings + base::size(kAlgorithmNameMappings);
 
 #if DCHECK_IS_ON()
   DCHECK(VerifyAlgorithmNameMappings(begin, end));
@@ -772,7 +774,7 @@ const CurveNameMapping kCurveNameMappings[] = {
     {"P-521", kWebCryptoNamedCurveP521}};
 
 // Reminder to update curveNameMappings when adding a new curve.
-static_assert(kWebCryptoNamedCurveLast + 1 == arraysize(kCurveNameMappings),
+static_assert(kWebCryptoNamedCurveLast + 1 == base::size(kCurveNameMappings),
               "curveNameMappings needs to be updated");
 
 bool ParseNamedCurve(const Dictionary& raw,
@@ -786,7 +788,7 @@ bool ParseNamedCurve(const Dictionary& raw,
     return false;
   }
 
-  for (size_t i = 0; i < arraysize(kCurveNameMappings); ++i) {
+  for (size_t i = 0; i < base::size(kCurveNameMappings); ++i) {
     if (kCurveNameMappings[i].name == named_curve_string) {
       named_curve = kCurveNameMappings[i].value;
       return true;

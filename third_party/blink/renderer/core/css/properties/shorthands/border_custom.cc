@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/properties/shorthands/border.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
@@ -52,7 +53,7 @@ const CSSValue* Border::CSSValueFromComputedStyleInternal(
   static const CSSProperty* kProperties[3] = {&GetCSSPropertyBorderRight(),
                                               &GetCSSPropertyBorderBottom(),
                                               &GetCSSPropertyBorderLeft()};
-  for (size_t i = 0; i < arraysize(kProperties); ++i) {
+  for (size_t i = 0; i < base::size(kProperties); ++i) {
     const CSSValue* value_for_side = kProperties[i]->CSSValueFromComputedStyle(
         style, layout_object, styled_node, allow_visited_style);
     if (!DataEquivalent(value, value_for_side)) {

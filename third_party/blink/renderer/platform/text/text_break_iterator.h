@@ -22,13 +22,15 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_BREAK_ITERATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_BREAK_ITERATOR_H_
 
+#include <type_traits>
+
+#include <unicode/brkiter.h>
+
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
-
-#include <unicode/brkiter.h>
 
 namespace blink {
 
@@ -143,33 +145,33 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
   const String& GetString() const { return string_; }
 
   UChar LastCharacter() const {
-    static_assert(arraysize(prior_context_) == 2,
+    static_assert(std::extent<decltype(prior_context_)>() == 2,
                   "TextBreakIterator has unexpected prior context length");
     return prior_context_[1];
   }
 
   UChar SecondToLastCharacter() const {
-    static_assert(arraysize(prior_context_) == 2,
+    static_assert(std::extent<decltype(prior_context_)>() == 2,
                   "TextBreakIterator has unexpected prior context length");
     return prior_context_[0];
   }
 
   void SetPriorContext(UChar last, UChar second_to_last) {
-    static_assert(arraysize(prior_context_) == 2,
+    static_assert(std::extent<decltype(prior_context_)>() == 2,
                   "TextBreakIterator has unexpected prior context length");
     prior_context_[0] = second_to_last;
     prior_context_[1] = last;
   }
 
   void UpdatePriorContext(UChar last) {
-    static_assert(arraysize(prior_context_) == 2,
+    static_assert(std::extent<decltype(prior_context_)>() == 2,
                   "TextBreakIterator has unexpected prior context length");
     prior_context_[0] = prior_context_[1];
     prior_context_[1] = last;
   }
 
   void ResetPriorContext() {
-    static_assert(arraysize(prior_context_) == 2,
+    static_assert(std::extent<decltype(prior_context_)>() == 2,
                   "TextBreakIterator has unexpected prior context length");
     prior_context_[0] = 0;
     prior_context_[1] = 0;
@@ -181,7 +183,7 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
   };
 
   PriorContext GetPriorContext() const {
-    static_assert(arraysize(prior_context_) == 2,
+    static_assert(std::extent<decltype(prior_context_)>() == 2,
                   "TextBreakIterator has unexpected prior context length");
     if (prior_context_[1]) {
       if (prior_context_[0])

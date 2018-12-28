@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
@@ -124,7 +124,7 @@ class TestOriginTrialPolicy : public OriginTrialPolicy {
   }
   base::StringPiece GetPublicKey() const override {
     return base::StringPiece(reinterpret_cast<const char*>(key_),
-                             arraysize(kTestPublicKey));
+                             base::size(kTestPublicKey));
   }
   bool IsFeatureDisabled(base::StringPiece feature) const override {
     return disabled_features_.count(feature.as_string()) > 0;
@@ -158,10 +158,10 @@ class TrialTokenValidatorTest : public testing::Test {
         insecure_origin_(url::Origin::Create(GURL(kInsecureOrigin))),
         valid_token_signature_(
             std::string(reinterpret_cast<const char*>(kSampleTokenSignature),
-                        arraysize(kSampleTokenSignature))),
+                        base::size(kSampleTokenSignature))),
         expired_token_signature_(
             std::string(reinterpret_cast<const char*>(kExpiredTokenSignature),
-                        arraysize(kExpiredTokenSignature))),
+                        base::size(kExpiredTokenSignature))),
         response_headers_(new net::HttpResponseHeaders("")) {
     TrialTokenValidator::SetOriginTrialPolicyGetter(
         base::BindRepeating([](OriginTrialPolicy* policy) { return policy; },

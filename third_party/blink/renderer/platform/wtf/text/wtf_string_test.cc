@@ -26,6 +26,8 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #include <limits>
+
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
@@ -494,7 +496,7 @@ TEST(StringTest, StringPrinter) {
                                          0x30C8};  // "Test" in Japanese.
   EXPECT_EQ(CString("\"\\u30C6\\u30B9\\u30C8\""),
             ToCStringThroughPrinter(
-                String(kUnicodeSample, arraysize(kUnicodeSample))));
+                String(kUnicodeSample, base::size(kUnicodeSample))));
 }
 
 }  // namespace WTF

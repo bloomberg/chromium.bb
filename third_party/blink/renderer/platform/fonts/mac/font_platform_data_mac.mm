@@ -25,6 +25,8 @@
 
 #import <AppKit/NSFont.h>
 #import <AvailabilityMacros.h>
+
+#include "base/stl_util.h"
 #import "third_party/blink/public/platform/mac/web_sandbox_support.h"
 #import "third_party/blink/public/platform/platform.h"
 #import "third_party/blink/renderer/platform/fonts/font.h"
@@ -59,13 +61,13 @@ static CTFontDescriptorRef CascadeToLastResortFontDescriptor() {
   const void* descriptors[] = {last_resort.Get()};
   RetainPtr<CFArrayRef> values_array(
       kAdoptCF, CFArrayCreate(kCFAllocatorDefault, descriptors,
-                              arraysize(descriptors), &kCFTypeArrayCallBacks));
+                              base::size(descriptors), &kCFTypeArrayCallBacks));
 
   const void* keys[] = {kCTFontCascadeListAttribute};
   const void* values[] = {values_array.Get()};
   RetainPtr<CFDictionaryRef> attributes(
       kAdoptCF,
-      CFDictionaryCreate(kCFAllocatorDefault, keys, values, arraysize(keys),
+      CFDictionaryCreate(kCFAllocatorDefault, keys, values, base::size(keys),
                          &kCFTypeDictionaryKeyCallBacks,
                          &kCFTypeDictionaryValueCallBacks));
 

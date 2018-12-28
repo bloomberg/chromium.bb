@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/core/editing/serializers/markup_formatter.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/core/dom/cdata_section.h"
 #include "third_party/blink/renderer/core/dom/comment.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -114,11 +115,11 @@ void MarkupFormatter::AppendCharactersReplacingEntities(
   if (source.Is8Bit()) {
     AppendCharactersReplacingEntitiesInternal(
         result, source.Characters8() + offset, length, kEntityMaps,
-        arraysize(kEntityMaps), entity_mask);
+        base::size(kEntityMaps), entity_mask);
   } else {
     AppendCharactersReplacingEntitiesInternal(
         result, source.Characters16() + offset, length, kEntityMaps,
-        arraysize(kEntityMaps), entity_mask);
+        base::size(kEntityMaps), entity_mask);
   }
 }
 

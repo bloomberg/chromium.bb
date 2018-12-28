@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -401,7 +402,7 @@ class JsToCppTest : public testing::Test {
              global_proxy, scope.GetIsolate())};
     V8ScriptRunner::CallFunction(start_fn.As<v8::Function>(),
                                  scope.GetExecutionContext(), global_proxy,
-                                 arraysize(args), args, scope.GetIsolate());
+                                 base::size(args), args, scope.GetIsolate());
     test::EnterRunLoop();
   }
 };
