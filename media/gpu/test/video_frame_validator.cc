@@ -201,7 +201,7 @@ bool VideoFrameValidator::WriteI420ToFile(
                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_APPEND);
   const size_t num_planes = VideoFrame::NumPlanes(video_frame->format());
   for (size_t i = 0; i < num_planes; i++) {
-    size_t plane_w = VideoFrame::Rows(i, video_frame->format(), width);
+    size_t plane_w = VideoFrame::Columns(i, video_frame->format(), width);
     size_t plane_h = VideoFrame::Rows(i, video_frame->format(), height);
     int data_size = base::checked_cast<int>(plane_w * plane_h);
     const uint8_t* data = video_frame->data(i);
