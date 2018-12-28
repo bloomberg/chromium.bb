@@ -11,6 +11,7 @@ source_set("eg_tests") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui",
     "//ios/chrome/test/app:test_support",
