@@ -78,6 +78,10 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   // open when disabling, also close it.
   void SetTrayEnabled(bool enabled);
 
+  // Set the target notification, which is visible in the viewport when the
+  // message center opens.
+  void SetTargetNotification(const std::string& notification_id);
+
   // Sets the height of the system tray bubble from the edge of the work area
   // so that the notification popups don't overlap with the tray. Pass 0 if no
   // bubble is shown.
