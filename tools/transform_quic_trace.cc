@@ -41,28 +41,28 @@ bool IsValidFormatString(const std::string& format) {
 }
 
 bool InputTrace(quic_trace::Trace* trace) {
-  if (FLAGS_input_format == "json") {
-    std::istreambuf_iterator<char> it(std::cin);
-    std::istreambuf_iterator<char> end;
-
-    auto status = JsonStringToMessage(std::string(it, end), trace);
-    return status.ok();
+  if (FLAGS_input_format == "protobuf") {
+    return trace->ParseFromIstream(&std::cin);
   }
 
-  return trace->ParseFromIstream(&std::cin);
+  std::istreambuf_iterator<char> it(std::cin);
+  std::istreambuf_iterator<char> end;
+
+  auto status = JsonStringToMessage(std::string(it, end), trace);
+  return status.ok();
 }
 
 void OutputTrace(const quic_trace::Trace& trace) {
-  if (FLAGS_output_format == "json") {
-    std::string output;
-    JsonOptions options;
-    options.add_whitespace = FLAGS_whitespace;
-    MessageToJsonString(trace, &output, options);
-    std::cout << output;
+  if (FLAGS_output_format == "protobuf") {
+    trace.SerializeToOstream(&std::cout);
     return;
   }
 
-  trace.SerializeToOstream(&std::cout);
+  std::string output;
+  JsonOptions options;
+  options.add_whitespace = FLAGS_whitespace;
+  MessageToJsonString(trace, &output, options);
+  std::cout << output;
 }
 
 void MaybeTruncateTrace(quic_trace::Trace* trace) {
