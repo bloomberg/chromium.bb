@@ -33,6 +33,6 @@ Polymer({
    * @private
    */
   iconUrlFromId_: function(app) {
-    return `chrome://extension-icon/${app.id}/128/1`;
+    return app_management.util.getAppIcon(app);
   },
 });

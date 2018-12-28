@@ -34,8 +34,17 @@ cr.define('app_management.util', function() {
     return initialState;
   }
 
+  /**
+   * @param {appManagement.mojom.App} app
+   * @return {string}
+   */
+  function getAppIcon(app) {
+    return `chrome://extension-icon/${app.id}/128/1`;
+  }
+
   return {
     createEmptyState: createEmptyState,
     createInitialState: createInitialState,
+    getAppIcon: getAppIcon,
   };
 });

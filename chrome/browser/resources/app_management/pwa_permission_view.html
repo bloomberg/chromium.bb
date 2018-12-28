@@ -13,19 +13,6 @@
 <dom-module id="app-management-pwa-permission-view">
   <template>
     <style include="app-management-shared-css cr-icons paper-button-style">
-    #permission-header {
-      align-items: center;
-      border-top: var(--card-separator);
-      display: flex;
-    }
-
-    #app-title {
-      flex: 1;
-      font-size: 16px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
     #site-settings-button {
       color: var(--secondary-text-color);
       font-size: 12px;
@@ -49,14 +36,14 @@
     }
     </style>
 
-    <div id="permission-header">
+    <div class="permission-view-header">
       <paper-icon-button-light class="icon-arrow-back">
           <button id="closeButton" aria-label="$i18n{back}">
             <paper-ripple class="circle"></paper-ripple>
           </button>
       </paper-icon-button-light>
       <img class="permission-view-header-icon" src="[[iconUrlFromId_(app_)]]">
-      <div id="app-title">[[app_.title]]</div>
+      <div class="app-title">[[app_.title]]</div>
       <div id="site-settings-button">$i18n{openSiteSettings}</div>
       <paper-icon-button-light id="site-settings-icon" class="icon-external">
           <button aria-label="$i18n{openSiteSettings}"></button>
