@@ -58,6 +58,10 @@ content::WebUIDataSource* CreatePolicyUIHtmlSource() {
                              IDS_POLICY_SHOW_EXPANDED_VALUE);
   source->AddLocalizedString("hideExpandedValue",
                              IDS_POLICY_HIDE_EXPANDED_VALUE);
+  source->AddLocalizedString("showExpandedStatus",
+                             IDS_POLICY_SHOW_EXPANDED_STATUS);
+  source->AddLocalizedString("hideExpandedStatus",
+                             IDS_POLICY_HIDE_EXPANDED_STATUS);
   source->AddLocalizedString("policyLearnMore", IDS_POLICY_LEARN_MORE);
   // Add required resources.
 #if !defined(OS_ANDROID)

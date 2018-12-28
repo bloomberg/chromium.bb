@@ -59,6 +59,10 @@ content::WebUIDataSource* CreatePolicyToolUIHtmlSource() {
                              IDS_POLICY_TOOL_DELETE_FAILED);
   // Overwrite the title value added by PolicyUIHandler.
   source->AddLocalizedString("title", IDS_POLICY_TOOL_TITLE);
+  source->AddLocalizedString("showExpandedStatus",
+                             IDS_POLICY_SHOW_EXPANDED_STATUS);
+  source->AddLocalizedString("hideExpandedStatus",
+                             IDS_POLICY_HIDE_EXPANDED_STATUS);
 
   // Add required resources.
   source->AddResourcePath("policy_common.css", IDR_POLICY_COMMON_CSS);

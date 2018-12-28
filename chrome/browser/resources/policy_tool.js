@@ -213,13 +213,18 @@ policy.Page.prototype.tableHeadings = ['Name', 'Value', 'Status'];
 
 /** @override */
 policy.Policy.prototype.decorate = function() {
-  this.updateToggleExpandedValueText_();
   this.querySelector('.edit-button')
       .addEventListener('click', this.onValueEditing_.bind(this));
   this.querySelector('.value-edit-form').onsubmit =
       this.submitEditedValue_.bind(this);
+  const links = this.querySelectorAll('.overflow-link');
+  for (let i = 0; i < links.length; i++) {
+    this.setExpandedText_(links[i], true);
+  }
   this.querySelector('.toggle-expanded-value')
-      .addEventListener('click', this.toggleExpandedValue_.bind(this));
+      .addEventListener('click', this.toggleExpanded_);
+  this.querySelector('.toggle-expanded-status')
+      .addEventListener('click', this.toggleExpanded_);
 };
 
 /** @override */
@@ -269,7 +274,8 @@ policy.Policy.prototype.setValue_ = function(value) {
   }
   this.unset = !value;
   this.querySelector('.value').textContent = value;
-  this.querySelector('.expanded-value').textContent = value;
+  this.querySelector('.expanded-value-container .expanded-text').textContent =
+      value;
   this.querySelector('.value-edit-field').value = value;
 };
 
@@ -279,13 +285,19 @@ policy.Policy.prototype.getValueWidth_ = function(valueContainer) {
       valueContainer.querySelector('.edit-button').offsetWidth;
 };
 
+policy.Policy.prototype.hideExpandedValueRow_ = function() {
+  const cell = this.querySelector('.value-container');
+  cell.querySelector('.overflow-link').hidden = true;
+  this.querySelector(cell.dataset.expandableRow).hidden = true;
+  this.setExpandedText_(cell.querySelector('.overflow-link'), true);
+};
 /**
  * Start editing value.
  * @private
  */
 policy.Policy.prototype.onValueEditing_ = function() {
+  this.hideExpandedValueRow_();
   this.classList.add('value-editing-on');
-  this.classList.remove('has-overflowed-value');
   this.querySelector('.value-edit-field').select();
 };
 
