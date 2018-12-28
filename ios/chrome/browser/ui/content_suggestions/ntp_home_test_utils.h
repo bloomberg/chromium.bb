@@ -27,10 +27,6 @@ id<GREYMatcher> OmniboxWidth(CGFloat width);
 // plus or minus |margin|.
 id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin);
 
-// Returns a matcher, which is true if the view's frame.origin.y is equal to
-// |offset|.
-id<GREYMatcher> HeaderPinnedOffset(CGFloat offset);
-
 // Returns a vector of 10 suggestions.
 std::vector<ntp_snippets::ContentSuggestion> Suggestions();
 }  // namespace ntp_home

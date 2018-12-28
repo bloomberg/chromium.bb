@@ -300,22 +300,6 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
       performAction:grey_tap()];
 
-  // Test that the omnibox is visible and taking full width, before any scroll
-  // happen on iPhone.
-  if (!IsRegularXRegularSizeClass()) {
-    // Test that the omnibox is still pinned to the top of the screen and
-    // under the safe area.
-    CGFloat safeAreaTop = ntp_home::CollectionView().safeAreaInsets.top;
-
-    CGFloat contentOffset = ntp_home::CollectionView().contentOffset.y;
-    CGFloat fakeOmniboxOrigin = ntp_home::FakeOmnibox().frame.origin.y;
-    CGFloat pinnedOffset = contentOffset - (fakeOmniboxOrigin - safeAreaTop);
-    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                            [ContentSuggestionsHeaderItem
-                                                accessibilityIdentifier])]
-        assertWithMatcher:ntp_home::HeaderPinnedOffset(pinnedOffset)];
-  }
-
   // Check that the first items are visible as the collection should be
   // scrolled.
   [[EarlGrey
