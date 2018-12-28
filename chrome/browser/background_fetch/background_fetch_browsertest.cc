@@ -190,6 +190,8 @@ class OfflineContentProviderObserver : public OfflineContentProvider::Observer {
       resume_ = false;
     }
 
+    // Check that the progress is always increasing and never resets.
+    DCHECK_GE(item.progress.value, latest_item_.progress.value);
     latest_item_ = item;
   }
 
