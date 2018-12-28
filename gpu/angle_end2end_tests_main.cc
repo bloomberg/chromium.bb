@@ -18,6 +18,8 @@ int RunHelper(base::TestSuite* test_suite) {
 
 }  // namespace
 
+// Located in third_party/angle/src/tests/test_utils/ANGLETest.cpp.
+// Defined here so we can avoid depending on the ANGLE headers.
 void ANGLEProcessTestArgs(int *argc, char *argv[]);
 
 int main(int argc, char** argv) {
