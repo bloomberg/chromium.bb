@@ -259,6 +259,8 @@ void CompositedLayerMapping::CreatePrimaryGraphicsLayer() {
   UpdateHitTestableWithoutDrawsContent(true);
   UpdateOpacity(GetLayoutObject().StyleRef());
   UpdateTransform(GetLayoutObject().StyleRef());
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    OwningLayer().UpdateFilterReferenceBox();
   UpdateFilters();
   UpdateBackdropFilters();
   UpdateLayerBlendMode(GetLayoutObject().StyleRef());
@@ -308,18 +310,22 @@ void CompositedLayerMapping::UpdateTransform(const ComputedStyle& style) {
 }
 
 void CompositedLayerMapping::UpdateFilters() {
+  // Filters will be handled by property tree
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    return;
   CompositorFilterOperations operations;
   OwningLayer().UpdateCompositorFilterOperationsForFilter(operations);
-
   graphics_layer_->SetFilters(std::move(operations));
 }
 
 void CompositedLayerMapping::UpdateBackdropFilters() {
-  gfx::RectF backdrop_filter_bounds;
+  // Filters will be handled by property tree
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    return;
   CompositorFilterOperations backdrop_filters =
-      OwningLayer().CreateCompositorFilterOperationsForBackdropFilter(
-          &backdrop_filter_bounds);
-  graphics_layer_->SetBackdropFilters(backdrop_filters, backdrop_filter_bounds);
+      OwningLayer().CreateCompositorFilterOperationsForBackdropFilter();
+  gfx::RectF filter_bounds = OwningLayer().BackdropFilterBounds();
+  graphics_layer_->SetBackdropFilters(backdrop_filters, filter_bounds);
 }
 
 void CompositedLayerMapping::UpdateStickyConstraints(
@@ -1167,6 +1173,9 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
   // Set opacity, if it is not animating.
   if (!GetLayoutObject().StyleRef().IsRunningOpacityAnimationOnCompositor())
     UpdateOpacity(GetLayoutObject().StyleRef());
+
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    OwningLayer().UpdateFilterReferenceBox();
 
   if (!GetLayoutObject().StyleRef().IsRunningFilterAnimationOnCompositor())
     UpdateFilters();

@@ -32,6 +32,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/svg/svg_resource_client.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -57,21 +58,20 @@ class PaintLayerResourceInfo final
   explicit PaintLayerResourceInfo(PaintLayer*);
   ~PaintLayerResourceInfo() override;
 
-  void SetLastEffect(FilterEffect*);
-  FilterEffect* LastEffect() const;
-  void InvalidateFilterChain();
+  FloatRect FilterReferenceBox() const { return filter_reference_box_; }
+  void SetFilterReferenceBox(const FloatRect& rect) {
+    filter_reference_box_ = rect;
+  }
 
   void ClearLayer() { layer_ = nullptr; }
 
   void ResourceContentChanged(InvalidationModeMask) override;
   void ResourceElementChanged() override;
 
-  void Trace(blink::Visitor*) override;
-
  private:
-  // |clearLayer| must be called before *m_layer becomes invalid.
+  // |ClearLayer| must be called before *layer_ becomes invalid.
   PaintLayer* layer_;
-  Member<FilterEffect> last_effect_;
+  FloatRect filter_reference_box_;
   DISALLOW_COPY_AND_ASSIGN(PaintLayerResourceInfo);
 };
 
