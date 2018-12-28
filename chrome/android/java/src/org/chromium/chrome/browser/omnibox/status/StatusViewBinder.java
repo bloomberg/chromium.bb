@@ -12,7 +12,7 @@ import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor.ViewBi
  * StatusViewBinder observes StatusModel changes and triggers StatusView updates.
  */
 class StatusViewBinder implements ViewBinder<PropertyModel, StatusView, PropertyKey> {
-    public StatusViewBinder() {}
+    StatusViewBinder() {}
 
     @Override
     public void bind(PropertyModel model, StatusView view, PropertyKey propertyKey) {

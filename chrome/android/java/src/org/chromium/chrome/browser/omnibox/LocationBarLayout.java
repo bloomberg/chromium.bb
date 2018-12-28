@@ -43,7 +43,6 @@ import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.omnibox.UrlBar.ScrollType;
 import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
-import org.chromium.chrome.browser.omnibox.status.StatusView;
 import org.chromium.chrome.browser.omnibox.status.StatusViewCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator.AutocompleteDelegate;
@@ -571,25 +570,25 @@ public class LocationBarLayout extends FrameLayout
         return mToolbarDataProvider;
     }
 
-    private static @StatusView.NavigationButtonType int suggestionTypeToNavigationButtonType(
-            OmniboxSuggestion suggestion) {
+    private static @StatusViewCoordinator.NavigationButtonType
+    int suggestionTypeToNavigationButtonType(OmniboxSuggestion suggestion) {
         if (suggestion.isUrlSuggestion()) {
-            return StatusView.NavigationButtonType.PAGE;
+            return StatusViewCoordinator.NavigationButtonType.PAGE;
         } else {
-            return StatusView.NavigationButtonType.MAGNIFIER;
+            return StatusViewCoordinator.NavigationButtonType.MAGNIFIER;
         }
     }
 
     // Updates the navigation button based on the URL string
     private void updateNavigationButton() {
-        @StatusView.NavigationButtonType
-        int type = StatusView.NavigationButtonType.EMPTY;
+        @StatusViewCoordinator.NavigationButtonType
+        int type = StatusViewCoordinator.NavigationButtonType.EMPTY;
         if (mIsTablet && mAutocompleteCoordinator.getSuggestionCount() > 0) {
             // If there are suggestions showing, show the icon for the default suggestion.
             type = suggestionTypeToNavigationButtonType(
                     mAutocompleteCoordinator.getSuggestionAt(0));
         } else if (mIsTablet) {
-            type = StatusView.NavigationButtonType.PAGE;
+            type = StatusViewCoordinator.NavigationButtonType.PAGE;
         }
 
         mStatusViewCoordinator.setNavigationButtonType(type);
