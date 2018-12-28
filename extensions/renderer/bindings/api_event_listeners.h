@@ -32,11 +32,11 @@ class APIEventListeners {
   // change was "manual" (i.e., triggered by a direct call from the extension
   // rather than something like the context being destroyed).
   using ListenersUpdated =
-      base::Callback<void(const std::string& event_name,
-                          binding::EventListenersChanged,
-                          const base::DictionaryValue* filter,
-                          bool update_lazy_listeners,
-                          v8::Local<v8::Context> context)>;
+      base::RepeatingCallback<void(const std::string& event_name,
+                                   binding::EventListenersChanged,
+                                   const base::DictionaryValue* filter,
+                                   bool update_lazy_listeners,
+                                   v8::Local<v8::Context> context)>;
 
   // A callback to retrieve the identity of the context's owner. This allows us
   // to associate multiple listeners from different v8::Contexts with the same
@@ -90,9 +90,9 @@ class APIEventListeners {
 // dispatched is dispatched to all the associated listeners.
 class UnfilteredEventListeners final : public APIEventListeners {
  public:
-  UnfilteredEventListeners(const ListenersUpdated& listeners_updated,
+  UnfilteredEventListeners(ListenersUpdated listeners_updated,
                            const std::string& event_name,
-                           const ContextOwnerIdGetter& context_owner_id_getter,
+                           ContextOwnerIdGetter context_owner_id_getter,
                            int max_listeners,
                            bool supports_lazy_listeners,
                            ListenerTracker* listener_tracker);
@@ -163,9 +163,9 @@ class UnfilteredEventListeners final : public APIEventListeners {
 // added, or the last listener with a given filter is removed.
 class FilteredEventListeners final : public APIEventListeners {
  public:
-  FilteredEventListeners(const ListenersUpdated& listeners_updated,
+  FilteredEventListeners(ListenersUpdated listeners_updated,
                          const std::string& event_name,
-                         const ContextOwnerIdGetter& context_owner_id_getter,
+                         ContextOwnerIdGetter context_owner_id_getter,
                          int max_listeners,
                          bool supports_lazy_listeners,
                          ListenerTracker* listener_tracker);

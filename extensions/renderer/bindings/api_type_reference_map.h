@@ -21,9 +21,10 @@ class APITypeReferenceMap {
  public:
   // A callback used to initialize an unknown type, so that these can be
   // created lazily.
-  using InitializeTypeCallback = base::Callback<void(const std::string& name)>;
+  using InitializeTypeCallback =
+      base::RepeatingCallback<void(const std::string& name)>;
 
-  explicit APITypeReferenceMap(const InitializeTypeCallback& initialize_type);
+  explicit APITypeReferenceMap(InitializeTypeCallback initialize_type);
   ~APITypeReferenceMap();
 
   // Adds the |spec| to the map under the given |name|.

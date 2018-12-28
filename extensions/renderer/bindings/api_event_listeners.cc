@@ -77,15 +77,15 @@ bool ValidateFilter(v8::Local<v8::Context> context,
 }  // namespace
 
 UnfilteredEventListeners::UnfilteredEventListeners(
-    const ListenersUpdated& listeners_updated,
+    ListenersUpdated listeners_updated,
     const std::string& event_name,
-    const ContextOwnerIdGetter& context_owner_id_getter,
+    ContextOwnerIdGetter context_owner_id_getter,
     int max_listeners,
     bool supports_lazy_listeners,
     ListenerTracker* listener_tracker)
-    : listeners_updated_(listeners_updated),
+    : listeners_updated_(std::move(listeners_updated)),
       event_name_(event_name),
-      context_owner_id_getter_(context_owner_id_getter),
+      context_owner_id_getter_(std::move(context_owner_id_getter)),
       max_listeners_(max_listeners),
       supports_lazy_listeners_(supports_lazy_listeners),
       listener_tracker_(listener_tracker) {
@@ -227,15 +227,15 @@ struct FilteredEventListeners::ListenerData {
 };
 
 FilteredEventListeners::FilteredEventListeners(
-    const ListenersUpdated& listeners_updated,
+    ListenersUpdated listeners_updated,
     const std::string& event_name,
-    const ContextOwnerIdGetter& context_owner_id_getter,
+    ContextOwnerIdGetter context_owner_id_getter,
     int max_listeners,
     bool supports_lazy_listeners,
     ListenerTracker* listener_tracker)
-    : listeners_updated_(listeners_updated),
+    : listeners_updated_(std::move(listeners_updated)),
       event_name_(event_name),
-      context_owner_id_getter_(context_owner_id_getter),
+      context_owner_id_getter_(std::move(context_owner_id_getter)),
       max_listeners_(max_listeners),
       supports_lazy_listeners_(supports_lazy_listeners),
       listener_tracker_(listener_tracker) {

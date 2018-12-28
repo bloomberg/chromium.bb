@@ -9,9 +9,8 @@
 
 namespace extensions {
 
-BindingAccessChecker::BindingAccessChecker(
-    const AvailabilityCallback& is_available)
-    : is_available_(is_available) {}
+BindingAccessChecker::BindingAccessChecker(AvailabilityCallback is_available)
+    : is_available_(std::move(is_available)) {}
 BindingAccessChecker::~BindingAccessChecker() {}
 
 bool BindingAccessChecker::HasAccess(v8::Local<v8::Context> context,

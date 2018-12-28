@@ -551,7 +551,8 @@ TEST_F(APIEventHandlerTest, TestEventListenersThrowingExceptions) {
          const std::string& error) { errors_out->push_back(error); };
 
   std::vector<std::string> logged_errors;
-  ExceptionHandler exception_handler(base::Bind(log_error, &logged_errors));
+  ExceptionHandler exception_handler(
+      base::BindRepeating(log_error, &logged_errors));
   SetHandler(std::make_unique<APIEventHandler>(
       base::DoNothing(), base::BindRepeating(&GetContextOwner),
       &exception_handler));
@@ -1018,7 +1019,7 @@ TEST_F(APIEventHandlerTest, TestUnmanagedEvents) {
          const base::DictionaryValue* filter, bool was_manual,
          v8::Local<v8::Context> context) { ADD_FAILURE(); };
 
-  APIEventHandler handler(base::Bind(fail_on_notified),
+  APIEventHandler handler(base::BindRepeating(fail_on_notified),
                           base::BindRepeating(&GetContextOwner), nullptr);
 
   const char kEventName[] = "alpha";

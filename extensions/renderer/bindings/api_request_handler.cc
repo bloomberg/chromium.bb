@@ -98,14 +98,15 @@ APIRequestHandler::PendingRequest& APIRequestHandler::PendingRequest::operator=(
     PendingRequest&&) = default;
 
 APIRequestHandler::APIRequestHandler(
-    const SendRequestMethod& send_request,
+    SendRequestMethod send_request,
     APILastError last_error,
     ExceptionHandler* exception_handler,
-    const GetUserActivationState& get_user_activation_state_callback)
-    : send_request_(send_request),
+    GetUserActivationState get_user_activation_state_callback)
+    : send_request_(std::move(send_request)),
       last_error_(std::move(last_error)),
       exception_handler_(exception_handler),
-      get_user_activation_state_callback_(get_user_activation_state_callback) {}
+      get_user_activation_state_callback_(
+          std::move(get_user_activation_state_callback)) {}
 
 APIRequestHandler::~APIRequestHandler() {}
 

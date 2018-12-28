@@ -60,7 +60,8 @@ TEST_F(EventEmitterUnittest, TestDispatchMethod) {
                       const std::string& error) { errors->push_back(error); };
 
   std::vector<std::string> logged_errors;
-  ExceptionHandler exception_handler(base::Bind(log_error, &logged_errors));
+  ExceptionHandler exception_handler(
+      base::BindRepeating(log_error, &logged_errors));
 
   gin::Handle<EventEmitter> event = gin::CreateHandle(
       isolate(),

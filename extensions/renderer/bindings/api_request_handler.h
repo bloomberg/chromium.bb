@@ -48,16 +48,16 @@ class APIRequestHandler {
   };
 
   using SendRequestMethod =
-      base::Callback<void(std::unique_ptr<Request>, v8::Local<v8::Context>)>;
+      base::RepeatingCallback<void(std::unique_ptr<Request>,
+                                   v8::Local<v8::Context>)>;
 
   using GetUserActivationState =
       base::RepeatingCallback<bool(v8::Local<v8::Context>)>;
 
-  APIRequestHandler(
-      const SendRequestMethod& send_request,
-      APILastError last_error,
-      ExceptionHandler* exception_handler,
-      const GetUserActivationState& get_user_activation_state_callback);
+  APIRequestHandler(SendRequestMethod send_request,
+                    APILastError last_error,
+                    ExceptionHandler* exception_handler,
+                    GetUserActivationState get_user_activation_state_callback);
   ~APIRequestHandler();
 
   // Begins the process of processing the request. Returns the identifier of the

@@ -25,7 +25,7 @@ using BindingAccessCheckerTest = APIBindingTest;
 TEST_F(BindingAccessCheckerTest, TestHasAccess) {
   v8::HandleScope handle_scope(isolate());
 
-  BindingAccessChecker checker(base::Bind(&IsAvailable));
+  BindingAccessChecker checker(base::BindRepeating(&IsAvailable));
 
   v8::Local<v8::Context> context = MainContext();
   EXPECT_TRUE(checker.HasAccess(context, "available"));
@@ -35,7 +35,7 @@ TEST_F(BindingAccessCheckerTest, TestHasAccess) {
 TEST_F(BindingAccessCheckerTest, TestHasAccessOrThrowError) {
   v8::HandleScope handle_scope(isolate());
 
-  BindingAccessChecker checker(base::Bind(&IsAvailable));
+  BindingAccessChecker checker(base::BindRepeating(&IsAvailable));
 
   v8::Local<v8::Context> context = MainContext();
   {

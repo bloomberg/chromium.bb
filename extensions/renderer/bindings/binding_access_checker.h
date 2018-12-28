@@ -19,9 +19,10 @@ class BindingAccessChecker {
   // The callback for determining if a given API feature (specified by |name|)
   // is available in the given context.
   using AvailabilityCallback =
-      base::Callback<bool(v8::Local<v8::Context>, const std::string& name)>;
+      base::RepeatingCallback<bool(v8::Local<v8::Context>,
+                                   const std::string& name)>;
 
-  BindingAccessChecker(const AvailabilityCallback& is_available);
+  BindingAccessChecker(AvailabilityCallback is_available);
   ~BindingAccessChecker();
 
   // Returns true if the feature specified by |full_name| is available to the

@@ -24,12 +24,12 @@ class APILastError {
   // a simple object without getters/setters. This is to accommodate the
   // legacy chrome.extension.lastError property.
   // Note: |secondary_parent| may be null.
-  using GetParent = base::Callback<v8::Local<v8::Object>(
+  using GetParent = base::RepeatingCallback<v8::Local<v8::Object>(
       v8::Local<v8::Context>,
       v8::Local<v8::Object>* secondary_parent)>;
 
-  APILastError(const GetParent& get_parent,
-               const binding::AddConsoleError& add_console_error);
+  APILastError(GetParent get_parent,
+               binding::AddConsoleError add_console_error);
   APILastError(APILastError&& other);
   ~APILastError();
 
