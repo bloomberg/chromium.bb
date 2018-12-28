@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
+#include "base/stl_util.h"  // for base::size()
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -41,7 +42,7 @@ const StylePropertyShorthand& {{property.name.to_lower_camel_case()}}Shorthand()
   static StylePropertyShorthand {{property.name.to_lower_camel_case()}}Longhands(
     {{property.property_id}},
     {{property.name.to_lower_camel_case()}}Properties,
-    arraysize({{property.name.to_lower_camel_case()}}Properties));
+    base::size({{property.name.to_lower_camel_case()}}Properties));
   return {{property.name.to_lower_camel_case()}}Longhands;
 }
 {% endfor %}
@@ -53,7 +54,7 @@ const StylePropertyShorthand& offsetShorthandWithoutPositionAnchor() {
     &GetCSSPropertyOffsetDistance(),
     &GetCSSPropertyOffsetRotate(),
   };
-  DEFINE_STATIC_LOCAL(StylePropertyShorthand, offsetLonghands, (CSSPropertyOffset, offsetProperties, arraysize(offsetProperties)));
+  DEFINE_STATIC_LOCAL(StylePropertyShorthand, offsetLonghands, (CSSPropertyOffset, offsetProperties, base::size(offsetProperties)));
   return offsetLonghands;
 }
 
