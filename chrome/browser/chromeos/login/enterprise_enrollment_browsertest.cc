@@ -1119,7 +1119,7 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
   DisableAttributePromptUpdate();
   LoadConfiguration();
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
-  base::RunLoop().RunUntilIdle();
+  ExecutePendingJavaScript();
   EXPECT_TRUE(IsStepDisplayed("success"));
 }
 
