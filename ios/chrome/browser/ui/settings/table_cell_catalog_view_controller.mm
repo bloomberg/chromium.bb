@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/encryption_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
@@ -57,6 +58,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeSettingsSwitch1,
   ItemTypeSettingsSwitch2,
   ItemTypeSyncSwitch,
+  ItemTypeSettingsSyncError,
   ItemTypeAutofillEditItem,
   ItemTypeAutofillData,
   ItemTypeAccount,
@@ -198,6 +200,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
   syncSwitchItem.on = YES;
   syncSwitchItem.enabled = NO;
   [model addItem:syncSwitchItem
+      toSectionWithIdentifier:SectionIdentifierSettings];
+
+  SettingsImageDetailTextItem* imageDetailTextItem =
+      [[SettingsImageDetailTextItem alloc]
+          initWithType:ItemTypeSettingsSyncError];
+  imageDetailTextItem.text = @"This is an error description about sync";
+  imageDetailTextItem.detailText =
+      @"This is more detail about the sync error description";
+  imageDetailTextItem.image = [ChromeIcon infoIcon];
+  [model addItem:imageDetailTextItem
       toSectionWithIdentifier:SectionIdentifierSettings];
 
   EncryptionItem* encryptionChecked =
