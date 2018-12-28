@@ -678,7 +678,7 @@ void Fullscreen::ContinueRequestFullscreen(Document& document,
 
     // 10.2. Reject |promise| with a TypeError exception and terminate these
     // steps.
-    if (resolver) {
+    if (resolver && resolver->GetScriptState()->ContextIsValid()) {
       ScriptState::Scope scope(resolver->GetScriptState());
       // TODO(dtapuska): Change error to be something useful instead of just a
       // boolean and return this to the user.

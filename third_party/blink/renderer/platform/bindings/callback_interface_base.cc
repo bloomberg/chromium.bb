@@ -45,11 +45,11 @@ ScriptState* CallbackInterfaceBase::CallbackRelevantScriptStateOrReportError(
     return callback_relevant_script_state_;
 
   // Report a SecurityError due to a cross origin callback object.
+  ScriptState::Scope incumbent_scope(incumbent_script_state_);
   v8::TryCatch try_catch(GetIsolate());
   try_catch.SetVerbose(true);
   ExceptionState exception_state(
       GetIsolate(), ExceptionState::kExecutionContext, interface, operation);
-  ScriptState::Scope incumbent_scope(incumbent_script_state_);
   exception_state.ThrowSecurityError(
       "An invocation of the provided callback failed due to cross origin "
       "access.");
@@ -63,9 +63,9 @@ ScriptState* CallbackInterfaceBase::CallbackRelevantScriptStateOrThrowException(
     return callback_relevant_script_state_;
 
   // Throw a SecurityError due to a cross origin callback object.
+  ScriptState::Scope incumbent_scope(incumbent_script_state_);
   ExceptionState exception_state(
       GetIsolate(), ExceptionState::kExecutionContext, interface, operation);
-  ScriptState::Scope incumbent_scope(incumbent_script_state_);
   exception_state.ThrowSecurityError(
       "An invocation of the provided callback failed due to cross origin "
       "access.");
