@@ -31,6 +31,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_ButtonHoverColor:
         return gfx::kGoogleGrey200;
       case NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
+      case NativeTheme::kColorId_FocusedHighlightedMenuItemBackgroundColor:
         return SkColorSetA(gfx::kGoogleGrey800, 0x99);
       case NativeTheme::kColorId_MenuBackgroundColor:
       case NativeTheme::kColorId_BubbleBackground:
