@@ -47,6 +47,7 @@ class ScriptPromise;
 class ScriptState;
 class ScriptValue;
 class StringOrTrustedScript;
+class V8Function;
 
 typedef HTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmapOrOffscreenCanvas
     ImageBitmapSourceUnion;
@@ -64,7 +65,7 @@ class WindowOrWorkerGlobalScope {
 
   static int setTimeout(ScriptState*,
                         EventTarget&,
-                        const ScriptValue& handler,
+                        V8Function* handler,
                         int timeout,
                         const Vector<ScriptValue>& arguments);
   static int setTimeout(ScriptState*,
@@ -80,7 +81,7 @@ class WindowOrWorkerGlobalScope {
                                   const Vector<ScriptValue>&);
   static int setInterval(ScriptState*,
                          EventTarget&,
-                         const ScriptValue& handler,
+                         V8Function* handler,
                          int timeout,
                          const Vector<ScriptValue>&);
   static int setInterval(ScriptState*,

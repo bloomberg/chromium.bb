@@ -28,6 +28,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/scheduled_action.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -174,6 +175,9 @@ void DOMTimer::Fired() {
 
   action->Execute(context);
 
+  // Eagerly clear out |action|'s resources.
+  action->Dispose();
+
   // ExecutionContext might be already gone when we executed action->execute().
   ExecutionContext* execution_context = GetExecutionContext();
   if (!execution_context)
@@ -182,8 +186,6 @@ void DOMTimer::Fired() {
   execution_context->Timers()->SetTimerNestingLevel(0);
   // Eagerly unregister as ExecutionContext observer.
   ClearContext();
-  // Eagerly clear out |action|'s resources.
-  action->Dispose();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> DOMTimer::TimerTaskRunner() const {
