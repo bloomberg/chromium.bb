@@ -213,6 +213,8 @@ class FastInkView::LayerTreeFrameSinkHolder
   }
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override {
+    if (delete_pending_)
+      return;
     for (auto& entry : resources) {
       auto it = exported_resources_.find(entry.id);
       DCHECK(it != exported_resources_.end());
