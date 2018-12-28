@@ -243,7 +243,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
   MOCK_METHOD1(OnWaiting, void(WaitingReason));
 
   base::MessageLoop message_loop_;
-  MediaLog media_log_;
+  NullMediaLog media_log_;
   std::unique_ptr<DecryptingAudioDecoder> decoder_;
   std::unique_ptr<StrictMock<MockCdmContext>> cdm_context_;
   std::unique_ptr<StrictMock<MockDecryptor>> decryptor_;

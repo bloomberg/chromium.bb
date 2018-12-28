@@ -12,7 +12,7 @@
 #include "media/audio/null_audio_sink.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/fake_audio_render_callback.h"
-#include "media/base/media_log.h"
+#include "media/base/media_util.h"
 #include "media/blink/webaudiosourceprovider_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -124,7 +124,7 @@ class HTMLAudioElementCapturerSourceTest : public testing::Test {
   blink::WebMediaStreamSource blink_audio_source_;
   blink::WebMediaStreamTrack blink_audio_track_;
 
-  media::MediaLog media_log_;
+  media::NullMediaLog media_log_;
   media::FakeAudioRenderCallback fake_callback_;
   scoped_refptr<media::WebAudioSourceProviderImpl> audio_source_;
 };

@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
+#include "media/base/media_util.h"
 #include "media/base/video_codecs.h"
 #include "media/formats/mp4/mp4_stream_parser.h"
 #include "media/formats/mpeg/adts_stream_parser.h"
@@ -503,7 +504,7 @@ bool StreamParserFactory::IsTypeSupported(
     const std::string& type,
     const std::vector<std::string>& codecs) {
   // TODO(wolenetz): Questionable MediaLog usage, http://crbug.com/712310
-  MediaLog media_log;
+  NullMediaLog media_log;
   return CheckTypeAndCodecs(type, codecs, &media_log, nullptr, nullptr,
                             nullptr);
 }

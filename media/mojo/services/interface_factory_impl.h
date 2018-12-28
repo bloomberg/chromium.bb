@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "media/base/media_util.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "media/mojo/services/deferred_destroy_strong_binding_set.h"
@@ -19,14 +20,12 @@
 namespace media {
 
 class CdmFactory;
-class MediaLog;
 class MojoMediaClient;
 
 class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
  public:
   InterfaceFactoryImpl(
       service_manager::mojom::InterfaceProviderPtr interfaces,
-      MediaLog* media_log,
       std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref,
       MojoMediaClient* mojo_media_client);
   ~InterfaceFactoryImpl() final;
@@ -72,7 +71,8 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
-  MediaLog* media_log_;
+  // TODO(xhwang): Use MojoMediaLog for Renderer.
+  NullMediaLog media_log_;
   mojo::StrongBindingSet<mojom::Renderer> renderer_bindings_;
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
 

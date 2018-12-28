@@ -310,7 +310,7 @@ void RTCVideoDecoderAdapter::InitializeOnMediaThread(
 
   // TODO(sandersd): Plumb a real log sink here so that we can contribute to the
   // media-internals UI. The current log just discards all messages.
-  media_log_ = std::make_unique<media::MediaLog>();
+  media_log_ = std::make_unique<media::NullMediaLog>();
 
   video_decoder_ = gpu_factories_->CreateVideoDecoder(
       media_log_.get(), base::BindRepeating(&OnRequestOverlayInfo),

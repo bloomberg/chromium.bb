@@ -28,6 +28,7 @@
 #include "media/base/gmock_callback_support.h"
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
+#include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/null_video_sink.h"
 #include "media/base/test_helpers.h"
@@ -445,7 +446,7 @@ class VideoRendererImplTest : public testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment task_environment_;
-  MediaLog media_log_;
+  NullMediaLog media_log_;
 
   // Fixture members.
   std::unique_ptr<VideoRendererImpl> renderer_;

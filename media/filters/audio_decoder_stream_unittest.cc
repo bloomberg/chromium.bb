@@ -11,7 +11,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "media/base/gmock_callback_support.h"
-#include "media/base/media_log.h"
+#include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/filters/decoder_stream.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -111,7 +111,7 @@ class AudioDecoderStreamTest : public testing::Test {
   }
 
   base::test::ScopedTaskEnvironment task_environment_;
-  MediaLog media_log_;
+  NullMediaLog media_log_;
   testing::NiceMock<MockDemuxerStream> demuxer_stream_{DemuxerStream::AUDIO};
   AudioDecoderStream audio_decoder_stream_;
 

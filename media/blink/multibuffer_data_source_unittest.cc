@@ -10,8 +10,8 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "media/base/media_log.h"
 #include "media/base/media_switches.h"
+#include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "media/blink/buffered_data_source_host_impl.h"
@@ -196,7 +196,7 @@ class MockMultibufferDataSource : public MultibufferDataSource {
  private:
   // Whether the resource is downloading or deferred.
   bool downloading_;
-  MediaLog media_log_;
+  NullMediaLog media_log_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMultibufferDataSource);
 };

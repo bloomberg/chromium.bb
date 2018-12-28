@@ -9,6 +9,7 @@
 
 #include "base/time/time.h"
 #include "media/base/demuxer.h"
+#include "media/base/media_util.h"
 #include "media/base/pipeline_status.h"
 #include "media/filters/chunk_demuxer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -105,7 +106,7 @@ class MockMediaSource {
  private:
   void VerifyExpectedAppendResult(bool append_result);
 
-  MediaLog media_log_;
+  NullMediaLog media_log_;
   scoped_refptr<DecoderBuffer> file_data_;
   size_t current_position_;
   size_t initial_append_size_;

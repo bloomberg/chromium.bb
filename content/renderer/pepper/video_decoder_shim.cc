@@ -27,7 +27,6 @@
 #include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/limits.h"
-#include "media/base/media_log.h"
 #include "media/base/media_util.h"
 #include "media/base/video_decoder.h"
 #include "media/filters/ffmpeg_video_decoder.h"
@@ -657,7 +656,7 @@ class VideoDecoderShim::DecoderImpl {
 
   // WeakPtr is bound to main_message_loop_. Use only in shim callbacks.
   base::WeakPtr<VideoDecoderShim> shim_;
-  media::MediaLog media_log_;
+  media::NullMediaLog media_log_;
   std::unique_ptr<media::VideoDecoder> decoder_;
   bool initialized_ = false;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;

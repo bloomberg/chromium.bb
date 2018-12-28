@@ -16,8 +16,8 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/media.h"
-#include "media/base/media_log.h"
 #include "media/base/media_tracks.h"
+#include "media/base/media_util.h"
 #include "media/base/test_data_util.h"
 #include "media/base/timestamp_constants.h"
 #include "media/filters/ffmpeg_demuxer.h"
@@ -173,7 +173,7 @@ int StreamReader::GetNextStreamIndexToRead() {
 static void RunDemuxerBenchmark(const std::string& filename) {
   base::FilePath file_path(GetTestDataFilePath(filename));
   base::TimeDelta total_time;
-  MediaLog media_log_;
+  NullMediaLog media_log_;
   for (int i = 0; i < kBenchmarkIterations; ++i) {
     // Setup.
     base::test::ScopedTaskEnvironment scoped_task_environment_;

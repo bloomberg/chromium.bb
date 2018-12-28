@@ -15,7 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
-#include "media/base/media_log.h"
+#include "media/base/media_util.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame_pool.h"
 #include "media/base/wall_clock_time_source.h"
@@ -333,7 +333,7 @@ class VideoRendererAlgorithmTest : public testing::Test {
   }
 
  protected:
-  MediaLog media_log_;
+  NullMediaLog media_log_;
   VideoFramePool frame_pool_;
   std::unique_ptr<base::SimpleTestTickClock> tick_clock_;
   WallClockTimeSource time_source_;

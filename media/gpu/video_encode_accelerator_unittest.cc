@@ -42,7 +42,6 @@
 #include "media/base/bitstream_buffer.h"
 #include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
-#include "media/base/media_log.h"
 #include "media/base/media_util.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_decoder.h"
@@ -848,7 +847,7 @@ class VideoFrameQualityValidator
 
   FrameStats CompareFrames(const VideoFrame& original_frame,
                            const VideoFrame& output_frame);
-  MediaLog media_log_;
+  NullMediaLog media_log_;
   const VideoCodecProfile profile_;
   const VideoPixelFormat pixel_format_;
   const bool verify_quality_;

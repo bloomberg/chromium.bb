@@ -20,9 +20,9 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/encryption_pattern.h"
-#include "media/base/media_log.h"
 #include "media/base/media_track.h"
 #include "media/base/media_tracks.h"
+#include "media/base/media_util.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/test_data_util.h"
 #include "media/base/text_track_config.h"
@@ -179,7 +179,7 @@ class Mp2tStreamParserTest : public testing::Test {
   }
 
  protected:
-  MediaLog media_log_;
+  NullMediaLog media_log_;
   std::unique_ptr<Mp2tStreamParser> parser_;
   int segment_count_;
   int config_count_;

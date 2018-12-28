@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/fake_audio_render_callback.h"
-#include "media/base/media_log.h"
+#include "media/base/media_util.h"
 #include "media/base/mock_audio_renderer_sink.h"
 #include "media/blink/webaudiosourceprovider_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -106,7 +106,7 @@ class WebAudioSourceProviderImplTest
  protected:
   AudioParameters params_;
   FakeAudioRenderCallback fake_callback_;
-  MediaLog media_log_;
+  NullMediaLog media_log_;
   scoped_refptr<MockAudioRendererSink> mock_sink_;
   scoped_refptr<WebAudioSourceProviderImpl> wasp_impl_;
 

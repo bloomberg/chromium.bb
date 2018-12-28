@@ -15,6 +15,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/gmock_callback_support.h"
+#include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "media/base/video_frame.h"
@@ -219,7 +220,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
   MOCK_METHOD1(OnWaiting, void(WaitingReason));
 
   base::MessageLoop message_loop_;
-  MediaLog media_log_;
+  NullMediaLog media_log_;
   std::unique_ptr<DecryptingVideoDecoder> decoder_;
   std::unique_ptr<StrictMock<MockCdmContext>> cdm_context_;
   std::unique_ptr<StrictMock<MockDecryptor>> decryptor_;

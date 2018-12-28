@@ -18,7 +18,7 @@
 #include "cc/layers/surface_layer.h"
 #include "cc/layers/video_frame_provider.h"
 #include "content/common/content_export.h"
-#include "media/base/media_log.h"
+#include "media/base/media_util.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
 
@@ -180,7 +180,7 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   // TODO(qiangchen, emircan): It might be nice to use a real MediaLog here from
   // the WebMediaPlayerMS instance, but it owns the MediaLog and this class has
   // non-deterministic destruction paths (either compositor or IO).
-  media::MediaLog media_log_;
+  media::NullMediaLog media_log_;
 
   size_t serial_;
 

@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "media/base/media_switches.h"
+#include "media/base/media_util.h"
 #include "media/base/video_types.h"
 #include "media/base/video_util.h"
 #include "media/formats/common/opus_constants.h"
@@ -610,7 +611,7 @@ bool AVCDecoderConfigurationRecord::Parse(BoxReader* reader) {
 bool AVCDecoderConfigurationRecord::Parse(const uint8_t* data, int data_size) {
   BufferReader reader(data, data_size);
   // TODO(wolenetz): Questionable MediaLog usage, http://crbug.com/712310
-  MediaLog media_log;
+  NullMediaLog media_log;
   return ParseInternal(&reader, &media_log);
 }
 
