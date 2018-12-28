@@ -35,6 +35,8 @@ Polymer({
 
   /** @override */
   attached: function() {
+    document.documentElement.classList.remove('loading');
+
     this.watch('searchTerm_', function(state) {
       return state.search.term;
     });
