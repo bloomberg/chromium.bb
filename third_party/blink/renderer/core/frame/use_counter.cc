@@ -1345,6 +1345,8 @@ void UseCounter::DidCommitLoad(const LocalFrame* frame) {
   const KURL url = frame->GetDocument()->Url();
   if (url.ProtocolIs("chrome-extension"))
     context_ = kExtensionContext;
+  if (url.ProtocolIs("file"))
+    context_ = kFileContext;
 
   DCHECK_EQ(kPreCommit, commit_state_);
   commit_state_ = kCommited;
@@ -1366,8 +1368,10 @@ void UseCounter::DidCommitLoad(const LocalFrame* frame) {
 
     // TODO(loonybear): remove or move SVG histogram and extension histogram
     // to the browser side.
-    if ((context_ == kSVGImageContext || context_ == kExtensionContext))
+    if ((context_ == kSVGImageContext || context_ == kExtensionContext ||
+         context_ == kFileContext)) {
       FeaturesHistogram().Count(static_cast<int>(WebFeature::kPageVisits));
+    }
   }
 }
 
@@ -1528,9 +1532,6 @@ void UseCounter::NotifyFeatureCounted(WebFeature feature) {
 }
 
 EnumerationHistogram& UseCounter::FeaturesHistogram() const {
-  DCHECK_NE(kDisabledContext, context_);
-  // The default features histogram is being recorded on the browser side.
-  DCHECK_NE(kDefaultContext, context_);
   // Every SVGImage has it's own Page instance, and multiple web pages can
   // share the usage of a single SVGImage.  Ideally perhaps we'd delegate
   // metrics from an SVGImage to one of the Page's it's displayed in, but
@@ -1543,9 +1544,29 @@ EnumerationHistogram& UseCounter::FeaturesHistogram() const {
   DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, extension_histogram,
                       ("Blink.UseCounter.Extensions.Features",
                        static_cast<int32_t>(WebFeature::kNumberOfFeatures)));
+  DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, file_histogram,
+                      ("Blink.UseCounter.File.Features",
+                       static_cast<int32_t>(WebFeature::kNumberOfFeatures)));
   // Track what features/properties have been reported to the browser side
   // histogram.
-  return context_ == kSVGImageContext ? svg_histogram : extension_histogram;
+  switch (context_) {
+    case kDefaultContext:
+      // The default features histogram is being recorded on the browser side.
+      NOTREACHED();
+      break;
+    case kSVGImageContext:
+      return svg_histogram;
+    case kExtensionContext:
+      return extension_histogram;
+    case kFileContext:
+      return file_histogram;
+    case kDisabledContext:
+      NOTREACHED();
+      break;
+  }
+  NOTREACHED();
+  blink::EnumerationHistogram* null = nullptr;
+  return *null;
 }
 
 EnumerationHistogram& UseCounter::CssHistogram() const {
