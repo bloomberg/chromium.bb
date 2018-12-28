@@ -18,8 +18,6 @@ import org.chromium.payments.mojom.PaymentRequest;
 import org.chromium.services.service_manager.InterfaceRegistry;
 import org.chromium.webshare.mojom.ShareService;
 
-@SuppressWarnings("MultipleTopLevelClassesInFile")
-
 /** Registers mojo interface implementations exposed to C++ code at the Chrome layer. */
 class ChromeInterfaceRegistrar {
     @CalledByNative
