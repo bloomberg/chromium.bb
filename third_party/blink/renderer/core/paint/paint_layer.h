@@ -616,8 +616,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void UpdateCompositorFilterOperationsForBackdropFilter(
       CompositorFilterOperations& operations,
       gfx::RectF* backdrop_filter_bounds) const;
-  CompositorFilterOperations CreateCompositorFilterOperationsForBackdropFilter(
-      gfx::RectF* backdrop_filter_bounds) const;
+  CompositorFilterOperations CreateCompositorFilterOperationsForBackdropFilter()
+      const;
 
   void SetIsUnderSVGHiddenContainer(bool value) {
     is_under_svg_hidden_container_ = value;
@@ -625,7 +625,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   bool IsUnderSVGHiddenContainer() { return is_under_svg_hidden_container_; }
 
   bool PaintsWithFilters() const;
-  FilterEffect* LastFilterEffect() const;
 
   // Maps "forward" to determine which pixels in a destination rect are
   // affected by pixels in the source rect.
@@ -642,6 +641,14 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   }
   PaintLayerResourceInfo& EnsureResourceInfo();
 
+  // Filter reference box is the area over which the filter is computed, in the
+  // coordinate system of the object with the filter. Filter bounds is the
+  // reference box, offset by the object's location in the graphics layer.
+  FloatRect FilterReferenceBox() const;
+  FloatRect BackdropFilterReferenceBox() const;
+  FloatRect BackdropFilterBounds() const;
+
+  void UpdateFilterReferenceBox();
   void UpdateFilters(const ComputedStyle* old_style,
                      const ComputedStyle& new_style);
   void UpdateClipPath(const ComputedStyle* old_style,
@@ -1225,7 +1232,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const PaintLayer* stacking_parent,
       CalculateBoundsOptions) const;
 
-  FloatRect FilterReferenceBox(const FilterOperations&, float zoom) const;
+  bool NeedsFilterReferenceBox() const;
 
   LayoutPoint LocationInternal() const;
 

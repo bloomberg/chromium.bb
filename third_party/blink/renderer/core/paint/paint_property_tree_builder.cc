@@ -1073,9 +1073,20 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
 
       if (auto* layer = ToLayoutBoxModelObject(object_).Layer()) {
         // Try to use the cached filter.
-        if (properties_->Filter())
+        if (properties_->Filter()) {
           state.filter = properties_->Filter()->Filter();
+          state.backdrop_filter = properties_->Filter()->BackdropFilter();
+          state.backdrop_filter_bounds =
+              properties_->Filter()->BackdropFilterBounds();
+        }
 
+        // With BGPT disabled, UpdateFilterReferenceBox gets called from
+        // CompositedLayerMapping::UpdateGraphicsLayerGeometry, but only
+        // for composited layers.
+        if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+            layer->GetCompositingState() != kPaintsIntoOwnBacking) {
+          layer->UpdateFilterReferenceBox();
+        }
         layer->UpdateCompositorFilterOperationsForFilter(state.filter);
         layer->UpdateCompositorFilterOperationsForBackdropFilter(
             state.backdrop_filter, &state.backdrop_filter_bounds);
