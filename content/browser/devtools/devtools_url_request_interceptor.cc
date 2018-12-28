@@ -14,8 +14,26 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/features.h"
 
 namespace content {
+
+// static
+std::unique_ptr<DevToolsURLRequestInterceptor>
+DevToolsURLRequestInterceptor::MaybeCreate(BrowserContext* browser_context) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return nullptr;
+
+  // TODO(caseq): Technically, this is wrong -- we currently maintain one
+  // interception controller per browser context, while in reality it is
+  // created per StoragePartition.
+  // So we only support interception for the first StoragePartition, which
+  // results in extensions not being supported. Luckily, this implementation
+  // of the interception is going away when network service is enabled.
+  if (DevToolsInterceptorController::FromBrowserContext(browser_context))
+    return nullptr;
+  return std::make_unique<DevToolsURLRequestInterceptor>(browser_context);
+}
 
 // static
 bool DevToolsURLRequestInterceptor::IsNavigationRequest(

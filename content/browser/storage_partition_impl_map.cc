@@ -412,8 +412,11 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
   }
 
   URLRequestInterceptorScopedVector request_interceptors;
-  request_interceptors.push_back(
-      std::make_unique<DevToolsURLRequestInterceptor>(browser_context_));
+
+  auto devtools_interceptor =
+      DevToolsURLRequestInterceptor::MaybeCreate(browser_context_);
+  if (devtools_interceptor)
+    request_interceptors.push_back(std::move(devtools_interceptor));
   request_interceptors.push_back(ServiceWorkerRequestHandler::CreateInterceptor(
       browser_context_->GetResourceContext()));
   request_interceptors.push_back(std::make_unique<AppCacheInterceptor>());
