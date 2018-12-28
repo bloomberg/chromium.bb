@@ -36,8 +36,16 @@ namespace quic {
 
 namespace test {
 
-static const QuicConnectionId kTestConnectionId =
-    QuicConnectionIdFromUInt64(42);
+// A generic predictable connection ID suited for testing.
+QuicConnectionId TestConnectionId();
+
+// A generic predictable connection ID suited for testing, generated from a
+// given number, such as an index.
+QuicConnectionId TestConnectionId(uint64_t connection_number);
+
+// Extracts the connection number passed to TestConnectionId().
+uint64_t TestConnectionIdToUInt64(QuicConnectionId connection_id);
+
 static const uint16_t kTestPort = 12345;
 static const uint32_t kInitialStreamFlowControlWindowForTest =
     1024 * 1024;  // 1 MB

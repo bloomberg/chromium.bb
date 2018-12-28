@@ -800,7 +800,7 @@ std::vector<TestParams> GetTestParams() {
 class QuicConnectionTest : public QuicTestWithParam<TestParams> {
  protected:
   QuicConnectionTest()
-      : connection_id_(QuicConnectionIdFromUInt64(42)),
+      : connection_id_(TestConnectionId()),
         framer_(SupportedVersions(version()),
                 QuicTime::Zero(),
                 Perspective::IS_CLIENT),
@@ -1913,8 +1913,7 @@ TEST_P(QuicConnectionTest, MaxPacketSize) {
 }
 
 TEST_P(QuicConnectionTest, SmallerServerMaxPacketSize) {
-  QuicConnectionId connection_id = QuicConnectionIdFromUInt64(42);
-  TestConnection connection(connection_id, kPeerAddress, helper_.get(),
+  TestConnection connection(TestConnectionId(), kPeerAddress, helper_.get(),
                             alarm_factory_.get(), writer_.get(),
                             Perspective::IS_SERVER, version());
   EXPECT_EQ(Perspective::IS_SERVER, connection.perspective());
@@ -1998,7 +1997,7 @@ TEST_P(QuicConnectionTest, LimitMaxPacketSizeByWriter) {
 }
 
 TEST_P(QuicConnectionTest, LimitMaxPacketSizeByWriterForNewConnection) {
-  const QuicConnectionId connection_id = QuicConnectionIdFromUInt64(17);
+  const QuicConnectionId connection_id = TestConnectionId(17);
   const QuicByteCount lower_max_packet_size = 1240;
   writer_->set_max_packet_size(lower_max_packet_size);
   TestConnection connection(connection_id, kPeerAddress, helper_.get(),
@@ -7591,6 +7590,40 @@ TEST_P(QuicConnectionTest, OrphanPathResponse) {
   // must not be FIRST_FRAME_IS_PING.
   EXPECT_NE(QuicConnection::FIRST_FRAME_IS_PING,
             QuicConnectionPeer::GetCurrentPacketContent(&connection_));
+}
+
+// Regression test for b/120791670
+TEST_P(QuicConnectionTest, StopProcessingGQuicPacketInIetfQuicConnection) {
+  // This test mimics a problematic scenario where an IETF QUIC connection
+  // receives a Google QUIC packet and continue processing it using Google QUIC
+  // wire format.
+  if (version().transport_version <= QUIC_VERSION_43) {
+    return;
+  }
+  set_perspective(Perspective::IS_SERVER);
+  QuicStreamFrame stream_frame(
+      QuicUtils::GetCryptoStreamId(connection_.transport_version()), false, 0u,
+      QuicStringPiece());
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
+  ProcessFramePacketWithAddresses(QuicFrame(stream_frame), kSelfAddress,
+                                  kPeerAddress);
+
+  // Let connection process a Google QUIC packet.
+  peer_framer_.set_version_for_tests(
+      ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_43));
+  std::unique_ptr<QuicPacket> packet(ConstructDataPacket(2, !kHasStopWaiting));
+  char buffer[kMaxPacketSize];
+  size_t encrypted_length = peer_framer_.EncryptPayload(
+      ENCRYPTION_NONE, 2, *packet, buffer, kMaxPacketSize);
+  // Make sure no stream frame is processed.
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(0);
+  connection_.ProcessUdpPacket(
+      kSelfAddress, kPeerAddress,
+      QuicReceivedPacket(buffer, encrypted_length, clock_.Now(), false));
+
+  EXPECT_EQ(2u, connection_.GetStats().packets_received);
+  EXPECT_EQ(1u, connection_.GetStats().packets_processed);
 }
 
 }  // namespace

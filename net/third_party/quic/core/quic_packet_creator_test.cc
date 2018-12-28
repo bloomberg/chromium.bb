@@ -141,7 +141,7 @@ class QuicPacketCreatorTest : public QuicTestWithParam<TestParams> {
         client_framer_(SupportedVersions(GetParam().version),
                        QuicTime::Zero(),
                        Perspective::IS_CLIENT),
-        connection_id_(QuicConnectionIdFromUInt64(2)),
+        connection_id_(TestConnectionId(2)),
         data_("foo"),
         creator_(connection_id_, &client_framer_, &delegate_, &producer_),
         serialized_packet_(creator_.NoPacket()) {

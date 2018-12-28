@@ -169,10 +169,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_donot_retransmit_old_window_update2,
           true)
 
-// If ture, make QuicSession::GetStream faster by skipping the lookup into
-// static stream map, when possible.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_session_faster_get_stream, true)
-
 // If true, disable QUIC version 35.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_35, false)
 // If true, then QuicCryptoServerConfig::ProcessClientHelloAfterGetProof() will
@@ -282,11 +278,6 @@ QUIC_FLAG(bool,
           false)
 
 // If true, public reset packets sent from GFE will include a kEPID tag.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_enable_server_epid_in_public_reset,
-          true)
-
-// If true, public reset packets sent from GFE will include a kEPID tag.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_spurious_ack_alarm, false)
 
 // If true, QuicSpdyStream::WritevBody() will convert iovs into QuicMemSliceSpan
@@ -298,12 +289,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_call_write_mem_slices, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_startup_rate_reduction,
           false)
-
-// If true, enable the fix for the bug where v44 packets are rejected
-// by a lower-version connection close.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_fix_reject_by_session_type,
-          true)
 
 // If true, only send version negotiation packets when they are at least
 // 1200 bytes.
@@ -332,3 +317,9 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_connection_do_not_add_to_write_blocked_list_if_disconnected,
     false)
+
+// Changes internal in-memory representation of QUIC connection IDs to network
+// byte order.
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_connection_ids_network_byte_order,
+          false)

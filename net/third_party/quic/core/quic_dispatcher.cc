@@ -736,71 +736,53 @@ void QuicDispatcher::StatelesslyTerminateConnection(
     QuicErrorCode error_code,
     const QuicString& error_details,
     QuicTimeWaitListManager::TimeWaitAction action) {
-  if (GetQuicReloadableFlag(quic_fix_reject_by_session_type)) {
-    if (format != IETF_QUIC_LONG_HEADER_PACKET) {
-      QUIC_DVLOG(1) << "Statelessly terminating " << connection_id
-                    << " based on a non-ietf-long packet, action:" << action
-                    << ", error_code:" << error_code
-                    << ", error_details:" << error_details;
-      time_wait_list_manager_->AddConnectionIdToTimeWait(
-          connection_id, format != GOOGLE_QUIC_PACKET, action,
-          /*termination_packets=*/nullptr);
-      return;
-    }
+  if (format != IETF_QUIC_LONG_HEADER_PACKET) {
+    QUIC_DVLOG(1) << "Statelessly terminating " << connection_id
+                  << " based on a non-ietf-long packet, action:" << action
+                  << ", error_code:" << error_code
+                  << ", error_details:" << error_details;
+    time_wait_list_manager_->AddConnectionIdToTimeWait(
+        connection_id, format != GOOGLE_QUIC_PACKET, action,
+        /*termination_packets=*/nullptr);
+    return;
+  }
 
-    // If the version is known and supported by framer, send a connection close.
-    if (framer_.IsSupportedVersion(version)) {
-      QUIC_DVLOG(1)
-          << "Statelessly terminating " << connection_id
-          << " based on an ietf-long packet, which has a supported version:"
-          << version << ", error_code:" << error_code
-          << ", error_details:" << error_details;
-      // Set framer_ to the packet's version such that the connection close can
-      // be processed by the client.
-      ParsedQuicVersion original_version = framer_.version();
-      framer_.set_version(version);
-
-      StatelessConnectionTerminator terminator(connection_id, &framer_,
-                                               helper_.get(),
-                                               time_wait_list_manager_.get());
-      // This also adds the connection to time wait list.
-      terminator.CloseConnection(error_code, error_details, true);
-
-      // Restore framer_ to the original version, as if nothing changed in it.
-      framer_.set_version(original_version);
-      return;
-    }
-
+  // If the version is known and supported by framer, send a connection close.
+  if (framer_.IsSupportedVersion(version)) {
     QUIC_DVLOG(1)
         << "Statelessly terminating " << connection_id
-        << " based on an ietf-long packet, which has an unsupported version:"
+        << " based on an ietf-long packet, which has a supported version:"
         << version << ", error_code:" << error_code
         << ", error_details:" << error_details;
-    // Version is unknown or unsupported by framer, send a version negotiation
-    // with an empty version list, which can be understood by the client.
-    std::vector<std::unique_ptr<QuicEncryptedPacket>> termination_packets;
-    termination_packets.push_back(QuicFramer::BuildVersionNegotiationPacket(
-        connection_id, /*ietf_quic=*/true,
-        ParsedQuicVersionVector{UnsupportedQuicVersion()}));
-    time_wait_list_manager()->AddConnectionIdToTimeWait(
-        connection_id, /*ietf_quic=*/true,
-        QuicTimeWaitListManager::SEND_TERMINATION_PACKETS,
-        &termination_packets);
-    return;
-  }
+    // Set framer_ to the packet's version such that the connection close can be
+    // processed by the client.
+    ParsedQuicVersion original_version = framer_.version();
+    framer_.set_version(version);
 
-  if (format == IETF_QUIC_LONG_HEADER_PACKET) {
-    // Send connection close for IETF long header packet, and this also adds
-    // connection to time wait list.
     StatelessConnectionTerminator terminator(
         connection_id, &framer_, helper_.get(), time_wait_list_manager_.get());
+    // This also adds the connection to time wait list.
     terminator.CloseConnection(error_code, error_details, true);
+
+    // Restore framer_ to the original version, as if nothing changed in it.
+    framer_.set_version(original_version);
     return;
   }
 
-  time_wait_list_manager_->AddConnectionIdToTimeWait(
-      connection_id, format != GOOGLE_QUIC_PACKET, action,
-      /*termination_packets=*/nullptr);
+  QUIC_DVLOG(1)
+      << "Statelessly terminating " << connection_id
+      << " based on an ietf-long packet, which has an unsupported version:"
+      << version << ", error_code:" << error_code
+      << ", error_details:" << error_details;
+  // Version is unknown or unsupported by framer, send a version negotiation
+  // with an empty version list, which can be understood by the client.
+  std::vector<std::unique_ptr<QuicEncryptedPacket>> termination_packets;
+  termination_packets.push_back(QuicFramer::BuildVersionNegotiationPacket(
+      connection_id, /*ietf_quic=*/true,
+      ParsedQuicVersionVector{UnsupportedQuicVersion()}));
+  time_wait_list_manager()->AddConnectionIdToTimeWait(
+      connection_id, /*ietf_quic=*/true,
+      QuicTimeWaitListManager::SEND_TERMINATION_PACKETS, &termination_packets);
 }
 
 void QuicDispatcher::OnPacket() {}
@@ -1074,10 +1056,7 @@ void QuicDispatcher::BufferEarlyPacket(QuicConnectionId connection_id,
   EnqueuePacketResult rs = buffered_packets_.EnqueuePacket(
       connection_id, ietf_quic, *current_packet_, current_self_address_,
       current_peer_address_, /*is_chlo=*/false,
-      /*alpn=*/"",
-      GetQuicReloadableFlag(quic_fix_reject_by_session_type)
-          ? version
-          : UnsupportedQuicVersion());
+      /*alpn=*/"", version);
   if (rs != EnqueuePacketResult::SUCCESS) {
     OnBufferPacketFailure(rs, connection_id);
   }

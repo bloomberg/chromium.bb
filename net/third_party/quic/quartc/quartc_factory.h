@@ -51,6 +51,11 @@ struct QuartcSessionConfig {
   // Congestion control type used for this session.  Only BBR and GoogCC are
   // supported.
   CongestionControlType congestion_control_type = kBBR;
+
+  // Tail loss probes (TLP) are enabled by default, but it may be useful to
+  // disable them in tests. We can also consider disabling them in production
+  // if we discover that tail loss probes add overhead in low bitrate audio.
+  bool enable_tail_loss_probe = true;
 };
 
 // Factory that creates instances of QuartcSession.  Implements the

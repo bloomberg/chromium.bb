@@ -28,14 +28,8 @@ class QUIC_EXPORT_PRIVATE QuicConnectionId {
 
   ~QuicConnectionId();
 
-  // Immutable pointer to the connection ID bytes.
-  const char* data() const;
-
-  // Mutable pointer to the connection ID bytes.
-  char* mutable_data();
-
   // Always returns 8.
-  QuicConnectionIdLength length() const;
+  uint8_t length() const;
 
   // Returns whether the connection ID is zero.
   bool IsEmpty() const;
@@ -45,6 +39,10 @@ class QUIC_EXPORT_PRIVATE QuicConnectionId {
 
   // Hash() is required to use connection IDs as keys in hash tables.
   size_t Hash() const;
+
+  // Generates an ASCII string that represents
+  // the contents of the connection ID, or "0" if it is empty.
+  QuicString ToString() const;
 
   // operator<< allows easily logging connection IDs.
   friend QUIC_EXPORT_PRIVATE std::ostream& operator<<(
@@ -59,11 +57,8 @@ class QUIC_EXPORT_PRIVATE QuicConnectionId {
  private:
   // The connection ID is currently represented in host byte order in |id64_|.
   // In the future, it will be saved in the first |length_| bytes of |data_|.
-  //
-  // Fields currently commented out since they trigger -Wunused-private-field
-  // in Chromium build:
-  //   uint8_t data_[kQuicMaxConnectionIdLength];
-  //   QuicConnectionIdLength length_;
+  char data_[kQuicMaxConnectionIdLength];
+  uint8_t length_;
   uint64_t id64_;  // host byte order
 };
 

@@ -60,8 +60,8 @@ class ShloVerifier {
     result_ = result;
     crypto_config_->ProcessClientHello(
         result_, /*reject_only=*/false,
-        /*connection_id=*/QuicConnectionIdFromUInt64(1), server_addr_,
-        client_addr_, AllSupportedVersions().front(), AllSupportedVersions(),
+        /*connection_id=*/TestConnectionId(1), server_addr_, client_addr_,
+        AllSupportedVersions().front(), AllSupportedVersions(),
         /*use_stateless_rejects=*/true,
         /*server_designated_connection_id=*/EmptyQuicConnectionId(), clock_,
         QuicRandom::GetInstance(), compressed_certs_cache_, params_,

@@ -34,6 +34,20 @@ using testing::Invoke;
 namespace quic {
 namespace test {
 
+QuicConnectionId TestConnectionId() {
+  // Chosen by fair dice roll.
+  // Guaranteed to be random.
+  return TestConnectionId(42);
+}
+
+QuicConnectionId TestConnectionId(uint64_t connection_number) {
+  return QuicConnectionIdFromUInt64(connection_number);
+}
+
+uint64_t TestConnectionIdToUInt64(QuicConnectionId connection_id) {
+  return QuicConnectionIdToUInt64(connection_id);
+}
+
 QuicAckFrame InitAckFrame(const std::vector<QuicAckBlock>& ack_blocks) {
   DCHECK_GT(ack_blocks.size(), 0u);
 
@@ -341,8 +355,7 @@ void MockQuicConnectionHelper::AdvanceTime(QuicTime::Delta delta) {
 MockQuicConnection::MockQuicConnection(MockQuicConnectionHelper* helper,
                                        MockAlarmFactory* alarm_factory,
                                        Perspective perspective)
-    : MockQuicConnection(QuicConnectionIdFromUInt64(QuicEndian::NetToHost64(
-                             QuicConnectionIdToUInt64(kTestConnectionId))),
+    : MockQuicConnection(TestConnectionId(),
                          QuicSocketAddress(TestPeerIPAddress(), kTestPort),
                          helper,
                          alarm_factory,
@@ -353,8 +366,7 @@ MockQuicConnection::MockQuicConnection(QuicSocketAddress address,
                                        MockQuicConnectionHelper* helper,
                                        MockAlarmFactory* alarm_factory,
                                        Perspective perspective)
-    : MockQuicConnection(QuicConnectionIdFromUInt64(QuicEndian::NetToHost64(
-                             QuicConnectionIdToUInt64(kTestConnectionId))),
+    : MockQuicConnection(TestConnectionId(),
                          address,
                          helper,
                          alarm_factory,
@@ -377,8 +389,7 @@ MockQuicConnection::MockQuicConnection(
     MockAlarmFactory* alarm_factory,
     Perspective perspective,
     const ParsedQuicVersionVector& supported_versions)
-    : MockQuicConnection(QuicConnectionIdFromUInt64(QuicEndian::NetToHost64(
-                             QuicConnectionIdToUInt64(kTestConnectionId))),
+    : MockQuicConnection(TestConnectionId(),
                          QuicSocketAddress(TestPeerIPAddress(), kTestPort),
                          helper,
                          alarm_factory,

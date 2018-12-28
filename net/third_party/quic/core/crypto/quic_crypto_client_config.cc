@@ -516,9 +516,8 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     CryptoHandshakeMessage* out,
     QuicString* error_details) const {
   DCHECK(error_details != nullptr);
-  // TODO(dschinazi) b/120240679 - remove this endianness swap
-  connection_id = QuicConnectionIdFromUInt64(
-      QuicEndian::HostToNet64(QuicConnectionIdToUInt64(connection_id)));
+  const uint64_t connection_id64_net =
+      QuicEndian::HostToNet64(QuicConnectionIdToUInt64(connection_id));
 
   FillInchoateClientHello(server_id, preferred_version, cached, rand,
                           /* demand_x509_proof= */ true, out_params, out);
@@ -643,7 +642,8 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     const QuicData& client_hello_serialized = out->GetSerialized();
     hkdf_input.append(QuicCryptoConfig::kCETVLabel,
                       strlen(QuicCryptoConfig::kCETVLabel) + 1);
-    hkdf_input.append(connection_id.data(), connection_id.length());
+    hkdf_input.append(reinterpret_cast<const char*>(&connection_id64_net),
+                      sizeof(connection_id64_net));
     hkdf_input.append(client_hello_serialized.data(),
                       client_hello_serialized.length());
     hkdf_input.append(cached->server_config());
@@ -694,8 +694,9 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   //   out_params->hkdf_input_suffix
   //   out_params->initial_crypters
   out_params->hkdf_input_suffix.clear();
-  out_params->hkdf_input_suffix.append(connection_id.data(),
-                                       connection_id.length());
+  out_params->hkdf_input_suffix.append(
+      reinterpret_cast<const char*>(&connection_id64_net),
+      sizeof(connection_id64_net));
   const QuicData& client_hello_serialized = out->GetSerialized();
   out_params->hkdf_input_suffix.append(client_hello_serialized.data(),
                                        client_hello_serialized.length());

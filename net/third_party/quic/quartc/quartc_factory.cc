@@ -46,6 +46,15 @@ std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcSession(
   SetQuicFlag(&FLAGS_quic_buffered_data_threshold,
               std::numeric_limits<int>::max());
 
+  // TODO(b/117157454): Perform version negotiation for Quartc outside of
+  // QuicSession/QuicConnection. Currently default of
+  // quic_restart_flag_quic_no_server_conn_ver_negotiation2 is false,
+  // but we fail blueprint test that sets all QUIC flags to true.
+  //
+  // Forcing flag to false to pass blueprint tests, but eventually we'll have
+  // to implement negotiation outside of QuicConnection.
+  SetQuicRestartFlag(quic_no_server_conn_ver_negotiation2, false);
+
   std::unique_ptr<QuicConnection> quic_connection =
       CreateQuicConnection(perspective, writer.get());
 
@@ -123,6 +132,10 @@ std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcSession(
   copt.push_back(kBBQ4);  // 0.75 pacing gain in DRAIN.
   copt.push_back(k1RTT);  // Exit STARTUP after 1 RTT with no gains.
   copt.push_back(kIW10);  // 10-packet (14600 byte) initial cwnd.
+
+  if (!quartc_session_config.enable_tail_loss_probe) {
+    copt.push_back(kNTLP);
+  }
 
   quic_connection->set_fill_up_link_during_probing(true);
 

@@ -157,12 +157,12 @@ class SendAlgorithmTest : public QuicTestWithParam<TestParams> {
                      "QUIC sender",
                      "Receiver",
                      Perspective::IS_CLIENT,
-                     QuicConnectionIdFromUInt64(42)),
+                     TestConnectionId()),
         receiver_(&simulator_,
                   "Receiver",
                   "QUIC sender",
                   Perspective::IS_SERVER,
-                  QuicConnectionIdFromUInt64(42)) {
+                  TestConnectionId()) {
     rtt_stats_ = quic_sender_.connection()->sent_packet_manager().GetRttStats();
     sender_ = SendAlgorithmInterface::Create(
         simulator_.GetClock(), rtt_stats_,

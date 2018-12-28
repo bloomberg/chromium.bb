@@ -253,7 +253,9 @@ QuicFramer::QuicFramer(const ParsedQuicVersionVector& supported_versions,
       last_timestamp_(QuicTime::Delta::Zero()),
       data_producer_(nullptr),
       process_stateless_reset_at_client_only_(
-          GetQuicReloadableFlag(quic_process_stateless_reset_at_client_only)) {
+          GetQuicReloadableFlag(quic_process_stateless_reset_at_client_only)),
+      infer_packet_header_type_from_version_(perspective ==
+                                             Perspective::IS_CLIENT) {
   DCHECK(!supported_versions.empty());
   version_ = supported_versions_[0];
   decrypter_ = QuicMakeUnique<NullDecrypter>(perspective);
@@ -1111,9 +1113,7 @@ std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildPublicResetPacket(
     }
     reset.SetStringPiece(kCADR, serialized_address);
   }
-  if (GetQuicReloadableFlag(quic_enable_server_epid_in_public_reset) &&
-      !packet.endpoint_id.empty()) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_enable_server_epid_in_public_reset);
+  if (!packet.endpoint_id.empty()) {
     reset.SetStringPiece(kEPID, packet.endpoint_id);
   }
   const QuicData& reset_serialized = reset.GetSerialized();
@@ -1160,6 +1160,7 @@ std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildIetfStatelessResetPacket(
   QuicDataWriter writer(len, buffer.get(), NETWORK_BYTE_ORDER);
 
   uint8_t type = 0;
+  type |= FLAGS_FIXED_BIT;
   type |= FLAGS_SHORT_HEADER_RESERVED_1;
   type |= FLAGS_SHORT_HEADER_RESERVED_2;
   type |= PacketNumberLengthToShortHeaderType(PACKET_1BYTE_PACKET_NUMBER);
@@ -1174,6 +1175,7 @@ std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildIetfStatelessResetPacket(
                                  random_bytes_length)) {
       return nullptr;
     }
+    QUIC_RELOADABLE_FLAG_COUNT(quic_more_random_bytes_in_stateless_reset);
   } else {
     // Append an random packet number.
     QuicPacketNumber random_packet_number =
@@ -1274,7 +1276,7 @@ bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
   QuicDataReader reader(packet.data(), packet.length(), endianness());
 
   bool last_packet_is_ietf_quic = false;
-  if (perspective_ == Perspective::IS_CLIENT) {
+  if (infer_packet_header_type_from_version_) {
     last_packet_is_ietf_quic = version_.transport_version > QUIC_VERSION_43;
   } else if (!reader.IsDoneReading()) {
     uint8_t type = reader.PeekByte();
@@ -1980,13 +1982,6 @@ bool QuicFramer::ProcessIetfPacketHeader(QuicDataReader* reader,
   header->form = type & FLAGS_LONG_HEADER ? IETF_QUIC_LONG_HEADER_PACKET
                                           : IETF_QUIC_SHORT_HEADER_PACKET;
   if (header->form == IETF_QUIC_LONG_HEADER_PACKET) {
-    // Get long packet type.
-    header->long_packet_type =
-        static_cast<QuicLongHeaderType>(type & kQuicLongHeaderTypeMask);
-    if (header->long_packet_type < ZERO_RTT_PROTECTED ||
-        header->long_packet_type > INITIAL) {
-      header->long_packet_type = VERSION_NEGOTIATION;
-    }
     QUIC_DVLOG(1) << ENDPOINT << "Received IETF long header: "
                   << QuicUtils::QuicLongHeaderTypetoString(
                          header->long_packet_type);
@@ -2003,6 +1998,32 @@ bool QuicFramer::ProcessIetfPacketHeader(QuicDataReader* reader,
     header->source_connection_id_length = perspective_ == Perspective::IS_CLIENT
                                               ? PACKET_8BYTE_CONNECTION_ID
                                               : PACKET_0BYTE_CONNECTION_ID;
+    // Read version tag.
+    QuicVersionLabel version_label;
+    if (!reader->ReadTag(&version_label)) {
+      set_detailed_error("Unable to read protocol version.");
+      return false;
+    }
+    // TODO(rch): Use ReadUInt32() once QUIC_VERSION_35 is removed.
+    version_label = QuicEndian::NetToHost32(version_label);
+    if (!version_label) {
+      // Version label is 0 indicating this is a version negotiation packet.
+      header->long_packet_type = VERSION_NEGOTIATION;
+    } else {
+      header->version = ParseQuicVersionLabel(version_label);
+      header->long_packet_type =
+          static_cast<QuicLongHeaderType>(type & kQuicLongHeaderTypeMask);
+      if (header->version.transport_version != QUIC_VERSION_UNSUPPORTED &&
+          (header->long_packet_type < ZERO_RTT_PROTECTED ||
+           header->long_packet_type > INITIAL)) {
+        set_detailed_error("Illegal long header type value.");
+        return false;
+      }
+    }
+    if (header->long_packet_type != VERSION_NEGOTIATION) {
+      // Do not save version of version negotiation packet.
+      last_version_label_ = version_label;
+    }
   } else {
     QUIC_DVLOG(1) << ENDPOINT << "Received IETF short header";
     QuicShortHeaderType short_type =
@@ -2030,26 +2051,7 @@ bool QuicFramer::ProcessIetfPacketHeader(QuicDataReader* reader,
     QUIC_DVLOG(1) << "packet_number_length = " << header->packet_number_length;
   }
 
-  QuicVersionLabel version_label;
   if (header->form == IETF_QUIC_LONG_HEADER_PACKET) {
-    // Read version tag.
-    if (!reader->ReadTag(&version_label)) {
-      set_detailed_error("Unable to read protocol version.");
-      return false;
-    }
-    // TODO(rch): Use ReadUInt32() once QUIC_VERSION_35 is removed.
-    version_label = QuicEndian::NetToHost32(version_label);
-    if (header->long_packet_type == VERSION_NEGOTIATION && version_label) {
-      // Version negotiation is identified by the version field.
-      set_detailed_error("Illegal long header type value.");
-      return false;
-    }
-    header->version = ParseQuicVersionLabel(version_label);
-    if (header->long_packet_type != VERSION_NEGOTIATION) {
-      // Do not save version of version negotiation packet.
-      last_version_label_ = version_label;
-    }
-
     // Read and validate connection ID length.
     uint8_t connection_id_length;
     if (!reader->ReadBytes(&connection_id_length, 1)) {
@@ -5025,6 +5027,14 @@ uint8_t QuicFramer::GetIetfStreamFrameTypeByte(
     type_byte |= IETF_STREAM_FRAME_FIN_BIT;
   }
   return type_byte;
+}
+
+void QuicFramer::InferPacketHeaderTypeFromVersion() {
+  // This function should only be called when server connection negotiates the
+  // version.
+  DCHECK(perspective_ == Perspective::IS_SERVER &&
+         !infer_packet_header_type_from_version_);
+  infer_packet_header_type_from_version_ = true;
 }
 
 #undef ENDPOINT  // undef for jumbo builds

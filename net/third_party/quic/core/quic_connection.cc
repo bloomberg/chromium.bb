@@ -623,6 +623,7 @@ bool QuicConnection::OnProtocolVersionMismatch(
 
   // Store the new version.
   framer_.set_version(received_version);
+  framer_.InferPacketHeaderTypeFromVersion();
 
   version_negotiation_state_ = NEGOTIATED_VERSION;
   visitor_->OnSuccessfulVersionNegotiation(received_version);
@@ -787,6 +788,7 @@ bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
     } else {
       DCHECK_EQ(header.version, version());
       version_negotiation_state_ = NEGOTIATED_VERSION;
+      framer_.InferPacketHeaderTypeFromVersion();
       visitor_->OnSuccessfulVersionNegotiation(version());
       if (debug_visitor_ != nullptr) {
         debug_visitor_->OnSuccessfulVersionNegotiation(version());

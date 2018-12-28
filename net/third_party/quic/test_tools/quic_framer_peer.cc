@@ -39,6 +39,8 @@ void QuicFramerPeer::SetLargestPacketNumber(QuicFramer* framer,
 void QuicFramerPeer::SetPerspective(QuicFramer* framer,
                                     Perspective perspective) {
   framer->perspective_ = perspective;
+  framer->infer_packet_header_type_from_version_ =
+      perspective == Perspective::IS_CLIENT;
 }
 
 // static

@@ -1016,12 +1016,18 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterCalculateSharedKeys(
     params->sni = QuicHostnameUtils::NormalizeHostname(sni_tmp.get());
   }
 
+  // connection_id is already passed in in network byte order
+  // TODO(dschinazi) b/120240679 - move the endianness swap from
+  // ProcessClientHelloAfterGetProof to here.
+  const uint64_t connection_id64_net = QuicConnectionIdToUInt64(connection_id);
+
   QuicString hkdf_suffix;
   const QuicData& client_hello_serialized = client_hello.GetSerialized();
-  hkdf_suffix.reserve(connection_id.length() +
+  hkdf_suffix.reserve(sizeof(connection_id64_net) +
                       client_hello_serialized.length() +
                       requested_config->serialized.size());
-  hkdf_suffix.append(connection_id.data(), connection_id.length());
+  hkdf_suffix.append(reinterpret_cast<const char*>(&connection_id64_net),
+                     sizeof(connection_id64_net));
   hkdf_suffix.append(client_hello_serialized.data(),
                      client_hello_serialized.length());
   hkdf_suffix.append(requested_config->serialized);
@@ -1044,7 +1050,8 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterCalculateSharedKeys(
     QuicString hkdf_input;
     hkdf_input.append(QuicCryptoConfig::kCETVLabel,
                       strlen(QuicCryptoConfig::kCETVLabel) + 1);
-    hkdf_input.append(connection_id.data(), connection_id.length());
+    hkdf_input.append(reinterpret_cast<const char*>(&connection_id64_net),
+                      sizeof(connection_id64_net));
     hkdf_input.append(client_hello_copy_serialized.data(),
                       client_hello_copy_serialized.length());
     hkdf_input.append(requested_config->serialized);
@@ -1711,7 +1718,8 @@ void QuicCryptoServerConfig::BuildRejection(
     out->SetStringPiece(kPROF, signed_config.proof.signature);
     if (should_return_sct) {
       if (cert_sct.empty()) {
-        QUIC_LOG_EVERY_N_SEC(WARNING, 60) << "SCT is expected but it is empty.";
+        QUIC_LOG_EVERY_N_SEC(WARNING, 60)
+            << "SCT is expected but it is empty. sni :" << params->sni;
       } else {
         out->SetStringPiece(kCertificateSCTTag, cert_sct);
       }

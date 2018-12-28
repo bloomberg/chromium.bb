@@ -489,6 +489,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
     version_ = versions[0];
   }
 
+  // Tell framer to infer packet header type from version_.
+  void InferPacketHeaderTypeFromVersion();
+
   // Returns true if data with |offset| of stream |id| starts with 'CHLO'.
   bool StartsWithChlo(QuicStreamId id, QuicStreamOffset offset) const;
 
@@ -867,6 +870,11 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   // Latched value of quic_process_stateless_reset_at_client_only flag.
   const bool process_stateless_reset_at_client_only_;
+
+  // If true, framer infers packet header type (IETF/GQUIC) from version_.
+  // Otherwise, framer infers packet header type from first byte of a received
+  // packet.
+  bool infer_packet_header_type_from_version_;
 };
 
 }  // namespace quic

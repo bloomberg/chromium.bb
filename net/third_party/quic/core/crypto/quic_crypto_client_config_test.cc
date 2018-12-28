@@ -83,7 +83,7 @@ TEST_F(QuicCryptoClientConfigTest, CachedState_ServerDesignatedConnectionId) {
   EXPECT_FALSE(state.has_server_designated_connection_id());
 
   uint64_t conn_id = 1234;
-  QuicConnectionId connection_id = QuicConnectionIdFromUInt64(conn_id);
+  QuicConnectionId connection_id = TestConnectionId(conn_id);
   state.add_server_designated_connection_id(connection_id);
   EXPECT_TRUE(state.has_server_designated_connection_id());
   EXPECT_EQ(connection_id, state.GetNextServerDesignatedConnectionId());
@@ -91,18 +91,18 @@ TEST_F(QuicCryptoClientConfigTest, CachedState_ServerDesignatedConnectionId) {
 
   // Allow the ID to be set multiple times.  It's unusual that this would
   // happen, but not impossible.
-  connection_id = QuicConnectionIdFromUInt64(++conn_id);
+  connection_id = TestConnectionId(++conn_id);
   state.add_server_designated_connection_id(connection_id);
   EXPECT_TRUE(state.has_server_designated_connection_id());
   EXPECT_EQ(connection_id, state.GetNextServerDesignatedConnectionId());
-  connection_id = QuicConnectionIdFromUInt64(++conn_id);
+  connection_id = TestConnectionId(++conn_id);
   state.add_server_designated_connection_id(connection_id);
   EXPECT_EQ(connection_id, state.GetNextServerDesignatedConnectionId());
   EXPECT_FALSE(state.has_server_designated_connection_id());
 
   // Test FIFO behavior.
-  const QuicConnectionId first_cid = QuicConnectionIdFromUInt64(0xdeadbeef);
-  const QuicConnectionId second_cid = QuicConnectionIdFromUInt64(0xfeedbead);
+  const QuicConnectionId first_cid = TestConnectionId(0xdeadbeef);
+  const QuicConnectionId second_cid = TestConnectionId(0xfeedbead);
   state.add_server_designated_connection_id(first_cid);
   state.add_server_designated_connection_id(second_cid);
   EXPECT_TRUE(state.has_server_designated_connection_id());
@@ -295,7 +295,7 @@ TEST_F(QuicCryptoClientConfigTest, FillClientHello) {
                                 TlsClientHandshaker::CreateSslCtx());
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params(
       new QuicCryptoNegotiatedParameters);
-  QuicConnectionId kConnectionId = QuicConnectionIdFromUInt64(1234);
+  QuicConnectionId kConnectionId = TestConnectionId(1234);
   QuicString error_details;
   MockRandom rand;
   CryptoHandshakeMessage chlo;
@@ -539,9 +539,9 @@ TEST_F(QuicCryptoClientConfigTest, ProcessStatelessReject) {
   // Create a dummy reject message and mark it as stateless.
   CryptoHandshakeMessage rej;
   crypto_test_utils::FillInDummyReject(&rej, /* stateless */ true);
-  const QuicConnectionId kConnectionId = QuicConnectionIdFromUInt64(0xdeadbeef);
+  const QuicConnectionId kConnectionId = TestConnectionId(0xdeadbeef);
   const QuicString server_nonce = "SERVER_NONCE";
-  const uint64_t kConnectionId64 = QuicConnectionIdToUInt64(kConnectionId);
+  const uint64_t kConnectionId64 = TestConnectionIdToUInt64(kConnectionId);
   rej.SetValue(kRCID, kConnectionId64);
   rej.SetStringPiece(kServerNonceTag, server_nonce);
 
@@ -557,8 +557,8 @@ TEST_F(QuicCryptoClientConfigTest, ProcessStatelessReject) {
                                     AllSupportedTransportVersions().front(), "",
                                     &cached, out_params, &error));
   EXPECT_TRUE(cached.has_server_designated_connection_id());
-  EXPECT_EQ(QuicConnectionIdFromUInt64(QuicEndian::NetToHost64(
-                QuicConnectionIdToUInt64(kConnectionId))),
+  EXPECT_EQ(TestConnectionId(QuicEndian::NetToHost64(
+                TestConnectionIdToUInt64(kConnectionId))),
             cached.GetNextServerDesignatedConnectionId());
   EXPECT_EQ(server_nonce, cached.GetNextServerNonce());
 }

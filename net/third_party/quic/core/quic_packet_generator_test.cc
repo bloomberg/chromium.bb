@@ -149,7 +149,7 @@ class QuicPacketGeneratorTest : public QuicTest {
       : framer_(AllSupportedVersions(),
                 QuicTime::Zero(),
                 Perspective::IS_CLIENT),
-        generator_(QuicConnectionIdFromUInt64(42),
+        generator_(TestConnectionId(),
                    &framer_,
                    &random_generator_,
                    &delegate_,
