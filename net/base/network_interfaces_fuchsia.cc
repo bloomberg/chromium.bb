@@ -27,7 +27,7 @@ using ConnectionType = NetworkChangeNotifier::ConnectionType;
 
 ConnectionType ConvertConnectionType(
     const fuchsia::netstack::NetInterface& iface) {
-  return iface.features & zircon::ethernet::INFO_FEATURE_WLAN
+  return iface.features & fuchsia::hardware::ethernet::INFO_FEATURE_WLAN
              ? NetworkChangeNotifier::CONNECTION_WIFI
              : NetworkChangeNotifier::CONNECTION_UNKNOWN;
 }
@@ -84,7 +84,7 @@ std::vector<NetworkInterface> NetInterfaceToNetworkInterfaces(
     return output;
 
   // Skip loopback.
-  if (iface_in.features & zircon::ethernet::INFO_FEATURE_LOOPBACK)
+  if (iface_in.features & fuchsia::hardware::ethernet::INFO_FEATURE_LOOPBACK)
     return output;
 
   output.push_back(NetworkInterfaceFromAddress(iface_in, 0));
