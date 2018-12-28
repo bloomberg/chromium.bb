@@ -1529,7 +1529,7 @@ void RenderWidgetHostViewAura::SetTextEditCommandForNextKeyEvent(
 ukm::SourceId RenderWidgetHostViewAura::GetClientSourceForMetrics() const {
   RenderFrameHostImpl* frame = GetFocusedFrame();
   if (frame) {
-    frame->GetRenderWidgetHost()
+    return frame->GetRenderWidgetHost()
         ->delegate()
         ->GetUkmSourceIdForLastCommittedSource();
   }
