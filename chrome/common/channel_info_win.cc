@@ -25,12 +25,8 @@ std::string GetChannelName() {
 #endif
 }
 
-namespace channel_info_internal {
-
-version_info::Channel InitChannel() {
+version_info::Channel GetChannel() {
   return install_static::GetChromeChannel();
 }
-
-}  // namespace channel_info_internal
 
 }  // namespace chrome

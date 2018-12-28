@@ -51,14 +51,6 @@ version_info::Channel GetChannelByName(const std::string& channel);
 std::string GetChannelSuffixForDataDir();
 #endif
 
-namespace channel_info_internal {
-
-// Internal platform-specific implementation to initialize the GetChannel()
-// return value.
-version_info::Channel InitChannel();
-
-}  // namespace channel_info_internal
-
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_CHANNEL_INFO_H_
