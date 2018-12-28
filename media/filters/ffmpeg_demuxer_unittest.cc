@@ -22,8 +22,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/base/decrypt_config.h"
-#include "media/base/media_log.h"
 #include "media/base/media_tracks.h"
+#include "media/base/media_util.h"
 #include "media/base/mock_demuxer_host.h"
 #include "media/base/mock_media_log.h"
 #include "media/base/test_helpers.h"
@@ -269,7 +269,7 @@ class FFmpegDemuxerTest : public testing::Test {
   // using StrictMock<MockMediaLog> for all FFmpegDemuxerTests. See
   // https://crbug.com/749178.
   StrictMock<MockMediaLog> media_log_;
-  MediaLog dummy_media_log_;
+  NullMediaLog dummy_media_log_;
 
   std::unique_ptr<FileDataSource> data_source_;
   std::unique_ptr<FFmpegDemuxer> demuxer_;

@@ -19,6 +19,7 @@
 #include "content/renderer/media/stream/webmediaplayer_ms.h"
 #include "content/renderer/media/stream/webmediaplayer_ms_compositor.h"
 #include "content/renderer/render_frame_impl.h"
+#include "media/base/media_util.h"
 #include "media/base/test_helpers.h"
 #include "media/base/video_frame.h"
 #include "media/video/mock_gpu_memory_buffer_video_frame_pool.h"
@@ -691,7 +692,7 @@ void WebMediaPlayerMSTest::InitializeWebMediaPlayerMS() {
           ? blink::WebMediaPlayer::SurfaceLayerMode::kAlways
           : blink::WebMediaPlayer::SurfaceLayerMode::kNever;
   player_ = std::make_unique<WebMediaPlayerMS>(
-      nullptr, this, &delegate_, std::make_unique<media::MediaLog>(),
+      nullptr, this, &delegate_, std::make_unique<media::NullMediaLog>(),
       std::unique_ptr<MediaStreamRendererFactory>(render_factory_),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
