@@ -214,7 +214,9 @@ AbortCallback ProvidedFileSystem::GetActions(
           new operations::GetActions(event_router_, file_system_info_,
                                      entry_paths, callback)));
   if (!request_id) {
-    callback.Run(Actions(), base::File::FILE_ERROR_SECURITY);
+    // If the provider doesn't listen for GetActions requests, treat it as
+    // having no actions.
+    callback.Run(Actions(), base::File::FILE_OK);
     return AbortCallback();
   }
 
