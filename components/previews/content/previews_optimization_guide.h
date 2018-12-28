@@ -31,10 +31,6 @@ namespace previews {
 class PreviewsHints;
 class PreviewsUserData;
 
-using ResourceLoadingHintsCallback = base::OnceCallback<void(
-    const GURL& document_gurl,
-    const std::vector<std::string>& resource_patterns_to_block)>;
-
 // A Previews optimization guide that makes decisions guided by hints received
 // from the OptimizationGuideService.
 class PreviewsOptimizationGuide
@@ -65,8 +61,7 @@ class PreviewsOptimizationGuide
   // (specifically, PageHints). If so, but the hints are not available
   // synchronously, this method will request that they be loaded (from disk or
   // network).
-  bool MaybeLoadOptimizationHints(const GURL& url,
-                                  ResourceLoadingHintsCallback callback);
+  bool MaybeLoadOptimizationHints(const GURL& url);
 
   // Whether |url| has loaded resource loading hints and, if it does, populates
   // |out_resource_patterns_to_block| with the resource patterns to block.
@@ -89,12 +84,8 @@ class PreviewsOptimizationGuide
   // Updates the hints to the latest hints sent by the Component Updater.
   void UpdateHints(std::unique_ptr<PreviewsHints> hints);
 
-  // Handles a loaded hint. It checks if the |loaded_hint| has any page hint
-  // that apply to |doucment_url|. If so, it looks for any applicable resource
-  // loading hints and will call |callback| with the applicable resource loading
-  // details if found.
-  void OnLoadedHint(ResourceLoadingHintsCallback callback,
-                    const GURL& document_url,
+  // Callback when a hint is loaded.
+  void OnLoadedHint(const GURL& document_url,
                     const optimization_guide::proto::Hint& loaded_hint) const;
 
   // The OptimizationGuideService that this guide is listening to. Not owned.

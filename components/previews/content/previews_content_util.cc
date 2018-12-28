@@ -72,8 +72,7 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
   bool has_page_hints = false;
   if (should_load_page_hints) {
     // Initiate load of any applicable page hint details.
-    // TODO(dougarnett): Generalize method name to LoadPageHints().
-    has_page_hints = previews_decider->LoadResourceHints(url);
+    has_page_hints = previews_decider->LoadPageHints(url);
   }
 
   // Note: this is for the beginning of navigation so we should not

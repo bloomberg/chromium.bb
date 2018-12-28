@@ -42,7 +42,7 @@ class PreviewEnabledPreviewsDecider : public PreviewsDecider {
     return IsEnabled(type);
   }
 
-  bool LoadResourceHints(const GURL& url) override {
+  bool LoadPageHints(const GURL& url) override {
     return url.host_piece().ends_with("hintcachedhost.com");
   }
 
