@@ -3588,7 +3588,8 @@ void RenderFrameImpl::HandleRendererDebugURL(const GURL& url) {
 void RenderFrameImpl::UpdateSubresourceLoaderFactories(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders) {
   DCHECK(loader_factories_);
-  DCHECK(loader_factories_->IsHostChildURLLoaderFactoryBundle());
+  // TODO(crbug/916625): CHECKing for crbug.com/916625.
+  CHECK(loader_factories_->IsHostChildURLLoaderFactoryBundle());
   static_cast<HostChildURLLoaderFactoryBundle*>(loader_factories_.get())
       ->UpdateThisAndAllClones(std::move(subresource_loaders));
 }
