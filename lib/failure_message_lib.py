@@ -32,7 +32,7 @@ FAILURE_KEYS = (
     'id', 'build_stage_id', 'outer_failure_id', 'exception_type',
     'exception_message', 'exception_category', 'extra_info',
     'timestamp', 'stage_name', 'board', 'stage_status', 'build_id',
-    'master_build_id', 'builder_name', 'waterfall', 'build_number',
+    'master_build_id', 'builder_name', 'build_number',
     'build_config', 'build_status', 'important', 'buildbucket_id')
 
 
@@ -62,7 +62,7 @@ class StageFailure(_StageFailure):
         stage_failure_message.exception_category,
         stage_failure_message.extra_info, None,
         stage_failure_message.stage_name, None, None, None, None, None, None,
-        None, None, None, None, None)
+        None, None, None, None)
 
   @classmethod
   def GetStageFailureFromDicts(cls, failure_dict, stage_dict, build_dict):
@@ -83,7 +83,7 @@ class StageFailure(_StageFailure):
         failure_dict['extra_info'], failure_dict['timestamp'],
         stage_dict['name'], stage_dict['board'], stage_dict['status'],
         build_dict['id'], build_dict['master_build_id'],
-        build_dict['builder_name'], build_dict['waterfall'],
+        build_dict['builder_name'],
         build_dict['build_number'], build_dict['build_config'],
         build_dict['status'], build_dict['important'],
         build_dict['buildbucket_id'])

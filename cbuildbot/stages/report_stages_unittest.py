@@ -10,7 +10,6 @@ from __future__ import print_function
 import datetime as dt
 import json
 import mock
-import os
 
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import cbuildbot_unittest
@@ -20,7 +19,6 @@ from chromite.cbuildbot import topology
 from chromite.cbuildbot import topology_unittest
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import report_stages
-from chromite.lib.const import waterfall
 from chromite.lib import alerts
 from chromite.lib import cidb
 from chromite.lib import constants
@@ -110,7 +108,6 @@ class SlaveFailureSummaryStageTest(
         failure_message_lib_unittest.StageFailureHelper.CreateStageFailure(
             build_id=10,
             build_stage_id=11,
-            waterfall=waterfall.WATERFALL_SWARMING,
             builder_name='builder_name',
             build_number=12,
             build_config='build-config',
@@ -130,7 +127,6 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTestCase):
     self.db = fake_cidb.FakeCIDBConnection()
     cidb.CIDBConnectionFactory.SetupMockCidb(self.db)
     retry_stats.SetupStats()
-    os.environ['BUILDBOT_MASTERNAME'] = waterfall.WATERFALL_SWARMING
 
     master_build_id = self.db.InsertBuild(
         'master_build', 1,

@@ -9,12 +9,6 @@ from __future__ import print_function
 
 import os
 
-# TODO(akeshet): Once constants.py is more completely split, and the callers are
-# all updated, remove these *-imports. See crbug.com/746047 for context.
-# pylint: disable=wildcard-import
-# pylint: disable=unused-wildcard-import
-from chromite.lib.const.waterfall import *
-
 def _FindSourceRoot():
   """Try and find the root check out of the chromiumos tree"""
   source_root = path = os.path.realpath(os.path.join(

@@ -67,7 +67,7 @@ class StepFailure(Exception):
     stage_failure = failure_message_lib.StageFailure(
         None, build_stage_id, None, self.__class__.__name__, self.message,
         self.EXCEPTION_CATEGORY, self.EncodeExtraInfo(), None, stage_name,
-        None, None, None, None, None, None, None, None, None, None, None)
+        None, None, None, None, None, None, None, None, None, None)
     return failure_message_lib.StageFailureMessage(
         stage_failure, stage_prefix_name=stage_prefix_name)
 
@@ -177,7 +177,7 @@ class CompoundFailure(StepFailure):
     stage_failure = failure_message_lib.StageFailure(
         None, build_stage_id, None, self.__class__.__name__, self.message,
         self.EXCEPTION_CATEGORY, self.EncodeExtraInfo(), None, stage_name,
-        None, None, None, None, None, None, None, None, None, None, None)
+        None, None, None, None, None, None, None, None, None, None)
     compound_failure_message = failure_message_lib.CompoundFailureMessage(
         stage_failure, stage_prefix_name=stage_prefix_name)
 
@@ -185,7 +185,7 @@ class CompoundFailure(StepFailure):
       inner_failure = failure_message_lib.StageFailure(
           None, build_stage_id, None, exc_class.__name__, exc_str,
           _GetExceptionCategory(exc_class), None, None, stage_name,
-          None, None, None, None, None, None, None, None, None, None, None)
+          None, None, None, None, None, None, None, None, None, None)
       innner_failure_message = failure_message_lib.StageFailureMessage(
           inner_failure, stage_prefix_name=stage_prefix_name)
       compound_failure_message.inner_failures.append(innner_failure_message)
@@ -515,7 +515,7 @@ def GetStageFailureMessageFromException(stage_name, build_stage_id,
     stage_failure = failure_message_lib.StageFailure(
         None, build_stage_id, None, type(exception).__name__, str(exception),
         _GetExceptionCategory(type(exception)), None, None, stage_name,
-        None, None, None, None, None, None, None, None, None, None, None)
+        None, None, None, None, None, None, None, None, None, None)
 
     return failure_message_lib.StageFailureMessage(
         stage_failure, stage_prefix_name=stage_prefix_name)
