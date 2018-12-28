@@ -60,6 +60,19 @@ class MediaQueryListEvent final : public Event {
     return event_interface_names::kMediaQueryListEvent;
   }
 
+  // beforeprint/afterprint events need to be dispatched while the execution
+  // context is paused.  When printing, window.print() invoked by beforeprint/
+  // afterprint event listeners should have no effect, hence the event dispatch
+  // needs to be done during the pause.
+  // Accordingly, MediaQueryListEvent is also expected to be dispatched while
+  // printing.
+  bool ShouldDispatchEvenWhenExecutionContextIsPaused() const override {
+    // TODO(thestig,yukishiino): Probably it's better to return true only when
+    // we're actually printing.  It's possible that execution contexts are
+    // paused for other reasons (e.g. other modal dialogs).
+    return true;
+  }
+
   void Trace(blink::Visitor* visitor) override {
     Event::Trace(visitor);
     visitor->Trace(media_query_list_);

@@ -94,7 +94,6 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -167,6 +166,8 @@
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/editing/writing_direction.h"
+#include "third_party/blink/renderer/core/events/after_print_event.h"
+#include "third_party/blink/renderer/core/events/before_print_event.h"
 #include "third_party/blink/renderer/core/exported/local_frame_client_impl.h"
 #include "third_party/blink/renderer/core/exported/web_associated_url_loader_impl.h"
 #include "third_party/blink/renderer/core/exported/web_dev_tools_agent_impl.h"
@@ -1474,6 +1475,9 @@ void WebLocalFrameImpl::DispatchAfterPrintEvent() {
 
 void WebLocalFrameImpl::DispatchPrintEventRecursively(
     const AtomicString& event_type) {
+  DCHECK(event_type == event_type_names::kBeforeprint ||
+         event_type == event_type_names::kAfterprint);
+
   HeapVector<Member<Frame>> frames;
   for (Frame* frame = frame_; frame; frame = frame->Tree().TraverseNext(frame_))
     frames.push_back(frame);
@@ -1485,7 +1489,10 @@ void WebLocalFrameImpl::DispatchPrintEventRecursively(
     }
     if (!frame->Tree().IsDescendantOf(frame_))
       continue;
-    ToLocalFrame(frame)->DomWindow()->DispatchEvent(*Event::Create(event_type));
+    Event* event = event_type == event_type_names::kBeforeprint
+                       ? static_cast<Event*>(BeforePrintEvent::Create())
+                       : static_cast<Event*>(AfterPrintEvent::Create());
+    ToLocalFrame(frame)->DomWindow()->DispatchEvent(*event);
   }
 }
 

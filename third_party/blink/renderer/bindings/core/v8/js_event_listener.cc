@@ -48,17 +48,8 @@ void JSEventListener::InvokeInternal(EventTarget&,
                                      v8::Local<v8::Value> js_event) {
   // Step 10: Call a listener with event's currentTarget as receiver and event
   // and handle errors if thrown.
-  const bool is_beforeunload_event =
-      event.IsBeforeUnloadEvent() &&
-      event.type() == event_type_names::kBeforeunload;
-  const bool is_print_event =
-      // TODO(yukishiino): Should check event.Is{Before,After}PrintEvent.
-      event.type() == event_type_names::kBeforeprint ||
-      event.type() == event_type_names::kAfterprint;
-  const bool is_media_query_list_event =
-      event.InterfaceName() == event_interface_names::kMediaQueryListEvent;
   if (!event_listener_->IsRunnableOrThrowException(
-          (is_beforeunload_event || is_print_event || is_media_query_list_event)
+          event.ShouldDispatchEvenWhenExecutionContextIsPaused()
               ? V8EventListener::IgnorePause::kIgnore
               : V8EventListener::IgnorePause::kDontIgnore)) {
     return;
