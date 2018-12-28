@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_helper_delegate.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "extensions/common/extension.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "url/gurl.h"
 
@@ -22,6 +23,7 @@ class PendingAppManager;
 }  // namespace web_app
 
 namespace chromeos {
+
 namespace multidevice_setup {
 
 class AndroidSmsAppHelperDelegateImpl : public AndroidSmsAppHelperDelegate {
@@ -32,6 +34,18 @@ class AndroidSmsAppHelperDelegateImpl : public AndroidSmsAppHelperDelegate {
  private:
   friend class AndroidSmsAppHelperDelegateImplTest;
 
+  // Fetches the Extension* associated with the PWA for |gurl|. This class is
+  // a thin wrapper around extensions::util::GetInstalledPwaForUrl() which is
+  // stubbed out for tests.
+  class PwaFetcherDelegate {
+   public:
+    PwaFetcherDelegate();
+    virtual ~PwaFetcherDelegate();
+
+    virtual const extensions::Extension* GetPwaForUrl(Profile* profile,
+                                                      GURL gurl);
+  };
+
   // Note: This constructor should only be used in testing. Right now, objects
   // built using this constructor will segfault on profile_ if
   // LaunchAndroidSmsApp is called. We'll need to fix this once tests for that
@@ -40,30 +54,38 @@ class AndroidSmsAppHelperDelegateImpl : public AndroidSmsAppHelperDelegate {
       web_app::PendingAppManager* pending_app_manager,
       HostContentSettingsMap* host_content_settings_map,
       network::mojom::CookieManager* cookie_manager);
-  void OnAppInstalled(bool launch_on_install,
-                      const GURL& app_url,
-                      web_app::InstallResultCode code);
-  void SetUpAndroidSmsApp(bool launch_on_install);
-  void LaunchAndroidSmsApp();
-  void OnSetDefaultToPersistCookieForInstall(bool launch_on_install,
-                                             bool set_cookie_success);
 
   // AndroidSmsAppHelperDelegate:
   void SetUpAndroidSmsApp() override;
   void SetUpAndLaunchAndroidSmsApp() override;
   void TearDownAndroidSmsApp() override;
 
+  void OnAppInstalled(bool launch_on_install,
+                      const GURL& app_url,
+                      web_app::InstallResultCode code);
+  void SetUpAndroidSmsApp(bool launch_on_install);
+  void SetUpAndroidSmsAppWithNoOldApp(bool launch_on_install);
+  void LaunchAndroidSmsApp();
+  void OnSetDefaultToPersistCookieForInstall(bool launch_on_install,
+                                             bool set_cookie_success);
+  void TearDownAndroidSmsAppAtUrl(GURL pwa_url);
+
+  void SetPwaFetcherDelegateForTesting(
+      std::unique_ptr<PwaFetcherDelegate> test_pwa_fetcher_delegate);
+
   static const char kMessagesWebAppUrl[];
   web_app::PendingAppManager* pending_app_manager_;
   Profile* profile_;
   HostContentSettingsMap* host_content_settings_map_;
   network::mojom::CookieManager* cookie_manager_;
+  std::unique_ptr<PwaFetcherDelegate> pwa_fetcher_delegate_;
   base::WeakPtrFactory<AndroidSmsAppHelperDelegateImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidSmsAppHelperDelegateImpl);
 };
 
 }  // namespace multidevice_setup
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_MULTIDEVICE_SETUP_ANDROID_SMS_APP_HELPER_DELEGATE_IMPL_H_
