@@ -562,6 +562,9 @@ void NewPasswordFormManager::ProcessServerPredictions(
 }
 
 void NewPasswordFormManager::Fill() {
+  if (!driver_)
+    return;
+
   waiting_for_server_predictions_ = false;
 
   if (form_fetcher_->GetState() == FormFetcher::State::WAITING)
@@ -582,11 +585,6 @@ void NewPasswordFormManager::Fill() {
     return;
 
   RecordMetricOnCompareParsingResult(*observed_password_form);
-
-  // TODO(https://crbug.com/831123). Move this lines to the beginning of the
-  // function when the old parsing is removed.
-  if (!driver_)
-    return;
 
   if (observed_password_form->is_new_password_reliable && !IsBlacklisted()) {
     driver_->FormEligibleForGenerationFound(
