@@ -50,6 +50,7 @@
 namespace blink {
 
 class Color;
+class GraphicsContext;
 class GraphicsLayer;
 class InspectedFrames;
 class InspectorDOMAgent;
@@ -127,6 +128,8 @@ class CORE_EXPORT InspectorOverlayAgent final
 
   // Update the complete lifecycle (e.g., layout, paint) for the overlay.
   void UpdateAllOverlayLifecyclePhases();
+  // For CompositeAfterPaint.
+  void PaintOverlay(GraphicsContext&);
 
   bool IsInspectorLayer(GraphicsLayer*);
 

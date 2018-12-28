@@ -403,6 +403,15 @@ _CONFIG = [
         ],
     },
     {
+        'paths': ['third_party/blink/renderer/core/inspector/inspector_overlay_agent.cc'],
+        'allowed': [
+            # cc painting types.
+            'cc::ContentLayerClient',
+            'cc::DisplayItemList',
+            'cc::DrawRecordOp',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/inspector/inspector_performance_agent.cc'],
         'allowed': [
             'base::subtle::TimeTicksNowIgnoringOverride',

@@ -18,7 +18,9 @@ namespace {
 class ForeignLayerDisplayItemClient final : public DisplayItemClient {
  public:
   ForeignLayerDisplayItemClient(scoped_refptr<cc::Layer> layer)
-      : layer_(std::move(layer)) {}
+      : layer_(std::move(layer)) {
+    Invalidate(PaintInvalidationReason::kUncacheable);
+  }
 
   String DebugName() const final { return "ForeignLayer"; }
 
@@ -45,6 +47,7 @@ ForeignLayerDisplayItem::ForeignLayerDisplayItem(Type type,
          RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
   DCHECK(IsForeignLayerType(type));
   DCHECK(GetLayer());
+  DCHECK(!IsCacheable());
 }
 
 ForeignLayerDisplayItem::~ForeignLayerDisplayItem() {
@@ -56,7 +59,7 @@ cc::Layer* ForeignLayerDisplayItem::GetLayer() const {
 }
 
 bool ForeignLayerDisplayItem::Equals(const DisplayItem& other) const {
-  return DisplayItem::Equals(other) &&
+  return GetType() == other.GetType() &&
          GetLayer() ==
              static_cast<const ForeignLayerDisplayItem&>(other).GetLayer();
 }
