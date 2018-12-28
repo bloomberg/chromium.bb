@@ -16,6 +16,16 @@ namespace ash {
 // SystemTrayModel.
 class ASH_EXPORT UnifiedSystemTrayModel {
  public:
+  enum class NotificationTargetMode {
+    // Notification list scrolls to the last notification.
+    LAST_NOTIFICATION,
+    // Notification list scrolls to the last scroll position.
+    LAST_POSITION,
+    // Notification list scrolls to the specified notification defined by
+    // |SetTargetNotification(notification_id)|.
+    NOTIFICATION_ID,
+  };
+
   class Observer {
    public:
     virtual ~Observer() {}
@@ -49,6 +59,10 @@ class ASH_EXPORT UnifiedSystemTrayModel {
   // Clears all changes by SetNotificatinExpanded().
   void ClearNotificationChanges();
 
+  // Set the notification id of the target. This sets target mode as
+  // NOTIFICATION_ID.
+  void SetTargetNotification(const std::string& notification_id);
+
   float display_brightness() const { return display_brightness_; }
   float keyboard_brightness() const { return keyboard_brightness_; }
 
@@ -56,11 +70,31 @@ class ASH_EXPORT UnifiedSystemTrayModel {
     expanded_on_open_ = expanded_on_open;
   }
 
+  void set_notification_target_mode(NotificationTargetMode mode) {
+    notification_target_mode_ = mode;
+  }
+
+  NotificationTargetMode notification_target_mode() const {
+    return notification_target_mode_;
+  }
+
+  const std::string& notification_target_id() const {
+    return notification_target_id_;
+  }
+
  private:
   class DBusObserver;
 
   void DisplayBrightnessChanged(float brightness, bool by_user);
   void KeyboardBrightnessChanged(float brightness, bool by_user);
+
+  // Target mode which is used to decide the scroll position of the message
+  // center on opening. See the comment in |NotificationTargetMode|.
+  NotificationTargetMode notification_target_mode_ =
+      NotificationTargetMode::LAST_NOTIFICATION;
+  // Set the notification id of the target. This id is used if the target mode
+  // is NOTIFICATION_ID.
+  std::string notification_target_id_;
 
   // If UnifiedSystemTray bubble is expanded on its open. It's expanded by
   // default, and if a user collapses manually, it remembers previous state.

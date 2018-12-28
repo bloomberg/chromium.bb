@@ -13,6 +13,7 @@
 #include "ash/system/message_center/unified_message_list_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/sign_out_button.h"
+#include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -114,11 +115,12 @@ UnifiedMessageCenterView::UnifiedMessageCenterView(
     UnifiedSystemTrayView* parent,
     UnifiedSystemTrayModel* model)
     : parent_(parent),
+      model_(model),
       stacking_counter_(new StackingNotificationCounterView()),
       scroll_bar_(new MessageCenterScrollBar(this)),
       scroller_(new views::ScrollView()),
       message_list_view_(new UnifiedMessageListView(this, model)),
-      position_from_bottom_(kClearAllButtonRowHeight) {
+      last_scroll_position_from_bottom_(kClearAllButtonRowHeight) {
   message_list_view_->Init();
 
   AddChildView(stacking_counter_);
@@ -135,6 +137,9 @@ UnifiedMessageCenterView::UnifiedMessageCenterView(
 }
 
 UnifiedMessageCenterView::~UnifiedMessageCenterView() {
+  model_->set_notification_target_mode(
+      UnifiedSystemTrayModel::NotificationTargetMode::LAST_NOTIFICATION);
+
   RemovedFromWidget();
 }
 
@@ -145,7 +150,7 @@ void UnifiedMessageCenterView::SetMaxHeight(int max_height) {
 void UnifiedMessageCenterView::ListPreferredSizeChanged() {
   UpdateVisibility();
   PreferredSizeChanged();
-  ScrollToPositionFromBottom();
+  ScrollToTarget();
   Layout();
 
   if (GetWidget() && !GetWidget()->IsClosed())
@@ -185,7 +190,7 @@ void UnifiedMessageCenterView::Layout() {
     scroller_->SetBoundsRect(GetContentsBounds());
   }
 
-  ScrollToPositionFromBottom();
+  ScrollToTarget();
   NotifyHeightBelowScroll();
 }
 
@@ -197,8 +202,12 @@ gfx::Size UnifiedMessageCenterView::CalculatePreferredSize() const {
 }
 
 void UnifiedMessageCenterView::OnMessageCenterScrolled() {
-  position_from_bottom_ =
+  last_scroll_position_from_bottom_ =
       scroll_bar_->GetMaxPosition() - scroller_->GetVisibleRect().y();
+
+  // Reset the target if user scrolls the list manually.
+  model_->set_notification_target_mode(
+      UnifiedSystemTrayModel::NotificationTargetMode::LAST_POSITION);
 
   const bool was_visible = stacking_counter_->visible();
   stacking_counter_->SetCount(GetStackedNotificationCount());
@@ -239,33 +248,59 @@ void UnifiedMessageCenterView::UpdateVisibility() {
              session_controller->ShouldShowNotificationTray() &&
              (!session_controller->IsScreenLocked() ||
               AshMessageCenterLockScreenController::IsEnabled()));
-  // When notification list went invisible, |position_from_bottom_| should be
-  // reset.
-  if (!visible())
-    position_from_bottom_ = kClearAllButtonRowHeight;
+  // When notification list went invisible, the last notification should be
+  // targeted next time.
+  if (!visible()) {
+    model_->set_notification_target_mode(
+        UnifiedSystemTrayModel::NotificationTargetMode::LAST_NOTIFICATION);
+  }
 }
 
-void UnifiedMessageCenterView::ScrollToPositionFromBottom() {
+void UnifiedMessageCenterView::ScrollToTarget() {
   // Following logic doesn't work when the view is invisible, because it uses
   // the height of |scroller_|.
   if (!visible())
     return;
 
-  // If the last notification is taller than |scroller_|, we should align the
-  // top of the notification with the top of |scroller_|.
-  const int last_notification_offset =
-      message_list_view_->GetLastNotificationHeight() - scroller_->height() +
-      kUnifiedNotificationCenterSpacing;
-  if (position_from_bottom_ == kClearAllButtonRowHeight &&
-      last_notification_offset > 0) {
-    position_from_bottom_ += last_notification_offset;
+  int position;
+  switch (model_->notification_target_mode()) {
+    case UnifiedSystemTrayModel::NotificationTargetMode::LAST_POSITION:
+      // Restore the previous scrolled position with matching the distance from
+      // the bottom.
+      position =
+          scroll_bar_->GetMaxPosition() - last_scroll_position_from_bottom_;
+      break;
+    case UnifiedSystemTrayModel::NotificationTargetMode::NOTIFICATION_ID:
+      FALLTHROUGH;
+    case UnifiedSystemTrayModel::NotificationTargetMode::LAST_NOTIFICATION: {
+      const gfx::Rect& target_rect =
+          (model_->notification_target_mode() ==
+           UnifiedSystemTrayModel::NotificationTargetMode::NOTIFICATION_ID)
+              ? message_list_view_->GetNotificationBounds(
+                    model_->notification_target_id())
+              : message_list_view_->GetLastNotificationBounds();
+
+      const int last_notification_offset = target_rect.height() -
+                                           scroller_->height() +
+                                           kUnifiedNotificationCenterSpacing;
+      if (last_notification_offset > 0) {
+        // If the target notification is taller than |scroller_|, we should
+        // align the top of the notification with the top of |scroller_|.
+        position = target_rect.y();
+      } else {
+        // Otherwise, we align the bottom of the notification with the bottom of
+        // |scroller_|;
+        position = target_rect.bottom() - scroller_->height();
+
+        if (model_->notification_target_mode() ==
+            UnifiedSystemTrayModel::NotificationTargetMode::LAST_NOTIFICATION) {
+          position += kUnifiedNotificationCenterSpacing;
+        }
+      }
+    }
   }
 
-  if (position_from_bottom_ > scroll_bar_->GetMaxPosition())
-    position_from_bottom_ = scroll_bar_->GetMaxPosition();
-
-  scroller_->ScrollToPosition(
-      scroll_bar_, scroll_bar_->GetMaxPosition() - position_from_bottom_);
+  scroller_->ScrollToPosition(scroll_bar_, position);
 }
 
 int UnifiedMessageCenterView::GetStackedNotificationCount() const {

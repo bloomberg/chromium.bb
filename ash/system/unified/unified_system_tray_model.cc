@@ -99,6 +99,13 @@ base::Optional<bool> UnifiedSystemTrayModel::GetNotificationExpanded(
                                            : base::Optional<bool>(it->second);
 }
 
+void UnifiedSystemTrayModel::SetTargetNotification(
+    const std::string& notification_id) {
+  DCHECK(!notification_id.empty());
+  notification_target_id_ = notification_id;
+  notification_target_mode_ = NotificationTargetMode::NOTIFICATION_ID;
+}
+
 void UnifiedSystemTrayModel::SetNotificationExpanded(
     const std::string& notification_id,
     bool expanded) {

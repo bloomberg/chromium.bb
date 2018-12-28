@@ -210,12 +210,6 @@ void UnifiedMessageListView::ClearAllWithAnimation() {
     StartAnimation();
 }
 
-int UnifiedMessageListView::GetLastNotificationHeight() const {
-  if (!has_children())
-    return 0;
-  return child_at(child_count() - 1)->bounds().height();
-}
-
 int UnifiedMessageListView::CountNotificationsAboveY(int y_offset) const {
   for (int i = 0; i < child_count(); ++i) {
     if (child_at(i)->bounds().bottom() >= y_offset)
@@ -242,6 +236,26 @@ void UnifiedMessageListView::Layout() {
     view->SetBoundsRect(gfx::Tween::RectValueBetween(
         GetCurrentValue(), view->start_bounds(), view->ideal_bounds()));
   }
+}
+
+gfx::Rect UnifiedMessageListView::GetNotificationBounds(
+    const std::string& notification_id) const {
+  if (!notification_id.empty()) {
+    for (int i = 0; i < child_count(); i++) {
+      if (GetContainer(i)->GetNotificationId() == notification_id)
+        return GetContainer(i)->bounds();
+    }
+  }
+
+  // Fallback to the last notification.
+  return GetLastNotificationBounds();
+}
+
+gfx::Rect UnifiedMessageListView::GetLastNotificationBounds() const {
+  if (child_count() == 0)
+    return gfx::Rect();
+
+  return GetContainer(child_count() - 1)->bounds();
 }
 
 gfx::Size UnifiedMessageListView::CalculatePreferredSize() const {

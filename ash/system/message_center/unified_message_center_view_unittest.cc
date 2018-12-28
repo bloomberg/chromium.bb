@@ -152,6 +152,8 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
 
   int size_changed_count() const { return size_changed_count_; }
 
+  UnifiedSystemTrayModel* model() { return model_.get(); }
+
  private:
   int id_ = 0;
   int size_changed_count_ = 0;
@@ -311,7 +313,7 @@ TEST_F(UnifiedMessageCenterViewTest, InitialPositionWithLargeNotification) {
             message_view_bounds.height());
 
   // Top of the second notification aligns with the top of MessageCenterView.
-  EXPECT_EQ(0, message_view_bounds.y());
+  EXPECT_EQ(kStackingNotificationCounterHeight, message_view_bounds.y());
 }
 
 TEST_F(UnifiedMessageCenterViewTest, ScrollPositionWhenResized) {
@@ -436,6 +438,82 @@ TEST_F(UnifiedMessageCenterViewTest, HeightBelowScroll) {
   GetScroller()->ScrollToPosition(GetScrollBar(), 0);
   message_center_view()->OnMessageCenterScrolled();
   EXPECT_LT(0, message_center_view()->height_below_scroll());
+}
+
+TEST_F(UnifiedMessageCenterViewTest,
+       HeightBelowScrollWithTargetingFirstNotification) {
+  std::vector<std::string> ids;
+  for (size_t i = 0; i < 10; ++i)
+    ids.push_back(AddNotification());
+  // Set the first notification as the target.
+  model()->SetTargetNotification(ids[0]);
+
+  CreateMessageCenterView();
+  EXPECT_TRUE(message_center_view()->visible());
+
+  EXPECT_GT(GetMessageListView()->bounds().height(),
+            message_center_view()->bounds().height());
+  message_center_view()->OnMessageCenterScrolled();
+
+  EXPECT_EQ(0, GetScroller()->GetVisibleRect().y());
+  EXPECT_EQ(
+      GetMessageListView()->height() - GetScroller()->GetVisibleRect().height(),
+      message_center_view()->height_below_scroll());
+}
+
+TEST_F(UnifiedMessageCenterViewTest,
+       HeightBelowScrollWithTargetingNotification) {
+  std::vector<std::string> ids;
+  for (size_t i = 0; i < 10; ++i)
+    ids.push_back(AddNotification());
+  // Set the second last notification as the target.
+  model()->SetTargetNotification(ids[8]);
+
+  CreateMessageCenterView();
+  EXPECT_TRUE(message_center_view()->visible());
+
+  EXPECT_GT(GetMessageListView()->bounds().height(),
+            message_center_view()->bounds().height());
+  message_center_view()->OnMessageCenterScrolled();
+
+  EXPECT_EQ(GetMessageListView()->GetLastNotificationBounds().height(),
+            message_center_view()->height_below_scroll());
+}
+
+TEST_F(UnifiedMessageCenterViewTest,
+       HeightBelowScrollWithTargetingLastNotification) {
+  std::vector<std::string> ids;
+  for (size_t i = 0; i < 10; ++i)
+    ids.push_back(AddNotification());
+  // Set the second last notification as the target.
+  model()->SetTargetNotification(ids[9]);
+
+  CreateMessageCenterView();
+  EXPECT_TRUE(message_center_view()->visible());
+
+  EXPECT_GT(GetMessageListView()->bounds().height(),
+            message_center_view()->bounds().height());
+  message_center_view()->OnMessageCenterScrolled();
+
+  EXPECT_EQ(0, message_center_view()->height_below_scroll());
+}
+
+TEST_F(UnifiedMessageCenterViewTest,
+       HeightBelowScrollWithTargetingInvalidNotification) {
+  std::vector<std::string> ids;
+  for (size_t i = 0; i < 10; ++i)
+    ids.push_back(AddNotification());
+  // Set the second last notification as the target.
+  model()->SetTargetNotification("INVALID_ID");
+
+  CreateMessageCenterView();
+  EXPECT_TRUE(message_center_view()->visible());
+
+  EXPECT_GT(GetMessageListView()->bounds().height(),
+            message_center_view()->bounds().height());
+  message_center_view()->OnMessageCenterScrolled();
+
+  EXPECT_EQ(0, message_center_view()->height_below_scroll());
 }
 
 }  // namespace ash

@@ -46,9 +46,13 @@ class ASH_EXPORT UnifiedMessageListView
   // removed from MessageCenter at the beginning of the animation.
   void ClearAllWithAnimation();
 
-  // Get the height of the notification at the bottom. If no notification is
-  // added, it returns 0.
-  int GetLastNotificationHeight() const;
+  // Return the bounds of the specified notification view. If the given id is
+  // invalid, return an empty rect.
+  gfx::Rect GetNotificationBounds(const std::string& id) const;
+
+  // Return the bounds of the last notification view. If there is no view,
+  // return an empty rect.
+  gfx::Rect GetLastNotificationBounds() const;
 
   // Count the number of notifications whose bottom position is above
   // |y_offset|. O(n) where n is number of notifications.

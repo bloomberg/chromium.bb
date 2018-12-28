@@ -243,6 +243,11 @@ void UnifiedSystemTray::SetTrayEnabled(bool enabled) {
   SetEnabled(enabled);
 }
 
+void UnifiedSystemTray::SetTargetNotification(
+    const std::string& notification_id) {
+  model_->SetTargetNotification(notification_id);
+}
+
 bool UnifiedSystemTray::PerformAction(const ui::Event& event) {
   if (bubble_) {
     CloseBubble();

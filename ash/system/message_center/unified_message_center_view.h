@@ -87,21 +87,22 @@ class ASH_EXPORT UnifiedMessageCenterView
 
   void UpdateVisibility();
 
-  // Scroll the notification list to |position_from_bottom_|.
-  void ScrollToPositionFromBottom();
+  // Scroll the notification list to the target position.
+  void ScrollToTarget();
 
   // Notifies height below scroll to |parent_| so that it can update
   // TopCornerBorder.
   void NotifyHeightBelowScroll();
 
   UnifiedSystemTrayView* const parent_;
+  UnifiedSystemTrayModel* const model_;
   StackingNotificationCounterView* const stacking_counter_;
   MessageCenterScrollBar* const scroll_bar_;
   views::ScrollView* const scroller_;
   UnifiedMessageListView* const message_list_view_;
 
   // Position from the bottom of scroll contents in dip.
-  int position_from_bottom_;
+  int last_scroll_position_from_bottom_;
 
   views::FocusManager* focus_manager_ = nullptr;
 
