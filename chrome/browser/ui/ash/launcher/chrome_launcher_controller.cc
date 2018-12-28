@@ -357,6 +357,15 @@ void ChromeLauncherController::UnpinShelfItemInternal(const ash::ShelfID& id) {
     RemoveShelfItem(id);
 }
 
+void ChromeLauncherController::SetItemStatusOrRemove(
+    const ash::ShelfID& id,
+    ash::ShelfItemStatus status) {
+  if (!IsPinned(id) && status == ash::STATUS_CLOSED)
+    RemoveShelfItem(id);
+  else
+    SetItemStatus(id, status);
+}
+
 bool ChromeLauncherController::IsPinned(const ash::ShelfID& id) {
   const ash::ShelfItem* item = GetItem(id);
   return item && ItemTypeIsPinned(*item);
@@ -367,10 +376,7 @@ void ChromeLauncherController::SetV1AppStatus(const std::string& app_id,
   ash::ShelfID id(app_id);
   const ash::ShelfItem* item = GetItem(id);
   if (item) {
-    if (!IsPinned(id) && status == ash::STATUS_CLOSED)
-      RemoveShelfItem(id);
-    else
-      SetItemStatus(id, status);
+    SetItemStatusOrRemove(id, status);
   } else if (status != ash::STATUS_CLOSED && !app_id.empty()) {
     InsertAppLauncherItem(
         AppShortcutLauncherItemController::Create(ash::ShelfID(app_id)), status,
@@ -465,7 +471,7 @@ void ChromeLauncherController::UpdateAppState(content::WebContents* contents,
       // Since GetAppState() will use |web_contents_to_app_id_| we remove
       // the connection before calling it.
       web_contents_to_app_id_.erase(contents);
-      SetItemStatus(old_id, GetAppState(old_id.app_id));
+      SetItemStatusOrRemove(old_id, GetAppState(old_id.app_id));
     }
   }
 
@@ -474,7 +480,7 @@ void ChromeLauncherController::UpdateAppState(content::WebContents* contents,
   else
     web_contents_to_app_id_[contents] = shelf_id.app_id;
 
-  SetItemStatus(shelf_id, GetAppState(shelf_id.app_id));
+  SetItemStatusOrRemove(shelf_id, GetAppState(shelf_id.app_id));
 }
 
 ash::ShelfID ChromeLauncherController::GetShelfIDForWebContents(

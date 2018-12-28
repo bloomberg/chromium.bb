@@ -364,6 +364,10 @@ class ChromeLauncherController
   // An internal helper to unpin a shelf item; this does not update prefs.
   void UnpinShelfItemInternal(const ash::ShelfID& id);
 
+  // Updates the running status of an item, or removes it if necessary.
+  void SetItemStatusOrRemove(const ash::ShelfID& id,
+                             ash::ShelfItemStatus status);
+
   // Resolves the app icon image loader for the app.
   AppIconLoader* GetAppIconLoaderForApp(const std::string& app_id);
 
