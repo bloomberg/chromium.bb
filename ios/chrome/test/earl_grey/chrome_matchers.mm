@@ -168,15 +168,25 @@ id<GREYMatcher> ButtonWithImage(int image_id) {
                     image_matcher, nil);
 }
 
+id<GREYMatcher> StaticTextWithAccessibilityLabelId(int message_id) {
+  return StaticTextWithAccessibilityLabel(
+      l10n_util::GetNSStringWithFixup(message_id));
+}
+
 id<GREYMatcher> StaticTextWithAccessibilityLabel(NSString* label) {
   return grey_allOf(grey_accessibilityLabel(label),
                     grey_accessibilityTrait(UIAccessibilityTraitStaticText),
                     nil);
 }
 
-id<GREYMatcher> StaticTextWithAccessibilityLabelId(int message_id) {
-  return StaticTextWithAccessibilityLabel(
+id<GREYMatcher> HeaderWithAccessibilityLabelId(int message_id) {
+  return HeaderWithAccessibilityLabel(
       l10n_util::GetNSStringWithFixup(message_id));
+}
+
+id<GREYMatcher> HeaderWithAccessibilityLabel(NSString* label) {
+  return grey_allOf(grey_accessibilityLabel(label),
+                    grey_accessibilityTrait(UIAccessibilityTraitHeader), nil);
 }
 
 id<GREYMatcher> CancelButton() {
@@ -316,7 +326,9 @@ id<GREYMatcher> OpenLinkInNewTabButton() {
 }
 
 id<GREYMatcher> NavigationBarDoneButton() {
-  return ButtonWithAccessibilityLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
+  return grey_allOf(
+      ButtonWithAccessibilityLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON),
+      grey_userInteractionEnabled(), nil);
 }
 
 id<GREYMatcher> BookmarksNavigationBarDoneButton() {

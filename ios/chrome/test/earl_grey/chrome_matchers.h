@@ -37,6 +37,14 @@ id<GREYMatcher> StaticTextWithAccessibilityLabelId(int message_id);
 // accessibility trait UIAccessibilityTraitStaticText.
 id<GREYMatcher> StaticTextWithAccessibilityLabel(NSString* label);
 
+// Matcher for element with accessibility label corresponding to |message_id|
+// and accessibility trait UIAccessibilityTraitHeader.
+id<GREYMatcher> HeaderWithAccessibilityLabelId(int message_id);
+
+// Matcher for element with accessibility label corresponding to |label| and
+// accessibility trait UIAccessibilityTraitHeader.
+id<GREYMatcher> HeaderWithAccessibilityLabel(NSString* label);
+
 // Returns matcher for a cancel button.
 id<GREYMatcher> CancelButton();
 

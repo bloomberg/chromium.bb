@@ -11,6 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_command_line.h"
 #include "components/reading_list/core/reading_list_model.h"
+#include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_switches.h"
@@ -41,6 +42,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -165,6 +167,61 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 }
 
+// Tests that the collections shortcut are displayed and working.
+- (void)testCollectionShortcuts {
+  // Check the Bookmarks.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_SUGGESTIONS_BOOKMARKS)]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::HeaderWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_SUGGESTIONS_BOOKMARKS)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
+      performAction:grey_tap()];
+
+  // Check the ReadingList.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_SUGGESTIONS_READING_LIST)]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::HeaderWithAccessibilityLabelId(
+                                   IDS_IOS_TOOLS_MENU_READING_LIST)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
+      performAction:grey_tap()];
+
+  // Check the RecentTabs.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_SUGGESTIONS_RECENT_TABS)]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::HeaderWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_SUGGESTIONS_RECENT_TABS)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
+      performAction:grey_tap()];
+
+  // Check the History.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_SUGGESTIONS_HISTORY)]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::HeaderWithAccessibilityLabelId(
+                                   IDS_HISTORY_TITLE)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
+      performAction:grey_tap()];
+}
+
 // Tests that the fake omnibox width is correctly updated after a rotation.
 - (void)testOmniboxWidthRotation {
   // TODO(crbug.com/652465): Enable the test for iPad when rotation bug is
@@ -273,6 +330,24 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           FakeOmniboxAccessibilityID())]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+}
+
+// Tests that the app doesn't crash when opening multiple tabs.
+- (void)testOpenMultipleTabs {
+  NSInteger numberOfTabs = 10;
+  for (NSInteger i = 0; i < numberOfTabs; i++) {
+    [ChromeEarlGreyUI openNewTab];
+  }
+  id<GREYMatcher> matcher;
+  if (IsIPadIdiom()) {
+    matcher = grey_accessibilityID(@"Enter Tab Switcher");
+  } else {
+    matcher = grey_allOf(grey_accessibilityID(kToolbarStackButtonIdentifier),
+                         grey_sufficientlyVisible(), nil);
+  }
+  [[EarlGrey selectElementWithMatcher:matcher]
+      assertWithMatcher:grey_accessibilityValue([NSString
+                            stringWithFormat:@"%@", @(numberOfTabs + 1)])];
 }
 
 // Tests that the promo is correctly displayed and removed once tapped.
