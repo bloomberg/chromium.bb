@@ -847,10 +847,17 @@ void HttpHandler::HandleCommand(
   CommandMap::const_iterator iter = command_map_->begin();
   while (true) {
     if (iter == command_map_->end()) {
-      std::unique_ptr<net::HttpServerResponseInfo> response(
-          new net::HttpServerResponseInfo(net::HTTP_NOT_FOUND));
-      response->SetBody("unknown command: " + trimmed_path, "text/plain");
-      send_response_func.Run(std::move(response));
+      if (kW3CDefault) {
+        PrepareResponse(
+            trimmed_path, send_response_func,
+            Status(kUnknownCommand, "unknown command: " + trimmed_path),
+            nullptr, session_id, kW3CDefault);
+      } else {
+        std::unique_ptr<net::HttpServerResponseInfo> response(
+            new net::HttpServerResponseInfo(net::HTTP_NOT_FOUND));
+        response->SetBody("unknown command: " + trimmed_path, "text/plain");
+        send_response_func.Run(std::move(response));
+      }
       return;
     }
     if (internal::MatchesCommand(
@@ -865,13 +872,26 @@ void HttpHandler::HandleCommand(
     std::unique_ptr<base::Value> parsed_body =
         base::JSONReader::Read(request.data);
     if (!parsed_body || !parsed_body->GetAsDictionary(&body_params)) {
-      std::unique_ptr<net::HttpServerResponseInfo> response(
-          new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
-      response->SetBody("missing command parameters", "text/plain");
-      send_response_func.Run(std::move(response));
+      if (kW3CDefault) {
+        PrepareResponse(trimmed_path, send_response_func,
+                        Status(kInvalidArgument, "missing command parameters"),
+                        nullptr, session_id, kW3CDefault);
+      } else {
+        std::unique_ptr<net::HttpServerResponseInfo> response(
+            new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
+        response->SetBody("missing command parameters", "text/plain");
+        send_response_func.Run(std::move(response));
+      }
       return;
     }
     params.MergeDictionary(body_params);
+  } else if (kW3CDefault && iter->method == kPost) {
+    // Data in JSON format is required for POST requests. See step 5 of
+    // https://www.w3.org/TR/2018/REC-webdriver1-20180605/#processing-model.
+    PrepareResponse(trimmed_path, send_response_func,
+                    Status(kInvalidArgument, "missing command parameters"),
+                    nullptr, session_id, kW3CDefault);
+    return;
   }
 
   iter->command.Run(params,
