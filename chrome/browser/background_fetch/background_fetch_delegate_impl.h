@@ -152,10 +152,6 @@ class BackgroundFetchDelegateImpl
     void UpdateOfflineItem();
     void MarkJobAsStarted();
 
-    // Returns how many bytes have been processed by the Download Service so
-    // far.
-    uint64_t GetProcessedDataSize() const;
-
     enum class UploadData {
       kAbsent,
       kIncluded,
@@ -169,7 +165,6 @@ class BackgroundFetchDelegateImpl
     offline_items_collection::OfflineItem offline_item;
     State job_state;
     std::unique_ptr<content::BackgroundFetchDescription> fetch_description;
-    uint64_t in_progress_parts_size = 0u;
 
     base::OnceClosure on_resume;
 
