@@ -15,7 +15,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.omnibox.status.StatusView.NavigationButtonType;
-import org.chromium.chrome.browser.omnibox.status.StatusView.StatusButtonType;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 
@@ -42,9 +41,8 @@ public class StatusViewCoordinator implements View.OnClickListener {
         mStatusView = statusView;
 
         mModel = new PropertyModel.Builder(StatusProperties.ALL_KEYS)
-                         .with(StatusProperties.NAVIGATION_ICON_TINT_RES,
+                         .with(StatusProperties.STATUS_ICON_TINT_RES,
                                  R.color.locationbar_status_separator_color)
-                         .with(StatusProperties.STATUS_BUTTON_TYPE, StatusButtonType.NONE)
                          .build();
 
         PropertyModelChangeProcessor.create(mModel, mStatusView, new StatusViewBinder());
@@ -126,7 +124,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
      */
     @VisibleForTesting
     public boolean isSecurityButtonShown() {
-        return mModel.get(StatusProperties.STATUS_BUTTON_TYPE) == StatusButtonType.SECURITY_ICON;
+        return mMediator.testIsSecurityButtonShown();
     }
 
     /**
@@ -135,7 +133,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
     @VisibleForTesting
     @DrawableRes
     public int getSecurityIconResourceId() {
-        return mModel.get(StatusProperties.SECURITY_ICON_RES);
+        return mModel.get(StatusProperties.STATUS_ICON_RES);
     }
 
     /**

@@ -111,7 +111,7 @@ public class LocationBarTablet extends LocationBarLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mLocationBarIcon = findViewById(R.id.location_bar_icon);
+        mLocationBarIcon = findViewById(R.id.location_bar_status_icon);
         mBookmarkButton = findViewById(R.id.bookmark_button);
         mSaveOfflineButton = findViewById(R.id.save_offline_button);
 
