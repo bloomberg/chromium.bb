@@ -251,16 +251,8 @@ bool CompositingReasonFinder::RequiresCompositingForScrollDependentPosition(
   if (settings.GetPreferCompositingToLCDTextEnabled())
     ignore_lcd_text = true;
 
-  if (!ignore_lcd_text) {
-    if (!RuntimeEnabledFeatures::CompositeOpaqueFixedPositionEnabled())
-      return false;
-    if (!layer.BackgroundIsKnownToBeOpaqueInRect(
-            LayoutRect(layer.BoundingBoxForCompositing()), true)) {
-      return false;
-    }
-    if (layer.CompositesWithTransform() || layer.CompositesWithOpacity())
-      return false;
-  }
+  if (!ignore_lcd_text)
+    return false;
 
   // Don't promote fixed position elements that are descendants of a non-view
   // container, e.g. transformed elements.  They will stay fixed wrt the

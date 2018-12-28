@@ -219,11 +219,6 @@
       name: "CompositedSelectionUpdate",
     },
     {
-      name: "CompositeOpaqueFixedPosition",
-      settable_from_internals: true,
-      status: "experimental",
-    },
-    {
       name: "CompositorTouchAction",
       status: "test",
     },

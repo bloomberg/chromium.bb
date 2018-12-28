@@ -21,7 +21,6 @@
     {
       "name": "LayoutBlockFlow DIV id='transform'",
       "bounds": [256, 256],
-      "contentsOpaque": true,
       "transform": 3
     },
     {
