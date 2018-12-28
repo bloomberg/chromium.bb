@@ -263,8 +263,8 @@ void UserActivityManager::OnIdleEventObserved(
       smart_dim_model_) {
     waiting_for_model_decision_ = true;
     smart_dim_model_->RequestDimDecision(
-        features_, base::BindOnce(&UserActivityManager::ApplyDimDecision,
-                                  weak_ptr_factory_.GetWeakPtr()));
+        features_, base::Bind(&UserActivityManager::ApplyDimDecision,
+                              weak_ptr_factory_.GetWeakPtr()));
   }
   waiting_for_final_action_ = true;
 }

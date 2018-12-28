@@ -10,6 +10,8 @@ source_set("smart_dim") {
   ]
 
   sources = [
+    "ml_service_client.cc",
+    "ml_service_client.h",
     "model_impl.cc",
     "tf_native_inference.cc",
     "tf_native_inference.h",
@@ -22,6 +24,7 @@ source_set("smart_dim") {
     "//chrome/browser/chromeos/power/ml:user_activity_ukm_logger_helpers",
     "//chrome/common:constants",
     "//chromeos:chromeos",
+    "//chromeos/services/machine_learning/public/cpp:cpp",
     "//components/assist_ranker",
     "//components/assist_ranker/proto",
     "//components/sessions",

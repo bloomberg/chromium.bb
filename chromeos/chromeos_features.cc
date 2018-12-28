@@ -84,6 +84,11 @@ const base::Feature kUseMessagesGoogleComDomain{
 const base::Feature kUserActivityPrediction{"UserActivityPrediction",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables ML service inferencing (instead of TFNative inferencing)
+// for the Smart Dim feature on Chrome OS.
+const base::Feature kUserActivityPredictionMlService{
+    "UserActivityPredictionMlService", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 
 }  // namespace chromeos
