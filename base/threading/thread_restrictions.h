@@ -365,8 +365,6 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
 
   // Allowed usage:
   friend class SimpleThread;
-  friend class android_webview::AwFormDatabaseService;
-  friend class android_webview::CookieManager;
   friend class base::GetAppOutputScopedAllowBaseSyncPrimitives;
   friend class content::BrowserMainLoop;
   friend class content::BrowserProcessSubThread;
@@ -418,6 +416,9 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class ::NativeDesktopMediaList;
   friend class ::StartupTimeBomb;
   friend class android::JavaHandlerThread;
+  friend class android_webview::
+      AwFormDatabaseService;  // http://crbug.com/904431
+  friend class android_webview::CookieManager;
   friend class audio::OutputDevice;
   friend class base::MessageLoopImpl;
   friend class base::ScopedAllowThreadRecallForStackSamplingProfiler;
@@ -438,8 +439,8 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   // Usage that should be fixed:
   friend class ::chromeos::BlockingMethodCaller;  // http://crbug.com/125360
   friend class base::Thread;                      // http://crbug.com/918039
-  friend class cc::CompletionEvent;              // http://crbug.com/902653
-  friend class cc::SingleThreadTaskGraphRunner;  // http://crbug.com/902823
+  friend class cc::CompletionEvent;               // http://crbug.com/902653
+  friend class cc::SingleThreadTaskGraphRunner;   // http://crbug.com/902823
   friend class content::
       BrowserGpuChannelHostFactory;                 // http://crbug.com/125248
   friend class content::CategorizedWorkerPool;      // http://crbug.com/902823
