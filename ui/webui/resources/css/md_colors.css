@@ -11,3 +11,13 @@
    */
   --md-toolbar-color: rgb(51, 103, 214);
 }
+
+html[dark],
+:host-context(html[dark]) {
+  --md-background-color: rgb(32, 33, 36);  /* --google-grey-900 */
+  --md-toolbar-border-color: rgb(95, 99, 104);  /* --google-grey-refresh-700 */
+  /* Dark mode doesn't currently have a different toolbar background color.
+   * Instead, it uses a 1px grey border at the bottom. We set it just in case
+   * opaqueness is required for some reason. */
+  --md-toolbar-color: var(--md-background-color);
+}
