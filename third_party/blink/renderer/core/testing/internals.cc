@@ -267,6 +267,15 @@ void Internals::ResetToConsistentState(Page* page) {
   // call.
   page->SetDefaultPageScaleLimits(1, 4);
   page->SetPageScaleFactor(1);
+
+  // Ensure timers are reset so timers such as EventHandler's |hover_timer_| do
+  // not cause additional lifecycle updates.
+  for (Frame* frame = page->MainFrame(); frame;
+       frame = frame->Tree().TraverseNext()) {
+    if (frame->IsLocalFrame())
+      ToLocalFrame(frame)->GetEventHandler().Clear();
+  }
+
   LocalFrame* frame = page->DeprecatedLocalMainFrame();
   frame->View()->LayoutViewport()->SetScrollOffset(ScrollOffset(),
                                                    kProgrammaticScroll);
