@@ -1144,6 +1144,7 @@ void InlineFlowBox::AddReplacedChildrenVisualOverflow(LayoutUnit line_top,
                                                       LayoutUnit line_bottom) {
   LayoutRect logical_visual_overflow =
       VisualOverflowRect(line_top, line_bottom);
+  bool visual_overflow_may_have_changed = false;
   for (InlineBox* curr = FirstChild(); curr; curr = curr->NextOnLine()) {
     const LineLayoutItem& item = curr->GetLineLayoutItem();
     if (item.IsOutOfFlowPositioned() || item.IsText() || item.IsLayoutInline())
@@ -1162,10 +1163,13 @@ void InlineFlowBox::AddReplacedChildrenVisualOverflow(LayoutUnit line_top,
                                          curr->LogicalTop());
       logical_visual_overflow.Unite(child_logical_visual_overflow);
       ClearKnownToHaveNoOverflow();
+      visual_overflow_may_have_changed = true;
     }
   }
-  SetVisualOverflowFromLogicalRect(logical_visual_overflow, line_top,
-                                   line_bottom);
+  if (visual_overflow_may_have_changed) {
+    SetVisualOverflowFromLogicalRect(logical_visual_overflow, line_top,
+                                     line_bottom);
+  }
 }
 
 static void ComputeGlyphOverflow(

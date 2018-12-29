@@ -1431,21 +1431,14 @@ bool LayoutObject::RecalcLayoutOverflow() {
   return children_layout_overflow_changed;
 }
 
-bool LayoutObject::RecalcVisualOverflow() {
-  if (!NeedsVisualOverflowRecalc())
-    return false;
-  bool visual_overflow_changed = SelfNeedsVisualOverflowRecalc();
+void LayoutObject::RecalcVisualOverflow() {
   for (LayoutObject* current = SlowFirstChild(); current;
        current = current->NextSibling()) {
     if (current->HasLayer() &&
         ToLayoutBoxModelObject(current)->HasSelfPaintingLayer())
       continue;
-    if (current->RecalcVisualOverflow())
-      visual_overflow_changed = true;
+    current->RecalcVisualOverflow();
   }
-  ClearChildNeedsVisualOverflowRecalc();
-  ClearSelfNeedsVisualOverflowRecalc();
-  return visual_overflow_changed;
 }
 
 const LayoutBoxModelObject* LayoutObject::EnclosingCompositedContainer() const {
@@ -1998,11 +1991,6 @@ void LayoutObject::FirstLineStyleDidChange(const ComputedStyle& old_style,
 
 void LayoutObject::MarkContainerChainForOverflowRecalcIfNeeded() {
   LayoutObject* object = this;
-  bool found_layer = false;
-  if (HasLayer()) {
-    ToLayoutBoxModelObject(this)->Layer()->SetNeedsCompositingInputsUpdate();
-    found_layer = true;
-  }
   do {
     // Cell and row need to propagate the flag to their containing section and
     // row as their containing block is the table wrapper.
@@ -2010,26 +1998,16 @@ void LayoutObject::MarkContainerChainForOverflowRecalcIfNeeded() {
     object = object->IsTableCell() || object->IsTableRow()
                  ? object->Parent()
                  : object->Container();
-    if (object) {
+    if (object)
       object->SetChildNeedsLayoutOverflowRecalc();
-      object->SetChildNeedsVisualOverflowRecalc();
-
-      if (object->HasLayer() && !found_layer) {
-        ToLayoutBoxModelObject(object)
-            ->Layer()
-            ->SetNeedsCompositingInputsUpdate();
-        found_layer = true;
-      }
-    }
-
   } while (object);
 }
 
 void LayoutObject::SetNeedsOverflowRecalc() {
-  bool needed_recalc =
-      NeedsLayoutOverflowRecalc() && NeedsVisualOverflowRecalc();
+  bool needed_recalc = NeedsLayoutOverflowRecalc();
   SetSelfNeedsLayoutOverflowRecalc();
-  SetSelfNeedsVisualOverflowRecalc();
+  if (auto* painting_layer = PaintingLayer())
+    painting_layer->SetNeedsVisualOverflowRecalc();
   SetShouldCheckForPaintInvalidation();
   if (!needed_recalc)
     MarkContainerChainForOverflowRecalcIfNeeded();

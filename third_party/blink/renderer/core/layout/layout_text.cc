@@ -1780,17 +1780,6 @@ void LayoutText::TransformText() {
     SetText(std::move(text_to_transform), true);
 }
 
-bool LayoutText::RecalcVisualOverflow() {
-  if (!NeedsVisualOverflowRecalc())
-    return false;
-  ClearSelfNeedsVisualOverflowRecalc();
-  ClearChildNeedsVisualOverflowRecalc();
-  // The actual visual overflow of text is computed during layout,
-  // because of complications to do with glyph caches, so return true
-  // always if recalc is needed for now.
-  return true;
-}
-
 static inline bool IsInlineFlowOrEmptyText(const LayoutObject* o) {
   if (o->IsLayoutInline())
     return true;

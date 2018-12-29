@@ -48,7 +48,7 @@ class LayoutListItem final : public LayoutBlockFlow {
 
   const char* GetName() const override { return "LayoutListItem"; }
 
-  bool RecalcVisualOverflow() override;
+  void RecalcVisualOverflow() override;
 
  private:
   bool IsOfType(LayoutObjectType type) const override {

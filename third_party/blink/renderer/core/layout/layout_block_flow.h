@@ -425,7 +425,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   void SimplifiedNormalFlowInlineLayout();
   bool RecalcInlineChildrenLayoutOverflow();
-  bool RecalcInlineChildrenVisualOverflow();
+  void RecalcInlineChildrenVisualOverflow();
 
   PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
 

@@ -94,14 +94,11 @@ bool LayoutMultiColumnSpannerPlaceholder::NeedsPreferredWidthsRecalculation()
   return layout_object_in_flow_thread_->NeedsPreferredWidthsRecalculation();
 }
 
-bool LayoutMultiColumnSpannerPlaceholder::RecalcVisualOverflow() {
-  LayoutRect old_contents_overflow = ContentsVisualOverflowRect();
-  bool visual_overflow_changed = LayoutBox::RecalcVisualOverflow();
+void LayoutMultiColumnSpannerPlaceholder::RecalcVisualOverflow() {
+  LayoutBox::RecalcVisualOverflow();
   ClearVisualOverflow();
   AddContentsVisualOverflow(
       layout_object_in_flow_thread_->VisualOverflowRect());
-  return visual_overflow_changed ||
-         old_contents_overflow != ContentsVisualOverflowRect();
 }
 
 LayoutUnit LayoutMultiColumnSpannerPlaceholder::MinPreferredLogicalWidth()

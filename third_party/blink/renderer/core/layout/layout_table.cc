@@ -595,30 +595,20 @@ bool LayoutTable::RecalcLayoutOverflow() {
          children_layout_overflow_changed;
 }
 
-bool LayoutTable::RecalcVisualOverflow() {
-  if (!NeedsVisualOverflowRecalc())
-    return false;
-  bool visual_overflow_changed = false;
-  if (ChildNeedsVisualOverflowRecalc()) {
-    for (auto* caption : captions_)
+void LayoutTable::RecalcVisualOverflow() {
+  for (auto* caption : captions_) {
+    if (!caption->HasSelfPaintingLayer())
       caption->RecalcVisualOverflow();
-
-    for (LayoutTableSection* section = TopSection(); section;
-         section = SectionBelow(section)) {
-      if (section->RecalcVisualOverflow())
-        visual_overflow_changed = true;
-    }
-    if (RecalcPositionedDescendantsVisualOverflow())
-      visual_overflow_changed = true;
   }
-  if (SelfNeedsVisualOverflowRecalc())
-    visual_overflow_changed = true;
-  ClearChildNeedsVisualOverflowRecalc();
-  ClearSelfNeedsVisualOverflowRecalc();
 
-  if (RecalcSelfVisualOverflow())
-    visual_overflow_changed = true;
-  return visual_overflow_changed;
+  for (LayoutTableSection* section = TopSection(); section;
+       section = SectionBelow(section)) {
+    if (!section->HasSelfPaintingLayer())
+      section->RecalcVisualOverflow();
+  }
+
+  RecalcPositionedDescendantsVisualOverflow();
+  RecalcSelfVisualOverflow();
 }
 
 void LayoutTable::UpdateLayout() {

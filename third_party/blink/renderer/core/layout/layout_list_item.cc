@@ -287,23 +287,9 @@ bool LayoutListItem::UpdateMarkerLocation() {
   return false;
 }
 
-bool LayoutListItem::RecalcVisualOverflow() {
-  if (!NeedsVisualOverflowRecalc())
-    return false;
-  bool visual_overflow_changed = false;
-  if (ChildNeedsVisualOverflowRecalc())
-    visual_overflow_changed = RecalcChildVisualOverflow();
-  // UpdateOverflow may override the visual overflow rect for inline boxes.
-
-  if (SelfNeedsVisualOverflowRecalc())
-    visual_overflow_changed = true;
-  if (RecalcSelfVisualOverflow())
-    visual_overflow_changed = true;
-
-  ClearChildNeedsVisualOverflowRecalc();
-  ClearSelfNeedsVisualOverflowRecalc();
-
-  return visual_overflow_changed;
+void LayoutListItem::RecalcVisualOverflow() {
+  RecalcChildVisualOverflow();
+  RecalcSelfVisualOverflow();
 }
 
 void LayoutListItem::ComputeVisualOverflow(bool recompute_floats) {
