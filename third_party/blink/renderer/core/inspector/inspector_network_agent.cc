@@ -1093,12 +1093,14 @@ void InspectorNetworkAgent::WillLoadXHR(XMLHttpRequest* xhr,
                                         const AtomicString& method,
                                         const KURL& url,
                                         bool async,
+                                        EncodedFormData* form_data,
                                         const HTTPHeaderMap& headers,
                                         bool include_credentials) {
   DCHECK(xhr);
   DCHECK(!pending_request_);
   pending_xhr_replay_data_ = XHRReplayData::Create(
-      method, UrlWithoutFragment(url), async, include_credentials);
+      method, UrlWithoutFragment(url), async,
+      form_data ? form_data->DeepCopy() : nullptr, include_credentials);
   for (const auto& header : headers)
     pending_xhr_replay_data_->AddHeader(header.key, header.value);
 }
@@ -1424,8 +1426,12 @@ Response InspectorNetworkAgent::replayXHR(const String& request_id) {
     xhr->setRequestHeader(header.key, header.value,
                           IGNORE_EXCEPTION_FOR_TESTING);
   }
-  xhr->SendForInspectorXHRReplay(data ? data->PostData() : nullptr,
-                                 IGNORE_EXCEPTION_FOR_TESTING);
+  scoped_refptr<EncodedFormData> post_data;
+  if (data)
+    post_data = data->PostData();
+  if (!post_data)
+    post_data = xhr_replay_data->FormData();
+  xhr->SendForInspectorXHRReplay(post_data, IGNORE_EXCEPTION_FOR_TESTING);
 
   replay_xhrs_.insert(xhr);
   return Response::OK();

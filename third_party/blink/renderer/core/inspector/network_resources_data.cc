@@ -45,9 +45,10 @@ static bool IsHTTPErrorStatusCode(int status_code) {
 XHRReplayData* XHRReplayData::Create(const AtomicString& method,
                                      const KURL& url,
                                      bool async,
+                                     scoped_refptr<EncodedFormData> form_data,
                                      bool include_credentials) {
-  return MakeGarbageCollected<XHRReplayData>(method, url, async,
-                                             include_credentials);
+  return MakeGarbageCollected<XHRReplayData>(
+      method, url, async, std::move(form_data), include_credentials);
 }
 
 void XHRReplayData::AddHeader(const AtomicString& key,
@@ -58,10 +59,12 @@ void XHRReplayData::AddHeader(const AtomicString& key,
 XHRReplayData::XHRReplayData(const AtomicString& method,
                              const KURL& url,
                              bool async,
+                             scoped_refptr<EncodedFormData> form_data,
                              bool include_credentials)
     : method_(method),
       url_(url),
       async_(async),
+      form_data_(form_data),
       include_credentials_(include_credentials) {}
 
 // ResourceData

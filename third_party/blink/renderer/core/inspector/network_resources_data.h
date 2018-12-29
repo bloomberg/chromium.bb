@@ -54,17 +54,20 @@ class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData> {
   static XHRReplayData* Create(const AtomicString& method,
                                const KURL&,
                                bool async,
+                               scoped_refptr<EncodedFormData>,
                                bool include_credentials);
 
   XHRReplayData(const AtomicString& method,
                 const KURL&,
                 bool async,
+                scoped_refptr<EncodedFormData>,
                 bool include_credentials);
 
   void AddHeader(const AtomicString& key, const AtomicString& value);
   const AtomicString& Method() const { return method_; }
   const KURL& Url() const { return url_; }
   bool Async() const { return async_; }
+  EncodedFormData* FormData() const { return form_data_.get(); }
   const HTTPHeaderMap& Headers() const { return headers_; }
   bool IncludeCredentials() const { return include_credentials_; }
 
@@ -74,6 +77,7 @@ class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData> {
   AtomicString method_;
   KURL url_;
   bool async_;
+  scoped_refptr<EncodedFormData> form_data_;
   HTTPHeaderMap headers_;
   bool include_credentials_;
 };
@@ -162,7 +166,7 @@ class NetworkResourcesData final
     void SetPostData(scoped_refptr<EncodedFormData> post_data) {
       post_data_ = post_data;
     }
-    scoped_refptr<EncodedFormData> PostData() const { return post_data_; }
+    EncodedFormData* PostData() const { return post_data_.get(); }
     ExecutionContext* GetExecutionContext() const { return execution_context_; }
     void Trace(blink::Visitor*);
 
