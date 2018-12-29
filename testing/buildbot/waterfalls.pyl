@@ -2284,23 +2284,13 @@
       'Linux FYI Experimental Release (NVIDIA)': {
         'os_type': 'linux',
         'browser_config': 'release',
-        'swarming': {
-          'dimension_sets': [
-            {
-              # LINUX_QUADRO_P400_EXPERIMENTAL_DRIVER
-              # TODO(jmadill): Update this with new driver. http://crbug.com/887241
-              'gpu': '10de:1cb3-384.90',
-              'os': 'Ubuntu',
-              'pool': 'Chrome-GPU',
-            },
-          ],
-        },
-        # Currently the experimental driver is identical to the stable
-        # driver. If it's upgraded, change these test_suites to be the same as
-        # 'Linux FYI Release (NVIDIA)'.
-        # TODO(jmadill): Update this to add tests. http://crbug.com/887241
+        'mixins': [
+          'linux_nvidia_quadro_p400_experimental',
+        ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+          'gtest_tests': 'gpu_fyi_linux_release_gtests',
+          'isolated_scripts': 'gpu_fyi_and_optional_isolated_scripts',
+          'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
         },
       },
       'Linux FYI GPU TSAN Release': {
