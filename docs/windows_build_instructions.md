@@ -23,13 +23,13 @@ Are you a Google employee? See
 
 ### Visual Studio
 
-As of September, 2017 (R503915) Chromium requires Visual Studio 2017 (15.7.2 or
-higher) to build. The clang-cl compiler is used but Visual Studio's header
-files, libraries, and some tools are required. Visual Studio Community Edition
-should work if its license is appropriate for you. You must install the "Desktop
-development with C++" component and the "MFC and ATL support" sub-component.
-This can be done from the command line by passing these arguments to the Visual
-Studio installer that you download (see below for ARM64 instructions):
+Chromium requires Visual Studio 2017 (>=15.7.2) or 2019 (>=16.0.0) to build.
+The clang-cl compiler is used but Visual Studio's header files, libraries, and
+some tools are required. Visual Studio Community Edition should work if its
+license is appropriate for you. You must install the "Desktop development with
+C++" component and the "MFC/ATL support" sub-components. This can be done from
+the command line by passing these arguments to the Visual Studio installer (see
+below for ARM64 instructions):
 ```shell
 $ PATH_TO_INSTALLER.EXE ^
 --add Microsoft.VisualStudio.Workload.NativeDesktop ^
