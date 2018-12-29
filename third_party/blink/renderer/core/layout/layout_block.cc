@@ -2104,13 +2104,13 @@ bool LayoutBlock::RecalcNormalFlowChildLayoutOverflowIfNeeded(
   return layout_object->RecalcLayoutOverflow();
 }
 
-bool LayoutBlock::RecalcNormalFlowChildVisualOverflowIfNeeded(
+void LayoutBlock::RecalcNormalFlowChildVisualOverflowIfNeeded(
     LayoutObject* layout_object) {
   if (layout_object->IsOutOfFlowPositioned() ||
       (layout_object->HasLayer() &&
        ToLayoutBoxModelObject(layout_object)->HasSelfPaintingLayer()))
-    return false;
-  return layout_object->RecalcVisualOverflow();
+    return;
+  layout_object->RecalcVisualOverflow();
 }
 
 bool LayoutBlock::RecalcChildLayoutOverflow() {
@@ -2135,26 +2135,19 @@ bool LayoutBlock::RecalcChildLayoutOverflow() {
          children_layout_overflow_changed;
 }
 
-bool LayoutBlock::RecalcChildVisualOverflow() {
+void LayoutBlock::RecalcChildVisualOverflow() {
   DCHECK(!IsTable());
-  DCHECK(ChildNeedsVisualOverflowRecalc());
-  ClearChildNeedsVisualOverflowRecalc();
-
-  bool children_visual_overflow_changed = false;
 
   if (ChildrenInline()) {
     SECURITY_DCHECK(IsLayoutBlockFlow());
-    children_visual_overflow_changed =
-        ToLayoutBlockFlow(this)->RecalcInlineChildrenVisualOverflow();
+    ToLayoutBlockFlow(this)->RecalcInlineChildrenVisualOverflow();
   } else {
     for (LayoutBox* box = FirstChildBox(); box; box = box->NextSiblingBox()) {
-      if (RecalcNormalFlowChildVisualOverflowIfNeeded(box))
-        children_visual_overflow_changed = true;
+      RecalcNormalFlowChildVisualOverflowIfNeeded(box);
     }
   }
 
-  return RecalcPositionedDescendantsVisualOverflow() ||
-         children_visual_overflow_changed;
+  RecalcPositionedDescendantsVisualOverflow();
 }
 
 bool LayoutBlock::RecalcPositionedDescendantsLayoutOverflow() {
@@ -2171,20 +2164,16 @@ bool LayoutBlock::RecalcPositionedDescendantsLayoutOverflow() {
   return children_layout_overflow_changed;
 }
 
-bool LayoutBlock::RecalcPositionedDescendantsVisualOverflow() {
-  bool children_visual_overflow_changed = false;
-
+void LayoutBlock::RecalcPositionedDescendantsVisualOverflow() {
   TrackedLayoutBoxListHashSet* positioned_descendants = PositionedObjects();
   if (!positioned_descendants)
-    return children_visual_overflow_changed;
+    return;
 
   for (auto* box : *positioned_descendants) {
     if (box->HasLayer() && box->HasSelfPaintingLayer())
       continue;
-    if (box->RecalcVisualOverflow())
-      children_visual_overflow_changed = true;
+    box->RecalcVisualOverflow();
   }
-  return children_visual_overflow_changed;
 }
 
 bool LayoutBlock::RecalcLayoutOverflow() {
@@ -2199,23 +2188,9 @@ bool LayoutBlock::RecalcLayoutOverflow() {
   return RecalcSelfLayoutOverflow();
 }
 
-bool LayoutBlock::RecalcVisualOverflow() {
-  if (!NeedsVisualOverflowRecalc())
-    return false;
-  bool visual_overflow_changed = false;
-  if (ChildNeedsVisualOverflowRecalc())
-    visual_overflow_changed = RecalcChildVisualOverflow();
-
-  if (SelfNeedsVisualOverflowRecalc())
-    visual_overflow_changed = true;
-
-  if (RecalcSelfVisualOverflow())
-    visual_overflow_changed = true;
-
-  ClearChildNeedsVisualOverflowRecalc();
-  ClearSelfNeedsVisualOverflowRecalc();
-
-  return visual_overflow_changed;
+void LayoutBlock::RecalcVisualOverflow() {
+  RecalcChildVisualOverflow();
+  RecalcSelfVisualOverflow();
 }
 
 bool LayoutBlock::RecalcSelfLayoutOverflow() {
@@ -2233,11 +2208,8 @@ bool LayoutBlock::RecalcSelfLayoutOverflow() {
   return !HasOverflowClip() || self_needs_layout_overflow_recalc;
 }
 
-bool LayoutBlock::RecalcSelfVisualOverflow() {
+void LayoutBlock::RecalcSelfVisualOverflow() {
   ComputeVisualOverflow(true);
-  // TODO(chrishtr): what does it have to do with HasOverflowClip()? Why
-  // not just return true if the visual overflow actually changed?
-  return !HasOverflowClip();
 }
 
 // Called when a positioned object moves but doesn't necessarily change size.

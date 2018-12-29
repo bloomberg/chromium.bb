@@ -62,7 +62,7 @@ class LayoutSVGText final : public LayoutSVGBlock {
   void SubtreeChildWillBeRemoved();
   void SubtreeTextDidChange();
 
-  bool RecalcVisualOverflow() override;
+  void RecalcVisualOverflow() override;
 
   const char* GetName() const override { return "LayoutSVGText"; }
 

@@ -292,26 +292,20 @@ void LayoutTableRow::ComputeLayoutOverflow() {
     AddLayoutOverflowFromCell(cell);
 }
 
-bool LayoutTableRow::RecalcVisualOverflow() {
-  if (!NeedsVisualOverflowRecalc())
-    return false;
-  bool visual_overflow_changed = SelfNeedsVisualOverflowRecalc();
+void LayoutTableRow::RecalcVisualOverflow() {
   unsigned n_cols = Section()->NumCols(RowIndex());
   for (unsigned c = 0; c < n_cols; c++) {
     auto* cell = Section()->OriginatingCellAt(RowIndex(), c);
     if (!cell)
       continue;
-    if (cell->RecalcVisualOverflow())
-      visual_overflow_changed = true;
+    if (!cell->HasSelfPaintingLayer())
+      cell->RecalcVisualOverflow();
   }
-  ClearChildNeedsVisualOverflowRecalc();
-  ClearSelfNeedsVisualOverflowRecalc();
-  if (!visual_overflow_changed)
-    return false;
-  return ComputeVisualOverflow();
+
+  ComputeVisualOverflow();
 }
 
-bool LayoutTableRow::ComputeVisualOverflow() {
+void LayoutTableRow::ComputeVisualOverflow() {
   const auto& old_visual_rect = VisualOverflowRect();
   ClearVisualOverflow();
   AddVisualEffectOverflow();
@@ -320,9 +314,7 @@ bool LayoutTableRow::ComputeVisualOverflow() {
     AddVisualOverflowFromCell(cell);
   if (old_visual_rect != VisualOverflowRect()) {
     SetShouldCheckForPaintInvalidation();
-    return true;
   }
-  return false;
 }
 
 void LayoutTableRow::AddLayoutOverflowFromCell(const LayoutTableCell* cell) {
@@ -339,6 +331,9 @@ void LayoutTableRow::AddLayoutOverflowFromCell(const LayoutTableCell* cell) {
 }
 
 void LayoutTableRow::AddVisualOverflowFromCell(const LayoutTableCell* cell) {
+  if (cell->HasSelfPaintingLayer())
+    return;
+
   // Table row paints its background behind cells. If the cell spans multiple
   // rows, the row's visual rect should be expanded to cover the cell.
   // Here don't check background existence to avoid requirement to invalidate

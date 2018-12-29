@@ -1392,6 +1392,8 @@ void LayoutTableSection::ComputeVisualOverflowFromDescendants() {
     AddVisualOverflowFromChild(*row);
 
     for (auto* cell = row->FirstCell(); cell; cell = cell->NextCell()) {
+      if (cell->HasSelfPaintingLayer())
+        continue;
       // Let the section's self visual overflow cover the cell's whole collapsed
       // borders. This ensures correct raster invalidation on section border
       // style change.
@@ -1468,33 +1470,17 @@ bool LayoutTableSection::RecalcLayoutOverflow() {
   return children_layout_overflow_changed;
 }
 
-bool LayoutTableSection::RecalcVisualOverflow() {
-  if (!NeedsVisualOverflowRecalc())
-    return false;
-
+void LayoutTableSection::RecalcVisualOverflow() {
   unsigned total_rows = grid_.size();
-  bool child_visual_overflow_changed = false;
   for (unsigned r = 0; r < total_rows; r++) {
     LayoutTableRow* row_layouter = RowLayoutObjectAt(r);
     if (!row_layouter || (row_layouter->HasLayer() &&
                           row_layouter->Layer()->IsSelfPaintingLayer()))
       continue;
-    if (row_layouter->RecalcVisualOverflow())
-      child_visual_overflow_changed = true;
+    row_layouter->RecalcVisualOverflow();
   }
-
-  LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
-
-  if (child_visual_overflow_changed || SelfNeedsVisualOverflowRecalc())
-    ComputeVisualOverflowFromDescendants();
-  if (SelfNeedsVisualOverflowRecalc())
-    AddVisualEffectOverflow();
-
-  ClearChildNeedsVisualOverflowRecalc();
-  ClearSelfNeedsVisualOverflowRecalc();
-
-  return child_visual_overflow_changed ||
-         previous_visual_overflow_rect != VisualOverflowRect();
+  ComputeVisualOverflowFromDescendants();
+  AddVisualEffectOverflow();
 }
 
 void LayoutTableSection::MarkAllCellsWidthsDirtyAndOrNeedsLayout(

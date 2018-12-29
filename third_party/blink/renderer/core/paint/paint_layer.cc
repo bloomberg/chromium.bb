@@ -140,6 +140,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
     : is_root_layer_(layout_object.IsLayoutView()),
       has_visible_content_(false),
       needs_descendant_dependent_flags_update_(true),
+      needs_visual_overflow_recalc_(true),
       has_visible_descendant_(false),
 #if DCHECK_IS_ON()
       // The root layer (LayoutView) does not need position update at start
@@ -734,8 +735,9 @@ void PaintLayer::UpdateDescendantDependentFlags() {
       GetLayoutObject().SetNeedsPaintPropertyUpdate();
     needs_descendant_dependent_flags_update_ = false;
 
-    if (GetLayoutObject().NeedsVisualOverflowRecalc() && IsSelfPaintingLayer())
+    if (IsSelfPaintingLayer() && needs_visual_overflow_recalc_)
       GetLayoutObject().RecalcVisualOverflow();
+    needs_visual_overflow_recalc_ = false;
   }
 
   bool previously_has_visible_content = has_visible_content_;
@@ -1073,6 +1075,12 @@ void PaintLayer::SetNeedsCompositingInputsUpdate(
   // dependent flags update. Reduce call sites after CAP launch allows
   /// removal of CompositingInputsUpdater.
   MarkAncestorChainForFlagsUpdate(flag);
+}
+
+void PaintLayer::SetNeedsVisualOverflowRecalc() {
+  DCHECK(IsSelfPaintingLayer());
+  needs_visual_overflow_recalc_ = true;
+  SetNeedsCompositingInputsUpdate();
 }
 
 void PaintLayer::SetNeedsCompositingInputsUpdateInternal() {
@@ -2946,6 +2954,9 @@ void PaintLayer::UpdateSelfPaintingLayer() {
   // Self-painting change can change the compositing container chain;
   // invalidate the new chain in addition to the old one.
   MarkCompositingContainerChainForNeedsRepaint();
+
+  if (is_self_painting_layer)
+    SetNeedsVisualOverflowRecalc();
 
   if (PaintLayer* parent = Parent()) {
     parent->MarkAncestorChainForFlagsUpdate();

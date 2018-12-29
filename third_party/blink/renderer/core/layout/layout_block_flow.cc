@@ -4693,20 +4693,17 @@ bool LayoutBlockFlow::RecalcInlineChildrenLayoutOverflow() {
   return children_layout_overflow_changed;
 }
 
-bool LayoutBlockFlow::RecalcInlineChildrenVisualOverflow() {
+void LayoutBlockFlow::RecalcInlineChildrenVisualOverflow() {
   DCHECK(ChildrenInline());
-  bool children_visual_overflow_changed = false;
   ListHashSet<RootInlineBox*> line_boxes;
   for (InlineWalker walker(LineLayoutBlockFlow(this)); !walker.AtEnd();
        walker.Advance()) {
     LayoutObject* layout_object = walker.Current().GetLayoutObject();
-    if (RecalcNormalFlowChildVisualOverflowIfNeeded(layout_object)) {
-      children_visual_overflow_changed = true;
-      if (layout_object->IsBox()) {
-        if (InlineBox* inline_box_wrapper =
-                ToLayoutBox(layout_object)->InlineBoxWrapper())
-          line_boxes.insert(&inline_box_wrapper->Root());
-      }
+    RecalcNormalFlowChildVisualOverflowIfNeeded(layout_object);
+    if (layout_object->IsBox()) {
+      if (InlineBox* inline_box_wrapper =
+              ToLayoutBox(layout_object)->InlineBoxWrapper())
+        line_boxes.insert(&inline_box_wrapper->Root());
     }
   }
 
@@ -4717,8 +4714,6 @@ bool LayoutBlockFlow::RecalcInlineChildrenVisualOverflow() {
     RootInlineBox* box = *it;
     box->AddReplacedChildrenVisualOverflow(box->LineTop(), box->LineBottom());
   }
-
-  return children_visual_overflow_changed;
 }
 
 PositionWithAffinity LayoutBlockFlow::PositionForPoint(

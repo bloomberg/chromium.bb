@@ -108,7 +108,7 @@ class CORE_EXPORT LayoutTableRow final : public LayoutTableBoxComponent {
 
   void ComputeLayoutOverflow();
 
-  bool RecalcVisualOverflow() override;
+  void RecalcVisualOverflow() override;
 
   const char* GetName() const override { return "LayoutTableRow"; }
 
@@ -125,7 +125,7 @@ class CORE_EXPORT LayoutTableRow final : public LayoutTableBoxComponent {
   bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
 
  private:
-  bool ComputeVisualOverflow();
+  void ComputeVisualOverflow();
   void AddLayoutOverflowFromCell(const LayoutTableCell*);
   void AddVisualOverflowFromCell(const LayoutTableCell*);
 

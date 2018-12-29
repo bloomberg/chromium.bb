@@ -769,6 +769,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     NeedsDescendantDependentUpdate,
     DoesNotNeedDescendantDependentUpdate
   };
+  void SetNeedsVisualOverflowRecalc();
   void SetNeedsCompositingInputsUpdate(
       DescendantDependentFlagsUpdateFlag = NeedsDescendantDependentUpdate);
   // Use this internal method only for cases during the descendant-dependent
@@ -1255,7 +1256,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   const unsigned is_root_layer_ : 1;
 
   unsigned has_visible_content_ : 1;
+
   unsigned needs_descendant_dependent_flags_update_ : 1;
+  unsigned needs_visual_overflow_recalc_ : 1;
+
   unsigned has_visible_descendant_ : 1;
 
 #if DCHECK_IS_ON()

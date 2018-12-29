@@ -300,13 +300,11 @@ void LayoutSVGText::UpdateLayout() {
   ClearNeedsLayout();
 }
 
-bool LayoutSVGText::RecalcVisualOverflow() {
-  LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
-  bool visual_overflow_changed = LayoutObject::RecalcVisualOverflow();
+void LayoutSVGText::RecalcVisualOverflow() {
+  // Add in overflow from children.
+  LayoutObject::RecalcVisualOverflow();
   AddSelfVisualOverflow(LayoutRect(ObjectBoundingBox()));
   AddVisualEffectOverflow();
-  return visual_overflow_changed ||
-         previous_visual_overflow_rect != VisualOverflowRect();
 }
 
 RootInlineBox* LayoutSVGText::CreateRootInlineBox() {

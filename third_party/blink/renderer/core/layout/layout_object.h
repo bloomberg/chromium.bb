@@ -938,29 +938,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     bitfields_.SetChildNeedsLayoutOverflowRecalc(false);
   }
 
-  bool NeedsVisualOverflowRecalc() const {
-    return bitfields_.SelfNeedsVisualOverflowRecalc() ||
-           bitfields_.ChildNeedsVisualOverflowRecalc();
-  }
-  bool SelfNeedsVisualOverflowRecalc() const {
-    return bitfields_.SelfNeedsVisualOverflowRecalc();
-  }
-  bool ChildNeedsVisualOverflowRecalc() const {
-    return bitfields_.ChildNeedsVisualOverflowRecalc();
-  }
-  void SetSelfNeedsVisualOverflowRecalc() {
-    bitfields_.SetSelfNeedsVisualOverflowRecalc(true);
-  }
-  void SetChildNeedsVisualOverflowRecalc() {
-    bitfields_.SetChildNeedsVisualOverflowRecalc(true);
-  }
-  void ClearSelfNeedsVisualOverflowRecalc() {
-    bitfields_.SetSelfNeedsVisualOverflowRecalc(false);
-  }
-  void ClearChildNeedsVisualOverflowRecalc() {
-    bitfields_.SetChildNeedsVisualOverflowRecalc(false);
-  }
-
   // CSS clip only applies when position is absolute or fixed. Prefer this check
   // over !StyleRef().HasAutoClip().
   bool HasClip() const {
@@ -1251,7 +1228,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual void Paint(const PaintInfo&) const;
 
   virtual bool RecalcLayoutOverflow();
-  virtual bool RecalcVisualOverflow();
+  // Recalculates visual overflow for this object and non-self-painting
+  // PaintLayer descendants.
+  virtual void RecalcVisualOverflow();
 
   // Subclasses must reimplement this method to compute the size and position
   // of this object and all its descendants.
@@ -2531,8 +2510,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           needs_simplified_normal_flow_layout_(false),
           self_needs_layout_overflow_recalc_(false),
           child_needs_layout_overflow_recalc_(false),
-          self_needs_visual_overflow_recalc_(false),
-          child_needs_visual_overflow_recalc_(false),
           preferred_logical_widths_dirty_(false),
           needs_collect_inlines_(false),
           should_check_for_paint_invalidation_(true),
@@ -2630,12 +2607,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
     ADD_BOOLEAN_BITFIELD(child_needs_layout_overflow_recalc_,
                          ChildNeedsLayoutOverflowRecalc);
-
-    ADD_BOOLEAN_BITFIELD(self_needs_visual_overflow_recalc_,
-                         SelfNeedsVisualOverflowRecalc);
-
-    ADD_BOOLEAN_BITFIELD(child_needs_visual_overflow_recalc_,
-                         ChildNeedsVisualOverflowRecalc);
 
     // This boolean marks preferred logical widths for lazy recomputation.
     //

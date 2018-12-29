@@ -325,17 +325,17 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
  protected:
   bool RecalcNormalFlowChildLayoutOverflowIfNeeded(LayoutObject*);
-  bool RecalcNormalFlowChildVisualOverflowIfNeeded(LayoutObject*);
+  void RecalcNormalFlowChildVisualOverflowIfNeeded(LayoutObject*);
   bool RecalcPositionedDescendantsLayoutOverflow();
-  bool RecalcPositionedDescendantsVisualOverflow();
+  void RecalcPositionedDescendantsVisualOverflow();
   bool RecalcSelfLayoutOverflow();
-  bool RecalcSelfVisualOverflow();
+  void RecalcSelfVisualOverflow();
 
  public:
   bool RecalcChildLayoutOverflow();
-  bool RecalcChildVisualOverflow();
+  void RecalcChildVisualOverflow();
   bool RecalcLayoutOverflow() override;
-  bool RecalcVisualOverflow() override;
+  void RecalcVisualOverflow() override;
 
   // An example explaining layout tree structure about first-line style:
   // <style>

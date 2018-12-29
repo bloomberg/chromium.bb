@@ -241,19 +241,11 @@ bool LayoutSVGRoot::ShouldApplyViewportClip() const {
          StyleRef().OverflowX() == EOverflow::kScroll || IsDocumentElement();
 }
 
-bool LayoutSVGRoot::RecalcVisualOverflow() {
-  if (!NeedsVisualOverflowRecalc())
-    return false;
-  bool visual_overflow_changed = LayoutReplaced::RecalcVisualOverflow();
+void LayoutSVGRoot::RecalcVisualOverflow() {
+  LayoutReplaced::RecalcVisualOverflow();
   UpdateCachedBoundaries();
-  if (!ShouldApplyViewportClip()) {
-    LayoutRect old_contents_overflow = ContentsVisualOverflowRect();
+  if (!ShouldApplyViewportClip())
     AddContentsVisualOverflow(ComputeContentsVisualOverflow());
-    visual_overflow_changed =
-        visual_overflow_changed ||
-        old_contents_overflow != ContentsVisualOverflowRect();
-  }
-  return visual_overflow_changed;
 }
 
 LayoutRect LayoutSVGRoot::ComputeContentsVisualOverflow() const {
