@@ -34,15 +34,10 @@ function outer(index) {
 Usage:
 function inner2(a) {
     return a + 2;
+  }
 
 Usage:
-}
-
-Usage:
-function inner4(a) { return a + 4;
-
-Usage:
-}
+function inner4(a) { return a + 4; }
 
 Usage:
 if (index === 7)
@@ -52,14 +47,10 @@ Usage:
   if (!self.__funcs)
     self.__funcs = [inner1, inner2, inner3, inner4, inner5];
   return self.__funcs[index];
-
-Usage:
 }
 
 function performActions() {
   return outer(1)(0) + outer(3)(0);
-
-Usage:
 }
 
 Usage:
