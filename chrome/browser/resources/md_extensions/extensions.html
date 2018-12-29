@@ -9,26 +9,49 @@
 </if>
   <style>
     html {
-      /* --md-background-color in disguise. Not using the var for increased
-       * performance. */
+      --dev-mode-toolbar-height: 52px;
+      /* --google-grey-refresh-700 */
+      --toolbar-dark-border: 1px solid rgb(95, 99, 104);
+      --toolbar-light-color: rgb(51, 103, 214); /* --google-blue-700 */
+      --toolbar-height: 56px;
+
+      /* --md-background-color in disguise. */
       background-color: rgb(248, 249, 250);
 
       /* Remove 300ms delay for 'click' event, when using touch interface. */
       touch-action: manipulation;
     }
 
-    .loading {
-      /* --google-blue-700 in disguise. Replaced when manager.html loads. */
-      border-top: 56px solid rgb(51, 103, 214);
+    html[dark] {
+      background-color: rgb(32, 33, 36);  /* --google-grey-900 */
+    }
+
+    html:not([dark]).loading {
+      /* Replaced when manager.html loads. */
+      border-top: var(--toolbar-height) solid var(--toolbar-light-color);
+    }
+
+    html[dark].loading {
+      border-top: var(--toolbar-dark-border);
+      margin-top: var(--toolbar-height);
+    }
+
+    /* Mimics the developer mode toolbar until the real one loads. */
+    html[dark].loading.in-dev-mode::before {
+      border-bottom: var(--toolbar-dark-border);
+      content: '';
+      display: block;
+      height: var(--dev-mode-toolbar-height);
     }
 
     /* Note: .in-dev-mode is applied by i18n{loadTimeClasses}. */
-    .loading.in-dev-mode {
-      /* --google-blue-700: rgb(51, 103, 214); */
-      /* --google-grey-300: #e0e0e0; */
-      border-image: linear-gradient(to bottom, rgb(51, 103, 214) 56px,
-          #fff 56px, #fff 107px, #e0e0e0 107px) 108;
-      border-top: 108px solid;
+    html:not([dark]).loading.in-dev-mode {
+      border-image: linear-gradient(to bottom,
+          var(--toolbar-light-color) var(--toolbar-height),
+          #fff var(--toolbar-height),
+          #fff 107px, #e0e0e0 /* --google-grey-300 */ 107px) 108;
+      border-top: calc(var(--toolbar-height) + var(--dev-mode-toolbar-height))
+          solid;
     }
 
     html,
