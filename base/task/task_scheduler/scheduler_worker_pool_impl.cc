@@ -54,6 +54,27 @@ constexpr char kNumActiveWorkersHistogramPrefix[] =
     "TaskScheduler.NumActiveWorkers.";
 constexpr size_t kMaxNumberOfWorkers = 256;
 
+// In a background pool:
+// - Blocking calls take more time than in a foreground pool.
+// - We want to minimize impact on foreground work, not maximize execution
+//   throughput.
+// For these reasons, the timeout to increase the maximum number of concurrent
+// tasks when there is a MAY_BLOCK ScopedBlockingCall is *long*. It is not
+// infinite because execution throughput should not be reduced forever if a task
+// blocks forever.
+//
+// TODO(fdoray): On platforms without background pools, blocking in a
+// BEST_EFFORT task should:
+// 1. Increment the maximum number of concurrent tasks after a *short* timeout,
+//    to allow scheduling of USER_VISIBLE/USER_BLOCKING tasks.
+// 2. Increment the maximum number of concurrent BEST_EFFORT tasks after a
+//    *long* timeout, because we only want to allow more BEST_EFFORT tasks to be
+//    be scheduled concurrently when we believe that a BEST_EFFORT task is
+//    blocked forever.
+// Currently, only 1. is true as the configuration is per pool.
+constexpr TimeDelta kBackgroundMayBlockThreshold = TimeDelta::FromSeconds(10);
+constexpr TimeDelta kBackgroundBlockedWorkersPoll = TimeDelta::FromSeconds(12);
+
 // Only used in DCHECKs.
 bool ContainsWorker(const std::vector<scoped_refptr<SchedulerWorker>>& workers,
                     const SchedulerWorker* worker) {
@@ -270,12 +291,17 @@ void SchedulerWorkerPoolImpl::Start(
 
   AutoSchedulerLock auto_lock(lock_);
 
-  may_block_threshold_ =
-      TimeDelta::FromMicroseconds(kMayBlockThresholdMicrosecondsParam.Get());
-  blocked_workers_poll_period_ =
-      TimeDelta::FromMicroseconds(kBlockedWorkersPollMicrosecondsParam.Get());
-
   DCHECK(workers_.empty());
+
+  may_block_threshold_ = priority_hint_ == ThreadPriority::NORMAL
+                             ? TimeDelta::FromMicroseconds(
+                                   kMayBlockThresholdMicrosecondsParam.Get())
+                             : kBackgroundMayBlockThreshold;
+  blocked_workers_poll_period_ =
+      priority_hint_ == ThreadPriority::NORMAL
+          ? TimeDelta::FromMicroseconds(
+                kBlockedWorkersPollMicrosecondsParam.Get())
+          : kBackgroundBlockedWorkersPoll;
 
   max_tasks_ = params.max_tasks();
   DCHECK_GE(max_tasks_, 1U);
