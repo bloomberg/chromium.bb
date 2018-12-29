@@ -5967,5 +5967,4 @@ crbug.com/917284 virtual/disabled-service-worker-servicification/external/wpt/se
 crbug.com/917284 virtual/outofblink-cors/external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
 
 # Sheriff 2018-12-27
-crbug.com/917944 [ Mac10.10 Mac10.11 ] paint/invalidation/forms/textarea-caret.html [ Failure ]
 crbug.com/917970 [ Mac10.13 ] virtual/mouseevent_fractional/fast/events/popup-blocking-timers5.html [ Pass Failure ]
