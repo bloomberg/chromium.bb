@@ -152,7 +152,7 @@ base::string16 AutofillSaveCardInfoBarDelegateMobile::GetButtonLabel(
   }
 
   return should_request_name_from_user_
-             ? l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_NEXT)
+             ? l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_CONTINUE)
              : l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT);
 }
 
