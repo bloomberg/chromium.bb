@@ -5942,13 +5942,6 @@ crbug.com/913931 [ Mac10.11 ] external/wpt/css/css-layout-api/auto-block-size-ab
 # Sheriff 2018-12-19
 crbug.com/915862 [ Android ] webmidi/permission.html [ Pass Failure ]
 
-# These tests will fail until upstream v8 changes are landed.
-crbug.com/v8/8381 http/tests/devtools/coverage/coverage-repeated.js [ Pass Failure ]
-crbug.com/v8/8381 http/tests/devtools/coverage/coverage-view-filter.js [ Pass Failure ]
-crbug.com/v8/8381 http/tests/devtools/coverage/coverage-view.js [ Pass Failure ]
-crbug.com/v8/8381 http/tests/devtools/coverage/multiple-instances-merge.js [ Pass Failure ]
-crbug.com/v8/8381 http/tests/devtools/coverage/coverage-export.js [ Pass Failure ]
-
 # ssauleau 2018-12-20
 crbug.com/v8/8319 external/wpt/wasm/jsapi/global/constructor.any.html [ Pass Failure ]
 crbug.com/v8/8319 external/wpt/wasm/jsapi/global/constructor.any.worker.html [ Pass Failure ]
