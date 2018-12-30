@@ -17,18 +17,20 @@
 
 namespace content {
 
+class AppCacheBackendProxy;
+
 class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost {
  public:
   // Returns the host having given id or NULL if there is no such host.
   static WebApplicationCacheHostImpl* FromId(int id);
 
   WebApplicationCacheHostImpl(blink::WebApplicationCacheHostClient* client,
-                              AppCacheBackend* backend,
+                              AppCacheBackendProxy* backend,
                               int appcache_host_id);
   ~WebApplicationCacheHostImpl() override;
 
   int host_id() const { return host_id_; }
-  AppCacheBackend* backend() const { return backend_; }
+  AppCacheBackendProxy* backend() const { return backend_; }
   blink::WebApplicationCacheHostClient* client() const { return client_; }
 
   virtual void OnCacheSelected(const AppCacheInfo& info);
@@ -65,7 +67,7 @@ class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost {
   enum IsNewMasterEntry { MAYBE_NEW_ENTRY, NEW_ENTRY, OLD_ENTRY };
 
   blink::WebApplicationCacheHostClient* client_;
-  AppCacheBackend* backend_;
+  AppCacheBackendProxy* backend_;
   int host_id_;
   AppCacheStatus status_;
   blink::WebURLResponse document_response_;

@@ -12,34 +12,33 @@
 #include "content/common/appcache.mojom.h"
 #include "content/common/appcache_interfaces.h"
 #include "ipc/ipc_sender.h"
+#include "url/gurl.h"
 
 namespace content {
 
 // Sends appcache related messages to the main process.
-class AppCacheBackendProxy : public AppCacheBackend {
+class AppCacheBackendProxy {
  public:
   AppCacheBackendProxy();
-  ~AppCacheBackendProxy() override;
-
+  ~AppCacheBackendProxy();
 
   // AppCacheBackend methods
-  void RegisterHost(int host_id) override;
-  void UnregisterHost(int host_id) override;
-  void SetSpawningHostId(int host_id, int spawning_host_id) override;
+  void RegisterHost(int host_id);
+  void UnregisterHost(int host_id);
+  void SetSpawningHostId(int host_id, int spawning_host_id);
   void SelectCache(int host_id,
                    const GURL& document_url,
                    const int64_t cache_document_was_loaded_from,
-                   const GURL& manifest_url) override;
-  void SelectCacheForSharedWorker(int host_id, int64_t appcache_id) override;
+                   const GURL& manifest_url);
+  void SelectCacheForSharedWorker(int host_id, int64_t appcache_id);
   void MarkAsForeignEntry(int host_id,
                           const GURL& document_url,
-                          int64_t cache_document_was_loaded_from) override;
-  AppCacheStatus GetStatus(int host_id) override;
-  bool StartUpdate(int host_id) override;
-  bool SwapCache(int host_id) override;
-  void GetResourceList(
-      int host_id,
-      std::vector<AppCacheResourceInfo>* resource_infos) override;
+                          int64_t cache_document_was_loaded_from);
+  AppCacheStatus GetStatus(int host_id);
+  bool StartUpdate(int host_id);
+  bool SwapCache(int host_id);
+  void GetResourceList(int host_id,
+                       std::vector<AppCacheResourceInfo>* resource_infos);
 
  private:
   mojom::AppCacheBackend* GetAppCacheBackendPtr();

@@ -9,13 +9,14 @@
 
 namespace content {
 class RenderViewImpl;
+class AppCacheBackendProxy;
 
 class RendererWebApplicationCacheHostImpl : public WebApplicationCacheHostImpl {
  public:
   RendererWebApplicationCacheHostImpl(
       RenderViewImpl* render_view,
       blink::WebApplicationCacheHostClient* client,
-      AppCacheBackend* backend,
+      AppCacheBackendProxy* backend,
       int appcache_host_id,
       int frame_routing_id);
 

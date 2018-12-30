@@ -5,6 +5,7 @@
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 
 #include "content/common/view_messages.h"
+#include "content/renderer/appcache/appcache_backend_proxy.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -20,7 +21,7 @@ namespace content {
 RendererWebApplicationCacheHostImpl::RendererWebApplicationCacheHostImpl(
     RenderViewImpl* render_view,
     WebApplicationCacheHostClient* client,
-    AppCacheBackend* backend,
+    AppCacheBackendProxy* backend,
     int appcache_host_id,
     int frame_routing_id)
     : WebApplicationCacheHostImpl(client, backend, appcache_host_id),

@@ -85,30 +85,6 @@ class CONTENT_EXPORT AppCacheFrontend {
   virtual ~AppCacheFrontend() {}
 };
 
-// Interface used by frontend (renderer) to talk to backend (browser-process).
-class CONTENT_EXPORT AppCacheBackend {
- public:
-  virtual void RegisterHost(int host_id) = 0;
-  virtual void UnregisterHost(int host_id) = 0;
-  virtual void SetSpawningHostId(int host_id, int spawning_host_id) = 0;
-  virtual void SelectCache(int host_id,
-                           const GURL& document_url,
-                           const int64_t cache_document_was_loaded_from,
-                           const GURL& manifest_url) = 0;
-  virtual void SelectCacheForSharedWorker(int host_id, int64_t appcache_id) = 0;
-  virtual void MarkAsForeignEntry(int host_id,
-                                  const GURL& document_url,
-                                  int64_t cache_document_was_loaded_from) = 0;
-  virtual AppCacheStatus GetStatus(int host_id) = 0;
-  virtual bool StartUpdate(int host_id) = 0;
-  virtual bool SwapCache(int host_id) = 0;
-  virtual void GetResourceList(
-      int host_id, std::vector<AppCacheResourceInfo>* resource_infos) = 0;
-
- protected:
-  virtual ~AppCacheBackend() {}
-};
-
 // Useful string constants.
 CONTENT_EXPORT extern const char kHttpGETMethod[];
 CONTENT_EXPORT extern const char kHttpHEADMethod[];
