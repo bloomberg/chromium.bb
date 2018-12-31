@@ -126,11 +126,16 @@ if get_option('color-management-colord')
 endif
 
 if get_option('systemd')
+	dep_libsystemd = dependency('libsystemd', required: false)
+	if not dep_libsystemd.found()
+		error('systemd-notify requires libsystemd which was not found. Or, you can use \'-Dsystemd=false\'.')
+	endif
+
 	plugin_systemd_notify = shared_library(
 		'systemd-notify',
 		'systemd-notify.c',
 		include_directories: include_directories('..', '../shared'),
-		dependencies: [ dep_libweston, dependency('libsystemd') ],
+		dependencies: [ dep_libweston, dep_libsystemd ],
 		name_prefix: '',
 		install: true,
 		install_dir: dir_module_weston
