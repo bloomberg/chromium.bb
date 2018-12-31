@@ -107,15 +107,17 @@ if get_option('color-management-colord')
 		'cms-colord.c',
 		'cms-helper.c',
 	]
-	deps_colord = [
-		dep_libweston,
-		dependency('colord', version: '>= 0.1.27')
-	]
+
+	dep_colord = dependency('colord', version: '>= 0.1.27', required: false)
+	if not dep_colord.found()
+		error('cms-colord requires colord >= 0.1.27 which was not found. Or, you can use \'-Dcolor-management-colord=false\'.')
+	endif
+
 	plugin_colord = shared_library(
 		'cms-colord',
 		srcs_colord,
 		include_directories: include_directories('..', '../shared'),
-		dependencies: deps_colord,
+		dependencies: [ dep_libweston, dep_colord ],
 		name_prefix: '',
 		install: true,
 		install_dir: dir_module_weston
