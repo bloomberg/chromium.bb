@@ -7,7 +7,6 @@
 #import <XCTest/XCTest.h>
 
 #import "base/test/ios/wait_util.h"
-#include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -359,73 +358,6 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
                                    ^(NSString* error) {
                                      GREYFail(error);
                                    });
-}
-
-// Tests cancelling the context menu.
-- (void)testDismissContextMenu {
-  const GURL initialURL = self.testServer->GetURL(kInitialPageUrl);
-  [ChromeEarlGrey loadURL:initialURL];
-  [ChromeEarlGrey waitForWebViewContainingText:kInitialPageDestinationLinkText];
-
-  // Display the context menu twice.
-  for (NSInteger i = 0; i < 2; i++) {
-    LongPressElement(kInitialPageDestinationLinkId);
-
-    // Make sure the context menu appeared.
-    [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
-        assertWithMatcher:grey_notNil()];
-
-    if (IsIPadIdiom()) {
-      // Tap the tools menu to dismiss the popover.
-      [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuButton()]
-          performAction:grey_tap()];
-    } else {
-      TapOnContextMenuButton(chrome_test_util::CancelButton());
-    }
-
-    // Make sure the context menu disappeared.
-    [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
-        assertWithMatcher:grey_nil()];
-  }
-
-  // Display the context menu one last time.
-  LongPressElement(kInitialPageDestinationLinkId);
-
-  // Make sure the context menu appeared.
-  [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
-      assertWithMatcher:grey_notNil()];
-}
-
-// Checks that all the options are displayed in the context menu.
-- (void)testAppropriateContextMenu {
-  const GURL initialURL = self.testServer->GetURL(kInitialPageUrl);
-  [ChromeEarlGrey loadURL:initialURL];
-  [ChromeEarlGrey waitForWebViewContainingText:kInitialPageDestinationLinkText];
-
-  LongPressElement(kInitialPageDestinationLinkId);
-
-  // Check the different buttons.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:
-                 chrome_test_util::ButtonWithAccessibilityLabelId(
-                     IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_CONTENT_CONTEXT_COPY)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  if (!IsIPadIdiom()) {
-    [[EarlGrey selectElementWithMatcher:
-                   chrome_test_util::ButtonWithAccessibilityLabelId(IDS_CANCEL)]
-        assertWithMatcher:grey_sufficientlyVisible()];
-  }
 }
 
 @end
