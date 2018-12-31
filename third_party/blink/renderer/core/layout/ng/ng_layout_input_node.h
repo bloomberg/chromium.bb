@@ -139,11 +139,8 @@ class CORE_EXPORT NGLayoutInputNode {
 
   // Returns intrinsic sizing information for replaced elements.
   // ComputeReplacedSize can use it to compute actual replaced size.
-  // The function arguments return values from LegacyLayout intrinsic size
-  // computations: LayoutReplaced::IntrinsicSizingInfo,
-  // and LayoutReplaced::IntrinsicSize.
-  void IntrinsicSize(NGLogicalSize* default_intrinsic_size,
-                     base::Optional<LayoutUnit>* computed_inline_size,
+  // Corresponds to Legacy's LayoutReplaced::IntrinsicSizingInfo.
+  void IntrinsicSize(base::Optional<LayoutUnit>* computed_inline_size,
                      base::Optional<LayoutUnit>* computed_block_size,
                      NGLogicalSize* aspect_ratio) const;
 

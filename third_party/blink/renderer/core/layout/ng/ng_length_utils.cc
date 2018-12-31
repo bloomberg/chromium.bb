@@ -592,14 +592,12 @@ NGLogicalSize ComputeReplacedSize(
   DCHECK(node.IsReplaced());
 
   NGLogicalSize replaced_size;
-
-  NGLogicalSize default_intrinsic_size;
   base::Optional<LayoutUnit> computed_inline_size;
   base::Optional<LayoutUnit> computed_block_size;
   NGLogicalSize aspect_ratio;
 
-  node.IntrinsicSize(&default_intrinsic_size, &computed_inline_size,
-                     &computed_block_size, &aspect_ratio);
+  node.IntrinsicSize(&computed_inline_size, &computed_block_size,
+                     &aspect_ratio);
 
   const ComputedStyle& style = node.Style();
   Length inline_length = style.LogicalWidth();
@@ -612,7 +610,7 @@ NGLogicalSize ComputeReplacedSize(
       if (computed_inline_size.has_value())
         replaced_size.inline_size = computed_inline_size.value();
       else
-        replaced_size.inline_size = default_intrinsic_size.inline_size;
+        replaced_size.inline_size = space.AvailableSize().inline_size;
       replaced_size.inline_size +=
           (ComputeBorders(space, style) + ComputePadding(space, style))
               .InlineSum();
@@ -620,7 +618,7 @@ NGLogicalSize ComputeReplacedSize(
       // inline_size is computed from block_size.
       replaced_size.inline_size =
           ResolveBlockLength(
-              space, style, block_length, default_intrinsic_size.block_size,
+              space, style, block_length, space.AvailableSize().block_size,
               LengthResolveType::kContentSize, LengthResolvePhase::kLayout) *
           aspect_ratio.inline_size / aspect_ratio.block_size;
     }
@@ -633,26 +631,24 @@ NGLogicalSize ComputeReplacedSize(
 
   // Compute block size
   if (block_length.IsAuto()) {
-    if (inline_length.IsAuto() || aspect_ratio.IsEmpty()) {
+    if (aspect_ratio.IsEmpty()) {
       // Use intrinsic values if block_size cannot be computed from inline_size.
       if (computed_block_size.has_value())
         replaced_size.block_size = LayoutUnit(computed_block_size.value());
       else
-        replaced_size.block_size = default_intrinsic_size.block_size;
+        replaced_size.block_size = space.AvailableSize().block_size;
       replaced_size.block_size +=
           (ComputeBorders(space, style) + ComputePadding(space, style))
               .BlockSum();
     } else {
       // block_size is computed from inline_size.
-      replaced_size.block_size =
-          ResolveInlineLength(space, style, child_minmax, inline_length,
-                              LengthResolveType::kContentSize,
-                              LengthResolvePhase::kLayout) *
-          aspect_ratio.block_size / aspect_ratio.inline_size;
+      replaced_size.block_size = replaced_size.inline_size *
+                                 aspect_ratio.block_size /
+                                 aspect_ratio.inline_size;
     }
   } else {
     replaced_size.block_size = ResolveBlockLength(
-        space, style, block_length, default_intrinsic_size.block_size,
+        space, style, block_length, space.AvailableSize().block_size,
         LengthResolveType::kContentSize, LengthResolvePhase::kLayout);
   }
   return replaced_size;
