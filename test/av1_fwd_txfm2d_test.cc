@@ -570,5 +570,11 @@ INSTANTIATE_TEST_CASE_P(SSE4_1, AV1HighbdFwdTxfm2dTest,
                         Combine(ValuesIn(Highbd_fwd_txfm_for_sse4_1),
                                 Values(av1_highbd_fwd_txfm)));
 #endif  // HAVE_SSE4_1
+#if HAVE_AVX2
+static TX_SIZE Highbd_fwd_txfm_for_avx2[] = { TX_64X64 };
 
+INSTANTIATE_TEST_CASE_P(AVX2, AV1HighbdFwdTxfm2dTest,
+                        Combine(ValuesIn(Highbd_fwd_txfm_for_avx2),
+                                Values(av1_highbd_fwd_txfm)));
+#endif  // HAVE_AVX2
 }  // namespace

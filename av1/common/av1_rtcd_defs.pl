@@ -237,7 +237,7 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   specialize qw/av1_fwd_txfm2d_32x32 sse4_1/;
 
   add_proto qw/void av1_fwd_txfm2d_64x64/, "const int16_t *input, int32_t *output, int stride, TX_TYPE tx_type, int bd";
-  specialize qw/av1_fwd_txfm2d_64x64 sse4_1/;
+  specialize qw/av1_fwd_txfm2d_64x64 sse4_1 avx2/;
   add_proto qw/void av1_fwd_txfm2d_32x64/, "const int16_t *input, int32_t *output, int stride, TX_TYPE tx_type, int bd";
   specialize qw/av1_fwd_txfm2d_32x64 sse4_1/;
   add_proto qw/void av1_fwd_txfm2d_64x32/, "const int16_t *input, int32_t *output, int stride, TX_TYPE tx_type, int bd";
