@@ -33,9 +33,11 @@ bool ReadWin32Header(ConstBufferView image, BufferSource* source) {
     return false;
 
   const auto* dos_header = source->GetPointer<pe::ImageDOSHeader>();
-  if (!dos_header || (dos_header->e_lfanew & 7) != 0)
+  // For |e_lfanew|, reject on misalignment or overlap with DOS header.
+  if (!dos_header || (dos_header->e_lfanew & 7) != 0 ||
+      dos_header->e_lfanew < 0U + sizeof(pe::ImageDOSHeader)) {
     return false;
-
+  }
   // Offset to PE header is in DOS header.
   *source = std::move(BufferSource(image).Skip(dos_header->e_lfanew));
   // Check 'PE\0\0' magic from PE header.
@@ -120,7 +122,8 @@ template <class Traits>
 std::unique_ptr<ReferenceReader> DisassemblerWin32<Traits>::MakeReadRelocs(
     offset_t lo,
     offset_t hi) {
-  ParseAndStoreRelocBlocks();
+  if (!ParseAndStoreRelocBlocks())
+    return std::make_unique<EmptyReferenceReader>();
 
   RelocRvaReaderWin32 reloc_rva_reader(image_, reloc_region_,
                                        reloc_block_offsets_, lo, hi);
@@ -155,7 +158,9 @@ std::unique_ptr<ReferenceReader> DisassemblerWin32<Traits>::MakeReadRel32(
 template <class Traits>
 std::unique_ptr<ReferenceWriter> DisassemblerWin32<Traits>::MakeWriteRelocs(
     MutableBufferView image) {
-  ParseAndStoreRelocBlocks();
+  if (!ParseAndStoreRelocBlocks())
+    return std::make_unique<EmptyReferenceWriter>();
+
   return std::make_unique<RelocWriterWin32>(Traits::kRelocType, image,
                                             reloc_region_, reloc_block_offsets_,
                                             translator_);
@@ -187,28 +192,30 @@ bool DisassemblerWin32<Traits>::ParseHeader() {
   if (!ReadWin32Header<Traits>(image_, &source))
     return false;
 
+  constexpr size_t kDataDirBase =
+      offsetof(typename Traits::ImageOptionalHeader, data_directory);
   auto* coff_header = source.GetPointer<pe::ImageFileHeader>();
-  if (!coff_header ||
-      coff_header->size_of_optional_header <
-          offsetof(typename Traits::ImageOptionalHeader, data_directory)) {
+  if (!coff_header || coff_header->size_of_optional_header < kDataDirBase)
     return false;
-  }
 
+  // |number_of_rva_and_sizes < kImageNumberOfDirectoryEntries| is possible. So
+  // in theory, GetPointer() on ImageOptionalHeader can reach EOF for a tiny PE
+  // file, causing false rejection. However, this should not occur for practical
+  // cases; and rejection is okay for corner cases (e.g., from a fuzzer).
   auto* optional_header =
       source.GetPointer<typename Traits::ImageOptionalHeader>();
   if (!optional_header || optional_header->magic != Traits::kMagic)
     return false;
 
-  const size_t kDataDirBase =
-      offsetof(typename Traits::ImageOptionalHeader, data_directory);
-  size_t size_of_optional_header = coff_header->size_of_optional_header;
-  if (size_of_optional_header < kDataDirBase)
+  // Check |optional_header->number_of_rva_and_sizes|.
+  const size_t data_dir_size =
+      coff_header->size_of_optional_header - kDataDirBase;
+  const size_t num_data_dir = data_dir_size / sizeof(pe::ImageDataDirectory);
+  if (num_data_dir != optional_header->number_of_rva_and_sizes ||
+      num_data_dir * sizeof(pe::ImageDataDirectory) != data_dir_size ||
+      num_data_dir > pe::kImageNumberOfDirectoryEntries) {
     return false;
-
-  const size_t data_dir_bound =
-      (size_of_optional_header - kDataDirBase) / sizeof(pe::ImageDataDirectory);
-  if (optional_header->number_of_rva_and_sizes > data_dir_bound)
-    return false;
+  }
 
   base_relocation_table_ = ReadDataDirectory<Traits>(
       optional_header, pe::kIndexOfBaseRelocationTable);
@@ -293,21 +300,28 @@ bool DisassemblerWin32<Traits>::ParseHeader() {
 template <class Traits>
 bool DisassemblerWin32<Traits>::ParseAndStoreRelocBlocks() {
   if (has_parsed_relocs_)
-    return true;
+    return reloc_region_.lo() != kInvalidOffset;
+
   has_parsed_relocs_ = true;
   DCHECK(reloc_block_offsets_.empty());
 
   offset_t relocs_offset =
       translator_.RvaToOffset(base_relocation_table_->virtual_address);
   size_t relocs_size = base_relocation_table_->size;
-  reloc_region_ = {relocs_offset, relocs_size};
-  // Reject bogus relocs. Note that empty relocs are allowed!
-  if (!image_.covers(reloc_region_))
+  const BufferRegion temp_reloc_region = {relocs_offset, relocs_size};
+
+  // Reject bogus relocs. It's possible to have no reloc, so this is non-fatal!
+  if (relocs_offset == kInvalidOffset || !image_.covers(temp_reloc_region))
     return false;
 
   // Precompute offsets of all reloc blocks.
-  return RelocRvaReaderWin32::FindRelocBlocks(image_, reloc_region_,
-                                              &reloc_block_offsets_);
+  if (!RelocRvaReaderWin32::FindRelocBlocks(image_, temp_reloc_region,
+                                            &reloc_block_offsets_)) {
+    return false;
+  }
+  // Reassign |reloc_region_| only on success.
+  reloc_region_ = temp_reloc_region;
+  return true;
 }
 
 template <class Traits>
