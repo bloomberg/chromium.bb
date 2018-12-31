@@ -45,14 +45,21 @@ endif
 if get_option('image-jpeg')
 	dep_libjpeg = dependency('libjpeg', required: false)
 	if not dep_libjpeg.found()
-		dep_libjpeg = cc.find_library('jpeg')
+		dep_libjpeg = cc.find_library('jpeg', required: false)
+	endif
+	if not dep_libjpeg.found()
+		error('JPEG image loading requires libjpeg or jpeg, neither was found. Or, you can use \'-Dimage-jpeg=false\'.')
 	endif
 	deps_cairo_shared += dep_libjpeg
 	config_h.set('HAVE_JPEG', '1')
 endif
 
 if get_option('image-webp')
-	deps_cairo_shared += dependency('libwebp')
+	dep_webp = dependency('libwebp', required: false)
+	if not dep_webp.found()
+		error('WEBP image loading requires libwebp which was not found. Or, you can use \'-Dimage-webp=false\'.')
+	endif
+	deps_cairo_shared += dep_webp
 	config_h.set('HAVE_WEBP', '1')
 endif
 
