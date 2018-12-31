@@ -77,6 +77,13 @@ class Bridge : public BridgedNativeWidgetHostHelper {
     // Drag-drop only doesn't work across mojo yet.
     return nullptr;
   }
+  ui::TextInputClient* GetTextInputClient() override {
+    // Text input doesn't work across mojo yet.
+    return nullptr;
+  }
+  void GetHasInputContext(bool* has_input_context) override {
+    *has_input_context = false;
+  }
 
   mojom::BridgedNativeWidgetHostAssociatedPtr host_ptr_;
   std::unique_ptr<BridgedNativeWidgetImpl> bridge_impl_;

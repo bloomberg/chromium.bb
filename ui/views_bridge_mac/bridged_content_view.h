@@ -32,17 +32,6 @@ VIEWS_EXPORT
   // Weak, reset by clearView.
   views::BridgedNativeWidgetImpl* bridge_;
 
-  // Weak. If non-null the TextInputClient of the currently focused View in the
-  // hierarchy rooted at |hostedView_|. Owned by the focused View.
-  // TODO(ccameron): Remove this member.
-  ui::TextInputClient* textInputClient_;
-
-  // The TextInputClient about to be set. Requests for a new -inputContext will
-  // use this, but while the input is changing, |self| still needs to service
-  // IME requests using the old |textInputClient_|.
-  // TODO(ccameron): Remove this member.
-  ui::TextInputClient* pendingTextInputClient_;
-
   // A tracking area installed to enable mouseMoved events.
   ui::ScopedCrTrackingArea cursorTrackingArea_;
 
@@ -62,7 +51,6 @@ VIEWS_EXPORT
 }
 
 @property(readonly, nonatomic) views::BridgedNativeWidgetImpl* bridge;
-@property(assign, nonatomic) ui::TextInputClient* textInputClient;
 @property(assign, nonatomic) BOOL drawMenuBackgroundForBlur;
 
 // Initialize the NSView -> views::View bridge. |viewToHost| must be non-NULL.
@@ -84,6 +72,14 @@ VIEWS_EXPORT
 // Notifies the associated FocusManager whether full keyboard access is enabled
 // or not.
 - (void)updateFullKeyboardAccess;
+
+// The TextInputClient of the currently focused views::View.
+// TODO(ccameron): This cannot be relied on across processes.
+- (ui::TextInputClient*)textInputClient;
+
+// Returns true if it is needed to call -[NSApp updateWindows] while updating
+// the text input client.
+- (bool)needsUpdateWindows;
 
 @end
 

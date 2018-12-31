@@ -234,9 +234,9 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
                           const base::string16& characters_ignoring_modifiers,
                           uint32_t key_code) override;
 
-  // TODO(ccameron): This method exists temporarily as we move all direct access
-  // of TextInputClient out of BridgedContentView.
-  void SetTextInputClient(ui::TextInputClient* text_input_client);
+  // Return true if [NSApp updateWindows] needs to be called after updating the
+  // TextInputClient.
+  bool NeedsUpdateWindows();
 
   // Compute the window and content size, and forward them to |host_|. This will
   // update widget and compositor size.

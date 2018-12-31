@@ -17,6 +17,7 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/native_theme/native_theme_mac.h"
+#include "ui/views/cocoa/text_input_host.h"
 #include "ui/views/cocoa/tooltip_manager_mac.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
@@ -90,6 +91,7 @@ BridgedNativeWidgetHostImpl::BridgedNativeWidgetHostImpl(NativeWidgetMac* owner)
       native_widget_mac_(owner),
       root_view_id_(ui::NSViewIds::GetNewId()),
       accessibility_focus_overrider_(this),
+      text_input_host_(new TextInputHost(this)),
       host_mojo_binding_(this) {
   DCHECK(GetIdToWidgetHostImplMap().find(widget_id_) ==
          GetIdToWidgetHostImplMap().end());
@@ -524,6 +526,10 @@ double BridgedNativeWidgetHostImpl::SheetPositionY() {
 views_bridge_mac::DragDropClient*
 BridgedNativeWidgetHostImpl::GetDragDropClient() {
   return drag_drop_client_.get();
+}
+
+ui::TextInputClient* BridgedNativeWidgetHostImpl::GetTextInputClient() {
+  return text_input_host_->GetTextInputClient();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1129,16 +1135,19 @@ void BridgedNativeWidgetHostImpl::OnDidChangeFocus(View* focused_before,
                                                    View* focused_now) {
   ui::InputMethod* input_method =
       native_widget_mac_->GetWidget()->GetInputMethod();
-  if (input_method) {
-    ui::TextInputClient* input_client = input_method->GetTextInputClient();
-    // Sanity check: When focus moves away from the widget (i.e. |focused_now|
-    // is nil), then the textInputClient will be cleared.
-    DCHECK(!!focused_now || !input_client);
-    // TODO(ccameron): TextInputClient is not handled across process borders
-    // yet.
-    if (bridge_impl_)
-      bridge_impl_->SetTextInputClient(input_client);
-  }
+  if (!input_method)
+    return;
+
+  ui::TextInputClient* new_text_input_client =
+      input_method->GetTextInputClient();
+  // Sanity check: When focus moves away from the widget (i.e. |focused_now|
+  // is nil), then the textInputClient will be cleared.
+  DCHECK(!!focused_now || !new_text_input_client);
+  text_input_host_->SetTextInputClient(new_text_input_client);
+}
+
+void BridgedNativeWidgetHostImpl::GetHasInputContext(bool* has_input_context) {
+  return text_input_host_->GetHasInputContext(has_input_context);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
