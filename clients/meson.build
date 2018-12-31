@@ -61,11 +61,9 @@ simple_clients = [
 		],
 		'dep_objs': [
 			dep_wayland_client,
-			dep_libdrm_headers,
-			dep_gbm,
-			dep_egl,
-			dep_glesv2
-		]
+			dep_libdrm_headers
+		],
+		'deps': [ 'egl', 'glesv2', 'gbm' ]
 	},
 	{
 		'name': 'dmabuf-v4l',
