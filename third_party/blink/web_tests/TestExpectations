@@ -84,7 +84,6 @@ crbug.com/908841 external/wpt/fullscreen/api/element-ready-check-containing-ifra
 # The following fail only on Mac.
 crbug.com/891427 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Pass Failure Timeout Crash ]
@@ -119,6 +118,8 @@ crbug.com/887140 hdr/color-jpeg-with-color-profile.html [ Failure ]
 crbug.com/887140 hdr/color-profile-video.html [ Failure ]
 crbug.com/887140 hdr/video-canvas-alpha.html [ Failure ]
 
+# This was disabled by sheriff on Dec 31. Also failing on Win7, will need more investigation.
+crbug.com/891427 [ Mac Win7 ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
 
 # ====== Site Isolation failures from here ======
 # See also third_party/blink/web_tests/virtual/not-site-per-process/README.md
