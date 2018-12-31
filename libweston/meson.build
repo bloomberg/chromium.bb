@@ -309,7 +309,11 @@ if get_option('backend-wayland')
 	]
 
 	if get_option('renderer-gl')
-		deps_wlwl += dep_wl_egl
+		d = dependency('wayland-egl', required: false)
+		if not d.found()
+			error('wayland-backend + gl-renderer requires wayland-egl which was not found. Or, you can use \'-Dbackend-wayland=false\' or \'-Drenderer-gl=false\'.')
+		endif
+		deps_wlwl += d
 	endif
 
 	plugin_wlwl = shared_library(
