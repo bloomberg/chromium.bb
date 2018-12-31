@@ -178,7 +178,10 @@ if get_option('backend-drm')
 	]
 
 	if get_option('renderer-gl')
-		dep_gbm = dependency('gbm')
+		dep_gbm = dependency('gbm', required: false)
+		if not dep_gbm.found()
+			error('drm-backend + gl-renderer requires gbm which was not found. Or, you can use \'-Dbackend-drm=false\' or \'-Drenderer-gl=false\'.')
+		endif
 		if dep_gbm.version().version_compare('>= 17.1')
 			config_h.set('HAVE_GBM_MODIFIERS', '1')
 		endif
