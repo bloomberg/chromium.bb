@@ -375,15 +375,18 @@ class MigrationTwoClientTest : public MigrationTest {
 
 // Easiest possible test of migration errors: triggers a server
 // migration on one datatype, then modifies some other datatype.
-IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest, MigratePrefsThenModifyBookmark) {
+// TODO(https://crbug.com/918124): Often times out on continuous build.
+IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest,
+                       DISABLED_MigratePrefsThenModifyBookmark) {
   RunTwoClientMigrationTest(MakeList(syncer::PREFERENCES),
                             MODIFY_BOOKMARK);
 }
 
 // Triggers a server migration on two datatypes, then makes a local
 // modification to one of them.
+// TODO(https://crbug.com/918124): Often times out on continuous build.
 IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest,
-                       MigratePrefsAndBookmarksThenModifyBookmark) {
+                       DISABLED_MigratePrefsAndBookmarksThenModifyBookmark) {
   RunTwoClientMigrationTest(
       MakeList(syncer::PREFERENCES, syncer::BOOKMARKS),
       MODIFY_BOOKMARK);
