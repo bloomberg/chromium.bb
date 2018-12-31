@@ -15,6 +15,7 @@
 #include <string>
 
 #include "net/third_party/quic/core/quic_packets.h"
+#include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
@@ -220,9 +221,9 @@ int QuicSocketUtils::ReadPacket(int fd,
   hdr.msg_flags = 0;
 
   struct cmsghdr* cmsg = reinterpret_cast<struct cmsghdr*>(cbuf);
-  cmsg->cmsg_len = arraysize(cbuf);
+  cmsg->cmsg_len = QUIC_ARRAYSIZE(cbuf);
   hdr.msg_control = cmsg;
-  hdr.msg_controllen = arraysize(cbuf);
+  hdr.msg_controllen = QUIC_ARRAYSIZE(cbuf);
 
   int bytes_read = recvmsg(fd, &hdr, 0);
 
@@ -237,7 +238,7 @@ int QuicSocketUtils::ReadPacket(int fd,
 
   if (hdr.msg_flags & MSG_CTRUNC) {
     QUIC_BUG << "Incorrectly set control length: " << hdr.msg_controllen
-             << ", expected " << arraysize(cbuf);
+             << ", expected " << QUIC_ARRAYSIZE(cbuf);
     return -1;
   }
 
