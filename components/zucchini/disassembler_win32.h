@@ -104,7 +104,7 @@ class DisassemblerWin32 : public Disassembler {
   AddressTranslator translator_;
 
   // Reference storage.
-  BufferRegion reloc_region_;
+  BufferRegion reloc_region_ = {kInvalidOffset, 0U};
   std::vector<offset_t> reloc_block_offsets_;
   offset_t reloc_end_ = 0;
   std::vector<offset_t> abs32_locations_;

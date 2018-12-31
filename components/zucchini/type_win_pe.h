@@ -120,6 +120,9 @@ struct ImageOptionalHeader {
   uint32_t size_of_heap_commit;
   uint32_t loader_flags;
   uint32_t number_of_rva_and_sizes;
+
+  // The number of elements is actually |number_of_rva_and_sizes|, so accesses
+  // to |data_directory| should be checked against the bound.
   ImageDataDirectory data_directory[kImageNumberOfDirectoryEntries];  // 0x60
   /* 0xE0 */
 };
