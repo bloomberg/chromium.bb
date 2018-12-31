@@ -10,9 +10,27 @@ from __future__ import print_function
 import mock
 import os
 
+from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.scripts import run_tests
+
+
+class TestsExceptionsTest(cros_test_lib.TestCase):
+  """Tests that all tests in SPECIAL_TESTS and SLOW_TESTS do exist."""
+
+  def runTest(self):
+    for test_path in run_tests.SPECIAL_TESTS:
+      self.assertExists(
+          os.path.join(constants.CHROMITE_DIR, test_path),
+          "%s doesn't exist. Please remove it from run_tests.SPECIAL_TESTS" %
+          test_path)
+
+    for test_path in run_tests.SLOW_TESTS:
+      self.assertExists(
+          os.path.join(constants.CHROMITE_DIR, test_path),
+          "%s doesn't exist. Please remove it from run_tests.SLOW_TESTS" %
+          test_path)
 
 
 class RunTestsTest(cros_test_lib.MockTestCase):

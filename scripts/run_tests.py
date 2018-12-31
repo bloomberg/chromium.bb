@@ -70,7 +70,6 @@ SPECIAL_TESTS = {
     'cli/cros/cros_build_unittest': INSIDE,
     'cli/cros/cros_chroot_unittest': INSIDE,
     'cli/cros/cros_debug_unittest': INSIDE,
-    'cli/cros/cros_payload_unittest': INSIDE,
     'cli/cros/lint_unittest': INSIDE,
     'cli/cros/lint_autotest_unittest': INSIDE,
     'cli/deploy_unittest': INSIDE,
@@ -89,11 +88,9 @@ SPECIAL_TESTS = {
     'scripts/cros_list_modified_packages_unittest': INSIDE,
     'scripts/cros_mark_as_stable_unittest': INSIDE,
     'scripts/cros_mark_chrome_as_stable_unittest': INSIDE,
-    'scripts/sync_package_status_unittest': INSIDE,
     'scripts/cros_portage_upgrade_unittest': INSIDE,
     'scripts/dep_tracker_unittest': INSIDE,
     'scripts/test_image_unittest': INSIDE,
-    'scripts/upload_package_status_unittest': INSIDE,
 
     # Tests that need to run outside the chroot.
     'lib/cgroups_unittest': OUTSIDE,
@@ -111,9 +108,6 @@ SPECIAL_TESTS = {
 
 SLOW_TESTS = {
     # Tests that require network can be really slow.
-    'buildbot/manifest_version_unittest': SKIP,
-    'buildbot/repository_unittest': SKIP,
-    'buildbot/remote_try_unittest': SKIP,
     'lib/cros_build_lib_unittest': SKIP,
     'lib/gce_unittest': SKIP,
     'lib/gerrit_unittest': SKIP,
