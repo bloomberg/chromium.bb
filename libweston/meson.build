@@ -413,10 +413,6 @@ endif
 if get_option('renderer-gl')
 	config_h.set('ENABLE_EGL', '1')
 
-	if not dep_egl.found() or not dep_glesv2.found()
-		error('gl-renderer enabled but EGL/GLESv2 not found')
-	endif
-
 	srcs_renderer_gl = [
 		'gl-renderer.c',
 		'vertex-clipping.c',
@@ -424,13 +420,21 @@ if get_option('renderer-gl')
 		linux_dmabuf_unstable_v1_protocol_c,
 		linux_dmabuf_unstable_v1_server_protocol_h,
 	]
+
 	deps_renderer_gl = [
-		dep_egl,
-		dep_glesv2,
 		dep_pixman,
 		dep_libweston,
 		dep_libdrm_headers,
 	]
+
+	foreach name : [ 'egl', 'glesv2' ]
+		d = dependency(name, required: false)
+		if not d.found()
+			error('gl-renderer requires @0@ which was not found. Or, you can use \'-Drenderer-gl=false\'.'.format(name))
+		endif
+		deps_renderer_gl += d
+	endforeach
+
 	plugin_gl = shared_library(
 		'gl-renderer',
 		srcs_renderer_gl,
