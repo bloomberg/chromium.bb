@@ -122,8 +122,17 @@ if get_option('launcher-logind')
 	if systemd_dep.found()
 		config_h.set('HAVE_SYSTEMD_LOGIN_209', '1')
 	else
-		systemd_dep = dependency('libsystemd-login', version: '>= 198')
+		systemd_dep = dependency('libsystemd-login', version: '>= 198', required: false)
+		if not systemd_dep.found()
+			error('logind support requires libsystemd or libsystemd-login but neither was found. Or, you can use \'-Dlauncher-logind=false\'')
+		endif
 	endif
+
+	dbus_dep = dependency('dbus-1', version: '>= 1.6', required: false)
+	if not dbus_dep.found()
+		error('logind support requires dbus-1 >= 1.6 which was not found. Or, you can use \'-Dlauncher-logind=false\'')
+	endif
+
 	config_h.set('HAVE_DBUS', '1')
 	config_h.set('HAVE_SYSTEMD_LOGIN', '1')
 
@@ -132,7 +141,7 @@ if get_option('launcher-logind')
 		'launcher-logind.c',
 	]
 	deps_session_helper += [
-		dependency('dbus-1', version: '>= 1.6'),
+		dbus_dep,
 		systemd_dep,
 	]
 endif
