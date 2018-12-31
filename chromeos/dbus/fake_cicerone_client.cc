@@ -170,6 +170,7 @@ void FakeCiceroneClient::SetUpLxdContainerUser(
   signal.set_owner_id(request.owner_id());
   signal.set_vm_name(request.vm_name());
   signal.set_container_name(request.container_name());
+  signal.set_container_username(request.container_username());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&FakeCiceroneClient::NotifyContainerStarted,
                                 base::Unretained(this), std::move(signal)));
