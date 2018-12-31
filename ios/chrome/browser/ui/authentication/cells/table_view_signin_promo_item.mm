@@ -21,9 +21,6 @@ const CGFloat kMargin = 16;
 #pragma mark - TableViewSigninPromoItem
 
 @implementation TableViewSigninPromoItem
-@synthesize configurator = _configurator;
-@synthesize delegate = _delegate;
-@synthesize text = _text;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];

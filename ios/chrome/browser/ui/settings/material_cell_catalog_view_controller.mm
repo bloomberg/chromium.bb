@@ -72,7 +72,6 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierAccountCell,
   SectionIdentifierAccountControlCell,
   SectionIdentifierFooters,
-  SectionIdentifierSync,
   SectionIdentifierContentSuggestionsCell,
 };
 
@@ -235,14 +234,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 
   // Multiline cells.
   [model addSectionWithIdentifier:SectionIdentifierMultilineCell];
-  CardMultilineItem* multilineItem =
-      [[CardMultilineItem alloc] initWithType:ItemTypeMultilineBasic];
-  multilineItem.text =
-      @"Lorem ipsum dolor sit amet, consectetur "
-      @"adipiscing elit, sed do eiusmod tempor "
-      @"incididunt ut labore et dolore magna aliqua.";
-  [model addItem:multilineItem
-      toSectionWithIdentifier:SectionIdentifierMultilineCell];
   [model addItem:[self settingsImageDetailTextItem]
       toSectionWithIdentifier:SectionIdentifierMultilineCell];
   LegacySettingsImageDetailTextItem* settingsImageDetailTextItem =
@@ -383,11 +374,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
       toSectionWithIdentifier:SectionIdentifierAccountCell];
   [model addItem:[self warmStateSigninPromoItem]
       toSectionWithIdentifier:SectionIdentifierAccountCell];
-
-  // Sync cells.
-  [model addSectionWithIdentifier:SectionIdentifierSync];
-  [model addItem:[self syncPassphraseErrorItem]
-      toSectionWithIdentifier:SectionIdentifierSync];
 
   // Account control cells.
   [model addSectionWithIdentifier:SectionIdentifierAccountControlCell];
@@ -817,13 +803,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
                  title:@"Footer title"
               callback:nil];
   return footerItem;
-}
-
-- (PassphraseErrorItem*)syncPassphraseErrorItem {
-  PassphraseErrorItem* item =
-      [[PassphraseErrorItem alloc] initWithType:ItemTypeSyncPassphraseError];
-  item.text = @"Incorrect passphrase";
-  return item;
 }
 
 - (PasswordDetailsItem*)passwordDetailsShortHiddenItem {

@@ -5,7 +5,9 @@
 #import "ios/chrome/browser/ui/settings/table_cell_catalog_view_controller.h"
 
 #import "ios/chrome/browser/ui/authentication/cells/account_control_item.h"
+#import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
+#import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
@@ -281,6 +283,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierAutofill];
 
   // SectionIdentifierAccount.
+  TableViewSigninPromoItem* signinPromo =
+      [[TableViewSigninPromoItem alloc] initWithType:ItemTypeAccount];
+  signinPromo.configurator = [[SigninPromoViewConfigurator alloc]
+      initWithUserEmail:@"jonhdoe@example.com"
+           userFullName:@"John Doe"
+              userImage:nil
+         hasCloseButton:NO];
+  signinPromo.text = @"Signin promo text example";
+  [model addItem:signinPromo toSectionWithIdentifier:SectionIdentifierAccount];
+
   TableViewAccountItem* accountItemDetailWithError =
       [[TableViewAccountItem alloc] initWithType:ItemTypeAccount];
   // TODO(crbug.com/754032): ios_default_avatar image is from a downstream iOS
