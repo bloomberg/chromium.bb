@@ -38,6 +38,7 @@ namespace views {
 
 class BridgedNativeWidgetImpl;
 class NativeWidgetMac;
+class TextInputHost;
 
 // The portion of NativeWidgetMac that lives in the browser process. This
 // communicates to the BridgedNativeWidgetImpl, which interacts with the Cocoa
@@ -85,6 +86,8 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   BridgeFactoryHost* bridge_factory_host() const {
     return bridge_factory_host_;
   }
+
+  TextInputHost* text_input_host() const { return text_input_host_.get(); }
 
   // A NSWindow that is guaranteed to exist in this process. If the bridge
   // object for this host is in this process, then this points to the bridge's
@@ -205,6 +208,8 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   static NSView* GetGlobalCaptureView();
 
  private:
+  friend class TextInputHost;
+
   void UpdateCompositorProperties();
   void DestroyCompositor();
   void RankNSViewsRecursive(View* view, std::map<NSView*, int>* rank) const;
@@ -225,6 +230,8 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
                  gfx::Point* baseline_point) override;
   double SheetPositionY() override;
   views_bridge_mac::DragDropClient* GetDragDropClient() override;
+  ui::TextInputClient* GetTextInputClient() override;
+  void GetHasInputContext(bool* has_text_input_context) override;
 
   // BridgeFactoryHost::Observer:
   void OnBridgeFactoryHostDestroying(BridgeFactoryHost* host) override;
@@ -374,7 +381,10 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
 
   // The id that may be used to look up the NSView for |root_view_|.
   const uint64_t root_view_id_;
-  views::View* root_view_ = nullptr;  // Weak. Owned by |native_widget_mac_|.
+
+  // Weak. Owned by |native_widget_mac_|.
+  views::View* root_view_ = nullptr;
+
   std::unique_ptr<DragDropClientMac> drag_drop_client_;
 
   // The mojo pointer to a BridgedNativeWidget, which may exist in another
@@ -401,6 +411,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
 
   std::unique_ptr<TooltipManager> tooltip_manager_;
   std::unique_ptr<ui::InputMethod> input_method_;
+  std::unique_ptr<TextInputHost> text_input_host_;
   FocusManager* focus_manager_ = nullptr;  // Weak. Owned by our Widget.
 
   base::string16 window_title_;

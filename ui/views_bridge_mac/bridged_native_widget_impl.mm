@@ -1180,9 +1180,8 @@ void BridgedNativeWidgetImpl::UpdateTooltip() {
   [bridged_view_ updateTooltipIfRequiredAt:point];
 }
 
-void BridgedNativeWidgetImpl::SetTextInputClient(
-    ui::TextInputClient* text_input_client) {
-  [bridged_view_ setTextInputClient:text_input_client];
+bool BridgedNativeWidgetImpl::NeedsUpdateWindows() {
+  return [bridged_view_ needsUpdateWindows];
 }
 
 void BridgedNativeWidgetImpl::RedispatchKeyEvent(
