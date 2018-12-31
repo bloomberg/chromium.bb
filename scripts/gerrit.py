@@ -23,7 +23,6 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gerrit
-from chromite.lib import git
 from chromite.lib import gob_util
 from chromite.lib import memoize
 from chromite.lib import terminal
@@ -177,11 +176,6 @@ def PrintCls(opts, cls, lims=None, show_approvals=True):
       PrettyPrintCl(opts, cl, lims=lims, show_approvals=show_approvals)
 
 
-def _MyUserInfo():
-  """Try to return e-mail addresses used by the active user."""
-  return [git.GetProjectUserEmail(constants.CHROMITE_DIR)]
-
-
 def _Query(opts, query, raw=True, helper=None):
   """Queries Gerrit with a query string built from the commandline options"""
   if opts.branch is not None:
@@ -227,31 +221,10 @@ def FilteredQuery(opts, query, helper=None):
   return sorted(ret, key=key)
 
 
-def IsApprover(cl, users):
-  """See if the approvers in |cl| is listed in |users|"""
-  # See if we are listed in the approvals list.  We have to parse
-  # this by hand as the gerrit query system doesn't support it :(
-  # http://code.google.com/p/gerrit/issues/detail?id=1235
-  if 'approvals' not in cl['currentPatchSet']:
-    return False
-
-  if isinstance(users, basestring):
-    users = (users,)
-
-  for approver in cl['currentPatchSet']['approvals']:
-    if (approver['by']['email'] in users and
-        approver['type'] == 'CRVW' and
-        int(approver['value']) != 0):
-      return True
-
-  return False
-
-
 def UserActTodo(opts):
   """List CLs needing your review"""
-  emails = _MyUserInfo()
-  cls = FilteredQuery(opts, 'reviewer:self status:open NOT owner:self')
-  cls = [x for x in cls if not IsApprover(x, emails)]
+  cls = FilteredQuery(opts, ('reviewer:self status:open NOT owner:self '
+                             'label:Code-Review=0,user=self'))
   PrintCls(opts, cls)
 
 
