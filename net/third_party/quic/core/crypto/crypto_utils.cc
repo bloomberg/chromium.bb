@@ -110,7 +110,7 @@ void CryptoUtils::CreateTlsInitialCrypters(Perspective perspective,
   handshake_secret.resize(EVP_MAX_MD_SIZE);
   size_t handshake_secret_len;
   if (!HKDF_extract(handshake_secret.data(), &handshake_secret_len, hash,
-                    connection_id_bytes, arraysize(connection_id_bytes),
+                    connection_id_bytes, QUIC_ARRAYSIZE(connection_id_bytes),
                     kInitialSalt, QUIC_ARRAYSIZE(kInitialSalt))) {
     QUIC_BUG << "HKDF_extract failed when creating initial crypters";
   }
