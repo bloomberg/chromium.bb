@@ -80,15 +80,17 @@ if get_option('color-management-lcms')
 		'cms-static.c',
 		'cms-helper.c',
 	]
-	deps_lcms = [
-		dep_libweston,
-		dependency('lcms2'),
-	]
+
+	dep_lcms2 = dependency('lcms2', required: false)
+	if not dep_lcms2.found()
+		error('cms-static requires lcms2 which was not found. Or, you can use \'-Dcolor-management-lcms=false\'.')
+	endif
+
 	plugin_lcms = shared_library(
 		'cms-static',
 		srcs_lcms,
 		include_directories: include_directories('..', '../shared'),
-		dependencies: deps_lcms,
+		dependencies: [ dep_libweston, dep_lcms2 ],
 		name_prefix: '',
 		install: true,
 		install_dir: dir_module_weston
