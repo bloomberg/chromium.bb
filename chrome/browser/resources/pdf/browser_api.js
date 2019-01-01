@@ -102,8 +102,9 @@ class BrowserApi {
    *     has been updated.
    */
   setZoom(zoom) {
-    if (this.zoomBehavior_ != BrowserApi.ZoomBehavior.MANAGE)
-      return Promise.reject(new Error('Viewer does not manage browser zoom.'));
+    assert(
+        this.zoomBehavior_ == BrowserApi.ZoomBehavior.MANAGE,
+        'Viewer does not manage browser zoom.');
     return new Promise((resolve, reject) => {
       chrome.tabs.setZoom(this.streamInfo_.tabId, zoom, resolve);
     });

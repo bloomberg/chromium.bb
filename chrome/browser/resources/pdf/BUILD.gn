@@ -18,6 +18,9 @@ group("closure_compile") {
 }
 
 js_library("browser_api") {
+  deps = [
+    "//ui/webui/resources/js:assert",
+  ]
   externs_list = [
     "$externs_path/chrome_extensions.js",
     "$externs_path/mime_handler_private.js",

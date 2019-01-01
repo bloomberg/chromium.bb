@@ -441,11 +441,10 @@ Viewport.prototype = {
    * @private
    */
   setZoomInternal_: function(newZoom) {
-    if (!this.allowedToChangeZoom_) {
-      throw new Error(
-          'Called Viewport.setZoomInternal_ without calling ' +
-          'Viewport.mightZoom_.');
-    }
+    assert(
+        this.allowedToChangeZoom_,
+        'Called Viewport.setZoomInternal_ without calling ' +
+            'Viewport.mightZoom_.');
     // Record the scroll position (relative to the top-left of the window).
     const currentScrollPos = {
       x: this.position.x / this.zoom,
