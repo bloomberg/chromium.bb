@@ -37,6 +37,7 @@
 #include "content/public/common/content_switches.h"
 #include "sql/database.h"
 #include "third_party/blink/public/common/features.h"
+#include "url/origin.h"
 
 namespace content {
 namespace {
@@ -231,17 +232,17 @@ void DOMStorageContextWrapper::GetSessionStorageUsage(
                      base::RetainedRef(context_), std::move(callback)));
 }
 
-void DOMStorageContextWrapper::DeleteLocalStorage(const GURL& origin,
+void DOMStorageContextWrapper::DeleteLocalStorage(const url::Origin& origin,
                                                   base::OnceClosure callback) {
   DCHECK(context_.get());
   DCHECK(callback);
   if (!legacy_localstorage_path_.empty()) {
     context_->task_runner()->PostShutdownBlockingTask(
         FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-        base::BindOnce(base::IgnoreResult(&sql::Database::Delete),
-                       legacy_localstorage_path_.Append(
-                           DOMStorageArea::DatabaseFileNameFromOrigin(
-                               url::Origin::Create(origin)))));
+        base::BindOnce(
+            base::IgnoreResult(&sql::Database::Delete),
+            legacy_localstorage_path_.Append(
+                DOMStorageArea::DatabaseFileNameFromOrigin(origin))));
   }
   // base::Unretained is safe here, because the mojo_state_ won't be deleted
   // until a ShutdownAndDelete task has been ran on the mojo_task_runner_, and
@@ -251,7 +252,7 @@ void DOMStorageContextWrapper::DeleteLocalStorage(const GURL& origin,
       FROM_HERE,
       base::BindOnce(
           &LocalStorageContextMojo::DeleteStorage,
-          base::Unretained(mojo_state_), url::Origin::Create(origin),
+          base::Unretained(mojo_state_), origin,
           base::BindOnce(&GotMojoCallback, base::ThreadTaskRunnerHandle::Get(),
                          std::move(callback))));
 }

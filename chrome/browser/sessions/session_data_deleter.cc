@@ -129,7 +129,7 @@ void SessionDataDeleter::ClearSessionOnlyLocalStorage(
     if (!storage_policy_->IsStorageSessionOnly(usage.origin.GetURL()))
       continue;
     storage_partition->GetDOMStorageContext()->DeleteLocalStorage(
-        usage.origin.GetURL(), base::DoNothing());
+        usage.origin, base::DoNothing());
   }
 }
 

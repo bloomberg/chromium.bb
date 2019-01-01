@@ -21,7 +21,6 @@
 #include "mojo/public/cpp/bindings/message.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
-#include "url/origin.h"
 
 namespace base {
 class FilePath;
@@ -58,7 +57,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   // DOMStorageContext implementation.
   void GetLocalStorageUsage(GetLocalStorageUsageCallback callback) override;
   void GetSessionStorageUsage(GetSessionStorageUsageCallback callback) override;
-  void DeleteLocalStorage(const GURL& origin,
+  void DeleteLocalStorage(const url::Origin& origin,
                           base::OnceClosure callback) override;
   void PerformLocalStorageCleanup(base::OnceClosure callback) override;
   void DeleteSessionStorage(const SessionStorageUsageInfo& usage_info,

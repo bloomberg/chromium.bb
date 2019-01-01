@@ -10,7 +10,9 @@
 
 #include "base/callback.h"
 
-class GURL;
+namespace url {
+class Origin;
+}
 
 namespace content {
 
@@ -39,7 +41,7 @@ class DOMStorageContext {
   // Deletes the local storage for the origin of |origin_url|. |callback| is
   // called when the deletion is sent to the database and GetLocalStorageUsage()
   // will not return entries for |origin_url| anymore.
-  virtual void DeleteLocalStorage(const GURL& origin_url,
+  virtual void DeleteLocalStorage(const url::Origin& origin,
                                   base::OnceClosure callback) = 0;
 
   // Removes traces of deleted data from the local storage backend.

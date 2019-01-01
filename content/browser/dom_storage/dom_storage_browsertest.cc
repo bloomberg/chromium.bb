@@ -77,7 +77,7 @@ class DOMStorageBrowserTest : public ContentBrowserTest {
     return usage;
   }
 
-  void DeletePhysicalOrigin(GURL origin) {
+  void DeletePhysicalOrigin(url::Origin origin) {
     auto* context = BrowserContext::GetDefaultStoragePartition(
                         shell()->web_contents()->GetBrowserContext())
                         ->GetDOMStorageContext();
@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, DeletePhysicalOrigin) {
   SimpleTest(GetTestUrl("dom_storage", "store_data.html"), kNotIncognito);
   std::vector<StorageUsageInfo> usage = GetUsage();
   ASSERT_EQ(1U, usage.size());
-  DeletePhysicalOrigin(usage[0].origin.GetURL());
+  DeletePhysicalOrigin(usage[0].origin);
   EXPECT_EQ(0U, GetUsage().size());
 }
 
