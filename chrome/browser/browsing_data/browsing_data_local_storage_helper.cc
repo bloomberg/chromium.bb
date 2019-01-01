@@ -78,7 +78,8 @@ void BrowsingDataLocalStorageHelper::StartFetching(
 void BrowsingDataLocalStorageHelper::DeleteOrigin(const GURL& origin_url,
                                                   base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  dom_storage_context_->DeleteLocalStorage(origin_url, std::move(callback));
+  dom_storage_context_->DeleteLocalStorage(url::Origin::Create(origin_url),
+                                           std::move(callback));
 }
 
 //---------------------------------------------------------

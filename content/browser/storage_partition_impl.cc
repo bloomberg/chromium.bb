@@ -176,8 +176,7 @@ void OnLocalStorageUsageInfo(
 
     if (infos[i].last_modified >= delete_begin &&
         infos[i].last_modified <= delete_end) {
-      dom_storage_context->DeleteLocalStorage(infos[i].origin.GetURL(),
-                                              barrier);
+      dom_storage_context->DeleteLocalStorage(infos[i].origin, barrier);
     } else {
       barrier.Run();
     }
@@ -229,8 +228,8 @@ void ClearLocalStorageOnUIThread(
                       origin_matcher.Run(storage_origin,
                                          special_storage_policy.get());
     if (can_delete) {
-      dom_storage_context->DeleteLocalStorage(storage_origin,
-                                              std::move(callback));
+      dom_storage_context->DeleteLocalStorage(
+          url::Origin::Create(storage_origin), std::move(callback));
     } else {
       std::move(callback).Run();
     }
