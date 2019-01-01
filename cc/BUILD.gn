@@ -347,9 +347,6 @@ cc_component("cc") {
     "trees/ukm_manager.h",
   ]
 
-  # TODO(khushalsagar): Remove once crbug.com/683263 is fixed.
-  configs = [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
   public_deps = [
     "//cc/base",
     "//cc/paint",
@@ -714,9 +711,6 @@ cc_test("cc_unittests") {
     # warnings for now.
     cflags = [ "/wd4250" ]
   }
-
-  # TODO(khushalsagar): Remove once crbug.com/683263 is fixed.
-  configs = [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
     ":cc",
