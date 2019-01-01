@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 #include "third_party/blink/renderer/core/paint/find_paint_offset_and_visual_rect_needing_update.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
@@ -389,6 +390,22 @@ void PaintInvalidator::InvalidatePaint(
   }
 }
 
+static void InvalidateChromeClient(
+    const LayoutBoxModelObject& paint_invalidation_container) {
+  if (paint_invalidation_container.GetDocument().Printing() &&
+      !RuntimeEnabledFeatures::PrintBrowserEnabled())
+    return;
+
+  DCHECK(paint_invalidation_container.IsLayoutView());
+  DCHECK(!paint_invalidation_container.IsPaintInvalidationContainer());
+
+  auto* frame_view = paint_invalidation_container.GetFrameView();
+  DCHECK(!frame_view->GetFrame().OwnerLayoutObject());
+  if (auto* client = frame_view->GetChromeClient()) {
+    client->InvalidateRect(IntRect(IntPoint(), frame_view->Size()));
+  }
+}
+
 void PaintInvalidator::UpdateEmptyVisualRectFlag(
     const LayoutObject& object,
     PaintInvalidatorContext& context) {
@@ -514,6 +531,15 @@ void PaintInvalidator::InvalidatePaint(
         PaintInvalidatorContext::kSubtreeVisualRectUpdate |
         PaintInvalidatorContext::kSubtreeInvalidationChecking;
   }
+
+  // The object is under a frame for WebViewPlugin, SVG images etc. Need to
+  // inform the chrome client of the invalidation so that the client will
+  // initiate painting of the contents.
+  // TODO(wangxianzhu): Do we need this for CAP?
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+      !context.paint_invalidation_container->IsPaintInvalidationContainer() &&
+      reason != PaintInvalidationReason::kNone)
+    InvalidateChromeClient(*context.paint_invalidation_container);
 }
 
 void PaintInvalidator::ProcessPendingDelayedPaintInvalidations() {
