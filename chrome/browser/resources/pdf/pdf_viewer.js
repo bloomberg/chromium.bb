@@ -483,11 +483,7 @@ PDFViewer.prototype = {
   annotationModeChanged_: async function(e) {
     const annotationMode = e.detail.value;
     if (annotationMode) {
-      // TODO(dstockwell): add assert lib and replace this with assert
-      if (this.currentController_ != this.pluginController_) {
-        throw new Error(
-            'Plugin controller is not current, cannot enter annotation mode');
-      }
+      assert(this.currentController_ == this.pluginController_);
       // Enter annotation mode.
       // TODO(dstockwell): set plugin read-only, begin transition
       this.updateProgress(0);
@@ -501,11 +497,7 @@ PDFViewer.prototype = {
       this.updateProgress(100);
     } else {
       // Exit annotation mode.
-      // TODO(dstockwell): add assert lib and replace this with assert
-      if (this.currentController_ != this.inkController_) {
-        throw new Error(
-            'Ink controller is not current, cannot exit annotation mode');
-      }
+      assert(this.currentController_ == this.inkController_);
       // TODO(dstockwell): set ink read-only, begin transition
       this.updateProgress(0);
       // This runs separately to allow other consumers of `loaded` to queue
@@ -625,18 +617,17 @@ PDFViewer.prototype = {
     if (this.loadState_ == loadState) {
       return;
     }
-    if ((loadState == LoadState.SUCCESS || loadState == LoadState.FAILURE) &&
-        this.loadState_ != LoadState.LOADING) {
-      throw new Error('Internal error: invalid loadState transition.');
-    }
-    this.loadState_ = loadState;
     if (loadState == LoadState.SUCCESS) {
+      assert(this.loadState_ == LoadState.LOADING);
       this.loaded_.resolve();
     } else if (loadState == LoadState.FAILED) {
+      assert(this.loadState_ == LoadState.LOADING);
       this.loaded_.reject();
     } else {
+      assert(loadState == LoadState.LOADING);
       this.loaded_ = new PromiseResolver();
     }
+    this.loadState_ = loadState;
   },
 
   /**
@@ -716,9 +707,7 @@ PDFViewer.prototype = {
    * @private
    */
   setUserInitiated_: function(userInitiated) {
-    if (this.isUserInitiatedEvent_ == userInitiated) {
-      throw new Error('Trying to set user initiated to current value.');
-    }
+    assert(this.isUserInitiatedEvent_ != userInitiated);
     this.isUserInitiatedEvent_ = userInitiated;
   },
 
@@ -1403,8 +1392,7 @@ class PluginController extends ContentController {
         break;
       case 'consumeSaveToken':
         const resolve = this.pendingTokens_.get(message.data.token);
-        if (!this.pendingTokens_.delete(message.data.token))
-          throw new Error('Internal error: save token not found.');
+        assert(this.pendingTokens_.delete(message.data.token));
         resolve(null);
         break;
     }
@@ -1417,15 +1405,14 @@ class PluginController extends ContentController {
    * @private
    */
   saveData_(messageData) {
-    if (!(loadTimeData.getBoolean('pdfFormSaveEnabled') ||
-          loadTimeData.getBoolean('pdfAnnotationsEnabled')))
-      throw new Error('Internal error: save not enabled.');
+    assert(
+        loadTimeData.getBoolean('pdfFormSaveEnabled') ||
+        loadTimeData.getBoolean('pdfAnnotationsEnabled'));
 
     // Verify a token that was created by this instance is included to avoid
     // being spammed.
     const resolver = this.pendingTokens_.get(messageData.token);
-    if (!this.pendingTokens_.delete(messageData.token))
-      throw new Error('Internal error: save token not found, abort save.');
+    assert(this.pendingTokens_.delete(messageData.token));
 
     if (!messageData.dataToSave) {
       resolver.reject();
@@ -1440,13 +1427,13 @@ class PluginController extends ContentController {
 
     const buffer = messageData.dataToSave;
     const bufView = new Uint8Array(buffer);
-    if (bufView.length > MAX_FILE_SIZE)
-      throw new Error(`File too large to be saved: ${bufView.length} bytes.`);
-    if (bufView.length < MIN_FILE_SIZE ||
-        String.fromCharCode(bufView[0], bufView[1], bufView[2], bufView[3]) !=
-            '%PDF') {
-      throw new Error('Not a PDF file.');
-    }
+    assert(
+        bufView.length <= MAX_FILE_SIZE,
+        `File too large to be saved: ${bufView.length} bytes.`);
+    assert(bufView.length >= MIN_FILE_SIZE);
+    assert(
+        String.fromCharCode(bufView[0], bufView[1], bufView[2], bufView[3]) ==
+        '%PDF');
 
     resolver.resolve(messageData);
   }
