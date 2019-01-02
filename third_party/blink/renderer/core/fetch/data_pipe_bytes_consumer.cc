@@ -261,4 +261,8 @@ void DataPipeBytesConsumer::ClearDataPipe() {
   data_pipe_.reset();
 }
 
+void DataPipeBytesConsumer::Dispose() {
+  watcher_.Cancel();
+}
+
 }  // namespace blink

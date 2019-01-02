@@ -201,6 +201,8 @@ void SimpleWatcher::Cancel() {
   // notification, in which case the watch may have already been implicitly
   // cancelled.
   DCHECK(rv == MOJO_RESULT_OK || rv == MOJO_RESULT_NOT_FOUND);
+
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 MojoResult SimpleWatcher::Arm(MojoResult* ready_result,

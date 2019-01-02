@@ -485,6 +485,7 @@ class FetchDataLoaderAsString final : public FetchDataLoader,
 class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
                                         public BytesConsumer::Client {
   USING_GARBAGE_COLLECTED_MIXIN(FetchDataLoaderAsDataPipe);
+  USING_PRE_FINALIZER(FetchDataLoaderAsDataPipe, Dispose);
 
  public:
   explicit FetchDataLoaderAsDataPipe(
@@ -615,6 +616,8 @@ class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
     data_pipe_watcher_.Cancel();
     out_data_pipe_.reset();
   }
+
+  void Dispose() { data_pipe_watcher_.Cancel(); }
 
   TraceWrapperMember<BytesConsumer> consumer_;
   Member<FetchDataLoader::Client> client_;
