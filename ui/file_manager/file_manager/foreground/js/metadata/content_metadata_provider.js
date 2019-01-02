@@ -284,6 +284,7 @@ ContentMetadataProvider.prototype.convertMediaMetadataToMetadataItem_ =
     var item = new MetadataItem();
     var mimeType = metadata['mimeType'];
     item.contentMimeType = mimeType;
+    item.mediaMimeType = mimeType;
     var trans = {scaleX: 1, scaleY: 1, rotate90: 0};
     if (metadata.rotation) {
       switch (metadata.rotation) {
