@@ -45,12 +45,17 @@ void ServiceMain(service_manager::mojom::ServiceRequest request) {
   if (!enabled_features.empty())
     enabled_features += ",";
   enabled_features += features::kMash.name;
+  // Disable SingleProcessMash, even if it's on by default in the test suite.
+  if (!disabled_features.empty())
+    disabled_features += ",";
+  disabled_features += features::kSingleProcessMash.name;
   // This code path is really only for testing (production code uses the utility
   // process to launch AshService), so it's ok to use a for-testing function.
   base::FeatureList::ClearInstanceForTesting();
   CHECK(base::FeatureList::InitializeInstance(enabled_features,
                                               disabled_features));
   CHECK(base::FeatureList::IsEnabled(features::kMash));
+  CHECK(!base::FeatureList::IsEnabled(features::kSingleProcessMash));
 
   ui::MaterialDesignController::Initialize();
 

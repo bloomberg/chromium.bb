@@ -431,9 +431,9 @@
       },
       {
         "args": [
-          "--enable-features=SingleProcessMash"
+          "--disable-features=SingleProcessMash"
         ],
-        "name": "single_process_mash_ash_unittests",
+        "name": "non_single_process_mash_ash_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -510,10 +510,10 @@
       },
       {
         "args": [
-          "--enable-features=SingleProcessMash",
+          "--disable-features=SingleProcessMash",
           "--override-use-software-gl-for-tests"
         ],
-        "name": "single_process_mash_browser_tests",
+        "name": "non_single_process_mash_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 20
@@ -621,24 +621,24 @@
       },
       {
         "args": [
+          "--disable-features=SingleProcessMash",
+          "--override-use-software-gl-for-tests"
+        ],
+        "name": "non_single_process_mash_content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 5
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "args": [
           "--enable-features=TracingPerfettoBackend",
           "--gtest_filter=TracingControllerTest.*"
         ],
         "name": "perfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=SingleProcessMash",
-          "--override-use-software-gl-for-tests"
-        ],
-        "name": "single_process_mash_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 5
         },
         "test": "content_browsertests"
       },
@@ -661,9 +661,9 @@
       },
       {
         "args": [
-          "--enable-features=SingleProcessMash"
+          "--disable-features=SingleProcessMash"
         ],
-        "name": "single_process_mash_content_unittests",
+        "name": "non_single_process_mash_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -717,9 +717,9 @@
       },
       {
         "args": [
-          "--enable-features=SingleProcessMash"
+          "--disable-features=SingleProcessMash"
         ],
-        "name": "single_process_mash_exo_unittests",
+        "name": "non_single_process_mash_exo_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -788,9 +788,9 @@
       },
       {
         "args": [
-          "--enable-features=SingleProcessMash"
+          "--disable-features=SingleProcessMash"
         ],
-        "name": "single_process_mash_interactive_ui_tests",
+        "name": "non_single_process_mash_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
@@ -1042,9 +1042,9 @@
       },
       {
         "args": [
-          "--enable-features=SingleProcessMash"
+          "--disable-features=SingleProcessMash"
         ],
-        "name": "single_process_mash_unit_tests",
+        "name": "non_single_process_mash_unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1137,9 +1137,9 @@
       },
       {
         "args": [
-          "--enable-features=SingleProcessMash"
+          "--disable-features=SingleProcessMash"
         ],
-        "name": "single_process_mash_ash_unittests",
+        "name": "non_single_process_mash_ash_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1216,10 +1216,10 @@
       },
       {
         "args": [
-          "--enable-features=SingleProcessMash",
+          "--disable-features=SingleProcessMash",
           "--override-use-software-gl-for-tests"
         ],
-        "name": "single_process_mash_browser_tests",
+        "name": "non_single_process_mash_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
@@ -1327,24 +1327,24 @@
       },
       {
         "args": [
+          "--disable-features=SingleProcessMash",
+          "--override-use-software-gl-for-tests"
+        ],
+        "name": "non_single_process_mash_content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 5
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "args": [
           "--enable-features=TracingPerfettoBackend",
           "--gtest_filter=TracingControllerTest.*"
         ],
         "name": "perfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=SingleProcessMash",
-          "--override-use-software-gl-for-tests"
-        ],
-        "name": "single_process_mash_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 5
         },
         "test": "content_browsertests"
       },
@@ -1367,9 +1367,9 @@
       },
       {
         "args": [
-          "--enable-features=SingleProcessMash"
+          "--disable-features=SingleProcessMash"
         ],
-        "name": "single_process_mash_content_unittests",
+        "name": "non_single_process_mash_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1423,9 +1423,9 @@
       },
       {
         "args": [
-          "--enable-features=SingleProcessMash"
+          "--disable-features=SingleProcessMash"
         ],
-        "name": "single_process_mash_exo_unittests",
+        "name": "non_single_process_mash_exo_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1494,9 +1494,9 @@
       },
       {
         "args": [
-          "--enable-features=SingleProcessMash"
+          "--disable-features=SingleProcessMash"
         ],
-        "name": "single_process_mash_interactive_ui_tests",
+        "name": "non_single_process_mash_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
@@ -1747,9 +1747,9 @@
       },
       {
         "args": [
-          "--enable-features=SingleProcessMash"
+          "--disable-features=SingleProcessMash"
         ],
-        "name": "single_process_mash_unit_tests",
+        "name": "non_single_process_mash_unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
