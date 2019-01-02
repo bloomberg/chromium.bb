@@ -32,6 +32,7 @@
 #if BUILDFLAG(ENABLE_APP_LIST)
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #endif
 
@@ -135,7 +136,8 @@ class AppListDialogContainer : public BaseDialogContainer,
   explicit AppListDialogContainer(views::View* dialog_body)
       : BaseDialogContainer(dialog_body, base::RepeatingClosure()) {
     SetBackground(std::make_unique<AppListOverlayBackground>());
-    close_button_ = views::BubbleFrameView::CreateCloseButton(this);
+    close_button_ = views::BubbleFrameView::CreateCloseButton(
+        this, GetNativeTheme()->SystemDarkModeEnabled());
     AddChildView(close_button_);
   }
   ~AppListDialogContainer() override {}
