@@ -15,6 +15,9 @@ enum class DownloadTaskType {
 
   // Task to remove unnecessary files from the system.
   CLEANUP_TASK = 1,
+
+  // Task to invoke the download auto-resumption handler.
+  DOWNLOAD_AUTO_RESUMPTION_TASK = 2,
 };
 
 }  // namespace download
