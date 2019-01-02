@@ -31369,6 +31369,7 @@ from previous Chrome versions.
   <int value="105046382" label="ParallelDownloading:disabled"/>
   <int value="106840653" label="mus"/>
   <int value="107900612" label="ChromeHomePersistentIph:disabled"/>
+  <int value="109577361" label="ForbidSyncXHRInPageDismissal:enabled"/>
   <int value="115915570"
       label="OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRef:enabled"/>
   <int value="118991027" label="enable-accelerated-fixed-root-background"/>
@@ -31982,6 +31983,7 @@ from previous Chrome versions.
   <int value="1237297772" label="no-pings"/>
   <int value="1240073971" label="ash-disable-smooth-screen-rotation"/>
   <int value="1242632259" label="ContentSuggestionsCategoryOrder:disabled"/>
+  <int value="1243890754" label="ForbidSyncXHRInPageDismissal:disabled"/>
   <int value="1245889469" label="enable-surface-worker"/>
   <int value="1247293682" label="topchrome-md"/>
   <int value="1250071868" label="disable-timezone-tracking-option"/>
