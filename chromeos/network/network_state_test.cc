@@ -57,6 +57,14 @@ void NetworkStateTest::ShutdownNetworkState() {
   network_state_handler_->Shutdown();
 }
 
+void NetworkStateTest::ClearDefaultServices() {
+  DBusThreadManager::Get()
+      ->GetShillServiceClient()
+      ->GetTestInterface()
+      ->ClearServices();
+  base::RunLoop().RunUntilIdle();
+}
+
 std::string NetworkStateTest::ConfigureService(
     const std::string& shill_json_string) {
   last_created_service_path_ = "";
