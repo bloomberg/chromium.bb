@@ -10,6 +10,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/lock_screen_action/lock_screen_action_background_controller.h"
 #include "ash/lock_screen_action/test_lock_screen_action_background_controller.h"
+#include "ash/login/login_screen_controller.h"
 #include "ash/login/mock_login_screen_client.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/views_utils.h"
@@ -517,6 +518,49 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterShutdownButtonStatusChange) {
                                  LoginShelfView::kBrowseAsGuest,
                                  LoginShelfView::kAddUser}));
   EXPECT_TRUE(IsButtonEnabled(LoginShelfView::kShutdown));
+}
+
+TEST_F(LoginShelfViewTest, ParentAccessButtonVisibility) {
+  // Parent access button should only be visible on lock screen.
+  Shell::Get()->login_screen_controller()->SetShowParentAccess(true);
+
+  NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
+                                 LoginShelfView::kBrowseAsGuest,
+                                 LoginShelfView::kAddUser}));
+
+  NotifySessionStateChanged(SessionState::LOGGED_IN_NOT_ACTIVE);
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
+
+  NotifySessionStateChanged(SessionState::ACTIVE);
+  EXPECT_TRUE(ShowsShelfButtons({}));
+
+  NotifySessionStateChanged(SessionState::LOGIN_SECONDARY);
+  EXPECT_TRUE(
+      ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kCancel}));
+
+  NotifySessionStateChanged(SessionState::ACTIVE);
+  EXPECT_TRUE(ShowsShelfButtons({}));
+
+  NotifySessionStateChanged(SessionState::LOCKED);
+  EXPECT_TRUE(
+      ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut,
+                         LoginShelfView::kParentAccess}));
+}
+
+TEST_F(LoginShelfViewTest, ParentAccessButtonVisibilityChangeOnLockScreen) {
+  NotifySessionStateChanged(SessionState::LOCKED);
+  EXPECT_TRUE(
+      ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut}));
+
+  Shell::Get()->login_screen_controller()->SetShowParentAccess(true);
+  EXPECT_TRUE(
+      ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut,
+                         LoginShelfView::kParentAccess}));
+
+  Shell::Get()->login_screen_controller()->SetShowParentAccess(false);
+  EXPECT_TRUE(
+      ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut}));
 }
 
 }  // namespace

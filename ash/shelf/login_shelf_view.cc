@@ -386,6 +386,8 @@ LoginShelfView::LoginShelfView(
   add_button(kBrowseAsGuest, IDS_ASH_BROWSE_AS_GUEST_BUTTON,
              kShelfBrowseAsGuestButtonIcon);
   add_button(kAddUser, IDS_ASH_ADD_USER_BUTTON, kShelfAddPersonButtonIcon);
+  add_button(kParentAccess, IDS_ASH_PARENT_ACCESS_BUTTON,
+             kShelfParentAccessButtonIcon);
 
   // Adds observers for states that affect the visiblity of different buttons.
   tray_action_observer_.Add(Shell::Get()->tray_action());
@@ -506,6 +508,11 @@ void LoginShelfView::SetAllowLoginAsGuest(bool allow_guest) {
   UpdateUi();
 }
 
+void LoginShelfView::SetShowParentAccess(bool show) {
+  show_parent_access_ = show;
+  UpdateUi();
+}
+
 void LoginShelfView::SetShowGuestButtonInOobe(bool show) {
   allow_guest_in_oobe_ = show;
   UpdateUi();
@@ -563,6 +570,7 @@ void LoginShelfView::UpdateUi() {
   bool show_reboot = Shell::Get()->shutdown_controller()->reboot_on_shutdown();
   mojom::TrayActionState tray_action_state =
       Shell::Get()->tray_action()->GetLockScreenNoteState();
+  bool is_locked = (session_state == SessionState::LOCKED);
   bool is_lock_screen_note_in_foreground =
       (tray_action_state == mojom::TrayActionState::kActive ||
        tray_action_state == mojom::TrayActionState::kLaunching) &&
@@ -573,13 +581,13 @@ void LoginShelfView::UpdateUi() {
                                      !is_lock_screen_note_in_foreground);
   GetViewByID(kRestart)->SetVisible(show_reboot &&
                                     !is_lock_screen_note_in_foreground);
-  GetViewByID(kSignOut)->SetVisible(session_state == SessionState::LOCKED &&
+  GetViewByID(kSignOut)->SetVisible(is_locked &&
                                     !is_lock_screen_note_in_foreground);
   GetViewByID(kCloseNote)
-      ->SetVisible(session_state == SessionState::LOCKED &&
-                   is_lock_screen_note_in_foreground);
+      ->SetVisible(is_locked && is_lock_screen_note_in_foreground);
   GetViewByID(kCancel)->SetVisible(session_state ==
                                    SessionState::LOGIN_SECONDARY);
+  GetViewByID(kParentAccess)->SetVisible(is_locked && show_parent_access_);
 
   bool is_login_primary = (session_state == SessionState::LOGIN_PRIMARY);
   bool dialog_visible = dialog_state_ != mojom::OobeDialogState::HIDDEN;

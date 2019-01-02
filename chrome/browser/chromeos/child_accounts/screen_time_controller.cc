@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller.h"
 
+#include "ash/public/interfaces/login_screen.mojom.h"
+#include "base/feature_list.h"
 #include "base/optional.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -13,6 +15,8 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/login_screen_client.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -177,6 +181,8 @@ void ScreenTimeController::UpdateTimeLimitsMessage(
   ScreenLocker::default_screen_locker()->SetAuthEnabledForUser(
       account_id, !visible,
       visible ? next_unlock_time : base::Optional<base::Time>());
+  if (base::FeatureList::IsEnabled(features::kParentAccessCode))
+    LoginScreenClient::Get()->login_screen()->SetShowParentAccess(visible);
 }
 
 void ScreenTimeController::OnPolicyChanged() {

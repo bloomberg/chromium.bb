@@ -432,6 +432,13 @@ const base::Feature kOobeRecommendAppsScreen{"OobeRecommendAppsScreen",
 const base::Feature kUseNewAcceptLanguageHeader{
     "UseNewAcceptLanguageHeader", base::FEATURE_ENABLED_BY_DEFAULT};
 
+#if defined(OS_CHROMEOS)
+// Enables usage of Parent Access Code to authorize certain actions on child
+// user device.
+const base::Feature kParentAccessCode{"ParentAccessCode",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Delegate permissions to cross-origin iframes when the feature has been
 // allowed by feature policy.
 const base::Feature kPermissionDelegation{"PermissionDelegation",

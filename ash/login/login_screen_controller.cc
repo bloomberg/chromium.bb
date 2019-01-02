@@ -505,6 +505,13 @@ void LoginScreenController::SetShowGuestButtonInOobe(bool show) {
       ->SetShowGuestButtonInOobe(show);
 }
 
+void LoginScreenController::SetShowParentAccess(bool show) {
+  Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
+      ->shelf_widget()
+      ->login_shelf_view()
+      ->SetShowParentAccess(show);
+}
+
 void LoginScreenController::FocusLoginShelf(bool reverse) {
   Shelf* shelf = Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow());
   // Tell the focus direction to the status area or the shelf so they can focus
