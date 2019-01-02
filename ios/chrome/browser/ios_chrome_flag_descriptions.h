@@ -216,6 +216,11 @@ extern const char kMemexTabSwitcherDescription[];
 extern const char kNewPasswordFormParsingName[];
 extern const char kNewPasswordFormParsingDescription[];
 
+// Title and description for the flag to enable new password form parsing for
+// saving.
+extern const char kNewPasswordFormParsingForSavingName[];
+extern const char kNewPasswordFormParsingForSavingDescription[];
+
 // Title and description for the flag to enable non-modal JavaScript dialogs.
 extern const char kNonModalDialogsName[];
 extern const char kNonModalDialogsDescription[];
@@ -234,6 +239,11 @@ extern const char kOmniboxTabSwitchSuggestionsDescription[];
 // and ref in omnibox URL suggestions.
 extern const char kOmniboxUIElideSuggestionUrlAfterHostName[];
 extern const char kOmniboxUIElideSuggestionUrlAfterHostDescription[];
+
+// Title and description for the flag to enable using only new password form
+// parsing.
+extern const char kOnlyNewPasswordFormParsingName[];
+extern const char kOnlyNewPasswordFormParsingDescription[];
 
 // Title and description for the flag to control the out of web implementation
 // of fullscreen.

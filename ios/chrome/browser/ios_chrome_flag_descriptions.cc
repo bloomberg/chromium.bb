@@ -273,6 +273,13 @@ const char kNewPasswordFormParsingDescription[] =
     "currently under development. WARNING: when enabled Password Manager might "
     "stop working";
 
+const char kNewPasswordFormParsingForSavingName[] =
+    "New password form parsing for saving passwords";
+const char kNewPasswordFormParsingForSavingDescription[] =
+    "Replaces existing form parsing for saving in password manager with a new "
+    "version, currently under development. WARNING: when enabled, Password "
+    "Manager might stop working";
+
 const char kNonModalDialogsName[] = "Use non-modal JavaScript dialogs";
 const char kNonModalDialogsDescription[] =
     "Presents JavaScript dialogs non-modally so that the user can change tabs "
@@ -294,6 +301,11 @@ const char kOmniboxUIElideSuggestionUrlAfterHostName[] =
 const char kOmniboxUIElideSuggestionUrlAfterHostDescription[] =
     "Elides the path, query, and ref of suggested URLs in the omnibox "
     "dropdown.";
+
+const char kOnlyNewPasswordFormParsingName[] =
+    "Use only new password form parsing";
+const char kOnlyNewPasswordFormParsingDescription[] =
+    "The old password form parsing is disabled";
 
 const char kOutOfWebFullscreenName[] = "Fullscreen implementation out of web";
 const char kOutOfWebFullscreenDescription[] =
