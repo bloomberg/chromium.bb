@@ -140,6 +140,10 @@ class HistoryMenuBridgeTest : public CocoaProfileTest {
     bridge_->GotFaviconData(item, image_result);
   }
 
+  void CancelFaviconRequest(HistoryMenuBridge::HistoryItem* item) {
+    bridge_->CancelFaviconRequest(item);
+  }
+
   std::unique_ptr<MockBridge> bridge_;
 };
 
@@ -347,6 +351,9 @@ TEST_F(HistoryMenuBridgeTest, GetFaviconForHistoryItem) {
   // Make sure the item was modified properly.
   EXPECT_TRUE(item.icon_requested);
   EXPECT_NE(base::CancelableTaskTracker::kBadTaskId, item.icon_task_id);
+
+  // Cancel the request.
+  CancelFaviconRequest(&item);
 }
 
 TEST_F(HistoryMenuBridgeTest, GotFaviconData) {
@@ -359,6 +366,9 @@ TEST_F(HistoryMenuBridgeTest, GotFaviconData) {
   HistoryMenuBridge::HistoryItem item;
   item.menu_item.reset([[NSMenuItem alloc] init]);
   GetFaviconForHistoryItem(&item);
+
+  // Cancel the request so there will be no race.
+  CancelFaviconRequest(&item);
 
   // Pretend to be called back.
   favicon_base::FaviconImageResult image_result;
