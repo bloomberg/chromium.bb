@@ -155,11 +155,6 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
       }
       return script;
     }
-    // TODO(v8:8252): Remove the default case once deprecated options are
-    // removed from v8::ScriptCompiler::CompileOptions.
-    default:
-      NOTREACHED();
-      break;
   }
 
   // All switch branches should return and we should never get here.
