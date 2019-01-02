@@ -13782,7 +13782,8 @@ class TestRenderFrameMetadataObserver : public RenderFrameMetadataObserver {
   void BindToCurrentThread() override {}
   void OnRenderFrameSubmission(
       const RenderFrameMetadata& render_frame_metadata,
-      viz::CompositorFrameMetadata* compositor_frame_metadata) override {
+      viz::CompositorFrameMetadata* compositor_frame_metadata,
+      bool force_send) override {
     if (increment_counter_)
       compositor_frame_metadata->send_frame_token_to_embedder = true;
     last_metadata_ = render_frame_metadata;

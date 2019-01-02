@@ -559,6 +559,10 @@ class CC_EXPORT LayerTreeImpl {
       std::unique_ptr<PendingPageScaleAnimation> pending_animation);
   std::unique_ptr<PendingPageScaleAnimation> TakePendingPageScaleAnimation();
 
+  // Requests that we force send RenderFrameMetadata with the next frame.
+  void RequestForceSendMetadata() { force_send_metadata_request_ = true; }
+  bool TakeForceSendMetadataRequest();
+
   void DidUpdateScrollOffset(ElementId id);
 
   // Mark the scrollbar geometries (e.g., thumb size and position) as needing an
@@ -757,6 +761,10 @@ class CC_EXPORT LayerTreeImpl {
   scoped_refptr<SyncedBrowserControls> top_controls_shown_ratio_;
 
   std::unique_ptr<PendingPageScaleAnimation> pending_page_scale_animation_;
+
+  // Whether we have a request to force-send RenderFrameMetadata with the next
+  // frame.
+  bool force_send_metadata_request_ = false;
 
   // Tracks the lifecycle which is used for enforcing dependencies between
   // lifecycle states. See: |LayerTreeLifecycle|.

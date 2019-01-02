@@ -497,6 +497,9 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->pending_page_scale_animation_ =
       std::move(pending_page_scale_animation_);
 
+  if (TakeForceSendMetadataRequest())
+    target_tree->RequestForceSendMetadata();
+
   target_tree->RegisterSelection(selection_);
 
   // This should match the property synchronization in
@@ -2317,6 +2320,12 @@ void LayerTreeImpl::SetPendingPageScaleAnimation(
 std::unique_ptr<PendingPageScaleAnimation>
 LayerTreeImpl::TakePendingPageScaleAnimation() {
   return std::move(pending_page_scale_animation_);
+}
+
+bool LayerTreeImpl::TakeForceSendMetadataRequest() {
+  bool force_send_metadata_request = force_send_metadata_request_;
+  force_send_metadata_request_ = false;
+  return force_send_metadata_request;
 }
 
 void LayerTreeImpl::ResetAllChangeTracking() {

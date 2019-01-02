@@ -453,6 +453,13 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // calculations.
   void SetExternalPageScaleFactor(float page_scale_factor);
 
+  // Requests that we force send RenderFrameMetadata with the next frame.
+  void RequestForceSendMetadata() { force_send_metadata_request_ = true; }
+
+  // Returns the state of |force_send_metadata_request_| and resets the
+  // variable to false.
+  bool TakeForceSendMetadataRequest();
+
   // Used externally by blink for setting the PropertyTrees when
   // UseLayerLists() is true, which also implies that Slimming Paint
   // v2 is enabled.
@@ -785,6 +792,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       [static_cast<size_t>(EventListenerClass::kLast) + 1];
 
   std::unique_ptr<PendingPageScaleAnimation> pending_page_scale_animation_;
+
+  // Whether we have a pending request to force send RenderFrameMetadata with
+  // the next frame.
+  bool force_send_metadata_request_ = false;
 
   PropertyTrees property_trees_;
 

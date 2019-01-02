@@ -8978,5 +8978,92 @@ class DidReceiveCompositorFrameAckNotSentWhenNotNeeded
 SINGLE_AND_MULTI_THREAD_TEST_F(
     DidReceiveCompositorFrameAckNotSentWhenNotNeeded);
 
+// Confirms that requests to force send RFM are forwarded once (and exactly
+// once) to the RFM observer. Does this by drawing 3 frames and requesting
+// force send from only the second then validating the request.
+class LayerTreeHostTestRequestForceSendMetadata
+    : public LayerTreeHostTest,
+      public RenderFrameMetadataObserver {
+ public:
+  // Provides a wrapper which can be passed to LayerTreeHost, but just forwards
+  // to the test class.
+  class ForwardingRenderFrameMetadataObserver
+      : public RenderFrameMetadataObserver {
+   public:
+    explicit ForwardingRenderFrameMetadataObserver(
+        RenderFrameMetadataObserver* target)
+        : target_(target) {}
+
+    // RenderFrameMetadataObserver implementation.
+    void BindToCurrentThread() override { target_->BindToCurrentThread(); }
+    void OnRenderFrameSubmission(
+        const RenderFrameMetadata& render_frame_metadata,
+        viz::CompositorFrameMetadata* compositor_frame_metadata,
+        bool force_send) override {
+      target_->OnRenderFrameSubmission(render_frame_metadata,
+                                       compositor_frame_metadata, force_send);
+    }
+
+   private:
+    RenderFrameMetadataObserver* target_ = nullptr;
+  };
+
+  LayerTreeHostTestRequestForceSendMetadata() = default;
+
+  void BeginTest() override {
+    // Just set up a basic frame which can be repeatedly re-drawn.
+    layer_tree_host()->SetRenderFrameObserver(
+        std::make_unique<ForwardingRenderFrameMetadataObserver>(this));
+    layer_tree_host()->SetViewportSizeAndScale(gfx::Size(10, 10), 1.f,
+                                               viz::LocalSurfaceIdAllocation());
+    layer_tree_host()->root_layer()->SetBounds(gfx::Size(10, 10));
+
+    layer_ = FakePictureLayer::Create(&client_);
+    layer_->SetBounds(gfx::Size(10, 10));
+    layer_->SetPosition(gfx::PointF(0.f, 0.f));
+    layer_->SetIsDrawable(true);
+    layer_tree_host()->root_layer()->AddChild(layer_);
+
+    PostSetNeedsCommitToMainThread();
+    client_.set_bounds(layer_->bounds());
+  }
+
+  void DidCommitAndDrawFrame() override {
+    // Draw three frames, sending a request to force send metadata on the
+    // middle (second) frame.
+    if (num_draw_layers_ == 3)
+      return;
+    if (num_draw_layers_ == 2)
+      layer_tree_host()->RequestForceSendMetadata();
+    layer_->SetNeedsDisplay();
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    num_draw_layers_++;
+    if (num_draw_layers_ == 3)
+      EndTest();
+  }
+
+  void AfterTest() override { EXPECT_EQ(1, num_force_sends_); }
+
+  // RenderFrameMetadataObserver implementation. Called on thread.
+  void BindToCurrentThread() override {}
+  void OnRenderFrameSubmission(
+      const RenderFrameMetadata& render_frame_metadata,
+      viz::CompositorFrameMetadata* compositor_frame_metadata,
+      bool force_send) override {
+    if (force_send)
+      num_force_sends_++;
+  }
+
+ private:
+  FakeContentLayerClient client_;
+  scoped_refptr<Layer> layer_;
+  int num_draw_layers_ = 0;
+  int num_force_sends_ = 0;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestRequestForceSendMetadata);
+
 }  // namespace
 }  // namespace cc
