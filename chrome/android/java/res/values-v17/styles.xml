@@ -201,6 +201,9 @@
         <item name="android:layout_marginTop">2dp</item>
         <item name="android:background">@color/modern_grey_600</item>
     </style>
+    <style name="TextAppearance.AccessibilityTextPreference">
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+    </style>
 
     <style name="ThemeWithActionBarBase" parent="Theme.AppCompat.Light">
         <item name="android:windowBackground">@drawable/action_bar_activity_bg</item>
