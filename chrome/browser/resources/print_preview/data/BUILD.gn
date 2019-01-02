@@ -34,7 +34,6 @@ js_library("destination_store") {
     "..:native_layer",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:event_tracker",
-    "//ui/webui/resources/js:webui_listener_tracker",
     "//ui/webui/resources/js/cr:event_target",
   ]
 }

@@ -29,13 +29,18 @@ cr.define('destination_search_test', function() {
     let nativeLayer = null;
 
     /** @override */
+    suiteSetup(function() {
+      print_preview_test_utils.setupTestListenerElement();
+    });
+
+    /** @override */
     setup(function() {
       // Create data classes
       nativeLayer = new print_preview.NativeLayerStub();
       print_preview.NativeLayer.setInstance(nativeLayer);
       userInfo = new print_preview.UserInfo();
-      destinationStore = new print_preview.DestinationStore(
-          userInfo, new WebUIListenerTracker());
+      destinationStore =
+          print_preview_test_utils.createDestinationStore(userInfo);
       nativeLayer.setLocalDestinationCapabilities(
           print_preview_test_utils.getCddTemplate('FooDevice', 'FooName'));
       destinationStore.init(

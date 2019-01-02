@@ -14,7 +14,11 @@ const MAX_SECTIONS_TO_SHOW = 6;
 Polymer({
   is: 'print-preview-app',
 
-  behaviors: [SettingsBehavior, CrContainerShadowBehavior],
+  behaviors: [
+    SettingsBehavior,
+    CrContainerShadowBehavior,
+    WebUIListenerBehavior,
+  ],
 
   properties: {
     /**
@@ -142,9 +146,6 @@ Polymer({
     'close': 'onCrDialogClose_',
   },
 
-  /** @private {?WebUIListenerTracker} */
-  listenerTracker_: null,
-
   /** @private {?print_preview.NativeLayer} */
   nativeLayer_: null,
 
@@ -179,14 +180,13 @@ Polymer({
     this.nativeLayer_ = print_preview.NativeLayer.getInstance();
     this.documentInfo_ = new print_preview.DocumentInfo();
     this.userInfo_ = new print_preview.UserInfo();
-    this.listenerTracker_ = new WebUIListenerTracker();
-    this.listenerTracker_.add(
+    this.addWebUIListener(
         'use-cloud-print', this.onCloudPrintEnable_.bind(this));
-    this.listenerTracker_.add('print-failed', this.onPrintFailed_.bind(this));
-    this.listenerTracker_.add(
+    this.addWebUIListener('print-failed', this.onPrintFailed_.bind(this));
+    this.addWebUIListener(
         'print-preset-options', this.onPrintPresetOptions_.bind(this));
     this.destinationStore_ = new print_preview.DestinationStore(
-        this.userInfo_, this.listenerTracker_);
+        this.userInfo_, this.addWebUIListener.bind(this));
     this.invitationStore_ = new print_preview.InvitationStore(this.userInfo_);
     this.tracker_.add(window, 'keydown', this.onKeyDown_.bind(this));
     this.$.previewArea.setPluginKeyEventCallback(this.onKeyDown_.bind(this));
@@ -216,7 +216,6 @@ Polymer({
 
   /** @override */
   detached: function() {
-    this.listenerTracker_.removeAll();
     this.tracker_.removeAll();
   },
 

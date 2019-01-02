@@ -30,7 +30,6 @@ js_type_check("js_resources") {
     ":search_highlight_utils",
     ":util",
     ":web_ui_listener_behavior",
-    ":webui_listener_tracker",
     ":webui_resource_test",
   ]
 }
@@ -58,12 +57,6 @@ js_library("dark_mode") {
 }
 
 js_library("event_tracker") {
-}
-
-js_library("webui_listener_tracker") {
-  deps = [
-    ":cr",
-  ]
 }
 
 js_library("search_highlight_utils") {

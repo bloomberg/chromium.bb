@@ -73,7 +73,7 @@ PrintPreviewDestinationDialogInteractiveTest =
   get extraLibraries() {
     return super.extraLibraries.concat([
       ROOT_PATH + 'chrome/test/data/webui/settings/test_util.js',
-      ROOT_PATH + 'ui/webui/resources/js/webui_listener_tracker.js',
+      ROOT_PATH + 'ui/webui/resources/js/web_ui_listener_behavior.js',
       '../test_browser_proxy.js',
       'native_layer_stub.js',
       'print_preview_test_utils.js',

@@ -14,6 +14,11 @@ cr.define('destination_settings_test', function() {
     let destinationSettings = null;
 
     /** @override */
+    suiteSetup(function() {
+      print_preview_test_utils.setupTestListenerElement();
+    });
+
+    /** @override */
     setup(function() {
       PolymerTest.clearBody();
       const nativeLayer = new print_preview.NativeLayerStub();
@@ -37,8 +42,8 @@ cr.define('destination_settings_test', function() {
       // Set up the destination store, but no destination yet. Button is
       // disabled.
       const userInfo = new print_preview.UserInfo();
-      const destinationStore = new print_preview.DestinationStore(
-          userInfo, new WebUIListenerTracker());
+      const destinationStore =
+          print_preview_test_utils.createDestinationStore(userInfo);
       destinationStore.init(
           false /* isInAppKioskMode */, 'FooDevice' /* printerName */,
           '' /* serializedDefaultDestinationSelectionRulesStr */,

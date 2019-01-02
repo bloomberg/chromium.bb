@@ -685,7 +685,7 @@ PrintPreviewDestinationDialogTest = class extends NewPrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      ROOT_PATH + 'ui/webui/resources/js/webui_listener_tracker.js',
+      ROOT_PATH + 'ui/webui/resources/js/web_ui_listener_behavior.js',
       ROOT_PATH + 'ui/webui/resources/js/cr/event_target.js',
       '../settings/test_util.js',
       '../test_browser_proxy.js',
@@ -846,7 +846,7 @@ PrintPreviewNewDestinationSearchTest = class extends NewPrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      ROOT_PATH + 'ui/webui/resources/js/webui_listener_tracker.js',
+      ROOT_PATH + 'ui/webui/resources/js/web_ui_listener_behavior.js',
       '../settings/test_util.js',
       '../test_browser_proxy.js',
       'native_layer_stub.js',
@@ -1150,9 +1150,10 @@ PrintPreviewDestinationSettingsTest = class extends NewPrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      ROOT_PATH + 'ui/webui/resources/js/webui_listener_tracker.js',
+      ROOT_PATH + 'ui/webui/resources/js/web_ui_listener_behavior.js',
       '../test_browser_proxy.js',
       'native_layer_stub.js',
+      'print_preview_test_utils.js',
       'destination_settings_test.js',
     ]);
   }
