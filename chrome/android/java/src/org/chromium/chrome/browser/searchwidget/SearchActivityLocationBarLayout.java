@@ -139,12 +139,17 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
         findViewById(R.id.url_action_container).setVisibility(View.VISIBLE);
     }
 
+    @Override
+    public void onUrlFocusChange(boolean hasFocus) {
+        super.onUrlFocusChange(hasFocus);
+        if (hasFocus) setUrlFocusChangeInProgress(false);
+    }
+
     // TODO(tedchoc): Investigate focusing regardless of the search promo state and just ensure
     //                we don't start processing non-cached suggestion requests until that state
     //                is finalized after native has been initialized.
     private void focusTextBox() {
         if (!mUrlBar.hasFocus()) mUrlBar.requestFocus();
-        setUrlFocusChangeInProgress(false);
         getAutocompleteCoordinator().setShowCachedZeroSuggestResults(true);
 
         new Handler().post(new Runnable() {
