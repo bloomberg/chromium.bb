@@ -1,0 +1,104 @@
+#============================================================= -*-perl-*-
+#
+# Template::Manual::Credits
+#
+# AUTHOR
+#   Andy Wardley  <abw@wardley.org>
+#
+# COPYRIGHT
+#   Copyright (C) 1996-2007 Andy Wardley.  All Rights Reserved.
+#
+#   This module is free software; you can redistribute it and/or
+#   modify it under the same terms as Perl itself.
+#
+#========================================================================
+
+=head1 NAME
+
+Template::Manual::Credits - Author and contributor credits
+
+=head1 HISTORY
+
+The Template Toolkit began its life as the C<Text::MetaText> module,
+originally released to CPAN around 1996.  This itself was the public
+manifestation of an earlier template processing system I developed
+while working at Peritas (now Knowledge Pool -
+http://www.knowledgepool.com/)
+
+C<Text::MetaText> was the prototype - the one we always planned to throw
+away.  It did the job well, showing us what worked and what didn't, what
+was good and what was bad, and gave us some ideas about what could be
+done better, given the chance to start again from scratch.
+
+Some time late in 1998 I threw away the prototype and started work on the
+Template Toolkit. By then I was working at Canon Research Centre Europe Ltd.
+(CRE), involved in a general research programme related to web publishing and
+dynamic content generation. The first alpha release was in June 1999, followed
+by numerous more alpha and beta releases culminating in 1.00 being released on
+2nd December 1999.
+
+A month or so later, work had begun on version 2.00. The plan was to get the
+template language relatively stable in version 1.00 and not worry too much
+about performance or other internal matters. Then, version 2.00 would follow
+to improve performance, clean up the architecture and fix anything that, with
+the benefit of hindsight, we thought could be improved. As it happens, me
+starting work on version 2.00 coincided with Doug Steinwand sending me his
+parser variant which compiled templates to Perl code, giving a major
+performance boost. As well as the speedups, there are a whole host of
+significant new features in version 2.00, and a greatly improved internal
+architecture. Apart from a few minor "fixups" the template directives and
+language have remained the same as in version 1.00
+
+Version 2.00 was available in beta release form in July 2000, just in time for
+the 4th Perl Conference where version 1.00 was awarded "Best New Perl Module".
+After another extended beta release period, version 2.00 was released on 1st
+December 2000.
+
+Version 3 has been in development ever since.
+
+=head1 AUTHOR
+
+Andy Wardley E<lt>abw@wardley.orgE<gt> L<http://wardley.org/>
+
+=head1 COPYRIGHT
+
+Copyright (C) 1996-2007 Andy Wardley.  All Rights Reserved.
+
+The Template Toolkit is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+=head1 CONTRIBUTORS
+
+Many people have contributed ideas, inspiration, fixes and features to
+the Template Toolkit.  Their efforts continue to be very much appreciated.  
+Please let me know if you think anyone is missing from this list.
+
+Chuck Adams, Stephen Adkins, Ivan Adzhubey, Mark Anderson, Bradley Baetz,
+Thierry-Michel Barral, Craig Barratt, Stas Bekman, Robin Berjon, Tony Bowden,
+Neil Bowers, Leon Brocard, Lyle Brooks, Norbert Buchmüller, Dave Cash, Piers
+Cawley, Darren Chamberlain, Timmy Chan, Eric Cholet, Nik Clayton, Tosh Cooey,
+Dave Cross, Chris Dean, Francois Desarmenien, Horst Dumcke, Mark Fowler,
+Michael Fowler, Kenny Gatdula, Axel Gerstmair, Dylan William Hardison, Perrin
+Harkins, Bryce Harrington, Dave Hodgkinson, Lubomir Host, Dave Howorth, Harald
+Joerg, Colin Johnson, Adam Kennedy, Vivek Khera, Alexey A. Kiritchun, Rafael
+Kitover, Ivan Kurmanov, Denis F. Latypoff, Hans von Lengerke, Jonas Liljegren,
+Simon Luff, Andy Maas, Paul Makepeace, Gervase Markham, Sergey Martynoff,
+Simon Matthews, Robert McArthur, Craig McLane, Myk Melez, Eugene Miretskiy,
+Tatsuhiko Miyagawa, Bill Moseley, Keith G. Murphy, Chris Nandor, John
+Napiorkowski, Breno G. de Oliveira, Leslie Michael Orchard, Paul Orrock,
+Jonathon Padfield, Steve Peters, Briac PilprE<eacute>, Yuri Pimenov, Martin
+Portman, Slaven Rezic, Jess Robinson, Josh Rosenbaum, Christian Schaffner,
+Mike Schilli, Randal L. Schwartz, Paul Seamons, Paul Sharpe, Ville
+SkyttE<auml>, Barrie Slaymaker, Doug Steinwand, Michael Stevens, Autrijus
+Tang, Drew Taylor, Rod Taylor, Swen Thuemmler, Richard Tietjen, Ben Tilly,
+Stathy G. Touloumis, Jim Vaughan, Simon Wilcox, Chris Winters
+
+=cut
+
+# Local Variables:
+# mode: perl
+# perl-indent-level: 4
+# indent-tabs-mode: nil
+# End:
+#
+# vim: expandtab shiftwidth=4:

@@ -1,0 +1,23 @@
+#!/usr/bin/perl
+
+use 5.006;
+use strict;
+use pip;
+
+use vars qw{$VERSION};
+BEGIN {
+	$VERSION = '1.19';
+}
+
+eval {
+	pip::main( @ARGV );
+};
+
+if ( $@ ) {
+	my $errstr = $@;
+	$errstr =~ s/\sat line\b.+$//;
+	print "Unexpected Error: $errstr\n";
+	exit(255);
+}
+
+exit(0);

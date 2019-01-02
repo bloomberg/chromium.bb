@@ -1,0 +1,57 @@
+=head1 NAME
+
+Imager::Handy - simple access to common functions
+
+=head1 SYNOPSIS
+
+  use Imager ':handy';
+  my $color = NC(255, 0, 0);
+  my $font = NF(1.0, 0, 0);
+
+=head1 DESCRIPTION
+
+If you use Imager with the C<:handy> import tag, it will export a
+number of functions that can shorter your code.
+
+=over
+
+=item NC()
+
+=item newcolor()
+
+=item newcolour()
+
+Create a new Imager::Color object, supplying any parameters to the
+new() method.
+
+  my $color = NC('red');
+
+=item NF()
+
+=item newfont()
+
+Create a new Imager::Font object, supplying any parameters to the
+new() method.
+
+  my $font = NF(file => 'foo.ttf');
+
+=item NCF()
+
+Create a new L<Imager::Color::Float> object, supplying any parameters
+to the new() method.
+
+  my $colorf = NCF(1.0, 0, 0);
+
+=back
+
+=head1 BUGS
+
+NC() can be mostly replaced by supplying the color name or other
+description directly to the drawing method.
+
+=head1 AUTHOR
+
+Tony Cook <tonyc@cpan.org>
+
+=cut
+

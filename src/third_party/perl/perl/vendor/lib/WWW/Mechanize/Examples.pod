@@ -1,0 +1,563 @@
+=head1 NAME
+
+WWW::Mechanize::Examples - Sample programs that use WWW::Mechanize
+
+=head1 SYNOPSIS
+
+Plenty of people have learned WWW::Mechanize, and now, you can too!
+
+Following are user-supplied samples of WWW::Mechanize in action.
+If you have samples you'd like to contribute, please send 'em to
+C<< <andy@petdance.com> >>.
+
+You can also look at the F<t/*.t> files in the distribution.
+
+Please note that these examples are not intended to do any specific task.
+For all I know, they're no longer functional because the sites they
+hit have changed.  They're here to give examples of how people have
+used WWW::Mechanize.
+
+Note that the examples are in reverse order of my having received them,
+so the freshest examples are always at the top.
+
+=head2 Starbucks Density Calculator, by Nat Torkington
+
+Here's a pair of programs from Nat Torkington, editor for O'Reilly Media
+and co-author of the I<Perl Cookbook>.
+
+=over 4
+
+Rael [Dornfest] discovered that you can easily find out how many Starbucks
+there are in an area by searching for "Starbucks".  So I wrote a silly
+scraper for some old census data and came up with some Starbucks density
+figures.  There's no meaning to these numbers thanks to errors from using
+old census data coupled with false positives in Yahoo search (e.g.,
+"Dodie Starbuck-Your Style Desgn" in Portland OR).  But it was fun to
+waste a night on.
+
+Here are the top twenty cities in descending order of population,
+with the amount of territory each Starbucks has.  E.g., A New York NY
+Starbucks covers 1.7 square miles of ground.
+
+    New York, NY        1.7
+    Los Angeles, CA     1.2
+    Chicago, IL         1.0
+    Houston, TX         4.6
+    Philadelphia, PA    6.8
+    San Diego, CA       2.7
+    Detroit, MI        19.9
+    Dallas, TX          2.7
+    Phoenix, AZ         4.1
+    San Antonio, TX    12.3
+    San Jose, CA        1.1
+    Baltimore, MD       3.9
+    Indianapolis, IN   12.1
+    San Francisco, CA   0.5
+    Jacksonville, FL   39.9
+    Columbus, OH        7.3
+    Milwaukee, WI       5.1
+    Memphis, TN        15.1
+    Washington, DC      1.4
+    Boston, MA          0.5
+
+=back
+
+C<get_pop_data>
+
+    #!/usr/bin/perl -w
+
+    use WWW::Mechanize;
+    use Storable;
+
+    $url = 'http://www.census.gov/population/www/documentation/twps0027.html';
+    $m = WWW::Mechanize->new();
+    $m->get($url);
+
+    $c = $m->content;
+
+    $c =~ m{<A NAME=.tabA.>(.*?)</TABLE>}s
+      or die "Can't find the population table\n";
+    $t = $1;
+    @outer = $t =~ m{<TR.*?>(.*?)</TR>}gs;
+    shift @outer;
+    foreach $r (@outer) {
+      @bits = $r =~ m{<TD.*?>(.*?)</TD>}gs;
+      for ($x = 0; $x < @bits; $x++) {
+        $b = $bits[$x];
+        @v = split /\s*<BR>\s*/, $b;
+        foreach (@v) { s/^\s+//; s/\s+$// }
+        push @{$data[$x]}, @v;
+      }
+    }
+
+    for ($y = 0; $y < @{$data[0]}; $y++) {
+        $data{$data[1][$y]} = {
+            NAME => $data[1][$y],
+            RANK => $data[0][$y],
+            POP  => comma_free($data[2][$y]),
+            AREA => comma_free($data[3][$y]),
+            DENS => comma_free($data[4][$y]),
+        };
+    }
+
+    store(\%data, "cities.dat");
+
+    sub comma_free {
+      my $n = shift;
+      $n =~ s/,//;
+      return $n;
+    }
+
+
+C<plague_of_coffee>
+
+    #!/usr/bin/perl -w
+
+    use WWW::Mechanize;
+    use strict;
+    use Storable;
+
+    $SIG{__WARN__} = sub {} ;  # ssssssh
+
+    my $Cities = retrieve("cities.dat");
+
+    my $m = WWW::Mechanize->new();
+    $m->get("http://local.yahoo.com/");
+
+    my @cities = sort { $Cities->{$a}{RANK} <=> $Cities->{$b}{RANK} } keys %$Cities;
+    foreach my $c ( @cities ) {
+      my $fields = {
+        'stx' => "starbucks",
+        'csz' => $c,
+      };
+
+      my $r = $m->submit_form(form_number => 2,
+                              fields => $fields);
+      die "Couldn't submit form" unless $r->is_success;
+
+      my $hits = number_of_hits($r);
+      #  my $ppl  = sprintf("%d", 1000 * $Cities->{$c}{POP} / $hits);
+      #  print "$c has $hits Starbucks.  That's one for every $ppl people.\n";
+      my $density = sprintf("%.1f", $Cities->{$c}{AREA} / $hits);
+      print "$c : $density\n";
+    }
+
+    sub number_of_hits {
+      my $r = shift;
+      my $c = $r->content;
+      if ($c =~ m{\d+ out of <b>(\d+)</b> total results for}) {
+        return $1;
+      }
+      if ($c =~ m{Sorry, no .*? found in or near}) {
+        return 0;
+      }
+      if ($c =~ m{Your search matched multiple cities}) {
+        warn "Your search matched multiple cities\n";
+        return 0;
+      }
+      if ($c =~ m{Sorry we couldn.t find that location}) {
+        warn "No cities\n";
+        return 0;
+      }
+      if ($c =~ m{Could not find.*?, showing results for}) {
+        warn "No matches\n";
+        return 0;
+      }
+      die "Unknown response\n$c\n";
+    }
+
+
+
+=head2 pb-upload, by John Beppu
+
+This program takes filenames of images from the command line and
+uploads them to a www.photobucket.com folder.  John Beppu, the author, says:
+
+=over 4
+
+I had 92 pictures I wanted to upload, and doing it through a browser
+would've been torture.  But thanks to mech, all I had to do was
+`./pb.upload *.jpg` and watch it do its thing.  It felt good.
+If I had more time, I'd implement WWW::Photobucket on top of
+WWW::Mechanize.
+
+=back
+
+    #!/usr/bin/perl -w -T
+
+    use strict;
+    use WWW::Mechanize;
+
+    my $login    = "login_name";
+    my $password = "password";
+    my $folder   = "folder";
+
+    my $url = "http://img78.photobucket.com/albums/v281/$login/$folder/";
+
+    # login to your photobucket.com account
+    my $mech = WWW::Mechanize->new();
+    $mech->get($url);
+    $mech->submit_form(
+        form_number => 1,
+        fields      => { password => $password },
+    );
+    die unless ($mech->success);
+
+    # upload image files specified on command line
+    foreach (@ARGV) {
+        print "$_\n";
+        $mech->form_number(2);
+        $mech->field('the_file[]' => $_);
+        $mech->submit();
+    }
+
+=head2 listmod, by Ian Langworth
+
+Ian Langworth contributes this little gem that will bring joy to
+beleagured mailing list admins.  It discards spam messages through
+mailman's web interface.
+
+
+    #!/arch/unix/bin/perl
+    use strict;
+    use warnings;
+    #
+    # listmod - fast alternative to mailman list interface
+    #
+    # usage: listmod crew XXXXXXXX
+    # 
+
+    die "usage: $0 <listname> <password>\n" unless @ARGV == 2;
+    my ($listname, $password) = @ARGV;
+
+    use CGI qw(unescape);
+
+    use WWW::Mechanize;
+    my $m = WWW::Mechanize->new( autocheck => 1 );
+
+    use Term::ReadLine;
+    my $term = Term::ReadLine->new($0);
+
+    # submit the form, get the cookie, go to the list admin page
+    $m->get("https://lists.ccs.neu.edu/bin/admindb/$listname");
+    $m->set_visible( $password );
+    $m->click;
+
+    # exit if nothing to do
+    print "There are no pending requests.\n" and exit
+        if $m->content =~ /There are no pending requests/;
+
+    # select the first form and examine its contents
+    $m->form_number(1);
+    my $f = $m->current_form or die "Couldn't get first form!\n";
+
+    # get me the base form element for each email item
+    my @items = map {m/^.+?-(.+)/} grep {m/senderbanp/} $f->param
+        or die "Couldn't get items in first form!\n";
+
+    # iterate through items, prompt user, commit actions
+    foreach my $item (@items) {
+
+        # show item info
+        my $sender = unescape($item);
+        my ($subject) = [$f->find_input("senderbanp-$item")->value_names]->[1] 
+            =~ /Subject:\s+(.+?)\s+Size:/g;
+
+        # prompt user
+        my $choice = '';
+        while ( $choice !~ /^[DAX]$/ ) {
+            print "$sender\: '$subject'\n";
+            $choice = uc $term->readline("Action: defer/accept/discard [dax]: ");
+            print "\n\n";
+        }
+
+        # set button
+        $m->field("senderaction-$item" => {D=>0,A=>1,X=>3}->{$choice});
+    }
+
+    # submit actions
+    $m->click;
+
+=head2 ccdl, by Andy Lester
+
+Steve McConnell, author of the landmark I<Code Complete> has put
+up the chapters for the 2nd edition in PDF format on his website.
+I needed to download them to take to Kinko's to have printed.  This
+little program did it for me.
+
+
+    #!/usr/bin/perl -w
+
+    use strict;
+    use WWW::Mechanize;
+
+    my $start = "http://www.stevemcconnell.com/cc2/cc.htm";
+
+    my $mech = WWW::Mechanize->new( autocheck => 1 );
+    $mech->get( $start );
+
+    my @links = $mech->find_all_links( url_regex => qr/\d+.+\.pdf$/ );
+
+    for my $link ( @links ) {
+        my $url = $link->url_abs;
+        my $filename = $url;
+        $filename =~ s[^.+/][];
+
+        print "Fetching $url";
+        $mech->get( $url, ':content_file' => $filename );
+
+        print "   ", -s $filename, " bytes\n";
+    }
+
+=head2 quotes.pl, by Andy Lester
+
+This was a program that was going to get a hack in I<Spidering Hacks>,
+but got cut at the last minute, probably because it's against IMDB's TOS
+to scrape from it.  I present it here as an example, not a suggestion
+that you break their TOS.
+
+Last I checked, it didn't work because their HTML didn't match, but it's
+still good as sample code.
+
+    #!/usr/bin/perl -w
+    
+    use strict;
+    
+    use WWW::Mechanize;
+    use Getopt::Long;
+    use Text::Wrap;
+    
+    my $match = undef;
+    my $random = undef;
+    GetOptions(
+        "match=s" => \$match,
+        "random" => \$random,
+    ) or exit 1;
+
+    my $movie = shift @ARGV or die "Must specify a movie\n";
+
+    my $quotes_page = get_quotes_page( $movie );
+    my @quotes = extract_quotes( $quotes_page );
+
+    if ( $match ) {
+        $match = quotemeta($match);
+        @quotes = grep /$match/i, @quotes;
+    }
+
+    if ( $random ) {
+        print $quotes[rand @quotes];
+    }
+    else {
+        print join( "\n", @quotes );
+    }
+
+
+    sub get_quotes_page {
+        my $movie = shift;
+
+        my $mech = WWW::Mechanize->new;
+        $mech->get( "http://www.imdb.com/search" );
+        $mech->success or die "Can't get the search page";
+
+        $mech->submit_form(
+            form_number => 2,
+            fields => {
+                title	=> $movie,
+                restrict    => "Movies only",
+            },
+        );
+
+        my @links = $mech->find_all_links( url_regex => qr[^/Title] )
+            or die "No matches for \"$movie\" were found.\n";
+
+        # Use the first link
+        my ( $url, $title ) = @{$links[0]};
+
+        warn "Checking $title...\n";
+
+        $mech->get( $url );
+        my $link = $mech->find_link( text_regex => qr/Memorable Quotes/i )
+            or die qq{"$title" has no quotes in IMDB!\n};
+
+        warn "Fetching quotes...\n\n";
+        $mech->get( $link->[0] );
+
+        return $mech->content;
+    }
+
+
+    sub extract_quotes {
+        my $page = shift;
+
+        # Nibble away at the unwanted HTML at the beginnning...
+        $page =~ s/.+Memorable Quotes//si;
+        $page =~ s/.+?(<a name)/$1/si;
+
+        # ... and the end of the page
+        $page =~ s/Browse titles in the movie quotes.+$//si;
+        $page =~ s/<p.+$//g;
+
+        # Quotes separated by an <HR> tag
+        my @quotes = split( /<hr.+?>/, $page );
+
+        for my $quote ( @quotes ) {
+            my @lines = split( /<br>/, $quote );
+            for ( @lines ) {
+                s/<[^>]+>//g;   # Strip HTML tags
+                s/\s+/ /g;	    # Squash whitespace
+                s/^ //;	    # Strip leading space
+                s/ $//;	    # Strip trailing space
+                s/&#34;/"/g;    # Replace HTML entity quotes
+
+                # Word-wrap to fit in 72 columns
+                $Text::Wrap::columns = 72;
+                $_ = wrap( '', '    ', $_ );
+            }
+            $quote = join( "\n", @lines );
+        }
+
+        return @quotes;
+    }
+
+=head2 cpansearch.pl, by Ed Silva
+
+A quick little utility to search the CPAN and fire up a browser
+with a results page.
+
+    #!/usr/bin/perl
+
+    # turn on perl's safety features
+    use strict;
+    use warnings;
+
+    # work out the name of the module we're looking for
+    my $module_name = $ARGV[0]
+      or die "Must specify module name on command line";
+
+    # create a new browser
+    use WWW::Mechanize;
+    my $browser = WWW::Mechanize->new();
+
+    # tell it to get the main page
+    $browser->get("http://search.cpan.org/");
+
+    # okay, fill in the box with the name of the
+    # module we want to look up
+    $browser->form_number(1);
+    $browser->field("query", $module_name);
+    $browser->click();
+
+    # click on the link that matches the module name
+    $browser->follow_link( text_regex => $module_name );
+
+    my $url = $browser->uri;
+
+    # launch a browser...
+    system('galeon', $url);
+
+    exit(0);
+
+
+=head2 lj_friends.cgi, by Matt Cashner
+
+    #!/usr/bin/perl
+
+    # Provides an rss feed of a paid user's LiveJournal friends list
+    # Full entries, protected entries, etc.
+    # Add to your favorite rss reader as
+    # http://your.site.com/cgi-bin/lj_friends.cgi?user=USER&password=PASSWORD
+
+    use warnings;
+    use strict;
+
+    use WWW::Mechanize;
+    use CGI;
+
+    my $cgi = CGI->new();
+    my $form = $cgi->Vars;
+
+    my $agent = WWW::Mechanize->new();
+
+    $agent->get('http://www.livejournal.com/login.bml');
+    $agent->form_number('3');
+    $agent->field('user',$form->{user});
+    $agent->field('password',$form->{password});
+    $agent->submit();
+    $agent->get('http://www.livejournal.com/customview.cgi?user='.$form->{user}.'&styleid=225596&checkcookies=1');
+    print "Content-type: text/plain\n\n";
+    print $agent->content();
+
+=head2 Hacking Movable Type, by Dan Rinzel
+
+    use strict;
+    use WWW::Mechanize;
+
+    # a tool to automatically post entries to a moveable type weblog, and set arbitrary creation dates
+
+    my $mech = WWW::Mechanize->new();
+    my $entry;
+    $entry->{title} = "Test AutoEntry Title";
+    $entry->{btext} = "Test AutoEntry Body";
+    $entry->{date} = '2002-04-15 14:18:00';
+    my $start = qq|http://my.blog.site/mt.cgi|;
+
+    $mech->get($start);
+    $mech->field('username','und3f1n3d');
+    $mech->field('password','obscur3d');
+    $mech->submit(); # to get login cookie
+    $mech->get(qq|$start?__mode=view&_type=entry&blog_id=1|);
+    $mech->form_name('entry_form');
+    $mech->field('title',$entry->{title});
+    $mech->field('category_id',1); # adjust as needed
+    $mech->field('text',$entry->{btext});
+    $mech->field('status',2); # publish, or 1 = draft
+    $results = $mech->submit(); 
+
+    # if we're ok with this entry being datestamped "NOW" (no {date} in %entry)
+    # we're done. Otherwise, time to be tricksy
+    # MT returns a 302 redirect from this form. the redirect itself contains a <body onload=""> handler
+    # which takes the user to an editable version of the form where the create date can be edited	
+    # MT date format of YYYY-MM-DD HH:MI:SS is the only one that won't error out
+
+    if ($entry->{date} && $entry->{date} =~ /^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}/) {
+        # travel the redirect
+        $results = $mech->get($results->{_headers}->{location});
+        $results->{_content} =~ /<body onLoad="([^\"]+)"/is;
+        my $js = $1;
+        $js =~ /\'([^']+)\'/;
+        $results = $mech->get($start.$1);
+        $mech->form_name('entry_form');
+        $mech->field('created_on_manual',$entry->{date});
+        $mech->submit();
+    }
+
+=head2 get-despair, by Randal Schwartz
+
+Randal submitted this bot that walks the despair.com site sucking down
+all the pictures.
+
+    use strict; 
+    $|++;
+
+    use WWW::Mechanize;
+    use File::Basename; 
+
+    my $m = WWW::Mechanize->new;
+
+    $m->get("http://www.despair.com/indem.html");
+
+    my @top_links = @{$m->links};
+
+    for my $top_link_num (0..$#top_links) {
+        next unless $top_links[$top_link_num][0] =~ /^http:/; 
+
+        $m->follow_link( n=>$top_link_num ) or die "can't follow $top_link_num";
+
+        print $m->uri, "\n";
+        for my $image (grep m{^http://store4}, map $_->[0], @{$m->links}) { 
+            my $local = basename $image;
+            print " $image...", $m->mirror($image, $local)->message, "\n"
+        }
+
+        $m->back or die "can't go back";
+    }
