@@ -7,14 +7,14 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/table_view/table_view_model.h"
 
 // Consumer protocol for Google services settings.
 @protocol GoogleServicesSettingsConsumer<NSObject>
 
-// Returns the collection view model.
+// Returns the table view model.
 @property(nonatomic, strong, readonly)
-    CollectionViewModel<CollectionViewItem*>* collectionViewModel;
+    TableViewModel<TableViewItem*>* tableViewModel;
 
 // Inserts sections at |sections| indexes. Does nothing if the model is not
 // loaded yet.
@@ -29,7 +29,7 @@
 
 // Reloads only a specific |item|. Does nothing if the model is not loaded
 // yet.
-- (void)reloadItem:(CollectionViewItem*)item;
+- (void)reloadItem:(TableViewItem*)item;
 
 @end
 
