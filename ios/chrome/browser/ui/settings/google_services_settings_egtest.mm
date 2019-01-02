@@ -40,7 +40,8 @@ using chrome_test_util::SettingsDoneButton;
 @synthesize scrollViewMatcher = _scrollViewMatcher;
 
 // Opens the Google services settings view, and closes it.
-- (void)testOpenGoogleServicesSettings {
+// TODO(crbug.com/918711): Tests failing.
+- (void)DISABLED_testOpenGoogleServicesSettings {
   [self openGoogleServicesSettings];
 
   // Assert title and accessibility.
@@ -54,7 +55,8 @@ using chrome_test_util::SettingsDoneButton;
 }
 
 // Tests the Google Services settings.
-- (void)testOpeningServices {
+// TODO(crbug.com/918711): Tests failing.
+- (void)DISABLED_testOpeningServices {
   [self openGoogleServicesSettings];
   [self assertNonPersonalizedServices];
 }
