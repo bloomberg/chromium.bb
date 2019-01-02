@@ -62,6 +62,11 @@ typedef enum {{enum_name}} {
 
 {%   endfor %}
 
+// Declare constants
+{%- for constant in module.constants %}
+{{constant|format_constant_declaration}};
+{%- endfor %}
+
 {#--- Interface Stubs -#}
 {%  for interface in interfaces %}
 {%- set interface_name = interface|get_name_for_kind %}
