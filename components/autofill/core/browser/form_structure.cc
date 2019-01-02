@@ -288,6 +288,32 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
   return HTML_TYPE_UNRECOGNIZED;
 }
 
+// Helper function for explicit conversion between |ButtonTitleType| defined in
+// "button_title_type.h" and "server.proto".
+AutofillUploadContents_ButtonTitle_ButtonTitleType ToServerButtonTitleType(
+    autofill::ButtonTitleType input) {
+  switch (input) {
+    case ButtonTitleType::NONE:
+      return AutofillUploadContents::ButtonTitle::NONE;
+    case ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE:
+      return AutofillUploadContents::ButtonTitle::BUTTON_ELEMENT_SUBMIT_TYPE;
+    case ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE:
+      return AutofillUploadContents::ButtonTitle::BUTTON_ELEMENT_BUTTON_TYPE;
+    case ButtonTitleType::INPUT_ELEMENT_SUBMIT_TYPE:
+      return AutofillUploadContents::ButtonTitle::INPUT_ELEMENT_SUBMIT_TYPE;
+    case ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE:
+      return AutofillUploadContents::ButtonTitle::INPUT_ELEMENT_BUTTON_TYPE;
+    case ButtonTitleType::HYPERLINK:
+      return AutofillUploadContents::ButtonTitle::HYPERLINK;
+    case ButtonTitleType::DIV:
+      return AutofillUploadContents::ButtonTitle::DIV;
+    case ButtonTitleType::SPAN:
+      return AutofillUploadContents::ButtonTitle::SPAN;
+  }
+  NOTREACHED();
+  return AutofillUploadContents::ButtonTitle::NONE;
+}
+
 std::ostream& operator<<(
     std::ostream& out,
     const autofill::AutofillQueryResponseContents& response) {
@@ -575,9 +601,7 @@ bool FormStructure::EncodeUploadRequest(
     for (const ButtonTitleInfo& e : button_titles_) {
       auto* button_title = upload->add_button_title();
       button_title->set_title(base::UTF16ToUTF8(e.first));
-      button_title->set_type(
-          static_cast<AutofillUploadContents_ButtonTitle_ButtonTitleType>(
-              e.second));
+      button_title->set_type(ToServerButtonTitleType(e.second));
     }
   }
 

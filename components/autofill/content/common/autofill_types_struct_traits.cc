@@ -541,6 +541,12 @@ autofill::mojom::ButtonTitleType EnumTraits<
       return autofill::mojom::ButtonTitleType::INPUT_ELEMENT_SUBMIT_TYPE;
     case autofill::ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE:
       return autofill::mojom::ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE;
+    case autofill::ButtonTitleType::HYPERLINK:
+      return autofill::mojom::ButtonTitleType::HYPERLINK;
+    case autofill::ButtonTitleType::DIV:
+      return autofill::mojom::ButtonTitleType::DIV;
+    case autofill::ButtonTitleType::SPAN:
+      return autofill::mojom::ButtonTitleType::SPAN;
   }
   NOTREACHED();
   return autofill::mojom::ButtonTitleType::NONE;
@@ -565,6 +571,15 @@ bool EnumTraits<autofill::mojom::ButtonTitleType, autofill::ButtonTitleType>::
       return true;
     case autofill::mojom::ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE:
       *output = autofill::ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE;
+      return true;
+    case autofill::mojom::ButtonTitleType::HYPERLINK:
+      *output = autofill::ButtonTitleType::HYPERLINK;
+      return true;
+    case autofill::mojom::ButtonTitleType::DIV:
+      *output = autofill::ButtonTitleType::DIV;
+      return true;
+    case autofill::mojom::ButtonTitleType::SPAN:
+      *output = autofill::ButtonTitleType::SPAN;
       return true;
   }
   NOTREACHED();

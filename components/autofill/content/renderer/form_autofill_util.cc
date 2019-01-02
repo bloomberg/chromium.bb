@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -74,6 +75,13 @@ namespace {
 const int kMaxLengthForSingleButtonTitle = 30;
 // Maximal length of all button titles.
 const int kMaxLengthForAllButtonTitles = 200;
+
+// Text features to detect form submission buttons. Features are selected based
+// on analysis of real forms and their buttons.
+// TODO(crbug.com/910546): Consider to add more features (e.g. non-English
+// features).
+const char* const kButtonFeatures[] = {"button", "btn", "submit",
+                                       "boton" /* "button" in Spanish */};
 
 // A bit field mask for FillForm functions to not fill some fields.
 enum FieldFilterMask {
@@ -366,21 +374,74 @@ bool InferLabelFromSibling(const WebFormControlElement& element,
 // Helper function to add a button's |title| to the |list| and updates the
 // |total_length| of stored titles. Returns true iff the list still have free
 // capacity.
-bool AddButtonTitleToList(base::string16&& title,
+bool AddButtonTitleToList(base::string16 title,
                           ButtonTitleType button_type,
                           ButtonTitleList* list,
                           int* total_length) {
   if (*total_length >= kMaxLengthForAllButtonTitles)
     return false;
+  title = base::CollapseWhitespace(std::move(title), false);
   if (title.empty())
     return true;
-  title = base::CollapseWhitespace(std::move(title), false);
   TruncateString(&title,
                  std::min(kMaxLengthForSingleButtonTitle,
                           kMaxLengthForAllButtonTitles - *total_length));
   *total_length += title.length();
   list->push_back(std::make_pair(std::move(title), button_type));
   return *total_length < kMaxLengthForAllButtonTitles;
+}
+
+// Returns true iff |attribute| contains one of |kButtonFeatures|.
+bool AttributeHasButtonFeature(const WebString& attribute) {
+  if (attribute.IsNull())
+    return false;
+  std::string value = attribute.Utf8();
+  std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+  for (const char* const button_feature : kButtonFeatures) {
+    if (value.find(button_feature, 0) != std::string::npos)
+      return true;
+  }
+  return false;
+}
+
+// Returns true if |element|'s id, name or css class contain |kButtonFeatures|.
+bool ElementAttributesHasButtonFeature(const WebElement& element) {
+  return AttributeHasButtonFeature(element.GetAttribute("id")) ||
+         AttributeHasButtonFeature(element.GetAttribute("name")) ||
+         AttributeHasButtonFeature(element.GetAttribute("class"));
+}
+
+// Finds elements from |elements| that contains |kButtonFeatures|, adds them to
+// |list| and updates the |total_length| of the |list|'s items.
+// If |extract_value_attribute|, the "value" attribute is extracted as a button
+// title. Otherwise, |WebElement::TextContent| (aka innerText in Javascript) is
+// extracted as a title.
+void FindElementsWithButtonFeatures(const WebElementCollection& elements,
+                                    ButtonTitleType button_type,
+                                    bool extract_value_attribute,
+                                    ButtonTitleList* list,
+                                    int* total_length) {
+  static base::NoDestructor<WebString> kValue("value");
+  if (*total_length >= kMaxLengthForAllButtonTitles)
+    return;
+  for (WebElement item = elements.FirstItem();
+       !item.IsNull() && *total_length < kMaxLengthForAllButtonTitles;
+       item = elements.NextItem()) {
+    if (!ElementAttributesHasButtonFeature(item))
+      continue;
+
+    base::string16 title =
+        extract_value_attribute
+            ? (item.HasAttribute(*kValue) ? item.GetAttribute(*kValue).Utf16()
+                                          : base::string16())
+            : item.TextContent().Utf16();
+    if (extract_value_attribute && title.empty())
+      title = item.TextContent().Utf16();
+    if (!AddButtonTitleToList(std::move(title), button_type, list,
+                              total_length)) {
+      break;
+    }
+  }
 }
 
 // Helper for |InferLabelForElement()| that infers a label, if possible, from
@@ -809,6 +870,9 @@ bool InferLabelForElement(const WebFormControlElement& element,
 ButtonTitleList InferButtonTitlesForForm(const WebFormElement& form_element) {
   static base::NoDestructor<WebString> kSubmit("submit");
   static base::NoDestructor<WebString> kButton("button");
+  static base::NoDestructor<WebString> kA("a");
+  static base::NoDestructor<WebString> kDiv("div");
+  static base::NoDestructor<WebString> kSpan("span");
 
   ButtonTitleList result;
   WebVector<WebFormControlElement> control_elements;
@@ -821,7 +885,7 @@ ButtonTitleList InferButtonTitlesForForm(const WebFormElement& form_element) {
         control_element.FormControlTypeForAutofill() == *kButton;
     if (!is_submit_input && !is_button_input)
       continue;
-    base::string16&& title = control_element.Value().Utf16();
+    base::string16 title = control_element.Value().Utf16();
     if (!AddButtonTitleToList(std::move(title),
                               is_submit_input
                                   ? ButtonTitleType::INPUT_ELEMENT_SUBMIT_TYPE
@@ -842,7 +906,7 @@ ButtonTitleList InferButtonTitlesForForm(const WebFormElement& form_element) {
       continue;
     }
     bool is_submit_type = type_attribute.IsNull() || type_attribute == *kSubmit;
-    base::string16&& title = item.TextContent().Utf16();
+    base::string16 title = item.TextContent().Utf16();
     if (!AddButtonTitleToList(std::move(title),
                               is_submit_type
                                   ? ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE
@@ -851,6 +915,15 @@ ButtonTitleList InferButtonTitlesForForm(const WebFormElement& form_element) {
       break;
     }
   }
+  FindElementsWithButtonFeatures(
+      form_element.GetElementsByHTMLTagName(*kA), ButtonTitleType::HYPERLINK,
+      true /* extract_value_attribute */, &result, &total_length);
+  FindElementsWithButtonFeatures(
+      form_element.GetElementsByHTMLTagName(*kDiv), ButtonTitleType::DIV,
+      false /* extract_value_attribute */, &result, &total_length);
+  FindElementsWithButtonFeatures(
+      form_element.GetElementsByHTMLTagName(*kSpan), ButtonTitleType::SPAN,
+      false /* extract_value_attribute */, &result, &total_length);
   return result;
 }
 
