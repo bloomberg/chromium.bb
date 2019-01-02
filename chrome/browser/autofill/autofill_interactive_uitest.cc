@@ -1250,6 +1250,49 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   EXPECT_EQ(color, orginalcolor);
 }
 
+// Test that an <input> field with a <datalist> has a working drop down even if
+// it was dynamically changed to <input type="password"> temporarily. This is a
+// regression test for crbug.com/918351.
+IN_PROC_BROWSER_TEST_F(
+    AutofillInteractiveTest,
+    OnSelectOptionFromDatalistTurningToPasswordFieldAndBack) {
+  static const char kTestForm[] =
+      "<form action=\"http://www.example.com/\" method=\"POST\">"
+      "  <input list=\"dl\" type=\"search\" id=\"firstname\"><br>"
+      "  <datalist id=\"dl\">"
+      "  <option value=\"Adam\"></option>"
+      "  <option value=\"Bob\"></option>"
+      "  <option value=\"Carl\"></option>"
+      "  </datalist>"
+      "</form>";
+
+  // Load the test page.
+  SetTestUrlResponse(kTestForm);
+  ASSERT_NO_FATAL_FAILURE(
+      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      GetWebContents(),
+      "document.getElementById('firstname').type = 'password';"));
+  // At this point, the IsPasswordFieldForAutofill() function returns true and
+  // will continue to return true for the field, even when the type is changed
+  // back to 'search'.
+  ASSERT_TRUE(content::ExecuteScript(
+      GetWebContents(),
+      "document.getElementById('firstname').type = 'search';"));
+
+  // Regression test for crbug.com/918351 whether the datalist becomes available
+  // again.
+  FocusFirstNameField();
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN,
+                       {ObservedUiEvents::kSuggestionShown});
+  SendKeyToDataListPopup(ui::DomKey::ARROW_DOWN);
+  SendKeyToDataListPopup(ui::DomKey::ENTER);
+  // Pressing the down arrow preselects the first item. Pressing it again
+  // selects the second item.
+  ExpectFieldValue("firstname", "Bob");
+}
+
 // Test that a JavaScript oninput event is fired after auto-filling a form.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, OnInputAfterAutofill) {
   static const char kOnInputScript[] =

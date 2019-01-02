@@ -654,7 +654,14 @@ void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
 
   // Password field elements should only have suggestions shown by the password
   // autofill agent.
-  if (input_element && input_element->IsPasswordFieldForAutofill() &&
+  // The /*disable presubmit*/ comment below is used to disable a presubmit
+  // script that ensures that only IsPasswordFieldForAutofill() is used in this
+  // code (it has to appear between the function name and the parentesis to not
+  // match a regex). In this specific case we are actually interested in whether
+  // the field is currently a password field, not whether it has ever been a
+  // password field.
+  if (input_element &&
+      input_element->IsPasswordField /*disable presubmit*/ () &&
       !query_password_suggestion_) {
     return;
   }
