@@ -127,7 +127,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      * Handle UI updates of menu icons. Only applicable for phones.
      */
     public interface MenuDelegatePhone {
-
         /**
          * Called when current tab's loading status changes.
          *
@@ -408,13 +407,13 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                 if (mLocationBarModel.getTab() == null) return;
 
                 assert tab == mLocationBarModel.getTab();
-                mLocationBar.updateSecurityIcon();
+                mLocationBar.updateStatusIcon();
                 mLocationBar.setUrlToPageUrl();
             }
 
             @Override
             public void didReloadLoFiImages(Tab tab) {
-                mLocationBar.updateSecurityIcon();
+                mLocationBar.updateStatusIcon();
             }
 
             @Override
@@ -459,7 +458,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                     // finishes loading. If this is a preview, update the security icon which will
                     // also update the verbose status view to make sure the "Lite" badge is
                     // displayed.
-                    mLocationBar.updateSecurityIcon();
+                    mLocationBar.updateStatusIcon();
                     PreviewsUma.recordLitePageAtLoadFinish(
                             PreviewsAndroidBridge.getInstance().getPreviewsType(
                                     tab.getWebContents()));
@@ -603,7 +602,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                     // Some previews are not fully decided until the page commits. If this
                     // is a preview, update the security icon which will also update the verbose
                     // status view to make sure the "Lite" badge is displayed.
-                    mLocationBar.updateSecurityIcon();
+                    mLocationBar.updateStatusIcon();
                     PreviewsUma.recordLitePageAtCommit(
                             PreviewsAndroidBridge.getInstance().getPreviewsType(
                                     tab.getWebContents()),
@@ -1402,8 +1401,9 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
         if (mControlsVisibilityDelegate == null) return;
         if (hasFocus) {
-            mFullscreenFocusToken = mControlsVisibilityDelegate
-                    .showControlsPersistentAndClearOldToken(mFullscreenFocusToken);
+            mFullscreenFocusToken =
+                    mControlsVisibilityDelegate.showControlsPersistentAndClearOldToken(
+                            mFullscreenFocusToken);
         } else {
             mControlsVisibilityDelegate.releasePersistentShowingToken(mFullscreenFocusToken);
         }
@@ -1544,8 +1544,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      * @param activityCreationTimeMs The time of creation for the activity this toolbar belongs to.
      * @param activityName Simple class name for the activity this toolbar belongs to.
      */
-    public void onDeferredStartup(final long activityCreationTimeMs,
-            final String activityName) {
+    public void onDeferredStartup(final long activityCreationTimeMs, final String activityName) {
         // Record startup performance statistics
         long elapsedTime = SystemClock.elapsedRealtime() - activityCreationTimeMs;
         if (elapsedTime < RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS) {
@@ -1598,8 +1597,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private void updateBookmarkButtonStatus() {
         assert mToolbarInflationComplete;
         Tab currentTab = mLocationBarModel.getTab();
-        boolean isBookmarked = currentTab != null
-                && currentTab.getBookmarkId() != Tab.INVALID_BOOKMARK_ID;
+        boolean isBookmarked =
+                currentTab != null && currentTab.getBookmarkId() != Tab.INVALID_BOOKMARK_ID;
         boolean editingAllowed = currentTab == null || mBookmarkBridge == null
                 || mBookmarkBridge.isEditBookmarksEnabled();
         mToolbar.updateBookmarkButton(isBookmarked, editingAllowed);

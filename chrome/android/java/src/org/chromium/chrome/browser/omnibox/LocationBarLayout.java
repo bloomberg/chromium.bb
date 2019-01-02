@@ -247,8 +247,7 @@ public class LocationBarLayout extends FrameLayout
     }
 
     @Override
-    public void initializeControls(WindowDelegate windowDelegate,
-            WindowAndroid windowAndroid) {
+    public void initializeControls(WindowDelegate windowDelegate, WindowAndroid windowAndroid) {
         mWindowDelegate = windowDelegate;
         mWindowAndroid = windowAndroid;
 
@@ -331,8 +330,7 @@ public class LocationBarLayout extends FrameLayout
         // This will only be called once at least one tab exists, and the tab model is told to
         // update its state. During Chrome initialization the tab model update happens after the
         // call to onNativeLibraryReady, so this assert will not fire.
-        assert mNativeInitialized
-                : "Setting Autocomplete Profile before native side initialized";
+        assert mNativeInitialized : "Setting Autocomplete Profile before native side initialized";
         mAutocompleteCoordinator.setAutocompleteProfile(profile);
         mOmniboxPrerender.initializeForProfile(profile);
     }
@@ -581,8 +579,8 @@ public class LocationBarLayout extends FrameLayout
      * Updates the security icon displayed in the LocationBar.
      */
     @Override
-    public void updateSecurityIcon() {
-        mStatusViewCoordinator.updateSecurityIcon();
+    public void updateStatusIcon() {
+        mStatusViewCoordinator.updateStatusIcon();
         // Update the URL in case the scheme change triggers a URL emphasis change.
         setUrlToPageUrl();
     }
@@ -622,21 +620,21 @@ public class LocationBarLayout extends FrameLayout
                 int widthMeasureSpec;
                 int heightMeasureSpec;
                 if (childLayoutParams.width == LayoutParams.WRAP_CONTENT) {
-                    widthMeasureSpec = MeasureSpec.makeMeasureSpec(
-                            getMeasuredWidth(), MeasureSpec.AT_MOST);
+                    widthMeasureSpec =
+                            MeasureSpec.makeMeasureSpec(getMeasuredWidth(), MeasureSpec.AT_MOST);
                 } else if (childLayoutParams.width == LayoutParams.MATCH_PARENT) {
-                    widthMeasureSpec = MeasureSpec.makeMeasureSpec(
-                            getMeasuredWidth(), MeasureSpec.EXACTLY);
+                    widthMeasureSpec =
+                            MeasureSpec.makeMeasureSpec(getMeasuredWidth(), MeasureSpec.EXACTLY);
                 } else {
                     widthMeasureSpec = MeasureSpec.makeMeasureSpec(
                             childLayoutParams.width, MeasureSpec.EXACTLY);
                 }
                 if (childLayoutParams.height == LayoutParams.WRAP_CONTENT) {
-                    heightMeasureSpec = MeasureSpec.makeMeasureSpec(
-                            getMeasuredHeight(), MeasureSpec.AT_MOST);
+                    heightMeasureSpec =
+                            MeasureSpec.makeMeasureSpec(getMeasuredHeight(), MeasureSpec.AT_MOST);
                 } else if (childLayoutParams.height == LayoutParams.MATCH_PARENT) {
-                    heightMeasureSpec = MeasureSpec.makeMeasureSpec(
-                            getMeasuredHeight(), MeasureSpec.EXACTLY);
+                    heightMeasureSpec =
+                            MeasureSpec.makeMeasureSpec(getMeasuredHeight(), MeasureSpec.EXACTLY);
                 } else {
                     heightMeasureSpec = MeasureSpec.makeMeasureSpec(
                             childLayoutParams.height, MeasureSpec.EXACTLY);
@@ -781,7 +779,6 @@ public class LocationBarLayout extends FrameLayout
             }
         });
     }
-
 
     @Override
     public void onClick(View v) {
@@ -947,7 +944,7 @@ public class LocationBarLayout extends FrameLayout
     public void updateLoadingState(boolean updateUrl) {
         if (updateUrl) setUrlToPageUrl();
         updateNavigationButton();
-        mStatusViewCoordinator.updateSecurityIcon();
+        mStatusViewCoordinator.updateStatusIcon();
     }
 
     /** @return The current active {@link Tab}. */
@@ -1070,10 +1067,10 @@ public class LocationBarLayout extends FrameLayout
     }
 
     @Override
-    public void setTitleToPageTitle() { }
+    public void setTitleToPageTitle() {}
 
     @Override
-    public void setShowTitle(boolean showTitle) { }
+    public void setShowTitle(boolean showTitle) {}
 
     @Override
     public WindowAndroid getWindowAndroid() {

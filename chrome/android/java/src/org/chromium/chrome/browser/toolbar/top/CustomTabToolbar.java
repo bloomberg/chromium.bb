@@ -334,7 +334,7 @@ public class CustomTabToolbar
             mTitleBar.setLayoutParams(lp);
             mTitleBar.setTextSize(TypedValue.COMPLEX_UNIT_PX,
                     getResources().getDimension(R.dimen.custom_tabs_title_text_size));
-            updateSecurityIcon();
+            updateStatusIcon();
         } else {
             assert false : "Unreached state";
         }
@@ -387,7 +387,7 @@ public class CustomTabToolbar
                 setUrlBarHidden(false);
             }
         }
-        updateSecurityIcon();
+        updateStatusIcon();
     }
 
     @VisibleForTesting
@@ -460,7 +460,7 @@ public class CustomTabToolbar
     @Override
     public void updateLoadingState(boolean updateUrl) {
         if (updateUrl) setUrlToPageUrl();
-        updateSecurityIcon();
+        updateStatusIcon();
     }
 
     @Override
@@ -476,7 +476,7 @@ public class CustomTabToolbar
     @Override
     public void updateVisualsForState() {
         Resources resources = getResources();
-        updateSecurityIcon();
+        updateStatusIcon();
         updateButtonsTint();
         if (mUrlCoordinator.setUseDarkTextColors(mUseDarkColors)) {
             setUrlToPageUrl();
@@ -485,7 +485,7 @@ public class CustomTabToolbar
         int titleTextColor = mUseDarkColors
                 ? ApiCompatibilityUtils.getColor(resources, R.color.url_emphasis_default_text)
                 : ApiCompatibilityUtils.getColor(
-                          resources, R.color.url_emphasis_light_default_text);
+                        resources, R.color.url_emphasis_light_default_text);
         mTitleBar.setTextColor(titleTextColor);
 
         if (getProgressBar() != null) {
@@ -537,7 +537,7 @@ public class CustomTabToolbar
     public void initializeControls(WindowDelegate windowDelegate, WindowAndroid windowAndroid) {}
 
     @Override
-    public void updateSecurityIcon() {
+    public void updateStatusIcon() {
         if (mState == STATE_TITLE_ONLY) return;
 
         int securityIconResource = getToolbarDataProvider().getSecurityIconResource(

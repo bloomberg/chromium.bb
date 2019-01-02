@@ -23,7 +23,6 @@ import org.chromium.ui.base.WindowAndroid;
  * Container that holds the {@link UrlBar} and SSL state related with the current {@link Tab}.
  */
 public interface LocationBar extends UrlBarDelegate {
-
     /**
      * Handles native dependent initialization for this class.
      */
@@ -134,7 +133,7 @@ public interface LocationBar extends UrlBarDelegate {
     /**
      * Updates the security icon displayed in the LocationBar.
      */
-    void updateSecurityIcon();
+    void updateStatusIcon();
 
     /**
      * @return The {@link ViewGroup} that this container holds.
