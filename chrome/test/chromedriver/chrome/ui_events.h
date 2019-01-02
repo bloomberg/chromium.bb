@@ -29,6 +29,9 @@ enum MouseButton {
   kNoneMouseButton
 };
 
+// Specifies the event's pointer type.
+enum PointerType { kMouse = 0, kPen };
+
 struct MouseEvent {
   MouseEvent(MouseEventType type,
              MouseButton button,
@@ -49,6 +52,7 @@ struct MouseEvent {
   // |click_count| should not be negative.
   int click_count;
   std::string element_id;
+  PointerType pointer_type;
 };
 
 // Specifies the type of the touch event.

@@ -22,18 +22,16 @@ MouseEvent::MouseEvent(MouseEventType type,
       y(y),
       modifiers(modifiers),
       buttons(buttons),
-      click_count(click_count) {}
+      click_count(click_count),
+      element_id(std::string()),
+      pointer_type(kMouse) {}
 
 MouseEvent::MouseEvent(const MouseEvent& other) = default;
 
 MouseEvent::~MouseEvent() {}
 
-TouchEvent::TouchEvent(TouchEventType type,
-                       int x,
-                       int y)
-    : type(type),
-      x(x),
-      y(y) {}
+TouchEvent::TouchEvent(TouchEventType type, int x, int y)
+    : type(type), x(x), y(y), element_id(std::string()) {}
 
 TouchEvent::TouchEvent(const TouchEvent& other) = default;
 

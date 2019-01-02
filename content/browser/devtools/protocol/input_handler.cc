@@ -176,6 +176,15 @@ blink::WebInputEvent::Type GetTouchEventType(const std::string& type) {
   return blink::WebInputEvent::kUndefined;
 }
 
+blink::WebPointerProperties::PointerType GetPointerType(
+    const std::string& type) {
+  if (type == Input::DispatchMouseEvent::PointerTypeEnum::Mouse)
+    return blink::WebPointerProperties::PointerType::kMouse;
+  if (type == Input::DispatchMouseEvent::PointerTypeEnum::Pen)
+    return blink::WebPointerProperties::PointerType::kPen;
+  return blink::WebPointerProperties::PointerType::kMouse;
+}
+
 bool GenerateTouchPoints(
     blink::WebTouchEvent* event,
     blink::WebInputEvent::Type type,
@@ -598,6 +607,7 @@ void InputHandler::DispatchMouseEvent(
     Maybe<int> click_count,
     Maybe<double> delta_x,
     Maybe<double> delta_y,
+    Maybe<std::string> pointer_type,
     std::unique_ptr<DispatchMouseEventCallback> callback) {
   blink::WebInputEvent::Type type = GetMouseEventType(event_type);
   if (type == blink::WebInputEvent::kUndefined) {
@@ -642,7 +652,7 @@ void InputHandler::DispatchMouseEvent(
 
   mouse_event->button = button;
   mouse_event->click_count = click_count.fromMaybe(0);
-  mouse_event->pointer_type = blink::WebPointerProperties::PointerType::kMouse;
+  mouse_event->pointer_type = GetPointerType(pointer_type.fromMaybe(""));
 
   gfx::PointF point;
   RenderWidgetHostImpl* widget_host =

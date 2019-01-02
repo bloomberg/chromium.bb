@@ -122,6 +122,18 @@ const char* GetAsString(KeyEventType type) {
   }
 }
 
+const char* GetAsString(PointerType type) {
+  switch (type) {
+    case kMouse:
+      return "mouse";
+    case kPen:
+      return "pen";
+    default:
+      NOTREACHED();
+      return "";
+  }
+}
+
 }  // namespace
 
 WebViewImpl::WebViewImpl(const std::string& id,
@@ -467,6 +479,7 @@ Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
     params.SetString("button", GetAsString(it->button));
     params.SetInteger("buttons", it->buttons);
     params.SetInteger("clickCount", it->click_count);
+    params.SetString("pointerType", GetAsString(it->pointer_type));
     Status status = client_->SendCommand("Input.dispatchMouseEvent", params);
     if (status.IsError())
       return status;
