@@ -8,9 +8,20 @@ import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
 
-trichrome_library_package = "org.chromium.trichromelibrary"
-trichrome_certdigest =
-    "1975b2f17177bc89a5dff31f9e64a6cae281a53dc1d1d59b1d147fe1c82afa00"
+if (!defined(default_trichrome_certdigest)) {
+  default_trichrome_certdigest =
+      "32a2fc74d731105859e5a85df16d95f102d85b22099b8064c5d8915c61dad1e0"
+}
+
+declare_args() {
+  # The package name for the Trichrome static shared library on Android.
+  trichrome_library_package = "org.chromium.trichromelibrary"
+
+  # The SHA256 certificate digest for the Trichrome static shared library on
+  # Android. You can use "apksigner verify --print-certs" on the signed APK to
+  # calculate the correct digest.
+  trichrome_certdigest = default_trichrome_certdigest
+}
 
 trichrome_jinja_variables = [
   "min_sdk_version=28",
