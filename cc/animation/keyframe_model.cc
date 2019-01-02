@@ -143,14 +143,10 @@ void KeyframeModel::SetRunState(RunState run_state,
 }
 
 void KeyframeModel::Pause(base::TimeDelta pause_offset) {
-  // Convert pause offset to monotonic time.
-
-  // TODO(crbug.com/840364): This conversion is incorrect. pause_offset is
-  // actually a local time so to convert it to monotonic time we should include
-  // total_paused_duration_ but exclude time_offset. The current calculation is
-  // is incorrect for animations that have start-delay or are paused and
-  // unpaused multiple times.
-  base::TimeTicks monotonic_time = pause_offset + start_time_ + time_offset_;
+  // Convert pause offset which is in local time to monotonic time.
+  // TODO(yigu): This should be scaled by playbackrate. http://crbug.com/912407
+  base::TimeTicks monotonic_time =
+      pause_offset + start_time_ + total_paused_duration_;
   SetRunState(PAUSED, monotonic_time);
 }
 
@@ -242,8 +238,7 @@ base::TimeDelta KeyframeModel::ConvertMonotonicTimeToLocalTime(
     return base::TimeDelta();
 
   // If we're paused, time is 'stuck' at the pause time.
-  base::TimeTicks time =
-      (run_state_ == PAUSED) ? pause_time_ - time_offset_ : monotonic_time;
+  base::TimeTicks time = (run_state_ == PAUSED) ? pause_time_ : monotonic_time;
   return time - start_time_ - total_paused_duration_;
 }
 
