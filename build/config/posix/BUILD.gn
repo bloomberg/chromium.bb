@@ -35,7 +35,13 @@ config("runtime_library") {
   libs = []
 
   if (use_custom_libcxx) {
-    if (!is_component_build) {
+    if (is_component_build) {
+      # In component builds, symbols from libc++.so are exported for all DSOs to
+      # use.  If the system libc++ gets loaded (indirectly through a system
+      # library), then it will conflict with our libc++.so.  Add a custom ABI
+      # version to avoid conflicts.
+      defines += [ "_LIBCPP_ABI_VERSION=Cr" ]
+    } else {
       # Don't leak any symbols on a static build.
       defines += [ "_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS" ]
       if (!export_libcxxabi_from_executables) {

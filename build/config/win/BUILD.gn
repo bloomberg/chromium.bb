@@ -264,9 +264,12 @@ config("runtime_library") {
     cflags_cc +=
         [ "-I" + rebase_path("$libcxx_prefix/include", root_build_dir) ]
     if (!is_component_build) {
+      # Don't leak any symbols on a static build.
       defines += [ "_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS" ]
     }
 
+    # Windows doesn't need to set _LIBCPP_ABI_VERSION since there's no system
+    # C++ library we could conflict with.
     defines += [
       "CR_LIBCXX_REVISION=$libcxx_svn_revision",
       "CR_LIBCXXABI_REVISION=$libcxxabi_svn_revision",
