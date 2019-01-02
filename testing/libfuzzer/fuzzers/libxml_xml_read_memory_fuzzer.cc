@@ -33,7 +33,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   const int options[] = {0, random_option};
 
   for (const auto option_value : options) {
-    if (auto doc = xmlReadMemory(data_string.c_str(), data_string.length(),
+    // Intentionally pass raw data as the API does not require trailing \0.
+    if (auto doc = xmlReadMemory(reinterpret_cast<const char*>(data), size,
                                  "noname.xml", NULL, option_value)) {
       auto buffer = xmlBufferCreate();
       assert(buffer);
