@@ -167,7 +167,8 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
         synchronized (mAwInit.getLock()) {
             if (mProxyController == null) {
                 mProxyController = BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(
-                        new SupportLibProxyControllerAdapter(mAwInit.getAwProxyController()));
+                        new SupportLibProxyControllerAdapter(
+                                mAwInit.getRunQueue(), mAwInit.getAwProxyController()));
             }
         }
         return mProxyController;
