@@ -217,6 +217,8 @@ class AdaptiveScreenBrightnessManagerTest
   const GURL kUrl3 = GURL("https://example3.com/");
 
  private:
+  // TODO(crbug.com/917580): Remove this; thread_bundle() should be used
+  // instead.
   const scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   chromeos::FakeChromeUserManager fake_user_manager_;
 

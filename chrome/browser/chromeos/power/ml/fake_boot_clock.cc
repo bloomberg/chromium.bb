@@ -12,15 +12,28 @@ FakeBootClock::FakeBootClock(
     scoped_refptr<const base::TestMockTimeTaskRunner> task_runner,
     base::TimeDelta initial_time_since_boot)
     : task_runner_(task_runner),
+      env_(nullptr),
       initial_time_since_boot_(initial_time_since_boot) {
   DCHECK_GE(initial_time_since_boot, base::TimeDelta());
   initial_time_ticks_ = task_runner_->NowTicks();
 }
 
+FakeBootClock::FakeBootClock(base::test::ScopedTaskEnvironment* env,
+                             base::TimeDelta initial_time_since_boot)
+    : env_(env), initial_time_since_boot_(initial_time_since_boot) {
+  DCHECK_GE(initial_time_since_boot, base::TimeDelta());
+  initial_time_ticks_ = env_->NowTicks();
+}
+
 FakeBootClock::~FakeBootClock() = default;
 
 base::TimeDelta FakeBootClock::GetTimeSinceBoot() {
-  base::TimeTicks now = task_runner_->NowTicks();
+  base::TimeTicks now;
+  if (env_) {
+    now = env_->NowTicks();
+  } else {
+    now = task_runner_->NowTicks();
+  }
   return (now - initial_time_ticks_) + initial_time_since_boot_;
 }
 

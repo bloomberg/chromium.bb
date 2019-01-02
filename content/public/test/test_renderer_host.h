@@ -192,6 +192,10 @@ class RenderViewHostTestHarness : public testing::Test {
   // Constructs a RenderViewHostTestHarness which uses |thread_bundle_options|
   // to initialize its TestBrowserThreadBundle.
   explicit RenderViewHostTestHarness(int thread_bundle_options = 0);
+  RenderViewHostTestHarness(
+      base::test::ScopedTaskEnvironment::MainThreadType main_thread_type,
+      base::test::ScopedTaskEnvironment::ExecutionMode execution_control_mode,
+      int thread_bundle_options = 0);
   ~RenderViewHostTestHarness() override;
 
   NavigationController& controller();
