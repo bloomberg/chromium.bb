@@ -6,7 +6,6 @@
 
 #include "base/metrics/histogram_samples.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -186,16 +185,7 @@ TEST_F(FlashEmbedRewriteTest, YouTubeRewriteEmbedSuccess) {
   EXPECT_EQ(total_count, samples->TotalCount());
 }
 
-// Crashes on Mac/Win only. http://crbug.com/879644
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_YouTubeRewriteEmbedSuccessRewrite \
-  DISABLED_YouTubeRewriteEmbedSuccessRewrite
-#else
-#define MAYBE_YouTubeRewriteEmbedSuccessRewrite \
-  YouTubeRewriteEmbedSuccessRewrite
-#endif
-
-TEST_F(FlashEmbedRewriteTest, MAYBE_YouTubeRewriteEmbedSuccessRewrite) {
+TEST_F(FlashEmbedRewriteTest, YouTubeRewriteEmbedSuccessRewrite) {
   std::unique_ptr<base::HistogramSamples> samples = GetHistogramSamples();
   auto total_count = 0;
   EXPECT_EQ(total_count, samples->TotalCount());
