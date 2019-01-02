@@ -8,7 +8,7 @@
 #include "ash/components/quick_launch/quick_launch_application.h"
 #include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"
 #include "ash/components/shortcut_viewer/shortcut_viewer_application.h"
-#include "ash/components/tap_visualizer/public/mojom/constants.mojom.h"
+#include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
 #include "ash/components/tap_visualizer/tap_visualizer_app.h"
 #include "ash/shell/content/client/shell_content_browser_client.h"
 #include "base/command_line.h"

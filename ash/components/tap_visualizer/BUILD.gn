@@ -13,6 +13,7 @@ source_set("lib") {
   ]
 
   deps = [
+    "//ash/components/tap_visualizer/public/mojom",
     "//ash/public/cpp",
     "//base",
     "//cc/paint",
