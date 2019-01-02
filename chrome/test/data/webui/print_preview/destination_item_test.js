@@ -55,7 +55,7 @@ cr.define('destination_item_test', function() {
     test(assert(TestNames.Offline), function() {
       const now = new Date();
       let twoMonthsAgo = new Date(now.getTime());
-      const month = twoMonthsAgo.getMonth() - 2;
+      let month = twoMonthsAgo.getMonth() - 2;
       if (month < 0) {
         month = month + 12;
         twoMonthsAgo.setFullYear(now.getFullYear() - 1);
