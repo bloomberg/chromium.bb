@@ -167,10 +167,12 @@ void TabletModeWindowState::UpdateWindowPosition(wm::WindowState* window_state,
 }
 
 TabletModeWindowState::TabletModeWindowState(aura::Window* window,
-                                             TabletModeWindowManager* creator)
+                                             TabletModeWindowManager* creator,
+                                             bool defer_bounds_updates)
     : window_(window),
       creator_(creator),
-      current_state_type_(wm::GetWindowState(window)->GetStateType()) {
+      current_state_type_(wm::GetWindowState(window)->GetStateType()),
+      defer_bounds_updates_(defer_bounds_updates) {
   old_state_.reset(wm::GetWindowState(window)
                        ->SetStateObject(std::unique_ptr<State>(this))
                        .release());
