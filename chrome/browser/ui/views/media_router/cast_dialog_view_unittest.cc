@@ -145,13 +145,7 @@ class CastDialogViewTest : public ChromeViewsTestBase {
   CastDialogView* dialog_ = nullptr;
 };
 
-// Flaky on Mac. https://crbug.com/843599
-#if defined(OS_MACOSX)
-#define MAYBE_ShowAndHideDialog DISABLED_ShowAndHideDialog
-#else
-#define MAYBE_ShowAndHideDialog ShowAndHideDialog
-#endif
-TEST_F(CastDialogViewTest, MAYBE_ShowAndHideDialog) {
+TEST_F(CastDialogViewTest, ShowAndHideDialog) {
   EXPECT_FALSE(CastDialogView::IsShowing());
   EXPECT_EQ(nullptr, CastDialogView::GetCurrentDialogWidget());
 

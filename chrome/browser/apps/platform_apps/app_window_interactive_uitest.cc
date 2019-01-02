@@ -18,7 +18,6 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
-#include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #endif
 
 #if defined(OS_WIN)

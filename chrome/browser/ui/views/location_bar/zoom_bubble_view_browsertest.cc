@@ -25,6 +25,10 @@
 #include "ui/aura/test/env_test_helper.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
+#endif
+
 using ZoomBubbleBrowserTest = InProcessBrowserTest;
 
 namespace {
@@ -42,6 +46,10 @@ void ShowInActiveTab(Browser* browser) {
 // Test whether the zoom bubble is anchored and whether it is visible when in
 // non-immersive fullscreen.
 IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, NonImmersiveFullscreen) {
+#if defined(OS_MACOSX)
+  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
+#endif
+
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
   content::WebContents* web_contents = browser_view->GetActiveWebContents();
 
