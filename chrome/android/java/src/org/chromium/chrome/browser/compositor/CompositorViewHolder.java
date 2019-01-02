@@ -89,6 +89,7 @@ public class CompositorViewHolder extends FrameLayout
     private CompositorView mCompositorView;
 
     private boolean mContentOverlayVisiblity = true;
+    private boolean mCanBeFocusable;
 
     private int mPendingFrameCount;
 
@@ -817,9 +818,10 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     @Override
-    public void setContentOverlayVisibility(boolean show) {
-        if (show != mContentOverlayVisiblity) {
+    public void setContentOverlayVisibility(boolean show, boolean canBeFocusable) {
+        if (show != mContentOverlayVisiblity || canBeFocusable != mCanBeFocusable) {
             mContentOverlayVisiblity = show;
+            mCanBeFocusable = canBeFocusable;
             updateContentOverlayVisibility(mContentOverlayVisiblity);
         }
     }
@@ -1019,8 +1021,8 @@ public class CompositorViewHolder extends FrameLayout
             }
         } else {
             if (mView.getParent() == this) {
-                setFocusable(true);
-                setFocusableInTouchMode(true);
+                setFocusable(mCanBeFocusable);
+                setFocusableInTouchMode(mCanBeFocusable);
 
                 if (webContents != null && !webContents.isDestroyed()) {
                     getContentView().setVisibility(View.INVISIBLE);

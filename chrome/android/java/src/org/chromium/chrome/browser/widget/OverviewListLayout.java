@@ -160,6 +160,13 @@ public class OverviewListLayout extends Layout implements AccessibilityTabModelA
     }
 
     @Override
+    public boolean canHostBeFocusable() {
+        // TODO(https://crbug.com/918171): Consider fine-tuning accessibility support for the
+        // overview list layout.
+        return false;
+    }
+
+    @Override
     public void setTabModelSelector(
             TabModelSelector tabModelSelector, TabContentManager tabContentManager) {
         super.setTabModelSelector(tabModelSelector, tabContentManager);
