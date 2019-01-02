@@ -222,11 +222,25 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
             recordSelectionCountHistorgram("Remove");
             recordUserActionWithOptionalSearch("RemoveSelected");
 
+            int numItemsRemoved = 0;
+            HistoryItem lastItemRemoved = null;
             for (HistoryItem historyItem : mSelectionDelegate.getSelectedItems()) {
                 mHistoryAdapter.markItemForRemoval(historyItem);
+                numItemsRemoved++;
+                lastItemRemoved = historyItem;
             }
+
             mHistoryAdapter.removeItems();
             mSelectionDelegate.clearSelection();
+
+            if (numItemsRemoved == 1) {
+                assert lastItemRemoved != null;
+                announceItemRemoved(lastItemRemoved);
+            } else if (numItemsRemoved > 1) {
+                mRecyclerView.announceForAccessibility(mRecyclerView.getContext().getString(
+                        R.string.multiple_history_items_deleted, numItemsRemoved));
+            }
+
             return true;
         } else if (item.getItemId() == R.id.search_menu_id) {
             mHistoryAdapter.removeHeader();
@@ -285,6 +299,12 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         }
         mHistoryAdapter.markItemForRemoval(item);
         mHistoryAdapter.removeItems();
+        announceItemRemoved(item);
+    }
+
+    private void announceItemRemoved(HistoryItem item) {
+        mRecyclerView.announceForAccessibility(
+                mRecyclerView.getContext().getString(R.string.delete_message, item.getTitle()));
     }
 
     /**
