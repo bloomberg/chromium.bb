@@ -21145,6 +21145,7 @@ Called by update_net_error_codes.py.-->
   <int value="2718" label="V8HTMLMediaElement_CanPlayType_Method"/>
   <int value="2719" label="HistoryLength"/>
   <int value="2720" label="FeaturePolicyReportOnlyHeader"/>
+  <int value="2721" label="V8PaymentRequest_HasEnrolledInstrument_Method"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
