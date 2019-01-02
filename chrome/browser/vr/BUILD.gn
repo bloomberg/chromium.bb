@@ -197,10 +197,7 @@ component("vr_ui") {
     "//skia",
   ]
 
-  defines = [
-    "VR_IMPLEMENTATION",
-    "VR_UI_IMPLEMENTATION",
-  ]
+  defines = [ "VR_UI_IMPLEMENTATION" ]
 
   if (use_command_buffer) {
     sources += [
@@ -258,6 +255,7 @@ component("vr_common") {
     "sounds_manager_audio_delegate.h",
     "ui_factory.cc",
     "ui_factory.h",
+    "vr_export.h",
     "vr_web_contents_observer.cc",
     "vr_web_contents_observer.h",
   ]
@@ -317,10 +315,7 @@ component("vr_common") {
     deps += [ "//services/ws/public/cpp/gpu" ]
   }
 
-  defines = [
-    "VR_IMPLEMENTATION",
-    "VR_UI_IMPLEMENTATION",
-  ]
+  defines = [ "VR_IMPLEMENTATION" ]
 
   if (!use_command_buffer) {
     sources += [
@@ -333,7 +328,7 @@ component("vr_common") {
 
 # vr_base contains common dependencies of vr_common and vr_ui. It exists because
 # vr_ui must not depend on vr_common.
-source_set("vr_base") {
+component("vr_base") {
   sources = [
     "assets_component_update_status.h",
     "assets_load_status.h",
@@ -392,7 +387,7 @@ source_set("vr_base") {
     "ui_support.h",
     "ui_test_input.h",
     "ui_unsupported_mode.h",
-    "vr_export.h",
+    "vr_base_export.h",
     "vr_geometry_util.cc",
     "vr_geometry_util.h",
     "vr_gl_util.cc",
@@ -404,10 +399,7 @@ source_set("vr_base") {
     "keyboard_delegate_for_testing.h",
   ]
 
-  defines = [
-    "VR_IMPLEMENTATION",
-    "VR_UI_IMPLEMENTATION",
-  ]
+  defines = [ "VR_BASE_IMPLEMENTATION" ]
 
   public_deps = [
     ":vr_build_features",

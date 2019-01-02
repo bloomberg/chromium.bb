@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_VR_MODEL_WEB_VR_MODEL_H_
 #define CHROME_BROWSER_VR_MODEL_WEB_VR_MODEL_H_
 
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_base_export.h"
 
 namespace vr {
 
@@ -35,7 +35,7 @@ enum class ExternalPromptNotificationType {
   kPromptBluetooth,
 };
 
-struct VR_EXPORT WebVrModel {
+struct VR_BASE_EXPORT WebVrModel {
   WebVrState state = kWebVrNoTimeoutPending;
   bool has_received_permissions = false;
   bool showing_hosted_ui = false;

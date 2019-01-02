@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_VR_MODEL_CONTROLLER_MODEL_H_
 
 #include "base/time/time.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_base_export.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/transform.h"
 
@@ -16,7 +16,7 @@ namespace vr {
 // platform-specific VR subsystem (e.g., GVR). It is used by both the
 // UiInputManager (for generating gestures), and by the UI for rendering the
 // controller.
-struct VR_EXPORT ControllerModel {
+struct VR_BASE_EXPORT ControllerModel {
   enum ButtonState {
     kUp,
     kDown,
