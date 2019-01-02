@@ -60,12 +60,9 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
   // This method is intended as a configuration option to be used after
   // construction. Behavior is undefined if |this| has already handled any
   // InkDrop inherited functions.
+  // TODO(pbos): Move along with AutoHighlightMode to views::InkDrop so users
+  // can configure inkdrops created by parent classes.
   void SetAutoHighlightMode(AutoHighlightMode auto_highlight_mode);
-
-  // Sets the AutoHighlightMode as per the platform. Platforms that show ripples
-  // will be set to HIDE_ON_RIPPLE, and platforms that don't show ripples are
-  // set to SHOW_ON_RIPPLE highlight behavior.
-  void SetAutoHighlightModeForPlatform();
 
   const base::Optional<int>& hover_highlight_fade_duration_ms() const {
     return hover_highlight_fade_duration_ms_;

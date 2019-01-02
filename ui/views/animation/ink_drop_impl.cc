@@ -621,10 +621,6 @@ void InkDropImpl::SetAutoHighlightMode(AutoHighlightMode auto_highlight_mode) {
   SetHighlightState(highlight_state_factory_->CreateStartState());
 }
 
-void InkDropImpl::SetAutoHighlightModeForPlatform() {
-  SetAutoHighlightMode(AutoHighlightMode::HIDE_ON_RIPPLE);
-}
-
 void InkDropImpl::HostSizeChanged(const gfx::Size& new_size) {
   // |root_layer_| should fill the entire host because it affects the clipping
   // when a mask layer is applied to it. This will not affect clipping if no

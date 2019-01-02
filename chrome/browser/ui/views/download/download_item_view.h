@@ -106,7 +106,6 @@ class DownloadItemView : public views::InkDropHostView,
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // view::InkDropHostView:
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   void OnInkDropCreated() override;
   SkColor GetInkDropBaseColor() const override;
 

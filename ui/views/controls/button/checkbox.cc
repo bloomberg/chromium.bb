@@ -107,7 +107,6 @@ void Checkbox::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 }
 
 std::unique_ptr<InkDrop> Checkbox::CreateInkDrop() {
-  // Completely removes the highlight.
   std::unique_ptr<InkDropImpl> ink_drop = CreateDefaultInkDropImpl();
   ink_drop->SetShowHighlightOnHover(false);
   ink_drop->SetAutoHighlightMode(InkDropImpl::AutoHighlightMode::NONE);
@@ -116,8 +115,8 @@ std::unique_ptr<InkDrop> Checkbox::CreateInkDrop() {
 
 std::unique_ptr<InkDropRipple> Checkbox::CreateInkDropRipple() const {
   // The "small" size is 21dp, the large size is 1.33 * 21dp = 28dp.
-  return CreateDefaultInkDropRipple(image()->GetMirroredBounds().CenterPoint(),
-                                    gfx::Size(21, 21));
+  return CreateSquareInkDropRipple(image()->GetMirroredBounds().CenterPoint(),
+                                   gfx::Size(21, 21));
 }
 
 SkColor Checkbox::GetInkDropBaseColor() const {

@@ -289,8 +289,7 @@ SkColor HoverButton::GetInkDropBaseColor() const {
 }
 
 std::unique_ptr<views::InkDrop> HoverButton::CreateInkDrop() {
-  std::unique_ptr<views::InkDrop> ink_drop =
-      CreateDefaultFloodFillInkDropImpl();
+  std::unique_ptr<views::InkDrop> ink_drop = MenuButton::CreateInkDrop();
   // Turn on highlighting when the button is focused only - hovering the button
   // will request focus.
   ink_drop->SetShowHighlightOnFocus(true);

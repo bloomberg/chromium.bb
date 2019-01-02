@@ -500,10 +500,6 @@ void DownloadItemView::OnThemeChanged() {
   UpdateDropdownButton();
 }
 
-std::unique_ptr<views::InkDrop> DownloadItemView::CreateInkDrop() {
-  return CreateDefaultFloodFillInkDropImpl();
-}
-
 void DownloadItemView::OnInkDropCreated() {
   ConfigureInkDrop();
 }

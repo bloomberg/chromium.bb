@@ -120,14 +120,9 @@ SkColor ToolbarActionView::GetInkDropBaseColor() const {
   return GetToolbarInkDropBaseColor(this);
 }
 
-bool ToolbarActionView::ShouldUseFloodFillInkDrop() const {
-  return delegate_->ShownInsideMenu();
-}
-
 std::unique_ptr<views::InkDrop> ToolbarActionView::CreateInkDrop() {
-  auto ink_drop = CreateToolbarInkDrop(this);
+  auto ink_drop = MenuButton::CreateInkDrop();
   ink_drop->SetShowHighlightOnHover(!delegate_->ShownInsideMenu());
-  ink_drop->SetShowHighlightOnFocus(!focus_ring());
   return ink_drop;
 }
 

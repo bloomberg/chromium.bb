@@ -52,17 +52,6 @@ void SetToolbarButtonHighlightPath(views::View* host_view,
   host_view->SetProperty(views::kHighlightPathKey, path.release());
 }
 
-std::unique_ptr<views::InkDrop> CreateToolbarInkDrop(
-    views::InkDropHostView* host_view) {
-  auto ink_drop =
-      std::make_unique<views::InkDropImpl>(host_view, host_view->size());
-  ink_drop->SetAutoHighlightMode(
-      views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
-  ink_drop->SetShowHighlightOnHover(true);
-  ink_drop->SetShowHighlightOnFocus(!views::PlatformStyle::kPreferFocusRings);
-  return ink_drop;
-}
-
 std::unique_ptr<views::InkDropHighlight> CreateToolbarInkDropHighlight(
     const views::InkDropHostView* host_view) {
   constexpr float kToolbarInkDropHighlightVisibleOpacity = 0.08f;

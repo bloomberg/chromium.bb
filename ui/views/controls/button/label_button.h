@@ -95,9 +95,6 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   void EnableCanvasFlippingForRTLUI(bool flip) override;
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
-  std::unique_ptr<InkDrop> CreateInkDrop() override;
-  std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  protected:
@@ -114,10 +111,6 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // Returns the available area for the label and image. Subclasses can change
   // these bounds if they need room to do manual painting.
   virtual gfx::Rect GetChildAreaBounds();
-
-  // Returns true if the CreateInkDrop*() methods should create flood fill ink
-  // drop components.
-  virtual bool ShouldUseFloodFillInkDrop() const;
 
   // View:
   void OnFocus() override;
