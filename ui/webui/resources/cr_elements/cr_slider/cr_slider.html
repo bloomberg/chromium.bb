@@ -39,7 +39,7 @@
 
       #barContainer {
         border-top-color: var(--cr-slider-container-color,
-            var(--google-blue-600-opacity-24));
+            rgba(var(--google-blue-600-rgb), .24));
         height: var(--cr-slider-bar-height);
         margin: 0 16px;
         position: absolute;
@@ -169,7 +169,7 @@
       }
 
       :host([disabled_]) #barContainer {
-        border-top-color: var(--google-grey-600-opacity-24);
+        border-top-color: rgba(var(--google-grey-600-rgb), .24);
       }
 
       :host([disabled_]) #bar {
