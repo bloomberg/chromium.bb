@@ -49,10 +49,6 @@ class CORE_EXPORT PaintLayerPainter {
                                  const PaintLayerPaintingInfo&,
                                  PaintLayerFlags);
 
-  void PaintOverlayScrollbars(GraphicsContext&,
-                              const CullRect&,
-                              const GlobalPaintFlags);
-
   // Returns true if the painted output of this PaintLayer and its children is
   // invisible and therefore can't impact painted output.
   bool PaintedOutputInvisible(const ComputedStyle&,
@@ -96,10 +92,6 @@ class CORE_EXPORT PaintLayerPainter {
                                     GraphicsContext&,
                                     const PaintLayerPaintingInfo&,
                                     PaintLayerFlags);
-  void PaintOverflowControlsForFragments(const PaintLayerFragments&,
-                                         GraphicsContext&,
-                                         const PaintLayerPaintingInfo&,
-                                         PaintLayerFlags);
   void PaintMaskForFragments(const PaintLayerFragments&,
                              GraphicsContext&,
                              const PaintLayerPaintingInfo&,
