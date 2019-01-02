@@ -35,10 +35,10 @@ function finishTest(status_string) {
 function runTest() {
   let container = document.createElement("div");
   Promise.all([
-    container.getDisplayLock().acquire(),
-    container.getDisplayLock().acquire(),
-    container.getDisplayLock().acquire(),
-    container.getDisplayLock().acquire()
+    container.getDisplayLock().acquire({ timeout: Infinity }),
+    container.getDisplayLock().acquire({ timeout: Infinity }),
+    container.getDisplayLock().acquire({ timeout: Infinity }),
+    container.getDisplayLock().acquire({ timeout: Infinity })
   ]).then(() => {
     let child = document.createElement("div");
     child.id = "child";

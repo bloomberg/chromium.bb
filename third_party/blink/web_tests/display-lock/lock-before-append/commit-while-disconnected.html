@@ -1,18 +1,18 @@
 <!doctype HTML>
 
 <!--
-Runs an acquire on a container with no containment, then adds
-containment and commits.
+Runs an acquire(), then commits without connecting the element, which should just unlock and fail.
 -->
 
 <style>
-.contained {
+#container {
   contain: content;
   width: 100px;
   height: 100px;
   background: lightblue;
 }
 </style>
+
 <div id="log"></div>
 
 <script>
@@ -27,18 +27,19 @@ function finishTest(status_string) {
     window.testRunner.notifyDone();
 }
 
-async function runTest() {
+function runTest() {
   let container = document.createElement("div");
-  await container.getDisplayLock().acquire({ timeout: Infinity });
+  container.id = "container";
 
-  container.classList = "contained";
-  document.body.appendChild(container);
-
-  container.getDisplayLock().commit().then(
-    () => { finishTest("PASS"); },
-    () => { finishTest("FAIL"); });
+  container.getDisplayLock().acquire({ timeout: Infinity }).then(() => {
+    container.getDisplayLock().commit().then(
+      () => { finishTest("FAIL"); },
+      () => {
+        document.body.appendChild(container);
+        finishTest("PASS");
+      });
+  });
 }
 
 window.onload = runTest;
 </script>
-
