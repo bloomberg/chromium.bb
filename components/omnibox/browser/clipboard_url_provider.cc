@@ -155,7 +155,7 @@ base::Optional<AutocompleteMatch> ClipboardURLProvider::CreateTextMatch(
       IDS_COPIED_TEXT_FROM_CLIPBOARD, AutocompleteMatch::SanitizeString(text)));
   AutocompleteMatch::ClassifyLocationInString(
       base::string16::npos, 0, match.contents.length(),
-      ACMatchClassification::DIM, &match.contents_class);
+      ACMatchClassification::NONE, &match.contents_class);
 
   match.description.assign(l10n_util::GetStringUTF16(IDS_TEXT_FROM_CLIPBOARD));
   AutocompleteMatch::ClassifyLocationInString(
