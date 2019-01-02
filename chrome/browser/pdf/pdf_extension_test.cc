@@ -644,12 +644,14 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Beep) {
   RunTestsInFile("beep_test.js", "test-beep.pdf");
 }
 
+#if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(PDFAnnotationsTest, AnnotationsFeatureEnabled) {
   RunTestsInFile("annotations_feature_enabled_test.js", "test.pdf");
 }
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, AnnotationsFeatureDisabled) {
   RunTestsInFile("annotations_feature_disabled_test.js", "test.pdf");
 }
+#endif
 
 // TODO(tsepez): See https://crbug.com/696650.
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_NoBeep) {
