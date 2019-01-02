@@ -242,13 +242,13 @@ Example Usage:
 
 ``` bash
 # Creates the data file ./report.ndjson, generated based on ./chrome.size
-tools/binary_size/supersize html_report chrome.size --report-file report.ndjson -v
+tools/binary_size/supersize html_report chrome.size report.ndjson -v
 
 # Includes every symbol in the data file, although it will take longer to load.
-tools/binary_size/supersize html_report chrome.size --report-file report.ndjson --all-symbols
+tools/binary_size/supersize html_report chrome.size report.ndjson --all-symbols
 
 # Create a data file showing a diff between two .size files.
-tools/binary_size/supersize html_report after.size --diff-with before.size --report-file report.ndjson
+tools/binary_size/supersize html_report after.size --diff-with before.size report.ndjson
 ```
 
 ### Usage: start_server
