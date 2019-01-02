@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_VR_MODEL_CAPTURING_STATE_MODEL_H_
 #define CHROME_BROWSER_VR_MODEL_CAPTURING_STATE_MODEL_H_
 
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_base_export.h"
 
 namespace vr {
 
-struct VR_EXPORT CapturingStateModel {
+struct VR_BASE_EXPORT CapturingStateModel {
   bool audio_capture_enabled = false;
   bool video_capture_enabled = false;
   bool screen_capture_enabled = false;

@@ -11,7 +11,7 @@
 #include "chrome/browser/vr/model/capturing_state_model.h"
 #include "chrome/browser/vr/model/web_vr_model.h"
 #include "chrome/browser/vr/ui_unsupported_mode.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_base_export.h"
 #include "components/security_state/core/security_state.h"
 
 namespace base {
@@ -28,7 +28,7 @@ struct LocationBarState;
 // The browser communicates state changes to the VR UI via this interface.
 // A GL thread would also implement this interface to provide a convenient way
 // to call these methods from the main thread.
-class VR_EXPORT BrowserUiInterface {
+class VR_BASE_EXPORT BrowserUiInterface {
  public:
   virtual ~BrowserUiInterface() {}
 
