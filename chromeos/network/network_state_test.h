@@ -28,6 +28,9 @@ class NetworkStateTest : public testing::Test {
   // Call this before TearDown() to shut down NetworkStateHandler.
   void ShutdownNetworkState();
 
+  // Clears services that are set by fake shill service manager by default.
+  void ClearDefaultServices();
+
   // Configures a new service using Shill properties from |shill_json_string|
   // which must include a GUID and Type. Returns the service path, or "" if the
   // service could not be configured.
