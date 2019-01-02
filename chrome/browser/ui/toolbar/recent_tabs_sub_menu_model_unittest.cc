@@ -271,17 +271,8 @@ TEST_F(RecentTabsSubMenuModelTest, RecentlyClosedTabsFromCurrentSession) {
   EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(6, &url, &title));
 }
 
-// TODO(sail): enable this test when dynamic model is enabled in
-// RecentTabsSubMenuModel.
-#if defined(OS_MACOSX)
-#define MAYBE_RecentlyClosedTabsAndWindowsFromLastSession \
-    DISABLED_RecentlyClosedTabsAndWindowsFromLastSession
-#else
-#define MAYBE_RecentlyClosedTabsAndWindowsFromLastSession \
-    RecentlyClosedTabsAndWindowsFromLastSession
-#endif
 TEST_F(RecentTabsSubMenuModelTest,
-       MAYBE_RecentlyClosedTabsAndWindowsFromLastSession) {
+       RecentlyClosedTabsAndWindowsFromLastSession) {
   DisableSync();
 
   TabRestoreServiceFactory::GetInstance()->SetTestingFactory(
@@ -508,13 +499,7 @@ TEST_F(RecentTabsSubMenuModelTest, OtherDevices) {
   EXPECT_TRUE(model.GetURLAndTitleForItemAtIndex(12, &url, &title));
 }
 
-// Mac doesn't support the dynamic menu.
-#if defined(OS_MACOSX)
-#define MAYBE_OtherDevicesDynamicUpdate DISABLED_OtherDevicesDynamicUpdate
-#else
-#define MAYBE_OtherDevicesDynamicUpdate OtherDevicesDynamicUpdate
-#endif
-TEST_F(RecentTabsSubMenuModelTest, MAYBE_OtherDevicesDynamicUpdate) {
+TEST_F(RecentTabsSubMenuModelTest, OtherDevicesDynamicUpdate) {
   // Create menu with disabled synchronization.
   DisableSync();
 
