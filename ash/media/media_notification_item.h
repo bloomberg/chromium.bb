@@ -5,6 +5,7 @@
 #ifndef ASH_MEDIA_MEDIA_NOTIFICATION_ITEM_H_
 #define ASH_MEDIA_MEDIA_NOTIFICATION_ITEM_H_
 
+#include <set>
 #include <string>
 
 #include "ash/ash_export.h"
@@ -34,7 +35,7 @@ class ASH_EXPORT MediaNotificationItem
       const base::Optional<media_session::MediaMetadata>& metadata) override;
   void MediaSessionActionsChanged(
       const std::vector<media_session::mojom::MediaSessionAction>& actions)
-      override {}
+      override;
 
   void SetView(MediaNotificationView* view);
 
@@ -65,6 +66,8 @@ class ASH_EXPORT MediaNotificationItem
   media_session::mojom::MediaSessionInfoPtr session_info_;
 
   media_session::MediaMetadata session_metadata_;
+
+  std::set<media_session::mojom::MediaSessionAction> session_actions_;
 
   mojo::Binding<media_session::mojom::MediaSessionObserver> observer_binding_{
       this};

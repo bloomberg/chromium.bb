@@ -7,6 +7,7 @@
 #include "ash/media/media_notification_constants.h"
 #include "ash/media/media_notification_controller.h"
 #include "ash/shell.h"
+#include "base/stl_util.h"
 #include "components/vector_icons/vector_icons.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/gfx/font.h"
@@ -207,9 +208,12 @@ void MediaNotificationView::UpdateWithMediaSessionInfo(
   bool playing = session_info->playback_state ==
                  media_session::mojom::MediaPlaybackState::kPlaying;
   play_pause_button_->SetToggled(playing);
-  play_pause_button_->set_tag(
-      playing ? static_cast<int>(MediaSessionAction::kPause)
-              : static_cast<int>(MediaSessionAction::kPlay));
+
+  MediaSessionAction action =
+      playing ? MediaSessionAction::kPause : MediaSessionAction::kPlay;
+  play_pause_button_->set_tag(static_cast<int>(action));
+  play_pause_button_->SetVisible(IsActionButtonVisible(action));
+  PreferredSizeChanged();
 }
 
 void MediaNotificationView::UpdateWithMediaMetadata(
@@ -228,6 +232,13 @@ void MediaNotificationView::UpdateWithMediaMetadata(
   artist_label_->SetVisible(!metadata.artist.empty());
 }
 
+void MediaNotificationView::UpdateWithMediaActions(
+    const std::set<media_session::mojom::MediaSessionAction>& actions) {
+  enabled_actions_ = actions;
+  UpdateActionButtonsVisibility();
+  PreferredSizeChanged();
+}
+
 void MediaNotificationView::UpdateControlButtonsVisibilityWithNotification(
     const message_center::Notification& notification) {
   // Media notifications do not use the settings and snooze buttons.
@@ -238,18 +249,31 @@ void MediaNotificationView::UpdateControlButtonsVisibilityWithNotification(
   UpdateControlButtonsVisibility();
 }
 
-void MediaNotificationView::UpdateViewForExpandedState() {
+bool MediaNotificationView::IsActionButtonVisible(
+    MediaSessionAction action) const {
+  // Not all media sessions support the same actions.
+  bool visible = base::ContainsKey(enabled_actions_, action);
+
   // We should reduce the number of action buttons we show when we are
   // collapsed.
+  // TODO(beccahughes): Use priority based ranking here
+  if (!expanded_ && visible)
+    visible = ShouldShowActionWhenCollapsed(action);
+
+  return visible;
+}
+
+void MediaNotificationView::UpdateActionButtonsVisibility() {
   for (int i = 0; i < button_row_->child_count(); ++i) {
     views::Button* action_button =
         views::Button::AsButton(button_row_->child_at(i));
 
-    action_button->SetVisible(expanded_ || ShouldShowActionWhenCollapsed(
-                                               static_cast<MediaSessionAction>(
-                                                   action_button->tag())));
+    action_button->SetVisible(IsActionButtonVisible(
+        static_cast<MediaSessionAction>(action_button->tag())));
   }
+}
 
+void MediaNotificationView::UpdateViewForExpandedState() {
   // Adjust the layout of the |main_row_| based on the expanded state. If the
   // notification is expanded then the buttons should be below the title/artist
   // information. If it is collapsed then the buttons will be to the right.
@@ -272,6 +296,8 @@ void MediaNotificationView::UpdateViewForExpandedState() {
   }
 
   header_row_->SetExpanded(expanded_);
+
+  UpdateActionButtonsVisibility();
 }
 
 void MediaNotificationView::CreateMediaButton(const gfx::VectorIcon& icon,

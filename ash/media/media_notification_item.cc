@@ -69,6 +69,15 @@ void MediaNotificationItem::MediaSessionMetadataChanged(
     view_->UpdateWithMediaMetadata(session_metadata_);
 }
 
+void MediaNotificationItem::MediaSessionActionsChanged(
+    const std::vector<media_session::mojom::MediaSessionAction>& actions) {
+  session_actions_ = std::set<media_session::mojom::MediaSessionAction>(
+      actions.begin(), actions.end());
+
+  if (view_)
+    view_->UpdateWithMediaActions(session_actions_);
+}
+
 void MediaNotificationItem::SetView(MediaNotificationView* view) {
   DCHECK(view_ || view);
 
@@ -78,6 +87,7 @@ void MediaNotificationItem::SetView(MediaNotificationView* view) {
     DCHECK(!session_info_.is_null());
     view_->UpdateWithMediaSessionInfo(session_info_);
     view_->UpdateWithMediaMetadata(session_metadata_);
+    view_->UpdateWithMediaActions(session_actions_);
   }
 }
 
