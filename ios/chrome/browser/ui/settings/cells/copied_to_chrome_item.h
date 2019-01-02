@@ -7,18 +7,15 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
-
-@class MDCButton;
+#import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
 // Item that configures a CopiedToChromeCell.
-@interface CopiedToChromeItem : CollectionViewItem
+@interface CopiedToChromeItem : TableViewItem
 @end
 
 // A cell indicating that the credit card has been copied to Chrome. Includes a
 // button to clear the copy.
-@interface CopiedToChromeCell : MDCCollectionViewCell
+@interface CopiedToChromeCell : UITableViewCell
 
 // Text label displaying the item's text.
 @property(nonatomic, readonly, strong) UILabel* textLabel;
