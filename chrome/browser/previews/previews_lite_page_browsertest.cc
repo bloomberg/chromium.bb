@@ -1122,10 +1122,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   ClearDeciderState();
 }
 
-// This was previously marked DISABLE_ON_WIN_MAC(), but the test is also failing
-// flakily on Linux, so now it is completely disabled. https://crbug.com/915775
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
-                       DISABLED_LitePagePreviewsReportSavings) {
+                       DISABLE_ON_WIN_MAC(LitePagePreviewsReportSavings)) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(data_reduction_proxy::prefs::kDataUsageReportingEnabled,
                     true);
@@ -1136,6 +1134,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
 
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewLoaded();
+
+  // Navigate to an untracked (no preview) page before checking reported savings
+  // to reduce flakiness.
+  ui_test_utils::NavigateToURL(browser(), GURL("http://www.google.com"));
 
   EXPECT_EQ(GetTotalOriginalContentLength() - GetTotalDataUsage(), 40U);
   EXPECT_EQ(GetDataUsage(), 20U);
