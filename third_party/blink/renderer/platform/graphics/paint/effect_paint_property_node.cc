@@ -32,21 +32,25 @@ FloatRect EffectPaintPropertyNode::MapRect(const FloatRect& input_rect) const {
 bool EffectPaintPropertyNode::Changed(
     const PropertyTreeState& relative_to_state,
     const TransformPaintPropertyNode* transform_not_to_check) const {
-  auto* relative_effect = relative_to_state.Effect()
-                              ? relative_to_state.Effect()->Unalias()
-                              : nullptr;
-  if (transform_not_to_check)
-    transform_not_to_check = transform_not_to_check->Unalias();
-  for (const auto* node = Unalias(); node && node != relative_effect;
-       node = node->Parent() ? node->Parent()->Unalias() : nullptr) {
+  auto* relative_effect = relative_to_state.Effect();
+  auto* relative_transform = relative_to_state.Transform();
+
+  // Note that we can't unalias nodes in the loop conditions, since we need to
+  // check NodeChanged() function on aliased nodes as well (since the parenting
+  // might change).
+  for (const auto* node = this; node && node != relative_effect;
+       node = node->Parent()) {
     if (node->NodeChanged())
       return true;
-    auto* local_transform = node->LocalTransformSpace()
-                                ? node->LocalTransformSpace()->Unalias()
-                                : nullptr;
+
+    // We shouldn't check state on aliased nodes, other than NodeChanged().
+    if (node->IsParentAlias())
+      continue;
+
+    auto* local_transform = node->LocalTransformSpace();
     if (node->HasFilterThatMovesPixels() &&
         local_transform != transform_not_to_check &&
-        local_transform->Changed(*relative_to_state.Transform()->Unalias())) {
+        local_transform->Changed(*relative_transform)) {
       return true;
     }
     // We don't check for change of OutputClip here to avoid N^3 complexity.
