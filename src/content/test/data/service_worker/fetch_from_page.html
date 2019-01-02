@@ -1,0 +1,11 @@
+<!doctype html>
+<title>Fetch url specified by a query param</title>
+<script>
+const params = new URLSearchParams(location.search);
+async function run() {
+  const response = await fetch(params.get('url'));
+  document.body.innerText += await response.text();
+  document.title = 'DONE';
+}
+self.onload = run;
+</script>

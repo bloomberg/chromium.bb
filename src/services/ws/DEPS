@@ -1,0 +1,10 @@
+include_rules = [
+  "+cc",
+  "+components/discardable_memory/service",
+  "+components/discardable_memory/public",
+  "+components/viz/common",
+  "+components/viz/host",
+  "+services/viz/public/interfaces",
+  "+third_party/skia/include",
+  "+ui",
+]

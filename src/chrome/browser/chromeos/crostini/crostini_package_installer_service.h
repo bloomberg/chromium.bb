@@ -1,0 +1,77 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_PACKAGE_INSTALLER_SERVICE_H_
+#define CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_PACKAGE_INSTALLER_SERVICE_H_
+
+#include <map>
+#include <string>
+#include <vector>
+
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_package_installer_notification.h"
+#include "components/keyed_service/core/keyed_service.h"
+
+namespace crostini {
+
+class CrostiniPackageInstallerService
+    : public KeyedService,
+      public InstallLinuxPackageProgressObserver {
+ public:
+  static CrostiniPackageInstallerService* GetForProfile(Profile* profile);
+
+  explicit CrostiniPackageInstallerService(Profile* profile);
+  ~CrostiniPackageInstallerService() override;
+
+  void NotificationClosed(CrostiniPackageInstallerNotification* notification);
+
+  // Install a Linux package. If successfully started, a system notification
+  // will be used to display further updates.
+  void InstallLinuxPackage(
+      const std::string& vm_name,
+      const std::string& container_name,
+      const std::string& package_path,
+      CrostiniManager::InstallLinuxPackageCallback callback);
+
+  // InstallLinuxPackageProgressObserver:
+  void OnInstallLinuxPackageProgress(
+      const std::string& vm_name,
+      const std::string& container_name,
+      InstallLinuxPackageProgressStatus result,
+      int progress_percent,
+      const std::string& failure_reason) override;
+
+ private:
+  // Wraps the callback provided in InstallLinuxPackage().
+  void OnInstallLinuxPackage(
+      const std::string& vm_name,
+      const std::string& container_name,
+      CrostiniManager::InstallLinuxPackageCallback callback,
+      ConciergeClientResult result,
+      const std::string& failure_reason);
+
+  std::string GetUniqueNotificationId();
+
+  Profile* profile_;
+
+  // Keyed on <vm_name, container_name>. A container can only have one install
+  // running at a time, but we need to keep notifications around until they're
+  // dismissed.
+  std::map<std::pair<std::string, std::string>,
+           std::unique_ptr<CrostiniPackageInstallerNotification>>
+      running_notifications_;
+  std::vector<std::unique_ptr<CrostiniPackageInstallerNotification>>
+      finished_notifications_;
+
+  int next_notification_id = 0;
+
+  base::WeakPtrFactory<CrostiniPackageInstallerService> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(CrostiniPackageInstallerService);
+};
+
+}  // namespace crostini
+
+#endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_PACKAGE_INSTALLER_SERVICE_H_

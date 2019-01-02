@@ -1,0 +1,14 @@
+{
+  "name": "mirroring",
+  "sandbox_type": "utility",
+  "display_name": "Mirroring Service",
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "mirroring": [
+          "mirroring.mojom.MirroringService"
+        ]
+      }
+    }
+  }
+}

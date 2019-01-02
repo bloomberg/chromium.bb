@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Picture-in-Picture Window Size Test</title>
+</head>
+<body>
+  <video controls preload=auto src='../bigbuck.webm'></video>
+</body>
+<script>
+  const video = document.querySelector('video');
+
+  // This video is created here in order to be used in
+  // `secondPictureInPicture()`. Unfortunately, the `requestPictureInPicture()`
+  // method has to be called during a user activation event handler so it's not
+  // possible to load the video on-demand.
+  const secondVideo = document.createElement('video');
+  secondVideo.src = '../bigbuck.webm';
+  secondVideo.load();
+
+  function requestPictureInPictureAndDisable() {
+    enterPictureInPictureInternal();
+    video.disablePictureInPicture = true;
+  }
+
+  function enterPictureInPicture() {
+    enterPictureInPictureInternal();
+  }
+
+  function exitPictureInPicture() {
+    document.exitPictureInPicture();
+  }
+
+  function isInPictureInPicture() {
+    window.domAutomationController.send(document.pictureInPictureElement == video);
+  }
+
+  function isPaused() {
+    window.domAutomationController.send(video.paused);
+  }
+
+  function enterPictureInPictureInternal() {
+    video.requestPictureInPicture()
+    .then(win => {
+      win.addEventListener('resize', () => {
+        document.title = 'resized';
+      }, { once: true });
+
+      video.addEventListener('leavepictureinpicture', () => {
+        document.title = 'left';
+      }, { once: true });
+
+      video.addEventListener('pictureinpicturecontrolclick', function(event) {
+        document.title = event.id;
+      }, { once: true });
+
+      window.domAutomationController.send(true);
+    })
+    .catch(e => {
+      window.domAutomationController.send(false);
+    });
+  }
+
+  function setControls(ids) {
+    try{
+      var controls = [];
+      Array.from(ids).forEach(id => {
+        controls.push({
+          id: id,
+          label: "label_" + id,
+          icons: [{
+            src: "icon.png",
+            sizes: "144x144",
+            type: "image/png",
+          }],
+        });
+      });
+      video.setPictureInPictureControls(controls);
+      return true;
+    } catch(error) {
+      return false;
+    }
+  }
+
+  function secondPictureInPicture() {
+    secondVideo.requestPictureInPicture();
+  }
+
+  function enterFullscreen() {
+    video.webkitRequestFullscreen();
+
+    video.addEventListener('webkitfullscreenchange', () => {
+      document.title = 'fullscreen';
+    }, { once: true });
+  }
+
+  function changeVideoSrc() {
+    video.src = video.src;
+    video.play()
+    .then(_ => { window.domAutomationController.send(true); })
+    .catch(e => { window.domAutomationController.send(false); });
+  }
+
+  function changeVideoSrcToMediaStream() {
+    const canvas = document.createElement('canvas');
+    canvas.getContext('2d').fillRect(0, 0, canvas.width, canvas.height);
+    video.autoplay = true;
+    video.srcObject = canvas.captureStream();
+    video.addEventListener('playing', function() {
+      setTimeout(_ => { window.domAutomationController.send(true); }, 100);
+    }, { once: true });
+  }
+</script>
+</html>

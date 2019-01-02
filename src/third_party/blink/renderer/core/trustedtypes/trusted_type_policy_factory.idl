@@ -1,0 +1,15 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://github.com/wicg/trusted-types
+
+[
+    Exposed=(Window),
+    RuntimeEnabled=TrustedDOMTypes
+] interface TrustedTypePolicyFactory {
+    [RaisesException] TrustedTypePolicy createPolicy(DOMString policyName, TrustedTypePolicyOptions policyOptions, optional boolean exposed = false);
+    TrustedTypePolicy getExposedPolicy(DOMString policyName);
+    // All the policy object names that have been created
+    [Affects=Nothing] sequence<DOMString> getPolicyNames();
+};

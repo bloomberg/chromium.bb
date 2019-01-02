@@ -1,0 +1,23 @@
+[document web]
+++[section]
+++++[dateeditor]
+++++++[section]
+++++++++[section]
+++++++++++[spin button] name='Month'
+++++++++++++[text] name='mm'
+++++++++++[text] name='/'
+++++++++++[spin button] name='Day'
+++++++++++++[text] name='dd'
+++++++++++[text] name='/'
+++++++++++[spin button] name='Year'
+++++++++++++[text] name='yyyy'
+++++++++++[text] name=', '
+++++++++++[spin button] name='Hours'
+++++++++++++[text] name='--'
+++++++++++[text] name=':'
+++++++++++[spin button] name='Minutes'
+++++++++++++[text] name='--'
+++++++++++[text] name=' '
+++++++++++[spin button] name='AM/PM'
+++++++++++++[text] name='--'
+++++++[push button] name='Show date picker' haspopup:menu

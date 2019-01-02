@@ -1,0 +1,25 @@
+[document web]
+++[section]
+++++[combo box] expandable haspopup:menu
+++++++[menu]
+++++++++[menu item] name='Placeholder option' selectable selected posinset:1 setsize:3
+++++++++[menu item] name='Option 1' posinset:2 setsize:3
+++++++++[menu item] name='Option 2' posinset:3 setsize:3
+++++[combo box] expandable haspopup:menu
+++++++[menu]
+++++++++[menu item] name='Option 1' posinset:1 setsize:3
+++++++++[menu item] name='Option 2' selectable selected posinset:2 setsize:3
+++++++++[menu item] name='Option 3' posinset:3 setsize:3
+++++[combo box] expandable required haspopup:menu
+++++++[menu]
+++++++++[menu item] name='Option 1' selectable selected posinset:1 setsize:3
+++++++++[menu item] name='Option 2' posinset:2 setsize:3
+++++++++[menu item] name='Option 3' posinset:3 setsize:3
+++++[list box] multiselectable
+++++++[list item] name='Option 1' posinset:1 setsize:3
+++++++[list item] name='Option 2' posinset:2 setsize:3
+++++++[list item] name='Option 3' posinset:3 setsize:3
+++++[list box]
+++++++[list item] name='Option 1' posinset:1 setsize:3
+++++++[list item] name='Option 2' posinset:2 setsize:3
+++++++[list item] name='Option 3' posinset:3 setsize:3

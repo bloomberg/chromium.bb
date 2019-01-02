@@ -1,0 +1,12 @@
+[document web]
+++[table]
+++++[table row]
+++++++[column header] name='Single'
+++++++++[text] name='Single'
+++++++[column header] name='Pair'
+++++++++[text] name='Pair'
+++++[table row]
+++++++[table cell] name='A'
+++++++++[text] name='A'
+++++++[table cell] name='AA'
+++++++++[text] name='AA'

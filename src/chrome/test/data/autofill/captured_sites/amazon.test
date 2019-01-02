@@ -1,0 +1,153 @@
+{
+  "name": "Amazon.com: The Path to Power (The Years of Lyndon Johnson, Volume 1) (9780679729457): Robert A. Caro: Books",
+  "startingURL": "https://www.amazon.com/Path-Power-Years-Lyndon-Johnson/dp/0679729453/ref=sr_1_1?_encoding=UTF8&ref_=nav_ya_signin&",
+  "actions": [
+    {
+      "selectorType": "xpath",
+      "selector": "//*[@id=\"add-to-cart-button\"]",
+      "context": {
+        "isIframe": false
+      },
+      "type": "click"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//*[@id=\"hlb-ptc-btn-native\"]",
+      "context": {
+        "isIframe": false
+      },
+      "type": "click"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//*[@id=\"enterAddressFullName\"]",
+      "context": {
+        "isIframe": false
+      },
+      "type": "autofill"
+    },
+    {
+      "selector": "//*[@id=\"enterAddressFullName\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "NAME_FULL",
+      "expectedValue": "Milton C. Waddams",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"enterAddressAddressLine1\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "ADDRESS_HOME_LINE1",
+      "expectedValue": "4120 Freidrich Lane",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"enterAddressAddressLine2\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "ADDRESS_HOME_LINE2",
+      "expectedValue": "Apt 8",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"enterAddressCity\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "ADDRESS_HOME_CITY",
+      "expectedValue": "Austin",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"enterAddressStateOrRegion\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "ADDRESS_HOME_STATE",
+      "expectedValue": "Texas",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"enterAddressPostalCode\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "ADDRESS_HOME_ZIP",
+      "expectedValue": "78744",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"enterAddressPhoneNumber\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "PHONE_HOME_WHOLE_NUMBER",
+      "expectedValue": "5125551234",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//input[@type='submit' and @value='Deliver to this address']",
+      "context": {
+        "isIframe": false
+      },
+      "type": "click"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//*[@id=\"shippingOptionFormId\"]/div[1]/div[2]/div/span[contains(., '')]/span[contains(., '')]/input[@type='submit' and @value='Continue']",
+      "context": {
+        "isIframe": false
+      },
+      "type": "click"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//*[@id=\"ccName\"]",
+      "context": {
+        "isIframe": false
+      },
+      "type": "autofill"
+    },
+    {
+      "selector": "//*[@id=\"addCreditCardNumber\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "CREDIT_CARD_NUMBER",
+      "expectedValue": "9621327911759602",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"ccName\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "CREDIT_CARD_NAME_FULL",
+      "expectedValue": "Milton Waddams",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"ccMonth\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "CREDIT_CARD_EXP_MONTH",
+      "expectedValue": "5",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"ccYear\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "CREDIT_CARD_EXP_4_DIGIT_YEAR",
+      "expectedValue": "2027",
+      "type": "validateField"
+    }
+  ]
+}

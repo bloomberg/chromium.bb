@@ -1,0 +1,23 @@
+{
+  "name": "network",
+  "display_name": "Network Service",
+  "sandbox_type": "network",
+  "options" : {
+    "instance_sharing" : "shared_instance_across_users"
+  },
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "network_service": [
+          "network.mojom.NetworkService"
+        ],
+        "test": [
+          "network.mojom.NetworkServiceTest"
+        ],
+        "url_loader": [
+          "network.mojom.URLLoaderFactory"
+        ]
+      }
+    }
+  }
+}

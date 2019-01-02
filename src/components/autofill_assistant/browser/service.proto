@@ -1,0 +1,176 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package autofill_assistant;
+
+// Context contains client environment details.
+message ClientContextProto {
+  required string chrome_version = 1;
+}
+
+// Get the list of scripts that can potentially be run on a url.
+message SupportsScriptRequestProto {
+  required string url = 1;
+  required ClientContextProto client_context = 2;
+}
+
+// Response of the list of supported scripts.
+message SupportsScriptResponseProto {
+  repeated SupportedScriptProto scripts = 1;
+}
+
+// Supported script.
+message SupportedScriptProto {
+  // This is the internal name of the script.
+  required string path = 1;
+
+  message PresentationProto {
+    // Script name.
+    optional string name = 1;
+
+    // Precondition contains a set of conditions that must hold for a script to
+    // be executed. No precondition means that a script can run in any case.
+    optional ScriptPreconditionProto precondition = 2;
+  }
+  optional PresentationProto presentation = 2;
+}
+
+message ScriptPreconditionProto {
+  // Combined with AND: the elements referenced here must be present.
+  repeated ElementReferenceProto elements_exist = 1;
+}
+
+enum PolicyType {
+  UNKNOWN_POLICY = 0;
+  SCRIPT = 1;
+  PAGE = 2;
+  VALIDATION = 3;
+  TRACE = 4;
+}
+
+message ScriptActionRequestProto {
+  optional ClientContextProto client_context = 7;
+
+  // The server payload received from the previous response.
+  optional bytes server_payload = 1;
+
+  oneof request {
+    InitialScriptActionsRequestProto initial_request = 4;
+    NextScriptActionsRequestProto next_request = 5;
+  }
+}
+
+// Initial request to get a script's actions.
+message InitialScriptActionsRequestProto {
+  message QueryProto {
+    required string script_path = 1;
+    optional PolicyType policy = 2;
+  }
+  required QueryProto query = 1;
+}
+
+// Next request to get a script's actions.
+message NextScriptActionsRequestProto {
+  // The result of processing each ActionProto from the previous response. This
+  // field must be in the same order as the actions in the original response.
+  // It may have less actions in case of failure.
+  repeated ProcessedActionProto processed_actions = 1;
+}
+
+// Response of a script's actions.
+message ActionsResponseProto {
+  // Opaque data that should not be interpreted and must pass this back
+  // unchanged in the next request.
+  optional bytes server_payload = 1;
+
+  // Actions to be performed in order.
+  // Should stop processing as soon as an action fails.
+  repeated ActionProto actions = 2;
+}
+
+// An action could be performed.
+message ActionProto {
+  // Wait these many milliseconds before executing the action, if set.
+  optional int32 action_delay_ms = 3;
+
+  // Opaque data that should not be interpreted by the client. The client must
+  // pass this back unchanged in the next request
+  optional bytes server_payload = 4;
+
+  oneof action_info {
+    ClickProto click = 5;
+    TellProto tell = 11;
+    WaitForDomProto wait_for_dom = 19;
+    UseCreditCardProto use_card = 28;
+    UseAddressProto use_address = 29;
+  }
+}
+
+message ProcessedActionProto {
+  // The action that was processed.
+  optional ActionProto action = 1;
+
+  optional ProcessedActionStatus status = 2;
+}
+
+enum ProcessedActionStatus {
+  UNKNOWN_ACTION_STATUS = 0;
+  ELEMENT_RESOLUTION_FAILED = 1;
+  ACTION_APPLIED = 2;
+  OTHER_ACTION_STATUS = 3;
+}
+
+// A reference to an unique element on the page, possibly nested in frames.
+message ElementReferenceProto {
+  // A sequence of CSS selectors. Any non-final CSS selector is expected to
+  // arrive at a frame or an iframe, i.e. an element that contains another
+  // document.
+  // APIs are free to reject element references that do not refer to unique
+  // elements (i.e. resolve to more than one element on the page).
+  repeated string selectors = 1;
+}
+
+// Contain all arguments to perform a click.
+message ClickProto {
+  required ElementReferenceProto element_to_click = 1;
+}
+
+// Contain a localized text message from the server.
+message TellProto {
+  required string message = 1;
+}
+
+// Fill a form with an address if there is, otherwise fail this action.
+message UseAddressProto {
+  // Optional message to show usage of the address, like billing or shipping
+  // address.
+  optional string usage = 1;
+
+  // Reference to an element in the form that should be filled.
+  required ElementReferenceProto form_field_element = 2;
+}
+
+// Fill a form with a credit card if there is, otherwise fail this action.
+message UseCreditCardProto {
+  // A reference to the card number field in the form that should be filled.
+  required ElementReferenceProto form_field_element = 1;
+}
+
+// Ask Chrome to wait for an element in the DOM. This can be used to only
+// proceed to the next action once the page is ready.
+message WaitForDomProto {
+  // The element to wait.
+  required ElementReferenceProto element = 1;
+
+  // Fail after waiting this amount of time.
+  optional int32 timeout_ms = 2;
+
+  // If true, wait for the given element to be absent, otherwise wait for
+  // existence.
+  optional bool check_for_absence = 3;
+}

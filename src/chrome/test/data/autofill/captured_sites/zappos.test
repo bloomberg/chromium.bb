@@ -1,0 +1,145 @@
+{
+  "name": "Online Shoes, Clothing, Always Shipped FREE | Zappos.com",
+  "startingURL": "https://www.zappos.com/marty/cart",
+  "actions": [
+    {
+      "selectorType": "xpath",
+      "selector": "//*[@id=\"root\"]/div/div/main/div/div/div[2]/div[2]/div/div[2]/form/button[contains(., 'Proceed to CheckoutCart')]",
+      "context": {
+        "isIframe": false
+      },
+      "type": "click"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//*[@id=\"address\"]/div[1]/div/div[2]/div[2]/div[2]/div/div/div/div/div/div[2]/div/span[contains(., 'Ship to a new address')]/div/div/div/img",
+      "context": {
+        "isIframe": false
+      },
+      "type": "click"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//*[@id=\"AddressForm_NAME\"]",
+      "context": {
+        "isIframe": false
+      },
+      "type": "autofill"
+    },
+    {
+      "selector": "//*[@id=\"AddressForm_NAME\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "NAME_FULL",
+      "expectedValue": "Milton C. Waddams",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"AddressForm_ADDRESS_LINE_1\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "ADDRESS_HOME_LINE1",
+      "expectedValue": "4120 Freidrich Lane",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"AddressForm_ADDRESS_LINE_2\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "ADDRESS_HOME_LINE2",
+      "expectedValue": "Apt 8",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"AddressForm_CITY\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "ADDRESS_HOME_CITY",
+      "expectedValue": "Austin",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"AddressForm_STATE_OR_REGION\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "ADDRESS_HOME_STATE",
+      "expectedValue": "Texas",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"AddressForm_ZIP_CODE\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "ADDRESS_HOME_ZIP",
+      "expectedValue": "78744",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"AddressForm_PHONE_NUMBER\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "PHONE_HOME_WHOLE_NUMBER",
+      "expectedValue": "5125551234",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//*[@id=\"saveAndShipToThisAddress\"]",
+      "context": {
+        "isIframe": false
+      },
+      "type": "click"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//*[@id=\"ccNumber\"]",
+      "context": {
+        "isIframe": false
+      },
+      "type": "autofill"
+    },
+    {
+      "selector": "//*[@id=\"ccNumber\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "CREDIT_CARD_NUMBER",
+      "expectedValue": "9621327911759602",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"ccName\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "CREDIT_CARD_NAME_FULL",
+      "expectedValue": "Milton Waddams",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"ccMonth\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "CREDIT_CARD_EXP_MONTH",
+      "expectedValue": "5",
+      "type": "validateField"
+    },
+    {
+      "selector": "//*[@id=\"ccYear\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "CREDIT_CARD_EXP_4_DIGIT_YEAR",
+      "expectedValue": "2027",
+      "type": "validateField"
+    }
+  ]
+}

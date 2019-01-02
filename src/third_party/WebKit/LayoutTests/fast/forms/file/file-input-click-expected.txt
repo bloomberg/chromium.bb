@@ -1,0 +1,4 @@
+FileChooser: opened; multiple=false directory=false
+Ensure clicking on an INPUT element with TYPE=FILE launches a file chooser. Automated test passes if 'FileChooser: opened' was logged.
+
+

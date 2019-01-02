@@ -1,0 +1,11 @@
+{
+  "name": "foo",
+  "display_name": "Foo",
+  "options": {
+    "instance_sharing": "singleton",
+    "allow_other_user_ids": true,
+    "allow_other_instance_names": true,
+    "instance_for_client_process": true
+  },
+  "interface_provider_specs": { }
+}

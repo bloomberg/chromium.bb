@@ -1,0 +1,102 @@
+{
+    "0": {
+        "benchmarks": {
+            "memory.leak_detection" : {
+                "end": 20
+            }
+        }
+    },
+    "1": {
+        "benchmarks": {
+           "memory.leak_detection" : {
+                "begin":21,
+                "end": 40
+            }
+
+        }
+    },
+    "2": {
+        "benchmarks": {
+           "memory.leak_detection" : {
+                "begin":41,
+                "end": 60
+            }
+
+        }
+    },
+    "2": {
+        "benchmarks": {
+           "memory.leak_detection" : {
+                "begin":41,
+                "end": 60
+            }
+
+        }
+    },
+    "3": {
+        "benchmarks": {
+           "memory.leak_detection" : {
+                "begin":61,
+                "end": 80
+            }
+
+        }
+    },
+    "4": {
+        "benchmarks": {
+           "memory.leak_detection" : {
+                "begin":81,
+                "end": 100
+            }
+
+        }
+    },
+    "5": {
+        "benchmarks": {
+           "memory.leak_detection" : {
+                "begin":101,
+                "end": 120
+            }
+
+        }
+    },
+    "6": {
+        "benchmarks": {
+           "memory.leak_detection" : {
+                "begin":121,
+                "end": 140
+            }
+
+        }
+    },
+    "7": {
+        "benchmarks": {
+           "memory.leak_detection" : {
+                "begin":141,
+                "end": 160
+            }
+
+        }
+    },
+    "8": {
+        "benchmarks": {
+           "memory.leak_detection" : {
+                "begin":161,
+                "end": 180
+            }
+
+        }
+    },
+    "9": {
+        "benchmarks": {
+           "memory.leak_detection" : {
+                "begin":181,
+                "end": 200
+            }
+
+        }
+    },
+    "extra_infos": {
+        "num_stories": 200
+    }
+}

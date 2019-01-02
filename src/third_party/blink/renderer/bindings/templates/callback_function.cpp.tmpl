@@ -1,0 +1,72 @@
+{% from 'callback_invoke.cc.tmpl' import callback_invoke %}
+{% filter format_blink_cpp_source_code %}
+
+{% include 'copyright_block.txt' %}
+
+#include "{{this_include_header_path}}"
+
+{% for filename in cpp_includes %}
+#include "{{filename}}"
+{% endfor %}
+
+namespace blink {
+
+const char* {{cpp_class}}::NameInHeapSnapshot() const {
+  return "{{cpp_class}}";
+}
+
+v8::Maybe<{{return_cpp_type}}> {{cpp_class}}::Invoke({{argument_declarations | join(', ')}}) {
+{{callback_invoke(
+    'callback function', 'invoke',
+    return_cpp_type, native_value_traits_tag, arguments,
+    callback_function_name, 'invoke')}}
+}
+
+{% if idl_type == 'any' %}
+v8::Maybe<{{return_cpp_type}}> {{cpp_class}}::Construct({{argument_declarations[1:] | join(', ')}}) {
+{{callback_invoke(
+    'callback function', 'construct',
+    return_cpp_type, native_value_traits_tag, arguments,
+    callback_function_name, 'construct')}}
+}
+{% endif %}
+
+{% if idl_type == 'void' or callback_function_name == 'Function' %}
+void {{cpp_class}}::InvokeAndReportException({{argument_declarations | join(', ')}}) {
+  v8::TryCatch try_catch(GetIsolate());
+  try_catch.SetVerbose(true);
+
+  v8::Maybe<{{return_cpp_type}}> maybe_result =
+      Invoke({{
+                 (['callback_this_value'] +
+                  (arguments|map(attribute='name')|list)
+                 )|join(', ')
+             }});
+  // An exception if any is killed with the v8::TryCatch above.
+  ALLOW_UNUSED_LOCAL(maybe_result);
+}
+{% endif %}
+
+v8::Maybe<{{return_cpp_type}}> V8PersistentCallbackFunction<{{cpp_class}}>::Invoke({{argument_declarations | join(', ')}}) {
+  return Proxy()->Invoke(
+      {{
+         (['callback_this_value'] +
+          (arguments|map(attribute='name')|list)
+         )|join(', ')
+      }});
+}
+
+{% if idl_type == 'void' or callback_function_name == 'Function' %}
+void V8PersistentCallbackFunction<{{cpp_class}}>::InvokeAndReportException({{argument_declarations | join(', ')}}) {
+  Proxy()->InvokeAndReportException(
+      {{
+         (['callback_this_value'] +
+          (arguments|map(attribute='name')|list)
+         )|join(', ')
+      }});
+}
+{% endif %}
+
+}  // namespace blink
+
+{% endfilter %}{# format_blink_cpp_source_code #}

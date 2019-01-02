@@ -1,0 +1,30 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://w3c.github.io/webrtc-quic/#dom-rtcquictransportstate
+enum RTCQuicTransportState {
+    "new",
+    "connecting",
+    "connected",
+    "closed",
+    "failed",
+};
+
+// https://w3c.github.io/webrtc-quic/#quic-transport*
+[
+   Constructor(RTCIceTransport transport, sequence<RTCCertificate> certificates),
+   RaisesException=Constructor,
+   Exposed=Window,
+   RuntimeEnabled=RTCQuicTransport
+] interface RTCQuicTransport {
+    readonly attribute RTCIceTransport transport;
+    readonly attribute RTCQuicTransportState state;
+    RTCQuicParameters getLocalParameters();
+    RTCQuicParameters? getRemoteParameters();
+    sequence<RTCCertificate> getCertificates();
+    sequence<ArrayBuffer> getRemoteCertificates();
+    void stop();
+    [RaisesException, RuntimeEnabled=RTCQuicStream] RTCQuicStream createStream();
+    // TODO(crbug.com/868068): Implement remaining control methods + events.
+};

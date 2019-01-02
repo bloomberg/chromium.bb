@@ -1,0 +1,9 @@
+include_rules = [
+   "+media/audio",
+   "+media/base",
+   "+media/mojo",
+   "+media/webrtc",
+   "+sandbox",
+   "+services/audio/public",
+   "+services/service_manager/sandbox",
+]

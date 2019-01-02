@@ -1,0 +1,16 @@
+{
+  "name": "data_decoder",
+  "display_name": "Data Decoder Service",
+  "options" : {
+    "instance_sharing" : "shared_instance_across_users"
+  },
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "image_decoder": [ "data_decoder.mojom.ImageDecoder" ],
+        "json_parser": [ "data_decoder.mojom.JsonParser" ],
+        "xml_parser": [ "data_decoder.mojom.XmlParser" ]
+      }
+    }
+  }
+}

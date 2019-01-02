@@ -1,0 +1,19 @@
+[document web]
+++[table] name='Browser and Engine'
+++++[caption]
+++++++[text] name='Browser and Engine'
+++++[table row]
+++++++[column header] name='Browser'
+++++++++[text] name='Browser'
+++++++[column header] name='Engine'
+++++++++[text] name='Engine'
+++++[table row]
+++++++[table cell] name='Chrome'
+++++++++[text] name='Chrome'
+++++++[table cell] name='Blink'
+++++++++[text] name='Blink'
+++++[table row]
+++++++[table cell] name='Safari'
+++++++++[text] name='Safari'
+++++++[table cell] name='WebKit'
+++++++++[text] name='WebKit'

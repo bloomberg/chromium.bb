@@ -1,0 +1,48 @@
+#!/usr/bin/env python
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""This tool provides a command line interface for the flakiness dashboard."""
+
+import argparse
+import sys
+
+from test_results import analysis
+from test_results import core
+
+
+def main():
+  parser = argparse.ArgumentParser()
+  subparsers = parser.add_subparsers(dest='action')
+  subparsers.required = True
+  subparser = subparsers.add_parser('builders')
+  subparser.add_argument(
+      '--master', help='include results for this master only, can use'
+      ' shell-style wildcards to match multiple masters.')
+  subparser.add_argument(
+      '--builder', help='include results for this builder only, can use'
+      ' shell-style wildcards to match multiple builders.')
+  subparser.add_argument(
+      '--test-type', help='include results for this test type only, can use'
+      ' shell-style wildcards to match multiple test types.')
+  subparser = subparsers.add_parser('results')
+  subparser.add_argument('master')
+  subparser.add_argument('builder')
+  subparser.add_argument('test_type')
+  args = parser.parse_args()
+
+  if args.action == 'builders':
+    df = core.GetBuilders()
+    df = analysis.FilterBy(
+        df, master=args.master, builder=args.builder, test_type=args.test_type)
+    print df
+  elif args.action == 'results':
+    print core.GetTestResults(args.master, args.builder, args.test_type)
+  else:
+    raise NotImplementedError(args.action)
+
+
+if __name__ == '__main__':
+  core.CheckDependencies()
+  sys.exit(main())

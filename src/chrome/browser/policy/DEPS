@@ -1,0 +1,12 @@
+include_rules = [
+  "+chrome",
+  "+chromeos",
+  "+content/public/browser",
+  "+content/public/common",
+  "+content/public/test",
+]
+specific_include_rules = {
+  "policy_browsertest\.cc": [
+    "+ash/shell.h",
+  ]
+}

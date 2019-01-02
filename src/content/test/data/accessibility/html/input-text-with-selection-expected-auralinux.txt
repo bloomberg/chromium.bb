@@ -1,0 +1,3 @@
+[document web] focusable
+++[section]
+++++[entry] editable focusable focused single-line selectable-text text-input-type:text
