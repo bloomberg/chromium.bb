@@ -974,7 +974,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     VerifyPreviewNotLoaded();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.BlacklistReasons",
-        PreviewsLitePageNavigationThrottle::BlacklistReason::kHostBlacklisted,
+        PreviewsLitePageNavigationThrottle::BlacklistReason::
+            kHostBypassBlacklisted,
         1);
     ClearDeciderState();
 

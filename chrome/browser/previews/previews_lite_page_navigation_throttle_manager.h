@@ -53,12 +53,14 @@ class PreviewsLitePageNavigationThrottleManager {
   // Prompts |this| to display the required UI notifications to the user.
   virtual void NotifyUser(content::WebContents* web_contents) = 0;
 
-  // Blacklists the given |host| for the given |duration|.
-  virtual void BlacklistHost(const std::string& host,
-                             base::TimeDelta duration) = 0;
+  // Blacklists the given |host| for the given |duration| in the server
+  // bypass blacklist for LitePageRedirects.
+  virtual void BlacklistBypassedHost(const std::string& host,
+                                     base::TimeDelta duration) = 0;
 
-  // Returns true if the given |host| is blacklisted.
-  virtual bool HostBlacklisted(const std::string& host) = 0;
+  // Returns true if the given |host| is blacklisted in the server bypass
+  // blacklist.
+  virtual bool HostBlacklistedFromBypass(const std::string& host) = 0;
 };
 
 #endif  // CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_NAVIGATION_THROTTLE_MANAGER_H_

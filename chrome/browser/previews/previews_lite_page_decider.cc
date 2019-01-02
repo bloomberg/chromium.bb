@@ -135,7 +135,7 @@ PreviewsLitePageDecider::PreviewsLitePageDecider(
       page_id_(base::RandUint64()),
       drp_settings_(nullptr),
       pref_service_(nullptr),
-      host_blacklist_(std::make_unique<base::DictionaryValue>()) {
+      host_bypass_blacklist_(std::make_unique<base::DictionaryValue>()) {
   if (!browser_context)
     return;
 
@@ -148,15 +148,15 @@ PreviewsLitePageDecider::PreviewsLitePageDecider(
   DCHECK(!browser_context->IsOffTheRecord());
 
   pref_service_ = Profile::FromBrowserContext(browser_context)->GetPrefs();
-  host_blacklist_ =
+  host_bypass_blacklist_ =
       pref_service_->GetDictionary(kHostBlacklist)->CreateDeepCopy();
 
   // Note: This switch has no effect if |drp_settings| was null since
-  // |host_blacklist_| would be empty anyways.
+  // |host_bypass_blacklist_| would be empty anyways.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           previews::switches::kClearLitePageRedirectLocalBlacklist)) {
-    host_blacklist_->Clear();
-    pref_service_->Set(kHostBlacklist, *host_blacklist_);
+    host_bypass_blacklist_->Clear();
+    pref_service_->Set(kHostBlacklist, *host_bypass_blacklist_);
   }
 
   // Add |this| as an observer to DRP, but if DRP is already initialized, check
@@ -253,14 +253,14 @@ void PreviewsLitePageDecider::SetDRPSettingsForTesting(
 
 void PreviewsLitePageDecider::ClearBlacklist() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  host_blacklist_->Clear();
+  host_bypass_blacklist_->Clear();
   if (pref_service_)
-    pref_service_->Set(kHostBlacklist, *host_blacklist_);
+    pref_service_->Set(kHostBlacklist, *host_bypass_blacklist_);
 }
 
 void PreviewsLitePageDecider::ClearStateForTesting() {
   single_bypass_.clear();
-  host_blacklist_->Clear();
+  host_bypass_blacklist_->Clear();
 }
 
 void PreviewsLitePageDecider::SetUserHasSeenUINotification() {
@@ -369,21 +369,22 @@ void PreviewsLitePageDecider::NotifyUser(content::WebContents* web_contents) {
                      base::Unretained(this)));
 }
 
-void PreviewsLitePageDecider::BlacklistHost(const std::string& host,
-                                            base::TimeDelta duration) {
+void PreviewsLitePageDecider::BlacklistBypassedHost(const std::string& host,
+                                                    base::TimeDelta duration) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // If there is an existing entry, intentionally update it.
-  host_blacklist_->SetKey(
+  host_bypass_blacklist_->SetKey(
       host, base::Value((base::Time::Now() + duration).ToDoubleT()));
 
-  RemoveStaleEntries(host_blacklist_.get());
+  RemoveStaleEntries(host_bypass_blacklist_.get());
   if (pref_service_)
-    pref_service_->Set(kHostBlacklist, *host_blacklist_);
+    pref_service_->Set(kHostBlacklist, *host_bypass_blacklist_);
 }
 
-bool PreviewsLitePageDecider::HostBlacklisted(const std::string& host) {
+bool PreviewsLitePageDecider::HostBlacklistedFromBypass(
+    const std::string& host) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::Value* value = host_blacklist_->FindKey(host);
+  base::Value* value = host_bypass_blacklist_->FindKey(host);
   if (!value)
     return false;
 

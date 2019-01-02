@@ -306,8 +306,8 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
     }
   }
 
-  if (manager_->HostBlacklisted(url.host()))
-    blacklist_reasons.push_back(BlacklistReason::kHostBlacklisted);
+  if (manager_->HostBlacklistedFromBypass(url.host()))
+    blacklist_reasons.push_back(BlacklistReason::kHostBypassBlacklisted);
 
   // Record UMA
   for (BlacklistReason reason : blacklist_reasons) {
@@ -562,7 +562,8 @@ PreviewsLitePageNavigationThrottle::WillRedirectRequest() {
           chrome_proxy_header.find("host-blacklisted") != std::string::npos;
 
       if (blacklist_host)
-        manager_->BlacklistHost(GURL(original_url).host(), kBlacklistDuration);
+        manager_->BlacklistBypassedHost(GURL(original_url).host(),
+                                        kBlacklistDuration);
 
       UMA_HISTOGRAM_BOOLEAN("Previews.ServerLitePage.HostBlacklistedOnBypass",
                             blacklist_host);
