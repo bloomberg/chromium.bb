@@ -716,7 +716,6 @@ void CorePageLoadMetricsObserver::OnUserInput(
 }
 
 void CorePageLoadMetricsObserver::OnResourceDataUseObserved(
-    FrameTreeNodeId frame_tree_node_id,
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
         resources) {
   for (auto const& resource : resources) {
