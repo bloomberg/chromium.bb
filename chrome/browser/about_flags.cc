@@ -2611,6 +2611,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalAccessibilityFeaturesName,
      flag_descriptions::kExperimentalAccessibilityFeaturesDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(::switches::kEnableExperimentalAccessibilityFeatures)},
+    {"enable-experimental-accessibility-labels",
+     flag_descriptions::kExperimentalAccessibilityLabelsName,
+     flag_descriptions::kExperimentalAccessibilityLabelsDescription, kOsAll,
+     SINGLE_VALUE_TYPE(::switches::kEnableExperimentalAccessibilityLabels)},
 #if defined(OS_CHROMEOS)
     {"opt-in-ime-menu", flag_descriptions::kEnableImeMenuName,
      flag_descriptions::kEnableImeMenuDescription, kOsCrOS,

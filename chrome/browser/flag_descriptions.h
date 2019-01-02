@@ -166,6 +166,9 @@ extern const char kExperimentalAccessibilityFeaturesDescription[];
 extern const char kExperimentalAccessibilityAutoclickName[];
 extern const char kExperimentalAccessibilityAutoclickDescription[];
 
+extern const char kExperimentalAccessibilityLabelsName[];
+extern const char kExperimentalAccessibilityLabelsDescription[];
+
 extern const char kExperimentalAccessibilitySwitchAccessName[];
 extern const char kExperimentalAccessibilitySwitchAccessDescription[];
 

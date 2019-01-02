@@ -692,6 +692,11 @@ const char kExperimentalAccessibilityAutoclickName[] =
 const char kExperimentalAccessibilityAutoclickDescription[] =
     "Enable additional features for automatic clicks.";
 
+const char kExperimentalAccessibilityLabelsName[] =
+    "Experimental accessibility image label features";
+const char kExperimentalAccessibilityLabelsDescription[] =
+    "Enable additional features for image labels for accessibility.";
+
 const char kExperimentalAccessibilitySwitchAccessName[] =
     "Experimental feature Switch Access";
 const char kExperimentalAccessibilitySwitchAccessDescription[] =
