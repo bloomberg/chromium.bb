@@ -44,13 +44,17 @@ class ContextualSuggestionsBridge {
       const base::android::JavaParamRef<jstring>& j_suggestion_id,
       const base::android::JavaParamRef<jobject>& j_callback);
 
-  // Fetches a favicon corresponding to suggestion with |j_suggestion_id| and
-  // passes results to Java side using |j_callback|.
-  void FetchSuggestionFavicon(
+  // Gets the image URL for the given |suggestion_id|.
+  base::android::ScopedJavaLocalRef<jstring> GetImageUrl(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& j_suggestion_id,
-      const base::android::JavaParamRef<jobject>& j_callback);
+      const base::android::JavaParamRef<jstring>& j_suggestion_id);
+
+  // Gets the favicon URL for the given |suggestion_id|.
+  base::android::ScopedJavaLocalRef<jstring> GetFaviconUrl(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& j_suggestion_id);
 
   // Requests the backend to clear state related to this bridge.
   void ClearState(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);

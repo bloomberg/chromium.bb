@@ -14,17 +14,11 @@
 #include "components/ntp_snippets/contextual/contextual_content_suggestions_service_proxy.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_features.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_result.h"
-#include "components/ntp_snippets/remote/cached_image_fetcher.h"
-#include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider_impl.h"
-#include "ui/gfx/image/image.h"
 
 namespace contextual_suggestions {
 
 using ntp_snippets::ContentSuggestion;
-using ntp_snippets::ImageDataFetchedCallback;
-using ntp_snippets::ImageFetchedCallback;
-using ntp_snippets::CachedImageFetcher;
 using ntp_snippets::RemoteSuggestionsDatabase;
 
 namespace {
@@ -37,15 +31,10 @@ bool IsEligibleURL(const GURL& url) {
 ContextualContentSuggestionsService::ContextualContentSuggestionsService(
     std::unique_ptr<ContextualSuggestionsFetcher>
         contextual_suggestions_fetcher,
-    std::unique_ptr<CachedImageFetcher> image_fetcher,
-    std::unique_ptr<RemoteSuggestionsDatabase> contextual_suggestions_database,
     std::unique_ptr<ContextualSuggestionsReporterProvider> reporter_provider)
-    : contextual_suggestions_database_(
-          std::move(contextual_suggestions_database)),
-      fetch_cache_(kFetchCacheCapacity),
+    : fetch_cache_(kFetchCacheCapacity),
       contextual_suggestions_fetcher_(
           std::move(contextual_suggestions_fetcher)),
-      image_fetcher_(std::move(image_fetcher)),
       reporter_provider_(std::move(reporter_provider)) {}
 
 ContextualContentSuggestionsService::~ContextualContentSuggestionsService() =
@@ -68,15 +57,6 @@ void ContextualContentSuggestionsService::FetchContextualSuggestionClusters(
   } else {
     std::move(callback).Run(result);
   }
-}
-
-void ContextualContentSuggestionsService::FetchContextualSuggestionImage(
-    const ContentSuggestion::ID& suggestion_id,
-    const GURL& image_url,
-    ImageFetchedCallback callback) {
-  image_fetcher_->FetchSuggestionImage(suggestion_id, image_url,
-                                       ImageDataFetchedCallback(),
-                                       std::move(callback));
 }
 
 void ContextualContentSuggestionsService::FetchDone(
