@@ -9,11 +9,12 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "content/public/browser/network_service_instance.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 
 namespace {
 const net::BackoffEntry::Policy kForceSigninVerifierBackoffPolicy = {
@@ -37,13 +38,10 @@ const char kForceSigninVerificationFailureTimeMetricsName[] =
     "Signin.ForceSigninVerificationTime.Failure";
 
 ForceSigninVerifier::ForceSigninVerifier(Profile* profile)
-    : OAuth2TokenService::Consumer("force_signin_verifier"),
-      has_token_verified_(false),
+    : has_token_verified_(false),
       backoff_entry_(&kForceSigninVerifierBackoffPolicy),
       creation_time_(base::TimeTicks::Now()),
-      oauth2_token_service_(
-          ProfileOAuth2TokenServiceFactory::GetForProfile(profile)),
-      signin_manager_(SigninManagerFactory::GetForProfile(profile)) {
+      identity_manager_(IdentityManagerFactory::GetForProfile(profile)) {
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
   UMA_HISTOGRAM_BOOLEAN(kForceSigninVerificationMetricsName,
                         ShouldSendRequest());
@@ -54,34 +52,34 @@ ForceSigninVerifier::~ForceSigninVerifier() {
   Cancel();
 }
 
-void ForceSigninVerifier::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
+void ForceSigninVerifier::OnAccessTokenFetchComplete(
+    GoogleServiceAuthError error,
+    identity::AccessTokenInfo token_info) {
+  if (error.state() != GoogleServiceAuthError::NONE) {
+    if (error.IsPersistentError()) {
+      UMA_HISTOGRAM_MEDIUM_TIMES(kForceSigninVerificationFailureTimeMetricsName,
+                                 base::TimeTicks::Now() - creation_time_);
+      has_token_verified_ = true;
+      CloseAllBrowserWindows();
+      content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(
+          this);
+      Cancel();
+    } else {
+      backoff_entry_.InformOfRequest(false);
+      backoff_request_timer_.Start(
+          FROM_HERE, backoff_entry_.GetTimeUntilRelease(),
+          base::BindOnce(&ForceSigninVerifier::SendRequest,
+                         base::Unretained(this)));
+      access_token_fetcher_.reset();
+    }
+    return;
+  }
+
   UMA_HISTOGRAM_MEDIUM_TIMES(kForceSigninVerificationSuccessTimeMetricsName,
                              base::TimeTicks::Now() - creation_time_);
   has_token_verified_ = true;
   content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
   Cancel();
-}
-
-void ForceSigninVerifier::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
-    const GoogleServiceAuthError& error) {
-  if (error.IsPersistentError()) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(kForceSigninVerificationFailureTimeMetricsName,
-                               base::TimeTicks::Now() - creation_time_);
-    has_token_verified_ = true;
-    CloseAllBrowserWindows();
-    content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(
-        this);
-    Cancel();
-  } else {
-    backoff_entry_.InformOfRequest(false);
-    backoff_request_timer_.Start(
-        FROM_HERE, backoff_entry_.GetTimeUntilRelease(),
-        base::Bind(&ForceSigninVerifier::SendRequest, base::Unretained(this)));
-    access_token_request_.reset();
-  }
 }
 
 void ForceSigninVerifier::OnConnectionChanged(
@@ -98,7 +96,7 @@ void ForceSigninVerifier::OnConnectionChanged(
 void ForceSigninVerifier::Cancel() {
   backoff_entry_.Reset();
   backoff_request_timer_.Stop();
-  access_token_request_.reset();
+  access_token_fetcher_.reset();
   content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
 }
 
@@ -123,30 +121,39 @@ void ForceSigninVerifier::SendRequestIfNetworkAvailable(
     return;
   }
 
-  std::string account_id = signin_manager_->GetAuthenticatedAccountId();
-  OAuth2TokenService::ScopeSet oauth2_scopes;
+  identity::ScopeSet oauth2_scopes;
   oauth2_scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
-  access_token_request_ =
-      oauth2_token_service_->StartRequest(account_id, oauth2_scopes, this);
+  // It is safe to use Unretained(this) here given that the callback
+  // will not be invoked if this object is deleted.
+  access_token_fetcher_ =
+      std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+          "force_signin_verifier", identity_manager_, oauth2_scopes,
+          base::BindOnce(&ForceSigninVerifier::OnAccessTokenFetchComplete,
+                         base::Unretained(this)),
+          identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
 }
 
 bool ForceSigninVerifier::ShouldSendRequest() {
-  return !has_token_verified_ && access_token_request_.get() == nullptr &&
-         signin_manager_->IsAuthenticated();
+  return !has_token_verified_ && access_token_fetcher_.get() == nullptr &&
+         identity_manager_->HasPrimaryAccount();
 }
 
 void ForceSigninVerifier::CloseAllBrowserWindows() {
   // Do not close window if there is ongoing reauth. If it fails later, the
   // signin process should take care of the signout.
-  if (signin_manager_->AuthInProgress())
+  auto* primary_account_mutator = identity_manager_->GetPrimaryAccountMutator();
+  if (!primary_account_mutator ||
+      primary_account_mutator->LegacyIsPrimaryAccountAuthInProgress())
     return;
-  signin_manager_->SignOutAndRemoveAllAccounts(
+  primary_account_mutator->ClearPrimaryAccount(
+      identity::PrimaryAccountMutator::ClearAccountsAction::kRemoveAll,
       signin_metrics::AUTHENTICATION_FAILED_WITH_FORCE_SIGNIN,
       signin_metrics::SignoutDelete::IGNORE_METRIC);
 }
 
-OAuth2TokenService::Request* ForceSigninVerifier::GetRequestForTesting() {
-  return access_token_request_.get();
+identity::PrimaryAccountAccessTokenFetcher*
+ForceSigninVerifier::GetAccessTokenFetcherForTesting() {
+  return access_token_fetcher_.get();
 }
 
 net::BackoffEntry* ForceSigninVerifier::GetBackoffEntryForTesting() {
