@@ -10,6 +10,15 @@
 
 namespace blink {
 
+// Limit the maximum column count, to prevent potential performance problems.
+static const unsigned kColumnCountClampMax = 10000;
+
+// Clamp "infinite" clips to a number of pixels that can be losslessly
+// converted to and from floating point, to avoid loss of precision.
+// Note that tables have something similar, see
+// TableLayoutAlgorithm::kTableMaxWidth.
+static const int kMulticolMaxClipPixels = 1000000;
+
 MultiColumnFragmentainerGroup::MultiColumnFragmentainerGroup(
     const LayoutMultiColumnSet& column_set)
     : column_set_(column_set) {}
@@ -62,7 +71,6 @@ LayoutUnit MultiColumnFragmentainerGroup::LogicalHeightInFlowThreadAt(
 }
 
 void MultiColumnFragmentainerGroup::ResetColumnHeight() {
-  actual_column_count_allowance_ = 0;
   max_logical_height_ = CalculateMaxColumnHeight();
 
   LayoutMultiColumnFlowThread* flow_thread =
@@ -137,24 +145,6 @@ bool MultiColumnFragmentainerGroup::RecalculateColumnHeight(
   // We may not have found our final height yet, but at least we've found a
   // height.
   is_logical_height_known_ = true;
-
-  unsigned column_count = UnclampedActualColumnCount();
-  if (column_count > LayoutMultiColumnFlowThread::ColumnCountClampMax() ||
-      (column_count > LayoutMultiColumnFlowThread::ColumnCountClampMin() &&
-       column_count > column_set_.UsedColumnCount())) {
-    // That's a lot of columns! We have either exceeded the maximum value, or we
-    // have overflowing columns, and the proposed count is within clamping
-    // range. Calculate allowance to make sure we have a legitimate reason for
-    // it, or else clamp it. We have quadratic performance complexity for
-    // painting columns.
-    if (!actual_column_count_allowance_) {
-      const auto* flow_thread = column_set_.MultiColumnFlowThread();
-      unsigned allowance = flow_thread->CalculateActualColumnCountAllowance();
-      DCHECK_GE(allowance, LayoutMultiColumnFlowThread::ColumnCountClampMin());
-      DCHECK_LE(allowance, LayoutMultiColumnFlowThread::ColumnCountClampMax());
-      actual_column_count_allowance_ = allowance;
-    }
-  }
 
   if (logical_height_ == old_column_height)
     return false;  // No change. We're done.
@@ -329,8 +319,7 @@ LayoutRect MultiColumnFragmentainerGroup::CalculateOverflow() const {
 
 unsigned MultiColumnFragmentainerGroup::ActualColumnCount() const {
   unsigned count = UnclampedActualColumnCount();
-  if (actual_column_count_allowance_)
-    count = std::min(count, actual_column_count_allowance_);
+  count = std::min(count, kColumnCountClampMax);
   DCHECK_GE(count, 1u);
   return count;
 }
@@ -452,12 +441,6 @@ LayoutRect MultiColumnFragmentainerGroup::FlowThreadPortionRectAt(
   return LayoutRect(logical_top, LayoutUnit(), portion_logical_height,
                     column_set_.PageLogicalWidth());
 }
-
-// Clamp "infinite" clips to a number of pixels that can be losslessly
-// converted to and from floating point, to avoid loss of precision.
-// Note that tables have something similar, see
-// TableLayoutAlgorithm::kTableMaxWidth.
-static const int kMulticolMaxClipPixels = 1000000;
 
 LayoutRect MultiColumnFragmentainerGroup::FlowThreadPortionOverflowRectAt(
     unsigned column_index) const {
