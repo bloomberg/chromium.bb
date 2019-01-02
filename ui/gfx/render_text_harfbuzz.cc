@@ -490,12 +490,12 @@ class HarfBuzzLineBreaker {
     line->segments.push_back(segment);
     line->size.set_width(line->size.width() + segment.width());
 
-    SkPaint paint;
-    paint.setTypeface(run.font_params.skia_face);
-    paint.setTextSize(SkIntToScalar(run.font_params.font_size));
-    paint.setAntiAlias(run.font_params.render_params.antialiasing);
+    SkFont font(run.font_params.skia_face, run.font_params.font_size);
+    font.setEdging(run.font_params.render_params.antialiasing
+                       ? SkFont::Edging::kAntiAlias
+                       : SkFont::Edging::kAlias);
     SkFontMetrics metrics;
-    paint.getFontMetrics(&metrics);
+    font.getMetrics(&metrics);
 
     // max_descent_ is y-down, fDescent is y-down, baseline_offset is y-down
     max_descent_ = std::max(max_descent_,

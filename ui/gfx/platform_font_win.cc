@@ -673,21 +673,20 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
       FontRenderParams::SubpixelRenderingToSkiaLCDOrientation(
           font_params.subpixel_rendering));
 
-  SkPaint paint;
-  paint.setAntiAlias(font_params.antialiasing);
-  paint.setTypeface(std::move(skia_face));
-  paint.setTextSize(-font_info.lfHeight);
+  SkFont font(std::move(skia_face), -font_info.lfHeight);
+  font.setEdging(font_params.antialiasing ? SkFont::Edging::kAntiAlias
+                                          : SkFont::Edging::kAlias);
   SkFontMetrics skia_metrics;
-  paint.getFontMetrics(&skia_metrics);
+  font.getMetrics(&skia_metrics);
 
   // The calculations below are similar to those in the CreateHFontRef
   // function. The height, baseline and cap height are rounded up to ensure
   // that they match up closely with GDI.
   const int height = std::ceil(skia_metrics.fDescent - skia_metrics.fAscent);
   const int baseline = std::max<int>(1, std::ceil(-skia_metrics.fAscent));
-  const int cap_height = std::ceil(paint.getTextSize() *
-      static_cast<double>(dwrite_font_metrics.capHeight) /
-          dwrite_font_metrics.designUnitsPerEm);
+  const int cap_height = std::ceil(
+      font.getSize() * static_cast<double>(dwrite_font_metrics.capHeight) /
+      dwrite_font_metrics.designUnitsPerEm);
 
   // The metrics retrieved from skia don't have the average character width. In
   // any case if we get the average character width from skia then use that or
