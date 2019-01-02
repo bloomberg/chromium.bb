@@ -588,10 +588,12 @@ void DownloadItemImpl::Resume(bool user_resume) {
 }
 
 void DownloadItemImpl::UpdateResumptionInfo(bool user_resume) {
-  if (user_resume)
+  if (user_resume) {
     allow_metered_ |= delegate_->IsActiveNetworkMetered();
+    bytes_wasted_ = 0;
+  }
 
-  auto_resume_count_ = user_resume ? 0 : auto_resume_count_++;
+  auto_resume_count_ = user_resume ? 0 : ++auto_resume_count_;
 }
 
 void DownloadItemImpl::Cancel(bool user_cancel) {

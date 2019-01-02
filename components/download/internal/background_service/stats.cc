@@ -48,6 +48,8 @@ std::string TaskTypeToHistogramSuffix(DownloadTaskType task_type) {
       return "DownloadTask";
     case DownloadTaskType::CLEANUP_TASK:
       return "CleanUpTask";
+    case DownloadTaskType::DOWNLOAD_AUTO_RESUMPTION_TASK:
+      return "DownloadAutoResumptionTask";
   }
   NOTREACHED();
   return std::string();

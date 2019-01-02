@@ -5,6 +5,9 @@
 #include "chrome/browser/android/download/download_utils.h"
 
 #include "base/android/jni_string.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/strings/string_number_conversions.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_utils.h"
@@ -14,6 +17,14 @@
 using base::android::ConvertUTF16ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
+
+namespace {
+// If received bytes is more than the size limit and resumption will restart
+// from the beginning, throttle it.
+int kDefaultAutoResumptionSizeLimit = 10 * 1024 * 1024;  // 10 MB
+const char kAutoResumptionSizeLimitParamName[] = "AutoResumptionSizeLimit";
+
+}  // namespace
 
 static ScopedJavaLocalRef<jstring> JNI_DownloadUtils_GetFailStateMessage(
     JNIEnv* env,
@@ -45,4 +56,15 @@ base::FilePath DownloadUtils::GetUriStringForPath(
       base::android::ConvertUTF8ToJavaString(env, file_path.AsUTF8Unsafe()));
   return base::FilePath(
       base::android::ConvertJavaStringToUTF8(env, uri_jstring));
+}
+
+// static
+int DownloadUtils::GetAutoResumptionSizeLimit() {
+  std::string value = base::GetFieldTrialParamValueByFeature(
+      chrome::android::kDownloadAutoResumptionThrottling,
+      kAutoResumptionSizeLimitParamName);
+  int size_limit;
+  return base::StringToInt(value, &size_limit)
+             ? size_limit
+             : kDefaultAutoResumptionSizeLimit;
 }

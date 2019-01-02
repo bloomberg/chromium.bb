@@ -401,6 +401,8 @@ void ControllerImpl::HandleTaskFinished(DownloadTaskType task_type,
     case DownloadTaskType::CLEANUP_TASK:
       ScheduleCleanupTask();
       break;
+    case DownloadTaskType::DOWNLOAD_AUTO_RESUMPTION_TASK:
+      NOTREACHED();
   }
 }
 
