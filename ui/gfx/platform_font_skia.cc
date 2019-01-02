@@ -13,8 +13,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "third_party/skia/include/core/SkFont.h"
 #include "third_party/skia/include/core/SkFontStyle.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkString.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
@@ -306,18 +306,14 @@ void PlatformFontSkia::ComputeMetricsIfNecessary() {
   if (metrics_need_computation_) {
     metrics_need_computation_ = false;
 
-    SkPaint paint;
-    paint.setAntiAlias(false);
-    paint.setSubpixelText(false);
-    paint.setTextSize(font_size_pixels_);
-    paint.setTypeface(typeface_);
-    paint.setFakeBoldText(weight_ >= Font::Weight::BOLD &&
-                          !typeface_->isBold());
-    paint.setTextSkewX((Font::ITALIC & style_) && !typeface_->isItalic()
-                           ? -SK_Scalar1 / 4
-                           : 0);
+    SkFont font(typeface_, font_size_pixels_);
+    font.setEdging(SkFont::Edging::kAlias);
+    font.setEmbolden(weight_ >= Font::Weight::BOLD && !typeface_->isBold());
+    font.setSkewX((Font::ITALIC & style_) && !typeface_->isItalic()
+                      ? -SK_Scalar1 / 4
+                      : 0);
     SkFontMetrics metrics;
-    paint.getFontMetrics(&metrics);
+    font.getMetrics(&metrics);
     ascent_pixels_ = SkScalarCeilToInt(-metrics.fAscent);
     height_pixels_ = ascent_pixels_ + SkScalarCeilToInt(metrics.fDescent);
     cap_height_pixels_ = SkScalarCeilToInt(metrics.fCapHeight);
