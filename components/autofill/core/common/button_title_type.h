@@ -15,7 +15,10 @@ enum ButtonTitleType {
   BUTTON_ELEMENT_SUBMIT_TYPE = 1,  // <button type='submit'>
   BUTTON_ELEMENT_BUTTON_TYPE = 2,  // <button type='button'>
   INPUT_ELEMENT_SUBMIT_TYPE = 3,   // <input type='submit'>
-  INPUT_ELEMENT_BUTTON_TYPE = 4    // <input type='button'>
+  INPUT_ELEMENT_BUTTON_TYPE = 4,   // <input type='button'>
+  HYPERLINK = 5,                   // e.g. <a class='button'>
+  DIV = 6,                         // e.g. <div id='submit'>
+  SPAN = 7                         // e.g. <span name='btn'>
 };
 
 }  // namespace autofill

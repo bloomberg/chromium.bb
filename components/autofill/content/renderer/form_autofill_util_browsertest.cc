@@ -273,6 +273,10 @@ TEST_F(FormAutofillUtilsTest, InferButtonTitleForFormTest) {
       "  <input type='button' value='\n Show\t password '>"
       "  <button>Sign Up</button>"
       "  <button type='button'>Register</button>"
+      "  <a id='Submit' value='Create account'>"
+      "  <div name='BTN'> Join </div>"
+      "  <span class='button'> Start </span>"
+      "  <a class='empty button' value='   \t   \n'>"
       "</form>";
 
   LoadHTML(kHtml);
@@ -291,7 +295,11 @@ TEST_F(FormAutofillUtilsTest, InferButtonTitleForFormTest) {
       {base::UTF8ToUTF16("Sign Up"),
        autofill::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE},
       {base::UTF8ToUTF16("Register"),
-       autofill::ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE}};
+       autofill::ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE},
+      {base::UTF8ToUTF16("Create account"),
+       autofill::ButtonTitleType::HYPERLINK},
+      {base::UTF8ToUTF16("Join"), autofill::ButtonTitleType::DIV},
+      {base::UTF8ToUTF16("Start"), autofill::ButtonTitleType::SPAN}};
   EXPECT_EQ(expected, actual);
 }
 
