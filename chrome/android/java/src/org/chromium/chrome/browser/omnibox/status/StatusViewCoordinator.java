@@ -73,9 +73,6 @@ public class StatusViewCoordinator implements View.OnClickListener {
 
         mMediator.setVerboseStatusTextMinWidth(
                 res.getDimensionPixelSize(R.dimen.location_bar_min_verbose_status_text_width));
-
-        mMediator.setTabletMode(mIsTablet);
-        mMediator.setNavigationButtonType(NavigationButtonType.PAGE);
     }
 
     /**
