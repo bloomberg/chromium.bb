@@ -485,6 +485,17 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"copied-text-behavior", flag_descriptions::kCopiedTextBehaviorName,
      flag_descriptions::kCopiedTextBehaviorName, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(omnibox::kCopiedTextBehavior)},
+    {"new-password-form-parsing-for-saving",
+     flag_descriptions::kNewPasswordFormParsingForSavingName,
+     flag_descriptions::kNewPasswordFormParsingForSavingDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kNewPasswordFormParsingForSaving)},
+    {"only-new-password-form-parsing",
+     flag_descriptions::kOnlyNewPasswordFormParsingName,
+     flag_descriptions::kOnlyNewPasswordFormParsingDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(password_manager::features::kOnlyNewParser)},
 };
 
 // Add all switches from experimental flags to |command_line|.
