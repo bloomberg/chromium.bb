@@ -18,6 +18,10 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/ui_base_features.h"
 
+#if defined(OS_MACOSX)
+#include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
+#endif
+
 namespace {
 
 // Javascript snippet used to verify the keyboard lock API exists.
@@ -102,6 +106,10 @@ class KeyboardLockInteractiveBrowserTest
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   net::EmbeddedTestServer https_test_server_;
+
+#if defined(OS_MACOSX)
+  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardLockInteractiveBrowserTest);
 };

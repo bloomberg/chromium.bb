@@ -1035,6 +1035,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, MAYBE_AcceptState) {
 #if defined(OS_MACOSX)
   if (base::mac::IsOS10_10())
     return;  // Fails when swarmed. http://crbug.com/660582
+  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 #endif
 
   scoped_refptr<WindowsCreateFunction> function(new WindowsCreateFunction());

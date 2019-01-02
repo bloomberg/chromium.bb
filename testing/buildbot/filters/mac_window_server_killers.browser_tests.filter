@@ -64,6 +64,7 @@
 -DeclarativeNetRequestBrowserTest.*
 -DeclarativeNetRequestHostPermissionsBrowserTest.*
 -DevToolsExtensionTest.*
+-DevToolsManagerDelegateTest.*
 -DevToolsSanityTest.*
 -DeviceManagementServiceIntegrationTestInstance/DeviceManagementServiceIntegrationTest.*
 -DiceBrowserTest.*
@@ -174,6 +175,7 @@
 -PrefsFunctionalTest.*
 -PrefsTabHelperBrowserTest.*
 -PrerenderBrowserTest.*
+-PresentationReceiverWindowViewBrowserTest.*
 -PrintBrowserTest.*
 -PrintPreviewDialogControllerBrowserTest.*
 -PrintPreviewSettingsSectionsTest.*

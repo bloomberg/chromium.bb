@@ -270,15 +270,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterWebUIBrowserTest, OpenDialogFromContextMenu) {
   TestOpenDialogFromContextMenu();
 }
 
-// Disabled on macOS due to many timeouts. Seems fine on all other platforms.
-// crbug.com/849146
-#if defined(OS_MACOSX)
-#define MAYBE_OpenDialogFromAppMenu DISABLED_OpenDialogFromAppMenu
-#else
-#define MAYBE_OpenDialogFromAppMenu OpenDialogFromAppMenu
-#endif
-IN_PROC_BROWSER_TEST_F(MediaRouterWebUIBrowserTest,
-                       MAYBE_OpenDialogFromAppMenu) {
+IN_PROC_BROWSER_TEST_F(MediaRouterWebUIBrowserTest, OpenDialogFromAppMenu) {
   TestOpenDialogFromAppMenu();
 }
 
@@ -287,12 +279,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterWebUIBrowserTest,
   TestEphemeralToolbarIconForDialog();
 }
 
-// Flaky on chromeos, linux, win: https://crbug.com/658005
-// Flaky on MacViews: https://crbug.com/817408
-// TODO(https://crbug.com/678472): Replace this test case with a Views version.
-// Close out the bugs above when doing so.
 IN_PROC_BROWSER_TEST_F(MediaRouterWebUIBrowserTest,
-                       DISABLED_OpenDialogWithMediaRouterAction) {
+                       OpenDialogWithMediaRouterAction) {
   // We start off at about:blank page.
   // Make sure there is 1 tab and media router is enabled.
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
@@ -322,15 +310,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterWebUIBrowserTest,
   SetAlwaysShowActionPref(false);
 }
 
-#if defined(MEMORY_SANITIZER)
-// Flaky crashes. crbug.com/863945
-#define MAYBE_OpenDialogsInMultipleTabs DISABLED_OpenDialogsInMultipleTabs
-#else
-#define MAYBE_OpenDialogsInMultipleTabs OpenDialogsInMultipleTabs
-#endif
-
-IN_PROC_BROWSER_TEST_F(MediaRouterWebUIBrowserTest,
-                       MAYBE_OpenDialogsInMultipleTabs) {
+IN_PROC_BROWSER_TEST_F(MediaRouterWebUIBrowserTest, OpenDialogsInMultipleTabs) {
   // Start with two tabs.
   chrome::NewTab(browser());
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
