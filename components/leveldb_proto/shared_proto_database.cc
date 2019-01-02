@@ -30,7 +30,8 @@ SharedProtoDatabase::SharedProtoDatabase(const std::string& client_name,
       db_dir_(db_dir),
       db_wrapper_(std::make_unique<ProtoLevelDBWrapper>(task_runner_)),
       db_(std::make_unique<LevelDB>(client_name.c_str())),
-      weak_factory_(this) {
+      weak_factory_(
+          std::make_unique<base::WeakPtrFactory<SharedProtoDatabase>>(this)) {
   DETACH_FROM_SEQUENCE(on_task_runner_);
 }
 
@@ -45,7 +46,7 @@ void SharedProtoDatabase::GetDatabaseInitStatusAsync(
   task_runner_->PostTaskAndReply(
       FROM_HERE, base::DoNothing(),
       base::BindOnce(&SharedProtoDatabase::RunInitCallback,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_factory_->GetWeakPtr(), std::move(callback)));
 }
 
 void SharedProtoDatabase::RunInitCallback(
@@ -89,7 +90,7 @@ void SharedProtoDatabase::Init(
   db_wrapper_->InitWithDatabase(
       db_.get(), db_dir_, options, false /* destroy_on_corruption */,
       base::BindOnce(&SharedProtoDatabase::OnDatabaseInit,
-                     weak_factory_.GetWeakPtr(), std::move(callback),
+                     weak_factory_->GetWeakPtr(), std::move(callback),
                      std::move(callback_task_runner)));
 }
 
@@ -117,7 +118,9 @@ void SharedProtoDatabase::OnDatabaseInit(
                                  base::BindOnce(std::move(callback), status));
 }
 
-SharedProtoDatabase::~SharedProtoDatabase() = default;
+SharedProtoDatabase::~SharedProtoDatabase() {
+  task_runner_->DeleteSoon(FROM_HERE, std::move(weak_factory_));
+}
 
 LevelDB* SharedProtoDatabase::GetLevelDBForTesting() const {
   return db_.get();
