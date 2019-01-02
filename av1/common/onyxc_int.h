@@ -255,24 +255,23 @@ typedef struct SequenceHeader {
                                        // 2 - adaptive
   uint8_t still_picture;               // Video is a single frame still picture
   uint8_t reduced_still_picture_hdr;   // Use reduced header for still picture
-  uint8_t force_integer_mv;        // 0 - Not to force. MV can be in 1/4 or 1/8
-                                   // 1 - force to integer
-                                   // 2 - adaptive
-  int enable_filter_intra;         // enables/disables filterintra
-  int enable_intra_edge_filter;    // enables/disables corner/edge/upsampling
-  int enable_interintra_compound;  // enables/disables interintra_compound
-  int enable_masked_compound;      // enables/disables masked compound
-  int enable_dual_filter;          // 0 - disable dual interpolation filter
-                                   // 1 - enable vert/horiz filter selection
-  int enable_warped_motion;        // 0 - disable warped motion for sequence
-                                   // 1 - enable it for the sequence
-  int enable_superres;     // 0 - Disable superres for the sequence, and disable
-                           //     transmitting per-frame superres enabled flag.
-                           // 1 - Enable superres for the sequence, and also
-                           //     enable per-frame flag to denote if superres is
-                           //     enabled for that frame.
-  int enable_cdef;         // To turn on/off CDEF
-  int enable_restoration;  // To turn on/off loop restoration
+  uint8_t force_integer_mv;            // 0 - Don't force. MV can use subpel
+                                       // 1 - force to integer
+                                       // 2 - adaptive
+  uint8_t enable_filter_intra;         // enables/disables filterintra
+  uint8_t enable_intra_edge_filter;    // enables/disables edge upsampling
+  uint8_t enable_interintra_compound;  // enables/disables interintra_compound
+  uint8_t enable_masked_compound;      // enables/disables masked compound
+  uint8_t enable_dual_filter;          // 0 - disable dual interpolation filter
+                                       // 1 - enable vert/horz filter selection
+  uint8_t enable_warped_motion;        // 0 - disable warp for the sequence
+                                       // 1 - enable warp for the sequence
+  uint8_t enable_superres;             // 0 - Disable superres for the sequence
+                                       //     and no frame level superres flag
+                                       // 1 - Enable superres for the sequence
+                                       //     enable per-frame superres flag
+  uint8_t enable_cdef;                 // To turn on/off CDEF
+  uint8_t enable_restoration;          // To turn on/off loop restoration
   BITSTREAM_PROFILE profile;
 
   // Operating point info.
