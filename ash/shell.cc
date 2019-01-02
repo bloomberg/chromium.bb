@@ -22,7 +22,7 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/cast_config_controller.h"
-#include "ash/components/tap_visualizer/public/mojom/constants.mojom.h"
+#include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
 #include "ash/contained_shell/contained_shell_controller.h"
 #include "ash/dbus/ash_dbus_services.h"
 #include "ash/detachable_base/detachable_base_handler.h"
@@ -1262,9 +1262,11 @@ void Shell::Init(
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowTaps)) {
     // The show taps feature is a separate service.
     // TODO(jamescook): Make this work in ash_shell_with_content.
-    // TODO(https://crbug.com/904148): This should not use |WarmService()|.
-    connector_->WarmService(service_manager::ServiceFilter::ByName(
-        tap_visualizer::mojom::kServiceName));
+    tap_visualizer::mojom::TapVisualizerPtr tap_visualizer_ptr;
+    connector_->BindInterface(service_manager::ServiceFilter::ByName(
+                                  tap_visualizer::mojom::kServiceName),
+                              mojo::MakeRequest(&tap_visualizer_ptr));
+    tap_visualizer_ptr->Show();
   }
 
   if (!::features::IsMultiProcessMash()) {

@@ -66,6 +66,7 @@
         "removable_storage_writer": [ "removable_storage_writer" ],
         "secure_channel": [ "secure_channel" ],
         "shortcut_viewer_app": [ "shortcut_viewer" ],
+        "tap_visualizer_app": [ "tap_visualizer" ],
         "ui": [
           "ime_registrar",
           "input_device_controller",

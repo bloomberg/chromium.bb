@@ -5,3 +5,8 @@
 module tap_visualizer.mojom;
 
 const string kServiceName = "tap_visualizer_app";
+
+interface TapVisualizer {
+  // Show the UI.
+  Show();
+};
