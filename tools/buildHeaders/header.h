@@ -42,6 +42,7 @@ namespace spv {
         ELangLua,      // Lua
         ELangPython,   // Python
         ELangCSharp,   // CSharp
+        ELangD,        // D
 
         ELangAll,      // print headers in all languages to files
     };
