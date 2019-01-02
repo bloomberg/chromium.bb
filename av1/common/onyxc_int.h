@@ -241,7 +241,7 @@ typedef struct SequenceHeader {
   int num_bits_height;
   int max_frame_width;
   int max_frame_height;
-  int frame_id_numbers_present_flag;
+  uint8_t frame_id_numbers_present_flag;
   int frame_id_length;
   int delta_frame_id_length;
   BLOCK_SIZE sb_size;  // Size of the superblock used for this frame
@@ -277,8 +277,8 @@ typedef struct SequenceHeader {
   // Operating point info.
   int operating_points_cnt_minus_1;
   int operating_point_idc[MAX_NUM_OPERATING_POINTS];
-  int display_model_info_present_flag;
-  int decoder_model_info_present_flag;
+  uint8_t display_model_info_present_flag;
+  uint8_t decoder_model_info_present_flag;
   BitstreamLevel level[MAX_NUM_OPERATING_POINTS];
   uint8_t tier[MAX_NUM_OPERATING_POINTS];  // seq_tier in the spec. One bit: 0
                                            // or 1.
