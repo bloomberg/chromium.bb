@@ -274,6 +274,9 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
         GetBlobPtrsForRequestBody(*resource_request_.request_body);
   }
 
+  // TODO(falken): Grant the controller service worker's process access to files
+  // in the body, like ServiceWorkerFetchDispatcher::DispatchFetchEvent() does.
+
   controller->DispatchFetchEvent(
       std::move(params), std::move(response_callback_ptr),
       base::BindOnce(&ServiceWorkerSubresourceLoader::OnFetchEventFinished,

@@ -862,6 +862,7 @@ test("content_browsertests") {
     "../browser/service_manager/service_manager_context_browsertest.cc",
     "../browser/service_worker/service_worker_browsertest.cc",
     "../browser/service_worker/service_worker_clients_api_browsertest.cc",
+    "../browser/service_worker/service_worker_file_upload_browsertest.cc",
     "../browser/service_worker/service_worker_tls_browsertest.cc",
     "../browser/session_history_browsertest.cc",
     "../browser/shape_detection/shape_detection_browsertest.cc",
