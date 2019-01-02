@@ -32,12 +32,13 @@
     <TextView
         android:id="@+id/preview"
         android:layout_width="match_parent"
-        android:layout_height="180dp"
+        android:layout_height="wrap_content"
+        android:minHeight="180dp"
         android:layout_marginTop="10dp"
         android:background="#fafafa"
         android:padding="16dp"
         android:text="@string/font_size_preview_text"
-        android:textColor="?android:attr/textColorPrimary"
+        android:textAppearance="@style/TextAppearance.AccessibilityTextPreference"
         android:lineSpacingExtra="6dp" />
 
 </LinearLayout>
