@@ -471,7 +471,8 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
         String snackbarText = singleItemDeleted
                 ? items.get(0).getDisplayFileName()
                 : String.format(Locale.getDefault(), "%d", items.size());
-        int snackbarTemplateId = singleItemDeleted ? R.string.undo_bar_delete_message
+        int snackbarTemplateId = singleItemDeleted
+                ? R.string.delete_message
                 : R.string.undo_bar_multiple_downloads_delete_message;
 
         Snackbar snackbar = Snackbar.make(snackbarText, mUndoDeletionSnackbarController,
