@@ -85,9 +85,9 @@ class PreviewsLitePageDecider
                          const std::string& host) override;
   bool NeedsToNotifyUser() override;
   void NotifyUser(content::WebContents* web_contents) override;
-  void BlacklistHost(const std::string& host,
-                     base::TimeDelta duration) override;
-  bool HostBlacklisted(const std::string& host) override;
+  void BlacklistBypassedHost(const std::string& host,
+                             base::TimeDelta duration) override;
+  bool HostBlacklistedFromBypass(const std::string& host) override;
 
   // data_reduction_proxy::DataReductionProxySettingsObserver:
   void OnProxyRequestHeadersChanged(
@@ -122,7 +122,7 @@ class PreviewsLitePageDecider
   // A dictionary of host string to base::Time. If a hostname is a member of
   // this dictionary, that host should be blacklisted from this preview until
   // after the time value. This is stored persistently in prefs.
-  std::unique_ptr<base::DictionaryValue> host_blacklist_;
+  std::unique_ptr<base::DictionaryValue> host_bypass_blacklist_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
