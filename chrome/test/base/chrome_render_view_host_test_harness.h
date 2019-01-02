@@ -16,6 +16,10 @@ class ChromeRenderViewHostTestHarness
     : public content::RenderViewHostTestHarness {
  public:
   explicit ChromeRenderViewHostTestHarness(int thread_bundle_options = 0);
+  ChromeRenderViewHostTestHarness(
+      base::test::ScopedTaskEnvironment::MainThreadType main_thread_type,
+      base::test::ScopedTaskEnvironment::ExecutionMode execution_control_mode,
+      int thread_bundle_options = 0);
   ~ChromeRenderViewHostTestHarness() override;
 
   TestingProfile* profile();

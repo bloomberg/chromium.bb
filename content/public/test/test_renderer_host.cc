@@ -187,6 +187,15 @@ RenderViewHostTestHarness::RenderViewHostTestHarness(int thread_bundle_options)
     : thread_bundle_(
           std::make_unique<TestBrowserThreadBundle>(thread_bundle_options)) {}
 
+RenderViewHostTestHarness::RenderViewHostTestHarness(
+    base::test::ScopedTaskEnvironment::MainThreadType main_thread_type,
+    base::test::ScopedTaskEnvironment::ExecutionMode execution_control_mode,
+    int thread_bundle_options)
+    : thread_bundle_(
+          std::make_unique<TestBrowserThreadBundle>(main_thread_type,
+                                                    execution_control_mode,
+                                                    thread_bundle_options)) {}
+
 RenderViewHostTestHarness::~RenderViewHostTestHarness() {
 }
 

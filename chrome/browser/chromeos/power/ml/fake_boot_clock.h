@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 
 namespace chromeos {
@@ -19,13 +20,18 @@ class FakeBootClock : public BootClock {
  public:
   FakeBootClock(scoped_refptr<const base::TestMockTimeTaskRunner> task_runner,
                 base::TimeDelta initial_time_since_boot);
+  FakeBootClock(base::test::ScopedTaskEnvironment* env,
+                base::TimeDelta initial_time_since_boot);
   ~FakeBootClock() override;
 
   // BootClock:
   base::TimeDelta GetTimeSinceBoot() override;
 
  private:
+  // TODO(crbug.com/917580): This is no longer needed and should be removed.
+  // |env_| should give sufficient access to fake clock values.
   scoped_refptr<const base::TestMockTimeTaskRunner> task_runner_;
+  base::test::ScopedTaskEnvironment* env_;
   base::TimeDelta initial_time_since_boot_;
   base::TimeTicks initial_time_ticks_;
 
