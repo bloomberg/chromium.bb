@@ -903,9 +903,6 @@ extern const char kPassiveDocumentWheelEventListenersDescription[];
 extern const char kPasswordImportName[];
 extern const char kPasswordImportDescription[];
 
-extern const char kPasswordSearchMobileName[];
-extern const char kPasswordSearchMobileDescription[];
-
 extern const char kPasswordsKeyboardAccessoryName[];
 extern const char kPasswordsKeyboardAccessoryDescription[];
 

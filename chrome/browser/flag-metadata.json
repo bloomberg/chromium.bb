@@ -2771,11 +2771,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "password-search",
-    "owners": [ "fhorschig" ],
-    "expiry_milestone": 73
-  },
-  {
     "name": "passwords-keyboard-accessory",
     "owners": [ "fhorschig" ],
     "expiry_milestone": 76

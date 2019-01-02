@@ -26,7 +26,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
@@ -121,7 +120,7 @@ public class SavePasswordsPreferences
         setPreferenceScreen(getPreferenceManager().createPreferenceScreen(getActivity()));
         PasswordManagerHandlerProvider.getInstance().addObserver(this);
 
-        setHasOptionsMenu(ExportFlow.providesPasswordExport() || providesPasswordSearch());
+        setHasOptionsMenu(true); // Password Export might be optional but Search is always present.
 
         if (savedInstanceState == null) return;
 
@@ -139,14 +138,12 @@ public class SavePasswordsPreferences
         menu.findItem(R.id.export_passwords).setVisible(ExportFlow.providesPasswordExport());
         menu.findItem(R.id.export_passwords).setEnabled(false);
         mSearchItem = menu.findItem(R.id.menu_id_search);
-        mSearchItem.setVisible(providesPasswordSearch());
-        if (providesPasswordSearch()) {
-            mHelpItem = menu.findItem(R.id.menu_id_general_help);
-            SearchUtils.initializeSearchView(mSearchItem, mSearchQuery, getActivity(), (query) -> {
-                maybeRecordTriggeredPasswordSearch(true);
-                filterPasswords(query);
-            });
-        }
+        mSearchItem.setVisible(true);
+        mHelpItem = menu.findItem(R.id.menu_id_general_help);
+        SearchUtils.initializeSearchView(mSearchItem, mSearchQuery, getActivity(), (query) -> {
+            maybeRecordTriggeredPasswordSearch(true);
+            filterPasswords(query);
+        });
     }
 
     /**
@@ -155,7 +152,7 @@ public class SavePasswordsPreferences
      * @param searchTriggered Whether to log a triggered search or no triggered search.
      */
     private void maybeRecordTriggeredPasswordSearch(boolean searchTriggered) {
-        if (providesPasswordSearch() && !mSearchRecorded) {
+        if (!mSearchRecorded) {
             mSearchRecorded = true;
             RecordHistogram.recordBooleanHistogram(
                     "PasswordManager.Android.PasswordSearchTriggered", searchTriggered);
@@ -468,14 +465,6 @@ public class SavePasswordsPreferences
         mLinkPref.setOnPreferenceClickListener(this);
         mLinkPref.setOrder(ORDER_MANAGE_ACCOUNT_LINK);
         getPreferenceScreen().addPreference(mLinkPref);
-    }
-
-    /**
-     * Returns whether the password search feature is ready to use.
-     * @return Returns true if the flag is set.
-     */
-    private boolean providesPasswordSearch() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORD_SEARCH);
     }
 
     @VisibleForTesting

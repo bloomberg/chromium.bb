@@ -176,7 +176,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &omnibox::kHideSteadyStateUrlTrivialSubdomains,
     &omnibox::kQueryInOmnibox,
     &password_manager::features::kGooglePasswordManager,
-    &password_manager::features::kPasswordSearchMobile,
     &password_manager::features::kPasswordsKeyboardAccessory,
     &switches::kSyncSendTabToSelf,
     &translate::kTranslateAndroidManualTrigger,
