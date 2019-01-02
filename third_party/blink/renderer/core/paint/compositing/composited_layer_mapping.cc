@@ -815,7 +815,7 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
   bool has_clip_path =
       ClipPathClipper::LocalClipPathBoundingBox(GetLayoutObject()).has_value();
   if (UpdateMaskLayer(has_mask || has_clip_path)) {
-    graphics_layer_->SetMaskLayer(mask_layer_.get(), false);
+    graphics_layer_->SetMaskLayer(mask_layer_.get());
     layer_config_changed = true;
   }
 
@@ -836,11 +836,11 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
       // TODO(trchen): Verify if the 3 cases are mutually exclusive.
       GraphicsLayer* first_come_first_served = child_clipping_mask_layer_.get();
       if (HasClippingLayer()) {
-        ClippingLayer()->SetMaskLayer(first_come_first_served, true);
+        ClippingLayer()->SetMaskLayer(first_come_first_served);
         first_come_first_served = nullptr;
       }
       if (HasScrollingLayer()) {
-        ScrollingLayer()->SetMaskLayer(first_come_first_served, true);
+        ScrollingLayer()->SetMaskLayer(first_come_first_served);
         first_come_first_served = nullptr;
       }
       graphics_layer_->SetContentsClippingMaskLayer(first_come_first_served);
@@ -2004,13 +2004,13 @@ bool CompositedLayerMapping::UpdateClippingLayers(
       ancestor_clipping_mask_layer_->SetPaintingPhase(
           kGraphicsLayerPaintAncestorClippingMask);
       ancestor_clipping_layer_->SetMaskLayer(
-          ancestor_clipping_mask_layer_.get(), true);
+          ancestor_clipping_mask_layer_.get());
       layers_changed = true;
     }
   } else if (ancestor_clipping_mask_layer_) {
     ancestor_clipping_mask_layer_->RemoveFromParent();
     ancestor_clipping_mask_layer_ = nullptr;
-    ancestor_clipping_layer_->SetMaskLayer(nullptr, false);
+    ancestor_clipping_layer_->SetMaskLayer(nullptr);
     layers_changed = true;
   }
 

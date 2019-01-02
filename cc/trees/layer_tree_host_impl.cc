@@ -1069,12 +1069,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
       active_tree()->property_trees()->effect_tree.HasCopyRequests();
   bool have_missing_animated_tiles = false;
 
-  int num_layers = 0;
-  int num_mask_layers = 0;
-  int num_rounded_corner_mask_layers = 0;
-  int64_t visible_mask_layer_area = 0;
-  int64_t visible_rounded_corner_mask_layer_area = 0;
-
   for (EffectTreeLayerListIterator it(active_tree());
        it.state() != EffectTreeLayerListIterator::State::END; ++it) {
     auto target_render_pass_id = it.target_render_surface()->id();
@@ -1109,7 +1103,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
           frame->may_contain_video = true;
 
         layer->AppendQuads(target_render_pass, &append_quads_data);
-        ++num_layers;
       }
 
       rendering_stats_instrumentation_->AddVisibleContentArea(
@@ -1149,12 +1142,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     }
     frame->use_default_lower_bound_deadline |=
         append_quads_data.use_default_lower_bound_deadline;
-    num_mask_layers += append_quads_data.num_mask_layers;
-    num_rounded_corner_mask_layers +=
-        append_quads_data.num_rounded_corner_mask_layers;
-    visible_mask_layer_area += append_quads_data.visible_mask_layer_area;
-    visible_rounded_corner_mask_layer_area +=
-        append_quads_data.visible_rounded_corner_mask_layer_area;
   }
 
   // If CommitToActiveTree() is true, then we wait to draw until
@@ -1232,34 +1219,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
         "Compositing.RenderPass.AppendQuadData."
         "CheckerboardedNeedRasterContentArea",
         checkerboarded_needs_raster_content_area);
-  }
-
-  // Only record these umas on the first frame, and only in the renderer,
-  // for which we use having a compositor thread as a proxy.
-  if (!active_tree_->has_ever_been_drawn() && SupportsImplScrolling()) {
-    int mask_layer_percent = static_cast<int>(
-        num_mask_layers / static_cast<float>(num_layers) * 100);
-    int rc_mask_layer_percent =
-        static_cast<int>(num_rounded_corner_mask_layers /
-                         static_cast<float>(num_mask_layers) * 100);
-    int rc_area_percent =
-        static_cast<int>(visible_rounded_corner_mask_layer_area /
-                         static_cast<float>(total_visible_area) * 100);
-
-    UMA_HISTOGRAM_PERCENTAGE(
-        "Compositing.RenderPass.AppendQuadData.MaskLayerPercent",
-        mask_layer_percent);
-    if (num_mask_layers > 0) {
-      UMA_HISTOGRAM_PERCENTAGE(
-          "Compositing.RenderPass.AppendQuadData.RCMaskLayerPercent",
-          rc_mask_layer_percent);
-      UMA_HISTOGRAM_PERCENTAGE(
-          "Compositing.RenderPass.AppendQuadData.RCMaskAreaPercent",
-          rc_area_percent);
-      UMA_HISTOGRAM_COUNTS_10M(
-          "Compositing.RenderPass.AppendQuadData.RCMaskArea",
-          visible_rounded_corner_mask_layer_area);
-    }
   }
 
   TRACE_EVENT_END2("cc,benchmark", "LayerTreeHostImpl::CalculateRenderPasses",

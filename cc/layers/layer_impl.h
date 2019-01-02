@@ -458,11 +458,6 @@ class CC_EXPORT LayerImpl {
   // TODO(sunxd): Remove this function and replace it with visitor pattern.
   virtual bool is_surface_layer() const;
 
-  void set_is_rounded_corner_mask(bool rounded) {
-    is_rounded_corner_mask_ = rounded;
-  }
-  bool is_rounded_corner_mask() const { return is_rounded_corner_mask_; }
-
  protected:
   // When |will_always_push_properties| is true, the layer will not itself set
   // its SetNeedsPushProperties() state, as it expects to be always pushed to
@@ -603,7 +598,6 @@ class CC_EXPORT LayerImpl {
   bool raster_even_if_not_drawn_ : 1;
 
   bool has_transform_node_ : 1;
-  bool is_rounded_corner_mask_ : 1;
 
   DISALLOW_COPY_AND_ASSIGN(LayerImpl);
 };

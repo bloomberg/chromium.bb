@@ -256,12 +256,6 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
 
-  if (mask_type_ != Layer::LayerMaskType::NOT_MASK) {
-    append_quads_data->num_mask_layers++;
-    if (is_rounded_corner_mask())
-      append_quads_data->num_rounded_corner_mask_layers++;
-  }
-
   if (raster_source_->IsSolidColor()) {
     // TODO(sunxd): Solid color non-mask layers are forced to have contents
     // scale = 1. This is a workaround to temperarily fix
@@ -460,13 +454,6 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
         static_cast<int64_t>(visible_geometry_rect.width()) *
         visible_geometry_rect.height();
     append_quads_data->visible_layer_area += visible_geometry_area;
-
-    if (mask_type_ != Layer::LayerMaskType::NOT_MASK) {
-      append_quads_data->visible_mask_layer_area += visible_geometry_area;
-      if (is_rounded_corner_mask())
-        append_quads_data->visible_rounded_corner_mask_layer_area +=
-            visible_geometry_area;
-    }
 
     bool has_draw_quad = false;
     if (*iter && iter->draw_info().IsReadyToDraw()) {
