@@ -17,6 +17,10 @@ const char kEnableExperimentalAccessibilityFeatures[] =
 const char kEnableExperimentalAccessibilityAutoclick[] =
     "enable-experimental-accessibility-autoclick";
 
+// Enables additional image label features that haven't launched yet.
+const char kEnableExperimentalAccessibilityLabels[] =
+    "enable-experimental-accessibility-labels";
+
 // Shows setting to enable Switch Access before it has launched.
 const char kEnableExperimentalAccessibilitySwitchAccess[] =
     "enable-experimental-accessibility-switch-access";
