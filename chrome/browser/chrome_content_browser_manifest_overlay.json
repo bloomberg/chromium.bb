@@ -109,6 +109,7 @@
           // TODO(beng): These should be moved to a separate capability.
           "app_management.mojom.PageHandlerFactory",
           "eoc_internals.mojom.PageHandler",
+          "feed_internals.mojom.PageHandler",
           "media.mojom.MediaEngagementScoreDetailsProvider",
           "md_downloads.mojom.PageHandlerFactory",
           "mojom.BluetoothInternalsHandler",
