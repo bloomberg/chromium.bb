@@ -829,17 +829,10 @@ TEST_F(LoggingTest, LogPrefix) {
   log_string_ptr = nullptr;
 }
 
-// Crashes on Win 10 only.  https://crbug.com/897735
-#if defined(OS_WIN)
-#define MAYBE_LogMessageMarkersOnStack DISABLED_LogMessageMarkersOnStack
-#else
-#define MAYBE_LogMessageMarkersOnStack LogMessageMarkersOnStack
-#endif
-
 #if !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER)
 // Since we scan potentially uninitialized portions of the stack, we can't run
 // this test under any sanitizer that checks for uninitialized reads.
-TEST_F(LoggingTest, MAYBE_LogMessageMarkersOnStack) {
+TEST_F(LoggingTest, LogMessageMarkersOnStack) {
   const uint32_t kLogStartMarker = 0xbedead01;
   const uint32_t kLogEndMarker = 0x5050dead;
   const char kTestMessage[] = "Oh noes! I have crashed! 💩";
