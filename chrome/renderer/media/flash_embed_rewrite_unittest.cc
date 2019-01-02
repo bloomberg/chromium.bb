@@ -250,3 +250,53 @@ TEST_F(FlashEmbedRewriteTest, YouTubeRewriteEmbedJSAPI) {
     EXPECT_EQ(total_count, samples->TotalCount());
   }
 }
+
+TEST_F(FlashEmbedRewriteTest, DailymotionRewriteEmbed) {
+  struct TestData {
+    std::string original;
+    std::string expected;
+  } test_data[] = {
+      // { original, expected }
+      {"http://dailymotion.com", ""},
+      {"http://www.dailymotion.com", ""},
+      {"https://www.dailymotion.com", ""},
+      {"http://www.foo.dailymotion.com", ""},
+      {"https://www.foo.dailymotion.com", ""},
+      // URL isn't using Flash
+      {"http://www.dailymotion.com/embed/video/deadbeef", ""},
+      // URL isn't using Flash, no www
+      {"http://dailymotion.com/embed/video/deadbeef", ""},
+      // URL isn't using Flash, invalid parameter construct
+      {"http://www.dailymotion.com/embed/video/deadbeef&start=4", ""},
+      // URL is using Flash, no www
+      {"http://dailymotion.com/swf/deadbeef",
+       "http://dailymotion.com/embed/video/deadbeef"},
+      // URL is using Flash, is valid, https
+      {"https://www.dailymotion.com/swf/deadbeef",
+       "https://www.dailymotion.com/embed/video/deadbeef"},
+      // URL is using Flash, is valid, http
+      {"http://www.dailymotion.com/swf/deadbeef",
+       "http://www.dailymotion.com/embed/video/deadbeef"},
+      // URL is using Flash, valid
+      {"https://www.foo.dailymotion.com/swf/deadbeef",
+       "https://www.foo.dailymotion.com/embed/video/deadbeef"},
+      // URL is using Flash, is valid, has one parameter
+      {"http://www.dailymotion.com/swf/deadbeef?start=4",
+       "http://www.dailymotion.com/embed/video/deadbeef?start=4"},
+      // URL is using Flash, is valid, has multiple parameters
+      {"http://www.dailymotion.com/swf/deadbeef?start=4&fs=1",
+       "http://www.dailymotion.com/embed/video/deadbeef?start=4&fs=1"},
+      // URL is using Flash, invalid parameter construct, has one parameter
+      {"http://www.dailymotion.com/swf/deadbeef&start=4",
+       "http://www.dailymotion.com/embed/video/deadbeef&start=4"},
+      // Invalid URL.
+      {"http://www.dailymotion.com/abcd/swf/deadbeef", ""},
+      // Uses /swf/video/
+      {"http://www.dailymotion.com/swf/video/deadbeef",
+       "http://www.dailymotion.com/embed/video/deadbeef"}};
+
+  for (const auto& data : test_data) {
+    EXPECT_EQ(GURL(data.expected),
+              FlashEmbedRewrite::RewriteFlashEmbedURL(GURL(data.original)));
+  }
+}

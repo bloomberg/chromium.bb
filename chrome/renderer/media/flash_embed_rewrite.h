@@ -9,6 +9,7 @@ class GURL;
 
 class FlashEmbedRewrite {
  public:
+  // Entry point that will then call a private website-specific method.
   static GURL RewriteFlashEmbedURL(const GURL&);
 
   // Used for UMA. Values should not be reorderer or reused.
@@ -28,7 +29,11 @@ class FlashEmbedRewrite {
   static const char kFlashYouTubeRewriteUMA[];
 
  private:
+  // YouTube specific method.
   static GURL RewriteYouTubeFlashEmbedURL(const GURL&);
+
+  // Dailymotion specific method.
+  static GURL RewriteDailymotionFlashEmbedURL(const GURL&);
 };
 
 #endif  // CHROME_RENDERER_MEDIA_FLASH_EMBED_REWRITE_H_

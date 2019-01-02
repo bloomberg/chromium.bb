@@ -25,6 +25,9 @@ GURL FlashEmbedRewrite::RewriteFlashEmbedURL(const GURL& url) {
   if (url.DomainIs("youtube.com") || url.DomainIs("youtube-nocookie.com"))
     return RewriteYouTubeFlashEmbedURL(url);
 
+  if (url.DomainIs("dailymotion.com"))
+    return RewriteDailymotionFlashEmbedURL(url);
+
   return GURL();
 }
 
@@ -79,4 +82,21 @@ GURL FlashEmbedRewrite::RewriteYouTubeFlashEmbedURL(const GURL& url) {
 
   RecordYouTubeRewriteUMA(result);
   return corrected_url.ReplaceComponents(r);
+}
+
+GURL FlashEmbedRewrite::RewriteDailymotionFlashEmbedURL(const GURL& url) {
+  // Dailymotion flash embeds are of the form of either:
+  //  - /swf/
+  //  - /swf/video/
+  if (url.path().find("/swf/") != 0)
+    return GURL();
+
+  std::string path = url.path();
+  int replace_length = path.find("/swf/video/") == 0 ? 11 : 5;
+  path.replace(0, replace_length, "/embed/video/");
+
+  url::Replacements<char> r;
+  r.SetPath(path.c_str(), url::Component(0, path.length()));
+
+  return url.ReplaceComponents(r);
 }
