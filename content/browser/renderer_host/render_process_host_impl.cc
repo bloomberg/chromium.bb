@@ -2269,15 +2269,12 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   associated_registry->AddInterface(base::Bind(
       &RenderProcessHostImpl::CreateRendererHost, base::Unretained(this)));
 
-  // TODO(lukasza): https://crbug.com/891872: Stop vending out non-origin-bound
-  // URLLoaderFactories to the renderer process.
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    const base::Optional<url::Origin> kNoOrigin = base::nullopt;
     AddUIThreadInterface(
         registry.get(),
-        base::BindRepeating(&RenderProcessHostImpl::CreateURLLoaderFactory,
-                            base::Unretained(this), kNoOrigin,
-                            nullptr /* header_client */));
+        base::BindRepeating(
+            &RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess,
+            base::Unretained(this)));
   }
 
   registry->AddInterface(
@@ -2536,10 +2533,28 @@ RenderProcessHostImpl::GetProcessResourceCoordinator() {
   return &process_resource_coordinator_;
 }
 
+void RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess(
+    network::mojom::URLLoaderFactoryRequest request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  base::Optional<url::Origin> request_initiator_site_lock;
+  GURL process_lock =
+      ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(GetID());
+  if (process_lock.is_valid()) {
+    request_initiator_site_lock = SiteInstanceImpl::GetRequestInitiatorSiteLock(
+        GetBrowserContext(), process_lock);
+  }
+
+  CreateURLLoaderFactory(request_initiator_site_lock,
+                         nullptr /* header_client */, std::move(request));
+}
+
 void RenderProcessHostImpl::CreateURLLoaderFactory(
     const base::Optional<url::Origin>& origin,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
     network::mojom::URLLoaderFactoryRequest request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   // "chrome-guest://..." is never used as a |request_initiator|.  Therefore
   // it doesn't make sense to associate a URLLoaderFactory with a
   // chrome-guest-based |origin|.
