@@ -58,6 +58,8 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   void UpdateWithMediaSessionInfo(
       const media_session::mojom::MediaSessionInfoPtr& session_info);
   void UpdateWithMediaMetadata(const media_session::MediaMetadata& metadata);
+  void UpdateWithMediaActions(
+      const std::set<media_session::mojom::MediaSessionAction>& actions);
 
  private:
   friend class MediaNotificationViewTest;
@@ -70,6 +72,10 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   void CreateMediaButton(const gfx::VectorIcon& icon,
                          media_session::mojom::MediaSessionAction action);
 
+  bool IsActionButtonVisible(
+      media_session::mojom::MediaSessionAction action) const;
+
+  void UpdateActionButtonsVisibility();
   void UpdateViewForExpandedState();
 
   // View containing close and settings buttons.
@@ -78,6 +84,9 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
 
   // Whether this notification is expanded or not.
   bool expanded_ = false;
+
+  // Set of enabled actions.
+  std::set<media_session::mojom::MediaSessionAction> enabled_actions_;
 
   // Container views directly attached to this view.
   message_center::NotificationHeaderView* header_row_ = nullptr;
