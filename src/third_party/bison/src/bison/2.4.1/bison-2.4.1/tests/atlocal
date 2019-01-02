@@ -1,0 +1,48 @@
+# tests/atlocal.  Generated from atlocal.in by configure.					-*- shell-script -*-
+# Configurable variable values for Bison test suite.
+
+# Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free
+# Software Foundation, Inc.
+
+EXEEXT='.exe'
+exec_prefix='${prefix}'
+bindir='${exec_prefix}/bin'
+prefix='c:/progra~1/bison'
+buildlibdir=$(cygpath -m $abs_top_builddir/lib)
+srclibdir=$(cygpath -m $abs_top_srcdir/lib)
+
+# We need a C compiler.
+CC='gcc -std=gnu99'
+
+# We want no optimization.
+CFLAGS='-Wall -Wpointer-arith -fms-extensions -mms-bitfields -fno-exceptions -fomit-frame-pointer -march=i386 -ffast-math -Wstrict-prototypes  '
+
+# We need `config.h'.
+CPPFLAGS="-I$buildlibdir -I$srclibdir   -D__USE_MINGW_ACCESS -D_LARGEFILE_SOURCE=1 -D_LARGEFILE64_SOURCE=1 -D_FILE_OFFSET_BITS=64 -DENABLE_RELOCATABLE -DINSTALLPREFIX=$prefix -DINSTALLDIR=$bindir -DEXEEXT=$EXEEXT -DNO_XMALLOC       -ID:/Progra~1/GnuWin32/include     "
+
+# Is the compiler GCC?
+GCC='yes'
+
+# The C++ compiler.
+CXX='g++'
+
+# If 'exit 77'; skip all C++ tests; otherwise ':'.
+BISON_CXX_WORKS=':'
+
+# We want no optimization with C++, too.
+CXXFLAGS='-Wall -Wpointer-arith -fms-extensions -mms-bitfields -fno-exceptions -fomit-frame-pointer -march=i386 -ffast-math -fconserve-space -fno-rtti -D__STDC_LIMIT_MACROS  '
+
+# Are special link options needed?
+LDFLAGS=' -Wl,-s -Wl,--force-exe-suffix -Wl,--enable-auto-import -Wl,--enable-runtime-pseudo-reloc -Wl,--allow-multiple-definition -Wl,--enable-stdcall-fixup -LD:/Progra~1/GnuWin32/lib   '
+
+# Are special libraries needed?
+LIBS=" -Wl,-s  -LD:/Progra~1/GnuWin32/lib  -lintl -lwsock32 -lole32 -luuid -lmsvcp60   D:/Progra~1/GnuWin32/lib/libintl.dll.a -LD:/Progra~1/GnuWin32/lib $buildlibdir/libbison.a"
+
+# Empty if no javac was found
+CONF_JAVAC=''
+
+# Empty if no Java VM was found
+CONF_JAVA='gij'
+
+# Empty if no xsltproc was found
+XSLTPROC=''
