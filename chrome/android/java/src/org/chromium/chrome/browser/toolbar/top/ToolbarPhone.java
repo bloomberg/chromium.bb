@@ -654,7 +654,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     private int getViewBoundsLeftOfLocationBar(@VisualState int visualState) {
         // Uses getMeasuredWidth()s instead of getLeft() because this is called in onMeasure
         // and the layout values have not yet been set.
-        if (visualState == VisualState.NEW_TAB_NORMAL) {
+        if (visualState == VisualState.NEW_TAB_NORMAL && mTabSwitcherState == STATIC_TAB) {
             return mToolbarSidePadding;
         } else if (ApiCompatibilityUtils.isLayoutRtl(this)) {
             return getBoundsAfterAccountingForRightButtons();
@@ -682,7 +682,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     private int getViewBoundsRightOfLocationBar(@VisualState int visualState) {
         // Uses getMeasuredWidth()s instead of getRight() because this is called in onMeasure
         // and the layout values have not yet been set.
-        if (visualState == VisualState.NEW_TAB_NORMAL) {
+        if (visualState == VisualState.NEW_TAB_NORMAL && mTabSwitcherState == STATIC_TAB) {
             return getMeasuredWidth() - mToolbarSidePadding;
         } else if (ApiCompatibilityUtils.isLayoutRtl(this)) {
             return getMeasuredWidth() - getBoundsAfterAccountingForLeftButton();
@@ -1420,6 +1420,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                 int rightDelta = getViewBoundsRightOfLocationBar(mVisualState)
                         - mUnfocusedLocationBarLayoutLeft - mUnfocusedLocationBarLayoutWidth;
                 float inversePercent = 1f - mUrlExpansionPercent;
+
                 locationBarClipLeft += leftDelta * inversePercent;
                 locationBarClipRight -= rightDelta * inversePercent;
 
@@ -1620,7 +1621,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         exitAnimation.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                updateViewsForTabSwitcherMode();
+                onExitTabSwitcherAnimationEnd();
             }
         });
 
@@ -1646,11 +1647,19 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             @Override
             public void onAnimationEnd(Animator animation) {
                 mDelayedTabSwitcherModeAnimation = null;
-                updateViewsForTabSwitcherMode();
+                onExitTabSwitcherAnimationEnd();
             }
         });
 
         return exitAnimation;
+    }
+
+    private void onExitTabSwitcherAnimationEnd() {
+        updateViewsForTabSwitcherMode();
+
+        // Request a texture update to ensure a texture is captured before the user
+        // re-enters the tab switcher.
+        mLayoutUpdateHost.requestUpdate();
     }
 
     @Override
@@ -1658,7 +1667,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         assert mTextureCaptureMode != textureMode;
         mTextureCaptureMode = textureMode;
         if (mTextureCaptureMode) {
-            if (!hideShadowForIncognitoNtp() && !hideShadowForInterstitial()) {
+            if (!hideShadowForIncognitoNtp() && !hideShadowForInterstitial()
+                    && !hideShadowForRegularNtpTextureCapture()) {
                 mToolbarShadow.setVisibility(VISIBLE);
             }
             mPreTextureCaptureAlpha = getAlpha();
@@ -1671,6 +1681,11 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             updateShadowVisibility();
             mPreTextureCaptureAlpha = 1f;
         }
+    }
+
+    private boolean hideShadowForRegularNtpTextureCapture() {
+        return !isIncognito() && NewTabPage.isNTPUrl(getToolbarDataProvider().getCurrentUrl())
+                && mNtpSearchBoxScrollPercent < 1.f;
     }
 
     // TODO(dtrainor): This is always true when in the tab switcher (crbug.com/710750).
@@ -2267,7 +2282,6 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         // These are used to skip setting state unnecessarily while in the tab switcher.
         boolean inOrEnteringStaticTab =
                 mTabSwitcherState == STATIC_TAB || mTabSwitcherState == EXITING_TAB_SWITCHER;
-        boolean inOrEnteringTabSwitcher = !inOrEnteringStaticTab;
 
         @VisualState
         int newVisualState = computeVisualState();
