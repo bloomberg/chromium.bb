@@ -477,6 +477,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(blink::features::kWritableFilesAPI))
     WebRuntimeFeatures::EnableFeatureFromString("WritableFiles", true);
 
+  if (base::FeatureList::IsEnabled(
+          blink::features::kForbidSyncXHRInPageDismissal)) {
+    WebRuntimeFeatures::EnableForbidSyncXHRInPageDismissal(true);
+  }
+
   // End individual features.
   // Do not add individual features below this line.
 

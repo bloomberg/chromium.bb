@@ -137,6 +137,10 @@ const base::Feature kWasmCodeCache = {"WasmCodeCache",
 const base::Feature kWritableFilesAPI{"WritableFilesAPI",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allows for synchronous XHR requests during page dismissal
+const base::Feature kForbidSyncXHRInPageDismissal{
+    "ForbidSyncXHRInPageDismissal", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const char kAutofillPreviewStyleExperimentBgColorParameterName[] = "bg_color";
 
 const char kAutofillPreviewStyleExperimentColorParameterName[] = "color";

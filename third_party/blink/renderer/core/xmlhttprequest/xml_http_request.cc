@@ -26,7 +26,9 @@
 #include <memory>
 
 #include "base/auto_reset.h"
+#include "base/feature_list.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_document_or_string_or_form_data_or_url_search_params.h"
@@ -1099,9 +1101,6 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
     resource_loader_options.data_buffering_policy = kDoNotBufferData;
   }
 
-  exception_code_ = DOMExceptionCode::kNoError;
-  error_ = false;
-
   if (async_) {
     UseCounter::Count(&execution_context,
                       WebFeature::kXMLHttpRequestAsynchronous);
@@ -1133,10 +1132,21 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
         DEFINE_STATIC_LOCAL(EnumerationHistogram, syncxhr_pagedismissal_histogram,
                             ("XHR.Sync.PageDismissal", 5));
         syncxhr_pagedismissal_histogram.Count(pagedismissal);
+        // Disallow synchronous requests on page dismissal
+        if (base::FeatureList::IsEnabled(
+                features::kForbidSyncXHRInPageDismissal)) {
+          HandleNetworkError();
+          ThrowForLoadFailureIfNeeded(exception_state,
+                                      "Synchronous XHR in page dismissal.");
+          return;
+        }
       }
     }
     resource_loader_options.synchronous_policy = kRequestSynchronously;
   }
+
+  exception_code_ = DOMExceptionCode::kNoError;
+  error_ = false;
 
   loader_ = MakeGarbageCollected<ThreadableLoader>(execution_context, this,
                                                    resource_loader_options);
