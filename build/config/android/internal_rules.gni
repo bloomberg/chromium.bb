@@ -1243,18 +1243,23 @@ if (enable_java_templates) {
                                ])
         script = "//build/android/gyp/dex.py"
         depfile = "$target_gen_dir/$target_name.d"
-        inputs = []
+        inputs = [
+          invoker.build_config,
+        ]
         outputs = [
           invoker.output,
         ]
 
         _rebased_output = rebase_path(invoker.output, root_build_dir)
-
+        _rebased_build_config =
+            rebase_path(invoker.build_config, root_build_dir)
         args = [
           "--depfile",
           rebase_path(depfile, root_build_dir),
           "--dex-path",
           _rebased_output,
+          "--classpath=@FileArg($_rebased_build_config:deps_info:javac_full_interface_classpath)",
+          "--sdk-jars=@FileArg($_rebased_build_config:android:sdk_jars)",
         ]
 
         if (_proguard_enabled) {
@@ -1425,7 +1430,7 @@ if (enable_java_templates) {
     # Turned off because of existing code which fails the assertion
     _enable_thread_annotations = false
 
-    _desugar = defined(invoker.supports_android) && invoker.supports_android
+    _desugar = defined(invoker.desugar) && invoker.desugar
     _emma_instrument = invoker.emma_instrument
     _enable_bytecode_rewriter =
         _enable_assert || _enable_custom_resources || _enable_thread_annotations
@@ -3357,6 +3362,9 @@ if (enable_java_templates) {
         _accumulated_public_deps += [ ":$_copy_system_library_target_name" ]
       } else {
         _process_prebuilt_target_name = "${target_name}__process_prebuilt"
+
+        # Skip desugaring for debug builds using r8 due to binary size issue.
+        _desugar = _supports_android && !(is_java_debug && experimental_use_r8)
         process_java_prebuilt(_process_prebuilt_target_name) {
           forward_variables_from(invoker,
                                  [
@@ -3366,7 +3374,7 @@ if (enable_java_templates) {
                                    "jar_included_patterns",
                                  ])
           is_prebuilt = _is_prebuilt
-          supports_android = _supports_android
+          desugar = _desugar
           enable_build_hooks = _enable_build_hooks
           enable_build_hooks_android = _enable_build_hooks_android
           build_config = _build_config
@@ -3389,7 +3397,9 @@ if (enable_java_templates) {
           dex("${target_name}__dex") {
             input_jars = [ _final_jar_path ]
             output = _dex_path
+            build_config = _build_config
             deps = [
+              ":$_build_config_target_name",
               ":$_process_prebuilt_target_name",
             ]
           }
