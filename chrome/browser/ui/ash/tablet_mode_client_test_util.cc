@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/shell_test_api.mojom.h"
+#include "ash/public/interfaces/shell_test_api.test-mojom.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"

@@ -15,8 +15,8 @@
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/shelf_test_api.mojom.h"
-#include "ash/public/interfaces/shell_test_api.mojom.h"
+#include "ash/public/interfaces/shelf_test_api.test-mojom.h"
+#include "ash/public/interfaces/shell_test_api.test-mojom.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shell.h"                                   // mash-ok
 #include "ash/wm/overview/window_selector_controller.h"  // mash-ok

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/public/interfaces/shell_test_api.mojom.h"
+#include "ash/public/interfaces/shell_test_api.test-mojom.h"
 #include "base/macros.h"
 #include "services/ws/common/types.h"
 
