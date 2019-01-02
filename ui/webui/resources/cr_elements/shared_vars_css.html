@@ -7,19 +7,22 @@
 <style is="custom-style">
   html {
     --google-blue-50: #E8F0FE;
-    --google-blue-600: #1A73E8;
+    --google-blue-500-rgb: 66, 133, 244;
+    --google-blue-600-rgb: 26, 115, 232;
+    --google-blue-600: rgb(var(--google-blue-600-rgb));
+    --google-blue-900-rgb: 13, 71, 161;
     /* -refresh differentiates from google-green-700 in polymer's color.html. */
     --google-green-refresh-700: #188038;
-    --google-blue-600-opacity-24: rgba(26, 115, 232, 0.24);
     /* -refresh differentiates from google-grey-100 in polymer's color.html. */
     --google-grey-refresh-100: #F1F3F4;
     --google-grey-200: #E8EAED;
     --google-grey-400: #BDC1C6;
-    --google-grey-600: #80868B;
-    --google-grey-600-opacity-24: rgba(128, 134, 139, 0.24);
+    --google-grey-600-rgb: 128, 134, 139;
+    --google-grey-600: rgb(var(--google-grey-600-rgb));
     /* -refresh differentiates from google-grey-700 in polymer's color.html. */
     --google-grey-refresh-700: #5F6368;
-    --google-grey-800: #3C4043;
+    --google-grey-800-rgb: 60, 64, 67;
+    --google-grey-800: rgb(var(--google-grey-800-rgb));
     --google-grey-900: #202124;
     --google-red-600: #D93025;
 
@@ -28,9 +31,8 @@
 
     --cr-card-background-color: white;
     --cr-card-elevation: {
-      /* google-grey-800 with opacity */
-      box-shadow: rgba(60, 64, 67, .3) 0 1px 2px 0,
-                  rgba(60, 64, 67, .15) 0 1px 3px 1px;
+      box-shadow: rgba(var(--google-grey-800-rgb), .3) 0 1px 2px 0,
+                  rgba(var(--google-grey-800-rgb), .15) 0 1px 3px 1px;
     }
 
     --cr-focused-item-color: var(--google-grey-300);
@@ -40,7 +42,7 @@
     --cr-menu-background-focus-color: var(--google-grey-200);
     --cr-menu-shadow: 0 2px 6px var(--paper-grey-500);
     --cr-section-text-color: var(--google-grey-refresh-700);
-    --cr-separator-color: rgba(0, 0, 0, 0.06);
+    --cr-separator-color: rgba(0, 0, 0, .06);
     --cr-title-text-color: rgb(90, 90, 90);
     --cr-toggle-color: var(--google-blue-500);
   }
@@ -181,7 +183,7 @@
     --cr-toolbar-overlay-animation-duration: 150ms;
 
     --cr-container-shadow: {
-      box-shadow: inset 0 5px 6px -3px rgba(0, 0, 0, 0.4);
+      box-shadow: inset 0 5px 6px -3px rgba(0, 0, 0, .4);
       height: 6px;
       left: 0;
       margin-bottom: -6px;
@@ -198,9 +200,9 @@
 
     /** MD Refresh Styles */
     --cr-card-border-radius: 4px;
-    --cr-disabled-opacity: 0.38;
+    --cr-disabled-opacity: .38;
     --cr-form-field-bottom-spacing: 16px;
-    --cr-form-field-label-font-size: 0.625rem;
+    --cr-form-field-label-font-size: .625rem;
     --cr-form-field-label-height: 1em;
     --cr-form-field-label-line-height: 1em;
     --cr-form-field-label: {
@@ -208,7 +210,7 @@
       display: block;
       font-size: var(--cr-form-field-label-font-size);
       font-weight: 500;
-      letter-spacing: 0.4px;
+      letter-spacing: .4px;
       line-height: var(--cr-form-field-label-line-height);
       margin-bottom: 8px;
     }
