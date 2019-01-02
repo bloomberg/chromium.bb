@@ -108,6 +108,10 @@ class TabController {
   virtual void OnMouseEventInTab(views::View* source,
                                  const ui::MouseEvent& event) = 0;
 
+  // Updates hover-card content, anchoring and visibility based on what tab is
+  // hovered and whether the card should be shown.
+  virtual void UpdateHoverCard(Tab* tab, bool should_show) = 0;
+
   // Returns whether |tab| needs to be painted. When this returns true, |clip|
   // is set to the path which should be clipped out of the current tab's region
   // (for hit testing or painting), if any.  |clip| is only non-empty when

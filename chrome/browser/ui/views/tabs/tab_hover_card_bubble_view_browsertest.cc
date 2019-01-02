@@ -1,0 +1,169 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/browser_features.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/tabs/tab.h"
+#include "chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/grit/generated_resources.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/widget/widget.h"
+
+using views::Widget;
+
+class TabHoverCardBubbleViewBrowserTest : public DialogBrowserTest {
+ public:
+  TabHoverCardBubbleViewBrowserTest() = default;
+  ~TabHoverCardBubbleViewBrowserTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kTabHoverCards);
+    DialogBrowserTest::SetUp();
+  }
+
+  static TabHoverCardBubbleView* GetHoverCard(const TabStrip* tabstrip) {
+    return tabstrip->hover_card_;
+  }
+
+  static Widget* GetHoverCardWidget(const TabHoverCardBubbleView* hover_card) {
+    return hover_card->widget_;
+  }
+
+  const base::string16& GetHoverCardTitle(
+      const TabHoverCardBubbleView* hover_card) {
+    return hover_card->title_label_->text();
+  }
+
+  const base::string16& GetHoverCardDomain(
+      const TabHoverCardBubbleView* hover_card) {
+    return hover_card->domain_label_->text();
+  }
+
+  void MouseExitTabStrip() {
+    TabStrip* tab_strip =
+        BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
+    ui::MouseEvent stop_hover_event(ui::ET_MOUSE_EXITED, gfx::Point(),
+                                    gfx::Point(), base::TimeTicks(),
+                                    ui::EF_NONE, 0);
+    tab_strip->OnMouseExited(stop_hover_event);
+  }
+
+  void ClickMouseOnTab() {
+    TabStrip* tab_strip =
+        BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
+    Tab* tab = tab_strip->tab_at(0);
+    ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                               base::TimeTicks(), ui::EF_NONE, 0);
+    tab->OnMousePressed(click_event);
+  }
+
+  void HoverMouseOverTabAt(int index) {
+    TabStrip* tab_strip =
+        BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
+    Tab* tab = tab_strip->tab_at(index);
+    ui::MouseEvent hover_event(ui::ET_MOUSE_ENTERED, gfx::Point(), gfx::Point(),
+                               base::TimeTicks(), ui::EF_NONE, 0);
+    tab->OnMouseEntered(hover_event);
+  }
+
+  // DialogBrowserTest:
+  void ShowUi(const std::string& name) override {
+    TabStrip* tab_strip =
+        BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
+    Tab* tab = tab_strip->tab_at(0);
+    ui::MouseEvent hover_event(ui::ET_MOUSE_ENTERED, gfx::Point(), gfx::Point(),
+                               base::TimeTicks(), ui::EF_NONE, 0);
+    tab->OnMouseEntered(hover_event);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TabHoverCardBubbleViewBrowserTest);
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
+                       InvokeUi_tab_hover_card) {
+  ShowAndVerifyUi();
+}
+
+// Verify hover card is visible while hovering and not visible outside of the
+// tabstrip.
+IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
+                       WidgetVisibleOnHover) {
+  ShowUi("default");
+  TabStrip* tab_strip =
+      BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
+  TabHoverCardBubbleView* hover_card = GetHoverCard(tab_strip);
+  Widget* widget = GetHoverCardWidget(hover_card);
+
+  EXPECT_TRUE(widget != nullptr);
+  EXPECT_TRUE(widget->IsVisible());
+  MouseExitTabStrip();
+  EXPECT_FALSE(widget->IsVisible());
+}
+
+// Verify hover card is not visible after clicking on a tab.
+IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
+                       WidgetNotVisibleOnClick) {
+  ShowUi("default");
+  TabStrip* tab_strip =
+      BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
+  TabHoverCardBubbleView* hover_card = GetHoverCard(tab_strip);
+  Widget* widget = GetHoverCardWidget(hover_card);
+
+  EXPECT_TRUE(widget != nullptr);
+  EXPECT_TRUE(widget->IsVisible());
+  ClickMouseOnTab();
+  EXPECT_FALSE(widget->IsVisible());
+}
+
+// Verify title, domain, and anchor are correctly updated when moving hover
+// from one tab to another.
+IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest, WidgetDataUpdate) {
+  TabStrip* tab_strip =
+      BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
+  TabRendererData newTabData = TabRendererData();
+  newTabData.title = base::UTF8ToUTF16("Test Tab 2");
+  newTabData.url = GURL("http://example.com/this/should/not/be/seen");
+  tab_strip->AddTabAt(1, newTabData, false);
+
+  ShowUi("default");
+  TabHoverCardBubbleView* hover_card = GetHoverCard(tab_strip);
+  Widget* widget = GetHoverCardWidget(hover_card);
+
+  EXPECT_TRUE(widget != nullptr);
+  EXPECT_TRUE(widget->IsVisible());
+  HoverMouseOverTabAt(1);
+  EXPECT_TRUE(widget != nullptr);
+  EXPECT_TRUE(widget->IsVisible());
+  Tab* tab = tab_strip->tab_at(1);
+  EXPECT_EQ(GetHoverCardTitle(hover_card), base::UTF8ToUTF16("Test Tab 2"));
+  EXPECT_EQ(GetHoverCardDomain(hover_card), base::UTF8ToUTF16("example.com"));
+  EXPECT_EQ(hover_card->GetAnchorView(), static_cast<views::View*>(tab));
+}
+
+// Verify inactive window remains inactive when showing a hover card for a tab
+// in the inactive window.
+IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
+                       InactiveWindowStaysInactiveOnHover) {
+  ShowUi("default");
+  BrowserView::GetBrowserViewForBrowser(browser())->Deactivate();
+  ASSERT_FALSE(BrowserView::GetBrowserViewForBrowser(browser())->IsActive());
+  TabStrip* tab_strip =
+      BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
+  Tab* tab = tab_strip->tab_at(0);
+  ui::MouseEvent hover_event(ui::ET_MOUSE_ENTERED, gfx::Point(), gfx::Point(),
+                             base::TimeTicks(), ui::EF_NONE, 0);
+  tab->OnMouseEntered(hover_event);
+  ASSERT_FALSE(BrowserView::GetBrowserViewForBrowser(browser())->IsActive());
+}
