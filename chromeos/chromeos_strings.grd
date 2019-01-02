@@ -166,6 +166,9 @@ Try tapping the mic to ask me anything.
       <message name="IDS_ASH_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
         Add Person
       </message>
+      <message name="IDS_ASH_PARENT_ACCESS_BUTTON" desc="Text shown on an parent access button on login/lock screen">
+        Parent access
+      </message>
       <message name="IDS_ASH_SHELF_APPS_BUTTON" desc="Text shown on apps button on login screen.">
         Apps
       </message>

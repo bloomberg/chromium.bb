@@ -289,6 +289,11 @@ extern const base::Feature kOobeRecommendAppsScreen;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kUseNewAcceptLanguageHeader;
 
+#if defined(OS_CHROMEOS)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kParentAccessCode;
+#endif
+
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPermissionDelegation;
 

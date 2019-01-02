@@ -50,14 +50,15 @@ class ASH_EXPORT LoginShelfView : public views::View,
                                   public LoginDataDispatcher::Observer {
  public:
   enum ButtonId {
-    kShutdown = 1,    // Shut down the device.
-    kRestart,         // Restart the device.
-    kSignOut,         // Sign out the active user session.
-    kCloseNote,       // Close the lock screen note.
-    kCancel,          // Cancel multiple user sign-in.
-    kBrowseAsGuest,   // Use in guest mode.
-    kAddUser,         // Add a new user.
-    kApps,            // Show list of available kiosk apps.
+    kShutdown = 1,   // Shut down the device.
+    kRestart,        // Restart the device.
+    kSignOut,        // Sign out the active user session.
+    kCloseNote,      // Close the lock screen note.
+    kCancel,         // Cancel multiple user sign-in.
+    kBrowseAsGuest,  // Use in guest mode.
+    kAddUser,        // Add a new user.
+    kApps,           // Show list of available kiosk apps.
+    kParentAccess    // Unlock child device with Parent Access Code.
   };
 
   explicit LoginShelfView(
@@ -77,6 +78,9 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // Sets if the guest button on the login shelf can be shown. Even if set to
   // true the button may still not be visible.
   void SetAllowLoginAsGuest(bool allow_guest);
+
+  // Sets whether parent access button can be shown on the login shelf.
+  void SetShowParentAccess(bool show);
 
   // Sets if the guest button on the login shelf can be shown during gaia
   // signin screen.
@@ -125,7 +129,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
   mojom::OobeDialogState dialog_state_ = mojom::OobeDialogState::HIDDEN;
   bool allow_guest_ = true;
   bool allow_guest_in_oobe_ = false;
-
+  bool show_parent_access_ = false;
   // When the Gaia screen is active during Login, the guest-login button should
   // appear if there are no user views.
   bool login_screen_has_users_ = false;
