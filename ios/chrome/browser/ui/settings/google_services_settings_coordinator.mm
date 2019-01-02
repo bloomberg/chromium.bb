@@ -61,6 +61,8 @@
   self.mediator.consumer = viewController;
   self.mediator.authService = self.authService;
   self.mediator.commandHandler = self;
+  self.mediator.syncService =
+      ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
   viewController.modelDelegate = self.mediator;
   viewController.serviceDelegate = self.mediator;
   DCHECK(self.navigationController);

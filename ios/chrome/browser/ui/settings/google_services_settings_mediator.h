@@ -18,6 +18,9 @@ class AuthenticationService;
 class PrefService;
 class SyncSetupService;
 
+namespace browser_sync {
+class ProfileSyncService;
+}  // namespace browser_sync
 namespace unified_consent {
 class UnifiedConsentService;
 }  // namespace unified_consent
@@ -34,17 +37,20 @@ class UnifiedConsentService;
 // Command handler.
 @property(nonatomic, weak) id<GoogleServicesSettingsCommandHandler>
     commandHandler;
+// Sync service.
+@property(nonatomic, assign) browser_sync::ProfileSyncService* syncService;
 
 // Designated initializer. All the paramters should not be null.
 // |userPrefService|: preference service from the browser state.
 // |localPrefService|: preference service from the application context.
-- (instancetype)
-initWithUserPrefService:(PrefService*)userPrefService
-       localPrefService:(PrefService*)localPrefService
-       syncSetupService:(SyncSetupService*)syncSetupService
-  unifiedConsentService:
-      (unified_consent::UnifiedConsentService*)unifiedConsentService
-    NS_DESIGNATED_INITIALIZER;
+// |syncSetupService|: allows configuring sync.
+// |unifiedConsentService|: manage the user consent.
+- (instancetype)initWithUserPrefService:(PrefService*)userPrefService
+                       localPrefService:(PrefService*)localPrefService
+                       syncSetupService:(SyncSetupService*)syncSetupService
+                  unifiedConsentService:
+                      (unified_consent::UnifiedConsentService*)
+                          unifiedConsentService NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 

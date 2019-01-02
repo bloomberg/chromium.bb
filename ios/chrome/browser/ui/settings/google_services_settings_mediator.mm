@@ -7,12 +7,14 @@
 #include "base/auto_reset.h"
 #include "base/mac/foundation_util.h"
 #include "components/autofill/core/common/autofill_prefs.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/unified_consent/pref_names.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
+#include "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_command_handler.h"
@@ -54,7 +56,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface GoogleServicesSettingsMediator () <BooleanObserver>
+@interface GoogleServicesSettingsMediator () <BooleanObserver,
+                                              SyncObserverModelBridge> {
+  // Sync observer.
+  std::unique_ptr<SyncObserverBridge> _syncObserver;
+}
 
 // Unified consent service.
 @property(nonatomic, assign)
@@ -107,12 +113,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - Load model
 
-- (instancetype)
-initWithUserPrefService:(PrefService*)userPrefService
-       localPrefService:(PrefService*)localPrefService
-       syncSetupService:(SyncSetupService*)syncSetupService
-  unifiedConsentService:
-      (unified_consent::UnifiedConsentService*)unifiedConsentService {
+- (instancetype)initWithUserPrefService:(PrefService*)userPrefService
+                       localPrefService:(PrefService*)localPrefService
+                       syncSetupService:(SyncSetupService*)syncSetupService
+                  unifiedConsentService:
+                      (unified_consent::UnifiedConsentService*)
+                          unifiedConsentService {
   self = [super init];
   if (self) {
     DCHECK(userPrefService);
@@ -346,6 +352,8 @@ initWithUserPrefService:(PrefService*)userPrefService
   DCHECK_EQ(self.consumer, controller);
   [self loadNonPersonalizedSection];
   [self updateSyncErrorSectionAndNotifyConsumer:NO];
+  DCHECK(self.syncService);
+  _syncObserver.reset(new SyncObserverBridge(self, self.syncService));
 }
 
 #pragma mark - GoogleServicesSettingsServiceDelegate
@@ -399,6 +407,12 @@ initWithUserPrefService:(PrefService*)userPrefService
     case BetterSearchAndBrowsingItemType:
       break;
   }
+}
+
+#pragma mark - SyncObserverModelBridge
+
+- (void)onSyncStateChanged {
+  [self updateSyncErrorSectionAndNotifyConsumer:YES];
 }
 
 #pragma mark - BooleanObserver
