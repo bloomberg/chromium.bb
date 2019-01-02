@@ -721,15 +721,6 @@ void RenderViewHostImpl::SetInitialFocus(bool reverse) {
   Send(new ViewMsg_SetInitialFocus(GetRoutingID(), reverse));
 }
 
-void RenderViewHostImpl::RenderWidgetWillSetIsLoading(bool is_loading) {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&ResourceDispatcherHostImpl::OnRenderViewHostSetIsLoading,
-                     GetProcess()->GetID(), GetRoutingID(), is_loading));
-}
-
 void RenderViewHostImpl::RenderWidgetDidFirstVisuallyNonEmptyPaint() {
   delegate_->DidFirstVisuallyNonEmptyPaint(this);
 }

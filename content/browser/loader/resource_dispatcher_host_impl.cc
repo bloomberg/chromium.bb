@@ -1220,17 +1220,6 @@ void ResourceDispatcherHostImpl::OnRenderViewHostDeleted(int child_id,
   }
 }
 
-// static
-void ResourceDispatcherHostImpl::OnRenderViewHostSetIsLoading(int child_id,
-                                                              int route_id,
-                                                              bool is_loading) {
-  auto* host = ResourceDispatcherHostImpl::Get();
-  if (host && host->scheduler_) {
-    host->scheduler_->DeprecatedOnLoadingStateChanged(child_id, route_id,
-                                                      !is_loading);
-  }
-}
-
 // The object died, so cancel and detach all requests associated with it except
 // for downloads and detachable resources, which belong to the browser process
 // even if initiated via a renderer.
@@ -1993,8 +1982,7 @@ void ResourceDispatcherHostImpl::AckUpdateLoadInfo() {
 void ResourceDispatcherHostImpl::MaybeStartUpdateLoadInfoTimer() {
   // If shutdown has occurred, |update_load_info_timer_| is nullptr.
   if (!is_shutdown_ && !waiting_on_load_state_ack_ &&
-      !update_load_info_timer_->IsRunning() &&
-      scheduler_->DeprecatedHasLoadingClients() && !pending_loaders_.empty()) {
+      !update_load_info_timer_->IsRunning() && !pending_loaders_.empty()) {
     update_load_info_timer_->Start(
         FROM_HERE, TimeDelta::FromMilliseconds(kUpdateLoadStatesIntervalMsec),
         this, &ResourceDispatcherHostImpl::UpdateLoadInfo);

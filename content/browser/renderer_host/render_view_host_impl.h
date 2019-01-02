@@ -226,7 +226,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   void RenderWidgetDidInit() override;
   void RenderWidgetDidClose() override;
   void RenderWidgetNeedsToRouteCloseEvent() override;
-  void RenderWidgetWillSetIsLoading(bool is_loading) override;
   void RenderWidgetDidFirstVisuallyNonEmptyPaint() override;
   void RenderWidgetDidCommitAndDrawCompositorFrame() override;
   void RenderWidgetGotFocus() override;
