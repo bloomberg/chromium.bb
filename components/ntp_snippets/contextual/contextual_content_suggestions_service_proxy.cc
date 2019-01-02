@@ -49,36 +49,29 @@ void ContextualContentSuggestionsServiceProxy::FetchContextualSuggestions(
           weak_ptr_factory_.GetWeakPtr(), last_ukm_source_id_, url.spec()));
 }
 
-void ContextualContentSuggestionsServiceProxy::FetchContextualSuggestionImage(
-    const std::string& suggestion_id,
-    ntp_snippets::ImageFetchedCallback callback) {
+std::string
+ContextualContentSuggestionsServiceProxy::GetContextualSuggestionImageUrl(
+    const std::string& suggestion_id) {
   auto suggestion_iter = suggestions_.find(suggestion_id);
   if (suggestion_iter == suggestions_.end()) {
     DVLOG(1) << "Unkown suggestion ID: " << suggestion_id;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), gfx::Image()));
-    return;
+    return "";
   }
 
   std::string& image_id = suggestion_iter->second.image_id;
-  GURL image_url = ImageUrlFromId(image_id);
-
-  FetchImageImpl(image_url, image_id, std::move(callback));
+  return ImageUrlFromId(image_id).spec();
 }
 
-void ContextualContentSuggestionsServiceProxy::FetchContextualSuggestionFavicon(
-    const std::string& suggestion_id,
-    ntp_snippets::ImageFetchedCallback callback) {
+std::string
+ContextualContentSuggestionsServiceProxy::GetContextualSuggestionFaviconUrl(
+    const std::string& suggestion_id) {
   auto suggestion_iter = suggestions_.find(suggestion_id);
   if (suggestion_iter == suggestions_.end()) {
     DVLOG(1) << "Unkown suggestion ID: " << suggestion_id;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), gfx::Image()));
-    return;
+    return "";
   }
 
-  FetchImageImpl(GURL(suggestion_iter->second.favicon_image_url),
-                 suggestion_iter->second.favicon_image_id, std::move(callback));
+  return suggestion_iter->second.favicon_image_url;
 }
 
 void ContextualContentSuggestionsServiceProxy::ClearState() {
@@ -113,19 +106,6 @@ void ContextualContentSuggestionsServiceProxy::FlushMetrics() {
   if (last_ukm_source_id_ != ukm::kInvalidSourceId)
     reporter_->Flush();
   last_ukm_source_id_ = ukm::kInvalidSourceId;
-}
-
-void ContextualContentSuggestionsServiceProxy::FetchImageImpl(
-    const GURL& image_url,
-    const std::string& image_id,
-    ntp_snippets::ImageFetchedCallback callback) {
-  ntp_snippets::ContentSuggestion::ID synthetic_cache_id(
-      ntp_snippets::Category::FromKnownCategory(
-          ntp_snippets::KnownCategories::CONTEXTUAL),
-      image_id);
-
-  service_->FetchContextualSuggestionImage(synthetic_cache_id, image_url,
-                                           std::move(callback));
 }
 
 void ContextualContentSuggestionsServiceProxy::CacheSuggestions(

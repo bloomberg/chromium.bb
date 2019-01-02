@@ -7,6 +7,10 @@ package org.chromium.chrome.browser.contextual_suggestions;
 import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
+import org.chromium.base.VisibleForTesting;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
+import org.chromium.chrome.browser.cached_image_fetcher.CachedImageFetcher;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsBridge.ContextualSuggestionsResult;
 import org.chromium.chrome.browser.ntp.snippets.EmptySuggestionsSource;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
@@ -19,6 +23,7 @@ import org.chromium.content_public.browser.WebContents;
 class ContextualSuggestionsSourceImpl
         extends EmptySuggestionsSource implements ContextualSuggestionsSource {
     private ContextualSuggestionsBridge mBridge;
+    private CachedImageFetcher mCachedImageFetcher;
 
     /**
      * Creates a ContextualSuggestionsSource for getting contextual suggestions for the current
@@ -28,6 +33,7 @@ class ContextualSuggestionsSourceImpl
      */
     public ContextualSuggestionsSourceImpl(Profile profile) {
         mBridge = new ContextualSuggestionsBridge(profile);
+        mCachedImageFetcher = CachedImageFetcher.getInstance();
     }
 
     @Override
@@ -37,19 +43,32 @@ class ContextualSuggestionsSourceImpl
 
     @Override
     public void fetchSuggestionImage(SnippetArticle suggestion, Callback<Bitmap> callback) {
-        mBridge.fetchSuggestionImage(suggestion, callback);
+        String url = mBridge.getImageUrl(suggestion);
+        mCachedImageFetcher.fetchImage(url, callback);
     }
 
     @Override
     public void fetchContextualSuggestionImage(
             SnippetArticle suggestion, Callback<Bitmap> callback) {
-        mBridge.fetchSuggestionImage(suggestion, callback);
+        String url = mBridge.getImageUrl(suggestion);
+        if (url == null) {
+            PostTask.postTask(new TaskTraits(), () -> callback.onResult(null));
+            return;
+        }
+
+        mCachedImageFetcher.fetchImage(url, callback);
     }
 
     @Override
     public void fetchSuggestionFavicon(SnippetArticle suggestion, int minimumSizePx,
             int desiredSizePx, Callback<Bitmap> callback) {
-        mBridge.fetchSuggestionFavicon(suggestion, callback);
+        String url = mBridge.getFaviconUrl(suggestion);
+        if (url == null) {
+            PostTask.postTask(new TaskTraits(), () -> callback.onResult(null));
+            return;
+        }
+
+        mCachedImageFetcher.fetchImage(url, desiredSizePx, desiredSizePx, callback);
     }
 
     @Override
@@ -65,5 +84,12 @@ class ContextualSuggestionsSourceImpl
     @Override
     public void clearState() {
         mBridge.clearState();
+    }
+
+    @VisibleForTesting
+    ContextualSuggestionsSourceImpl(
+            ContextualSuggestionsBridge bridge, CachedImageFetcher cachedImageFethcer) {
+        mBridge = bridge;
+        mCachedImageFetcher = cachedImageFethcer;
     }
 }
