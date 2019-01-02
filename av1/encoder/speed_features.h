@@ -343,6 +343,11 @@ typedef struct SPEED_FEATURES {
   // 1: use model based rd breakout
   int model_based_post_interp_filter_breakout;
 
+  // Model based breakout in motion_mode_rd
+  // 0: no breakout
+  // 1: use model based rd breakout
+  int model_based_motion_mode_rd_breakout;
+
   // Used if partition_search_type = FIXED_SIZE_PARTITION
   BLOCK_SIZE always_this_block_size;
 

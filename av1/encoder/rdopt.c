@@ -155,6 +155,7 @@ static model_rd_from_sse_type model_rd_sse_fn[MODELRD_TYPES] = {
 #define MODELRD_TYPE_INTERINTRA 1
 #define MODELRD_TYPE_INTRA 1
 #define MODELRD_TYPE_DIST_WTD_COMPOUND 1
+#define MODELRD_TYPE_MOTION_MODE_RD 1
 
 #define DUAL_FILTER_SET_SIZE (SWITCHABLE_FILTERS * SWITCHABLE_FILTERS)
 static const InterpFilters filter_sets[DUAL_FILTER_SET_SIZE] = {
@@ -5787,8 +5788,7 @@ static void pick_tx_size_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     // tighter.
     assert(cpi->sf.model_based_prune_tx_search_level >= 0 &&
            cpi->sf.model_based_prune_tx_search_level <= 2);
-    static const int prune_factor_by8[] = { 2 + MODELRD_TYPE_TX_SEARCH_PRUNE,
-                                            4 + MODELRD_TYPE_TX_SEARCH_PRUNE };
+    static const int prune_factor_by8[] = { 4, 6 };
     if (!model_skip &&
         ((model_rd *
           prune_factor_by8[cpi->sf.model_based_prune_tx_search_level - 1]) >>
@@ -9247,6 +9247,20 @@ static int64_t motion_mode_rd(
         rd_stats->rate += x->motion_mode_cost[bsize][mbmi->motion_mode];
       } else {
         rd_stats->rate += x->motion_mode_cost1[bsize][mbmi->motion_mode];
+      }
+    }
+
+    if (cpi->sf.model_based_motion_mode_rd_breakout) {
+      int model_rate;
+      int64_t model_dist;
+      model_rd_sb_fn[MODELRD_TYPE_MOTION_MODE_RD](
+          cpi, mbmi->sb_type, x, xd, 0, num_planes - 1, mi_row, mi_col,
+          &model_rate, &model_dist, NULL, NULL, NULL, NULL, NULL);
+      const int64_t est_rd =
+          RDCOST(x->rdmult, rd_stats->rate + model_rate, model_dist);
+      if ((est_rd >> 3) * 6 > ref_best_rd) {
+        mbmi->ref_frame[1] = ref_frame_1;
+        continue;
       }
     }
 
