@@ -43,11 +43,10 @@
 @implementation GoogleServicesSettingsCoordinator
 
 - (void)start {
-  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
   GoogleServicesSettingsViewController* viewController =
       [[GoogleServicesSettingsViewController alloc]
-          initWithLayout:layout
-                   style:CollectionViewControllerStyleDefault];
+          initWithTableViewStyle:UITableViewStyleGrouped
+                     appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   viewController.presentationDelegate = self;
   self.viewController = viewController;
   SyncSetupService* syncSetupService =

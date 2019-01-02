@@ -13,15 +13,14 @@
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_image_detail_text_item.h"
-#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_sync_switch_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
+#import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #import "ios/chrome/browser/ui/settings/utils/observable_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -30,7 +29,7 @@
 
 using l10n_util::GetNSString;
 
-typedef NSArray<CollectionViewItem*>* ItemArray;
+typedef NSArray<TableViewItem*>* ItemArray;
 
 namespace {
 
@@ -96,8 +95,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // All the items for the personalized section.
 @property(nonatomic, strong, readonly) ItemArray personalizedItems;
 // Item for the autocomplete wallet feature.
-@property(nonatomic, strong, readonly)
-    LegacySyncSwitchItem* autocompleteWalletItem;
+@property(nonatomic, strong, readonly) SyncSwitchItem* autocompleteWalletItem;
 // All the items for the non-personalized section.
 @property(nonatomic, strong, readonly) ItemArray nonPersonalizedItems;
 
@@ -156,9 +154,9 @@ initWithUserPrefService:(PrefService*)userPrefService
 
 // Loads NonPersonalizedSectionIdentifier section.
 - (void)loadNonPersonalizedSection {
-  CollectionViewModel* model = self.consumer.collectionViewModel;
+  TableViewModel* model = self.consumer.tableViewModel;
   [model addSectionWithIdentifier:NonPersonalizedSectionIdentifier];
-  for (CollectionViewItem* item in self.nonPersonalizedItems) {
+  for (TableViewItem* item in self.nonPersonalizedItems) {
     [model addItem:item
         toSectionWithIdentifier:NonPersonalizedSectionIdentifier];
   }
@@ -173,28 +171,28 @@ initWithUserPrefService:(PrefService*)userPrefService
 
 - (ItemArray)nonPersonalizedItems {
   if (!_nonPersonalizedItems) {
-    LegacySyncSwitchItem* autocompleteSearchesAndURLsItem = [self
+    SyncSwitchItem* autocompleteSearchesAndURLsItem = [self
         switchItemWithItemType:AutocompleteSearchesAndURLsItemType
                   textStringID:
                       IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_TEXT
                 detailStringID:
                     IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_DETAIL
                       dataType:0];
-    LegacySyncSwitchItem* preloadPagesItem = [self
-        switchItemWithItemType:PreloadPagesItemType
-                  textStringID:
-                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_PRELOAD_PAGES_TEXT
-                detailStringID:
-                    IDS_IOS_GOOGLE_SERVICES_SETTINGS_PRELOAD_PAGES_DETAIL
-                      dataType:0];
-    LegacySyncSwitchItem* improveChromeItem = [self
-        switchItemWithItemType:ImproveChromeItemType
-                  textStringID:
-                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_TEXT
-                detailStringID:
-                    IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_DETAIL
-                      dataType:0];
-    LegacySyncSwitchItem* betterSearchAndBrowsingItemType = [self
+    SyncSwitchItem* preloadPagesItem =
+        [self switchItemWithItemType:PreloadPagesItemType
+                        textStringID:
+                            IDS_IOS_GOOGLE_SERVICES_SETTINGS_PRELOAD_PAGES_TEXT
+                      detailStringID:
+                          IDS_IOS_GOOGLE_SERVICES_SETTINGS_PRELOAD_PAGES_DETAIL
+                            dataType:0];
+    SyncSwitchItem* improveChromeItem =
+        [self switchItemWithItemType:ImproveChromeItemType
+                        textStringID:
+                            IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_TEXT
+                      detailStringID:
+                          IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_DETAIL
+                            dataType:0];
+    SyncSwitchItem* betterSearchAndBrowsingItemType = [self
         switchItemWithItemType:BetterSearchAndBrowsingItemType
                   textStringID:
                       IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_TEXT
@@ -211,13 +209,12 @@ initWithUserPrefService:(PrefService*)userPrefService
 
 #pragma mark - Private
 
-// Creates a LegacySyncSwitchItem instance.
-- (LegacySyncSwitchItem*)switchItemWithItemType:(NSInteger)itemType
-                                   textStringID:(int)textStringID
-                                 detailStringID:(int)detailStringID
-                                       dataType:(NSInteger)dataType {
-  LegacySyncSwitchItem* switchItem =
-      [[LegacySyncSwitchItem alloc] initWithType:itemType];
+// Creates a SyncSwitchItem instance.
+- (SyncSwitchItem*)switchItemWithItemType:(NSInteger)itemType
+                             textStringID:(int)textStringID
+                           detailStringID:(int)detailStringID
+                                 dataType:(NSInteger)dataType {
+  SyncSwitchItem* switchItem = [[SyncSwitchItem alloc] initWithType:itemType];
   switchItem.text = GetNSString(textStringID);
   if (detailStringID)
     switchItem.detailText = GetNSString(detailStringID);
@@ -226,10 +223,10 @@ initWithUserPrefService:(PrefService*)userPrefService
 }
 
 // Creates a item to display the sync error.
-- (LegacySettingsImageDetailTextItem*)createSyncErrorItemWithItemType:
+- (SettingsImageDetailTextItem*)createSyncErrorItemWithItemType:
     (NSInteger)itemType {
-  LegacySettingsImageDetailTextItem* syncErrorItem =
-      [[LegacySettingsImageDetailTextItem alloc] initWithType:itemType];
+  SettingsImageDetailTextItem* syncErrorItem =
+      [[SettingsImageDetailTextItem alloc] initWithType:itemType];
   syncErrorItem.text = l10n_util::GetNSString(IDS_IOS_SYNC_ERROR_TITLE);
   syncErrorItem.detailText =
       GetSyncErrorDescriptionForSyncSetupService(self.syncSetupService);
@@ -248,7 +245,7 @@ initWithUserPrefService:(PrefService*)userPrefService
 // Reloads the sync feedback section. If |notifyConsummer| is YES, the consomer
 // is notified to add or remove the sync error section.
 - (void)updateSyncErrorSectionAndNotifyConsumer:(BOOL)notifyConsummer {
-  CollectionViewModel* model = self.consumer.collectionViewModel;
+  TableViewModel* model = self.consumer.tableViewModel;
   BOOL hasError = NO;
   ItemType type;
   if (self.isAuthenticated) {
@@ -288,7 +285,7 @@ initWithUserPrefService:(PrefService*)userPrefService
   // Add the sync error item and its section (if it doesn't already exist) and
   // reload them.
   BOOL sectionAdded = NO;
-  LegacySettingsImageDetailTextItem* syncErrorItem =
+  SettingsImageDetailTextItem* syncErrorItem =
       [self createSyncErrorItemWithItemType:type];
   if (![model hasSectionForSectionIdentifier:SyncFeedbackSectionIdentifier]) {
     // Adding the sync error item and its section.
@@ -316,10 +313,10 @@ initWithUserPrefService:(PrefService*)userPrefService
 
 // Updates the non-personalized section according to the user consent.
 - (void)updateNonPersonalizedSection {
-  for (CollectionViewItem* item in self.nonPersonalizedItems) {
+  for (TableViewItem* item in self.nonPersonalizedItems) {
     ItemType type = static_cast<ItemType>(item.type);
-    LegacySyncSwitchItem* switchItem =
-        base::mac::ObjCCastStrict<LegacySyncSwitchItem>(item);
+    SyncSwitchItem* switchItem =
+        base::mac::ObjCCastStrict<SyncSwitchItem>(item);
     switch (type) {
       case AutocompleteSearchesAndURLsItemType:
         switchItem.on = self.autocompleteSearchPreference.value;
@@ -353,8 +350,7 @@ initWithUserPrefService:(PrefService*)userPrefService
 
 #pragma mark - GoogleServicesSettingsServiceDelegate
 
-- (void)toggleSwitchItem:(LegacySyncSwitchItem*)switchItem
-               withValue:(BOOL)value {
+- (void)toggleSwitchItem:(SyncSwitchItem*)switchItem withValue:(BOOL)value {
   ItemType type = static_cast<ItemType>(switchItem.type);
   switch (type) {
     case AutocompleteSearchesAndURLsItemType:
@@ -385,24 +381,7 @@ initWithUserPrefService:(PrefService*)userPrefService
   }
 }
 
-- (BOOL)shouldHighlightItem:(CollectionViewItem*)item {
-  ItemType type = static_cast<ItemType>(item.type);
-  switch (type) {
-    case RestartAuthenticationFlowErrorItemType:
-    case ReauthDialogAsSyncIsInAuthErrorItemType:
-    case ShowPassphraseDialogErrorItemType:
-      return YES;
-      break;
-    case AutocompleteSearchesAndURLsItemType:
-    case PreloadPagesItemType:
-    case ImproveChromeItemType:
-    case BetterSearchAndBrowsingItemType:
-      return NO;
-      break;
-  }
-}
-
-- (void)didSelectItem:(CollectionViewItem*)item {
+- (void)didSelectItem:(TableViewItem*)item {
   ItemType type = static_cast<ItemType>(item.type);
   switch (type) {
     case RestartAuthenticationFlowErrorItemType:
@@ -418,7 +397,6 @@ initWithUserPrefService:(PrefService*)userPrefService
     case PreloadPagesItemType:
     case ImproveChromeItemType:
     case BetterSearchAndBrowsingItemType:
-      NOTREACHED();
       break;
   }
 }
@@ -427,7 +405,7 @@ initWithUserPrefService:(PrefService*)userPrefService
 
 - (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
   [self updateNonPersonalizedSection];
-  CollectionViewModel* model = self.consumer.collectionViewModel;
+  TableViewModel* model = self.consumer.tableViewModel;
   NSUInteger index =
       [model sectionForSectionIdentifier:NonPersonalizedSectionIdentifier];
   NSIndexSet* sectionIndexToReload = [NSIndexSet indexSetWithIndex:index];
