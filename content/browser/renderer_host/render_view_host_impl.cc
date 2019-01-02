@@ -164,7 +164,7 @@ void GetPlatformSpecificPrefs(RendererPreferences* prefs) {
 }  // namespace
 
 // static
-const int64_t RenderViewHostImpl::kUnloadTimeoutMS = 1000;
+const int64_t RenderViewHostImpl::kUnloadTimeoutMS = 500;
 
 ///////////////////////////////////////////////////////////////////////////////
 // RenderViewHost, public:
