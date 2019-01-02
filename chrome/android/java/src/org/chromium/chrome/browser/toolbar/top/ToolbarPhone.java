@@ -153,6 +153,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     private boolean mForceTextureCapture;
     private boolean mUseLightDrawablesForTextureCapture;
     private boolean mLightDrawablesUsedForLastTextureCapture;
+    private int mTabCountForLastTextureCapture;
 
     @ViewDebug.ExportedProperty(category = "chrome")
     private boolean mAnimateNormalToolbar;
@@ -1297,6 +1298,10 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
         mLightDrawablesUsedForLastTextureCapture = mUseLightDrawablesForTextureCapture;
 
+        if (mTabSwitcherAnimationTabStackDrawable != null && mToggleTabStackButton != null) {
+            mTabCountForLastTextureCapture = mTabSwitcherAnimationTabStackDrawable.getTabCount();
+        }
+
         canvas.restore();
     }
 
@@ -1525,9 +1530,17 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     public boolean setForceTextureCapture(boolean forceTextureCapture) {
         if (forceTextureCapture) {
             setUseLightDrawablesForTextureCapture();
-            // Only force a texture capture if the tint for the toolbar drawables is changing.
+            // Only force a texture capture if the tint for the toolbar drawables is changing or
+            // if the tab count has changed since the last texture capture.
             mForceTextureCapture =
                     mLightDrawablesUsedForLastTextureCapture != mUseLightDrawablesForTextureCapture;
+
+            if (mTabSwitcherAnimationTabStackDrawable != null && mToggleTabStackButton != null) {
+                mForceTextureCapture = mForceTextureCapture
+                        || mTabCountForLastTextureCapture
+                                != mTabSwitcherAnimationTabStackDrawable.getTabCount();
+            }
+
             return mForceTextureCapture;
         }
 
