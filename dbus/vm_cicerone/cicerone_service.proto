@@ -104,6 +104,9 @@ message ContainerStartedSignal {
 
   // The username of uid 1000 in the container.
   string container_username = 4;
+
+  // The home directory of uid 1000 in the container.
+  string container_homedir = 5;
 }
 
 // Message used in the signal for when a container has shut down.
@@ -681,6 +684,9 @@ message GetLxdContainerUsernameResponse {
 
   // The failure_reason if the username could not be retrieved.
   string failure_reason = 3;
+
+  // The home directory of uid 1000 in the container.
+  string homedir = 4;
 }
 // Request for setting up the user for an LXD container.
 message SetUpLxdContainerUserRequest {
