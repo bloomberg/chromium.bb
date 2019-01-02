@@ -19,7 +19,8 @@
 
 (function () {
   class BrowserProxy {
-    constructor() {
+    /** @param {!omnibox_output.OmniboxOutput} omniboxOutput */
+    constructor(omniboxOutput) {
       /** @private {!mojom.OmniboxPageCallbackRouter} */
       this.callbackRouter_ = new mojom.OmniboxPageCallbackRouter;
 
@@ -28,7 +29,9 @@
       // match. Response refers to the data returned from the C++
       // AutocompleteController.
       this.callbackRouter_.handleNewAutocompleteResult.addListener(
-          result => omniboxOutput.addAutocompleteResponse(result));
+          omniboxOutput.addAutocompleteResponse.bind(omniboxOutput));
+      this.callbackRouter_.handleAnswerImageData.addListener(
+          omniboxOutput.updateAnswerImage.bind(omniboxOutput));
 
       /** @private {!mojom.OmniboxPageHandlerProxy} */
       this.handler_ = mojom.OmniboxPageHandler.getProxy();
@@ -43,7 +46,7 @@
   }
 
   /** @type {!BrowserProxy} */
-  const browserProxy = new BrowserProxy();
+  let browserProxy;
   /** @type {!OmniboxInput} */
   let omniboxInput;
   /** @type {!omnibox_output.OmniboxOutput} */
@@ -53,6 +56,7 @@
     omniboxInput = /** @type {!OmniboxInput} */ ($('omnibox-input'));
     omniboxOutput =
         /** @type {!omnibox_output.OmniboxOutput} */ ($('omnibox-output'));
+    browserProxy = new BrowserProxy(omniboxOutput);
 
     omniboxInput.addEventListener('query-inputs-changed', event => {
       omniboxOutput.clearAutocompleteResponses();

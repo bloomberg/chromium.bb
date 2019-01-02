@@ -154,6 +154,10 @@ tbody:not(:first-of-type) td.cell-provider-and-type .pair-item:first-child {
   font-size: 0;
 }
 
+.pair-container {
+  align-items: center;
+}
+
 .cell-contents-and-description .pair-container,
 .cell-fill-and-inline .pair-container {
   display: flex;
@@ -168,12 +172,20 @@ tbody:not(:first-of-type) td.cell-provider-and-type .pair-item:first-child {
   margin-right: 15px;
 }
 
-.cell-contents-and-description .pair-item:first-child {
+.cell-contents-and-description img.pair-item {
+  border-radius: 3px;
+  height: 28px;
+}
+
+.cell-contents-and-description .pair-item.contents {
   color: blue;
 }
 
+.cell-contents-and-description .pair-item.answer {
+  color: orange;
+}
+
 .cell-fill-and-inline .pair-container {
-  align-items: center;
   margin-right: -1px;
 }
 
@@ -181,13 +193,18 @@ tbody:not(:first-of-type) td.cell-provider-and-type .pair-item:first-child {
   margin-right: 1px;
 }
 
-.cell-fill-and-inline .pair-item:nth-child(2):not(:empty) {
+.cell-fill-and-inline .pair-item.inline:not(:empty) {
   border: 1px solid;
   font-weight: bold;
 }
 
 .cell-fill-and-inline .overlap-warning {
   color: red;
+}
+
+.cell-destination-url img {
+  margin-right: 5px;
+  vertical-align: middle;
 }
 
 .accesskey {
@@ -205,6 +222,11 @@ tbody:not(:first-of-type) td.cell-provider-and-type .pair-item:first-child {
 
 .header-fill-and-inline .header-container :nth-child(2) {
   border: 1px solid;
+}
+
+img:not([src]),
+.pair-item:empty:not(img) {
+  display: none;
 }
 
 omnibox-input {

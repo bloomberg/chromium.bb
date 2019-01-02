@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,6 +18,8 @@
 #include "base/values.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -32,8 +35,84 @@
 #include "components/search_engines/template_url.h"
 #include "content/public/browser/web_ui.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "ui/gfx/image/image.h"
 
 using bookmarks::BookmarkModel;
+using OmniboxPageImageCallback =
+    base::RepeatingCallback<void(const SkBitmap& bitmap)>;
+
+namespace {
+
+using ImageReciever = std::function<void(std::string)>;
+
+class OmniboxPageImageObserver : public BitmapFetcherService::Observer {
+ public:
+  explicit OmniboxPageImageObserver(ImageReciever image_reciever)
+      : image_reciever_(image_reciever) {}
+
+  void OnImageChanged(BitmapFetcherService::RequestId request_id,
+                      const SkBitmap& bitmap) override {
+    auto data = gfx::Image::CreateFrom1xBitmap(bitmap).As1xPNGBytes();
+    std::string base_64;
+    base::Base64Encode(base::StringPiece(data->front_as<char>(), data->size()),
+                       &base_64);
+    const char kDataUrlPrefix[] = "data:image/png;base64,";
+    std::string data_url = GURL(kDataUrlPrefix + base_64).spec();
+    image_reciever_(data_url);
+  }
+
+ private:
+  const ImageReciever image_reciever_;
+
+  DISALLOW_COPY_AND_ASSIGN(OmniboxPageImageObserver);
+};
+
+std::string SuggestionAnswerTypeToString(int answer_type) {
+  switch (answer_type) {
+    case SuggestionAnswer::ANSWER_TYPE_INVALID:
+      return "invalid";
+    case SuggestionAnswer::ANSWER_TYPE_DICTIONARY:
+      return "dictionary";
+    case SuggestionAnswer::ANSWER_TYPE_FINANCE:
+      return "finance";
+    case SuggestionAnswer::ANSWER_TYPE_KNOWLEDGE_GRAPH:
+      return "knowledge graph";
+    case SuggestionAnswer::ANSWER_TYPE_LOCAL:
+      return "local";
+    case SuggestionAnswer::ANSWER_TYPE_SPORTS:
+      return "sports";
+    case SuggestionAnswer::ANSWER_TYPE_SUNRISE:
+      return "sunrise";
+    case SuggestionAnswer::ANSWER_TYPE_TRANSLATION:
+      return "translation";
+    case SuggestionAnswer::ANSWER_TYPE_WEATHER:
+      return "weather";
+    case SuggestionAnswer::ANSWER_TYPE_WHEN_IS:
+      return "when is";
+    case SuggestionAnswer::ANSWER_TYPE_CURRENCY:
+      return "currency";
+    case SuggestionAnswer::ANSWER_TYPE_LOCAL_TIME:
+      return "local time";
+    case SuggestionAnswer::ANSWER_TYPE_PLAY_INSTALL:
+      return "play install";
+    default:
+      return std::to_string(answer_type);
+  }
+}
+
+std::string SuggestionAnswerImageLineToString(
+    const SuggestionAnswer::ImageLine& image_line) {
+  std::string string;
+  for (auto text_field : image_line.text_fields())
+    string += base::UTF16ToUTF8(text_field.text());
+  if (image_line.additional_text())
+    string += " " + base::UTF16ToUTF8(image_line.additional_text()->text());
+  if (image_line.status_text())
+    string += " " + base::UTF16ToUTF8(image_line.status_text()->text());
+  return string;
+}
+
+}  // namespace
 
 namespace mojo {
 
@@ -69,6 +148,7 @@ struct TypeConverter<mojom::AutocompleteMatchPtr, AutocompleteMatch> {
     result->inline_autocompletion =
         base::UTF16ToUTF8(input.inline_autocompletion);
     result->destination_url = input.destination_url.spec();
+    result->image = input.ImageUrl().spec().c_str();
     result->contents = base::UTF16ToUTF8(input.contents);
     // At this time, we're not bothering to send along the long vector that
     // represent contents classification.  i.e., for each character, what
@@ -77,10 +157,18 @@ struct TypeConverter<mojom::AutocompleteMatchPtr, AutocompleteMatch> {
     // At this time, we're not bothering to send along the long vector that
     // represents description classification.  i.e., for each character, what
     // type of text it is.
+    if (input.answer) {
+      result->answer =
+          SuggestionAnswerImageLineToString(input.answer->first_line()) +
+          " / " +
+          SuggestionAnswerImageLineToString(input.answer->second_line()) +
+          " / " + SuggestionAnswerTypeToString(input.answer->type());
+    }
     result->transition =
         ui::PageTransitionGetCoreTransitionString(input.transition);
     result->allowed_to_be_default_match = input.allowed_to_be_default_match;
     result->type = AutocompleteMatchType::ToString(input.type);
+    result->is_search_type = AutocompleteMatch::IsSearchType(input.type);
     result->has_tab_match = input.has_tab_match;
     if (input.associated_keyword.get() != NULL) {
       result->associated_keyword =
@@ -166,7 +254,72 @@ void OmniboxPageHandler::OnResultChanged(bool default_match_changed) {
     }
   }
 
+  // Obtain a vector of all image urls required.
+  std::vector<std::string> image_urls;
+  for (size_t i = 0; i < result->combined_results.size(); ++i)
+    image_urls.push_back(result->combined_results[i]->image);
+  for (size_t i = 0; i < result->results_by_provider.size(); ++i) {
+    const mojom::AutocompleteResultsForProvider& result_by_provider =
+        *result->results_by_provider[i];
+    for (size_t j = 0; j < result_by_provider.results.size(); ++j)
+      image_urls.push_back(result_by_provider.results[j]->image);
+  }
+
   page_->HandleNewAutocompleteResult(std::move(result));
+
+  // Fill in image data
+  BitmapFetcherService* image_service =
+      BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
+  for (std::string image_url : image_urls) {
+    const ImageReciever handleAnswerImageData = [this,
+                                                 image_url](std::string data) {
+      page_->HandleAnswerImageData(image_url, data);
+    };
+    if (!image_url.empty()) {
+      // TODO(jdonnelly, rhalavati, manukh): Create a helper function with
+      // Callback to create annotation and pass it to image_service, merging
+      // the annotations in omnibox_page_handler.cc, chrome_omnibox_client.cc,
+      // and chrome_autocomplete_provider_client.cc.
+      auto traffic_annotation = net::DefineNetworkTrafficAnnotation(
+          "omnibox_debug_results_change", R"(
+          semantics {
+            sender: "Omnibox"
+            description:
+              "Chromium provides answers in the suggestion list for "
+              "certain queries that user types in the omnibox. This request "
+              "retrieves a small image (for example, an icon illustrating "
+              "the current weather conditions) when this can add information "
+              "to an answer."
+            trigger:
+              "Change of results for the query typed by the user in the "
+              "omnibox."
+            data:
+              "The only data sent is the path to an image. No user data is "
+              "included, although some might be inferrable (e.g. whether the "
+              "weather is sunny or rainy in the user's current location) "
+              "from the name of the image in the path."
+            destination: WEBSITE
+          }
+          policy {
+            cookies_allowed: YES
+            cookies_store: "user"
+            setting:
+              "You can enable or disable this feature via 'Use a prediction "
+              "service to help complete searches and URLs typed in the "
+              "address bar.' in Chromium's settings under Advanced. The "
+              "feature is enabled by default."
+            chrome_policy {
+              SearchSuggestEnabled {
+                  policy_options {mode: MANDATORY}
+                  SearchSuggestEnabled: false
+              }
+            }
+          })");
+      image_service->RequestImage(
+          GURL(image_url), new OmniboxPageImageObserver(handleAnswerImageData),
+          traffic_annotation);
+    }
+  }
 }
 
 bool OmniboxPageHandler::LookupIsTypedHost(const base::string16& host,

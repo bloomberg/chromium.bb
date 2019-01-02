@@ -20,11 +20,14 @@ struct AutocompleteMatch {
   string fill_into_edit;
   string inline_autocompletion;
   string destination_url;
+  string image;
   string contents;
   string description;
+  string answer;
   string transition;
   bool allowed_to_be_default_match;
   string type;
+  bool is_search_type;
   bool has_tab_match;
   string? associated_keyword;
   string keyword;
@@ -66,4 +69,5 @@ interface OmniboxPageHandler {
 
 interface OmniboxPage {
   HandleNewAutocompleteResult(OmniboxResult result);
+  HandleAnswerImageData(string image_url, string image_data);
 };

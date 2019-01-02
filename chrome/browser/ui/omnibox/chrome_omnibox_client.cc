@@ -334,9 +334,9 @@ void ChromeOmniboxClient::OnResultChanged(
       continue;
     }
     // TODO(jdonnelly, rhalavati): Create a helper function with Callback to
-    // create annotation and pass it to image_service, merging this annotation
-    // and the one in
-    // chrome/browser/autocomplete/chrome_autocomplete_provider_client.cc
+    // create annotation and pass it to image_service, merging the annotations
+    // in omnibox_page_handler.cc, chrome_omnibox_client.cc,
+    // and chrome_autocomplete_provider_client.cc.
     constexpr net::NetworkTrafficAnnotationTag traffic_annotation =
         net::DefineNetworkTrafficAnnotation("omnibox_result_change", R"(
           semantics {
