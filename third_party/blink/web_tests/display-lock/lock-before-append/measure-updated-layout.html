@@ -74,7 +74,7 @@ async_test((t) => {
   async function runTest() {
     let container = document.createElement("div");
     container.id = "container";
-    await container.getDisplayLock().acquire();
+    await container.getDisplayLock().acquire({ timeout: Infinity });
 
     document.getElementById("parent").appendChild(container);
     construct(container);

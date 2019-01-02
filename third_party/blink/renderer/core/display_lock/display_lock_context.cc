@@ -82,6 +82,7 @@ void DisplayLockContext::Dispose() {
   // going to be disposed.
   FinishUpdateResolver(kDetach);
   FinishCommitResolver(kDetach);
+  CancelTimeoutTask();
   state_ = kUnlocked;
 
   if (element_ && element_->GetDocument().View())
@@ -140,8 +141,8 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
 }
 
 ScriptPromise DisplayLockContext::update(ScriptState* script_state) {
-  // Reject if we're unlocked.
-  if (state_ == kUnlocked)
+  // Reject if we're unlocked or disconnected.
+  if (state_ == kUnlocked || !element_->isConnected())
     return GetRejectedPromise(script_state);
 
   // If we have a resolver, then we're at least updating already, just return
@@ -152,10 +153,7 @@ ScriptPromise DisplayLockContext::update(ScriptState* script_state) {
   }
 
   update_resolver_ = ScriptPromiseResolver::Create(script_state);
-  // We only need to kick off an Update if we're in a locked state, all other
-  // states are already updating.
-  if (state_ == kLocked)
-    StartUpdate();
+  StartUpdateIfNeeded();
   return update_resolver_->Promise();
 }
 
@@ -181,8 +179,9 @@ ScriptPromise DisplayLockContext::commit(ScriptState* script_state) {
   // of the promises.
   DCHECK_NE(state_, kCommitting);
   commit_resolver_ = ScriptPromiseResolver::Create(script_state);
+  auto promise = commit_resolver_->Promise();
   StartCommit();
-  return commit_resolver_->Promise();
+  return promise;
 }
 
 void DisplayLockContext::FinishUpdateResolver(ResolverState state) {
@@ -355,6 +354,19 @@ void DisplayLockContext::NotifyForcedUpdateScopeEnded() {
 }
 
 void DisplayLockContext::StartCommit() {
+  // If we don't have an element or we're not connected, then the process of
+  // committing is the same as just unlocking the element.
+  if (!element_ || !element_->isConnected()) {
+    state_ = kUnlocked;
+    update_budget_.reset();
+    FinishUpdateResolver(kReject);
+    // TODO(vmpstr): Should we resolve here? What's the path to unlocking an
+    // element without connecting it (i.e. acquire the lock, then change your
+    // mind).
+    FinishCommitResolver(kReject);
+    return;
+  }
+
   DCHECK_LT(state_, kCommitting);
   if (state_ != kUpdating)
     ScheduleAnimation();
@@ -392,12 +404,19 @@ void DisplayLockContext::StartCommit() {
       layout_invalidation_reason::kDisplayLockCommitting);
 }
 
-void DisplayLockContext::StartUpdate() {
-  DCHECK_EQ(state_, kLocked);
-  state_ = kUpdating;
+void DisplayLockContext::StartUpdateIfNeeded() {
+  // We should not be calling this if we're unlocked.
+  DCHECK_NE(state_, kUnlocked);
+  // Any state other than kLocked means that we are already in the process of
+  // updating/committing, so we can piggy back on that process without kicking
+  // off any new updates.
+  if (state_ != kLocked)
+    return;
+
   // We don't need to mark anything dirty since the budget will take care of
   // that for us.
   update_budget_ = CreateNewBudget();
+  state_ = kUpdating;
   ScheduleAnimation();
 }
 
@@ -486,12 +505,22 @@ void DisplayLockContext::DidFinishLifecycleUpdate() {
   if (state_ == kCommitting) {
     FinishUpdateResolver(kResolve);
     FinishCommitResolver(kResolve);
+    CancelTimeoutTask();
     state_ = kUnlocked;
     return;
   }
 
   if (state_ != kUpdating)
     return;
+
+  // If we became disconnected for any reason, then we should reject the
+  // update promise and go back to the locked state.
+  if (!element_ || !element_->isConnected()) {
+    FinishUpdateResolver(kReject);
+    update_budget_.reset();
+    state_ = kLocked;
+    return;
+  }
 
   if (update_budget_->NeedsLifecycleUpdates()) {
     // Note that we post a task to schedule an animation, since rAF requests can
@@ -509,6 +538,8 @@ void DisplayLockContext::DidFinishLifecycleUpdate() {
 }
 
 void DisplayLockContext::ScheduleAnimation() {
+  DCHECK(element_->isConnected());
+
   // Schedule an animation to perform the lifecycle phases.
   element_->GetDocument().GetPage()->Animator().ScheduleVisualUpdate(
       element_->GetDocument().GetFrame());
@@ -539,8 +570,7 @@ void DisplayLockContext::CancelTimeoutTask() {
 }
 
 void DisplayLockContext::TriggerTimeout() {
-  if (element_ && state_ < kCommitting)
-    StartCommit();
+  StartCommit();
   timeout_task_is_scheduled_ = false;
 }
 

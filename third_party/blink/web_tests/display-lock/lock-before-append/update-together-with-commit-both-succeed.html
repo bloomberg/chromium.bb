@@ -34,7 +34,7 @@ function finishTest(status_string) {
 
 function runTest() {
   let container = document.createElement("div");
-  container.getDisplayLock().acquire().then(() => {
+  container.getDisplayLock().acquire({ timeout: Infinity }).then(() => {
     let child = document.createElement("div");
     child.id = "child";
     container.appendChild(child);
