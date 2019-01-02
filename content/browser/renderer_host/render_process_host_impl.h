@@ -661,6 +661,15 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // execute.
   void CancelProcessShutdownDelayForUnload();
 
+  // Creates a URLLoaderFactory that can be used by the renderer process,
+  // without binding it to a specific frame or an origin.
+  //
+  // TODO(kinuko, lukasza): https://crbug.com/891872: Remove, once all
+  // URLLoaderFactories are associated with a specific origin and an execution
+  // context (e.g. a frame, a service worker or any other kind of worker).
+  void CreateURLLoaderFactoryForRendererProcess(
+      network::mojom::URLLoaderFactoryRequest request);
+
   mojo::OutgoingInvitation mojo_invitation_;
 
   std::unique_ptr<ChildConnection> child_connection_;
