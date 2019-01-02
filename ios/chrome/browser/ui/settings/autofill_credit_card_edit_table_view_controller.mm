@@ -142,7 +142,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)loadModel {
   [super loadModel];
-  TableViewModel* model = self.tableViewModel;
+  TableViewModel<TableViewItem*>* model = self.tableViewModel;
 
   BOOL isEditing = self.tableView.editing;
 

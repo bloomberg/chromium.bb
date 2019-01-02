@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
+#import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
 #import "ios/chrome/browser/ui/settings/cells/encryption_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
@@ -280,6 +281,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   autofillItemWithAllTexts.accessoryType =
       UITableViewCellAccessoryDisclosureIndicator;
   [model addItem:autofillItemWithAllTexts
+      toSectionWithIdentifier:SectionIdentifierAutofill];
+
+  CopiedToChromeItem* copiedToChrome =
+      [[CopiedToChromeItem alloc] initWithType:ItemTypeAutofillData];
+  [model addItem:copiedToChrome
       toSectionWithIdentifier:SectionIdentifierAutofill];
 
   // SectionIdentifierAccount.

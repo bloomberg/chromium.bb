@@ -5,27 +5,15 @@
 #import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
 
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
-#import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-// Padding used on the leading and trailing edges of the cell.
-const CGFloat kHorizontalPadding = 16;
-
-// Padding used on the top and bottom edges of the cell.
-const CGFloat kVerticalPadding = 16;
-}  // namespace
 
 @implementation CopiedToChromeItem
 
@@ -42,10 +30,10 @@ const CGFloat kVerticalPadding = 16;
 @implementation CopiedToChromeCell
 
 @synthesize textLabel = _textLabel;
-@synthesize button = _button;
 
-- (instancetype)initWithFrame:(CGRect)frame {
-  self = [super initWithFrame:frame];
+- (instancetype)initWithStyle:(UITableViewCellStyle)style
+              reuseIdentifier:(NSString*)reuseIdentifier {
+  self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
     UIView* contentView = self.contentView;
 
@@ -53,8 +41,9 @@ const CGFloat kVerticalPadding = 16;
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _textLabel.text =
         l10n_util::GetNSString(IDS_IOS_AUTOFILL_DESCRIBE_LOCAL_COPY);
-    _textLabel.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
-    _textLabel.textColor = UIColorFromRGB(kUIKitMainTextColor);
+    _textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+    _textLabel.adjustsFontForContentSizeCategory = YES;
+    _textLabel.textColor = UIColor.blackColor;
     [_textLabel
         setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
                                         forAxis:
@@ -62,7 +51,7 @@ const CGFloat kVerticalPadding = 16;
     [contentView addSubview:_textLabel];
 
     _button = [UIButton buttonWithType:UIButtonTypeCustom];
-    [_button setTitleColor:UIColorFromRGB(kUIKitFooterLinkColor)
+    [_button setTitleColor:UIColorFromRGB(kTableViewTextLabelColorBlue)
                   forState:UIControlStateNormal];
 
     _button.translatesAutoresizingMaskIntoConstraints = NO;
@@ -75,18 +64,20 @@ const CGFloat kVerticalPadding = 16;
     [NSLayoutConstraint activateConstraints:@[
       [_textLabel.leadingAnchor
           constraintEqualToAnchor:contentView.leadingAnchor
-                         constant:kHorizontalPadding],
+                         constant:kTableViewHorizontalSpacing],
       [_textLabel.trailingAnchor
           constraintLessThanOrEqualToAnchor:_button.leadingAnchor
-                                   constant:-kHorizontalPadding],
+                                   constant:-kTableViewHorizontalSpacing],
       [_textLabel.centerYAnchor
           constraintEqualToAnchor:contentView.centerYAnchor],
-      [_button.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor
-                                             constant:-kHorizontalPadding],
+      [_button.trailingAnchor
+          constraintEqualToAnchor:contentView.trailingAnchor
+                         constant:-kTableViewHorizontalSpacing],
       [_button.firstBaselineAnchor
           constraintEqualToAnchor:_textLabel.firstBaselineAnchor],
     ]];
-    AddOptionalVerticalPadding(contentView, _textLabel, kVerticalPadding);
+    AddOptionalVerticalPadding(contentView, _textLabel,
+                               kTableViewLargeVerticalSpacing);
   }
   return self;
 }
