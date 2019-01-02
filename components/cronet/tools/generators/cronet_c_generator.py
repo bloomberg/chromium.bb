@@ -537,8 +537,8 @@ class Generator(generator.Generator):
       return "%sextern const char %s[]" % \
           ((self.export_attribute + " ") if self.export_attribute else "",
            constant.name)
-    return "constexpr %s %s = %s" % (
-        GetCppPodType(constant.kind), constant.name,
+    return "const %s %s_%s = %s" % (
+        GetCppPodType(constant.kind), self.module.namespace, constant.name,
         self._ConstantValue(constant))
 
   def _GetCppWrapperType(self, kind, add_same_module_namespaces=False):
