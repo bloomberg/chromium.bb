@@ -46,7 +46,7 @@ class CORE_EXPORT DisplayLockContext final
     kDoNotYield,
     kStrictYieldBetweenLifecyclePhases,
     kYieldBetweenLifecyclePhases,
-    kDefault = kDoNotYield
+    kDefault = kYieldBetweenLifecyclePhases
   };
 
   // See GetScopedPendingFrameRect() for description.
