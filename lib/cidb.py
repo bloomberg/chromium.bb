@@ -696,27 +696,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       'buildbot_generation', 'master_build_id', 'bot_hostname', 'deadline',
       'build_type', 'metadata_url', 'toolchain_url', 'branch')
 
-  _SQL_FETCH_ANNOTATIONS = (
-      'SELECT aT.build_id, aT.last_updated, last_annotator, '
-      'failure_category, failure_message, blame_url, notes, deleted, '
-      'bT.last_updated, bT.id, buildbot_generation, builder_name, '
-      'waterfall, build_number, build_config, bot_hostname, status, '
-      'start_time, finish_time, status_pickle, build_type, final, '
-      'chrome_version, milestone_version, platform_version, summary, '
-      'full_version, sdk_version, toolchain_url, metadata_url, '
-      'deadline, important, buildbucket_id, unibuild, suite_scheduling'
-      ' FROM annotationsTable aT'
-      ' JOIN buildTable bT ON aT.build_id = bT.id')
-  BAD_CL_ANNOTATION_KEYS = (
-      'master_build_id', 'last_annotated', 'last_annotator',
-      'failure_category', 'failure_message', 'blame_url', 'notes', 'deleted',
-      'build_last_updated', 'id', 'buildbot_generation', 'builder_name',
-      'waterfall', 'build_number', 'build_config', 'bot_hostname', 'status',
-      'start_time', 'finish_time', 'status_pickle', 'build_type', 'final',
-      'chrome_version', 'milestone_version', 'platform_version', 'summary',
-      'full_version', 'sdk_version', 'toolchain_url', 'metadata_url',
-      'deadline', 'important', 'buildbucket_id', 'unibuild', 'suite_scheduling')
-
   def __init__(self, db_credentials_dir, for_service=False,
                query_retry_args=SqlConnectionRetryArgs(8, 4, 2)):
     super(CIDBConnection, self).__init__(
