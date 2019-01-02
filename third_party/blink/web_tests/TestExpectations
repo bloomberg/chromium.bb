@@ -3204,6 +3204,14 @@ crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-09F
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/elementTiming.html [ Timeout ]
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure Timeout ]
 
+# wpt-importer has trouble rebaselining these tests. They might be flaky?
+crbug.com/832501 external/wpt/webrtc/RTCPeerConnection-track-stats.https.html [ Failure ]
+crbug.com/832501 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCPeerConnection-track-stats.https.html [ Failure ]
+
+# Hit a DCHECK
+crbug.com/918663 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-006.html [ Failure Crash ]
+crbug.com/918664 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-table-1a.html [ Failure Pass ]
+
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 external/wpt/css/filter-effects/filter-subregion-01.html [ Failure ]
 crbug.com/626703 external/wpt/webrtc/RTCTrackEvent-fire.html [ Timeout ]
