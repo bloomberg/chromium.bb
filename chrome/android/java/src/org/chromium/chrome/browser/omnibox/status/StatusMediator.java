@@ -23,7 +23,6 @@ class StatusMediator {
     private boolean mVerboseStatusSpaceAvailable;
     private boolean mPageIsPreview;
     private boolean mPageIsOffline;
-    private boolean mTabletMode;
 
     private int mUrlMinWidth;
     private int mSeparatorMinWidth;
@@ -107,13 +106,6 @@ class StatusMediator {
      */
     void setSeparatorFieldMinWidth(int width) {
         mSeparatorMinWidth = width;
-    }
-
-    /**
-     * Toggle tablet mode.
-     */
-    void setTabletMode(boolean isTablet) {
-        mTabletMode = isTablet;
     }
 
     /**
@@ -265,7 +257,7 @@ class StatusMediator {
      *     - not shown if URL is focused.
      */
     private void updateLocationBarIcon() {
-        if (mUrlHasFocus && mTabletMode) {
+        if (mUrlHasFocus) {
             mModel.set(StatusProperties.STATUS_ICON_RES, mNavigationIconRes);
             mModel.set(StatusProperties.STATUS_ICON_TINT_RES, mNavigationIconTintRes);
             mModel.set(StatusProperties.STATUS_ICON_DESCRIPTION_RES,
