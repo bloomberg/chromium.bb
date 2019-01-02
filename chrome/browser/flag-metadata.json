@@ -675,7 +675,7 @@
   },
   {
     "name": "document-passive-event-listeners",
-    "owners": ["input-dev" ],
+    "owners": ["nzolghadr, input-dev" ],
     "expiry_milestone": 76
   },
   {
@@ -1941,8 +1941,8 @@
   },
   {
     "name": "enable-touch-drag-drop",
-    "owners": ["input-dev" ],
-    "expiry_milestone": -1
+    "owners": ["eirage", "input-dev" ],
+    "expiry_milestone": 78
   },
   {
     "name": "enable-touchable-app-context-menu",
@@ -2767,13 +2767,13 @@
   },
   {
     "name": "passive-event-listeners-due-to-fling",
-    "owners": ["input-dev" ],
+    "owners": ["sahel", "input-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "passive-listener-default",
-    "owners": ["input-dev" ],
-    "expiry_milestone": 76
+    "owners": ["nzolghadr", "input-dev" ],
+    "expiry_milestone": 78
   },
   {
     "name": "passwords-keyboard-accessory",
