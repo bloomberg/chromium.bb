@@ -116,7 +116,7 @@ class SharedProtoDatabase
                        scoped_refptr<base::SequencedTaskRunner>>>
       outstanding_init_requests_;
 
-  base::WeakPtrFactory<SharedProtoDatabase> weak_factory_;
+  std::unique_ptr<base::WeakPtrFactory<SharedProtoDatabase>> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedProtoDatabase);
 };
@@ -150,7 +150,7 @@ void SharedProtoDatabase::GetClientAsync(
   auto current_task_runner = base::SequencedTaskRunnerHandle::Get();
   task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&SharedProtoDatabase::Init, weak_factory_.GetWeakPtr(),
+      base::BindOnce(&SharedProtoDatabase::Init, weak_factory_->GetWeakPtr(),
                      create_if_missing,
                      base::BindOnce(&GetClientInitCallback<T>,
                                     std::move(callback), std::move(client)),
@@ -167,7 +167,7 @@ std::unique_ptr<SharedProtoDatabaseClient<T>> SharedProtoDatabase::GetClient(
   auto current_task_runner = base::SequencedTaskRunnerHandle::Get();
   task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&SharedProtoDatabase::Init, weak_factory_.GetWeakPtr(),
+      base::BindOnce(&SharedProtoDatabase::Init, weak_factory_->GetWeakPtr(),
                      create_if_missing, std::move(callback),
                      std::move(current_task_runner)));
   return GetClientInternal<T>(client_namespace, type_prefix);
