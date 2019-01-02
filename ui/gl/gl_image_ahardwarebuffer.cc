@@ -27,7 +27,7 @@ unsigned int GLInternalFormat(uint32_t buffer_format) {
     case AHARDWAREBUFFER_FORMAT_R5G6B5_UNORM:
       return GL_RGB;
     default:
-      NOTREACHED();
+      // For all other buffer formats, use GL_RGBA as internal format.
       return GL_RGBA;
   }
 }
