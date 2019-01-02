@@ -435,17 +435,6 @@ void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
                  "mask_layer_gpu_memory_usage",
                  mask_layer->GPUMemoryUsageInBytes());
 
-    int64_t visible_geometry_area =
-        static_cast<int64_t>(unoccluded_content_rect.width()) *
-        unoccluded_content_rect.height();
-    append_quads_data->num_mask_layers++;
-    append_quads_data->visible_mask_layer_area += visible_geometry_area;
-    if (mask_layer->is_rounded_corner_mask()) {
-      append_quads_data->num_rounded_corner_mask_layers++;
-      append_quads_data->visible_rounded_corner_mask_layer_area +=
-          visible_geometry_area;
-    }
-
     if (mask_layer->mask_type() == Layer::LayerMaskType::MULTI_TEXTURE_MASK) {
       TileMaskLayer(render_pass, shared_quad_state, unoccluded_content_rect);
       return;

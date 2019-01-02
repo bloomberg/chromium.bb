@@ -763,10 +763,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return should_flatten_screen_space_transform_from_property_tree_;
   }
 
-  void set_is_rounded_corner_mask(bool rounded) {
-    is_rounded_corner_mask_ = rounded;
-  }
-
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;
@@ -985,7 +981,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool may_contain_video_ : 1;
   bool needs_show_scrollbars_ : 1;
   bool has_transform_node_ : 1;
-  bool is_rounded_corner_mask_ : 1;
   // This value is valid only when LayerTreeHost::has_copy_request() is true
   bool subtree_has_copy_request_ : 1;
   SkColor safe_opaque_background_color_;
