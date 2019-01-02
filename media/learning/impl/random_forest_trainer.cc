@@ -7,8 +7,8 @@
 #include <set>
 
 #include "base/logging.h"
-#include "media/learning/impl/random_forest.h"
 #include "media/learning/impl/random_tree_trainer.h"
+#include "media/learning/impl/voting_ensemble.h"
 
 namespace media {
 namespace learning {
@@ -77,8 +77,8 @@ std::unique_ptr<RandomForestTrainer::TrainingResult> RandomForestTrainer::Train(
     trees.push_back(std::move(tree));
   }
 
-  std::unique_ptr<RandomForest> forest =
-      std::make_unique<RandomForest>(std::move(trees));
+  std::unique_ptr<VotingEnsemble> forest =
+      std::make_unique<VotingEnsemble>(std::move(trees));
 
   // Compute OOB accuracy.
   int num_correct = 0;

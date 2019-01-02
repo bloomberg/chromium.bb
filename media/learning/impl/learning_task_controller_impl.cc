@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "media/learning/impl/extra_trees_trainer.h"
 #include "media/learning/impl/random_tree_trainer.h"
 
 namespace media {
@@ -15,6 +16,15 @@ namespace learning {
 LearningTaskControllerImpl::LearningTaskControllerImpl(const LearningTask& task)
     : task_(task), training_data_(std::make_unique<TrainingData>()) {
   switch (task_.model) {
+    case LearningTask::Model::kExtraTrees:
+      training_cb_ = base::BindRepeating(
+          [](const LearningTask& task, TrainingData training_data,
+             TrainedModelCB model_cb) {
+            ExtraTreesTrainer trainer;
+            std::move(model_cb).Run(trainer.Train(task, training_data));
+          },
+          task_);
+      break;
     case LearningTask::Model::kRandomForest:
       // TODO(liberato): forest!
       training_cb_ = RandomTreeTrainer::GetTrainingAlgorithmCB(task_);
