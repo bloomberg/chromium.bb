@@ -29,8 +29,6 @@ class PageLoadMetricsTestWaiter
     // kLoadTimingInfo waits for main frame timing info only.
     kLoadTimingInfo = 1 << 6,
   };
-  using FrameTreeNodeId =
-      page_load_metrics::PageLoadMetricsObserver::FrameTreeNodeId;
 
   explicit PageLoadMetricsTestWaiter(content::WebContents* web_contents);
 
@@ -79,8 +77,6 @@ class PageLoadMetricsTestWaiter
   class WaiterMetricsObserver
       : public page_load_metrics::PageLoadMetricsObserver {
    public:
-    using FrameTreeNodeId =
-        page_load_metrics::PageLoadMetricsObserver::FrameTreeNodeId;
     // We use a WeakPtr to the PageLoadMetricsTestWaiter because |waiter| can be
     // destroyed before this WaiterMetricsObserver.
     explicit WaiterMetricsObserver(
@@ -96,7 +92,6 @@ class PageLoadMetricsTestWaiter
                               extra_request_complete_info) override;
 
     void OnResourceDataUseObserved(
-        FrameTreeNodeId frame_tree_node_id,
         const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
             resources) override;
 
@@ -163,7 +158,6 @@ class PageLoadMetricsTestWaiter
   // from a resource load. Stops waiting if expectations are satisfied after
   // update.
   void OnResourceDataUseObserved(
-      FrameTreeNodeId frame_tree_node_id,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources);
 

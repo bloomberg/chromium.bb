@@ -100,15 +100,14 @@ void PageTimingMetricsSender::DidObserveLayoutJank(double jank_fraction) {
 void PageTimingMetricsSender::DidStartResponse(
     const GURL& response_url,
     int resource_id,
-    const network::ResourceResponseHead& response_head,
-    content::ResourceType resource_type) {
+    const network::ResourceResponseHead& response_head) {
   DCHECK(!base::ContainsKey(page_resource_data_use_, resource_id));
 
   auto resource_it = page_resource_data_use_.emplace(
       std::piecewise_construct, std::forward_as_tuple(resource_id),
       std::forward_as_tuple(std::make_unique<PageResourceDataUse>()));
   resource_it.first->second->DidStartResponse(response_url, resource_id,
-                                              response_head, resource_type);
+                                              response_head);
 }
 
 void PageTimingMetricsSender::DidReceiveTransferSizeUpdate(

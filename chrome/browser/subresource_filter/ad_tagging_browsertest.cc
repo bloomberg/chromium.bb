@@ -241,9 +241,9 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, VerifyCrossOriginWithoutNavigate) {
 
   // Navigate away and ensure we report cross origin.
   ui_test_utils::NavigateToURL(browser(), GetURL(url::kAboutBlankURL));
-
-  // TODO(johnidel): Check that frame was reported properly. See
-  // crbug.com/914893.
+  histogram_tester.ExpectUniqueSample(
+      kAllOriginStatusHistogram,
+      AdsPageLoadMetricsObserver::AdOriginStatus::kCross, 1);
 }
 
 // Ad script creates a frame and navigates it cross origin.
