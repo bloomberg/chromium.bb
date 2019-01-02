@@ -1539,7 +1539,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             return false;
         }
 
-        if (getEphemeralTabPanel() != null && getEphemeralTabPanel().isShowing()) {
+        if (getEphemeralTabPanel() != null && getEphemeralTabPanel().isPanelOpened()) {
             return false;
         }
 
