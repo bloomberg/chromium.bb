@@ -226,9 +226,6 @@ jumbo_component("gfx") {
 
   configs += [
     "//build/config:precompiled_headers",
-
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
     "//build/config/compiler:wexit_time_destructors",
   ]
 
@@ -690,9 +687,6 @@ test("gfx_unittests") {
   if (!is_ios) {
     sources += [ "paint_vector_icon_unittest.cc" ]
   }
-
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
     ":gfx",
