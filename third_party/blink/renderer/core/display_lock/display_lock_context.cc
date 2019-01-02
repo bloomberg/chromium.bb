@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_options.h"
 #include "third_party/blink/renderer/core/display_lock/strict_yielding_display_lock_budget.h"
 #include "third_party/blink/renderer/core/display_lock/unyielding_display_lock_budget.h"
+#include "third_party/blink/renderer/core/display_lock/yielding_display_lock_budget.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -407,8 +408,7 @@ std::unique_ptr<DisplayLockBudget> DisplayLockContext::CreateNewBudget() {
     case BudgetType::kStrictYieldBetweenLifecyclePhases:
       return base::WrapUnique(new StrictYieldingDisplayLockBudget(this));
     case BudgetType::kYieldBetweenLifecyclePhases:
-      NOTIMPLEMENTED();
-      return nullptr;
+      return base::WrapUnique(new YieldingDisplayLockBudget(this));
   }
   NOTREACHED();
   return nullptr;

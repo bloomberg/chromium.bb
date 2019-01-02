@@ -14,6 +14,8 @@ blink_core_sources("display_lock") {
     "strict_yielding_display_lock_budget.h",
     "unyielding_display_lock_budget.cc",
     "unyielding_display_lock_budget.h",
+    "yielding_display_lock_budget.cc",
+    "yielding_display_lock_budget.h",
   ]
 
   public_deps = [
