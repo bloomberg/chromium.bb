@@ -325,9 +325,7 @@ cca.views.Camera.prototype.endTake_ = function() {
         throw error;
       });
     }
-  }).catch((error) => {
-    console.error(error);
-  }).finally(() => {
+  }).catch(console.error).finally(() => {
     // Re-enable UI controls after finishing the take.
     this.take_ = null;
     document.body.classList.remove('taking');
@@ -366,11 +364,17 @@ cca.views.Camera.prototype.createRecordingBlob_ = function() {
     this.mediaRecorder_.addEventListener('dataavailable', ondataavailable);
     this.mediaRecorder_.addEventListener('stop', onstop);
 
-    // Start recording and update the UI for the ongoing recording. Force to
-    // re-enable audio track before starting recording (crbug.com/878255).
-    this.options_.updateMicAudio(true);
+    // Start recording and update the UI for the ongoing recording.
+    // TODO(yuli): Don't re-enable audio after crbug.com/878255 fixed in M73.
+    var track = this.preview_.stream.getAudioTracks()[0];
+    var enableAudio = (enabled) => {
+      if (track) {
+        track.enabled = enabled;
+      }
+    };
+    enableAudio(true);
     this.mediaRecorder_.start();
-    this.options_.updateMicAudio();
+    enableAudio(document.body.classList.contains('mic'));
     this.recordTime_.start();
   });
 };
