@@ -27,6 +27,8 @@ cr.define('app_management', function() {
         id: id,
         type: apps.mojom.AppType.kUnknown,
         title: 'App Title',
+        version: '5.1',
+        size: '9.0MB',
         isPinned: apps.mojom.OptionalBool.kUnknown,
       };
 

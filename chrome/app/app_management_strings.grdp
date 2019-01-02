@@ -13,14 +13,17 @@
   <message name="IDS_APP_MANAGEMENT_MORE_APPS" desc="Label for more apps button at bottom of app list card.">
     Show <ph name="NUMBER_OF_MORE_APPS">$1<ex>4</ex></ph> more apps
   </message>
-  <message name="IDS_APP_MANAGEMENT_NOTIFICATIONS" desc="Label for notifications section in app settings page.">
+  <message name="IDS_APP_MANAGEMENT_NOTIFICATIONS" desc="Label for notifications section in the app settings page.">
     Notifications
   </message>
   <message name="IDS_APP_MANAGEMENT_NOTIFICATIONS_SUBLABEL" desc="Sublabel for the Notifications item in the main App Management view">
     <ph name="NUMBER_OF_MORE_APPS">$1<ex>4</ex></ph> apps
   </message>
-  <message name="IDS_APP_MANAGEMENT_PERMISSIONS" desc="Label for permissions section in app settings page.">
+  <message name="IDS_APP_MANAGEMENT_PERMISSIONS" desc="Label for permissions section in the app settings page.">
     Permissions
+  </message>
+  <message name="IDS_APP_MANAGEMENT_PIN_TO_SHELF" desc="Label for the pin to shelf button in the app settings page.">
+    Pin to shelf
   </message>
   <message name="IDS_APP_MANAGEMENT_SEARCH_PROMPT" desc="Prompt in search bar of main app management page.">
     Search apps
@@ -31,7 +34,13 @@
   <message name="IDS_APP_MANAGEMENT_TITLE" desc="Title of the app management page.">
     Apps
   </message>
-  <message name="IDS_APP_MANAGEMENT_UNINSTALL" desc="Label for the uninstall button in app settings page.">
+  <message name="IDS_APP_MANAGEMENT_SIZE" desc="Label for the size of an app in the app settings page.">
+    Size: <ph name="APP_SIZE">$1<ex>8.0MB</ex></ph>
+  </message>
+  <message name="IDS_APP_MANAGEMENT_UNINSTALL" desc="Label for the uninstall button in the app settings page.">
     Uninstall
+  </message>
+  <message name="IDS_APP_MANAGEMENT_VERSION" desc="Label for version of an app in the app settings page.">
+    Version: <ph name="VERSION">$1<ex>4.0</ex></ph>
   </message>
 </grit-part>
