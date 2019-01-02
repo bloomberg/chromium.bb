@@ -492,10 +492,9 @@ void Button::RemovedFromWidget() {
 }
 
 std::unique_ptr<InkDrop> Button::CreateInkDrop() {
-  std::unique_ptr<views::InkDropImpl> ink_drop = CreateDefaultInkDropImpl();
+  std::unique_ptr<InkDrop> ink_drop = InkDropHostView::CreateInkDrop();
   ink_drop->SetShowHighlightOnFocus(!focus_ring_);
-  ink_drop->SetAutoHighlightModeForPlatform();
-  return std::move(ink_drop);
+  return ink_drop;
 }
 
 SkColor Button::GetInkDropBaseColor() const {

@@ -16,6 +16,7 @@
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_stub.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view_properties.h"
 
@@ -146,32 +147,20 @@ void InkDropHostView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 }
 
 std::unique_ptr<InkDrop> InkDropHostView::CreateInkDrop() {
-  return CreateDefaultInkDropImpl();
+  return CreateDefaultFloodFillInkDropImpl();
 }
 
 std::unique_ptr<InkDropRipple> InkDropHostView::CreateInkDropRipple() const {
-  if (GetProperty(kHighlightPathKey)) {
-    return std::make_unique<views::FloodFillInkDropRipple>(
-        size(), gfx::Insets(), GetInkDropCenterBasedOnLastEvent(),
-        GetInkDropBaseColor(), ink_drop_visible_opacity());
-  }
-
-  return CreateDefaultInkDropRipple(
-      GetMirroredRect(GetContentsBounds()).CenterPoint());
+  return std::make_unique<views::FloodFillInkDropRipple>(
+      size(), gfx::Insets(), GetInkDropCenterBasedOnLastEvent(),
+      GetInkDropBaseColor(), ink_drop_visible_opacity());
 }
 
 std::unique_ptr<InkDropHighlight> InkDropHostView::CreateInkDropHighlight()
     const {
-  std::unique_ptr<InkDropHighlight> highlight;
-
-  if (GetProperty(kHighlightPathKey)) {
-    highlight = std::make_unique<views::InkDropHighlight>(
-        size(), 0, gfx::RectF(GetMirroredRect(GetLocalBounds())).CenterPoint(),
-        GetInkDropBaseColor());
-  } else {
-    highlight = CreateDefaultInkDropHighlight(
-        gfx::RectF(GetMirroredRect(GetContentsBounds())).CenterPoint());
-  }
+  auto highlight = std::make_unique<views::InkDropHighlight>(
+      size(), 0, gfx::RectF(GetMirroredRect(GetLocalBounds())).CenterPoint(),
+      GetInkDropBaseColor());
   // TODO(pbos): Once |ink_drop_highlight_opacity_| is either always set or
   // callers are using the default InkDropHighlight value then make this a
   // constructor argument to InkDropHighlight.
@@ -182,10 +171,8 @@ std::unique_ptr<InkDropHighlight> InkDropHostView::CreateInkDropHighlight()
 }
 
 std::unique_ptr<views::InkDropMask> InkDropHostView::CreateInkDropMask() const {
-  if (SkPath* highlight_path = GetProperty(kHighlightPathKey))
-    return std::make_unique<views::PathInkDropMask>(size(), *highlight_path);
-
-  return nullptr;
+  return std::make_unique<views::PathInkDropMask>(size(),
+                                                  GetHighlightPath(this));
 }
 
 SkColor InkDropHostView::GetInkDropBaseColor() const {
@@ -259,13 +246,19 @@ std::unique_ptr<InkDropImpl> InkDropHostView::CreateDefaultInkDropImpl() {
 
 std::unique_ptr<InkDropImpl>
 InkDropHostView::CreateDefaultFloodFillInkDropImpl() {
-  std::unique_ptr<views::InkDropImpl> ink_drop = CreateDefaultInkDropImpl();
+  auto ink_drop = std::make_unique<InkDropImpl>(this, size());
   ink_drop->SetAutoHighlightMode(
       views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
   return ink_drop;
 }
 
 std::unique_ptr<InkDropRipple> InkDropHostView::CreateDefaultInkDropRipple(
+    const gfx::Point& center_point,
+    const gfx::Size& size) const {
+  return CreateSquareInkDropRipple(center_point, size);
+}
+
+std::unique_ptr<InkDropRipple> InkDropHostView::CreateSquareInkDropRipple(
     const gfx::Point& center_point,
     const gfx::Size& size) const {
   auto ripple = std::make_unique<SquareInkDropRipple>(
@@ -278,6 +271,12 @@ std::unique_ptr<InkDropRipple> InkDropHostView::CreateDefaultInkDropRipple(
 std::unique_ptr<InkDropHighlight>
 InkDropHostView::CreateDefaultInkDropHighlight(const gfx::PointF& center_point,
                                                const gfx::Size& size) const {
+  return CreateSquareInkDropHighlight(center_point, size);
+}
+
+std::unique_ptr<InkDropHighlight> InkDropHostView::CreateSquareInkDropHighlight(
+    const gfx::PointF& center_point,
+    const gfx::Size& size) const {
   auto highlight = std::make_unique<InkDropHighlight>(
       size, ink_drop_small_corner_radius_, center_point, GetInkDropBaseColor());
   highlight->set_explode_size(gfx::SizeF(CalculateLargeInkDropSize(size)));

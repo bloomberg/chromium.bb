@@ -134,25 +134,37 @@ class VIEWS_EXPORT InkDropHostView : public View {
   void OnFocus() override;
   void OnBlur() override;
 
-  // Returns an InkDropImpl with default configuration. The base implementation
-  // of CreateInkDrop() delegates to this function.
+  // Returns an InkDropImpl suitable for use with a square ink drop.
+  // TODO(pbos): Rename to CreateDefaultSquareInkDropImpl.
   std::unique_ptr<InkDropImpl> CreateDefaultInkDropImpl();
 
   // Returns an InkDropImpl configured to work well with a flood-fill ink drop
   // ripple.
   std::unique_ptr<InkDropImpl> CreateDefaultFloodFillInkDropImpl();
 
-  // Returns the default InkDropRipple centered on |center_point|.
+  // TODO(pbos): Migrate uses to CreateSquareInkDropRipple which this calls
+  // directly.
   std::unique_ptr<InkDropRipple> CreateDefaultInkDropRipple(
       const gfx::Point& center_point,
       const gfx::Size& size = gfx::Size(kDefaultInkDropSize,
                                         kDefaultInkDropSize)) const;
 
-  // Returns the default InkDropHighlight centered on |center_point|.
+  // Creates a SquareInkDropRipple centered on |center_point|.
+  std::unique_ptr<InkDropRipple> CreateSquareInkDropRipple(
+      const gfx::Point& center_point,
+      const gfx::Size& size) const;
+
+  // TODO(pbos): Migrate uses to CreateSquareInkDropHighlight which this calls
+  // directly.
   std::unique_ptr<InkDropHighlight> CreateDefaultInkDropHighlight(
       const gfx::PointF& center_point,
       const gfx::Size& size = gfx::Size(kDefaultInkDropSize,
                                         kDefaultInkDropSize)) const;
+
+  // Creates a InkDropHighlight centered on |center_point|.
+  std::unique_ptr<InkDropHighlight> CreateSquareInkDropHighlight(
+      const gfx::PointF& center_point,
+      const gfx::Size& size) const;
 
   // Returns true if an ink drop instance has been created.
   bool HasInkDrop() const;

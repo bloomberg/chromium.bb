@@ -99,18 +99,6 @@ SkColor MdTextButton::GetInkDropBaseColor() const {
   return color_utils::DeriveDefaultIconColor(label()->enabled_color());
 }
 
-std::unique_ptr<InkDrop> MdTextButton::CreateInkDrop() {
-  return CreateDefaultFloodFillInkDropImpl();
-}
-
-std::unique_ptr<views::InkDropRipple> MdTextButton::CreateInkDropRipple()
-    const {
-  return std::unique_ptr<views::InkDropRipple>(
-      new views::FloodFillInkDropRipple(
-          size(), GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
-          ink_drop_visible_opacity()));
-}
-
 void MdTextButton::StateChanged(ButtonState old_state) {
   LabelButton::StateChanged(old_state);
   UpdateColors();

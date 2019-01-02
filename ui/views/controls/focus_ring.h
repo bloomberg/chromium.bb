@@ -116,6 +116,8 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
   DISALLOW_COPY_AND_ASSIGN(FocusRing);
 };
 
+VIEWS_EXPORT SkPath GetHighlightPath(const View* view);
+
 }  // views
 
 #endif  // UI_VIEWS_CONTROLS_FOCUS_RING_H_

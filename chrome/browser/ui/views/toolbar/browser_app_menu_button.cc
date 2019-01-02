@@ -270,10 +270,6 @@ int BrowserAppMenuButton::OnPerformDrop(const ui::DropTargetEvent& event) {
   return ui::DragDropTypes::DRAG_MOVE;
 }
 
-std::unique_ptr<views::InkDrop> BrowserAppMenuButton::CreateInkDrop() {
-  return CreateToolbarInkDrop(this);
-}
-
 std::unique_ptr<views::InkDropHighlight>
 BrowserAppMenuButton::CreateInkDropHighlight() const {
   return CreateToolbarInkDropHighlight(this);

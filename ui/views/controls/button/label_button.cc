@@ -18,11 +18,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop.h"
-#include "ui/views/animation/ink_drop_highlight.h"
-#include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/label_button_label.h"
@@ -342,10 +338,6 @@ gfx::Rect LabelButton::GetChildAreaBounds() {
   return GetLocalBounds();
 }
 
-bool LabelButton::ShouldUseFloodFillInkDrop() const {
-  return !GetText().empty();
-}
-
 void LabelButton::OnFocus() {
   Button::OnFocus();
   // Typically the border renders differently when focused.
@@ -380,39 +372,6 @@ void LabelButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   image()->DestroyLayer();
   ResetInkDropMask();
   ink_drop_container_->RemoveInkDropLayer(ink_drop_layer);
-}
-
-std::unique_ptr<InkDrop> LabelButton::CreateInkDrop() {
-  return ShouldUseFloodFillInkDrop() ? CreateDefaultFloodFillInkDropImpl()
-                                     : Button::CreateInkDrop();
-}
-
-std::unique_ptr<views::InkDropRipple> LabelButton::CreateInkDropRipple() const {
-  // Views that use a highlight path use the base style and do not need the
-  // overrides in this file.
-  if (GetProperty(views::kHighlightPathKey))
-    return InkDropHostView::CreateInkDropRipple();
-  return ShouldUseFloodFillInkDrop()
-             ? std::make_unique<views::FloodFillInkDropRipple>(
-                   size(), GetInkDropCenterBasedOnLastEvent(),
-                   GetInkDropBaseColor(), ink_drop_visible_opacity())
-             : CreateDefaultInkDropRipple(
-                   image()->GetMirroredBounds().CenterPoint());
-}
-
-std::unique_ptr<views::InkDropHighlight> LabelButton::CreateInkDropHighlight()
-    const {
-  // Views that use a highlight path use the base style and do not need the
-  // overrides in this file.
-  if (GetProperty(views::kHighlightPathKey))
-    return InkDropHostView::CreateInkDropHighlight();
-  return ShouldUseFloodFillInkDrop()
-             ? std::make_unique<views::InkDropHighlight>(
-                   size(), ink_drop_small_corner_radius(),
-                   gfx::RectF(GetLocalBounds()).CenterPoint(),
-                   GetInkDropBaseColor())
-             : CreateDefaultInkDropHighlight(
-                   gfx::RectF(image()->GetMirroredBounds()).CenterPoint());
 }
 
 void LabelButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
