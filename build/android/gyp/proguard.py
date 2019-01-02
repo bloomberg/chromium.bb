@@ -121,6 +121,7 @@ def _CreateR8Command(options, map_output_path, output_dir):
   # TODO: R8 needs -applymapping equivalent.
   cmd = [
     'java', '-jar', options.r8_path,
+    '--no-desugaring',
     '--no-data-resources',
     '--output', output_dir,
     '--pg-map-output', map_output_path,
