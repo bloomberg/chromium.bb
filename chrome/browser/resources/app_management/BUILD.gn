@@ -15,6 +15,7 @@ if (!is_android) {
       ":fake_page_handler",
       ":item",
       ":main_view",
+      ":metadata_view",
       ":pwa_permission_view",
       ":reducers",
       ":router",
@@ -46,6 +47,7 @@ if (!is_android) {
       ":actions",
       ":browser_proxy",
       ":main_view",
+      ":metadata_view",
       ":pwa_permission_view",
       ":router",
       ":util",
@@ -94,9 +96,16 @@ if (!is_android) {
     ]
   }
 
+  js_library("metadata_view") {
+    deps = [
+      ":fake_page_handler",
+    ]
+  }
+
   js_library("pwa_permission_view") {
     deps = [
       ":fake_page_handler",
+      ":metadata_view",
     ]
   }
 

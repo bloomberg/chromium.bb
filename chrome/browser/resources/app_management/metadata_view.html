@@ -1,0 +1,54 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="browser_proxy.html">
+<link rel="import" href="shared_style.html">
+<link rel="import" href="shared_vars.html">
+
+<dom-module id="app-management-metadata-view">
+  <template>
+    <style include="app-management-shared-css">
+    #shelf-switch-row {
+      align-items: center;
+      display: flex;
+      justify-content: space-around;
+      padding-bottom: 20px;
+    }
+
+    #shelf-switch {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    cr-toggle {
+      padding-inline-start: 12px;
+    }
+
+    #metadata-overview {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #metadata-overview > span {
+      text-align: center;
+    }
+
+    .metadata-row {
+      display: flex;
+      justify-content: space-around;
+    }
+    </style>
+    <div id="shelf-switch-row">
+      <span id="shelf-switch" class="header-text">
+        $i18n{pinToShelf}
+        <cr-toggle></cr-toggle>
+      </span>
+    </div>
+
+    <div id="metadata-overview" class="secondary-text">
+      <span>[[versionString_(app)]]</span>
+      <span>[[sizeString_(app)]]</span>
+      <!--TODO(ceciliani): Placeholder for legal declaration-->
+    </div>
+  </template>
+  <script src="metadata_view.js"></script>
+</dom-module>

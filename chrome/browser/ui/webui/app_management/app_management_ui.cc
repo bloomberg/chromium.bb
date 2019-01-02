@@ -37,9 +37,12 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("openSiteSettings",
                              IDS_APP_MANAGEMENT_SITE_SETTING);
   source->AddLocalizedString("permissions", IDS_APP_MANAGEMENT_PERMISSIONS);
+  source->AddLocalizedString("pinToShelf", IDS_APP_MANAGEMENT_PIN_TO_SHELF);
   source->AddLocalizedString("searchPrompt", IDS_APP_MANAGEMENT_SEARCH_PROMPT);
+  source->AddLocalizedString("size", IDS_APP_MANAGEMENT_SIZE);
   source->AddLocalizedString("title", IDS_APP_MANAGEMENT_TITLE);
   source->AddLocalizedString("uninstall", IDS_APP_MANAGEMENT_UNINSTALL);
+  source->AddLocalizedString("version", IDS_APP_MANAGEMENT_VERSION);
 
   source->AddResourcePath("app_management.mojom-lite.js",
                           IDR_APP_MANAGEMENT_MOJO_LITE_JS);
@@ -78,6 +81,10 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   source->AddResourcePath("item.js", IDR_APP_MANAGEMENT_ITEM_JS);
   source->AddResourcePath("main_view.html", IDR_APP_MANAGEMENT_MAIN_VIEW_HTML);
   source->AddResourcePath("main_view.js", IDR_APP_MANAGEMENT_MAIN_VIEW_JS);
+  source->AddResourcePath("metadata_view.html",
+                          IDR_APP_MANAGEMENT_METADATA_VIEW_HTML);
+  source->AddResourcePath("metadata_view.js",
+                          IDR_APP_MANAGEMENT_METADATA_VIEW_JS);
   source->AddResourcePath("pwa_permission_view.html",
                           IDR_APP_MANAGEMENT_PWA_PERMISSION_VIEW_HTML);
   source->AddResourcePath("pwa_permission_view.js",
