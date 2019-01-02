@@ -151,6 +151,11 @@ class ASH_EXPORT ShelfView : public views::View,
   AppListButton* GetAppListButton() const;
   BackButton* GetBackButton() const;
 
+  // Updates the union of all the shelf item bounds shown by this shelf view.
+  // This is used to determine the common area where the mouse can hover
+  // for showing tooltips without stuttering over gaps.
+  void UpdateVisibleShelfItemBoundsUnion();
+
   // Returns true if the mouse cursor exits the area for launcher tooltip.
   // There are thin gaps between launcher buttons but the tooltip shouldn't hide
   // in the gaps, but the tooltip should hide if the mouse moved totally outside
@@ -596,6 +601,10 @@ class ASH_EXPORT ShelfView : public views::View,
   // A reference to the view used as a separator between pinned and unpinned
   // items.
   views::Separator* separator_ = nullptr;
+
+  // The union of all visible shelf item bounds. Used for showing tooltips in
+  // a continuous manner.
+  gfx::Rect visible_shelf_item_bounds_union_;
 
   // A view to draw a background behind the app list and back buttons.
   // Owned by the view hierarchy.
