@@ -54,6 +54,9 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
         return SkColorSetA(gfx::kGoogleGrey800, 0xCC);
       case NativeTheme::kColorId_TextfieldDefaultBackground:
         return SkColorSetA(SK_ColorBLACK, 0x4D);
+      case NativeTheme::kColorId_LinkEnabled:
+      case NativeTheme::kColorId_LinkPressed:
+        return gfx::kGoogleBlue300;
 
       default:
         break;
