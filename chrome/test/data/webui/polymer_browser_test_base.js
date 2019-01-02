@@ -110,6 +110,11 @@ PolymerTest.prototype = {
  */
 PolymerTest.testIronIcons = function(e) {
   e.querySelectorAll('* /deep/ iron-icon').forEach(function(icon) {
+    // Early return if the src is set instead of the icon, since the tests
+    // below will not work correctly in this case.
+    if (icon.src && !icon.icon)
+      return;
+
     // If the icon isn't set (or is set to ''), then don't test this. Having no
     // set icon is valid for cases when we don't want to display anything.
     if (!icon.icon) {
