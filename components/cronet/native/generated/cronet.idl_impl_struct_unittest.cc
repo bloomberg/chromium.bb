@@ -259,6 +259,70 @@ TEST_F(CronetStructTest, TestCronet_RequestFinishedInfo) {
   Cronet_RequestFinishedInfoPtr second = Cronet_RequestFinishedInfo_Create();
 
   // Copy values from |first| to |second|.
+  Cronet_RequestFinishedInfo_request_start_set(
+      second, Cronet_RequestFinishedInfo_request_start_get(first));
+  EXPECT_EQ(Cronet_RequestFinishedInfo_request_start_get(first),
+            Cronet_RequestFinishedInfo_request_start_get(second));
+  Cronet_RequestFinishedInfo_dns_start_set(
+      second, Cronet_RequestFinishedInfo_dns_start_get(first));
+  EXPECT_EQ(Cronet_RequestFinishedInfo_dns_start_get(first),
+            Cronet_RequestFinishedInfo_dns_start_get(second));
+  Cronet_RequestFinishedInfo_dns_end_set(
+      second, Cronet_RequestFinishedInfo_dns_end_get(first));
+  EXPECT_EQ(Cronet_RequestFinishedInfo_dns_end_get(first),
+            Cronet_RequestFinishedInfo_dns_end_get(second));
+  Cronet_RequestFinishedInfo_connect_start_set(
+      second, Cronet_RequestFinishedInfo_connect_start_get(first));
+  EXPECT_EQ(Cronet_RequestFinishedInfo_connect_start_get(first),
+            Cronet_RequestFinishedInfo_connect_start_get(second));
+  Cronet_RequestFinishedInfo_connect_end_set(
+      second, Cronet_RequestFinishedInfo_connect_end_get(first));
+  EXPECT_EQ(Cronet_RequestFinishedInfo_connect_end_get(first),
+            Cronet_RequestFinishedInfo_connect_end_get(second));
+  Cronet_RequestFinishedInfo_ssl_start_set(
+      second, Cronet_RequestFinishedInfo_ssl_start_get(first));
+  EXPECT_EQ(Cronet_RequestFinishedInfo_ssl_start_get(first),
+            Cronet_RequestFinishedInfo_ssl_start_get(second));
+  Cronet_RequestFinishedInfo_ssl_end_set(
+      second, Cronet_RequestFinishedInfo_ssl_end_get(first));
+  EXPECT_EQ(Cronet_RequestFinishedInfo_ssl_end_get(first),
+            Cronet_RequestFinishedInfo_ssl_end_get(second));
+  Cronet_RequestFinishedInfo_sending_start_set(
+      second, Cronet_RequestFinishedInfo_sending_start_get(first));
+  EXPECT_EQ(Cronet_RequestFinishedInfo_sending_start_get(first),
+            Cronet_RequestFinishedInfo_sending_start_get(second));
+  Cronet_RequestFinishedInfo_sending_end_set(
+      second, Cronet_RequestFinishedInfo_sending_end_get(first));
+  EXPECT_EQ(Cronet_RequestFinishedInfo_sending_end_get(first),
+            Cronet_RequestFinishedInfo_sending_end_get(second));
+  Cronet_RequestFinishedInfo_push_start_set(
+      second, Cronet_RequestFinishedInfo_push_start_get(first));
+  EXPECT_EQ(Cronet_RequestFinishedInfo_push_start_get(first),
+            Cronet_RequestFinishedInfo_push_start_get(second));
+  Cronet_RequestFinishedInfo_push_end_set(
+      second, Cronet_RequestFinishedInfo_push_end_get(first));
+  EXPECT_EQ(Cronet_RequestFinishedInfo_push_end_get(first),
+            Cronet_RequestFinishedInfo_push_end_get(second));
+  Cronet_RequestFinishedInfo_response_start_set(
+      second, Cronet_RequestFinishedInfo_response_start_get(first));
+  EXPECT_EQ(Cronet_RequestFinishedInfo_response_start_get(first),
+            Cronet_RequestFinishedInfo_response_start_get(second));
+  Cronet_RequestFinishedInfo_request_end_set(
+      second, Cronet_RequestFinishedInfo_request_end_get(first));
+  EXPECT_EQ(Cronet_RequestFinishedInfo_request_end_get(first),
+            Cronet_RequestFinishedInfo_request_end_get(second));
+  Cronet_RequestFinishedInfo_socket_reused_set(
+      second, Cronet_RequestFinishedInfo_socket_reused_get(first));
+  EXPECT_EQ(Cronet_RequestFinishedInfo_socket_reused_get(first),
+            Cronet_RequestFinishedInfo_socket_reused_get(second));
+  Cronet_RequestFinishedInfo_sent_byte_count_set(
+      second, Cronet_RequestFinishedInfo_sent_byte_count_get(first));
+  EXPECT_EQ(Cronet_RequestFinishedInfo_sent_byte_count_get(first),
+            Cronet_RequestFinishedInfo_sent_byte_count_get(second));
+  Cronet_RequestFinishedInfo_received_byte_count_set(
+      second, Cronet_RequestFinishedInfo_received_byte_count_get(first));
+  EXPECT_EQ(Cronet_RequestFinishedInfo_received_byte_count_get(first),
+            Cronet_RequestFinishedInfo_received_byte_count_get(second));
   Cronet_RequestFinishedInfo_Destroy(first);
   Cronet_RequestFinishedInfo_Destroy(second);
 }

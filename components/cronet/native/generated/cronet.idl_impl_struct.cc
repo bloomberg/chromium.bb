@@ -775,5 +775,208 @@ void Cronet_RequestFinishedInfo_Destroy(Cronet_RequestFinishedInfoPtr self) {
 }
 
 // Struct Cronet_RequestFinishedInfo setters.
+void Cronet_RequestFinishedInfo_request_start_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t request_start) {
+  DCHECK(self);
+  self->request_start = request_start;
+}
+
+void Cronet_RequestFinishedInfo_dns_start_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t dns_start) {
+  DCHECK(self);
+  self->dns_start = dns_start;
+}
+
+void Cronet_RequestFinishedInfo_dns_end_set(Cronet_RequestFinishedInfoPtr self,
+                                            int64_t dns_end) {
+  DCHECK(self);
+  self->dns_end = dns_end;
+}
+
+void Cronet_RequestFinishedInfo_connect_start_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t connect_start) {
+  DCHECK(self);
+  self->connect_start = connect_start;
+}
+
+void Cronet_RequestFinishedInfo_connect_end_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t connect_end) {
+  DCHECK(self);
+  self->connect_end = connect_end;
+}
+
+void Cronet_RequestFinishedInfo_ssl_start_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t ssl_start) {
+  DCHECK(self);
+  self->ssl_start = ssl_start;
+}
+
+void Cronet_RequestFinishedInfo_ssl_end_set(Cronet_RequestFinishedInfoPtr self,
+                                            int64_t ssl_end) {
+  DCHECK(self);
+  self->ssl_end = ssl_end;
+}
+
+void Cronet_RequestFinishedInfo_sending_start_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t sending_start) {
+  DCHECK(self);
+  self->sending_start = sending_start;
+}
+
+void Cronet_RequestFinishedInfo_sending_end_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t sending_end) {
+  DCHECK(self);
+  self->sending_end = sending_end;
+}
+
+void Cronet_RequestFinishedInfo_push_start_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t push_start) {
+  DCHECK(self);
+  self->push_start = push_start;
+}
+
+void Cronet_RequestFinishedInfo_push_end_set(Cronet_RequestFinishedInfoPtr self,
+                                             int64_t push_end) {
+  DCHECK(self);
+  self->push_end = push_end;
+}
+
+void Cronet_RequestFinishedInfo_response_start_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t response_start) {
+  DCHECK(self);
+  self->response_start = response_start;
+}
+
+void Cronet_RequestFinishedInfo_request_end_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t request_end) {
+  DCHECK(self);
+  self->request_end = request_end;
+}
+
+void Cronet_RequestFinishedInfo_socket_reused_set(
+    Cronet_RequestFinishedInfoPtr self,
+    bool socket_reused) {
+  DCHECK(self);
+  self->socket_reused = socket_reused;
+}
+
+void Cronet_RequestFinishedInfo_sent_byte_count_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t sent_byte_count) {
+  DCHECK(self);
+  self->sent_byte_count = sent_byte_count;
+}
+
+void Cronet_RequestFinishedInfo_received_byte_count_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t received_byte_count) {
+  DCHECK(self);
+  self->received_byte_count = received_byte_count;
+}
 
 // Struct Cronet_RequestFinishedInfo getters.
+int64_t Cronet_RequestFinishedInfo_request_start_get(
+    Cronet_RequestFinishedInfoPtr self) {
+  DCHECK(self);
+  return self->request_start;
+}
+
+int64_t Cronet_RequestFinishedInfo_dns_start_get(
+    Cronet_RequestFinishedInfoPtr self) {
+  DCHECK(self);
+  return self->dns_start;
+}
+
+int64_t Cronet_RequestFinishedInfo_dns_end_get(
+    Cronet_RequestFinishedInfoPtr self) {
+  DCHECK(self);
+  return self->dns_end;
+}
+
+int64_t Cronet_RequestFinishedInfo_connect_start_get(
+    Cronet_RequestFinishedInfoPtr self) {
+  DCHECK(self);
+  return self->connect_start;
+}
+
+int64_t Cronet_RequestFinishedInfo_connect_end_get(
+    Cronet_RequestFinishedInfoPtr self) {
+  DCHECK(self);
+  return self->connect_end;
+}
+
+int64_t Cronet_RequestFinishedInfo_ssl_start_get(
+    Cronet_RequestFinishedInfoPtr self) {
+  DCHECK(self);
+  return self->ssl_start;
+}
+
+int64_t Cronet_RequestFinishedInfo_ssl_end_get(
+    Cronet_RequestFinishedInfoPtr self) {
+  DCHECK(self);
+  return self->ssl_end;
+}
+
+int64_t Cronet_RequestFinishedInfo_sending_start_get(
+    Cronet_RequestFinishedInfoPtr self) {
+  DCHECK(self);
+  return self->sending_start;
+}
+
+int64_t Cronet_RequestFinishedInfo_sending_end_get(
+    Cronet_RequestFinishedInfoPtr self) {
+  DCHECK(self);
+  return self->sending_end;
+}
+
+int64_t Cronet_RequestFinishedInfo_push_start_get(
+    Cronet_RequestFinishedInfoPtr self) {
+  DCHECK(self);
+  return self->push_start;
+}
+
+int64_t Cronet_RequestFinishedInfo_push_end_get(
+    Cronet_RequestFinishedInfoPtr self) {
+  DCHECK(self);
+  return self->push_end;
+}
+
+int64_t Cronet_RequestFinishedInfo_response_start_get(
+    Cronet_RequestFinishedInfoPtr self) {
+  DCHECK(self);
+  return self->response_start;
+}
+
+int64_t Cronet_RequestFinishedInfo_request_end_get(
+    Cronet_RequestFinishedInfoPtr self) {
+  DCHECK(self);
+  return self->request_end;
+}
+
+bool Cronet_RequestFinishedInfo_socket_reused_get(
+    Cronet_RequestFinishedInfoPtr self) {
+  DCHECK(self);
+  return self->socket_reused;
+}
+
+int64_t Cronet_RequestFinishedInfo_sent_byte_count_get(
+    Cronet_RequestFinishedInfoPtr self) {
+  DCHECK(self);
+  return self->sent_byte_count;
+}
+
+int64_t Cronet_RequestFinishedInfo_received_byte_count_get(
+    Cronet_RequestFinishedInfoPtr self) {
+  DCHECK(self);
+  return self->received_byte_count;
+}

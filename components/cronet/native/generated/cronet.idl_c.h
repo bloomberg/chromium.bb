@@ -148,6 +148,9 @@ typedef enum Cronet_UrlRequestStatusListener_Status {
   Cronet_UrlRequestStatusListener_Status_READING_RESPONSE = 14,
 } Cronet_UrlRequestStatusListener_Status;
 
+// Declare constants
+const int64_t Cronet_kInvalidTime = -1;
+
 ///////////////////////
 // Concrete interface Cronet_Buffer.
 
@@ -970,7 +973,116 @@ CRONET_EXPORT Cronet_RequestFinishedInfoPtr Cronet_RequestFinishedInfo_Create();
 CRONET_EXPORT void Cronet_RequestFinishedInfo_Destroy(
     Cronet_RequestFinishedInfoPtr self);
 // Cronet_RequestFinishedInfo setters.
+CRONET_EXPORT
+void Cronet_RequestFinishedInfo_request_start_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t request_start);
+CRONET_EXPORT
+void Cronet_RequestFinishedInfo_dns_start_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t dns_start);
+CRONET_EXPORT
+void Cronet_RequestFinishedInfo_dns_end_set(Cronet_RequestFinishedInfoPtr self,
+                                            int64_t dns_end);
+CRONET_EXPORT
+void Cronet_RequestFinishedInfo_connect_start_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t connect_start);
+CRONET_EXPORT
+void Cronet_RequestFinishedInfo_connect_end_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t connect_end);
+CRONET_EXPORT
+void Cronet_RequestFinishedInfo_ssl_start_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t ssl_start);
+CRONET_EXPORT
+void Cronet_RequestFinishedInfo_ssl_end_set(Cronet_RequestFinishedInfoPtr self,
+                                            int64_t ssl_end);
+CRONET_EXPORT
+void Cronet_RequestFinishedInfo_sending_start_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t sending_start);
+CRONET_EXPORT
+void Cronet_RequestFinishedInfo_sending_end_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t sending_end);
+CRONET_EXPORT
+void Cronet_RequestFinishedInfo_push_start_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t push_start);
+CRONET_EXPORT
+void Cronet_RequestFinishedInfo_push_end_set(Cronet_RequestFinishedInfoPtr self,
+                                             int64_t push_end);
+CRONET_EXPORT
+void Cronet_RequestFinishedInfo_response_start_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t response_start);
+CRONET_EXPORT
+void Cronet_RequestFinishedInfo_request_end_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t request_end);
+CRONET_EXPORT
+void Cronet_RequestFinishedInfo_socket_reused_set(
+    Cronet_RequestFinishedInfoPtr self,
+    bool socket_reused);
+CRONET_EXPORT
+void Cronet_RequestFinishedInfo_sent_byte_count_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t sent_byte_count);
+CRONET_EXPORT
+void Cronet_RequestFinishedInfo_received_byte_count_set(
+    Cronet_RequestFinishedInfoPtr self,
+    int64_t received_byte_count);
 // Cronet_RequestFinishedInfo getters.
+CRONET_EXPORT
+int64_t Cronet_RequestFinishedInfo_request_start_get(
+    Cronet_RequestFinishedInfoPtr self);
+CRONET_EXPORT
+int64_t Cronet_RequestFinishedInfo_dns_start_get(
+    Cronet_RequestFinishedInfoPtr self);
+CRONET_EXPORT
+int64_t Cronet_RequestFinishedInfo_dns_end_get(
+    Cronet_RequestFinishedInfoPtr self);
+CRONET_EXPORT
+int64_t Cronet_RequestFinishedInfo_connect_start_get(
+    Cronet_RequestFinishedInfoPtr self);
+CRONET_EXPORT
+int64_t Cronet_RequestFinishedInfo_connect_end_get(
+    Cronet_RequestFinishedInfoPtr self);
+CRONET_EXPORT
+int64_t Cronet_RequestFinishedInfo_ssl_start_get(
+    Cronet_RequestFinishedInfoPtr self);
+CRONET_EXPORT
+int64_t Cronet_RequestFinishedInfo_ssl_end_get(
+    Cronet_RequestFinishedInfoPtr self);
+CRONET_EXPORT
+int64_t Cronet_RequestFinishedInfo_sending_start_get(
+    Cronet_RequestFinishedInfoPtr self);
+CRONET_EXPORT
+int64_t Cronet_RequestFinishedInfo_sending_end_get(
+    Cronet_RequestFinishedInfoPtr self);
+CRONET_EXPORT
+int64_t Cronet_RequestFinishedInfo_push_start_get(
+    Cronet_RequestFinishedInfoPtr self);
+CRONET_EXPORT
+int64_t Cronet_RequestFinishedInfo_push_end_get(
+    Cronet_RequestFinishedInfoPtr self);
+CRONET_EXPORT
+int64_t Cronet_RequestFinishedInfo_response_start_get(
+    Cronet_RequestFinishedInfoPtr self);
+CRONET_EXPORT
+int64_t Cronet_RequestFinishedInfo_request_end_get(
+    Cronet_RequestFinishedInfoPtr self);
+CRONET_EXPORT
+bool Cronet_RequestFinishedInfo_socket_reused_get(
+    Cronet_RequestFinishedInfoPtr self);
+CRONET_EXPORT
+int64_t Cronet_RequestFinishedInfo_sent_byte_count_get(
+    Cronet_RequestFinishedInfoPtr self);
+CRONET_EXPORT
+int64_t Cronet_RequestFinishedInfo_received_byte_count_get(
+    Cronet_RequestFinishedInfoPtr self);
 
 #ifdef __cplusplus
 }
