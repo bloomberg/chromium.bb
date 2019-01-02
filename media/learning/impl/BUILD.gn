@@ -7,6 +7,8 @@ component("impl") {
   visibility = [ "//media/learning/impl:unit_tests" ]
 
   sources = [
+    "extra_trees_trainer.cc",
+    "extra_trees_trainer.h",
     "learning_session_impl.cc",
     "learning_session_impl.h",
     "learning_task_controller.h",
@@ -15,8 +17,6 @@ component("impl") {
     "model.h",
     "one_hot.cc",
     "one_hot.h",
-    "random_forest.cc",
-    "random_forest.h",
     "random_forest_trainer.cc",
     "random_forest_trainer.h",
     "random_number_generator.cc",
@@ -26,6 +26,8 @@ component("impl") {
     "target_distribution.cc",
     "target_distribution.h",
     "training_algorithm.h",
+    "voting_ensemble.cc",
+    "voting_ensemble.h",
   ]
 
   defines = [ "IS_LEARNING_IMPL_IMPL" ]
@@ -43,6 +45,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "extra_trees_trainer_unittest.cc",
     "fisher_iris_dataset.cc",
     "fisher_iris_dataset.h",
     "learning_session_impl_unittest.cc",

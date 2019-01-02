@@ -107,6 +107,9 @@ class COMPONENT_EXPORT(LEARNING_COMMON) TrainingData {
 COMPONENT_EXPORT(LEARNING_COMMON)
 std::ostream& operator<<(std::ostream& out, const TrainingExample& example);
 
+COMPONENT_EXPORT(LEARNING_COMMON)
+std::ostream& operator<<(std::ostream& out, const FeatureVector& features);
+
 }  // namespace learning
 }  // namespace media
 

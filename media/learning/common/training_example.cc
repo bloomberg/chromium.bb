@@ -22,10 +22,14 @@ TrainingExample::TrainingExample(TrainingExample&& rhs) noexcept = default;
 TrainingExample::~TrainingExample() = default;
 
 std::ostream& operator<<(std::ostream& out, const TrainingExample& example) {
-  for (const auto& feature : example.features)
-    out << " " << feature;
+  out << example.features << " => " << example.target_value;
 
-  out << " => " << example.target_value;
+  return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const FeatureVector& features) {
+  for (const auto& feature : features)
+    out << " " << feature;
 
   return out;
 }

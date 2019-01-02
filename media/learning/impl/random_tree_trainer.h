@@ -42,6 +42,22 @@ namespace learning {
 // target values that ended up in each group.  The index with the best score is
 // chosen for the split.
 //
+// For nominal features, we split the feature into all of its nominal values.
+// This is somewhat nonstandard; one would normally convert to one-hot numeric
+// features first.  See OneHotConverter if you'd like to do this.
+//
+// For numeric features, we choose a split point uniformly at random between its
+// min and max values in the training data.  We do this because it's suitable
+// for extra trees.  RandomForest trees want to select the best split point for
+// each feature, rather than uniformly.  Either way, of course, we choose the
+// best split among the (feature, split point) pairs we're considering.
+//
+// Also note that for one-hot features, these are the same thing.  So, this
+// implementation is suitable for extra trees with numeric (possibly one hot)
+// features, or RF with one-hot nominal features.  Note that non-one-hot nominal
+// features probably work fine with RF too.  Numeric, non-binary features don't
+// work with RF, unless one changes the split point selection.
+//
 // The training algorithm then recurses to build child nodes.  One child node is
 // created for each observed value of the |i|-th feature in the training set.
 // The child node is trained using the subset of the training set that shares
