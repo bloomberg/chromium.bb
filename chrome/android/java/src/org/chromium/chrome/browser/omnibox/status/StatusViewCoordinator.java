@@ -107,13 +107,13 @@ public class StatusViewCoordinator implements View.OnClickListener {
 
         // TODO(ender): remove this once icon selection has complete set of
         // corresponding properties (for tinting etc).
-        updateSecurityIcon();
+        updateStatusIcon();
     }
 
     /**
      * Updates the security icon displayed in the LocationBar.
      */
-    public void updateSecurityIcon() {
+    public void updateStatusIcon() {
         mMediator.setSecurityIconResource(mToolbarDataProvider.getSecurityIconResource(mIsTablet));
         mMediator.setSecurityIconTint(mToolbarDataProvider.getSecurityIconColorStateList());
         mMediator.setSecurityIconDescription(
