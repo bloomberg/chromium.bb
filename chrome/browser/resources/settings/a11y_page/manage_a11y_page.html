@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
@@ -24,8 +25,10 @@
 
       h2 ~ .settings-box,
       h2 ~ settings-toggle-button,
+      h2 ~ cr-link-row,
       iron-collapse .settings-box,
-      iron-collapse settings-toggle-button {
+      iron-collapse settings-toggle-button,
+      iron-collapse cr-link-row {
         margin-inline-end: var(--settings-box-row-padding);
         margin-inline-start: var(--settings-box-row-indent);
         padding-inline-end: 0;
@@ -75,19 +78,15 @@
         </paper-icon-button-light>
       </div>
     </iron-collapse>
-    <div class="settings-box two-line" on-click="onManageTtsSettingsTap_"
-        actionable>
-      <div class="start" aria-hidden="true">
-        $i18n{manageTtsSettings}
-        <div class="secondary" id="appearanceSettingsSecondary">
-          $i18n{ttsSettingsLinkDescription}
-        </div>
-      </div>
-      <paper-icon-button-light class="subpage-arrow">
-        <button aria-label="$i18n{manageTtsSettings}"
-            aria-describedby="appearanceSettingsSecondary"></button>
-      </paper-icon-button-light>
-    </div>
+
+    <cr-link-row
+        class="hr"
+        embedded
+        icon-class="subpage-arrow"
+        label="$i18n{manageTtsSettings}"
+        on-click="onManageTtsSettingsTap_"
+        sub-label="$i18n{ttsSettingsLinkDescription}">
+    </cr-link-row>
 
     <h2>$i18n{displayHeading}</h2>
     <settings-toggle-button class="first"
@@ -122,30 +121,22 @@
         </settings-dropdown-menu>
       </div>
     </template>
-    <div class="settings-box two-line" on-click="onDisplayTap_" actionable>
-      <div class="start" aria-hidden="true">
-        $i18n{displaySettingsTitle}
-        <div class="secondary" id="displaySettingsSecondary">
-          $i18n{displaySettingsDescription}
-        </div>
-      </div>
-      <paper-icon-button-light class="subpage-arrow">
-        <button aria-label="$i18n{displaySettingsTitle}"
-            aria-describedby="displaySettingsSecondary"></button>
-      </paper-icon-button-light>
-    </div>
-    <div class="settings-box two-line" on-click="onAppearanceTap_" actionable>
-      <div class="start" aria-hidden="true">
-        $i18n{appearanceSettingsTitle}
-        <div class="secondary" id="appearanceSettingsSecondary">
-          $i18n{appearanceSettingsDescription}
-        </div>
-      </div>
-      <paper-icon-button-light class="subpage-arrow">
-        <button aria-label="$i18n{appearanceSettingsTitle}"
-            aria-describedby="appearanceSettingsSecondary"></button>
-      </paper-icon-button-light>
-    </div>
+    <cr-link-row
+        class="hr"
+        embedded
+        icon-class="subpage-arrow"
+        label="$i18n{displaySettingsTitle}"
+        on-click="onDisplayTap_"
+        sub-label="$i18n{displaySettingsDescription}">
+    </cr-link-row>
+    <cr-link-row
+        class="hr"
+        embedded
+        icon-class="subpage-arrow"
+        label="$i18n{appearanceSettingsTitle}"
+        on-click="onAppearanceTap_"
+        sub-label="$i18n{appearanceSettingsDescription}">
+    </cr-link-row>
 
     <h2>$i18n{keyboardAndTextInputHeading}</h2>
     <settings-toggle-button class="first"
@@ -175,29 +166,22 @@
           label="$i18n{switchAccessLabel}">
       </settings-toggle-button>
       <iron-collapse opened="[[prefs.settings.a11y.switch_access.value]]">
-        <div class="settings-box continuation" actionable
+        <cr-link-row
+            embedded
+            icon-class="icon-external"
+            label="$i18n{switchAccessOptionsLabel}"
             on-click="onSwitchAccessSettingsTap_">
-          <div class="start" aria-hidden="true">
-            $i18n{switchAccessOptionsLabel}
-          </div>
-          <paper-icon-button-light class="icon-external">
-            <button aria-label="$i18n{switchAccessOptionsLabel}"></button>
-          </paper-icon-button-light>
-        </div>
+        </cr-link-row>
       </iron-collapse>
     </template>
-    <div class="settings-box two-line" on-click="onKeyboardTap_" actionable>
-      <div class="start" aria-hidden="true">
-        $i18n{keyboardSettingsTitle}
-        <div class="secondary" id="keyboardSettingsSecondary">
-          $i18n{keyboardSettingsDescription}
-        </div>
-      </div>
-      <paper-icon-button-light class="subpage-arrow">
-        <button aria-label="$i18n{keyboardSettingsTitle}"
-            aria-describedby="keyboardSettingsSecondary"></button>
-      </paper-icon-button-light>
-    </div>
+    <cr-link-row
+        class="hr"
+        embedded
+        icon-class="subpage-arrow"
+        label="$i18n{keyboardSettingsTitle}"
+        on-click="onKeyboardTap_"
+        sub-label="$i18n{keyboardSettingsDescription}">
+    </cr-link-row>
 
     <h2>$i18n{mouseAndTouchpadHeading}</h2>
     <settings-toggle-button class="first"
@@ -263,18 +247,14 @@
         pref="{{prefs.settings.a11y.cursor_highlight}}"
         label="$i18n{cursorHighlightLabel}">
     </settings-toggle-button>
-    <div class="settings-box two-line" on-click="onMouseTap_" actionable>
-      <div class="start" aria-hidden="true">
-        $i18n{mouseSettingsTitle}
-        <div class="secondary" id="mouseSettingsSecondary">
-          $i18n{mouseSettingsDescription}
-        </div>
-      </div>
-      <paper-icon-button-light class="subpage-arrow">
-        <button aria-label="$i18n{mouseSettingsTitle}"
-            aria-describedby="mouseSettingsSecondary"></button>
-      </paper-icon-button-light>
-    </div>
+    <cr-link-row
+        class="hr"
+        embedded
+        icon-class="subpage-arrow"
+        label="$i18n{mouseSettingsTitle}"
+        on-click="onMouseTap_"
+        sub-label="$i18n{mouseSettingsDescription}">
+    </cr-link-row>
 
     <h2>$i18n{audioHeading}</h2>
     <settings-toggle-button class="first"
