@@ -161,6 +161,23 @@ struct Cronet_RequestFinishedInfo {
   explicit Cronet_RequestFinishedInfo(Cronet_RequestFinishedInfo&& from);
   ~Cronet_RequestFinishedInfo();
 
+  int64_t request_start = Cronet_kInvalidTime;
+  int64_t dns_start = Cronet_kInvalidTime;
+  int64_t dns_end = Cronet_kInvalidTime;
+  int64_t connect_start = Cronet_kInvalidTime;
+  int64_t connect_end = Cronet_kInvalidTime;
+  int64_t ssl_start = Cronet_kInvalidTime;
+  int64_t ssl_end = Cronet_kInvalidTime;
+  int64_t sending_start = Cronet_kInvalidTime;
+  int64_t sending_end = Cronet_kInvalidTime;
+  int64_t push_start = Cronet_kInvalidTime;
+  int64_t push_end = Cronet_kInvalidTime;
+  int64_t response_start = Cronet_kInvalidTime;
+  int64_t request_end = Cronet_kInvalidTime;
+  bool socket_reused = false;
+  int64_t sent_byte_count = -1;
+  int64_t received_byte_count = -1;
+
  private:
   DISALLOW_ASSIGN(Cronet_RequestFinishedInfo);
 };
