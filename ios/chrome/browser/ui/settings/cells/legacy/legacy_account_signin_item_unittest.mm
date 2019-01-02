@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/cells/account_signin_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_account_signin_item.h"
 
 #import <CoreGraphics/CoreGraphics.h>
 #import <UIKit/UIKit.h>
@@ -18,18 +18,19 @@
 // Tests that the UIImage and UILabels are set properly after a call to
 // |configureCell:|.
 
-using AccountSignInItemTest = PlatformTest;
+using LegacyAccountSignInItemTest = PlatformTest;
 
-TEST_F(AccountSignInItemTest, ImageView) {
-  AccountSignInItem* item = [[AccountSignInItem alloc] initWithType:0];
+TEST_F(LegacyAccountSignInItemTest, ImageView) {
+  LegacyAccountSignInItem* item =
+      [[LegacyAccountSignInItem alloc] initWithType:0];
   UIImage* image = [[UIImage alloc] init];
 
   item.image = image;
 
   id cell = [[[item cellClass] alloc] init];
-  ASSERT_TRUE([cell isMemberOfClass:[AccountSignInCell class]]);
+  ASSERT_TRUE([cell isMemberOfClass:[LegacyAccountSignInCell class]]);
 
-  AccountSignInCell* signInCell = cell;
+  LegacyAccountSignInCell* signInCell = cell;
   EXPECT_FALSE(signInCell.imageView.image);
 
   [item configureCell:cell];

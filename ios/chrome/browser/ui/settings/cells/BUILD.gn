@@ -4,8 +4,6 @@
 
 source_set("cells") {
   sources = [
-    "account_signin_item.h",
-    "account_signin_item.mm",
     "autofill_data_item.h",
     "autofill_data_item.mm",
     "byo_textfield_item.h",
@@ -75,7 +73,6 @@ source_set("cells") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "account_signin_item_unittest.mm",
     "autofill_data_item_unittest.mm",
     "byo_textfield_item_unittest.mm",
     "card_multiline_item_unittest.mm",

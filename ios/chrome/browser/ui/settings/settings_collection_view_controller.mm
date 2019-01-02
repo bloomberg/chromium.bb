@@ -47,7 +47,7 @@
 #import "ios/chrome/browser/ui/settings/autofill_credit_card_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill_profile_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/bandwidth_management_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/cells/account_signin_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_account_signin_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
@@ -487,8 +487,8 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
         signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
     _hasRecordedSigninImpression = YES;
   }
-  AccountSignInItem* signInTextItem =
-      [[AccountSignInItem alloc] initWithType:ItemTypeSignInButton];
+  LegacyAccountSignInItem* signInTextItem =
+      [[LegacyAccountSignInItem alloc] initWithType:ItemTypeSignInButton];
   signInTextItem.accessibilityIdentifier = kSettingsSignInCellId;
   UIImage* image = CircularImageFromImage(ios::GetChromeBrowserProvider()
                                               ->GetSigninResourcesProvider()
