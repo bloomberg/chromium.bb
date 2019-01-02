@@ -809,7 +809,8 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
 
         onViewportChanged();
         getActiveLayout().show(time(), animate);
-        mHost.setContentOverlayVisibility(getActiveLayout().shouldDisplayContentOverlay());
+        mHost.setContentOverlayVisibility(getActiveLayout().shouldDisplayContentOverlay(),
+                getActiveLayout().canHostBeFocusable());
         mHost.requestRender();
 
         // Notify observers about the new scene.

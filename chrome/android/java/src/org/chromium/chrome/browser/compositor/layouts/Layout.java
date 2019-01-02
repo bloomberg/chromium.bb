@@ -764,6 +764,14 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     }
 
     /**
+     * @return True if the host container can set itself as focusable e.g. for accessibility.
+     *         Subclasses can override e.g. to provide a different default focused view.
+     */
+    public boolean canHostBeFocusable() {
+        return true;
+    }
+
+    /**
      * @param e                 The {@link MotionEvent} to consider.
      * @param offsets           The current touch offsets that should be applied to the
      *                          {@link EventFilter}s.
