@@ -483,16 +483,26 @@ BackButton* ShelfView::GetBackButton() const {
   return nullptr;
 }
 
-bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) const {
-  gfx::Rect tooltip_bounds;
-  for (int i = 0; i < child_count(); ++i) {
-    const views::View* child = child_at(i);
+void ShelfView::UpdateVisibleShelfItemBoundsUnion() {
+  visible_shelf_item_bounds_union_.SetRect(0, 0, 0, 0);
+  for (int i = first_visible_index_; i <= last_visible_index_; ++i) {
+    const views::View* child = view_model_->view_at(i);
     if (!IsTabletModeEnabled() && child == GetBackButton())
       continue;
-    if (child != overflow_button_ && ShouldShowTooltipForView(child))
-      tooltip_bounds.Union(child->GetMirroredBounds());
+    if (ShouldShowTooltipForView(child))
+      visible_shelf_item_bounds_union_.Union(child->GetMirroredBounds());
   }
-  return !tooltip_bounds.Contains(cursor_location);
+}
+
+bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) const {
+  // Hide the tooltip if this is the app list button and the list is showing.
+  const AppListButton* app_list_button = GetAppListButton();
+  if (app_list_button &&
+      app_list_button->GetMirroredBounds().Contains(cursor_location) &&
+      app_list_button->is_showing_app_list()) {
+    return true;
+  }
+  return !visible_shelf_item_bounds_union_.Contains(cursor_location);
 }
 
 bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
@@ -928,6 +938,7 @@ void ShelfView::LayoutToIdealBounds() {
   overflow_button_->SetBoundsRect(overflow_bounds);
   UpdateBackButton();
   LayoutAppListAndBackButtonHighlight();
+  UpdateVisibleShelfItemBoundsUnion();
 }
 
 bool ShelfView::IsItemPinned(const ShelfItem& item) const {
@@ -1187,6 +1198,7 @@ void ShelfView::AnimateToIdealBounds() {
   }
   overflow_button_->SetBoundsRect(overflow_bounds);
   LayoutAppListAndBackButtonHighlight();
+  UpdateVisibleShelfItemBoundsUnion();
 }
 
 views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
