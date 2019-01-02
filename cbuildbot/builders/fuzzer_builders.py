@@ -27,4 +27,3 @@ class FuzzerBuilder(simple_builders.SimpleBuilder):
     self._RunStage(build_stages.SetupBoardStage, board)
     self._RunStage(build_stages.BuildPackagesStage, board)
     self._RunStage(artifact_stages.GenerateSysrootStage, board)
-    self._RunStage(artifact_stages.ArchiveStage, board, builder_run=self._run)
