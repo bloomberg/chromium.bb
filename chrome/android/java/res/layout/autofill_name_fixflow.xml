@@ -11,6 +11,7 @@
     style="@style/AlertDialogContent"
     android:minHeight="36dp"
     android:layout_marginBottom="32dp"
+    android:paddingBottom="16dp"
     android:layout_marginTop="6dp"
     android:orientation="horizontal"
     android:gravity="center_vertical">
@@ -30,7 +31,7 @@
             android:hint="@string/autofill_card_holder_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:imeOptions="flagNoExtractUi"
+            android:imeOptions="actionDone"
             android:inputType="textCapWords"/>
 
     </org.chromium.chrome.browser.widget.CompatibilityTextInputLayout>
