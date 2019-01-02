@@ -50,6 +50,11 @@ interface BridgedNativeWidgetHost {
   // bounds from OnWindowGeometryChanged.
   OnViewSizeChanged(gfx.mojom.Size new_size);
 
+  // The vertical position from which sheets should be anchored, from the top
+  // of the content view.
+  [Sync]
+  GetSheetOffsetY() => (int32 offset_y);
+
   // Indicate if full keyboard accessibility is needed and update focus if
   // needed.
   SetKeyboardAccessible(bool enabled);

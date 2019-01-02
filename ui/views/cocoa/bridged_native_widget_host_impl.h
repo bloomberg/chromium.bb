@@ -228,7 +228,6 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
                  bool* found_word,
                  gfx::DecoratedText* decorated_word,
                  gfx::Point* baseline_point) override;
-  double SheetPositionY() override;
   views_bridge_mac::DragDropClient* GetDragDropClient() override;
   ui::TextInputClient* GetTextInputClient() override;
   void GetHasInputContext(bool* has_text_input_context) override;
@@ -240,6 +239,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   void OnVisibilityChanged(bool visible) override;
   void OnWindowNativeThemeChanged() override;
   void OnViewSizeChanged(const gfx::Size& new_size) override;
+  bool GetSheetOffsetY(int32_t* offset_y) override;
   void SetKeyboardAccessible(bool enabled) override;
   void OnIsFirstResponderChanged(bool is_first_responder) override;
   void OnMouseCaptureActiveChanged(bool capture_is_active) override;
@@ -303,6 +303,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
                          bool* was_handled) override;
 
   // views_bridge_mac::mojom::BridgedNativeWidgetHost, synchronous callbacks:
+  void GetSheetOffsetY(GetSheetOffsetYCallback callback) override;
   void DispatchKeyEventRemote(std::unique_ptr<ui::Event> event,
                               DispatchKeyEventRemoteCallback callback) override;
   void DispatchKeyEventToMenuControllerRemote(

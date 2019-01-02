@@ -50,9 +50,9 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   // destroyed.
   void WindowDestroyed();
 
-  // Returns the vertical position that sheets should be anchored, in pixels
-  // from the bottom of the window.
-  virtual int SheetPositionY();
+  // The vertical position from which sheets should be anchored, from the top
+  // of the content view.
+  virtual int32_t SheetOffsetY();
 
   // Returns in |override_titlebar_height| whether or not to override the
   // titlebar height and in |titlebar_height| the height of the titlebar.

@@ -118,15 +118,12 @@ BrowserWindowTouchBarController* BrowserFrameMac::GetTouchBarController()
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserFrameMac, views::NativeWidgetMac implementation:
 
-int BrowserFrameMac::SheetPositionY() {
+int32_t BrowserFrameMac::SheetOffsetY() {
+  // ModalDialogHost::GetDialogPosition() is relative to the host view. In
+  // practice, this ends up being the widget's content view.
   web_modal::WebContentsModalDialogHost* dialog_host =
       browser_view_->GetWebContentsModalDialogHost();
-  NSView* view = dialog_host->GetHostView().GetNativeNSView();
-  // Get the position of the host view relative to the window since
-  // ModalDialogHost::GetDialogPosition() is relative to the host view.
-  int host_view_y =
-      [view convertPoint:NSMakePoint(0, NSHeight([view frame])) toView:nil].y;
-  return host_view_y - dialog_host->GetDialogPosition(gfx::Size()).y();
+  return dialog_host->GetDialogPosition(gfx::Size()).y();
 }
 
 void BrowserFrameMac::GetWindowFrameTitlebarHeight(

@@ -519,10 +519,6 @@ bool BridgedNativeWidgetHostImpl::DispatchKeyEventToMenuController(
   return false;
 }
 
-double BridgedNativeWidgetHostImpl::SheetPositionY() {
-  return native_widget_mac_->SheetPositionY();
-}
-
 views_bridge_mac::DragDropClient*
 BridgedNativeWidgetHostImpl::GetDragDropClient() {
   return drag_drop_client_.get();
@@ -617,6 +613,11 @@ bool BridgedNativeWidgetHostImpl::GetHasMenuController(
 
 void BridgedNativeWidgetHostImpl::OnViewSizeChanged(const gfx::Size& new_size) {
   root_view_->SetSize(new_size);
+}
+
+bool BridgedNativeWidgetHostImpl::GetSheetOffsetY(int32_t* offset_y) {
+  *offset_y = native_widget_mac_->SheetOffsetY();
+  return true;
 }
 
 void BridgedNativeWidgetHostImpl::SetKeyboardAccessible(bool enabled) {
@@ -972,6 +973,13 @@ bool BridgedNativeWidgetHostImpl::HandleAccelerator(
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidgetHostImpl,
 // views_bridge_mac::mojom::BridgedNativeWidgetHost synchronous callbacks:
+
+void BridgedNativeWidgetHostImpl::GetSheetOffsetY(
+    GetSheetOffsetYCallback callback) {
+  int32_t offset_y = 0;
+  GetSheetOffsetY(&offset_y);
+  std::move(callback).Run(offset_y);
+}
 
 void BridgedNativeWidgetHostImpl::DispatchKeyEventRemote(
     std::unique_ptr<ui::Event> event,

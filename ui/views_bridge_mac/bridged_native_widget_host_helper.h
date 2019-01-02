@@ -52,12 +52,6 @@ class VIEWS_BRIDGE_MAC_EXPORT BridgedNativeWidgetHostHelper {
                          gfx::DecoratedText* decorated_word,
                          gfx::Point* baseline_point) = 0;
 
-  // Returns the vertical position that sheets should be anchored, in pixels
-  // from the bottom of the window.
-  // TODO(ccameron): This should be either moved to the mojo interface or
-  // separated out in such a way as to avoid needing to go through mojo.
-  virtual double SheetPositionY() = 0;
-
   // Return a pointer to host's DragDropClientMac.
   // TODO(ccameron): Drag-drop behavior needs to be implemented over mojo.
   virtual DragDropClient* GetDragDropClient() = 0;

@@ -72,7 +72,6 @@ class Bridge : public BridgedNativeWidgetHostHelper {
                  gfx::Point* baseline_point) override {
     *found_word = false;
   }
-  double SheetPositionY() override { return 0; }
   views_bridge_mac::DragDropClient* GetDragDropClient() override {
     // Drag-drop only doesn't work across mojo yet.
     return nullptr;

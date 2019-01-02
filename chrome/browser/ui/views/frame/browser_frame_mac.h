@@ -29,7 +29,7 @@ class BrowserFrameMac : public views::NativeWidgetMac,
   BrowserWindowTouchBarController* GetTouchBarController() const;
 
   // Overridden from views::NativeWidgetMac:
-  int SheetPositionY() override;
+  int32_t SheetOffsetY() override;
   void GetWindowFrameTitlebarHeight(bool* override_titlebar_height,
                                     float* titlebar_height) override;
   void OnFocusWindowToolbar() override;
