@@ -31,6 +31,7 @@ class DataSaverSiteBreakdownMetricsObserver
                          ukm::SourceId source_id) override;
 
   void OnResourceDataUseObserved(
+      FrameTreeNodeId frame_tree_node_id,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources) override;
 
