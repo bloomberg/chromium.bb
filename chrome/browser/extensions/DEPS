@@ -29,4 +29,9 @@ specific_include_rules = {
   "test_extension_system.cc": [
     "+services/data_decoder",
   ],
+  "cross_origin_read_blocking_browsertest.cc": [
+    # Mostly for helping the test verify UMA values from
+    # network::CrossOriginReadBlocking::Action enum.
+    "+services/network/cross_origin_read_blocking.h"
+  ],
 }
