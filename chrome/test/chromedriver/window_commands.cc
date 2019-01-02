@@ -171,6 +171,14 @@ int MouseButtonToButtons(MouseButton button) {
   }
 }
 
+PointerType StringToPointerType(std::string pointer_type) {
+  CHECK(pointer_type == "pen" || pointer_type == "mouse");
+  if (pointer_type == "pen")
+    return kPen;
+  else
+    return kMouse;
+}
+
 struct Cookie {
   Cookie(const std::string& name,
          const std::string& value,
@@ -1085,7 +1093,7 @@ Status ProcessInputActionSequence(
       action->SetString("subtype", subtype);
 
       if (subtype == "pointerDown" || subtype == "pointerUp") {
-        if (pointer_type == "mouse") {
+        if (pointer_type == "mouse" || pointer_type == "pen") {
           int button;
           if (!action_item->GetInteger("button", &button) || button < 0 ||
               button > 4) {
@@ -1288,7 +1296,7 @@ Status ExecutePerformActions(Session* session,
           }
         }
 
-        if (pointer_type == "mouse") {
+        if (pointer_type == "mouse" || pointer_type == "pen") {
           int click_count = 0;
           if (action_type == "pointerDown" || action_type == "pointerUp") {
             pointer_action->GetString("button", &button_type);
@@ -1298,6 +1306,7 @@ Status ExecutePerformActions(Session* session,
                            StringToMouseButton(button_type), x, y, 0, buttons,
                            click_count);
           event.element_id = element_id;
+          event.pointer_type = StringToPointerType(pointer_type);
           mouse_events.push_back(event);
           if (action_type == "pointerDown")
             buttons |= StringToModifierMouseButton(button_type);
@@ -1317,7 +1326,7 @@ Status ExecutePerformActions(Session* session,
         }
       }
 
-      if (pointer_type == "mouse") {
+      if (pointer_type == "mouse" || pointer_type == "pen") {
         longest_mouse_list_size =
             std::max(mouse_events.size(), longest_mouse_list_size);
         mouse_events_list.push_back(mouse_events);

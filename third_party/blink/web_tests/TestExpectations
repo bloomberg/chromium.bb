@@ -2727,6 +2727,8 @@ crbug.com/770028 external/wpt/pointerevents/extension/pointerevent_getPredictedE
 # Chrome touch-action computation ignores div transforms.
 crbug.com/715148 external/wpt/pointerevents/pointerevent_touch-action-rotated-divs_touch-manual.html  [ Skip ]
 
+crbug.com/606367 external/wpt/pointerevents/pointerevent_pointerout_pen-manual.html  [ Skip ]
+
 # Disabled until v8 roll.
 crbug.com/906847 inspector-protocol/runtime/runtime-getProperties.js [ Skip ]
 crbug.com/906847 inspector-protocol/debugger/debugger-scope-skip-variables-with-empty-name.js [ Skip ]
