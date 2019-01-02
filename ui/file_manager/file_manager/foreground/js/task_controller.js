@@ -411,12 +411,12 @@ TaskController.prototype.canExecuteMoreActions = function() {
 };
 
 /**
- * Returns whether open with command can be executed or not.
- * @return {boolean} True if open with command is executable.
+ * Returns whether show sub-menu command can be executed or not.
+ * @return {boolean} True if show-submenu command is executable.
  */
 TaskController.prototype.canExecuteShowOverflow = function() {
-  // TODO (adanilo@) same logic as more actions now, extend
-  return this.canExecuteMoreActions_;
+  // TODO (adanilo@) extend this for general sub-menu case
+  return this.ui_.shareMenuButton.overflow.firstChild !== null;
 };
 
 /**
