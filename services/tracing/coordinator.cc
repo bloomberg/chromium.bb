@@ -87,10 +87,6 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
                                   agent_entry, std::move(ptr)));
   }
 
-  // Called from |backend_task_runner_| to close the recorder proxy on the
-  // correct task runner.
-  void CloseRecorder(mojom::RecorderPtr recorder) {}
-
   // Called from |main_task_runner_| either after flushing is complete or at
   // shutdown. We either will not write to the stream afterwards or do not care
   // what happens to what we try to write.
@@ -435,8 +431,7 @@ void Coordinator::SendRecorder(
     // Recorders are created and closed on |backend_task_runner_|.
     backend_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&Coordinator::TraceStreamer::CloseRecorder,
-                       trace_streamer_->AsWeakPtr(), std::move(recorder)));
+        base::BindOnce([](mojom::RecorderPtr ptr) {}, std::move(recorder)));
   }
 }
 
