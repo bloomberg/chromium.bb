@@ -546,24 +546,47 @@ function _drawMaterialElementTitle(elementInfo, bounds)
 
 function _createMaterialTooltip(parentElement, bounds, contentElement, withArrow)
 {
-    var tooltipContainer = parentElement.createChild("div");
-    var tooltipContent = tooltipContainer.createChild("div", "tooltip-content");
+    const tooltipContainer = parentElement.createChild("div");
+    const tooltipContent = tooltipContainer.createChild("div", "tooltip-content");
     tooltipContent.appendChild(contentElement);
 
-    var titleWidth = tooltipContent.offsetWidth;
-    var titleHeight = tooltipContent.offsetHeight;
-    var arrowRadius = 8;
-    var pageMargin = 2;
+    const titleWidth = tooltipContent.offsetWidth;
+    const titleHeight = tooltipContent.offsetHeight;
+    const arrowHalfWidth = 8;
+    const pageMargin = 2;
+    const arrowWidth = arrowHalfWidth * 2;
+    const arrowInset = arrowHalfWidth + 2;
 
-    var boxX = Math.min(bounds.minX, canvasWidth - titleWidth - pageMargin);
+    const containerMinX = pageMargin + arrowInset;
+    const containerMaxX = canvasWidth - pageMargin - arrowInset - arrowWidth;
 
-    var boxY = bounds.minY - arrowRadius - titleHeight;
-    var onTop = true;
+    // Left align arrow to the tooltip but ensure it is pointing to the element.
+    // Center align arrow if the inspected element bounds are too narrow.
+    const boundsAreTooNarrow = bounds.maxX - bounds.minX < arrowWidth + 2 * arrowInset;
+    let arrowX;
+    if (boundsAreTooNarrow) {
+        arrowX = (bounds.minX + bounds.maxX) * 0.5 - arrowHalfWidth;
+    } else {
+        const xFromLeftBound = bounds.minX + arrowInset;
+        const xFromRightBound = bounds.maxX - arrowInset - arrowWidth;
+        if (xFromLeftBound > containerMinX && xFromLeftBound < containerMaxX)
+            arrowX = xFromLeftBound;
+        else
+            arrowX = Number.constrain(containerMinX, xFromLeftBound, xFromRightBound);
+    }
+    // Hide arrow if element is completely off the sides of the page.
+    const arrowHidden = arrowX < containerMinX || arrowX > containerMaxX;
+
+    let boxX = arrowX - arrowInset;
+    boxX = Number.constrain(boxX, pageMargin, canvasWidth - titleWidth - pageMargin);
+
+    let boxY = bounds.minY - arrowHalfWidth - titleHeight;
+    let onTop = true;
     if (boxY < 0) {
-        boxY = Math.min(canvasHeight - titleHeight, bounds.maxY + arrowRadius);
+        boxY = Math.min(canvasHeight - titleHeight, bounds.maxY + arrowHalfWidth);
         onTop = false;
     } else if (bounds.minY > canvasHeight) {
-        boxY = canvasHeight - arrowRadius - titleHeight;
+        boxY = canvasHeight - arrowHalfWidth - titleHeight;
     }
 
     tooltipContent.style.top = boxY + "px";
@@ -571,18 +594,11 @@ function _createMaterialTooltip(parentElement, bounds, contentElement, withArrow
     if (!withArrow)
         return;
 
-    var tooltipArrow = tooltipContainer.createChild("div", "material-tooltip-arrow");
-    // Left align arrow to the tooltip but ensure it is pointing to the element.
-    var tooltipBorderRadius = 2;
-    var arrowX = boxX + arrowRadius + tooltipBorderRadius;
-    if (arrowX < bounds.minX)
-        arrowX = bounds.minX + arrowRadius;
-    // Hide arrow if element is completely off the sides of the page.
-    var arrowHidden = arrowX < pageMargin + tooltipBorderRadius || arrowX + arrowRadius * 2 > canvasWidth - pageMargin - tooltipBorderRadius;
+    const tooltipArrow = tooltipContainer.createChild("div", "material-tooltip-arrow");
     tooltipArrow.classList.toggle("hidden", arrowHidden);
     if (!arrowHidden) {
         tooltipArrow.classList.toggle("tooltip-arrow-top", onTop);
-        tooltipArrow.style.top = (onTop ? boxY + titleHeight : boxY - arrowRadius) + "px";
+        tooltipArrow.style.top = (onTop ? boxY + titleHeight : boxY - arrowHalfWidth) + "px";
         tooltipArrow.style.left = arrowX + "px";
     }
 }
@@ -909,6 +925,20 @@ String.prototype.trimEnd = function(maxLength)
         return String(this);
     return this.substr(0, maxLength - 1) + "\u2026";
 }
+
+/**
+ * @param {number} num
+ * @param {number} min
+ * @param {number} max
+ * @return {number}
+ */
+ Number.constrain = function(num, min, max) {
+    if (num < min)
+        num = min;
+    else if (num > max)
+        num = max;
+    return num;
+};
 
 window.addEventListener("DOMContentLoaded", onLoaded);
 document.addEventListener("keydown", onDocumentKeyDown);
