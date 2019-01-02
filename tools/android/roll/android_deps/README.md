@@ -38,8 +38,8 @@ Full steps to add a new third party library:
       variable in `BuildConfigGenerator.groovy` in order to ensure that each
       tag in CIPD is unique.
       - One option to thoroughly test your change is to run
-        `rm -rf third_party/android_deps/libs/[!O]*` before running with
-        `--update-all`. This will ensure all your deps are fresh. The commands
+        `rm -rf third_party/android_deps/libs/[!O]* && tools/android/roll/android_deps/fetch_all.py --update-all`.
+        This will ensure all your deps are fresh. The commands
         printed out in the following step will ensure you do not upload
         duplicate instances.
 
