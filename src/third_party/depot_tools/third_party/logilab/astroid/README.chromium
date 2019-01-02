@@ -1,0 +1,11 @@
+URL: https://github.com/PyCQA/astroid
+URL: https://pypi.org/project/astroid/#files
+Version: 1.4.9
+License: GPL
+License File: LICENSE.txt
+
+Description:
+This directory contains the astroid module, required for pylint.
+
+Local Modifications:
+None
