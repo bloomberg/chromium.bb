@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/cells/account_signin_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_account_signin_item.h"
 
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -33,14 +33,14 @@ const CGFloat kMainTextFontSize = 14;
 const CGFloat kDetailTextFontSize = 14;
 }
 
-@implementation AccountSignInItem
+@implementation LegacyAccountSignInItem
 
 @synthesize image = _image;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
-    self.cellClass = [AccountSignInCell class];
+    self.cellClass = [LegacyAccountSignInCell class];
     self.accessibilityTraits |= UIAccessibilityTraitButton;
   }
   return self;
@@ -48,7 +48,7 @@ const CGFloat kDetailTextFontSize = 14;
 
 #pragma mark - CollectionViewItem
 
-- (void)configureCell:(AccountSignInCell*)cell {
+- (void)configureCell:(LegacyAccountSignInCell*)cell {
   [super configureCell:cell];
   cell.textLabel.text =
       l10n_util::GetNSString(IDS_IOS_SIGN_IN_TO_CHROME_SETTING_TITLE);
@@ -59,7 +59,7 @@ const CGFloat kDetailTextFontSize = 14;
 
 @end
 
-@implementation AccountSignInCell
+@implementation LegacyAccountSignInCell
 
 @synthesize textLabel = _textLabel;
 @synthesize detailTextLabel = _detailTextLabel;
