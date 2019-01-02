@@ -100,12 +100,12 @@ mojom("test_interfaces") {
   testonly = true
   disable_variants = true
   sources = [
-    "login_screen_test_api.mojom",
-    "shelf_test_api.mojom",
-    "shell_test_api.mojom",
-    "status_area_widget_test_api.mojom",
-    "system_tray_test_api.mojom",
-    "time_to_first_present_recorder_test_api.mojom",
+    "login_screen_test_api.test-mojom",
+    "shelf_test_api.test-mojom",
+    "shell_test_api.test-mojom",
+    "status_area_widget_test_api.test-mojom",
+    "system_tray_test_api.test-mojom",
+    "time_to_first_present_recorder_test_api.test-mojom",
   ]
   deps = [
     "//components/account_id/interfaces",

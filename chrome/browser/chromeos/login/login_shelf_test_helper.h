@@ -4,7 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_SHELF_TEST_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_SHELF_TEST_HELPER_H_
-#include "ash/public/interfaces/login_screen_test_api.mojom.h"
+#include "ash/public/interfaces/login_screen_test_api.test-mojom.h"
 
 namespace chromeos {
 

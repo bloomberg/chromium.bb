@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/shell_test_api.mojom.h"
+#include "ash/public/interfaces/shell_test_api.test-mojom.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/common/webui_url_constants.h"

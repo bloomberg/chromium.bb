@@ -5,7 +5,7 @@
 #ifndef ASH_METRICS_TIME_TO_FIRST_PRESENT_RECORDER_TEST_API_H_
 #define ASH_METRICS_TIME_TO_FIRST_PRESENT_RECORDER_TEST_API_H_
 
-#include "ash/public/interfaces/time_to_first_present_recorder_test_api.mojom.h"
+#include "ash/public/interfaces/time_to_first_present_recorder_test_api.test-mojom.h"
 #include "base/macros.h"
 
 namespace ash {

@@ -8,7 +8,7 @@
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/system_tray_test_api.mojom.h"
+#include "ash/public/interfaces/system_tray_test_api.test-mojom.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/router/media_routes_observer.h"

@@ -4,7 +4,7 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_view_ids.h"
-#include "ash/public/interfaces/system_tray_test_api.mojom.h"
+#include "ash/public/interfaces/system_tray_test_api.test-mojom.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"

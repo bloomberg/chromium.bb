@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/public/interfaces/system_tray_test_api.mojom.h"
+#include "ash/public/interfaces/system_tray_test_api.test-mojom.h"
 #include "base/macros.h"
 
 namespace ui {
