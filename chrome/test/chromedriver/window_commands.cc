@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -1003,17 +1004,14 @@ Status ProcessInputActionSequence(
     base::DictionaryValue tmp_state;
     tmp_state.SetString("id", id);
     if (type == "key") {
-      std::unique_ptr<base::ListValue> pressed(new base::ListValue);
-      bool alt = false;
-      bool shift = false;
-      bool ctrl = false;
-      bool meta = false;
-
-      tmp_state.SetList("pressed", std::move(pressed));
-      tmp_state.SetBoolean("alt", alt);
-      tmp_state.SetBoolean("shift", shift);
-      tmp_state.SetBoolean("ctrl", ctrl);
-      tmp_state.SetBoolean("meta", meta);
+      // Initialize a key input state object
+      // (https://w3c.github.io/webdriver/#dfn-key-input-state).
+      tmp_state.SetDictionary("pressed",
+                              std::make_unique<base::DictionaryValue>());
+      // For convenience, we use one integer property to encode four Boolean
+      // properties (alt, shift, ctrl, meta) from the spec, using values from
+      // enum KeyModifierMask.
+      tmp_state.SetInteger("modifiers", 0);
     } else if (type == "pointer") {
       std::unique_ptr<base::ListValue> pressed(new base::ListValue);
       int x = 0;
@@ -1073,11 +1071,19 @@ Status ProcessInputActionSequence(
           return status;
       } else {
         std::string key;
-        // TODO: check if key is a single unicode code point
-        if (!action_item->GetString("value", &key)) {
-          return Status(kInvalidArgument,
-                        "'value' must be a single unicode point");
+        bool valid = action_item->GetString("value", &key);
+        if (valid) {
+          // check if key is a single unicode code point
+          int32_t char_index = 0;
+          uint32_t code_point;
+          valid =
+              base::ReadUnicodeCharacter(key.c_str(), key.size(), &char_index,
+                                         &code_point) &&
+              static_cast<std::string::size_type>(char_index + 1) == key.size();
         }
+        if (!valid)
+          return Status(kInvalidArgument,
+                        "'value' must be a single Unicode code point");
         action->SetString("value", key);
       }
     } else if (type == "pointer") {
@@ -1219,36 +1225,19 @@ Status ExecutePerformActions(Session* session,
         action->GetString("subtype", &subtype);
         std::string id;
         action->GetString("id", &id);
+
+        base::DictionaryValue* input_state;
+        if (!session->input_state_table.GetDictionary(id, &input_state))
+          return Status(kUnknownError, "missing input state");
+
         if (subtype == "pause") {
           key_events.push_back(builder.SetType(kPauseEventType)->Build());
         } else {
-          base::DictionaryValue dispatch_params;
-          base::string16 raw_key;
-          action->GetString("value", &raw_key);
-          base::char16 key = raw_key[0];
-          // TODO: understand necessary_modifiers
-          int necessary_modifiers = 0;
-          ui::KeyboardCode key_code = ui::VKEY_UNKNOWN;
-          std::string error_msg;
-          ConvertCharToKeyCode(key, &key_code, &necessary_modifiers,
-                               &error_msg);
-          if (!error_msg.empty())
-            return Status(kUnknownError, error_msg);
+          Status status = ConvertKeyActionToKeyEvent(
+              action, input_state, subtype == "keyDown", &key_events);
 
-          if (subtype == "keyDown")
-            key_events.push_back(builder.SetType(kKeyDownEventType)
-                                     ->SetText(base::UTF16ToUTF8(raw_key),
-                                               base::UTF16ToUTF8(raw_key))
-                                     ->SetKeyCode(key_code)
-                                     ->SetModifiers(0)
-                                     ->Build());
-          else if (subtype == "keyUp")
-            key_events.push_back(builder.SetType(kKeyUpEventType)
-                                     ->SetText(base::UTF16ToUTF8(raw_key),
-                                               base::UTF16ToUTF8(raw_key))
-                                     ->SetKeyCode(key_code)
-                                     ->SetModifiers(0)
-                                     ->Build());
+          if (status.IsError())
+            return status;
         }
       }
       longest_key_list_size =

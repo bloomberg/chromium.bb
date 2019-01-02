@@ -519,12 +519,28 @@ Status WebViewImpl::DispatchKeyEvents(const std::list<KeyEvent>& events) {
     params.SetString("text", it->modified_text);
     params.SetString("unmodifiedText", it->unmodified_text);
     params.SetInteger("windowsVirtualKeyCode", it->key_code);
-    ui::DomCode dom_code = ui::UsLayoutKeyboardCodeToDomCode(it->key_code);
-    std::string code = ui::KeycodeConverter::DomCodeToCodeString(dom_code);
+    std::string code;
+    if (it->is_from_action) {
+      code = it->code;
+    } else {
+      ui::DomCode dom_code = ui::UsLayoutKeyboardCodeToDomCode(it->key_code);
+      code = ui::KeycodeConverter::DomCodeToCodeString(dom_code);
+    }
     if (!code.empty())
       params.SetString("code", code);
     if (!it->key.empty())
       params.SetString("key", it->key);
+    else if (it->is_from_action)
+      params.SetString("key", it->modified_text);
+    if (it->location != 0) {
+      // The |location| parameter in DevTools protocol only accepts 1 (left
+      // modifiers) and 2 (right modifiers). For location 3 (numeric keypad),
+      // it is necessary to set the |isKeypad| parameter.
+      if (it->location == 3)
+        params.SetBoolean("isKeypad", true);
+      else
+        params.SetInteger("location", it->location);
+    }
     Status status = client_->SendCommand("Input.dispatchKeyEvent", params);
     if (status.IsError())
       return status;

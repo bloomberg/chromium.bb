@@ -104,6 +104,9 @@ struct KeyEvent {
   std::string unmodified_text;
   std::string key;
   ui::KeyboardCode key_code;
+  int location;
+  std::string code;
+  bool is_from_action;
 };
 
 class KeyEventBuilder {
@@ -117,6 +120,10 @@ class KeyEventBuilder {
   KeyEventBuilder* SetText(const std::string& unmodified_text,
                            const std::string& modified_text);
   KeyEventBuilder* SetKeyCode(ui::KeyboardCode key_code);
+  KeyEventBuilder* SetLocation(int location);
+  KeyEventBuilder* SetDefaultKey(const std::string& key);
+  KeyEventBuilder* SetCode(const std::string& key);
+  KeyEventBuilder* SetIsFromAction();
   KeyEvent Build();
   void Generate(std::list<KeyEvent>* key_events);
 
