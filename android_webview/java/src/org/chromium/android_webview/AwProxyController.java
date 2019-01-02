@@ -16,7 +16,7 @@ import java.util.concurrent.Executor;
 public class AwProxyController {
     public AwProxyController() {}
 
-    public void setProxyOverride(
+    public String setProxyOverride(
             String[][] proxyRules, String[] bypassRules, Runnable listener, Executor executor) {
         int length = (proxyRules == null ? 0 : proxyRules.length);
         String[] urlSchemes = new String[length];
@@ -31,31 +31,29 @@ public class AwProxyController {
             // proxy URLs
             proxyUrls[i] = proxyRules[i][1];
             if (proxyUrls[i] == null) {
-                throw new NullPointerException("Proxy rule " + i + " has a null url");
+                return "Proxy rule " + i + " has a null url";
             }
         }
         length = (bypassRules == null ? 0 : bypassRules.length);
         for (int i = 0; i < length; i++) {
             if (bypassRules[i] == null) {
-                throw new NullPointerException("Bypass rule " + i + " is null");
+                return "Bypass rule " + i + " is null";
             }
         }
         if (executor == null) {
-            throw new NullPointerException("Executor must not be null");
+            return "Executor must not be null";
         }
 
-        String result =
-                nativeSetProxyOverride(urlSchemes, proxyUrls, bypassRules, listener, executor);
-        if (!result.isEmpty()) {
-            throw new IllegalArgumentException(result);
-        }
+        return nativeSetProxyOverride(urlSchemes, proxyUrls, bypassRules, listener, executor);
     }
 
-    public void clearProxyOverride(Runnable listener, Executor executor) {
+    public String clearProxyOverride(Runnable listener, Executor executor) {
         if (executor == null) {
-            throw new NullPointerException("Executor must not be null");
+            return "Executor must not be null";
         }
+
         nativeClearProxyOverride(listener, executor);
+        return "";
     }
 
     @CalledByNativeUnchecked
