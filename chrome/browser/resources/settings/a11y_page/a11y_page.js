@@ -36,8 +36,7 @@ Polymer({
         // <if expr="chromeos">
         if (settings.routes.MANAGE_ACCESSIBILITY) {
           map.set(
-              settings.routes.MANAGE_ACCESSIBILITY.path,
-              '#subpage-trigger .subpage-arrow button');
+              settings.routes.MANAGE_ACCESSIBILITY.path, '#subpage-trigger');
         }
         // </if>
         return map;
