@@ -320,8 +320,9 @@ void ChromeAutocompleteProviderClient::PrefetchImage(const GURL& url) {
   DCHECK(image_service);
 
   // TODO(jdonnelly, rhalavati): Create a helper function with Callback to
-  // create annotation and pass it to image_service, merging this annotation and
-  // chrome/browser/ui/omnibox/chrome_omnibox_client.cc
+  // create annotation and pass it to image_service, merging the annotations
+  // in omnibox_page_handler.cc, chrome_omnibox_client.cc,
+  // and chrome_autocomplete_provider_client.cc.
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("omnibox_prefetch_image", R"(
         semantics {

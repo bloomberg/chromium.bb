@@ -65,6 +65,14 @@ cr.define('omnibox_output', function() {
     }
 
     /**
+     * @param {string} url
+     * @param {string} data
+     */
+    updateAnswerImage(url, data) {
+      this.matches.forEach(match => match.updateAnswerImage(url, data));
+    }
+
+    /**
      * Show or hide various output elements depending on display inputs.
      * 1) Show non-last result groups only if showIncompleteResults is true.
      * 2) Show the details section above each table if showDetails or
@@ -102,7 +110,7 @@ cr.define('omnibox_output', function() {
     get visibleTableText() {
       return this.resultsGroups_
           .flatMap(resultsGroup => resultsGroup.visibleText)
-          .reduce((prev, cur) => `${prev}${cur}\n`, '');
+          .join('\n');
     }
   }
 
@@ -326,8 +334,10 @@ cr.define('omnibox_output', function() {
 
     /** @param {!mojom.AutocompleteMatch} match */
     set match(match) {
-      /** @type {!Object} */
+      /** @type {!Object<string, !OutputProperty>} */
       this.properties = {};
+      /** @type {!OutputProperty} */
+      this.properties.contentsAndDescription;
       /** @type {?string} */
       this.providerName = match.providerName || null;
 
@@ -367,6 +377,15 @@ cr.define('omnibox_output', function() {
         this.appendChild(this.additionalProperties);
     }
 
+    /**
+     * @param {string} url
+     * @param {string} data
+     */
+    updateAnswerImage(url, data) {
+      if (this.properties.contentsAndDescription.value === url)
+        this.properties.contentsAndDescription.setAnswerImageData(data);
+    }
+
     /** @param {boolean} showDetails */
     updateVisibility(showDetails) {
       // Show certain columns only if they showDetails is true.
@@ -398,7 +417,9 @@ cr.define('omnibox_output', function() {
      * needs to be displayed for this match.
      */
     get hasAdditionalProperties() {
-      return Object.keys(this.additionalProperties.value).length > 0;
+      return Object
+                 .keys(/** @type {!Object} */ (this.additionalProperties.value))
+                 .length > 0;
     }
 
     /** @private @return {!Array<!OutputProperty>} */
@@ -446,7 +467,7 @@ cr.define('omnibox_output', function() {
   class OutputProperty extends HTMLTableCellElement {
     /**
      * @param {Column} column
-     * @param {!Array<!Object>} values
+     * @param {!Array<*>} values
      * @return {!OutputProperty}
      */
     static create(column, values) {
@@ -457,16 +478,11 @@ cr.define('omnibox_output', function() {
       return outputProperty;
     }
 
-    /** @return {!Object} */
-    get value() {
-      return this.value_;
-    }
-
-    /** @param {!Array<!Object>} values */
+    /** @param {!Array<*>} values */
     set values(values) {
-      /** @private {!Object} */
-      this.value_ = values[0];
-      /** @private {!Array<!Object>} */
+      /** @type {*} */
+      this.value = values[0];
+      /** @private {!Array<*>} */
       this.values_ = values;
       /** @override */
       this.render_();
@@ -477,7 +493,7 @@ cr.define('omnibox_output', function() {
 
     /** @return {string} */
     get text() {
-      return this.value_ + '';
+      return this.value + '';
     }
   }
 
@@ -538,6 +554,54 @@ cr.define('omnibox_output', function() {
     }
   }
 
+  class OutputAnswerProperty extends OutputProperty {
+    constructor() {
+      super();
+
+      /** @private {!Element} */
+      this.container_ = document.createElement('div');
+      this.container_.classList.add('pair-container');
+      this.appendChild(this.container_);
+
+      /** @type {!Element} */
+      this.image_ = document.createElement('img');
+      this.image_.classList.add('pair-item', 'image');
+      this.container_.appendChild(this.image_);
+
+      /** @type {!Element} */
+      this.contents_ = document.createElement('div');
+      this.contents_.classList.add('pair-item', 'contents');
+      this.container_.appendChild(this.contents_);
+
+      /** @type {!Element} */
+      this.description_ = document.createElement('div');
+      this.description_.classList.add('pair-item', 'description');
+      this.container_.appendChild(this.description_);
+
+      /** @type {!Element} */
+      this.answer_ = document.createElement('div');
+      this.answer_.classList.add('pair-item', 'answer');
+      this.container_.appendChild(this.answer_);
+    }
+
+    /** @param {string} imageData */
+    setAnswerImageData(imageData) {
+      this.image_.src = imageData;
+    }
+
+    /** @private @override */
+    render_() {
+      this.contents_.textContent = this.values_[1];
+      this.description_.textContent = this.values_[2];
+      this.answer_.textContent = this.values_[3];
+    }
+
+    /** @override @return {string} */
+    get text() {
+      return this.values_.join('.');
+    }
+  }
+
   class OutputBooleanProperty extends OutputProperty {
     constructor() {
       super();
@@ -554,7 +618,7 @@ cr.define('omnibox_output', function() {
     }
 
     get text() {
-      return (this.value_ ? 'is: ' : 'not: ') + this.name;
+      return (this.value ? 'is: ' : 'not: ') + this.name;
     }
   }
 
@@ -579,7 +643,7 @@ cr.define('omnibox_output', function() {
 
     /** @override @return {string} */
     get text() {
-      return JSON.stringify(this.value_, null, 2);
+      return JSON.stringify(this.value, null, 2);
     }
 
     /**
@@ -627,23 +691,37 @@ cr.define('omnibox_output', function() {
 
     /** @override @return {string} */
     get text() {
-      return this.value_.reduce(
+      return this.value.reduce(
           (prev, {key, value}) => `${prev}${key}: ${value}\n`, '');
     }
   }
 
-  class OutputLinkProperty extends OutputProperty {
+  class OutputUrlProperty extends OutputProperty {
     constructor() {
       super();
+
+      /** @private {!Element} */
+      this.container_ = document.createElement('div');
+      this.container_.classList.add('pair-container');
+      this.appendChild(this.container_);
+
+      /** @private {!Element} */
+      this.icon_ = document.createElement('img');
+      this.container_.appendChild(this.icon_);
+
       /** @private {!Element} */
       this.link_ = document.createElement('a');
-      this.appendChild(this.link_);
+      this.container_.appendChild(this.link_);
     }
 
     /** @private @override */
     render_() {
-      this.link_.textContent = this.value_;
-      this.link_.href = this.value_;
+      if (this.values_[1])
+        this.icon_.removeAttribute('src');
+      else
+        this.icon_.src = `chrome://favicon/${this.value}`;
+      this.link_.textContent = this.value;
+      this.link_.href = this.value;
     }
   }
 
@@ -657,7 +735,7 @@ cr.define('omnibox_output', function() {
 
     /** @private @override */
     render_() {
-      this.div_.textContent = this.value_;
+      this.div_.textContent = this.value;
     }
   }
 
@@ -786,10 +864,11 @@ cr.define('omnibox_output', function() {
         'The result score. Higher is more relevant.', ['relevance'],
         OutputTextProperty),
     new Column(
-        ['Contents', 'Description'], '', 'contentsAndDescription', true,
+        ['Contents', 'Description', 'Answer'], '', 'contentsAndDescription',
+        true,
         'The text that is presented identifying the result. / The page title ' +
             'of the result.',
-        ['contents', 'description'], OutputPairProperty),
+        ['image', 'contents', 'description', 'answer'], OutputAnswerProperty),
     new Column(
         ['D'], '', 'allowedToBeDefaultMatch', true,
         'Can Be Default\nA green checkmark indicates that the result can be ' +
@@ -808,7 +887,7 @@ cr.define('omnibox_output', function() {
         ['hasTabMatch'], OutputBooleanProperty),
     new Column(
         ['URL'], '', 'destinationUrl', true, 'The URL for the result.',
-        ['destinationUrl'], OutputLinkProperty),
+        ['destinationUrl', 'isSearchType'], OutputUrlProperty),
     new Column(
         ['Fill', 'Inline'], '', 'fillAndInline', false,
         'The text shown in the omnibox when the result is selected. / The ' +
@@ -876,6 +955,8 @@ cr.define('omnibox_output', function() {
       'output-overlapping-pair-property', OutputOverlappingPairProperty,
       {extends: 'td'});
   customElements.define(
+      'output-answer-property', OutputAnswerProperty, {extends: 'td'});
+  customElements.define(
       'output-boolean-property', OutputBooleanProperty, {extends: 'td'});
   customElements.define(
       'output-json-property', OutputJsonProperty, {extends: 'td'});
@@ -883,7 +964,7 @@ cr.define('omnibox_output', function() {
       'output-key-value-tuple-property', OutputKeyValueTuplesProperty,
       {extends: 'td'});
   customElements.define(
-      'output-link-property', OutputLinkProperty, {extends: 'td'});
+      'output-url-property', OutputUrlProperty, {extends: 'td'});
   customElements.define(
       'output-text-property', OutputTextProperty, {extends: 'td'});
 
