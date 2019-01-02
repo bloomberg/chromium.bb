@@ -2906,7 +2906,6 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
         workspace_branch=branch,
         display_label=config_lib.DISPLAY_LABEL_FIRMWARE,
         # TODO: Uncomment to put buildspecs go into production.
-        # active_waterfall=waterfall.WATERFALL_SWARMING,
         # schedule=interval,
     )
 
@@ -2917,8 +2916,6 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
               site_config.templates.firmwarebranch,
               boards=[board],
               workspace_branch=branch,
-              # TODO: Uncomment to put buildspecs go into production.
-              # active_waterfall=waterfall.WATERFALL_SWARMING,
           ))
 
 
