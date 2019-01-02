@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #if DCHECK_IS_ON()
-#include "third_party/blink/renderer/platform/wtf/list_hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #endif
 
@@ -208,7 +208,7 @@ class PropertyTreePrinter {
     return node;
   }
 
-  ListHashSet<const NodeType*> nodes_;
+  LinkedHashSet<const NodeType*> nodes_;
 };
 
 template <typename NodeType>
