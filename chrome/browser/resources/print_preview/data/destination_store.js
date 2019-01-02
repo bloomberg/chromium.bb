@@ -126,10 +126,10 @@ cr.define('print_preview', function() {
      * A data store that stores destinations and dispatches events when the
      * data store changes.
      * @param {!print_preview.UserInfo} userInfo User information repository.
-     * @param {!WebUIListenerTracker} listenerTracker Tracker for WebUI
-     *     listeners added in DestinationStore constructor.
+     * @param {function(string, !Function):void} addListenerCallback Function
+     *     to call to add Web UI listeners in DestinationStore constructor.
      */
-    constructor(userInfo, listenerTracker) {
+    constructor(userInfo, addListenerCallback) {
       super();
 
       /**
@@ -279,7 +279,9 @@ cr.define('print_preview', function() {
 
       this.reset_();
 
-      this.addWebUIEventListeners_(listenerTracker);
+      addListenerCallback('printers-added', this.onPrintersAdded_.bind(this));
+      addListenerCallback(
+          'reload-printer-list', this.onDestinationsReload.bind(this));
     }
 
     /**
@@ -340,19 +342,6 @@ cr.define('print_preview', function() {
       const isCloudDestinationSearchInProgress = !!this.cloudPrintInterface_ &&
           this.cloudPrintInterface_.isCloudDestinationSearchInProgress();
       return isCloudDestinationSearchInProgress;
-    }
-
-    /**
-     * Starts listening for relevant WebUI events and adds the listeners to
-     * |listenerTracker|. |listenerTracker| is responsible for removing the
-     * listeners when necessary.
-     * @param {!WebUIListenerTracker} listenerTracker
-     * @private
-     */
-    addWebUIEventListeners_(listenerTracker) {
-      listenerTracker.add('printers-added', this.onPrintersAdded_.bind(this));
-      listenerTracker.add(
-          'reload-printer-list', this.onDestinationsReload.bind(this));
     }
 
     /**

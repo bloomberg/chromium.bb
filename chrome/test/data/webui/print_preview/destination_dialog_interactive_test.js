@@ -22,13 +22,18 @@ cr.define('destination_dialog_interactive_test', function() {
     let nativeLayer = null;
 
     /** @override */
+    suiteSetup(function() {
+      print_preview_test_utils.setupTestListenerElement();
+    });
+
+    /** @override */
     setup(function() {
       // Create destinations.
       nativeLayer = new print_preview.NativeLayerStub();
       print_preview.NativeLayer.setInstance(nativeLayer);
       const userInfo = new print_preview.UserInfo();
-      destinationStore = new print_preview.DestinationStore(
-          userInfo, new WebUIListenerTracker());
+      destinationStore =
+          print_preview_test_utils.createDestinationStore(userInfo);
       const localDestinations = [];
       const destinations = print_preview_test_utils.getDestinations(
           nativeLayer, localDestinations);

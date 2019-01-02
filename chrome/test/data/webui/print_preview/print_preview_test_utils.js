@@ -291,18 +291,43 @@ cr.define('print_preview_test_utils', function() {
         new CustomEvent('input', {composed: true, bubbles: true}));
   }
 
+  function setupTestListenerElement() {
+    const domModule = document.createElement('dom-module');
+    domModule.setAttribute('id', 'test-listener-element');
+    domModule.appendChild(document.createElement('template'));
+    document.body.appendChild(domModule);
+    Polymer({
+      is: 'test-listener-element',
+      behaviors: [WebUIListenerBehavior],
+    });
+  }
+
+  /**
+   * @param {!print_preview.UserInfo} userInfo
+   * @return {!print_preview.DestinationStore}
+   */
+  function createDestinationStore(userInfo) {
+    const testListenerElement = document.createElement('test-listener-element');
+    document.body.appendChild(testListenerElement);
+    return new print_preview.DestinationStore(
+        userInfo,
+        testListenerElement.addWebUIListener.bind(testListenerElement));
+  }
+
   return {
-    getDefaultInitialSettings: getDefaultInitialSettings,
-    getCddTemplate: getCddTemplate,
-    getCddTemplateWithAdvancedSettings: getCddTemplateWithAdvancedSettings,
-    getDefaultMediaSize: getDefaultMediaSize,
-    getDefaultOrientation: getDefaultOrientation,
+    createDestinationStore: createDestinationStore,
     createDestinationWithCertificateStatus:
         createDestinationWithCertificateStatus,
+    getCddTemplate: getCddTemplate,
+    getCddTemplateWithAdvancedSettings: getCddTemplateWithAdvancedSettings,
+    getDefaultInitialSettings: getDefaultInitialSettings,
+    getDefaultMediaSize: getDefaultMediaSize,
+    getDefaultOrientation: getDefaultOrientation,
     getDestinations: getDestinations,
     getMediaSizeCapabilityWithCustomNames:
         getMediaSizeCapabilityWithCustomNames,
     getPdfPrinter: getPdfPrinter,
+    setupTestListenerElement: setupTestListenerElement,
     triggerInputEvent: triggerInputEvent,
   };
 });

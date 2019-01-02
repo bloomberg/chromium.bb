@@ -371,9 +371,6 @@ without changes to the corresponding grd file. -->
                  compress="gzip" />
       <structure name="IDR_WEBUI_HTML_UTIL"
                  file="html/util.html" type="chrome_html" compress="gzip" />
-      <structure name="IDR_WEBUI_HTML_WEBUI_LISTENER_TRACKER"
-                 file="html/webui_listener_tracker.html" type="chrome_html"
-                 compress="gzip" />
 
       <structure name="IDR_WEBUI_JS_ACTION_LINK"
                  file="js/action_link.js" type="chrome_html" compress="gzip" />
@@ -520,9 +517,6 @@ without changes to the corresponding grd file. -->
                  compress="gzip" />
       <structure name="IDR_WEBUI_JS_EVENT_TRACKER"
                  file="js/event_tracker.js" type="chrome_html"
-                 compress="gzip" />
-      <structure name="IDR_WEBUI_JS_WEBUI_LISTENER_TRACKER"
-                 file="js/webui_listener_tracker.js" type="chrome_html"
                  compress="gzip" />
       <structure name="IDR_WEBUI_JS_ICON"
                  file="js/icon.js" type="chrome_html" compress="gzip"
