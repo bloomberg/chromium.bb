@@ -154,7 +154,7 @@ typedef struct RefCntBuffer {
   int height;
   WarpedMotionParams global_motion[REF_FRAMES];
   int showable_frame;  // frame can be used as show existing frame in future
-  int film_grain_params_present;
+  uint8_t film_grain_params_present;
   aom_film_grain_t film_grain_params;
   aom_codec_frame_buffer_t raw_frame_buffer;
   YV12_BUFFER_CONFIG buf;
@@ -250,14 +250,14 @@ typedef struct SequenceHeader {
 
   OrderHintInfo order_hint_info;
 
-  int force_screen_content_tools;  // 0 - force off
-                                   // 1 - force on
-                                   // 2 - adaptive
-  int force_integer_mv;            // 0 - Not to force. MV can be in 1/4 or 1/8
+  uint8_t force_screen_content_tools;  // 0 - force off
+                                       // 1 - force on
+                                       // 2 - adaptive
+  uint8_t still_picture;               // Video is a single frame still picture
+  uint8_t reduced_still_picture_hdr;   // Use reduced header for still picture
+  uint8_t force_integer_mv;        // 0 - Not to force. MV can be in 1/4 or 1/8
                                    // 1 - force to integer
                                    // 2 - adaptive
-  int still_picture;               // Video is a single frame still picture
-  int reduced_still_picture_hdr;   // Use reduced header for still picture
   int enable_filter_intra;         // enables/disables filterintra
   int enable_intra_edge_filter;    // enables/disables corner/edge/upsampling
   int enable_interintra_compound;  // enables/disables interintra_compound
@@ -287,8 +287,8 @@ typedef struct SequenceHeader {
   // Color config.
   aom_bit_depth_t bit_depth;  // AOM_BITS_8 in profile 0 or 1,
                               // AOM_BITS_10 or AOM_BITS_12 in profile 2 or 3.
-  int use_highbitdepth;       // If true, we need to use 16bit frame buffers.
-  int monochrome;             // Monochorme video
+  uint8_t use_highbitdepth;   // If true, we need to use 16bit frame buffers.
+  uint8_t monochrome;         // Monochorme video
   aom_color_primaries_t color_primaries;
   aom_transfer_characteristics_t transfer_characteristics;
   aom_matrix_coefficients_t matrix_coefficients;
@@ -296,9 +296,8 @@ typedef struct SequenceHeader {
   int subsampling_x;          // Chroma subsampling for x
   int subsampling_y;          // Chroma subsampling for y
   aom_chroma_sample_position_t chroma_sample_position;
-  int separate_uv_delta_q;
-
-  int film_grain_params_present;
+  uint8_t separate_uv_delta_q;
+  uint8_t film_grain_params_present;
 } SequenceHeader;
 
 typedef struct {
