@@ -40,6 +40,8 @@
         <item name="android:windowExitTransition" tools:targetApi="21">@null</item>
         <item name="android:windowSharedElementEnterTransition" tools:targetApi="21">@transition/move_image</item>
         <item name="android:windowSharedElementExitTransition" tools:targetApi="21">@transition/move_image</item>
+        <item name="android:popupMenuStyle">@style/PopupMenuStyle</item>
+        <item name="android:contextPopupMenuStyle" tools:targetApi="24">@style/PopupMenuStyle</item>
     </style>
     <style name="MainTheme" parent="MainThemeBase" />
     <style name="TranslucentMainTheme" parent="MainThemeBase">
@@ -74,6 +76,8 @@
         <item name="colorControlHighlight">@color/control_highlight_color</item>
         <item name="spinnerStyle">@style/SpinnerStyle</item>
         <item name="windowNoTitle">true</item>
+        <item name="android:popupMenuStyle">@style/PopupMenuStyle</item>
+        <item name="android:contextPopupMenuStyle" tools:targetApi="24">@style/PopupMenuStyle</item>
     </style>
     <style name="FullscreenWhite" parent="FullscreenWhiteBase" />
 
@@ -144,6 +148,8 @@
         <item name="floatLabelPaddingTop">@dimen/pref_autofill_field_top_margin</item>
         <item name="actionBarStyle">@style/PreferenceActionBarModern</item>
         <item name="android:windowContentOverlay">@null</item>
+        <item name="android:popupMenuStyle">@style/PopupMenuStyle</item>
+        <item name="android:contextPopupMenuStyle" tools:targetApi="24">@style/PopupMenuStyle</item>
     </style>
     <style name="PreferenceActionBarModern" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
       <item name="titleTextStyle">@style/BlackHeadline</item>
@@ -215,6 +221,8 @@
         <item name="colorAccent">@color/pref_accent_color</item>
         <item name="colorControlHighlight">@color/control_highlight_color</item>
         <item name="spinnerStyle">@style/SpinnerStyle</item>
+        <item name="android:popupMenuStyle">@style/PopupMenuStyle</item>
+        <item name="android:contextPopupMenuStyle" tools:targetApi="24">@style/PopupMenuStyle</item>
     </style>
     <style name="ThemeWithActionBar" parent="ThemeWithActionBarBase" />
 
@@ -337,6 +345,13 @@
     <!-- Spinner styles -->
     <style name="SpinnerStyle" parent="Widget.AppCompat.Spinner">
         <item name="android:popupBackground">@drawable/popup_bg</item>
+        <item name="android:popupElevation" tools:targetApi="21">0dp</item>
+    </style>
+
+    <!-- Popup and long-press context popup menu style -->
+    <style name="PopupMenuStyle" parent="Widget.AppCompat.Light.PopupMenu">
+        <item name="android:popupBackground">@drawable/popup_bg</item>
+        <item name="android:overlapAnchor" tools:targetApi="21">true</item>
         <item name="android:popupElevation" tools:targetApi="21">0dp</item>
     </style>
 
