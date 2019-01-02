@@ -916,8 +916,6 @@ void Tab::UpdateIconVisibility() {
     if (showing_icon_)
       available_width -= favicon_width;
 
-    // Show the close button if it's allowed to show on hover, even if it's
-    // forced to be hidden normally.
     showing_close_button_ &= large_enough_for_close_button;
     if (showing_close_button_)
       available_width -= close_button_width;
