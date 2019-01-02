@@ -1050,6 +1050,13 @@
     'ios_clean': {
       'filepath': 'ios/clean/',
     },
+    'ios_flags': {
+      'filepath': 'ios/chrome/browser/about_flags.h|'\
+                  'ios/chrome/browser/about_flags.mm|'\
+                  'ios/chrome/browser/experimental_flags.h|'\
+                  'ios/chrome/browser/experimental_flags.mm|'\
+                  'ios/chrome/browser/resources/Settings.bundle/Experimental.plist',
+    },
     'ios_showcase': {
       'filepath': 'ios/showcase/',
     },
@@ -2253,10 +2260,10 @@
                 'ramyan+watch@chromium.org'],
     'ios': ['ios-reviews@chromium.org'],
     'ios_chrome': ['ios-reviews+chrome@chromium.org',
-                   'noyau+watch@chromium.org',
                    'marq+watch@chromium.org'],
     'ios_clean': ['ios-reviews+clean@chromium.org',
                   'marq+scrutinize@chromium.org'],
+    'ios_flags': ['noyau+watch@chromium.org'],
     'ios_showcase': ['ios-reviews+showcase@chromium.org',
                      'marq+watch@chromium.org'],
     'ios_web': ['ios-reviews+web@chromium.org',
@@ -2337,10 +2344,8 @@
     'nfc': ['mattreynolds+watch@chromium.org'],
     'notifications': ['peter@chromium.org'],
     'nqe': ['tbansal+watch-nqe@chromium.org'],
-    'ntp_snippets': ['ntp-dev+reviews@chromium.org',
-                     'noyau+watch@chromium.org'],
-    'ntp_tiles': ['ntp-dev+reviews@chromium.org',
-                  'noyau+watch@chromium.org'],
+    'ntp_snippets': ['ntp-dev+reviews@chromium.org'],
+    'ntp_tiles': ['ntp-dev+reviews@chromium.org'],
     'offline_items_collection': ['peter@chromium.org'],
     'offline_pages': ['chili+watch@chromium.org',
                       'carlosk+watch@chromium.org',
