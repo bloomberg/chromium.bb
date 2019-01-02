@@ -190,18 +190,6 @@ class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
 
   unsigned ColumnCount() const { return column_count_; }
 
-  // Calculate and return the actual column count allowance. This method should
-  // only be called when we ended up with an actual column count larger than
-  // ColumnCountClampMin() in some fragmentainer group.
-  unsigned CalculateActualColumnCountAllowance() const;
-
-  // Any actual column count value lower than this will be allowed
-  // unconditionally.
-  static unsigned ColumnCountClampMin() { return 10; }
-
-  // The maximum actual column count we're going to allow.
-  static unsigned ColumnCountClampMax() { return 2000; }
-
   // Total height available to columns and spanners. This is the multicol
   // container's content box logical height, or 0 if auto.
   LayoutUnit ColumnHeightAvailable() const { return column_height_available_; }
