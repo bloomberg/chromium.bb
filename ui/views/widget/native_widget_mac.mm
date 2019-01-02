@@ -96,10 +96,8 @@ void NativeWidgetMac::WindowDestroyed() {
     delete this;
 }
 
-int NativeWidgetMac::SheetPositionY() {
-  NSView* view = GetNativeView().GetNativeNSView();
-  return
-      [view convertPoint:NSMakePoint(0, NSHeight([view frame])) toView:nil].y;
+int32_t NativeWidgetMac::SheetOffsetY() {
+  return 0;
 }
 
 void NativeWidgetMac::GetWindowFrameTitlebarHeight(

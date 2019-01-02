@@ -196,15 +196,18 @@
 - (NSRect)window:(NSWindow*)window
     willPositionSheet:(NSWindow*)sheet
             usingRect:(NSRect)defaultSheetLocation {
-  // TODO(ccameron): This should go through the BridgedNativeWidgetHost
-  // interface.
-  CGFloat sheetPositionY = parent_->host_helper()->SheetPositionY();
+  int32_t sheetPositionY = 0;
+  parent_->host()->GetSheetOffsetY(&sheetPositionY);
+  NSView* view = [window contentView];
+  NSPoint pointInView =
+      NSMakePoint(0, NSMaxY([view bounds]) - sheetPositionY);
+  NSPoint pointInWindow = [view convertPoint:pointInView toView:nil];
 
   // As per NSWindowDelegate documentation, the origin indicates the top left
   // point of the host frame in window coordinates. The width changes the
   // animation from vertical to trapezoid if it is smaller than the width of the
   // dialog. The height is ignored but should be set to zero.
-  return NSMakeRect(0, sheetPositionY, NSWidth(defaultSheetLocation), 0);
+  return NSMakeRect(0, pointInWindow.y, NSWidth(defaultSheetLocation), 0);
 }
 
 @end
