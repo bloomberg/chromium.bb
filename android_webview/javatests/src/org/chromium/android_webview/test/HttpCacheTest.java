@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.base.FileUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -40,7 +41,7 @@ public class HttpCacheTest {
                                                 .getCacheDir()
                                                 .getPath(),
                 "org.chromium.android_webview");
-        deleteDirectory(webViewCacheDir);
+        FileUtils.recursivelyDeleteFile(webViewCacheDir);
 
         mActivityTestRule.startBrowserProcess();
         final TestAwContentsClient contentClient = new TestAwContentsClient();
@@ -65,13 +66,5 @@ public class HttpCacheTest {
 
         Assert.assertTrue(webViewCacheDir.isDirectory());
         Assert.assertTrue(webViewCacheDir.list().length > 0);
-    }
-
-    private void deleteDirectory(File dir) throws Exception {
-        if (!dir.exists()) return;
-        Assert.assertTrue(dir.isDirectory());
-        Process rmrf = Runtime.getRuntime().exec("rm -rf " + dir.getAbsolutePath());
-        rmrf.waitFor();
-        Assert.assertFalse(dir.exists());
     }
 }
