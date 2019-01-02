@@ -119,6 +119,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/eoc_internals/eoc_internals_ui.h"
 #include "chrome/browser/ui/webui/explore_sites_internals/explore_sites_internals_ui.h"
+#include "chrome/browser/ui/webui/feed_internals/feed_internals_ui.h"
 #include "chrome/browser/ui/webui/offline/offline_internals_ui.h"
 #include "chrome/browser/ui/webui/snippets_internals/snippets_internals_ui.h"
 #include "chrome/browser/ui/webui/webapks_ui.h"
@@ -534,9 +535,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUIOfflineInternalsHost)
     return &NewWebUI<OfflineInternalsUI>;
   if (url.host_piece() == chrome::kChromeUISnippetsInternalsHost &&
-      !profile->IsOffTheRecord() &&
-      !base::FeatureList::IsEnabled(feed::kInterestFeedContentSuggestions))
-    return &NewWebUI<SnippetsInternalsUI>;
+      !profile->IsOffTheRecord()) {
+    if (base::FeatureList::IsEnabled(feed::kInterestFeedContentSuggestions))
+      return &NewWebUI<FeedInternalsUI>;
+    else
+      return &NewWebUI<SnippetsInternalsUI>;
+  }
   if (url.host_piece() == chrome::kChromeUIWebApksHost)
     return &NewWebUI<WebApksUI>;
 #else   // !defined(OS_ANDROID)

@@ -5096,6 +5096,7 @@ grit("resources") {
   if (is_android) {
     deps += [
       "//chrome/browser/ui/webui/eoc_internals:mojo_bindings_js",
+      "//chrome/browser/ui/webui/feed_internals:mojo_bindings_js",
       "//chrome/browser/ui/webui/snippets_internals:mojo_bindings_js",
     ]
   } else {
