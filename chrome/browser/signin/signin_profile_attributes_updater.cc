@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_util.h"
 #include "components/signin/core/browser/account_info.h"
 
 SigninProfileAttributesUpdater::SigninProfileAttributesUpdater(
@@ -59,7 +60,8 @@ void SigninProfileAttributesUpdater::UpdateProfileAttributes() {
   } else {
     entry->SetLocalAuthCredentials(std::string());
     entry->SetAuthInfo(std::string(), base::string16());
-    entry->SetIsSigninRequired(false);
+    if (!signin_util::IsForceSigninEnabled())
+      entry->SetIsSigninRequired(false);
   }
 
   if (old_gaia_id != entry->GetGAIAId())

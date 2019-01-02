@@ -15,6 +15,7 @@
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/signin/test_signin_client_builder.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -84,6 +85,7 @@ TEST_F(SigninProfileAttributesUpdaterTest, SigninSignout) {
   ASSERT_TRUE(profile_manager_.profile_attributes_storage()
                   ->GetProfileAttributesWithPath(profile_->GetPath(), &entry));
   ASSERT_FALSE(entry->IsAuthenticated());
+  EXPECT_FALSE(entry->IsSigninRequired());
 
   // Signin.
   AccountTrackerService* account_tracker =
@@ -100,6 +102,7 @@ TEST_F(SigninProfileAttributesUpdaterTest, SigninSignout) {
   signin_manager->SignOut(signin_metrics::SIGNOUT_TEST,
                           signin_metrics::SignoutDelete::IGNORE_METRIC);
   EXPECT_FALSE(entry->IsAuthenticated());
+  EXPECT_FALSE(entry->IsSigninRequired());
 }
 #endif  // !defined(OS_CHROMEOS)
 
@@ -136,3 +139,41 @@ TEST_F(SigninProfileAttributesUpdaterTest, AuthError) {
       account_id, GoogleServiceAuthError::AuthErrorNone());
   EXPECT_FALSE(entry->IsAuthError());
 }
+
+#if !defined(OS_CHROMEOS)
+class SigninProfileAttributesUpdaterWithForceSigninTest
+    : public SigninProfileAttributesUpdaterTest {
+  void SetUp() override {
+    signin_util::SetForceSigninForTesting(true);
+    SigninProfileAttributesUpdaterTest::SetUp();
+  }
+
+  void TearDown() override {
+    SigninProfileAttributesUpdaterTest::TearDown();
+    signin_util::ResetForceSigninForTesting();
+  }
+};
+
+TEST_F(SigninProfileAttributesUpdaterWithForceSigninTest, IsSigninRequired) {
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(profile_manager_.profile_attributes_storage()
+                  ->GetProfileAttributesWithPath(profile_->GetPath(), &entry));
+  EXPECT_FALSE(entry->IsAuthenticated());
+  EXPECT_TRUE(entry->IsSigninRequired());
+
+  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile_);
+  AccountTrackerService* account_tracker =
+      AccountTrackerServiceFactory::GetForProfile(profile_);
+  std::string account_id =
+      account_tracker->SeedAccountInfo("gaia", "example@email.com");
+  signin_manager->OnExternalSigninCompleted("example@email.com");
+  EXPECT_TRUE(entry->IsAuthenticated());
+  EXPECT_EQ("gaia", entry->GetGAIAId());
+  EXPECT_EQ("example@email.com", base::UTF16ToUTF8(entry->GetUserName()));
+
+  signin_manager->SignOut(signin_metrics::SIGNOUT_TEST,
+                          signin_metrics::SignoutDelete::IGNORE_METRIC);
+  EXPECT_FALSE(entry->IsAuthenticated());
+  EXPECT_TRUE(entry->IsSigninRequired());
+}
+#endif
