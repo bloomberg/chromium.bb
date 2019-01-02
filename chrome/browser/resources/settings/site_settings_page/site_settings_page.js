@@ -137,7 +137,7 @@ Polymer({
       const route = pair[0];
       const id = pair[1];
       this.focusConfig.set(route.path, () => this.async(() => {
-        cr.ui.focusWithoutInk(assert(this.$$(`#${id} .subpage-arrow button`)));
+        cr.ui.focusWithoutInk(assert(this.$$(`#${id}`)));
       }));
     });
   },
