@@ -135,3 +135,22 @@ OnboardingWelcomeModuleMetricsTest =
 TEST_F('OnboardingWelcomeModuleMetricsTest', 'All', function() {
   mocha.run();
 });
+
+OnboardingWelcomeSetAsDefaultTest = class extends OnboardingWelcomeBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://welcome/set_as_default/nux_set_as_default.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'nux_set_as_default_test.js',
+      'test_nux_set_as_default_proxy.js',
+    ]);
+  }
+};
+
+TEST_F('OnboardingWelcomeSetAsDefaultTest', 'All', function() {
+  mocha.run();
+});
