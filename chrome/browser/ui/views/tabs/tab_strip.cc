@@ -15,6 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/adapters.h"
 #include "base/containers/flat_map.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -23,6 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_flags.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -33,6 +35,7 @@
 #include "chrome/browser/ui/views/tabs/stacked_tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
+#include "chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
@@ -1156,6 +1159,29 @@ const Tab* TabStrip::GetAdjacentTab(const Tab* tab, int offset) {
 void TabStrip::OnMouseEventInTab(views::View* source,
                                  const ui::MouseEvent& event) {
   UpdateStackedLayoutFromMouseEvent(source, event);
+}
+
+void TabStrip::UpdateHoverCard(Tab* tab, bool should_show) {
+  if (!base::FeatureList::IsEnabled(features::kTabHoverCards))
+    return;
+
+  if (!hover_card_ && !should_show)
+    return;
+
+  // The view tracker is used to prevent us from accessing the hover card after
+  // it has been deleted by the owning widget.
+  if (!hover_card_ || !hover_card_view_tracker_.view()) {
+    hover_card_ = new TabHoverCardBubbleView(tab, tab->data());
+    hover_card_view_tracker_.SetView(hover_card_);
+  }
+
+  if (should_show) {
+    hover_card_->UpdateCardContent(tab->data());
+    hover_card_->UpdateCardAnchor(tab);
+    hover_card_->Show();
+  } else {
+    hover_card_->Hide();
+  }
 }
 
 bool TabStrip::ShouldPaintTab(const Tab* tab, float scale, gfx::Path* clip) {
@@ -2779,6 +2805,10 @@ void TabStrip::OnMouseMoved(const ui::MouseEvent& event) {
 
 void TabStrip::OnMouseEntered(const ui::MouseEvent& event) {
   SetResetToShrinkOnExit(true);
+}
+
+void TabStrip::OnMouseExited(const ui::MouseEvent& event) {
+  UpdateHoverCard(nullptr, false);
 }
 
 void TabStrip::OnGestureEvent(ui::GestureEvent* event) {

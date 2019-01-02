@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_close_button.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
+#include "chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_style.h"
@@ -176,8 +177,7 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
   focus_ring_ = views::FocusRing::Install(this);
 }
 
-Tab::~Tab() {
-}
+Tab::~Tab() = default;
 
 void Tab::AnimationEnded(const gfx::Animation* animation) {
   if (animation == &title_animation_)
@@ -396,6 +396,7 @@ void Tab::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 bool Tab::OnKeyPressed(const ui::KeyEvent& event) {
+  controller_->UpdateHoverCard(this, false);
   if (event.key_code() == ui::VKEY_SPACE && !IsSelected()) {
     controller_->SelectTab(this);
     return true;
@@ -415,6 +416,7 @@ bool IsSelectionModifierDown(const ui::MouseEvent& event) {
 }  // namespace
 
 bool Tab::OnMousePressed(const ui::MouseEvent& event) {
+  controller_->UpdateHoverCard(this, false);
   controller_->OnMouseEventInTab(this, event);
 
   // Allow a right click from touch to drag, which corresponds to a long click.
@@ -511,6 +513,7 @@ void Tab::OnMouseEntered(const ui::MouseEvent& event) {
   hover_controller_.Show(GlowHoverController::SUBTLE);
   UpdateForegroundColors();
   Layout();
+  controller_->UpdateHoverCard(this, true);
 }
 
 void Tab::OnMouseExited(const ui::MouseEvent& event) {
@@ -521,6 +524,7 @@ void Tab::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 void Tab::OnGestureEvent(ui::GestureEvent* event) {
+  controller_->UpdateHoverCard(this, false);
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN: {
       // TAP_DOWN is only dispatched for the first touch point.
@@ -720,8 +724,10 @@ void Tab::SetData(TabRendererData data) {
   if (old.pinned != data_.pinned)
     showing_alert_indicator_ = false;
 
-  if (data_.alert_state != old.alert_state || data_.title != old.title)
+  if (data_.alert_state != old.alert_state || data_.title != old.title) {
     TooltipTextChanged();
+    controller_->UpdateHoverCard(this, mouse_hovered_);
+  }
 
   Layout();
   SchedulePaint();

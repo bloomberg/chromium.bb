@@ -34,11 +34,13 @@
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_targeter_delegate.h"
+#include "ui/views/view_tracker.h"
 
 class NewTabButton;
 class StackedTabStripLayout;
 class Tab;
 class TabDragController;
+class TabHoverCardBubbleView;
 class TabStripController;
 class TabStripObserver;
 
@@ -276,6 +278,7 @@ class TabStrip : public views::AccessiblePaneView,
   const Tab* GetAdjacentTab(const Tab* tab, int offset) override;
   void OnMouseEventInTab(views::View* source,
                          const ui::MouseEvent& event) override;
+  void UpdateHoverCard(Tab* tab, bool should_show) override;
   bool ShouldPaintTab(const Tab* tab, float scale, gfx::Path* clip) override;
   int GetStrokeThickness() const override;
   bool CanPaintThrobberToLayer() const override;
@@ -329,6 +332,7 @@ class TabStrip : public views::AccessiblePaneView,
 
   friend class TabDragController;
   friend class TabDragControllerTest;
+  friend class TabHoverCardBubbleViewBrowserTest;
   friend class TabStripTest;
 
   // Used during a drop session of a url. Tracks the position of the drop as
@@ -623,6 +627,7 @@ class TabStrip : public views::AccessiblePaneView,
   void OnMouseCaptureLost() override;
   void OnMouseMoved(const ui::MouseEvent& event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -646,6 +651,11 @@ class TabStrip : public views::AccessiblePaneView,
   // painted, and the event handling code ensures only tabs in |tabs_| are used.
   views::ViewModelT<Tab> tabs_;
   TabsClosingMap tabs_closing_map_;
+
+  // The view tracker is used to keep track of if the hover card has been
+  // destroyed by its widget.
+  TabHoverCardBubbleView* hover_card_ = nullptr;
+  views::ViewTracker hover_card_view_tracker_;
 
   std::unique_ptr<TabStripController> controller_;
 
