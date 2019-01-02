@@ -616,7 +616,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
         this.setMetricsMode(
             loadTimeData.getString('arcTextMetricsManagedEnabled'), true);
       }
-      this.getElement_('arc-tos-accept-button').textContent =
+      this.getElement_('arc-tos-accept-button-content').textContent =
           loadTimeData.getString(
               isDemoModeSetup ? 'arcTermsOfServiceAcceptAndContinueButton' :
                                 'arcTermsOfServiceAcceptButton');
