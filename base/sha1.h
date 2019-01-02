@@ -15,7 +15,7 @@ namespace base {
 
 // These functions perform SHA-1 operations.
 
-static const size_t kSHA1Length = 20;  // Length in bytes of a SHA-1 hash.
+enum { kSHA1Length = 20 };  // Length in bytes of a SHA-1 hash.
 
 // Computes the SHA-1 hash of the input string |str| and returns the full
 // hash.
