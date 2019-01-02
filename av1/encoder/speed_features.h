@@ -358,7 +358,7 @@ typedef struct SPEED_FEATURES {
   BLOCK_SIZE always_this_block_size;
 
   // Drop less likely to be picked reference frames in the RD search.
-  // Has four levels for now: 0, 1, 2 and 3, where higher levels prune more
+  // Has five levels for now: 0, 1, 2, 3 and 4, where higher levels prune more
   // aggressively than lower ones. (0 means no pruning).
   int selective_ref_frame;
 

@@ -11330,6 +11330,42 @@ static int inter_mode_search_order_independent_skip(
       return 1;
   }
 
+  if (sf->selective_ref_frame >= 4 && comp_pred) {
+    // Check if one of the reference is ALTREF2_FRAME and BWDREF_FRAME is a
+    // valid reference.
+    if ((ref_frame[0] == ALTREF2_FRAME || ref_frame[1] == ALTREF2_FRAME) &&
+        (cpi->ref_frame_flags & ref_frame_flag_list[BWDREF_FRAME])) {
+      // Check if both ALTREF2_FRAME and BWDREF_FRAME are future references.
+      if ((get_relative_dist(
+               order_hint_info,
+               cm->cur_frame->ref_order_hints[ALTREF2_FRAME - LAST_FRAME],
+               current_frame->order_hint) > 0) &&
+          (get_relative_dist(
+               order_hint_info,
+               cm->cur_frame->ref_order_hints[BWDREF_FRAME - LAST_FRAME],
+               current_frame->order_hint) > 0)) {
+        // Drop ALTREF2_FRAME as a reference if BWDREF_FRAME is a closer
+        // reference to the current frame than ALTREF2_FRAME
+        if (get_relative_dist(
+                order_hint_info,
+                cm->cur_frame->ref_order_hints[ALTREF2_FRAME - LAST_FRAME],
+                cm->cur_frame->ref_order_hints[BWDREF_FRAME - LAST_FRAME]) >=
+            0) {
+          const RefCntBuffer *const buf_arf2 =
+              get_ref_frame_buf(cm, ALTREF2_FRAME);
+          assert(buf_arf2 != NULL);
+          const RefCntBuffer *const buf_bwd =
+              get_ref_frame_buf(cm, BWDREF_FRAME);
+          assert(buf_bwd != NULL);
+          assert(buf_arf2->frame_rf_level == buf_bwd->frame_rf_level);
+          (void)buf_arf2;
+          (void)buf_bwd;
+          return 1;
+        }
+      }
+    }
+  }
+
   if (skip_repeated_mv(cm, x, this_mode, ref_frame, search_state)) {
     return 1;
   }
