@@ -472,10 +472,6 @@ void AppsNavigationThrottle::OnDeferredNavigationProcessed(
   std::vector<IntentPickerAppInfo> apps_for_picker =
       FindPwaForUrl(web_contents, url, std::move(apps));
 
-  // We will not show the UI if the apps list is empty.
-  if (apps_for_picker.empty())
-    ui_displayed_ = false;
-
   // If we only have PWAs in the app list, do not show the intent picker.
   // Instead just show the omnibox icon. This is to reduce annoyance to users
   // until "Remember my choice" is available for desktop PWAs.
@@ -487,7 +483,9 @@ void AppsNavigationThrottle::OnDeferredNavigationProcessed(
   } else {
     ui_displayed_ = false;
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-    if (browser)
+    // If there were any candidates, show the intent picker icon in the omnibox
+    // so the user can manually pick if they wish.
+    if (browser && !apps_for_picker.empty())
       browser->window()->SetIntentPickerViewVisibility(/*visible=*/true);
   }
 
@@ -575,6 +573,9 @@ bool AppsNavigationThrottle::ShouldAutoDisplayUi(
     const std::vector<IntentPickerAppInfo>& apps_for_picker,
     content::WebContents* web_contents,
     const GURL& url) {
+  if (apps_for_picker.empty())
+    return false;
+
   // Check if all the app candidates are PWAs.
   bool only_pwa_apps =
       std::all_of(apps_for_picker.begin(), apps_for_picker.end(),

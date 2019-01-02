@@ -242,7 +242,9 @@ bool ArcIntentHelperBridge::ShouldChromeHandleUrl(const GURL& url) {
   }
 
   for (const IntentFilter& filter : intent_filters_) {
-    if (filter.Match(url))
+    // The intent helper package is used by ARC to send URLs to Chrome, so it
+    // does not count as a candidate.
+    if (filter.Match(url) && !IsIntentHelperPackage(filter.package_name()))
       return false;
   }
 
