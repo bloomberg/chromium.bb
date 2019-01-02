@@ -190,7 +190,8 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     case kColorId_DisabledMenuItemForegroundColor:
       return NSSystemColorToSkColor([NSColor disabledControlTextColor]);
     case kColorId_MenuSeparatorColor:
-      return SkColorSetA(SK_ColorBLACK, 0x26);
+      return SystemDarkModeEnabled() ? SkColorSetA(gfx::kGoogleGrey800, 0xCC)
+                                     : SkColorSetA(SK_ColorBLACK, 0x26);
     case kColorId_MenuBorderColor:
       return SkColorSetA(SK_ColorBLACK, 0x60);
 
