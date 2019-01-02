@@ -1491,10 +1491,6 @@ const char kPasswordImportName[] = "Password import";
 const char kPasswordImportDescription[] =
     "Import functionality in password settings.";
 
-const char kPasswordSearchMobileName[] = "Password search";
-const char kPasswordSearchMobileDescription[] =
-    "Search functionality in password settings.";
-
 const char kPasswordsKeyboardAccessoryName[] =
     "Add password-related functions to keyboard accessory";
 const char kPasswordsKeyboardAccessoryDescription[] =

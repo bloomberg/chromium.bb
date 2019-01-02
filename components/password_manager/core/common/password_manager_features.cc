@@ -42,10 +42,6 @@ const base::Feature kProtectSyncCredentialOnReauth = {
 const base::Feature kPasswordImport = {"PasswordImport",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Allows searching for saved passwords in the settings page on mobile devices.
-const base::Feature kPasswordSearchMobile = {"PasswordSearchMobile",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Adds password-related features to the keyboard accessory on mobile devices.
 const base::Feature kPasswordsKeyboardAccessory = {
     "PasswordsKeyboardAccessory", base::FEATURE_DISABLED_BY_DEFAULT};

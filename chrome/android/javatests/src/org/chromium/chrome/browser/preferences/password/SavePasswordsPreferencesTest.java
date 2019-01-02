@@ -78,7 +78,6 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.history.HistoryActivity;
 import org.chromium.chrome.browser.history.HistoryManager;
 import org.chromium.chrome.browser.history.StubbedHistoryProvider;
@@ -89,8 +88,6 @@ import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesTest;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 
 import java.io.File;
 import java.io.IOException;
@@ -1498,7 +1495,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures(ChromeFeatureList.PASSWORD_SEARCH)
     @SuppressWarnings("AlwaysShowAction") // We need to ensure the icon is in the action bar.
     public void testSearchIconVisibleInActionBarWithFeature() throws Exception {
         setPasswordSource(null); // Initialize empty preferences.
@@ -1524,7 +1520,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures(ChromeFeatureList.PASSWORD_SEARCH)
     public void testSearchTextInOverflowMenuVisibleWithFeature() throws Exception {
         setPasswordSource(null); // Initialize empty preferences.
         SavePasswordsPreferences f =
@@ -1554,7 +1549,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures(ChromeFeatureList.PASSWORD_SEARCH)
     public void testTriggeringSearchRestoresHelpIcon() throws Exception {
         setPasswordSource(null);
         PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -1601,27 +1595,11 @@ public class SavePasswordsPreferencesTest {
     }
 
     /**
-     * Check that the search item is not visible if the Feature is disabled.
-     */
-    @Test
-    @SmallTest
-    @Feature({"Preferences"})
-    @DisableFeatures(ChromeFeatureList.PASSWORD_SEARCH)
-    public void testSearchIconGoneWithoutFeature() throws Exception {
-        setPasswordSource(null); // Initialize empty preferences.
-        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                SavePasswordsPreferences.class.getName());
-
-        Espresso.onView(withId(R.id.menu_id_search)).check(doesNotExist());
-    }
-
-    /**
      * Check that the search filters the list by name.
      */
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures(ChromeFeatureList.PASSWORD_SEARCH)
     public void testSearchFiltersByUserName() throws Exception {
         setPasswordSourceWithMultipleEntries(GREEK_GODS);
         PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -1645,7 +1623,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures(ChromeFeatureList.PASSWORD_SEARCH)
     public void testSearchFiltersByUrl() throws Exception {
         setPasswordSourceWithMultipleEntries(GREEK_GODS);
         PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -1669,7 +1646,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures(ChromeFeatureList.PASSWORD_SEARCH)
     public void testSearchDisplaysBlankPageIfSearchTurnsUpEmpty() throws Exception {
         setPasswordSourceWithMultipleEntries(GREEK_GODS);
         PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -1703,7 +1679,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures(ChromeFeatureList.PASSWORD_SEARCH)
     public void testSearchIconClickedHidesExceptionsTemporarily() throws Exception {
         setPasswordExceptions(new String[] {"http://exclu.de", "http://not-inclu.de"});
         final SavePasswordsPreferences savePasswordPreferences =
@@ -1739,7 +1714,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures(ChromeFeatureList.PASSWORD_SEARCH)
     public void testSearchIconClickedHidesGeneralPrefs() throws Exception {
         setPasswordSource(ZEUS_ON_EARTH);
         final SavePasswordsPreferences prefs =
@@ -1787,7 +1761,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures(ChromeFeatureList.PASSWORD_SEARCH)
     public void testSearchBarBackButtonRestoresGeneralPrefs() throws Exception {
         setPasswordSourceWithMultipleEntries(GREEK_GODS);
         PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -1816,7 +1789,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures(ChromeFeatureList.PASSWORD_SEARCH)
     public void testSearchViewCloseIconExistsOnlyToClearQueries() throws Exception {
         setPasswordSourceWithMultipleEntries(GREEK_GODS);
         PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -1851,7 +1823,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures(ChromeFeatureList.PASSWORD_SEARCH)
     public void testSearchIconColorAffectsOnlyLocalSearchDrawable() throws Exception {
         // Open the password preferences and remember the applied color filter.
         final SavePasswordsPreferences f =
@@ -1901,16 +1872,14 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures(ChromeFeatureList.PASSWORD_SEARCH)
     public void testSearchResultsPersistAfterEntryInspection() throws Exception {
         setPasswordSourceWithMultipleEntries(GREEK_GODS);
         setPasswordExceptions(new String[] {"http://exclu.de", "http://not-inclu.de"});
         ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
-        final Preferences prefs =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
         // Open the search and filter all but "Zeus".
         Espresso.onView(withSearchMenuIdOrText()).perform(click());
@@ -1966,7 +1935,6 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures(ChromeFeatureList.PASSWORD_SEARCH)
     public void testSearchIsRecordedInHistograms() throws Exception {
         MetricsUtils.HistogramDelta triggered_delta = new MetricsUtils.HistogramDelta(
                 "PasswordManager.Android.PasswordSearchTriggered", 1);
