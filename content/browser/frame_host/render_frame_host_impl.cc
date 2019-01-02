@@ -62,7 +62,6 @@
 #include "content/browser/keyboard_lock/keyboard_lock_service_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/loader/resource_scheduler_filter.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_interface_proxy.h"
 #include "content/browser/media/session/media_session_service_impl.h"
@@ -395,21 +394,6 @@ void LookupRenderFrameHostOrProxy(int process_id,
   *rfh = RenderFrameHostImpl::FromID(process_id, routing_id);
   if (*rfh == nullptr)
     *rfph = RenderFrameProxyHost::FromID(process_id, routing_id);
-}
-
-void NotifyResourceSchedulerOfNavigation(
-    int render_process_id,
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
-  // TODO(csharrison): This isn't quite right for OOPIF, as we *do* want to
-  // propagate OnNavigate to the client associated with the OOPIF's RVH. This
-  // should not result in show-stopping bugs, just poorer loading performance.
-  if (!ui::PageTransitionIsMainFrame(params.transition))
-    return;
-
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&ResourceSchedulerFilter::OnDidCommitMainframeNavigation,
-                     render_process_id, params.render_view_routing_id));
 }
 
 // Takes the lower 31 bits of the metric-name-hash of a Mojo interface |name|.
@@ -2156,9 +2140,6 @@ void RenderFrameHostImpl::DidCommitProvisionalLoad(
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::DidCommitProvisionalLoad",
                "url", validated_params->url.possibly_invalid_spec(), "details",
                CommitAsTracedValue(validated_params.get()));
-
-  // Notify the resource scheduler of the navigation committing.
-  NotifyResourceSchedulerOfNavigation(process->GetID(), *validated_params);
 
   // If we're waiting for a cross-site beforeunload ack from this renderer and
   // we receive a Navigate message from the main frame, then the renderer was

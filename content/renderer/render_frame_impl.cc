@@ -5498,14 +5498,6 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
       document_loader->ReplacesCurrentHistoryItem();
   params->post_id = -1;
   params->nav_entry_id = navigation_state->request_params().nav_entry_id;
-  // We need to track the RenderViewHost routing_id because of downstream
-  // dependencies (https://crbug.com/392171 DownloadRequestHandle,
-  // SaveFileManager, ResourceDispatcherHostImpl, MediaStreamUIProxy and
-  // possibly others). They look up the view based on the ID stored in the
-  // resource requests. Once those dependencies are unwound or moved to
-  // RenderFrameHost (https://crbug.com/304341) we can move the client to be
-  // based on the routing_id of the RenderFrameHost.
-  params->render_view_routing_id = render_view_->GetRoutingID();
 
   // "Standard" commits from Blink create new NavigationEntries. We also treat
   // main frame "inert" commits as creating new NavigationEntries if they

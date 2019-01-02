@@ -154,11 +154,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Called when a RenderViewHost is deleted.
   static void OnRenderViewHostDeleted(int child_id, int route_id);
 
-  // Called when a RenderViewHost starts or stops loading.
-  static void OnRenderViewHostSetIsLoading(int child_id,
-                                           int route_id,
-                                           bool is_loading);
-
   // Force cancels any pending requests for the given process.
   void CancelRequestsForProcess(int child_id);
 

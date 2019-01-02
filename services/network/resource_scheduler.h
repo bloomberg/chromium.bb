@@ -107,25 +107,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
   // Called when a renderer is destroyed.
   void OnClientDeleted(int child_id, int route_id);
 
-  // Called when a renderer stops or restarts loading.
-  // Do not call this function when the network service is enabled.
-  void DeprecatedOnLoadingStateChanged(int child_id,
-                                       int route_id,
-                                       bool is_loaded);
-
-  // Signals from IPC messages directly from the renderers:
-
-  // Called when a client navigates to a new main document.
-  // Do not call this function when the network service is enabled.
-  void DeprecatedOnNavigate(int child_id, int route_id);
-
-  // Signals from the IO thread:
 
   // Client functions:
-
-  // Returns true if at least one client is currently loading.
-  // Do not call this function when the network service is enabled.
-  bool DeprecatedHasLoadingClients() const;
 
   // Updates the priority for |request|. Modifies request->priority(), and may
   // start the request loading if it wasn't already started.

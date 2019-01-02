@@ -364,8 +364,7 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
   Client(net::NetworkQualityEstimator* network_quality_estimator,
          ResourceScheduler* resource_scheduler,
          const base::TickClock* tick_clock)
-      : deprecated_is_loaded_(false),
-        in_flight_delayable_count_(0),
+      : in_flight_delayable_count_(0),
         total_layout_blocking_count_(0),
         num_skipped_scans_due_to_scheduled_start_(0),
         network_quality_estimator_(network_quality_estimator),
@@ -432,16 +431,6 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
     }
     ClearInFlightRequests();
     return unowned_requests;
-  }
-
-  bool deprecated_is_loaded() const { return deprecated_is_loaded_; }
-
-  void DeprecatedOnLoadingStateChanged(bool is_loaded) {
-    deprecated_is_loaded_ = is_loaded;
-  }
-
-  void DeprecatedOnNavigate() {
-    deprecated_is_loaded_ = false;
   }
 
   void ReprioritizeRequest(ScheduledResourceRequestImpl* request,
@@ -889,7 +878,6 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
     }
   }
 
-  bool deprecated_is_loaded_;
   // Tracks if the main HTML parser has reached the body which marks the end of
   // layout-blocking resources.
   // This is disabled and the is always true when kRendererSideResourceScheduler
@@ -1026,36 +1014,6 @@ void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
   }
 
   client_map_.erase(it);
-}
-
-void ResourceScheduler::DeprecatedOnLoadingStateChanged(int child_id,
-                                                        int route_id,
-                                                        bool is_loaded) {
-  Client* client = GetClient(child_id, route_id);
-  DCHECK(client);
-  client->DeprecatedOnLoadingStateChanged(is_loaded);
-}
-
-void ResourceScheduler::DeprecatedOnNavigate(int child_id, int route_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  ClientId client_id = MakeClientId(child_id, route_id);
-
-  ClientMap::iterator it = client_map_.find(client_id);
-  if (it == client_map_.end()) {
-    // The client was likely deleted shortly before we received this IPC.
-    return;
-  }
-
-  Client* client = it->second.get();
-  client->DeprecatedOnNavigate();
-}
-
-bool ResourceScheduler::DeprecatedHasLoadingClients() const {
-  for (const auto& client : client_map_) {
-    if (!client.second->deprecated_is_loaded())
-      return true;
-  }
-  return false;
 }
 
 ResourceScheduler::Client* ResourceScheduler::GetClient(int child_id,

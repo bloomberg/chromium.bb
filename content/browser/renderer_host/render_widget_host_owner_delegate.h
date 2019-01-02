@@ -39,9 +39,6 @@ class CONTENT_EXPORT RenderWidgetHostOwnerDelegate {
   // RenderWidgetDidClose() on the swapped in widget eventually.
   virtual void RenderWidgetNeedsToRouteCloseEvent() = 0;
 
-  // The RenderWidgetHost will be setting its loading state.
-  virtual void RenderWidgetWillSetIsLoading(bool is_loading) = 0;
-
   // The RenderWidget finished the first visually non-empty paint.
   virtual void RenderWidgetDidFirstVisuallyNonEmptyPaint() = 0;
 
