@@ -18,6 +18,15 @@
 
 namespace leveldb_proto {
 
+class ProtoDatabaseProvider;
+
+// Avoids circular dependencies between ProtoDatabaseWrapper and
+// ProtoDatabaseProvider, since we'd need to include the provider header here
+// to use |db_provider_|'s GetSharedDBInstance.
+void GetSharedDBInstance(
+    ProtoDatabaseProvider* db_provider,
+    base::OnceCallback<void(scoped_refptr<SharedProtoDatabase>)> callback);
+
 // The ProtoDatabaseWrapper<T> owns a ProtoDatabase<T> instance, and allows the
 // underlying ProtoDatabase<T> implementation to change without users of the
 // wrapper needing to know.

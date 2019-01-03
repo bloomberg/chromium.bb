@@ -33,9 +33,17 @@ bool KeyFilterStripPrefix(const LevelDB::KeyFilter& key_filter,
 }
 
 void GetSharedDatabaseInitStatusAsync(
+    const std::string& client_name,
     const scoped_refptr<SharedProtoDatabase>& shared_db,
     Callbacks::InitStatusCallback callback) {
-  shared_db->GetDatabaseInitStatusAsync(std::move(callback));
+  shared_db->GetDatabaseInitStatusAsync(client_name, std::move(callback));
+}
+
+void UpdateClientCorruptAsync(
+    const scoped_refptr<SharedProtoDatabase>& shared_db,
+    const std::string& client_name,
+    ClientCorruptCallback callback) {
+  shared_db->UpdateClientCorruptAsync(client_name, std::move(callback));
 }
 
 }  // namespace leveldb_proto

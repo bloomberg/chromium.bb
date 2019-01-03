@@ -2,6 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//third_party/protobuf/proto_library.gni")
+
+proto_library("proto") {
+  sources = [
+    "proto/shared_db_metadata.proto",
+  ]
+}
+
 static_library("leveldb_proto") {
   sources = [
     "leveldb_database.cc",
@@ -12,6 +20,7 @@ static_library("leveldb_proto") {
     "proto_database_impl.h",
     "proto_database_provider.cc",
     "proto_database_provider.h",
+    "proto_database_wrapper.cc",
     "proto_database_wrapper.h",
     "proto_leveldb_wrapper.cc",
     "proto_leveldb_wrapper.h",
@@ -26,6 +35,9 @@ static_library("leveldb_proto") {
     "shared_proto_database_provider.cc",
     "shared_proto_database_provider.h",
     "unique_proto_database.h",
+  ]
+  deps = [
+    ":proto",
   ]
 
   public_deps = [
