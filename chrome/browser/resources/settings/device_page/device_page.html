@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
@@ -22,55 +23,51 @@
     <settings-animated-pages id="pages" section="device"
         focus-config="[[focusConfig_]]">
       <div id="main" route-path="default">
-        <div id="pointersRow" class="settings-box first"
-            on-click="onPointersTap_" actionable>
-          <div class="start">
-            [[getPointersTitle_(hasMouse_, hasTouchpad_)]]
-          </div>
-          <paper-icon-button-light class="subpage-arrow">
-            <button
-                aria-label$="[[getPointersTitle_(hasMouse_, hasTouchpad_)]]">
-            </button>
-          </paper-icon-button-light>
-        </div>
-        <div id="keyboardRow" class="settings-box" on-click="onKeyboardTap_"
-            actionable>
-          <div class="start">$i18n{keyboardTitle}</div>
-          <paper-icon-button-light class="subpage-arrow">
-            <button aria-label="$i18n{keyboardTitle}"></button>
-          </paper-icon-button-light>
-        </div>
+        <cr-link-row
+            icon-class="subpage-arrow"
+            id="pointersRow"
+            label="[[getPointersTitle_(hasMouse_, hasTouchpad_)]]"
+            on-click="onPointersTap_">
+        </cr-link-row>
+        <cr-link-row
+            class="hr"
+            icon-class="subpage-arrow"
+            id="keyboardRow"
+            label="$i18n{keyboardTitle}"
+            on-click="onKeyboardTap_">
+        </cr-link-row>
         <template is="dom-if" if="[[hasStylus_]]">
-          <div id="stylusRow" class="settings-box" on-click="onStylusTap_"
-              actionable>
-            <div class="start">$i18n{stylusTitle}</div>
-            <paper-icon-button-light class="subpage-arrow">
-              <button aria-label="$i18n{stylusTitle}"></button>
-            </paper-icon-button-light>
-          </div>
+          <cr-link-row
+              class="hr"
+              icon-class="subpage-arrow"
+              id="stylusRow"
+              label="$i18n{stylusTitle}"
+              on-click="onStylusTap_">
+          </cr-link-row>
         </template>
-        <div id="displayRow" class="settings-box" on-click="onDisplayTap_"
-            actionable>
-          <div class="start">$i18n{displayTitle}</div>
-          <paper-icon-button-light class="subpage-arrow">
-            <button aria-label="$i18n{displayTitle}"></button>
-          </paper-icon-button-light>
-        </div>
-        <div id="storageRow" hidden="[[hideStorageInfo_]]" class="settings-box"
-            on-click="onStorageTap_" actionable>
-          <div class="start">$i18n{storageTitle}</div>
-          <paper-icon-button-light class="subpage-arrow">
-            <button aria-label="$i18n{storageTitle}"></button>
-          </paper-icon-button-light>
-        </div>
+        <cr-link-row
+            class="hr"
+            icon-class="subpage-arrow"
+            id="displayRow"
+            label="$i18n{displayTitle}"
+            on-click="onDisplayTap_">
+        </cr-link-row>
+        <cr-link-row
+            class="hr"
+            hidden="[[hideStorageInfo_]]"
+            icon-class="subpage-arrow"
+            id="storageRow"
+            label="$i18n{storageTitle}"
+            on-click="onStorageTap_">
+        </cr-link-row>
         <template is="dom-if" if="[[enablePowerSettings_]]">
-          <div id="powerRow" class="settings-box" on-click="onPowerTap_"
-              actionable>
-            <div class="start">$i18n{powerTitle}</div>
-            <paper-icon-button-light class="subpage-arrow">
-              <button aria-label="$i18n{powerTitle}"></button>
-            </paper-icon-button-light>
-          </div>
+          <cr-link-row
+              class="hr"
+              icon-class="subpage-arrow"
+              id="powerRow"
+              label="$i18n{powerTitle}"
+              on-click="onPowerTap_">
+          </cr-link-row>
         </template>
       </div>
       <template is="dom-if" route-path="/pointer-overlay">
