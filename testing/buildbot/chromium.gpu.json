@@ -288,6 +288,7 @@
           "--test-launcher-retry-limit=0",
           "--no-xvfb"
         ],
+        "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -614,6 +615,7 @@
           "--test-launcher-retry-limit=0",
           "--no-xvfb"
         ],
+        "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -960,6 +962,7 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
+        "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1271,6 +1274,7 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
+        "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1711,6 +1715,7 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
+        "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2048,6 +2053,7 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
+        "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2418,6 +2424,7 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
+        "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2793,6 +2800,7 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
+        "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
