@@ -2196,3 +2196,4 @@ Bug(none) http/tests/devtools/isolated-code-cache/cross-origin-test.js [ WontFix
 
 # ====== Tests incompatible with the default Site Isolation until here ======
 external/wpt/css/css-overscroll-behavior/overscrollBehavior-manual.html [ WontFix ]
+external/wpt/html/semantics/forms/the-input-element/event-select-manual.html [ WontFix ]
