@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -50,9 +51,8 @@
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/overscroll_configuration.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -387,8 +387,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
   cursor_manager_.reset(new CursorManager(this));
 
   SetOverscrollControllerEnabled(
-      OverscrollConfig::GetHistoryNavigationMode() !=
-      OverscrollConfig::HistoryNavigationMode::kDisabled);
+      base::FeatureList::IsEnabled(features::kOverscrollHistoryNavigation));
 
   selection_controller_client_.reset(
       new TouchSelectionControllerClientAura(this));

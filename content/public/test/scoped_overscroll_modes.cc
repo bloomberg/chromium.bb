@@ -6,15 +6,6 @@
 
 namespace content {
 
-ScopedHistoryNavigationMode::ScopedHistoryNavigationMode(
-    OverscrollConfig::HistoryNavigationMode mode) {
-  OverscrollConfig::SetHistoryNavigationMode(mode);
-}
-
-ScopedHistoryNavigationMode::~ScopedHistoryNavigationMode() {
-  OverscrollConfig::ResetHistoryNavigationMode();
-}
-
 ScopedPullToRefreshMode::ScopedPullToRefreshMode(
     OverscrollConfig::PullToRefreshMode mode) {
   OverscrollConfig::SetPullToRefreshMode(mode);
