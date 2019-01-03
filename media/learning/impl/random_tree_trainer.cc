@@ -120,9 +120,15 @@ struct InteriorNode : public Model {
 
 struct LeafNode : public Model {
   LeafNode(const TrainingData& training_data,
-           const std::vector<size_t> training_idx) {
+           const std::vector<size_t> training_idx,
+           LearningTask::Ordering ordering) {
     for (size_t idx : training_idx)
       distribution_ += training_data[idx];
+
+    // Note that we don't treat numeric targets any differently.  We want to
+    // weight the leaf by the number of examples, so replacing it with an
+    // average would just introduce rounding errors.  One might as well take the
+    // average of the final distribution.
   }
 
   // TreeNode
@@ -155,32 +161,77 @@ std::unique_ptr<Model> RandomTreeTrainer::Train(
     const LearningTask& task,
     const TrainingData& training_data,
     const std::vector<size_t>& training_idx) {
-  if (training_data.empty())
-    return std::make_unique<LeafNode>(training_data, std::vector<size_t>());
+  if (training_data.empty()) {
+    return std::make_unique<LeafNode>(training_data, std::vector<size_t>(),
+                                      LearningTask::Ordering::kUnordered);
+  }
 
-  return Build(task, training_data, training_idx, FeatureSet());
+  DCHECK_EQ(task.feature_descriptions.size(), training_data[0].features.size());
+
+  // Start with all features unused.
+  FeatureSet unused_set;
+  for (size_t idx = 0; idx < task.feature_descriptions.size(); idx++)
+    unused_set.insert(idx);
+
+  return Build(task, training_data, training_idx, unused_set);
 }
 
 std::unique_ptr<Model> RandomTreeTrainer::Build(
     const LearningTask& task,
     const TrainingData& training_data,
     const std::vector<size_t>& training_idx,
-    const FeatureSet& used_set) {
+    const FeatureSet& unused_set) {
   DCHECK_GT(training_idx.size(), 0u);
 
-  // TODO(liberato): Does it help if we refuse to split without an info gain?
-  Split best_potential_split;
+  // TODO: enforce a minimum number of samples.  ExtraTrees uses 2 for
+  // classification, and 5 for regression.
+
+  // Remove any constant attributes in |training_data| from |unused_set|.  Also
+  // check if our training data has a constant target value.
+  std::set<TargetValue> target_values;
+  std::vector<std::set<FeatureValue>> feature_values;
+  feature_values.resize(training_data[0].features.size());
+  for (size_t idx : training_idx) {
+    const TrainingExample& example = training_data[idx];
+    // Record this target value to see if there is more than one.  We skip the
+    // insertion if we've already determined that it's not constant.
+    if (target_values.size() < 2)
+      target_values.insert(example.target_value);
+
+    // For all features in |unused_set|, see if it's a constant in our subset of
+    // the training data.
+    for (size_t feature_idx : unused_set) {
+      auto& values = feature_values[feature_idx];
+      if (values.size() < 2)
+        values.insert(example.features[feature_idx]);
+    }
+  }
+
+  // Is the output constant in |training_data|?  If so, then generate a leaf.
+  // If we're not normalizing leaves, then this matters since this training data
+  // might be split across multiple leaves.
+  if (target_values.size() == 1) {
+    return std::make_unique<LeafNode>(training_data, training_idx,
+                                      task.target_description.ordering);
+  }
+
+  // Remove any constant features from the unused set, so that we don't try to
+  // split on them.  It would work, but it would be trivially useless.  We also
+  // don't want to use one of our potential splits on it.
+  FeatureSet new_unused_set = unused_set;
+  for (size_t feature_idx : unused_set) {
+    auto& values = feature_values[feature_idx];
+    if (values.size() == 1)
+      new_unused_set.erase(feature_idx);
+  }
 
   // Select the feature subset to consider at this leaf.
-  FeatureSet feature_candidates;
-  for (size_t i = 0; i < training_data[0].features.size(); i++) {
-    if (used_set.find(i) != used_set.end())
-      continue;
-    feature_candidates.insert(i);
-  }
+  FeatureSet feature_candidates = new_unused_set;
   // TODO(liberato): Let our caller override this.
   const size_t features_per_split =
-      std::min(static_cast<int>(sqrt(feature_candidates.size())), 3);
+      std::max(static_cast<int>(sqrt(feature_candidates.size())), 3);
+  // Note that it's okay if there are fewer features left; we'll select all of
+  // them instead.
   while (feature_candidates.size() > features_per_split) {
     // Remove a random feature.
     size_t which = rng()->Generate(feature_candidates.size());
@@ -189,6 +240,9 @@ std::unique_ptr<Model> RandomTreeTrainer::Build(
       ;
     feature_candidates.erase(iter);
   }
+
+  // TODO(liberato): Does it help if we refuse to split without an info gain?
+  Split best_potential_split;
 
   // Find the best split among the candidates that we have.
   for (int i : feature_candidates) {
@@ -204,7 +258,8 @@ std::unique_ptr<Model> RandomTreeTrainer::Build(
   // but all had the same value).  Either way, we should end up with a leaf.
   if (best_potential_split.branch_infos.size() < 2) {
     // Stop when there is no more tree.
-    return std::make_unique<LeafNode>(training_data, training_idx);
+    return std::make_unique<LeafNode>(training_data, training_idx,
+                                      task.target_description.ordering);
   }
 
   // Build an interior node
@@ -215,16 +270,17 @@ std::unique_ptr<Model> RandomTreeTrainer::Build(
   // there's nothing left to split.  For numeric splits, we might want to split
   // it further.  Note that if there is only one branch for this split, then
   // we returned a leaf anyway.
-  FeatureSet new_used_set(used_set);
   if (task.feature_descriptions[best_potential_split.split_index].ordering ==
       LearningTask::Ordering::kUnordered) {
-    new_used_set.insert(best_potential_split.split_index);
+    DCHECK(new_unused_set.find(best_potential_split.split_index) !=
+           new_unused_set.end());
+    new_unused_set.erase(best_potential_split.split_index);
   }
 
   for (auto& branch_iter : best_potential_split.branch_infos) {
     node->AddChild(branch_iter.first,
                    Build(task, training_data, branch_iter.second.training_idx,
-                         new_used_set));
+                         new_unused_set));
   }
 
   return node;
@@ -241,6 +297,9 @@ RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
 
   Split split(split_index);
   base::Optional<FeatureValue> split_point;
+
+  // TODO(liberato): Consider removing nominal feature support and RF.  That
+  // would make this code somewhat simpler.
 
   // For a numeric split, find the split point.  Otherwise, we'll split on every
   // nominal value that this feature has in |training_data|.
@@ -282,9 +341,24 @@ RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
     branch_info.target_distribution += example;
   }
 
+  // Figure out how good / bad this split is.
+  switch (task.target_description.ordering) {
+    case LearningTask::Ordering::kUnordered:
+      ComputeNominalSplitScore(&split, total_weight);
+      break;
+    case LearningTask::Ordering::kNumeric:
+      ComputeNumericSplitScore(&split, total_weight);
+      break;
+  }
+
+  return split;
+}
+
+void RandomTreeTrainer::ComputeNominalSplitScore(Split* split,
+                                                 double total_weight) {
   // Compute the nats given that we're at this node.
-  split.nats_remaining = 0;
-  for (auto& info_iter : split.branch_infos) {
+  split->nats_remaining = 0;
+  for (auto& info_iter : split->branch_infos) {
     Split::BranchInfo& branch_info = info_iter.second;
 
     const double total_counts = branch_info.target_distribution.total_counts();
@@ -294,11 +368,37 @@ RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
       double p = iter.second / total_counts;
       // p*log(p) is the expected nats if the answer is |iter|.  We multiply
       // that by the probability of being in this bucket at all.
-      split.nats_remaining -= (p * log(p)) * p_branch;
+      split->nats_remaining -= (p * log(p)) * p_branch;
     }
   }
+}
 
-  return split;
+void RandomTreeTrainer::ComputeNumericSplitScore(Split* split,
+                                                 double total_weight) {
+  // Compute the nats given that we're at this node.
+  split->nats_remaining = 0;
+  for (auto& info_iter : split->branch_infos) {
+    Split::BranchInfo& branch_info = info_iter.second;
+
+    const double total_counts = branch_info.target_distribution.total_counts();
+    // |p_branch| is the probability of following this branch.
+    const double p_branch = total_counts / total_weight;
+
+    // Compute the average at this node.  Note that we have no idea if the leaf
+    // node would actually use an average, but really it should match.  It would
+    // be really nice if we could compute the value (or TargetDistribution) as
+    // part of computing the split, and have somebody just hand that target
+    // distribution to the leaf if it ends up as one.
+    double average = branch_info.target_distribution.Average();
+
+    for (auto& iter : branch_info.target_distribution) {
+      // Compute the squared error for all |iter.second| counts that each have a
+      // value of |iter.first|, when this leaf approximates them as |average|.
+      double sq_err = (iter.first.value() - average) *
+                      (iter.first.value() - average) * iter.second;
+      split->nats_remaining += sq_err * p_branch;
+    }
+  }
 }
 
 FeatureValue RandomTreeTrainer::FindNumericSplitPoint(

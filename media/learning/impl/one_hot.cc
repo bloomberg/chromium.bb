@@ -80,8 +80,10 @@ void OneHotConverter::ProcessOneFeature(
     const TrainingData& training_data) {
   // Collect all the distinct values for |index|.
   std::set<Value> values;
-  for (auto& example : training_data)
+  for (auto& example : training_data) {
+    DCHECK_GE(example.features.size(), index);
     values.insert(example.features[index]);
+  }
 
   // We let the set's ordering be the one-hot value.  It doesn't really matter
   // as long as we don't change it once we pick it.

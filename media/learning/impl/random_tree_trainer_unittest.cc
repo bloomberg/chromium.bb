@@ -153,7 +153,7 @@ TEST_P(RandomTreeTest, ComplexSeparableTrainingData) {
 }
 
 TEST_P(RandomTreeTest, UnseparableTrainingData) {
-  SetupFeatures(2);
+  SetupFeatures(1);
   TrainingData training_data;
   TrainingExample example_1({FeatureValue(123)}, TargetValue(1));
   TrainingExample example_2({FeatureValue(123)}, TargetValue(2));
@@ -177,7 +177,7 @@ TEST_P(RandomTreeTest, UnseparableTrainingData) {
 
 TEST_P(RandomTreeTest, UnknownFeatureValueHandling) {
   // Verify how a previously unseen feature value is handled.
-  SetupFeatures(2);
+  SetupFeatures(1);
   TrainingData training_data;
   TrainingExample example_1({FeatureValue(123)}, TargetValue(1));
   TrainingExample example_2({FeatureValue(456)}, TargetValue(2));
@@ -219,7 +219,7 @@ TEST_P(RandomTreeTest, UnknownFeatureValueHandling) {
 TEST_P(RandomTreeTest, NumericFeaturesSplitMultipleTimes) {
   // Verify that numeric features can be split more than once in the tree.
   // This should also pass for nominal features, though it's less interesting.
-  SetupFeatures(2);
+  SetupFeatures(1);
   TrainingData training_data;
   const int feature_mult = 10;
   for (size_t i = 0; i < 4; i++) {
