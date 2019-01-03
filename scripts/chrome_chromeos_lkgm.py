@@ -33,10 +33,12 @@ class ChromeLKGMCommitter(object):
                           '\n\nBUG=762641')
   # Files needed in a local checkout to successfully update the LKGM. The OWNERS
   # file allows the --tbr-owners mechanism to select an appropriate OWNER to
-  # TBR.
+  # TBR. TRANSLATION_OWNERS is necesssary to parse CHROMEOS_OWNERS file since
+  # it has the reference.
   _NEEDED_FILES = [
       constants.PATH_TO_CHROME_CHROMEOS_OWNERS,
       constants.PATH_TO_CHROME_LKGM,
+      'tools/translation/TRANSLATION_OWNERS',
   ]
 
   def __init__(self, args):
