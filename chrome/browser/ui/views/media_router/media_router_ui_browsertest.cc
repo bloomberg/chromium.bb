@@ -279,8 +279,15 @@ IN_PROC_BROWSER_TEST_F(MediaRouterWebUIBrowserTest,
   TestEphemeralToolbarIconForDialog();
 }
 
+#if defined(OS_MACOSX)
+// TODO(paksting): Flakily times out on Mac.  https://crbug.com/918742
+#define MAYBE_OpenDialogWithMediaRouterAction \
+  DISABLED_OpenDialogWithMediaRouterAction
+#else
+#define MAYBE_OpenDialogWithMediaRouterAction OpenDialogWithMediaRouterAction
+#endif
 IN_PROC_BROWSER_TEST_F(MediaRouterWebUIBrowserTest,
-                       OpenDialogWithMediaRouterAction) {
+                       MAYBE_OpenDialogWithMediaRouterAction) {
   // We start off at about:blank page.
   // Make sure there is 1 tab and media router is enabled.
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
