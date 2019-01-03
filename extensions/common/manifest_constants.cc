@@ -598,8 +598,6 @@ const char kInvalidSandboxedPagesList[] =
     "Invalid value for 'sandbox.pages'.";
 const char kInvalidSandboxedPage[] =
     "Invalid value for 'sandbox.pages[*]'.";
-const char kInvalidSandboxedPagesCSP[] =
-    "Invalid value for 'sandbox.content_security_policy'.";
 const char kInvalidSearchEngineMissingKeys[] =
     "Missing mandatory parameters for "
     "'chrome_settings_overrides.search_provider'.";

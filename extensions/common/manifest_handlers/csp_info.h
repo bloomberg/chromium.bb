@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/strings/string_piece_forward.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handler.h"
 
@@ -23,7 +24,16 @@ struct CSPInfo : public Extension::ManifestData {
   // vulnerabilities.
   std::string content_security_policy;
 
+  // Content Security Policy that should be used to enforce the sandbox used
+  // by sandboxed pages (guaranteed to have the "sandbox" directive without the
+  // "allow-same-origin" token).
+  std::string sandbox_content_security_policy;
+
   static const std::string& GetContentSecurityPolicy(
+      const Extension* extension);
+
+  // Returns the extension's Content Security Policy for the sandboxed pages.
+  static const std::string& GetSandboxContentSecurityPolicy(
       const Extension* extension);
 
   // Returns the Content Security Policy that the specified resource should be
@@ -33,7 +43,8 @@ struct CSPInfo : public Extension::ManifestData {
       const std::string& relative_path);
 };
 
-// Parses "content_security_policy" and "app.content_security_policy" keys.
+// Parses "content_security_policy", "app.content_security_policy" and
+// "sandbox.content_security_policy" manifest keys.
 class CSPHandler : public ManifestHandler {
  public:
   CSPHandler();
@@ -52,11 +63,21 @@ class CSPHandler : public ManifestHandler {
   // pages.
   bool ParseExtensionPagesCSP(Extension* extension,
                               base::string16* error,
-                              const std::string& manifest_key,
+                              base::StringPiece manifest_key,
                               const base::Value* content_security_policy);
+
+  // Parses the content security policy specified in the manifest for sandboxed
+  // pages. This should be called after ParseExtensionPagesCSP.
+  bool ParseSandboxCSP(Extension* extension,
+                       base::string16* error,
+                       base::StringPiece manifest_key,
+                       const base::Value* sandbox_csp);
 
   // Sets the default CSP value for the extension.
   bool SetDefaultExtensionPagesCSP(Extension* extension);
+
+  // Helper to set the sandbox content security policy manifest data.
+  void SetSandboxCSP(Extension* extension, std::string sandbox_csp);
 
   base::span<const char* const> Keys() const override;
 
