@@ -26,8 +26,9 @@ class QUIC_EXPORT_PRIVATE QpackInstructionEncoder {
 
   // Setters for values to be encoded.
   // |name| and |value| must remain valid until the instruction is encoded.
-  void set_is_static(bool is_static) { is_static_ = is_static; }
+  void set_s_bit(bool s_bit) { s_bit_ = s_bit; }
   void set_varint(uint64_t varint) { varint_ = varint; }
+  void set_varint2(uint64_t varint2) { varint2_ = varint2; }
   void set_name(QuicStringPiece name) { name_ = name; }
   void set_value(QuicStringPiece value) { value_ = value; }
 
@@ -52,9 +53,9 @@ class QUIC_EXPORT_PRIVATE QpackInstructionEncoder {
     // Select state based on type of current field.
     kStartField,
     // Write static bit to |byte_|.
-    kStaticBit,
-    // Start encoding an integer (|varint_| or string length) with a prefix,
-    // using |byte_| for the high bits.
+    kSbit,
+    // Start encoding an integer (|varint_| or |varint2_| or string length) with
+    // a prefix, using |byte_| for the high bits.
     kVarintStart,
     // Resume encoding an integer.
     kVarintResume,
@@ -77,9 +78,10 @@ class QUIC_EXPORT_PRIVATE QpackInstructionEncoder {
   size_t DoWriteString(size_t max_encoded_bytes, QuicString* output);
 
   // Storage for field values to be encoded.
-  bool is_static_;
+  bool s_bit_;
   uint64_t varint_;
-  // The caller must keep the string that |name_| and |value_| point to
+  uint64_t varint2_;
+  // The caller must keep the std::string that |name_| and |value_| point to
   // valid until they are encoded.
   QuicStringPiece name_;
   QuicStringPiece value_;

@@ -29,11 +29,16 @@ bool operator==(const QpackInstructionOpcode& a,
 // consume the current byte.  Decoding an integer or a length-prefixed string
 // literal consumes all bytes containing the field value.
 enum class QpackInstructionFieldType {
-  // A single bit indicating whether the index is static.
-  kStaticBit,
+  // A single bit indicating whether the index refers to the static table, or
+  // indicating the sign of Delta Base Index.  Called "S" bit because both
+  // "static" and "sign" start with the letter "S".
+  kSbit,
   // An integer encoded with variable length encoding.  This could be an index,
-  // stream ID, or maximum size.
+  // stream ID, maximum size, or Largest Reference.
   kVarint,
+  // A second integer encoded with variable length encoding.  This could be
+  // Delta Base Index.
+  kVarint2,
   // A header name or header value encoded as:
   //   a bit indicating whether it is Huffman encoded;
   //   the encoded length of the string;
@@ -46,7 +51,7 @@ enum class QpackInstructionFieldType {
 // The meaning of the parameter depends on the field type.
 struct QUIC_EXPORT_PRIVATE QpackInstructionField {
   QpackInstructionFieldType type;
-  // For a kStaticBit field, |param| is a mask with exactly one bit set.
+  // For a kSbit field, |param| is a mask with exactly one bit set.
   // For kVarint fields, |param| is the prefix length of the integer encoding.
   // For kName and kValue fields, |param| is the prefix length of the length of
   // the string, and the bit immediately preceding the prefix is interpreted as
@@ -96,6 +101,12 @@ const QpackInstruction* DynamicTableSizeUpdateInstruction();
 
 // Encoder stream language.
 const QpackLanguage* QpackEncoderStreamLanguage();
+
+// 5.4.1. Header data prefix instructions
+
+const QpackInstruction* QpackPrefixInstruction();
+
+const QpackLanguage* QpackPrefixLanguage();
 
 // 5.4.2. Request and push stream instructions
 

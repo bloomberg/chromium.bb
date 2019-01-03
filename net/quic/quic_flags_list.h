@@ -323,3 +323,15 @@ QUIC_FLAG(
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_connection_ids_network_byte_order,
           false)
+
+// Allows use of new QUIC connection ID constructor designed for
+// variable-length connection IDs when acting as client.
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_variable_length_connection_ids_client,
+          false)
+
+// Allows use of new QUIC connection ID constructor designed for
+// variable-length connection IDs when acting as server
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_variable_length_connection_ids_server,
+          false)

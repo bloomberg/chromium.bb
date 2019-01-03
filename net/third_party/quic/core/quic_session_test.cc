@@ -46,6 +46,7 @@ using testing::Invoke;
 using testing::NiceMock;
 using testing::Return;
 using testing::StrictMock;
+using testing::WithArg;
 
 namespace quic {
 namespace test {
@@ -140,7 +141,9 @@ class TestSession : public QuicSession {
                     DefaultQuicConfig(),
                     CurrentSupportedVersions()),
         crypto_stream_(this),
-        writev_consumes_all_data_(false) {
+        writev_consumes_all_data_(false),
+        should_buffer_incoming_streams_(false),
+        num_incoming_streams_created_(0) {
     Initialize();
     this->connection()->SetEncrypter(
         ENCRYPTION_FORWARD_SECURE,
@@ -186,14 +189,15 @@ class TestSession : public QuicSession {
           QUIC_TOO_MANY_OPEN_STREAMS, "Too many streams!",
           ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
       return nullptr;
-    } else {
-      TestStream* stream = new TestStream(
-          id, this,
-          DetermineStreamType(id, connection()->transport_version(),
-                              /*is_incoming=*/true, BIDIRECTIONAL));
-      ActivateStream(QuicWrapUnique(stream));
-      return stream;
     }
+
+    TestStream* stream = new TestStream(
+        id, this,
+        DetermineStreamType(id, connection()->transport_version(),
+                            /*is_incoming=*/true, BIDIRECTIONAL));
+    ActivateStream(QuicWrapUnique(stream));
+    ++num_incoming_streams_created_;
+    return stream;
   }
 
   TestStream* CreateIncomingStream(PendingStream pending) override {
@@ -203,6 +207,7 @@ class TestSession : public QuicSession {
         DetermineStreamType(id, connection()->transport_version(),
                             /*is_incoming=*/true, BIDIRECTIONAL));
     ActivateStream(QuicWrapUnique(stream));
+    ++num_incoming_streams_created_;
     return stream;
   }
 
@@ -272,6 +277,18 @@ class TestSession : public QuicSession {
     return WritevData(stream, stream->id(), bytes, 0, FIN);
   }
 
+  bool ShouldBufferIncomingStream(QuicStreamId id) const override {
+    return should_buffer_incoming_streams_;
+  }
+
+  void set_should_buffer_incoming_streams(bool should_buffer_incoming_streams) {
+    should_buffer_incoming_streams_ = should_buffer_incoming_streams;
+  }
+
+  int num_incoming_streams_created() const {
+    return num_incoming_streams_created_;
+  }
+
   using QuicSession::ActivateStream;
   using QuicSession::closed_streams;
   using QuicSession::zombie_streams;
@@ -280,34 +297,12 @@ class TestSession : public QuicSession {
   StrictMock<TestCryptoStream> crypto_stream_;
 
   bool writev_consumes_all_data_;
+  bool should_buffer_incoming_streams_;
   QuicFrame save_frame_;
+  int num_incoming_streams_created_;
 };
 
 class QuicSessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
- public:
-  // CheckMultiPathResponse validates that a written packet
-  // contains both expected path responses.
-  WriteResult CheckMultiPathResponse(const char* buffer,
-                                     size_t buf_len,
-                                     const QuicIpAddress& self_address,
-                                     const QuicSocketAddress& peer_address,
-                                     PerPacketOptions* options) {
-    QuicEncryptedPacket packet(buffer, buf_len);
-    // The packet should look like:
-    //  fd513039 39052a00  00000000 00000000  *.Q099.*.........*
-    //  0001fe62 a4c3d138  0ba93f42 82ec0f00  *...b...8..?B....*
-    //  01020304 0506070f  08090a0b 0c0d0e0f  *...
-    // The two PATH RESPONSE frames should be at offset
-    // 30 in the packet. We expect to see
-    //   0x0f 0 1 2 3 4 5 6 7
-    // and
-    //   0x0f 8 9 10 11 12 13 14 15
-    const unsigned char expected[] = {0x0f, 0, 1, 2,  3,  4,  5,  6,  7,
-                                      0x0f, 8, 9, 10, 11, 12, 13, 14, 15};
-    EXPECT_EQ(0, memcmp((buffer + 30), expected, sizeof(expected)));
-    return WriteResult(WRITE_STATUS_OK, 0);
-  }
-
  protected:
   explicit QuicSessionTestBase(Perspective perspective)
       : connection_(
@@ -391,8 +386,56 @@ class QuicSessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
 };
 
 class QuicSessionTestServer : public QuicSessionTestBase {
+ public:
+  // CheckMultiPathResponse validates that a written packet
+  // contains both expected path responses.
+  WriteResult CheckMultiPathResponse(const char* buffer,
+                                     size_t buf_len,
+                                     const QuicIpAddress& self_address,
+                                     const QuicSocketAddress& peer_address,
+                                     PerPacketOptions* options) {
+    QuicEncryptedPacket packet(buffer, buf_len);
+    {
+      InSequence s;
+      EXPECT_CALL(framer_visitor_, OnPacket());
+      EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
+      EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+      EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+      EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
+      EXPECT_CALL(framer_visitor_, OnPathResponseFrame(_))
+          .WillOnce(
+              WithArg<0>(Invoke([this](const QuicPathResponseFrame& frame) {
+                EXPECT_EQ(path_frame_buffer1_, frame.data_buffer);
+                return true;
+              })));
+      EXPECT_CALL(framer_visitor_, OnPathResponseFrame(_))
+          .WillOnce(
+              WithArg<0>(Invoke([this](const QuicPathResponseFrame& frame) {
+                EXPECT_EQ(path_frame_buffer2_, frame.data_buffer);
+                return true;
+              })));
+      EXPECT_CALL(framer_visitor_, OnPacketComplete());
+    }
+    client_framer_.ProcessPacket(packet);
+    return WriteResult(WRITE_STATUS_OK, 0);
+  }
+
  protected:
-  QuicSessionTestServer() : QuicSessionTestBase(Perspective::IS_SERVER) {}
+  QuicSessionTestServer()
+      : QuicSessionTestBase(Perspective::IS_SERVER),
+        path_frame_buffer1_({0, 1, 2, 3, 4, 5, 6, 7}),
+        path_frame_buffer2_({8, 9, 10, 11, 12, 13, 14, 15}),
+        client_framer_(SupportedVersions(GetParam()),
+                       QuicTime::Zero(),
+                       Perspective::IS_CLIENT) {
+    client_framer_.set_visitor(&framer_visitor_);
+  }
+
+  QuicPathFrameBuffer path_frame_buffer1_;
+  QuicPathFrameBuffer path_frame_buffer2_;
+  StrictMock<MockFramerVisitor> framer_visitor_;
+  // Framer used to process packets sent by server.
+  QuicFramer client_framer_;
 };
 
 INSTANTIATE_TEST_CASE_P(Tests,
@@ -1056,7 +1099,7 @@ TEST_P(QuicSessionTestServer, ServerReplyToConnectivityProbe) {
     // Need to explicitly do this to emulate the reception of a PathChallenge,
     // which stores its payload for use in generating the response.
     connection_->OnPathChallengeFrame(
-        QuicPathChallengeFrame(0, {{0, 1, 2, 3, 4, 5, 6, 7}}));
+        QuicPathChallengeFrame(0, path_frame_buffer1_));
   }
   session_.OnConnectivityProbeReceived(session_.self_address(),
                                        new_peer_address);
@@ -1088,9 +1131,9 @@ TEST_P(QuicSessionTestServer, ServerReplyToConnectivityProbes) {
   // Need to explicitly do this to emulate the reception of a PathChallenge,
   // which stores its payload for use in generating the response.
   connection_->OnPathChallengeFrame(
-      QuicPathChallengeFrame(0, {{0, 1, 2, 3, 4, 5, 6, 7}}));
+      QuicPathChallengeFrame(0, path_frame_buffer1_));
   connection_->OnPathChallengeFrame(
-      QuicPathChallengeFrame(0, {{8, 9, 10, 11, 12, 13, 14, 15}}));
+      QuicPathChallengeFrame(0, path_frame_buffer2_));
   session_.OnConnectivityProbeReceived(session_.self_address(),
                                        old_peer_address);
 }
@@ -1454,6 +1497,63 @@ TEST_P(QuicSessionTestServer, DrainingStreamsDoNotCountAsOpenedOutgoing) {
   session_.OnStreamFrame(data1);
   EXPECT_CALL(session_, OnCanCreateNewOutgoingStream()).Times(1);
   session_.StreamDraining(stream_id);
+}
+
+TEST_P(QuicSessionTestServer, NoPendingStreams) {
+  session_.set_should_buffer_incoming_streams(false);
+
+  QuicStreamId stream_id = QuicUtils::GetFirstUnidirectionalStreamId(
+      transport_version(), Perspective::IS_CLIENT);
+  QuicStreamFrame data1(stream_id, true, 10, QuicStringPiece("HT"));
+  session_.OnStreamFrame(data1);
+  EXPECT_EQ(1, session_.num_incoming_streams_created());
+
+  QuicStreamFrame data2(stream_id, false, 0, QuicStringPiece("HT"));
+  session_.OnStreamFrame(data2);
+  EXPECT_EQ(1, session_.num_incoming_streams_created());
+}
+
+TEST_P(QuicSessionTestServer, PendingStreams) {
+  if (connection_->transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+  session_.set_should_buffer_incoming_streams(true);
+
+  QuicStreamId stream_id = QuicUtils::GetFirstUnidirectionalStreamId(
+      transport_version(), Perspective::IS_CLIENT);
+  QuicStreamFrame data1(stream_id, true, 10, QuicStringPiece("HT"));
+  session_.OnStreamFrame(data1);
+  EXPECT_EQ(0, session_.num_incoming_streams_created());
+
+  QuicStreamFrame data2(stream_id, false, 0, QuicStringPiece("HT"));
+  session_.OnStreamFrame(data2);
+  EXPECT_EQ(1, session_.num_incoming_streams_created());
+}
+
+TEST_P(QuicSessionTestServer, RstPendingStreams) {
+  if (connection_->transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+  session_.set_should_buffer_incoming_streams(true);
+
+  QuicStreamId stream_id = QuicUtils::GetFirstUnidirectionalStreamId(
+      transport_version(), Perspective::IS_CLIENT);
+  QuicStreamFrame data1(stream_id, true, 10, QuicStringPiece("HT"));
+  session_.OnStreamFrame(data1);
+  EXPECT_EQ(0, session_.num_incoming_streams_created());
+
+  EXPECT_CALL(session_, OnCanCreateNewOutgoingStream()).Times(1);
+  EXPECT_CALL(*connection_, SendControlFrame(_)).Times(1);
+  EXPECT_CALL(*connection_, OnStreamReset(stream_id, QUIC_RST_ACKNOWLEDGEMENT))
+      .Times(1);
+  QuicRstStreamFrame rst1(kInvalidControlFrameId, stream_id,
+                          QUIC_ERROR_PROCESSING_STREAM, 12);
+  session_.OnRstStream(rst1);
+  EXPECT_EQ(0, session_.num_incoming_streams_created());
+
+  QuicStreamFrame data2(stream_id, false, 0, QuicStringPiece("HT"));
+  session_.OnStreamFrame(data2);
+  EXPECT_EQ(0, session_.num_incoming_streams_created());
 }
 
 TEST_P(QuicSessionTestServer, DrainingStreamsDoNotCountAsOpened) {

@@ -12,6 +12,7 @@
 #include "net/third_party/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
+#include "net/third_party/quic/core/quic_connection_id.h"
 #include "net/third_party/quic/core/quic_framer.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_utils.h"
@@ -335,8 +336,10 @@ QuicTimeWaitListManager::ConnectionIdData::~ConnectionIdData() = default;
 
 QuicUint128 QuicTimeWaitListManager::GetStatelessResetToken(
     QuicConnectionId connection_id) const {
-  // TODO(dschinazi) b/120240679 - convert connection ID to UInt128
-  return QuicConnectionIdToUInt64(connection_id);
+  if (!QuicConnectionIdSupportsVariableLength(Perspective::IS_SERVER)) {
+    return QuicConnectionIdToUInt64(connection_id);
+  }
+  return QuicUtils::GenerateStatelessResetToken(connection_id);
 }
 
 }  // namespace quic

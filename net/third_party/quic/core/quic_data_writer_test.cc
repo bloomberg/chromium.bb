@@ -256,15 +256,99 @@ TEST_P(QuicDataWriterTest, WriteConnectionId) {
   ASSERT_LE(connection_id.length(), kQuicMaxConnectionIdLength);
   char buffer[kQuicMaxConnectionIdLength];
   QuicDataWriter writer(connection_id.length(), buffer, GetParam().endianness);
-  EXPECT_TRUE(writer.WriteConnectionId(connection_id));
+  EXPECT_TRUE(writer.WriteConnectionId(connection_id, Perspective::IS_CLIENT));
   test::CompareCharArraysWithHexError("connection_id", buffer,
                                       connection_id.length(), big_endian,
                                       connection_id.length());
 
   QuicConnectionId read_connection_id;
   QuicDataReader reader(buffer, connection_id.length(), GetParam().endianness);
-  EXPECT_TRUE(reader.ReadConnectionId(&read_connection_id));
+  EXPECT_TRUE(reader.ReadConnectionId(
+      &read_connection_id, QUIC_ARRAYSIZE(big_endian), Perspective::IS_CLIENT));
   EXPECT_EQ(connection_id, read_connection_id);
+
+  // TODO(dschinazi) b/120240679 - remove this second read once these flags are
+  // deprecated: quic_variable_length_connection_ids_(client|server).
+  QuicConnectionId read_connection_id2;
+  QuicDataReader reader2(buffer, connection_id.length(), GetParam().endianness);
+  EXPECT_TRUE(reader2.ReadConnectionId(&read_connection_id2,
+                                       QUIC_ARRAYSIZE(big_endian),
+                                       Perspective::IS_SERVER));
+  EXPECT_EQ(connection_id, read_connection_id2);
+}
+
+// TODO(dschinazi) b/120240679 - remove this test once these flags are
+// deprecated: quic_variable_length_connection_ids_(client|server).
+TEST_P(QuicDataWriterTest, WriteConnectionIdServerAllowingVariableLength) {
+  if (!GetQuicRestartFlag(quic_connection_ids_network_byte_order)) {
+    // This test is pointless if the flag is off.
+    return;
+  }
+  SetQuicRestartFlag(quic_variable_length_connection_ids_client, false);
+  SetQuicRestartFlag(quic_variable_length_connection_ids_server, true);
+  QuicConnectionId connection_id =
+      TestConnectionId(UINT64_C(0x0011223344556677));
+  char big_endian[] = {
+      0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+  };
+  EXPECT_EQ(connection_id.length(), QUIC_ARRAYSIZE(big_endian));
+  ASSERT_LE(connection_id.length(), kQuicMaxConnectionIdLength);
+  char buffer[kQuicMaxConnectionIdLength];
+  QuicDataWriter writer(connection_id.length(), buffer, GetParam().endianness);
+  EXPECT_TRUE(writer.WriteConnectionId(connection_id, Perspective::IS_SERVER));
+  test::CompareCharArraysWithHexError("connection_id", buffer,
+                                      connection_id.length(), big_endian,
+                                      connection_id.length());
+
+  QuicConnectionId read_connection_id;
+  QuicDataReader reader(buffer, connection_id.length(), GetParam().endianness);
+  EXPECT_TRUE(reader.ReadConnectionId(
+      &read_connection_id, QUIC_ARRAYSIZE(big_endian), Perspective::IS_CLIENT));
+  EXPECT_EQ(connection_id, read_connection_id);
+
+  QuicConnectionId read_connection_id2;
+  QuicDataReader reader2(buffer, connection_id.length(), GetParam().endianness);
+  EXPECT_TRUE(reader2.ReadConnectionId(&read_connection_id2,
+                                       QUIC_ARRAYSIZE(big_endian),
+                                       Perspective::IS_SERVER));
+  EXPECT_EQ(connection_id, read_connection_id2);
+}
+
+// TODO(dschinazi) b/120240679 - remove this test once these flags are
+// deprecated: quic_variable_length_connection_ids_(client|server).
+TEST_P(QuicDataWriterTest, WriteConnectionIdClientAllowingVariableLength) {
+  if (!GetQuicRestartFlag(quic_connection_ids_network_byte_order)) {
+    // This test is pointless if the flag is off.
+    return;
+  }
+  SetQuicRestartFlag(quic_variable_length_connection_ids_client, true);
+  SetQuicRestartFlag(quic_variable_length_connection_ids_server, false);
+  QuicConnectionId connection_id =
+      TestConnectionId(UINT64_C(0x0011223344556677));
+  char big_endian[] = {
+      0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+  };
+  EXPECT_EQ(connection_id.length(), QUIC_ARRAYSIZE(big_endian));
+  ASSERT_LE(connection_id.length(), kQuicMaxConnectionIdLength);
+  char buffer[kQuicMaxConnectionIdLength];
+  QuicDataWriter writer(connection_id.length(), buffer, GetParam().endianness);
+  EXPECT_TRUE(writer.WriteConnectionId(connection_id, Perspective::IS_SERVER));
+  test::CompareCharArraysWithHexError("connection_id", buffer,
+                                      connection_id.length(), big_endian,
+                                      connection_id.length());
+
+  QuicConnectionId read_connection_id;
+  QuicDataReader reader(buffer, connection_id.length(), GetParam().endianness);
+  EXPECT_TRUE(reader.ReadConnectionId(
+      &read_connection_id, QUIC_ARRAYSIZE(big_endian), Perspective::IS_CLIENT));
+  EXPECT_EQ(connection_id, read_connection_id);
+
+  QuicConnectionId read_connection_id2;
+  QuicDataReader reader2(buffer, connection_id.length(), GetParam().endianness);
+  EXPECT_TRUE(reader2.ReadConnectionId(&read_connection_id2,
+                                       QUIC_ARRAYSIZE(big_endian),
+                                       Perspective::IS_SERVER));
+  EXPECT_EQ(connection_id, read_connection_id2);
 }
 
 TEST_P(QuicDataWriterTest, WriteTag) {

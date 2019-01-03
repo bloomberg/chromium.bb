@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "net/third_party/quic/platform/api/quic_string.h"
+#include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/platform/impl/quic_file_utils_impl.h"
 
 namespace quic {
@@ -19,7 +20,7 @@ std::vector<QuicString> ReadFileContents(const QuicString& dirname) {
 }
 
 // Reads the contents of |filename| as a string into |contents|.
-void ReadFileContents(const QuicString& filename, QuicString* contents) {
+void ReadFileContents(QuicStringPiece filename, QuicString* contents) {
   ReadFileContentsImpl(filename, contents);
 }
 

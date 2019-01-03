@@ -26,14 +26,19 @@ quic_trace::EncryptionLevel EncryptionLevelToProto(EncryptionLevel level) {
 QuicTraceVisitor::QuicTraceVisitor(const QuicConnection* connection)
     : connection_(connection),
       start_time_(connection_->clock()->ApproximateNow()) {
-  // QUIC CIDs are currently represented in memory as a converted representation
-  // of the on-wire ID.  Convert it back to wire format before recording, since
-  // the standard treats it as an opaque blob.
-  // TODO(dschinazi) b/120240679 - convert directly from CID to string
-  uint64_t connection_id = QuicEndian::HostToNet64(
-      QuicConnectionIdToUInt64(connection->connection_id()));
-  QuicString binary_connection_id(reinterpret_cast<const char*>(&connection_id),
-                                  sizeof(connection_id));
+  QuicString binary_connection_id;
+  if (!QuicConnectionIdSupportsVariableLength(connection->perspective())) {
+    // QUIC CIDs are currently represented in memory as a converted
+    // representation of the on-wire ID.  Convert it back to wire format before
+    // recording, since the standard treats it as an opaque blob.
+    uint64_t connection_id = QuicEndian::HostToNet64(
+        QuicConnectionIdToUInt64(connection->connection_id()));
+    binary_connection_id = QuicString(
+        reinterpret_cast<const char*>(&connection_id), sizeof(connection_id));
+  } else {
+    binary_connection_id.assign(connection->connection_id().data(),
+                                connection->connection_id().length());
+  }
 
   // We assume that the connection ID in gQUIC is equivalent to the
   // server-chosen client-selected ID.

@@ -6,17 +6,25 @@
 
 #include "base/logging.h"
 #include "net/third_party/quic/core/qpack/qpack_constants.h"
+#include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/http2/decoder/decode_buffer.h"
 #include "net/third_party/quiche/src/http2/decoder/decode_status.h"
 
 namespace quic {
 
 QpackDecoder::ProgressiveDecoder::ProgressiveDecoder(
+    QuicStreamId stream_id,
     QpackHeaderTable* header_table,
     QpackDecoder::HeadersHandlerInterface* handler)
-    : instruction_decoder_(QpackRequestStreamLanguage(), this),
+    : stream_id_(stream_id),
+      prefix_decoder_(
+          QuicMakeUnique<QpackInstructionDecoder>(QpackPrefixLanguage(), this)),
+      instruction_decoder_(QpackRequestStreamLanguage(), this),
       header_table_(header_table),
       handler_(handler),
+      largest_reference_(0),
+      base_index_(0),
+      prefix_decoded_(false),
       decoding_(true),
       error_detected_(false) {}
 
@@ -25,6 +33,16 @@ void QpackDecoder::ProgressiveDecoder::Decode(QuicStringPiece data) {
 
   if (data.empty() || error_detected_) {
     return;
+  }
+
+  // Decode prefix byte by byte until the first (and only) instruction is
+  // decoded.
+  while (!prefix_decoded_) {
+    prefix_decoder_->Decode(data.substr(0, 1));
+    data = data.substr(1, QuicStringPiece::npos);
+    if (data.empty()) {
+      return;
+    }
   }
 
   instruction_decoder_.Decode(data);
@@ -38,23 +56,40 @@ void QpackDecoder::ProgressiveDecoder::EndHeaderBlock() {
     return;
   }
 
-  if (instruction_decoder_.AtInstructionBoundary()) {
-    handler_->OnDecodingCompleted();
-  } else {
+  if (!instruction_decoder_.AtInstructionBoundary()) {
     OnError("Incomplete header block.");
+    return;
   }
+
+  if (!prefix_decoded_) {
+    OnError("Incomplete header data prefix.");
+    return;
+  }
+
+  handler_->OnDecodingCompleted();
 }
 
 bool QpackDecoder::ProgressiveDecoder::OnInstructionDecoded(
     const QpackInstruction* instruction) {
+  if (instruction == QpackPrefixInstruction()) {
+    DCHECK(!prefix_decoded_);
+
+    largest_reference_ = instruction_decoder_.varint();
+    base_index_ = instruction_decoder_.varint2();
+    prefix_decoded_ = true;
+
+    return true;
+  }
+
   if (instruction == QpackIndexedHeaderFieldInstruction()) {
-    if (!instruction_decoder_.is_static()) {
+    if (!instruction_decoder_.s_bit()) {
       // TODO(bnc): Implement.
       OnError("Indexed Header Field with dynamic entry not implemented.");
       return false;
     }
 
-    auto entry = header_table_->LookupEntry(instruction_decoder_.varint());
+    auto entry = header_table_->LookupEntry(/* is_static = */ true,
+                                            instruction_decoder_.varint());
     if (!entry) {
       OnError("Invalid static table index.");
       return false;
@@ -71,7 +106,7 @@ bool QpackDecoder::ProgressiveDecoder::OnInstructionDecoded(
   }
 
   if (instruction == QpackLiteralHeaderFieldNameReferenceInstruction()) {
-    if (!instruction_decoder_.is_static()) {
+    if (!instruction_decoder_.s_bit()) {
       // TODO(bnc): Implement.
       OnError(
           "Literal Header Field With Name Reference with dynamic entry not "
@@ -79,7 +114,8 @@ bool QpackDecoder::ProgressiveDecoder::OnInstructionDecoded(
       return false;
     }
 
-    auto entry = header_table_->LookupEntry(instruction_decoder_.varint());
+    auto entry = header_table_->LookupEntry(/* is_static = */ true,
+                                            instruction_decoder_.varint());
     if (!entry) {
       OnError(
           "Invalid static table index in Literal Header Field With Name "
@@ -116,8 +152,9 @@ void QpackDecoder::ProgressiveDecoder::OnError(QuicStringPiece error_message) {
 
 std::unique_ptr<QpackDecoder::ProgressiveDecoder>
 QpackDecoder::DecodeHeaderBlock(
+    QuicStreamId stream_id,
     QpackDecoder::HeadersHandlerInterface* handler) {
-  return std::make_unique<ProgressiveDecoder>(&header_table_, handler);
+  return QuicMakeUnique<ProgressiveDecoder>(stream_id, &header_table_, handler);
 }
 
 }  // namespace quic

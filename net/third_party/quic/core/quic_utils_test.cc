@@ -5,8 +5,11 @@
 #include "net/third_party/quic/core/quic_utils.h"
 
 #include "net/third_party/quic/core/crypto/crypto_protocol.h"
+#include "net/third_party/quic/core/quic_connection_id.h"
+#include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
+#include "net/third_party/quic/test_tools/quic_test_utils.h"
 
 namespace quic {
 namespace test {
@@ -159,6 +162,37 @@ TEST_F(QuicUtilsTest, IsIetfPacketHeader) {
   first_byte |= PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID;
   EXPECT_FALSE(QuicUtils::IsIetfPacketHeader(first_byte));
   EXPECT_FALSE(QuicUtils::IsIetfPacketShortHeader(first_byte));
+}
+
+TEST_F(QuicUtilsTest, RandomConnectionId) {
+  MockRandom random(33);
+  QuicConnectionId connection_id = QuicUtils::CreateRandomConnectionId(&random);
+  EXPECT_EQ(connection_id.length(), sizeof(uint64_t));
+  if (!QuicConnectionIdSupportsVariableLength(quic::Perspective::IS_SERVER) ||
+      !QuicConnectionIdSupportsVariableLength(quic::Perspective::IS_CLIENT)) {
+    EXPECT_EQ(connection_id, QuicConnectionIdFromUInt64(random.RandUint64()));
+  } else {
+    char connection_id_bytes[sizeof(uint64_t)];
+    random.RandBytes(connection_id_bytes, QUIC_ARRAYSIZE(connection_id_bytes));
+    EXPECT_EQ(connection_id,
+              QuicConnectionId(static_cast<char*>(connection_id_bytes),
+                               QUIC_ARRAYSIZE(connection_id_bytes)));
+  }
+  EXPECT_NE(connection_id, EmptyQuicConnectionId());
+  EXPECT_NE(connection_id, TestConnectionId());
+  EXPECT_NE(connection_id, TestConnectionId(1));
+}
+
+TEST_F(QuicUtilsTest, StatelessResetToken) {
+  QuicConnectionId connection_id1a = test::TestConnectionId(1);
+  QuicConnectionId connection_id1b = test::TestConnectionId(1);
+  QuicConnectionId connection_id2 = test::TestConnectionId(2);
+  QuicUint128 token1a = QuicUtils::GenerateStatelessResetToken(connection_id1a);
+  QuicUint128 token1b = QuicUtils::GenerateStatelessResetToken(connection_id1b);
+  QuicUint128 token2 = QuicUtils::GenerateStatelessResetToken(connection_id2);
+  EXPECT_EQ(token1a, token1b);
+  EXPECT_NE(token1a, token2);
+  EXPECT_EQ(token1a, MakeQuicUint128(0, 1));
 }
 
 }  // namespace

@@ -11,8 +11,9 @@
 namespace quic {
 
 QpackInstructionEncoder::QpackInstructionEncoder()
-    : is_static_(false),
+    : s_bit_(false),
       varint_(0),
+      varint2_(0),
       byte_(0),
       state_(State::kOpcode),
       instruction_(nullptr) {}
@@ -47,7 +48,7 @@ void QpackInstructionEncoder::Next(size_t max_encoded_bytes,
       case State::kStartField:
         DoStartField();
         break;
-      case State::kStaticBit:
+      case State::kSbit:
         DoStaticBit();
         break;
       case State::kVarintStart:
@@ -80,10 +81,11 @@ void QpackInstructionEncoder::DoOpcode() {
 
 void QpackInstructionEncoder::DoStartField() {
   switch (field_->type) {
-    case QpackInstructionFieldType::kStaticBit:
-      state_ = State::kStaticBit;
+    case QpackInstructionFieldType::kSbit:
+      state_ = State::kSbit;
       return;
     case QpackInstructionFieldType::kVarint:
+    case QpackInstructionFieldType::kVarint2:
       state_ = State::kVarintStart;
       return;
     case QpackInstructionFieldType::kName:
@@ -94,9 +96,9 @@ void QpackInstructionEncoder::DoStartField() {
 }
 
 void QpackInstructionEncoder::DoStaticBit() {
-  DCHECK(field_->type == QpackInstructionFieldType::kStaticBit);
+  DCHECK(field_->type == QpackInstructionFieldType::kSbit);
 
-  if (is_static_) {
+  if (s_bit_) {
     DCHECK_EQ(0, byte_ & field_->param);
 
     byte_ |= field_->param;
@@ -109,13 +111,24 @@ void QpackInstructionEncoder::DoStaticBit() {
 size_t QpackInstructionEncoder::DoVarintStart(size_t max_encoded_bytes,
                                               QuicString* output) {
   DCHECK(field_->type == QpackInstructionFieldType::kVarint ||
+         field_->type == QpackInstructionFieldType::kVarint2 ||
          field_->type == QpackInstructionFieldType::kName ||
          field_->type == QpackInstructionFieldType::kValue);
   DCHECK(!varint_encoder_.IsEncodingInProgress());
 
-  size_t integer_to_encode = field_->type == QpackInstructionFieldType::kVarint
-                                 ? varint_
-                                 : string_to_write_.size();
+  size_t integer_to_encode;
+  switch (field_->type) {
+    case QpackInstructionFieldType::kVarint:
+      integer_to_encode = varint_;
+      break;
+    case QpackInstructionFieldType::kVarint2:
+      integer_to_encode = varint2_;
+      break;
+    default:
+      integer_to_encode = string_to_write_.size();
+      break;
+  }
+
   output->push_back(
       varint_encoder_.StartEncoding(byte_, field_->param, integer_to_encode));
   byte_ = 0;
@@ -125,7 +138,8 @@ size_t QpackInstructionEncoder::DoVarintStart(size_t max_encoded_bytes,
     return 1;
   }
 
-  if (field_->type == QpackInstructionFieldType::kVarint) {
+  if (field_->type == QpackInstructionFieldType::kVarint ||
+      field_->type == QpackInstructionFieldType::kVarint2) {
     ++field_;
     state_ = State::kStartField;
     return 1;
@@ -138,6 +152,7 @@ size_t QpackInstructionEncoder::DoVarintStart(size_t max_encoded_bytes,
 size_t QpackInstructionEncoder::DoVarintResume(size_t max_encoded_bytes,
                                                QuicString* output) {
   DCHECK(field_->type == QpackInstructionFieldType::kVarint ||
+         field_->type == QpackInstructionFieldType::kVarint2 ||
          field_->type == QpackInstructionFieldType::kName ||
          field_->type == QpackInstructionFieldType::kValue);
   DCHECK(varint_encoder_.IsEncodingInProgress());
@@ -151,7 +166,8 @@ size_t QpackInstructionEncoder::DoVarintResume(size_t max_encoded_bytes,
 
   DCHECK_LE(encoded_bytes, max_encoded_bytes);
 
-  if (field_->type == QpackInstructionFieldType::kVarint) {
+  if (field_->type == QpackInstructionFieldType::kVarint ||
+      field_->type == QpackInstructionFieldType::kVarint2) {
     ++field_;
     state_ = State::kStartField;
     return encoded_bytes;

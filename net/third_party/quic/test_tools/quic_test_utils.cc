@@ -41,11 +41,25 @@ QuicConnectionId TestConnectionId() {
 }
 
 QuicConnectionId TestConnectionId(uint64_t connection_number) {
-  return QuicConnectionIdFromUInt64(connection_number);
+  if (!QuicConnectionIdUseNetworkByteOrder()) {
+    return QuicConnectionIdFromUInt64(connection_number);
+  }
+  const uint64_t connection_id64_net =
+      QuicEndian::HostToNet64(connection_number);
+  return QuicConnectionId(reinterpret_cast<const char*>(&connection_id64_net),
+                          sizeof(connection_id64_net));
 }
 
 uint64_t TestConnectionIdToUInt64(QuicConnectionId connection_id) {
-  return QuicConnectionIdToUInt64(connection_id);
+  if (!QuicConnectionIdUseNetworkByteOrder()) {
+    return QuicConnectionIdToUInt64(connection_id);
+  }
+  DCHECK_EQ(connection_id.length(), kQuicDefaultConnectionIdLength);
+  uint64_t connection_id64_net = 0;
+  memcpy(&connection_id64_net, connection_id.data(),
+         std::min<size_t>(static_cast<size_t>(connection_id.length()),
+                          sizeof(connection_id64_net)));
+  return QuicEndian::NetToHost64(connection_id64_net);
 }
 
 QuicAckFrame InitAckFrame(const std::vector<QuicAckBlock>& ack_blocks) {
@@ -587,8 +601,8 @@ TestQuicSpdyServerSession::TestQuicSpdyServerSession(
                             compressed_certs_cache) {
   Initialize();
   ON_CALL(helper_, GenerateConnectionIdForReject(_))
-      .WillByDefault(testing::Return(QuicConnectionIdFromUInt64(
-          connection->random_generator()->RandUint64())));
+      .WillByDefault(testing::Return(
+          QuicUtils::CreateRandomConnectionId(connection->random_generator())));
   ON_CALL(helper_, CanAcceptClientHello(_, _, _, _, _))
       .WillByDefault(testing::Return(true));
 }

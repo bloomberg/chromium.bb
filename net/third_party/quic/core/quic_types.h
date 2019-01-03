@@ -256,6 +256,7 @@ enum QuicIetfFrameType : uint8_t {
 enum QuicPacketNumberLength : uint8_t {
   PACKET_1BYTE_PACKET_NUMBER = 1,
   PACKET_2BYTE_PACKET_NUMBER = 2,
+  PACKET_3BYTE_PACKET_NUMBER = 3,  // Only used in v99.
   PACKET_4BYTE_PACKET_NUMBER = 4,
   // TODO(rch): Remove this when we remove QUIC_VERSION_39.
   PACKET_6BYTE_PACKET_NUMBER = 6,
@@ -460,22 +461,15 @@ enum QuicIetfTransportErrorCodes : uint16_t {
   FRAME_ERROR_base = 0x100,  // add frame type to this base
 };
 
-// Used in long header to explicitly indicate the packet type.
+// Please note, this value cannot used directly for packet serialization.
 enum QuicLongHeaderType : uint8_t {
-  VERSION_NEGOTIATION = 0,  // Value does not matter.
-  ZERO_RTT_PROTECTED = 0x7C,
-  HANDSHAKE = 0x7D,
-  RETRY = 0x7E,
-  INITIAL = 0x7F,
+  VERSION_NEGOTIATION,
+  INITIAL,
+  ZERO_RTT_PROTECTED,
+  HANDSHAKE,
+  RETRY,
 
   INVALID_PACKET_TYPE,
-};
-
-// Used in short header to determine the size of packet number field.
-enum QuicShortHeaderType : uint8_t {
-  SHORT_HEADER_1_BYTE_PACKET_NUMBER = 0,
-  SHORT_HEADER_2_BYTE_PACKET_NUMBER = 1,
-  SHORT_HEADER_4_BYTE_PACKET_NUMBER = 2,
 };
 
 enum QuicPacketHeaderTypeFlags : uint8_t {

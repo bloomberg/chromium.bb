@@ -36,6 +36,9 @@ void TestHeadersHandler::OnDecodingErrorDetected(
 }
 
 spdy::SpdyHeaderBlock TestHeadersHandler::ReleaseHeaderList() {
+  DCHECK(decoding_completed_);
+  DCHECK(!decoding_error_detected_);
+
   return std::move(header_list_);
 }
 
@@ -51,7 +54,8 @@ void QpackDecode(QpackDecoder::HeadersHandlerInterface* handler,
                  const FragmentSizeGenerator& fragment_size_generator,
                  QuicStringPiece data) {
   QpackDecoder decoder;
-  auto progressive_decoder = decoder.DecodeHeaderBlock(handler);
+  auto progressive_decoder =
+      decoder.DecodeHeaderBlock(/* stream_id = */ 1, handler);
   while (!data.empty()) {
     size_t fragment_size = std::min(fragment_size_generator(), data.size());
     progressive_decoder->Decode(data.substr(0, fragment_size));

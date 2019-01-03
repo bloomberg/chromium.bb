@@ -4,6 +4,8 @@
 
 #include "net/third_party/quic/tools/quic_simple_crypto_server_stream_helper.h"
 
+#include "net/third_party/quic/core/quic_utils.h"
+
 namespace quic {
 
 QuicSimpleCryptoServerStreamHelper::QuicSimpleCryptoServerStreamHelper(
@@ -16,7 +18,7 @@ QuicSimpleCryptoServerStreamHelper::~QuicSimpleCryptoServerStreamHelper() =
 QuicConnectionId
 QuicSimpleCryptoServerStreamHelper::GenerateConnectionIdForReject(
     QuicConnectionId /*connection_id*/) const {
-  return QuicConnectionIdFromUInt64(random_->RandUint64());
+  return QuicUtils::CreateRandomConnectionId(random_, Perspective::IS_SERVER);
 }
 
 bool QuicSimpleCryptoServerStreamHelper::CanAcceptClientHello(

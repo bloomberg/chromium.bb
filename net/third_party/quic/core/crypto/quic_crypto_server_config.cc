@@ -43,6 +43,7 @@
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_reference_counted.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
+#include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
@@ -866,10 +867,15 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
     const QuicReferenceCountedPointer<Config>& requested_config,
     const QuicReferenceCountedPointer<Config>& primary_config,
     std::unique_ptr<ProcessClientHelloResultCallback> done_cb) const {
-  // TODO(dschinazi) b/120240679 - move this endianness swap to
-  // ProcessClientHelloAfterCalculateSharedKeys()
-  connection_id = QuicConnectionIdFromUInt64(
-      QuicEndian::HostToNet64(QuicConnectionIdToUInt64(connection_id)));
+  if (connection_id.length() != kQuicDefaultConnectionIdLength) {
+    QUIC_BUG << "ProcessClientHelloAfterGetProof called with connection ID "
+             << connection_id << " of unsupported length "
+             << connection_id.length();
+  }
+  if (!QuicConnectionIdSupportsVariableLength(Perspective::IS_SERVER)) {
+    connection_id = QuicConnectionIdFromUInt64(
+        QuicEndian::HostToNet64(QuicConnectionIdToUInt64(connection_id)));
+  }
   ProcessClientHelloHelper helper(&done_cb);
 
   if (found_error) {
@@ -997,6 +1003,12 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterCalculateSharedKeys(
     const QuicReferenceCountedPointer<Config>& requested_config,
     const QuicReferenceCountedPointer<Config>& primary_config,
     std::unique_ptr<ProcessClientHelloResultCallback> done_cb) const {
+  if (connection_id.length() != kQuicDefaultConnectionIdLength) {
+    QUIC_BUG << "ProcessClientHelloAfterCalculateSharedKeys called with "
+                "connection ID "
+             << connection_id << " of unsupported length "
+             << connection_id.length();
+  }
   ProcessClientHelloHelper helper(&done_cb);
 
   if (found_error) {
@@ -1016,18 +1028,23 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterCalculateSharedKeys(
     params->sni = QuicHostnameUtils::NormalizeHostname(sni_tmp.get());
   }
 
-  // connection_id is already passed in in network byte order
-  // TODO(dschinazi) b/120240679 - move the endianness swap from
-  // ProcessClientHelloAfterGetProof to here.
-  const uint64_t connection_id64_net = QuicConnectionIdToUInt64(connection_id);
-
   QuicString hkdf_suffix;
   const QuicData& client_hello_serialized = client_hello.GetSerialized();
-  hkdf_suffix.reserve(sizeof(connection_id64_net) +
-                      client_hello_serialized.length() +
-                      requested_config->serialized.size());
-  hkdf_suffix.append(reinterpret_cast<const char*>(&connection_id64_net),
-                     sizeof(connection_id64_net));
+  if (!QuicConnectionIdSupportsVariableLength(Perspective::IS_SERVER)) {
+    // connection_id is already passed in in network byte order.
+    const uint64_t connection_id64_net =
+        QuicConnectionIdToUInt64(connection_id);
+    hkdf_suffix.reserve(sizeof(connection_id64_net) +
+                        client_hello_serialized.length() +
+                        requested_config->serialized.size());
+    hkdf_suffix.append(reinterpret_cast<const char*>(&connection_id64_net),
+                       sizeof(connection_id64_net));
+  } else {
+    hkdf_suffix.reserve(connection_id.length() +
+                        client_hello_serialized.length() +
+                        requested_config->serialized.size());
+    hkdf_suffix.append(connection_id.data(), connection_id.length());
+  }
   hkdf_suffix.append(client_hello_serialized.data(),
                      client_hello_serialized.length());
   hkdf_suffix.append(requested_config->serialized);
@@ -1050,8 +1067,15 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterCalculateSharedKeys(
     QuicString hkdf_input;
     hkdf_input.append(QuicCryptoConfig::kCETVLabel,
                       strlen(QuicCryptoConfig::kCETVLabel) + 1);
-    hkdf_input.append(reinterpret_cast<const char*>(&connection_id64_net),
-                      sizeof(connection_id64_net));
+    if (!QuicConnectionIdSupportsVariableLength(Perspective::IS_SERVER)) {
+      // connection_id is already passed in in network byte order.
+      const uint64_t connection_id64_net =
+          QuicConnectionIdToUInt64(connection_id);
+      hkdf_input.append(reinterpret_cast<const char*>(&connection_id64_net),
+                        sizeof(connection_id64_net));
+    } else {
+      hkdf_input.append(connection_id.data(), connection_id.length());
+    }
     hkdf_input.append(client_hello_copy_serialized.data(),
                       client_hello_copy_serialized.length());
     hkdf_input.append(requested_config->serialized);
@@ -1648,8 +1672,23 @@ void QuicCryptoServerConfig::BuildRejection(
                   << "with server-designated connection ID "
                   << server_designated_connection_id;
     out->set_tag(kSREJ);
-    out->SetValue(kRCID, QuicEndian::HostToNet64(QuicConnectionIdToUInt64(
-                             server_designated_connection_id)));
+    if (!QuicConnectionIdSupportsVariableLength(Perspective::IS_SERVER)) {
+      out->SetValue(kRCID, QuicEndian::HostToNet64(QuicConnectionIdToUInt64(
+                               server_designated_connection_id)));
+    } else {
+      if (server_designated_connection_id.length() !=
+              kQuicDefaultConnectionIdLength &&
+          version < QUIC_VERSION_99) {
+        QUIC_BUG << "Tried to send connection ID "
+                 << server_designated_connection_id << " of bad length "
+                 << server_designated_connection_id.length() << " with version "
+                 << QuicVersionToString(version);
+        return;
+      }
+      out->SetStringPiece(
+          kRCID, QuicStringPiece(server_designated_connection_id.data(),
+                                 server_designated_connection_id.length()));
+    }
   } else {
     out->set_tag(kREJ);
   }

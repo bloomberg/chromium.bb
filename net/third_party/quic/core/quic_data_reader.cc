@@ -128,16 +128,25 @@ bool QuicDataReader::ReadStringPiece(QuicStringPiece* result, size_t size) {
   return true;
 }
 
-bool QuicDataReader::ReadConnectionId(QuicConnectionId* connection_id) {
-  // TODO(dschinazi) b/120240679 - read bytes directly into connection_id.data()
-  uint64_t connection_id64 = 0;
-  if (!ReadBytes(&connection_id64, sizeof(connection_id64))) {
-    return false;
+bool QuicDataReader::ReadConnectionId(QuicConnectionId* connection_id,
+                                      uint8_t length,
+                                      Perspective perspective) {
+  if (!QuicConnectionIdSupportsVariableLength(perspective)) {
+    uint64_t connection_id64 = 0;
+    if (!ReadBytes(&connection_id64, sizeof(connection_id64))) {
+      return false;
+    }
+    *connection_id =
+        QuicConnectionIdFromUInt64(QuicEndian::NetToHost64(connection_id64));
+    return true;
   }
-  *connection_id =
-      QuicConnectionIdFromUInt64(QuicEndian::NetToHost64(connection_id64));
+  DCHECK_LE(length, kQuicMaxConnectionIdLength);
 
-  return true;
+  const bool ok = ReadBytes(connection_id->mutable_data(), length);
+  if (ok) {
+    connection_id->set_length(length);
+  }
+  return ok;
 }
 
 bool QuicDataReader::ReadTag(uint32_t* tag) {

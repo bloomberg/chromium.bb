@@ -666,7 +666,7 @@ QuicConnectionIdLength QuicPacketCreator::GetSourceConnectionIdLength() const {
 }
 
 QuicPacketNumberLength QuicPacketCreator::GetPacketNumberLength() const {
-  if (HasIetfLongHeader()) {
+  if (HasIetfLongHeader() && framer_->transport_version() != QUIC_VERSION_99) {
     return PACKET_4BYTE_PACKET_NUMBER;
   }
   return packet_.packet_number_length;

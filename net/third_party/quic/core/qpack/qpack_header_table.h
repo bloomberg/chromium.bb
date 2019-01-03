@@ -16,8 +16,9 @@ namespace quic {
 
 using QpackEntry = spdy::HpackEntry;
 
-// This class manages the QPACK static and dynamic tables.
-// TODO(bnc): Implement dynamic table.
+// This class manages the QPACK static and dynamic tables.  For dynamic entries,
+// it only has a concept of absolute indices.  The caller needs to perform the
+// necessary transformations to and from relative indices and post-base indices.
 class QUIC_EXPORT_PRIVATE QpackHeaderTable {
  public:
   using EntryTable = spdy::HpackHeaderTable::EntryTable;
@@ -35,27 +36,107 @@ class QUIC_EXPORT_PRIVATE QpackHeaderTable {
 
   ~QpackHeaderTable();
 
-  // Returns the entry at given index, or nullptr on error.
-  const QpackEntry* LookupEntry(size_t index) const;
+  // Returns the entry at absolute index |index| from the static or dynamic
+  // table according to |is_static|.  |index| is zero based for both the static
+  // and the dynamic table.  The returned pointer is valid until the entry is
+  // evicted, even if other entries are inserted into the dynamic table.
+  // Returns nullptr if entry does not exist.
+  const QpackEntry* LookupEntry(bool is_static, size_t index) const;
 
-  // Returns the index of an entry with matching name and value if such exists,
-  // otherwise one with matching name is such exists.
+  // Returns the absolute index of an entry with matching name and value if such
+  // exists, otherwise one with matching name is such exists.  |index| is zero
+  // based for both the static and the dynamic table.
   MatchType FindHeaderField(QuicStringPiece name,
                             QuicStringPiece value,
+                            bool* is_static,
                             size_t* index) const;
 
+  // Insert (name, value) into the dynamic table.  May evict entries.  Returns a
+  // pointer to the inserted owned entry on success.  Returns nullptr if entry
+  // is larger than the capacity of the dynamic table.
+  const QpackEntry* InsertEntry(QuicStringPiece name, QuicStringPiece value);
+
+  // Change dynamic table capacity to |max_size|.  Returns true on success.
+  // Returns false is |max_size| exceeds maximum dynamic table capacity.
+  bool UpdateTableSize(size_t max_size);
+
+  // Set |maximum_dynamic_table_capacity_|.  The initial value is zero.  The
+  // final value is determined by the decoder and is sent to the encoder as
+  // SETTINGS_HEADER_TABLE_SIZE.  Therefore in the decoding context the final
+  // value can be set upon connection establishment, whereas in the encoding
+  // context it can be set when the SETTINGS frame is received.
+  // This method must only be called at most once.
+  void SetMaximumDynamicTableCapacity(size_t maximum_dynamic_table_capacity);
+
+  // Used by request streams to decode Largest Reference.
+  size_t max_entries() const { return max_entries_; }
+
+  // The number of entries inserted to the dynamic table (including ones that
+  // were dropped since).  Used for relative indexing on the encoder stream.
+  size_t inserted_entry_count() const {
+    return dynamic_entries_.size() + dropped_entry_count_;
+  }
+
+  // The number of entries dropped from the dynamic table.
+  size_t dropped_entry_count() const { return dropped_entry_count_; }
+
  private:
+  // Evict entries from the dynamic table until table size is less than or equal
+  // to |new_table_size|.
+  void EvictDownTo(size_t new_table_size);
+
+  // Static Table
+
   // |static_entries_|, |static_index_|, |static_name_index_| are owned by
   // QpackStaticTable singleton.
 
   // Tracks QpackEntries by index.
   const EntryTable& static_entries_;
 
-  // Tracks the unique QpackEntry for a given header name and value.
+  // Tracks the unique static entry for a given header name and value.
   const UnorderedEntrySet& static_index_;
 
-  // Tracks the first static entry for each name in the static table.
+  // Tracks the first static entry for a given header name.
   const NameToEntryMap& static_name_index_;
+
+  // Dynamic Table
+
+  // Queue of dynamic table entries, for lookup by index.
+  // |dynamic_entries_| owns the entries in the dynamic table.
+  EntryTable dynamic_entries_;
+
+  // An unordered set of QpackEntry pointers with a comparison operator that
+  // only cares about name and value.  This allows fast lookup of the most
+  // recently inserted dynamic entry for a given header name and value pair.
+  // Entries point to entries owned by |dynamic_entries_|.
+  UnorderedEntrySet dynamic_index_;
+
+  // An unordered map of QpackEntry pointers keyed off header name.  This allows
+  // fast lookup of the most recently inserted dynamic entry for a given header
+  // name.  Entries point to entries owned by |dynamic_entries_|.
+  NameToEntryMap dynamic_name_index_;
+
+  // Size of the dynamic table.  This is the sum of the size of its entries.
+  size_t dynamic_table_size_;
+
+  // Dynamic Table Capacity is the maximum allowed value of
+  // |dynamic_table_size_|.  Entries are evicted if necessary before inserting a
+  // new entry to ensure that dynamic table size never exceeds capacity.
+  // Initial value is |maximum_dynamic_table_capacity_|.  Capacity can be
+  // changed by the encoder, as long as it does not exceed
+  // |maximum_dynamic_table_capacity_|.
+  size_t dynamic_table_capacity_;
+
+  // Maximum allowed value of |dynamic_table_capacity|.  The initial value is
+  // zero.  Can be changed by SetMaximumDynamicTableCapacity().
+  size_t maximum_dynamic_table_capacity_;
+
+  // MaxEntries, see Section 3.2.2.  Calculated based on
+  // |maximum_dynamic_table_capacity_|.
+  size_t max_entries_;
+
+  // The number of entries dropped from the dynamic table.
+  size_t dropped_entry_count_;
 };
 
 }  // namespace quic

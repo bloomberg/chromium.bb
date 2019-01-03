@@ -20,6 +20,7 @@
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
+#include "net/third_party/quic/platform/api/quic_uint128.h"
 #include "net/third_party/quic/test_tools/mock_quic_session_visitor.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quic/test_tools/quic_time_wait_list_manager_peer.h"
@@ -54,8 +55,10 @@ class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
   }
 
   bool IsValidStatelessResetToken(QuicUint128 token) const override {
-    // TODO(dschinazi) b/120240679 - convert connection ID to UInt128
-    return token == QuicConnectionIdToUInt64(connection_id_);
+    if (!QuicConnectionIdSupportsVariableLength(Perspective::IS_SERVER)) {
+      return token == QuicConnectionIdToUInt64(connection_id_);
+    }
+    return token == QuicUtils::GenerateStatelessResetToken(connection_id_);
   }
 
   void OnAuthenticatedIetfStatelessResetPacket(
@@ -217,10 +220,18 @@ bool ValidPublicResetPacketPredicate(
 
   QuicIetfStatelessResetPacket stateless_reset =
       visitor.stateless_reset_packet();
-  // TODO(dschinazi) b/120240679 - convert connection ID to UInt128
+
+  QuicUint128 expected_stateless_reset_token;
+  if (!QuicConnectionIdSupportsVariableLength(Perspective::IS_SERVER)) {
+    expected_stateless_reset_token =
+        QuicConnectionIdToUInt64(expected_connection_id);
+  } else {
+    expected_stateless_reset_token =
+        QuicUtils::GenerateStatelessResetToken(expected_connection_id);
+  }
+
   bool stateless_reset_is_valid =
-      stateless_reset.stateless_reset_token ==
-      QuicConnectionIdToUInt64(expected_connection_id);
+      stateless_reset.stateless_reset_token == expected_stateless_reset_token;
 
   return public_reset_is_valid || stateless_reset_is_valid;
 }

@@ -18,13 +18,17 @@ namespace test {
 class TestHeadersHandler : public QpackDecoder::HeadersHandlerInterface {
  public:
   TestHeadersHandler();
+  ~TestHeadersHandler() override = default;
 
   // HeadersHandlerInterface implementation:
   void OnHeaderDecoded(QuicStringPiece name, QuicStringPiece value) override;
   void OnDecodingCompleted() override;
   void OnDecodingErrorDetected(QuicStringPiece error_message) override;
 
+  // Release decoded header list.  Must only be called if decoding is complete
+  // and no errors have been detected.
   spdy::SpdyHeaderBlock ReleaseHeaderList();
+
   bool decoding_completed() const;
   bool decoding_error_detected() const;
 

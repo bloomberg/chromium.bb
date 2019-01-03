@@ -311,7 +311,7 @@ std::ostream& operator<<(std::ostream& os, const QuicFrame& frame) {
       break;
     }
     case APPLICATION_CLOSE_FRAME:
-      os << "type { APPLICATION_CLOSE } " << *(frame.connection_close_frame);
+      os << "type { APPLICATION_CLOSE } " << *(frame.application_close_frame);
       break;
     case NEW_CONNECTION_ID_FRAME:
       os << "type { NEW_CONNECTION_ID } " << *(frame.new_connection_id_frame);

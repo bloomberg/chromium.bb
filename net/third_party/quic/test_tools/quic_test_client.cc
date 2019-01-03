@@ -225,7 +225,7 @@ MockableQuicClient::mockable_network_helper() const {
 }
 
 QuicConnectionId MockableQuicClient::GenerateNewConnectionId() {
-  return !QuicConnectionIdIsEmpty(override_connection_id_)
+  return !override_connection_id_.IsEmpty()
              ? override_connection_id_
              : QuicClient::GenerateNewConnectionId();
 }

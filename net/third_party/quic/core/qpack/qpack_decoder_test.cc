@@ -34,6 +34,7 @@ class MockHeadersHandler : public QpackDecoder::HeadersHandlerInterface {
 class QpackDecoderTest : public QuicTestWithParam<FragmentMode> {
  public:
   QpackDecoderTest() : fragment_mode_(GetParam()) {}
+  ~QpackDecoderTest() override = default;
 
   void Decode(QuicStringPiece data) {
     QpackDecode(&handler_, FragmentModeToFragmentSizeGenerator(fragment_mode_),
@@ -52,18 +53,22 @@ INSTANTIATE_TEST_CASE_P(,
                         Values(FragmentMode::kSingleChunk,
                                FragmentMode::kOctetByOctet));
 
-TEST_P(QpackDecoderTest, NotStarted) {
-  EXPECT_CALL(handler_, OnDecodingCompleted());
+TEST_P(QpackDecoderTest, NoPrefix) {
+  EXPECT_CALL(handler_, OnDecodingErrorDetected(
+                            QuicStringPiece("Incomplete header data prefix.")));
 
   QpackDecoder decoder;
-  auto progressive_decoder = decoder.DecodeHeaderBlock(&handler_);
+  auto progressive_decoder =
+      decoder.DecodeHeaderBlock(/* stream_id = */ 1, &handler_);
+  // Header Data Prefix is at least two bytes long.
+  progressive_decoder->Decode(QuicTextUtils::HexDecode("00"));
   progressive_decoder->EndHeaderBlock();
 }
 
 TEST_P(QpackDecoderTest, Empty) {
   EXPECT_CALL(handler_, OnDecodingCompleted());
 
-  Decode("");
+  Decode(QuicTextUtils::HexDecode("0000"));
 }
 
 TEST_P(QpackDecoderTest, EmptyName) {
@@ -71,7 +76,7 @@ TEST_P(QpackDecoderTest, EmptyName) {
               OnHeaderDecoded(QuicStringPiece(""), QuicStringPiece("foo")));
   EXPECT_CALL(handler_, OnDecodingCompleted());
 
-  Decode(QuicTextUtils::HexDecode("2003666f6f"));
+  Decode(QuicTextUtils::HexDecode("00002003666f6f"));
 }
 
 TEST_P(QpackDecoderTest, EmptyValue) {
@@ -79,7 +84,7 @@ TEST_P(QpackDecoderTest, EmptyValue) {
               OnHeaderDecoded(QuicStringPiece("foo"), QuicStringPiece("")));
   EXPECT_CALL(handler_, OnDecodingCompleted());
 
-  Decode(QuicTextUtils::HexDecode("23666f6f00"));
+  Decode(QuicTextUtils::HexDecode("000023666f6f00"));
 }
 
 TEST_P(QpackDecoderTest, EmptyNameAndValue) {
@@ -87,7 +92,7 @@ TEST_P(QpackDecoderTest, EmptyNameAndValue) {
               OnHeaderDecoded(QuicStringPiece(""), QuicStringPiece("")));
   EXPECT_CALL(handler_, OnDecodingCompleted());
 
-  Decode(QuicTextUtils::HexDecode("2000"));
+  Decode(QuicTextUtils::HexDecode("00002000"));
 }
 
 TEST_P(QpackDecoderTest, Simple) {
@@ -95,7 +100,7 @@ TEST_P(QpackDecoderTest, Simple) {
               OnHeaderDecoded(QuicStringPiece("foo"), QuicStringPiece("bar")));
   EXPECT_CALL(handler_, OnDecodingCompleted());
 
-  Decode(QuicTextUtils::HexDecode("23666f6f03626172"));
+  Decode(QuicTextUtils::HexDecode("000023666f6f03626172"));
 }
 
 TEST_P(QpackDecoderTest, Multiple) {
@@ -107,6 +112,7 @@ TEST_P(QpackDecoderTest, Multiple) {
   EXPECT_CALL(handler_, OnDecodingCompleted());
 
   Decode(QuicTextUtils::HexDecode(
+      "0000"                // prefix
       "23666f6f03626172"    // foo: bar
       "2700666f6f62616172"  // 7 octet long header name, the smallest number
                             // that does not fit on a 3-bit prefix.
@@ -122,7 +128,7 @@ TEST_P(QpackDecoderTest, NameLenTooLarge) {
   EXPECT_CALL(handler_, OnDecodingErrorDetected(
                             QuicStringPiece("Encoded integer too large.")));
 
-  Decode(QuicTextUtils::HexDecode("27ffffffffffffffffffff"));
+  Decode(QuicTextUtils::HexDecode("000027ffffffffffffffffffff"));
 }
 
 // Name Length value can be decoded by varint decoder but exceeds 1 MB limit.
@@ -130,7 +136,7 @@ TEST_P(QpackDecoderTest, NameLenExceedsLimit) {
   EXPECT_CALL(handler_, OnDecodingErrorDetected(
                             QuicStringPiece("String literal too long.")));
 
-  Decode(QuicTextUtils::HexDecode("27ffff7f"));
+  Decode(QuicTextUtils::HexDecode("000027ffff7f"));
 }
 
 // Value Length value is too large for varint decoder to decode.
@@ -138,14 +144,14 @@ TEST_P(QpackDecoderTest, ValueLenTooLargeForVarintDecoder) {
   EXPECT_CALL(handler_, OnDecodingErrorDetected(
                             QuicStringPiece("Encoded integer too large.")));
 
-  Decode(QuicTextUtils::HexDecode("23666f6f7fffffffffffffffffffff"));
+  Decode(QuicTextUtils::HexDecode("000023666f6f7fffffffffffffffffffff"));
 }
 
 TEST_P(QpackDecoderTest, IncompleteHeaderBlock) {
   EXPECT_CALL(handler_, OnDecodingErrorDetected(
                             QuicStringPiece("Incomplete header block.")));
 
-  Decode(QuicTextUtils::HexDecode("2366"));
+  Decode(QuicTextUtils::HexDecode("00002366"));
 }
 
 TEST_P(QpackDecoderTest, HuffmanSimple) {
@@ -154,7 +160,7 @@ TEST_P(QpackDecoderTest, HuffmanSimple) {
   EXPECT_CALL(handler_, OnDecodingCompleted());
 
   Decode(QuicTextUtils::HexDecode(
-      QuicStringPiece("2f0125a849e95ba97d7f8925a849e95bb8e8b4bf")));
+      QuicStringPiece("00002f0125a849e95ba97d7f8925a849e95bb8e8b4bf")));
 }
 
 TEST_P(QpackDecoderTest, AlternatingHuffmanNonHuffman) {
@@ -164,6 +170,7 @@ TEST_P(QpackDecoderTest, AlternatingHuffmanNonHuffman) {
   EXPECT_CALL(handler_, OnDecodingCompleted());
 
   Decode(QuicTextUtils::HexDecode(
+      "0000"                        // Prefix.
       "2f0125a849e95ba97d7f"        // Huffman-encoded name.
       "8925a849e95bb8e8b4bf"        // Huffman-encoded value.
       "2703637573746f6d2d6b6579"    // Non-Huffman encoded name.
@@ -181,7 +188,8 @@ TEST_P(QpackDecoderTest, HuffmanNameDoesNotHaveEOSPrefix) {
 
   // 'y' ends in 0b0 on the most significant bit of the last byte.
   // The remaining 7 bits must be a prefix of EOS, which is all 1s.
-  Decode(QuicTextUtils::HexDecode("2f0125a849e95ba97d7e8925a849e95bb8e8b4bf"));
+  Decode(
+      QuicTextUtils::HexDecode("00002f0125a849e95ba97d7e8925a849e95bb8e8b4bf"));
 }
 
 TEST_P(QpackDecoderTest, HuffmanValueDoesNotHaveEOSPrefix) {
@@ -190,7 +198,8 @@ TEST_P(QpackDecoderTest, HuffmanValueDoesNotHaveEOSPrefix) {
 
   // 'e' ends in 0b101, taking up the 3 most significant bits of the last byte.
   // The remaining 5 bits must be a prefix of EOS, which is all 1s.
-  Decode(QuicTextUtils::HexDecode("2f0125a849e95ba97d7f8925a849e95bb8e8b4be"));
+  Decode(
+      QuicTextUtils::HexDecode("00002f0125a849e95ba97d7f8925a849e95bb8e8b4be"));
 }
 
 TEST_P(QpackDecoderTest, HuffmanNameEOSPrefixTooLong) {
@@ -200,8 +209,8 @@ TEST_P(QpackDecoderTest, HuffmanNameEOSPrefixTooLong) {
   // The trailing EOS prefix must be at most 7 bits long.  Appending one octet
   // with value 0xff is invalid, even though 0b111111111111111 (15 bits) is a
   // prefix of EOS.
-  Decode(
-      QuicTextUtils::HexDecode("2f0225a849e95ba97d7fff8925a849e95bb8e8b4bf"));
+  Decode(QuicTextUtils::HexDecode(
+      "00002f0225a849e95ba97d7fff8925a849e95bb8e8b4bf"));
 }
 
 TEST_P(QpackDecoderTest, HuffmanValueEOSPrefixTooLong) {
@@ -211,8 +220,8 @@ TEST_P(QpackDecoderTest, HuffmanValueEOSPrefixTooLong) {
   // The trailing EOS prefix must be at most 7 bits long.  Appending one octet
   // with value 0xff is invalid, even though 0b1111111111111 (13 bits) is a
   // prefix of EOS.
-  Decode(
-      QuicTextUtils::HexDecode("2f0125a849e95ba97d7f8a25a849e95bb8e8b4bfff"));
+  Decode(QuicTextUtils::HexDecode(
+      "00002f0125a849e95ba97d7f8a25a849e95bb8e8b4bfff"));
 }
 
 TEST_P(QpackDecoderTest, StaticTable) {
@@ -241,7 +250,7 @@ TEST_P(QpackDecoderTest, StaticTable) {
   EXPECT_CALL(handler_, OnDecodingCompleted());
 
   Decode(QuicTextUtils::HexDecode(
-      "d1dfccd45f108621e9aec2a11f5c8294e75f000554524143455f1000"));
+      "0000d1dfccd45f108621e9aec2a11f5c8294e75f000554524143455f1000"));
 }
 
 TEST_P(QpackDecoderTest, TooHighStaticTableIndex) {
@@ -253,7 +262,7 @@ TEST_P(QpackDecoderTest, TooHighStaticTableIndex) {
   EXPECT_CALL(handler_, OnDecodingErrorDetected(
                             QuicStringPiece("Invalid static table index.")));
 
-  Decode(QuicTextUtils::HexDecode("ff23ff24"));
+  Decode(QuicTextUtils::HexDecode("0000ff23ff24"));
 }
 
 }  // namespace

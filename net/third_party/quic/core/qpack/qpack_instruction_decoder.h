@@ -57,8 +57,9 @@ class QUIC_EXPORT_PRIVATE QpackInstructionDecoder {
   // Accessors for decoded values.  Should only be called for fields that are
   // part of the most recently decoded instruction, and only after |this| calls
   // Delegate::OnInstructionDecoded() but before Decode() is called again.
-  bool is_static() const { return is_static_; }
+  bool s_bit() const { return s_bit_; }
   uint64_t varint() const { return varint_; }
+  uint64_t varint2() const { return varint2_; }
   const QuicString& name() const { return name_; }
   const QuicString& value() const { return value_; }
 
@@ -109,8 +110,9 @@ class QUIC_EXPORT_PRIVATE QpackInstructionDecoder {
   Delegate* const delegate_;
 
   // Storage for decoded field values.
-  bool is_static_;
+  bool s_bit_;
   uint64_t varint_;
+  uint64_t varint2_;
   QuicString name_;
   QuicString value_;
   // Whether the currently decoded header name or value is Huffman encoded.

@@ -20,8 +20,9 @@ QpackInstructionDecoder::QpackInstructionDecoder(const QpackLanguage* language,
                                                  Delegate* delegate)
     : language_(language),
       delegate_(delegate),
-      is_static_(false),
+      s_bit_(false),
       varint_(0),
+      varint2_(0),
       is_huffman_encoded_(false),
       string_length_(0),
       error_detected_(false),
@@ -105,12 +106,13 @@ void QpackInstructionDecoder::DoStartField() {
   }
 
   switch (field_->type) {
-    case QpackInstructionFieldType::kStaticBit:
+    case QpackInstructionFieldType::kSbit:
     case QpackInstructionFieldType::kName:
     case QpackInstructionFieldType::kValue:
       state_ = State::kReadBit;
       return;
     case QpackInstructionFieldType::kVarint:
+    case QpackInstructionFieldType::kVarint2:
       state_ = State::kVarintStart;
       return;
   }
@@ -120,9 +122,9 @@ void QpackInstructionDecoder::DoReadBit(QuicStringPiece data) {
   DCHECK(!data.empty());
 
   switch (field_->type) {
-    case QpackInstructionFieldType::kStaticBit: {
+    case QpackInstructionFieldType::kSbit: {
       const uint8_t bitmask = field_->param;
-      is_static_ = (data[0] & bitmask) == bitmask;
+      s_bit_ = (data[0] & bitmask) == bitmask;
 
       ++field_;
       state_ = State::kStartField;
@@ -148,6 +150,7 @@ void QpackInstructionDecoder::DoReadBit(QuicStringPiece data) {
 size_t QpackInstructionDecoder::DoVarintStart(QuicStringPiece data) {
   DCHECK(!data.empty());
   DCHECK(field_->type == QpackInstructionFieldType::kVarint ||
+         field_->type == QpackInstructionFieldType::kVarint2 ||
          field_->type == QpackInstructionFieldType::kName ||
          field_->type == QpackInstructionFieldType::kValue);
 
@@ -172,6 +175,7 @@ size_t QpackInstructionDecoder::DoVarintStart(QuicStringPiece data) {
 size_t QpackInstructionDecoder::DoVarintResume(QuicStringPiece data) {
   DCHECK(!data.empty());
   DCHECK(field_->type == QpackInstructionFieldType::kVarint ||
+         field_->type == QpackInstructionFieldType::kVarint2 ||
          field_->type == QpackInstructionFieldType::kName ||
          field_->type == QpackInstructionFieldType::kValue);
 
@@ -195,11 +199,20 @@ size_t QpackInstructionDecoder::DoVarintResume(QuicStringPiece data) {
 
 void QpackInstructionDecoder::DoVarintDone() {
   DCHECK(field_->type == QpackInstructionFieldType::kVarint ||
+         field_->type == QpackInstructionFieldType::kVarint2 ||
          field_->type == QpackInstructionFieldType::kName ||
          field_->type == QpackInstructionFieldType::kValue);
 
   if (field_->type == QpackInstructionFieldType::kVarint) {
     varint_ = varint_decoder_.value();
+
+    ++field_;
+    state_ = State::kStartField;
+    return;
+  }
+
+  if (field_->type == QpackInstructionFieldType::kVarint2) {
+    varint2_ = varint_decoder_.value();
 
     ++field_;
     state_ = State::kStartField;

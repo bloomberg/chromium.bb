@@ -1011,7 +1011,8 @@ TEST_P(QuicPacketCreatorTest,
 }
 
 TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthLeastAwaiting) {
-  if (GetParam().version.transport_version > QUIC_VERSION_43) {
+  if (GetParam().version.transport_version > QUIC_VERSION_43 &&
+      GetParam().version.transport_version != QUIC_VERSION_99) {
     EXPECT_EQ(PACKET_4BYTE_PACKET_NUMBER,
               QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
     creator_.set_encryption_level(ENCRYPTION_FORWARD_SECURE);
@@ -1043,7 +1044,8 @@ TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthLeastAwaiting) {
 }
 
 TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthCwnd) {
-  if (GetParam().version.transport_version > QUIC_VERSION_43) {
+  if (GetParam().version.transport_version > QUIC_VERSION_43 &&
+      GetParam().version.transport_version != QUIC_VERSION_99) {
     EXPECT_EQ(PACKET_4BYTE_PACKET_NUMBER,
               QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
     creator_.set_encryption_level(ENCRYPTION_FORWARD_SECURE);

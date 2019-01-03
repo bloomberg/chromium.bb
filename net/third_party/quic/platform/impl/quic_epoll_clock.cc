@@ -26,7 +26,9 @@ QuicTime QuicEpollClock::Now() const {
   }
 
   if (now <= largest_time_) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_monotonic_epoll_clock);
+    if (now < largest_time_) {
+      QUIC_RELOADABLE_FLAG_COUNT(quic_monotonic_epoll_clock);
+    }
     // Time not increasing, return |largest_time_|.
     return largest_time_;
   }
