@@ -65,13 +65,13 @@ test can query for whether each submitted frame used the correct pose.
         // Encode an index into the clear color.
         frame_id++;
         frame_data_array[frame_id] = frame;
-        cached_frame_of_ref = sessionInfos[sessionTypes.IMMERSIVE].currentFrameOfRef;
+        cached_frame_of_ref = sessionInfos[sessionTypes.IMMERSIVE].currentRefSpace;
 
         var encoded_frame_id = {};
         encoded_frame_id.r = frame_id % 256;
         encoded_frame_id.g = ((frame_id - frame_id % 256) / 256) % 256;
         encoded_frame_id.b = ((frame_id - frame_id % (256 * 256)) / (256 * 256)) % 256;
-        // We divide by 255 rather than 256, because our range of values is [0, 255], 
+        // We divide by 255 rather than 256, because our range of values is [0, 255],
         // which should map to [0.0f, 1.0f].
         gl.clearColor(encoded_frame_id.r / 255, encoded_frame_id.g / 255, encoded_frame_id.b / 255, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT);

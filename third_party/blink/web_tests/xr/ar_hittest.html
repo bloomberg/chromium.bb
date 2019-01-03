@@ -29,7 +29,7 @@ let expectedHitMatrix = [1, 0, 0, 1,
 
 let testFunction = function(session, t, fakeDeviceController) {
   assert_false(session.immersive);
-  return session.requestFrameOfReference("eye-level").then((frameOfReference) => {
+  return session.requestReferenceSpace({ type: "stationary", subtype: "eye-level" }).then((referenceSpace) => {
     let direction = new Float32Array([1.0, 0.0, 0.0]);
     let origin = new Float32Array([0.0, 0.0, 0.0]);
 
@@ -38,7 +38,7 @@ let testFunction = function(session, t, fakeDeviceController) {
 
     fakeDeviceController.setHitTestResults({ results: [hit] });
 
-    return session.requestHitTest(origin, direction, frameOfReference).then(
+    return session.requestHitTest(origin, direction, referenceSpace).then(
         (hitResults) => {
           // Test that hit results are what we expected.
           assert_equals(hitResults.length, 1);

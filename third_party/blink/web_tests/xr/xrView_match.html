@@ -32,7 +32,7 @@ let testFunction = function(session, t, fakeDeviceController) {
       viewMatrix: VALID_VIEW_MATRIX
     }]);
 
-  return session.requestFrameOfReference("eye-level").then((frameOfRef) => new Promise((resolve) =>{
+  return session.requestReferenceSpace({ type: "stationary", subtype: "eye-level" }).then((referenceSpace) => new Promise((resolve) =>{
     function onFrame(time, xrFrame) {
       // Ensure that two views are provided.
       assert_not_equals(xrFrame.views, null);

@@ -28,12 +28,12 @@ class ResizeObserver;
 class ScriptPromiseResolver;
 class V8XRFrameRequestCallback;
 class XRCanvasInputProvider;
-class XRCoordinateSystem;
+class XRSpace;
 class XRDevice;
-class XRFrameOfReferenceOptions;
 class XRInputSourceEvent;
 class XRLayer;
 class XRPresentationContext;
+class XRReferenceSpaceOptions;
 class XRView;
 
 class XRSession final : public EventTargetWithInlineData,
@@ -83,9 +83,8 @@ class XRSession final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(selectend, kSelectend);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(select, kSelect);
 
-  ScriptPromise requestFrameOfReference(ScriptState*,
-                                        const String& type,
-                                        const XRFrameOfReferenceOptions*);
+  ScriptPromise requestReferenceSpace(ScriptState*,
+                                      const XRReferenceSpaceOptions*);
 
   int requestAnimationFrame(V8XRFrameRequestCallback*);
   void cancelAnimationFrame(int id);
@@ -98,7 +97,7 @@ class XRSession final : public EventTargetWithInlineData,
   ScriptPromise requestHitTest(ScriptState* script_state,
                                NotShared<DOMFloat32Array> origin,
                                NotShared<DOMFloat32Array> direction,
-                               XRCoordinateSystem* coordinate_system);
+                               XRSpace* space);
 
   // Called by JavaScript to manually end the session.
   ScriptPromise end(ScriptState*);

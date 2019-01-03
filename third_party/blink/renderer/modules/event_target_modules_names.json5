@@ -65,8 +65,8 @@
     "MIDIInput",
     "MIDIPort",
     "XR",
-    "XRCoordinateSystem",
     "XRSession",
+    "XRSpace",
     {
       name: "WebSocket",
       ImplementedAs: "DOMWebSocket",

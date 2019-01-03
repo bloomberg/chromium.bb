@@ -11,8 +11,7 @@
   readonly attribute XRSession session;
   readonly attribute FrozenArray<XRView> views;
 
-  // TODO(https://crbug.com/915050): Update definition to match spec.
-  XRViewerPose? getViewerPose(XRCoordinateSystem coordinateSystem);
+  XRViewerPose? getViewerPose(XRReferenceSpace referenceSpace);
   XRInputPose? getInputPose(XRInputSource inputSource,
-                            XRCoordinateSystem coordinateSystem);
+                            XRReferenceSpace referenceSpace);
 };
