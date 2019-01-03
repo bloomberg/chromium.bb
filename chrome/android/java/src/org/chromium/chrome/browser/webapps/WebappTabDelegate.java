@@ -84,7 +84,7 @@ public class WebappTabDelegate extends TabDelegate {
             boolean foundSpecializedHandler = false;
 
             for (String result : ExternalNavigationDelegateImpl.getSpecializedHandlersWithFilter(
-                         handlers, null, null)) {
+                         handlers, null)) {
                 if (result.equals(mApkPackageName)) {
                     // Current WebAPK matches and this is a HTTP(s) link. Don't intercept so that we
                     // can launch a CCT. See http://crbug.com/831806 for more context.
