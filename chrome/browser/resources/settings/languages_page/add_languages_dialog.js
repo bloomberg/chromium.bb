@@ -11,7 +11,7 @@ Polymer({
 
   behaviors: [
     CrScrollableBehavior,
-    settings.FindShortcutBehavior,
+    FindShortcutBehavior,
   ],
 
   properties: {
@@ -56,7 +56,7 @@ Polymer({
     this.removeSelfAsFindShortcutListener();
   },
 
-  // Override settings.FindShortcutBehavior methods.
+  // Override FindShortcutBehavior methods.
   handleFindShortcut: function(modalContextOpen) {
     // Assumes this is the only open modal.
     const searchInput = this.$.search.getSearchInput();

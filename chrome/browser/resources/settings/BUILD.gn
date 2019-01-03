@@ -107,7 +107,6 @@ group("closure_compile") {
 js_type_check("settings_resources") {
   deps = [
     ":extension_control_browser_proxy",
-    ":find_shortcut_behavior",
     ":global_scroll_target_behavior",
     ":lifetime_browser_proxy",
     ":open_window_proxy",
@@ -123,14 +122,6 @@ js_library("extension_control_browser_proxy") {
     "//ui/webui/resources/js:cr",
   ]
   externs_list = [ "$externs_path/chrome_send.js" ]
-}
-
-js_library("find_shortcut_behavior") {
-  deps = [
-    "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js/cr/ui:command",
-  ]
 }
 
 js_library("global_scroll_target_behavior") {

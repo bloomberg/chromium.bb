@@ -12,8 +12,8 @@ Polymer({
   is: 'settings-subpage',
 
   behaviors: [
+    FindShortcutBehavior,
     Polymer.IronResizableBehavior,
-    settings.FindShortcutBehavior,
     settings.RouteObserverBehavior,
   ],
 
@@ -133,7 +133,7 @@ Polymer({
     this.searchTerm = e.detail;
   },
 
-  // Override settings.FindShortcutBehavior methods.
+  // Override FindShortcutBehavior methods.
   handleFindShortcut: function(modalContextOpen) {
     if (modalContextOpen) {
       return false;

@@ -23,7 +23,7 @@ Polymer({
   behaviors: [
     settings.RouteObserverBehavior,
     CrContainerShadowBehavior,
-    settings.FindShortcutBehavior,
+    FindShortcutBehavior,
   ],
 
   properties: {
@@ -215,7 +215,7 @@ Polymer({
     this.$.main.searchContents(urlSearchQuery);
   },
 
-  // Override settings.FindShortcutBehavior methods.
+  // Override FindShortcutBehavior methods.
   handleFindShortcut: function(modalContextOpen) {
     if (modalContextOpen) {
       return false;

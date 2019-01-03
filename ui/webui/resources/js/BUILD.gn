@@ -19,6 +19,7 @@ js_type_check("js_resources") {
     ":cr",
     ":dark_mode",
     ":event_tracker",
+    ":find_shortcut_behavior",
     ":i18n_behavior",
     ":i18n_template",
     ":i18n_template_no_process",
@@ -125,4 +126,12 @@ js_library("web_ui_listener_behavior") {
 
 js_library("webui_resource_test") {
   externs_list = [ "dom_automation_controller.js" ]
+}
+
+js_library("find_shortcut_behavior") {
+  deps = [
+    ":assert",
+    ":cr",
+    "cr/ui:command",
+  ]
 }
