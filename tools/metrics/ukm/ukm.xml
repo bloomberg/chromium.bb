@@ -3414,6 +3414,19 @@ be describing additional metrics about the same event.
       origin of the main frame request. In ms.
     </summary>
   </metric>
+  <metric name="MainFrameResource.NavigationStartToRequestStart">
+    <summary>
+      The duration from the start of the navigation to the start of the main
+      frame request. This includes the time to process any redirects on the main
+      frame request. In ms.
+    </summary>
+  </metric>
+  <metric name="MainFrameResource.RedirectCount">
+    <summary>
+      The number of main frame redirects that occurred before commit. Unset if
+      there were no redirects.
+    </summary>
+  </metric>
   <metric name="MainFrameResource.RequestStartToReceiveHeadersEnd">
     <summary>
       The duration from when the request was started to the time when its

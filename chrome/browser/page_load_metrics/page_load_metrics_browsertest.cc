@@ -252,6 +252,9 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPage) {
     EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
         kv.second.get(),
         PageLoad::kMainFrameResource_RequestStartToReceiveHeadersEndName));
+    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
+        kv.second.get(),
+        PageLoad::kMainFrameResource_NavigationStartToRequestStartName));
   }
 
   // Verify that NoPageLoadMetricsRecorded returns false when PageLoad metrics

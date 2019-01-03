@@ -63,6 +63,13 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnStart(
   return CONTINUE_OBSERVING;
 }
 
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+UkmPageLoadMetricsObserver::OnRedirect(
+    content::NavigationHandle* navigation_handle) {
+  main_frame_request_redirect_count_++;
+  return CONTINUE_OBSERVING;
+}
+
 UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle,
     ukm::SourceId source_id) {
@@ -73,6 +80,7 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
   // The PageTransition for the navigation may be updated on commit.
   page_transition_ = navigation_handle->GetPageTransition();
   was_cached_ = navigation_handle->WasResponseCached();
+  navigation_start_ = navigation_handle->NavigationStart();
   return CONTINUE_OBSERVING;
 }
 
@@ -270,7 +278,7 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
       ukm::GetExponentialBucketMin(network_bytes_, 1.3));
 
   if (main_frame_timing_)
-    ReportMainResourceTimingMetrics(&builder);
+    ReportMainResourceTimingMetrics(timing, &builder);
 
   // Ensure that before user input metrics are recorded for all page loads, even
   // if no user input was processed during the page load lifetime.
@@ -352,6 +360,7 @@ void UkmPageLoadMetricsObserver::RecordBeforeUserInputMetrics(
 }
 
 void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
     ukm::builders::PageLoad* builder) {
   DCHECK(main_frame_timing_.has_value());
 
@@ -400,6 +409,20 @@ void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
   }
   builder->SetMainFrameResource_RequestStartToReceiveHeadersEnd(
       request_start_to_receive_headers_end_ms);
+
+  if (!main_frame_timing_->request_start.is_null() &&
+      !navigation_start_.is_null()) {
+    base::TimeDelta navigation_start_to_request_start =
+        main_frame_timing_->request_start - navigation_start_;
+
+    builder->SetMainFrameResource_NavigationStartToRequestStart(
+        navigation_start_to_request_start.InMilliseconds());
+  }
+
+  if (main_frame_request_redirect_count_ > 0) {
+    builder->SetMainFrameResource_RedirectCount(
+        main_frame_request_redirect_count_);
+  }
 }
 
 void UkmPageLoadMetricsObserver::ReportLayoutStability(
