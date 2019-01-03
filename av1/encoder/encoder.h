@@ -318,7 +318,7 @@ typedef struct AV1EncoderConfig {
   aom_superblock_size_t superblock_size;
   unsigned int large_scale_tile;
   unsigned int single_tile_decoding;
-  int monochrome;
+  uint8_t monochrome;
   unsigned int full_still_picture_hdr;
   int enable_dual_filter;
   unsigned int motion_vector_unit_test;
