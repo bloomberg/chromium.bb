@@ -77,7 +77,6 @@ source_set("lib") {
     deps += [
       "//chromeos/assistant/internal",
       "//chromeos/assistant/internal:build_libassistant",
-      "//chromeos/assistant/internal/action",
       "//chromeos/assistant/internal/proto/google3",
       "//chromeos/resources",
       "//chromeos/services/assistant/public/proto",
