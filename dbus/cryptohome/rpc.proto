@@ -453,3 +453,9 @@ message MigrateKeyRequest {
 // Mount the guest user partition.
 message MountGuestRequest {
 }
+
+// Unmount request. Currently we only support unmounting all mounted cryptohomes
+// but in the future we may implement per-user unmount, at which point we can
+// extend this proto with the necessary information.
+message UnmountRequest {
+}
