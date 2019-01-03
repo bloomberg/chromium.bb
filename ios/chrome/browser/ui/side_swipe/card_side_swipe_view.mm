@@ -191,7 +191,7 @@ const CGFloat kResizeFactor = 4;
         if (PagePlaceholderTabHelper::FromWebState(tab.webState)
                 ->will_add_placeholder_for_next_navigation() &&
             !ios::device_util::IsSingleCoreDevice()) {
-          [card setImage:SnapshotTabHelper::GetDefaultSnapshotImage()];
+          [card setImage:nil];
           dispatch_async(priorityQueue, ^{
             UIImage* greyImage = [self smallGreyImage:image];
             dispatch_async(dispatch_get_main_queue(), ^{

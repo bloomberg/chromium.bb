@@ -1423,21 +1423,18 @@ enum class EnterTabSwitcherSnapshotResult {
     BOOL loading = currentWebState->IsLoading();
     SnapshotTabHelper::FromWebState(currentWebState)
         ->UpdateSnapshotWithCallback(^(UIImage* snapshot) {
-          BOOL failed =
-              !snapshot ||
-              snapshot == SnapshotTabHelper::GetDefaultSnapshotImage();
           EnterTabSwitcherSnapshotResult snapshotResult;
-          if (loading && failed) {
+          if (loading && !snapshot) {
             snapshotResult =
                 EnterTabSwitcherSnapshotResult::kPageLoadingAndSnapshotFailed;
-          } else if (loading && !failed) {
+          } else if (loading && snapshot) {
             snapshotResult = EnterTabSwitcherSnapshotResult::
                 kPageLoadingAndSnapshotSucceeded;
-          } else if (!loading && failed) {
+          } else if (!loading && !snapshot) {
             snapshotResult = EnterTabSwitcherSnapshotResult::
                 kPageNotLoadingAndSnapshotFailed;
           } else {
-            DCHECK(!loading && !failed);
+            DCHECK(!loading && snapshot);
             snapshotResult = EnterTabSwitcherSnapshotResult::
                 kPageNotLoadingAndSnapshotSucceeded;
           }

@@ -44,27 +44,31 @@ class SnapshotTabHelper : public infobars::InfoBarManager::Observer,
   // Retrieves a color snapshot for the current page, invoking |callback|
   // with the image. The callback may be called synchronously is there is
   // a cached snapshot available in memory, otherwise it will be invoked
-  // asynchronously after retrieved from disk or re-generated.
+  // asynchronously after retrieved from disk. Invokes |callback| with nil if a
+  // snapshot does not exist.
   void RetrieveColorSnapshot(void (^callback)(UIImage*));
 
   // Retrieves a grey snapshot for the current page, invoking |callback|
   // with the image. The callback may be called synchronously is there is
   // a cached snapshot available in memory, otherwise it will be invoked
-  // asynchronously after retrieved from disk or re-generated.
+  // asynchronously after retrieved from disk or re-generated. Invokes
+  // |callback| with nil if a snapshot does not exist.
   void RetrieveGreySnapshot(void (^callback)(UIImage*));
 
   // Asynchronously generates a new snapshot, updates the snapshot cache, and
-  // runs |callback| with the new snapshot image.
+  // invokes |callback| with the new snapshot image. Invokes |callback| with nil
+  // if snapshot generation fails.
   void UpdateSnapshotWithCallback(void (^callback)(UIImage*));
 
   // DEPRECATED(crbug.com/917929): Use the asynchronous function
   // |UpdateSnapshotWithCallback()| for all new callsites.
   // Generates a new snapshot, updates the snapshot cache, and returns the new
-  // snapshot image.
+  // snapshot image. Returns nil if snapshot generation fails.
   UIImage* UpdateSnapshot();
 
   // Generates a new snapshot without any overlays, and returns the new snapshot
-  // image. This does not update the snapshot cache.
+  // image. This does not update the snapshot cache. Returns nil if snapshot
+  // generation fails.
   UIImage* GenerateSnapshotWithoutOverlays();
 
   // Requests deletion of the current page snapshot from disk and memory.
@@ -72,9 +76,6 @@ class SnapshotTabHelper : public infobars::InfoBarManager::Observer,
 
   // Instructs the helper not to snapshot content for the next page load event.
   void IgnoreNextLoad();
-
-  // Returns an image to use as replacement of a missing snapshot.
-  static UIImage* GetDefaultSnapshotImage();
 
  private:
   SnapshotTabHelper(web::WebState* web_state, NSString* session_id);
