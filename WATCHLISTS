@@ -1051,11 +1051,9 @@
       'filepath': 'ios/clean/',
     },
     'ios_flags': {
-      'filepath': 'ios/chrome/browser/about_flags.h|'\
-                  'ios/chrome/browser/about_flags.mm|'\
-                  'ios/chrome/browser/experimental_flags.h|'\
-                  'ios/chrome/browser/experimental_flags.mm|'\
-                  'ios/chrome/browser/resources/Settings.bundle/Experimental.plist',
+      'filepath': 'ios/chrome/browser/about_flags\.(h|mm)|'\
+                  'ios/chrome/browser/experimental_flags\.(h|mm)|'\
+                  'ios/chrome/browser/resources/Settings.bundle/Experimental\.plist',
     },
     'ios_showcase': {
       'filepath': 'ios/showcase/',
