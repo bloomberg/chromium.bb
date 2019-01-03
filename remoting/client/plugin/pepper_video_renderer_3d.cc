@@ -566,7 +566,8 @@ void PepperVideoRenderer3D::CreateProgram(const char* vertex_shader,
   gles2_if_->EnableVertexAttribArray(graphics_3d, tc_location);
   gles2_if_->VertexAttribPointer(
       graphics_3d, tc_location, 2, GL_FLOAT, GL_FALSE, 0,
-      static_cast<float*>(0) + 8);  // Skip position coordinates.
+      reinterpret_cast<void*>(8 *
+                              sizeof(GLfloat)));  // Skip position coordinates.
 
   gles2_if_->UseProgram(graphics_3d, 0);
 

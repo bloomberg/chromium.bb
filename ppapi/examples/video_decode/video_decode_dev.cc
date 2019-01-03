@@ -666,7 +666,8 @@ Shader VideoDecodeDemoInstance::CreateProgram(const char* vertex_shader,
   gles2_if_->EnableVertexAttribArray(context_->pp_resource(), tc_location);
   gles2_if_->VertexAttribPointer(
       context_->pp_resource(), tc_location, 2, GL_FLOAT, GL_FALSE, 0,
-      static_cast<float*>(0) + 8);  // Skip position coordinates.
+      reinterpret_cast<void*>(8 *
+                              sizeof(GLfloat)));  // Skip position coordinates.
 
   gles2_if_->UseProgram(context_->pp_resource(), 0);
   assertNoGLError();
