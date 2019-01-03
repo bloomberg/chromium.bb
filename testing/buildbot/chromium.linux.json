@@ -675,7 +675,7 @@
             }
           ]
         },
-        "test": "castrunner_tests"
+        "test": "castrunner_unittests"
       },
       {
         "args": [
@@ -890,20 +890,6 @@
           ]
         },
         "test": "webrunner_browsertests"
-      },
-      {
-        "args": [
-          "--qemu-require-kvm"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "kvm": "1"
-            }
-          ]
-        },
-        "test": "webrunner_smoketests"
       },
       {
         "args": [
