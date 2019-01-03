@@ -86,6 +86,7 @@ TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistration) {
       {"", {"very", "awesome"}}};
   std::set<std::string> mime_types = {"text/plain", "text/x-python"};
   bool no_display = true;
+  std::string executable_file_name = "execName";
 
   std::string app_id = CrostiniTestHelper::GenerateAppId(
       desktop_file_id, vm_name, container_name);
@@ -98,6 +99,7 @@ TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistration) {
   App* app = app_list.add_apps();
   app->set_desktop_file_id(desktop_file_id);
   app->set_no_display(no_display);
+  app->set_executable_file_name(executable_file_name);
 
   for (const auto& localized_name : name) {
     App::LocaleString::Entry* entry = app->mutable_name()->add_values();
@@ -134,6 +136,7 @@ TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistration) {
   EXPECT_EQ(result->Keywords(), keywords[""]);
   EXPECT_EQ(result->MimeTypes(), mime_types);
   EXPECT_EQ(result->NoDisplay(), no_display);
+  EXPECT_EQ(result->ExecutableFileName(), executable_file_name);
 }
 
 TEST_F(CrostiniRegistryServiceTest, Observer) {
@@ -494,6 +497,27 @@ TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistrationKeywords) {
   EXPECT_EQ(result->Keywords(), keywords["ge"]);
   g_browser_process->SetApplicationLocale("te");
   EXPECT_EQ(result->Keywords(), keywords["te"]);
+}
+
+TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistrationExecutableFileName) {
+  std::string executable_file_name = "myExec";
+  std::string app_id_valid_exec =
+      CrostiniTestHelper::GenerateAppId("app", "vm", "container");
+  std::string app_id_no_exec =
+      CrostiniTestHelper::GenerateAppId("noExec", "vm", "container");
+  ApplicationList app_list =
+      CrostiniTestHelper::BasicAppList("app", "vm", "container");
+  *app_list.add_apps() = CrostiniTestHelper::BasicApp("noExec");
+
+  app_list.mutable_apps(0)->set_executable_file_name(executable_file_name);
+  service()->UpdateApplicationList(app_list);
+
+  base::Optional<CrostiniRegistryService::Registration> result_valid_exec =
+      service()->GetRegistration(app_id_valid_exec);
+  base::Optional<CrostiniRegistryService::Registration> result_no_exec =
+      service()->GetRegistration(app_id_no_exec);
+  EXPECT_EQ(result_valid_exec->ExecutableFileName(), executable_file_name);
+  EXPECT_EQ(result_no_exec->ExecutableFileName(), "");
 }
 
 }  // namespace crostini

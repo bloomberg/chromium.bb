@@ -736,11 +736,13 @@ TEST_F(AppSearchProviderTest, CrostiniApp) {
   std::map<std::string, std::set<std::string>> keywords;
   keywords[""] = {"wow", "amazing", "excellent app"};
   crostini_test_helper.UpdateAppKeywords(testApp, keywords);
+  testApp.set_executable_file_name("executable");
   crostini_test_helper.AddApp(testApp);
   EXPECT_EQ("goodApp", RunQuery("wow"));
   EXPECT_EQ("goodApp", RunQuery("amazing"));
   EXPECT_EQ("goodApp", RunQuery("excellent app"));
   EXPECT_EQ("goodApp", RunQuery("good"));
+  EXPECT_EQ("goodApp", RunQuery("executable"));
   EXPECT_EQ("", RunQuery("wow amazing"));
   EXPECT_EQ("", RunQuery("terrible"));
 }
