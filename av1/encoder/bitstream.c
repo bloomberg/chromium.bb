@@ -1230,13 +1230,14 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
 }
 
 #if CONFIG_RD_DEBUG
-static void dump_mode_info(MODE_INFO *mi) {
+static void dump_mode_info(MB_MODE_INFO *mi) {
   printf("\nmi->mi_row == %d\n", mi->mi_row);
   printf("&& mi->mi_col == %d\n", mi->mi_col);
   printf("&& mi->sb_type == %d\n", mi->sb_type);
   printf("&& mi->tx_size == %d\n", mi->tx_size);
   printf("&& mi->mode == %d\n", mi->mode);
 }
+
 static int rd_token_stats_mismatch(RD_STATS *rd_stats, TOKEN_STATS *token_stats,
                                    int plane) {
   if (rd_stats->txb_coeff_cost[plane] != token_stats->cost) {
@@ -1470,14 +1471,16 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
                                   row, col, &block[plane], plane);
           }
         }
+      }
 #if CONFIG_RD_DEBUG
+      for (plane = 0; plane < num_planes && is_inter_block(mbmi); ++plane) {
         if (mbmi->sb_type >= BLOCK_8X8 &&
             rd_token_stats_mismatch(&mbmi->rd_stats, &token_stats, plane)) {
-          dump_mode_info(m);
+          dump_mode_info(mbmi);
           assert(0);
         }
-#endif  // CONFIG_RD_DEBUG
       }
+#endif  // CONFIG_RD_DEBUG
     }
   }
 }

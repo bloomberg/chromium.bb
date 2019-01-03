@@ -4844,7 +4844,7 @@ static void try_tx_block_no_split(
        rd_stats->skip == 1) &&
       !xd->lossless[mbmi->segment_id]) {
 #if CONFIG_RD_DEBUG
-    av1_update_txb_coeff_cost(rd_stats, plane, tx_size, blk_row, blk_col,
+    av1_update_txb_coeff_cost(rd_stats, 0, tx_size, blk_row, blk_col,
                               zero_blk_rate - rd_stats->rate);
 #endif  // CONFIG_RD_DEBUG
     rd_stats->rate = zero_blk_rate;
