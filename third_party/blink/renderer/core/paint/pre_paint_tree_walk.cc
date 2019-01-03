@@ -115,11 +115,6 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view) {
   if (context().tree_builder_context) {
     PaintPropertyTreeBuilder::SetupContextForFrame(
         frame_view, *context().tree_builder_context);
-  }
-  paint_invalidator_.InvalidatePaint(
-      frame_view, base::OptionalOrNullptr(context().tree_builder_context),
-      context().paint_invalidator_context);
-  if (context().tree_builder_context) {
     context().tree_builder_context->supports_composited_raster_invalidation =
         frame_view.GetFrame().GetSettings()->GetAcceleratedCompositingEnabled();
   }

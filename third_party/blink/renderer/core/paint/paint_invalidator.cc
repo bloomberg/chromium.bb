@@ -248,13 +248,14 @@ void PaintInvalidator::UpdatePaintInvalidationContainer(
       context.paint_invalidation_container_for_stacked_contents =
           ToLayoutBoxModelObject(&object);
   } else if (object.IsLayoutView()) {
-    // paintInvalidationContainerForStackedContents is only for stacked
+    // paint_invalidation_container_for_stacked_contents is only for stacked
     // descendants in its own frame, because it doesn't establish stacking
     // context for stacked contents in sub-frames.
     // Contents stacked in the root stacking context in this frame should use
-    // this frame's paintInvalidationContainer.
+    // this frame's PaintInvalidationContainer.
     context.paint_invalidation_container_for_stacked_contents =
-        context.paint_invalidation_container;
+        context.paint_invalidation_container =
+            &object.ContainerForPaintInvalidation();
   } else if (object.IsColumnSpanAll() ||
              object.IsFloatingWithNonContainingBlockParent()) {
     // In these cases, the object may belong to an ancestor of the current
@@ -364,28 +365,6 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
         }
       }
     }
-  }
-}
-
-void PaintInvalidator::InvalidatePaint(
-    LocalFrameView& frame_view,
-    const PaintPropertyTreeBuilderContext* tree_builder_context,
-
-    PaintInvalidatorContext& context) {
-  LayoutView* layout_view = frame_view.GetLayoutView();
-  CHECK(layout_view);
-
-  context.paint_invalidation_container =
-      context.paint_invalidation_container_for_stacked_contents =
-          &layout_view->ContainerForPaintInvalidation();
-  context.painting_layer = layout_view->Layer();
-  context.fragment_data = &layout_view->FirstFragment();
-  if (tree_builder_context) {
-    context.tree_builder_context_ = &tree_builder_context->fragments[0];
-#if DCHECK_IS_ON()
-    context.tree_builder_context_actually_needed_ =
-        tree_builder_context->is_actually_needed;
-#endif
   }
 }
 
