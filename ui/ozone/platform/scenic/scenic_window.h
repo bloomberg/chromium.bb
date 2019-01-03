@@ -5,7 +5,6 @@
 #ifndef UI_OZONE_PLATFORM_SCENIC_SCENIC_WINDOW_H_
 #define UI_OZONE_PLATFORM_SCENIC_SCENIC_WINDOW_H_
 
-#include <fuchsia/ui/input/cpp/fidl.h>
 #include <fuchsia/ui/viewsv1/cpp/fidl.h>
 #include <lib/ui/scenic/cpp/resources.h>
 #include <lib/ui/scenic/cpp/session.h>
@@ -29,7 +28,6 @@ class PlatformWindowDelegate;
 
 class OZONE_EXPORT ScenicWindow : public PlatformWindow,
                                   public fuchsia::ui::viewsv1::ViewListener,
-                                  public fuchsia::ui::input::InputListener,
                                   public InputEventDispatcherDelegate {
  public:
   // Both |window_manager| and |delegate| must outlive the ScenicWindow.
@@ -70,11 +68,6 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
   // views::ViewListener interface.
   void OnPropertiesChanged(fuchsia::ui::viewsv1::ViewProperties properties,
                            OnPropertiesChangedCallback callback) override;
-
-  // fuchsia::ui::input::InputListener interface.
-  // TODO(crbug.com/881591): Remove this when ViewsV1 deprecation is complete.
-  void OnEvent(fuchsia::ui::input::InputEvent event,
-               OnEventCallback callback) override;
 
   // Callbacks for |scenic_session_|.
   void OnScenicError(zx_status_t status);
@@ -124,11 +117,6 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
 
   // Current view size in device pixels.
   gfx::Size size_pixels_;
-
-  // InputConnection and InputListener binding used to receive input events from
-  // the view.
-  fuchsia::ui::input::InputConnectionPtr input_connection_;
-  fidl::Binding<fuchsia::ui::input::InputListener> input_listener_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ScenicWindow);
 };
