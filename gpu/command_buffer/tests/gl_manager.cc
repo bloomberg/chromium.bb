@@ -22,7 +22,6 @@
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
-#include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
@@ -284,7 +283,7 @@ void GLManager::InitializeWithWorkarounds(
 void GLManager::InitializeWithWorkaroundsImpl(
     const GLManager::Options& options,
     const GpuDriverBugWorkarounds& workarounds) {
-  const SharedMemoryLimits limits;
+  const SharedMemoryLimits limits = options.shared_memory_limits;
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   DCHECK(!command_line.HasSwitch(switches::kDisableGLExtensions));

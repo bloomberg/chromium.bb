@@ -12,6 +12,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/client/gpu_control.h"
+#include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
@@ -77,6 +78,8 @@ class GLManager : private GpuControl {
     gpu::ImageFactory* image_factory = nullptr;
     // Whether to preserve the backbuffer after a call to SwapBuffers().
     bool preserve_backbuffer = false;
+    // Shared memory limits
+    SharedMemoryLimits shared_memory_limits = {};
   };
   GLManager();
   ~GLManager() override;

@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 
 #include "gpu/command_buffer/common/discardable_handle.h"
+#include "gpu/command_buffer/service/multi_draw_manager.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 
 namespace gpu {
@@ -1615,11 +1616,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleDrawElementsInstancedANGLE(
   return DoDrawElementsInstancedANGLE(mode, count, type, indices, primcount);
 }
 
-error::Error GLES2DecoderPassthroughImpl::HandleMultiDrawArraysWEBGL(
+error::Error GLES2DecoderPassthroughImpl::HandleMultiDrawArraysCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  const volatile gles2::cmds::MultiDrawArraysWEBGL& c =
-      *static_cast<const volatile gles2::cmds::MultiDrawArraysWEBGL*>(cmd_data);
+  const volatile gles2::cmds::MultiDrawArraysCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::MultiDrawArraysCHROMIUM*>(
+          cmd_data);
   if (!features().webgl_multi_draw) {
     return error::kUnknownCommand;
   }
@@ -1645,20 +1647,19 @@ error::Error GLES2DecoderPassthroughImpl::HandleMultiDrawArraysWEBGL(
   if (counts == nullptr) {
     return error::kOutOfBounds;
   }
-  // Copy these arrays out of shared memory because it is possible
-  // for the shared memory to be modified after validation but
-  // before drawing.
-  std::vector<GLint> firsts_copy(firsts, firsts + drawcount);
-  std::vector<GLsizei> counts_copy(counts, counts + drawcount);
-  return DoMultiDrawArraysWEBGL(mode, firsts_copy.data(), counts_copy.data(),
-                                drawcount);
+  if (!multi_draw_manager_->MultiDrawArrays(mode, firsts, counts, drawcount)) {
+    return error::kInvalidArguments;
+  }
+  return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::HandleMultiDrawArraysInstancedWEBGL(
+error::Error
+GLES2DecoderPassthroughImpl::HandleMultiDrawArraysInstancedCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  const volatile gles2::cmds::MultiDrawArraysInstancedWEBGL& c =
-      *static_cast<const volatile gles2::cmds::MultiDrawArraysInstancedWEBGL*>(
+  const volatile gles2::cmds::MultiDrawArraysInstancedCHROMIUM& c =
+      *static_cast<
+          const volatile gles2::cmds::MultiDrawArraysInstancedCHROMIUM*>(
           cmd_data);
   if (!features().webgl_multi_draw_instanced) {
     return error::kUnknownCommand;
@@ -1694,23 +1695,18 @@ error::Error GLES2DecoderPassthroughImpl::HandleMultiDrawArraysInstancedWEBGL(
   if (instance_counts == nullptr) {
     return error::kOutOfBounds;
   }
-  // Copy these arrays out of shared memory because it is possible
-  // for the shared memory to be modified after validation but
-  // before drawing.
-  std::vector<GLint> firsts_copy(firsts, firsts + drawcount);
-  std::vector<GLsizei> counts_copy(counts, counts + drawcount);
-  std::vector<GLsizei> instance_counts_copy(instance_counts,
-                                            instance_counts + drawcount);
-  return DoMultiDrawArraysInstancedWEBGL(
-      mode, firsts_copy.data(), counts_copy.data(), instance_counts_copy.data(),
-      drawcount);
+  if (!multi_draw_manager_->MultiDrawArraysInstanced(
+          mode, firsts, counts, instance_counts, drawcount)) {
+    return error::kInvalidArguments;
+  }
+  return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::HandleMultiDrawElementsWEBGL(
+error::Error GLES2DecoderPassthroughImpl::HandleMultiDrawElementsCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  const volatile gles2::cmds::MultiDrawElementsWEBGL& c =
-      *static_cast<const volatile gles2::cmds::MultiDrawElementsWEBGL*>(
+  const volatile gles2::cmds::MultiDrawElementsCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::MultiDrawElementsCHROMIUM*>(
           cmd_data);
   if (!features().webgl_multi_draw) {
     return error::kUnknownCommand;
@@ -1738,26 +1734,21 @@ error::Error GLES2DecoderPassthroughImpl::HandleMultiDrawElementsWEBGL(
   if (offsets == nullptr) {
     return error::kOutOfBounds;
   }
-  // The do-er for this function calls the ANGLE implementation which
-  // requires an array of pointers, not 32-bit integers
-  std::vector<const GLvoid*> indices(drawcount);
-  for (GLsizei draw_id = 0; draw_id < drawcount; ++draw_id) {
-    indices[draw_id] =
-        reinterpret_cast<GLvoid*>(static_cast<GLintptr>(offsets[draw_id]));
+  if (!multi_draw_manager_->MultiDrawElements(mode, counts, type, offsets,
+                                              drawcount)) {
+    return error::kInvalidArguments;
   }
-  // Copy these arrays out of shared memory because it is possible
-  // for the shared memory to be modified after validation but
-  // before drawing.
-  std::vector<GLsizei> counts_copy(counts, counts + drawcount);
-  return DoMultiDrawElementsWEBGL(mode, counts_copy.data(), type,
-                                  indices.data(), drawcount);
+  return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::HandleMultiDrawElementsInstancedWEBGL(
+error::Error
+GLES2DecoderPassthroughImpl::HandleMultiDrawElementsInstancedCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  const volatile gles2::cmds::MultiDrawElementsInstancedWEBGL& c = *static_cast<
-      const volatile gles2::cmds::MultiDrawElementsInstancedWEBGL*>(cmd_data);
+  const volatile gles2::cmds::MultiDrawElementsInstancedCHROMIUM& c =
+      *static_cast<
+          const volatile gles2::cmds::MultiDrawElementsInstancedCHROMIUM*>(
+          cmd_data);
   if (!features().webgl_multi_draw_instanced) {
     return error::kUnknownCommand;
   }
@@ -1793,22 +1784,11 @@ error::Error GLES2DecoderPassthroughImpl::HandleMultiDrawElementsInstancedWEBGL(
   if (instance_counts == nullptr) {
     return error::kOutOfBounds;
   }
-  // The do-er for this function calls the ANGLE implementation which
-  // requires an array of pointers, not 32-bit integers
-  std::vector<const GLvoid*> indices(drawcount);
-  for (GLsizei draw_id = 0; draw_id < drawcount; ++draw_id) {
-    indices[draw_id] =
-        reinterpret_cast<GLvoid*>(static_cast<GLintptr>(offsets[draw_id]));
+  if (!multi_draw_manager_->MultiDrawElementsInstanced(
+          mode, counts, type, offsets, instance_counts, drawcount)) {
+    return error::kInvalidArguments;
   }
-  // Copy these arrays out of shared memory because it is possible
-  // for the shared memory to be modified after validation but
-  // before drawing.
-  std::vector<GLsizei> counts_copy(counts, counts + drawcount);
-  std::vector<GLsizei> instance_counts_copy(instance_counts,
-                                            instance_counts + drawcount);
-  return DoMultiDrawElementsInstancedWEBGL(
-      mode, counts_copy.data(), type, indices.data(),
-      instance_counts_copy.data(), drawcount);
+  return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::HandleVertexAttribDivisorANGLE(

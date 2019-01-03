@@ -2298,13 +2298,34 @@ TEST_F(GLES2FormatTest, ShaderSourceBucket) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-TEST_F(GLES2FormatTest, MultiDrawArraysWEBGL) {
-  cmds::MultiDrawArraysWEBGL& cmd = *GetBufferAs<cmds::MultiDrawArraysWEBGL>();
+TEST_F(GLES2FormatTest, MultiDrawBeginCHROMIUM) {
+  cmds::MultiDrawBeginCHROMIUM& cmd =
+      *GetBufferAs<cmds::MultiDrawBeginCHROMIUM>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(11));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::MultiDrawBeginCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLsizei>(11), cmd.drawcount);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, MultiDrawEndCHROMIUM) {
+  cmds::MultiDrawEndCHROMIUM& cmd = *GetBufferAs<cmds::MultiDrawEndCHROMIUM>();
+  void* next_cmd = cmd.Set(&cmd);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::MultiDrawEndCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, MultiDrawArraysCHROMIUM) {
+  cmds::MultiDrawArraysCHROMIUM& cmd =
+      *GetBufferAs<cmds::MultiDrawArraysCHROMIUM>();
   void* next_cmd =
       cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<uint32_t>(12),
               static_cast<uint32_t>(13), static_cast<uint32_t>(14),
               static_cast<uint32_t>(15), static_cast<GLsizei>(16));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::MultiDrawArraysWEBGL::kCmdId),
+  EXPECT_EQ(static_cast<uint32_t>(cmds::MultiDrawArraysCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLenum>(11), cmd.mode);
@@ -2316,16 +2337,17 @@ TEST_F(GLES2FormatTest, MultiDrawArraysWEBGL) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-TEST_F(GLES2FormatTest, MultiDrawArraysInstancedWEBGL) {
-  cmds::MultiDrawArraysInstancedWEBGL& cmd =
-      *GetBufferAs<cmds::MultiDrawArraysInstancedWEBGL>();
+TEST_F(GLES2FormatTest, MultiDrawArraysInstancedCHROMIUM) {
+  cmds::MultiDrawArraysInstancedCHROMIUM& cmd =
+      *GetBufferAs<cmds::MultiDrawArraysInstancedCHROMIUM>();
   void* next_cmd =
       cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<uint32_t>(12),
               static_cast<uint32_t>(13), static_cast<uint32_t>(14),
               static_cast<uint32_t>(15), static_cast<uint32_t>(16),
               static_cast<uint32_t>(17), static_cast<GLsizei>(18));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::MultiDrawArraysInstancedWEBGL::kCmdId),
-            cmd.header.command);
+  EXPECT_EQ(
+      static_cast<uint32_t>(cmds::MultiDrawArraysInstancedCHROMIUM::kCmdId),
+      cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLenum>(11), cmd.mode);
   EXPECT_EQ(static_cast<uint32_t>(12), cmd.firsts_shm_id);
@@ -2338,14 +2360,14 @@ TEST_F(GLES2FormatTest, MultiDrawArraysInstancedWEBGL) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-TEST_F(GLES2FormatTest, MultiDrawElementsWEBGL) {
-  cmds::MultiDrawElementsWEBGL& cmd =
-      *GetBufferAs<cmds::MultiDrawElementsWEBGL>();
+TEST_F(GLES2FormatTest, MultiDrawElementsCHROMIUM) {
+  cmds::MultiDrawElementsCHROMIUM& cmd =
+      *GetBufferAs<cmds::MultiDrawElementsCHROMIUM>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11),
                            static_cast<uint32_t>(12), static_cast<uint32_t>(13),
                            static_cast<GLenum>(14), static_cast<uint32_t>(15),
                            static_cast<uint32_t>(16), static_cast<GLsizei>(17));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::MultiDrawElementsWEBGL::kCmdId),
+  EXPECT_EQ(static_cast<uint32_t>(cmds::MultiDrawElementsCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLenum>(11), cmd.mode);
@@ -2358,16 +2380,16 @@ TEST_F(GLES2FormatTest, MultiDrawElementsWEBGL) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-TEST_F(GLES2FormatTest, MultiDrawElementsInstancedWEBGL) {
-  cmds::MultiDrawElementsInstancedWEBGL& cmd =
-      *GetBufferAs<cmds::MultiDrawElementsInstancedWEBGL>();
+TEST_F(GLES2FormatTest, MultiDrawElementsInstancedCHROMIUM) {
+  cmds::MultiDrawElementsInstancedCHROMIUM& cmd =
+      *GetBufferAs<cmds::MultiDrawElementsInstancedCHROMIUM>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11),
                            static_cast<uint32_t>(12), static_cast<uint32_t>(13),
                            static_cast<GLenum>(14), static_cast<uint32_t>(15),
                            static_cast<uint32_t>(16), static_cast<uint32_t>(17),
                            static_cast<uint32_t>(18), static_cast<GLsizei>(19));
   EXPECT_EQ(
-      static_cast<uint32_t>(cmds::MultiDrawElementsInstancedWEBGL::kCmdId),
+      static_cast<uint32_t>(cmds::MultiDrawElementsInstancedCHROMIUM::kCmdId),
       cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLenum>(11), cmd.mode);

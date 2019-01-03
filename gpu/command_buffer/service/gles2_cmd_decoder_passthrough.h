@@ -46,6 +46,7 @@ namespace gles2 {
 
 class ContextGroup;
 class GPUTracer;
+class MultiDrawManager;
 class PassthroughAbstractTextureImpl;
 
 struct MappedBuffer {
@@ -574,6 +575,8 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   MailboxManager* mailbox_manager_ = nullptr;
 
   std::unique_ptr<GpuFenceManager> gpu_fence_manager_;
+
+  std::unique_ptr<MultiDrawManager> multi_draw_manager_;
 
   // State tracking of currently bound 2D textures (client IDs)
   size_t active_texture_unit_;

@@ -7493,9 +7493,69 @@ static_assert(offsetof(ShaderSourceBucket, shader) == 4,
 static_assert(offsetof(ShaderSourceBucket, str_bucket_id) == 8,
               "offset of ShaderSourceBucket str_bucket_id should be 8");
 
-struct MultiDrawArraysWEBGL {
-  typedef MultiDrawArraysWEBGL ValueType;
-  static const CommandId kCmdId = kMultiDrawArraysWEBGL;
+struct MultiDrawBeginCHROMIUM {
+  typedef MultiDrawBeginCHROMIUM ValueType;
+  static const CommandId kCmdId = kMultiDrawBeginCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLsizei _drawcount) {
+    SetHeader();
+    drawcount = _drawcount;
+  }
+
+  void* Set(void* cmd, GLsizei _drawcount) {
+    static_cast<ValueType*>(cmd)->Init(_drawcount);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  int32_t drawcount;
+};
+
+static_assert(sizeof(MultiDrawBeginCHROMIUM) == 8,
+              "size of MultiDrawBeginCHROMIUM should be 8");
+static_assert(offsetof(MultiDrawBeginCHROMIUM, header) == 0,
+              "offset of MultiDrawBeginCHROMIUM header should be 0");
+static_assert(offsetof(MultiDrawBeginCHROMIUM, drawcount) == 4,
+              "offset of MultiDrawBeginCHROMIUM drawcount should be 4");
+
+struct MultiDrawEndCHROMIUM {
+  typedef MultiDrawEndCHROMIUM ValueType;
+  static const CommandId kCmdId = kMultiDrawEndCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init() { SetHeader(); }
+
+  void* Set(void* cmd) {
+    static_cast<ValueType*>(cmd)->Init();
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+};
+
+static_assert(sizeof(MultiDrawEndCHROMIUM) == 4,
+              "size of MultiDrawEndCHROMIUM should be 4");
+static_assert(offsetof(MultiDrawEndCHROMIUM, header) == 0,
+              "offset of MultiDrawEndCHROMIUM header should be 0");
+
+struct MultiDrawArraysCHROMIUM {
+  typedef MultiDrawArraysCHROMIUM ValueType;
+  static const CommandId kCmdId = kMultiDrawArraysCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
@@ -7542,26 +7602,28 @@ struct MultiDrawArraysWEBGL {
   int32_t drawcount;
 };
 
-static_assert(sizeof(MultiDrawArraysWEBGL) == 28,
-              "size of MultiDrawArraysWEBGL should be 28");
-static_assert(offsetof(MultiDrawArraysWEBGL, header) == 0,
-              "offset of MultiDrawArraysWEBGL header should be 0");
-static_assert(offsetof(MultiDrawArraysWEBGL, mode) == 4,
-              "offset of MultiDrawArraysWEBGL mode should be 4");
-static_assert(offsetof(MultiDrawArraysWEBGL, firsts_shm_id) == 8,
-              "offset of MultiDrawArraysWEBGL firsts_shm_id should be 8");
-static_assert(offsetof(MultiDrawArraysWEBGL, firsts_shm_offset) == 12,
-              "offset of MultiDrawArraysWEBGL firsts_shm_offset should be 12");
-static_assert(offsetof(MultiDrawArraysWEBGL, counts_shm_id) == 16,
-              "offset of MultiDrawArraysWEBGL counts_shm_id should be 16");
-static_assert(offsetof(MultiDrawArraysWEBGL, counts_shm_offset) == 20,
-              "offset of MultiDrawArraysWEBGL counts_shm_offset should be 20");
-static_assert(offsetof(MultiDrawArraysWEBGL, drawcount) == 24,
-              "offset of MultiDrawArraysWEBGL drawcount should be 24");
+static_assert(sizeof(MultiDrawArraysCHROMIUM) == 28,
+              "size of MultiDrawArraysCHROMIUM should be 28");
+static_assert(offsetof(MultiDrawArraysCHROMIUM, header) == 0,
+              "offset of MultiDrawArraysCHROMIUM header should be 0");
+static_assert(offsetof(MultiDrawArraysCHROMIUM, mode) == 4,
+              "offset of MultiDrawArraysCHROMIUM mode should be 4");
+static_assert(offsetof(MultiDrawArraysCHROMIUM, firsts_shm_id) == 8,
+              "offset of MultiDrawArraysCHROMIUM firsts_shm_id should be 8");
+static_assert(
+    offsetof(MultiDrawArraysCHROMIUM, firsts_shm_offset) == 12,
+    "offset of MultiDrawArraysCHROMIUM firsts_shm_offset should be 12");
+static_assert(offsetof(MultiDrawArraysCHROMIUM, counts_shm_id) == 16,
+              "offset of MultiDrawArraysCHROMIUM counts_shm_id should be 16");
+static_assert(
+    offsetof(MultiDrawArraysCHROMIUM, counts_shm_offset) == 20,
+    "offset of MultiDrawArraysCHROMIUM counts_shm_offset should be 20");
+static_assert(offsetof(MultiDrawArraysCHROMIUM, drawcount) == 24,
+              "offset of MultiDrawArraysCHROMIUM drawcount should be 24");
 
-struct MultiDrawArraysInstancedWEBGL {
-  typedef MultiDrawArraysInstancedWEBGL ValueType;
-  static const CommandId kCmdId = kMultiDrawArraysInstancedWEBGL;
+struct MultiDrawArraysInstancedCHROMIUM {
+  typedef MultiDrawArraysInstancedCHROMIUM ValueType;
+  static const CommandId kCmdId = kMultiDrawArraysInstancedCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
@@ -7617,38 +7679,41 @@ struct MultiDrawArraysInstancedWEBGL {
   int32_t drawcount;
 };
 
-static_assert(sizeof(MultiDrawArraysInstancedWEBGL) == 36,
-              "size of MultiDrawArraysInstancedWEBGL should be 36");
-static_assert(offsetof(MultiDrawArraysInstancedWEBGL, header) == 0,
-              "offset of MultiDrawArraysInstancedWEBGL header should be 0");
-static_assert(offsetof(MultiDrawArraysInstancedWEBGL, mode) == 4,
-              "offset of MultiDrawArraysInstancedWEBGL mode should be 4");
+static_assert(sizeof(MultiDrawArraysInstancedCHROMIUM) == 36,
+              "size of MultiDrawArraysInstancedCHROMIUM should be 36");
+static_assert(offsetof(MultiDrawArraysInstancedCHROMIUM, header) == 0,
+              "offset of MultiDrawArraysInstancedCHROMIUM header should be 0");
+static_assert(offsetof(MultiDrawArraysInstancedCHROMIUM, mode) == 4,
+              "offset of MultiDrawArraysInstancedCHROMIUM mode should be 4");
 static_assert(
-    offsetof(MultiDrawArraysInstancedWEBGL, firsts_shm_id) == 8,
-    "offset of MultiDrawArraysInstancedWEBGL firsts_shm_id should be 8");
+    offsetof(MultiDrawArraysInstancedCHROMIUM, firsts_shm_id) == 8,
+    "offset of MultiDrawArraysInstancedCHROMIUM firsts_shm_id should be 8");
+static_assert(offsetof(MultiDrawArraysInstancedCHROMIUM, firsts_shm_offset) ==
+                  12,
+              "offset of MultiDrawArraysInstancedCHROMIUM firsts_shm_offset "
+              "should be 12");
 static_assert(
-    offsetof(MultiDrawArraysInstancedWEBGL, firsts_shm_offset) == 12,
-    "offset of MultiDrawArraysInstancedWEBGL firsts_shm_offset should be 12");
-static_assert(
-    offsetof(MultiDrawArraysInstancedWEBGL, counts_shm_id) == 16,
-    "offset of MultiDrawArraysInstancedWEBGL counts_shm_id should be 16");
-static_assert(
-    offsetof(MultiDrawArraysInstancedWEBGL, counts_shm_offset) == 20,
-    "offset of MultiDrawArraysInstancedWEBGL counts_shm_offset should be 20");
-static_assert(offsetof(MultiDrawArraysInstancedWEBGL, instance_counts_shm_id) ==
-                  24,
-              "offset of MultiDrawArraysInstancedWEBGL instance_counts_shm_id "
-              "should be 24");
-static_assert(offsetof(MultiDrawArraysInstancedWEBGL,
+    offsetof(MultiDrawArraysInstancedCHROMIUM, counts_shm_id) == 16,
+    "offset of MultiDrawArraysInstancedCHROMIUM counts_shm_id should be 16");
+static_assert(offsetof(MultiDrawArraysInstancedCHROMIUM, counts_shm_offset) ==
+                  20,
+              "offset of MultiDrawArraysInstancedCHROMIUM counts_shm_offset "
+              "should be 20");
+static_assert(offsetof(MultiDrawArraysInstancedCHROMIUM,
+                       instance_counts_shm_id) == 24,
+              "offset of MultiDrawArraysInstancedCHROMIUM "
+              "instance_counts_shm_id should be 24");
+static_assert(offsetof(MultiDrawArraysInstancedCHROMIUM,
                        instance_counts_shm_offset) == 28,
-              "offset of MultiDrawArraysInstancedWEBGL "
+              "offset of MultiDrawArraysInstancedCHROMIUM "
               "instance_counts_shm_offset should be 28");
-static_assert(offsetof(MultiDrawArraysInstancedWEBGL, drawcount) == 32,
-              "offset of MultiDrawArraysInstancedWEBGL drawcount should be 32");
+static_assert(
+    offsetof(MultiDrawArraysInstancedCHROMIUM, drawcount) == 32,
+    "offset of MultiDrawArraysInstancedCHROMIUM drawcount should be 32");
 
-struct MultiDrawElementsWEBGL {
-  typedef MultiDrawElementsWEBGL ValueType;
-  static const CommandId kCmdId = kMultiDrawElementsWEBGL;
+struct MultiDrawElementsCHROMIUM {
+  typedef MultiDrawElementsCHROMIUM ValueType;
+  static const CommandId kCmdId = kMultiDrawElementsCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
@@ -7699,30 +7764,31 @@ struct MultiDrawElementsWEBGL {
   int32_t drawcount;
 };
 
-static_assert(sizeof(MultiDrawElementsWEBGL) == 32,
-              "size of MultiDrawElementsWEBGL should be 32");
-static_assert(offsetof(MultiDrawElementsWEBGL, header) == 0,
-              "offset of MultiDrawElementsWEBGL header should be 0");
-static_assert(offsetof(MultiDrawElementsWEBGL, mode) == 4,
-              "offset of MultiDrawElementsWEBGL mode should be 4");
-static_assert(offsetof(MultiDrawElementsWEBGL, counts_shm_id) == 8,
-              "offset of MultiDrawElementsWEBGL counts_shm_id should be 8");
+static_assert(sizeof(MultiDrawElementsCHROMIUM) == 32,
+              "size of MultiDrawElementsCHROMIUM should be 32");
+static_assert(offsetof(MultiDrawElementsCHROMIUM, header) == 0,
+              "offset of MultiDrawElementsCHROMIUM header should be 0");
+static_assert(offsetof(MultiDrawElementsCHROMIUM, mode) == 4,
+              "offset of MultiDrawElementsCHROMIUM mode should be 4");
+static_assert(offsetof(MultiDrawElementsCHROMIUM, counts_shm_id) == 8,
+              "offset of MultiDrawElementsCHROMIUM counts_shm_id should be 8");
 static_assert(
-    offsetof(MultiDrawElementsWEBGL, counts_shm_offset) == 12,
-    "offset of MultiDrawElementsWEBGL counts_shm_offset should be 12");
-static_assert(offsetof(MultiDrawElementsWEBGL, type) == 16,
-              "offset of MultiDrawElementsWEBGL type should be 16");
-static_assert(offsetof(MultiDrawElementsWEBGL, offsets_shm_id) == 20,
-              "offset of MultiDrawElementsWEBGL offsets_shm_id should be 20");
+    offsetof(MultiDrawElementsCHROMIUM, counts_shm_offset) == 12,
+    "offset of MultiDrawElementsCHROMIUM counts_shm_offset should be 12");
+static_assert(offsetof(MultiDrawElementsCHROMIUM, type) == 16,
+              "offset of MultiDrawElementsCHROMIUM type should be 16");
 static_assert(
-    offsetof(MultiDrawElementsWEBGL, offsets_shm_offset) == 24,
-    "offset of MultiDrawElementsWEBGL offsets_shm_offset should be 24");
-static_assert(offsetof(MultiDrawElementsWEBGL, drawcount) == 28,
-              "offset of MultiDrawElementsWEBGL drawcount should be 28");
+    offsetof(MultiDrawElementsCHROMIUM, offsets_shm_id) == 20,
+    "offset of MultiDrawElementsCHROMIUM offsets_shm_id should be 20");
+static_assert(
+    offsetof(MultiDrawElementsCHROMIUM, offsets_shm_offset) == 24,
+    "offset of MultiDrawElementsCHROMIUM offsets_shm_offset should be 24");
+static_assert(offsetof(MultiDrawElementsCHROMIUM, drawcount) == 28,
+              "offset of MultiDrawElementsCHROMIUM drawcount should be 28");
 
-struct MultiDrawElementsInstancedWEBGL {
-  typedef MultiDrawElementsInstancedWEBGL ValueType;
-  static const CommandId kCmdId = kMultiDrawElementsInstancedWEBGL;
+struct MultiDrawElementsInstancedCHROMIUM {
+  typedef MultiDrawElementsInstancedCHROMIUM ValueType;
+  static const CommandId kCmdId = kMultiDrawElementsInstancedCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
@@ -7782,38 +7848,40 @@ struct MultiDrawElementsInstancedWEBGL {
   int32_t drawcount;
 };
 
-static_assert(sizeof(MultiDrawElementsInstancedWEBGL) == 40,
-              "size of MultiDrawElementsInstancedWEBGL should be 40");
-static_assert(offsetof(MultiDrawElementsInstancedWEBGL, header) == 0,
-              "offset of MultiDrawElementsInstancedWEBGL header should be 0");
-static_assert(offsetof(MultiDrawElementsInstancedWEBGL, mode) == 4,
-              "offset of MultiDrawElementsInstancedWEBGL mode should be 4");
+static_assert(sizeof(MultiDrawElementsInstancedCHROMIUM) == 40,
+              "size of MultiDrawElementsInstancedCHROMIUM should be 40");
 static_assert(
-    offsetof(MultiDrawElementsInstancedWEBGL, counts_shm_id) == 8,
-    "offset of MultiDrawElementsInstancedWEBGL counts_shm_id should be 8");
+    offsetof(MultiDrawElementsInstancedCHROMIUM, header) == 0,
+    "offset of MultiDrawElementsInstancedCHROMIUM header should be 0");
+static_assert(offsetof(MultiDrawElementsInstancedCHROMIUM, mode) == 4,
+              "offset of MultiDrawElementsInstancedCHROMIUM mode should be 4");
 static_assert(
-    offsetof(MultiDrawElementsInstancedWEBGL, counts_shm_offset) == 12,
-    "offset of MultiDrawElementsInstancedWEBGL counts_shm_offset should be 12");
-static_assert(offsetof(MultiDrawElementsInstancedWEBGL, type) == 16,
-              "offset of MultiDrawElementsInstancedWEBGL type should be 16");
+    offsetof(MultiDrawElementsInstancedCHROMIUM, counts_shm_id) == 8,
+    "offset of MultiDrawElementsInstancedCHROMIUM counts_shm_id should be 8");
+static_assert(offsetof(MultiDrawElementsInstancedCHROMIUM, counts_shm_offset) ==
+                  12,
+              "offset of MultiDrawElementsInstancedCHROMIUM counts_shm_offset "
+              "should be 12");
+static_assert(offsetof(MultiDrawElementsInstancedCHROMIUM, type) == 16,
+              "offset of MultiDrawElementsInstancedCHROMIUM type should be 16");
 static_assert(
-    offsetof(MultiDrawElementsInstancedWEBGL, offsets_shm_id) == 20,
-    "offset of MultiDrawElementsInstancedWEBGL offsets_shm_id should be 20");
-static_assert(offsetof(MultiDrawElementsInstancedWEBGL, offsets_shm_offset) ==
-                  24,
-              "offset of MultiDrawElementsInstancedWEBGL offsets_shm_offset "
+    offsetof(MultiDrawElementsInstancedCHROMIUM, offsets_shm_id) == 20,
+    "offset of MultiDrawElementsInstancedCHROMIUM offsets_shm_id should be 20");
+static_assert(offsetof(MultiDrawElementsInstancedCHROMIUM,
+                       offsets_shm_offset) == 24,
+              "offset of MultiDrawElementsInstancedCHROMIUM offsets_shm_offset "
               "should be 24");
-static_assert(offsetof(MultiDrawElementsInstancedWEBGL,
+static_assert(offsetof(MultiDrawElementsInstancedCHROMIUM,
                        instance_counts_shm_id) == 28,
-              "offset of MultiDrawElementsInstancedWEBGL "
+              "offset of MultiDrawElementsInstancedCHROMIUM "
               "instance_counts_shm_id should be 28");
-static_assert(offsetof(MultiDrawElementsInstancedWEBGL,
+static_assert(offsetof(MultiDrawElementsInstancedCHROMIUM,
                        instance_counts_shm_offset) == 32,
-              "offset of MultiDrawElementsInstancedWEBGL "
+              "offset of MultiDrawElementsInstancedCHROMIUM "
               "instance_counts_shm_offset should be 32");
 static_assert(
-    offsetof(MultiDrawElementsInstancedWEBGL, drawcount) == 36,
-    "offset of MultiDrawElementsInstancedWEBGL drawcount should be 36");
+    offsetof(MultiDrawElementsInstancedCHROMIUM, drawcount) == 36,
+    "offset of MultiDrawElementsInstancedCHROMIUM drawcount should be 36");
 
 struct StencilFunc {
   typedef StencilFunc ValueType;

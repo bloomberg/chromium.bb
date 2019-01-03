@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
+#include "gpu/command_buffer/service/multi_draw_manager.h"
 #include "gpu/command_buffer/service/passthrough_discardable_manager.h"
 #include "gpu/command_buffer/service/program_cache.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
@@ -685,6 +686,9 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
 
   gpu_fence_manager_.reset(new GpuFenceManager());
 
+  multi_draw_manager_.reset(
+      new MultiDrawManager(MultiDrawManager::IndexStorageType::Pointer));
+
   auto result =
       group_->Initialize(this, attrib_helper.context_type, disallowed_features);
   if (result != gpu::ContextResult::kSuccess) {
@@ -1051,6 +1055,10 @@ void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
   if (gpu_tracer_) {
     gpu_tracer_->Destroy(have_context);
     gpu_tracer_.reset();
+  }
+
+  if (multi_draw_manager_.get()) {
+    multi_draw_manager_.reset();
   }
 
   if (!have_context) {

@@ -3084,6 +3084,39 @@ TEST_F(GLES2ImplementationTest, BufferDataLargerThanTransferBuffer) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, MultiDrawArraysWEBGLLargerThanTransferBuffer) {
+  struct Cmds {
+    cmds::MultiDrawBeginCHROMIUM begin;
+    cmds::MultiDrawArraysCHROMIUM draw1;
+    cmd::SetToken set_token1;
+    cmds::MultiDrawArraysCHROMIUM draw2;
+    cmd::SetToken set_token2;
+    cmds::MultiDrawEndCHROMIUM end;
+  };
+  const unsigned kUsableSize =
+      kTransferBufferSize - GLES2Implementation::kStartingOffset;
+  const unsigned kDrawCount = kUsableSize / sizeof(int);
+  const unsigned kChunkDrawCount = kDrawCount / 2;
+  const unsigned kCountsOffset = kChunkDrawCount * sizeof(int);
+  GLint firsts[kDrawCount] = {0};
+  GLsizei counts[kDrawCount] = {0};
+
+  ExpectedMemoryInfo mem1 = GetExpectedMemory(kUsableSize);
+  ExpectedMemoryInfo mem2 = GetExpectedMemory(kUsableSize);
+
+  Cmds expected;
+  expected.begin.Init(kDrawCount);
+  expected.draw1.Init(GL_TRIANGLES, mem1.id, mem1.offset, mem1.id,
+                      mem1.offset + kCountsOffset, kChunkDrawCount);
+  expected.set_token1.Init(GetNextToken());
+  expected.draw2.Init(GL_TRIANGLES, mem2.id, mem2.offset, mem2.id,
+                      mem2.offset + kCountsOffset, kChunkDrawCount);
+  expected.set_token2.Init(GetNextToken());
+  expected.end.Init();
+  gl_->MultiDrawArraysWEBGL(GL_TRIANGLES, firsts, counts, kDrawCount);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, CapabilitiesAreCached) {
   static const GLenum kStates[] = {
     GL_DITHER,
