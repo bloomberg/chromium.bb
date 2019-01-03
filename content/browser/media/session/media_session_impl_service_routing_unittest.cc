@@ -605,4 +605,27 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   }
 }
 
+TEST_F(MediaSessionImplServiceRoutingTest,
+       NotifyMojoObserverWhenActionsChange) {
+  CreateServiceForFrame(main_frame_);
+  StartPlayerForFrame(main_frame_);
+
+  services_[main_frame_]->EnableAction(
+      media_session::mojom::MediaSessionAction::kPlay);
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+  observer.WaitForActions();
+
+  EXPECT_EQ(1u, observer.actions().size());
+  EXPECT_EQ(media_session::mojom::MediaSessionAction::kPlay,
+            observer.actions()[0]);
+
+  services_[main_frame_]->DisableAction(
+      media_session::mojom::MediaSessionAction::kPlay);
+  observer.WaitForActions();
+
+  EXPECT_TRUE(observer.actions().empty());
+}
+
 }  // namespace content
