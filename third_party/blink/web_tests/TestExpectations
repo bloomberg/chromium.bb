@@ -2618,7 +2618,6 @@ crbug.com/807152 vr/VRDisplay_rAF_fires_with_window_rAF.html [ Pass Failure ]
 crbug.com/813697 vr/getFrameData_oneframeupdate.html [ Pass Failure ]
 
 crbug.com/806357 [ Win Debug ] virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure ]
-crbug.com/839038 [ Mac ] external/wpt/pointerevents/pointerevent_lostpointercapture_for_disconnected_node-manual.html [ Skip ]
 
 crbug.com/869919 external/wpt/uievents/click/click_event_target-manual.html [ Failure ]
 
@@ -2732,6 +2731,21 @@ crbug.com/770028 external/wpt/pointerevents/extension/pointerevent_getPredictedE
 crbug.com/715148 external/wpt/pointerevents/pointerevent_touch-action-rotated-divs_touch-manual.html  [ Skip ]
 
 crbug.com/606367 external/wpt/pointerevents/pointerevent_pointerout_pen-manual.html  [ Skip ]
+crbug.com/606367 external/wpt/pointerevents/pointerevent_boundary_events_at_implicit_release_hoverable_pointers-manual.html  [ Skip ]
+crbug.com/606367 external/wpt/pointerevents/pointerevent_lostpointercapture_for_disconnected_node-manual.html  [ Skip ]
+crbug.com/606367 external/wpt/pointerevents/pointerevent_lostpointercapture_is_first-manual.html  [ Skip ]
+crbug.com/606367 external/wpt/pointerevents/pointerevent_pointerenter_does_not_bubble-manual.html  [ Skip ]
+crbug.com/606367 external/wpt/pointerevents/pointerevent_pointerleave_descendant_over-manual.html  [ Skip ]
+crbug.com/606367 external/wpt/pointerevents/pointerevent_pointerleave_descendants-manual.html  [ Skip ]
+crbug.com/606367 external/wpt/pointerevents/pointerevent_pointerleave_does_not_bubble-manual.html  [ Skip ]
+crbug.com/606367 external/wpt/pointerevents/pointerevent_pointerout_received_once-manual.html  [ Skip ]
+crbug.com/606367 external/wpt/pointerevents/pointerevent_releasepointercapture_invalid_pointerid-manual.html  [ Skip ]
+crbug.com/606367 external/wpt/pointerevents/pointerevent_releasepointercapture_onpointerup_mouse-manual.html  [ Skip ]
+crbug.com/606367 external/wpt/pointerevents/pointerevent_setpointercapture_disconnected-manual.html  [ Skip ]
+crbug.com/606367 external/wpt/pointerevents/pointerevent_setpointercapture_invalid_pointerid-manual.html  [ Skip ]
+crbug.com/606367 external/wpt/pointerevents/pointerevent_setpointercapture_relatedtarget-manual.html  [ Skip ]
+crbug.com/606367 external/wpt/pointerevents/pointerevent_suppress_compat_events_on_click-manual.html  [ Skip ]
+crbug.com/606367 external/wpt/pointerevents/pointerevent_suppress_compat_events_on_drag_mouse-manual.html  [ Skip ]
 
 # Disabled until v8 roll.
 crbug.com/906847 inspector-protocol/runtime/runtime-getProperties.js [ Skip ]
@@ -3788,7 +3802,6 @@ crbug.com/626703 external/wpt/css/css-masking/clip-path/clip-path-ellipse-008.ht
 crbug.com/626703 external/wpt/css/css-masking/clip-path/clip-path-ellipse-007.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-masking/clip-path/clip-path-element-userSpaceOnUse-004.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-masking/clip-path-svg-content/clip-path-shape-circle-005.svg [ Failure ]
-crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_pointerout_received_once-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-016.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-013.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-011.html [ Failure ]
