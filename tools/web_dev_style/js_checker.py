@@ -59,17 +59,6 @@ class JSChecker(object):
     """
     os_path = self.input_api.os_path
 
-    try:
-      # Import ESLint.
-      _HERE_PATH = os_path.dirname(os_path.realpath(__file__))
-      _SRC_PATH = os_path.normpath(os_path.join(_HERE_PATH, '..', '..'))
-      import sys
-      old_sys_path = sys.path[:]
-      sys.path.append(os_path.join(_SRC_PATH, 'third_party', 'node'))
-      import node, node_modules
-    finally:
-      sys.path = old_sys_path
-
     # Extract paths to be passed to ESLint.
     affected_js_files_paths = []
     presubmit_path = self.input_api.PresubmitLocalPath()
@@ -77,12 +66,11 @@ class JSChecker(object):
       affected_js_files_paths.append(
           os_path.relpath(f.AbsoluteLocalPath(), presubmit_path))
 
-    output = node.RunNode([
-        node_modules.PathToEsLint(),
-        '--color',
-        '--format', format,
-        '--ignore-pattern \'!.eslintrc.js\'',
-        ' '.join(affected_js_files_paths)])
+    args = ['--color', '--format', format, '--ignore-pattern \'!.eslintrc.js\'']
+    args += affected_js_files_paths
+
+    import eslint
+    output = eslint.Run(os_path=os_path, args=args)
 
     return [self.output_api.PresubmitError(output)] if output else []
 
