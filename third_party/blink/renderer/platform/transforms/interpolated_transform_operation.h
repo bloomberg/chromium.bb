@@ -43,9 +43,10 @@ class PLATFORM_EXPORT InterpolatedTransformOperation final
   static scoped_refptr<InterpolatedTransformOperation> Create(
       const TransformOperations& from,
       const TransformOperations& to,
+      int starting_index,
       double progress) {
     return base::AdoptRef(
-        new InterpolatedTransformOperation(from, to, progress));
+        new InterpolatedTransformOperation(from, to, starting_index, progress));
   }
 
   bool CanBlendWith(const TransformOperation& other) const override {
@@ -64,7 +65,7 @@ class PLATFORM_EXPORT InterpolatedTransformOperation final
       double progress,
       bool blend_to_identity = false) override;
   scoped_refptr<TransformOperation> Zoom(double factor) final {
-    return Create(from.Zoom(factor), to.Zoom(factor), progress);
+    return Create(from.Zoom(factor), to.Zoom(factor), starting_index, progress);
   }
 
   bool DependsOnBoxSize() const override {
@@ -73,11 +74,19 @@ class PLATFORM_EXPORT InterpolatedTransformOperation final
 
   InterpolatedTransformOperation(const TransformOperations& from,
                                  const TransformOperations& to,
+                                 int starting_index,
                                  double progress)
-      : from(from), to(to), progress(progress) {}
+      : from(from),
+        to(to),
+        starting_index(starting_index),
+        progress(progress) {}
 
   const TransformOperations from;
   const TransformOperations to;
+  // Number of operations to skip from the start of each list. By spec,
+  // pairwise interpolations are performed for compatible operations at the
+  // start of the list and matrix interpolation for the remainder.
+  int starting_index;
   double progress;
 };
 

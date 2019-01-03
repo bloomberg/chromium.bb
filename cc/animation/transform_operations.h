@@ -6,8 +6,10 @@
 #define CC_ANIMATION_TRANSFORM_OPERATIONS_H_
 
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "cc/animation/animation_export.h"
@@ -41,6 +43,10 @@ class CC_ANIMATION_EXPORT TransformOperations {
   // Returns a transformation matrix representing these transform operations.
   gfx::Transform Apply() const;
 
+  // Returns a transformation matrix representing the set of transform
+  // operations from index |start| to the end of the list.
+  gfx::Transform ApplyRemaining(size_t start) const;
+
   // Given another set of transform operations and a progress in the range
   // [0, 1], returns a transformation matrix representing the intermediate
   // value. If this->MatchesTypes(from), then each of the operations are
@@ -73,6 +79,12 @@ class CC_ANIMATION_EXPORT TransformOperations {
   // Returns true if this operation and its descendants have the same types
   // as other and its descendants.
   bool MatchesTypes(const TransformOperations& other) const;
+
+  // Returns the number of matching transform operations at the start of the
+  // transform lists. If one list is shorter but pairwise compatible, it will be
+  // extended with matching identity operators per spec
+  // (https://drafts.csswg.org/css-transforms/#interpolation-of-transforms).
+  size_t MatchingPrefixLength(const TransformOperations& other) const;
 
   // Returns true if these operations can be blended. It will only return
   // false if we must resort to matrix interpolation, and matrix interpolation
@@ -109,17 +121,19 @@ class CC_ANIMATION_EXPORT TransformOperations {
                           SkMScalar tolerance) const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(TransformOperationsTest, TestDecompositionCache);
+
   bool BlendInternal(const TransformOperations& from,
                      SkMScalar progress,
                      TransformOperations* result) const;
 
   std::vector<TransformOperation> operations_;
 
-  bool ComputeDecomposedTransform() const;
+  bool ComputeDecomposedTransform(size_t start_offset) const;
 
-  // For efficiency, we cache the decomposed transform.
-  mutable std::unique_ptr<gfx::DecomposedTransform> decomposed_transform_;
-  mutable bool decomposed_transform_dirty_;
+  // For efficiency, we cache the decomposed transforms.
+  mutable std::unordered_map<size_t, std::unique_ptr<gfx::DecomposedTransform>>
+      decomposed_transforms_;
 };
 
 }  // namespace cc
