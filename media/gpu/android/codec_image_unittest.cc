@@ -14,6 +14,7 @@
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/mock_media_codec_bridge.h"
 #include "media/gpu/android/codec_image.h"
+#include "media/gpu/android/mock_abstract_texture.h"
 #include "media/gpu/android/mock_texture_owner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,15 +57,17 @@ class CodecImageTest : public testing::Test {
     context_->Initialize(surface_.get(), gl::GLContextAttribs());
     ASSERT_TRUE(context_->MakeCurrent(surface_.get()));
 
-    GLuint texture_id = 0;
-    glGenTextures(1, &texture_id);
+    glGenTextures(1, &texture_id_);
     // The tests rely on this texture being bound.
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id);
-    texture_owner_ = new NiceMock<MockTextureOwner>(texture_id, context_.get(),
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id_);
+
+    texture_owner_ = new NiceMock<MockTextureOwner>(texture_id_, context_.get(),
                                                     surface_.get());
   }
 
   void TearDown() override {
+    if (texture_id_ && context_->MakeCurrent(surface_.get()))
+      glDeleteTextures(1, &texture_id_);
     context_ = nullptr;
     share_group_ = nullptr;
     surface_ = nullptr;
@@ -94,6 +97,7 @@ class CodecImageTest : public testing::Test {
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLShareGroup> share_group_;
   scoped_refptr<gl::GLSurface> surface_;
+  GLuint texture_id_ = 0;
 
   class PromotionHintReceiver {
    public:

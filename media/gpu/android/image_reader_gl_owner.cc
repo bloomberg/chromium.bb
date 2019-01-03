@@ -16,6 +16,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/ipc/common/android/android_image_reader_utils.h"
 #include "ui/gl/gl_fence_android_native_fence_sync.h"
 #include "ui/gl/scoped_binders.h"
@@ -66,9 +67,10 @@ class ImageReaderGLOwner::ScopedHardwareBufferImpl
   AImage* image_;
 };
 
-ImageReaderGLOwner::ImageReaderGLOwner(GLuint texture_id)
-    : current_image_(nullptr),
-      texture_id_(texture_id),
+ImageReaderGLOwner::ImageReaderGLOwner(
+    std::unique_ptr<gpu::gles2::AbstractTexture> texture)
+    : TextureOwner(std::move(texture)),
+      current_image_(nullptr),
       loader_(base::android::AndroidImageReader::GetInstance()),
       context_(gl::GLContext::GetCurrent()),
       surface_(gl::GLSurface::GetCurrent()),
@@ -120,8 +122,24 @@ ImageReaderGLOwner::ImageReaderGLOwner(GLuint texture_id)
 
 ImageReaderGLOwner::~ImageReaderGLOwner() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(image_reader_);
   DCHECK_EQ(external_image_refs_.size(), 0u);
+
+  // Clear the texture before we return, so that it can OnTextureDestroyed() if
+  // it hasn't already.  This will do nothing if it has already been destroyed.
+  ClearAbstractTexture();
+}
+
+void ImageReaderGLOwner::OnTextureDestroyed(gpu::gles2::AbstractTexture*) {
+  // The AbstractTexture is being destroyed.  This can happen if, for example,
+  // the video decoder's gl context is lost.  Remember that the platform texture
+  // might not be gone; it's possible for the gl decoder (and AbstractTexture)
+  // to be destroyed via, e.g., renderer crash, but the platform texture is
+  // still shared with some other gl context.
+
+  // This should only be called once.  Note that even during construction,
+  // there's a check that |image_reader_| is constructed.  Otherwise, errors
+  // during init might cause us to get here without an image reader.
+  DCHECK(image_reader_);
 
   // Now we can stop listening to new images.
   loader_.AImageReader_setImageListener(image_reader_, NULL);
@@ -132,25 +150,20 @@ ImageReaderGLOwner::~ImageReaderGLOwner() {
 
   // Delete the image reader.
   loader_.AImageReader_delete(image_reader_);
-
-  // Delete texture
-  ui::ScopedMakeCurrent scoped_make_current(context_.get(), surface_.get());
-  if (context_->IsCurrent(surface_.get())) {
-    glDeleteTextures(1, &texture_id_);
-    DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-  }
-}
-
-GLuint ImageReaderGLOwner::GetTextureId() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return texture_id_;
+  image_reader_ = nullptr;
 }
 
 gl::ScopedJavaSurface ImageReaderGLOwner::CreateJavaSurface() const {
+  // If we've already lost the texture, then do nothing.
+  if (!image_reader_) {
+    DLOG(ERROR) << "Already lost texture / image reader";
+    return gl::ScopedJavaSurface::AcquireExternalSurface(nullptr);
+  }
+
   // Get the android native window from the image reader.
   ANativeWindow* window = nullptr;
   if (loader_.AImageReader_getWindow(image_reader_, &window) != AMEDIA_OK) {
-    LOG(ERROR) << "unable to get a window from image reader.";
+    DLOG(ERROR) << "unable to get a window from image reader.";
     return gl::ScopedJavaSurface::AcquireExternalSurface(nullptr);
   }
 
@@ -165,6 +178,11 @@ gl::ScopedJavaSurface ImageReaderGLOwner::CreateJavaSurface() const {
 
 void ImageReaderGLOwner::UpdateTexImage() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // If we've lost the texture, then do nothing.
+  if (!texture())
+    return;
+
   DCHECK(image_reader_);
 
   // Acquire the latest image asynchronously
@@ -241,7 +259,7 @@ void ImageReaderGLOwner::EnsureTexImageBound() {
     return;
 
   // Create EGL image from the AImage and bind it to the texture.
-  if (!gpu::CreateAndBindEglImage(current_image_, texture_id_, &loader_))
+  if (!gpu::CreateAndBindEglImage(current_image_, GetTextureId(), &loader_))
     return;
 
   current_image_bound_ = true;

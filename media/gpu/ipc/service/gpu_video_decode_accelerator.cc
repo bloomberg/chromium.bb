@@ -84,6 +84,25 @@ static gpu::gles2::ContextGroup* GetContextGroup(
   return stub->context_group().get();
 }
 
+static std::unique_ptr<gpu::gles2::AbstractTexture> CreateAbstractTexture(
+    const base::WeakPtr<gpu::CommandBufferStub>& stub,
+    GLenum target,
+    GLenum internal_format,
+    GLsizei width,
+    GLsizei height,
+    GLsizei depth,
+    GLint border,
+    GLenum format,
+    GLenum type) {
+  if (!stub) {
+    DLOG(ERROR) << "Stub is gone; no DecoderContext.";
+    return nullptr;
+  }
+
+  return stub->decoder_context()->CreateAbstractTexture(
+      target, internal_format, width, height, depth, border, format, type);
+}
+
 }  // anonymous namespace
 
 // DebugAutoLock works like AutoLock but only acquires the lock when
@@ -168,6 +187,8 @@ GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
   bind_image_cb_ = base::BindRepeating(&BindImage, stub_->AsWeakPtr());
   get_context_group_cb_ =
       base::BindRepeating(&GetContextGroup, stub_->AsWeakPtr());
+  create_abstract_texture_cb_ =
+      base::BindRepeating(&CreateAbstractTexture, stub_->AsWeakPtr());
 }
 
 GpuVideoDecodeAccelerator::~GpuVideoDecodeAccelerator() {
@@ -352,7 +373,8 @@ bool GpuVideoDecodeAccelerator::Initialize(
   std::unique_ptr<GpuVideoDecodeAcceleratorFactory> vda_factory =
       GpuVideoDecodeAcceleratorFactory::CreateWithGLES2Decoder(
           get_gl_context_cb_, make_context_current_cb_, bind_image_cb_,
-          get_context_group_cb_, overlay_factory_cb_);
+          get_context_group_cb_, overlay_factory_cb_,
+          create_abstract_texture_cb_);
 
   if (!vda_factory) {
     LOG(ERROR) << "Failed creating the VDA factory";

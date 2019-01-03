@@ -55,6 +55,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const GetContextGroupCallback& get_context_group_cb,
       const AndroidOverlayMojoFactoryCB& overlay_factory_cb,
+      const CreateAbstractTextureCallback& create_abstract_texture_cb,
       DeviceInfo* device_info);
 
   ~AndroidVideoDecodeAccelerator() override;
@@ -76,6 +77,15 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // AVDAStateProvider implementation:
   const gfx::Size& GetSize() const override;
   gpu::gles2::ContextGroup* GetContextGroup() const override;
+  std::unique_ptr<gpu::gles2::AbstractTexture> CreateAbstractTexture(
+      GLenum target,
+      GLenum internal_format,
+      GLsizei width,
+      GLsizei height,
+      GLsizei depth,
+      int border,
+      GLenum format,
+      GLenum type) override;
   // Notifies the client about the error and sets |state_| to |ERROR|.  If we're
   // in the middle of Initialize, we guarantee that Initialize will return
   // failure.  If deferred init is pending, then we'll fail deferred init.
@@ -393,6 +403,8 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
 
   // Optional factory to produce mojo AndroidOverlay instances.
   AndroidOverlayMojoFactoryCB overlay_factory_cb_;
+
+  CreateAbstractTextureCallback create_abstract_texture_cb_;
 
   std::unique_ptr<PromotionHintAggregator> promotion_hint_aggregator_;
 

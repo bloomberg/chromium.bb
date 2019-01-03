@@ -26,6 +26,15 @@ class AVDAStateProvider {
   // Various handy getters.
   virtual const gfx::Size& GetSize() const = 0;
   virtual gpu::gles2::ContextGroup* GetContextGroup() const = 0;
+  virtual std::unique_ptr<gpu::gles2::AbstractTexture> CreateAbstractTexture(
+      GLenum target,
+      GLenum internal_format,
+      GLsizei width,
+      GLsizei height,
+      GLsizei depth,
+      int border,
+      GLenum format,
+      GLenum type) = 0;
 
   // Report a fatal error. This will post NotifyError(), and transition to the
   // error state.

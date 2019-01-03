@@ -24,7 +24,6 @@ struct FrameAvailableEvent;
 // present in the surface.
 class MEDIA_GPU_EXPORT SurfaceTextureGLOwner : public TextureOwner {
  public:
-  GLuint GetTextureId() const override;
   gl::GLContext* GetContext() const override;
   gl::GLSurface* GetSurface() const override;
   gl::ScopedJavaSurface CreateJavaSurface() const override;
@@ -38,10 +37,13 @@ class MEDIA_GPU_EXPORT SurfaceTextureGLOwner : public TextureOwner {
   std::unique_ptr<gl::GLImage::ScopedHardwareBuffer> GetAHardwareBuffer()
       override;
 
+ protected:
+  void OnTextureDestroyed(gpu::gles2::AbstractTexture*) override;
+
  private:
   friend class TextureOwner;
 
-  SurfaceTextureGLOwner(GLuint texture_id);
+  SurfaceTextureGLOwner(std::unique_ptr<gpu::gles2::AbstractTexture> texture);
   ~SurfaceTextureGLOwner() override;
 
   scoped_refptr<gl::SurfaceTexture> surface_texture_;

@@ -32,6 +32,7 @@ class MockTextureOwner : public TextureOwner {
   MOCK_METHOD0(IgnorePendingRelease, void());
   MOCK_METHOD0(IsExpectingFrameAvailable, bool());
   MOCK_METHOD0(WaitForFrameAvailable, void());
+  MOCK_METHOD1(OnTextureDestroyed, void(gpu::gles2::AbstractTexture*));
 
   std::unique_ptr<gl::GLImage::ScopedHardwareBuffer> GetAHardwareBuffer()
       override {
@@ -45,7 +46,6 @@ class MockTextureOwner : public TextureOwner {
   bool FakeIsExpectingFrameAvailable() { return expecting_frame_available; }
   void FakeWaitForFrameAvailable() { expecting_frame_available = false; }
 
-  GLuint fake_texture_id;
   gl::GLContext* fake_context;
   gl::GLSurface* fake_surface;
   bool expecting_frame_available;

@@ -130,6 +130,9 @@ class GpuVideoDecodeAccelerator
   // Callback to return a ContextGroup*.
   GetContextGroupCallback get_context_group_cb_;
 
+  // Callback to return a DecoderContext*.
+  CreateAbstractTextureCallback create_abstract_texture_cb_;
+
   // The texture dimensions as requested by ProvidePictureBuffers().
   gfx::Size texture_dimensions_;
 
