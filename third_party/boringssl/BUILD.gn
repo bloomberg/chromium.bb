@@ -111,8 +111,14 @@ component("boringssl") {
   public = all_headers
   friend = [ ":*" ]
   deps = [
-    ":boringssl_asm",
     "//third_party/boringssl/src/third_party/fiat:fiat_license",
+  ]
+
+  # Mark boringssl_asm as a public dependency so the OPENSSL_NO_ASM
+  # config is forwarded to callers. In particular, boringssl_crypto_tests
+  # requires it.
+  public_deps = [
+    ":boringssl_asm",
   ]
 
   public_configs = [ ":external_config" ]
@@ -197,6 +203,13 @@ if (build_with_chromium) {
 
     sources = all_sources
     deps = [
+      "//third_party/boringssl/src/third_party/fiat:fiat_license",
+    ]
+
+    # Mark boringssl_asm as a public dependency so the OPENSSL_NO_ASM
+    # config is forwarded to callers. In particular, boringssl_crypto_tests
+    # requires it.
+    public_deps = [
       ":boringssl_asm",
     ]
 
@@ -259,6 +272,13 @@ if (build_with_chromium) {
 
     sources = all_sources
     deps = [
+      "//third_party/boringssl/src/third_party/fiat:fiat_license",
+    ]
+
+    # Mark boringssl_asm as a public dependency so the OPENSSL_NO_ASM
+    # config is forwarded to callers. In particular, boringssl_crypto_tests
+    # requires it.
+    public_deps = [
       ":boringssl_asm",
     ]
 
