@@ -21,8 +21,6 @@
 
 namespace media_router {
 
-struct IssueInfo;
-
 class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
  public:
   MediaRouterIntegrationBrowserTest();
@@ -107,14 +105,6 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
 
   // Returns the active WebContents for the current window.
   content::WebContents* GetActiveWebContents();
-
-  // Sets the MediaRouterFileDialog to act like a valid file was selected on
-  // opening the dialog.
-  void FileDialogSelectsFile(GURL file_url);
-
-  // Sets the MediaRouterFileDialog to act like a bad file was selected on
-  // opening the dialog.
-  void FileDialogSelectFails(const IssueInfo& issue);
 
   // Runs a basic test in which a presentation is created through the
   // MediaRouter dialog, then terminated.
