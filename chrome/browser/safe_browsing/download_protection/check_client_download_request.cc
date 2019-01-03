@@ -807,8 +807,6 @@ void CheckClientDownloadRequest::FinishRequest(
   if (reason != REASON_DOWNLOAD_DESTROYED)
     callback_.Run(result);
   item_->RemoveObserver(this);
-  CHECK(service_ != nullptr);  // TODO(drubery): Remove when crbug/915037 is
-                               // resolved
   service_->RequestFinished(this);
   // DownloadProtectionService::RequestFinished may delete us.
 }
