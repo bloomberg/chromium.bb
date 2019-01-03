@@ -586,7 +586,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
   bool ServerSendsVersionNegotiation() {
     return GetQuicReloadableFlag(quic_no_client_conn_ver_negotiation) &&
            GetParam().client_supported_versions[0] !=
-               FilterSupportedVersions(GetParam().server_supported_versions)[0];
+               GetParam().negotiated_version;
   }
 
   bool SupportsIetfQuicWithTls(ParsedQuicVersion version) {
@@ -699,6 +699,44 @@ TEST_P(EndToEndTestWithStatelessReject, SimpleRequestResponseStatless) {
 }
 
 TEST_P(EndToEndTest, SimpleRequestResponse) {
+  ASSERT_TRUE(Initialize());
+
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
+  int expected_num_client_hellos = 2;
+  if (ServerSendsVersionNegotiation()) {
+    ++expected_num_client_hellos;
+    if (BothSidesSupportStatelessRejects()) {
+      ++expected_num_client_hellos;
+    }
+  }
+  EXPECT_EQ(expected_num_client_hellos,
+            client_->client()->GetNumSentClientHellos());
+}
+
+// TODO(dschinazi) remove this test once the flags are deprecated
+TEST_P(EndToEndTest, SimpleRequestResponseVariableLengthConnectionIDClient) {
+  SetQuicRestartFlag(quic_variable_length_connection_ids_client, true);
+  SetQuicRestartFlag(quic_variable_length_connection_ids_server, false);
+  ASSERT_TRUE(Initialize());
+
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
+  int expected_num_client_hellos = 2;
+  if (ServerSendsVersionNegotiation()) {
+    ++expected_num_client_hellos;
+    if (BothSidesSupportStatelessRejects()) {
+      ++expected_num_client_hellos;
+    }
+  }
+  EXPECT_EQ(expected_num_client_hellos,
+            client_->client()->GetNumSentClientHellos());
+}
+
+// TODO(dschinazi) remove this test once the flags are deprecated
+TEST_P(EndToEndTest, SimpleRequestResponseVariableLengthConnectionIDServer) {
+  SetQuicRestartFlag(quic_variable_length_connection_ids_client, false);
+  SetQuicRestartFlag(quic_variable_length_connection_ids_server, true);
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));

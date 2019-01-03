@@ -1208,7 +1208,8 @@ bool QuicTestPacketMaker::ShouldIncludeVersion(bool include_version) const {
 quic::QuicPacketNumberLength QuicTestPacketMaker::GetPacketNumberLength()
     const {
   if (version_ > quic::QUIC_VERSION_43 &&
-      encryption_level_ < quic::ENCRYPTION_FORWARD_SECURE) {
+      encryption_level_ < quic::ENCRYPTION_FORWARD_SECURE &&
+      version_ != quic::QUIC_VERSION_99) {
     return quic::PACKET_4BYTE_PACKET_NUMBER;
   }
   return quic::PACKET_1BYTE_PACKET_NUMBER;

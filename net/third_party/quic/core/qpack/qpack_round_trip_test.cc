@@ -26,6 +26,7 @@ class QpackRoundTripTest
   QpackRoundTripTest()
       : encoding_fragment_mode_(std::get<0>(GetParam())),
         decoding_fragment_mode_(std::get<1>(GetParam())) {}
+  ~QpackRoundTripTest() override = default;
 
   spdy::SpdyHeaderBlock EncodeThenDecode(
       const spdy::SpdyHeaderBlock& header_list) {

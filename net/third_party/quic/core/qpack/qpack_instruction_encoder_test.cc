@@ -20,6 +20,7 @@ namespace {
 class QpackInstructionEncoderTest : public QuicTestWithParam<FragmentMode> {
  protected:
   QpackInstructionEncoderTest() : fragment_mode_(GetParam()) {}
+  ~QpackInstructionEncoderTest() override = default;
 
   // Encode |instruction| with fragment sizes dictated by |fragment_mode_|.
   QuicString EncodeInstruction(const QpackInstruction* instruction) {
@@ -58,35 +59,38 @@ TEST_P(QpackInstructionEncoderTest, Varint) {
   EXPECT_EQ(QuicTextUtils::HexDecode("7f00"), EncodeInstruction(&instruction));
 }
 
-TEST_P(QpackInstructionEncoderTest, StaticBitAndVarint) {
+TEST_P(QpackInstructionEncoderTest, SBitAndTwoVarint2) {
   const QpackInstruction instruction{
       QpackInstructionOpcode{0x80, 0xc0},
-      {{QpackInstructionFieldType::kStaticBit, 0x20},
-       {QpackInstructionFieldType::kVarint, 5}}};
+      {{QpackInstructionFieldType::kSbit, 0x20},
+       {QpackInstructionFieldType::kVarint, 5},
+       {QpackInstructionFieldType::kVarint2, 8}}};
 
-  encoder_.set_is_static(true);
+  encoder_.set_s_bit(true);
   encoder_.set_varint(5);
-  EXPECT_EQ(QuicTextUtils::HexDecode("a5"), EncodeInstruction(&instruction));
+  encoder_.set_varint2(200);
+  EXPECT_EQ(QuicTextUtils::HexDecode("a5c8"), EncodeInstruction(&instruction));
 
-  encoder_.set_is_static(false);
+  encoder_.set_s_bit(false);
   encoder_.set_varint(31);
-  EXPECT_EQ(QuicTextUtils::HexDecode("9f00"), EncodeInstruction(&instruction));
+  encoder_.set_varint2(356);
+  EXPECT_EQ(QuicTextUtils::HexDecode("9f00ff65"),
+            EncodeInstruction(&instruction));
 }
 
-TEST_P(QpackInstructionEncoderTest, StaticBitAndVarintAndValue) {
-  const QpackInstruction instruction{
-      QpackInstructionOpcode{0xc0, 0xc0},
-      {{QpackInstructionFieldType::kStaticBit, 0x20},
-       {QpackInstructionFieldType::kVarint, 5},
-       {QpackInstructionFieldType::kValue, 7}}};
+TEST_P(QpackInstructionEncoderTest, SBitAndVarintAndValue) {
+  const QpackInstruction instruction{QpackInstructionOpcode{0xc0, 0xc0},
+                                     {{QpackInstructionFieldType::kSbit, 0x20},
+                                      {QpackInstructionFieldType::kVarint, 5},
+                                      {QpackInstructionFieldType::kValue, 7}}};
 
-  encoder_.set_is_static(true);
+  encoder_.set_s_bit(true);
   encoder_.set_varint(100);
   encoder_.set_value("foo");
   EXPECT_EQ(QuicTextUtils::HexDecode("ff458294e7"),
             EncodeInstruction(&instruction));
 
-  encoder_.set_is_static(false);
+  encoder_.set_s_bit(false);
   encoder_.set_varint(3);
   encoder_.set_value("bar");
   EXPECT_EQ(QuicTextUtils::HexDecode("c303626172"),
@@ -125,19 +129,18 @@ TEST_P(QpackInstructionEncoderTest, Value) {
             EncodeInstruction(&instruction));
 }
 
-TEST_P(QpackInstructionEncoderTest, StaticBitAndNameAndValue) {
-  const QpackInstruction instruction{
-      QpackInstructionOpcode{0xf0, 0xf0},
-      {{QpackInstructionFieldType::kStaticBit, 0x08},
-       {QpackInstructionFieldType::kName, 2},
-       {QpackInstructionFieldType::kValue, 7}}};
+TEST_P(QpackInstructionEncoderTest, SBitAndNameAndValue) {
+  const QpackInstruction instruction{QpackInstructionOpcode{0xf0, 0xf0},
+                                     {{QpackInstructionFieldType::kSbit, 0x08},
+                                      {QpackInstructionFieldType::kName, 2},
+                                      {QpackInstructionFieldType::kValue, 7}}};
 
-  encoder_.set_is_static(false);
+  encoder_.set_s_bit(false);
   encoder_.set_name("");
   encoder_.set_value("");
   EXPECT_EQ(QuicTextUtils::HexDecode("f000"), EncodeInstruction(&instruction));
 
-  encoder_.set_is_static(true);
+  encoder_.set_s_bit(true);
   encoder_.set_name("foo");
   encoder_.set_value("bar");
   EXPECT_EQ(QuicTextUtils::HexDecode("fe94e703626172"),

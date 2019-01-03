@@ -20,6 +20,7 @@
 #include "net/third_party/quic/core/crypto/proof_verifier.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quic/core/crypto/quic_random.h"
+#include "net/third_party/quic/core/quic_connection_id.h"
 #include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
@@ -31,6 +32,7 @@
 #include "net/third_party/quic/platform/api/quic_map_util.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
+#include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
@@ -516,8 +518,9 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     CryptoHandshakeMessage* out,
     QuicString* error_details) const {
   DCHECK(error_details != nullptr);
-  const uint64_t connection_id64_net =
-      QuicEndian::HostToNet64(QuicConnectionIdToUInt64(connection_id));
+  QUIC_BUG_IF(connection_id.length() != kQuicDefaultConnectionIdLength)
+      << "FillClientHello called with connection ID " << connection_id
+      << " of unsupported length " << connection_id.length();
 
   FillInchoateClientHello(server_id, preferred_version, cached, rand,
                           /* demand_x509_proof= */ true, out_params, out);
@@ -642,8 +645,14 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     const QuicData& client_hello_serialized = out->GetSerialized();
     hkdf_input.append(QuicCryptoConfig::kCETVLabel,
                       strlen(QuicCryptoConfig::kCETVLabel) + 1);
-    hkdf_input.append(reinterpret_cast<const char*>(&connection_id64_net),
-                      sizeof(connection_id64_net));
+    if (!QuicConnectionIdSupportsVariableLength(Perspective::IS_CLIENT)) {
+      const uint64_t connection_id64_net =
+          QuicEndian::HostToNet64(QuicConnectionIdToUInt64(connection_id));
+      hkdf_input.append(reinterpret_cast<const char*>(&connection_id64_net),
+                        sizeof(connection_id64_net));
+    } else {
+      hkdf_input.append(connection_id.data(), connection_id.length());
+    }
     hkdf_input.append(client_hello_serialized.data(),
                       client_hello_serialized.length());
     hkdf_input.append(cached->server_config());
@@ -694,9 +703,16 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   //   out_params->hkdf_input_suffix
   //   out_params->initial_crypters
   out_params->hkdf_input_suffix.clear();
-  out_params->hkdf_input_suffix.append(
-      reinterpret_cast<const char*>(&connection_id64_net),
-      sizeof(connection_id64_net));
+  if (!QuicConnectionIdSupportsVariableLength(Perspective::IS_CLIENT)) {
+    const uint64_t connection_id64_net =
+        QuicEndian::HostToNet64(QuicConnectionIdToUInt64(connection_id));
+    out_params->hkdf_input_suffix.append(
+        reinterpret_cast<const char*>(&connection_id64_net),
+        sizeof(connection_id64_net));
+  } else {
+    out_params->hkdf_input_suffix.append(connection_id.data(),
+                                         connection_id.length());
+  }
   const QuicData& client_hello_serialized = out->GetSerialized();
   out_params->hkdf_input_suffix.append(client_hello_serialized.data(),
                                        client_hello_serialized.length());
@@ -828,14 +844,33 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
   }
 
   if (rej.tag() == kSREJ) {
-    uint64_t connection_id;
-    if (rej.GetUint64(kRCID, &connection_id) != QUIC_NO_ERROR) {
-      *error_details = "Missing kRCID";
-      return QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND;
+    QuicConnectionId connection_id;
+    if (!QuicConnectionIdSupportsVariableLength(Perspective::IS_CLIENT)) {
+      uint64_t connection_id64;
+      if (rej.GetUint64(kRCID, &connection_id64) != QUIC_NO_ERROR) {
+        *error_details = "Missing kRCID";
+        return QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND;
+      }
+      connection_id64 = QuicEndian::NetToHost64(connection_id64);
+      connection_id = QuicConnectionIdFromUInt64(connection_id64);
+    } else {
+      QuicStringPiece connection_id_bytes;
+      if (!rej.GetStringPiece(kRCID, &connection_id_bytes)) {
+        *error_details = "Missing kRCID";
+        return QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND;
+      }
+      connection_id = QuicConnectionId(connection_id_bytes.data(),
+                                       connection_id_bytes.length());
+      if (connection_id.length() != kQuicDefaultConnectionIdLength) {
+        QUIC_PEER_BUG << "Received server-designated connection ID "
+                      << connection_id << " of bad length "
+                      << connection_id.length() << " with version "
+                      << QuicVersionToString(version);
+        *error_details = "Bad kRCID length";
+        return QUIC_CRYPTO_INTERNAL_ERROR;
+      }
     }
-    connection_id = QuicEndian::NetToHost64(connection_id);
-    cached->add_server_designated_connection_id(
-        QuicConnectionIdFromUInt64(connection_id));
+    cached->add_server_designated_connection_id(connection_id);
     if (!nonce.empty()) {
       cached->add_server_nonce(QuicString(nonce));
     }

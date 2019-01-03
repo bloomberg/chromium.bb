@@ -8,8 +8,11 @@
 #include <cstdint>
 
 #include "net/third_party/quic/core/quic_constants.h"
+#include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/platform/api/quic_aligned.h"
+#include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
+#include "net/third_party/quic/platform/api/quic_endian.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_prefetch.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
@@ -317,7 +320,7 @@ SentPacketState QuicUtils::RetransmissionTypeToPacketState(
 
 // static
 bool QuicUtils::IsIetfPacketHeader(uint8_t first_byte) {
-  return (first_byte & FLAGS_LONG_HEADER) ||
+  return (first_byte & FLAGS_LONG_HEADER) || (first_byte & FLAGS_FIXED_BIT) ||
          !(first_byte & FLAGS_DEMULTIPLEXING_BIT);
 }
 
@@ -398,6 +401,51 @@ QuicStreamId QuicUtils::GetFirstUnidirectionalStreamId(
     return version == QUIC_VERSION_99 ? 2 : 3;
   }
   return version == QUIC_VERSION_99 ? 3 : 2;
+}
+
+// static
+QuicConnectionId QuicUtils::CreateRandomConnectionId() {
+  return CreateRandomConnectionId(QuicRandom::GetInstance());
+}
+
+// static
+QuicConnectionId QuicUtils::CreateRandomConnectionId(Perspective perspective) {
+  return CreateRandomConnectionId(QuicRandom::GetInstance(), perspective);
+}
+
+// static
+QuicConnectionId QuicUtils::CreateRandomConnectionId(QuicRandom* random) {
+  return CreateRandomConnectionId(random, Perspective::IS_SERVER);
+}
+
+// static
+QuicConnectionId QuicUtils::CreateRandomConnectionId(QuicRandom* random,
+                                                     Perspective perspective) {
+  if (!QuicConnectionIdSupportsVariableLength(perspective)) {
+    return QuicConnectionIdFromUInt64(random->RandUint64());
+  }
+  char connection_id_bytes[kQuicDefaultConnectionIdLength];
+  random->RandBytes(connection_id_bytes, QUIC_ARRAYSIZE(connection_id_bytes));
+  return QuicConnectionId(static_cast<char*>(connection_id_bytes),
+                          QUIC_ARRAYSIZE(connection_id_bytes));
+}
+
+QuicUint128 QuicUtils::GenerateStatelessResetToken(
+    QuicConnectionId connection_id) {
+  if (!QuicConnectionIdUseNetworkByteOrder()) {
+    return QuicConnectionIdToUInt64(connection_id);
+  }
+  uint64_t data_bytes[3] = {0, 0, 0};
+  static_assert(sizeof(data_bytes) >= kQuicMaxConnectionIdLength,
+                "kQuicMaxConnectionIdLength changed");
+  memcpy(data_bytes, connection_id.data(), connection_id.length());
+  // This is designed so that the common case of 64bit connection IDs
+  // produces a stateless reset token that is equal to the connection ID
+  // interpreted as a 64bit unsigned integer, to facilitate debugging.
+  return MakeQuicUint128(
+      QuicEndian::NetToHost64(sizeof(uint64_t) ^ connection_id.length() ^
+                              data_bytes[1] ^ data_bytes[2]),
+      QuicEndian::NetToHost64(data_bytes[0]));
 }
 
 #undef RETURN_STRING_LITERAL  // undef for jumbo builds

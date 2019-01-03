@@ -26,6 +26,7 @@ class MockSenderDelegate : public QpackEncoderStreamSender::Delegate {
 class QpackEncoderStreamSenderTest : public QuicTest {
  protected:
   QpackEncoderStreamSenderTest() : stream_(&delegate_) {}
+  ~QpackEncoderStreamSenderTest() override = default;
 
   StrictMock<MockSenderDelegate> delegate_;
   QpackEncoderStreamSender stream_;

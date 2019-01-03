@@ -9,6 +9,7 @@
 #include <cstdint>
 
 #include "base/macros.h"
+#include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/core/quic_error_codes.h"
 #include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/core/quic_versions.h"
@@ -132,6 +133,23 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
   static QuicStreamId GetFirstUnidirectionalStreamId(
       QuicTransportVersion version,
       Perspective perspective);
+
+  // Generates a random 64bit connection ID.
+  static QuicConnectionId CreateRandomConnectionId();
+
+  // Generates a random 64bit connection ID.
+  static QuicConnectionId CreateRandomConnectionId(Perspective perspective);
+
+  // Generates a random 64bit connection ID using the provided QuicRandom.
+  static QuicConnectionId CreateRandomConnectionId(QuicRandom* random);
+
+  // Generates a random 64bit connection ID using the provided QuicRandom.
+  static QuicConnectionId CreateRandomConnectionId(QuicRandom* random,
+                                                   Perspective perspective);
+
+  // Generates a 128bit stateless reset token based on a connection ID.
+  static QuicUint128 GenerateStatelessResetToken(
+      QuicConnectionId connection_id);
 };
 
 }  // namespace quic

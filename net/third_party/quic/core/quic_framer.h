@@ -417,6 +417,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // header.versions.
   bool AppendPacketHeader(const QuicPacketHeader& header,
                           QuicDataWriter* writer);
+  bool AppendIetfHeaderTypeByte(const QuicPacketHeader& header,
+                                QuicDataWriter* writer);
   bool AppendIetfPacketHeader(const QuicPacketHeader& header,
                               QuicDataWriter* writer);
   bool AppendTypeByte(const QuicFrame& frame,
@@ -583,6 +585,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool ProcessUnauthenticatedHeader(QuicDataReader* encrypted_reader,
                                     QuicPacketHeader* header);
 
+  bool ProcessIetfHeaderTypeByte(QuicDataReader* reader,
+                                 QuicPacketHeader* header);
   bool ProcessIetfPacketHeader(QuicDataReader* reader,
                                QuicPacketHeader* header);
 
@@ -685,7 +689,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
       QuicConnectionIdLength destination_connection_id_length,
       QuicConnectionId source_connection_id,
       QuicConnectionIdLength source_connection_id_length,
-      QuicDataWriter* writer);
+      QuicDataWriter* writer,
+      Perspective perspective);
 
   // The Append* methods attempt to write the provided header or frame using the
   // |writer|, and return true if successful.

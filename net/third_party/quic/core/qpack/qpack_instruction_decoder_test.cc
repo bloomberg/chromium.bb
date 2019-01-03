@@ -22,13 +22,13 @@ namespace quic {
 namespace test {
 namespace {
 
-// This instruction has two fields: a static bit and a 6-bit prefix encoded
-// index.
+// This instruction has three fields: an S bit and two varints.
 const QpackInstruction* TestInstruction1() {
   static const QpackInstruction* const instruction =
       new QpackInstruction{QpackInstructionOpcode{0x00, 0x80},
-                           {{QpackInstructionFieldType::kStaticBit, 0x40},
-                            {QpackInstructionFieldType::kVarint, 6}}};
+                           {{QpackInstructionFieldType::kSbit, 0x40},
+                            {QpackInstructionFieldType::kVarint, 6},
+                            {QpackInstructionFieldType::kVarint2, 8}}};
   return instruction;
 }
 
@@ -66,6 +66,7 @@ class QpackInstructionDecoderTest : public QuicTestWithParam<FragmentMode> {
  public:
   QpackInstructionDecoderTest()
       : decoder_(TestLanguage(), &delegate_), fragment_mode_(GetParam()) {}
+  ~QpackInstructionDecoderTest() override = default;
 
  protected:
   // Decode one full instruction with fragment sizes dictated by
@@ -102,18 +103,20 @@ INSTANTIATE_TEST_CASE_P(,
                         Values(FragmentMode::kSingleChunk,
                                FragmentMode::kOctetByOctet));
 
-TEST_P(QpackInstructionDecoderTest, StaticBitAndIndex) {
+TEST_P(QpackInstructionDecoderTest, SBitAndVarint2) {
   EXPECT_CALL(delegate_, OnInstructionDecoded(TestInstruction1()));
-  DecodeInstruction(QuicTextUtils::HexDecode("7f01"));
+  DecodeInstruction(QuicTextUtils::HexDecode("7f01ff65"));
 
-  EXPECT_TRUE(decoder_.is_static());
+  EXPECT_TRUE(decoder_.s_bit());
   EXPECT_EQ(64u, decoder_.varint());
+  EXPECT_EQ(356u, decoder_.varint2());
 
   EXPECT_CALL(delegate_, OnInstructionDecoded(TestInstruction1()));
-  DecodeInstruction(QuicTextUtils::HexDecode("05"));
+  DecodeInstruction(QuicTextUtils::HexDecode("05c8"));
 
-  EXPECT_FALSE(decoder_.is_static());
+  EXPECT_FALSE(decoder_.s_bit());
   EXPECT_EQ(5u, decoder_.varint());
+  EXPECT_EQ(200u, decoder_.varint2());
 }
 
 TEST_P(QpackInstructionDecoderTest, NameAndValue) {
@@ -157,7 +160,7 @@ TEST_P(QpackInstructionDecoderTest, DelegateSignalsError) {
   EXPECT_CALL(delegate_, OnInstructionDecoded(TestInstruction1()))
       .After(first_call)
       .WillOnce(Return(false));
-  decoder_.Decode(QuicTextUtils::HexDecode("0102030405"));
+  decoder_.Decode(QuicTextUtils::HexDecode("01000200030004000500"));
 
   EXPECT_EQ(2u, decoder_.varint());
 }

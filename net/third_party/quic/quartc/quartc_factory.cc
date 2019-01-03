@@ -201,7 +201,14 @@ std::unique_ptr<QuicConnection> QuartcFactory::CreateQuicConnection(
     QuartcPacketWriter* packet_writer) {
   // dummy_id and dummy_address are used because Quartc network layer will not
   // use these two.
-  QuicConnectionId dummy_id = QuicConnectionIdFromUInt64(0);
+  QuicConnectionId dummy_id;
+  if (!QuicConnectionIdSupportsVariableLength(perspective)) {
+    dummy_id = QuicConnectionIdFromUInt64(0);
+  } else {
+    char connection_id_bytes[sizeof(uint64_t)] = {};
+    dummy_id = QuicConnectionId(static_cast<char*>(connection_id_bytes),
+                                sizeof(connection_id_bytes));
+  }
   QuicSocketAddress dummy_address(QuicIpAddress::Any4(), 0 /*Port*/);
   return QuicMakeUnique<QuicConnection>(
       dummy_id, dummy_address, this, /*QuicConnectionHelperInterface*/

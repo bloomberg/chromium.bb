@@ -33,7 +33,9 @@ size_t GetPacketHeaderSize(
       // Long header.
       return kPacketHeaderTypeSize + kConnectionIdLengthSize +
              destination_connection_id_length + source_connection_id_length +
-             PACKET_4BYTE_PACKET_NUMBER + kQuicVersionSize +
+             (version == QUIC_VERSION_99 ? packet_number_length
+                                         : PACKET_4BYTE_PACKET_NUMBER) +
+             kQuicVersionSize +
              (include_diversification_nonce ? kDiversificationNonceSize : 0);
     }
     // Short header.

@@ -20,6 +20,7 @@
 #include "net/third_party/quic/core/quic_crypto_client_stream.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_session.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quic/core/tls_server_handshaker.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
@@ -277,8 +278,8 @@ TEST_P(QuicCryptoServerStreamTest, StatelessRejectAfterCHLO) {
   ASSERT_TRUE(client_state->has_server_designated_connection_id());
   const QuicConnectionId server_designated_connection_id =
       client_state->GetNextServerDesignatedConnectionId();
-  const QuicConnectionId expected_id =
-      TestConnectionId(server_connection_->random_generator()->RandUint64());
+  const QuicConnectionId expected_id = QuicUtils::CreateRandomConnectionId(
+      server_connection_->random_generator());
   EXPECT_EQ(expected_id, server_designated_connection_id);
   EXPECT_FALSE(client_state->has_server_designated_connection_id());
   ASSERT_TRUE(client_state->IsComplete(QuicWallTime::FromUNIXSeconds(0)));
@@ -308,8 +309,8 @@ TEST_P(QuicCryptoServerStreamTest, ConnectedAfterStatelessHandshake) {
   ASSERT_TRUE(client_state->has_server_designated_connection_id());
   const QuicConnectionId server_designated_connection_id =
       client_state->GetNextServerDesignatedConnectionId();
-  const QuicConnectionId expected_id =
-      TestConnectionId(server_connection_->random_generator()->RandUint64());
+  const QuicConnectionId expected_id = QuicUtils::CreateRandomConnectionId(
+      server_connection_->random_generator());
   EXPECT_EQ(expected_id, server_designated_connection_id);
   EXPECT_FALSE(client_state->has_server_designated_connection_id());
   ASSERT_TRUE(client_state->IsComplete(QuicWallTime::FromUNIXSeconds(0)));

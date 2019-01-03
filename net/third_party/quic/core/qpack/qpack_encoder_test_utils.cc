@@ -13,7 +13,8 @@ namespace test {
 QuicString QpackEncode(const FragmentSizeGenerator& fragment_size_generator,
                        const spdy::SpdyHeaderBlock* header_list) {
   QpackEncoder encoder;
-  auto progressive_encoder = encoder.EncodeHeaderList(header_list);
+  auto progressive_encoder =
+      encoder.EncodeHeaderList(/* stream_id = */ 1, header_list);
 
   QuicString output;
   while (progressive_encoder->HasNext()) {

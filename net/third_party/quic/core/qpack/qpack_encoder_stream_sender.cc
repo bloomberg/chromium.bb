@@ -21,7 +21,7 @@ void QpackEncoderStreamSender::SendInsertWithNameReference(
     bool is_static,
     uint64_t name_index,
     QuicStringPiece value) {
-  instruction_encoder_.set_is_static(is_static);
+  instruction_encoder_.set_s_bit(is_static);
   instruction_encoder_.set_varint(name_index);
   instruction_encoder_.set_value(value);
 

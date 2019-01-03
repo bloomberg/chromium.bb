@@ -136,10 +136,13 @@ bool QuicSpdyClientSession::ShouldCreateIncomingStream(QuicStreamId id) {
     return false;
   }
   if (QuicUtils::IsClientInitiatedStreamId(connection()->transport_version(),
-                                           id)) {
+                                           id) ||
+      (connection()->transport_version() == QUIC_VERSION_99 &&
+       QuicUtils::IsBidirectionalStreamId(id))) {
     QUIC_LOG(WARNING) << "Received invalid push stream id " << id;
     connection()->CloseConnection(
-        QUIC_INVALID_STREAM_ID, "Server created odd numbered stream",
+        QUIC_INVALID_STREAM_ID,
+        "Server created non write unidirectional stream",
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return false;
   }

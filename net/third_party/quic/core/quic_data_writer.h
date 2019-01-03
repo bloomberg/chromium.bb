@@ -95,11 +95,11 @@ class QUIC_EXPORT_PRIVATE QuicDataWriter {
   // Write padding of |count| bytes.
   bool WritePaddingBytes(size_t count);
 
-  // Write connection ID as a 64-bit unsigned integer to the payload.
-  // TODO(fayang): Remove this method and use WriteUInt64() once deprecating
-  // quic_rw_cid_in_big_endian flag and QuicDataWriter has a mode indicating
-  // writing in little/big endian.
-  bool WriteConnectionId(QuicConnectionId connection_id);
+  // Write connection ID to the payload.
+  // TODO(dschinazi) b/120240679 - remove perspective once these flags are
+  // deprecated: quic_variable_length_connection_ids_(client|server).
+  bool WriteConnectionId(QuicConnectionId connection_id,
+                         Perspective perspective);
 
   // Write tag as a 32-bit unsigned integer to the payload. As tags are already
   // converted to big endian (e.g., CHLO is 'C','H','L','O') in memory by TAG or

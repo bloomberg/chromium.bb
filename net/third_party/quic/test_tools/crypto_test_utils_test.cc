@@ -63,7 +63,7 @@ class ShloVerifier {
         /*connection_id=*/TestConnectionId(1), server_addr_, client_addr_,
         AllSupportedVersions().front(), AllSupportedVersions(),
         /*use_stateless_rejects=*/true,
-        /*server_designated_connection_id=*/EmptyQuicConnectionId(), clock_,
+        /*server_designated_connection_id=*/TestConnectionId(2), clock_,
         QuicRandom::GetInstance(), compressed_certs_cache_, params_,
         signed_config_, /*total_framing_overhead=*/50, kDefaultMaxPacketSize,
         GetProcessClientHelloCallback());

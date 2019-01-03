@@ -9,6 +9,7 @@
 
 #include "net/third_party/quic/core/qpack/qpack_header_table.h"
 #include "net/third_party/quic/core/qpack/qpack_instruction_decoder.h"
+#include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
@@ -50,7 +51,8 @@ class QUIC_EXPORT_PRIVATE QpackDecoder {
       : public QpackInstructionDecoder::Delegate {
    public:
     ProgressiveDecoder() = delete;
-    ProgressiveDecoder(QpackHeaderTable* header_table,
+    ProgressiveDecoder(QuicStreamId stream_id,
+                       QpackHeaderTable* header_table,
                        HeadersHandlerInterface* handler);
     ProgressiveDecoder(const ProgressiveDecoder&) = delete;
     ProgressiveDecoder& operator=(const ProgressiveDecoder&) = delete;
@@ -67,10 +69,25 @@ class QUIC_EXPORT_PRIVATE QpackDecoder {
     bool OnInstructionDecoded(const QpackInstruction* instruction) override;
     void OnError(QuicStringPiece error_message) override;
 
+    // TODO(zhongyi): remove this method once internal change lands:
+    QuicStreamId stream_id() const { return stream_id_; }
+
    private:
+    const QuicStreamId stream_id_;
+
+    // |prefix_decoder_| only decodes a handful of bytes then it can be
+    // destroyed to conserve memory.  |instruction_decoder_|, on the other hand,
+    // is used until the entire header block is decoded.
+    std::unique_ptr<QpackInstructionDecoder> prefix_decoder_;
     QpackInstructionDecoder instruction_decoder_;
+
     const QpackHeaderTable* const header_table_;
     HeadersHandlerInterface* handler_;
+    size_t largest_reference_;
+    size_t base_index_;
+
+    // False until prefix is fully read and decoded.
+    bool prefix_decoded_;
 
     // True until EndHeaderBlock() is called.
     bool decoding_;
@@ -83,6 +100,7 @@ class QUIC_EXPORT_PRIVATE QpackDecoder {
   // |handler| must remain valid until the returned ProgressiveDecoder instance
   // is destroyed or the decoder calls |handler->OnHeaderBlockEnd()|.
   std::unique_ptr<ProgressiveDecoder> DecodeHeaderBlock(
+      QuicStreamId stream_id,
       HeadersHandlerInterface* handler);
 
  private:

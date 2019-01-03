@@ -1001,7 +1001,7 @@ void QuicDispatcher::ProcessBufferedChlos(size_t max_connections_to_create) {
       return;
     }
     QuicSession* session =
-        CreateQuicSession(connection_id, packets.front().client_address,
+        CreateQuicSession(connection_id, packets.front().peer_address,
                           packet_list.alpn, packet_list.version);
     QUIC_DLOG(INFO) << "Created new session for " << connection_id;
     session_map_.insert(std::make_pair(connection_id, QuicWrapUnique(session)));
@@ -1363,7 +1363,7 @@ void QuicDispatcher::DeliverPacketsToSession(
     const std::list<BufferedPacket>& packets,
     QuicSession* session) {
   for (const BufferedPacket& packet : packets) {
-    session->ProcessUdpPacket(packet.server_address, packet.client_address,
+    session->ProcessUdpPacket(packet.self_address, packet.peer_address,
                               *(packet.packet));
   }
 }

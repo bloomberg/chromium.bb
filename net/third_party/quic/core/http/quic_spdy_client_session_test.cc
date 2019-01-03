@@ -63,6 +63,9 @@ class TestQuicSpdyClientSession : public QuicSpdyClientSession {
   }
 
   MockQuicSpdyClientStream* CreateIncomingStream(QuicStreamId id) override {
+    if (!ShouldCreateIncomingStream(id)) {
+      return nullptr;
+    }
     MockQuicSpdyClientStream* stream =
         new MockQuicSpdyClientStream(id, this, READ_UNIDIRECTIONAL);
     ActivateStream(QuicWrapUnique(stream));
@@ -451,6 +454,10 @@ TEST_P(QuicSpdyClientSessionTest, InvalidPacketReceived) {
   QuicReceivedPacket valid_packet(buf, 2, QuicTime::Zero(), false);
   // Close connection shouldn't be called.
   EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    // Illegal fixed bit value.
+    EXPECT_CALL(*connection_, OnError(_)).Times(1);
+  }
   session_->ProcessUdpPacket(client_address, server_address, valid_packet);
 
   // Verify that a non-decryptable packet doesn't close the connection.
@@ -764,6 +771,18 @@ TEST_P(QuicSpdyClientSessionTest, PushPromiseInvalidHost) {
 
   EXPECT_EQ(session_->GetPromisedById(promised_stream_id_), nullptr);
   EXPECT_EQ(session_->GetPromisedByUrl(promise_url_), nullptr);
+}
+
+TEST_P(QuicSpdyClientSessionTest,
+       TryToCreateServerInitiatedBidirectionalStream) {
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    EXPECT_CALL(*connection_, CloseConnection(QUIC_INVALID_STREAM_ID, _, _));
+  } else {
+    EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
+  }
+  session_->GetOrCreateStream(
+      QuicSpdySessionPeer::GetNthServerInitiatedBidirectionalStreamId(*session_,
+                                                                      0));
 }
 
 }  // namespace

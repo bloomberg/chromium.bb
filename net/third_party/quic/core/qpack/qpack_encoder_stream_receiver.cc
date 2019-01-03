@@ -28,7 +28,7 @@ void QpackEncoderStreamReceiver::Decode(QuicStringPiece data) {
 bool QpackEncoderStreamReceiver::OnInstructionDecoded(
     const QpackInstruction* instruction) {
   if (instruction == InsertWithNameReferenceInstruction()) {
-    delegate_->OnInsertWithNameReference(instruction_decoder_.is_static(),
+    delegate_->OnInsertWithNameReference(instruction_decoder_.s_bit(),
                                          instruction_decoder_.varint(),
                                          instruction_decoder_.value());
     return true;

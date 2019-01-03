@@ -16,7 +16,7 @@ const QpackInstruction* InsertWithNameReferenceInstruction() {
       new QpackInstructionOpcode{0b10000000, 0b10000000};
   static const QpackInstruction* const instruction =
       new QpackInstruction{*opcode,
-                           {{QpackInstructionFieldType::kStaticBit, 0b01000000},
+                           {{QpackInstructionFieldType::kSbit, 0b01000000},
                             {QpackInstructionFieldType::kVarint, 6},
                             {QpackInstructionFieldType::kValue, 7}}};
   return instruction;
@@ -56,12 +56,30 @@ const QpackLanguage* QpackEncoderStreamLanguage() {
   return language;
 }
 
+const QpackInstruction* QpackPrefixInstruction() {
+  // This opcode matches every input.
+  static const QpackInstructionOpcode* const opcode =
+      new QpackInstructionOpcode{0b00000000, 0b00000000};
+  static const QpackInstruction* const instruction =
+      new QpackInstruction{*opcode,
+                           {{QpackInstructionFieldType::kVarint, 8},
+                            {QpackInstructionFieldType::kSbit, 0b10000000},
+                            {QpackInstructionFieldType::kVarint2, 7}}};
+  return instruction;
+}
+
+const QpackLanguage* QpackPrefixLanguage() {
+  static const QpackLanguage* const language =
+      new QpackLanguage{QpackPrefixInstruction()};
+  return language;
+}
+
 const QpackInstruction* QpackIndexedHeaderFieldInstruction() {
   static const QpackInstructionOpcode* const opcode =
       new QpackInstructionOpcode{0b10000000, 0b10000000};
   static const QpackInstruction* const instruction =
       new QpackInstruction{*opcode,
-                           {{QpackInstructionFieldType::kStaticBit, 0b01000000},
+                           {{QpackInstructionFieldType::kSbit, 0b01000000},
                             {QpackInstructionFieldType::kVarint, 6}}};
   return instruction;
 }
@@ -79,7 +97,7 @@ const QpackInstruction* QpackLiteralHeaderFieldNameReferenceInstruction() {
       new QpackInstructionOpcode{0b01000000, 0b11000000};
   static const QpackInstruction* const instruction =
       new QpackInstruction{*opcode,
-                           {{QpackInstructionFieldType::kStaticBit, 0b00010000},
+                           {{QpackInstructionFieldType::kSbit, 0b00010000},
                             {QpackInstructionFieldType::kVarint, 4},
                             {QpackInstructionFieldType::kValue, 7}}};
   return instruction;

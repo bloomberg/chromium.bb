@@ -97,23 +97,34 @@ const char kPreSharedKeyLabel[] = "QUIC PSK";
 void CryptoUtils::CreateTlsInitialCrypters(Perspective perspective,
                                            QuicConnectionId connection_id,
                                            CrypterPair* crypters) {
+  QUIC_BUG_IF(connection_id.length() != kQuicDefaultConnectionIdLength)
+      << "CreateTlsInitialCrypters called with connection ID " << connection_id
+      << " of unsupported length " << connection_id.length();
   const EVP_MD* hash = EVP_sha256();
-
-  uint64_t connection_id64 = QuicConnectionIdToUInt64(connection_id);
-  uint8_t connection_id_bytes[sizeof(connection_id64)];
-  for (size_t i = 0; i < sizeof(connection_id64); ++i) {
-    connection_id_bytes[i] =
-        (connection_id64 >> ((sizeof(connection_id64) - i - 1) * 8)) & 0xff;
-  }
 
   std::vector<uint8_t> handshake_secret;
   handshake_secret.resize(EVP_MAX_MD_SIZE);
   size_t handshake_secret_len;
-  if (!HKDF_extract(handshake_secret.data(), &handshake_secret_len, hash,
-                    connection_id_bytes, QUIC_ARRAYSIZE(connection_id_bytes),
-                    kInitialSalt, QUIC_ARRAYSIZE(kInitialSalt))) {
-    QUIC_BUG << "HKDF_extract failed when creating initial crypters";
+  bool hkdf_extract_success;
+  if (!QuicConnectionIdSupportsVariableLength(perspective)) {
+    uint64_t connection_id64 = QuicConnectionIdToUInt64(connection_id);
+    uint8_t connection_id_bytes[sizeof(connection_id64)];
+    for (size_t i = 0; i < sizeof(connection_id64); ++i) {
+      connection_id_bytes[i] =
+          (connection_id64 >> ((sizeof(connection_id64) - i - 1) * 8)) & 0xff;
+    }
+    hkdf_extract_success =
+        HKDF_extract(handshake_secret.data(), &handshake_secret_len, hash,
+                     connection_id_bytes, QUIC_ARRAYSIZE(connection_id_bytes),
+                     kInitialSalt, QUIC_ARRAYSIZE(kInitialSalt));
+  } else {
+    hkdf_extract_success = HKDF_extract(
+        handshake_secret.data(), &handshake_secret_len, hash,
+        reinterpret_cast<const uint8_t*>(connection_id.data()),
+        connection_id.length(), kInitialSalt, QUIC_ARRAYSIZE(kInitialSalt));
   }
+  QUIC_BUG_IF(!hkdf_extract_success)
+      << "HKDF_extract failed when creating initial crypters";
   handshake_secret.resize(handshake_secret_len);
 
   const QuicString client_label = "client in";

@@ -44,6 +44,7 @@ class QUIC_EXPORT_PRIVATE QpackEncoderStreamReceiver
   QpackEncoderStreamReceiver(const QpackEncoderStreamReceiver&) = delete;
   QpackEncoderStreamReceiver& operator=(const QpackEncoderStreamReceiver&) =
       delete;
+  ~QpackEncoderStreamReceiver() override = default;
 
   // Decode data and call appropriate Delegate method after each decoded
   // instruction.  Once an error occurs, Delegate::OnErrorDetected() is called,

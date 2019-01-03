@@ -73,6 +73,7 @@ class QuicSpdyClientSession : public QuicSpdyClientSessionBase {
   bool ShouldCreateOutgoingUnidirectionalStream() override;
 
   // If an incoming stream can be created, return true.
+  // TODO(fayang): move this up to QuicSpdyClientSessionBase.
   bool ShouldCreateIncomingStream(QuicStreamId id) override;
 
   // Create the crypto stream. Called by Initialize().

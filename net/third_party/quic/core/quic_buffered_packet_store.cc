@@ -31,7 +31,6 @@ class ConnectionExpireAlarm : public QuicAlarm::Delegate {
 
   void OnAlarm() override { connection_store_->OnExpirationTimeout(); }
 
-  // Disallow copy and asign.
   ConnectionExpireAlarm(const ConnectionExpireAlarm&) = delete;
   ConnectionExpireAlarm& operator=(const ConnectionExpireAlarm&) = delete;
 
@@ -42,11 +41,11 @@ class ConnectionExpireAlarm : public QuicAlarm::Delegate {
 }  // namespace
 
 BufferedPacket::BufferedPacket(std::unique_ptr<QuicReceivedPacket> packet,
-                               QuicSocketAddress server_address,
-                               QuicSocketAddress client_address)
+                               QuicSocketAddress self_address,
+                               QuicSocketAddress peer_address)
     : packet(std::move(packet)),
-      server_address(server_address),
-      client_address(client_address) {}
+      self_address(self_address),
+      peer_address(peer_address) {}
 
 BufferedPacket::BufferedPacket(BufferedPacket&& other) = default;
 
@@ -83,8 +82,8 @@ EnqueuePacketResult QuicBufferedPacketStore::EnqueuePacket(
     QuicConnectionId connection_id,
     bool ietf_quic,
     const QuicReceivedPacket& packet,
-    QuicSocketAddress server_address,
-    QuicSocketAddress client_address,
+    QuicSocketAddress self_address,
+    QuicSocketAddress peer_address,
     bool is_chlo,
     const QuicString& alpn,
     const ParsedQuicVersion& version) {
@@ -133,7 +132,7 @@ EnqueuePacketResult QuicBufferedPacketStore::EnqueuePacket(
   }
 
   BufferedPacket new_entry(std::unique_ptr<QuicReceivedPacket>(packet.Clone()),
-                           server_address, client_address);
+                           self_address, peer_address);
   if (is_chlo) {
     // Add CHLO to the beginning of buffered packets so that it can be delivered
     // first later.

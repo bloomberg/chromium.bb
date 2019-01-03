@@ -40,11 +40,10 @@ class QUIC_EXPORT_PRIVATE QuicBufferedPacketStore {
     TOO_MANY_CONNECTIONS  // Too many connections stored up in the store.
   };
 
-  // A packets with client/server address.
   struct QUIC_EXPORT_PRIVATE BufferedPacket {
     BufferedPacket(std::unique_ptr<QuicReceivedPacket> packet,
-                   QuicSocketAddress server_address,
-                   QuicSocketAddress client_address);
+                   QuicSocketAddress self_address,
+                   QuicSocketAddress peer_address);
     BufferedPacket(BufferedPacket&& other);
 
     BufferedPacket& operator=(BufferedPacket&& other);
@@ -52,8 +51,8 @@ class QUIC_EXPORT_PRIVATE QuicBufferedPacketStore {
     ~BufferedPacket();
 
     std::unique_ptr<QuicReceivedPacket> packet;
-    QuicSocketAddress server_address;
-    QuicSocketAddress client_address;
+    QuicSocketAddress self_address;
+    QuicSocketAddress peer_address;
   };
 
   // A queue of BufferedPackets for a connection.
@@ -71,7 +70,8 @@ class QUIC_EXPORT_PRIVATE QuicBufferedPacketStore {
     QuicString alpn;
     // Indicating whether this is an IETF QUIC connection.
     bool ietf_quic;
-    // QUIC version if buffered_packets contains the CHLO.
+    // If buffered_packets contains the CHLO, it is the version of the CHLO.
+    // Otherwise, it is the version of the first packet in |buffered_packets|.
     ParsedQuicVersion version;
   };
 
@@ -105,8 +105,8 @@ class QUIC_EXPORT_PRIVATE QuicBufferedPacketStore {
   EnqueuePacketResult EnqueuePacket(QuicConnectionId connection_id,
                                     bool ietf_quic,
                                     const QuicReceivedPacket& packet,
-                                    QuicSocketAddress server_address,
-                                    QuicSocketAddress client_address,
+                                    QuicSocketAddress self_address,
+                                    QuicSocketAddress peer_address,
                                     bool is_chlo,
                                     const QuicString& alpn,
                                     const ParsedQuicVersion& version);

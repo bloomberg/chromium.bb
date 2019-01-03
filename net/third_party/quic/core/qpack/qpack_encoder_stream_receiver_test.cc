@@ -34,6 +34,7 @@ class MockDelegate : public QpackEncoderStreamReceiver::Delegate {
 class QpackEncoderStreamReceiverTest : public QuicTest {
  protected:
   QpackEncoderStreamReceiverTest() : stream_(&delegate_) {}
+  ~QpackEncoderStreamReceiverTest() override = default;
 
   void Decode(QuicStringPiece data) { stream_.Decode(data); }
   StrictMock<MockDelegate>* delegate() { return &delegate_; }
