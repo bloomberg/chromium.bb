@@ -172,9 +172,8 @@ void SystemClipboard::WriteImage(Image* image,
   if (bitmap.isNull())
     return;
 
-  // TODO(piman): this should not be NULL, but it is. crbug.com/369621
-  if (!bitmap.getPixels())
-    return;
+  // TODO(crbug.com/918717): Remove CHECK if no crashes occur on it in canary.
+  CHECK(bitmap.getPixels());
 
   clipboard_->WriteImage(mojom::ClipboardBuffer::kStandard, bitmap);
 
