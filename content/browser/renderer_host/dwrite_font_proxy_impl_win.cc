@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/dwrite_font_proxy_message_filter_win.h"
+#include "content/browser/renderer_host/dwrite_font_proxy_impl_win.h"
 
 #include <dwrite.h>
 #include <shlobj.h>
@@ -143,8 +143,8 @@ bool CheckRequiredStylesPresent(IDWriteFontCollection* collection,
       }
       mswr::ComPtr<IDWriteFont> font;
       if (FAILED(family->GetFirstMatchingFont(
-          font_style.required_weight, font_style.required_stretch,
-          font_style.required_style, &font))) {
+              font_style.required_weight, font_style.required_stretch,
+              font_style.required_style, &font))) {
         DCHECK(false);
         return true;
       }

@@ -30,7 +30,7 @@
 #include "ui/base/ui_base_features.h"
 
 #if defined(OS_WIN)
-#include "content/browser/renderer_host/dwrite_font_proxy_message_filter_win.h"
+#include "content/browser/renderer_host/dwrite_font_proxy_impl_win.h"
 #include "content/public/common/font_cache_dispatcher_win.h"
 #elif defined(OS_MACOSX)
 #include "content/browser/sandbox_support_mac_impl.h"
