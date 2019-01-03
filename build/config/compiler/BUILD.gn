@@ -1179,8 +1179,6 @@ config("assembler_debug_dir") {
     if (!is_win && target_os != "chromeos") {
       # We don't use clang -cc1as on Windows (yet? https://crbug.com/762167)
       # Chrome OS's clang doesn't know this flag yet, https://crbug.com/917357
-      # TODO(thakis): Uncomment the next line once openmax_dl removes this
-      # config.
       asmflags = [ "-Wa,-fdebug-compilation-dir,." ]
     }
   }
