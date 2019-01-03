@@ -175,14 +175,6 @@ std::unique_ptr<TestingProfile> BuildTestingProfile(
     const base::FilePath& path,
     Profile::Delegate* delegate) {
   TestingProfile::Builder profile_builder;
-
-  TestingProfile::TestingFactories testing_factories =
-      IdentityTestEnvironmentProfileAdaptor::
-          GetIdentityTestEnvironmentFactories();
-  for (auto& testing_factory : testing_factories) {
-    profile_builder.AddTestingFactory(testing_factory.first,
-                                      testing_factory.second);
-  }
   profile_builder.AddTestingFactory(
       ChromeSigninClientFactory::GetInstance(),
       base::BindRepeating(&signin::BuildTestSigninClient));
@@ -194,7 +186,8 @@ std::unique_ptr<TestingProfile> BuildTestingProfile(
       base::BindRepeating(&FakeUserPolicySigninService::Build));
   profile_builder.SetDelegate(delegate);
   profile_builder.SetPath(path);
-  return profile_builder.Build();
+  return IdentityTestEnvironmentProfileAdaptor::
+      CreateProfileForIdentityTestEnvironment(profile_builder);
 }
 
 }  // namespace
@@ -808,7 +801,7 @@ TEST_F(DiceTurnSyncOnHelperTest,
   DiceTurnSyncOnHelper* dice_sync_starter = CreateDiceTurnOnSyncHelper(
       DiceTurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT);
 
-  // Check that the account was set in the sign-in manager, but the sync
+  // Check that the primary account was set with IdentityManager, but the sync
   // confirmation dialog was not yet shown.
   EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(account_id()));
   EXPECT_EQ(account_id(), identity_manager()->GetPrimaryAccountId());
