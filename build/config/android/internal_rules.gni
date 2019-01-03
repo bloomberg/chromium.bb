@@ -951,7 +951,13 @@ if (enable_java_templates) {
       pool = "//build/toolchain:link_pool($default_toolchain)"
 
       _output_path = invoker.output_path
+      _proguard_jar_path = _default_proguard_jar_path
+      if (defined(invoker.proguard_jar_path)) {
+        _proguard_jar_path = invoker.proguard_jar_path
+      }
+
       inputs = [
+        _proguard_jar_path,
         invoker.build_config,
       ]
       if (defined(invoker.inputs)) {
@@ -970,6 +976,8 @@ if (enable_java_templates) {
       args = [
         "--depfile",
         rebase_path(depfile, root_build_dir),
+        "--proguard-path",
+        rebase_path(_proguard_jar_path, root_build_dir),
         "--output-path",
         rebase_path(_output_path, root_build_dir),
         "--mapping-output",
@@ -979,24 +987,19 @@ if (enable_java_templates) {
         "--classpath",
         "@FileArg($_rebased_build_config:android:sdk_jars)",
       ]
-
-      if (!defined(invoker.proguard_jar_path) || use_r8) {
+      if (experimental_use_r8) {
         args += [
           "--r8-path",
           rebase_path(_r8_path, root_build_dir),
         ]
-        inputs += [ _r8_path ]
-      } else {
-        _proguard_jar_path = invoker.proguard_jar_path
-        args += [
-          "--proguard-path",
-          rebase_path(_proguard_jar_path, root_build_dir),
-        ]
-        inputs += [ _proguard_jar_path ]
       }
-
       if (defined(invoker.args)) {
         args += invoker.args
+      }
+      if (defined(invoker.proguard_jar_path)) {
+        # We assume that if we are using a different ProGuard, this new version
+        # can handle the 'dangerous' optimizaions.
+        args += [ "--enable-dangerous-optimizations" ]
       }
     }
   }
@@ -1071,17 +1074,10 @@ if (enable_java_templates) {
 
     _proguard_enabled =
         defined(invoker.proguard_enabled) && invoker.proguard_enabled
-    _proguarding_with_r8 =
-        _proguard_enabled && !defined(invoker.proguard_jar_path)
-    _enable_multidex =
-        defined(invoker.enable_multidex) && invoker.enable_multidex
+    _proguarding_with_r8 = _proguard_enabled && experimental_use_r8
 
     assert(!(defined(invoker.input_jars) && _proguard_enabled),
            "input_jars can't be specified when proguarding a dex.")
-
-    if (_enable_multidex) {
-      _main_dex_rules = "//build/android/main_dex_classes.flags"
-    }
 
     if (!_proguarding_with_r8) {
       _dexing_jars = []
@@ -1092,6 +1088,10 @@ if (enable_java_templates) {
 
     if (_proguard_enabled) {
       if (defined(invoker.enable_multidex)) {
+        assert(invoker.enable_multidex || !invoker.enable_multidex)
+        if (defined(invoker.extra_main_dex_proguard_config)) {
+          assert(invoker.extra_main_dex_proguard_config != [])
+        }
         if (defined(invoker.negative_main_dex_globs)) {
           assert(invoker.negative_main_dex_globs != [])
         }
@@ -1145,27 +1145,13 @@ if (enable_java_templates) {
           ]
         }
 
-        if (_enable_multidex && _proguarding_with_r8) {
-          if (defined(invoker.extra_main_dex_proguard_config)) {
-            args += [
-              "--main-dex-rules-path",
-              rebase_path(invoker.extra_main_dex_proguard_config,
-                          root_build_dir),
-            ]
-            inputs += [ invoker.extra_main_dex_proguard_config ]
-          }
-          args += [
-            "--main-dex-rules-path",
-            rebase_path(_main_dex_rules, root_build_dir),
-          ]
-          inputs += [ _main_dex_rules ]
-        }
-
         output_path = _proguard_output_path
       }
     }
 
     if (!_proguarding_with_r8) {
+      _enable_multidex =
+          defined(invoker.enable_multidex) && invoker.enable_multidex
       if (_enable_multidex) {
         _main_dex_list_path = invoker.output + ".main_dex_list"
         _main_dex_list_target_name = "${target_name}__main_dex_list"
@@ -1182,6 +1168,8 @@ if (enable_java_templates) {
           # http://crbug.com/725224. Fix for bots running out of memory.
           pool = "//build/toolchain:link_pool($default_toolchain)"
 
+          main_dex_rules = "//build/android/main_dex_classes.flags"
+
           if (defined(invoker.proguard_jar_path)) {
             _proguard_jar_path = invoker.proguard_jar_path
           } else {
@@ -1191,7 +1179,7 @@ if (enable_java_templates) {
           _shrinked_android = "$android_sdk_build_tools/lib/shrinkedAndroid.jar"
           _dx = "$android_sdk_build_tools/lib/dx.jar"
           inputs = [
-            _main_dex_rules,
+            main_dex_rules,
             _dx,
             _proguard_jar_path,
             _shrinked_android,
@@ -1211,7 +1199,7 @@ if (enable_java_templates) {
             "--main-dex-list-path",
             rebase_path(_main_dex_list_path, root_build_dir),
             "--main-dex-rules-path",
-            rebase_path(_main_dex_rules, root_build_dir),
+            rebase_path(main_dex_rules, root_build_dir),
             "--proguard-path",
             rebase_path(_proguard_jar_path, root_build_dir),
           ]
