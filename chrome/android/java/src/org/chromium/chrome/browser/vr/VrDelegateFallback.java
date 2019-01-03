@@ -17,7 +17,9 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.compat.ApiHelperForN;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.ui.widget.Toast;
 
 /**
  * Fallback {@link VrDelegate} implementation if the VR module is not available.
@@ -202,6 +204,9 @@ import org.chromium.chrome.browser.ChromeActivity;
             }
             // Set up 2D-in-VR.
             removeBlackOverlayView(activity, false);
+            Toast.makeText(ContextUtils.getApplicationContext(),
+                         R.string.vr_preparing_vr_toast_standalone_text, Toast.LENGTH_SHORT)
+                    .show();
         } else {
             activity.finish();
         }
