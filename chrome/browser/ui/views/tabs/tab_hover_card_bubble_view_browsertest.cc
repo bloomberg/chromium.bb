@@ -155,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest, WidgetDataUpdate) {
 // Verify inactive window remains inactive when showing a hover card for a tab
 // in the inactive window.
 IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
-                       InactiveWindowStaysInactiveOnHover) {
+                       DISABLED_InactiveWindowStaysInactiveOnHover) {
   ShowUi("default");
   BrowserView::GetBrowserViewForBrowser(browser())->Deactivate();
   ASSERT_FALSE(BrowserView::GetBrowserViewForBrowser(browser())->IsActive());
