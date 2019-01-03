@@ -255,6 +255,18 @@ Viewport.prototype = {
   },
 
   /**
+   * Returns the document dimensions.
+   *
+   * @return {Point} A dictionary with the 'width'/'height' of the document.
+   */
+  getDocumentDimensions: function() {
+    return {
+      width: this.documentDimensions_.width,
+      height: this.documentDimensions_.height
+    };
+  },
+
+  /**
    * Returns true if the document needs scrollbars at the given zoom level.
    *
    * @param {number} zoom compute whether scrollbars are needed at this zoom

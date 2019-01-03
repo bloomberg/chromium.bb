@@ -827,6 +827,8 @@ PDFViewer.prototype = {
       }
     }
 
+    this.currentController_.viewportChanged();
+
     const visiblePageDimensions = this.viewport_.getPageScreenRect(visiblePage);
     const size = this.viewport_.size;
     this.sendScriptingMessage_({
@@ -1142,6 +1144,11 @@ class ContentController {
   afterZoom() {}
 
   /**
+   * Handles a change to the viewport.
+   */
+  viewportChanged() {}
+
+  /**
    * Rotates the document 90 degrees in the clockwise direction.
    * @abstract
    */
@@ -1214,6 +1221,11 @@ class InkController extends ContentController {
   }
 
   /** @override */
+  viewportChanged() {
+    this.inkHost_.viewportChanged(this.viewport_);
+  }
+
+  /** @override */
   save(requireResult) {
     return this.inkHost_.saveDocument();
   }
@@ -1224,7 +1236,7 @@ class InkController extends ContentController {
       this.inkHost_ = document.createElement('viewer-ink-host');
       document.body.appendChild(this.inkHost_);
     }
-    return this.inkHost_.load(filename, data);
+    return this.inkHost_.load(filename, data, this.viewport_);
   }
 
   /** @override */

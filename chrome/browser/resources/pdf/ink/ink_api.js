@@ -7,7 +7,10 @@
  * across an IFrame boundary.
  */
 class InkAPI {
-  constructor() {
+  constructor(embed) {
+    /** @type {*} */
+    this.embed_ = embed;
+
     /** @type {ArrayBuffer} */
     this.buffer_ = null;
   }
@@ -25,12 +28,17 @@ class InkAPI {
   getPDF() {
     return this.buffer_;
   }
+
+  setCamera(camera) {
+    this.embed_.setCamera(camera);
+  }
 }
 
 /**
  * @return {InkAPI}
  */
 window.initInk = function() {
-  // TODO(dstockwell): Create Ink embed and pass to InkAPI.
-  return new InkAPI();
+  // TODO(dstockwell): Create real Ink embed and pass to InkAPI.
+  const embed = {setCamera() {}};
+  return new InkAPI(embed);
 };
