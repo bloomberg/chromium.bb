@@ -6113,52 +6113,6 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_EQ(LayoutPoint(100, 85), paint_offset("float-right-rtl-vlr"));
 }
 
-TEST_P(PaintPropertyTreeBuilderTest, ClipInvalidationForReplacedElement) {
-  // Non-composited LayoutImage has a micro-optimization to embed object-fit
-  // and clip to the drawing, thus not creating nodes.
-  // CAP makes everything non-composited essentially.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-  // This test verifies clip nodes are correctly updated in response to
-  // content box mutation.
-  SetBodyInnerHTML(R"HTML(
-    <style>
-    img {
-      box-sizing: border-box;
-      width: 8px;
-      height: 8px;
-      object-fit: none;
-      will-change: transform;
-    }
-    </style>
-    <!-- An image of 10x10 white pixels. -->
-    <img id="target" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAA
-        AAKCAIAAAACUFjqAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4gcVABQvx8CBmA
-        AAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAAFUlEQVQY02P
-        8//8/A27AxIAXjFRpAKXjAxH/0Dm5AAAAAElFTkSuQmCC"/>
-  )HTML");
-
-  {
-    const auto* properties = PaintPropertiesForElement("target");
-    ASSERT_TRUE(properties);
-    ASSERT_TRUE(properties->OverflowClip());
-    EXPECT_EQ(FloatRect(0, 0, 8, 8),
-              properties->OverflowClip()->ClipRect().Rect());
-  }
-
-  GetDocument().getElementById("target")->setAttribute(
-      html_names::kStyleAttr, "padding: 1px 2px 3px 4px;");
-  UpdateAllLifecyclePhasesForTest();
-
-  {
-    const auto* properties = PaintPropertiesForElement("target");
-    ASSERT_TRUE(properties);
-    ASSERT_TRUE(properties->OverflowClip());
-    EXPECT_EQ(FloatRect(4, 1, 2, 4),
-              properties->OverflowClip()->ClipRect().Rect());
-  }
-}
-
 TEST_P(PaintPropertyTreeBuilderTest, SubpixelPositionedScrollNode) {
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>

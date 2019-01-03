@@ -1409,6 +1409,128 @@ TEST_P(PaintPropertyTreeUpdateTest, ForwardReferencedSVGElementUpdate) {
                 svg2_properties->PaintOffsetTranslation()));
 }
 
+TEST_P(PaintPropertyTreeUpdateTest, OverflowClipUpdateForImage) {
+  // This test verifies clip nodes are correctly updated in response to
+  // content box mutation.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    img {
+      box-sizing: border-box;
+      width: 8px;
+      height: 8px;
+    }
+    </style>
+    <!-- An image of 10x10 white pixels. -->
+    <img id="target" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAA
+        AAKCAIAAAACUFjqAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4gcVABQvx8CBmA
+        AAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAAFUlEQVQY02P
+        8//8/A27AxIAXjFRpAKXjAxH/0Dm5AAAAAElFTkSuQmCC">
+  )HTML");
+
+  auto* target = GetDocument().getElementById("target");
+  const auto* properties = PaintPropertiesForElement("target");
+  // We don't need paint properties for object-fit: fill because the content
+  // never overflows.
+  EXPECT_EQ(nullptr, properties);
+
+  target->setAttribute(html_names::kStyleAttr, "object-fit: cover");
+  UpdateAllLifecyclePhasesForTest();
+  properties = PaintPropertiesForElement("target");
+  // We don't need paint properties because image painter always clip to the
+  // content box.
+  EXPECT_EQ(nullptr, properties);
+
+  target->setAttribute(html_names::kStyleAttr, "object-fit: none");
+  UpdateAllLifecyclePhasesForTest();
+  properties = PaintPropertiesForElement("target");
+  // Ditto.
+  EXPECT_EQ(nullptr, properties);
+
+  // We need overflow clip when there is border radius.
+  target->setAttribute(html_names::kStyleAttr,
+                       "object-fit: none; border-radius: 2px");
+  UpdateAllLifecyclePhasesForTest();
+  properties = PaintPropertiesForElement("target");
+  ASSERT_TRUE(properties);
+  ASSERT_TRUE(properties->OverflowClip());
+  FloatSize corner(2, 2);
+  FloatRoundedRect::Radii radii(corner, corner, corner, corner);
+  EXPECT_EQ(FloatRoundedRect(FloatRect(8, 8, 8, 8), radii),
+            properties->OverflowClip()->ClipRect());
+
+  // We should update clip rect on border radius change.
+  target->setAttribute(html_names::kStyleAttr,
+                       "object-fit: none; border-radius: 3px");
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_EQ(properties, PaintPropertiesForElement("target"));
+  ASSERT_TRUE(properties->OverflowClip());
+  radii.Expand(1);
+  EXPECT_EQ(FloatRoundedRect(FloatRect(8, 8, 8, 8), radii),
+            properties->OverflowClip()->ClipRect());
+
+  // We should update clip rect on padding change.
+  target->setAttribute(
+      html_names::kStyleAttr,
+      "object-fit: none; border-radius: 3px; padding: 1px 2px 3px 4px");
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_EQ(properties, PaintPropertiesForElement("target"));
+  ASSERT_TRUE(properties->OverflowClip());
+  // The rounded clip rect is the intersection of the rounded inner border
+  // rect and the content box rect.
+  EXPECT_EQ(
+      FloatRoundedRect(FloatRect(12, 9, 2, 4),
+                       FloatRoundedRect::Radii(FloatSize(0, 2), FloatSize(1, 2),
+                                               FloatSize(), FloatSize(1, 0))),
+      properties->OverflowClip()->ClipRect());
+}
+
+TEST_P(PaintPropertyTreeUpdateTest, OverflowClipUpdateForVideo) {
+  // This test verifies clip nodes are correctly updated in response to
+  // content box mutation.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    video {
+      box-sizing: border-box;
+      width: 8px;
+      height: 8px;
+    }
+    </style>
+    <video id="target"></video>
+  )HTML");
+
+  auto* target = GetDocument().getElementById("target");
+  const auto* properties = PaintPropertiesForElement("target");
+  // We always create overflow clip for video regardless of object-fit.
+  ASSERT_TRUE(properties);
+  ASSERT_TRUE(properties->OverflowClip());
+  EXPECT_EQ(FloatRoundedRect(8, 8, 8, 8),
+            properties->OverflowClip()->ClipRect());
+
+  target->setAttribute(html_names::kStyleAttr, "object-fit: cover");
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_EQ(properties, PaintPropertiesForElement("target"));
+  ASSERT_TRUE(properties->OverflowClip());
+  EXPECT_EQ(FloatRoundedRect(8, 8, 8, 8),
+            properties->OverflowClip()->ClipRect());
+
+  // We need OverflowClip for object-fit: cover, too.
+  target->setAttribute(html_names::kStyleAttr, "object-fit: none");
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_EQ(properties, PaintPropertiesForElement("target"));
+  ASSERT_TRUE(properties->OverflowClip());
+  EXPECT_EQ(FloatRoundedRect(8, 8, 8, 8),
+            properties->OverflowClip()->ClipRect());
+
+  // We should update clip rect on padding change.
+  target->setAttribute(html_names::kStyleAttr,
+                       "object-fit: none; padding: 1px 2px 3px 4px");
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_EQ(properties, PaintPropertiesForElement("target"));
+  ASSERT_TRUE(properties->OverflowClip());
+  EXPECT_EQ(FloatRoundedRect(12, 9, 2, 4),
+            properties->OverflowClip()->ClipRect());
+}
+
 TEST_P(PaintPropertyTreeUpdateTest, ChangingClipPath) {
   GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
   SetBodyInnerHTML(R"HTML(

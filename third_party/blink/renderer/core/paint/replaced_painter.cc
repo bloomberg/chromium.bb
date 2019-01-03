@@ -56,11 +56,8 @@ ScopedReplacedContentPaintState::ScopedReplacedContentPaintState(
     property_changed = true;
   }
 
-  bool painter_implements_content_box_clip = replaced.IsLayoutImage();
-  if (paint_properties->OverflowClip() &&
-      (!painter_implements_content_box_clip ||
-       replaced.StyleRef().HasBorderRadius())) {
-    new_properties.SetClip(paint_properties->OverflowClip());
+  if (const auto* clip = paint_properties->OverflowClip()) {
+    new_properties.SetClip(clip);
     property_changed = true;
   }
 
@@ -157,9 +154,10 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
       !layout_replaced_.IsSelected())
     return;
 
-  bool skip_clip = layout_replaced_.IsSVGRoot() &&
-                   !ToLayoutSVGRoot(layout_replaced_).ShouldApplyViewportClip();
-  if (skip_clip || !layout_replaced_.PhysicalContentBoxRect().IsEmpty()) {
+  bool has_clip =
+      layout_replaced_.FirstFragment().PaintProperties() &&
+      layout_replaced_.FirstFragment().PaintProperties()->OverflowClip();
+  if (!has_clip || !layout_replaced_.PhysicalContentBoxRect().IsEmpty()) {
     ScopedReplacedContentPaintState content_paint_state(paint_state,
                                                         layout_replaced_);
     layout_replaced_.PaintReplaced(content_paint_state.GetPaintInfo(),
