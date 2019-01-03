@@ -554,28 +554,60 @@ class ProtoDBPerfTest : public testing::Test {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
-TEST_F(ProtoDBPerfTest, InsertMultipleDBsAlternating_Individual_100b) {
+// Flakily times out on Windows, see http://crbug.com/918874.
+#if defined(OS_WIN)
+#define MAYBE_InsertMultipleDBsAlternating_Individual_100b \
+  DISABLED_InsertMultipleDBsAlternating_Individual_100b
+#else
+#define MAYBE_InsertMultipleDBsAlternating_Individual_100b \
+  InsertMultipleDBsAlternating_Individual_100b
+#endif
+TEST_F(ProtoDBPerfTest, MAYBE_InsertMultipleDBsAlternating_Individual_100b) {
   // num_entries, data_size, batch_size, single_db.
   TestParams params = {200, kMediumDataSize, 1, false};
   RunAlternatingInsertTests({params}, "InsertMultipleDBsAlternating_Individual",
                             5);
 }
 
-TEST_F(ProtoDBPerfTest, InsertMultipleDBsAlternating_Individual_1000b) {
+// Flakily times out on Windows, see http://crbug.com/918874.
+#if defined(OS_WIN)
+#define MAYBE_InsertMultipleDBsAlternating_Individual_1000b \
+  DISABLED_InsertMultipleDBsAlternating_Individual_1000b
+#else
+#define MAYBE_InsertMultipleDBsAlternating_Individual_1000b \
+  InsertMultipleDBsAlternating_Individual_1000b
+#endif
+TEST_F(ProtoDBPerfTest, MAYBE_InsertMultipleDBsAlternating_Individual_1000b) {
   // num_entries, data_size, batch_size, single_db.
   TestParams params = {200, kLargeDataSize, 1, false};
   RunAlternatingInsertTests({params}, "InsertMultipleDBsAlternating_Individual",
                             5);
 }
 
-TEST_F(ProtoDBPerfTest, InsertSingleDBAlternating_Individual_100b) {
+// Flakily times out on Windows, see http://crbug.com/918874.
+#if defined(OS_WIN)
+#define MAYBE_InsertSingleDBAlternating_Individual_100b \
+  DISABLED_InsertSingleDBAlternating_Individual_100b
+#else
+#define MAYBE_InsertSingleDBAlternating_Individual_100b \
+  InsertSingleDBAlternating_Individual_100b
+#endif
+TEST_F(ProtoDBPerfTest, MAYBE_InsertSingleDBAlternating_Individual_100b) {
   // num_entries, data_size, batch_size, single_db.
   TestParams params = {200, kMediumDataSize, 1, true};
   RunAlternatingInsertTests({params}, "InsertSingleDBAlternating_Individual",
                             5);
 }
 
-TEST_F(ProtoDBPerfTest, InsertSingleDBAlternating_Individual_1000b) {
+// Flakily times out on Windows, see http://crbug.com/918874.
+#if defined(OS_WIN)
+#define MAYBE_InsertSingleDBAlternating_Individual_1000b \
+  DISABLED_InsertSingleDBAlternating_Individual_1000b
+#else
+#define MAYBE_InsertSingleDBAlternating_Individual_1000b \
+  InsertSingleDBAlternating_Individual_1000b
+#endif
+TEST_F(ProtoDBPerfTest, MAYBE_InsertSingleDBAlternating_Individual_1000b) {
   // num_entries, data_size, batch_size, single_db.
   TestParams params = {200, kLargeDataSize, 1, true};
   RunAlternatingInsertTests({params}, "InsertSingleDBAlternating_Individual",
