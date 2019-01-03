@@ -42,7 +42,7 @@ class SessionInfo {
     return this.session;
   }
 
-  get currentFrameOfRef() {
+  get currentRefSpace() {
     return this.frameOfRef;
   }
 
@@ -50,7 +50,7 @@ class SessionInfo {
     this.session = session;
   }
 
-  set currentFrameOfRef(frameOfRef) {
+  set currentRefSpace(frameOfRef) {
     this.frameOfRef = frameOfRef;
   }
 
@@ -127,10 +127,11 @@ function onSessionStarted(session) {
   }
 
   session.baseLayer = new XRWebGLLayer(session, gl);
-  session.requestFrameOfReference('eye-level').then( (frameOfRef) => {
-    sessionInfos[getSessionType(session)].currentFrameOfRef = frameOfRef;
-    session.requestAnimationFrame(onXRFrame);
-  });
+  session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' })
+      .then( (refSpace) => {
+        sessionInfos[getSessionType(session)].currentRefSpace = refSpace;
+        session.requestAnimationFrame(onXRFrame);
+      });
 }
 
 function onSessionEnded(event) {
@@ -141,9 +142,8 @@ function onXRFrame(t, frame) {
   let session = frame.session;
   session.requestAnimationFrame(onXRFrame);
 
-  let frameOfRef = null;
-  frameOfRef = sessionInfos[getSessionType(session)].currentFrameOfRef;
-  let pose = frame.getViewerPose(frameOfRef);
+  let refSpace = sessionInfos[getSessionType(session)].currentRefSpace;
+  let pose = frame.getViewerPose(refSpace);
   if (onPoseCallback) {
     onPoseCallback(pose);
   }

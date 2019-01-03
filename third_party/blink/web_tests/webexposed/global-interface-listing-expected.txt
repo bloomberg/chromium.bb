@@ -10322,10 +10322,10 @@ interface XR : EventTarget
     method constructor
     method requestDevice
     setter ondevicechange
-interface XRCoordinateSystem : EventTarget
+interface XRBoundedReferenceSpace : XRReferenceSpace
     attribute @@toStringTag
+    getter boundsGeometry
     method constructor
-    method getTransformTo
 interface XRDevice
     attribute @@toStringTag
     method constructor
@@ -10338,11 +10338,6 @@ interface XRFrame
     method constructor
     method getInputPose
     method getViewerPose
-interface XRFrameOfReference : XRCoordinateSystem
-    attribute @@toStringTag
-    getter bounds
-    getter emulatedHeight
-    method constructor
 interface XRHitResult
     attribute @@toStringTag
     getter hitMatrix
@@ -10376,6 +10371,11 @@ interface XRRay
     getter origin
     getter transformMatrix
     method constructor
+interface XRReferenceSpace : XRSpace
+    attribute @@toStringTag
+    getter onreset
+    method constructor
+    setter onreset
 interface XRSession : EventTarget
     attribute @@toStringTag
     getter baseLayer
@@ -10394,8 +10394,8 @@ interface XRSession : EventTarget
     method end
     method getInputSources
     method requestAnimationFrame
-    method requestFrameOfReference
     method requestHitTest
+    method requestReferenceSpace
     setter baseLayer
     setter depthFar
     setter depthNear
@@ -10407,9 +10407,20 @@ interface XRSessionEvent : Event
     attribute @@toStringTag
     getter session
     method constructor
+interface XRSpace : EventTarget
+    attribute @@toStringTag
+    method constructor
+    method getTransformTo
 interface XRStageBounds
     attribute @@toStringTag
     getter geometry
+    method constructor
+interface XRStationaryReferenceSpace : XRReferenceSpace
+    attribute @@toStringTag
+    getter subtype
+    method constructor
+interface XRUnboundedReferenceSpace : XRReferenceSpace
+    attribute @@toStringTag
     method constructor
 interface XRView
     attribute @@toStringTag

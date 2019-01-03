@@ -37,8 +37,8 @@ let testFunction = function(session, t, fakeDeviceController) {
     viewMatrix: VALID_VIEW_MATRIX
   }]);
 
-  return session.requestFrameOfReference("eye-level")
-    .then((frameOfRef) => new Promise((resolve, reject) => {
+  return session.requestReferenceSpace({ type: "stationary", subtype: "eye-level" })
+    .then((referenceSpace) => new Promise((resolve, reject) => {
       let counter = 0;
       let windowFrameTime = 0;
       let frameTime = 0;

@@ -17,17 +17,20 @@
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation.h"
 #include "third_party/blink/renderer/modules/xr/xr.h"
+#include "third_party/blink/renderer/modules/xr/xr_bounded_reference_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_canvas_input_provider.h"
 #include "third_party/blink/renderer/modules/xr/xr_device.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame.h"
-#include "third_party/blink/renderer/modules/xr/xr_frame_of_reference.h"
-#include "third_party/blink/renderer/modules/xr/xr_frame_of_reference_options.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_provider.h"
 #include "third_party/blink/renderer/modules/xr/xr_hit_result.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_layer.h"
 #include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
+#include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
+#include "third_party/blink/renderer/modules/xr/xr_reference_space_options.h"
 #include "third_party/blink/renderer/modules/xr/xr_session_event.h"
+#include "third_party/blink/renderer/modules/xr/xr_stationary_reference_space.h"
+#include "third_party/blink/renderer/modules/xr/xr_unbounded_reference_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
 #include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -38,10 +41,13 @@ namespace {
 
 const char kSessionEnded[] = "XRSession has already ended.";
 
-const char kUnknownFrameOfReference[] = "Unknown frame of reference type.";
+const char kUnknownReferenceSpace[] = "Unknown reference space type.";
 
-const char kNonEmulatedStageNotSupported[] =
-    "This device does not support a non-emulated 'stage' frame of reference.";
+const char kSubtypeRequired[] =
+    "Subtype must be specified when requesting a stationary reference space.";
+
+const char kReferenceSpaceNotSupported[] =
+    "This device does not support the requested reference space type.";
 
 const double kDegToRad = M_PI / 180.0;
 
@@ -183,48 +189,68 @@ const AtomicString& XRSession::InterfaceName() const {
   return event_target_names::kXRSession;
 }
 
-ScriptPromise XRSession::requestFrameOfReference(
+ScriptPromise XRSession::requestReferenceSpace(
     ScriptState* script_state,
-    const String& type,
-    const XRFrameOfReferenceOptions* options) {
+    const XRReferenceSpaceOptions* options) {
   if (ended_) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                            kSessionEnded));
   }
 
-  XRFrameOfReference* frameOfRef = nullptr;
-  if (type == "head-model") {
-    frameOfRef = MakeGarbageCollected<XRFrameOfReference>(
-        this, XRFrameOfReference::kTypeHeadModel);
-  } else if (type == "eye-level") {
-    frameOfRef = MakeGarbageCollected<XRFrameOfReference>(
-        this, XRFrameOfReference::kTypeEyeLevel);
-  } else if (type == "stage") {
-    if (!options->disableStageEmulation()) {
-      frameOfRef = MakeGarbageCollected<XRFrameOfReference>(
-          this, XRFrameOfReference::kTypeStage);
-      frameOfRef->UseEmulatedHeight(options->stageEmulationHeight());
-    } else if (display_info_ && display_info_->stageParameters) {
-      frameOfRef = MakeGarbageCollected<XRFrameOfReference>(
-          this, XRFrameOfReference::kTypeStage);
+  XRReferenceSpace* reference_space = nullptr;
+  if (options->type() == "stationary") {
+    if (!options->hasSubtype()) {
+      return ScriptPromise::RejectWithDOMException(
+          script_state,
+          DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                               kSubtypeRequired));
+    }
+
+    XRStationaryReferenceSpace::Subtype subtype;
+
+    if (options->subtype() == "eye-level") {
+      subtype = XRStationaryReferenceSpace::kSubtypeEyeLevel;
+    } else if (options->subtype() == "floor-level") {
+      subtype = XRStationaryReferenceSpace::kSubtypeFloorLevel;
+    } else if (options->subtype() == "position-disabled") {
+      subtype = XRStationaryReferenceSpace::kSubtypePositionDisabled;
     } else {
       return ScriptPromise::RejectWithDOMException(
           script_state,
           DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                               kNonEmulatedStageNotSupported));
+                               kSubtypeRequired));
+    }
+
+    reference_space =
+        MakeGarbageCollected<XRStationaryReferenceSpace>(this, subtype);
+  } else if (options->type() == "bounded") {
+    // TODO(https://crbug.com/917411): Bounded reference spaces cannot be
+    // returned unless they have bounds geometry. Until we implement that they
+    // will be considered unsupported.
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                                           kReferenceSpaceNotSupported));
+  } else if (options->type() == "unbounded") {
+    if (immersive_ && environment_integration_) {
+      reference_space = MakeGarbageCollected<XRUnboundedReferenceSpace>(this);
+    } else {
+      return ScriptPromise::RejectWithDOMException(
+          script_state,
+          DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                               kReferenceSpaceNotSupported));
     }
   }
 
-  if (!frameOfRef) {
+  if (!reference_space) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                           kUnknownFrameOfReference));
+                                           kUnknownReferenceSpace));
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
-  resolver->Resolve(frameOfRef);
+  resolver->Resolve(reference_space);
 
   return promise;
 }
@@ -280,27 +306,26 @@ HeapVector<Member<XRInputSource>> XRSession::getInputSources() const {
 ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
                                         NotShared<DOMFloat32Array> origin,
                                         NotShared<DOMFloat32Array> direction,
-                                        XRCoordinateSystem* coordinate_system) {
+                                        XRSpace* space) {
   if (ended_) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                            kSessionEnded));
   }
 
-  if (!coordinate_system) {
+  if (!space) {
     return ScriptPromise::Reject(
         script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(),
-                          "The coordinateSystem parameter is empty."));
+                          script_state->GetIsolate(), "No XRSpace specified."));
   }
 
   if (origin.View()->length() != 3 || direction.View()->length() != 3) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                           "Invalid ray!"));
+                                           "Invalid ray"));
   }
 
-  // TODO(https://crbug.com/846411): use coordinate_system.
+  // TODO(https://crbug.com/846411): use space.
 
   // Reject the promise if device doesn't support the hit-test API.
   // TODO(https://crbug.com/878936): Get the environment provider without going
