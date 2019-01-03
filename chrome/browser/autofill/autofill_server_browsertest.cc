@@ -216,6 +216,7 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
   upload.set_passwords_revealed(false);
   upload.set_submission_event(
       AutofillUploadContents_SubmissionIndicatorEvent_HTML_FORM_SUBMISSION);
+  upload.set_has_form_tag(true);
 
   test::FillUploadField(upload.add_field(), 2594484045U, "one", "text", nullptr,
                         2U);

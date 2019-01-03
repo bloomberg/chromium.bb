@@ -2444,6 +2444,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithMatchingValidities) {
   std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
   form.origin = GURL("http://www.foo.com/");
+  form.is_form_tag = true;
 
   form_structure = std::make_unique<FormStructure>(form);
   form_structure->DetermineHeuristicTypes();
@@ -2537,6 +2538,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithMatchingValidities) {
   upload.set_action_signature(15724779818122431245U);
   upload.set_submission_event(
       AutofillUploadContents_SubmissionIndicatorEvent_NONE);
+  upload.set_has_form_tag(true);
 
   test::FillUploadField(upload.add_field(), 3763331450U, "firstname", "text",
                         nullptr, 3U, 0);
@@ -2765,6 +2767,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithMultipleValidities) {
   std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
   form.origin = GURL("http://www.foo.com/");
+  form.is_form_tag = true;
 
   form_structure = std::make_unique<FormStructure>(form);
   form_structure->DetermineHeuristicTypes();
@@ -2859,6 +2862,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithMultipleValidities) {
   upload.set_action_signature(15724779818122431245U);
   upload.set_submission_event(
       AutofillUploadContents_SubmissionIndicatorEvent_NONE);
+  upload.set_has_form_tag(true);
 
   test::FillUploadField(upload.add_field(), 3763331450U, "firstname", "text",
                         nullptr, 3U, {0, 2});
@@ -2892,6 +2896,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
   std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
   form.origin = GURL("http://www.foo.com/");
+  form.is_form_tag = true;
 
   form_structure = std::make_unique<FormStructure>(form);
   form_structure->DetermineHeuristicTypes();
@@ -2983,6 +2988,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
   upload.set_password_has_numeric(true);
   upload.set_password_length(10u);
   upload.set_action_signature(15724779818122431245U);
+  upload.set_has_form_tag(true);
 
   test::FillUploadField(upload.add_field(), 3763331450U, "firstname", "text",
                         nullptr, 3U);
@@ -3103,6 +3109,7 @@ TEST_F(FormStructureTest,
   std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
   form.origin = GURL("http://www.foo.com/");
+  form.is_form_tag = true;
 
   form_structure = std::make_unique<FormStructure>(form);
   form_structure->DetermineHeuristicTypes();
@@ -3182,6 +3189,7 @@ TEST_F(FormStructureTest,
   upload.set_passwords_revealed(false);
   upload.set_submission_event(
       AutofillUploadContents_SubmissionIndicatorEvent_NONE);
+  upload.set_has_form_tag(true);
 
   AutofillUploadContents::Field* upload_firstname_field = upload.add_field();
   test::FillUploadField(upload_firstname_field, 4224610201U, "firstname", "",
@@ -3227,6 +3235,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithAutocomplete) {
   std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
   form.origin = GURL("http://www.foo.com/");
+  form.is_form_tag = true;
 
   form_structure = std::make_unique<FormStructure>(form);
   form_structure->DetermineHeuristicTypes();
@@ -3281,6 +3290,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithAutocomplete) {
   upload.set_passwords_revealed(false);
   upload.set_submission_event(
       AutofillUploadContents_SubmissionIndicatorEvent_NONE);
+  upload.set_has_form_tag(true);
 
   test::FillUploadField(upload.add_field(), 3763331450U, "firstname", "text",
                         "given-name", 3U);
@@ -3309,6 +3319,7 @@ TEST_F(FormStructureTest, EncodeUploadRequestWithPropertiesMask) {
   std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
   form.origin = GURL("http://www.foo.com/");
+  form.is_form_tag = true;
 
   form_structure = std::make_unique<FormStructure>(form);
   form_structure->DetermineHeuristicTypes();
@@ -3376,6 +3387,7 @@ TEST_F(FormStructureTest, EncodeUploadRequestWithPropertiesMask) {
   upload.set_passwords_revealed(false);
   upload.set_submission_event(
       AutofillUploadContents_SubmissionIndicatorEvent_NONE);
+  upload.set_has_form_tag(true);
 
   test::FillUploadField(upload.add_field(), 3763331450U, nullptr, nullptr,
                         nullptr, 3U);
@@ -3407,6 +3419,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_ObservedSubmissionFalse) {
   std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
   form.origin = GURL("http://www.foo.com/");
+  form.is_form_tag = true;
 
   form_structure = std::make_unique<FormStructure>(form);
   form_structure->DetermineHeuristicTypes();
@@ -3461,6 +3474,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_ObservedSubmissionFalse) {
   upload.set_passwords_revealed(false);
   upload.set_submission_event(
       AutofillUploadContents_SubmissionIndicatorEvent_NONE);
+  upload.set_has_form_tag(true);
 
   test::FillUploadField(upload.add_field(), 3763331450U, "firstname", "text",
                         nullptr, 3U);
@@ -3488,6 +3502,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithLabels) {
   std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
   form.origin = GURL("http://www.foo.com/");
+  form.is_form_tag = true;
 
   form_structure = std::make_unique<FormStructure>(form);
   form_structure->DetermineHeuristicTypes();
@@ -3535,6 +3550,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithLabels) {
   upload.set_passwords_revealed(false);
   upload.set_submission_event(
       AutofillUploadContents_SubmissionIndicatorEvent_NONE);
+  upload.set_has_form_tag(true);
 
   test::FillUploadField(upload.add_field(), 1318412689U, nullptr, "text",
                         nullptr, 3U);
@@ -3560,6 +3576,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithCssClassesAndIds) {
   std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
   form.origin = GURL("http://www.foo.com/");
+  form.is_form_tag = true;
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -3605,6 +3622,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithCssClassesAndIds) {
   upload.set_passwords_revealed(false);
   upload.set_submission_event(
       AutofillUploadContents_SubmissionIndicatorEvent_NONE);
+  upload.set_has_form_tag(true);
 
   AutofillUploadContents::Field* firstname_field = upload.add_field();
   test::FillUploadField(firstname_field, 1318412689U, nullptr, "text", nullptr,
@@ -3640,6 +3658,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithFormName) {
   std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
   form.origin = GURL("http://www.foo.com/");
+  form.is_form_tag = true;
 
   // Setting the form name which we expect to see in the upload.
   form.name = ASCIIToUTF16("myform");
@@ -3689,6 +3708,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithFormName) {
   upload.set_passwords_revealed(false);
   upload.set_submission_event(
       AutofillUploadContents_SubmissionIndicatorEvent_FRAME_DETACHED);
+  upload.set_has_form_tag(true);
 
   test::FillUploadField(upload.add_field(), 1318412689U, nullptr, "text",
                         nullptr, 3U);
@@ -3715,6 +3735,7 @@ TEST_F(FormStructureTest, EncodeUploadRequestPartialMetadata) {
   std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
   form.origin = GURL("http://www.foo.com/");
+  form.is_form_tag = true;
 
   form_structure = std::make_unique<FormStructure>(form);
   form_structure->DetermineHeuristicTypes();
@@ -3769,6 +3790,7 @@ TEST_F(FormStructureTest, EncodeUploadRequestPartialMetadata) {
   upload.set_action_signature(15724779818122431245U);
   upload.set_submission_event(
       AutofillUploadContents_SubmissionIndicatorEvent_NONE);
+  upload.set_has_form_tag(true);
 
   test::FillUploadField(upload.add_field(), 1318412689U, nullptr, "text",
                         nullptr, 3U);
@@ -3798,6 +3820,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_DisabledMetadataTrial) {
   std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
   form.origin = GURL("http://www.foo.com/");
+  form.is_form_tag = true;
 
   form_structure = std::make_unique<FormStructure>(form);
   form_structure->DetermineHeuristicTypes();
@@ -3860,6 +3883,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_DisabledMetadataTrial) {
   upload.set_passwords_revealed(false);
   upload.set_submission_event(
       AutofillUploadContents_SubmissionIndicatorEvent_NONE);
+  upload.set_has_form_tag(true);
 
   test::FillUploadField(upload.add_field(), 3763331450U, nullptr, nullptr,
                         nullptr, 3U);
@@ -3885,6 +3909,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_DisabledMetadataTrial) {
 TEST_F(FormStructureTest, CheckDataPresence) {
   FormData form;
   form.origin = GURL("http://www.foo.com/");
+  form.is_form_tag = true;
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -3934,6 +3959,7 @@ TEST_F(FormStructureTest, CheckDataPresence) {
   upload.set_action_signature(15724779818122431245U);
   upload.set_submission_event(
       AutofillUploadContents_SubmissionIndicatorEvent_HTML_FORM_SUBMISSION);
+  upload.set_has_form_tag(true);
 
   test::FillUploadField(upload.add_field(), 1089846351U, "first", "text",
                         nullptr, 1U);
@@ -4163,6 +4189,7 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
   std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
   form.origin = GURL("http://www.foo.com/");
+  form.is_form_tag = false;
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -4212,6 +4239,7 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
   upload.set_autofill_used(false);
   upload.set_data_present("1440000360000008");
   upload.set_passwords_revealed(false);
+  upload.set_has_form_tag(false);
   upload.set_action_signature(15724779818122431245U);
   upload.set_submission_event(
       AutofillUploadContents_SubmissionIndicatorEvent_XHR_SUCCEEDED);
@@ -4327,6 +4355,29 @@ TEST_F(FormStructureTest, EncodeUploadRequest_PasswordsRevealed) {
       std::string() /* login_form_signature */, true /* observed_submission */,
       &upload));
   EXPECT_EQ(true, upload.passwords_revealed());
+}
+
+TEST_F(FormStructureTest, EncodeUploadRequest_IsFormTag) {
+  for (bool is_form_tag : {false, true}) {
+    SCOPED_TRACE(testing::Message() << "is_form_tag=" << is_form_tag);
+
+    FormData form;
+    form.origin = GURL("http://www.foo.com/");
+    FormFieldData field;
+    field.name = ASCIIToUTF16("email");
+    form.fields.push_back(field);
+
+    form.is_form_tag = is_form_tag;
+
+    FormStructure form_structure(form);
+    form_structure.set_passwords_were_revealed(true);
+    AutofillUploadContents upload;
+    EXPECT_TRUE(form_structure.EncodeUploadRequest(
+        {{}} /* available_field_types */, false /* form_was_autofilled */,
+        std::string() /* login_form_signature */,
+        true /* observed_submission */, &upload));
+    EXPECT_EQ(is_form_tag, upload.has_form_tag());
+  }
 }
 
 TEST_F(FormStructureTest, EncodeUploadRequest_RichMetadata) {
@@ -6537,8 +6588,8 @@ TEST_F(FormStructureTest, AllowBigForms) {
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
-  // Check that the form with 100 fields are processed correctly.
-  for (size_t i = 0; i < 100; ++i) {
+  // Check that the form with 250 fields are processed correctly.
+  for (size_t i = 0; i < 250; ++i) {
     field.form_control_type = "text";
     field.name = ASCIIToUTF16("text") + base::NumberToString16(i);
     form.fields.push_back(field);
