@@ -143,6 +143,9 @@ void UpdatePersistentErrorOfRefreshTokenForAccount(
     const std::string& account_id,
     const GoogleServiceAuthError& auth_error);
 
+// Disables internal retries of failed access token fetches.
+void DisableAccessTokenFetchRetries(IdentityManager* identity_manager);
+
 }  // namespace identity
 
 #endif  // SERVICES_IDENTITY_PUBLIC_CPP_IDENTITY_TEST_UTILS_H_

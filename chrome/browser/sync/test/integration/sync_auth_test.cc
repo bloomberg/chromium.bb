@@ -6,18 +6,19 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/sync/driver/sync_token_status.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 
 using bookmarks_helper::AddURL;
 
@@ -99,11 +100,11 @@ class SyncAuthTest : public SyncTest {
     // or CONNECTION_FAILED, this means the OAuth2TokenService has given up
     // trying to reach Gaia. In practice, OA2TS retries a fixed number of times,
     // but the count is transparent to PSS.
-    // Override the max retry count in TokenService so that we instantly trigger
-    // the case where ProfileSyncService must pick up where OAuth2TokenService
-    // left off (in terms of retries).
-    ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile(0))->
-        set_max_authorization_token_fetch_retries_for_testing(0);
+    // Disable retries so that we instantly trigger the case where
+    // ProfileSyncService must pick up where OAuth2TokenService left off (in
+    // terms of retries).
+    identity::DisableAccessTokenFetchRetries(
+        IdentityManagerFactory::GetForProfile(GetProfile(0)));
   }
 
  private:
