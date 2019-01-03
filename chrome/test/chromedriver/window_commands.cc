@@ -355,6 +355,39 @@ Status ProcessPauseAction(const base::DictionaryValue* action_item,
   return Status(kOk);
 }
 
+// Implements "compute the tick duration" algorithm from W3C spec
+// (https://w3c.github.io/webdriver/#dfn-computing-the-tick-duration).
+// For convenience, this function computes durations of all ticks, while the
+// original algorithm computes duration of one tick.
+void ComputeTickDurations(std::vector<int>* tick_durations,
+                          const base::ListValue& actions_list) {
+  for (size_t i = 0; i < actions_list.GetSize(); i++) {
+    const base::DictionaryValue* action_sequence = nullptr;
+    actions_list.GetDictionary(i, &action_sequence);
+    const base::ListValue* actions = nullptr;
+    action_sequence->GetList("actions", &actions);
+    std::string type;
+    action_sequence->GetString("sourceType", &type);
+
+    for (size_t j = 0; j < actions->GetSize(); j++) {
+      const base::DictionaryValue* action = nullptr;
+      actions->GetDictionary(j, &action);
+      std::string subtype;
+      action->GetString("subtype", &subtype);
+
+      if (subtype == "pause" ||
+          (type == "pointer" && subtype == "pointerMove")) {
+        if (j >= tick_durations->size())
+          tick_durations->resize(j + 1);
+        int duration = 0;
+        GetOptionalInt(action, "duration", &duration);
+        if (duration > (*tick_durations)[j])
+          (*tick_durations)[j] = duration;
+      }
+    }
+  }
+}
+
 Status ElementInViewCenter(Session* session,
                            WebView* web_view,
                            std::string element_id,
@@ -1327,9 +1360,12 @@ Status ExecutePerformActions(Session* session,
     }
   }
 
+  std::vector<int> tick_durations;
+  ComputeTickDurations(&tick_durations, actions_list);
+
   size_t max_list_length =
-      std::max(std::max(longest_mouse_list_size, longest_touch_list_size),
-               longest_key_list_size);
+      std::max({longest_mouse_list_size, longest_touch_list_size,
+                longest_key_list_size, tick_durations.size()});
   std::map<std::string, gfx::Point> element_center_point;
   for (size_t i = 0; i < max_list_length; i++) {
     std::list<MouseEvent> dispatch_mouse_events;
@@ -1398,6 +1434,10 @@ Status ExecutePerformActions(Session* session,
       Status status = web_view->DispatchKeyEvents(dispatch_key_events);
       if (status.IsError())
         return status;
+    }
+    if (i < tick_durations.size() && tick_durations[i] > 0) {
+      base::PlatformThread::Sleep(
+          base::TimeDelta::FromMilliseconds(tick_durations[i]));
     }
   }
   return Status(kOk);
