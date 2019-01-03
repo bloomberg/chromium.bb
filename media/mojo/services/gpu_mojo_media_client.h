@@ -39,8 +39,8 @@ class GpuMojoMediaClient : public MojoMediaClient {
   ~GpuMojoMediaClient() final;
 
   // MojoMediaClient implementation.
-  std::vector<mojom::SupportedVideoDecoderConfigPtr>
-  GetSupportedVideoDecoderConfigs() final;
+  std::vector<SupportedVideoDecoderConfig> GetSupportedVideoDecoderConfigs()
+      final;
   void Initialize(service_manager::Connector* connector) final;
   std::unique_ptr<AudioDecoder> CreateAudioDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) final;

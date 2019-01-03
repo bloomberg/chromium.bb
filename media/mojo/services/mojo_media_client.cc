@@ -28,9 +28,9 @@ std::unique_ptr<AudioDecoder> MojoMediaClient::CreateAudioDecoder(
   return nullptr;
 }
 
-std::vector<mojom::SupportedVideoDecoderConfigPtr>
+std::vector<SupportedVideoDecoderConfig>
 MojoMediaClient::GetSupportedVideoDecoderConfigs() {
-  return std::vector<mojom::SupportedVideoDecoderConfigPtr>();
+  return {};
 }
 
 std::unique_ptr<VideoDecoder> MojoMediaClient::CreateVideoDecoder(

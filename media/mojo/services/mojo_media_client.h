@@ -15,6 +15,7 @@
 #include "media/media_buildflags.h"
 #include "media/mojo/interfaces/video_decoder.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
+#include "media/video/supported_video_decoder_config.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -55,7 +56,7 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
   virtual std::unique_ptr<AudioDecoder> CreateAudioDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  virtual std::vector<mojom::SupportedVideoDecoderConfigPtr>
+  virtual std::vector<SupportedVideoDecoderConfig>
   GetSupportedVideoDecoderConfigs();
 
   virtual std::unique_ptr<VideoDecoder> CreateVideoDecoder(
