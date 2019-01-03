@@ -10,9 +10,9 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -23,7 +23,8 @@ class AuthStatusConsumer;
 class UserContext;
 
 // Implements ExtendedAuthenticator.
-class CHROMEOS_EXPORT ExtendedAuthenticatorImpl : public ExtendedAuthenticator {
+class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ExtendedAuthenticatorImpl
+    : public ExtendedAuthenticator {
  public:
   static scoped_refptr<ExtendedAuthenticatorImpl> Create(
       NewAuthStatusConsumer* consumer);

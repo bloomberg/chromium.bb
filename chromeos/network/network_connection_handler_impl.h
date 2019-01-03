@@ -7,7 +7,7 @@
 
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
-#include "chromeos/login/login_state.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"

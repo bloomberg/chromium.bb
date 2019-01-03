@@ -15,7 +15,7 @@ source_set("cryptohome") {
     "//chromeos:chromeos_export",
     "//chromeos:cryptohome_proto",
     "//chromeos/dbus",
-    "//chromeos/login:challenge_response_key",
+    "//chromeos/login/auth:challenge_response_key",
     "//components/account_id",
     "//components/device_event_log",
     "//components/user_manager",
@@ -42,8 +42,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//chromeos:cryptohome_proto",
     "//chromeos/dbus",
-    "//chromeos/login",
-    "//chromeos/login:challenge_response_key",
+    "//chromeos/login/auth:challenge_response_key",
     "//testing/gtest:gtest",
   ]
   sources = [

@@ -6,14 +6,15 @@
 #define CHROMEOS_LOGIN_AUTH_MOCK_AUTH_STATUS_CONSUMER_H_
 
 #include "base/callback.h"
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/user_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT MockAuthStatusConsumer : public AuthStatusConsumer {
+class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) MockAuthStatusConsumer
+    : public AuthStatusConsumer {
  public:
   explicit MockAuthStatusConsumer(base::OnceClosure quit_closure);
   virtual ~MockAuthStatusConsumer();

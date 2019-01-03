@@ -16,7 +16,7 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "chromeos/login/scoped_test_public_session_login_state.h"
+#include "chromeos/login/login_state/scoped_test_public_session_login_state.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/common/extension.h"

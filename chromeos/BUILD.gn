@@ -29,12 +29,12 @@ component("chromeos") {
   public_deps = [
     ":chromeos_constants",
     ":chromeos_export",
-    ":login_event_recorder",
     ":policy_certificate_provider",
     ":tools",
     "//chromeos/cryptohome",
     "//chromeos/dbus",
-    "//chromeos/login",
+    "//chromeos/login/auth",
+    "//chromeos/login/login_state",
     "//chromeos/network",
     "//chromeos/settings",
     "//dbus",
@@ -202,18 +202,6 @@ source_set("chromeos_constants") {
   ]
 }
 
-source_set("login_event_recorder") {
-  configs += [ ":chromeos_implementation" ]
-  deps = [
-    ":chromeos_export",
-    "//base",
-  ]
-  sources = [
-    "login_event_recorder.cc",
-    "login_event_recorder.h",
-  ]
-}
-
 source_set("policy_certificate_provider") {
   configs += [ ":chromeos_implementation" ]
   deps = [
@@ -258,6 +246,8 @@ source_set("test_support_source_set") {
     ":cryptohome_proto",
     ":power_manager_proto",
     "//chromeos/dbus:test_support",
+    "//chromeos/login/auth:test_support",
+    "//chromeos/login/login_state:test_support",
   ]
   deps = [
     "//components/account_id",
@@ -276,16 +266,6 @@ source_set("test_support_source_set") {
     "cryptohome/mock_homedir_methods.h",
     "disks/mock_disk_mount_manager.cc",
     "disks/mock_disk_mount_manager.h",
-    "login/auth/fake_extended_authenticator.cc",
-    "login/auth/fake_extended_authenticator.h",
-    "login/auth/mock_auth_attempt_state_resolver.cc",
-    "login/auth/mock_auth_attempt_state_resolver.h",
-    "login/auth/mock_auth_status_consumer.cc",
-    "login/auth/mock_auth_status_consumer.h",
-    "login/auth/mock_url_fetchers.cc",
-    "login/auth/mock_url_fetchers.h",
-    "login/scoped_test_public_session_login_state.cc",
-    "login/scoped_test_public_session_login_state.h",
     "network/fake_network_device_handler.cc",
     "network/fake_network_device_handler.h",
     "network/mock_managed_network_configuration_handler.cc",
@@ -330,7 +310,8 @@ test("chromeos_unittests") {
     "//base/test:test_support",
     "//chromeos/cryptohome:unit_tests",
     "//chromeos/dbus:unit_tests",
-    "//chromeos/login:unit_tests",
+    "//chromeos/login/auth:unit_tests",
+    "//chromeos/login/login_state:unit_tests",
     "//chromeos/network:unit_tests",
     "//chromeos/services:unit_tests",
     "//chromeos/settings:unit_tests",

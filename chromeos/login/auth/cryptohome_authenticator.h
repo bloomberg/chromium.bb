@@ -9,12 +9,12 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/auth_attempt_state.h"
 #include "chromeos/login/auth/auth_attempt_state_resolver.h"
 #include "chromeos/login/auth/authenticator.h"
@@ -56,7 +56,7 @@ class AuthStatusConsumer;
 //     Old password failure: NEED_OLD_PW
 //     Old password ok: RECOVER_MOUNT > CONTINUE > ONLINE_LOGIN
 //
-class CHROMEOS_EXPORT CryptohomeAuthenticator
+class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) CryptohomeAuthenticator
     : public Authenticator,
       public AuthAttemptStateResolver {
  public:

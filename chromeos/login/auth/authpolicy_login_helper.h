@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -19,7 +20,7 @@ namespace chromeos {
 // authenticate users this class should be used instead of AuthPolicyClient.
 // Allows canceling all pending calls and restarting AuthPolicy service. Used
 // for enrollment and login UI to proper cancel the flows.
-class CHROMEOS_EXPORT AuthPolicyLoginHelper {
+class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) AuthPolicyLoginHelper {
  public:
   using AuthCallback = AuthPolicyClient::AuthCallback;
   using JoinCallback = AuthPolicyClient::JoinCallback;

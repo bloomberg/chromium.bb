@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/login/scoped_test_public_session_login_state.h"
+#include "chromeos/login/login_state/scoped_test_public_session_login_state.h"
 
 namespace chromeos {
 
@@ -31,9 +31,8 @@ ScopedTestPublicSessionLoginState::ScopedTestPublicSessionLoginState(
 
 ScopedTestPublicSessionLoginState::~ScopedTestPublicSessionLoginState() {
   // Reset state at the end of test.
-  LoginState::Get()->SetLoggedInState(
-      LoginState::LOGGED_IN_NONE,
-      LoginState::LOGGED_IN_USER_NONE);
+  LoginState::Get()->SetLoggedInState(LoginState::LOGGED_IN_NONE,
+                                      LoginState::LOGGED_IN_USER_NONE);
   if (needs_shutdown_)
     LoginState::Shutdown();
 

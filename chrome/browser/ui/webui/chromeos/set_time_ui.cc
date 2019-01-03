@@ -21,7 +21,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/system_clock_client.h"
-#include "chromeos/login/login_state.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"

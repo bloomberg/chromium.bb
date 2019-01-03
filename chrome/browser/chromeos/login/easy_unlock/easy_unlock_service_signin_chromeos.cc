@@ -33,7 +33,7 @@
 #include "chromeos/components/proximity_auth/switches.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/login/auth/user_context.h"
-#include "chromeos/login/login_state.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/tpm/tpm_token_loader.h"
 
 using proximity_auth::ScreenlockState;

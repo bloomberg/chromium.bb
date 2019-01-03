@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/login/login_state.h"
+#include "chromeos/login/login_state/login_state.h"
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -16,12 +16,11 @@ const char kTestUserHash[] = "testuserhash";
 
 namespace chromeos {
 
-class LoginStateTest : public testing::Test,
-                       public LoginState::Observer {
+class LoginStateTest : public testing::Test, public LoginState::Observer {
  public:
-  LoginStateTest() : logged_in_user_type_(LoginState::LOGGED_IN_USER_NONE),
-                     login_state_changes_count_(0) {
-  }
+  LoginStateTest()
+      : logged_in_user_type_(LoginState::LOGGED_IN_USER_NONE),
+        login_state_changes_count_(0) {}
   ~LoginStateTest() override = default;
 
   // testing::Test
@@ -137,8 +136,7 @@ TEST_F(LoginStateTest, TestPrimaryUser) {
 
   // Setting login state to ACTIVE and setting the primary user.
   LoginState::Get()->SetLoggedInStateAndPrimaryUser(
-      LoginState::LOGGED_IN_ACTIVE,
-      LoginState::LOGGED_IN_USER_REGULAR,
+      LoginState::LOGGED_IN_ACTIVE, LoginState::LOGGED_IN_USER_REGULAR,
       kTestUserHash);
   EXPECT_EQ(LoginState::LOGGED_IN_USER_REGULAR,
             LoginState::Get()->GetLoggedInUserType());

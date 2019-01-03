@@ -9,7 +9,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/login/login_state.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/settings/cros_settings_names.h"
 
 namespace chromeos {

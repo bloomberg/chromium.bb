@@ -7,9 +7,9 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 
@@ -28,7 +28,7 @@ class UserContext;
 // 1. On successful authentication, will call consumer_->OnAuthSuccess().
 // 2. On failure, will call consumer_->OnAuthFailure().
 // 3. On password change, will call consumer_->OnPasswordChangeDetected().
-class CHROMEOS_EXPORT Authenticator
+class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) Authenticator
     : public base::RefCountedThreadSafe<Authenticator> {
  public:
   explicit Authenticator(AuthStatusConsumer* consumer);
