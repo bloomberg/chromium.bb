@@ -107,7 +107,6 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
         mVerifyingTextView = (TextView) v.findViewById(R.id.verifying);
 
         mPassphraseEditText = (EditText) v.findViewById(R.id.passphrase);
-        mPassphraseEditText.setHint(R.string.sync_enter_custom_passphrase_hint);
         mPassphraseEditText.setOnEditorActionListener(new OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {

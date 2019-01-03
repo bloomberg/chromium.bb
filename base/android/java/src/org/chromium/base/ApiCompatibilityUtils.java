@@ -40,11 +40,14 @@ import android.support.annotation.Nullable;
 import android.support.v4.widget.ImageViewCompat;
 import android.text.Html;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodSubtype;
 import android.view.textclassifier.TextClassifier;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
@@ -766,6 +769,31 @@ public class ApiCompatibilityUtils {
             return new TransitionDrawableCompat(layers);
         }
         return new TransitionDrawable(layers);
+    }
+
+    /**
+     * Adds a content description to the provided EditText password field on versions of Android
+     * where the hint text is not used for accessibility. Does nothing if the EditText field does
+     * not have a password input type or the hint text is empty.  See https://crbug.com/911762.
+     *
+     * @param view The EditText password field.
+     */
+    public static void setPasswordEditTextContentDescription(EditText view) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) return;
+
+        if (isPasswordInputType(view.getInputType()) && !TextUtils.isEmpty(view.getHint())) {
+            view.setContentDescription(view.getHint());
+        }
+    }
+
+    private static boolean isPasswordInputType(int inputType) {
+        final int variation =
+                inputType & (EditorInfo.TYPE_MASK_CLASS | EditorInfo.TYPE_MASK_VARIATION);
+        return variation == (EditorInfo.TYPE_CLASS_TEXT | EditorInfo.TYPE_TEXT_VARIATION_PASSWORD)
+                || variation
+                == (EditorInfo.TYPE_CLASS_TEXT | EditorInfo.TYPE_TEXT_VARIATION_WEB_PASSWORD)
+                || variation
+                == (EditorInfo.TYPE_CLASS_NUMBER | EditorInfo.TYPE_NUMBER_VARIATION_PASSWORD);
     }
 
     private static class LayerDrawableCompat extends LayerDrawable {
