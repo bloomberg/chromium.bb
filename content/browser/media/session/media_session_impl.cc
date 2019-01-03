@@ -224,6 +224,13 @@ void MediaSessionImpl::NotifyMediaSessionActionsChange(
     const std::set<media_session::mojom::MediaSessionAction>& actions) {
   for (auto& observer : observers_)
     observer.MediaSessionActionsChanged(actions);
+
+  std::vector<media_session::mojom::MediaSessionAction> actions_vec(
+      actions.begin(), actions.end());
+  mojo_observers_.ForAllPtrs(
+      [&actions_vec](media_session::mojom::MediaSessionObserver* observer) {
+        observer->MediaSessionActionsChanged(actions_vec);
+      });
 }
 
 bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
@@ -753,6 +760,15 @@ void MediaSessionImpl::AddObserver(
   observer->MediaSessionInfoChanged(GetMediaSessionInfoSync());
   observer->MediaSessionMetadataChanged(
       routed_service_ ? routed_service_->metadata() : base::nullopt);
+
+  if (routed_service_) {
+    std::vector<media_session::mojom::MediaSessionAction> actions(
+        routed_service_->actions().begin(), routed_service_->actions().end());
+    observer->MediaSessionActionsChanged(actions);
+  } else {
+    observer->MediaSessionActionsChanged(
+        std::vector<media_session::mojom::MediaSessionAction>());
+  }
 
   mojo_observers_.AddPtr(std::move(observer));
 }
