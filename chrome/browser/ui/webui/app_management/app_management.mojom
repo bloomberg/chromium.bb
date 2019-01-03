@@ -36,3 +36,10 @@ interface Page {
   OnAppChanged(App update);
   OnAppRemoved(string app_id);
 };
+
+enum TestPermissionType {
+  NOTIFICATIONS = 0,
+  LOCATION,
+  CAMERA,
+  MICROPHONE,
+};

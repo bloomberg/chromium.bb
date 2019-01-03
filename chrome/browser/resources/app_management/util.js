@@ -35,7 +35,7 @@ cr.define('app_management.util', function() {
   }
 
   /**
-   * @param {appManagement.mojom.App} app
+   * @param {App} app
    * @return {string}
    */
   function getAppIcon(app) {

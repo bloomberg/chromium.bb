@@ -9,7 +9,7 @@ Polymer({
   ],
 
   properties: {
-    /** @type {appManagement.mojom.App} */
+    /** @type {App} */
     app: {
       type: Object,
     },
@@ -28,7 +28,7 @@ Polymer({
   },
 
   /**
-   * @param {appManagement.mojom.App} app
+   * @param {App} app
    * @return {string}
    * @private
    */

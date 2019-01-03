@@ -4,4 +4,31 @@
 
 Polymer({
   is: 'app-management-app',
+
+  behaviors: [
+    app_management.StoreClient,
+  ],
+
+  properties: {
+    /**
+     * @private {boolean}
+     */
+    mainViewSelected_: Boolean,
+
+    /**
+     * @private {boolean}
+     */
+    pwaPermissionViewSelected_: Boolean,
+  },
+
+  /** @override */
+  attached: function() {
+    this.watch('mainViewSelected_', function(state) {
+      return state.currentPage.pageType == PageType.MAIN;
+    });
+
+    this.watch('pwaPermissionViewSelected_', function(state) {
+      return state.currentPage.pageType == PageType.DETAIL;
+    });
+  },
 });

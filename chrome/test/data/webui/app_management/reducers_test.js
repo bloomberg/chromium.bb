@@ -72,6 +72,30 @@ suite('app state', function() {
     assertTrue(!!apps['2']);
   });
 
+  test(
+      'returns to main page if an app is removed while in its detail page',
+      function() {
+        state.currentPage.selectedAppId = '1';
+        state.currentPage.pageType = PageType.DETAIL;
+
+        action = app_management.actions.removeApp('1');
+        state = app_management.reduceAction(state, action);
+
+        assertEquals(null, state.currentPage.selectedAppId);
+        assertEquals(PageType.MAIN, state.currentPage.pageType);
+
+        // Page doesn't change if a different app is removed.
+        state.apps['1'] = createApp('1');
+        state.currentPage.selectedAppId = '1';
+        state.currentPage.pageType = PageType.DETAIL;
+
+        action = app_management.actions.removeApp('2');
+        state = app_management.reduceAction(state, action);
+
+        assertEquals('1', state.currentPage.selectedAppId);
+        assertEquals(PageType.DETAIL, state.currentPage.pageType);
+      });
+
   test('state updates when changing to main page', function() {
     // Returning to main page results in no selected app.
     state.currentPage.selectedAppId = '1';

@@ -90,6 +90,23 @@ cr.define('app_management', function() {
   };
 
   /**
+   * @param {Page} currentPage
+   * @param {Object} action
+   * @return {Page}
+   */
+  CurrentPageState.removeApp = function(currentPage, action) {
+    if (currentPage.pageType == PageType.DETAIL &&
+        currentPage.selectedAppId == action.id) {
+      return {
+        pageType: PageType.MAIN,
+        selectedAppId: null,
+      };
+    } else {
+      return currentPage;
+    }
+  };
+
+  /**
    * @param {AppMap} apps
    * @param {Page} currentPage
    * @param {Object} action
@@ -99,6 +116,8 @@ cr.define('app_management', function() {
     switch (action.name) {
       case 'change-page':
         return CurrentPageState.changePage(apps, action);
+      case 'remove-app':
+        return CurrentPageState.removeApp(currentPage, action);
       default:
         return currentPage;
     }

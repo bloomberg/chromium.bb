@@ -8,15 +8,16 @@ cr.define('app_management', function() {
       /** @type {appManagement.mojom.PageCallbackRouter} */
       this.callbackRouter = new appManagement.mojom.PageCallbackRouter();
 
-      /** @type {appManagement.mojom.PageHandlerInterface} */
+      /** @type {PageHandlerInterface} */
       this.handler = null;
 
       const urlParams = new URLSearchParams(window.location.search);
       const useFake = urlParams.get('fakeBackend');
+
       if (useFake) {
-        this.handler = new app_management.FakePageHandler(
-            this.callbackRouter.createProxy());
-        const /** @type {!Array<appManagement.mojom.App>}*/ appList = [
+        this.handler = new app_management.FakePageHandler(this.callbackRouter);
+
+        const /** @type {!Array<App>}*/ appList = [
           app_management.FakePageHandler.createApp(
               'ahfgeienlihckogmohjhadlkjgocpleb'),
           app_management.FakePageHandler.createApp(
@@ -29,7 +30,9 @@ cr.define('app_management', function() {
           app_management.FakePageHandler.createApp(
               'aapocclcgogkmnckokdopfmhonfmgoek'),
         ];
+
         this.handler.setApps(appList);
+
       } else {
         this.handler = new appManagement.mojom.PageHandlerProxy();
         const factory = appManagement.mojom.PageHandlerFactory.getProxy();

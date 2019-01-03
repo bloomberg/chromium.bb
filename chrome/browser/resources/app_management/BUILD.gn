@@ -16,6 +16,7 @@ if (!is_android) {
       ":item",
       ":main_view",
       ":metadata_view",
+      ":permission_item",
       ":pwa_permission_view",
       ":reducers",
       ":router",
@@ -46,10 +47,13 @@ if (!is_android) {
     deps = [
       ":actions",
       ":browser_proxy",
+      ":constants",
       ":main_view",
       ":metadata_view",
       ":pwa_permission_view",
       ":router",
+      ":store",
+      ":store_client",
       ":util",
     ]
   }
@@ -73,6 +77,7 @@ if (!is_android) {
 
   js_library("fake_page_handler") {
     deps = [
+      ":types",
       "//chrome/browser/ui/webui/app_management:mojo_bindings_js_externs",
       "//ui/webui/resources/js:cr",
     ]
@@ -102,10 +107,20 @@ if (!is_android) {
     ]
   }
 
+  js_library("permission_item") {
+    deps = [
+      ":constants",
+      ":types",
+    ]
+  }
+
   js_library("pwa_permission_view") {
     deps = [
+      ":constants",
       ":fake_page_handler",
       ":metadata_view",
+      ":permission_item",
+      ":store_client",
     ]
   }
 
@@ -144,6 +159,9 @@ if (!is_android) {
   }
 
   js_library("types") {
+    deps = [
+      "//chrome/browser/ui/webui/app_management:mojo_bindings_js_externs",
+    ]
   }
 
   js_library("util") {

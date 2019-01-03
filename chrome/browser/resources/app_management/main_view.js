@@ -12,7 +12,7 @@ Polymer({
   properties: {
     /**
      * List of all apps.
-     * @private {Array<appManagement.mojom.App>}
+     * @private {Array<App>}
      */
     apps_: {
       type: Array,
@@ -22,7 +22,7 @@ Polymer({
 
     /**
      * List of apps displayed before expanding the app list.
-     * @private {Array<appManagement.mojom.App>}
+     * @private {Array<App>}
      */
     displayedApps_: {
       type: Array,
@@ -31,7 +31,7 @@ Polymer({
 
     /**
      * List of apps displayed after expanding app list.
-     * @private {Array<appManagement.mojom.App>}
+     * @private {Array<App>}
      */
     collapsedApps_: {
       type: Array,

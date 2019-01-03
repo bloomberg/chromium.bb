@@ -29,7 +29,10 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
 
   source->AddLocalizedString("appListTitle", IDS_APP_MANAGEMENT_APP_LIST_TITLE);
   source->AddLocalizedString("back", IDS_APP_MANAGEMENT_BACK);
+  source->AddLocalizedString("camera", IDS_APP_MANAGEMENT_CAMERA);
   source->AddLocalizedString("lessApps", IDS_APP_MANAGEMENT_LESS_APPS);
+  source->AddLocalizedString("location", IDS_APP_MANAGEMENT_LOCATION);
+  source->AddLocalizedString("microphone", IDS_APP_MANAGEMENT_MICROPHONE);
   source->AddLocalizedString("moreApps", IDS_APP_MANAGEMENT_MORE_APPS);
   source->AddLocalizedString("notificationSublabel",
                              IDS_APP_MANAGEMENT_NOTIFICATIONS_SUBLABEL);
@@ -85,6 +88,10 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
                           IDR_APP_MANAGEMENT_METADATA_VIEW_HTML);
   source->AddResourcePath("metadata_view.js",
                           IDR_APP_MANAGEMENT_METADATA_VIEW_JS);
+  source->AddResourcePath("permission_item.html",
+                          IDR_APP_MANAGEMENT_PERMISSION_ITEM_HTML);
+  source->AddResourcePath("permission_item.js",
+                          IDR_APP_MANAGEMENT_PERMISSION_ITEM_JS);
   source->AddResourcePath("pwa_permission_view.html",
                           IDR_APP_MANAGEMENT_PWA_PERMISSION_VIEW_HTML);
   source->AddResourcePath("pwa_permission_view.js",
