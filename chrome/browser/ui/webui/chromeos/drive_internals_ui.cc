@@ -32,7 +32,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_api_util.h"
 #include "components/drive/drive_notification_manager.h"

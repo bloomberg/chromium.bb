@@ -16,7 +16,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/time/time.h"
-#include "chromeos/chromeos_paths.h"
+#include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/cryptohome/homedir_methods.h"

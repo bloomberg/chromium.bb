@@ -15,7 +15,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/chromeos_paths.h"
+#include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/util/tpm_util.h"

@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/login/screens/mock_model_view_channel.h"
 #include "chrome/browser/chromeos/login/screens/mock_network_screen.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"

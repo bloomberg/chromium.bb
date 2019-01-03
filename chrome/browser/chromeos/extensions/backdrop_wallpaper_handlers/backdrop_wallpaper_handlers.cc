@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/extensions/backdrop_wallpaper_handlers/backdrop_wallpaper.pb.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/extensions/api/wallpaper_private.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "url/gurl.h"

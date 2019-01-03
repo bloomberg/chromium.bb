@@ -31,7 +31,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
-#include "chromeos/chromeos_constants.h"
+#include "chromeos/constants/chromeos_constants.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/drive.pb.h"

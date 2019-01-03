@@ -13,7 +13,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
 

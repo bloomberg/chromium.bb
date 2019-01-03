@@ -14,7 +14,7 @@
 #include "ash/system/palette/tools/laser_pointer_mode.h"
 #include "ash/system/palette/tools/magnifier_mode.h"
 #include "ash/system/palette/tools/metalayer_mode.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/gfx/paint_vector_icon.h"
 
 namespace ash {

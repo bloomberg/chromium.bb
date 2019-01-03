@@ -15,7 +15,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/test/scoped_path_override.h"
-#include "chromeos/chromeos_paths.h"
+#include "chromeos/constants/chromeos_paths.h"
 #include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

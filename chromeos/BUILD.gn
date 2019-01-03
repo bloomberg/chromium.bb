@@ -189,16 +189,16 @@ source_set("chromeos_constants") {
     "//third_party/icu",
   ]
   sources = [
-    "chromeos_constants.cc",
-    "chromeos_constants.h",
-    "chromeos_features.cc",
-    "chromeos_features.h",
-    "chromeos_paths.cc",
-    "chromeos_paths.h",
-    "chromeos_pref_names.cc",
-    "chromeos_pref_names.h",
-    "chromeos_switches.cc",
-    "chromeos_switches.h",
+    "constants/chromeos_constants.cc",
+    "constants/chromeos_constants.h",
+    "constants/chromeos_features.cc",
+    "constants/chromeos_features.h",
+    "constants/chromeos_paths.cc",
+    "constants/chromeos_paths.h",
+    "constants/chromeos_pref_names.cc",
+    "constants/chromeos_pref_names.h",
+    "constants/chromeos_switches.cc",
+    "constants/chromeos_switches.h",
   ]
 }
 

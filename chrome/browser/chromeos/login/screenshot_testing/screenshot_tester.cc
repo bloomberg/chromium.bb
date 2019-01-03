@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/login/screenshot_testing/SkDiffPixelsMetric.h"
 #include "chrome/browser/chromeos/login/screenshot_testing/SkImageDiffer.h"
 #include "chrome/browser/chromeos/login/screenshot_testing/SkPMetric.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"

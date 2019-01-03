@@ -11,9 +11,9 @@
 
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/chromeos_features.h"
 #include "chromeos/components/proximity_auth/proximity_auth_local_state_pref_manager.h"
 #include "chromeos/components/proximity_auth/proximity_auth_pref_names.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/prefs/testing_pref_service.h"

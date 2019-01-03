@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/chromeos_pref_names.h"
+#include "chromeos/constants/chromeos_pref_names.h"
 
 namespace chromeos {
 namespace prefs {
@@ -48,4 +48,3 @@ const char kDeviceWiFiFastTransitionEnabled[] =
 
 }  // namespace prefs
 }  // namespace chromeos
-

@@ -35,7 +35,7 @@
 #include "chrome/browser/chromeos/oauth2_token_service_delegate.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/account_manager/account_manager_factory.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/user_manager/user_manager.h"
 #endif  // defined(OS_CHROMEOS)
 

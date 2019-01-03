@@ -20,6 +20,6 @@ specific_include_rules = {
   "fake_.*": [
     # TODO(stevenjb): Remove use of chromeos_paths in fake impls.
     # https://crbug.com/863439.
-    "+chromeos/chromeos_paths.h",
+    "+chromeos/constants",
   ],
 }

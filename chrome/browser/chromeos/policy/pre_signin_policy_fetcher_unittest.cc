@@ -16,7 +16,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/chromeos_paths.h"
+#include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"

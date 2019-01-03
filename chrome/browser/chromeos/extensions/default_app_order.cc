@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/page_break_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chromeos/chromeos_paths.h"
+#include "chromeos/constants/chromeos_paths.h"
 #include "extensions/common/constants.h"
 
 namespace chromeos {

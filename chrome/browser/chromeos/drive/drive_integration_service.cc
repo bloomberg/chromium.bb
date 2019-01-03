@@ -39,7 +39,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/drive/chromeos/file_cache.h"
 #include "components/drive/chromeos/file_system.h"

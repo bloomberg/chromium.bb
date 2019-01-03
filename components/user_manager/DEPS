@@ -1,5 +1,5 @@
 include_rules = [
-"+chromeos/chromeos_switches.h",
+"+chromeos/constants",
 "+components/account_id/account_id.h",
 "+components/prefs",
 "+google_apis/gaia/gaia_auth_util.h",

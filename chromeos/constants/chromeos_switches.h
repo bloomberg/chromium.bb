@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_CHROMEOS_SWITCHES_H_
-#define CHROMEOS_CHROMEOS_SWITCHES_H_
+#ifndef CHROMEOS_CONSTANTS_CHROMEOS_SWITCHES_H_
+#define CHROMEOS_CONSTANTS_CHROMEOS_SWITCHES_H_
 
 #include "base/feature_list.h"
 #include "base/memory/memory_pressure_monitor_chromeos.h"
@@ -230,4 +230,4 @@ CHROMEOS_EXPORT bool ShouldShowPlayStoreInDemoMode();
 }  // namespace switches
 }  // namespace chromeos
 
-#endif  // CHROMEOS_CHROMEOS_SWITCHES_H_
+#endif  // CHROMEOS_CONSTANTS_CHROMEOS_SWITCHES_H_

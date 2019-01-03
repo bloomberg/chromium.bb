@@ -24,7 +24,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/drive/file_system_core_util.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"

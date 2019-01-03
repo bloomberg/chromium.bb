@@ -4,8 +4,8 @@
 
 // Constants related to ChromeOS.
 
-#ifndef CHROMEOS_CHROMEOS_CONSTANTS_H_
-#define CHROMEOS_CHROMEOS_CONSTANTS_H_
+#ifndef CHROMEOS_CONSTANTS_CHROMEOS_CONSTANTS_H_
+#define CHROMEOS_CONSTANTS_CHROMEOS_CONSTANTS_H_
 
 #include "base/files/file_path.h"
 #include "chromeos/chromeos_export.h"
@@ -19,4 +19,4 @@ CHROMEOS_EXPORT extern const base::FilePath::CharType kNssKeyDbPath[];
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_CHROMEOS_CONSTANTS_H_
+#endif  // CHROMEOS_CONSTANTS_CHROMEOS_CONSTANTS_H_

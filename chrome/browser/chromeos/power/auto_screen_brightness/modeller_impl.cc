@@ -19,7 +19,7 @@
 #include "base/task_runner_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"

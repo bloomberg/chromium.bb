@@ -20,7 +20,7 @@
 #include "ash/tray_action/tray_action.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "base/command_line.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"

@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
 #include "chrome/browser/component_updater/fake_cros_component_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/chromeos_paths.h"
+#include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace chromeos {

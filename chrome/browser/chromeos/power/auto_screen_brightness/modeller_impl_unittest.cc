@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/power/auto_screen_brightness/trainer.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/user_activity/user_activity_detector.h"

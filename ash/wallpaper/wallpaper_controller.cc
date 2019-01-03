@@ -39,7 +39,7 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "services/data_decoder/public/cpp/decode_image.h"

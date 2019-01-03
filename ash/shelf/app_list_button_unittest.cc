@@ -21,7 +21,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_command_line.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {

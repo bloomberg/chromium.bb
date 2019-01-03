@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "extensions/browser/app_window/app_window.h"

@@ -159,8 +159,8 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "chromeos/chromeos_features.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "components/arc/arc_features.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"

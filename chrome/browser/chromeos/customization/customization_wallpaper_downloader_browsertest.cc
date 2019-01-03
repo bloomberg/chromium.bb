@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"

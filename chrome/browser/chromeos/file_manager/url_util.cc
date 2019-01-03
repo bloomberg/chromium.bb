@@ -12,7 +12,7 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "net/base/escape.h"
 
 namespace file_manager {

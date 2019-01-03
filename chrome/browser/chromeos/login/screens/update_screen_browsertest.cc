@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
