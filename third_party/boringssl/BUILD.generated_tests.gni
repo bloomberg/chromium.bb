@@ -5,6 +5,8 @@
 # This file is created by generate_build_files.py. Do not edit manually.
 
 test_support_sources = [
+  "src/crypto/test/abi_test.cc",
+  "src/crypto/test/abi_test.h",
   "src/crypto/test/file_test.cc",
   "src/crypto/test/file_test.h",
   "src/crypto/test/gtest_main.h",
@@ -25,6 +27,7 @@ test_support_sources = [
 
 crypto_test_sources = [
   "crypto_test_data.cc",
+  "src/crypto/abi_self_test.cc",
   "src/crypto/asn1/asn1_test.cc",
   "src/crypto/base64/base64_test.cc",
   "src/crypto/bio/bio_test.cc",
