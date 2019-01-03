@@ -96,9 +96,11 @@ void OpenURL(const GURL& url) {
 class WebUsbNotificationDelegate : public TabStripModelObserver,
                                    public message_center::NotificationDelegate {
  public:
-  WebUsbNotificationDelegate(const GURL& landing_page,
+  WebUsbNotificationDelegate(base::WeakPtr<WebUsbDetector> detector,
+                             const GURL& landing_page,
                              const std::string& notification_id)
-      : landing_page_(landing_page),
+      : detector_(std::move(detector)),
+        landing_page_(landing_page),
         notification_id_(notification_id),
         disposition_(WEBUSB_NOTIFICATION_CLOSED),
         browser_tab_strip_tracker_(this, nullptr, nullptr) {
@@ -157,11 +159,14 @@ class WebUsbNotificationDelegate : public TabStripModelObserver,
     RecordNotificationClosure(disposition_);
 
     browser_tab_strip_tracker_.StopObservingAndSendOnBrowserRemoved();
+    if (detector_)
+      detector_->RemoveNotification(notification_id_);
   }
 
  private:
   ~WebUsbNotificationDelegate() override = default;
 
+  base::WeakPtr<WebUsbDetector> detector_;
   GURL landing_page_;
   std::string notification_id_;
   WebUsbNotificationClosed disposition_;
@@ -172,7 +177,7 @@ class WebUsbNotificationDelegate : public TabStripModelObserver,
 
 }  // namespace
 
-WebUsbDetector::WebUsbDetector() : client_binding_(this) {}
+WebUsbDetector::WebUsbDetector() : client_binding_(this), weak_factory_(this) {}
 
 WebUsbDetector::~WebUsbDetector() {}
 
@@ -223,6 +228,9 @@ void WebUsbDetector::OnDeviceAdded(
     return;
   }
 
+  if (IsDisplayingNotification(landing_page))
+    return;
+
   std::string notification_id = device_info->guid;
 
   message_center::RichNotificationData rich_notification_data;
@@ -240,10 +248,25 @@ void WebUsbDetector::OnDeviceAdded(
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierWebUsb),
       rich_notification_data,
-      base::MakeRefCounted<WebUsbNotificationDelegate>(landing_page,
-                                                       notification_id));
+      base::MakeRefCounted<WebUsbNotificationDelegate>(
+          weak_factory_.GetWeakPtr(), landing_page, notification_id));
   notification.SetSystemPriority();
   SystemNotificationHelper::GetInstance()->Display(notification);
+  open_notifications_by_id_[notification_id] = landing_page;
+}
+
+bool WebUsbDetector::IsDisplayingNotification(const GURL& url) {
+  for (const auto& map_entry : open_notifications_by_id_) {
+    const GURL& entry_url = map_entry.second;
+    if (url == entry_url)
+      return true;
+  }
+
+  return false;
+}
+
+void WebUsbDetector::RemoveNotification(const std::string& id) {
+  open_notifications_by_id_.erase(id);
 }
 
 void WebUsbDetector::OnDeviceRemoved(
