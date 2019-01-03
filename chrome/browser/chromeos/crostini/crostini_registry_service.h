@@ -82,6 +82,7 @@ class CrostiniRegistryService : public KeyedService {
 
     std::string Name() const;
     std::string Comment() const;
+    std::string ExecutableFileName() const;
     std::set<std::string> MimeTypes() const;
     std::set<std::string> Keywords() const;
     bool NoDisplay() const;

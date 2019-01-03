@@ -47,6 +47,7 @@ constexpr char kAppContainerNameKey[] = "container_name";
 constexpr char kAppCommentKey[] = "comment";
 constexpr char kAppMimeTypesKey[] = "mime_types";
 constexpr char kAppKeywordsKey[] = "keywords";
+constexpr char kAppExecutableFileNameKey[] = "executable_file_name";
 constexpr char kAppNameKey[] = "name";
 constexpr char kAppNoDisplayKey[] = "no_display";
 constexpr char kAppScaledKey[] = "scaled";
@@ -308,6 +309,16 @@ std::string CrostiniRegistryService::Registration::Name() const {
 
 std::string CrostiniRegistryService::Registration::Comment() const {
   return LocalizedString(kAppCommentKey);
+}
+
+std::string CrostiniRegistryService::Registration::ExecutableFileName() const {
+  if (pref_.is_none())
+    return std::string();
+  const base::Value* executable_file_name =
+      pref_.FindKeyOfType(kAppExecutableFileNameKey, base::Value::Type::STRING);
+  if (!executable_file_name)
+    return std::string();
+  return executable_file_name->GetString();
 }
 
 std::set<std::string> CrostiniRegistryService::Registration::MimeTypes() const {
@@ -728,6 +739,8 @@ void CrostiniRegistryService::UpdateApplicationList(
       pref_registration.SetKey(kAppNameKey, std::move(name));
       pref_registration.SetKey(kAppCommentKey,
                                ProtoToDictionary(app.comment()));
+      pref_registration.SetKey(kAppExecutableFileNameKey,
+                               base::Value(app.executable_file_name()));
       pref_registration.SetKey(kAppMimeTypesKey, ProtoToList(app.mime_types()));
       pref_registration.SetKey(kAppKeywordsKey,
                                LocaleStringsProtoToDictionary(app.keywords()));

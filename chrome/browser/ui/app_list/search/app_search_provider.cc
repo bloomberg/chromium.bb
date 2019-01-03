@@ -546,11 +546,14 @@ class CrostiniDataSource : public AppSearchProvider::DataSource,
           *registry_service->GetRegistration(app_id);
       if (registration.NoDisplay())
         continue;
-      // Eventually it would be nice to use additional data points, for example
-      // the executable file name.
       apps->emplace_back(std::make_unique<AppSearchProvider::App>(
           this, app_id, registration.Name(), registration.LastLaunchTime(),
           registration.InstallTime(), false /* installed_internally */));
+      const std::string& executable_file_name =
+          registration.ExecutableFileName();
+      if (!executable_file_name.empty())
+        apps->back()->AddSearchableText(
+            base::UTF8ToUTF16(executable_file_name));
       for (const std::string& keyword : registration.Keywords())
         apps->back()->AddSearchableText(base::UTF8ToUTF16(keyword));
 
