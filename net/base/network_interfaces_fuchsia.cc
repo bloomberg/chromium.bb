@@ -4,9 +4,9 @@
 
 #include "net/base/network_interfaces_fuchsia.h"
 
+#include <fuchsia/hardware/ethernet/cpp/fidl.h>
 #include <fuchsia/net/cpp/fidl.h>
 #include <fuchsia/netstack/cpp/fidl.h>
-#include <zircon/ethernet/cpp/fidl.h>
 
 #include <string>
 #include <utility>
