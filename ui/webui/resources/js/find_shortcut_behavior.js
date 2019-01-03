@@ -8,7 +8,7 @@
  * top of the stack will be notified that a find shortcut has been invoked.
  */
 
-cr.define('settings', function() {
+const FindShortcutManager = (() => {
   /**
    * Stack of listeners. Only the top listener will handle the shortcut.
    * @type {!Array<!HTMLElement>}
@@ -54,36 +54,34 @@ cr.define('settings', function() {
     }
   });
 
+  return Object.freeze({listeners: listeners});
+})();
+
+/**
+ * Used to determine how to handle find shortcut invocations.
+ * @polymerBehavior
+ */
+const FindShortcutBehavior = {
   /**
-   * Used to determine how to handle find shortcut invocations.
-   * @polymerBehavior
+   * If handled, return true.
+   * @param {boolean} modalContextOpen
+   * @return {boolean}
+   * @protected
    */
-  const FindShortcutBehavior = {
-    /**
-     * If handled, return true.
-     * @param {boolean} modalContextOpen
-     * @return {boolean}
-     * @protected
-     */
-    handleFindShortcut(modalContextOpen) {
-      assertNotReached();
-    },
+  handleFindShortcut(modalContextOpen) {
+    assertNotReached();
+  },
 
-    becomeActiveFindShortcutListener() {
-      assert(
-          listeners.indexOf(this) == -1,
-          'Already listening for find shortcuts.');
-      listeners.push(this);
-    },
+  becomeActiveFindShortcutListener() {
+    const listeners = FindShortcutManager.listeners;
+    assert(!listeners.includes(this), 'Already listening for find shortcuts.');
+    listeners.push(this);
+  },
 
-    removeSelfAsFindShortcutListener() {
-      const index = listeners.indexOf(this);
-      assert(index > -1, 'Find shortcut listener not found.');
-      listeners.splice(index, 1);
-    },
-  };
-
-  return {
-    FindShortcutBehavior,
-  };
-});
+  removeSelfAsFindShortcutListener() {
+    const listeners = FindShortcutManager.listeners;
+    const index = listeners.indexOf(this);
+    assert(listeners.includes(this), 'Find shortcut listener not found.');
+    listeners.splice(index, 1);
+  },
+};

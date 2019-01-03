@@ -12,7 +12,6 @@ js_type_check("closure_compile") {
 
 js_library("settings_ui") {
   deps = [
-    "..:find_shortcut_behavior",
     "..:global_scroll_target_behavior",
     "..:page_visibility",
     "../prefs:prefs",
@@ -23,5 +22,6 @@ js_library("settings_ui") {
     "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar",
     "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar_search_field",
     "//ui/webui/resources/cr_elements/policy:cr_policy_indicator_behavior",
+    "//ui/webui/resources/js:find_shortcut_behavior",
   ]
 }

@@ -3,12 +3,10 @@
 // found in the LICENSE file.
 
 suite('find-shortcut', () => {
-  /** @typedef {{
-   *    becomeActiveFindShortcutListener: !Function,
-   *    removeSelfAsFindShortcutListener: !Function,
-   *  }}
-   */
-  let Listener;
+  /** @override */
+  suiteSetup(
+      () => PolymerTest.importHtml(
+          'chrome://resources/cr_elements/cr_dialog/cr_dialog.html'));
 
   /**
    * @type {PromiseResolver<!{modalContextOpen: boolean, self: HTMLElement}>}
@@ -107,7 +105,7 @@ suite('find-shortcut', () => {
 
     Polymer({
       is: 'find-shortcut-element',
-      behaviors: [settings.FindShortcutBehavior],
+      behaviors: [FindShortcutBehavior],
 
       handledResponse: true,
 
