@@ -110,15 +110,15 @@ const std::string& CSPInfo::GetResourceContentSecurityPolicy(
       GetContentSecurityPolicy(extension);
 }
 
-CSPHandler::CSPHandler(bool is_platform_app)
-    : is_platform_app_(is_platform_app) {
-}
+CSPHandler::CSPHandler() = default;
 
-CSPHandler::~CSPHandler() {
-}
+CSPHandler::~CSPHandler() = default;
 
 bool CSPHandler::Parse(Extension* extension, base::string16* error) {
-  const std::string key = Keys()[0];
+  const char* key = extension->GetType() == Manifest::TYPE_PLATFORM_APP
+                        ? keys::kPlatformAppContentSecurityPolicy
+                        : keys::kContentSecurityPolicy;
+
   // The "content_security_policy" manifest key can either be a string or a
   // dictionary of the format
   // "content_security_policy" : {
@@ -131,7 +131,7 @@ bool CSPHandler::Parse(Extension* extension, base::string16* error) {
   // TODO(crbug.com/914224): Remove the channel check once the support for the
   // dictionary key is launched to other channels.
   bool csp_dictionary_supported =
-      !is_platform_app_ &&
+      extension->GetType() == Manifest::TYPE_EXTENSION &&
       GetCurrentChannel() == version_info::Channel::UNKNOWN;
   if (csp_dictionary_supported && csp && csp->is_dict())
     return ParseCSPDictionary(extension, error, *csp);
@@ -185,8 +185,9 @@ bool CSPHandler::SetDefaultExtensionPagesCSP(Extension* extension) {
   // TODO(abarth): Should we continue to let extensions override the
   //               default Content-Security-Policy?
   const char* content_security_policy =
-      is_platform_app_ ? kDefaultPlatformAppContentSecurityPolicy
-                       : kDefaultContentSecurityPolicy;
+      extension->GetType() == Manifest::TYPE_PLATFORM_APP
+          ? kDefaultPlatformAppContentSecurityPolicy
+          : kDefaultContentSecurityPolicy;
 
   DCHECK_EQ(
       content_security_policy,
@@ -199,20 +200,14 @@ bool CSPHandler::SetDefaultExtensionPagesCSP(Extension* extension) {
 }
 
 bool CSPHandler::AlwaysParseForType(Manifest::Type type) const {
-  if (is_platform_app_)
-    return type == Manifest::TYPE_PLATFORM_APP;
-  else
-    return type == Manifest::TYPE_EXTENSION ||
-        type == Manifest::TYPE_LEGACY_PACKAGED_APP;
+  return type == Manifest::TYPE_PLATFORM_APP ||
+         type == Manifest::TYPE_EXTENSION ||
+         type == Manifest::TYPE_LEGACY_PACKAGED_APP;
 }
 
 base::span<const char* const> CSPHandler::Keys() const {
-  if (is_platform_app_) {
-    static constexpr const char* kKeys[] = {
-        keys::kPlatformAppContentSecurityPolicy};
-    return kKeys;
-  }
-  static constexpr const char* kKeys[] = {keys::kContentSecurityPolicy};
+  static constexpr const char* kKeys[] = {
+      keys::kContentSecurityPolicy, keys::kPlatformAppContentSecurityPolicy};
   return kKeys;
 }
 
