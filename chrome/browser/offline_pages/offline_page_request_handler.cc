@@ -408,7 +408,11 @@ void GetPagesToServeURL(
       OfflinePageModel* offline_page_model =
           OfflinePageModelFactory::GetForBrowserContext(
               web_contents->GetBrowserContext());
-      DCHECK(offline_page_model);
+      if (!offline_page_model) {
+        FailedToFindOfflinePage(RequestResult::OFFLINE_PAGE_NOT_FOUND,
+                                network_state, job);
+        return;
+      }
       offline_page_model->GetPageByOfflineId(
           offline_id, base::Bind(&GetPageByOfflineIdDone, url, offline_header,
                                  network_state, web_contents_getter, job));
