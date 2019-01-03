@@ -20,7 +20,7 @@ using payments::mojom::blink::PaymentRequestClient;
 // HasEnrolledInstrumentTest is parameterized on this enum to test that
 // canMakePayment when PaymentRequestHasEnrolledInstrumentEnabled is false
 // behaves identically to hasEnrolledInstrument.
-enum class HasEnrolledInstrumentEnabled { YES, NO };
+enum class HasEnrolledInstrumentEnabled { kYes, kNo };
 
 class HasEnrolledInstrumentTest
     : public testing::Test,
@@ -28,7 +28,7 @@ class HasEnrolledInstrumentTest
   void SetUp() override {
     testing::Test::SetUp();
     RuntimeEnabledFeatures::SetPaymentRequestHasEnrolledInstrumentEnabled(
-        GetParam() == HasEnrolledInstrumentEnabled::YES);
+        GetParam() == HasEnrolledInstrumentEnabled::kYes);
   }
 };
 
@@ -40,7 +40,7 @@ TEST_P(HasEnrolledInstrumentTest, RejectPromiseOnUserCancel) {
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
 
-  if (GetParam() == HasEnrolledInstrumentEnabled::YES) {
+  if (GetParam() == HasEnrolledInstrumentEnabled::kYes) {
     request->hasEnrolledInstrument(scope.GetScriptState())
         .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
   } else {
@@ -60,7 +60,7 @@ TEST_P(HasEnrolledInstrumentTest, RejectPromiseOnUnknownError) {
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
 
-  if (GetParam() == HasEnrolledInstrumentEnabled::YES) {
+  if (GetParam() == HasEnrolledInstrumentEnabled::kYes) {
     request->hasEnrolledInstrument(scope.GetScriptState())
         .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
   } else {
@@ -79,7 +79,7 @@ TEST_P(HasEnrolledInstrumentTest, RejectDuplicateRequest) {
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
-  if (GetParam() == HasEnrolledInstrumentEnabled::YES) {
+  if (GetParam() == HasEnrolledInstrumentEnabled::kYes) {
     request->hasEnrolledInstrument(scope.GetScriptState());
     request->hasEnrolledInstrument(scope.GetScriptState())
         .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
@@ -99,7 +99,7 @@ TEST_P(HasEnrolledInstrumentTest, RejectQueryQuotaExceeded) {
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
 
-  if (GetParam() == HasEnrolledInstrumentEnabled::YES) {
+  if (GetParam() == HasEnrolledInstrumentEnabled::kYes) {
     request->hasEnrolledInstrument(scope.GetScriptState())
         .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
   } else {
@@ -119,7 +119,7 @@ TEST_P(HasEnrolledInstrumentTest, ReturnHasNoEnrolledInstrument) {
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
   String captor;
-  if (GetParam() == HasEnrolledInstrumentEnabled::YES) {
+  if (GetParam() == HasEnrolledInstrumentEnabled::kYes) {
     request->hasEnrolledInstrument(scope.GetScriptState())
         .Then(funcs.ExpectCall(&captor), funcs.ExpectNoCall());
   } else {
@@ -142,7 +142,7 @@ TEST_P(HasEnrolledInstrumentTest, ReturnHasEnrolledInstrument) {
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
   String captor;
-  if (GetParam() == HasEnrolledInstrumentEnabled::YES) {
+  if (GetParam() == HasEnrolledInstrumentEnabled::kYes) {
     request->hasEnrolledInstrument(scope.GetScriptState())
         .Then(funcs.ExpectCall(&captor), funcs.ExpectNoCall());
   } else {
@@ -159,8 +159,8 @@ TEST_P(HasEnrolledInstrumentTest, ReturnHasEnrolledInstrument) {
 
 INSTANTIATE_TEST_CASE_P(ProgrammaticHasEnrolledInstrumentTest,
                         HasEnrolledInstrumentTest,
-                        ::testing::Values(HasEnrolledInstrumentEnabled::YES,
-                                          HasEnrolledInstrumentEnabled::NO));
+                        ::testing::Values(HasEnrolledInstrumentEnabled::kYes,
+                                          HasEnrolledInstrumentEnabled::kNo));
 
 // Test fixture for canMakePayment when
 // PaymentRequestHasEnrolledInstrumentEnabled is true.
