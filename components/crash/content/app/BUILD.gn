@@ -61,7 +61,6 @@ static_library("app") {
   if (is_mac || is_win || is_android || (is_linux && !is_chromeos)) {
     deps += [
       "//third_party/crashpad/crashpad/client",
-      "//third_party/crashpad/crashpad/snapshot:snapshot_api",
       "//third_party/crashpad/crashpad/util",
     ]
   }
