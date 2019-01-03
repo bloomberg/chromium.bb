@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../assert_selection.js"></script>
+<script>
+// Regression test for https://crbug.com/906148
+selection_test(
+  [
+    '<div contenteditable>',
+      '|<span contenteditable="false">line 1</span>',
+      '<div>line 2</div>',
+    '</div>'
+  ].join(''),
+  selection => selection.modify('move', 'forward', 'line'),
+  [
+    '<div contenteditable>',
+      '<span contenteditable="false">line 1</span>',
+      '<div>|line 2</div>',
+    '</div>'
+  ].join(''),
+  'Down arrow should move caret to the next editable line across the uneditable span');
+</script>
