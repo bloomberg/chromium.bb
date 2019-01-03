@@ -505,7 +505,12 @@ void ChromeAppListModelUpdater::OnFolderDeleted(
 void ChromeAppListModelUpdater::OnItemUpdated(
     ash::mojom::AppListItemMetadataPtr item) {
   ChromeAppListItem* chrome_item = FindItem(item->id);
-  DCHECK(chrome_item);
+
+  // Ignore the item if it does not exist. This happens when a race occurs
+  // between the browser and ash. e.g. An item is removed on browser side while
+  // there is an in-flight OnItemUpdated() call from ash.
+  if (!chrome_item)
+    return;
 
   // Preserve icon once it cannot be modified at ash.
   item->icon = chrome_item->icon();

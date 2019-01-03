@@ -1652,16 +1652,20 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
         DisableOverlay();
     }
 
-    if (surface_layer_mode_ !=
-        WebMediaPlayerParams::SurfaceLayerMode::kAlways) {
+    if (surface_layer_mode_ ==
+            WebMediaPlayerParams::SurfaceLayerMode::kAlways ||
+        (surface_layer_mode_ ==
+             WebMediaPlayerParams::SurfaceLayerMode::kOnDemand &&
+         client_->DisplayType() ==
+             WebMediaPlayer::DisplayType::kPictureInPicture)) {
+      ActivateSurfaceLayerForVideo();
+    } else {
       DCHECK(!video_layer_);
       video_layer_ = cc::VideoLayer::Create(
           compositor_.get(),
           pipeline_metadata_.video_decoder_config.video_rotation());
       video_layer_->SetContentsOpaque(opaque_);
       client_->SetCcLayer(video_layer_.get());
-    } else {
-      ActivateSurfaceLayerForVideo();
     }
   }
 

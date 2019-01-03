@@ -12,6 +12,7 @@
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../lifetime_browser_proxy.html">
 <link rel="import" href="../people_page/sync_browser_proxy.html">
+<link rel="import" href="../people_page/signout_dialog.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_page/settings_animated_pages.html">
 <link rel="import" href="../settings_page/settings_subpage.html">
@@ -95,7 +96,7 @@
             label="$i18n{signinAllowedTitle}"
             sub-label="$i18n{signinAllowedDescription}"
             on-settings-boolean-control-change="onSigninAllowedChange_"
-            disabled="[[syncStatus.signedIn]]">
+            no-set-pref>
         </settings-toggle-button>
 </if><!-- not chromeos -->
         <template is="dom-if" if="[[!unifiedConsentEnabled_]]">
@@ -583,6 +584,13 @@
        </template>
       </template>
     </settings-animated-pages>
+
+    <template is="dom-if" if="[[showSignoutDialog_]]" restamp>
+      <settings-signout-dialog sync-status="[[syncStatus]]"
+          on-close="onSignoutDialogClosed_">
+      </settings-signout-dialog>
+    </template>
+
 <if expr="not chromeos">
     <cr-toast id="toast" open="[[showRestart_]]">
       <div>$i18n{restartToApplyChanges}</div>

@@ -838,13 +838,6 @@ class CryptohomeClientImpl : public CryptohomeClient {
                          request, std::move(callback));
   }
 
-  void GetTpmStatus(
-      const cryptohome::GetTpmStatusRequest& request,
-      DBusMethodCallback<cryptohome::BaseReply> callback) override {
-    CallCryptohomeMethod(cryptohome::kCryptohomeGetTpmStatus, request,
-                         std::move(callback));
-  }
-
   void RemoveFirmwareManagementParametersFromTpm(
       const cryptohome::RemoveFirmwareManagementParametersRequest& request,
       DBusMethodCallback<cryptohome::BaseReply> callback) override {
@@ -908,6 +901,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&CryptohomeClientImpl::OnBoolMethod,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+
   }
 
   void GetCurrentSpaceForUid(const uid_t android_uid,

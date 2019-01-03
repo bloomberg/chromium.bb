@@ -125,6 +125,12 @@ cr.define('settings_privacy_page', function() {
 
       setup(function() {
         page = document.createElement('settings-privacy-page');
+        page.prefs = {
+          signin: {
+            allowed_on_next_startup:
+                {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true},
+          },
+        };
         document.body.appendChild(page);
       });
 
@@ -150,18 +156,92 @@ cr.define('settings_privacy_page', function() {
       if (!cr.isChromeOS) {
         test('signinAllowedToggle', function() {
           const toggle = page.$.signinAllowedToggle;
+
           page.syncStatus = {signedIn: false};
-          // When the user is signed out, the toggle is enabled.
-          assertFalse(toggle.disabled);
+          // Check initial setup.
+          assertTrue(toggle.checked);
+          assertTrue(page.prefs.signin.allowed_on_next_startup.value);
+          assertFalse(page.$.toast.open);
+
+          // When the user is signed out, clicking the toggle should work
+          // normally and the restart toast should be opened.
+          toggle.click();
+          assertFalse(toggle.checked);
+          assertFalse(page.prefs.signin.allowed_on_next_startup.value);
+          assertTrue(page.$.toast.open);
+
+          // Clicking it again, turns the toggle back on. The toast remains
+          // open.
+          toggle.click();
+          assertTrue(toggle.checked);
+          assertTrue(page.prefs.signin.allowed_on_next_startup.value);
+          assertTrue(page.$.toast.open);
+
+          // Reset toast.
+          page.showRestart_ = false;
+          assertFalse(page.$.toast.open);
 
           page.syncStatus = {signedIn: true};
-          // When the user is signed in, the toggle is disabled.
-          assertTrue(toggle.disabled);
+          // When the user is signed in, clicking the toggle should open the
+          // sign-out dialog.
+          assertFalse(!!page.$$('settings-signout-dialog'));
+          toggle.click();
+          return test_util.eventToPromise('cr-dialog-open', page)
+              .then(function() {
+                Polymer.dom.flush();
+                // The toggle remains on.
+                assertTrue(toggle.checked);
+                assertTrue(page.prefs.signin.allowed_on_next_startup.value);
+                assertFalse(page.$.toast.open);
+
+                const signoutDialog = page.$$('settings-signout-dialog');
+                assertTrue(!!signoutDialog);
+                assertTrue(signoutDialog.$$('#dialog').open);
+
+                // The user clicks cancel.
+                const cancel = signoutDialog.$$('#disconnectCancel');
+                cancel.click();
+
+                return test_util.eventToPromise('close', signoutDialog);
+              })
+              .then(function() {
+                Polymer.dom.flush();
+                assertFalse(!!page.$$('settings-signout-dialog'));
+
+                // After the dialog is closed, the toggle remains turned on.
+                assertTrue(toggle.checked);
+                assertTrue(page.prefs.signin.allowed_on_next_startup.value);
+                assertFalse(page.$.toast.open);
+
+                // The user clicks the toggle again.
+                toggle.click();
+                return test_util.eventToPromise('cr-dialog-open', page);
+              })
+              .then(function() {
+                Polymer.dom.flush();
+                const signoutDialog = page.$$('settings-signout-dialog');
+                assertTrue(!!signoutDialog);
+                assertTrue(signoutDialog.$$('#dialog').open);
+
+                // The user clicks confirm, which signs them out.
+                const disconnectConfirm =
+                    signoutDialog.$$('#disconnectConfirm');
+                disconnectConfirm.click();
+
+                return test_util.eventToPromise('close', signoutDialog);
+              })
+              .then(function() {
+                Polymer.dom.flush();
+                // After the dialog is closed, the toggle is turned off and the
+                // toast is shown.
+                assertFalse(toggle.checked);
+                assertFalse(page.prefs.signin.allowed_on_next_startup.value);
+                assertTrue(page.$.toast.open);
+              });
         });
       }
     });
   }
-
 
   function registerClearBrowsingDataTestsDice() {
     suite('ClearBrowsingDataDice', function() {

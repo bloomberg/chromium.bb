@@ -647,11 +647,7 @@ void OverlayWindowViews::OnKeyEvent(ui::KeyEvent* event) {
 void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
   switch (event->type()) {
 // Only show the media controls when the mouse is hovering over the window.
-// This is checking for both ENTERED and MOVED because ENTERED is not fired
-// after a resize on Windows.
-#if defined(OS_WIN)
     case ui::ET_MOUSE_MOVED:
-#endif  // OS_WIN
     case ui::ET_MOUSE_ENTERED:
       UpdateControlsVisibility(true);
       break;
@@ -670,7 +666,7 @@ void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
 
   // If the user interacts with the window using a mouse, stop the timer to
   // automatically hide the controls.
-  hide_controls_timer_.Stop();
+  hide_controls_timer_.Reset();
 
   views::Widget::OnMouseEvent(event);
 }

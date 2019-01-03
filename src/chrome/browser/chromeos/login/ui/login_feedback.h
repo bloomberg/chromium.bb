@@ -25,6 +25,12 @@ class LoginFeedback {
   explicit LoginFeedback(Profile* signin_profile);
   ~LoginFeedback();
 
+  // Returns true if Feedback is enabled in the login screen.
+  static bool IsEnabled();
+
+  // Enables Feedback in the login screen for tests.
+  static void EnableForTesting();
+
   // Request to show the feedback UI with |description|. |finished_callback|
   // will be invoked when the feedback UI is closed, either cancel or send the
   // feedback.

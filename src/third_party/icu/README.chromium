@@ -207,9 +207,7 @@ D. Local Modifications
      windowsZones.txt
      zoneinfo64.txt
 
-  As of May 4, 2018, the latest version is 2018e and the above files
-  are available at
-  http://source.icu-project.org/repos/icu/data/trunk/tzdata/icunew/2018e/44/
+  As of Oct 18, 2018, the latest version is 2018f.
 
 4. Build-related changes
 
@@ -267,3 +265,9 @@ D. Local Modifications
   - patches/decimalformat_align.patch
   - upstream bug:
     https://unicode-org.atlassian.net/browse/ICU-20039
+
+12. Align memory buffer used in UnicodeSet on ARM.
+
+  - patches/arm_align.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20001

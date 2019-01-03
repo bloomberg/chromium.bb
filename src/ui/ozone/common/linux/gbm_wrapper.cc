@@ -192,27 +192,30 @@ class Device final : public ui::GbmDevice {
       gbm_flags &= ~GBM_BO_USE_SCANOUT;
 
     struct gbm_bo* bo = nullptr;
-    if (gbm_device_is_format_supported(device_, format, gbm_flags)) {
-      struct gbm_import_fd_planar_data fd_data;
-      fd_data.width = size.width();
-      fd_data.height = size.height();
-      fd_data.format = format;
+    if (!gbm_device_is_format_supported(device_, format, gbm_flags)) {
+      LOG(ERROR) << "gbm format not supported: " << format;
+      return nullptr;
+    }
 
-      DCHECK_LE(planes.size(), 3u);
-      for (size_t i = 0; i < planes.size(); ++i) {
-        fd_data.fds[i] = fds[i < fds.size() ? i : 0].get();
-        fd_data.strides[i] = planes[i].stride;
-        fd_data.offsets[i] = planes[i].offset;
-        fd_data.format_modifiers[i] = planes[i].modifier;
-      }
+    struct gbm_import_fd_planar_data fd_data;
+    fd_data.width = size.width();
+    fd_data.height = size.height();
+    fd_data.format = format;
 
-      // The fd passed to gbm_bo_import is not ref-counted and need to be
-      // kept open for the lifetime of the buffer.
-      bo = gbm_bo_import(device_, GBM_BO_IMPORT_FD_PLANAR, &fd_data, gbm_flags);
-      if (!bo) {
-        LOG(ERROR) << "nullptr returned from gbm_bo_import";
-        return nullptr;
-      }
+    DCHECK_LE(planes.size(), 3u);
+    for (size_t i = 0; i < planes.size(); ++i) {
+      fd_data.fds[i] = fds[i < fds.size() ? i : 0].get();
+      fd_data.strides[i] = planes[i].stride;
+      fd_data.offsets[i] = planes[i].offset;
+      fd_data.format_modifiers[i] = planes[i].modifier;
+    }
+
+    // The fd passed to gbm_bo_import is not ref-counted and need to be
+    // kept open for the lifetime of the buffer.
+    bo = gbm_bo_import(device_, GBM_BO_IMPORT_FD_PLANAR, &fd_data, gbm_flags);
+    if (!bo) {
+      LOG(ERROR) << "nullptr returned from gbm_bo_import";
+      return nullptr;
     }
 
     return std::make_unique<Buffer>(bo, format, gbm_flags, planes[0].modifier,

@@ -1103,6 +1103,8 @@ void ProfileIOData::Init(
     chrome_network_delegate->set_profile_path(profile_params_->path);
     chrome_network_delegate->set_cookie_settings(
         profile_params_->cookie_settings.get());
+    chrome_network_delegate->set_force_google_safe_search(
+        &force_google_safesearch_);
 
     chrome_network_delegate_unowned_ = chrome_network_delegate.get();
 

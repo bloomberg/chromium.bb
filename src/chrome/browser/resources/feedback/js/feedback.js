@@ -46,11 +46,6 @@ var MAX_SCREENSHOT_WIDTH = 100;
  */
 var SYSINFO_WINDOW_ID = 'sysinfo_window';
 
-/** @type {string}
- * @const
- */
-var STATS_WINDOW_ID = 'stats_window';
-
 /**
  * SRT Prompt Result defined in feedback_private.idl.
  * @enum {string}
@@ -158,19 +153,6 @@ function clearAttachedFile() {
 }
 
 /**
- * Creates a closure that creates or shows a window with the given url.
- * @param {string} windowId A string with the ID of the window we are opening.
- * @param {string} url The destination URL of the new window.
- * @return {function()} A function to be called to open the window.
- */
-function windowOpener(windowId, url) {
-  return function(e) {
-    e.preventDefault();
-    chrome.app.window.create(url, {id: windowId});
-  };
-}
-
-/**
  * Sets up the event handlers for the given |anchorElement|.
  * @param {HTMLElement} anchorElement The <a> html element.
  * @param {string} url The destination URL for the link.
@@ -178,7 +160,7 @@ function windowOpener(windowId, url) {
 function setupLinkHandlers(anchorElement, url) {
   anchorElement.onclick = function(e) {
     e.preventDefault();
-    window.open(url, '_blank');
+    openUrlInAppWindow(url);
   };
 
   anchorElement.onauxclick = function(e) {
@@ -378,7 +360,7 @@ function initialize() {
 
         $('srt-accept-button').onclick = function() {
           chrome.feedbackPrivate.logSrtPromptResult(SrtPromptResult.ACCEPTED);
-          window.open(SRT_DOWNLOAD_PAGE, '_blank');
+          openUrlInAppWindow(SRT_DOWNLOAD_PAGE);
           scheduleWindowClose();
         };
 
@@ -528,12 +510,7 @@ function initialize() {
         var histogramUrlElement = $('histograms-url');
         if (histogramUrlElement) {
           // Opens a new window showing the histogram metrics.
-          histogramUrlElement.onclick =
-              windowOpener(STATS_WINDOW_ID, 'chrome://histograms');
-
-          histogramUrlElement.onauxclick = function(e) {
-            e.preventDefault();
-          };
+          setupLinkHandlers(histogramUrlElement, 'chrome://histograms');
         }
 
         var legalHelpPageUrlElement = $('legal-help-page-url');

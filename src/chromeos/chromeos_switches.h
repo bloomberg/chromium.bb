@@ -93,6 +93,7 @@ CHROMEOS_EXPORT extern const char kEnableCastReceiver[];
 CHROMEOS_EXPORT extern const char kEnableChromevoxDeveloperOption[];
 CHROMEOS_EXPORT extern const char kEnableConsumerKiosk[];
 CHROMEOS_EXPORT extern const char kEnableDataSaverPrompt[];
+CHROMEOS_EXPORT extern const char kEnableDiscoverApp[];
 CHROMEOS_EXPORT extern const char kEnableEncryptionMigration[];
 CHROMEOS_EXPORT extern const char kEnableExperimentalAccessibilityFeatures[];
 CHROMEOS_EXPORT extern const char kEnableExtensionAssetsSharing[];

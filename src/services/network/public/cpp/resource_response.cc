@@ -61,6 +61,7 @@ scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
   new_response->head.async_revalidation_requested =
       head.async_revalidation_requested;
   new_response->head.did_mime_sniff = head.did_mime_sniff;
+  new_response->head.intercepted_by_plugin = head.intercepted_by_plugin;
   return new_response;
 }
 

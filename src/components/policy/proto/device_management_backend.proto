@@ -838,9 +838,6 @@ message DeviceStatusReportRequest {
 
   // Release channel (stable, beta, etc.).
   optional Channel channel = 22;
-
-  // TPM status information.
-  optional TpmStatusInfo tpm_status_info = 23;
 }
 
 message OsUpdateStatus {
@@ -1669,21 +1666,6 @@ message TpmVersionInfo {
   optional uint32 tpm_model = 4;
   optional uint64 firmware_version = 5;
   optional string vendor_specific = 6;
-}
-
-// Contains status of the TPM unit.  These fields come from GetTpmStatusReply
-// proto message from Chrome OS side (dbus/cryptohome/rpc.proto).
-message TpmStatusInfo {
-  optional bool enabled = 1;
-  optional bool owned = 2;
-  optional bool initialized = 3;
-  optional bool attestation_prepared = 4;
-  optional bool attestation_enrolled = 5;
-  optional int32 dictionary_attack_counter = 6;
-  optional int32 dictionary_attack_threshold = 7;
-  optional bool dictionary_attack_lockout_in_effect = 8;
-  optional int32 dictionary_attack_lockout_seconds_remaining = 9;
-  optional bool boot_lockbox_finalized = 10;
 }
 
 // System state included with some log events.

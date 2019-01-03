@@ -942,6 +942,12 @@ class DownloadContentTest : public ContentBrowserTest {
     return inject_error_callback_;
   }
 
+  void RegisterServiceWorker(Shell* shell, const std::string& worker_url) {
+    NavigateToURL(
+        shell, embedded_test_server()->GetURL("/register_service_worker.html"));
+    EXPECT_EQ("DONE", EvalJs(shell, "register('" + worker_url + "')"));
+  }
+
  private:
   // Location of the downloads directory for these tests
   base::ScopedTempDir downloads_directory_;
@@ -1183,6 +1189,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MultiDownload) {
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Content served with a MIME type of application/octet-stream should be
 // downloaded even when a plugin can be found that handles the file type.
+// See https://crbug.com/104331 for the details.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadOctetStream) {
   const char kTestPluginName[] = "TestPlugin";
   const char kTestMimeType[] = "application/x-test-mime-type";
@@ -1197,9 +1204,90 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadOctetStream) {
 
   // The following is served with a Content-Type of application/octet-stream.
   NavigateToURLAndWaitForDownload(
-      shell(), embedded_test_server()->GetURL("/download/download-test.lib"),
+      shell(), embedded_test_server()->GetURL("/download/octet-stream.abc"),
       download::DownloadItem::COMPLETE);
 }
+
+// Content served with a MIME type of application/octet-stream should be
+// downloaded even when a plugin can be found that handles the file type.
+// See https://crbug.com/104331 for the details.
+// In this test, the url is in scope of a service worker but the response is
+// served from network.
+// This is regression test for https://crbug.com/896696.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest,
+                       DownloadOctetStream_PassThroughServiceWorker) {
+  const char kTestPluginName[] = "TestPlugin";
+  const char kTestMimeType[] = "application/x-test-mime-type";
+  const char kTestFileType[] = "abc";
+
+  RegisterServiceWorker(shell(), "/fetch_event_passthrough.js");
+
+  WebPluginInfo plugin_info;
+  plugin_info.name = base::ASCIIToUTF16(kTestPluginName);
+  plugin_info.mime_types.push_back(
+      WebPluginMimeType(kTestMimeType, kTestFileType, ""));
+  plugin_info.type = WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;
+  PluginServiceImpl::GetInstance()->RegisterInternalPlugin(plugin_info, false);
+
+  // The following is served with a Content-Type of application/octet-stream.
+  NavigateToURLAndWaitForDownload(
+      shell(), embedded_test_server()->GetURL("/download/octet-stream.abc"),
+      download::DownloadItem::COMPLETE);
+}
+
+// Content served with a MIME type of application/octet-stream should be
+// downloaded even when a plugin can be found that handles the file type.
+// See https://crbug.com/104331 for the details.
+// In this test, the response will be served from a service worker.
+// This is regression test for https://crbug.com/896696.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest,
+                       DownloadOctetStream_OctetStreamServiceWorker) {
+  const char kTestPluginName[] = "TestPlugin";
+  const char kTestMimeType[] = "application/x-test-mime-type";
+  const char kTestFileType[] = "abc";
+
+  RegisterServiceWorker(shell(), "/fetch_event_octet_stream.js");
+
+  WebPluginInfo plugin_info;
+  plugin_info.name = base::ASCIIToUTF16(kTestPluginName);
+  plugin_info.mime_types.push_back(
+      WebPluginMimeType(kTestMimeType, kTestFileType, ""));
+  plugin_info.type = WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;
+  PluginServiceImpl::GetInstance()->RegisterInternalPlugin(plugin_info, false);
+
+  // The following is served with a Content-Type of application/octet-stream.
+  NavigateToURLAndWaitForDownload(
+      shell(), embedded_test_server()->GetURL("/download/octet-stream.abc"),
+      download::DownloadItem::COMPLETE);
+}
+
+// Content served with a MIME type of application/octet-stream should be
+// downloaded even when a plugin can be found that handles the file type.
+// See https://crbug.com/104331 for the details.
+// In this test, the url is in scope of a service worker and the response is
+// served from the network via service worker.
+// This is regression test for https://crbug.com/896696.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest,
+                       DownloadOctetStream_RespondWithFetchServiceWorker) {
+  const char kTestPluginName[] = "TestPlugin";
+  const char kTestMimeType[] = "application/x-test-mime-type";
+  const char kTestFileType[] = "abc";
+
+  RegisterServiceWorker(shell(), "/fetch_event_respond_with_fetch.js");
+
+  WebPluginInfo plugin_info;
+  plugin_info.name = base::ASCIIToUTF16(kTestPluginName);
+  plugin_info.mime_types.push_back(
+      WebPluginMimeType(kTestMimeType, kTestFileType, ""));
+  plugin_info.type = WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;
+  PluginServiceImpl::GetInstance()->RegisterInternalPlugin(plugin_info, false);
+
+  // The following is served with a Content-Type of application/octet-stream.
+  NavigateToURLAndWaitForDownload(
+      shell(), embedded_test_server()->GetURL("/download/octet-stream.abc"),
+      download::DownloadItem::COMPLETE);
+}
+
 #endif
 
 // Try to cancel just before we release the download file, by delaying final

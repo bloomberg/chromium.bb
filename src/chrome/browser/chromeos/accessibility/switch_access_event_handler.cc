@@ -54,6 +54,9 @@ void SwitchAccessEventHandler::DispatchKeyEventToSwitchAccess(
     const ui::KeyEvent& event) {
   extensions::ExtensionHost* host =
       GetAccessibilityExtensionHost(extension_misc::kSwitchAccessExtensionId);
+  if (!host)
+    return;
+
   ForwardKeyToExtension(event, host);
 }
 

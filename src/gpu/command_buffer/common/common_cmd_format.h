@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include "base/atomicops.h"
+#include "base/numerics/checked_math.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 
 namespace gpu {
@@ -33,25 +34,38 @@ struct SizedResult {
 
   // Returns the total size in bytes of the SizedResult for a given number of
   // results including the size field.
-  static size_t ComputeSize(size_t num_results) {
-    return sizeof(T) * num_results + sizeof(uint32_t);  // NOLINT
+  static uint32_t ComputeSize(base::CheckedNumeric<uint32_t> num_results) {
+    base::CheckedNumeric<uint32_t> size = num_results;
+    size *= sizeof(T);
+    size += sizeof(uint32_t);
+    return size.ValueOrDie();
   }
 
   // Returns the maximum number of results for a given buffer size.
   static uint32_t ComputeMaxResults(size_t size_of_buffer) {
-    return (size_of_buffer >= sizeof(uint32_t))
-               ? ((size_of_buffer - sizeof(uint32_t)) / sizeof(T))
-               : 0;  // NOLINT
+    base::CheckedNumeric<uint32_t> max_results = 0;
+    if (size_of_buffer >= sizeof(uint32_t)) {
+      max_results = size_of_buffer;
+      max_results -= sizeof(uint32_t);
+      max_results /= sizeof(T);
+    }
+    return max_results.ValueOrDefault(0);
   }
 
   // Set the size for a given number of results.
-  void SetNumResults(size_t num_results) {
-    size = sizeof(T) * num_results;  // NOLINT
+  void SetNumResults(base::CheckedNumeric<uint32_t> num_results) {
+    base::CheckedNumeric<uint32_t> bytes = num_results;
+    bytes *= sizeof(T);
+    size = bytes.ValueOrDie();
   }
 
   // Get the number of elements in the result
   int32_t GetNumResults() const {
-    return size / sizeof(T);  // NOLINT
+    // TODO(piman): return uint32_t here to remove the need for checked
+    // numerics.
+    base::CheckedNumeric<uint32_t> num_results = size;
+    num_results /= sizeof(T);
+    return num_results.ValueOrDie<int32_t>();
   }
 
   // Copy the result.

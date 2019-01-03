@@ -423,8 +423,41 @@ Status ChromeDesktopImpl::SetWindowBounds(
   status = GetWindowBounds(window_id, &window);
   if (status.IsError())
     return status;
-  if (window.state != state)
+  if (window.state == state)
+    return Status(kOk);
+
+  if (state == "maximized" && window.state == "normal") {
+    // Maximize window is not supported in some environment, such as Mac Chrome
+    // version 70 and above, or Linux without a window manager.
+    // In these cases, we simulate window maximization by setting window size
+    // to equal to screen size. This is accordance with the W3C spec at
+    // https://www.w3.org/TR/webdriver1/#dfn-maximize-the-window.
+    // Get a WebView, then use it to send JavaScript to query screen size.
+    if (web_views_.size() == 0)
+      return Status(kUnknownError, "no WebView");
+    WebView* web_view = web_views_.begin()->get();
+    std::unique_ptr<base::Value> result;
+    status = web_view->EvaluateScript(
+        std::string(),
+        "({width: screen.availWidth, height: screen.availHeight})", &result);
+    if (status.IsError())
+      return Status(kUnknownError, "JavaScript code failed", status);
+    const base::Value* width =
+        result->FindKeyOfType("width", base::Value::Type::INTEGER);
+    const base::Value* height =
+        result->FindKeyOfType("height", base::Value::Type::INTEGER);
+    if (width == nullptr || height == nullptr)
+      return Status(kUnknownError, "unexpected JavaScript result");
+    auto bounds = std::make_unique<base::DictionaryValue>();
+    bounds->SetInteger("width", width->GetInt());
+    bounds->SetInteger("height", height->GetInt());
+    bounds->SetInteger("left", 0);
+    bounds->SetInteger("top", 0);
+    params.Set("bounds", bounds->CreateDeepCopy());
+    return devtools_websocket_client_->SendCommand("Browser.setWindowBounds",
+                                                   params);
+  } else {
     return Status(kUnknownError, "failed to change window state to " + state +
                                      ", current state is " + window.state);
-  return Status(kOk);
+  }
 }

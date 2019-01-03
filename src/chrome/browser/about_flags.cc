@@ -27,6 +27,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/data_use_measurement/page_load_capping/chrome_page_load_capping_features.h"
 #include "chrome/browser/flag_descriptions.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
@@ -3579,6 +3580,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"disable-lock-screen-apps", flag_descriptions::kDisableLockScreenAppsName,
      flag_descriptions::kDisableLockScreenAppsDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kDisableLockScreenApps)},
+    {"double-tap-to-zoom-in-tablet-mode",
+     flag_descriptions::kDoubleTapToZoomInTabletModeName,
+     flag_descriptions::kDoubleTapToZoomInTabletModeDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kDoubleTapToZoomInTabletMode)},
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)

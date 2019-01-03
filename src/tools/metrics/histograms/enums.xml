@@ -29144,6 +29144,7 @@ from previous Chrome versions.
   <int value="-20267582" label="ResourceLoadingHints:disabled"/>
   <int value="-19354048" label="AutofillUpstreamSendPanFirstSix:disabled"/>
   <int value="-18464041" label="AutofillPrefilledFields:disabled"/>
+  <int value="-17698200" label="DoubleTapToZoomInTabletMode:disabled"/>
   <int value="-16824589" label="ash-shelf-color"/>
   <int value="-13918890" label="disable-download-notification"/>
   <int value="-11260186" label="enable-offline-pages-as-saved-pages"/>
@@ -29520,6 +29521,7 @@ from previous Chrome versions.
   <int value="765306424" label="ModuleScriptsDynamicImport:disabled"/>
   <int value="765803208" label="AutofillShowTypePredictions:enabled"/>
   <int value="766898398" label="sampling-heap-profiler"/>
+  <int value="767543730" label="DoubleTapToZoomInTabletMode:enabled"/>
   <int value="767970385" label="ResamplingScrollEvents:enabled"/>
   <int value="772272625" label="simplify-https-indicator"/>
   <int value="772348426" label="AffiliationBasedMatching:enabled"/>
