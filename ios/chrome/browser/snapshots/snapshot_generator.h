@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-@class SnapshotOverlay;
 @protocol SnapshotGeneratorDelegate;
 
 namespace web {
@@ -24,11 +23,6 @@ class WebState;
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
-
-// Returns the size the snapshot for the current page would have if it
-// was regenerated. If capturing the snapshot is not possible, returns
-// CGSizeZero.
-- (CGSize)snapshotSize;
 
 // Gets a color snapshot for the current page, calling |callback| once it has
 // been retrieved. Invokes |callback| with nil if a snapshot does not exist.

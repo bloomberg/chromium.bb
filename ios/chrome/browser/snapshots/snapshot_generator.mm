@@ -15,14 +15,11 @@
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_generator_delegate.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#include "ios/web/public/features.h"
-#import "ios/web/public/features.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web/public/web_task_traits.h"
@@ -79,10 +76,6 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
     _webStateObserver.reset();
     _webState = nullptr;
   }
-}
-
-- (CGSize)snapshotSize {
-  return [self snapshotFrame].size;
 }
 
 - (void)retrieveSnapshot:(void (^)(UIImage*))callback {

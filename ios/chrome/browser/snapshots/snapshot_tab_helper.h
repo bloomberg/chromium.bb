@@ -5,20 +5,21 @@
 #ifndef IOS_CHROME_BROWSER_SNAPSHOTS_SNAPSHOT_TAB_HELPER_H_
 #define IOS_CHROME_BROWSER_SNAPSHOTS_SNAPSHOT_TAB_HELPER_H_
 
-#include <memory>
-
 #import <UIKit/UIKit.h>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "components/infobars/core/infobar_manager.h"
-#import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
 
 @class SnapshotGenerator;
 @protocol SnapshotGeneratorDelegate;
+
+namespace web {
+class WebState;
+}
 
 // SnapshotTabHelper allows capturing and retrival for web page snapshots.
 class SnapshotTabHelper : public infobars::InfoBarManager::Observer,
@@ -35,11 +36,6 @@ class SnapshotTabHelper : public infobars::InfoBarManager::Observer,
   // Sets the delegate. Capturing snapshot before setting a delegate will
   // results in failures. The delegate is not owned by the tab helper.
   void SetDelegate(id<SnapshotGeneratorDelegate> delegate);
-
-  // Returns the size the snapshot for the current page would have if it
-  // was regenerated. If capturing the snapshot is not possible, returns
-  // CGSizeZero.
-  CGSize GetSnapshotSize() const;
 
   // Retrieves a color snapshot for the current page, invoking |callback|
   // with the image. The callback may be called synchronously is there is
