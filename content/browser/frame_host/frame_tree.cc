@@ -303,7 +303,6 @@ void FrameTree::SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) {
   if (node == GetFocusedFrame())
     return;
 
-
   std::set<SiteInstance*> frame_tree_site_instances =
       CollectSiteInstances(this);
 
