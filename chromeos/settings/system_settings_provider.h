@@ -24,6 +24,7 @@ class CHROMEOS_EXPORT SystemSettingsProvider
     : public CrosSettingsProvider,
       public system::TimezoneSettings::Observer {
  public:
+  SystemSettingsProvider();
   explicit SystemSettingsProvider(const NotifyObserversCallback& notify_cb);
   ~SystemSettingsProvider() override;
 
@@ -36,6 +37,9 @@ class CHROMEOS_EXPORT SystemSettingsProvider
   void TimezoneChanged(const icu::TimeZone& timezone) override;
 
  private:
+  // Code common to both constructors.
+  void Init();
+
   // CrosSettingsProvider implementation.
   void DoSet(const std::string& path, const base::Value& in_value) override;
 

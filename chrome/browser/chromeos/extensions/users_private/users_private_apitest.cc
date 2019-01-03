@@ -16,11 +16,14 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
+#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
+#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/users_private.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/settings/cros_settings_names.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/prefs/pref_service.h"
@@ -120,6 +123,9 @@ class UsersPrivateApiTest : public ExtensionApiTest {
 
     chromeos::OwnerSettingsServiceChromeOSFactory::GetInstance()
         ->SetOwnerKeyUtilForTesting(owner_key_util);
+
+    scoped_testing_cros_settings_.device_settings()->Set(
+        chromeos::kDeviceOwner, base::Value("testuser@gmail.com"));
   }
   ~UsersPrivateApiTest() override = default;
 
@@ -127,14 +133,6 @@ class UsersPrivateApiTest : public ExtensionApiTest {
       content::BrowserContext* profile) {
     CHECK(s_test_delegate_);
     return base::WrapUnique(s_test_delegate_);
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(chromeos::switches::kStubCrosSettings);
-    command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
-                                    "testuser@gmail.com");
-    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
   }
 
   void SetUpOnMainThread() override {
@@ -159,6 +157,9 @@ class UsersPrivateApiTest : public ExtensionApiTest {
   static TestDelegate* s_test_delegate_;
 
  private:
+  chromeos::ScopedStubInstallAttributes scoped_stub_install_attributes_;
+  chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
+
   DISALLOW_COPY_AND_ASSIGN(UsersPrivateApiTest);
 };
 
