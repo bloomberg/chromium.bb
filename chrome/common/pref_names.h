@@ -739,8 +739,6 @@ extern const char kMediaGalleriesRememberedGalleries[];
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
-extern const char kShelfChromeIconIndex[];
-extern const char kPinnedLauncherApps[];
 extern const char kPolicyPinnedLauncherApps[];
 #endif  // defined(OS_CHROMEOS)
 

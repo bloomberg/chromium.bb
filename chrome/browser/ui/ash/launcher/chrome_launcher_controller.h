@@ -275,11 +275,6 @@ class ChromeLauncherController
   // Invoked when the associated browser or app is closed.
   void RemoveShelfItem(const ash::ShelfID& id);
 
-  // Internal helpers for pinning and unpinning that handle both
-  // client-triggered and internal pinning operations.
-  void DoPinAppWithID(const std::string& app_id);
-  void DoUnpinAppWithID(const std::string& app_id, bool update_prefs);
-
   // Pin a running app with |shelf_id| internally to |index|.
   void PinRunningAppInternal(int index, const ash::ShelfID& shelf_id);
 
@@ -292,10 +287,10 @@ class ChromeLauncherController
   void SyncPinPosition(const ash::ShelfID& id);
 
   // Re-syncs shelf model.
-  void UpdateAppLaunchersFromPref();
+  void UpdateAppLaunchersFromSync();
 
   // Schedules re-sync of shelf model.
-  void ScheduleUpdateAppLaunchersFromPref();
+  void ScheduleUpdateAppLaunchersFromSync();
 
   // Update the policy-pinned flag for each shelf item.
   void UpdatePolicyPinnedAppsFromPrefs();
@@ -361,7 +356,7 @@ class ChromeLauncherController
   // sync_preferences::PrefServiceSyncableObserver:
   void OnIsSyncingChanged() override;
 
-  // An internal helper to unpin a shelf item; this does not update prefs.
+  // An internal helper to unpin a shelf item; this does not update app sync.
   void UnpinShelfItemInternal(const ash::ShelfID& id);
 
   // Updates the running status of an item, or removes it if necessary.
