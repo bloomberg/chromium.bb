@@ -319,6 +319,7 @@
     kevin-arcnext-postsubmit
     kevin-postsubmit
     kip-postsubmit
+    kukui-postsubmit
     lars-postsubmit
     leon-postsubmit
     lulu-postsubmit
@@ -496,6 +497,7 @@
     relm-release
     rikku-release
     romer-release
+    samus-kernelnext-release
     samus-release
     sand-release
     sarien-release
@@ -2332,6 +2334,7 @@
   kukui-no-vmtest-pre-cq
   kukui-paladin-tryjob
   kukui-payloads-tryjob
+  kukui-postsubmit-tryjob
   kukui-pre-cq
   kukui-release-afdo-generate-tryjob
   kukui-release-afdo-tryjob
@@ -2727,6 +2730,7 @@
     kevin-arcnext-postsubmit
     kevin-postsubmit
     kip-postsubmit
+    kukui-postsubmit
     lars-postsubmit
     leon-postsubmit
     lulu-postsubmit
@@ -2893,6 +2897,7 @@
     relm-release
     rikku-release
     romer-release
+    samus-kernelnext-release
     samus-release
     sand-release
     sarien-release
@@ -3556,6 +3561,17 @@
   samus-firmware-samus-6300.B-firmwarebranch-tryjob
   samus-firmware-tryjob
   samus-full-tryjob
+  samus-kernelnext-chromium-pfq-tryjob
+  samus-kernelnext-compile-only-pre-cq
+  samus-kernelnext-full-tryjob
+  samus-kernelnext-llvm-next-toolchain-tryjob
+  samus-kernelnext-llvm-toolchain-tryjob
+  samus-kernelnext-no-vmtest-pre-cq
+  samus-kernelnext-paladin-tryjob
+  samus-kernelnext-pre-cq
+  samus-kernelnext-release-tryjob
+  samus-kernelnext-tot-chromium-pfq-informational-tryjob
+  samus-kernelnext-unittest-stress
   samus-llvm-next-toolchain-tryjob
   samus-llvm-toolchain-tryjob
   samus-no-vmtest-pre-cq
