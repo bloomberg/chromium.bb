@@ -68,8 +68,9 @@ Polymer({
    * @private
    */
   computeIssueClass_: function(issue) {
-    if (!issue)
+    if (!issue) {
       return '';
+    }
 
     return issue.isBlocking ? 'blocking' : 'non-blocking';
   },

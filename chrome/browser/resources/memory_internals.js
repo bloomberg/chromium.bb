@@ -26,8 +26,9 @@ function addListRow(table, celltype, cols) {
   const tr = document.createElement('tr');
   for (const col of cols) {
     const cell = document.createElement(celltype);
-    if (col)
+    if (col) {
       cell.appendChild(col);
+    }
     tr.appendChild(cell);
   }
   table.appendChild(tr);
@@ -44,8 +45,9 @@ function returnProcessList(data) {
   proclist.innerText = '';  // Clear existing contents.
 
   const processes = data['processes'];
-  if (processes.length == 0)
-    return;  // No processes to dump, don't make the table and refresh button.
+  if (processes.length == 0) {
+    return;
+  }  // No processes to dump, don't make the table and refresh button.
 
   // Add the refresh and save-dump buttons.
   const commandsDiv = document.createElement('div');

@@ -69,8 +69,9 @@ cr.define('bookmarks', function() {
      */
     getFocusedElement_() {
       let focus = document.activeElement;
-      while (focus.root && focus.root.activeElement)
+      while (focus.root && focus.root.activeElement) {
         focus = focus.root.activeElement;
+      }
 
       return focus;
     }
@@ -84,13 +85,15 @@ cr.define('bookmarks', function() {
       const closeListener = (e) => {
         // If the dialog is open, then it got reshown immediately and we
         // shouldn't clear it until it is closed again.
-        if (dialog.open)
+        if (dialog.open) {
           return;
+        }
 
         assert(this.dialogs_.delete(dialog));
         // Focus the originally focused element if there are no more dialogs.
-        if (!this.hasOpenDialog() && this.previousFocusElement_)
+        if (!this.hasOpenDialog() && this.previousFocusElement_) {
           this.previousFocusElement_.focus();
+        }
 
         dialog.removeEventListener('close', closeListener);
       };

@@ -74,8 +74,9 @@ cr.define('cloudprint', function() {
    */
   function extractCertificateStatus(tags) {
     const certTag = tags.find(tag => tag.startsWith(CERT_TAG));
-    if (!certTag)
+    if (!certTag) {
       return print_preview.DestinationCertificateStatus.NONE;
+    }
     const value = /** @type {print_preview.DestinationCertificateStatus} */ (
         certTag.substring(CERT_TAG.length));
     // Only 2 valid values sent by GCP server.

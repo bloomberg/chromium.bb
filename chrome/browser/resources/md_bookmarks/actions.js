@@ -165,8 +165,9 @@ cr.define('bookmarks.actions', function() {
       const selectedIndex = displayedList.indexOf(id);
       assert(selectedIndex != -1);
       let anchorIndex = displayedList.indexOf(anchor);
-      if (anchorIndex == -1)
+      if (anchorIndex == -1) {
         anchorIndex = selectedIndex;
+      }
 
       // When performing a range selection, don't change the anchor from what
       // was used in this selection.
@@ -175,8 +176,9 @@ cr.define('bookmarks.actions', function() {
       const startIndex = Math.min(anchorIndex, selectedIndex);
       const endIndex = Math.max(anchorIndex, selectedIndex);
 
-      for (let i = startIndex; i <= endIndex; i++)
+      for (let i = startIndex; i <= endIndex; i++) {
         toSelect.push(displayedList[i]);
+      }
     } else {
       toSelect.push(id);
     }
@@ -222,8 +224,9 @@ cr.define('bookmarks.actions', function() {
    * @return {!cr.ui.Action}
    */
   function setSearchTerm(term) {
-    if (!term)
+    if (!term) {
       return clearSearch();
+    }
 
     return {
       name: 'start-search',

@@ -154,8 +154,9 @@ Polymer({
    * @private
    */
   siteWithinCategoryChanged_: function(category, site) {
-    if (category == this.category)
+    if (category == this.category) {
       this.configureWidget_();
+    }
   },
 
   /**
@@ -169,8 +170,9 @@ Polymer({
 
     // The SESSION_ONLY list won't have any incognito exceptions. (Minor
     // optimization, not required).
-    if (this.categorySubtype == settings.ContentSetting.SESSION_ONLY)
+    if (this.categorySubtype == settings.ContentSetting.SESSION_ONLY) {
       return;
+    }
 
     // A change notification is not sent for each site. So we repopulate the
     // whole list when the incognito profile is created or destroyed.
@@ -182,8 +184,9 @@ Polymer({
    * @private
    */
   configureWidget_: function() {
-    if (this.category == undefined)
+    if (this.category == undefined) {
       return;
+    }
 
     // The observer for All Sites fires before the attached/ready event, so
     // initialize this here.
@@ -371,8 +374,9 @@ Polymer({
     // It makes no sense to show "clear on exit" for exceptions that only apply
     // to incognito. It gives the impression that they might under some
     // circumstances not be cleared on exit, which isn't true.
-    if (!this.actionMenuSite_ || this.actionMenuSite_.incognito)
+    if (!this.actionMenuSite_ || this.actionMenuSite_.incognito) {
       return false;
+    }
 
     return this.showSessionOnlyAction_;
   },
@@ -451,8 +455,9 @@ Polymer({
     this.activeDialogAnchor_ = null;
     const actionMenu =
         /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'));
-    if (actionMenu.open)
+    if (actionMenu.open) {
       actionMenu.close();
+    }
   },
 
   /**
@@ -460,8 +465,9 @@ Polymer({
    * @private
    */
   getFilteredSites_: function() {
-    if (!this.searchFilter)
+    if (!this.searchFilter) {
       return this.sites.slice();
+    }
 
     const propNames = [
       'displayName',

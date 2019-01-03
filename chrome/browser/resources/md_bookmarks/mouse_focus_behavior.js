@@ -40,8 +40,9 @@ cr.define('bookmarks', function() {
      * @private
      */
     onKeydown_: function(e) {
-      if (!['Shift', 'Alt', 'Control', 'Meta'].includes(e.key))
+      if (!['Shift', 'Alt', 'Control', 'Meta'].includes(e.key)) {
         this.removeAttribute(HIDE_FOCUS_RING_ATTRIBUTE);
+      }
     },
   };
 

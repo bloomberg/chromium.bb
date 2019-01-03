@@ -140,8 +140,9 @@ cr.define('device_table', function() {
 
       for (var i = 0; i < this.headers_.length; i++) {
         // Skip the LINKS column. It has no data-field attribute.
-        if (i === COLUMNS.LINKS)
+        if (i === COLUMNS.LINKS) {
           continue;
+        }
         row.insertCell();
       }
 
@@ -194,16 +195,18 @@ cr.define('device_table', function() {
 
       var forgetLink = row.cells[COLUMNS.LINKS].children[1];
 
-      if (this.inspectionMap_.has(device))
+      if (this.inspectionMap_.has(device)) {
         forgetLink.disabled = !this.inspectionMap_.get(device);
-      else
+      } else {
         forgetLink.disabled = true;
+      }
 
       // Update the properties based on the header field path.
       for (var i = 0; i < this.headers_.length; i++) {
         // Skip the LINKS column. It has no data-field attribute.
-        if (i === COLUMNS.LINKS)
+        if (i === COLUMNS.LINKS) {
           continue;
+        }
 
         var header = this.headers_[i];
         var propName = header.dataset.field;

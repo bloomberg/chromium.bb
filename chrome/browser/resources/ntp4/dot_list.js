@@ -44,24 +44,28 @@ cr.define('ntp', function() {
      * @param {!Event} e The KeyboardEvent.
      */
     onKeyDown_: function(e) {
-      if (hasKeyModifiers(e))
+      if (hasKeyModifiers(e)) {
         return;
+      }
 
       let direction = 0;
-      if (e.key == 'ArrowLeft')
+      if (e.key == 'ArrowLeft') {
         direction = -1;
-      else if (e.key == 'ArrowRight')
+      } else if (e.key == 'ArrowRight') {
         direction = 1;
-      else
+      } else {
         return;
+      }
 
       const focusDot = this.querySelector('.dot:focus');
-      if (!focusDot)
+      if (!focusDot) {
         return;
+      }
       const focusIndex = Array.prototype.indexOf.call(navDots, focusDot);
       let newFocusIndex = focusIndex + direction;
-      if (focusIndex == newFocusIndex)
+      if (focusIndex == newFocusIndex) {
         return;
+      }
 
       newFocusIndex = (newFocusIndex + navDots.length) % navDots.length;
       navDots[newFocusIndex].tabIndex = 3;

@@ -127,8 +127,9 @@ Polymer({
           'iron-announce', {text: loadTimeData.getString('searchCleared')});
     }
 
-    if (!this.searchTerm_)
+    if (!this.searchTerm_) {
       return;
+    }
 
     chrome.bookmarks.search(this.searchTerm_, (results) => {
       const ids = results.map(function(node) {

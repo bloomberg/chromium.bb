@@ -81,8 +81,9 @@ Polymer({
 
   /** @private */
   onFitToPageSettingChange_: function() {
-    if (this.ignoreFtp_ || !this.getSetting('fitToPage').available)
+    if (this.ignoreFtp_ || !this.getSetting('fitToPage').available) {
       return;
+    }
 
     const fitToPage = this.getSetting('fitToPage').value;
 
@@ -108,8 +109,9 @@ Polymer({
 
   /** @private */
   onFitToPageScalingSet_: function() {
-    if (this.currentState_ != print_preview_new.ScalingState.FIT_TO_PAGE)
+    if (this.currentState_ != print_preview_new.ScalingState.FIT_TO_PAGE) {
       return;
+    }
 
     this.ignoreValue_ = true;
     this.currentValue_ = this.getFitToPageScalingDisplayValue_();
@@ -133,8 +135,9 @@ Polymer({
    * @private
    */
   onScalingValidChanged_: function() {
-    if (this.ignoreValid_)
+    if (this.ignoreValid_) {
       return;
+    }
 
     this.currentState_ = this.getSetting('scaling').valid ?
         print_preview_new.ScalingState.VALID :
@@ -147,36 +150,42 @@ Polymer({
    * @private
    */
   onInputChanged_: function() {
-    if (this.ignoreValue_)
+    if (this.ignoreValue_) {
       return;
+    }
 
-    if (this.currentValue_ !== '')
+    if (this.currentValue_ !== '') {
       this.setSettingValid('scaling', this.inputValid_);
+    }
 
-    if (this.currentValue_ !== '' && this.inputValid_)
+    if (this.currentValue_ !== '' && this.inputValid_) {
       this.setSetting('scaling', this.currentValue_);
+    }
   },
 
   /** @private */
   onFitToPageChange_: function() {
     const newValue = this.$$('#fit-to-page-checkbox').checked;
 
-    if (this.fitToPageTimeout_ !== null)
+    if (this.fitToPageTimeout_ !== null) {
       clearTimeout(this.fitToPageTimeout_);
+    }
 
     this.fitToPageTimeout_ = setTimeout(() => {
       this.fitToPageTimeout_ = null;
 
-      if (newValue === this.lastFitToPageValue_)
+      if (newValue === this.lastFitToPageValue_) {
         return;
+      }
 
       this.lastFitToPageValue_ = newValue;
       this.setSetting('fitToPage', newValue);
 
-      if (newValue == false)
+      if (newValue == false) {
         this.currentValue_ = this.lastValidScaling_;
-      else
+      } else {
         this.currentState_ = print_preview_new.ScalingState.FIT_TO_PAGE;
+      }
 
       // For tests only
       this.fire('update-checkbox-setting', 'fitToPage');
@@ -202,8 +211,9 @@ Polymer({
       this.ignoreFtp_ = true;
       this.$$('#fit-to-page-checkbox').checked = false;
       this.lastFitToPageValue_ = false;
-      if (current == print_preview_new.ScalingState.VALID)
+      if (current == print_preview_new.ScalingState.VALID) {
         this.setSetting('fitToPage', false);
+      }
       this.ignoreFtp_ = false;
     }
     if (current == print_preview_new.ScalingState.FIT_TO_PAGE) {
@@ -222,7 +232,6 @@ Polymer({
         this.getSetting('fitToPage').available) {
       this.setSetting('fitToPage', false);
     }
-
   },
 
   /**

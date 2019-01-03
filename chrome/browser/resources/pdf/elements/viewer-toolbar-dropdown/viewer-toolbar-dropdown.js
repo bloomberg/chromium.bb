@@ -63,25 +63,29 @@ Polymer({
 
   lowerBoundChanged_: function() {
     this.maxHeightValid_ = false;
-    if (this.dropdownOpen)
+    if (this.dropdownOpen) {
       this.updateMaxHeight();
+    }
   },
 
   toggleDropdown: function() {
     this.dropdownOpen = !this.dropdownOpen;
     if (this.dropdownOpen) {
       this.$.dropdown.style.display = 'block';
-      if (!this.maxHeightValid_)
+      if (!this.maxHeightValid_) {
         this.updateMaxHeight();
+      }
       this.fire('dropdown-opened', this.metricsId);
     }
 
     if (this.dropdownOpen) {
       const listener = (e) => {
-        if (e.path.includes(this))
+        if (e.path.includes(this)) {
           return;
-        if (this.dropdownOpen)
+        }
+        if (this.dropdownOpen) {
           this.toggleDropdown();
+        }
         // Clean up the handler. The dropdown may already be closed.
         window.removeEventListener('pointerdown', listener);
       };
@@ -110,8 +114,9 @@ Polymer({
     this.animation_ = isEntry ? this.animateEntry_() : this.animateExit_();
     this.animation_.onfinish = () => {
       this.animation_ = null;
-      if (!this.dropdownOpen)
+      if (!this.dropdownOpen) {
         this.$.dropdown.style.display = 'none';
+      }
     };
   },
 
@@ -119,8 +124,9 @@ Polymer({
     let maxHeight =
         this.$.dropdown.getBoundingClientRect().height - DROPDOWN_OUTER_PADDING;
 
-    if (maxHeight < 0)
+    if (maxHeight < 0) {
       maxHeight = 0;
+    }
 
     this.$.dropdown.animate(
         {

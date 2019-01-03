@@ -87,8 +87,9 @@ class GestureDetector {
   notify_(pinchEvent) {
     const listeners = this.listeners_.get(pinchEvent.type);
 
-    for (const l of listeners)
+    for (const l of listeners) {
       l(pinchEvent);
+    }
   }
 
   /**
@@ -99,8 +100,9 @@ class GestureDetector {
    */
   onTouchStart_(event) {
     this.lastTouchTouchesCount_ = event.touches.length;
-    if (!this.wasTwoFingerTouch())
+    if (!this.wasTwoFingerTouch()) {
       return;
+    }
 
     this.pinchStartEvent_ = event;
     this.lastEvent_ = event;
@@ -114,8 +116,9 @@ class GestureDetector {
    * @private
    */
   onTouch_(event) {
-    if (!this.pinchStartEvent_)
+    if (!this.pinchStartEvent_) {
       return;
+    }
 
     const lastEvent = /** @type {!TouchEvent} */ (this.lastEvent_);
 
@@ -164,8 +167,9 @@ class GestureDetector {
     // zooming mechanism for handling non-synthetic ctrl-wheels. This allows us
     // to anchor the zoom around the mouse position instead of the scroll
     // position.
-    if (!event.ctrlKey)
+    if (!event.ctrlKey) {
       return;
+    }
 
     event.preventDefault();
 

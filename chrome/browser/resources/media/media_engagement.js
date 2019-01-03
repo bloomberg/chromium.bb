@@ -76,8 +76,9 @@ function compareTableItem(sortKey, a, b) {
   const val2 = b[sortKey];
 
   // Compare the hosts of the origin ignoring schemes.
-  if (sortKey == 'origin')
+  if (sortKey == 'origin') {
     return new URL(val1.url).host > new URL(val2.url).host ? 1 : -1;
+  }
 
   if (sortKey == 'visits' || sortKey == 'mediaPlaybacks' ||
       sortKey == 'lastMediaPlaybackTime' || sortKey == 'totalScore' ||
@@ -207,10 +208,11 @@ document.addEventListener('DOMContentLoaded', function() {
       const oldSortColumn = document.querySelector('.sort-column');
       oldSortColumn.classList.remove('sort-column');
       e.target.classList.add('sort-column');
-      if (sortReverse)
+      if (sortReverse) {
         e.target.setAttribute('sort-reverse', '');
-      else
+      } else {
         e.target.removeAttribute('sort-reverse');
+      }
       renderTable();
     });
   }

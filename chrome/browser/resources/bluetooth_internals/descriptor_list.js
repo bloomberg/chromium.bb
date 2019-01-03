@@ -152,8 +152,9 @@ cr.define('descriptor_list', function() {
      * @param {string} characteristicId
      */
     load: function(deviceAddress, serviceId, characteristicId) {
-      if (this.descriptorsRequested_ || !this.isSpinnerShowing())
+      if (this.descriptorsRequested_ || !this.isSpinnerShowing()) {
         return;
+      }
 
       this.deviceAddress_ = deviceAddress;
       this.serviceId_ = serviceId;

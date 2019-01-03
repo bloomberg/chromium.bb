@@ -159,8 +159,9 @@ Polymer({
     const app = this.findApp_(this.$.selectApp.value);
     this.selectedApp_ = app;
 
-    if (app && !app.preferred)
+    if (app && !app.preferred) {
       this.browserProxy_.setPreferredNoteTakingApp(app.value);
+    }
   },
 
   /**

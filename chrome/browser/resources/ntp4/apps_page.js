@@ -53,8 +53,9 @@ cr.define('ntp', function() {
       menu.appendChild(cr.ui.MenuItem.createSeparator());
       this.launchRegularTab_ = this.appendMenuItem_('applaunchtyperegular');
       this.launchPinnedTab_ = this.appendMenuItem_('applaunchtypepinned');
-      if (loadTimeData.getBoolean('canHostedAppsOpenInWindows'))
+      if (loadTimeData.getBoolean('canHostedAppsOpenInWindows')) {
         this.launchNewWindow_ = this.appendMenuItem_('applaunchtypewindow');
+      }
       this.launchFullscreen_ = this.appendMenuItem_('applaunchtypefullscreen');
 
       const self = this;
@@ -102,8 +103,9 @@ cr.define('ntp', function() {
       const button = cr.doc.createElement('button');
       this.menu.appendChild(button);
       cr.ui.decorate(button, cr.ui.MenuItem);
-      if (opt_textId)
+      if (opt_textId) {
         button.textContent = loadTimeData.getString(opt_textId);
+      }
       return button;
     },
 
@@ -122,8 +124,9 @@ cr.define('ntp', function() {
       ];
 
       for (let i = 0; i < launchTypes.length; ++i) {
-        if (!launchTypes[i])
+        if (!launchTypes[i]) {
           continue;
+        }
 
         f(launchTypes[i], i);
       }
@@ -153,19 +156,22 @@ cr.define('ntp', function() {
              launchTypeButton == launchTypeWindow) ||
             (loadTimeData.getBoolean('enableNewBookmarkApps') &&
              launchTypeButton != launchTypeWindow);
-        if (!launchTypeButton.hidden)
+        if (!launchTypeButton.hidden) {
           hasLaunchType = true;
+        }
       });
 
       this.launchTypeMenuSeparator_.hidden =
           !app.appData.mayChangeLaunchType || !hasLaunchType;
 
       this.options_.disabled = !app.appData.optionsUrl || !app.appData.enabled;
-      if (this.details_)
+      if (this.details_) {
         this.details_.disabled = !app.appData.detailsUrl;
+      }
       this.uninstall_.disabled = !app.appData.mayDisable;
-      if (this.appinfo_)
+      if (this.appinfo_) {
         this.appinfo_.hidden = !app.appData.isLocallyInstalled;
+      }
 
       this.createShortcutSeparator_.hidden = this.createShortcut_.hidden =
           !app.appData.mayCreateShortcuts;
@@ -258,8 +264,9 @@ cr.define('ntp', function() {
 
       this.className = 'app focusable';
 
-      if (!this.appData_.icon_big_exists && this.appData_.icon_small_exists)
+      if (!this.appData_.icon_big_exists && this.appData_.icon_small_exists) {
         this.useSmallIcon_ = true;
+      }
 
       this.appContents_ = (this.useSmallIcon_ ? $('app-small-icon-template') :
                                                 $('app-large-icon-template'))
@@ -408,8 +415,9 @@ cr.define('ntp', function() {
      * @private
      */
     onClick_: function(e) {
-      if (/** @type {MouseEvent} */ (e).button > 1)
+      if (/** @type {MouseEvent} */ (e).button > 1) {
         return;
+      }
 
       chrome.send('launchApp', [
         this.appId, APP_LAUNCH.NTP_APPS_MAXIMIZED, 'chrome-ntp-icon', e.button,
@@ -462,8 +470,9 @@ cr.define('ntp', function() {
     onMousedown_: function(e) {
       // If the current platform uses middle click to autoscroll and this
       // mousedown isn't handled, onClick_() will never fire. crbug.com/142939
-      if (e.button == 1)
+      if (e.button == 1) {
         e.preventDefault();
+      }
 
       if (e.button == 2 ||
           !findAncestorByClass(
@@ -637,8 +646,9 @@ cr.define('ntp', function() {
     onTileAdded_: function(e) {
       assert(e.currentTarget == this);
       assert(e.addedTile.firstChild instanceof App);
-      if (this.classList.contains('selected-card'))
+      if (this.classList.contains('selected-card')) {
         e.addedTile.firstChild.loadIcon();
+      }
     },
 
     /**
@@ -647,8 +657,9 @@ cr.define('ntp', function() {
      * @private
      */
     onScroll_: function() {
-      if (!this.selected)
+      if (!this.selected) {
         return;
+      }
       for (let i = 0; i < this.tileElements_.length; i++) {
         const app = this.tileElements_[i].firstChild;
         assert(app instanceof App);
@@ -669,10 +680,12 @@ cr.define('ntp', function() {
 
     /** @override */
     shouldAcceptDrag: function(e) {
-      if (ntp.getCurrentlyDraggingTile())
+      if (ntp.getCurrentlyDraggingTile()) {
         return true;
-      if (!e.dataTransfer || !e.dataTransfer.types)
+      }
+      if (!e.dataTransfer || !e.dataTransfer.types) {
         return false;
+      }
       return Array.prototype.indexOf.call(
                  e.dataTransfer.types, 'text/uri-list') != -1;
     },
@@ -730,10 +743,12 @@ cr.define('ntp', function() {
       }
 
       // Make sure title is >=1 and <=45 characters for Chrome app limits.
-      if (!title)
+      if (!title) {
         title = url;
-      if (title.length > 45)
+      }
+      if (title.length > 45) {
         title = title.substring(0, 45);
+      }
       const data = {url: url, title: title};
 
       // Synthesize an app.
@@ -754,8 +769,9 @@ cr.define('ntp', function() {
 
     /** @override */
     tileMoved: function(draggedTile) {
-      if (!(draggedTile.firstChild instanceof App))
+      if (!(draggedTile.firstChild instanceof App)) {
         return;
+      }
 
       const pageIndex = ntp.getAppsPageIndex(this);
       chrome.send('setPageIndex', [draggedTile.firstChild.appId, pageIndex]);
@@ -763,8 +779,9 @@ cr.define('ntp', function() {
       const appIds = [];
       for (let i = 0; i < this.tileElements_.length; i++) {
         const tileContents = this.tileElements_[i].firstChild;
-        if (tileContents instanceof App)
+        if (tileContents instanceof App) {
           appIds.push(tileContents.appId);
+        }
       }
 
       chrome.send('reorderApps', [draggedTile.firstChild.appId, appIds]);
@@ -773,10 +790,11 @@ cr.define('ntp', function() {
     /** @override */
     setDropEffect: function(dataTransfer) {
       const tile = ntp.getCurrentlyDraggingTile();
-      if (tile && tile.querySelector('.app'))
+      if (tile && tile.querySelector('.app')) {
         ntp.setCurrentDropEffect(dataTransfer, 'move');
-      else
+      } else {
         ntp.setCurrentDropEffect(dataTransfer, 'copy');
+      }
     },
   };
 

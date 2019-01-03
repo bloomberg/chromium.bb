@@ -41,10 +41,11 @@ cr.define('welcome', function() {
 
     /** @override */
     goToNewTabPage(replace) {
-      if (replace)
+      if (replace) {
         window.location.replace('chrome://newtab');
-      else
+      } else {
         window.location.assign('chrome://newtab');
+      }
     }
 
     /** @override */

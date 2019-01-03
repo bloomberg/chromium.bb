@@ -68,8 +68,9 @@ cr.define('bookmarks', function() {
      * @private
      */
     cancelTimeout_() {
-      if (this.timer_)
+      if (this.timer_) {
         this.timerProxy_.clearTimeout(this.timer_);
+      }
     }
 
     /** @private */

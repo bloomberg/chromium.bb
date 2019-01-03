@@ -193,8 +193,9 @@ const DomainSecurityPolicyView = (function() {
       const staticHashes = [];
       for (let i = 0; i < kStaticHashKeys.length; ++i) {
         const staticHashValue = result[kStaticHashKeys[i]];
-        if (staticHashValue != undefined && staticHashValue != '')
+        if (staticHashValue != undefined && staticHashValue != '') {
           staticHashes.push(staticHashValue);
+        }
       }
 
       for (let i = 0; i < keys.length; ++i) {

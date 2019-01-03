@@ -29,10 +29,12 @@ Polymer({
     const VARIANT_KEY = 'variant';
     const VARIANT_TYPE_MAP = {'defaultonly': false, 'combined': true};
     const params = new URLSearchParams(location.search);
-    if (params.has(VARIANT_KEY) && params.get(VARIANT_KEY) in VARIANT_TYPE_MAP)
+    if (params.has(VARIANT_KEY) &&
+        params.get(VARIANT_KEY) in VARIANT_TYPE_MAP) {
       this.isCombined = VARIANT_TYPE_MAP[params.get(VARIANT_KEY)];
-    else
+    } else {
       this.isCombined = !isPinnedToTaskbar;
+    }
 
     // Show the module.
     this.style.opacity = 1;
@@ -71,8 +73,9 @@ Polymer({
   },
 
   onToggle: function() {
-    if (!this.isCombined)
+    if (!this.isCombined) {
       return;
+    }
     const sections = this.shadowRoot.querySelectorAll('.section.expandable');
     sections.forEach(function(section) {
       const isExpanded = section.classList.toggle('expanded');

@@ -37,8 +37,9 @@ cr.define('sidebar', function() {
 
     window.matchMedia('screen and (max-width: 600px)')
         .addListener(function(query) {
-          if (!query.matches)
+          if (!query.matches) {
             this.close();
+          }
         }.bind(this));
   }
 

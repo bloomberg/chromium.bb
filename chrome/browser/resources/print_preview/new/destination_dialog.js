@@ -160,14 +160,16 @@ Polymer({
 
   /** @private */
   updateDestinations_: function() {
-    if (this.destinationStore === undefined)
+    if (this.destinationStore === undefined) {
       return;
+    }
 
     this.notifyPath('userInfo.users');
     this.notifyPath('userInfo.activeUser');
     this.notifyPath('userInfo.loggedIn');
-    if (this.userInfo.loggedIn)
+    if (this.userInfo.loggedIn) {
       this.showCloudPrintPromo = false;
+    }
 
     if (this.userInfo) {
       this.updateList(
@@ -187,8 +189,9 @@ Polymer({
    * @private
    */
   computeRecentDestinationList_: function() {
-    if (!observerDepsDefined(Array.from(arguments)))
+    if (!observerDepsDefined(Array.from(arguments))) {
       return [];
+    }
 
     const recentDestinations = [];
     const filterAccount = this.userInfo.activeUser;
@@ -213,8 +216,9 @@ Polymer({
 
   /** @private */
   onCloseOrCancel_: function() {
-    if (this.searchQuery_)
+    if (this.searchQuery_) {
       this.$.searchBox.setValue('');
+    }
     if (this.$.dialog.getNative().returnValue == 'success') {
       this.metrics_.record(print_preview.Metrics.DestinationSearchBucket
                                .DESTINATION_CLOSED_CHANGED);
@@ -266,8 +270,9 @@ Polymer({
     // <if expr="chromeos">
     // Destination must be a CrOS local destination that needs to be set up.
     // The user is only allowed to set up printer at one time.
-    if (this.destinationInConfiguring_)
+    if (this.destinationInConfiguring_) {
       return;
+    }
 
     // Show the configuring status to the user and resolve the destination.
     listItem.onConfigureRequestAccepted();
@@ -279,8 +284,9 @@ Polymer({
               listItem.onConfigureComplete(response.success);
               if (response.success) {
                 destination.capabilities = response.capabilities;
-                if (response.policies)
+                if (response.policies) {
                   destination.policies = response.policies;
+                }
                 this.selectDestination_(destination);
               }
             },
@@ -356,8 +362,9 @@ Polymer({
    * @private
    */
   getAcceptButtonText_: function() {
-    if (!this.invitation_)
+    if (!this.invitation_) {
       return '';
+    }
 
     return this.invitation_.asGroupManager ? this.i18n('acceptForGroup') :
                                              this.i18n('accept');
@@ -368,8 +375,9 @@ Polymer({
    * @private
    */
   getInvitationText_: function() {
-    if (!this.invitation_)
+    if (!this.invitation_) {
       return '';
+    }
 
     if (this.invitation_.asGroupManager) {
       return this.i18nAdvanced('groupPrinterSharingInviteText', {

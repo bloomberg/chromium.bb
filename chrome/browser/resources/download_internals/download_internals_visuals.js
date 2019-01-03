@@ -13,10 +13,11 @@ cr.define('downloadInternalsVisuals', function() {
         return 'service-entry-available';
       case ServiceEntryState.ACTIVE:
         if (entry.driver == undefined || !entry.driver.paused ||
-            entry.driver.state == DriverEntryState.INTERRUPTED)
+            entry.driver.state == DriverEntryState.INTERRUPTED) {
           return 'service-entry-active';
-        else
+        } else {
           return 'service-entry-blocked';
+        }
       case ServiceEntryState.PAUSED:
         return 'service-entry-paused';
       case ServiceEntryState.COMPLETE:

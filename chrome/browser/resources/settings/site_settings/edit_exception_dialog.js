@@ -86,7 +86,8 @@ Polymer({
 
   /** @private */
   modelChanged_: function() {
-    if (!this.model)
+    if (!this.model) {
       this.$.dialog.cancel();
+    }
   },
 });

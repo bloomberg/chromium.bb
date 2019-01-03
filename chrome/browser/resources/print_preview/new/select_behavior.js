@@ -26,8 +26,9 @@ cr.define('print_preview_new', function() {
      */
     onSelectedValueChange_: function(current, previous) {
       // Don't trigger an extra preview request at startup.
-      if (previous === undefined)
+      if (previous === undefined) {
         return;
+      }
 
       this.debounce('select-change', () => {
         this.onProcessSelectChange(this.selectedValue);

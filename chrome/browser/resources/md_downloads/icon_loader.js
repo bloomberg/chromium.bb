@@ -41,8 +41,9 @@ cr.define('downloads', function() {
      */
     finishedLoading_(e) {
       const resolver = assert(this.iconResolvers_[e.currentTarget.src]);
-      if (!resolver.isFulfilled)
+      if (!resolver.isFulfilled) {
         resolver.resolve(e.type == 'load');
+      }
     }
   }
 

@@ -131,8 +131,9 @@ Polymer({
     const contentTypes = this.getCategoryList();
     // Make sure to include cookies, because All Sites handles data storage +
     // cookies as well as regular settings.ContentSettingsTypes.
-    if (!contentTypes.includes(settings.ContentSettingsTypes.COOKIES))
+    if (!contentTypes.includes(settings.ContentSettingsTypes.COOKIES)) {
       contentTypes.push(settings.ContentSettingsTypes.COOKIES);
+    }
 
     this.browserProxy.getAllSites(contentTypes).then((response) => {
       response.forEach(siteGroup => {
@@ -159,8 +160,9 @@ Polymer({
         // If there is an overlapping origin, update the original
         // |originInfo|.
         siteGroup.origins.forEach(originInfo => {
-          if (!storageOriginInfoMap.has(originInfo.origin))
+          if (!storageOriginInfoMap.has(originInfo.origin)) {
             return;
+          }
           Object.apply(originInfo, storageOriginInfoMap.get(originInfo.origin));
           storageOriginInfoMap.delete(originInfo.origin);
         });
@@ -200,8 +202,9 @@ Polymer({
    */
   sortSiteGroupList_: function(siteGroupList) {
     const sortMethod = this.$.sortMethod.value;
-    if (!this.sortMethods_)
+    if (!this.sortMethods_) {
       return siteGroupList;
+    }
 
     if (sortMethod == this.sortMethods_.mostVisited) {
       siteGroupList.sort(this.mostVisitedComparator_);
@@ -209,8 +212,9 @@ Polymer({
       // Storage is loaded asynchronously, so make sure it's updated for every
       // item in the list to ensure the sorting is correct.
       const etldPlus1List = siteGroupList.reduce((list, siteGroup) => {
-        if (siteGroup.origins.length > 1 && siteGroup.etldPlus1.length > 0)
+        if (siteGroup.origins.length > 1 && siteGroup.etldPlus1.length > 0) {
           list.push(siteGroup.etldPlus1);
+        }
         return list;
       }, []);
 
@@ -328,13 +332,15 @@ Polymer({
     // fire once.
     assert(!oldConfig);
 
-    if (!settings.routes.SITE_SETTINGS_ALL)
+    if (!settings.routes.SITE_SETTINGS_ALL) {
       return;
+    }
 
     const onNavigatedTo = () => {
       this.async(() => {
-        if (this.selectedItem_ == null || this.siteGroupMap.size == 0)
+        if (this.selectedItem_ == null || this.siteGroupMap.size == 0) {
           return;
+        }
 
         // Focus the site-entry to ensure the iron-list renders it, otherwise
         // the query selector will not be able to find it. Note the index is

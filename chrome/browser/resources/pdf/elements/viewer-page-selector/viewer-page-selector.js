@@ -32,10 +32,11 @@ Polymer({
   pageNoCommitted: function() {
     const page = parseInt(this.pageSelector.value, 10);
 
-    if (!isNaN(page) && page <= this.docLength && page > 0)
+    if (!isNaN(page) && page <= this.docLength && page > 0) {
       this.fire('change-page', {page: page - 1, origin: 'pageselector'});
-    else
+    } else {
       this.pageSelector.value = this.pageNo.toString();
+    }
     this.pageSelector.blur();
   },
 

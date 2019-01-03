@@ -5,7 +5,8 @@
 // <include src="autocomplete_action_predictor.js">
 // <include src="resource_prefetch_predictor.js">
 
-if (cr.isWindows)
+if (cr.isWindows) {
   document.documentElement.setAttribute('os', 'win');
+}
 
 cr.ui.decorate('tabbox', cr.ui.TabBox);

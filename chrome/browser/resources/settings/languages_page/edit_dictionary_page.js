@@ -86,10 +86,11 @@ Polymer({
    */
   isWordInvalid_: function(word, duplicateError, lengthError) {
     const trimmedWord = word.trim();
-    if (this.words_.indexOf(trimmedWord) != -1)
+    if (this.words_.indexOf(trimmedWord) != -1) {
       return duplicateError || true;
-    else if (trimmedWord.length > MAX_CUSTOM_DICTIONARY_WORD_BYTES)
+    } else if (trimmedWord.length > MAX_CUSTOM_DICTIONARY_WORD_BYTES) {
       return lengthError || true;
+    }
 
     return false;
   },
@@ -103,21 +104,25 @@ Polymer({
   onCustomDictionaryChanged_: function(added, removed) {
     const wasEmpty = this.words_.length == 0;
 
-    for (const word of removed)
+    for (const word of removed) {
       this.arrayDelete('words_', word);
+    }
 
-    if (this.words_.length === 0 && added.length === 0 && !wasEmpty)
+    if (this.words_.length === 0 && added.length === 0 && !wasEmpty) {
       this.hasWords_ = false;
+    }
 
     // This is a workaround to ensure the dom-if is set to true before items
     // are rendered so that focus works correctly in Polymer 2; see
     // https://crbug.com/912523.
-    if (wasEmpty && added.length > 0)
+    if (wasEmpty && added.length > 0) {
       this.hasWords_ = true;
+    }
 
     for (const word of added) {
-      if (this.words_.indexOf(word) == -1)
+      if (this.words_.indexOf(word) == -1) {
         this.unshift('words_', word);
+      }
     }
 
     // When adding a word to an _empty_ list, the template is expanded. This
@@ -167,8 +172,9 @@ Polymer({
     // Spaces are allowed, but removing leading and trailing whitespace.
     const word = this.newWordValue_.trim();
     this.newWordValue_ = '';
-    if (!word)
+    if (!word) {
       return;
+    }
 
     this.languageSettingsPrivate.addSpellcheckWord(word);
   },

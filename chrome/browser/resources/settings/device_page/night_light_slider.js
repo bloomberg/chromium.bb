@@ -121,16 +121,14 @@ Polymer({
 
   /** @private */
   updateMarkers_: function() {
-    if (!this.isReady_ || !this.prefsAvailable())
+    if (!this.isReady_ || !this.prefsAvailable()) {
       return;
+    }
 
-    const startHour =
-        /** @type {number} */ (
-            this.getPref('ash.night_light.custom_start_time').value) /
-        60.0;
+    const startHour = /** @type {number} */ (
+            this.getPref('ash.night_light.custom_start_time').value) / 60.0;
     const endHour = /** @type {number} */ (
-                        this.getPref('ash.night_light.custom_end_time').value) /
-        60.0;
+        this.getPref('ash.night_light.custom_end_time').value) / 60.0;
 
     const markersContainer = this.$.markersContainer;
     markersContainer.innerHTML = '';
@@ -191,8 +189,9 @@ Polymer({
    */
   blurAnyFocusedKnob_: function() {
     const activeElement = this.shadowRoot.activeElement;
-    if (activeElement == this.$.startKnob || activeElement == this.$.endKnob)
+    if (activeElement == this.$.startKnob || activeElement == this.$.endKnob) {
       activeElement.blur();
+    }
   },
 
   /**
@@ -226,8 +225,9 @@ Polymer({
    * @private
    */
   continueDrag_: function(event) {
-    if (!this.dragObject_)
+    if (!this.dragObject_) {
       return;
+    }
 
     event.stopPropagation();
     switch (event.detail.state) {
@@ -264,8 +264,9 @@ Polymer({
    */
   doKnobTracking_: function(event) {
     const lastDeltaMinutes = this.getDeltaMinutes_(event.detail.ddx);
-    if (Math.abs(lastDeltaMinutes) < 1)
+    if (Math.abs(lastDeltaMinutes) < 1) {
       return;
+    }
 
     // Using |ddx| to compute the delta minutes and adding that to the current
     // value will result in a rounding error for every update. The cursor will
@@ -340,8 +341,9 @@ Polymer({
    * @private
    */
   updateKnobs_: function() {
-    if (!this.isReady_ || !this.prefsAvailable())
+    if (!this.isReady_ || !this.prefsAvailable()) {
       return;
+    }
     const startOffsetMinutes = /** @type {number} */ (
         this.getPref('ash.night_light.custom_start_time').value);
     this.updateKnobLeft_(this.$.startKnob, startOffsetMinutes);
@@ -490,10 +492,11 @@ Polymer({
 
     const totalMinutes = TOTAL_MINUTES_PER_DAY;
     const minDistance = MIN_KNOBS_DISTANCE_MINUTES;
-    if (modulo(otherValue - updatedValue, totalMinutes) < minDistance)
+    if (modulo(otherValue - updatedValue, totalMinutes) < minDistance) {
       updatedValue = otherValue + (fromUserGesture ? -1 : 1) * minDistance;
-    else if (modulo(updatedValue - otherValue, totalMinutes) < minDistance)
+    } else if (modulo(updatedValue - otherValue, totalMinutes) < minDistance) {
       updatedValue = otherValue + (fromUserGesture ? 1 : -1) * minDistance;
+    }
 
     // The knobs are allowed to wrap around.
     this.setPrefValue(prefPath, modulo(updatedValue, TOTAL_MINUTES_PER_DAY));
@@ -505,11 +508,13 @@ Polymer({
    * @private
    */
   getPrefPath_: function(knob) {
-    if (knob == this.$.startKnob)
+    if (knob == this.$.startKnob) {
       return 'ash.night_light.custom_start_time';
+    }
 
-    if (knob == this.$.endKnob)
+    if (knob == this.$.endKnob) {
       return 'ash.night_light.custom_end_time';
+    }
 
     return null;
   },
@@ -639,8 +644,9 @@ Polymer({
       return;
     }
 
-    if (event.metaKey || event.shiftKey || event.altKey || event.ctrlKey)
+    if (event.metaKey || event.shiftKey || event.altKey || event.ctrlKey) {
       return;
+    }
 
     const deltaKeyMap = {
       ArrowDown: -1,
@@ -656,8 +662,9 @@ Polymer({
 
       event.preventDefault();
       const value = this.getPrefValue_(activeElement);
-      if (value == null)
+      if (value == null) {
         return;
+      }
 
       const delta = deltaKeyMap[event.key];
       this.updatePref_(value + delta, false);
@@ -673,5 +680,4 @@ Polymer({
     // created. Hence we handle focus and blur explicitly above.
   }
 });
-
 })();

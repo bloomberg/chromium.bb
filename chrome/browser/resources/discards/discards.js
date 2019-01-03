@@ -51,8 +51,9 @@ cr.define('discards', function() {
     const SECONDS_PER_YEAR = SECONDS_PER_DAY * 365;
 
     // Seconds.
-    if (seconds < SECONDS_PER_MINUTE)
+    if (seconds < SECONDS_PER_MINUTE) {
       return seconds.toString() + maybeMakePlural(' second', seconds);
+    }
 
     // Minutes.
     let minutes = Math.floor(seconds / SECONDS_PER_MINUTE);
@@ -103,8 +104,9 @@ cr.define('discards', function() {
   function durationToString(secondsAgo) {
     const ret = secondsToString(secondsAgo);
 
-    if (ret.endsWith(' seconds') || ret.endsWith(' second'))
+    if (ret.endsWith(' seconds') || ret.endsWith(' second')) {
       return 'just now';
+    }
 
     return ret + ' ago';
   }

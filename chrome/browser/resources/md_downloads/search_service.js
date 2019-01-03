@@ -51,12 +51,14 @@ cr.define('downloads', function() {
       let sameTerms = searchTerms.length == this.searchTerms_.length;
 
       for (let i = 0; sameTerms && i < searchTerms.length; ++i) {
-        if (searchTerms[i] != this.searchTerms_[i])
+        if (searchTerms[i] != this.searchTerms_[i]) {
           sameTerms = false;
+        }
       }
 
-      if (sameTerms)
+      if (sameTerms) {
         return false;
+      }
 
       this.searchTerms_ = searchTerms;
       this.loadMore();

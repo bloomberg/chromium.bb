@@ -13,10 +13,11 @@ cr.define('ntp', function() {
   }
   function setCurrentlyDraggingTile(tile) {
     currentlyDraggingTile = tile;
-    if (tile)
+    if (tile) {
       ntp.enterRearrangeMode();
-    else
+    } else {
       ntp.leaveRearrangeMode();
+    }
   }
 
   /**
@@ -28,8 +29,9 @@ cr.define('ntp', function() {
    */
   function setCurrentDropEffect(dataTransfer, effect) {
     dataTransfer.dropEffect = effect;
-    if (currentlyDraggingTile)
+    if (currentlyDraggingTile) {
       currentlyDraggingTile.lastDropEffect = dataTransfer.dropEffect;
+    }
   }
 
   /**
@@ -105,8 +107,9 @@ cr.define('ntp', function() {
     onDragStart_: function(e) {
       // The user may start dragging again during a previous drag's finishing
       // animation.
-      if (this.classList.contains('dragging'))
+      if (this.classList.contains('dragging')) {
         this.finalizeDrag_();
+      }
 
       setCurrentlyDraggingTile(this);
 
@@ -166,8 +169,9 @@ cr.define('ntp', function() {
 
       // tilePage will be null if we've already been removed.
       const tilePage = this.tilePage;
-      if (tilePage)
+      if (tilePage) {
         tilePage.positionTile_(this.index);
+      }
 
       // Take an appropriate action with the drag clone.
       if (this.landedOnTrash) {
@@ -201,8 +205,9 @@ cr.define('ntp', function() {
           // previous class (currently: .placing) sets up a transition.
           // http://dev.w3.org/csswg/css3-transitions/#starting
           window.setTimeout(function() {
-            if (this.dragClone)
+            if (this.dragClone) {
               this.dragClone.classList.add('dropped-on-other-page');
+            }
           }.bind(this), 0);
         }
       }
@@ -234,8 +239,9 @@ cr.define('ntp', function() {
       this.appendChild(clone);
       this.doppleganger_ = clone;
 
-      if (isRTL())
+      if (isRTL()) {
         x *= -1;
+      }
 
       this.doppleganger_.style.transform =
           'translate(' + x + 'px, ' + y + 'px)';
@@ -274,8 +280,9 @@ cr.define('ntp', function() {
       clone.parentNode.removeChild(clone);
       this.eventTracker.remove(clone, 'transitionend');
       this.classList.remove('dragging');
-      if (this.firstChild.finalizeDrag)
+      if (this.firstChild.finalizeDrag) {
         this.firstChild.finalizeDrag();
+      }
     },
 
     /**
@@ -296,10 +303,11 @@ cr.define('ntp', function() {
      * @param {boolean=} opt_animate Whether the animation should be animated.
      */
     doRemove: function(opt_animate) {
-      if (opt_animate)
+      if (opt_animate) {
         this.firstChild.classList.add('removing-tile-contents');
-      else
+      } else {
         this.tilePage.removeTile(this, false);
+      }
     },
 
     /**
@@ -307,10 +315,12 @@ cr.define('ntp', function() {
      * @param {Event} e The event object.
      */
     onContentsAnimationEnd_: function(e) {
-      if (this.firstChild.classList.contains('new-tile-contents'))
+      if (this.firstChild.classList.contains('new-tile-contents')) {
         this.firstChild.classList.remove('new-tile-contents');
-      if (this.firstChild.classList.contains('removing-tile-contents'))
+      }
+      if (this.firstChild.classList.contains('removing-tile-contents')) {
         this.tilePage.removeTile(this, true);
+      }
     },
   };
 
@@ -554,8 +564,9 @@ cr.define('ntp', function() {
      */
     addTileAt: function(tileElement, index, animate) {
       this.classList.remove('animating-tile-page');
-      if (animate)
+      if (animate) {
         tileElement.classList.add('new-tile-contents');
+      }
 
       // Make sure the index is positive and either in the the bounds of
       // this.tileElements_ or at the end (meaning append).
@@ -571,8 +582,9 @@ cr.define('ntp', function() {
       this.repositionTiles_();
 
       // If this is the first tile being added, make it focusable after add.
-      if (this.focusableElements_.length == 1)
+      if (this.focusableElements_.length == 1) {
         this.updateFocusableElement();
+      }
       this.fireAddedEvent(wrapperDiv, index, animate);
     },
 
@@ -599,8 +611,9 @@ cr.define('ntp', function() {
      *     last tile is removed from it.
      */
     removeTile: function(tile, opt_animate, opt_dontNotify) {
-      if (opt_animate)
+      if (opt_animate) {
         this.classList.add('animating-tile-page');
+      }
 
       const index = tile.index;
       tile.parentNode.removeChild(tile);
@@ -608,8 +621,9 @@ cr.define('ntp', function() {
       this.cleanupDrag();
       this.updateFocusableElement();
 
-      if (!opt_dontNotify)
+      if (!opt_dontNotify) {
         this.fireRemovedEvent(tile, index, !!opt_animate);
+      }
     },
 
     /**
@@ -654,8 +668,9 @@ cr.define('ntp', function() {
      * @private
      */
     handleCardDeselection_: function(e) {
-      if (this.currentFocusElement_)
+      if (this.currentFocusElement_) {
         this.currentFocusElement_.tabIndex = -1;
+      }
     },
 
     /**
@@ -664,8 +679,9 @@ cr.define('ntp', function() {
      * @private
      */
     handleFocus_: function(e) {
-      if (this.focusableElements_.length == 0)
+      if (this.focusableElements_.length == 0) {
         return;
+      }
 
       this.updateFocusElement_();
     },
@@ -693,8 +709,9 @@ cr.define('ntp', function() {
      */
     handleKeyDown_: function(e) {
       // We only handle up, down, left, right without control keys.
-      if (e.metaKey || e.shiftKey || e.altKey || e.ctrlKey)
+      if (e.metaKey || e.shiftKey || e.altKey || e.ctrlKey) {
         return;
+      }
 
       // Wrap the given index to |this.focusableElements_|.
       const wrap = function(idx) {
@@ -721,8 +738,9 @@ cr.define('ntp', function() {
           for (;; newFocusIdx = wrap(newFocusIdx + direction)) {
             const newTile = this.focusableElements_[newFocusIdx].parentNode;
             const rowTiles = this.layoutValues_.numRowTiles;
-            if ((newTile.index - tile.index) % rowTiles == 0)
+            if ((newTile.index - tile.index) % rowTiles == 0) {
               break;
+            }
           }
 
           this.focusElementIndex_ = newFocusIdx;
@@ -756,8 +774,9 @@ cr.define('ntp', function() {
 
       const newFocusElement = this.focusableElements_[this.focusElementIndex_];
       const lastFocusElement = this.currentFocusElement_;
-      if (lastFocusElement && lastFocusElement != newFocusElement)
+      if (lastFocusElement && lastFocusElement != newFocusElement) {
         lastFocusElement.tabIndex = -1;
+      }
 
       newFocusElement.tabIndex = 1;
     },
@@ -769,8 +788,9 @@ cr.define('ntp', function() {
      */
     updateFocusElement_: function() {
       this.updateFocusableElement();
-      if (this.focusElementIndex_ >= 0)
+      if (this.focusElementIndex_ >= 0) {
         this.focusableElements_[this.focusElementIndex_].focus();
+      }
     },
 
     /**
@@ -839,8 +859,9 @@ cr.define('ntp', function() {
      *     for the current grid layout.
      */
     getAnimatedLeftMargin_: function() {
-      if (this.layoutValues_.wide)
+      if (this.layoutValues_.wide) {
         return 0;
+      }
 
       const grid = this.gridValues_;
       return (grid.minWideWidth - MIN_WIDE_MARGIN - grid.narrowWidth) / 2;
@@ -921,11 +942,13 @@ cr.define('ntp', function() {
       const gridClientRect = this.tileGrid_.getBoundingClientRect();
       let col = Math.floor(
           (x - gridClientRect.left - layout.leftMargin) / layout.colWidth);
-      if (col < 0 || col >= layout.numRowTiles)
+      if (col < 0 || col >= layout.numRowTiles) {
         return -1;
+      }
 
-      if (isRTL())
+      if (isRTL()) {
         col = layout.numRowTiles - 1 - col;
+      }
 
       const row = Math.floor((y - gridClientRect.top) / layout.rowHeight);
       return row * layout.numRowTiles + col;
@@ -970,8 +993,9 @@ cr.define('ntp', function() {
       fadeDistance = Math.min(leftMargin, fadeDistance);
       // On Skia we don't use any fade because it works very poorly. See
       // http://crbug.com/99373
-      if (!cr.isMac)
+      if (!cr.isMac) {
         fadeDistance = 1;
+      }
       const gradient = '-webkit-linear-gradient(left,' +
           'transparent, ' +
           'transparent ' + (leftMargin - fadeDistance) + 'px, ' +
@@ -1008,8 +1032,9 @@ cr.define('ntp', function() {
       // calculations may come out to be negative, so we use margins as the
       // css property.
 
-      if (typeof this.topMarginIsForWide_ == 'undefined')
+      if (typeof this.topMarginIsForWide_ == 'undefined') {
         this.topMarginIsForWide_ = layout.wide;
+      }
       if (this.topMarginIsForWide_ != layout.wide) {
         this.animatedTopMarginPx_ += newMargin - this.topMarginPx_;
         this.topMargin_.style.marginBottom = toCssPx(this.animatedTopMarginPx_);
@@ -1058,8 +1083,9 @@ cr.define('ntp', function() {
     handleMouseWheel: function(e) {
       // The ctrl-wheel should triggle the zoom in/out actions in Chromium for
       // all pages.
-      if (e.wheelDeltaY == 0 || e.ctrlKey)
+      if (e.wheelDeltaY == 0 || e.ctrlKey) {
         return false;
+      }
 
       this.content_.scrollTop -= e.wheelDeltaY / 3;
       return true;
@@ -1088,8 +1114,9 @@ cr.define('ntp', function() {
      * @private
      */
     queueUpdateScrollbars_: function() {
-      if (this.scrollbarUpdate_)
+      if (this.scrollbarUpdate_) {
         return;
+      }
 
       this.scrollbarUpdate_ =
           window.setTimeout(this.doUpdateScrollbars_.bind(this), 0);
@@ -1159,8 +1186,9 @@ cr.define('ntp', function() {
 
       // The new tile may change the number of rows, hence the top margin
       // will change.
-      if (!this.withinPageDrag_)
+      if (!this.withinPageDrag_) {
         this.updateTopMargin_();
+      }
 
       this.doDragOver(e);
     },
@@ -1171,8 +1199,9 @@ cr.define('ntp', function() {
 
       this.setDropEffect(e.dataTransfer);
       let newDragIndex = this.getWouldBeIndexForPoint_(e.pageX, e.pageY);
-      if (newDragIndex < 0 || newDragIndex >= this.tileElements_.length)
+      if (newDragIndex < 0 || newDragIndex >= this.tileElements_.length) {
         newDragIndex = this.dragItemIndex_;
+      }
       this.updateDropIndicator_(newDragIndex);
     },
 
@@ -1194,8 +1223,9 @@ cr.define('ntp', function() {
           const originalPage =
               currentlyDraggingTile ? currentlyDraggingTile.tilePage : null;
           this.addDragData(e.dataTransfer, adjustedIndex);
-          if (originalPage)
+          if (originalPage) {
             originalPage.cleanupDrag();
+          }
         }
 
         // Dropping the icon may cause topMargin to change, but changing it
@@ -1214,12 +1244,14 @@ cr.define('ntp', function() {
      */
     appendDraggingTile: function() {
       const originalPage = currentlyDraggingTile.tilePage;
-      if (originalPage == this)
+      if (originalPage == this) {
         return;
+      }
 
       this.addDragData(null, this.tileElements_.length);
-      if (originalPage)
+      if (originalPage) {
         originalPage.cleanupDrag();
+      }
     },
 
     /**
@@ -1238,8 +1270,9 @@ cr.define('ntp', function() {
      */
     repositionTiles_: function(opt_ignoreNode) {
       for (let i = 0; i < this.tileElements_.length; i++) {
-        if (!opt_ignoreNode || opt_ignoreNode !== this.tileElements_[i])
+        if (!opt_ignoreNode || opt_ignoreNode !== this.tileElements_[i]) {
           this.positionTile_(i);
+        }
       }
     },
 
@@ -1250,15 +1283,17 @@ cr.define('ntp', function() {
      */
     updateDropIndicator_: function(newDragIndex) {
       const oldDragIndex = this.currentDropIndex_;
-      if (newDragIndex == oldDragIndex)
+      if (newDragIndex == oldDragIndex) {
         return;
+      }
 
       const repositionStart = Math.min(newDragIndex, oldDragIndex);
       const repositionEnd = Math.max(newDragIndex, oldDragIndex);
 
       for (let i = repositionStart; i <= repositionEnd; i++) {
-        if (i == this.dragItemIndex_)
+        if (i == this.dragItemIndex_) {
           continue;
+        }
 
         const adjustment = i > this.dragItemIndex_ ?
             i <= newDragIndex ? -1 : 0 :

@@ -16,12 +16,15 @@ cr.define('extensions', function() {
       return x < y ? -1 : (x > y ? 1 : 0);
     }
     function compareLocation(x, y) {
-      if (x.location == y.location)
+      if (x.location == y.location) {
         return 0;
-      if (x.location == chrome.developerPrivate.Location.UNPACKED)
+      }
+      if (x.location == chrome.developerPrivate.Location.UNPACKED) {
         return -1;
-      if (y.location == chrome.developerPrivate.Location.UNPACKED)
+      }
+      if (y.location == chrome.developerPrivate.Location.UNPACKED) {
         return 1;
+      }
       return 0;
     }
     return compareLocation(a, b) ||
@@ -244,8 +247,9 @@ cr.define('extensions', function() {
           // |extensionInfo| can be undefined in the case of an extension
           // being unloaded right before uninstallation. There's nothing to do
           // here.
-          if (!eventData.extensionInfo)
+          if (!eventData.extensionInfo) {
             break;
+          }
 
           if (this.delegate.shouldIgnoreUpdate(
                   eventData.extensionInfo.id, eventData.event_type)) {
@@ -275,8 +279,9 @@ cr.define('extensions', function() {
      * @private
      */
     onFilterChanged_: function(event) {
-      if (this.currentPage_.page !== Page.LIST)
+      if (this.currentPage_.page !== Page.LIST) {
         extensions.navigation.navigateTo({page: Page.LIST});
+      }
       this.filter = /** @type {string} */ (event.detail);
     },
 
@@ -364,8 +369,9 @@ cr.define('extensions', function() {
       let insertBeforeChild = this[listId].findIndex(function(listEl) {
         return compareExtensions(listEl, item) > 0;
       });
-      if (insertBeforeChild == -1)
+      if (insertBeforeChild == -1) {
         insertBeforeChild = this[listId].length;
+      }
       this.splice(listId, insertBeforeChild, 0, item);
     },
 
@@ -463,11 +469,11 @@ cr.define('extensions', function() {
         }
       }
 
-      if (toPage == Page.DETAILS)
+      if (toPage == Page.DETAILS) {
         this.detailViewItem_ = assert(data);
-      else if (toPage == Page.ERRORS)
+      } else if (toPage == Page.ERRORS) {
         this.errorPageItem_ = assert(data);
-      else if (toPage == Page.ACTIVITY_LOG) {
+      } else if (toPage == Page.ACTIVITY_LOG) {
         if (!this.showActivityLog) {
           // Redirect back to the details page if we try to view the
           // activity log of an extension but the flag is not set.
@@ -543,8 +549,9 @@ cr.define('extensions', function() {
 
       // The button will not exist, when returning from a details page
       // because the corresponding extension/app was deleted.
-      if (button)
+      if (button) {
         button.focus();
+      }
     },
 
     /**

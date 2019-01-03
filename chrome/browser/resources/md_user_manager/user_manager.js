@@ -71,8 +71,9 @@ cr.define('cr.ui', function() {
   UserManager.onPageChanged_ = function(event) {
     const userPodsPageVisible = event.detail.page == 'user-pods-page';
     cr.ui.UserManager.getInstance().userPodsPageVisible = userPodsPageVisible;
-    if (userPodsPageVisible)
+    if (userPodsPageVisible) {
       $('pod-row').rebuildPods();
+    }
   };
 
   /**
@@ -109,9 +110,9 @@ cr.define('cr.ui', function() {
       e.preventDefault();
     });
 
-    if (window.location.hash == '#tutorial')
+    if (window.location.hash == '#tutorial') {
       document.querySelector('user-manager-tutorial').startTutorial();
-    else if (window.location.hash == '#create-user') {
+    } else if (window.location.hash == '#create-user') {
       document.querySelector('user-manager-pages')
           .setSelectedPage('create-user-page');
     }

@@ -159,8 +159,9 @@ Polymer({
     const marginControlContainer = this.$.marginControlContainer;
     let fromElement = event.fromElement;
     while (fromElement != null) {
-      if (fromElement == marginControlContainer)
+      if (fromElement == marginControlContainer) {
         return;
+      }
 
       fromElement = fromElement.parentElement;
     }
@@ -177,8 +178,9 @@ Polymer({
     const marginControlContainer = this.$.marginControlContainer;
     let toElement = event.toElement;
     while (toElement != null) {
-      if (toElement == marginControlContainer)
+      if (toElement == marginControlContainer) {
         return;
+      }
 
       toElement = toElement.parentElement;
     }
@@ -196,8 +198,9 @@ Polymer({
 
   /** @private */
   pluginOrDocumentStatusChanged_: function() {
-    if (!this.pluginLoaded_ || !this.documentReady_)
+    if (!this.pluginLoaded_ || !this.documentReady_) {
       return;
+    }
 
     this.previewState = this.previewState ==
             print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADING ?
@@ -300,8 +303,9 @@ Polymer({
     this.documentReady_ = false;
     this.getPreview_().then(
         previewUid => {
-          if (!this.documentInfo.isModifiable)
+          if (!this.documentInfo.isModifiable) {
             this.onPreviewStart_(previewUid, -1);
+          }
           this.documentReady_ = true;
         },
         type => {
@@ -418,8 +422,9 @@ Polymer({
    * @private
    */
   onPageCountReady_: function(pageCount, previewResponseId, fitToPageScaling) {
-    if (this.inFlightRequestId_ != previewResponseId)
+    if (this.inFlightRequestId_ != previewResponseId) {
       return;
+    }
     this.documentInfo.updatePageCount(pageCount);
     this.documentInfo.updateFitToPageScaling(fitToPageScaling);
     this.notifyPath('documentInfo.pageCount');
@@ -471,20 +476,24 @@ Polymer({
    * @private
    */
   onPagePreviewReady_: function(pageIndex, previewUid, previewResponseId) {
-    if (this.inFlightRequestId_ != previewResponseId)
+    if (this.inFlightRequestId_ != previewResponseId) {
       return;
+    }
     const pageNumber = pageIndex + 1;
     let index = this.getSettingValue('pages').indexOf(pageNumber);
     // When pagesPerSheet > 1, the backend will always return page indices 0 to
     // N-1, where N is the total page count of the N-upped document.
     const pagesPerSheet =
         /** @type {number} */ (this.getSettingValue('pagesPerSheet'));
-    if (pagesPerSheet > 1)
+    if (pagesPerSheet > 1) {
       index = pageIndex;
-    if (index == 0)
+    }
+    if (index == 0) {
       this.onPreviewStart_(previewUid, pageIndex);
-    if (index != -1)
+    }
+    if (index != -1) {
       this.pluginProxy_.loadPreviewPage(previewUid, pageIndex, index);
+    }
   },
 
   /**
@@ -506,8 +515,9 @@ Polymer({
 
     // Don't handle the key event for these elements.
     const tagName = e.composedPath()[0].tagName;
-    if (['INPUT', 'SELECT', 'EMBED'].includes(tagName))
+    if (['INPUT', 'SELECT', 'EMBED'].includes(tagName)) {
       return;
+    }
 
     // For the most part, if any div of header was the last clicked element,
     // then the active element is the body. Starting with the last clicked
@@ -543,8 +553,9 @@ Polymer({
    * Called when dragging margins starts or stops.
    */
   onMarginDragChanged_: function(e) {
-    if (!this.pluginProxy_.pluginReady())
+    if (!this.pluginProxy_.pluginReady()) {
       return;
+    }
 
     // When hovering over the plugin (which may be in a separate iframe)
     // pointer events will be sent to the frame. When dragging the margins,
@@ -569,8 +580,9 @@ Polymer({
     this.scrollLeft = 0;
 
     const position = /** @type {{ x: number, y: number }} */ (e.detail);
-    if (position.x === 0 && position.y === 0)
+    if (position.x === 0 && position.y === 0) {
       return;
+    }
 
     this.pluginProxy_.scrollPosition(position.x, position.y);
   },

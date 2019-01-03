@@ -61,8 +61,9 @@ Polymer({
 
   attached: function() {
     this.resizeObserver_ = new ResizeObserver(entries => {
-      if (entries === null)
+      if (entries === null) {
         return;
+      }
 
       const entry = assert(entries[0]);
       // Don't set maxHeight below the minimum height.
@@ -92,8 +93,9 @@ Polymer({
 
   /** @private */
   updateMatchingDestinations_: function() {
-    if (this.destinations === undefined)
+    if (this.destinations === undefined) {
       return;
+    }
 
     this.updateList(
         'matchingDestinations_',
@@ -129,8 +131,9 @@ Polymer({
    * @private
    */
   onDestinationSelected_: function(e) {
-    if (e.composedPath()[0].tagName === 'A')
+    if (e.composedPath()[0].tagName === 'A') {
       return;
+    }
 
     this.fire('destination-selected', e.target);
   },

@@ -137,8 +137,9 @@ doodles.init = function() {
     doodles.targetDoodle.metadata = ddl.metadata || null;
     doodles.showLogoOrDoodle(/*fromCache=*/ true);
     // Never hide an interactive doodle if it was already shown.
-    if (ddl.metadata && (ddl.metadata.type === doodles.LOGO_TYPE.INTERACTIVE))
+    if (ddl.metadata && (ddl.metadata.type === doodles.LOGO_TYPE.INTERACTIVE)) {
       return;
+    }
     // If we got a valid ddl object (from cache), load a fresh one.
     if (ddl.v !== null) {
       doodles.loadDoodle(ddl.v, function(ddl2) {
@@ -180,8 +181,9 @@ doodles.init = function() {
 doodles.loadDoodle = function(v, onload) {
   var ddlScript = document.createElement('script');
   ddlScript.src = 'chrome-search://local-ntp/doodle.js';
-  if (v !== null)
+  if (v !== null) {
     ddlScript.src += '?v=' + v;
+  }
   ddlScript.onload = function() {
     onload(ddl);
   };

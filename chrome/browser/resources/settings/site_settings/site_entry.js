@@ -80,14 +80,16 @@ Polymer({
 
   /** @override */
   detached: function() {
-    if (this.button_)
+    if (this.button_) {
       this.unlisten(this.button_, 'keydown', 'onButtonKeydown_');
+    }
   },
 
   /** @param {!KeyboardEvent} e */
   onButtonKeydown_: function(e) {
-    if (e.shiftKey && e.key === 'Tab')
+    if (e.shiftKey && e.key === 'Tab') {
       this.focus();
+    }
   },
 
   /**
@@ -98,8 +100,9 @@ Polymer({
    * @private
    */
   grouped_: function(siteGroup) {
-    if (siteGroup)
+    if (siteGroup) {
       return siteGroup.origins.length != 1;
+    }
     return false;
   },
 
@@ -115,11 +118,13 @@ Polymer({
    * @private
    */
   siteRepresentation_: function(siteGroup, originIndex) {
-    if (!siteGroup)
+    if (!siteGroup) {
       return '';
+    }
     if (this.grouped_(siteGroup) && originIndex == -1) {
-      if (siteGroup.etldPlus1 != '')
+      if (siteGroup.etldPlus1 != '') {
         return siteGroup.etldPlus1;
+      }
       // Fall back onto using the host of the first origin, if no eTLD+1 name
       // was computed.
     }
@@ -136,26 +141,31 @@ Polymer({
     this.displayName_ = this.siteRepresentation_(siteGroup, -1);
 
     // Update the button listener.
-    if (this.button_)
+    if (this.button_) {
       this.unlisten(this.button_, 'keydown', 'onButtonKeydown_');
+    }
     this.button_ = /** @type Element */
         (this.root.querySelector('#toggleButton *:not([hidden]) button'));
     this.listen(assert(this.button_), 'keydown', 'onButtonKeydown_');
 
     if (!this.grouped_(siteGroup)) {
       // Ensure ungrouped |siteGroup|s do not get stuck in an opened state.
-      if (this.$.collapseChild.opened)
+      if (this.$.collapseChild.opened) {
         this.toggleCollapsible_();
+      }
       // Ungrouped site-entries should not show cookies.
-      if (this.cookieString_)
+      if (this.cookieString_) {
         this.cookieString_ = '';
+      }
     }
-    if (!siteGroup)
+    if (!siteGroup) {
       return;
+    }
     this.calculateUsageInfo_(siteGroup);
 
-    if (!this.grouped_(siteGroup))
+    if (!this.grouped_(siteGroup)) {
       return;
+    }
 
     const siteList = [this.displayName_];
     this.localDataBrowserProxy_.getNumCookiesList(siteList)
@@ -163,8 +173,9 @@ Polymer({
           assert(siteList.length == numCookiesList.length);
 
           const numCookies = numCookiesList[0].numCookies;
-          if (siteGroup.numCookies != numCookies)
+          if (siteGroup.numCookies != numCookies) {
             this.fire('site-entry-storage-updated');
+          }
           siteGroup.numCookies = numCookies;
           this.notifyPath('siteGroup.numCookies');
 
@@ -188,15 +199,17 @@ Polymer({
    * @private
    */
   scheme_: function(siteGroup, originIndex) {
-    if (!siteGroup || (this.grouped_(siteGroup) && originIndex == -1))
+    if (!siteGroup || (this.grouped_(siteGroup) && originIndex == -1)) {
       return '';
+    }
     originIndex = this.getIndexBoundToOriginList_(siteGroup, originIndex);
 
     const url = this.toUrl(siteGroup.origins[originIndex].origin);
     const scheme = url.protocol.replace(new RegExp(':*$'), '');
     /** @type{string} */ const HTTPS_SCHEME = 'https';
-    if (scheme == HTTPS_SCHEME)
+    if (scheme == HTTPS_SCHEME) {
       return '';
+    }
     return scheme;
   },
 
@@ -222,8 +235,9 @@ Polymer({
    */
   calculateUsageInfo_: function(siteGroup) {
     const getFormattedBytesForSize = (numBytes) => {
-      if (numBytes == 0)
+      if (numBytes == 0) {
         return Promise.resolve('0 B');
+      }
       return this.browserProxy.getFormattedBytes(numBytes);
     };
 
@@ -345,8 +359,10 @@ Polymer({
       const origin = this.siteGroup.origins[i].origin;
       this.browserProxy.setOriginPermissions(
           origin, contentSettingsTypes, settings.ContentSetting.DEFAULT);
-      if (contentSettingsTypes.includes(settings.ContentSettingsTypes.PLUGINS))
+      if (contentSettingsTypes.includes(
+              settings.ContentSettingsTypes.PLUGINS)) {
         this.browserProxy.clearFlashPref(origin);
+      }
     }
     this.onCloseDialog_(e);
   },
@@ -382,8 +398,9 @@ Polymer({
    * @private
    */
   getClassForIndex_: function(index) {
-    if (index == 0)
+    if (index == 0) {
       return 'first';
+    }
     return '';
   },
 

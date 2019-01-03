@@ -43,23 +43,26 @@ Polymer({
   },
 
   onRouteExit: function() {
-    if (this.finalized_)
+    if (this.finalized_) {
       return;
+    }
     this.finalized_ = true;
     this.browserProxy_.recordNavigatedAwayThroughBrowserHistory();
   },
 
   onRouteUnload: function() {
-    if (this.finalized_)
+    if (this.finalized_) {
       return;
+    }
     this.finalized_ = true;
     this.browserProxy_.recordNavigatedAway();
   },
 
   /** @private */
   onDeclineClick_: function() {
-    if (this.finalized_)
+    if (this.finalized_) {
       return;
+    }
 
     this.browserProxy_.recordSkip();
     this.finished_();
@@ -67,8 +70,9 @@ Polymer({
 
   /** @private */
   onSetDefaultClick_: function() {
-    if (this.finalized_)
+    if (this.finalized_) {
       return;
+    }
 
     this.browserProxy_.recordBeginSetDefault();
     this.browserProxy_.setAsDefault();

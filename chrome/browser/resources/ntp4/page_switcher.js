@@ -97,8 +97,9 @@ cr.define('ntp', function() {
     doDragOver: function(e) {
       e.preventDefault();
       const targetPage = ntp.getCardSlider().currentCardValue;
-      if (targetPage.shouldAcceptDrag(e))
+      if (targetPage.shouldAcceptDrag(e)) {
         targetPage.setDropEffect(e.dataTransfer);
+      }
     },
 
     doDrop: function(e) {
@@ -106,13 +107,15 @@ cr.define('ntp', function() {
       this.cancelDelayedSwitch_();
 
       const tile = ntp.getCurrentlyDraggingTile();
-      if (!tile)
+      if (!tile) {
         return;
+      }
 
       const sourcePage = tile.tilePage;
       const targetPage = ntp.getCardSlider().currentCardValue;
-      if (targetPage == sourcePage || !targetPage.shouldAcceptDrag(e))
+      if (targetPage == sourcePage || !targetPage.shouldAcceptDrag(e)) {
         return;
+      }
 
       targetPage.appendDraggingTile();
     },
@@ -126,8 +129,9 @@ cr.define('ntp', function() {
       // Stop switching when the next page can't be dropped onto.
       const nextPage =
           ntp.getCardSlider().getCardAtIndex(this.nextCardIndex_());
-      if (!nextPage.shouldAcceptDrag(e))
+      if (!nextPage.shouldAcceptDrag(e)) {
         return;
+      }
 
       const self = this;
       function navPageClearTimeout() {

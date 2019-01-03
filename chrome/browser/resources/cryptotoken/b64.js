@@ -4,8 +4,9 @@
 
 // WebSafeBase64Escape and Unescape.
 function B64_encode(bytes, opt_length) {
-  if (!opt_length)
+  if (!opt_length) {
     opt_length = bytes.length;
+  }
   var b64out =
       'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
   var result = '';
@@ -33,8 +34,9 @@ function B64_encode(bytes, opt_length) {
 
 // Normal base64 encode; not websafe, including padding.
 function base64_encode(bytes, opt_length) {
-  if (!opt_length)
+  if (!opt_length) {
     opt_length = bytes.length;
+  }
   var b64out =
       'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
   var result = '';
@@ -57,8 +59,9 @@ function base64_encode(bytes, opt_length) {
     var i = (accu >> (shift - 6)) & 63;
     result += b64out.charAt(i);
   }
-  while (result.length % 4)
+  while (result.length % 4) {
     result += '=';
+  }
   return result;
 }
 
@@ -77,8 +80,9 @@ function B64_decode(string) {
   var shift = 0;
   for (var i = 0; i < string.length; ++i) {
     var c = string.charCodeAt(i);
-    if (c < 32 || c > 127 || !B64_inmap[c - 32])
+    if (c < 32 || c > 127 || !B64_inmap[c - 32]) {
       return [];
+    }
     accu <<= 6;
     accu |= (B64_inmap[c - 32] - 1);
     shift += 6;

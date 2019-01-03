@@ -52,8 +52,9 @@ cr.define('cert_viewer', function() {
   function oneShot(fn) {
     let fired = false;
     return function() {
-      if (fired)
+      if (fired) {
         return;
+      }
       fired = true;
       fn();
     };
@@ -81,8 +82,9 @@ cr.define('cert_viewer', function() {
     // Copy all the tab labels into an array.
     const nodes = Array.prototype.slice.call($('tabs').childNodes, 0);
     nodes.push($('export'));
-    for (let i = 0; i < nodes.length; i++)
+    for (let i = 0; i < nodes.length; i++) {
       nodes[i].textContent = nodes[i].textContent.replace('&', '');
+    }
   }
 
   /**
@@ -121,8 +123,9 @@ cr.define('cert_viewer', function() {
     // node has at most one child).  This will reveal the parent nodes and
     // populate the fields view.
     let last = root;
-    while (last.detail.children && last.detail.children[0])
+    while (last.detail.children && last.detail.children[0]) {
       last = last.detail.children[0];
+    }
     last.selected = true;
   }
 
@@ -162,8 +165,9 @@ cr.define('cert_viewer', function() {
   function showCertificateFields() {
     clearCertificateFields();
     const item = $('hierarchy').selectedItem;
-    if (item && item.detail.payload.index !== undefined)
+    if (item && item.detail.payload.index !== undefined) {
       chrome.send('requestCertificateFields', [item.detail.payload.index]);
+    }
   }
 
   /**
@@ -186,10 +190,11 @@ cr.define('cert_viewer', function() {
    */
   function showCertificateFieldValue() {
     const item = $('cert-fields').selectedItem;
-    if (item && item.detail.payload.val)
+    if (item && item.detail.payload.val) {
       $('cert-field-value').textContent = item.detail.payload.val;
-    else
+    } else {
       $('cert-field-value').textContent = '';
+    }
   }
 
   /**
@@ -197,8 +202,9 @@ cr.define('cert_viewer', function() {
    */
   function exportCertificate() {
     const item = $('hierarchy').selectedItem;
-    if (item && item.detail.payload.index !== undefined)
+    if (item && item.detail.payload.index !== undefined) {
       chrome.send('exportCertificate', [item.detail.payload.index]);
+    }
   }
 
   return {

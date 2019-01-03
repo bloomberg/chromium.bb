@@ -89,8 +89,9 @@ cr.define('md_history', function() {
 
     /** @param {!KeyboardEvent} e */
     onCheckboxKeydown_: function(e) {
-      if (e.shiftKey && e.key === 'Tab')
+      if (e.shiftKey && e.key === 'Tab') {
         this.focus();
+      }
     },
 
     /**
@@ -108,8 +109,9 @@ cr.define('md_history', function() {
         }
       }
 
-      if (this.selectionNotAllowed_)
+      if (this.selectionNotAllowed_) {
         return;
+      }
 
       this.$.checkbox.focus();
       this.fire('history-checkbox-select', {
@@ -151,8 +153,9 @@ cr.define('md_history', function() {
      */
     onItemMousedown_: function(e) {
       // Prevent shift clicking a checkbox from selecting text.
-      if (e.shiftKey)
+      if (e.shiftKey) {
         e.preventDefault();
+      }
     },
 
     /**
@@ -181,11 +184,13 @@ cr.define('md_history', function() {
      * @private
      */
     onRemoveBookmarkTap_: function() {
-      if (!this.item.starred)
+      if (!this.item.starred) {
         return;
+      }
 
-      if (this.$$('#bookmark-star') == this.root.activeElement)
+      if (this.$$('#bookmark-star') == this.root.activeElement) {
         this.$['menu-button'].focus();
+      }
 
       const browserService = md_history.BrowserService.getInstance();
       browserService.removeBookmark(this.item.url);
@@ -217,11 +222,13 @@ cr.define('md_history', function() {
       const browserService = md_history.BrowserService.getInstance();
       browserService.recordAction('EntryLinkClick');
 
-      if (this.searchTerm)
+      if (this.searchTerm) {
         browserService.recordAction('SearchResultClick');
+      }
 
-      if (this.index == undefined)
+      if (this.index == undefined) {
         return;
+      }
 
       browserService.recordHistogram(
           'HistoryPage.ClickPosition',
@@ -256,11 +263,13 @@ cr.define('md_history', function() {
      * @private
      */
     cardTitle_: function(numberOfItems, historyDate, search) {
-      if (this.item === undefined)
+      if (this.item === undefined) {
         return '';
+      }
 
-      if (!search)
+      if (!search) {
         return this.item.dateRelativeDay;
+      }
       return HistoryItem.searchResultsTitle(numberOfItems, search);
     },
 

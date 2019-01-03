@@ -116,8 +116,9 @@ cr.define('print_preview', function() {
      * @return {!print_preview.NativeLayer} The singleton instance.
      */
     static getInstance() {
-      if (currentInstance == null)
+      if (currentInstance == null) {
         currentInstance = new NativeLayer();
+      }
       return assert(currentInstance);
     }
 
@@ -247,8 +248,9 @@ cr.define('print_preview', function() {
      *     closing the dialog without printing.
      */
     dialogClose(isCancel) {
-      if (isCancel)
+      if (isCancel) {
         chrome.send('closePrintPreviewDialog');
+      }
       chrome.send('dialogClose');
     }
 

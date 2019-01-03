@@ -62,8 +62,9 @@ const TaskSchedulerInternals = {
     $('status').textContent =
         data.instantiated ? 'Instantiated' : 'Not Instantiated';
     $('details').hidden = !data.instantiated;
-    if (!data.instantiated)
+    if (!data.instantiated) {
       return;
+    }
 
     TaskSchedulerInternals.updateHistograms(data.histograms);
   }

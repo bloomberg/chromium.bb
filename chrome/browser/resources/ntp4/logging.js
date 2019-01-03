@@ -18,8 +18,9 @@ const eventLog = [];
  *     the event stack.
  */
 function logEvent(name, opt_shouldLogTime) {
-  if (opt_shouldLogTime)
+  if (opt_shouldLogTime) {
     chrome.send('metricsHandler:logEventTime', [name]);
+  }
   eventLog.push([name, Date.now()]);
 }
 

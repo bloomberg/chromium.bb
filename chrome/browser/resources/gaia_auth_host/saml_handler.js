@@ -264,10 +264,11 @@ cr.define('cr.login', function() {
     onContentLoad_(e) {
       // |this.webview_.contentWindow| may be null after network error screen
       // is shown. See crbug.com/770999.
-      if (this.webview_.contentWindow)
+      if (this.webview_.contentWindow) {
         PostMessageChannel.init(this.webview_.contentWindow);
-      else
+      } else {
         console.error('SamlHandler.onContentLoad_: contentWindow is null.');
+      }
     }
 
     /**
@@ -275,8 +276,9 @@ cr.define('cr.login', function() {
      * @private
      */
     onLoadAbort_(e) {
-      if (e.isTopLevel)
+      if (e.isTopLevel) {
         this.abortedTopLevelUrl_ = e.url;
+      }
     }
 
     /**
@@ -291,8 +293,9 @@ cr.define('cr.login', function() {
       }
 
       // Skip for none http/https url.
-      if (!e.url.startsWith('https://') && !e.url.startsWith('http://'))
+      if (!e.url.startsWith('https://') && !e.url.startsWith('http://')) {
         return;
+      }
 
       this.isSamlPage_ = this.pendingIsSamlPage_;
     }
@@ -306,8 +309,9 @@ cr.define('cr.login', function() {
      * @return {!Object} Decision whether to block the request.
      */
     onInsecureRequest(details) {
-      if (!this.blockInsecureContent)
+      if (!this.blockInsecureContent) {
         return {};
+      }
       const strippedUrl = stripParams(details.url);
       this.dispatchEvent(new CustomEvent(
           'insecureContentBlocked', {detail: {url: strippedUrl}}));
@@ -329,10 +333,11 @@ cr.define('cr.login', function() {
 
         if (headerName == SAML_HEADER) {
           const action = header.value.toLowerCase();
-          if (action == 'start')
+          if (action == 'start') {
             this.pendingIsSamlPage_ = true;
-          else if (action == 'end')
+          } else if (action == 'end') {
             this.pendingIsSamlPage_ = false;
+          }
         }
       }
 
@@ -343,8 +348,9 @@ cr.define('cr.login', function() {
      * Invoked when the injected JS makes a connection.
      */
     onConnected_(port) {
-      if (port.targetWindow != this.webview_.contentWindow)
+      if (port.targetWindow != this.webview_.contentWindow) {
         return;
+      }
 
       const channel = Channel.create();
       channel.init(port);
@@ -408,16 +414,18 @@ cr.define('cr.login', function() {
 
         this.dispatchEvent(new CustomEvent('apiPasswordAdded'));
       } else if (call.method == 'confirm') {
-        if (call.token != this.apiToken_)
+        if (call.token != this.apiToken_) {
           console.error('SamlHandler.onAPICall_: token mismatch');
+        }
       } else {
         console.error('SamlHandler.onAPICall_: unknown message');
       }
     }
 
     onUpdatePassword_(channel, msg) {
-      if (this.isSamlPage_)
+      if (this.isSamlPage_) {
         this.passwordStore_[msg.id] = msg.password;
+      }
     }
 
     onPageLoaded_(channel, msg) {

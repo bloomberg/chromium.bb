@@ -63,8 +63,9 @@ Polymer({
   onQueryParamsChanged_: function() {
     const searchTerm = this.queryParams_.q || '';
     let selectedId = this.queryParams_.id;
-    if (!selectedId && !searchTerm)
+    if (!selectedId && !searchTerm) {
       selectedId = BOOKMARKS_BAR_ID;
+    }
 
     if (searchTerm != this.searchTerm_) {
       this.searchTerm_ = searchTerm;
@@ -88,8 +89,9 @@ Polymer({
    * @private
    */
   onQueryChanged_: function(current, previous) {
-    if (previous !== undefined)
+    if (previous !== undefined) {
       this.urlQuery_ = this.query_;
+    }
   },
 
   /** @private */
@@ -104,11 +106,12 @@ Polymer({
 
   /** @private */
   updateQueryParams_: function() {
-    if (this.searchTerm_)
+    if (this.searchTerm_) {
       this.queryParams_ = {q: this.searchTerm_};
-    else if (this.selectedId_ != BOOKMARKS_BAR_ID)
+    } else if (this.selectedId_ != BOOKMARKS_BAR_ID) {
       this.queryParams_ = {id: this.selectedId_};
-    else
+    } else {
       this.queryParams_ = {};
+    }
   },
 });

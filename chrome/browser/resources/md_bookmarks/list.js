@@ -161,8 +161,9 @@ Polymer({
    */
   onOpenCommandMenu_: function(e) {
     // If the item is not visible, scroll to it before rendering the menu.
-    if (e.source == MenuSource.ITEM)
+    if (e.source == MenuSource.ITEM) {
       this.scrollToId_(/** @type {BookmarksItemElement} */ (e.path[0]).itemId);
+    }
   },
 
   /**
@@ -178,8 +179,9 @@ Polymer({
     const toHighlight = /** @type {!Array<string>} */
         (e.detail.filter((item) => this.displayedIds_.indexOf(item) != -1));
 
-    if (toHighlight.length <= 0)
+    if (toHighlight.length <= 0) {
       return;
+    }
 
     const leadId = toHighlight[0];
     this.dispatch(
@@ -258,16 +260,18 @@ Polymer({
     }
 
     // Prevent the iron-list from changing focus on enter.
-    if (e.path[0] instanceof HTMLButtonElement && e.key == 'Enter')
+    if (e.path[0] instanceof HTMLButtonElement && e.key == 'Enter') {
       handled = true;
+    }
 
     if (!handled) {
       handled = bookmarks.CommandManager.getInstance().handleKeyEvent(
           e, this.getState().selection.items);
     }
 
-    if (handled)
+    if (handled) {
       e.stopPropagation();
+    }
   },
 
   /**

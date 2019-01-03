@@ -22,8 +22,9 @@ Polymer({
    * @private
    */
   onMediaSizeSettingChange_: function(value) {
-    if (!this.capability)
+    if (!this.capability) {
       return;
+    }
 
     const valueToSet = JSON.stringify(value);
     for (const option of

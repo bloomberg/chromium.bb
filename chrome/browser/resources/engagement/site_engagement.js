@@ -56,10 +56,11 @@ function initialize() {
       const oldSortColumn = document.querySelector('.sort-column');
       oldSortColumn.classList.remove('sort-column');
       e.target.classList.add('sort-column');
-      if (sortReverse)
+      if (sortReverse) {
         e.target.setAttribute('sort-reverse', '');
-      else
+      } else {
         e.target.removeAttribute('sort-reverse');
+      }
       renderTable();
     });
   }
@@ -111,15 +112,17 @@ function initialize() {
   }
 
   function disableAutoupdate() {
-    if (updateInterval)
+    if (updateInterval) {
       clearInterval(updateInterval);
+    }
     updateInterval = null;
   }
   disableAutoupdateForTests = disableAutoupdate;
 
   function enableAutoupdate() {
-    if (updateInterval)
+    if (updateInterval) {
       clearInterval(updateInterval);
+    }
     updateInterval = setInterval(updateEngagementTable, 5000);
   }
 
@@ -165,8 +168,9 @@ function initialize() {
     const val2 = b[sortKey];
 
     // Compare the hosts of the origin ignoring schemes.
-    if (sortKey == 'origin')
+    if (sortKey == 'origin') {
       return new URL(val1.url).host > new URL(val2.url).host ? 1 : -1;
+    }
 
     if (sortKey == 'baseScore' || sortKey == 'bonusScore' ||
         sortKey == 'totalScore') {

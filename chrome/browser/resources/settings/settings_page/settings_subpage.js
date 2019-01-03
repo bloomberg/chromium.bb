@@ -88,8 +88,9 @@ Polymer({
 
   /** @private */
   onActiveChanged_: function() {
-    if (this.lastActiveValue_ == this.active_)
+    if (this.lastActiveValue_ == this.active_) {
       return;
+    }
     this.lastActiveValue_ = this.active_;
 
     if (this.active_ && this.pageTitle) {
@@ -97,17 +98,20 @@ Polymer({
           loadTimeData.getStringF('settingsAltPageTitle', this.pageTitle);
     }
 
-    if (!this.searchLabel)
+    if (!this.searchLabel) {
       return;
+    }
 
     const searchField = this.$$('cr-search-field');
-    if (searchField)
+    if (searchField) {
       searchField.setValue('');
+    }
 
-    if (this.active_)
+    if (this.active_) {
       this.becomeActiveFindShortcutListener();
-    else
+    } else {
       this.removeSelfAsFindShortcutListener();
+    }
   },
 
   /**
@@ -131,12 +135,14 @@ Polymer({
 
   // Override settings.FindShortcutBehavior methods.
   handleFindShortcut: function(modalContextOpen) {
-    if (modalContextOpen)
+    if (modalContextOpen) {
       return false;
+    }
     const subpageSearch = this.$$('cr-search-field');
     const searchInput = subpageSearch.getSearchInput();
-    if (searchInput != subpageSearch.shadowRoot.activeElement)
+    if (searchInput != subpageSearch.shadowRoot.activeElement) {
       searchInput.focus();
+    }
     return true;
   },
 });

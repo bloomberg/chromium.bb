@@ -308,8 +308,9 @@ MultipleGnubbySigner.prototype.anyPending_ = function() {
  * @private
  */
 MultipleGnubbySigner.prototype.timeout_ = function(anyPending) {
-  if (this.complete_)
+  if (this.complete_) {
     return;
+  }
   this.complete_ = true;
   // Defer notifying the caller that all are complete, in case the caller is
   // doing work in response to a gnubbyFound callback and has an inconsistent
@@ -338,9 +339,11 @@ MultipleGnubbySigner.prototype.notifyGnubbyComplete_ = function(
     'gnubby': result.gnubby,
     'gnubbyId': tracker.signer.getDeviceId()
   };
-  if (result['challenge'])
+  if (result['challenge']) {
     signResult['challenge'] = result['challenge'];
-  if (result['info'])
+  }
+  if (result['info']) {
     signResult['info'] = result['info'];
+  }
   this.gnubbyCompleteCb_(signResult, moreExpected);
 };

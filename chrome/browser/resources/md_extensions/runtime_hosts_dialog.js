@@ -152,10 +152,11 @@ cr.define('extensions', function() {
      * @private
      */
     onSubmitTap_: function() {
-      if (this.currentSite !== null)
+      if (this.currentSite !== null) {
         this.handleEdit_();
-      else
+      } else {
         this.handleAdd_();
+      }
     },
 
     /**

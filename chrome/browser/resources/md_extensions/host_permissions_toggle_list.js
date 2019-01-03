@@ -40,10 +40,12 @@ cr.define('extensions', function() {
      */
     getSortedHosts_: function() {
       return this.permissions.hosts.sort((a, b) => {
-        if (a.host < b.host)
+        if (a.host < b.host) {
           return -1;
-        if (a.host > b.host)
+        }
+        if (a.host > b.host) {
           return 1;
+        }
         return 0;
       });
     },
@@ -69,10 +71,11 @@ cr.define('extensions', function() {
       const host = e.target.host;
       const checked = e.target.checked;
 
-      if (checked)
+      if (checked) {
         this.delegate.addRuntimeHostPermission(this.itemId, host);
-      else
+      } else {
         this.delegate.removeRuntimeHostPermission(this.itemId, host);
+      }
     },
   });
 

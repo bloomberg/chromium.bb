@@ -37,8 +37,9 @@ const FileMetadata = (function() {
       select.options.add(new Option(title, originEntry.extensionID));
 
       // If option was the previously only selected, make it selected again.
-      if (originEntry.extensionID != oldSelectedExtension)
+      if (originEntry.extensionID != oldSelectedExtension) {
         continue;
+      }
       select.options[select.options.length - 1].selected = true;
     }
 
@@ -51,8 +52,9 @@ const FileMetadata = (function() {
    */
   function getSelectedExtensionId() {
     const dropDown = $('extensions-select').options;
-    if (dropDown.selectedIndex >= 0)
+    if (dropDown.selectedIndex >= 0) {
       return dropDown[dropDown.selectedIndex].value;
+    }
 
     return null;
   }

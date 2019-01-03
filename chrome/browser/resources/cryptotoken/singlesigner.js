@@ -121,12 +121,14 @@ SingleGnubbySigner.prototype.getDeviceId = function() {
  */
 SingleGnubbySigner.prototype.close = function() {
   if (this.state_ == SingleGnubbySigner.State.OPENING) {
-    if (this.openCanceller_)
+    if (this.openCanceller_) {
       this.openCanceller_();
+    }
   }
 
-  if (!this.gnubby_)
+  if (!this.gnubby_) {
     return;
+  }
   this.state_ = SingleGnubbySigner.State.CLOSING;
   this.gnubby_.closeWhenIdle(this.closed_.bind(this));
 };

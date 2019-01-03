@@ -131,8 +131,9 @@ Polymer({
         ])
         .then(args => {
           const canSetDefault = args[0];
-          if (!canSetDefault)
+          if (!canSetDefault) {
             modules = modules.filter(module => module != 'nux-set-as-default');
+          }
 
           const indicatorElementCount = modules.reduce((count, module) => {
             return count += MODULES_NEEDING_INDICATOR.has(module) ? 1 : 0;

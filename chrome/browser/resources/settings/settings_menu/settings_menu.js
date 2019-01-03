@@ -47,8 +47,9 @@ Polymer({
    * @private
    */
   onLinkClick_: function(event) {
-    if (event.target.matches('a:not(#extensionsLink)'))
+    if (event.target.matches('a:not(#extensionsLink)')) {
       event.preventDefault();
+    }
   },
 
   /**

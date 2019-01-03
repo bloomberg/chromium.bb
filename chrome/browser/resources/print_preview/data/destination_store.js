@@ -23,12 +23,14 @@ cr.define('print_preview', function() {
    * @return {!print_preview.Cdd} Localized capabilities.
    */
   const localizeCapabilities = function(capabilities) {
-    if (!capabilities.printer)
+    if (!capabilities.printer) {
       return capabilities;
+    }
 
     const mediaSize = capabilities.printer.media_size;
-    if (!mediaSize)
+    if (!mediaSize) {
       return capabilities;
+    }
 
     for (let i = 0, media; (media = mediaSize.option[i]); i++) {
       // No need to patch capabilities with localized names provided.
@@ -60,12 +62,14 @@ cr.define('print_preview', function() {
    * @private
    */
   const sortMediaSizes = function(capabilities) {
-    if (!capabilities.printer)
+    if (!capabilities.printer) {
       return capabilities;
+    }
 
     const mediaSize = capabilities.printer.media_size;
-    if (!mediaSize)
+    if (!mediaSize) {
       return capabilities;
+    }
 
     // For the standard sizes, separate into categories, as seen in the Cloud
     // Print CDD guide:
@@ -336,8 +340,9 @@ cr.define('print_preview', function() {
                   el => el ===
                       print_preview.DestinationStorePrinterSearchStatus
                           .SEARCHING);
-      if (isLocalDestinationSearchInProgress)
+      if (isLocalDestinationSearchInProgress) {
         return true;
+      }
 
       const isCloudDestinationSearchInProgress = !!this.cloudPrintInterface_ &&
           this.cloudPrintInterface_.isCloudDestinationSearchInProgress();
@@ -417,8 +422,9 @@ cr.define('print_preview', function() {
             this.destinationMap_[this.getDestinationKey_(origin, id, account)];
         if (candidate != null) {
           candidate.isRecent = true;
-          if (!foundDestination && !this.useSystemDefaultAsDefault_)
+          if (!foundDestination && !this.useSystemDefaultAsDefault_) {
             this.selectDestination(candidate);
+          }
           foundDestination = true;
         } else if (!foundDestination && !this.useSystemDefaultAsDefault_) {
           foundDestination = this.fetchPreselectedDestination_(
@@ -427,8 +433,9 @@ cr.define('print_preview', function() {
         }
       }
 
-      if (foundDestination && !this.useSystemDefaultAsDefault_)
+      if (foundDestination && !this.useSystemDefaultAsDefault_) {
         return;
+      }
 
       // Try the system default
       id = this.systemDefaultDestinationId_;
@@ -560,8 +567,9 @@ cr.define('print_preview', function() {
       } catch (e) {
         console.error('Failed to parse defaultDestinationSelectionRules: ' + e);
       }
-      if (!matchRules)
+      if (!matchRules) {
         return null;
+      }
 
       const isLocal = !matchRules.kind || matchRules.kind == 'local';
       const isCloud = !matchRules.kind || matchRules.kind == 'cloud';
@@ -900,13 +908,15 @@ cr.define('print_preview', function() {
       // If the cloud printer handler is enabled, request cloud printers from
       // the handler instead of trying to directly communicate with the cloud
       // print server. See https://crbug.com/829414.
-      if (loadTimeData.getBoolean('cloudPrinterHandlerEnabled'))
+      if (loadTimeData.getBoolean('cloudPrinterHandlerEnabled')) {
         types.push(print_preview.PrinterType.CLOUD_PRINTER);
-      else
+      } else {
         this.startLoadCloudDestinations();
+      }
 
-      for (const printerType of types)
+      for (const printerType of types) {
         this.startLoadDestinations(printerType);
+      }
     }
 
     /**
@@ -1157,8 +1167,9 @@ cr.define('print_preview', function() {
           type, print_preview.DestinationStorePrinterSearchStatus.DONE);
       cr.dispatchSimpleEvent(
           this, DestinationStore.EventType.DESTINATION_SEARCH_DONE);
-      if (type === print_preview.PrinterType.EXTENSION_PRINTER)
+      if (type === print_preview.PrinterType.EXTENSION_PRINTER) {
         this.endExtensionPrinterSearch_();
+      }
       this.sendNoPrinterEventIfNeeded_();
     }
 

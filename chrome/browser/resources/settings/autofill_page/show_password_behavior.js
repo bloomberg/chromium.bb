@@ -55,8 +55,9 @@ const ShowPasswordBehavior = {
    * @private
    */
   getPassword_: function() {
-    if (!this.item)
+    if (!this.item) {
       return '';
+    }
     return this.item.entry.federationText || this.item.password ||
         ' '.repeat(this.item.entry.numCharactersInPassword);
   },
@@ -67,10 +68,11 @@ const ShowPasswordBehavior = {
    * @private
    */
   onShowPasswordButtonTap_: function() {
-    if (this.item.password)
+    if (this.item.password) {
       this.set('item.password', '');
-    else
-      this.fire('show-password', this);  // Request the password.
+    } else {
+      this.fire('show-password', this);
+    }  // Request the password.
   },
 };
 

@@ -115,8 +115,9 @@ TtsExtension.prototype = {
     // Truncate the utterance if it's too long. Both Chrome's tts
     // extension api and the web speech api specify 32k as the
     // maximum limit for an utterance.
-    if (utterance.length > 32768)
+    if (utterance.length > 32768) {
       utterance = utterance.substr(0, 32768);
+    }
 
     try {
       // First, stop any pending audio.
@@ -135,8 +136,9 @@ TtsExtension.prototype = {
         gender = this.voiceNameToLangAndGender_[options.voiceName].gender;
       }
 
-      if (!lang)
+      if (!lang) {
         lang = navigator.language;
+      }
 
       // Look up the specific voice name for this language and gender.
       // If it's not in the map, it doesn't matter - the language will
@@ -152,8 +154,9 @@ TtsExtension.prototype = {
             url += '&text=' + encodeURIComponent(utterance);
             url += '&lang=' + lang.toLowerCase();
 
-            if (voiceName)
+            if (voiceName) {
               url += '&name=' + voiceName;
+            }
 
             if (options.rate) {
               // Input rate is between 0.1 and 10.0 with a default of 1.0.

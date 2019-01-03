@@ -19,8 +19,9 @@ cr.define('settings.printing', function() {
    * @return {boolean}
    */
   function isNameAndAddressValid(name, address) {
-    if (!name || !address)
+    if (!name || !address) {
       return false;
+    }
 
     const hostnamePrefix = '([a-z\\d]|[a-z\\d][a-z\\d\\-]{0,61}[a-z\\d])';
 

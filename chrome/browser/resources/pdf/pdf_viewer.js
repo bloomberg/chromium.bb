@@ -43,8 +43,9 @@ function getFilenameFromURL(url) {
   try {
     return decodeURIComponent(filename);
   } catch (e) {
-    if (e instanceof URIError)
+    if (e instanceof URIError) {
       return filename;
+    }
     throw e;
   }
 }
@@ -149,8 +150,9 @@ function PDFViewer(browserApi) {
   // to be displayed in the window. It is sized according to the document size
   // of the pdf and zoom level.
   this.sizer_ = $('sizer');
-  if (this.isPrintPreview_)
+  if (this.isPrintPreview_) {
     this.pageIndicator_ = $('page-indicator');
+  }
   this.passwordScreen_ = $('password-screen');
   this.passwordScreen_.addEventListener(
       'password-submitted', this.onPasswordSubmitted_.bind(this));
@@ -260,10 +262,11 @@ function PDFViewer(browserApi) {
 
   document.body.addEventListener('change-page', e => {
     this.viewport_.goToPage(e.detail.page);
-    if (e.detail.origin == 'bookmark')
+    if (e.detail.origin == 'bookmark') {
       this.metrics.onFollowBookmark();
-    else if (e.detail.origin == 'pageselector')
+    } else if (e.detail.origin == 'pageselector') {
       this.metrics.onPageSelectorNavigation();
+    }
   });
 
   document.body.addEventListener('change-page-and-xy', e => {
@@ -279,8 +282,9 @@ function PDFViewer(browserApi) {
   });
 
   document.body.addEventListener('dropdown-opened', e => {
-    if (e.detail == 'bookmarks')
+    if (e.detail == 'bookmarks') {
       this.metrics.onOpenBookmarksPanel();
+    }
   });
 
   this.toolbarManager_ =
@@ -326,8 +330,9 @@ PDFViewer.prototype = {
     // Certain scroll events may be sent from outside of the extension.
     const fromScriptingAPI = e.fromScriptingAPI;
 
-    if (shouldIgnoreKeyEvents(document.activeElement) || e.defaultPrevented)
+    if (shouldIgnoreKeyEvents(document.activeElement) || e.defaultPrevented) {
       return;
+    }
 
     this.toolbarManager_.hideToolbarsAfterTimeout(e);
 
@@ -365,10 +370,11 @@ PDFViewer.prototype = {
         }
         break;  // Ensure escape falls through to the print-preview handler.
       case 32:  // Space key.
-        if (e.shiftKey)
+        if (e.shiftKey) {
           pageUpHandler();
-        else
+        } else {
           pageDownHandler();
+        }
         return;
       case 33:  // Page up key.
         pageUpHandler();
@@ -432,16 +438,19 @@ PDFViewer.prototype = {
         }
         return;
       case 219:  // Left bracket key.
-        if (e.ctrlKey)
+        if (e.ctrlKey) {
           this.currentController_.rotateCounterClockwise();
+        }
         return;
       case 220:  // Backslash key.
-        if (e.ctrlKey)
+        if (e.ctrlKey) {
           this.zoomToolbar_.fitToggleFromHotKey();
+        }
         return;
       case 221:  // Right bracket key.
-        if (e.ctrlKey)
+        if (e.ctrlKey) {
           this.currentController_.rotateClockwise();
+        }
         return;
     }
 
@@ -451,16 +460,18 @@ PDFViewer.prototype = {
           {type: 'sendKeyEvent', keyEvent: SerializeKeyEvent(e)});
     } else {
       // Show toolbars as a fallback.
-      if (!(e.shiftKey || e.ctrlKey || e.altKey))
+      if (!(e.shiftKey || e.ctrlKey || e.altKey)) {
         this.toolbarManager_.showToolbars();
+      }
     }
   },
 
   handleMouseEvent_: function(e) {
-    if (e.type == 'mousemove')
+    if (e.type == 'mousemove') {
       this.toolbarManager_.handleMouseMove(e);
-    else if (e.type == 'mouseout')
+    } else if (e.type == 'mouseout') {
       this.toolbarManager_.hideToolbarsForMouseOut();
+    }
   },
 
   handleContextMenuEvent_: function(e) {
@@ -529,8 +540,9 @@ PDFViewer.prototype = {
       this.toolbarManager_.forceHideTopToolbar();
     }
 
-    if (e.detail.userInitiated)
+    if (e.detail.userInitiated) {
       this.metrics.onFitTo(e.detail.fittingType);
+    }
   },
 
   /**
@@ -540,10 +552,12 @@ PDFViewer.prototype = {
    * @private
    */
   sendDocumentLoadedMessage_: function() {
-    if (this.loadState_ == LoadState.LOADING)
+    if (this.loadState_ == LoadState.LOADING) {
       return;
-    if (this.isPrintPreview_ && !this.isPrintPreviewLoadingFinished_)
+    }
+    if (this.isPrintPreview_ && !this.isPrintPreviewLoadingFinished_) {
       return;
+    }
     this.sendScriptingMessage_(
         {type: 'documentLoaded', load_state: this.loadState_});
   },
@@ -557,8 +571,9 @@ PDFViewer.prototype = {
    * @private
    */
   handleURLParams_: function(params) {
-    if (params.zoom)
+    if (params.zoom) {
       this.viewport_.setZoom(params.zoom);
+    }
 
     if (params.position) {
       this.viewport_.goToPageAndXY(
@@ -573,10 +588,11 @@ PDFViewer.prototype = {
       if (params.viewPosition) {
         const zoomedPositionShift = params.viewPosition * this.viewport_.zoom;
         const currentViewportPosition = this.viewport_.position;
-        if (params.view == FittingType.FIT_TO_WIDTH)
+        if (params.view == FittingType.FIT_TO_WIDTH) {
           currentViewportPosition.y += zoomedPositionShift;
-        else if (params.view == FittingType.FIT_TO_HEIGHT)
+        } else if (params.view == FittingType.FIT_TO_HEIGHT) {
           currentViewportPosition.x += zoomedPositionShift;
+        }
         this.viewport_.position = currentViewportPosition;
       }
       this.isUserInitiatedEvent_ = true;
@@ -595,8 +611,9 @@ PDFViewer.prototype = {
    */
   goToPageAndXY_: function(origin, page, message) {
     this.viewport_.goToPageAndXY(page, message.x, message.y);
-    if (origin == 'bookmark')
+    if (origin == 'bookmark') {
       this.metrics.onFollowBookmark();
+    }
   },
 
   /**
@@ -637,8 +654,9 @@ PDFViewer.prototype = {
    * @param {number} progress the progress as a percentage.
    */
   updateProgress: function(progress) {
-    if (this.toolbar_)
+    if (this.toolbar_) {
       this.toolbar_.loadProgress = progress;
+    }
 
     if (progress == -1) {
       // Document load failed.
@@ -653,14 +671,16 @@ PDFViewer.prototype = {
       this.sendDocumentLoadedMessage_();
     } else if (progress == 100) {
       // Document load complete.
-      if (this.lastViewportPosition_)
+      if (this.lastViewportPosition_) {
         this.viewport_.position = this.lastViewportPosition_;
+      }
       this.paramsParser_.getViewportFromUrlParams(
           this.originalUrl_, this.handleURLParams_.bind(this));
       this.setLoadState_(LoadState.SUCCESS);
       this.sendDocumentLoadedMessage_();
-      while (this.delayedScriptingMessages_.length > 0)
+      while (this.delayedScriptingMessages_.length > 0) {
         this.handleScriptingMessage(this.delayedScriptingMessages_.shift());
+      }
 
       this.toolbarManager_.hideToolbarsAfterTimeout();
     } else {
@@ -762,8 +782,9 @@ PDFViewer.prototype = {
    * @private
    */
   viewportChanged_: function() {
-    if (!this.documentDimensions_)
+    if (!this.documentDimensions_) {
       return;
+    }
 
     // Offset the toolbar position so that it doesn't move if scrollbars appear.
     const hasScrollbars = this.viewport_.documentHasScrollbars();
@@ -791,8 +812,9 @@ PDFViewer.prototype = {
     // Update the page indicator.
     const visiblePage = this.viewport_.getMostVisiblePage();
 
-    if (this.toolbar_)
+    if (this.toolbar_) {
       this.toolbar_.pageNo = visiblePage + 1;
+    }
 
     // TODO(raymes): Give pageIndicator_ the same API as toolbar_.
     if (this.pageIndicator_) {
@@ -829,12 +851,14 @@ PDFViewer.prototype = {
       this.parentWindow_ = message.source;
       this.parentOrigin_ = message.origin;
       // Ensure that we notify the embedder if the document is loaded.
-      if (this.loadState_ != LoadState.LOADING)
+      if (this.loadState_ != LoadState.LOADING) {
         this.sendDocumentLoadedMessage_();
+      }
     }
 
-    if (this.handlePrintPreviewScriptingMessage_(message))
+    if (this.handlePrintPreviewScriptingMessage_(message)) {
       return;
+    }
 
     // Delay scripting messages from users of the scripting API until the
     // document is loaded. This simplifies use of the APIs.
@@ -860,8 +884,9 @@ PDFViewer.prototype = {
    * @private
    */
   handlePrintPreviewScriptingMessage_: function(message) {
-    if (!this.isPrintPreview_)
+    if (!this.isPrintPreview_) {
       return false;
+    }
 
     switch (message.data.type.toString()) {
       case 'loadPreviewPage':
@@ -882,11 +907,13 @@ PDFViewer.prototype = {
 
         // TODO(raymes): Disable these properly in the plugin.
         const printButton = $('print-button');
-        if (printButton)
+        if (printButton) {
           printButton.parentNode.removeChild(printButton);
+        }
         const saveButton = $('save-button');
-        if (saveButton)
+        if (saveButton) {
           saveButton.parentNode.removeChild(saveButton);
+        }
 
         this.pageIndicator_.pageLabels = message.data.pageNumbers;
 
@@ -928,12 +955,13 @@ PDFViewer.prototype = {
       // unless we're sending it to ourselves (which could happen in the case
       // of tests). We also allow documentLoaded messages through as this won't
       // leak important information.
-      if (this.parentOrigin_ == window.location.origin)
+      if (this.parentOrigin_ == window.location.origin) {
         targetOrigin = this.parentOrigin_;
-      else if (message.type == 'documentLoaded')
+      } else if (message.type == 'documentLoaded') {
         targetOrigin = '*';
-      else
+      } else {
         targetOrigin = this.originalUrl_;
+      }
       this.parentWindow_.postMessage(message, targetOrigin);
     }
   },
@@ -970,11 +998,13 @@ PDFViewer.prototype = {
     this.isUserInitiatedEvent_ = true;
     // If we received the document dimensions, the password was good so we
     // can dismiss the password screen.
-    if (this.passwordScreen_.active)
+    if (this.passwordScreen_.active) {
       this.passwordScreen_.close();
+    }
 
-    if (this.pageIndicator_)
+    if (this.pageIndicator_) {
       this.pageIndicator_.initialFadeIn();
+    }
 
     if (this.toolbar_) {
       this.toolbar_.docLength = this.documentDimensions_.pageDimensions.length;
@@ -995,10 +1025,11 @@ PDFViewer.prototype = {
   handlePasswordRequest: function() {
     // If the password screen isn't up, put it up. Otherwise we're
     // responding to an incorrect password so deny it.
-    if (!this.passwordScreen_.active)
+    if (!this.passwordScreen_.active) {
       this.passwordScreen_.show();
-    else
+    } else {
       this.passwordScreen_.deny();
+    }
   },
 
   /**
@@ -1083,8 +1114,9 @@ PDFViewer.prototype = {
 
     // Make sure file extension is .pdf, avoids dangerous extensions.
     let fileName = result.fileName;
-    if (!fileName.toLowerCase().endsWith('.pdf'))
+    if (!fileName.toLowerCase().endsWith('.pdf')) {
       fileName = fileName + '.pdf';
+    }
 
     const a = document.createElement('a');
     a.download = fileName;

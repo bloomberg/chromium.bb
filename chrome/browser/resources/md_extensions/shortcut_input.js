@@ -67,16 +67,18 @@ cr.define('extensions', function() {
 
     /** @private */
     startCapture_: function() {
-      if (this.capturing_)
+      if (this.capturing_) {
         return;
+      }
       this.capturing_ = true;
       this.delegate.setShortcutHandlingSuspended(true);
     },
 
     /** @private */
     endCapture_: function() {
-      if (!this.capturing_)
+      if (!this.capturing_) {
         return;
+      }
       this.pendingShortcut_ = '';
       this.capturing_ = false;
       const input = this.$.input;
@@ -90,8 +92,9 @@ cr.define('extensions', function() {
      * @private
      */
     onKeyDown_: function(e) {
-      if (e.target == this.$.clear)
+      if (e.target == this.$.clear) {
         return;
+      }
 
       if (e.keyCode == extensions.Key.Escape) {
         if (!this.capturing_) {
@@ -109,8 +112,9 @@ cr.define('extensions', function() {
         return;
       }
 
-      if (!this.capturing_)
+      if (!this.capturing_) {
         this.startCapture_();
+      }
 
       this.handleKey_(e);
     },
@@ -124,11 +128,14 @@ cr.define('extensions', function() {
       // case, the clear button disappears before key-up, so 'Enter's key-up
       // target becomes the input field, not the clear button, and needs to
       // be caught explicitly.
-      if (e.target == this.$.clear || e.key == 'Enter')
+      if (e.target == this.$.clear || e.key == 'Enter') {
         return;
+      }
 
-      if (e.keyCode == extensions.Key.Escape || e.keyCode == extensions.Key.Tab)
+      if (e.keyCode == extensions.Key.Escape ||
+          e.keyCode == extensions.Key.Tab) {
         return;
+      }
 
       this.handleKey_(e);
     },
@@ -143,10 +150,12 @@ cr.define('extensions', function() {
      */
     getErrorString_: function(
         error, includeStartModifier, tooManyModifiers, needCharacter) {
-      if (error == ShortcutError.TOO_MANY_MODIFIERS)
+      if (error == ShortcutError.TOO_MANY_MODIFIERS) {
         return tooManyModifiers;
-      if (error == ShortcutError.NEED_CHARACTER)
+      }
+      if (error == ShortcutError.NEED_CHARACTER) {
         return needCharacter;
+      }
       return includeStartModifier;
     },
 

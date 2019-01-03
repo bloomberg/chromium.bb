@@ -43,8 +43,9 @@ cr.define('bookmarks.ApiListener', function() {
   }
 
   function highlightUpdatedItemsImpl() {
-    if (!trackUpdates)
+    if (!trackUpdates) {
       return;
+    }
 
     document.dispatchEvent(new CustomEvent('highlight-items', {
       detail: updatedItems,
@@ -84,8 +85,9 @@ cr.define('bookmarks.ApiListener', function() {
    */
   function onBookmarkCreated(id, treeNode) {
     batchUIUpdates();
-    if (trackUpdates)
+    if (trackUpdates) {
       updatedItems.push(id);
+    }
     dispatch(bookmarks.actions.createBookmark(id, treeNode));
   }
 
@@ -111,8 +113,9 @@ cr.define('bookmarks.ApiListener', function() {
    */
   function onBookmarkMoved(id, moveInfo) {
     batchUIUpdates();
-    if (trackUpdates)
+    if (trackUpdates) {
       updatedItems.push(id);
+    }
     dispatch(bookmarks.actions.moveBookmark(
         id, moveInfo.parentId, moveInfo.index, moveInfo.oldParentId,
         moveInfo.oldIndex));

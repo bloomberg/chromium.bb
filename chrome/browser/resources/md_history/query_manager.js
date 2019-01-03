@@ -41,14 +41,16 @@ Polymer({
     this.documentListeners_['change-query'] = this.onChangeQuery_.bind(this);
     this.documentListeners_['query-history'] = this.onQueryHistory_.bind(this);
 
-    for (const e in this.documentListeners_)
+    for (const e in this.documentListeners_) {
       document.addEventListener(e, this.documentListeners_[e]);
+    }
   },
 
   /** @override */
   detached: function() {
-    for (const e in this.documentListeners_)
+    for (const e in this.documentListeners_) {
       document.removeEventListener(e, this.documentListeners_[e]);
+    }
   },
 
   /**
@@ -58,8 +60,9 @@ Polymer({
   queryHistory_: function(incremental) {
     const queryState = this.queryState;
 
-    if (queryState.queryingDisabled)
+    if (queryState.queryingDisabled) {
       return;
+    }
 
     this.set('queryState.querying', true);
     this.set('queryState.incremental', incremental);
@@ -90,8 +93,9 @@ Polymer({
 
     if (needsUpdate) {
       this.queryHistory_(false);
-      if (this.router)
+      if (this.router) {
         this.router.serializeUrl();
+      }
     }
   },
 
@@ -107,7 +111,8 @@ Polymer({
   /** @private */
   searchTermChanged_: function() {
     // TODO(tsergeant): Ignore incremental searches in this metric.
-    if (this.queryState.searchTerm)
+    if (this.queryState.searchTerm) {
       md_history.BrowserService.getInstance().recordAction('Search');
+    }
   },
 });

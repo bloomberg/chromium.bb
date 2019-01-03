@@ -50,13 +50,15 @@ cr.define('bookmarks', function() {
       const content = this.$.content;
       content.textContent = '';
       pieces.forEach(function(p) {
-        if (p.value.length == 0)
+        if (p.value.length == 0) {
           return;
+        }
 
         const span = document.createElement('span');
         span.textContent = p.value;
-        if (p.collapsible)
+        if (p.collapsible) {
           span.classList.add('collapsible');
+        }
 
         content.appendChild(span);
       });

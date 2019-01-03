@@ -38,8 +38,9 @@ Polymer({
 
   /** @protected settings.RouteObserverBehavior */
   currentRouteChanged: function(newRoute) {
-    if (newRoute == settings.routes.NETWORK_DETAIL)
+    if (newRoute == settings.routes.NETWORK_DETAIL) {
       /** @type {NetworkProxyElement} */ (this.$$('network-proxy')).reset();
+    }
   },
 
   /** @private */
@@ -102,8 +103,9 @@ Polymer({
    * @private
    */
   shouldShowAllowShared_: function(property) {
-    if (!this.isShared_())
+    if (!this.isShared_()) {
       return false;
+    }
     // We currently do not accurately determine the source if the policy
     // controlling the proxy setting, so always show the 'allow shared'
     // toggle for shared networks. http://crbug.com/662529.

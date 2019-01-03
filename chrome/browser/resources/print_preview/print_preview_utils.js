@@ -28,11 +28,14 @@ function isPositiveInteger(value) {
  * @return {boolean} true if the arrays are equal.
  */
 function areArraysEqual(array1, array2) {
-  if (array1.length != array2.length)
+  if (array1.length != array2.length) {
     return false;
-  for (let i = 0; i < array1.length; i++)
-    if (array1[i] !== array2[i])
+  }
+  for (let i = 0; i < array1.length; i++) {
+    if (array1[i] !== array2[i]) {
       return false;
+    }
+  }
   return true;
 }
 
@@ -43,12 +46,14 @@ function areArraysEqual(array1, array2) {
  * @return {boolean} true if the arrays are equal.
  */
 function areRangesEqual(array1, array2) {
-  if (array1.length != array2.length)
+  if (array1.length != array2.length) {
     return false;
-  for (let i = 0; i < array1.length; i++)
+  }
+  for (let i = 0; i < array1.length; i++) {
     if (array1[i].from != array2[i].from || array1[i].to != array2[i].to) {
       return false;
     }
+  }
   return true;
 }
 
@@ -61,13 +66,16 @@ function areRangesEqual(array1, array2) {
 function removeDuplicates(inArray) {
   const out = [];
 
-  if (inArray.length == 0)
+  if (inArray.length == 0) {
     return out;
+  }
 
   out.push(inArray[0]);
-  for (let i = 1; i < inArray.length; ++i)
-    if (inArray[i] != inArray[i - 1])
+  for (let i = 1; i < inArray.length; ++i) {
+    if (inArray[i] != inArray[i - 1]) {
       out.push(inArray[i]);
+    }
+  }
   return out;
 }
 
@@ -120,23 +128,29 @@ function pageRangeTextToPageRanges(pageRangeText, opt_totalPageCount) {
   for (let i = 0; i < parts.length; ++i) {
     const match = parts[i].match(regex);
     if (match) {
-      if (!isPositiveInteger(match[1]) && match[1] !== '')
+      if (!isPositiveInteger(match[1]) && match[1] !== '') {
         return PageRangeStatus.SYNTAX_ERROR;
-      if (!isPositiveInteger(match[2]) && match[2] !== '')
+      }
+      if (!isPositiveInteger(match[2]) && match[2] !== '') {
         return PageRangeStatus.SYNTAX_ERROR;
+      }
       const from = match[1] ? parseInt(match[1], 10) : 1;
       const to = match[2] ? parseInt(match[2], 10) : totalPageCount;
-      if (from > to)
+      if (from > to) {
         return PageRangeStatus.SYNTAX_ERROR;
-      if (to > totalPageCount)
+      }
+      if (to > totalPageCount) {
         return PageRangeStatus.LIMIT_ERROR;
+      }
       pageRanges.push({'from': from, 'to': to});
     } else {
-      if (!isPositiveInteger(parts[i]))
+      if (!isPositiveInteger(parts[i])) {
         return PageRangeStatus.SYNTAX_ERROR;
+      }
       const singlePageNumber = parseInt(parts[i], 10);
-      if (singlePageNumber > totalPageCount)
+      if (singlePageNumber > totalPageCount) {
         return PageRangeStatus.LIMIT_ERROR;
+      }
       pageRanges.push({'from': singlePageNumber, 'to': singlePageNumber});
     }
   }
@@ -165,8 +179,9 @@ function pageRangeTextToPageList(pageRangeText, totalPageCount) {
     }
   }
   if (pageList.length == 0) {
-    for (let j = 1; j <= totalPageCount; ++j)
+    for (let j = 1; j <= totalPageCount; ++j) {
       pageList.push(j);
+    }
   }
   return pageList;
 }
@@ -178,8 +193,9 @@ function pageRangeTextToPageList(pageRangeText, totalPageCount) {
  */
 function pageListToPageSet(pageList) {
   let pageSet = [];
-  if (pageList.length == 0)
+  if (pageList.length == 0) {
     return pageSet;
+  }
   pageSet = pageList.slice(0);
   pageSet.sort(function(a, b) {
     return /** @type {number} */ (a) - /** @type {number} */ (b);
@@ -224,8 +240,9 @@ function arrayContains(array, item) {
 function getStringForLocale(localizedStrings, locale) {
   locale = locale.toLowerCase();
   for (let i = 0; i < localizedStrings.length; i++) {
-    if (localizedStrings[i].locale.toLowerCase() == locale)
+    if (localizedStrings[i].locale.toLowerCase() == locale) {
       return localizedStrings[i].value;
+    }
   }
   return '';
 }

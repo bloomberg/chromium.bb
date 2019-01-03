@@ -278,8 +278,9 @@ Polymer({
         // Don't try to print with system dialog on Windows if the document is
         // not ready, because we send the preview document to the printer on
         // Windows.
-        if (!cr.isWindows || this.state == print_preview_new.State.READY)
+        if (!cr.isWindows || this.state == print_preview_new.State.READY) {
           this.onPrintWithSystemDialog_();
+        }
         e.preventDefault();
         return;
       }
@@ -322,8 +323,9 @@ Polymer({
     // TODO(rbpotter): Fix event re-firing so that the event comes from the
     // dialog that has been closed, and add an assertion that the removed
     // dialog matches e.composedPath()[0].
-    if (e.composedPath()[0].nodeName == 'CR-DIALOG')
+    if (e.composedPath()[0].nodeName == 'CR-DIALOG') {
       this.openDialogs_.pop();
+    }
   },
 
   /**
@@ -399,8 +401,9 @@ Polymer({
   /** @private */
   onDestinationSelect_: function() {
     // If the plugin does not exist do not attempt to load the preview.
-    if (this.state == print_preview_new.State.FATAL_ERROR)
+    if (this.state == print_preview_new.State.FATAL_ERROR) {
       return;
+    }
 
     this.$.state.transitTo(print_preview_new.State.NOT_READY);
     this.destination_ = this.destinationStore_.selectedDestination;
@@ -413,17 +416,20 @@ Polymer({
     // destinationStore_.selectedDestination.capabilities has been updated.
     this.notifyPath('destination_.capabilities');
 
-    if (!this.$.model.initialized())
+    if (!this.$.model.initialized()) {
       this.$.model.applyStickySettings();
+    }
 
-    if (this.destination_)
+    if (this.destination_) {
       this.$.model.applyDestinationSpecificPolicies();
+    }
 
     if (this.state == print_preview_new.State.NOT_READY ||
         this.state == print_preview_new.State.INVALID_PRINTER) {
       this.$.state.transitTo(print_preview_new.State.READY);
-      if (this.isInKioskAutoPrintMode_)
+      if (this.isInKioskAutoPrintMode_) {
         this.onPrintRequested_();
+      }
     }
   },
 
@@ -571,13 +577,15 @@ Polymer({
         break;
       case print_preview_new.PreviewAreaState.INVALID_SETTINGS:
       case print_preview_new.PreviewAreaState.UNSUPPORTED_CLOUD_PRINTER:
-        if (this.state != print_preview_new.State.INVALID_PRINTER)
+        if (this.state != print_preview_new.State.INVALID_PRINTER) {
           this.$.state.transitTo(print_preview_new.State.INVALID_PRINTER);
+        }
         break;
       case print_preview_new.PreviewAreaState.DISPLAY_PREVIEW:
       case print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADED:
-        if (this.state == print_preview_new.State.HIDDEN)
+        if (this.state == print_preview_new.State.HIDDEN) {
           this.$.state.transitTo(print_preview_new.State.PRINTING);
+        }
         break;
       default:
         break;
@@ -619,11 +627,13 @@ Polymer({
    * @private
    */
   onPrintPresetOptions_: function(disableScaling, copies, duplex) {
-    if (disableScaling)
+    if (disableScaling) {
       this.documentInfo_.updateIsScalingDisabled(true);
+    }
 
-    if (copies > 0 && this.getSetting('copies').available)
+    if (copies > 0 && this.getSetting('copies').available) {
       this.setSetting('copies', copies);
+    }
 
     if (duplex !== print_preview_new.DuplexMode.UNKNOWN_DUPLEX_MODE &&
         this.getSetting('duplex').available) {

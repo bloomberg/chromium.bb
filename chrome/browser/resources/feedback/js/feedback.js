@@ -162,10 +162,11 @@ function clearAttachedFile() {
 function setupLinkHandlers(anchorElement, url, useAppWindow) {
   anchorElement.onclick = function(e) {
     e.preventDefault();
-    if (useAppWindow)
+    if (useAppWindow) {
       openUrlInAppWindow(url);
-    else
+    } else {
       window.open(url, '_blank');
+    }
   };
 
   anchorElement.onauxclick = function(e) {
@@ -244,8 +245,9 @@ function sendReport() {
   feedbackInfo.sendHistograms = useHistograms;
 
   // If the user doesn't want to send the screenshot.
-  if (!$('screenshot-checkbox').checked)
+  if (!$('screenshot-checkbox').checked) {
     feedbackInfo.screenshot = null;
+  }
 
   let productId = parseInt('' + feedbackInfo.productId);
   if (isNaN(productId)) {
@@ -294,8 +296,9 @@ function performanceFeedbackChanged() {
 function resizeAppWindow() {
   // We pick the width from the titlebar, which has no margins.
   let width = $('title-bar').scrollWidth;
-  if (width < FEEDBACK_MIN_WIDTH)
+  if (width < FEEDBACK_MIN_WIDTH) {
     width = FEEDBACK_MIN_WIDTH;
+  }
 
   // We get the height by adding the titlebar height and the content height +
   // margins. We can't get the margins for the content-pane here by using
@@ -304,8 +307,9 @@ function resizeAppWindow() {
       CONTENT_MARGIN_HEIGHT;
 
   let minHeight = FEEDBACK_MIN_HEIGHT;
-  if (feedbackInfo.flow == chrome.feedbackPrivate.FeedbackFlow.LOGIN)
+  if (feedbackInfo.flow == chrome.feedbackPrivate.FeedbackFlow.LOGIN) {
     minHeight = FEEDBACK_MIN_HEIGHT_LOGIN;
+  }
   height = Math.max(height, minHeight);
 
   chrome.app.window.current().resizeTo(width, height);
@@ -348,8 +352,9 @@ function initialize() {
   // Add listener to receive the feedback info object.
   chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.sentFromEventPage) {
-      if (!feedbackInfo.flow)
+      if (!feedbackInfo.flow) {
         feedbackInfo.flow = chrome.feedbackPrivate.FeedbackFlow.REGULAR;
+      }
 
       if (feedbackInfo.flow ==
           chrome.feedbackPrivate.FeedbackFlow.SHOW_SRT_PROMPT) {
@@ -385,10 +390,12 @@ function initialize() {
       }
 
       $('description-text').textContent = feedbackInfo.description;
-      if (feedbackInfo.descriptionPlaceholder)
+      if (feedbackInfo.descriptionPlaceholder) {
         $('description-text').placeholder = feedbackInfo.descriptionPlaceholder;
-      if (feedbackInfo.pageUrl)
+      }
+      if (feedbackInfo.pageUrl) {
         $('page-url-text').value = feedbackInfo.pageUrl;
+      }
 
       takeScreenshot(function(screenshotCanvas) {
         // We've taken our screenshot, show the feedback page without any
@@ -420,8 +427,9 @@ function initialize() {
 
       chrome.feedbackPrivate.getUserEmail(function(email) {
         // Never add an empty option.
-        if (!email)
+        if (!email) {
           return;
+        }
         const optionElement = document.createElement('option');
         optionElement.value = email;
         optionElement.text = email;

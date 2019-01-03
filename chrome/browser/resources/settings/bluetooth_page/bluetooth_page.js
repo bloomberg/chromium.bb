@@ -136,10 +136,12 @@ Polymer({
 
   /** @override */
   ready: function() {
-    if (bluetoothApis.bluetoothApiForTest)
+    if (bluetoothApis.bluetoothApiForTest) {
       this.bluetooth = bluetoothApis.bluetoothApiForTest;
-    if (bluetoothApis.bluetoothPrivateApiForTest)
+    }
+    if (bluetoothApis.bluetoothPrivateApiForTest) {
       this.bluetoothPrivate = bluetoothApis.bluetoothPrivateApiForTest;
+    }
   },
 
   /** @override */
@@ -169,8 +171,9 @@ Polymer({
   getIcon_: function(bluetoothToggleState) {
     // Don't use |this.bluetoothToggleState_| here, since it has not been
     // updated yet to the latest value.
-    if (!bluetoothToggleState)
+    if (!bluetoothToggleState) {
       return 'settings:bluetooth-disabled';
+    }
     return 'cr:bluetooth';
   },
 
@@ -201,18 +204,21 @@ Polymer({
    */
   onBluetoothAdapterStateChanged_: function(state) {
     this.adapterState_ = state;
-    if (this.isToggleEnabled_())
+    if (this.isToggleEnabled_()) {
       this.bluetoothToggleState_ = state.powered;
+    }
   },
 
   /** @private */
   onTap_: function() {
-    if (!this.isToggleEnabled_())
+    if (!this.isToggleEnabled_()) {
       return;
-    if (!this.bluetoothToggleState_)
+    }
+    if (!this.bluetoothToggleState_) {
       this.bluetoothToggleState_ = true;
-    else
+    } else {
       this.openSubpage_();
+    }
   },
 
   /**

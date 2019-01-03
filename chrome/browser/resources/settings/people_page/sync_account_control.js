@@ -145,8 +145,9 @@ Polymer({
       // Turn off the promo if the user is signed in.
       this.showingPromo = false;
     }
-    if (!this.syncStatus.signedIn && this.shownAccount_ !== undefined)
+    if (!this.syncStatus.signedIn && this.shownAccount_ !== undefined) {
       this.recordImpressionUserActions_();
+    }
   },
 
   /**
@@ -198,16 +199,18 @@ Polymer({
    * @private
    */
   getSyncIconStyle_: function() {
-    if (!!this.syncStatus.hasUnrecoverableError)
+    if (!!this.syncStatus.hasUnrecoverableError) {
       return 'sync-problem';
+    }
     if (!!this.syncStatus.hasError) {
       return this.syncStatus.statusAction ==
               settings.StatusAction.REAUTHENTICATE ?
           'sync-paused' :
           'sync-problem';
     }
-    if (!!this.syncStatus.disabled)
+    if (!!this.syncStatus.disabled) {
       return 'sync-disabled';
+    }
     return 'sync';
   },
 
@@ -282,8 +285,9 @@ Polymer({
    * @private
    */
   computeShouldShowAvatarRow_: function() {
-    if (this.storedAccounts_ === undefined || this.syncStatus === undefined)
+    if (this.storedAccounts_ === undefined || this.syncStatus === undefined) {
       return false;
+    }
 
     return this.syncStatus.signedIn || this.storedAccounts_.length > 0;
   },
@@ -295,9 +299,9 @@ Polymer({
         this.syncBrowserProxy_.startSignIn();
         break;
       case settings.StatusAction.SIGNOUT_AND_SIGNIN:
-        if (this.syncStatus.domain)
+        if (this.syncStatus.domain) {
           settings.navigateTo(settings.routes.SIGN_OUT);
-        else {
+        } else {
           // Silently sign the user out without deleting their profile and
           // prompt them to sign back in.
           this.syncBrowserProxy_.signOut(false);
@@ -358,8 +362,9 @@ Polymer({
     // Close dropdown when avatar-row hides, so if it appears again, the menu
     // won't be open by default.
     const actionMenu = this.$$('#menu');
-    if (!this.shouldShowAvatarRow_ && actionMenu && actionMenu.open)
+    if (!this.shouldShowAvatarRow_ && actionMenu && actionMenu.open) {
       actionMenu.close();
+    }
   },
 
   /**
@@ -375,8 +380,9 @@ Polymer({
 
   /** @private */
   onShownAccountShouldChange_: function() {
-    if (this.storedAccounts_ === undefined || this.syncStatus === undefined)
+    if (this.storedAccounts_ === undefined || this.syncStatus === undefined) {
       return;
+    }
 
     if (this.syncStatus.signedIn) {
       for (let i = 0; i < this.storedAccounts_.length; i++) {
@@ -401,8 +407,9 @@ Polymer({
 
       this.shownAccount_ = firstStoredAccount;
 
-      if (shouldRecordImpression)
+      if (shouldRecordImpression) {
         this.recordImpressionUserActions_();
+      }
     }
   }
 });

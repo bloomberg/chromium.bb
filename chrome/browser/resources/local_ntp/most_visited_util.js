@@ -56,10 +56,12 @@ function createMostVisitedLink(params, href, title, text, direction) {
   var link = document.createElement('a');
   link.style.color = styles.color;
   link.style.fontSize = styles.fontSize + 'px';
-  if (styles.fontFamily)
+  if (styles.fontFamily) {
     link.style.fontFamily = styles.fontFamily;
-  if (styles.textAlign)
+  }
+  if (styles.textAlign) {
     link.style.textAlign = styles.textAlign;
+  }
   if (styles.textFadePos) {
     var dir = /^rtl$/i.test(direction) ? 'to left' : 'to right';
     // The fading length in pixels is passed by the caller.
@@ -159,21 +161,26 @@ function getMostVisitedStyles(params, isTitle) {
     fontFamily: '',
     fontSize: 11
   };
-  if ('f' in params && /^[-0-9a-zA-Z ,]+$/.test(params.f))
+  if ('f' in params && /^[-0-9a-zA-Z ,]+$/.test(params.f)) {
     styles.fontFamily = params.f;
-  if ('fs' in params && isFinite(parseInt(params.fs, 10)))
+  }
+  if ('fs' in params && isFinite(parseInt(params.fs, 10))) {
     styles.fontSize = parseInt(params.fs, 10);
-  if ('ta' in params && /^[-0-9a-zA-Z ,]+$/.test(params.ta))
+  }
+  if ('ta' in params && /^[-0-9a-zA-Z ,]+$/.test(params.ta)) {
     styles.textAlign = params.ta;
+  }
   if ('tf' in params) {
     var tf = parseInt(params.tf, 10);
-    if (isFinite(tf))
+    if (isFinite(tf)) {
       styles.textFadePos = tf;
+    }
   }
   if ('ntl' in params) {
     var ntl = parseInt(params.ntl, 10);
-    if (isFinite(ntl))
+    if (isFinite(ntl)) {
       styles.numTitleLines = ntl;
+    }
   }
   return styles;
 }
@@ -197,19 +204,24 @@ var isSchemeAllowed = function(url) {
 function fillMostVisited(location, fill) {
   var params = parseQueryParams(location);
   params.rid = parseInt(params.rid, 10);
-  if (!isFinite(params.rid))
+  if (!isFinite(params.rid)) {
     return;
+  }
   var data =
       chrome.embeddedSearch.newTabPage.getMostVisitedItemData(params.rid);
-  if (!data)
+  if (!data) {
     return;
-  if (data.url && !isSchemeAllowed(data.url))
+  }
+  if (data.url && !isSchemeAllowed(data.url)) {
     return;
+  }
 
-  if (isFinite(params.dummy) && parseInt(params.dummy, 10))
+  if (isFinite(params.dummy) && parseInt(params.dummy, 10)) {
     data.dummy = true;
+  }
 
-  if (data.direction)
+  if (data.direction) {
     document.body.dir = data.direction;
+  }
   fill(params, data);
 }

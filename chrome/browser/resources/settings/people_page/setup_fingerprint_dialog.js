@@ -95,13 +95,15 @@ Polymer({
    * Closes the dialog.
    */
   close: function() {
-    if (this.$.dialog.open)
+    if (this.$.dialog.open) {
       this.$.dialog.close();
+    }
 
     // Note: Reset resets |step_| back to the default, so handle anything that
     // checks |step_| before resetting.
-    if (this.step_ != settings.FingerprintSetupStep.READY)
+    if (this.step_ != settings.FingerprintSetupStep.READY) {
       this.browserProxy_.cancelCurrentEnroll();
+    }
 
     this.reset_();
   },
@@ -130,8 +132,9 @@ Polymer({
    * @private
    */
   onClose_: function() {
-    if (this.$.dialog.open)
+    if (this.$.dialog.open) {
       this.$.dialog.close();
+    }
   },
 
   /**
@@ -226,8 +229,9 @@ Polymer({
    * @private
    */
   getCloseButtonText_: function(step) {
-    if (step == settings.FingerprintSetupStep.READY)
+    if (step == settings.FingerprintSetupStep.READY) {
       return this.i18n('done');
+    }
 
     return this.i18n('cancel');
   },
@@ -237,8 +241,9 @@ Polymer({
    * @private
    */
   getCloseButtonClass_: function(step) {
-    if (step == settings.FingerprintSetupStep.READY)
+    if (step == settings.FingerprintSetupStep.READY) {
       return 'action-button';
+    }
 
     return 'cancel-button';
   },

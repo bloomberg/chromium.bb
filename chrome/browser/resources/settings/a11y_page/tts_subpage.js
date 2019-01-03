@@ -295,8 +295,9 @@ Polymer({
    * @private
    */
   updateLangToVoicePrefs_: function(langToVoices) {
-    if (langToVoices.length == 0)
+    if (langToVoices.length == 0) {
       return;
+    }
     const allCodes = new Set(
         Object.keys(this.prefs.settings['tts']['lang_to_voice_name'].value));
     for (const code in langToVoices) {
@@ -314,8 +315,9 @@ Polymer({
       }
       // See if the set voice ID is in the voices list, in which case we are
       // done checking this language.
-      if (voices.some(voice => voice.id === defaultVoiceForLang))
+      if (voices.some(voice => voice.id === defaultVoiceForLang)) {
         continue;
+      }
       // Change prefs that point to voices that no longer exist.
       this.set(
           'prefs.settings.tts.lang_to_voice_name.value.' + code,
@@ -338,8 +340,9 @@ Polymer({
    * @private
    */
   setDefaultPreviewVoiceForLocale_: function(allVoices, languageCodeMap) {
-    if (!allVoices || allVoices.length == 0)
+    if (!allVoices || allVoices.length == 0) {
       return;
+    }
 
     // Force a synchronous render so that we can set the default.
     this.$.previewVoiceOptions.render();
@@ -347,8 +350,9 @@ Polymer({
     // Set something if nothing exists. This useful for new users where
     // sometimes browserProxy.getProspectiveUILanguage() does not complete the
     // callback.
-    if (!this.defaultPreviewVoice)
+    if (!this.defaultPreviewVoice) {
       this.set('defaultPreviewVoice', this.getBestVoiceForLocale_(allVoices));
+    }
 
     const browserProxy = settings.LanguagesBrowserProxyImpl.getInstance();
     browserProxy.getProspectiveUILanguage().then(prospectiveUILanguage => {

@@ -55,10 +55,11 @@ const SetManufacturerModelBehavior = {
    * @public
    */
   getBaseName: function(path) {
-    if (path && path.length > 0)
+    if (path && path.length > 0) {
       return path.substring(path.lastIndexOf('/') + 1);
-    else
+    } else {
       return '';
+    }
   },
 
   /**
@@ -89,8 +90,9 @@ const SetManufacturerModelBehavior = {
    * @private
    */
   manufacturerListChanged_: function(manufacturersInfo) {
-    if (!manufacturersInfo.success)
+    if (!manufacturersInfo.success) {
       return;
+    }
     this.manufacturerList = manufacturersInfo.manufacturers;
     if (this.activePrinter.ppdManufacturer.length != 0) {
       settings.CupsPrintersBrowserProxyImpl.getInstance()
@@ -104,8 +106,9 @@ const SetManufacturerModelBehavior = {
    * @private
    */
   modelListChanged_: function(modelsInfo) {
-    if (modelsInfo.success)
+    if (modelsInfo.success) {
       this.modelList = modelsInfo.models;
+    }
   },
 
   /**

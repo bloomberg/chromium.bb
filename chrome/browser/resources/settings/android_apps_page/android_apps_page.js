@@ -58,7 +58,8 @@ Polymer({
       // Filter out events coming from 'Learn more' link
       return;
     }
-    if (this.androidAppsInfo.playStoreEnabled)
+    if (this.androidAppsInfo.playStoreEnabled) {
       settings.navigateTo(settings.routes.ANDROID_APPS_DETAILS);
+    }
   },
 });

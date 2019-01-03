@@ -89,8 +89,9 @@ Polymer({
    */
   onSearchChanged_: function(e) {
     const searchTerm = /** @type {string} */ (e.detail);
-    if (searchTerm != this.searchTerm_)
+    if (searchTerm != this.searchTerm_) {
       this.dispatch(bookmarks.actions.setSearchTerm(searchTerm));
+    }
   },
 
   /** @private */

@@ -81,8 +81,9 @@ Channel.prototype = {
    */
   invokeMessageCallbacks_: function(msg) {
     const name = msg.name;
-    if (this.messageCallbacks_[name])
+    if (this.messageCallbacks_[name]) {
       return this.messageCallbacks_[name](msg);
+    }
 
     console.error('Error: Unexpected message, name=' + name);
     return null;
@@ -104,8 +105,9 @@ Channel.prototype = {
     } else if (name == Channel.INTERNAL_REPLY_MESSAGE) {
       const callback = this.internalRequestCallbacks_[msg.requestId];
       delete this.internalRequestCallbacks_[msg.requestId];
-      if (callback)
+      if (callback) {
         callback(msg.result);
+      }
     } else {
       this.invokeMessageCallbacks_(msg);
     }

@@ -141,8 +141,9 @@ cr.define('service_list', function() {
      * @param {string} deviceAddress
      */
     load: function(deviceAddress) {
-      if (this.servicesRequested_ || !this.isSpinnerShowing())
+      if (this.servicesRequested_ || !this.isSpinnerShowing()) {
         return;
+      }
 
       this.deviceAddress_ = deviceAddress;
       this.servicesRequested_ = true;

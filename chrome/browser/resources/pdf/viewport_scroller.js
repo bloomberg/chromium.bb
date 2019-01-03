@@ -117,10 +117,11 @@ ViewportScroller.prototype = {
    */
   onMousemove_: function(event) {
     this.scrollVelocity_ = this.calculateVelocity_(event);
-    if (!this.scrollVelocity_.x && !this.scrollVelocity_.y)
+    if (!this.scrollVelocity_.x && !this.scrollVelocity_.y) {
       this.stopDragScrollTimer_();
-    else if (!this.timerId_)
+    } else if (!this.timerId_) {
       this.startDragScrollTimer_();
+    }
   },
 
   /**
@@ -131,8 +132,9 @@ ViewportScroller.prototype = {
    */
   setEnableScrolling: function(isSelecting) {
     if (isSelecting) {
-      if (!this.mousemoveCallback_)
+      if (!this.mousemoveCallback_) {
         this.mousemoveCallback_ = this.onMousemove_.bind(this);
+      }
       this.plugin_.addEventListener(
           'mousemove', this.mousemoveCallback_, false);
     } else {

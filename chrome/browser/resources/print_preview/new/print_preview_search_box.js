@@ -45,8 +45,9 @@ Polymer({
   onSearchChanged_: function(e) {
     let safeQuery = e.detail.trim().replace(SANITIZE_REGEX, '\\$&');
     safeQuery = safeQuery.length > 0 ? new RegExp(`(${safeQuery})`, 'i') : null;
-    if (this.timeout_)
+    if (this.timeout_) {
       clearTimeout(this.timeout_);
+    }
     this.timeout_ = setTimeout(() => {
       this.searchQuery = safeQuery;
       this.timeout_ = null;

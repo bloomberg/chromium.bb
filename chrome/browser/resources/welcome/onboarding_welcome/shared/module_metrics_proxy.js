@@ -160,14 +160,16 @@ cr.define('nux', function() {
 
     recordClickedOption() {
       // Only overwrite this.firstPart if it's not overwritten already
-      if (this.firstPart == this.options_.didNothing)
+      if (this.firstPart == this.options_.didNothing) {
         this.firstPart = this.options_.choseAnOption;
+      }
     }
 
     recordClickedDisabledButton() {
       // Only overwrite this.firstPart if it's not overwritten already
-      if (this.firstPart == this.options_.didNothing)
+      if (this.firstPart == this.options_.didNothing) {
         this.firstPart = this.options_.clickedDisabledNextButton;
+      }
     }
 
     recordNoThanks() {

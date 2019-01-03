@@ -109,10 +109,12 @@ cr.define('print_preview', function() {
 
     /** Initiates loading of cloud printer sharing invitations. */
     startLoadingInvitations() {
-      if (!this.cloudPrintInterface_)
+      if (!this.cloudPrintInterface_) {
         return;
-      if (!this.userInfo_.activeUser)
+      }
+      if (!this.userInfo_.activeUser) {
         return;
+      }
       if (this.loadStatus_.hasOwnProperty(this.userInfo_.activeUser)) {
         if (this.loadStatus_[this.userInfo_.activeUser] ==
             print_preview.InvitationStoreLoadStatus.DONE) {
@@ -133,8 +135,9 @@ cr.define('print_preview', function() {
      * @param {boolean} accept Whether to accept this invitation.
      */
     processInvitation(invitation, accept) {
-      if (this.invitationInProgress_)
+      if (this.invitationInProgress_) {
         return;
+      }
       this.invitationInProgress_ = invitation;
       this.cloudPrintInterface_.processInvite(invitation, accept);
     }
@@ -151,8 +154,9 @@ cr.define('print_preview', function() {
               return i != invitation;
             });
       }
-      if (this.invitationInProgress_ == invitation)
+      if (this.invitationInProgress_ == invitation) {
         this.invitationInProgress_ = null;
+      }
     }
 
     /**

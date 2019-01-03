@@ -548,8 +548,9 @@ cr.define('print_preview', function() {
      *     destination.
      */
     set capabilities(capabilities) {
-      if (capabilities)
+      if (capabilities) {
         this.capabilities_ = capabilities;
+      }
     }
 
     /**
@@ -634,8 +635,9 @@ cr.define('print_preview', function() {
      * @return {string} Human readable status for a destination that is offline
      *     or has a bad certificate. */
     get connectionStatusText() {
-      if (!this.isOfflineOrInvalid)
+      if (!this.isOfflineOrInvalid) {
         return '';
+      }
       const offlineDurationMs = Date.now() - this.lastAccessTime_;
       let statusMessageId;
       if (this.shouldShowInvalidCertificateError) {
@@ -821,8 +823,9 @@ cr.define('print_preview', function() {
      */
     get hasColorCapability() {
       const capability = this.colorCapability_();
-      if (!capability || !capability.option)
+      if (!capability || !capability.option) {
         return false;
+      }
       let hasColor = false;
       let hasMonochrome = false;
       capability.option.forEach(option => {
@@ -858,14 +861,16 @@ cr.define('print_preview', function() {
       const typesToLookFor =
           isColor ? this.COLOR_TYPES_ : this.MONOCHROME_TYPES_;
       const capability = this.colorCapability_();
-      if (!capability || !capability.option)
+      if (!capability || !capability.option) {
         return null;
+      }
       for (let i = 0; i < typesToLookFor.length; i++) {
         const matchingOptions = capability.option.filter(option => {
           return option.type == typesToLookFor[i];
         });
-        if (matchingOptions.length > 0)
+        if (matchingOptions.length > 0) {
           return matchingOptions[0];
+        }
       }
       return null;
     }
@@ -896,8 +901,9 @@ cr.define('print_preview', function() {
      */
     get defaultColorOption() {
       const capability = this.colorCapability_();
-      if (!capability || !capability.option)
+      if (!capability || !capability.option) {
         return null;
+      }
       const defaultOptions = capability.option.filter(option => {
         return option.is_default;
       });

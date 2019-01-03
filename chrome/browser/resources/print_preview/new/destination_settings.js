@@ -87,8 +87,9 @@ Polymer({
    */
   getStatusText_: function() {
     // |destination| can be either undefined, or null here.
-    if (!this.destination)
+    if (!this.destination) {
       return '';
+    }
 
     return this.destination.shouldShowInvalidCertificateError ?
         this.i18n('noLongerSupportedFragment') :

@@ -346,11 +346,13 @@ Polymer({
    * @private
    */
   updateSettingsFromDestination_: function() {
-    if (!this.destination)
+    if (!this.destination) {
       return;
+    }
 
-    if (this.destination.capabilities == this.lastDestinationCapabilities_)
+    if (this.destination.capabilities == this.lastDestinationCapabilities_) {
       return;
+    }
 
     this.lastDestinationCapabilities_ = this.destination.capabilities;
 
@@ -359,8 +361,9 @@ Polymer({
         null;
     this.updateSettingsAvailabilityFromDestination_(caps);
 
-    if (!caps)
+    if (!caps) {
       return;
+    }
 
     this.updateSettingsValues_(caps);
   },
@@ -391,8 +394,9 @@ Polymer({
     this.set(
         'settings.vendorItems.available', !!caps && !!caps.vendor_capability);
 
-    if (this.documentInfo)
+    if (this.documentInfo) {
       this.updateSettingsAvailabilityFromDestinationAndDocumentInfo_();
+    }
   },
 
   /** @private */
@@ -439,14 +443,16 @@ Polymer({
         'settings.rasterize.available',
         !this.documentInfo.isModifiable && !cr.isWindows && !cr.isMac);
 
-    if (this.destination)
+    if (this.destination) {
       this.updateSettingsAvailabilityFromDestinationAndDocumentInfo_();
+    }
   },
 
   /** @private */
   updateHeaderFooterAvailable_: function() {
-    if (this.documentInfo === undefined)
+    if (this.documentInfo === undefined) {
       return;
+    }
 
     this.set(
         'settings.headerFooter.available', this.isHeaderFooterAvailable_());
@@ -458,15 +464,17 @@ Polymer({
    */
   isHeaderFooterAvailable_: function() {
     // Always unavailable for PDFs.
-    if (!this.documentInfo.isModifiable)
+    if (!this.documentInfo.isModifiable) {
       return false;
+    }
 
     // Always unavailable for small paper sizes.
     const microns = this.getSettingValue('layout') ?
         this.getSettingValue('mediaSize').width_microns :
         this.getSettingValue('mediaSize').height_microns;
-    if (microns < MINIMUM_HEIGHT_MICRONS)
+    if (microns < MINIMUM_HEIGHT_MICRONS) {
       return false;
+    }
 
     // Otherwise, availability depends on the margins.
     let available = false;
@@ -586,14 +594,17 @@ Polymer({
               item.select_cap.option.find(o => !!o.is_default);
           defaultValue = !!defaultOption ? defaultOption.value : null;
         } else if (item.type == 'RANGE') {
-          if (!!item.range_cap)
+          if (!!item.range_cap) {
             defaultValue = item.range_cap.default || null;
+          }
         } else if (item.type == 'TYPED_VALUE') {
-          if (!!item.typed_value_cap)
+          if (!!item.typed_value_cap) {
             defaultValue = item.typed_value_cap.default || null;
+          }
         }
-        if (defaultValue != null)
+        if (defaultValue != null) {
           vendorSettings[item.id] = defaultValue;
+        }
       }
       this.setSetting('vendorItems', vendorSettings);
     }
@@ -601,8 +612,9 @@ Polymer({
 
   /** @private */
   updateRecentDestinations_: function() {
-    if (!this.initialized_ || !this.destination)
+    if (!this.initialized_ || !this.destination) {
       return;
+    }
 
     // Determine if this destination is already in the recent destinations,
     // and where in the array it is located.
@@ -627,8 +639,9 @@ Polymer({
         this.recentDestinations.length == NUM_DESTINATIONS) {
       indexFound = NUM_DESTINATIONS - 1;
     }
-    if (indexFound != -1)
+    if (indexFound != -1) {
       this.recentDestinations.splice(indexFound, 1);
+    }
 
     // Add the most recent destination
     this.splice('recentDestinations', 0, 0, newDestination);
@@ -645,8 +658,9 @@ Polymer({
   setStickySettings: function(savedSettingsStr) {
     assert(!this.stickySettings_ && this.recentDestinations.length == 0);
 
-    if (!savedSettingsStr)
+    if (!savedSettingsStr) {
       return;
+    }
 
     let savedSettings;
     try {
@@ -656,8 +670,9 @@ Polymer({
       console.error('Unable to parse state ' + e);
       return;  // use default values rather than updating.
     }
-    if (savedSettings.version != 2)
+    if (savedSettings.version != 2) {
       return;
+    }
 
     let recentDestinations = savedSettings.recentDestinations || [];
     if (!Array.isArray(recentDestinations)) {
@@ -690,17 +705,20 @@ Polymer({
       STICKY_SETTING_NAMES.forEach(settingName => {
         const setting = this.get(settingName, this.settings);
         const value = this.stickySettings_[setting.key];
-        if (value != undefined)
+        if (value != undefined) {
           this.setSetting(settingName, value);
+        }
       });
     }
     if (this.policySettings_) {
       for (const [settingName, policy] of Object.entries(
                this.policySettings_)) {
-        if (policy.value !== undefined)
+        if (policy.value !== undefined) {
           this.setSetting(settingName, policy.value);
-        if (policy.managed)
+        }
+        if (policy.managed) {
           this.set(`settings.${settingName}.setByPolicy`, true);
+        }
       }
     }
     this.initialized_ = true;
@@ -742,8 +760,9 @@ Polymer({
 
   /** @private */
   stickySettingsChanged_: function() {
-    if (!this.initialized_)
+    if (!this.initialized_) {
       return;
+    }
 
     const serialization = {
       version: 2,
@@ -809,8 +828,9 @@ Polymer({
     };
 
     // Set 'cloudPrintID' only if the destination is not local.
-    if (!destination.isLocal)
+    if (!destination.isLocal) {
       ticket.cloudPrintID = destination.id;
+    }
 
     if (this.getSettingValue('margins') ==
         print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
@@ -824,8 +844,9 @@ Polymer({
       ticket.capabilities = JSON.stringify(destination.capabilities);
     }
 
-    if (openPdfInPreview)
+    if (openPdfInPreview) {
       ticket.OpenPDFInPreview = true;
+    }
 
     return JSON.stringify(ticket);
   },
@@ -847,8 +868,9 @@ Polymer({
 
     // Create CJT (Cloud Job Ticket)
     const cjt = {version: '1.0', print: {}};
-    if (this.settings.collate.available)
+    if (this.settings.collate.available) {
       cjt.print.collate = {collate: this.settings.collate.value};
+    }
     if (this.settings.color.available) {
       const selectedOption = destination.getSelectedColorOption(
           /** @type {boolean} */ (this.settings.color.value));
@@ -873,8 +895,9 @@ Polymer({
         }
       }
     }
-    if (this.settings.copies.available)
+    if (this.settings.copies.available) {
       cjt.print.copies = {copies: parseInt(this.getSettingValue('copies'), 10)};
+    }
     if (this.settings.duplex.available) {
       cjt.print.duplex = {
         type: this.settings.duplex.value ?

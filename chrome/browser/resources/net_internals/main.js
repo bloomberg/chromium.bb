@@ -26,8 +26,9 @@ const MainView = (function() {
   function MainView() {
     assertFirstConstructorCall(MainView);
 
-    if (hasTouchScreen())
+    if (hasTouchScreen()) {
       document.body.classList.add('touch');
+    }
 
     // This must be initialized before the tabs, so they can register as
     // observers.
@@ -113,8 +114,9 @@ const MainView = (function() {
     onUrlHashChange_: function() {
       const parsed = parseUrlHash_(window.location.hash);
 
-      if (!parsed)
+      if (!parsed) {
         return;
+      }
 
       // Redirect deleted pages to #events page, which contains instructions
       // about migrating to using net-export and the external netlog_viewer.
@@ -162,10 +164,12 @@ const MainView = (function() {
     let paramDict = null;
     for (let i = 1; i < parameters.length; i++) {
       const paramStrings = parameters[i].split('=');
-      if (paramStrings.length != 2)
+      if (paramStrings.length != 2) {
         continue;
-      if (paramDict == null)
+      }
+      if (paramDict == null) {
         paramDict = {};
+      }
       const key = decodeURIComponent(paramStrings[0]);
       const value = decodeURIComponent(paramStrings[1]);
       paramDict[key] = value;

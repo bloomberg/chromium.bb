@@ -18,8 +18,9 @@
  * @private
  */
 function isEmptyObject_(object) {
-  for (const i in object)
+  for (const i in object) {
     return false;
+  }
   return true;
 }
 
@@ -31,8 +32,9 @@ function isEmptyObject_(object) {
  * @private
  */
 function copyAttributes_(source, destination) {
-  for (const i in source)
+  for (const i in source) {
     destination[i] = source[i];
+  }
   return destination;
 }
 
@@ -42,8 +44,9 @@ function copyAttributes_(source, destination) {
  * @private
  */
 function localize_(element) {
-  if (window.i18nTemplate && window.loadTimeData)
+  if (window.i18nTemplate && window.loadTimeData) {
     i18nTemplate.process(element, loadTimeData);
+  }
 }
 
 /**
@@ -97,8 +100,9 @@ function separateBackward_(value, maxLength) {
  */
 function numBytesToText_(value) {
   let result = checkIfAvailable_(value);
-  if (result)
+  if (result) {
     return result;
+  }
 
   const segments = separateBackward_(value.toString(), 3);
   result = segments.join(',') + ' B';
@@ -122,8 +126,9 @@ function numBytesToText_(value) {
  */
 function dateToText(value) {
   let result = checkIfAvailable_(value);
-  if (result)
+  if (result) {
     return result;
+  }
 
   const time = new Date(value);
   const now = new Date();
@@ -294,8 +299,9 @@ function handleGlobalInfo(event) {
   const storageObject = getStorageObject(data.type);
   copyAttributes_(data, storageObject.detail.payload);
   storageObject.reveal();
-  if (getTreeViewObject().selectedItem == storageObject)
+  if (getTreeViewObject().selectedItem == storageObject) {
     updateDescription();
+  }
 }
 
 /**
@@ -330,8 +336,9 @@ function handlePerHostInfo(event) {
     const hostObject = getHostObject(data.type, data.host);
     copyAttributes_(data, hostObject.detail.payload);
     hostObject.reveal();
-    if (getTreeViewObject().selectedItem == hostObject)
+    if (getTreeViewObject().selectedItem == hostObject) {
       updateDescription();
+    }
   }
 }
 
@@ -378,8 +385,9 @@ function handlePerOriginInfo(event) {
     const originObject = getOriginObject(data.type, data.host, data.origin);
     copyAttributes_(data, originObject.detail.payload);
     originObject.reveal();
-    if (getTreeViewObject().selectedItem == originObject)
+    if (getTreeViewObject().selectedItem == originObject) {
       updateDescription();
+    }
   }
 }
 
@@ -430,8 +438,9 @@ function updateDescription() {
       const key = keyAndLabel[i][0];
       const label = keyAndLabel[i][1];
       const entry = item.detail.payload[key];
-      if (entry === undefined)
+      if (entry === undefined) {
         continue;
+      }
 
       const normalize = keyAndLabel[i][2] || stringToText_;
 
@@ -459,11 +468,13 @@ function dumpTreeToObj(opt_treeitem) {
     res.children.push(dumpTreeToObj(child));
   }
 
-  if (isEmptyObject_(res.payload))
+  if (isEmptyObject_(res.payload)) {
     delete res.payload;
+  }
 
-  if (res.children.length == 0)
+  if (res.children.length == 0) {
     delete res.children;
+  }
   return res;
 }
 
@@ -473,8 +484,9 @@ function dumpTreeToObj(opt_treeitem) {
  */
 function dumpStatisticsToObj() {
   const result = {};
-  for (const key in statistics)
+  for (const key in statistics) {
     result[key] = statistics[key].detail;
+  }
   return result;
 }
 

@@ -40,8 +40,9 @@ function initViewer(browserApi) {
   // PDFViewer will handle any messages after it is created.
   window.removeEventListener('message', handleScriptingMessage, false);
   viewer = new PDFViewer(browserApi);
-  while (pendingMessages.length > 0)
+  while (pendingMessages.length > 0) {
     viewer.handleScriptingMessage(pendingMessages.shift());
+  }
 }
 
 /**
@@ -75,8 +76,9 @@ function main() {
   let chain = createBrowserApi();
 
   // Content settings may not be present in test environments.
-  if (chrome.contentSettings)
+  if (chrome.contentSettings) {
     chain = chain.then(configureJavaScriptContentSetting);
+  }
 
   chain.then(initViewer);
 }

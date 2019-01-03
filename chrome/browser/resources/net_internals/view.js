@@ -116,8 +116,9 @@ const DivView = (function() {
     superClass.call(this);
 
     this.node_ = $(divId);
-    if (!this.node_)
+    if (!this.node_) {
       throw new Error('Element ' + divId + ' not found');
+    }
 
     // Initialize the default values to those of the DIV.
     this.width_ = this.node_.offsetWidth;

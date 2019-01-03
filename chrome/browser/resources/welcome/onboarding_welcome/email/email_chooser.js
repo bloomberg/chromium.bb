@@ -99,15 +99,17 @@ Polymer({
   },
 
   onRouteExit: function() {
-    if (this.finalized_)
+    if (this.finalized_) {
       return;
+    }
     this.cleanUp_();
     this.metricsManager_.recordBrowserBackOrForward();
   },
 
   onRouteUnload: function() {
-    if (this.finalized_)
+    if (this.finalized_) {
       return;
+    }
     this.cleanUp_();
     this.metricsManager_.recordNavigatedAway();
   },
@@ -130,10 +132,11 @@ Polymer({
    * @private
    */
   onEmailClick_: function(e) {
-    if (this.getSelected_(e.model.item))
+    if (this.getSelected_(e.model.item)) {
       this.selectedEmailProvider_ = null;
-    else
+    } else {
       this.selectedEmailProvider_ = e.model.item;
+    }
 
     this.metricsManager_.recordClickedOption();
   },
@@ -170,8 +173,9 @@ Polymer({
    * @private
    */
   addBookmark_: function(emailProvider) {
-    if (emailProvider.bookmarkId)
+    if (emailProvider.bookmarkId) {
       return;
+    }
 
     // Indicates that the emailProvider is being added as a bookmark.
     emailProvider.bookmarkId = 'pending';
@@ -208,8 +212,9 @@ Polymer({
    * @private
    */
   onSelectedEmailProviderChange_: function(newEmail, prevEmail) {
-    if (!this.emailProxy_ || !this.bookmarkProxy_)
+    if (!this.emailProxy_ || !this.bookmarkProxy_) {
       return;
+    }
 
     if (prevEmail) {
       // If it was previously selected, it must've been assigned an id.
@@ -217,10 +222,11 @@ Polymer({
       this.revertBookmark_(prevEmail);
     }
 
-    if (newEmail)
+    if (newEmail) {
       this.addBookmark_(newEmail);
-    else
+    } else {
       this.bookmarkBarManager_.setShown(this.wasBookmarkBarShownOnInit_);
+    }
 
     // Announcements are mutually exclusive, so keeping separate.
     if (prevEmail && newEmail) {
@@ -250,7 +256,8 @@ Polymer({
 
   /** @private */
   onActionButtonClicked_: function() {
-    if (this.$$('.action-button').disabled)
+    if (this.$$('.action-button').disabled) {
       this.metricsManager_.recordClickedDisabledButton();
+    }
   },
 });

@@ -82,8 +82,9 @@ Polymer({
 
   /** @private */
   showDialog_: function() {
-    if (!this.$.dialog.open)
+    if (!this.$.dialog.open) {
       this.$.dialog.showModal();
+    }
     this.browserProxy_.onShowResetProfileDialog();
   },
 
@@ -114,8 +115,9 @@ Polymer({
   },
 
   cancel: function() {
-    if (this.$.dialog.open)
+    if (this.$.dialog.open) {
       this.$.dialog.cancel();
+    }
   },
 
   /** @private */
@@ -126,8 +128,9 @@ Polymer({
             this.$.sendSettings.checked, this.resetRequestOrigin_)
         .then(() => {
           this.clearingInProgress_ = false;
-          if (this.$.dialog.open)
+          if (this.$.dialog.open) {
             this.$.dialog.close();
+          }
           this.fire('reset-done');
         });
   },

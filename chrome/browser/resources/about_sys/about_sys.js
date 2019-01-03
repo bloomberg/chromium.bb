@@ -129,13 +129,15 @@ function parseSystemLog(text) {
   const lines = text.split('\n');
   for (let i = 0, len = lines.length; i < len; i++) {
     // Skip empty lines.
-    if (!lines[i])
+    if (!lines[i]) {
       continue;
+    }
 
     const delimiter = lines[i].indexOf('=');
     if (delimiter <= 0) {
-      if (i == lines.length - 1)
+      if (i == lines.length - 1) {
         break;
+      }
       // If '=' is missing here, format is wrong.
       return false;
     }
@@ -143,26 +145,30 @@ function parseSystemLog(text) {
     const name = lines[i].substring(0, delimiter);
     let value = '';
     // Set value if non-empty
-    if (lines[i].length > delimiter + 1)
+    if (lines[i].length > delimiter + 1) {
       value = lines[i].substring(delimiter + 1);
+    }
 
     // Delimiters are based on kMultilineIndicatorString, kMultilineStartString,
     // and kMultilineEndString in components/feedback/feedback_data.cc.
     // If these change, we should check for both the old and new versions.
     if (value == '<multiline>') {
       // Skip start delimiter.
-      if (i == len - 1 || lines[++i].indexOf(DELIM_START) == -1)
+      if (i == len - 1 || lines[++i].indexOf(DELIM_START) == -1) {
         return false;
+      }
 
       ++i;
       value = '';
       // Append lines between start and end delimiters.
-      while (i < len && lines[i] != DELIM_END)
+      while (i < len && lines[i] != DELIM_END) {
         value += lines[i++] + '\n';
+      }
 
       // Remove trailing newline.
-      if (value)
+      if (value) {
         value = value.substr(0, value.length - 1);
+      }
     }
     details.push({'statName': name, 'statValue': value});
   }

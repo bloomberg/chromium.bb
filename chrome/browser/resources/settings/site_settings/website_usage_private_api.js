@@ -71,8 +71,9 @@ cr.define('settings.WebsiteUsagePrivateApi', function() {
   const fetchUsageTotal = function(host) {
     const instance =
         settings.WebsiteUsagePrivateApi.websiteUsagePolymerInstance;
-    if (instance != null)
+    if (instance != null) {
       instance.websiteDataUsage = '';
+    }
 
     hostName = host;
     chrome.send('fetchUsageTotal', [host]);
@@ -88,8 +89,9 @@ cr.define('settings.WebsiteUsagePrivateApi', function() {
   const returnUsageTotal = function(host, usage, type) {
     const instance =
         settings.WebsiteUsagePrivateApi.websiteUsagePolymerInstance;
-    if (instance == null)
+    if (instance == null) {
       return;
+    }
 
     if (hostName == host) {
       instance.websiteDataUsage = usage;
@@ -113,8 +115,9 @@ cr.define('settings.WebsiteUsagePrivateApi', function() {
   const onUsageCleared = function(origin) {
     const instance =
         settings.WebsiteUsagePrivateApi.websiteUsagePolymerInstance;
-    if (instance == null)
+    if (instance == null) {
       return;
+    }
 
     instance.notifyUsageDeleted(origin);
   };

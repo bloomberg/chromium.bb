@@ -252,10 +252,12 @@ Polymer({
   // <if expr="chromeos">
   /** @private */
   getPasswordState_: function(hasPin, enableScreenLock) {
-    if (!enableScreenLock)
+    if (!enableScreenLock) {
       return this.i18n('lockScreenNone');
-    if (hasPin)
+    }
+    if (hasPin) {
       return this.i18n('lockScreenPinOrPassword');
+    }
     return this.i18n('lockScreenPasswordOnly');
   },
   // </if>
@@ -308,8 +310,9 @@ Polymer({
    * @private
    */
   computeShouldShowGoogleAccount_: function() {
-    if (this.storedAccounts === undefined || this.syncStatus === undefined)
+    if (this.storedAccounts === undefined || this.syncStatus === undefined) {
       return false;
+    }
 
     return (this.storedAccounts.length > 0 || !!this.syncStatus.signedIn) &&
         !this.syncStatus.hasError;
@@ -345,8 +348,9 @@ Polymer({
     cr.ui.focusWithoutInk(assert(this.$$('#disconnectButton')));
     // </if>
 
-    if (settings.getCurrentRoute() == settings.routes.SIGN_OUT)
+    if (settings.getCurrentRoute() == settings.routes.SIGN_OUT) {
       settings.navigateToPreviousRoute();
+    }
   },
 
   /** @private */
@@ -368,8 +372,9 @@ Polymer({
     assert(this.syncStatus.signedIn);
     assert(this.syncStatus.syncSystemEnabled);
 
-    if (!this.isSyncStatusActionable_(this.syncStatus))
+    if (!this.isSyncStatusActionable_(this.syncStatus)) {
       return;
+    }
 
     switch (this.syncStatus.statusAction) {
       case settings.StatusAction.REAUTHENTICATE:
@@ -380,9 +385,9 @@ Polymer({
         this.syncBrowserProxy_.attemptUserExit();
         // </if>
         // <if expr="not chromeos">
-        if (this.syncStatus.domain)
+        if (this.syncStatus.domain) {
           settings.navigateTo(settings.routes.SIGN_OUT);
-        else {
+        } else {
           // Silently sign the user out without deleting their profile and
           // prompt them to sign back in.
           this.syncBrowserProxy_.signOut(false);
@@ -464,8 +469,9 @@ Polymer({
    * @private
    */
   shouldShowSyncAccountControl_: function() {
-    if (this.syncStatus == undefined)
+    if (this.syncStatus == undefined) {
       return false;
+    }
 
     return this.diceEnabled_ && !!this.syncStatus.syncSystemEnabled &&
         !!this.syncStatus.signinAllowed;
@@ -520,18 +526,21 @@ Polymer({
    * @return {string}
    */
   getSyncIcon_: function(syncStatus) {
-    if (!syncStatus)
+    if (!syncStatus) {
       return '';
+    }
 
     let syncIcon = 'cr:sync';
 
-    if (syncStatus.hasError)
+    if (syncStatus.hasError) {
       syncIcon = 'settings:sync-problem';
+    }
 
     // Override the icon to the disabled icon if sync is managed.
     if (syncStatus.managed ||
-        syncStatus.statusAction == settings.StatusAction.REAUTHENTICATE)
+        syncStatus.statusAction == settings.StatusAction.REAUTHENTICATE) {
       syncIcon = 'settings:sync-disabled';
+    }
 
     return syncIcon;
   },
@@ -577,8 +586,9 @@ Polymer({
    * @private
    */
   selectLockScreenTitleString(hasPinLogin) {
-    if (hasPinLogin)
+    if (hasPinLogin) {
       return this.i18n('lockScreenTitleLoginLock');
+    }
     return this.i18n('lockScreenTitleLock');
   },
 

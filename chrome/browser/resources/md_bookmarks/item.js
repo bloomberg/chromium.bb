@@ -73,8 +73,9 @@ Polymer({
     e.preventDefault();
     e.stopPropagation();
     this.focus();
-    if (!this.isSelectedItem_)
+    if (!this.isSelectedItem_) {
       this.selectThisItem_();
+    }
 
     this.fire('open-command-menu', {
       x: e.clientX,
@@ -155,10 +156,11 @@ Polymer({
    * @param {KeyboardEvent} e
    */
   onKeydown_: function(e) {
-    if (e.key == 'ArrowLeft')
+    if (e.key == 'ArrowLeft') {
       this.focus();
-    else if (e.key == 'ArrowRight')
+    } else if (e.key == 'ArrowRight') {
       this.$.menuButton.focus();
+    }
   },
 
   /**
@@ -166,13 +168,15 @@ Polymer({
    * @private
    */
   onDblClick_: function(e) {
-    if (!this.isSelectedItem_)
+    if (!this.isSelectedItem_) {
       this.selectThisItem_();
+    }
 
     const commandManager = bookmarks.CommandManager.getInstance();
     const itemSet = this.getState().selection.items;
-    if (commandManager.canExecute(Command.OPEN, itemSet))
+    if (commandManager.canExecute(Command.OPEN, itemSet)) {
       commandManager.handle(Command.OPEN, itemSet);
+    }
   },
 
   /**
@@ -180,18 +184,21 @@ Polymer({
    * @private
    */
   onMiddleClick_: function(e) {
-    if (e.button != 1)
+    if (e.button != 1) {
       return;
+    }
 
     this.selectThisItem_();
-    if (this.isFolder_)
+    if (this.isFolder_) {
       return;
+    }
 
     const commandManager = bookmarks.CommandManager.getInstance();
     const itemSet = this.getState().selection.items;
     const command = e.shiftKey ? Command.OPEN : Command.OPEN_NEW_TAB;
-    if (commandManager.canExecute(command, itemSet))
+    if (commandManager.canExecute(command, itemSet)) {
       commandManager.handle(command, itemSet);
+    }
   },
 
   /**
@@ -201,8 +208,9 @@ Polymer({
    * @private
    */
   cancelMiddleMouseBehavior_: function(e) {
-    if (e.button == 1)
+    if (e.button == 1) {
       e.preventDefault();
+    }
   },
 
   /**

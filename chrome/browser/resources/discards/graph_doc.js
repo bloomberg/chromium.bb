@@ -265,13 +265,15 @@ class Graph {
    * @private
    */
   addOrUpdatePage_(oldNodes, page) {
-    if (!page)
+    if (!page) {
       return;
+    }
     let node = /** @type {?PageNode} */ (oldNodes.get(page.id));
-    if (node)
+    if (node) {
       node.page = page;
-    else
+    } else {
       node = new PageNode(page);
+    }
 
     this.nodes_.set(page.id, node);
   }
@@ -282,13 +284,15 @@ class Graph {
    * @private
    */
   addOrUpdateFrame_(oldNodes, frame) {
-    if (!frame)
+    if (!frame) {
       return;
+    }
     let node = /** @type {?FrameNode} */ (oldNodes.get(frame.id));
-    if (node)
+    if (node) {
       node.frame = frame;
-    else
+    } else {
       node = new FrameNode(frame);
+    }
 
     this.nodes_.set(frame.id, node);
   }
@@ -299,13 +303,15 @@ class Graph {
    * @private
    */
   addOrUpdateProcess_(oldNodes, process) {
-    if (!process)
+    if (!process) {
       return;
+    }
     let node = /** @type {?ProcessNode} */ (oldNodes.get(process.id));
-    if (node)
+    if (node) {
       node.process = process;
-    else
+    } else {
       node = new ProcessNode(process);
+    }
 
     this.nodes_.set(process.id, node);
   }
@@ -317,8 +323,9 @@ class Graph {
    */
   maybeAddLink_(source, dst_id) {
     const target = this.nodes_.get(dst_id);
-    if (target)
+    if (target) {
       this.links_.push({source: source, target: target});
+    }
   }
 
   /**
@@ -331,12 +338,15 @@ class Graph {
     // existing nodes into it.
     const oldNodes = this.nodes_;
     this.nodes_ = new Map();
-    for (const page of graph.pages)
+    for (const page of graph.pages) {
       this.addOrUpdatePage_(oldNodes, page);
-    for (const frame of graph.frames)
+    }
+    for (const frame of graph.frames) {
       this.addOrUpdateFrame_(oldNodes, frame);
-    for (const process of graph.processes)
+    }
+    for (const process of graph.processes) {
       this.addOrUpdateProcess_(oldNodes, process);
+    }
 
 
     // Recompute the links, there's no benefit to maintaining the identity
@@ -347,8 +357,9 @@ class Graph {
     const newNodes = this.nodes_.values();
     for (const node of newNodes) {
       const linkTargets = node.linkTargets();
-      for (const linkTarget of linkTargets)
+      for (const linkTarget of linkTargets) {
         this.maybeAddLink_(node, linkTarget);
+      }
     }
 
     // TODO(siggi): this is a good place to do initial positioning of new nodes.
@@ -360,8 +371,9 @@ class Graph {
    * @private
    */
   onDragStart_(d) {
-    if (!d3.event.active)
+    if (!d3.event.active) {
       this.restartSimulation_();
+    }
     d.fx = d.x;
     d.fy = d.y;
   }
@@ -380,8 +392,9 @@ class Graph {
    * @private
    */
   onDragEnd_(d) {
-    if (!d3.event.active)
+    if (!d3.event.active) {
       this.simulation_.alphaTarget(0);
+    }
     d.fx = null;
     d.fy = null;
   }

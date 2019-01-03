@@ -20,8 +20,9 @@ Polymer({
    * @private
    */
   getLabel_: function(extensionId, extensionName) {
-    if (this.extensionId == undefined || this.extensionName == undefined)
+    if (this.extensionId == undefined || this.extensionName == undefined) {
       return '';
+    }
 
     const manageUrl = 'chrome://extensions/?id=' + this.extensionId;
     return this.i18nAdvanced('controlledByExtension', {

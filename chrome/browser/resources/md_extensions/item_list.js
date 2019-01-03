@@ -79,8 +79,9 @@ cr.define('extensions', function() {
 
     /** @private */
     shouldShowEmptyItemsMessage_: function() {
-      if (!this.apps || !this.extensions)
+      if (!this.apps || !this.extensions) {
         return;
+      }
 
       return this.apps.length === 0 && this.extensions.length === 0;
     },
@@ -93,8 +94,9 @@ cr.define('extensions', function() {
 
     /** @private */
     onNoExtensionsTap_: function(e) {
-      if (e.target.tagName == 'A')
+      if (e.target.tagName == 'A') {
         chrome.metricsPrivate.recordUserAction('Options_GetMoreExtensions');
+      }
     },
 
     /** @private */

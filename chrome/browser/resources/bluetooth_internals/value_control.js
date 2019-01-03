@@ -102,8 +102,9 @@ cr.define('value_control', function() {
      * @private
      */
     toHex_: function() {
-      if (this.value_.length == 0)
+      if (this.value_.length == 0) {
         return '';
+      }
 
       return this.value_.reduce(function(result, value, index) {
         return result + ('0' + value.toString(16)).substr(-2);
@@ -121,8 +122,9 @@ cr.define('value_control', function() {
         return;
       }
 
-      if (!newValue.startsWith('0x'))
+      if (!newValue.startsWith('0x')) {
         throw new Error('Expected new value to start with "0x".');
+      }
 
       var result = [];
       for (var i = 2; i < newValue.length; i += 2) {
@@ -179,8 +181,9 @@ cr.define('value_control', function() {
         return;
       }
 
-      if (!/^[0-9\-]*$/.test(newValue))
+      if (!/^[0-9\-]*$/.test(newValue)) {
         throw new Error('New value can only contain numbers and hyphens.');
+      }
 
       this.value_ = newValue.split('-').map(function(val) {
         return parseInt(val, 10);
@@ -281,8 +284,9 @@ cr.define('value_control', function() {
       this.characteristicId_ = options.characteristicId;
       this.descriptorId_ = options.descriptorId;
 
-      if (options.properties)
+      if (options.properties) {
         this.properties_ = options.properties;
+      }
 
       this.redraw();
     },
@@ -304,8 +308,9 @@ cr.define('value_control', function() {
       this.valueInput_.hidden = !isAvailable;
       this.typeSelect_.hidden = !isAvailable;
 
-      if (!isAvailable)
+      if (!isAvailable) {
         return;
+      }
 
       this.valueInput_.value = this.value_.getAs(this.typeSelect_.value);
     },

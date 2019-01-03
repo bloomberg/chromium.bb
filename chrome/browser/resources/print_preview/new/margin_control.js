@@ -79,8 +79,9 @@ Polymer({
   /** @param {string} value New value of the margin control's textbox. */
   setTextboxValue: function(value) {
     const textbox = this.$.textbox;
-    if (textbox.value != value)
+    if (textbox.value != value) {
       textbox.value = value;
+    }
   },
 
   /** @return {number} The current position of the margin control. */
@@ -159,8 +160,9 @@ Polymer({
 
   /** @private */
   updatePosition_: function() {
-    if (!observerDepsDefined(Array.from(arguments)))
+    if (!observerDepsDefined(Array.from(arguments))) {
       return;
+    }
 
     const orientationEnum = print_preview.ticket_items.CustomMarginsOrientation;
     let x = this.translateTransform.x;
@@ -199,8 +201,9 @@ Polymer({
 
   /** @private */
   onClipSizeChange_: function() {
-    if (!this.clipSize)
+    if (!this.clipSize) {
       return;
+    }
     window.requestAnimationFrame(() => {
       const offsetLeft = this.offsetLeft;
       const offsetTop = this.offsetTop;

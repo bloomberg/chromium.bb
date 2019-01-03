@@ -82,8 +82,9 @@ cr.define('settings', function() {
      * @private
      */
     getActiveTarget_: function(target, active) {
-      if (target === undefined || active === undefined)
+      if (target === undefined || active === undefined) {
         return undefined;
+      }
 
       return active ? target : null;
     },

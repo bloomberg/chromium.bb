@@ -164,13 +164,15 @@ cr.define('identity_internals', function() {
       }
 
       // Remove from the data_ source if token found.
-      if (tokenIndex)
+      if (tokenIndex) {
         this.data_.splice(tokenIndex, 1);
+      }
 
       // Remove from the user interface.
       const tokenNode = $(accessToken);
-      if (tokenNode)
+      if (tokenNode) {
         this.removeChild(tokenNode);
+      }
     },
   };
 

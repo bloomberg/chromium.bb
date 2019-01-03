@@ -263,14 +263,16 @@ Polymer({
    * @private
    */
   displayInfoFetched_: function(displays) {
-    if (!displays.length)
+    if (!displays.length) {
       return;
+    }
     settings.display.systemDisplayApi.getDisplayLayout(
         this.displayLayoutFetched_.bind(this, displays));
-    if (this.isMirrored_(displays))
+    if (this.isMirrored_(displays)) {
       this.mirroringDestinationIds = displays[0].mirroringDestinationIds;
-    else
+    } else {
       this.mirroringDestinationIds = [];
+    }
   },
 
   /**
@@ -292,8 +294,9 @@ Polymer({
    */
   getSelectedModeIndex_: function(selectedDisplay) {
     for (let i = 0; i < selectedDisplay.modes.length; ++i) {
-      if (selectedDisplay.modes[i].isSelected)
+      if (selectedDisplay.modes[i].isSelected) {
         return i;
+      }
     }
     return 0;
   },
@@ -341,10 +344,12 @@ Polymer({
    * @private
    */
   isDisplayScaleManagedByPolicy_: function(selectedDisplay, resolutionPref) {
-    if (!this.isDevicePolicyEnabled_(resolutionPref) || !selectedDisplay)
+    if (!this.isDevicePolicyEnabled_(resolutionPref) || !selectedDisplay) {
       return false;
-    if (selectedDisplay.isInternal)
+    }
+    if (selectedDisplay.isInternal) {
       return resolutionPref.value.internal_scale_percentage !== undefined;
+    }
     return resolutionPref.value.external_scale_percentage !== undefined;
   },
 
@@ -528,8 +533,9 @@ Polymer({
    * @private
    */
   getDisplaySelectMenuIndex_: function(selectedDisplay, primaryDisplayId) {
-    if (selectedDisplay && selectedDisplay.id == primaryDisplayId)
+    if (selectedDisplay && selectedDisplay.id == primaryDisplayId) {
       return 0;
+    }
     return 1;
   },
 
@@ -573,8 +579,9 @@ Polymer({
    * @private
    */
   showMirror_: function(unifiedDesktopMode, displays) {
-    if (displays === undefined)
+    if (displays === undefined) {
       return false;
+    }
 
     return this.isMirrored_(displays) ||
         (!unifiedDesktopMode &&
@@ -628,8 +635,9 @@ Polymer({
    * @private
    */
   isBestMode_: function(selectedDisplay, mode) {
-    if (!selectedDisplay.isInternal)
+    if (!selectedDisplay.isInternal) {
       return mode.isNative;
+    }
 
     // Things work differently for full HD devices(1080p). The best mode is the
     // one with 1.25 device scale factor and 0.8 ui scale.
@@ -659,10 +667,11 @@ Polymer({
     assert(mode);
     const widthStr = mode.width.toString();
     const heightStr = mode.height.toString();
-    if (this.isBestMode_(this.selectedDisplay, mode))
+    if (this.isBestMode_(this.selectedDisplay, mode)) {
       return this.i18n('displayResolutionTextBest', widthStr, heightStr);
-    else if (mode.isNative)
+    } else if (mode.isNative) {
       return this.i18n('displayResolutionTextNative', widthStr, heightStr);
+    }
     return this.i18n('displayResolutionText', widthStr, heightStr);
   },
 
@@ -682,10 +691,11 @@ Polymer({
     const deviceScaleFactor = mode.deviceScaleFactor;
     const inverseZoomFactor = 1.0 / zoomFactor;
     let logicalResolutionStrId = 'displayZoomLogicalResolutionText';
-    if (Math.abs(deviceScaleFactor - inverseZoomFactor) < 0.001)
+    if (Math.abs(deviceScaleFactor - inverseZoomFactor) < 0.001) {
       logicalResolutionStrId = 'displayZoomNativeLogicalResolutionNativeText';
-    else if (Math.abs(inverseZoomFactor - 1.0) < 0.001)
+    } else if (Math.abs(inverseZoomFactor - 1.0) < 0.001) {
       logicalResolutionStrId = 'displayZoomLogicalResolutionDefaultText';
+    }
     const widthStr =
         Math.round(mode.widthInNativePixels / (deviceScaleFactor * zoomFactor))
             .toString();
@@ -703,8 +713,9 @@ Polymer({
    * @private
    */
   onDisplaySizeSliderDrag_: function(e) {
-    if (!this.selectedDisplay)
+    if (!this.selectedDisplay) {
       return;
+    }
     this.updateLogicalResolutionText_(/** @type {number} */ (e.detail.value));
   },
 
@@ -717,8 +728,9 @@ Polymer({
     for (let i = 0; i < this.displays.length; ++i) {
       const display = this.displays[i];
       if (id == display.id) {
-        if (this.selectedDisplay != display)
+        if (this.selectedDisplay != display) {
           this.setSelectedDisplay_(display);
+        }
         return;
       }
     }
@@ -750,12 +762,15 @@ Polymer({
    */
   updatePrimaryDisplay_: function(e) {
     /** @type {number} */ const PRIMARY_DISP_IDX = 0;
-    if (!this.selectedDisplay)
+    if (!this.selectedDisplay) {
       return;
-    if (this.selectedDisplay.id == this.primaryDisplayId)
+    }
+    if (this.selectedDisplay.id == this.primaryDisplayId) {
       return;
-    if (e.target.value != PRIMARY_DISP_IDX)
+    }
+    if (e.target.value != PRIMARY_DISP_IDX) {
       return;
+    }
 
     /** @type {!chrome.system.display.DisplayProperties} */ const properties = {
       isPrimary: true
@@ -794,8 +809,9 @@ Polymer({
   onSelectedModeChange_: function(newModeIndex) {
     // We want to ignore all value changes to the pref due to the slider being
     // dragged. See http://crbug/845712 for more info.
-    if (this.currentSelectedModeIndex_ == newModeIndex)
+    if (this.currentSelectedModeIndex_ == newModeIndex) {
       return;
+    }
     this.onSelectedModeSliderChange_();
   },
 
@@ -806,8 +822,9 @@ Polymer({
    * @private
    */
   onSelectedZoomChange_: function() {
-    if (this.currentSelectedModeIndex_ == -1 || !this.selectedDisplay)
+    if (this.currentSelectedModeIndex_ == -1 || !this.selectedDisplay) {
       return;
+    }
 
     /** @type {!chrome.system.display.DisplayProperties} */ const properties = {
       displayZoomFactor:
@@ -847,8 +864,9 @@ Polymer({
     };
     settings.display.systemDisplayApi.setMirrorMode(mirrorModeInfo, () => {
       const error = chrome.runtime.lastError;
-      if (error)
+      if (error) {
         console.error('setMirrorMode Error: ' + error.message);
+      }
     });
   },
 
@@ -884,13 +902,16 @@ Polymer({
     let selectedDisplay = undefined;
     for (let i = 0; i < this.displays.length; ++i) {
       const display = this.displays[i];
-      if (displayIds)
+      if (displayIds) {
         displayIds += ',';
+      }
       displayIds += display.id;
-      if (display.isPrimary && !primaryDisplay)
+      if (display.isPrimary && !primaryDisplay) {
         primaryDisplay = display;
-      if (this.selectedDisplay && display.id == this.selectedDisplay.id)
+      }
+      if (this.selectedDisplay && display.id == this.selectedDisplay.id) {
         selectedDisplay = display;
+      }
     }
     this.displayIds = displayIds;
     this.primaryDisplayId = (primaryDisplay && primaryDisplay.id) || '';

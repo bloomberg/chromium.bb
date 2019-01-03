@@ -188,10 +188,11 @@ Polymer({
         break;
       case CrPicture.SelectionTypes.OLD:
         const imageIndex = image.dataset.imageIndex;
-        if (imageIndex !== undefined && imageIndex >= 0 && image.src)
+        if (imageIndex !== undefined && imageIndex >= 0 && image.src) {
           this.browserProxy_.selectDefaultImage(image.dataset.url);
-        else
+        } else {
           this.browserProxy_.selectOldImage();
+        }
         break;
       case CrPicture.SelectionTypes.DEFAULT:
         this.browserProxy_.selectDefaultImage(image.dataset.url);
@@ -241,8 +242,9 @@ Polymer({
   /** @private */
   onDiscardImage_: function() {
     // Prevent image from being discarded if old image is pending.
-    if (this.oldImagePending_)
+    if (this.oldImagePending_) {
       return;
+    }
     this.pictureList_.setOldImageUrl(CrPicture.kDefaultImageUrl);
     // Revert to profile image as we don't know what last used default image is.
     this.browserProxy_.selectProfileImage();
@@ -299,8 +301,9 @@ Polymer({
    */
   getAuthorCredit_: function(selectedItem, defaultImages) {
     const index = selectedItem ? selectedItem.dataset.imageIndex : undefined;
-    if (index === undefined || index < 0 || index >= defaultImages.length)
+    if (index === undefined || index < 0 || index >= defaultImages.length) {
       return '';
+    }
     const author = defaultImages[index].author;
     return author ? this.i18n('authorCreditText', author) : '';
   },
@@ -314,8 +317,9 @@ Polymer({
    */
   getAuthorWebsite_: function(selectedItem, defaultImages) {
     const index = selectedItem ? selectedItem.dataset.imageIndex : undefined;
-    if (index === undefined || index < 0 || index >= defaultImages.length)
+    if (index === undefined || index < 0 || index >= defaultImages.length) {
       return '';
+    }
     return defaultImages[index].website || '';
   },
 });

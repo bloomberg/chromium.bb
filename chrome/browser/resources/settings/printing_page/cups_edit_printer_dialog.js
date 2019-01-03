@@ -57,8 +57,9 @@ Polymer({
    * @private
    */
   printerInfoChanged_: function(change) {
-    if (change.path != 'activePrinter.printerName')
+    if (change.path != 'activePrinter.printerName') {
       this.needsReconfigured_ = true;
+    }
   },
 
   /**

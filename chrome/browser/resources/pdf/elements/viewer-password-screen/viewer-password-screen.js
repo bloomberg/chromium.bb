@@ -20,8 +20,9 @@ Polymer({
   },
 
   close: function() {
-    if (this.active)
+    if (this.active) {
       this.$.dialog.close();
+    }
   },
 
   deny: function() {
@@ -34,8 +35,9 @@ Polymer({
 
   submit: function() {
     const password = /** @type {!CrInputElement} */ (this.$.password);
-    if (password.value.length == 0)
+    if (password.value.length == 0) {
       return;
+    }
     password.disabled = true;
     this.$.submit.disabled = true;
     this.fire('password-submitted', {password: password.value});

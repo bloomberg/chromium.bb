@@ -138,8 +138,9 @@ Polymer({
    * @private
    */
   getExtensionPrinterTooltip_: function() {
-    if (!this.destination.isExtension)
+    if (!this.destination.isExtension) {
       return '';
+    }
     return loadTimeData.getStringF(
         'extensionDestinationIconTooltip', this.destination.extensionName);
   },

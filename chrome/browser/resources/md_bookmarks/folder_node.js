@@ -114,8 +114,9 @@ Polymer({
       handled = false;
     }
 
-    if (this.getComputedStyleValue('direction') == 'rtl')
+    if (this.getComputedStyleValue('direction') == 'rtl') {
       xDirection *= -1;
+    }
 
     this.changeKeyboardSelection_(
         xDirection, yDirection, this.root.activeElement);
@@ -125,8 +126,9 @@ Polymer({
           e, new Set([this.itemId]));
     }
 
-    if (!handled)
+    if (!handled) {
       return;
+    }
 
     e.preventDefault();
     e.stopPropagation();
@@ -167,14 +169,16 @@ Polymer({
       }
     }
 
-    if (!yDirection)
+    if (!yDirection) {
       return;
+    }
 
     // The current node's successor is its first child when open.
     if (!isChildFolderNodeFocused && yDirection == 1 && this.isOpen) {
       const children = this.getChildFolderNodes_();
-      if (children.length)
+      if (children.length) {
         newFocusFolderNode = children[0];
+      }
     }
 
     if (isChildFolderNodeFocused) {
@@ -186,15 +190,17 @@ Polymer({
       }
 
       // The first child's predecessor is this node.
-      if (!newFocusFolderNode && yDirection == -1)
+      if (!newFocusFolderNode && yDirection == -1) {
         newFocusFolderNode = this;
+      }
     }
 
     // If there is no newly focused node, allow the parent to handle the change.
     if (!newFocusFolderNode) {
-      if (this.itemId != ROOT_NODE_ID)
+      if (this.itemId != ROOT_NODE_ID) {
         this.getParentFolderNode_().changeKeyboardSelection_(
             0, yDirection, this);
+      }
 
       return;
     }
@@ -252,8 +258,9 @@ Polymer({
    */
   getLastVisibleDescendant_: function() {
     const children = this.getChildFolderNodes_();
-    if (!this.isOpen || children.length == 0)
+    if (!this.isOpen || children.length == 0) {
       return this;
+    }
 
     return children.pop().getLastVisibleDescendant_();
   },
@@ -325,8 +332,9 @@ Polymer({
   /** @private */
   depthChanged_: function() {
     this.style.setProperty('--node-depth', String(this.depth));
-    if (this.depth == -1)
+    if (this.depth == -1) {
       this.$.descendants.removeAttribute('role');
+    }
   },
 
   /**
@@ -373,10 +381,11 @@ Polymer({
    * @private
    */
   updateAriaExpanded_: function(hasChildFolder, isOpen) {
-    if (hasChildFolder)
+    if (hasChildFolder) {
       this.getFocusTarget().setAttribute('aria-expanded', String(isOpen));
-    else
+    } else {
       this.getFocusTarget().removeAttribute('aria-expanded');
+    }
   },
 
   /**
@@ -384,8 +393,9 @@ Polymer({
    * @private
    */
   scrollIntoViewIfNeeded_: function() {
-    if (!this.isSelectedFolder_)
+    if (!this.isSelectedFolder_) {
       return;
+    }
 
     this.async(() => this.$.container.scrollIntoViewIfNeeded());
   },

@@ -32,8 +32,9 @@ cr.define('inline.login', function() {
   function onAuthReady(e) {
     $('contents').classList.toggle('loading', false);
     authReadyFired = true;
-    if (isLoginPrimaryAccount)
+    if (isLoginPrimaryAccount) {
       chrome.send('metricsHandler:recordAction', ['Signin_SigninPage_Shown']);
+    }
   }
 
   function onDropLink(e) {

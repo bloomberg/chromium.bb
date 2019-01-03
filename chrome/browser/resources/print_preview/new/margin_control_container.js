@@ -175,8 +175,9 @@ Polymer({
   onMediaSizeOrLayoutChange_: function() {
     // Reset the custom margins when the paper size changes. Don't do this if it
     // is the first preview.
-    if (this.resetMargins_ === null)
+    if (this.resetMargins_ === null) {
       return;
+    }
 
     this.resetMargins_ = true;
     const marginsSetting = this.getSetting('margins');
@@ -321,13 +322,15 @@ Polymer({
    */
   setInvisible: function(invisible) {
     // Ignore changes if the margin controls are not available.
-    if (!this.available_)
+    if (!this.available_) {
       return;
+    }
 
     // Do not set the controls invisible if the user is dragging or focusing
     // the textbox for one of them.
-    if (invisible && (this.dragging_ != '' || this.textboxFocused_))
+    if (invisible && (this.dragging_ != '' || this.textboxFocused_)) {
       return;
+    }
 
     this.invisible_ = invisible;
   },
@@ -395,8 +398,9 @@ Polymer({
     const oldMargins = /** @type {print_preview.MarginsSetting} */ (
         this.getSettingValue('customMargins'));
     const key = print_preview_new.MARGIN_KEY_MAP.get(marginSide);
-    if (oldMargins[key] == marginValue)
+    if (oldMargins[key] == marginValue) {
       return;
+    }
     const newMargins = Object.assign({}, oldMargins);
     newMargins[key] = marginValue;
     this.setSetting('customMargins', newMargins);
@@ -412,18 +416,19 @@ Polymer({
     const marginSide =
         /** @type {!print_preview.ticket_items.CustomMarginsOrientation} */ (
             side);
-    if (value < 0)
+    if (value < 0) {
       return 0;
+    }
     const Orientation = print_preview.ticket_items.CustomMarginsOrientation;
     let limit = 0;
     const margins = this.getSettingValue('customMargins');
-    if (marginSide == Orientation.TOP)
+    if (marginSide == Orientation.TOP) {
       limit = this.pageSize.height - margins.marginBottom - MINIMUM_DISTANCE;
-    else if (marginSide == Orientation.RIGHT)
+    } else if (marginSide == Orientation.RIGHT) {
       limit = this.pageSize.width - margins.marginLeft - MINIMUM_DISTANCE;
-    else if (marginSide == Orientation.BOTTOM)
+    } else if (marginSide == Orientation.BOTTOM) {
       limit = this.pageSize.height - margins.marginTop - MINIMUM_DISTANCE;
-    else {
+    } else {
       assert(marginSide == Orientation.LEFT);
       limit = this.pageSize.width - margins.marginRight - MINIMUM_DISTANCE;
     }
@@ -471,8 +476,9 @@ Polymer({
   onPointerDown_: function(e) {
     const control =
         /** @type {!PrintPreviewMarginControlElement} */ (e.target);
-    if (!control.shouldDrag(e))
+    if (!control.shouldDrag(e)) {
       return;
+    }
 
     this.pointerStartPositionInPixels_ =
         new print_preview.Coordinate2d(e.x, e.y);
@@ -497,8 +503,9 @@ Polymer({
    * @private
    */
   onTransitionEnd_: function() {
-    if (this.invisible_)
+    if (this.invisible_) {
       this.style.display = 'none';
+    }
   },
 
   /**
@@ -545,8 +552,9 @@ Polymer({
    * @param {number} scaleTransform Updated value of the scale transform.
    */
   updateScaleTransform: function(scaleTransform) {
-    if (scaleTransform != this.scaleTransform_)
+    if (scaleTransform != this.scaleTransform_) {
       this.scaleTransform_ = scaleTransform;
+    }
   },
 
   /**

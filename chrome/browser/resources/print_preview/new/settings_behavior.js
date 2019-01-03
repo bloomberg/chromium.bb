@@ -79,8 +79,9 @@ const SettingsBehavior = {
    */
   setSetting: function(settingName, value) {
     const setting = this.getSetting(settingName);
-    if (setting.setByPolicy)
+    if (setting.setByPolicy) {
       return;
+    }
     this.set(`settings.${settingName}.value`, value);
   },
 
@@ -92,11 +93,13 @@ const SettingsBehavior = {
     const setting = this.getSetting(settingName);
     // Should not set the setting to invalid if it is not available, as there
     // is no way for the user to change the value in this case.
-    if (!valid)
+    if (!valid) {
       assert(setting.available, 'Setting is not available: ' + settingName);
+    }
     const shouldFireEvent = valid != setting.valid;
     this.set(`settings.${settingName}.valid`, valid);
-    if (shouldFireEvent)
+    if (shouldFireEvent) {
       this.fire('setting-valid-changed', valid);
+    }
   }
 };

@@ -91,13 +91,15 @@ let deleteLinkTitle = '';
  * @param {number} rid Restricted id of the link to be edited.
  */
 function prepopulateFields(rid) {
-  if (!isFinite(rid))
+  if (!isFinite(rid)) {
     return;
+  }
 
   // Grab the link data from the embeddedSearch API.
   let data = chrome.embeddedSearch.newTabPage.getMostVisitedItemData(rid);
-  if (!data)
+  if (!data) {
     return;
+  }
   prepopulatedLink.rid = rid;
   $(IDS.TITLE_FIELD).value = prepopulatedLink.title = data.title;
   $(IDS.TITLE_FIELD).dir = data.direction || 'ltr';
@@ -143,10 +145,11 @@ function finishEditLink() {
   }
 
   const titleValue = $(IDS.TITLE_FIELD).value;
-  if (!titleValue)  // Set the URL input as the title if no title is provided.
+  if (!titleValue) {  // Set the URL input as the title if no title is provided.
     newTitle = urlValue;
-  else if (titleValue != prepopulatedLink.title)
+  } else if (titleValue != prepopulatedLink.title) {
     newTitle = titleValue;
+  }
 
   // Update the link only if a field was changed.
   if (!!newUrl || !!newTitle) {
@@ -244,8 +247,9 @@ function init() {
   queryArgs = {};
   for (let i = 0; i < query.length; ++i) {
     let val = query[i].split('=');
-    if (val[0] == '')
+    if (val[0] == '') {
       continue;
+    }
     queryArgs[decodeURIComponent(val[0])] = decodeURIComponent(val[1]);
   }
 
@@ -292,8 +296,9 @@ function init() {
   let finishEditOrClose = (event) => {
     if (event.keyCode === KEYCODES.ENTER) {
       event.preventDefault();
-      if (!$(IDS.DONE).disabled)
+      if (!$(IDS.DONE).disabled) {
         finishEditLink();
+      }
     }
   };
   $(IDS.TITLE_FIELD).onkeydown = finishEditOrClose;

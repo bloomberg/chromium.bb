@@ -76,8 +76,9 @@ Polymer({
     this.onCreditCardNameOrNumberChanged_();
 
     // Add a leading '0' if a month is 1 char.
-    if (this.creditCard.expirationMonth.length == 1)
+    if (this.creditCard.expirationMonth.length == 1) {
       this.creditCard.expirationMonth = '0' + this.creditCard.expirationMonth;
+    }
 
     const date = new Date();
     let firstYear = date.getFullYear();
@@ -85,12 +86,13 @@ Polymer({
     let selectedYear = parseInt(this.creditCard.expirationYear, 10);
 
     // |selectedYear| must be valid and between first and last years.
-    if (!selectedYear)
+    if (!selectedYear) {
       selectedYear = firstYear;
-    else if (selectedYear < firstYear)
+    } else if (selectedYear < firstYear) {
       firstYear = selectedYear;
-    else if (selectedYear > lastYear)
+    } else if (selectedYear > lastYear) {
       lastYear = selectedYear;
+    }
 
     const yearList = [];
     for (let i = firstYear; i <= lastYear; ++i) {
@@ -123,8 +125,9 @@ Polymer({
    * @private
    */
   onSaveButtonTap_: function() {
-    if (!this.saveEnabled_())
+    if (!this.saveEnabled_()) {
       return;
+    }
 
     // If the card is expired, reflect the error to the user.
     // Otherwise, update the card, save and close the dialog.

@@ -47,8 +47,9 @@ cr.define('extensions', function() {
    */
   function userCanChangeEnablement(item) {
     // User doesn't have permission.
-    if (!item.userMayModify)
+    if (!item.userMayModify) {
       return false;
+    }
     // Item is forcefully disabled.
     if (item.disableReasons.corruptInstall ||
         item.disableReasons.suspiciousInstall ||
@@ -57,11 +58,13 @@ cr.define('extensions', function() {
     }
     // An item with dependent extensions can't be disabled (it would bork the
     // dependents).
-    if (item.dependentExtensions.length > 0)
+    if (item.dependentExtensions.length > 0) {
       return false;
+    }
     // Blacklisted can't be enabled, either.
-    if (item.state == chrome.developerPrivate.ExtensionState.BLACKLISTED)
+    if (item.state == chrome.developerPrivate.ExtensionState.BLACKLISTED) {
       return false;
+    }
 
     return true;
   }
@@ -122,17 +125,22 @@ cr.define('extensions', function() {
     // Trim the "chrome-extension://<id>/".
     const url = new URL(view.url);
     let label = view.url;
-    if (url.protocol == 'chrome-extension:')
+    if (url.protocol == 'chrome-extension:') {
       label = url.pathname.substring(1);
-    if (label == '_generated_background_page.html')
+    }
+    if (label == '_generated_background_page.html') {
       label = loadTimeData.getString('viewBackgroundPage');
+    }
     // Add any qualifiers.
-    if (view.incognito)
+    if (view.incognito) {
       label += ' ' + loadTimeData.getString('viewIncognito');
-    if (view.renderProcessId == -1)
+    }
+    if (view.renderProcessId == -1) {
       label += ' ' + loadTimeData.getString('viewInactive');
-    if (view.isIframe)
+    }
+    if (view.isIframe) {
       label += ' ' + loadTimeData.getString('viewIframe');
+    }
 
     return label;
   }

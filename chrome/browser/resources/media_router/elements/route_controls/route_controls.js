@@ -452,8 +452,9 @@ Polymer({
   updateVolume_: function() {
     this.lastVolumeChangeByUser_ = Date.now();
     const volume = this.$['route-volume-slider'].value / 100;
-    if (volume == this.displayedVolume_)
+    if (volume == this.displayedVolume_) {
       return;
+    }
     this.displayedVolume_ = volume;
     media_router.browserApi.setCurrentMediaVolume(volume);
   },
@@ -466,8 +467,9 @@ Polymer({
     /** @const */ var currentTime = Date.now();
     // We limit the frequency of volume change requests during dragging to
     // limit the number of Mojo calls to the component extension.
-    if (currentTime - this.lastVolumeChangeByUser_ < 300)
+    if (currentTime - this.lastVolumeChangeByUser_ < 300) {
       return;
+    }
     this.updateVolume_();
   },
 
@@ -476,11 +478,13 @@ Polymer({
    * @private
    */
   onVolumeDraggingChanged_: function(e) {
-    if (!!this.isVolumeChanging_ == !!e.detail.value)
+    if (!!this.isVolumeChanging_ == !!e.detail.value) {
       return;
+    }
     this.isVolumeChanging_ = e.detail.value;
-    if (!this.isVolumeChanging_)
+    if (!this.isVolumeChanging_) {
       this.updateVolume_();
+    }
   },
 
   /**

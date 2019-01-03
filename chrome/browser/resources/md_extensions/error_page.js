@@ -155,8 +155,9 @@ cr.define('extensions', function() {
       const errors = this.data.manifestErrors.concat(this.data.runtimeErrors);
       this.entries_ = errors;
       this.selectedEntry_ = -1;  // This also help reset code-section content.
-      if (this.entries_.length)
+      if (this.entries_.length) {
         this.selectedEntry_ = 0;
+      }
     },
 
     /** @private */
@@ -197,8 +198,9 @@ cr.define('extensions', function() {
      * @private
      */
     onDeleteErrorAction_: function(e) {
-      if (e.type == 'keydown' && !((e.code == 'Space' || e.code == 'Enter')))
+      if (e.type == 'keydown' && !((e.code == 'Space' || e.code == 'Enter'))) {
         return;
+      }
 
       this.delegate.deleteErrors(
           this.data.id, [(/** @type {!{model:Object}} */ (e)).model.item.id]);
@@ -222,8 +224,9 @@ cr.define('extensions', function() {
     onSelectedErrorChanged_: function() {
       this.code_ = null;
 
-      if (this.selectedEntry_ < 0)
+      if (this.selectedEntry_ < 0) {
         return;
+      }
 
       const error = this.getSelectedError();
       const args = {
@@ -344,12 +347,13 @@ cr.define('extensions', function() {
     onStackKeydown_: function(e) {
       let direction = 0;
 
-      if (e.key == 'ArrowDown')
+      if (e.key == 'ArrowDown') {
         direction = 1;
-      else if (e.key == 'ArrowUp')
+      } else if (e.key == 'ArrowUp') {
         direction = -1;
-      else
+      } else {
         return;
+      }
 
       e.preventDefault();
 
@@ -410,8 +414,9 @@ cr.define('extensions', function() {
      * @private
      */
     onErrorItemAction_: function(e) {
-      if (e.type == 'keydown' && !((e.code == 'Space' || e.code == 'Enter')))
+      if (e.type == 'keydown' && !((e.code == 'Space' || e.code == 'Enter'))) {
         return;
+      }
 
       this.selectedEntry_ =
           this.selectedEntry_ == e.model.index ? -1 : e.model.index;

@@ -70,8 +70,9 @@ Polymer({
    * @private
    */
   refreshNetworks_: function() {
-    if (!this.networkType)
+    if (!this.networkType) {
       return;
+    }
     const filter = {
       networkType: this.networkType,
       visible: false,

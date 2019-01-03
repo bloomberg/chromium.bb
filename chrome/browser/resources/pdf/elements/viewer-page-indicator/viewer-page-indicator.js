@@ -43,10 +43,11 @@ Polymer({
     // those platforms, though.
     assert(document.documentElement.dir);
     const endEdge = isRTL() ? 'left' : 'right';
-    if (window.innerWidth == document.scrollingElement.scrollWidth)
+    if (window.innerWidth == document.scrollingElement.scrollWidth) {
       this.style[endEdge] = '16px';
-    else
+    } else {
       this.style[endEdge] = '0px';
+    }
     // </if>
     this.style.opacity = 1;
     clearTimeout(this.timerId);
@@ -62,9 +63,10 @@ Polymer({
   },
 
   indexChanged: function() {
-    if (this.pageLabels)
+    if (this.pageLabels) {
       this.label = this.pageLabels[this.index];
-    else
+    } else {
       this.label = String(this.index + 1);
+    }
   }
 });

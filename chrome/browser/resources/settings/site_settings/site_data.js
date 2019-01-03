@@ -131,8 +131,9 @@ Polymer({
     // elements residing in this element's Shadow DOM.
     if (settings.routes.SITE_SETTINGS_DATA_DETAILS) {
       const onNavigatedTo = () => this.async(() => {
-        if (this.lastSelected_ == null || this.sites.length == 0)
+        if (this.lastSelected_ == null || this.sites.length == 0) {
           return;
+        }
 
         const lastSelectedSite = this.lastSelected_.item.site;
         const lastSelectedIndex = this.lastSelected_.index;
@@ -190,8 +191,9 @@ Polymer({
    * @private
    */
   computeRemoveLabel_: function(filter) {
-    if (filter.length == 0)
+    if (filter.length == 0) {
       return loadTimeData.getString('siteSettingsCookieRemoveAll');
+    }
     return loadTimeData.getString('siteSettingsCookieRemoveAllShown');
   },
 

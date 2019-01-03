@@ -42,8 +42,9 @@ cr.define('device_collection', function() {
     getByAddress: function(address) {
       for (var i = 0; i < this.length; i++) {
         var device = this.item(i);
-        if (address == device.address)
+        if (address == device.address) {
           return device;
+        }
       }
       return null;
     },

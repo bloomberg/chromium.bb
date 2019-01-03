@@ -46,8 +46,9 @@ Polymer({
 
     this.displayId = '';  // Will trigger displayIdChanged_.
 
-    if (this.$.dialog.open)
+    if (this.$.dialog.open) {
       this.$.dialog.close();
+    }
   },
 
   /** @private */
@@ -56,8 +57,9 @@ Polymer({
       settings.display.systemDisplayApi.overscanCalibrationReset(oldValue);
       settings.display.systemDisplayApi.overscanCalibrationComplete(oldValue);
     }
-    if (!newValue)
+    if (!newValue) {
       return;
+    }
     this.committed_ = false;
     settings.display.systemDisplayApi.overscanCalibrationStart(newValue);
   },
@@ -80,32 +82,37 @@ Polymer({
    * @private
    */
   handleKeyEvent_: function(event) {
-    if (event.altKey || event.ctrlKey || event.metaKey)
+    if (event.altKey || event.ctrlKey || event.metaKey) {
       return;
+    }
     switch (event.keyCode) {
       case 37:  // left arrow
-        if (event.shiftKey)
+        if (event.shiftKey) {
           this.move_(-1, 0);
-        else
+        } else {
           this.resize_(1, 0);
+        }
         break;
       case 38:  // up arrow
-        if (event.shiftKey)
+        if (event.shiftKey) {
           this.move_(0, -1);
-        else
+        } else {
           this.resize_(0, -1);
+        }
         break;
       case 39:  // right arrow
-        if (event.shiftKey)
+        if (event.shiftKey) {
           this.move_(1, 0);
-        else
+        } else {
           this.resize_(-1, 0);
+        }
         break;
       case 40:  // down arrow
-        if (event.shiftKey)
+        if (event.shiftKey) {
           this.move_(0, 1);
-        else
+        } else {
           this.resize_(0, 1);
+        }
         break;
       default:
         // Allow unhandled key events to propagate.

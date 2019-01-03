@@ -267,8 +267,9 @@ Polymer({
   onPromoteUpdaterTap_: function() {
     // This is necessary because #promoteUpdater is not a button, so by default
     // disable doesn't do anything.
-    if (this.promoteUpdaterStatus_.disabled)
+    if (this.promoteUpdaterStatus_.disabled) {
       return;
+    }
     this.aboutBrowserProxy_.promoteUpdater();
   },
   // </if>
@@ -366,10 +367,12 @@ Polymer({
         return this.i18nAdvanced('aboutUpgradeCheckStarted');
       case UpdateStatus.NEARLY_UPDATED:
         // <if expr="chromeos">
-        if (this.currentChannel_ != this.targetChannel_)
+        if (this.currentChannel_ != this.targetChannel_) {
           return this.i18nAdvanced('aboutUpgradeSuccessChannelSwitch');
-        if (this.currentUpdateStatusEvent_.rollback)
+        }
+        if (this.currentUpdateStatusEvent_.rollback) {
           return this.i18nAdvanced('aboutRollbackSuccess');
+        }
         // </if>
         return this.i18nAdvanced('aboutUpgradeRelaunch');
       case UpdateStatus.UPDATED:
@@ -412,11 +415,13 @@ Polymer({
         }
         let result = '';
         const message = this.currentUpdateStatusEvent_.message;
-        if (message)
+        if (message) {
           result += formatMessage(message);
+        }
         const connectMessage = this.currentUpdateStatusEvent_.connectionTypes;
-        if (connectMessage)
+        if (connectMessage) {
           result += '<div>' + formatMessage(connectMessage) + '</div>';
+        }
         return result;
     }
   },
@@ -437,8 +442,9 @@ Polymer({
     // <if expr="not chromeos">
     // If this platform has reached the end of the line, display an error icon
     // and ignore UpdateStatus.
-    if (this.obsoleteSystemInfo_.endOfLine)
+    if (this.obsoleteSystemInfo_.endOfLine) {
       return 'cr:error';
+    }
     // </if>
 
     switch (this.currentUpdateStatusEvent_.status) {
@@ -466,8 +472,9 @@ Polymer({
     // </if>
 
     // <if expr="not chromeos">
-    if (this.obsoleteSystemInfo_.endOfLine)
+    if (this.obsoleteSystemInfo_.endOfLine) {
       return null;
+    }
     // </if>
 
     switch (this.currentUpdateStatusEvent_.status) {
@@ -648,12 +655,14 @@ Polymer({
    */
   shouldShowIcons_: function() {
     // <if expr="chromeos">
-    if (this.hasEndOfLife_)
+    if (this.hasEndOfLife_) {
       return true;
+    }
     // </if>
     // <if expr="not chromeos">
-    if (this.obsoleteSystemInfo_.endOfLine)
+    if (this.obsoleteSystemInfo_.endOfLine) {
       return true;
+    }
     // </if>
     return this.showUpdateStatus_;
   },

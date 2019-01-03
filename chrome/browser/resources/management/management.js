@@ -45,8 +45,9 @@ cr.define('management', function() {
       // Show descriptions of the types of reporting in the |reportingSources|
       // list.
       this.browserProxy_.getReportingInfo().then(function(reportingSources) {
-        if (reportingSources.length == 0)
+        if (reportingSources.length == 0) {
           return;
+        }
 
         $('policies').hidden = false;
 
@@ -59,8 +60,9 @@ cr.define('management', function() {
 
       // Show names and permissions of |extensions| in a table.
       this.browserProxy_.getExtensions().then(function(extensions) {
-        if (extensions.length == 0)
+        if (extensions.length == 0) {
           return;
+        }
 
         const table = $('extensions-table');
 

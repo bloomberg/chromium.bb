@@ -91,8 +91,9 @@ cr.define('expandable_list', function() {
      * @param {cr.ui.ArrayDataModel} data
      */
     setData: function(data) {
-      if (this.dataModel)
+      if (this.dataModel) {
         this.dataModel.removeEventListener('splice', this.boundUpdateMessage_);
+      }
 
       this.dataModel = data;
       this.dataModel.addEventListener('splice', this.boundUpdateMessage_);

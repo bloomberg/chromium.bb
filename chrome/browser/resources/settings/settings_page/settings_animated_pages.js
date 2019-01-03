@@ -80,18 +80,22 @@ Polymer({
     }
 
     const subpagePaths = [];
-    if (settings.routes.SITE_SETTINGS_COOKIES)
+    if (settings.routes.SITE_SETTINGS_COOKIES) {
       subpagePaths.push(settings.routes.SITE_SETTINGS_COOKIES.path);
+    }
 
-    if (settings.routes.SITE_SETTINGS_SITE_DATA)
+    if (settings.routes.SITE_SETTINGS_SITE_DATA) {
       subpagePaths.push(settings.routes.SITE_SETTINGS_SITE_DATA.path);
+    }
 
-    if (settings.routes.SITE_SETTINGS_ALL)
+    if (settings.routes.SITE_SETTINGS_ALL) {
       subpagePaths.push(settings.routes.SITE_SETTINGS_ALL.path);
+    }
 
     // <if expr="chromeos">
-    if (settings.routes.INTERNET_NETWORKS)
+    if (settings.routes.INTERNET_NETWORKS) {
       subpagePaths.push(settings.routes.INTERNET_NETWORKS.path);
+    }
     // </if>
 
     // Only handle iron-select events from div elements and the
@@ -102,8 +106,9 @@ Polymer({
         subpagePaths.map(path => `settings-subpage[route-path="${path}"]`));
     const query = whitelist.join(', ');
 
-    if (!e.detail.item.matches(query))
+    if (!e.detail.item.matches(query)) {
       return;
+    }
 
     let pathConfig = this.focusConfig.get(this.previousRoute_.path);
     if (pathConfig) {
@@ -112,8 +117,9 @@ Polymer({
         handler = pathConfig;
       } else {
         handler = () => {
-          if (typeof pathConfig == 'string')
+          if (typeof pathConfig == 'string') {
             pathConfig = assert(this.querySelector(pathConfig));
+          }
           cr.ui.focusWithoutInk(/** @type {!Element} */ (pathConfig));
         };
       }
@@ -126,8 +132,9 @@ Polymer({
    * @private
    */
   lightDomChanged_: function() {
-    if (this.lightDomReady_)
+    if (this.lightDomReady_) {
       return;
+    }
 
     this.lightDomReady_ = true;
     Polymer.dom(this).unobserveNodes(this.lightDomObserver_);
@@ -139,8 +146,9 @@ Polymer({
    * @private
    */
   runQueuedRouteChange_: function() {
-    if (!this.queuedRouteChange_)
+    if (!this.queuedRouteChange_) {
       return;
+    }
     this.async(this.currentRouteChanged.bind(
         this, this.queuedRouteChange_.newRoute,
         this.queuedRouteChange_.oldRoute));
@@ -190,8 +198,9 @@ Polymer({
     // Nothing to do if the subpage isn't wrapped in a <dom-if>
     // (or <template is="dom-if" for Poylmer 1) or the template is already
     // stamped.
-    if (!domIf || domIf.if)
+    if (!domIf || domIf.if) {
       return;
+    }
 
     // Set the subpage's id for use by neon-animated-pages.
     // TODO(dpapad): Remove conditional logic once migration to Polymer 2 is
@@ -222,8 +231,9 @@ Polymer({
     //
     // Note that the dom-if should always use the property and settings-subpage
     // should always use the attribute.
-    if (domIf.hasAttribute('no-search') || domIf.noSearch)
+    if (domIf.hasAttribute('no-search') || domIf.noSearch) {
       subpage.setAttribute('no-search', '');
+    }
 
     // Render synchronously so neon-animated-pages can select the subpage.
     domIf.if = true;

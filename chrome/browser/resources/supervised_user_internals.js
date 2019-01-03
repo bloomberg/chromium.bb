@@ -111,8 +111,9 @@ cr.define('chrome.supervised_user_internals', function() {
 
     jstProcess(new JsEvalContext({results: filteringResults}), container);
 
-    if (shouldScrollDown)
+    if (shouldScrollDown) {
       scrollToBottom(container);
+    }
   }
 
   // Return an object with all of the exports.

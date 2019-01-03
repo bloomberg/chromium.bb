@@ -24,8 +24,9 @@ cr.define('downloadInternals', function() {
    */
   function removeGuidFromList(list, guid) {
     const index = list.findIndex(entry => entry.guid == guid);
-    if (index != -1)
+    if (index != -1) {
       list.splice(index, 1);
+    }
   }
 
   /**
@@ -36,10 +37,11 @@ cr.define('downloadInternals', function() {
    */
   function addOrUpdateEntryByGuid(list, newEntry) {
     const index = list.findIndex(entry => entry.guid == newEntry.guid);
-    if (index != -1)
+    if (index != -1) {
       list[index] = newEntry;
-    else
+    } else {
       list.unshift(newEntry);
+    }
   }
 
   function updateEntryTables() {

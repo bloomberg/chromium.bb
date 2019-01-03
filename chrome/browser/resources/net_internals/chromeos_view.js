@@ -29,10 +29,11 @@ const CrosView = (function() {
    */
   function importONCFile_() {
     clearParseStatus_();
-    if (fileContent)
+    if (fileContent) {
       g_browser.importONCFile(fileContent, passcode);
-    else
+    } else {
       setParseStatus_('ONC file parse failed: cannot read file');
+    }
     clearFileInput_();
   }
 
@@ -44,8 +45,9 @@ const CrosView = (function() {
    */
   function setPasscode_(value) {
     passcode = value;
-    if (passcode)
+    if (passcode) {
       importONCFile_();
+    }
   }
 
   /**

@@ -58,7 +58,8 @@ Polymer({
 
   /** @private */
   onSubpageTap_: function(event) {
-    if (this.prefs.crostini.enabled.value)
+    if (this.prefs.crostini.enabled.value) {
       settings.navigateTo(settings.routes.CROSTINI_DETAILS);
+    }
   },
 });

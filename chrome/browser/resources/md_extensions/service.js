@@ -162,8 +162,9 @@ cr.define('extensions', function() {
                       'File selection was canceled.') {
                 throw new Error(chrome.runtime.lastError.message);
               }
-              if (loadError)
+              if (loadError) {
                 return reject(loadError);
+              }
 
               resolve();
             });
@@ -172,8 +173,9 @@ cr.define('extensions', function() {
 
     /** @override */
     deleteItem(id) {
-      if (this.isDeleting_)
+      if (this.isDeleting_) {
         return;
+      }
       this.isDeleting_ = true;
       chrome.management.uninstall(id, {showConfirmDialog: true}, () => {
         // The "last error" was almost certainly the user canceling the dialog.
@@ -388,8 +390,9 @@ cr.define('extensions', function() {
         // id corresponds to exactly one activity.
         const activitiesById = new Map();
         for (const result of results) {
-          for (const activity of result.activities)
+          for (const activity of result.activities) {
             activitiesById.set(activity.activityId, activity);
+          }
         }
 
         return {activities: Array.from(activitiesById.values())};
