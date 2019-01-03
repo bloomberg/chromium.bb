@@ -14,11 +14,10 @@ class BrowserState;
 }
 
 // Helper functions to be used with KeyedService::SetTestingFactory().
+// This is a subset of the helpers available in //chrome. If more helpers are
+// needed, they can be copied from fake_gaia_cookie_manager_service_builder.h
+// under //chrome.
 std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerService(
-    web::BrowserState* browser_state);
-
-std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerServiceWithOptions(
-    bool create_fake_url_loader_factory_for_cookie_requests,
     web::BrowserState* browser_state);
 
 #endif  // IOS_CHROME_BROWSER_SIGNIN_FAKE_GAIA_COOKIE_MANAGER_SERVICE_BUILDER_H_
