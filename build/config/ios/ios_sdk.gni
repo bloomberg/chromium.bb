@@ -34,7 +34,7 @@ declare_args() {
   # requires loading a separate Xcode project and enable automatically managed
   # certificates. When true, all test application will use the same bundle id
   # to avoid running out of certificates if using a free account.
-  ios_automatically_manage_certs = true
+  ios_automatically_manage_certs = false
 
   # If non-empty, this list must contain valid cpu architecture, and the final
   # build will be a multi-architecture build (aka fat build) supporting the
