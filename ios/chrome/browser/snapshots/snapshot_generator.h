@@ -30,12 +30,6 @@ class WebState;
 // CGSizeZero.
 - (CGSize)snapshotSize;
 
-// If |snapshotCoalescingEnabled| is YES snapshots of the web page are
-// coalesced until this method is called with |snapshotCoalescingEnabled| set to
-// NO. When snapshot coalescing is enabled, mutiple calls to generate a snapshot
-// with the same parameters may be coalesced.
-- (void)setSnapshotCoalescingEnabled:(BOOL)snapshotCoalescingEnabled;
-
 // Gets a color snapshot for the current page, calling |callback| once it has
 // been retrieved or regenerated. If the snapshot cannot be generated, the
 // |callback| will be called with nil.

@@ -90,10 +90,6 @@ UIImage* SnapshotTabHelper::GenerateSnapshotWithoutOverlays() {
   return [snapshot_generator_ generateSnapshotWithOverlays:NO];
 }
 
-void SnapshotTabHelper::SetSnapshotCoalescingEnabled(bool enabled) {
-  [snapshot_generator_ setSnapshotCoalescingEnabled:enabled];
-}
-
 void SnapshotTabHelper::RemoveSnapshot() {
   DCHECK(web_state_);
   [snapshot_generator_ removeSnapshot];
