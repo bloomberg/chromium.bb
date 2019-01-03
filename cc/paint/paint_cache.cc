@@ -35,26 +35,50 @@ void ClientPaintCache::Put(PaintCacheDataType type,
   auto key = std::make_pair(type, id);
   DCHECK(cache_map_.Peek(key) == cache_map_.end());
 
+  pending_entries_->push_back(key);
   cache_map_.Put(key, size);
   bytes_used_ += size;
 }
 
+template <typename Iterator>
+void ClientPaintCache::EraseFromMap(Iterator it) {
+  DCHECK_GE(bytes_used_, it->second);
+  bytes_used_ -= it->second;
+  cache_map_.Erase(it);
+}
+
+void ClientPaintCache::FinalizePendingEntries() {
+  pending_entries_->clear();
+}
+
+void ClientPaintCache::AbortPendingEntries() {
+  for (const auto& entry : pending_entries_) {
+    auto it = cache_map_.Peek(entry);
+    DCHECK(it != cache_map_.end());
+    EraseFromMap(it);
+  }
+  pending_entries_->clear();
+}
+
 void ClientPaintCache::Purge(PurgedData* purged_data) {
+  DCHECK(pending_entries_->empty());
+
   while (bytes_used_ > max_budget_) {
     auto it = cache_map_.rbegin();
     PaintCacheDataType type = it->first.first;
     PaintCacheId id = it->first.second;
 
+    EraseFromMap(it);
     (*purged_data)[static_cast<uint32_t>(type)].push_back(id);
-    DCHECK_GE(bytes_used_, it->second);
-    bytes_used_ -= it->second;
-    cache_map_.Erase(it);
   }
 }
 
 bool ClientPaintCache::PurgeAll() {
+  DCHECK(pending_entries_->empty());
+
   bool has_data = !cache_map_.empty();
   cache_map_.Clear();
+  bytes_used_ = 0u;
   return has_data;
 }
 

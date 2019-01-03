@@ -94,6 +94,7 @@ ImageProvider::ScopedDecodedDrawImage TestOptionsProvider::GetDecodedDrawImage(
 }
 
 void TestOptionsProvider::ClearPaintCache() {
+  client_paint_cache_.FinalizePendingEntries();
   client_paint_cache_.PurgeAll();
   service_paint_cache_.PurgeAll();
 }
