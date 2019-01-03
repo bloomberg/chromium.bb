@@ -168,7 +168,7 @@ void PictureInPictureWindowControllerImpl::UpdatePlaybackState(
 }
 
 bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
-  DCHECK(window_ && window_->IsActive());
+  DCHECK(window_);
 
   if (IsPlayerActive()) {
     media_player_id_->render_frame_host->Send(new MediaPlayerDelegateMsg_Pause(
