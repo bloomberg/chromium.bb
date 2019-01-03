@@ -1096,6 +1096,10 @@ TEST_F(TaskSchedulerPriorityUpdateTest, UpdatePrioritySequenceNotScheduled) {
   for (auto& task_runner_and_events : task_runners_and_events_) {
     test::WaitWithoutBlockingObserver(&task_runner_and_events->task_ran);
   }
+
+  // Make sure to coalesce tasks from |pool_blocking_events| (they are not
+  // guaranteed to all have picked up the Signal() to unblock at this point).
+  scheduler_.FlushForTesting();
 }
 
 // Update the priority of a sequence when it is scheduled, i.e. not currently
