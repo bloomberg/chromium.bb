@@ -3369,7 +3369,7 @@ if (enable_java_templates) {
 
         # Skip desugaring for debug builds using r8 to increase incremental
         # build speed. Release builds still need desugar.jar for binary size.
-        _using_r8 = !defined(invoker.proguard_jar_path) || use_r8
+        _using_r8 = !defined(invoker.proguard_jar_path) || experimental_use_r8
         _desugar = !(_using_r8 && is_java_debug) && _supports_android
         process_java_prebuilt(_process_prebuilt_target_name) {
           forward_variables_from(invoker,
