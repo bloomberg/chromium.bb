@@ -238,7 +238,7 @@ public class FeedNewTabPage extends NewTabPage {
         mNewTabPageLayout.initialize(mNewTabPageManager, mTab, mTileGroupDelegate,
                 mSearchProviderHasLogo,
                 TemplateUrlService.getInstance().isDefaultSearchEngineGoogle(), mMediator,
-                mContextMenuManager, mUiConfig);
+                mContextMenuManager, mUiConfig, mConstructedTimeNs);
     }
 
     @Override

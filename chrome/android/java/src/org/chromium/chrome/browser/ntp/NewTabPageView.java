@@ -106,9 +106,11 @@ public class NewTabPageView extends FrameLayout {
      * @param searchProviderHasLogo Whether the search provider has a logo.
      * @param searchProviderIsGoogle Whether the search provider is Google.
      * @param scrollPosition The adapter scroll position to initialize to.
+     * @param constructedTimeNs The timestamp at which the new tab page's construction started.
      */
     public void initialize(NewTabPageManager manager, Tab tab, TileGroup.Delegate tileGroupDelegate,
-            boolean searchProviderHasLogo, boolean searchProviderIsGoogle, int scrollPosition) {
+            boolean searchProviderHasLogo, boolean searchProviderIsGoogle, int scrollPosition,
+            long constructedTimeNs) {
         TraceEvent.begin(TAG + ".initialize()");
         mTab = tab;
         mManager = manager;
@@ -125,7 +127,8 @@ public class NewTabPageView extends FrameLayout {
         mTab.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
 
         mNewTabPageLayout.initialize(manager, tab, tileGroupDelegate, searchProviderHasLogo,
-                searchProviderIsGoogle, mRecyclerView, mContextMenuManager, mUiConfig);
+                searchProviderIsGoogle, mRecyclerView, mContextMenuManager, mUiConfig,
+                constructedTimeNs);
 
         mSnapScrollHelper = new SnapScrollHelper(mManager, mNewTabPageLayout);
         mSnapScrollHelper.setView(mRecyclerView);

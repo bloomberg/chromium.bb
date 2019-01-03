@@ -20,12 +20,15 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -63,6 +66,8 @@ import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.widget.ViewRectProvider;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Layout for the new tab page. This positions the page elements in the correct vertical positions.
@@ -215,11 +220,12 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
      * @param scrollDelegate The delegate used to obtain information about scroll state.
      * @param contextMenuManager The manager for long-press context menus.
      * @param uiConfig UiConfig that provides display information about this view.
+     * @param constructedTimeNs The timestamp at which the new tab page's construction started.
      */
     public void initialize(NewTabPageManager manager, Tab tab, TileGroup.Delegate tileGroupDelegate,
             boolean searchProviderHasLogo, boolean searchProviderIsGoogle,
-            ScrollDelegate scrollDelegate, ContextMenuManager contextMenuManager,
-            UiConfig uiConfig) {
+            ScrollDelegate scrollDelegate, ContextMenuManager contextMenuManager, UiConfig uiConfig,
+            long constructedTimeNs) {
         TraceEvent.begin(TAG + ".initialize()");
         mScrollDelegate = scrollDelegate;
         mTab = tab;
@@ -292,6 +298,22 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
                 chromeLayoutManager.addOverviewModeObserver(mOverviewObserver);
             }
         }
+
+        // Use preDraw instead of draw because api level 25 and earlier doesn't seem to call the
+        // onDraw listener. Also, the onDraw version cannot be removed inside of the notification,
+        // which complicates this.
+        getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                Log.e(TAG, "SKYM onPreDraw()");
+                long timeToFirstDrawMs =
+                        TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - constructedTimeNs);
+                RecordHistogram.recordTimesHistogram(
+                        "NewTabPage.TimeToFirstDraw", timeToFirstDrawMs, TimeUnit.MILLISECONDS);
+                getViewTreeObserver().removeOnPreDrawListener(this);
+                return true;
+            }
+        });
 
         manager.addDestructionObserver(NewTabPageLayout.this::onDestroy);
 
