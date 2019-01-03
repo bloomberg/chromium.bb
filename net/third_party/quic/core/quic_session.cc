@@ -694,15 +694,18 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id, bool locally_reset) {
 void QuicSession::ClosePendingStream(QuicStreamId stream_id) {
   QUIC_DVLOG(1) << ENDPOINT << "Closing stream " << stream_id;
 
-  auto it = pending_stream_map_.find(stream_id);
-  if (it == pending_stream_map_.end()) {
+  if (pending_stream_map_.find(stream_id) == pending_stream_map_.end()) {
     QUIC_BUG << ENDPOINT << "Stream is already closed: " << stream_id;
     return;
   }
 
   SendRstStream(stream_id, QUIC_RST_ACKNOWLEDGEMENT, 0);
 
-  pending_stream_map_.erase(it);
+  // The pending stream may have been deleted and removed during SendRstStream.
+  // Remove the stream from pending stream map iff it is still in the map.
+  if (pending_stream_map_.find(stream_id) != pending_stream_map_.end()) {
+    pending_stream_map_.erase(stream_id);
+  }
 
   --num_dynamic_incoming_streams_;
 
