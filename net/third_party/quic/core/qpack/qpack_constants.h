@@ -102,6 +102,20 @@ const QpackInstruction* DynamicTableSizeUpdateInstruction();
 // Encoder stream language.
 const QpackLanguage* QpackEncoderStreamLanguage();
 
+// 5.3 Decoder stream instructions
+
+// 5.3.1 Table State Synchronize
+const QpackInstruction* TableStateSynchronizeInstruction();
+
+// 5.3.2 Header Acknowledgement
+const QpackInstruction* HeaderAcknowledgementInstruction();
+
+// 5.3.3 Stream Cancellation
+const QpackInstruction* StreamCancellationInstruction();
+
+// Decoder stream language.
+const QpackLanguage* QpackDecoderStreamLanguage();
+
 // 5.4.1. Header data prefix instructions
 
 const QpackInstruction* QpackPrefixInstruction();
