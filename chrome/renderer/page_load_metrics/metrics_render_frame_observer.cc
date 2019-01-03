@@ -106,10 +106,10 @@ void MetricsRenderFrameObserver::DidStartResponse(
     // case. There should be a guarantee that DidStartProvisionalLoad be called
     // before DidStartResponse for the frame request.
     provisional_frame_resource_data_use_->DidStartResponse(
-        response_url, request_id, response_head);
+        response_url, request_id, response_head, resource_type);
   } else if (page_timing_metrics_sender_) {
     page_timing_metrics_sender_->DidStartResponse(response_url, request_id,
-                                                  response_head);
+                                                  response_head, resource_type);
     UpdateResourceMetadata(request_id);
   }
 }

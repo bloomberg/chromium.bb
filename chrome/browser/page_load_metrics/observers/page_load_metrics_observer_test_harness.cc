@@ -70,6 +70,12 @@ void PageLoadMetricsObserverTestHarness::SimulateResourceDataUseUpdate(
   tester_->SimulateResourceDataUseUpdate(resources);
 }
 
+void PageLoadMetricsObserverTestHarness::SimulateResourceDataUseUpdate(
+    const std::vector<mojom::ResourceDataUpdatePtr>& resources,
+    content::RenderFrameHost* render_frame_host) {
+  tester_->SimulateResourceDataUseUpdate(resources, render_frame_host);
+}
+
 void PageLoadMetricsObserverTestHarness::SimulateFeaturesUpdate(
     const mojom::PageLoadFeatures& new_features) {
   tester_->SimulateFeaturesUpdate(new_features);
