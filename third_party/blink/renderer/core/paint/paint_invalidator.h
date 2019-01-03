@@ -141,7 +141,8 @@ class PaintInvalidator {
   void InvalidatePaint(LocalFrameView&,
                        const PaintPropertyTreeBuilderContext*,
                        PaintInvalidatorContext&);
-  void InvalidatePaint(const LayoutObject&,
+  // Returns true if the object is invalidated.
+  bool InvalidatePaint(const LayoutObject&,
                        const PaintPropertyTreeBuilderContext*,
                        PaintInvalidatorContext&);
 

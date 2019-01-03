@@ -115,6 +115,8 @@ class CORE_EXPORT PrePaintTreeWalk {
   PaintInvalidator paint_invalidator_;
   Vector<PrePaintTreeWalkContext> context_storage_;
 
+  bool needs_invalidate_chrome_client_ = false;
+
   FRIEND_TEST_ALL_PREFIXES(PrePaintTreeWalkTest, ClipRects);
 };
 
