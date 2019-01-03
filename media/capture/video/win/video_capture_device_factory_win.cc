@@ -80,7 +80,9 @@ static_assert(base::size(kBlacklistedCameraNames) == BLACKLISTED_CAMERA_MAX + 1,
 
 const char* const kModelIdsBlacklistedForMediaFoundation[] = {
     // Devices using Empia 2860 or 2820 chips, see https://crbug.com/849636.
-    "eb1a:2860", "eb1a:2820", "1ce6:2820"};
+    "eb1a:2860", "eb1a:2820", "1ce6:2820",
+    // Elgato HD60 Pro
+    "12ab:0380"};
 
 const std::pair<VideoCaptureApi, std::vector<std::pair<GUID, GUID>>>
     kMfAttributes[] = {{VideoCaptureApi::WIN_MEDIA_FOUNDATION,
