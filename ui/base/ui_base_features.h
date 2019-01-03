@@ -13,7 +13,6 @@
 namespace features {
 
 // Keep sorted!
-UI_BASE_EXPORT extern const base::Feature kEnableEmojiContextMenu;
 UI_BASE_EXPORT extern const base::Feature
     kEnableFullscreenHandwritingVirtualKeyboard;
 UI_BASE_EXPORT extern const base::Feature kEnableStylusVirtualKeyboard;

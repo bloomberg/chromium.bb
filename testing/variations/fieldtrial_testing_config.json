@@ -1769,23 +1769,6 @@
             ]
         }
     ],
-    "EnableEmojiContextMenu": [
-        {
-            "platforms": [
-                "chromeos",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "EnableEmojiContextMenu"
-                    ]
-                }
-            ]
-        }
-    ],
     "EnableMediaRouter": [
         {
             "platforms": [
