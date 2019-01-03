@@ -3753,6 +3753,13 @@ void RenderFrameHostImpl::CreateNewWindow(
                           std::move(reply));
 }
 
+void RenderFrameHostImpl::CreatePortal(blink::mojom::PortalRequest request,
+                                       CreatePortalCallback callback) {
+  Portal* portal = Portal::Create(this, std::move(request));
+  RenderFrameProxyHost* proxy_host = portal->CreateProxyAndAttachPortal();
+  std::move(callback).Run(proxy_host->GetRoutingID(), portal->portal_token());
+}
+
 void RenderFrameHostImpl::IssueKeepAliveHandle(
     mojom::KeepAliveHandleRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -4058,11 +4065,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::BindRepeating(&FileSystemManagerImpl::BindRequest,
                           base::Unretained(file_system_manager_.get())),
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
-
-  if (Portal::IsEnabled()) {
-    registry_->AddInterface(base::BindRepeating(IgnoreResult(&Portal::Create),
-                                                base::Unretained(this)));
-  }
 
   registry_->AddInterface(base::BindRepeating(
       &BackgroundFetchServiceImpl::CreateForFrame, GetProcess(), routing_id_));

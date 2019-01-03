@@ -24,6 +24,7 @@ import "third_party/blink/public/mojom/referrer.mojom";
 import "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom";
 import "third_party/blink/public/web/commit_result.mojom";
 import "third_party/blink/public/mojom/devtools/devtools_agent.mojom";
+import "third_party/blink/public/mojom/portal/portal.mojom";
 import "third_party/blink/public/web/window_features.mojom";
 import "ui/base/mojo/window_open_disposition.mojom";
 import "url/mojom/url.mojom";
@@ -271,6 +272,14 @@ interface FrameHost {
   // is only non-null on when status == CreateNewWindowStatus::kSuccess.
   [Sync] CreateNewWindow(CreateNewWindowParams params)
       => (CreateNewWindowStatus status, CreateNewWindowReply? reply);
+
+  // Sent by the renderer process to request the creation of a new portal.
+  // |pipe| is the pipe to be used for the Portal object. Returns
+  // |proxy_routing_id|, which is the routing id of the RenderFrameProxy and
+  // |portal_token|, which is the unique identifier for the portal.
+  [Sync] CreatePortal(blink.mojom.Portal& portal)
+      => (int32 proxy_routing_id,
+          mojo_base.mojom.UnguessableToken portal_token);
 
   // Creates and returns a KeepAliveHandle.
   IssueKeepAliveHandle(KeepAliveHandle& keep_alive_handle);

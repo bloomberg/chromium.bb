@@ -227,6 +227,13 @@ class BLINK_EXPORT WebLocalFrameClient {
     return nullptr;
   }
 
+  // Request the creation of a new portal.
+  virtual std::pair<WebRemoteFrame*, base::UnguessableToken> CreatePortal(
+      mojo::ScopedMessagePipeHandle pipe) {
+    return std::pair<WebRemoteFrame*, base::UnguessableToken>(
+        nullptr, base::UnguessableToken());
+  }
+
   // Called when Blink cannot find a frame with the given name in the frame's
   // browsing instance.  This gives the embedder a chance to return a frame
   // from outside of the browsing instance.

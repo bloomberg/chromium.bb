@@ -88,6 +88,7 @@ class LoaderIOThreadNotifier;
 class ManifestManagerHost;
 class MediaWebContentsObserver;
 class PluginContentOriginWhitelist;
+class Portal;
 class RenderFrameHost;
 class RenderViewHost;
 class RenderViewHostDelegateView;
@@ -1001,6 +1002,18 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // this won't create one if none exists.
   FindRequestManager* GetFindRequestManagerForTesting();
 
+  // Detaches this WebContents from its outer WebContents.
+  std::unique_ptr<WebContents> DetachFromOuterWebContents();
+
+  // Reattaches this inner WebContents to its outer WebContents.
+  void ReattachToOuterWebContentsFrame();
+
+  // Getter/setter for the Portal associated with this WebContents. If non-null
+  // then this WebContents is embedded in a portal and its outer WebContents can
+  // be found by using GetOuterWebContents().
+  void set_portal(Portal* portal) { portal_ = portal; }
+  Portal* portal() { return portal_; }
+
  private:
   friend class WebContentsObserver;
   friend class WebContents;  // To implement factory methods.
@@ -1091,6 +1104,15 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
     void ConnectToOuterWebContents(
         std::unique_ptr<WebContents> current_web_contents,
         RenderFrameHostImpl* outer_contents_frame);
+
+    // Disconnects the current WebContents from its outer WebContents, and
+    // returns ownership to the caller. This is used when activating a portal,
+    // which causes the WebContents to transition from an inner WebContents to
+    // an outer WebContents.
+    // TODO(lfg): Activating a nested portal currently replaces the outermost
+    // WebContents with the portal. We should allow replacing only the inner
+    // WebContents with the nested portal.
+    std::unique_ptr<WebContents> DisconnectFromOuterWebContents();
 
     WebContentsImpl* outer_web_contents() const { return outer_web_contents_; }
     int outer_contents_frame_tree_node_id() const {
@@ -1411,9 +1433,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // is that of the main frame.
   void SetVisibilityForChildViews(bool visible);
 
-  // Reattaches this inner WebContents to its outer WebContents.
-  void ReattachToOuterWebContentsFrame();
-
   // A helper for clearing the link status bubble after navigating away.
   // See also UpdateTargetURL.
   void ClearTargetURL();
@@ -1469,11 +1488,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Helper classes ------------------------------------------------------------
 
-  // Manages the frame tree of the page and process swaps in each node.
-  FrameTree frame_tree_;
-
   // Contains information about the WebContents tree structure.
   WebContentsTreeNode node_;
+
+  // Manages the frame tree of the page and process swaps in each node.
+  FrameTree frame_tree_;
 
   // SavePackage, lazily created.
   scoped_refptr<SavePackage> save_package_;
@@ -1810,6 +1829,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // DidStartNavigation/DidFinishNavigation and only set for an initial
   // navigation triggered by the browser going to about:blank.
   bool should_focus_location_bar_by_default_ = false;
+
+  // Stores the Portal object associated with this WebContents, if there is one.
+  // If non-null then this WebContents is embedded in a portal and its outer
+  // WebContents can be found by using GetOuterWebContents().
+  Portal* portal_ = nullptr;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
   base::WeakPtrFactory<WebContentsImpl> weak_factory_;

@@ -536,8 +536,12 @@ class WebContents : public PageNavigator,
   virtual bool CanAttachToOuterContentsFrame(
       RenderFrameHost* outer_contents_frame) = 0;
 
-  // Attaches |current_web_contents| to its container frame
-  // |outer_contents_frame|.
+  // Attaches |current_web_contents|, which should be the same as |this|
+  // WebContents, to its container frame |outer_contents_frame|, which should be
+  // in the outer WebContents. The |current_web_contents| is pointer is needed
+  // for passing ownership of the inner WebContents to the otuer WebContents.
+  // TODO(lfg): This API should be moved so that it is called on the outer
+  // WebContents.
   virtual void AttachToOuterWebContentsFrame(
       std::unique_ptr<WebContents> current_web_contents,
       RenderFrameHost* outer_contents_frame) = 0;

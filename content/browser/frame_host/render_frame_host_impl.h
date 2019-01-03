@@ -1024,6 +1024,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // mojom::FrameHost:
   void CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
                        CreateNewWindowCallback callback) override;
+  void CreatePortal(blink::mojom::PortalRequest request,
+                    CreatePortalCallback callback) override;
   void IssueKeepAliveHandle(mojom::KeepAliveHandleRequest request) override;
   void DidCommitProvisionalLoad(
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>

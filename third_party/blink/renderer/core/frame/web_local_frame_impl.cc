@@ -204,6 +204,8 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
+#include "third_party/blink/renderer/core/html/portal/document_portals.h"
+#include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
@@ -1840,6 +1842,17 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
 
   DCHECK(webframe_child->Parent());
   return webframe_child->GetFrame();
+}
+
+std::pair<RemoteFrame*, base::UnguessableToken> WebLocalFrameImpl::CreatePortal(
+    HTMLPortalElement* portal,
+    mojom::blink::PortalRequest request) {
+  auto pair = client_->CreatePortal(request.PassMessagePipe());
+  WebRemoteFrameImpl* portal_frame = ToWebRemoteFrameImpl(pair.first);
+  portal_frame->InitializeCoreFrame(*GetFrame()->GetPage(), portal,
+                                    g_null_atom);
+  return std::pair<RemoteFrame*, base::UnguessableToken>(
+      portal_frame->GetFrame(), pair.second);
 }
 
 void WebLocalFrameImpl::DidChangeContentsSize(const IntSize& size) {

@@ -791,6 +791,12 @@ LocalFrame* LocalFrameClientImpl::CreateFrame(
   return web_frame_->CreateChildFrame(name, owner_element);
 }
 
+std::pair<RemoteFrame*, base::UnguessableToken>
+LocalFrameClientImpl::CreatePortal(HTMLPortalElement* portal,
+                                   mojom::blink::PortalRequest request) {
+  return web_frame_->CreatePortal(portal, std::move(request));
+}
+
 WebPluginContainerImpl* LocalFrameClientImpl::CreatePlugin(
     HTMLPlugInElement& element,
     const KURL& url,

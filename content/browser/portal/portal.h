@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "content/common/content_export.h"
+#include "content/common/frame.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom.h"
@@ -15,6 +16,8 @@
 namespace content {
 
 class RenderFrameHostImpl;
+class RenderFrameProxyHost;
+class WebContentsImpl;
 
 // A Portal provides a way to embed a WebContents inside a frame in another
 // WebContents. It also provides an API that the owning frame can interact with
@@ -40,18 +43,24 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   static std::unique_ptr<Portal> CreateForTesting(
       RenderFrameHostImpl* owner_render_frame_host);
 
+  // Called from a synchronous IPC from the renderer process in order to create
+  // the proxy.
+  RenderFrameProxyHost* CreateProxyAndAttachPortal();
+
   // blink::mojom::Portal implementation.
-  void Init(base::OnceCallback<void(const base::UnguessableToken&)> callback)
-      override;
   void Navigate(const GURL& url) override;
   void Activate(base::OnceCallback<void(blink::mojom::PortalActivationStatus)>
                     callback) override;
 
   // WebContentsObserver overrides.
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
+  void WebContentsDestroyed() override;
+
+  // Returns the token which uniquely identifies this Portal.
+  const base::UnguessableToken& portal_token() const { return portal_token_; }
 
   // Returns the Portal's WebContents.
-  WebContents* GetPortalContents();
+  WebContentsImpl* GetPortalContents();
 
   // Gets/sets the mojo binding. Only used in tests.
   mojo::StrongBindingPtr<blink::mojom::Portal> GetBindingForTesting() {
@@ -67,12 +76,15 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
 
   // Uniquely identifies the portal, this token is used by the browser process
   // to reference this portal when communicating with the renderer.
-  base::UnguessableToken portal_token_;
+  const base::UnguessableToken portal_token_;
 
   // WeakPtr to StrongBinding.
   mojo::StrongBindingPtr<blink::mojom::Portal> binding_;
 
+  // When the portal is not attached, the Portal owns its WebContents.
   std::unique_ptr<WebContents> portal_contents_;
+
+  WebContentsImpl* portal_contents_impl_;
 };
 
 }  // namespace content
