@@ -135,8 +135,9 @@ Polymer({
 
   /** Overridden from IronScrollTargetBehavior */
   _scrollHandler: function() {
-    if (this.scrollTarget)
+    if (this.scrollTarget) {
       this.toolbarShadow_ = this.scrollTarget.scrollTop != 0;
+    }
   },
 
   /** @private */
@@ -236,12 +237,13 @@ Polymer({
    * @private
    */
   onCommand_: function(e) {
-    if (e.command.id == 'find-command' || e.command.id == 'slash-command')
+    if (e.command.id == 'find-command' || e.command.id == 'slash-command') {
       this.focusToolbarSearchField();
-    else if (e.command.id == 'delete-command')
+    } else if (e.command.id == 'delete-command') {
       this.deleteSelected();
-    else if (e.command.id == 'select-all-command')
+    } else if (e.command.id == 'select-all-command') {
       this.selectOrUnselectAll();
+    }
   },
 
   /**
@@ -308,8 +310,9 @@ Polymer({
   hasDrawerChanged_: function() {
     const drawer =
         /** @type {?CrDrawerElement} */ (this.$.drawer.getIfExists());
-    if (!this.hasDrawer_ && drawer && drawer.open)
+    if (!this.hasDrawer_ && drawer && drawer.open) {
       drawer.cancel();
+    }
   },
 
   /**
@@ -329,8 +332,9 @@ Polymer({
   /** @private */
   closeDrawer_: function() {
     const drawer = this.$.drawer.get();
-    if (drawer && drawer.open)
+    if (drawer && drawer.open) {
       drawer.close();
+    }
   },
 
   /** @private */

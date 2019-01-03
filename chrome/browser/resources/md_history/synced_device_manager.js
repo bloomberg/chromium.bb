@@ -109,8 +109,9 @@ Polymer({
     for (let i = 0; i < session.windows.length; i++) {
       const windowId = session.windows[i].sessionId;
       const newTabs = session.windows[i].tabs;
-      if (newTabs.length == 0)
+      if (newTabs.length == 0) {
         continue;
+      }
 
       newTabs.forEach(function(tab) {
         tab.windowId = windowId;
@@ -131,8 +132,9 @@ Polymer({
           }
         }
       }
-      if (windowAdded && i != session.windows.length - 1)
+      if (windowAdded && i != session.windows.length - 1) {
         separatorIndexes.push(tabs.length - 1);
+      }
     }
     return {
       device: session.name,
@@ -174,8 +176,9 @@ Polymer({
 
   /** @private */
   updateFocusGrid_: function() {
-    if (!this.focusGrid_)
+    if (!this.focusGrid_) {
       return;
+    }
 
     this.focusGrid_.destroy();
 
@@ -215,8 +218,9 @@ Polymer({
    */
   showNoSyncedMessage: function(
       signInState, syncedDevicesLength, guestSession) {
-    if (guestSession)
+    if (guestSession) {
       return true;
+    }
 
     return signInState && syncedDevicesLength == 0;
   },
@@ -245,8 +249,9 @@ Polymer({
    */
   noSyncedTabsMessage: function() {
     let stringName = this.fetchingSyncedTabs_ ? 'loading' : 'noSyncedResults';
-    if (this.searchTerm !== '')
+    if (this.searchTerm !== '') {
       stringName = 'noSearchResults';
+    }
     return loadTimeData.getString(stringName);
   },
 
@@ -261,8 +266,9 @@ Polymer({
   updateSyncedDevices: function(sessionList) {
     this.fetchingSyncedTabs_ = false;
 
-    if (!sessionList)
+    if (!sessionList) {
       return;
+    }
 
     if (sessionList.length > 0 && !this.hasSeenForeignData_) {
       this.hasSeenForeignData_ = true;
@@ -274,8 +280,9 @@ Polymer({
     const devices = [];
     sessionList.forEach((session) => {
       const device = this.createInternalDevice_(session);
-      if (device.tabs.length != 0)
+      if (device.tabs.length != 0) {
         devices.push(device);
+      }
     });
 
     this.syncedDevices_ = devices;
@@ -289,8 +296,9 @@ Polymer({
    * @param {?boolean} previous
    */
   signInStateChanged_: function(current, previous) {
-    if (previous === undefined)
+    if (previous === undefined) {
       return;
+    }
 
     this.fire('history-view-changed');
 

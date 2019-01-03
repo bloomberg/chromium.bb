@@ -305,8 +305,9 @@ Polymer({
   toggleExpandButton_: function(e) {
     // The expand button handles toggling itself.
     const expandButtonTag = 'CR-EXPAND-BUTTON';
-    if (e.target.tagName == expandButtonTag)
+    if (e.target.tagName == expandButtonTag) {
       return;
+    }
 
     /** @type {!CrExpandButtonElement} */
     const expandButton = e.currentTarget.querySelector(expandButtonTag);
@@ -319,8 +320,9 @@ Polymer({
    * @private
    */
   itemsToRemoveSectionExpandedChanged_: function(newVal, oldVal) {
-    if (!oldVal && newVal)
+    if (!oldVal && newVal) {
       this.browserProxy_.notifyShowDetails(this.itemsToRemoveSectionExpanded_);
+    }
   },
 
   /**
@@ -549,8 +551,9 @@ Polymer({
 
     // Files to remove list should only be expandable if details are being
     // shown, otherwise it will add extra padding at the bottom of the card.
-    if (!this.showExplanation_ || !this.showItemsToRemove_)
+    if (!this.showExplanation_ || !this.showItemsToRemove_) {
       this.itemsToRemoveSectionExpanded_ = false;
+    }
   },
 
   /**

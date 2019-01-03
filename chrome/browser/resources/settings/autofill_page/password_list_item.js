@@ -20,8 +20,9 @@ Polymer({
    * @private
    */
   onReadonlyInputTap_: function() {
-    if (this.item.password)
+    if (this.item.password) {
       this.$$('#password').select();
+    }
   },
 
   /**

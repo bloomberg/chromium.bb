@@ -31,8 +31,9 @@ function loadAuthUrlAndShowWindow(url, win) {
       },
       ['blocking', 'requestHeaders']);
 
-  if (!url.toLowerCase().startsWith('https://accounts.google.com/'))
+  if (!url.toLowerCase().startsWith('https://accounts.google.com/')) {
     document.querySelector('.titlebar').classList.add('titlebar-border');
+  }
 
   webview.src = url;
   if (win) {

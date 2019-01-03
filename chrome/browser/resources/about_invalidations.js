@@ -106,8 +106,9 @@ cr.define('chrome.invalidations', function() {
     const time = new Date();
     const version = oId.isUnknownVersion ? '?' : oId.version;
     let payload = '';
-    if (oId.hasOwnProperty('payload'))
+    if (oId.hasOwnProperty('payload')) {
       payload = oId.payload;
+    }
     if (!(key in tableObjects)) {
       tableObjects[key] = {
         name: name,
@@ -161,8 +162,9 @@ cr.define('chrome.invalidations', function() {
     // Grey out every datatype assigned to this registrar
     // (and reenable them later in case they are still registered).
     for (const key in tableObjects) {
-      if (tableObjects[key]['registrar'] === registrar)
+      if (tableObjects[key]['registrar'] === registrar) {
         tableObjects[key].type = 'greyed';
+      }
     }
     // Reenable those ObjectsIds still registered with this registrar.
     for (let i = 0; i < allIds.length; i++) {

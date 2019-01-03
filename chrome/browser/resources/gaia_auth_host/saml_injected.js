@@ -99,8 +99,9 @@ PasswordInputScraper.prototype = {
     this.passwordFieldsObserver = new MutationObserver(function(mutations) {
       mutations.forEach(function(mutation) {
         Array.prototype.forEach.call(mutation.addedNodes, function(addedNode) {
-          if (addedNode.nodeType != Node.ELEMENT_NODE)
+          if (addedNode.nodeType != Node.ELEMENT_NODE) {
             return;
+          }
 
           if (addedNode.matches('input[type=password]')) {
             this.trackPasswordField(addedNode);
@@ -134,8 +135,9 @@ PasswordInputScraper.prototype = {
     const existing = this.passwordFields_.filter(function(element) {
       return element === passwordField;
     });
-    if (existing.length != 0)
+    if (existing.length != 0) {
       return;
+    }
 
     const index = this.passwordFields_.length;
     const fieldId = passwordField.id || passwordField.name || '';
@@ -151,8 +153,9 @@ PasswordInputScraper.prototype = {
    */
   maybeSendUpdatedPassword: function(index, fieldId) {
     const newValue = this.passwordFields_[index].value;
-    if (newValue == this.passwordValues_[index])
+    if (newValue == this.passwordValues_[index]) {
       return;
+    }
 
     this.passwordValues_[index] = newValue;
 
@@ -177,8 +180,9 @@ PasswordInputScraper.prototype = {
 };
 
 function onGetSAMLFlag(channel, isSAMLPage) {
-  if (!isSAMLPage)
+  if (!isSAMLPage) {
     return;
+  }
   const pageURL = window.location.href;
 
   channel.send({name: 'pageLoaded', url: pageURL});
@@ -190,8 +194,9 @@ function onGetSAMLFlag(channel, isSAMLPage) {
 
   if (document.readyState == 'loading') {
     window.addEventListener('readystatechange', function listener(event) {
-      if (document.readyState == 'loading')
+      if (document.readyState == 'loading') {
         return;
+      }
       initPasswordScraper();
       window.removeEventListener(event.type, listener, true);
     }, true);

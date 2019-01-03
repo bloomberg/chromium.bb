@@ -56,13 +56,15 @@ Polymer({
    * @private
    */
   prefChanged_: function() {
-    if (!this.pref)
+    if (!this.pref) {
       return;
+    }
 
     // Ignore updates while the input is focused so that user input is not
     // overwritten.
-    if (this.$.input.focused)
+    if (this.$.input.focused) {
       return;
+    }
 
     this.setInputValueFromPref_();
   },
@@ -112,10 +114,11 @@ Polymer({
    */
   onKeydown_: function(event) {
     // If pressed enter when input is invalid, do not trigger on-change.
-    if (event.key == 'Enter' && this.invalid)
+    if (event.key == 'Enter' && this.invalid) {
       event.preventDefault();
-    else if (event.key == 'Escape')
+    } else if (event.key == 'Escape') {
       this.resetValue_();
+    }
 
     this.stopKeyEventPropagation_(event);
   },

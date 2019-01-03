@@ -293,8 +293,9 @@ function getThemeBackgroundInfo() {
  */
 function getIsThemeDark() {
   var info = getThemeBackgroundInfo();
-  if (!info)
+  if (!info) {
     return false;
+  }
   // Heuristic: light text implies dark theme.
   var rgba = info.textColorRgba;
   var luminance = 0.3 * rgba[0] + 0.59 * rgba[1] + 0.11 * rgba[2];
@@ -309,8 +310,9 @@ function renderTheme() {
   $(IDS.NTP_CONTENTS).classList.toggle(CLASSES.DARK, getIsThemeDark());
 
   var info = getThemeBackgroundInfo();
-  if (!info)
+  if (!info) {
     return;
+  }
 
   var background = [convertToRGBAColor(info.backgroundColorRgba),
                     info.imageUrl,
@@ -379,8 +381,9 @@ function renderTheme() {
  */
 function sendThemeInfoToMostVisitedIframe() {
   var info = getThemeBackgroundInfo();
-  if (!info)
+  if (!info) {
     return;
+  }
 
   var isThemeDark = getIsThemeDark();
 
@@ -554,10 +557,11 @@ function reloadTiles() {
  * @param {boolean} success True if the link was successfully added.
  */
 function onAddCustomLinkDone(success) {
-  if (success)
+  if (success) {
     showNotification(configData.translatedStrings.linkAddedMsg);
-  else
+  } else {
     showErrorNotification(configData.translatedStrings.linkCantCreate);
+  }
   ntpApiHandle.logEvent(LOG_TYPE.NTP_CUSTOMIZE_SHORTCUT_DONE);
 }
 
@@ -569,10 +573,11 @@ function onAddCustomLinkDone(success) {
  * @param {boolean} success True if the link was successfully updated.
  */
 function onUpdateCustomLinkDone(success) {
-  if (success)
+  if (success) {
     showNotification(configData.translatedStrings.linkEditedMsg);
-  else
+  } else {
     showErrorNotification(configData.translatedStrings.linkCantEdit);
+  }
 }
 
 
@@ -583,10 +588,11 @@ function onUpdateCustomLinkDone(success) {
  * @param {boolean} success True if the link was successfully deleted.
  */
 function onDeleteCustomLinkDone(success) {
-  if (success)
+  if (success) {
     showNotification(configData.translatedStrings.linkRemovedMsg);
-  else
+  } else {
     showErrorNotification(configData.translatedStrings.linkCantRemove);
+  }
 }
 
 
@@ -666,10 +672,11 @@ function floatUpNotification(notification, notificationContainer) {
   // Hide pre-existing notification if it was different type. Clear timeout and
   // replace it with the new timeout and new message if it was the same type.
   if (delayedHideNotification) {
-    if (delayedHideNotification.previousContainer === notificationContainer)
+    if (delayedHideNotification.previousContainer === notificationContainer) {
       delayedHideNotification.clear();
-    else
+    } else {
       delayedHideNotification.trigger();
+    }
     delayedHideNotification = null;
   }
 
@@ -694,8 +701,9 @@ function floatUpNotification(notification, notificationContainer) {
  * @param {!Element} notificationContainer The notification container element.
  */
 function floatDownNotification(notification, notificationContainer) {
-  if (!notificationContainer.classList.contains(CLASSES.FLOAT_UP))
+  if (!notificationContainer.classList.contains(CLASSES.FLOAT_UP)) {
     return;
+  }
 
   // Hide middle-slot promo if one is present.
   if ($(IDS.PROMO) !== null) {
@@ -826,8 +834,9 @@ function setFakeboxVisibility(show) {
  */
 function registerKeyHandler(element, keycode, handler) {
   element.addEventListener('keydown', function(event) {
-    if (event.keyCode == keycode)
+    if (event.keyCode == keycode) {
       handler(event);
+    }
   });
 }
 
@@ -998,10 +1007,11 @@ function init() {
 
     // Listener for updating the key capture state.
     document.body.onmousedown = function(event) {
-      if (isFakeboxClick(event))
+      if (isFakeboxClick(event)) {
         searchboxApiHandle.startCapturingKeyStrokes();
-      else if (isFakeboxFocused())
+      } else if (isFakeboxFocused()) {
         searchboxApiHandle.stopCapturingKeyStrokes();
+      }
     };
     searchboxApiHandle.onkeycapturechange = function() {
       setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
@@ -1011,8 +1021,9 @@ function init() {
       event.preventDefault();
       // Send pasted text to Omnibox.
       var text = event.clipboardData.getData('text/plain');
-      if (text)
+      if (text) {
         searchboxApiHandle.paste(text);
+      }
     };
     inputbox.ondrop = function(event) {
       event.preventDefault();
@@ -1069,10 +1080,12 @@ function createIframes() {
 
   var searchboxApiHandle = window.chrome.embeddedSearch.searchBox;
 
-  if (searchboxApiHandle.rtl)
+  if (searchboxApiHandle.rtl) {
     args.push('rtl=1');
-  if (NTP_DESIGN.numTitleLines > 1)
+  }
+  if (NTP_DESIGN.numTitleLines > 1) {
     args.push('ntl=' + NTP_DESIGN.numTitleLines);
+  }
 
   args.push(
       'title=' +
@@ -1114,8 +1127,9 @@ function createIframes() {
     // Collect arguments for the edit custom link iframe.
     let clArgs = [];
 
-    if (searchboxApiHandle.rtl)
+    if (searchboxApiHandle.rtl) {
       clArgs.push('rtl=1');
+    }
 
     clArgs.push(
         'addTitle=' +
@@ -1171,8 +1185,9 @@ function listen() {
  * doesn't block the main page load.
  */
 function injectPromo(promo) {
-  if (promo.promoHtml == '')
+  if (promo.promoHtml == '') {
     return;
+  }
 
   let promoContainer = document.createElement('div');
   promoContainer.id = IDS.PROMO;

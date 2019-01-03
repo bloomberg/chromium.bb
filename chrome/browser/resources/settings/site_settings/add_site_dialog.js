@@ -100,7 +100,8 @@ Polymer({
 
   /** @private */
   hasIncognitoChanged_: function() {
-    if (!this.hasIncognito)
+    if (!this.hasIncognito) {
       this.$.incognito.checked = false;
+    }
   },
 });

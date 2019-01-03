@@ -215,8 +215,9 @@ cr.define('adapter_broker', function() {
    *     rejects if Bluetooth is not supported.
    */
   function getAdapterBroker() {
-    if (adapterBroker)
+    if (adapterBroker) {
       return Promise.resolve(adapterBroker);
+    }
 
     var bluetoothInternalsHandler = new mojom.BluetoothInternalsHandlerPtr;
     Mojo.bindInterface(

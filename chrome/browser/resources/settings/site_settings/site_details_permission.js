@@ -96,8 +96,9 @@ Polymer({
    * @private
    */
   onDefaultSettingChanged_: function(category) {
-    if (category == this.category)
+    if (category == this.category) {
       this.updateDefaultPermission_(this.site);
+    }
   },
 
   /**
@@ -140,12 +141,14 @@ Polymer({
         defaultSetting == settings.ContentSetting.IMPORTANT_CONTENT) {
       return this.i18n('siteSettingsActionAskDefault');
     } else if (defaultSetting == settings.ContentSetting.ALLOW) {
-      if (this.useCustomSoundLabels_(category) && useAutomaticLabel)
+      if (this.useCustomSoundLabels_(category) && useAutomaticLabel) {
         return this.i18n('siteSettingsActionAutomaticDefault');
+      }
       return this.i18n('siteSettingsActionAllowDefault');
     } else if (defaultSetting == settings.ContentSetting.BLOCK) {
-      if (this.useCustomSoundLabels_(category))
+      if (this.useCustomSoundLabels_(category)) {
         return this.i18n('siteSettingsActionMuteDefault');
+      }
       return this.i18n('siteSettingsActionBlockDefault');
     }
     assertNotReached(
@@ -161,8 +164,9 @@ Polymer({
    * @private
    */
   blockSettingString_: function(category, blockString, muteString) {
-    if (this.useCustomSoundLabels_(category))
+    if (this.useCustomSoundLabels_(category)) {
       return muteString;
+    }
     return blockString;
   },
 
@@ -240,8 +244,9 @@ Polymer({
    */
   showAskSetting_: function(category, setting, source) {
     // For chooser-based permissions 'ask' takes the place of 'allow'.
-    if (category == settings.ContentSettingsTypes.USB_DEVICES)
+    if (category == settings.ContentSettingsTypes.USB_DEVICES) {
       return true;
+    }
 
     return this.isNonDefaultAsk_(setting, source);
   },
@@ -295,8 +300,9 @@ Polymer({
       extensionAllowString, extensionBlockString, extensionAskString,
       policyAllowString, policyBlockString, policyAskString,
       drmDisabledString) {
-    if (source == undefined || category == undefined || setting == undefined)
+    if (source == undefined || category == undefined || setting == undefined) {
       return null;
+    }
 
     /** @type {Object<!settings.ContentSetting, ?string>} */
     const extensionStrings = {};

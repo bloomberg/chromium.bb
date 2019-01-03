@@ -19,18 +19,21 @@ cr.define('bookmarks', function() {
    */
   SelectionState.selectItems = function(selectionState, action) {
     let newItems = new Set();
-    if (!action.clear)
+    if (!action.clear) {
       newItems = new Set(selectionState.items);
+    }
 
     action.items.forEach(function(id) {
       let add = true;
-      if (action.toggle)
+      if (action.toggle) {
         add = !newItems.has(id);
+      }
 
-      if (add)
+      if (add) {
         newItems.add(id);
-      else
+      } else {
         newItems.delete(id);
+      }
     });
 
     return /** @type {SelectionState} */ (Object.assign({}, selectionState, {
@@ -149,13 +152,15 @@ cr.define('bookmarks', function() {
    * @return {SearchState}
    */
   SearchState.removeDeletedResults = function(search, deletedIds) {
-    if (!search.results)
+    if (!search.results) {
       return search;
+    }
 
     const newResults = [];
     search.results.forEach(function(id) {
-      if (!deletedIds.has(id))
+      if (!deletedIds.has(id)) {
         newResults.push(id);
+      }
     });
     return /** @type {SearchState} */ (Object.assign({}, search, {
       results: newResults,
@@ -223,8 +228,9 @@ cr.define('bookmarks', function() {
    */
   NodeState.editBookmark = function(nodes, action) {
     // Do not allow folders to change URL (making them no longer folders).
-    if (!nodes[action.id].url && action.changeInfo.url)
+    if (!nodes[action.id].url && action.changeInfo.url) {
       delete action.changeInfo.url;
+    }
 
     return NodeState.modifyNode_(nodes, action.id, function(node) {
       return /** @type {BookmarkNode} */ (
@@ -329,8 +335,9 @@ cr.define('bookmarks', function() {
     let currentId = childId;
     // Work upwards through the tree from child.
     while (currentId) {
-      if (currentId == ancestorId)
+      if (currentId == ancestorId) {
         return true;
+      }
       currentId = nodes[currentId].parentId;
     }
     return false;
@@ -360,8 +367,10 @@ cr.define('bookmarks', function() {
         // When deleting the selected folder (or its ancestor), select the
         // parent of the deleted node.
         if (selectedFolder &&
-            SelectedFolderState.isAncestorOf(nodes, action.id, selectedFolder))
+            SelectedFolderState.isAncestorOf(
+                nodes, action.id, selectedFolder)) {
           return assert(nodes[action.id].parentId);
+        }
         return selectedFolder;
       default:
         return selectedFolder;
@@ -380,8 +389,9 @@ cr.define('bookmarks', function() {
       folderOpenState, id, nodes) {
     const newFolderOpenState =
         /** @type {FolderOpenState} */ (new Map(folderOpenState));
-    for (let currentId = id; currentId; currentId = nodes[currentId].parentId)
+    for (let currentId = id; currentId; currentId = nodes[currentId].parentId) {
       newFolderOpenState.set(currentId, true);
+    }
 
     return newFolderOpenState;
   };
@@ -414,8 +424,9 @@ cr.define('bookmarks', function() {
         return FolderOpenState.openFolderAndAncestors(
             folderOpenState, nodes[action.id].parentId, nodes);
       case 'move-bookmark':
-        if (!nodes[action.id].children)
+        if (!nodes[action.id].children) {
           return folderOpenState;
+        }
 
         return FolderOpenState.openFolderAndAncestors(
             folderOpenState, action.parentId, nodes);

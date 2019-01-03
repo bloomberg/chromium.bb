@@ -11,8 +11,9 @@ cr.define('extensions', function() {
    *     registered yet.
    */
   function whenDocumentReady() {
-    if (document.readyState == 'complete')
+    if (document.readyState == 'complete') {
       return Promise.resolve();
+    }
 
     return new Promise(function(resolve) {
       document.addEventListener('readystatechange', function f() {
@@ -75,16 +76,18 @@ cr.define('extensions', function() {
     show: function(data) {
       this.data_ = data;
       whenDocumentReady().then(() => {
-        if (!this.extensionOptions_)
+        if (!this.extensionOptions_) {
           this.extensionOptions_ = document.createElement('ExtensionOptions');
+        }
         this.extensionOptions_.extension = this.data_.id;
         this.extensionOptions_.onclose = () => this.$.dialog.close();
 
         const boundUpdateDialogSize = this.updateDialogSize_.bind(this);
         this.boundUpdateDialogSize_ = boundUpdateDialogSize;
         this.extensionOptions_.onpreferredsizechanged = e => {
-          if (!this.$.dialog.open)
+          if (!this.$.dialog.open) {
             this.$.dialog.showModal();
+          }
           this.preferredSize_ = e;
           this.debounce('updateDialogSize_', boundUpdateDialogSize, 50);
         };

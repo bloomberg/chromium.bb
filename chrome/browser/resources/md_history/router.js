@@ -54,8 +54,9 @@ Polymer({
    * @private
    */
   onQueryChanged_: function(current, previous) {
-    if (previous !== undefined)
+    if (previous !== undefined) {
       this.urlQuery_ = this.query_;
+    }
   },
 
   /** @private */
@@ -69,8 +70,9 @@ Polymer({
   serializeUrl: function() {
     let path = this.selectedPage;
 
-    if (path == 'history')
+    if (path == 'history') {
       path = '';
+    }
 
     // Make all modifications at the end of the method so observers can't change
     // the outcome.
@@ -82,8 +84,9 @@ Polymer({
   selectedPageChanged_: function() {
     // Update the URL if the page was changed externally, but ignore the update
     // if it came from parseUrl_().
-    if (!this.parsing_)
+    if (!this.parsing_) {
       this.serializeUrl();
+    }
   },
 
   /** @private */

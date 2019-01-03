@@ -140,8 +140,9 @@ Polymer({
 
   /** @private */
   extensionsChanged_: function() {
-    if (this.showExtensionsList_ && this.$.extensions)
+    if (this.showExtensionsList_ && this.$.extensions) {
       this.$.extensions.notifyResize();
+    }
   },
 
   /**
@@ -180,8 +181,9 @@ Polymer({
    * @private
    */
   computeMatchingEngines_: function(list) {
-    if (this.filter == '')
+    if (this.filter == '') {
       return list;
+    }
 
     const filter = this.filter.toLowerCase();
     return list.filter(e => {

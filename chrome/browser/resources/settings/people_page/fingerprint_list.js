@@ -73,8 +73,9 @@ Polymer({
    */
   currentRouteChanged: function(newRoute, oldRoute) {
     if (newRoute != settings.routes.FINGERPRINT) {
-      if (this.browserProxy_)
+      if (this.browserProxy_) {
         this.browserProxy_.endCurrentAuthentication();
+      }
     } else if (oldRoute == settings.routes.LOCK_SCREEN) {
       // Start fingerprint authentication when going from LOCK_SCREEN to
       // FINGERPRINT page.
@@ -102,8 +103,9 @@ Polymer({
       const ripple = listItem.querySelector('paper-ripple');
 
       // Activate the ripple.
-      if (ripple)
+      if (ripple) {
         ripple.simulatedRipple();
+      }
 
       // Flash the background.
       listItem.animate(
@@ -138,8 +140,9 @@ Polymer({
    */
   onFingerprintDeleteTapped_: function(e) {
     this.browserProxy_.removeEnrollment(e.model.index).then(success => {
-      if (success)
+      if (success) {
         this.updateFingerprintsList_();
+      }
     });
   },
 
@@ -150,8 +153,9 @@ Polymer({
   onFingerprintLabelChanged_: function(e) {
     this.browserProxy_.changeEnrollmentLabel(e.model.index, e.model.item)
         .then(success => {
-          if (success)
+          if (success) {
             this.updateFingerprintsList_();
+          }
         });
   },
 

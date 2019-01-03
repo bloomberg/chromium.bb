@@ -136,12 +136,14 @@ function getSuggestionsByCategory() {
     }
 
     const emptyNode = $(`${domId}-empty`);
-    if (emptyNode)
+    if (emptyNode) {
       emptyNode.textContent = text;
+    }
 
     const clearNode = $(`${domId}-clear`);
-    if (clearNode)
+    if (clearNode) {
       clearNode.style.display = display;
+    }
 
     // Toggle visibility for suggestions.
     const links = document.getElementsByClassName(toggleClass);
@@ -208,8 +210,9 @@ function setupEventListeners() {
   $('debug-log-dump').addEventListener('click', function(event) {
     pageHandler.getDebugLog().then(function(response) {
       let logs = response.debugLog;
-      if (logs === '')
+      if (logs === '') {
         logs = 'No data yet. Have you enabled debug logging in chrome://flags?';
+      }
       downloadData('debug_log.txt', 'text/plain', logs);
     });
   });

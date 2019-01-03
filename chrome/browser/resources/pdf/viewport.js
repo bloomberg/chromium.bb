@@ -245,8 +245,9 @@ Viewport.prototype = {
    * @private
    */
   getZoomedDocumentDimensions_: function(zoom) {
-    if (!this.documentDimensions_)
+    if (!this.documentDimensions_) {
       return null;
+    }
     return {
       width: Math.round(this.documentDimensions_.width * zoom),
       height: Math.round(this.documentDimensions_.height * zoom)
@@ -271,10 +272,11 @@ Viewport.prototype = {
     // If scrollbars are required for one direction, expand the document in the
     // other direction to take the width of the scrollbars into account when
     // deciding whether the other direction needs scrollbars.
-    if (zoomedDimensions.width > this.window_.innerWidth)
+    if (zoomedDimensions.width > this.window_.innerWidth) {
       zoomedDimensions.height += this.scrollbarWidth_;
-    else if (zoomedDimensions.height > this.window_.innerHeight)
+    } else if (zoomedDimensions.height > this.window_.innerHeight) {
       zoomedDimensions.width += this.scrollbarWidth_;
+    }
     return {
       horizontal: zoomedDimensions.width > this.window_.innerWidth,
       vertical: zoomedDimensions.height + this.topToolbarHeight_ >
@@ -333,16 +335,17 @@ Viewport.prototype = {
    * @private
    */
   resize_: function() {
-    if (this.fittingType_ == FittingType.FIT_TO_PAGE)
+    if (this.fittingType_ == FittingType.FIT_TO_PAGE) {
       this.fitToPageInternal_(false);
-    else if (this.fittingType_ == FittingType.FIT_TO_WIDTH)
+    } else if (this.fittingType_ == FittingType.FIT_TO_WIDTH) {
       this.fitToWidth();
-    else if (this.fittingType_ == FittingType.FIT_TO_HEIGHT)
+    } else if (this.fittingType_ == FittingType.FIT_TO_HEIGHT) {
       this.fitToHeightInternal_(false);
-    else if (this.internalZoom_ == 0)
+    } else if (this.internalZoom_ == 0) {
       this.fitToNone();
-    else
+    } else {
       this.updateViewport_();
+    }
   },
 
   /**
@@ -581,13 +584,15 @@ Viewport.prototype = {
       const bottom =
           this.pageDimensions_[page].y + this.pageDimensions_[page].height;
 
-      if (top <= y && bottom > y)
+      if (top <= y && bottom > y) {
         return page;
+      }
 
-      if (top > y)
+      if (top > y) {
         max = page - 1;
-      else
+      } else {
         min = page + 1;
+      }
     }
     return 0;
   },
@@ -600,8 +605,9 @@ Viewport.prototype = {
    */
   getMostVisiblePage: function() {
     const firstVisiblePage = this.getPageAtY_(this.position.y / this.zoom);
-    if (firstVisiblePage == this.pageDimensions_.length - 1)
+    if (firstVisiblePage == this.pageDimensions_.length - 1) {
       return firstVisiblePage;
+    }
 
     const viewportRect = {
       x: this.position.x / this.zoom,
@@ -617,8 +623,9 @@ Viewport.prototype = {
         getIntersectionHeight(
             this.pageDimensions_[firstVisiblePage + 1], viewportRect) /
         this.pageDimensions_[firstVisiblePage + 1].height;
-    if (nextPageVisibility > firstVisiblePageVisibility)
+    if (nextPageVisibility > firstVisiblePageVisibility) {
       return firstVisiblePage + 1;
+    }
     return firstVisiblePage;
   },
 
@@ -650,8 +657,9 @@ Viewport.prototype = {
     const needsScrollbars = this.documentNeedsScrollbars_(zoom);
 
     // If the document fits, just return the zoom.
-    if (!needsScrollbars.horizontal && !needsScrollbars.vertical)
+    if (!needsScrollbars.horizontal && !needsScrollbars.vertical) {
       return zoom;
+    }
 
     const zoomedDimensions = this.getZoomedDocumentDimensions_(zoom);
 
@@ -671,10 +679,12 @@ Viewport.prototype = {
       width: this.window_.innerWidth,
       height: this.window_.innerHeight
     };
-    if (needsScrollbars.horizontal)
+    if (needsScrollbars.horizontal) {
       windowWithScrollbars.height -= scrollbarWidth;
-    if (needsScrollbars.vertical)
+    }
+    if (needsScrollbars.vertical) {
       windowWithScrollbars.width -= scrollbarWidth;
+    }
 
     // Recompute the zoom.
     zoom = this.computeFittingZoomGivenDimensions_(
@@ -706,11 +716,13 @@ Viewport.prototype = {
     let zoomWidth;
     let zoomHeight;
 
-    if (fitWidth)
+    if (fitWidth) {
       zoomWidth = windowWidth / pageWidth;
+    }
 
-    if (fitHeight)
+    if (fitHeight) {
       zoomHeight = windowHeight / pageHeight;
+    }
 
     let zoom;
     if (!fitWidth && fitHeight) {
@@ -731,8 +743,9 @@ Viewport.prototype = {
   fitToWidth: function() {
     this.mightZoom_(() => {
       this.fittingType_ = FittingType.FIT_TO_WIDTH;
-      if (!this.documentDimensions_)
+      if (!this.documentDimensions_) {
         return;
+      }
       // When computing fit-to-width, the maximum width of a page in the
       // document is used, which is equal to the size of the document width.
       this.setZoomInternal_(
@@ -752,8 +765,9 @@ Viewport.prototype = {
   fitToHeightInternal_: function(scrollToTopOfPage) {
     this.mightZoom_(() => {
       this.fittingType_ = FittingType.FIT_TO_HEIGHT;
-      if (!this.documentDimensions_)
+      if (!this.documentDimensions_) {
         return;
+      }
       const page = this.getMostVisiblePage();
       // When computing fit-to-height, the maximum height of the current page
       // is used.
@@ -787,8 +801,9 @@ Viewport.prototype = {
   fitToPageInternal_: function(scrollToTopOfPage) {
     this.mightZoom_(() => {
       this.fittingType_ = FittingType.FIT_TO_PAGE;
-      if (!this.documentDimensions_)
+      if (!this.documentDimensions_) {
         return;
+      }
       const page = this.getMostVisiblePage();
       // Fit to the current page's height and the widest page's width.
       const dimensions = {
@@ -817,8 +832,9 @@ Viewport.prototype = {
   fitToNone: function() {
     this.mightZoom_(() => {
       this.fittingType_ = FittingType.NONE;
-      if (!this.documentDimensions_)
+      if (!this.documentDimensions_) {
         return;
+      }
       this.setZoomInternal_(Math.min(
           this.defaultZoom_,
           this.computeFittingZoom_(this.documentDimensions_, true, false)));
@@ -834,8 +850,9 @@ Viewport.prototype = {
       this.fittingType_ = FittingType.NONE;
       let nextZoom = Viewport.ZOOM_FACTORS[0];
       for (let i = 0; i < Viewport.ZOOM_FACTORS.length; i++) {
-        if (Viewport.ZOOM_FACTORS[i] < this.internalZoom_)
+        if (Viewport.ZOOM_FACTORS[i] < this.internalZoom_) {
           nextZoom = Viewport.ZOOM_FACTORS[i];
+        }
       }
       this.setZoomInternal_(nextZoom);
       this.updateViewport_();
@@ -850,8 +867,9 @@ Viewport.prototype = {
       this.fittingType_ = FittingType.NONE;
       let nextZoom = Viewport.ZOOM_FACTORS[Viewport.ZOOM_FACTORS.length - 1];
       for (let i = Viewport.ZOOM_FACTORS.length - 1; i >= 0; i--) {
-        if (Viewport.ZOOM_FACTORS[i] > this.internalZoom_)
+        if (Viewport.ZOOM_FACTORS[i] > this.internalZoom_) {
           nextZoom = Viewport.ZOOM_FACTORS[i];
+        }
       }
       this.setZoomInternal_(nextZoom);
       this.updateViewport_();
@@ -949,19 +967,23 @@ Viewport.prototype = {
    */
   goToPageAndXY: function(page, x, y) {
     this.mightZoom_(() => {
-      if (this.pageDimensions_.length === 0)
+      if (this.pageDimensions_.length === 0) {
         return;
-      if (page < 0)
+      }
+      if (page < 0) {
         page = 0;
-      if (page >= this.pageDimensions_.length)
+      }
+      if (page >= this.pageDimensions_.length) {
         page = this.pageDimensions_.length - 1;
+      }
       const dimensions = this.pageDimensions_[page];
       let toolbarOffset = 0;
       // Unless we're in fit to page or fit to height mode, scroll above the
       // page by |this.topToolbarHeight_| so that the toolbar isn't covering it
       // initially.
-      if (!this.isPagedMode())
+      if (!this.isPagedMode()) {
         toolbarOffset = this.topToolbarHeight_;
+      }
       this.position = {
         x: (dimensions.x + x) * this.zoom,
         y: (dimensions.y + y) * this.zoom - toolbarOffset
@@ -1017,8 +1039,9 @@ Viewport.prototype = {
     if (!this.documentDimensions_) {
       return {x: 0, y: 0, width: 0, height: 0};
     }
-    if (page >= this.pageDimensions_.length)
+    if (page >= this.pageDimensions_.length) {
       page = this.pageDimensions_.length - 1;
+    }
 
     const pageDimensions = this.pageDimensions_[page];
 
@@ -1075,8 +1098,9 @@ Viewport.prototype = {
       changed = true;
     }
 
-    if (changed)
+    if (changed) {
       this.position = newPosition;
+    }
   },
 
   /**

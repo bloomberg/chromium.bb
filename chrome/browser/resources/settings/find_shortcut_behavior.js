@@ -27,14 +27,16 @@ cr.define('settings', function() {
       new cr.ui.KeyboardShortcutList(cr.isMac ? 'meta|f' : 'ctrl|f');
 
   window.addEventListener('keydown', e => {
-    if (e.defaultPrevented || listeners.length == 0)
+    if (e.defaultPrevented || listeners.length == 0) {
       return;
+    }
 
     if (shortcut.matchesEvent(e)) {
       const listener = /** @type {!{handleFindShortcut: function(boolean)}} */ (
           listeners[listeners.length - 1]);
-      if (listener.handleFindShortcut(modalContextOpen))
+      if (listener.handleFindShortcut(modalContextOpen)) {
         e.preventDefault();
+      }
     }
   });
 
@@ -47,8 +49,9 @@ cr.define('settings', function() {
   });
 
   window.addEventListener('close', e => {
-    if (['CR-DIALOG', 'CR-DRAWER'].includes(e.composedPath()[0].nodeName))
+    if (['CR-DIALOG', 'CR-DRAWER'].includes(e.composedPath()[0].nodeName)) {
       modalContextOpen = false;
+    }
   });
 
   /**

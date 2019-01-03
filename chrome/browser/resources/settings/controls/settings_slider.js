@@ -94,19 +94,22 @@ Polymer({
    * @private
    */
   onSliderChanged_: function() {
-    if (!this.loaded_)
+    if (!this.loaded_) {
       return;
+    }
 
-    if (this.$.slider.dragging && !this.updateValueInstantly)
+    if (this.$.slider.dragging && !this.updateValueInstantly) {
       return;
+    }
 
     const sliderValue = this.$.slider.value;
 
     let newValue;
-    if (this.ticks && this.ticks.length > 0)
+    if (this.ticks && this.ticks.length > 0) {
       newValue = this.getTickValueAtIndex_(sliderValue);
-    else
+    } else {
       newValue = sliderValue / this.scale;
+    }
 
     this.set('pref.value', newValue);
   },
@@ -123,8 +126,9 @@ Polymer({
    * @private
    */
   valueChanged_: function() {
-    if (this.pref == undefined || !this.loaded_)
+    if (this.pref == undefined || !this.loaded_) {
       return;
+    }
 
     // First update the slider settings if |ticks| was set.
     const numTicks = this.ticks.length;
@@ -142,8 +146,9 @@ Polymer({
       // value is updated based on the slider value.
       if (this.$.slider.dragging) {
         const prefValueFromSlider = this.$.slider.value / this.scale;
-        if (this.updateValueInstantly && prefValue != prefValueFromSlider)
+        if (this.updateValueInstantly && prefValue != prefValueFromSlider) {
           this.set('pref.value', prefValueFromSlider);
+        }
       } else {
         // When not dragging, simply update the slider value.
         this.$.slider.value = prefValue * this.scale;
@@ -159,8 +164,9 @@ Polymer({
 
     if (this.$.slider.dragging) {
       const tickValue = this.getTickValueAtIndex_(this.$.slider.value);
-      if (this.updateValueInstantly && this.pref.value != tickValue)
+      if (this.updateValueInstantly && this.pref.value != tickValue) {
         this.set('pref.value', tickValue);
+      }
 
       return;
     }
@@ -174,10 +180,12 @@ Polymer({
                 {index: -1, diff: Number.MAX_VALUE})
             .index;
     assert(index != -1);
-    if (this.$.slider.value != index)
+    if (this.$.slider.value != index) {
       this.$.slider.value = index;
+    }
     const tickValue = this.getTickValueAtIndex_(index);
-    if (this.pref.value != tickValue)
+    if (this.pref.value != tickValue) {
       this.set('pref.value', tickValue);
+    }
   },
 });

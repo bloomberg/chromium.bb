@@ -214,8 +214,9 @@ function QueuedSignRequest(
 
 /** Closes this sign request. */
 QueuedSignRequest.prototype.close = function() {
-  if (this.closed_)
+  if (this.closed_) {
     return;
+  }
   var hadBegunSigning = false;
   if (this.begun_ && this.signer_) {
     this.signer_.close();
@@ -338,8 +339,9 @@ function Signer(timer, sender, errorCb, successCb, opt_logMsgUrl) {
  */
 Signer.prototype.setChallenges = function(
     signChallenges, opt_defaultChallenge, opt_appId) {
-  if (this.challengesSet_ || this.done_)
+  if (this.challengesSet_ || this.done_) {
     return false;
+  }
   if (this.timer_.expired()) {
     this.notifyError_({errorCode: ErrorCodes.TIMEOUT});
     return true;
@@ -472,8 +474,9 @@ Signer.prototype.doSign_ = async function() {
         encodedChallenges, timeoutSeconds, this.logMsgUrl_);
     this.handler_ = FACTORY_REGISTRY.getRequestHelper().getHandler(
         /** @type {HelperRequest} */ (request));
-    if (!this.handler_)
+    if (!this.handler_) {
       return false;
+    }
     return this.handler_.run(this.helperComplete_.bind(this));
   });
 };
@@ -652,8 +655,9 @@ Signer.prototype.close_ = function(opt_notifying) {
  * @private
  */
 Signer.prototype.notifyError_ = function(error) {
-  if (this.done_)
+  if (this.done_) {
     return;
+  }
   this.done_ = true;
   this.close_(true);
   this.errorCb_(error);
@@ -667,8 +671,9 @@ Signer.prototype.notifyError_ = function(error) {
  * @private
  */
 Signer.prototype.notifySuccess_ = function(challenge, info, browserData) {
-  if (this.done_)
+  if (this.done_) {
     return;
+  }
   this.done_ = true;
   this.close_(true);
   this.successCb_(challenge, info, browserData);

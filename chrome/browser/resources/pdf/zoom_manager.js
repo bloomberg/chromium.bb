@@ -126,11 +126,13 @@ class ActiveZoomManager extends ZoomManager {
     // change events. Either, the change occurred before our update and will be
     // overwritten, or the change being reported is the change we are making,
     // which we have already handled.
-    if (this.changingBrowserZoom_)
+    if (this.changingBrowserZoom_) {
       return;
+    }
 
-    if (this.floatingPointEquals(this.browserZoom_, newZoom))
+    if (this.floatingPointEquals(this.browserZoom_, newZoom)) {
       return;
+    }
 
     this.browserZoom_ = newZoom;
     this.viewport_.setZoom(newZoom);
@@ -144,12 +146,14 @@ class ActiveZoomManager extends ZoomManager {
     // previous extension-initiated zoom-level change, ignore this zoom change.
     // Once the browser zoom level is changed, we check whether the extension's
     // zoom level matches the most recently sent zoom level.
-    if (this.changingBrowserZoom_)
+    if (this.changingBrowserZoom_) {
       return;
+    }
 
     const zoom = this.viewport_.zoom;
-    if (this.floatingPointEquals(this.browserZoom_, zoom))
+    if (this.floatingPointEquals(this.browserZoom_, zoom)) {
       return;
+    }
 
     this.changingBrowserZoom_ = this.setBrowserZoomFunction_(zoom).then(() => {
       this.browserZoom_ = zoom;

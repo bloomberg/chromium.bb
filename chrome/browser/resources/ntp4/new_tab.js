@@ -87,8 +87,9 @@ cr.define('ntp', function() {
     if (!loadTimeData.getBoolean('showWebStoreIcon')) {
       const webStoreIcon = $('chrome-web-store-link');
       // Not all versions of the NTP have a footer, so this may not exist.
-      if (webStoreIcon)
+      if (webStoreIcon) {
         webStoreIcon.hidden = true;
+      }
     } else {
       const webStoreLink = loadTimeData.getString('webStoreLink');
       const url =
@@ -127,8 +128,9 @@ cr.define('ntp', function() {
     }
 
     $('login-container').addEventListener('click', showSyncLoginUI);
-    if (loadTimeData.getBoolean('shouldShowSyncLogin'))
+    if (loadTimeData.getBoolean('shouldShowSyncLogin')) {
       chrome.send('initializeSyncLogin');
+    }
 
     doWhenAllSectionsReady(function() {
       // Tell the slider about the pages.
@@ -150,8 +152,9 @@ cr.define('ntp', function() {
    * @param {Event} e The click/auxclick event.
    */
   function onChromeWebStoreButtonClick(e) {
-    if (e.button > 1)
-      return;  // Ignore buttons other than left and middle.
+    if (e.button > 1) {
+      return;
+    }  // Ignore buttons other than left and middle.
     chrome.send(
         'recordAppLaunchByURL',
         [encodeURIComponent(this.href), ntp.APP_LAUNCH.NTP_WEBSTORE_FOOTER]);
@@ -183,10 +186,11 @@ cr.define('ntp', function() {
    */
   function doWhenAllSectionsReady(callback) {
     assert(typeof callback == 'function');
-    if (sectionsToWaitFor > 0)
+    if (sectionsToWaitFor > 0) {
       readyCallbacks.push(callback);
-    else
-      window.setTimeout(callback, 0);  // Do soon after, but asynchronously.
+    } else {
+      window.setTimeout(callback, 0);
+    }  // Do soon after, but asynchronously.
   }
 
   /**
@@ -230,10 +234,11 @@ cr.define('ntp', function() {
     }
 
     const menu = $('footer-menu-container');
-    if (menu.clientWidth > logoImg.width)
+    if (menu.clientWidth > logoImg.width) {
       logo.style.WebkitFlex = '0 1 ' + menu.clientWidth + 'px';
-    else
+    } else {
       menu.style.WebkitFlex = '0 1 ' + logoImg.width + 'px';
+    }
   }
 
   /**
@@ -258,8 +263,9 @@ cr.define('ntp', function() {
    */
   function setFaviconDominantColor(id, color) {
     const node = $(id);
-    if (node)
+    if (node) {
       node.stripeColor = color;
+    }
   }
 
   /**

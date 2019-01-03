@@ -49,8 +49,9 @@ Polymer({
     this.addWebUIListener('update-startup-pages', startupPages => {
       // If an "edit" URL dialog was open, close it, because the underlying page
       // might have just been removed (and model indices have changed anyway).
-      if (this.startupUrlDialogModel_)
+      if (this.startupUrlDialogModel_) {
         this.destroyUrlDialog_();
+      }
       this.startupPages_ = startupPages;
       this.updateScrollableContents();
     });

@@ -100,8 +100,9 @@ Polymer({
                 return;
               }
 
-              if (destination.id != this.destination_.id)
+              if (destination.id != this.destination_.id) {
                 return;
+              }
 
               if (resolvedDestination) {
                 this.state_ = print_preview_new.ResolverState.DONE;

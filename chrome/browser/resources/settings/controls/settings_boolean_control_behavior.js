@@ -74,8 +74,9 @@ const SettingsBooleanControlBehaviorImpl = {
   notifyChangedByUserInteraction: function() {
     this.fire('settings-boolean-control-change');
 
-    if (!this.pref || this.noSetPref)
+    if (!this.pref || this.noSetPref) {
       return;
+    }
     this.sendPrefChange();
   },
 

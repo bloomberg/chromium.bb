@@ -46,8 +46,9 @@ function addTestDevice(event) {
           $('test-device-name').value, $('test-device-serial').value,
           $('test-device-landing-page').value)
       .then(function(response) {
-        if (response.success)
+        if (response.success) {
           refreshDeviceList();
+        }
 
         $('add-test-device-result').textContent = response.message;
         $('add-test-device-result').className =

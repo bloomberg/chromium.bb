@@ -343,10 +343,11 @@ Polymer({
   onMenuEditCreditCardTap_: function(e) {
     e.preventDefault();
 
-    if (this.activeCreditCard.metadata.isLocal)
+    if (this.activeCreditCard.metadata.isLocal) {
       this.showCreditCardDialog_ = true;
-    else
+    } else {
       this.onRemoteEditCreditCardTap_();
+    }
 
     this.$.creditCardSharedMenu.close();
   },
@@ -435,50 +436,60 @@ Polymer({
    * @private
    */
   checkIfMigratable_: function(syncStatus, creditCards, creditCardEnabled) {
-    if (syncStatus == undefined)
+    if (syncStatus == undefined) {
       return false;
+    }
 
     // If user not enable migration experimental flag, return false.
-    if (!this.migrationEnabled_)
+    if (!this.migrationEnabled_) {
       return false;
+    }
 
     // If user does not have Google Payments Account, return false.
-    if (!this.hasGooglePaymentsAccount_)
+    if (!this.hasGooglePaymentsAccount_) {
       return false;
+    }
 
     // If the Autofill Upstream feature is not enabled, return false.
-    if (!this.upstreamEnabled_)
+    if (!this.upstreamEnabled_) {
       return false;
+    }
 
     // Don't offer upload if user has a secondary passphrase. Users who have
     // enabled a passphrase have chosen to not make their sync information
     // accessible to Google. Since upload makes credit card data available
     // to other Google systems, disable it for passphrase users.
-    if (this.isUsingSecondaryPassphrase_)
+    if (this.isUsingSecondaryPassphrase_) {
       return false;
+    }
 
     // If upload-to-Google state is not active, card cannot be saved to Google
     // Payments. Return false.
-    if (!this.uploadToGoogleActive_)
+    if (!this.uploadToGoogleActive_) {
       return false;
+    }
 
     // The domain of the user's email address is not allowed, return false.
-    if (!this.userEmailDomainAllowed_)
+    if (!this.userEmailDomainAllowed_) {
       return false;
+    }
 
     // If credit card enabled pref is false, return false.
-    if (!creditCardEnabled)
+    if (!creditCardEnabled) {
       return false;
+    }
 
     // If user not signed-in and synced, return false.
-    if (!syncStatus.signedIn || !syncStatus.syncSystemEnabled)
+    if (!syncStatus.signedIn || !syncStatus.syncSystemEnabled) {
       return false;
+    }
 
     const numberOfMigratableCreditCard =
         creditCards.filter(card => card.metadata.isMigratable).length;
     // Check whether exist at least one local valid card for migration.
-    if (numberOfMigratableCreditCard == 0)
+    if (numberOfMigratableCreditCard == 0) {
       return false;
+    }
 
     // Update the display text depends on the number of migratable credit cards.
     this.migratableCreditCardsInfo_ = numberOfMigratableCreditCard == 1 ?

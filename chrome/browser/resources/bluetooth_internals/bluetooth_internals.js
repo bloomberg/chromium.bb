@@ -93,8 +93,9 @@ cr.define('bluetooth_internals', function() {
   function makeDeviceDetailsPage(deviceInfo) {
     var deviceDetailsPageId = 'devices/' + deviceInfo.address.toLowerCase();
     var deviceDetailsPage = PageManager.registeredPages[deviceDetailsPageId];
-    if (deviceDetailsPage)
+    if (deviceDetailsPage) {
       return deviceDetailsPage;
+    }
 
     var pageSection = document.createElement('section');
     pageSection.hidden = true;
@@ -140,8 +141,9 @@ cr.define('bluetooth_internals', function() {
   function updateDeviceDetailsPage(address) {
     var detailPageId = 'devices/' + address.toLowerCase();
     var page = PageManager.registeredPages[detailPageId];
-    if (page)
+    if (page) {
       page.redraw();
+    }
   }
 
   function updateStoppedDiscoverySession() {
@@ -261,8 +263,9 @@ cr.define('bluetooth_internals', function() {
     window.addEventListener('hashchange', function() {
       // If a user navigates and the page doesn't exist, do nothing.
       var pageName = window.location.hash.substr(1);
-      if ($(pageName))
+      if ($(pageName)) {
         PageManager.showPageByName(pageName);
+      }
     });
 
     if (!window.location.hash) {

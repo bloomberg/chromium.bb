@@ -88,8 +88,9 @@ Polymer({
    * @private
    */
   shouldHideResetButton_: function() {
-    if (this.model === undefined)
+    if (this.model === undefined) {
       return false;
+    }
 
     return this.model.enforcement ==
         chrome.settingsPrivate.Enforcement.ENFORCED ||
@@ -101,8 +102,9 @@ Polymer({
    * @private
    */
   shouldHideActionMenu_: function() {
-    if (this.model === undefined)
+    if (this.model === undefined) {
       return false;
+    }
 
     return this.model.enforcement ==
         chrome.settingsPrivate.Enforcement.ENFORCED ||
@@ -115,8 +117,9 @@ Polymer({
    * @private
    */
   onOriginTap_: function(event) {
-    if (!this.enableSiteSettings_)
+    if (!this.enableSiteSettings_) {
       return;
+    }
     settings.navigateTo(
         settings.routes.SITE_SETTINGS_SITE_DETAILS,
         new URLSearchParams('site=' + this.model.origin));
@@ -145,8 +148,9 @@ Polymer({
     // </if>
 
     if (this.model.incognito) {
-      if (displayName.length > 0)
+      if (displayName.length > 0) {
         return loadTimeData.getStringF('embeddedIncognitoSite', displayName);
+      }
       return loadTimeData.getString('incognitoSite');
     }
     return displayName;
@@ -181,8 +185,9 @@ Polymer({
   /** @private */
   onShowActionMenuTap_: function() {
     // Chooser exceptions do not support the action menu, so do nothing.
-    if (this.chooserType !== settings.ChooserType.NONE)
+    if (this.chooserType !== settings.ChooserType.NONE) {
       return;
+    }
 
     this.fire(
         'show-action-menu',

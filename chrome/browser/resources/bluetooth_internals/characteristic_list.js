@@ -230,8 +230,9 @@ cr.define('characteristic_list', function() {
      * @param {string} serviceId
      */
     load: function(deviceAddress, serviceId) {
-      if (this.characteristicsRequested_ || !this.isSpinnerShowing())
+      if (this.characteristicsRequested_ || !this.isSpinnerShowing()) {
         return;
+      }
 
       this.deviceAddress_ = deviceAddress;
       this.serviceId_ = serviceId;

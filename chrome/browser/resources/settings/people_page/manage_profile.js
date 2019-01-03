@@ -78,8 +78,9 @@ Polymer({
   /** @protected */
   currentRouteChanged: function() {
     if (settings.getCurrentRoute() == settings.routes.MANAGE_PROFILE) {
-      if (this.profileName)
+      if (this.profileName) {
         this.$.name.value = this.profileName;
+      }
       if (loadTimeData.getBoolean('profileShortcutsEnabled')) {
         this.browserProxy_.getProfileShortcutStatus().then(status => {
           if (status == ProfileShortcutStatus.PROFILE_SHORTCUT_SETTING_HIDDEN) {
@@ -101,8 +102,9 @@ Polymer({
    * @private
    */
   onProfileNameChanged_: function(event) {
-    if (event.target.invalid)
+    if (event.target.invalid) {
       return;
+    }
 
     this.browserProxy_.setProfileName(event.target.value);
   },
@@ -124,10 +126,11 @@ Polymer({
    * @private
    */
   profileAvatarChanged_: function() {
-    if (this.profileAvatar_.isGaiaAvatar)
+    if (this.profileAvatar_.isGaiaAvatar) {
       this.browserProxy_.setProfileIconToGaiaAvatar();
-    else
+    } else {
       this.browserProxy_.setProfileIconToDefaultAvatar(this.profileAvatar_.url);
+    }
   },
 
   /**

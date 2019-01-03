@@ -81,16 +81,18 @@ function PDFScriptingAPI(window, plugin) {
          * }}
          */
         const viewportData = event.data;
-        if (this.viewportChangedCallback_)
+        if (this.viewportChangedCallback_) {
           this.viewportChangedCallback_(
               viewportData.pageX, viewportData.pageY, viewportData.pageWidth,
               viewportData.viewportWidth, viewportData.viewportHeight);
+        }
         break;
       case 'documentLoaded': {
         const data = /** @type {{load_state: LoadState}} */ (event.data);
         this.loadState_ = data.load_state;
-        if (this.loadCallback_)
+        if (this.loadCallback_) {
           this.loadCallback_(this.loadState_ == LoadState.SUCCESS);
+        }
         break;
       }
       case 'getSelectedTextReply': {
@@ -102,8 +104,9 @@ function PDFScriptingAPI(window, plugin) {
         break;
       }
       case 'sendKeyEvent':
-        if (this.keyEventCallback_)
+        if (this.keyEventCallback_) {
           this.keyEventCallback_(DeserializeKeyEvent(event.data.keyEvent));
+        }
         break;
     }
   }, false);
@@ -119,10 +122,11 @@ PDFScriptingAPI.prototype = {
    * @private
    */
   sendMessage_: function(message) {
-    if (this.plugin_)
+    if (this.plugin_) {
       this.plugin_.postMessage(message, '*');
-    else
+    } else {
       this.pendingScriptingMessages_.push(message);
+    }
   },
 
   /**
@@ -139,8 +143,9 @@ PDFScriptingAPI.prototype = {
       // allows us to receive messages.
       this.sendMessage_({type: 'initialize'});
       // Flush pending messages.
-      while (this.pendingScriptingMessages_.length > 0)
+      while (this.pendingScriptingMessages_.length > 0) {
         this.sendMessage_(this.pendingScriptingMessages_.shift());
+      }
     }
   },
 
@@ -161,8 +166,9 @@ PDFScriptingAPI.prototype = {
    */
   setLoadCallback: function(callback) {
     this.loadCallback_ = callback;
-    if (this.loadState_ != LoadState.LOADING && this.loadCallback_)
+    if (this.loadState_ != LoadState.LOADING && this.loadCallback_) {
       this.loadCallback_(this.loadState_ == LoadState.SUCCESS);
+    }
   },
 
   /**
@@ -219,8 +225,9 @@ PDFScriptingAPI.prototype = {
    *     outstanding request for selected text that has not been answered.
    */
   getSelectedText: function(callback) {
-    if (this.selectedTextCallback_)
+    if (this.selectedTextCallback_) {
       return false;
+    }
     this.selectedTextCallback_ = callback;
     this.sendMessage_({type: 'getSelectedText'});
     return true;

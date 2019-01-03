@@ -47,15 +47,17 @@ const DumpDatabase = (function() {
     div.appendChild(createElementFromText('h3', metadata['title']));
 
     let tr = document.createElement('tr');
-    for (let i = 0; i < metadata.keys.length; ++i)
+    for (let i = 0; i < metadata.keys.length; ++i) {
       tr.appendChild(createElementFromText('td', metadata.keys[i]));
+    }
     header.appendChild(tr);
 
     for (let i = 0; i < databaseDump.length; i++) {
       const entry = databaseDump[i];
       tr = document.createElement('tr');
-      for (let k = 0; k < metadata.keys.length; ++k)
+      for (let k = 0; k < metadata.keys.length; ++k) {
         tr.appendChild(createElementFromText('td', entry[metadata.keys[k]]));
+      }
       body.appendChild(tr);
     }
   }

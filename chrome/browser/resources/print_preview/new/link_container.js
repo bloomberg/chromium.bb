@@ -43,10 +43,12 @@ Polymer({
    * @private
    */
   computeShouldShowSystemDialogLink_: function() {
-    if (this.appKioskMode)
+    if (this.appKioskMode) {
       return false;
-    if (!cr.isWindows)
+    }
+    if (!cr.isWindows) {
       return true;
+    }
     return !!this.destination &&
         this.destination.origin == print_preview.DestinationOrigin.LOCAL &&
         this.destination.id !=
@@ -63,8 +65,9 @@ Polymer({
 
   /** @private */
   onSystemDialogClick_: function() {
-    if (!this.shouldShowSystemDialogLink_)
+    if (!this.shouldShowSystemDialogLink_) {
       return;
+    }
 
     // <if expr="not is_win">
     this.openingSystemDialog_ = true;

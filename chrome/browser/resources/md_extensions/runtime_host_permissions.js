@@ -132,8 +132,9 @@ cr.define('extensions', function() {
      * @private
      */
     getRuntimeHosts_: function() {
-      if (!this.permissions.hosts)
+      if (!this.permissions.hosts) {
         return [];
+      }
 
       // Only show granted hosts in the list.
       // TODO(devlin): For extensions that request a finite set of hosts,

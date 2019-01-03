@@ -100,11 +100,13 @@ cr.define('downloads', function() {
 
     /** @private */
     hasDownloadsChanged_: function() {
-      if (loadTimeData.getBoolean('allowDeletingHistory'))
+      if (loadTimeData.getBoolean('allowDeletingHistory')) {
         this.$.toolbar.downloadsShowing = this.hasDownloads_;
+      }
 
-      if (this.hasDownloads_)
+      if (this.hasDownloads_) {
         this.$.downloadsList.fire('iron-resize');
+      }
     },
 
     /**
@@ -185,12 +187,13 @@ cr.define('downloads', function() {
      * @private
      */
     onCommand_: function(e) {
-      if (e.command.id == 'clear-all-command')
+      if (e.command.id == 'clear-all-command') {
         this.mojoHandler_.clearAll();
-      else if (e.command.id == 'undo-command')
+      } else if (e.command.id == 'undo-command') {
         this.mojoHandler_.undo();
-      else if (e.command.id == 'find-command')
+      } else if (e.command.id == 'find-command') {
         this.$.toolbar.onFindCommand();
+      }
     },
 
     /** @private */
@@ -251,8 +254,9 @@ cr.define('downloads', function() {
     updateHideDates_: function(start, end) {
       for (let i = start; i <= end; ++i) {
         const current = this.items_[i];
-        if (!current)
+        if (!current) {
           continue;
+        }
         const prev = this.items_[i - 1];
         current.hideDate = !!prev && prev.dateString == current.dateString;
       }

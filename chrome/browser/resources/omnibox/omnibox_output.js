@@ -5,8 +5,9 @@
 cr.define('omnibox_output', function() {
   /** @param {!Element} element*/
   function clearChildren(element) {
-    while (element.firstChild)
+    while (element.firstChild) {
       element.firstChild.remove();
+    }
   }
 
   class OmniboxOutput extends OmniboxElement {
@@ -166,8 +167,9 @@ cr.define('omnibox_output', function() {
               .map(resultsWrapper => resultsWrapper.results)
               .filter(results => results.length > 0)
               .map(OutputResultsTable.create);
-      if (this.hasAdditionalProperties)
+      if (this.hasAdditionalProperties) {
         this.headers.push(OutputHeader.create(ADDITIONAL_PROPERTIES_COLUMN));
+      }
       this.render_();
     }
 
@@ -373,8 +375,9 @@ cr.define('omnibox_output', function() {
       clearChildren(this);
       COLUMNS.map(column => this.properties[column.matchKey])
           .forEach(cell => this.appendChild(cell));
-      if (this.hasAdditionalProperties)
+      if (this.hasAdditionalProperties) {
         this.appendChild(this.additionalProperties);
+      }
     }
 
     /**
@@ -382,8 +385,9 @@ cr.define('omnibox_output', function() {
      * @param {string} data
      */
     updateAnswerImage(url, data) {
-      if (this.properties.contentsAndDescription.value === url)
+      if (this.properties.contentsAndDescription.value === url) {
         this.properties.contentsAndDescription.setAnswerImageData(data);
+      }
     }
 
     /** @param {boolean} showDetails */
@@ -401,8 +405,9 @@ cr.define('omnibox_output', function() {
       this.allProperties_.forEach(
           property => property.classList.remove('filtered-highlighted-nested'));
 
-      if (!filterText)
+      if (!filterText) {
         return;
+      }
 
       const matchedProperties = this.allProperties_.filter(
           property => FilterUtil.filterText(property.text, filterText));
@@ -653,8 +658,9 @@ cr.define('omnibox_output', function() {
      */
     static renderJsonWord(word, cls) {
       const span = document.createElement('span');
-      if (cls)
+      if (cls) {
         span.classList.add(cls);
+      }
       span.textContent = word;
       return span;
     }
@@ -664,16 +670,21 @@ cr.define('omnibox_output', function() {
      * @return {string|undefined}
      */
     static classifyJsonWord(word) {
-      if (/^\d+$/.test(word))
+      if (/^\d+$/.test(word)) {
         return 'number';
-      if (/^"[^]*":$/.test(word))
+      }
+      if (/^"[^]*":$/.test(word)) {
         return 'key';
-      if (/^"[^]*"$/.test(word))
+      }
+      if (/^"[^]*"$/.test(word)) {
         return 'string';
-      if (/true|false/.test(word))
+      }
+      if (/true|false/.test(word)) {
         return 'boolean';
-      if (/null/.test(word))
+      }
+      if (/null/.test(word)) {
         return 'null';
+      }
     }
   }
 
@@ -716,10 +727,11 @@ cr.define('omnibox_output', function() {
 
     /** @private @override */
     render_() {
-      if (this.values_[1])
+      if (this.values_[1]) {
         this.icon_.removeAttribute('src');
-      else
+      } else {
         this.icon_.src = `chrome://favicon/${this.value}`;
+      }
       this.link_.textContent = this.value;
       this.link_.href = this.value;
     }

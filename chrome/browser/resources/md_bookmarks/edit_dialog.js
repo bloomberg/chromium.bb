@@ -57,8 +57,9 @@ Polymer({
     this.editItem_ = editItem;
 
     this.titleValue_ = editItem.title;
-    if (!this.isFolder_)
+    if (!this.isFolder_) {
       this.urlValue_ = assert(editItem.url);
+    }
 
     bookmarks.DialogFocusManager.getInstance().showDialog(this.$.dialog);
   },
@@ -83,10 +84,11 @@ Polymer({
    */
   getDialogTitle_: function(isFolder, isEdit) {
     let title;
-    if (isEdit)
+    if (isEdit) {
       title = isFolder ? 'renameFolderTitle' : 'editBookmarkTitle';
-    else
+    } else {
       title = isFolder ? 'addFolderTitle' : 'addBookmarkTitle';
+    }
 
     return loadTimeData.getString(title);
   },
@@ -101,13 +103,15 @@ Polymer({
     const urlInput = /** @type {CrInputElement} */ (this.$.url);
     const originalValue = this.urlValue_;
 
-    if (urlInput.validate())
+    if (urlInput.validate()) {
       return true;
+    }
 
     this.urlValue_ = 'http://' + originalValue;
 
-    if (urlInput.validate())
+    if (urlInput.validate()) {
       return true;
+    }
 
     this.urlValue_ = originalValue;
     return false;
@@ -117,8 +121,9 @@ Polymer({
   onSaveButtonTap_: function() {
     const edit = {'title': this.titleValue_};
     if (!this.isFolder_) {
-      if (!this.validateUrl_())
+      if (!this.validateUrl_()) {
         return;
+      }
 
       edit['url'] = this.urlValue_;
     }

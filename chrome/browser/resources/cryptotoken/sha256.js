@@ -31,8 +31,9 @@ function SHA256() {
   ];
 
   this._pad[0] = 0x80;
-  for (var i = 1; i < 64; ++i)
+  for (var i = 1; i < 64; ++i) {
     this._pad[i] = 0;
+  }
 
   this.reset();
 }
@@ -114,8 +115,9 @@ SHA256.prototype._compress = function(buf) {
  * @param {Array<number>|Uint8Array} bytes The data
  * @param {number=} opt_length How many bytes to hash, if not all */
 SHA256.prototype.update = function(bytes, opt_length) {
-  if (!opt_length)
+  if (!opt_length) {
     opt_length = bytes.length;
+  }
 
   this._total += opt_length;
   for (var n = 0; n < opt_length; ++n) {
@@ -150,17 +152,19 @@ SHA256.prototype.updateRange = function(bytes, start, end) {
  * @return {!Array<number>} the SHA256 hash value.
  */
 SHA256.prototype.digest = function(var_args) {
-  for (var i = 0; i < arguments.length; ++i)
+  for (var i = 0; i < arguments.length; ++i) {
     this.update(arguments[i]);
+  }
 
   var digest = new Array(32);
   var totalBits = this._total * 8;
 
   // add pad 0x80 0x00*
-  if (this._inbuf < 56)
+  if (this._inbuf < 56) {
     this.update(this._pad, 56 - this._inbuf);
-  else
+  } else {
     this.update(this._pad, 64 - (this._inbuf - 56));
+  }
 
   // add # bits, big endian
   for (var i = 63; i >= 56; --i) {
@@ -171,9 +175,11 @@ SHA256.prototype.digest = function(var_args) {
   this._compress(this._buf);
 
   var n = 0;
-  for (var i = 0; i < 8; ++i)
-    for (var j = 24; j >= 0; j -= 8)
+  for (var i = 0; i < 8; ++i) {
+    for (var j = 24; j >= 0; j -= 8) {
       digest[n++] = (this._chain[i] >> j) & 255;
+    }
+  }
 
   return digest;
 };

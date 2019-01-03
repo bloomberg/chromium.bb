@@ -176,11 +176,13 @@ Polymer({
    * @private
    */
   isNthLanguage_: function(n) {
-    if (this.languages == undefined || this.detailLanguage_ == undefined)
+    if (this.languages == undefined || this.detailLanguage_ == undefined) {
       return false;
+    }
 
-    if (n >= this.languages.enabled.length)
+    if (n >= this.languages.enabled.length) {
       return false;
+    }
 
     const compareLanguage = assert(this.languages.enabled[n]);
     return this.detailLanguage_.language == compareLanguage.language;
@@ -225,12 +227,14 @@ Polymer({
     // In a CrOS multi-user session, the primary user controls the UI language.
     // TODO(michaelpg): The language selection should not be hidden, but should
     // show a policy indicator. crbug.com/648498
-    if (this.isSecondaryUser_())
+    if (this.isSecondaryUser_()) {
       menu.querySelector('#uiLanguageItem').hidden = true;
+    }
 
     // The UI language choice doesn't persist for guests.
-    if (loadTimeData.getBoolean('isGuest'))
+    if (loadTimeData.getBoolean('isGuest')) {
       menu.querySelector('#uiLanguageItem').hidden = true;
+    }
   },
 
   /**
@@ -253,12 +257,14 @@ Polymer({
     // Taps on the button are handled in onInputMethodOptionsTap_.
     // TODO(dschuyler): The row has two operations that are not clearly
     // delineated. crbug.com/740691
-    if (e.target.tagName == 'BUTTON')
+    if (e.target.tagName == 'BUTTON') {
       return;
+    }
 
     // Ignore key presses other than <Enter>.
-    if (e.type == 'keypress' && e.key != 'Enter')
+    if (e.type == 'keypress' && e.key != 'Enter') {
       return;
+    }
 
     // Set the input method.
     this.languageHelper.setCurrentInputMethod(e.model.item.id);
@@ -304,26 +310,31 @@ Polymer({
    * @private
    */
   disableUILanguageCheckbox_: function(languageState, prospectiveUILanguage) {
-    if (this.detailLanguage_ === undefined)
+    if (this.detailLanguage_ === undefined) {
       return true;
+    }
 
     // UI language setting belongs to the primary user.
-    if (this.isSecondaryUser_())
+    if (this.isSecondaryUser_()) {
       return true;
+    }
 
     // If the language cannot be a UI language, we can't set it as the
     // prospective UI language.
-    if (!languageState.language.supportsUI)
+    if (!languageState.language.supportsUI) {
       return true;
+    }
 
     // Unchecking the currently chosen language doesn't make much sense.
-    if (languageState.language.code == prospectiveUILanguage)
+    if (languageState.language.code == prospectiveUILanguage) {
       return true;
+    }
 
     // Check if the language is prohibited by the current "AllowedLanguages"
     // policy.
-    if (languageState.language.isProhibitedLanguage)
+    if (languageState.language.isProhibitedLanguage) {
       return true;
+    }
 
     // Otherwise, the prospective language can be changed to this language.
     return false;
@@ -352,8 +363,9 @@ Polymer({
    * @private
    */
   disableTranslateCheckbox_: function(language, targetLanguageCode) {
-    if (language == undefined || !language.supportsTranslate)
+    if (language == undefined || !language.supportsTranslate) {
       return true;
+    }
 
     return this.languageHelper.convertLanguageCodeForTranslate(language.code) ==
         targetLanguageCode;
@@ -382,8 +394,9 @@ Polymer({
    * @return {string}
    */
   getMenuClass_: function(translateEnabled) {
-    if (translateEnabled || cr.isChromeOS || cr.isWindows)
+    if (translateEnabled || cr.isChromeOS || cr.isWindows) {
       return 'complex';
+    }
     return '';
   },
 
@@ -466,11 +479,13 @@ Polymer({
    * @private
    */
   getSpellCheckSecondaryText_: function() {
-    if (this.languages == undefined || this.prefs == undefined)
+    if (this.languages == undefined || this.prefs == undefined) {
       return '';
+    }
 
-    if (this.getSpellCheckDisabledByPolicy_())
+    if (this.getSpellCheckDisabledByPolicy_()) {
       return loadTimeData.getString('spellCheckDisabled');
+    }
     const enabledSpellCheckLanguages =
         this.getSpellCheckLanguages_().filter(function(languageState) {
           return (languageState.spellCheckEnabled || languageState.isManaged) &&
@@ -527,8 +542,9 @@ Polymer({
 
   /** @private */
   updateSpellcheckLanguages_: function() {
-    if (this.languages == undefined)
+    if (this.languages == undefined) {
       return;
+    }
 
     this.set('spellCheckLanguages_', this.getSpellCheckLanguages_());
 
@@ -549,14 +565,16 @@ Polymer({
 
   /** @private */
   updateSpellcheckEnabled_: function() {
-    if (this.prefs == undefined)
+    if (this.prefs == undefined) {
       return;
+    }
 
     this.set('spellCheckDisabled_', this.getSpellCheckDisabledByPolicy_());
 
     // If the spellcheck section was expanded, close it.
-    if (this.spellCheckDisabled_)
+    if (this.spellCheckDisabled_) {
       this.set('spellCheckOpened_', false);
+    }
   },
 
   /**
@@ -573,8 +591,9 @@ Polymer({
    */
   onSpellCheckChange_: function(e) {
     const item = e.model.item;
-    if (!item.language.supportsSpellcheck)
+    if (!item.language.supportsSpellcheck) {
       return;
+    }
 
     this.languageHelper.toggleSpellCheck(
         item.language.code, !item.spellCheckEnabled);
@@ -716,8 +735,9 @@ Polymer({
   closeMenuSoon_: function() {
     const menu = /** @type {!CrActionMenuElement} */ (this.$.menu.get());
     setTimeout(function() {
-      if (menu.open)
+      if (menu.open) {
         menu.close();
+      }
     }, settings.kMenuCloseDelay);
   },
 
@@ -744,11 +764,13 @@ Polymer({
   toggleExpandButton_: function(e) {
     // The expand button handles toggling itself.
     const expandButtonTag = 'CR-EXPAND-BUTTON';
-    if (e.target.tagName == expandButtonTag)
+    if (e.target.tagName == expandButtonTag) {
       return;
+    }
 
-    if (!e.currentTarget.hasAttribute('actionable'))
+    if (!e.currentTarget.hasAttribute('actionable')) {
       return;
+    }
 
     /** @type {!CrExpandButtonElement} */
     const expandButton = e.currentTarget.querySelector(expandButtonTag);

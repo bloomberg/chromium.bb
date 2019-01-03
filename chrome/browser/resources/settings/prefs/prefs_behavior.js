@@ -52,8 +52,9 @@ const PrefsBehavior = {
   appendPrefListItem: function(key, item) {
     const pref = this.getPref(key);
     assert(pref && pref.type == chrome.settingsPrivate.PrefType.LIST);
-    if (pref.value.indexOf(item) == -1)
+    if (pref.value.indexOf(item) == -1) {
       this.push('prefs.' + key + '.value', item);
+    }
   },
 
   /**

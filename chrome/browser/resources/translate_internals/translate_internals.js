@@ -43,8 +43,9 @@ cr.define('cr.translateInternals', function() {
       hash = hash.substring(1);
 
       const id = 'tabpanel-' + hash;
-      if (tabpanelIds.indexOf(id) == -1)
+      if (tabpanelIds.indexOf(id) == -1) {
         return;
+      }
 
       $(id).selected = true;
     };
@@ -304,8 +305,9 @@ cr.define('cr.translateInternals', function() {
   function padWithZeros(number, width) {
     const numberStr = number.toString();
     const restWidth = width - numberStr.length;
-    if (restWidth <= 0)
+    if (restWidth <= 0) {
       return numberStr;
+    }
 
     return Array(restWidth + 1).join('0') + numberStr;
   }

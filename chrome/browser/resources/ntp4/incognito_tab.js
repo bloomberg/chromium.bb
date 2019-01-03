@@ -26,8 +26,9 @@ function recomputeLayoutWidth() {
   const MAX_ALLOWED_WIDTH = 600;
   const tooWide = maxWidth > MAX_ALLOWED_WIDTH;
   bulletpoints[1].classList.toggle('too-wide', tooWide);
-  if (tooWide)
+  if (tooWide) {
     maxWidth = MAX_ALLOWED_WIDTH;
+  }
 
   content.style.maxWidth = maxWidth + 'px';
 }

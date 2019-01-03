@@ -68,8 +68,9 @@ Polymer({
   },
 
   hide: function() {
-    if (this.opened)
+    if (this.opened) {
       this.toggleVisibility();
+    }
   },
 
   show: function() {

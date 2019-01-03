@@ -74,11 +74,13 @@ cr.define('extensions', function() {
    * @return {boolean} Whether the key is valid.
    */
   function isValidKeyCode(keyCode) {
-    if (keyCode == Key.Escape)
+    if (keyCode == Key.Escape) {
       return false;
+    }
     for (const k in Key) {
-      if (Key[k] == keyCode)
+      if (Key[k] == keyCode) {
         return true;
+      }
     }
     return (keyCode >= 'A'.charCodeAt(0) && keyCode <= 'Z'.charCodeAt(0)) ||
         (keyCode >= '0'.charCodeAt(0) && keyCode <= '9'.charCodeAt(0));
@@ -93,16 +95,21 @@ cr.define('extensions', function() {
   function keystrokeToString(e) {
     const output = [];
     // TODO(devlin): Should this be i18n'd?
-    if (cr.isMac && e.metaKey)
+    if (cr.isMac && e.metaKey) {
       output.push('Command');
-    if (cr.isChromeOS && e.metaKey)
+    }
+    if (cr.isChromeOS && e.metaKey) {
       output.push('Search');
-    if (e.ctrlKey)
+    }
+    if (e.ctrlKey) {
       output.push('Ctrl');
-    if (!e.ctrlKey && e.altKey)
+    }
+    if (!e.ctrlKey && e.altKey) {
       output.push('Alt');
-    if (e.shiftKey)
+    }
+    if (e.shiftKey) {
       output.push('Shift');
+    }
 
     const keyCode = e.keyCode;
     if (isValidKeyCode(keyCode)) {

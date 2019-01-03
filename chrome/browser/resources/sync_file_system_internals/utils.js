@@ -13,8 +13,9 @@ function createElementFromText(elementName, text, opt_attributes) {
   const element = document.createElement(elementName);
   element.appendChild(document.createTextNode(text));
   if (opt_attributes) {
-    for (const key in opt_attributes)
+    for (const key in opt_attributes) {
       element.setAttribute(key, opt_attributes[key]);
+    }
   }
   return element;
 }

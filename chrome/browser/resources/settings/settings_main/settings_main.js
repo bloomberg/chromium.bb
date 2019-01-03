@@ -106,8 +106,9 @@ Polymer({
    */
   setOverscroll_: function(opt_minHeight) {
     const scroller = this.offsetParent;
-    if (!scroller)
+    if (!scroller) {
       return;
+    }
     const overscroll = this.$.overscroll;
     const visibleBottom = scroller.scrollTop + scroller.clientHeight;
     const overscrollBottom = overscroll.offsetTop + overscroll.scrollHeight;

@@ -86,8 +86,9 @@ Polymer({
    * @private
    */
   filterPrinter_: function(searchTerm) {
-    if (!searchTerm)
+    if (!searchTerm) {
       return null;
+    }
     return function(printer) {
       return printer.printerName.toLowerCase().includes(
           searchTerm.toLowerCase());

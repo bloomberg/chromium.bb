@@ -47,8 +47,9 @@ cr.define('policy', function() {
     setLabelAndShow_: function(labelName, labelValue, needsToBeShown = true) {
       const labelElement = this.querySelector(labelName);
       labelElement.textContent = labelValue || '';
-      if (needsToBeShown)
+      if (needsToBeShown) {
         labelElement.parentElement.hidden = false;
+      }
     },
     /**
      * Populate the box with the given cloud policy status.
@@ -325,28 +326,32 @@ cr.define('policy', function() {
     setPolicyValues: function(values) {
       // Remove all policies from the table.
       const policies = this.getElementsByTagName('tbody');
-      while (policies.length > 0)
+      while (policies.length > 0) {
         this.removeChild(policies.item(0));
+      }
 
       // First, add known policies whose value is currently set.
       const unset = [];
       for (const name in this.policies_) {
-        if (name in values)
+        if (name in values) {
           this.setPolicyValue_(name, values[name], false);
-        else
+        } else {
           unset.push(name);
+        }
       }
 
       // Second, add policies whose value is currently set but whose name is not
       // recognized.
       for (const name in values) {
-        if (!(name in this.policies_))
+        if (!(name in this.policies_)) {
           this.setPolicyValue_(name, values[name], true);
+        }
       }
 
       // Finally, add known policies whose value is not currently set.
-      for (let i = 0; i < unset.length; i++)
+      for (let i = 0; i < unset.length; i++) {
         this.setPolicyValue_(unset[i], undefined, false);
+      }
 
       // Filter the policies.
       this.filter();
@@ -376,10 +381,11 @@ cr.define('policy', function() {
         policy.hidden = policy.unset && !showUnset ||
             policy.name.toLowerCase().indexOf(this.filterPattern_) == -1;
       }
-      if (this.querySelector('tbody:not([hidden])'))
+      if (this.querySelector('tbody:not([hidden])')) {
         this.parentElement.classList.remove('empty');
-      else
+      } else {
         this.parentElement.classList.add('empty');
+      }
       setTimeout(this.checkOverflow_.bind(this), 0);
     },
 
@@ -390,8 +396,9 @@ cr.define('policy', function() {
     checkOverflow_: function() {
       const policies = this.getElementsByTagName('tbody');
       for (let i = 0; i < policies.length; i++) {
-        if (!policies[i].hidden)
+        if (!policies[i].hidden) {
           policies[i].checkOverflow();
+        }
       }
     },
 
@@ -464,8 +471,9 @@ cr.define('policy', function() {
     if (values.hasOwnProperty('extensionPolicies')) {
       for (const extensionId in values.extensionPolicies) {
         table = page.policyTables['extension-' + extensionId];
-        if (table)
+        if (table) {
           table.setPolicyValues(values.extensionPolicies[extensionId]);
+        }
       }
     }
   };
@@ -615,8 +623,9 @@ cr.define('policy', function() {
     setStatus: function(status) {
       // Remove any existing status boxes.
       const container = $('status-box-container');
-      while (container.firstChild)
+      while (container.firstChild) {
         container.removeChild(container.firstChild);
+      }
       // Hide the status section.
       const section = $('status-section');
       section.hidden = true;

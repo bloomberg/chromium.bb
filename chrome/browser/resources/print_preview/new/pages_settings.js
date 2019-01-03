@@ -28,8 +28,9 @@ const PagesValue = {
  * @private
  */
 function parseIntStrict(value) {
-  if (/^\d+$/.test(value.trim()))
+  if (/^\d+$/.test(value.trim())) {
     return Number(value);
+  }
   return NaN;
 }
 
@@ -157,8 +158,9 @@ Polymer({
     }
 
     const array = new Array(this.documentInfo.pageCount);
-    for (let i = 0; i < array.length; i++)
+    for (let i = 0; i < array.length; i++) {
       array[i] = i + 1;
+    }
     return array;
   },
 
@@ -173,8 +175,9 @@ Polymer({
       this.errorState_ = PagesInputErrorState.NO_ERROR;
       return this.allPagesArray_;
     } else if (this.inputString_ === '') {
-      if (this.errorState_ !== PagesInputErrorState.NO_ERROR)
+      if (this.errorState_ !== PagesInputErrorState.NO_ERROR) {
         this.errorState_ = PagesInputErrorState.EMPTY;
+      }
       return this.pagesToPrint_;
     }
 
@@ -222,10 +225,12 @@ Polymer({
         return this.pagesToPrint_;
       }
 
-      if (Number.isNaN(min))
+      if (Number.isNaN(min)) {
         min = 1;
-      if (Number.isNaN(max))
+      }
+      if (Number.isNaN(max)) {
         max = maxPage;
+      }
       if (min > max) {
         this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
         this.onRangeChange_();
@@ -283,13 +288,15 @@ Polymer({
   getNupPages_: function() {
     const pagesPerSheet =
         /** @type {number} */ (this.getSettingValue('pagesPerSheet'));
-    if (pagesPerSheet <= 1 || this.pagesToPrint_.length == 0)
+    if (pagesPerSheet <= 1 || this.pagesToPrint_.length == 0) {
       return this.pagesToPrint_;
+    }
 
     const numPages = Math.ceil(this.pagesToPrint_.length / pagesPerSheet);
     const nupPages = new Array(numPages);
-    for (let i = 0; i < nupPages.length; i++)
+    for (let i = 0; i < nupPages.length; i++) {
       nupPages[i] = i + 1;
+    }
     return nupPages;
   },
 
@@ -299,8 +306,9 @@ Polymer({
    * @private
    */
   onRangeChange_: function() {
-    if (this.settings === undefined || this.pagesToPrint_ === undefined)
+    if (this.settings === undefined || this.pagesToPrint_ === undefined) {
       return;
+    }
 
     if (this.errorState_ === PagesInputErrorState.EMPTY) {
       this.setSettingValid('pages', true);
@@ -322,8 +330,9 @@ Polymer({
         nupPages.length != this.getSettingValue('pages').length) {
       this.setSetting('pages', nupPages);
     }
-    if (rangesChanged)
+    if (rangesChanged) {
       this.setSetting('ranges', this.rangesToPrint_);
+    }
     this.setSettingValid('pages', true);
     this.hasError_ = false;
   },
@@ -340,8 +349,9 @@ Polymer({
 
   /** @private */
   resetIfEmpty_: function() {
-    if (this.inputString_ !== '')
+    if (this.inputString_ !== '') {
       return;
+    }
 
     this.optionSelected_ = PagesValue.ALL;
 
@@ -354,8 +364,9 @@ Polymer({
    * @param {!KeyboardEvent} e The keyboard event
    */
   onKeydown_: function(e) {
-    if (e.key === 'Escape')
+    if (e.key === 'Escape') {
       return;
+    }
 
     if (e.key === 'Enter') {
       this.resetAndUpdate();
@@ -397,8 +408,9 @@ Polymer({
 
   /** @private */
   onCustomInputFocus_: function() {
-    if (this.optionSelected_ !== PagesValue.CUSTOM)
+    if (this.optionSelected_ !== PagesValue.CUSTOM) {
       this.optionSelected_ = PagesValue.CUSTOM;
+    }
   },
 
   /**

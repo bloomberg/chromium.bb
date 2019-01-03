@@ -215,8 +215,9 @@ Polymer({
          */
         (this.setPasswordExceptionsListener_));
 
-    if (this.$.undoToast.open)
+    if (this.$.undoToast.open) {
       this.$.undoToast.hide();
+    }
   },
 
   /**
@@ -247,8 +248,9 @@ Polymer({
    * @private
    */
   getFilteredPasswords_: function(filter) {
-    if (!filter)
+    if (!filter) {
       return this.savedPasswords.slice();
+    }
 
     return this.savedPasswords.filter(
         p => [p.entry.loginPair.urls.shown, p.entry.loginPair.username].some(

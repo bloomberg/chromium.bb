@@ -22,8 +22,9 @@ cr.define('media_router', function() {
    */
   function initialize() {
     // For non-Mac platforms, request data immediately after initialization.
-    if (!cr.isMac)
+    if (!cr.isMac) {
       onRequestInitialData();
+    }
 
     container = /** @type {!MediaRouterContainerInterface} */
         ($('media-router-container'));

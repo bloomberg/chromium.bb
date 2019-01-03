@@ -62,8 +62,9 @@ Polymer({
     } else {
       const dialog = /** @type {?SettingsResetProfileDialogElement} */ (
           lazyRender.getIfExists());
-      if (dialog)
+      if (dialog) {
         dialog.cancel();
+      }
     }
   },
 

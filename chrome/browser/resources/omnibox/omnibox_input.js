@@ -75,8 +75,9 @@ class OmniboxInput extends OmniboxElement {
   onQueryInputsChanged_() {
     const zeroSuggest = this.$$('zero-suggest').checked;
     this.$$('current-url').disabled = zeroSuggest;
-    if (zeroSuggest)
+    if (zeroSuggest) {
       this.$$('current-url').value = this.$$('input-text').value;
+    }
 
     /** @type {!QueryInputs} */
     const queryInputs = {

@@ -17,16 +17,18 @@ chrome.runtime.onMessageExternal.addListener(function(
   }
 
   function getHost(url) {
-    if (!url)
+    if (!url) {
       return '';
+    }
     // Use the DOM to parse the URL. Since we don't add the anchor to
     // the page, this is the only reference to it and it will be
     // deleted once it's gone out of scope.
     const a = document.createElement('a');
     a.href = url;
     let origin = a.protocol + '//' + a.hostname;
-    if (a.port != '')
+    if (a.port != '') {
       origin = origin + ':' + a.port;
+    }
     origin = origin + '/';
     return origin;
   }
@@ -285,8 +287,9 @@ function onProcessCpu(port) {
       } else if (process.type == 'gpu') {
         gpuProcessCpu = process.cpu;
       }
-      if (!!browserProcessCpu && !!gpuProcessCpu)
+      if (!!browserProcessCpu && !!gpuProcessCpu) {
         break;
+      }
     }
 
     port.postMessage({
@@ -307,8 +310,9 @@ function onProcessCpu(port) {
 }
 
 function appendLastErrorMessage(errors) {
-  if (chrome.runtime.lastError !== undefined)
+  if (chrome.runtime.lastError !== undefined) {
     errors.push(chrome.runtime.lastError.message);
+  }
 }
 
 chrome.runtime.onConnectExternal.addListener(function(port) {

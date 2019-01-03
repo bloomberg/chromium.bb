@@ -30,8 +30,9 @@ const TaskLog = (function() {
     label.appendChild(collapseCheck);
 
     const ul = document.createElement('ul');
-    for (let i = 0; i < taskLog.details.length; ++i)
+    for (let i = 0; i < taskLog.details.length; ++i) {
       ul.appendChild(createElementFromText('li', taskLog.details[i]));
+    }
     label.appendChild(ul);
 
     const tr = document.createElement('tr');

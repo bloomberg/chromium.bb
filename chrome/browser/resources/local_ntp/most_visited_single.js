@@ -361,10 +361,11 @@ var updateTheme = function(info) {
  */
 var focusTileMenu = function(info) {
   let tile = document.querySelector(`a.md-tile[data-tid="${info.tid}"]`);
-  if (info.tid === -1 /* Add shortcut tile */)
+  if (info.tid === -1 /* Add shortcut tile */) {
     tile.focus();
-  else
+  } else {
     tile.parentNode.childNodes[1].focus();
+  }
 };
 
 
@@ -453,14 +454,16 @@ var swapInNewTiles = function() {
 function updateTileVisibility() {
   const allTiles = document.querySelectorAll(
       '#' + IDS.MV_TILES + ' .' + CLASSES.MD_TILE_CONTAINER);
-  if (allTiles.length === 0)
+  if (allTiles.length === 0) {
     return;
+  }
 
   // Get the current number of tiles per row. Hide any tile after the first two
   // rows.
   const tilesPerRow = Math.trunc(document.body.offsetWidth / MD_TILE_WIDTH);
-  for (let i = MD_NUM_TILES_ALWAYS_VISIBLE; i < allTiles.length; i++)
+  for (let i = MD_NUM_TILES_ALWAYS_VISIBLE; i < allTiles.length; i++) {
     allTiles[i].style.display = (i < tilesPerRow * 2) ? 'block' : 'none';
+  }
 }
 
 
@@ -475,8 +478,9 @@ var addTile = function(args) {
     // An actual suggestion. Grab the data from the embeddedSearch API.
     var data =
         chrome.embeddedSearch.newTabPage.getMostVisitedItemData(args.rid);
-    if (!data)
+    if (!data) {
       return;
+    }
 
     data.tid = data.rid;
     if (!data.faviconUrl) {
@@ -504,8 +508,9 @@ var blacklistTile = function(tile) {
   } else {
     tile.classList.add('blacklisted');
     tile.addEventListener('transitionend', function(ev) {
-      if (ev.propertyName != 'width')
+      if (ev.propertyName != 'width') {
         return;
+      }
       window.parent.postMessage(
           {cmd: 'tileBlacklisted', tid: Number(tid)}, DOMAIN_ORIGIN);
     });
@@ -557,8 +562,9 @@ function stopReorder(tile) {
   // Update |data-pos| for all tiles and notify EmbeddedSearchAPI that the tile
   // has been moved.
   const allTiles = document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE);
-  for (let i = 0; i < allTiles.length; i++)
+  for (let i = 0; i < allTiles.length; i++) {
     allTiles[i].setAttribute('data-pos', i);
+  }
   chrome.embeddedSearch.newTabPage.reorderCustomLink(
       Number(tile.firstChild.getAttribute('data-tid')),
       Number(tile.firstChild.getAttribute('data-pos')));
@@ -586,14 +592,16 @@ function setupReorder(tile) {
         window.clearTimeout(timeout);
       }, {once: true});
       let mouseup = document.addEventListener('mouseup', () => {
-        if (event.button == 0 /* LEFT CLICK */)
+        if (event.button == 0 /* LEFT CLICK */) {
           window.clearTimeout(timeout);
+        }
       }, {once: true});
 
       // Wait for |REORDER_TIMEOUT_DELAY| before starting the reorder flow.
       timeout = window.setTimeout(() => {
-        if (!reordering)
+        if (!reordering) {
           startReorder(tile);
+        }
         document.removeEventListener('dragend', dragend);
         document.removeEventListener('mouseup', mouseup);
       }, REORDER_TIMEOUT_DELAY);
@@ -847,8 +855,9 @@ var init = function() {
   queryArgs = {};
   for (var i = 0; i < query.length; ++i) {
     var val = query[i].split('=');
-    if (val[0] == '')
+    if (val[0] == '') {
       continue;
+    }
     queryArgs[decodeURIComponent(val[0])] = decodeURIComponent(val[1]);
   }
 
@@ -873,8 +882,9 @@ var init = function() {
   // Throttle the resize event.
   let resizeTimeout;
   window.onresize = () => {
-    if (resizeTimeout)
+    if (resizeTimeout) {
       return;
+    }
     resizeTimeout = window.setTimeout(() => {
       resizeTimeout = null;
       updateTileVisibility();

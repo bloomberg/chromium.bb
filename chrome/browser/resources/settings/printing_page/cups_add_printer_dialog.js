@@ -337,8 +337,9 @@ Polymer({
    * @private
    */
   resetData_: function() {
-    if (this.newPrinter)
+    if (this.newPrinter) {
       this.newPrinter = getEmptyPrinter_();
+    }
   },
 
   /** @private */
@@ -506,7 +507,8 @@ Polymer({
   onAddPrinter_: function(success, printerName) {
     // 'on-add-cups-printer' event might be triggered by editing an existing
     // printer, in which case there is no configuring dialog.
-    if (this.$$('add-printer-configuring-dialog'))
+    if (this.$$('add-printer-configuring-dialog')) {
       this.$$('add-printer-configuring-dialog').close();
+    }
   },
 });

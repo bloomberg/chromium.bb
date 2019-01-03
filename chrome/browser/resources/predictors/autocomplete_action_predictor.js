@@ -41,8 +41,9 @@ function updateAutocompleteActionPredictorDbView(database) {
   $('autocompleteActionPredictorEnabledMode').hidden = !showEnabled;
   $('autocompleteActionPredictorDisabledMode').hidden = showEnabled;
 
-  if (!showEnabled)
+  if (!showEnabled) {
     return;
+  }
 
   const filter = $('filter');
 

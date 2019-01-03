@@ -49,8 +49,9 @@ Polymer({
    * @private
    */
   computeCapabilityWithLabels_: function() {
-    if (this.capability === undefined)
+    if (this.capability === undefined) {
       return null;
+    }
 
     const result =
         /** @type {{option: Array<!print_preview_new.SelectOption>}} */ (

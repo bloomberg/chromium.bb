@@ -128,12 +128,15 @@ Polymer({
    * @private
    */
   getPointersTitle_: function() {
-    if (this.hasMouse_ && this.hasTouchpad_)
+    if (this.hasMouse_ && this.hasTouchpad_) {
       return this.i18n('mouseAndTouchpadTitle');
-    if (this.hasMouse_)
+    }
+    if (this.hasMouse_) {
       return this.i18n('mouseTitle');
-    if (this.hasTouchpad_)
+    }
+    if (this.hasTouchpad_) {
       return this.i18n('touchpadTitle');
+    }
     return '';
   },
 

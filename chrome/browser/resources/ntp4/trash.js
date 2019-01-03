@@ -35,8 +35,9 @@ cr.define('ntp', function() {
      */
     shouldAcceptDrag: function(e) {
       const tile = ntp.getCurrentlyDraggingTile();
-      if (!tile)
+      if (!tile) {
         return false;
+      }
 
       return tile.firstChild.canBeRemoved();
     },

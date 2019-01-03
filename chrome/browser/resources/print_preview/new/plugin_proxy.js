@@ -46,8 +46,9 @@ cr.define('print_preview_new', function() {
      * @return {!print_preview_new.PluginProxy} The singleton instance.
      */
     static getInstance() {
-      if (instance == null)
+      if (instance == null) {
         instance = new PluginProxy();
+      }
       return assert(instance);
     }
 

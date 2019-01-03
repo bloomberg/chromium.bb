@@ -44,24 +44,28 @@ const DeviceLogUI = (function() {
   const createLogEntryText = function(logEntry) {
     const level = logEntry['level'];
     const levelCheckbox = 'log-level-' + level.toLowerCase();
-    if ($(levelCheckbox) && !$(levelCheckbox).checked)
+    if ($(levelCheckbox) && !$(levelCheckbox).checked) {
       return null;
+    }
 
     const type = logEntry['type'];
     const typeCheckbox = 'log-type-' + type.toLowerCase();
-    if ($(typeCheckbox) && !$(typeCheckbox).checked)
+    if ($(typeCheckbox) && !$(typeCheckbox).checked) {
       return null;
+    }
 
     const res = document.createElement('p');
     const textWrapper = document.createElement('span');
     let fileinfo = '';
-    if ($('log-fileinfo').checked)
+    if ($('log-fileinfo').checked) {
       fileinfo = logEntry['file'];
+    }
     let timestamp = '';
-    if ($('log-timedetail').checked)
+    if ($('log-timedetail').checked) {
       timestamp = logEntry['timestamp'];
-    else
+    } else {
       timestamp = logEntry['timestampshort'];
+    }
     textWrapper.textContent = loadTimeData.getStringF(
         'logEntryFormat', timestamp, fileinfo, logEntry['event']);
     res.appendChild(createTypeTag(type));
@@ -81,8 +85,9 @@ const DeviceLogUI = (function() {
     container.textContent = '';
     for (let i = 0; i < logEntries.length; ++i) {
       const entry = createLogEntryText(JSON.parse(logEntries[i]));
-      if (entry)
+      if (entry) {
         container.appendChild(entry);
+      }
     }
   };
 
@@ -112,8 +117,9 @@ const DeviceLogUI = (function() {
    */
   const setRefresh = function() {
     const interval = parseQueryParams(window.location)['refresh'];
-    if (interval && interval != '')
+    if (interval && interval != '') {
       setInterval(requestLog, parseInt(interval) * 1000);
+    }
   };
 
   /**
@@ -129,8 +135,9 @@ const DeviceLogUI = (function() {
     // Show all types by default.
     let checkboxes = document.querySelectorAll(
         '#log-checkbox-container input[type="checkbox"][id*="log-type"]');
-    for (let i = 0; i < checkboxes.length; ++i)
+    for (let i = 0; i < checkboxes.length; ++i) {
       checkboxes[i].checked = true;
+    }
 
     $('log-fileinfo').checked = false;
     $('log-timedetail').checked = false;
@@ -138,8 +145,9 @@ const DeviceLogUI = (function() {
     $('log-refresh').onclick = requestLog;
     checkboxes = document.querySelectorAll(
         '#log-checkbox-container input[type="checkbox"]');
-    for (let i = 0; i < checkboxes.length; ++i)
+    for (let i = 0; i < checkboxes.length; ++i) {
       checkboxes[i].onclick = requestLog;
+    }
 
     setRefresh();
     requestLog();

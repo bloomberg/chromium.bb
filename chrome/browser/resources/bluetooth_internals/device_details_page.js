@@ -87,8 +87,9 @@ cr.define('device_details_page', function() {
 
     /** Creates a connection to the Bluetooth device. */
     connect: function() {
-      if (this.status_ !== device_collection.ConnectionStatus.DISCONNECTED)
+      if (this.status_ !== device_collection.ConnectionStatus.DISCONNECTED) {
         return;
+      }
 
       this.updateConnectionStatus_(
           device_collection.ConnectionStatus.CONNECTING);
@@ -128,8 +129,9 @@ cr.define('device_details_page', function() {
 
     /** Disconnects the page from the Bluetooth device. */
     disconnect: function() {
-      if (!this.devicePtr_)
+      if (!this.devicePtr_) {
         return;
+      }
 
       this.devicePtr_.disconnect();
       this.devicePtr_ = null;
@@ -142,10 +144,11 @@ cr.define('device_details_page', function() {
       var isConnected = this.deviceInfo.isGattConnected;
 
       // Update status if connection has changed.
-      if (isConnected)
+      if (isConnected) {
         this.connect();
-      else
+      } else {
         this.disconnect();
+      }
 
       var connectedText = isConnected ? 'Connected' : 'Not Connected';
 
@@ -153,12 +156,14 @@ cr.define('device_details_page', function() {
       var services = this.deviceInfo.services;
 
       var rssiValue = 'Unknown';
-      if (rssi.value != null && rssi.value <= 0)
+      if (rssi.value != null && rssi.value <= 0) {
         rssiValue = rssi.value;
+      }
 
       var serviceCount = 'Unknown';
-      if (services != null && services.length >= 0)
+      if (services != null && services.length >= 0) {
         serviceCount = services.length;
+      }
 
       var deviceViewObj = {
         name: this.deviceInfo.nameForDisplay,
@@ -202,8 +207,9 @@ cr.define('device_details_page', function() {
      * @private
      */
     updateConnectionStatus_: function(status) {
-      if (this.status === status)
+      if (this.status === status) {
         return;
+      }
 
       this.status_ = status;
       if (status === device_collection.ConnectionStatus.DISCONNECTED) {

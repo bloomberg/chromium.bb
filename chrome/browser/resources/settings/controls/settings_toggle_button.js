@@ -75,8 +75,9 @@ Polymer({
    */
   onHostTap_: function(e) {
     e.stopPropagation();
-    if (this.controlDisabled())
+    if (this.controlDisabled()) {
       return;
+    }
 
     this.checked = !this.checked;
     this.notifyChangedByUserInteraction();

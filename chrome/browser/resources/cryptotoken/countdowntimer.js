@@ -36,10 +36,12 @@ CountdownTimer.TIMER_INTERVAL_MILLIS = 200;
  * @return {boolean} whether the timeout could be set.
  */
 CountdownTimer.prototype.setTimeout = function(timeoutMillis, cb) {
-  if (this.timeoutId)
+  if (this.timeoutId) {
     return false;
-  if (!timeoutMillis || timeoutMillis < 0)
+  }
+  if (!timeoutMillis || timeoutMillis < 0) {
     return false;
+  }
   this.remainingMillis = timeoutMillis;
   this.cb = cb;
   if (this.remainingMillis > CountdownTimer.TIMER_INTERVAL_MILLIS) {
@@ -132,8 +134,9 @@ var MINIMUM_TIMEOUT_ATTENUATION_SECONDS = 1;
 function attenuateTimeoutInSeconds(timeoutSeconds, opt_attenuationSeconds) {
   var attenuationSeconds =
       opt_attenuationSeconds || MINIMUM_TIMEOUT_ATTENUATION_SECONDS;
-  if (timeoutSeconds < attenuationSeconds)
+  if (timeoutSeconds < attenuationSeconds) {
     return 0;
+  }
   return timeoutSeconds - attenuationSeconds;
 }
 

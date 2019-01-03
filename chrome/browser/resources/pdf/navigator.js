@@ -43,10 +43,11 @@ NavigatorDelegate.prototype = {
   navigateInCurrentTab: function(url) {
     // When the PDFviewer is inside a browser tab, prefer the tabs API because
     // it can navigate from one file:// URL to another.
-    if (chrome.tabs && this.tabId_ != -1)
+    if (chrome.tabs && this.tabId_ != -1) {
       chrome.tabs.update(this.tabId_, {url: url});
-    else
+    } else {
       window.location.href = url;
+    }
   },
 
   /**
@@ -58,10 +59,11 @@ NavigatorDelegate.prototype = {
   navigateInNewTab: function(url, active) {
     // Prefer the tabs API because it guarantees we can just open a new tab.
     // window.open doesn't have this guarantee.
-    if (chrome.tabs)
+    if (chrome.tabs) {
       chrome.tabs.create({url: url, active: active});
-    else
+    } else {
       window.open(url);
+    }
   },
 
   /**
@@ -72,10 +74,11 @@ NavigatorDelegate.prototype = {
   navigateInNewWindow: function(url) {
     // Prefer the windows API because it guarantees we can just open a new
     // window. window.open with '_blank' argument doesn't have this guarantee.
-    if (chrome.windows)
+    if (chrome.windows) {
       chrome.windows.create({url: url});
-    else
+    } else {
       window.open(url, '_blank');
+    }
   }
 };
 
@@ -103,8 +106,9 @@ Navigator.prototype = {
    *    navigating to the new URL.
    */
   navigate: function(url, disposition) {
-    if (url.length == 0)
+    if (url.length == 0) {
       return;
+    }
 
     // If |urlFragment| starts with '#', then it's for the same URL with a
     // different URL fragment.
@@ -112,18 +116,21 @@ Navigator.prototype = {
       // if '#' is already present in |originalUrl| then remove old fragment
       // and add new url fragment.
       const hashIndex = this.originalUrl_.search('#');
-      if (hashIndex != -1)
+      if (hashIndex != -1) {
         url = this.originalUrl_.substring(0, hashIndex) + url;
-      else
+      } else {
         url = this.originalUrl_ + url;
+      }
     }
 
     // If there's no scheme, then take a guess at the scheme.
-    if (url.indexOf('://') == -1 && url.indexOf('mailto:') == -1)
+    if (url.indexOf('://') == -1 && url.indexOf('mailto:') == -1) {
       url = this.guessUrlWithoutScheme_(url);
+    }
 
-    if (!this.isValidUrl_(url))
+    if (!this.isValidUrl_(url)) {
       return;
+    }
 
     switch (disposition) {
       case Navigator.WindowOpenDisposition.CURRENT_TAB:
@@ -160,19 +167,22 @@ Navigator.prototype = {
   onViewportReceived_: function(viewportPosition) {
     let originalUrl = this.originalUrl_;
     let hashIndex = originalUrl.search('#');
-    if (hashIndex != -1)
+    if (hashIndex != -1) {
       originalUrl = originalUrl.substring(0, hashIndex);
+    }
 
     let newUrl = viewportPosition.url;
     hashIndex = newUrl.search('#');
-    if (hashIndex != -1)
+    if (hashIndex != -1) {
       newUrl = newUrl.substring(0, hashIndex);
+    }
 
     const pageNumber = viewportPosition.page;
-    if (pageNumber != undefined && originalUrl == newUrl)
+    if (pageNumber != undefined && originalUrl == newUrl) {
       this.viewport_.goToPage(pageNumber);
-    else
+    } else {
       this.navigatorDelegate_.navigateInCurrentTab(viewportPosition.url);
+    }
   },
 
   /**
@@ -191,8 +201,9 @@ Navigator.prototype = {
     }
 
     // Navigations to file:-URLs are only allowed from file:-URLs.
-    if (url.startsWith('file:') && !this.originalUrl_.startsWith('file:'))
+    if (url.startsWith('file:') && !this.originalUrl_.startsWith('file:')) {
       return false;
+    }
 
 
     // Make sure |url| is not only a scheme.
@@ -235,8 +246,9 @@ Navigator.prototype = {
 
     // Check for obvious relative paths.
     let isRelative = false;
-    if (url.startsWith('.') || url.startsWith('\\'))
+    if (url.startsWith('.') || url.startsWith('\\')) {
       isRelative = true;
+    }
 
     // In Adobe Acrobat Reader XI, it looks as though links with less than
     // 2 dot separators in the domain are considered relative links, and
@@ -250,8 +262,9 @@ Navigator.prototype = {
           url :
           url.substr(0, domainSeparatorIndex);
       const domainDotCount = (domainName.match(/\./g) || []).length;
-      if (domainDotCount < 2)
+      if (domainDotCount < 2) {
         isRelative = true;
+      }
     }
 
     if (isRelative) {

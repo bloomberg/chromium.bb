@@ -181,8 +181,9 @@ Polymer({
     this.addWebUIListener(
         'sync-prefs-changed', this.handleSyncPrefsChanged_.bind(this));
 
-    if (settings.getCurrentRoute() == settings.routes.SYNC)
+    if (settings.getCurrentRoute() == settings.routes.SYNC) {
       this.onNavigateToPage_();
+    }
   },
   /**
    * Can be called from subpages to notify this page (=main sync page) that sync
@@ -195,8 +196,9 @@ Polymer({
 
   /** @override */
   detached: function() {
-    if (settings.routes.SYNC.contains(settings.getCurrentRoute()))
+    if (settings.routes.SYNC.contains(settings.getCurrentRoute())) {
       this.onNavigateAwayFromPage_();
+    }
 
     if (this.beforeunloadCallback_) {
       window.removeEventListener('beforeunload', this.beforeunloadCallback_);
@@ -226,10 +228,11 @@ Polymer({
 
   /** @protected */
   currentRouteChanged: function() {
-    if (settings.getCurrentRoute() == settings.routes.SYNC)
+    if (settings.getCurrentRoute() == settings.routes.SYNC) {
       this.onNavigateToPage_();
-    else if (!settings.routes.SYNC.contains(settings.getCurrentRoute()))
+    } else if (!settings.routes.SYNC.contains(settings.getCurrentRoute())) {
       this.onNavigateAwayFromPage_();
+    }
   },
 
   /**
@@ -245,8 +248,9 @@ Polymer({
   onNavigateToPage_: function() {
     assert(settings.getCurrentRoute() == settings.routes.SYNC);
 
-    if (this.beforeunloadCallback_)
+    if (this.beforeunloadCallback_) {
       return;
+    }
 
     this.collapsibleSectionsInitialized_ = false;
 
@@ -261,8 +265,9 @@ Polymer({
 
   /** @private */
   onNavigateAwayFromPage_: function() {
-    if (!this.beforeunloadCallback_)
+    if (!this.beforeunloadCallback_) {
       return;
+    }
 
     // Reset the status to CONFIGURE such that the searching algorithm can
     // search useful content when the page is not visible to the user.
@@ -284,8 +289,9 @@ Polymer({
     this.pageStatus_ = settings.PageStatus.CONFIGURE;
 
     // Hide the new passphrase box if the sync data has been encrypted.
-    if (this.syncPrefs.encryptAllData)
+    if (this.syncPrefs.encryptAllData) {
       this.creatingNewPassphrase_ = false;
+    }
 
     // Focus the password input box if password is needed to start sync.
     if (this.syncPrefs.passphraseRequired) {
@@ -293,8 +299,9 @@ Polymer({
       listenOnce(document, 'show-container', () => {
         const input = /** @type {!CrInputElement} */ (
             this.$$('#existingPassphraseInput'));
-        if (!input.matches(':focus-within'))
+        if (!input.matches(':focus-within')) {
           input.focus();
+        }
       });
     }
   },
@@ -323,15 +330,18 @@ Polymer({
     assert(this.creatingNewPassphrase_);
 
     // Ignore events on irrelevant elements or with irrelevant keys.
-    if (e.target.tagName != 'PAPER-BUTTON' && e.target.tagName != 'CR-INPUT')
+    if (e.target.tagName != 'PAPER-BUTTON' && e.target.tagName != 'CR-INPUT') {
       return;
-    if (e.type == 'keypress' && e.key != 'Enter')
+    }
+    if (e.type == 'keypress' && e.key != 'Enter') {
       return;
+    }
 
     // If a new password has been entered but it is invalid, do not send the
     // sync state to the API.
-    if (!this.validateCreatedPassphrases_())
+    if (!this.validateCreatedPassphrases_()) {
       return;
+    }
 
     this.syncPrefs.encryptAllData = true;
     this.syncPrefs.setNewPassphrase = true;
@@ -347,8 +357,9 @@ Polymer({
    * @param {!Event} e
    */
   onSubmitExistingPassphraseTap_: function(e) {
-    if (e.type == 'keypress' && e.key != 'Enter')
+    if (e.type == 'keypress' && e.key != 'Enter') {
       return;
+    }
 
     assert(!this.creatingNewPassphrase_);
 
@@ -374,8 +385,9 @@ Polymer({
         this.pageStatus_ = pageStatus;
         return;
       case settings.PageStatus.DONE:
-        if (settings.getCurrentRoute() == settings.routes.SYNC)
+        if (settings.getCurrentRoute() == settings.routes.SYNC) {
           settings.navigateTo(settings.routes.PEOPLE);
+        }
         return;
       case settings.PageStatus.PASSPHRASE_FAILED:
         if (this.pageStatus_ == this.pages_.CONFIGURE && this.syncPrefs &&
@@ -413,8 +425,9 @@ Polymer({
    * @private
    */
   enterPassphrasePrompt_: function() {
-    if (this.syncPrefs && this.syncPrefs.passphraseTypeIsCustom)
+    if (this.syncPrefs && this.syncPrefs.passphraseTypeIsCustom) {
       return this.syncPrefs.enterPassphraseBody;
+    }
 
     return this.syncPrefs.enterGooglePassphraseBody;
   },

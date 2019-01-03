@@ -200,8 +200,9 @@ cr.define('cr.login', function() {
      * Resets the webview to the blank page.
      */
     resetWebview() {
-      if (this.webview_.src && this.webview_.src != BLANK_PAGE_URL)
+      if (this.webview_.src && this.webview_.src != BLANK_PAGE_URL) {
         this.webview_.src = BLANK_PAGE_URL;
+      }
     }
 
     /**
@@ -315,8 +316,9 @@ cr.define('cr.login', function() {
     }
 
     constructChromeOSAPIUrl_() {
-      if (this.chromeOSApiVersion_ && this.chromeOSApiVersion_ == 2)
+      if (this.chromeOSApiVersion_ && this.chromeOSApiVersion_ == 2) {
         return this.idpOrigin_ + EMBEDDED_SETUP_CHROMEOS_ENDPOINT_V2;
+      }
 
       return this.idpOrigin_ + EMBEDDED_SETUP_CHROMEOS_ENDPOINT;
     }
@@ -345,55 +347,72 @@ cr.define('cr.login', function() {
       }
 
       let url;
-      if (data.gaiaPath)
+      if (data.gaiaPath) {
         url = this.idpOrigin_ + data.gaiaPath;
-      else if (this.isNewGaiaFlow)
+      } else if (this.isNewGaiaFlow) {
         url = this.constructChromeOSAPIUrl_();
-      else
+      } else {
         url = this.idpOrigin_ + IDP_PATH;
+      }
 
       if (this.isNewGaiaFlow) {
-        if (data.chromeType)
+        if (data.chromeType) {
           url = appendParam(url, 'chrometype', data.chromeType);
-        if (data.clientId)
+        }
+        if (data.clientId) {
           url = appendParam(url, 'client_id', data.clientId);
-        if (data.enterpriseDisplayDomain)
+        }
+        if (data.enterpriseDisplayDomain) {
           url = appendParam(url, 'manageddomain', data.enterpriseDisplayDomain);
-        if (data.clientVersion)
+        }
+        if (data.clientVersion) {
           url = appendParam(url, 'client_version', data.clientVersion);
-        if (data.platformVersion)
+        }
+        if (data.platformVersion) {
           url = appendParam(url, 'platform_version', data.platformVersion);
-        if (data.releaseChannel)
+        }
+        if (data.releaseChannel) {
           url = appendParam(url, 'release_channel', data.releaseChannel);
-        if (data.endpointGen)
+        }
+        if (data.endpointGen) {
           url = appendParam(url, 'endpoint_gen', data.endpointGen);
+        }
         if (data.chromeOSApiVersion == 2) {
           let mi = '';
-          if (data.menuGuestMode)
+          if (data.menuGuestMode) {
             mi += 'gm,';
-          if (data.menuKeyboardOptions)
+          }
+          if (data.menuKeyboardOptions) {
             mi += 'ko,';
-          if (data.menuEnterpriseEnrollment)
+          }
+          if (data.menuEnterpriseEnrollment) {
             mi += 'ee,';
-          if (mi.length)
+          }
+          if (mi.length) {
             url = appendParam(url, 'mi', mi);
+          }
 
-          if (data.lsbReleaseBoard)
+          if (data.lsbReleaseBoard) {
             url = appendParam(url, 'chromeos_board', data.lsbReleaseBoard);
-          if (data.isFirstUser)
+          }
+          if (data.isFirstUser) {
             url = appendParam(url, 'is_first_user', true);
-          if (data.obfuscatedOwnerId)
+          }
+          if (data.obfuscatedOwnerId) {
             url =
                 appendParam(url, 'obfuscated_owner_id', data.obfuscatedOwnerId);
+          }
         }
       } else {
         url = appendParam(url, 'continue', this.continueUrl_);
         url = appendParam(url, 'service', data.service || SERVICE_ID);
       }
-      if (data.hl)
+      if (data.hl) {
         url = appendParam(url, 'hl', data.hl);
-      if (data.gaiaId)
+      }
+      if (data.gaiaId) {
         url = appendParam(url, 'user_id', data.gaiaId);
+      }
       if (data.email) {
         if (data.readOnlyEmail) {
           url = appendParam(url, 'Email', data.email);
@@ -401,10 +420,12 @@ cr.define('cr.login', function() {
           url = appendParam(url, 'email_hint', data.email);
         }
       }
-      if (this.isConstrainedWindow_)
+      if (this.isConstrainedWindow_) {
         url = appendParam(url, 'source', CONSTRAINED_FLOW_SOURCE);
-      if (data.flow)
+      }
+      if (data.flow) {
         url = appendParam(url, 'flow', data.flow);
+      }
       if (data.emailDomain) {
         url = appendParam(url, 'emaildomain', data.emailDomain);
         // ChromeOS embedded signin page uses 'hd' (hosted domain) as the query
@@ -435,15 +456,17 @@ cr.define('cr.login', function() {
 
       if (!this.isNewGaiaFlow &&
           currentUrl.lastIndexOf(this.continueUrlWithoutParams_, 0) == 0) {
-        if (currentUrl.indexOf('ntp=1') >= 0)
+        if (currentUrl.indexOf('ntp=1') >= 0) {
           this.skipForNow_ = true;
+        }
 
         this.maybeCompleteAuth_();
         return;
       }
 
-      if (!currentUrl.startsWith('https'))
+      if (!currentUrl.startsWith('https')) {
         this.trusted_ = false;
+      }
 
       if (this.isConstrainedWindow_) {
         let isEmbeddedPage = false;
@@ -477,10 +500,11 @@ cr.define('cr.login', function() {
      * @private
      */
     updateHistoryState_(url) {
-      if (history.state && history.state.url != url)
+      if (history.state && history.state.url != url) {
         history.pushState({url: url}, '');
-      else
+      } else {
         history.replaceState({url: url}, '');
+      }
     }
 
     /**
@@ -502,8 +526,9 @@ cr.define('cr.login', function() {
      */
     onPopState_(e) {
       const state = e.state;
-      if (state && state.url)
+      if (state && state.url) {
         this.webview_.src = state.url;
+      }
     }
 
     /**
@@ -515,8 +540,9 @@ cr.define('cr.login', function() {
      */
     onHeadersReceived_(details) {
       const currentUrl = details.url;
-      if (currentUrl.lastIndexOf(this.idpOrigin_, 0) != 0)
+      if (currentUrl.lastIndexOf(this.idpOrigin_, 0) != 0) {
         return;
+      }
 
       const headers = details.responseHeaders;
       for (let i = 0; headers && i < headers.length; ++i) {
@@ -548,8 +574,9 @@ cr.define('cr.login', function() {
      * @param {object} e Payload of the received HTML5 message.
      */
     isGaiaMessage(e) {
-      if (!this.isWebviewEvent_(e))
+      if (!this.isWebviewEvent_(e)) {
         return false;
+      }
 
       // The event origin does not have a trailing slash.
       if (e.origin !=
@@ -570,14 +597,16 @@ cr.define('cr.login', function() {
      * @private
      */
     onMessageFromWebview_(e) {
-      if (!this.isGaiaMessage(e))
+      if (!this.isGaiaMessage(e)) {
         return;
+      }
 
       const msg = e.data;
       if (msg.method == 'attemptLogin') {
         this.email_ = msg.email;
-        if (this.authMode == AuthMode.DESKTOP)
+        if (this.authMode == AuthMode.DESKTOP) {
           this.password_ = msg.password;
+        }
         this.isSamlUserPasswordless_ = null;
 
         this.chooseWhatToSync_ = msg.chooseWhatToSync;
@@ -601,8 +630,9 @@ cr.define('cr.login', function() {
             {detail: {accountIdentifier: msg.accountIdentifier}}));
       } else if (msg.method == 'userInfo') {
         this.services_ = msg.services;
-        if (this.email_ && this.gaiaId_ && this.sessionIndex_)
+        if (this.email_ && this.gaiaId_ && this.sessionIndex_) {
           this.maybeCompleteAuth_();
+        }
       } else {
         console.warn('Unrecognized message from GAIA: ' + msg.method);
       }
@@ -640,8 +670,9 @@ cr.define('cr.login', function() {
       const missingGaiaInfo =
           !this.email_ || !this.gaiaId_ || !this.sessionIndex_;
       if (missingGaiaInfo && !this.skipForNow_) {
-        if (this.missingGaiaInfoCallback)
+        if (this.missingGaiaInfoCallback) {
           this.missingGaiaInfoCallback();
+        }
 
         this.webview_.src = this.initialFrameUrl_;
         return;
@@ -654,8 +685,9 @@ cr.define('cr.login', function() {
         console.warn('Forcing empty services.');
         this.services_ = [];
       }
-      if (!this.services_)
+      if (!this.services_) {
         return;
+      }
 
       if (this.isSamlUserPasswordless_ === null &&
           this.authFlow == AuthFlow.SAML && this.email_ && this.gaiaId_ &&
@@ -759,8 +791,9 @@ cr.define('cr.login', function() {
           console.error('FATAL: Bad services type:' + typeof this.services_);
         } else {
           for (let i = 0; i < this.services_.length; ++i) {
-            if (typeof this.services_[i] == 'string')
+            if (typeof this.services_[i] == 'string') {
               continue;
+            }
 
             console.error(
                 'FATAL: Bad services[' + i +
@@ -799,13 +832,15 @@ cr.define('cr.login', function() {
      * @private
      */
     onInsecureContentBlocked_(e) {
-      if (!this.isLoaded_)
+      if (!this.isLoaded_) {
         return;
+      }
 
-      if (this.insecureContentBlockedCallback)
+      if (this.insecureContentBlockedCallback) {
         this.insecureContentBlockedCallback(e.detail.url);
-      else
+      } else {
         console.error('Authenticator: Insecure content blocked.');
+      }
     }
 
     /**
@@ -813,11 +848,13 @@ cr.define('cr.login', function() {
      * @private
      */
     onAuthPageLoaded_(e) {
-      if (!this.isLoaded_)
+      if (!this.isLoaded_) {
         return;
+      }
 
-      if (!e.detail.isSAMLPage)
+      if (!e.detail.isSAMLPage) {
         return;
+      }
 
       this.authDomain = this.samlHandler_.authDomain;
       this.authFlow = AuthFlow.SAML;
@@ -842,8 +879,9 @@ cr.define('cr.login', function() {
       // Saml API 'add' password might be received after the 'loadcommit' event.
       // In such case, maybeCompleteAuth_ should be attempted again if GAIA ID
       // is available.
-      if (this.gaiaId_)
+      if (this.gaiaId_) {
         this.maybeCompleteAuth_();
+      }
     }
 
     /**
@@ -884,10 +922,11 @@ cr.define('cr.login', function() {
 
         // |this.webview_.contentWindow| may be null after network error screen
         // is shown. See crbug.com/770999.
-        if (this.webview_.contentWindow)
+        if (this.webview_.contentWindow) {
           this.webview_.contentWindow.postMessage(msg, currentUrl);
-        else
+        } else {
           console.error('Authenticator: contentWindow is null.');
+        }
 
         if (this.authMode == AuthMode.DEFAULT) {
           chrome.send('metricsHandler:recordBooleanHistogram', [
@@ -919,8 +958,9 @@ cr.define('cr.login', function() {
      * @private
      */
     onLoadCommit_(e) {
-      if (this.gaiaId_)
+      if (this.gaiaId_) {
         this.maybeCompleteAuth_();
+      }
     }
 
     /**

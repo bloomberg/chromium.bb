@@ -24,17 +24,20 @@ cr.define('print_preview', function() {
    */
   function updateHighlights(element, query) {
     const result = {highlights: [], bubbles: []};
-    if (!query)
+    if (!query) {
       return result;
+    }
 
     element.shadowRoot.querySelectorAll('.searchable').forEach(childElement => {
       childElement.childNodes.forEach(node => {
-        if (node.nodeType != Node.TEXT_NODE)
+        if (node.nodeType != Node.TEXT_NODE) {
           return;
+        }
 
         const textContent = node.nodeValue.trim();
-        if (textContent.length == 0)
+        if (textContent.length == 0) {
           return;
+        }
 
         if (query.test(textContent)) {
           // Don't highlight <select> nodes, yellow rectangles can't be
@@ -51,8 +54,9 @@ cr.define('print_preview', function() {
             const bubble = cr.search_highlight_utils.highlightControlWithBubble(
                 /** @type {!HTMLElement} */ (assert(selectNode.parentNode)),
                 textContent.match(query)[0]);
-            if (bubble)
+            if (bubble) {
               result.bubbles.push(bubble);
+            }
           }
         }
       });

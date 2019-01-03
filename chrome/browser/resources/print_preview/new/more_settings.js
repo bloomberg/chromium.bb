@@ -30,11 +30,13 @@ Polymer({
   toggleExpandButton_: function(e) {
     // The expand button handles toggling itself.
     const expandButtonTag = 'CR-EXPAND-BUTTON';
-    if (e.target.tagName == expandButtonTag)
+    if (e.target.tagName == expandButtonTag) {
       return;
+    }
 
-    if (!e.currentTarget.hasAttribute('actionable'))
+    if (!e.currentTarget.hasAttribute('actionable')) {
       return;
+    }
 
     /** @type {!CrExpandButtonElement} */
     const expandButton = e.currentTarget.querySelector(expandButtonTag);

@@ -14,8 +14,9 @@ cr.define('bookmarks.util', function() {
    * @return {!Array<string>}
    */
   function getDisplayedList(state) {
-    if (isShowingSearch(state))
+    if (isShowingSearch(state)) {
       return assert(state.search.results);
+    }
 
     return assert(state.nodes[state.selectedFolder].children);
   }
@@ -53,8 +54,9 @@ cr.define('bookmarks.util', function() {
     while (stack.length > 0) {
       const node = stack.pop();
       nodeMap[node.id] = normalizeNode(node);
-      if (!node.children)
+      if (!node.children) {
         continue;
+      }
 
       node.children.forEach(function(child) {
         stack.push(child);
@@ -129,8 +131,9 @@ cr.define('bookmarks.util', function() {
   function hasChildFolders(id, nodes) {
     const children = nodes[id].children;
     for (let i = 0; i < children.length; i++) {
-      if (nodes[children[i]].children)
+      if (nodes[children[i]].children) {
         return true;
+      }
     }
     return false;
   }
@@ -150,13 +153,15 @@ cr.define('bookmarks.util', function() {
       const id = stack.pop();
       const node = nodes[id];
 
-      if (!node)
+      if (!node) {
         continue;
+      }
 
       descendants.add(id);
 
-      if (!node.children)
+      if (!node.children) {
         continue;
+      }
 
       node.children.forEach(function(childId) {
         stack.push(childId);

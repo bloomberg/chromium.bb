@@ -95,8 +95,9 @@ cr.define('md_history', function() {
      * @param {string} action The name of the action to be logged.
      */
     recordAction(action) {
-      if (action.indexOf('_') == -1)
+      if (action.indexOf('_') == -1) {
         action = `HistoryPage_${action}`;
+      }
       chrome.send('metricsHandler:recordAction', [action]);
     }
 
@@ -110,10 +111,11 @@ cr.define('md_history', function() {
         return;
       }
 
-      if (successful)
+      if (successful) {
         this.pendingDeletePromise_.resolve(this.pendingDeleteItems_);
-      else
+      } else {
         this.pendingDeletePromise_.reject(this.pendingDeleteItems_);
+      }
 
       this.pendingDeleteItems_ = null;
       this.pendingDeletePromise_ = null;

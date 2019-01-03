@@ -97,8 +97,9 @@ cr.define('extensions', function() {
               .join('\n');
       let visibleAfter = linesAfter.slice(0, visibleLineCountAfter).join('\n');
       // If the last character is a \n, force it to be rendered.
-      if (visibleAfter.charAt(visibleAfter.length - 1) == '\n')
+      if (visibleAfter.charAt(visibleAfter.length - 1) == '\n') {
         visibleAfter += ' ';
+      }
 
       this.highlighted_ = highlight;
       this.highlightDescription_ = this.getAccessibilityHighlightDescription_(
@@ -136,8 +137,9 @@ cr.define('extensions', function() {
      */
     setLineNumbers_: function(start, end) {
       let lineNumbers = '';
-      for (let i = start; i <= end; ++i)
+      for (let i = start; i <= end; ++i) {
         lineNumbers += i + '\n';
+      }
 
       this.lineNumbers_ = lineNumbers;
     },

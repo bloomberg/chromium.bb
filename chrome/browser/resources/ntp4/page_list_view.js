@@ -152,16 +152,19 @@ cr.define('ntp', function() {
       cr.ui.decorate(this.dotList, ntp.DotList);
 
       this.trash = opt_trash;
-      if (this.trash)
+      if (this.trash) {
         new ntp.Trash(this.trash);
+      }
 
       this.pageSwitcherStart = opt_pageSwitcherStart;
-      if (this.pageSwitcherStart)
+      if (this.pageSwitcherStart) {
         ntp.initializePageSwitcher(this.pageSwitcherStart);
+      }
 
       this.pageSwitcherEnd = opt_pageSwitcherEnd;
-      if (this.pageSwitcherEnd)
+      if (this.pageSwitcherEnd) {
         ntp.initializePageSwitcher(this.pageSwitcherEnd);
+      }
 
       this.shownPageIndex = loadTimeData.getInteger('shown_page_index');
 
@@ -184,8 +187,9 @@ cr.define('ntp', function() {
       // there are multiple cards in the slider frame.
       const cardSlider = this.cardSlider;
       cardSliderFrame.addEventListener('touchmove', function(e) {
-        if (cardSlider.cardCount <= 1)
+        if (cardSlider.cardCount <= 1) {
           return;
+        }
         e.preventDefault();
       }, true);
 
@@ -250,8 +254,9 @@ cr.define('ntp', function() {
       this.dotList.insertBefore(
           newDot, opt_refNode ? opt_refNode.navigationDot : null);
       // Set a tab index on the first dot.
-      if (this.dotList.dots.length == 1)
+      if (this.dotList.dots.length == 1) {
         newDot.tabIndex = 3;
+      }
 
       this.eventTracker.add(page, 'pagelayout', this.onPageLayout_.bind(this));
     },
@@ -282,10 +287,11 @@ cr.define('ntp', function() {
       const app = /** @type {ntp.App} */ ($(appData.id));
       assert(app, 'trying to remove an app that doesn\'t exist');
 
-      if (!isUninstall)
+      if (!isUninstall) {
         app.replaceAppData(appData);
-      else
+      } else {
         app.remove(!!fromPage);
+      }
     },
 
     /**
@@ -329,8 +335,9 @@ cr.define('ntp', function() {
       // uninstall. Could we re-use the existing page and dot elements?  It
       // seems unfortunate to have Chrome send us the entire apps list after an
       // uninstall.
-      while (this.appsPages.length > 0)
+      while (this.appsPages.length > 0) {
         this.removeTilePageAndDot_(this.appsPages[this.appsPages.length - 1]);
+      }
 
       // Get the array of apps and add any special synthesized entries
       const apps = data.apps;
@@ -340,8 +347,9 @@ cr.define('ntp', function() {
 
       function stringListIsEmpty(list) {
         for (let i = 0; i < list.length; i++) {
-          if (list[i])
+          if (list[i]) {
             return false;
+          }
         }
         return true;
       }
@@ -373,8 +381,9 @@ cr.define('ntp', function() {
         const pageIndex = app.page_index || 0;
         while (pageIndex >= this.appsPages.length) {
           let pageName = loadTimeData.getString('appDefaultPageName');
-          if (this.appsPages.length < pageNames.length)
+          if (this.appsPages.length < pageNames.length) {
             pageName = pageNames[this.appsPages.length];
+          }
 
           const origPageCount = this.appsPages.length;
           this.appendTilePage(
@@ -385,16 +394,18 @@ cr.define('ntp', function() {
               this.appsPages.length == origPageCount + 1, 'expected new page');
         }
 
-        if (app.id == this.highlightAppId)
+        if (app.id == this.highlightAppId) {
           highlightApp = app;
-        else
+        } else {
           this.appsPages[pageIndex].insertApp(app, false);
+        }
       }
 
       this.cardSlider.currentCard = prevCurrentCard;
 
-      if (highlightApp)
+      if (highlightApp) {
         this.appAdded(highlightApp, true);
+      }
 
       logEvent('apps.layout: ' + (Date.now() - startTime));
 
@@ -536,8 +547,9 @@ cr.define('ntp', function() {
      * the page switchers.
      */
     updatePageSwitchers: function() {
-      if (!this.pageSwitcherStart || !this.pageSwitcherEnd)
+      if (!this.pageSwitcherStart || !this.pageSwitcherEnd) {
         return;
+      }
 
       const page =
           /** @type {?ntp.TilePage} */ (this.cardSlider.currentCardValue);
@@ -547,8 +559,9 @@ cr.define('ntp', function() {
       this.pageSwitcherEnd.hidden = !page ||
           (this.cardSlider.currentCard == this.cardSlider.cardCount - 1);
 
-      if (!page)
+      if (!page) {
         return;
+      }
 
       const pageSwitcherLeft =
           isRTL() ? this.pageSwitcherEnd : this.pageSwitcherStart;
@@ -595,16 +608,18 @@ cr.define('ntp', function() {
       // reflect user actions).
       if (!this.isStartingUp_()) {
         // TODO(dbeam): is this ever false?
-        if (page.classList.contains('apps-page'))
+        if (page.classList.contains('apps-page')) {
           this.setShownPage_(this.getAppsPageIndex(page));
-        else
+        } else {
           console.error('unknown page selected');
+        }
       }
 
       // Update the active dot
       const curDot = this.dotList.getElementsByClassName('selected')[0];
-      if (curDot)
+      if (curDot) {
         curDot.classList.remove('selected');
+      }
       page.navigationDot.classList.add('selected');
       this.updatePageSwitchers();
     },
@@ -647,8 +662,9 @@ cr.define('ntp', function() {
      * @private
      */
     onCardAddedOrRemoved_: function() {
-      if (this.isStartingUp_())
+      if (this.isStartingUp_()) {
         return;
+      }
 
       // Without repositioning there were issues - http://crbug.com/133457.
       this.cardSlider.repositionFrame();
@@ -699,16 +715,18 @@ cr.define('ntp', function() {
      * @private
      */
     onDocKeyDown_: function(e) {
-      if (!e.ctrlKey || e.altKey || e.metaKey || e.shiftKey)
+      if (!e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) {
         return;
+      }
 
       let direction = 0;
-      if (e.key == 'ArrowLeft')
+      if (e.key == 'ArrowLeft') {
         direction = -1;
-      else if (e.key == 'ArrowRight')
+      } else if (e.key == 'ArrowRight') {
         direction = 1;
-      else
+      } else {
         return;
+      }
 
       const cardIndex = (this.cardSlider.currentCard + direction +
                          this.cardSlider.cardCount) %
@@ -734,8 +752,9 @@ cr.define('ntp', function() {
      * @param {boolean=} opt_animate If the removal should be animated.
      */
     removeTilePageAndDot_: function(page, opt_animate) {
-      if (page.navigationDot)
+      if (page.navigationDot) {
         page.navigationDot.remove(opt_animate);
+      }
       this.cardSlider.removeCard(page);
     },
   };

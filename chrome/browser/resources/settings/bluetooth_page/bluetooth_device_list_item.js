@@ -85,8 +85,9 @@ Polymer({
    * @private
    */
   getConnectionStatusText_: function(device) {
-    if (!this.hasConnectionStatusText_(device))
+    if (!this.hasConnectionStatusText_(device)) {
       return '';
+    }
     return this.i18n(
         device.connected ? 'bluetoothConnected' : 'bluetoothNotConnected');
   },

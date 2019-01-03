@@ -115,8 +115,9 @@ Polymer({
 
     if (!incremental) {
       this.resultLoadingDisabled_ = false;
-      if (this.historyData_)
+      if (this.historyData_) {
         this.splice('historyData_', 0, this.historyData_.length);
+      }
       this.fire('unselect-all');
       this.scrollTop = 0;
     }
@@ -137,26 +138,29 @@ Polymer({
 
   historyDeleted: function() {
     // Do not reload the list when there are items checked.
-    if (this.getSelectedItemCount() > 0)
+    if (this.getSelectedItemCount() > 0) {
       return;
+    }
 
     // Reload the list with current search state.
     this.fire('query-history', false);
   },
 
   selectOrUnselectAll: function() {
-    if (this.historyData_.length == this.getSelectedItemCount())
+    if (this.historyData_.length == this.getSelectedItemCount()) {
       this.unselectAllItems();
-    else
+    } else {
       this.selectAllItems();
+    }
   },
 
   /**
    * Select each item in |historyData|.
    */
   selectAllItems: function() {
-    if (this.historyData_.length == this.getSelectedItemCount())
+    if (this.historyData_.length == this.getSelectedItemCount()) {
       return;
+    }
 
     this.historyData_.forEach((item, index) => {
       this.changeSelection_(index, true);
@@ -184,13 +188,15 @@ Polymer({
    * a dialog to confirm that the deletion should be performed.
    */
   deleteSelectedWithPrompt: function() {
-    if (!this.canDeleteHistory_)
+    if (!this.canDeleteHistory_) {
       return;
+    }
 
     const browserService = md_history.BrowserService.getInstance();
     browserService.recordAction('RemoveSelected');
-    if (this.queryState.searchTerm != '')
+    if (this.queryState.searchTerm != '') {
       browserService.recordAction('SearchResultRemove');
+    }
     this.$.dialog.get().showModal();
 
     // TODO(dbeam): remove focus flicker caused by showModal() + focus().
@@ -208,10 +214,11 @@ Polymer({
    */
   changeSelection_: function(index, selected) {
     this.set(`historyData_.${index}.selected`, selected);
-    if (selected)
+    if (selected) {
       this.selectedItems.add(index);
-    else
+    } else {
       this.selectedItems.delete(index);
+    }
   },
 
   /**
@@ -305,12 +312,14 @@ Polymer({
   onRemoveBookmarkStars_: function(e) {
     const url = e.detail;
 
-    if (this.historyData_ === undefined)
+    if (this.historyData_ === undefined) {
       return;
+    }
 
     for (let i = 0; i < this.historyData_.length; i++) {
-      if (this.historyData_[i].url == url)
+      if (this.historyData_[i].url == url) {
         this.set(`historyData_.${i}.starred`, false);
+      }
     }
   },
 
@@ -319,8 +328,9 @@ Polymer({
    * @private
    */
   onScrollToBottom_: function() {
-    if (this.resultLoadingDisabled_ || this.queryState.querying)
+    if (this.resultLoadingDisabled_ || this.queryState.querying) {
       return;
+    }
 
     this.fire('query-history', true);
   },
@@ -338,8 +348,9 @@ Polymer({
   onOpenMenu_: function(e) {
     const index = e.detail.index;
     const list = /** @type {IronListElement} */ (this.$['infinite-list']);
-    if (index < list.firstVisibleIndex || index > list.lastVisibleIndex)
+    if (index < list.firstVisibleIndex || index > list.lastVisibleIndex) {
       list.scrollToIndex(index);
+    }
 
     const target = e.detail.target;
     this.actionMenuModel_ = e.detail;
@@ -374,8 +385,9 @@ Polymer({
       this.removeItemsByIndex_([itemData.index]);
 
       const index = itemData.index;
-      if (index == undefined)
+      if (index == undefined) {
         return;
+      }
 
       const browserService = md_history.BrowserService.getInstance();
       browserService.recordHistogram(
@@ -407,8 +419,9 @@ Polymer({
       }
     }
 
-    if (indices.length == 0)
+    if (indices.length == 0) {
       indices.push(index);
+    }
 
     const selected = !this.selectedItems.has(index);
 
@@ -432,14 +445,16 @@ Polymer({
    */
   needsTimeGap_: function(item, index) {
     const length = this.historyData_.length;
-    if (index === undefined || index >= length - 1 || length == 0)
+    if (index === undefined || index >= length - 1 || length == 0) {
       return false;
+    }
 
     const currentItem = this.historyData_[index];
     const nextItem = this.historyData_[index + 1];
 
-    if (this.searchedTerm)
+    if (this.searchedTerm) {
       return currentItem.dateShort != nextItem.dateShort;
+    }
 
     return currentItem.time - nextItem.time > BROWSING_GAP_TIME &&
         currentItem.dateRelativeDay == nextItem.dateRelativeDay;
@@ -454,8 +469,9 @@ Polymer({
    */
   isCardStart_: function(item, i) {
     const length = this.historyData_.length;
-    if (i === undefined || length == 0 || i > length - 1)
+    if (i === undefined || length == 0 || i > length - 1) {
       return false;
+    }
     return i == 0 ||
         this.historyData_[i].dateRelativeDay !=
         this.historyData_[i - 1].dateRelativeDay;
@@ -470,8 +486,9 @@ Polymer({
    */
   isCardEnd_: function(item, i) {
     const length = this.historyData_.length;
-    if (i === undefined || length == 0 || i > length - 1)
+    if (i === undefined || length == 0 || i > length - 1) {
       return false;
+    }
     return i == length - 1 ||
         this.historyData_[i].dateRelativeDay !=
         this.historyData_[i + 1].dateRelativeDay;
@@ -511,8 +528,9 @@ Polymer({
    * @private
    */
   initializeResults_: function(info, results) {
-    if (results.length == 0)
+    if (results.length == 0) {
       return;
+    }
 
     let currentDate = results[0].dateRelativeDay;
 

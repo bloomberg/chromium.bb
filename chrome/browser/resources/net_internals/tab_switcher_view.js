@@ -62,8 +62,9 @@ const TabSwitcherView = (function() {
       // a fixed width at creation time, and need to set the width of the tab
       // list only after its been populated.
       let tabListWidth = this.tabListWidth_;
-      if (tabListWidth > width)
+      if (tabListWidth > width) {
         tabListWidth = width;
+      }
       tabListNode.style.position = 'absolute';
       setNodePosition(tabListNode, left, top, tabListWidth, height);
 
@@ -78,8 +79,9 @@ const TabSwitcherView = (function() {
     show: function(isVisible) {
       superClass.prototype.show.call(this, isVisible);
       const activeView = this.getActiveTabView();
-      if (activeView)
+      if (activeView) {
         activeView.show(isVisible);
+      }
     },
 
     // ---------------------------------------------
@@ -171,8 +173,9 @@ const TabSwitcherView = (function() {
 
       newView.show(this.isVisible());
 
-      if (this.onTabSwitched_)
+      if (this.onTabSwitched_) {
         this.onTabSwitched_(oldTabId, tabId);
+      }
     },
   };
 

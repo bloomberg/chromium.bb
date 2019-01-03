@@ -23,8 +23,9 @@ Polymer({
    * @private
    */
   onManageAndroidAppsKeydown_: function(event) {
-    if (event.key != 'Enter' && event.key != ' ')
+    if (event.key != 'Enter' && event.key != ' ') {
       return;
+    }
     this.browserProxy_.showAndroidAppsSettings(true /** keyboardAction */);
     event.stopPropagation();
   },

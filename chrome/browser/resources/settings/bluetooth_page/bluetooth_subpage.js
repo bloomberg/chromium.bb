@@ -245,24 +245,28 @@ Polymer({
 
   /** @private */
   selectedPairedItemChanged_: function() {
-    if (this.selectedPairedItem_)
+    if (this.selectedPairedItem_) {
       this.connectDevice_(this.selectedPairedItem_);
+    }
   },
 
   /** @private */
   selectedUnpairedItemChanged_: function() {
-    if (this.selectedUnpairedItem_)
+    if (this.selectedUnpairedItem_) {
       this.connectDevice_(this.selectedUnpairedItem_);
+    }
   },
 
   /** @private */
   updateDiscovery_: function() {
-    if (!this.adapterState || !this.adapterState.powered)
+    if (!this.adapterState || !this.adapterState.powered) {
       return;
-    if (settings.getCurrentRoute() == settings.routes.BLUETOOTH_DEVICES)
+    }
+    if (settings.getCurrentRoute() == settings.routes.BLUETOOTH_DEVICES) {
       this.startDiscovery_();
-    else
+    } else {
       this.stopDiscovery_();
+    }
   },
 
   /**
@@ -292,8 +296,9 @@ Polymer({
     const index = this.deviceList_.findIndex(function(device) {
       return device.address == address;
     });
-    if (index >= 0)
+    if (index >= 0) {
       this.set('deviceList_.' + index, device);
+    }
   },
 
   /**
@@ -315,20 +320,23 @@ Polymer({
     const index = this.deviceList_.findIndex(function(device) {
       return device.address == address;
     });
-    if (index >= 0)
+    if (index >= 0) {
       this.splice('deviceList_', index, 1);
+    }
   },
 
   /** @private */
   startDiscovery_: function() {
-    if (!this.adapterState || this.adapterState.discovering)
+    if (!this.adapterState || this.adapterState.discovering) {
       return;
+    }
 
     this.bluetooth.startDiscovery(function() {
       const lastError = chrome.runtime.lastError;
       if (lastError) {
-        if (lastError.message == 'Starting discovery failed')
-          return;  // May happen if also started elsewhere, ignore.
+        if (lastError.message == 'Starting discovery failed') {
+          return;
+        }  // May happen if also started elsewhere, ignore.
         console.error('startDiscovery Error: ' + lastError.message);
       }
     });
@@ -336,14 +344,16 @@ Polymer({
 
   /** @private */
   stopDiscovery_: function() {
-    if (!this.get('adapterState.discovering'))
+    if (!this.get('adapterState.discovering')) {
       return;
+    }
 
     this.bluetooth.stopDiscovery(function() {
       const lastError = chrome.runtime.lastError;
       if (lastError) {
-        if (lastError.message == 'Failed to stop discovery')
-          return;  // May happen if also stopped elsewhere, ignore.
+        if (lastError.message == 'Failed to stop discovery') {
+          return;
+        }  // May happen if also stopped elsewhere, ignore.
         console.error('stopDiscovery Error: ' + lastError.message);
       }
     });
@@ -356,14 +366,15 @@ Polymer({
   onDeviceEvent_: function(e) {
     const action = e.detail.action;
     const device = e.detail.device;
-    if (action == 'connect')
+    if (action == 'connect') {
       this.connectDevice_(device);
-    else if (action == 'disconnect')
+    } else if (action == 'disconnect') {
       this.disconnectDevice_(device);
-    else if (action == 'remove')
+    } else if (action == 'remove') {
       this.forgetDevice_(device);
-    else
+    } else {
       console.error('Unexected action: ' + action);
+    }
   },
 
   /**
@@ -371,8 +382,9 @@ Polymer({
    * @private
    */
   onEnableTap_: function(event) {
-    if (this.isToggleEnabled_())
+    if (this.isToggleEnabled_()) {
       this.bluetoothToggleState = !this.bluetoothToggleState;
+    }
     event.stopPropagation();
   },
 
@@ -430,8 +442,9 @@ Polymer({
     const address = device.address;
     this.bluetoothPrivate.connect(address, result => {
       // If |pairingDevice_| has changed, ignore the connect result.
-      if (this.pairingDevice_ && address != this.pairingDevice_.address)
+      if (this.pairingDevice_ && address != this.pairingDevice_.address) {
         return;
+      }
       // Let the dialog handle any errors, otherwise close the dialog.
       const dialog = this.$.deviceDialog;
       if (dialog.handleError(device, chrome.runtime.lastError, result)) {
@@ -474,8 +487,9 @@ Polymer({
 
   /** @private */
   openDialog_: function() {
-    if (this.dialogShown_)
+    if (this.dialogShown_) {
       return;
+    }
     // Call flush so that the dialog gets sized correctly before it is opened.
     Polymer.dom.flush();
     this.$.deviceDialog.open();
@@ -488,8 +502,9 @@ Polymer({
     this.pairingDevice_ = undefined;
     // The list is dynamic so focus the first item.
     const device = this.$$('#unpairedContainer bluetooth-device-list-item');
-    if (device)
+    if (device) {
       device.focus();
+    }
   },
 
   /**
@@ -504,8 +519,9 @@ Polymer({
     }
 
     // Return here because an update is already queued.
-    if (this.updateTimerId_ !== undefined)
+    if (this.updateTimerId_ !== undefined) {
       return;
+    }
 
     // Call bluetooth.getDevices once per listUpdateFrequencyMs.
     this.updateTimerId_ = window.setTimeout(() => {

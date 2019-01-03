@@ -104,8 +104,9 @@ Polymer({
     // If export started on a different tab and is still in progress, display a
     // busy UI.
     this.passwordManager_.requestExportProgressStatus(status => {
-      if (status == ProgressStatus.IN_PROGRESS)
+      if (status == ProgressStatus.IN_PROGRESS) {
         this.switchToDialog_(States.IN_PROGRESS);
+      }
     });
 
     this.passwordManager_.addPasswordsFileExportProgressListener(

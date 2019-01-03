@@ -196,8 +196,9 @@ Polymer({
    * @private
    */
   maybeChangeHeaderHeight_: function(newValue, oldValue) {
-    if (oldValue == newValue)
+    if (oldValue == newValue) {
       return;
+    }
 
     // Ensures conditional templates are stamped.
     this.async(function() {

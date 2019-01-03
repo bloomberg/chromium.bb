@@ -13,8 +13,9 @@
 function lookupDefaultZoom(streamInfo) {
   // Webviews don't run in tabs so |streamInfo.tabId| is -1 when running within
   // a webview.
-  if (!chrome.tabs || streamInfo.tabId < 0)
+  if (!chrome.tabs || streamInfo.tabId < 0) {
     return Promise.resolve(1);
+  }
 
   return new Promise(function(resolve, reject) {
     chrome.tabs.getZoomSettings(streamInfo.tabId, function(zoomSettings) {
@@ -36,8 +37,9 @@ function lookupDefaultZoom(streamInfo) {
 function lookupInitialZoom(streamInfo) {
   // Webviews don't run in tabs so |streamInfo.tabId| is -1 when running within
   // a webview.
-  if (!chrome.tabs || streamInfo.tabId < 0)
+  if (!chrome.tabs || streamInfo.tabId < 0) {
     return Promise.resolve(1);
+  }
 
   return new Promise(function(resolve, reject) {
     chrome.tabs.getZoom(streamInfo.tabId, resolve);
@@ -90,8 +92,9 @@ class BrowserApi {
    * Aborts the stream.
    */
   abortStream() {
-    if (chrome.mimeHandlerPrivate)
+    if (chrome.mimeHandlerPrivate) {
       chrome.mimeHandlerPrivate.abortStream();
+    }
   }
 
   /**
@@ -139,14 +142,16 @@ class BrowserApi {
    */
   addZoomEventListener(listener) {
     if (!(this.zoomBehavior_ == BrowserApi.ZoomBehavior.MANAGE ||
-          this.zoomBehavior_ == BrowserApi.ZoomBehavior.PROPAGATE_PARENT))
+          this.zoomBehavior_ == BrowserApi.ZoomBehavior.PROPAGATE_PARENT)) {
       return;
+    }
 
     chrome.tabs.onZoomChange.addListener(info => {
       const zoomChangeInfo =
           /** @type {{tabId: number, newZoomFactor: number}} */ (info);
-      if (zoomChangeInfo.tabId != this.streamInfo_.tabId)
+      if (zoomChangeInfo.tabId != this.streamInfo_.tabId) {
         return;
+      }
       listener(zoomChangeInfo.newZoomFactor);
     });
   }
@@ -182,8 +187,9 @@ function createBrowserApiForMimeHandlerView() {
           promises.push(new Promise(function(resolve) {
                           chrome.tabs.get(streamInfo.tabId, resolve);
                         }).then(function(tab) {
-            if (tab)
+            if (tab) {
               streamInfo.tabUrl = tab.url;
+            }
           }));
         }
         if (zoomBehavior == BrowserApi.ZoomBehavior.MANAGE) {

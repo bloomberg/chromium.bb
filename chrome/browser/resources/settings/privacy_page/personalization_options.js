@@ -109,10 +109,11 @@ Polymer({
 
     // TODO(dbeam): remember whether metrics reporting was enabled when Chrome
     // started.
-    if (metricsReporting.managed)
+    if (metricsReporting.managed) {
       this.showRestart_ = false;
-    else if (hadPreviousPref)
+    } else if (hadPreviousPref) {
       this.showRestart_ = true;
+    }
   },
 
   /**

@@ -205,8 +205,9 @@ class FeedbackRequest {
    * FeedbackRequest instance is closed.
    */
   onWindowClosed() {
-    if (!this.reportIsBeingSent_)
+    if (!this.reportIsBeingSent_) {
       this.isRequestCanceled_ = true;
+    }
   }
 }
 
@@ -230,8 +231,9 @@ function senderWhitelisted(id, startFeedbackCallback, feedbackInfo) {
           hashString += n < 0x10 ? '0' : '';
           hashString += n.toString(16);
         }
-        if (whitelistedExtensionIds.indexOf(hashString.toUpperCase()) != -1)
+        if (whitelistedExtensionIds.indexOf(hashString.toUpperCase()) != -1) {
           startFeedbackCallback(feedbackInfo);
+        }
       });
 }
 
@@ -243,8 +245,9 @@ function senderWhitelisted(id, startFeedbackCallback, feedbackInfo) {
  * @param {function(Object)} sendResponse Callback for sending a response.
  */
 function feedbackReadyHandler(request, sender, sendResponse) {
-  if (request.ready)
+  if (request.ready) {
     chrome.runtime.sendMessage({sentFromEventPage: true});
+  }
 }
 
 /**
@@ -254,8 +257,9 @@ function feedbackReadyHandler(request, sender, sendResponse) {
  * @param {function(Object)} sendResponse Callback for sending a response.
  */
 function requestFeedbackHandler(request, sender, sendResponse) {
-  if (request.requestFeedback)
+  if (request.requestFeedback) {
     senderWhitelisted(sender.id, startFeedbackUI, request.feedbackInfo);
+  }
 }
 
 /**

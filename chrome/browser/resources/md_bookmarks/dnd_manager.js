@@ -48,8 +48,9 @@ cr.define('bookmarks', function() {
    * @return {BookmarkElement}
    */
   function getBookmarkElement(path) {
-    if (!path)
+    if (!path) {
       return null;
+    }
 
     for (let i = 0; i < path.length; i++) {
       if (isBookmarkItem(path[i]) || isBookmarkFolderNode(path[i]) ||
@@ -67,8 +68,9 @@ cr.define('bookmarks', function() {
   function getDragElement(path) {
     const dragElement = getBookmarkElement(path);
     for (let i = 0; i < path.length; i++) {
-      if (path[i].tagName == 'BUTTON')
+      if (path[i].tagName == 'BUTTON') {
         return null;
+      }
     }
     return dragElement && dragElement.getAttribute('draggable') ? dragElement :
                                                                   null;
@@ -140,8 +142,9 @@ cr.define('bookmarks', function() {
 
     /** @return {boolean} */
     isDraggingFolderToDescendant(itemId, nodes) {
-      if (!this.isSameProfile())
+      if (!this.isSameProfile()) {
         return false;
+      }
 
       let parentId = nodes[itemId].parentId;
       const parents = {};
@@ -261,8 +264,9 @@ cr.define('bookmarks', function() {
      * Clears the drop indicator style from the last drop target.
      */
     removeDropIndicatorStyle() {
-      if (!this.lastIndicatorElement_ || !this.lastIndicatorClassName_)
+      if (!this.lastIndicatorElement_ || !this.lastIndicatorClassName_) {
         return;
+      }
 
       this.lastIndicatorElement_.classList.remove(this.lastIndicatorClassName_);
       this.lastIndicatorElement_ = null;
@@ -289,8 +293,9 @@ cr.define('bookmarks', function() {
      * Stop displaying the drop indicator.
      */
     finish() {
-      if (this.removeDropIndicatorTimeoutId_)
+      if (this.removeDropIndicatorTimeoutId_) {
         return;
+      }
 
       // The use of a timeout is in order to reduce flickering as we move
       // between valid drop targets.
@@ -341,8 +346,9 @@ cr.define('bookmarks', function() {
         'dragend': this.clearDragData_.bind(this),
         // TODO(calamity): Add touch support.
       };
-      for (const event in this.documentListeners_)
+      for (const event in this.documentListeners_) {
         document.addEventListener(event, this.documentListeners_[event]);
+      }
 
       chrome.bookmarkManagerPrivate.onDragEnter.addListener(
           this.handleChromeDragEnter_.bind(this));
@@ -351,8 +357,9 @@ cr.define('bookmarks', function() {
     }
 
     destroy() {
-      for (const event in this.documentListeners_)
+      for (const event in this.documentListeners_) {
         document.removeEventListener(event, this.documentListeners_[event]);
+      }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -364,8 +371,9 @@ cr.define('bookmarks', function() {
      */
     onDragStart_(e) {
       const dragElement = getDragElement(e.path);
-      if (!dragElement)
+      if (!dragElement) {
         return;
+      }
 
       e.preventDefault();
 
@@ -421,8 +429,9 @@ cr.define('bookmarks', function() {
         const index = dropInfo.index != -1 ? dropInfo.index : undefined;
         const shouldHighlight = this.shouldHighlight_(this.dropDestination_);
 
-        if (shouldHighlight)
+        if (shouldHighlight) {
           bookmarks.ApiListener.trackUpdatedItems();
+        }
 
         chrome.bookmarkManagerPrivate.drop(
             dropInfo.parentId, index,
@@ -452,11 +461,13 @@ cr.define('bookmarks', function() {
       this.dropDestination_ = null;
 
       // Allow normal DND on text inputs.
-      if (e.path[0].tagName == 'INPUT')
+      if (e.path[0].tagName == 'INPUT') {
         return;
+      }
 
-      if (!this.dragInfo_.isDragValid())
+      if (!this.dragInfo_.isDragValid()) {
         return;
+      }
 
       const state = bookmarks.Store.getInstance().data;
       const items = this.dragInfo_.dragData.elements;
@@ -530,8 +541,9 @@ cr.define('bookmarks', function() {
         parentId = assert(node.parentId);
         index = state.nodes[parentId].children.indexOf(node.id);
 
-        if (position == DropPosition.BELOW)
+        if (position == DropPosition.BELOW) {
           index++;
+        }
       }
 
       return {
@@ -573,8 +585,9 @@ cr.define('bookmarks', function() {
       const anyUnmodifiable = draggedNodes.some(
           (itemId) => !bookmarks.util.canEditNode(state, itemId));
 
-      if (anyUnmodifiable)
+      if (anyUnmodifiable) {
         return null;
+      }
 
       return {
         elements: draggedNodes.map((id) => state.nodes[id]),
@@ -594,8 +607,9 @@ cr.define('bookmarks', function() {
      */
     calculateDropDestination_(elementClientY, overElement) {
       const validDropPositions = this.calculateValidDropPositions_(overElement);
-      if (validDropPositions == DropPosition.NONE)
+      if (validDropPositions == DropPosition.NONE) {
         return null;
+      }
 
       const above = validDropPositions & DropPosition.ABOVE;
       const below = validDropPositions & DropPosition.BELOW;
@@ -603,14 +617,17 @@ cr.define('bookmarks', function() {
       const rect = overElement.getDropTarget().getBoundingClientRect();
       const yRatio = (elementClientY - rect.top) / rect.height;
 
-      if (above && (yRatio <= .25 || yRatio <= .5 && (!below || !on)))
+      if (above && (yRatio <= .25 || yRatio <= .5 && (!below || !on))) {
         return {element: overElement, position: DropPosition.ABOVE};
+      }
 
-      if (below && (yRatio > .75 || yRatio > .5 && (!above || !on)))
+      if (below && (yRatio > .75 || yRatio > .5 && (!above || !on))) {
         return {element: overElement, position: DropPosition.BELOW};
+      }
 
-      if (on)
+      if (on) {
         return {element: overElement, position: DropPosition.ON};
+      }
 
       return null;
     }
@@ -633,11 +650,13 @@ cr.define('bookmarks', function() {
         return DropPosition.NONE;
       }
 
-      if (isBookmarkList(overElement))
+      if (isBookmarkList(overElement)) {
         itemId = state.selectedFolder;
+      }
 
-      if (!bookmarks.util.canReorderChildren(state, itemId))
+      if (!bookmarks.util.canReorderChildren(state, itemId)) {
         return DropPosition.NONE;
+      }
 
       // Drags of a bookmark onto itself or of a folder into its children aren't
       // allowed.
@@ -647,8 +666,9 @@ cr.define('bookmarks', function() {
       }
 
       let validDropPositions = this.calculateDropAboveBelow_(overElement);
-      if (this.canDropOn_(overElement))
+      if (this.canDropOn_(overElement)) {
         validDropPositions |= DropPosition.ON;
+      }
 
       return validDropPositions;
     }
@@ -662,25 +682,29 @@ cr.define('bookmarks', function() {
       const dragInfo = this.dragInfo_;
       const state = bookmarks.Store.getInstance().data;
 
-      if (isBookmarkList(overElement))
+      if (isBookmarkList(overElement)) {
         return DropPosition.NONE;
+      }
 
       // We cannot drop between Bookmarks bar and Other bookmarks.
-      if (getBookmarkNode(overElement).parentId == ROOT_NODE_ID)
+      if (getBookmarkNode(overElement).parentId == ROOT_NODE_ID) {
         return DropPosition.NONE;
+      }
 
       const isOverFolderNode = isBookmarkFolderNode(overElement);
 
       // We can only drop between items in the tree if we have any folders.
-      if (isOverFolderNode && !dragInfo.isDraggingFolders())
+      if (isOverFolderNode && !dragInfo.isDraggingFolders()) {
         return DropPosition.NONE;
+      }
 
       let validDropPositions = DropPosition.NONE;
 
       // Cannot drop above if the item above is already in the drag source.
       const previousElem = overElement.previousElementSibling;
-      if (!previousElem || !dragInfo.isDraggingBookmark(previousElem.itemId))
+      if (!previousElem || !dragInfo.isDraggingBookmark(previousElem.itemId)) {
         validDropPositions |= DropPosition.ABOVE;
+      }
 
       // Don't allow dropping below an expanded sidebar folder item since it is
       // confusing to the user anyway.
@@ -692,8 +716,9 @@ cr.define('bookmarks', function() {
       const nextElement = overElement.nextElementSibling;
 
       // Cannot drop below if the item below is already in the drag source.
-      if (!nextElement || !dragInfo.isDraggingBookmark(nextElement.itemId))
+      if (!nextElement || !dragInfo.isDraggingBookmark(nextElement.itemId)) {
         validDropPositions |= DropPosition.BELOW;
+      }
 
       return validDropPositions;
     }
@@ -715,8 +740,9 @@ cr.define('bookmarks', function() {
       }
 
       // We can only drop on a folder.
-      if (getBookmarkNode(overElement).url)
+      if (getBookmarkNode(overElement).url) {
         return false;
+      }
 
       return !this.dragInfo_.isDraggingChildBookmark(overElement.itemId);
     }

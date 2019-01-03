@@ -123,14 +123,17 @@ cr.define('downloads', function() {
     computeClass_: function() {
       const classes = [];
 
-      if (this.isActive_)
+      if (this.isActive_) {
         classes.push('is-active');
+      }
 
-      if (this.isDangerous_)
+      if (this.isDangerous_) {
         classes.push('dangerous');
+      }
 
-      if (this.showProgress_)
+      if (this.showProgress_) {
         classes.push('show-progress');
+      }
 
       return classes.join(' ');
     },
@@ -149,8 +152,9 @@ cr.define('downloads', function() {
      * @private
      */
     computeControlledBy_: function() {
-      if (!this.data.byExtId || !this.data.byExtName)
+      if (!this.data.byExtId || !this.data.byExtName) {
         return '';
+      }
 
       const url = `chrome://extensions#${this.data.byExtId}`;
       const name = this.data.byExtName;
@@ -172,8 +176,9 @@ cr.define('downloads', function() {
      */
     computeDate_: function() {
       assert(typeof this.data.hideDate == 'boolean');
-      if (this.data.hideDate)
+      if (this.data.hideDate) {
         return '';
+      }
       return assert(this.data.sinceString || this.data.dateString);
     },
 
@@ -217,10 +222,12 @@ cr.define('downloads', function() {
      * @private
      */
     computeIcon_: function() {
-      if (this.isDangerous_)
+      if (this.isDangerous_) {
         return 'cr:warning';
-      if (!this.useFileIcon_)
+      }
+      if (!this.useFileIcon_) {
         return 'cr:insert-drive-file';
+      }
       return '';
     },
 
@@ -268,8 +275,9 @@ cr.define('downloads', function() {
      * @private
      */
     computePauseOrResumeClass_: function() {
-      if (this.data === undefined)
+      if (this.data === undefined) {
         return '';
+      }
 
       return !this.isInProgress_ && this.data.resume ? 'action-button' :
                                                        'pause-button';
@@ -280,13 +288,16 @@ cr.define('downloads', function() {
      * @private
      */
     computePauseOrResumeText_: function() {
-      if (this.data === undefined)
+      if (this.data === undefined) {
         return '';
+      }
 
-      if (this.isInProgress_)
+      if (this.isInProgress_) {
         return loadTimeData.getString('controlPause');
-      if (this.data.resume)
+      }
+      if (this.data.resume) {
         return loadTimeData.getString('controlResume');
+      }
       return '';
     },
 
@@ -353,8 +364,9 @@ cr.define('downloads', function() {
 
     /** @private */
     observeIsDangerous_: function() {
-      if (!this.data)
+      if (!this.data) {
         return;
+      }
 
       if (this.isDangerous_) {
         this.$.url.removeAttribute('href');
@@ -365,8 +377,9 @@ cr.define('downloads', function() {
         downloads.IconLoader.getInstance()
             .loadIcon(this.$['file-icon'], path)
             .then(success => {
-              if (path == this.data.filePath)
+              if (path == this.data.filePath) {
                 this.useFileIcon_ = success;
+              }
             });
       }
     },
@@ -401,10 +414,11 @@ cr.define('downloads', function() {
 
     /** @private */
     onPauseOrResumeTap_: function() {
-      if (this.isInProgress_)
+      if (this.isInProgress_) {
         this.mojoHandler_.pause(this.data.id);
-      else
+      } else {
         this.mojoHandler_.resume(this.data.id);
+      }
     },
 
     /** @private */

@@ -7,7 +7,6 @@
  * shortcuts.
  */
 cr.define('bookmarks', function() {
-
   const CommandManager = Polymer({
     is: 'bookmarks-command-manager',
 
@@ -98,12 +97,14 @@ cr.define('bookmarks', function() {
 
       const addDocumentListenerForCommand = (eventName, command) => {
         addDocumentListener(eventName, (e) => {
-          if (e.path[0].tagName == 'INPUT')
+          if (e.path[0].tagName == 'INPUT') {
             return;
+          }
 
           const items = this.getState().selection.items;
-          if (this.canExecute(command, items))
+          if (this.canExecute(command, items)) {
             this.handle(command, items);
+          }
         });
       };
       addDocumentListenerForCommand('command-undo', Command.UNDO);
@@ -482,8 +483,9 @@ cr.define('bookmarks', function() {
         let currentId = itemId;
         while (currentId != ROOT_NODE_ID) {
           currentId = assert(nodes[currentId].parentId);
-          if (itemIds.has(currentId))
+          if (itemIds.has(currentId)) {
             return;
+          }
         }
         minimizedSet.add(itemId);
       });
@@ -503,16 +505,18 @@ cr.define('bookmarks', function() {
           command == Command.OPEN_NEW_WINDOW ||
           command == Command.OPEN_INCOGNITO);
 
-      if (urls.length == 0)
+      if (urls.length == 0) {
         return;
+      }
 
       const openUrlsCallback = function() {
         const incognito = command == Command.OPEN_INCOGNITO;
         if (command == Command.OPEN_NEW_WINDOW || incognito) {
           chrome.windows.create({url: urls, incognito: incognito});
         } else {
-          if (command == Command.OPEN)
+          if (command == Command.OPEN) {
             chrome.tabs.create({url: urls.shift(), active: true});
+          }
           urls.forEach(function(url) {
             chrome.tabs.create({url: url, active: false});
           });
@@ -553,8 +557,9 @@ cr.define('bookmarks', function() {
         } else {
           node.children.forEach(function(childId) {
             const childNode = nodes[childId];
-            if (childNode.url)
+            if (childNode.url) {
               urls.push(childNode.url);
+            }
           });
         }
       });
@@ -601,8 +606,9 @@ cr.define('bookmarks', function() {
       let label;
       switch (command) {
         case Command.EDIT:
-          if (this.menuIds_.size != 1)
+          if (this.menuIds_.size != 1) {
             return '';
+          }
 
           const id = Array.from(this.menuIds_)[0];
           const itemUrl = this.getState().nodes[id].url;
@@ -712,8 +718,9 @@ cr.define('bookmarks', function() {
      * @private
      */
     computeHasAnySublabel_: function() {
-      if (this.menuIds_ == undefined || this.menuCommands_ == undefined)
+      if (this.menuIds_ == undefined || this.menuCommands_ == undefined) {
         return false;
+      }
 
       return this.menuCommands_.some(
           (command) => this.getCommandSublabel_(command) != '');
@@ -803,8 +810,9 @@ cr.define('bookmarks', function() {
      * @private
      */
     onMenuMousedown_: function(e) {
-      if (e.path[0].tagName != 'DIALOG')
+      if (e.path[0].tagName != 'DIALOG') {
         return;
+      }
 
       this.closeCommandMenu();
     },

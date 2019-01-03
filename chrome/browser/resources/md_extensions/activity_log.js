@@ -80,12 +80,15 @@ cr.define('extensions', function() {
    */
   function sortActivitiesByCallCount(activitiesByApiCall) {
     return Array.from(activitiesByApiCall.values()).sort(function(a, b) {
-      if (a.count != b.count)
+      if (a.count != b.count) {
         return b.count - a.count;
-      if (a.apiCall < b.apiCall)
+      }
+      if (a.apiCall < b.apiCall) {
         return -1;
-      if (a.apiCall > b.apiCall)
+      }
+      if (a.apiCall > b.apiCall) {
         return 1;
+      }
       return 0;
     });
   }
@@ -152,8 +155,9 @@ cr.define('extensions', function() {
       // away from this page so attached may not be called when a user navigates
       // back.
       this.navigationListener_ = extensions.navigation.addListener(newPage => {
-        if (newPage.page === Page.ACTIVITY_LOG)
+        if (newPage.page === Page.ACTIVITY_LOG) {
           this.getActivityLog_();
+        }
       });
     },
 
@@ -204,8 +208,9 @@ cr.define('extensions', function() {
       this.pageState_ = ActivityLogPageState.LOADED;
       this.activityData_ =
           sortActivitiesByCallCount(groupActivitiesByApiCall(activityData));
-      if (!this.onDataFetched.isFulfilled)
+      if (!this.onDataFetched.isFulfilled) {
         this.onDataFetched.resolve();
+      }
     },
 
     /** @private */
@@ -235,14 +240,16 @@ cr.define('extensions', function() {
       // urls should not contain any whitespace. As of now, only single term
       // search queries are allowed.
       const searchTerm = e.detail.replace(/\s+/g, '');
-      if (searchTerm === this.lastSearch_)
+      if (searchTerm === this.lastSearch_) {
         return;
+      }
 
       this.lastSearch_ = searchTerm;
-      if (searchTerm === '')
+      if (searchTerm === '') {
         this.getActivityLog_();
-      else
+      } else {
         this.getFilteredActivityLog_(searchTerm);
+      }
     },
   });
 

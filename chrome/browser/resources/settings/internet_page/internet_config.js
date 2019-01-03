@@ -85,8 +85,9 @@ Polymer({
 
   open: function() {
     const dialog = /** @type {!CrDialogElement} */ (this.$.dialog);
-    if (!dialog.open)
+    if (!dialog.open) {
       dialog.showModal();
+    }
 
     // Set managedProperties for new configurations and for existing
     // configurations until the current properties are loaded.
@@ -101,8 +102,9 @@ Polymer({
 
   close: function() {
     const dialog = /** @type {!CrDialogElement} */ (this.$.dialog);
-    if (dialog.open)
+    if (dialog.open) {
       dialog.close();
+    }
   },
 
   /**
@@ -122,8 +124,9 @@ Polymer({
   getDialogTitle_: function() {
     const name = /** @type {string} */ (
         CrOnc.getActiveValue(this.managedProperties_.Name));
-    if (name)
+    if (name) {
       return this.i18n('internetConfigName', HTMLEscape(name));
+    }
     const type = this.i18n('OncType' + this.managedProperties_.Type);
     return this.i18n('internetJoinType', type);
   },
@@ -133,8 +136,9 @@ Polymer({
    * @private
    */
   getError_: function() {
-    if (this.i18nExists(this.error_))
+    if (this.i18nExists(this.error_)) {
       return this.i18n(this.error_);
+    }
     return this.i18n('networkErrorUnknown');
   },
 

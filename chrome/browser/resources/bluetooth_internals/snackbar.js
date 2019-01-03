@@ -72,8 +72,9 @@ cr.define('snackbar', function() {
       this.actionLink_.textContent = options.actionText || 'Dismiss';
 
       this.actionLink_.addEventListener('click', function() {
-        if (options.action)
+        if (options.action) {
           options.action();
+        }
         this.dismiss();
       }.bind(this));
     },
@@ -83,10 +84,11 @@ cr.define('snackbar', function() {
      */
     show: function() {
       this.classList.add('open');
-      if (Snackbar.hasContentFocus_)
+      if (Snackbar.hasContentFocus_) {
         this.startTimeout_();
-      else
+      } else {
         this.stopTimeout_();
+      }
 
       document.addEventListener('contentfocus', this.boundStartTimeout_);
       document.addEventListener('contentblur', this.boundStopTimeout_);
@@ -102,8 +104,9 @@ cr.define('snackbar', function() {
     dismiss: function() {
       this.stopTimeout_();
 
-      if (!this.classList.contains('open'))
+      if (!this.classList.contains('open')) {
         return Promise.resolve();
+      }
 
       return new Promise(function(resolve) {
         listenOnce(this, 'transitionend', function() {
@@ -184,10 +187,11 @@ cr.define('snackbar', function() {
     var newSnackbar = new Snackbar();
     newSnackbar.initialize(options);
 
-    if (Snackbar.current_)
+    if (Snackbar.current_) {
       Snackbar.queue_.push(newSnackbar);
-    else
+    } else {
       Snackbar.show_(newSnackbar);
+    }
 
     return newSnackbar;
   };
@@ -227,10 +231,12 @@ cr.define('snackbar', function() {
    *     dismissing.
    */
   Snackbar.dismiss = function(clearQueue) {
-    if (clearQueue)
+    if (clearQueue) {
       Snackbar.queue_ = [];
-    if (Snackbar.current_)
+    }
+    if (Snackbar.current_) {
       return Snackbar.current_.dismiss();
+    }
     return Promise.resolve();
   };
 

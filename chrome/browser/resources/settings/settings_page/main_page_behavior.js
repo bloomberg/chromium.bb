@@ -31,14 +31,18 @@ cr.define('settings', function() {
    * @return {!settings.RouteState}
    */
   function classifyRoute(route) {
-    if (!route)
+    if (!route) {
       return RouteState.INITIAL;
-    if (route === settings.routes.BASIC || route === settings.routes.ABOUT)
+    }
+    if (route === settings.routes.BASIC || route === settings.routes.ABOUT) {
       return RouteState.TOP_LEVEL;
-    if (route.isSubpage())
+    }
+    if (route.isSubpage()) {
       return RouteState.SUBPAGE;
-    if (route.isNavigableDialog)
+    }
+    if (route.isNavigableDialog) {
       return RouteState.DIALOG;
+    }
     return RouteState.SECTION;
   }
 
@@ -114,8 +118,9 @@ cr.define('settings', function() {
     inSearchModeChanged_: function(current, previous) {
       // Ignore 1st occurrence which happens while the element is being
       // initialized.
-      if (previous === undefined)
+      if (previous === undefined) {
         return;
+      }
 
       if (!this.inSearchMode) {
         const route = settings.getCurrentRoute();
@@ -151,8 +156,9 @@ cr.define('settings', function() {
      */
     ensureSectionForRoute_: function(route) {
       const section = this.getSection(route.section);
-      if (section != null)
+      if (section != null) {
         return Promise.resolve(section);
+      }
 
       // TODO(dpapad): Remove condition when Polymer 2 migration is complete.
       // The function to use to wait for <dom-if>s to render.
@@ -266,8 +272,9 @@ cr.define('settings', function() {
      */
     currentRouteChanged(newRoute, oldRoute) {
       const transition = this.getStateTransition_(newRoute, oldRoute);
-      if (transition === null)
+      if (transition === null) {
         return;
+      }
 
       const oldState = transition[0];
       const newState = transition[1];
@@ -362,8 +369,9 @@ cr.define('settings', function() {
      * @return {?SettingsSectionElement}
      */
     getSection: function(section) {
-      if (!section)
+      if (!section) {
         return null;
+      }
       return /** @type {?SettingsSectionElement} */ (
           this.$$(`settings-section[section="${section}"]`));
     },

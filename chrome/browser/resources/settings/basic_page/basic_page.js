@@ -140,14 +140,17 @@ Polymer({
   currentRouteChanged: function(newRoute, oldRoute) {
     this.currentRoute_ = newRoute;
 
-    if (settings.routes.ADVANCED && settings.routes.ADVANCED.contains(newRoute))
+    if (settings.routes.ADVANCED &&
+        settings.routes.ADVANCED.contains(newRoute)) {
       this.advancedToggleExpanded = true;
+    }
 
     if (oldRoute && oldRoute.isSubpage()) {
       // If the new route isn't the same expanded section, reset
       // hasExpandedSection_ for the next transition.
-      if (!newRoute.isSubpage() || newRoute.section != oldRoute.section)
+      if (!newRoute.isSubpage() || newRoute.section != oldRoute.section) {
         this.hasExpandedSection_ = false;
+      }
     } else {
       assert(!this.hasExpandedSection_);
     }
@@ -282,8 +285,9 @@ Polymer({
   },
 
   advancedToggleClicked_: function() {
-    if (this.advancedTogglingInProgress_)
+    if (this.advancedTogglingInProgress_) {
       return;
+    }
 
     this.advancedTogglingInProgress_ = true;
     const toggle = this.$$('#toggleContainer');

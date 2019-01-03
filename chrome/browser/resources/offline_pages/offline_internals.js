@@ -331,8 +331,9 @@ cr.define('offlineInternals', function() {
     $('toggle-all-requests').onclick = function() {
       toggleAllCheckboxes($('toggle-all-requests'), 'requests');
     };
-    if (!incognito)
+    if (!incognito) {
       refreshAll();
+    }
   }
 
   // Return an object with all of the exports.

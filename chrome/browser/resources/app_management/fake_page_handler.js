@@ -32,8 +32,9 @@ cr.define('app_management', function() {
         isPinned: apps.mojom.OptionalBool.kUnknown,
       };
 
-      if (config)
+      if (config) {
         Object.assign(app, config);
+      }
 
       return app;
     }

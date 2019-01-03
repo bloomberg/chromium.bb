@@ -94,10 +94,11 @@ Polymer({
 
   /** @private */
   openAdvancedExtension_: function() {
-    if (this.advancedExtensionInstalled_)
+    if (this.advancedExtensionInstalled_) {
       this.browserProxy_.openAdvancedFontSettings();
-    else
+    } else {
       window.open(this.advancedExtensionUrl_);
+    }
   },
 
   /**

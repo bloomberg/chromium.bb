@@ -198,8 +198,9 @@ Polymer({
    * @private
    */
   showNoSearchResultsMessage_: function(searchTerm) {
-    if (!searchTerm || !this.printers.length)
+    if (!searchTerm || !this.printers.length) {
       return false;
+    }
     searchTerm = searchTerm.toLowerCase();
     return !this.printers.some(printer => {
       return printer.printerName.toLowerCase().includes(searchTerm);

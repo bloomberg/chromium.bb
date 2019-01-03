@@ -72,12 +72,14 @@ Polymer({
    * @private
    */
   computeHasMatching_: function() {
-    if (!this.shadowRoot)
+    if (!this.shadowRoot) {
       return true;
+    }
 
     cr.search_highlight_utils.removeHighlights(this.highlights_);
-    for (const bubble of this.bubbles_)
+    for (const bubble of this.bubbles_) {
       bubble.remove();
+    }
     this.highlights_ = [];
     this.bubbles_ = [];
 
@@ -105,8 +107,9 @@ Polymer({
 
   /** @private */
   onCloseOrCancel_: function() {
-    if (this.searchQuery_)
+    if (this.searchQuery_) {
       this.$.searchBox.setValue('');
+    }
     if (this.$.dialog.getNative().returnValue == 'success') {
       this.metrics_.record(print_preview.Metrics.PrintSettingsUiBucket
                                .ADVANCED_SETTINGS_DIALOG_CANCELED);

@@ -38,8 +38,9 @@ function isMouseNearTopToolbar(e) {
  */
 function isMouseNearSideToolbar(e, window) {
   let atSide = e.x > window.innerWidth - SIDE_TOOLBAR_REVEAL_DISTANCE_RIGHT;
-  if (isRTL())
+  if (isRTL()) {
     atSide = e.x < SIDE_TOOLBAR_REVEAL_DISTANCE_RIGHT;
+  }
   const atBottom =
       e.y > window.innerHeight - SIDE_TOOLBAR_REVEAL_DISTANCE_BOTTOM;
   return atSide && atBottom;
@@ -86,12 +87,14 @@ ToolbarManager.prototype = {
 
     // Allow the top toolbar to be shown if the mouse moves away from the side
     // toolbar (as long as the timeout has elapsed).
-    if (!this.isMouseNearSideToolbar_ && !this.sideToolbarAllowedOnlyTimer_)
+    if (!this.isMouseNearSideToolbar_ && !this.sideToolbarAllowedOnlyTimer_) {
       this.sideToolbarAllowedOnly_ = false;
+    }
 
     // Allow the top toolbar to be shown if the mouse moves to the top edge.
-    if (this.isMouseNearTopToolbar_)
+    if (this.isMouseNearTopToolbar_) {
       this.sideToolbarAllowedOnly_ = false;
+    }
 
     // Tapping the screen with toolbars open tries to close them.
     if (touchInteractionActive && this.zoomToolbar_.isVisible()) {
@@ -103,10 +106,11 @@ ToolbarManager.prototype = {
     // screen, if the mouse moved fast, or if the touchscreen was tapped.
     if (this.isMouseNearTopToolbar_ || this.isMouseNearSideToolbar_ ||
         this.isHighVelocityMouseMove_(e) || touchInteractionActive) {
-      if (this.sideToolbarAllowedOnly_)
+      if (this.sideToolbarAllowedOnly_) {
         this.zoomToolbar_.show();
-      else
+      } else {
         this.showToolbars();
+      }
     }
     this.hideToolbarsAfterTimeout();
   },
@@ -130,8 +134,9 @@ ToolbarManager.prototype = {
         const interval = newTime - this.lastMovementTimestamp;
         this.lastMovementTimestamp = newTime;
 
-        if (interval != 0)
+        if (interval != 0) {
           return movement / interval > SHOW_VELOCITY;
+        }
       }
     }
     return false;
@@ -151,8 +156,9 @@ ToolbarManager.prototype = {
    * Display both UI toolbars.
    */
   showToolbars: function() {
-    if (this.toolbar_)
+    if (this.toolbar_) {
       this.toolbar_.show();
+    }
     this.zoomToolbar_.show();
   },
 
@@ -182,14 +188,17 @@ ToolbarManager.prototype = {
    * elements.
    */
   hideToolbarsIfAllowed: function() {
-    if (this.isMouseNearSideToolbar_ || this.isMouseNearTopToolbar_)
+    if (this.isMouseNearSideToolbar_ || this.isMouseNearTopToolbar_) {
       return;
+    }
 
-    if (this.toolbar_ && this.toolbar_.shouldKeepOpen())
+    if (this.toolbar_ && this.toolbar_.shouldKeepOpen()) {
       return;
+    }
 
-    if (this.keyboardNavigationActive)
+    if (this.keyboardNavigationActive) {
       return;
+    }
 
     // Remove focus to make any visible tooltips disappear -- otherwise they'll
     // still be visible on screen when the toolbar is off screen.
@@ -198,8 +207,9 @@ ToolbarManager.prototype = {
       document.activeElement.blur();
     }
 
-    if (this.toolbar_)
+    if (this.toolbar_) {
       this.toolbar_.hide();
+    }
     this.zoomToolbar_.hide();
   },
 
@@ -207,8 +217,9 @@ ToolbarManager.prototype = {
    * Hide the toolbar after the HIDE_TIMEOUT has elapsed.
    */
   hideToolbarsAfterTimeout: function() {
-    if (this.toolbarTimeout_)
+    if (this.toolbarTimeout_) {
       this.window_.clearTimeout(this.toolbarTimeout_);
+    }
     this.toolbarTimeout_ = this.window_.setTimeout(
         this.hideToolbarsIfAllowed.bind(this), HIDE_TIMEOUT);
   },
@@ -233,8 +244,9 @@ ToolbarManager.prototype = {
    * of the screen.
    */
   forceHideTopToolbar: function() {
-    if (!this.toolbar_)
+    if (!this.toolbar_) {
       return;
+    }
     this.toolbar_.hide();
     this.sideToolbarAllowedOnly_ = true;
     this.sideToolbarAllowedOnlyTimer_ = this.window_.setTimeout(() => {
@@ -249,8 +261,9 @@ ToolbarManager.prototype = {
    * @private
    */
   resizeDropdowns_: function() {
-    if (!this.toolbar_)
+    if (!this.toolbar_) {
       return;
+    }
     const lowerBound =
         this.window_.innerHeight - this.zoomToolbar_.clientHeight;
     this.toolbar_.setDropdownLowerBound(lowerBound);

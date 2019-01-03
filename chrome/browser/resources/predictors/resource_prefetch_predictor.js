@@ -47,8 +47,9 @@ function updateResourcePrefetchPredictorDbView(database) {
 
   const hasOriginData = database.origin_db && database.origin_db.length > 0;
 
-  if (hasOriginData)
+  if (hasOriginData) {
     renderOriginData($('rpp_origin_body'), database.origin_db);
+  }
 }
 
 /**

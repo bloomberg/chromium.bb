@@ -26,8 +26,9 @@ cr.define('device_broker', function() {
    */
   function connectToDevice(address) {
     var deviceOrPromise = connectedDevices.get(address) || null;
-    if (deviceOrPromise !== null)
+    if (deviceOrPromise !== null) {
       return Promise.resolve(deviceOrPromise);
+    }
 
     var promise = adapter_broker.getAdapterBroker()
                       .then(function(adapterBroker) {

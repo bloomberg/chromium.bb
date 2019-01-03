@@ -102,8 +102,9 @@ cr.define('accessibility', function() {
   }
 
   function bindCheckbox(name, value) {
-    if (value == 'on')
+    if (value == 'on') {
       $(name).checked = true;
+    }
     if (value == 'disabled') {
       $(name).disabled = true;
       $(name).labels[0].classList.add('disabled');
@@ -151,8 +152,9 @@ cr.define('accessibility', function() {
     if (data.type == 'page') {
       const siteInfo = document.createElement('div');
       const properties = ['favicon_url', 'name', 'url'];
-      for (let j = 0; j < properties.length; j++)
+      for (let j = 0; j < properties.length; j++) {
         siteInfo.appendChild(formatValue(data, properties[j]));
+      }
       row.appendChild(siteInfo);
 
       row.appendChild(createModeElement(AXMode.kNativeAPIs, data));
@@ -173,8 +175,9 @@ cr.define('accessibility', function() {
     } else {
       row.appendChild(createShowAccessibilityTreeElement(data, row.id, false));
       row.appendChild(createCopyAccessibilityTreeElement(data, row.id));
-      if ('error' in data)
+      if ('error' in data) {
         row.appendChild(createErrorMessageElement(data, row));
+      }
     }
   }
 
@@ -191,15 +194,17 @@ cr.define('accessibility', function() {
 
     if (property == 'favicon_url') {
       const faviconElement = document.createElement('img');
-      if (value)
+      if (value) {
         faviconElement.src = value;
+      }
       faviconElement.alt = '';
       return faviconElement;
     }
 
     let text = value ? String(value) : '';
-    if (text.length > 100)
-      text = text.substring(0, 100) + '\u2026';  // ellipsis
+    if (text.length > 100) {
+      text = text.substring(0, 100) + '\u2026';
+    }  // ellipsis
 
     const span = document.createElement('span');
     const content = ' ' + text + ' ';
@@ -304,8 +309,9 @@ cr.define('accessibility', function() {
     closeLink.addEventListener('click', function() {
       const parentElement = errorMessageElement.parentElement;
       parentElement.removeChild(errorMessageElement);
-      if (parentElement.childElementCount == 0)
+      if (parentElement.childElementCount == 0) {
         parentElement.parentElement.removeChild(parentElement);
+      }
     });
     errorMessageElement.appendChild(closeLink);
     return errorMessageElement;
@@ -315,8 +321,9 @@ cr.define('accessibility', function() {
   function showTree(data) {
     const id = getIdFromData(data);
     const row = $(id);
-    if (!row)
+    if (!row) {
       return;
+    }
 
     row.textContent = '';
     formatRow(row, data);
@@ -327,8 +334,9 @@ cr.define('accessibility', function() {
   function copyTree(data) {
     const id = getIdFromData(data);
     const row = $(id);
-    if (!row)
+    if (!row) {
       return;
+    }
     const copy = $(id + ':copyTree');
 
     if ('tree' in data) {

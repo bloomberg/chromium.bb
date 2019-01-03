@@ -64,8 +64,9 @@ Polymer({
   /** @private */
   addUser_: function() {
     // May be submitted by the Enter key even if the input value is invalid.
-    if (!this.validate_())
+    if (!this.validate_()) {
       return;
+    }
 
     const input = this.$.addUserInput.value;
 

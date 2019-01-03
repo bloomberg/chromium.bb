@@ -16,10 +16,12 @@ cr.define('print_preview', function() {
         origin === print_preview.DestinationOrigin.CROS) {
       return print_preview.PrinterType.LOCAL_PRINTER;
     }
-    if (origin === print_preview.DestinationOrigin.PRIVET)
+    if (origin === print_preview.DestinationOrigin.PRIVET) {
       return print_preview.PrinterType.PRIVET_PRINTER;
-    if (origin === print_preview.DestinationOrigin.EXTENSION)
+    }
+    if (origin === print_preview.DestinationOrigin.EXTENSION) {
       return print_preview.PrinterType.EXTENSION_PRINTER;
+    }
     return null;
   };
 

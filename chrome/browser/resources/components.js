@@ -97,8 +97,9 @@ function returnComponentsData(componentsData) {
  * optional.
  */
 function onComponentEvent(eventArgs) {
-  if (!eventArgs['id'])
+  if (!eventArgs['id']) {
     return;
+  }
 
   const id = eventArgs['id'];
 

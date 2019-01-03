@@ -194,8 +194,9 @@ Polymer({
   /** @param {!settings.Route} route */
   currentRouteChanged: function(route) {
     const urlSearchQuery = settings.getQueryParameters().get('search') || '';
-    if (urlSearchQuery == this.lastSearchQuery_)
+    if (urlSearchQuery == this.lastSearchQuery_) {
       return;
+    }
 
     this.lastSearchQuery_ = urlSearchQuery;
 
@@ -216,8 +217,9 @@ Polymer({
 
   // Override settings.FindShortcutBehavior methods.
   handleFindShortcut: function(modalContextOpen) {
-    if (modalContextOpen)
+    if (modalContextOpen) {
       return false;
+    }
     this.$$('cr-toolbar').getSearchField().showAndFocus();
     return true;
   },
@@ -242,8 +244,9 @@ Polymer({
     // after typing 'foo '.
     const query = e.detail.replace(/^\s+/, '');
     // Prevent duplicate history entries.
-    if (query == this.lastSearchQuery_)
+    if (query == this.lastSearchQuery_) {
       return;
+    }
 
     settings.navigateTo(
         settings.routes.BASIC,

@@ -31,15 +31,17 @@ cr.define('discards_tab', function() {
     if (sortKey == 'title' || sortKey == 'tabUrl') {
       val1 = val1.toLowerCase();
       val2 = val2.toLowerCase();
-      if (val1 == val2)
+      if (val1 == val2) {
         return 0;
+      }
       return val1 > val2 ? 1 : -1;
     }
 
     // Compares boolean fields.
     if (['canFreeze', 'canDiscard', 'isAutoDiscardable'].includes(sortKey)) {
-      if (val1 == val2)
+      if (val1 == val2) {
         return 0;
+      }
       return val1 ? 1 : -1;
     }
 
@@ -122,8 +124,9 @@ Polymer({
   computeSortFunction_: function(sortKey, sortReverse) {
     // Polymer 2.0 may invoke multi-property observers before all properties
     // are defined.
-    if (!sortKey)
+    if (!sortKey) {
       return (a, b) => 0;
+    }
 
     return function(a, b) {
       const comp = discards_tab.compareTabDiscardsInfos(sortKey, a, b);
@@ -249,8 +252,9 @@ Polymer({
    * @private
    */
   updateTable_: function() {
-    if (this.updateTimer_)
+    if (this.updateTimer_) {
       clearInterval(this.updateTimer_);
+    }
     this.updateTableImpl_();
     this.updateTimer_ = setInterval(this.updateTableImpl_.bind(this), 1000);
   },

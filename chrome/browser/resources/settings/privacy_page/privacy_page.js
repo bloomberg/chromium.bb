@@ -215,8 +215,9 @@ Polymer({
    * @private
    */
   onDoNotTrackDomChange_: function(event) {
-    if (this.showDoNotTrackDialog_)
+    if (this.showDoNotTrackDialog_) {
       this.maybeShowDoNotTrackDialog_();
+    }
   },
 
   /**
@@ -260,8 +261,9 @@ Polymer({
   /** @private */
   maybeShowDoNotTrackDialog_: function() {
     const dialog = this.$$('#confirmDoNotTrackDialog');
-    if (dialog && !dialog.open)
+    if (dialog && !dialog.open) {
       dialog.showModal();
+    }
   },
 
   /** @private */
@@ -324,8 +326,9 @@ Polymer({
   onRemoveAllCookiesFromSite_: function() {
     const node = /** @type {?SiteDataDetailsSubpageElement} */ (
         this.$$('site-data-details-subpage'));
-    if (node)
+    if (node) {
       node.removeAll();
+    }
   },
 
   /** @private */

@@ -97,8 +97,9 @@ Polymer({
    */
   onNetworksChanged_: function(event) {
     const id = this.activeNetworkState_.GUID;
-    if (!event.detail.includes(id))
+    if (!event.detail.includes(id)) {
       return;
+    }
     this.networkingPrivate_.getState(id, newNetworkState => {
       if (chrome.runtime.lastError) {
         const message = chrome.runtime.lastError.message;

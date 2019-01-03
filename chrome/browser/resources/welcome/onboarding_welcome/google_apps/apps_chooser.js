@@ -87,15 +87,17 @@ Polymer({
   },
 
   onRouteExit() {
-    if (this.finalized_)
+    if (this.finalized_) {
       return;
+    }
     this.cleanUp_();
     this.metricsManager_.recordBrowserBackOrForward();
   },
 
   onRouteUnload() {
-    if (this.finalized_)
+    if (this.finalized_) {
       return;
+    }
     this.cleanUp_();
     this.metricsManager_.recordNavigatedAway();
   },
@@ -146,8 +148,9 @@ Polymer({
   cleanUp_() {
     this.finalized_ = true;
 
-    if (!this.appList_)
-      return;  // No apps to remove.
+    if (!this.appList_) {
+      return;
+    }  // No apps to remove.
 
     let removedBookmarks = false;
     this.appList_.forEach(app => {
@@ -205,10 +208,11 @@ Polymer({
 
     // Announcements should NOT be in |updateBookmark| because there should be a
     // different utterance when all app bookmarks are added/removed.
-    if (item.selected)
+    if (item.selected) {
       this.fire('iron-announce', {text: this.i18n('bookmarkAdded')});
-    else
+    } else {
       this.fire('iron-announce', {text: this.i18n('bookmarkRemoved')});
+    }
   },
 
   /**
@@ -234,7 +238,8 @@ Polymer({
   updateHasAppsSelected: function() {
     this.hasAppsSelected_ =
         this.appList_ && this.appList_.some(a => a.selected);
-    if (!this.hasAppsSelected_)
+    if (!this.hasAppsSelected_) {
       this.bookmarkBarManager_.setShown(this.wasBookmarkBarShownOnInit_);
+    }
   },
 });
