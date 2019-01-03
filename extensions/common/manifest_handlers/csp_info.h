@@ -36,7 +36,7 @@ struct CSPInfo : public Extension::ManifestData {
 // Parses "content_security_policy" and "app.content_security_policy" keys.
 class CSPHandler : public ManifestHandler {
  public:
-  explicit CSPHandler(bool is_platform_app);
+  CSPHandler();
   ~CSPHandler() override;
 
   bool Parse(Extension* extension, base::string16* error) override;
@@ -59,8 +59,6 @@ class CSPHandler : public ManifestHandler {
   bool SetDefaultExtensionPagesCSP(Extension* extension);
 
   base::span<const char* const> Keys() const override;
-
-  bool is_platform_app_;
 
   DISALLOW_COPY_AND_ASSIGN(CSPHandler);
 };

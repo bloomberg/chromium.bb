@@ -52,8 +52,7 @@ void RegisterCommonManifestHandlers() {
   registry->RegisterHandler(std::make_unique<BluetoothManifestHandler>());
   registry->RegisterHandler(std::make_unique<ContentCapabilitiesHandler>());
   registry->RegisterHandler(std::make_unique<ContentScriptsHandler>());
-  registry->RegisterHandler(std::make_unique<CSPHandler>(false));
-  registry->RegisterHandler(std::make_unique<CSPHandler>(true));
+  registry->RegisterHandler(std::make_unique<CSPHandler>());
   registry->RegisterHandler(
       std::make_unique<declarative_net_request::DNRManifestHandler>());
   registry->RegisterHandler(std::make_unique<DeclarativeManifestHandler>());
