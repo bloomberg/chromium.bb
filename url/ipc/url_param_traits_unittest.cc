@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/stl_util.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,7 +18,7 @@ TEST(IPCMessageTest, Serialize) {
     "http://user:pass@host.com:888/foo;bar?baz#nop",
   };
 
-  for (size_t i = 0; i < arraysize(serialize_cases); i++) {
+  for (size_t i = 0; i < base::size(serialize_cases); i++) {
     GURL input(serialize_cases[i]);
     IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
     IPC::ParamTraits<GURL>::Write(&msg, input);
