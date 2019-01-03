@@ -102,7 +102,7 @@ std::unique_ptr<AudioDecoder> GpuMojoMediaClient::CreateAudioDecoder(
 #endif  // defined(OS_ANDROID)
 }
 
-std::vector<mojom::SupportedVideoDecoderConfigPtr>
+std::vector<SupportedVideoDecoderConfig>
 GpuMojoMediaClient::GetSupportedVideoDecoderConfigs() {
   // TODO(liberato): Implement for D3D11VideoDecoder and MediaCodecVideoDecoder.
   VideoDecodeAccelerator::Capabilities capabilities =
@@ -113,9 +113,9 @@ GpuMojoMediaClient::GetSupportedVideoDecoderConfigs() {
       capabilities.flags &
       VideoDecodeAccelerator::Capabilities::SUPPORTS_ENCRYPTED_STREAMS;
 
-  std::vector<mojom::SupportedVideoDecoderConfigPtr> supported_configs;
+  std::vector<SupportedVideoDecoderConfig> supported_configs;
   for (const auto& supported_profile : capabilities.supported_profiles) {
-    supported_configs.push_back(mojom::SupportedVideoDecoderConfig::New(
+    supported_configs.push_back(SupportedVideoDecoderConfig(
         supported_profile.profile,           // profile_min
         supported_profile.profile,           // profile_max
         supported_profile.min_resolution,    // coded_size_min

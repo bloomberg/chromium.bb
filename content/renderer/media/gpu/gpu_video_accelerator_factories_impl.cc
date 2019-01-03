@@ -136,10 +136,9 @@ void GpuVideoAcceleratorFactoriesImpl::BindOnTaskRunner(
 }
 
 void GpuVideoAcceleratorFactoriesImpl::OnSupportedDecoderConfigs(
-    std::vector<media::mojom::SupportedVideoDecoderConfigPtr>
-        supported_configs) {
+    const std::vector<media::SupportedVideoDecoderConfig>& supported_configs) {
   base::AutoLock lock(supported_decoder_configs_lock_);
-  supported_decoder_configs_ = std::move(supported_configs);
+  supported_decoder_configs_ = supported_configs;
   video_decoder_.reset();
 }
 
@@ -200,18 +199,9 @@ bool GpuVideoAcceleratorFactoriesImpl::IsDecoderConfigSupported(
   if (!supported_decoder_configs_)
     return true;
 
-  for (const media::mojom::SupportedVideoDecoderConfigPtr& supported :
-       *supported_decoder_configs_) {
-    if (config.profile() >= supported->profile_min &&
-        config.profile() <= supported->profile_max &&
-        config.coded_size().width() >= supported->coded_size_min.width() &&
-        config.coded_size().width() <= supported->coded_size_max.width() &&
-        config.coded_size().height() >= supported->coded_size_min.height() &&
-        config.coded_size().height() <= supported->coded_size_max.height() &&
-        (config.is_encrypted() ? supported->allow_encrypted
-                               : !supported->require_encrypted)) {
+  for (const auto& supported : *supported_decoder_configs_) {
+    if (supported.Matches(config))
       return true;
-    }
   }
   return false;
 }

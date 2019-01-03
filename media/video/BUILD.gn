@@ -35,6 +35,8 @@ source_set("video") {
     "jpeg_encode_accelerator.h",
     "picture.cc",
     "picture.h",
+    "supported_video_decoder_config.cc",
+    "supported_video_decoder_config.h",
     "trace_util.cc",
     "trace_util.h",
     "video_decode_accelerator.cc",
@@ -106,6 +108,7 @@ source_set("unit_tests") {
     "h264_parser_unittest.cc",
     "h264_poc_unittest.cc",
     "half_float_maker_unittest.cc",
+    "supported_video_decoder_config_unittest.cc",
   ]
   if (enable_hevc_demuxing) {
     sources += [ "h265_parser_unittest.cc" ]
