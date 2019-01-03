@@ -1,19 +1,19 @@
 // Copyright (c) 2014-2018 The Khronos Group Inc.
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and/or associated documentation files (the "Materials"),
 // to deal in the Materials without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
 // and/or sell copies of the Materials, and to permit persons to whom the
 // Materials are furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Materials.
-// 
+//
 // MODIFICATIONS TO THIS FILE MAY MEAN IT NO LONGER ACCURATELY REFLECTS KHRONOS
 // STANDARDS. THE UNMODIFIED, NORMATIVE VERSIONS OF KHRONOS SPECIFICATIONS AND
-// HEADER INFORMATION ARE LOCATED AT https://www.khronos.org/registry/ 
-// 
+// HEADER INFORMATION ARE LOCATED AT https://www.khronos.org/registry/
+//
 // THE MATERIALS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 // OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -97,7 +97,7 @@ namespace {
         virtual void printEpilogue(std::ostream&) const { }
         virtual void printMeta(std::ostream&)     const;
         virtual void printTypes(std::ostream&)    const { }
-        
+
         virtual std::string escapeComment(const std::string& s) const;
 
         // Default printComments() uses these comment strings
@@ -107,7 +107,7 @@ namespace {
         virtual std::string commentEOL(bool isLast) const { return ""; }
 
         typedef std::pair<unsigned, std::string> valpair_t;
-        
+
         // for printing enum values
         virtual std::string enumBeg(const std::string&, enumStyle_t) const { return ""; }
         virtual std::string enumEnd(const std::string&, enumStyle_t, bool isLast = false) const {
@@ -126,7 +126,7 @@ namespace {
                                         const char* fmt, bool isLast = false) const {
             return "";
         }
-        
+
         std::vector<valpair_t> getSortedVals(const Json::Value&) const;
 
         virtual std::string indent(int count = 1) const {
@@ -149,7 +149,7 @@ namespace {
         }
 
         void addComment(Json::Value& node, const std::string& str);
-        
+
         Json::Value spvRoot; // JSON SPIR-V data
     };
 
@@ -197,14 +197,16 @@ namespace {
 
     const std::string TPrinter::DocComment2 =
         "Enumeration tokens for SPIR-V, in various styles:\n"
-        "  C, C++, C++11, JSON, Lua, Python, C#\n"
+        "  C, C++, C++11, JSON, Lua, Python, C#, D\n"
         "\n"
         "- C will have tokens with a \"Spv\" prefix, e.g.: SpvSourceLanguageGLSL\n"
         "- C++ will have tokens in the \"spv\" name space, e.g.: spv::SourceLanguageGLSL\n"
         "- C++11 will use enum classes in the spv namespace, e.g.: spv::SourceLanguage::GLSL\n"
         "- Lua will use tables, e.g.: spv.SourceLanguage.GLSL\n"
         "- Python will use dictionaries, e.g.: spv['SourceLanguage']['GLSL']\n"
-        "- C# will use enum classes in the Specification class located in the \"Spv\" namespace, e.g.: Spv.Specification.SourceLanguage.GLSL\n"
+        "- C# will use enum classes in the Specification class located in the \"Spv\" namespace,\n"
+        "    e.g.: Spv.Specification.SourceLanguage.GLSL\n"
+        "- D will have tokens under the \"spv\" module, e.g: spv.SourceLanguage.GLSL\n"
         "\n"
         "Some tokens act like mask values, which can be OR'd together,\n"
         "while others are mutually exclusive.  The mask-like ones have\n"
@@ -291,7 +293,7 @@ namespace {
     {
         const int commentCount = spvRoot["spv"]["meta"]["Comment"].size();
         int commentNum = 0;
-        
+
         for (const auto& comment : spvRoot["spv"]["meta"]["Comment"]) {
             out << commentBeg();
 
@@ -323,7 +325,7 @@ namespace {
     void TPrinter::printDefs(std::ostream& out) const
     {
         const Json::Value& enums = spvRoot["spv"]["enum"];
-        
+
         for (auto opClass = enums.begin(); opClass != enums.end(); ++opClass) {
             const bool isMask   = (*opClass)["Type"].asString() == "Bit";
             const auto opName   = (*opClass)["Name"].asString();
@@ -338,8 +340,8 @@ namespace {
                     out << enumFmt(opPrefix, valpair_t(0, "MaskNone"), enumNoMask);
 
                 const auto sorted = getSortedVals((*opClass)["Values"]);
-                
-                std::string maxEnum = maxEnumFmt(opName, valpair_t(0x7FFFFFFF, "Max"), enumHex);                
+
+                std::string maxEnum = maxEnumFmt(opName, valpair_t(0x7FFFFFFF, "Max"), enumHex);
 
                 bool printMax = (style != enumMask && maxEnum.size() > 0);
 
@@ -391,7 +393,7 @@ namespace {
             }
             return newStr;
         }
-        
+
         std::string fmtConstInt(unsigned val, const std::string& name,
                                 const char* fmt, bool isLast) const override {
             return indent(3) + '"' + name + "\": " + fmtNum("%d", val) + (isLast ? "\n" : ",\n");
@@ -489,7 +491,7 @@ namespace {
             return std::string("static const unsigned int ") + pre() + name +
                 " = " + fmtNum(fmt, val) + (isLast ? ";\n\n" : ";\n");
         }
-        
+
         virtual std::string pre() const { return ""; } // C name prefix
         virtual std::string headerGuardSuffix() const = 0;
     };
@@ -543,7 +545,7 @@ namespace {
 
                 if (isMask) {
                     const auto typeName = opName + styleStr(enumMask);
-                    
+
                     out << "inline " + typeName + " operator|(" + typeName + " a, " + typeName + " b) { return " +
                         typeName + "(unsigned(a) | unsigned(b)); }\n";
                 }
@@ -555,7 +557,7 @@ namespace {
 
         std::string commentBOL() const override { return "// "; }
 
-        
+
         virtual std::string enumBeg(const std::string& s, enumStyle_t style) const override {
             return std::string("enum ") + s + styleStr(style) + " {\n";
         }
@@ -695,6 +697,40 @@ namespace {
         }
     };
 
+    // D printer
+    class TPrinterD final : public TPrinter {
+    private:
+        std::string commentBeg() const override            { return "/+\n"; }
+        std::string commentBOL() const override            { return " + ";  }
+        std::string commentEnd(bool isLast) const override { return " +/\n"; }
+
+        void printPrologue(std::ostream& out) const override {
+            out << "module spv;\n\n";
+        }
+
+        void printEpilogue(std::ostream& out) const override {
+        }
+
+        std::string enumBeg(const std::string& s, enumStyle_t style) const override {
+            return "enum " + s + styleStr(style) + " : uint\n{\n";
+        }
+
+        std::string enumEnd(const std::string& s, enumStyle_t style, bool isLast) const override {
+            return std::string("}\n\n");
+        }
+
+        std::string enumFmt(const std::string& s, const valpair_t& v,
+                            enumStyle_t style, bool isLast) const override {
+            return indent() + prependIfDigit("_", v.second) + " = " + fmtStyleVal(v.first, style) + ",\n";
+        }
+
+        std::string fmtConstInt(unsigned val, const std::string& name,
+                                const char* fmt, bool isLast) const override {
+            return std::string("enum uint ") + name +
+                " = " + fmtNum(fmt, val) + (isLast ? ";\n\n" : ";\n");
+        }
+    };
+
 } // namespace
 
 namespace spv {
@@ -710,6 +746,7 @@ namespace spv {
         langInfo.push_back(std::make_pair(ELangLua,     "spirv.lua"));
         langInfo.push_back(std::make_pair(ELangPython,  "spirv.py"));
         langInfo.push_back(std::make_pair(ELangCSharp,  "spirv.cs"));
+        langInfo.push_back(std::make_pair(ELangD,       "spv.d"));
 
         for (const auto& lang : langInfo) {
             std::ofstream out(lang.second, std::ios::out);
@@ -736,6 +773,7 @@ namespace spv {
             case ELangLua:     p = TPrinterPtr(new TPrinterLua);     break;
             case ELangPython:  p = TPrinterPtr(new TPrinterPython);  break;
             case ELangCSharp:  p = TPrinterPtr(new TPrinterCSharp);  break;
+            case ELangD:       p = TPrinterPtr(new TPrinterD);       break;
             case ELangAll:     PrintAllHeaders();                    break;
             default:
                 std::cerr << "Unknown language." << std::endl;
