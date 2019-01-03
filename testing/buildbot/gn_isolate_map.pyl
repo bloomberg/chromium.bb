@@ -411,8 +411,8 @@
     "label": "//media/capture:capture_unittests",
     "type": "windowed_test_launcher",
   },
-  "castrunner_tests": {
-    "label": "//webrunner:castrunner_tests",
+  "castrunner_unittests": {
+    "label": "//webrunner:castrunner_unittests",
     "type": "console_test_launcher",
   },
   "cast_audio_backend_unittests": {
@@ -2737,10 +2737,6 @@
   },
   "webrunner_browsertests": {
     "label": "//webrunner:webrunner_browsertests",
-    "type": "console_test_launcher",
-  },
-  "webrunner_smoketests": {
-    "label": "//webrunner:webrunner_smoketests",
     "type": "console_test_launcher",
   },
   "webrunner_unittests": {

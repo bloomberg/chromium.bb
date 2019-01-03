@@ -3928,7 +3928,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "castrunner_tests"
+        "test": "castrunner_unittests"
       },
       {
         "args": [
@@ -4031,12 +4031,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "webrunner_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "webrunner_smoketests"
       },
       {
         "swarming": {
@@ -4071,7 +4065,7 @@
             }
           ]
         },
-        "test": "castrunner_tests"
+        "test": "castrunner_unittests"
       },
       {
         "args": [
@@ -4249,17 +4243,6 @@
           ]
         },
         "test": "webrunner_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "kvm": "1"
-            }
-          ]
-        },
-        "test": "webrunner_smoketests"
       },
       {
         "swarming": {
@@ -4299,7 +4282,7 @@
             }
           ]
         },
-        "test": "castrunner_tests"
+        "test": "castrunner_unittests"
       },
       {
         "args": [
@@ -4491,17 +4474,6 @@
           ]
         },
         "test": "webrunner_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "kvm": "1"
-            }
-          ]
-        },
-        "test": "webrunner_smoketests"
       },
       {
         "swarming": {

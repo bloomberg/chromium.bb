@@ -117,22 +117,46 @@ executable("castrunner_exe") {
   ]
 }
 
-test("castrunner_tests") {
+source_set("castrunner_test_support") {
   sources = [
-    "app/cast/cast_runner_integration_test.cc",
-    "app/cast/cast_runner_unittest.cc",
     "app/cast/test_common.cc",
     "app/cast/test_common.h",
+  ]
+  public_deps = [
+    "//base",
+    "//third_party/fuchsia-sdk/sdk:sys",
+  ]
+}
+
+test("castrunner_unittests") {
+  sources = [
+    "app/cast/cast_runner_unittest.cc",
   ]
   deps = [
     ":app_config_manager_test_support",
     ":castrunner_common",
+    ":castrunner_test_support",
+    ":test_common",
+    ":test_support",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//testing/gtest",
+  ]
+}
+
+test("castrunner_integration_tests") {
+  sources = [
+    "app/cast/cast_runner_integration_test.cc",
+  ]
+  deps = [
+    ":app_config_manager_test_support",
+    ":castrunner_common",
+    ":castrunner_test_support",
     ":test_common",
     ":test_support",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//net:test_support",
-    "//testing/gmock",
     "//testing/gtest",
   ]
   package_deps = [ [
