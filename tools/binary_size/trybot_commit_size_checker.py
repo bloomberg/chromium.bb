@@ -65,8 +65,8 @@ class _SizeDelta(collections.namedtuple(
 
   @property
   def explanation(self):
-    ret = '{}: expected max: {} {}, got {} {}'.format(
-        self.name, self.expected, self.units, self.actual, self.units)
+    ret = '{}: {} {} (max is {} {})'.format(
+        self.name, self.actual, self.units, self.expected, self.units)
     if self.details and not self.IsAllowable():
       ret += '\n' + self.details
     return ret
@@ -244,10 +244,11 @@ PASSING:
     checks_text += _FAILURE_GUIDANCE
 
   status_code = 1 if failing_deltas and not is_roller else 0
-  summary = """
-Normalized apk size delta: {}
-Dex method count delta: {}\
-""".format(resource_sizes_delta.actual, dex_delta.actual)
+  summary = '<br>'.join([
+      '',
+      'Normalized apk size delta: {}'.format(resource_sizes_delta.actual),
+      'Dex method count delta: {}'.format(dex_delta.actual),
+  ])
 
   # TODO(agrieve): Remove once recipe is updated: details, normalized_apk_size
   results_json = {
@@ -266,12 +267,12 @@ Dex method count delta: {}\
               'lines': resource_sizes_lines,
           },
           {
-              'name': '>>> SuperSize Text Diff <<<',
-              'lines': supersize_diff_lines,
-          },
-          {
               'name': '>>> Dex Method Diff <<<',
               'lines': dex_delta_lines,
+          },
+          {
+              'name': '>>> SuperSize Text Diff <<<',
+              'lines': supersize_diff_lines,
           },
           {
               'name': '>>> Supersize HTML Diff <<<',
