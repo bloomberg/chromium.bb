@@ -15,6 +15,7 @@ namespace explore_sites {
 const char kExploreSitesVariationParameterName[] = "variation";
 
 const char kExploreSitesVariationExperimental[] = "experiment";
+const char kExploreSitesVariationPersonalized[] = "personalized";
 
 ExploreSitesVariation GetExploreSitesVariation() {
   if (base::FeatureList::IsEnabled(kExploreSites)) {
@@ -22,6 +23,11 @@ ExploreSitesVariation GetExploreSitesVariation() {
             kExploreSites, kExploreSitesVariationParameterName) ==
         kExploreSitesVariationExperimental) {
       return ExploreSitesVariation::EXPERIMENT;
+    }
+    if (base::GetFieldTrialParamValueByFeature(
+            kExploreSites, kExploreSitesVariationParameterName) ==
+        kExploreSitesVariationPersonalized) {
+      return ExploreSitesVariation::PERSONALIZED;
     }
     return ExploreSitesVariation::ENABLED;
   }

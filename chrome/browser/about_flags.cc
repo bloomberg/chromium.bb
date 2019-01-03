@@ -1118,8 +1118,12 @@ const FeatureEntry::FeatureVariation kNewNetErrorPageUIVariations[] = {
 const FeatureEntry::FeatureParam kExploreSitesExperimental = {
     chrome::android::explore_sites::kExploreSitesVariationParameterName,
     chrome::android::explore_sites::kExploreSitesVariationExperimental};
+const FeatureEntry::FeatureParam kExploreSitesPersonalized = {
+    chrome::android::explore_sites::kExploreSitesVariationParameterName,
+    chrome::android::explore_sites::kExploreSitesVariationPersonalized};
 const FeatureEntry::FeatureVariation kExploreSitesVariations[] = {
-    {"Experimental", &kExploreSitesExperimental, 1, nullptr}};
+    {"Experimental", &kExploreSitesExperimental, 1, nullptr},
+    {"Personalized", &kExploreSitesPersonalized, 1, nullptr}};
 #endif  // defined(OS_ANDROID)
 
 const FeatureEntry::FeatureParam
