@@ -31,9 +31,22 @@ bool FineGrainedTimeZoneDetectionEnabled() {
 
 }  // namespace
 
+SystemSettingsProvider::SystemSettingsProvider()
+    : CrosSettingsProvider(CrosSettingsProvider::NotifyObserversCallback()) {
+  Init();
+}
+
 SystemSettingsProvider::SystemSettingsProvider(
     const NotifyObserversCallback& notify_cb)
     : CrosSettingsProvider(notify_cb) {
+  Init();
+}
+
+SystemSettingsProvider::~SystemSettingsProvider() {
+  system::TimezoneSettings::GetInstance()->RemoveObserver(this);
+}
+
+void SystemSettingsProvider::Init() {
   system::TimezoneSettings* timezone_settings =
       system::TimezoneSettings::GetInstance();
   timezone_settings->AddObserver(this);
@@ -43,10 +56,6 @@ SystemSettingsProvider::SystemSettingsProvider(
       new base::Value(PerUserTimezoneEnabled()));
   fine_grained_time_zone_enabled_value_.reset(
       new base::Value(FineGrainedTimeZoneDetectionEnabled()));
-}
-
-SystemSettingsProvider::~SystemSettingsProvider() {
-  system::TimezoneSettings::GetInstance()->RemoveObserver(this);
 }
 
 void SystemSettingsProvider::DoSet(const std::string& path,

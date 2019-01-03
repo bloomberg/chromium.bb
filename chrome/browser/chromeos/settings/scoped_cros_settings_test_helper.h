@@ -26,6 +26,9 @@ class FakeOwnerSettingsService;
 class ScopedTestCrosSettings;
 class ScopedTestDeviceSettingsService;
 
+// Helps in a variety of ways with setting up CrosSettings for testing.
+// This class is overly complex for most use-cases - if possible, prefer to
+// use ScopedTestingCrosSettings for new tests.
 class ScopedCrosSettingsTestHelper {
  public:
   // In some cases it is required to pass |create_settings_service| as false:

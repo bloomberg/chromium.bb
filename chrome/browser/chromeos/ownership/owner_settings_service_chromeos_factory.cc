@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
@@ -22,6 +23,8 @@ namespace chromeos {
 namespace {
 
 DeviceSettingsService* g_device_settings_service_for_testing_ = nullptr;
+
+StubCrosSettingsProvider* g_stub_cros_settings_provider_for_testing_ = nullptr;
 
 DeviceSettingsService* GetDeviceSettingsService() {
   if (g_device_settings_service_for_testing_)
@@ -61,6 +64,12 @@ void OwnerSettingsServiceChromeOSFactory::SetDeviceSettingsServiceForTesting(
   g_device_settings_service_for_testing_ = device_settings_service;
 }
 
+// static
+void OwnerSettingsServiceChromeOSFactory::SetStubCrosSettingsProviderForTesting(
+    StubCrosSettingsProvider* stub_cros_settings_provider) {
+  g_stub_cros_settings_provider_for_testing_ = stub_cros_settings_provider;
+}
+
 scoped_refptr<ownership::OwnerKeyUtil>
 OwnerSettingsServiceChromeOSFactory::GetOwnerKeyUtil() {
   if (owner_key_util_.get())
@@ -86,14 +95,22 @@ KeyedService* OwnerSettingsServiceChromeOSFactory::BuildInstanceFor(
     return nullptr;
   }
 
-  // If kStubCrosSettings is set, we treat the current user as the owner, and
-  // write settings directly to the stubbed provider in CrosSettings.
-  // This is done using the FakeOwnerSettingsService.
+  // TODO(olsen): Delete this code once no tests use kStubCrosSettings switch.
+  // See http://crbug.com/909635
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kStubCrosSettings)) {
+          switches::kStubCrosSettings) &&
+      g_stub_cros_settings_provider_for_testing_ == nullptr) {
+    g_stub_cros_settings_provider_for_testing_ =
+        CrosSettings::Get()->stubbed_provider_for_test();
+  }
+
+  // If g_stub_cros_settings_provider_for_testing_ is set, we treat the current
+  // user as the owner, and write settings directly to the stubbed provider.
+  // This is done using the FakeOwnerSettingsService.
+  if (g_stub_cros_settings_provider_for_testing_ != nullptr) {
     return new FakeOwnerSettingsService(
         profile, GetInstance()->GetOwnerKeyUtil(),
-        CrosSettings::Get()->stubbed_provider_for_test());
+        g_stub_cros_settings_provider_for_testing_);
   }
 
   return new OwnerSettingsServiceChromeOS(

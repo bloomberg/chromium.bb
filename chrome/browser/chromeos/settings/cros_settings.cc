@@ -23,8 +23,17 @@ namespace chromeos {
 
 static CrosSettings* g_cros_settings = nullptr;
 
+// Calling SetForTesting sets this flag. This flag means that the production
+// code which calls Initialize and Shutdown will have no effect - the test
+// install attributes will remain in place until ShutdownForTesting is called.
+bool g_using_cros_settings_for_testing = false;
+
 // static
 void CrosSettings::Initialize(PrefService* local_state) {
+  // Don't reinitialize if a specific instance has already been set for test.
+  if (g_using_cros_settings_for_testing)
+    return;
+
   CHECK(!g_cros_settings);
   g_cros_settings = new CrosSettings(DeviceSettingsService::Get(), local_state);
 }
@@ -36,6 +45,9 @@ bool CrosSettings::IsInitialized() {
 
 // static
 void CrosSettings::Shutdown() {
+  if (g_using_cros_settings_for_testing)
+    return;
+
   DCHECK(g_cros_settings);
   delete g_cros_settings;
   g_cros_settings = nullptr;
@@ -45,6 +57,22 @@ void CrosSettings::Shutdown() {
 CrosSettings* CrosSettings::Get() {
   CHECK(g_cros_settings);
   return g_cros_settings;
+}
+
+// static
+void CrosSettings::SetForTesting(CrosSettings* test_instance) {
+  DCHECK(!g_cros_settings);
+  DCHECK(!g_using_cros_settings_for_testing);
+  g_cros_settings = test_instance;
+  g_using_cros_settings_for_testing = true;
+}
+
+// static
+void CrosSettings::ShutdownForTesting() {
+  DCHECK(g_using_cros_settings_for_testing);
+  // Don't delete the test instance, we are not the owner.
+  g_cros_settings = nullptr;
+  g_using_cros_settings_for_testing = false;
 }
 
 bool CrosSettings::IsUserWhitelisted(const std::string& username,
@@ -61,6 +89,8 @@ bool CrosSettings::IsUserWhitelisted(const std::string& username,
     return true;
   return FindEmailInList(kAccountsPrefUsers, username, wildcard_match);
 }
+
+CrosSettings::CrosSettings() = default;
 
 CrosSettings::CrosSettings(DeviceSettingsService* device_settings_service,
                            PrefService* local_state) {
