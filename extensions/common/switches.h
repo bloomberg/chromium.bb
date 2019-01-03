@@ -25,6 +25,7 @@ extern const char kErrorConsole[];
 extern const char kExtensionProcess[];
 extern const char kExtensionsOnChromeURLs[];
 extern const char kForceDevModeHighlighting[];
+extern const char kForceEmptyCorbAllowlist[];
 extern const char kLoadApps[];
 extern const char kLoadExtension[];
 #if defined(CHROMIUM_BUILD)

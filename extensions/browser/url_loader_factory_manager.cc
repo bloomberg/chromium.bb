@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
@@ -28,6 +29,7 @@
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
+#include "extensions/common/switches.h"
 #include "extensions/common/user_script.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -139,44 +141,51 @@ bool IsValidHashedExtensionId(const std::string& hash) {
   return correct_chars && correct_length;
 }
 
+std::vector<std::string> CreateExtensionAllowlist() {
+  std::vector<std::string> allowlist;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceEmptyCorbAllowlist)) {
+    return allowlist;
+  }
+
+  // Make sure kHardcodedPartOfAllowlist will fit, but also leave some room
+  // for field trial params.
+  allowlist.reserve(base::size(kHardcodedPartOfCorbAllowlist) + 10);
+
+  // Append extensions from the hardcoded allowlist.
+  for (const char* hash : kHardcodedPartOfCorbAllowlist) {
+    DCHECK(IsValidHashedExtensionId(hash));  // It also validates the length.
+    allowlist.push_back(std::string(hash, kHashedExtensionIdLength));
+  }
+
+  // Append extensions from the field trial param.
+  std::string field_trial_arg = base::GetFieldTrialParamValueByFeature(
+      extensions_features::kBypassCorbOnlyForExtensionsAllowlist,
+      extensions_features::kBypassCorbAllowlistParamName);
+  field_trial_arg = base::ToUpperASCII(field_trial_arg);
+  std::vector<std::string> field_trial_allowlist = base::SplitString(
+      field_trial_arg, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  base::EraseIf(field_trial_allowlist, [](const std::string& hash) {
+    // Filter out invalid data from |field_trial_allowlist|.
+    if (IsValidHashedExtensionId(hash))
+      return false;  // Don't remove.
+
+    LOG(ERROR) << "Invalid extension hash: " << hash;
+    return true;  // Remove.
+  });
+  std::move(field_trial_allowlist.begin(), field_trial_allowlist.end(),
+            std::back_inserter(allowlist));
+
+  return allowlist;
+}
+
 // Returns a set of HashedExtensionId of extensions that depend on relaxed CORB
 // behavior in their content scripts.
 const base::flat_set<std::string>& GetExtensionsAllowlist() {
   DCHECK(base::FeatureList::IsEnabled(
       extensions_features::kBypassCorbOnlyForExtensionsAllowlist));
   static const base::NoDestructor<base::flat_set<std::string>> s_allowlist([] {
-    std::vector<std::string> allowlist;
-
-    // Make sure kHardcodedPartOfAllowlist will fit, but also leave some room
-    // for field trial params.
-    allowlist.reserve(base::size(kHardcodedPartOfCorbAllowlist) + 10);
-
-    // Append extensions from the hardcoded allowlist.
-    for (const char* hash : kHardcodedPartOfCorbAllowlist) {
-      DCHECK(IsValidHashedExtensionId(hash));  // It also validates the length.
-      allowlist.push_back(std::string(hash, kHashedExtensionIdLength));
-    }
-
-    // Append extensions from the field trial param.
-    std::string field_trial_arg = base::GetFieldTrialParamValueByFeature(
-        extensions_features::kBypassCorbOnlyForExtensionsAllowlist,
-        extensions_features::kBypassCorbAllowlistParamName);
-    field_trial_arg = base::ToUpperASCII(field_trial_arg);
-    std::vector<std::string> field_trial_allowlist = base::SplitString(
-        field_trial_arg, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    base::EraseIf(field_trial_allowlist, [](const std::string& hash) {
-      // Filter out invalid data from |field_trial_allowlist|.
-      if (IsValidHashedExtensionId(hash))
-        return false;  // Don't remove.
-
-      LOG(ERROR) << "Invalid extension hash: " << hash;
-      return true;  // Remove.
-    });
-    std::move(field_trial_allowlist.begin(), field_trial_allowlist.end(),
-              std::back_inserter(allowlist));
-
-    // Return as a flat_set.
-    base::flat_set<std::string> result(std::move(allowlist));
+    base::flat_set<std::string> result(CreateExtensionAllowlist());
     result.shrink_to_fit();
     return result;
   }());
