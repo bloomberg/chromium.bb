@@ -23,10 +23,8 @@
 @property(nonatomic, readonly, strong) UIViewController* viewController;
 
 // Displays the given TabSwitcher, replacing any TabSwitchers or view
-// controllers that may currently be visible.  Runs the given |completion| block
-// after the view controller is visible.
-- (void)showTabSwitcher:(id<TabSwitcher>)tabSwitcher
-             completion:(ProceduralBlock)completion;
+// controllers that may currently be visible.
+- (void)showTabSwitcher:(id<TabSwitcher>)tabSwitcher;
 
 // Displays the given view controller, replacing any TabSwitchers or other view
 // controllers that may currently be visible.  Runs the given |completion| block
