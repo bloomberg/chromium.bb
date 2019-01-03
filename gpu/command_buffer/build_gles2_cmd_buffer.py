@@ -2854,7 +2854,25 @@ _FUNCTION_INFO = {
     'trace_level': 2,
     'es31': True
   },
-  'MultiDrawArraysWEBGL': {
+  'MultiDrawBeginCHROMIUM': {
+    'decoder_func': 'DoMultiDrawBeginCHROMIUM',
+    'extension': 'WEBGL_multi_draw',
+    'extension_flag': 'webgl_multi_draw',
+    'internal': True,
+    'trace_level': 1,
+    'impl_func': False,
+    'unit_test': False,
+  },
+  'MultiDrawEndCHROMIUM': {
+    'decoder_func': 'DoMultiDrawEndCHROMIUM',
+    'extension': 'WEBGL_multi_draw',
+    'extension_flag': 'webgl_multi_draw',
+    'internal': True,
+    'trace_level': 1,
+    'impl_func': False,
+    'unit_test': False,
+  },
+  'MultiDrawArraysCHROMIUM': {
     'type': 'Custom',
     'cmd_args': 'GLenumDrawMode mode, '
                 'uint32_t firsts_shm_id, uint32_t firsts_shm_offset, '
@@ -2869,9 +2887,10 @@ _FUNCTION_INFO = {
     'defer_draws': True,
     'impl_func': False,
     'client_test': False,
+    'internal': True,
     'trace_level': 2,
   },
-  'MultiDrawArraysInstancedWEBGL': {
+  'MultiDrawArraysInstancedCHROMIUM': {
     'type': 'Custom',
     'cmd_args': 'GLenumDrawMode mode, '
                 'uint32_t firsts_shm_id, uint32_t firsts_shm_offset, '
@@ -2888,9 +2907,10 @@ _FUNCTION_INFO = {
     'defer_draws': True,
     'impl_func': False,
     'client_test': False,
+    'internal': True,
     'trace_level': 2,
   },
-  'MultiDrawElementsWEBGL': {
+  'MultiDrawElementsCHROMIUM': {
     'type': 'Custom',
     'cmd_args': 'GLenumDrawMode mode, '
                 'uint32_t counts_shm_id, uint32_t counts_shm_offset, '
@@ -2906,9 +2926,10 @@ _FUNCTION_INFO = {
     'defer_draws': True,
     'impl_func': False,
     'client_test': False,
+    'internal': True,
     'trace_level': 2,
   },
-  'MultiDrawElementsInstancedWEBGL': {
+  'MultiDrawElementsInstancedCHROMIUM': {
     'type': 'Custom',
     'cmd_args': 'GLenumDrawMode mode, '
                 'uint32_t counts_shm_id, uint32_t counts_shm_offset, '
@@ -2926,7 +2947,28 @@ _FUNCTION_INFO = {
     'defer_draws': True,
     'impl_func': False,
     'client_test': False,
+    'internal': True,
     'trace_level': 2,
+  },
+  'MultiDrawArraysWEBGL': {
+    'type': 'NoCommand',
+    'extension': 'WEBGL_multi_draw',
+    'extension_flag': 'webgl_multi_draw',
+  },
+  'MultiDrawArraysInstancedWEBGL': {
+    'type': 'NoCommand',
+    'extension': 'WEBGL_multi_draw_instanced',
+    'extension_flag': 'webgl_multi_draw_instanced',
+  },
+  'MultiDrawElementsWEBGL': {
+    'type': 'NoCommand',
+    'extension': 'WEBGL_multi_draw',
+    'extension_flag': 'webgl_multi_draw',
+  },
+  'MultiDrawElementsInstancedWEBGL': {
+    'type': 'NoCommand',
+    'extension': 'WEBGL_multi_draw_instanced',
+    'extension_flag': 'webgl_multi_draw_instanced',
   },
   'OverlayPromotionHintCHROMIUM': {
     'decoder_func': 'DoOverlayPromotionHintCHROMIUM',

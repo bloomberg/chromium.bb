@@ -2174,18 +2174,19 @@ void GLES2Implementation::MultiDrawArraysWEBGLHelper(GLenum mode,
 
   uint32_t buffer_size = ComputeCombinedCopySize(drawcount, firsts, counts);
   ScopedTransferBufferPtr buffer(buffer_size, helper_, transfer_buffer_);
-  // TODO(crbug.com/890539): Increment a base gl_DrawID for multiple calls to
-  // this helper
+
+  helper_->MultiDrawBeginCHROMIUM(drawcount);
   auto DoMultiDraw = [&](const std::array<uint32_t, 2>& offsets, uint32_t,
                          uint32_t copy_count) {
-    helper_->MultiDrawArraysWEBGL(mode, buffer.shm_id(),
-                                  buffer.offset() + offsets[0], buffer.shm_id(),
-                                  buffer.offset() + offsets[1], copy_count);
+    helper_->MultiDrawArraysCHROMIUM(
+        mode, buffer.shm_id(), buffer.offset() + offsets[0], buffer.shm_id(),
+        buffer.offset() + offsets[1], copy_count);
   };
   if (!TransferArraysAndExecute(drawcount, &buffer, DoMultiDraw, firsts,
                                 counts)) {
     SetGLError(GL_OUT_OF_MEMORY, "glMultiDrawArraysWEBGL", "out of memory");
   }
+  helper_->MultiDrawEndCHROMIUM();
 }
 
 void GLES2Implementation::MultiDrawArraysInstancedWEBGLHelper(
@@ -2199,11 +2200,11 @@ void GLES2Implementation::MultiDrawArraysInstancedWEBGLHelper(
   uint32_t buffer_size =
       ComputeCombinedCopySize(drawcount, firsts, counts, instance_counts);
   ScopedTransferBufferPtr buffer(buffer_size, helper_, transfer_buffer_);
-  // TODO(crbug.com/890539): Increment a base gl_DrawID for multiple calls to
-  // this helper
+
+  helper_->MultiDrawBeginCHROMIUM(drawcount);
   auto DoMultiDraw = [&](const std::array<uint32_t, 3>& offsets, uint32_t,
                          uint32_t copy_count) {
-    helper_->MultiDrawArraysInstancedWEBGL(
+    helper_->MultiDrawArraysInstancedCHROMIUM(
         mode, buffer.shm_id(), buffer.offset() + offsets[0], buffer.shm_id(),
         buffer.offset() + offsets[1], buffer.shm_id(),
         buffer.offset() + offsets[2], copy_count);
@@ -2213,6 +2214,7 @@ void GLES2Implementation::MultiDrawArraysInstancedWEBGLHelper(
     SetGLError(GL_OUT_OF_MEMORY, "glMultiDrawArraysInstancedWEBGL",
                "out of memory");
   }
+  helper_->MultiDrawEndCHROMIUM();
 }
 
 void GLES2Implementation::MultiDrawElementsWEBGLHelper(GLenum mode,
@@ -2224,11 +2226,11 @@ void GLES2Implementation::MultiDrawElementsWEBGLHelper(GLenum mode,
 
   uint32_t buffer_size = ComputeCombinedCopySize(drawcount, counts, offsets);
   ScopedTransferBufferPtr buffer(buffer_size, helper_, transfer_buffer_);
-  // TODO(crbug.com/890539): Increment a base gl_DrawID for multiple calls to
-  // this helper
+
+  helper_->MultiDrawBeginCHROMIUM(drawcount);
   auto DoMultiDraw = [&](const std::array<uint32_t, 2>& offsets, uint32_t,
                          uint32_t copy_count) {
-    helper_->MultiDrawElementsWEBGL(
+    helper_->MultiDrawElementsCHROMIUM(
         mode, buffer.shm_id(), buffer.offset() + offsets[0], type,
         buffer.shm_id(), buffer.offset() + offsets[1], copy_count);
   };
@@ -2236,6 +2238,7 @@ void GLES2Implementation::MultiDrawElementsWEBGLHelper(GLenum mode,
                                 offsets)) {
     SetGLError(GL_OUT_OF_MEMORY, "glMultiDrawElementsWEBGL", "out of memory");
   }
+  helper_->MultiDrawEndCHROMIUM();
 }
 
 void GLES2Implementation::MultiDrawElementsInstancedWEBGLHelper(
@@ -2250,11 +2253,11 @@ void GLES2Implementation::MultiDrawElementsInstancedWEBGLHelper(
   uint32_t buffer_size =
       ComputeCombinedCopySize(drawcount, counts, offsets, instance_counts);
   ScopedTransferBufferPtr buffer(buffer_size, helper_, transfer_buffer_);
-  // TODO(crbug.com/890539): Increment a base gl_DrawID for multiple calls to
-  // this helper
+
+  helper_->MultiDrawBeginCHROMIUM(drawcount);
   auto DoMultiDraw = [&](const std::array<uint32_t, 3>& offsets, uint32_t,
                          uint32_t copy_count) {
-    helper_->MultiDrawElementsInstancedWEBGL(
+    helper_->MultiDrawElementsInstancedCHROMIUM(
         mode, buffer.shm_id(), buffer.offset() + offsets[0], type,
         buffer.shm_id(), buffer.offset() + offsets[1], buffer.shm_id(),
         buffer.offset() + offsets[2], copy_count);
@@ -2264,6 +2267,7 @@ void GLES2Implementation::MultiDrawElementsInstancedWEBGLHelper(
     SetGLError(GL_OUT_OF_MEMORY, "glMultiDrawElementsInstancedWEBGL",
                "out of memory");
   }
+  helper_->MultiDrawEndCHROMIUM();
 }
 
 void GLES2Implementation::MultiDrawArraysWEBGL(GLenum mode,

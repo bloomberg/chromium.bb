@@ -10,6 +10,7 @@
 #include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
+#include "gpu/command_buffer/service/multi_draw_manager.h"
 #include "gpu/command_buffer/service/passthrough_discardable_manager.h"
 #include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
@@ -2165,46 +2166,44 @@ error::Error GLES2DecoderPassthroughImpl::DoMemoryBarrierByRegion(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoMultiDrawArraysWEBGL(
-    GLenum mode,
-    const GLint* firsts,
-    const GLsizei* counts,
+error::Error GLES2DecoderPassthroughImpl::DoMultiDrawBeginCHROMIUM(
     GLsizei drawcount) {
-  api()->glMultiDrawArraysANGLEFn(mode, firsts, counts, drawcount);
+  if (!multi_draw_manager_->Begin(drawcount)) {
+    return error::kInvalidArguments;
+  }
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoMultiDrawArraysInstancedWEBGL(
-    GLenum mode,
-    const GLint* firsts,
-    const GLsizei* counts,
-    const GLsizei* instanceCounts,
-    GLsizei drawcount) {
-  api()->glMultiDrawArraysInstancedANGLEFn(mode, firsts, counts, instanceCounts,
-                                           drawcount);
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderPassthroughImpl::DoMultiDrawElementsWEBGL(
-    GLenum mode,
-    const GLsizei* counts,
-    GLenum type,
-    const GLvoid* const* indices,
-    GLsizei drawcount) {
-  api()->glMultiDrawElementsANGLEFn(mode, counts, type, indices, drawcount);
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderPassthroughImpl::DoMultiDrawElementsInstancedWEBGL(
-    GLenum mode,
-    const GLsizei* counts,
-    GLenum type,
-    const GLvoid* const* indices,
-    const GLsizei* instanceCounts,
-    GLsizei drawcount) {
-  api()->glMultiDrawElementsInstancedANGLEFn(mode, counts, type, indices,
-                                             instanceCounts, drawcount);
-  return error::kNoError;
+error::Error GLES2DecoderPassthroughImpl::DoMultiDrawEndCHROMIUM() {
+  bool success;
+  MultiDrawManager::ResultData result = multi_draw_manager_->End(&success);
+  if (!success) {
+    return error::kInvalidArguments;
+  }
+  switch (result.draw_function) {
+    case MultiDrawManager::DrawFunction::DrawArrays:
+      api()->glMultiDrawArraysANGLEFn(result.mode, result.firsts.data(),
+                                      result.counts.data(), result.drawcount);
+      return error::kNoError;
+    case MultiDrawManager::DrawFunction::DrawArraysInstanced:
+      api()->glMultiDrawArraysInstancedANGLEFn(
+          result.mode, result.firsts.data(), result.counts.data(),
+          result.instance_counts.data(), result.drawcount);
+      return error::kNoError;
+    case MultiDrawManager::DrawFunction::DrawElements:
+      api()->glMultiDrawElementsANGLEFn(result.mode, result.counts.data(),
+                                        result.type, result.indices.data(),
+                                        result.drawcount);
+      return error::kNoError;
+    case MultiDrawManager::DrawFunction::DrawElementsInstanced:
+      api()->glMultiDrawElementsInstancedANGLEFn(
+          result.mode, result.counts.data(), result.type, result.indices.data(),
+          result.instance_counts.data(), result.drawcount);
+      return error::kNoError;
+    default:
+      NOTREACHED();
+      return error::kLostContext;
+  }
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoPauseTransformFeedback() {

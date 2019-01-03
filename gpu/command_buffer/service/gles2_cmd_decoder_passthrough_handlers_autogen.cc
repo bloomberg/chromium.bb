@@ -2299,6 +2299,38 @@ error::Error GLES2DecoderPassthroughImpl::HandleShaderSourceBucket(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::HandleMultiDrawBeginCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::MultiDrawBeginCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::MultiDrawBeginCHROMIUM*>(
+          cmd_data);
+  if (!features().webgl_multi_draw) {
+    return error::kUnknownCommand;
+  }
+
+  GLsizei drawcount = static_cast<GLsizei>(c.drawcount);
+  error::Error error = DoMultiDrawBeginCHROMIUM(drawcount);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::HandleMultiDrawEndCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  if (!features().webgl_multi_draw) {
+    return error::kUnknownCommand;
+  }
+
+  error::Error error = DoMultiDrawEndCHROMIUM();
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::HandleStencilFunc(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
