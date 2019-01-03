@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
 #include "base/threading/thread_checker.h"
 #include "components/metrics_services_manager/metrics_services_manager_client.h"
 
@@ -39,17 +38,11 @@ class IOSChromeMetricsServicesManagerClient
       override;
   std::unique_ptr<metrics::MetricsServiceClient> CreateMetricsServiceClient()
       override;
-  std::unique_ptr<const base::FieldTrial::EntropyProvider>
-  CreateEntropyProvider() override;
+  metrics::MetricsStateManager* GetMetricsStateManager() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool IsMetricsReportingEnabled() override;
   bool IsMetricsConsentGiven() override;
   bool IsIncognitoSessionActive() override;
-  bool IsMetricsReportingForceEnabled() override;
-
-  // Gets the MetricsStateManager, creating it if it has not already been
-  // created.
-  metrics::MetricsStateManager* GetMetricsStateManager();
 
   // MetricsStateManager which is passed as a parameter to service constructors.
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager_;
