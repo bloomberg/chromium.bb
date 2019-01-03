@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.media.remote;
 
+import com.google.android.gms.cast.Cast;
 import com.google.android.gms.cast.CastDevice;
 import com.google.android.gms.cast.MediaInfo;
 import com.google.android.gms.cast.MediaStatus;
@@ -11,6 +12,11 @@ import com.google.android.gms.cast.RemoteMediaPlayer;
 import com.google.android.gms.cast.RemoteMediaPlayer.MediaChannelResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.media.router.CastSessionUtil;
@@ -20,6 +26,9 @@ import org.chromium.chrome.browser.media.router.MediaStatusBridge;
 import org.chromium.chrome.browser.media.router.MediaStatusObserver;
 import org.chromium.chrome.browser.media.ui.MediaNotificationInfo;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager;
+
+import java.util.Locale;
+import java.util.Random;
 
 /**
  * A wrapper around a RemoteMediaPlayer that exposes simple playback commands without the
@@ -38,6 +47,11 @@ public class RemoteMediaPlayerWrapper implements RemoteMediaPlayer.OnMetadataUpd
     private RemoteMediaPlayer mMediaPlayer;
     private MediaNotificationInfo.Builder mNotificationBuilder;
     private MediaStatusObserver mMediaStatusObserver;
+
+    private Random mRequestIdGenerator = new Random();
+    private long mMediaSessionId;
+    private boolean mPendingSeek;
+    private long mPendingSeekTime;
 
     private boolean mLoaded;
 
@@ -95,10 +109,34 @@ public class RemoteMediaPlayerWrapper implements RemoteMediaPlayer.OnMetadataUpd
     }
 
     /**
+     *  Opportunistically tries to update |mMediaSessionId|.
+     *  TODO(https://crbug.com/918644): Remove this code when no longer needed.
+     */
+    private void updateMediaSessionId(String message) {
+        try {
+            JSONObject jsonMessage = new JSONObject(message);
+            String messageType = jsonMessage.getString("type");
+
+            if ("MEDIA_STATUS".equals(messageType)) {
+                JSONArray statusArray = jsonMessage.getJSONArray("status");
+                JSONObject status = statusArray.getJSONObject(0);
+
+                mMediaSessionId = status.getLong("mediaSessionId");
+            }
+        } catch (JSONException e) {
+            // Ignore the exception. We are only looking to opportunistically capture the
+            // mediaSessionId.
+        }
+    }
+
+    /**
      * Forwards the message to the underlying RemoteMediaPlayer.
      */
     public void onMediaMessage(String message) {
         if (mMediaPlayer == null) return;
+
+        // Needed to send manual seek messages.
+        updateMediaSessionId(message);
 
         try {
             mMediaPlayer.onMessageReceived(mCastDevice, CastSessionUtil.MEDIA_NAMESPACE, message);
@@ -193,6 +231,35 @@ public class RemoteMediaPlayerWrapper implements RemoteMediaPlayer.OnMetadataUpd
         }
     }
 
+    private String createManualSeekMessage(long seekTimeMillis) {
+        // The request ID does not matter for RemotePlayback.
+        int requestId = mRequestIdGenerator.nextInt(10000);
+        String message = String.format(Locale.ROOT,
+                "{\"requestId\":%d,\"type\":\"SEEK\",\"mediaSessionId\":%d,\"currentTime\":%.3f}",
+                requestId, mMediaSessionId, (double) seekTimeMillis / 1000);
+        return message;
+    }
+
+    // TODO(https://crbug.com/918644) Remove this code when it is no longer needed.
+    private void sendManualSeek(long position) {
+        mPendingSeekTime = position;
+        mPendingSeek = true;
+
+        final String message = createManualSeekMessage(position);
+        Cast.CastApi.sendMessage(mApiClient, CastSessionUtil.MEDIA_NAMESPACE, message)
+                .setResultCallback(new ResultCallback<Status>() {
+                    @Override
+                    public void onResult(Status result) {
+                        mPendingSeek = false;
+
+                        if (!result.isSuccess()) {
+                            Log.e(TAG, "Error when sending manual seek. Status code: %d",
+                                    result.getStatusCode());
+                        }
+                    }
+                });
+    }
+
     /**
      * Seeks to the given position (in milliseconds).
      * No-op if are not in a valid state. Doesn't verify the command's success/failure.
@@ -206,8 +273,11 @@ public class RemoteMediaPlayerWrapper implements RemoteMediaPlayer.OnMetadataUpd
             return;
         }
 
+        // We send a hand crafted message to the receiver rather than using the RemoteMediaPlayer,
+        // due to a crash in GMS code if ever a request times out. See https://crbug.com/876247 and
+        // https://crbug.com/914072.
         try {
-            mMediaPlayer.seek(mApiClient, position).setResultCallback(this);
+            sendManualSeek(position);
         } catch (IllegalStateException e) {
             // GMS throws with message "Result already set" when making multiple API calls
             // in a short amount of time, before results can be read. See https://crbug.com/853923.
@@ -243,7 +313,11 @@ public class RemoteMediaPlayerWrapper implements RemoteMediaPlayer.OnMetadataUpd
 
     @Override
     public long getApproximateCurrentTime() {
-        return mMediaPlayer.getApproximateStreamPosition();
+        // media::Pipeline's seek completes before we get a MediaStatus message with an
+        // updated timestamp. This gives the appearance of the media time jumping around right after
+        // a seek. Send |mPendingSeekTime| when seeking, to prevent media time from being clamped
+        // when seeking backwards.
+        return mPendingSeek ? mPendingSeekTime : mMediaPlayer.getApproximateStreamPosition();
     }
 
     @Override
