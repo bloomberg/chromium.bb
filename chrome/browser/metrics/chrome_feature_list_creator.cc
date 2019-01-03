@@ -191,7 +191,7 @@ void ChromeFeatureListCreator::SetupFieldTrials() {
   // leaked since it needs to live for the duration of the browser process and
   // there's no benefit in cleaning it up at exit.
   base::FieldTrialList* leaked_field_trial_list = new base::FieldTrialList(
-      metrics_services_manager_.get()->CreateEntropyProvider());
+      metrics_services_manager_->CreateEntropyProvider());
   ANNOTATE_LEAKING_OBJECT_PTR(leaked_field_trial_list);
   ignore_result(leaked_field_trial_list);
 
@@ -209,7 +209,7 @@ void ChromeFeatureListCreator::SetupFieldTrials() {
 #endif  // defined(OFFICIAL_BUILD)
 
   variations::VariationsService* variations_service =
-      metrics_services_manager_.get()->GetVariationsService();
+      metrics_services_manager_->GetVariationsService();
   variations_service->SetupFieldTrials(
       cc::switches::kEnableGpuBenchmarking, switches::kEnableFeatures,
       switches::kDisableFeatures, unforceable_field_trials, variation_ids,

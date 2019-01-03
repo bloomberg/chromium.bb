@@ -29,7 +29,6 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_reporting_default_state.h"
 #include "components/metrics/metrics_service.h"
-#include "components/metrics/metrics_switches.h"
 #include "components/metrics/net/cellular_logic_helper.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
 #include "components/metrics/net/network_metrics_provider.h"
@@ -110,12 +109,6 @@ void IOSChromeMetricsServiceClient::RegisterPrefs(
   metrics::StabilityMetricsHelper::RegisterPrefs(registry);
   metrics::RegisterMetricsReportingStatePrefs(registry);
   ukm::UkmService::RegisterPrefs(registry);
-}
-
-// static
-bool IOSChromeMetricsServiceClient::IsMetricsReportingForceEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      metrics::switches::kForceEnableMetricsReporting);
 }
 
 metrics::MetricsService* IOSChromeMetricsServiceClient::GetMetricsService() {

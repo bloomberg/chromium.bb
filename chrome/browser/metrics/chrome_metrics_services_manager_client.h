@@ -9,7 +9,6 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
 #include "base/threading/thread_checker.h"
 #include "components/metrics_services_manager/metrics_services_manager_client.h"
 
@@ -77,24 +76,15 @@ class ChromeMetricsServicesManagerClient
       override;
   std::unique_ptr<metrics::MetricsServiceClient> CreateMetricsServiceClient()
       override;
-  std::unique_ptr<const base::FieldTrial::EntropyProvider>
-  CreateEntropyProvider() override;
+  metrics::MetricsStateManager* GetMetricsStateManager() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool IsMetricsReportingEnabled() override;
   bool IsMetricsConsentGiven() override;
-
+  bool IsIncognitoSessionActive() override;
 #if defined(OS_WIN)
   // On Windows, the client controls whether Crashpad can upload crash reports.
   void UpdateRunningServices(bool may_record, bool may_upload) override;
 #endif  // defined(OS_WIN)
-
-  bool IsMetricsReportingForceEnabled() override;
-
-  bool IsIncognitoSessionActive() override;
-
-  // Gets the MetricsStateManager, creating it if it has not already been
-  // created.
-  metrics::MetricsStateManager* GetMetricsStateManager();
 
   // MetricsStateManager which is passed as a parameter to service constructors.
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager_;

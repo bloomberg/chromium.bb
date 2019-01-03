@@ -144,6 +144,9 @@ class MetricsServiceClient {
   // Notify MetricsServiceManager to UpdateRunningServices using callback.
   void UpdateRunningServices();
 
+  // Checks if the user has forced metrics collection on via the override flag.
+  bool IsMetricsReportingForceEnabled();
+
  private:
   base::Closure update_running_services_;
 

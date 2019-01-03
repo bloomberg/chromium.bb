@@ -8,10 +8,11 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/metrics/field_trial.h"
+#include "base/memory/scoped_refptr.h"
 
 namespace metrics {
 class MetricsServiceClient;
+class MetricsStateManager;
 }
 
 namespace network {
@@ -41,8 +42,10 @@ class MetricsServicesManagerClient {
   CreateVariationsService() = 0;
   virtual std::unique_ptr<metrics::MetricsServiceClient>
   CreateMetricsServiceClient() = 0;
-  virtual std::unique_ptr<const base::FieldTrial::EntropyProvider>
-  CreateEntropyProvider() = 0;
+
+  // Gets the MetricsStateManager, creating it if it has not already been
+  // created.
+  virtual metrics::MetricsStateManager* GetMetricsStateManager() = 0;
 
   // Returns the URL loader factory which the metrics services should use.
   virtual scoped_refptr<network::SharedURLLoaderFactory>
@@ -60,9 +63,6 @@ class MetricsServicesManagerClient {
   // Update the running state of metrics services managed by the embedder, for
   // example, crash reporting.
   virtual void UpdateRunningServices(bool may_record, bool may_upload) {}
-
-  // If the user has forced metrics collection on via the override flag.
-  virtual bool IsMetricsReportingForceEnabled();
 };
 
 }  // namespace metrics_services_manager

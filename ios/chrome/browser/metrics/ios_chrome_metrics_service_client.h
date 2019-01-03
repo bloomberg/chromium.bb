@@ -56,9 +56,6 @@ class IOSChromeMetricsServiceClient : public IncognitoWebStateObserver,
   // Registers local state prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Checks if the user has forced metrics collection on via the override flag.
-  static bool IsMetricsReportingForceEnabled();
-
   // metrics::MetricsServiceClient:
   metrics::MetricsService* GetMetricsService() override;
   ukm::UkmService* GetUkmService() override;

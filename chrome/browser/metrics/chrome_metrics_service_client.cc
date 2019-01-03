@@ -76,7 +76,6 @@
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/metrics_state_manager.h"
-#include "components/metrics/metrics_switches.h"
 #include "components/metrics/net/cellular_logic_helper.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
 #include "components/metrics/net/network_metrics_provider.h"
@@ -561,12 +560,6 @@ metrics::EnableMetricsDefault
 ChromeMetricsServiceClient::GetMetricsReportingDefaultState() {
   return metrics::GetMetricsReportingDefaultState(
       g_browser_process->local_state());
-}
-
-// static
-bool ChromeMetricsServiceClient::IsMetricsReportingForceEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      metrics::switches::kForceEnableMetricsReporting);
 }
 
 void ChromeMetricsServiceClient::Initialize() {
