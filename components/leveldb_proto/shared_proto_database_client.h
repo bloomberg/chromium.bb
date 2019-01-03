@@ -18,6 +18,8 @@ namespace leveldb_proto {
 
 class SharedProtoDatabase;
 
+using ClientCorruptCallback = base::OnceCallback<void(bool)>;
+
 std::string StripPrefix(const std::string& key, const std::string& prefix);
 std::unique_ptr<std::vector<std::string>> PrefixStrings(
     std::unique_ptr<std::vector<std::string>> strings,
@@ -30,8 +32,13 @@ std::unique_ptr<std::vector<std::string>> PrefixStrings(
     const std::string& prefix);
 
 void GetSharedDatabaseInitStatusAsync(
+    const std::string& client_name,
     const scoped_refptr<SharedProtoDatabase>& db,
     Callbacks::InitStatusCallback callback);
+
+void UpdateClientCorruptAsync(const scoped_refptr<SharedProtoDatabase>& db,
+                              const std::string& client_name,
+                              ClientCorruptCallback callback);
 
 // An implementation of ProtoDatabase<T> that uses a shared LevelDB and task
 // runner.
@@ -107,8 +114,6 @@ class SharedProtoDatabaseClient : public ProtoDatabase<T> {
 
   typename Callbacks::InitCallback GetInitCallback() const;
 
-  void SetIsCorrupt(bool is_corrupt);
-
  private:
   friend class SharedProtoDatabase;
   friend class SharedProtoDatabaseTest;
@@ -120,8 +125,6 @@ class SharedProtoDatabaseClient : public ProtoDatabase<T> {
       const std::string& client_namespace,
       const std::string& type_prefix,
       const scoped_refptr<SharedProtoDatabase>& parent_db);
-
-  void OnParentInit(bool success);
 
   static void StripPrefixLoadKeysCallback(
       Callbacks::LoadKeysCallback callback,
@@ -139,6 +142,8 @@ class SharedProtoDatabaseClient : public ProtoDatabase<T> {
       std::unique_ptr<typename Util::Internal<T>::KeyEntryVector> kev,
       const std::string& prefix);
 
+  void UpdateClientCorruptionCount();
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   // |is_corrupt_| should be set by the SharedProtoDatabase that creates this
@@ -146,6 +151,7 @@ class SharedProtoDatabaseClient : public ProtoDatabase<T> {
   // database corruption.
   bool is_corrupt_ = false;
   std::string prefix_;
+  std::string client_name_;
 
   scoped_refptr<SharedProtoDatabase> parent_db_;
   std::unique_ptr<UniqueProtoDatabase<T>> unique_db_;
@@ -180,7 +186,8 @@ void SharedProtoDatabaseClient<T>::Init(
     const std::string& client_name,
     Callbacks::InitStatusCallback callback) {
   unique_db_->SetMetricsId(client_name);
-  GetSharedDatabaseInitStatusAsync(parent_db_, std::move(callback));
+  GetSharedDatabaseInitStatusAsync(client_name, parent_db_,
+                                   std::move(callback));
 }
 
 template <typename T>
@@ -326,6 +333,20 @@ void SharedProtoDatabaseClient<T>::Destroy(
       base::BindOnce([](Callbacks::DestroyCallback callback,
                         bool success) { std::move(callback).Run(success); },
                      std::move(callback)));
+}
+
+template <typename T>
+void SharedProtoDatabaseClient<T>::UpdateClientCorruptionCount() {
+  // Tell the SharedProtoDatabase that we've seen the corruption state so it's
+  // safe to update its records for this client.
+  UpdateClientCorruptAsync(parent_db_, client_name_,
+                           base::BindOnce([](bool success) {
+                             // TODO(thildebr): Should we do anything special
+                             // here? If the shared DB can't update the client's
+                             // corruption counter to match its own, then the
+                             // client will think it's corrupt on the next Init
+                             // as well.
+                           }));
 }
 
 // static

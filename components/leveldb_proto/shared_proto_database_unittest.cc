@@ -46,8 +46,10 @@ class SharedProtoDatabaseTest : public testing::Test {
 
   void TearDown() override {}
 
-  void InitDB(bool create_if_missing, Callbacks::InitStatusCallback callback) {
-    db_->Init(create_if_missing, std::move(callback),
+  void InitDB(bool create_if_missing,
+              const std::string& client_name,
+              Callbacks::InitStatusCallback callback) {
+    db_->Init(create_if_missing, client_name, std::move(callback),
               scoped_task_environment_.GetMainThreadTaskRunner());
   }
 
@@ -145,7 +147,7 @@ TEST_F(SharedProtoDatabaseTest, GetClient_DifferentThreads) {
 // backing LevelDB has been initialized on another thread.
 TEST_F(SharedProtoDatabaseTest, TestDBDestructionAfterInit) {
   base::RunLoop run_init_loop;
-  InitDB(true /* create_if_missing */,
+  InitDB(true /* create_if_missing */, kDefaultNamespace,
          base::BindOnce(
              [](base::OnceClosure signal, Enums::InitStatus status) {
                ASSERT_EQ(status, Enums::InitStatus::kOK);

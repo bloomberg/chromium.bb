@@ -51,18 +51,23 @@ void LoadKeysFromTaskRunner(
 
 ProtoLevelDBWrapper::ProtoLevelDBWrapper(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-    : task_runner_(task_runner) {
+    : task_runner_(task_runner), weak_ptr_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 ProtoLevelDBWrapper::ProtoLevelDBWrapper(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     LevelDB* db)
-    : task_runner_(task_runner), db_(db) {
+    : task_runner_(task_runner), db_(db), weak_ptr_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 ProtoLevelDBWrapper::~ProtoLevelDBWrapper() = default;
+
+void ProtoLevelDBWrapper::RunInitCallback(Callbacks::InitCallback callback,
+                                          const leveldb::Status* status) {
+  std::move(callback).Run(status->ok());
+}
 
 void ProtoLevelDBWrapper::InitWithDatabase(
     LevelDB* database,

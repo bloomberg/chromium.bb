@@ -108,6 +108,9 @@ class ProtoLevelDBWrapper {
 
   void Destroy(Callbacks::DestroyCallback callback);
 
+  void RunInitCallback(Callbacks::InitCallback callback,
+                       const leveldb::Status* status);
+
   // Allow callers to provide their own Database implementation.
   void InitWithDatabase(LevelDB* database,
                         const base::FilePath& database_dir,
@@ -132,6 +135,8 @@ class ProtoLevelDBWrapper {
   // The identifier used when recording metrics to determine the source of the
   // LevelDB calls, likely the database client name.
   std::string metrics_id_ = "Default";
+
+  base::WeakPtrFactory<ProtoLevelDBWrapper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtoLevelDBWrapper);
 };

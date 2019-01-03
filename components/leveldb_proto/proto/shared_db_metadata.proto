@@ -1,0 +1,25 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package leveldb_proto;
+
+// A proto to for storing metadata related to a SharedProtoDatabase client.
+//
+// Next tag: 3
+message SharedDBMetadataProto {
+  // For the global database, this is value increases every time a corruption
+  // is discovered, as a way for clients to determine whether there's been a
+  // corruption since the last time they checked.
+  // For clients, this number is set to the global value when they check their
+  // corruption status, to indicate that we don't need to tell them there was
+  // a corruption next time they check.
+  optional uint64 corruptions = 1;
+
+  // Timestamp for when the database was modified.
+  optional uint64 last_modified = 2;
+}
