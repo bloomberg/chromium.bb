@@ -38,9 +38,9 @@ class TabDragControllerTest : public InProcessBrowserTest {
   // the tabs in |browser|.
   void AddTabAndResetBrowser(Browser* browser);
 
-  // Creates a new Browser and resizes |browser()| and the new browser to be
-  // side by side.
-  Browser* CreateAnotherWindowBrowserAndRelayout();
+  // Creates a new Browser and resizes browser() and the new browser to be side
+  // by side.
+  Browser* CreateAnotherBrowserAndResize();
 
   void SetWindowFinderForTabStrip(TabStrip* tab_strip,
                                   std::unique_ptr<WindowFinder> window_finder);

@@ -108,7 +108,7 @@ bool BrowserNonClientFrameViewMac::CaptionButtonsOnLeadingEdge() const {
 }
 
 gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStrip(
-    views::View* tabstrip) const {
+    const views::View* tabstrip) const {
   // TODO(weili): In the future, we should hide the title bar, and show the
   // tab strip directly under the menu bar. For now, just lay our content
   // under the native title bar. Use the default title bar height to avoid

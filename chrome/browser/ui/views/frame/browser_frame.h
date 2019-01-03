@@ -58,7 +58,7 @@ class BrowserFrame : public views::Widget,
 
   // Retrieves the bounds, in non-client view coordinates for the specified
   // TabStrip view.
-  gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const;
+  gfx::Rect GetBoundsForTabStrip(const views::View* tabstrip) const;
 
   // Returns the inset of the topmost view in the client view from the top of
   // the non-client view. The topmost view depends on the window type. The

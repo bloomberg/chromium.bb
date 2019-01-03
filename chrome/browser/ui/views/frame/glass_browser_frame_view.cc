@@ -151,7 +151,7 @@ bool GlassBrowserFrameView::CaptionButtonsOnLeadingEdge() const {
 }
 
 gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
-    views::View* tabstrip) const {
+    const views::View* tabstrip) const {
   const int x = CaptionButtonsOnLeadingEdge()
                     ? (width() - frame()->GetMinimizeButtonOffset())
                     : 0;
@@ -223,7 +223,7 @@ gfx::Size GlassBrowserFrameView::GetMinimumSize() const {
 
   // Ensure that the minimum width is enough to hold a min-width tab strip.
   if (browser_view()->IsTabStripVisible()) {
-    TabStrip* tabstrip = browser_view()->tabstrip();
+    const TabStrip* tabstrip = browser_view()->tabstrip();
     int min_tabstrip_width = tabstrip->GetMinimumSize().width();
     int min_tabstrip_area_width =
         width() - GetBoundsForTabStrip(tabstrip).width() + min_tabstrip_width;
