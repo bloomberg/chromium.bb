@@ -64,7 +64,7 @@ struct CommonNavigationParams;
 
 // See src/content/common/navigation_params.h
 [Native]
-struct RequestNavigationParams;
+struct CommitNavigationParams;
 
 // Implemented by the frame provider and currently must be associated with the
 // legacy IPC channel.
@@ -104,7 +104,7 @@ interface FrameNavigationControl {
   CommitNavigation(
       network.mojom.URLResponseHead head,
       CommonNavigationParams common_params,
-      RequestNavigationParams request_params,
+      CommitNavigationParams request_params,
       network.mojom.URLLoaderClientEndpoints? url_loader_client_endpoints,
       blink.mojom.URLLoaderFactoryBundle? subresource_loader_factories,
       array<TransferrableURLLoader>? subresource_overrides,
@@ -124,7 +124,7 @@ interface FrameNavigationControl {
   // subresources where applicable.
   CommitFailedNavigation(
       CommonNavigationParams common_params,
-      RequestNavigationParams request_params,
+      CommitNavigationParams request_params,
       bool has_stale_copy_in_cache,
       int32 error_code,
       string? error_page_content,
@@ -138,7 +138,7 @@ interface FrameNavigationControl {
   // if the renderer committed another navigation in the meantime.
   CommitSameDocumentNavigation(
       CommonNavigationParams common_params,
-      RequestNavigationParams request_params)
+      CommitNavigationParams request_params)
       => (blink.mojom.CommitResult commit_result);
 
   // Asks the renderer to handle a renderer-debug URL.

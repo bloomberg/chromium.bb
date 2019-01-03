@@ -237,7 +237,7 @@ struct CONTENT_EXPORT CommonNavigationParams {
 
 // PlzNavigate
 // Timings collected in the browser during navigation for the
-// Navigation Timing API. Sent to Blink in RequestNavigationParams when
+// Navigation Timing API. Sent to Blink in CommitNavigationParams when
 // the navigation is ready to be committed.
 struct CONTENT_EXPORT NavigationTiming {
   base::TimeTicks redirect_start;
@@ -245,29 +245,27 @@ struct CONTENT_EXPORT NavigationTiming {
   base::TimeTicks fetch_start;
 };
 
-// Used by FrameMsg_Navigate. Holds the parameters needed by the renderer to
-// start a browser-initiated navigation besides those in CommonNavigationParams.
-// PlzNavigate: sent to the renderer to make it issue a stream request for a
-// navigation that is ready to commit.
-struct CONTENT_EXPORT RequestNavigationParams {
-  RequestNavigationParams();
-  RequestNavigationParams(bool is_overriding_user_agent,
-                          const std::vector<GURL>& redirects,
-                          const GURL& original_url,
-                          const std::string& original_method,
-                          bool can_load_local_resources,
-                          const PageState& page_state,
-                          int nav_entry_id,
-                          bool is_history_navigation_in_new_child,
-                          std::map<std::string, bool> subframe_unique_names,
-                          bool intended_as_new_entry,
-                          int pending_history_list_offset,
-                          int current_history_list_offset,
-                          int current_history_list_length,
-                          bool is_view_source,
-                          bool should_clear_history_list);
-  RequestNavigationParams(const RequestNavigationParams& other);
-  ~RequestNavigationParams();
+// Used by commit IPC messages. Holds the parameters needed by the renderer to
+// commit a navigation besides those in CommonNavigationParams.
+struct CONTENT_EXPORT CommitNavigationParams {
+  CommitNavigationParams();
+  CommitNavigationParams(bool is_overriding_user_agent,
+                         const std::vector<GURL>& redirects,
+                         const GURL& original_url,
+                         const std::string& original_method,
+                         bool can_load_local_resources,
+                         const PageState& page_state,
+                         int nav_entry_id,
+                         bool is_history_navigation_in_new_child,
+                         std::map<std::string, bool> subframe_unique_names,
+                         bool intended_as_new_entry,
+                         int pending_history_list_offset,
+                         int current_history_list_offset,
+                         int current_history_list_length,
+                         bool is_view_source,
+                         bool should_clear_history_list);
+  CommitNavigationParams(const CommitNavigationParams& other);
+  ~CommitNavigationParams();
 
   // Whether or not the user agent override string should be used.
   bool is_overriding_user_agent = false;

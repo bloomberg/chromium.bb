@@ -154,7 +154,7 @@ struct CommonNavigationParams;
 struct ContextMenuParams;
 struct FrameOwnerProperties;
 struct PendingNavigation;
-struct RequestNavigationParams;
+struct CommitNavigationParams;
 struct ResourceTimingInfo;
 struct SubresourceLoaderParams;
 
@@ -631,7 +631,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       network::ResourceResponse* response,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       const CommonNavigationParams& common_params,
-      const RequestNavigationParams& request_params,
+      const CommitNavigationParams& commit_params,
       bool is_view_source,
       base::Optional<SubresourceLoaderParams> subresource_loader_params,
       base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
@@ -642,7 +642,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // an error page.
   void FailedNavigation(int64_t navigation_id,
                         const CommonNavigationParams& common_params,
-                        const RequestNavigationParams& request_params,
+                        const CommitNavigationParams& commit_params,
                         bool has_stale_copy_in_cache,
                         int error_code,
                         const base::Optional<std::string>& error_page_content);
@@ -1099,7 +1099,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void UpdatePermissionsForNavigation(
       const CommonNavigationParams& common_params,
-      const RequestNavigationParams& request_params);
+      const CommitNavigationParams& commit_params);
 
   // Creates a Network Service-backed factory from appropriate |NetworkContext|
   // and sets a connection error handler to trigger
@@ -1490,7 +1490,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool has_shown_beforeunload_dialog_ = false;
 
   // Returns whether the tab was previously discarded.
-  // This is passed to RequestNavigationParams in NavigationRequest.
+  // This is passed to CommitNavigationParams in NavigationRequest.
   bool was_discarded_;
 
   // Indicates whether this RenderFrameHost is in the process of loading a

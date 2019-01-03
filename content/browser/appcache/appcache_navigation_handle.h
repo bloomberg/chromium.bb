@@ -37,7 +37,7 @@ class ChromeAppCacheService;
 //      host id was updated.
 //
 //   5) When the navigation is ready to commit, the NavigationRequest will
-//      update the RequestNavigationParams based on the id from the
+//      update the CommitNavigationParams based on the id from the
 //      AppCacheNavigationHandle.
 //
 //   6) The commit leads to AppCache registrations happening from the renderer.

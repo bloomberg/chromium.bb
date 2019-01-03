@@ -576,7 +576,7 @@ void RenderViewTest::Reload(const GURL& url) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   TestRenderFrame* frame =
       static_cast<TestRenderFrame*>(impl->GetMainRenderFrame());
-  frame->Navigate(common_params, RequestNavigationParams());
+  frame->Navigate(common_params, CommitNavigationParams());
   FrameLoadWaiter(frame).Wait();
   view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
       blink::WebWidget::LifecycleUpdateReason::kTest);
@@ -717,16 +717,16 @@ void RenderViewTest::GoToOffset(int offset,
       PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr,
       base::Optional<SourceLocation>(), false /* started_from_context_menu */,
       false /* has_user_gesture */, InitiatorCSPInfo(), std::string());
-  RequestNavigationParams request_params;
-  request_params.page_state = state;
-  request_params.nav_entry_id = pending_offset + 1;
-  request_params.pending_history_list_offset = pending_offset;
-  request_params.current_history_list_offset = impl->history_list_offset_;
-  request_params.current_history_list_length = history_list_length;
+  CommitNavigationParams commit_params;
+  commit_params.page_state = state;
+  commit_params.nav_entry_id = pending_offset + 1;
+  commit_params.pending_history_list_offset = pending_offset;
+  commit_params.current_history_list_offset = impl->history_list_offset_;
+  commit_params.current_history_list_length = history_list_length;
 
   TestRenderFrame* frame =
       static_cast<TestRenderFrame*>(impl->GetMainRenderFrame());
-  frame->Navigate(common_params, request_params);
+  frame->Navigate(common_params, commit_params);
 
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.

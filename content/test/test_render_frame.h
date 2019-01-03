@@ -21,7 +21,7 @@ namespace content {
 
 struct CommonNavigationParams;
 class MockFrameHost;
-struct RequestNavigationParams;
+struct CommitNavigationParams;
 
 // A test class to use in RenderViewTests.
 class TestRenderFrame : public RenderFrameImpl {
@@ -42,9 +42,9 @@ class TestRenderFrame : public RenderFrameImpl {
   void WillSendRequest(blink::WebURLRequest& request) override;
   void Navigate(const network::ResourceResponseHead& head,
                 const CommonNavigationParams& common_params,
-                const RequestNavigationParams& request_params);
+                const CommitNavigationParams& commit_params);
   void Navigate(const CommonNavigationParams& common_params,
-                const RequestNavigationParams& request_params);
+                const CommitNavigationParams& commit_params);
   void SwapOut(int proxy_routing_id,
                bool is_loading,
                const FrameReplicationState& replicated_frame_state);

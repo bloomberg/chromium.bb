@@ -86,7 +86,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   static std::unique_ptr<NavigationRequest> CreateBrowserInitiated(
       FrameTreeNode* frame_tree_node,
       const CommonNavigationParams& common_params,
-      const RequestNavigationParams& request_params,
+      const CommitNavigationParams& commit_params,
       bool browser_initiated,
       const std::string& extra_headers,
       const FrameNavigationEntry& frame_entry,
@@ -135,9 +135,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
     return begin_params_.get();
   }
 
-  const RequestNavigationParams& request_params() const {
-    return request_params_;
-  }
+  const CommitNavigationParams& commit_params() const { return commit_params_; }
 
   // Updates the navigation start time.
   void set_navigation_start_time(const base::TimeTicks& time) {
@@ -175,7 +173,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
     associated_site_instance_type_ = type;
   }
 
-  void set_was_discarded() { request_params_.was_discarded = true; }
+  void set_was_discarded() { commit_params_.was_discarded = true; }
 
   NavigationHandleImpl* navigation_handle() const {
     return navigation_handle_.get();
@@ -232,7 +230,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   NavigationRequest(FrameTreeNode* frame_tree_node,
                     const CommonNavigationParams& common_params,
                     mojom::BeginNavigationParamsPtr begin_params,
-                    const RequestNavigationParams& request_params,
+                    const CommitNavigationParams& commit_params,
                     bool browser_initiated,
                     bool from_begin_navigation,
                     bool is_for_commit,
@@ -350,9 +348,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       const;
 
   // Called before a commit. Updates the history index and length held in
-  // RequestNavigationParams. This is used to update this shared state with the
+  // CommitNavigationParams. This is used to update this shared state with the
   // renderer process.
-  void UpdateRequestNavigationParamsHistory();
+  void UpdateCommitNavigationParamsHistory();
 
   // Called when an ongoing renderer-initiated navigation is aborted.
   // Only used with PerNavigationMojoInterface enabled.
@@ -374,11 +372,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // redirects.
   // Note: |common_params_| and |begin_params_| are not const as they can be
   // modified during redirects.
-  // Note: |request_params_| is not const because service_worker_provider_id
+  // Note: |commit_params_| is not const because service_worker_provider_id
   // and should_create_service_worker will be set in OnResponseStarted.
   CommonNavigationParams common_params_;
   mojom::BeginNavigationParamsPtr begin_params_;
-  RequestNavigationParams request_params_;
+  CommitNavigationParams commit_params_;
   const bool browser_initiated_;
 
   // Stores the NavigationUIData for this navigation until the NavigationHandle

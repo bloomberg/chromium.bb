@@ -4151,7 +4151,7 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       base::Optional<SourceLocation>(), false /* started_from_context_menu */,
       false /* has_user_gesture */, InitiatorCSPInfo(), std::string());
   CommitNavigation(0, nullptr, network::mojom::URLLoaderClientEndpointsPtr(),
-                   common_params, RequestNavigationParams(), false,
+                   common_params, CommitNavigationParams(), false,
                    base::nullopt, base::nullopt /* subresource_overrides */,
                    base::UnguessableToken::Create() /* not traced */);
 }
@@ -4482,7 +4482,7 @@ void RenderFrameHostImpl::CommitNavigation(
     network::ResourceResponse* response,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     const CommonNavigationParams& common_params,
-    const RequestNavigationParams& request_params,
+    const CommitNavigationParams& commit_params,
     bool is_view_source,
     base::Optional<SubresourceLoaderParams> subresource_loader_params,
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
@@ -4501,7 +4501,7 @@ void RenderFrameHostImpl::CommitNavigation(
   const bool is_first_navigation = !has_committed_any_navigation_;
   has_committed_any_navigation_ = true;
 
-  UpdatePermissionsForNavigation(common_params, request_params);
+  UpdatePermissionsForNavigation(common_params, commit_params);
 
   // Get back to a clean state, in case we start a new navigation without
   // completing an unload handler.
@@ -4660,7 +4660,7 @@ void RenderFrameHostImpl::CommitNavigation(
   if (is_same_document) {
     DCHECK(same_document_navigation_request_);
     GetNavigationControl()->CommitSameDocumentNavigation(
-        common_params, request_params,
+        common_params, commit_params,
         base::BindOnce(&RenderFrameHostImpl::OnSameDocumentCommitProcessed,
                        base::Unretained(this),
                        same_document_navigation_request_->navigation_handle()
@@ -4731,7 +4731,7 @@ void RenderFrameHostImpl::CommitNavigation(
     if (IsPerNavigationMojoInterfaceEnabled() && navigation_request_ &&
         navigation_request_->GetCommitNavigationClient()) {
       navigation_request_->GetCommitNavigationClient()->CommitNavigation(
-          head, common_params, request_params,
+          head, common_params, commit_params,
           std::move(url_loader_client_endpoints),
           std::move(subresource_loader_factories),
           std::move(subresource_overrides), std::move(controller),
@@ -4740,7 +4740,7 @@ void RenderFrameHostImpl::CommitNavigation(
                          base::Unretained(this), navigation_id));
     } else {
       GetNavigationControl()->CommitNavigation(
-          head, common_params, request_params,
+          head, common_params, commit_params,
           std::move(url_loader_client_endpoints),
           std::move(subresource_loader_factories),
           std::move(subresource_overrides), std::move(controller),
@@ -4775,7 +4775,7 @@ void RenderFrameHostImpl::CommitNavigation(
 void RenderFrameHostImpl::FailedNavigation(
     int64_t navigation_id,
     const CommonNavigationParams& common_params,
-    const RequestNavigationParams& request_params,
+    const CommitNavigationParams& commit_params,
     bool has_stale_copy_in_cache,
     int error_code,
     const base::Optional<std::string>& error_page_content) {
@@ -4785,7 +4785,7 @@ void RenderFrameHostImpl::FailedNavigation(
 
   // Update renderer permissions even for failed commits, so that for example
   // the URL bar correctly displays privileged URLs instead of filtering them.
-  UpdatePermissionsForNavigation(common_params, request_params);
+  UpdatePermissionsForNavigation(common_params, commit_params);
 
   // Get back to a clean state, in case a new navigation started without
   // completing an unload handler.
@@ -4818,13 +4818,13 @@ void RenderFrameHostImpl::FailedNavigation(
   if (IsPerNavigationMojoInterfaceEnabled() && request &&
       request->GetCommitNavigationClient()) {
     request->GetCommitNavigationClient()->CommitFailedNavigation(
-        common_params, request_params, has_stale_copy_in_cache, error_code,
+        common_params, commit_params, has_stale_copy_in_cache, error_code,
         error_page_content, std::move(subresource_loader_factories),
         base::BindOnce(&RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
                        base::Unretained(this), navigation_id));
   } else {
     GetNavigationControl()->CommitFailedNavigation(
-        common_params, request_params, has_stale_copy_in_cache, error_code,
+        common_params, commit_params, has_stale_copy_in_cache, error_code,
         error_page_content, std::move(subresource_loader_factories),
         base::BindOnce(&RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
                        base::Unretained(this), navigation_id));
@@ -5265,7 +5265,7 @@ void RenderFrameHostImpl::GrantFileAccessFromResourceRequestBody(
 
 void RenderFrameHostImpl::UpdatePermissionsForNavigation(
     const CommonNavigationParams& common_params,
-    const RequestNavigationParams& request_params) {
+    const CommitNavigationParams& commit_params) {
   // Browser plugin guests are not allowed to navigate outside web-safe schemes,
   // so do not grant them the ability to commit additional URLs.
   if (!GetProcess()->IsForGuestsOnly()) {
@@ -5287,8 +5287,8 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
   // access again.  Abuse is prevented, because the files listed in the page
   // state are validated earlier, when they are received from the renderer (in
   // RenderFrameHostImpl::CanAccessFilesOfPageState).
-  if (request_params.page_state.IsValid())
-    GrantFileAccessFromPageState(request_params.page_state);
+  if (commit_params.page_state.IsValid())
+    GrantFileAccessFromPageState(commit_params.page_state);
 
   // We may be here after transferring navigation to a different renderer
   // process.  In this case, we need to ensure that the new renderer retains
@@ -6072,7 +6072,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   }
 
   if (navigation_request_)
-    was_discarded_ = navigation_request_->request_params().was_discarded;
+    was_discarded_ = navigation_request_->commit_params().was_discarded;
 
   // Find the appropriate NavigationRequest for this navigation.
   std::unique_ptr<NavigationRequest> navigation_request;

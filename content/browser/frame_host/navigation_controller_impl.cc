@@ -366,13 +366,13 @@ void ValidateRequestMatchesEntry(NavigationRequest* request,
   }
   DCHECK_EQ(request->common_params().should_replace_current_entry,
             entry->should_replace_entry());
-  DCHECK_EQ(request->request_params().should_clear_history_list,
+  DCHECK_EQ(request->commit_params().should_clear_history_list,
             entry->should_clear_history_list());
   DCHECK_EQ(request->common_params().has_user_gesture,
             entry->has_user_gesture());
   DCHECK_EQ(request->common_params().base_url_for_data_url,
             entry->GetBaseURLForDataURL());
-  DCHECK_EQ(request->request_params().can_load_local_resources,
+  DCHECK_EQ(request->commit_params().can_load_local_resources,
             entry->GetCanLoadLocalResources());
   DCHECK_EQ(request->common_params().started_from_context_menu,
             entry->has_started_from_context_menu());
@@ -387,10 +387,10 @@ void ValidateRequestMatchesEntry(NavigationRequest* request,
   DCHECK_EQ(request->common_params().url, frame_entry->url());
   DCHECK_EQ(request->common_params().method, frame_entry->method());
 
-  size_t redirect_size = request->request_params().redirects.size();
+  size_t redirect_size = request->commit_params().redirects.size();
   if (redirect_size == frame_entry->redirect_chain().size()) {
     for (size_t i = 0; i < redirect_size; ++i) {
-      DCHECK_EQ(request->request_params().redirects[i],
+      DCHECK_EQ(request->commit_params().redirects[i],
                 frame_entry->redirect_chain()[i]);
     }
   } else {
@@ -2881,7 +2881,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
       params.started_from_context_menu, has_user_gesture, InitiatorCSPInfo(),
       params.href_translate, params.input_start);
 
-  RequestNavigationParams request_params(
+  CommitNavigationParams commit_params(
       override_user_agent, params.redirect_chain, common_params.url,
       common_params.method, params.can_load_local_resources,
       frame_entry->page_state(), entry.GetUniqueID(),
@@ -2893,11 +2893,11 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
       is_view_source_mode, params.should_clear_history_list);
 #if defined(OS_ANDROID)
   if (ValidateDataURLAsString(params.data_url_as_string)) {
-    request_params.data_url_as_string = params.data_url_as_string->data();
+    commit_params.data_url_as_string = params.data_url_as_string->data();
   }
 #endif
 
-  request_params.was_activated = params.was_activated;
+  commit_params.was_activated = params.was_activated;
 
   // A form submission may happen here if the navigation is a renderer-initiated
   // form submission that took the OpenURL path.
@@ -2907,7 +2907,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
   std::string extra_headers_crlf;
   base::ReplaceChars(params.extra_headers, "\n", "\r\n", &extra_headers_crlf);
   return NavigationRequest::CreateBrowserInitiated(
-      node, common_params, request_params, !params.is_renderer_initiated,
+      node, common_params, commit_params, !params.is_renderer_initiated,
       extra_headers_crlf, *frame_entry, entry, request_body,
       params.navigation_ui_data ? params.navigation_ui_data->Clone() : nullptr);
 }
@@ -2990,18 +2990,16 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
   // TODO(clamy): |intended_as_new_entry| below should always be false once
   // Reload no longer leads to this being called for a pending NavigationEntry
   // of index -1.
-  RequestNavigationParams request_params =
-      entry.ConstructRequestNavigationParams(
-          *frame_entry, common_params.url, common_params.method,
-          is_history_navigation_in_new_child,
-          entry.GetSubframeUniqueNames(frame_tree_node),
-          GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
-          GetIndexOfEntry(&entry), GetLastCommittedEntryIndex(),
-          GetEntryCount());
-  request_params.post_content_type = post_content_type;
+  CommitNavigationParams commit_params = entry.ConstructCommitNavigationParams(
+      *frame_entry, common_params.url, common_params.method,
+      is_history_navigation_in_new_child,
+      entry.GetSubframeUniqueNames(frame_tree_node),
+      GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
+      GetIndexOfEntry(&entry), GetLastCommittedEntryIndex(), GetEntryCount());
+  commit_params.post_content_type = post_content_type;
 
   return NavigationRequest::CreateBrowserInitiated(
-      frame_tree_node, common_params, request_params,
+      frame_tree_node, common_params, commit_params,
       !entry.is_renderer_initiated(), entry.extra_headers(), *frame_entry,
       entry, request_body, nullptr /* navigation_ui_data */);
 }

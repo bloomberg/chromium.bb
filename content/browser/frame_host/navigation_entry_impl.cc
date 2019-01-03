@@ -706,7 +706,7 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
       has_user_gesture(), InitiatorCSPInfo(), std::string(), input_start);
 }
 
-RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(
+CommitNavigationParams NavigationEntryImpl::ConstructCommitNavigationParams(
     const FrameNavigationEntry& frame_entry,
     const GURL& original_url,
     const std::string& original_method,
@@ -735,7 +735,7 @@ RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(
     current_length_to_send = 0;
   }
 
-  RequestNavigationParams request_params(
+  CommitNavigationParams commit_params(
       GetIsOverridingUserAgent(), redirects, original_url, original_method,
       GetCanLoadLocalResources(), frame_entry.page_state(), GetUniqueID(),
       is_history_navigation_in_new_child, subframe_unique_names,
@@ -743,10 +743,10 @@ RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(
       current_length_to_send, IsViewSourceMode(), should_clear_history_list());
 #if defined(OS_ANDROID)
   if (NavigationControllerImpl::ValidateDataURLAsString(GetDataURLAsString())) {
-    request_params.data_url_as_string = GetDataURLAsString()->data();
+    commit_params.data_url_as_string = GetDataURLAsString()->data();
   }
 #endif
-  return request_params;
+  return commit_params;
 }
 
 void NavigationEntryImpl::ResetForCommit(FrameNavigationEntry* frame_entry) {

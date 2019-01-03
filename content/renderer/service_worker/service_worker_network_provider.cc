@@ -158,7 +158,7 @@ class WebServiceWorkerNetworkProviderForFrame
 std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 ServiceWorkerNetworkProvider::CreateForNavigation(
     int route_id,
-    const RequestNavigationParams* request_params,
+    const CommitNavigationParams* commit_params,
     blink::WebLocalFrame* frame,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory) {
@@ -168,9 +168,9 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
   // however it will have an invalid id.
   bool should_create_provider = false;
   int provider_id = kInvalidServiceWorkerProviderId;
-  if (request_params) {
-    should_create_provider = request_params->should_create_service_worker;
-    provider_id = request_params->service_worker_provider_id;
+  if (commit_params) {
+    should_create_provider = commit_params->should_create_service_worker;
+    provider_id = commit_params->service_worker_provider_id;
   } else {
     should_create_provider =
         ((frame->EffectiveSandboxFlags() & blink::WebSandboxFlags::kOrigin) !=

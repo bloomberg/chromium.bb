@@ -461,8 +461,8 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
             *frame_entry, request_body, frame_entry->url(),
             frame_entry->referrer(), navigate_type, PREVIEWS_UNSPECIFIED,
             base::TimeTicks::Now(), base::TimeTicks::Now());
-    RequestNavigationParams request_params =
-        entry.ConstructRequestNavigationParams(
+    CommitNavigationParams commit_params =
+        entry.ConstructCommitNavigationParams(
             *frame_entry, common_params.url, common_params.method, false,
             entry.GetSubframeUniqueNames(frame_tree_node),
             controller->GetPendingEntryIndex() ==
@@ -470,11 +470,11 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
             controller->GetIndexOfEntry(&entry),
             controller->GetLastCommittedEntryIndex(),
             controller->GetEntryCount());
-    request_params.post_content_type = post_content_type;
+    commit_params.post_content_type = post_content_type;
 
     std::unique_ptr<NavigationRequest> navigation_request =
         NavigationRequest::CreateBrowserInitiated(
-            frame_tree_node, common_params, request_params,
+            frame_tree_node, common_params, commit_params,
             !entry.is_renderer_initiated(), entry.extra_headers(), *frame_entry,
             entry, request_body, nullptr /* navigation_ui_data */);
 
@@ -2858,19 +2858,17 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
       *frame_entry, nullptr, frame_entry->url(), frame_entry->referrer(),
       FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, PREVIEWS_UNSPECIFIED,
       base::TimeTicks::Now(), base::TimeTicks::Now());
-  RequestNavigationParams request_params =
-      entry.ConstructRequestNavigationParams(
-          *frame_entry, common_params.url, common_params.method, false,
-          entry.GetSubframeUniqueNames(frame_tree_node),
-          controller().GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
-          static_cast<NavigationControllerImpl&>(controller())
-              .GetIndexOfEntry(&entry),
-          controller().GetLastCommittedEntryIndex(),
-          controller().GetEntryCount());
+  CommitNavigationParams commit_params = entry.ConstructCommitNavigationParams(
+      *frame_entry, common_params.url, common_params.method, false,
+      entry.GetSubframeUniqueNames(frame_tree_node),
+      controller().GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
+      static_cast<NavigationControllerImpl&>(controller())
+          .GetIndexOfEntry(&entry),
+      controller().GetLastCommittedEntryIndex(), controller().GetEntryCount());
 
   std::unique_ptr<NavigationRequest> navigation_request =
       NavigationRequest::CreateBrowserInitiated(
-          frame_tree_node, common_params, request_params,
+          frame_tree_node, common_params, commit_params,
           !entry.is_renderer_initiated(), entry.extra_headers(), *frame_entry,
           entry, nullptr /* request_body */, nullptr /* navigation_ui_data */);
   manager->DidCreateNavigationRequest(navigation_request.get());
@@ -2934,19 +2932,17 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
       *frame_entry, nullptr, frame_entry->url(), frame_entry->referrer(),
       FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, PREVIEWS_UNSPECIFIED,
       base::TimeTicks::Now(), base::TimeTicks::Now());
-  RequestNavigationParams request_params =
-      entry.ConstructRequestNavigationParams(
-          *frame_entry, common_params.url, common_params.method, false,
-          entry.GetSubframeUniqueNames(frame_tree_node),
-          controller().GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
-          static_cast<NavigationControllerImpl&>(controller())
-              .GetIndexOfEntry(&entry),
-          controller().GetLastCommittedEntryIndex(),
-          controller().GetEntryCount());
+  CommitNavigationParams commit_params = entry.ConstructCommitNavigationParams(
+      *frame_entry, common_params.url, common_params.method, false,
+      entry.GetSubframeUniqueNames(frame_tree_node),
+      controller().GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
+      static_cast<NavigationControllerImpl&>(controller())
+          .GetIndexOfEntry(&entry),
+      controller().GetLastCommittedEntryIndex(), controller().GetEntryCount());
 
   std::unique_ptr<NavigationRequest> navigation_request =
       NavigationRequest::CreateBrowserInitiated(
-          frame_tree_node, common_params, request_params,
+          frame_tree_node, common_params, commit_params,
           !entry.is_renderer_initiated(), entry.extra_headers(), *frame_entry,
           entry, nullptr /* request_body */, nullptr /* navigation_ui_data */);
   manager->DidCreateNavigationRequest(navigation_request.get());
@@ -3007,19 +3003,17 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
       *frame_entry, nullptr, frame_entry->url(), frame_entry->referrer(),
       FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, PREVIEWS_UNSPECIFIED,
       base::TimeTicks::Now(), base::TimeTicks::Now());
-  RequestNavigationParams request_params =
-      entry.ConstructRequestNavigationParams(
-          *frame_entry, common_params.url, common_params.method, false,
-          entry.GetSubframeUniqueNames(frame_tree_node),
-          controller().GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
-          static_cast<NavigationControllerImpl&>(controller())
-              .GetIndexOfEntry(&entry),
-          controller().GetLastCommittedEntryIndex(),
-          controller().GetEntryCount());
+  CommitNavigationParams commit_params = entry.ConstructCommitNavigationParams(
+      *frame_entry, common_params.url, common_params.method, false,
+      entry.GetSubframeUniqueNames(frame_tree_node),
+      controller().GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
+      static_cast<NavigationControllerImpl&>(controller())
+          .GetIndexOfEntry(&entry),
+      controller().GetLastCommittedEntryIndex(), controller().GetEntryCount());
 
   std::unique_ptr<NavigationRequest> navigation_request =
       NavigationRequest::CreateBrowserInitiated(
-          frame_tree_node, common_params, request_params,
+          frame_tree_node, common_params, commit_params,
           !entry.is_renderer_initiated(), entry.extra_headers(), *frame_entry,
           entry, nullptr /* request_body */, nullptr /* navigation_ui_data */);
   manager->DidCreateNavigationRequest(navigation_request.get());
