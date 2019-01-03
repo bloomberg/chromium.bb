@@ -633,7 +633,8 @@ cr.define('print_preview', function() {
 
     /**
      * @return {string} Human readable status for a destination that is offline
-     *     or has a bad certificate. */
+     *     or has a bad certificate.
+     */
     get connectionStatusText() {
       if (!this.isOfflineOrInvalid) {
         return '';
@@ -686,52 +687,6 @@ cr.define('print_preview', function() {
         return 'print-preview:print';
       }
       return 'print-preview:printer-shared';
-    }
-
-    /** @return {string} Relative URL of the destination's icon. */
-    get iconUrl() {
-      if (this.id_ == Destination.GooglePromotedId.DOCS) {
-        return Destination.IconUrl_.DOCS;
-      }
-      if (this.id_ == Destination.GooglePromotedId.SAVE_AS_PDF) {
-        return Destination.IconUrl_.PDF;
-      }
-      if (this.isEnterprisePrinter) {
-        return Destination.IconUrl_.ENTERPRISE;
-      }
-      if (this.isLocal) {
-        return Destination.IconUrl_.LOCAL_1X;
-      }
-      if (this.type_ == print_preview.DestinationType.MOBILE && this.isOwned_) {
-        return Destination.IconUrl_.MOBILE;
-      }
-      if (this.type_ == print_preview.DestinationType.MOBILE) {
-        return Destination.IconUrl_.MOBILE_SHARED;
-      }
-      if (this.isOwned_) {
-        return Destination.IconUrl_.CLOUD_1X;
-      }
-      return Destination.IconUrl_.CLOUD_SHARED_1X;
-    }
-
-    /**
-     * @return {string} The srcset="" attribute of a destination. Generally used
-     *     for a 2x (e.g. HiDPI) icon. Can be empty or of the format '<url> 2x'.
-     */
-    get srcSet() {
-      let srcSetIcon = '';
-      const iconUrl = this.iconUrl;
-      if (iconUrl == Destination.IconUrl_.LOCAL_1X) {
-        srcSetIcon = Destination.IconUrl_.LOCAL_2X;
-      } else if (iconUrl == Destination.IconUrl_.CLOUD_1X) {
-        srcSetIcon = Destination.IconUrl_.CLOUD_2X;
-      } else if (iconUrl == Destination.IconUrl_.CLOUD_SHARED_1X) {
-        srcSetIcon = Destination.IconUrl_.CLOUD_SHARED_2X;
-      }
-      if (srcSetIcon) {
-        srcSetIcon += ' 2x';
-      }
-      return srcSetIcon;
     }
 
     /**
@@ -926,25 +881,6 @@ cr.define('print_preview', function() {
   Destination.GooglePromotedId = {
     DOCS: '__google__docs',
     SAVE_AS_PDF: 'Save as PDF'
-  };
-
-  /**
-   * Enumeration of relative icon URLs for various types of destinations.
-   * @enum {string}
-   * @private
-   */
-  Destination.IconUrl_ = {
-    CLOUD_1X: 'images/1x/printer.png',
-    CLOUD_2X: 'images/2x/printer.png',
-    CLOUD_SHARED_1X: 'images/1x/printer_shared.png',
-    CLOUD_SHARED_2X: 'images/2x/printer_shared.png',
-    LOCAL_1X: 'images/1x/printer.png',
-    LOCAL_2X: 'images/2x/printer.png',
-    MOBILE: 'images/mobile.png',
-    MOBILE_SHARED: 'images/mobile_shared.png',
-    PDF: 'images/pdf.png',
-    DOCS: 'images/google_doc.png',
-    ENTERPRISE: 'images/business.svg'
   };
 
   // Export
