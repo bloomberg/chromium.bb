@@ -187,7 +187,7 @@ void AshWindowTreeHostPlatform::CommonInit() {
   event_queue_ =
       Shell::Get()->window_service_owner()->window_service()->event_queue();
 
-  if (!base::FeatureList::IsEnabled(features::kMash))
+  if (!::features::IsMultiProcessMash())
     return;
 
   input_method_ = std::make_unique<aura::InputMethodMus>(this, this);
