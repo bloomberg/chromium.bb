@@ -38,10 +38,11 @@
 #include "content/test/test_content_browser_client.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/cross_origin_read_blocking.h"
+#include "services/network/initiator_lock_compatibility.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/test/test_url_loader_client.h"
-#include "services/network/url_loader.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
@@ -51,7 +52,9 @@ using testing::Not;
 using testing::HasSubstr;
 using Action = network::CrossOriginReadBlocking::Action;
 using RequestInitiatorOriginLockCompatibility =
-    network::URLLoader::RequestInitiatorOriginLockCompatibility;
+    network::InitiatorLockCompatibility;
+using CorbVsInitiatorLock =
+    network::CrossOriginReadBlocking::CorbResultVsInitiatorLockCompatibility;
 
 namespace {
 
@@ -106,15 +109,46 @@ void InspectHistograms(
     // TODO(lukasza): https://crbug.com/910287: Remove the special case below
     // after ensuring that |request_initiator| coming through AppCache is
     // trustworthy (today kBrowserProcess will be reported in
-    // NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility when
+    // NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility UMA when
     // AppCache is relaying renderer requests through a browser process).
     auto expected_lock_compatibility =
         special_request_initiator_origin_lock_check_for_appcache
-            ? RequestInitiatorOriginLockCompatibility::kBrowserProcess
-            : RequestInitiatorOriginLockCompatibility::kCompatibleLock;
+            ? network::InitiatorLockCompatibility::kBrowserProcess
+            : network::InitiatorLockCompatibility::kCompatibleLock;
     histograms.ExpectUniqueSample(
         "NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility",
         expected_lock_compatibility, 1);
+
+    if (0 != (expectations & kShouldBeBlocked)) {
+      auto benign_blocking = base::Bucket(
+          static_cast<int>(CorbVsInitiatorLock::kBenignBlocking), 1);
+      auto compatible_blocking = base::Bucket(
+          static_cast<int>(CorbVsInitiatorLock::kBlockingWhenCompatibleLock),
+          1);
+      auto other_blocking = base::Bucket(
+          static_cast<int>(CorbVsInitiatorLock::kBlockingWhenOtherLock), 1);
+
+      ::testing::Matcher<std::vector<base::Bucket>> expected_buckets;
+      if (special_request_initiator_origin_lock_check_for_appcache) {
+        expected_buckets = ::testing::ElementsAre(other_blocking);
+      } else {
+        // Important part of the verification is that we never expect to
+        // encounted kBlockingWhenIncorrectLock (outside of HTML Import
+        // scenarios covered by separate, explicit tests below).
+        expected_buckets =
+            ::testing::AnyOf(::testing::ElementsAre(benign_blocking),
+                             ::testing::ElementsAre(compatible_blocking));
+      }
+
+      EXPECT_THAT(
+          histograms.GetAllSamples(
+              "SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility"),
+          expected_buckets);
+    } else {  // ~kAllowed
+      histograms.ExpectUniqueSample(
+          "SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility",
+          CorbVsInitiatorLock::kNoBlocking, 1);
+    }
   }
 
   std::string bucket;
@@ -822,6 +856,268 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, PrefetchIsNotImpacted) {
       ExecuteScriptAndExtractString(shell()->web_contents()->GetAllFrames()[1],
                                     fetch_script, &response_body));
   EXPECT_EQ("<p>contents of the response</p>", response_body);
+}
+
+// This test covers a scenario where foo.com document HTML-Imports a bar.com
+// document.  Because of historical reasons, bar.com fetches use foo.com's
+// URLLoaderFactory.  This means that |request_initiator_site_lock| enforcement
+// can incorrectly classify such fetches as malicious (kIncorrectLock).
+// This test ensures that UMAs properly detect such mishaps.
+//
+// TODO(lukasza, yoichio): https://crbug.com/766694: Remove this test once HTML
+// Imports are removed from the codebase.
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
+                       HtmlImports_IncorrectLock) {
+  embedded_test_server()->StartAcceptingConnections();
+
+  // Prepare to intercept the network request at the IPC layer.
+  // This has to be done before the RenderFrameHostImpl is created.
+  //
+  // Note: we want to verify that the blocking prevents the data from being sent
+  // over IPC.  Testing later (e.g. via Response/Headers Web APIs) might give a
+  // false sense of security, since some sanitization happens inside the
+  // renderer (e.g. via FetchResponseData::CreateCorsFilteredResponse).
+  GURL json_url("http://bar.com/site_isolation/nosniff.json");
+  RequestInterceptor interceptor(json_url);
+
+  // Navigate to the test page.
+  GURL foo_url("http://foo.com/title1.html");
+  EXPECT_TRUE(NavigateToURL(shell(), foo_url));
+
+  // Trigger a HTML import from another site.  The imported document will
+  // perform a fetch of nosniff.json same-origin (bar.com) via <script> element.
+  // CORB should normally allow such fetch (request_initiator == bar.com ==
+  // origin_of_fetch_target), but here the fetch will be blocked, because
+  // request_initiator_site_lock (a.com) will differ from request_initiator.
+  // Such mishap is okay, because CORB only blocks HTML/XML/JSON and such
+  // content type wouldn't have worked in <script> (or other non-XHR/fetch
+  // context) anyway.
+  GURL html_import_url(
+      "http://bar.com/cross_site_document_blocking/html_import.html");
+  const char* html_import_injection_template = R"(
+          var link = document.createElement('link');
+          link.rel = 'import';
+          link.href = $1;
+          document.head.appendChild(link);
+          )";
+  {
+    base::HistogramTester histograms;
+    std::string script =
+        JsReplace(html_import_injection_template, html_import_url);
+    ExecuteScriptAsync(shell()->web_contents(), script);
+    interceptor.WaitForRequestCompletion();
+
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      // NetworkService enforices |request_initiator_site_lock| for CORB,
+      // which means that legitimate fetches from HTML Imported scripts may get
+      // incorrectly blocked.
+      interceptor.Verify(CorbExpectations::kShouldBeBlockedWithoutSniffing);
+
+      // The main purpose of the test is not verifying the incorrect behavior
+      // above, but making sure that the UMA that records the incorrect behavior
+      // is logged.  Hopefully the incorrect behavior will rarely occur in
+      // practice.
+      FetchHistogramsFromChildProcesses();
+      auto incorrect_lock_blocking = base::Bucket(
+          static_cast<int>(CorbVsInitiatorLock::kBlockingWhenIncorrectLock), 1);
+
+      // ExecuteScriptAsync covers 2 fetches:
+      // - Fetching cross_site_document_blocking/html_import.html
+      // - Fetching site_isolation/nosniff.json (via <script src=...>
+      //   from html_import.html)
+      // The second one is done with kIncorrectLock, but the assertion below
+      // needs to also cover the first one:
+      auto no_blocking =
+          base::Bucket(static_cast<int>(CorbVsInitiatorLock::kNoBlocking), 1);
+      EXPECT_THAT(
+          histograms.GetAllSamples(
+              "SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility"),
+          ::testing::UnorderedElementsAre(no_blocking,
+                                          incorrect_lock_blocking));
+    } else {
+      // Without |request_initiator_site_lock| no CORB blocking is expected.
+      interceptor.Verify(CorbExpectations::kShouldBeAllowedWithoutSniffing);
+    }
+  }
+}
+
+// This test doesn't cover desirable behavior, but rather highlights bugs in
+// implementation of HTML Imports:
+// 1. On one hand:
+//    - "/site_isolation/nosniff.json" is resolved relative to foo.com
+//    - request_initiator is set to foo.com
+// 2. But
+//    - CORB sees that the request was made from bar.com and blocks it.
+//
+// The test helps show that the bug above means that in XHR/fetch scenarios
+// request_initiator is accidentally compatible with request_initiator_site_lock
+// and therefore the lock can be safely enforced.
+//
+// There are 2 almost identical tests here:
+// - HtmlImports_CompatibleLock1
+// - HtmlImports_CompatibleLock2
+// They differ in which document is HTML Imported (and how the fetch of
+// nosniff.json is triggered).
+//
+// TODO(lukasza, yoichio): https://crbug.com/766694: Remove this test once HTML
+// Imports are removed from the codebase.
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
+                       HtmlImports_CompatibleLock1) {
+  embedded_test_server()->StartAcceptingConnections();
+
+  // Prepare to intercept the network request at the IPC layer.
+  // This has to be done before the RenderFrameHostImpl is created.
+  //
+  // Note: we want to verify that the blocking prevents the data from being sent
+  // over IPC.  Testing later (e.g. via Response/Headers Web APIs) might give a
+  // false sense of security, since some sanitization happens inside the
+  // renderer (e.g. via FetchResponseData::CreateCorsFilteredResponse).
+  GURL json_url("http://foo.com/site_isolation/nosniff.json");
+  RequestInterceptor interceptor(json_url);
+
+  // Navigate to the test page.
+  GURL foo_url("http://foo.com/title1.html");
+  EXPECT_TRUE(NavigateToURL(shell(), foo_url));
+
+  // Trigger a HTML import from another site.  The imported document will
+  // perform a fetch of nosniff.json same-origin (bar.com).  CORB should
+  // allow all same-origin fetches.
+  GURL html_import_url(
+      "http://bar.com/cross_site_document_blocking/html_import2.html");
+  const char* html_import_injection_template = R"(
+          var link = document.createElement('link');
+          link.rel = 'import';
+          link.href = $1;
+          document.head.appendChild(link);
+          )";
+  {
+    DOMMessageQueue msg_queue;
+    base::HistogramTester histograms;
+    std::string script =
+        JsReplace(html_import_injection_template, html_import_url);
+    ExecuteScriptAsync(shell()->web_contents(), script);
+    interceptor.WaitForRequestCompletion();
+
+    // |request_initiator| is same-origin (foo.com), and so the fetch should not
+    // be blocked by CORB.
+    interceptor.Verify(CorbExpectations::kShouldBeAllowedWithoutSniffing);
+
+    // OTOH, the fetching context (i.e. the context that fetch_nosniff_json.js
+    // exectues under) is cross-origin (bar.com) so CORB should result in a
+    // fetch error.
+    std::string fetch_result;
+    EXPECT_TRUE(msg_queue.WaitForMessage(&fetch_result));
+    EXPECT_EQ("\"ERROR: TypeError: Failed to fetch\"", fetch_result);
+
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      // The main purpose of the test is not verifying the incorrect behavior
+      // above, but making sure that the UMA that records the incorrect behavior
+      // is logged.  Hopefully the incorrect behavior will rarely occur in
+      // practice.
+      FetchHistogramsFromChildProcesses();
+
+      // ExecuteScriptAsync covers 3 fetches:
+      // - Fetching cross_site_document_blocking/html_import.html
+      // - Fetching cross_site_document_blocking/fetch_nosniff_json.js
+      // - Fetching site_isolation/nosniff.json
+      // All of them should result in no CORB blocking.
+      auto no_blocking =
+          base::Bucket(static_cast<int>(CorbVsInitiatorLock::kNoBlocking), 3);
+      EXPECT_THAT(
+          histograms.GetAllSamples(
+              "SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility"),
+          ::testing::UnorderedElementsAre(no_blocking));
+    }
+  }
+}
+
+// This test doesn't cover desirable behavior, but rather highlights bugs in
+// implementation of HTML Imports:
+// 1. On one hand:
+//    - "/site_isolation/nosniff.json" is resolved relative to foo.com
+//    - request_initiator is set to foo.com
+// 2. But
+//    - CORB sees that the request was made from bar.com and blocks it.
+//
+// The test helps show that the bug above means that in XHR/fetch scenarios
+// request_initiator is accidentally compatible with request_initiator_site_lock
+// and therefore the lock can be safely enforced.
+//
+// There are 2 almost identical tests here:
+// - HtmlImports_CompatibleLock1
+// - HtmlImports_CompatibleLock2
+// They differ in which document is HTML Imported (and how the fetch of
+// nosniff.json is triggered).
+//
+// TODO(lukasza, yoichio): https://crbug.com/766694: Remove this test once HTML
+// Imports are removed from the codebase.
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
+                       HtmlImports_CompatibleLock2) {
+  embedded_test_server()->StartAcceptingConnections();
+
+  // Prepare to intercept the network request at the IPC layer.
+  // This has to be done before the RenderFrameHostImpl is created.
+  //
+  // Note: we want to verify that the blocking prevents the data from being sent
+  // over IPC.  Testing later (e.g. via Response/Headers Web APIs) might give a
+  // false sense of security, since some sanitization happens inside the
+  // renderer (e.g. via FetchResponseData::CreateCorsFilteredResponse).
+  GURL json_url("http://foo.com/site_isolation/nosniff.json");
+  RequestInterceptor interceptor(json_url);
+
+  // Navigate to the test page.
+  GURL foo_url("http://foo.com/title1.html");
+  EXPECT_TRUE(NavigateToURL(shell(), foo_url));
+
+  // Trigger a HTML import from another site.  The imported document will
+  // perform a fetch of nosniff.json same-origin (bar.com).  CORB should
+  // allow all same-origin fetches.
+  GURL html_import_url(
+      "http://bar.com/cross_site_document_blocking/html_import3.html");
+  const char* html_import_injection_template = R"(
+          var link = document.createElement('link');
+          link.rel = 'import';
+          link.href = $1;
+          document.head.appendChild(link);
+          )";
+  {
+    DOMMessageQueue msg_queue;
+    base::HistogramTester histograms;
+    std::string script =
+        JsReplace(html_import_injection_template, html_import_url);
+    ExecuteScriptAsync(shell()->web_contents(), script);
+    interceptor.WaitForRequestCompletion();
+
+    // |request_initiator| is same-origin (foo.com), and so the fetch should not
+    // be blocked by CORB.
+    interceptor.Verify(CorbExpectations::kShouldBeAllowedWithoutSniffing);
+
+    // OTOH, the fetching context (i.e. the context that html_import3.html
+    // exectues under) is cross-origin (bar.com) so CORB should result in a
+    // fetch error.
+    std::string fetch_result;
+    EXPECT_TRUE(msg_queue.WaitForMessage(&fetch_result));
+    EXPECT_EQ("\"ERROR: TypeError: Failed to fetch\"", fetch_result);
+
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      // The main purpose of the test is not verifying the incorrect behavior
+      // above, but making sure that the UMA that records the incorrect behavior
+      // is logged.  Hopefully the incorrect behavior will rarely occur in
+      // practice.
+      FetchHistogramsFromChildProcesses();
+
+      // ExecuteScriptAsync covers 3 fetches:
+      // - Fetching cross_site_document_blocking/html_import.html
+      // - Fetching site_isolation/nosniff.json
+      // All of them should result in no CORB blocking.
+      auto no_blocking =
+          base::Bucket(static_cast<int>(CorbVsInitiatorLock::kNoBlocking), 2);
+      EXPECT_THAT(
+          histograms.GetAllSamples(
+              "SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility"),
+          ::testing::UnorderedElementsAre(no_blocking));
+    }
+  }
 }
 
 INSTANTIATE_TEST_CASE_P(WithoutOutOfBlinkCors,

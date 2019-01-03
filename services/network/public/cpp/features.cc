@@ -50,5 +50,12 @@ const base::Feature kUnthrottleRequestsAfterLongQueuingDelay{
     "UnthrottleRequestsAfterLongQueuingDelay",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Kill switch for enforcing
+// URLLoaderFactoryParams::request_initiator_origin_lock for Cross-Origin Read
+// Blocking.  When enabled, then CORB treats |request_initiator| as opaque
+// when it doesn't match |request_initiator_site_lock|.
+const base::Feature kEnforceRequestInitiatorLockForCorb{
+    "EnforceRequestInitiatorLockForCorb", base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace network

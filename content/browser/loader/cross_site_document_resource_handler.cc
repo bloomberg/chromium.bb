@@ -583,10 +583,22 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
     const network::ResourceResponse& response) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  // Pre-NetworkService code has to blindly trust the |request_initiator| value
+  // provided by the renderer process.
+  //
+  // TODO(lukasza): It might make sense to use ChildProcessSecurityPolicyImpl's
+  // CanAccessDataForOrigin below.  We don't do it, because
+  // 1) non-NetworkService doesn't protect against content scripts attack vector
+  //    (i.e. CanAccessDataForOrigin would only plug one hole in the
+  //    non-NetworkService world)
+  // 2) we hope that NetworkService will ship soon.
+  constexpr auto kInitiatorLockCompatibility =
+      network::InitiatorLockCompatibility::kCompatibleLock;
+
   // Delegate most decisions to CrossOriginReadBlocking::ResponseAnalyzer.
   analyzer_ =
       std::make_unique<network::CrossOriginReadBlocking::ResponseAnalyzer>(
-          *request(), response);
+          *request(), response, kInitiatorLockCompatibility);
   if (analyzer_->ShouldAllow())
     return false;
 

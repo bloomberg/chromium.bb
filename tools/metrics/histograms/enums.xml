@@ -8724,6 +8724,25 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Cache miss"/>
 </enum>
 
+<enum name="CorbResultVsInitiatorLockCompatibility">
+  <summary>
+    Whether CORB blocking might have been caused by treating |request_initiator|
+    as opaque when |request_initiator_site_lock| is incompatible (as may be the
+    case for HTML Imports).
+  </summary>
+  <int value="0" label="NoBlocking"/>
+  <int value="1" label="BenignBlocking">
+    CORB blocked either an empty response, or a 4xx/5xx response.
+  </int>
+  <int value="2" label="BlockingWhenIncorrectLock">
+    CORB blocked a response after forcing |request_initiator| to be treated as
+    opaque (because it was incompatible with |request_initiator_site_lock|).
+    This case is most likely to be hit with HTML Imports.
+  </int>
+  <int value="3" label="BlockingWhenCompatibleLock"/>
+  <int value="4" label="BlockingWhenOtherLock"/>
+</enum>
+
 <enum name="CoreAudioDispatchOverrideInitResult">
   <summary>
     The result of trying to initialize the CoreAudio dispatch override hotfix.
