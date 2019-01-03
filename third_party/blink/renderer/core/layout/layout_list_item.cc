@@ -190,11 +190,11 @@ bool LayoutListItem::PrepareForBlockDirectionAlign(
   // Deal with the situation of layout tree changed.
   if (marker_parent && marker_parent->IsAnonymous()) {
     // When list-position-style change from outside to inside, we need to
-    // restore LogicalHeight. So add IsInside().
+    // restore LogicalHeight to auto. So add IsInside().
     if (marker_->IsInside() || marker_->NextSibling()) {
-      // Restore old marker_container LogicalHeight.
+      // Set marker_container's LogicalHeight to auto.
       if (marker_parent->StyleRef().LogicalHeight().IsZero())
-        ForceLogicalHeight(*marker_parent, StyleRef().LogicalHeight());
+        ForceLogicalHeight(*marker_parent, Length());
 
       // If marker_parent isn't the ancestor of line_box_parent, marker might
       // generate a new empty line. We need to remove marker here.E.g:
