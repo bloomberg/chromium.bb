@@ -368,4 +368,9 @@ void UpdatePersistentErrorOfRefreshTokenForAccount(
       account_id, auth_error);
 }
 
+void DisableAccessTokenFetchRetries(IdentityManager* identity_manager) {
+  identity_manager->GetTokenService()
+      ->set_max_authorization_token_fetch_retries_for_testing(0);
+}
+
 }  // namespace identity

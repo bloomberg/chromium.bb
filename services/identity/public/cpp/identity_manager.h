@@ -318,6 +318,8 @@ class IdentityManager : public SigninManagerBase::Observer,
       const std::string& account_id,
       const GoogleServiceAuthError& auth_error);
 
+  friend void DisableAccessTokenFetchRetries(IdentityManager* identity_manager);
+
   // These clients needs to call SetPrimaryAccountSynchronously().
   friend ArcSupportHostTest;
   friend arc::ArcTermsOfServiceDefaultNegotiatorTest;
