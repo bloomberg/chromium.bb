@@ -22,13 +22,6 @@ import("//rlz/buildflags/buildflags.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/views/features.gni")
 
-config("ui_warnings") {
-  if (is_mac) {
-    # TODO(thakis): Remove this once http://crbug.com/383820 is figured out
-    cflags = [ "-Wno-nonnull" ]
-  }
-}
-
 # Use a static library here because many test binaries depend on this but don't
 # require many files from it. This makes linking more efficient.
 jumbo_split_static_library("ui") {
@@ -347,7 +340,6 @@ jumbo_split_static_library("ui") {
   libs = []
 
   configs += [
-    ":ui_warnings",
     "//build/config:precompiled_headers",
     "//build/config/compiler:wexit_time_destructors",
   ]
@@ -2120,6 +2112,7 @@ jumbo_split_static_library("ui") {
       "//third_party/google_toolbox_for_mac",
       "//third_party/mozilla",
       "//ui/accelerated_widget_mac:accelerated_widget_mac",
+      "//ui/views_bridge_mac",
     ]
     include_dirs = [ "$target_gen_dir" ]
     libs += [

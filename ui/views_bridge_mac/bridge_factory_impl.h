@@ -7,6 +7,7 @@
 
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/views/views_export.h"
+#include "ui/views_bridge_mac/mojo/alert.mojom.h"
 #include "ui/views_bridge_mac/mojo/bridge_factory.mojom.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
@@ -23,6 +24,7 @@ class VIEWS_EXPORT BridgeFactoryImpl : public mojom::BridgeFactory {
   void BindRequest(mojom::BridgeFactoryAssociatedRequest request);
 
   // mojom::BridgeFactory:
+  void CreateAlert(mojom::AlertBridgeRequest bridge_request) override;
   void CreateBridgedNativeWidget(
       uint64_t bridge_id,
       mojom::BridgedNativeWidgetAssociatedRequest bridge_request,
