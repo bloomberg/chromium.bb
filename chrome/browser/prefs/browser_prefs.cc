@@ -346,15 +346,6 @@ const char kDismissedRecentOfflineTabSuggestions[] =
 const char kShowFirstRunBubbleOption[] = "show-first-run-bubble-option";
 #endif  // defined(OS_ANDROID)
 
-// Deprecated 11/2017.
-const char kInstantUIZeroSuggestUrlPrefix[] =
-    "instant_ui.zero_suggest_url_prefix";
-
-#if defined(OS_CHROMEOS)
-// Deprecated 12/2017.
-const char kTouchHudProjectionEnabled[] = "touch_hud.projection_enabled";
-#endif
-
 #if defined(OS_WIN)
 // Deprecated 6/2018.
 const char kResetHasSeenWin10PromoPage[] =
@@ -393,11 +384,6 @@ const char kHttpServerProperties[] = "net.http_server_properties";
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(kInstantUIZeroSuggestUrlPrefix, std::string());
-
-#if defined(OS_CHROMEOS)
-  registry->RegisterBooleanPref(kTouchHudProjectionEnabled, false);
-#endif
 
 #if defined(OS_ANDROID)
   registry->RegisterListPref(kDismissedPhysicalWebPageSuggestions);
@@ -862,17 +848,6 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
 void MigrateObsoleteProfilePrefs(Profile* profile) {
   PrefService* profile_prefs = profile->GetPrefs();
 
-  // Added 11/2017.
-  profile_prefs->ClearPref(kInstantUIZeroSuggestUrlPrefix);
-
-#if defined(OS_CHROMEOS)
-  // Added 12/2017.
-  profile_prefs->ClearPref(kTouchHudProjectionEnabled);
-
-  // Added 12/2018.
-  profile_prefs->ClearPref(prefs::kDataSaverPromptsShown);
-#endif
-
 #if defined(OS_ANDROID)
   // Added 4/2018
   profile_prefs->ClearPref(kDismissedPhysicalWebPageSuggestions);
@@ -905,4 +880,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kOnboardDuringNUX);
   profile_prefs->ClearPref(kNuxOnboardGroup);
   profile_prefs->ClearPref(kHttpServerProperties);
+
+#if defined(OS_CHROMEOS)
+  // Added 12/2018.
+  profile_prefs->ClearPref(prefs::kDataSaverPromptsShown);
+#endif
 }
