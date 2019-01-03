@@ -48,8 +48,8 @@ void InterpolatedTransformOperation::Apply(
     const FloatSize& border_box_size) const {
   TransformationMatrix from_transform;
   TransformationMatrix to_transform;
-  from.Apply(border_box_size, from_transform);
-  to.Apply(border_box_size, to_transform);
+  from.ApplyRemaining(border_box_size, starting_index, from_transform);
+  to.ApplyRemaining(border_box_size, starting_index, to_transform);
 
   to_transform.Blend(from_transform, progress);
   transform.Multiply(to_transform);
@@ -72,7 +72,7 @@ scoped_refptr<TransformOperation> InterpolatedTransformOperation::Blend(
     from_operations.Operations().push_back(
         const_cast<TransformOperation*>(from));
   return InterpolatedTransformOperation::Create(this_operations,
-                                                from_operations, progress);
+                                                from_operations, 0, progress);
 }
 
 }  // namespace blink
