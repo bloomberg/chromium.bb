@@ -12,7 +12,6 @@
 #import <objc/runtime.h>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/ios/block_types.h"
@@ -1421,20 +1420,6 @@ enum class EnterTabSwitcherSnapshotResult {
 - (void)prepareTabSwitcher {
   web::WebState* currentWebState = self.currentBVC.tabModel.currentTab.webState;
   if (currentWebState) {
-    // In order to generate the transition between the current browser view
-    // controller and the tab switcher controller it's possible that multiple
-    // screenshots of the same tab are taken. Since taking a screenshot is
-    // expensive we activate snapshot coalescing in the scope of this function
-    // which will cache the first snapshot for the tab and reuse it instead of
-    // regenerating a new one each time.
-    base::ScopedClosureRunner runner;
-    SnapshotTabHelper::FromWebState(currentWebState)
-        ->SetSnapshotCoalescingEnabled(true);
-    runner.ReplaceClosure(base::BindOnce(^{
-      SnapshotTabHelper::FromWebState(currentWebState)
-          ->SetSnapshotCoalescingEnabled(false);
-    }));
-
     BOOL loading = currentWebState->IsLoading();
     SnapshotTabHelper::FromWebState(currentWebState)
         ->UpdateSnapshotWithCallback(^(UIImage* snapshot) {

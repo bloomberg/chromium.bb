@@ -67,10 +67,6 @@ class SnapshotTabHelper : public infobars::InfoBarManager::Observer,
   // image. This does not update the snapshot cache.
   UIImage* GenerateSnapshotWithoutOverlays();
 
-  // When snapshot coalescing is enabled, multiple calls to generate a
-  // snapshot with the same parameters may be coalesced.
-  void SetSnapshotCoalescingEnabled(bool enabled);
-
   // Requests deletion of the current page snapshot from disk and memory.
   void RemoveSnapshot();
 
