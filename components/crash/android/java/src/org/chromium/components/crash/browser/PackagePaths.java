@@ -4,7 +4,6 @@
 
 package org.chromium.components.crash.browser;
 
-import android.annotation.SuppressLint;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -33,10 +32,9 @@ public abstract class PackagePaths {
      * @ Build paths for the chrome/webview package for the purpose of loading CrashpadMain via
      * /system/bin/app_process.
      */
-    @SuppressLint("NewApi")
     @CalledByNative
     public static String[] makePackagePaths(String arch) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             return new String[] {"", ""};
         }
         try {

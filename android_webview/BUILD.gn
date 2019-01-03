@@ -434,7 +434,6 @@ if (current_abi_is_webview_only) {
       forward_variables_from(invoker, "*")
       deps = [
         ":webview_entry_point",
-        "//components/crash/android:crashpad_main",
       ]
       is_webview = true
     }
@@ -734,6 +733,7 @@ source_set("common") {
     "//components/autofill/content/renderer",
     "//components/cdm/browser",
     "//components/cdm/renderer",
+    "//components/crash/android:crashpad_main",
     "//components/crash/content/app",
     "//components/crash/content/browser",
     "//components/download/public/common:public",
@@ -924,6 +924,7 @@ android_library("android_webview_java") {
     "//components/autofill/android:autofill_java",
     "//components/autofill/android:provider_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
+    "//components/crash/android:handler_java",
     "//components/crash/android:java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/minidump_uploader:minidump_uploader_java",
