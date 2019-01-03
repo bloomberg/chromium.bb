@@ -46,8 +46,9 @@ Polymer({
    *     and |enforcement|.
    */
   getIndicatorTypeForPref_: function(controlledBy, enforcement) {
-    if (enforcement == chrome.settingsPrivate.Enforcement.RECOMMENDED)
+    if (enforcement == chrome.settingsPrivate.Enforcement.RECOMMENDED) {
       return CrPolicyIndicatorType.RECOMMENDED;
+    }
     if (enforcement == chrome.settingsPrivate.Enforcement.ENFORCED) {
       switch (controlledBy) {
         case chrome.settingsPrivate.ControlledBy.EXTENSION:
@@ -71,8 +72,9 @@ Polymer({
    * @private
    */
   getIndicatorTooltipForPref_: function(indicatorType) {
-    if (!this.pref)
+    if (!this.pref) {
       return '';
+    }
 
     const matches = this.pref && this.pref.value == this.pref.recommendedValue;
     return this.getIndicatorTooltip(

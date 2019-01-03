@@ -97,8 +97,9 @@ function LoadTimeData(){}
      */
     getStringF: function(id, var_args) {
       var value = this.getString(id);
-      if (!value)
+      if (!value) {
         return '';
+      }
 
       var args = Array.prototype.slice.call(arguments);
       args[0] = value;

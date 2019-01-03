@@ -107,8 +107,9 @@ cr.define('cr.ui.pageManager', function() {
      *     should include the leading '#' if not empty.
      */
     setHash: function(hash) {
-      if (this.hash == hash)
+      if (this.hash == hash) {
         return;
+      }
       this.hash = hash;
       PageManager.onPageHashChanged(this);
     },
@@ -155,8 +156,9 @@ cr.define('cr.ui.pageManager', function() {
       if (this.isOverlay && this.container.classList.contains('transparent')) {
         return false;
       }
-      if (this.pageDiv.hidden)
+      if (this.pageDiv.hidden) {
         return false;
+      }
       return this.pageDiv.page == this;
     },
 
@@ -165,8 +167,9 @@ cr.define('cr.ui.pageManager', function() {
      * @type {boolean}
      */
     set visible(visible) {
-      if ((this.visible && visible) || (!this.visible && !visible))
+      if ((this.visible && visible) || (!this.visible && !visible)) {
         return;
+      }
 
       // If using an overlay, the visibility of the dialog is toggled at the
       // same time as the overlay to show the dialog's out transition. This
@@ -228,8 +231,9 @@ cr.define('cr.ui.pageManager', function() {
           // Hide all dialogs in this container since a different one may have
           // been previously visible before fading out.
           var pages = container.querySelectorAll('.page');
-          for (var i = 0; i < pages.length; i++)
+          for (var i = 0; i < pages.length; i++) {
             pages[i].hidden = true;
+          }
           // Show the new dialog.
           pageDiv.hidden = false;
           pageDiv.page = this;
@@ -273,13 +277,15 @@ cr.define('cr.ui.pageManager', function() {
         PageManager.onPageVisibilityChanged(this);
       } else {
         // Kick change events for text fields.
-        if (pageDiv.contains(document.activeElement))
+        if (pageDiv.contains(document.activeElement)) {
           document.activeElement.blur();
+        }
         container.classList.add('transparent');
       }
 
-      if (loading)
+      if (loading) {
         this.fadeCompleted_();
+      }
     },
 
     /**
@@ -291,8 +297,9 @@ cr.define('cr.ui.pageManager', function() {
         this.pageDiv.hidden = true;
         this.container.hidden = true;
 
-        if (this.parentPage)
+        if (this.parentPage) {
           this.parentPage.pageDiv.parentElement.removeAttribute('aria-hidden');
+        }
 
         PageManager.onPageVisibilityChanged(this);
       }

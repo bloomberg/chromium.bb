@@ -220,8 +220,9 @@ cr.define('cr.ui', function() {
      * @private
      */
     updateCardWidths_: function() {
-      for (var i = 0, card; card = this.cards_[i]; i++)
+      for (var i = 0, card; card = this.cards_[i]; i++) {
         card.style.width = this.cardWidth_ + 'px';
+      }
     },
 
     /**
@@ -270,8 +271,9 @@ cr.define('cr.ui', function() {
      * @private
      */
     onMouseWheel_: function(e) {
-      if (e.wheelDeltaX == 0)
+      if (e.wheelDeltaX == 0) {
         return;
+      }
 
       // Continuous devices such as an Apple Touchpad or Apple MagicMouse will
       // send arbitrary delta values. Conversly, standard mousewheels will
@@ -280,20 +282,23 @@ cr.define('cr.ui', function() {
       // Unfortunately there isn't a better way to do this until real touch
       // events are available to desktop clients.)
       var DISCRETE_DELTA = 120;
-      if (e.wheelDeltaX % DISCRETE_DELTA)
+      if (e.wheelDeltaX % DISCRETE_DELTA) {
         this.mouseWheelIsContinuous_ = true;
+      }
 
       if (this.mouseWheelIsContinuous_) {
         // For continuous devices, detect a page swipe when the accumulated
         // delta matches a pre-defined threshhold.  After changing the page,
         // ignore wheel events for a short time before repeating this process.
-        if (this.mouseWheelCardSelected_)
+        if (this.mouseWheelCardSelected_) {
           return;
+        }
         this.mouseWheelScrollAmount_ += e.wheelDeltaX;
         if (Math.abs(this.mouseWheelScrollAmount_) >= 600) {
           var pagesToScroll = this.mouseWheelScrollAmount_ > 0 ? 1 : -1;
-          if (!isRTL())
+          if (!isRTL()) {
             pagesToScroll *= -1;
+          }
           var newCardIndex = this.currentCard + pagesToScroll;
           newCardIndex =
               Math.min(this.cards_.length - 1, Math.max(0, newCardIndex));
@@ -303,8 +308,9 @@ cr.define('cr.ui', function() {
       } else {
         // For discrete devices, consider each wheel tick a page change.
         var pagesToScroll = e.wheelDeltaX / DISCRETE_DELTA;
-        if (!isRTL())
+        if (!isRTL()) {
           pagesToScroll *= -1;
+        }
         var newCardIndex = this.currentCard + pagesToScroll;
         newCardIndex =
             Math.min(this.cards_.length - 1, Math.max(0, newCardIndex));
@@ -312,8 +318,9 @@ cr.define('cr.ui', function() {
       }
 
       // We got a mouse wheel event, so cancel any pending scroll wheel timeout.
-      if (this.scrollClearTimeout_ != null)
+      if (this.scrollClearTimeout_ != null) {
         clearTimeout(this.scrollClearTimeout_);
+      }
       // If we didn't use up all the scroll, hold onto it for a little bit, but
       // drop it after a delay.
       if (this.mouseWheelScrollAmount_ != 0) {
@@ -340,8 +347,9 @@ cr.define('cr.ui', function() {
      */
     onTransitionEnd_: function(e) {
       // Ignore irrelevant transitions that might bubble up.
-      if (e.target !== this.container_ || e.propertyName != 'transform')
+      if (e.target !== this.container_ || e.propertyName != 'transform') {
         return;
+      }
       this.fireChangeEndedEvent_(true);
     },
 
@@ -376,10 +384,11 @@ cr.define('cr.ui', function() {
 
       this.updateSelectedCardAttributes_();
 
-      if (this.currentCard_ == -1)
+      if (this.currentCard_ == -1) {
         this.currentCard_ = 0;
-      else if (index <= this.currentCard_)
+      } else if (index <= this.currentCard_) {
         this.selectCard(this.currentCard_ + 1, false, true, true);
+      }
 
       this.fireAddedEvent_(card, index);
     },
@@ -440,10 +449,11 @@ cr.define('cr.ui', function() {
       this.assertValidIndex_(index);
       var removed = this.cards_.splice(index, 1).pop();
 
-      if (this.cards_.length == 0)
+      if (this.cards_.length == 0) {
         this.currentCard_ = -1;
-      else if (index < this.currentCard_)
+      } else if (index < this.currentCard_) {
         this.selectCard(this.currentCard_ - 1, false, true);
+      }
 
       this.fireRemovedEvent_(removed, index);
     },
@@ -500,8 +510,9 @@ cr.define('cr.ui', function() {
       var isChangingCard =
           !this.cards_[newCardIndex].classList.contains('selected-card');
 
-      if (typeof opt_forceChange != 'undefined' && opt_forceChange)
+      if (typeof opt_forceChange != 'undefined' && opt_forceChange) {
         isChangingCard = true;
+      }
 
       if (isChangingCard) {
         this.currentCard_ = newCardIndex;
@@ -560,8 +571,9 @@ cr.define('cr.ui', function() {
 
       // If there's no change, return something to let the caller know there
       // won't be a transition occuring.
-      if (prevLeft == this.currentLeft_ && this.deltaX_ == 0)
+      if (prevLeft == this.currentLeft_ && this.deltaX_ == 0) {
         return false;
+      }
 
       // Animate to the current card, which will either transition if the
       // current card is new, or reset the existing card if we didn't drag
@@ -658,10 +670,11 @@ cr.define('cr.ui', function() {
       // Ensure that the new card index is valid.  The new card index could be
       // invalid if a swipe suggests scrolling off the end of the list of
       // cards.
-      if (newCardIndex < 0)
+      if (newCardIndex < 0) {
         newCardIndex = 0;
-      else if (newCardIndex >= this.cardCount)
+      } else if (newCardIndex >= this.cardCount) {
         newCardIndex = this.cardCount - 1;
+      }
       this.selectCard(newCardIndex, /* animate */ true);
     },
 

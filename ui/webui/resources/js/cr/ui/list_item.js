@@ -43,8 +43,9 @@ cr.define('cr.ui', function() {
      */
     decorate: function() {
       this.setAttribute('role', 'listitem');
-      if (!this.id)
+      if (!this.id) {
         this.id = 'listitem-' + ListItem.nextUniqueIdSuffix_++;
+      }
     },
 
     /**

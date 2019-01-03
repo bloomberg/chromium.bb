@@ -30,14 +30,16 @@ cr.define('cr', function() {
      *     called when the event is dispatched.
      */
     addEventListener: function(type, handler) {
-      if (!this.listeners_)
+      if (!this.listeners_) {
         this.listeners_ = Object.create(null);
+      }
       if (!(type in this.listeners_)) {
         this.listeners_[type] = [handler];
       } else {
         var handlers = this.listeners_[type];
-        if (handlers.indexOf(handler) < 0)
+        if (handlers.indexOf(handler) < 0) {
           handlers.push(handler);
+        }
       }
     },
 
@@ -47,17 +49,19 @@ cr.define('cr', function() {
      * @param {EventListenerType} handler The handler for the event.
      */
     removeEventListener: function(type, handler) {
-      if (!this.listeners_)
+      if (!this.listeners_) {
         return;
+      }
       if (type in this.listeners_) {
         var handlers = this.listeners_[type];
         var index = handlers.indexOf(handler);
         if (index >= 0) {
           // Clean up if this was the last listener.
-          if (handlers.length == 1)
+          if (handlers.length == 1) {
             delete this.listeners_[type];
-          else
+          } else {
             handlers.splice(index, 1);
+          }
         }
       }
     },
@@ -70,8 +74,9 @@ cr.define('cr', function() {
      *     calls preventDefault on the event object then this returns false.
      */
     dispatchEvent: function(event) {
-      if (!this.listeners_)
+      if (!this.listeners_) {
         return true;
+      }
 
       // Since we are using DOM Event objects we need to override some of the
       // properties and methods so that we can emulate this correctly.
@@ -86,10 +91,11 @@ cr.define('cr', function() {
         // Clone to prevent removal during dispatch
         var handlers = this.listeners_[type].concat();
         for (var i = 0, handler; handler = handlers[i]; i++) {
-          if (handler.handleEvent)
+          if (handler.handleEvent) {
             prevented |= handler.handleEvent.call(handler, event) === false;
-          else
+          } else {
             prevented |= handler.call(this, event) === false;
+          }
         }
       }
 

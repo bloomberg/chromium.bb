@@ -59,8 +59,9 @@ const CrRadioButtonBehaviorImpl = {
    * @private
    */
   disabledChanged_: function(current, previous) {
-    if (previous === undefined && !this.disabled)
+    if (previous === undefined && !this.disabled) {
       return;
+    }
 
     this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
   },

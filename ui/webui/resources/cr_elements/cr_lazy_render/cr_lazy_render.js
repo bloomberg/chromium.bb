@@ -35,8 +35,9 @@ Polymer({
    * @return {Element} Child element which has been stamped into the DOM tree.
    */
   get: function() {
-    if (!this.child_)
+    if (!this.child_) {
       this.render_();
+    }
     return this.child_;
   },
 
@@ -51,8 +52,9 @@ Polymer({
   /** @private */
   render_: function() {
     const template = this.getContentChildren()[0];
-    if (!this.ctor)
+    if (!this.ctor) {
       this.templatize(template);
+    }
     const parentNode = this.parentNode;
     if (parentNode && !this.child_) {
       this.instance_ = this.stamp({});
@@ -67,8 +69,9 @@ Polymer({
    * @param {Object} value
    */
   _forwardParentProp: function(prop, value) {
-    if (this.child_)
+    if (this.child_) {
       this.child_._templateInstance[prop] = value;
+    }
   },
 
   /**
@@ -77,8 +80,9 @@ Polymer({
    * @param {Object} value
    */
   _forwardParentPath: function(path, value) {
-    if (this.child_)
+    if (this.child_) {
       this.child_._templateInstance.notifyPath(path, value, true);
+    }
   },
 
   /**
@@ -86,7 +90,8 @@ Polymer({
    * @param {Object} value
    */
   _forwardHostPropV2: function(prop, value) {
-    if (this.instance_)
+    if (this.instance_) {
       this.instance_.forwardHostProp(prop, value);
+    }
   },
 });

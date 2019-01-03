@@ -125,8 +125,9 @@ cr.define('cr.ui', function() {
      * @type {ArrayDataModel}
      */
     set dataModel(dataModel) {
-      if (this.dataModel_ == dataModel)
+      if (this.dataModel_ == dataModel) {
         return;
+      }
 
       if (!this.boundHandleDataModelPermuted_) {
         this.boundHandleDataModelPermuted_ =
@@ -147,8 +148,9 @@ cr.define('cr.ui', function() {
       this.cachedItems_ = {};
       this.cachedItemHeights_ = {};
       this.selectionModel.clear();
-      if (dataModel)
+      if (dataModel) {
         this.selectionModel.adjustLength(dataModel.length);
+      }
 
       if (this.dataModel_) {
         this.dataModel_.addEventListener(
@@ -186,8 +188,9 @@ cr.define('cr.ui', function() {
     },
     set selectionModel(sm) {
       var oldSm = this.selectionModel_;
-      if (oldSm == sm)
+      if (oldSm == sm) {
         return;
+      }
 
       if (!this.boundHandleOnChange_) {
         this.boundHandleOnChange_ = this.handleOnChange_.bind(this);
@@ -217,8 +220,9 @@ cr.define('cr.ui', function() {
       return this.autoExpands_;
     },
     set autoExpands(autoExpands) {
-      if (this.autoExpands_ == autoExpands)
+      if (this.autoExpands_ == autoExpands) {
         return;
+      }
       this.autoExpands_ = autoExpands;
       this.redraw();
     },
@@ -231,8 +235,9 @@ cr.define('cr.ui', function() {
       return this.fixedHeight_;
     },
     set fixedHeight(fixedHeight) {
-      if (this.fixedHeight_ == fixedHeight)
+      if (this.fixedHeight_ == fixedHeight) {
         return;
+      }
       this.fixedHeight_ = fixedHeight;
       this.redraw();
     },
@@ -245,8 +250,9 @@ cr.define('cr.ui', function() {
       var dataModel = this.dataModel;
       if (dataModel) {
         var index = this.selectionModel.selectedIndex;
-        if (index != -1)
+        if (index != -1) {
           return dataModel.item(index);
+        }
       }
       return null;
     },
@@ -309,8 +315,9 @@ cr.define('cr.ui', function() {
      */
     endBatchUpdates: function() {
       this.batchCount_--;
-      if (this.batchCount_ == 0)
+      if (this.batchCount_ == 0) {
         this.redraw();
+      }
     },
 
     /**
@@ -344,8 +351,9 @@ cr.define('cr.ui', function() {
       this.setAttribute('role', 'list');
 
       // Make list focusable
-      if (!this.hasAttribute('tabindex'))
+      if (!this.hasAttribute('tabindex')) {
         this.tabIndex = 0;
+      }
     },
 
     /**
@@ -372,11 +380,13 @@ cr.define('cr.ui', function() {
      */
     getItemHeightByIndex_: function(index) {
       // If |this.fixedHeight_| is true, all the rows have same default height.
-      if (this.fixedHeight_)
+      if (this.fixedHeight_) {
         return this.getDefaultItemHeight_();
+      }
 
-      if (this.cachedItemHeights_[index])
+      if (this.cachedItemHeights_[index]) {
         return this.cachedItemHeights_[index];
+      }
 
       var item = this.getListItemByIndex(index);
       if (item) {
@@ -457,8 +467,9 @@ cr.define('cr.ui', function() {
       }
       w += mh;
 
-      if (!opt_item)
+      if (!opt_item) {
         this.removeChild(item);
+      }
       return {
         height: Math.max(0, h),
         marginTop: mt,
@@ -475,8 +486,9 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleDoubleClick_: function(e) {
-      if (this.disabled)
+      if (this.disabled) {
         return;
+      }
 
       var target = /** @type {HTMLElement} */ (e.target);
 
@@ -489,8 +501,9 @@ cr.define('cr.ui', function() {
 
       var sm = this.selectionModel;
       var indexSelected = sm.getIndexSelected(index);
-      if (!indexSelected)
+      if (!indexSelected) {
         this.handlePointerDownUp_(e);
+      }
     },
 
     /**
@@ -499,16 +512,18 @@ cr.define('cr.ui', function() {
      * @private
      */
     handlePointerDownUp_: function(e) {
-      if (this.disabled)
+      if (this.disabled) {
         return;
+      }
 
       var target = /** @type {HTMLElement} */ (e.target);
 
       // If the target was this element we need to make sure that the user did
       // not click on a border or a scrollbar.
       if (target == this) {
-        if (inViewport(target, e))
+        if (inViewport(target, e)) {
           this.selectionController_.handlePointerDownUp(e, -1);
+        }
         return;
       }
 
@@ -525,8 +540,9 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleElementFocus_: function(e) {
-      if (!this.hasElementFocus)
+      if (!this.hasElementFocus) {
         this.hasElementFocus = true;
+      }
     },
 
     /**
@@ -540,8 +556,9 @@ cr.define('cr.ui', function() {
      * Node.prototype.contains() will be fixed.
      */
     handleElementBlur_: function(e) {
-      if (!this.contains(e.relatedTarget))
+      if (!this.contains(e.relatedTarget)) {
         this.hasElementFocus = false;
+      }
     },
 
     /**
@@ -563,8 +580,9 @@ cr.define('cr.ui', function() {
      * @param {Event} e The keydown event.
      */
     handleKeyDown: function(e) {
-      if (!this.disabled)
+      if (!this.disabled) {
         this.selectionController_.handleKeyDown(e);
+      }
     },
 
     /**
@@ -581,8 +599,9 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleTouchEvents_: function(e) {
-      if (this.disabled)
+      if (this.disabled) {
         return;
+      }
 
       var target = /** @type {HTMLElement} */ (e.target);
 
@@ -635,13 +654,15 @@ cr.define('cr.ui', function() {
     handleLeadChange: function(e) {
       var element;
       if (e.oldValue != -1) {
-        if ((element = this.getListItemByIndex(e.oldValue)))
+        if ((element = this.getListItemByIndex(e.oldValue))) {
           element.lead = false;
+        }
       }
 
       if (e.newValue != -1) {
-        if ((element = this.getListItemByIndex(e.newValue)))
+        if ((element = this.getListItemByIndex(e.newValue))) {
           element.lead = true;
+        }
         if (e.oldValue != e.newValue) {
           this.scrollIndexIntoView(e.newValue);
           // If the lead item has a different height than other items, then we
@@ -757,8 +778,9 @@ cr.define('cr.ui', function() {
      */
     scrollIndexIntoView: function(index) {
       var dataModel = this.dataModel;
-      if (!dataModel || index < 0 || index >= dataModel.length)
+      if (!dataModel || index < 0 || index >= dataModel.length) {
         return;
+      }
 
       var itemHeight = this.getItemHeightByIndex_(index);
       var scrollTop = this.scrollTop;
@@ -782,15 +804,17 @@ cr.define('cr.ui', function() {
 
       // Check if the entire of given indexed row can be shown in the viewport.
       if (itemHeight <= availableHeight) {
-        if (top < scrollTop)
+        if (top < scrollTop) {
           scrollToAdjustTop();
-        else if (scrollTop + availableHeight < top + itemHeight)
+        } else if (scrollTop + availableHeight < top + itemHeight) {
           scrollToAdjustBottom();
+        }
       } else {
-        if (scrollTop < top)
+        if (scrollTop < top) {
           scrollToAdjustTop();
-        else if (top + itemHeight < scrollTop + availableHeight)
+        } else if (top + itemHeight < scrollTop + availableHeight) {
           scrollToAdjustBottom();
+        }
       }
     },
 
@@ -802,8 +826,9 @@ cr.define('cr.ui', function() {
       // and lists.
       var index = this.selectionModel.selectedIndex;
       var el = this.getListItemByIndex(index);
-      if (el)
+      if (el) {
         return el.getBoundingClientRect();
+      }
       return this.getBoundingClientRect();
     },
 
@@ -852,8 +877,9 @@ cr.define('cr.ui', function() {
     createItem: function(value) {
       var item = new this.itemConstructor_(value);
       item.label = value;
-      if (typeof item.decorate == 'function')
+      if (typeof item.decorate == 'function') {
         item.decorate();
+      }
       return item;
     },
 
@@ -891,11 +917,13 @@ cr.define('cr.ui', function() {
      */
     getIndexForListOffset_: function(offset) {
       var itemHeight = this.getDefaultItemHeight_();
-      if (!itemHeight)
+      if (!itemHeight) {
         return this.dataModel.length;
+      }
 
-      if (this.fixedHeight_)
+      if (this.fixedHeight_) {
         return this.getFirstItemInRow(Math.floor(offset / itemHeight));
+      }
 
       // If offset exceeds the height of list.
       var lastHeight = 0;
@@ -903,8 +931,9 @@ cr.define('cr.ui', function() {
         var h = this.getHeightsForIndex(this.dataModel.length - 1);
         lastHeight = h.top + h.height;
       }
-      if (lastHeight < offset)
+      if (lastHeight < offset) {
         return this.dataModel.length;
+      }
 
       // Estimates index.
       var estimatedIndex =
@@ -917,8 +946,9 @@ cr.define('cr.ui', function() {
         var top = heights.top;
         var height = heights.height;
 
-        if (top <= offset && offset <= (top + height))
+        if (top <= offset && offset <= (top + height)) {
           break;
+        }
 
         isIncrementing ? ++estimatedIndex : --estimatedIndex;
       } while (0 < estimatedIndex && estimatedIndex < this.dataModel.length);
@@ -990,8 +1020,9 @@ cr.define('cr.ui', function() {
 
       function remove() {
         var next = item.nextSibling;
-        if (item != self.pinnedItem_)
+        if (item != self.pinnedItem_) {
           self.removeChild(item);
+        }
         item = next;
       }
 
@@ -1015,22 +1046,25 @@ cr.define('cr.ui', function() {
       }
 
       while (item != this.afterFiller_) {
-        if (this.isItem(item))
+        if (this.isItem(item)) {
           remove();
-        else
+        } else {
           item = item.nextSibling;
+        }
       }
 
       if (this.pinnedItem_) {
         var index = this.pinnedItem_.listIndex;
         this.pinnedItem_.hidden = index < firstIndex || index >= lastIndex;
         this.cachedItems_[index] = this.pinnedItem_;
-        if (index >= lastIndex)
-          item = this.pinnedItem_;  // Insert new items before this one.
+        if (index >= lastIndex) {
+          item = this.pinnedItem_;
+        }  // Insert new items before this one.
       }
 
-      while (currentIndex < lastIndex)
+      while (currentIndex < lastIndex) {
         insert();
+      }
     },
 
     /**
@@ -1076,8 +1110,9 @@ cr.define('cr.ui', function() {
       // Removes all the temprary elements.
       for (var y = 0; y < measuringIndexes.length; y++) {
         // If the list item has been appended above, removes it.
-        if (isElementAppended[y])
+        if (isElementAppended[y]) {
           this.removeChild(measuringItems[y]);
+        }
       }
     },
 
@@ -1093,8 +1128,9 @@ cr.define('cr.ui', function() {
       }
 
       var height = 0;
-      for (var i = lastIndex; i < this.dataModel.length; i++)
+      for (var i = lastIndex; i < this.dataModel.length; i++) {
         height += this.getItemHeightByIndex_(i);
+      }
       return height;
     },
 
@@ -1102,8 +1138,9 @@ cr.define('cr.ui', function() {
      * Redraws the viewport.
      */
     redraw: function() {
-      if (this.batchCount_ != 0)
+      if (this.batchCount_ != 0) {
         return;
+      }
 
       var dataModel = this.dataModel;
       if (!dataModel || !this.autoExpands_ && this.clientHeight == 0) {
@@ -1121,8 +1158,9 @@ cr.define('cr.ui', function() {
 
       // Store all the item sizes into the cache in advance, to prevent
       // interleave measuring with mutating dom.
-      if (!this.fixedHeight_)
+      if (!this.fixedHeight_) {
         this.ensureAllItemSizesInCache();
+      }
 
       var autoExpands = this.autoExpands_;
 
@@ -1170,11 +1208,13 @@ cr.define('cr.ui', function() {
 
       // We don't set the lead or selected properties until after adding all
       // items, in case they force relayout in response to these events.
-      if (leadIndex != -1 && this.cachedItems_[leadIndex])
+      if (leadIndex != -1 && this.cachedItems_[leadIndex]) {
         this.cachedItems_[leadIndex].lead = true;
+      }
       for (var y = firstIndex; y < lastIndex; y++) {
-        if (sm.getIndexSelected(y) != this.cachedItems_[y].selected)
+        if (sm.getIndexSelected(y) != this.cachedItems_[y].selected) {
           this.cachedItems_[y].selected = !this.cachedItems_[y].selected;
+        }
       }
 
       this.firstIndex_ = firstIndex;
@@ -1249,8 +1289,9 @@ cr.define('cr.ui', function() {
      */
     ensureLeadItemExists: function() {
       var index = this.selectionModel.leadIndex;
-      if (index < 0)
+      if (index < 0) {
         return null;
+      }
       var cachedItems = this.cachedItems_ || {};
 
       var item =
@@ -1262,18 +1303,21 @@ cr.define('cr.ui', function() {
       this.pinnedItem_ = item;
       cachedItems[index] = item;
       item.listIndex = index;
-      if (item.parentNode == this)
+      if (item.parentNode == this) {
         return item;
+      }
 
-      if (this.batchCount_ != 0)
+      if (this.batchCount_ != 0) {
         item.hidden = true;
+      }
 
       // Item will get to the right place in redraw. Choose place to insert
       // reducing items reinsertion.
-      if (index <= this.firstIndex_)
+      if (index <= this.firstIndex_) {
         this.insertBefore(item, this.beforeFiller_.nextSibling);
-      else
+      } else {
         this.insertBefore(item, this.afterFiller_);
+      }
       this.redraw();
       return item;
     },
@@ -1332,12 +1376,14 @@ cr.define('cr.ui', function() {
     var wasSelected = listItem && listItem.selected;
     this.handlePointerDownUp_(e);
 
-    if (e.defaultPrevented || e.button != 0)
+    if (e.defaultPrevented || e.button != 0) {
       return;
+    }
 
     // The following hack is required only if the listItem gets selected.
-    if (!listItem || wasSelected || !listItem.selected)
+    if (!listItem || wasSelected || !listItem.selected) {
       return;
+    }
 
     // If non-focusable area in a list item is clicked and the item still
     // contains the focused element, the item did a special focus handling
@@ -1362,16 +1408,19 @@ cr.define('cr.ui', function() {
     e = /** @type {MouseEvent} */ (e);
     var element = e.target.ownerDocument.elementFromPoint(e.clientX, e.clientY);
     var listItem = this.getListItemAncestor(element);
-    if (!listItem)
+    if (!listItem) {
       return;
+    }
 
     var index = this.getIndexOfListItem(listItem);
-    if (index == -1)
+    if (index == -1) {
       return;
+    }
 
     var isAlreadySelected = this.selectionModel_.getIndexSelected(index);
-    if (!isAlreadySelected)
+    if (!isAlreadySelected) {
       this.selectionModel_.selectedIndex = index;
+    }
   }
 
   /**
@@ -1384,8 +1433,9 @@ cr.define('cr.ui', function() {
   function containsFocusableElement(start, root) {
     for (var element = start; element && element != root;
          element = element.parentElement) {
-      if (element.tabIndex >= 0 && !element.disabled)
+      if (element.tabIndex >= 0 && !element.disabled) {
         return true;
+      }
     }
     return false;
   }

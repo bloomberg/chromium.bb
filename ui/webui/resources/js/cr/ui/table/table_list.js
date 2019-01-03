@@ -39,8 +39,9 @@ cr.define('cr.ui.table', function() {
         this.redraw();
         return;
       }
-      if (this.updateScrollbars_())
-        List.prototype.redraw.call(this);  // Redraw items only.
+      if (this.updateScrollbars_()) {
+        List.prototype.redraw.call(this);
+      }  // Redraw items only.
       this.resizeCells_();
     },
 
@@ -51,8 +52,9 @@ cr.define('cr.ui.table', function() {
       var cm = this.table_.columnModel;
       for (var row = this.firstElementChild; row;
            row = row.nextElementSibling) {
-        if (row.tagName != 'LI')
+        if (row.tagName != 'LI') {
           continue;
+        }
 
         for (var i = 0; i < cm.size; i++) {
           row.children[i].style.width = cm.getWidth(i) + 'px';
@@ -66,8 +68,9 @@ cr.define('cr.ui.table', function() {
      * Redraws the viewport.
      */
     redraw: function() {
-      if (this.batchCount_ != 0)
+      if (this.batchCount_ != 0) {
         return;
+      }
       this.updateScrollbars_();
 
       List.prototype.redraw.call(this);
@@ -137,10 +140,12 @@ cr.define('cr.ui.table', function() {
      */
     showVerticalScrollBar_: function(show) {
       var style = this.style;
-      if (show && style.overflowY == 'scroll')
+      if (show && style.overflowY == 'scroll') {
         return false;
-      if (!show && style.overflowY == 'hidden')
+      }
+      if (!show && style.overflowY == 'hidden') {
         return false;
+      }
       style.overflowY = show ? 'scroll' : 'hidden';
       return true;
     },
@@ -151,8 +156,9 @@ cr.define('cr.ui.table', function() {
      *                   visibleHeight pixels.
      */
     areAllItemsVisible_: function(visibleHeight) {
-      if (!this.dataModel || this.dataModel.length == 0)
+      if (!this.dataModel || this.dataModel.length == 0) {
         return true;
+      }
       return this.getItemTop(this.dataModel.length) <= visibleHeight;
     },
 
@@ -174,12 +180,14 @@ cr.define('cr.ui.table', function() {
       var row = this.firstElementChild;
       // If the number of columns in the model has changed, a full redraw is
       // needed.
-      if (row.children.length != cm.size)
+      if (row.children.length != cm.size) {
         return true;
+      }
       // If the column visibility has changed, a full redraw is required.
       for (var i = 0; i < cm.size; ++i) {
-        if (cm.isVisible(i) == row.children[i].hidden)
+        if (cm.isVisible(i) == row.children[i].hidden) {
           return true;
+        }
       }
       return false;
     },

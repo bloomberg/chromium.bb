@@ -99,12 +99,14 @@ Polymer({
     // If the active history entry changes (i.e. user clicks back button),
     // all open dialogs should be cancelled.
     window.addEventListener('popstate', function() {
-      if (!this.ignorePopstate && this.$.dialog.open)
+      if (!this.ignorePopstate && this.$.dialog.open) {
         this.cancel();
+      }
     }.bind(this));
 
-    if (!this.ignoreEnterKey)
+    if (!this.ignoreEnterKey) {
       this.addEventListener('keypress', this.onKeypress_.bind(this));
+    }
   },
 
   /** @override */
@@ -128,8 +130,9 @@ Polymer({
 
     // In some cases dialog already has the 'open' attribute by this point.
     mutationObserverCallback();
-    if (this.showOnAttach)
+    if (this.showOnAttach) {
       this.showModal();
+    }
   },
 
   /** @override */
@@ -144,8 +147,9 @@ Polymer({
 
   /** @private */
   addIntersectionObserver_: function() {
-    if (this.intersectionObserver_)
+    if (this.intersectionObserver_) {
       return;
+    }
 
     const bodyContainer = this.$$('.body-container');
 
@@ -188,8 +192,9 @@ Polymer({
 
   /** @private */
   addKeydownListener_: function() {
-    if (!this.consumeKeydownEvent)
+    if (!this.consumeKeydownEvent) {
       return;
+    }
 
     this.boundKeydown_ = this.boundKeydown_ || this.onKeydown_.bind(this);
 
@@ -203,8 +208,9 @@ Polymer({
 
   /** @private */
   removeKeydownListener_: function() {
-    if (!this.boundKeydown_)
+    if (!this.boundKeydown_) {
       return;
+    }
 
     this.removeEventListener('keydown', this.boundKeydown_);
     document.body.removeEventListener('keydown', this.boundKeydown_);
@@ -247,8 +253,9 @@ Polymer({
    */
   onNativeDialogClose_: function(e) {
     // Ignore any 'close' events not fired directly by the <dialog> element.
-    if (e.target !== this.getNative())
+    if (e.target !== this.getNative()) {
       return;
+    }
 
     // TODO(dpapad): This is necessary to make the code work both for Polymer 1
     // and Polymer 2. Remove once migration to Polymer 2 is completed.
@@ -265,8 +272,9 @@ Polymer({
    */
   onNativeDialogCancel_: function(e) {
     // Ignore any 'cancel' events not fired directly by the <dialog> element.
-    if (e.target !== this.getNative())
+    if (e.target !== this.getNative()) {
       return;
+    }
 
     if (this.noCancel) {
       e.preventDefault();
@@ -302,12 +310,14 @@ Polymer({
    * @private
    */
   onKeypress_: function(e) {
-    if (e.key != 'Enter')
+    if (e.key != 'Enter') {
       return;
+    }
 
     // Accept Enter keys from either the dialog, or a child input element.
-    if (e.target != this && e.target.tagName != 'CR-INPUT')
+    if (e.target != this && e.target.tagName != 'CR-INPUT') {
       return;
+    }
 
     const actionButton =
         this.querySelector('.action-button:not([disabled]):not([hidden])');
@@ -324,11 +334,13 @@ Polymer({
   onKeydown_: function(e) {
     assert(this.consumeKeydownEvent);
 
-    if (!this.getNative().open)
+    if (!this.getNative().open) {
       return;
+    }
 
-    if (this.ignoreEnterKey && e.key == 'Enter')
+    if (this.ignoreEnterKey && e.key == 'Enter') {
       return;
+    }
 
     // Stop propagation to behave modally.
     e.stopPropagation();
@@ -338,8 +350,9 @@ Polymer({
   onPointerdown_: function(e) {
     // Only show pulse animation if user left-clicked outside of the dialog
     // contents.
-    if (e.button != 0 || e.composedPath()[0].tagName !== 'DIALOG')
+    if (e.button != 0 || e.composedPath()[0].tagName !== 'DIALOG') {
       return;
+    }
 
     this.$.dialog.animate(
         [

@@ -85,10 +85,12 @@ function getStartPointWithAnchor(
       break;
   }
 
-  if (startPoint + menuLength > max)
+  if (startPoint + menuLength > max) {
     startPoint = end - menuLength;
-  if (startPoint < min)
+  }
+  if (startPoint < min) {
     startPoint = start;
+  }
 
   startPoint = Math.max(min, Math.min(startPoint, max - menuLength));
 
@@ -201,8 +203,9 @@ Polymer({
    */
   onNativeDialogClose_: function(e) {
     // Ignore any 'close' events not fired directly by the <dialog> element.
-    if (e.target !== this.$.dialog)
+    if (e.target !== this.$.dialog) {
       return;
+    }
 
     // TODO(dpapad): This is necessary to make the code work both for Polymer 1
     // and Polymer 2. Remove once migration to Polymer 2 is completed.
@@ -243,8 +246,9 @@ Polymer({
       const options = this.querySelectorAll('.dropdown-item');
       let focusedIndex =
           Array.prototype.indexOf.call(options, getDeepActiveElement());
-      if (focusedIndex != -1)
+      if (focusedIndex != -1) {
         return;
+      }
 
       if (cr.isWindows || cr.isMac) {
         this.close();
@@ -254,8 +258,9 @@ Polymer({
       selectNext = true;
     }
 
-    if (e.key !== 'ArrowUp' && !selectNext)
+    if (e.key !== 'ArrowUp' && !selectNext) {
       return;
+    }
 
     const nextOption = this.getNextOption_(selectNext ? 1 : -1);
     if (nextOption) {
@@ -312,14 +317,16 @@ Polymer({
         Array.prototype.indexOf.call(options, getDeepActiveElement());
 
     // Handle case where nothing is focused and up is pressed.
-    if (focusedIndex === -1 && step === -1)
+    if (focusedIndex === -1 && step === -1) {
       focusedIndex = 0;
+    }
 
     do {
       focusedIndex = (numOptions + focusedIndex + step) % numOptions;
       nextOption = options[focusedIndex];
-      if (nextOption.disabled || nextOption.hidden)
+      if (nextOption.disabled || nextOption.hidden) {
         nextOption = null;
+      }
       counter++;
     } while (!nextOption && counter < numOptions);
 
@@ -446,8 +453,9 @@ Polymer({
 
     // Flip the X anchor in RTL.
     const rtl = getComputedStyle(this).direction == 'rtl';
-    if (rtl)
+    if (rtl) {
       c.anchorAlignmentX *= -1;
+    }
 
     const offsetWidth = this.$.dialog.offsetWidth;
     const menuLeft = getStartPointWithAnchor(
@@ -472,8 +480,9 @@ Polymer({
    */
   addListeners_: function() {
     this.boundClose_ = this.boundClose_ || function() {
-      if (this.$.dialog.open)
+      if (this.$.dialog.open) {
         this.close();
+      }
     }.bind(this);
     window.addEventListener('resize', this.boundClose_);
     window.addEventListener('popstate', this.boundClose_);

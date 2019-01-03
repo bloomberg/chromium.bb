@@ -98,8 +98,9 @@ Polymer({
   focusFirstItem_: function() {
     // Select the first cr-network-list-item if there is one.
     const item = this.$$('cr-network-list-item');
-    if (!item)
+    if (!item) {
       return;
+    }
     item.focus();
     this.focusRequested_ = false;
   },
@@ -110,8 +111,9 @@ Polymer({
    * @private
    */
   selectedItemChanged_: function() {
-    if (this.selectedItem)
+    if (this.selectedItem) {
       this.onItemAction_(this.selectedItem);
+    }
   },
 
   /**

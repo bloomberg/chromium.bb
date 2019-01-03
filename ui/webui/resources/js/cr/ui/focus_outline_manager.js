@@ -30,8 +30,9 @@ cr.define('cr.ui', function() {
     this.classList_ = doc.documentElement.classList;
 
     var onEvent = function(focusByKeyboard, e) {
-      if (this.focusByKeyboard_ === focusByKeyboard)
+      if (this.focusByKeyboard_ === focusByKeyboard) {
         return;
+      }
       this.focusByKeyboard_ = focusByKeyboard;
       this.updateVisibility();
     };

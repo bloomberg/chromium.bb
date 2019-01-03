@@ -33,16 +33,18 @@ Polymer({
 
   /** Toggles the drawer open and close. */
   toggle: function() {
-    if (this.open)
+    if (this.open) {
       this.cancel();
-    else
+    } else {
       this.openDrawer();
+    }
   },
 
   /** Shows drawer and slides it into view. */
   openDrawer: function() {
-    if (this.open)
+    if (this.open) {
       return;
+    }
     this.$.dialog.showModal();
     this.show_ = true;
     this.fire('cr-drawer-opening');
@@ -58,8 +60,9 @@ Polymer({
    * @param {boolean} cancel
    */
   dismiss_: function(cancel) {
-    if (!this.open)
+    if (!this.open) {
       return;
+    }
     this.show_ = false;
     listenOnce(this.$.dialog, 'transitionend', () => {
       this.$.dialog.close(cancel ? 'canceled' : 'closed');

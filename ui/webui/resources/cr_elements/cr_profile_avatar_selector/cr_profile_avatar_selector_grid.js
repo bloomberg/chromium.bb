@@ -36,8 +36,9 @@ Polymer({
       case 'ArrowLeft':
       case 'ArrowRight':
         // Ignores keys likely to be browse shortcuts (like Alt+Left for back).
-        if (this.ignoreModifiedKeyEvents && hasKeyModifiers(e))
+        if (this.ignoreModifiedKeyEvents && hasKeyModifiers(e)) {
           return;
+        }
 
         this.moveFocusRow_(items, e.key);
         e.preventDefault();
@@ -73,18 +74,21 @@ Polymer({
     if (direction == 'ArrowDown' || direction == 'ArrowUp') {
       for (let i = offset; Math.abs(i) <= rows; i += offset) {
         nextItem = items[(focusIndex + i * rowSize + gridSize) % gridSize];
-        if (nextItem)
+        if (nextItem) {
           break;
+        }
         // This codepath can be hit when |gridSize| is larger than
         // |items.length|, which means that there are empty grid spots at the
         // end.
       }
     } else {
-      if (style.direction == 'rtl')
+      if (style.direction == 'rtl') {
         offset *= -1;
+      }
       let nextIndex = (focusIndex + offset) % items.length;
-      if (nextIndex < 0)
+      if (nextIndex < 0) {
         nextIndex = items.length - 1;
+      }
       nextItem = items[nextIndex];
     }
 

@@ -163,8 +163,9 @@ cr.define('cr.ui', function() {
      */
     handleMouseDown_: function(e) {
       e = /** @type {!MouseEvent} */ (e);
-      if (e.button)
+      if (e.button) {
         return;
+      }
       this.startDrag(e.clientX, false);
       // Default action is to start selection and to move focus.
       e.preventDefault();
@@ -198,8 +199,9 @@ cr.define('cr.ui', function() {
      * @param {!TouchEvent} e The touch event.
      */
     handleTouchMove_: function(e) {
-      if (e.touches.length == 1)
+      if (e.touches.length == 1) {
         this.handleMove_(e.touches[0].clientX);
+      }
     },
 
     /**
@@ -264,8 +266,9 @@ cr.define('cr.ui', function() {
       var doc = targetElement.ownerDocument;
       var computedWidth =
           parseFloat(doc.defaultView.getComputedStyle(targetElement).width);
-      if (this.startWidth_ != computedWidth)
+      if (this.startWidth_ != computedWidth) {
         cr.dispatchSimpleEvent(this, 'resize');
+      }
 
       this.classList.remove('splitter-active');
     },

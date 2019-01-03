@@ -64,8 +64,9 @@ cr.define('cr.ui', function() {
 
               // Skip nodes that cannot receive focus. FILTER_SKIP does not
               // cause this node's children also to be skipped.
-              if (node.disabled || node.tabIndex < 0)
+              if (node.disabled || node.tabIndex < 0) {
                 return NodeFilter.FILTER_SKIP;
+              }
 
               // Accept nodes that are non-hidden and focusable.
               return NodeFilter.FILTER_ACCEPT;
@@ -74,8 +75,9 @@ cr.define('cr.ui', function() {
           false);
 
       var focusable = [];
-      while (treeWalker.nextNode())
+      while (treeWalker.nextNode()) {
         focusable.push(treeWalker.currentNode);
+      }
 
       return focusable;
     },
@@ -121,8 +123,9 @@ cr.define('cr.ui', function() {
       var focusableElements = this.getFocusableElements_();
       var element = this.focusDirBackwards_ ? focusableElements.pop() :
                                               focusableElements.shift();
-      if (!element)
+      if (!element) {
         return null;
+      }
       if (element.tagName != 'INPUT' || element.type != 'radio' ||
           element.name == '') {
         return element;

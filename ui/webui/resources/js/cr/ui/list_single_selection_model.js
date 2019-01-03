@@ -107,13 +107,15 @@ cr.define('cr.ui', function() {
     setIndexSelected: function(index, b) {
       // Only allow selection
       var oldSelected = index == this.selectedIndex_;
-      if (oldSelected == b)
+      if (oldSelected == b) {
         return;
+      }
 
-      if (b)
+      if (b) {
         this.selectedIndex = index;
-      else if (index == this.selectedIndex_)
+      } else if (index == this.selectedIndex_) {
         this.selectedIndex = -1;
+      }
     },
 
     /**
@@ -146,10 +148,11 @@ cr.define('cr.ui', function() {
       if (!this.changeCount_) {
         if (this.selectedIndexBefore_ != this.selectedIndex_) {
           var beforeChange = this.createChangeEvent('beforeChange');
-          if (this.dispatchEvent(beforeChange))
+          if (this.dispatchEvent(beforeChange)) {
             this.dispatchEvent(this.createChangeEvent('change'));
-          else
+          } else {
             this.selectedIndex_ = this.selectedIndexBefore_;
+          }
         }
       }
     },
@@ -195,8 +198,9 @@ cr.define('cr.ui', function() {
 
     adjustIndex_: function(index) {
       index = Math.max(-1, Math.min(this.length_ - 1, index));
-      if (!this.independentLeadItem_)
+      if (!this.independentLeadItem_) {
         index = this.selectedIndex;
+      }
       return index;
     },
 
@@ -224,8 +228,9 @@ cr.define('cr.ui', function() {
      * @param {!Array<number>} permutation The reordering permutation.
      */
     adjustToReordering: function(permutation) {
-      if (this.leadIndex != -1)
+      if (this.leadIndex != -1) {
         this.leadIndex = permutation[this.leadIndex];
+      }
 
       var oldSelectedIndex = this.selectedIndex;
       if (oldSelectedIndex != -1) {

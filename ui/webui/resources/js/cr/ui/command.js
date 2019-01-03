@@ -36,8 +36,9 @@ cr.define('cr.ui', function() {
           this.mods_[partLc + 'Key'] = true;
           break;
         default:
-          if (this.key_)
+          if (this.key_) {
             throw Error('Invalid shortcut');
+          }
           this.key_ = part;
           // For single key alpha shortcuts use event.keyCode rather than
           // event.key to match how chrome handles shortcuts and allow
@@ -111,8 +112,9 @@ cr.define('cr.ui', function() {
     decorate: function() {
       CommandManager.init(assert(this.ownerDocument));
 
-      if (this.hasAttribute('shortcut'))
+      if (this.hasAttribute('shortcut')) {
         this.shortcut = this.getAttribute('shortcut');
+      }
     },
 
     /**
@@ -122,8 +124,9 @@ cr.define('cr.ui', function() {
      * @param {HTMLElement=} opt_element Optional element to dispatch event on.
      */
     execute: function(opt_element) {
-      if (this.disabled)
+      if (this.disabled) {
         return;
+      }
       var doc = this.ownerDocument;
       if (doc.activeElement) {
         var e = new Event('command', {bubbles: true});
@@ -181,8 +184,9 @@ cr.define('cr.ui', function() {
      * @return {boolean} Whether it matched or not.
      */
     matchesEvent: function(e) {
-      if (!this.keyboardShortcuts_)
+      if (!this.keyboardShortcuts_) {
         return false;
+      }
       return this.keyboardShortcuts_.matchesEvent(e);
     },
   };
@@ -269,8 +273,9 @@ cr.define('cr.ui', function() {
       var target = e.target;
 
       // Ignore focus on a menu button or command item.
-      if (target.menu || target.command)
+      if (target.menu || target.command) {
         return;
+      }
 
       var commands = Array.prototype.slice.call(
           target.ownerDocument.querySelectorAll('command'));

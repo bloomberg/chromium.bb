@@ -88,8 +88,9 @@ Polymer({
    * Polymer networkProperties changed method.
    */
   networkPropertiesChanged_: function() {
-    if (!this.networkProperties || !this.networkProperties.Cellular)
+    if (!this.networkProperties || !this.networkProperties.Cellular) {
       return;
+    }
 
     /** @type {!CrOnc.APNProperties|undefined} */ let activeApn;
     const cellular = this.networkProperties.Cellular;
@@ -156,8 +157,9 @@ Polymer({
    */
   createApnObject_: function(apnProperties) {
     const newApn = {AccessPointName: ''};
-    if (apnProperties)
+    if (apnProperties) {
       Object.assign(newApn, apnProperties);
+    }
     return newApn;
   },
 
@@ -167,12 +169,14 @@ Polymer({
    * @private
    */
   getApnList_: function() {
-    if (!this.networkProperties || !this.networkProperties.Cellular)
+    if (!this.networkProperties || !this.networkProperties.Cellular) {
       return [];
+    }
     /** @type {!chrome.networkingPrivate.ManagedAPNList|undefined} */
     const apnlist = this.networkProperties.Cellular.APNList;
-    if (!apnlist)
+    if (!apnlist) {
       return [];
+    }
     return /** @type {!Array<!CrOnc.APNProperties>} */ (
         CrOnc.getActiveValue(apnlist));
   },
@@ -245,8 +249,9 @@ Polymer({
    * @private
    */
   isOtherSelected_: function(accessPointName) {
-    if (!this.networkProperties || !this.networkProperties.Cellular)
+    if (!this.networkProperties || !this.networkProperties.Cellular) {
       return false;
+    }
     const apnList = this.getApnList_();
     const apn = this.findApnInList(apnList, accessPointName);
     return apn == undefined;

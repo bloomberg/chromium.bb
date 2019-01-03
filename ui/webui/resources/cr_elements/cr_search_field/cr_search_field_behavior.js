@@ -64,8 +64,9 @@ const CrSearchFieldBehavior = {
 
   /** @private */
   scheduleSearch_: function() {
-    if (this.searchDelayTimer_ >= 0)
+    if (this.searchDelayTimer_ >= 0) {
       clearTimeout(this.searchDelayTimer_);
+    }
     // Dispatch 'search' event after:
     //    0ms if the value is empty
     //  500ms if the value length is 1
@@ -106,12 +107,14 @@ const CrSearchFieldBehavior = {
    */
   onValueChanged_: function(newValue, noEvent) {
     const effectiveValue = newValue.replace(/\s+/g, ' ');
-    if (effectiveValue == this.lastValue_)
+    if (effectiveValue == this.lastValue_) {
       return;
+    }
 
     this.lastValue_ = effectiveValue;
 
-    if (!noEvent)
+    if (!noEvent) {
       this.fire('search-changed', effectiveValue);
+    }
   },
 };

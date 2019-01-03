@@ -198,7 +198,6 @@ cr.define('cr.ui', function() {
    */
   TouchHandler.MAX_TRACKING_FOR_TAP_ = 8;
 
-
   /**
    * The maximum number of ms to track a touch event. After an event is older
    * than this value, it will be ignored in velocity calculations.
@@ -207,14 +206,12 @@ cr.define('cr.ui', function() {
    */
   TouchHandler.MAX_TRACKING_TIME_ = 250;
 
-
   /**
    * The maximum number of touches to track.
    * @type {number}
    * @private
    */
   TouchHandler.MAX_TRACKING_TOUCHES_ = 5;
-
 
   /**
    * The maximum velocity to return, in pixels per millisecond, that is used
@@ -224,7 +221,6 @@ cr.define('cr.ui', function() {
    * @private
    */
   TouchHandler.MAXIMUM_VELOCITY_ = 5;
-
 
   /**
    * The velocity to return, in pixel per millisecond, when the time stamps on
@@ -470,25 +466,28 @@ cr.define('cr.ui', function() {
     onStart_: function(e) {
       // Only process single touches.  If there is already a touch happening, or
       // two simultaneous touches then just ignore them.
-      if (e.touches.length > 1)
+      if (e.touches.length > 1) {
         // Note that we could cancel an active touch here.  That would make
         // simultaneous touch behave similar to near-simultaneous. However, if
         // the user is dragging something, an accidental second touch could be
         // quite disruptive if it cancelled their drag.  Better to just ignore
         // it.
         return;
+      }
 
       // It's still possible there could be an active "touch" if the user is
       // simultaneously using a mouse and a touch input.
-      if (this.activeTouch_ !== undefined)
+      if (this.activeTouch_ !== undefined) {
         return;
+      }
 
       var touch = e.targetTouches[0];
       this.activeTouch_ = touch.identifier;
 
       // We've just started touching so shouldn't swallow any upcoming click
-      if (this.swallowNextClick_)
+      if (this.swallowNextClick_) {
         this.swallowNextClick_ = false;
+      }
 
       this.disableTap_ = false;
 
@@ -549,8 +548,9 @@ cr.define('cr.ui', function() {
       // A TouchList isn't actually an array, so we shouldn't use
       // Array.prototype.filter/some, etc.
       for (var i = 0; i < touches.length; i++) {
-        if (touches[i].identifier == this.activeTouch_)
+        if (touches[i].identifier == this.activeTouch_) {
           return touches[i];
+        }
       }
       return undefined;
     },
@@ -561,16 +561,18 @@ cr.define('cr.ui', function() {
      * @private
      */
     onMove_: function(e) {
-      if (!this.tracking_)
+      if (!this.tracking_) {
         return;
+      }
 
       // Our active touch should always be in the list of touches still active
       assert(this.findActiveTouch_(e.touches), 'Missing touchEnd');
 
       var that = this;
       var touch = this.findActiveTouch_(e.changedTouches);
-      if (!touch)
+      if (!touch) {
         return;
+      }
 
       var clientX = touch.clientX;
       var clientY = touch.clientY;
@@ -585,8 +587,9 @@ cr.define('cr.ui', function() {
       var couldBeTap = this.totalMoveY_ <= TouchHandler.MAX_TRACKING_FOR_TAP_ ||
           this.totalMoveX_ <= TouchHandler.MAX_TRACKING_FOR_TAP_;
 
-      if (!couldBeTap)
+      if (!couldBeTap) {
         this.disableTap_ = true;
+      }
 
       if (this.draggingEnabled_ && !this.dragging_ && !couldBeTap) {
         // If we're waiting for a long press, stop
@@ -722,8 +725,9 @@ cr.define('cr.ui', function() {
       // drag-and-drop events are nested inside of the mouse events that trigger
       // them).
       this.dispatchEvent_(TouchHandler.EventType.TOUCH_END, touch);
-      if (!this.disableTap_)
+      if (!this.disableTap_) {
         this.dispatchEvent_(TouchHandler.EventType.TAP, touch);
+      }
     },
 
     /**
@@ -861,10 +865,11 @@ cr.define('cr.ui', function() {
           eventType, bubbles, clientX, clientY, touchedElement);
 
       // Set enableDrag when it can be overridden
-      if (eventType == TouchHandler.EventType.TOUCH_START)
+      if (eventType == TouchHandler.EventType.TOUCH_START) {
         event.enableDrag = false;
-      else if (eventType == TouchHandler.EventType.DRAG_START)
+      } else if (eventType == TouchHandler.EventType.DRAG_START) {
         event.enableDrag = true;
+      }
 
       if (isDrag) {
         event.dragDeltaX = clientX - this.startTouchX_;

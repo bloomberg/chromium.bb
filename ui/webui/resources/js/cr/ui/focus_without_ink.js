@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 cr.define('cr.ui', function() {
-  if (cr.ui.focusWithoutInk)
+  if (cr.ui.focusWithoutInk) {
     return;
+  }
 
   var hideInk = false;
 
@@ -53,13 +54,15 @@ cr.define('cr.ui', function() {
 
     // For paper-icon-button-light elements, focus() needs to be  called on the
     // inner native <button> for it to work.
-    if (innerButton)
+    if (innerButton) {
       innerButton.focus();
-    else
+    } else {
       toFocus.focus();
+    }
 
-    if (hideInk)
+    if (hideInk) {
       toFocus.noink = origNoInk;
+    }
   };
 
   return {focusWithoutInk: focusWithoutInk};

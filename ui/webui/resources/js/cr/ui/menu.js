@@ -56,11 +56,13 @@ cr.define('cr.ui', function() {
 
       cr.ui.decorate(menuItem, MenuItem);
 
-      if (item.label)
+      if (item.label) {
         menuItem.label = item.label;
+      }
 
-      if (item.iconUrl)
+      if (item.iconUrl) {
         menuItem.iconUrl = item.iconUrl;
+      }
 
       return menuItem;
     },
@@ -125,12 +127,15 @@ cr.define('cr.ui', function() {
     handleMouseUp_: function(e) {
       assert(this.contains(/** @type {Element} */ (e.target)));
 
-      if (!this.trustEvent_(e) || Date.now() - this.shown_.time > 200)
+      if (!this.trustEvent_(e) || Date.now() - this.shown_.time > 200) {
         return;
+      }
 
       var pos = this.shown_.mouseDownPos;
-      if (!pos || Math.abs(pos.x - e.screenX) + Math.abs(pos.y - e.screenY) > 4)
+      if (!pos ||
+          Math.abs(pos.x - e.screenX) + Math.abs(pos.y - e.screenY) > 4) {
         return;
+      }
 
       e.preventDefault();
       e.stopPropagation();
@@ -192,10 +197,12 @@ cr.define('cr.ui', function() {
      * @private
      */
     isItemVisible_: function(menuItem) {
-      if (menuItem.hidden)
+      if (menuItem.hidden) {
         return false;
-      if (!!menuItem.offsetParent)
+      }
+      if (!!menuItem.offsetParent) {
         return true;
+      }
       // A "position: fixed" element won't have an offsetParent, so we have to
       // do the full style computation.
       return window.getComputedStyle(menuItem).display != 'none';
@@ -249,16 +256,19 @@ cr.define('cr.ui', function() {
 
           // Check not to enter into infinite loop if all items are hidden or
           // disabled.
-          if (i == startPosition)
+          if (i == startPosition) {
             break;
+          }
 
           item = menuItems[i];
           if (item && !item.isSeparator() && !item.disabled &&
-              this.isItemVisible_(item))
+              this.isItemVisible_(item)) {
             break;
+          }
         }
-        if (item && !item.disabled)
+        if (item && !item.disabled) {
           self.selectedIndex = i;
+        }
       }.bind(this);
 
       switch (e.key) {
@@ -280,8 +290,9 @@ cr.define('cr.ui', function() {
             activationEvent.initEvent('activate', true, true);
             activationEvent.originalEvent = e;
             if (item.dispatchEvent(activationEvent)) {
-              if (item.command)
+              if (item.command) {
                 item.command.execute(contextElement);
+              }
             }
           }
           return true;
@@ -309,8 +320,9 @@ cr.define('cr.ui', function() {
       var menuItems = this.menuItems;
 
       for (var i = 0, menuItem; menuItem = menuItems[i]; i++) {
-        if (!menuItem.isSeparator())
+        if (!menuItem.isSeparator()) {
           menuItem.updateCommand(node);
+        }
       }
 
       let separatorRequired = false;
@@ -343,8 +355,9 @@ cr.define('cr.ui', function() {
       oldSelectedItem.blur();
     }
     var item = this.selectedItem;
-    if (item)
+    if (item) {
       item.selected = true;
+    }
   }
 
   /**

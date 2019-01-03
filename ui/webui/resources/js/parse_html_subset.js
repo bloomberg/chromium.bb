@@ -41,8 +41,9 @@ var parseHtmlSubset = (function() {
     for (var i = 0; i < arguments.length; ++i) {
       if (typeof arguments[i] == 'object') {
         for (var key in arguments[i]) {
-          if (arguments[i].hasOwnProperty(key))
+          if (arguments[i].hasOwnProperty(key)) {
             clone[key] = arguments[i][key];
+          }
         }
       }
     }
@@ -57,15 +58,17 @@ var parseHtmlSubset = (function() {
   }
 
   function assertElement(tags, node) {
-    if (tags.indexOf(node.tagName) == -1)
+    if (tags.indexOf(node.tagName) == -1) {
       throw Error(node.tagName + ' is not supported');
+    }
   }
 
   function assertAttribute(attrs, attrNode, node) {
     var n = attrNode.nodeName;
     var v = attrNode.nodeValue;
-    if (!attrs.hasOwnProperty(n) || !attrs[n](node, v))
+    if (!attrs.hasOwnProperty(n) || !attrs[n](node, v)) {
       throw Error(node.tagName + '[' + n + '="' + v + '"] is not supported');
+    }
   }
 
   return function(s, opt_extraTags, opt_extraAttrs) {

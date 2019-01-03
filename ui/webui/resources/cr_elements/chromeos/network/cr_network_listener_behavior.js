@@ -92,8 +92,9 @@ const CrNetworkListenerBehavior = {
    */
   maybeDispatchEvent_: function(selectors, event) {
     const element = this.$$(selectors);
-    if (!element)
+    if (!element) {
       return;
+    }
     element.dispatchEvent(event);
   },
 };

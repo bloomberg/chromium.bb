@@ -85,12 +85,12 @@ cr.define('cr', function() {
         var kind;
         var ctrl = cr.isMac && e.metaKey || !cr.isMac && e.ctrlKey;
 
-        if (e.button == 1 || ctrl)  // middle, ctrl or keyboard
+        if (e.button == 1 || ctrl) {  // middle, ctrl or keyboard
           kind = e.shiftKey ? cr.LinkKind.FOREGROUND_TAB :
                               cr.LinkKind.BACKGROUND_TAB;
-        else  // left or keyboard
+        } else {  // left or keyboard
           kind = e.shiftKey ? cr.LinkKind.WINDOW : cr.LinkKind.SELF;
-
+        }
         this.openUrls([url], kind);
       }
     },
@@ -111,12 +111,14 @@ cr.define('cr', function() {
      * @param {cr.LinkKind} kind The kind of open we want to do.
      */
     openUrls: function(urls, kind) {
-      if (urls.length < 1)
+      if (urls.length < 1) {
         return;
+      }
 
       if (urls.length > this.warningLimit) {
-        if (!this.window.confirm(this.getWarningMessage(urls.length)))
+        if (!this.window.confirm(this.getWarningMessage(urls.length))) {
           return;
+        }
       }
 
       // Fix '#124' URLs since opening those in a new window does not work. We

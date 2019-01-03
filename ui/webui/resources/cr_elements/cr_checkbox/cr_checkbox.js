@@ -61,8 +61,9 @@ Polymer({
    * @private
    */
   disabledChanged_: function(current, previous) {
-    if (previous === undefined && !this.disabled)
+    if (previous === undefined && !this.disabled) {
       return;
+    }
 
     this.setAttribute('tabindex', this.disabled ? -1 : 0);
     this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
@@ -94,8 +95,9 @@ Polymer({
    * @private
    */
   onClick_: function(e) {
-    if (!this.shouldHandleEvent_(e))
+    if (!this.shouldHandleEvent_(e)) {
       return;
+    }
 
     // Prevent |click| event from bubbling. It can cause parents of this
     // elements to erroneously re-toggle this control.
@@ -125,8 +127,9 @@ Polymer({
    * @private
    */
   onKeyPress_: function(e) {
-    if (!this.shouldHandleEvent_(e) || (e.key != ' ' && e.key != 'Enter'))
+    if (!this.shouldHandleEvent_(e) || (e.key != ' ' && e.key != 'Enter')) {
       return;
+    }
 
     e.preventDefault();
     this.toggleState_(true);

@@ -72,11 +72,13 @@ Polymer({
 
   /** @private */
   networkStateChanged_: function() {
-    if (!this.networkState)
+    if (!this.networkState) {
       return;
+    }
     const connectionState = this.networkState.ConnectionState;
-    if (connectionState == this.connectionState_)
+    if (connectionState == this.connectionState_) {
       return;
+    }
     this.connectionState_ = connectionState;
     this.fire('network-connect-changed', this.networkState);
   },
@@ -90,8 +92,9 @@ Polymer({
     if (this.item.hasOwnProperty('customItemName')) {
       const item = /** @type {!CrNetworkList.CustomItemState} */ (this.item);
       let name = item.customItemName || '';
-      if (CrOncStrings.hasOwnProperty(item.customItemName))
+      if (CrOncStrings.hasOwnProperty(item.customItemName)) {
         name = CrOncStrings[item.customItemName];
+      }
       return name;
     }
     const network = /** @type {!CrOnc.NetworkStateProperties} */ (this.item);
@@ -112,21 +115,26 @@ Polymer({
    * @private
    */
   getNetworkStateText_: function() {
-    if (!this.networkState)
+    if (!this.networkState) {
       return '';
+    }
     const connectionState = this.networkState.ConnectionState;
     if (this.networkState.Type == CrOnc.Type.CELLULAR) {
       // For Cellular, an empty ConnectionState indicates that the device is
       // still initializing.
-      if (!connectionState)
+      if (!connectionState) {
         return CrOncStrings.networkListItemInitializing;
-      if (this.networkState.Cellular && this.networkState.Cellular.Scanning)
+      }
+      if (this.networkState.Cellular && this.networkState.Cellular.Scanning) {
         return CrOncStrings.networkListItemScanning;
+      }
     }
-    if (connectionState == CrOnc.ConnectionState.CONNECTED)
+    if (connectionState == CrOnc.ConnectionState.CONNECTED) {
       return CrOncStrings.networkListItemConnected;
-    if (connectionState == CrOnc.ConnectionState.CONNECTING)
+    }
+    if (connectionState == CrOnc.ConnectionState.CONNECTING) {
       return CrOncStrings.networkListItemConnecting;
+    }
     return '';
   },
 

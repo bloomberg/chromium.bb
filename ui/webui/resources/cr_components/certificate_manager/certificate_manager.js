@@ -185,8 +185,9 @@ Polymer({
    * @private
    */
   openDialog_: function(dialogTagName, domIfBooleanName, anchor) {
-    if (anchor)
+    if (anchor) {
       this.activeDialogAnchor_ = anchor;
+    }
     this.set(domIfBooleanName, true);
     this.async(() => {
       const dialog = this.$$(dialogTagName);

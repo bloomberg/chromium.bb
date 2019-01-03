@@ -111,8 +111,9 @@ cr.define('cr.ui', function() {
      * @param {HTMLElement} node The new anchor node.
      */
     set anchorNode(node) {
-      if (!this.hidden)
+      if (!this.hidden) {
         return;
+      }
 
       this.anchorNode_ = node;
     },
@@ -123,8 +124,9 @@ cr.define('cr.ui', function() {
      * @param {HTMLElement} node The root node of the new content.
      */
     set content(node) {
-      if (!this.hidden)
+      if (!this.hidden) {
         return;
+      }
 
       var bubbleContent = this.querySelector('.bubble-content');
       bubbleContent.innerHTML = '';
@@ -137,13 +139,15 @@ cr.define('cr.ui', function() {
      * @param {cr.ui.ArrowLocation} location The new arrow location.
      */
     set arrowLocation(location) {
-      if (!this.hidden)
+      if (!this.hidden) {
         return;
+      }
 
       this.arrowAtRight_ = location == cr.ui.ArrowLocation.TOP_END ||
           location == cr.ui.ArrowLocation.BOTTOM_END;
-      if (document.documentElement.dir == 'rtl')
+      if (document.documentElement.dir == 'rtl') {
         this.arrowAtRight_ = !this.arrowAtRight_;
+      }
       this.arrowAtTop_ = location == cr.ui.ArrowLocation.TOP_START ||
           location == cr.ui.ArrowLocation.TOP_END;
     },
@@ -154,8 +158,9 @@ cr.define('cr.ui', function() {
      * @param {cr.ui.BubbleAlignment} alignment The new bubble alignment.
      */
     set bubbleAlignment(alignment) {
-      if (!this.hidden)
+      if (!this.hidden) {
         return;
+      }
 
       this.bubbleAlignment_ = alignment;
     },
@@ -185,10 +190,11 @@ cr.define('cr.ui', function() {
         var maxLeftPos =
             documentWidth - bubble.width - BubbleBase.MIN_VIEWPORT_EDGE_MARGIN;
         var minLeftPos = BubbleBase.MIN_VIEWPORT_EDGE_MARGIN;
-        if (document.documentElement.dir == 'rtl')
+        if (document.documentElement.dir == 'rtl') {
           left = Math.min(Math.max(left, minLeftPos), maxLeftPos);
-        else
+        } else {
           left = Math.max(Math.min(left, maxLeftPos), minLeftPos);
+        }
         var arrowTip = Math.min(
             Math.max(
                 arrow.width / 2,
@@ -249,8 +255,9 @@ cr.define('cr.ui', function() {
      * Show the bubble.
      */
     show: function() {
-      if (!this.hidden)
+      if (!this.hidden) {
         return;
+      }
 
       this.attachToDOM_();
       this.hidden = false;
@@ -266,8 +273,9 @@ cr.define('cr.ui', function() {
      * Hide the bubble.
      */
     hide: function() {
-      if (this.hidden)
+      if (this.hidden) {
         return;
+      }
 
       this.eventTracker_.removeAll();
       this.hidden = true;
@@ -308,8 +316,9 @@ cr.define('cr.ui', function() {
     updateArrowPosition_: function(visible, atTop, tipOffset) {
       var bubbleArrow = this.querySelector('.bubble-arrow');
       bubbleArrow.hidden = !visible;
-      if (!visible)
+      if (!visible) {
         return;
+      }
 
       var edgeOffset = (-bubbleArrow.clientHeight / 2) + 'px';
       bubbleArrow.style.top = atTop ? edgeOffset : 'auto';
@@ -358,8 +367,9 @@ cr.define('cr.ui', function() {
      *     parameters.
      */
     set handleCloseEvent(handler) {
-      if (!this.hidden)
+      if (!this.hidden) {
         return;
+      }
 
       this.handleCloseEvent_ = handler;
     },
@@ -386,8 +396,9 @@ cr.define('cr.ui', function() {
      * Show the bubble.
      */
     show: function() {
-      if (!this.hidden)
+      if (!this.hidden) {
         return;
+      }
 
       BubbleBase.prototype.show.call(this);
 
@@ -449,8 +460,9 @@ cr.define('cr.ui', function() {
      * @param {HTMLElement} node The new DOM sibling node.
      */
     set domSibling(node) {
-      if (!this.hidden)
+      if (!this.hidden) {
         return;
+      }
 
       this.domSibling_ = node;
     },
@@ -459,8 +471,9 @@ cr.define('cr.ui', function() {
      * Show the bubble.
      */
     show: function() {
-      if (!this.hidden)
+      if (!this.hidden) {
         return;
+      }
 
       BubbleBase.prototype.show.call(this);
       this.domSibling_.showingBubble = true;
@@ -500,14 +513,16 @@ cr.define('cr.ui', function() {
         case 'mousedown':
         case 'click':
           var target = assertInstanceof(event.target, Node);
-          if (event.button == 0 && this.anchorNode_.contains(target))
+          if (event.button == 0 && this.anchorNode_.contains(target)) {
             break;
+          }
         // Close the bubble when the underlying document is scrolled.
         case 'mousewheel':
         case 'scroll':
           var target = assertInstanceof(event.target, Node);
-          if (this.contains(target))
+          if (this.contains(target)) {
             break;
+          }
         // Close the bubble when the window is resized.
         case 'resize':
           this.hide();
@@ -516,8 +531,9 @@ cr.define('cr.ui', function() {
         // bubble target and is not inside the bubble.
         case 'elementFocused':
           var target = assertInstanceof(event.target, Node);
-          if (!this.anchorNode_.contains(target) && !this.contains(target))
+          if (!this.anchorNode_.contains(target) && !this.contains(target)) {
             this.hide();
+          }
           break;
       }
     },

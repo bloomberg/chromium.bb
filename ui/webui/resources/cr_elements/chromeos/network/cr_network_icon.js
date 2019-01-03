@@ -52,13 +52,16 @@ Polymer({
    * @private
    */
   getIconClass_: function() {
-    if (!this.networkState)
+    if (!this.networkState) {
       return '';
+    }
     const type = this.networkState.Type;
-    if (type == CrOnc.Type.ETHERNET)
+    if (type == CrOnc.Type.ETHERNET) {
       return 'ethernet';
-    if (type == CrOnc.Type.VPN)
+    }
+    if (type == CrOnc.Type.VPN) {
       return 'vpn';
+    }
 
     const prefix = (type == CrOnc.Type.CELLULAR || type == CrOnc.Type.TETHER) ?
         'cellular-' :
@@ -73,8 +76,9 @@ Polymer({
     }
 
     const connectionState = this.networkState.ConnectionState;
-    if (connectionState == CrOnc.ConnectionState.CONNECTING)
+    if (connectionState == CrOnc.ConnectionState.CONNECTING) {
       return prefix + 'connecting';
+    }
 
     if (!this.isListItem &&
         (!connectionState ||
@@ -93,11 +97,13 @@ Polymer({
    * @private
    */
   strengthToIndex_: function(strength) {
-    if (strength <= 0)
+    if (strength <= 0) {
       return 0;
+    }
 
-    if (strength >= 100)
+    if (strength >= 100) {
       return this.networkIconCount_ - 1;
+    }
 
     const zeroBasedIndex =
         Math.trunc((strength - 1) * (this.networkIconCount_ - 1) / 100);
@@ -110,10 +116,12 @@ Polymer({
    */
   showSecure_: function() {
     const networkState = this.networkState;
-    if (!this.networkState)
+    if (!this.networkState) {
       return false;
-    if (networkState.Type != CrOnc.Type.WI_FI || !networkState.WiFi)
+    }
+    if (networkState.Type != CrOnc.Type.WI_FI || !networkState.WiFi) {
       return false;
+    }
     if (!this.isListItem &&
         networkState.ConnectionState == CrOnc.ConnectionState.NOT_CONNECTED) {
       return false;

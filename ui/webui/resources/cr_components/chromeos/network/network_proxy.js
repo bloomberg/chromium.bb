@@ -139,15 +139,17 @@ Polymer({
 
   /** @private */
   networkPropertiesChanged_: function() {
-    if (this.proxyIsUserModified_)
-      return;  // Ignore update.
+    if (this.proxyIsUserModified_) {
+      return;
+    }  // Ignore update.
     this.updateProxy_();
   },
 
   /** @private */
   updateProxy_: function() {
-    if (!this.networkProperties)
+    if (!this.networkProperties) {
       return;
+    }
 
     /** @type {!CrOnc.ProxySettings} */
     const proxy = this.createDefaultProxySettings_();
@@ -268,20 +270,25 @@ Polymer({
             Object.assign({}, defaultProxy));
       } else {
         // Remove properties with empty hosts to unset them.
-        if (manual.HTTPProxy && !manual.HTTPProxy.Host)
+        if (manual.HTTPProxy && !manual.HTTPProxy.Host) {
           delete manual.HTTPProxy;
-        if (manual.SecureHTTPProxy && !manual.SecureHTTPProxy.Host)
+        }
+        if (manual.SecureHTTPProxy && !manual.SecureHTTPProxy.Host) {
           delete manual.SecureHTTPProxy;
-        if (manual.FTPProxy && !manual.FTPProxy.Host)
+        }
+        if (manual.FTPProxy && !manual.FTPProxy.Host) {
           delete manual.FTPProxy;
-        if (manual.SOCKS && !manual.SOCKS.Host)
+        }
+        if (manual.SOCKS && !manual.SOCKS.Host) {
           delete manual.SOCKS;
+        }
       }
       this.savedManual_ = Object.assign({}, manual);
       this.savedExcludeDomains_ = proxy.ExcludeDomains;
     } else if (proxy.Type == CrOnc.ProxySettingsType.PAC) {
-      if (!proxy.PAC)
+      if (!proxy.PAC) {
         return;
+      }
     }
     this.fire('proxy-change', {field: 'ProxySettings', value: proxy});
     this.proxyIsUserModified_ = false;
@@ -322,10 +329,11 @@ Polymer({
     // If the new proxy type is fully configured, send it, otherwise set
     // |proxyIsUserModified_| to true so that property updates do not
     // overwrite user changes.
-    if (proxyTypeChangeIsReady)
+    if (proxyTypeChangeIsReady) {
       this.sendProxyChange_();
-    else
+    } else {
       this.proxyIsUserModified_ = true;
+    }
 
     if (elementToFocus) {
       this.async(() => {
@@ -347,8 +355,9 @@ Polymer({
   /** @private */
   onAddProxyExclusionTap_: function() {
     const value = this.$.proxyExclusion.value;
-    if (!value)
+    if (!value) {
       return;
+    }
     this.push('proxy_.ExcludeDomains', value);
     // Clear input.
     this.$.proxyExclusion.value = '';
@@ -360,8 +369,9 @@ Polymer({
    * @private
    */
   onAddProxyExclusionKeypress_: function(event) {
-    if (event.key != 'Enter')
+    if (event.key != 'Enter') {
       return;
+    }
     event.stopPropagation();
     this.onAddProxyExclusionTap_();
   },
@@ -386,12 +396,15 @@ Polymer({
    * @private
    */
   getProxyTypeDesc_: function(proxyType) {
-    if (proxyType == CrOnc.ProxySettingsType.MANUAL)
+    if (proxyType == CrOnc.ProxySettingsType.MANUAL) {
       return this.i18n('networkProxyTypeManual');
-    if (proxyType == CrOnc.ProxySettingsType.PAC)
+    }
+    if (proxyType == CrOnc.ProxySettingsType.PAC) {
       return this.i18n('networkProxyTypePac');
-    if (proxyType == CrOnc.ProxySettingsType.WPAD)
+    }
+    if (proxyType == CrOnc.ProxySettingsType.WPAD) {
       return this.i18n('networkProxyTypeWpad');
+    }
     return this.i18n('networkProxyTypeDirect');
   },
 
@@ -410,14 +423,17 @@ Polymer({
    * @private
    */
   isEditable_: function(propertyName) {
-    if (!this.editable || (this.isShared_() && !this.useSharedProxies))
+    if (!this.editable || (this.isShared_() && !this.useSharedProxies)) {
       return false;
-    if (!this.networkProperties.hasOwnProperty('ProxySettings'))
-      return true;  // No proxy settings defined, so not enforced.
+    }
+    if (!this.networkProperties.hasOwnProperty('ProxySettings')) {
+      return true;
+    }  // No proxy settings defined, so not enforced.
     const property = /** @type {!CrOnc.ManagedProperty|undefined} */ (
         this.get('ProxySettings.' + propertyName, this.networkProperties));
-    if (!property)
+    if (!property) {
       return true;
+    }
     return this.isPropertyEditable_(property);
   },
 
@@ -445,12 +461,14 @@ Polymer({
    * @private
    */
   isSaveManualProxyEnabled_: function() {
-    if (!this.proxyIsUserModified_)
+    if (!this.proxyIsUserModified_) {
       return false;
+    }
     const manual = this.proxy_.Manual;
     const httpHost = this.get('HTTPProxy.Host', manual);
-    if (this.useSameProxy_)
+    if (this.useSameProxy_) {
       return !!httpHost;
+    }
     return !!httpHost || !!this.get('SecureHTTPProxy.Host', manual) ||
         !!this.get('FTPProxy.Host', manual) || !!this.get('SOCKS.Host', manual);
   },

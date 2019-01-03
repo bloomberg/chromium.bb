@@ -262,8 +262,9 @@ cr_slider.SliderTick;
     onFocus_: function() {
       this.holdDown_ = true;
 
-      if (this.shadowRoot.activeElement == this.$.knob)
+      if (this.shadowRoot.activeElement == this.$.knob) {
         return;
+      }
       this.$.knob.focus();
     },
 
@@ -277,11 +278,13 @@ cr_slider.SliderTick;
      * @private
      */
     onKeyDown_: function(event) {
-      if (this.disabled_ || this.noKeybindings)
+      if (this.disabled_ || this.noKeybindings) {
         return;
+      }
 
-      if (event.metaKey || event.shiftKey || event.altKey || event.ctrlKey)
+      if (event.metaKey || event.shiftKey || event.altKey || event.ctrlKey) {
         return;
+      }
 
       /** @type {number|undefined} */
       let newValue;
@@ -293,11 +296,13 @@ cr_slider.SliderTick;
         newValue = this.value + this.deltaKeyMap_.get(event.key);
       }
 
-      if (newValue == undefined)
+      if (newValue == undefined) {
         return;
+      }
 
-      if (this.updateValue_(newValue))
+      if (this.updateValue_(newValue)) {
         this.fire('cr-slider-value-changed');
+      }
       event.preventDefault();
       event.stopPropagation();
       setTimeout(() => {
@@ -316,8 +321,9 @@ cr_slider.SliderTick;
      * @private
      */
     onKnobKeydown_: function(e) {
-      if (e.shiftKey && e.key === 'Tab')
+      if (e.shiftKey && e.key === 'Tab') {
         this.focus();
+      }
     },
 
     /** @private */
@@ -332,8 +338,10 @@ cr_slider.SliderTick;
      * @private
      */
     onPointerDown_: function(event) {
-      if (this.disabled_ || event.buttons != 1 && event.pointerType == 'mouse')
+      if (this.disabled_ ||
+          event.buttons != 1 && event.pointerType == 'mouse') {
         return;
+      }
 
       this.dragging = true;
       this.transiting_ = true;
@@ -362,8 +370,9 @@ cr_slider.SliderTick;
       this.draggingEventTracker_.add(this, 'pointerdown', stopDragging);
       this.draggingEventTracker_.add(this, 'pointerup', stopDragging);
       this.draggingEventTracker_.add(this, 'keydown', e => {
-        if (e.key == 'Escape' || e.key == 'Tab')
+        if (e.key == 'Escape' || e.key == 'Tab') {
           stopDragging();
+        }
       });
     },
 
@@ -412,8 +421,9 @@ cr_slider.SliderTick;
       });
 
       const ariaValues = [tick, ticks[0], ticks[ticks.length - 1]].map(t => {
-        if (Number.isFinite(t))
+        if (Number.isFinite(t)) {
           return t;
+        }
         return Number.isFinite(t.ariaValue) ? t.ariaValue : t.value;
       });
       this.setAttribute(
@@ -446,10 +456,12 @@ cr_slider.SliderTick;
     updateValueFromClientX_: function(clientX) {
       const rect = this.$.barContainer.getBoundingClientRect();
       let ratio = (clientX - rect.left) / rect.width;
-      if (this.isRtl_)
+      if (this.isRtl_) {
         ratio = 1 - ratio;
-      if (this.updateValue_(ratio * (this.max - this.min) + this.min))
+      }
+      if (this.updateValue_(ratio * (this.max - this.min) + this.min)) {
         this.fire('cr-slider-value-changed');
+      }
     },
 
     _createRipple: function() {

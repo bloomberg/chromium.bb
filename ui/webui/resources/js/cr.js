@@ -148,8 +148,9 @@ var cr = cr || function() {
           var oldValue = this[name];
           if (value !== oldValue) {
             this[privateName] = value;
-            if (opt_setHook)
+            if (opt_setHook) {
               opt_setHook.call(this, value, oldValue);
+            }
             dispatchPropertyChange(this, name, value, oldValue);
           }
         };
@@ -159,12 +160,14 @@ var cr = cr || function() {
         return function(value) {
           var oldValue = this[name];
           if (value !== oldValue) {
-            if (value == undefined)
+            if (value == undefined) {
               this.removeAttribute(attributeName);
-            else
+            } else {
               this.setAttribute(attributeName, value);
-            if (opt_setHook)
+            }
+            if (opt_setHook) {
               opt_setHook.call(this, value, oldValue);
+            }
             dispatchPropertyChange(this, name, value, oldValue);
           }
         };
@@ -174,12 +177,14 @@ var cr = cr || function() {
         return function(value) {
           var oldValue = this[name];
           if (value !== oldValue) {
-            if (value)
+            if (value) {
               this.setAttribute(attributeName, name);
-            else
+            } else {
               this.removeAttribute(attributeName);
-            if (opt_setHook)
+            }
+            if (opt_setHook) {
               opt_setHook.call(this, value, oldValue);
+            }
             dispatchPropertyChange(this, name, value, oldValue);
           }
         };
@@ -200,16 +205,19 @@ var cr = cr || function() {
    *     property is set, but before the propertyChange event is fired.
    */
   function defineProperty(obj, name, opt_kind, opt_setHook) {
-    if (typeof obj == 'function')
+    if (typeof obj == 'function') {
       obj = obj.prototype;
+    }
 
     var kind = /** @type {PropertyKind} */ (opt_kind || PropertyKind.JS);
 
-    if (!obj.__lookupGetter__(name))
+    if (!obj.__lookupGetter__(name)) {
       obj.__defineGetter__(name, getGetter(name, kind));
+    }
 
-    if (!obj.__lookupSetter__(name))
+    if (!obj.__lookupSetter__(name)) {
       obj.__defineSetter__(name, getSetter(name, kind, opt_setHook));
+    }
   }
 
   /**
@@ -231,8 +239,9 @@ var cr = cr || function() {
    * @return {number} The unique ID for the item.
    */
   function getUid(item) {
-    if (item.hasOwnProperty('uid'))
+    if (item.hasOwnProperty('uid')) {
       return item.uid;
+    }
     return item.uid = createUid();
   }
 
@@ -282,8 +291,9 @@ var cr = cr || function() {
       // properties.
       var propertyDescriptor =
           Object.getOwnPropertyDescriptor(exports, propertyName);
-      if (propertyDescriptor)
+      if (propertyDescriptor) {
         Object.defineProperty(obj, propertyName, propertyDescriptor);
+      }
     }
   }
 
@@ -347,10 +357,11 @@ var cr = cr || function() {
     var resolver = chromeSendResolverMap[id];
     delete chromeSendResolverMap[id];
 
-    if (isSuccess)
+    if (isSuccess) {
       resolver.resolve(response);
-    else
+    } else {
       resolver.reject(response);
+    }
   }
 
   /**
