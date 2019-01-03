@@ -470,6 +470,13 @@ public class TopToolbarCoordinator implements Toolbar {
     }
 
     /**
+     * @param anchor The view to use as an anchor.
+     */
+    public void setProgressBarAnchorView(@Nullable View anchor) {
+        mToolbarProvider.whenLoaded(toolbar -> getProgressBar().setAnchorView(anchor));
+    }
+
+    /**
      * Starts load progress.
      */
     public void startLoadProgress() {

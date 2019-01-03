@@ -12,7 +12,9 @@ import android.animation.TimeInterpolator;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.animation.AccelerateInterpolator;
@@ -115,6 +117,16 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
 
     /** Whether or not the progress bar is attached to the window. */
     private boolean mIsAttachedToWindow;
+
+    /** The progress bar's anchor view. */
+    @Nullable
+    private View mAnchorView;
+
+    /** The progress bar's height. */
+    private final int mProgressBarHeight;
+
+    private final OnLayoutChangeListener mOnLayoutChangeListener = (view, left, top, right, bottom,
+            oldLeft, oldTop, oldRight, oldBottom) -> updateTopMargin();
 
     private final Runnable mStartSmoothIndeterminate = new Runnable() {
         @Override
@@ -220,15 +232,16 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
      *
      * @param context The application environment.
      * @param height The height of the progress bar in px.
-     * @param topMargin The top margin of the progress bar.
+     * @param anchor The view to use as an anchor.
      * @param useStatusBarColorAsBackground Whether or not to use the status bar color as the
      *                                      background of the toolbar.
      */
     public ToolbarProgressBar(
-            Context context, int height, int topMargin, boolean useStatusBarColorAsBackground) {
+            Context context, int height, View anchor, boolean useStatusBarColorAsBackground) {
         super(context, height);
+        mProgressBarHeight = height;
         setAlpha(0.0f);
-        mMarginTop = topMargin;
+        setAnchorView(anchor);
         mUseStatusBarColorAsBackground = useStatusBarColorAsBackground;
         mAnimationLogic = new ProgressAnimationSmooth();
 
@@ -241,12 +254,16 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
      * Set the top progress bar's top margin.
      * @param topMargin The top margin of the progress bar in px.
      */
-    public void setTopMargin(int topMargin) {
+    private void setTopMargin(int topMargin) {
         mMarginTop = topMargin;
 
         if (mIsAttachedToWindow) {
             assert getLayoutParams() != null;
             ((ViewGroup.MarginLayoutParams) getLayoutParams()).topMargin = mMarginTop;
+            if (mAnimatingView != null && mAnimatingView.getLayoutParams() != null) {
+                ((ViewGroup.MarginLayoutParams) mAnimatingView.getLayoutParams()).topMargin =
+                        mMarginTop;
+            }
         }
     }
 
@@ -574,5 +591,35 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     @VisibleForTesting
     public Animator getIndeterminateAnimatorForTesting() {
         return mSmoothProgressAnimator;
+    }
+
+    /**
+     * Sets the progress bar's anchor view. This progress bar will always be positioned relative to
+     * the anchor view when shown.
+     *
+     * @param anchor The view to use as an anchor.
+     */
+    public void setAnchorView(@Nullable View anchor) {
+        if (mAnchorView == anchor) return;
+
+        if (mAnchorView != null) {
+            mAnchorView.removeOnLayoutChangeListener(mOnLayoutChangeListener);
+        }
+        mAnchorView = anchor;
+        updateTopMargin();
+        if (mAnchorView != null) {
+            mAnchorView.addOnLayoutChangeListener(mOnLayoutChangeListener);
+        }
+    }
+
+    /**
+     * Updates the progress bar's top margin. The only time this is a NOOP is if the margin remains
+     * the same.
+     */
+    private void updateTopMargin() {
+        int topMargin = (mAnchorView != null ? mAnchorView.getBottom() : 0) - mProgressBarHeight;
+        if (mMarginTop != topMargin) {
+            setTopMargin(topMargin);
+        }
     }
 }
