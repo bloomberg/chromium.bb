@@ -11,8 +11,13 @@
 
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/fake_signin_manager.h"
+#include "components/signin/core/browser/test_signin_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,7 +41,7 @@ TEST(SigninErrorControllerTest, SingleAccount) {
   TestingPrefServiceSimple pref_service;
   FakeProfileOAuth2TokenService token_service(&pref_service);
   SigninErrorController error_controller(
-      SigninErrorController::AccountMode::ANY_ACCOUNT, &token_service);
+      SigninErrorController::AccountMode::ANY_ACCOUNT, &token_service, nullptr);
   ScopedObserver<SigninErrorController, SigninErrorController::Observer>
       scoped_observer(&observer);
   scoped_observer.Add(&error_controller);
@@ -81,7 +86,7 @@ TEST(SigninErrorControllerTest, AccountTransitionAnyAccount) {
   token_service.UpdateCredentials(kTestAccountId, "token");
   token_service.UpdateCredentials(kOtherTestAccountId, "token");
   SigninErrorController error_controller(
-      SigninErrorController::AccountMode::ANY_ACCOUNT, &token_service);
+      SigninErrorController::AccountMode::ANY_ACCOUNT, &token_service, nullptr);
   ASSERT_FALSE(error_controller.HasError());
 
   token_service.UpdateAuthErrorForTesting(
@@ -99,13 +104,32 @@ TEST(SigninErrorControllerTest, AccountTransitionAnyAccount) {
   ASSERT_FALSE(error_controller.HasError());
 }
 
+// This test exercises behavior on signin/signout, which is not relevant on
+// ChromeOS.
+#if !defined(OS_CHROMEOS)
 TEST(SigninErrorControllerTest, AccountTransitionPrimaryAccount) {
+  base::test::ScopedTaskEnvironment task_environment;
+
   TestingPrefServiceSimple pref_service;
   FakeProfileOAuth2TokenService token_service(&pref_service);
+  ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service.registry());
+  TestSigninClient signin_client(&pref_service);
+  AccountTrackerService account_tracker;
+  AccountTrackerService::RegisterPrefs(pref_service.registry());
+  account_tracker.Initialize(&pref_service, base::FilePath());
+  FakeGaiaCookieManagerService cookie_manager_service(&token_service,
+                                                      &signin_client);
+  FakeSigninManager signin_manager(&signin_client, &token_service,
+                                   &account_tracker, &cookie_manager_service);
+  SigninManagerBase::RegisterProfilePrefs(pref_service.registry());
+  SigninManagerBase::RegisterPrefs(pref_service.registry());
+  signin_manager.Initialize(nullptr);
+
   token_service.UpdateCredentials(kTestAccountId, "token");
   token_service.UpdateCredentials(kOtherTestAccountId, "token");
   SigninErrorController error_controller(
-      SigninErrorController::AccountMode::PRIMARY_ACCOUNT, &token_service);
+      SigninErrorController::AccountMode::PRIMARY_ACCOUNT, &token_service,
+      &signin_manager);
   ASSERT_FALSE(error_controller.HasError());
 
   token_service.UpdateAuthErrorForTesting(
@@ -115,10 +139,18 @@ TEST(SigninErrorControllerTest, AccountTransitionPrimaryAccount) {
       kOtherTestAccountId,
       GoogleServiceAuthError(GoogleServiceAuthError::NONE));
   ASSERT_FALSE(error_controller.HasError());  // No primary account.
-  error_controller.SetPrimaryAccountID(kOtherTestAccountId);
-  ASSERT_FALSE(error_controller.HasError());  // Error on secondary.
-  // Change the primary account.
-  error_controller.SetPrimaryAccountID(kTestAccountId);
+
+  // Set the primary account.
+  signin_manager.SignIn(kOtherTestAccountId, kOtherTestAccountId, "");
+
+  ASSERT_FALSE(error_controller.HasError());  // Error is on secondary.
+
+  // Change the primary account to the account with an error and check that the
+  // error controller updates its error status accordingly.
+  signin_manager.SignOutAndKeepAllAccounts(
+      signin_metrics::FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST,
+      signin_metrics::SignoutDelete::IGNORE_METRIC);
+  signin_manager.SignIn(kTestAccountId, kTestAccountId, "");
   ASSERT_TRUE(error_controller.HasError());
   ASSERT_STREQ(kTestAccountId, error_controller.error_account_id().c_str());
 
@@ -127,15 +159,25 @@ TEST(SigninErrorControllerTest, AccountTransitionPrimaryAccount) {
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
   ASSERT_TRUE(error_controller.HasError());
   ASSERT_STREQ(kTestAccountId, error_controller.error_account_id().c_str());
-  error_controller.SetPrimaryAccountID(kOtherTestAccountId);
+
+  // Change the primary account again and check that the error controller
+  // updates its error status accordingly.
+  signin_manager.SignOutAndKeepAllAccounts(
+      signin_metrics::FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST,
+      signin_metrics::SignoutDelete::IGNORE_METRIC);
+  signin_manager.SignIn(kOtherTestAccountId, kOtherTestAccountId, "");
   ASSERT_TRUE(error_controller.HasError());
   ASSERT_STREQ(kOtherTestAccountId,
                error_controller.error_account_id().c_str());
 
-  // Signout.
-  error_controller.SetPrimaryAccountID("");
+  // Sign out and check that that the error controller updates its error status
+  // accordingly.
+  signin_manager.SignOutAndKeepAllAccounts(
+      signin_metrics::FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST,
+      signin_metrics::SignoutDelete::IGNORE_METRIC);
   ASSERT_FALSE(error_controller.HasError());
 }
+#endif
 
 // Verify that SigninErrorController handles errors properly.
 TEST(SigninErrorControllerTest, AuthStatusEnumerateAllErrors) {
@@ -143,7 +185,7 @@ TEST(SigninErrorControllerTest, AuthStatusEnumerateAllErrors) {
   FakeProfileOAuth2TokenService token_service(&pref_service);
   token_service.UpdateCredentials(kTestAccountId, "token");
   SigninErrorController error_controller(
-      SigninErrorController::AccountMode::ANY_ACCOUNT, &token_service);
+      SigninErrorController::AccountMode::ANY_ACCOUNT, &token_service, nullptr);
 
   GoogleServiceAuthError::State table[] = {
       GoogleServiceAuthError::NONE,
@@ -194,7 +236,7 @@ TEST(SigninErrorControllerTest, AuthStatusChange) {
   token_service.UpdateCredentials(kTestAccountId, "token");
   token_service.UpdateCredentials(kOtherTestAccountId, "token");
   SigninErrorController error_controller(
-      SigninErrorController::AccountMode::ANY_ACCOUNT, &token_service);
+      SigninErrorController::AccountMode::ANY_ACCOUNT, &token_service, nullptr);
   ASSERT_FALSE(error_controller.HasError());
 
   // Set an error for kOtherTestAccountId.

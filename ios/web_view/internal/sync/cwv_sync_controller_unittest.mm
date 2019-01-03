@@ -61,13 +61,14 @@ class CWVSyncControllerTest : public PlatformTest {
         gaia_cookie_manager_service_(&token_service_,
                                      &signin_client_,
                                      /*use_fake_url_fetcher=*/true),
-        signin_error_controller_(
-            SigninErrorController::AccountMode::ANY_ACCOUNT,
-            &token_service_),
         signin_manager_(&signin_client_,
                         &token_service_,
                         &account_tracker_service_,
-                        &gaia_cookie_manager_service_) {
+                        &gaia_cookie_manager_service_),
+        signin_error_controller_(
+            SigninErrorController::AccountMode::ANY_ACCOUNT,
+            &token_service_,
+            &signin_manager_) {
     web_state_.SetBrowserState(&browser_state_);
 
     browser_sync::ProfileSyncService::InitParams init_params;
@@ -120,8 +121,8 @@ class CWVSyncControllerTest : public PlatformTest {
 
   FakeProfileOAuth2TokenService token_service_;
   FakeGaiaCookieManagerService gaia_cookie_manager_service_;
-  SigninErrorController signin_error_controller_;
   FakeSigninManager signin_manager_;
+  SigninErrorController signin_error_controller_;
   CWVSyncController* sync_controller_;
   syncer::SyncServiceObserver* sync_service_observer_;
 };

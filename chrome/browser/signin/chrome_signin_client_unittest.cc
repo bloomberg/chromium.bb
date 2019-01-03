@@ -20,7 +20,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/signin_error_controller.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
@@ -141,16 +140,12 @@ class MockChromeSigninClient : public ChromeSigninClient {
 
 class MockSigninManager : public SigninManager {
  public:
-  explicit MockSigninManager(SigninClient* client,
-                             SigninErrorController* signin_error_controller)
+  explicit MockSigninManager(SigninClient* client)
       : SigninManager(client,
                       nullptr,
                       &fake_service_,
                       nullptr,
-                      signin_error_controller,
-                      signin::AccountConsistencyMethod::kDisabled) {
-    DCHECK(signin_error_controller);
-  }
+                      signin::AccountConsistencyMethod::kDisabled) {}
 
   MOCK_METHOD4(OnSignoutDecisionReached,
                void(signin_metrics::ProfileSignout,
@@ -168,8 +163,7 @@ class ChromeSigninClientSignoutTest : public BrowserWithTestWindowTest {
 
     signin_util::SetForceSigninForTesting(true);
     CreateClient(browser()->profile());
-    manager_ = std::make_unique<MockSigninManager>(client_.get(),
-                                                   fake_controller_.get());
+    manager_ = std::make_unique<MockSigninManager>(client_.get());
   }
 
   void TearDown() override {
@@ -178,18 +172,12 @@ class ChromeSigninClientSignoutTest : public BrowserWithTestWindowTest {
   }
 
   void CreateClient(Profile* profile) {
-    if (fake_controller_)
-      fake_controller_->Shutdown();
-
     client_ = std::make_unique<MockChromeSigninClient>(profile);
     token_service_ = std::make_unique<FakeOAuth2TokenService>();
-    fake_controller_ = std::make_unique<SigninErrorController>(
-        SigninErrorController::AccountMode::ANY_ACCOUNT, token_service_.get());
   }
 
   std::unique_ptr<MockChromeSigninClient> client_;
   std::unique_ptr<FakeOAuth2TokenService> token_service_;
-  std::unique_ptr<SigninErrorController> fake_controller_;
   std::unique_ptr<MockSigninManager> manager_;
 };
 
@@ -219,7 +207,7 @@ TEST_F(ChromeSigninClientSignoutTest, SignOutWithoutManager) {
   signin_metrics::SignoutDelete delete_metric =
       signin_metrics::SignoutDelete::IGNORE_METRIC;
 
-  MockSigninManager other_manager(client_.get(), fake_controller_.get());
+  MockSigninManager other_manager(client_.get());
   other_manager.CopyCredentialsFrom(*manager_.get());
 
   EXPECT_CALL(*client_, ShowUserManager(browser()->profile()->GetPath()))
@@ -252,8 +240,7 @@ TEST_F(ChromeSigninClientSignoutTest, SignOutWithoutManager) {
 TEST_F(ChromeSigninClientSignoutTest, SignOutWithoutForceSignin) {
   signin_util::SetForceSigninForTesting(false);
   CreateClient(browser()->profile());
-  manager_ = std::make_unique<MockSigninManager>(client_.get(),
-                                                 fake_controller_.get());
+  manager_ = std::make_unique<MockSigninManager>(client_.get());
 
   signin_metrics::ProfileSignout source_metric =
       signin_metrics::ProfileSignout::USER_CLICKED_SIGNOUT_SETTINGS;
@@ -319,8 +306,7 @@ TEST_P(ChromeSigninClientSignoutSourceTest, UserSignoutAllowed) {
   std::unique_ptr<TestingProfile> profile = builder.Build();
 
   CreateClient(profile.get());
-  manager_ = std::make_unique<MockSigninManager>(client_.get(),
-                                                 fake_controller_.get());
+  manager_ = std::make_unique<MockSigninManager>(client_.get());
   ASSERT_TRUE(signin_util::IsUserSignoutAllowedForProfile(profile.get()));
 
   // Verify SigninManager gets callback indicating sign-out is always allowed.
@@ -345,8 +331,7 @@ TEST_P(ChromeSigninClientSignoutSourceTest, UserSignoutDisallowed) {
   std::unique_ptr<TestingProfile> profile = builder.Build();
 
   CreateClient(profile.get());
-  manager_ = std::make_unique<MockSigninManager>(client_.get(),
-                                                 fake_controller_.get());
+  manager_ = std::make_unique<MockSigninManager>(client_.get());
 
   ASSERT_TRUE(signin_util::IsUserSignoutAllowedForProfile(profile.get()));
   signin_util::SetUserSignoutAllowedForProfile(profile.get(), false);

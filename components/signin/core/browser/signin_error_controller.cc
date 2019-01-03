@@ -7,13 +7,22 @@
 #include "components/signin/core/browser/signin_metrics.h"
 
 SigninErrorController::SigninErrorController(AccountMode mode,
-                                             OAuth2TokenService* token_service)
+                                             OAuth2TokenService* token_service,
+                                             SigninManagerBase* signin_manager)
     : account_mode_(mode),
       token_service_(token_service),
+      signin_manager_(signin_manager),
       scoped_token_service_observer_(this),
+      scoped_signin_manager_observer_(this),
       auth_error_(GoogleServiceAuthError::AuthErrorNone()) {
   DCHECK(token_service_);
   scoped_token_service_observer_.Add(token_service_);
+
+  if (account_mode_ == AccountMode::PRIMARY_ACCOUNT) {
+    DCHECK(signin_manager_);
+    scoped_signin_manager_observer_.Add(signin_manager_);
+  }
+
   Update();
 }
 
@@ -21,6 +30,9 @@ SigninErrorController::~SigninErrorController() = default;
 
 void SigninErrorController::Shutdown() {
   scoped_token_service_observer_.RemoveAll();
+
+  if (account_mode_ == AccountMode::PRIMARY_ACCOUNT)
+    scoped_signin_manager_observer_.RemoveAll();
 }
 
 void SigninErrorController::Update() {
@@ -35,7 +47,7 @@ void SigninErrorController::Update() {
   for (const std::string& account_id : token_service_->GetAccounts()) {
     // In PRIMARY_ACCOUNT mode, ignore all secondary accounts.
     if (account_mode_ == AccountMode::PRIMARY_ACCOUNT &&
-        (account_id != primary_account_id_)) {
+        (account_id != signin_manager_->GetAuthenticatedAccountId())) {
       continue;
     }
 
@@ -82,12 +94,6 @@ bool SigninErrorController::HasError() const {
   return auth_error_.state() != GoogleServiceAuthError::NONE;
 }
 
-void SigninErrorController::SetPrimaryAccountID(const std::string& account_id) {
-  primary_account_id_ = account_id;
-  if (account_mode_ == AccountMode::PRIMARY_ACCOUNT)
-    Update();  // Recompute the error state.
-}
-
 void SigninErrorController::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -103,5 +109,16 @@ void SigninErrorController::OnEndBatchChanges() {
 void SigninErrorController::OnAuthErrorChanged(
     const std::string& account_id,
     const GoogleServiceAuthError& auth_error) {
+  Update();
+}
+
+void SigninErrorController::GoogleSigninSucceeded(
+    const AccountInfo& account_info) {
+  DCHECK(account_mode_ == AccountMode::PRIMARY_ACCOUNT);
+  Update();
+}
+
+void SigninErrorController::GoogleSignedOut(const AccountInfo& account_info) {
+  DCHECK(account_mode_ == AccountMode::PRIMARY_ACCOUNT);
   Update();
 }

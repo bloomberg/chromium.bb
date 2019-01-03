@@ -43,7 +43,6 @@ class PrefRegistrySimple;
 class PrefService;
 class ProfileOAuth2TokenService;
 class SigninClient;
-class SigninErrorController;
 
 class SigninManagerBase : public KeyedService {
  public:
@@ -97,8 +96,7 @@ class SigninManagerBase : public KeyedService {
 #endif
   SigninManagerBase(SigninClient* client,
                     ProfileOAuth2TokenService* token_service,
-                    AccountTrackerService* account_tracker_service,
-                    SigninErrorController* signin_error_controller);
+                    AccountTrackerService* account_tracker_service);
 #if !defined(OS_CHROMEOS)
  public:
 #endif
@@ -214,7 +212,6 @@ class SigninManagerBase : public KeyedService {
   ProfileOAuth2TokenService* token_service_;
 
   AccountTrackerService* account_tracker_service_;
-  SigninErrorController* signin_error_controller_;
   bool initialized_;
 
   // Account id after successful authentication.

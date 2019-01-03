@@ -11,6 +11,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
@@ -19,7 +20,8 @@
 // AuthStatusProvider to report their current authentication state, and should
 // invoke AuthStatusChanged() when their authentication state may have changed.
 class SigninErrorController : public KeyedService,
-                              public OAuth2TokenService::Observer {
+                              public OAuth2TokenService::Observer,
+                              public SigninManagerBase::Observer {
  public:
   enum class AccountMode {
     // Signin error controller monitors all the accounts. When multiple accounts
@@ -39,8 +41,9 @@ class SigninErrorController : public KeyedService,
     virtual void OnErrorChanged() = 0;
   };
 
-  explicit SigninErrorController(AccountMode mode,
-                                 OAuth2TokenService* token_service);
+  SigninErrorController(AccountMode mode,
+                        OAuth2TokenService* token_service,
+                        SigninManagerBase* signin_manager);
   ~SigninErrorController() override;
 
   // KeyedService implementation:
@@ -48,9 +51,6 @@ class SigninErrorController : public KeyedService,
 
   // True if there exists an error worth elevating to the user.
   bool HasError() const;
-
-  // Sets the primary account id. Only used in the PRIMARY_ACCOUNT account mode.
-  void SetPrimaryAccountID(const std::string& account_id);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -67,13 +67,20 @@ class SigninErrorController : public KeyedService,
   void OnAuthErrorChanged(const std::string& account_id,
                           const GoogleServiceAuthError& auth_error) override;
 
+  // SigninManagerBase::Observer implementation:
+  void GoogleSigninSucceeded(const AccountInfo& account_info) override;
+  void GoogleSignedOut(const AccountInfo& account_info) override;
+
   const AccountMode account_mode_;
   OAuth2TokenService* token_service_;
+
+  // Used only in PRIMARY_ACCOUNT mode, where it must be non-null; otherwise,
+  // may be null.
+  SigninManagerBase* signin_manager_;
   ScopedObserver<OAuth2TokenService, SigninErrorController>
       scoped_token_service_observer_;
-
-  // The primary account ID. Only used in the PRIMARY_ACCOUNT account mode.
-  std::string primary_account_id_;
+  ScopedObserver<SigninManagerBase, SigninErrorController>
+      scoped_signin_manager_observer_;
 
   // The account that generated the last auth error.
   std::string error_account_id_;

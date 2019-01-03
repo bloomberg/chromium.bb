@@ -470,7 +470,7 @@ class IdentityManagerTest : public testing::Test {
 #else
     signin_manager_ = std::make_unique<FakeSigninManager>(
         &signin_client_, &token_service_, &account_tracker_,
-        &gaia_cookie_manager_service_, nullptr, account_consistency);
+        &gaia_cookie_manager_service_, account_consistency);
 #endif
 
     // Passing this switch ensures that the new SigninManager starts with a
