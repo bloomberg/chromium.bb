@@ -130,12 +130,10 @@ class ExtensionFunction
 
   // Returns true if the function has permission to run.
   //
-  // The default implementation is to check the Extension's permissions against
-  // what this function requires to run, but some APIs may require finer
-  // grained control, such as tabs.executeScript being allowed for active tabs.
-  //
-  // This will be run after the function has been set up but before Run().
-  virtual bool HasPermission();
+  // This checks the Extension's permissions against the features declared in
+  // the *_features.json files. Note that some functions may perform additional
+  // checks in Run(), such as for specific host permissions or user gestures.
+  bool HasPermission() const;
 
   // The result of a function call.
   //
@@ -272,10 +270,10 @@ class ExtensionFunction
   int request_id() { return request_id_; }
 
   void set_source_url(const GURL& source_url) { source_url_ = source_url; }
-  const GURL& source_url() { return source_url_; }
+  const GURL& source_url() const { return source_url_; }
 
   void set_has_callback(bool has_callback) { has_callback_ = has_callback; }
-  bool has_callback() { return has_callback_; }
+  bool has_callback() const { return has_callback_; }
 
   void set_include_incognito_information(bool include) {
     include_incognito_information_ = include;

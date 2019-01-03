@@ -168,7 +168,6 @@ class TabsCaptureVisibleTabFunction : public UIThreadExtensionFunction {
   TabsCaptureVisibleTabFunction();
 
   // ExtensionFunction implementation.
-  bool HasPermission() override;
   ResponseAction Run() override;
 
  protected:
@@ -187,9 +186,6 @@ class ExecuteCodeInTabFunction : public ExecuteCodeFunction {
 
  protected:
   ~ExecuteCodeInTabFunction() override;
-
-  // ExtensionFunction:
-  bool HasPermission() override;
 
   // Initializes |execute_tab_id_| and |details_|.
   InitResult Init() override;

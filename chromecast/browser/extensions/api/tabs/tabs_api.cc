@@ -717,10 +717,6 @@ ExtensionFunction::ResponseAction TabsRemoveFunction::Run() {
 
 TabsCaptureVisibleTabFunction::TabsCaptureVisibleTabFunction() {}
 
-bool TabsCaptureVisibleTabFunction::HasPermission() {
-  return false;
-}
-
 ExtensionFunction::ResponseAction TabsCaptureVisibleTabFunction::Run() {
   return RespondNow(Error("Cannot capture tab"));
 }
@@ -736,18 +732,6 @@ ExtensionFunction::ResponseAction TabsDetectLanguageFunction::Run() {
 ExecuteCodeInTabFunction::ExecuteCodeInTabFunction() : execute_tab_id_(-1) {}
 
 ExecuteCodeInTabFunction::~ExecuteCodeInTabFunction() {}
-
-bool ExecuteCodeInTabFunction::HasPermission() {
-  if (Init() == SUCCESS &&
-      // TODO(devlin/lazyboy): Consider removing the following check as it isn't
-      // doing anything. The fallback to ExtensionFunction::HasPermission()
-      // below dictates what this function returns.
-      extension_->permissions_data()->HasAPIPermissionForTab(
-          execute_tab_id_, APIPermission::kTab)) {
-    return true;
-  }
-  return ExtensionFunction::HasPermission();
-}
 
 ExecuteCodeFunction::InitResult ExecuteCodeInTabFunction::Init() {
   if (init_result_)
