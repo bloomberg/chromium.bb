@@ -2,27 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+window.dispatch_ = {};
+
 cr.define('app_management', function() {
-  /** @implements {appManagement.mojom.PageHandlerInterface} */
+  /*
+   * TODO(rekanorman): Should implement appManagement.mojom.PageHandlerInterface
+   * once backend permissions are implemented.
+   */
   class FakePageHandler {
-    constructor(page) {
-      /** @type {appManagement.mojom.PageInterface} */
-      this.page = page;
-
-      /** @type {!Array<appManagement.mojom.App>} */
-      this.apps_ = [];
-    }
-
-    getApps() {
-      this.page.onAppsAdded(this.apps_);
-    }
-
     /**
      * @param {string} id
      * @param {Object=} config
-     * @return {!appManagement.mojom.App}
+     * @return {!App}
      */
     static createApp(id, config) {
+      const permissionMap = {
+        [TestPermissionTypeEnum.NOTIFICATIONS]: false,
+        [TestPermissionTypeEnum.LOCATION]: false,
+        [TestPermissionTypeEnum.CAMERA]: false,
+        [TestPermissionTypeEnum.MICROPHONE]: false,
+      };
+
       const app = {
         id: id,
         type: apps.mojom.AppType.kUnknown,
@@ -30,6 +30,7 @@ cr.define('app_management', function() {
         version: '5.1',
         size: '9.0MB',
         isPinned: apps.mojom.OptionalBool.kUnknown,
+        permissions: permissionMap,
       };
 
       if (config) {
@@ -40,10 +41,51 @@ cr.define('app_management', function() {
     }
 
     /**
-     * @param {!Array<appManagement.mojom.App>} appList
+     * TODO(rekanorman): Change type to appManagement.mojom.PageProxy once
+     *   the App struct has a permissions field.
+     * @param {appManagement.mojom.PageCallbackRouter} page
+     */
+    constructor(page) {
+      /**
+       * TODO(rekanorman): Change type to appManagement.mojom.PageProxy once
+       *   the App struct has a permissions field.
+       * @type {Object}
+       */
+      this.page = page;
+
+      /** @type {!Array<App>} */
+      this.apps_ = [];
+    }
+
+    getApps() {
+      this.page.onAppsAdded.dispatch_(this.apps_);
+    }
+
+    /**
+     * @param {!Array<App>} appList
      */
     setApps(appList) {
       this.apps_ = appList;
+    }
+
+    /**
+     * @param {string} appId
+     * @param {TestPermissionType} permissionType
+     * @param {PermissionValue} newPermissionValue
+     */
+    setPermission(appId, permissionType, newPermissionValue) {
+      const app = app_management.Store.getInstance().data.apps[appId];
+      const newPermissions = Object.assign({}, app.permissions);
+      newPermissions[permissionType] = newPermissionValue;
+      const newApp = Object.assign({}, app, {permissions: newPermissions});
+      this.page.onAppChanged.dispatch_(newApp);
+    }
+
+    /**
+     * @param {string} appId
+     */
+    uninstall(appId) {
+      this.page.onAppRemoved.dispatch_(appId);
     }
   }
 

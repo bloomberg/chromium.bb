@@ -7,8 +7,17 @@
   <message name="IDS_APP_MANAGEMENT_BACK" desc="Label for button for going back to the previous page.">
     Back
   </message>
+  <message name="IDS_APP_MANAGEMENT_CAMERA" desc="Label for the camera permission toggle.">
+    Camera
+  </message>
   <message name="IDS_APP_MANAGEMENT_LESS_APPS" desc="Label for showing less apps.">
     Show less
+  </message>
+  <message name="IDS_APP_MANAGEMENT_LOCATION" desc="Label for the location permission toggle.">
+    Location
+  </message>
+  <message name="IDS_APP_MANAGEMENT_MICROPHONE" desc="Label for the microphone permission toggle.">
+    Microphone
   </message>
   <message name="IDS_APP_MANAGEMENT_MORE_APPS" desc="Label for more apps button at bottom of app list card.">
     Show <ph name="NUMBER_OF_MORE_APPS">$1<ex>4</ex></ph> more apps

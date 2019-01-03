@@ -14,3 +14,5 @@ const PageType = {
   MAIN: 0,
   DETAIL: 1,
 };
+
+const TestPermissionTypeEnum = appManagement.mojom.TestPermissionType;

@@ -3,18 +3,16 @@
 // found in the LICENSE file.
 Polymer({
   is: 'app-management-pwa-permission-view',
+
+  behaviors: [
+    app_management.StoreClient,
+  ],
+
   properties: {
     /**
-     * @type {appManagement.mojom.App}
-     * @private
+     * @private {App}
      */
-    app_: {
-      type: Object,
-      value: function() {
-        return app_management.FakePageHandler.createApp(
-            'blpcfgokakmgnkcojhhkbfbldkacnbeo');
-      },
-    },
+    app_: Object,
 
     /**
      * @private {boolean}
@@ -25,6 +23,32 @@ Polymer({
     },
   },
 
+  attached: function() {
+    this.watch('app_', function(state) {
+      const selectedAppId = state.currentPage.selectedAppId;
+      if (selectedAppId) {
+        return state.apps[selectedAppId];
+      }
+    });
+
+    this.updateFromStore();
+  },
+
+  /**
+   * @private
+   */
+  onClickBackButton_: function() {
+    this.listExpanded_ = false;
+    this.dispatch(app_management.actions.changePage(PageType.MAIN));
+  },
+
+  /**
+   * @private
+   */
+  onClickUninstallButton_: function() {
+    app_management.BrowserProxy.getInstance().handler.uninstall(this.app_.id);
+  },
+
   /**
    * @private
    */
@@ -33,7 +57,7 @@ Polymer({
   },
 
   /**
-   * @param {appManagement.mojom.App} app
+   * @param {App} app
    * @return {string}
    * @private
    */

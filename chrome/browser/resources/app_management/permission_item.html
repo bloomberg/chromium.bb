@@ -1,0 +1,20 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="shared_style.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
+
+<dom-module id="app-management-permission-item">
+  <template>
+    <style include="app-management-shared-css">
+    :host {
+      display: flex;
+    }
+    </style>
+    <div class="permission-row">
+      <div class="header-text">[[permissionLabel]]</div>
+      <cr-toggle checked="[[permissionValue_]]" on-change="togglePermission_">
+      </cr-toggle>
+    </div>
+  </template>
+  <script src="permission_item.js"></script>
+</dom-module>
