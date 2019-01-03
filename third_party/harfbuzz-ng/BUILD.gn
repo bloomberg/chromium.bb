@@ -56,6 +56,7 @@ if (use_system_harfbuzz) {
       "src/src/hb-aat-ltag-table.hh",
       "src/src/hb-aat-map.cc",
       "src/src/hb-aat-map.hh",
+      "src/src/hb-array.hh",
       "src/src/hb-atomic.hh",
       "src/src/hb-blob.cc",
       "src/src/hb-blob.h",
