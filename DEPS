@@ -156,7 +156,7 @@ hooks = [
     # Note: On Win, this should run after win_toolchain, as it may use it.
     'name': 'clang',
     'pattern': '.',
-    'action': ['python', 'tools/clang/scripts/update.py', '--if-needed'],
+    'action': ['python', 'tools/clang/scripts/update.py'],
   },
   {
     # Update LASTCHANGE.
