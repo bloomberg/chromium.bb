@@ -1366,6 +1366,7 @@ enum HistogramValue {
   AUTOTESTPRIVATE_CLOSEAPP = 1303,
   ACCESSIBILITY_PRIVATE_SETSWITCHACCESSMENUSTATE = 1304,
   AUTOTESTPRIVATE_SENDASSISTANTTEXTQUERY = 1305,
+  AUTOTESTPRIVATE_SETCROSTINIAPPSCALED = 1306,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

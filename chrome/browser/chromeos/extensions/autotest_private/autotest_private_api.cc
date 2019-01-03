@@ -27,6 +27,8 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
@@ -1278,6 +1280,36 @@ void AutotestPrivateSendAssistantTextQueryFunction::OnInteractionFinished(
 
 void AutotestPrivateSendAssistantTextQueryFunction::Timeout() {
   Respond(Error("Assistant response timeout."));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSetCrostiniAppScaledFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateSetCrostiniAppScaledFunction::
+    ~AutotestPrivateSetCrostiniAppScaledFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSetCrostiniAppScaledFunction::Run() {
+  std::unique_ptr<api::autotest_private::SetCrostiniAppScaled::Params> params(
+      api::autotest_private::SetCrostiniAppScaled::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateSetCrostiniAppScaledFunction " << params->app_id
+           << " " << params->scaled;
+
+  ChromeLauncherController* const controller =
+      ChromeLauncherController::instance();
+  if (!controller)
+    return RespondNow(Error("Controller not available"));
+
+  crostini::CrostiniRegistryService* registry_service =
+      crostini::CrostiniRegistryServiceFactory::GetForProfile(
+          controller->profile());
+  if (!registry_service)
+    return RespondNow(Error("Crostini registry not available"));
+
+  registry_service->SetAppScaled(params->app_id, params->scaled);
+  return RespondNow(NoArguments());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
