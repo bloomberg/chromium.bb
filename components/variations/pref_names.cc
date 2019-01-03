@@ -34,8 +34,8 @@ const char kVariationsPermanentConsistencyCountry[] =
     "variations_permanent_consistency_country";
 
 // Previously used by CachingPermutedEntropyProvider, which has been replaced by
-// NormalizedMurmurHashEntropyProvider.
-// TODO(crbug/912368): Clear this from prefs when removing old entropy provider.
+// NormalizedMurmurHashEntropyProvider. Deleted on startup.
+// TODO(crbug/912368): Remove this after it's been deleted from most installs.
 const char kVariationsPermutedEntropyCache[] =
     "user_experience_metrics.permuted_entropy_cache";
 

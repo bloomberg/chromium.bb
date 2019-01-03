@@ -384,8 +384,6 @@ class MetricsService : public base::HistogramFlattener {
   static ShutdownCleanliness clean_shutdown_status_;
 
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, IsPluginProcess);
-  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest,
-                           PermutedEntropyCacheClearedWhenLowEntropyReset);
 
   SEQUENCE_CHECKER(sequence_checker_);
 

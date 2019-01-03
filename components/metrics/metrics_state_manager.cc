@@ -29,8 +29,8 @@
 #include "components/metrics/metrics_switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/variations/caching_permuted_entropy_provider.h"
 #include "components/variations/entropy_provider.h"
+#include "components/variations/pref_names.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
@@ -146,6 +146,10 @@ MetricsStateManager::MetricsStateManager(
   int64_t install_date = local_state_->GetInt64(prefs::kInstallDate);
   if (install_date == 0)
     local_state_->SetInt64(prefs::kInstallDate, base::Time::Now().ToTimeT());
+
+  // Delete the cache used by CachingPermutedEntropyProvider, which was removed.
+  // TODO(crbug/912368): Remove this after it's been deleted from most installs.
+  local_state_->ClearPref(::variations::prefs::kVariationsPermutedEntropyCache);
 
   DCHECK(!instance_exists_);
   instance_exists_ = true;
@@ -285,7 +289,10 @@ void MetricsStateManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(prefs::kInstallDate, 0);
 
   ClonedInstallDetector::RegisterPrefs(registry);
-  variations::CachingPermutedEntropyProvider::RegisterPrefs(registry);
+
+  // TODO(crbug/912368): Remove this after it's been deleted from most installs.
+  registry->RegisterStringPref(
+      ::variations::prefs::kVariationsPermutedEntropyCache, std::string());
 }
 
 // static
