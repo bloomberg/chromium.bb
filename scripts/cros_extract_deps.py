@@ -196,7 +196,7 @@ def GenerateCPEList(deps_list, sysroot):
   cpe_dump = []
 
   # Generage CPEs for SDK packages.
-  for sdk_cpv in GenerateSDKCPVList(sysroot):
+  for sdk_cpv in sorted(GenerateSDKCPVList(sysroot)):
     # Only add CPE for SDK CPVs missing in deps_list.
     if deps_list.get(sdk_cpv) is not None:
       continue
@@ -211,7 +211,7 @@ def GenerateCPEList(deps_list, sysroot):
       logging.warning('No CPE entry for %s', sdk_cpv)
 
   # Generage CPEs for packages in deps_list.
-  for cpv, record in deps_list.iteritems():
+  for cpv, record in sorted(deps_list.items()):
     if record['cpes']:
       name = '%s/%s' % (record['category'], record['name'])
       cpe_dump.append({'ComponentName': name,
