@@ -1625,6 +1625,14 @@ void QuicChromiumClientSession::OnConnectionClosed(
     }
     base::UmaHistogramSparse("Net.QuicSession.ConnectionCloseErrorCodeClient",
                              error);
+    if (error == quic::QUIC_TOO_MANY_RTOS) {
+      UMA_HISTOGRAM_COUNTS_1000(
+          "Net.QuicSession.ClosedByRtoAtClient.ReceivedPacketCount",
+          connection()->GetStats().packets_received);
+      UMA_HISTOGRAM_COUNTS_1000(
+          "Net.QuicSession.ClosedByRtoAtClient.SentPacketCount",
+          connection()->GetStats().packets_sent);
+    }
   }
 
   if (error == quic::QUIC_NETWORK_IDLE_TIMEOUT) {
