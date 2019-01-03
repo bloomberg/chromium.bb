@@ -63,15 +63,19 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
     movement_threshold_ = movement_threshold;
   }
 
+  // Functionality for testing.
+  static float GetStartGestureDelayRatioForTesting();
+
  private:
   void SetTapDownTarget(aura::Window* target);
   void CreateAutoclickRingWidget(const gfx::Point& point_in_screen);
   void UpdateAutoclickRingWidget(views::Widget* widget,
                                  const gfx::Point& point_in_screen);
   void DoAutoclickAction();
+  void StartAutoclickGesture();
   void CancelAutoclickAction();
   void OnActionCompleted();
-  void InitClickTimer();
+  void InitClickTimers();
   void UpdateRingWidget(const gfx::Point& mouse_location);
   void RecordUserAction(mojom::AutoclickEventType event_type) const;
   bool DragInProgress() const;
@@ -96,10 +100,23 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
   std::unique_ptr<views::Widget> widget_;
   base::TimeDelta delay_;
   int mouse_event_flags_;
+  // The timer that counts down from the beginning of a gesture until a click.
   std::unique_ptr<base::RetainingOneShotTimer> autoclick_timer_;
-  // The position in screen coordinates used to determine
-  // the distance the mouse has moved.
+  // The timer that counts from when the user stops moving the mouse
+  // until the start of the animated gesture. This keeps the animation from
+  // showing up when the mouse cursor is moving quickly across the screen,
+  // instead waiting for the mouse to begin a dwell.
+  std::unique_ptr<base::RetainingOneShotTimer> start_gesture_timer_;
+  // The position in screen coordinates used to determine the distance the
+  // mouse has moved since dwell began. It is used to determine
+  // if move events should cancel the gesture.
   gfx::Point anchor_location_;
+  // The position in screen coodinates tracking where the autoclick gesture
+  // should be anchored. While the |start_gesture_timer_| is running and before
+  // the animation is drawn, subtle mouse movements will update the
+  // |gesture_anchor_location_|, so that once animation begins it can focus on
+  // the most recent mose point.
+  gfx::Point gesture_anchor_location_;
   std::unique_ptr<AutoclickRingHandler> autoclick_ring_handler_;
   std::unique_ptr<AutoclickDragEventRewriter> drag_event_rewriter_;
 

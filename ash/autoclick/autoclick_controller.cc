@@ -25,11 +25,19 @@ namespace ash {
 
 namespace {
 
+// The ratio of how long the gesture should take to begin after a dwell to the
+// total amount of time of the dwell.
+const float kStartGestureDelayRatio = 1 / 6.0;
+
 bool IsModifierKey(const ui::KeyboardCode key_code) {
   return key_code == ui::VKEY_SHIFT || key_code == ui::VKEY_LSHIFT ||
          key_code == ui::VKEY_CONTROL || key_code == ui::VKEY_LCONTROL ||
          key_code == ui::VKEY_RCONTROL || key_code == ui::VKEY_MENU ||
          key_code == ui::VKEY_LMENU || key_code == ui::VKEY_RMENU;
+}
+
+base::TimeDelta CalculateStartGestureDelay(base::TimeDelta total_delay) {
+  return total_delay * kStartGestureDelayRatio;
 }
 
 }  // namespace
@@ -49,11 +57,13 @@ AutoclickController::AutoclickController()
       mouse_event_flags_(ui::EF_NONE),
       anchor_location_(-kDefaultAutoclickMovementThreshold,
                        -kDefaultAutoclickMovementThreshold),
+      gesture_anchor_location_(-kDefaultAutoclickMovementThreshold,
+                               -kDefaultAutoclickMovementThreshold),
       autoclick_ring_handler_(std::make_unique<AutoclickRingHandler>()),
       drag_event_rewriter_(std::make_unique<AutoclickDragEventRewriter>()) {
   Shell::GetPrimaryRootWindow()->GetHost()->GetEventSource()->AddEventRewriter(
       drag_event_rewriter_.get());
-  InitClickTimer();
+  InitClickTimers();
 }
 
 AutoclickController::~AutoclickController() {
@@ -62,6 +72,10 @@ AutoclickController::~AutoclickController() {
       ->GetHost()
       ->GetEventSource()
       ->RemoveEventRewriter(drag_event_rewriter_.get());
+}
+
+float AutoclickController::GetStartGestureDelayRatioForTesting() {
+  return kStartGestureDelayRatio;
 }
 
 void AutoclickController::SetTapDownTarget(aura::Window* target) {
@@ -94,7 +108,7 @@ bool AutoclickController::IsEnabled() const {
 
 void AutoclickController::SetAutoclickDelay(base::TimeDelta delay) {
   delay_ = delay;
-  InitClickTimer();
+  InitClickTimers();
   if (enabled_) {
     UMA_HISTOGRAM_CUSTOM_TIMES("Accessibility.CrosAutoclickDelay", delay,
                                base::TimeDelta::FromMilliseconds(1),
@@ -144,13 +158,10 @@ void AutoclickController::UpdateAutoclickRingWidget(
 void AutoclickController::DoAutoclickAction() {
   RecordUserAction(event_type_);
 
-  gfx::Point point_in_screen =
-      display::Screen::GetScreen()->GetCursorScreenPoint();
-  anchor_location_ = point_in_screen;
-  aura::Window* root_window = wm::GetRootWindowAt(point_in_screen);
+  aura::Window* root_window = wm::GetRootWindowAt(anchor_location_);
   DCHECK(root_window) << "Root window not found while attempting autoclick.";
 
-  gfx::Point location_in_pixels(point_in_screen);
+  gfx::Point location_in_pixels(anchor_location_);
   ::wm::ConvertPointFromScreen(root_window, &location_in_pixels);
   aura::WindowTreeHost* host = root_window->GetHost();
   host->ConvertDIPToPixels(&location_in_pixels);
@@ -216,10 +227,20 @@ void AutoclickController::DoAutoclickAction() {
   }
 }
 
+void AutoclickController::StartAutoclickGesture() {
+  // The anchor is always the point in the screen where the timer starts.
+  anchor_location_ = gesture_anchor_location_;
+  autoclick_ring_handler_->StartGesture(
+      delay_ - CalculateStartGestureDelay(delay_), anchor_location_,
+      widget_.get());
+  autoclick_timer_->Reset();
+}
+
 void AutoclickController::CancelAutoclickAction() {
-  if (autoclick_timer_) {
+  if (start_gesture_timer_)
+    start_gesture_timer_->Stop();
+  if (autoclick_timer_)
     autoclick_timer_->Stop();
-  }
   autoclick_ring_handler_->StopGesture();
 
   // If we are dragging, complete the drag, so as not to leave the UI in a
@@ -241,11 +262,16 @@ void AutoclickController::OnActionCompleted() {
   Shell::Get()->accessibility_controller()->SetAutoclickEventType(event_type_);
 }
 
-void AutoclickController::InitClickTimer() {
+void AutoclickController::InitClickTimers() {
   CancelAutoclickAction();
+  base::TimeDelta start_gesture_delay = CalculateStartGestureDelay(delay_);
   autoclick_timer_ = std::make_unique<base::RetainingOneShotTimer>(
-      FROM_HERE, delay_,
+      FROM_HERE, delay_ - start_gesture_delay,
       base::BindRepeating(&AutoclickController::DoAutoclickAction,
+                          base::Unretained(this)));
+  start_gesture_timer_ = std::make_unique<base::RetainingOneShotTimer>(
+      FROM_HERE, start_gesture_delay,
+      base::BindRepeating(&AutoclickController::StartAutoclickGesture,
                           base::Unretained(this)));
 }
 
@@ -302,6 +328,7 @@ void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
        (event->type() == ui::ET_MOUSE_DRAGGED &&
         drag_event_rewriter_->IsEnabled()))) {
     mouse_event_flags_ = event->flags();
+    // Update the point even if the animation is not currently being shown.
     UpdateRingWidget(point_in_screen);
 
     // The distance between the mouse location and the anchor location
@@ -313,21 +340,29 @@ void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
     gfx::Vector2d delta = point_in_screen - anchor_location_;
     if (delta.LengthSquared() >= movement_threshold_ * movement_threshold_) {
       anchor_location_ = point_in_screen;
-      autoclick_timer_->Reset();
-      autoclick_ring_handler_->StartGesture(delay_, anchor_location_,
-                                            widget_.get());
-    } else if (autoclick_timer_->IsRunning()) {
-      autoclick_ring_handler_->SetGestureCenter(point_in_screen, widget_.get());
+      gesture_anchor_location_ = point_in_screen;
+      // Stop all the timers, restarting the gesture timer only. This keeps
+      // the animation from being drawn while the user is still moving quickly.
+      start_gesture_timer_->Reset();
+      if (autoclick_timer_) {
+        autoclick_timer_->Stop();
+      }
+      autoclick_ring_handler_->StopGesture();
+    } else if (start_gesture_timer_->IsRunning()) {
+      // Keep track of where the gesture will be anchored.
+      gesture_anchor_location_ = point_in_screen;
     }
   } else if (event->type() == ui::ET_MOUSE_PRESSED ||
              event->type() == ui::ET_MOUSE_RELEASED) {
     CancelAutoclickAction();
-  } else if (event->type() == ui::ET_MOUSEWHEEL &&
-             autoclick_timer_->IsRunning()) {
-    autoclick_timer_->Reset();
-    UpdateRingWidget(point_in_screen);
-    autoclick_ring_handler_->StartGesture(delay_, anchor_location_,
-                                          widget_.get());
+  } else if (event->type() == ui::ET_MOUSEWHEEL) {
+    anchor_location_ = point_in_screen;
+    gesture_anchor_location_ = point_in_screen;
+    start_gesture_timer_->Reset();
+    if (autoclick_timer_) {
+      autoclick_timer_->Stop();
+    }
+    autoclick_ring_handler_->StopGesture();
   }
 }
 

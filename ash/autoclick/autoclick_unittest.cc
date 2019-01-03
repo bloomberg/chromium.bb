@@ -6,6 +6,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -70,7 +71,12 @@ class MouseEventCapturer : public ui::EventHandler {
 
 class AutoclickTest : public AshTestBase {
  public:
-  AutoclickTest() = default;
+  AutoclickTest() {
+    DestroyScopedTaskEnvironment();
+    scoped_task_environment_ =
+        std::make_unique<base::test::ScopedTaskEnvironment>(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME);
+  };
   ~AutoclickTest() override = default;
 
   void SetUp() override {
@@ -104,6 +110,11 @@ class AutoclickTest : public AshTestBase {
     return GetMouseEvents();
   }
 
+  void FastForwardBy(int milliseconds) {
+    scoped_task_environment_->FastForwardBy(
+        base::TimeDelta::FromMilliseconds(milliseconds));
+  }
+
   AutoclickController* GetAutoclickController() {
     return Shell::Get()->autoclick_controller();
   }
@@ -116,6 +127,7 @@ class AutoclickTest : public AshTestBase {
 
  private:
   MouseEventCapturer mouse_event_capturer_;
+  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoclickTest);
 };
@@ -483,6 +495,51 @@ TEST_F(AutoclickTest, AutoclickRevertsToLeftClick) {
   ASSERT_EQ(2u, events.size());
   EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & events[0].flags());
   EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & events[1].flags());
+}
+
+TEST_F(AutoclickTest, WaitsToDrawAnimationAfterDwellBegins) {
+  float ratio = GetAutoclickController()->GetStartGestureDelayRatioForTesting();
+  int full_delay = ceil(1.0 / ratio) * 5;
+  int animation_delay = 5;
+  GetAutoclickController()->SetAutoclickDelay(
+      base::TimeDelta::FromMilliseconds(full_delay));
+  GetAutoclickController()->SetEnabled(true);
+  std::vector<ui::MouseEvent> events;
+
+  // Start a dwell at (210, 210).
+  GetEventGenerator()->MoveMouseTo(210, 210);
+
+  // The center should change to (205, 205) if the adjustment is made before
+  // the animation starts.
+  FastForwardBy(animation_delay - 1);
+  GetEventGenerator()->MoveMouseTo(205, 205);
+
+  // Now wait the full delay to ensure the click has happened, then check
+  // the result.
+  FastForwardBy(full_delay);
+  events = GetMouseEvents();
+  ASSERT_EQ(2u, events.size());
+  EXPECT_EQ(gfx::Point(205, 205), events[0].location());
+
+  // Start another dwell at (100, 100).
+  ClearMouseEvents();
+  GetEventGenerator()->MoveMouseTo(100, 100);
+
+  // Move the mouse a little to (105, 105), which should become the center.
+  FastForwardBy(animation_delay - 1);
+  GetEventGenerator()->MoveMouseTo(105, 105);
+
+  // Fast forward until the animation would have started. Now moving the mouse
+  // a little does not change the center point.
+  FastForwardBy(animation_delay);
+  GetEventGenerator()->MoveMouseTo(110, 110);
+
+  // Now wait until the click. It should be at the center point from before
+  // the animation started.
+  FastForwardBy(full_delay);
+  events = GetMouseEvents();
+  ASSERT_EQ(2u, events.size());
+  EXPECT_EQ(gfx::Point(105, 105), events[0].location());
 }
 
 }  // namespace ash
