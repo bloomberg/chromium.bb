@@ -169,7 +169,7 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase,
     base::RunLoop run_loop;
     context_->data_manager_->CreateRegistration(
         registration_id, std::move(requests), std::move(options), icon,
-        /* start_paused = */ false,
+        /* start_paused= */ false,
         base::BindOnce(&BackgroundFetchServiceTest::DidStartFetch,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -213,7 +213,7 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase,
     service_->MatchRequests(
         service_worker_registration_id, developer_id, unique_id,
         blink::mojom::FetchAPIRequest::New() /* request_to_match*/,
-        nullptr /* cache_query_params*/, true /* match_all */,
+        nullptr /* cache_query_params*/, /* match_all= */ true,
         base::BindOnce(&BackgroundFetchServiceTest::DidMatchAllRequests,
                        base::Unretained(this), run_loop.QuitClosure(),
                        out_fetches));
@@ -296,7 +296,8 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase,
     context_ = base::MakeRefCounted<BackgroundFetchContext>(
         browser_context(),
         base::WrapRefCounted(embedded_worker_test_helper()->context_wrapper()),
-        nullptr /* cache_storage_context */, nullptr /* quota_manager_proxy */);
+        /* cache_storage_context= */ nullptr,
+        /* quota_manager_proxy= */ nullptr);
     context_->SetDataManagerForTesting(
         std::make_unique<BackgroundFetchTestDataManager>(
             browser_context(), storage_partition(),
@@ -443,7 +444,7 @@ TEST_F(BackgroundFetchServiceTest, FetchInvalidArguments) {
     blink::mojom::BackgroundFetchError error;
     blink::mojom::BackgroundFetchRegistration registration;
 
-    Fetch(42 /* service_worker_registration_id */, "" /* developer_id */,
+    Fetch(/* service_worker_registration_id= */ 42, /* developer_id= */ "",
           std::move(requests), options.Clone(), SkBitmap(), &error,
           &registration);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ARGUMENT);
@@ -459,7 +460,7 @@ TEST_F(BackgroundFetchServiceTest, FetchInvalidArguments) {
     blink::mojom::BackgroundFetchError error;
     blink::mojom::BackgroundFetchRegistration registration;
 
-    Fetch(42 /* service_worker_registration_id */, kExampleDeveloperId,
+    Fetch(/* service_worker_registration_id= */ 42, kExampleDeveloperId,
           std::move(requests), std::move(options), SkBitmap(), &error,
           &registration);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ARGUMENT);
@@ -858,7 +859,7 @@ TEST_F(BackgroundFetchServiceTest, AbortInvalidDeveloperIdArgument) {
 
   BadMessageObserver bad_message_observer;
   blink::mojom::BackgroundFetchError error;
-  Abort(42 /* service_worker_registration_id */, "" /* developer_id */,
+  Abort(/* service_worker_registration_id= */ 42, /* developer_id= */ "",
         kExampleUniqueId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ARGUMENT);
   EXPECT_EQ("Invalid developer_id", bad_message_observer.last_error());
@@ -871,8 +872,8 @@ TEST_F(BackgroundFetchServiceTest, AbortInvalidUniqueIdArgument) {
 
   BadMessageObserver bad_message_observer;
   blink::mojom::BackgroundFetchError error;
-  Abort(42 /* service_worker_registration_id */, kExampleDeveloperId,
-        "not a GUID" /* unique_id */, &error);
+  Abort(/* service_worker_registration_id= */ 42, kExampleDeveloperId,
+        /* unique_id= */ "not a GUID", &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ARGUMENT);
   EXPECT_EQ("Invalid unique_id", bad_message_observer.last_error());
 }
@@ -882,7 +883,7 @@ TEST_F(BackgroundFetchServiceTest, AbortUnknownUniqueId) {
   // |unique_id| that does not correspond to an active fetch kindly tells us so.
 
   blink::mojom::BackgroundFetchError error;
-  Abort(42 /* service_worker_registration_id */, kExampleDeveloperId,
+  Abort(/* service_worker_registration_id= */ 42, kExampleDeveloperId,
         kExampleUniqueId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ID);
 }

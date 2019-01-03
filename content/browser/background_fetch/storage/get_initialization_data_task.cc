@@ -477,7 +477,7 @@ void GetInitializationDataTask::DidGetRegistrations(
         this,
         InitializationSubTask::SubTaskInit{
             ud.first, ud.second,
-            &insertion_result.first->second /* initialization_data */},
+            /* initialization_data= */ &insertion_result.first->second},
         barrier_closure));
   }
 }

@@ -182,8 +182,8 @@ BackgroundFetchTestBase::CreateBackgroundFetchRegistration(
     blink::mojom::BackgroundFetchResult result,
     blink::mojom::BackgroundFetchFailureReason failure_reason) {
   return blink::mojom::BackgroundFetchRegistration::New(
-      developer_id, unique_id, 0 /* upload_total */, 0 /* uploaded */,
-      0 /* download_total */, 0 /* downloaded */, result, failure_reason);
+      developer_id, unique_id, /* upload_total= */ 0, /* uploaded= */ 0,
+      /* download_total= */ 0, /* downloaded= */ 0, result, failure_reason);
 }
 
 }  // namespace content

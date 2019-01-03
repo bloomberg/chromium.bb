@@ -35,7 +35,7 @@ class MockBGFQuotaManagerProxy : public MockQuotaManagerProxy {
                         blink::mojom::StorageType type,
                         UsageAndQuotaCallback callback) override {
     DCHECK(original_task_runner);
-    std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk, 0 /* usage */,
+    std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk, /* usage= */ 0,
                             kBackgroundFetchMaxQuotaBytes);
   }
 
@@ -52,8 +52,8 @@ BackgroundFetchTestDataManager::BackgroundFetchTestDataManager(
     bool mock_fill_response)
     : BackgroundFetchDataManager(browser_context,
                                  service_worker_context,
-                                 nullptr /* cache_storage_context */,
-                                 nullptr /* quota_manager_proxy */),
+                                 /* cache_storage_context= */ nullptr,
+                                 /* quota_manager_proxy= */ nullptr),
       browser_context_(browser_context),
       storage_partition_(storage_partition),
       mock_fill_response_(mock_fill_response) {}

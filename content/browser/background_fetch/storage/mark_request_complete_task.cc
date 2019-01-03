@@ -108,7 +108,7 @@ void MarkRequestCompleteTask::StoreResponse(base::OnceClosure done_closure) {
                        weak_factory_.GetWeakPtr(), std::move(done_closure)));
   } else {
     // Assume there is enough quota.
-    DidGetIsQuotaAvailable(std::move(done_closure), true /* is_available */);
+    DidGetIsQuotaAvailable(std::move(done_closure), /* is_available= */ true);
   }
 }
 
@@ -122,7 +122,7 @@ void MarkRequestCompleteTask::DidGetIsQuotaAvailable(
 
   CacheStorageHandle cache_storage = GetOrOpenCacheStorage(registration_id_);
   cache_storage.value()->OpenCache(
-      registration_id_.unique_id() /* cache_name */,
+      /* cache_name= */ registration_id_.unique_id(),
       base::BindOnce(&MarkRequestCompleteTask::DidOpenCache,
                      weak_factory_.GetWeakPtr(), std::move(done_closure)));
 }
@@ -151,9 +151,9 @@ void MarkRequestCompleteTask::PopulateResponseBody(
     // or the BackgroundFetchRequestInfo responsible for files vs. blobs.
     auto blob_builder =
         std::make_unique<storage::BlobDataBuilder>(base::GenerateGUID());
-    blob_builder->AppendFile(request_info_->GetFilePath(), 0 /* offset */,
+    blob_builder->AppendFile(request_info_->GetFilePath(), /* offset= */ 0,
                              request_info_->GetFileSize(),
-                             base::Time() /* expected_modification_time */);
+                             /* expected_modification_time= */ base::Time());
 
     blob_data_handle = GetBlobStorageContext(blob_storage_context())
                            ->AddFinishedBlob(std::move(blob_builder));

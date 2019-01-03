@@ -230,8 +230,8 @@ void BackgroundFetchScheduler::OnRegistrationCreated(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   auto controller = CreateInitializedController(
       registration_id, registration, std::move(options), icon,
-      0 /* completed_requests */, num_requests, {} /* active_fetch_requests */,
-      start_paused);
+      /* completed_requests= */ 0, num_requests,
+      /* active_fetch_requests= */ {}, start_paused);
 
   DCHECK_EQ(job_controllers_.count(registration_id.unique_id()), 0u);
   job_controllers_[registration_id.unique_id()] = std::move(controller);

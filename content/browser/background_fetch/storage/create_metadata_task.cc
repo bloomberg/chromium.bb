@@ -361,7 +361,7 @@ void CreateMetadataTask::DidStoreMetadata(
   // Create cache entries.
   CacheStorageHandle cache_storage = GetOrOpenCacheStorage(registration_id_);
   cache_storage.value()->OpenCache(
-      registration_id_.unique_id() /* cache_name */,
+      /* cache_name= */ registration_id_.unique_id(),
       base::BindOnce(&CreateMetadataTask::DidOpenCache,
                      weak_factory_.GetWeakPtr()));
 }

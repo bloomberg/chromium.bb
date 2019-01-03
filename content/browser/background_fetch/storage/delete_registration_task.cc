@@ -73,7 +73,7 @@ void DeleteRegistrationTask::Start() {
 
   CacheStorageHandle cache_storage = GetOrOpenCacheStorage(origin_, unique_id_);
   cache_storage.value()->DoomCache(
-      unique_id_ /* cache_name */,
+      /* cache_name= */ unique_id_,
       base::BindOnce(&DeleteRegistrationTask::DidDeleteCache,
                      weak_factory_.GetWeakPtr(), barrier_closure));
 }

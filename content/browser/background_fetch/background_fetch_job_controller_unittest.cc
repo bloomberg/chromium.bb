@@ -103,7 +103,7 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
   std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
   CreateRegistrationForRequests(
       BackgroundFetchRegistrationId* registration_id,
-      std::map<GURL, std::string /* method */> request_data,
+      std::map<GURL, /* method= */ std::string> request_data,
       bool auto_complete_requests) {
     DCHECK(registration_id);
 
@@ -131,8 +131,8 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
       // Provide fake responses for the given |request_data| pairs.
       for (const auto& pair : request_data) {
         CreateRequestWithProvidedResponse(
-            pair.second /* method */, pair.first /* url */,
-            TestResponseBuilder(200 /* response_code */)
+            /* method= */ pair.second, /* url= */ pair.first,
+            TestResponseBuilder(/* response_code= */ 200)
                 .SetResponseData(kExampleResponseData)
                 .Build());
       }
@@ -163,7 +163,7 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
     controller->InitializeRequestStatus(/* completed_downloads= */ 0,
                                         total_downloads,
                                         /* outstanding_guids= */ {},
-                                        /* start_paused = */ false);
+                                        /* start_paused= */ false);
 
     return controller;
   }
@@ -185,7 +185,7 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
         browser_context(),
         base::WrapRefCounted(embedded_worker_test_helper()->context_wrapper()),
         base::WrapRefCounted(partition->GetCacheStorageContext()),
-        nullptr /* quota_manager_proxy */);
+        /* quota_manager_proxy= */ nullptr);
   }
 
   void TearDown() override {
@@ -243,7 +243,7 @@ TEST_F(BackgroundFetchJobControllerTest, SingleRequestJob) {
 
   auto requests = CreateRegistrationForRequests(
       &registration_id, {{GURL("https://example.com/funny_cat.png"), "GET"}},
-      true /* auto_complete_requests */);
+      /* auto_complete_requests= */ true);
 
   EXPECT_EQ(JobCompletionStatus::kRunning,
             GetCompletionStatus(registration_id));
@@ -267,7 +267,7 @@ TEST_F(BackgroundFetchJobControllerTest, SingleRequestJobWithInsecureOrigin) {
 
   auto requests = CreateRegistrationForRequests(
       &registration_id, {{GURL("http://example.com/funny_cat.png"), "GET"}},
-      true /* auto_complete_requests */);
+      /* auto_complete_requests= */ true);
 
   EXPECT_EQ(JobCompletionStatus::kRunning,
             GetCompletionStatus(registration_id));
@@ -296,7 +296,7 @@ TEST_F(BackgroundFetchJobControllerTest, MultipleRequestJob) {
       {{GURL("https://example.com/funny_cat.png"), "GET"},
        {GURL("https://example.com/scary_cat.png"), "GET"},
        {GURL("https://example.com/crazy_cat.png"), "GET"}},
-      true /* auto_complete_requests */);
+      /* auto_complete_requests= */ true);
 
   EXPECT_EQ(JobCompletionStatus::kRunning,
             GetCompletionStatus(registration_id));
@@ -342,7 +342,7 @@ TEST_F(BackgroundFetchJobControllerTest, MultipleRequestsJobWithMixedContent) {
       &registration_id,
       {{GURL("http://example.com/funny_cat.png"), "GET"},
        {GURL("https://example.com/scary_cat.png"), "GET"}},
-      true /* auto_complete_requests */);
+      /* auto_complete_requests= */ true);
 
   EXPECT_EQ(JobCompletionStatus::kRunning,
             GetCompletionStatus(registration_id));
@@ -380,7 +380,7 @@ TEST_F(BackgroundFetchJobControllerTest, Abort) {
 
   auto requests = CreateRegistrationForRequests(
       &registration_id, {{GURL("https://example.com/funny_cat.png"), "GET"}},
-      true /* auto_complete_requests */);
+      /* auto_complete_requests= */ true);
 
   EXPECT_EQ(JobCompletionStatus::kRunning,
             GetCompletionStatus(registration_id));
@@ -408,7 +408,7 @@ TEST_F(BackgroundFetchJobControllerTest, Progress) {
 
   auto requests = CreateRegistrationForRequests(
       &registration_id, {{GURL("https://example.com/funny_cat.png"), "GET"}},
-      true /* auto_complete_requests */);
+      /* auto_complete_requests= */ true);
 
   EXPECT_EQ(JobCompletionStatus::kRunning,
             GetCompletionStatus(registration_id));
@@ -444,7 +444,7 @@ TEST_F(BackgroundFetchJobControllerTest, ServiceWorkerRegistrationDeleted) {
 
   auto requests = CreateRegistrationForRequests(
       &registration_id, {{GURL("https://example.com/funny_cat.png"), "GET"}},
-      true /* auto_complete_requests */);
+      /* auto_complete_requests= */ true);
 
   EXPECT_EQ(JobCompletionStatus::kRunning,
             GetCompletionStatus(registration_id));
@@ -468,7 +468,7 @@ TEST_F(BackgroundFetchJobControllerTest, ServiceWorkerDatabaseDeleted) {
 
   auto requests = CreateRegistrationForRequests(
       &registration_id, {{GURL("https://example.com/funny_cat.png"), "GET"}},
-      true /* auto_complete_requests */);
+      /* auto_complete_requests= */ true);
 
   EXPECT_EQ(JobCompletionStatus::kRunning,
             GetCompletionStatus(registration_id));

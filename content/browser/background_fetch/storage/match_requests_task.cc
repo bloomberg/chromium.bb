@@ -33,7 +33,7 @@ MatchRequestsTask::~MatchRequestsTask() = default;
 void MatchRequestsTask::Start() {
   CacheStorageHandle cache_storage = GetOrOpenCacheStorage(registration_id_);
   cache_storage.value()->OpenCache(
-      registration_id_.unique_id() /* cache_name */,
+      /* cache_name= */ registration_id_.unique_id(),
       base::BindOnce(&MatchRequestsTask::DidOpenCache,
                      weak_factory_.GetWeakPtr()));
 }
