@@ -17,12 +17,12 @@ UserGesturesNativeHandler::UserGesturesNativeHandler(ScriptContext* context)
 void UserGesturesNativeHandler::AddRoutes() {
   RouteHandlerFunction(
       "IsProcessingUserGesture", "test",
-      base::Bind(&UserGesturesNativeHandler::IsProcessingUserGesture,
-                 base::Unretained(this)));
+      base::BindRepeating(&UserGesturesNativeHandler::IsProcessingUserGesture,
+                          base::Unretained(this)));
   RouteHandlerFunction(
       "RunWithUserGesture", "test",
-      base::Bind(&UserGesturesNativeHandler::RunWithUserGesture,
-                 base::Unretained(this)));
+      base::BindRepeating(&UserGesturesNativeHandler::RunWithUserGesture,
+                          base::Unretained(this)));
 }
 
 void UserGesturesNativeHandler::IsProcessingUserGesture(

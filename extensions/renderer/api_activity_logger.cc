@@ -29,11 +29,12 @@ APIActivityLogger::APIActivityLogger(ScriptContext* context)
 APIActivityLogger::~APIActivityLogger() {}
 
 void APIActivityLogger::AddRoutes() {
-  RouteHandlerFunction("LogEvent", base::Bind(&APIActivityLogger::LogForJS,
-                                              base::Unretained(this), EVENT));
+  RouteHandlerFunction("LogEvent",
+                       base::BindRepeating(&APIActivityLogger::LogForJS,
+                                           base::Unretained(this), EVENT));
   RouteHandlerFunction("LogAPICall",
-                       base::Bind(&APIActivityLogger::LogForJS,
-                                  base::Unretained(this), APICALL));
+                       base::BindRepeating(&APIActivityLogger::LogForJS,
+                                           base::Unretained(this), APICALL));
 }
 
 // static

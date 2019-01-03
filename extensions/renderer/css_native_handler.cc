@@ -19,8 +19,8 @@ CssNativeHandler::CssNativeHandler(ScriptContext* context)
 void CssNativeHandler::AddRoutes() {
   RouteHandlerFunction(
       "CanonicalizeCompoundSelector", "declarativeContent",
-      base::Bind(&CssNativeHandler::CanonicalizeCompoundSelector,
-                 base::Unretained(this)));
+      base::BindRepeating(&CssNativeHandler::CanonicalizeCompoundSelector,
+                          base::Unretained(this)));
 }
 
 void CssNativeHandler::CanonicalizeCompoundSelector(

@@ -5,6 +5,7 @@
 #include "extensions/renderer/object_backed_native_handler.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "content/public/renderer/worker_thread.h"
@@ -118,14 +119,14 @@ void ObjectBackedNativeHandler::Router(
 
 void ObjectBackedNativeHandler::RouteHandlerFunction(
     const std::string& name,
-    const HandlerFunction& handler_function) {
-  RouteHandlerFunction(name, "", handler_function);
+    HandlerFunction handler_function) {
+  RouteHandlerFunction(name, "", std::move(handler_function));
 }
 
 void ObjectBackedNativeHandler::RouteHandlerFunction(
     const std::string& name,
     const std::string& feature_name,
-    const HandlerFunction& handler_function) {
+    HandlerFunction handler_function) {
   DCHECK_EQ(init_state_, kInitializingRoutes)
       << "RouteHandlerFunction() can only be called from AddRoutes()!";
 
@@ -135,7 +136,8 @@ void ObjectBackedNativeHandler::RouteHandlerFunction(
 
   v8::Local<v8::Object> data = v8::Object::New(isolate);
   SetPrivate(data, kHandlerFunction,
-             v8::External::New(isolate, new HandlerFunction(handler_function)));
+             v8::External::New(
+                 isolate, new HandlerFunction(std::move(handler_function))));
   DCHECK(feature_name.empty() ||
          ExtensionAPI::GetSharedInstance()->GetFeatureDependency(feature_name))
       << feature_name;

@@ -36,8 +36,8 @@ class ObjectBackedNativeHandler : public NativeHandler {
   v8::Isolate* GetIsolate() const;
 
  protected:
-  typedef base::Callback<void(const v8::FunctionCallbackInfo<v8::Value>&)>
-      HandlerFunction;
+  using HandlerFunction =
+      base::RepeatingCallback<void(const v8::FunctionCallbackInfo<v8::Value>&)>;
 
   virtual void AddRoutes() = 0;
 
@@ -54,10 +54,10 @@ class ObjectBackedNativeHandler : public NativeHandler {
   // the |handler_function| is not invoked.
   // TODO(devlin): Deprecate the version that doesn't take a |feature_name|.
   void RouteHandlerFunction(const std::string& name,
-                            const HandlerFunction& handler_function);
+                            HandlerFunction handler_function);
   void RouteHandlerFunction(const std::string& name,
                             const std::string& feature_name,
-                            const HandlerFunction& handler_function);
+                            HandlerFunction handler_function);
 
   ScriptContext* context() const { return context_; }
 

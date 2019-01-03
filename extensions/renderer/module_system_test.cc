@@ -11,6 +11,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -86,8 +87,8 @@ class GetAPINatives : public ObjectBackedNativeHandler {
       args.GetReturnValue().Set(api);
     };
 
-    RouteHandlerFunction("get",
-                         base::Bind(get_api, context(), bindings_system_));
+    RouteHandlerFunction(
+        "get", base::BindRepeating(get_api, context(), bindings_system_));
   }
 
  private:
@@ -109,10 +110,12 @@ class ModuleSystemTestEnvironment::AssertNatives
 
   // ObjectBackedNativeHandler:
   void AddRoutes() override {
-    RouteHandlerFunction("AssertTrue", base::Bind(&AssertNatives::AssertTrue,
-                                                  base::Unretained(this)));
-    RouteHandlerFunction("AssertFalse", base::Bind(&AssertNatives::AssertFalse,
-                                                   base::Unretained(this)));
+    RouteHandlerFunction("AssertTrue",
+                         base::BindRepeating(&AssertNatives::AssertTrue,
+                                             base::Unretained(this)));
+    RouteHandlerFunction("AssertFalse",
+                         base::BindRepeating(&AssertNatives::AssertFalse,
+                                             base::Unretained(this)));
   }
 
   bool assertion_made() { return assertion_made_; }

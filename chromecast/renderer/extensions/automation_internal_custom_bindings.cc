@@ -503,10 +503,11 @@ void AutomationInternalCustomBindings::AddRoutes() {
 // It's safe to use base::Unretained(this) here because these bindings
 // will only be called on a valid AutomationInternalCustomBindings instance
 // and none of the functions have any side effects.
-#define ROUTE_FUNCTION(FN)                                               \
-  RouteHandlerFunction(#FN, "automation",                                \
-                       base::Bind(&AutomationInternalCustomBindings::FN, \
-                                  base::Unretained(this)))
+#define ROUTE_FUNCTION(FN)                                       \
+  RouteHandlerFunction(                                          \
+      #FN, "automation",                                         \
+      base::BindRepeating(&AutomationInternalCustomBindings::FN, \
+                          base::Unretained(this)))
   ROUTE_FUNCTION(IsInteractPermitted);
   ROUTE_FUNCTION(GetSchemaAdditions);
   ROUTE_FUNCTION(StartCachingAccessibilityTrees);
@@ -1563,7 +1564,7 @@ void AutomationInternalCustomBindings::RouteTreeIDFunction(
     const std::string& name,
     TreeIDFunction callback) {
   scoped_refptr<TreeIDWrapper> wrapper = new TreeIDWrapper(this, callback);
-  RouteHandlerFunction(name, base::Bind(&TreeIDWrapper::Run, wrapper));
+  RouteHandlerFunction(name, base::BindRepeating(&TreeIDWrapper::Run, wrapper));
 }
 
 void AutomationInternalCustomBindings::RouteNodeIDFunction(
@@ -1578,8 +1579,8 @@ void AutomationInternalCustomBindings::RouteNodeIDPlusAttributeFunction(
     NodeIDPlusAttributeFunction callback) {
   scoped_refptr<NodeIDPlusAttributeWrapper> wrapper =
       new NodeIDPlusAttributeWrapper(this, callback);
-  RouteHandlerFunction(name,
-                       base::Bind(&NodeIDPlusAttributeWrapper::Run, wrapper));
+  RouteHandlerFunction(
+      name, base::BindRepeating(&NodeIDPlusAttributeWrapper::Run, wrapper));
 }
 
 void AutomationInternalCustomBindings::RouteNodeIDPlusRangeFunction(
@@ -1587,7 +1588,8 @@ void AutomationInternalCustomBindings::RouteNodeIDPlusRangeFunction(
     NodeIDPlusRangeFunction callback) {
   scoped_refptr<NodeIDPlusRangeWrapper> wrapper =
       new NodeIDPlusRangeWrapper(this, callback);
-  RouteHandlerFunction(name, base::Bind(&NodeIDPlusRangeWrapper::Run, wrapper));
+  RouteHandlerFunction(
+      name, base::BindRepeating(&NodeIDPlusRangeWrapper::Run, wrapper));
 }
 
 void AutomationInternalCustomBindings::RouteNodeIDPlusStringBoolFunction(

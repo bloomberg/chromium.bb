@@ -60,8 +60,8 @@ RenderFrameObserverNatives::~RenderFrameObserverNatives() {}
 void RenderFrameObserverNatives::AddRoutes() {
   RouteHandlerFunction(
       "OnDocumentElementCreated", "app.window",
-      base::Bind(&RenderFrameObserverNatives::OnDocumentElementCreated,
-                 base::Unretained(this)));
+      base::BindRepeating(&RenderFrameObserverNatives::OnDocumentElementCreated,
+                          base::Unretained(this)));
 }
 
 void RenderFrameObserverNatives::Invalidate() {

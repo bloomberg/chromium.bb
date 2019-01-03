@@ -189,14 +189,17 @@ ModuleSystem::~ModuleSystem() {
 }
 
 void ModuleSystem::AddRoutes() {
-  RouteHandlerFunction("require", base::Bind(&ModuleSystem::RequireForJs,
-                                             base::Unretained(this)));
-  RouteHandlerFunction("requireNative", base::Bind(&ModuleSystem::RequireNative,
-                                                   base::Unretained(this)));
-  RouteHandlerFunction("loadScript", base::Bind(&ModuleSystem::LoadScript,
-                                                base::Unretained(this)));
   RouteHandlerFunction(
-      "privates", base::Bind(&ModuleSystem::Private, base::Unretained(this)));
+      "require",
+      base::BindRepeating(&ModuleSystem::RequireForJs, base::Unretained(this)));
+  RouteHandlerFunction("requireNative",
+                       base::BindRepeating(&ModuleSystem::RequireNative,
+                                           base::Unretained(this)));
+  RouteHandlerFunction(
+      "loadScript",
+      base::BindRepeating(&ModuleSystem::LoadScript, base::Unretained(this)));
+  RouteHandlerFunction("privates", base::BindRepeating(&ModuleSystem::Private,
+                                                       base::Unretained(this)));
 }
 
 void ModuleSystem::Invalidate() {

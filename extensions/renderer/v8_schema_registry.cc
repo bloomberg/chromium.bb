@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "content/public/renderer/v8_value_converter.h"
@@ -52,12 +53,14 @@ class SchemaRegistryNativeHandler : public ObjectBackedNativeHandler {
 
   // ObjectBackedNativeHandler:
   void AddRoutes() override {
-    RouteHandlerFunction("GetSchema",
-                         base::Bind(&SchemaRegistryNativeHandler::GetSchema,
-                                    base::Unretained(this)));
-    RouteHandlerFunction("GetObjectType",
-                         base::Bind(&SchemaRegistryNativeHandler::GetObjectType,
-                                    base::Unretained(this)));
+    RouteHandlerFunction(
+        "GetSchema",
+        base::BindRepeating(&SchemaRegistryNativeHandler::GetSchema,
+                            base::Unretained(this)));
+    RouteHandlerFunction(
+        "GetObjectType",
+        base::BindRepeating(&SchemaRegistryNativeHandler::GetObjectType,
+                            base::Unretained(this)));
   }
 
   ~SchemaRegistryNativeHandler() override { context_->Invalidate(); }

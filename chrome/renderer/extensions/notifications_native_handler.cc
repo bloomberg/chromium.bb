@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/notifications/notification_style.h"
@@ -22,8 +23,9 @@ NotificationsNativeHandler::NotificationsNativeHandler(ScriptContext* context)
 void NotificationsNativeHandler::AddRoutes() {
   RouteHandlerFunction(
       "GetNotificationImageSizes", "notifications",
-      base::Bind(&NotificationsNativeHandler::GetNotificationImageSizes,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &NotificationsNativeHandler::GetNotificationImageSizes,
+          base::Unretained(this)));
 }
 
 void NotificationsNativeHandler::GetNotificationImageSizes(
