@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+const State = {
+  LOADING: 'loading',
+  ACTIVE: 'active',
+  IDLE: 'idle'
+};
+
 /**
  * Hosts the Ink component which is responsible for both PDF rendering and
  * annotation when in annotation mode.
@@ -9,16 +15,11 @@
 Polymer({
   is: 'viewer-ink-host',
 
-  properties: {
-    /** @private */
-    dummyContent_: String,
-  },
+  /** @private {InkAPI} */
+  ink_: null,
 
   /** @private {?string} */
-  dummyFileName_: null,
-
-  /** @private {ArrayBuffer} */
-  dummyData_: null,
+  fileName_: null,
 
   /**
    * Begins annotation mode with the document represented by `data`.
@@ -30,9 +31,13 @@ Polymer({
    * @return {!Promise} void value.
    */
   load: async function(fileName, data) {
-    this.dummyContent_ = `Annotating ${data.byteLength} bytes`;
-    this.dummyFileName_ = fileName;
-    this.dummyData_ = data;
+    this.fileName_ = fileName;
+    this.state_ = State.LOADING;
+    this.$.frame.src = 'ink/index.html';
+    await new Promise(resolve => this.$.frame.onload = resolve);
+    this.ink_ = await this.$.frame.contentWindow.initInk();
+    this.ink_.setPDF(data);
+    this.state_ = State.ACTIVE;
     this.style.visibility = 'visible';
   },
 
@@ -42,8 +47,8 @@ Polymer({
    */
   saveDocument: async function() {
     return {
-      fileName: this.dummyFileName_,
-      dataToSave: this.dummyData_,
+      fileName: this.fileName_,
+      dataToSave: await this.ink_.getPDF(),
     };
   },
 });
