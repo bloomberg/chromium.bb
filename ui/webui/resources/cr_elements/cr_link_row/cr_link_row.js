@@ -32,12 +32,16 @@ Polymer({
       type: String,
       /* Value used for noSubLabel attribute. */
       value: '',
+      observer: 'onSubLabelChange_',
     },
 
     disabled: {
       type: Boolean,
       reflectToAttribute: true,
     },
+
+    /** @private {string|undefined} */
+    ariaDescribedBy_: String,
   },
 
   listeners: {
@@ -67,5 +71,10 @@ Polymer({
     ripple.setAttribute('recenters', '');
     ripple.classList.add('circle');
     return ripple;
+  },
+
+  /** @private */
+  onSubLabelChange_: function() {
+    this.ariaDescribedBy_ = this.subLabel ? 'subLabel' : undefined;
   },
 });

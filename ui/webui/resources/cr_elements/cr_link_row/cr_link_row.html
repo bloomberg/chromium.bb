@@ -81,7 +81,10 @@
         @apply --cr-secondary-text;
       }
     </style>
-    <button disabled="[[disabled]]">
+    <button
+        aria-describedby$="[[ariaDescribedBy_]]"
+        aria-label$="[[label]]"
+        disabled="[[disabled]]">
       <div id="outer" noSubLabel$="[[!subLabel]]">
         <iron-icon id="startIcon" icon="[[startIcon]]" hidden="[[!startIcon]]"
             aria-hidden="true">
