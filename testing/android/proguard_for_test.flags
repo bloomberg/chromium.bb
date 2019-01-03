@@ -21,6 +21,16 @@
 # all classes from the test apk.
 -keep class **.test.** { *; }
 
+# These 2 rules together keep all interfaces that are mocked by Mockito, since
+# Mockito generates these mocks at runtime, and the interfaces could get methods
+# stripped out.
+-if class * {
+  @org.mockito.Mock ** *;
+}
+-keep interface <2> {
+  <methods>;
+}
+
 # Keep all enum members since they might be reflectively called by JUnit4 runner
 -keepclassmembers enum * { *; }
 
