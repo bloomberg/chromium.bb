@@ -321,6 +321,7 @@ HTMLInputElement* LayoutTextControlSingleLine::InputElement() const {
 void LayoutTextControlSingleLine::ComputeVisualOverflow(
     bool recompute_floats) {
   LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
+  ClearVisualOverflow();
   AddVisualOverflowFromChildren();
 
   AddVisualEffectOverflow();
