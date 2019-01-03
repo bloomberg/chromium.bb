@@ -32,6 +32,7 @@
 #include "cc/input/layer_selection_bound.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/layer.h"
+#include "cc/paint/paint_worklet_layer_painter.h"
 #include "cc/trees/element_id.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
@@ -174,6 +175,10 @@ class WebLayerTreeView {
 
   // Mutations are plumbed back to the layer tree via the mutator client.
   virtual void SetMutatorClient(std::unique_ptr<cc::LayerTreeMutator>) {}
+
+  // Paints are plumbed back to the layer tree via the painter client.
+  virtual void SetPaintWorkletLayerPainterClient(
+      std::unique_ptr<cc::PaintWorkletLayerPainter>) {}
 
   // For when the embedder itself change scales on the page (e.g. devtools)
   // and wants all of the content at the new scale to be crisp.

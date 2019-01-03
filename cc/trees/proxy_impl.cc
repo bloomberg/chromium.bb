@@ -15,6 +15,7 @@
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
 #include "cc/input/browser_controls_offset_manager.h"
+#include "cc/paint/paint_worklet_layer_painter.h"
 #include "cc/scheduler/compositor_timing_history.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host.h"
@@ -127,6 +128,13 @@ void ProxyImpl::InitializeMutatorOnImpl(
   TRACE_EVENT0("cc", "ProxyImpl::InitializeMutatorOnImpl");
   DCHECK(IsImplThread());
   host_impl_->SetLayerTreeMutator(std::move(mutator));
+}
+
+void ProxyImpl::InitializePaintWorkletLayerPainterOnImpl(
+    std::unique_ptr<PaintWorkletLayerPainter> painter) {
+  TRACE_EVENT0("cc", "ProxyImpl::InitializePaintWorkletLayerPainterOnImpl");
+  DCHECK(IsImplThread());
+  host_impl_->SetPaintWorkletLayerPainter(std::move(painter));
 }
 
 void ProxyImpl::UpdateBrowserControlsStateOnImpl(

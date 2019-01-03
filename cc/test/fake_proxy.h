@@ -12,7 +12,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace cc {
-
+class PaintWorkletLayerPainter;
 class FakeProxy : public Proxy {
  public:
   FakeProxy() : layer_tree_host_(nullptr) {}
@@ -37,6 +37,8 @@ class FakeProxy : public Proxy {
   void Start() override {}
   void Stop() override {}
   void SetMutator(std::unique_ptr<LayerTreeMutator> mutator) override;
+  void SetPaintWorkletLayerPainter(
+      std::unique_ptr<PaintWorkletLayerPainter> painter) override;
   bool SupportsImplScrolling() const override;
   bool MainFrameWillHappenForTesting() override;
   void UpdateBrowserControlsState(BrowserControlsState constraints,

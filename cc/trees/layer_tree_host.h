@@ -61,6 +61,7 @@ class LayerTreeHostImpl;
 class LayerTreeHostImplClient;
 class LayerTreeHostSingleThreadClient;
 class LayerTreeMutator;
+class PaintWorkletLayerPainter;
 class MutatorEvents;
 class MutatorHost;
 struct PendingPageScaleAnimation;
@@ -150,6 +151,11 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Sets the LayerTreeMutator interface used to directly mutate the compositor
   // state on the compositor thread. (Compositor-Worker)
   void SetLayerTreeMutator(std::unique_ptr<LayerTreeMutator> mutator);
+
+  // Sets the LayerTreePainter interface used to dispatch the JS paint callback
+  // to a worklet thread.
+  void SetPaintWorkletLayerPainter(
+      std::unique_ptr<PaintWorkletLayerPainter> painter);
 
   // Attachs a SwapPromise to the Layer tree, that passes through the
   // LayerTreeHost and LayerTreeHostImpl with the next commit and frame

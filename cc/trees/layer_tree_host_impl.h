@@ -74,6 +74,7 @@ class ImageAnimationController;
 class LayerImpl;
 class LayerTreeFrameSink;
 class LayerTreeImpl;
+class PaintWorkletLayerPainter;
 class MemoryHistory;
 class MutatorEvents;
 class MutatorHost;
@@ -679,6 +680,8 @@ class CC_EXPORT LayerTreeHostImpl
                              base::TimeDelta delayed_by);
 
   void SetLayerTreeMutator(std::unique_ptr<LayerTreeMutator> mutator);
+  void SetPaintWorkletLayerPainter(
+      std::unique_ptr<PaintWorkletLayerPainter> painter);
 
   // The viewport has two scroll nodes, corresponding to the visual and layout
   // viewports. However, when we compute the scroll chain we include only one
@@ -1102,6 +1105,8 @@ class CC_EXPORT LayerTreeHostImpl
   ui::SkippedFrameTracker skipped_frame_tracker_;
   int last_color_space_id_ = -1;
   bool is_animating_for_snap_;
+
+  std::unique_ptr<PaintWorkletLayerPainter> painter_;
 
   const PaintImage::GeneratorClientId paint_image_generator_client_id_;
 

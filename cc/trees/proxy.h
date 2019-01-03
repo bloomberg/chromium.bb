@@ -27,6 +27,7 @@ class Rect;
 namespace cc {
 class LayerTreeFrameSink;
 class LayerTreeMutator;
+class PaintWorkletLayerPainter;
 class RenderFrameMetadataObserver;
 
 // Abstract interface responsible for proxying commands from the main-thread
@@ -71,6 +72,9 @@ class CC_EXPORT Proxy {
   virtual void Stop() = 0;
 
   virtual void SetMutator(std::unique_ptr<LayerTreeMutator> mutator) = 0;
+
+  virtual void SetPaintWorkletLayerPainter(
+      std::unique_ptr<PaintWorkletLayerPainter> painter) = 0;
 
   virtual bool SupportsImplScrolling() const = 0;
 

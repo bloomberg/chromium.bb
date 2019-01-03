@@ -12,6 +12,7 @@
 #include "cc/base/completion_event.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
+#include "cc/paint/paint_worklet_layer_painter.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/trees/latency_info_swap_promise.h"
 #include "cc/trees/layer_tree_frame_sink.h"
@@ -516,6 +517,16 @@ void ProxyMain::SetMutator(std::unique_ptr<LayerTreeMutator> mutator) {
       FROM_HERE, base::BindOnce(&ProxyImpl::InitializeMutatorOnImpl,
                                 base::Unretained(proxy_impl_.get()),
                                 base::Passed(std::move(mutator))));
+}
+
+void ProxyMain::SetPaintWorkletLayerPainter(
+    std::unique_ptr<PaintWorkletLayerPainter> painter) {
+  TRACE_EVENT0("cc", "ThreadProxy::SetPaintWorkletLayerPainter");
+  ImplThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ProxyImpl::InitializePaintWorkletLayerPainterOnImpl,
+                     base::Unretained(proxy_impl_.get()),
+                     base::Passed(std::move(painter))));
 }
 
 bool ProxyMain::SupportsImplScrolling() const {

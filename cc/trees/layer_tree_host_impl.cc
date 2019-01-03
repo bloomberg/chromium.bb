@@ -50,6 +50,7 @@
 #include "cc/layers/scrollbar_layer_impl_base.h"
 #include "cc/layers/surface_layer_impl.h"
 #include "cc/layers/viewport.h"
+#include "cc/paint/paint_worklet_layer_painter.h"
 #include "cc/raster/bitmap_raster_buffer_provider.h"
 #include "cc/raster/gpu_raster_buffer_provider.h"
 #include "cc/raster/one_copy_raster_buffer_provider.h"
@@ -3142,6 +3143,11 @@ LayerTreeHostImpl::CreateRasterBufferProvider() {
 void LayerTreeHostImpl::SetLayerTreeMutator(
     std::unique_ptr<LayerTreeMutator> mutator) {
   mutator_host_->SetLayerTreeMutator(std::move(mutator));
+}
+
+void LayerTreeHostImpl::SetPaintWorkletLayerPainter(
+    std::unique_ptr<PaintWorkletLayerPainter> painter) {
+  painter_ = std::move(painter);
 }
 
 LayerImpl* LayerTreeHostImpl::ViewportMainScrollLayer() {

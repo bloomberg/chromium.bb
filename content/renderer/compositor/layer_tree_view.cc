@@ -391,6 +391,12 @@ void LayerTreeView::SetMutatorClient(
   layer_tree_host_->SetLayerTreeMutator(std::move(client));
 }
 
+void LayerTreeView::SetPaintWorkletLayerPainterClient(
+    std::unique_ptr<cc::PaintWorkletLayerPainter> client) {
+  TRACE_EVENT0("cc", "LayerTreeView::SetPaintWorkletLayerPainterClient");
+  layer_tree_host_->SetPaintWorkletLayerPainter(std::move(client));
+}
+
 void LayerTreeView::ForceRecalculateRasterScales() {
   layer_tree_host_->SetNeedsRecalculateRasterScales();
 }
