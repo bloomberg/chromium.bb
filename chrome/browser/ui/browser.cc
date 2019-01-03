@@ -14,6 +14,7 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -186,7 +187,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/overscroll_configuration.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -197,7 +197,7 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/profiling.h"
 #include "content/public/common/renderer_preferences.h"
@@ -1111,11 +1111,8 @@ void Browser::SetTopControlsGestureScrollInProgress(bool in_progress) {
 
 bool Browser::CanOverscrollContent() const {
 #if defined(USE_AURA)
-  if (is_app() || is_devtools() || !is_type_tabbed())
-    return false;
-
-  return content::OverscrollConfig::GetHistoryNavigationMode() !=
-         content::OverscrollConfig::HistoryNavigationMode::kDisabled;
+  return !is_app() && is_type_tabbed() &&
+         base::FeatureList::IsEnabled(features::kOverscrollHistoryNavigation);
 #else
   return false;
 #endif

@@ -10,6 +10,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop_current.h"
@@ -47,7 +48,7 @@
 #include "content/public/browser/web_drag_dest_delegate.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/drop_data.h"
 #include "net/base/filename_util.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -644,20 +645,11 @@ void WebContentsViewAura::EndDrag(RenderWidgetHost* source_rwh,
 
 void WebContentsViewAura::InstallOverscrollControllerDelegate(
     RenderWidgetHostViewAura* view) {
-  const OverscrollConfig::HistoryNavigationMode mode =
-      OverscrollConfig::GetHistoryNavigationMode();
-  switch (mode) {
-    case OverscrollConfig::HistoryNavigationMode::kDisabled:
-      gesture_nav_simple_.reset();
-      break;
-    case OverscrollConfig::HistoryNavigationMode::kParallaxUi:
-      NOTREACHED();
-      break;
-    case OverscrollConfig::HistoryNavigationMode::kSimpleUi:
-      if (!gesture_nav_simple_)
-        gesture_nav_simple_ = std::make_unique<GestureNavSimple>(web_contents_);
-      break;
-  }
+  if (!base::FeatureList::IsEnabled(features::kOverscrollHistoryNavigation))
+    return;
+
+  if (!gesture_nav_simple_)
+    gesture_nav_simple_ = std::make_unique<GestureNavSimple>(web_contents_);
   if (view)
     view->overscroll_controller()->set_delegate(gesture_nav_simple_.get());
 }
