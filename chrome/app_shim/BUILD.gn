@@ -55,6 +55,16 @@ mac_app_bundle("app_mode_loader") {
     "app_mode_loader_mac.mm",
   ]
 
+  if (is_component_build) {
+    # Loaders are installed to ~/Applications. In a component build, include
+    # the absolute path to the out dir in their library search path so that
+    # their components are found at launch.
+    ldflags = [
+      "-rpath",
+      rebase_path(root_out_dir),
+    ]
+  }
+
   deps = [
     "//base",
     "//chrome/common:app_mode_app_support",
