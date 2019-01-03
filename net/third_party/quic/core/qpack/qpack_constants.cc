@@ -56,6 +56,37 @@ const QpackLanguage* QpackEncoderStreamLanguage() {
   return language;
 }
 
+const QpackInstruction* TableStateSynchronizeInstruction() {
+  static const QpackInstructionOpcode* const opcode =
+      new QpackInstructionOpcode{0b00000000, 0b11000000};
+  static const QpackInstruction* const instruction =
+      new QpackInstruction{*opcode, {{QpackInstructionFieldType::kVarint, 6}}};
+  return instruction;
+}
+
+const QpackInstruction* HeaderAcknowledgementInstruction() {
+  static const QpackInstructionOpcode* const opcode =
+      new QpackInstructionOpcode{0b10000000, 0b10000000};
+  static const QpackInstruction* const instruction =
+      new QpackInstruction{*opcode, {{QpackInstructionFieldType::kVarint, 7}}};
+  return instruction;
+}
+
+const QpackInstruction* StreamCancellationInstruction() {
+  static const QpackInstructionOpcode* const opcode =
+      new QpackInstructionOpcode{0b01000000, 0b11000000};
+  static const QpackInstruction* const instruction =
+      new QpackInstruction{*opcode, {{QpackInstructionFieldType::kVarint, 6}}};
+  return instruction;
+}
+
+const QpackLanguage* QpackDecoderStreamLanguage() {
+  static const QpackLanguage* const language = new QpackLanguage{
+      TableStateSynchronizeInstruction(), HeaderAcknowledgementInstruction(),
+      StreamCancellationInstruction()};
+  return language;
+}
+
 const QpackInstruction* QpackPrefixInstruction() {
   // This opcode matches every input.
   static const QpackInstructionOpcode* const opcode =
