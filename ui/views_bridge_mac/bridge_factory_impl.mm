@@ -7,6 +7,7 @@
 #include "base/no_destructor.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/remote_accessibility_api.h"
+#include "ui/views_bridge_mac/alert.h"
 #include "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
 #include "ui/views_bridge_mac/bridged_native_widget_impl.h"
 
@@ -102,6 +103,11 @@ void BridgeFactoryImpl::BindRequest(
     mojom::BridgeFactoryAssociatedRequest request) {
   binding_.Bind(std::move(request),
                 ui::WindowResizeHelperMac::Get()->task_runner());
+}
+
+void BridgeFactoryImpl::CreateAlert(mojom::AlertBridgeRequest bridge_request) {
+  // The resulting object manages its own lifetime.
+  ignore_result(new AlertBridge(std::move(bridge_request)));
 }
 
 void BridgeFactoryImpl::CreateBridgedNativeWidget(
