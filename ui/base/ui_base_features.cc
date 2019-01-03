@@ -17,16 +17,6 @@ namespace features {
 const base::Feature kCalculateNativeWinOcclusion{
     "CalculateNativeWinOcclusion", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // OW_WIN
-// If enabled, the emoji picker context menu item may be shown for editable
-// text areas.
-const base::Feature kEnableEmojiContextMenu {
-  "EnableEmojiContextMenu",
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_CHROMEOS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
 
 // Enables the full screen handwriting virtual keyboard behavior.
 const base::Feature kEnableFullscreenHandwritingVirtualKeyboard = {

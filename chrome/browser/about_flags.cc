@@ -3655,14 +3655,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kViewsCastDialog)},
 #endif  // defined(TOOLKIT_VIEWS)
 
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_CHROMEOS)
-    {"enable-emoji-context-menu",
-     flag_descriptions::kEnableEmojiContextMenuName,
-     flag_descriptions::kEnableEmojiContextMenuDescription,
-     kOsMac | kOsWin | kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kEnableEmojiContextMenu)},
-#endif  // OS_MACOSX || OS_WIN || OS_CHROMEOS
-
     {"SupervisedUserCommittedInterstitials",
      flag_descriptions::kSupervisedUserCommittedInterstitialsName,
      flag_descriptions::kSupervisedUserCommittedInterstitialsDescription,

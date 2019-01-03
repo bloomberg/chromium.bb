@@ -529,11 +529,6 @@ const char kEnableDockedMagnifierName[] = "Docked Magnifier";
 const char kEnableDockedMagnifierDescription[] =
     "Enables the Docked Magnifier (a.k.a. picture-in-picture magnifier).";
 
-const char kEnableEmojiContextMenuName[] = "Emoji Context Menu";
-const char kEnableEmojiContextMenuDescription[] =
-    "Enables the Emoji picker item in context menus for editable text areas, if"
-    " supported by the operating system.";
-
 const char kEnforceTLS13DowngradeName[] = "TLS 1.3 downgrade hardening";
 const char kEnforceTLS13DowngradeDescription[] =
     "This option enables the TLS 1.3 downgrade hardening mechanism. This "

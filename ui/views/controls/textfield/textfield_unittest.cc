@@ -20,7 +20,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
@@ -35,7 +34,6 @@
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/events/event.h"
@@ -1563,8 +1561,6 @@ TEST_F(TextfieldTest, FocusTraversalTest) {
 
 TEST_F(TextfieldTest, ContextMenuDisplayTest) {
   InitTextfield();
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kEnableEmojiContextMenu);
 
   EXPECT_TRUE(textfield_->context_menu_controller());
   textfield_->SetText(ASCIIToUTF16("hello world"));
@@ -3452,10 +3448,6 @@ TEST_F(TextfieldTest, EmojiItem_EmptyField) {
   InitTextfield();
   EXPECT_TRUE(textfield_->context_menu_controller());
 
-  // Enable the emoji feature.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kEnableEmojiContextMenu);
-
   // A normal empty field may show the Emoji option (if supported).
   ui::MenuModel* context_menu = GetContextMenuModel();
   EXPECT_TRUE(context_menu);
@@ -3469,10 +3461,6 @@ TEST_F(TextfieldTest, EmojiItem_EmptyField) {
 TEST_F(TextfieldTest, EmojiItem_ReadonlyField) {
   InitTextfield();
   EXPECT_TRUE(textfield_->context_menu_controller());
-
-  // Enable the emoji feature.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kEnableEmojiContextMenu);
 
   textfield_->SetReadOnly(true);
   // In no case is the emoji option showing on a read-only field.
@@ -3494,10 +3482,6 @@ TEST_F(TextfieldTest, EmojiItem_FieldWithText) {
 #else
   constexpr int kExpectedEmojiIndex = 0;
 #endif
-
-  // Enable the emoji feature.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kEnableEmojiContextMenu);
 
   // A field with text may still show the Emoji option (if supported).
   textfield_->SetText(base::ASCIIToUTF16("some text"));
@@ -3548,10 +3532,6 @@ TEST_F(TextfieldTest, TextServicesContextMenuTextDirectionTest) {
 TEST_F(TextfieldTest, LookUpItemUpdate) {
   InitTextfield();
   EXPECT_TRUE(textfield_->context_menu_controller());
-
-  // Make sure the Emoji feature is disabled for this test.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kEnableEmojiContextMenu);
 
   const base::string16 kTextOne = ASCIIToUTF16("crake");
   textfield_->SetText(kTextOne);
