@@ -74,32 +74,22 @@ Polymer({
       value: function() {
         const map = new Map();
         if (settings.routes.POINTERS) {
-          map.set(
-              settings.routes.POINTERS.path,
-              '#pointersRow .subpage-arrow button');
+          map.set(settings.routes.POINTERS.path, '#pointersRow');
         }
         if (settings.routes.KEYBOARD) {
-          map.set(
-              settings.routes.KEYBOARD.path,
-              '#keyboardRow .subpage-arrow button');
+          map.set(settings.routes.KEYBOARD.path, '#keyboardRow');
         }
         if (settings.routes.STYLUS) {
-          map.set(
-              settings.routes.STYLUS.path, '#stylusRow .subpage-arrow button');
+          map.set(settings.routes.STYLUS.path, '#stylusRow');
         }
         if (settings.routes.DISPLAY) {
-          map.set(
-              settings.routes.DISPLAY.path,
-              '#displayRow .subpage-arrow button');
+          map.set(settings.routes.DISPLAY.path, '#displayRow');
         }
         if (settings.routes.STORAGE) {
-          map.set(
-              settings.routes.STORAGE.path,
-              '#storageRow .subpage-arrow button');
+          map.set(settings.routes.STORAGE.path, '#storageRow');
         }
         if (settings.routes.POWER) {
-          map.set(
-              settings.routes.POWER.path, '#powerRow .subpage-arrow button');
+          map.set(settings.routes.POWER.path, '#powerRow');
         }
         return map;
       },
