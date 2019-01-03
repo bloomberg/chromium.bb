@@ -57,13 +57,14 @@ if (current_toolchain == bootstrap_toolchain) {
     # This code has very specific requirements related to its static
     # linking and minimal libc use.  It cannot support the normal variety
     # of build configs that the rest of the code is built with.  So it
-    # resets the list of configsto empty, and then builds up from scratch
+    # resets the list of configs to empty, and then builds up from scratch
     # using only the basics that work here.
     configs = []
     configs += [
       "//build/config/compiler:compiler_cpu_abi",
       "//build/config/compiler:runtime_library",
       "//build/config/compiler:chromium_code",
+      "//build/config/compiler:clang_revision",
       "//build/config/compiler:default_optimization",
       "//build/config/compiler:default_symbols",
     ]
