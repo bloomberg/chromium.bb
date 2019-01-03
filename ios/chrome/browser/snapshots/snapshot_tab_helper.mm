@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/snapshots/snapshot_generator.h"
@@ -16,6 +17,24 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+// Possible results of snapshotting when the page has been loaded. These values
+// are persisted to logs. Entries should not be renumbered and numeric values
+// should never be reused.
+enum class PageLoadedSnapshotResult {
+  // Snapshot was not attempted, since the loading page will result in a stale
+  // snapshot.
+  kSnapshotNotAttemptedBecausePageLoadFailed = 0,
+  // Snapshot was attempted, but the image is either the default image or nil.
+  kSnapshotAttemptedAndFailed = 1,
+  // Snapshot successfully taken.
+  kSnapshotSucceeded = 2,
+  // kMaxValue should share the value of the highest enumerator.
+  kMaxValue = kSnapshotSucceeded,
+};
+
+}  // namespace
 
 SnapshotTabHelper::~SnapshotTabHelper() {
   DCHECK(!web_state_);
@@ -49,6 +68,8 @@ void SnapshotTabHelper::RetrieveGreySnapshot(void (^callback)(UIImage*)) {
 }
 
 void SnapshotTabHelper::UpdateSnapshotWithCallback(void (^callback)(UIImage*)) {
+  was_loading_during_last_snapshot_ = web_state_->IsLoading();
+
   if (web_state_->ContentIsHTML()) {
     [snapshot_generator_ updateWebViewSnapshotWithCompletion:callback];
     return;
@@ -104,22 +125,56 @@ SnapshotTabHelper::SnapshotTabHelper(web::WebState* web_state,
   }
 }
 
-void SnapshotTabHelper::DidStartLoading(web::WebState* web_state) {
-    RemoveSnapshot();
-}
-
 void SnapshotTabHelper::PageLoaded(
     web::WebState* web_state,
     web::PageLoadCompletionStatus load_completion_status) {
-  if (!ignore_next_load_ &&
-      load_completion_status == web::PageLoadCompletionStatus::SUCCESS) {
+  // Snapshots taken while page is loading will eventually be stale. It
+  // is important that another snapshot is taken after the new
+  // page has loaded to replace the stale snapshot. The
+  // |IOS.PageLoadedSnapshotResult| histogram shows the outcome of
+  // snapshot attempts when the page is loaded after having taken
+  // a stale snapshot.
+  switch (load_completion_status) {
+    case web::PageLoadCompletionStatus::FAILURE:
+      // Only log histogram for when a stale snapshot needs to be replaced.
+      if (was_loading_during_last_snapshot_) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "IOS.PageLoadedSnapshotResult",
+            PageLoadedSnapshotResult::
+                kSnapshotNotAttemptedBecausePageLoadFailed);
+      }
+      break;
+
+    case web::PageLoadCompletionStatus::SUCCESS:
+      if (ignore_next_load_)
+        break;
+
+      bool was_loading = was_loading_during_last_snapshot_;
       base::PostDelayedTaskWithTraits(
           FROM_HERE, {web::WebThread::UI},
-          base::BindOnce(&SnapshotTabHelper::UpdateSnapshotWithCallback,
-                         weak_ptr_factory_.GetWeakPtr(), /*callback=*/nil),
+          base::BindOnce(
+              &SnapshotTabHelper::UpdateSnapshotWithCallback,
+              weak_ptr_factory_.GetWeakPtr(),
+              ^(UIImage* snapshot) {
+                // Only log histogram for when a stale snapshot needs to be
+                // replaced.
+                if (!was_loading)
+                  return;
+                PageLoadedSnapshotResult snapshotResult =
+                    PageLoadedSnapshotResult::kSnapshotSucceeded;
+                if (!snapshot ||
+                    snapshot == SnapshotTabHelper::GetDefaultSnapshotImage()) {
+                  snapshotResult =
+                      PageLoadedSnapshotResult::kSnapshotAttemptedAndFailed;
+                }
+                UMA_HISTOGRAM_ENUMERATION("IOS.PageLoadedSnapshotResult",
+                                          snapshotResult);
+              }),
           base::TimeDelta::FromSeconds(1));
+      break;
   }
   ignore_next_load_ = false;
+  was_loading_during_last_snapshot_ = false;
 }
 
 void SnapshotTabHelper::WebStateDestroyed(web::WebState* web_state) {

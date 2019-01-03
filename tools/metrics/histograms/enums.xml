@@ -15355,6 +15355,25 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="Automatic kiosk session"/>
 </enum>
 
+<enum name="EnterTabSwitcherSnapshotResult">
+  <int value="0" label="Page was loading, snapshot failed">
+    Page was loading at the time of the snapshot request, and the snapshot
+    failed.
+  </int>
+  <int value="1" label="Page was loading, snapshot succeeded.">
+    Page was loading at the time of the snapshot request, and the snapshot
+    succeeded.
+  </int>
+  <int value="2" label="Page was not loading, snapshot failed">
+    Page was not loading at the time of the snapshot request, and the snapshot
+    failed.
+  </int>
+  <int value="3" label="Page was not loading, snapshot succeeded">
+    Page was not loading at the time of the snapshot request, and the snapshot
+    succeeded.
+  </int>
+</enum>
+
 <enum name="EquivalentEffectiveAndWhiteListed">
   <int value="0" label="Different effective and whitelisted touch actions"/>
   <int value="1" label="Equivalent effective and whitelisted touch actions"/>
@@ -39836,6 +39855,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="10" label="Frozen to hidden and backgrounded"/>
 </enum>
 
+<enum name="PageLoadedSnapshotResult">
+  <int value="0" label="Snapshot not attempted, page load failed">
+    Snapshot was not attempted because the page load failed and would result in
+    a stale snapshot.
+  </int>
+  <int value="1" label="Snapshot was attempted, but the snapshot failed."/>
+  <int value="2" label="Snapshot was successfully taken."/>
+</enum>
+
 <enum name="PageLoadEvent">
   <obsolete>
     Deprecated in favor of {Committed|Provisional|InternalError}LoadEvent
@@ -47482,6 +47510,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="ShowTabSwitcherSnapshotResult">
+  <obsolete>
+    Removed 2019-01.
+  </obsolete>
   <int value="0" label="Snapshot not attempted, page is still loading">
     Snapshot was not attempted because the page is still loading and would
     result in a stale snapshot.

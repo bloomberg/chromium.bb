@@ -84,7 +84,6 @@ class SnapshotTabHelper : public infobars::InfoBarManager::Observer,
   SnapshotTabHelper(web::WebState* web_state, NSString* session_id);
 
   // web::WebStateObserver implementation.
-  void DidStartLoading(web::WebState* web_state) override;
   void PageLoaded(
       web::WebState* web_state,
       web::PageLoadCompletionStatus load_completion_status) override;
@@ -109,6 +108,11 @@ class SnapshotTabHelper : public infobars::InfoBarManager::Observer,
       infobar_observer_;
 
   bool ignore_next_load_ = false;
+
+  // True if |web_state_| was loading at the time of the last call to
+  // UpdateSnapshotWithCallback(). If true, the last snapshot is expected to
+  // become stale once the new page is loaded and rendered.
+  bool was_loading_during_last_snapshot_ = false;
 
   // Used to ensure |UpdateSnapshotWithCallback()| is not run when this object
   // is destroyed.

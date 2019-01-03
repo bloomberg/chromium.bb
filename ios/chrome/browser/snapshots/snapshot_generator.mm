@@ -233,8 +233,14 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
                                                   frame:snapshotFrame];
           }
         }
-        [strongSelf.snapshotCache setImage:snapshot
-                             withSessionID:_snapshotSessionId];
+        if (snapshot) {
+          [strongSelf.snapshotCache setImage:snapshot
+                               withSessionID:_snapshotSessionId];
+        } else {
+          // Remove any stale snapshot since the snapshot failed.
+          [strongSelf.snapshotCache
+              removeImageWithSessionID:_snapshotSessionId];
+        }
         [_coalescingSnapshotContext setCachedSnapshot:snapshot
                                          withOverlays:overlays];
         [_delegate snapshotGenerator:self
