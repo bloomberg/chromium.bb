@@ -31,8 +31,8 @@ declare_args() {
 
 default_chrome_public_jinja_variables = [
   "channel=$android_channel",
-  "enable_arcore=$enable_arcore",
   "enable_vr=$enable_vr",
+  "include_arcore_manifest_flag=$enable_arcore",
 ]
 
 if (android_64bit_browser) {
