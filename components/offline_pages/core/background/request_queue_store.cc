@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/offline_store_utils.h"
@@ -33,6 +34,13 @@ using SuccessCallback = base::OnceCallback<void(bool)>;
 // This is a macro instead of a const so that
 // it can be used inline in other SQL statements below.
 #define REQUEST_QUEUE_TABLE_NAME "request_queue_v1"
+// The full set of fields, used in several SQL statements.
+#define REQUEST_QUEUE_FIELDS                                                \
+  "request_id, creation_time, activation_time,"                             \
+  " last_attempt_time, started_attempt_count, completed_attempt_count,"     \
+  " state, url, client_namespace, client_id, original_url, request_origin," \
+  " fail_state, auto_fetch_notification_state"
+
 const bool kUserRequested = true;
 
 bool CreateRequestQueueTable(sql::Database* db) {
@@ -50,11 +58,20 @@ bool CreateRequestQueueTable(sql::Database* db) {
       " client_id VARCHAR NOT NULL,"
       " original_url VARCHAR NOT NULL DEFAULT '',"
       " request_origin VARCHAR NOT NULL DEFAULT '',"
-      " fail_state INTEGER NOT NULL DEFAULT 0"
+      " fail_state INTEGER NOT NULL DEFAULT 0,"
+      " auto_fetch_notification_state INTEGER NOT NULL DEFAULT 0"
       ")";
   return db->Execute(kSql);
 }
 
+// Upgrades an old version of the request queue table to the new version.
+//
+// The upgrade is done by renaming the existing table to
+// 'temp_request_queue_v1', reinserting data from the temporary table back into
+// 'request_queue_v1', and finally dropping the temporary table.
+//
+// |upgrade_sql| is the SQL statement that copies data from the temporary
+// table back into the primary table.
 bool UpgradeWithQuery(sql::Database* db, const char* upgrade_sql) {
   if (!db->Execute("ALTER TABLE " REQUEST_QUEUE_TABLE_NAME
                    " RENAME TO temp_" REQUEST_QUEUE_TABLE_NAME)) {
@@ -109,6 +126,20 @@ bool UpgradeFrom61(sql::Database* db) {
   return UpgradeWithQuery(db, kSql);
 }
 
+bool UpgradeFrom72(sql::Database* db) {
+  static const char kSql[] =
+      "INSERT INTO " REQUEST_QUEUE_TABLE_NAME
+      " (request_id, creation_time, activation_time, last_attempt_time, "
+      "started_attempt_count, completed_attempt_count, state, url, "
+      "client_namespace, client_id, original_url, request_origin, fail_state) "
+      "SELECT "
+      "request_id, creation_time, activation_time, last_attempt_time, "
+      "started_attempt_count, completed_attempt_count, state, url, "
+      "client_namespace, client_id, original_url, request_origin, fail_state "
+      "FROM temp_" REQUEST_QUEUE_TABLE_NAME;
+  return UpgradeWithQuery(db, kSql);
+}
+
 bool CreateSchema(sql::Database* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
@@ -136,15 +167,28 @@ bool CreateSchema(sql::Database* db) {
   } else if (!db->DoesColumnExist(REQUEST_QUEUE_TABLE_NAME, "fail_state")) {
     if (!UpgradeFrom61(db))
       return false;
+  } else if (!db->DoesColumnExist(REQUEST_QUEUE_TABLE_NAME,
+                                  "auto_fetch_notification_state")) {
+    if (!UpgradeFrom72(db))
+      return false;
   }
 
   // This would be a great place to add indices when we need them.
   return transaction.Commit();
 }
 
-// Create a save page request from a SQL result.  Expects complete rows with
-// all columns present.  Columns are in order they are defined in select query
-// in |GetOneRequest| method.
+SavePageRequest::AutoFetchNotificationState AutoFetchNotificationStateFromInt(
+    int value) {
+  switch (static_cast<SavePageRequest::AutoFetchNotificationState>(value)) {
+    case SavePageRequest::AutoFetchNotificationState::kUnknown:
+    case SavePageRequest::AutoFetchNotificationState::kShown:
+      return static_cast<SavePageRequest::AutoFetchNotificationState>(value);
+  }
+  return SavePageRequest::AutoFetchNotificationState::kUnknown;
+}
+
+// Create a save page request from the first row of an SQL result. The result
+// must have the exact columns from the |REQUEST_QUEUE_FIELDS| macro.
 std::unique_ptr<SavePageRequest> MakeSavePageRequest(
     const sql::Statement& statement) {
   const int64_t id = statement.ColumnInt64(0);
@@ -161,8 +205,6 @@ std::unique_ptr<SavePageRequest> MakeSavePageRequest(
                            statement.ColumnString(9));
   const GURL original_url(statement.ColumnString(10));
   const std::string request_origin(statement.ColumnString(11));
-  const FailState fail_state =
-      static_cast<FailState>(statement.ColumnInt64(12));
 
   DVLOG(2) << "making save page request - id " << id << " url " << url
            << " client_id " << client_id.name_space << "-" << client_id.id
@@ -170,15 +212,17 @@ std::unique_ptr<SavePageRequest> MakeSavePageRequest(
            << kUserRequested << " original_url " << original_url
            << " request_origin " << request_origin;
 
-  std::unique_ptr<SavePageRequest> request(
-      new SavePageRequest(id, url, client_id, creation_time, kUserRequested));
+  std::unique_ptr<SavePageRequest> request(new SavePageRequest(
+      id, std::move(url), std::move(client_id), creation_time, kUserRequested));
   request->set_last_attempt_time(last_attempt_time);
   request->set_started_attempt_count(started_attempt_count);
   request->set_completed_attempt_count(completed_attempt_count);
   request->set_request_state(state);
-  request->set_original_url(original_url);
-  request->set_request_origin(request_origin);
-  request->set_fail_state(fail_state);
+  request->set_original_url(std::move(original_url));
+  request->set_request_origin(std::move(request_origin));
+  request->set_fail_state(static_cast<FailState>(statement.ColumnInt64(12)));
+  request->set_auto_fetch_notification_state(
+      AutoFetchNotificationStateFromInt(statement.ColumnInt(13)));
   return request;
 }
 
@@ -186,11 +230,8 @@ std::unique_ptr<SavePageRequest> MakeSavePageRequest(
 std::unique_ptr<SavePageRequest> GetOneRequest(sql::Database* db,
                                                const int64_t request_id) {
   static const char kSql[] =
-      "SELECT request_id, creation_time, activation_time,"
-      " last_attempt_time, started_attempt_count, completed_attempt_count,"
-      " state, url, client_namespace, client_id, original_url, request_origin,"
-      " fail_state"
-      " FROM " REQUEST_QUEUE_TABLE_NAME " WHERE request_id=?";
+      "SELECT " REQUEST_QUEUE_FIELDS " FROM " REQUEST_QUEUE_TABLE_NAME
+      " WHERE request_id=?";
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, request_id);
@@ -213,14 +254,10 @@ ItemActionStatus DeleteRequestById(sql::Database* db, int64_t request_id) {
 }
 
 ItemActionStatus Insert(sql::Database* db, const SavePageRequest& request) {
-  static const char kSql[] =
-      "INSERT OR IGNORE INTO " REQUEST_QUEUE_TABLE_NAME
-      " (request_id, creation_time, activation_time,"
-      " last_attempt_time, started_attempt_count, completed_attempt_count,"
-      " state, url, client_namespace, client_id, original_url, request_origin,"
-      " fail_state)"
-      " VALUES "
-      " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+  static const char kSql[] = "INSERT OR IGNORE INTO " REQUEST_QUEUE_TABLE_NAME
+                             " (" REQUEST_QUEUE_FIELDS
+                             ") VALUES"
+                             " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, request.request_id());
@@ -237,6 +274,8 @@ ItemActionStatus Insert(sql::Database* db, const SavePageRequest& request) {
   statement.BindString(10, request.original_url().spec());
   statement.BindString(11, request.request_origin());
   statement.BindInt64(12, static_cast<int64_t>(request.fail_state()));
+  statement.BindInt(
+      13, static_cast<int64_t>(request.auto_fetch_notification_state()));
 
   if (!statement.Run())
     return ItemActionStatus::STORE_ERROR;
@@ -251,7 +290,7 @@ ItemActionStatus Update(sql::Database* db, const SavePageRequest& request) {
       " SET creation_time = ?, activation_time = ?, last_attempt_time = ?,"
       " started_attempt_count = ?, completed_attempt_count = ?, state = ?,"
       " url = ?, client_namespace = ?, client_id = ?, original_url = ?,"
-      " request_origin = ?, fail_state = ?"
+      " request_origin = ?, fail_state = ?, auto_fetch_notification_state = ?"
       " WHERE request_id = ?";
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -269,8 +308,10 @@ ItemActionStatus Update(sql::Database* db, const SavePageRequest& request) {
   statement.BindString(9, request.original_url().spec());
   statement.BindString(10, request.request_origin());
   statement.BindInt64(11, static_cast<int64_t>(request.fail_state()));
+  statement.BindInt64(
+      12, static_cast<int64_t>(request.auto_fetch_notification_state()));
   // WHERE:
-  statement.BindInt64(12, request.request_id());
+  statement.BindInt64(13, request.request_id());
 
   if (!statement.Run())
     return ItemActionStatus::STORE_ERROR;
@@ -337,11 +378,7 @@ void GetRequestsSync(sql::Database* db,
                      scoped_refptr<base::SingleThreadTaskRunner> runner,
                      RequestQueueStore::GetRequestsCallback callback) {
   static const char kSql[] =
-      "SELECT request_id, creation_time, activation_time,"
-      " last_attempt_time, started_attempt_count, completed_attempt_count,"
-      " state, url, client_namespace, client_id, original_url, request_origin,"
-      " fail_state"
-      " FROM " REQUEST_QUEUE_TABLE_NAME;
+      "SELECT " REQUEST_QUEUE_FIELDS " FROM " REQUEST_QUEUE_TABLE_NAME;
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
 
@@ -482,6 +519,18 @@ void ResetSync(sql::Database* db,
   runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback), success));
 }
 
+bool SetAutoFetchNotificationState(
+    sql::Database* db,
+    int64_t request_id,
+    SavePageRequest::AutoFetchNotificationState state) {
+  std::unique_ptr<SavePageRequest> request = GetOneRequest(db, request_id);
+  if (!request)
+    return false;
+
+  request->set_auto_fetch_notification_state(state);
+  return Update(db, *request) == ItemActionStatus::SUCCESS;
+}
+
 }  // anonymous namespace
 
 RequestQueueStore::RequestQueueStore(
@@ -588,6 +637,17 @@ void RequestQueueStore::RemoveRequests(const std::vector<int64_t>& request_ids,
       FROM_HERE, base::BindOnce(&RemoveRequestsSync, db_.get(),
                                 base::ThreadTaskRunnerHandle::Get(),
                                 request_ids, std::move(callback)));
+}
+
+void RequestQueueStore::SetAutoFetchNotificationState(
+    int64_t request_id,
+    SavePageRequest::AutoFetchNotificationState state,
+    base::OnceCallback<void(bool updated)> callback) {
+  base::PostTaskAndReplyWithResult(
+      background_task_runner_.get(), FROM_HERE,
+      base::BindOnce(offline_pages::SetAutoFetchNotificationState, db_.get(),
+                     request_id, state),
+      std::move(callback));
 }
 
 void RequestQueueStore::Reset(ResetCallback callback) {

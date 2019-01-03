@@ -8,6 +8,8 @@ if (is_android) {
 
 static_library("task") {
   sources = [
+    "closure_task.cc",
+    "closure_task.h",
     "task.cc",
     "task.h",
     "task_queue.cc",
