@@ -49,15 +49,6 @@ namespace test {
 
 namespace {
 
-const char* kCoalescedCountHistogram =
-    "Event.CompositorThreadEventQueue.CoalescedCount";
-const char* kContinuousHeadQueueingTimeHistogram =
-    "Event.CompositorThreadEventQueue.Continuous.HeadQueueingTime";
-const char* kContinuousTailQueueingTimeHistogram =
-    "Event.CompositorThreadEventQueue.Continuous.TailQueueingTime";
-const char* kNonContinuousQueueingTimeHistogram =
-    "Event.CompositorThreadEventQueue.NonContinuous.QueueingTime";
-
 enum InputHandlerProxyTestType {
   ROOT_SCROLL_NORMAL_HANDLER,
   ROOT_SCROLL_SYNCHRONOUS_HANDLER,
@@ -1406,8 +1397,6 @@ TEST(SynchronousInputHandlerProxyTest, SetOffset) {
 }
 
 TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedGestureScroll) {
-  base::HistogramTester histogram_tester;
-
   // Handle scroll on compositor.
   cc::InputHandlerScrollResult scroll_result_did_scroll_;
   scroll_result_did_scroll_.did_scroll = true;
@@ -1465,12 +1454,9 @@ TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedGestureScroll) {
   EXPECT_EQ(InputHandlerProxy::DID_HANDLE, event_disposition_recorder_[2]);
   EXPECT_EQ(InputHandlerProxy::DID_HANDLE, event_disposition_recorder_[3]);
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
-  histogram_tester.ExpectUniqueSample(kCoalescedCountHistogram, 2, 1);
 }
 
 TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedGestureScrollPinchScroll) {
-  base::HistogramTester histogram_tester;
-
   // Handle scroll on compositor.
   cc::InputHandlerScrollResult scroll_result_did_scroll_;
   scroll_result_did_scroll_.did_scroll = true;
@@ -1530,12 +1516,9 @@ TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedGestureScrollPinchScroll) {
   EXPECT_EQ(0ul, event_queue().size());
   EXPECT_EQ(12ul, event_disposition_recorder_.size());
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
-  histogram_tester.ExpectBucketCount(kCoalescedCountHistogram, 1, 2);
-  histogram_tester.ExpectBucketCount(kCoalescedCountHistogram, 2, 2);
 }
 
 TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedQueueingTime) {
-  base::HistogramTester histogram_tester;
   base::SimpleTestTickClock tick_clock;
   tick_clock.SetNowTicks(base::TimeTicks::Now());
   SetInputHandlerProxyTickClockForTesting(&tick_clock);
@@ -1569,13 +1552,6 @@ TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedQueueingTime) {
   EXPECT_EQ(0ul, event_queue().size());
   EXPECT_EQ(5ul, event_disposition_recorder_.size());
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
-  histogram_tester.ExpectUniqueSample(kContinuousHeadQueueingTimeHistogram, 140,
-                                      1);
-  histogram_tester.ExpectUniqueSample(kContinuousTailQueueingTimeHistogram, 80,
-                                      1);
-  histogram_tester.ExpectBucketCount(kNonContinuousQueueingTimeHistogram, 0, 1);
-  histogram_tester.ExpectBucketCount(kNonContinuousQueueingTimeHistogram, 70,
-                                     1);
 }
 
 TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedCoalesceScrollAndPinch) {
