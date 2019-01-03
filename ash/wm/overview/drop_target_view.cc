@@ -5,6 +5,7 @@
 #include "ash/wm/overview/drop_target_view.h"
 
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/wm/overview/overview_constants.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"

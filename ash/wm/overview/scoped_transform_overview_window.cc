@@ -10,7 +10,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
-#include "ash/wm/overview/drop_target_view.h"
+#include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/start_animation_observer.h"
@@ -130,10 +130,10 @@ class ScopedTransformOverviewWindow::WindowMask : public ui::LayerDelegate,
     // transformed, so reverse the transform so the final scaled round matches
     // |kOverviewWindowRoundingDp|.
     const gfx::Vector2dF scale = window_->transform().Scale2d();
-    const SkScalar r_x = SkIntToScalar(
-        std::round(DropTargetView::kOverviewWindowRoundingDp / scale.x()));
-    const SkScalar r_y = SkIntToScalar(
-        std::round(DropTargetView::kOverviewWindowRoundingDp / scale.y()));
+    const SkScalar r_x =
+        SkIntToScalar(std::round(kOverviewWindowRoundingDp / scale.x()));
+    const SkScalar r_y =
+        SkIntToScalar(std::round(kOverviewWindowRoundingDp / scale.y()));
 
     SkPath path;
     SkScalar radii[8] = {r_x, r_y, r_x, r_y, r_x, r_y, r_x, r_y};
@@ -397,12 +397,6 @@ gfx::Rect ScopedTransformOverviewWindow::ShrinkRectToFitPreservingAspectRatio(
   return new_bounds;
 }
 
-gfx::Rect ScopedTransformOverviewWindow::GetMaskBoundsForTesting() const {
-  if (!mask_)
-    return gfx::Rect();
-  return mask_->layer()->bounds();
-}
-
 void ScopedTransformOverviewWindow::Close() {
   if (immediate_close_for_tests) {
     CloseWidget();
@@ -522,6 +516,12 @@ void ScopedTransformOverviewWindow::UpdateMinimizedWidget() {
 void ScopedTransformOverviewWindow::OnImplicitAnimationsCompleted() {
   selector_item_->UpdateMaskAndShadow(/*show=*/true);
   selector_item_->OnDragAnimationCompleted();
+}
+
+gfx::Rect ScopedTransformOverviewWindow::GetMaskBoundsForTesting() const {
+  if (!mask_)
+    return gfx::Rect();
+  return mask_->layer()->bounds();
 }
 
 void ScopedTransformOverviewWindow::CreateMirrorWindowForMinimizedState() {
