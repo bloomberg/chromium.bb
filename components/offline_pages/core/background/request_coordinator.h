@@ -152,6 +152,12 @@ class RequestCoordinator : public KeyedService,
   // Get all save page request items in the callback.
   void GetAllRequests(GetRequestsCallback callback);
 
+  // Calls |RequestQueueStore::SetAutoFetchNotificationState|.
+  void SetAutoFetchNotificationState(
+      int64_t request_id,
+      SavePageRequest::AutoFetchNotificationState state,
+      base::OnceCallback<void(bool updated)> callback);
+
   // Starts processing of one or more queued save page later requests
   // in scheduled background mode.
   // Returns whether processing was started and that caller should expect

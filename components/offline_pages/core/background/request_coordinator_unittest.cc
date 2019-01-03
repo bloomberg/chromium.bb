@@ -58,6 +58,25 @@ const bool kUserRequested = true;
 const int kAttemptCount = 1;
 const std::string kRequestOrigin("abc.xyz");
 
+class BoolCallbackResult {
+ public:
+  base::RepeatingCallback<void(bool)> Bind() {
+    return base::BindRepeating(&BoolCallbackResult::SetResult,
+                               base::Unretained(this));
+  }
+
+  bool result() const { return result_; }
+  bool called() const { return called_; }
+
+ private:
+  void SetResult(bool result) {
+    called_ = true;
+    result_ = result;
+  }
+  bool called_ = false;
+  bool result_ = false;
+};
+
 class ObserverStub : public RequestCoordinator::Observer {
  public:
   ObserverStub()
@@ -182,9 +201,6 @@ class RequestCoordinatorTest : public testing::Test {
   net::NetworkChangeNotifier::ConnectionType GetConnectionType() {
     return coordinator()->current_conditions_->GetNetConnectionType();
   }
-
-  // Callback for Add requests.
-  void AddRequestDone(AddRequestResult result, const SavePageRequest& request);
 
   // Callback for getting requests.
   void GetRequestsDone(GetRequestsResult result,
@@ -476,17 +492,12 @@ void RequestCoordinatorTest::GetQueuedRequestsDone(
   waiter_.Signal();
 }
 
-void RequestCoordinatorTest::AddRequestDone(AddRequestResult result,
-                                            const SavePageRequest& request) {}
-
 void RequestCoordinatorTest::SetupForOfflinerDoneCallbackTest(
     offline_pages::SavePageRequest* request) {
   // Mark request as started and add it to the queue,
   // then wait for callback to finish.
   request->MarkAttemptStarted(OfflineTimeNow());
-  queue()->AddRequest(*request,
-                      base::BindOnce(&RequestCoordinatorTest::AddRequestDone,
-                                     base::Unretained(this)));
+  queue()->AddRequest(*request, base::DoNothing());
   PumpLoop();
 
   // Override the processing callback for test visiblity.
@@ -511,18 +522,14 @@ void RequestCoordinatorTest::SendOfflinerDoneCallback(
 SavePageRequest RequestCoordinatorTest::AddRequest1() {
   offline_pages::SavePageRequest request1(kRequestId1, kUrl1, kClientId1,
                                           OfflineTimeNow(), kUserRequested);
-  queue()->AddRequest(request1,
-                      base::BindOnce(&RequestCoordinatorTest::AddRequestDone,
-                                     base::Unretained(this)));
+  queue()->AddRequest(request1, base::DoNothing());
   return request1;
 }
 
 SavePageRequest RequestCoordinatorTest::AddRequest2() {
   offline_pages::SavePageRequest request2(kRequestId2, kUrl2, kClientId2,
                                           OfflineTimeNow(), kUserRequested);
-  queue()->AddRequest(request2,
-                      base::BindOnce(&RequestCoordinatorTest::AddRequestDone,
-                                     base::Unretained(this)));
+  queue()->AddRequest(request2, base::DoNothing());
   return request2;
 }
 
@@ -1033,11 +1040,10 @@ TEST_F(RequestCoordinatorTest, SchedulerGetsLeastRestrictiveConditions) {
   // Put two requests on the queue - The first is user requested, and
   // the second is not user requested.
   AddRequest1();
+
   offline_pages::SavePageRequest request2(kRequestId2, kUrl2, kClientId2,
                                           OfflineTimeNow(), !kUserRequested);
-  queue()->AddRequest(request2,
-                      base::BindOnce(&RequestCoordinatorTest::AddRequestDone,
-                                     base::Unretained(this)));
+  queue()->AddRequest(request2, base::DoNothing());
   PumpLoop();
 
   // Trigger the scheduler to schedule for the least restrictive condition.
@@ -1339,9 +1345,7 @@ TEST_F(RequestCoordinatorTest,
   // Set request to allow one more completed attempt.
   int max_tries = coordinator()->policy()->GetMaxCompletedTries();
   request.set_completed_attempt_count(max_tries - 1);
-  queue()->AddRequest(request,
-                      base::BindOnce(&RequestCoordinatorTest::AddRequestDone,
-                                     base::Unretained(this)));
+  queue()->AddRequest(request, base::DoNothing());
   PumpLoop();
 
   // Ensure that the new request does not finish - we simulate it being
@@ -1412,9 +1416,7 @@ TEST_F(RequestCoordinatorTest, TimeBudgetExceeded) {
   offline_pages::SavePageRequest request2(kRequestId1 + 1, kUrl1, kClientId1,
                                           OfflineTimeNow(), kUserRequested);
   request2.set_completed_attempt_count(kAttemptCount);
-  queue()->AddRequest(request2,
-                      base::BindOnce(&RequestCoordinatorTest::AddRequestDone,
-                                     base::Unretained(this)));
+  queue()->AddRequest(request2, base::DoNothing());
   PumpLoop();
 
   // Sending the request to the offliner.
@@ -1495,6 +1497,34 @@ TEST_F(RequestCoordinatorTest, GetAllRequests) {
   EXPECT_EQ(2UL, last_requests().size());
   EXPECT_EQ(kRequestId1, last_requests().at(0)->request_id());
   EXPECT_EQ(kRequestId2, last_requests().at(1)->request_id());
+}
+
+TEST_F(RequestCoordinatorTest, SetAutoFetchNotificationState) {
+  AddRequest1();
+  BoolCallbackResult success_callback, fail_callback;
+
+  // Request exists, should succeed.
+  coordinator()->SetAutoFetchNotificationState(
+      kRequestId1, SavePageRequest::AutoFetchNotificationState::kShown,
+      success_callback.Bind());
+
+  // Request does not exist, should fail.
+  coordinator()->SetAutoFetchNotificationState(
+      kRequestId2, SavePageRequest::AutoFetchNotificationState::kShown,
+      fail_callback.Bind());
+
+  // Get the request and verify it was changed.
+  queue()->GetRequests(base::BindOnce(&RequestCoordinatorTest::GetRequestsDone,
+                                      base::Unretained(this)));
+  PumpLoop();
+
+  ASSERT_TRUE(success_callback.called());
+  ASSERT_TRUE(fail_callback.called());
+  EXPECT_EQ(true, success_callback.result());
+  EXPECT_EQ(false, fail_callback.result());
+  ASSERT_EQ(1UL, last_requests().size());
+  EXPECT_EQ(SavePageRequest::AutoFetchNotificationState::kShown,
+            last_requests()[0]->auto_fetch_notification_state());
 }
 
 TEST_F(RequestCoordinatorTest, PauseAndResumeObserver) {
@@ -1687,9 +1717,7 @@ TEST_F(RequestCoordinatorTest, SnapshotOnLastTryForScheduledProcessing) {
   // be the last retry.
   int max_tries = coordinator()->policy()->GetMaxCompletedTries();
   request.set_completed_attempt_count(max_tries - 1);
-  queue()->AddRequest(request,
-                      base::BindOnce(&RequestCoordinatorTest::AddRequestDone,
-                                     base::Unretained(this)));
+  queue()->AddRequest(request, base::DoNothing());
   PumpLoop();
 
   // Ensure that the new request does not finish - we simulate it being

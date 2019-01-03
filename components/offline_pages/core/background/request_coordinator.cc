@@ -372,6 +372,13 @@ void RequestCoordinator::GetAllRequests(GetRequestsCallback callback) {
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void RequestCoordinator::SetAutoFetchNotificationState(
+    int64_t request_id,
+    SavePageRequest::AutoFetchNotificationState state,
+    base::OnceCallback<void(bool updated)> callback) {
+  queue_->SetAutoFetchNotificationState(request_id, state, std::move(callback));
+}
+
 void RequestCoordinator::GetQueuedRequestsCallback(
     GetRequestsCallback callback,
     GetRequestsResult result,

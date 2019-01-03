@@ -22,6 +22,7 @@
 #include "components/offline_pages/core/background/remove_requests_task.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
 #include "components/offline_pages/core/background/save_page_request.h"
+#include "components/offline_pages/task/closure_task.h"
 
 namespace offline_pages {
 
@@ -119,6 +120,15 @@ void RequestQueue::MarkAttemptCompleted(int64_t request_id,
   std::unique_ptr<Task> task(new MarkAttemptCompletedTask(
       store_.get(), request_id, fail_state, std::move(callback)));
   task_queue_.AddTask(std::move(task));
+}
+
+void RequestQueue::SetAutoFetchNotificationState(
+    int64_t request_id,
+    SavePageRequest::AutoFetchNotificationState state,
+    base::OnceCallback<void(bool updated)> callback) {
+  task_queue_.AddTask(std::make_unique<ClosureTask>(base::BindOnce(
+      &RequestQueueStore::SetAutoFetchNotificationState,
+      base::Unretained(store_.get()), request_id, state, std::move(callback))));
 }
 
 void RequestQueue::MarkAttemptDeferred(int64_t request_id,

@@ -95,6 +95,13 @@ class RequestQueueStore {
   void RemoveRequests(const std::vector<int64_t>& request_ids,
                       UpdateCallback callback);
 
+  // Asynchronously sets the auto fetch notification state on the request with
+  // |request_id|.
+  void SetAutoFetchNotificationState(
+      int64_t request_id,
+      SavePageRequest::AutoFetchNotificationState state,
+      base::OnceCallback<void(bool updated)> callback);
+
   // Resets the store (removes any existing data).
   // Virtual for testing only.
   virtual void Reset(ResetCallback callback);

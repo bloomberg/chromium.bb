@@ -6,6 +6,7 @@
 #define COMPONENTS_OFFLINE_PAGES_CORE_BACKGROUND_SAVE_PAGE_REQUEST_H_
 
 #include <stdint.h>
+#include <iosfwd>
 
 #include "base/time/time.h"
 #include "components/offline_items_collection/core/fail_state.h"
@@ -26,6 +27,11 @@ class SavePageRequest {
     AVAILABLE = 0,  // Request can be scheduled when preconditions are met.
     PAUSED = 1,     // Request is not available until it is unpaused.
     OFFLINING = 2,  // Request is actively offlining.
+  };
+
+  enum class AutoFetchNotificationState : int {
+    kUnknown = 0,
+    kShown = 1,  // The auto-fetch notification was shown.
   };
 
   SavePageRequest(int64_t request_id,
@@ -104,6 +110,13 @@ class SavePageRequest {
     request_origin_ = request_origin;
   }
 
+  AutoFetchNotificationState auto_fetch_notification_state() const {
+    return auto_fetch_notification_state_;
+  }
+  void set_auto_fetch_notification_state(AutoFetchNotificationState state) {
+    auto_fetch_notification_state_ = state;
+  }
+
   // Implemented in test_util.cc.
   std::string ToString() const;
 
@@ -151,9 +164,17 @@ class SavePageRequest {
   // determined or Chrome.
   std::string request_origin_;
 
+  // Notification state for auto_fetch requests.
+  AutoFetchNotificationState auto_fetch_notification_state_ =
+      AutoFetchNotificationState::kUnknown;
+
   // Helper method to update the |fail_state_| of a request.
   void UpdateFailState(FailState fail_state);
 };
+
+// Implemented in test_util.cc.
+std::ostream& operator<<(std::ostream& out,
+                         SavePageRequest::AutoFetchNotificationState value);
 
 }  // namespace offline_pages
 

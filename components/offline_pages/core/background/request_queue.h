@@ -99,6 +99,12 @@ class RequestQueue : public TaskQueue::Delegate {
                             FailState fail_state,
                             UpdateCallback callback);
 
+  // Sets the auto fetch notification state on the request with |request_id|.
+  void SetAutoFetchNotificationState(
+      int64_t request_id,
+      SavePageRequest::AutoFetchNotificationState state,
+      base::OnceCallback<void(bool updated)> callback);
+
   // Make a task to pick the next request, and report our choice to the
   // callbacks.
   void PickNextRequest(
