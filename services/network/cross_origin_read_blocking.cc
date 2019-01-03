@@ -12,6 +12,7 @@
 #include <unordered_set>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -23,6 +24,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/resource_response_info.h"
 
@@ -196,6 +198,20 @@ void BlockResponseHeaders(
 std::set<int>& GetPluginProxyingProcesses() {
   static base::NoDestructor<std::set<int>> set;
   return *set;
+}
+
+bool ShouldEnforceInitiatorLock() {
+  return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+         base::FeatureList::IsEnabled(
+             network::features::kEnforceRequestInitiatorLockForCorb);
+}
+
+void RecordCorbResultVsInitiatorLockCompatibility(
+    CrossOriginReadBlocking::CorbResultVsInitiatorLockCompatibility value) {
+  if (ShouldEnforceInitiatorLock()) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility", value);
+  }
 }
 
 }  // namespace
@@ -548,10 +564,12 @@ class CrossOriginReadBlocking::ResponseAnalyzer::FetchOnlyResourceSniffer
 
 CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
     const net::URLRequest& request,
-    const ResourceResponse& response) {
+    const ResourceResponse& response,
+    InitiatorLockCompatibility initiator_compatibility) {
   content_length_ = response.head.content_length;
   http_response_code_ =
       response.head.headers ? response.head.headers->response_code() : 0;
+  initiator_compatibility_ = initiator_compatibility;
 
   should_block_based_on_headers_ = ShouldBlockBasedOnHeaders(request, response);
   if (should_block_based_on_headers_ == kNeedToSniffMore)
@@ -572,7 +590,10 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // Treat a missing initiator as an empty origin to be safe, though we don't
   // expect this to happen.  Unfortunately, this requires a copy.
   url::Origin initiator;
-  if (request.initiator().has_value())
+  bool block_untrustworthy_initiator =
+      ShouldEnforceInitiatorLock() &&
+      initiator_compatibility_ == InitiatorLockCompatibility::kIncorrectLock;
+  if (request.initiator().has_value() && !block_untrustworthy_initiator)
     initiator = request.initiator().value();
 
   // Don't block same-origin documents.
@@ -842,6 +863,9 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogAllowedResponse() {
           : network::CrossOriginReadBlocking::Action::kAllowedWithoutSniffing);
 
   LogBytesReadForSniffing();
+
+  RecordCorbResultVsInitiatorLockCompatibility(
+      CorbResultVsInitiatorLockCompatibility::kNoBlocking);
 }
 
 void CrossOriginReadBlocking::ResponseAnalyzer::LogBlockedResponse() {
@@ -864,6 +888,27 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogBlockedResponse() {
   }
 
   LogBytesReadForSniffing();
+
+  if (!ShouldReportBlockedResponse()) {
+    RecordCorbResultVsInitiatorLockCompatibility(
+        CorbResultVsInitiatorLockCompatibility::kBenignBlocking);
+  } else {
+    switch (initiator_compatibility_) {
+      case InitiatorLockCompatibility::kIncorrectLock:
+        RecordCorbResultVsInitiatorLockCompatibility(
+            CorbResultVsInitiatorLockCompatibility::kBlockingWhenIncorrectLock);
+        break;
+      case InitiatorLockCompatibility::kCompatibleLock:
+        RecordCorbResultVsInitiatorLockCompatibility(
+            CorbResultVsInitiatorLockCompatibility::
+                kBlockingWhenCompatibleLock);
+        break;
+      default:
+        RecordCorbResultVsInitiatorLockCompatibility(
+            CorbResultVsInitiatorLockCompatibility::kBlockingWhenOtherLock);
+        break;
+    }
+  }
 }
 
 // static

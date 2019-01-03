@@ -23,7 +23,6 @@
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/mime_sniffer.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/cert/symantec_certs.h"
@@ -46,8 +45,6 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/resource_scheduler_client.h"
 #include "services/network/throttling/scoped_throttling_token.h"
-#include "url/origin.h"
-#include "url/url_constants.h"
 
 namespace network {
 
@@ -304,51 +301,6 @@ class SSLPrivateKeyInternal : public net::SSLPrivateKey {
   DISALLOW_COPY_AND_ASSIGN(SSLPrivateKeyInternal);
 };
 
-using InitiatorOriginLockCompatibility =
-    URLLoader::RequestInitiatorOriginLockCompatibility;
-InitiatorOriginLockCompatibility VerifyRequestInitiatorOriginLock(
-    const mojom::URLLoaderFactoryParams& factory_params,
-    const ResourceRequest& request) {
-  if (factory_params.process_id == mojom::kBrowserProcessId)
-    return InitiatorOriginLockCompatibility::kBrowserProcess;
-
-  if (!factory_params.request_initiator_site_lock.has_value())
-    return InitiatorOriginLockCompatibility::kNoLock;
-  const url::Origin& lock = factory_params.request_initiator_site_lock.value();
-
-  if (!request.request_initiator.has_value()) {
-    NOTREACHED();  // Should only happen for the browser process.
-    return InitiatorOriginLockCompatibility::kNoInitiator;
-  }
-  const url::Origin& initiator = request.request_initiator.value();
-
-  // TODO(lukasza, nasko): Also consider equality of precursor origins (e.g. if
-  // |initiator| is opaque, then it's precursor origin should match the |lock|
-  // [or |lock|'s precursor if |lock| is also opaque]).
-  if (initiator.opaque() || (initiator == lock))
-    return InitiatorOriginLockCompatibility::kCompatibleLock;
-
-  // TODO(lukasza, nasko): https://crbug.com/888079: Return kIncorrectLock if
-  // the origins do not match exactly in the previous if statement.  This should
-  // be possible to do once we no longer fall back to site_url and have
-  // request_initiator_*origin*_lock instead.  The fallback will go away after:
-  // - We have precursor origins: https://crbug.com/888079
-  // and
-  // - We no longer vend process-wide factory: https://crbug.com/891872
-  if (!initiator.opaque() && !lock.opaque() &&
-      initiator.scheme() == lock.scheme() &&
-      initiator.GetURL().SchemeIsHTTPOrHTTPS() &&
-      !initiator.GetURL().HostIsIPAddress()) {
-    std::string lock_domain = lock.host();
-    if (!lock_domain.empty() && lock_domain.back() == '.')
-      lock_domain.erase(lock_domain.length() - 1);
-    if (initiator.DomainIs(lock_domain))
-      return InitiatorOriginLockCompatibility::kCompatibleLock;
-  }
-
-  return InitiatorOriginLockCompatibility::kIncorrectLock;
-}
-
 }  // namespace
 
 URLLoader::URLLoader(
@@ -372,7 +324,7 @@ URLLoader::URLLoader(
       options_(options),
       resource_type_(request.resource_type),
       is_load_timing_enabled_(request.enable_load_timing),
-      factory_params_(std::move(factory_params)),
+      factory_params_(factory_params),
       render_frame_id_(request.render_frame_id),
       request_id_(request_id),
       keepalive_(request.keepalive),
@@ -449,14 +401,19 @@ URLLoader::URLLoader(
   throttling_token_ = network::ScopedThrottlingToken::MaybeCreate(
       url_request_->net_log().source().id, request.throttling_profile_id);
 
+  initiator_lock_compatibility_ =
+      VerifyRequestInitiatorLock(*factory_params_, request);
   UMA_HISTOGRAM_ENUMERATION(
       "NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility",
-      VerifyRequestInitiatorOriginLock(*factory_params_, request));
-  // TODO(lukasza): https://crbug.com/871827: Enforce the origin lock.  In the
-  // long-term kIncorrectLock should trigger a renderer kill, but in the
-  // short-term we should at least fallback to using an opaque origin instead of
-  // a lock-incorrect |request.request_initiator| - using an opaque should be
-  // safe and hopefully also compatible with HTML Imports and SVG images.
+      initiator_lock_compatibility_);
+  // TODO(lukasza): Enforce the origin lock.
+  // - https://crbug.com/766694: In the long-term kIncorrectLock should trigger
+  //   a renderer kill, but this can't be done until HTML Imports are gone.
+  // - https://crbug.com/515309: The lock should apply to Origin header (and
+  //   SameSite cookies) in addition to CORB (which was taken care of in
+  //   https://crbug.com/871827).  Here enforcement most likely would mean
+  //   setting |url_request_|'s initiator to something other than
+  //   |request.request_initiator| (opaque origin?  lock origin?).
   url_request_->set_initiator(request.request_initiator);
 
   if (request.update_first_party_url_on_redirect) {
@@ -849,7 +806,7 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
 
     corb_analyzer_ =
         std::make_unique<CrossOriginReadBlocking::ResponseAnalyzer>(
-            *url_request_, *response_);
+            *url_request_, *response_, initiator_lock_compatibility_);
     is_more_corb_sniffing_needed_ = corb_analyzer_->needs_sniffing();
     if (corb_analyzer_->ShouldBlock()) {
       DCHECK(!is_more_corb_sniffing_needed_);
@@ -1384,14 +1341,6 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
       FROM_HERE,
       base::BindOnce(&URLLoader::DeleteSelf, weak_ptr_factory_.GetWeakPtr()));
   return kWillCancelRequest;
-}
-
-// static
-InitiatorOriginLockCompatibility
-URLLoader::VerifyRequestInitiatorOriginLockForTesting(
-    const mojom::URLLoaderFactoryParams& factory_params,
-    const ResourceRequest& request) {
-  return VerifyRequestInitiatorOriginLock(factory_params, request);
 }
 
 }  // namespace network
