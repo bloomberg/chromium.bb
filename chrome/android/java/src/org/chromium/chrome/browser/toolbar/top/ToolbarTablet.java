@@ -134,12 +134,6 @@ public class ToolbarTablet extends ToolbarLayout
         mToolbarButtons = new ImageButton[] {mBackButton, mForwardButton, mReloadButton};
     }
 
-    @Override
-    protected int getProgressBarTopMargin() {
-        int tabStripHeight = getResources().getDimensionPixelSize(R.dimen.tab_strip_height);
-        return super.getProgressBarTopMargin() + tabStripHeight;
-    }
-
     /**
      * Sets up key listeners after native initialization is complete, so that we can invoke
      * native functions.
