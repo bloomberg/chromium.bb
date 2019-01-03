@@ -289,6 +289,8 @@ enum AuthenticationState {
     _didFinishSignIn = YES;
     [_delegate didAcceptSignIn:self showAccountsSettings:showAccountsSettings];
   }
+  _unifiedConsentCoordinator.delegate = nil;
+  _unifiedConsentCoordinator = nil;
 }
 
 - (void)acceptSignInAndCommitSyncChanges {
