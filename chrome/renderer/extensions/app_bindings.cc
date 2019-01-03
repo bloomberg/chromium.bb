@@ -19,18 +19,18 @@ AppBindings::AppBindings(Dispatcher* dispatcher, ScriptContext* context)
 AppBindings::~AppBindings() {}
 
 void AppBindings::AddRoutes() {
-  RouteHandlerFunction(
-      "GetIsInstalled", "app.getIsInstalled",
-      base::Bind(&AppBindings::GetIsInstalled, base::Unretained(this)));
+  RouteHandlerFunction("GetIsInstalled", "app.getIsInstalled",
+                       base::BindRepeating(&AppBindings::GetIsInstalled,
+                                           base::Unretained(this)));
   RouteHandlerFunction(
       "GetDetails", "app.getDetails",
-      base::Bind(&AppBindings::GetDetails, base::Unretained(this)));
-  RouteHandlerFunction(
-      "GetInstallState", "app.installState",
-      base::Bind(&AppBindings::GetInstallState, base::Unretained(this)));
-  RouteHandlerFunction(
-      "GetRunningState", "app.runningState",
-      base::Bind(&AppBindings::GetRunningState, base::Unretained(this)));
+      base::BindRepeating(&AppBindings::GetDetails, base::Unretained(this)));
+  RouteHandlerFunction("GetInstallState", "app.installState",
+                       base::BindRepeating(&AppBindings::GetInstallState,
+                                           base::Unretained(this)));
+  RouteHandlerFunction("GetRunningState", "app.runningState",
+                       base::BindRepeating(&AppBindings::GetRunningState,
+                                           base::Unretained(this)));
 }
 
 void AppBindings::GetIsInstalled(

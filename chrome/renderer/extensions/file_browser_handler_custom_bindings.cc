@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "extensions/renderer/script_context.h"
@@ -22,7 +23,7 @@ FileBrowserHandlerCustomBindings::FileBrowserHandlerCustomBindings(
 void FileBrowserHandlerCustomBindings::AddRoutes() {
   RouteHandlerFunction(
       "GetExternalFileEntry", "fileBrowserHandler",
-      base::Bind(
+      base::BindRepeating(
           &FileBrowserHandlerCustomBindings::GetExternalFileEntryCallback,
           base::Unretained(this)));
 }

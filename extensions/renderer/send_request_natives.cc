@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
@@ -20,11 +21,12 @@ SendRequestNatives::SendRequestNatives(RequestSender* request_sender,
     : ObjectBackedNativeHandler(context), request_sender_(request_sender) {}
 
 void SendRequestNatives::AddRoutes() {
-  RouteHandlerFunction(
-      "StartRequest",
-      base::Bind(&SendRequestNatives::StartRequest, base::Unretained(this)));
-  RouteHandlerFunction("GetGlobal", base::Bind(&SendRequestNatives::GetGlobal,
-                                               base::Unretained(this)));
+  RouteHandlerFunction("StartRequest",
+                       base::BindRepeating(&SendRequestNatives::StartRequest,
+                                           base::Unretained(this)));
+  RouteHandlerFunction("GetGlobal",
+                       base::BindRepeating(&SendRequestNatives::GetGlobal,
+                                           base::Unretained(this)));
 }
 
 // Starts an API request to the browser, with an optional callback.  The

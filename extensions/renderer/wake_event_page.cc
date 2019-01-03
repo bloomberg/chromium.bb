@@ -57,8 +57,8 @@ class WakeEventPage::WakeEventPageNativeHandler
     // after destruction.
     RouteHandlerFunction(
         kWakeEventPageFunctionName,
-        base::Bind(&WakeEventPageNativeHandler::DoWakeEventPage,
-                   base::Unretained(this)));
+        base::BindRepeating(&WakeEventPageNativeHandler::DoWakeEventPage,
+                            base::Unretained(this)));
   };
 
   ~WakeEventPageNativeHandler() override {}

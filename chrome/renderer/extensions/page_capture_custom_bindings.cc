@@ -18,12 +18,14 @@ PageCaptureCustomBindings::PageCaptureCustomBindings(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {}
 
 void PageCaptureCustomBindings::AddRoutes() {
-  RouteHandlerFunction("CreateBlob", "pageCapture",
-                       base::Bind(&PageCaptureCustomBindings::CreateBlob,
-                                  base::Unretained(this)));
-  RouteHandlerFunction("SendResponseAck", "pageCapture",
-                       base::Bind(&PageCaptureCustomBindings::SendResponseAck,
-                                  base::Unretained(this)));
+  RouteHandlerFunction(
+      "CreateBlob", "pageCapture",
+      base::BindRepeating(&PageCaptureCustomBindings::CreateBlob,
+                          base::Unretained(this)));
+  RouteHandlerFunction(
+      "SendResponseAck", "pageCapture",
+      base::BindRepeating(&PageCaptureCustomBindings::SendResponseAck,
+                          base::Unretained(this)));
 }
 
 void PageCaptureCustomBindings::CreateBlob(

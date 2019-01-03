@@ -16,12 +16,14 @@ V8ContextNativeHandler::V8ContextNativeHandler(ScriptContext* context)
     : ObjectBackedNativeHandler(context), context_(context) {}
 
 void V8ContextNativeHandler::AddRoutes() {
-  RouteHandlerFunction("GetAvailability",
-                       base::Bind(&V8ContextNativeHandler::GetAvailability,
-                                  base::Unretained(this)));
-  RouteHandlerFunction("GetModuleSystem",
-                       base::Bind(&V8ContextNativeHandler::GetModuleSystem,
-                                  base::Unretained(this)));
+  RouteHandlerFunction(
+      "GetAvailability",
+      base::BindRepeating(&V8ContextNativeHandler::GetAvailability,
+                          base::Unretained(this)));
+  RouteHandlerFunction(
+      "GetModuleSystem",
+      base::BindRepeating(&V8ContextNativeHandler::GetModuleSystem,
+                          base::Unretained(this)));
 }
 
 void V8ContextNativeHandler::GetAvailability(

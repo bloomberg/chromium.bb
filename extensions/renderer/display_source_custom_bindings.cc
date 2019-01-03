@@ -35,13 +35,14 @@ DisplaySourceCustomBindings::DisplaySourceCustomBindings(
 DisplaySourceCustomBindings::~DisplaySourceCustomBindings() {}
 
 void DisplaySourceCustomBindings::AddRoutes() {
-  RouteHandlerFunction("StartSession", "displaySource",
-                       base::Bind(&DisplaySourceCustomBindings::StartSession,
-                                  weak_factory_.GetWeakPtr()));
+  RouteHandlerFunction(
+      "StartSession", "displaySource",
+      base::BindRepeating(&DisplaySourceCustomBindings::StartSession,
+                          weak_factory_.GetWeakPtr()));
   RouteHandlerFunction(
       "TerminateSession", "displaySource",
-      base::Bind(&DisplaySourceCustomBindings::TerminateSession,
-                 weak_factory_.GetWeakPtr()));
+      base::BindRepeating(&DisplaySourceCustomBindings::TerminateSession,
+                          weak_factory_.GetWeakPtr()));
 }
 
 void DisplaySourceCustomBindings::Invalidate() {

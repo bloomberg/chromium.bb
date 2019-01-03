@@ -26,12 +26,13 @@ RuntimeCustomBindings::RuntimeCustomBindings(ScriptContext* context)
 RuntimeCustomBindings::~RuntimeCustomBindings() {}
 
 void RuntimeCustomBindings::AddRoutes() {
+  RouteHandlerFunction("GetManifest",
+                       base::BindRepeating(&RuntimeCustomBindings::GetManifest,
+                                           base::Unretained(this)));
   RouteHandlerFunction(
-      "GetManifest",
-      base::Bind(&RuntimeCustomBindings::GetManifest, base::Unretained(this)));
-  RouteHandlerFunction("GetExtensionViews",
-                       base::Bind(&RuntimeCustomBindings::GetExtensionViews,
-                                  base::Unretained(this)));
+      "GetExtensionViews",
+      base::BindRepeating(&RuntimeCustomBindings::GetExtensionViews,
+                          base::Unretained(this)));
 }
 
 void RuntimeCustomBindings::GetManifest(

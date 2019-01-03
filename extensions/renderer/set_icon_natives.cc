@@ -10,6 +10,7 @@
 #include <limits>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/public/common/common_param_traits.h"
@@ -67,9 +68,9 @@ SetIconNatives::SetIconNatives(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {}
 
 void SetIconNatives::AddRoutes() {
-  RouteHandlerFunction(
-      "SetIconCommon",
-      base::Bind(&SetIconNatives::SetIconCommon, base::Unretained(this)));
+  RouteHandlerFunction("SetIconCommon",
+                       base::BindRepeating(&SetIconNatives::SetIconCommon,
+                                           base::Unretained(this)));
 }
 
 bool SetIconNatives::ConvertImageDataToBitmapValue(

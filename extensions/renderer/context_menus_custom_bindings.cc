@@ -29,7 +29,7 @@ ContextMenusCustomBindings::ContextMenusCustomBindings(ScriptContext* context)
 
 void ContextMenusCustomBindings::AddRoutes() {
   RouteHandlerFunction("GetNextContextMenuId",
-                       base::Bind(&GetNextContextMenuId));
+                       base::BindRepeating(&GetNextContextMenuId));
 }
 
 }  // extensions

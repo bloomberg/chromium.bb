@@ -15,9 +15,9 @@ IdGeneratorCustomBindings::IdGeneratorCustomBindings(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {}
 
 void IdGeneratorCustomBindings::AddRoutes() {
-  RouteHandlerFunction("GetNextId",
-                       base::Bind(&IdGeneratorCustomBindings::GetNextId,
-                                  base::Unretained(this)));
+  RouteHandlerFunction(
+      "GetNextId", base::BindRepeating(&IdGeneratorCustomBindings::GetNextId,
+                                       base::Unretained(this)));
 }
 
 void IdGeneratorCustomBindings::GetNextId(

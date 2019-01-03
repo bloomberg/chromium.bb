@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
 #include "extensions/renderer/script_context.h"
@@ -23,16 +24,17 @@ FileManagerPrivateCustomBindings::FileManagerPrivateCustomBindings(
 void FileManagerPrivateCustomBindings::AddRoutes() {
   RouteHandlerFunction(
       "GetFileSystem", "fileManagerPrivate",
-      base::Bind(&FileManagerPrivateCustomBindings::GetFileSystem,
-                 base::Unretained(this)));
+      base::BindRepeating(&FileManagerPrivateCustomBindings::GetFileSystem,
+                          base::Unretained(this)));
   RouteHandlerFunction(
       "GetExternalFileEntry", "fileManagerPrivate",
-      base::Bind(&FileManagerPrivateCustomBindings::GetExternalFileEntry,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &FileManagerPrivateCustomBindings::GetExternalFileEntry,
+          base::Unretained(this)));
   RouteHandlerFunction(
       "GetEntryURL", "fileManagerPrivate",
-      base::Bind(&FileManagerPrivateCustomBindings::GetEntryURL,
-                 base::Unretained(this)));
+      base::BindRepeating(&FileManagerPrivateCustomBindings::GetEntryURL,
+                          base::Unretained(this)));
 }
 
 void FileManagerPrivateCustomBindings::GetFileSystem(
