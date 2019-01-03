@@ -1941,7 +1941,7 @@ enum class EnterTabSwitcherSnapshotResult {
   _tabSwitcherIsActive = YES;
   [_tabSwitcher setDelegate:self];
 
-  [self.mainCoordinator showTabSwitcher:_tabSwitcher completion:nil];
+  [self.mainCoordinator showTabSwitcher:_tabSwitcher];
 }
 
 - (BOOL)shouldOpenNTPTabOnActivationOfTabModel:(TabModel*)tabModel {

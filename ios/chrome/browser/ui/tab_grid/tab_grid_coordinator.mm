@@ -281,8 +281,7 @@
       prepareForAppearance];
 }
 
-- (void)showTabSwitcher:(id<TabSwitcher>)tabSwitcher
-             completion:(ProceduralBlock)completion {
+- (void)showTabSwitcher:(id<TabSwitcher>)tabSwitcher {
   DCHECK(tabSwitcher);
   DCHECK_EQ([tabSwitcher viewController], self.baseViewController);
   // It's also expected that |tabSwitcher| will be |self.tabSwitcher|, but that
@@ -295,11 +294,7 @@
     self.bvcContainer = nil;
     BOOL animated = !self.animationsDisabledForTesting;
     [self.baseViewController dismissViewControllerAnimated:animated
-                                                completion:completion];
-  } else {
-    if (completion) {
-      completion();
-    }
+                                                completion:nil];
   }
   // Record when the tab switcher is presented.
   // TODO(crbug.com/856965) : Rename metrics.
