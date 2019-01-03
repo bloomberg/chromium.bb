@@ -1416,12 +1416,6 @@ static bool CanOmitOverflowClip(const LayoutObject& object) {
     return false;
 
   const auto& block = ToLayoutBlock(object);
-  // This is a heuristic to avoid costly paint property subtree rebuild on
-  // CanOmitOverflowClip() changes, e.g. on selection. This also avoids omitting
-  // overflow clip when there is any self-painting descendant which is not
-  // covered by ContentsVisualOverflowRect().
-  if (block.HasLayer() && block.Layer()->FirstChild())
-    return false;
   // Selection may overflow.
   if (block.IsSelected())
     return false;
@@ -1446,7 +1440,19 @@ static bool CanOmitOverflowClip(const LayoutObject& object) {
       LayoutPoint(), kExcludeOverlayScrollbarSizeForHitTesting);
   if (clip_rect != clip_rect_excluding_overlay_scrollbars)
     return false;
-  return clip_rect.Contains(block.ContentsVisualOverflowRect());
+
+  // Visual overflow extending beyond the clip rect must be clipped.
+  // ContentsVisualOverflowRect() does not include self-painting descendants
+  // (see comment above |BoxOverflowModel|) so, as a simplification, do not
+  // omit the clip if there are any PaintLayer descendants.
+  if (block.HasLayer() && block.Layer()->FirstChild())
+    return false;
+  if (!clip_rect.Contains(block.ContentsVisualOverflowRect()))
+    return false;
+
+  // Content can scroll, and needs to be clipped, if the layout overflow extends
+  // beyond the clip rect.
+  return clip_rect.Contains(block.LayoutOverflowRect());
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
