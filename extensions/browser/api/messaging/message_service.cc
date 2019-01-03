@@ -205,11 +205,12 @@ void MessageService::OpenChannelToExtension(
   // request if the target extension is not externally connectable.
   const bool requested_include_tls_channel_id = include_tls_channel_id;
 
-  content::RenderFrameHost* source =
+  content::RenderFrameHost* source_render_frame_host =
       content::RenderFrameHost::FromID(source_process_id, source_routing_id);
-  if (!source)
+  if (!source_render_frame_host)
     return;
-  BrowserContext* context = source->GetProcess()->GetBrowserContext();
+  BrowserContext* context =
+      source_render_frame_host->GetProcess()->GetBrowserContext();
 
   ExtensionRegistry* registry = ExtensionRegistry::Get(context);
   const Extension* target_extension =
@@ -217,8 +218,8 @@ void MessageService::OpenChannelToExtension(
   PortId receiver_port_id(source_port_id.context_id, source_port_id.port_number,
                           false);
   if (!target_extension) {
-    DispatchOnDisconnect(
-        source, receiver_port_id, kReceivingEndDoesntExistError);
+    DispatchOnDisconnect(source_render_frame_host, receiver_port_id,
+                         kReceivingEndDoesntExistError);
     return;
   }
 
@@ -260,19 +261,15 @@ void MessageService::OpenChannelToExtension(
       // Important: use kReceivingEndDoesntExistError here so that we don't
       // leak information about this extension to callers. This way it's
       // indistinguishable from the extension just not existing.
-      DispatchOnDisconnect(
-          source, receiver_port_id, kReceivingEndDoesntExistError);
+      DispatchOnDisconnect(source_render_frame_host, receiver_port_id,
+                           kReceivingEndDoesntExistError);
       return;
     }
   }
 
-  WebContents* source_contents = nullptr;
-  content::RenderFrameHost* source_render_frame_host =
-      content::RenderFrameHost::FromID(source_process_id, source_routing_id);
-  if (source_render_frame_host) {
-    source_contents =
-        WebContents::FromRenderFrameHost(source_render_frame_host);
-  }
+  DCHECK(source_render_frame_host);
+  WebContents* source_contents =
+      WebContents::FromRenderFrameHost(source_render_frame_host);
 
   int source_frame_id = -1;
   bool include_guest_process_info = false;
