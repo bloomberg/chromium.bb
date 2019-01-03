@@ -464,7 +464,7 @@ TEST_F(RenderFrameImplTest, ZoomLimit) {
   common_params.url = GURL("data:text/html,min_zoomlimit_test");
   common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   GetMainRenderFrame()->SetHostZoomLevel(common_params.url, kMinZoomLevel);
-  GetMainRenderFrame()->Navigate(common_params, RequestNavigationParams());
+  GetMainRenderFrame()->Navigate(common_params, CommitNavigationParams());
   base::RunLoop().RunUntilIdle();
   EXPECT_DOUBLE_EQ(kMinZoomLevel, view_->GetWebView()->ZoomLevel());
 
@@ -473,7 +473,7 @@ TEST_F(RenderFrameImplTest, ZoomLimit) {
                                          ZoomFactorToZoomLevel(1.0));
   common_params.url = GURL("data:text/html,max_zoomlimit_test");
   GetMainRenderFrame()->SetHostZoomLevel(common_params.url, kMaxZoomLevel);
-  GetMainRenderFrame()->Navigate(common_params, RequestNavigationParams());
+  GetMainRenderFrame()->Navigate(common_params, CommitNavigationParams());
   base::RunLoop().RunUntilIdle();
   EXPECT_DOUBLE_EQ(kMaxZoomLevel, view_->GetWebView()->ZoomLevel());
 }

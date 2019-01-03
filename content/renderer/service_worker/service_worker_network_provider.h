@@ -35,7 +35,7 @@ namespace mojom {
 class URLLoaderFactory;
 }
 
-struct RequestNavigationParams;
+struct CommitNavigationParams;
 class ServiceWorkerProviderContext;
 
 // ServiceWorkerNetworkProvider enables the browser process to recognize
@@ -59,12 +59,12 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   // Creates a ServiceWorkerNetworkProvider for navigation and wraps it
   // with WebServiceWorkerNetworkProvider to be owned by Blink.
   //
-  // |request_params| are navigation parameters that were transmitted to the
+  // |commit_params| are navigation parameters that were transmitted to the
   // renderer by the browser on a navigation commit. It is null if we have not
   // yet heard from the browser (currently only during the time it takes from
   // having the renderer initiate a navigation until the browser commits it).
   // Note: in particular, provisional load failure do not provide
-  // |request_params|.
+  // |commit_params|.
   // TODO(ahemery): Update this comment when do not create placeholder document
   // loaders for renderer-initiated navigations. In this case, this should never
   // be null.
@@ -79,7 +79,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   static std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
   CreateForNavigation(
       int route_id,
-      const RequestNavigationParams* request_params,
+      const CommitNavigationParams* commit_params,
       blink::WebLocalFrame* frame,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory);

@@ -36,7 +36,7 @@ class ServiceWorkerNavigationHandleCore;
 //   provider id was updated.
 //
 //   5) When the navigation is ready to commit, the NavigationRequest will
-//   update the RequestNavigationParams based on the id from the
+//   update the CommitNavigationParams based on the id from the
 //   ServiceWorkerNavigationHandle.
 //
 //   6) If the commit leads to the creation of a ServiceWorkerNetworkProvider

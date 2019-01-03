@@ -15,10 +15,10 @@ NavigationState::~NavigationState() {
 // static
 std::unique_ptr<NavigationState> NavigationState::CreateBrowserInitiated(
     const CommonNavigationParams& common_params,
-    const RequestNavigationParams& request_params,
+    const CommitNavigationParams& commit_params,
     base::TimeTicks time_commit_requested,
     mojom::FrameNavigationControl::CommitNavigationCallback callback) {
-  return base::WrapUnique(new NavigationState(common_params, request_params,
+  return base::WrapUnique(new NavigationState(common_params, commit_params,
                                               time_commit_requested, false,
                                               std::move(callback)));
 }
@@ -26,7 +26,7 @@ std::unique_ptr<NavigationState> NavigationState::CreateBrowserInitiated(
 // static
 std::unique_ptr<NavigationState> NavigationState::CreateContentInitiated() {
   return base::WrapUnique(new NavigationState(
-      CommonNavigationParams(), RequestNavigationParams(), base::TimeTicks(),
+      CommonNavigationParams(), CommitNavigationParams(), base::TimeTicks(),
       true,
       content::mojom::FrameNavigationControl::CommitNavigationCallback()));
 }
@@ -54,7 +54,7 @@ void NavigationState::RunCommitNavigationCallback(
 
 NavigationState::NavigationState(
     const CommonNavigationParams& common_params,
-    const RequestNavigationParams& request_params,
+    const CommitNavigationParams& commit_params,
     base::TimeTicks time_commit_requested,
     bool is_content_initiated,
     mojom::FrameNavigationControl::CommitNavigationCallback callback)
@@ -62,7 +62,7 @@ NavigationState::NavigationState(
       was_within_same_document_(false),
       is_content_initiated_(is_content_initiated),
       common_params_(common_params),
-      request_params_(request_params),
+      commit_params_(commit_params),
       time_commit_requested_(time_commit_requested),
       navigation_client_(nullptr),
       commit_callback_(std::move(callback)) {}

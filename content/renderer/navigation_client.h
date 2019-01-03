@@ -21,7 +21,7 @@ class NavigationClient : mojom::NavigationClient {
   void CommitNavigation(
       const network::ResourceResponseHead& head,
       const CommonNavigationParams& common_params,
-      const RequestNavigationParams& request_params,
+      const CommitNavigationParams& commit_params,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
       base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
@@ -33,7 +33,7 @@ class NavigationClient : mojom::NavigationClient {
       CommitNavigationCallback callback) override;
   void CommitFailedNavigation(
       const CommonNavigationParams& common_params,
-      const RequestNavigationParams& request_params,
+      const CommitNavigationParams& commit_params,
       bool has_stale_copy_in_cache,
       int error_code,
       const base::Optional<std::string>& error_page_content,

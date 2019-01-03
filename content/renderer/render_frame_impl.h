@@ -178,7 +178,7 @@ struct CommonNavigationParams;
 struct CustomContextMenuContext;
 struct FrameOwnerProperties;
 struct FrameReplicationState;
-struct RequestNavigationParams;
+struct CommitNavigationParams;
 struct ScreenInfo;
 
 class CONTENT_EXPORT RenderFrameImpl
@@ -540,7 +540,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void CommitNavigation(
       const network::ResourceResponseHead& head,
       const CommonNavigationParams& common_params,
-      const RequestNavigationParams& request_params,
+      const CommitNavigationParams& commit_params,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
       base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
@@ -552,7 +552,7 @@ class CONTENT_EXPORT RenderFrameImpl
       CommitNavigationCallback callback) override;
   void CommitFailedNavigation(
       const CommonNavigationParams& common_params,
-      const RequestNavigationParams& request_params,
+      const CommitNavigationParams& commit_params,
       bool has_stale_copy_in_cache,
       int error_code,
       const base::Optional<std::string>& error_page_content,
@@ -560,7 +560,7 @@ class CONTENT_EXPORT RenderFrameImpl
       CommitFailedNavigationCallback callback) override;
   void CommitSameDocumentNavigation(
       const CommonNavigationParams& common_params,
-      const RequestNavigationParams& request_params,
+      const CommitNavigationParams& commit_params,
       CommitSameDocumentNavigationCallback callback) override;
   void HandleRendererDebugURL(const GURL& url) override;
   void UpdateSubresourceLoaderFactories(
@@ -1098,7 +1098,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // Creates a WebURLRequest to use fo the commit of a navigation.
   blink::WebURLRequest CreateURLRequestForCommit(
       const CommonNavigationParams& common_params,
-      const RequestNavigationParams& request_params,
+      const CommitNavigationParams& commit_params,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       const network::ResourceResponseHead& head);
 
@@ -1158,7 +1158,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // Does preparation for the navigation to |url|.
   void PrepareRenderViewForNavigation(
       const GURL& url,
-      const RequestNavigationParams& request_params);
+      const CommitNavigationParams& commit_params);
 
   // Creates a placeholder document loader, while navigation is taking place,
   // either in the browser or in the renderer.
@@ -1173,7 +1173,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Decodes a data url for navigation commit.
   void DecodeDataURL(const CommonNavigationParams& common_params,
-                     const RequestNavigationParams& request_params,
+                     const CommitNavigationParams& commit_params,
                      std::string* mime_type,
                      std::string* charset,
                      std::string* data,
@@ -1269,7 +1269,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Updates the state of this frame when asked to commit a navigation.
   void PrepareFrameForCommit(const GURL& url,
-                             const RequestNavigationParams& request_params);
+                             const CommitNavigationParams& commit_params);
 
   // Updates the state when asked to commit a history navigation.  Sets
   // |item_for_history_navigation| and |load_type| to the appropriate values for
@@ -1297,7 +1297,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // so that it can be performed in cross-document fashion.
   blink::mojom::CommitResult PrepareForHistoryNavigationCommit(
       FrameMsg_Navigate_Type::Value navigation_type,
-      const RequestNavigationParams& request_params,
+      const CommitNavigationParams& commit_params,
       blink::WebHistoryItem* item_for_history_navigation,
       blink::WebFrameLoadType* load_type);
 
@@ -1308,7 +1308,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // to be supplied to the loader.
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
   BuildServiceWorkerNetworkProviderForNavigation(
-      const RequestNavigationParams* request_params,
+      const CommitNavigationParams* commit_params,
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info);
 

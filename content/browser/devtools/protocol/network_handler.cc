@@ -1609,10 +1609,10 @@ void NetworkHandler::NavigationRequestWillBeSent(
     headers_dict->setString(net::HttpRequestHeaders::kReferer, referrer.spec());
 
   std::unique_ptr<Network::Response> redirect_response;
-  const RequestNavigationParams& request_params = nav_request.request_params();
-  if (!request_params.redirect_response.empty()) {
-    redirect_response = BuildResponse(request_params.redirects.back(),
-                                      request_params.redirect_response.back());
+  const CommitNavigationParams& commit_params = nav_request.commit_params();
+  if (!commit_params.redirect_response.empty()) {
+    redirect_response = BuildResponse(commit_params.redirects.back(),
+                                      commit_params.redirect_response.back());
   }
   std::string url_fragment;
   std::string url_without_fragment =

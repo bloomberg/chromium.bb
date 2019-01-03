@@ -103,9 +103,9 @@ CommonNavigationParams::CommonNavigationParams(
 
 CommonNavigationParams::~CommonNavigationParams() = default;
 
-RequestNavigationParams::RequestNavigationParams() = default;
+CommitNavigationParams::CommitNavigationParams() = default;
 
-RequestNavigationParams::RequestNavigationParams(
+CommitNavigationParams::CommitNavigationParams(
     bool is_overriding_user_agent,
     const std::vector<GURL>& redirects,
     const GURL& original_url,
@@ -137,9 +137,9 @@ RequestNavigationParams::RequestNavigationParams(
       is_view_source(is_view_source),
       should_clear_history_list(should_clear_history_list) {}
 
-RequestNavigationParams::RequestNavigationParams(
-    const RequestNavigationParams& other) = default;
+CommitNavigationParams::CommitNavigationParams(
+    const CommitNavigationParams& other) = default;
 
-RequestNavigationParams::~RequestNavigationParams() = default;
+CommitNavigationParams::~CommitNavigationParams() = default;
 
 }  // namespace content

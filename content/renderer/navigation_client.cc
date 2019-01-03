@@ -16,7 +16,7 @@ NavigationClient::~NavigationClient() {}
 void NavigationClient::CommitNavigation(
     const network::ResourceResponseHead& head,
     const CommonNavigationParams& common_params,
-    const RequestNavigationParams& request_params,
+    const CommitNavigationParams& commit_params,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
     base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
@@ -31,7 +31,7 @@ void NavigationClient::CommitNavigation(
   // unexpectedly abort the ongoing navigation. Remove when the races are fixed.
   ResetDisconnectionHandler();
   render_frame_->CommitNavigation(
-      head, common_params, request_params,
+      head, common_params, commit_params,
       std::move(url_loader_client_endpoints), std::move(subresource_loaders),
       std::move(subresource_overrides),
       std::move(controller_service_worker_info),
@@ -41,7 +41,7 @@ void NavigationClient::CommitNavigation(
 
 void NavigationClient::CommitFailedNavigation(
     const CommonNavigationParams& common_params,
-    const RequestNavigationParams& request_params,
+    const CommitNavigationParams& commit_params,
     bool has_stale_copy_in_cache,
     int error_code,
     const base::Optional<std::string>& error_page_content,
@@ -49,7 +49,7 @@ void NavigationClient::CommitFailedNavigation(
     CommitFailedNavigationCallback callback) {
   ResetDisconnectionHandler();
   render_frame_->CommitFailedNavigation(
-      common_params, request_params, has_stale_copy_in_cache, error_code,
+      common_params, commit_params, has_stale_copy_in_cache, error_code,
       error_page_content, std::move(subresource_loaders), std::move(callback));
 }
 

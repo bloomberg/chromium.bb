@@ -33,7 +33,7 @@
 
 namespace content {
 struct CommonNavigationParams;
-struct RequestNavigationParams;
+struct CommitNavigationParams;
 
 class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
  public:
@@ -189,7 +189,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       PreviewsState previews_state,
       base::TimeTicks navigation_start,
       base::TimeTicks input_start) const;
-  RequestNavigationParams ConstructRequestNavigationParams(
+  CommitNavigationParams ConstructCommitNavigationParams(
       const FrameNavigationEntry& frame_entry,
       const GURL& original_url,
       const std::string& original_method,

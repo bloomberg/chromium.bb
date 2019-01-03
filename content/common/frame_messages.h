@@ -493,7 +493,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::NavigationTiming)
   IPC_STRUCT_TRAITS_MEMBER(fetch_start)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::RequestNavigationParams)
+IPC_STRUCT_TRAITS_BEGIN(content::CommitNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(is_overriding_user_agent)
   IPC_STRUCT_TRAITS_MEMBER(redirects)
   IPC_STRUCT_TRAITS_MEMBER(redirect_response)
