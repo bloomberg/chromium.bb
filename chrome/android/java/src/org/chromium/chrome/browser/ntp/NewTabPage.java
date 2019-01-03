@@ -101,7 +101,7 @@ public class NewTabPage
     private LocationBarVoiceRecognitionHandler mVoiceRecognitionHandler;
 
     // The timestamp at which the constructor was called.
-    private final long mConstructedTimeNs;
+    protected final long mConstructedTimeNs;
 
     // The timestamp at which this NTP was last shown to the user.
     private long mLastShownTimeNs;
@@ -360,7 +360,7 @@ public class NewTabPage
         mNewTabPageView.initialize(mNewTabPageManager, mTab, mTileGroupDelegate,
                 mSearchProviderHasLogo,
                 TemplateUrlService.getInstance().isDefaultSearchEngineGoogle(),
-                getScrollPositionFromNavigationEntry());
+                getScrollPositionFromNavigationEntry(), mConstructedTimeNs);
     }
 
     /**
