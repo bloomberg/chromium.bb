@@ -49,8 +49,7 @@ class PageTimingMetricsSender {
   void DidObserveLayoutJank(double jank_fraction);
   void DidStartResponse(const GURL& response_url,
                         int resource_id,
-                        const network::ResourceResponseHead& response_head,
-                        content::ResourceType resource_type);
+                        const network::ResourceResponseHead& response_head);
   void DidReceiveTransferSizeUpdate(int resource_id, int received_data_length);
   void DidCompleteResponse(int resource_id,
                            const network::URLLoaderCompletionStatus& status);

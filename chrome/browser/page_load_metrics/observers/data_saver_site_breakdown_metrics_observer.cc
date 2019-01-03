@@ -42,7 +42,6 @@ DataSaverSiteBreakdownMetricsObserver::OnCommit(
 }
 
 void DataSaverSiteBreakdownMetricsObserver::OnResourceDataUseObserved(
-    FrameTreeNodeId frame_tree_node_id,
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
         resources) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

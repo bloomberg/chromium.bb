@@ -444,8 +444,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
 
   // Report data usage before new timing and metadata for messages that have
   // both updates.
-  client_->UpdateResourceDataUse(render_frame_host->GetFrameTreeNodeId(),
-                                 resources);
+  client_->UpdateResourceDataUse(resources);
   if (render_frame_host->GetParent() == nullptr) {
     UpdateMainFrameMetadata(std::move(new_metadata));
     UpdateMainFrameTiming(std::move(new_timing));

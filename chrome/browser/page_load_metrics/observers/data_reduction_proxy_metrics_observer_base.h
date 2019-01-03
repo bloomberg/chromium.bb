@@ -52,7 +52,6 @@ class DataReductionProxyMetricsObserverBase
   void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
                             extra_request_compelte_info) override;
   void OnResourceDataUseObserved(
-      FrameTreeNodeId frame_tree_node_id,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources) override;
   void OnEventOccurred(const void* const event_key) override;

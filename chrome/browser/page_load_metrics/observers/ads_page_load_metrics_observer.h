@@ -81,10 +81,11 @@ class AdsPageLoadMetricsObserver
   ObservePolicy FlushMetricsOnAppEnterBackground(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
+                            extra_request_info) override;
   void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnResourceDataUseObserved(
-      FrameTreeNodeId frame_tree_node_id,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources) override;
   void OnPageInteractive(
@@ -97,8 +98,6 @@ class AdsPageLoadMetricsObserver
                 AdTypes ad_types,
                 AdOriginStatus origin_status,
                 bool frame_navigated);
-
-    // Total prefilter (body) bytes loaded for complete resources.
     size_t frame_bytes;
     size_t frame_bytes_uncached;
     const FrameTreeNodeId frame_tree_node_id;
@@ -125,9 +124,8 @@ class AdsPageLoadMetricsObserver
   // each call in order to free up memory.
   AdTypes DetectAds(content::NavigationHandle* navigation_handle);
 
-  void ProcessResourceForFrame(
-      FrameTreeNodeId frame_tree_node_id,
-      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
+  void ProcessLoadedResource(
+      const page_load_metrics::ExtraRequestCompleteInfo& extra_request_info);
 
   // Get the mime type of a resource. This only returns a subset of mime types,
   // grouped at a higher level. For example, all video mime types return the
@@ -139,7 +137,6 @@ class AdsPageLoadMetricsObserver
   // update. Updates |page_resources_| to reflect the new state of the resource.
   // Called once per ResourceDataUpdate.
   void UpdateResource(
-      FrameTreeNodeId frame_tree_node_id,
       const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
 
   // Records size of resources by mime type.
@@ -155,7 +152,7 @@ class AdsPageLoadMetricsObserver
 
   // Checks to see if a resource is waiting for a navigation with the given
   // |frame_tree_node_id| to commit before it can be processed. If so, call
-  // OnResourceDataUpdate for the delayed resource.
+  // OnLoadedResource for the delayed resource.
   void ProcessOngoingNavigationResource(FrameTreeNodeId frame_tree_node_id);
 
   // Stores the size data of each ad frame. Pointed to by ad_frames_ so use a
@@ -177,7 +174,7 @@ class AdsPageLoadMetricsObserver
   // When the observer receives report of a document resource loading for a
   // sub-frame before the sub-frame commit occurs, hold onto the resource
   // request info (delay it) until the sub-frame commits.
-  std::map<FrameTreeNodeId, page_load_metrics::mojom::ResourceDataUpdatePtr>
+  std::map<FrameTreeNodeId, page_load_metrics::ExtraRequestCompleteInfo>
       ongoing_navigation_resources_;
 
   // Maps a request_id for a blink resource to the metadata for the resource
