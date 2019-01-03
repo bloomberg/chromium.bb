@@ -423,6 +423,7 @@ void MetricsStateManager::ResetMetricsIDsIfNecessary() {
 
   local_state_->ClearPref(prefs::kMetricsClientID);
   local_state_->ClearPref(prefs::kMetricsLowEntropySource);
+  local_state_->ClearPref(prefs::kMetricsOldLowEntropySource);
   local_state_->ClearPref(prefs::kMetricsResetIds);
 
   // Also clear the backed up client info.
