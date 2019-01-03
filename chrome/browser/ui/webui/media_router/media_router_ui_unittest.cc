@@ -813,8 +813,7 @@ TEST_F(MediaRouterUITest, UpdateSinksWhenDialogMovesToAnotherDisplay) {
       std::make_unique<TestWebContentsDisplayObserver>(display1);
   TestWebContentsDisplayObserver* display_observer =
       display_observer_unique.get();
-  media_router_ui_->set_display_observer_for_test(
-      std::move(display_observer_unique));
+  media_router_ui_->display_observer_ = std::move(display_observer_unique);
 
   std::vector<MediaSinkWithCastModes> sinks;
   MediaSinkWithCastModes display_sink1(

@@ -42,10 +42,13 @@ class MediaRouterDialogControllerViews
 
  private:
   friend class content::WebContentsUserData<MediaRouterDialogControllerViews>;
+  friend class MediaRouterUiForTest;
 
   // Use MediaRouterDialogController::GetOrCreateForWebContents() to create
   // an instance.
   explicit MediaRouterDialogControllerViews(content::WebContents* web_contents);
+
+  MediaRouterViewsUI* ui() { return ui_.get(); }
 
   // Responsible for notifying the dialog view of dialog model updates and
   // sending route requests to MediaRouter. Set to nullptr when the dialog is

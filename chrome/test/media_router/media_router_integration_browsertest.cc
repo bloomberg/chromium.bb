@@ -28,7 +28,6 @@
 #include "components/policy/policy_constants.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "media/base/test_data_util.h"
 #include "net/base/filename_util.h"
@@ -46,6 +45,7 @@ const char kReceiver[] = "receiver";
 const base::FilePath::StringPieceType kResourcePath = FILE_PATH_LITERAL(
     "media_router/browser_test_resources/");
 const char kTestSinkName[] = "test-sink-1";
+const char kButterflyVideoFileName[] = "butterfly-853x480.webm";
 // The javascript snippets.
 const char kCheckSessionScript[] = "checkSession();";
 const char kCheckStartFailedScript[] = "checkStartFailed('%s', '%s');";
@@ -78,38 +78,6 @@ std::string GetDefaultRequestSessionId(WebContents* web_contents) {
   return session_id;
 }
 
-// File Dialog which fails on open.
-class TestFailMediaRouterFileDialog : public MediaRouterFileDialog {
- public:
-  TestFailMediaRouterFileDialog(MediaRouterFileDialogDelegate* delegate,
-                                const IssueInfo& issue)
-      : MediaRouterFileDialog(nullptr), delegate_(delegate), issue_(issue) {}
-  ~TestFailMediaRouterFileDialog() override {}
-
-  MediaRouterFileDialogDelegate* delegate_;
-  const IssueInfo issue_;
-
-  void OpenFileDialog(Browser* browser) override {
-    delegate_->FileDialogSelectionFailed(issue_);
-  }
-};
-
-// File Dialog with a preset file URL.
-class TestMediaRouterFileDialog : public MediaRouterFileDialog {
- public:
-  TestMediaRouterFileDialog(MediaRouterFileDialogDelegate* delegate, GURL url)
-      : MediaRouterFileDialog(nullptr), delegate_(delegate), file_url_(url) {}
-  ~TestMediaRouterFileDialog() override {}
-
-  MediaRouterFileDialogDelegate* delegate_;
-  GURL file_url_;
-
-  GURL GetLastSelectedFileUrl() override { return file_url_; }
-  void OpenFileDialog(Browser* browser) override {
-    delegate_->FileDialogFileSelected(ui::SelectedFileInfo());
-  }
-};
-
 }  // namespace
 
 MediaRouterIntegrationBrowserTest::MediaRouterIntegrationBrowserTest() {
@@ -119,6 +87,7 @@ MediaRouterIntegrationBrowserTest::~MediaRouterIntegrationBrowserTest() {
 }
 
 void MediaRouterIntegrationBrowserTest::TearDownOnMainThread() {
+  test_ui_->TearDown();
   MediaRouterBaseBrowserTest::TearDownOnMainThread();
   test_navigation_observer_.reset();
 }
@@ -202,30 +171,27 @@ void MediaRouterIntegrationBrowserTest::OpenDialogAndCastFile(
       ? SetTestData(FILE_PATH_LITERAL("local_media_sink.json"))
       : SetTestData(FILE_PATH_LITERAL("local_media_sink_route_fail.json"));
   GURL file_url = net::FilePathToFileURL(
-      media::GetTestDataFilePath("butterfly-853x480.webm"));
+      media::GetTestDataFilePath(kButterflyVideoFileName));
   test_ui_->ShowDialog();
   // Mock out file dialog operations, as those can't be simulated.
-  FileDialogSelectsFile(file_url);
-  // Click on the desired mode.
+  test_ui_->SetLocalFile(file_url);
+  test_ui_->WaitForSink(receiver_);
   test_ui_->ChooseSourceType(CastDialogView::kLocalFile);
-  // Wait for the sinks to load.
+  ASSERT_EQ(CastDialogView::kLocalFile, test_ui_->GetChosenSourceType());
   test_ui_->WaitForSinkAvailable(receiver_);
-  // Click on sink.
   test_ui_->StartCasting(receiver_);
-  // Expect that the current tab has the file open in it.
   ASSERT_EQ(file_url, GetActiveWebContents()->GetURL());
 }
 
 void MediaRouterIntegrationBrowserTest::OpenDialogAndCastFileFails() {
   SetTestData(FILE_PATH_LITERAL("local_media_sink.json"));
   GURL file_url = net::FilePathToFileURL(
-      media::GetTestDataFilePath("butterfly-853x480.webm"));
+      media::GetTestDataFilePath(kButterflyVideoFileName));
   test_ui_->ShowDialog();
   // Mock out file dialog opperations, as those can't be simulated.
-  FileDialogSelectFails(IssueInfo());
-  // Click on the desired mode.
+  test_ui_->SetLocalFileSelectionIssue(IssueInfo());
+  test_ui_->WaitForSink(receiver_);
   test_ui_->ChooseSourceType(CastDialogView::kLocalFile);
-  // Wait for the issue to appear.
   test_ui_->WaitForAnyIssue();
 }
 
@@ -368,17 +334,6 @@ WebContents* MediaRouterIntegrationBrowserTest::GetActiveWebContents() {
   return browser()->tab_strip_model()->GetActiveWebContents();
 }
 
-void MediaRouterIntegrationBrowserTest::FileDialogSelectsFile(GURL file_url) {
-  // TODO(https://crbug.com/900248): Implement this.
-  NOTIMPLEMENTED();
-}
-
-void MediaRouterIntegrationBrowserTest::FileDialogSelectFails(
-    const IssueInfo& issue) {
-  // TODO(https://crbug.com/900248): Implement this.
-  NOTIMPLEMENTED();
-}
-
 void MediaRouterIntegrationBrowserTest::RunBasicTest() {
   WebContents* web_contents = StartSessionWithTestPageAndChooseSink();
   CheckSessionValidity(web_contents);
@@ -458,9 +413,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, Basic) {
 }
 
 // Tests that creating a route with a local file opens the file in a new tab.
-// TODO(https://crbug.com/900248): Make this test pass with the Views dialog.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
-                       DISABLED_OpenLocalMediaFileInCurrentTab) {
+                       OpenLocalMediaFileInCurrentTab) {
   // Start at a new tab, the file should open in the same tab.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   // Make sure there is 1 tab.
@@ -471,6 +425,9 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   // Expect that no new tab has been opened.
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
+  // The dialog will close from navigating to the local file within the tab, so
+  // open it again after it closes.
+  test_ui_->WaitForDialogHidden();
   test_ui_->ShowDialog();
 
   // Wait for a route to be created.
@@ -478,9 +435,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
 }
 
 // Tests that creating a route with a local file opens the file in a new tab.
-// TODO(https://crbug.com/900248): Make this test pass with the Views dialog.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
-                       DISABLED_OpenLocalMediaFileInNewTab) {
+                       OpenLocalMediaFileInNewTab) {
   // Start at a tab with content in it, the file will open in a new tab.
   ui_test_utils::NavigateToURL(browser(), GURL("https://google.com"));
   // Make sure there is 1 tab.
@@ -498,7 +454,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
 }
 
 // Tests that failing to create a route with a local file shows an issue.
-// TODO(https://crbug.com/900248): Make this test pass with the Views dialog.
+// TODO(https://crbug.com/907539): Make the Views dialog show the issue.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
                        DISABLED_OpenLocalMediaFileFailsAndShowsIssue) {
   OpenDialogAndCastFileFails();
@@ -507,7 +463,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
 }
 
 // Tests that creating a route with a local file opens in fullscreen.
-// TODO(https://crbug.com/900248): Make this test pass with the Views dialog.
+// TODO(https://crbug.com/903016) Disabled due to flakiness in entering
+// fullscreen.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
                        DISABLED_OpenLocalMediaFileFullscreen) {
   // Start at a new tab, the file should open in the same tab.
@@ -531,9 +488,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
 }
 
 // Tests that failed route creation of local file does not enter fullscreen.
-// TODO(https://crbug.com/900248): Make this test pass with the Views dialog.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
-                       DISABLED_OpenLocalMediaFileCastFailNoFullscreen) {
+                       OpenLocalMediaFileCastFailNoFullscreen) {
   // Start at a new tab, the file should open in the same tab.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   // Make sure there is 1 tab.
