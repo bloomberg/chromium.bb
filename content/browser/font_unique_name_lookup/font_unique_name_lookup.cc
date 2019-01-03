@@ -15,6 +15,7 @@
 #include "third_party/blink/public/common/font_unique_name_lookup/font_unique_name_table.pb.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/icu_fold_case_util.h"
 
+#include <algorithm>
 #include <set>
 #include <vector>
 #include "third_party/icu/source/common/unicode/unistr.h"
@@ -137,7 +138,8 @@ bool FontUniqueNameLookup::UpdateTableIfNeeded() {
       !proto_storage_.IsValid() || !proto_storage_.mapping.size() ||
       !font_table.ParseFromArray(proto_storage_.mapping.memory(),
                                  proto_storage_.mapping.size()) ||
-      font_table.stored_for_android_build_fp() != GetAndroidBuildFingerprint();
+      font_table.stored_for_platform_version_identifier() !=
+          GetAndroidBuildFingerprint();
   if (update_needed)
     UpdateTable();
   return update_needed;
@@ -147,14 +149,12 @@ bool FontUniqueNameLookup::UpdateTable() {
   std::vector<std::string> font_files_to_index = GetFontFilePaths();
 
   blink::FontUniqueNameTable font_table;
-  font_table.set_stored_for_android_build_fp(GetAndroidBuildFingerprint());
+  font_table.set_stored_for_platform_version_identifier(
+      GetAndroidBuildFingerprint());
   for (const auto& font_file : font_files_to_index) {
     int32_t number_of_faces = NumberOfFacesInFontFile(font_file);
     for (int32_t i = 0; i < number_of_faces; ++i) {
-      if (!IndexFile(font_table.add_font_entries(), font_file, i)) {
-        // TODO(drott): Track file scanning failures in UMA.
-        font_table.mutable_font_entries()->RemoveLast();
-      }
+      IndexFile(&font_table, font_file, i);
     }
   }
 
@@ -227,22 +227,22 @@ base::FilePath FontUniqueNameLookup::TableCacheFilePath() {
       cache_directory_.Append(base::FilePath(kProtobufFilename)));
 }
 
-bool FontUniqueNameLookup::IndexFile(
-    blink::FontUniqueNameTable_FontUniqueNameEntry* font_entry,
-    const std::string& font_file_path,
-    uint32_t ttc_index) {
+void FontUniqueNameLookup::IndexFile(blink::FontUniqueNameTable* font_table,
+                                     const std::string& font_file_path,
+                                     uint32_t ttc_index) {
   ScopedFtFace face(ft_library_, font_file_path.c_str(), ttc_index);
   if (!face.IsValid()) {
+    // TODO(drott): Track font file scanning failures in UMA.
     LOG(ERROR) << "Unable to open font file for indexing: "
                << font_file_path.c_str()
                << " - FreeType FT_Error code: " << face.error();
-    return false;
+    return;
   }
 
   if (!FT_Get_Sfnt_Name_Count(face.get())) {
     LOG(ERROR) << "Zero name table entries in font file: "
                << font_file_path.c_str();
-    return false;
+    return;
   }
 
   // Get file attributes
@@ -251,23 +251,28 @@ bool FontUniqueNameLookup::IndexFile(
       base::File::FLAG_OPEN | base::File::Flags::FLAG_READ);
   if (!font_file_for_info.IsValid()) {
     LOG(ERROR) << "Unable to open font file: " << font_file_path.c_str();
-    return false;
+    return;
   }
   base::File::Info font_file_info;
   if (!font_file_for_info.GetInfo(&font_file_info)) {
     LOG(ERROR) << "Unable to get font file attributes for: "
                << font_file_path.c_str();
-    return false;
+    return;
   }
-  font_entry->set_file_path(font_file_path);
-  font_entry->set_ttc_index(ttc_index);
+
+  blink::FontUniqueNameTable_UniqueFont* added_unique_font =
+      font_table->add_fonts();
+  added_unique_font->set_file_path(font_file_path);
+  added_unique_font->set_ttc_index(ttc_index);
+
+  int added_font_index = font_table->fonts_size() - 1;
 
   for (size_t i = 0; i < FT_Get_Sfnt_Name_Count(face.get()); ++i) {
     FT_SfntName sfnt_name;
     if (FT_Get_Sfnt_Name(face.get(), i, &sfnt_name) != 0) {
       LOG(ERROR) << "Unable to retrieve Sfnt Name table for font file: "
                  << font_file_path.c_str();
-      return false;
+      return;
     }
 
     if (!SfntNameIsEnglish(sfnt_name))
@@ -287,23 +292,25 @@ bool FontUniqueNameLookup::IndexFile(
         reinterpret_cast<char*>(sfnt_name.string), sfnt_name.string_len,
         codepage_name.c_str());
     if (sfnt_name_unicode.isBogus())
-      return false;
+      return;
     // Firefox performs case insensitive matching for src: local().
     sfnt_name_unicode.foldCase();
     sfnt_name_unicode.toUTF8String(sfnt_name_string);
 
-    switch (sfnt_name.name_id) {
-      case TT_NAME_ID_PS_NAME:
-        font_entry->set_postscript_name(blink::IcuFoldCase(sfnt_name_string));
-        break;
-      case TT_NAME_ID_FULL_NAME:
-        font_entry->set_full_name(blink::IcuFoldCase(sfnt_name_string));
-        break;
-      default:
-        break;
-    }
+    blink::FontUniqueNameTable_UniqueNameToFontMapping* name_mapping =
+        font_table->add_name_map();
+    name_mapping->set_font_name(blink::IcuFoldCase(sfnt_name_string));
+    name_mapping->set_font_index(added_font_index);
   }
-  return true;
+
+  // Sort names and update protobuf, essential for binary search in matching to
+  // work.
+  std::sort(font_table->mutable_name_map()->begin(),
+            font_table->mutable_name_map()->end(),
+            [](const blink::FontUniqueNameTable_UniqueNameToFontMapping& a,
+               const blink::FontUniqueNameTable_UniqueNameToFontMapping& b) {
+              return a.font_name() < b.font_name();
+            });
 }
 
 int32_t FontUniqueNameLookup::NumberOfFacesInFontFile(

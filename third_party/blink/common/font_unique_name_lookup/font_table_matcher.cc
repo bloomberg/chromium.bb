@@ -31,32 +31,42 @@ FontTableMatcher::MemoryMappingFromFontUniqueNameTable(
 base::Optional<FontTableMatcher::MatchResult> FontTableMatcher::MatchName(
     const std::string& name_request) const {
   std::string folded_name_request = IcuFoldCase(name_request);
-  const auto& font_entries = font_table_.font_entries();
-  auto find_result = std::find_if(
-      font_entries.begin(), font_entries.end(),
-      [&folded_name_request](
-          const FontUniqueNameTable_FontUniqueNameEntry& entry) {
-        return !entry.postscript_name().compare(folded_name_request) ||
-               !entry.full_name().compare(folded_name_request);
+
+  const auto& name_map = font_table_.name_map();
+
+  auto find_result = std::lower_bound(
+      name_map.begin(), name_map.end(), folded_name_request,
+      [](const blink::FontUniqueNameTable_UniqueNameToFontMapping& a,
+         const std::string& b) {
+        // Comp predicate for std::lower_bound needs to return whether a < b,
+        // so that it can find a match for "not less than".
+        return a.font_name() < b;
       });
-  if (find_result != font_entries.end()) {
-    return base::Optional<MatchResult>(
-        {find_result->file_path(), find_result->ttc_index()});
+  if (find_result == name_map.end() ||
+      find_result->font_name() != folded_name_request ||
+      static_cast<int>(find_result->font_index()) > font_table_.fonts_size()) {
+    return {};
   }
-  return {};
+
+  const auto& found_font = font_table_.fonts()[find_result->font_index()];
+
+  if (!found_font.file_path().size())
+    return {};
+  return base::Optional<MatchResult>(
+      {found_font.file_path(), found_font.ttc_index()});
 }
 
 size_t FontTableMatcher::AvailableFonts() const {
-  return font_table_.font_entries_size();
+  return font_table_.fonts_size();
 }
 
 bool FontTableMatcher::FontListIsDisjointFrom(
     const FontTableMatcher& other) const {
   std::vector<std::string> paths_self, paths_other, intersection_result;
-  for (const auto& indexed_font : font_table_.font_entries()) {
+  for (const auto& indexed_font : font_table_.fonts()) {
     paths_self.push_back(indexed_font.file_path());
   }
-  for (const auto& indexed_font_other : other.font_table_.font_entries()) {
+  for (const auto& indexed_font_other : other.font_table_.fonts()) {
     paths_other.push_back(indexed_font_other.file_path());
   }
   std::sort(paths_self.begin(), paths_self.end());

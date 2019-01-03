@@ -17,7 +17,7 @@
 #include <string>
 
 namespace blink {
-class FontUniqueNameTable_FontUniqueNameEntry;
+class FontUniqueNameTable;
 }
 
 namespace content {
@@ -105,10 +105,9 @@ class CONTENT_EXPORT FontUniqueNameLookup {
   // Scan the font file at |font_file_path| and given |ttc_index| and extract
   // full font name and postscript name from the font and store it into the
   // font_index_entry protobuf object.
-  bool IndexFile(
-      blink::FontUniqueNameTable_FontUniqueNameEntry* font_index_entry,
-      const std::string& font_file_path,
-      uint32_t ttc_index);
+  void IndexFile(blink::FontUniqueNameTable* font_table,
+                 const std::string& font_file_path,
+                 uint32_t ttc_index);
   // For a TrueType font collection, determine how many font faces are
   // available in a file.
   int32_t NumberOfFacesInFontFile(const std::string& font_filename) const;
