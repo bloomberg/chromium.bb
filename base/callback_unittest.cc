@@ -5,6 +5,7 @@
 #include "base/callback.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -18,11 +19,10 @@ namespace base {
 
 void NopInvokeFunc() {}
 
-// White-box testpoints to inject into a Callback<> object for checking
-// comparators and emptiness APIs.  Use a BindState that is specialized
-// based on a type we declared in the anonymous namespace above to remove any
-// chance of colliding with another instantiation and breaking the
-// one-definition-rule.
+// White-box testpoints to inject into a callback object for checking
+// comparators and emptiness APIs. Use a BindState that is specialized based on
+// a type we declared in the anonymous namespace above to remove any chance of
+// colliding with another instantiation and breaking the one-definition-rule.
 struct FakeBindState : internal::BindStateBase {
   FakeBindState() : BindStateBase(&NopInvokeFunc, &Destroy, &IsCancelled) {}
 
@@ -53,21 +53,21 @@ class CallbackTest : public ::testing::Test {
   ~CallbackTest() override = default;
 
  protected:
-  Callback<void()> callback_a_;
-  const Callback<void()> callback_b_;  // Ensure APIs work with const.
-  Callback<void()> null_callback_;
+  RepeatingCallback<void()> callback_a_;
+  const RepeatingCallback<void()> callback_b_;  // Ensure APIs work with const.
+  RepeatingCallback<void()> null_callback_;
 };
 
 // Ensure we can create unbound callbacks. We need this to be able to store
 // them in class members that can be initialized later.
 TEST_F(CallbackTest, DefaultConstruction) {
-  Callback<void()> c0;
-  Callback<void(int)> c1;
-  Callback<void(int,int)> c2;
-  Callback<void(int,int,int)> c3;
-  Callback<void(int,int,int,int)> c4;
-  Callback<void(int,int,int,int,int)> c5;
-  Callback<void(int,int,int,int,int,int)> c6;
+  RepeatingCallback<void()> c0;
+  RepeatingCallback<void(int)> c1;
+  RepeatingCallback<void(int, int)> c2;
+  RepeatingCallback<void(int, int, int)> c3;
+  RepeatingCallback<void(int, int, int, int)> c4;
+  RepeatingCallback<void(int, int, int, int, int)> c5;
+  RepeatingCallback<void(int, int, int, int, int, int)> c6;
 
   EXPECT_TRUE(c0.is_null());
   EXPECT_TRUE(c1.is_null());
@@ -90,13 +90,13 @@ TEST_F(CallbackTest, Equals) {
   EXPECT_FALSE(callback_b_.Equals(callback_a_));
 
   // We should compare based on instance, not type.
-  Callback<void()> callback_c(new FakeBindState());
-  Callback<void()> callback_a2 = callback_a_;
+  RepeatingCallback<void()> callback_c(new FakeBindState());
+  RepeatingCallback<void()> callback_a2 = callback_a_;
   EXPECT_TRUE(callback_a_.Equals(callback_a2));
   EXPECT_FALSE(callback_a_.Equals(callback_c));
 
   // Empty, however, is always equal to empty.
-  Callback<void()> empty2;
+  RepeatingCallback<void()> empty2;
   EXPECT_TRUE(null_callback_.Equals(empty2));
 }
 
@@ -125,14 +125,14 @@ TEST_F(CallbackTest, Move) {
 struct TestForReentrancy {
   TestForReentrancy()
       : cb_already_run(false),
-        cb(Bind(&TestForReentrancy::AssertCBIsNull, Unretained(this))) {
-  }
+        cb(BindRepeating(&TestForReentrancy::AssertCBIsNull,
+                         Unretained(this))) {}
   void AssertCBIsNull() {
     ASSERT_TRUE(cb.is_null());
     cb_already_run = true;
   }
   bool cb_already_run;
-  Closure cb;
+  RepeatingClosure cb;
 };
 
 TEST_F(CallbackTest, ResetAndReturn) {
@@ -145,12 +145,12 @@ TEST_F(CallbackTest, ResetAndReturn) {
 }
 
 TEST_F(CallbackTest, NullAfterMoveRun) {
-  Closure cb = Bind([] {});
+  RepeatingClosure cb = BindRepeating([] {});
   ASSERT_TRUE(cb);
   std::move(cb).Run();
   ASSERT_FALSE(cb);
 
-  const Closure cb2 = Bind([] {});
+  const RepeatingClosure cb2 = BindRepeating([] {});
   ASSERT_TRUE(cb2);
   std::move(cb2).Run();
   ASSERT_TRUE(cb2);
@@ -162,7 +162,7 @@ TEST_F(CallbackTest, NullAfterMoveRun) {
 }
 
 TEST_F(CallbackTest, MaybeValidReturnsTrue) {
-  Callback<void()> cb(BindRepeating([]() {}));
+  RepeatingCallback<void()> cb = BindRepeating([]() {});
   // By default, MaybeValid() just returns true all the time.
   EXPECT_TRUE(cb.MaybeValid());
   cb.Run();
@@ -181,7 +181,8 @@ TEST_F(CallbackTest, MaybeValidInvalidateWeakPtrsOnSameSequence) {
   WeakPtrFactory<ClassWithAMethod> factory(&obj);
   WeakPtr<ClassWithAMethod> ptr = factory.GetWeakPtr();
 
-  Callback<void()> cb(BindRepeating(&ClassWithAMethod::TheMethod, ptr));
+  RepeatingCallback<void()> cb =
+      BindRepeating(&ClassWithAMethod::TheMethod, ptr);
   EXPECT_TRUE(cb.MaybeValid());
 
   factory.InvalidateWeakPtrs();
@@ -195,7 +196,8 @@ TEST_F(CallbackTest, MaybeValidInvalidateWeakPtrsOnOtherSequence) {
   WeakPtrFactory<ClassWithAMethod> factory(&obj);
   WeakPtr<ClassWithAMethod> ptr = factory.GetWeakPtr();
 
-  Callback<void()> cb(BindRepeating(&ClassWithAMethod::TheMethod, ptr));
+  RepeatingCallback<void()> cb =
+      BindRepeating(&ClassWithAMethod::TheMethod, ptr);
   EXPECT_TRUE(cb.MaybeValid());
 
   Thread other_thread("other_thread");
@@ -203,7 +205,7 @@ TEST_F(CallbackTest, MaybeValidInvalidateWeakPtrsOnOtherSequence) {
   other_thread.task_runner()->PostTask(
       FROM_HERE,
       BindOnce(
-          [](Callback<void()> cb) {
+          [](RepeatingCallback<void()> cb) {
             // Check that MaybeValid() _eventually_ returns false.
             const TimeDelta timeout = TestTimeouts::tiny_timeout();
             const TimeTicks begin = TimeTicks::Now();
@@ -220,10 +222,10 @@ TEST_F(CallbackTest, MaybeValidInvalidateWeakPtrsOnOtherSequence) {
 class CallbackOwner : public base::RefCounted<CallbackOwner> {
  public:
   explicit CallbackOwner(bool* deleted) {
-    // WrapRefCounted() here is needed to avoid the check failure in the Bind
-    // implementation, that refuses to create the first reference to ref-counted
-    // objects.
-    callback_ = Bind(&CallbackOwner::Unused, WrapRefCounted(this));
+    // WrapRefCounted() here is needed to avoid the check failure in the
+    // BindRepeating implementation, that refuses to create the first reference
+    // to ref-counted objects.
+    callback_ = BindRepeating(&CallbackOwner::Unused, WrapRefCounted(this));
     deleted_ = deleted;
   }
   void Reset() {
@@ -240,7 +242,7 @@ class CallbackOwner : public base::RefCounted<CallbackOwner> {
     FAIL() << "Should never be called";
   }
 
-  Closure callback_;
+  RepeatingClosure callback_;
   bool* deleted_;
 };
 
