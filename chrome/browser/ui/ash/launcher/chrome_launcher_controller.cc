@@ -288,7 +288,7 @@ ChromeLauncherController::~ChromeLauncherController() {
 
 void ChromeLauncherController::Init() {
   CreateBrowserShortcutLauncherItem();
-  UpdateAppLaunchersFromPref();
+  UpdateAppLaunchersFromSync();
 }
 
 ash::ShelfID ChromeLauncherController::CreateAppLauncherItem(
@@ -560,7 +560,7 @@ void ChromeLauncherController::ActiveUserChanged(
     controller->ActiveUserChanged(user_email);
   // Update the user specific shell properties from the new user profile.
   // Shelf preferences are loaded in ChromeLauncherController::AttachProfile.
-  UpdateAppLaunchersFromPref();
+  UpdateAppLaunchersFromSync();
 
   // Restore the order of running, but unpinned applications for the activated
   // user.
@@ -747,7 +747,7 @@ void ChromeLauncherController::OnAppInstalled(
     }
   }
 
-  UpdateAppLaunchersFromPref();
+  UpdateAppLaunchersFromSync();
 }
 
 void ChromeLauncherController::OnAppUninstalledPrepared(
@@ -903,11 +903,11 @@ void ChromeLauncherController::SyncPinPosition(const ash::ShelfID& shelf_id) {
 }
 
 void ChromeLauncherController::OnSyncModelUpdated() {
-  UpdateAppLaunchersFromPref();
+  UpdateAppLaunchersFromSync();
 }
 
 void ChromeLauncherController::OnIsSyncingChanged() {
-  UpdateAppLaunchersFromPref();
+  UpdateAppLaunchersFromSync();
 
   // Initialize the local prefs if this is the first time sync has occurred.
   if (!PrefServiceSyncableFromProfile(profile())->IsSyncing())
@@ -918,21 +918,21 @@ void ChromeLauncherController::OnIsSyncingChanged() {
                 ash::prefs::kShelfAutoHideBehavior);
 }
 
-void ChromeLauncherController::ScheduleUpdateAppLaunchersFromPref() {
+void ChromeLauncherController::ScheduleUpdateAppLaunchersFromSync() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(&ChromeLauncherController::UpdateAppLaunchersFromPref,
+      base::BindOnce(&ChromeLauncherController::UpdateAppLaunchersFromSync,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ChromeLauncherController::UpdateAppLaunchersFromPref() {
+void ChromeLauncherController::UpdateAppLaunchersFromSync() {
   // Do not sync pin changes during this function to avoid cyclical updates.
   // This function makes the shelf model reflect synced prefs, and should not
   // cyclically trigger sync changes (eg. ShelfItemAdded calls SyncPinPosition).
   ScopedPinSyncDisabler scoped_pin_sync_disabler = GetScopedPinSyncDisabler();
 
-  const std::vector<ash::ShelfID> pinned_apps = GetPinnedAppsFromPrefs(
-      profile()->GetPrefs(), launcher_controller_helper_.get());
+  const std::vector<ash::ShelfID> pinned_apps =
+      GetPinnedAppsFromSync(launcher_controller_helper_.get());
 
   int index = 0;
   // Skip the app list and back button if they exist.
@@ -1142,14 +1142,14 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
   pref_change_registrar_.Init(profile()->GetPrefs());
   pref_change_registrar_.Add(
       prefs::kPolicyPinnedLauncherApps,
-      base::Bind(&ChromeLauncherController::UpdateAppLaunchersFromPref,
+      base::Bind(&ChromeLauncherController::UpdateAppLaunchersFromSync,
                  base::Unretained(this)));
   // Handling of prefs::kArcEnabled change should be called deferred to avoid
   // race condition when OnAppUninstalledPrepared for ARC apps is called after
-  // UpdateAppLaunchersFromPref.
+  // UpdateAppLaunchersFromSync.
   pref_change_registrar_.Add(
       arc::prefs::kArcEnabled,
-      base::Bind(&ChromeLauncherController::ScheduleUpdateAppLaunchersFromPref,
+      base::Bind(&ChromeLauncherController::ScheduleUpdateAppLaunchersFromSync,
                  base::Unretained(this)));
 
   std::unique_ptr<LauncherAppUpdater> extension_app_updater(

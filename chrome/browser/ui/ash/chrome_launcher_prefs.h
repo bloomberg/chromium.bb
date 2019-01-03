@@ -35,9 +35,9 @@ void RegisterChromeLauncherUserPrefs(PrefRegistrySimple* registry);
 // shelf prefs across devices after the very start of the user's first session.
 void InitLocalPref(PrefService* prefs, const char* local, const char* synced);
 
-// Get the list of pinned apps from preferences.
-std::vector<ash::ShelfID> GetPinnedAppsFromPrefs(
-    const PrefService* prefs,
+// Gets the ordered list of pinned apps that exist on device from the app sync
+// service.
+std::vector<ash::ShelfID> GetPinnedAppsFromSync(
     LauncherControllerHelper* helper);
 
 // Removes information about pin position from sync model for the app.

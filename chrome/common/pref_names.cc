@@ -2134,14 +2134,6 @@ const char kMediaGalleriesRememberedGalleries[] =
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
-// This value stores chrome icon's index in the launcher. This should be handled
-// separately with app shortcut's index because of ShelfModel's backward
-// compatibility. If we add chrome icon index to |kPinnedLauncherApps|, its
-// index is also stored in the |kPinnedLauncherApp| pref. It may causes
-// creating two chrome icons.
-const char kShelfChromeIconIndex[] = "shelf_chrome_icon_index";
-
-const char kPinnedLauncherApps[] = "pinned_launcher_apps";
 const char kPolicyPinnedLauncherApps[] = "policy_pinned_launcher_apps";
 #endif  // defined(OS_CHROMEOS)
 
