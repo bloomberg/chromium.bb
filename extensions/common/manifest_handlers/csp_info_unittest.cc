@@ -47,6 +47,14 @@ TEST_F(CSPInfoUnitTest, SandboxedPages) {
   scoped_refptr<Extension> extension5(
       LoadAndExpectSuccess("sandboxed_pages_valid_5.json"));
 
+  // Sandboxed pages specified for a platform app with a custom CSP.
+  scoped_refptr<Extension> extension6(
+      LoadAndExpectSuccess("sandboxed_pages_valid_6.json"));
+
+  // Sandboxed pages specified for a platform app with no custom CSP.
+  scoped_refptr<Extension> extension7(
+      LoadAndExpectSuccess("sandboxed_pages_valid_7.json"));
+
   const char kSandboxedCSP[] =
       "sandbox allow-scripts allow-forms allow-popups allow-modals; "
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'; child-src 'self';";
@@ -72,17 +80,21 @@ TEST_F(CSPInfoUnitTest, SandboxedPages) {
                                extension5.get(), "/path/test.ext"));
   EXPECT_EQ(kDefaultCSP, CSPInfo::GetResourceContentSecurityPolicy(
                              extension5.get(), "/test"));
+  EXPECT_EQ(kCustomSandboxedCSP, CSPInfo::GetResourceContentSecurityPolicy(
+                                     extension6.get(), "/test"));
+  EXPECT_EQ(kSandboxedCSP, CSPInfo::GetResourceContentSecurityPolicy(
+                               extension7.get(), "/test"));
 
   Testcase testcases[] = {
       Testcase("sandboxed_pages_invalid_1.json",
                errors::kInvalidSandboxedPagesList),
       Testcase("sandboxed_pages_invalid_2.json", errors::kInvalidSandboxedPage),
       Testcase("sandboxed_pages_invalid_3.json",
-               errors::kInvalidSandboxedPagesCSP),
+               GetInvalidManifestKeyError(keys::kSandboxedPagesCSP)),
       Testcase("sandboxed_pages_invalid_4.json",
-               errors::kInvalidSandboxedPagesCSP),
+               GetInvalidManifestKeyError(keys::kSandboxedPagesCSP)),
       Testcase("sandboxed_pages_invalid_5.json",
-               errors::kInvalidSandboxedPagesCSP)};
+               GetInvalidManifestKeyError(keys::kSandboxedPagesCSP))};
   RunTestcases(testcases, base::size(testcases), EXPECT_TYPE_ERROR);
 }
 

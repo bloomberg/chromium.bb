@@ -425,7 +425,6 @@ extern const char kInvalidRequirements[];
 extern const char kInvalidRunAt[];
 extern const char kInvalidSandboxedPagesList[];
 extern const char kInvalidSandboxedPage[];
-extern const char kInvalidSandboxedPagesCSP[];
 extern const char kInvalidSearchEngineMissingKeys[];
 extern const char kInvalidSearchEngineURL[];
 extern const char kInvalidShortName[];

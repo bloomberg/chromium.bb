@@ -181,6 +181,9 @@ class Manifest {
 
   // These access the wrapped manifest value, returning false when the property
   // does not exist or if the manifest type can't access it.
+  // TODO(karandeepb): These methods should be changed to use base::StringPiece.
+  // Better, we should pass a list of path components instead of a unified
+  // |path| to do away with our usage of deprecated base::Value methods.
   bool HasKey(const std::string& key) const;
   bool HasPath(const std::string& path) const;
   bool Get(const std::string& path, const base::Value** out_value) const;

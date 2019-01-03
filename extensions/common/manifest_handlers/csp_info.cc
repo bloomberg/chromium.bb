@@ -31,6 +31,10 @@ const char kDefaultContentSecurityPolicy[] =
     "script-src 'self' blob: filesystem: chrome-extension-resource:; "
     "object-src 'self' blob: filesystem:;";
 
+const char kDefaultSandboxedPageContentSecurityPolicy[] =
+    "sandbox allow-scripts allow-forms allow-popups allow-modals; "
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'; child-src 'self';";
+
 const char kExtensionPagesKey[] = "extension_pages";
 const char kExtensionPagesPath[] = "content_security_policy.extension_pages";
 
@@ -84,6 +88,14 @@ base::string16 GetInvalidManifestKeyError(base::StringPiece key) {
   return ErrorUtils::FormatErrorMessageUTF16(errors::kInvalidManifestKey, key);
 }
 
+// Returns null if the manifest type can't access the path. Else returns the
+// corresponding Value.
+const base::Value* GetManifestPath(const Extension* extension,
+                                   const char* path) {
+  const base::Value* value = nullptr;
+  return extension->manifest()->Get(path, &value) ? value : nullptr;
+}
+
 }  // namespace
 
 CSPInfo::CSPInfo(const std::string& security_policy)
@@ -102,12 +114,21 @@ const std::string& CSPInfo::GetContentSecurityPolicy(
 }
 
 // static
+const std::string& CSPInfo::GetSandboxContentSecurityPolicy(
+    const Extension* extension) {
+  CSPInfo* csp_info = static_cast<CSPInfo*>(
+      extension->GetManifestData(keys::kContentSecurityPolicy));
+  return csp_info ? csp_info->sandbox_content_security_policy
+                  : base::EmptyString();
+}
+
+// static
 const std::string& CSPInfo::GetResourceContentSecurityPolicy(
     const Extension* extension,
     const std::string& relative_path) {
-  return SandboxedPageInfo::IsSandboxedPage(extension, relative_path) ?
-      SandboxedPageInfo::GetContentSecurityPolicy(extension) :
-      GetContentSecurityPolicy(extension);
+  return SandboxedPageInfo::IsSandboxedPage(extension, relative_path)
+             ? GetSandboxContentSecurityPolicy(extension)
+             : GetContentSecurityPolicy(extension);
 }
 
 CSPHandler::CSPHandler() = default;
@@ -124,9 +145,7 @@ bool CSPHandler::Parse(Extension* extension, base::string16* error) {
   // "content_security_policy" : {
   //     "extension_pages" : ""
   //  }
-  const base::Value* csp = nullptr;
-  bool result = extension->manifest()->Get(key, &csp);
-  DCHECK_EQ(result, !!csp);
+  const base::Value* csp = GetManifestPath(extension, key);
 
   // TODO(crbug.com/914224): Remove the channel check once the support for the
   // dictionary key is launched to other channels.
@@ -136,7 +155,9 @@ bool CSPHandler::Parse(Extension* extension, base::string16* error) {
   if (csp_dictionary_supported && csp && csp->is_dict())
     return ParseCSPDictionary(extension, error, *csp);
 
-  return ParseExtensionPagesCSP(extension, error, key, csp);
+  return ParseExtensionPagesCSP(extension, error, key, csp) &&
+         ParseSandboxCSP(extension, error, keys::kSandboxedPagesCSP,
+                         GetManifestPath(extension, keys::kSandboxedPagesCSP));
 }
 
 bool CSPHandler::ParseCSPDictionary(Extension* extension,
@@ -150,7 +171,7 @@ bool CSPHandler::ParseCSPDictionary(Extension* extension,
 bool CSPHandler::ParseExtensionPagesCSP(
     Extension* extension,
     base::string16* error,
-    const std::string& manifest_key,
+    base::StringPiece manifest_key,
     const base::Value* content_security_policy) {
   if (!content_security_policy)
     return SetDefaultExtensionPagesCSP(extension);
@@ -181,6 +202,36 @@ bool CSPHandler::ParseExtensionPagesCSP(
   return true;
 }
 
+bool CSPHandler::ParseSandboxCSP(Extension* extension,
+                                 base::string16* error,
+                                 base::StringPiece manifest_key,
+                                 const base::Value* sandbox_csp) {
+  if (!sandbox_csp) {
+    SetSandboxCSP(extension, kDefaultSandboxedPageContentSecurityPolicy);
+    return true;
+  }
+
+  if (!sandbox_csp->is_string()) {
+    *error = GetInvalidManifestKeyError(manifest_key);
+    return false;
+  }
+
+  const std::string& sandbox_csp_str = sandbox_csp->GetString();
+  if (!csp_validator::ContentSecurityPolicyIsLegal(sandbox_csp_str) ||
+      !csp_validator::ContentSecurityPolicyIsSandboxed(sandbox_csp_str,
+                                                       extension->GetType())) {
+    *error = GetInvalidManifestKeyError(manifest_key);
+    return false;
+  }
+
+  std::vector<InstallWarning> warnings;
+  std::string effective_sandbox_csp =
+      csp_validator::GetEffectiveSandoxedPageCSP(sandbox_csp_str, &warnings);
+  SetSandboxCSP(extension, std::move(effective_sandbox_csp));
+  extension->AddInstallWarnings(std::move(warnings));
+  return true;
+}
+
 bool CSPHandler::SetDefaultExtensionPagesCSP(Extension* extension) {
   // TODO(abarth): Should we continue to let extensions override the
   //               default Content-Security-Policy?
@@ -199,6 +250,17 @@ bool CSPHandler::SetDefaultExtensionPagesCSP(Extension* extension) {
   return true;
 }
 
+void CSPHandler::SetSandboxCSP(Extension* extension, std::string sandbox_csp) {
+  CHECK(csp_validator::ContentSecurityPolicyIsSandboxed(sandbox_csp,
+                                                        extension->GetType()));
+
+  // By now we must have parsed the extension page CSP.
+  CSPInfo* csp_info = static_cast<CSPInfo*>(
+      extension->GetManifestData(keys::kContentSecurityPolicy));
+  DCHECK(csp_info);
+  csp_info->sandbox_content_security_policy = std::move(sandbox_csp);
+}
+
 bool CSPHandler::AlwaysParseForType(Manifest::Type type) const {
   return type == Manifest::TYPE_PLATFORM_APP ||
          type == Manifest::TYPE_EXTENSION ||
@@ -207,7 +269,8 @@ bool CSPHandler::AlwaysParseForType(Manifest::Type type) const {
 
 base::span<const char* const> CSPHandler::Keys() const {
   static constexpr const char* kKeys[] = {
-      keys::kContentSecurityPolicy, keys::kPlatformAppContentSecurityPolicy};
+      keys::kContentSecurityPolicy, keys::kPlatformAppContentSecurityPolicy,
+      keys::kSandboxedPagesCSP};
   return kKeys;
 }
 
