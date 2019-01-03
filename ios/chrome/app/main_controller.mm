@@ -278,16 +278,21 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // Possible results of snapshotting at the moment the user enters the tab
 // switcher. These values are persisted to logs. Entries should not be
 // renumbered and numeric values should never be reused.
-enum class ShowTabSwitcherSnapshotResult {
-  // Snapshot was not attempted, since the loading page will result in a stale
-  // snapshot.
-  kSnapshotNotAttemptedBecausePageIsLoading = 0,
-  // Snapshot was attempted, but the image is either the default image or nil.
-  kSnapshotAttemptedAndFailed = 1,
-  // Snapshot successfully taken.
-  kSnapshotSucceeded = 2,
+enum class EnterTabSwitcherSnapshotResult {
+  // Page was loading at the time of the snapshot request, and the snapshot
+  // failed.
+  kPageLoadingAndSnapshotFailed = 0,
+  // Page was loading at the time of the snapshot request, and the snapshot
+  // succeeded.
+  kPageLoadingAndSnapshotSucceeded = 1,
+  // Page was not loading at the time of the snapshot request, and the snapshot
+  // failed.
+  kPageNotLoadingAndSnapshotFailed = 2,
+  // Page was not loading at the time of the snapshot request, and the snapshot
+  // succeeded.
+  kPageNotLoadingAndSnapshotSucceeded = 3,
   // kMaxValue should share the value of the highest enumerator.
-  kMaxValue = kSnapshotSucceeded,
+  kMaxValue = kPageNotLoadingAndSnapshotSucceeded,
 };
 
 }  // namespace
@@ -1414,6 +1419,47 @@ enum class ShowTabSwitcherSnapshotResult {
 }
 
 - (void)prepareTabSwitcher {
+  web::WebState* currentWebState = self.currentBVC.tabModel.currentTab.webState;
+  if (currentWebState) {
+    // In order to generate the transition between the current browser view
+    // controller and the tab switcher controller it's possible that multiple
+    // screenshots of the same tab are taken. Since taking a screenshot is
+    // expensive we activate snapshot coalescing in the scope of this function
+    // which will cache the first snapshot for the tab and reuse it instead of
+    // regenerating a new one each time.
+    base::ScopedClosureRunner runner;
+    SnapshotTabHelper::FromWebState(currentWebState)
+        ->SetSnapshotCoalescingEnabled(true);
+    runner.ReplaceClosure(base::BindOnce(^{
+      SnapshotTabHelper::FromWebState(currentWebState)
+          ->SetSnapshotCoalescingEnabled(false);
+    }));
+
+    BOOL loading = currentWebState->IsLoading();
+    SnapshotTabHelper::FromWebState(currentWebState)
+        ->UpdateSnapshotWithCallback(^(UIImage* snapshot) {
+          BOOL failed =
+              !snapshot ||
+              snapshot == SnapshotTabHelper::GetDefaultSnapshotImage();
+          EnterTabSwitcherSnapshotResult snapshotResult;
+          if (loading && failed) {
+            snapshotResult =
+                EnterTabSwitcherSnapshotResult::kPageLoadingAndSnapshotFailed;
+          } else if (loading && !failed) {
+            snapshotResult = EnterTabSwitcherSnapshotResult::
+                kPageLoadingAndSnapshotSucceeded;
+          } else if (!loading && failed) {
+            snapshotResult = EnterTabSwitcherSnapshotResult::
+                kPageNotLoadingAndSnapshotFailed;
+          } else {
+            DCHECK(!loading && !failed);
+            snapshotResult = EnterTabSwitcherSnapshotResult::
+                kPageNotLoadingAndSnapshotSucceeded;
+          }
+          UMA_HISTOGRAM_ENUMERATION("IOS.EnterTabSwitcherSnapshotResult",
+                                    snapshotResult);
+        });
+  }
   [self.mainCoordinator prepareToShowTabSwitcher:_tabSwitcher];
 }
 
@@ -1904,45 +1950,6 @@ enum class ShowTabSwitcherSnapshotResult {
 }
 
 - (void)showTabSwitcher {
-  BrowserViewController* currentBVC = self.currentBVC;
-  Tab* currentTab = [[currentBVC tabModel] currentTab];
-
-  // In order to generate the transition between the current browser view
-  // controller and the tab switcher controller it's possible that multiple
-  // screenshots of the same tab are taken. Since taking a screenshot is
-  // expensive we activate snapshot coalescing in the scope of this function
-  // which will cache the first snapshot for the tab and reuse it instead of
-  // regenerating a new one each time.
-  base::ScopedClosureRunner runner;
-  if (currentTab && currentTab.webState) {
-    SnapshotTabHelper::FromWebState(currentTab.webState)
-        ->SetSnapshotCoalescingEnabled(true);
-    runner.ReplaceClosure(base::BindOnce(^{
-      SnapshotTabHelper::FromWebState(currentTab.webState)
-          ->SetSnapshotCoalescingEnabled(false);
-    }));
-
-      if (currentTab.webState->IsLoading()) {
-        UMA_HISTOGRAM_ENUMERATION(
-            "IOS.ShowTabSwitcherSnapshotResult",
-            ShowTabSwitcherSnapshotResult::
-                kSnapshotNotAttemptedBecausePageIsLoading);
-      } else {
-        SnapshotTabHelper::FromWebState(currentTab.webState)
-            ->UpdateSnapshotWithCallback(^(UIImage* snapshot) {
-              if (snapshot == SnapshotTabHelper::GetDefaultSnapshotImage()) {
-                UMA_HISTOGRAM_ENUMERATION(
-                    "IOS.ShowTabSwitcherSnapshotResult",
-                    ShowTabSwitcherSnapshotResult::kSnapshotAttemptedAndFailed);
-              } else {
-                UMA_HISTOGRAM_ENUMERATION(
-                    "IOS.ShowTabSwitcherSnapshotResult",
-                    ShowTabSwitcherSnapshotResult::kSnapshotSucceeded);
-              }
-            });
-      }
-  }
-
   DCHECK(_tabSwitcher);
   // Tab switcher implementations may need to rebuild state before being
   // displayed.
