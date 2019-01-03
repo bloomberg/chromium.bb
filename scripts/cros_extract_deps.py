@@ -3,7 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Command to extract the dependancy tree for a given package."""
+"""Command to extract the dependancy tree for a given package.
+
+This produces JSON output for other tools to process.
+"""
 
 from __future__ import print_function
 
@@ -221,9 +224,7 @@ def GenerateCPEList(deps_list, sysroot):
 
 def ParseArgs(argv):
   """Parse command line arguments."""
-  parser = commandline.ArgumentParser(description="""
-This extracts the dependency tree for the specified package, and outputs it
-to stdout, in a serialized JSON format.""")
+  parser = commandline.ArgumentParser(description=__doc__)
   target = parser.add_mutually_exclusive_group()
   target.add_argument('--sysroot', type='path', help='Path to the sysroot.')
   target.add_argument('--board', help='Board name.')
@@ -233,8 +234,10 @@ to stdout, in a serialized JSON format.""")
                       help='Output either traditional deps or CPE-only JSON.')
   parser.add_argument('--output-path', default=None,
                       help='Write output to the given path.')
-  known_args, unknown_args = parser.parse_known_args(argv)
-  return (known_args, unknown_args)
+  parser.add_argument('pkgs', nargs='*')
+  opts = parser.parse_args(argv)
+  opts.Freeze()
+  return opts
 
 
 def ExtractDeps(sysroot, package_list, formatting='deps'):
@@ -253,15 +256,14 @@ def ExtractDeps(sysroot, package_list, formatting='deps'):
 
 
 def main(argv):
-  known_args, unknown_args = ParseArgs(argv)
+  opts = ParseArgs(argv)
 
-  sysroot = known_args.sysroot or cros_build_lib.GetSysroot(known_args.board)
-  pkgs = list(unknown_args)
-  deps_list = ExtractDeps(sysroot, pkgs, known_args.format)
+  sysroot = opts.sysroot or cros_build_lib.GetSysroot(opts.board)
+  deps_list = ExtractDeps(sysroot, opts.pkgs, opts.format)
 
   deps_output = json.dumps(deps_list, sort_keys=True, indent=2)
-  if known_args.output_path:
-    with open(known_args.output_path, 'w') as f:
+  if opts.output_path:
+    with open(opts.output_path, 'w') as f:
       f.write(deps_output)
   else:
     print(deps_output)
