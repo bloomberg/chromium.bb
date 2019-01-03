@@ -24,6 +24,8 @@
 #define DISABLE_TRELLISQ_SEARCH 0
 
 #define MAX_MESH_SPEED 5  // Max speed setting for mesh motion method
+// Max speed setting for tx domain evaluation
+#define MAX_TX_DOMAIN_EVAL_SPEED 5
 static MESH_PATTERN
     good_quality_mesh_patterns[MAX_MESH_SPEED + 1][MAX_MESH_STEP] = {
       { { 64, 8 }, { 28, 4 }, { 15, 1 }, { 7, 1 } },
@@ -49,6 +51,15 @@ static MESH_PATTERN intrabc_mesh_patterns[MAX_MESH_SPEED + 1][MAX_MESH_STEP] = {
 };
 static uint8_t intrabc_max_mesh_pct[MAX_MESH_SPEED + 1] = { 100, 100, 100,
                                                             25,  25,  10 };
+
+// Threshold values to be used for pruning the txfm_domain_distortion
+// based on block MSE
+// TODO(any): Extend the threshold logic for faster presets and refine the
+// thresholds
+static unsigned int tx_domain_dist_thresholds[MAX_TX_DOMAIN_EVAL_SPEED + 1] = {
+  UINT_MAX, 162754, 22026, 0, 0, 0
+};
+
 // scaling values to be used for gating wedge/compound segment based on best
 // approximate rd
 static int comp_type_rd_threshold_mul[3] = { 1, 11, 12 };
@@ -264,6 +275,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->prune_motion_mode_level = 2;
     sf->gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3_ARF2;
     sf->cb_pred_filter_search = 1;
+    sf->use_transform_domain_distortion = boosted ? 0 : 1;
   }
 
   if (speed >= 2) {
@@ -639,6 +651,10 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
       comp_type_rd_threshold_mul[sf->prune_comp_type_by_comp_avg];
   cpi->max_comp_type_rd_threshold_div =
       comp_type_rd_threshold_div[sf->prune_comp_type_by_comp_avg];
+  int tx_domain_speed = (oxcf->speed >= MAX_TX_DOMAIN_EVAL_SPEED)
+                            ? MAX_TX_DOMAIN_EVAL_SPEED
+                            : oxcf->speed;
+  cpi->tx_domain_dist_threshold = tx_domain_dist_thresholds[tx_domain_speed];
 
 #if CONFIG_DIST_8X8
   if (sf->use_transform_domain_distortion > 0) cpi->oxcf.using_dist_8x8 = 0;

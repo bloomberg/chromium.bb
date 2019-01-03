@@ -2147,7 +2147,8 @@ static unsigned pixel_dist(const AV1_COMP *const cpi, const MACROBLOCK *x,
 static INLINE int64_t pixel_diff_dist(const MACROBLOCK *x, int plane,
                                       int blk_row, int blk_col,
                                       const BLOCK_SIZE plane_bsize,
-                                      const BLOCK_SIZE tx_bsize) {
+                                      const BLOCK_SIZE tx_bsize,
+                                      unsigned int *block_mse_q8) {
   int visible_rows, visible_cols;
   const MACROBLOCKD *xd = &x->e_mbd;
   get_txb_dimensions(xd, plane, plane_bsize, blk_row, blk_col, tx_bsize, NULL,
@@ -2170,7 +2171,11 @@ static INLINE int64_t pixel_diff_dist(const MACROBLOCK *x, int plane,
   }
 #endif
   diff += ((blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]);
-  return aom_sum_squares_2d_i16(diff, diff_stride, visible_cols, visible_rows);
+  uint64_t sse =
+      aom_sum_squares_2d_i16(diff, diff_stride, visible_cols, visible_rows);
+  if (block_mse_q8 != NULL)
+    *block_mse_q8 = (unsigned int)((256 * sse) / (visible_cols * visible_rows));
+  return sse;
 }
 
 int av1_count_colors(const uint8_t *src, int stride, int rows, int cols,
@@ -3132,8 +3137,22 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     allowed_tx_mask = (1 << txk_start);
   }
 
+  const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
+  int64_t block_sse = 0;
+  unsigned int block_mse_q8 = UINT_MAX;
+  block_sse = pixel_diff_dist(x, plane, blk_row, blk_col, plane_bsize, tx_bsize,
+                              &block_mse_q8);
+  assert(block_mse_q8 != UINT_MAX);
+  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    block_sse = ROUND_POWER_OF_TWO(block_sse, (xd->bd - 8) * 2);
+    block_mse_q8 = ROUND_POWER_OF_TWO(block_mse_q8, (xd->bd - 8) * 2);
+  }
+  block_sse *= 16;
+  // Tranform domain distortion is accurate for higher residuals.
+  // TODO(any): Experiment with variance and mean based thresholds
   int use_transform_domain_distortion =
       (cpi->sf.use_transform_domain_distortion > 0) &&
+      (block_mse_q8 >= cpi->tx_domain_dist_threshold) &&
       // Any 64-pt transforms only preserves half the coefficients.
       // Therefore transform domain distortion is not valid for these
       // transform sizes.
@@ -3150,13 +3169,6 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     calc_pixel_domain_distortion_final = use_transform_domain_distortion = 0;
 
   const uint16_t *eobs_ptr = x->plane[plane].eobs;
-
-  const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
-  int64_t block_sse =
-      pixel_diff_dist(x, plane, blk_row, blk_col, plane_bsize, tx_bsize);
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-    block_sse = ROUND_POWER_OF_TWO(block_sse, (xd->bd - 8) * 2);
-  block_sse *= 16;
 
   for (TX_TYPE tx_type = txk_start; tx_type <= txk_end; ++tx_type) {
     if (!(allowed_tx_mask & (1 << tx_type))) continue;
@@ -5664,7 +5676,8 @@ static int predict_skip_flag(MACROBLOCK *x, BLOCK_SIZE bsize, int64_t *dist,
   const MACROBLOCKD *xd = &x->e_mbd;
   const int16_t dc_q = av1_dc_quant_QTX(x->qindex, 0, xd->bd);
 
-  *dist = pixel_diff_dist(x, 0, 0, 0, bsize, bsize);
+  *dist = pixel_diff_dist(x, 0, 0, 0, bsize, bsize, NULL);
+
   const int64_t mse = *dist / bw / bh;
   // Normalized quantizer takes the transform upscaling factor (8 for tx size
   // smaller than 32) into account.
@@ -5719,11 +5732,13 @@ static void calc_regional_sse(MACROBLOCK *x, BLOCK_SIZE bsize, int64_t dist,
   const BLOCK_SIZE split_size = get_partition_subsize(bsize, PARTITION_SPLIT);
   int64_t dist_0, dist_1, dist_2, dist_3;
   MACROBLOCKD *xd = &x->e_mbd;
-  dist_0 = pixel_diff_dist(x, AOM_PLANE_Y, 0, 0, bsize, split_size);
-  dist_1 = pixel_diff_dist(x, AOM_PLANE_Y, 0, bw_mi / 2, bsize, split_size);
-  dist_2 = pixel_diff_dist(x, AOM_PLANE_Y, bh_mi / 2, 0, bsize, split_size);
-  dist_3 =
-      pixel_diff_dist(x, AOM_PLANE_Y, bh_mi / 2, bw_mi / 2, bsize, split_size);
+  dist_0 = pixel_diff_dist(x, AOM_PLANE_Y, 0, 0, bsize, split_size, NULL);
+  dist_1 =
+      pixel_diff_dist(x, AOM_PLANE_Y, 0, bw_mi / 2, bsize, split_size, NULL);
+  dist_2 =
+      pixel_diff_dist(x, AOM_PLANE_Y, bh_mi / 2, 0, bsize, split_size, NULL);
+  dist_3 = pixel_diff_dist(x, AOM_PLANE_Y, bh_mi / 2, bw_mi / 2, bsize,
+                           split_size, NULL);
 
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     dist = ROUND_POWER_OF_TWO(dist, (xd->bd - 8) * 2);

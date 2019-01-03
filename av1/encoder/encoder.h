@@ -838,6 +838,8 @@ typedef struct AV1_COMP {
   int max_comp_type_rd_threshold_mul;
   int max_comp_type_rd_threshold_div;
 
+  unsigned int tx_domain_dist_threshold;
+
   AV1LfSync lf_row_sync;
   AV1LrSync lr_row_sync;
   AV1LrStruct lr_ctxt;
