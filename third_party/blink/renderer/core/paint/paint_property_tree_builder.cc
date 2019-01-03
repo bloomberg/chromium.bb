@@ -1255,6 +1255,9 @@ static bool IsPrintingRootLayoutView(const LayoutObject& object) {
   return !ToLocalFrame(parent_frame)->GetDocument()->Printing();
 }
 
+// TODO(wangxianzhu): Combine the logic by overriding LayoutBox::
+// ComputeShouldClipOverflow() in LayoutReplaced and subclasses and remove
+// this function.
 static bool NeedsOverflowClipForReplacedContents(
     const LayoutReplaced& replaced) {
   // <svg> may optionally allow overflow. If an overflow clip is required,
@@ -1262,18 +1265,17 @@ static bool NeedsOverflowClipForReplacedContents(
   if (replaced.IsSVGRoot())
     return ToLayoutSVGRoot(replaced).ShouldApplyViewportClip();
 
+  // A replaced element with border-radius always clips the content.
   if (replaced.StyleRef().HasBorderRadius())
     return true;
 
-  // Non-composited images have a micro-optimization to embed clip rects into
-  // the drawings instead of using a clip node.
-  bool is_spv1_composited =
-      replaced.HasLayer() && replaced.Layer()->GetCompositedLayerMapping();
-  if (replaced.IsImage() && !is_spv1_composited)
+  // ImagePainter (but not painters for LayoutMedia whose IsImage is also true)
+  // won't paint outside of the content box.
+  if (replaced.IsImage() && !replaced.IsMedia())
     return false;
 
-  // Embedded objects are always sized to fit the content rect.
-  if (replaced.IsLayoutEmbeddedContent())
+  // Non-plugin embedded contents are always sized to fit the content box.
+  if (replaced.IsLayoutEmbeddedContent() && !replaced.IsEmbeddedObject())
     return false;
 
   return true;
@@ -1423,15 +1425,6 @@ static bool CanOmitOverflowClip(const LayoutObject& object) {
   // BlockPainter for SPv1 clip. TODO(wangxianzhu): clean up.
   if (block.HasControlClip() || block.ShouldPaintCarets())
     return false;
-
-  if (object.IsLayoutReplaced()) {
-    const LayoutReplaced& replaced = ToLayoutReplaced(object);
-    if (replaced.StyleRef().HasBorderRadius())
-      return false;
-    LayoutRect replaced_content_rect = replaced.ReplacedContentRect();
-    return replaced_content_rect.IsEmpty() ||
-           replaced.PhysicalContentBoxRect().Contains(replaced_content_rect);
-  }
 
   // We need OverflowClip for hit-testing if the clip rect excluding overlay
   // scrollbars is different from the normal clip rect.

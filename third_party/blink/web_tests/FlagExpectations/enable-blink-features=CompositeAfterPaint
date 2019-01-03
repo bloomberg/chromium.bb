@@ -199,7 +199,6 @@ Bug(none) http/tests/navigation/same-document-scroll-position-restore.html [ Tim
 Bug(none) ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ Failure ]
 Bug(none) inspector-protocol/layers/paint-profiler.js [ Failure ]
 Bug(none) inspector-protocol/layers/get-layers.js [ Timeout ]
-crbug.com/912357 media/video-object-fit.html [ Failure ]
 Bug(none) paint/pagination/pagination-change-clip-crash.html [ Failure ]
 Bug(none) virtual/sampling-heap-profiler/inspector-protocol/memory/sampling-native-profile-blink-gc.js [ Failure ]
 
