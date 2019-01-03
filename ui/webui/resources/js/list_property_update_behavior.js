@@ -39,7 +39,8 @@ const ListPropertyUpdateBehavior = {
       const spliceParams = [index, deleteCount].concat(added);
       list.splice.apply(list, spliceParams);
     });
-    if (splices.length > 0)
+    if (splices.length > 0) {
       this.notifySplices(propertyName, splices);
+    }
   },
 };

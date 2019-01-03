@@ -92,8 +92,9 @@ Polymer({
 
   /** Only focuses the button if it's not disabled. */
   focusTakePhotoButton: function() {
-    if (this.cameraOnline_)
+    if (this.cameraOnline_) {
       this.$.takePhoto.focus();
+    }
   },
 
   /**
@@ -102,8 +103,9 @@ Polymer({
    * 'photoDataURL' property containing the photo encoded as a data URL.
    */
   takePhoto: function() {
-    if (!this.cameraOnline_ || this.cameraCaptureInProgress_)
+    if (!this.cameraOnline_ || this.cameraCaptureInProgress_) {
       return;
+    }
     this.cameraCaptureInProgress_ = true;
 
     /** Pre-allocate all frames needed for capture. */
@@ -115,8 +117,9 @@ Polymer({
         height: CAPTURE_SIZE.height / 2
       };
       const captureFrameCount = CAPTURE_DURATION_MS / CAPTURE_INTERVAL_MS;
-      while (frames.length < captureFrameCount)
+      while (frames.length < captureFrameCount) {
         frames.push(this.allocateFrame_(captureSize));
+      }
     } else {
       frames.push(this.allocateFrame_(CAPTURE_SIZE));
     }
@@ -189,8 +192,9 @@ Polymer({
    */
   stopVideoTracks_: function(stream) {
     const tracks = stream.getVideoTracks();
-    for (let i = 0; i < tracks.length; i++)
+    for (let i = 0; i < tracks.length; i++) {
       tracks[i].stop();
+    }
   },
 
   /**
@@ -270,8 +274,9 @@ Polymer({
     });
 
     /** No need for further processing if single frame. */
-    if (encodedImages.length == 1)
+    if (encodedImages.length == 1) {
       return encodedImages[0];
+    }
 
     /** Create forward/backward image sequence. */
     const forwardBackwardImageSequence =

@@ -74,18 +74,21 @@ Polymer({
 
   /** @private */
   networkPropertiesChanged_: function(newValue, oldValue) {
-    if (!this.networkProperties)
+    if (!this.networkProperties) {
       return;
+    }
 
-    if (!oldValue || newValue.GUID != oldValue.GUID)
+    if (!oldValue || newValue.GUID != oldValue.GUID) {
       this.savedNameservers_ = [];
+    }
 
     // Update the 'nameservers' property.
     let nameservers = [];
     const ipv4 =
         CrOnc.getIPConfigForType(this.networkProperties, CrOnc.IPType.IPV4);
-    if (ipv4 && ipv4.NameServers)
+    if (ipv4 && ipv4.NameServers) {
       nameservers = ipv4.NameServers;
+    }
 
     // Update the 'nameserversType' property.
     const configType =
@@ -114,16 +117,18 @@ Polymer({
   setNameservers_: function(nameserversType, nameservers, sendNameservers) {
     if (nameserversType == 'custom') {
       // Add empty entries for unset custom nameservers.
-      for (let i = nameservers.length; i < this.MAX_NAMESERVERS; ++i)
+      for (let i = nameservers.length; i < this.MAX_NAMESERVERS; ++i) {
         nameservers[i] = '';
+      }
       this.savedNameservers_ = nameservers.slice();
     }
     this.nameservers_ = nameservers;
     // Set nameserversType_ after dom-repeat has been stamped.
     this.async(() => {
       this.nameserversType_ = nameserversType;
-      if (sendNameservers)
+      if (sendNameservers) {
         this.sendNameServers_();
+      }
     });
   },
 
@@ -145,8 +150,9 @@ Polymer({
    * @private
    */
   showNameservers_: function(nameserversType, type, nameservers) {
-    if (nameserversType != type)
+    if (nameserversType != type) {
       return false;
+    }
     return type == 'custom' || nameservers.length > 0;
   },
 

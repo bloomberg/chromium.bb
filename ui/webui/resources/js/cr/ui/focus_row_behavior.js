@@ -34,8 +34,9 @@ cr.define('cr.ui', function() {
      */
     onKeydown(row, e) {
       // Prevent iron-list from changing the focus on enter.
-      if (e.key == 'Enter')
+      if (e.key == 'Enter') {
         e.stopPropagation();
+      }
 
       return false;
     }
@@ -146,18 +147,21 @@ cr.define('cr.ui', function() {
       this.unlisten(this, 'mousedown', 'onMouseDown_');
       this.unlisten(this, 'blur', 'onBlur_');
       this.removeObservers_();
-      if (this.row_)
+      if (this.row_) {
         this.row_.destroy();
+      }
     },
 
     /** @private */
     updateFirstControl_: function() {
       const newFirstControl = this.row_.getFirstFocusable();
-      if (newFirstControl === this.firstControl_)
+      if (newFirstControl === this.firstControl_) {
         return;
+      }
 
-      if (this.firstControl_)
+      if (this.firstControl_) {
         this.unlisten(this.firstControl_, 'keydown', 'onFirstControlKeydown_');
+      }
       this.firstControl_ = newFirstControl;
       if (this.firstControl_) {
         this.listen(
@@ -168,12 +172,14 @@ cr.define('cr.ui', function() {
 
     /** @private */
     removeObservers_: function() {
-      if (this.firstControl_)
+      if (this.firstControl_) {
         this.unlisten(this.firstControl_, 'keydown', 'onFirstControlKeydown_');
-      if (this.controlObservers_.length > 0)
+      }
+      if (this.controlObservers_.length > 0) {
         this.controlObservers_.forEach(observer => {
           observer.disconnect();
         });
+      }
       this.controlObservers_ = [];
     },
 
@@ -275,19 +281,22 @@ cr.define('cr.ui', function() {
 
     /** @param {!KeyboardEvent} e */
     onFirstControlKeydown_: function(e) {
-      if (e.shiftKey && e.key === 'Tab')
+      if (e.shiftKey && e.key === 'Tab') {
         this.focus();
+      }
     },
 
     /** @private */
     ironListTabIndexChanged_: function() {
-      if (this.row_)
+      if (this.row_) {
         this.row_.makeActive(this.ironListTabIndex == 0);
+      }
 
       // If a new row is being focused, reset listBlurred. This means an item
       // has been removed and iron-list is about to focus the next item.
-      if (this.ironListTabIndex == 0)
+      if (this.ironListTabIndex == 0) {
         this.listBlurred = false;
+      }
     },
 
     /** @private */
@@ -304,8 +313,9 @@ cr.define('cr.ui', function() {
 
       const node =
           e.relatedTarget ? /** @type {!Node} */ (e.relatedTarget) : null;
-      if (!this.parentNode.contains(node))
+      if (!this.parentNode.contains(node)) {
         this.listBlurred = true;
+      }
     },
   };
 

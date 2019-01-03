@@ -92,19 +92,20 @@
       // dom-if.
       // TODO(crbug.com/738611): After migration to Polymer 2, remove Polymer 1
       // references.
-      if (Polymer.DomIf)
+      if (Polymer.DomIf) {
         this.$$('slot').addEventListener('slotchange', this.populateBound_);
-      else
+      } else {
         this.observer_ = Polymer.dom(this).observeNodes(this.populateBound_);
+      }
 
       this.populate_();
     },
 
     /** @override */
     detached: function() {
-      if (Polymer.DomIf)
+      if (Polymer.DomIf) {
         this.$$('slot').removeEventListener('slotchange', this.populateBound_);
-      else if (this.observer_) {
+      } else if (this.observer_) {
         Polymer.dom(this).unobserveNodes(
             /** @type {!PolymerDomApi.ObserveHandle} */ (this.observer_));
       }
@@ -113,13 +114,15 @@
 
     /** @override */
     focus: function() {
-      if (this.disabled || !this.buttons_)
+      if (this.disabled || !this.buttons_) {
         return;
+      }
 
       const radio =
           this.buttons_.find(radio => radio.getAttribute('tabindex') == '0');
-      if (radio)
+      if (radio) {
         radio.focus();
+      }
     },
 
     /**
@@ -127,15 +130,18 @@
      * @private
      */
     onKeyDown_: function(event) {
-      if (this.disabled)
+      if (this.disabled) {
         return;
+      }
 
-      if (event.ctrlKey || event.shiftKey || event.metaKey || event.altKey)
+      if (event.ctrlKey || event.shiftKey || event.metaKey || event.altKey) {
         return;
+      }
 
       const targetElement = /** @type {!Element} */ (event.target);
-      if (!this.buttons_.includes(targetElement))
+      if (!this.buttons_.includes(targetElement)) {
         return;
+      }
 
       if (event.key == ' ' || event.key == 'Enter') {
         event.preventDefault();
@@ -144,8 +150,9 @@
       }
 
       const enabledRadios = this.buttons_.filter(isEnabled);
-      if (enabledRadios.length == 0)
+      if (enabledRadios.length == 0) {
         return;
+      }
 
       let selectedIndex;
       const max = enabledRadios.length - 1;
@@ -187,12 +194,14 @@
      */
     onClick_: function(event) {
       const path = event.composedPath();
-      if (path.some(target => /^a$/i.test(target.tagName)))
+      if (path.some(target => /^a$/i.test(target.tagName))) {
         return;
+      }
       const target = /** @type {!Element} */ (
           path.find(n => this.selectableRegExp_.test(n.tagName)));
-      if (target && this.buttons_.includes(target))
+      if (target && this.buttons_.includes(target)) {
         this.select_(/** @type {!Element} */ (target));
+      }
     },
 
     /** @private */
@@ -219,18 +228,21 @@
      * @private
      */
     select_: function(button) {
-      if (!isEnabled(button))
+      if (!isEnabled(button)) {
         return;
+      }
 
       const name = `${button.name}`;
-      if (this.selected != name)
+      if (this.selected != name) {
         this.selected = name;
+      }
     },
 
     /** @private */
     update_: function() {
-      if (!this.buttons_)
+      if (!this.buttons_) {
         return;
+      }
       let noneMadeFocusable = true;
       this.buttons_.forEach(radio => {
         radio.checked = this.selected != undefined &&
@@ -242,8 +254,9 @@
       });
       if (noneMadeFocusable && !this.disabled) {
         const focusable = this.buttons_.find(isEnabled);
-        if (focusable)
+        if (focusable) {
           focusable.setAttribute('tabindex', '0');
+        }
       }
     },
   });

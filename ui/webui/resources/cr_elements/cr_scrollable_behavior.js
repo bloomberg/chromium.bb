@@ -62,8 +62,9 @@ const CrScrollableBehavior = {
   },
 
   detached: function() {
-    if (this.intervalId_ !== null)
+    if (this.intervalId_ !== null) {
       clearInterval(this.intervalId_);
+    }
   },
 
   /**
@@ -72,14 +73,16 @@ const CrScrollableBehavior = {
    * containers are resized correctly.
    */
   updateScrollableContents: function() {
-    if (this.intervalId_ !== null)
-      return;  // notifyResize is already in progress.
+    if (this.intervalId_ !== null) {
+      return;
+    }  // notifyResize is already in progress.
 
     this.requestUpdateScroll();
 
     let nodeList = this.root.querySelectorAll('[scrollable] iron-list');
-    if (!nodeList.length)
+    if (!nodeList.length) {
       return;
+    }
 
     // Use setInterval to avoid initial render / sizing issues.
     this.intervalId_ = window.setInterval(function() {
@@ -110,8 +113,9 @@ const CrScrollableBehavior = {
   requestUpdateScroll: function() {
     requestAnimationFrame(function() {
       const scrollableElements = this.root.querySelectorAll('[scrollable]');
-      for (let i = 0; i < scrollableElements.length; i++)
+      for (let i = 0; i < scrollableElements.length; i++) {
         this.updateScroll_(/** @type {!HTMLElement} */ (scrollableElements[i]));
+      }
     }.bind(this));
   },
 
@@ -130,8 +134,9 @@ const CrScrollableBehavior = {
       const scrollTop = list.savedScrollTops.shift();
       // Ignore scrollTop of 0 in case it was intermittent (we do not need to
       // explicitly scroll to 0).
-      if (scrollTop != 0)
+      if (scrollTop != 0) {
         list.scroll(0, scrollTop);
+      }
     });
   },
 

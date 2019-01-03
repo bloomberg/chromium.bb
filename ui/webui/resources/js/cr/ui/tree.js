@@ -50,16 +50,18 @@ cr.define('cr.ui', function() {
      */
     decorate: function() {
       // Make list focusable
-      if (!this.hasAttribute('tabindex'))
+      if (!this.hasAttribute('tabindex')) {
         this.tabIndex = 0;
+      }
 
       this.addEventListener('click', this.handleClick);
       this.addEventListener('mousedown', this.handleMouseDown);
       this.addEventListener('dblclick', this.handleDblClick);
       this.addEventListener('keydown', this.handleKeyDown);
 
-      if (!this.hasAttribute('role'))
+      if (!this.hasAttribute('role')) {
         this.setAttribute('role', 'group');
+      }
     },
 
     /**
@@ -114,13 +116,15 @@ cr.define('cr.ui', function() {
      */
     handleClick: function(e) {
       var treeItem = findTreeItem(/** @type {!Node} */ (e.target));
-      if (treeItem)
+      if (treeItem) {
         treeItem.handleClick(e);
+      }
     },
 
     handleMouseDown: function(e) {
-      if (e.button == 2)  // right
+      if (e.button == 2) {  // right
         this.handleClick(e);
+      }
     },
 
     /**
@@ -129,8 +133,9 @@ cr.define('cr.ui', function() {
      */
     handleDblClick: function(e) {
       var treeItem = findTreeItem(/** @type {!Node} */ (e.target));
-      if (treeItem)
+      if (treeItem) {
         treeItem.expanded = !treeItem.expanded;
+      }
     },
 
     /**
@@ -140,12 +145,14 @@ cr.define('cr.ui', function() {
      */
     handleKeyDown: function(e) {
       var itemToSelect;
-      if (e.ctrlKey)
+      if (e.ctrlKey) {
         return;
+      }
 
       var item = this.selectedItem;
-      if (!item)
+      if (!item) {
         return;
+      }
 
       var rtl = getComputedStyle(item).direction == 'rtl';
 
@@ -160,19 +167,22 @@ cr.define('cr.ui', function() {
         case 'ArrowLeft':
         case 'ArrowRight':
           // Don't let back/forward keyboard shortcuts be used.
-          if (!cr.isMac && e.altKey || cr.isMac && e.metaKey)
+          if (!cr.isMac && e.altKey || cr.isMac && e.metaKey) {
             break;
+          }
 
           if (e.key == 'ArrowLeft' && !rtl || e.key == 'ArrowRight' && rtl) {
-            if (item.expanded)
+            if (item.expanded) {
               item.expanded = false;
-            else
+            } else {
               itemToSelect = findTreeItem(item.parentNode);
+            }
           } else {
-            if (!item.expanded)
+            if (!item.expanded) {
               item.expanded = true;
-            else
+            } else {
               itemToSelect = item.items[0];
+            }
           }
           break;
         case 'Home':
@@ -203,13 +213,15 @@ cr.define('cr.ui', function() {
         // want one change when moving between items.
         this.selectedItem_ = item;
 
-        if (oldSelectedItem)
+        if (oldSelectedItem) {
           oldSelectedItem.selected = false;
+        }
 
         if (item) {
           item.selected = true;
-          if (item.id)
+          if (item.id) {
             this.setAttribute('aria-activedescendant', item.id);
+          }
         } else {
           this.removeAttribute('aria-activedescendant');
         }
@@ -223,8 +235,9 @@ cr.define('cr.ui', function() {
     getRectForContextMenu: function() {
       // TODO(arv): Add trait support so we can share more code between trees
       // and lists.
-      if (this.selectedItem)
+      if (this.selectedItem) {
         return this.selectedItem.rowElement.getBoundingClientRect();
+      }
       return this.getBoundingClientRect();
     }
   };
@@ -336,8 +349,9 @@ cr.define('cr.ui', function() {
      */
     addAt: function(child, index) {
       this.lastElementChild.insertBefore(child, this.items[index]);
-      if (this.items.length == 1)
+      if (this.items.length == 1) {
         this.hasChildren = true;
+      }
       child.setDepth_(this.depth + 1);
     },
 
@@ -350,12 +364,14 @@ cr.define('cr.ui', function() {
       // If we removed the selected item we should become selected.
       var tree = this.tree;
       var selectedItem = tree.selectedItem;
-      if (selectedItem && child.contains(selectedItem))
+      if (selectedItem && child.contains(selectedItem)) {
         this.selected = true;
+      }
 
       this.lastElementChild.removeChild(/** @type {!cr.ui.TreeItem} */ (child));
-      if (this.items.length == 0)
+      if (this.items.length == 0) {
         this.hasChildren = false;
+      }
     },
 
     /**
@@ -390,8 +406,9 @@ cr.define('cr.ui', function() {
       return this.hasAttribute('expanded');
     },
     set expanded(b) {
-      if (this.expanded == b)
+      if (this.expanded == b) {
         return;
+      }
 
       var treeChildren = this.lastElementChild;
 
@@ -407,14 +424,16 @@ cr.define('cr.ui', function() {
         var tree = this.tree;
         if (tree && !this.selected) {
           var oldSelected = tree.selectedItem;
-          if (oldSelected && this.contains(oldSelected))
+          if (oldSelected && this.contains(oldSelected)) {
             this.selected = true;
+          }
         }
         this.removeAttribute('expanded');
-        if (this.mayHaveChildren_)
+        if (this.mayHaveChildren_) {
           this.setAttribute('aria-expanded', 'false');
-        else
+        } else {
           this.removeAttribute('aria-expanded');
+        }
         treeChildren.removeAttribute('expanded');
         cr.dispatchSimpleEvent(this, 'collapse', true);
       }
@@ -477,8 +496,9 @@ cr.define('cr.ui', function() {
       return this.hasAttribute('selected');
     },
     set selected(b) {
-      if (this.selected == b)
+      if (this.selected == b) {
         return;
+      }
       var rowItem = this.firstElementChild;
       var tree = this.tree;
       if (b) {
@@ -486,13 +506,15 @@ cr.define('cr.ui', function() {
         rowItem.setAttribute('selected', '');
         this.reveal();
         this.labelElement.scrollIntoViewIfNeeded(false);
-        if (tree)
+        if (tree) {
           tree.selectedItem = this;
+        }
       } else {
         this.removeAttribute('selected');
         rowItem.removeAttribute('selected');
-        if (tree && tree.selectedItem == this)
+        if (tree && tree.selectedItem == this) {
           tree.selectedItem = null;
+        }
       }
     },
 
@@ -542,10 +564,11 @@ cr.define('cr.ui', function() {
      * @param {Event} e The click event.
      */
     handleClick: function(e) {
-      if (e.target.className == 'expand-icon')
+      if (e.target.className == 'expand-icon') {
         this.expanded = !this.expanded;
-      else
+      } else {
         this.selected = true;
+      }
     },
 
     /**
@@ -555,8 +578,9 @@ cr.define('cr.ui', function() {
      */
     set editing(editing) {
       var oldEditing = this.editing;
-      if (editing == oldEditing)
+      if (editing == oldEditing) {
         return;
+      }
 
       var self = this;
       var labelEl = this.labelElement;
@@ -592,10 +616,11 @@ cr.define('cr.ui', function() {
         // the input loses focus we set editing to false again.
         input = this.ownerDocument.createElement('input');
         input.value = text;
-        if (labelEl.firstChild)
+        if (labelEl.firstChild) {
           labelEl.replaceChild(input, labelEl.firstChild);
-        else
+        } else {
           labelEl.appendChild(input);
+        }
 
         input.addEventListener('keydown', handleKeydown);
         input.addEventListener('blur', (function() {
@@ -665,12 +690,14 @@ cr.define('cr.ui', function() {
    * @return {cr.ui.TreeItem} The found item or null.
    */
   function getNextHelper(item) {
-    if (!item)
+    if (!item) {
       return null;
+    }
 
     var nextSibling = item.nextElementSibling;
-    if (nextSibling)
+    if (nextSibling) {
       return assertInstanceof(nextSibling, cr.ui.TreeItem);
+    }
     return getNextHelper(item.parentItem);
   }
 
@@ -681,8 +708,9 @@ cr.define('cr.ui', function() {
    */
   function getPrevious(item) {
     var previousSibling = item.previousElementSibling;
-    if (previousSibling)
+    if (previousSibling) {
       return getLastHelper(assertInstanceof(previousSibling, cr.ui.TreeItem));
+    }
     return item.parentItem;
   }
 
@@ -692,8 +720,9 @@ cr.define('cr.ui', function() {
    * @return {cr.ui.TreeItem} The found item or null.
    */
   function getLastHelper(item) {
-    if (!item)
+    if (!item) {
       return null;
+    }
     if (item.expanded && item.hasChildren) {
       var lastChild = item.items[item.items.length - 1];
       return getLastHelper(lastChild);

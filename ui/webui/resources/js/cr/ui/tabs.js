@@ -33,8 +33,9 @@ cr.define('cr.ui', function() {
    */
   function selectedSetHook(newValue, oldValue) {
     var tabBox;
-    if (newValue && (tabBox = getTabBox(this)))
+    if (newValue && (tabBox = getTabBox(this))) {
       tabBox.selectedIndex = Array.prototype.indexOf.call(p.children, this);
+    }
   }
 
   /**
@@ -161,12 +162,14 @@ cr.define('cr.ui', function() {
           break;
       }
 
-      if (!delta)
+      if (!delta) {
         return;
+      }
 
       var cs = this.ownerDocument.defaultView.getComputedStyle(this);
-      if (cs.direction == 'rtl')
+      if (cs.direction == 'rtl') {
         delta *= -1;
+      }
 
       var count = this.children.length;
       var tabbox = getTabBox(this);

@@ -77,12 +77,14 @@ cr.define('cr.ui', function() {
     },
     set columnModel(columnModel) {
       if (this.columnModel_ != columnModel) {
-        if (this.columnModel_)
+        if (this.columnModel_) {
           this.columnModel_.removeEventListener('resize', this.boundResize_);
+        }
         this.columnModel_ = columnModel;
 
-        if (this.columnModel_)
+        if (this.columnModel_) {
           this.columnModel_.addEventListener('resize', this.boundResize_);
+        }
         this.list_.invalidate();
         this.redraw();
       }
@@ -99,8 +101,9 @@ cr.define('cr.ui', function() {
     },
     set selectionModel(selectionModel) {
       if (this.list_.selectionModel != selectionModel) {
-        if (this.dataModel)
+        if (this.dataModel) {
           selectionModel.adjustLength(this.dataModel.length);
+        }
         this.list_.selectionModel = selectionModel;
       }
     },
@@ -147,8 +150,9 @@ cr.define('cr.ui', function() {
         var cell = table.ownerDocument.createElement('div');
         cell.style.width = cm.getWidth(i) + 'px';
         cell.className = 'table-row-cell';
-        if (cm.isEndAlign(i))
+        if (cm.isEndAlign(i)) {
           cell.style.textAlign = 'end';
+        }
         cell.hidden = !cm.isVisible(i);
         cell.appendChild(
             cm.getRenderFunction(i).call(null, dataItem, cm.getId(i), table));
@@ -166,8 +170,9 @@ cr.define('cr.ui', function() {
      *     function.
      */
     setRenderFunction: function(renderFunction) {
-      if (renderFunction === this.renderFunction_)
+      if (renderFunction === this.renderFunction_) {
         return;
+      }
 
       this.renderFunction_ = renderFunction;
       cr.dispatchSimpleEvent(this, 'change');
@@ -300,8 +305,9 @@ cr.define('cr.ui', function() {
       } else {
         this.list_.dataModel.sort(cm.getId(i), cm.getDefaultOrder(i));
       }
-      if (this.selectionModel.selectedIndex == -1)
+      if (this.selectionModel.selectedIndex == -1) {
         this.list_.scrollTop = 0;
+      }
     },
 
     /**

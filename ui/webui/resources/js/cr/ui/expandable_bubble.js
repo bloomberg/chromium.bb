@@ -66,8 +66,9 @@ cr.define('cr.ui', function() {
     set anchorNode(node) {
       this.anchorNode_ = node;
 
-      if (!this.hidden)
+      if (!this.hidden) {
         this.resizeAndReposition();
+      }
     },
 
     /**
@@ -92,8 +93,9 @@ cr.define('cr.ui', function() {
     set suppressed(suppress) {
       if (suppress) {
         // If the bubble is already hidden, then we don't need to suppress it.
-        if (this.hidden)
+        if (this.hidden) {
           return;
+        }
 
         this.hidden = true;
       } else if (this.bubbleSuppressed) {
@@ -113,8 +115,9 @@ cr.define('cr.ui', function() {
       // Center bubble in collapsed mode (if it doesn't take up all the room we
       // have).
       var offset = 0;
-      if (!this.expanded)
+      if (!this.expanded) {
         offset = (clientRect.width - parseInt(this.style.width, 10)) / 2;
+      }
       this.style.left = this.style.right = clientRect.left + offset + 'px';
 
       var top = Math.max(0, clientRect.top - 4);
@@ -196,8 +199,9 @@ cr.define('cr.ui', function() {
      * Node.prototype.contains() will be fixed.
      */
     onNotificationClick_: function(e) {
-      if (!this.contains(/** @type {!Node} */ (e.target)))
+      if (!this.contains(/** @type {!Node} */ (e.target))) {
         return;
+      }
 
       if (!this.expanded) {
         // Save the height of the unexpanded bubble, so we can make sure to
@@ -214,8 +218,9 @@ cr.define('cr.ui', function() {
      * clicked.
      */
     show: function() {
-      if (!this.hidden)
+      if (!this.hidden) {
         return;
+      }
 
       document.body.appendChild(this);
       this.hidden = false;

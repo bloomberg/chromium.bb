@@ -70,16 +70,18 @@ cr.define('cr.ui.table', function() {
 
     endBatchUpdates: function() {
       this.batchCount_--;
-      if (this.batchCount_ == 0)
+      if (this.batchCount_ == 0) {
         this.redraw();
+      }
     },
 
     /**
      * Redraws table header.
      */
     redraw: function() {
-      if (this.batchCount_ != 0)
+      if (this.batchCount_ != 0) {
         return;
+      }
 
       var cm = this.table_.columnModel;
       var dm = this.table_.dataModel;
@@ -99,9 +101,10 @@ cr.define('cr.ui.table', function() {
         // columns are in sync.
         cell.hidden = !cm.isVisible(i);
         cell.className = 'table-header-cell';
-        if (dm.isSortable(cm.getId(i)))
+        if (dm.isSortable(cm.getId(i))) {
           cell.addEventListener(
               'click', this.createSortFunction_(i).bind(this));
+        }
 
         cell.appendChild(this.createHeaderLabel_(i));
         this.headerInner_.appendChild(cell);
@@ -141,8 +144,9 @@ cr.define('cr.ui.table', function() {
       var place = 0;
       for (var i = 0; i < cm.size; i++) {
         // Don't account for the widths of hidden columns.
-        if (splitters[i].hidden)
+        if (splitters[i].hidden) {
           continue;
+        }
         place += cm.getWidth(i);
         splitters[i].style.marginInlineStart = place + 'px';
       }
@@ -159,18 +163,20 @@ cr.define('cr.ui.table', function() {
       var labelDiv = this.ownerDocument.createElement('div');
       labelDiv.className = 'table-header-label';
 
-      if (cm.isEndAlign(index))
+      if (cm.isEndAlign(index)) {
         labelDiv.style.textAlign = 'end';
+      }
       var span = this.ownerDocument.createElement('span');
       span.appendChild(cm.renderHeader(index, this.table_));
       span.style.padding = '0';
 
       if (dm) {
         if (dm.sortStatus.field == cm.getId(index)) {
-          if (dm.sortStatus.direction == 'desc')
+          if (dm.sortStatus.direction == 'desc') {
             span.className = 'table-header-sort-image-desc';
-          else
+          } else {
             span.className = 'table-header-sort-image-asc';
+          }
         }
       }
       labelDiv.appendChild(span);
@@ -194,8 +200,9 @@ cr.define('cr.ui.table', function() {
      */
     handleTouchStart_: function(e) {
       e = /** @type {TouchEvent} */ (e);
-      if (e.touches.length != 1)
+      if (e.touches.length != 1) {
         return;
+      }
       var clientX = e.touches[0].clientX;
 
       var minDistance = TableHeader.TOUCH_DRAG_AREA_WIDTH;
@@ -214,8 +221,9 @@ cr.define('cr.ui.table', function() {
           candidate = splitters[i];
         }
       }
-      if (candidate)
+      if (candidate) {
         candidate.startDrag(clientX, true);
+      }
       // Splitter itself shouldn't handle this event.
       e.stopPropagation();
     },
@@ -239,12 +247,14 @@ cr.define('cr.ui.table', function() {
       var cm = this.table_.columnModel;
       // If the number of columns in the model has changed, a full redraw is
       // needed.
-      if (headerCells.length != cm.size)
+      if (headerCells.length != cm.size) {
         return true;
+      }
       // If the column visibility has changed, a full redraw is required.
       for (var i = 0; i < cm.size; i++) {
-        if (cm.isVisible(i) == headerCells[i].hidden)
+        if (cm.isVisible(i) == headerCells[i].hidden) {
           return true;
+        }
       }
       return false;
     },

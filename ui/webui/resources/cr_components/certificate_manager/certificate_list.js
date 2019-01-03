@@ -49,8 +49,9 @@ Polymer({
    * @private
    */
   getDescription_: function() {
-    if (this.certificates.length == 0)
+    if (this.certificates.length == 0) {
       return this.i18n('certificateManagerNoCertificates');
+    }
 
     switch (this.certificateType) {
       case CertificateType.PERSONAL:
@@ -150,8 +151,9 @@ Polymer({
     if (this.certificateType == CertificateType.PERSONAL) {
       browserProxy.importPersonalCertificate(useHardwareBacked)
           .then(showPasswordPrompt => {
-            if (showPasswordPrompt)
+            if (showPasswordPrompt) {
               this.dispatchImportActionEvent_(null, anchor);
+            }
           }, this.onRejected_.bind(this, anchor));
     } else if (this.certificateType == CertificateType.CA) {
       browserProxy.importCaCertificate().then(certificateName => {

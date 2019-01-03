@@ -71,8 +71,9 @@ Polymer({
 
   /** @private */
   filterItems_: function(searchTerm) {
-    if (!searchTerm)
+    if (!searchTerm) {
       return null;
+    }
     return function(item) {
       return item.toLowerCase().includes(searchTerm.toLowerCase());
     };

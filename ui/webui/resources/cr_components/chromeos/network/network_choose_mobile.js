@@ -64,8 +64,9 @@ Polymer({
    * Polymer networkProperties changed method.
    */
   networkPropertiesChanged_: function() {
-    if (!this.networkProperties || !this.networkProperties.Cellular)
+    if (!this.networkProperties || !this.networkProperties.Cellular) {
       return;
+    }
     const cellular = this.networkProperties.Cellular;
     this.mobileNetworkList_ = cellular.FoundNetworks ||
         [{NetworkId: 'none', LongName: this.i18n('networkCellularNoNetworks')}];
@@ -75,8 +76,9 @@ Polymer({
       let selected = this.mobileNetworkList_.find(function(mobileNetwork) {
         return mobileNetwork.Status == 'current';
       });
-      if (!selected)
+      if (!selected) {
         selected = this.mobileNetworkList_[0];
+      }
       this.selectedMobileNetworkId_ = selected.NetworkId;
     });
   },
@@ -120,15 +122,18 @@ Polymer({
    * @private
    */
   getSecondaryText_: function(properties) {
-    if (!properties || !properties.Cellular)
+    if (!properties || !properties.Cellular) {
       return '';
+    }
     const cellular = properties.Cellular;
-    if (cellular.Scanning)
+    if (cellular.Scanning) {
       return this.i18n('networkCellularScanning');
-    else if (this.scanRequested_)
+    } else if (this.scanRequested_) {
       return this.i18n('networkCellularScanCompleted');
-    else if (properties.ConnectionState != CrOnc.ConnectionState.NOT_CONNECTED)
+    } else if (
+        properties.ConnectionState != CrOnc.ConnectionState.NOT_CONNECTED) {
       return this.i18n('networkCellularScanConnectedHelp');
+    }
     return '';
   },
 
@@ -158,8 +163,9 @@ Polymer({
    */
   onChange_: function(event) {
     const target = /** @type {!HTMLSelectElement} */ (event.target);
-    if (!target.value || target.value == 'none')
+    if (!target.value || target.value == 'none') {
       return;
+    }
     this.networkingPrivate.selectCellularMobileNetwork(
         this.networkProperties.GUID, target.value);
   },

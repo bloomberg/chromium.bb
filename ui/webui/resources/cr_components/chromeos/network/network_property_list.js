@@ -73,8 +73,9 @@ Polymer({
    * @private
    */
   onValueChange_: function(event) {
-    if (!this.propertyDict)
+    if (!this.propertyDict) {
       return;
+    }
     const key = event.target.id;
     let curValue = this.get(key, this.propertyDict);
     if (typeof curValue == 'object' && !Array.isArray(curValue)) {
@@ -83,8 +84,9 @@ Polymer({
           /** @type {!CrOnc.ManagedProperty} */ (curValue));
     }
     const newValue = this.getValueFromEditField_(key, event.target.value);
-    if (newValue == curValue)
+    if (newValue == curValue) {
       return;
+    }
     this.fire('property-change', {field: key, value: newValue});
   },
 
@@ -97,8 +99,9 @@ Polymer({
   getPropertyLabel_: function(key, prefix) {
     let oncKey = 'Onc' + prefix + key;
     oncKey = oncKey.replace(/\./g, '-');
-    if (this.i18nExists(oncKey))
+    if (this.i18nExists(oncKey)) {
       return this.i18n(oncKey);
+    }
     // We do not provide translations for every possible network property key.
     // For keys specific to a type, strip the type prefix.
     let result = prefix + key;
@@ -121,8 +124,9 @@ Polymer({
    */
   computeFilter_: function(prefix, propertyDict, editFieldTypes) {
     return key => {
-      if (editFieldTypes.hasOwnProperty(key))
+      if (editFieldTypes.hasOwnProperty(key)) {
         return true;
+      }
       const value = this.getPropertyValue_(key, prefix, propertyDict);
       return value !== undefined && value !== '';
     };
@@ -216,29 +220,34 @@ Polymer({
    */
   getPropertyValue_: function(key, prefix, propertyDict) {
     let value = this.get(key, propertyDict);
-    if (value === undefined)
+    if (value === undefined) {
       return '';
+    }
     if (typeof value == 'object' && !Array.isArray(value)) {
       // Extract the property from an ONC managed dictionary
       value =
           CrOnc.getActiveValue(/** @type {!CrOnc.ManagedProperty} */ (value));
     }
-    if (Array.isArray(value))
+    if (Array.isArray(value)) {
       return value.join(', ');
+    }
 
     const customValue = this.getCustomPropertyValue_(key, value);
-    if (customValue)
+    if (customValue) {
       return customValue;
-    if (typeof value == 'number' || typeof value == 'boolean')
+    }
+    if (typeof value == 'number' || typeof value == 'boolean') {
       return value.toString();
+    }
 
     assert(typeof value == 'string');
     const valueStr = /** @type {string} */ (value);
     let oncKey = 'Onc' + prefix + key;
     oncKey = oncKey.replace(/\./g, '-');
     oncKey += '_' + valueStr;
-    if (this.i18nExists(oncKey))
+    if (this.i18nExists(oncKey)) {
       return this.i18n(oncKey);
+    }
     return valueStr;
   },
 
@@ -251,8 +260,9 @@ Polymer({
    */
   getValueFromEditField_(key, fieldValue) {
     const editType = this.editFieldTypes[key];
-    if (editType == 'StringArray')
+    if (editType == 'StringArray') {
       return fieldValue.toString().split(/, */);
+    }
     return fieldValue;
   },
 
@@ -272,14 +282,18 @@ Polymer({
       assert(typeof value == 'number');
       // Possible |signalStrength| values should be 0, 25, 50, 75, and 100. Add
       // <= checks for robustness.
-      if (value <= 24)
+      if (value <= 24) {
         return this.i18n('OncTether-SignalStrength_Weak');
-      if (value <= 49)
+      }
+      if (value <= 49) {
         return this.i18n('OncTether-SignalStrength_Okay');
-      if (value <= 74)
+      }
+      if (value <= 74) {
         return this.i18n('OncTether-SignalStrength_Good');
-      if (value <= 99)
+      }
+      if (value <= 99) {
         return this.i18n('OncTether-SignalStrength_Strong');
+      }
       return this.i18n('OncTether-SignalStrength_VeryStrong');
     }
 

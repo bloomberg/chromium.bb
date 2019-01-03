@@ -327,8 +327,9 @@ Polymer({
   /** This is called by container object when user initiated submit. */
   doSubmit: function() {
     if (!this.isConfirmStep) {
-      if (!this.enableSubmit)
+      if (!this.enableSubmit) {
         return;
+      }
       this.initialPin_ = this.pinKeyboardValue_;
       this.pinKeyboardValue_ = '';
       this.isConfirmStep = true;

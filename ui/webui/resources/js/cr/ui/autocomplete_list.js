@@ -101,8 +101,9 @@ cr.define('cr.ui', function() {
         self.requestSuggestions(self.targetInput_.value);
       };
       this.addEventListener('change', function(e) {
-        if (self.selectedItem)
+        if (self.selectedItem) {
           self.handleSelectedSuggestion(self.selectedItem);
+        }
       });
       // Start hidden; adding suggestions will unhide.
       this.hidden = true;
@@ -145,8 +146,9 @@ cr.define('cr.ui', function() {
      */
     handleSelectedSuggestion: function(selectedSuggestion) {
       var input = this.targetInput_;
-      if (!input)
+      if (!input) {
         return;
+      }
       input.value = selectedSuggestion['url'];
       // Programatically change the value won't trigger a change event, but
       // clients are likely to want to know when changes happen, so fire one.
@@ -159,8 +161,9 @@ cr.define('cr.ui', function() {
      * @param {HTMLElement} input The input element to attach to.
      */
     attachToInput: function(input) {
-      if (this.targetInput_ == input)
+      if (this.targetInput_ == input) {
         return;
+      }
 
       this.detach();
       this.targetInput_ = input;
@@ -187,8 +190,9 @@ cr.define('cr.ui', function() {
      */
     detach: function() {
       var input = this.targetInput_;
-      if (!input)
+      if (!input) {
         return;
+      }
 
       input.removeEventListener('keydown', this.textFieldKeyHandler_, true);
       input.removeEventListener('input', this.textFieldInputHandler_);
@@ -235,8 +239,9 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleAutocompleteKeydown_: function(event) {
-      if (this.hidden)
+      if (this.hidden) {
         return;
+      }
       var handled = false;
       switch (event.key) {
         case 'Escape':

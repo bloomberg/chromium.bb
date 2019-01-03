@@ -18,16 +18,18 @@
 function assert(condition, opt_message) {
   if (!condition) {
     var message = 'Assertion failed';
-    if (opt_message)
+    if (opt_message) {
       message = message + ': ' + opt_message;
+    }
     var error = new Error(message);
     var global = function() {
       /** @type {boolean} */
       this.traceAssertionsForTesting;
       return this;
     }();
-    if (global.traceAssertionsForTesting)
+    if (global.traceAssertionsForTesting) {
       console.warn(error.stack);
+    }
     throw error;
   }
   return condition;

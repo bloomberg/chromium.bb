@@ -51,8 +51,9 @@ cr.define('cr.ui', function() {
      * Hides the currently visible bubble, if any.
      */
     hideBubble: function() {
-      if (bubble)
+      if (bubble) {
         bubble.hide();
+      }
     },
 
     /**
@@ -75,10 +76,11 @@ cr.define('cr.ui', function() {
       var defaultStrings = this.getDefaultStrings();
       var text = defaultStrings[this.controlledBy];
 
-      if (this.hasAttribute('text' + this.controlledBy))
+      if (this.hasAttribute('text' + this.controlledBy)) {
         text = this.getAttribute('text' + this.controlledBy);
-      else if (this.controlledBy == 'extension' && this['extensionName'])
+      } else if (this.controlledBy == 'extension' && this['extensionName']) {
         text = defaultStrings['extensionWithName'];
+      }
 
       return text || '';
     },
@@ -98,10 +100,11 @@ cr.define('cr.ui', function() {
      * @override
      */
     toggleBubble: function() {
-      if (this.showingBubble)
+      if (this.showingBubble) {
         this.hideBubble();
-      else
+      } else {
         this.showBubble(this.createDomTree(this.getBubbleText()));
+      }
     },
   };
 

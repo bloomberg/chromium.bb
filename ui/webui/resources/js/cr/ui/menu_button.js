@@ -56,8 +56,9 @@ cr.define('cr.ui', function() {
       this.classList.add('menu-button');  // For styles in menu_button.css.
 
       var menu;
-      if ((menu = this.getAttribute('menu')))
+      if ((menu = this.getAttribute('menu'))) {
         this.menu = menu;
+      }
 
       // An event tracker for events we only connect to while the menu is
       // displayed.
@@ -82,8 +83,9 @@ cr.define('cr.ui', function() {
 
       this.menu_ = menu;
       if (menu) {
-        if (menu.id)
+        if (menu.id) {
           this.setAttribute('menu', '#' + menu.id);
+        }
       }
     },
 
@@ -112,8 +114,9 @@ cr.define('cr.ui', function() {
      * @param {Event} e The event object.
      */
     handleEvent: function(e) {
-      if (!this.menu)
+      if (!this.menu) {
         return;
+      }
 
       switch (e.type) {
         case 'touchstart':
@@ -183,8 +186,9 @@ cr.define('cr.ui', function() {
           }
           break;
         case 'scroll':
-          if (!(e.target == this.menu || this.menu.contains(e.target)))
+          if (!(e.target == this.menu || this.menu.contains(e.target))) {
             this.hideMenu();
+          }
           break;
         case 'popstate':
         case 'resize':
@@ -192,8 +196,9 @@ cr.define('cr.ui', function() {
           break;
         case 'contextmenu':
           if ((!this.menu || !this.menu.contains(e.target)) &&
-              (!this.hideTimestamp_ || Date.now() - this.hideTimestamp_ > 50))
+              (!this.hideTimestamp_ || Date.now() - this.hideTimestamp_ > 50)) {
             this.showMenu(true, {x: e.screenX, y: e.screenY});
+          }
           e.preventDefault();
           // Don't allow elements further up in the DOM to show their menus.
           e.stopPropagation();
@@ -220,8 +225,9 @@ cr.define('cr.ui', function() {
 
       var event = new UIEvent(
           'menushow', {bubbles: true, cancelable: true, view: window});
-      if (!this.dispatchEvent(event))
+      if (!this.dispatchEvent(event)) {
         return;
+      }
 
       this.menu.show(opt_mousePos);
 
@@ -240,8 +246,9 @@ cr.define('cr.ui', function() {
       this.showingEvents_.add(this.menu, 'activate', this);
       this.positionMenu_();
 
-      if (shouldSetFocus)
+      if (shouldSetFocus) {
         this.menu.focusSelectedItem();
+      }
     },
 
     /**
@@ -272,19 +279,22 @@ cr.define('cr.ui', function() {
      *     default: cr.ui.HideType.INSTANT.
      */
     hideMenuInternal_: function(shouldTakeFocus, opt_hideType) {
-      if (!this.isMenuShown())
+      if (!this.isMenuShown()) {
         return;
+      }
 
       this.removeAttribute('menu-shown');
-      if (opt_hideType == HideType.DELAYED)
+      if (opt_hideType == HideType.DELAYED) {
         this.menu.classList.add('hide-delayed');
-      else
+      } else {
         this.menu.classList.remove('hide-delayed');
+      }
       this.menu.hide();
 
       this.showingEvents_.removeAll();
-      if (shouldTakeFocus)
+      if (shouldTakeFocus) {
         this.focus();
+      }
 
       var event = new UIEvent(
           'menuhide', {bubbles: true, cancelable: false, view: window});
@@ -320,12 +330,14 @@ cr.define('cr.ui', function() {
       switch (e.key) {
         case 'ArrowDown':
         case 'ArrowUp':
-          if (!this.respondToArrowKeys)
+          if (!this.respondToArrowKeys) {
             break;
+          }
         case 'Enter':
         case ' ':
-          if (!this.isMenuShown())
+          if (!this.isMenuShown()) {
             this.showMenu(true);
+          }
           e.preventDefault();
           break;
         case 'Escape':

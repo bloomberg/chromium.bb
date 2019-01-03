@@ -38,10 +38,11 @@ cr.define('cr.ui', function() {
 
     /** @override */
     onFocus: function(row, e) {
-      if (this.ignoreFocusChange_)
+      if (this.ignoreFocusChange_) {
         this.ignoreFocusChange_ = false;
-      else
+      } else {
         this.lastFocused_ = e.currentTarget;
+      }
 
       this.rows.forEach(function(r) {
         r.makeActive(r == row);
@@ -55,14 +56,15 @@ cr.define('cr.ui', function() {
 
       var newRow = -1;
 
-      if (e.key == 'ArrowUp')
+      if (e.key == 'ArrowUp') {
         newRow = rowIndex - 1;
-      else if (e.key == 'ArrowDown')
+      } else if (e.key == 'ArrowDown') {
         newRow = rowIndex + 1;
-      else if (e.key == 'PageUp')
+      } else if (e.key == 'PageUp') {
         newRow = 0;
-      else if (e.key == 'PageDown')
+      } else if (e.key == 'PageDown') {
         newRow = this.rows.length - 1;
+      }
 
       var rowToFocus = this.rows[newRow];
       if (rowToFocus) {
@@ -96,8 +98,9 @@ cr.define('cr.ui', function() {
      */
     getRowIndexForTarget: function(target) {
       for (var i = 0; i < this.rows.length; ++i) {
-        if (this.rows[i].getElements().indexOf(target) >= 0)
+        if (this.rows[i].getElements().indexOf(target) >= 0) {
           return i;
+        }
       }
       return -1;
     },
@@ -108,8 +111,9 @@ cr.define('cr.ui', function() {
      */
     getRowForRoot: function(root) {
       for (var i = 0; i < this.rows.length; ++i) {
-        if (this.rows[i].root == root)
+        if (this.rows[i].root == root) {
           return this.rows[i];
+        }
       }
       return null;
     },
@@ -132,10 +136,11 @@ cr.define('cr.ui', function() {
       row.delegate = row.delegate || this;
 
       var nextRowIndex = nextRow ? this.rows.indexOf(nextRow) : -1;
-      if (nextRowIndex == -1)
+      if (nextRowIndex == -1) {
         this.rows.push(row);
-      else
+      } else {
         this.rows.splice(nextRowIndex, 0, row);
+      }
     },
 
     /**
@@ -144,8 +149,9 @@ cr.define('cr.ui', function() {
      */
     removeRow: function(row) {
       var nextRowIndex = row ? this.rows.indexOf(row) : -1;
-      if (nextRowIndex > -1)
+      if (nextRowIndex > -1) {
         this.rows.splice(nextRowIndex, 1);
+      }
     },
 
     /**
@@ -156,12 +162,14 @@ cr.define('cr.ui', function() {
      *     grid.
      */
     ensureRowActive: function(preferredRow) {
-      if (this.rows.length == 0)
+      if (this.rows.length == 0) {
         return;
+      }
 
       for (var i = 0; i < this.rows.length; ++i) {
-        if (this.rows[i].isActive())
+        if (this.rows[i].isActive()) {
           return;
+        }
       }
 
       (this.rows[preferredRow || 0] || this.rows[0]).makeActive(true);

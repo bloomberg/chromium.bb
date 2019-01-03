@@ -95,8 +95,9 @@ Polymer({
    */
   computeIsSpinnerShown_: function() {
     const showSpinner = this.spinnerActive && this.showingSearch;
-    if (showSpinner)
+    if (showSpinner) {
       this.$.spinnerTemplate.if = true;
+    }
     return showSpinner;
   },
 
@@ -108,14 +109,16 @@ Polymer({
   /** @private */
   onInputBlur_: function() {
     this.searchFocused_ = false;
-    if (!this.hasSearchText)
+    if (!this.hasSearchText) {
       this.showingSearch = false;
+    }
   },
 
   /** @private */
   onSearchTermKeydown_: function(e) {
-    if (e.key == 'Escape')
+    if (e.key == 'Escape') {
       this.showingSearch = false;
+    }
   },
 
   /**
@@ -123,8 +126,9 @@ Polymer({
    * @private
    */
   showSearch_: function(e) {
-    if (e.target != this.$.clearSearch)
+    if (e.target != this.$.clearSearch) {
       this.showingSearch = true;
+    }
   },
 
   /**
@@ -143,8 +147,9 @@ Polymer({
    */
   showingSearchChanged_: function(current, previous) {
     // Prevent unnecessary 'search-changed' event from firing on startup.
-    if (previous == undefined)
+    if (previous == undefined) {
       return;
+    }
 
     if (this.showingSearch) {
       this.focus_();

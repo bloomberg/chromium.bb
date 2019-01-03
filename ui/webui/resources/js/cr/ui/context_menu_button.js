@@ -59,8 +59,9 @@ cr.define('cr.ui', function() {
         case 'mousedown':
           // Menu buttons prevent focus changes.
           var target = getContextMenuTarget(this);
-          if (target)
+          if (target) {
             target.focus();
+          }
           break;
         case 'mouseup':
           // Stop mouseup to prevent selection changes.

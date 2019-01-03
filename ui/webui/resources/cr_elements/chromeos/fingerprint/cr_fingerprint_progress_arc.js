@@ -162,8 +162,9 @@ Polymer({
    * @param {boolean} isComplete Indicate whether enrollment is complete.
    */
   setProgress: function(prevPercentComplete, currPercentComplete, isComplete) {
-    if (this.isComplete_)
+    if (this.isComplete_) {
       return;
+    }
     this.isComplete_ = isComplete;
 
     const slice = 2 * Math.PI / 100;
@@ -211,10 +212,11 @@ Polymer({
       this.updateTimerId_ = undefined;
     }
 
-    if (isComplete)
+    if (isComplete) {
       this.animateScanComplete_();
-    else
+    } else {
       this.animateScanProgress_();
+    }
   },
 
   /**

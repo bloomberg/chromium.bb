@@ -57,10 +57,11 @@ cr.define('cr.ui', function() {
           this.selectedIndexes_[index] = true;
           // Mark the index as changed. If previously marked, then unmark,
           // since it just got reverted to the original state.
-          if (index in this.changedIndexes_)
+          if (index in this.changedIndexes_) {
             delete this.changedIndexes_[index];
-          else
+          } else {
             this.changedIndexes_[index] = true;
+          }
         }
       }
 
@@ -69,10 +70,11 @@ cr.define('cr.ui', function() {
         delete this.selectedIndexes_[index];
         // Mark the index as changed. If previously marked, then unmark,
         // since it just got reverted to the original state.
-        if (index in this.changedIndexes_)
+        if (index in this.changedIndexes_) {
           delete this.changedIndexes_[index];
-        else
+        } else {
           this.changedIndexes_[index] = false;
+        }
       }
 
       if (selectedIndexes.length) {
@@ -116,8 +118,9 @@ cr.define('cr.ui', function() {
 
       var result = Infinity;
       for (var i in this.selectedIndexes_) {
-        if (Math.abs(i - index) < Math.abs(result - index))
+        if (Math.abs(i - index) < Math.abs(result - index)) {
           result = i;
+        }
       }
       return result < this.length ? Number(result) : -1;
     },
@@ -150,8 +153,9 @@ cr.define('cr.ui', function() {
      * Selects all indexes.
      */
     selectAll: function() {
-      if (this.length === 0)
+      if (this.length === 0) {
         return;
+      }
 
       this.selectRange(0, this.length - 1);
     },
@@ -185,13 +189,15 @@ cr.define('cr.ui', function() {
      */
     setIndexSelected: function(index, b) {
       var oldSelected = index in this.selectedIndexes_;
-      if (oldSelected == b)
+      if (oldSelected == b) {
         return;
+      }
 
-      if (b)
+      if (b) {
         this.selectedIndexes_[index] = true;
-      else
+      } else {
         delete this.selectedIndexes_[index];
+      }
 
       this.beginChange();
 
@@ -278,8 +284,9 @@ cr.define('cr.ui', function() {
       var newValue = this.adjustIndex_(leadIndex);
       this.leadIndex_ = newValue;
       // Delays the call of dispatchPropertyChange if batch is running.
-      if (!this.changeCount_ && newValue != oldValue)
+      if (!this.changeCount_ && newValue != oldValue) {
         cr.dispatchPropertyChange(this, 'leadIndex', newValue, oldValue);
+      }
     },
 
     anchorIndex_: -1,
@@ -297,8 +304,9 @@ cr.define('cr.ui', function() {
       var newValue = this.adjustIndex_(anchorIndex);
       this.anchorIndex_ = newValue;
       // Delays the call of dispatchPropertyChange if batch is running.
-      if (!this.changeCount_ && newValue != oldValue)
+      if (!this.changeCount_ && newValue != oldValue) {
         cr.dispatchPropertyChange(this, 'anchorIndex', newValue, oldValue);
+      }
     },
 
     /**
@@ -346,10 +354,12 @@ cr.define('cr.ui', function() {
                                  });
 
       // Will be adjusted in endChange.
-      if (oldLeadIndex != -1)
+      if (oldLeadIndex != -1) {
         this.leadIndex = permutation[oldLeadIndex];
-      if (oldAnchorIndex != -1)
+      }
+      if (oldAnchorIndex != -1) {
         this.anchorIndex = permutation[oldAnchorIndex];
+      }
 
       if (oldSelectedItemsCount && !this.selectedIndexes.length &&
           this.length_ && oldLeadIndex != -1) {

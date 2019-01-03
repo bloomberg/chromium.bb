@@ -69,7 +69,8 @@ Polymer({
 
   /** @private */
   onShowChanged_: function() {
-    if (this.show)
+    if (this.show) {
       this.hasShown_ = true;
+    }
   },
 });

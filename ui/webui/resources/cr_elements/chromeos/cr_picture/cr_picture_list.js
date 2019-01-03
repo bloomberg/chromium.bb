@@ -119,8 +119,9 @@ Polymer({
   setProfileImageUrl: function(imageUrl, selected) {
     this.profileImageUrl_ = imageUrl;
     this.$.profileImage.title = this.profileImageLabel;
-    if (!selected)
+    if (!selected) {
       return;
+    }
     this.setSelectedImage_(this.$.profileImage);
   },
 
@@ -181,8 +182,9 @@ Polymer({
 
   /** @private */
   onDefaultImagesChanged_: function() {
-    if (this.selectedImageUrl_)
+    if (this.selectedImageUrl_) {
       this.setSelectedImageUrl(this.selectedImageUrl_);
+    }
   },
 
   /**
@@ -190,8 +192,9 @@ Polymer({
    * @param {!{detail: !{key: string, keyboardEvent: Object}}} e
    */
   onKeysPressed_: function(e) {
-    if (!this.selectedItem)
+    if (!this.selectedItem) {
       return;
+    }
 
     const selector = /** @type {IronSelectorElement} */ (this.$.selector);
     const prevSelected = this.selectedItem;
@@ -231,8 +234,9 @@ Polymer({
     this.selectedItem = selected;
 
     if (selected.dataset.type == CrPicture.SelectionTypes.CAMERA) {
-      if (activate)
+      if (activate) {
         this.fire('focus-action', selected);
+      }
     } else if (
         activate || selected.dataset.type != CrPicture.SelectionTypes.FILE) {
       this.fire('image-activate', selected);
@@ -255,8 +259,9 @@ Polymer({
    * @private
    */
   onSelectedItemChanged_: function(event) {
-    if (event.target.selectedItem)
+    if (event.target.selectedItem) {
       event.target.selectedItem.scrollIntoViewIfNeeded(false);
+    }
   },
 
   /**
@@ -267,15 +272,17 @@ Polymer({
    */
   getImgSrc_: function(url) {
     // Use first frame of animated user images.
-    if (url.startsWith('chrome://theme'))
+    if (url.startsWith('chrome://theme')) {
       return url + '[0]';
+    }
 
     /**
      * Extract first frame from image by creating a single frame PNG using
      * url as input if base64 encoded and potentially animated.
      */
-    if (url.split(',')[0] == 'data:image/png;base64')
+    if (url.split(',')[0] == 'data:image/png;base64') {
       return CrPngBehavior.convertImageSequenceToPng([url]);
+    }
 
     return url;
   },
@@ -289,8 +296,9 @@ Polymer({
    * @private
    */
   getImgSrc2x_: function(url) {
-    if (!url.startsWith('chrome://theme'))
+    if (!url.startsWith('chrome://theme')) {
       return '';
+    }
     return url + '[0]@2x 2x';
   },
 });

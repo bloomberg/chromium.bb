@@ -134,15 +134,17 @@ cr.define('cr.ui', function() {
      * @private
      */
     reduce_(action) {
-      if (!action)
+      if (!action) {
         return;
+      }
 
       this.data = this.reducer_(this.data, action);
 
       // Batch notifications until after all initialization queuedActions are
       // resolved.
-      if (this.isInitialized() && !this.batchMode_)
+      if (this.isInitialized() && !this.batchMode_) {
         this.notifyObservers_(this.data);
+      }
     }
 
     /**

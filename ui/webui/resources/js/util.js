@@ -166,14 +166,16 @@ function swapDomNodes(a, b) {
 function disableTextSelectAndDrag(opt_allowSelectStart, opt_allowDragStart) {
   // Disable text selection.
   document.onselectstart = function(e) {
-    if (!(opt_allowSelectStart && opt_allowSelectStart.call(this, e)))
+    if (!(opt_allowSelectStart && opt_allowSelectStart.call(this, e))) {
       e.preventDefault();
+    }
   };
 
   // Disable dragging.
   document.ondragstart = function(e) {
-    if (!(opt_allowDragStart && opt_allowDragStart.call(this, e)))
+    if (!(opt_allowDragStart && opt_allowDragStart.call(this, e))) {
       e.preventDefault();
+    }
   };
 }
 
@@ -216,10 +218,12 @@ function queryRequiredElement(selectors, opt_context) {
 // call into the browser to do the navigation.
 ['click', 'auxclick'].forEach(function(eventName) {
   document.addEventListener(eventName, function(e) {
-    if (e.button > 1)
-      return;  // Ignore buttons other than left and middle.
-    if (e.defaultPrevented)
+    if (e.button > 1) {
       return;
+    }  // Ignore buttons other than left and middle.
+    if (e.defaultPrevented) {
+      return;
+    }
 
     var eventPath = e.path;
     var anchor = null;
@@ -243,8 +247,9 @@ function queryRequiredElement(selectors, opt_context) {
       anchor = el;
     }
 
-    if (!anchor)
+    if (!anchor) {
       return;
+    }
 
     anchor = /** @type {!HTMLAnchorElement} */ (anchor);
     if ((anchor.protocol == 'file:' || anchor.protocol == 'about:') &&
@@ -269,8 +274,9 @@ function queryRequiredElement(selectors, opt_context) {
 function appendParam(url, key, value) {
   var param = encodeURIComponent(key) + '=' + encodeURIComponent(value);
 
-  if (url.indexOf('?') == -1)
+  if (url.indexOf('?') == -1) {
     return url + '?' + param;
+  }
   return url + '&' + param;
 }
 
@@ -310,8 +316,9 @@ function ensureTransitionEndEvent(el, opt_timeOut) {
     fired = true;
   });
   window.setTimeout(function() {
-    if (!fired)
+    if (!fired) {
       cr.dispatchSimpleEvent(el, 'transitionend', true);
+    }
   }, opt_timeOut);
 }
 
@@ -378,8 +385,9 @@ function HTMLEscape(original) {
  *     appended.
  */
 function elide(original, maxLength) {
-  if (original.length <= maxLength)
+  if (original.length <= maxLength) {
     return original;
+  }
   return original.substring(0, maxLength - 1) + '\u2026';
 }
 
@@ -402,8 +410,9 @@ function quoteString(str) {
  *     optional return value is passed on by the listener.
  */
 function listenOnce(target, eventNames, callback) {
-  if (!Array.isArray(eventNames))
+  if (!Array.isArray(eventNames)) {
     eventNames = eventNames.split(/ +/);
+  }
 
   var removeAllAndCallCallback = function(event) {
     eventNames.forEach(function(eventName) {
@@ -427,14 +436,16 @@ if (!('key' in KeyboardEvent.prototype)) {
     /** @this {KeyboardEvent} */
     get: function() {
       // 0-9
-      if (this.keyCode >= 0x30 && this.keyCode <= 0x39)
+      if (this.keyCode >= 0x30 && this.keyCode <= 0x39) {
         return String.fromCharCode(this.keyCode);
+      }
 
       // A-Z
       if (this.keyCode >= 0x41 && this.keyCode <= 0x5a) {
         var result = String.fromCharCode(this.keyCode).toLowerCase();
-        if (this.shiftKey)
+        if (this.shiftKey) {
           result = result.toUpperCase();
+        }
         return result;
       }
 

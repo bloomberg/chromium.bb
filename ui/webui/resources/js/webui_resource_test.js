@@ -13,8 +13,9 @@ function assertEquals(expected, observed, opt_message) {
   if (observed !== expected) {
     var message = 'Assertion Failed\n  Observed: ' + observed +
         '\n  Expected: ' + expected;
-    if (opt_message)
+    if (opt_message) {
       message = message + '\n  ' + opt_message;
+    }
     throw new Error(message);
   }
 }
@@ -50,8 +51,9 @@ function assertNotEqual(reference, observed, opt_message) {
   if (observed === reference) {
     var message = 'Assertion Failed\n  Observed: ' + observed +
         '\n  Reference: ' + reference;
-    if (opt_message)
+    if (opt_message) {
       message = message + '\n  ' + opt_message;
+    }
     throw new Error(message);
   }
 }
@@ -67,8 +69,9 @@ function assertThrows(f) {
   } catch (err) {
     triggeredError = true;
   }
-  if (!triggeredError)
+  if (!triggeredError) {
     throw new Error('Assertion Failed: throw expected.');
+  }
 }
 
 /**
@@ -198,16 +201,18 @@ function runTests(opt_testScope) {
   testHarness = /** @type{!WebUiTestHarness} */ (testScope);
   for (var name in testScope) {
     // To avoid unnecessary getting properties, test name first.
-    if (/^test/.test(name) && typeof testScope[name] == 'function')
+    if (/^test/.test(name) && typeof testScope[name] == 'function') {
       testCases.push(name);
+    }
   }
   if (!testCases.length) {
     console.error('Failed to find test cases.');
     cleanTestRun = false;
   }
   try {
-    if (testHarness.setUpPage)
+    if (testHarness.setUpPage) {
       testHarness.setUpPage();
+    }
   } catch (err) {
     cleanTestRun = false;
   }
@@ -239,8 +244,9 @@ function continueTesting(opt_asyncTestFailure) {
         ' complete, status=' + (opt_asyncTestFailure ? 'FAIL' : 'PASS') +
         ', duration=' + Math.round(now - testStartTime) + 'ms');
   }
-  if (opt_asyncTestFailure)
+  if (opt_asyncTestFailure) {
     cleanTestRun = false;
+  }
   var done = false;
   if (pendingTearDown) {
     pendingTearDown();
@@ -253,8 +259,9 @@ function continueTesting(opt_asyncTestFailure) {
     var isAsyncTest = testScope[testName].length;
     var testError = false;
     try {
-      if (testHarness.setUp)
+      if (testHarness.setUp) {
         testHarness.setUp();
+      }
       pendingTearDown = testHarness.tearDown || null;
       testScope[testName](continueTesting);
     } catch (err) {
@@ -265,8 +272,9 @@ function continueTesting(opt_asyncTestFailure) {
     }
     // Asynchronous tests must manually call continueTesting when complete
     // unless they throw an exception.
-    if (!isAsyncTest || testError)
+    if (!isAsyncTest || testError) {
       continueTesting();
+    }
   } else {
     done = true;
     endTests(cleanTestRun);

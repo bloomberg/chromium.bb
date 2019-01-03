@@ -53,8 +53,9 @@ cr.define('cr.ui', function() {
      * @return {*} The element at the given index.
      */
     item: function(index) {
-      if (index >= 0 && index < this.length)
+      if (index >= 0 && index < this.length) {
         return this.array_[this.indexes_[index]];
+      }
       return undefined;
     },
 
@@ -111,8 +112,9 @@ cr.define('cr.ui', function() {
      */
     indexOf: function(item, opt_fromIndex) {
       for (var i = opt_fromIndex || 0; i < this.indexes_.length; i++) {
-        if (item === this.item(i))
+        if (item === this.item(i)) {
           return i;
+        }
       }
       return -1;
     },
@@ -201,8 +203,9 @@ cr.define('cr.ui', function() {
       // change), and then sort again.
       // Still need to finish the sorting above (including events), so
       // list will not go to inconsistent state.
-      if (status.field)
+      if (status.field) {
         this.delayedSort_(status.field, status.direction);
+      }
 
       return deletedItems;
     },
@@ -234,8 +237,9 @@ cr.define('cr.ui', function() {
      */
     replaceItem: function(oldItem, newItem) {
       var index = this.indexOf(oldItem);
-      if (index < 0)
+      if (index < 0) {
         return;
+      }
       this.array_[this.indexes_[index]] = newItem;
       this.updateIndex(index);
     },
@@ -273,8 +277,9 @@ cr.define('cr.ui', function() {
         var status = this.sortStatus;
         var sortPermutation =
             this.doSort_(this.sortStatus.field, this.sortStatus.direction);
-        if (sortPermutation)
+        if (sortPermutation) {
           this.dispatchPermutedEvent_(sortPermutation);
+        }
         // We should first call prepareSort (data may change), and then sort.
         // Still need to finish the sorting above (including events), so
         // list will not go to inconsistent state.
@@ -334,8 +339,9 @@ cr.define('cr.ui', function() {
 
       this.prepareSort(field, function() {
         var sortPermutation = self.doSort_(field, direction);
-        if (sortPermutation)
+        if (sortPermutation) {
           self.dispatchPermutedEvent_(sortPermutation);
+        }
         self.dispatchSortEvent_();
       });
     },
@@ -355,18 +361,21 @@ cr.define('cr.ui', function() {
       var sorted = this.indexes_.every(function(element, index, array) {
         return index == 0 || compareFunction(element, array[index - 1]) >= 0;
       });
-      if (!sorted)
+      if (!sorted) {
         this.indexes_.sort(compareFunction);
+      }
       this.sortStatus_ = this.createSortStatus(field, direction);
       var sortPermutation = [];
       var changed = false;
       for (var i = 0; i < this.length; i++) {
-        if (positions[this.indexes_[i]] != i)
+        if (positions[this.indexes_[i]] != i) {
           changed = true;
+        }
         sortPermutation[positions[this.indexes_[i]]] = i;
       }
-      if (changed)
+      if (changed) {
         return sortPermutation;
+      }
       return null;
     },
 
@@ -411,8 +420,9 @@ cr.define('cr.ui', function() {
      */
     sortFunction_: function(field, direction) {
       var compareFunction = null;
-      if (field !== null)
+      if (field !== null) {
         compareFunction = this.createCompareFunction_(field);
+      }
       var dirMultiplier = direction == 'desc' ? -1 : 1;
 
       return function(index1, index2) {
@@ -420,10 +430,12 @@ cr.define('cr.ui', function() {
         var item2 = this.array_[index2];
 
         var compareResult = 0;
-        if (typeof(compareFunction) === 'function')
+        if (typeof (compareFunction) === 'function') {
           compareResult = compareFunction.call(null, item1, item2);
-        if (compareResult != 0)
+        }
+        if (compareResult != 0) {
           return dirMultiplier * compareResult;
+        }
         return dirMultiplier *
             this.defaultValuesCompareFunction(index1, index2);
       }.bind(this);
@@ -434,10 +446,12 @@ cr.define('cr.ui', function() {
      */
     defaultValuesCompareFunction: function(a, b) {
       // We could insert i18n comparisons here.
-      if (a < b)
+      if (a < b) {
         return -1;
-      if (a > b)
+      }
+      if (a > b) {
         return 1;
+      }
       return 0;
     }
   };

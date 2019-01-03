@@ -80,15 +80,17 @@ cr.define('cr.ui', function() {
       availRect = popupElement.offsetParent.getBoundingClientRect();
     }
 
-    if (cs.direction == 'rtl')
+    if (cs.direction == 'rtl') {
       opt_invertLeftRight = !opt_invertLeftRight;
+    }
 
     // Flip BEFORE, AFTER based on alignment.
     if (opt_invertLeftRight) {
-      if (type == AnchorType.BEFORE)
+      if (type == AnchorType.BEFORE) {
         type = AnchorType.AFTER;
-      else if (type == AnchorType.AFTER)
+      } else if (type == AnchorType.AFTER) {
         type = AnchorType.BEFORE;
+      }
     }
 
     // Flip type based on available size
@@ -127,28 +129,32 @@ cr.define('cr.ui', function() {
     // Primary direction
     switch (type) {
       case AnchorType.BELOW:
-        if (anchorRect.bottom + popupRect.height <= availRect.height)
+        if (anchorRect.bottom + popupRect.height <= availRect.height) {
           style.top = anchorRect.bottom + 'px';
-        else
+        } else {
           style.bottom = '0';
+        }
         break;
       case AnchorType.ABOVE:
-        if (availRect.height - anchorRect.top >= 0)
+        if (availRect.height - anchorRect.top >= 0) {
           style.bottom = availRect.height - anchorRect.top + 'px';
-        else
+        } else {
           style.top = '0';
+        }
         break;
       case AnchorType.AFTER:
-        if (anchorRect.right + popupRect.width <= availRect.width)
+        if (anchorRect.right + popupRect.width <= availRect.width) {
           style.left = anchorRect.right + 'px';
-        else
+        } else {
           style.right = '0';
+        }
         break;
       case AnchorType.BEFORE:
-        if (availRect.width - anchorRect.left >= 0)
+        if (availRect.width - anchorRect.left >= 0) {
           style.right = availRect.width - anchorRect.left + 'px';
-        else
+        } else {
           style.left = '0';
+        }
         break;
     }
 

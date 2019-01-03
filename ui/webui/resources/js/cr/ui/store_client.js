@@ -88,16 +88,18 @@ cr.define('cr.ui', function() {
         // Avoid poking Polymer unless something has actually changed. Reducers
         // must return new objects rather than mutating existing objects, so
         // any real changes will pass through correctly.
-        if (oldValue === newValue || newValue === undefined)
+        if (oldValue === newValue || newValue === undefined) {
           return;
+        }
 
         this[watch.localProperty] = newValue;
       });
     },
 
     updateFromStore: function() {
-      if (this.getStore().isInitialized())
+      if (this.getStore().isInitialized()) {
         this.onStateChanged(this.getStore().data);
+      }
     },
 
     /**

@@ -82,12 +82,14 @@ var i18nTemplate = (function() {
     'i18n-values': function(element, attributeAndKeys, data, visited) {
       var parts = attributeAndKeys.replace(/\s/g, '').split(/;/);
       parts.forEach(function(part) {
-        if (!part)
+        if (!part) {
           return;
+        }
 
         var attributeAndKeyPair = part.match(/^([^:]+):(.+)$/);
-        if (!attributeAndKeyPair)
+        if (!attributeAndKeyPair) {
           throw new Error('malformed i18n-values: ' + attributeAndKeys);
+        }
 
         var propName = attributeAndKeyPair[1];
         var propExpr = attributeAndKeyPair[2];
@@ -123,8 +125,9 @@ var i18nTemplate = (function() {
 
   // Only look through shadow DOM when it's supported. As of April 2015, iOS
   // Chrome doesn't support shadow DOM.
-  if (Element.prototype.createShadowRoot)
+  if (Element.prototype.createShadowRoot) {
     prefixes.push('* /deep/ ');
+  }
 
   var attributeNames = Object.keys(handlers);
   var selector = prefixes
@@ -173,14 +176,16 @@ var i18nTemplate = (function() {
     var templates = root.querySelectorAll('template');
     for (var i = 0; i < templates.length; ++i) {
       var template = /** @type {HTMLTemplateElement} */ (templates[i]);
-      if (!template.content)
+      if (!template.content) {
         continue;
+      }
       processWithoutCycles(template.content, data, visited, mark);
     }
 
     var isElement = root instanceof Element;
-    if (isElement && root.webkitMatchesSelector(selector))
+    if (isElement && root.webkitMatchesSelector(selector)) {
       processElement(/** @type {!Element} */ (root), data, visited);
+    }
 
     var elements = root.querySelectorAll(selector);
     for (var i = 0; i < elements.length; ++i) {
@@ -207,8 +212,9 @@ var i18nTemplate = (function() {
     for (var i = 0; i < attributeNames.length; i++) {
       var name = attributeNames[i];
       var attribute = element.getAttribute(name);
-      if (attribute != null)
+      if (attribute != null) {
         handlers[name](element, attribute, data, visited);
+      }
     }
   }
 

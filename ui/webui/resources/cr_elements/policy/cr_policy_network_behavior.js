@@ -16,12 +16,14 @@ const CrPolicyNetworkBehavior = {
   isNetworkPolicyControlled: function(property) {
     // If the property is not a dictionary, or does not have an Effective
     // sub-property set, then the property is not policy controlled.
-    if (typeof property != 'object' || !property.Effective)
+    if (typeof property != 'object' || !property.Effective) {
       return false;
+    }
     // Enforced
     const effective = property.Effective;
-    if (effective == 'UserPolicy' || effective == 'DevicePolicy')
+    if (effective == 'UserPolicy' || effective == 'DevicePolicy') {
       return true;
+    }
     // Recommended
     if (typeof property.UserPolicy != 'undefined' ||
         typeof property.DevicePolicy != 'undefined') {
@@ -57,17 +59,20 @@ const CrPolicyNetworkBehavior = {
    */
   isEditable: function(property) {
     // If the property is not a dictionary, then the property is not editable.
-    if (typeof property != 'object')
+    if (typeof property != 'object') {
       return false;
+    }
 
     // If the property has a UserEditable sub-property, that determines whether
     // or not it is editable.
-    if (typeof property.UserEditable != 'undefined')
+    if (typeof property.UserEditable != 'undefined') {
       return property.UserEditable;
+    }
 
     // Otherwise if the property has a DeviceEditable sub-property, check that.
-    if (typeof property.DeviceEditable != 'undefined')
+    if (typeof property.DeviceEditable != 'undefined') {
       return property.DeviceEditable;
+    }
 
     // If no 'Editable' sub-property exists, the policy value is not editable.
     return false;
@@ -108,10 +113,12 @@ const CrPolicyNetworkBehavior = {
    * @private
    */
   getIndicatorTypeForSource: function(source) {
-    if (source == CrOnc.Source.DEVICE_POLICY)
+    if (source == CrOnc.Source.DEVICE_POLICY) {
       return CrPolicyIndicatorType.DEVICE_POLICY;
-    if (source == CrOnc.Source.USER_POLICY)
+    }
+    if (source == CrOnc.Source.USER_POLICY) {
       return CrPolicyIndicatorType.USER_POLICY;
+    }
     return CrPolicyIndicatorType.NONE;
   },
 };

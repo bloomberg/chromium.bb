@@ -14,14 +14,16 @@ cr.define('cr.ui', function() {
    */
   function decorate(source, constr) {
     var elements;
-    if (typeof source == 'string')
+    if (typeof source == 'string') {
       elements = cr.doc.querySelectorAll(source);
-    else
+    } else {
       elements = [source];
+    }
 
     for (var i = 0, el; el = elements[i]; i++) {
-      if (!(el instanceof constr))
+      if (!(el instanceof constr)) {
         constr.decorate(el);
+      }
     }
   }
 
@@ -31,10 +33,11 @@ cr.define('cr.ui', function() {
   function createElementHelper(tagName, opt_bag) {
     // Allow passing in ownerDocument to create in a different document.
     var doc;
-    if (opt_bag && opt_bag.ownerDocument)
+    if (opt_bag && opt_bag.ownerDocument) {
       doc = opt_bag.ownerDocument;
-    else
+    } else {
       doc = cr.doc;
+    }
     return doc.createElement(tagName);
   }
 
@@ -136,8 +139,9 @@ cr.define('cr.ui', function() {
                               parseInt(parentComputedStyle.paddingRight, 10);
 
     var max = parentEl.clientWidth - startPos - inner - parentPadding;
-    if (opt_scale)
+    if (opt_scale) {
       max *= opt_scale;
+    }
 
     function limit() {
       if (el.scrollWidth > max) {
@@ -164,8 +168,9 @@ cr.define('cr.ui', function() {
    * @return {string} e.g. '16px'.
    */
   function toCssPx(pixels) {
-    if (!window.isFinite(pixels))
+    if (!window.isFinite(pixels)) {
       console.error('Pixel value is not a number: ' + pixels);
+    }
     return Math.round(pixels) + 'px';
   }
 

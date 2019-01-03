@@ -53,8 +53,9 @@ Polymer({
     // Wait for the dom-repeat to populate the <option> entries.
     this.async(function() {
       const select = this.$$('select');
-      if (select.value != this.value)
+      if (select.value != this.value) {
         select.value = this.value;
+      }
     });
   },
 
@@ -71,8 +72,9 @@ Polymer({
     }
     const key = /** @type {string} */ (item);
     const oncKey = 'Onc' + prefix.replace(/\./g, '-') + '_' + key;
-    if (this.i18nExists(oncKey))
+    if (this.i18nExists(oncKey)) {
       return this.i18n(oncKey);
+    }
     assertNotReached('ONC Key not found: ' + oncKey);
     return key;
   },
@@ -83,8 +85,9 @@ Polymer({
    * @private
    */
   getItemValue_: function(item) {
-    if (this.certList)
+    if (this.certList) {
       return /** @type {chrome.networkingPrivate.Certificate}*/ (item).hash;
+    }
     return /** @type {string} */ (item);
   },
 

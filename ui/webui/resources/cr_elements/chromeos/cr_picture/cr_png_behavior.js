@@ -181,8 +181,9 @@ const CrPngBehavior = {
     png.chunks.push(acTL);
 
     /** Append each image as a PNG frame. */
-    for (let i = 0; i < images.length; ++i)
+    for (let i = 0; i < images.length; ++i) {
       this.appendFrameFromDataURL_(images[i], png);
+    }
 
     /** Update IHDR now that size and colour is known. */
     this.writeUInt32_(IHDR, png.width, 8);
@@ -424,20 +425,27 @@ const CrPngBehavior = {
           }
 
           /** Check that header matches our expectations. */
-          if (width != png.width)
+          if (width != png.width) {
             console.error('Bad PNG width: ' + width);
-          if (height != png.height)
+          }
+          if (height != png.height) {
             console.error('Bad PNG height: ' + height);
-          if (depth != PNG_BIT_DEPTH)
+          }
+          if (depth != PNG_BIT_DEPTH) {
             console.error('Bad PNG bit depth: ' + depth);
-          if (colour != png.colour)
+          }
+          if (colour != png.colour) {
             console.error('Bad PNG colour type: ' + colour);
-          if (compression != PNG_COMPRESSION_METHOD)
+          }
+          if (compression != PNG_COMPRESSION_METHOD) {
             console.error('Bad PNG compression method: ' + compression);
-          if (filter != PNG_FILTER_METHOD)
+          }
+          if (filter != PNG_FILTER_METHOD) {
             console.error('Bad PNG filter method: ' + filter);
-          if (interlace != PNG_INTERLACE_METHOD)
+          }
+          if (interlace != PNG_INTERLACE_METHOD) {
             console.error('Bad PNG interlace method: ' + interlace);
+          }
           break;
         case 'IDAT':
           /** Append as IDAT chunk if this is the first frame. */

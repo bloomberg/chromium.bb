@@ -224,8 +224,9 @@ CrOnc.VPNType = {
  *     if it exists, otherwise undefined.
  */
 CrOnc.getActiveValue = function(property) {
-  if (property == undefined)
+  if (property == undefined) {
     return undefined;
+  }
 
   if (typeof property != 'object' || Array.isArray(property)) {
     console.error(
@@ -234,21 +235,25 @@ CrOnc.getActiveValue = function(property) {
   }
 
   // Return the Active value if it exists.
-  if ('Active' in property)
+  if ('Active' in property) {
     return property['Active'];
+  }
 
   // If no Active value is defined, return the effective value.
   if ('Effective' in property) {
     const effective = property.Effective;
-    if (effective in property)
+    if (effective in property) {
       return property[effective];
+    }
   }
 
   // If no Effective value, return the UserSetting or SharedSetting.
-  if ('UserSetting' in property)
+  if ('UserSetting' in property) {
     return property['UserSetting'];
-  if ('SharedSetting' in property)
+  }
+  if ('SharedSetting' in property) {
     return property['SharedSetting'];
+  }
 
   // Effective, UserEditable or DeviceEditable properties may not have a value
   // set.
@@ -269,10 +274,12 @@ CrOnc.getActiveValue = function(property) {
  * @return {string}
  */
 CrOnc.getStateOrActiveString = function(property) {
-  if (property === undefined)
+  if (property === undefined) {
     return '';
-  if (typeof property == 'string')
+  }
+  if (typeof property == 'string') {
     return property;
+  }
   return /** @type {string} */ (CrOnc.getActiveValue(property));
 };
 
@@ -288,8 +295,9 @@ CrOnc.isSimpleProperty = function(property) {
     'DeviceEditable'
   ];
   for (const prop of requiredProperties) {
-    if (prop in property)
+    if (prop in property) {
       return true;
+    }
   }
   return false;
 };
@@ -302,8 +310,9 @@ CrOnc.isSimpleProperty = function(property) {
  */
 CrOnc.getActiveProperties = function(properties) {
   'use strict';
-  if (!properties)
+  if (!properties) {
     return undefined;
+  }
   const result = {};
   const keys = Object.keys(properties);
   for (let i = 0; i < keys.length; ++i) {
@@ -311,10 +320,11 @@ CrOnc.getActiveProperties = function(properties) {
     const property = properties[k];
     let propertyValue;
     if (typeof property === 'object') {
-      if (CrOnc.isSimpleProperty(property))
+      if (CrOnc.isSimpleProperty(property)) {
         propertyValue = CrOnc.getActiveValue(property);
-      else
+      } else {
         propertyValue = CrOnc.getActiveProperties(property);
+      }
     } else {
       propertyValue = property;
     }
@@ -341,22 +351,26 @@ CrOnc.getIPConfigForType = function(properties, type) {
       ipConfig = ipConfigs[i];
       ipType = ipConfig.Type ? /** @type {CrOnc.IPType} */ (ipConfig.Type) :
                                undefined;
-      if (ipType == type)
+      if (ipType == type) {
         break;
+      }
     }
   }
-  if (type != CrOnc.IPType.IPV4)
+  if (type != CrOnc.IPType.IPV4) {
     return type == ipType ? ipConfig : undefined;
+  }
 
   const staticIpConfig =
       /** @type {!CrOnc.IPConfigProperties|undefined} */ (
           CrOnc.getActiveProperties(properties.StaticIPConfig));
-  if (!staticIpConfig)
+  if (!staticIpConfig) {
     return ipConfig;
+  }
 
   // If there is no entry in IPConfigs for |type|, return the static config.
-  if (!ipConfig)
+  if (!ipConfig) {
     return staticIpConfig;
+  }
 
   // Otherwise, merge the appropriate static values into the result.
   if (staticIpConfig.IPAddress &&
@@ -381,14 +395,18 @@ CrOnc.getIPConfigForType = function(properties, type) {
  */
 CrOnc.getSignalStrength = function(properties) {
   const type = properties.Type;
-  if (type == CrOnc.Type.CELLULAR && properties.Cellular)
+  if (type == CrOnc.Type.CELLULAR && properties.Cellular) {
     return properties.Cellular.SignalStrength || 0;
-  if (type == CrOnc.Type.TETHER && properties.Tether)
+  }
+  if (type == CrOnc.Type.TETHER && properties.Tether) {
     return properties.Tether.SignalStrength || 0;
-  if (type == CrOnc.Type.WI_FI && properties.WiFi)
+  }
+  if (type == CrOnc.Type.WI_FI && properties.WiFi) {
     return properties.WiFi.SignalStrength || 0;
-  if (type == CrOnc.Type.WI_MAX && properties.WiMAX)
+  }
+  if (type == CrOnc.Type.WI_MAX && properties.WiMAX) {
     return properties.WiMAX.SignalStrength || 0;
+  }
   return 0;
 };
 
@@ -402,14 +420,18 @@ CrOnc.getSignalStrength = function(properties) {
  */
 CrOnc.getManagedAutoConnect = function(properties) {
   const type = properties.Type;
-  if (type == CrOnc.Type.CELLULAR && properties.Cellular)
+  if (type == CrOnc.Type.CELLULAR && properties.Cellular) {
     return properties.Cellular.AutoConnect;
-  if (type == CrOnc.Type.VPN && properties.VPN)
+  }
+  if (type == CrOnc.Type.VPN && properties.VPN) {
     return properties.VPN.AutoConnect;
-  if (type == CrOnc.Type.WI_FI && properties.WiFi)
+  }
+  if (type == CrOnc.Type.WI_FI && properties.WiFi) {
     return properties.WiFi.AutoConnect;
-  if (type == CrOnc.Type.WI_MAX && properties.WiMAX)
+  }
+  if (type == CrOnc.Type.WI_MAX && properties.WiMAX) {
     return properties.WiMAX.AutoConnect;
+  }
   return undefined;
 };
 
@@ -430,12 +452,14 @@ CrOnc.getAutoConnect = function(properties) {
  * @return {string} The name to display for |network|.
  */
 CrOnc.getNetworkName = function(properties) {
-  if (!properties)
+  if (!properties) {
     return '';
+  }
   const name = CrOnc.getStateOrActiveString(properties.Name);
   const type = CrOnc.getStateOrActiveString(properties.Type);
-  if (!name)
+  if (!name) {
     return CrOncStrings['OncType' + type];
+  }
   if (type == 'VPN' && properties.VPN) {
     const vpnType = CrOnc.getStateOrActiveString(properties.VPN.Type);
     if (vpnType == 'ThirdPartyVPN' && properties.VPN.ThirdPartyVPN) {
@@ -465,11 +489,13 @@ CrOnc.getEscapedNetworkName = function(properties) {
  *   locked SIM.
  */
 CrOnc.isSimLocked = function(properties) {
-  if (!properties.Cellular)
+  if (!properties.Cellular) {
     return false;
+  }
   const simLockStatus = properties.Cellular.SIMLockStatus;
-  if (simLockStatus == undefined)
+  if (simLockStatus == undefined) {
     return false;
+  }
   return simLockStatus.LockType == CrOnc.LockType.PIN ||
       simLockStatus.LockType == CrOnc.LockType.PUK;
 };
@@ -495,8 +521,9 @@ CrOnc.setValidStaticIPConfig = function(config, properties) {
   }
   if (config.IPAddressConfigType != CrOnc.IPConfigType.STATIC &&
       config.NameServersConfigType != CrOnc.IPConfigType.STATIC) {
-    if (config.hasOwnProperty('StaticIPConfig'))
+    if (config.hasOwnProperty('StaticIPConfig')) {
       delete config.StaticIPConfig;
+    }
     return;
   }
 
@@ -531,18 +558,21 @@ CrOnc.setValidStaticIPConfig = function(config, properties) {
 CrOnc.setProperty = function(properties, key, value) {
   while (true) {
     const index = key.indexOf('.');
-    if (index < 0)
+    if (index < 0) {
       break;
+    }
     const keyComponent = key.substr(0, index);
-    if (!properties.hasOwnProperty(keyComponent))
+    if (!properties.hasOwnProperty(keyComponent)) {
       properties[keyComponent] = {};
+    }
     properties = properties[keyComponent];
     key = key.substr(index + 1);
   }
-  if (value === undefined)
+  if (value === undefined) {
     delete properties[key];
-  else
+  } else {
     properties[key] = value;
+  }
 };
 
 /**
@@ -571,8 +601,9 @@ CrOnc.setTypeProperty = function(properties, key, value) {
 CrOnc.getRoutingPrefixAsNetmask = function(prefixLength) {
   'use strict';
   // Return the empty string for invalid inputs.
-  if (prefixLength < 0 || prefixLength > 32)
+  if (prefixLength < 0 || prefixLength > 32) {
     return '';
+  }
   let netmask = '';
   for (let i = 0; i < 4; ++i) {
     let remainder = 8;
@@ -582,11 +613,13 @@ CrOnc.getRoutingPrefixAsNetmask = function(prefixLength) {
       remainder = prefixLength;
       prefixLength = 0;
     }
-    if (i > 0)
+    if (i > 0) {
       netmask += '.';
+    }
     let value = 0;
-    if (remainder != 0)
+    if (remainder != 0) {
       value = ((2 << (remainder - 1)) - 1) << (8 - remainder);
+    }
     netmask += value.toString();
   }
   return netmask;
@@ -601,15 +634,17 @@ CrOnc.getRoutingPrefixAsLength = function(netmask) {
   'use strict';
   let prefixLength = 0;
   const tokens = netmask.split('.');
-  if (tokens.length != 4)
+  if (tokens.length != 4) {
     return -1;
+  }
   for (let i = 0; i < tokens.length; ++i) {
     const token = tokens[i];
     // If we already found the last mask and the current one is not
     // '0' then the netmask is invalid. For example, 255.224.255.0
     if (prefixLength / 8 != i) {
-      if (token != '0')
+      if (token != '0') {
         return -1;
+      }
     } else if (token == '255') {
       prefixLength += 8;
     } else if (token == '254') {
@@ -652,8 +687,9 @@ CrOnc.proxyMatches = function(a, b) {
  */
 CrOnc.shouldShowTetherDialogBeforeConnection = function(networkProperties) {
   // Only show for Tether networks.
-  if (networkProperties.Type != CrOnc.Type.TETHER)
+  if (networkProperties.Type != CrOnc.Type.TETHER) {
     return false;
+  }
 
   // Show if there are no Tether properties or if there are Tether properties
   // and they indicate that a connection has not yet occurred to this host.
@@ -667,7 +703,8 @@ CrOnc.shouldShowTetherDialogBeforeConnection = function(networkProperties) {
  * @return {!CrOnc.Type|undefined}
  */
 CrOnc.getValidType = function(typeStr) {
-  if (Object.values(CrOnc.Type).indexOf(typeStr) >= 0)
+  if (Object.values(CrOnc.Type).indexOf(typeStr) >= 0) {
     return /** @type {!CrOnc.Type} */ (typeStr);
+  }
   return undefined;
 };

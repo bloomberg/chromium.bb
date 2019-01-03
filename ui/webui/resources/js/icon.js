@@ -54,8 +54,9 @@ cr.define('cr.icon', function() {
     var supportedScaleFactors = getSupportedScaleFactors();
 
     var replaceStartIndex = path.indexOf('scalefactor');
-    if (replaceStartIndex < 0)
+    if (replaceStartIndex < 0) {
       return getUrlForCss(path);
+    }
 
     var s = '';
     for (var i = 0; i < supportedScaleFactors.length; ++i) {
@@ -65,8 +66,9 @@ cr.define('cr.icon', function() {
 
       s += getUrlForCss(pathWithScaleFactor) + ' ' + scaleFactor + 'x';
 
-      if (i != supportedScaleFactors.length - 1)
+      if (i != supportedScaleFactors.length - 1) {
         s += ', ';
+      }
     }
     return '-webkit-image-set(' + s + ')';
   }

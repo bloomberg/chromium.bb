@@ -55,8 +55,9 @@ Polymer({
 
   /** @private */
   updateShowPassword_: function() {
-    if (this.value == FAKE_CREDENTIAL)
+    if (this.value == FAKE_CREDENTIAL) {
       this.showPassword = false;
+    }
   },
 
   focus: function() {
@@ -113,8 +114,9 @@ Polymer({
    * @private
    */
   onKeypress_: function(event) {
-    if (event.target.id != 'input' || event.key != 'Enter')
+    if (event.target.id != 'input' || event.key != 'Enter') {
       return;
+    }
     event.stopPropagation();
     this.fire('enter');
   },
@@ -126,8 +128,9 @@ Polymer({
    * @private
    */
   onFocus_: function(e) {
-    if (this.value != FAKE_CREDENTIAL)
+    if (this.value != FAKE_CREDENTIAL) {
       return;
+    }
     // We can not rely on data binding to update the target value when a
     // field is focused.
     e.target.value = '';
@@ -144,8 +147,9 @@ Polymer({
    * @private
    */
   onBlur_: function(e) {
-    if (!this.restoreUnknown_)
+    if (!this.restoreUnknown_) {
       return;
+    }
     // The target is still focused so we can not rely on data binding to
     // update the target value.
     e.target.value = FAKE_CREDENTIAL;

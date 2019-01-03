@@ -165,8 +165,9 @@ cr.define('cr.ui.pageManager', function() {
         // If it's not a page, try it as an overlay.
         var hash = opt_propertyBag.hash || '';
         if (!targetPage && this.showOverlay_(pageName, hash, rootPage)) {
-          if (opt_updateHistory)
+          if (opt_updateHistory) {
             this.updateHistoryState_(!!opt_propertyBag.replaceState);
+          }
           this.updateTitle_();
           return;
         }
@@ -184,8 +185,9 @@ cr.define('cr.ui.pageManager', function() {
 
       // Notify pages if they will be hidden.
       this.forEachPage_(!isRootPageLocked, function(page) {
-        if (page.name != pageName && !this.isAncestorOfPage(page, targetPage))
+        if (page.name != pageName && !this.isAncestorOfPage(page, targetPage)) {
           page.willHidePage();
+        }
       });
 
       // Update the page's hash.
@@ -198,8 +200,9 @@ cr.define('cr.ui.pageManager', function() {
       });
 
       // Update the history and current location.
-      if (opt_updateHistory)
+      if (opt_updateHistory) {
         this.updateHistoryState_(!!opt_propertyBag.replaceState);
+      }
 
       // Update focus if any other control was focused on the previous page,
       // or the previous page is not known.
@@ -219,8 +222,9 @@ cr.define('cr.ui.pageManager', function() {
 
       // If the target page was already visible, notify it that its hash
       // changed externally.
-      if (targetPageWasVisible)
+      if (targetPageWasVisible) {
         targetPage.didChangeHash();
+      }
 
       // Update the document title. Do this after didShowPage was called, in
       // case a page decides to change its title.
@@ -233,8 +237,9 @@ cr.define('cr.ui.pageManager', function() {
      */
     getPageNameFromPath: function() {
       var path = location.pathname;
-      if (path.length <= 1)
+      if (path.length <= 1) {
         return this.defaultPage_.name;
+      }
 
       // Skip starting slash and remove trailing slash (if any).
       return path.slice(1).replace(/\/$/, '');
@@ -266,8 +271,9 @@ cr.define('cr.ui.pageManager', function() {
     isAncestorOfPage: function(potentialAncestor, potentialDescendent) {
       var parent = potentialDescendent.parentPage;
       while (parent) {
-        if (parent == potentialAncestor)
+        if (parent == potentialAncestor) {
           return true;
+        }
         parent = parent.parentPage;
       }
       return false;
@@ -293,11 +299,13 @@ cr.define('cr.ui.pageManager', function() {
     onPageVisibilityChanged: function(page) {
       this.updateRootPageFreezeState();
 
-      for (var i = 0; i < this.observers_.length; ++i)
+      for (var i = 0; i < this.observers_.length; ++i) {
         this.observers_[i].onPageVisibilityChanged(page);
+      }
 
-      if (!page.visible && this.isTopLevelOverlay(page))
+      if (!page.visible && this.isTopLevelOverlay(page)) {
         this.updateScrollPosition_();
+      }
     },
 
     /**
@@ -306,8 +314,9 @@ cr.define('cr.ui.pageManager', function() {
      * @param {cr.ui.pageManager.Page} page The page whose hash has changed.
      */
     onPageHashChanged: function(page) {
-      if (page == this.getTopmostVisiblePage())
+      if (page == this.getTopmostVisiblePage()) {
         this.updateHistoryState_(false);
+      }
     },
 
     /**
@@ -326,8 +335,9 @@ cr.define('cr.ui.pageManager', function() {
      */
     closeOverlay: function() {
       var overlay = this.getVisibleOverlay_();
-      if (!overlay)
+      if (!overlay) {
         return;
+      }
 
       overlay.visible = false;
       overlay.didClosePage();
@@ -354,8 +364,9 @@ cr.define('cr.ui.pageManager', function() {
       // Blur the active element to ensure any changed pref value is saved.
       document.activeElement.blur();
       var overlay = this.getVisibleOverlay_();
-      if (!overlay)
+      if (!overlay) {
         return;
+      }
       // Let the overlay handle the <Esc> if it wants to.
       if (overlay.handleCancel) {
         overlay.handleCancel();
@@ -391,8 +402,9 @@ cr.define('cr.ui.pageManager', function() {
      * Hides the currently visible bubble, if any.
      */
     hideBubble: function() {
-      if (this.bubble_)
+      if (this.bubble_) {
         this.bubble_.hide();
+      }
     },
 
     /**
@@ -437,8 +449,9 @@ cr.define('cr.ui.pageManager', function() {
      */
     willClose: function() {
       var overlay = this.getVisibleOverlay_();
-      if (overlay)
+      if (overlay) {
         overlay.didClosePage();
+      }
     },
 
     /**
@@ -447,8 +460,9 @@ cr.define('cr.ui.pageManager', function() {
      */
     updateRootPageFreezeState: function() {
       var topPage = this.getTopmostVisiblePage();
-      if (topPage)
+      if (topPage) {
         this.setRootPageFrozen_(topPage.isOverlay);
+      }
     },
 
     /**
@@ -478,15 +492,17 @@ cr.define('cr.ui.pageManager', function() {
      */
     showOverlay_: function(overlayName, hash, rootPage) {
       var overlay = this.registeredOverlayPages[overlayName.toLowerCase()];
-      if (!overlay || !overlay.canShowPage())
+      if (!overlay || !overlay.canShowPage()) {
         return false;
+      }
 
       var focusOutlineManager = cr.ui.FocusOutlineManager.forDocument(document);
 
       // Save the currently focused element in the page for restoration later.
       var currentPage = this.getTopmostVisiblePage();
-      if (currentPage && focusOutlineManager.visible)
+      if (currentPage && focusOutlineManager.visible) {
         currentPage.lastFocusedElement = document.activeElement;
+      }
 
       if ((!rootPage || !rootPage.sticky) && overlay.parentPage &&
           !overlay.parentPage.visible) {
@@ -501,11 +517,13 @@ cr.define('cr.ui.pageManager', function() {
         overlay.didChangeHash();
       }
 
-      if (focusOutlineManager.visible)
+      if (focusOutlineManager.visible) {
         overlay.focus();
+      }
 
-      if (!overlay.pageDiv.contains(document.activeElement))
+      if (!overlay.pageDiv.contains(document.activeElement)) {
         document.activeElement.blur();
+      }
 
       if ($('search-field') && $('search-field').value == '') {
         var section = overlay.associatedSection;
@@ -538,11 +556,13 @@ cr.define('cr.ui.pageManager', function() {
       var topmostPage = null;
       for (var name in this.registeredOverlayPages) {
         var page = this.registeredOverlayPages[name];
-        if (!page.visible)
+        if (!page.visible) {
           continue;
+        }
 
-        if (page.alwaysOnTop)
+        if (page.alwaysOnTop) {
           return page;
+        }
 
         if (!topmostPage ||
             this.getNestingLevel(page) > this.getNestingLevel(topmostPage)) {
@@ -561,8 +581,9 @@ cr.define('cr.ui.pageManager', function() {
     getTopmostVisibleNonOverlayPage_: function() {
       for (var name in this.registeredPages) {
         var page = this.registeredPages[name];
-        if (page.visible)
+        if (page.visible) {
           return page;
+        }
       }
 
       return null;
@@ -607,8 +628,9 @@ cr.define('cr.ui.pageManager', function() {
      * @private
      */
     updateHistoryState_: function(replace) {
-      if (this.isDialog)
+      if (this.isDialog) {
         return;
+      }
 
       var page = this.getTopmostVisiblePage();
       var path = window.location.pathname + window.location.hash;
@@ -620,8 +642,9 @@ cr.define('cr.ui.pageManager', function() {
       // If the page is already in history (the user may have clicked the same
       // link twice, or this is the initial load), do nothing.
       var newPath = (page == this.defaultPage_ ? '' : page.name) + page.hash;
-      if (path == newPath)
+      if (path == newPath) {
         return;
+      }
 
       for (var i = 0; i < this.observers_.length; ++i) {
         this.observers_[i].updateHistory(newPath, replace);
@@ -635,11 +658,13 @@ cr.define('cr.ui.pageManager', function() {
     restoreLastFocusedElement_: function() {
       var currentPage = this.getTopmostVisiblePage();
 
-      if (!currentPage.lastFocusedElement)
+      if (!currentPage.lastFocusedElement) {
         return;
+      }
 
-      if (cr.ui.FocusOutlineManager.forDocument(document).visible)
+      if (cr.ui.FocusOutlineManager.forDocument(document).visible) {
         currentPage.lastFocusedElement.focus();
+      }
 
       currentPage.lastFocusedElement = null;
     },
@@ -652,8 +677,9 @@ cr.define('cr.ui.pageManager', function() {
      */
     findSectionForNode_: function(node) {
       while (node = node.parentNode) {
-        if (node.nodeName == 'SECTION')
+        if (node.nodeName == 'SECTION') {
           return node;
+        }
       }
       return null;
     },
@@ -665,8 +691,9 @@ cr.define('cr.ui.pageManager', function() {
      */
     setRootPageFrozen_: function(freeze) {
       var container = $('page-container');
-      if (container.classList.contains('frozen') == freeze)
+      if (container.classList.contains('frozen') == freeze) {
         return;
+      }
 
       if (freeze) {
         // Lock the width, since auto width computation may change.
@@ -701,8 +728,9 @@ cr.define('cr.ui.pageManager', function() {
      */
     updateAllFrozenElementPositions_: function() {
       var frozenElements = document.querySelectorAll('.frozen');
-      for (var i = 0; i < frozenElements.length; i++)
+      for (var i = 0; i < frozenElements.length; i++) {
         this.updateFrozenElementHorizontalPosition_(frozenElements[i]);
+      }
     },
 
     /**
@@ -728,8 +756,9 @@ cr.define('cr.ui.pageManager', function() {
      */
     forEachPage_: function(includeRootPages, callback) {
       var pageNames = Object.keys(this.registeredOverlayPages);
-      if (includeRootPages)
+      if (includeRootPages) {
         pageNames = Object.keys(this.registeredPages).concat(pageNames);
+      }
 
       pageNames.forEach(function(name) {
         callback.call(

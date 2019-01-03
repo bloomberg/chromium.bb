@@ -32,8 +32,9 @@ cr.define('cr.ui.overlay', function() {
     var defaultButtons = /** @type !NodeList<!HTMLElement> */ (
         overlay.querySelectorAll('.page .button-strip > .default-button'));
     for (var i = 0; i < defaultButtons.length; i++) {
-      if (!findAncestor(defaultButtons[i], isHidden))
+      if (!findAncestor(defaultButtons[i], isHidden)) {
         return defaultButtons[i];
+      }
     }
     return null;
   }
@@ -48,12 +49,14 @@ cr.define('cr.ui.overlay', function() {
     if (!globallyInitialized) {
       document.addEventListener('keydown', function(e) {
         var overlay = getTopOverlay();
-        if (!overlay)
+        if (!overlay) {
           return;
+        }
 
         // Close the overlay on escape.
-        if (e.key == 'Escape')
+        if (e.key == 'Escape') {
           cr.dispatchSimpleEvent(overlay, 'cancelOverlay');
+        }
 
         // Execute the overlay's default button on enter, unless focus is on an
         // element that has standard behavior for the enter key.
@@ -86,8 +89,9 @@ cr.define('cr.ui.overlay', function() {
     var pages = document.querySelectorAll('.overlay .page:not(.not-resizable)');
 
     var maxHeight = Math.min(0.9 * window.innerHeight, 640) + 'px';
-    for (var i = 0; i < pages.length; i++)
+    for (var i = 0; i < pages.length; i++) {
       pages[i].style.maxHeight = maxHeight;
+    }
   }
 
   /**
@@ -99,8 +103,9 @@ cr.define('cr.ui.overlay', function() {
     var closeButtons = overlay.querySelectorAll('.page > .close-button');
     for (var i = 0; i < closeButtons.length; i++) {
       closeButtons[i].addEventListener('click', function(e) {
-        if (cr.ui.FocusOutlineManager)
+        if (cr.ui.FocusOutlineManager) {
           cr.ui.FocusOutlineManager.forDocument(document).updateVisibility();
+        }
         cr.dispatchSimpleEvent(overlay, 'cancelOverlay');
       });
     }
@@ -108,10 +113,11 @@ cr.define('cr.ui.overlay', function() {
     // Remove the 'pulse' animation any time the overlay is hidden or shown.
     overlay.__defineSetter__('hidden', function(value) {
       this.classList.remove('pulse');
-      if (value)
+      if (value) {
         this.setAttribute('hidden', true);
-      else
+      } else {
         this.removeAttribute('hidden');
+      }
     });
     overlay.__defineGetter__('hidden', function() {
       return this.hasAttribute('hidden');
@@ -120,13 +126,15 @@ cr.define('cr.ui.overlay', function() {
     // Shake when the user clicks away.
     overlay.addEventListener('click', function(e) {
       // Only pulse if the overlay was the target of the click.
-      if (this != e.target)
+      if (this != e.target) {
         return;
+      }
 
       // This may be null while the overlay is closing.
       var overlayPage = this.querySelector('.page:not([hidden])');
-      if (overlayPage)
+      if (overlayPage) {
         overlayPage.classList.add('pulse');
+      }
     });
     overlay.addEventListener('animationend', function(e) {
       e.target.classList.remove('pulse');

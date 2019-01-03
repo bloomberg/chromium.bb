@@ -77,8 +77,9 @@ cr.define('cr.ui', function() {
       return true;
     },
     set fixedHeight(fixedHeight) {
-      if (!fixedHeight)
+      if (!fixedHeight) {
         console.warn('cr.ui.Grid does not support fixedHeight = false');
+      }
     },
 
     /**
@@ -90,8 +91,9 @@ cr.define('cr.ui', function() {
       // Size comes here with margin already collapsed.
       var size = this.getDefaultItemSize_();
 
-      if (!size)
+      if (!size) {
         return 0;
+      }
 
       // We should uncollapse margin, since margin isn't collapsed for
       // inline-block elements according to css spec which are thumbnail items.
@@ -99,18 +101,21 @@ cr.define('cr.ui', function() {
       var width = size.width + Math.min(size.marginLeft, size.marginRight);
       var height = size.height + Math.min(size.marginTop, size.marginBottom);
 
-      if (!width || !height)
+      if (!width || !height) {
         return 0;
+      }
 
       var itemCount = this.dataModel ? this.dataModel.length : 0;
-      if (!itemCount)
+      if (!itemCount) {
         return 0;
+      }
 
       var columns = Math.floor(
           (this.clientWidthWithoutScrollbar_ - this.horizontalPadding_) /
           width);
-      if (!columns)
+      if (!columns) {
         return 0;
+      }
 
       var rows = Math.ceil(itemCount / columns);
       if (rows * height <= this.clientHeight_) {
@@ -293,8 +298,9 @@ cr.define('cr.ui', function() {
             this.insertBefore(spacer, next);
             item = next;
           }
-        } else
+        } else {
           item = next;
+        }
       }
 
       function isSpacer(child) {
@@ -380,11 +386,13 @@ cr.define('cr.ui', function() {
      * @override
      */
     getIndexBelow: function(index) {
-      if (this.isAccessibilityEnabled())
+      if (this.isAccessibilityEnabled()) {
         return this.getIndexAfter(index);
+      }
       var last = this.getLastIndex();
-      if (index == last)
+      if (index == last) {
         return -1;
+      }
       index += this.grid_.columns;
       return Math.min(index, last);
     },
@@ -396,10 +404,12 @@ cr.define('cr.ui', function() {
      * @override
      */
     getIndexAbove: function(index) {
-      if (this.isAccessibilityEnabled())
+      if (this.isAccessibilityEnabled()) {
         return this.getIndexBefore(index);
-      if (index == 0)
+      }
+      if (index == 0) {
         return -1;
+      }
       index -= this.grid_.columns;
       return Math.max(index, 0);
     },

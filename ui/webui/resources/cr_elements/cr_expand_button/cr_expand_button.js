@@ -77,8 +77,9 @@ Polymer({
    * @private
    */
   onKeyPress_: function(event) {
-    if (event.key == ' ' || event.key == 'Enter')
+    if (event.key == ' ' || event.key == 'Enter') {
       this.updateRippleHoldDown_(true);
+    }
   },
 
   /** @private */
@@ -100,8 +101,9 @@ Polymer({
 
     // If this event originated from a pointer, then |ripple.holdDown| should
     // preemptively be set to false to allow ripple to animate.
-    if (this.fromPointer_)
+    if (this.fromPointer_) {
       this.updateRippleHoldDown_(false);
+    }
     this.fromPointer_ = false;
   },
 

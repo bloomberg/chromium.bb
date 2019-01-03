@@ -73,15 +73,17 @@ Polymer({
       e.preventDefault();
 
       let diff = e.clientX - this.pointerDownX_;
-      if (Math.abs(diff) < this.MOVE_THRESHOLD_PX)
+      if (Math.abs(diff) < this.MOVE_THRESHOLD_PX) {
         return;
+      }
 
       this.handledInPointerMove_ = true;
 
       let shouldToggle = (diff * direction < 0 && this.checked) ||
           (diff * direction > 0 && !this.checked);
-      if (shouldToggle)
+      if (shouldToggle) {
         this.toggleState_(false);
+      }
     };
   },
 
@@ -119,8 +121,9 @@ Polymer({
    */
   onPointerDown_: function(e) {
     // Don't do anything if this was not a primary button click or touch event.
-    if (e.button != 0)
+    if (e.button != 0) {
       return;
+    }
 
     // This is necessary to have follow up pointer events fire on |this|, even
     // if they occur outside of its bounds.
@@ -139,13 +142,15 @@ Polymer({
 
     // Ignore case where 'click' handler is triggered while disabled. Can happen
     // via calling the click() method.
-    if (this.disabled)
+    if (this.disabled) {
       return;
+    }
 
     // User gesture has already been taken care of inside |pointermove|
     // handlers, Do nothing here.
-    if (this.handledInPointerMove_)
+    if (this.handledInPointerMove_) {
       return;
+    }
 
     // If no pointermove event fired, then user just clicked on the
     // toggle button and therefore it should be toggled.

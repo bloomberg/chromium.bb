@@ -144,8 +144,9 @@ Polymer({
 
   /** @private */
   devicesChanged_: function() {
-    if (this.devices.length > 0)
+    if (this.devices.length > 0) {
       this.selectedDeviceId = this.devices[0].deviceId;
+    }
   },
 
   /** @private */

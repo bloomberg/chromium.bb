@@ -39,8 +39,9 @@ cr.define('cr.ui', function() {
      */
     showMenu: function(e, menu) {
       menu.updateCommands(assertInstanceof(e.currentTarget, Node));
-      if (!menu.hasVisibleItems())
+      if (!menu.hasVisibleItems()) {
         return;
+      }
 
       this.menu_ = menu;
       menu.classList.remove('hide-delayed');
@@ -74,13 +75,15 @@ cr.define('cr.ui', function() {
      */
     hideMenu: function(opt_hideType) {
       var menu = this.menu;
-      if (!menu)
+      if (!menu) {
         return;
+      }
 
-      if (opt_hideType == cr.ui.HideType.DELAYED)
+      if (opt_hideType == cr.ui.HideType.DELAYED) {
         menu.classList.add('hide-delayed');
-      else
+      } else {
         menu.classList.remove('hide-delayed');
+      }
       menu.hide();
       var originalContextElement = menu.contextElement;
       menu.contextElement = null;
@@ -147,8 +150,9 @@ cr.define('cr.ui', function() {
       }
 
       // Context menu is handled even when we have no menu.
-      if (e.type != 'contextmenu' && !this.menu)
+      if (e.type != 'contextmenu' && !this.menu) {
         return;
+      }
 
       switch (e.type) {
         case 'mousedown':
@@ -160,13 +164,15 @@ cr.define('cr.ui', function() {
               e.preventDefault();
               e.stopPropagation();
             }
-          } else
+          } else {
             e.preventDefault();
+          }
           break;
 
         case 'touchstart':
-          if (!this.menu.contains(e.target))
+          if (!this.menu.contains(e.target)) {
             this.hideMenu();
+          }
           break;
 
         case 'keydown':
@@ -191,8 +197,9 @@ cr.define('cr.ui', function() {
           break;
 
         case 'focus':
-          if (!this.menu.contains(e.target))
+          if (!this.menu.contains(e.target)) {
             this.hideMenu();
+          }
           break;
 
         case 'blur':
@@ -206,8 +213,9 @@ cr.define('cr.ui', function() {
 
         case 'contextmenu':
           if ((!this.menu || !this.menu.contains(e.target)) &&
-              (!this.hideTimestamp_ || Date.now() - this.hideTimestamp_ > 50))
+              (!this.hideTimestamp_ || Date.now() - this.hideTimestamp_ > 50)) {
             this.showMenu(e, e.currentTarget.contextMenu);
+          }
           e.preventDefault();
           // Don't allow elements further up in the DOM to show their menus.
           e.stopPropagation();
@@ -236,8 +244,9 @@ cr.define('cr.ui', function() {
           cr.ui.decorate(menu, Menu);
         }
 
-        if (menu === oldContextMenu)
+        if (menu === oldContextMenu) {
           return;
+        }
 
         if (oldContextMenu && !menu) {
           this.removeEventListener('contextmenu', contextMenuHandler);
@@ -252,8 +261,9 @@ cr.define('cr.ui', function() {
 
         this.contextMenu_ = menu;
 
-        if (menu && menu.id)
+        if (menu && menu.id) {
           this.setAttribute('contextmenu', '#' + menu.id);
+        }
 
         cr.dispatchPropertyChange(this, 'contextMenu', menu, oldContextMenu);
       });
@@ -276,8 +286,9 @@ cr.define('cr.ui', function() {
      * @param {!cr.ui.Menu} contextMenu The contextMenu property to be set.
      */
     setContextMenu: function(element, contextMenu) {
-      if (!element.contextMenu)
+      if (!element.contextMenu) {
         this.addContextMenuProperty(element);
+      }
       element.contextMenu = contextMenu;
     }
   };

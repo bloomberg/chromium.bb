@@ -36,8 +36,9 @@ cr.define('cr.ui', function() {
      * @return {number} The index below or -1 if not found.
      */
     getIndexBelow: function(index) {
-      if (index == this.getLastIndex())
+      if (index == this.getLastIndex()) {
         return -1;
+      }
       return index + 1;
     },
 
@@ -81,8 +82,9 @@ cr.define('cr.ui', function() {
      * @return {number} The next index or -1 if not found.
      */
     getNextIndex: function(index) {
-      if (index == this.getLastIndex())
+      if (index == this.getLastIndex()) {
         return -1;
+      }
       return index + 1;
     },
 
@@ -131,11 +133,13 @@ cr.define('cr.ui', function() {
         if (cr.isMac || cr.isChromeOS) {
           sm.leadIndex = sm.anchorIndex = -1;
           sm.unselectAll();
-        } else if (!isDown && !e.shiftKey && !e.ctrlKey)
+        } else if (!isDown && !e.shiftKey && !e.ctrlKey) {
           // Keep anchor and lead indexes. Note that this is intentionally
           // different than on the Mac.
-          if (sm.multiple)
+          if (sm.multiple) {
             sm.unselectAll();
+          }
+        }
       } else {
         if (sm.multiple &&
             (cr.isMac ? e.metaKey : (e.ctrlKey && !e.shiftKey))) {
@@ -151,10 +155,11 @@ cr.define('cr.ui', function() {
           if (isDown) {
             sm.unselectAll();
             sm.leadIndex = index;
-            if (sm.multiple)
+            if (sm.multiple) {
               sm.selectRange(anchorIndex, index);
-            else
+            } else {
               sm.setIndexSelected(index, true);
+            }
           }
         } else {
           // Right click for a context menu needs to not clear the selection.
@@ -199,8 +204,9 @@ cr.define('cr.ui', function() {
         var inputType = e.target.type;
         // Just protect space (for toggling) for checkbox and radio.
         if (inputType == 'checkbox' || inputType == 'radio') {
-          if (e.key == ' ')
+          if (e.key == ' ') {
             return;
+          }
           // Protect all but the most basic navigation commands in anything
           // else.
         } else if (e.key != 'ArrowUp' && e.key != 'ArrowDown') {
@@ -208,8 +214,9 @@ cr.define('cr.ui', function() {
         }
       }
       // Similarly, don't interfere with select element handling.
-      if (tagName == 'SELECT')
+      if (tagName == 'SELECT') {
         return;
+      }
 
       var sm = this.selectionModel;
       var newIndex = -1;
@@ -269,8 +276,9 @@ cr.define('cr.ui', function() {
         sm.leadIndex = newIndex;
         if (e.shiftKey) {
           var anchorIndex = sm.anchorIndex;
-          if (sm.multiple)
+          if (sm.multiple) {
             sm.unselectAll();
+          }
           if (anchorIndex == -1) {
             sm.setIndexSelected(newIndex, true);
             sm.anchorIndex = newIndex;
@@ -281,16 +289,18 @@ cr.define('cr.ui', function() {
           // Setting the lead index is done above.
           // Mac does not allow you to change the lead.
         } else {
-          if (sm.multiple)
+          if (sm.multiple) {
             sm.unselectAll();
+          }
           sm.setIndexSelected(newIndex, true);
           sm.anchorIndex = newIndex;
         }
 
         sm.endChange();
 
-        if (prevent)
+        if (prevent) {
           e.preventDefault();
+        }
       }
     }
   };
