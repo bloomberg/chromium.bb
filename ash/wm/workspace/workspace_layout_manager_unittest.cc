@@ -445,7 +445,7 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeWithEmptySize) {
   std::unique_ptr<aura::Window> window =
       window_factory::NewWindow(nullptr, aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
-  wm::GetWindowState(window.get())->Maximize();
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   aura::Window* default_container =
       Shell::GetPrimaryRootWindowController()->GetContainer(
           kShellWindowId_DefaultContainer);
