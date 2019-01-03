@@ -30,8 +30,8 @@ class SyncService;
 class SyncSetupInProgressHandle;
 }
 
-// Handles details of signing the user in with IdentityManager and turning on
-// sync for an account that is already present in the token service.
+// Handles details of setting the primary account with IdentityManager and
+// turning on sync for an account for which there is already a refresh token.
 class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
  public:
   // Behavior when the signin is aborted (by an error or cancelled by the user).

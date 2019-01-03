@@ -442,7 +442,6 @@ void DiceTurnSyncOnHelper::OnNewProfileTokensLoaded(Profile* new_profile) {
 void DiceTurnSyncOnHelper::SigninAndShowSyncConfirmationUI() {
   // Signin.
   auto* primary_account_mutator = identity_manager_->GetPrimaryAccountMutator();
-  DCHECK(primary_account_mutator);
   primary_account_mutator->SetPrimaryAccount(account_info_.account_id);
   signin_metrics::LogSigninAccessPointCompleted(signin_access_point_,
                                                 signin_promo_action_);
