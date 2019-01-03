@@ -87,20 +87,11 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
 - (void)retrieveSnapshot:(void (^)(UIImage*))callback {
   DCHECK(callback);
-
-  void (^wrappedCallback)(UIImage*) = ^(UIImage* image) {
-    if (!image) {
-      image = [SnapshotGenerator defaultSnapshotImage];
-    }
-    callback(image);
-  };
-
-  SnapshotCache* snapshotCache = self.snapshotCache;
-  if (snapshotCache) {
-    [snapshotCache retrieveImageForSessionID:_snapshotSessionId
-                                    callback:wrappedCallback];
+  if (self.snapshotCache) {
+    [self.snapshotCache retrieveImageForSessionID:_snapshotSessionId
+                                         callback:callback];
   } else {
-    wrappedCallback(nil);
+    callback(nil);
   }
 }
 
@@ -128,12 +119,9 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
 - (UIImage*)updateSnapshot {
   UIImage* snapshot = [self generateSnapshotWithOverlays:YES];
-  // Return default snapshot without caching it if the generation failed.
-  if (!snapshot) {
-    return [[self class] defaultSnapshotImage];
+  if (snapshot) {
+    [self.snapshotCache setImage:snapshot withSessionID:_snapshotSessionId];
   }
-
-  [self.snapshotCache setImage:snapshot withSessionID:_snapshotSessionId];
   return snapshot;
 }
 
@@ -216,23 +204,6 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
 - (void)removeSnapshot {
   [self.snapshotCache removeImageWithSessionID:_snapshotSessionId];
-}
-
-+ (UIImage*)defaultSnapshotImage {
-  static UIImage* defaultSnapshotImage = nil;
-  if (!defaultSnapshotImage) {
-    CGRect frame = CGRectMake(0, 0, 2, 2);
-    UIGraphicsBeginImageContext(frame.size);
-    [[UIColor whiteColor] setFill];
-    CGContextFillRect(UIGraphicsGetCurrentContext(), frame);
-
-    UIImage* result = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-
-    defaultSnapshotImage =
-        [result stretchableImageWithLeftCapWidth:1 topCapHeight:1];
-  }
-  return defaultSnapshotImage;
 }
 
 #pragma mark - Private methods

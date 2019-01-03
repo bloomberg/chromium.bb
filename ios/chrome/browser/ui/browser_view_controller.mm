@@ -4195,7 +4195,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         ->RetrieveColorSnapshot(^(UIImage* image) {
           if (PagePlaceholderTabHelper::FromWebState(webStateBeingActivated)
                   ->will_add_placeholder_for_next_navigation()) {
-            [swipeView setImage:SnapshotTabHelper::GetDefaultSnapshotImage()];
+            [swipeView setImage:nil];
           } else {
             [swipeView setImage:image];
           }

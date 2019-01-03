@@ -99,11 +99,6 @@ void SnapshotTabHelper::IgnoreNextLoad() {
   ignore_next_load_ = true;
 }
 
-// static
-UIImage* SnapshotTabHelper::GetDefaultSnapshotImage() {
-  return [SnapshotGenerator defaultSnapshotImage];
-}
-
 SnapshotTabHelper::SnapshotTabHelper(web::WebState* web_state,
                                      NSString* session_id)
     : web_state_(web_state),
@@ -158,8 +153,7 @@ void SnapshotTabHelper::PageLoaded(
                   return;
                 PageLoadedSnapshotResult snapshotResult =
                     PageLoadedSnapshotResult::kSnapshotSucceeded;
-                if (!snapshot ||
-                    snapshot == SnapshotTabHelper::GetDefaultSnapshotImage()) {
+                if (!snapshot) {
                   snapshotResult =
                       PageLoadedSnapshotResult::kSnapshotAttemptedAndFailed;
                 }

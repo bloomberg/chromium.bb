@@ -31,8 +31,7 @@ class WebState;
 - (CGSize)snapshotSize;
 
 // Gets a color snapshot for the current page, calling |callback| once it has
-// been retrieved or regenerated. If the snapshot cannot be generated, the
-// |callback| will be called with nil.
+// been retrieved. Invokes |callback| with nil if a snapshot does not exist.
 - (void)retrieveSnapshot:(void (^)(UIImage*))callback;
 
 // Gets a grey snapshot for the current page, calling |callback| once it has
@@ -58,9 +57,6 @@ class WebState;
 
 // Requests deletion of the current page snapshot from disk and memory.
 - (void)removeSnapshot;
-
-// Returns an image to use as replacement of a missing snapshot.
-+ (UIImage*)defaultSnapshotImage;
 
 // The SnapshotGenerator delegate.
 @property(nonatomic, weak) id<SnapshotGeneratorDelegate> delegate;

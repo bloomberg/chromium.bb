@@ -164,8 +164,8 @@ TEST_F(SnapshotTabHelperTest, RetrieveColorSnapshotCachedSnapshot) {
   EXPECT_EQ(delegate_.snapshotTakenCount, 0u);
 }
 
-// Tests that RetrieveColorSnapshot returns the default snapshot image when
-// there is no cached snapshot and the WebState web usage is disabled.
+// Tests that RetrieveColorSnapshot returns nil when there is no cached snapshot
+// and the WebState web usage is disabled.
 TEST_F(SnapshotTabHelperTest, RetrieveColorSnapshotWebUsageDisabled) {
   web_state_.SetWebUsageEnabled(false);
 
@@ -181,15 +181,12 @@ TEST_F(SnapshotTabHelperTest, RetrieveColorSnapshotWebUsageDisabled) {
 
   run_loop.Run();
 
-  ASSERT_TRUE(snapshot);
-  EXPECT_TRUE(
-      UIImagesAreEqual(snapshot, SnapshotTabHelper::GetDefaultSnapshotImage()));
+  EXPECT_FALSE(snapshot);
   EXPECT_EQ(delegate_.snapshotTakenCount, 0u);
 }
 
-// Tests that RetrieveColorSnapshot returns the default snapshot image when
-// there is no cached snapshot and the delegate says it is not possible to
-// take a snapshot.
+// Tests that RetrieveColorSnapshot returns nil when there is no cached snapshot
+// and the delegate says it is not possible to take a snapshot.
 TEST_F(SnapshotTabHelperTest, RetrieveColorSnapshotCannotTakeSnapshot) {
   delegate_.canTakeSnapshot = YES;
 
@@ -205,9 +202,7 @@ TEST_F(SnapshotTabHelperTest, RetrieveColorSnapshotCannotTakeSnapshot) {
 
   run_loop.Run();
 
-  ASSERT_TRUE(snapshot);
-  EXPECT_TRUE(
-      UIImagesAreEqual(snapshot, SnapshotTabHelper::GetDefaultSnapshotImage()));
+  EXPECT_FALSE(snapshot);
   EXPECT_EQ(delegate_.snapshotTakenCount, 0u);
 }
 
@@ -234,8 +229,8 @@ TEST_F(SnapshotTabHelperTest, RetrieveGreySnapshotCachedSnapshot) {
   EXPECT_EQ(delegate_.snapshotTakenCount, 0u);
 }
 
-// Tests that RetrieveGreySnapshot returns the default snapshot image when
-// there is no cached snapshot and the WebState web usage is disabled.
+// Tests that RetrieveGreySnapshot returns nil when there is no cached snapshot
+// and the WebState web usage is disabled.
 TEST_F(SnapshotTabHelperTest, RetrieveGreySnapshotWebUsageDisabled) {
   web_state_.SetWebUsageEnabled(false);
 
@@ -251,14 +246,12 @@ TEST_F(SnapshotTabHelperTest, RetrieveGreySnapshotWebUsageDisabled) {
 
   run_loop.Run();
 
-  ASSERT_TRUE(snapshot);
-  EXPECT_TRUE(UIImagesAreEqual(
-      snapshot, GreyImage(SnapshotTabHelper::GetDefaultSnapshotImage())));
+  EXPECT_FALSE(snapshot);
   EXPECT_EQ(delegate_.snapshotTakenCount, 0u);
 }
 
-// Tests that RetrieveGreySnapshot returns the default snapshot image when
-// there is no cached snapshot and the WebState web usage is disabled.
+// Tests that RetrieveGreySnapshot returns nil when there is no cached snapshot
+// and the WebState web usage is disabled.
 TEST_F(SnapshotTabHelperTest, RetrieveGreySnapshotCannotTakeSnapshot) {
   delegate_.canTakeSnapshot = YES;
   base::RunLoop run_loop;
@@ -273,9 +266,7 @@ TEST_F(SnapshotTabHelperTest, RetrieveGreySnapshotCannotTakeSnapshot) {
 
   run_loop.Run();
 
-  ASSERT_TRUE(snapshot);
-  EXPECT_TRUE(UIImagesAreEqual(
-      snapshot, GreyImage(SnapshotTabHelper::GetDefaultSnapshotImage())));
+  EXPECT_FALSE(snapshot);
   EXPECT_EQ(delegate_.snapshotTakenCount, 0u);
 }
 

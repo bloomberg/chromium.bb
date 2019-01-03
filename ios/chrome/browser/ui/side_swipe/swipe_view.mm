@@ -40,6 +40,7 @@
     _imageView = [[UIImageView alloc] initWithFrame:CGRectZero];
     [_imageView setClipsToBounds:YES];
     [_imageView setContentMode:UIViewContentModeScaleAspectFill];
+    [_imageView setBackgroundColor:[UIColor whiteColor]];
     [self addSubview:_imageView];
 
     _topToolbarSnapshot = [[UIImageView alloc] initWithFrame:CGRectZero];
