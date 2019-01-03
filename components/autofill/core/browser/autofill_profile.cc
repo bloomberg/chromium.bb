@@ -447,8 +447,6 @@ int AutofillProfile::Compare(const AutofillProfile& profile) const {
 bool AutofillProfile::EqualsSansOrigin(const AutofillProfile& profile) const {
   return guid() == profile.guid() &&
          language_code() == profile.language_code() &&
-         is_client_validity_states_updated() ==
-             profile.is_client_validity_states_updated() &&
          Compare(profile) == 0;
 }
 
