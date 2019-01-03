@@ -311,20 +311,6 @@ WebFontRenderStyle FontPlatformData::QuerySystemRenderStyle(
   return result;
 }
 
-void FontPlatformData::SetupSkPaint(SkPaint* font,
-                                    float device_scale_factor,
-                                    const Font*) const {
-  style_.ApplyToSkPaint(*font, device_scale_factor);
-
-  const float ts = text_size_ >= 0 ? text_size_ : 12;
-  font->setTextSize(SkFloatToScalar(ts));
-  font->setTypeface(typeface_);
-  font->setFakeBoldText(synthetic_bold_);
-  font->setTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
-
-  font->setEmbeddedBitmapText(!avoid_embedded_bitmaps_);
-}
-
 void FontPlatformData::SetupSkFont(SkFont* font,
                                    float device_scale_factor,
                                    const Font*) const {

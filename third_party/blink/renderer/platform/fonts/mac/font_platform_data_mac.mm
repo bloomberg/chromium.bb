@@ -114,58 +114,6 @@ static sk_sp<SkTypeface> LoadFromBrowserProcess(NSFont* ns_font,
   return return_font;
 }
 
-void FontPlatformData::SetupSkPaint(SkPaint* paint,
-                                    float,
-                                    const Font* font) const {
-  bool should_smooth_fonts = true;
-  bool should_antialias = true;
-  bool should_subpixel_position = true;
-
-  if (font) {
-    switch (font->GetFontDescription().FontSmoothing()) {
-      case kAntialiased:
-        should_smooth_fonts = false;
-        break;
-      case kSubpixelAntialiased:
-        break;
-      case kNoSmoothing:
-        should_antialias = false;
-        should_smooth_fonts = false;
-        break;
-      case kAutoSmoothing:
-        // For the AutoSmooth case, don't do anything! Keep the default
-        // settings.
-        break;
-    }
-  }
-
-  if (WebTestSupport::IsRunningWebTest()) {
-    should_smooth_fonts = false;
-    should_antialias =
-        should_antialias && WebTestSupport::IsFontAntialiasingEnabledForTest();
-    should_subpixel_position =
-        WebTestSupport::IsTextSubpixelPositioningAllowedForTest();
-  }
-
-  paint->setAntiAlias(should_antialias);
-  paint->setEmbeddedBitmapText(false);
-  const float ts = text_size_ >= 0 ? text_size_ : 12;
-  paint->setTextSize(SkFloatToScalar(ts));
-  paint->setTypeface(typeface_);
-  paint->setFakeBoldText(synthetic_bold_);
-  paint->setTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
-  paint->setLCDRenderText(should_smooth_fonts);
-  paint->setSubpixelText(should_subpixel_position);
-
-  // When rendering using CoreGraphics, disable hinting when
-  // webkit-font-smoothing:antialiased or text-rendering:geometricPrecision is
-  // used.  See crbug.com/152304
-  if (font &&
-      (font->GetFontDescription().FontSmoothing() == kAntialiased ||
-       font->GetFontDescription().TextRendering() == kGeometricPrecision))
-    paint->setHinting(SkFontHinting::kNone);
-}
-
 void FontPlatformData::SetupSkFont(SkFont* skfont,
                                    float,
                                    const Font* font) const {

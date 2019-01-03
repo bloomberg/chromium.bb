@@ -39,40 +39,6 @@
 
 namespace blink {
 
-void FontPlatformData::SetupSkPaint(SkPaint* font, float, const Font*) const {
-  font->setTextSize(SkFloatToScalar(text_size_));
-  font->setTypeface(typeface_);
-  font->setFakeBoldText(synthetic_bold_);
-  font->setTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
-
-  uint32_t text_flags = PaintTextFlags();
-  uint32_t flags = font->getFlags();
-  static const uint32_t kTextFlagsMask =
-      SkPaint::kAntiAlias_Flag | SkPaint::kLCDRenderText_Flag |
-      SkPaint::kEmbeddedBitmapText_Flag | SkPaint::kSubpixelText_Flag;
-  flags &= ~kTextFlagsMask;
-
-  // Only use sub-pixel positioning if anti aliasing is enabled. Otherwise,
-  // without font smoothing, subpixel text positioning leads to uneven spacing
-  // since subpixel test placement coordinates would be passed to Skia, which
-  // only has non-antialiased glyphs to draw, so they necessarily get clamped at
-  // pixel positions, which leads to uneven spacing, either too close or too far
-  // away from adjacent glyphs. We avoid this by linking the two flags.
-  if (text_flags & SkPaint::kAntiAlias_Flag)
-    flags |= SkPaint::kSubpixelText_Flag;
-
-  if (WebTestSupport::IsRunningWebTest() &&
-      !WebTestSupport::IsTextSubpixelPositioningAllowedForTest())
-    flags &= ~SkPaint::kSubpixelText_Flag;
-
-  SkASSERT(!(text_flags & ~kTextFlagsMask));
-  flags |= text_flags;
-
-  font->setFlags(flags);
-
-  font->setEmbeddedBitmapText(!avoid_embedded_bitmaps_);
-}
-
 void FontPlatformData::SetupSkFont(SkFont* font, float, const Font*) const {
   font->setSize(SkFloatToScalar(text_size_));
   font->setTypeface(typeface_);

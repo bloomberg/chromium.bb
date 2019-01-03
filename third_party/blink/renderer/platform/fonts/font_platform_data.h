@@ -154,11 +154,6 @@ class PLATFORM_EXPORT FontPlatformData {
   const WebFontRenderStyle& GetFontRenderStyle() const { return style_; }
 #endif
 
-  // TODO(reed): SetupSkPaint is deprecated. Remove this once all call sites
-  // are moved to SetupSkFont.
-  void SetupSkPaint(SkPaint*,
-                    float device_scale_factor = 1,
-                    const Font* = nullptr) const;
   void SetupSkFont(SkFont*,
                    float device_scale_factor = 1,
                    const Font* = nullptr) const;
