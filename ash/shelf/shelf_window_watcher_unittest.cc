@@ -110,10 +110,12 @@ TEST_F(ShelfWindowWatcherTest, OpenAndCloseMash) {
   EXPECT_EQ(2, model_->item_count());
 
   // Windows with type WINDOW_TYPE_NORMAL get shelf items, others do not.
+  // WINDOW_TYPE_CONTROL is not toplevel and should not be added to the
+  // container.
   aura::client::WindowType no_item_types[] = {
       aura::client::WINDOW_TYPE_UNKNOWN, aura::client::WINDOW_TYPE_NORMAL,
-      aura::client::WINDOW_TYPE_POPUP,   aura::client::WINDOW_TYPE_CONTROL,
-      aura::client::WINDOW_TYPE_MENU,    aura::client::WINDOW_TYPE_TOOLTIP};
+      aura::client::WINDOW_TYPE_POPUP, aura::client::WINDOW_TYPE_MENU,
+      aura::client::WINDOW_TYPE_TOOLTIP};
   for (aura::client::WindowType type : no_item_types) {
     std::unique_ptr<aura::Window> window =
         window_factory::NewWindow(nullptr, type);

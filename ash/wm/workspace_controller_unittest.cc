@@ -643,24 +643,27 @@ TEST_F(WorkspaceControllerTest, DontCrashOnChangeAndActivate) {
 
 // Verifies a window with a transient parent not managed by workspace works.
 TEST_F(WorkspaceControllerTest, TransientParent) {
+  std::unique_ptr<Window> w1(CreateTestWindow());
+  w1->SetBounds(gfx::Rect(0, 0, 100, 100));
+  w1->Show();
+
   // Normal window with no transient parent.
-  std::unique_ptr<Window> w2(CreateTestWindow());
+  std::unique_ptr<Window> w3(CreateTestWindow());
+  w3->SetBounds(gfx::Rect(10, 11, 250, 251));
+  w3->Show();
+  wm::ActivateWindow(w3.get());
+
+  // Window with a transient parent.
+  std::unique_ptr<Window> w2(CreateTestWindowUnparented());
+  ::wm::AddTransientChild(w1.get(), w2.get());
   w2->SetBounds(gfx::Rect(10, 11, 250, 251));
+  ParentWindowInPrimaryRootWindow(w2.get());
   w2->Show();
   wm::ActivateWindow(w2.get());
 
-  // Window with a transient parent. We set the transient parent to the root,
-  // which would never happen but is enough to exercise the bug.
-  std::unique_ptr<Window> w1(CreateTestWindowUnparented());
-  ::wm::AddTransientChild(Shell::Get()->GetPrimaryRootWindow(), w1.get());
-  w1->SetBounds(gfx::Rect(10, 11, 250, 251));
-  ParentWindowInPrimaryRootWindow(w1.get());
-  w1->Show();
-  wm::ActivateWindow(w1.get());
-
   // The window with the transient parent should get added to the same parent as
   // the normal window.
-  EXPECT_EQ(w2->parent(), w1->parent());
+  EXPECT_EQ(w3->parent(), w2->parent());
 }
 
 // Test the placement of newly created windows.
