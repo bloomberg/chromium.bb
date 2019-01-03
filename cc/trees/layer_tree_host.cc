@@ -41,6 +41,7 @@
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/painted_scrollbar_layer.h"
+#include "cc/paint/paint_worklet_layer_painter.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/tiles/frame_viewer_instrumentation.h"
 #include "cc/trees/clip_node.h"
@@ -998,6 +999,16 @@ void LayerTreeHost::SetLayerTreeMutator(
     return;
   }
   proxy_->SetMutator(std::move(mutator));
+}
+
+void LayerTreeHost::SetPaintWorkletLayerPainter(
+    std::unique_ptr<PaintWorkletLayerPainter> painter) {
+  // The paint worklet system assumes that the painter will never be called from
+  // the main thread, which will not be the case if we're running in
+  // single-threaded mode.
+  DCHECK(task_runner_provider_->HasImplThread())
+      << "PaintWorkletLayerPainter not supported in single-thread mode";
+  proxy_->SetPaintWorkletLayerPainter(std::move(painter));
 }
 
 bool LayerTreeHost::IsSingleThreaded() const {

@@ -40,6 +40,8 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
       LayerTreeFrameSink* layer_tree_frame_sink,
       base::WeakPtr<ProxyMain> proxy_main_frame_sink_bound_weak_ptr);
   void InitializeMutatorOnImpl(std::unique_ptr<LayerTreeMutator> mutator);
+  void InitializePaintWorkletLayerPainterOnImpl(
+      std::unique_ptr<PaintWorkletLayerPainter> painter);
   void SetInputThrottledUntilCommitOnImpl(bool is_throttled);
   void SetDeferMainFrameUpdateOnImpl(bool defer_main_frame_update) const;
   void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect);
