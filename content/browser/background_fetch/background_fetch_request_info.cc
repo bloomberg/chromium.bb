@@ -64,7 +64,7 @@ void BackgroundFetchRequestInfo::SetEmptyResultWithFailureReason(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   result_ = std::make_unique<BackgroundFetchResult>(
-      nullptr /* response */, base::Time::Now(), failure_reason);
+      /* response= */ nullptr, base::Time::Now(), failure_reason);
 }
 
 void BackgroundFetchRequestInfo::PopulateWithResponse(

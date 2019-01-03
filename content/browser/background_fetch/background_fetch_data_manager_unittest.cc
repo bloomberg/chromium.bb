@@ -128,7 +128,7 @@ void AnnotateRequestInfoWithFakeDownloadManagerData(
   // |kResponseFileSize| for tests that use filesize.
   request_info->SetResult(std::make_unique<BackgroundFetchResult>(
       std::move(response), base::Time::Now(), base::FilePath(),
-      base::nullopt /* blob_handle */,
+      /* blob_handle= */ base::nullopt,
       over_quota ? kBackgroundFetchMaxQuotaBytes + 1 : kResponseFileSize));
 }
 
@@ -222,7 +222,7 @@ class BackgroundFetchDataManagerTest
         std::make_unique<BackgroundFetchTestDataManager>(
             browser_context(), storage_partition(),
             embedded_worker_test_helper()->context_wrapper(),
-            true /* mock_fill_response */);
+            /* mock_fill_response= */ true);
 
     background_fetch_data_manager_->AddObserver(this);
     background_fetch_data_manager_->InitializeOnIOThread();
@@ -256,7 +256,7 @@ class BackgroundFetchDataManagerTest
     base::RunLoop run_loop;
     background_fetch_data_manager_->CreateRegistration(
         registration_id, std::move(requests), std::move(options), icon,
-        /* start_paused = */ false,
+        /* start_paused= */ false,
         base::BindOnce(&DidCreateRegistration, run_loop.QuitClosure(),
                        out_error));
     run_loop.Run();
@@ -456,7 +456,7 @@ class BackgroundFetchDataManagerTest
             origin(), CacheStorageOwner::kBackgroundFetch);
     cache_storage.value()->MatchCache(
         kExampleUniqueId, BackgroundFetchSettledFetch::CloneRequest(request),
-        nullptr /* match_params */,
+        /* match_params= */ nullptr,
         base::BindOnce(&BackgroundFetchDataManagerTest::DidMatchCache,
                        base::Unretained(this), run_loop.QuitClosure(),
                        &result));
@@ -473,7 +473,7 @@ class BackgroundFetchDataManagerTest
           background_fetch_data_manager_->cache_manager()->OpenCacheStorage(
               origin(), CacheStorageOwner::kBackgroundFetch);
       cache_storage.value()->OpenCache(
-          kExampleUniqueId /* cache_name */,
+          /* cache_name= */ kExampleUniqueId,
           base::BindOnce(&BackgroundFetchDataManagerTest::DidOpenCache,
                          base::Unretained(this), run_loop.QuitClosure(),
                          &handle));
@@ -492,7 +492,7 @@ class BackgroundFetchDataManagerTest
           BackgroundFetchSettledFetch::CloneRequest(request);
 
       handle.value()->BatchOperation(
-          std::move(operation_ptr_vec), true /* fail_on_duplicates */,
+          std::move(operation_ptr_vec), /* fail_on_duplicates= */ true,
           base::BindOnce(&BackgroundFetchDataManagerTest::DidDeleteFromCache,
                          base::Unretained(this), run_loop.QuitClosure()),
           base::DoNothing());
@@ -1118,7 +1118,7 @@ TEST_F(BackgroundFetchDataManagerTest, LargeIconNotPersisted) {
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
 
-  SkBitmap icon = CreateTestIcon(512 /* size */);
+  SkBitmap icon = CreateTestIcon(/* size= */ 512);
   ASSERT_FALSE(background_fetch::ShouldPersistIcon(icon));
 
   // Create a single registration.
@@ -1342,8 +1342,8 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
   EXPECT_FALSE(request_info);
   EXPECT_EQ(
       GetRequestStats(sw_id),
-      (ResponseStateStats{0 /* pending_requests */, 0 /* active_requests */,
-                          0 /* completed_requests */}));
+      (ResponseStateStats{/* pending_requests= */ 0, /* active_requests= */ 0,
+                          /* completed_requests= */ 0}));
 
   std::vector<blink::mojom::FetchAPIRequestPtr> requests =
       CreateValidRequests(origin(), 2u);
@@ -1359,8 +1359,8 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
 
   EXPECT_EQ(
       GetRequestStats(sw_id),
-      (ResponseStateStats{2 /* pending_requests */, 0 /* active_requests */,
-                          0 /* completed_requests */}));
+      (ResponseStateStats{/* pending_requests= */ 2, /* active_requests= */ 0,
+                          /* completed_requests= */ 0}));
 
   // Popping should work now.
   PopNextRequest(registration_id, &error, &request_info);
@@ -1370,8 +1370,8 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
   EXPECT_FALSE(request_info->download_guid().empty());
   EXPECT_EQ(
       GetRequestStats(sw_id),
-      (ResponseStateStats{1 /* pending_requests */, 1 /* active_requests */,
-                          0 /* completed_requests */}));
+      (ResponseStateStats{/* pending_requests= */ 1, /* active_requests= */ 1,
+                          /* completed_requests= */ 0}));
 
   // Mark as complete.
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
@@ -1379,8 +1379,8 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_EQ(
       GetRequestStats(sw_id),
-      (ResponseStateStats{1 /* pending_requests */, 0 /* active_requests */,
-                          1 /* completed_requests */}));
+      (ResponseStateStats{/* pending_requests= */ 1, /* active_requests= */ 0,
+                          /* completed_requests= */ 1}));
 
   RestartDataManagerFromPersistentStorage();
 
@@ -1391,8 +1391,8 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
   EXPECT_FALSE(request_info->download_guid().empty());
   EXPECT_EQ(
       GetRequestStats(sw_id),
-      (ResponseStateStats{0 /* pending_requests */, 1 /* active_requests */,
-                          1 /* completed_requests */}));
+      (ResponseStateStats{/* pending_requests= */ 0, /* active_requests= */ 1,
+                          /* completed_requests= */ 1}));
 
   // Mark as complete.
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
@@ -1400,8 +1400,8 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_EQ(
       GetRequestStats(sw_id),
-      (ResponseStateStats{0 /* pending_requests */, 0 /* active_requests */,
-                          2 /* completed_requests */}));
+      (ResponseStateStats{/* pending_requests= */ 0, /* active_requests= */ 0,
+                          /* completed_requests= */ 2}));
 
   // We are out of pending requests.
   PopNextRequest(registration_id, &error, &request_info);
@@ -1409,8 +1409,8 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
   EXPECT_FALSE(request_info);
   EXPECT_EQ(
       GetRequestStats(sw_id),
-      (ResponseStateStats{0 /* pending_requests */, 0 /* active_requests */,
-                          2 /* completed_requests */}));
+      (ResponseStateStats{/* pending_requests= */ 0, /* active_requests= */ 0,
+                          /* completed_requests= */ 2}));
 }
 
 TEST_F(BackgroundFetchDataManagerTest, RegistrationBytesUpdated) {
@@ -1419,7 +1419,7 @@ TEST_F(BackgroundFetchDataManagerTest, RegistrationBytesUpdated) {
 
   BackgroundFetchRegistrationId registration_id(
       sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
-  auto requests = CreateValidRequests(origin(), 3u /* num_requests */);
+  auto requests = CreateValidRequests(origin(), /* num_requests= */ 3u);
 
   const std::string upload_payload = "Upload Data";
   requests[0]->blob = BuildBlob(upload_payload);
@@ -1446,7 +1446,7 @@ TEST_F(BackgroundFetchDataManagerTest, RegistrationBytesUpdated) {
   PopNextRequest(registration_id, &error, &request_info);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
-                                                 true /* succeeded */);
+                                                 /* succeeded= */ true);
   MarkRequestAsComplete(registration_id, request_info.get(), &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
@@ -1460,7 +1460,7 @@ TEST_F(BackgroundFetchDataManagerTest, RegistrationBytesUpdated) {
   PopNextRequest(registration_id, &error, &request_info);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
-                                                 true /* succeeded */);
+                                                 /* succeeded= */ true);
   MarkRequestAsComplete(registration_id, request_info.get(), &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
@@ -1472,7 +1472,7 @@ TEST_F(BackgroundFetchDataManagerTest, RegistrationBytesUpdated) {
   PopNextRequest(registration_id, &error, &request_info);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
-                                                 false /* succeeded */);
+                                                 /* succeeded= */ false);
   MarkRequestAsComplete(registration_id, request_info.get(), &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
@@ -1489,7 +1489,7 @@ TEST_F(BackgroundFetchDataManagerTest, ExceedingQuotaIsReported) {
 
   BackgroundFetchRegistrationId registration_id(
       sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
-  auto requests = CreateValidRequests(origin(), 3u /* num_requests */);
+  auto requests = CreateValidRequests(origin(), /* num_requests= */ 3u);
 
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
@@ -1505,7 +1505,7 @@ TEST_F(BackgroundFetchDataManagerTest, ExceedingQuotaIsReported) {
   PopNextRequest(registration_id, &error, &request_info);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   AnnotateRequestInfoWithFakeDownloadManagerData(
-      request_info.get(), true /* succeeded */, true /* over_quota */);
+      request_info.get(), /* succeeded= */ true, /* over_quota= */ true);
   MarkRequestAsComplete(registration_id, request_info.get(), &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::QUOTA_EXCEEDED);
 }
@@ -1516,7 +1516,7 @@ TEST_F(BackgroundFetchDataManagerTest, WriteToCache) {
 
   BackgroundFetchRegistrationId registration_id(
       sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
-  auto requests = CreateValidRequests(origin(), 2u /* num_requests */);
+  auto requests = CreateValidRequests(origin(), /* num_requests= */ 2u);
 
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
@@ -1534,7 +1534,7 @@ TEST_F(BackgroundFetchDataManagerTest, WriteToCache) {
   ASSERT_TRUE(request_info);
 
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
-                                                 true /* success */);
+                                                 /* success= */ true);
   MarkRequestAsComplete(registration_id, request_info.get(), &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
@@ -1549,7 +1549,7 @@ TEST_F(BackgroundFetchDataManagerTest, WriteToCache) {
   ASSERT_TRUE(request_info);
 
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
-                                                 true /* success */);
+                                                 /* success= */ true);
   MarkRequestAsComplete(registration_id, request_info.get(), &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_TRUE(MatchCache(requests[0]));
@@ -1589,7 +1589,7 @@ TEST_F(BackgroundFetchDataManagerTest, CacheDeleted) {
   ASSERT_TRUE(request_info);
 
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
-                                                 true /* success */);
+                                                 /* success= */ true);
   MarkRequestAsComplete(registration_id, request_info.get(), &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
@@ -1611,7 +1611,7 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequests) {
 
   size_t num_requests = 2u;
   std::vector<blink::mojom::FetchAPIRequestPtr> requests =
-      CreateValidRequests(origin(), num_requests /* num_requests */);
+      CreateValidRequests(origin(), num_requests);
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
   BackgroundFetchRegistrationId registration_id(
@@ -1627,14 +1627,14 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequests) {
 
   EXPECT_EQ(
       GetRequestStats(sw_id),
-      (ResponseStateStats{2 /* pending_requests */, 0 /* active_requests */,
-                          0 /* completed_requests */}));
+      (ResponseStateStats{/* pending_requests= */ 2, /* active_requests= */ 0,
+                          /* completed_requests= */ 0}));
 
   // Nothing is downloaded yet.
   std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> settled_fetches;
-  MatchRequests(registration_id, nullptr /* request_to_match */,
-                nullptr /* cache_query_params */, true /* match_all */, &error,
-                &settled_fetches);
+  MatchRequests(registration_id, /* request_to_match= */ nullptr,
+                /* cache_query_params= */ nullptr, /* match_all= */ true,
+                &error, &settled_fetches);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(settled_fetches.size(), num_requests);
 
@@ -1652,12 +1652,12 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequests) {
 
   EXPECT_EQ(
       GetRequestStats(sw_id),
-      (ResponseStateStats{0 /* pending_requests */, 0 /* active_requests */,
-                          num_requests /* completed_requests */}));
+      (ResponseStateStats{/* pending_requests= */ 0, /* active_requests= */ 0,
+                          /* completed_requests= */ num_requests}));
 
-  MatchRequests(registration_id, nullptr /* request_to_match */,
-                nullptr /* cache_query_params */, true /* match_all */, &error,
-                &settled_fetches);
+  MatchRequests(registration_id, /* request_to_match= */ nullptr,
+                /* cache_query_params= */ nullptr, /* match_all= */ true,
+                &error, &settled_fetches);
 
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   // We are marking the responses as failed in Download Manager.
@@ -1709,7 +1709,7 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsFromCache) {
 
   BackgroundFetchRegistrationId registration_id(
       sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
-  auto requests = CreateValidRequests(origin(), 2u /* num_requests */);
+  auto requests = CreateValidRequests(origin(), /* num_requests= */ 2u);
 
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
@@ -1723,9 +1723,9 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsFromCache) {
 
   std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> settled_fetches;
   // Nothing is downloaded yet.
-  MatchRequests(registration_id, nullptr /* request_to_match */,
-                nullptr /* cache_query_params */, true /* match_all */, &error,
-                &settled_fetches);
+  MatchRequests(registration_id, /* request_to_match= */ nullptr,
+                /* cache_query_params= */ nullptr, /* match_all= */ true,
+                &error, &settled_fetches);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(settled_fetches.size(), requests.size());
 
@@ -1734,13 +1734,13 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsFromCache) {
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_TRUE(request_info);
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
-                                                 true /* success */);
+                                                 /* success= */ true);
   MarkRequestAsComplete(registration_id, request_info.get(), &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
-  MatchRequests(registration_id, nullptr /* request_to_match */,
-                nullptr /* cache_query_params */, false /* match_all */, &error,
-                &settled_fetches);
+  MatchRequests(registration_id, /* request_to_match= */ nullptr,
+                /* cache_query_params= */ nullptr, /* match_all= */ false,
+                &error, &settled_fetches);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(settled_fetches.size(), 1u);
 
@@ -1748,13 +1748,13 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsFromCache) {
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_TRUE(request_info);
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
-                                                 true /* success */);
+                                                 /* success= */ true);
   MarkRequestAsComplete(registration_id, request_info.get(), &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
-  MatchRequests(registration_id, nullptr /* request_to_match */,
-                nullptr /* cache_query_params */, true /* match_all */, &error,
-                &settled_fetches);
+  MatchRequests(registration_id, /* request_to_match= */ nullptr,
+                /* cache_query_params= */ nullptr, /* match_all= */ true,
+                &error, &settled_fetches);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_EQ(settled_fetches.size(), requests.size());
 
@@ -1768,9 +1768,9 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsFromCache) {
 
   RestartDataManagerFromPersistentStorage();
 
-  MatchRequests(registration_id, nullptr /* request_to_match */,
-                nullptr /* cache_query_params */, true /* match_all */, &error,
-                &settled_fetches);
+  MatchRequests(registration_id, /* request_to_match= */ nullptr,
+                /* cache_query_params= */ nullptr, /* match_all= */ true,
+                &error, &settled_fetches);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(settled_fetches.size(), requests.size());
 }
@@ -1779,7 +1779,7 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsForASpecificRequest) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
-  auto requests = CreateValidRequests(origin(), 2u /* num_requests */);
+  auto requests = CreateValidRequests(origin(), /* num_requests= */ 2u);
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
   BackgroundFetchRegistrationId registration_id(
@@ -1806,13 +1806,13 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsForASpecificRequest) {
 
   EXPECT_EQ(
       GetRequestStats(sw_id),
-      (ResponseStateStats{0 /* pending_requests */, 0 /* active_requests */,
-                          requests.size() /* completed_requests */}));
+      (ResponseStateStats{/* pending_requests= */ 0, /* active_requests= */ 0,
+                          /* completed_requests= */ requests.size()}));
 
   std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> settled_fetches;
-  MatchRequests(registration_id, std::move(requests[0]) /* request_to_match */,
-                nullptr /* cache_query_params */, false /* match_all */, &error,
-                &settled_fetches);
+  MatchRequests(registration_id, /* request_to_match= */ std::move(requests[0]),
+                /* cache_query_params= */ nullptr, /* match_all= */ false,
+                &error, &settled_fetches);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   // We are marking the responses as failed in Download Manager.
   EXPECT_EQ(settled_fetches.size(), 1u);
@@ -1821,9 +1821,9 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsForASpecificRequest) {
   auto non_existing_request = blink::mojom::FetchAPIRequest::New();
   non_existing_request->url = GURL("https://example.com/missing-file.txt");
   MatchRequests(registration_id,
-                std::move(non_existing_request) /* request_to_match */,
-                nullptr /* cache_query_params */, false /* match_all */, &error,
-                &settled_fetches);
+                /* request_to_match= */ std::move(non_existing_request),
+                /* cache_query_params= */ nullptr, /* match_all= */ false,
+                &error, &settled_fetches);
   EXPECT_TRUE(settled_fetches.empty());
 }
 
@@ -1831,7 +1831,7 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsForAnIncompleteRequest) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
-  auto requests = CreateValidRequests(origin(), 3u /* num_requests */);
+  auto requests = CreateValidRequests(origin(), /* num_requests= */ 3u);
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
   BackgroundFetchRegistrationId registration_id(
@@ -1858,13 +1858,13 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsForAnIncompleteRequest) {
 
   EXPECT_EQ(
       GetRequestStats(sw_id),
-      (ResponseStateStats{1 /* pending_requests */, 0 /* active_requests */,
-                          requests.size() - 1 /* completed_requests */}));
+      (ResponseStateStats{/* pending_requests= */ 1, /* active_requests= */ 0,
+                          /* completed_requests= */ requests.size() - 1}));
 
   std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> settled_fetches;
-  MatchRequests(registration_id, std::move(requests[2]) /* request_to_match */,
-                nullptr /* cache_query_params */, false /* match_all */, &error,
-                &settled_fetches);
+  MatchRequests(registration_id, /* request_to_match= */ std::move(requests[2]),
+                /* cache_query_params= */ nullptr, /* match_all= */ false,
+                &error, &settled_fetches);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_EQ(settled_fetches.size(), 1u);
   EXPECT_TRUE(settled_fetches[0]->response.is_null());
@@ -1904,15 +1904,15 @@ TEST_F(BackgroundFetchDataManagerTest, IgnoreMethodAndMatchAll) {
 
   EXPECT_EQ(
       GetRequestStats(sw_id),
-      (ResponseStateStats{0 /* pending_requests */, 0 /* active_requests */,
-                          requests.size() /* completed_requests */}));
+      (ResponseStateStats{/* pending_requests= */ 0, /* active_requests= */ 0,
+                          /* completed_requests= */ requests.size()}));
 
   std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> settled_fetches;
   blink::mojom::QueryParamsPtr cache_query_params =
       blink::mojom::QueryParams::New();
   cache_query_params->ignore_method = true;
-  MatchRequests(registration_id, std::move(requests[0]) /* request_to_match */,
-                std::move(cache_query_params), true /* match_all */, &error,
+  MatchRequests(registration_id, /* request_to_match= */ std::move(requests[0]),
+                std::move(cache_query_params), /* match_all= */ true, &error,
                 &settled_fetches);
 
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -2147,7 +2147,7 @@ TEST_F(BackgroundFetchDataManagerTest, StorageErrorsReported) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
-  auto requests = CreateValidRequests(origin(), 3u /* num_requests */);
+  auto requests = CreateValidRequests(origin(), /* num_requests= */ 3u);
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
   BackgroundFetchRegistrationId registration_id(
@@ -2182,15 +2182,15 @@ TEST_F(BackgroundFetchDataManagerTest, StorageErrorsReported) {
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_TRUE(request_info);
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
-                                                 true /* success */);
+                                                 /* success= */ true);
   MarkRequestAsComplete(registration_id, request_info.get(), &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> settled_fetches;
 
   {
-    MatchRequests(registration_id, nullptr /* request_to_match */,
-                  nullptr /* cache_query_params */, false /* match_all */,
+    MatchRequests(registration_id, /* request_to_match= */ nullptr,
+                  /* cache_query_params= */ nullptr, /* match_all= */ false,
                   &error, &settled_fetches);
 
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -2204,8 +2204,8 @@ TEST_F(BackgroundFetchDataManagerTest, StorageErrorsReported) {
 
   {
     base::HistogramTester histogram_tester;
-    MatchRequests(registration_id, nullptr /* request_to_match */,
-                  nullptr /* cache_query_params */, true /* match_all */,
+    MatchRequests(registration_id, /* request_to_match= */ nullptr,
+                  /* cache_query_params= */ nullptr, /* match_all= */ true,
                   &error, &settled_fetches);
 
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::STORAGE_ERROR);

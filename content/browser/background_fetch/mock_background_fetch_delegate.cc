@@ -128,7 +128,7 @@ void MockBackgroundFetchDelegate::DownloadUrl(
         job_unique_id,
         base::BindOnce(&BackgroundFetchDelegate::Client::OnDownloadUpdated,
                        job_id_to_client_map_[job_unique_id], job_unique_id,
-                       guid, bytes_uploaded, /* bytes_download */ 0u));
+                       guid, /* bytes_download= */ bytes_uploaded, 0u));
   }
 
   if (test_response->data.size()) {
@@ -157,7 +157,7 @@ void MockBackgroundFetchDelegate::DownloadUrl(
     CHECK(base::CreateTemporaryFileInDir(temp_directory_.GetPath(),
                                          &response_path));
 
-    CHECK_NE(-1 /* error */,
+    CHECK_NE(/* error= */ -1,
              base::WriteFile(response_path, test_response->data.c_str(),
                              test_response->data.size()));
 
@@ -170,7 +170,7 @@ void MockBackgroundFetchDelegate::DownloadUrl(
                 std::make_unique<BackgroundFetchResponse>(
                     std::vector<GURL>({url}), test_response->headers),
                 base::Time::Now(), response_path,
-                base::nullopt /* blob_handle */, test_response->data.size())));
+                /* blob_handle= */ base::nullopt, test_response->data.size())));
   } else {
     auto response = std::make_unique<BackgroundFetchResponse>(
         std::vector<GURL>({url}), test_response->headers);

@@ -177,7 +177,7 @@ void BackgroundFetchContext::DidGetPermission(
   if (permission != BackgroundFetchPermission::BLOCKED) {
     data_manager_->CreateRegistration(
         registration_id, std::move(requests), std::move(options), icon,
-        permission == BackgroundFetchPermission::ASK /* start_paused */,
+        /* start_paused= */ permission == BackgroundFetchPermission::ASK,
         base::BindOnce(&BackgroundFetchContext::DidCreateRegistration,
                        weak_factory_.GetWeakPtr(), registration_id));
     return;
@@ -211,7 +211,7 @@ void BackgroundFetchContext::DidCreateRegistration(
   if (error == blink::mojom::BackgroundFetchError::NONE)
     std::move(iter->second).Run(error, std::move(registration));
   else
-    std::move(iter->second).Run(error, nullptr /* registration */);
+    std::move(iter->second).Run(error, /* registration= */ nullptr);
 
   fetch_callbacks_.erase(registration_id);
 }

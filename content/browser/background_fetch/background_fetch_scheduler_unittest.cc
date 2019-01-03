@@ -119,9 +119,9 @@ class BackgroundFetchSchedulerTest : public BackgroundFetchTestBase {
         &controller_sequence_list_,
         base::BindOnce(&BackgroundFetchSchedulerTest::DidJobFinish,
                        base::Unretained(this)));
-    controller->InitializeRequestStatus(0 /* completed_downloads */,
+    controller->InitializeRequestStatus(/* completed_downloads= */ 0,
                                         requests.size(),
-                                        {} /* active_fetch_requests */,
+                                        /* active_fetch_requests= */ {},
                                         /* start_paused= */ false);
     scheduler_->job_controllers_[registration_id.unique_id()] =
         std::move(controller);
