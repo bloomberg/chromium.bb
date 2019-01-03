@@ -1537,6 +1537,26 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGForeignObjectOverflowClip) {
   EXPECT_EQ(nullptr, properties2);
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, OverflowClipWithEmptyVisualOverflow) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0 }
+      ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+    </style>
+    <div id='container' style='width: 100px; height: 100px;
+        will-change: transform; overflow: scroll; background: lightblue;'>
+      <div id='forcescroll' style='width: 0; height: 400px;'></div>
+    </div>
+  )HTML");
+
+  const auto* clip = PaintPropertiesForElement("container")->OverflowClip();
+  EXPECT_NE(nullptr, clip);
+  EXPECT_EQ(FloatRect(0, 0, 90, 90), clip->ClipRect().Rect());
+}
+
 TEST_P(PaintPropertyTreeBuilderTest,
        PaintOffsetTranslationSVGHTMLBoundaryMulticol) {
   SetBodyInnerHTML(R"HTML(
