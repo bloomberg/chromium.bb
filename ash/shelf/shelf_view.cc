@@ -487,6 +487,11 @@ void ShelfView::UpdateVisibleShelfItemBoundsUnion() {
   visible_shelf_item_bounds_union_.SetRect(0, 0, 0, 0);
   for (int i = first_visible_index_; i <= last_visible_index_; ++i) {
     const views::View* child = view_model_->view_at(i);
+    // Since shelf items are centered, we don't want to include the app list
+    // button, otherwise tooltips will show when hovering a potentially large
+    // amount of white space between the app list button and the first item.
+    if (child == GetAppListButton())
+      continue;
     if (!IsTabletModeEnabled() && child == GetBackButton())
       continue;
     if (ShouldShowTooltipForView(child))
@@ -495,20 +500,22 @@ void ShelfView::UpdateVisibleShelfItemBoundsUnion() {
 }
 
 bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) const {
-  // Hide the tooltip if this is the app list button and the list is showing.
+  // If this is the app list button, only show the tooltip if the app list is
+  // not already showing.
   const AppListButton* app_list_button = GetAppListButton();
   if (app_list_button &&
-      app_list_button->GetMirroredBounds().Contains(cursor_location) &&
-      app_list_button->is_showing_app_list()) {
-    return true;
+      app_list_button->GetMirroredBounds().Contains(cursor_location)) {
+    return app_list_button->is_showing_app_list();
   }
   return !visible_shelf_item_bounds_union_.Contains(cursor_location);
 }
 
 bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
   // TODO(msw): Push this app list state into ShelfItem::shows_tooltip.
-  if (view == GetAppListButton() && GetAppListButton()->is_showing_app_list())
-    return false;
+  // If this is the app list button, only show the tooltip if the app list is
+  // not already showing.
+  if (view == GetAppListButton())
+    return !GetAppListButton()->is_showing_app_list();
   // Don't show a tooltip for a view that's currently being dragged.
   if (view == drag_view_)
     return false;
