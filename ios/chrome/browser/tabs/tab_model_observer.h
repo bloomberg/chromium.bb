@@ -24,9 +24,6 @@
 // The given tab will be removed.
 - (void)tabModel:(TabModel*)model willRemoveTab:(Tab*)tab;
 
-// All tabs in the model will close.
-- (void)tabModelClosedAllTabs:(TabModel*)model;
-
 // A tab was removed at the given index.
 - (void)tabModel:(TabModel*)model
     didRemoveTab:(Tab*)tab

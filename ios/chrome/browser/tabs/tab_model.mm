@@ -562,7 +562,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 
 - (void)closeAllTabs {
   _webStateList->CloseAllWebStates(WebStateList::CLOSE_USER_ACTION);
-  [_observers tabModelClosedAllTabs:self];
 }
 
 - (void)haltAllTabs {
