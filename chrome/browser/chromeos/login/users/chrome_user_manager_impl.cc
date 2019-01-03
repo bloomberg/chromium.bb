@@ -75,7 +75,7 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart_client.h"
-#include "chromeos/login/login_state.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/account_id/account_id.h"

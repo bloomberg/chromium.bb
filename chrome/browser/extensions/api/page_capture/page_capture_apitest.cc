@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/login/scoped_test_public_session_login_state.h"
+#include "chromeos/login/login_state/scoped_test_public_session_login_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
@@ -26,7 +26,7 @@
 #include "net/dns/mock_host_resolver.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/login/login_state.h"
+#include "chromeos/login/login_state/login_state.h"
 #endif  // defined(OS_CHROMEOS)
 
 using extensions::Extension;

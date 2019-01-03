@@ -12,6 +12,7 @@ source_set("dbus") {
   configs += [ "//chromeos:chromeos_implementation" ]
   public_deps = [
     ":dbus_switches",
+    "//dbus",
   ]
   deps = [
     "//base",
@@ -34,7 +35,6 @@ source_set("dbus") {
     "//components/device_event_log",
     "//components/policy:cloud_policy_proto_generated_compile",
     "//components/policy/proto",
-    "//dbus",
     "//net",
     "//skia",
     "//third_party/icu",

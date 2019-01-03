@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/login/login_state.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_policy_observer.h"
 

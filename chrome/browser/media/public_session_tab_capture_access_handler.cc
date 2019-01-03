@@ -10,7 +10,7 @@
 #include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/extensions/public_session_permission_helper.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chromeos/login/login_state.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/manifest_permission_set.h"

@@ -10,7 +10,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "chromeos/login/login_state.h"
+#include "chromeos/login/login_state/login_state.h"
 
 namespace metrics {
 

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_LOGIN_LOGIN_STATE_H_
-#define CHROMEOS_LOGIN_LOGIN_STATE_H_
+#ifndef CHROMEOS_LOGIN_LOGIN_STATE_LOGIN_STATE_H_
+#define CHROMEOS_LOGIN_LOGIN_STATE_LOGIN_STATE_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
 // Tracks the login state of chrome, accessible to Ash and other chromeos code.
-class CHROMEOS_EXPORT LoginState {
+class COMPONENT_EXPORT(LOGIN_STATE) LoginState {
  public:
   enum LoggedInState {
     LOGGED_IN_NONE,       // Not logged in
@@ -27,10 +27,10 @@ class CHROMEOS_EXPORT LoginState {
     LOGGED_IN_USER_GUEST,           // A guest is logged in (i.e. incognito)
     LOGGED_IN_USER_PUBLIC_ACCOUNT,  // A user is logged in to a public session.
     LOGGED_IN_USER_PUBLIC_ACCOUNT_MANAGED,  // Public session v2.
-    LOGGED_IN_USER_SUPERVISED,      // A supervised user is logged in
-    LOGGED_IN_USER_KIOSK_APP,       // Is in kiosk app mode
-    LOGGED_IN_USER_ARC_KIOSK_APP,   // Is in ARC kiosk mode
-    LOGGED_IN_USER_CHILD            // A child is logged in
+    LOGGED_IN_USER_SUPERVISED,              // A supervised user is logged in
+    LOGGED_IN_USER_KIOSK_APP,               // Is in kiosk app mode
+    LOGGED_IN_USER_ARC_KIOSK_APP,           // Is in ARC kiosk mode
+    LOGGED_IN_USER_CHILD                    // A child is logged in
   };
 
   class Observer {
@@ -54,10 +54,9 @@ class CHROMEOS_EXPORT LoginState {
 
   // Sets the logged in state, user type, and primary user hash when the
   // primary user initialy logs in. Also notifies observers.
-  void SetLoggedInStateAndPrimaryUser(
-      LoggedInState state,
-      LoggedInUserType type,
-      const std::string& primary_user_hash);
+  void SetLoggedInStateAndPrimaryUser(LoggedInState state,
+                                      LoggedInUserType type,
+                                      const std::string& primary_user_hash);
 
   // Sets the logged in state and user type. Also notifies observers. Used
   // in tests or situations where there is no primary user (e.g. from the
@@ -127,4 +126,4 @@ class CHROMEOS_EXPORT LoginState {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_LOGIN_LOGIN_STATE_H_
+#endif  // CHROMEOS_LOGIN_LOGIN_STATE_LOGIN_STATE_H_

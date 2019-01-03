@@ -7,9 +7,9 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/user_context.h"
 
@@ -23,7 +23,8 @@ namespace chromeos {
 
 class AuthStatusConsumer;
 
-class CHROMEOS_EXPORT StubAuthenticator : public Authenticator {
+class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) StubAuthenticator
+    : public Authenticator {
  public:
   StubAuthenticator(AuthStatusConsumer* consumer,
                     const UserContext& expected_user_context);

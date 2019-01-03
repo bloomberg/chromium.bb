@@ -34,7 +34,7 @@
 #include "extensions/shell/browser/shell_navigation_ui_data.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/login/login_state.h"
+#include "chromeos/login/login_state/login_state.h"
 #endif
 
 using content::BrowserContext;

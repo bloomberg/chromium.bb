@@ -20,7 +20,7 @@ source_set("settings") {
     "//chromeos:chromeos_export",
     "//chromeos:cryptohome_proto",
     "//chromeos/dbus",
-    "//chromeos/login",
+    "//chromeos/login/login_state",
     "//components/policy/core/common:common_constants",
     "//components/policy/proto",
     "//dbus",

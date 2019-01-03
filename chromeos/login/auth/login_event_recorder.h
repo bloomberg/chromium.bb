@@ -2,33 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_LOGIN_EVENT_RECORDER_H_
-#define CHROMEOS_LOGIN_EVENT_RECORDER_H_
+#ifndef CHROMEOS_LOGIN_AUTH_LOGIN_EVENT_RECORDER_H_
+#define CHROMEOS_LOGIN_AUTH_LOGIN_EVENT_RECORDER_H_
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
 // LoginEventRecorder records the bootimes of Chrome OS.
 // Actual implementation is handled by delegate.
-class CHROMEOS_EXPORT LoginEventRecorder {
+class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) LoginEventRecorder {
  public:
   class Delegate {
    public:
-  // Add a time marker for login. A timeline will be dumped to
-  // /tmp/login-times-sent after login is done. If |send_to_uma| is true
-  // the time between this marker and the last will be sent to UMA with
-  // the identifier BootTime.|marker_name|.
+    // Add a time marker for login. A timeline will be dumped to
+    // /tmp/login-times-sent after login is done. If |send_to_uma| is true
+    // the time between this marker and the last will be sent to UMA with
+    // the identifier BootTime.|marker_name|.
     virtual void AddLoginTimeMarker(const std::string& marker_name,
                                     bool send_to_uma) = 0;
 
-  // Record events for successful authentication.
+    // Record events for successful authentication.
     virtual void RecordAuthenticationSuccess() = 0;
 
-  // Record events for authentication failure.
+    // Record events for authentication failure.
     virtual void RecordAuthenticationFailure() = 0;
   };
   LoginEventRecorder();
@@ -58,4 +58,4 @@ class CHROMEOS_EXPORT LoginEventRecorder {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_LOGIN_EVENT_RECORDER_H_
+#endif  // CHROMEOS_LOGIN_AUTH_LOGIN_EVENT_RECORDER_H_

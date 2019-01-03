@@ -18,7 +18,7 @@
 #include "base/threading/thread_checker.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/cryptohome_client.h"
-#include "chromeos/login/login_state.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/tpm/tpm_token_info_getter.h"
 
 namespace base {

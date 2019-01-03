@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/login_event_recorder.h"
+#include "chromeos/login/auth/login_event_recorder.h"
 
 #include <vector>
 
@@ -13,8 +13,7 @@ namespace chromeos {
 static base::LazyInstance<LoginEventRecorder>::DestructorAtExit
     g_login_event_recorder = LAZY_INSTANCE_INITIALIZER;
 
-LoginEventRecorder::LoginEventRecorder() : delegate_(NULL) {
-}
+LoginEventRecorder::LoginEventRecorder() : delegate_(NULL) {}
 
 LoginEventRecorder::~LoginEventRecorder() = default;
 

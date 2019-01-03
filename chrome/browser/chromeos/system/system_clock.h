@@ -10,7 +10,7 @@
 #include "base/callback_list.h"
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
-#include "chromeos/login/login_state.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
-#include "chromeos/login_event_recorder.h"
+#include "chromeos/login/auth/login_event_recorder.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_widget_host.h"

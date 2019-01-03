@@ -5,8 +5,8 @@
 #ifndef CHROMEOS_LOGIN_AUTH_FAKE_EXTENDED_AUTHENTICATOR_H_
 #define CHROMEOS_LOGIN_AUTH_FAKE_EXTENDED_AUTHENTICATOR_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "chromeos/login/auth/user_context.h"
 
@@ -14,7 +14,8 @@ namespace chromeos {
 
 class AuthFailure;
 
-class CHROMEOS_EXPORT FakeExtendedAuthenticator : public ExtendedAuthenticator {
+class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) FakeExtendedAuthenticator
+    : public ExtendedAuthenticator {
  public:
   FakeExtendedAuthenticator(NewAuthStatusConsumer* consumer,
                             const UserContext& expected_user_context);

@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/net/shill_error.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/login/login_state.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "components/login/localized_values_builder.h"
 #include "content/public/browser/web_ui_data_source.h"

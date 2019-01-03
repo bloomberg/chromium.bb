@@ -38,7 +38,7 @@
 #include "chromeos/components/drivefs/drivefs_host.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/disks/disk.h"
-#include "chromeos/login/login_state.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"

@@ -7,8 +7,8 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/optional.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/challenge_response_key.h"
 #include "chromeos/login/auth/key.h"
 #include "components/account_id/account_id.h"
@@ -28,7 +28,7 @@ namespace chromeos {
 // |auth_code_|.
 // The |user_id_hash_| is used to locate the user's home directory
 // mount point for the user. It is set when the mount has been completed.
-class CHROMEOS_EXPORT UserContext {
+class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) UserContext {
  public:
   // The authentication flow used during sign-in.
   enum AuthFlow {

@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/apps/platform_apps/app_window_interactive_uitest.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "chromeos/login/scoped_test_public_session_login_state.h"
+#include "chromeos/login/login_state/scoped_test_public_session_login_state.h"
 #include "extensions/test/extension_test_message_listener.h"
 
 class ChromeNativeAppWindowViewsAuraAshInteractiveTest

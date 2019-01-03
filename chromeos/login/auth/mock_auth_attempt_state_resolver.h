@@ -5,14 +5,14 @@
 #ifndef CHROMEOS_LOGIN_AUTH_MOCK_AUTH_ATTEMPT_STATE_RESOLVER_H_
 #define CHROMEOS_LOGIN_AUTH_MOCK_AUTH_ATTEMPT_STATE_RESOLVER_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/auth_attempt_state_resolver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT MockAuthAttemptStateResolver
+class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) MockAuthAttemptStateResolver
     : public AuthAttemptStateResolver {
  public:
   MockAuthAttemptStateResolver();
