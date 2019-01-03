@@ -23,5 +23,15 @@ PASS Complete mismatch (except length): "scale(2) rotate(0deg) translate(100px)"
 PASS Complete mismatch (except length): Animation between "scale(2) rotate(0deg) translate(100px)" and "rotate(720deg) scale(2) translate(200px)" at progress 0.25
 PASS Complete mismatch including length: "scale(2) rotate(0deg)" and "rotate(720deg) scale(2) translate(200px)" are valid transform values
 PASS Complete mismatch including length: Animation between "scale(2) rotate(0deg)" and "rotate(720deg) scale(2) translate(200px)" at progress 0.25
+PASS Mismatched lengths (from is shorter), partial match: "rotate(0deg) scaleX(1)" and "rotate(720deg) translateX(0px) scaleX(2)" are valid transform values
+FAIL Mismatched lengths (from is shorter), partial match: Animation between "rotate(0deg) scaleX(1)" and "rotate(720deg) translateX(0px) scaleX(2)" at progress 0.25 assert_equals: expected "matrix(-1.25, 0, 0, -1, 0, 0)" but got "matrix(1.25, 0, 0, 1, 0, 0)"
+PASS Mismatched lengths (to is shorter), partial match: "rotate(720deg) translateX(0px) scaleX(2)" and "rotate(0deg) scaleX(1)" are valid transform values
+FAIL Mismatched lengths (to is shorter), partial match: Animation between "rotate(720deg) translateX(0px) scaleX(2)" and "rotate(0deg) scaleX(1)" at progress 0.25 assert_equals: expected "matrix(-1.75, 0, 0, -1, 0, 0)" but got "matrix(1.75, 0, 0, 1, 0, 0)"
+PASS Mismatched lengths (from is shorter), partial match on primitive: "scaleX(-3) scaleY(2)" and "scaleY(-3) translateX(0px) scaleX(2)" are valid transform values
+FAIL Mismatched lengths (from is shorter), partial match on primitive: Animation between "scaleX(-3) scaleY(2)" and "scaleY(-3) translateX(0px) scaleX(2)" at progress 0.25 assert_equals: expected "matrix(-2.5, 0, 0, 0, 0, 0)" but got "matrix(-1.75, 0, 0, 0.75, 0, 0)"
+PASS Mismatched lengths (to is shorter), partial match on primitive: "scaleY(-3) translateX(0px) scaleX(2)" and "scaleX(-3) scaleY(2)" are valid transform values
+FAIL Mismatched lengths (to is shorter), partial match on primitive: Animation between "scaleY(-3) translateX(0px) scaleX(2)" and "scaleX(-3) scaleY(2)" at progress 0.25 assert_equals: expected "matrix(0, 0, 0, -2.5, 0, 0)" but got "matrix(0.75, 0, 0, -1.75, 0, 0)"
+PASS Common prefix on primitive: "scaleY(-3) translateX(0px)" and "scaleX(-3) scaleY(2)" are valid transform values
+FAIL Common prefix on primitive: Animation between "scaleY(-3) translateX(0px)" and "scaleX(-3) scaleY(2)" at progress 0.25 assert_equals: expected "matrix(0, 0, 0, -2.5, 0, 0)" but got "matrix(0, 0, 0, -1.75, 0, 0)"
 Harness: the test ran to completion.
 
