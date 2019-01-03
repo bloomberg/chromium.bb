@@ -269,20 +269,20 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public int countSpecializedHandlers(List<ResolveInfo> infos, Intent intent) {
-        return getSpecializedHandlersWithFilter(infos, null, intent).size();
+    public int countSpecializedHandlers(List<ResolveInfo> infos) {
+        return getSpecializedHandlersWithFilter(infos, null).size();
     }
 
     @VisibleForTesting
     public static ArrayList<String> getSpecializedHandlersWithFilter(
-            List<ResolveInfo> infos, String filterPackageName, Intent intent) {
+            List<ResolveInfo> infos, String filterPackageName) {
         ArrayList<String> result = new ArrayList<>();
         if (infos == null) {
             return result;
         }
 
         for (ResolveInfo info : infos) {
-            if (!matchResolveInfoExceptWildCardHost(info, filterPackageName, intent)) {
+            if (!matchResolveInfoExceptWildCardHost(info, filterPackageName)) {
                 continue;
             }
 
@@ -301,7 +301,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     private static boolean matchResolveInfoExceptWildCardHost(
-            ResolveInfo info, String filterPackageName, Intent intent) {
+            ResolveInfo info, String filterPackageName) {
         IntentFilter intentFilter = info.filter;
         if (intentFilter == null) {
             // Error on the side of classifying ResolveInfo as generic.
@@ -311,19 +311,17 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             // Don't count generic handlers.
             return false;
         }
-        if (intent != null) {
-            boolean isWildCardHost = false;
-            Iterator<IntentFilter.AuthorityEntry> it = intentFilter.authoritiesIterator();
-            while (it != null && it.hasNext()) {
-                IntentFilter.AuthorityEntry entry = it.next();
-                if ("*".equals(entry.getHost())) {
-                    isWildCardHost = true;
-                    break;
-                }
+        boolean isWildCardHost = false;
+        Iterator<IntentFilter.AuthorityEntry> it = intentFilter.authoritiesIterator();
+        while (it != null && it.hasNext()) {
+            IntentFilter.AuthorityEntry entry = it.next();
+            if ("*".equals(entry.getHost())) {
+                isWildCardHost = true;
+                break;
             }
-            if (isWildCardHost) {
-                return false;
-            }
+        }
+        if (isWildCardHost) {
+            return false;
         }
         if (!TextUtils.isEmpty(filterPackageName)
                 && (info.activityInfo == null
@@ -348,7 +346,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         try (StrictModeContext unused = StrictModeContext.allowDiskReads()){
             List<ResolveInfo> handlers = context.getPackageManager().queryIntentActivities(
                     intent, PackageManager.GET_RESOLVED_FILTER);
-            return getSpecializedHandlersWithFilter(handlers, packageName, intent).size() > 0;
+            return getSpecializedHandlersWithFilter(handlers, packageName).size() > 0;
         } catch (RuntimeException e) {
             IntentUtils.logTransactionTooLargeOrRethrow(e, intent);
         }
@@ -618,7 +616,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     @Override
     public void maybeRecordAppHandlersInIntent(Intent intent, List<ResolveInfo> infos) {
         intent.putExtra(IntentHandler.EXTRA_EXTERNAL_NAV_PACKAGES,
-                getSpecializedHandlersWithFilter(infos, null, intent));
+                getSpecializedHandlersWithFilter(infos, null));
     }
 
     @Override

@@ -4,11 +4,9 @@
 
 package org.chromium.chrome.browser.externalnav;
 
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
-import android.net.Uri;
 import android.os.Build;
 import android.support.test.filters.SmallTest;
 
@@ -50,7 +48,7 @@ public class ExternalNavigationDelegateImplTest {
         List<ResolveInfo> resolveInfos = new ArrayList<ResolveInfo>();
         Assert.assertEquals(0,
                 ExternalNavigationDelegateImpl
-                        .getSpecializedHandlersWithFilter(resolveInfos, packageName, null)
+                        .getSpecializedHandlersWithFilter(resolveInfos, packageName)
                         .size());
     }
 
@@ -63,7 +61,7 @@ public class ExternalNavigationDelegateImplTest {
         List<ResolveInfo> resolveInfos = makeResolveInfos(info);
         Assert.assertEquals(0,
                 ExternalNavigationDelegateImpl
-                        .getSpecializedHandlersWithFilter(resolveInfos, packageName, null)
+                        .getSpecializedHandlersWithFilter(resolveInfos, packageName)
                         .size());
     }
 
@@ -77,7 +75,7 @@ public class ExternalNavigationDelegateImplTest {
         List<ResolveInfo> resolveInfos = makeResolveInfos(info);
         Assert.assertEquals(1,
                 ExternalNavigationDelegateImpl
-                        .getSpecializedHandlersWithFilter(resolveInfos, packageName, null)
+                        .getSpecializedHandlersWithFilter(resolveInfos, packageName)
                         .size());
     }
 
@@ -91,7 +89,7 @@ public class ExternalNavigationDelegateImplTest {
         List<ResolveInfo> resolveInfos = makeResolveInfos(info);
         Assert.assertEquals(1,
                 ExternalNavigationDelegateImpl
-                        .getSpecializedHandlersWithFilter(resolveInfos, packageName, null)
+                        .getSpecializedHandlersWithFilter(resolveInfos, packageName)
                         .size());
     }
 
@@ -103,37 +101,19 @@ public class ExternalNavigationDelegateImplTest {
         info.filter = new IntentFilter();
         info.filter.addDataAuthority("*", null);
         List<ResolveInfo> resolveInfos = makeResolveInfos(info);
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com"));
         Assert.assertEquals(0,
                 ExternalNavigationDelegateImpl
-                        .getSpecializedHandlersWithFilter(resolveInfos, packageName, intent)
-                        .size());
-
-        Intent intentWildcardHost =
-                new Intent(Intent.ACTION_VIEW, Uri.parse("https://*.google.com"));
-        Assert.assertEquals(0,
-                ExternalNavigationDelegateImpl
-                        .getSpecializedHandlersWithFilter(
-                                resolveInfos, packageName, intentWildcardHost)
+                        .getSpecializedHandlersWithFilter(resolveInfos, packageName)
                         .size());
 
         ResolveInfo infoWildcardSubDomain = new ResolveInfo();
         infoWildcardSubDomain.filter = new IntentFilter();
         infoWildcardSubDomain.filter.addDataAuthority("http://*.google.com", "80");
         List<ResolveInfo> resolveInfosWildcardSubDomain = makeResolveInfos(infoWildcardSubDomain);
-        Intent intentSubDomain1 = new Intent(Intent.ACTION_VIEW, Uri.parse("https://google.com"));
         Assert.assertEquals(1,
                 ExternalNavigationDelegateImpl
                         .getSpecializedHandlersWithFilter(
-                                resolveInfosWildcardSubDomain, packageName, intentSubDomain1)
-                        .size());
-
-        Intent intentSubDomain2 =
-                new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com"));
-        Assert.assertEquals(1,
-                ExternalNavigationDelegateImpl
-                        .getSpecializedHandlersWithFilter(
-                                resolveInfosWildcardSubDomain, packageName, intentSubDomain2)
+                                resolveInfosWildcardSubDomain, packageName)
                         .size());
     }
 
@@ -149,7 +129,7 @@ public class ExternalNavigationDelegateImplTest {
         List<ResolveInfo> resolveInfos = makeResolveInfos(info);
         Assert.assertEquals(1,
                 ExternalNavigationDelegateImpl
-                        .getSpecializedHandlersWithFilter(resolveInfos, packageName, null)
+                        .getSpecializedHandlersWithFilter(resolveInfos, packageName)
                         .size());
     }
 
@@ -165,7 +145,7 @@ public class ExternalNavigationDelegateImplTest {
         List<ResolveInfo> resolveInfos = makeResolveInfos(info);
         Assert.assertEquals(0,
                 ExternalNavigationDelegateImpl
-                        .getSpecializedHandlersWithFilter(resolveInfos, packageName, null)
+                        .getSpecializedHandlersWithFilter(resolveInfos, packageName)
                         .size());
     }
 
@@ -189,7 +169,7 @@ public class ExternalNavigationDelegateImplTest {
         // Ephemeral resolver is not counted as a specialized handler.
         Assert.assertEquals(0,
                 ExternalNavigationDelegateImpl
-                        .getSpecializedHandlersWithFilter(resolveInfos, packageName, null)
+                        .getSpecializedHandlersWithFilter(resolveInfos, packageName)
                         .size());
     }
 
