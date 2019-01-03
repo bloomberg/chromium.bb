@@ -1373,20 +1373,46 @@ TEST_F(ShelfViewTest, ShelfAlignmentClosesTooltip) {
 TEST_F(ShelfViewTest, ShouldHideTooltipTest) {
   ShelfID app_button_id = AddAppShortcut();
   ShelfID platform_button_id = AddApp();
+  // TODO(manucornet): It should not be necessary to call this manually. The
+  // |AddItem| call seems to sometimes be missing some re-layout steps. We
+  // should find out what's going on there.
+  shelf_view_->UpdateVisibleShelfItemBoundsUnion();
+  const AppListButton* app_list_button = shelf_view_->GetAppListButton();
+
+  // Make sure we're not showing the app list.
+  EXPECT_FALSE(app_list_button->is_showing_app_list())
+      << "We should not be showing the app list";
 
   // The tooltip shouldn't hide if the mouse is on normal buttons.
   for (int i = 0; i < test_api_->GetButtonCount(); i++) {
     ShelfButton* button = test_api_->GetButton(i);
     if (!button)
       continue;
-
     EXPECT_FALSE(shelf_view_->ShouldHideTooltip(
         button->GetMirroredBounds().CenterPoint()))
         << "ShelfView tries to hide on button " << i;
   }
 
+  // The tooltip should hide if placed in between the app list button and the
+  // first shelf button.
+  const int left = app_list_button->bounds().right();
+  // Find the first shelf button that's to the right of the app list button.
+  int right = 0;
+  for (int i = 0; i < test_api_->GetButtonCount(); ++i) {
+    ShelfButton* button = test_api_->GetButton(i);
+    if (!button)
+      continue;
+    right = button->bounds().x();
+    if (right > left)
+      break;
+  }
+  const int center_x =
+      shelf_view_->GetMirroredXInView(left + (right - left) / 2);
+  EXPECT_TRUE(shelf_view_->ShouldHideTooltip(gfx::Point(
+      center_x, app_list_button->GetMirroredBounds().left_center().y())))
+      << "Tooltip should hide between app list button and first shelf item";
+
   // The tooltip should not hide on the app-list button.
-  AppListButton* app_list_button = shelf_view_->GetAppListButton();
   EXPECT_FALSE(shelf_view_->ShouldHideTooltip(
       app_list_button->GetMirroredBounds().CenterPoint()));
 
@@ -1462,13 +1488,12 @@ TEST_F(ShelfViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
   EXPECT_TRUE(tooltip_manager->IsVisible());
 
   // Move the mouse cursor slightly to the right of the item. The tooltip should
-  // stay open.
+  // now close.
   generator->MoveMouseBy(bounds.width() / 2 + 5, 0);
-  // Make sure there is no delayed close.
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(tooltip_manager->IsVisible());
+  EXPECT_FALSE(tooltip_manager->IsVisible());
 
-  // Move back - it should still stay open.
+  // Move back - it should appear again.
   generator->MoveMouseBy(-(bounds.width() / 2 + 5), 0);
   // Make sure there is no delayed close.
   base::RunLoop().RunUntilIdle();
