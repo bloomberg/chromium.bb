@@ -76,14 +76,16 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
 
   geometry_map_.PushMappingsToAncestor(layer, layer->Parent());
 
-  PaintLayer* enclosing_composited_layer = info.enclosing_composited_layer;
+  PaintLayer* enclosing_stacking_composited_layer =
+      info.enclosing_stacking_composited_layer;
   PaintLayer* enclosing_squashing_composited_layer =
       info.enclosing_squashing_composited_layer;
   switch (layer->GetCompositingState()) {
     case kNotComposited:
       break;
     case kPaintsIntoOwnBacking:
-      enclosing_composited_layer = layer;
+      if (layer->GetLayoutObject().StyleRef().IsStackingContext())
+        enclosing_stacking_composited_layer = layer;
       break;
     case kPaintsIntoGroupedBacking:
       enclosing_squashing_composited_layer =
@@ -92,8 +94,8 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
   }
 
   if (layer->NeedsCompositingInputsUpdate()) {
-    if (enclosing_composited_layer) {
-      enclosing_composited_layer->GetCompositedLayerMapping()
+    if (enclosing_stacking_composited_layer) {
+      enclosing_stacking_composited_layer->GetCompositedLayerMapping()
           ->SetNeedsGraphicsLayerUpdate(kGraphicsLayerUpdateSubtree);
     }
     if (enclosing_squashing_composited_layer) {
@@ -117,7 +119,8 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
   if (update_type == kForceUpdate)
     UpdateAncestorDependentCompositingInputs(layer, info);
 
-  info.enclosing_composited_layer = enclosing_composited_layer;
+  info.enclosing_stacking_composited_layer =
+      enclosing_stacking_composited_layer;
   info.enclosing_squashing_composited_layer =
       enclosing_squashing_composited_layer;
 
