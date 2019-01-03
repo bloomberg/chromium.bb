@@ -226,15 +226,26 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
 
   {
     base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
-    if (gpu_service_->gr_shader_cache())
+    if (gpu_service_->gr_shader_cache()) {
       cache_use.emplace(gpu_service_->gr_shader_cache(),
                         gpu::kInProcessCommandBufferClientId);
+    }
     sk_surface_->draw(ddl.get());
     gr_context()->flush();
   }
+
+  // Note that the ScopedCacheUse for GrShaderCache is scoped until the
+  // ReleaseFenceSync call here since releasing the fence may schedule a
+  // different decoder's stream which also uses the shader cache.
   sync_point_client_state_->ReleaseFenceSync(sync_fence_release);
 
   if (overdraw_ddl) {
+    base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
+    if (gpu_service_->gr_shader_cache()) {
+      cache_use.emplace(gpu_service_->gr_shader_cache(),
+                        gpu::kInProcessCommandBufferClientId);
+    }
+
     sk_sp<SkSurface> overdraw_surface = SkSurface::MakeRenderTarget(
         gr_context(), overdraw_ddl->characterization(), SkBudgeted::kNo);
     overdraw_surface->draw(overdraw_ddl.get());

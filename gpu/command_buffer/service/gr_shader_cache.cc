@@ -149,6 +149,9 @@ void GrShaderCache::EnforceLimits(size_t size_needed) {
 GrShaderCache::ScopedCacheUse::ScopedCacheUse(GrShaderCache* cache,
                                               int32_t client_id)
     : cache_(cache) {
+  DCHECK_EQ(cache_->current_client_id_, kInvalidClientId);
+  DCHECK_NE(client_id, kInvalidClientId);
+
   cache_->current_client_id_ = client_id;
 }
 
