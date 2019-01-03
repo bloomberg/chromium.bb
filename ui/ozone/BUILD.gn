@@ -7,7 +7,6 @@ import("//build/config/ui.gni")
 import("//gpu/vulkan/features.gni")
 import("//testing/test.gni")
 import("//ui/ozone/ozone.gni")
-import("//ui/ozone/ozone_extra.gni")
 
 assert(use_ozone)
 
@@ -133,6 +132,9 @@ jumbo_component("ozone_base") {
     "//ui/ozone/public/interfaces",
     "//ui/ozone/platform/*",
   ]
+
+  # Out of tree platforms can depend on this.
+  visibility += ozone_external_platform_visibility
 }
 
 source_set("platform") {
@@ -187,6 +189,9 @@ source_set("platform") {
 
   # This is used for platform tests.
   visibility += [ "//ui/ozone/platform/*" ]
+
+  # This can be used for out of tree platforms tests.
+  visibility += ozone_external_platform_visibility
 }
 
 jumbo_component("ozone") {

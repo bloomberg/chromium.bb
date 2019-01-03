@@ -39,4 +39,7 @@ source_set("common") {
   ]
 
   visibility = [ "//ui/ozone/platform/*" ]
+
+  # Out of tree platforms can depend on this.
+  visibility += ozone_external_platform_visibility
 }
