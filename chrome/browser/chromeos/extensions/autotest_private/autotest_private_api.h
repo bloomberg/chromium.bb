@@ -492,6 +492,18 @@ class AutotestPrivateSendAssistantTextQueryFunction
   std::unique_ptr<base::DictionaryValue> result_;
 };
 
+// Enable/disable a Crostini app's "scaled" property.
+// When an app is "scaled", it will use low display density.
+class AutotestPrivateSetCrostiniAppScaledFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setCrostiniAppScaled",
+                             AUTOTESTPRIVATE_SETCROSTINIAPPSCALED)
+ private:
+  ~AutotestPrivateSetCrostiniAppScaledFunction() override;
+  ResponseAction Run() override;
+};
+
 // The profile-keyed service that manages the autotestPrivate extension API.
 class AutotestPrivateAPI : public BrowserContextKeyedAPI {
  public:

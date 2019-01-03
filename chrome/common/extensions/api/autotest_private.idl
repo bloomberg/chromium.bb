@@ -284,5 +284,11 @@ namespace autotestPrivate {
     // |callback|: Called when response has been received.
     static void sendAssistantTextQuery(DOMString query, long timeout_ms,
                                        AssistantQueryResponseCallback callback);
+
+    // Enable/disable a Crostini app's "scaled" property.
+    // |appId|: The Crostini application ID.
+    // |scaled|: The app is "scaled" when shown, which means it uses low display density.
+    // |callback|: Called when the operation has completed.
+    static void setCrostiniAppScaled(DOMString appId, boolean scaled, VoidCallback callback);
   };
 };

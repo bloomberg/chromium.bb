@@ -17585,6 +17585,7 @@ Called by update_net_error_codes.py.-->
   <int value="1303" label="AUTOTESTPRIVATE_CLOSEAPP"/>
   <int value="1304" label="ACCESSIBILITY_PRIVATE_SETSWITCHACCESSMENUSTATE"/>
   <int value="1305" label="AUTOTESTPRIVATE_SENDASSISTANTTEXTQUERY"/>
+  <int value="1306" label="AUTOTESTPRIVATE_SETCROSTINIAPPSCALED"/>
 </enum>
 
 <enum name="ExtensionIconState">

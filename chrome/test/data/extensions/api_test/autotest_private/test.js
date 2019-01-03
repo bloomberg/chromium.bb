@@ -190,6 +190,17 @@ var defaultTests = [
     chrome.autotestPrivate.runCrostiniInstaller(chrome.test.callbackFail(
         'Crostini is not available for the current user'));
   },
+  // This sets a Crostini app's "scaled" property in the app registry.
+  // When the property is set to true, the app will be launched in low display
+  // density.
+  function setCrostiniAppScaled() {
+    chrome.autotestPrivate.setCrostiniAppScaled(
+        'nodabfiipdopnjihbfpiengllkohmfkl', true,
+        function() {
+          chrome.test.assertNoLastError();
+          chrome.test.succeed();
+        });
+  },
   function bootstrapMachineLearningService() {
     chrome.autotestPrivate.bootstrapMachineLearningService(
         chrome.test.callbackFail('ML Service connection error'));
