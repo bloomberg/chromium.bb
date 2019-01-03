@@ -36,8 +36,7 @@ DiceSigninButtonView::DiceSigninButtonView(
   // Regular MD text button when there is no account.
   views::MdTextButton* button = views::MdTextButton::Create(
       button_listener,
-      l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON),
-      views::style::CONTEXT_BUTTON);
+      l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON));
   button->SetProminent(prominent);
   AddChildView(button);
   signin_button_ = button;
@@ -101,8 +100,7 @@ DiceSigninButtonView::DiceSigninButtonView(
                      views::GridLayout::USE_PREF, 0, 0);
   views::MdTextButton* button = views::MdTextButton::Create(
       button_listener,
-      l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON),
-      views::style::CONTEXT_BUTTON);
+      l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON));
   button->SetProminent(true);
   grid_layout->AddView(button);
   signin_button_ = button;
