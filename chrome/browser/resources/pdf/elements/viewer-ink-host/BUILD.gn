@@ -14,4 +14,9 @@ js_library("viewer-ink-host") {
   deps = [
     "//chrome/browser/resources/pdf/ink:ink_api",
   ]
+  externs_list = [
+    # TODO(dstockwell): Once viewport can be typechecked this can be replaced
+    # by a dep on viewport.
+    "externs.js",
+  ]
 }
