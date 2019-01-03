@@ -5420,6 +5420,9 @@ interface PopStateEvent : Event
     attribute @@toStringTag
     getter state
     method constructor
+interface PortalHost : EventTarget
+    attribute @@toStringTag
+    method constructor
 interface Presentation
     attribute @@toStringTag
     getter defaultRequest
@@ -10798,6 +10801,7 @@ interface webkitURL
     getter pageYOffset
     getter performance
     getter personalbar
+    getter portalHost
     getter screen
     getter screenLeft
     getter screenTop
