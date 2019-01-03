@@ -289,9 +289,14 @@ class AbstractInlineBoxAndSideAffinity {
       return ToPositionInFlatTree(ToNGCaretPosition().ToPositionInDOMTree());
 
     const InlineBoxPosition inline_box_position = ToInlineBoxPosition();
-    return PositionInFlatTree::EditingPositionOf(
-        inline_box_position.inline_box->GetLineLayoutItem().GetNode(),
-        inline_box_position.offset_in_box);
+    const LineLayoutItem item =
+        inline_box_position.inline_box->GetLineLayoutItem();
+    const int text_start_offset =
+        item.IsText() ? LineLayoutText(item).TextStartOffset() : 0;
+    const int offset_in_node =
+        text_start_offset + inline_box_position.offset_in_box;
+    return PositionInFlatTree::EditingPositionOf(item.GetNode(),
+                                                 offset_in_node);
   }
 
   AbstractInlineBox GetBox() const { return box_; }
