@@ -4,38 +4,30 @@
 
 #include "ash/system/flag_warning/flag_warning_tray.h"
 
-#include "ash/root_window_controller.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
-#include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/base/ui_base_features.h"
 
 namespace ash {
 namespace {
 
-class FlagWarningTrayTest : public AshTestBase {
- public:
-  FlagWarningTrayTest() = default;
-  ~FlagWarningTrayTest() override = default;
-
-  // testing::Test:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(::features::kMash);
-    AshTestBase::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(FlagWarningTrayTest);
-};
+using FlagWarningTrayTest = AshTestBase;
 
 TEST_F(FlagWarningTrayTest, VisibleForMash) {
-  FlagWarningTray* tray = Shell::GetPrimaryRootWindowController()
-                              ->GetStatusAreaWidget()
-                              ->flag_warning_tray_for_testing();
+  // Simulate enabling Mash.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {::features::kMash} /* enabled */,
+      {::features::kSingleProcessMash} /* disabled */);
+
+  StatusAreaWidget widget(Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                                              kShellWindowId_StatusContainer),
+                          GetPrimaryShelf());
+  widget.Initialize();
+  FlagWarningTray* tray = widget.flag_warning_tray_for_testing();
   ASSERT_TRUE(tray);
   EXPECT_TRUE(tray->visible());
 }

@@ -60,6 +60,8 @@ UI_BASE_EXPORT extern const base::Feature kMash;
 // make it the default kMash behavior.
 UI_BASE_EXPORT extern const base::Feature kMashOopViz;
 
+// NOTE: Do not access directly outside of tests. Use IsSingleProcessMash()
+// to avoid problems when Mash and SingleProcessMash are both enabled.
 UI_BASE_EXPORT extern const base::Feature kSingleProcessMash;
 
 // Returns true if Chrome's aura usage is backed by the WindowService.

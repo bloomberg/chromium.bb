@@ -149,7 +149,8 @@ bool IsMashOopVizEnabled() {
 }
 
 bool IsSingleProcessMash() {
-  return base::FeatureList::IsEnabled(features::kSingleProcessMash);
+  return base::FeatureList::IsEnabled(features::kSingleProcessMash) &&
+         !base::FeatureList::IsEnabled(features::kMash);
 }
 
 bool IsAutomaticUiAdjustmentsForTouchEnabled() {

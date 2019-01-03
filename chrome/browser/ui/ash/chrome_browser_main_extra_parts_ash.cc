@@ -152,6 +152,9 @@ ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {
 void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
     content::ServiceManagerConnection* connection) {
   if (features::IsMultiProcessMash()) {
+    // Mash and SingleProcessMash cannot be enabled simultaneously.
+    DCHECK(!features::IsSingleProcessMash());
+
     // ash::Shell will not be created because ash is running out-of-process.
     ash::Shell::SetIsBrowserProcessWithMash();
   }

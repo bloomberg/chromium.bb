@@ -69,7 +69,7 @@ AshService::AshService(service_manager::mojom::ServiceRequest request)
     : service_binding_(this, std::move(request)) {}
 
 AshService::~AshService() {
-  if (!base::FeatureList::IsEnabled(features::kMash))
+  if (!::features::IsMultiProcessMash())
     return;
 
   // Shutdown part of GpuHost before deleting Shell. This is necessary to
@@ -175,7 +175,7 @@ void AshService::OnStart() {
   registry_.AddInterface(base::BindRepeating(&AshService::BindServiceFactory,
                                              base::Unretained(this)));
 
-  if (base::FeatureList::IsEnabled(features::kMash))
+  if (::features::IsMultiProcessMash())
     InitForMash();
 }
 
@@ -192,7 +192,7 @@ void AshService::CreateService(
     service_manager::mojom::PIDReceiverPtr pid_receiver) {
   DCHECK_EQ(name, ws::mojom::kServiceName);
   Shell::Get()->window_service_owner()->BindWindowService(std::move(service));
-  if (base::FeatureList::IsEnabled(features::kMash)) {
+  if (::features::IsMultiProcessMash()) {
     ws::WindowService* window_service =
         Shell::Get()->window_service_owner()->window_service();
     input_device_controller_ = std::make_unique<ws::InputDeviceController>();
