@@ -367,11 +367,8 @@ source_set("test_lib_shared_headers") {
   ]
 }
 
-ios_framework_bundle("test_lib") {
+source_set("test_lib") {
   testonly = true
-
-  output_name = "EarlGreyTestLib"
-  info_plist = "Info.plist"
 
   sources = [
     "src/AppFramework/Error/GREYFailureScreenshotterStub.m",
@@ -432,8 +429,6 @@ ios_framework_bundle("test_lib") {
     "QuartzCore.framework",
     "UIKit.framework",
   ]
-
-  public_headers = [ "src/TestLib/EarlGreyImpl/EarlGrey.h" ]
 
   public_configs = [ ":config" ]
 
