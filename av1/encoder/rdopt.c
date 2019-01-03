@@ -786,16 +786,6 @@ static int get_est_rate_dist(const TileDataEnc *tile_data, BLOCK_SIZE bsize,
   return 0;
 }
 
-static int64_t get_est_rd(TileDataEnc *tile_data, BLOCK_SIZE bsize, int rdmult,
-                          int64_t sse, int curr_cost) {
-  int est_residue_cost;
-  int64_t est_dist;
-  if (get_est_rate_dist(tile_data, bsize, sse, &est_residue_cost, &est_dist)) {
-    return RDCOST(rdmult, est_residue_cost + curr_cost, est_dist);
-  }
-  return 0;
-}
-
 void av1_inter_mode_data_fit(TileDataEnc *tile_data, int rdmult) {
   aom_clear_system_state();
   for (int bsize = 0; bsize < BLOCK_SIZES_ALL; ++bsize) {
@@ -2533,7 +2523,9 @@ static void PrintPredictionUnitStats(const AV1_COMP *const cpi,
   if (rd_stats->rate == INT_MAX || rd_stats->dist == INT64_MAX) return;
 
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
-  if (!tile_data->inter_mode_rd_models[plane_bsize].ready) return;
+  if (cpi->sf.inter_mode_rd_model_estimation == 1 &&
+      !tile_data->inter_mode_rd_models[plane_bsize].ready)
+    return;
 #endif
   (void)tile_data;
   // Generate small sample to restrict output size.
@@ -2611,19 +2603,21 @@ static void PrintPredictionUnitStats(const AV1_COMP *const cpi,
           model_rdcost_norm);
 
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
-  // TODO(angiebird): make sure the prediction for YUV planes are ready
-  const int64_t overall_sse = get_sse(cpi, x);
-  assert(tile_data->inter_mode_rd_models[plane_bsize].ready);
-  int est_residue_cost = 0;
-  int64_t est_dist = 0;
-  get_est_rate_dist(tile_data, plane_bsize, overall_sse, &est_residue_cost,
-                    &est_dist);
-  const double est_residue_cost_norm = (double)est_residue_cost / num_samples;
-  const double est_dist_norm = (double)est_dist / num_samples;
-  const double est_rdcost_norm =
-      (double)RDCOST(x->rdmult, est_residue_cost, est_dist) / num_samples;
-  fprintf(fout, " %g %g %g", est_residue_cost_norm, est_dist_norm,
-          est_rdcost_norm);
+  if (cpi->sf.inter_mode_rd_model_estimation == 1) {
+    assert(tile_data->inter_mode_rd_models[plane_bsize].ready);
+    const int64_t overall_sse = get_sse(cpi, x);
+    assert(tile_data->inter_mode_rd_models[plane_bsize].ready);
+    int est_residue_cost = 0;
+    int64_t est_dist = 0;
+    get_est_rate_dist(tile_data, plane_bsize, overall_sse, &est_residue_cost,
+                      &est_dist);
+    const double est_residue_cost_norm = (double)est_residue_cost / num_samples;
+    const double est_dist_norm = (double)est_dist / num_samples;
+    const double est_rdcost_norm =
+        (double)RDCOST(x->rdmult, est_residue_cost, est_dist) / num_samples;
+    fprintf(fout, " %g %g %g", est_residue_cost_norm, est_dist_norm,
+            est_rdcost_norm);
+  }
 #endif
 
   double mean = get_mean(src_diff, diff_stride, bw, bh);
@@ -9251,7 +9245,11 @@ static int64_t motion_mode_rd(
       }
     }
 
-    if (cpi->sf.model_based_motion_mode_rd_breakout) {
+    if (cpi->sf.model_based_motion_mode_rd_breakout
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+        && do_tx_search
+#endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
+    ) {
       int model_rate;
       int64_t model_dist;
       model_rd_sb_fn[MODELRD_TYPE_MOTION_MODE_RD](
@@ -9266,38 +9264,37 @@ static int64_t motion_mode_rd(
     }
 
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
-    if (cpi->sf.inter_mode_rd_model_estimation && cm->tile_cols == 1 &&
-        cm->tile_rows == 1) {
-      const InterModeRdModel *md =
-          &tile_data->inter_mode_rd_models[mbmi->sb_type];
-      if (md->ready) {
-        const int64_t curr_sse = get_sse(cpi, x);
-        const int64_t est_rd = get_est_rd(tile_data, mbmi->sb_type, x->rdmult,
-                                          curr_sse, rd_stats->rate);
-        const int est_skip = est_rd * 0.8 > *best_est_rd;
-        if (est_skip) {
-          mbmi->ref_frame[1] = ref_frame_1;
-          continue;
-        } else {
-          if (est_rd < *best_est_rd) {
-            *best_est_rd = est_rd;
-          }
-        }
-      }
-    }
-
     if (!do_tx_search) {
-      const int64_t curr_sse = get_sse(cpi, x);
+      int64_t curr_sse;
       int est_residue_cost = 0;
       int64_t est_dist = 0;
-      const int has_est_rd = get_est_rate_dist(tile_data, bsize, curr_sse,
-                                               &est_residue_cost, &est_dist);
-      (void)has_est_rd;
-      assert(has_est_rd);
+      int64_t est_rd = 0;
+      if (cpi->sf.inter_mode_rd_model_estimation == 1) {
+        curr_sse = get_sse(cpi, x);
+        const int has_est_rd = get_est_rate_dist(tile_data, bsize, curr_sse,
+                                                 &est_residue_cost, &est_dist);
+        (void)has_est_rd;
+        assert(has_est_rd);
+        est_rd = RDCOST(x->rdmult, rd_stats->rate + est_residue_cost, est_dist);
+        if (est_rd * 0.8 > *best_est_rd) {
+          mbmi->ref_frame[1] = ref_frame_1;
+          continue;
+        }
+      } else if (cpi->sf.inter_mode_rd_model_estimation == 2) {
+        model_rd_sb_fn[MODELRD_TYPE_MOTION_MODE_RD](
+            cpi, bsize, x, xd, 0, num_planes - 1, mi_row, mi_col,
+            &est_residue_cost, &est_dist, NULL, &curr_sse, NULL, NULL, NULL);
+        est_rd = RDCOST(x->rdmult, rd_stats->rate + est_residue_cost, est_dist);
+        if (est_rd * 0.75 > AOMMIN(ref_best_rd, *best_est_rd)) {
+          mbmi->ref_frame[1] = ref_frame_1;
+          continue;
+        }
+      }
       const int mode_rate = rd_stats->rate;
       rd_stats->rate += est_residue_cost;
       rd_stats->dist = est_dist;
-      rd_stats->rdcost = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
+      rd_stats->rdcost = est_rd;
+      *best_est_rd = AOMMIN(*best_est_rd, rd_stats->rdcost);
       if (cm->current_frame.reference_mode == SINGLE_REFERENCE) {
         if (!is_comp_pred) {
           inter_modes_info_push(inter_modes_info, mode_rate, curr_sse,
@@ -11974,12 +11971,11 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
   int64_t best_est_rd = INT64_MAX;
   // TODO(angiebird): Turn this on when this speed feature is well tested
-#if 1
   const InterModeRdModel *md = &tile_data->inter_mode_rd_models[bsize];
-  const int do_tx_search = !md->ready;
-#else
-  const int do_tx_search = 1;
-#endif
+  const int do_tx_search =
+      !((cpi->sf.inter_mode_rd_model_estimation == 1 && md->ready) ||
+        (cpi->sf.inter_mode_rd_model_estimation == 2 &&
+         x->source_variance < 512));
   InterModesInfo *inter_modes_info = x->inter_modes_info;
   inter_modes_info->num = 0;
 #endif
@@ -12285,8 +12281,14 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       const int data_idx = inter_modes_info->rd_idx_pair_arr[j].idx;
       *mbmi = inter_modes_info->mbmi_arr[data_idx];
       int64_t curr_est_rd = inter_modes_info->est_rd_arr[data_idx];
-      if (curr_est_rd * 0.85 > top_est_rd) {
-        continue;
+      if (cpi->sf.inter_mode_rd_model_estimation == 1) {
+        if (curr_est_rd * 0.85 > top_est_rd) break;
+      } else if (cpi->sf.inter_mode_rd_model_estimation == 2) {
+        if (x->source_variance < 256) {
+          if (curr_est_rd * 0.80 > top_est_rd) break;
+        } else {
+          if (curr_est_rd * 0.75 > top_est_rd) break;
+        }
       }
       const int mode_rate = inter_modes_info->mode_rate_arr[data_idx];
 

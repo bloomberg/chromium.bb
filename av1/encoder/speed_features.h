@@ -565,7 +565,12 @@ typedef struct SPEED_FEATURES {
   // adding a penalty of 1%
   int dual_sgr_penalty_level;
 
-  // Dynamically estimate final rd from prediction error and mode cost
+  // 2-pass inter mode model estimation where the preliminary pass skips
+  // transform search and uses a model to estimate rd, while the final pass
+  // computes the full transform search. two types of models are supported:
+  // 0: not used
+  // 1: used with online dynamic rd model
+  // 2: used with static rd model
   int inter_mode_rd_model_estimation;
 
   // Skip some ref frames in compound motion search by single motion search

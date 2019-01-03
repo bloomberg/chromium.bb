@@ -5641,7 +5641,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     }
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
     // TODO(angiebird): Let inter_mode_rd_model_estimation support multi-tile.
-    if (cpi->sf.inter_mode_rd_model_estimation && cm->tile_cols == 1 &&
+    if (cpi->sf.inter_mode_rd_model_estimation == 1 && cm->tile_cols == 1 &&
         cm->tile_rows == 1) {
       av1_inter_mode_data_fit(tile_data, x->rdmult);
     }
