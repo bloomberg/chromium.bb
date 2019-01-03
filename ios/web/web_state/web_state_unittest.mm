@@ -215,7 +215,7 @@ TEST_P(WebStateTest, Snapshot) {
   CGRect rect = [web_state()->GetView() bounds];
   base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.2));
   web_state()->TakeSnapshot(
-      rect, base::BindOnce(^(gfx::Image snapshot) {
+      rect, base::BindOnce(^(const gfx::Image& snapshot) {
         if (@available(iOS 11, *)) {
           ASSERT_FALSE(snapshot.IsEmpty());
           EXPECT_GT(snapshot.Width(), 0);

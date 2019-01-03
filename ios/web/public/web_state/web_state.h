@@ -309,7 +309,7 @@ class WebState : public base::SupportsUserData {
   virtual void SetHasOpener(bool has_opener) = 0;
 
   // Callback used to handle snapshots. The parameter is the snapshot image.
-  typedef base::OnceCallback<void(gfx::Image)> SnapshotCallback;
+  typedef base::OnceCallback<void(const gfx::Image&)> SnapshotCallback;
 
   // Takes a snapshot of this WebState with |rect|. |rect| should be specified
   // in the coordinate system of the view returned by GetView(). |callback| is

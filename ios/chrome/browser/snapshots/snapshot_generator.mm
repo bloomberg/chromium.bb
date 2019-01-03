@@ -144,7 +144,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   [_delegate snapshotGenerator:self willUpdateSnapshotForWebState:_webState];
   __weak SnapshotGenerator* weakSelf = self;
   _webState->TakeSnapshot(
-      snapshotFrame, base::BindOnce(^(gfx::Image image) {
+      snapshotFrame, base::BindOnce(^(const gfx::Image& image) {
         SnapshotGenerator* strongSelf = weakSelf;
         if (!strongSelf || !_webState)
           return;
