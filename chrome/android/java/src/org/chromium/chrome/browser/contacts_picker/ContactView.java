@@ -129,7 +129,11 @@ public class ContactView extends SelectableItemView<ContactDetails> {
 
         String displayName = contactDetails.getDisplayName();
         mDisplayName.setText(displayName);
-        mDetailsView.setText(contactDetails.getContactDetailsAsString());
+        String details = contactDetails.getContactDetailsAsString(
+                /*longVersion=*/false, mContext.getResources());
+        mDetailsView.setText(details);
+        mDetailsView.setVisibility(details.isEmpty() ? View.GONE : View.VISIBLE);
+
         if (icon == null) {
             icon = mCategoryView.getIconGenerator().generateIconForText(
                     contactDetails.getDisplayNameAbbreviation());

@@ -73,7 +73,8 @@ public class PickerAdapter extends Adapter<ContactViewHolder>
             String query_lower = query.toLowerCase(Locale.getDefault());
             for (ContactDetails contact : mContactDetails) {
                 if (contact.getDisplayName().toLowerCase(Locale.getDefault()).contains(query_lower)
-                        || contact.getContactDetailsAsString()
+                        || contact.getContactDetailsAsString(
+                                          /*longVersion=*/true, /*resources=*/null)
                                    .toLowerCase(Locale.getDefault())
                                    .contains(query_lower)) {
                     mSearchResults.add(count);

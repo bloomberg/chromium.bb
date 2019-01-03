@@ -3527,6 +3527,11 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       <message name="IDS_CONTACTS_PICKER_SELECT_CONTACT" desc="The label at the top of the dialog that allows users to select a single contact from their device and share the details with a web page.">
         Select a contact
       </message>
+      <message name="IDS_CONTACTS_PICKER_MORE_DETAILS" desc="Label describing that the user has one or more telephone/emails (used for either). The leading space is a word separator, for those languages that use space as a separator.">
+        {DETAIL_COUNT, plural,
+          =1 { (+ 1 more)}
+          other { (+ # more)}}
+      </message>
 
       <!-- Photo Picker strings -->
       <message name="IDS_DECODER_DESCRIPTION" desc="The title for the image decoder utility service.">

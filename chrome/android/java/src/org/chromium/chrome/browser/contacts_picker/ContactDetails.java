@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser.contacts_picker;
 
+import android.content.res.Resources;
 import android.support.annotation.Nullable;
 import android.util.JsonWriter;
+
+import org.chromium.chrome.R;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -80,9 +83,13 @@ public class ContactDetails implements Comparable<ContactDetails> {
     /**
      * Accessor for the list of contact details (emails and phone numbers). Returned as strings
      * separated by newline).
+     * @param longVersion Whether to get all the details (for emails and phone numbers) or only what
+     *                    will fit in the allotted space on the dialog.
+     * @param resources The resources to use for fetching the string. Must be provided if
+     *                  longVersion is false, otherwise it can be null.
      * @return A string containing all the contact details registered for this contact.
      */
-    public String getContactDetailsAsString() {
+    public String getContactDetailsAsString(boolean longVersion, @Nullable Resources resources) {
         int count = 0;
         StringBuilder builder = new StringBuilder();
         if (mEmails != null) {
@@ -91,6 +98,12 @@ public class ContactDetails implements Comparable<ContactDetails> {
                     builder.append("\n");
                 }
                 builder.append(email);
+                if (!longVersion && mEmails.size() > 1) {
+                    int size = mEmails.size() - 1;
+                    builder.append(resources.getQuantityString(
+                            R.plurals.contacts_picker_more_details, size, size));
+                    break;
+                }
             }
         }
         if (mPhoneNumbers != null) {
@@ -99,6 +112,12 @@ public class ContactDetails implements Comparable<ContactDetails> {
                     builder.append("\n");
                 }
                 builder.append(phoneNumber);
+                if (!longVersion && mPhoneNumbers.size() > 1) {
+                    int size = mPhoneNumbers.size() - 1;
+                    builder.append(resources.getQuantityString(
+                            R.plurals.contacts_picker_more_details, size, size));
+                    break;
+                }
             }
         }
 
