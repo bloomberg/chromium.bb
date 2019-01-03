@@ -52,10 +52,12 @@ public class ExploreSitesPageTest {
 
     ArrayList<ExploreSitesCategory> getTestingCatalog() {
         final ArrayList<ExploreSitesCategory> categoryList = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 5; i++) {
             ExploreSitesCategory category =
                     new ExploreSitesCategory(i, i, "Category #" + Integer.toString(i));
-            for (int j = 0; j < 8; j++) {
+            // 0th category would be filtered out. Tests that row maximums are obeyed.
+            int numSites = 4 * i + 1;
+            for (int j = 0; j < numSites; j++) {
                 ExploreSitesSite site = new ExploreSitesSite(
                         i * 8 + j, "Site #" + Integer.toString(j), "https://example.com/", false);
                 category.addSite(site);

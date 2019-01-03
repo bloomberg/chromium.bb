@@ -12,9 +12,8 @@ import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.modelutil.ListObservable;
+import org.chromium.chrome.browser.modelutil.ForwardingListObservable;
 import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
-import org.chromium.chrome.browser.modelutil.ListObservableImpl;
 import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
@@ -33,17 +32,16 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Recycler view adapter delegate for a model containing a list of category cards and an error code.
  */
-class CategoryCardAdapter extends ListObservableImpl<Void>
+class CategoryCardAdapter extends ForwardingListObservable<Void>
         implements RecyclerViewAdapter
                            .Delegate<CategoryCardViewHolderFactory.CategoryCardViewHolder, Void>,
                    PropertyObservable.PropertyObserver<PropertyKey>, ListObserver<Void> {
-    @IntDef({ViewType.HEADER, ViewType.CATEGORY, ViewType.LOADING, ViewType.ERROR})
+    @IntDef({ViewType.CATEGORY, ViewType.LOADING, ViewType.ERROR})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ViewType {
-        int HEADER = 0;
-        int CATEGORY = 1;
-        int LOADING = 2;
-        int ERROR = 3;
+        int CATEGORY = 0;
+        int LOADING = 1;
+        int ERROR = 2;
     }
 
     private final RoundedIconGenerator mIconGenerator;
@@ -75,8 +73,7 @@ class CategoryCardAdapter extends ListObservableImpl<Void>
                 != ExploreSitesPage.CatalogLoadingState.SUCCESS) {
             return 1;
         }
-        // Add 1 for title.
-        return mCategoryModel.get(ExploreSitesPage.CATEGORY_LIST_KEY).size() + 1;
+        return mCategoryModel.get(ExploreSitesPage.CATEGORY_LIST_KEY).size();
     }
 
     @Override
@@ -89,7 +86,6 @@ class CategoryCardAdapter extends ListObservableImpl<Void>
             case ExploreSitesPage.CatalogLoadingState.LOADING_NET:
                 return ViewType.LOADING;
             case ExploreSitesPage.CatalogLoadingState.SUCCESS:
-                if (position == 0) return ViewType.HEADER;
                 return ViewType.CATEGORY;
             default:
                 assert(false);
@@ -102,10 +98,8 @@ class CategoryCardAdapter extends ListObservableImpl<Void>
             int position, @Nullable Void payload) {
         if (holder.getItemViewType() == ViewType.CATEGORY) {
             ExploreSitesCategoryCardView view = (ExploreSitesCategoryCardView) holder.itemView;
-            // Position - 1 because there is always title.
-            view.setCategory(
-                    mCategoryModel.get(ExploreSitesPage.CATEGORY_LIST_KEY).get(position - 1),
-                    position - 1, mIconGenerator, mContextMenuManager, mNavDelegate, mProfile);
+            view.setCategory(mCategoryModel.get(ExploreSitesPage.CATEGORY_LIST_KEY).get(position),
+                    position, mIconGenerator, mContextMenuManager, mNavDelegate, mProfile);
         } else if (holder.getItemViewType() == ViewType.LOADING) {
             // Start spinner.
             LoadingView spinner = holder.itemView.findViewById(R.id.loading);
@@ -139,28 +133,8 @@ class CategoryCardAdapter extends ListObservableImpl<Void>
             }
         }
         if (key == ExploreSitesPage.SCROLL_TO_CATEGORY_KEY) {
-            int pos = mCategoryModel.get(ExploreSitesPage.SCROLL_TO_CATEGORY_KEY);
-            // Add 1 for title.
-            mLayoutManager.scrollToPosition(pos + 1);
+            mLayoutManager.scrollToPosition(
+                    mCategoryModel.get(ExploreSitesPage.SCROLL_TO_CATEGORY_KEY));
         }
-    }
-
-    @Override
-    public void onItemRangeInserted(ListObservable source, int index, int count) {
-        // Add 1 because of title.
-        notifyItemRangeInserted(index + 1, count);
-    }
-
-    @Override
-    public void onItemRangeRemoved(ListObservable source, int index, int count) {
-        // Add 1 because of title.
-        notifyItemRangeRemoved(index + 1, count);
-    }
-
-    @Override
-    public void onItemRangeChanged(
-            ListObservable<Void> source, int index, int count, @Nullable Void payload) {
-        // Add 1 because of title.
-        notifyItemRangeChanged(index + 1, count, payload);
     }
 }
