@@ -4,9 +4,6 @@
 
 #include "chrome/browser/chrome_browser_main_android.h"
 
-#include "base/base_switches.h"
-#include "base/command_line.h"
-#include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
@@ -17,9 +14,6 @@
 #include "chrome/browser/android/seccomp_support_detector.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/descriptors_android.h"
-#include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/content/browser/child_process_crash_observer_android.h"
 #include "components/metrics/stability_metrics_helper.h"
@@ -47,34 +41,11 @@ int ChromeBrowserMainPartsAndroid::PreCreateThreads() {
 
   int result_code = ChromeBrowserMainParts::PreCreateThreads();
 
-  // The ChildProcessCrashObserver must be registered before any child
-  // process is created (as it needs to be notified during child
-  // process creation). Such processes are created on the
-  // PROCESS_LAUNCHER thread, and so the observer is initialized and
-  // the manager registered before that thread is created.
+  // The ChildExitObserver needs to be created before any child process is
+  // created because it needs to be notified during process creation.
   crash_reporter::ChildExitObserver::Create();
-
-#if defined(GOOGLE_CHROME_BUILD)
-  // TODO(jcivelli): we should not initialize the crash-reporter when it was not
-  // enabled. Right now if it is disabled we still generate the minidumps but we
-  // do not upload them.
-  bool breakpad_enabled = true;
-#else
-  bool breakpad_enabled = false;
-#endif
-
-  // Allow Breakpad to be enabled in Chromium builds for testing purposes.
-  if (!breakpad_enabled)
-    breakpad_enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableCrashReporterForTesting);
-
-  if (breakpad_enabled) {
-    base::FilePath crash_dump_dir;
-    base::PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_dir);
-    crash_reporter::ChildExitObserver::GetInstance()->RegisterClient(
-        std::make_unique<crash_reporter::ChildProcessCrashObserver>(
-            crash_dump_dir, kAndroidMinidumpDescriptor));
-  }
+  crash_reporter::ChildExitObserver::GetInstance()->RegisterClient(
+      std::make_unique<crash_reporter::ChildProcessCrashObserver>());
 
   return result_code;
 }

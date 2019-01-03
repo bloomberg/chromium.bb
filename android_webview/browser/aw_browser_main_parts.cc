@@ -30,7 +30,6 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
-#include "components/crash/content/browser/crash_dump_manager_android.h"
 #include "components/heap_profiling/supervisor.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "components/user_prefs/user_prefs.h"
@@ -95,10 +94,9 @@ int AwBrowserMainParts::PreCreateThreads() {
   }
 
   base::FilePath crash_dir;
-  if (crash_reporter::IsCrashReporterEnabled()) {
-    if (base::PathService::Get(android_webview::DIR_CRASH_DUMPS, &crash_dir)) {
-      if (!base::PathExists(crash_dir))
-        base::CreateDirectory(crash_dir);
+  if (base::PathService::Get(android_webview::DIR_CRASH_DUMPS, &crash_dir)) {
+    if (!base::PathExists(crash_dir)) {
+      base::CreateDirectory(crash_dir);
     }
   }
 
@@ -106,7 +104,7 @@ int AwBrowserMainParts::PreCreateThreads() {
           switches::kWebViewSandboxedRenderer)) {
     // Create the renderers crash manager on the UI thread.
     ::crash_reporter::ChildExitObserver::GetInstance()->RegisterClient(
-        std::make_unique<AwBrowserTerminator>(crash_dir));
+        std::make_unique<AwBrowserTerminator>());
   }
 
   variations::InitCrashKeys();

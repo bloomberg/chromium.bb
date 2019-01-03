@@ -15,18 +15,18 @@ public final class CastCrashHandler {
     private static final String TAG = "cr_CastCrashHandler";
 
     @CalledByNative
-    public static void uploadOnce(String crashDumpPath, String uuid, String applicationFeedback,
-            boolean uploadCrashToStaging) {
+    public static void uploadOnce(String crashDumpPath, String crashReportsPath, String uuid,
+            String applicationFeedback, boolean uploadCrashToStaging) {
         CastCrashUploader uploader = CastCrashUploaderFactory.createCastCrashUploader(
-                crashDumpPath, uuid, applicationFeedback, uploadCrashToStaging);
+                crashDumpPath, crashReportsPath, uuid, applicationFeedback, uploadCrashToStaging);
         uploader.uploadOnce();
     }
 
     @CalledByNative
-    public static void removeCrashDumps(String crashDumpPath, String uuid,
+    public static void removeCrashDumps(String crashDumpPath, String crashReportsPath, String uuid,
             String applicationFeedback, boolean uploadCrashToStaging) {
         CastCrashUploader uploader = CastCrashUploaderFactory.createCastCrashUploader(
-                crashDumpPath, uuid, applicationFeedback, uploadCrashToStaging);
+                crashDumpPath, crashReportsPath, uuid, applicationFeedback, uploadCrashToStaging);
         uploader.removeCrashDumps();
     }
 }

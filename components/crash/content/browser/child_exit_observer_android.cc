@@ -129,20 +129,6 @@ void ChildExitObserver::OnChildExit(TerminationInfo* info) {
   }
 }
 
-void ChildExitObserver::BrowserChildProcessStarted(
-    int process_host_id,
-    content::PosixFileDescriptorInfo* mappings) {
-  std::vector<Client*> registered_clients_copy;
-  {
-    base::AutoLock auto_lock(registered_clients_lock_);
-    for (auto& client : registered_clients_)
-      registered_clients_copy.push_back(client.get());
-  }
-  for (auto* client : registered_clients_copy) {
-    client->OnChildStart(process_host_id, mappings);
-  }
-}
-
 void ChildExitObserver::BrowserChildProcessHostDisconnected(
     const content::ChildProcessData& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -230,12 +216,18 @@ void ChildExitObserver::Observe(int type,
       return;
   }
   const auto& iter = process_host_id_to_pid_.find(rph->GetID());
-  if (iter != process_host_id_to_pid_.end()) {
-    if (info.pid == base::kNullProcessHandle) {
-      info.pid = iter->second;
-    }
-    process_host_id_to_pid_.erase(iter);
+  // NOTIFICATION_RENDERER_PROCESS_CLOSED corresponds to death of an underlying
+  // RenderProcess. NOTIFICATION_RENDERER_PROCESS_TERMINATED corresponds to when
+  // the RenderProcessHost's lifetime is ending. Ideally, we'd only listen to
+  // the former, but if the RenderProcessHost is destroyed before the
+  // RenderProcess, then the former is never sent.
+  if (iter == process_host_id_to_pid_.end()) {
+    return;
   }
+  if (info.pid == base::kNullProcessHandle) {
+    info.pid = iter->second;
+  }
+  process_host_id_to_pid_.erase(iter);
   OnChildExit(&info);
 }
 
