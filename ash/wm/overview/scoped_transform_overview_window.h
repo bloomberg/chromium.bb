@@ -145,8 +145,6 @@ class ASH_EXPORT ScopedTransformOverviewWindow
     return window_selector_bounds_;
   }
 
-  gfx::Rect GetMaskBoundsForTesting() const;
-
   // Closes the transient root of the window managed by |this|.
   void Close();
 
@@ -184,10 +182,14 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
 
+  gfx::Rect GetMaskBoundsForTesting() const;
+
  private:
   friend class WindowSelectorTest;
   class LayerCachingAndFilteringObserver;
   class WindowMask;
+  FRIEND_TEST_ALL_PREFIXES(ScopedTransformOverviewWindowTest,
+                           WindowBoundsChangeTest);
 
   // Closes the window managed by |this|.
   void CloseWidget();

@@ -26,6 +26,7 @@
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/drop_target_view.h"
+#include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
@@ -83,11 +84,6 @@ constexpr int kWindowSelectionShadowElevation = 24;
 // The base color which is mixed with the dark muted color from wallpaper to
 // form the shield widgets color.
 constexpr SkColor kShieldBaseColor = SkColorSetARGB(179, 0, 0, 0);
-
-// In the conceptual overview table, the window margin is the space reserved
-// around the window within the cell. This margin does not overlap so the
-// closest distance between adjacent windows will be twice this amount.
-constexpr int kWindowMargin = 5;
 
 // Windows are not allowed to get taller than this.
 constexpr int kMaxHeight = 512;

@@ -1836,6 +1836,7 @@ test("ash_unittests") {
     "wm/overlay_event_filter_unittest.cc",
     "wm/overlay_layout_manager_unittest.cc",
     "wm/overview/cleanup_animation_observer_unittest.cc",
+    "wm/overview/scoped_transform_overview_window_unittest.cc",
     "wm/overview/start_animation_observer_unittest.cc",
     "wm/overview/window_selector_controller_unittest.cc",
     "wm/overview/window_selector_unittest.cc",

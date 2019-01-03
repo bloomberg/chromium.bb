@@ -25,6 +25,7 @@
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wallpaper/wallpaper_window_state_manager.h"
+#include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -1467,8 +1468,7 @@ void WallpaperController::InstallDesktopController(aura::Window* root_window) {
   const int container_id = GetWallpaperContainerId(locked_);
   float blur = login_constants::kClearBlurSigma;
   if (is_wallpaper_blurred) {
-    blur = session_blocked ? login_constants::kBlurSigma
-                           : WindowSelectorController::kWallpaperBlurSigma;
+    blur = session_blocked ? login_constants::kBlurSigma : kWallpaperBlurSigma;
   }
   RootWindowController::ForWindow(root_window)
       ->wallpaper_widget_controller()

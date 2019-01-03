@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector_controller.h"
@@ -152,8 +153,7 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
     // Blurs the wallpaper background.
     RootWindowController::ForWindow(root_window)
         ->wallpaper_widget_controller()
-        ->SetWallpaperBlur(
-            static_cast<float>(WindowSelectorController::kWallpaperBlurSigma));
+        ->SetWallpaperBlur(kWallpaperBlurSigma);
 
     // Darken the background.
     shield_widget_ = CreateBackgroundWidget(
@@ -166,7 +166,7 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
     views::View* shield_view = new views::View();
     shield_view->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
     shield_view->layer()->SetColor(WindowGrid::GetShieldColor());
-    shield_view->layer()->SetOpacity(WindowGrid::kShieldOpacity);
+    shield_view->layer()->SetOpacity(kShieldOpacity);
     shield_widget_->SetContentsView(shield_view);
   }
 
@@ -194,7 +194,7 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
     // Clears the background wallpaper blur.
     RootWindowController::ForWindow(dragged_window_->GetRootWindow())
         ->wallpaper_widget_controller()
-        ->SetWallpaperBlur(WindowSelectorController::kWallpaperClearBlurSigma);
+        ->SetWallpaperBlur(kWallpaperClearBlurSigma);
 
     // Clears the background darken widget.
     shield_widget_.reset();
