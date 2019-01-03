@@ -61,24 +61,32 @@ public class StatusView extends LinearLayout {
      * Start animating transition of status icon.
      */
     private void animateStatusIcon() {
-        Drawable sourceIcon = mIconView.getDrawable();
-
-        if (sourceIcon == null) {
-            sourceIcon = new ColorDrawable(Color.TRANSPARENT);
-        }
-
         Drawable targetIcon = null;
+
+        // Ensure no animations are pending.
+        mIconView.animate().cancel();
+
         if (mIconRes != 0 && mIconTintRes != 0) {
             targetIcon =
                     TintedDrawable.constructTintedDrawable(getContext(), mIconRes, mIconTintRes);
+            mIconView.setVisibility(View.VISIBLE);
         } else if (mIconRes != 0) {
             targetIcon = ApiCompatibilityUtils.getDrawable(getContext().getResources(), mIconRes);
+            mIconView.setVisibility(View.VISIBLE);
         } else {
             targetIcon = new ColorDrawable(Color.TRANSPARENT);
+            mIconView.animate()
+                    .setStartDelay(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS)
+                    .withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            mIconView.setVisibility(View.GONE);
+                        }
+                    });
         }
 
         TransitionDrawable newImage =
-                new TransitionDrawable(new Drawable[] {sourceIcon, targetIcon});
+                new TransitionDrawable(new Drawable[] {mIconView.getDrawable(), targetIcon});
 
         mIconView.setImageDrawable(newImage);
 
