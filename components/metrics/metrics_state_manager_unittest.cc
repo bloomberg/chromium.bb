@@ -24,7 +24,6 @@
 #include "components/metrics/metrics_switches.h"
 #include "components/metrics/test_enabled_state_provider.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/variations/caching_permuted_entropy_provider.h"
 #include "components/variations/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
