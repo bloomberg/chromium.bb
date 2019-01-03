@@ -316,10 +316,18 @@ TEST_F(BubbleBorderTest, GetBoundsOriginTest) {
     const int kBorderedContentHeight =
         kContentSize.height() + (2 * kStrokeWidth);
 
-    const int kTopHorizArrowY = kAnchor.bottom() + kStrokeWidth - kInsets.top();
-    const int kBottomHorizArrowY = kAnchor.y() - kTotalSize.height();
-    const int kLeftVertArrowX = kAnchor.x() + kAnchor.width();
-    const int kRightVertArrowX = kAnchor.x() - kTotalSize.width();
+    const int kStrokeTopInset = kStrokeWidth - kInsets.top();
+    const int kStrokeBottomInset = kStrokeWidth - kInsets.bottom();
+    const int kStrokeLeftInset = kStrokeWidth - kInsets.left();
+    const int kStrokeRightInset = kStrokeWidth - kInsets.right();
+
+    const int kTopHorizArrowY = kAnchor.bottom() + kStrokeTopInset;
+    const int kBottomHorizArrowY =
+        kAnchor.y() - kTotalSize.height() - kStrokeBottomInset;
+    const int kLeftVertArrowX =
+        kAnchor.x() + kAnchor.width() + kStrokeLeftInset;
+    const int kRightVertArrowX =
+        kAnchor.x() - kTotalSize.width() - kStrokeRightInset;
 
     struct TestCase {
       BubbleBorder::Arrow arrow;
@@ -329,22 +337,23 @@ TEST_F(BubbleBorderTest, GetBoundsOriginTest) {
 
     TestCase cases[] = {
         // Horizontal arrow tests.
-        {BubbleBorder::TOP_LEFT, kAnchor.x() + kStrokeWidth - kInsets.left(),
+        {BubbleBorder::TOP_LEFT, kAnchor.x() + kStrokeLeftInset,
          kTopHorizArrowY},
         {BubbleBorder::TOP_CENTER,
          kAnchor.CenterPoint().x() - (kTotalSize.width() / 2), kTopHorizArrowY},
         {BubbleBorder::BOTTOM_RIGHT,
-         kAnchor.x() + kAnchor.width() - kTotalSize.width() - kStrokeWidth,
+         kAnchor.x() + kAnchor.width() - kTotalSize.width() - kStrokeRightInset,
          kBottomHorizArrowY},
 
         // Vertical arrow tests.
-        {BubbleBorder::LEFT_TOP, kLeftVertArrowX, kAnchor.y() + kStrokeWidth},
-        {BubbleBorder::LEFT_CENTER,
-         kLeftVertArrowX - (kInsets.left() - kStrokeWidth),
-         kAnchor.CenterPoint().y() - (kBorderedContentHeight / 2) -
-             (kInsets.top() - kStrokeWidth)},
+        {BubbleBorder::LEFT_TOP, kLeftVertArrowX,
+         kAnchor.y() + kStrokeTopInset},
+        {BubbleBorder::LEFT_CENTER, kLeftVertArrowX,
+         kAnchor.CenterPoint().y() - (kBorderedContentHeight / 2) +
+             kStrokeTopInset},
         {BubbleBorder::RIGHT_BOTTOM, kRightVertArrowX,
-         kAnchor.y() + kAnchor.height() - kTotalSize.height() - kStrokeWidth},
+         kAnchor.y() + kAnchor.height() - kTotalSize.height() -
+             kStrokeBottomInset},
 
         // No arrow tests.
         {BubbleBorder::NONE,

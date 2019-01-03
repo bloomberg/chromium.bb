@@ -90,9 +90,7 @@ void BubbleBorder::SetCornerRadius(int corner_radius) {
 gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
                                   const gfx::Size& contents_size) const {
   // In MD, there are no arrows, so positioning logic is significantly simpler.
-  // TODO(estade): handle more anchor positions.
-  if (arrow_ == TOP_RIGHT || arrow_ == TOP_LEFT || arrow_ == BOTTOM_CENTER ||
-      arrow_ == TOP_CENTER || arrow_ == LEFT_CENTER || arrow_ == RIGHT_CENTER) {
+  if (has_arrow(arrow_)) {
     gfx::Rect contents_bounds(contents_size);
     // Apply the border part of the inset before calculating coordinates because
     // the border should align with the anchor's border. For the purposes of
@@ -107,20 +105,53 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
             : gfx::Insets(kBorderThicknessDip);
     const gfx::Insets shadow_insets = GetInsets() - border_insets;
     contents_bounds.Inset(-border_insets);
-    if (arrow_ == TOP_RIGHT) {
-      contents_bounds +=
-          anchor_rect.bottom_right() - contents_bounds.top_right();
-    } else if (arrow_ == TOP_LEFT) {
-      contents_bounds +=
-          anchor_rect.bottom_left() - contents_bounds.origin();
-    } else if (arrow_ == BOTTOM_CENTER) {
-      contents_bounds += CenterTop(anchor_rect) - CenterBottom(contents_bounds);
-    } else if (arrow_ == TOP_CENTER) {
-      contents_bounds += CenterBottom(anchor_rect) - CenterTop(contents_bounds);
-    } else if (arrow_ == LEFT_CENTER) {
-      contents_bounds += RightCenter(anchor_rect) - LeftCenter(contents_bounds);
-    } else if (arrow_ == RIGHT_CENTER) {
-      contents_bounds += LeftCenter(anchor_rect) - RightCenter(contents_bounds);
+    switch (arrow_) {
+      case TOP_LEFT:
+        contents_bounds += anchor_rect.bottom_left() - contents_bounds.origin();
+        break;
+      case TOP_RIGHT:
+        contents_bounds +=
+            anchor_rect.bottom_right() - contents_bounds.top_right();
+        break;
+      case BOTTOM_LEFT:
+        contents_bounds += anchor_rect.origin() - contents_bounds.bottom_left();
+        break;
+      case BOTTOM_RIGHT:
+        contents_bounds +=
+            anchor_rect.top_right() - contents_bounds.bottom_right();
+        break;
+      case LEFT_TOP:
+        contents_bounds += anchor_rect.top_right() - contents_bounds.origin();
+        break;
+      case RIGHT_TOP:
+        contents_bounds += anchor_rect.origin() - contents_bounds.top_right();
+        break;
+      case LEFT_BOTTOM:
+        contents_bounds +=
+            anchor_rect.bottom_right() - contents_bounds.bottom_left();
+        break;
+      case RIGHT_BOTTOM:
+        contents_bounds +=
+            anchor_rect.bottom_left() - contents_bounds.bottom_right();
+        break;
+      case TOP_CENTER:
+        contents_bounds +=
+            CenterBottom(anchor_rect) - CenterTop(contents_bounds);
+        break;
+      case BOTTOM_CENTER:
+        contents_bounds +=
+            CenterTop(anchor_rect) - CenterBottom(contents_bounds);
+        break;
+      case LEFT_CENTER:
+        contents_bounds +=
+            RightCenter(anchor_rect) - LeftCenter(contents_bounds);
+        break;
+      case RIGHT_CENTER:
+        contents_bounds +=
+            LeftCenter(anchor_rect) - RightCenter(contents_bounds);
+        break;
+      default:
+        NOTREACHED();
     }
     // With NO_ASSETS, there should be further insets, but the same logic is
     // used to position the bubble origin according to |anchor_rect|.
@@ -129,7 +160,10 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
     contents_bounds.Inset(-shadow_insets);
     // |arrow_offset_| is used to adjust bubbles that would normally be
     // partially offscreen.
-    contents_bounds += gfx::Vector2d(-arrow_offset_, 0);
+    if (is_arrow_on_horizontal(arrow_))
+      contents_bounds += gfx::Vector2d(-arrow_offset_, 0);
+    else
+      contents_bounds += gfx::Vector2d(0, -arrow_offset_);
     return contents_bounds;
   }
 
