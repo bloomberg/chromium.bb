@@ -35,24 +35,29 @@
 #include "content/public/test/blink_test_environment.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 
-class BlinkTestEnvironmentScope {
+class BlinkTestSuite : public base::TestSuite {
  public:
-  BlinkTestEnvironmentScope() { content::SetUpBlinkTestEnvironment(); }
-  ~BlinkTestEnvironmentScope() { content::TearDownBlinkTestEnvironment(); }
+  BlinkTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
+
+ private:
+  void Initialize() override {
+    base::TestSuite::Initialize();
+    content::SetUpBlinkTestEnvironment();
+    blink::ThreadState::Current()->RegisterTraceDOMWrappers(nullptr, nullptr,
+                                                            nullptr, nullptr);
+  }
+  void Shutdown() override {
+    blink::ThreadState::Current()->CollectAllGarbage();
+    content::TearDownBlinkTestEnvironment();
+    base::TestSuite::Shutdown();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(BlinkTestSuite);
 };
 
-int runHelper(base::TestSuite* testSuite) {
-  BlinkTestEnvironmentScope blinkTestEnvironment;
-  blink::ThreadState* currentThreadState = blink::ThreadState::Current();
-  currentThreadState->RegisterTraceDOMWrappers(nullptr, nullptr, nullptr,
-                                               nullptr);
-  int result = testSuite->Run();
-  currentThreadState->CollectAllGarbage();
-  return result;
-}
-
 int main(int argc, char** argv) {
-  base::TestSuite testSuite(argc, argv);
+  BlinkTestSuite testSuite(argc, argv);
   return base::LaunchUnitTests(
-      argc, argv, base::BindOnce(runHelper, base::Unretained(&testSuite)));
+      argc, argv,
+      base::BindOnce(&base::TestSuite::Run, base::Unretained(&testSuite)));
 }
