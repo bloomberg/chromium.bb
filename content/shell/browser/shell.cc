@@ -122,6 +122,12 @@ Shell::~Shell() {
     }
   }
 
+  // Always destroy WebContents before calling PlatformExit(). WebContents
+  // destruction sequence may depend on the resources destroyed in
+  // PlatformExit() (e.g. the display::Screen singleton).
+  web_contents_->SetDelegate(nullptr);
+  web_contents_.reset();
+
   if (windows_.empty()) {
     if (headless_)
       PlatformExit();
@@ -132,8 +138,6 @@ Shell::~Shell() {
     if (*g_quit_main_message_loop)
       std::move(*g_quit_main_message_loop).Run();
   }
-
-  web_contents_->SetDelegate(nullptr);
 }
 
 Shell* Shell::CreateShell(std::unique_ptr<WebContents> web_contents,
