@@ -73,6 +73,7 @@ void PagePlaceholderTabHelper::AddPlaceholder() {
   // Lazily create the placeholder view.
   if (!placeholder_view_) {
     placeholder_view_ = [[UIImageView alloc] init];
+    placeholder_view_.backgroundColor = [UIColor whiteColor];
     placeholder_view_.contentMode = UIViewContentModeScaleAspectFit;
     placeholder_view_.autoresizingMask =
         UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
