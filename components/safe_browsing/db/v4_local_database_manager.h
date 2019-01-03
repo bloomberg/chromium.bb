@@ -210,11 +210,6 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // Called when the database has been updated and schedules the next update.
   void DatabaseUpdated();
 
-  // Delete any PVer3 list files from disk because PVer3 has been deprecated.
-  // This method can be removed after the UMA metrics for the following prefix
-  // go down to 0 in Stable: "SafeBrowsing.V4UnusedStoreFileExists.V3."
-  void DeletePVer3StoreFiles();
-
   // Delete any *.store files from disk that are no longer used.
   void DeleteUnusedStoreFiles();
 
