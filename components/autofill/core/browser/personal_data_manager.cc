@@ -1009,11 +1009,11 @@ std::vector<AutofillProfile*> PersonalDataManager::GetProfiles() const {
   return result;
 }
 
-void PersonalDataManager::UpdateProfilesValidityMapsIfNeeded(
+void PersonalDataManager::UpdateProfilesServerValidityMapsIfNeeded(
     const std::vector<AutofillProfile*>& profiles) {
-  if (!profile_validities_need_update_)
+  if (!profiles_server_validities_need_update)
     return;
-  profile_validities_need_update_ = false;
+  profiles_server_validities_need_update = false;
   for (auto* profile : profiles) {
     profile->UpdateServerValidityMap(GetProfileValidityByGUID(profile->guid()));
   }
@@ -1092,7 +1092,7 @@ void PersonalDataManager::Refresh() {
   LoadProfiles();
   LoadCreditCards();
   LoadPaymentsCustomerData();
-  profile_validities_need_update_ = true;
+  profiles_server_validities_need_update = true;
 }
 
 std::vector<AutofillProfile*> PersonalDataManager::GetProfilesToSuggest()
@@ -1172,7 +1172,7 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
           min_last_used, &sorted_profiles);
     }
     // We need the updated information on the validity states of the profiles.
-    UpdateProfilesValidityMapsIfNeeded(sorted_profiles);
+    UpdateProfilesServerValidityMapsIfNeeded(sorted_profiles);
     MaybeRemoveInvalidSuggestions(type, &sorted_profiles);
   }
 
@@ -1452,7 +1452,7 @@ const ProfileValidityMap& PersonalDataManager::GetProfileValidityByGUID(
     const std::string& guid) {
   static const ProfileValidityMap& empty_validity_map = ProfileValidityMap();
   if (!synced_profile_validity_) {
-    profile_validities_need_update_ = true;
+    profiles_server_validities_need_update = true;
     synced_profile_validity_ = std::make_unique<UserProfileValidityMap>();
     if (!synced_profile_validity_->ParseFromString(
             ::autofill::prefs::GetAllProfilesValidityMapsEncodedString(
@@ -2570,7 +2570,7 @@ void PersonalDataManager::ApplyCardFixesAndCleanups() {
 
 void PersonalDataManager::ResetProfileValidity() {
   synced_profile_validity_.reset();
-  profile_validities_need_update_ = true;
+  profiles_server_validities_need_update = true;
 }
 
 }  // namespace autofill

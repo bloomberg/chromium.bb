@@ -452,7 +452,7 @@ bool AutofillManager::MaybeStartVoteUploadProcess(
   // Only upload server statistics and UMA metrics if at least some local data
   // is available to use as a baseline.
   std::vector<AutofillProfile*> profiles = personal_data_->GetProfiles();
-  personal_data_->UpdateProfilesValidityMapsIfNeeded(profiles);
+  personal_data_->UpdateProfilesServerValidityMapsIfNeeded(profiles);
   if (observed_submission && form_structure->IsAutofillable()) {
     AutofillMetrics::LogNumberOfProfilesAtAutofillableFormSubmission(
         personal_data_->GetProfiles().size());

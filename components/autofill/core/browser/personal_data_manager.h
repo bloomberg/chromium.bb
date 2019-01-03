@@ -262,7 +262,7 @@ class PersonalDataManager : public KeyedService,
   virtual PaymentsCustomerData* GetPaymentsCustomerData() const;
 
   // Updates the validity states of |profiles| according to server validity map.
-  void UpdateProfilesValidityMapsIfNeeded(
+  void UpdateProfilesServerValidityMapsIfNeeded(
       const std::vector<AutofillProfile*>& profiles);
 
   // Updates the validity states of |profiles| according to client side
@@ -618,7 +618,7 @@ class PersonalDataManager : public KeyedService,
   base::ObserverList<PersonalDataManagerObserver>::Unchecked observers_;
 
   // |profile_valditiies_need_update| whenever the profile validities are out of
-  bool profile_validities_need_update_ = true;
+  bool profiles_server_validities_need_update = true;
 
  private:
   // Saves |imported_credit_card| to the WebDB if it exists. Returns the guid of
