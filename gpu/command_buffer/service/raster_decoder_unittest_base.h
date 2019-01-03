@@ -212,9 +212,7 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
                                      GLsizei height,
                                      GLuint bound_pixel_unpack_buffer);
 
-  GLvoid* BufferOffset(unsigned i) {
-    return static_cast<int8_t*>(nullptr) + (i);
-  }
+  GLvoid* BufferOffset(unsigned i) { return reinterpret_cast<GLvoid*>(i); }
 
  protected:
   static const GLint kMaxTextureSize = 2048;
