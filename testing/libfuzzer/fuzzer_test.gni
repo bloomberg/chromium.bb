@@ -4,7 +4,6 @@
 
 # Defines fuzzer_test.
 #
-import("//build/config/coverage/coverage.gni")
 import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//testing/test.gni")
@@ -36,10 +35,6 @@ import("//testing/test.gni")
 # config (.options file) file would be generated or modified in root output
 # dir (next to test).
 template("fuzzer_test") {
-  assert(!(is_mac && use_clang_coverage && use_fuzzing_engine),
-         "Code Coverage for fuzz targets does not work on Mac until " +
-             "crbug.com/790747 is resolved.")
-
   if (!disable_libfuzzer && (use_fuzzing_engine || use_drfuzz || is_linux)) {
     assert(defined(invoker.sources), "Need sources in $target_name.")
 
