@@ -4,12 +4,14 @@
 
 #include "base/command_line.h"
 #include "base/unguessable_token.h"
+#include "build/build_config.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/media/session/mock_media_session_player_observer.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/media_content_type.h"
+#include "media/base/media_switches.h"
 #include "services/media_session/public/cpp/switches.h"
 #include "services/media_session/public/cpp/test/audio_focus_test_util.h"
 #include "services/media_session/public/cpp/test/mock_media_session.h"
@@ -106,7 +108,8 @@ class AudioFocusDelegateDefaultBrowserTest : public ContentBrowserTest {
       media_session::test::MockMediaSessionMojoObserver observer(
           *media_session);
       observer.WaitForState(
-          use_separate_group_id
+          use_separate_group_id || !base::FeatureList::IsEnabled(
+                                       media::kUseGroupedBrowserAudioFocus)
               ? media_session::mojom::MediaSessionInfo::SessionState::kSuspended
               : media_session::mojom::MediaSessionInfo::SessionState::kActive);
     }

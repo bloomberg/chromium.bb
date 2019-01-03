@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser.h"
@@ -13,6 +14,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/test_extension_dir.h"
+#include "media/base/media_switches.h"
 #include "services/media_session/public/cpp/switches.h"
 
 namespace web_app {
@@ -34,6 +36,8 @@ class WebAppAudioFocusBrowserTest : public extensions::ExtensionBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(media_session::switches::kEnableAudioFocus);
+    scoped_feature_list_.InitAndEnableFeature(
+        media::kUseGroupedBrowserAudioFocus);
   }
 
   bool IsPaused(content::WebContents* web_contents) {
@@ -74,6 +78,8 @@ class WebAppAudioFocusBrowserTest : public extensions::ExtensionBrowserTest {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(WebAppAudioFocusBrowserTest);
 };
 
