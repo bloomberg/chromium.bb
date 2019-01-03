@@ -14,7 +14,6 @@
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/cast_web_contents_manager.h"
 #include "chromecast/chromecast_buildflags.h"
-#include "chromecast/public/cast_media_shlib.h"
 #include "content/public/browser/media_capture_devices.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/navigation_handle.h"
@@ -137,10 +136,6 @@ void CastWebViewDefault::CloseContents(content::WebContents* source) {
 void CastWebViewDefault::InitializeWindow(CastWindowManager* window_manager,
                                           CastWindowManager::WindowId z_order,
                                           VisibilityPriority initial_priority) {
-  if (media::CastMediaShlib::ClearVideoPlaneImage) {
-    media::CastMediaShlib::ClearVideoPlaneImage();
-  }
-
   DCHECK(window_manager);
   window_->CreateWindowForWebContents(web_contents_.get(), window_manager,
                                       z_order, initial_priority);
