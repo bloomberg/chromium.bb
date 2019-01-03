@@ -54,7 +54,10 @@ FootnoteContainerView::FootnoteContainerView(const gfx::Insets& margins,
   SetLayoutManager(
       std::make_unique<BoxLayout>(BoxLayout::kVertical, margins, 0));
   SetCornerRadius(corner_radius);
-  SetBorder(CreateSolidSidedBorder(1, 0, 0, 0, gfx::kGoogleGrey200));
+  SetBorder(CreateSolidSidedBorder(1, 0, 0, 0,
+                                   GetNativeTheme()->SystemDarkModeEnabled()
+                                       ? gfx::kGoogleGrey900
+                                       : gfx::kGoogleGrey200));
   AddChildView(child_view);
   SetVisible(child_view->visible());
 }
