@@ -2812,6 +2812,7 @@
           '--test-launcher-batch-limit=400',
           '--deqp-egl-display-type=angle-d3d11',
         ],
+        'should_retry_with_patch': False,
         'swarming': {
           'shards': 4,
         },
@@ -2825,6 +2826,7 @@
           '--test-launcher-batch-limit=400',
           '--deqp-egl-display-type=angle-gl',
         ],
+        'should_retry_with_patch': False,
         'swarming': {
           'shards': 4,
         },
@@ -2834,6 +2836,10 @@
 
     'gpu_angle_deqp_egl_gles_tests': {
       'angle_deqp_egl_gles_tests': {
+        'android_args': [
+          '--enable-xml-result-parsing',
+          '--shard-timeout=500',
+        ],
         # Only pass the display type to desktop. The Android runner doesn't support
         # passing args to the executable but only one display type is supported on
         # Android anyways. Regardless, this test is only run on Android right now.
@@ -2841,10 +2847,7 @@
           '--test-launcher-batch-limit=400',
           '--deqp-egl-display-type=angle-gles',
         ],
-        'android_args': [
-          '--enable-xml-result-parsing',
-          '--shard-timeout=500',
-        ],
+        'should_retry_with_patch': False,
         'swarming': {
           'shards': 4,
         },
@@ -2858,6 +2861,7 @@
           '--test-launcher-batch-limit=400',
           '--deqp-egl-display-type=angle-vulkan',
         ],
+        'should_retry_with_patch': False,
         'swarming': {
           'shards': 4,
         },
@@ -2867,72 +2871,77 @@
 
     'gpu_angle_deqp_gles2_d3d11_tests': {
       'angle_deqp_gles2_d3d11_tests': {
-        'swarming': {
-          'shards': 4,
-        },
-        'test': 'angle_deqp_gles2_tests',
         'args': [
           '--test-launcher-batch-limit=400',
           '--deqp-egl-display-type=angle-d3d11',
         ],
+        'should_retry_with_patch': False,
+        'swarming': {
+          'shards': 4,
+        },
+        'test': 'angle_deqp_gles2_tests',
       },
     },
 
     'gpu_angle_deqp_gles2_gl_tests': {
       'angle_deqp_gles2_gl_tests': {
-        'swarming': {
-          'shards': 4,
-        },
-        'test': 'angle_deqp_gles2_tests',
         'args': [
           '--test-launcher-batch-limit=400',
           '--deqp-egl-display-type=angle-gl',
         ],
+        'should_retry_with_patch': False,
+        'swarming': {
+          'shards': 4,
+        },
+        'test': 'angle_deqp_gles2_tests',
       },
     },
 
     'gpu_angle_deqp_gles2_vulkan_tests': {
       'angle_deqp_gles2_vulkan_tests': {
-        'swarming': {
-          'shards': 4,
-        },
-        'test': 'angle_deqp_gles2_tests',
+        'android_args': [
+          '--enable-xml-result-parsing',
+          '--shard-timeout=500'
+        ],
         'args': [
           '--deqp-egl-display-type=angle-vulkan',
         ],
         'desktop_args': [
           '--test-launcher-batch-limit=400',
         ],
-        'android_args': [
-          '--enable-xml-result-parsing',
-          '--shard-timeout=500'
-        ],
+        'should_retry_with_patch': False,
+        'swarming': {
+          'shards': 4,
+        },
+        'test': 'angle_deqp_gles2_tests',
       },
     },
 
     'gpu_angle_deqp_gles31_d3d11_tests': {
       'angle_deqp_gles31_d3d11_tests': {
-        'swarming': {
-          'shards': 6,
-        },
-        'test': 'angle_deqp_gles31_tests',
         'args': [
           '--test-launcher-batch-limit=400',
           '--deqp-egl-display-type=angle-d3d11'
         ],
+        'should_retry_with_patch': False,
+        'swarming': {
+          'shards': 6,
+        },
+        'test': 'angle_deqp_gles31_tests',
       },
     },
 
     'gpu_angle_deqp_gles31_gl_tests': {
       'angle_deqp_gles31_gl_tests': {
-        'swarming': {
-          'shards': 6,
-        },
-        'test': 'angle_deqp_gles31_tests',
         'args': [
           '--test-launcher-batch-limit=400',
           '--deqp-egl-display-type=angle-gl'
         ],
+        'should_retry_with_patch': False,
+        'swarming': {
+          'shards': 6,
+        },
+        'test': 'angle_deqp_gles31_tests',
       },
     },
 
@@ -2941,52 +2950,58 @@
       # Temporarily disabled on AMD Win 7 to prevent a recipe engine crash.
       # TODO(jmadill): Re-enable there when http://crbug.com/713196 is fixed.
       'angle_deqp_gles3_d3d11_tests': {
-        'swarming': {
-          'shards': 12,
-        },
-        'test': 'angle_deqp_gles3_tests',
         'args': [
           '--test-launcher-batch-limit=400',
           '--deqp-egl-display-type=angle-d3d11',
         ],
+        'should_retry_with_patch': False,
+        'swarming': {
+          'shards': 12,
+        },
+        'test': 'angle_deqp_gles3_tests',
       },
     },
 
     'gpu_angle_deqp_gles3_gl_tests': {
       'angle_deqp_gles3_gl_tests': {
-        'swarming': {
-          'shards': 12,
-        },
-        'test': 'angle_deqp_gles3_tests',
         'args': [
           '--test-launcher-batch-limit=400',
           '--deqp-egl-display-type=angle-gl',
         ],
+        'should_retry_with_patch': False,
+        'swarming': {
+          'shards': 12,
+        },
+        'test': 'angle_deqp_gles3_tests',
       },
     },
 
     'gpu_angle_deqp_gles_gtests': {
       'angle_deqp_gles2_gles_tests': {
-        'swarming': {
-          'shards': 4,
-        },
-        'test': 'angle_deqp_gles2_tests',
+        'android_args': [
+          '--enable-xml-result-parsing',
+          '--shard-timeout=500'
+        ],
         'args': [
           '--deqp-egl-display-type=angle-gles'
         ],
         'desktop_args': [
           '--test-launcher-batch-limit=400',
         ],
+        'should_retry_with_patch': False,
+        'swarming': {
+          'shards': 4,
+        },
+        'test': 'angle_deqp_gles2_tests',
+      },
+      'angle_deqp_gles3_gles_tests': {
         'android_args': [
           '--enable-xml-result-parsing',
           '--shard-timeout=500'
         ],
-      },
-      'angle_deqp_gles3_gles_tests': {
-        'swarming': {
-          'shards': 12,
-        },
-        'test': 'angle_deqp_gles3_tests',
+        'args': [
+          '--deqp-egl-display-type=angle-gles'
+        ],
         # Only pass the display type to desktop. The Android runner doesn't support
         # passing args to the executable but only one display type is supported on
         # Android anyways.
@@ -2994,10 +3009,11 @@
           '--test-launcher-batch-limit=400',
           '--deqp-egl-display-type=angle-gles'
         ],
-        'android_args': [
-          '--enable-xml-result-parsing',
-          '--shard-timeout=500'
-        ],
+        'should_retry_with_patch': False,
+        'swarming': {
+          'shards': 12,
+        },
+        'test': 'angle_deqp_gles3_tests',
       },
     },
 
@@ -3009,6 +3025,7 @@
           # http://crbug.com/669196
           '--test-launcher-retry-limit=0'
         ],
+        'should_retry_with_patch': False,
         'swarming': {
           'shards': 4,
         },
@@ -3018,23 +3035,25 @@
     'gpu_angle_fyi_and_optional_win_specific_isolated_scripts': {
       # TODO(jmadill): Run on Linux bots when possible.
       'passthrough_command_buffer_perftests': {
-        'isolate_name': 'command_buffer_perftests',
         'args': [
           '-v',
           '--use-cmd-decoder=passthrough',
           '--use-angle=gl-null',
           '--fast-run',
         ],
+        'isolate_name': 'command_buffer_perftests',
+        'should_retry_with_patch': False,
       },
       # TODO(jmadill): Run on Linux bots when possible.
       'validating_command_buffer_perftests': {
-        'isolate_name': 'command_buffer_perftests',
         'args': [
           '-v',
           '--use-cmd-decoder=validating',
           '--use-stub',
           '--fast-run',
         ],
+        'isolate_name': 'command_buffer_perftests',
+        'should_retry_with_patch': False,
       },
     },
 
@@ -3047,6 +3066,7 @@
           '--test-launcher-retry-limit=0'
         ],
         'linux_args': ['--no-xvfb'],
+        'should_retry_with_patch': False,
       },
     },
 
@@ -3060,6 +3080,7 @@
           # http://crbug.com/669196
         '--test-launcher-retry-limit=0'
         ],
+        'should_retry_with_patch': False,
       },
     },
 
