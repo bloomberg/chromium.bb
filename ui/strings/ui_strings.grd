@@ -589,7 +589,7 @@ need to be translated for each locale.-->
       <message name="IDS_APP_COMMA_KEY" desc="Comma key">
         Comma
       </message>
-      <message name="IDS_APP_PERIOD_KEY" desc="Period key">
+      <message name="IDS_APP_PERIOD_KEY" desc="Period key, which is used to denote the end of a sentence (and not an interval of time).">
         Period
       </message>
       <message name="IDS_APP_MEDIA_NEXT_TRACK_KEY" desc="Media next track key">
