@@ -414,6 +414,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   render_passes_in_draw_order->clear();
   render_pass_filters_.clear();
   render_pass_backdrop_filters_.clear();
+  render_pass_backdrop_filter_bounds_.clear();
 
   current_frame_valid_ = false;
 }
