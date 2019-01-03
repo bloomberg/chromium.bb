@@ -76,20 +76,19 @@ public class ExploreSitesSection {
         List<ExploreSitesCategory> categoryList = new ArrayList<>();
 
         // News category.
-        ExploreSitesCategory category =
-                new ExploreSitesCategory(-1 /* category_id */, CategoryType.NEWS,
-                        getContext().getString(R.string.explore_sites_default_category_news));
+        ExploreSitesCategory category = ExploreSitesCategory.createPlaceholder(CategoryType.NEWS,
+                getContext().getString(R.string.explore_sites_default_category_news));
         category.setDrawable(getVectorDrawable(R.drawable.ic_article_blue_24dp));
         categoryList.add(category);
 
         // Shopping category.
-        category = new ExploreSitesCategory(-1 /* category_id */, CategoryType.SHOPPING,
+        category = ExploreSitesCategory.createPlaceholder(CategoryType.SHOPPING,
                 getContext().getString(R.string.explore_sites_default_category_shopping));
         category.setDrawable(getVectorDrawable(R.drawable.ic_shopping_basket_blue_24dp));
         categoryList.add(category);
 
         // Sport category.
-        category = new ExploreSitesCategory(-1 /* category_id */, CategoryType.SPORT,
+        category = ExploreSitesCategory.createPlaceholder(CategoryType.SPORT,
                 getContext().getString(R.string.explore_sites_default_category_sports));
         category.setDrawable(getVectorDrawable(R.drawable.ic_directions_run_blue_24dp));
         categoryList.add(category);
@@ -98,8 +97,8 @@ public class ExploreSitesSection {
     }
 
     private ExploreSitesCategory createMoreTileCategory() {
-        ExploreSitesCategory category = new ExploreSitesCategory(-1 /* category_id */,
-                ExploreSitesCategory.MORE_BUTTON_ID, getContext().getString(R.string.more));
+        ExploreSitesCategory category = ExploreSitesCategory.createPlaceholder(
+                CategoryType.MORE_BUTTON, getContext().getString(R.string.more));
         category.setDrawable(getVectorDrawable(R.drawable.ic_arrow_forward_blue_24dp));
         return category;
     }
@@ -147,8 +146,7 @@ public class ExploreSitesSection {
             ExploreSitesCategoryTileView v =
                     (ExploreSitesCategoryTileView) mExploreSection.getChildAt(i);
             ExploreSitesCategory category = v.getCategory();
-            if (category == null || category.getType() == ExploreSitesCategory.MORE_BUTTON_ID)
-                continue;
+            if (category == null || category.isMoreButton()) continue;
             viewTypes.put(category.getType(), v);
         }
 

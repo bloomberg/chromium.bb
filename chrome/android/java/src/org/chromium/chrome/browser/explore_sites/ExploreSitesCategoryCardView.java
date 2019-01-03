@@ -89,10 +89,9 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
             // Remove from model (category).
             mCategory.removeSite(mTileIndex);
 
-            // Update the view This may add any sites that we didn't have room for before.  It
-            // should reset the tile indexeds for views we keep.
-            updateTileViews(
-                    mCategory.getSites(), mCategory.getNumDisplayed(), mCategory.getMaxRows());
+            // Update the view. This may add sites that we didn't have room for before.  It
+            // should reset the tile indexes for views we keep.
+            updateTileViews(mCategory);
         }
         @Override
         public String getUrl() {
@@ -160,14 +159,14 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
         mCategory = category;
 
         updateTitle(category.getTitle());
-        updateTileViews(category.getSites(), category.getNumDisplayed(), category.getMaxRows());
+        updateTileViews(category);
     }
 
     public void updateTitle(String categoryTitle) {
         mTitleView.setText(categoryTitle);
     }
 
-    public void updateTileViews(List<ExploreSitesSite> sites, int numSitesToShow, int maxRows) {
+    public void updateTileViews(ExploreSitesCategory category) {
         // Clear observers.
         for (PropertyModelChangeProcessor<PropertyModel, ExploreSitesTileView, PropertyKey>
                         observer : mModelChangeProcessors) {
@@ -177,11 +176,12 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
 
         // Only show rows that would be fully populated by original list of sites. This is
         // calculated within the category.
-        mTileView.setMaxRows(maxRows);
+        mTileView.setMaxRows(Math.min(category.getMaxRows(), MAX_ROWS));
 
         // Maximum number of sites that can be shown, defined as min of
         // numSitesToShow and maxRows * maxCols.
-        int tileMax = Math.min(maxRows * ExploreSitesCategory.MAX_COLUMNS, numSitesToShow);
+        int tileMax = Math.min(category.getMaxRows() * ExploreSitesCategory.MAX_COLUMNS,
+                category.getNumDisplayed());
 
         // Remove extra tiles if too many.
         if (mTileView.getChildCount() > tileMax) {
@@ -199,7 +199,7 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
 
         // Initialize all the non-empty tiles again to update.
         int tileIndex = 0;
-        for (ExploreSitesSite site : sites) {
+        for (ExploreSitesSite site : category.getSites()) {
             if (tileIndex >= tileMax) break;
             final PropertyModel siteModel = site.getModel();
             // Skip blacklisted sites.

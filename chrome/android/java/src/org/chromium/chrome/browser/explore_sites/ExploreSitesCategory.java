@@ -23,21 +23,24 @@ import java.util.List;
  */
 public class ExploreSitesCategory {
     private static final String TAG = "ExploreSitesCategory";
-    // The ID to use when creating the More button, that should not scroll the ESP when clicked.
-    public static final int MORE_BUTTON_ID = -1;
+    // The ID to use when creating placeholder icons on the NTP when there is no data or the More
+    // button.
+    private static final int PLACEHOLDER_ID = -1;
 
     static final int MAX_COLUMNS = 4;
 
     // This enum must match the numbering for ExploreSites.CategoryClick in histograms.xml.  Do not
     // reorder or remove items, only add new items before COUNT.
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({CategoryType.DEFAULT, CategoryType.SOCIAL, CategoryType.ENTERTAINMENT,
-            CategoryType.SPORT, CategoryType.NEWS, CategoryType.SHOPPING, CategoryType.REFERENCE,
-            CategoryType.BANKING, CategoryType.GOVERNMENT, CategoryType.TRAVEL,
-            CategoryType.EDUCATION, CategoryType.JOBS, CategoryType.APPS_GAMES,
-            CategoryType.FAVORITE, CategoryType.GOOGLE, CategoryType.FOOD, CategoryType.HEALTH,
-            CategoryType.BOOKS, CategoryType.TECHNOLOGY, CategoryType.SCIENCE, CategoryType.COUNT})
+    @IntDef({CategoryType.MORE_BUTTON, CategoryType.DEFAULT, CategoryType.SOCIAL,
+            CategoryType.ENTERTAINMENT, CategoryType.SPORT, CategoryType.NEWS,
+            CategoryType.SHOPPING, CategoryType.REFERENCE, CategoryType.BANKING,
+            CategoryType.GOVERNMENT, CategoryType.TRAVEL, CategoryType.EDUCATION, CategoryType.JOBS,
+            CategoryType.APPS_GAMES, CategoryType.FAVORITE, CategoryType.GOOGLE, CategoryType.FOOD,
+            CategoryType.HEALTH, CategoryType.BOOKS, CategoryType.TECHNOLOGY, CategoryType.SCIENCE,
+            CategoryType.COUNT})
     public @interface CategoryType {
+        int MORE_BUTTON = -1; // This is not included in histograms.xml.
         int DEFAULT = 0;
         int SOCIAL = 1;
         int ENTERTAINMENT = 2;
@@ -60,6 +63,11 @@ public class ExploreSitesCategory {
         int SCIENCE = 19;
         // This must always be one higher than the last category number.
         int COUNT = 20;
+    }
+
+    public static ExploreSitesCategory createPlaceholder(
+            @CategoryType int categoryType, String title) {
+        return new ExploreSitesCategory(PLACEHOLDER_ID, categoryType, title);
     }
 
     private int mCategoryId;
@@ -95,7 +103,11 @@ public class ExploreSitesCategory {
     }
 
     public boolean isPlaceholder() {
-        return mCategoryId == -1;
+        return mCategoryId == PLACEHOLDER_ID;
+    }
+
+    public boolean isMoreButton() {
+        return mCategoryType == CategoryType.MORE_BUTTON;
     }
 
     public String getTitle() {
