@@ -73,6 +73,7 @@ class SmbService : public KeyedService,
                        const base::FilePath& share_path,
                        bool is_kerberos_chromad,
                        bool should_open_file_manager_after_mount,
+                       bool has_credentials,
                        smbprovider::ErrorType error,
                        int32_t mount_id);
 
