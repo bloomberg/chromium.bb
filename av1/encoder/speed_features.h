@@ -264,6 +264,12 @@ enum {
   DIST_WTD_COMP_DISABLED,
 } UENUM1BYTE(DIST_WTD_COMP_FLAG);
 
+typedef enum {
+  FLAG_SKIP_EIGHTTAP = 1 << EIGHTTAP_REGULAR,
+  FLAG_SKIP_EIGHTTAP_SMOOTH = 1 << EIGHTTAP_SMOOTH,
+  FLAG_SKIP_EIGHTTAP_SHARP = 1 << MULTITAP_SHARP,
+} INTERP_FILTER_MASK;
+
 typedef struct SPEED_FEATURES {
   MV_SPEED_FEATURES mv;
 
@@ -631,6 +637,12 @@ typedef struct SPEED_FEATURES {
   int simple_motion_search_prune_rect;
 
   int cb_pred_filter_search;
+
+  // adaptive interp_filter search to allow skip of certain filter types.
+  int adaptive_interp_filter_search;
+
+  // mask for skip evaluation of certain interp_filter type.
+  INTERP_FILTER_MASK interp_filter_search_mask;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

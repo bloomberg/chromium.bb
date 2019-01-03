@@ -5092,6 +5092,36 @@ static INLINE int is_frame_droppable(AV1_COMP *cpi) {
            cpi->refresh_last_frame);
 }
 
+static int setup_interp_filter_search_mask(AV1_COMP *cpi) {
+  InterpFilters ifilter;
+  int ref_total[REF_FRAMES] = { 0 };
+  MV_REFERENCE_FRAME ref;
+  int mask = 0;
+  int arf_idx = ALTREF_FRAME;
+  if (cpi->common.last_frame_type == KEY_FRAME || cpi->refresh_alt_ref_frame)
+    return mask;
+  for (ref = LAST_FRAME; ref <= ALTREF_FRAME; ++ref)
+    for (ifilter = EIGHTTAP_REGULAR; ifilter <= MULTITAP_SHARP; ++ifilter)
+      ref_total[ref] += cpi->interp_filter_selected[ref][ifilter];
+
+  for (ifilter = EIGHTTAP_REGULAR; ifilter <= MULTITAP_SHARP; ++ifilter) {
+    if ((ref_total[LAST_FRAME] &&
+         cpi->interp_filter_selected[LAST_FRAME][ifilter] * 30 <=
+             ref_total[LAST_FRAME]) &&
+        (((cpi->interp_filter_selected[LAST2_FRAME][ifilter] * 20) +
+          (cpi->interp_filter_selected[LAST3_FRAME][ifilter] * 20) +
+          (cpi->interp_filter_selected[GOLDEN_FRAME][ifilter] * 20) +
+          (cpi->interp_filter_selected[BWDREF_FRAME][ifilter] * 10) +
+          (cpi->interp_filter_selected[ALTREF2_FRAME][ifilter] * 10) +
+          (cpi->interp_filter_selected[arf_idx][ifilter] * 10)) <
+         (ref_total[LAST2_FRAME] + ref_total[LAST3_FRAME] +
+          ref_total[GOLDEN_FRAME] + ref_total[BWDREF_FRAME] +
+          ref_total[ALTREF2_FRAME] + ref_total[ALTREF_FRAME])))
+      mask |= 1 << ifilter;
+  }
+  return mask;
+}
+
 static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
                                      int skip_adapt,
                                      unsigned int *frame_flags) {
@@ -5125,6 +5155,10 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   // Reset the frame packet stamp index.
   if (current_frame->frame_type == KEY_FRAME && cm->show_frame)
     current_frame->frame_number = 0;
+
+  cm->last_frame_type = current_frame->frame_type;
+  if (cpi->oxcf.pass == 2 && cpi->sf.adaptive_interp_filter_search)
+    cpi->sf.interp_filter_search_mask = setup_interp_filter_search_mask(cpi);
 
   // NOTE:
   // (1) Move the setup of the ref_frame_flags upfront as it would be
@@ -5420,6 +5454,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     cpi->frame_flags |= FRAMEFLAGS_BWDREF;
   else
     cpi->frame_flags &= ~FRAMEFLAGS_BWDREF;
+  cm->last_frame_type = current_frame->frame_type;
 
   av1_rc_postencode_update(cpi, *size);
 

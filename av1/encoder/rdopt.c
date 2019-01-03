@@ -8251,6 +8251,10 @@ static INLINE void find_best_non_dual_interp_filter(
     for (i = filter_set_size - 1; i > 0; i -= (SWITCHABLE_FILTERS + 1)) {
       // This assert tells that (filter_x == filter_y) for non-dual filter case
       assert((filter_sets[i] & 0xffff) == (filter_sets[i] >> 16));
+      if (cpi->sf.adaptive_interp_filter_search &&
+          (cpi->sf.interp_filter_search_mask & (1 << (i >> 2)))) {
+        continue;
+      }
       interpolation_filter_rd(x, cpi, tile_data, bsize, mi_row, mi_col,
                               orig_dst, rd, switchable_rate, skip_txfm_sb,
                               skip_sse_sb, dst_bufs, i, switchable_ctx,
@@ -8263,6 +8267,10 @@ static INLINE void find_best_non_dual_interp_filter(
          i += (SWITCHABLE_FILTERS + 1)) {
       // This assert tells that (filter_x == filter_y) for non-dual filter case
       assert((filter_sets[i] & 0xffff) == (filter_sets[i] >> 16));
+      if (cpi->sf.adaptive_interp_filter_search &&
+          (cpi->sf.interp_filter_search_mask & (1 << (i >> 2)))) {
+        continue;
+      }
       interpolation_filter_rd(x, cpi, tile_data, bsize, mi_row, mi_col,
                               orig_dst, rd, switchable_rate, skip_txfm_sb,
                               skip_sse_sb, dst_bufs, i, switchable_ctx,

@@ -290,6 +290,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->use_dist_wtd_comp_flag = DIST_WTD_COMP_DISABLED;
     sf->prune_comp_type_by_comp_avg = 2;
     sf->cb_pred_filter_search = 0;
+    sf->adaptive_interp_filter_search = 1;
   }
 
   if (speed >= 3) {
@@ -501,6 +502,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->intra_angle_estimation = 0;
   sf->skip_obmc_in_uniform_mv_field = 0;
   sf->skip_wm_in_uniform_mv_field = 0;
+  sf->adaptive_interp_filter_search = 0;
 
   for (i = 0; i < TX_SIZES; i++) {
     sf->intra_y_mode_mask[i] = INTRA_ALL;

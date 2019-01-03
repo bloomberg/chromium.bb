@@ -373,6 +373,7 @@ typedef struct AV1Common {
   // Prepare ref_frame_map for the next frame.
   // Only used in frame parallel decode.
   RefCntBuffer *next_ref_frame_map[REF_FRAMES];
+  FRAME_TYPE last_frame_type; /* last frame's frame type for motion search.*/
 
   int show_frame;
   int showable_frame;  // frame can be used as show existing frame in future

@@ -4801,6 +4801,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                        "No sequence header");
   }
 
+  cm->last_frame_type = current_frame->frame_type;
+
   if (seq_params->reduced_still_picture_hdr) {
     cm->show_existing_frame = 0;
     cm->show_frame = 1;
