@@ -11,6 +11,7 @@
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/snapshots/snapshot_generator.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 
@@ -53,10 +54,6 @@ void SnapshotTabHelper::CreateForWebState(web::WebState* web_state,
 
 void SnapshotTabHelper::SetDelegate(id<SnapshotGeneratorDelegate> delegate) {
   snapshot_generator_.delegate = delegate;
-}
-
-CGSize SnapshotTabHelper::GetSnapshotSize() const {
-  return [snapshot_generator_ snapshotSize];
 }
 
 void SnapshotTabHelper::RetrieveColorSnapshot(void (^callback)(UIImage*)) {
