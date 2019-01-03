@@ -309,8 +309,6 @@ Guide](https://google.github.io/styleguide/jsguide.html).
 * Use single-quotes instead of double-quotes for all strings.
     * `clang-format` now handles this automatically.
 
-* Omit curly braces for single-line if statements.
-
 * Use ES5 getters and setters
     * Use `@type` (instead of `@return` or `@param`) for JSDoc annotations on
       getters/setters
