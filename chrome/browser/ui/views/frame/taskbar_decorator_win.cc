@@ -18,6 +18,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkFont.h"
 #include "third_party/skia/include/core/SkImageEncoder.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkRRect.h"
@@ -126,22 +127,25 @@ void DrawTaskbarDecorationString(gfx::NativeWindow window,
   canvas.drawCircle(kRadius, kRadius, kRadius, paint);
 
   paint.reset();
-  paint.setAntiAlias(true);
   paint.setColor(kForegroundColor);
+
+  SkFont font;
 
   SkRect bounds;
   int text_size = kMaxTextSize;
   // Find the largest |text_size| larger than |kMinTextSize| in which
   // |content| fits into our 16x16px icon, with margins.
   do {
-    paint.setTextSize(text_size--);
-    paint.measureText(content.c_str(), content.size(), &bounds);
+    font.setSize(text_size--);
+    font.measureText(content.c_str(), content.size(), kUTF8_SkTextEncoding,
+                     &bounds);
   } while (text_size >= kMinTextSize &&
            (bounds.width() > kMaxBounds || bounds.height() > kMaxBounds));
 
-  canvas.drawText(content.c_str(), content.size(),
-                  kRadius - bounds.width() / 2 - bounds.x(),
-                  kRadius - bounds.height() / 2 - bounds.y(), paint);
+  canvas.drawSimpleText(content.c_str(), content.size(), kUTF8_SkTextEncoding,
+                        kRadius - bounds.width() / 2 - bounds.x(),
+                        kRadius - bounds.height() / 2 - bounds.y(), font,
+                        paint);
 
   PostSetOverlayIcon(hwnd, std::move(badge));
 }
