@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_CHROMEOS_TEST_UTILS_H_
-#define CHROMEOS_CHROMEOS_TEST_UTILS_H_
+#ifndef CHROMEOS_TEST_CHROMEOS_TEST_UTILS_H_
+#define CHROMEOS_TEST_CHROMEOS_TEST_UTILS_H_
 
 #include <string>
 
@@ -22,4 +22,4 @@ bool GetTestDataPath(const std::string& component,
 }  // namespace test_utils
 }  // namespace chromeos
 
-#endif  // CHROMEOS_CHROMEOS_TEST_UTILS_H_
+#endif  // CHROMEOS_TEST_CHROMEOS_TEST_UTILS_H_

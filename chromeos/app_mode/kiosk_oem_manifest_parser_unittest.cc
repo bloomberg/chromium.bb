@@ -4,7 +4,7 @@
 
 #include "chromeos/app_mode/kiosk_oem_manifest_parser.h"
 
-#include "chromeos/chromeos_test_utils.h"
+#include "chromeos/test/chromeos_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/chromeos_test_utils.h"
+#include "chromeos/test/chromeos_test_utils.h"
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
