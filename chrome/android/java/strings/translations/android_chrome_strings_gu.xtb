@@ -40,6 +40,7 @@
 <translation id="1259100630977430756">તમે ખાનગી ટૅબમાં જુઓ છો તે પેજ તમે તમારા બધા ખાનગી ટૅબ બંધ કરી દો તે પછી તમારા બ્રાઉઝરના ઇતિહાસમાં, કુકીના સંગ્રહમાં અથવા શોધ ઇતિહાસમાં રહેશે નહીં. તમે ડાઉનલોડ કરો તે કોઈપણ ફાઇલ અથવા તમે બનાવો તે બુકમાર્ક રાખવામાં આવશે.
 
 જો કે, તમે અદૃશ્ય હોતા નથી. ખાનગી મોડમાં રહેવાથી તમારું બ્રાઉઝિંગ કંપનીથી, તમારા ઇન્ટરનેટ સેવા પ્રદાતાથી અથવા તમે મુલાકાત લો છો તે વેબસાઇટથી છૂપું રહેતું નથી.</translation>
+<translation id="1260236875608242557">શોધો તેમજ શોધખોળ કરો</translation>
 <translation id="1264974993859112054">રમત-ગમત</translation>
 <translation id="127138278192656016">સિંક અને બધી સેવાઓનો ઉપયોગ કરો</translation>
 <translation id="1272079795634619415">રોકો</translation>
@@ -201,6 +202,7 @@
 <translation id="2450083983707403292">શું તમે <ph name="FILE_NAME" />ને ફરી ડાઉનલોડ કરવાનું શરૂ કરવા માગો છો?</translation>
 <translation id="2476578072172137802">સાઇટ સેટિંગ્સ</translation>
 <translation id="2482878487686419369">સૂચનાઓ</translation>
+<translation id="2494974097748878569">Chromeમાં Google આસિસ્ટંટ</translation>
 <translation id="2496180316473517155">બ્રાઉઝિંગ ઇતિહાસ</translation>
 <translation id="2498359688066513246">સહાય અને પ્રતિસાદ</translation>
 <translation id="2501278716633472235">પાછા જાઓ</translation>
@@ -407,6 +409,7 @@
 <translation id="4195643157523330669">નવા ટૅબમાં ખોલો</translation>
 <translation id="4198423547019359126">કોઈ ડાઉનલોડ સ્થાનો ઉપલબ્ધ નથી</translation>
 <translation id="4209895695669353772">Google દ્વારા સૂચવેલ વ્યક્તિગત કરેલ કન્ટેન્ટ મેળવવા માટે, સિંક કરવાનું ચાલુ કરો</translation>
+<translation id="4222812745228723705">આગળ વધીને, તમે સંમત થાઓ છો કે આ સેવા પૂરી પાડવા માટે, Chromeનો આપમેળે ભરાવાનો ડેટા, સાઇટની URL અને તેનું કન્ટેન્ટ Chrome, Googleને મોકલશે. Chrome અને Chromeની આપમેળે ભરાવાની સુવિધામાં Google આસિસ્ટંટને બંધ કરવા માટે Chrome સેટિંગની મુલાકાત લો. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">કોઈ કન્ટેન્ટ મળ્યું નથી</translation>
 <translation id="4226663524361240545">સૂચનાઓ ઉપકરણને વાઇબ્રેટ કરી શકે છે</translation>
 <translation id="423219824432660969"><ph name="TIME" /> પ્રમાણે Google પાસવર્ડ વડે સિંક કરેલા ડેટાને એન્ક્રિપ્ટ કરો</translation>
@@ -689,6 +692,7 @@
 <translation id="6277522088822131679">પૃષ્ઠને છાપવામાં સમસ્યા હતી. કૃપા કરીને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="6295158916970320988">બધી સાઇટ્સ</translation>
 <translation id="629730747756840877">એકાઉન્ટ</translation>
+<translation id="6302269476990306341">Chromeમાં Google આસિસ્ટંટ રોકાઈ રહ્યું છે</translation>
 <translation id="6303969859164067831">સાઇન આઉટ કરો અને સિંક બંધ કરો</translation>
 <translation id="6316139424528454185">Android વર્ઝન અસમર્થિત છે</translation>
 <translation id="6320088164292336938">વાઇબ્રેટ</translation>
@@ -700,6 +704,7 @@
 <translation id="6343192674172527289">કોઈ ડાઉનલોડ મળ્યાં નથી</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 અને વધુ <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 અને વધુ <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 અને વધુ <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
 <translation id="6364438453358674297">ઇતિહાસમાંથી સૂચનને દૂર કરીએ?</translation>
+<translation id="6369229450655021117">અહીંથી, તમે વેબમાં શોધી શકશો, મિત્રો સાથે શેર કરી શકશો અને ખુલ્લા પેજ પણ જોઈ શકશો</translation>
 <translation id="6378173571450987352">વિગતો: વપરાયેલ ડેટાની માત્રા દ્વારા સૉર્ટ કરાયેલ</translation>
 <translation id="6383961787135158834">સાઇટ સ્ટોરેજ સાફ કરો…</translation>
 <translation id="6388207532828177975">સાફ કરો અને ફરીથી સેટ કરો</translation>
@@ -825,6 +830,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" />ની પસંદગી કરી</translation>
 <translation id="7253272406652746122">તમારા ડિવાઇસની સેટિંગ ઍપ્લિકેશનમાં એકાઉન્ટ પેજમાંથી Google એકાઉન્ટ ઉમેરો.</translation>
 <translation id="7274013316676448362">અવરોધિત સાઇટ</translation>
+<translation id="7291387454912369099">આસિસ્ટંટે ચેકઆઉટ ટ્રિગર કર્યું</translation>
 <translation id="729975465115245577">તમારા ઉપકરણ પાસે પાસવર્ડ ફાઇલને સ્ટોર કરવા માટેની ઍપ નથી.</translation>
 <translation id="7302081693174882195">વિગતો: સાચવેલ ડેટાની માત્રા દ્વારા સૉર્ટ કરેલ</translation>
 <translation id="7333031090786104871">હજીપણ પાછલી સાઇટ ઉમેરી રહ્યાં છે</translation>

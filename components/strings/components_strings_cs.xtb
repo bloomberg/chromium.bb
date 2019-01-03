@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">neznámé jméno</translation>
 <translation id="1050038467049342496">Zavřete ostatní aplikace</translation>
 <translation id="1055184225775184556">&amp;Vrátit přidání zpět</translation>
+<translation id="1058479211578257048">Ukládání karet...</translation>
 <translation id="10614374240317010">Nikdy se neukládají</translation>
 <translation id="1066396345355680611">Můžete ztratit přístup k chráněnému obsahu z webu <ph name="SITE" /> a některých dalších webů.</translation>
 <translation id="106701514854093668">Záložky v PC</translation>
@@ -598,6 +599,7 @@
 <translation id="4989163558385430922">Zobrazit vše</translation>
 <translation id="4989809363548539747">Tento plugin není podporován</translation>
 <translation id="5002932099480077015">Pokud je tato možnost aktivována, Chrome do zařízení uloží kopii karty za účelem rychlejšího vyplňování formulářů.</translation>
+<translation id="5014174725590676422">Je zobrazena obrazovka prvního spuštění Asistenta Google v Chromu</translation>
 <translation id="5015510746216210676">Název počítače:</translation>
 <translation id="5018422839182700155">Tuto stránku nelze otevřít</translation>
 <translation id="5019198164206649151">Záložní úložiště je ve špatném stavu</translation>
@@ -709,6 +711,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5720705177508910913">Aktuální uživatel</translation>
 <translation id="5730040223043577876">Pokud jste heslo použili na jiném webu, doporučujeme vám ho resetovat.</translation>
 <translation id="5732392974455271431">Rodiče ti jej mohou odblokovat.</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{Uložit kartu do účtu Google}few{Uložit karty do účtu Google}many{Uložit karty do účtu Google}other{Uložit karty do účtu Google}}</translation>
 <translation id="5763042198335101085">Zadejte platnou e-mailovou adresu</translation>
 <translation id="5765072501007116331">Chcete-li zobrazit způsoby doručení a požadavky, vyberte adresu</translation>
 <translation id="5770114862687765385">Soubor se zdá být poškozený. Relaci resetujete kliknutím na tlačítko Resetovat.</translation>
@@ -1187,6 +1190,7 @@ Další podrobnosti:
 <translation id="9080712759204168376">Přehled objednávky</translation>
 <translation id="9103872766612412690">Web <ph name="SITE" /> vaše informace běžně chrání šifrováním. Když se prohlížeč Chromium k webu <ph name="SITE" /> pokusil připojit tentokrát, web vrátil neobvyklé a nesprávné identifikační údaje. K tomuto problému může dojít, pokud se za web <ph name="SITE" /> pokouší vydávat nějaký útočník nebo pokud bylo připojení přerušeno přihlašovací obrazovkou sítě Wi-Fi. Vaše informace jsou i nadále v bezpečí, protože prohlížeč Chromium připojení přerušil dříve, než došlo k odeslání jakýchkoliv dat.</translation>
 <translation id="9106062320799175032">Přidání fakturační adresy</translation>
+<translation id="9110718169272311511">Asistent Google v Chromu je k dispozici v dolní části obrazovky</translation>
 <translation id="9114524666733003316">Ověřování karty...</translation>
 <translation id="9128870381267983090">Připojit k síti</translation>
 <translation id="9137013805542155359">Zobrazit originál</translation>

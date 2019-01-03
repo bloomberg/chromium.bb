@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">ukendt navn</translation>
 <translation id="1050038467049342496">Luk andre apps</translation>
 <translation id="1055184225775184556">&amp;Fortryd tilføjelse</translation>
+<translation id="1058479211578257048">Gemmer kort...</translation>
 <translation id="10614374240317010">Aldrig gemt</translation>
 <translation id="1066396345355680611">Du mister muligvis adgang til beskyttet adgang fra <ph name="SITE" /> og visse andre websites.</translation>
 <translation id="106701514854093668">Bogmærker på pc</translation>
@@ -602,6 +603,7 @@
 <translation id="4989163558385430922">Se alle</translation>
 <translation id="4989809363548539747">Dette plugin understøttes ikke</translation>
 <translation id="5002932099480077015">Hvis denne indstilling er slået til, gemmer Chrome en kopi af dit kort på denne enhed for at gøre det hurtigere at udfylde formularer.</translation>
+<translation id="5014174725590676422">Skærmen for førstegangsbrug af Google Assistent i Chrome vises</translation>
 <translation id="5015510746216210676">Maskinnavn:</translation>
 <translation id="5018422839182700155">Denne side kan ikke åbnes</translation>
 <translation id="5019198164206649151">Sikkerhedskopien er fejlbehæftet</translation>
@@ -713,6 +715,7 @@
 <translation id="5720705177508910913">Aktuel bruger</translation>
 <translation id="5730040223043577876">Chrome anbefaler, at du nulstiller din adgangskode, hvis du har brugt den på andre websites.</translation>
 <translation id="5732392974455271431">Dine forældre kan fjerne blokeringen for dig</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{Gem kortet på din Google-konto}one{Gem kortet på din Google-konto}other{Gem kortene på din Google-konto}}</translation>
 <translation id="5763042198335101085">Angiv en gyldig mailadresse</translation>
 <translation id="5765072501007116331">Vælg en adresse for at se leveringsmetoder og -krav</translation>
 <translation id="5770114862687765385">Filen ser ud til at være beskadiget. Klik på knappen "Nulstil" for at nulstille sessionen.</translation>
@@ -1193,6 +1196,7 @@ Yderligere oplysninger:
 <translation id="9080712759204168376">Bestillingsoversigt</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> bruger normalt kryptering til at beskytte dine oplysninger. Da Chromium forsøgte at oprette forbindelse til <ph name="SITE" /> denne gang, returnerede websitet usædvanlige og forkerte loginoplysninger. Dette kan skyldes, at en hacker forsøger at udgive sig for at være <ph name="SITE" />, eller at en Wi-Fi-loginskærm har forstyrret forbindelsen. Dine oplysninger er stadig sikre, idet Chromium afbrød forbindelsen, inden der blev udvekslet data.</translation>
 <translation id="9106062320799175032">Tilføj faktureringsadresse</translation>
+<translation id="9110718169272311511">Google Assistent i Chrome er tilgængelig nederst på skærmen</translation>
 <translation id="9114524666733003316">Bekræfter kort...</translation>
 <translation id="9128870381267983090">Opret forbindelse til netværk</translation>
 <translation id="9137013805542155359">Vis oprindelig</translation>

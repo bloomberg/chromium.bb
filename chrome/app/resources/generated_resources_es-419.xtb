@@ -803,7 +803,7 @@
 <translation id="2192505247865591433">De:</translation>
 <translation id="2193365732679659387">Configuración de confianza</translation>
 <translation id="2195729137168608510">Protección de correo electrónico</translation>
-<translation id="2198757192731523470">Es posible que Google use tu historial para personalizar la Búsqueda, Ads y otros servicios de Google.</translation>
+<translation id="2198757192731523470">Es posible que Google use tu historial para personalizar la Búsqueda, los anuncios y otros servicios de Google.</translation>
 <translation id="2199298570273670671">Error</translation>
 <translation id="2199719347983604670">Datos de Sincronización de Chrome</translation>
 <translation id="2200356397587687044">Chrome necesita permiso para continuar</translation>
@@ -3692,7 +3692,7 @@
 <translation id="6618097958368085618">Conservar de todos modos</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">El sitio puede hacer un seguimiento de tu ubicación</translation>
-<translation id="6619801788773578757">Agregar app del kiosco</translation>
+<translation id="6619801788773578757">Agregar aplicación de kiosco</translation>
 <translation id="6619990499523117484">Confirma el PIN</translation>
 <translation id="662080504995468778">Permanecer aquí</translation>
 <translation id="6621715389962683284">No se puede establecer una conexión de red.</translation>
@@ -3718,7 +3718,7 @@
 <translation id="6651237644330755633">Confía en este certificado para identificar sitios web</translation>
 <translation id="6653525630739667879">No se puede guardar el elemento en $1. Todas las modificaciones se guardarán en $2 en la carpeta de descargas.</translation>
 <translation id="665355505818177700">La integración de <ph name="MS_AD_NAME" /> en Chrome solo es compatible en plataformas x86_64. Las Chromebooks creadas a partir de una plataforma ARM o x86 no son compatibles con esta funcionalidad.</translation>
-<translation id="6655190889273724601">Modo de programador</translation>
+<translation id="6655190889273724601">Modo de desarrollador</translation>
 <translation id="6655458902729017087">Ocultar cuentas</translation>
 <translation id="6657585470893396449">Contraseña</translation>
 <translation id="6659213950629089752">La extensión "<ph name="NAME" />" hizo zoom en esta página</translation>

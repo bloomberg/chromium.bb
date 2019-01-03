@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">tên không biết</translation>
 <translation id="1050038467049342496">Đóng các ứng dụng khác</translation>
 <translation id="1055184225775184556">&amp;Hoàn tác thêm</translation>
+<translation id="1058479211578257048">Đang lưu thẻ...</translation>
 <translation id="10614374240317010">Không bao giờ lưu</translation>
 <translation id="1066396345355680611">Bạn có thể mất quyền truy cập vào nội dung được bảo vệ của <ph name="SITE" /> và một số trang web khác.</translation>
 <translation id="106701514854093668">Dấu trang máy tính</translation>
@@ -602,6 +603,7 @@
 <translation id="4989163558385430922">Xem tất cả</translation>
 <translation id="4989809363548539747">Plugin này không được hỗ trợ</translation>
 <translation id="5002932099480077015">Nếu được bật, Chrome sẽ lưu trữ bản sao thẻ của bạn trên thiết bị này để điền vào biểu mẫu nhanh hơn.</translation>
+<translation id="5014174725590676422">Màn hình chạy đầu tiên của Trợ lý Google trong Chrome đã được hiển thị</translation>
 <translation id="5015510746216210676">Tên máy:</translation>
 <translation id="5018422839182700155">Không thể mở trang này</translation>
 <translation id="5019198164206649151">Không thể lưu trữ do chương trình phụ trợ ở trạng thái xấu</translation>
@@ -713,6 +715,7 @@
 <translation id="5720705177508910913">Người dùng hiện tại</translation>
 <translation id="5730040223043577876">Chrome khuyên bạn nên đặt lại mật khẩu của mình nếu đã sử dụng lại mật khẩu này trên các trang web khác.</translation>
 <translation id="5732392974455271431">Cha mẹ của bạn có thể bỏ chặn trang web cho bạn</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{Lưu thẻ vào Tài khoản Google}other{Lưu các thẻ vào Tài khoản Google}}</translation>
 <translation id="5763042198335101085">Nhập địa chỉ email hợp lệ</translation>
 <translation id="5765072501007116331">Để xem các yêu cầu và phương thức phân phối, hãy chọn một địa chỉ</translation>
 <translation id="5770114862687765385">Tệp dường như bị lỗi. Hãy nhấp vào nút 'Đặt lại' để đặt lại phiên làm việc này.</translation>
@@ -1193,6 +1196,7 @@ Thông tin chi tiết bổ sung:
 <translation id="9080712759204168376">Tóm tắt đơn hàng</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> thường sử dụng mã hóa để bảo vệ thông tin của bạn. Khi Chromium cố gắng kết nối với <ph name="SITE" /> tại thời điểm này, trang web đã gửi lại thông tin đăng nhập không chính xác và bất thường. Điều này có thể xảy ra khi kẻ tấn công đang cố gắng giả mạo là <ph name="SITE" /> hoặc màn hình đăng nhập Wi-Fi đã làm gián đoạn kết nối. Thông tin của bạn vẫn an toàn do Chromium đã ngừng kết nối trước khi bất kỳ dữ liệu nào được trao đổi.</translation>
 <translation id="9106062320799175032">Thêm địa chỉ thanh toán</translation>
+<translation id="9110718169272311511">Chức năng Trợ lý Google trong Chrome có ở gần cuối màn hình</translation>
 <translation id="9114524666733003316">Đang xác nhận thẻ...</translation>
 <translation id="9128870381267983090">Kết nối đến mạng</translation>
 <translation id="9137013805542155359">Hiển thị văn bản gốc</translation>

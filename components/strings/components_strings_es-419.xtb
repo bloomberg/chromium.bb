@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">nombre desconocido</translation>
 <translation id="1050038467049342496">Cierra las demás apps.</translation>
 <translation id="1055184225775184556">&amp;Deshacer Agregar</translation>
+<translation id="1058479211578257048">Guardando tarjetas…</translation>
 <translation id="10614374240317010">Nunca guardado</translation>
 <translation id="1066396345355680611">Es posible que ya no puedas acceder al contenido protegido de <ph name="SITE" /> y otros sitios.</translation>
 <translation id="106701514854093668">Favoritos de escritorio</translation>
@@ -603,6 +604,7 @@
 <translation id="4989163558385430922">Ver todo</translation>
 <translation id="4989809363548539747">Este complemento no es compatible</translation>
 <translation id="5002932099480077015">Si se habilita esta opción, Chrome almacenará una copia de la tarjeta en el dispositivo para llenar más rápidamente los formularios.</translation>
+<translation id="5014174725590676422">Se muestra la pantalla de primera ejecución del Asistente de Google en Chrome</translation>
 <translation id="5015510746216210676">Nombre de la máquina:</translation>
 <translation id="5018422839182700155">No se puede abrir esta página</translation>
 <translation id="5019198164206649151">La memoria auxiliar se encuentra en mal estado.</translation>
@@ -714,6 +716,7 @@
 <translation id="5720705177508910913">Usuario actual</translation>
 <translation id="5730040223043577876">Chrome te recomienda que restablezcas tu contraseña si la volviste a usar en otros sitios.</translation>
 <translation id="5732392974455271431">Tus padres pueden desbloquearlo por ti</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{Guarda la tarjeta en tu Cuenta de Google}other{Guarda las tarjetas en tu Cuenta de Google}}</translation>
 <translation id="5763042198335101085">Escribe una dirección de correo electrónico válida</translation>
 <translation id="5765072501007116331">Para ver los requisitos y métodos de entrega, selecciona una dirección</translation>
 <translation id="5770114862687765385">Es posible que el archivo esté dañado. Haz clic en "Restablecer" para reiniciar la sesión.</translation>
@@ -1194,6 +1197,7 @@ Detalles adicionales:
 <translation id="9080712759204168376">Resumen del pedido</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> suele utilizar la encriptación para proteger la información. Cuando Chromium intentó conectarse a <ph name="SITE" />, el sitio web devolvió credenciales incorrectas y poco comunes. Es posible que un atacante quiera suplantar a <ph name="SITE" /> o que una pantalla de acceso Wi-Fi haya interrumpido la conexión. Tu información permanece segura porque Chromium detuvo la conexión para evitar el intercambio de datos.</translation>
 <translation id="9106062320799175032">Agregar dirección de facturación</translation>
+<translation id="9110718169272311511">El Asistente de Google en Chrome está disponible cerca de la parte inferior de la pantalla</translation>
 <translation id="9114524666733003316">Confirmando tarjeta…</translation>
 <translation id="9128870381267983090">Conectarse a una red</translation>
 <translation id="9137013805542155359">Mostrar original</translation>

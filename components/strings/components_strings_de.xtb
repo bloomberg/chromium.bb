@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">Unbekannter Name</translation>
 <translation id="1050038467049342496">Andere Apps schließen</translation>
 <translation id="1055184225775184556">&amp;Hinzufügen rückgängig machen</translation>
+<translation id="1058479211578257048">Karten werden gespeichert…</translation>
 <translation id="10614374240317010">Nie speichern für…</translation>
 <translation id="1066396345355680611">Eventuell verlieren Sie den Zugriff auf geschützte Inhalte von <ph name="SITE" /> und einigen anderen Websites.</translation>
 <translation id="106701514854093668">Desktop-Lesezeichen</translation>
@@ -255,7 +256,7 @@
 <translation id="2597378329261239068">Dieses Dokument ist passwortgeschützt. Geben Sie ein Passwort ein.</translation>
 <translation id="2609632851001447353">Varianten</translation>
 <translation id="262424810616849754">{COUNT,plural, =0{Keine}=1{1 App ($1)}=2{2 Apps ($1, $2)}other{# Apps ($1, $2, $3)}}</translation>
-<translation id="2625385379895617796">Ihre Uhr geht vor.</translation>
+<translation id="2625385379895617796">Ihre Uhr geht vor</translation>
 <translation id="2634124572758952069">Die Server-IP-Adresse von <ph name="HOST_NAME" /> wurde nicht gefunden.</translation>
 <translation id="2639739919103226564">Status:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
@@ -601,6 +602,7 @@
 <translation id="4989163558385430922">Alle ansehen</translation>
 <translation id="4989809363548539747">Dieses Plug-in wird nicht unterstützt</translation>
 <translation id="5002932099480077015">Wenn diese Funktion aktiviert ist, speichert Chrome eine Kopie Ihrer Karte auf diesem Gerät, um ein Ausfüllen von Formularen zu beschleunigen.</translation>
+<translation id="5014174725590676422">Bildschirm für die erste Ausführung von Google Assistant für Chrome wird angezeigt</translation>
 <translation id="5015510746216210676">Computername:</translation>
 <translation id="5018422839182700155">Diese Seite kann nicht geöffnet werden</translation>
 <translation id="5019198164206649151">Sicherungsspeicher ist fehlerhaft.</translation>
@@ -712,6 +714,7 @@
 <translation id="5720705177508910913">Aktueller Nutzer</translation>
 <translation id="5730040223043577876">Chrome empfiehlt, Ihr Passwort zurückzusetzen, wenn Sie es auf anderen Websites verwendet haben.</translation>
 <translation id="5732392974455271431">Deine Eltern können die Blockierung aufheben</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{Karte in Ihrem Google-Konto speichern}other{Karten in Ihrem Google-Konto speichern}}</translation>
 <translation id="5763042198335101085">Geben Sie eine gültige E-Mail-Adresse ein</translation>
 <translation id="5765072501007116331">Wählen Sie eine Adresse aus, um Lieferoptionen und -anforderungen zu sehen</translation>
 <translation id="5770114862687765385">Die Datei scheint beschädigt zu sein. Klicken Sie auf die Schaltfläche "Zurücksetzen", um die Sitzung zurückzusetzen.</translation>
@@ -1158,7 +1161,7 @@ Weitere Details:
 <translation id="8892964541482452187">Schaltfläche "Tab wechseln", Eingabetaste drücken, um zu diesem Tab zu wechseln</translation>
 <translation id="8903921497873541725">Vergrößern</translation>
 <translation id="8931333241327730545">Möchten Sie diese Karte in Ihrem Google-Konto speichern?</translation>
-<translation id="8932102934695377596">Ihre Uhr geht nach.</translation>
+<translation id="8932102934695377596">Ihre Uhr geht nach</translation>
 <translation id="893332455753468063">Namen hinzufügen</translation>
 <translation id="8938939909778640821">Akzeptierte Kredit- und Prepaidkarten</translation>
 <translation id="8957210676456822347">Erfassungsportal-Autorisierung</translation>
@@ -1193,6 +1196,7 @@ Weitere Details:
 <translation id="9080712759204168376">Bestellübersicht</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> schützt Ihre Daten in der Regel durch Verschlüsselung. Als Chromium dieses Mal versuchte, eine Verbindung zu <ph name="SITE" /> herzustellen, gab die Website ungewöhnliche und falsche Anmeldedaten zurück. Entweder versucht ein Angreifer, sich als <ph name="SITE" /> auszugeben, oder die Verbindung wurde durch eine WLAN-Anmeldeseite unterbrochen. Da Chromium die Verbindung vor dem Austausch von Daten unterbrochen hat, sind Ihre Informationen weiterhin sicher.</translation>
 <translation id="9106062320799175032">Rechnungsadresse hinzufügen</translation>
+<translation id="9110718169272311511">Google Assistant für Chrome ist unten auf dem Bildschirm verfügbar</translation>
 <translation id="9114524666733003316">Karte wird bestätigt…</translation>
 <translation id="9128870381267983090">Mit Netzwerk verbinden</translation>
 <translation id="9137013805542155359">Original anzeigen</translation>

@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">nama tidak diketahui</translation>
 <translation id="1050038467049342496">Tutup apl lain</translation>
 <translation id="1055184225775184556">&amp;Buat Asal Tambahkan</translation>
+<translation id="1058479211578257048">Menyimpan kad...</translation>
 <translation id="10614374240317010">Tidak pernah disimpan</translation>
 <translation id="1066396345355680611">Anda mungkin kehilangan akses kepada kandungan yang dilindungi daripada <ph name="SITE" /> dan beberapa tapak lain.</translation>
 <translation id="106701514854093668">Penanda Halaman Desktop</translation>
@@ -603,6 +604,7 @@
 <translation id="4989163558385430922">Lihat semua</translation>
 <translation id="4989809363548539747">Pemalam ini tidak disokong</translation>
 <translation id="5002932099480077015">Jika didayakan, Chrome akan menyimpan salinan kad anda pada peranti ini untuk pengisian borang yang lebih cepat.</translation>
+<translation id="5014174725590676422">Google Assistant dalam skrin pelaksanaan pertama Chrome dipaparkan</translation>
 <translation id="5015510746216210676">Nama Mesin:</translation>
 <translation id="5018422839182700155">Tidak dapat membuka halaman ini</translation>
 <translation id="5019198164206649151">Simpanan penyandaran dalam keadaan buruk</translation>
@@ -714,6 +716,7 @@
 <translation id="5720705177508910913">Pengguna semasa</translation>
 <translation id="5730040223043577876">Chrome mengesyorkan penetapan semula kata laluan jika anda menggunakan semula kata laluan itu di tapak lain.</translation>
 <translation id="5732392974455271431">Ibu bapa anda boleh menyahsekatnya untuk anda</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{Simpan kad ke Akaun Google anda}other{Simpan kad ke Akaun Google anda}}</translation>
 <translation id="5763042198335101085">Masukkan alamat e-mel yang sah</translation>
 <translation id="5765072501007116331">Pilih alamat untuk melihat kaedah dan syarat penghantaran</translation>
 <translation id="5770114862687765385">Fail tersebut kelihatan rosak. Klik butang 'Tetapkan semula' untuk menetapkan semula sesi.</translation>
@@ -1194,6 +1197,7 @@ Butiran tambahan:
 <translation id="9080712759204168376">Ringkasan Pesanan</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> biasanya menggunakan penyulitan untuk melindungi maklumat anda. Apabila Chromium cuba menyambung ke <ph name="SITE" /> pada kali ini, tapak web tersebut mengembalikan bukti kelayakan yang luar biasa dan salah. Hal ini boleh berlaku apabila penyerang sedang cuba menyamar sebagai <ph name="SITE" /> atau skrin log masuk Wi-Fi telah memutuskan sambungan. Maklumat anda masih selamat kerana Chromium menghentikan sambungan sebelum sebarang pertukaran data berlaku.</translation>
 <translation id="9106062320799175032">Tambahkan Alamat Pengebilan</translation>
+<translation id="9110718169272311511">Google Assistant dalam Chrome tersedia berhampiran bahagian bawah skrin</translation>
 <translation id="9114524666733003316">Mengesahkan kad...</translation>
 <translation id="9128870381267983090">Sambung ke rangkaian</translation>
 <translation id="9137013805542155359">Paparkan asal</translation>

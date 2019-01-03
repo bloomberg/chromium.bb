@@ -202,6 +202,7 @@
 <translation id="2450083983707403292">Начать скачивание <ph name="FILE_NAME" /> ещё раз?</translation>
 <translation id="2476578072172137802">Настройки сайта</translation>
 <translation id="2482878487686419369">Уведомления</translation>
+<translation id="2494974097748878569">Google Ассистент в Chrome</translation>
 <translation id="2496180316473517155">История просмотров</translation>
 <translation id="2498359688066513246">Справка/отзыв</translation>
 <translation id="2501278716633472235">Назад</translation>
@@ -408,6 +409,7 @@
 <translation id="4195643157523330669">Открыть в новой вкладке</translation>
 <translation id="4198423547019359126">Нет доступных мест для скачивания</translation>
 <translation id="4209895695669353772">Чтобы мы могли рекомендовать вам интересный контент, включите синхронизацию.</translation>
+<translation id="4222812745228723705">Продолжая, вы разрешаете Chrome отправлять данные Автозаполнения, а также URL и контент сайта в Google. Отключить Google Ассистента и Автозаполнение можно в настройках Chrome. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">Ничего не найдено</translation>
 <translation id="4226663524361240545">Вибрация при получении уведомлений</translation>
 <translation id="423219824432660969">Выполнить шифрование синхронизированных данных, используя пароль аккаунта Google от <ph name="TIME" /></translation>
@@ -690,6 +692,7 @@
 <translation id="6277522088822131679">Не удалось распечатать страницу. Повторите попытку.</translation>
 <translation id="6295158916970320988">Все сайты</translation>
 <translation id="629730747756840877">Аккаунт</translation>
+<translation id="6302269476990306341">Google Ассистент в Chrome отключится</translation>
 <translation id="6303969859164067831">Выйти из аккаунта и отключить синхронизацию</translation>
 <translation id="6316139424528454185">Устаревшая версия Android</translation>
 <translation id="6320088164292336938">Вибросигнал</translation>
@@ -827,6 +830,7 @@
 <translation id="7250468141469952378">Выбрано: <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Добавьте аккаунт Google в настройках устройства (раздел "Аккаунты").</translation>
 <translation id="7274013316676448362">Заблокированный сайт</translation>
+<translation id="7291387454912369099">Оплата через Ассистента</translation>
 <translation id="729975465115245577">На устройстве не установлено приложение для хранения файлов паролей.</translation>
 <translation id="7302081693174882195">Сортировка по объему сэкономленного трафика</translation>
 <translation id="7333031090786104871">Предыдущий сайт ещё не добавлен</translation>

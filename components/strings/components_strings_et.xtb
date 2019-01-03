@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">tundmatu nimi</translation>
 <translation id="1050038467049342496">Sulgege muud rakendused</translation>
 <translation id="1055184225775184556">&amp;Võta lisamine tagasi</translation>
+<translation id="1058479211578257048">Kaartide salvestamine …</translation>
 <translation id="10614374240317010">Ei ole kunagi salvestatud</translation>
 <translation id="1066396345355680611">Võite kaotada juurdepääsu saidi <ph name="SITE" /> ja mõne muu saidi kaitstud sisule.</translation>
 <translation id="106701514854093668">Töölaua järjehoidjad</translation>
@@ -602,6 +603,7 @@
 <translation id="4989163558385430922">Kuva kõik</translation>
 <translation id="4989809363548539747">Seda pistikprogrammi ei toetata</translation>
 <translation id="5002932099480077015">Kui see on lubatud, salvestab Chrome teie kaardi koopia vormide kiiremini täitmiseks sellesse seadmesse.</translation>
+<translation id="5014174725590676422">Näidatud on Google'i assistendi esmakordse käivitamise kuva Chrome'is</translation>
 <translation id="5015510746216210676">Seadme nimi:</translation>
 <translation id="5018422839182700155">Seda lehte ei saa avada</translation>
 <translation id="5019198164206649151">Varusalves esineb probleeme</translation>
@@ -713,6 +715,7 @@
 <translation id="5720705177508910913">Praegune kasutaja</translation>
 <translation id="5730040223043577876">Chrome soovitab teil parooli lähtestada, kui kasutasite seda ka muudel saitidel.</translation>
 <translation id="5732392974455271431">Vanemad saavad blokeeringu teie eest tühistada</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{Salvestage kaart oma Google'i kontole}other{Salvestage kaardid oma Google'i kontole}}</translation>
 <translation id="5763042198335101085">Sisestage kehtiv e-posti aadress</translation>
 <translation id="5765072501007116331">Kohaletoimetamisviiside ja nõuete nägemiseks valige aadress</translation>
 <translation id="5770114862687765385">Näib, et fail on rikutud. Seansi lähtestamiseks klõpsake nupul „Lähtesta”.</translation>
@@ -1192,6 +1195,7 @@ Lisateave:
 <translation id="9080712759204168376">Tellimuse kokkuvõte</translation>
 <translation id="9103872766612412690">Sait <ph name="SITE" /> kasutab teie teabe kaitsmiseks tavaliselt krüpteerimist. Kui Chromium püüdis seekord saidiga <ph name="SITE" /> ühendust luua, tagastas veebisait ebatavalised ja valed mandaadid. See võib juhtuda siis, kui ründaja proovib teeselda, et on sait <ph name="SITE" />, või WiFi sisselogimisekraan on ühenduse katkestanud. Teie teave on endiselt kaitstud, sest Chromium peatas ühenduse enne andmevahetust.</translation>
 <translation id="9106062320799175032">Arveldusaadressi lisamine</translation>
+<translation id="9110718169272311511">Google'i assistent on Chrome'is saadaval ekraani alaosas</translation>
 <translation id="9114524666733003316">Kaardi kinnitamine …</translation>
 <translation id="9128870381267983090">Ühendumine Internetiga</translation>
 <translation id="9137013805542155359">Kuva originaal</translation>

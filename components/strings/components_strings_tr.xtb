@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">bilinmeyen ad</translation>
 <translation id="1050038467049342496">Diğer uygulamaları kapatın</translation>
 <translation id="1055184225775184556">Eklemeyi &amp;Geri Al</translation>
+<translation id="1058479211578257048">Kartlar kaydediliyor...</translation>
 <translation id="10614374240317010">Hiç kaydedilmeyecekler</translation>
 <translation id="1066396345355680611"><ph name="SITE" /> ve diğer sitelerden alınan korunan içeriğe erişiminizi kaybedebilirsiniz.</translation>
 <translation id="106701514854093668">Masaüstü Yer İşaretleri</translation>
@@ -602,6 +603,7 @@
 <translation id="4989163558385430922">Tümünü göster</translation>
 <translation id="4989809363548539747">Bu eklenti desteklenmiyor</translation>
 <translation id="5002932099480077015">Bu seçenek etkinleştirildiğinde Chrome, formları daha hızlı doldurmak için kartınızın bir kopyasını bu cihazda saklar.</translation>
+<translation id="5014174725590676422">Chrome'da Google Asistan'ın ilk kez çalışma ekranı aşağıda gösterilmiştir</translation>
 <translation id="5015510746216210676">Makine Adı:</translation>
 <translation id="5018422839182700155">Bu sayfa açılamıyor</translation>
 <translation id="5019198164206649151">Yedekleme deposu kötü durumda</translation>
@@ -713,6 +715,7 @@
 <translation id="5720705177508910913">Geçerli kullanıcı</translation>
 <translation id="5730040223043577876">Chrome, şifrenizi başka sitelerde kullandıysanız sıfırlamanızı önerir.</translation>
 <translation id="5732392974455271431">Ebeveynleriniz engellemeyi kaldırabilir</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{Kartı Google Hesabınıza kaydedin}other{Kartları Google Hesabınıza kaydedin}}</translation>
 <translation id="5763042198335101085">Geçerli bir e-posta adresi girin</translation>
 <translation id="5765072501007116331">Teslimat yöntemlerini ve gereksinimleri görmek için bir adres seçin</translation>
 <translation id="5770114862687765385">Dosya bozuk gibi görünüyor. Oturumu sıfırlamak için "Sıfırla" düğmesini tıklayın.</translation>
@@ -1193,6 +1196,7 @@ Ek ayrıntılar:
 <translation id="9080712759204168376">Sipariş Özeti</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> normalde bilgilerinizi korumak için şifreleme kullanmaktadır. Chromium bu sefer <ph name="SITE" /> sitesine bağlanmayı denediğinde, web sitesi sıra dışı ve yanlış kimlik bilgileri döndürdü. Bir saldırgan <ph name="SITE" /> gibi davranmaya çalışıyor olabilir ya da bir Kablosuz oturum açma ekranı bağlantıyı kesmiştir. Chromium herhangi bir veri alışverişinden önce bağlantıyı durdurduğu için bilgileriniz hâlâ güvendedir.</translation>
 <translation id="9106062320799175032">Fatura Adresi Ekleyin</translation>
+<translation id="9110718169272311511">Chrome'da Google Asistan ekranın altına yakın bir bölümde bulunur</translation>
 <translation id="9114524666733003316">Kart onaylanıyor...</translation>
 <translation id="9128870381267983090">Ağa bağlan</translation>
 <translation id="9137013805542155359">Orijinali göster</translation>

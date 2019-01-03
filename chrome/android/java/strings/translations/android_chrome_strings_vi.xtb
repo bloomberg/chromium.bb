@@ -40,6 +40,7 @@
 <translation id="1259100630977430756">Các trang mà bạn xem ở tab ẩn danh sẽ không lưu vào lịch sử của trình duyệt, kho cookie hoặc lịch sử tìm kiếm sau khi bạn đóng tất cả tab riêng tư. Mọi tệp bạn tải xuống hoặc dấu trang bạn tạo sẽ được lưu lại.
 
 Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang chế độ riêng tư sẽ không ẩn hoạt động duyệt web của bạn với chủ lao động, nhà cung cấp dịch vụ Internet hoặc các trang web bạn truy cập.</translation>
+<translation id="1260236875608242557">Tìm kiếm và khám phá</translation>
 <translation id="1264974993859112054">Thể thao</translation>
 <translation id="127138278192656016">Sử dụng tùy chọn đồng bộ hóa và tất cả dịch vụ</translation>
 <translation id="1272079795634619415">Dừng</translation>
@@ -201,6 +202,7 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="2450083983707403292">Bạn có muốn bắt đầu tải xuống <ph name="FILE_NAME" /> lần nữa không?</translation>
 <translation id="2476578072172137802">Cài đặt trang web</translation>
 <translation id="2482878487686419369">Thông báo</translation>
+<translation id="2494974097748878569">Trợ lý Google trong Chrome</translation>
 <translation id="2496180316473517155">Lịch sử duyệt web</translation>
 <translation id="2498359688066513246">Trợ giúp và phản hồi</translation>
 <translation id="2501278716633472235">Quay lại</translation>
@@ -407,6 +409,7 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="4195643157523330669">Mở bằng tab mới</translation>
 <translation id="4198423547019359126">Không có vị trí tải xuống</translation>
 <translation id="4209895695669353772">Để nhận nội dung do Google đề xuất riêng cho bạn, hãy bật tính năng đồng bộ hóa</translation>
+<translation id="4222812745228723705">Bằng việc tiếp tục, bạn đồng ý rằng Chrome sẽ gửi dữ liệu từ tính năng Tự động điền của Chrome, URL và nội dung của trang web đến Google để cung cấp dịch vụ này. Bạn có thể tắt Trợ lý Google và tính năng Tự động điền của Chrome trong phần cài đặt của Chrome. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">Không tìm thấy nội dung nào</translation>
 <translation id="4226663524361240545">Thông báo có thể làm rung thiết bị</translation>
 <translation id="423219824432660969">Mã hóa dữ liệu đã đồng bộ hóa bằng mật khẩu Google kể từ <ph name="TIME" /></translation>
@@ -689,6 +692,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6277522088822131679">Đã xảy ra sự cố khi in trang này. Vui lòng thử lại.</translation>
 <translation id="6295158916970320988">Tất cả các trang web</translation>
 <translation id="629730747756840877">Tài khoản</translation>
+<translation id="6302269476990306341">Trợ lý Google trong Chrome đang dừng</translation>
 <translation id="6303969859164067831">Đăng xuất và tắt đồng bộ hóa</translation>
 <translation id="6316139424528454185">Phiên bản Android không được hỗ trợ</translation>
 <translation id="6320088164292336938">Rung</translation>
@@ -700,6 +704,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6343192674172527289">Không tìm thấy tài nguyên đã tải xuống nào</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 và <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> tùy chọn khác}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 và <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> tùy chọn khác}}</translation>
 <translation id="6364438453358674297">Xóa đề xuất khỏi lịch sử?</translation>
+<translation id="6369229450655021117">Từ đây, bạn có thể tìm kiếm trên web, chia sẻ với bạn bè và xem các trang đang mở</translation>
 <translation id="6378173571450987352">Thông tin chi tiết: Sắp xếp theo lượng dữ liệu đã dùng</translation>
 <translation id="6383961787135158834">Xóa bộ nhớ trang web...</translation>
 <translation id="6388207532828177975">Xóa và đặt lại</translation>
@@ -825,6 +830,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7250468141469952378">Đã chọn <ph name="ITEM_COUNT" /> mục</translation>
 <translation id="7253272406652746122">Thêm Tài khoản Google từ trang Tài khoản trong ứng dụng Cài đặt trên thiết bị của bạn.</translation>
 <translation id="7274013316676448362">Trang web bị chặn</translation>
+<translation id="7291387454912369099">Trợ lý kích hoạt thanh toán</translation>
 <translation id="729975465115245577">Thiết bị của bạn không có ứng dụng để lưu trữ tệp mật khẩu.</translation>
 <translation id="7302081693174882195">Thông tin chi tiết: Sắp xếp theo lượng dữ liệu đã tiết kiệm được</translation>
 <translation id="7333031090786104871">Vẫn đang thêm trang web trước</translation>

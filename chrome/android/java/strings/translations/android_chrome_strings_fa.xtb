@@ -202,6 +202,7 @@
 <translation id="2450083983707403292">می‌خواهید بارگیری <ph name="FILE_NAME" /> را دوباره شروع کنید؟</translation>
 <translation id="2476578072172137802">تنظیمات سایت</translation>
 <translation id="2482878487686419369">اعلان‌ها</translation>
+<translation id="2494974097748878569">‏«دستیار Google» در Chrome</translation>
 <translation id="2496180316473517155">سابقه مرور</translation>
 <translation id="2498359688066513246">راهنمایی و بازخورد</translation>
 <translation id="2501278716633472235">بازگشت</translation>
@@ -408,6 +409,7 @@
 <translation id="4195643157523330669">باز کردن در برگهٔ جدید</translation>
 <translation id="4198423547019359126">مکانی برای بارگیری دردسترس نیست</translation>
 <translation id="4209895695669353772">‏برای اینکه Google محتوای شخصی‌شده به شما پیشنهاد دهد، همگام‌سازی را روشن کنید</translation>
+<translation id="4222812745228723705">‏با ادامه دادن، موافقت می‌‌کنید Chrome برای ارائه این سرویس، داده‌های «تکمیل خودکار Chrome» ، نشانی وب سایت و محتوای آن را برای Google ارسال کند. برای خاموش کردن «دستیار Google» در Chrome و «تکمیل خودکار Chrome»، به تنظیمات Chrome بروید. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">محتوایی پیدا نشد</translation>
 <translation id="4226663524361240545">اعلان‌ها ممکن است دستگاه را بلرزانند</translation>
 <translation id="423219824432660969">‏رمزگذاری داده‌های همگام‌سازی‌شده با گذرواژه Google از <ph name="TIME" /></translation>
@@ -689,6 +691,7 @@
 <translation id="6277522088822131679">در چاپ صفحه مشکلی پیش آمد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="6295158916970320988">همه سایت‌ها</translation>
 <translation id="629730747756840877">حساب</translation>
+<translation id="6302269476990306341">‏توقف «دستیار Google» در Chrome</translation>
 <translation id="6303969859164067831">خروج از سیستم و خاموش کردن همگام‌سازی</translation>
 <translation id="6316139424528454185">‏نسخه Android پشتیبانی نمی‌شود</translation>
 <translation id="6320088164292336938">لرزش</translation>
@@ -826,6 +829,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> مورد انتخاب شد</translation>
 <translation id="7253272406652746122">‏از صفحه «حساب‌ها» در برنامه «تنظیمات» دستگاه، یک حساب Google اضافه کنید.</translation>
 <translation id="7274013316676448362">سایت مسدودشده</translation>
+<translation id="7291387454912369099">تسویه‌حساب فعال‌شده ازسوی دستیار</translation>
 <translation id="729975465115245577">دستگاه شما برنامه‌ای برای ذخیره فایل گذرواژه‌ها ندارد.</translation>
 <translation id="7302081693174882195">جزئیات: مرتب‌شده براساس مقدار داده صرفه‌جویی‌شده</translation>
 <translation id="7333031090786104871">همچنان درحال افزودن سایت قبلی</translation>

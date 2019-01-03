@@ -1980,7 +1980,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="6097601282776163274">Włącz zbieranie zanonimizowanych danych z URL-em jako kluczem</translation>
 <translation id="6099853574908182288">Domyślny tryb drukowania kolorów</translation>
 <translation id="6111936128861357925">Zezwól na ukrytą grę-żart z dinozaurem</translation>
-<translation id="6114416803310251055">przestarzała</translation>
+<translation id="6114416803310251055">wycofana</translation>
 <translation id="6133088669883929098">Zezwalaj na generowanie kluczy we wszystkich witrynach</translation>
 <translation id="6145799962557135888">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których może być wykonywany kod JavaScript. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultJavaScriptSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="614662973812186053">Ta zasada kontroluje też zbieranie danych o użytkowaniu i danych diagnostycznych Androida.</translation>

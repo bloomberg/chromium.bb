@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">nezināms nosaukums</translation>
 <translation id="1050038467049342496">Aizveriet citas lietotnes</translation>
 <translation id="1055184225775184556">&amp;Pievienošanas atsaukšana</translation>
+<translation id="1058479211578257048">Notiek karšu datu saglabāšana...</translation>
 <translation id="10614374240317010">Netiek saglabātas</translation>
 <translation id="1066396345355680611">Varat zaudēt piekļuvi aizsargātam saturam no vietnes <ph name="SITE" /> un dažām citām vietnēm.</translation>
 <translation id="106701514854093668">Datora grāmatzīmes</translation>
@@ -601,6 +602,7 @@
 <translation id="4989163558385430922">Skatīt visu</translation>
 <translation id="4989809363548539747">Šis spraudnis netiek atbalstīts</translation>
 <translation id="5002932099480077015">Iespējojot šo opciju, Chrome saglabās jūsu kartes informāciju šajā ierīcē, lai jūs varētu ātrāk aizpildīt veidlapas.</translation>
+<translation id="5014174725590676422">Tiek rādīts Google asistenta pirmās palaišanas ekrāns pārlūkprogrammā Chrome.</translation>
 <translation id="5015510746216210676">Ierīces nosaukums:</translation>
 <translation id="5018422839182700155">Nevar atvērt šo lapu</translation>
 <translation id="5019198164206649151">Dublējumu krātuve nav labā stāvoklī.</translation>
@@ -712,6 +714,7 @@
 <translation id="5720705177508910913">Pašreizējais lietotājs</translation>
 <translation id="5730040223043577876">Chrome iesaka atiestatīt jūsu paroli, ja izmantojāt to citās vietnēs.</translation>
 <translation id="5732392974455271431">Lai atbloķētu, vērsieties pie vecākiem</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{Kartes datu saglabāšana Google kontā}zero{Karšu datu saglabāšana Google kontā}one{Karšu datu saglabāšana Google kontā}other{Karšu datu saglabāšana Google kontā}}</translation>
 <translation id="5763042198335101085">Ievadiet derīgu e-pasta adresi</translation>
 <translation id="5765072501007116331">Lai skatītu piegādes veidus un prasības, atlasiet adresi.</translation>
 <translation id="5770114862687765385">Šķiet, ka fails ir bojāts. Lai atiestatītu sesiju, noklikšķiniet uz pogas “Atiestatīt”.</translation>
@@ -1192,6 +1195,7 @@ Papildu informācija:
 <translation id="9080712759204168376">Pasūtījuma kopsavilkums</translation>
 <translation id="9103872766612412690">Vietnē <ph name="SITE" /> informācijas aizsargāšanai parasti tiek izmantota šifrēšana. Kad pārlūkā Chromium tika mēģināts izveidot savienojumu ar vietni <ph name="SITE" />, šoreiz tā nosūtīja neparastus un nepareizus akreditācijas datus. Iespējams, tas notika, jo uzbrucējs mēģināja uzdoties par vietni <ph name="SITE" />, vai arī Wi-Fi pierakstīšanās ekrāns pārtrauca savienojumu. Jūsu informācija joprojām ir drošībā, jo pārlūks Chromium pārtrauca savienojumu, pirms tika veikta jebkādu datu apmaiņa.</translation>
 <translation id="9106062320799175032">Norēķinu adreses pievienošana</translation>
+<translation id="9110718169272311511">Google asistents pārlūkprogrammā Chrome ir pieejams ekrāna apakšdaļā.</translation>
 <translation id="9114524666733003316">Notiek kartes apstiprināšana...</translation>
 <translation id="9128870381267983090">Izveidot savienojumu ar tīklu</translation>
 <translation id="9137013805542155359">Rādīt oriģinālo</translation>

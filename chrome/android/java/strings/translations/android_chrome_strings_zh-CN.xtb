@@ -40,6 +40,7 @@
 <translation id="1259100630977430756">在您关闭所有私密标签页后，您在其中查看的网页不会在浏览器历史记录、Cookie 存储区或搜索记录中留下任何痕迹。不过，您下载的所有文件或创建的书签均会保留下来。
 
 但是，这并不意味着您能完全隐身。即使您进入私密模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
+<translation id="1260236875608242557">搜索内容与浏览相关建议</translation>
 <translation id="1264974993859112054">体育</translation>
 <translation id="127138278192656016">使用同步功能和所有服务</translation>
 <translation id="1272079795634619415">停止</translation>
@@ -703,6 +704,7 @@
 <translation id="6343192674172527289">未找到任何下载内容</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 个地址}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 个地址}}</translation>
 <translation id="6364438453358674297">要从历史记录中移除建议吗？</translation>
+<translation id="6369229450655021117">您可从这里搜索网上内容、与好友分享内容以及查看已打开的网页</translation>
 <translation id="6378173571450987352">详细信息：按已使用的数据流量排序</translation>
 <translation id="6383961787135158834">清除网站存储数据…</translation>
 <translation id="6388207532828177975">清除并重置</translation>

@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">不明名稱</translation>
 <translation id="1050038467049342496">關閉其他應用程式</translation>
 <translation id="1055184225775184556">復原新增(&amp;U)</translation>
+<translation id="1058479211578257048">正在儲存卡片...</translation>
 <translation id="10614374240317010">一律不儲存</translation>
 <translation id="1066396345355680611">你可能無法再存取 <ph name="SITE" /> 和其他網站上的受保護內容。</translation>
 <translation id="106701514854093668">電腦版書籤</translation>
@@ -602,6 +603,7 @@
 <translation id="4989163558385430922">查看全部</translation>
 <translation id="4989809363548539747">這是不支援的外掛程式</translation>
 <translation id="5002932099480077015">啟用後，Chrome 會將您的信用卡複本儲存在這個裝置上，以加快表單填寫速度。</translation>
+<translation id="5014174725590676422">目前顯示 Chrome 版 Google 助理首次執行的畫面</translation>
 <translation id="5015510746216210676">裝置名稱：</translation>
 <translation id="5018422839182700155">無法開啟這個網頁</translation>
 <translation id="5019198164206649151">備份儲存狀態不佳</translation>
@@ -713,6 +715,7 @@
 <translation id="5720705177508910913">目前使用者</translation>
 <translation id="5730040223043577876">如果你在其他網站上重複使用過你的密碼，Chrome 會建議你重設密碼。</translation>
 <translation id="5732392974455271431">你的家長可以為你解除封鎖這個網站</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{將卡片儲存到你的 Google 帳戶}other{將卡片儲存到你的 Google 帳戶}}</translation>
 <translation id="5763042198335101085">請輸入有效的電子郵件地址</translation>
 <translation id="5765072501007116331">如要查看快遞方式和相關規定，請選取一個地址</translation>
 <translation id="5770114862687765385">這個檔案似乎已毀損。按一下 [重設] 按鈕即可重設工作階段。</translation>
@@ -1053,7 +1056,7 @@
 <translation id="8103161714697287722">付款方式</translation>
 <translation id="8118489163946903409">付款方式</translation>
 <translation id="8127301229239896662">「<ph name="SOFTWARE_NAME" />」未正確安裝在電腦或網路上。請通知 IT 管理員解決這個問題。</translation>
-<translation id="8130693978878176684">我無法提供協助了，請自行填入資料。</translation>
+<translation id="8130693978878176684">我幫不上忙了，請自行填入資料。</translation>
 <translation id="8131740175452115882">確認</translation>
 <translation id="8149426793427495338">您的電腦已進入睡眠模式。</translation>
 <translation id="8150722005171944719">無法讀取位於 <ph name="URL" /> 的檔案。這個檔案可能已遭移除或移動位置，或者檔案權限為禁止存取。</translation>
@@ -1192,6 +1195,7 @@
 <translation id="9080712759204168376">訂單摘要</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> 通常使用加密方式保護您的資訊。但 Chromium 這次嘗試連線到 <ph name="SITE" /> 時，該網站傳回了異常且錯誤的憑證。這可能是因為有攻擊者企圖偽裝成 <ph name="SITE" />，或是受到 Wi-Fi 登入畫面影響而造成連線中斷。不過請放心，Chromium 已及時停止連線，並未傳輸任何資料，因此您的資訊仍然安全無虞。</translation>
 <translation id="9106062320799175032">新增帳單地址</translation>
+<translation id="9110718169272311511">Chrome 版 Google 助理位於靠近畫面底部的位置</translation>
 <translation id="9114524666733003316">正在驗證信用卡...</translation>
 <translation id="9128870381267983090">連線至網路</translation>
 <translation id="9137013805542155359">顯示原文</translation>

@@ -40,6 +40,7 @@
 <translation id="1259100630977430756">जब आप निजी मोड के सभी टैब बंद कर देते हैं, तो जिन पेजों को आपने निजी मोड में देखा था वे आपके ब्राउज़र के इतिहास, कुकी स्टोर या खोज इतिहास में दिखाई नहीं देंगे. आप जो भी फ़ाइल डाउनलोड करते हैं या जो भी बुकमार्क बनाते हैं, उन्हें बनाए रखा जाएगा.
 
 हालांकि, निजी मोड का मतलब यह नहीं है कि आपको कोई भी नहीं देख सकता. निजी मोड में आप जो भी ब्राउजिंग करते हैं उसे आपके नियोक्ता, इंटरनेट सेवा देने वाली कंपनी या आप जिन वेबसाइटों को देखते हैं, वे देख सकते हैं.</translation>
+<translation id="1260236875608242557">खोजें और एक्सप्लोर करें</translation>
 <translation id="1264974993859112054">खेल-कूद</translation>
 <translation id="127138278192656016">सिंक और सभी सेवाएं इस्तेमाल करें</translation>
 <translation id="1272079795634619415">रोकें</translation>
@@ -201,6 +202,7 @@
 <translation id="2450083983707403292">क्या आप <ph name="FILE_NAME" /> को डाउनलोड करना फिर से शुरू करना चाहते हैं?</translation>
 <translation id="2476578072172137802">साइट की सेटिंग</translation>
 <translation id="2482878487686419369">अधिसूचनाएं</translation>
+<translation id="2494974097748878569">Chrome में Google Assistant</translation>
 <translation id="2496180316473517155">ब्राउज़िंग इतिहास...</translation>
 <translation id="2498359688066513246">सहायता और फ़ीडबैक</translation>
 <translation id="2501278716633472235">वापस जाएं</translation>
@@ -407,6 +409,7 @@
 <translation id="4195643157523330669">नए टैब में खोलें</translation>
 <translation id="4198423547019359126">डाउनलोड करने की कोई जगह उपलब्ध नहीं है</translation>
 <translation id="4209895695669353772">Google की ओर से सुझाई गई मनमुताबिक सामग्री पाने के लिए, 'सिंक करें' को चालू करें</translation>
+<translation id="4222812745228723705">जारी रखकर, आप सहमति देते हैं कि Chrome, यह सेवा देने के लिए, Chrome की अपने आप भरने की सुविधा (ऑटो फ़िल) के ज़रिए सेव किया गया डेटा, साइट का यूआरएल, और उसकी सामग्री Google को भेजेगा. Chrome और Chrome की अपने आप भरने की सुविधा (ऑटो फ़िल) में Google Assistant को बंद करने के लिए Chrome की सेटिंग पर जाएं. <ph name="BEGIN_LINK" />ज़्यादा जानें<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">कोई सामग्री नहीं मिली</translation>
 <translation id="4226663524361240545">नोटिफ़िकेशन से डिवाइस में कंपन हो सकता है</translation>
 <translation id="423219824432660969"><ph name="TIME" /> तक का सुरक्षित किया गया किया गया डेटा 'Google पासवर्ड' से सिंक करें</translation>
@@ -689,6 +692,7 @@
 <translation id="6277522088822131679">पेज को प्रिंट करने में समस्या थी. कृपया फिर से प्रयास करें.</translation>
 <translation id="6295158916970320988">सभी साइटें</translation>
 <translation id="629730747756840877">खाता</translation>
+<translation id="6302269476990306341">'Chrome में Google Assistant' को रोका जा रहा है</translation>
 <translation id="6303969859164067831">साइन आउट करें और सिंक बंद करें</translation>
 <translation id="6316139424528454185">Android वर्शन काम नहीं कर रहा है</translation>
 <translation id="6320088164292336938">कंपन</translation>
@@ -700,6 +704,7 @@
 <translation id="6343192674172527289">कोई डाउनलोड नहीं मिला</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 और <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> अन्य}one{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 और <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> अन्य}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 और <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> अन्य}}</translation>
 <translation id="6364438453358674297">सुझाव को इतिहास से निकालें?</translation>
+<translation id="6369229450655021117">यहां से, आप वेब खोज सकते हैं, दोस्तों के साथ शेयर कर सकते हैं और खुले हुए पेज देख सकते हैं</translation>
 <translation id="6378173571450987352">जानकारी: इस्तेमाल किए गए डेटा की मात्रा के अनुसार क्रम से लगाया गया</translation>
 <translation id="6383961787135158834">साइट की जगह साफ़ करें…</translation>
 <translation id="6388207532828177975">साफ़ करें और रीसेट करें</translation>
@@ -825,6 +830,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> चुने गए</translation>
 <translation id="7253272406652746122">अपने डिवाइस के सेटिंग ऐप्लिकेशन में खाते पेज से कोई Google खाता जोड़ें.</translation>
 <translation id="7274013316676448362">अवरोधित साइट</translation>
+<translation id="7291387454912369099">Assistant ने चेकआउट शुरू किया</translation>
 <translation id="729975465115245577">आपके डिवाइस में पासवर्ड फ़ाइल को संग्रहित करने वाला कोई ऐप्लिकेशन नहीं है.</translation>
 <translation id="7302081693174882195">जानकारी: बचाए गए डेटा की मात्रा के अनुसार क्रम से लगाया गया</translation>
 <translation id="7333031090786104871">पिछली साइट अभी भी जोड़ी जा रही है</translation>

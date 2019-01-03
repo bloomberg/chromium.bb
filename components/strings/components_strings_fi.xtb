@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">tuntematon nimi</translation>
 <translation id="1050038467049342496">Sulje muita sovelluksia.</translation>
 <translation id="1055184225775184556">K&amp;umoa lisäys</translation>
+<translation id="1058479211578257048">Tallennetaan kortteja…</translation>
 <translation id="10614374240317010">Ei tallenneta</translation>
 <translation id="1066396345355680611">Saatat menettää esim. sivuston <ph name="SITE" /> suojatun sisällön käyttöoikeuden.</translation>
 <translation id="106701514854093668">Työpöytäkirjanmerkit</translation>
@@ -603,6 +604,7 @@
 <translation id="4989163558385430922">Näytä kaikki</translation>
 <translation id="4989809363548539747">Tätä laajennusta ei tueta.</translation>
 <translation id="5002932099480077015">Kun tämä vaihtoehto on käytössä, Chrome nopeuttaa lomakkeiden täyttämistä tallentamalla kortin tiedot tälle laittelle.</translation>
+<translation id="5014174725590676422">Chromen Google Assistantin ensimmäisen käyttökerran näyttö näkyy</translation>
 <translation id="5015510746216210676">Laitteen nimi:</translation>
 <translation id="5018422839182700155">Sivun avaaminen epäonnistui</translation>
 <translation id="5019198164206649151">Tallennustila on virheellisessä tilassa</translation>
@@ -714,6 +716,7 @@
 <translation id="5720705177508910913">Nykyinen käyttäjä</translation>
 <translation id="5730040223043577876">Chrome suosittelee salasanan vaihtamista, jos olet käyttänyt sitä myös muilla sivustoilla.</translation>
 <translation id="5732392974455271431">Vanhempasi voivat kumota eston puolestasi.</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{Tallenna kortti Google-tilillesi}other{Tallenna kortit Google-tilillesi}}</translation>
 <translation id="5763042198335101085">Anna voimassa oleva sähköpostiosoite.</translation>
 <translation id="5765072501007116331">Valitse osoite, niin näet toimitustavat ja vaatimukset.</translation>
 <translation id="5770114862687765385">Tiedosto on ilmeisesti vioittunut. Nollaa käyttökerta klikkaamalla Nollaa.</translation>
@@ -1194,6 +1197,7 @@ Lisätietoja:
 <translation id="9080712759204168376">Tilauksen yhteenveto</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> suojaa tietosi normaalisti salauksen avulla. Kun Chromium yritti tällä kertaa yhdistää sivustoon <ph name="SITE" />, sivusto palautti epätavalliset ja virheelliset kirjautumistiedot. Hyökkääjä saattaa yrittää esiintyä sivustona <ph name="SITE" />, tai Wi-Fi-kirjautumisruutu on keskeyttänyt yhteyden. Tietosi ovat edelleen turvassa, sillä Chromium katkaisi yhteyden, ennen kuin mitään tietoja vaihdettiin.</translation>
 <translation id="9106062320799175032">Lisää laskutusosoite</translation>
+<translation id="9110718169272311511">Chromen Google Assistant on käytettävissä näytön alareunassa</translation>
 <translation id="9114524666733003316">Vahvistetaan korttia…</translation>
 <translation id="9128870381267983090">Yhdistä verkkoon</translation>
 <translation id="9137013805542155359">Näytä alkuperäinen</translation>

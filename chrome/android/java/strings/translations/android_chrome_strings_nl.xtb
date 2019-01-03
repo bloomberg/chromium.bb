@@ -40,6 +40,7 @@
 <translation id="1259100630977430756">Pagina's die je bekijkt op privétabbladen, blijven niet in de geschiedenis, cookie-opslag of zoekgeschiedenis van je browser staan nadat je alle privétabbladen hebt gesloten. Bestanden die je downloadt of bladwijzers die je instelt, blijven behouden.
 
 Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browsegeschiedenis niet verborgen voor je werkgever, je internetprovider of de websites die je bezoekt.</translation>
+<translation id="1260236875608242557">Zoeken en verkennen</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="127138278192656016">Synchronisatie en alle services gebruiken</translation>
 <translation id="1272079795634619415">Stop</translation>
@@ -201,6 +202,7 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="2450083983707403292">Wil je het downloaden van <ph name="FILE_NAME" /> opnieuw starten?</translation>
 <translation id="2476578072172137802">Site instellingen</translation>
 <translation id="2482878487686419369">Meldingen</translation>
+<translation id="2494974097748878569">De Google Assistent in Chrome</translation>
 <translation id="2496180316473517155">Browsegeschiedenis</translation>
 <translation id="2498359688066513246">Hulp en feedback</translation>
 <translation id="2501278716633472235">Terug</translation>
@@ -407,6 +409,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4195643157523330669">Openen op nieuw tabblad</translation>
 <translation id="4198423547019359126">Geen beschikbare downloadlocaties</translation>
 <translation id="4209895695669353772">Schakel synchronisatie in om suggesties voor gepersonaliseerde content van Google te ontvangen</translation>
+<translation id="4222812745228723705">Als je doorgaat, ga je ermee akkoord dat Chrome gegevens van de functie 'Automatisch aanvullen', de URL van de site en bijbehorende content naar Google verzendt om deze service te leveren. Ga naar de instellingen van Chrome om de Google Assistent in Chrome en de functie 'Automatisch aanvullen' uit te schakelen. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">Geen content gevonden</translation>
 <translation id="4226663524361240545">Het apparaat kan trillen bij meldingen</translation>
 <translation id="423219824432660969">Gesynchroniseerde gegevens versleutelen met Google-wachtwoord vanaf <ph name="TIME" /></translation>
@@ -689,6 +692,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6277522088822131679">Er is een fout opgetreden bij het afdrukken van de pagina. Probeer het opnieuw.</translation>
 <translation id="6295158916970320988">Alle sites</translation>
 <translation id="629730747756840877">Account</translation>
+<translation id="6302269476990306341">De Google Assistent in Chrome wordt gestopt</translation>
 <translation id="6303969859164067831">Uitloggen en synchronisatie uitschakelen</translation>
 <translation id="6316139424528454185">Android-versie wordt niet ondersteund</translation>
 <translation id="6320088164292336938">Trillen</translation>
@@ -700,6 +704,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6343192674172527289">Geen downloads gevonden</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 en nog <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> andere}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 en nog <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> andere}}</translation>
 <translation id="6364438453358674297">Suggestie verwijderen uit geschiedenis?</translation>
+<translation id="6369229450655021117">Hier kun je op internet zoeken, content delen met vrienden en geopende pagina's bekijken</translation>
 <translation id="6378173571450987352">Details: gesorteerd op hoeveelheid gebruikte data</translation>
 <translation id="6383961787135158834">Site-opslag wissen…</translation>
 <translation id="6388207532828177975">Wissen en opnieuw instellen</translation>
@@ -825,6 +830,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> geselecteerd</translation>
 <translation id="7253272406652746122">Voeg een Google-account toe via de pagina Accounts in de app Instellingen van je apparaat.</translation>
 <translation id="7274013316676448362">Geblokkeerde site</translation>
+<translation id="7291387454912369099">Assistent voor automatisch invullen</translation>
 <translation id="729975465115245577">Je apparaat bevat geen app om het wachtwoordbestand in op te slaan.</translation>
 <translation id="7302081693174882195">Details: gesorteerd op de hoeveelheid bespaarde data</translation>
 <translation id="7333031090786104871">Nog steeds bezig met toevoegen van vorige site</translation>

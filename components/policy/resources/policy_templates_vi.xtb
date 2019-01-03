@@ -2115,7 +2115,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này không được đặt, người dùng có thể được hỏi có nhập hay không hoặc quá trình nhập có thể diễn ra tự động.</translation>
 <translation id="6224304369267200483">URL/miền đã tự động cho phép chứng thực Khóa bảo mật trực tiếp</translation>
 <translation id="6233173491898450179">Đặt thư mục tải xuống</translation>
-<translation id="6244210204546589761">Các URL được mở khi khởi động</translation>
+<translation id="6244210204546589761">Các URL sẽ mở khi khởi động</translation>
 <translation id="6258193603492867656">Chỉ định liệu Kerberos SPN được tạo có được bao gồm cổng không chuẩn hay không.
 
           Nếu bạn bật cài đặt này và nhập một cổng không chuẩn (tức là một cổng không phải là 80 hoặc 443), cổng này sẽ được bao gồm trong Kerberos SPN được tạo.

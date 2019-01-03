@@ -139,7 +139,7 @@
 <translation id="2188751878842439466">{COUNT,plural, =1{మూసిన కుండలీకరణ గుర్తు}other{# మూసిన కుండలీకరణ గుర్తులు}}</translation>
 <translation id="2199994615414171367">మునుపటి గణితం</translation>
 <translation id="2203046366315513658">విలువను తగ్గిస్తుంది</translation>
-<translation id="2220529011494928058">సమస్యను నివేదించు</translation>
+<translation id="2220529011494928058">సమస్యను నివేదించండి</translation>
 <translation id="2223693656926968778">ప్రస్తుత అంశంపై చర్య తీసుకోండి</translation>
 <translation id="225732394367814946">ప్రసంగ రేటు పెంచండి</translation>
 <translation id="2267945578749931355">తదుపరి అక్షరం</translation>
@@ -186,7 +186,7 @@
 <translation id="2644542693584024604">అక్షరక్రమం తప్పుగా ఉంది</translation>
 <translation id="2661530546602071611">గమనిక</translation>
 <translation id="2673280813984708147">సవరిస్తున్నారు</translation>
-<translation id="267442004702508783">రీఫ్రెష్ చేస్తుంది</translation>
+<translation id="267442004702508783">రిఫ్రెష్ చేస్తుంది</translation>
 <translation id="2684412629217766642">ChromeVox ట్యుటోరియల్‌ను మూసివేస్తుంది</translation>
 <translation id="2697408785920771974">autoinl</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{తెరిచిన కుండలీకరణ గుర్తు}other{# తెరిచిన కుండలీకరణ గుర్తులు}}</translation>
@@ -554,7 +554,7 @@
 <translation id="5189244881767082992">పంక్తి</translation>
 <translation id="5203930734796605961"><ph name="KEY" /> ఇప్పటికే ఆదేశానికి కేటాయించబడింది.</translation>
 <translation id="5205493599117157272"><ph name="TYPE" /> జాబితా.</translation>
-<translation id="520883772648104506">తదుపరి రేడియో బటన్ లేదు.</translation>
+<translation id="520883772648104506">తర్వాతి రేడియో బటన్ లేదు.</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">ముగింపు</translation>
 <translation id="5291783959063340370">ఆబ్జెక్ట్</translation>
@@ -796,7 +796,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="7240858705033280249">వివరాలకు వెళ్లండి</translation>
 <translation id="7241683698754534149">పెద్ద వివరణను కొత్త ట్యాబ్‌లో తెరవండి</translation>
 <translation id="7248671827512403053">అప్లికేషన్‌</translation>
-<translation id="725969808843520477">తదుపరి రేడియో బటన్</translation>
+<translation id="725969808843520477">తర్వాతి రేడియో బటన్</translation>
 <translation id="7261612856573623172">వచనం నుండి ప్రసంగం సిస్టమ్ వాయిస్</translation>
 <translation id="7269119382257320590">విరామచిహ్నాలు లేవు</translation>
 <translation id="7273174640290488576">ఖాళీ</translation>

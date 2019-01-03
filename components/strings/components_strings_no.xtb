@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">ukjent navn</translation>
 <translation id="1050038467049342496">Lukk andre apper</translation>
 <translation id="1055184225775184556">&amp;Angre tilleggingen</translation>
+<translation id="1058479211578257048">Lagrer kort …</translation>
 <translation id="10614374240317010">Aldri lagret</translation>
 <translation id="1066396345355680611">Du kan miste tilgangen til beskyttet innhold fra <ph name="SITE" /> og enkelte andre nettsteder.</translation>
 <translation id="106701514854093668">Bokmerker på datamaskinen</translation>
@@ -602,6 +603,7 @@
 <translation id="4989163558385430922">Se alle</translation>
 <translation id="4989809363548539747">Dette programtillegget støttes ikke</translation>
 <translation id="5002932099480077015">Hvis du slår på dette alternativet, lagrer Chrome en kopi av kortet ditt på denne enheten, slik at det blir raskere å fylle ut skjemaer i fremtiden.</translation>
+<translation id="5014174725590676422">Skjermen for første kjøring av Google-assistenten i Chrome vises</translation>
 <translation id="5015510746216210676">Maskinnavn:</translation>
 <translation id="5018422839182700155">Kan ikke åpne denne siden</translation>
 <translation id="5019198164206649151">Ugyldig funksjonalitet for sikkerhetskopiering</translation>
@@ -713,6 +715,7 @@
 <translation id="5720705177508910913">Gjeldende bruker</translation>
 <translation id="5730040223043577876">Chrome anbefaler at du tilbakestiller passordet ditt hvis du også har brukt det på andre nettsteder.</translation>
 <translation id="5732392974455271431">Foreldrene dine kan oppheve blokkeringen for deg</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{Lagre kort i Google-kontoen din}other{Lagre kort i Google-kontoen din}}</translation>
 <translation id="5763042198335101085">Angi en gyldig e-postadresse</translation>
 <translation id="5765072501007116331">For å se leveringsmetoder og -krav, velg en adresse</translation>
 <translation id="5770114862687765385">Filen ser ut til å være skadet. Klikk på «Tilbakestill»-knappen for å tilbakestille økten.</translation>
@@ -1191,6 +1194,7 @@ Mer informasjon:
 <translation id="9080712759204168376">Bestillingssammendrag</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> bruker vanligvis kryptering for å beskytte informasjonen din. Da Chromium prøvde å koble til <ph name="SITE" /> denne gangen, sendte nettstedet tilbake uvanlig og feil legitimasjon. Dette kan skje hvis en angriper prøver å utgi seg for å være <ph name="SITE" />, eller hvis en Wi-Fi-påloggingsskjerm har avbrutt tilkoblingen. Informasjonen din er likevel sikker fordi Chromium stoppet tilkoblingen før det ble utvekslet noen data.</translation>
 <translation id="9106062320799175032">Legg til faktureringsadresse</translation>
+<translation id="9110718169272311511">Du finner Google-assistenten i Chrome på nedre del av skjermen.</translation>
 <translation id="9114524666733003316">Bekrefter kortet …</translation>
 <translation id="9128870381267983090">Koble til nettverk</translation>
 <translation id="9137013805542155359">Vis original</translation>

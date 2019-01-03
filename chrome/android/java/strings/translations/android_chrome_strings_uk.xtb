@@ -40,6 +40,7 @@
 <translation id="1259100630977430756">Сторінки, які ви переглядаєте на приватних вкладках, не реєструються в історії веб-переглядача чи історії пошуку й не залишають файлів cookie, коли ви закриваєте всі приватні вкладки. Усі завантажені файли чи створені закладки зберігаються.
 
 Проте ви не можете сховати все. Навіть у приватному режимі ваш роботодавець, постачальник послуг Інтернету чи адміністратори веб-сайтів, які ви відвідуєте, можуть бачити, що ви переглядаєте.</translation>
+<translation id="1260236875608242557">Пошук і огляд</translation>
 <translation id="1264974993859112054">Спорт</translation>
 <translation id="127138278192656016">Використовувати синхронізацію та всі сервіси</translation>
 <translation id="1272079795634619415">Зупинити</translation>
@@ -703,6 +704,7 @@
 <translation id="6343192674172527289">Завантаження не знайдено</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}few{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}many{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
 <translation id="6364438453358674297">Вилучити пропозицію з історії?</translation>
+<translation id="6369229450655021117">Тут можна здійснювати пошук, ділитися вмістом із друзями та переглядати відкриті сторінки.</translation>
 <translation id="6378173571450987352">Деталі: відсортовано за кількістю використаного трафіку</translation>
 <translation id="6383961787135158834">Видалити дані сайтів…</translation>
 <translation id="6388207532828177975">Очистити та скинути</translation>

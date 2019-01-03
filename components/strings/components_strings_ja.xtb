@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">不明な名前</translation>
 <translation id="1050038467049342496">他のアプリを終了する</translation>
 <translation id="1055184225775184556">追加の取り消し（&amp;U）</translation>
+<translation id="1058479211578257048">カードを保存しています...</translation>
 <translation id="10614374240317010">常に保存しない</translation>
 <translation id="1066396345355680611"><ph name="SITE" /> と他の一部のサイトで、保護されたコンテンツにアクセスできなくなる可能性があります。</translation>
 <translation id="106701514854093668">パソコンのブックマーク</translation>
@@ -602,6 +603,7 @@
 <translation id="4989163558385430922">すべて表示</translation>
 <translation id="4989809363548539747">このプラグインはサポートされていません</translation>
 <translation id="5002932099480077015">有効にすると、Chrome ではこの端末にカードのコピーが保存されます。これにより、フォームにすばやく入力できるようになります。</translation>
+<translation id="5014174725590676422">Chrome の Google アシスタントの初回実行画面が表示されました</translation>
 <translation id="5015510746216210676">マシン名:</translation>
 <translation id="5018422839182700155">このページを開けません</translation>
 <translation id="5019198164206649151">代替ストアの状態が不適切です</translation>
@@ -713,6 +715,7 @@
 <translation id="5720705177508910913">現在のユーザー</translation>
 <translation id="5730040223043577876">パスワードを他のサイトで再使用した場合、Chrome ではパスワードの再設定を促すメッセージが表示されます。</translation>
 <translation id="5732392974455271431">ブロックの解除は保護者が行うことができます</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{Google アカウントにカードを保存}other{Google アカウントにカードを保存}}</translation>
 <translation id="5763042198335101085">有効なメールアドレスを入力してください</translation>
 <translation id="5765072501007116331">配達方法と要件を確認するには、住所を選択してください</translation>
 <translation id="5770114862687765385">ファイルが壊れているようです。[リセット] ボタンをクリックしてセッションをリセットしてください。</translation>
@@ -1193,6 +1196,7 @@
 <translation id="9080712759204168376">ご注文の概要</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> では通常、暗号化して情報を保護しています。今回、Chromium から <ph name="SITE" /> への接続試行時に、このウェブサイトからいつもとは異なる誤った認証情報が返されました。悪意のあるユーザーが <ph name="SITE" /> になりすまそうとしているか、Wi-Fi ログイン画面で接続が中断された可能性があります。データのやり取りが行われる前に Chromium によって接続が停止されたため、情報は引き続き保護されています。</translation>
 <translation id="9106062320799175032">請求先住所の追加</translation>
+<translation id="9110718169272311511">画面下部にある Chrome の Google アシスタントを使用できます</translation>
 <translation id="9114524666733003316">カードを確認しています…</translation>
 <translation id="9128870381267983090">ネットワークに接続する</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>

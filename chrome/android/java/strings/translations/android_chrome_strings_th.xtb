@@ -40,6 +40,7 @@
 <translation id="1259100630977430756">หน้าที่คุณดูในแท็บส่วนตัวจะไม่เก็บอยู่ในประวัติของเบราว์เซอร์ ที่จัดเก็บคุกกี้ หรือประวัติการค้นหาหลังจากที่คุณปิดแท็บส่วนตัวทั้งหมดแล้ว แต่จะมีการเก็บไฟล์ที่คุณดาวน์โหลดหรือบุ๊กมาร์กที่คุณสร้างไว้
 
 อย่างไรก็ตาม คนอื่นจะยังมองเห็นคุณ การเข้าสู่โหมดส่วนตัวไม่ได้เป็นการซ่อนการท่องเว็บจากนายจ้าง ผู้ให้บริการอินเทอร์เน็ต หรือเว็บไซต์ที่คุณเข้าชม</translation>
+<translation id="1260236875608242557">ค้นหาและสำรวจ</translation>
 <translation id="1264974993859112054">กีฬา</translation>
 <translation id="127138278192656016">ใช้การซิงค์และบริการทั้งหมด</translation>
 <translation id="1272079795634619415">หยุด</translation>
@@ -201,6 +202,7 @@
 <translation id="2450083983707403292">คุณต้องการเริ่มดาวน์โหลด <ph name="FILE_NAME" /> อีกครั้งไหม</translation>
 <translation id="2476578072172137802">การตั้งค่าไซต์</translation>
 <translation id="2482878487686419369">การแจ้งเตือน</translation>
+<translation id="2494974097748878569">Google Assistant ใน Chrome</translation>
 <translation id="2496180316473517155">ประวัติการเข้าชมที่เรียกดู</translation>
 <translation id="2498359688066513246">ความช่วยเหลือและความคิดเห็น</translation>
 <translation id="2501278716633472235">ย้อนกลับ</translation>
@@ -407,6 +409,7 @@
 <translation id="4195643157523330669">เปิดในแท็บใหม่</translation>
 <translation id="4198423547019359126">ไม่มีตำแหน่งการดาวน์โหลดที่ใช้ได้</translation>
 <translation id="4209895695669353772">เปิดการซิงค์เพื่อรับคำแนะนำเนื้อหาที่ปรับเปลี่ยนในแบบของคุณจาก Google</translation>
+<translation id="4222812745228723705">การดำเนินการต่อเป็นการยอมรับว่า Chrome จะส่งข้อมูลจากการป้อนข้อความอัตโนมัติของ Chrome, URL ของเว็บไซต์และเนื้อหาไปยัง Google เพื่อให้บริการนี้ ไปที่การตั้งค่า Chrome เพื่อปิด Google Assistant ใน Chrome และการป้อนข้อความอัตโนมัติของ Chrome <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">ไม่พบเนื้อหา</translation>
 <translation id="4226663524361240545">การแจ้งเตือนอาจทำให้อุปกรณ์สั่น</translation>
 <translation id="423219824432660969">เข้ารหัสลับข้อมูลที่ซิงค์ด้วยรหัสผ่าน Google ตั้งแต่ <ph name="TIME" /></translation>
@@ -689,6 +692,7 @@
 <translation id="6277522088822131679">เกิดปัญหาในการพิมพ์หน้านี้ โปรดลองอีกครั้ง</translation>
 <translation id="6295158916970320988">ไซต์ทั้งหมด</translation>
 <translation id="629730747756840877">บัญชี</translation>
+<translation id="6302269476990306341">Google Assistant ใน Chrome หยุดทำงาน</translation>
 <translation id="6303969859164067831">ออกจากระบบและปิดการซิงค์</translation>
 <translation id="6316139424528454185">ไม่รองรับ Android เวอร์ชันนี้</translation>
 <translation id="6320088164292336938">สั่น</translation>
@@ -700,6 +704,7 @@
 <translation id="6343192674172527289">ไม่พบการดาวน์โหลด</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> แห่ง}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> แห่ง}}</translation>
 <translation id="6364438453358674297">ต้องการนำคำแนะนำออกจากประวัติการเข้าชมใช่ไหม</translation>
+<translation id="6369229450655021117">คุณจะค้นหาเว็บ แชร์กับเพื่อนๆ และดูหน้าเว็บที่เปิดอยู่ได้จากที่นี่</translation>
 <translation id="6378173571450987352">รายละเอียด: จัดเรียงตามปริมาณเน็ตมือถือที่ใช้</translation>
 <translation id="6383961787135158834">ล้างที่เก็บข้อมูลไซต์…</translation>
 <translation id="6388207532828177975">ล้างข้อมูลและรีเซ็ต</translation>
@@ -825,6 +830,7 @@
 <translation id="7250468141469952378">เลือกไว้ <ph name="ITEM_COUNT" /> รายการ</translation>
 <translation id="7253272406652746122">เพิ่มบัญชี Google จากหน้า "บัญชี" ในแอปการตั้งค่าของอุปกรณ์</translation>
 <translation id="7274013316676448362">เว็บไซต์ที่ถูกบล็อก</translation>
+<translation id="7291387454912369099">Assistant สำหรับการป้อนข้อความอัตโนมัติ</translation>
 <translation id="729975465115245577">อุปกรณ์ของคุณไม่มีแอปไว้จัดเก็บไฟล์รหัสผ่าน</translation>
 <translation id="7302081693174882195">รายละเอียด: จัดเรียงตามปริมาณเน็ตมือถือที่ประหยัดได้</translation>
 <translation id="7333031090786104871">ยังเพิ่มไซต์ก่อนหน้าอยู่</translation>

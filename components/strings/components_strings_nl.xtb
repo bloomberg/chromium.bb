@@ -10,6 +10,7 @@
 <translation id="1038842779957582377">onbekende naam</translation>
 <translation id="1050038467049342496">Andere apps sluiten</translation>
 <translation id="1055184225775184556">&amp;Toevoegen ongedaan maken</translation>
+<translation id="1058479211578257048">Kaarten opslaan...</translation>
 <translation id="10614374240317010">Nooit opgeslagen</translation>
 <translation id="1066396345355680611">Mogelijk heb je geen toegang meer tot beveiligde content van <ph name="SITE" /> en sommige andere sites.</translation>
 <translation id="106701514854093668">Desktopbladwijzers</translation>
@@ -598,6 +599,7 @@
 <translation id="4989163558385430922">Alles weergeven</translation>
 <translation id="4989809363548539747">Deze plug-in wordt niet ondersteund</translation>
 <translation id="5002932099480077015">Indien ingeschakeld, slaat Chrome een kopie van je kaart op dit apparaat op zodat formulieren sneller kunnen worden ingevuld.</translation>
+<translation id="5014174725590676422">Het eerste uitvoeringsscherm van de Google Assistent in Chrome wordt weergegeven</translation>
 <translation id="5015510746216210676">Naam apparaat:</translation>
 <translation id="5018422839182700155">Kan deze pagina niet openen</translation>
 <translation id="5019198164206649151">Backend-opslag in slechte staat</translation>
@@ -709,6 +711,7 @@
 <translation id="5720705177508910913">Huidige gebruiker</translation>
 <translation id="5730040223043577876">Chrome raadt je aan je wachtwoord opnieuw in te stellen als je het voor andere sites hebt hergebruikt.</translation>
 <translation id="5732392974455271431">Je ouders kunnen de blokkering van deze site opheffen</translation>
+<translation id="5737183892635480227">{NUM_CARDS,plural, =1{Kaart opslaan in je Google-account}other{Kaarten opslaan in je Google-account}}</translation>
 <translation id="5763042198335101085">Geef een geldig e-mailadres op</translation>
 <translation id="5765072501007116331">Selecteer een adres om bezorgingsmethoden en vereisten te bekijken</translation>
 <translation id="5770114862687765385">Het bestand lijkt beschadigd. Klik op de knop Resetten om de sessie te resetten.</translation>
@@ -1187,6 +1190,7 @@ Aanvullende informatie:
 <translation id="9080712759204168376">Besteloverzicht</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> gebruikt gewoonlijk versleuteling om je gegevens te beschermen. Toen Chromium deze keer probeerde verbinding te maken met <ph name="SITE" />, retourneerde de website ongewone en onjuiste inloggegevens. Dit gebeurt wanneer een aanvaller probeert zich als <ph name="SITE" /> voor te doen of wanneer een wifi-inlogscherm de verbinding heeft verbroken. Je gegevens zijn nog steeds beveiligd omdat Chromium de verbinding heeft beëindigd voordat er gegevens konden worden uitgewisseld.</translation>
 <translation id="9106062320799175032">Factuuradres toevoegen</translation>
+<translation id="9110718169272311511">De Google Assistent in Chrome is onderaan het scherm beschikbaar</translation>
 <translation id="9114524666733003316">Creditcard bevestigen...</translation>
 <translation id="9128870381267983090">Verbinding maken met netwerk</translation>
 <translation id="9137013805542155359">Origineel weergeven</translation>

@@ -40,6 +40,7 @@
 <translation id="1259100630977430756">關閉所有私密分頁後，你在其中瀏覽過的網頁都不會保留在瀏覽器記錄、Cookie 儲存庫或搜尋記錄中，但系統仍會保留你下載的所有檔案或是你建立的所有書籤。
 
 不過，這並不代表你完全沒有瀏覽記錄。使用私密模式時，你的雇主、網際網路服務供應商和你所造訪的網站仍然可以追蹤你的瀏覽記錄。</translation>
+<translation id="1260236875608242557">搜尋及探索</translation>
 <translation id="1264974993859112054">運動資訊</translation>
 <translation id="127138278192656016">使用同步處理功能和所有服務</translation>
 <translation id="1272079795634619415">停止</translation>
@@ -201,6 +202,7 @@
 <translation id="2450083983707403292">要重新下載「<ph name="FILE_NAME" />」嗎？</translation>
 <translation id="2476578072172137802">網站設定</translation>
 <translation id="2482878487686419369">通知</translation>
+<translation id="2494974097748878569">Chrome 版 Google 助理</translation>
 <translation id="2496180316473517155">瀏覽記錄</translation>
 <translation id="2498359688066513246">說明與意見回饋</translation>
 <translation id="2501278716633472235">返回</translation>
@@ -407,6 +409,7 @@
 <translation id="4195643157523330669">在新分頁中開啟</translation>
 <translation id="4198423547019359126">沒有可用的下載位置</translation>
 <translation id="4209895695669353772">如要取得個人化的 Google 推薦內容，請開啟同步處理功能</translation>
+<translation id="4222812745228723705">選擇繼續即表示您同意 Chrome 將 Chrome 自動填入功能取得的資料、網站的網址及其內容傳送給 Google，讓 Google 為您提供這項服務。如要針對 Chrome 和 Chrome 自動填入功能關閉 Google 助理，請前往 Chrome 設定。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">找不到內容</translation>
 <translation id="4226663524361240545">收到通知時裝置會震動</translation>
 <translation id="423219824432660969">使用你在 <ph name="TIME" />設定的 Google 密碼，加密保護同步資料</translation>
@@ -689,6 +692,7 @@
 <translation id="6277522088822131679">列印網頁時發生問題，請再試一次。</translation>
 <translation id="6295158916970320988">所有網站</translation>
 <translation id="629730747756840877">帳戶</translation>
+<translation id="6302269476990306341">正在停止 Chrome 版 Google 助理</translation>
 <translation id="6303969859164067831">登出並關閉同步處理功能</translation>
 <translation id="6316139424528454185">系統不支援目前的 Android 版本</translation>
 <translation id="6320088164292336938">震動</translation>
@@ -700,6 +704,7 @@
 <translation id="6343192674172527289">找不到下載內容</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 和另外 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 個地址}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 和另外 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 個地址}}</translation>
 <translation id="6364438453358674297">從歷史記錄中移除建議項目？</translation>
+<translation id="6369229450655021117">在這裡，你可以搜尋網路、與好友分享內容及查看開啟的網頁</translation>
 <translation id="6378173571450987352">詳細資料：依使用資料量排序</translation>
 <translation id="6383961787135158834">清除網站儲存的資料…</translation>
 <translation id="6388207532828177975">清除並重設</translation>
@@ -825,6 +830,7 @@
 <translation id="7250468141469952378">已選取 <ph name="ITEM_COUNT" /> 個項目</translation>
 <translation id="7253272406652746122">在裝置的「設定」應用程式中，透過「帳戶」頁面新增 Google 帳戶。</translation>
 <translation id="7274013316676448362">已封鎖網站</translation>
+<translation id="7291387454912369099">Google 助理自動填入功能</translation>
 <translation id="729975465115245577">你的裝置沒有可儲存密碼檔案的應用程式。</translation>
 <translation id="7302081693174882195">詳細資料：依儲存資料量排序</translation>
 <translation id="7333031090786104871">仍在新增先前的網站</translation>

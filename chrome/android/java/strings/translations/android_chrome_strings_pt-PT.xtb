@@ -409,7 +409,7 @@ Para ajustar o termo de pesquisa, mantenha-o premido para selecionar. Para refin
 <translation id="4195643157523330669">Abrir num novo separador</translation>
 <translation id="4198423547019359126">Não existem localizações de transferência disponíveis.</translation>
 <translation id="4209895695669353772">Para obter conteúdo personalizado sugerido pelo Google, ative a sincronização.</translation>
-<translation id="4222812745228723705">Ao continuar, aceita que o Chrome envie dados do Preenchimento automático do Chrome, o URL do site e respetivo conteúdo à Google para fornecer este serviço. Aceda às definições do Chrome para desativar o Assistente Google no Chrome e o Preenchimento automático do Chrome. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
+<translation id="4222812745228723705">Ao continuar, aceita que o Chrome envie dados do Preenchimento automático do Chrome, do URL do site e respetivo conteúdo à Google para fornecer este serviço. Aceda às definições do Chrome para desativar o Assistente Google no Chrome e o Preenchimento automático do Chrome. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="4225719675976901337">Nenhum conteúdo encontrado</translation>
 <translation id="4226663524361240545">As notificações podem fazer com que o dispositivo vibre</translation>
 <translation id="423219824432660969">Encriptar dados sincronizados com a palavra-passe do Google a partir de <ph name="TIME" /></translation>
@@ -830,7 +830,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> selecionado(s).</translation>
 <translation id="7253272406652746122">Adicione uma Conta Google na página Contas na aplicação Definições do dispositivo.</translation>
 <translation id="7274013316676448362">Site bloqueado</translation>
-<translation id="7291387454912369099">O Assistente acionou o pagamento</translation>
+<translation id="7291387454912369099">Assistente para o Preenchimento automático</translation>
 <translation id="729975465115245577">O dispositivo não tem uma aplicação para armazenar o ficheiro de palavras-passe.</translation>
 <translation id="7302081693174882195">Detalhes: ordenado por quantidade de dados guardados</translation>
 <translation id="7333031090786104871">Ainda a adicionar o site anterior…</translation>
