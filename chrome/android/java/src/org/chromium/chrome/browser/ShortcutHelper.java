@@ -537,12 +537,12 @@ public class ShortcutHelper {
     }
 
     /**
-     * Returns the package name of the WebAPK if WebAPKs are enabled and there is an installed
-     * WebAPK which can handle {@link url}. Returns null otherwise.
+     * Returns the package name of one of the WebAPKs which can handle {@link url}. Returns null if
+     * there are no matches.
      */
     @CalledByNative
-    private static String queryWebApkPackage(String url) {
-        return WebApkValidator.queryWebApkPackage(ContextUtils.getApplicationContext(), url);
+    private static String queryFirstWebApkPackage(String url) {
+        return WebApkValidator.queryFirstWebApkPackage(ContextUtils.getApplicationContext(), url);
     }
 
     /**

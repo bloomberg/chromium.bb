@@ -494,8 +494,8 @@ public class NotificationPlatformBridge {
             final String title, final String body, final Bitmap image, final Bitmap icon,
             final Bitmap badge, final int[] vibrationPattern, final long timestamp,
             final boolean renotify, final boolean silent, final ActionInfo[] actions) {
-        final String webApkPackage =
-                WebApkValidator.queryWebApkPackage(ContextUtils.getApplicationContext(), scopeUrl);
+        final String webApkPackage = WebApkValidator.queryFirstWebApkPackage(
+                ContextUtils.getApplicationContext(), scopeUrl);
         if (webApkPackage != null) {
             WebApkIdentityServiceClient.CheckBrowserBacksWebApkCallback callback =
                     new WebApkIdentityServiceClient.CheckBrowserBacksWebApkCallback() {
@@ -700,7 +700,7 @@ public class NotificationPlatformBridge {
     private void closeNotification(final String notificationId, String scopeUrl,
             boolean hasQueriedWebApkPackage, String webApkPackage) {
         if (!hasQueriedWebApkPackage) {
-            final String webApkPackageFound = WebApkValidator.queryWebApkPackage(
+            final String webApkPackageFound = WebApkValidator.queryFirstWebApkPackage(
                     ContextUtils.getApplicationContext(), scopeUrl);
             if (webApkPackageFound != null) {
                 WebApkIdentityServiceClient.CheckBrowserBacksWebApkCallback callback =

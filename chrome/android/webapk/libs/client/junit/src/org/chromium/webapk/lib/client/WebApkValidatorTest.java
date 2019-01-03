@@ -80,8 +80,8 @@ public class WebApkValidatorTest {
     }
 
     /**
-     * Tests {@link WebApkValidator.queryWebApkPackage()} returns a WebAPK's package name if the
-     * WebAPK can handle the given URL and the WebAPK is valid.
+     * Tests {@link WebApkValidator.queryFirstWebApkPackage()} returns a WebAPK's package name if
+     * the WebAPK can handle the given URL and the WebAPK is valid.
      */
     @Test
     public void testQueryWebApkPackageReturnsPackageIfTheURLCanBeHandled() {
@@ -94,7 +94,7 @@ public class WebApkValidatorTest {
                     WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE), TEST_STARTURL));
 
             assertEquals(WEBAPK_PACKAGE_NAME,
-                    WebApkValidator.queryWebApkPackage(
+                    WebApkValidator.queryFirstWebApkPackage(
                             RuntimeEnvironment.application, URL_OF_WEBAPK));
         } catch (URISyntaxException e) {
             Assert.fail("URI is invalid.");
@@ -102,7 +102,8 @@ public class WebApkValidatorTest {
     }
 
     /**
-     * Tests {@link WebApkValidator.queryWebApkPackage()} returns null for a non-browsable Intent.
+     * Tests {@link WebApkValidator.queryFirstWebApkPackage()} returns null for a non-browsable
+     * Intent.
      */
     @Test
     public void testQueryWebApkPackageReturnsNullForNonBrowsableIntent() {
@@ -113,7 +114,7 @@ public class WebApkValidatorTest {
             mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
                     WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE), TEST_STARTURL));
 
-            assertNull(WebApkValidator.queryWebApkPackage(
+            assertNull(WebApkValidator.queryFirstWebApkPackage(
                     RuntimeEnvironment.application, URL_OF_WEBAPK));
         } catch (URISyntaxException e) {
             Assert.fail("URI is invalid.");
@@ -121,7 +122,7 @@ public class WebApkValidatorTest {
     }
 
     /**
-     * Tests {@link WebApkValidator.queryWebApkPackage()} returns null if no WebAPK handles the
+     * Tests {@link WebApkValidator.queryFirstWebApkPackage()} returns null if no WebAPK handles the
      * given URL.
      */
     @Test
@@ -134,7 +135,7 @@ public class WebApkValidatorTest {
             mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
                     WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE), TEST_STARTURL));
 
-            assertNull(WebApkValidator.queryWebApkPackage(
+            assertNull(WebApkValidator.queryFirstWebApkPackage(
                     RuntimeEnvironment.application, URL_WITHOUT_WEBAPK));
         } catch (URISyntaxException e) {
             Assert.fail("URI is invalid.");

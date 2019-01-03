@@ -2189,7 +2189,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             RecordUserAction.record("MobileMenuAddToHomescreen");
         } else if (id == R.id.open_webapk_id) {
             Context context = ContextUtils.getApplicationContext();
-            String packageName = WebApkValidator.queryWebApkPackage(context, currentTab.getUrl());
+            String packageName =
+                    WebApkValidator.queryFirstWebApkPackage(context, currentTab.getUrl());
             Intent launchIntent = WebApkNavigationClient.createLaunchWebApkIntent(
                     packageName, currentTab.getUrl(), false);
             try {

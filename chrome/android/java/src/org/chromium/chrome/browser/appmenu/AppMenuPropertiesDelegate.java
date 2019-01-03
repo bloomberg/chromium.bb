@@ -263,7 +263,7 @@ public class AppMenuPropertiesDelegate {
             Context context = ContextUtils.getApplicationContext();
             long addToHomeScreenStart = SystemClock.elapsedRealtime();
             ResolveInfo resolveInfo =
-                    WebApkValidator.queryWebApkResolveInfo(context, currentTab.getUrl());
+                    WebApkValidator.queryFirstWebApkResolveInfo(context, currentTab.getUrl());
             RecordHistogram.recordTimesHistogram("Android.PrepareMenu.OpenWebApkVisibilityCheck",
                     SystemClock.elapsedRealtime() - addToHomeScreenStart, TimeUnit.MILLISECONDS);
 

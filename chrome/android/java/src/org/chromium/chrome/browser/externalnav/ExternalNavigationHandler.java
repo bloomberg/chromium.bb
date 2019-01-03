@@ -610,7 +610,7 @@ public class ExternalNavigationHandler {
 
         // If the only specialized intent handler is a WebAPK, set the intent's package to
         // launch the WebAPK without showing the intent picker.
-        String targetWebApkPackageName = mDelegate.findWebApkPackageName(resolvingInfos);
+        String targetWebApkPackageName = mDelegate.findFirstWebApkPackageName(resolvingInfos);
 
         // We can't rely on this falling through to startActivityIfNeeded and behaving
         // correctly for WebAPKs. This is because the target of the intent is the WebApk's main
