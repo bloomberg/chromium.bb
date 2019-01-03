@@ -86,8 +86,11 @@ Vector3dF ScaleVector3d(const Vector3dF& v,
 
 float AngleBetweenVectorsInDegrees(const gfx::Vector3dF& base,
                                    const gfx::Vector3dF& other) {
-  return gfx::RadToDeg(
-      std::acos(gfx::DotProduct(base, other) / base.Length() / other.Length()));
+  // Clamp the resulting value to prevent potential NANs from floating point
+  // precision issues.
+  return gfx::RadToDeg(std::acos(fmax(
+      fmin(gfx::DotProduct(base, other) / base.Length() / other.Length(), 1.f),
+      -1.f)));
 }
 
 float ClockwiseAngleBetweenVectorsInDegrees(const gfx::Vector3dF& base,
