@@ -34,8 +34,7 @@ ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
       parent_node_(&scenic_session_),
       node_(&scenic_session_),
       input_node_(&scenic_session_),
-      render_node_(&scenic_session_),
-      input_listener_binding_(this) {
+      render_node_(&scenic_session_) {
   scenic_session_.set_error_handler(
       fit::bind_member(this, &ScenicWindow::OnScenicError));
   scenic_session_.set_event_handler(
@@ -67,15 +66,6 @@ ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
   view_.set_error_handler(fit::bind_member(this, &ScenicWindow::OnViewError));
   view_listener_binding_.set_error_handler(
       fit::bind_member(this, &ScenicWindow::OnViewError));
-
-  // Setup ViewsV1 input event listener.
-  // TODO(crbug.com/881591): Remove this when ViewsV1 deprecation is complete.
-  fuchsia::sys::ServiceProviderPtr view_service_provider;
-  view_->GetServiceProvider(view_service_provider.NewRequest());
-  view_service_provider->ConnectToService(
-      fuchsia::ui::input::InputConnection::Name_,
-      input_connection_.NewRequest().TakeChannel());
-  input_connection_->SetEventListener(input_listener_binding_.NewBinding());
 
   // Call Present() to ensure that the scenic session commands are processed,
   // which is necessary to receive metrics event from Scenic.
@@ -264,20 +254,6 @@ void ScenicWindow::OnScenicEvents(
       }
     }
   }
-}
-
-void ScenicWindow::OnEvent(fuchsia::ui::input::InputEvent event,
-                           OnEventCallback callback) {
-  bool result = false;
-
-  if (event.is_focus()) {
-    delegate_->OnActivationChanged(event.focus().focused);
-    result = true;
-  } else {
-    result = event_dispatcher_.ProcessEvent(event);
-  }
-
-  callback(result);
 }
 
 void ScenicWindow::OnViewError(zx_status_t status) {
