@@ -11,15 +11,25 @@ const char kTestFilePath1[] = "tmp/test/font1.ttf";
 const char kDummyAndroidBuildFingerPrint[] = "A";
 
 void PopulateFontUniqueNameEntry(
-    blink::FontUniqueNameTable_FontUniqueNameEntry* entry,
+    blink::FontUniqueNameTable* font_unique_name_table,
     const std::string& path,
     int32_t ttc_index,
-    const std::string& full_name,
-    const std::string& postscript_name) {
-  entry->set_file_path(path);
-  entry->set_ttc_index(ttc_index);
-  entry->set_full_name(blink::IcuFoldCase(full_name));
-  entry->set_postscript_name(blink::IcuFoldCase(postscript_name));
+    const std::set<std::string>& names) {
+  auto* font_entry = font_unique_name_table->add_fonts();
+  font_entry->set_file_path(path);
+  font_entry->set_ttc_index(ttc_index);
+
+  std::set<std::string> names_folded;
+  for (auto& name : names) {
+    names_folded.insert(blink::IcuFoldCase(name));
+  }
+
+  // Set iteration will return values in sorted order.
+  for (auto& name : names_folded) {
+    auto* names_entry = font_unique_name_table->add_name_map();
+    names_entry->set_font_name(name);
+    names_entry->set_font_index(0);
+  }
 }
 
 }  // namespace
@@ -30,11 +40,12 @@ class FontTableMatcherTest : public ::testing::Test {
  protected:
   void SetUp() override {
     FontUniqueNameTable font_unique_name_table;
-    font_unique_name_table.set_stored_for_android_build_fp(
+    font_unique_name_table.set_stored_for_platform_version_identifier(
         kDummyAndroidBuildFingerPrint);
-    PopulateFontUniqueNameEntry(font_unique_name_table.add_font_entries(),
-                                kTestFilePath1, 0, "FONT NAME UPPERCASE",
-                                "FONT-NAME-UPPERCASE");
+    PopulateFontUniqueNameEntry(
+        &font_unique_name_table, kTestFilePath1, 0,
+        {u8"FONT NAME UPPERCASE", u8"எழுத்துரு பெயர்", u8"字體名稱",
+         u8"FONT-NAME-UPPERCASE", u8"எழுத்துரு-பெயர்", u8"字體名稱"});
     base::ReadOnlySharedMemoryMapping mapping =
         FontTableMatcher::MemoryMappingFromFontUniqueNameTable(
             std::move(font_unique_name_table));
@@ -57,6 +68,22 @@ TEST_F(FontTableMatcherTest, CaseInsensitiveMatchingBothNames) {
   ASSERT_TRUE(result.has_value());
   ASSERT_EQ(result->font_path, kTestFilePath1);
   ASSERT_EQ(result->ttc_index, 0u);
+}
+
+TEST_F(FontTableMatcherTest, MatchTamilChinese) {
+  ASSERT_EQ(matcher_->AvailableFonts(), 1u);
+  for (std::string font_name :
+       {u8"எழுத்துரு பெயர்", u8"எழுத்துரு-பெயர்", u8"字體名稱"}) {
+    base::Optional<FontTableMatcher::MatchResult> result =
+        matcher_->MatchName(font_name);
+    ASSERT_TRUE(result.has_value());
+    ASSERT_EQ(result->font_path, kTestFilePath1);
+    ASSERT_EQ(result->ttc_index, 0u);
+
+    base::Optional<FontTableMatcher::MatchResult> result_for_substring =
+        matcher_->MatchName(font_name.substr(0, font_name.size() - 2u));
+    ASSERT_FALSE(result_for_substring.has_value());
+  }
 }
 
 TEST_F(FontTableMatcherTest, NoSubStringMatching) {
