@@ -1075,9 +1075,7 @@ TEST_F(PaintInvalidatorCustomClientTest,
        NonCompositedInvalidationChangeOpacity) {
   // This test runs in a non-composited mode, so invalidations should
   // be issued via InvalidateChromeClient.
-  SetBodyInnerHTML(R"HTML(
-    <div id=target style="opacity: 0.99"></div>
-    )HTML");
+  SetBodyInnerHTML("<div id=target style='opacity: 0.99'></div>");
 
   auto* target = GetDocument().getElementById("target");
   ASSERT_TRUE(target);
@@ -1088,6 +1086,28 @@ TEST_F(PaintInvalidatorCustomClientTest,
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_TRUE(InvalidationRecorded());
+}
+
+TEST_F(PaintInvalidatorCustomClientTest,
+       NoInvalidationRepeatedUpdateLifecyleExceptPaint) {
+  SetBodyInnerHTML("<div id=target style='opacity: 0.99'></div>");
+
+  auto* target = GetDocument().getElementById("target");
+  ASSERT_TRUE(target);
+  ResetInvalidationRecorded();
+
+  target->setAttribute(html_names::kStyleAttr, "opacity: 0.98");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(GetDocument().View()->GetLayoutView()->Layer()->NeedsRepaint());
+  EXPECT_TRUE(InvalidationRecorded());
+
+  ResetInvalidationRecorded();
+  // Let PrePaintTreeWalk do something instead of no-op.
+  GetDocument().View()->SetNeedsPaintPropertyUpdate();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  // The layer NeedsRepaint flag is only cleared after paint.
+  EXPECT_TRUE(GetDocument().View()->GetLayoutView()->Layer()->NeedsRepaint());
+  EXPECT_FALSE(InvalidationRecorded());
 }
 
 }  // namespace blink
