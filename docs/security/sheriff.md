@@ -70,6 +70,7 @@ emergencies](https://www.youtube.com/watch?v=buHaKYL9Jhg).
 and
 [chrome-security@google.com](https://groups.google.com/a/google.com/forum/#!forum/chrome-security)
 lists get a reply (by someone; not necessarily the sheriffs themselves).
+See [go/chrome-security-emails](https://goto.google.com/chrome-security-emails) for a dashboard.
   * Note: external emails will always come in on security@chromium.org as
 chrome-security@google.com is a google-only list, but both need to be triaged.
 * Ensure [accurate label management](security-labels.md) on bugs, for example
