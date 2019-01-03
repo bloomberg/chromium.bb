@@ -2021,6 +2021,7 @@ jumbo_source_set("unit_tests") {
     "layout/layout_table_row_test.cc",
     "layout/layout_table_section_test.cc",
     "layout/layout_table_test.cc",
+    "layout/layout_text_control_single_line_test.cc",
     "layout/layout_text_control_test.cc",
     "layout/layout_text_fragment_test.cc",
     "layout/layout_text_test.cc",

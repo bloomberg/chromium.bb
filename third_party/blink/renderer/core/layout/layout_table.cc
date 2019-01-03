@@ -925,6 +925,7 @@ void LayoutTable::InvalidateCollapsedBordersForAllCellsIfNeeded() {
 
 void LayoutTable::ComputeVisualOverflow(bool) {
   LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
+  ClearVisualOverflow();
   AddVisualOverflowFromChildren();
 
   AddVisualEffectOverflow();

@@ -319,6 +319,24 @@ TEST_F(LayoutTableTest, OutOfOrderHeadFootAndBody) {
             table->BottomNonEmptySection());
 }
 
+TEST_F(LayoutTableTest, VisualOverflowCleared) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #table {
+        width: 50px; height: 50px; box-shadow: 5px 5px 5px black;
+      }
+    </style>
+    <table id='table' style='width: 50px; height: 50px'></table>
+  )HTML");
+  auto* table = GetTableByElementId("table");
+  EXPECT_EQ(LayoutRect(-3, -3, 66, 66), table->SelfVisualOverflowRect());
+  ToElement(table->GetNode())
+      ->setAttribute(html_names::kStyleAttr, "box-shadow: initial");
+  GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  EXPECT_EQ(LayoutRect(0, 0, 50, 50), table->SelfVisualOverflowRect());
+}
+
 }  // anonymous namespace
 
 }  // namespace blink
