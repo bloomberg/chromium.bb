@@ -82,7 +82,7 @@ public class StatusView extends LinearLayout {
                         public void run() {
                             mIconView.setVisibility(View.GONE);
                         }
-                    });
+                    }).start();
         }
 
         TransitionDrawable newImage =
