@@ -2578,6 +2578,10 @@ if (enable_java_templates) {
           forward_variables_from(invoker, [ "proguard_jar_path" ])
           deps += _deps + [ ":$_compile_resources_target" ]
           proguard_configs = [ _jar_path ]
+          if (defined(invoker.apk_under_test)) {
+            proguard_args = [ "--mapping=@FileArg($_rebased_build_config:deps_info:proguard_under_test_mapping)" ]
+            deps += [ "${invoker.apk_under_test}__final_dex" ]
+          }
           proguard_mapping_path = _proguard_mapping_path
         } else {
           if (_enable_multidex) {
