@@ -270,14 +270,16 @@ TEST(Vector3dTest, AngleBetweenVectorsInDegress) {
     float expected;
     gfx::Vector3dF input1;
     gfx::Vector3dF input2;
-  } tests[] = {
-      {0, gfx::Vector3dF(0, 1, 0), gfx::Vector3dF(0, 1, 0)},
-      {90, gfx::Vector3dF(0, 1, 0), gfx::Vector3dF(0, 0, 1)},
-      {45,
-       gfx::Vector3dF(0, 1, 0),
-       gfx::Vector3dF(0, 0.70710678188f, 0.70710678188f)},
-      {180, gfx::Vector3dF(0, 1, 0), gfx::Vector3dF(0, -1, 0)},
-  };
+  } tests[] = {{0, gfx::Vector3dF(0, 1, 0), gfx::Vector3dF(0, 1, 0)},
+               {90, gfx::Vector3dF(0, 1, 0), gfx::Vector3dF(0, 0, 1)},
+               {45, gfx::Vector3dF(0, 1, 0),
+                gfx::Vector3dF(0, 0.70710678188f, 0.70710678188f)},
+               {180, gfx::Vector3dF(0, 1, 0), gfx::Vector3dF(0, -1, 0)},
+               // Two vectors that are sufficiently close enough together to
+               // trigger an issue that produces NANs if the value passed to
+               // acos is not clamped due to floating point precision.
+               {0, gfx::Vector3dF(0, -0.990842f, -0.003177f),
+                gfx::Vector3dF(0, -0.999995f, -0.003124f)}};
 
   for (size_t i = 0; i < base::size(tests); ++i) {
     float actual =
