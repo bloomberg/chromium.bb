@@ -599,10 +599,12 @@ TEST_F(NativeWidgetMacTest, MiniaturizeExternally) {
   EXPECT_EQ(3, view->paint_count());
 
   widget->CloseNow();
+}
 
+TEST_F(NativeWidgetMacTest, MiniaturizeFramelessWindow) {
   // Create a widget without a minimize button.
-  widget = CreateTopLevelFramelessPlatformWidget();
-  ns_window = widget->GetNativeWindow().GetNativeNSWindow();
+  Widget* widget = CreateTopLevelFramelessPlatformWidget();
+  NSWindow* ns_window = widget->GetNativeWindow().GetNativeNSWindow();
   widget->SetBounds(gfx::Rect(100, 100, 300, 300));
   widget->Show();
   EXPECT_FALSE(widget->IsMinimized());
@@ -613,6 +615,8 @@ TEST_F(NativeWidgetMacTest, MiniaturizeExternally) {
 
   // But this should work.
   widget->Minimize();
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_TRUE(widget->IsMinimized());
 
   // Test closing while minimized.

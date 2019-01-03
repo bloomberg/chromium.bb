@@ -271,6 +271,13 @@
   return touchBarDelegate_ ? [touchBarDelegate_ makeTouchBar] : nil;
 }
 
+// On newer SDKs, _canMiniaturize respects NSMiniaturizableWindowMask in the
+// window's styleMask. Views assumes that Widgets can always be minimized,
+// regardless of their window style, so override that behavior here.
+- (BOOL)_canMiniaturize {
+  return YES;
+}
+
 // CommandDispatchingWindow implementation.
 
 - (void)setCommandHandler:(id<UserInterfaceItemCommandHandler>)commandHandler {
