@@ -29,7 +29,7 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user.h"

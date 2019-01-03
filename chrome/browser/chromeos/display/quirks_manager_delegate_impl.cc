@@ -8,7 +8,7 @@
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/chromeos_paths.h"
+#include "chromeos/constants/chromeos_paths.h"
 #include "google_apis/google_api_keys.h"
 
 namespace {

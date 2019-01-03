@@ -11,7 +11,7 @@
 #include "base/command_line.h"
 #include "base/system/sys_info.h"
 #include "base/task_runner.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/user_manager/user_names.h"
 #include "components/user_manager/user_type.h"
 

@@ -27,7 +27,7 @@
 #include "ash/public/cpp/wallpaper_types.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

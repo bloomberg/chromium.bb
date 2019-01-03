@@ -8,7 +8,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/settings/cros_settings_names.h"
 

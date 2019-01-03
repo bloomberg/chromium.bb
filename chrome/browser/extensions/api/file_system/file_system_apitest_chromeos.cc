@@ -20,7 +20,7 @@
 #include "chrome/browser/extensions/api/file_system/consent_provider.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "components/user_manager/scoped_user_manager.h"

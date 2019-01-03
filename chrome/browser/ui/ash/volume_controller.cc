@@ -11,7 +11,7 @@
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "media/audio/sounds/sounds_manager.h"
 #include "services/service_manager/public/cpp/connector.h"

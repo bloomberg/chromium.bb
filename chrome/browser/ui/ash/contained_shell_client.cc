@@ -10,7 +10,7 @@
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/connector.h"

@@ -197,7 +197,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/memory/memory_pressure_monitor_chromeos.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #endif
 
 #if defined(USE_GLIB)

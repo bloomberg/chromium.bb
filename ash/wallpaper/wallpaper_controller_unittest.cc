@@ -30,7 +30,7 @@
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time_override.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/testing_pref_service.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/skia/include/core/SkBitmap.h"

@@ -10,7 +10,7 @@
 #include "ash/public/cpp/app_types.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_features.h"

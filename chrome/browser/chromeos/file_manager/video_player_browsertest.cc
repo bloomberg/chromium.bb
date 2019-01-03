@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/file_manager/file_manager_browsertest_base.h"
 
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 
 namespace file_manager {
 

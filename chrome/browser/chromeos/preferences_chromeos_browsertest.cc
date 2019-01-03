@@ -19,7 +19,7 @@
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/system/fake_input_device_settings.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/feedback/tracing_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"

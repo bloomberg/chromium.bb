@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 
 namespace chromeos {
 namespace {

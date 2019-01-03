@@ -13,7 +13,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"

@@ -11,7 +11,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -35,7 +35,7 @@
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/system/devicemode.h"
 #include "chromeos/system/statistics_provider.h"

@@ -8,7 +8,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"

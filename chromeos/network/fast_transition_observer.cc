@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/system/sys_info.h"
 #include "base/values.h"
-#include "chromeos/chromeos_pref_names.h"
+#include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_registry_simple.h"

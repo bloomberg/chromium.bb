@@ -48,7 +48,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/dbus/dbus_helper.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chromeos/chromeos_paths.h"
+#include "chromeos/constants/chromeos_paths.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace {

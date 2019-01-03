@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_CHROMEOS_PREF_NAMES_H_
-#define CHROMEOS_CHROMEOS_PREF_NAMES_H_
+#ifndef CHROMEOS_CONSTANTS_CHROMEOS_PREF_NAMES_H_
+#define CHROMEOS_CONSTANTS_CHROMEOS_PREF_NAMES_H_
 
 #include "chromeos/chromeos_export.h"
 
@@ -22,4 +22,4 @@ CHROMEOS_EXPORT extern const char kDeviceWiFiFastTransitionEnabled[];
 }  // namespace prefs
 }  // namespace chromeos
 
-#endif  // CHROMEOS_CHROMEOS_PREF_NAMES_H_
+#endif  // CHROMEOS_CONSTANTS_CHROMEOS_PREF_NAMES_H_

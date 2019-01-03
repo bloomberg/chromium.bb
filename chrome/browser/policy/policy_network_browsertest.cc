@@ -41,7 +41,7 @@
 #include "services/network/public/mojom/network_service_test.mojom.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #endif
 
 namespace {

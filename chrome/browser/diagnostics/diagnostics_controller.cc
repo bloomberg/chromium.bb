@@ -18,7 +18,7 @@
 #include "chrome/common/chrome_switches.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #endif
 
 namespace diagnostics {

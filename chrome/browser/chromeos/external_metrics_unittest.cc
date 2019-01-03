@@ -11,7 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/metrics/serialization/metric_sample.h"
 #include "components/metrics/serialization/serialization_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"

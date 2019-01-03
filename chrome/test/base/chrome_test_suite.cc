@@ -28,7 +28,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/process/process_metrics.h"
-#include "chromeos/chromeos_paths.h"
+#include "chromeos/constants/chromeos_paths.h"
 #endif
 
 #if defined(OS_MACOSX)

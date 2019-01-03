@@ -34,7 +34,7 @@
 #if defined(OS_CHROMEOS)
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #endif
 
 #if !defined(OS_ANDROID)

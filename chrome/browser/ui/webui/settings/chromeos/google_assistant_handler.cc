@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_framework_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_service_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "services/service_manager/public/cpp/connector.h"

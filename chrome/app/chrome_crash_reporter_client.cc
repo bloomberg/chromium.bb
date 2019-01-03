@@ -37,7 +37,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/common/channel_info.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/version_info/version_info.h"
 #endif
 

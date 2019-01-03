@@ -24,7 +24,7 @@
 #include "chrome/browser/chromeos/scoped_set_running_on_chromeos_for_testing.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "chromeos/disks/disk.h"

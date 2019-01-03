@@ -10,7 +10,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/monotone_cubic_spline.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {

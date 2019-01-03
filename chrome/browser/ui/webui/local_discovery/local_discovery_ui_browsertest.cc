@@ -43,7 +43,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/common/pref_names.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #endif
 

@@ -18,7 +18,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #endif
 
 namespace extensions {

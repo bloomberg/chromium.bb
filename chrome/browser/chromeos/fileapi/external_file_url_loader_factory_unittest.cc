@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/drive/chromeos/fake_file_system.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "components/drive/service/test_util.h"

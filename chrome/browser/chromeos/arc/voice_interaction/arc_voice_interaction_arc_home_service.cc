@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
 #include "chrome/browser/ui/ash/assistant/assistant_context_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_prefs.h"

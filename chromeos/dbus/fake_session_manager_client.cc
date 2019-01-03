@@ -19,7 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/chromeos_paths.h"
+#include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/login_manager/policy_descriptor.pb.h"
 #include "chromeos/dbus/util/account_identifier_operators.h"

@@ -41,7 +41,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #else
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"

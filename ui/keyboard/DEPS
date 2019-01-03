@@ -1,5 +1,4 @@
 include_rules = [
-  "+chromeos/chromeos_features.h",
   "+components/ukm",
   "+mojo/public",
   "+services/metrics/public/cpp",

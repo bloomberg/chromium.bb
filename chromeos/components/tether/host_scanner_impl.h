@@ -14,11 +14,11 @@
 #include "base/observer_list.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/tether/host_scanner.h"
 #include "chromeos/components/tether/host_scanner_operation.h"
 #include "chromeos/components/tether/notification_presenter.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/session_manager/core/session_manager_observer.h"
 

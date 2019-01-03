@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/values.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "content/public/browser/web_ui.h"
 
 namespace chromeos {

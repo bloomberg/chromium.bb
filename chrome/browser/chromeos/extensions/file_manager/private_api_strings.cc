@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/strings/grit/components_strings.h"
 #include "extensions/common/extension_l10n_util.h"

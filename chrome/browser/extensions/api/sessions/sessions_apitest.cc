@@ -38,7 +38,7 @@
 #include "extensions/common/extension_builder.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #endif
 
 namespace utils = extension_function_test_utils;

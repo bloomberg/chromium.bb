@@ -26,7 +26,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/extensions/updater/local_extension_cache.h"
-#include "chromeos/chromeos_paths.h"
+#include "chromeos/constants/chromeos_paths.h"
 #endif
 
 namespace extensions {

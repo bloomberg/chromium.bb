@@ -25,7 +25,7 @@
 #include "chrome/browser/web_data_service_factory.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "chromeos/account_manager/account_manager_factory.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/core/browser/account_reconcilor.h"

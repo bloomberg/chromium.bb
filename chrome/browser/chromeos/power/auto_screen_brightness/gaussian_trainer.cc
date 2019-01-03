@@ -6,7 +6,7 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 
 #include <algorithm>
 #include <cmath>

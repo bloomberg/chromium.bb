@@ -33,7 +33,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #endif
 
 using content::NavigationController;

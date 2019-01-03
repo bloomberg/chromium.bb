@@ -24,7 +24,7 @@
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/install_attributes.h"
 #include "chromeos/system/statistics_provider.h"

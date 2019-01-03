@@ -20,7 +20,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "content/public/browser/notification_service.h"
 

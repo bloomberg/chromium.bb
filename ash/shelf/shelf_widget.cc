@@ -27,7 +27,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_owner.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"

@@ -13,7 +13,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/onc/onc_parsed_certificates.h"

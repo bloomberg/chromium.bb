@@ -99,7 +99,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #endif
 
 using app_modal::JavaScriptAppModalDialog;

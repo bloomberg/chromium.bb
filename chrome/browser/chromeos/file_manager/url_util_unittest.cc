@@ -11,7 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "extensions/common/constants.h"
 #include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"

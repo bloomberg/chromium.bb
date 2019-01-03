@@ -21,7 +21,7 @@
 #include "google_apis/google_api_keys.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #endif
 
 using signin::AccountConsistencyMethod;

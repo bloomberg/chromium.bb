@@ -44,7 +44,7 @@
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #endif
 
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)

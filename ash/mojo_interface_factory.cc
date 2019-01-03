@@ -51,7 +51,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/single_thread_task_runner.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/keyboard/keyboard_controller.h"
 
 namespace ash {

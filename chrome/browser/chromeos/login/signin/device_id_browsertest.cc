@@ -17,7 +17,7 @@
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/user_manager/known_user.h"

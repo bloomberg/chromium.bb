@@ -24,7 +24,7 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"

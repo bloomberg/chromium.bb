@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "services/device/public/cpp/hid/fake_input_service_linux.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/input_service.mojom.h"

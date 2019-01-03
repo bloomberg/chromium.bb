@@ -21,7 +21,7 @@
 #include "chrome/browser/chromeos/power/ml/smart_dim/tf_native_inference.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger_helpers.h"
 #include "chrome/grit/browser_resources.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/assist_ranker/example_preprocessing.h"
 #include "components/assist_ranker/proto/example_preprocessor.pb.h"
 #include "components/assist_ranker/proto/ranker_example.pb.h"

@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/ownership/mock_owner_key_util.h"

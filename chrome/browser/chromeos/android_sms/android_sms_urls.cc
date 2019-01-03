@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/optional.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_switches.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "url/gurl.h"
 
 namespace chromeos {

@@ -30,7 +30,7 @@
 #include "third_party/sqlite/sqlite3.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/chromeos_constants.h"
+#include "chromeos/constants/chromeos_constants.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace diagnostics {

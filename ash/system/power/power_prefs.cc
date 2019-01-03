@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/time/default_tick_clock.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "components/pref_registry/pref_registry_syncable.h"
