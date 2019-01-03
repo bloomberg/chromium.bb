@@ -381,9 +381,9 @@ typedef struct AV1Common {
 
   uint8_t disable_cdf_update;
   int allow_high_precision_mv;
-  int cur_frame_force_integer_mv;  // 0 the default in AOM, 1 only integer
+  uint8_t cur_frame_force_integer_mv;  // 0 the default in AOM, 1 only integer
 
-  int allow_screen_content_tools;
+  uint8_t allow_screen_content_tools;
   int allow_intrabc;
   int allow_warped_motion;
 
