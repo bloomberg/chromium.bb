@@ -1,5 +1,4 @@
 out/
-out-node/
 *.code-workspace
 
 .tscache/

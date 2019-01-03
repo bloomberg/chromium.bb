@@ -3,19 +3,28 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON("package.json"),
 
-    clean: ["out/", "out-node/"],
+    clean: ["out/"],
 
     run: {
       "generate-listing": {
+        cmd: "npx",
         args: [
+          "ts-node",
+          "--transpile-only",
+          '-O{"module":"commonjs"}',
           "node-run",
-          "--generate-listing",
-          "out/cts/listing.json",
+          "src/cts",
+          "--generate-listing=out/cts/listing.json",
         ],
       },
       "node-run": {
+        cmd: "npx",
         args: [
+          "ts-node",
+          "--transpile-only",
+          '-O{"module":"commonjs"}',
           "node-run",
+          "src/cts",
           "--run",
         ],
       },
@@ -31,15 +40,6 @@ module.exports = function(grunt) {
     },
 
     ts: {
-      "out-node/": {
-        tsconfig: {
-          tsconfig: "tsconfig.json",
-          passThrough: true,
-        },
-        options: {
-          additionalFlags: "--noEmit false --outDir out-node/ --module commonjs",
-        }
-      },
       "out/": {
         tsconfig: {
           tsconfig: "tsconfig.json",
@@ -74,7 +74,6 @@ module.exports = function(grunt) {
   }
 
   publishTask("build", "Build out/", [
-    "node-build",
     "ts:out/",
     "run:generate-listing",
   ]);
@@ -82,14 +81,10 @@ module.exports = function(grunt) {
     "http-server:out/",
   ]);
 
-  publishTask("node-build", "Build out-node/", [
-    "ts:out-node/",
-  ]);
-  publishTask("node-run", "Run out-node/", [
-    "node-build",
+  publishTask("node-run", "Run in Node", [
     "run:node-run",
   ]);
-  publishedTasks.push({name: "clean", desc: "Clean out/, out-node/"});
+  publishedTasks.push({name: "clean", desc: "Clean out/"});
 
   grunt.registerTask("default", "", () => {
     console.log("Available tasks (see grunt --help for more):");
