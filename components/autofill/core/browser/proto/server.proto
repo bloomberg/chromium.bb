@@ -185,7 +185,7 @@ message AutofillRandomizedFieldMetadata {
 
 // This message contains information about the field types in a single form.
 // It is sent by the toolbar to contribute to the field type statistics.
-// Next available id: 37
+// Next available id: 38
 message AutofillUploadContents {
   required string client_version = 1;
   required fixed64 form_signature = 2;
@@ -393,6 +393,9 @@ message AutofillUploadContents {
   // Titles of form's buttons.
   // TODO(850606): Deprecate once randomized metadata is launched.
   repeated ButtonTitle button_title = 36;
+
+  // Whether the fields are enclosed by a <form> tag or are unowned elements.
+  optional bool has_form_tag = 37;
 }
 
 // This proto contains information about the validity of each field in an
