@@ -504,9 +504,8 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
     HashMap<String, Font>::iterator i =
         fonts_resolved_using_current_style_.find(new_font);
     if (i != fonts_resolved_using_current_style_.end()) {
-      DCHECK(font_lru_list_.Contains(new_font));
-      font_lru_list_.erase(new_font);
-      font_lru_list_.insert(new_font);
+      auto add_result = font_lru_list_.PrependOrMoveToFirst(new_font);
+      DCHECK(!add_result.is_new_entry);
       ModifiableState().SetFont(i->value, Host()->GetFontSelector());
     } else {
       MutableCSSPropertyValueSet* parsed_style =
@@ -537,8 +536,8 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
       Font final_font(final_description);
 
       fonts_resolved_using_current_style_.insert(new_font, final_font);
-      DCHECK(!font_lru_list_.Contains(new_font));
-      font_lru_list_.insert(new_font);
+      auto add_result = font_lru_list_.PrependOrMoveToFirst(new_font);
+      DCHECK(add_result.is_new_entry);
       PruneLocalFontCache(canvas_font_cache->HardMaxFonts());  // hard limit
       should_prune_local_font_cache_ = true;  // apply soft limit
       ModifiableState().SetFont(final_font, Host()->GetFontSelector());
@@ -582,8 +581,8 @@ void CanvasRenderingContext2D::PruneLocalFontCache(size_t target_size) {
     return;
   }
   while (font_lru_list_.size() > target_size) {
-    fonts_resolved_using_current_style_.erase(font_lru_list_.front());
-    font_lru_list_.RemoveFirst();
+    fonts_resolved_using_current_style_.erase(font_lru_list_.back());
+    font_lru_list_.pop_back();
   }
 }
 
