@@ -308,6 +308,11 @@ AdsPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
   return STOP_OBSERVING;
 }
 
+void AdsPageLoadMetricsObserver::OnLoadedResource(
+    const page_load_metrics::ExtraRequestCompleteInfo& extra_request_info) {
+  ProcessLoadedResource(extra_request_info);
+}
+
 void AdsPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
@@ -317,11 +322,10 @@ void AdsPageLoadMetricsObserver::OnComplete(
 }
 
 void AdsPageLoadMetricsObserver::OnResourceDataUseObserved(
-    FrameTreeNodeId frame_tree_node_id,
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
         resources) {
   for (auto const& resource : resources)
-    UpdateResource(frame_tree_node_id, resource);
+    UpdateResource(resource);
 }
 
 void AdsPageLoadMetricsObserver::OnSubframeNavigationEvaluated(
@@ -378,22 +382,29 @@ AdsPageLoadMetricsObserver::AdTypes AdsPageLoadMetricsObserver::DetectAds(
   return ad_types;
 }
 
-void AdsPageLoadMetricsObserver::ProcessResourceForFrame(
-    FrameTreeNodeId frame_tree_node_id,
-    const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
-  const auto& id_and_data = ad_frames_data_.find(frame_tree_node_id);
+void AdsPageLoadMetricsObserver::ProcessLoadedResource(
+    const page_load_metrics::ExtraRequestCompleteInfo& extra_request_info) {
+  const auto& id_and_data =
+      ad_frames_data_.find(extra_request_info.frame_tree_node_id);
   if (id_and_data == ad_frames_data_.end()) {
-    if (resource->is_primary_frame_resource) {
-      // Only hold onto primary resources if their load has finished.
-      if (!resource->is_complete)
-        return;
-
+    if (extra_request_info.resource_type == content::RESOURCE_TYPE_MAIN_FRAME ||
+        extra_request_info.resource_type == content::RESOURCE_TYPE_SUB_FRAME) {
       // This resource request is the primary resource load for a frame that
       // hasn't yet finished navigating. Hang onto the request info and replay
       // it once the frame finishes navigating.
       ongoing_navigation_resources_.emplace(
-          std::piecewise_construct, std::forward_as_tuple(frame_tree_node_id),
-          std::forward_as_tuple(resource.Clone()));
+          std::piecewise_construct,
+          std::forward_as_tuple(extra_request_info.frame_tree_node_id),
+          std::forward_as_tuple(
+              extra_request_info.url, extra_request_info.host_port_pair,
+              extra_request_info.frame_tree_node_id,
+              extra_request_info.was_cached, extra_request_info.raw_body_bytes,
+              extra_request_info.original_network_content_length, nullptr,
+              extra_request_info.resource_type, extra_request_info.net_error,
+              extra_request_info.load_timing_info
+                  ? std::make_unique<net::LoadTimingInfo>(
+                        *extra_request_info.load_timing_info)
+                  : nullptr));
     } else {
       // This is unexpected, it could be:
       // 1. a resource from a previous navigation that started its resource
@@ -404,21 +415,18 @@ void AdsPageLoadMetricsObserver::ProcessResourceForFrame(
     return;
   }
 
-  if (resource->is_complete) {
-    page_bytes_ += resource->encoded_body_length;
-    if (!resource->was_fetched_via_cache)
-      uncached_page_bytes_ += resource->encoded_body_length;
-  }
+  page_bytes_ += extra_request_info.raw_body_bytes;
+  if (!extra_request_info.was_cached)
+    uncached_page_bytes_ += extra_request_info.raw_body_bytes;
 
   // Determine if the frame (or its ancestor) is an ad, if so attribute the
   // bytes to the highest ad ancestor.
   AdFrameData* ancestor_data = id_and_data->second;
 
   if (ancestor_data) {
-    if (resource->is_complete) {
-      ancestor_data->frame_bytes += resource->encoded_body_length;
-      if (!resource->was_fetched_via_cache)
-        ancestor_data->frame_bytes_uncached += resource->encoded_body_length;
+    ancestor_data->frame_bytes += extra_request_info.raw_body_bytes;
+    if (!extra_request_info.was_cached) {
+      ancestor_data->frame_bytes_uncached += extra_request_info.raw_body_bytes;
     }
   }
 }
@@ -449,9 +457,7 @@ AdsPageLoadMetricsObserver::GetResourceMimeType(
 }
 
 void AdsPageLoadMetricsObserver::UpdateResource(
-    FrameTreeNodeId frame_tree_node_id,
     const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
-  ProcessResourceForFrame(frame_tree_node_id, resource);
   auto it = page_resources_.find(resource->request_id);
   // A new resource has been observed.
   if (it == page_resources_.end())
@@ -684,6 +690,6 @@ void AdsPageLoadMetricsObserver::ProcessOngoingNavigationResource(
   if (frame_id_and_request == ongoing_navigation_resources_.end())
     return;
 
-  ProcessResourceForFrame(frame_tree_node_id, frame_id_and_request->second);
+  ProcessLoadedResource(frame_id_and_request->second);
   ongoing_navigation_resources_.erase(frame_id_and_request);
 }

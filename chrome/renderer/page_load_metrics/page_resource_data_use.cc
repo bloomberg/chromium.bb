@@ -32,8 +32,7 @@ PageResourceDataUse::~PageResourceDataUse() = default;
 void PageResourceDataUse::DidStartResponse(
     const GURL& response_url,
     int resource_id,
-    const network::ResourceResponseHead& response_head,
-    content::ResourceType resource_type) {
+    const network::ResourceResponseHead& response_head) {
   resource_id_ = resource_id;
   data_reduction_proxy_compression_ratio_estimate_ =
       data_reduction_proxy::EstimateCompressionRatioFromHeaders(&response_head);
@@ -41,9 +40,6 @@ void PageResourceDataUse::DidStartResponse(
   mime_type_ = response_head.mime_type;
   was_fetched_via_cache_ = response_head.was_fetched_via_cache;
   is_secure_scheme_ = response_url.SchemeIsCryptographic();
-  is_primary_frame_resource_ =
-      resource_type == content::RESOURCE_TYPE_MAIN_FRAME ||
-      resource_type == content::RESOURCE_TYPE_SUB_FRAME;
 }
 
 void PageResourceDataUse::DidReceiveTransferSizeUpdate(
@@ -104,7 +100,6 @@ mojom::ResourceDataUpdatePtr PageResourceDataUse::GetResourceDataUpdate() {
   resource_data_update->was_fetched_via_cache = was_fetched_via_cache_;
   resource_data_update->is_secure_scheme = is_secure_scheme_;
   resource_data_update->proxy_used = proxy_used_;
-  resource_data_update->is_primary_frame_resource = is_primary_frame_resource_;
   return resource_data_update;
 }
 }  // namespace page_load_metrics
