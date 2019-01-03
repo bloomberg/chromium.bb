@@ -3628,6 +3628,21 @@
             ]
         }
     ],
+    "PredictivePrefetchingAllowedOnAllConnectionTypes": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "PredictivePrefetchingAllowedOnAllConnectionTypes",
+                    "enable_features": [
+                        "PredictivePrefetchingAllowedOnAllConnectionTypes"
+                    ]
+                }
+            ]
+        }
+    ],
     "PreviewsClientLoFi": [
         {
             "platforms": [
