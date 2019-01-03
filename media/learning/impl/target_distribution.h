@@ -70,6 +70,10 @@ class COMPONENT_EXPORT(LEARNING_IMPL) TargetDistribution {
   bool FindSingularMax(TargetValue* value_out,
                        size_t* counts_out = nullptr) const;
 
+  // Return the average value of the entries in this distribution.  Of course,
+  // this only makes sense if the TargetValues can be interpreted as numeric.
+  double Average() const;
+
   std::string ToString() const;
 
  private:

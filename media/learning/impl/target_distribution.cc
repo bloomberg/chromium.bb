@@ -85,6 +85,20 @@ bool TargetDistribution::FindSingularMax(TargetValue* value_out,
   return singular_max;
 }
 
+double TargetDistribution::Average() const {
+  double total_value = 0.;
+  size_t total_counts = 0;
+  for (auto& iter : counts_) {
+    total_value += iter.first.value() * iter.second;
+    total_counts += iter.second;
+  }
+
+  if (!total_counts)
+    return 0.;
+
+  return total_value / total_counts;
+}
+
 std::string TargetDistribution::ToString() const {
   std::ostringstream ss;
   ss << "[";
