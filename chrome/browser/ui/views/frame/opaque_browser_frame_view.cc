@@ -204,7 +204,7 @@ void OpaqueBrowserFrameView::InitViews() {
 // OpaqueBrowserFrameView, BrowserNonClientFrameView implementation:
 
 gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
-    views::View* tabstrip) const {
+    const views::View* tabstrip) const {
   if (!tabstrip)
     return gfx::Rect();
 
