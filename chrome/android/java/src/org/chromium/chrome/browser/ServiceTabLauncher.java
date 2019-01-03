@@ -93,7 +93,7 @@ public class ServiceTabLauncher {
                      BrowserServicesMetrics.getServiceTabResolveInfoTimingContext()) {
             resolveInfos = WebApkValidator.resolveInfosForUrl(context, url);
         }
-        String webApkPackageName = WebApkValidator.findWebApkPackage(context, resolveInfos);
+        String webApkPackageName = WebApkValidator.findFirstWebApkPackage(context, resolveInfos);
 
         if (webApkPackageName != null) {
             final List<ResolveInfo> resolveInfosFinal = resolveInfos;

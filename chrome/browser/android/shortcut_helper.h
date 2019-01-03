@@ -90,9 +90,9 @@ class ShortcutHelper {
                                                    const GURL& url,
                                                    bool* is_generated);
 
-  // Returns the package name of the WebAPK if WebAPKs are enabled and there is
-  // an installed WebAPK which can handle |url|. Returns empty string otherwise.
-  static std::string QueryWebApkPackage(const GURL& url);
+  // Returns the package name of one of the WebAPKs which can handle |url|.
+  // Returns an empty string if there are no matches.
+  static std::string QueryFirstWebApkPackage(const GURL& url);
 
   // Returns true if WebAPKs are enabled and there is an installed WebAPK which
   // can handle |start_url|, or there is one is being installed.

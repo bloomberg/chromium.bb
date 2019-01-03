@@ -49,7 +49,7 @@ interface ExternalNavigationDelegate {
      * @param infos ResolveInfos to search.
      * @return The package name of the first valid WebAPK. Null if no valid WebAPK was found.
      */
-    String findWebApkPackageName(List<ResolveInfo> infos);
+    String findFirstWebApkPackageName(List<ResolveInfo> infos);
 
     /**
      * Start an activity for the intent. Used for intents that must be handled externally.

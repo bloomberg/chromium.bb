@@ -1614,7 +1614,7 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public String findWebApkPackageName(List<ResolveInfo> infos) {
+        public String findFirstWebApkPackageName(List<ResolveInfo> infos) {
             List<IntentActivity> matchingIntentActivities = findMatchingIntentActivities(infos);
             for (IntentActivity intentActivity : matchingIntentActivities) {
                 if (intentActivity.isWebApk()) {

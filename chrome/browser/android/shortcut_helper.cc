@@ -299,12 +299,12 @@ SkBitmap ShortcutHelper::FinalizeLauncherIconInBackground(
 }
 
 // static
-std::string ShortcutHelper::QueryWebApkPackage(const GURL& url) {
+std::string ShortcutHelper::QueryFirstWebApkPackage(const GURL& url) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> java_url =
       base::android::ConvertUTF8ToJavaString(env, url.spec());
   ScopedJavaLocalRef<jstring> java_webapk_package_name =
-      Java_ShortcutHelper_queryWebApkPackage(env, java_url);
+      Java_ShortcutHelper_queryFirstWebApkPackage(env, java_url);
 
   std::string webapk_package_name = "";
   if (java_webapk_package_name.obj()) {
@@ -318,7 +318,7 @@ std::string ShortcutHelper::QueryWebApkPackage(const GURL& url) {
 bool ShortcutHelper::IsWebApkInstalled(content::BrowserContext* browser_context,
                                        const GURL& start_url,
                                        const GURL& manifest_url) {
-  return !QueryWebApkPackage(start_url).empty() ||
+  return !QueryFirstWebApkPackage(start_url).empty() ||
          WebApkInstallService::Get(browser_context)
              ->IsInstallInProgress(manifest_url);
 }
