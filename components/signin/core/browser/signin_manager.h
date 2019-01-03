@@ -48,7 +48,6 @@
 class GaiaCookieManagerService;
 class GoogleServiceAuthError;
 class PrefService;
-class SigninErrorController;
 
 namespace identity {
 class IdentityManager;
@@ -86,7 +85,6 @@ class SigninManager : public SigninManagerBase,
                 ProfileOAuth2TokenService* token_service,
                 AccountTrackerService* account_tracker_service,
                 GaiaCookieManagerService* cookie_manager_service,
-                SigninErrorController* signin_error_controller,
                 signin::AccountConsistencyMethod account_consistency);
   ~SigninManager() override;
 

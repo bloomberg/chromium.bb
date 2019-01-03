@@ -30,12 +30,8 @@ SigninManager::SigninManager(
     ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker_service,
     GaiaCookieManagerService* cookie_manager_service,
-    SigninErrorController* signin_error_controller,
     signin::AccountConsistencyMethod account_consistency)
-    : SigninManagerBase(client,
-                        token_service,
-                        account_tracker_service,
-                        signin_error_controller),
+    : SigninManagerBase(client, token_service, account_tracker_service),
       type_(SIGNIN_TYPE_NONE),
       cookie_manager_service_(cookie_manager_service),
       account_consistency_(account_consistency),

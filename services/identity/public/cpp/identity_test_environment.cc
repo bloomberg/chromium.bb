@@ -73,7 +73,6 @@ IdentityManagerDependenciesOwner::IdentityManagerDependenciesOwner(
                       &token_service_,
                       &account_tracker_,
                       nullptr,
-                      nullptr,
                       account_consistency) {
 #endif
   if (test_url_loader_factory != nullptr) {
