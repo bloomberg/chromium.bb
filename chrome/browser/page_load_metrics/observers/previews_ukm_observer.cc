@@ -57,6 +57,10 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
     lite_page_seen_ = true;
   }
   if (previews_state && previews::GetMainFramePreviewsType(previews_state) ==
+                            previews::PreviewsType::LITE_PAGE_REDIRECT) {
+    lite_page_redirect_seen_ = true;
+  }
+  if (previews_state && previews::GetMainFramePreviewsType(previews_state) ==
                             previews::PreviewsType::NOSCRIPT) {
     noscript_seen_ = true;
   }
@@ -67,6 +71,11 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
   if (previews_user_data &&
       previews_user_data->cache_control_no_transform_directive()) {
     origin_opt_out_occurred_ = true;
+  }
+  if (previews_user_data && previews_user_data->server_lite_page_info()) {
+    navigation_restart_penalty_ =
+        navigation_handle->NavigationStart() -
+        previews_user_data->server_lite_page_info()->original_navigation_start;
   }
 
   return CONTINUE_OBSERVING;
@@ -121,9 +130,13 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
       page_load_metrics::PageEndReason::PAGE_END_REASON_COUNT);
 
   // Only record previews types when they are active.
+  // |navigation_restart_penalty_| is included here because a Lite Page Redirect
+  // preview can be attempted and not commit. This incurs the penalty but may
+  // also cause no preview to be committed.
   if (!server_lofi_seen_ && !client_lofi_seen_ && !lite_page_seen_ &&
       !noscript_seen_ && !resource_loading_hints_seen_ &&
-      !origin_opt_out_occurred_ && !save_data_enabled_) {
+      !origin_opt_out_occurred_ && !save_data_enabled_ &&
+      !lite_page_redirect_seen_ && !navigation_restart_penalty_.has_value()) {
     return;
   }
 
@@ -134,6 +147,8 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
     builder.Setclient_lofi(1);
   if (lite_page_seen_)
     builder.Setlite_page(1);
+  if (lite_page_redirect_seen_)
+    builder.Setlite_page_redirect(1);
   if (noscript_seen_)
     builder.Setnoscript(1);
   if (resource_loading_hints_seen_)
@@ -144,6 +159,10 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
     builder.Setorigin_opt_out(1);
   if (save_data_enabled_)
     builder.Setsave_data_enabled(1);
+  if (navigation_restart_penalty_.has_value()) {
+    builder.Setnavigation_restart_penalty(
+        navigation_restart_penalty_->InMilliseconds());
+  }
   builder.Record(ukm::UkmRecorder::Get());
 }
 
