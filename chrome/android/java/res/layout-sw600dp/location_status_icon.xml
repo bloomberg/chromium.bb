@@ -12,6 +12,8 @@
         android:layout_width="@dimen/location_bar_icon_width"
         android:layout_height="match_parent"
         android:layout_gravity="center"
+        android:src="@android:color/transparent"
+        android:visibility="gone"
         android:contentDescription="@string/accessibility_toolbar_btn_site_info"
         android:scaleType="center" />
 </merge>

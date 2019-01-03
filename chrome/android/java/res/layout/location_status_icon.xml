@@ -13,6 +13,8 @@
         android:layout_height="match_parent"
         android:layout_gravity="center"
         android:paddingEnd="4dp"
+        android:src="@android:color/transparent"
+        android:visibility="gone"
         android:contentDescription="@string/accessibility_toolbar_btn_site_info"
         android:scaleType="center" />
 </merge>
