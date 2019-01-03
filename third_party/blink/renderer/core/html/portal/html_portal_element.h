@@ -15,6 +15,7 @@
 namespace blink {
 
 class Document;
+class RemoteFrame;
 class ScriptState;
 
 // The HTMLPortalElement implements the <portal> HTML element. The portal
@@ -30,6 +31,9 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
 
   explicit HTMLPortalElement(Document&);
   ~HTMLPortalElement() override;
+
+  // ScriptWrappable overrides.
+  void Trace(Visitor* visitor) override;
 
   // idl implementation.
   ScriptPromise activate(ScriptState*);
@@ -60,6 +64,8 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
   // Uniquely identifies the portal, this token is used by the browser process
   // to reference this portal when communicating with the renderer.
   base::UnguessableToken portal_token_;
+
+  Member<RemoteFrame> portal_frame_;
 
   mojom::blink::PortalPtr portal_ptr_;
 };

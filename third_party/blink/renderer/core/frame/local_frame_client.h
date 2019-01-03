@@ -35,6 +35,7 @@
 
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
+#include "third_party/blink/public/mojom/portal/portal.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
@@ -55,6 +56,7 @@
 #include "third_party/blink/renderer/core/frame/frame_client.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/html/link_resource.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
@@ -83,6 +85,7 @@ class DocumentLoader;
 class HTMLFormElement;
 class HTMLFrameOwnerElement;
 class HTMLMediaElement;
+class HTMLPortalElement;
 class HTMLPlugInElement;
 class HistoryItem;
 class KURL;
@@ -258,6 +261,13 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual LocalFrame* CreateFrame(const AtomicString& name,
                                   HTMLFrameOwnerElement*) = 0;
+
+  // Creates a portal for the |HTMLPortalElement| and binds the other end of the
+  // |PortalRequest|. Returns a pair of a RemoteFrame and a token that
+  // identifies the portal.
+  virtual std::pair<RemoteFrame*, base::UnguessableToken> CreatePortal(
+      HTMLPortalElement*,
+      mojom::blink::PortalRequest) = 0;
 
   // Whether or not plugin creation should fail if the HTMLPlugInElement isn't
   // in the DOM after plugin initialization.

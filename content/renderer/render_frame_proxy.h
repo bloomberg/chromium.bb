@@ -112,6 +112,11 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
       const FrameReplicationState& replicated_state,
       const base::UnguessableToken& devtools_frame_token);
 
+  // Creates a RenderFrameProxy to be used with a portal owned by |parent|.
+  // |routing_id| is the routing id of this new RenderFrameProxy.
+  static RenderFrameProxy* CreateProxyForPortal(RenderFrameImpl* parent,
+                                                int proxy_routing_id);
+
   // Returns the RenderFrameProxy for the given routing ID.
   static RenderFrameProxy* FromRoutingID(int routing_id);
 

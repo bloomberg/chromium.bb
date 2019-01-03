@@ -3956,6 +3956,17 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
   return web_frame;
 }
 
+std::pair<blink::WebRemoteFrame*, base::UnguessableToken>
+RenderFrameImpl::CreatePortal(mojo::ScopedMessagePipeHandle pipe) {
+  int proxy_routing_id = MSG_ROUTING_NONE;
+  base::UnguessableToken portal_token;
+  GetFrameHost()->CreatePortal(blink::mojom::PortalRequest(std::move(pipe)),
+                               &proxy_routing_id, &portal_token);
+  RenderFrameProxy* proxy =
+      RenderFrameProxy::CreateProxyForPortal(this, proxy_routing_id);
+  return std::make_pair(proxy->web_frame(), portal_token);
+}
+
 blink::WebFrame* RenderFrameImpl::FindFrame(const blink::WebString& name) {
   if (render_view_->renderer_wide_named_frame_lookup()) {
     for (const auto& it : g_routing_id_frame_map.Get()) {

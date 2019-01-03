@@ -128,6 +128,13 @@ LocalFrame* EmptyLocalFrameClient::CreateFrame(const AtomicString&,
   return nullptr;
 }
 
+std::pair<RemoteFrame*, base::UnguessableToken>
+EmptyLocalFrameClient::CreatePortal(HTMLPortalElement*,
+                                    mojom::blink::PortalRequest) {
+  return std::pair<RemoteFrame*, base::UnguessableToken>(
+      nullptr, base::UnguessableToken());
+}
+
 WebPluginContainerImpl* EmptyLocalFrameClient::CreatePlugin(
     HTMLPlugInElement&,
     const KURL&,

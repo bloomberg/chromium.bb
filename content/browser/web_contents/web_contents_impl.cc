@@ -463,6 +463,16 @@ void WebContentsImpl::WebContentsTreeNode::ConnectToOuterWebContents(
   outer_contents_frame->frame_tree_node()->AddObserver(this);
 }
 
+std::unique_ptr<WebContents>
+WebContentsImpl::WebContentsTreeNode::DisconnectFromOuterWebContents() {
+  std::unique_ptr<WebContents> inner_contents =
+      outer_web_contents_->node_.DetachInnerWebContents(current_web_contents_);
+  OuterContentsFrameTreeNode()->RemoveObserver(this);
+  outer_contents_frame_tree_node_id_ = FrameTreeNode::kFrameTreeNodeInvalidId;
+  outer_web_contents_ = nullptr;
+  return inner_contents;
+}
+
 void WebContentsImpl::WebContentsTreeNode::AttachInnerWebContents(
     std::unique_ptr<WebContents> inner_web_contents) {
   inner_web_contents_.push_back(std::move(inner_web_contents));
@@ -536,12 +546,12 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       controller_(this, browser_context),
       render_view_host_delegate_view_(nullptr),
       created_with_opener_(false),
+      node_(this),
       frame_tree_(new NavigatorImpl(&controller_, this),
                   this,
                   this,
                   this,
                   this),
-      node_(this),
       is_load_to_different_document_(false),
       crashed_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       crashed_error_code_(0),
@@ -1817,10 +1827,17 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
   // Create a proxy in top-level RenderFrameHostManager, pointing to the
   // SiteInstance of the outer WebContents. The proxy will be used to send
   // postMessage to the inner WebContents.
-  render_manager->CreateOuterDelegateProxy(
-      outer_contents_frame->GetSiteInstance(), outer_contents_frame_impl);
+  auto* proxy = render_manager->CreateOuterDelegateProxy(
+      outer_contents_frame->GetSiteInstance());
 
-  ReattachToOuterWebContentsFrame();
+  // When attaching a GuestView as an inner WebContents, there should already be
+  // a live RenderFrame, which has to be swapped. When attaching a portal, there
+  // will not be a live RenderFrame before creating the proxy.
+  if (outer_contents_frame->IsRenderFrameLive()) {
+    render_manager->SwapOuterDelegateFrame(outer_contents_frame_impl, proxy);
+
+    ReattachToOuterWebContentsFrame();
+  }
 
   if (node_.outer_web_contents()->frame_tree_.GetFocusedFrame() ==
       outer_contents_frame_impl->frame_tree_node()) {
@@ -1829,7 +1846,34 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
   }
 }
 
+std::unique_ptr<WebContents> WebContentsImpl::DetachFromOuterWebContents() {
+  DCHECK(node_.outer_web_contents());
+  if (RenderWidgetHostViewBase* view =
+          static_cast<RenderWidgetHostViewBase*>(GetMainFrame()->GetView())) {
+    view->Destroy();
+  }
+  GetRenderManager()->DeleteOuterDelegateProxy(
+      node_.OuterContentsFrameTreeNode()
+          ->current_frame_host()
+          ->GetSiteInstance());
+  view_.reset(CreateWebContentsView(
+      this, GetContentClient()->browser()->GetWebContentsViewDelegate(this),
+      &render_view_host_delegate_view_));
+  view_->CreateView(GetPreferredSize(), nullptr);
+  std::unique_ptr<WebContents> web_contents =
+      node_.DisconnectFromOuterWebContents();
+  DCHECK_EQ(web_contents.get(), this);
+  node_.SetFocusedWebContents(this);
+  CreateRenderWidgetHostViewForRenderManager(GetRenderViewHost());
+  return web_contents;
+}
+
 void WebContentsImpl::ReattachToOuterWebContentsFrame() {
+  // TODO(lfg): Portals still don't support rendering, so we don't attach their
+  // RenderWidgetHostView.
+  if (portal_)
+    return;
+
   DCHECK(node_.outer_web_contents());
   auto* render_manager = GetRenderManager();
   auto* parent_frame =

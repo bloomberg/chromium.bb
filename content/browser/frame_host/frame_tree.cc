@@ -170,7 +170,7 @@ FrameTree::NodeRange FrameTree::NodesExceptSubtree(FrameTreeNode* node) {
   return NodeRange(root_, node);
 }
 
-bool FrameTree::AddFrame(
+FrameTreeNode* FrameTree::AddFrame(
     FrameTreeNode* parent,
     int process_id,
     int new_routing_id,
@@ -191,7 +191,7 @@ bool FrameTree::AddFrame(
   // which requested a child frame to be added is the same as the process of the
   // parent node.
   if (parent->current_frame_host()->GetProcess()->GetID() != process_id)
-    return false;
+    return nullptr;
 
   std::unique_ptr<FrameTreeNode> new_node = base::WrapUnique(new FrameTreeNode(
       this, parent->navigator(), parent, scope, frame_name, frame_unique_name,
@@ -232,7 +232,7 @@ bool FrameTree::AddFrame(
   // we can announce the creation of the initial RenderFrame which already
   // exists in the renderer process.
   added_node->current_frame_host()->SetRenderFrameCreated(true);
-  return true;
+  return added_node;
 }
 
 void FrameTree::RemoveFrame(FrameTreeNode* child) {

@@ -148,20 +148,20 @@ class CONTENT_EXPORT FrameTree {
   // interface through which the child RenderFrame can access Mojo services
   // exposed by the corresponding RenderFrameHost. The caller takes care of
   // sending the client end of the interface down to the RenderFrame.
-  bool AddFrame(FrameTreeNode* parent,
-                int process_id,
-                int new_routing_id,
-                service_manager::mojom::InterfaceProviderRequest
-                    interface_provider_request,
-                blink::WebTreeScopeType scope,
-                const std::string& frame_name,
-                const std::string& frame_unique_name,
-                bool is_created_by_script,
-                const base::UnguessableToken& devtools_frame_token,
-                const blink::FramePolicy& frame_policy,
-                const FrameOwnerProperties& frame_owner_properties,
-                bool was_discarded,
-                blink::FrameOwnerElementType owner_type);
+  FrameTreeNode* AddFrame(FrameTreeNode* parent,
+                          int process_id,
+                          int new_routing_id,
+                          service_manager::mojom::InterfaceProviderRequest
+                              interface_provider_request,
+                          blink::WebTreeScopeType scope,
+                          const std::string& frame_name,
+                          const std::string& frame_unique_name,
+                          bool is_created_by_script,
+                          const base::UnguessableToken& devtools_frame_token,
+                          const blink::FramePolicy& frame_policy,
+                          const FrameOwnerProperties& frame_owner_properties,
+                          bool was_discarded,
+                          blink::FrameOwnerElementType owner_type);
 
   // Removes a frame from the frame tree. |child|, its children, and objects
   // owned by their RenderFrameHostManagers are immediately deleted. The root

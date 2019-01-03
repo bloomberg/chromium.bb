@@ -176,6 +176,18 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
   return proxy.release();
 }
 
+RenderFrameProxy* RenderFrameProxy::CreateProxyForPortal(
+    RenderFrameImpl* parent,
+    int proxy_routing_id) {
+  std::unique_ptr<RenderFrameProxy> proxy(
+      new RenderFrameProxy(proxy_routing_id));
+  blink::WebRemoteFrame* web_frame = blink::WebRemoteFrame::Create(
+      blink::WebTreeScopeType::kDocument, proxy.get());
+  proxy->Init(web_frame, parent->render_view(),
+              parent->GetLocalRootRenderWidget(), true);
+  return proxy.release();
+}
+
 // static
 RenderFrameProxy* RenderFrameProxy::FromRoutingID(int32_t routing_id) {
   RoutingIDProxyMap* proxies = g_routing_id_proxy_map.Pointer();

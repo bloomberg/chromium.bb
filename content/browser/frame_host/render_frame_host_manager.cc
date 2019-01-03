@@ -1891,14 +1891,20 @@ void RenderFrameHostManager::EnsureRenderViewInitialized(
   InitRenderView(render_view_host, proxy);
 }
 
-void RenderFrameHostManager::CreateOuterDelegateProxy(
-    SiteInstance* outer_contents_site_instance,
-    RenderFrameHostImpl* render_frame_host) {
-  // We only get here when Delegate for this manager is an inner delegate and is
-  // based on cross process frames.
-  RenderFrameProxyHost* proxy =
-      CreateRenderFrameProxyHost(outer_contents_site_instance, nullptr);
+RenderFrameProxyHost* RenderFrameHostManager::CreateOuterDelegateProxy(
+    SiteInstance* outer_contents_site_instance) {
+  // We only get here when Delegate for this manager is an inner delegate.
+  return CreateRenderFrameProxyHost(outer_contents_site_instance, nullptr);
+}
 
+void RenderFrameHostManager::DeleteOuterDelegateProxy(
+    SiteInstance* outer_contents_site_instance) {
+  DeleteRenderFrameProxyHost(outer_contents_site_instance);
+}
+
+void RenderFrameHostManager::SwapOuterDelegateFrame(
+    RenderFrameHostImpl* render_frame_host,
+    RenderFrameProxyHost* proxy) {
   // Swap the outer WebContents's frame with the proxy to inner WebContents.
   //
   // We are in the outer WebContents, and its FrameTree would never see
@@ -1907,6 +1913,7 @@ void RenderFrameHostManager::CreateOuterDelegateProxy(
   // false to |is_loading| below.
   // TODO(lazyboy): This |is_loading| behavior might not be what we want,
   // investigate and fix.
+  DCHECK_EQ(render_frame_host->GetSiteInstance(), proxy->GetSiteInstance());
   render_frame_host->Send(new FrameMsg_SwapOut(
       render_frame_host->GetRoutingID(), proxy->GetRoutingID(),
       false /* is_loading */,

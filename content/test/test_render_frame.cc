@@ -67,6 +67,11 @@ class MockFrameHost : public mojom::FrameHost {
     return true;
   }
 
+  void CreatePortal(blink::mojom::PortalRequest request,
+                    CreatePortalCallback callback) override {
+    std::move(callback).Run(MSG_ROUTING_NONE, base::UnguessableToken());
+  }
+
   void IssueKeepAliveHandle(mojom::KeepAliveHandleRequest request) override {}
 
   void DidCommitProvisionalLoad(
