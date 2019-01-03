@@ -57,11 +57,6 @@ component("url") {
 
   defines = [ "IS_URL_IMPL" ]
 
-  configs += [
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
-  ]
-
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
@@ -163,9 +158,6 @@ test("url_unittests") {
   } else {  # !use_platform_icu_alternatives
     deps += [ "//third_party/icu:icuuc" ]
   }
-
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   if (!is_ios) {
     deps += [
