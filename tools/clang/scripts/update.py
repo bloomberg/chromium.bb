@@ -35,7 +35,7 @@ if use_head_revision:
   CLANG_REVISION = 'HEAD'
 
 # This is incremented when pushing a new build of Clang at the same revision.
-CLANG_SUB_REVISION=1
+CLANG_SUB_REVISION=2
 
 PACKAGE_VERSION = "%s-%s" % (CLANG_REVISION, CLANG_SUB_REVISION)
 
@@ -532,6 +532,7 @@ def UpdateClang(args):
                      '-DLLVM_ENABLE_TERMINFO=OFF',
                      # Statically link MSVCRT to avoid DLL dependencies.
                      '-DLLVM_USE_CRT_RELEASE=MT',
+                     '-DCLANG_PLUGIN_SUPPORT=OFF',
                      ]
 
   if sys.platform != 'win32':

@@ -242,11 +242,7 @@ def main():
     want.append('bin/clang-cl.exe')
     want.append('bin/lld-link.exe')
   else:
-    so_ext = 'dylib' if sys.platform == 'darwin' else 'so'
-    want.extend(['bin/clang',
-                 'lib/libFindBadConstructs.' + so_ext,
-                 'lib/libBlinkGCPlugin.' + so_ext,
-                 ])
+    want.append('bin/clang')
   if sys.platform == 'darwin':
     want.extend([
         # AddressSanitizer runtime.
@@ -403,10 +399,7 @@ def main():
     stripped_binaries.append('lld')
     stripped_binaries.append('llvm-ar')
   for f in stripped_binaries:
-    if sys.platform == 'darwin':
-      # See http://crbug.com/256342
-      subprocess.call(['strip', '-x', os.path.join(pdir, 'bin', f)])
-    elif sys.platform.startswith('linux'):
+    if sys.platform != 'win32':
       subprocess.call(['strip', os.path.join(pdir, 'bin', f)])
 
   # Set up symlinks.
