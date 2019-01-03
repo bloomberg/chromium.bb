@@ -301,6 +301,7 @@ ios_framework_bundle("earl_grey") {
     "IOKit.framework",
     "QuartzCore.framework",
     "UIKit.framework",
+    "WebKit.framework",
     "XCTest.framework",
   ]
   public_configs = [ ":config" ]
