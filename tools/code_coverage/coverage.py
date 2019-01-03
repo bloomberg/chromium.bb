@@ -111,9 +111,6 @@ BUILD_DIR = None
 # line arguemnts.
 OUTPUT_DIR = None
 
-# Default number of jobs used to build when goma is configured and enabled.
-DEFAULT_GOMA_JOBS = 100
-
 # Name of the file extension for profraw data files.
 PROFRAW_FILE_EXTENSION = 'profraw'
 
@@ -287,21 +284,9 @@ def _BuildTargets(targets, jobs_count):
     jobs_count: Number of jobs to run in parallel for compilation. If None, a
                 default value is derived based on CPUs availability.
   """
-
-  def _IsGomaConfigured():
-    """Returns True if goma is enabled in the gn build args.
-
-    Returns:
-      A boolean indicates whether goma is configured for building or not.
-    """
-    build_args = _GetBuildArgs()
-    return 'use_goma' in build_args and build_args['use_goma'] == 'true'
-
   logging.info('Building %s.', str(targets))
-  if jobs_count is None and _IsGomaConfigured():
-    jobs_count = DEFAULT_GOMA_JOBS
 
-  subprocess_cmd = ['ninja', '-C', BUILD_DIR]
+  subprocess_cmd = ['autoninja', '-C', BUILD_DIR]
   if jobs_count is not None:
     subprocess_cmd.append('-j' + str(jobs_count))
 
@@ -909,8 +894,8 @@ def _ParseCommandArguments():
       type=int,
       default=None,
       help='Run N jobs to build in parallel. If not specified, a default value '
-      'will be derived based on CPUs availability. Please refer to '
-      '\'ninja -h\' for more details.')
+      'will be derived based on CPUs and goma availability. Please refer to '
+      '\'autoninja -h\' for more details.')
 
   arg_parser.add_argument(
       '-v',
