@@ -270,8 +270,6 @@ source_set("test_support_source_set") {
   sources = [
     "attestation/mock_attestation_flow.cc",
     "attestation/mock_attestation_flow.h",
-    "chromeos_test_utils.cc",
-    "chromeos_test_utils.h",
     "cryptohome/mock_async_method_caller.cc",
     "cryptohome/mock_async_method_caller.h",
     "cryptohome/mock_homedir_methods.cc",
@@ -302,6 +300,8 @@ source_set("test_support_source_set") {
     "network/onc/onc_test_utils.h",
     "network/portal_detector/mock_network_portal_detector.cc",
     "network/portal_detector/mock_network_portal_detector.h",
+    "test/chromeos_test_utils.cc",
+    "test/chromeos_test_utils.h",
   ]
 }
 
@@ -375,10 +375,10 @@ test("chromeos_unittests") {
     "printing/printer_translator_unittest.cc",
     "process_proxy/process_output_watcher_unittest.cc",
     "process_proxy/process_proxy_unittest.cc",
-    "run_all_unittests.cc",
     "system/cpu_temperature_reader_unittest.cc",
     "system/factory_ping_embargo_check_unittest.cc",
     "system/name_value_pairs_parser_unittest.cc",
+    "test/run_all_unittests.cc",
     "timezone/timezone_unittest.cc",
     "tools/variable_expander_unittest.cc",
     "tpm/tpm_token_info_getter_unittest.cc",
