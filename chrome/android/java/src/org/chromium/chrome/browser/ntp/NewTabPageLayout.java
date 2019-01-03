@@ -238,12 +238,20 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         mSiteSectionViewHolder = SiteSection.createViewHolder(getSiteSectionView(), mUiConfig);
         mSiteSectionViewHolder.bindDataSource(mTileGroup, tileRenderer);
 
-        if (ExploreSitesBridge.getVariation() == ExploreSitesVariation.ENABLED) {
-            mExploreSection = new ExploreSitesSection(mExploreSectionView, profile,
-                    mManager.getNavigationDelegate(), SuggestionsConfig.getTileStyle(mUiConfig));
-        } else if (ExploreSitesBridge.getVariation() == ExploreSitesVariation.EXPERIMENT) {
-            mExploreSection = new ExperimentalExploreSitesSection(
-                    mExploreSectionView, profile, mManager.getNavigationDelegate());
+        int variation = ExploreSitesBridge.getVariation();
+        switch (variation) {
+            case ExploreSitesVariation.ENABLED: // fall-through
+            case ExploreSitesVariation.PERSONALIZED:
+                mExploreSection = new ExploreSitesSection(mExploreSectionView, profile,
+                        mManager.getNavigationDelegate(),
+                        SuggestionsConfig.getTileStyle(mUiConfig));
+                break;
+            case ExploreSitesVariation.EXPERIMENT:
+                mExploreSection = new ExperimentalExploreSitesSection(
+                        mExploreSectionView, profile, mManager.getNavigationDelegate());
+                break;
+            case ExploreSitesVariation.DISABLED: // fall-through
+            default: // do nothing.
         }
 
         mSearchProviderLogoView = findViewById(R.id.search_provider_logo);
