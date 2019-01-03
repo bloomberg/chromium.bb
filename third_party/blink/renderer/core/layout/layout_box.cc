@@ -1566,11 +1566,16 @@ bool LayoutBox::HitTestAllPhases(HitTestResult& result,
   // If we have clipping, then we can't have any spillout.
   // TODO(pdr): Why is this optimization not valid for the effective root?
   if (!IsEffectiveRootScroller()) {
-    LayoutRect overflow_box =
-        (HasOverflowClip() || ShouldApplyPaintContainment())
-            ? BorderBoxRect()
-            : VisualOverflowRect();
-    FlipForWritingMode(overflow_box);
+    LayoutRect overflow_box;
+    if (result.GetHitTestRequest().GetType() &
+        HitTestRequest::kHitTestVisualOverflow) {
+      overflow_box = VisualOverflowRectIncludingFilters();
+    } else {
+      overflow_box = (HasOverflowClip() || ShouldApplyPaintContainment())
+                         ? BorderBoxRect()
+                         : VisualOverflowRect();
+      FlipForWritingMode(overflow_box);
+    }
     LayoutPoint adjusted_location = accumulated_offset + Location();
     overflow_box.MoveBy(adjusted_location);
     if (!location_in_container.Intersects(overflow_box))
@@ -1624,7 +1629,8 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
     LayoutRect bounds_rect;
     if (result.GetHitTestRequest().GetType() &
         HitTestRequest::kHitTestVisualOverflow) {
-      bounds_rect = VisualOverflowRect();
+      bounds_rect = VisualOverflowRectIncludingFilters();
+      FlipForWritingMode(bounds_rect);
     } else {
       bounds_rect = BorderBoxRect();
     }
@@ -5292,6 +5298,17 @@ void LayoutBox::SetLayoutClientAfterEdge(LayoutUnit client_after_edge) {
 
 LayoutUnit LayoutBox::LayoutClientAfterEdge() const {
   return overflow_ ? overflow_->LayoutClientAfterEdge() : ClientLogicalBottom();
+}
+
+LayoutRect LayoutBox::VisualOverflowRectIncludingFilters() const {
+  LayoutRect bounds_rect = VisualOverflowRect();
+  FlipForWritingMode(bounds_rect);
+  if (!StyleRef().HasFilter())
+    return bounds_rect;
+  FloatRect float_rect = Layer()->MapRectForFilter(FloatRect(bounds_rect));
+  float_rect.UniteIfNonZero(Layer()->FilterReferenceBox());
+  bounds_rect = EnclosingLayoutRect(float_rect);
+  return bounds_rect;
 }
 
 bool LayoutBox::HasTopOverflow() const {
