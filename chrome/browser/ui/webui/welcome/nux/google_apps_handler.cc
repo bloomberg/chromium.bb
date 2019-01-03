@@ -48,37 +48,24 @@ GoogleAppsHandler::GoogleAppsHandler()
           {static_cast<int>(GoogleApps::kYouTube),
            l10n_util::GetStringUTF8(
                IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_YOUTUBE),
-           "youtube",
-           l10n_util::GetStringUTF8(
-               IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_YOUTUBE_LINK),
-           IDR_NUX_GOOGLE_APPS_YOUTUBE_1X},
+           "youtube", "https://youtube.com", IDR_NUX_GOOGLE_APPS_YOUTUBE_1X},
           {static_cast<int>(GoogleApps::kMaps),
            l10n_util::GetStringUTF8(
                IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_MAPS),
-           "maps",
-           l10n_util::GetStringUTF8(
-               IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_MAPS_LINK),
-           IDR_NUX_GOOGLE_APPS_MAPS_1X},
+           "maps", "https://maps.google.com", IDR_NUX_GOOGLE_APPS_MAPS_1X},
           {static_cast<int>(GoogleApps::kNews),
            l10n_util::GetStringUTF8(
                IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_NEWS),
-           "news",
-           l10n_util::GetStringUTF8(
-               IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_NEWS_LINK),
-           IDR_NUX_GOOGLE_APPS_NEWS_1X},
+           "news", "https://news.google.com", IDR_NUX_GOOGLE_APPS_NEWS_1X},
           {static_cast<int>(GoogleApps::kTranslate),
            l10n_util::GetStringUTF8(
                IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_TRANSLATE),
-           "translate",
-           l10n_util::GetStringUTF8(
-               IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_TRANSLATE_LINK),
+           "translate", "https://translate.google.com",
            IDR_NUX_GOOGLE_APPS_TRANSLATE_1X},
           {static_cast<int>(GoogleApps::kChromeWebStore),
            l10n_util::GetStringUTF8(
                IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_WEB_STORE),
-           "web-store",
-           l10n_util::GetStringUTF8(
-               IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_WEB_STORE_LINK),
+           "web-store", "https://chrome.google.com/webstore",
            IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X},
       }} {}
 
