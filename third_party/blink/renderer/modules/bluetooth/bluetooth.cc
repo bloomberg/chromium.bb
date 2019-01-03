@@ -246,6 +246,7 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
                                        const BluetoothLEScanOptions* options,
                                        ExceptionState& exception_state) {
   ExecutionContext* context = ExecutionContext::From(script_state);
+  DCHECK(context);
 
   // Remind developers when they are using Web Bluetooth on unsupported
   // platforms.
@@ -303,9 +304,11 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
 }
 
 void Bluetooth::ScanEvent(mojom::blink::WebBluetoothScanResultPtr result) {
-  ExecutionContext* content = ContextLifecycleObserver::GetExecutionContext();
+  ExecutionContext* context = ContextLifecycleObserver::GetExecutionContext();
+  DCHECK(context);
+
   BluetoothDevice* bluetooth_device =
-      GetBluetoothDeviceRepresentingDevice(std::move(result->device), content);
+      GetBluetoothDeviceRepresentingDevice(std::move(result->device), context);
 
   HeapVector<blink::StringOrUnsignedLong> uuids;
   for (const String& uuid : result->uuids) {
