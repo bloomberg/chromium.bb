@@ -327,6 +327,8 @@ bool TabLoadTracker::IsUiTab(content::WebContents* web_contents) {
   // checking for specific cases where |web_contents| is not a ui tab.
   if (prerender::PrerenderContents::FromWebContents(web_contents) != nullptr)
     return false;
+  if (web_contents->GetOuterWebContents())
+    return false;
   return true;
 }
 
