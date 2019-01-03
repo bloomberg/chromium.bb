@@ -59,7 +59,11 @@ const char kCryptohomeInstallAttributesIsInvalid[] =
 const char kCryptohomeInstallAttributesIsFirstInstall[] =
     "InstallAttributesIsFirstInstall";
 const char kCryptohomeTpmIsAttestationPrepared[] = "TpmIsAttestationPrepared";
+const char kCryptohomeTpmAttestationGetEnrollmentPreparationsEx[] =
+    "TpmAttestationGetEnrollmentPreparationsEx";
 const char kCryptohomeTpmIsAttestationEnrolled[] = "TpmIsAttestationEnrolled";
+const char kCryptohomeTpmAttestationGetIdentityCertificatesEx[] =
+    "TpmAttestationGetIdentityCertificatesEx";
 const char kCryptohomeTpmAttestationCreateEnrollRequest[] =
     "TpmAttestationCreateEnrollRequest";
 const char kCryptohomeAsyncTpmAttestationCreateEnrollRequest[] =

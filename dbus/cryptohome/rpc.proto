@@ -135,7 +135,7 @@ message BaseReply {
   optional CryptohomeErrorCode error = 1;
 
   extensions 1000 to max;
-  // Next ID to use for extensions: 1011
+  // Next ID to use for extensions: 1012
 }
 
 // The MountRequest call may return more than just success or failure
@@ -317,6 +317,8 @@ message GetTpmStatusReply {
   repeated Identity identities = 16;
   // List of identity certificates.
   map<int32, IdentityCertificate> identity_certificates = 17;
+  // Map of CA types to whether we are prepared for enrollment with that CA.
+  map<int32, bool> enrollment_preparations = 18;
 }
 
 message GetEndorsementInfoRequest {
@@ -444,6 +446,19 @@ message GetSupportedKeyPoliciesReply {
 
   // Does it support low entropy credentials.
   optional bool low_entropy_credentials = 1;
+}
+
+message AttestationGetEnrollmentPreparationsRequest {
+  optional int32 pca_type = 1;
+}
+
+message AttestationGetEnrollmentPreparationsReply {
+  extend BaseReply {
+    optional AttestationGetEnrollmentPreparationsReply reply = 1011;
+  }
+
+  // Map of CA types to whether we are prepared for enrollment with that CA.
+  map<int32, bool> enrollment_preparations = 1;
 }
 
 message MigrateKeyRequest {
