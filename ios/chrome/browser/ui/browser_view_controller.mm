@@ -2991,12 +2991,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Provides a view that encompasses currently displayed infobar(s) or nil
 // if no infobar is presented.
 - (UIView*)infoBarOverlayViewForTab:(Tab*)tab {
-  if (IsIPadIdiom()) {
-    // Not using overlays on iPad because the content is pushed down by
-    // infobar and the transition between snapshot and fresh page can
-    // cause both snapshot and real infobars to appear at the same time.
-    return nil;
-  }
   if (tab && self.tabModel.currentTab == tab) {
     DCHECK(self.currentWebState);
     DCHECK(self.infobarContainerCoordinator);
@@ -3015,9 +3009,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // no _infobarContainerCoordinator instantiated yet.
     // Return offset outside of tab.
     return CGRectGetMaxY(self.view.frame);
-  } else if (IsIPadIdiom()) {
-    // The infobars on iPad are display at the top of a tab.
-    return CGRectGetMinY([self visibleFrameForTab:self.tabModel.currentTab]);
   } else {
     // The infobars on iPhone are displayed at the bottom of a tab.
     CGRect visibleFrame = [self visibleFrameForTab:self.tabModel.currentTab];
