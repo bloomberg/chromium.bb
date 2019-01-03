@@ -12267,6 +12267,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileStartup.UserEnteredTabSwitcher">
+  <owner>memex-team@google.com</owner>
+  <description>
+    An ACTION_MAIN intent was received by Chrome and the user was shown the tab
+    switcher (overview) on startup.
+  </description>
+</action>
+
 <action name="MobileTabbedModeViewIntentFromApp">
   <owner>tedchoc@chromium.org</owner>
   <description>

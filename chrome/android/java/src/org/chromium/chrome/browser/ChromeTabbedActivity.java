@@ -733,6 +733,11 @@ public class ChromeTabbedActivity
         super.onStartWithNative();
 
         setInitialOverviewState();
+
+        if (isMainIntentFromLauncher(getIntent()) && isInOverviewMode()) {
+            RecordUserAction.record("MobileStartup.UserEnteredTabSwitcher");
+        }
+
         BrowserActionsService.onTabbedModeForegrounded();
 
         resetSavedInstanceState();
