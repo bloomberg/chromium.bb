@@ -5,6 +5,7 @@ const path = require("path");
 const process = require("process");
 
 function die() {
+  console.error(new Error());
   console.error("");
   console.error("Usage:");
   console.error("  node node-run src/cts --run");
@@ -18,8 +19,9 @@ if (!fs.existsSync("src/")) {
 }
 
 const args = parseArgs(process.argv.slice(2), { boolean: true });
+let shouldGenerate = args.hasOwnProperty("generate-listing");
 let outFile;
-if (args.hasOwnProperty("generate-listing")) {
+if (shouldGenerate) {
   try {
     outFile = path.normalize(args["generate-listing"]);
   } catch (e) {
@@ -28,7 +30,7 @@ if (args.hasOwnProperty("generate-listing")) {
   }
 }
 let shouldRun = args.hasOwnProperty("run");
-if (!(outFile ^ shouldRun)) {
+if (!(shouldGenerate ^ shouldRun)) {
   die();
 }
 if (args._.length !== 1) {
@@ -36,7 +38,7 @@ if (args._.length !== 1) {
 }
 const specDir = path.normalize(args._[0] + "/"); // always ends in /
 
-const specSuffix = ".ts";
+const specSuffix = ".spec.ts";
 const specFiles = fg.sync(specDir + "**/{README.txt,*" + specSuffix + "}", {
   onlyFiles: false,
   markDirectories: true,
@@ -58,7 +60,7 @@ const listing = [];
 const modules = {};
 for (const spec of specFiles) {
   const file = (typeof spec === "string") ? spec : spec.path;
-  const f = file.substring(specDir.length);
+  const f = file.substring(specDir.length - 1);
   if (f.endsWith(specSuffix)) {
     const mod = require("./" + file);
     const testPath = f.substring(0, f.length - specSuffix.length);
@@ -67,7 +69,7 @@ for (const spec of specFiles) {
       path: testPath,
       description: mod.description.trim(),
     });
-  } else if (f.endsWith("/README.txt")) {
+  } else if (path.basename(file) === "README.txt") {
     const readme = file;
     if (fs.existsSync(readme)) {
       const path = f.substring(0, f.length - "README.txt".length);
@@ -78,8 +80,6 @@ for (const spec of specFiles) {
       });
     }
     // ignore
-  } else if (f.endsWith("/")) {
-    const readme = file + "README.txt";
   } else {
     console.error("Unrecognized file: " + file);
     process.exit(1);
@@ -93,6 +93,7 @@ if (outFile) {
 }
 
 if (shouldRun) {
+  console.error("** Tests **");
   console.error(JSON.stringify(listing, undefined, 2));
 
   const { Logger } = require("./src/framework");
@@ -117,6 +118,7 @@ if (shouldRun) {
         }
       }
     }
+    console.error("** Results **");
     console.log(JSON.stringify(log.results, undefined, 2));
 
     if (warned.length) {

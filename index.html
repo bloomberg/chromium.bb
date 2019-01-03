@@ -72,6 +72,7 @@
 </style>
 </head>
 <body>
+<div id="suitename"><!--TODO: remove when there's a tree display--></div>
 <div id="resultsVis"></div>
 
 <script type="module">
@@ -143,7 +144,7 @@ function mkCase(testcases, {name, params, run}) {
   const runCase = async () => {
     const res = await run();
 
-    casetime.text(res.timems.toFixed(4));
+    casetime.text(res.timems.toFixed(4) + " ms");
 
     testcase.removeClass("pass");
     testcase.removeClass("warn");
@@ -164,7 +165,13 @@ function mkCase(testcases, {name, params, run}) {
 }
 
 (async () => {
-  const listing = await (await fetch("out/cts/listing.json")).json();
+  const url = new URL(window.location);
+  const suite = url.searchParams.get("suite") || "cts";
+  const base = "./out/" + suite;
+  const listingurl = base + "/listing.json";
+  document.getElementById("suitename").innerText = listingurl;
+
+  const listing = await (await fetch(listingurl)).json();
 
   const log = new Logger();
 
@@ -176,7 +183,8 @@ function mkCase(testcases, {name, params, run}) {
     }
 
     const testcasesVis = mkTest(path, description);
-    const mod = await import("./out/cts/" + path + ".js")
+    console.assert(path.startsWith("/"));
+    const mod = await import(base + path + ".spec.js")
 
     const [tres, trec] = log.record(path);
     for (const t of mod.test.iterate(trec)) {

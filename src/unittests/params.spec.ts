@@ -7,7 +7,7 @@ import {
   Test,
   pcombine,
   poptions,
-} from "../../framework/index.js";
+} from "../framework/index.js";
 
 export const test = new Test();
 
