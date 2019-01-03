@@ -11,4 +11,7 @@ js_type_check("closure_compile") {
 }
 
 js_library("viewer-ink-host") {
+  deps = [
+    "//chrome/browser/resources/pdf/ink:ink_api",
+  ]
 }
