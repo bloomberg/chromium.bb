@@ -585,7 +585,6 @@ static aom_codec_err_t set_encoder_config(
   // In large-scale tile encoding mode, num_tile_groups is always 1.
   if (cfg->large_scale_tile) oxcf->num_tile_groups = 1;
   oxcf->mtu = extra_cfg->mtu_size;
-  oxcf->enable_tpl_model = extra_cfg->enable_tpl_model;
 
   // FIXME(debargha): Should this be:
   // oxcf->allow_ref_frame_mvs = extra_cfg->allow_ref_frame_mvs &
@@ -624,6 +623,9 @@ static aom_codec_err_t set_encoder_config(
       disable_superres(oxcf);
     }
   }
+
+  oxcf->enable_tpl_model =
+      extra_cfg->enable_tpl_model && (oxcf->superres_mode == SUPERRES_NONE);
 
   oxcf->maximum_buffer_size_ms = is_vbr ? 240000 : cfg->rc_buf_sz;
   oxcf->starting_buffer_level_ms = is_vbr ? 60000 : cfg->rc_buf_initial_sz;
