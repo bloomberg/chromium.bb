@@ -54,6 +54,33 @@
         <item name="buttonRaised">false</item>
     </style>
 
+    <!-- Chips -->
+    <style name="SuggestionChipThemeOverlay" tools:ignore="UnusedResources">
+        <item name="chipStyle">@style/SuggestionChip</item>
+    </style>
+
+    <style name="Chip">
+        <item name="android:minHeight">@dimen/chip_default_height</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="chipColor">@color/chip_background_color</item>
+        <item name="rippleColor">@color/chip_ripple_color</item>
+    </style>
+    <style name="SuggestionChip" parent="Chip" tools:ignore="UnusedResources">
+        <item name="cornerRadius">@dimen/chip_corner_radius</item>
+    </style>
+    <style name="InputChip" parent="Chip" tools:ignore="UnusedResources">
+        <item name="cornerRadius">@dimen/chip_default_height</item>
+    </style>
+
+    <style name="ChipTextView" tools:ignore="UnusedResources">
+        <item name="android:gravity">center</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:paddingStart">@dimen/chip_icon_padding</item>
+        <item name="android:paddingEnd">@dimen/chip_no_icon_padding</item>
+        <item name="android:textAlignment">center</item>
+    </style>
+
     <!-- Used by Chrome and Content -->
     <!-- TODO(huayinz): Update prefixes for text appearance styles in ui/android. -->
     <style name="TextAppearance" parent="android:TextAppearance" tools:ignore="UnusedResources" />
@@ -171,6 +198,12 @@
     <style name="TextAppearance.BlueLink3" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/blue_when_enabled</item>
         <item name="android:textSize">@dimen/text_size_small</item>
+    </style>
+
+    <!-- Chip Text Styles -->
+    <style name="TextAppearance.ChipText" parent="TextAppearance.RobotoMediumStyle">
+        <item name="android:textColor">@color/chip_text_color</item>
+        <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
 
     <!-- Dividers -->

@@ -553,12 +553,8 @@
     <item type="dimen" name="dialog_fixed_height_minor">100%</item>
 
     <!-- Chip list -->
-    <dimen name="chip_no_icon_padding">16dp</dimen>
-    <dimen name="chip_icon_padding">8dp</dimen>
     <dimen name="chip_list_inter_chip_padding">2.5dp</dimen>
     <dimen name="chip_list_side_padding">16dp</dimen>
-    <item name="chip_background_selected_focused_alpha" format="float" type="dimen">0.12</item>
-    <item name="chip_background_selected_alpha" format="float" type="dimen">0.06</item>
 
     <!-- Download manager dimensions -->
     <dimen name="download_manager_ideal_image_width">150dp</dimen>
