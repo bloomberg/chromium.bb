@@ -4,6 +4,8 @@
 
 source_set("cells") {
   sources = [
+    "account_sign_in_item.h",
+    "account_sign_in_item.mm",
     "autofill_data_item.h",
     "autofill_data_item.mm",
     "byo_textfield_item.h",
@@ -61,6 +63,8 @@ source_set("cells") {
     "//ios/chrome/browser/ui/icons",
     "//ios/chrome/browser/ui/table_view:styler",
     "//ios/chrome/browser/ui/table_view/cells",
+    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/signin",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ui/base",
   ]
