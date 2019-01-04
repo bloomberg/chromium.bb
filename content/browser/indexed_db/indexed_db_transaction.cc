@@ -178,9 +178,27 @@ void IndexedDBTransaction::RunTasksIfStarted() {
                                 ptr_factory_.GetWeakPtr()));
 }
 
+void IndexedDBTransaction::ForcePendingCommit() {
+  IDB_TRACE1("IndexedDBTransaction::ForceCommit", "txn.id", id());
+  DCHECK(is_commit_pending_);
+  if (state_ == FINISHED)
+    return;
+
+  should_process_queue_ = true;
+  state_ = STARTED;
+  if (!task_queue_.empty()) {
+    // Commits when completed.
+    ProcessTaskQueue();
+  } else {
+    leveldb::Status result = Commit();
+    if (!result.ok())
+      database_->ReportError(result);
+  }
+}
+
 void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
-  IDB_TRACE1("IndexedDBTransaction::Abort", "txn.id", id());
   DCHECK(!processing_event_queue_);
+  DCHECK(!is_commit_pending_);
   if (state_ == FINISHED)
     return;
 
@@ -254,7 +272,7 @@ void IndexedDBTransaction::Start() {
   diagnostics_.start_time = base::Time::Now();
 
   if (!used_) {
-    if (commit_pending_) {
+    if (is_commit_pending_) {
       // The transaction has never had requests issued against it, but the
       // front-end previously requested a commit; do the commit now, but not
       // re-entrantly as that may renter the coordinator.
@@ -328,7 +346,7 @@ leveldb::Status IndexedDBTransaction::Commit() {
     return leveldb::Status::OK();
   DCHECK_NE(state_, COMMITTING);
 
-  commit_pending_ = true;
+  is_commit_pending_ = true;
 
   // Front-end has requested a commit, but this transaction is blocked by
   // other transactions. The commit will be initiated when the transaction
@@ -500,7 +518,7 @@ void IndexedDBTransaction::ProcessTaskQueue() {
 
   // If there are no pending tasks, we haven't already committed/aborted,
   // and the front-end requested a commit, it is now safe to do so.
-  if (!HasPendingTasks() && state_ != FINISHED && commit_pending_) {
+  if (!HasPendingTasks() && state_ != FINISHED && is_commit_pending_) {
     processing_event_queue_ = false;
     // This can delete |this|.
     leveldb::Status result = Commit();

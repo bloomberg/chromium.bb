@@ -1892,7 +1892,7 @@ void IndexedDBDatabase::Close(IndexedDBConnection* connection, bool forced) {
   // happen if the close is requested by the connection itself as the
   // front-end defers the close until all transactions are complete, but can
   // occur on process termination or forced close.
-  connection->AbortAllTransactions(IndexedDBDatabaseError(
+  connection->FinishAllTransactions(IndexedDBDatabaseError(
       blink::kWebIDBDatabaseExceptionUnknownError, "Connection is closing."));
 
   // Abort transactions before removing the connection; aborting may complete
@@ -1947,7 +1947,7 @@ void IndexedDBDatabase::AbortAllTransactionsForConnections() {
   IDB_TRACE("IndexedDBDatabase::AbortAllTransactionsForConnections");
 
   for (IndexedDBConnection* connection : connections_) {
-    connection->AbortAllTransactions(
+    connection->FinishAllTransactions(
         IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError,
                                "Database is compacting."));
   }
