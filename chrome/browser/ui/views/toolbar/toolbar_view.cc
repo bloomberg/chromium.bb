@@ -554,11 +554,9 @@ void ToolbarView::OnPaintBackground(gfx::Canvas* canvas) {
 
   const ui::ThemeProvider* tp = GetThemeProvider();
 
-  // Always fill the toolbar with its bg color first in case the image is
-  // transparent.
-  canvas->FillRect(GetLocalBounds(),
-                   tp->GetColor(ThemeProperties::COLOR_TOOLBAR));
-
+  // If the toolbar has a theme image, it gets composited against the toolbar
+  // background color when it's imported, so we only need to specificallh draw
+  // the background color if there is no custom image.
   if (tp->HasCustomImage(IDR_THEME_TOOLBAR)) {
     const int x_offset =
         GetMirroredX() + browser_view_->GetMirroredX() +
@@ -568,6 +566,9 @@ void ToolbarView::OnPaintBackground(gfx::Canvas* canvas) {
                          GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
     canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR), x_offset,
                          y_offset, 0, 0, width(), height());
+  } else {
+    canvas->FillRect(GetLocalBounds(),
+                     tp->GetColor(ThemeProperties::COLOR_TOOLBAR));
   }
 
   // Toolbar/content separator.

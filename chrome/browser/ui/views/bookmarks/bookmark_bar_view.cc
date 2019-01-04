@@ -168,12 +168,6 @@ std::unique_ptr<views::LabelButtonBorder> CreateBookmarkButtonBorder() {
   return border;
 }
 
-SkColor GetBookmarkBarTextColor(const ui::ThemeProvider* theme_provider) {
-  return color_utils::GetColorWithMinimumContrast(
-      theme_provider->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT),
-      theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
-}
-
 // BookmarkButtonBase -----------------------------------------------
 
 // Base class for non-menu hosting buttons used on the bookmark bar.
@@ -993,8 +987,7 @@ void BookmarkBarView::PaintChildren(const views::PaintInfo& paint_info) {
 
     ui::PaintRecorder recorder(paint_info.context(), size());
     // TODO(sky/glen): make me pretty!
-    recorder.canvas()->FillRect(indicator_bounds,
-                                GetBookmarkBarTextColor(GetThemeProvider()));
+    recorder.canvas()->FillRect(indicator_bounds, GetBookmarkBarTextColor());
   }
 }
 
@@ -1631,7 +1624,7 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
   // We don't always have a theme provider (ui tests, for example).
   const ui::ThemeProvider* const tp = GetThemeProvider();
   if (tp) {
-    SkColor color = GetBookmarkBarTextColor(tp);
+    SkColor color = GetBookmarkBarTextColor();
     button->SetEnabledTextColors(color);
     if (node->is_folder()) {
       button->SetImage(views::Button::STATE_NORMAL,
@@ -1651,9 +1644,8 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
         // This favicon currently does not match the default favicon icon used
         // elsewhere in the codebase.
         // See https://crbug/814447
-        const gfx::ImageSkia icon =
-            gfx::CreateVectorIcon(kDefaultTouchFaviconIcon,
-                                  GetBookmarkBarTextColor(GetThemeProvider()));
+        const gfx::ImageSkia icon = gfx::CreateVectorIcon(
+            kDefaultTouchFaviconIcon, GetBookmarkBarTextColor());
         const gfx::ImageSkia mask =
             gfx::CreateVectorIcon(kDefaultTouchFaviconMaskIcon, SK_ColorBLACK);
         favicon = gfx::ImageSkiaOperations::CreateMaskedImage(icon, mask);
@@ -1965,7 +1957,7 @@ void BookmarkBarView::UpdateAppearanceForTheme() {
                     GetBookmarkButton(i));
   }
 
-  const SkColor color = GetBookmarkBarTextColor(theme_provider);
+  const SkColor color = GetBookmarkBarTextColor();
   other_bookmarks_button_->SetEnabledTextColors(color);
   other_bookmarks_button_->SetImage(views::Button::STATE_NORMAL,
                                     chrome::GetBookmarkFolderIcon(color));
@@ -2063,4 +2055,15 @@ int BookmarkBarView::GetIndexForButton(views::View* button) {
     return -1;
 
   return it - bookmark_buttons_.cbegin();
+}
+
+SkColor BookmarkBarView::GetBookmarkBarTextColor() {
+  const ui::ThemeProvider* theme_provider = GetThemeProvider();
+  int background_color_id =
+      bookmark_bar_state_ == BookmarkBar::DETACHED
+          ? ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND
+          : ThemeProperties::COLOR_TOOLBAR;
+  return color_utils::GetColorWithMinimumContrast(
+      theme_provider->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT),
+      theme_provider->GetColor(background_color_id));
 }

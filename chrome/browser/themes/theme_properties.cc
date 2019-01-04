@@ -42,6 +42,9 @@ base::Optional<SkColor> GetIncognitoColor(int id) {
     case ThemeProperties::COLOR_FRAME_INACTIVE:
     case ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE:
       return gfx::kGoogleGrey800;
+    case ThemeProperties::COLOR_DOWNLOAD_SHELF:
+    case ThemeProperties::COLOR_STATUS_BUBBLE:
+    case ThemeProperties::COLOR_INFOBAR:
     case ThemeProperties::COLOR_TOOLBAR:
     case ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
     case ThemeProperties::COLOR_NTP_BACKGROUND:
@@ -214,7 +217,10 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
     case COLOR_FRAME_INACTIVE:
     case COLOR_BACKGROUND_TAB_INACTIVE:
       return SkColorSetRGB(0xE7, 0xEA, 0xED);
+    case COLOR_DOWNLOAD_SHELF:
+    case COLOR_INFOBAR:
     case COLOR_TOOLBAR:
+    case COLOR_STATUS_BUBBLE:
       return SK_ColorWHITE;
     case COLOR_BOOKMARK_TEXT:
     case COLOR_TAB_TEXT:
