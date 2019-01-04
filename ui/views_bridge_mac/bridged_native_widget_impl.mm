@@ -299,10 +299,12 @@ BridgedNativeWidgetImpl::CreateNSWindow(
 BridgedNativeWidgetImpl::BridgedNativeWidgetImpl(
     uint64_t bridged_native_widget_id,
     BridgedNativeWidgetHost* host,
-    BridgedNativeWidgetHostHelper* host_helper)
+    BridgedNativeWidgetHostHelper* host_helper,
+    views_bridge_mac::mojom::TextInputHost* text_input_host)
     : id_(bridged_native_widget_id),
       host_(host),
       host_helper_(host_helper),
+      text_input_host_(text_input_host),
       bridge_mojo_binding_(this) {
   DCHECK(GetIdToWidgetImplMap().find(id_) == GetIdToWidgetImplMap().end());
   GetIdToWidgetImplMap().insert(std::make_pair(id_, this));

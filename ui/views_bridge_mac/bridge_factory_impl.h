@@ -28,7 +28,8 @@ class VIEWS_EXPORT BridgeFactoryImpl : public mojom::BridgeFactory {
   void CreateBridgedNativeWidget(
       uint64_t bridge_id,
       mojom::BridgedNativeWidgetAssociatedRequest bridge_request,
-      mojom::BridgedNativeWidgetHostAssociatedPtrInfo host) override;
+      mojom::BridgedNativeWidgetHostAssociatedPtrInfo host,
+      mojom::TextInputHostAssociatedPtrInfo text_input_host) override;
 
  private:
   friend class base::NoDestructor<BridgeFactoryImpl>;

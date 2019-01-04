@@ -23,6 +23,7 @@
 #include "ui/views/views_export.h"
 #import "ui/views_bridge_mac/cocoa_mouse_capture_delegate.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
+#include "ui/views_bridge_mac/mojo/text_input_host.mojom.h"
 
 @class BridgedContentView;
 @class ModalShowAnimationWithLayer;
@@ -33,6 +34,7 @@ namespace views_bridge_mac {
 
 namespace mojom {
 class BridgedNativeWidgetHost;
+class TextInputHost;
 }  // namespace mojom
 
 class BridgedNativeWidgetHostHelper;
@@ -76,9 +78,11 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
       const views_bridge_mac::mojom::CreateWindowParams* params);
 
   // Creates one side of the bridge. |host| and |parent| must not be NULL.
-  BridgedNativeWidgetImpl(uint64_t bridged_native_widget_id,
-                          BridgedNativeWidgetHost* host,
-                          BridgedNativeWidgetHostHelper* host_helper);
+  BridgedNativeWidgetImpl(
+      uint64_t bridged_native_widget_id,
+      BridgedNativeWidgetHost* host,
+      BridgedNativeWidgetHostHelper* host_helper,
+      views_bridge_mac::mojom::TextInputHost* text_input_host);
   ~BridgedNativeWidgetImpl() override;
 
   // Bind |bridge_mojo_binding_| to |request|, and set the connection error
@@ -155,6 +159,9 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   BridgedContentView* ns_view() { return bridged_view_; }
   BridgedNativeWidgetHost* host() { return host_; }
   BridgedNativeWidgetHostHelper* host_helper() { return host_helper_; }
+  views_bridge_mac::mojom::TextInputHost* text_input_host() const {
+    return text_input_host_;
+  }
   NSWindow* ns_window();
 
   views_bridge_mac::DragDropClient* drag_drop_client();
@@ -280,6 +287,9 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   const uint64_t id_;
   BridgedNativeWidgetHost* const host_;               // Weak. Owns this.
   BridgedNativeWidgetHostHelper* const host_helper_;  // Weak, owned by |host_|.
+  views_bridge_mac::mojom::TextInputHost* const
+      text_input_host_;  // Weak, owned by |host_|.
+
   base::scoped_nsobject<NativeWidgetMacNSWindow> window_;
   base::scoped_nsobject<ViewsNSWindowDelegate> window_delegate_;
   base::scoped_nsobject<NSObject<CommandDispatcherDelegate>>

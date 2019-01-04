@@ -230,7 +230,6 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
                  gfx::Point* baseline_point) override;
   views_bridge_mac::DragDropClient* GetDragDropClient() override;
   ui::TextInputClient* GetTextInputClient() override;
-  void GetHasInputContext(bool* has_text_input_context) override;
 
   // BridgeFactoryHost::Observer:
   void OnBridgeFactoryHostDestroying(BridgeFactoryHost* host) override;
