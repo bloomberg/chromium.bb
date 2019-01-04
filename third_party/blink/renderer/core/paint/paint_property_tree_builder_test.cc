@@ -1857,9 +1857,6 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FramesEstablishIsolation) {
-  if (!RuntimeEnabledFeatures::LayoutViewIsolationNodesEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0; }
