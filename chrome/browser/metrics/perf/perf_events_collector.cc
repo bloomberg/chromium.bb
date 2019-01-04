@@ -4,11 +4,9 @@
 
 #include "chrome/browser/metrics/perf/perf_events_collector.h"
 
-#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/system/sys_info.h"
 #include "chrome/browser/metrics/perf/cpu_identity.h"
 #include "chrome/browser/metrics/perf/perf_output.h"
 #include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
@@ -27,28 +25,9 @@ const char kCWPFieldTrialName[] = "ChromeOSWideProfilingCollection";
 // collecting further perf data. The current value is 4 MB.
 const size_t kCachedPerfDataProtobufSizeThreshold = 4 * 1024 * 1024;
 
-// Enumeration representing success and various failure modes for collecting and
-// sending perf data.
-enum GetPerfDataOutcome {
-  SUCCESS,
-  NOT_READY_TO_UPLOAD,
-  NOT_READY_TO_COLLECT,
-  INCOGNITO_ACTIVE,
-  INCOGNITO_LAUNCHED,
-  PROTOBUF_NOT_PARSED,
-  ILLEGAL_DATA_RETURNED,
-  ALREADY_COLLECTING,
-  NUM_OUTCOMES
-};
-
 // Name of the histogram that represents the success and various failure modes
-// for collecting and sending perf data.
-const char kGetPerfDataOutcomeHistogram[] = "UMA.Perf.GetData";
-
-void AddToPerfHistogram(GetPerfDataOutcome outcome) {
-  UMA_HISTOGRAM_ENUMERATION(kGetPerfDataOutcomeHistogram, outcome,
-                            NUM_OUTCOMES);
-}
+// for the perf collector.
+const char kPerfCollectorOutcomeHistogram[] = "UMA.Perf.GetData";
 
 // Gets parameter named by |key| from the map. If it is present and is an
 // integer, stores the result in |out| and return true. Otherwise return false.
@@ -193,40 +172,6 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
   return cmds;
 }
 
-// PerfDataProto is defined elsewhere with more fields than the definition in
-// Chromium's copy of perf_data.proto. During deserialization, the protobuf
-// data could contain fields that are defined elsewhere but not in
-// perf_data.proto, resulting in some data in |unknown_fields| for the message
-// types within PerfDataProto.
-//
-// This function deletes those dangling unknown fields if they are in messages
-// containing strings. See comments in perf_data.proto describing the fields
-// that have been intentionally left out. Note that all unknown fields will be
-// removed from those messages, not just unknown string fields.
-void RemoveUnknownFieldsFromMessagesWithStrings(PerfDataProto* proto) {
-  // Clean up PerfEvent::MMapEvent and PerfEvent::CommEvent.
-  for (PerfDataProto::PerfEvent& event : *proto->mutable_events()) {
-    if (event.has_comm_event())
-      event.mutable_comm_event()->mutable_unknown_fields()->clear();
-    if (event.has_mmap_event())
-      event.mutable_mmap_event()->mutable_unknown_fields()->clear();
-  }
-  // Clean up PerfBuildID.
-  for (PerfDataProto::PerfBuildID& build_id : *proto->mutable_build_ids()) {
-    build_id.mutable_unknown_fields()->clear();
-  }
-  // Clean up StringMetadata and StringMetadata::StringAndMd5sumPrefix.
-  if (proto->has_string_metadata()) {
-    proto->mutable_string_metadata()->mutable_unknown_fields()->clear();
-    if (proto->string_metadata().has_perf_command_line_whole()) {
-      proto->mutable_string_metadata()
-          ->mutable_perf_command_line_whole()
-          ->mutable_unknown_fields()
-          ->clear();
-    }
-  }
-}
-
 }  // namespace
 
 namespace internal {
@@ -253,7 +198,8 @@ std::vector<RandomSelector::WeightAndValue> GetDefaultCommandsForCpu(
 
 }  // namespace internal
 
-PerfCollector::PerfCollector() {}
+PerfCollector::PerfCollector()
+    : MetricCollector(kPerfCollectorOutcomeHistogram) {}
 
 PerfCollector::~PerfCollector() {}
 
@@ -265,16 +211,6 @@ void PerfCollector::Init() {
     SetCollectionParamsFromVariationParams(params);
 
   MetricCollector::Init();
-}
-
-bool PerfCollector::ShouldUpload() const {
-  if (cached_profile_data_.empty()) {
-    AddToPerfHistogram(NOT_READY_TO_UPLOAD);
-    return false;
-  }
-
-  AddToPerfHistogram(SUCCESS);
-  return true;
 }
 
 namespace internal {
@@ -387,24 +323,22 @@ void PerfCollector::SetCollectionParamsFromVariationParams(
   command_selector_.SetOdds(commands);
 }
 
-PerfCollector::PerfSubcommand PerfCollector::GetPerfSubcommandType(
+MetricCollector::PerfProtoType PerfCollector::GetPerfProtoType(
     const std::vector<std::string>& args) {
   if (args.size() > 1 && args[0] == "perf") {
-    if (args[1] == "record")
-      return PerfSubcommand::PERF_COMMAND_RECORD;
+    if (args[1] == "record" || args[1] == "mem")
+      return PerfProtoType::PERF_TYPE_DATA;
     if (args[1] == "stat")
-      return PerfSubcommand::PERF_COMMAND_STAT;
-    if (args[1] == "mem")
-      return PerfSubcommand::PERF_COMMAND_MEM;
+      return PerfProtoType::PERF_TYPE_STAT;
   }
 
-  return PerfSubcommand::PERF_COMMAND_UNSUPPORTED;
+  return PerfProtoType::PERF_TYPE_UNSUPPORTED;
 }
 
 void PerfCollector::ParseOutputProtoIfValid(
     std::unique_ptr<WindowedIncognitoObserver> incognito_observer,
     std::unique_ptr<SampledProfile> sampled_profile,
-    PerfSubcommand subcommand,
+    PerfProtoType type,
     const std::string& perf_stdout) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -413,74 +347,30 @@ void PerfCollector::ParseOutputProtoIfValid(
   std::unique_ptr<PerfOutputCall> call_deleter(std::move(perf_output_call_));
 
   if (incognito_observer->incognito_launched()) {
-    AddToPerfHistogram(INCOGNITO_LAUNCHED);
+    AddToUmaHistogram(CollectionAttemptStatus::INCOGNITO_LAUNCHED);
     return;
   }
-
-  if (perf_stdout.empty()) {
-    AddToPerfHistogram(ILLEGAL_DATA_RETURNED);
-    return;
-  }
-
-  switch (subcommand) {
-    case PerfSubcommand::PERF_COMMAND_RECORD:
-    case PerfSubcommand::PERF_COMMAND_MEM: {
-      PerfDataProto perf_data_proto;
-      if (!perf_data_proto.ParseFromString(perf_stdout)) {
-        AddToPerfHistogram(PROTOBUF_NOT_PARSED);
-        return;
-      }
-      RemoveUnknownFieldsFromMessagesWithStrings(&perf_data_proto);
-      sampled_profile->set_ms_after_boot(
-          base::SysInfo::Uptime().InMilliseconds());
-      sampled_profile->mutable_perf_data()->Swap(&perf_data_proto);
-      break;
-    }
-    case PerfSubcommand::PERF_COMMAND_STAT: {
-      PerfStatProto perf_stat_proto;
-      if (!perf_stat_proto.ParseFromString(perf_stdout)) {
-        AddToPerfHistogram(PROTOBUF_NOT_PARSED);
-        return;
-      }
-      sampled_profile->mutable_perf_stat()->Swap(&perf_stat_proto);
-      break;
-    }
-    case PerfSubcommand::PERF_COMMAND_UNSUPPORTED:
-      AddToPerfHistogram(PROTOBUF_NOT_PARSED);
-      return;
-  }
-
-  DCHECK(!login_time_.is_null());
-  sampled_profile->set_ms_after_login(
-      (base::TimeTicks::Now() - login_time_).InMilliseconds());
-
-  // Add the collected data to the container of collected SampledProfiles.
-  cached_profile_data_.resize(cached_profile_data_.size() + 1);
-  cached_profile_data_.back().Swap(sampled_profile.get());
+  SaveSerializedPerfProto(std::move(sampled_profile), type, perf_stdout);
 }
 
 bool PerfCollector::ShouldCollect() const {
   // Only allow one active collection.
   if (perf_output_call_) {
-    AddToPerfHistogram(ALREADY_COLLECTING);
+    AddToUmaHistogram(CollectionAttemptStatus::ALREADY_COLLECTING);
     return false;
   }
 
   // Do not collect further data if we've already collected a substantial amount
   // of data, as indicated by |kCachedPerfDataProtobufSizeThreshold|.
-  size_t cached_perf_data_size = 0;
-  for (size_t i = 0; i < cached_profile_data_.size(); ++i) {
-    cached_perf_data_size += cached_profile_data_[i].ByteSize();
-  }
-  if (cached_perf_data_size >= kCachedPerfDataProtobufSizeThreshold) {
-    AddToPerfHistogram(NOT_READY_TO_COLLECT);
+  if (cached_profile_data_size() >= kCachedPerfDataProtobufSizeThreshold) {
+    AddToUmaHistogram(CollectionAttemptStatus::NOT_READY_TO_COLLECT);
     return false;
   }
 
   // For privacy reasons, Chrome should only collect perf data if there is no
   // incognito session active (or gets spawned during the collection).
   if (BrowserList::IsIncognitoSessionActive()) {
-    AddToPerfHistogram(INCOGNITO_ACTIVE);
+    AddToUmaHistogram(CollectionAttemptStatus::INCOGNITO_ACTIVE);
     return false;
   }
 
@@ -495,14 +385,14 @@ void PerfCollector::CollectProfile(
   std::vector<std::string> command =
       base::SplitString(command_selector_.Select(), kPerfCommandDelimiter,
                         base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-  PerfSubcommand subcommand = GetPerfSubcommandType(command);
+  PerfProtoType type = GetPerfProtoType(command);
 
   perf_output_call_ = std::make_unique<PerfOutputCall>(
       collection_params_.collection_duration, command,
       base::BindOnce(&PerfCollector::ParseOutputProtoIfValid,
                      base::AsWeakPtr<PerfCollector>(this),
                      base::Passed(&incognito_observer),
-                     base::Passed(&sampled_profile), subcommand));
+                     base::Passed(&sampled_profile), type));
 }
 
 }  // namespace metrics

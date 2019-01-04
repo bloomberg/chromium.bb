@@ -27,18 +27,9 @@ class PerfCollector : public MetricCollector {
   void Init() override;
 
  protected:
-  // Perf events collection subcommands.
-  enum PerfSubcommand {
-    PERF_COMMAND_RECORD,
-    PERF_COMMAND_STAT,
-    PERF_COMMAND_MEM,
-    PERF_COMMAND_UNSUPPORTED,
-  };
-
-  // Returns one of the above enums given an vector of perf arguments, starting
-  // with "perf" itself in |args[0]|.
-  static PerfSubcommand GetPerfSubcommandType(
-      const std::vector<std::string>& args);
+  // Returns the perf proto type associated with the given vector of perf
+  // arguments, starting with "perf" itself in |args[0]|.
+  static PerfProtoType GetPerfProtoType(const std::vector<std::string>& args);
 
   // Parses a PerfDataProto or PerfStatProto from serialized data |perf_stdout|,
   // if non-empty. Which proto to use depends on |subcommand|. If |perf_stdout|
@@ -48,11 +39,10 @@ class PerfCollector : public MetricCollector {
   void ParseOutputProtoIfValid(
       std::unique_ptr<WindowedIncognitoObserver> incognito_observer,
       std::unique_ptr<SampledProfile> sampled_profile,
-      PerfSubcommand subcommand,
+      PerfProtoType type,
       const std::string& perf_stdout);
 
   // MetricCollector:
-  bool ShouldUpload() const override;
   bool ShouldCollect() const override;
   void CollectProfile(std::unique_ptr<SampledProfile> sampled_profile) override;
 

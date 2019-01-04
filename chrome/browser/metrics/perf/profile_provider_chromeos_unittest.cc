@@ -24,9 +24,6 @@ namespace metrics {
 
 namespace {
 
-const long kMsAfterBoot = 10000;
-const long kMsAfterLogin = 2000;
-
 // Returns sample PerfDataProtos with custom timestamps. The contents don't have
 // to make sense. They just need to constitute a semantically valid protobuf.
 // |proto| is an output parameter that will contain the created protobuf.
@@ -62,18 +59,14 @@ class TestMetricCollector : public MetricCollector {
  public:
   TestMetricCollector() {}
   explicit TestMetricCollector(const CollectionParams& collection_params)
-      : MetricCollector(collection_params) {}
+      : MetricCollector("UMA.CWP.TestData", collection_params) {}
 
   void CollectProfile(
       std::unique_ptr<SampledProfile> sampled_profile) override {
     PerfDataProto perf_data_proto = GetExamplePerfDataProto(TSTAMP);
-    sampled_profile->set_ms_after_boot(kMsAfterBoot);
-    sampled_profile->set_ms_after_login(kMsAfterLogin);
-    sampled_profile->mutable_perf_data()->Swap(&perf_data_proto);
-
-    // Add the collected data to the container of collected SampledProfiles.
-    cached_profile_data_.resize(cached_profile_data_.size() + 1);
-    cached_profile_data_.back().Swap(sampled_profile.get());
+    SaveSerializedPerfProto(std::move(sampled_profile),
+                            PerfProtoType::PERF_TYPE_DATA,
+                            perf_data_proto.SerializeAsString());
   }
 
  private:
