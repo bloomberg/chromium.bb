@@ -40,7 +40,7 @@ void ReadAndTruncateMetricsFromFile(
 bool WriteMetricToFile(const MetricSample& sample, const std::string& filename);
 
 // Maximum length of a serialized message
-static const int kMessageMaxLength = 1024;
+static const size_t kMessageMaxLength = 1024;
 
 }  // namespace SerializationUtils
 }  // namespace metrics

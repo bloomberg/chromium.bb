@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/numerics/safe_math.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "components/metrics/serialization/metric_sample.h"
@@ -35,11 +36,11 @@ bool ReadMessage(int fd, std::string* message) {
   CHECK(message);
 
   int result;
-  int32_t message_size;
-  const int32_t message_header_size = sizeof(message_size);
+  uint32_t encoded_size;
+  const size_t message_header_size = sizeof(uint32_t);
   // The file containing the metrics does not leave the device so the writer and
   // the reader will always have the same endianness.
-  result = HANDLE_EINTR(read(fd, &message_size, message_header_size));
+  result = HANDLE_EINTR(read(fd, &encoded_size, message_header_size));
   if (result < 0) {
     DPLOG(ERROR) << "reading metrics message header";
     return false;
@@ -48,17 +49,19 @@ bool ReadMessage(int fd, std::string* message) {
     // This indicates a normal EOF.
     return false;
   }
-  if (result < message_header_size) {
+  if (base::checked_cast<size_t>(result) < message_header_size) {
     DLOG(ERROR) << "bad read size " << result << ", expecting "
-                << sizeof(message_size);
+                << message_header_size;
     return false;
   }
 
   // kMessageMaxLength applies to the entire message: the 4-byte
   // length field and the content.
+  size_t message_size = base::checked_cast<size_t>(encoded_size);
   if (message_size > SerializationUtils::kMessageMaxLength) {
     DLOG(ERROR) << "message too long : " << message_size;
-    if (HANDLE_EINTR(lseek(fd, message_size - 4, SEEK_CUR)) == -1) {
+    if (HANDLE_EINTR(lseek(fd, message_size - message_header_size, SEEK_CUR)) ==
+        -1) {
       DLOG(ERROR) << "error while skipping message. abort";
       return false;
     }
@@ -192,17 +195,19 @@ bool SerializationUtils::WriteMetricToFile(const MetricSample& sample,
   }
 
   std::string msg = sample.ToString();
-  int32_t size = msg.length() + sizeof(int32_t);
-  if (size > kMessageMaxLength) {
+  size_t size = 0;
+  if (!base::CheckAdd(msg.length(), sizeof(uint32_t)).AssignIfValid(&size) ||
+      size > kMessageMaxLength) {
     DPLOG(ERROR) << "cannot write message: too long: " << filename;
     return false;
   }
 
   // The file containing the metrics samples will only be read by programs on
   // the same device so we do not check endianness.
+  uint32_t encoded_size = base::checked_cast<uint32_t>(size);
   if (!base::WriteFileDescriptor(file_descriptor.get(),
-                                 reinterpret_cast<char*>(&size),
-                                 sizeof(size))) {
+                                 reinterpret_cast<char*>(&encoded_size),
+                                 sizeof(uint32_t))) {
     DPLOG(ERROR) << "error writing message length: " << filename;
     return false;
   }
