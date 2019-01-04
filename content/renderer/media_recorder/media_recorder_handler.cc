@@ -161,8 +161,16 @@ bool MediaRecorderHandler::CanSupportMimeType(
   // vp8, vp9, h264 and avc1 or opus; |type| = "audio", supports opus or pcm
   // (little-endian 32-bit float).
   // http://www.webmproject.org/docs/container Sec:"HTML5 Video Type Parameters"
-  static const char* const kVideoCodecs[] = {"vp8",  "vp9",  "h264",
-                                             "avc1", "opus", "pcm"};
+  static const char* const kVideoCodecs[] = {
+    "vp8",
+    "vp9",
+#if BUILDFLAG(RTC_USE_H264)
+    "h264",
+    "avc1",
+#endif
+    "opus",
+    "pcm"
+  };
   static const char* const kAudioCodecs[] = {"opus", "pcm"};
   const char* const* codecs = video ? &kVideoCodecs[0] : &kAudioCodecs[0];
   const int codecs_count =

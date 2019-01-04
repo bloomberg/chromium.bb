@@ -6022,3 +6022,6 @@ crbug.com/918905 [ Mac Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-c
 
 # Sheriff 2019-01-04
 crbug.com/919096 [ Linux ] virtual/display-lock/display-lock/lock-before-append/measure-updated-layout.html [ Timeout Pass ]
+
+# Android doesn't support H264/AVC1 encoding.
+crbug.com/719023 [ Android ] fast/mediarecorder/MediaRecorder-isTypeSupported.html [ Failure ]
