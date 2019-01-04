@@ -912,6 +912,17 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
     navigationItem = webState->GetNavigationManager()->GetLastCommittedItem();
   }
 
+  if (!navigationItem) {
+    // Pending item may not exist due to the bug in //ios/web layer.
+    // TODO(crbug.com/899827): remove this early return once GetPendingItem()
+    // always return valid object inside WebStateObserver::DidStartNavigation()
+    // callback.
+    //
+    // Note that GetLastCommittedItem() returns null if navigation manager does
+    // not have committed items (which is normal situation).
+    return;
+  }
+
   [[OmniboxGeolocationController sharedInstance]
       addLocationToNavigationItem:navigationItem
                      browserState:ios::ChromeBrowserState::FromBrowserState(
