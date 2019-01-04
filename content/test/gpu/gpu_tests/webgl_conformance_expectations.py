@@ -596,6 +596,14 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/extensions/oes-texture-half-float-with-video.html',
         ['linux', ('nvidia', 0x1cb3)], bug=913969)
 
+    # NVIDIA P400 OpenGL, Debug
+    self.Flaky('conformance/canvas/draw-webgl-to-canvas-test.html',
+        ['linux', 'debug', ('nvidia', 0x1cb3)], bug=918995)
+    self.Flaky('conformance/extensions/webgl-depth-texture.html',
+        ['linux', 'debug', ('nvidia', 0x1cb3)], bug=918995)
+    self.Flaky('conformance/rendering/polygon-offset.html',
+        ['linux', 'debug', ('nvidia', 0x1cb3)], bug=918995)
+
     # AMD
     self.Fail('conformance/glsl/misc/fragcolor-fragdata-invariant.html',
         ['linux', 'amd'], bug=844311)
