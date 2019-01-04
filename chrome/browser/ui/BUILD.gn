@@ -2732,6 +2732,8 @@ jumbo_split_static_library("ui") {
       "views/relaunch_notification/relaunch_required_timer.h",
       "views/relaunch_notification/relaunch_required_timer_internal.cc",
       "views/relaunch_notification/relaunch_required_timer_internal.h",
+      "views/relaunch_notification/wall_clock_timer.cc",
+      "views/relaunch_notification/wall_clock_timer.h",
       "views/sad_tab_view.cc",
       "views/sad_tab_view.h",
       "views/safe_browsing/password_reuse_modal_warning_dialog.cc",

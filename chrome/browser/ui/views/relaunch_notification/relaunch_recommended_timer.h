@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
+#include "chrome/browser/ui/views/relaunch_notification/wall_clock_timer.h"
 
 // Timer that handles notification title refresh for relaunch recommended
 // notification. Created either by RelaunchRecommendedBubbleView for Chrome
@@ -42,7 +42,7 @@ class RelaunchRecommendedTimer {
   const base::TimeTicks upgrade_detected_time_;
 
   // A timer with which title refreshes are scheduled.
-  base::OneShotTimer refresh_timer_;
+  WallClockTimer refresh_timer_;
 
   // Callback which triggers the actual title update, which differs on Chrome
   // for desktop vs for Chrome OS.
