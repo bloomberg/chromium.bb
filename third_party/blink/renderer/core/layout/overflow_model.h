@@ -82,19 +82,33 @@ inline void UniteLayoutOverflowRect(LayoutRect& layout_overflow,
 // functions (addLayoutOverflow, addVisualOverflow, etc.) to keep this
 // invariant.
 
-class SimpleOverflowModel {
-  USING_FAST_MALLOC(SimpleOverflowModel);
+class SimpleLayoutOverflowModel {
+  USING_FAST_MALLOC(SimpleLayoutOverflowModel);
 
  public:
-  SimpleOverflowModel(const LayoutRect& layout_rect,
-                      const LayoutRect& visual_rect)
-      : layout_overflow_(layout_rect), visual_overflow_(visual_rect) {}
+  SimpleLayoutOverflowModel(const LayoutRect& layout_rect)
+      : layout_overflow_(layout_rect) {}
 
   const LayoutRect& LayoutOverflowRect() const { return layout_overflow_; }
   void SetLayoutOverflow(const LayoutRect& rect) { layout_overflow_ = rect; }
   void AddLayoutOverflow(const LayoutRect& rect) {
     UniteLayoutOverflowRect(layout_overflow_, rect);
   }
+
+  void Move(LayoutUnit dx, LayoutUnit dy) { layout_overflow_.Move(dx, dy); }
+
+ private:
+  LayoutRect layout_overflow_;
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleLayoutOverflowModel);
+};
+
+class SimpleVisualOverflowModel {
+  USING_FAST_MALLOC(SimpleVisualOverflowModel);
+
+ public:
+  SimpleVisualOverflowModel(const LayoutRect& visual_rect)
+      : visual_overflow_(visual_rect) {}
 
   const LayoutRect& VisualOverflowRect() const { return visual_overflow_; }
   void SetVisualOverflow(const LayoutRect& rect) { visual_overflow_ = rect; }
@@ -103,15 +117,13 @@ class SimpleOverflowModel {
   }
 
   void Move(LayoutUnit dx, LayoutUnit dy) {
-    layout_overflow_.Move(dx, dy);
     visual_overflow_.Move(dx, dy);
   }
 
  private:
-  LayoutRect layout_overflow_;
   LayoutRect visual_overflow_;
 
-  DISALLOW_COPY_AND_ASSIGN(SimpleOverflowModel);
+  DISALLOW_COPY_AND_ASSIGN(SimpleVisualOverflowModel);
 };
 
 // BoxModelOverflow tracks overflows of a LayoutBox. It separates visual
@@ -141,20 +153,40 @@ class SimpleOverflowModel {
 // it clips overflow, otherwise union of self visual overflow and contents
 // visual overflow.
 
-class BoxOverflowModel {
-  USING_FAST_MALLOC(BoxOverflowModel);
+class BoxLayoutOverflowModel {
+  USING_FAST_MALLOC(BoxLayoutOverflowModel);
 
  public:
-  BoxOverflowModel(const LayoutRect& layout_rect,
-                   const LayoutRect& self_visual_overflow_rect)
-      : layout_overflow_(layout_rect),
-        self_visual_overflow_(self_visual_overflow_rect) {}
+  BoxLayoutOverflowModel(const LayoutRect& layout_rect)
+      : layout_overflow_(layout_rect) {}
 
   const LayoutRect& LayoutOverflowRect() const { return layout_overflow_; }
   void SetLayoutOverflow(const LayoutRect& rect) { layout_overflow_ = rect; }
   void AddLayoutOverflow(const LayoutRect& rect) {
     UniteLayoutOverflowRect(layout_overflow_, rect);
   }
+
+  void Move(LayoutUnit dx, LayoutUnit dy) { layout_overflow_.Move(dx, dy); }
+
+  LayoutUnit LayoutClientAfterEdge() const { return layout_client_after_edge_; }
+  void SetLayoutClientAfterEdge(LayoutUnit client_after_edge) {
+    layout_client_after_edge_ = client_after_edge;
+  }
+
+ private:
+  LayoutRect layout_overflow_;
+  LayoutUnit layout_client_after_edge_;
+  bool has_subpixel_visual_effect_outsets_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(BoxLayoutOverflowModel);
+};
+
+class BoxVisualOverflowModel {
+  USING_FAST_MALLOC(BoxVisualOverflowModel);
+
+ public:
+  BoxVisualOverflowModel(const LayoutRect& self_visual_overflow_rect)
+      : self_visual_overflow_(self_visual_overflow_rect) {}
 
   void SetSelfVisualOverflow(const LayoutRect& rect) {
     self_visual_overflow_ = rect;
@@ -179,14 +211,8 @@ class BoxOverflowModel {
   }
 
   void Move(LayoutUnit dx, LayoutUnit dy) {
-    layout_overflow_.Move(dx, dy);
     self_visual_overflow_.Move(dx, dy);
     contents_visual_overflow_.Move(dx, dy);
-  }
-
-  LayoutUnit LayoutClientAfterEdge() const { return layout_client_after_edge_; }
-  void SetLayoutClientAfterEdge(LayoutUnit client_after_edge) {
-    layout_client_after_edge_ = client_after_edge;
   }
 
   void SetHasSubpixelVisualEffectOutsets(bool b) {
@@ -197,13 +223,11 @@ class BoxOverflowModel {
   }
 
  private:
-  LayoutRect layout_overflow_;
   LayoutRect self_visual_overflow_;
   LayoutRect contents_visual_overflow_;
-  LayoutUnit layout_client_after_edge_;
   bool has_subpixel_visual_effect_outsets_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(BoxOverflowModel);
+  DISALLOW_COPY_AND_ASSIGN(BoxVisualOverflowModel);
 };
 
 }  // namespace blink
