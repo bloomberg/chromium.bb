@@ -22,7 +22,6 @@ class ScriptState;
 class Bluetooth final : public EventTargetWithInlineData,
                         public ContextLifecycleObserver,
                         public mojom::blink::WebBluetoothScanClient {
-  USING_PRE_FINALIZER(Bluetooth, Dispose);
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Bluetooth);
 
@@ -32,6 +31,7 @@ class Bluetooth final : public EventTargetWithInlineData,
   }
 
   explicit Bluetooth(ExecutionContext*);
+  ~Bluetooth() override;
 
   // IDL exposed interface:
   ScriptPromise requestDevice(ScriptState*,
@@ -56,10 +56,6 @@ class Bluetooth final : public EventTargetWithInlineData,
 
   // ContextLifecycleObserver interface.
   void ContextDestroyed(ExecutionContext*) override;
-
-  // USING_PRE_FINALIZER interface.
-  // Called before the object gets garbage collected.
-  void Dispose();
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(advertisementreceived,
                                   kAdvertisementreceived);
