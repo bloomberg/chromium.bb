@@ -17,8 +17,34 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 
 using views::Widget;
+
+// Helper to wait until a window is deactivated.
+class WindowDeactivedWaiter : public views::WidgetObserver {
+ public:
+  explicit WindowDeactivedWaiter(BrowserView* window) : window_(window) {
+    window_->frame()->AddObserver(this);
+  }
+  ~WindowDeactivedWaiter() override { window_->frame()->RemoveObserver(this); }
+
+  void Wait() {
+    if (!window_->IsActive())
+      return;
+    run_loop_.Run();
+  }
+
+  // WidgetObserver overrides:
+  void OnWidgetActivationChanged(Widget* widget, bool active) override {
+    if (!active)
+      run_loop_.Quit();
+  }
+
+ private:
+  BrowserView* const window_;
+  base::RunLoop run_loop_;
+};
 
 class TabHoverCardBubbleViewBrowserTest : public DialogBrowserTest {
  public:
@@ -155,15 +181,31 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest, WidgetDataUpdate) {
 // Verify inactive window remains inactive when showing a hover card for a tab
 // in the inactive window.
 IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
-                       DISABLED_InactiveWindowStaysInactiveOnHover) {
+                       InactiveWindowStaysInactiveOnHover) {
+  const BrowserList* active_browser_list_ = BrowserList::GetInstance();
+  // Open a second window. On Windows, Widget::Deactivate() works by activating
+  // the next topmost window on the z-order stack. So instead we use two windows
+  // and Widget::Activate() here to prevent Widget::Deactivate() from
+  // undesirably activating another window when tests are being run in parallel.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(url::kAboutBlankURL), WindowOpenDisposition::NEW_WINDOW,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
   ShowUi("default");
-  BrowserView::GetBrowserViewForBrowser(browser())->Deactivate();
-  ASSERT_FALSE(BrowserView::GetBrowserViewForBrowser(browser())->IsActive());
+  ASSERT_EQ(2u, active_browser_list_->size());
+  Browser* active_window = active_browser_list_->get(0);
+  Browser* inactive_window = active_browser_list_->get(1);
+  WindowDeactivedWaiter waiter(
+      BrowserView::GetBrowserViewForBrowser(inactive_window));
+  BrowserView::GetBrowserViewForBrowser(active_window)->Activate();
+  waiter.Wait();
+  ASSERT_FALSE(
+      BrowserView::GetBrowserViewForBrowser(inactive_window)->IsActive());
   TabStrip* tab_strip =
-      BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
+      BrowserView::GetBrowserViewForBrowser(inactive_window)->tabstrip();
   Tab* tab = tab_strip->tab_at(0);
   ui::MouseEvent hover_event(ui::ET_MOUSE_ENTERED, gfx::Point(), gfx::Point(),
                              base::TimeTicks(), ui::EF_NONE, 0);
   tab->OnMouseEntered(hover_event);
-  ASSERT_FALSE(BrowserView::GetBrowserViewForBrowser(browser())->IsActive());
+  ASSERT_FALSE(
+      BrowserView::GetBrowserViewForBrowser(inactive_window)->IsActive());
 }
