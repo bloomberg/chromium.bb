@@ -7,7 +7,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <memory>
+#include <set>
+#include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/i18n/string_search.h"
@@ -700,10 +704,8 @@ void AutomationInternalCustomBindings::AddRoutes() {
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node, int start,
          int end) {
-        if (node->data().role != ax::mojom::Role::kInlineTextBox) {
-          gfx::Rect global_bounds = ComputeGlobalNodeBounds(tree_wrapper, node);
-          result.Set(RectToV8Object(isolate, global_bounds));
-        }
+        if (node->data().role != ax::mojom::Role::kInlineTextBox)
+          return;
 
         // Use character offsets to compute the local bounds of this subrange.
         gfx::RectF local_bounds(0, 0,
@@ -1154,7 +1156,7 @@ void AutomationInternalCustomBindings::Invalidate() {
 // http://crbug.com/784266
 // clang-format off
 void AutomationInternalCustomBindings::OnMessageReceived(
-    const IPC::Message& message){
+    const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AutomationInternalCustomBindings, message)
     IPC_MESSAGE_HANDLER(ExtensionMsg_AccessibilityEventBundle,
                         OnAccessibilityEvents)
