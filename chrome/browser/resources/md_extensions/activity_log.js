@@ -33,6 +33,12 @@ cr.define('extensions', function() {
      * @return {!Promise<!chrome.activityLogPrivate.ActivityResultSet>}
      */
     getFilteredExtensionActivityLog(extensionId, searchTerm) {}
+
+    /**
+     * @param {string} extensionId
+     * @return {!Promise<void>}
+     */
+    deleteActivitiesFromExtension(extensionId) {}
   }
 
   /**
@@ -191,6 +197,13 @@ cr.define('extensions', function() {
     shouldShowActivities_: function() {
       return this.pageState_ === ActivityLogPageState.LOADED &&
           this.activityData_.length > 0;
+    },
+
+    /** @private */
+    onClearButtonTap_: function() {
+      this.delegate.deleteActivitiesFromExtension(this.extensionId).then(() => {
+        this.processActivities_([]);
+      });
     },
 
     /** @private */

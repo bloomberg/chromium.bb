@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/promise_resolver.html">
@@ -12,7 +13,7 @@
 
 <dom-module id="extensions-activity-log">
   <template>
-    <style include="iron-flex cr-shared-style shared-style">
+    <style include="iron-flex cr-shared-style shared-style paper-button-style">
       .activity-message {
         color: #6e6e6e;
         font-size: 123%;  /* Should be 16px when 100% is 13px. */
@@ -24,6 +25,10 @@
       #activity-log-heading {
         flex-grow: 1;
         margin-inline-start: 16px;
+      }
+
+      #clear-activities-button {
+        margin-inline-start: 8px;
       }
 
       cr-search-field  {
@@ -41,6 +46,10 @@
           <cr-search-field label="$i18n{activityLogSearchLabel}"
               on-search-changed="onSearchChanged_">
           </cr-search-field >
+          <paper-button id="clear-activities-button"
+              on-click="onClearButtonTap_">
+            $i18n{clearActivities}
+          </paper-button>
         </div>
         <div id="loading-activities" class="activity-message"
             hidden$="[[!shouldShowLoadingMessage_(

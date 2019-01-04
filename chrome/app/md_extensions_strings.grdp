@@ -79,6 +79,9 @@
   <message name="IDS_MD_EXTENSIONS_ERROR_CONTEXT_UNKNOWN" desc="The text displayed to the user if an error's context url is unknown.">
     Unknown
   </message>
+  <message name="IDS_MD_EXTENSIONS_CLEAR_ACTIVITIES" desc="The label for the button that clears the activity log for the current extension.">
+    Clear activities
+  </message>
   <message name="IDS_MD_EXTENSIONS_ERROR_CLEAR_ALL" desc="The label for the button that clears all the errors.">
     Clear all
   </message>
