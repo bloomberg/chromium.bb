@@ -58,7 +58,7 @@ constexpr int kTallestFrameHeight = kTallestTabHeight + 19;
 // theme packs that aren't int-equal to this. Increment this number if you
 // change default theme assets or if you need themes to recreate their generated
 // images (which are cached).
-const int kThemePackVersion = 61;
+const int kThemePackVersion = 62;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -264,6 +264,10 @@ constexpr int kNonOverwritableColorTable[] = {
     TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE,
     TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_ACTIVE,
     TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_INACTIVE,
+    TP::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND,
+    TP::COLOR_INFOBAR,
+    TP::COLOR_DOWNLOAD_SHELF,
+    TP::COLOR_STATUS_BUBBLE,
 };
 constexpr size_t kNonOverwritableColorTableLength =
     base::size(kNonOverwritableColorTable);
@@ -587,17 +591,20 @@ void BrowserThemePack::SetColor(int id, SkColor color) {
   colors_[first_available_color].color = color;
 }
 
-void BrowserThemePack::ComputeColorFromImage(int color_id,
-                                             int height,
-                                             const gfx::Image& image) {
+void BrowserThemePack::SetColorIfUnspecified(int id, SkColor color) {
   SkColor temp_color;
-  if (!GetColor(color_id, &temp_color)) {
-    // Include all colors in the analysis.
-    constexpr color_utils::HSL kNoBounds = {-1, -1, -1};
-    const SkColor color = color_utils::CalculateKMeanColorOfBitmap(
-        *image.ToSkBitmap(), height, kNoBounds, kNoBounds, false);
-    SetColor(color_id, color);
-  }
+  if (!GetColor(id, &temp_color))
+    SetColor(id, color);
+}
+
+SkColor BrowserThemePack::ComputeImageColor(const gfx::Image& image,
+                                            int height) {
+  // Include all colors in the analysis.
+  constexpr color_utils::HSL kNoBounds = {-1, -1, -1};
+  const SkColor color = color_utils::CalculateKMeanColorOfBitmap(
+      *image.ToSkBitmap(), height, kNoBounds, kNoBounds, false);
+
+  return color;
 }
 
 // static
@@ -627,9 +634,14 @@ void BrowserThemePack::BuildFromExtension(
 
   pack->CropImages(&pack->images_);
 
+  // Create toolbar image, and generate toolbar color from image where relevant.
+  // This must be done after reading colors from JSON (so they can be used for
+  // compositing the image).
+  pack->CreateToolbarImageAndColors(&pack->images_);
+
   // Create frame images, and generate frame colors from images where relevant.
-  // This must be done after reading colors from JSON (so they aren't
-  // overwritten).
+  // This must be done after reading colors from JSON (so they can be used for
+  // compositing the image).
   pack->CreateFrameImagesAndColors(&pack->images_);
 
   // Generate any missing frame colors.  This must be done after generating
@@ -1260,6 +1272,47 @@ void BrowserThemePack::CropImages(ImageCache* images) const {
   }
 }
 
+void BrowserThemePack::CreateToolbarImageAndColors(ImageCache* images) {
+  ImageCache temp_output;
+
+  constexpr int kSrcImageId = PRS_THEME_TOOLBAR;
+
+  const auto image_it = images->find(kSrcImageId);
+  if (image_it == images->end())
+    return;
+
+  auto image = image_it->second.AsImageSkia();
+
+  constexpr int kToolbarColorId = TP::COLOR_TOOLBAR;
+  SkColor toolbar_color;
+  // Propagate the user-specified Toolbar Color to similar elements (for
+  // backwards-compatibility with themes written before this toolbar processing
+  // was introduced).
+  if (GetColor(kToolbarColorId, &toolbar_color)) {
+    SetColor(TP::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND, toolbar_color);
+    SetColor(TP::COLOR_INFOBAR, toolbar_color);
+    SetColor(TP::COLOR_DOWNLOAD_SHELF, toolbar_color);
+    SetColor(TP::COLOR_STATUS_BUBBLE, toolbar_color);
+  } else {
+    toolbar_color = TP::GetDefaultColor(kToolbarColorId, false);
+  }
+
+  // Generate a composite image by drawing the toolbar image on top of the
+  // specified toolbar color (if any).
+  color_utils::HSL hsl_shift{-1, -1, -1};
+  gfx::ImageSkia overlay;
+  auto source = std::make_unique<TabBackgroundImageSource>(
+      toolbar_color, image, overlay, hsl_shift, 0);
+  gfx::Size dest_size = image.size();
+
+  const gfx::Image dest_image(gfx::ImageSkia(std::move(source), dest_size));
+  temp_output[kSrcImageId] = dest_image;
+
+  SetColor(kToolbarColorId, ComputeImageColor(dest_image, dest_size.height()));
+
+  MergeImageCaches(temp_output, images);
+}
+
 void BrowserThemePack::CreateFrameImagesAndColors(ImageCache* images) {
   static constexpr struct FrameValues {
     int prs_id;
@@ -1313,8 +1366,8 @@ void BrowserThemePack::CreateFrameImagesAndColors(ImageCache* images) {
       temp_output[frame_values.prs_id] = dest_image;
 
       if (frame_values.color_id) {
-        ComputeColorFromImage(frame_values.color_id.value(),
-                              kTallestFrameHeight, dest_image);
+        SetColor(frame_values.color_id.value(),
+                 ComputeImageColor(dest_image, kTallestFrameHeight));
       }
     }
   }
@@ -1414,7 +1467,8 @@ void BrowserThemePack::GenerateWindowControlButtonColor(ImageCache* images) {
         base_color, bg_image, dest_size);
     const gfx::Image dest_image(gfx::ImageSkia(std::move(source), dest_size));
 
-    ComputeColorFromImage(bg_pair.color_id, dest_size.height(), dest_image);
+    SetColorIfUnspecified(bg_pair.color_id,
+                          ComputeImageColor(dest_image, dest_size.height()));
   }
 }
 
@@ -1489,8 +1543,8 @@ void BrowserThemePack::CreateTabBackgroundImagesAndColors(ImageCache* images) {
       const gfx::Image dest_image(gfx::ImageSkia(std::move(source), dest_size));
       temp_output[tab_id] = dest_image;
 
-      ComputeColorFromImage(kTabBackgroundMap[i].color_id, kTallestTabHeight,
-                            dest_image);
+      SetColorIfUnspecified(kTabBackgroundMap[i].color_id,
+                            ComputeImageColor(dest_image, kTallestTabHeight));
     }
   }
   MergeImageCaches(temp_output, images);

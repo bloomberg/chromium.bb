@@ -575,7 +575,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
   // color for opaque canvases).
   canvas->DrawColor(SK_ColorBLACK);
   canvas->DrawColor(
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR));
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_DOWNLOAD_SHELF));
 
   DrawStatusText(canvas);
   DrawFilename(canvas);

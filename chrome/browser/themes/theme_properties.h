@@ -118,6 +118,11 @@ class ThemeProperties {
     COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND,
     COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR,
 
+    // Color used for various 'shelves' and 'bars'.
+    COLOR_DOWNLOAD_SHELF,
+    COLOR_INFOBAR,
+    COLOR_STATUS_BUBBLE,
+
     // The throbber colors for tabs or anything on a toolbar (currently, only
     // the download shelf). If you're adding a throbber elsewhere, such as in
     // a dialog or bubble, you likely want
