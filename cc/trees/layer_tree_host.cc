@@ -16,7 +16,6 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -375,15 +374,10 @@ void LayerTreeHost::FinishCommitOnImplThread(
   // Dump property trees and layers if run with:
   //   --vmodule=layer_tree_host=3
   if (VLOG_IS_ON(3)) {
-    std::string property_trees;
-    base::JSONWriter::WriteWithOptions(
-        *sync_tree->property_trees()->AsTracedValue()->ToBaseValue(),
-        base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION |
-            base::JSONWriter::OPTIONS_PRETTY_PRINT,
-        &property_trees);
     VLOG(3) << "After finishing commit on impl, the sync tree:"
             << "\nproperty_trees:\n"
-            << property_trees << "\ncc::LayerImpls:\n"
+            << sync_tree->property_trees()->ToString() << "\n"
+            << "cc::LayerImpls:\n"
             << sync_tree->LayerListAsJson();
   }
 }
@@ -806,30 +800,14 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   // This only prints output in unit test or for the renderer.
   if (VLOG_IS_ON(3) && (!GetClientNameForMetrics() ||
                         GetClientNameForMetrics() == std::string("Renderer"))) {
-    std::string property_trees;
-    base::JSONWriter::WriteWithOptions(
-        *property_trees_.AsTracedValue()->ToBaseValue(),
-        base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION |
-            base::JSONWriter::OPTIONS_PRETTY_PRINT,
-        &property_trees);
     std::ostringstream layers;
-    for (auto* layer : *this) {
-      layers << "\n  layer id " << layer->id();
-      layers << "\n    element_id: " << layer->element_id();
-      layers << "\n    bounds: " << layer->bounds().ToString();
-      layers << "\n    opacity: " << layer->opacity();
-      layers << "\n    position: " << layer->position().ToString();
-      layers << "\n    draws_content: " << layer->DrawsContent();
-      layers << "\n    scrollable: " << layer->scrollable();
-      layers << "\n    contents_opaque: " << layer->contents_opaque();
-      layers << "\n    property tree indices: ";
-      layers << "transform(" << layer->transform_tree_index() << "), ";
-      layers << "clip(" << layer->clip_tree_index() << "), ";
-      layers << "effect(" << layer->effect_tree_index() << "), ";
-      layers << "scroll(" << layer->scroll_tree_index() << ")";
-    }
-    VLOG(3) << "After updating layers on the main thread:\nproperty trees:\n"
-            << property_trees << "\ncc:Layers:" << layers.str();
+    for (auto* layer : *this)
+      layers << layer->ToString() << "\n";
+    VLOG(3) << "After updating layers on the main thread:\n"
+            << "property trees:\n"
+            << property_trees_.ToString() << "\n"
+            << "cc::Layers:\n"
+            << layers.str();
   }
 
   bool painted_content_has_slow_paths = false;

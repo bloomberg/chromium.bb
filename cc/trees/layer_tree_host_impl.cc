@@ -2903,15 +2903,10 @@ void LayerTreeHostImpl::ActivateSyncTree() {
   // Dump property trees and layers if run with:
   //   --vmodule=layer_tree_host_impl=3
   if (VLOG_IS_ON(3)) {
-    std::string property_trees;
-    base::JSONWriter::WriteWithOptions(
-        *active_tree_->property_trees()->AsTracedValue()->ToBaseValue(),
-        base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION |
-            base::JSONWriter::OPTIONS_PRETTY_PRINT,
-        &property_trees);
     VLOG(3) << "After activating sync tree, the active tree:"
             << "\nproperty_trees:\n"
-            << property_trees << "\ncc::LayerImpls:\n"
+            << active_tree_->property_trees()->ToString() << "\n"
+            << "cc::LayerImpls:\n"
             << active_tree_->LayerListAsJson();
   }
 }

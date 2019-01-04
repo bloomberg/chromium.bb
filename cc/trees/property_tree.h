@@ -683,6 +683,7 @@ class CC_EXPORT PropertyTrees final {
   }
 
   std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
+  std::string ToString() const;
 
   CombinedAnimationScale GetAnimationScales(int transform_node_id,
                                             LayerTreeImpl* layer_tree_impl);

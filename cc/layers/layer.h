@@ -763,6 +763,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return should_flatten_screen_space_transform_from_property_tree_;
   }
 
+  std::string ToString() const;
+
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;

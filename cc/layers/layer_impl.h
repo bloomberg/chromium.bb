@@ -340,7 +340,7 @@ class CC_EXPORT LayerImpl {
   void AddDamageRect(const gfx::Rect& damage_rect);
   const gfx::Rect& damage_rect() const { return damage_rect_; }
 
-  virtual std::unique_ptr<base::DictionaryValue> LayerAsJson();
+  virtual std::unique_ptr<base::DictionaryValue> LayerAsJson() const;
   // TODO(pdr): This should be removed because there is no longer a tree
   // of layers, only a list.
   std::unique_ptr<base::DictionaryValue> LayerTreeAsJson();
@@ -390,6 +390,7 @@ class CC_EXPORT LayerImpl {
   virtual void GetAllPrioritizedTilesForTracing(
       std::vector<PrioritizedTile>* prioritized_tiles) const;
   virtual void AsValueInto(base::trace_event::TracedValue* dict) const;
+  std::string ToString() const;
 
   virtual size_t GPUMemoryUsageInBytes() const;
 
