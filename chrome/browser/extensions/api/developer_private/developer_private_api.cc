@@ -1889,10 +1889,10 @@ DeveloperPrivateRepairExtensionFunction::Run() {
     return RespondNow(Error(kCouldNotFindWebContentsError));
 
   scoped_refptr<WebstoreReinstaller> reinstaller(new WebstoreReinstaller(
-      web_contents,
-      params->extension_id,
-      base::Bind(&DeveloperPrivateRepairExtensionFunction::OnReinstallComplete,
-                 this)));
+      web_contents, params->extension_id,
+      base::BindOnce(
+          &DeveloperPrivateRepairExtensionFunction::OnReinstallComplete,
+          this)));
   reinstaller->BeginReinstall();
 
   return RespondLater();

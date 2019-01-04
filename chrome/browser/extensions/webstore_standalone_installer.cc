@@ -31,9 +31,9 @@ namespace extensions {
 WebstoreStandaloneInstaller::WebstoreStandaloneInstaller(
     const std::string& webstore_item_id,
     Profile* profile,
-    const Callback& callback)
+    Callback callback)
     : id_(webstore_item_id),
-      callback_(callback),
+      callback_(std::move(callback)),
       profile_(profile),
       install_source_(WebstoreInstaller::INSTALL_SOURCE_INLINE),
       show_user_count_(true),
@@ -80,7 +80,8 @@ WebstoreStandaloneInstaller::~WebstoreStandaloneInstaller() {
 void WebstoreStandaloneInstaller::RunCallback(bool success,
                                               const std::string& error,
                                               webstore_install::Result result) {
-  callback_.Run(success, error, result);
+  DCHECK(callback_);
+  std::move(callback_).Run(success, error, result);
 }
 
 void WebstoreStandaloneInstaller::AbortInstall() {
@@ -117,7 +118,7 @@ void WebstoreStandaloneInstaller::CompleteInstall(
     const std::string& error) {
   scoped_active_install_.reset();
   if (!callback_.is_null())
-    callback_.Run(result == webstore_install::SUCCESS, error, result);
+    RunCallback(result == webstore_install::SUCCESS, error, result);
   Release();  // Matches the AddRef in BeginInstall.
 }
 
