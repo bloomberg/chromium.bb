@@ -228,6 +228,7 @@ source_set("app_shell_lib") {
     ]
     deps += [
       "//chromeos",
+      "//chromeos/login/login_state",
       "//ui/chromeos",
       "//ui/display/manager",
     ]

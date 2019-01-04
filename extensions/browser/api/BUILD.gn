@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//extensions/common/api/schema.gni")
 import("//extensions/buildflags/buildflags.gni")
+import("//extensions/common/api/schema.gni")
 import("//tools/json_schema_compiler/json_schema_api.gni")
 
 assert(enable_extensions,
@@ -144,6 +144,7 @@ source_set("api") {
     deps += [
       "//chromeos",
       "//chromeos:media_perception_proto",
+      "//chromeos/login/login_state",
       "//chromeos/services/media_perception/public/mojom",
       "//chromeos/services/media_perception/public/mojom:mojom_js_data_deps",
     ]
