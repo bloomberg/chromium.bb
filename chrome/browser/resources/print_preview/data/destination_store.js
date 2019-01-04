@@ -1220,22 +1220,25 @@ cr.define('print_preview', function() {
     /**
      * Called when the /search call completes, either successfully or not.
      * In case of success, stores fetched destinations.
-     * @param {!cloudprint.CloudPrintInterfaceSearchDoneEvent} event Contains
-     *     the request result.
+     * @param {!CustomEvent} event Contains the request result.
      * @private
      */
     onCloudPrintSearchDone_(event) {
-      if (event.printers && event.printers.length > 0) {
-        this.insertDestinations_(event.printers);
+      const payload =
+          /** @type {!cloudprint.CloudPrintInterfaceSearchDoneDetail} */ (
+              event.detail);
+      if (payload.printers && payload.printers.length > 0) {
+        this.insertDestinations_(payload.printers);
         if (this.selectFirstDestination_) {
           this.selectDestination(this.destinations_[0]);
           this.selectFirstDestination_ = false;
         }
       }
-      if (event.searchDone) {
-        const origins = this.loadedCloudOrigins_[event.user] || [];
-        if (origins.indexOf(event.origin) < 0) {
-          this.loadedCloudOrigins_[event.user] = origins.concat([event.origin]);
+      if (payload.searchDone) {
+        const origins = this.loadedCloudOrigins_[payload.user] || [];
+        if (origins.indexOf(payload.origin) < 0) {
+          this.loadedCloudOrigins_[payload.user] =
+              origins.concat([payload.origin]);
         }
       }
       this.dispatchEvent(
@@ -1262,43 +1265,46 @@ cr.define('print_preview', function() {
     /**
      * Called when /printer call completes. Updates the specified destination's
      * print capabilities.
-     * @param {!cloudprint.CloudPrintInterfacePrinterDoneEvent} event Contains
-     *     detailed information about the destination.
+     * @param {!CustomEvent} event Contains detailed information about the
+     *     destination.
      * @private
      */
     onCloudPrintPrinterDone_(event) {
-      this.updateDestination_(event.printer);
+      this.updateDestination_(
+          /** @type {!print_preview.Destination} */ (event.detail));
     }
 
     /**
      * Called when the Google Cloud Print interface fails to lookup a
      * destination. Selects another destination if the failed destination was
      * the initial destination.
-     * @param {!cloudprint.CloudPrintInterfacePrinterFailedEvent} event
-     *     Contains the ID of the destination that was failed to be looked up.
+     * @param {!CustomEvent} event Contains the ID of the destination that was
+     *     failed to be looked up.
      * @private
      */
     onCloudPrintPrinterFailed_(event) {
+      const eventDetail =
+          /** @type {!cloudprint.CloudPrintInterfacePrinterFailedDetail } */ (
+              event.detail);
       if (this.autoSelectMatchingDestination_ &&
           this.autoSelectMatchingDestination_.matchIdAndOrigin(
-              event.destinationId, event.destinationOrigin)) {
+              eventDetail.destinationId, eventDetail.origin)) {
         console.error(
-            'Failed to fetch last used printer caps: ' + event.destinationId);
+            'Failed to fetch last used printer caps: ' +
+            eventDetail.destinationId);
         this.selectDefaultDestination_();
       }
     }
 
     /**
      * Called when printer sharing invitation was processed successfully.
-     * @param {Event} event Contains detailed information about the invite and
-     *     newly accepted destination (if known).
+     * @param {!CustomEvent} event Contains detailed information about the
+     *     invite and newly accepted destination (if known).
      * @private
      */
     onCloudPrintProcessInviteDone_(event) {
-      if (event.accept && event.printer) {
-        // Hint the destination list to promote this new destination.
-        event.printer.isRecent = true;
-        this.insertDestination_(event.printer);
+      if (event.detail.accept && event.detail.printer) {
+        this.insertDestination_(event.detail.printer);
       }
     }
 

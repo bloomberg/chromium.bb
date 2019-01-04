@@ -604,26 +604,29 @@ Polymer({
   /**
    * Called when there was an error communicating with Google Cloud print.
    * Displays an error message in the print header.
-   * @param {!Event} event Contains the error message.
+   * @param {!CustomEvent} event Contains the error message.
    * @private
    */
   onCloudPrintError_: function(event) {
-    if (event.status == 0) {
+    if (event.detail.status == 0) {
       return;  // Ignore, the system does not have internet connectivity.
     }
-    if (event.status == 403) {
+    if (event.detail.status == 403) {
       if (!this.isInAppKioskMode_) {
         this.$.destinationSettings.showCloudPrintPromo();
       }
     } else {
-      this.errorMessage_ = event.message;
+      this.errorMessage_ = event.detail.message;
       this.$.state.transitTo(print_preview_new.State.FATAL_ERROR);
     }
-    if (event.status == 200) {
+    if (event.detail.status == 200) {
       console.error(
-          `Google Cloud Print Error: (${event.errorCode}) ${event.message}`);
+          'Google Cloud Print Error: ' +
+          `(${event.detail.errorCode}) ${event.detail.message}`);
     } else {
-      console.error(`Google Cloud Print Error: HTTP status ${event.status}`);
+      console.error(
+          'Google Cloud Print Error: ' +
+          `HTTP status ${event.detail.status}`);
     }
   },
 

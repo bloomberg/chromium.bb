@@ -287,26 +287,25 @@ cr.define('cloudprint', function() {
     }
 
     /**
-     * Creates a Google Cloud Print interface error that is ready to dispatch.
-     * @param {!cloudprint.CloudPrintInterfaceEventType} type Type of the
-     *     error.
+     * Creates an object containing information about the error based on the
+     * request.
      * @param {!cloudprint.CloudPrintRequest} request Request that has been
      *     completed.
-     * @return {!Event} Google Cloud Print interface error event.
+     * @return {!{ status: number,
+     *             errorCode: number,
+     *             message: string,
+     *             origin: !print_preview.DestinationOrigin }} Information
+     *     about the error.
      * @private
      */
-    createErrorEvent_(type, request) {
-      const errorEvent = new Event(type);
-      errorEvent.status = request.xhr.status;
-      if (request.xhr.status == 200) {
-        errorEvent.errorCode = request.result['errorCode'];
-        errorEvent.message = request.result['message'];
-      } else {
-        errorEvent.errorCode = 0;
-        errorEvent.message = '';
-      }
-      errorEvent.origin = request.origin;
-      return errorEvent;
+    createErrorEventDetail_(request) {
+      const status200 = request.xhr.status === 200;
+      return {
+        status: request.xhr.status,
+        errorCode: status200 ? request.result['errorCode'] : 0,
+        message: status200 ? request.result['message'] : '',
+        origin: request.origin,
+      };
     }
 
     /**
@@ -407,7 +406,6 @@ cr.define('cloudprint', function() {
         activeUser = request.result && request.result['request'] &&
             request.result['request']['user'];
       }
-      let event = null;
       if (request.xhr.status == 200 && request.result['success']) {
         // Extract printers.
         const printerListJson = request.result['printers'] || [];
@@ -423,17 +421,24 @@ cr.define('cloudprint', function() {
         // Extract and store users.
         this.setUsers_(request);
         // Dispatch SEARCH_DONE event.
-        event = new Event(CloudPrintInterfaceEventType.SEARCH_DONE);
-        event.origin = request.origin;
-        event.printers = printerList;
-        event.isRecent = isRecent;
+        this.eventTarget_.dispatchEvent(
+            new CustomEvent(CloudPrintInterfaceEventType.SEARCH_DONE, {
+              detail: {
+                origin: request.origin,
+                printers: printerList,
+                isRecent: isRecent,
+                user: activeUser,
+                searchDone: lastRequestForThisOrigin,
+              }
+            }));
       } else {
-        event = this.createErrorEvent_(
-            CloudPrintInterfaceEventType.SEARCH_FAILED, request);
+        const errorEventDetail = this.createErrorEventDetail_(request);
+        errorEventDetail.user = activeUser;
+        errorEventDetail.searchDone = lastRequestForThisOrigin;
+        this.eventTarget_.dispatchEvent(new CustomEvent(
+            CloudPrintInterfaceEventType.SEARCH_FAILED,
+            {detail: errorEventDetail}));
       }
-      event.user = activeUser;
-      event.searchDone = lastRequestForThisOrigin;
-      this.eventTarget_.dispatchEvent(event);
     }
 
     /**
@@ -443,7 +448,6 @@ cr.define('cloudprint', function() {
      * @private
      */
     onInvitesDone_(request) {
-      let event = null;
       const activeUser = (request.result && request.result['request'] &&
                           request.result['request']['user']) ||
           '';
@@ -460,14 +464,17 @@ cr.define('cloudprint', function() {
           }
         });
         // Dispatch INVITES_DONE event.
-        event = new Event(CloudPrintInterfaceEventType.INVITES_DONE);
-        event.invitations = invitationList;
+        this.eventTarget_.dispatchEvent(
+            new CustomEvent(CloudPrintInterfaceEventType.INVITES_DONE, {
+              detail: {
+                invitations: invitationList,
+                user: activeUser,
+              }
+            }));
       } else {
-        event = this.createErrorEvent_(
-            CloudPrintInterfaceEventType.INVITES_FAILED, request);
+        this.eventTarget_.dispatchEvent(new CustomEvent(
+            CloudPrintInterfaceEventType.INVITES_FAILED, {detail: activeUser}));
       }
-      event.user = activeUser;
-      this.eventTarget_.dispatchEvent(event);
     }
 
     /**
@@ -479,28 +486,27 @@ cr.define('cloudprint', function() {
      * @private
      */
     onProcessInviteDone_(invitation, accept, request) {
-      let event = null;
       const activeUser = (request.result && request.result['request'] &&
                           request.result['request']['user']) ||
           '';
-      if (request.xhr.status == 200 && request.result['success']) {
-        event = new Event(CloudPrintInterfaceEventType.PROCESS_INVITE_DONE);
-        if (accept) {
-          try {
-            event.printer = cloudprint.parseCloudDestination(
-                request.result['printer'], request.origin, activeUser);
-          } catch (e) {
-            console.error('Failed to parse cloud print destination: ' + e);
-          }
+      let printer = null;
+      if (request.xhr.status == 200 && request.result['success'] && accept) {
+        try {
+          printer = cloudprint.parseCloudDestination(
+              request.result['printer'], request.origin, activeUser);
+        } catch (e) {
+          console.error('Failed to parse cloud print destination: ' + e);
         }
-      } else {
-        event = this.createErrorEvent_(
-            CloudPrintInterfaceEventType.PROCESS_INVITE_FAILED, request);
       }
-      event.invitation = invitation;
-      event.accept = accept;
-      event.user = activeUser;
-      this.eventTarget_.dispatchEvent(event);
+      this.eventTarget_.dispatchEvent(
+          new CustomEvent(CloudPrintInterfaceEventType.PROCESS_INVITE_DONE, {
+            detail: {
+              printer: printer,
+              invitation: invitation,
+              accept: accept,
+              user: activeUser,
+            }
+          }));
     }
 
     /**
@@ -511,14 +517,14 @@ cr.define('cloudprint', function() {
      */
     onSubmitDone_(request) {
       if (request.xhr.status == 200 && request.result['success']) {
-        const submitDoneEvent =
-            new Event(CloudPrintInterfaceEventType.SUBMIT_DONE);
-        submitDoneEvent.jobId = request.result['job']['id'];
-        this.eventTarget_.dispatchEvent(submitDoneEvent);
+        this.eventTarget_.dispatchEvent(new CustomEvent(
+            CloudPrintInterfaceEventType.SUBMIT_DONE,
+            {detail: request.result['job']['id']}));
       } else {
-        const errorEvent = this.createErrorEvent_(
-            CloudPrintInterfaceEventType.SUBMIT_FAILED, request);
-        this.eventTarget_.dispatchEvent(errorEvent);
+        const errorEventDetail = this.createErrorEventDetail_(request);
+        this.eventTarget_.dispatchEvent(new CustomEvent(
+            CloudPrintInterfaceEventType.SUBMIT_FAILED,
+            {detail: errorEventDetail}));
       }
     }
 
@@ -567,16 +573,14 @@ cr.define('cloudprint', function() {
               JSON.stringify(printerJson));
           return;
         }
-        const printerDoneEvent =
-            new Event(CloudPrintInterfaceEventType.PRINTER_DONE);
-        printerDoneEvent.printer = printer;
-        this.eventTarget_.dispatchEvent(printerDoneEvent);
+        this.eventTarget_.dispatchEvent(new CustomEvent(
+            CloudPrintInterfaceEventType.PRINTER_DONE, {detail: printer}));
       } else {
-        const errorEvent = this.createErrorEvent_(
-            CloudPrintInterfaceEventType.PRINTER_FAILED, request);
-        errorEvent.destinationId = destinationId;
-        errorEvent.destinationOrigin = request.origin;
-        this.eventTarget_.dispatchEvent(errorEvent);
+        const errorEventDetail = this.createErrorEventDetail_(request);
+        errorEventDetail.destinationId = destinationId;
+        this.eventTarget_.dispatchEvent(new CustomEvent(
+            CloudPrintInterfaceEventType.PRINTER_FAILED,
+            {detail: errorEventDetail}));
       }
     }
   }
