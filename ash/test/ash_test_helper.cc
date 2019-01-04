@@ -29,7 +29,6 @@
 #include "base/strings/string_split.h"
 #include "base/token.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/network/network_handler.h"
@@ -177,7 +176,6 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   // Create CrasAudioHandler for testing since g_browser_process is not
   // created in AshTestBase tests.
   chromeos::CrasAudioHandler::InitializeForTesting();
-  chromeos::SystemSaltGetter::Initialize();
 
   // Reset the global state for the cursor manager. This includes the
   // last cursor visibility state, etc.
@@ -255,7 +253,6 @@ void AshTestHelper::TearDown() {
   // CompositorFrameSinkClient::ReclaimResources()
   base::RunLoop().RunUntilIdle();
 
-  chromeos::SystemSaltGetter::Shutdown();
   chromeos::CrasAudioHandler::Shutdown();
 
   if (power_policy_controller_initialized_) {
