@@ -30,6 +30,7 @@
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "storage/browser/fileapi/obfuscated_file_util.h"
+#include "storage/browser/quota/special_storage_policy.h"
 #include "storage/common/fileapi/file_system_util.h"
 
 namespace content {
@@ -387,6 +388,8 @@ void PluginPrivateDataDeletionHelper::DecrementTaskCount(
 void ClearPluginPrivateDataOnFileTaskRunner(
     scoped_refptr<storage::FileSystemContext> filesystem_context,
     const GURL& storage_origin,
+    const StoragePartition::OriginMatcherFunction& origin_matcher,
+    const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     const base::Time begin,
     const base::Time end,
     const base::Closure& callback) {
@@ -413,6 +416,8 @@ void ClearPluginPrivateDataOnFileTaskRunner(
   // If a specific origin is provided, then check that it is in the list
   // returned and remove all the other origins.
   if (!storage_origin.is_empty()) {
+    DCHECK(origin_matcher.is_null()) << "Only 1 of |storage_origin| and "
+                                        "|origin_matcher| should be specified.";
     if (!base::ContainsKey(origins, storage_origin)) {
       // Nothing matches, so nothing to do.
       callback.Run();
@@ -422,6 +427,25 @@ void ClearPluginPrivateDataOnFileTaskRunner(
     // List should only contain the one value that matches.
     origins.clear();
     origins.insert(storage_origin);
+  }
+
+  // If a filter is provided, determine which origins match.
+  if (!origin_matcher.is_null()) {
+    DCHECK(storage_origin.is_empty())
+        << "Only 1 of |storage_origin| and |origin_matcher| should be "
+           "specified.";
+    std::set<GURL> origins_to_check;
+    origins_to_check.swap(origins);
+    for (const auto& origin : origins_to_check) {
+      if (origin_matcher.Run(origin, special_storage_policy.get()))
+        origins.insert(origin);
+    }
+
+    // If no origins matched, there is nothing to do.
+    if (origins.empty()) {
+      callback.Run();
+      return;
+    }
   }
 
   PluginPrivateDataDeletionHelper* helper = new PluginPrivateDataDeletionHelper(

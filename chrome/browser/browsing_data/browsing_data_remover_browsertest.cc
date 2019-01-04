@@ -1233,6 +1233,53 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
   EXPECT_EQ(0, GetMediaLicenseCount());
   ExpectCookieTreeModelCount(0);
 }
+
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
+                       MediaLicenseDeletionWithFilter) {
+  const std::string kMediaLicenseType = "MediaLicense";
+
+  GURL url =
+      embedded_test_server()->GetURL("/browsing_data/media_license.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  EXPECT_EQ(0, GetMediaLicenseCount());
+  EXPECT_FALSE(HasDataForType(kMediaLicenseType));
+
+  SetDataForType(kMediaLicenseType);
+  EXPECT_EQ(1, GetMediaLicenseCount());
+  EXPECT_TRUE(HasDataForType(kMediaLicenseType));
+
+  // Try to remove the Media Licenses using a whitelist that doesn't include
+  // the current URL. Media License should not be deleted.
+  std::unique_ptr<BrowsingDataFilterBuilder> filter_builder =
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
+  filter_builder->AddOrigin(
+      url::Origin::CreateFromNormalizedTuple("https", "test-origin", 443));
+  RemoveWithFilterAndWait(
+      content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES,
+      std::move(filter_builder));
+  EXPECT_EQ(1, GetMediaLicenseCount());
+
+  // Now try with a blacklist that includes the current URL. Media License
+  // should not be deleted.
+  filter_builder =
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::BLACKLIST);
+  filter_builder->AddOrigin(url::Origin::Create(url));
+  RemoveWithFilterAndWait(
+      content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES,
+      std::move(filter_builder));
+  EXPECT_EQ(1, GetMediaLicenseCount());
+
+  // Now try with a whitelist that includes the current URL. Media License
+  // should be deleted this time.
+  filter_builder =
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
+  filter_builder->AddOrigin(url::Origin::Create(url));
+  RemoveWithFilterAndWait(
+      content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES,
+      std::move(filter_builder));
+  EXPECT_EQ(0, GetMediaLicenseCount());
+}
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 const std::vector<std::string> kStorageTypes{

@@ -99,9 +99,10 @@ class ChromeBrowsingDataRemoverDelegate
 
     // Datatypes that can be deleted partially per URL / origin / domain,
     // whichever makes sense.
-    FILTERABLE_DATA_TYPES = DATA_TYPE_SITE_DATA |
-                            content::BrowsingDataRemover::DATA_TYPE_CACHE |
-                            content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS,
+    FILTERABLE_DATA_TYPES =
+        DATA_TYPE_SITE_DATA | content::BrowsingDataRemover::DATA_TYPE_CACHE |
+        content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS |
+        content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES,
 
     // Includes all the available remove options. Meant to be used by clients
     // that wish to wipe as much data as possible from a Profile, to make it

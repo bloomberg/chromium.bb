@@ -977,34 +977,42 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     base::RecordAction(UserMetricsAction("ClearBrowsingData_ContentLicenses"));
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-    // Will be completed in OnDeauthorizeFlashContentLicensesCompleted()
-    num_pending_tasks_ += 1;
-    if (!pepper_flash_settings_manager_.get()) {
-      pepper_flash_settings_manager_.reset(
-          new PepperFlashSettingsManager(this, profile_));
+    // Flash does not support filtering by domain, so skip this if clearing only
+    // a specified set of sites.
+    if (filter_builder.GetMode() != BrowsingDataFilterBuilder::WHITELIST) {
+      // Will be completed in OnDeauthorizeFlashContentLicensesCompleted()
+      num_pending_tasks_ += 1;
+      if (!pepper_flash_settings_manager_.get()) {
+        pepper_flash_settings_manager_.reset(
+            new PepperFlashSettingsManager(this, profile_));
+      }
+      deauthorize_flash_content_licenses_request_id_ =
+          pepper_flash_settings_manager_->DeauthorizeContentLicenses(prefs);
     }
-    deauthorize_flash_content_licenses_request_id_ =
-        pepper_flash_settings_manager_->DeauthorizeContentLicenses(prefs);
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if defined(OS_CHROMEOS)
     // On Chrome OS, delete any content protection platform keys.
-    const user_manager::User* user =
-        chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
-    if (!user) {
-      LOG(WARNING) << "Failed to find user for current profile.";
-    } else {
-      chromeos::DBusThreadManager::Get()
-          ->GetCryptohomeClient()
-          ->TpmAttestationDeleteKeys(
-              chromeos::attestation::KEY_USER,
-              cryptohome::CreateAccountIdentifierFromAccountId(
-                  user->GetAccountId()),
-              chromeos::attestation::kContentProtectionKeyPrefix,
-              base::BindOnce(
-                  &ChromeBrowsingDataRemoverDelegate::OnClearPlatformKeys,
-                  weak_ptr_factory_.GetWeakPtr(),
-                  CreatePendingTaskCompletionClosure()));
+    // Platform keys do not support filtering by domain, so skip this if
+    // clearing only a specified set of sites.
+    if (filter_builder.GetMode() != BrowsingDataFilterBuilder::WHITELIST) {
+      const user_manager::User* user =
+          chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
+      if (!user) {
+        LOG(WARNING) << "Failed to find user for current profile.";
+      } else {
+        chromeos::DBusThreadManager::Get()
+            ->GetCryptohomeClient()
+            ->TpmAttestationDeleteKeys(
+                chromeos::attestation::KEY_USER,
+                cryptohome::CreateAccountIdentifierFromAccountId(
+                    user->GetAccountId()),
+                chromeos::attestation::kContentProtectionKeyPrefix,
+                base::BindOnce(
+                    &ChromeBrowsingDataRemoverDelegate::OnClearPlatformKeys,
+                    weak_ptr_factory_.GetWeakPtr(),
+                    CreatePendingTaskCompletionClosure()));
+      }
     }
 #endif  // defined(OS_CHROMEOS)
 
