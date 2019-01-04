@@ -503,7 +503,8 @@ SYNC_TEST_F('ChromeVoxEventWatcherUnitTest', 'ShouldWaitToProcess', function() {
  * Test that no feedback is received for events that fire on elements
  * that are hidden (or the descendant of a hidden element).
  */
-TEST_F('ChromeVoxEventWatcherUnitTest', 'AriaHiddenFeedback', function() {
+// Flaky on Chromium OS: https://crbug.com/919033.
+TEST_F('ChromeVoxEventWatcherUnitTest', 'DISABLED_AriaHiddenFeedback', function() {
   this.loadHtml('<div>' +
       '<div>' +
       '  <button id="button1">Button 1</button>' +
