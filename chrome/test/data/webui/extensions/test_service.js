@@ -8,6 +8,7 @@ cr.define('extensions', function() {
     constructor() {
       super([
         'addRuntimeHostPermission',
+        'deleteActivitiesFromExtension',
         'getExtensionActivityLog',
         'getExtensionsInfo',
         'getExtensionSize',
@@ -185,6 +186,12 @@ cr.define('extensions', function() {
       return Promise.resolve({
         activities: [...apiCallMatches, ...pageUrlMatches, ...argUrlMatches]
       });
+    }
+
+    /** @override */
+    deleteActivitiesFromExtension(extensionId) {
+      this.methodCalled('deleteActivitiesFromExtension', extensionId);
+      return Promise.resolve();
     }
   }
 

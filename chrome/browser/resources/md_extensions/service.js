@@ -398,6 +398,14 @@ cr.define('extensions', function() {
         return {activities: Array.from(activitiesById.values())};
       });
     }
+
+    /** @override */
+    deleteActivitiesFromExtension(extensionId) {
+      return new Promise(function(resolve, reject) {
+        chrome.activityLogPrivate.deleteActivitiesByExtension(
+            extensionId, resolve);
+      });
+    }
   }
 
   cr.addSingletonGetter(Service);

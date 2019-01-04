@@ -154,6 +154,22 @@ suite('ExtensionsActivityLogTest', function() {
         });
   });
 
+  test('clicking on clear activities button clears activities', function() {
+    activityLog.$$('#clear-activities-button').click();
+
+    return proxyDelegate.whenCalled('deleteActivitiesFromExtension')
+        .then(() => {
+          Polymer.dom.flush();
+          testVisible('#no-activities', true);
+          testVisible('#loading-activities', false);
+          testVisible('#activity-list', false);
+          expectEquals(
+              activityLog.shadowRoot.querySelectorAll('activity-log-item')
+                  .length,
+              0);
+        });
+  });
+
   test('message shown when no activities present for extension', function() {
     // Spoof an API call and pretend that the extension has no activities.
     activityLog.activityData_ = [];
