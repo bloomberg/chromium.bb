@@ -4,37 +4,22 @@
 cr.define('app_management.ApiListener', function() {
   let initialized = false;
 
-  let initialListenerId;
-
-  function init() {
+  async function init() {
     assert(!initialized);
 
-    const callbackRouter =
-        app_management.BrowserProxy.getInstance().callbackRouter;
-
-    initialListenerId =
-        callbackRouter.onAppsAdded.addListener(initialOnAppsAdded);
-
-    app_management.BrowserProxy.getInstance().handler.getApps();
-
-    initialized = true;
-  }
-
-  /**
-   * @param {!Array<App>} apps
-   */
-  function initialOnAppsAdded(apps) {
-    const initialState = app_management.util.createInitialState(apps);
+    const {apps: initialApps} =
+        await app_management.BrowserProxy.getInstance().handler.getApps();
+    const initialState = app_management.util.createInitialState(initialApps);
     app_management.Store.getInstance().init(initialState);
 
     const callbackRouter =
         app_management.BrowserProxy.getInstance().callbackRouter;
 
-    callbackRouter.onAppsAdded.addListener(onAppsAdded);
+    callbackRouter.onAppAdded.addListener(onAppAdded);
     callbackRouter.onAppChanged.addListener(onAppChanged);
     callbackRouter.onAppRemoved.addListener(onAppRemoved);
 
-    callbackRouter.removeListener(initialListenerId);
+    initialized = true;
   }
 
   /**
@@ -45,10 +30,10 @@ cr.define('app_management.ApiListener', function() {
   }
 
   /**
-   * @param {Array<App>} apps
+   * @param {App} app
    */
-  function onAppsAdded(apps) {
-    dispatch(app_management.actions.addApps(apps));
+  function onAppAdded(app) {
+    dispatch(app_management.actions.addApp(app));
   }
 
   /**

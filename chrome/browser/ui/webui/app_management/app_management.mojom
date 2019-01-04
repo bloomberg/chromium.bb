@@ -27,12 +27,12 @@ interface PageHandlerFactory {
 
 // Browser interface.
 interface PageHandler {
-  GetApps();
+  GetApps() => (array<App> apps);
 };
 
 // Frontend interface.
 interface Page {
-  OnAppsAdded(array<App> apps);
+  OnAppAdded(App app);
   OnAppChanged(App update);
   OnAppRemoved(string app_id);
 };

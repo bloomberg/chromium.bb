@@ -17,12 +17,10 @@ cr.define('app_management', function() {
    * @param {Object} action
    * @return {AppMap}
    */
-  AppState.addApps = function(apps, action) {
-    const newAppEntries = {};
-    for (const app of action.apps) {
-      newAppEntries[app.id] = app;
-    }
-    return Object.assign({}, apps, newAppEntries);
+  AppState.addApp = function(apps, action) {
+    const newAppEntry = {};
+    newAppEntry[action.app.id] = action.app;
+    return Object.assign({}, apps, newAppEntry);
   };
 
   /**
@@ -57,8 +55,8 @@ cr.define('app_management', function() {
    */
   AppState.updateApps = function(apps, action) {
     switch (action.name) {
-      case 'add-apps':
-        return AppState.addApps(apps, action);
+      case 'add-app':
+        return AppState.addApp(apps, action);
       case 'change-app':
         return AppState.changeApp(apps, action);
       case 'remove-app':

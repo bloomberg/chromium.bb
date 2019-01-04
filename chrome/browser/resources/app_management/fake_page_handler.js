@@ -58,7 +58,7 @@ cr.define('app_management', function() {
     }
 
     getApps() {
-      this.page.onAppsAdded.dispatch_(this.apps_);
+      return Promise.resolve({apps: this.apps_});
     }
 
     /**

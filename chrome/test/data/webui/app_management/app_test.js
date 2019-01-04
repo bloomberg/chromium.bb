@@ -3,11 +3,9 @@
 // found in the LICENSE file.
 
 suite('<app-management-app>', function() {
-  test('loads', function(done) {
-    app_management.BrowserProxy.getInstance().handler.getApps();
-
-    let callbackRouter =
-        app_management.BrowserProxy.getInstance().callbackRouter;
-    callbackRouter.onAppsAdded.addListener(() => done());
+  test('loads', async function() {
+    // Check that the browser responds to the getApps() message.
+    const {apps: initialApps} =
+        await app_management.BrowserProxy.getInstance().handler.getApps();
   });
 });

@@ -25,7 +25,7 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
   ~AppManagementPageHandler() override;
 
   // app_management::mojom::PageHandler:
-  void GetApps() override;
+  void GetApps(GetAppsCallback callback) override;
 
  private:
   // apps::AppRegistryCache::Observer overrides:
