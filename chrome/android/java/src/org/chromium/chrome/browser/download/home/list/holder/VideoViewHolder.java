@@ -11,9 +11,9 @@ import android.widget.TextView;
 
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.UiUtils;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.download.R;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * A {@link RecyclerView.ViewHolder} specifically meant to display a video {@code OfflineItem}.

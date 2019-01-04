@@ -9,7 +9,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.widget.PopupWindow;
 
-import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.widget.UiWidgetFactory;
 
 /**

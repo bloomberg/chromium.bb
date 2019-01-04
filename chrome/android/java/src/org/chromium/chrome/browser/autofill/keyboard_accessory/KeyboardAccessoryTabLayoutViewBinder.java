@@ -13,8 +13,8 @@ import android.support.design.widget.TabLayout;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.ListModelChangeProcessor;
-import org.chromium.chrome.browser.modelutil.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Stateless {@link ListModelChangeProcessor.ViewBinder} that binds a {@link ListModel}'s data to

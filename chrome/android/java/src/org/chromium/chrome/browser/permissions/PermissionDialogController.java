@@ -12,13 +12,13 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
-import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
-import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -34,7 +34,7 @@ import java.util.List;
  * and will be displayed once the user responds to the current dialog.
  */
 public class PermissionDialogController
-        implements AndroidPermissionRequester.RequestDelegate, ModalDialogView.Controller {
+        implements AndroidPermissionRequester.RequestDelegate, ModalDialogProperties.Controller {
     @IntDef({State.NOT_SHOWING, State.PROMPT_PENDING, State.PROMPT_OPEN, State.PROMPT_ACCEPTED,
             State.PROMPT_DENIED, State.REQUEST_ANDROID_PERMISSIONS})
     @Retention(RetentionPolicy.SOURCE)
@@ -306,14 +306,14 @@ public class PermissionDialogController
     }
 
     @Override
-    public void onClick(PropertyModel model, @ModalDialogView.ButtonType int buttonType) {
+    public void onClick(PropertyModel model, @ModalDialogProperties.ButtonType int buttonType) {
         switch (buttonType) {
-            case ModalDialogView.ButtonType.POSITIVE:
+            case ModalDialogProperties.ButtonType.POSITIVE:
                 mPositiveClickListener.onClick(null, 0);
                 mModalDialogManager.dismissDialog(
                         model, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
                 break;
-            case ModalDialogView.ButtonType.NEGATIVE:
+            case ModalDialogProperties.ButtonType.NEGATIVE:
                 mNegativeClickListener.onClick(null, 0);
                 mModalDialogManager.dismissDialog(
                         model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);

@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.modelutil;
 
 import android.support.annotation.Nullable;
 
+import org.chromium.ui.modelutil.PropertyObservable;
+
 import java.util.Collection;
 
 /**

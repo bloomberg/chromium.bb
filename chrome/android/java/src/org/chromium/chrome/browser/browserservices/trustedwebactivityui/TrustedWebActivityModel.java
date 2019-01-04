@@ -8,7 +8,7 @@ import android.content.Intent;
 
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import javax.inject.Inject;
 

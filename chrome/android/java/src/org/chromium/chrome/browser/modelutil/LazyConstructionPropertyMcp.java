@@ -7,6 +7,9 @@ package org.chromium.chrome.browser.modelutil;
 import android.support.annotation.Nullable;
 
 import org.chromium.ui.ViewProvider;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyObservable;
 
 import java.util.HashSet;
 import java.util.Set;

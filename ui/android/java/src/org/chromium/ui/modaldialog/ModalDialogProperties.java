@@ -2,22 +2,59 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.modaldialog;
+package org.chromium.ui.modaldialog;
 
 import android.graphics.drawable.Drawable;
+import android.support.annotation.IntDef;
 import android.view.View;
 
-import org.chromium.chrome.browser.modelutil.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel.ReadableObjectPropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel.WritableBooleanPropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel.WritableObjectPropertyKey;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModel.ReadableObjectPropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * The model properties for a modal dialog.
  */
 public class ModalDialogProperties {
-    /** The {@link ModalDialogView.Controller} that handles events on user actions. */
-    public static final ReadableObjectPropertyKey<ModalDialogView.Controller> CONTROLLER =
+    /**
+     * Interface that controls the actions on the modal dialog.
+     */
+    public interface Controller {
+        /**
+         * Handle click event of the buttons on the dialog.
+         * @param model The dialog model that is associated with this click event.
+         * @param buttonType The type of the button.
+         */
+        void onClick(PropertyModel model, @ButtonType int buttonType);
+
+        /**
+         * Handle dismiss event when the dialog is dismissed by actions on the dialog. Note that it
+         * can be dangerous to the {@code dismissalCause} for business logic other than metrics
+         * recording, unless the dismissal cause is fully controlled by the client (e.g. button
+         * clicked), because the dismissal cause can be different values depending on modal dialog
+         * type and mode of presentation (e.g. it could be unknown on VR but a specific value on
+         * non-VR).
+         * @param model The dialog model that is associated with this dismiss event.
+         * @param dismissalCause The reason of the dialog being dismissed.
+         * @see DialogDismissalCause
+         */
+        void onDismiss(PropertyModel model, @DialogDismissalCause int dismissalCause);
+    }
+
+    @IntDef({ModalDialogProperties.ButtonType.POSITIVE, ModalDialogProperties.ButtonType.NEGATIVE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ButtonType {
+        int POSITIVE = 0;
+        int NEGATIVE = 1;
+    }
+
+    /** The {@link Controller} that handles events on user actions. */
+    public static final ReadableObjectPropertyKey<Controller> CONTROLLER =
             new ReadableObjectPropertyKey<>();
 
     /** The content description of the dialog for accessibility. */

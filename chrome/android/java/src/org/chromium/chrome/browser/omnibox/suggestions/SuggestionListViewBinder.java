@@ -8,9 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.modelutil.ModelListAdapter;
-import org.chromium.chrome.browser.modelutil.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Handles property updates to the suggestion list component.

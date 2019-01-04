@@ -22,8 +22,8 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.modelutil.LazyConstructionPropertyMcp;
 import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.ListModelChangeProcessor;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.ui.ViewProvider;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Creates and owns all elements which are part of the accessory sheet component.

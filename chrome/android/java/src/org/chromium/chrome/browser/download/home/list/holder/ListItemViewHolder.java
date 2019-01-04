@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.ListUtils;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * A {@link ViewHolder} responsible for building and setting properties on the underlying Android

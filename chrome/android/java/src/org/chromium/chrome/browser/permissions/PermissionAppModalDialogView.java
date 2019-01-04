@@ -12,9 +12,8 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
-import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * The Permission dialog that is app modal.
@@ -23,7 +22,7 @@ class PermissionAppModalDialogView {
     private final PropertyModel mDialogModel;
 
     PermissionAppModalDialogView(
-            ModalDialogView.Controller controller, PermissionDialogDelegate delegate) {
+            ModalDialogProperties.Controller controller, PermissionDialogDelegate delegate) {
         Context context = delegate.getTab().getActivity();
         LayoutInflater inflater = LayoutInflater.from(context);
         View customView = inflater.inflate(R.layout.permission_dialog, null);

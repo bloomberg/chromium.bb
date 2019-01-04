@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.modaldialog;
+package org.chromium.ui.modaldialog;
 
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
@@ -11,7 +11,7 @@ import android.util.SparseArray;
 
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -53,7 +53,7 @@ public class ModalDialogManager {
         /**
          * Run the cached cancel callback and reset the cached callback.
          */
-        protected final void dismissCurrentDialog(@DialogDismissalCause int dismissalCause) {
+        public final void dismissCurrentDialog(@DialogDismissalCause int dismissalCause) {
             if (mDismissCallback == null) return;
 
             // Set #mCancelCallback to null before calling the callback to avoid it being
@@ -66,7 +66,7 @@ public class ModalDialogManager {
         /**
          * @return The dialog model that this presenter is showing.
          */
-        protected final PropertyModel getDialogModel() {
+        public final PropertyModel getDialogModel() {
             return mDialogModel;
         }
 
@@ -264,7 +264,7 @@ public class ModalDialogManager {
      * @param dismissalCause The {@link DialogDismissalCause} that describes why the dialogs are
      *                       dismissed.
      */
-    protected void dismissDialogsOfType(
+    public void dismissDialogsOfType(
             @ModalDialogType int dialogType, @DialogDismissalCause int dismissalCause) {
         dismissPendingDialogsOfType(dialogType, dismissalCause);
         if (isShowing() && dialogType == mCurrentType) {
@@ -280,7 +280,8 @@ public class ModalDialogManager {
 
         while (!dialogs.isEmpty()) {
             PropertyModel model = dialogs.remove(0);
-            ModalDialogView.Controller controller = model.get(ModalDialogProperties.CONTROLLER);
+            ModalDialogProperties.Controller controller =
+                    model.get(ModalDialogProperties.CONTROLLER);
             controller.onDismiss(model, dismissalCause);
         }
     }
@@ -292,7 +293,7 @@ public class ModalDialogManager {
      * in the pending list. Any dialogs of the specified type in the pending list will be skipped.
      * @param dialogType The specified type of dialogs to be suspended.
      */
-    protected void suspendType(@ModalDialogType int dialogType) {
+    public void suspendType(@ModalDialogType int dialogType) {
         mSuspendedTypes.add(dialogType);
         if (isShowing() && dialogType == mCurrentType) {
             suspendCurrentDialog();
@@ -304,7 +305,7 @@ public class ModalDialogManager {
      * Resume the specified type of dialogs after suspension.
      * @param dialogType The specified type of dialogs to be resumed.
      */
-    protected void resumeType(@ModalDialogType int dialogType) {
+    public void resumeType(@ModalDialogType int dialogType) {
         mSuspendedTypes.remove(dialogType);
         if (!isShowing()) showNextDialog();
     }
@@ -340,17 +341,17 @@ public class ModalDialogManager {
     }
 
     @VisibleForTesting
-    List<PropertyModel> getPendingDialogsForTest(@ModalDialogType int dialogType) {
+    public List<PropertyModel> getPendingDialogsForTest(@ModalDialogType int dialogType) {
         return mPendingDialogs.get(dialogType);
     }
 
     @VisibleForTesting
-    Presenter getPresenterForTest(@ModalDialogType int dialogType) {
+    public Presenter getPresenterForTest(@ModalDialogType int dialogType) {
         return mPresenters.get(dialogType);
     }
 
     @VisibleForTesting
-    Presenter getCurrentPresenterForTest() {
+    public Presenter getCurrentPresenterForTest() {
         return mCurrentPresenter;
     }
 }

@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.explore_sites;
 import android.graphics.Bitmap;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * An object encapsulating info for a website.

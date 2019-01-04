@@ -12,8 +12,8 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.autofill.AutofillNameFixFlowPrompt.AutofillNameFixFlowPromptDelegate;
-import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
 
 /**
  * JNI call glue for AutofillNameFixFlowPrompt C++ and Java objects.

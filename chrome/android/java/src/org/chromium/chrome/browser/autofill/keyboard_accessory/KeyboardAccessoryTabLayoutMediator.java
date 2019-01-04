@@ -14,9 +14,9 @@ import android.support.v4.view.ViewPager;
 
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryTabLayoutCoordinator.AccessoryTabObserver;
 import org.chromium.chrome.browser.modelutil.ListObservable;
-import org.chromium.chrome.browser.modelutil.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
-import org.chromium.chrome.browser.modelutil.PropertyObservable;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyObservable;
 
 /**
  * This mediator observes and changes a {@link PropertyModel} that contains the visual appearance of
