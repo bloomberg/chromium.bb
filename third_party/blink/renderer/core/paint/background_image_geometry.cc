@@ -796,14 +796,17 @@ void BackgroundImageGeometry::CalculateFillTileSize(
     }
     case EFillSizeType::kContain:
     case EFillSizeType::kCover: {
+      // Always use the snapped positioning area size for this computation,
+      // so that we resize the image to completely fill the actual painted
+      // area.
       float horizontal_scale_factor =
           image_intrinsic_size.Width()
-              ? positioning_area_size.Width().ToFloat() /
+              ? snapped_positioning_area_size.Width().ToFloat() /
                     image_intrinsic_size.Width()
               : 1.0f;
       float vertical_scale_factor =
           image_intrinsic_size.Height()
-              ? positioning_area_size.Height().ToFloat() /
+              ? snapped_positioning_area_size.Height().ToFloat() /
                     image_intrinsic_size.Height()
               : 1.0f;
       // Force the dimension that determines the size to exactly match the
@@ -815,27 +818,27 @@ void BackgroundImageGeometry::CalculateFillTileSize(
         // at the edge of the image when we paint it.
         if (horizontal_scale_factor < vertical_scale_factor) {
           tile_size_ = LayoutSize(
-              positioning_area_size.Width(),
+              snapped_positioning_area_size.Width(),
               LayoutUnit(std::max(1.0f, roundf(image_intrinsic_size.Height() *
                                                horizontal_scale_factor))));
         } else {
           tile_size_ = LayoutSize(
               LayoutUnit(std::max(1.0f, roundf(image_intrinsic_size.Width() *
                                                vertical_scale_factor))),
-              positioning_area_size.Height());
+              snapped_positioning_area_size.Height());
         }
         return;
       }
       if (horizontal_scale_factor > vertical_scale_factor) {
         tile_size_ =
-            LayoutSize(positioning_area_size.Width(),
+            LayoutSize(snapped_positioning_area_size.Width(),
                        LayoutUnit(std::max(1.0f, image_intrinsic_size.Height() *
                                                      horizontal_scale_factor)));
       } else {
         tile_size_ =
             LayoutSize(LayoutUnit(std::max(1.0f, image_intrinsic_size.Width() *
                                                      vertical_scale_factor)),
-                       positioning_area_size.Height());
+                       snapped_positioning_area_size.Height());
       }
       return;
     }
