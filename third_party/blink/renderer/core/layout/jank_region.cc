@@ -43,7 +43,8 @@ class BasicIntervals {
 
  private:
   Vector<int> endpoints_;
-  std::map<int, unsigned> endpoint_to_index_;
+  // Avoid WTF::HashMap as key may be 0 or -1.
+  std::unordered_map<int, unsigned> endpoint_to_index_;
 
 #if DCHECK_IS_ON()
   bool has_index_ = false;

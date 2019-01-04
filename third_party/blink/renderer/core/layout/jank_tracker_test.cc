@@ -51,6 +51,9 @@ TEST_F(JankTrackerTest, SimpleBlockMovement) {
 }
 
 TEST_F(JankTrackerTest, GranularitySnapping) {
+  if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled())
+    return;
+
   SetBodyInnerHTML(R"HTML(
     <style>
       #j { position: relative; width: 304px; height: 104px; }

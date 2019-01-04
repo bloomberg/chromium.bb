@@ -42,6 +42,9 @@ static float GetMoveDistance(const FloatRect& old_rect,
 }
 
 static float RegionGranularityScale(const IntRect& viewport) {
+  if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled())
+    return 1;
+
   return kRegionGranularitySteps /
          std::min(viewport.Height(), viewport.Width());
 }
