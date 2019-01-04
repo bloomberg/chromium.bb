@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -51,6 +52,28 @@ void PaintTimingDetector::NotifyNodeRemoved(const LayoutObject& object) {
       DOMNodeIds::IdForNode(object.GetNode()));
   image_paint_timing_detector_->NotifyNodeRemoved(
       DOMNodeIds::IdForNode(object.GetNode()));
+}
+
+void PaintTimingDetector::NotifyInputEvent(WebInputEvent::Type type) {
+  if (type == WebInputEvent::kMouseMove || type == WebInputEvent::kMouseEnter ||
+      type == WebInputEvent::kMouseLeave ||
+      WebInputEvent::IsPinchGestureEventType(type)) {
+    return;
+  }
+  text_paint_timing_detector_->StopRecordEntries();
+  image_paint_timing_detector_->StopRecordEntries();
+}
+
+void PaintTimingDetector::NotifyScroll(ScrollType scroll_type) {
+  if (scroll_type != kUserScroll && scroll_type != kCompositorScroll)
+    return;
+  text_paint_timing_detector_->StopRecordEntries();
+  image_paint_timing_detector_->StopRecordEntries();
+}
+
+bool PaintTimingDetector::NeedToNotifyInputOrScroll() {
+  return text_paint_timing_detector_->IsRecording() ||
+         image_paint_timing_detector_->IsRecording();
 }
 
 void PaintTimingDetector::DidChangePerformanceTiming() {

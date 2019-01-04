@@ -63,6 +63,8 @@ class CORE_EXPORT TextPaintTimingDetector final
   void Dispose() { timer_.Stop(); }
   base::TimeTicks LargestTextPaint() const { return largest_text_paint_; }
   base::TimeTicks LastTextPaint() const { return last_text_paint_; }
+  void StopRecordEntries();
+  bool IsRecording() const { return is_recording_; }
   void Trace(blink::Visitor*);
 
  private:
@@ -77,7 +79,6 @@ class CORE_EXPORT TextPaintTimingDetector final
   void RegisterNotifySwapTime(ReportTimeCallback callback);
   void OnLargestTextDetected(const TextRecord&);
   void OnLastTextDetected(const TextRecord&);
-  void Deactivate();
 
   HashSet<DOMNodeId> recorded_text_node_ids_;
   HashSet<DOMNodeId> size_zero_node_ids_;

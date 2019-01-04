@@ -69,6 +69,13 @@ class CORE_EXPORT ImagePaintTimingDetector final
   void NotifyNodeRemoved(DOMNodeId);
   base::TimeTicks LargestImagePaint() const { return largest_image_paint_; }
   base::TimeTicks LastImagePaint() const { return last_image_paint_; }
+  // After the method being called, the detector stops to record new entries and
+  // node removal. But it still observe the loading status. In other words, if
+  // an image is recorded before stopping recording, and finish loading after
+  // stopping recording, the detector can still observe the loading being
+  // finished.
+  void StopRecordEntries();
+  bool IsRecording() const { return is_recording_; }
   void Trace(blink::Visitor*);
 
  private:
@@ -88,8 +95,6 @@ class CORE_EXPORT ImagePaintTimingDetector final
   void RegisterNotifySwapTime();
   void OnLargestImagePaintDetected(const ImageRecord&);
   void OnLastImagePaintDetected(const ImageRecord&);
-  void Deactivate();
-
   void Analyze();
 
   base::RepeatingCallback<void(WebLayerTreeView::ReportTimeCallback)>
@@ -122,6 +127,8 @@ class CORE_EXPORT ImagePaintTimingDetector final
   unsigned frame_index_ = 1;
 
   unsigned last_frame_index_queued_for_timing_ = 0;
+  // Used to control if we record new image entries and image removal, but has
+  // no effect on recording the loading status.
   bool is_recording_ = true;
 
   base::TimeTicks largest_image_paint_;

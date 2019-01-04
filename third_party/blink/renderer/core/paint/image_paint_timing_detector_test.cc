@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -121,6 +122,8 @@ class ImagePaintTimingDetectorTest
         WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
         WebString::FromUTF8(file_name));
   }
+
+  void SimulateScroll() { GetPaintTimingDetector().NotifyScroll(kUserScroll); }
 
  private:
   void FakeNotifySwapTime(WebLayerTreeView::ReportTimeCallback callback) {
@@ -689,6 +692,18 @@ TEST_F(ImagePaintTimingDetectorTest, BackgroundImage_IgnoreGradient) {
     </div>
   )HTML");
   UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(CountRecords(), 0u);
+}
+
+TEST_F(ImagePaintTimingDetectorTest, DeactivateAfterUserInput) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="parent">
+      <img id="target"></img>
+    </div>
+  )HTML");
+  SimulateScroll();
+  SetImageAndPaint("target", 5, 5);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
   EXPECT_EQ(CountRecords(), 0u);
 }
 

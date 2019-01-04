@@ -96,7 +96,7 @@ bool IsLoaded(const LayoutObject& object) {
 }  // namespace
 
 // Set a big enough limit for the number of nodes to ensure memory usage is
-// capped. Exceeding such limit will deactivate the algorithm.
+// capped. Exceeding such limit will make the detactor stops recording entries.
 constexpr size_t kImageNodeNumberLimit = 5000;
 
 static bool LargeImageFirst(const base::WeakPtr<ImageRecord>& a,
@@ -205,6 +205,8 @@ void ImagePaintTimingDetector::OnPrePaintFinished() {
 }
 
 void ImagePaintTimingDetector::NotifyNodeRemoved(DOMNodeId node_id) {
+  if (!is_recording_)
+    return;
   if (id_record_map_.Contains(node_id)) {
     // We assume that the removed node's id wouldn't be recycled, so we don't
     // bother to remove these records from size_ordered_set_ or
@@ -352,8 +354,13 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
     record->first_size = rect_size;
     size_ordered_set_.insert(record->AsWeakPtr());
     id_record_map_.insert(node_id, std::move(record));
-    if (id_record_map_.size() + size_zero_ids_.size() > kImageNodeNumberLimit)
-      Deactivate();
+    if (id_record_map_.size() + size_zero_ids_.size() > kImageNodeNumberLimit) {
+      TRACE_EVENT_INSTANT2("loading", "ImagePaintTimingDetector::OverNodeLimit",
+                           TRACE_EVENT_SCOPE_THREAD, "recorded_node_count",
+                           id_record_map_.size(), "size_zero_node_count",
+                           size_zero_ids_.size());
+      StopRecordEntries();
+    }
   }
 
   if (id_record_map_.Contains(node_id) && !id_record_map_.at(node_id)->loaded &&
@@ -374,11 +381,7 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
   }
 }
 
-void ImagePaintTimingDetector::Deactivate() {
-  TRACE_EVENT_INSTANT2("loading", "ImagePaintTimingDetector::OverNodeLimit",
-                       TRACE_EVENT_SCOPE_THREAD, "recorded_node_count",
-                       id_record_map_.size(), "size_zero_node_count",
-                       size_zero_ids_.size());
+void ImagePaintTimingDetector::StopRecordEntries() {
   is_recording_ = false;
 }
 
