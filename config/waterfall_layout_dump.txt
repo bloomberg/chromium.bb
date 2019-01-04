@@ -254,6 +254,7 @@
 
 == mst_android_pfq ==
   master-mst-android-pfq
+    eve-arcnext-mst-android-pfq
 
 == nyc_android_pfq ==
   master-nyc-android-pfq
@@ -1386,6 +1387,7 @@
   eve-arcnext-full-tryjob
   eve-arcnext-llvm-next-toolchain-tryjob
   eve-arcnext-llvm-toolchain-tryjob
+  eve-arcnext-mst-android-pfq-tryjob
   eve-arcnext-no-vmtest-pre-cq
   eve-arcnext-paladin-tryjob
   eve-arcnext-payloads-tryjob
@@ -2495,6 +2497,7 @@
     lakitu-st-release
     lakitu_next-release
   master-mst-android-pfq-tryjob
+    eve-arcnext-mst-android-pfq
   master-nyc-android-pfq-tryjob
     betty-arc64-nyc-android-pfq
     betty-nyc-android-pfq
