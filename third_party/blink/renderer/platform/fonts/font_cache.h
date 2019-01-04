@@ -253,6 +253,9 @@ class PLATFORM_EXPORT FontCache {
       UChar32,
       const SimpleFontData* font_data_to_substitute,
       FontFallbackPriority = FontFallbackPriority::kText);
+  sk_sp<SkTypeface> CreateTypefaceFromUniqueName(
+      const FontFaceCreationParams& creation_params,
+      CString& name);
 
   friend class FontGlobalContext;
   FontCache();
