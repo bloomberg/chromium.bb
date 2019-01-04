@@ -557,9 +557,8 @@ URLLoader::~URLLoader() {
 const void* const URLLoader::kUserDataKey = &URLLoader::kUserDataKey;
 
 void URLLoader::FollowRedirect(
-    const base::Optional<std::vector<std::string>>&
-        to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const base::Optional<std::vector<std::string>>& removed_headers,
+    const base::Optional<net::HttpRequestHeaders>& modified_headers,
     const base::Optional<GURL>& new_url) {
   if (!url_request_) {
     NotifyCompleted(net::ERR_UNEXPECTED);
@@ -583,12 +582,7 @@ void URLLoader::FollowRedirect(
   deferred_redirect_url_.reset();
   new_redirect_url_ = new_url;
 
-  if (to_be_removed_request_headers.has_value()) {
-    for (const std::string& key : to_be_removed_request_headers.value())
-      url_request_->RemoveRequestHeaderByName(key);
-  }
-
-  url_request_->FollowDeferredRedirect(modified_request_headers);
+  url_request_->FollowDeferredRedirect(removed_headers, modified_headers);
   new_redirect_url_.reset();
 }
 

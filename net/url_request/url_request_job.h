@@ -198,7 +198,8 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
   virtual void ContinueDespiteLastError();
 
   void FollowDeferredRedirect(
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers);
+      const base::Optional<std::vector<std::string>>& removed_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_headers);
 
   // Returns true if the Job is done producing response data and has called
   // NotifyDone on the request.
@@ -372,7 +373,8 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
   // given redirect destination.
   void FollowRedirect(
       const RedirectInfo& redirect_info,
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers);
+      const base::Optional<std::vector<std::string>>& removed_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_headers);
 
   // Called after every raw read. If |bytes_read| is > 0, this indicates
   // a successful read of |bytes_read| unfiltered bytes. If |bytes_read|

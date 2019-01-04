@@ -32,10 +32,11 @@ class CONTENT_EXPORT ResourceController {
   virtual void Resume() = 0;
 
   // Similar to |Resume()| but can only be called if the request was previously
-  // redirected. |modified_request_headers| are changes applied to the request
-  // headers after updating them for the redirect.
-  virtual void ResumeForRedirect(const base::Optional<net::HttpRequestHeaders>&
-                                     modified_request_headers) = 0;
+  // redirected. |removed_headers| and |modified_headers| are
+  // applied to the request header after updating them for the redirect.
+  virtual void ResumeForRedirect(
+      const base::Optional<std::vector<std::string>>& removed_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_headers) = 0;
 };
 
 }  // namespace content

@@ -884,8 +884,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // let the loader just follow the redirect.
     if (url_loader_) {
       DCHECK(!redirect_info_.new_url.is_empty());
-      url_loader_->FollowRedirect(
-          std::move(url_loader_modified_request_headers_));
+      url_loader_->FollowRedirect(std::move(url_loader_removed_headers_),
+                                  std::move(url_loader_modified_headers_));
       return;
     }
 
@@ -1039,7 +1039,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   }
 
   void FollowRedirect(
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+      const base::Optional<std::vector<std::string>>& removed_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_headers) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(!redirect_info_.new_url.is_empty());
     if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
@@ -1051,7 +1052,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     }
 
     if (!IsLoaderInterceptionEnabled()) {
-      url_loader_->FollowRedirect(modified_request_headers);
+      url_loader_->FollowRedirect(removed_headers, modified_headers);
       return;
     }
 
@@ -1067,7 +1068,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     bool should_clear_upload = false;
     net::RedirectUtil::UpdateHttpRequest(
         resource_request_->url, resource_request_->method, redirect_info_,
-        modified_request_headers, &resource_request_->headers,
+        removed_headers, modified_headers, &resource_request_->headers,
         &should_clear_upload);
     if (should_clear_upload) {
       // The request body is no longer applicable.
@@ -1085,7 +1086,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
     // Need to cache modified headers for |url_loader_| since it doesn't use
     // |resource_request_| during redirect.
-    url_loader_modified_request_headers_ = modified_request_headers;
+    url_loader_removed_headers_ = removed_headers;
+    url_loader_modified_headers_ = modified_headers;
 
     if (signed_exchange_utils::NeedToCheckRedirectedURLForAcceptHeader()) {
       // Currently we send the SignedExchange accept header only for the limited
@@ -1094,16 +1096,16 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       // header on when redirecting to the origins in the OriginList of
       // SignedHTTPExchangeAcceptHeader field trial, and need to remove it when
       // redirecting to out of the OriginList.
-      if (!url_loader_modified_request_headers_)
-        url_loader_modified_request_headers_ = net::HttpRequestHeaders();
+      if (!url_loader_modified_headers_)
+        url_loader_modified_headers_ = net::HttpRequestHeaders();
       std::string accept_value = network::kFrameAcceptHeader;
       if (signed_exchange_utils::ShouldAdvertiseAcceptHeader(
               url::Origin::Create(resource_request_->url))) {
         DCHECK(!accept_value.empty());
         accept_value.append(kAcceptHeaderSignedExchangeSuffix);
       }
-      url_loader_modified_request_headers_->SetHeader(network::kAcceptHeader,
-                                                      accept_value);
+      url_loader_modified_headers_->SetHeader(network::kAcceptHeader,
+                                              accept_value);
       resource_request_->headers.SetHeader(network::kAcceptHeader,
                                            accept_value);
     }
@@ -1489,7 +1491,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   // Caches the modified request headers provided by clients during redirect,
   // will be consumed by next |url_loader_->FollowRedirect()|.
-  base::Optional<net::HttpRequestHeaders> url_loader_modified_request_headers_;
+  base::Optional<std::vector<std::string>> url_loader_removed_headers_;
+  base::Optional<net::HttpRequestHeaders> url_loader_modified_headers_;
 
   BlobHandles blob_handles_;
   std::vector<GURL> url_chain_;
@@ -1758,14 +1761,13 @@ NavigationURLLoaderImpl::~NavigationURLLoaderImpl() {
 }
 
 void NavigationURLLoaderImpl::FollowRedirect(
-    const base::Optional<std::vector<std::string>>&
-        to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+    const base::Optional<std::vector<std::string>>& removed_headers,
+    const base::Optional<net::HttpRequestHeaders>& modified_headers) {
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&URLLoaderRequestController::FollowRedirect,
                      base::Unretained(request_controller_.get()),
-                     modified_request_headers));
+                     removed_headers, modified_headers));
 }
 
 void NavigationURLLoaderImpl::ProceedWithResponse() {}

@@ -462,7 +462,9 @@ void ResourceDispatcher::FollowPendingRedirect(
     if (request_info->redirect_requires_loader_restart) {
       request_info->url_loader->FollowRedirectForcingRestart();
     } else {
-      request_info->url_loader->FollowRedirect(base::nullopt);
+      request_info->url_loader->FollowRedirect(
+          base::nullopt /* removed_headers */,
+          base::nullopt /* modified_headers */);
     }
   }
 }

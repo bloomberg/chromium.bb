@@ -16,13 +16,19 @@ void RedirectUtil::UpdateHttpRequest(
     const GURL& original_url,
     const std::string& original_method,
     const RedirectInfo& redirect_info,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const base::Optional<std::vector<std::string>>& removed_headers,
+    const base::Optional<net::HttpRequestHeaders>& modified_headers,
     HttpRequestHeaders* request_headers,
     bool* should_clear_upload) {
   DCHECK(request_headers);
   DCHECK(should_clear_upload);
 
   *should_clear_upload = false;
+
+  if (removed_headers) {
+    for (const std::string& key : removed_headers.value())
+      request_headers->RemoveHeader(key);
+  }
 
   if (redirect_info.new_method != original_method) {
     // TODO(davidben): This logic still needs to be replicated at the consumers.
@@ -66,8 +72,8 @@ void RedirectUtil::UpdateHttpRequest(
                                url::Origin().Serialize());
   }
 
-  if (modified_request_headers)
-    request_headers->MergeFrom(modified_request_headers.value());
+  if (modified_headers)
+    request_headers->MergeFrom(modified_headers.value());
 }
 
 }  // namespace net

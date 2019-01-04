@@ -2592,7 +2592,8 @@ TEST_F(SpdyNetworkTransactionTest, RedirectGetRequest) {
 
   EXPECT_EQ(1, delegate.received_redirect_count());
 
-  request->FollowDeferredRedirect(base::nullopt /* modified_request_headers */);
+  request->FollowDeferredRedirect(base::nullopt /* removed_headers */,
+                                  base::nullopt /* modified_headers */);
   delegate.RunUntilComplete();
 
   EXPECT_EQ(1, delegate.response_started_count());
@@ -2687,8 +2688,8 @@ TEST_F(SpdyNetworkTransactionTest, RedirectServerPush) {
   delegate1.RunUntilRedirect();
   EXPECT_EQ(1, delegate1.received_redirect_count());
 
-  request1->FollowDeferredRedirect(
-      base::nullopt /* modified_request_headers */);
+  request1->FollowDeferredRedirect(base::nullopt /* removed_headers */,
+                                   base::nullopt /* modified_headers */);
   delegate1.RunUntilComplete();
   EXPECT_EQ(1, delegate1.response_started_count());
   EXPECT_FALSE(delegate1.received_data_before_response());

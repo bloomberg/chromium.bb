@@ -4396,7 +4396,8 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequest) {
     EXPECT_EQ(redirect_url, GURL(location));
 
     // Let the request finish.
-    r->FollowDeferredRedirect(base::nullopt /* modified_request_headers */);
+    r->FollowDeferredRedirect(base::nullopt /* removed_headers */,
+                              base::nullopt /* modified_headers */);
     d.RunUntilComplete();
     EXPECT_EQ(OK, d.request_status());
     EXPECT_EQ(ProxyServer(ProxyServer::SCHEME_HTTP,
@@ -4450,7 +4451,8 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestSynchronously) {
     EXPECT_EQ(redirect_url, GURL(location));
 
     // Let the request finish.
-    r->FollowDeferredRedirect(base::nullopt /* modified_request_headers */);
+    r->FollowDeferredRedirect(base::nullopt /* removed_headers */,
+                              base::nullopt /* modified_headers */);
     d.RunUntilComplete();
 
     EXPECT_EQ(OK, d.request_status());
@@ -4513,7 +4515,8 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestPost) {
     EXPECT_EQ(redirect_url, GURL(location));
 
     // Let the request finish.
-    r->FollowDeferredRedirect(base::nullopt /* modified_request_headers */);
+    r->FollowDeferredRedirect(base::nullopt /* removed_headers */,
+                              base::nullopt /* modified_headers */);
     d.RunUntilComplete();
 
     EXPECT_EQ(OK, d.request_status());
@@ -5632,9 +5635,10 @@ class AsyncLoggingUrlRequestDelegate : public TestDelegate {
     // FollowDeferredRedirect should not be called after cancellation.
     if (cancel_stage_ == CANCEL_ON_RECEIVED_REDIRECT)
       return;
-    if (!defer_redirect)
-      request->FollowDeferredRedirect(
-          base::nullopt /* modified_request_headers */);
+    if (!defer_redirect) {
+      request->FollowDeferredRedirect(base::nullopt /* removed_headers */,
+                                      base::nullopt /* modified_headers */);
+    }
   }
 
   void OnResponseStartedLoggingComplete(URLRequest* request, int net_error) {
@@ -7169,7 +7173,8 @@ TEST_F(URLRequestTestHTTP, CacheRedirect) {
     EXPECT_EQ(0, d.response_started_count());
     EXPECT_TRUE(req->was_cached());
 
-    req->FollowDeferredRedirect(base::nullopt /* modified_request_headers */);
+    req->FollowDeferredRedirect(base::nullopt /* removed_headers */,
+                                base::nullopt /* modified_headers */);
     d.RunUntilComplete();
     EXPECT_EQ(1, d.received_redirect_count());
     EXPECT_EQ(1, d.response_started_count());
@@ -7471,7 +7476,8 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect) {
     CheckFullRequestHeaders(d.full_request_headers(), test_url);
     d.ClearFullRequestHeaders();
 
-    req->FollowDeferredRedirect(base::nullopt /* modified_request_headers */);
+    req->FollowDeferredRedirect(base::nullopt /* removed_headers */,
+                                base::nullopt /* modified_headers */);
     d.RunUntilComplete();
 
     EXPECT_EQ(1, d.response_started_count());
@@ -7505,7 +7511,8 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect_GetFullRequestHeaders) {
 
     EXPECT_EQ(1, d.received_redirect_count());
 
-    req->FollowDeferredRedirect(base::nullopt /* modified_request_headers */);
+    req->FollowDeferredRedirect(base::nullopt /* removed_headers */,
+                                base::nullopt /* modified_headers */);
     d.RunUntilComplete();
 
     GURL target_url(http_test_server()->GetURL("/with-headers.html"));
@@ -7526,7 +7533,7 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect_GetFullRequestHeaders) {
   }
 }
 
-TEST_F(URLRequestTestHTTP, DeferredRedirect_ModifiedRequestHeaders) {
+TEST_F(URLRequestTestHTTP, DeferredRedirect_ModifiedHeaders) {
   ASSERT_TRUE(http_test_server()->Start());
 
   TestDelegate d;
@@ -7555,11 +7562,12 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect_ModifiedRequestHeaders) {
     d.ClearFullRequestHeaders();
 
     // Overwrite Header2 and add Header3.
-    net::HttpRequestHeaders modified_request_headers;
-    modified_request_headers.SetHeader("Header2", "");
-    modified_request_headers.SetHeader("Header3", "Value3");
+    net::HttpRequestHeaders modified_headers;
+    modified_headers.SetHeader("Header2", "");
+    modified_headers.SetHeader("Header3", "Value3");
 
-    req->FollowDeferredRedirect(modified_request_headers);
+    req->FollowDeferredRedirect(base::nullopt /* removed_headers */,
+                                modified_headers);
     d.RunUntilComplete();
 
     EXPECT_EQ(1, d.response_started_count());
@@ -7575,6 +7583,52 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect_ModifiedRequestHeaders) {
     EXPECT_EQ("", sent_value);
     EXPECT_TRUE(sent_headers2.GetHeader("Header3", &sent_value));
     EXPECT_EQ("Value3", sent_value);
+  }
+}
+
+TEST_F(URLRequestTestHTTP, DeferredRedirect_RemovedHeaders) {
+  ASSERT_TRUE(http_test_server()->Start());
+
+  TestDelegate d;
+  {
+    GURL test_url(http_test_server()->GetURL("/redirect-test.html"));
+    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+        test_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+
+    // Set initial headers for the request.
+    req->SetExtraRequestHeaderByName("Header1", "Value1", true /* overwrite */);
+    req->SetExtraRequestHeaderByName("Header2", "Value2", true /* overwrite */);
+
+    req->Start();
+    d.RunUntilRedirect();
+
+    // Initial request should have initial headers.
+    EXPECT_EQ(1, d.received_redirect_count());
+    EXPECT_TRUE(d.have_full_request_headers());
+    const HttpRequestHeaders& sent_headers1 = d.full_request_headers();
+    std::string sent_value;
+    EXPECT_TRUE(sent_headers1.GetHeader("Header1", &sent_value));
+    EXPECT_EQ("Value1", sent_value);
+    EXPECT_TRUE(sent_headers1.GetHeader("Header2", &sent_value));
+    EXPECT_EQ("Value2", sent_value);
+    d.ClearFullRequestHeaders();
+
+    // Keep Header1 and remove Header2.
+    std::vector<std::string> removed_headers({"Header2"});
+    req->FollowDeferredRedirect(removed_headers,
+                                base::nullopt /* modified_headers */);
+    d.RunUntilComplete();
+
+    EXPECT_EQ(1, d.response_started_count());
+    EXPECT_FALSE(d.received_data_before_response());
+    EXPECT_EQ(OK, d.request_status());
+
+    // Redirected request should also have
+    EXPECT_TRUE(d.have_full_request_headers());
+    const HttpRequestHeaders& sent_headers2 = d.full_request_headers();
+    EXPECT_TRUE(sent_headers2.GetHeader("Header1", &sent_value));
+    EXPECT_EQ("Value1", sent_value);
+    EXPECT_FALSE(sent_headers2.GetHeader("Header2", &sent_value));
   }
 }
 
@@ -11720,7 +11774,8 @@ TEST_F(URLRequestTestHTTP, HeadersCallbacksWithRedirect) {
 
   raw_req_headers = HttpRawRequestHeaders();
   raw_resp_headers = nullptr;
-  r->FollowDeferredRedirect(base::nullopt /* modified_request_headers */);
+  r->FollowDeferredRedirect(base::nullopt /* removed_headers */,
+                            base::nullopt /* modified_headers */);
   delegate.RunUntilComplete();
   EXPECT_TRUE(raw_req_headers.FindHeaderForTest("X-Foo", &value));
   EXPECT_EQ("bar", value);

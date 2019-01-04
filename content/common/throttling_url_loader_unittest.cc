@@ -236,11 +236,11 @@ class TestURLLoaderThrottle : public URLLoaderThrottle {
   using ThrottleCallback =
       base::RepeatingCallback<void(URLLoaderThrottle::Delegate* delegate,
                                    bool* defer)>;
-  using ThrottleRedirectCallback = base::RepeatingCallback<void(
-      URLLoaderThrottle::Delegate* delegate,
-      bool* defer,
-      std::vector<std::string>* to_be_removed_headers,
-      net::HttpRequestHeaders* modified_headers)>;
+  using ThrottleRedirectCallback =
+      base::RepeatingCallback<void(URLLoaderThrottle::Delegate* delegate,
+                                   bool* defer,
+                                   std::vector<std::string>* removed_headers,
+                                   net::HttpRequestHeaders* modified_headers)>;
 
   size_t will_start_request_called() const {
     return will_start_request_called_;
@@ -486,7 +486,7 @@ TEST_F(ThrottlingURLLoaderTest, ModifyURLBeforeStart) {
 TEST_F(ThrottlingURLLoaderTest, CancelBeforeRedirect) {
   throttle_->set_will_redirect_request_callback(base::BindRepeating(
       [](URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
-         std::vector<std::string>* /* to_be_removed_headers */,
+         std::vector<std::string>* /* removed_headers */,
          net::HttpRequestHeaders* /* modified_headers */) {
         delegate->CancelWithError(net::ERR_ACCESS_DENIED);
       }));
@@ -519,7 +519,7 @@ TEST_F(ThrottlingURLLoaderTest, DeferBeforeRedirect) {
   throttle_->set_will_redirect_request_callback(base::Bind(
       [](const base::Closure& quit_closure,
          URLLoaderThrottle::Delegate* delegate, bool* defer,
-         std::vector<std::string>* /* to_be_removed_headers */,
+         std::vector<std::string>* /* removed_headers */,
          net::HttpRequestHeaders* /* modified_headers */) {
         *defer = true;
         quit_closure.Run();
@@ -570,9 +570,9 @@ TEST_F(ThrottlingURLLoaderTest, DeferBeforeRedirect) {
 TEST_F(ThrottlingURLLoaderTest, ModifyHeadersBeforeRedirect) {
   throttle_->set_will_redirect_request_callback(base::BindRepeating(
       [](URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
-         std::vector<std::string>* to_be_removed_headers,
+         std::vector<std::string>* removed_headers,
          net::HttpRequestHeaders* modified_headers) {
-        to_be_removed_headers->push_back("X-Test-Header-1");
+        removed_headers->push_back("X-Test-Header-1");
         modified_headers->SetHeader("X-Test-Header-2", "Foo");
         modified_headers->SetHeader("X-Test-Header-3", "Throttle Value");
       }));
@@ -581,7 +581,7 @@ TEST_F(ThrottlingURLLoaderTest, ModifyHeadersBeforeRedirect) {
     net::HttpRequestHeaders modified_headers;
     modified_headers.SetHeader("X-Test-Header-3", "Client Value");
     modified_headers.SetHeader("X-Test-Header-4", "Bar");
-    loader_->FollowRedirect(modified_headers);
+    loader_->FollowRedirect(base::nullopt, modified_headers);
   }));
 
   CreateLoaderAndStart();
@@ -605,25 +605,25 @@ TEST_F(ThrottlingURLLoaderTest, MultipleThrottlesModifyHeadersBeforeRedirect) {
 
   throttle_->set_will_redirect_request_callback(base::BindRepeating(
       [](URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
-         std::vector<std::string>* to_be_removed_headers,
+         std::vector<std::string>* removed_headers,
          net::HttpRequestHeaders* modified_headers) {
-        to_be_removed_headers->push_back("X-Test-Header-0");
-        to_be_removed_headers->push_back("X-Test-Header-1");
+        removed_headers->push_back("X-Test-Header-0");
+        removed_headers->push_back("X-Test-Header-1");
         modified_headers->SetHeader("X-Test-Header-3", "Foo");
         modified_headers->SetHeader("X-Test-Header-4", "Throttle1");
       }));
 
   throttle2->set_will_redirect_request_callback(base::BindRepeating(
       [](URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
-         std::vector<std::string>* to_be_removed_headers,
+         std::vector<std::string>* removed_headers,
          net::HttpRequestHeaders* modified_headers) {
-        to_be_removed_headers->push_back("X-Test-Header-1");
-        to_be_removed_headers->push_back("X-Test-Header-2");
+        removed_headers->push_back("X-Test-Header-1");
+        removed_headers->push_back("X-Test-Header-2");
         modified_headers->SetHeader("X-Test-Header-4", "Throttle2");
       }));
 
   client_.set_on_received_redirect_callback(base::BindLambdaForTesting(
-      [&]() { loader_->FollowRedirect(base::nullopt); }));
+      [&]() { loader_->FollowRedirect(base::nullopt, base::nullopt); }));
 
   CreateLoaderAndStart();
   factory_.NotifyClientOnReceiveRedirect();
@@ -765,7 +765,7 @@ TEST_F(ThrottlingURLLoaderTest, ResumeNoOpIfNotDeferred) {
   throttle_->set_will_process_response_callback(std::move(resume_callback));
   throttle_->set_will_redirect_request_callback(base::BindRepeating(
       [](URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
-         std::vector<std::string>* /* to_be_removed_headers */,
+         std::vector<std::string>* /* removed_headers */,
          net::HttpRequestHeaders* /* modified_headers */) {
         delegate->Resume();
         delegate->Resume();
@@ -1129,7 +1129,7 @@ TEST_F(ThrottlingURLLoaderTest,
   throttle_->set_will_redirect_request_callback(base::BindRepeating(
       [](const base::RepeatingClosure& quit_closure,
          URLLoaderThrottle::Delegate* delegate, bool* defer,
-         std::vector<std::string>* /* to_be_removed_headers */,
+         std::vector<std::string>* /* removed_headers */,
          net::HttpRequestHeaders* /* modified_headers */) {
         *defer = true;
         quit_closure.Run();

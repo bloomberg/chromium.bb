@@ -13,6 +13,41 @@
 
 namespace content {
 
+namespace {
+
+// Merges |removed_headers_B| into |removed_headers_A|. Handles the cases where
+// any of them are base::nullopt.
+void MergeRemovedHeaders(
+    base::Optional<std::vector<std::string>>* removed_headers_A,
+    const base::Optional<std::vector<std::string>>& removed_headers_B) {
+  if (!removed_headers_B || removed_headers_B->empty())
+    return;
+  if (!*removed_headers_A) {
+    *removed_headers_A = removed_headers_B;
+    return;
+  }
+  for (auto& header : *removed_headers_B) {
+    if (!base::ContainsValue(**removed_headers_A, header))
+      (**removed_headers_A).emplace_back(std::move(header));
+  }
+}
+
+// Merges |modified_headers_B| into |modified_headers_A|. Handles the cases
+// where any of them are base::nullopt.
+void MergeModifiedHeaders(
+    base::Optional<net::HttpRequestHeaders>* modified_headers_A,
+    const base::Optional<net::HttpRequestHeaders>& modified_headers_B) {
+  if (!modified_headers_B || modified_headers_B->IsEmpty())
+    return;
+  if (!*modified_headers_A) {
+    *modified_headers_A = modified_headers_B;
+    return;
+  }
+  (**modified_headers_A).MergeFrom(*modified_headers_B);
+}
+
+}  // namespace
+
 class ThrottlingURLLoader::ForwardingThrottleDelegate
     : public URLLoaderThrottle::Delegate {
  public:
@@ -198,21 +233,14 @@ ThrottlingURLLoader::~ThrottlingURLLoader() {
 }
 
 void ThrottlingURLLoader::FollowRedirect(
+    const base::Optional<std::vector<std::string>>& removed_headers,
     const base::Optional<net::HttpRequestHeaders>& modified_headers) {
-  const base::Optional<net::HttpRequestHeaders>* modified_headers_to_send =
-      &modified_headers;
-  if (modified_request_headers_) {
-    if (modified_headers)
-      modified_request_headers_->MergeFrom(*modified_headers);
-    modified_headers_to_send = &modified_request_headers_;
-  }
+  MergeRemovedHeaders(&removed_headers_, removed_headers);
+  MergeModifiedHeaders(&modified_headers_, modified_headers);
 
   if (!throttle_will_start_redirect_url_.is_empty()) {
     throttle_will_start_redirect_url_ = GURL();
     // This is a synthesized redirect, so no need to tell the URLLoader.
-    DCHECK(!modified_headers_to_send->has_value())
-        << "ThrottlingURLLoader doesn't support modifying headers for "
-           "synthesized requests.";
     StartNow();
     return;
   }
@@ -221,13 +249,12 @@ void ThrottlingURLLoader::FollowRedirect(
     base::Optional<GURL> new_url;
     if (!throttle_will_redirect_redirect_url_.is_empty())
       new_url = throttle_will_redirect_redirect_url_;
-    url_loader_->FollowRedirect(to_be_removed_request_headers_,
-                                *modified_headers_to_send, new_url);
+    url_loader_->FollowRedirect(removed_headers_, modified_headers_, new_url);
     throttle_will_redirect_redirect_url_ = GURL();
   }
 
-  to_be_removed_request_headers_.reset();
-  modified_request_headers_.reset();
+  removed_headers_.reset();
+  modified_headers_.reset();
 }
 
 void ThrottlingURLLoader::FollowRedirectForcingRestart() {
@@ -235,15 +262,15 @@ void ThrottlingURLLoader::FollowRedirectForcingRestart() {
   client_binding_.Close();
   CHECK(throttle_will_redirect_redirect_url_.is_empty());
 
-  if (to_be_removed_request_headers_) {
-    for (const std::string& key : *to_be_removed_request_headers_)
+  if (removed_headers_) {
+    for (const std::string& key : *removed_headers_)
       start_info_->url_request.headers.RemoveHeader(key);
-    to_be_removed_request_headers_.reset();
+    removed_headers_.reset();
   }
 
-  if (modified_request_headers_) {
-    start_info_->url_request.headers.MergeFrom(*modified_request_headers_);
-    modified_request_headers_.reset();
+  if (modified_headers_) {
+    start_info_->url_request.headers.MergeFrom(*modified_headers_);
+    modified_headers_.reset();
   }
 
   StartNow();
@@ -498,11 +525,11 @@ void ThrottlingURLLoader::OnReceiveRedirect(
       auto* throttle = entry.throttle.get();
       bool throttle_deferred = false;
       auto weak_ptr = weak_factory_.GetWeakPtr();
-      std::vector<std::string> to_be_removed_headers;
+      std::vector<std::string> removed_headers;
       net::HttpRequestHeaders modified_headers;
       net::RedirectInfo redirect_info_copy = redirect_info;
       throttle->WillRedirectRequest(&redirect_info_copy, response_head,
-                                    &throttle_deferred, &to_be_removed_headers,
+                                    &throttle_deferred, &removed_headers,
                                     &modified_headers);
       if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
           redirect_info_copy.new_url != redirect_info.new_url) {
@@ -525,23 +552,8 @@ void ThrottlingURLLoader::OnReceiveRedirect(
       if (!HandleThrottleResult(throttle, throttle_deferred, &deferred))
         return;
 
-      if (!to_be_removed_headers.empty()) {
-        if (to_be_removed_request_headers_) {
-          for (auto& header : to_be_removed_headers) {
-            if (!base::ContainsValue(*to_be_removed_request_headers_, header))
-              to_be_removed_request_headers_->push_back(std::move(header));
-          }
-        } else {
-          to_be_removed_request_headers_ = std::move(to_be_removed_headers);
-        }
-      }
-
-      if (!modified_headers.IsEmpty()) {
-        if (modified_request_headers_)
-          modified_request_headers_->MergeFrom(modified_headers);
-        else
-          modified_request_headers_ = std::move(modified_headers);
-      }
+      MergeRemovedHeaders(&removed_headers_, removed_headers);
+      MergeModifiedHeaders(&modified_headers_, modified_headers);
     }
 
     if (deferred) {

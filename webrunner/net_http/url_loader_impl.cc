@@ -194,7 +194,8 @@ void URLLoaderImpl::FollowRedirect(Callback callback) {
   }
 
   done_callback_ = std::move(callback);
-  net_request_->FollowDeferredRedirect(base::nullopt);
+  net_request_->FollowDeferredRedirect(base::nullopt /* removed_headers */,
+                                       base::nullopt /* modified_headers */);
 }
 
 void URLLoaderImpl::QueryStatus(QueryStatusCallback callback) {

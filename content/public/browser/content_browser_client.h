@@ -559,12 +559,12 @@ class CONTENT_EXPORT ContentBrowserClient {
       int* extra_load_flags) {}
 
   // Allow the embedder to modify headers for a redirect. If non-nullopt,
-  // |*modified_request_headers| are applied to the request headers after
-  // updating them for the redirect.
+  // |*modified_headers| is applied to the request headers after updating them
+  // for the redirect.
   virtual void NavigationRequestRedirected(
       int frame_tree_node_id,
       const GURL& url,
-      base::Optional<net::HttpRequestHeaders>* modified_request_headers) {}
+      base::Optional<net::HttpRequestHeaders>* modified_headers) {}
 
   // Allow the embedder to control if the given cookie can be read.
   // This is called on the IO thread.
