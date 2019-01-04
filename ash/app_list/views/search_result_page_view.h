@@ -56,6 +56,10 @@ class APP_LIST_EXPORT SearchResultPageView
 
   SearchResultBaseView* first_result_view() const { return first_result_view_; }
 
+  // Offset/add the size of the shadow border to the bounds
+  // for proper sizing/placement with shadow included.
+  gfx::Rect AddShadowBorderToBounds(const gfx::Rect& bounds) const;
+
  private:
   // Separator between SearchResultContainerView.
   class HorizontalSeparator;

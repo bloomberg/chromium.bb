@@ -60,7 +60,6 @@ constexpr int kSearchBoxBorderWidth = 4;
 constexpr SkColor kSearchBoxBorderColor =
     SkColorSetARGB(0x3D, 0xFF, 0xFF, 0xFF);
 
-constexpr int kSearchBoxBorderCornerRadiusSearchResult = 4;
 constexpr int kAssistantIconSize = 24;
 constexpr int kCloseIconSize = 24;
 constexpr int kSearchBoxFocusBorderCornerRadius = 28;
@@ -304,7 +303,7 @@ int SearchBoxView::GetSearchBoxBorderCornerRadiusForState(
     ash::AppListState state) const {
   if (state == ash::AppListState::kStateSearchResults &&
       !app_list_view_->is_in_drag()) {
-    return kSearchBoxBorderCornerRadiusSearchResult;
+    return search_box::kSearchBoxBorderCornerRadiusSearchResult;
   }
   return search_box::kSearchBoxBorderCornerRadius;
 }

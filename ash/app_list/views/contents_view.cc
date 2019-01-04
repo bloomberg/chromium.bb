@@ -569,7 +569,8 @@ void ContentsView::UpdateYPositionAndOpacity() {
               apps_container_view->GetSearchBoxExpectedBounds())));
 
   search_results_page_view()->SetBoundsRect(
-      apps_container_view->GetSearchBoxExpectedBounds());
+      search_results_page_view()->AddShadowBorderToBounds(
+          apps_container_view->GetSearchBoxExpectedBounds()));
 
   apps_container_view->UpdateYPositionAndOpacity();
 }

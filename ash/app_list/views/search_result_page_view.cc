@@ -24,6 +24,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/views/background.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -47,6 +48,9 @@ constexpr int kSeparatorThickness = 1;
 constexpr int kSearchBoxHeight = 56;
 
 constexpr SkColor kSeparatorColor = SkColorSetA(gfx::kGoogleGrey900, 0x24);
+
+// The shadow elevation value for the shadow of the expanded search box.
+constexpr int kSearchBoxSearchResultShadowElevation = 12;
 
 // A container view that ensures the card background and the shadow are painted
 // in the correct order.
@@ -82,8 +86,12 @@ class ZeroWidthVerticalScrollBar : public views::OverlayScrollBar {
 
 class SearchResultPageBackground : public views::Background {
  public:
-  SearchResultPageBackground(SkColor color, int corner_radius)
-      : color_(color), corner_radius_(corner_radius) {}
+  SearchResultPageBackground(SkColor color,
+                             int corner_radius,
+                             int shadow_inset_top)
+      : color_(color),
+        corner_radius_(corner_radius),
+        shadow_inset_top_(shadow_inset_top) {}
   ~SearchResultPageBackground() override {}
 
  private:
@@ -98,13 +106,14 @@ class SearchResultPageBackground : public views::Background {
     if (bounds.height() <= kSearchBoxHeight)
       return;
     // Draw a separator between SearchBoxView and SearchResultPageView.
-    bounds.set_y(kSearchBoxHeight);
+    bounds.set_y(kSearchBoxHeight + shadow_inset_top_);
     bounds.set_height(kSeparatorThickness);
     canvas->FillRect(bounds, kSeparatorColor);
   }
 
   const SkColor color_;
   const int corner_radius_;
+  const int shadow_inset_top_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultPageBackground);
 };
@@ -146,11 +155,21 @@ SearchResultPageView::SearchResultPageView() : contents_view_(new views::View) {
   contents_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(), 0));
 
+  // Create and set a shadow to be displayed as a border for this view.
+  auto shadow_border = std::make_unique<views::BubbleBorder>(
+      views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
+      SK_ColorWHITE);
+  shadow_border->SetCornerRadius(
+      search_box::kSearchBoxBorderCornerRadiusSearchResult);
+  shadow_border->set_md_shadow_elevation(kSearchBoxSearchResultShadowElevation);
+  SetBorder(std::move(shadow_border));
+
   // Hides this view behind the search box by using the same color and
   // background border corner radius. All child views' background should be
   // set transparent so that the rounded corner is not overwritten.
   SetBackground(std::make_unique<SearchResultPageBackground>(
-      kCardBackgroundColor, search_box::kSearchBoxBorderCornerRadius));
+      kCardBackgroundColor, search_box::kSearchBoxBorderCornerRadius,
+      border()->GetInsets().top()));
   views::ScrollView* const scroller = new views::ScrollView;
   // Leaves a placeholder area for the search box and the separator below it.
   scroller->SetBorder(views::CreateEmptyBorder(
@@ -306,14 +325,20 @@ void SearchResultPageView::OnHidden() {
 
 gfx::Rect SearchResultPageView::GetPageBoundsForState(
     ash::AppListState state) const {
+  gfx::Rect onscreen_bounds;
+
   if (state != ash::AppListState::kStateSearchResults) {
     // Hides this view behind the search box by using the same bounds.
-    return AppListPage::contents_view()->GetSearchBoxBoundsForState(state);
+    onscreen_bounds =
+        AppListPage::contents_view()->GetSearchBoxBoundsForState(state);
+  } else {
+    onscreen_bounds = AppListPage::GetSearchBoxBounds();
+    onscreen_bounds.Offset((onscreen_bounds.width() - kWidth) / 2, 0);
+    onscreen_bounds.set_size(GetPreferredSize());
   }
 
-  gfx::Rect onscreen_bounds(AppListPage::GetSearchBoxBounds());
-  onscreen_bounds.Offset((onscreen_bounds.width() - kWidth) / 2, 0);
-  onscreen_bounds.set_size(GetPreferredSize());
+  onscreen_bounds = AddShadowBorderToBounds(onscreen_bounds);
+
   return onscreen_bounds;
 }
 
@@ -337,7 +362,8 @@ void SearchResultPageView::OnAnimationUpdated(double progress,
       gfx::Tween::LinearIntValueBetween(
           progress,
           search_box->GetSearchBoxBorderCornerRadiusForState(from_state),
-          search_box->GetSearchBoxBorderCornerRadiusForState(to_state))));
+          search_box->GetSearchBoxBorderCornerRadiusForState(to_state)),
+      border()->GetInsets().top()));
 
   gfx::Rect onscreen_bounds(
       GetPageBoundsForState(ash::AppListState::kStateSearchResults));
@@ -364,6 +390,13 @@ views::View* SearchResultPageView::GetFirstFocusableView() {
 views::View* SearchResultPageView::GetLastFocusableView() {
   return GetFocusManager()->GetNextFocusableView(
       this, GetWidget(), true /* reverse */, false /* dont_loop */);
+}
+
+gfx::Rect SearchResultPageView::AddShadowBorderToBounds(
+    const gfx::Rect& bounds) const {
+  gfx::Rect new_bounds(bounds);
+  new_bounds.Inset(-border()->GetInsets());
+  return new_bounds;
 }
 
 }  // namespace app_list

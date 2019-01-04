@@ -42,7 +42,7 @@ const SkColor kFolderTitleHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
 const SkColor kFolderShadowColor = SkColorSetRGB(0xBF, 0xBF, 0xBF);
 const float kFolderBubbleOpacity = 0.12f;
 
-const SkColor kCardBackgroundColor = SkColorSetRGB(0xFA, 0xFA, 0xFC);
+const SkColor kCardBackgroundColor = SK_ColorWHITE;
 
 // Duration in milliseconds for page transition.
 const int kPageTransitionDurationInMs = 250;
