@@ -2206,7 +2206,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, StartToCommitMetrics) {
   }
 }
 
-// Verify that the TimeToReadyToCommit metrics are correctly logged for
+// Verify that the TimeToReadyToCommit2 metrics are correctly logged for
 // SameProcess vs CrossProcess as well as MainFrame vs Subframe cases.
 IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
                        TimeToReadyToCommitMetrics) {
@@ -2220,13 +2220,13 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
     EXPECT_TRUE(NavigateToURL(shell(), url));
 
     base::HistogramTester::CountsMap expected_counts = {
-        {"Navigation.TimeToReadyToCommit.MainFrame", 1},
-        {"Navigation.TimeToReadyToCommit.MainFrame.NewNavigation", 1},
-        {"Navigation.TimeToReadyToCommit.NewNavigation", 1},
-        {"Navigation.TimeToReadyToCommit.SameProcess", 1},
-        {"Navigation.TimeToReadyToCommit.SameProcess.NewNavigation", 1}};
+        {"Navigation.TimeToReadyToCommit2.MainFrame", 1},
+        {"Navigation.TimeToReadyToCommit2.MainFrame.NewNavigation", 1},
+        {"Navigation.TimeToReadyToCommit2.NewNavigation", 1},
+        {"Navigation.TimeToReadyToCommit2.SameProcess", 1},
+        {"Navigation.TimeToReadyToCommit2.SameProcess.NewNavigation", 1}};
     EXPECT_THAT(
-        histograms.GetTotalCountsForPrefix("Navigation.TimeToReadyToCommit."),
+        histograms.GetTotalCountsForPrefix("Navigation.TimeToReadyToCommit2."),
         testing::ContainerEq(expected_counts));
   }
 
@@ -2237,13 +2237,13 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
     EXPECT_TRUE(NavigateToURL(shell(), url));
 
     base::HistogramTester::CountsMap expected_counts = {
-        {"Navigation.TimeToReadyToCommit.MainFrame", 1},
-        {"Navigation.TimeToReadyToCommit.MainFrame.NewNavigation", 1},
-        {"Navigation.TimeToReadyToCommit.NewNavigation", 1},
-        {"Navigation.TimeToReadyToCommit.CrossProcess", 1},
-        {"Navigation.TimeToReadyToCommit.CrossProcess.NewNavigation", 1}};
+        {"Navigation.TimeToReadyToCommit2.MainFrame", 1},
+        {"Navigation.TimeToReadyToCommit2.MainFrame.NewNavigation", 1},
+        {"Navigation.TimeToReadyToCommit2.NewNavigation", 1},
+        {"Navigation.TimeToReadyToCommit2.CrossProcess", 1},
+        {"Navigation.TimeToReadyToCommit2.CrossProcess.NewNavigation", 1}};
     EXPECT_THAT(
-        histograms.GetTotalCountsForPrefix("Navigation.TimeToReadyToCommit."),
+        histograms.GetTotalCountsForPrefix("Navigation.TimeToReadyToCommit2."),
         testing::ContainerEq(expected_counts));
   }
 
@@ -2263,17 +2263,17 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
     std::string navigation_type =
         AreAllSitesIsolatedForTesting() ? "CrossProcess" : "SameProcess";
     base::HistogramTester::CountsMap expected_counts = {
-        {"Navigation.TimeToReadyToCommit.Subframe", 1},
-        {"Navigation.TimeToReadyToCommit.Subframe.NewNavigation", 1},
-        {"Navigation.TimeToReadyToCommit.NewNavigation", 1},
-        {base::StringPrintf("Navigation.TimeToReadyToCommit.%s",
+        {"Navigation.TimeToReadyToCommit2.Subframe", 1},
+        {"Navigation.TimeToReadyToCommit2.Subframe.NewNavigation", 1},
+        {"Navigation.TimeToReadyToCommit2.NewNavigation", 1},
+        {base::StringPrintf("Navigation.TimeToReadyToCommit2.%s",
                             navigation_type.c_str()),
          1},
-        {base::StringPrintf("Navigation.TimeToReadyToCommit.%s.NewNavigation",
+        {base::StringPrintf("Navigation.TimeToReadyToCommit2.%s.NewNavigation",
                             navigation_type.c_str()),
          1}};
     EXPECT_THAT(
-        histograms.GetTotalCountsForPrefix("Navigation.TimeToReadyToCommit."),
+        histograms.GetTotalCountsForPrefix("Navigation.TimeToReadyToCommit2."),
         testing::ContainerEq(expected_counts));
   }
 }
