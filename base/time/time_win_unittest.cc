@@ -66,15 +66,23 @@ unsigned __stdcall RolloverTestThreadMain(void* param) {
   return 0;
 }
 
-// Measure the performance of __rdtsc so that we can compare it to the overhead
-// of QueryPerformanceCounter. A hard-coded frequency is used because we don't
-// care about the accuracy of the results, we just need to do the work.
-// The amount of work is not exactly the same as in TimeTicks::Now (some steps
-// are skipped) but that doesn't seem to materially affect the results.
+#if defined(_M_ARM64) && defined(__clang__)
+#define ReadCycleCounter() _ReadStatusReg(ARM64_PMCCNTR_EL0)
+#else
+#define ReadCycleCounter() __rdtsc()
+#endif
+
+// Measure the performance of the CPU cycle counter so that we can compare it to
+// the overhead of QueryPerformanceCounter. A hard-coded frequency is used
+// because we don't care about the accuracy of the results, we just need to do
+// the work. The amount of work is not exactly the same as in TimeTicks::Now
+// (some steps are skipped) but that doesn't seem to materially affect the
+// results.
 TimeTicks GetTSC() {
-  // Using a fake QPC frequency for test purposes.
-  return TimeTicks() + TimeDelta::FromMicroseconds(
-                           __rdtsc() * Time::kMicrosecondsPerSecond / 10000000);
+  // Using a fake cycle counter frequency for test purposes.
+  return TimeTicks() +
+         TimeDelta::FromMicroseconds(ReadCycleCounter() *
+                                     Time::kMicrosecondsPerSecond / 10000000);
 }
 
 }  // namespace
@@ -202,7 +210,7 @@ TEST(TimeTicks, TimerPerformance) {
   std::vector<TestCase> cases;
   cases.push_back({reinterpret_cast<TestFunc>(&Time::Now), "Time::Now"});
   cases.push_back({&TimeTicks::Now, "TimeTicks::Now"});
-  cases.push_back({&GetTSC, "rdtsc"});
+  cases.push_back({&GetTSC, "CPUCycleCounter"});
 
   if (ThreadTicks::IsSupported()) {
     ThreadTicks::WaitUntilInitialized();
