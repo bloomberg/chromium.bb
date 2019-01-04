@@ -5,6 +5,7 @@
 #include "components/autofill/content/renderer/form_autofill_util.h"
 
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -270,6 +271,9 @@ TEST_F(FormAutofillUtilsTest, InferLabelSourceTest) {
 TEST_F(FormAutofillUtilsTest, InferButtonTitleForFormTest) {
   const char kHtml[] =
       "<form id='target'>"
+      "  <input type='button' value='Clear field'>"
+      "  <input type='button' value='Clear field'>"
+      "  <input type='button' value='Clear field'>"
       "  <input type='button' value='\n Show\t password '>"
       "  <button>Sign Up</button>"
       "  <button type='button'>Register</button>"
@@ -290,6 +294,8 @@ TEST_F(FormAutofillUtilsTest, InferButtonTitleForFormTest) {
   autofill::ButtonTitleList actual =
       autofill::form_util::InferButtonTitlesForTesting(form_target);
   autofill::ButtonTitleList expected = {
+      {base::UTF8ToUTF16("Clear field"),
+       autofill::ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE},
       {base::UTF8ToUTF16("Show password"),
        autofill::ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE},
       {base::UTF8ToUTF16("Sign Up"),
@@ -301,6 +307,37 @@ TEST_F(FormAutofillUtilsTest, InferButtonTitleForFormTest) {
       {base::UTF8ToUTF16("Join"), autofill::ButtonTitleType::DIV},
       {base::UTF8ToUTF16("Start"), autofill::ButtonTitleType::SPAN}};
   EXPECT_EQ(expected, actual);
+}
+
+TEST_F(FormAutofillUtilsTest, InferButtonTitleForFormTest_TooLongTitle) {
+  std::string title;
+  for (int i = 0; i < 300; ++i)
+    title += "a";
+  std::string kFormHtml = "<form id='target'>";
+  for (int i = 0; i < 10; i++) {
+    std::string kFieldHtml =
+        "<input type='button' value='" + base::IntToString(i) + title + "'>";
+    kFormHtml += kFieldHtml;
+  }
+  kFormHtml += "</form>";
+
+  LoadHTML(kFormHtml.c_str());
+  WebLocalFrame* web_frame = GetMainFrame();
+  ASSERT_NE(nullptr, web_frame);
+  const WebElement& target = web_frame->GetDocument().GetElementById("target");
+  ASSERT_FALSE(target.IsNull());
+  const WebFormElement& form_target = target.ToConst<WebFormElement>();
+  ASSERT_FALSE(form_target.IsNull());
+
+  autofill::ButtonTitleList actual =
+      autofill::form_util::InferButtonTitlesForTesting(form_target);
+
+  int total_length = 0;
+  for (auto title : actual) {
+    EXPECT_GE(30u, title.first.length());
+    total_length += title.first.length();
+  }
+  EXPECT_EQ(200, total_length);
 }
 
 TEST_F(FormAutofillUtilsTest, InferButtonTitle_Formless) {

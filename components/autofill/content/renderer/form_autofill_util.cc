@@ -372,24 +372,15 @@ bool InferLabelFromSibling(const WebFormControlElement& element,
   return false;
 }
 
-// Helper function to add a button's |title| to the |list| and updates the
-// |total_length| of stored titles. Returns true iff the list still have free
-// capacity.
-bool AddButtonTitleToList(base::string16 title,
+// Helper function to add a button's |title| to the |list|.
+void AddButtonTitleToList(base::string16 title,
                           ButtonTitleType button_type,
-                          ButtonTitleList* list,
-                          int* total_length) {
-  if (*total_length >= kMaxLengthForAllButtonTitles)
-    return false;
+                          ButtonTitleList* list) {
   title = base::CollapseWhitespace(std::move(title), false);
   if (title.empty())
-    return true;
-  TruncateString(&title,
-                 std::min(kMaxLengthForSingleButtonTitle,
-                          kMaxLengthForAllButtonTitles - *total_length));
-  *total_length += title.length();
+    return;
+  TruncateString(&title, kMaxLengthForSingleButtonTitle);
   list->push_back(std::make_pair(std::move(title), button_type));
-  return *total_length < kMaxLengthForAllButtonTitles;
 }
 
 // Returns true iff |attribute| contains one of |kButtonFeatures|.
@@ -421,13 +412,9 @@ void FindElementsWithButtonFeatures(const WebElementCollection& elements,
                                     bool only_formless_elements,
                                     ButtonTitleType button_type,
                                     bool extract_value_attribute,
-                                    ButtonTitleList* list,
-                                    int* total_length) {
+                                    ButtonTitleList* list) {
   static base::NoDestructor<WebString> kValue("value");
-  if (*total_length >= kMaxLengthForAllButtonTitles)
-    return;
-  for (WebElement item = elements.FirstItem();
-       !item.IsNull() && *total_length < kMaxLengthForAllButtonTitles;
+  for (WebElement item = elements.FirstItem(); !item.IsNull();
        item = elements.NextItem()) {
     if (!ElementAttributesHasButtonFeature(item))
       continue;
@@ -443,10 +430,7 @@ void FindElementsWithButtonFeatures(const WebElementCollection& elements,
             : item.TextContent().Utf16();
     if (extract_value_attribute && title.empty())
       title = item.TextContent().Utf16();
-    if (!AddButtonTitleToList(std::move(title), button_type, list,
-                              total_length)) {
-      break;
-    }
+    AddButtonTitleToList(std::move(title), button_type, list);
   }
 }
 
@@ -873,6 +857,32 @@ bool InferLabelForElement(const WebFormControlElement& element,
   return false;
 }
 
+// Removes the duplicate titles and limits totals length. The order of the list
+// is preserved as first elements are more reliable features than following
+// ones.
+void RemoveDuplicatesAndLimitTotalLength(ButtonTitleList* result) {
+  std::set<ButtonTitleInfo> already_added;
+  ButtonTitleList unique_titles;
+  int total_length = 0;
+  for (auto title : *result) {
+    if (already_added.find(title) != already_added.end())
+      continue;
+    already_added.insert(title);
+
+    total_length += title.first.length();
+    if (total_length > kMaxLengthForAllButtonTitles) {
+      int new_length =
+          title.first.length() - (total_length - kMaxLengthForAllButtonTitles);
+      TruncateString(&title.first, new_length);
+    }
+    unique_titles.push_back(std::move(title));
+
+    if (total_length >= kMaxLengthForAllButtonTitles)
+      break;
+  }
+  *result = std::move(unique_titles);
+}
+
 // Infer button titles enclosed by |root_element|. |root_element| may be a
 // <form> or a <body> if there are <input>s that are not enclosed in a <form>
 // element.
@@ -908,18 +918,15 @@ ButtonTitleList InferButtonTitlesForForm(const WebElement& root_element) {
     if (!is_submit_input && !is_button_input)
       continue;
     base::string16 title = control_element.Value().Utf16();
-    if (!AddButtonTitleToList(std::move(title),
-                              is_submit_input
-                                  ? ButtonTitleType::INPUT_ELEMENT_SUBMIT_TYPE
-                                  : ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE,
-                              &result, &total_length)) {
-      break;
-    }
+    AddButtonTitleToList(std::move(title),
+                         is_submit_input
+                             ? ButtonTitleType::INPUT_ELEMENT_SUBMIT_TYPE
+                             : ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE,
+                         &result);
   }
   WebElementCollection buttons =
       root_element.GetElementsByHTMLTagName(*kButton);
-  for (WebElement item = buttons.FirstItem();
-       !item.IsNull() && total_length < kMaxLengthForAllButtonTitles;
+  for (WebElement item = buttons.FirstItem(); !item.IsNull();
        item = buttons.NextItem()) {
     WebString type_attribute = item.GetAttribute("type");
     if (!type_attribute.IsNull() && type_attribute != *kButton &&
@@ -928,30 +935,28 @@ ButtonTitleList InferButtonTitlesForForm(const WebElement& root_element) {
       continue;
     }
     if (only_formless_elements &&
-        IsElementInsideFormOrFieldSet(item, false /* consider_fieldset_tags */))
+        IsElementInsideFormOrFieldSet(item,
+                                      false /* consider_fieldset_tags */)) {
       continue;
+    }
     bool is_submit_type = type_attribute.IsNull() || type_attribute == *kSubmit;
     base::string16 title = item.TextContent().Utf16();
-    if (!AddButtonTitleToList(std::move(title),
-                              is_submit_type
-                                  ? ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE
-                                  : ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE,
-                              &result, &total_length)) {
-      break;
-    }
+    AddButtonTitleToList(std::move(title),
+                         is_submit_type
+                             ? ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE
+                             : ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE,
+                         &result);
   }
   FindElementsWithButtonFeatures(
       root_element.GetElementsByHTMLTagName(*kA), only_formless_elements,
-      ButtonTitleType::HYPERLINK, true /* extract_value_attribute */, &result,
-      &total_length);
+      ButtonTitleType::HYPERLINK, true /* extract_value_attribute */, &result);
   FindElementsWithButtonFeatures(root_element.GetElementsByHTMLTagName(*kDiv),
                                  only_formless_elements, ButtonTitleType::DIV,
-                                 false /* extract_value_attribute */, &result,
-                                 &total_length);
+                                 false /* extract_value_attribute */, &result);
   FindElementsWithButtonFeatures(root_element.GetElementsByHTMLTagName(*kSpan),
                                  only_formless_elements, ButtonTitleType::SPAN,
-                                 false /* extract_value_attribute */, &result,
-                                 &total_length);
+                                 false /* extract_value_attribute */, &result);
+  RemoveDuplicatesAndLimitTotalLength(&result);
   return result;
 }
 
