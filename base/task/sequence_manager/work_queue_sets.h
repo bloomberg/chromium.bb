@@ -5,8 +5,8 @@
 #ifndef BASE_TASK_SEQUENCE_MANAGER_WORK_QUEUE_SETS_H_
 #define BASE_TASK_SEQUENCE_MANAGER_WORK_QUEUE_SETS_H_
 
+#include <array>
 #include <map>
-#include <vector>
 
 #include "base/base_export.h"
 #include "base/logging.h"
@@ -28,7 +28,7 @@ namespace internal {
 // values are kept in sorted order.
 class BASE_EXPORT WorkQueueSets {
  public:
-  WorkQueueSets(size_t num_sets, const char* name);
+  explicit WorkQueueSets(const char* name);
   ~WorkQueueSets();
 
   // O(log num queues)
@@ -92,7 +92,8 @@ class BASE_EXPORT WorkQueueSets {
 
   // For each set |work_queue_heaps_| has a queue of WorkQueue ordered by the
   // oldest task in each WorkQueue.
-  std::vector<base::internal::IntrusiveHeap<OldestTaskEnqueueOrder>>
+  std::array<base::internal::IntrusiveHeap<OldestTaskEnqueueOrder>,
+             TaskQueue::kQueuePriorityCount>
       work_queue_heaps_;
   const char* const name_;
 

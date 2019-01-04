@@ -47,7 +47,7 @@ class WorkQueueTest : public testing::Test {
 
     work_queue_.reset(new WorkQueue(task_queue_.get(), "test",
                                     WorkQueue::QueueType::kImmediate));
-    work_queue_sets_.reset(new WorkQueueSets(1, "test"));
+    work_queue_sets_.reset(new WorkQueueSets("test"));
     work_queue_sets_->AddQueue(work_queue_.get(), 0);
   }
 

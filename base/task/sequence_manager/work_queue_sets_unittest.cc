@@ -19,9 +19,7 @@ namespace internal {
 
 class WorkQueueSetsTest : public testing::Test {
  public:
-  void SetUp() override {
-    work_queue_sets_.reset(new WorkQueueSets(kNumSets, "test"));
-  }
+  void SetUp() override { work_queue_sets_.reset(new WorkQueueSets("test")); }
 
   void TearDown() override {
     for (std::unique_ptr<WorkQueue>& work_queue : work_queues_) {
@@ -31,10 +29,6 @@ class WorkQueueSetsTest : public testing::Test {
   }
 
  protected:
-  enum {
-    kNumSets = 5  // An arbitary choice.
-  };
-
   WorkQueue* NewTaskQueue(const char* queue_name) {
     WorkQueue* queue =
         new WorkQueue(nullptr, "test", WorkQueue::QueueType::kImmediate);

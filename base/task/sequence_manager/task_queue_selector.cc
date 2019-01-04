@@ -20,8 +20,8 @@ namespace internal {
 TaskQueueSelector::TaskQueueSelector(
     scoped_refptr<AssociatedThreadId> associated_thread)
     : associated_thread_(std::move(associated_thread)),
-      delayed_work_queue_sets_(TaskQueue::kQueuePriorityCount, "delayed"),
-      immediate_work_queue_sets_(TaskQueue::kQueuePriorityCount, "immediate") {}
+      delayed_work_queue_sets_("delayed"),
+      immediate_work_queue_sets_("immediate") {}
 
 TaskQueueSelector::~TaskQueueSelector() = default;
 

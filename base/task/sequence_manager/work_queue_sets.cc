@@ -10,8 +10,7 @@ namespace base {
 namespace sequence_manager {
 namespace internal {
 
-WorkQueueSets::WorkQueueSets(size_t num_sets, const char* name)
-    : work_queue_heaps_(num_sets), name_(name) {}
+WorkQueueSets::WorkQueueSets(const char* name) : name_(name) {}
 
 WorkQueueSets::~WorkQueueSets() = default;
 
