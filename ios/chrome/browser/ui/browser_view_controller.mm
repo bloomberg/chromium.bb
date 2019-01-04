@@ -2555,15 +2555,20 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 }
 
 - (CGRect)ntpFrameForWebState:(web::WebState*)webState {
-  UIEdgeInsets headerInset = UIEdgeInsetsMake(
-      [self nativeContentHeaderHeightForWebState:webState], 0, 0, 0);
-  return UIEdgeInsetsInsetRect(self.contentArea.bounds, headerInset);
+  NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
+  if (!NTPHelper || !NTPHelper->IsActive())
+    return CGRectZero;
+  // NTP expects to be laid out behind the bottom toolbar.  It uses
+  // |contentInset| to push content above the toolbar.
+  UIEdgeInsets viewportInsets = [self viewportInsetsForView:self.contentArea];
+  viewportInsets.bottom = 0.0;
+  return UIEdgeInsetsInsetRect(self.contentArea.bounds, viewportInsets);
 }
 
 - (CGRect)visibleFrameForTab:(Tab*)tab {
-  UIEdgeInsets headerInset = UIEdgeInsetsMake(
-      [self nativeContentHeaderHeightForWebState:tab.webState], 0, 0, 0);
-  return UIEdgeInsetsInsetRect([self viewForTab:tab].bounds, headerInset);
+  UIView* tabView = [self viewForTab:tab];
+  return UIEdgeInsetsInsetRect(tabView.bounds,
+                               [self viewportInsetsForView:tabView]);
 }
 
 - (void)setFramesForHeaders:(NSArray<HeaderDefinition*>*)headers
@@ -3114,19 +3119,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 - (CGFloat)downloadManagerOverlayYOffsetForTab:(Tab*)tab {
   return CGRectGetMaxY([self visibleFrameForTab:tab]) -
          CGRectGetHeight(_downloadManagerCoordinator.viewController.view.frame);
-}
-
-// Returns a vertical voice search bar offset relative to the tab content.
-- (CGFloat)voiceSearchOverlayYOffsetForTab:(Tab*)tab {
-  if (tab != self.tabModel.currentTab) {
-    // There is no UI representation for non-current tabs or there is
-    // no visible voice search. Return offset outside of tab.
-    return CGRectGetMaxY(self.view.frame);
-  } else {
-    // The voice search bar on iPhone is displayed at the bottom of a tab.
-    CGRect visibleFrame = [self visibleFrameForTab:self.tabModel.currentTab];
-    return CGRectGetMaxY(visibleFrame);
-  }
 }
 
 #pragma mark - PasswordControllerDelegate methods
@@ -3720,15 +3712,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   return nativeController;
 }
 
-- (CGFloat)nativeContentHeaderHeightForWebState:(web::WebState*)webState {
-  if (IsVisibleURLNewTabPage(webState) && ![self canShowTabStrip]) {
-    if (self.usesFullscreenContainer)
-      return 0;
-    // Also subtract the top safe area so the view will appear as full screen.
-    // TODO(crbug.com/826369) Remove this once NTP is out of native content.
-    return -self.view.safeAreaInsets.top;
-  }
-  return self.headerHeight;
+- (UIEdgeInsets)nativeContentInsetForWebState:(web::WebState*)webState {
+  return [self viewportInsetsForView:webState->GetView()];
 }
 
 #pragma mark - DialogPresenterDelegate methods
@@ -3747,7 +3732,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
 - (CGFloat)collapsedTopToolbarHeight {
   if (base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen) &&
-      IsVisibleURLNewTabPage(self.currentWebState)) {
+      IsVisibleURLNewTabPage(self.currentWebState) && ![self canShowTabStrip]) {
+    // When the NTP is displayed in a horizontally compact environment, the top
+    // toolbars are hidden.
     return 0;
   }
   CGFloat collapsedToolbarHeight =
@@ -3763,7 +3750,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
 - (CGFloat)expandedTopToolbarHeight {
   if (base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen) &&
-      IsVisibleURLNewTabPage(self.currentWebState)) {
+      IsVisibleURLNewTabPage(self.currentWebState) && ![self canShowTabStrip]) {
+    // When the NTP is displayed in a horizontally compact environment, the top
+    // toolbars are hidden.
     return 0;
   }
   return [self primaryToolbarHeightWithInset] +
@@ -3772,10 +3761,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 }
 
 - (CGFloat)bottomToolbarHeight {
-  if (base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen) &&
-      IsVisibleURLNewTabPage(self.currentWebState)) {
-    return 0;
-  }
   return [self secondaryToolbarHeightWithInset];
 }
 
@@ -3965,6 +3950,23 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
   UIView* topHeader = headers[0].view;
   return -(topHeader.frame.origin.y - self.headerOffset);
+}
+
+// Returns the insets into |view| that result in the visible viewport.
+- (UIEdgeInsets)viewportInsetsForView:(UIView*)view {
+  DCHECK(view);
+  UIEdgeInsets viewportInsets = FullscreenControllerFactory::GetInstance()
+                                    ->GetForBrowserState(_browserState)
+                                    ->GetCurrentViewportInsets();
+  // TODO(crbug.com/917548): Use BVC for viewport inset coordinate space rather
+  // than the content area.
+  CGRect viewportFrame = [view
+      convertRect:UIEdgeInsetsInsetRect(self.contentArea.bounds, viewportInsets)
+         fromView:self.contentArea];
+  return UIEdgeInsetsMake(
+      CGRectGetMinY(viewportFrame), CGRectGetMinX(viewportFrame),
+      CGRectGetMaxY(view.bounds) - CGRectGetMaxY(viewportFrame),
+      CGRectGetMaxX(view.bounds) - CGRectGetMaxX(viewportFrame));
 }
 
 #pragma mark - KeyCommandsPlumbing
@@ -5113,12 +5115,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
 - (BOOL)preloadHasNativeControllerForURL:(const GURL&)url {
   return [self hasControllerForURL:url];
-}
-
-- (CGFloat)
-nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
-                                     webState:(web::WebState*)webState {
-  return [self nativeContentHeaderHeightForWebState:webState];
 }
 
 #pragma mark - NetExportTabHelperDelegate

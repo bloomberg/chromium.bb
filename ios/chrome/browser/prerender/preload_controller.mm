@@ -348,9 +348,10 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   return nil;
 }
 
-- (CGFloat)nativeContentHeaderHeightForWebState:(web::WebState*)webState {
-  return [delegate_ nativeContentHeaderHeightForPreloadController:self
-                                                         webState:webState];
+- (UIEdgeInsets)nativeContentInsetForWebState:(web::WebState*)webState {
+  // |-controllerForURL:webState:| short-circuits the native controller
+  // presentation flow, so the insets are never used.
+  return UIEdgeInsetsZero;
 }
 
 #pragma mark -
