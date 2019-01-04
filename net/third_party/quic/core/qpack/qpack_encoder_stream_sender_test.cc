@@ -20,7 +20,7 @@ class MockSenderDelegate : public QpackEncoderStreamSender::Delegate {
  public:
   ~MockSenderDelegate() override = default;
 
-  MOCK_METHOD1(Write, void(QuicStringPiece));
+  MOCK_METHOD1(Write, void(QuicStringPiece data));
 };
 
 class QpackEncoderStreamSenderTest : public QuicTest {
