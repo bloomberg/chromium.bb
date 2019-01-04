@@ -43,11 +43,11 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
     private IncognitoStateProvider mIncognitoStateProvider;
 
     private @Nullable IncognitoToggleTabLayout mIncognitoToggleTabLayout;
-    private @Nullable ToggleTabStackButton mToggleTabStackButton;
 
-    // The following two buttons are not used when Duet is enabled.
+    // The following three buttons are not used when Duet is enabled.
     private @Nullable NewTabButton mNewTabButton;
     private @Nullable MenuButton mMenuButton;
+    private @Nullable ToggleTabStackButton mToggleTabStackButton;
 
     private int mPrimaryColor;
     private boolean mUseLightIcons;
@@ -74,7 +74,16 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
 
         if (isBottomToolbarEnabled) {
             UiUtils.removeViewFromParent(mNewTabButton);
+            mNewTabButton.destroy();
+            mNewTabButton = null;
+
             UiUtils.removeViewFromParent(mMenuButton);
+            mMenuButton.destroy();
+            mMenuButton = null;
+
+            UiUtils.removeViewFromParent(mToggleTabStackButton);
+            mToggleTabStackButton.destroy();
+            mToggleTabStackButton = null;
         } else {
             // TODO(twellington): Try to make NewTabButton responsible for handling its own clicks.
             //                    TabSwitcherBottomToolbarCoordinator also uses NewTabButton and
@@ -86,9 +95,7 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
 
         if (usingHorizontalTabSwitcher()
                 && PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
-            inflateIncognitoToggle();
-        } else if (isBottomToolbarEnabled) {
-            removeToggleTabStackButton();
+            updateTabSwitchingElements(true);
         }
     }
 
@@ -246,11 +253,9 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
     void onAccessibilityStatusChanged(boolean enabled) {
         if (mNewTabButton != null) mNewTabButton.onAccessibilityStatusChanged();
 
-        if (mIncognitoToggleTabLayout != null) {
-            mIncognitoToggleTabLayout.setVisibility(enabled ? View.GONE : View.VISIBLE);
-        } else if (usingHorizontalTabSwitcher()
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
                 && PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
-            inflateIncognitoToggle();
+            updateTabSwitchingElements(!enabled);
         }
 
         updatePrimaryColorAndTint();
@@ -316,15 +321,23 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         if (mTabModelSelector != null) {
             mIncognitoToggleTabLayout.setTabModelSelector(mTabModelSelector);
         }
-
-        removeToggleTabStackButton();
     }
 
-    private void removeToggleTabStackButton() {
-        if (mToggleTabStackButton == null) return;
+    private void setIncognitoToggleVisibility(boolean showIncognitoToggle) {
+        if (mIncognitoToggleTabLayout == null) {
+            if (showIncognitoToggle) inflateIncognitoToggle();
+        } else {
+            mIncognitoToggleTabLayout.setVisibility(showIncognitoToggle ? View.VISIBLE : View.GONE);
+        }
+    }
 
-        UiUtils.removeViewFromParent(mToggleTabStackButton);
-        mToggleTabStackButton.destroy();
-        mToggleTabStackButton = null;
+    private void setToggleTabStackButtonVisibility(boolean showToggleTabStackButton) {
+        if (mToggleTabStackButton == null) return;
+        mToggleTabStackButton.setVisibility(showToggleTabStackButton ? View.VISIBLE : View.GONE);
+    }
+
+    private void updateTabSwitchingElements(boolean showIncognitoToggle) {
+        setIncognitoToggleVisibility(showIncognitoToggle);
+        setToggleTabStackButtonVisibility(!showIncognitoToggle);
     }
 }
