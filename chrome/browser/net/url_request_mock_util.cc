@@ -47,36 +47,4 @@ void SetUrlRequestMocksEnabled(bool enabled) {
   }
 }
 
-bool WriteFileToURLLoader(net::EmbeddedTestServer* test_server,
-                          content::URLLoaderInterceptor::RequestParams* params,
-                          std::string path) {
-  base::ScopedAllowBlockingForTesting allow_blocking;
-
-  if (path[0] == '/')
-    path.erase(0, 1);
-
-  if (path == "favicon.ico")
-    return false;
-
-  base::FilePath file_path;
-  base::PathService::Get(chrome::DIR_TEST_DATA, &file_path);
-  file_path = file_path.AppendASCII(path);
-
-  std::string contents;
-  const bool result = base::ReadFileToString(file_path, &contents);
-  EXPECT_TRUE(result);
-
-  if (path == "mock-link-doctor.json") {
-    GURL url = test_server->GetURL("mock.http", "/title2.html");
-
-    std::string placeholder = "http://mock.http/title2.html";
-    contents.replace(contents.find(placeholder), placeholder.length(),
-                     url.spec());
-  }
-
-  content::URLLoaderInterceptor::WriteResponse(
-      net::URLRequestTestJob::test_headers(), contents, params->client.get());
-  return true;
-}
-
 }  // namespace chrome_browser_net
