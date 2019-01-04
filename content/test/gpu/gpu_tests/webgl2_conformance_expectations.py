@@ -206,6 +206,30 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', ('nvidia', 0x1cb3), 'opengl'], bug=822733)
 
     # Win / AMD
+
+    # Recently many tests have become flaky on this configuration, returning
+    # (72, 72, 72) when reading back pixels, rather than the expected values.
+    # Going to try to skip the individual failing tests, rather than adding a
+    # wildcard flaky suppression for all of the tests.
+    self.Skip('conformance2/renderbuffers/' +
+              'multisampled-renderbuffer-initialization.html',
+              ['win', 'amd', 'd3d11'], bug=844483)
+    self.Skip('conformance2/textures/canvas/tex-2d-rgb9_e5-rgb-float.html',
+              ['win', 'amd', 'd3d11'], bug=844483)
+    self.Skip('conformance2/textures/canvas/tex-2d-rgb9_e5-rgb-half_float.html',
+              ['win', 'amd', 'd3d11'], bug=844483)
+    self.Skip('conformance2/textures/canvas/tex-3d-rg8-rg-unsigned_byte.html',
+              ['win', 'amd', 'd3d11'], bug=844483)
+    self.Skip('conformance2/textures/image_bitmap_from_canvas/' +
+              'tex-2d-rgb9_e5-rgb-float.html',
+              ['win', 'amd', 'd3d11'], bug=844483)
+    self.Skip('conformance2/textures/image_bitmap_from_canvas/' +
+              'tex-2d-rgb9_e5-rgb-half_float.html',
+              ['win', 'amd', 'd3d11'], bug=844483)
+    self.Skip('deqp/functional/gles3/texturefiltering/' +
+              '2d_array_combinations_05.html',
+              ['win', 'amd', 'd3d11'], bug=844483)
+
     self.Fail('conformance2/rendering/blitframebuffer-stencil-only.html',
         ['win', 'amd', 'd3d11'], bug=483282) # owner:jmadill
 
