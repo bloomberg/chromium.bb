@@ -949,10 +949,19 @@ void LayoutObject::MarkContainerChainForLayout(bool schedule_relayout,
     DCHECK(!object->IsSetNeedsLayoutForbidden());
 #endif
 
+    if (object->HasLayer() &&
+        ToLayoutBoxModelObject(object)->Layer()->IsSelfPaintingLayer())
+      ToLayoutBoxModelObject(object)->Layer()->SetNeedsVisualOverflowRecalc();
+
     if (layouter) {
       layouter->RecordObjectMarkedForLayout(object);
-      if (object == layouter->Root())
+
+      if (object == layouter->Root()) {
+        if (auto* painting_layer = PaintingLayer())
+          painting_layer->SetNeedsVisualOverflowRecalc();
+
         return;
+      }
     }
 
     last = object;

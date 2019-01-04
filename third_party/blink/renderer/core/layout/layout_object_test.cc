@@ -827,6 +827,31 @@ TEST_F(LayoutObjectTest, DistortingVisualEffectsUnaliases) {
   EXPECT_TRUE(object->HasNonZeroEffectiveOpacity());
 }
 
+TEST_F(LayoutObjectTest, UpdateVisualRectAfterAncestorLayout) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+        width: 50px;
+        height: 0;
+        position: relative;
+      }
+    </style>
+    <div id=ancestor style="width: 100px; height: 100px; position: relative">
+      <div>
+        <div id=target></div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* target = GetDocument().getElementById("target");
+  target->setAttribute(html_names::kStyleAttr, "height: 300px");
+  GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  const auto* container = GetLayoutObjectByElementId("ancestor");
+  EXPECT_EQ(LayoutRect(0, 0, 100, 300),
+            ToLayoutBox(container)->VisualOverflowRect());
+}
+
 class LayoutObjectSimTest : public SimTest {
  public:
   bool DocumentHasTouchActionRegion(const EventHandlerRegistry& registry) {
