@@ -18,6 +18,9 @@ using DurationBehavior = cc::ScrollOffsetAnimationCurve::DurationBehavior;
 const double kConstantDuration = 9.0;
 const double kDurationDivisor = 60.0;
 
+// 3 seconds limit for long-distance programmatic scrolls
+const double kDeltaBasedMaxDuration = 180.0;
+
 const double kInverseDeltaRampStartPx = 120.0;
 const double kInverseDeltaRampEndPx = 480.0;
 const double kInverseDeltaMinDuration = 6.0;
@@ -83,7 +86,8 @@ base::TimeDelta ScrollOffsetAnimationCurve::SegmentDuration(
       duration = kConstantDuration;
       break;
     case DurationBehavior::DELTA_BASED:
-      duration = std::sqrt(std::abs(MaximumDimension(delta)));
+      duration = std::min(double(std::sqrt(std::abs(MaximumDimension(delta)))),
+                          kDeltaBasedMaxDuration);
       break;
     case DurationBehavior::INVERSE_DELTA:
       duration = std::min(
