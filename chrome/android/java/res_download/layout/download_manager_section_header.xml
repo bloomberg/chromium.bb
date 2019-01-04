@@ -26,7 +26,7 @@
         android:layout_below="@+id/top_space"
         android:paddingStart="@dimen/list_item_default_margin"
         android:maxLines="1"
-        android:textAppearance="@style/BlackTitle1"/>
+        android:textAppearance="@style/TextAppearance.BlackTitle1"/>
 
     <TextView
         android:id="@+id/title"
@@ -34,7 +34,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/date"
         android:paddingStart="@dimen/list_item_default_margin"
-        android:textAppearance="@style/BlackHint2"
+        android:textAppearance="@style/TextAppearance.BlackHint2"
         android:maxLines="1" />
 
     <Space

@@ -24,7 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/page_info_permission_icon"
-        android:textAppearance="@style/BlackBodyDefault" />
+        android:textAppearance="@style/TextAppearance.BlackBodyDefault" />
 
     <org.chromium.ui.widget.TextViewWithLeading
         android:id="@+id/page_info_permission_unavailable_message"
@@ -32,9 +32,9 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/page_info_permission_status"
         android:layout_toEndOf="@id/page_info_permission_icon"
-        android:textAppearance="@style/BlueLink2"
+        android:textAppearance="@style/TextAppearance.BlueLink2"
         android:visibility="gone"
-        app:leading="20dp" />
+        app:leading="@dimen/text_size_medium_leading" />
 
     <org.chromium.ui.widget.TextViewWithLeading
         android:id="@+id/page_info_permission_subtitle"
@@ -42,8 +42,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/page_info_permission_status"
         android:layout_toEndOf="@id/page_info_permission_icon"
-        android:textSize="14sp"
-        android:textColor="@color/secondary_text_default_material_light"
+        android:textAppearance="@style/TextAppearance.PageInfoPermissionSubtitle"
         android:visibility="gone"
-        app:leading="20dp" />
+        app:leading="@dimen/text_size_medium_leading" />
 </RelativeLayout>

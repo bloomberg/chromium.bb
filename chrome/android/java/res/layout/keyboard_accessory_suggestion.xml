@@ -15,4 +15,4 @@
     android:paddingTop="0dp"
     android:layout_marginBottom="@dimen/keyboard_accessory_half_padding"
     android:layout_marginTop="@dimen/keyboard_accessory_half_padding"
-    android:textAppearance="@style/BlackTitle2"/>
+    android:textAppearance="@style/TextAppearance.BlackTitle2"/>

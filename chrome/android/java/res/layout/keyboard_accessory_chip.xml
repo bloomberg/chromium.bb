@@ -19,5 +19,5 @@
     android:layout_marginBottom="@dimen/keyboard_accessory_half_padding"
     android:layout_marginTop="@dimen/keyboard_accessory_half_padding"
     android:elevation="2dp"
-    android:textAppearance="@style/BlackTitle2"
+    android:textAppearance="@style/TextAppearance.BlackTitle2"
     android:background="@drawable/autofill_chip_inset"/>

@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:drawablePadding="3dp"
-            android:textAppearance="@style/BlackDisabledText1"
+            android:textAppearance="@style/TextAppearance.BlackDisabledText1"
             android:visibility="gone" />
 
         <org.chromium.chrome.browser.widget.LoadingView

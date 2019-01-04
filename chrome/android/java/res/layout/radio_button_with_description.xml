@@ -19,7 +19,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/radio_button"
-        android:textAppearance="@style/BlackTitle1" />
+        android:textAppearance="@style/TextAppearance.BlackTitle1" />
 
     <!-- This TextView is hidden if it has no text, so the initial visibility should be "gone". -->
     <TextView
@@ -28,6 +28,6 @@
         android:layout_height="wrap_content"
         android:layout_alignStart="@id/title"
         android:layout_below="@id/title"
-        android:textAppearance="@style/BlackHint2"
+        android:textAppearance="@style/TextAppearance.BlackHint2"
         android:visibility="gone"/>
 </merge>

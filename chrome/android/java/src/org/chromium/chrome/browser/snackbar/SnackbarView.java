@@ -249,7 +249,7 @@ public class SnackbarView {
 
         int textAppearanceResId = snackbar.getTextAppearance();
         if (textAppearanceResId == 0) {
-            textAppearanceResId = R.style.BlackBodyDefault;
+            textAppearanceResId = R.style.TextAppearance_BlackBodyDefault;
         }
         ApiCompatibilityUtils.setTextAppearance(mMessageView, textAppearanceResId);
 

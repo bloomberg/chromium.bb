@@ -218,8 +218,8 @@ public class PageInfoController
                             mTab.getProfile(), displayUrlBuilder.toString());
             if (emphasizeResponse.schemeLength > 0) {
                 displayUrlBuilder.setSpan(
-                        new TextAppearanceSpan(mContext, R.style.RobotoMediumStyle), 0,
-                        emphasizeResponse.schemeLength, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+                        new TextAppearanceSpan(mContext, R.style.TextAppearance_RobotoMediumStyle),
+                        0, emphasizeResponse.schemeLength, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
             }
         }
         viewParams.url = displayUrlBuilder;

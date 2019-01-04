@@ -144,9 +144,9 @@ class BrowsingModeBottomToolbarMediator
 
         FeatureHighlightProvider.getInstance().buildForView(activity, anchor,
                 R.string.iph_duet_title, FeatureHighlightProvider.TextAlignment.CENTER,
-                R.style.WhiteTitle1, R.string.iph_duet_description,
-                FeatureHighlightProvider.TextAlignment.CENTER, R.style.WhiteBody, finalColor,
-                DUET_IPH_BUBBLE_SHOW_DURATION_MS);
+                R.style.TextAppearance_WhiteTitle1, R.string.iph_duet_description,
+                FeatureHighlightProvider.TextAlignment.CENTER, R.style.TextAppearance_WhiteBody,
+                finalColor, DUET_IPH_BUBBLE_SHOW_DURATION_MS);
 
         anchor.postDelayed(() -> tracker.dismissed(FeatureConstants.CHROME_DUET_FEATURE),
                 DUET_IPH_BUBBLE_SHOW_DURATION_MS);

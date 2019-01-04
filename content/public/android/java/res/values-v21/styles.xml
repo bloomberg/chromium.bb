@@ -10,9 +10,7 @@
     <style name="SelectActionMenuWebSearch">
         <item name="android:icon">?android:attr/actionModeWebSearchDrawable</item>
     </style>
-    <!-- TODO(https://crbug.com/856244): remove textAllCaps from button style and move it to
-         button textAppearance styles. -->
-    <style name="TextSuggestionButton">
+    <style name="TextAppearance.TextSuggestionButton">
         <item name="android:drawablePadding">8dp</item>
         <item name="android:gravity">start|center_vertical</item>
         <item name="android:layout_gravity">start|center_vertical</item>
@@ -24,11 +22,10 @@
         <item name="android:paddingTop">8dp</item>
         <item name="android:singleLine">true</item>
         <!-- v17 hard codes modern_blue_600 -->
-        <item name="android:textAppearance">@style/TextSuggestionButtonText</item>
-        <item name="android:textAllCaps">true</item>
+        <item name="android:textAppearance">@style/TextAppearance.TextSuggestionButtonText</item>
     </style>
 
-    <style name="TextSuggestionButtonText" parent="@style/BlueButtonText2">
+    <style name="TextAppearance.TextSuggestionButtonText" parent="@style/TextAppearance.BlueButtonText2">
         <item name="android:textColor">?android:attr/colorAccent</item>
     </style>
 </resources>

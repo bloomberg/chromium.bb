@@ -621,9 +621,11 @@ class AutofillAssistantUiDelegate {
                 mActivity.getString(R.string.continue_button), ChipStyle.BUTTON_FILLED);
         continueChip.setOnClickListener(unusedView -> {
             // Reset UI changes.
-            ApiCompatibilityUtils.setTextAppearance(mDetailsTitle, R.style.BlackCaptionDefault);
+            ApiCompatibilityUtils.setTextAppearance(
+                    mDetailsTitle, R.style.TextAppearance_BlackCaptionDefault);
             mDetailsTitle.setTypeface(mDetailsTitle.getTypeface(), Typeface.BOLD);
-            ApiCompatibilityUtils.setTextAppearance(mDetailsText, R.style.BlackCaption);
+            ApiCompatibilityUtils.setTextAppearance(
+                    mDetailsText, R.style.TextAppearance_BlackCaption);
             clearCarousel();
             showStatusMessage(oldMessage);
             disableProgressBarPulsing();

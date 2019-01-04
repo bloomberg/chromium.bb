@@ -5,7 +5,7 @@
 
 <resources>
     <!-- TODO(crbuc.com/806868): Use a Chrome approved text appearance and remove this. -->
-    <style name="TextAppearance.DetailsTitle" parent="BlackCaptionDefault">
+    <style name="TextAppearance.DetailsTitle" parent="TextAppearance.BlackCaptionDefault">
         <item name="android:textStyle">bold</item>
     </style>
 </resources>

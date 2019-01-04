@@ -247,7 +247,7 @@ public class OfflineIndicatorController implements ConnectivityDetector.Observer
                         .setSingleLine(true)
                         .setProfileImage(icon)
                         .setBackgroundColor(Color.BLACK)
-                        .setTextAppearance(R.style.WhiteBody)
+                        .setTextAppearance(R.style.TextAppearance_WhiteBody)
                         .setDuration(SNACKBAR_DURATION_MS)
                         .setAction(chromeActivity.getString(
                                            R.string.offline_indicator_view_offline_content),

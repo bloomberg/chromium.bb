@@ -28,13 +28,13 @@
             android:id="@+id/control_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/BlackTitle1" />
+            android:textAppearance="@style/TextAppearance.BlackTitle1" />
 
         <TextView
             android:id="@+id/control_secondary_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/BlackHint1" />
+            android:textAppearance="@style/TextAppearance.BlackHint1" />
 
     </org.chromium.chrome.browser.widget.DualControlLayout>
 
