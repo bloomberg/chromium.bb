@@ -53,9 +53,14 @@ class NET_EXPORT_PRIVATE EntryMetadata {
   EntryMetadata();
   EntryMetadata(base::Time last_used_time,
                 base::StrictNumeric<uint32_t> entry_size);
+  EntryMetadata(int32_t trailer_prefetch_size,
+                base::StrictNumeric<uint32_t> entry_size);
 
   base::Time GetLastUsedTime() const;
   void SetLastUsedTime(const base::Time& last_used_time);
+
+  int32_t GetTrailerPrefetchSize() const;
+  void SetTrailerPrefetchSize(int32_t size);
 
   uint32_t RawTimeForSorting() const {
     return last_used_time_seconds_since_epoch_;
@@ -68,8 +73,11 @@ class NET_EXPORT_PRIVATE EntryMetadata {
   void SetInMemoryData(uint8_t val) { in_memory_data_ = val; }
 
   // Serialize the data into the provided pickle.
-  void Serialize(base::Pickle* pickle) const;
-  bool Deserialize(base::PickleIterator* it, bool has_entry_in_memory_data);
+  void Serialize(net::CacheType cache_type, base::Pickle* pickle) const;
+  bool Deserialize(net::CacheType cache_type,
+                   base::PickleIterator* it,
+                   bool has_entry_in_memory_data,
+                   bool app_cache_has_trailer_prefetch_size);
 
   static base::TimeDelta GetLowerEpsilonForTimeComparisons() {
     return base::TimeDelta::FromSeconds(1);
@@ -82,12 +90,23 @@ class NET_EXPORT_PRIVATE EntryMetadata {
 
  private:
   friend class SimpleIndexFileTest;
+  FRIEND_TEST_ALL_PREFIXES(SimpleIndexFileTest, ReadV8Format);
+  FRIEND_TEST_ALL_PREFIXES(SimpleIndexFileTest, ReadV8FormatAppCache);
 
   // There are tens of thousands of instances of EntryMetadata in memory, so the
   // size of each entry matters.  Even when the values used to set these members
   // are originally calculated as >32-bit types, the actual necessary size for
   // each shouldn't exceed 32 bits, so we use 32-bit types here.
-  uint32_t last_used_time_seconds_since_epoch_;
+
+  // In most modes we track the last access time in order to support automatic
+  // eviction. In APP_CACHE mode, however, eviction is disabled. Instead of
+  // storing the access time in APP_CACHE mode we instead store a hint about
+  // how much entry file trailer should be prefetched when its opened.
+  union {
+    uint32_t last_used_time_seconds_since_epoch_;
+    int32_t trailer_prefetch_size_;  // in bytes
+  };
+
   uint32_t entry_size_256b_chunks_ : 24;  // in 256-byte blocks, rounded up.
   uint32_t in_memory_data_ : 8;
 };
@@ -142,6 +161,9 @@ class NET_EXPORT_PRIVATE SimpleIndex
   void SetEntryInMemoryData(uint64_t entry_hash, uint8_t value);
 
   void WriteToDisk(IndexWriteToDiskReason reason);
+
+  int32_t GetTrailerPrefetchSize(uint64_t entry_hash) const;
+  void SetTrailerPrefetchSize(uint64_t entry_hash, int32_t size);
 
   // Update the size (in bytes) of an entry, in the metadata stored in the
   // index. This should be the total disk-file size including all streams of the

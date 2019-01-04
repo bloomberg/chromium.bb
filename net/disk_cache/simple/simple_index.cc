@@ -76,6 +76,15 @@ EntryMetadata::EntryMetadata(base::Time last_used_time,
   SetLastUsedTime(last_used_time);
 }
 
+EntryMetadata::EntryMetadata(int32_t trailer_prefetch_size,
+                             base::StrictNumeric<uint32_t> entry_size)
+    : trailer_prefetch_size_(0),
+      entry_size_256b_chunks_(0),
+      in_memory_data_(0) {
+  SetEntrySize(entry_size);  // to round/pack properly
+  SetTrailerPrefetchSize(trailer_prefetch_size);
+}
+
 base::Time EntryMetadata::GetLastUsedTime() const {
   // Preserve nullity.
   if (last_used_time_seconds_since_epoch_ == 0)
@@ -99,6 +108,16 @@ void EntryMetadata::SetLastUsedTime(const base::Time& last_used_time) {
     last_used_time_seconds_since_epoch_ = 1;
 }
 
+int32_t EntryMetadata::GetTrailerPrefetchSize() const {
+  return trailer_prefetch_size_;
+}
+
+void EntryMetadata::SetTrailerPrefetchSize(int32_t size) {
+  if (size <= 0)
+    return;
+  trailer_prefetch_size_ = size;
+}
+
 uint32_t EntryMetadata::GetEntrySize() const {
   return entry_size_256b_chunks_ << 8;
 }
@@ -108,25 +127,43 @@ void EntryMetadata::SetEntrySize(base::StrictNumeric<uint32_t> entry_size) {
   entry_size_256b_chunks_ = (static_cast<uint32_t>(entry_size) + 255) >> 8;
 }
 
-void EntryMetadata::Serialize(base::Pickle* pickle) const {
+void EntryMetadata::Serialize(net::CacheType cache_type,
+                              base::Pickle* pickle) const {
   DCHECK(pickle);
-  int64_t internal_last_used_time = GetLastUsedTime().ToInternalValue();
   // If you modify the size of the size of the pickle, be sure to update
   // kOnDiskSizeBytes.
   uint32_t packed_entry_info = (entry_size_256b_chunks_ << 8) | in_memory_data_;
-  pickle->WriteInt64(internal_last_used_time);
+  if (cache_type == net::APP_CACHE) {
+    pickle->WriteInt64(trailer_prefetch_size_);
+  } else {
+    int64_t internal_last_used_time = GetLastUsedTime().ToInternalValue();
+    pickle->WriteInt64(internal_last_used_time);
+  }
   pickle->WriteUInt64(packed_entry_info);
 }
 
-bool EntryMetadata::Deserialize(base::PickleIterator* it,
-                                bool has_entry_in_memory_data) {
+bool EntryMetadata::Deserialize(net::CacheType cache_type,
+                                base::PickleIterator* it,
+                                bool has_entry_in_memory_data,
+                                bool app_cache_has_trailer_prefetch_size) {
   DCHECK(it);
-  int64_t tmp_last_used_time;
+  int64_t tmp_time_or_prefetch_size;
   uint64_t tmp_entry_size;
-  if (!it->ReadInt64(&tmp_last_used_time) || !it->ReadUInt64(&tmp_entry_size) ||
+  if (!it->ReadInt64(&tmp_time_or_prefetch_size) ||
+      !it->ReadUInt64(&tmp_entry_size) ||
       tmp_entry_size > std::numeric_limits<uint32_t>::max())
     return false;
-  SetLastUsedTime(base::Time::FromInternalValue(tmp_last_used_time));
+  if (cache_type == net::APP_CACHE) {
+    if (app_cache_has_trailer_prefetch_size) {
+      int32_t trailer_prefetch_size = 0;
+      base::CheckedNumeric<int32_t> numeric_size(tmp_time_or_prefetch_size);
+      if (numeric_size.AssignIfValid(&trailer_prefetch_size)) {
+        SetTrailerPrefetchSize(trailer_prefetch_size);
+      }
+    }
+  } else {
+    SetLastUsedTime(base::Time::FromInternalValue(tmp_time_or_prefetch_size));
+  }
   if (has_entry_in_memory_data) {
     // tmp_entry_size actually packs entry_size_256b_chunks_ and
     // in_memory_data_.
@@ -302,8 +339,14 @@ void SimpleIndex::Insert(uint64_t entry_hash) {
   // Upon insert we don't know yet the size of the entry.
   // It will be updated later when the SimpleEntryImpl finishes opening or
   // creating the new entry, and then UpdateEntrySize will be called.
-  bool inserted = InsertInEntrySet(
-      entry_hash, EntryMetadata(base::Time::Now(), 0u), &entries_set_);
+  bool inserted = false;
+  if (cache_type_ == net::APP_CACHE) {
+    inserted =
+        InsertInEntrySet(entry_hash, EntryMetadata(-1, 0u), &entries_set_);
+  } else {
+    inserted = InsertInEntrySet(
+        entry_hash, EntryMetadata(base::Time::Now(), 0u), &entries_set_);
+  }
   if (!initialized_)
     removed_entries_.erase(entry_hash);
   if (inserted)
@@ -420,6 +463,27 @@ void SimpleIndex::StartEvictionIfNeeded() {
 
   delegate_->DoomEntries(&entry_hashes, base::Bind(&SimpleIndex::EvictionDone,
                                                    AsWeakPtr()));
+}
+
+int32_t SimpleIndex::GetTrailerPrefetchSize(uint64_t entry_hash) const {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(cache_type_, net::APP_CACHE);
+  auto it = entries_set_.find(entry_hash);
+  if (it == entries_set_.end())
+    return -1;
+  return it->second.GetTrailerPrefetchSize();
+}
+
+void SimpleIndex::SetTrailerPrefetchSize(uint64_t entry_hash, int32_t size) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(cache_type_, net::APP_CACHE);
+  auto it = entries_set_.find(entry_hash);
+  if (it == entries_set_.end())
+    return;
+  int32_t original_size = it->second.GetTrailerPrefetchSize();
+  it->second.SetTrailerPrefetchSize(size);
+  if (original_size != it->second.GetTrailerPrefetchSize())
+    PostponeWritingToDisk();
 }
 
 bool SimpleIndex::UpdateEntrySize(uint64_t entry_hash,
@@ -609,8 +673,8 @@ void SimpleIndex::WriteToDisk(IndexWriteToDiskReason reason) {
         cleanup_tracker_);
   }
 
-  index_file_->WriteToDisk(reason, entries_set_, cache_size_, start,
-                           app_on_background_, after_write);
+  index_file_->WriteToDisk(cache_type_, reason, entries_set_, cache_size_,
+                           start, app_on_background_, after_write);
 }
 
 }  // namespace disk_cache

@@ -47976,6 +47976,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Miss"/>
 </enum>
 
+<enum name="SimpleCachePrefetchMode">
+  <int value="0" label="None"/>
+  <int value="1" label="Full"/>
+  <int value="2" label="Trailer"/>
+</enum>
+
 <enum name="SimpleCacheReadParallelizable">
   <int value="0" label="Standalone Read (obsolete)"/>
   <int value="1" label="Follows read"/>

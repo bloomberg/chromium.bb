@@ -35,6 +35,14 @@ enum OpenEntryResult {
 };
 
 // Used in histograms, please only add entries at the end.
+enum OpenPrefetchMode {
+  OPEN_PREFETCH_NONE = 0,
+  OPEN_PREFETCH_FULL = 1,
+  OPEN_PREFETCH_TRAILER = 2,
+  OPEN_PREFETCH_MAX = 3,
+};
+
+// Used in histograms, please only add entries at the end.
 enum SyncWriteResult {
   SYNC_WRITE_RESULT_SUCCESS = 0,
   SYNC_WRITE_RESULT_PRETRUNCATE_FAILURE = 1,

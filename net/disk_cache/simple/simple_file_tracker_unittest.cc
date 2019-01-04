@@ -53,7 +53,8 @@ class SimpleFileTrackerTest : public DiskCacheTest {
   SyncEntryPointer MakeSyncEntry(uint64_t hash) {
     return SyncEntryPointer(
         new SimpleSynchronousEntry(net::DISK_CACHE, cache_path_, "dummy", hash,
-                                   /* had_index=*/true, &file_tracker_),
+                                   /* had_index=*/true, &file_tracker_,
+                                   /*trailer_prefetch_size=*/-1),
         SyncEntryDeleter(this));
   }
 

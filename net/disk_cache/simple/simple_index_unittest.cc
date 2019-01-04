@@ -80,7 +80,8 @@ class MockSimpleIndexFile : public SimpleIndexFile,
     ++load_index_entries_calls_;
   }
 
-  void WriteToDisk(SimpleIndex::IndexWriteToDiskReason reason,
+  void WriteToDisk(net::CacheType cache_type,
+                   SimpleIndex::IndexWriteToDiskReason reason,
                    const SimpleIndex::EntrySet& entry_set,
                    uint64_t cache_size,
                    const base::TimeTicks& start,
@@ -237,11 +238,11 @@ TEST_F(EntryMetadataTest, Serialize) {
   EntryMetadata entry_metadata = NewEntryMetadataWithValues();
 
   base::Pickle pickle;
-  entry_metadata.Serialize(&pickle);
+  entry_metadata.Serialize(net::DISK_CACHE, &pickle);
 
   base::PickleIterator it(pickle);
   EntryMetadata new_entry_metadata;
-  new_entry_metadata.Deserialize(&it, true);
+  new_entry_metadata.Deserialize(net::DISK_CACHE, &it, true, true);
   CheckEntryMetadataValues(new_entry_metadata);
 
   // Test reading of old format --- the modern serialization of above entry
@@ -250,7 +251,7 @@ TEST_F(EntryMetadataTest, Serialize) {
   // rounded again when stored by EntryMetadata.
   base::PickleIterator it2(pickle);
   EntryMetadata new_entry_metadata2;
-  new_entry_metadata2.Deserialize(&it2, false);
+  new_entry_metadata2.Deserialize(net::DISK_CACHE, &it2, false, false);
   EXPECT_EQ(RoundSize(RoundSize(kTestEntrySize) | kTestEntryMemoryData),
             new_entry_metadata2.GetEntrySize());
   EXPECT_EQ(0, new_entry_metadata2.GetInMemoryData());
