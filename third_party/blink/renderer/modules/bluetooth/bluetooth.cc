@@ -177,7 +177,14 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
   // If the algorithm is not allowed to show a popup, reject promise with a
   // SecurityError and abort these steps.
   auto& doc = *To<Document>(context);
-  if (!LocalFrame::HasTransientUserActivation(doc.GetFrame())) {
+  auto* frame = doc.GetFrame();
+  if (!frame) {
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(), "Document not active"));
+  }
+
+  if (!LocalFrame::HasTransientUserActivation(frame)) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(
@@ -186,18 +193,9 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
   }
 
   if (!service_) {
-    LocalFrame* frame = doc.GetFrame();
-    if (frame) {
       // See https://bit.ly/2S0zRAS for task types.
       frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(
           &service_, context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
-    }
-  }
-
-  if (!service_) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kNotSupportedError));
   }
 
   // In order to convert the arguments from service names and aliases to just
@@ -261,7 +259,14 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
   // If the algorithm is not allowed to show a popup, reject promise with a
   // SecurityError and abort these steps.
   auto& doc = *To<Document>(context);
-  if (!LocalFrame::HasTransientUserActivation(doc.GetFrame())) {
+  auto* frame = doc.GetFrame();
+  if (!frame) {
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(), "Document not active"));
+  }
+
+  if (!LocalFrame::HasTransientUserActivation(frame)) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(
@@ -270,16 +275,9 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
   }
 
   if (!service_) {
-    LocalFrame* frame = doc.GetFrame();
-    if (frame) {
-      frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(&service_));
-    }
-  }
-
-  if (!service_) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kNotSupportedError));
+    // See https://bit.ly/2S0zRAS for task types.
+    frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(
+        &service_, context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   }
 
   // TODO(dougt) deal with |options| here.
