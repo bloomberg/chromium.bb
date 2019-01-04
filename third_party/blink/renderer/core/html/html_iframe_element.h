@@ -32,7 +32,7 @@
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
-class Policy;
+class DOMFeaturePolicy;
 
 class CORE_EXPORT HTMLIFrameElement final
     : public HTMLFrameElementBase,
@@ -49,7 +49,7 @@ class CORE_EXPORT HTMLIFrameElement final
 
   DOMTokenList* sandbox() const;
   // Support JS introspection of frame policy (e.g. feature policy)
-  Policy* policy();
+  DOMFeaturePolicy* featurePolicy();
 
   // Returns attributes that should be checked against Trusted Types
   const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
@@ -93,7 +93,7 @@ class CORE_EXPORT HTMLIFrameElement final
   bool allow_payment_request_;
   bool collapsed_by_client_;
   Member<HTMLIFrameElementSandbox> sandbox_;
-  Member<Policy> policy_;
+  Member<DOMFeaturePolicy> policy_;
 
   network::mojom::ReferrerPolicy referrer_policy_;
 };

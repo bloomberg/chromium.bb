@@ -173,7 +173,7 @@ core_idl_files =
                     "events/transition_event.idl",
                     "events/ui_event.idl",
                     "events/wheel_event.idl",
-                    "feature_policy/policy.idl",
+                    "feature_policy/feature_policy.idl",
                     "fetch/body.idl",
                     "fetch/headers.idl",
                     "fetch/request.idl",

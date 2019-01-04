@@ -24,45 +24,45 @@ Header("Feature-Policy: fullscreen *; payment 'self'; midi 'none'; camera 'self'
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script>
-var policy_main = document.policy;
+var policy_main = document.featurePolicy;
 var allowed_features = ["fullscreen", "payment", "camera"];
 var disallowed_features = ["badfeature", "midi"];
 
-// Tests for policy.allowsFeature().
+// Tests for featurePolicy.allowsFeature().
 for (var feature of allowed_features) {
   test(function() {
     assert_true(policy_main.allowsFeature(feature));
     assert_true(policy_main.allowsFeature(feature, "http://127.0.0.1:8000"));
-  }, 'Test policy.allowsFeature() on feature ' + feature);
+  }, 'Test featurePolicy.allowsFeature() on feature ' + feature);
 }
 
 test(function() {
   assert_true(policy_main.allowsFeature("camera", "https://www.example.com"));
   assert_true(policy_main.allowsFeature("camera", "https://www.example.net"));
-}, 'Test policy.allowsFeature() for camera');
+}, 'Test featurePolicy.allowsFeature() for camera');
 
 for (var feature of disallowed_features) {
   test(function() {
     assert_false(policy_main.allowsFeature(feature));
     assert_false(policy_main.allowsFeature(feature, "http://127.0.0.1:8000"));
-  }, 'Test policy.allowsFeature() on disallowed feature ' + feature);
+  }, 'Test featurePolicy.allowsFeature() on disallowed feature ' + feature);
 }
 
-// Tests for policy.allowedFeatures().
+// Tests for featurePolicy.allowedFeatures().
 var allowed_features_main = policy_main.allowedFeatures();
 for (var feature of allowed_features) {
   test(function() {
     assert_true(allowed_features_main.includes(feature));
-  }, 'Test policy.allowedFeatures() include feature ' + feature);
+  }, 'Test featurePolicy.allowedFeatures() include feature ' + feature);
 }
 for (var feature of disallowed_features) {
   test(function() {
     assert_false(allowed_features_main.includes(feature));
-  }, 'Test policy.allowedFeatures() does not include disallowed feature ' +
+  }, 'Test featurePolicy.allowedFeatures() does not include disallowed feature ' +
     feature);
 }
 
-// Tests for policy.getAllowlistForFeature().
+// Tests for featurePolicy.getAllowlistForFeature().
 assert_array_equals(
   policy_main.getAllowlistForFeature("fullscreen"), ["*"],
   "fullscreen is allowed for all in main frame");

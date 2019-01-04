@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/feature_policy/policy.h"
+#include "third_party/blink/renderer/core/feature_policy/dom_feature_policy.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy.h"
@@ -12,7 +12,7 @@
 
 namespace blink {
 
-bool Policy::allowsFeature(const String& feature) const {
+bool DOMFeaturePolicy::allowsFeature(const String& feature) const {
   if (GetDefaultFeatureNameMap().Contains(feature)) {
     return GetPolicy()->IsFeatureEnabled(
         GetDefaultFeatureNameMap().at(feature));
@@ -22,7 +22,8 @@ bool Policy::allowsFeature(const String& feature) const {
   return false;
 }
 
-bool Policy::allowsFeature(const String& feature, const String& url) const {
+bool DOMFeaturePolicy::allowsFeature(const String& feature,
+                                     const String& url) const {
   scoped_refptr<const SecurityOrigin> origin =
       SecurityOrigin::CreateFromString(url);
   if (!origin || origin->IsOpaque()) {
@@ -41,7 +42,7 @@ bool Policy::allowsFeature(const String& feature, const String& url) const {
       GetDefaultFeatureNameMap().at(feature), origin->ToUrlOrigin());
 }
 
-Vector<String> Policy::allowedFeatures() const {
+Vector<String> DOMFeaturePolicy::allowedFeatures() const {
   Vector<String> allowed_features;
   for (const auto& entry : GetDefaultFeatureNameMap()) {
     if (GetPolicy()->IsFeatureEnabled(entry.value))
@@ -50,7 +51,8 @@ Vector<String> Policy::allowedFeatures() const {
   return allowed_features;
 }
 
-Vector<String> Policy::getAllowlistForFeature(const String& feature) const {
+Vector<String> DOMFeaturePolicy::getAllowlistForFeature(
+    const String& feature) const {
   if (GetDefaultFeatureNameMap().Contains(feature)) {
     const FeaturePolicy::Allowlist allowlist =
         GetPolicy()->GetAllowlistForFeature(
@@ -68,17 +70,18 @@ Vector<String> Policy::getAllowlistForFeature(const String& feature) const {
   return Vector<String>();
 }
 
-void Policy::AddWarningForUnrecognizedFeature(const String& feature) const {
+void DOMFeaturePolicy::AddWarningForUnrecognizedFeature(
+    const String& feature) const {
   GetDocument()->AddConsoleMessage(
       ConsoleMessage::Create(kOtherMessageSource, kWarningMessageLevel,
                              "Unrecognized feature: '" + feature + "'."));
 }
 
-void Policy::Trace(blink::Visitor* visitor) {
+void DOMFeaturePolicy::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
-void Policy::UpdateContainerPolicy(
+void DOMFeaturePolicy::UpdateContainerPolicy(
     const ParsedFeaturePolicy& container_policy,
     scoped_refptr<const SecurityOrigin> src_origin) {}
 

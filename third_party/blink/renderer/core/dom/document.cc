@@ -7539,7 +7539,7 @@ scoped_refptr<base::SingleThreadTaskRunner> Document::GetTaskRunner(
   return Thread::Current()->GetTaskRunner();
 }
 
-Policy* Document::policy() {
+DOMFeaturePolicy* Document::featurePolicy() {
   if (!policy_)
     policy_ = MakeGarbageCollected<DocumentPolicy>(this);
   return policy_.Get();

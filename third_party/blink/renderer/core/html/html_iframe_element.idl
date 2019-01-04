@@ -42,12 +42,9 @@ interface HTMLIFrameElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString csp;
 
     // Feature Policy
-    // https://wicg.github.io/feature-policy/
     [CEReactions, Reflect] attribute DOMString allow;
-    // TODO(iclelland): add spec for JS exposure in the spec for Feature Policy.
-    // Please refer to this doc for more details for now:
-    // https://docs.google.com/a/chromium.org/document/d/1wvk3cXkblNnbkMcsKayseK-k0SMGiP9b9fQFgfpqQpc/edit?usp=sharing
-    [OriginTrialEnabled=FeaturePolicyJavaScriptInterface] readonly attribute Policy policy;
+    // https://wicg.github.io/feature-policy/#the-policy-object
+    [OriginTrialEnabled=FeaturePolicyJavaScriptInterface] readonly attribute FeaturePolicy featurePolicy;
 
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLIFrameElement-partial

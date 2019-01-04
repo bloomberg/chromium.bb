@@ -625,6 +625,7 @@ html element iframe
     property contentDocument
     property contentWindow
     property csp
+    property featurePolicy
     property frameBorder
     property getSVGDocument
     property height
@@ -632,7 +633,6 @@ html element iframe
     property marginHeight
     property marginWidth
     property name
-    property policy
     property referrerPolicy
     property sandbox
     property scrolling

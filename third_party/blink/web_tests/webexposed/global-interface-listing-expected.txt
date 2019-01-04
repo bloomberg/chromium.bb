@@ -1547,6 +1547,7 @@ interface Document : Node
     getter documentURI
     getter domain
     getter embeds
+    getter featurePolicy
     getter fgColor
     getter firstElementChild
     getter fonts
@@ -1664,7 +1665,6 @@ interface Document : Node
     getter pictureInPictureEnabled
     getter plugins
     getter pointerLockElement
-    getter policy
     getter readyState
     getter referrer
     getter rootElement
@@ -3011,13 +3011,13 @@ interface HTMLIFrameElement : HTMLElement
     getter contentDocument
     getter contentWindow
     getter csp
+    getter featurePolicy
     getter frameBorder
     getter height
     getter longDesc
     getter marginHeight
     getter marginWidth
     getter name
-    getter policy
     getter referrerPolicy
     getter sandbox
     getter scrolling
