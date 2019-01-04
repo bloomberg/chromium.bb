@@ -82,21 +82,24 @@ class AdaptiveScreenBrightnessManagerTest
     : public ChromeRenderViewHostTestHarness {
  public:
   AdaptiveScreenBrightnessManagerTest()
-      : task_runner_(base::MakeRefCounted<base::TestMockTimeTaskRunner>()) {
+      : ChromeRenderViewHostTestHarness(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME,
+            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED,
+            content::TestBrowserThreadBundle::Options::DEFAULT) {
     auto logger = std::make_unique<TestingAdaptiveScreenBrightnessUkmLogger>();
     ukm_logger_ = logger.get();
 
     fake_power_manager_client_.Init(nullptr);
     viz::mojom::VideoDetectorObserverPtr observer;
     auto periodic_timer = std::make_unique<base::RepeatingTimer>();
-    periodic_timer->SetTaskRunner(task_runner_);
+    periodic_timer->SetTaskRunner(thread_bundle()->GetMainThreadTaskRunner());
     screen_brightness_manager_ =
         std::make_unique<AdaptiveScreenBrightnessManager>(
             std::move(logger), &user_activity_detector_,
             &fake_power_manager_client_, nullptr, nullptr,
             mojo::MakeRequest(&observer), std::move(periodic_timer),
-            task_runner_->GetMockClock(),
-            std::make_unique<FakeBootClock>(task_runner_,
+            const_cast<base::Clock*>(thread_bundle()->GetMockClock()),
+            std::make_unique<FakeBootClock>(thread_bundle(),
                                             base::TimeDelta::FromSeconds(10)));
   }
 
@@ -150,7 +153,7 @@ class AdaptiveScreenBrightnessManagerTest
   }
 
   void FastForwardTimeBySecs(const int seconds) {
-    task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(seconds));
+    thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(seconds));
   }
 
   // Creates a test browser window and sets its visibility, activity and
@@ -217,9 +220,6 @@ class AdaptiveScreenBrightnessManagerTest
   const GURL kUrl3 = GURL("https://example3.com/");
 
  private:
-  // TODO(crbug.com/917580): Remove this; thread_bundle() should be used
-  // instead.
-  const scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   chromeos::FakeChromeUserManager fake_user_manager_;
 
   ui::UserActivityDetector user_activity_detector_;
