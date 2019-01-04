@@ -621,6 +621,37 @@ TEST_F(ScrollIntoViewTest, SmoothUserScrollNotAbortedByProgrammaticScrolls) {
   ASSERT_EQ(Window().scrollY(), content->OffsetTop());
 }
 
+TEST_F(ScrollIntoViewTest, LongDistanceSmoothScrollFinishedInThreeSeconds) {
+  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<div id='space' style='height: 100000px'></div>"
+      "<div id='target' style='height: 1000px'></div>");
+
+  Compositor().BeginFrame();
+  ASSERT_EQ(Window().scrollY(), 0);
+
+  Element* target = GetDocument().getElementById("target");
+  ScrollIntoViewOptionsOrBoolean arg;
+  ScrollIntoViewOptions* options = ScrollIntoViewOptions::Create();
+  options->setBlock("start");
+  options->setBehavior("smooth");
+  arg.SetScrollIntoViewOptions(options);
+  target->scrollIntoView(arg);
+
+  // Scrolling the window
+  Compositor().BeginFrame();  // update run_state_.
+  Compositor().BeginFrame();  // Set start_time = now.
+  Compositor().BeginFrame(0.2);
+  ASSERT_EQ(Window().scrollY(), 864);
+
+  // Finish scrolling the container
+  Compositor().BeginFrame(2.8);
+  ASSERT_EQ(Window().scrollY(), target->OffsetTop());
+}
+
 }  // namespace
 
 }  // namespace blink
