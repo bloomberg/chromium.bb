@@ -53,7 +53,7 @@ class ForceMaximizeOnFirstRunTest : public LoginPolicyTestBase {
   DISALLOW_COPY_AND_ASSIGN(ForceMaximizeOnFirstRunTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ForceMaximizeOnFirstRunTest, PRE_TwoRuns) {
+IN_PROC_BROWSER_TEST_F(ForceMaximizeOnFirstRunTest, DISABLED_PRE_TwoRuns) {
   SetUpResolution();
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword, kEmptyServices);
