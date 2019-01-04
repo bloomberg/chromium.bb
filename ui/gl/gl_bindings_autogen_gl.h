@@ -703,7 +703,7 @@ typedef void(GL_BINDING_CALL* glGetProgramPipelineInfoLogProc)(GLuint pipeline,
 typedef void(GL_BINDING_CALL* glGetProgramPipelineivProc)(GLuint pipeline,
                                                           GLenum pname,
                                                           GLint* params);
-typedef void(GL_BINDING_CALL* glGetProgramResourceIndexProc)(
+typedef GLuint(GL_BINDING_CALL* glGetProgramResourceIndexProc)(
     GLuint program,
     GLenum programInterface,
     const GLchar* name);
@@ -2943,9 +2943,9 @@ class GL_EXPORT GLApi {
   virtual void glGetProgramPipelineivFn(GLuint pipeline,
                                         GLenum pname,
                                         GLint* params) = 0;
-  virtual void glGetProgramResourceIndexFn(GLuint program,
-                                           GLenum programInterface,
-                                           const GLchar* name) = 0;
+  virtual GLuint glGetProgramResourceIndexFn(GLuint program,
+                                             GLenum programInterface,
+                                             const GLchar* name) = 0;
   virtual void glGetProgramResourceivFn(GLuint program,
                                         GLenum programInterface,
                                         GLuint index,

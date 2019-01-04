@@ -586,7 +586,9 @@ MOCK_METHOD4(
 MOCK_METHOD3(GetProgramPipelineiv,
              void(GLuint pipeline, GLenum pname, GLint* params));
 MOCK_METHOD3(GetProgramResourceIndex,
-             void(GLuint program, GLenum programInterface, const GLchar* name));
+             GLuint(GLuint program,
+                    GLenum programInterface,
+                    const GLchar* name));
 MOCK_METHOD8(GetProgramResourceiv,
              void(GLuint program,
                   GLenum programInterface,

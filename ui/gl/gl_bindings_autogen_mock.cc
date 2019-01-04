@@ -2029,12 +2029,12 @@ MockGLInterface::Mock_glGetProgramPipelineiv(GLuint pipeline,
   interface_->GetProgramPipelineiv(pipeline, pname, params);
 }
 
-void GL_BINDING_CALL
+GLuint GL_BINDING_CALL
 MockGLInterface::Mock_glGetProgramResourceIndex(GLuint program,
                                                 GLenum programInterface,
                                                 const GLchar* name) {
   MakeGlMockFunctionUnique("glGetProgramResourceIndex");
-  interface_->GetProgramResourceIndex(program, programInterface, name);
+  return interface_->GetProgramResourceIndex(program, programInterface, name);
 }
 
 GLint GL_BINDING_CALL

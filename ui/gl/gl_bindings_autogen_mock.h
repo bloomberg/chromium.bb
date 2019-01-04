@@ -850,7 +850,7 @@ static void GL_BINDING_CALL Mock_glGetProgramPipelineInfoLog(GLuint pipeline,
 static void GL_BINDING_CALL Mock_glGetProgramPipelineiv(GLuint pipeline,
                                                         GLenum pname,
                                                         GLint* params);
-static void GL_BINDING_CALL
+static GLuint GL_BINDING_CALL
 Mock_glGetProgramResourceIndex(GLuint program,
                                GLenum programInterface,
                                const GLchar* name);

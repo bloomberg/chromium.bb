@@ -3935,10 +3935,11 @@ void GLApiBase::glGetProgramPipelineivFn(GLuint pipeline,
   driver_->fn.glGetProgramPipelineivFn(pipeline, pname, params);
 }
 
-void GLApiBase::glGetProgramResourceIndexFn(GLuint program,
-                                            GLenum programInterface,
-                                            const GLchar* name) {
-  driver_->fn.glGetProgramResourceIndexFn(program, programInterface, name);
+GLuint GLApiBase::glGetProgramResourceIndexFn(GLuint program,
+                                              GLenum programInterface,
+                                              const GLchar* name) {
+  return driver_->fn.glGetProgramResourceIndexFn(program, programInterface,
+                                                 name);
 }
 
 void GLApiBase::glGetProgramResourceivFn(GLuint program,
@@ -7220,11 +7221,11 @@ void TraceGLApi::glGetProgramPipelineivFn(GLuint pipeline,
   gl_api_->glGetProgramPipelineivFn(pipeline, pname, params);
 }
 
-void TraceGLApi::glGetProgramResourceIndexFn(GLuint program,
-                                             GLenum programInterface,
-                                             const GLchar* name) {
+GLuint TraceGLApi::glGetProgramResourceIndexFn(GLuint program,
+                                               GLenum programInterface,
+                                               const GLchar* name) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetProgramResourceIndex")
-  gl_api_->glGetProgramResourceIndexFn(program, programInterface, name);
+  return gl_api_->glGetProgramResourceIndexFn(program, programInterface, name);
 }
 
 void TraceGLApi::glGetProgramResourceivFn(GLuint program,
@@ -11291,14 +11292,17 @@ void DebugGLApi::glGetProgramPipelineivFn(GLuint pipeline,
   gl_api_->glGetProgramPipelineivFn(pipeline, pname, params);
 }
 
-void DebugGLApi::glGetProgramResourceIndexFn(GLuint program,
-                                             GLenum programInterface,
-                                             const GLchar* name) {
+GLuint DebugGLApi::glGetProgramResourceIndexFn(GLuint program,
+                                               GLenum programInterface,
+                                               const GLchar* name) {
   GL_SERVICE_LOG("glGetProgramResourceIndex"
                  << "(" << program << ", "
                  << GLEnums::GetStringEnum(programInterface) << ", "
                  << static_cast<const void*>(name) << ")");
-  gl_api_->glGetProgramResourceIndexFn(program, programInterface, name);
+  GLuint result =
+      gl_api_->glGetProgramResourceIndexFn(program, programInterface, name);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
 }
 
 void DebugGLApi::glGetProgramResourceivFn(GLuint program,
@@ -15331,10 +15335,11 @@ void NoContextGLApi::glGetProgramPipelineivFn(GLuint pipeline,
   NoContextHelper("glGetProgramPipelineiv");
 }
 
-void NoContextGLApi::glGetProgramResourceIndexFn(GLuint program,
-                                                 GLenum programInterface,
-                                                 const GLchar* name) {
+GLuint NoContextGLApi::glGetProgramResourceIndexFn(GLuint program,
+                                                   GLenum programInterface,
+                                                   const GLchar* name) {
   NoContextHelper("glGetProgramResourceIndex");
+  return 0U;
 }
 
 void NoContextGLApi::glGetProgramResourceivFn(GLuint program,

@@ -925,7 +925,7 @@ GL_FUNCTIONS = [
   'names': ['glGetProgramPipelineiv'],
   'arguments':
       'GLuint pipeline, GLenum pname, GLint* params', },
-{ 'return_type': 'void',
+{ 'return_type': 'GLuint',
   'names': ['glGetProgramResourceIndex'],
   'arguments':
       'GLuint program, GLenum programInterface, const GLchar* name', },
