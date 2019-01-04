@@ -112,6 +112,10 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
     // Used to prevent redundant calls to ScheduleWork / ScheduleDelayedWork.
     bool immediate_do_work_posted = false;
 
+    // Whether we're currently executing delayed work (as opposed to immediate
+    // work).
+    bool doing_delayed_work = false;
+
     // Number of tasks processed in a single DoWork invocation.
     int work_batch_size = 1;
 
