@@ -95,6 +95,8 @@ crbug.com/733494 [ Linux ] virtual/video-surface-layer/media/autoplay/document-u
 # Sheriff 2018-12-20
 crbug.com/916893 [ Linux ] virtual/bidi-caret-affinity/editing/pasteboard/drag-drop-iframe-refresh-crash.html [ Pass Leak ]
 
+# Sheriff 2019-01-04
+crbug.com/919117 [ Linux ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-drag.html [ Pass Leak ]
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #
