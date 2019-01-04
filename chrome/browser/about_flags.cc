@@ -1862,9 +1862,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(app_list::switches::kResetAppListInstallState)},
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
 #if defined(OS_ANDROID)
-    {"enable-special-locale", flag_descriptions::kEnableSpecialLocaleName,
-     flag_descriptions::kEnableSpecialLocaleDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kSpecialLocaleFeature)},
     {"enable-accessibility-tab-switcher",
      flag_descriptions::kAccessibilityTabSwitcherName,
      flag_descriptions::kAccessibilityTabSwitcherDescription, kOsAndroid,

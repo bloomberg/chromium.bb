@@ -142,7 +142,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kServiceManagerForDownload,
     &kSoleIntegration,
     &kSpannableInlineAutocomplete,
-    &kSpecialLocaleFeature,
     &kSpecialLocaleWrapper,
     &kTabReparenting,
     &kTabSwitcherOnReturn,
@@ -397,9 +396,6 @@ const base::Feature kSoleIntegration{"SoleIntegration",
 
 const base::Feature kSpannableInlineAutocomplete{
     "SpannableInlineAutocomplete", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kSpecialLocaleFeature{"SpecialLocale",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSpecialLocaleWrapper{"SpecialLocaleWrapper",
                                           base::FEATURE_ENABLED_BY_DEFAULT};

@@ -147,13 +147,7 @@ public class LocaleManager {
      * @return Whether the Chrome instance is running in a special locale.
      */
     public boolean isSpecialLocaleEnabled() {
-        // If there is a kill switch sent from the server, disable the feature.
-        if (!ChromeFeatureList.isEnabled("SpecialLocaleWrapper")) {
-            return false;
-        }
-        boolean inSpecialLocale = ChromeFeatureList.isEnabled("SpecialLocale");
-        inSpecialLocale = isReallyInSpecialLocale(inSpecialLocale);
-        return inSpecialLocale;
+        return false;
     }
 
     /**
@@ -376,15 +370,6 @@ public class LocaleManager {
         snackbar.setDuration(SNACKBAR_DURATION_MS);
         snackbar.setAction(context.getString(R.string.preferences), null);
         manager.showSnackbar(snackbar);
-    }
-
-    /**
-     * Does some extra checking about whether the user is in special locale.
-     * @param inSpecialLocale Whether the variation service thinks the client is in special locale.
-     * @return The result after extra confirmation.
-     */
-    protected boolean isReallyInSpecialLocale(boolean inSpecialLocale) {
-        return inSpecialLocale;
     }
 
     /**

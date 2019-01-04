@@ -1430,9 +1430,6 @@ extern const char kEnableOfflinePreviewsDescription[];
 extern const char kEnableOskOverscrollName[];
 extern const char kEnableOskOverscrollDescription[];
 
-extern const char kEnableSpecialLocaleName[];
-extern const char kEnableSpecialLocaleDescription[];
-
 extern const char kEnableWebNfcName[];
 extern const char kEnableWebNfcDescription[];
 
