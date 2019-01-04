@@ -143,7 +143,7 @@ test("device_unittests") {
     "//url",
   ]
 
-  # U2F and Serial:
+  # U2F:
   # Android doesn't compile.
   # Linux, requires udev.
   if (!is_linux_without_udev && !is_android) {
@@ -158,15 +158,6 @@ test("device_unittests") {
       "//services/service_manager/public/cpp",
       "//services/service_manager/public/mojom",
     ]
-
-    # Serial is supported in below platforms. See //device/servial/BUILD.gn
-    if (is_win || is_linux || is_mac) {
-      sources += [ "serial/serial_device_enumerator_unittest.cc" ]
-      deps += [ "//device/serial" ]
-      if (is_linux || is_mac) {
-        sources += [ "serial/serial_io_handler_posix_unittest.cc" ]
-      }
-    }
   }
 
   if (use_udev) {

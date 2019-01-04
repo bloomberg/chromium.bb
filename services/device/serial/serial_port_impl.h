@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "device/serial/serial_io_handler.h"
 #include "services/device/public/mojom/serial.mojom.h"
 
 namespace base {
@@ -15,6 +14,8 @@ class SingleThreadTaskRunner;
 }
 
 namespace device {
+
+class SerialIoHandler;
 
 // TODO(leonhsl): Merge this class with SerialIoHandler if/once
 // SerialIoHandler is exposed only via the Device Service.
@@ -51,7 +52,7 @@ class SerialPortImpl : public mojom::SerialPort {
   void ClearBreak(ClearBreakCallback callback) override;
 
   std::string path_;
-  scoped_refptr<device::SerialIoHandler> io_handler_;
+  scoped_refptr<SerialIoHandler> io_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialPortImpl);
 };

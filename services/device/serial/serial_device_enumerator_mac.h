@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_MAC_H_
-#define DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_MAC_H_
+#ifndef SERVICES_DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_MAC_H_
+#define SERVICES_DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_MAC_H_
 
 #include "base/macros.h"
-#include "device/serial/serial_device_enumerator.h"
+#include "services/device/serial/serial_device_enumerator.h"
 
 namespace device {
 
@@ -25,4 +25,4 @@ class SerialDeviceEnumeratorMac : public SerialDeviceEnumerator {
 
 }  // namespace device
 
-#endif  // DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_MAC_H_
+#endif  // SERVICES_DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_MAC_H_

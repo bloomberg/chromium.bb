@@ -6,8 +6,8 @@
 
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
-#include "device/serial/serial_device_enumerator.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/device/serial/serial_device_enumerator.h"
 #include "services/device/serial/serial_port_impl.h"
 
 namespace device {

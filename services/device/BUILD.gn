@@ -198,9 +198,15 @@ source_set("tests") {
 
   if (is_serial_enabled_platform) {
     sources += [
+      "serial/serial_device_enumerator_unittest.cc",
       "serial/serial_port_impl_unittest.cc",
       "serial/serial_port_manager_impl_unittest.cc",
     ]
+
+    if (is_posix) {
+      sources += [ "serial/serial_io_handler_posix_unittest.cc" ]
+    }
+
     deps += [ "//services/device/serial" ]
   }
 

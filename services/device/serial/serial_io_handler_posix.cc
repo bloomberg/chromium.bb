@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/serial/serial_io_handler_posix.h"
+#include "services/device/serial/serial_io_handler_posix.h"
 
 #include <sys/ioctl.h>
 #include <termios.h>
@@ -300,9 +300,9 @@ void SerialIoHandlerPosix::AttemptRead(bool within_read) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (pending_read_buffer()) {
-    int bytes_read = HANDLE_EINTR(read(file().GetPlatformFile(),
-                                       pending_read_buffer(),
-                                       pending_read_buffer_len()));
+    int bytes_read =
+        HANDLE_EINTR(read(file().GetPlatformFile(), pending_read_buffer(),
+                          pending_read_buffer_len()));
     if (bytes_read < 0) {
       if (errno == EAGAIN) {
         // The fd does not have data to read yet so continue waiting.
@@ -359,9 +359,9 @@ void SerialIoHandlerPosix::OnFileCanWriteWithoutBlocking() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (pending_write_buffer()) {
-    int bytes_written = HANDLE_EINTR(write(file().GetPlatformFile(),
-                                           pending_write_buffer(),
-                                           pending_write_buffer_len()));
+    int bytes_written =
+        HANDLE_EINTR(write(file().GetPlatformFile(), pending_write_buffer(),
+                           pending_write_buffer_len()));
     if (bytes_written < 0) {
       WriteCompleted(0, mojom::SerialSendError::SYSTEM_ERROR);
     } else {
@@ -379,8 +379,9 @@ void SerialIoHandlerPosix::EnsureWatchingReads() {
   DCHECK(file().IsValid());
   if (!file_read_watcher_) {
     file_read_watcher_ = base::FileDescriptorWatcher::WatchReadable(
-        file().GetPlatformFile(), base::Bind(&SerialIoHandlerPosix::AttemptRead,
-                                             base::Unretained(this), false));
+        file().GetPlatformFile(),
+        base::BindRepeating(&SerialIoHandlerPosix::AttemptRead,
+                            base::Unretained(this), false));
   }
 }
 
@@ -390,8 +391,9 @@ void SerialIoHandlerPosix::EnsureWatchingWrites() {
   if (!file_write_watcher_) {
     file_write_watcher_ = base::FileDescriptorWatcher::WatchWritable(
         file().GetPlatformFile(),
-        base::Bind(&SerialIoHandlerPosix::OnFileCanWriteWithoutBlocking,
-                   base::Unretained(this)));
+        base::BindRepeating(
+            &SerialIoHandlerPosix::OnFileCanWriteWithoutBlocking,
+            base::Unretained(this)));
   }
 }
 

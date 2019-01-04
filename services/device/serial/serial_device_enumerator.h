@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_H_
-#define DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_H_
+#ifndef SERVICES_DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_H_
+#define SERVICES_DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_H_
 
 #include <memory>
 
@@ -24,4 +24,4 @@ class SerialDeviceEnumerator {
 
 }  // namespace device
 
-#endif  // DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_H_
+#endif  // SERVICES_DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_H_
