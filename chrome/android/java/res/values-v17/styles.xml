@@ -106,7 +106,7 @@
 
     <style name="AlertDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
         <item name="android:windowBackground">@drawable/popup_bg</item>
-        <item name="android:windowTitleStyle">@style/AlertDialogTitleStyle</item>
+        <item name="android:windowTitleStyle">@style/TextAppearance.AlertDialogTitleStyle</item>
         <item name="android:textColorHighlight">@color/text_highlight_color</item>
 
         <!--  Overriding AppCompat values -->
@@ -118,8 +118,15 @@
         <item name="spinnerStyle">@style/SpinnerStyle</item>
     </style>
 
-    <style name="AlertDialogTitleStyle" parent="RtlOverlay.DialogWindowTitle.AppCompat">
-        <item name="android:textAppearance">@style/TextAppearance.BlackHeadline</item>
+    <!-- Styled to match BlackHeadline but setup to override values in the app compat parent theme.
+         Note that the fontFamily doesn't get applied on older versions of Android.
+         See https://crbug.com/918697.-->
+    <style name="TextAppearance.AlertDialogTitleStyle"
+           parent="RtlOverlay.DialogWindowTitle.AppCompat">
+        <item name="android:textColor">@color/default_text_color_list</item>
+        <item name="android:textSize">@dimen/headline_size</item>
+        <item name="android:fontFamily">@font/accent_font</item>
+        <item name="android:textStyle">normal</item>
     </style>
 
     <!-- The dim amount should match the alpha of modal_dialog_scrim_color. -->

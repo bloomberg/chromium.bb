@@ -192,9 +192,6 @@ public class SelectableListLayout<E>
      *                         established.
      * @param selectedGroupResId The resource id of the menu item to show when a selection is
      *                           established.
-     * @param normalBackgroundColorResId The resource id of the color to use as the background color
-     *                                   when selection is not enabled. If null the default appbar
-     *                                   background color will be used.
      * @param listener The OnMenuItemClickListener to set on the toolbar.
      * @param showShadowOnSelection Whether to show the toolbar shadow on selection.
      * @param updateStatusBarColor Whether the status bar color should be updated to match the
@@ -205,7 +202,6 @@ public class SelectableListLayout<E>
     public SelectableListToolbar<E> initializeToolbar(int toolbarLayoutId,
             SelectionDelegate<E> delegate, int titleResId, @Nullable DrawerLayout drawerLayout,
             int normalGroupResId, int selectedGroupResId,
-            @Nullable Integer normalBackgroundColorResId,
             @Nullable OnMenuItemClickListener listener, boolean showShadowOnSelection,
             boolean updateStatusBarColor) {
         mToolbarStub.setLayoutResource(toolbarLayoutId);
@@ -213,7 +209,7 @@ public class SelectableListLayout<E>
         SelectableListToolbar<E> toolbar = (SelectableListToolbar<E>) mToolbarStub.inflate();
         mToolbar = toolbar;
         mToolbar.initialize(delegate, titleResId, drawerLayout, normalGroupResId,
-                selectedGroupResId, normalBackgroundColorResId, updateStatusBarColor);
+                selectedGroupResId, updateStatusBarColor);
 
         if (listener != null) {
             mToolbar.setOnMenuItemClickListener(listener);

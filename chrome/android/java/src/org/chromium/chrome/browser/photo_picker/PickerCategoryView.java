@@ -154,8 +154,8 @@ public class PickerCategoryView extends RelativeLayout
         int titleId = multiSelectionAllowed ? R.string.photo_picker_select_images
                                             : R.string.photo_picker_select_image;
         PhotoPickerToolbar toolbar = (PhotoPickerToolbar) mSelectableListLayout.initializeToolbar(
-                R.layout.photo_picker_toolbar, mSelectionDelegate, titleId, null, 0, 0,
-                R.color.default_primary_color, null, false, false);
+                R.layout.photo_picker_toolbar, mSelectionDelegate, titleId, null, 0, 0, null, false,
+                false);
         toolbar.setNavigationOnClickListener(this);
         Button doneButton = (Button) toolbar.findViewById(R.id.done);
         doneButton.setOnClickListener(this);

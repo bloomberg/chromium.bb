@@ -167,16 +167,13 @@ public class SelectableListToolbar<E>
      *                         established.
      * @param selectedGroupResId The resource id of the menu item to show when a selection is
      *                           established.
-     * @param normalBackgroundColorResId The resource id of the color to use as the background color
-     *                                   when selection is not enabled. If null the default appbar
-     *                                   background color will be used.
      * @param updateStatusBarColor Whether the status bar color should be updated to match the
      *                             toolbar color. If true, the status bar will only be updated if
      *                             the current device fully supports theming and is on Android M+.
      */
     public void initialize(SelectionDelegate<E> delegate, int titleResId,
             @Nullable DrawerLayout drawerLayout, int normalGroupResId, int selectedGroupResId,
-            @Nullable Integer normalBackgroundColorResId, boolean updateStatusBarColor) {
+            boolean updateStatusBarColor) {
         mTitleResId = titleResId;
         mDrawerLayout = drawerLayout;
         mNormalGroupResId = normalGroupResId;
@@ -198,11 +195,8 @@ public class SelectableListToolbar<E>
 
         if (mDrawerLayout != null) initActionBarDrawerToggle();
 
-        normalBackgroundColorResId = normalBackgroundColorResId != null
-                ? normalBackgroundColorResId
-                : ColorUtils.getDefaultThemeColor(getResources(), false);
         mNormalBackgroundColor =
-                ApiCompatibilityUtils.getColor(getResources(), normalBackgroundColorResId);
+                ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color);
         setBackgroundColor(mNormalBackgroundColor);
 
         mSelectionBackgroundColor = ApiCompatibilityUtils.getColor(
@@ -213,6 +207,7 @@ public class SelectableListToolbar<E>
         mLightIconColorList =
                 AppCompatResources.getColorStateList(getContext(), R.color.white_mode_tint);
 
+        setTitleTextAppearance(getContext(), R.style.TextAppearance_BlackHeadline);
         if (mTitleResId != 0) setTitle(mTitleResId);
 
         // TODO(twellington): add the concept of normal & selected tint to apply to all toolbar
