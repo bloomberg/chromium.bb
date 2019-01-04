@@ -1004,22 +1004,15 @@ class BuildSpecsManager(object):
       logging.debug('Build %s: %s -> %s', status, src_file, dest_file)
       CreateSymlink(src_file, dest_file)
 
-  def PushSpecChanges(self, commit_message):
+  def PushSpecChanges(self, commit_message, push_to=None):
     """Pushes any changes you have in the manifest directory.
 
     Args:
       commit_message: Message that the git commit will contain.
+      push_to: A git.RemoteRef object specifying the remote branch to push to.
     """
-    # %submit enables Gerrit automerge feature to manage contention on the
-    # high traffic manifest_versions repository.
-    push_to_git = git.GetTrackingBranch(
-        self.manifest_dir, for_checkout=False, for_push=False)
-    push_to = git.RemoteRef(push_to_git.remote, 'refs/for/master%submit',
-                            push_to_git.project_name)
     _PushGitChanges(
-        self.manifest_dir,
-        commit_message,
-        dry_run=self.dry_run,
+        self.manifest_dir, commit_message, dry_run=self.dry_run,
         push_to=push_to)
 
   def UpdateStatus(self, success_map, message=None, retries=NUM_RETRIES):
@@ -1041,11 +1034,19 @@ class BuildSpecsManager(object):
         commit_message = (
             'Automatic checkin: status=%s build_version %s for %s' %
             (builder_status_lib.BuilderStatus.GetCompletedStatus(success),
-             self.current_version, self.build_names[0]))
+             self.current_version,
+             self.build_names[0]))
 
         self._SetPassSymlinks(success_map)
 
-        self.PushSpecChanges(commit_message)
+        # %submit enables Gerrit automerge feature to manage contention on the
+        # high traffic manifest_versions repository.
+        push_to_git = git.GetTrackingBranch(
+            self.manifest_dir, for_checkout=False, for_push=False)
+        push_to_gerrit = git.RemoteRef(push_to_git.remote,
+                                       'refs/for/master%submit',
+                                       push_to_git.project_name)
+        self.PushSpecChanges(commit_message, push_to=push_to_gerrit)
         return
       except cros_build_lib.RunCommandError as e:
         last_error = ('Failed to update the status for %s during remote'
