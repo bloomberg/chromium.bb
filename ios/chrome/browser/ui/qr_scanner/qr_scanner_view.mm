@@ -9,8 +9,8 @@
 #include "base/numerics/math_constants.h"
 #include "ios/chrome/browser/ui/icons/chrome_icon.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -19,9 +19,6 @@
 #endif
 
 namespace {
-
-// Padding for buttons in the QR scanner UI.
-const CGFloat kButtonPadding = 16.0;
 
 // Width and height of the QR scanner viewport.
 const CGFloat kViewportSize_iPhone = 250.0;
@@ -230,7 +227,7 @@ CGFloat GetViewportSize() {
 
 @interface QRScannerView () {
   // A button to toggle the torch.
-  MDCFlatButton* _torchButton;
+  UIBarButtonItem* _torchButton;
   // A view containing the preview layer for camera input.
   VideoPreviewView* _previewView;
   // A transparent overlay on top of the preview layer.
@@ -245,35 +242,9 @@ CGFloat GetViewportSize() {
   NSLayoutConstraint* _overlayHeightConstraint;
 }
 
-// Creates an image with template rendering mode for use in icons.
-- (UIImage*)templateImageWithName:(NSString*)name;
-// Creates an icon for torch turned on.
-- (UIImage*)torchOnIcon;
-// Creates an icon for torch turned off.
-- (UIImage*)torchOffIcon;
-
-// Sets common configuration properties of a button in the QR scanner UI and
-// adds it to self.view.
-- (void)configureButton:(MDCFlatButton*)button
-               withIcon:(UIImage*)icon
-                 action:(SEL)action;
-// Adds a close button.
-- (void)addCloseButton;
-// Adds a torch button and stores it in |_torchButton|.
-- (void)addTorchButton;
-// Adds a caption to the viewport.
-- (void)addViewportCaptionLabel;
-// Adds a preview view to |self| and configures its layout constraints.
-- (void)setupPreviewView;
-// Adds a transparent overlay with a viewport border to |self| and configures
-// its layout constraints.
-- (void)setupPreviewOverlayView;
-
 @end
 
 @implementation QRScannerView
-
-@synthesize delegate = _delegate;
 
 #pragma mark lifecycle
 
@@ -287,20 +258,8 @@ CGFloat GetViewportSize() {
   _delegate = delegate;
   [self setupPreviewView];
   [self setupPreviewOverlayView];
-  [self addCloseButton];
-  [self addTorchButton];
-  [self addViewportCaptionLabel];
+  [self addSubviews];
   return self;
-}
-
-- (instancetype)initWithFrame:(CGRect)frame {
-  NOTREACHED();
-  return nil;
-}
-
-- (instancetype)initWithCoder:(NSCoder*)coder {
-  NOTREACHED();
-  return nil;
 }
 
 #pragma mark UIView
@@ -343,7 +302,7 @@ CGFloat GetViewportSize() {
     accessibilityValue = l10n_util::GetNSString(
         IDS_IOS_QR_SCANNER_TORCH_OFF_ACCESSIBILITY_VALUE);
   }
-  [_torchButton setImage:icon forState:UIControlStateNormal];
+  [_torchButton setImage:icon];
   [_torchButton setAccessibilityValue:accessibilityValue];
 }
 
@@ -395,6 +354,7 @@ CGFloat GetViewportSize() {
 
 #pragma mark private methods
 
+// Creates an image with template rendering mode for use in icons.
 - (UIImage*)templateImageWithName:(NSString*)name {
   UIImage* image = [[UIImage imageNamed:name]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
@@ -402,80 +362,67 @@ CGFloat GetViewportSize() {
   return image;
 }
 
+// Creates an icon for torch turned on.
 - (UIImage*)torchOnIcon {
   UIImage* icon = [self templateImageWithName:@"qr_scanner_torch_on"];
   return icon;
 }
 
+// Creates an icon for torch turned off.
 - (UIImage*)torchOffIcon {
   UIImage* icon = [self templateImageWithName:@"qr_scanner_torch_off"];
   return icon;
 }
 
-- (void)configureButton:(MDCFlatButton*)button
-               withIcon:(UIImage*)icon
-                 action:(SEL)action {
-  [button setTintColor:[UIColor whiteColor]];
-  [button setImage:icon forState:UIControlStateNormal];
-  [button setInkStyle:MDCInkStyleUnbounded];
-  [button addTarget:_delegate
-                action:action
-      forControlEvents:UIControlEventTouchUpInside];
-  [self addSubview:button];
-}
+// Adds the subviews.
+- (void)addSubviews {
+  UIBarButtonItem* close =
+      [[UIBarButtonItem alloc] initWithImage:[ChromeIcon closeIcon]
+                                       style:UIBarButtonItemStylePlain
+                                      target:_delegate
+                                      action:@selector(dismissQRScannerView:)];
+  close.accessibilityLabel = [[ChromeIcon closeIcon] accessibilityLabel];
+  UIBarButtonItem* spacer = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
+                           target:nil
+                           action:nil];
+  _torchButton =
+      [[UIBarButtonItem alloc] initWithImage:[self torchOffIcon]
+                                       style:UIBarButtonItemStylePlain
+                                      target:_delegate
+                                      action:@selector(toggleTorch:)];
+  _torchButton.enabled = NO;
+  _torchButton.accessibilityIdentifier = @"qr_scanner_torch_button";
+  _torchButton.accessibilityLabel = l10n_util::GetNSString(
+      IDS_IOS_QR_SCANNER_TORCH_BUTTON_ACCESSIBILITY_LABEL);
+  _torchButton.accessibilityValue =
+      l10n_util::GetNSString(IDS_IOS_QR_SCANNER_TORCH_OFF_ACCESSIBILITY_VALUE);
 
-- (void)addCloseButton {
-  MDCFlatButton* closeButton = [[MDCFlatButton alloc] initWithFrame:CGRectZero];
-  UIImage* closeIcon = [ChromeIcon closeIcon];
-  UIImage* closeButtonIcon =
-      [closeIcon imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  [closeButton setAccessibilityLabel:[closeIcon accessibilityLabel]];
-  [closeButton setAccessibilityIdentifier:[closeIcon accessibilityIdentifier]];
-  [self configureButton:closeButton
-               withIcon:closeButtonIcon
-                 action:@selector(dismissQRScannerView:)];
+  UIToolbar* toolbar = [[UIToolbar alloc] init];
+  toolbar.items = @[ close, spacer, _torchButton ];
+  toolbar.tintColor = UIColor.whiteColor;
+  [toolbar setBackgroundImage:[[UIImage alloc] init]
+           forToolbarPosition:UIToolbarPositionAny
+                   barMetrics:UIBarMetricsDefault];
+  [toolbar setShadowImage:[[UIImage alloc] init]
+       forToolbarPosition:UIBarPositionAny];
 
-  // Constraints for closeButton.
-  [closeButton setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [NSLayoutConstraint activateConstraints:@[
-    [[closeButton leadingAnchor] constraintEqualToAnchor:[self leadingAnchor]
-                                                constant:kButtonPadding],
-    [[closeButton bottomAnchor] constraintEqualToAnchor:[self bottomAnchor]
-                                               constant:-kButtonPadding]
-  ]];
-}
+  [toolbar setBackgroundColor:[UIColor clearColor]];
+  toolbar.translatesAutoresizingMaskIntoConstraints = NO;
+  [self addSubview:toolbar];
 
-- (void)addTorchButton {
-  DCHECK(!_torchButton);
-  _torchButton = [[MDCFlatButton alloc] initWithFrame:CGRectZero];
-  [_torchButton setEnabled:NO];
-  [self configureButton:_torchButton
-               withIcon:[self torchOffIcon]
-                 action:@selector(toggleTorch:)];
-  [_torchButton setAccessibilityIdentifier:@"qr_scanner_torch_button"];
-  [_torchButton setAccessibilityLabel:
-                    l10n_util::GetNSString(
-                        IDS_IOS_QR_SCANNER_TORCH_BUTTON_ACCESSIBILITY_LABEL)];
-  [_torchButton setAccessibilityValue:
-                    l10n_util::GetNSString(
-                        IDS_IOS_QR_SCANNER_TORCH_OFF_ACCESSIBILITY_VALUE)];
+  AddSameConstraintsToSides(self, toolbar,
+                            LayoutSides::kLeading | LayoutSides::kTrailing);
+  [toolbar.bottomAnchor
+      constraintEqualToAnchor:self.safeAreaLayoutGuide.bottomAnchor]
+      .active = YES;
 
-  // Constraints for _torchButton.
-  [_torchButton setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [NSLayoutConstraint activateConstraints:@[
-    [[_torchButton trailingAnchor] constraintEqualToAnchor:[self trailingAnchor]
-                                                  constant:-kButtonPadding],
-    [[_torchButton bottomAnchor] constraintEqualToAnchor:[self bottomAnchor]
-                                                constant:-kButtonPadding]
-  ]];
-}
-
-- (void)addViewportCaptionLabel {
   UILabel* viewportCaption = [[UILabel alloc] init];
   NSString* label = l10n_util::GetNSString(IDS_IOS_QR_SCANNER_VIEWPORT_CAPTION);
   [viewportCaption setText:label];
   [viewportCaption
       setFont:[UIFont preferredFontForTextStyle:UIFontTextStyleBody]];
+  [viewportCaption setAdjustsFontForContentSizeCategory:YES];
   [viewportCaption setNumberOfLines:0];
   [viewportCaption setTextAlignment:NSTextAlignmentCenter];
   [viewportCaption setAccessibilityLabel:label];
@@ -487,30 +434,47 @@ CGFloat GetViewportSize() {
   [viewportCaption.layer setShadowOpacity:kViewportCaptionShadowOpacity];
   [viewportCaption.layer setMasksToBounds:NO];
   [viewportCaption.layer setShouldRasterize:YES];
-  [self addSubview:viewportCaption];
+
+  UIScrollView* scrollView = [[UIScrollView alloc] init];
+  scrollView.showsVerticalScrollIndicator = NO;
+  [self addSubview:scrollView];
+  [scrollView addSubview:viewportCaption];
 
   // Constraints for viewportCaption.
-  [viewportCaption setTranslatesAutoresizingMaskIntoConstraints:NO];
+  scrollView.translatesAutoresizingMaskIntoConstraints = NO;
+  viewportCaption.translatesAutoresizingMaskIntoConstraints = NO;
+
   [NSLayoutConstraint activateConstraints:@[
-    [[viewportCaption topAnchor]
-        constraintEqualToAnchor:[self centerYAnchor]
+    [scrollView.topAnchor
+        constraintEqualToAnchor:self.centerYAnchor
                        constant:GetViewportSize() / 2 +
                                 kViewportCaptionVerticalPadding],
+    [scrollView.bottomAnchor constraintEqualToAnchor:toolbar.topAnchor],
+    [scrollView.leadingAnchor
+        constraintEqualToAnchor:self.leadingAnchor
+                       constant:kViewportCaptionHorizontalPadding],
     [viewportCaption.leadingAnchor
         constraintEqualToAnchor:self.leadingAnchor
                        constant:kViewportCaptionHorizontalPadding],
+    [scrollView.trailingAnchor
+        constraintEqualToAnchor:self.trailingAnchor
+                       constant:-kViewportCaptionHorizontalPadding],
     [viewportCaption.trailingAnchor
         constraintEqualToAnchor:self.trailingAnchor
                        constant:-kViewportCaptionHorizontalPadding],
   ]];
+  AddSameConstraints(scrollView, viewportCaption);
 }
 
+// Adds a preview view to |self| and configures its layout constraints.
 - (void)setupPreviewView {
   DCHECK(!_previewView);
   _previewView = [[VideoPreviewView alloc] initWithFrame:self.frame];
   [self insertSubview:_previewView atIndex:0];
 }
 
+// Adds a transparent overlay with a viewport border to |self| and configures
+// its layout constraints.
 - (void)setupPreviewOverlayView {
   DCHECK(!_previewOverlay);
   _previewOverlay = [[PreviewOverlayView alloc] initWithFrame:CGRectZero];
