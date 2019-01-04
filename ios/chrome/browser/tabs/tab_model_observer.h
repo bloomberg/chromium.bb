@@ -54,9 +54,6 @@
 // The number of Tabs in this TabModel changed.
 - (void)tabModelDidChangeTabCount:(TabModel*)model;
 
-// |tab| is about to start loading a new URL.
-- (void)tabModel:(TabModel*)model willStartLoadingTab:(Tab*)tab;
-
 // Some properties about the given tab changed, such as the URL or title.
 - (void)tabModel:(TabModel*)model didChangeTab:(Tab*)tab;
 
