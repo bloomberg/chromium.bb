@@ -182,6 +182,11 @@ class WebTestBackgroundFetchDelegate::WebTestBackgroundFetchDownloadClient
     std::move(callback).Run(std::move(request_body));
   }
 
+  const base::WeakPtr<content::BackgroundFetchDelegate::Client>& client()
+      const {
+    return client_;
+  }
+
  private:
   base::WeakPtr<content::BackgroundFetchDelegate::Client> client_;
   base::flat_map<std::string, std::string> guid_to_unique_job_id_mapping_;
@@ -286,6 +291,8 @@ void WebTestBackgroundFetchDelegate::MarkJobComplete(
 void WebTestBackgroundFetchDelegate::UpdateUI(
     const std::string& job_unique_id,
     const base::Optional<std::string>& title,
-    const base::Optional<SkBitmap>& icon) {}
+    const base::Optional<SkBitmap>& icon) {
+  background_fetch_client_->client()->OnUIUpdated(job_unique_id);
+}
 
 }  // namespace content
