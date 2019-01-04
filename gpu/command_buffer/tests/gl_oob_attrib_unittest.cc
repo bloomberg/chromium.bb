@@ -24,6 +24,15 @@ class GLOOBAttribTest : public testing::Test {
 // Tests that enabling a vertex array for a location that matches any column of
 // a matrix attribute correctly triggers out-of-bounds checks.
 TEST_F(GLOOBAttribTest, DrawUsingOOBMatrixAttrib) {
+  // The passthrough command decoder uses robust buffer access behaviour. This
+  // makes OOB error checks unimportant because OOB accesses will not cause
+  // errors. OOB accesses will also return implementation-dependent values.
+  // See the KHR_robust_buffer_access_behavior spec for more information.
+  if (gl_.gpu_preferences().use_passthrough_cmd_decoder) {
+    std::cout << "Test skipped, KHR_robust_buffer_access_behavior enabled.\n";
+    return;
+  }
+
   const char kVertexShader[] =
       "attribute mat3 attrib;\n"
       "varying vec4 color;\n"
