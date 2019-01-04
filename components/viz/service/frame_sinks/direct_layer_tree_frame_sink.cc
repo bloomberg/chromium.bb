@@ -327,6 +327,20 @@ void DirectLayerTreeFrameSink::OnBeginFrame(
           base::TimeDelta::FromMilliseconds(100), 50);
     }
   }
+  if (!needs_begin_frames_) {
+    TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
+                           TRACE_ID_GLOBAL(args.trace_id),
+                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                           "step", "ReceiveBeginFrameDiscard");
+    // OnBeginFrame() can be called just to deliver presentation feedback, so
+    // report that we didn't use this BeginFrame.
+    DidNotProduceFrame(BeginFrameAck(args, false));
+    return;
+  }
+  TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
+                         TRACE_ID_GLOBAL(args.trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "step", "ReceiveBeginFrame");
 
   begin_frame_source_->OnBeginFrame(args);
 }
@@ -340,8 +354,9 @@ void DirectLayerTreeFrameSink::OnBeginFramePausedChanged(bool paused) {
   begin_frame_source_->OnSetBeginFrameSourcePaused(paused);
 }
 
-void DirectLayerTreeFrameSink::OnNeedsBeginFrames(bool needs_begin_frame) {
-  support_->SetNeedsBeginFrame(needs_begin_frame);
+void DirectLayerTreeFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
+  needs_begin_frames_ = needs_begin_frames;
+  support_->SetNeedsBeginFrame(needs_begin_frames);
 }
 
 void DirectLayerTreeFrameSink::OnContextLost() {
