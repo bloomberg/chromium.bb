@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -482,10 +483,14 @@ void ImageResource::ResponseReceived(
     std::unique_ptr<WebDataConsumerHandle> handle) {
   DCHECK(!handle);
   DCHECK(!multipart_parser_);
-  // If there's no boundary, just handle the request normally.
-  if (response.IsMultipart() && !response.MultipartBoundary().IsEmpty()) {
-    multipart_parser_ = MakeGarbageCollected<MultipartImageResourceParser>(
-        response, response.MultipartBoundary(), this);
+  if (response.MimeType() == "multipart/x-mixed-replace") {
+    Vector<char> boundary = network_utils::ParseMultipartBoundary(
+        response.HttpHeaderField(http_names::kContentType));
+    // If there's no boundary, just handle the request normally.
+    if (!boundary.IsEmpty()) {
+      multipart_parser_ = MakeGarbageCollected<MultipartImageResourceParser>(
+          response, boundary, this);
+    }
   }
 
   // Notify the base class that a response has been received. Note that after

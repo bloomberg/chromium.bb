@@ -254,10 +254,6 @@ class WebURLResponse {
   // Returns true if the URL list is not empty.
   BLINK_PLATFORM_EXPORT bool HasUrlListViaServiceWorker() const;
 
-  // The boundary of the response. Set only when this is a multipart response.
-  BLINK_PLATFORM_EXPORT void SetMultipartBoundary(const char* bytes,
-                                                  size_t /* size */);
-
   // The cache name of the CacheStorage from where the response is served via
   // the ServiceWorker. Null if the response isn't from the CacheStorage.
   BLINK_PLATFORM_EXPORT void SetCacheStorageCacheName(const WebString&);
