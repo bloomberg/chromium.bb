@@ -85,6 +85,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/intersection_geometry.h"
 #include "third_party/blink/renderer/core/layout/layout_media.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
@@ -102,6 +103,7 @@
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -133,8 +135,6 @@ using DocumentElementSetMap =
 namespace {
 
 constexpr float kMostlyFillViewportThreshold = 0.85f;
-constexpr TimeDelta kCheckViewportIntersectionInterval =
-    TimeDelta::FromSeconds(1);
 
 // This enum is used to record histograms. Do not reorder.
 enum MediaControlsShow {
@@ -463,10 +463,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
       audio_tracks_timer_(document.GetTaskRunner(TaskType::kInternalMedia),
                           this,
                           &HTMLMediaElement::AudioTracksTimerFired),
-      check_viewport_intersection_timer_(
-          document.GetTaskRunner(TaskType::kInternalMedia),
-          this,
-          &HTMLMediaElement::CheckViewportIntersectionTimerFired),
       removed_from_document_timer_(
           document.GetTaskRunner(TaskType::kInternalMedia),
           this,
@@ -567,8 +563,10 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
       GetDocument().GetTaskRunner(TaskType::kInternalMedia));
   audio_tracks_timer_.MoveToNewTaskRunner(
       GetDocument().GetTaskRunner(TaskType::kInternalMedia));
-  check_viewport_intersection_timer_.MoveToNewTaskRunner(
-      GetDocument().GetTaskRunner(TaskType::kInternalMedia));
+  if (viewport_intersection_observer_) {
+    ActivateViewportIntersectionMonitoring(false);
+    ActivateViewportIntersectionMonitoring(true);
+  }
   deferred_load_timer_.MoveToNewTaskRunner(
       GetDocument().GetTaskRunner(TaskType::kInternalMedia));
   removed_from_document_timer_.MoveToNewTaskRunner(
@@ -3547,7 +3545,6 @@ void HTMLMediaElement::UpdatePlayState() {
 void HTMLMediaElement::StopPeriodicTimers() {
   progress_event_timer_.Stop();
   playback_progress_timer_.Stop();
-  check_viewport_intersection_timer_.Stop();
   if (lazy_load_visibility_observer_) {
     lazy_load_visibility_observer_->Stop();
     lazy_load_visibility_observer_ = nullptr;
@@ -3975,6 +3972,7 @@ bool HTMLMediaElement::IsInteractiveContent() const {
 }
 
 void HTMLMediaElement::Trace(blink::Visitor* visitor) {
+  visitor->Trace(viewport_intersection_observer_);
   visitor->Trace(played_time_ranges_);
   visitor->Trace(async_event_queue_);
   visitor->Trace(error_);
@@ -4223,11 +4221,17 @@ void HTMLMediaElement::AudioSourceProviderImpl::Trace(blink::Visitor* visitor) {
 }
 
 void HTMLMediaElement::ActivateViewportIntersectionMonitoring(bool activate) {
-  if (activate && !check_viewport_intersection_timer_.IsActive()) {
-    check_viewport_intersection_timer_.StartRepeating(
-        kCheckViewportIntersectionInterval, FROM_HERE);
-  } else if (!activate) {
-    check_viewport_intersection_timer_.Stop();
+  if (activate && !viewport_intersection_observer_) {
+    viewport_intersection_observer_ = IntersectionObserver::Create(
+        {}, {kMostlyFillViewportThreshold}, &(GetDocument()),
+        WTF::BindRepeating(&HTMLMediaElement::OnViewportIntersectionChanged,
+                           WrapWeakPersistent(this)),
+        IntersectionObserver::kFractionOfRoot);
+    viewport_intersection_observer_->observe(this);
+  } else if (!activate && viewport_intersection_observer_) {
+    viewport_intersection_observer_->disconnect();
+    viewport_intersection_observer_ = nullptr;
+    mostly_filling_viewport_ = false;
   }
 }
 
@@ -4270,19 +4274,10 @@ bool HTMLMediaElement::MediaShouldBeOpaque() const {
          EffectivePreloadType() != WebMediaPlayer::kPreloadNone;
 }
 
-void HTMLMediaElement::CheckViewportIntersectionTimerFired(TimerBase*) {
-  bool should_report_root_bounds = true;
-  IntersectionGeometry geometry(nullptr, *this, Vector<Length>(),
-                                should_report_root_bounds);
-  geometry.ComputeGeometry();
-  IntRect intersect_rect = geometry.IntersectionIntRect();
-  if (current_intersect_rect_ == intersect_rect)
-    return;
-
-  current_intersect_rect_ = intersect_rect;
-  bool is_mostly_filling_viewport =
-      (current_intersect_rect_.Size().Area() >
-       kMostlyFillViewportThreshold * geometry.RootIntRect().Size().Area());
+void HTMLMediaElement::OnViewportIntersectionChanged(
+    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
+  const bool is_mostly_filling_viewport =
+      (entries.back()->intersectionRatio() >= kMostlyFillViewportThreshold);
   if (mostly_filling_viewport_ == is_mostly_filling_viewport)
     return;
 

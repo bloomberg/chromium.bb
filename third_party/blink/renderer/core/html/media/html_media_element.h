@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/dom/pausable_object.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/media/media_controls.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/platform/audio/audio_source_provider.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
@@ -441,7 +442,8 @@ class CORE_EXPORT HTMLMediaElement
   void ProgressEventTimerFired(TimerBase*);
   void PlaybackProgressTimerFired(TimerBase*);
   void ScheduleTimeupdateEvent(bool periodic_event);
-  void CheckViewportIntersectionTimerFired(TimerBase*);
+  void OnViewportIntersectionChanged(
+      const HeapVector<Member<IntersectionObserverEntry>>& entries);
   void StartPlaybackProgressTimer();
   void StartProgressEventTimer();
   void StopPeriodicTimers();
@@ -560,8 +562,9 @@ class CORE_EXPORT HTMLMediaElement
   TaskRunnerTimer<HTMLMediaElement> progress_event_timer_;
   TaskRunnerTimer<HTMLMediaElement> playback_progress_timer_;
   TaskRunnerTimer<HTMLMediaElement> audio_tracks_timer_;
-  TaskRunnerTimer<HTMLMediaElement> check_viewport_intersection_timer_;
   TaskRunnerTimer<HTMLMediaElement> removed_from_document_timer_;
+
+  Member<IntersectionObserver> viewport_intersection_observer_;
 
   Member<TimeRanges> played_time_ranges_;
   Member<EventQueue> async_event_queue_;
@@ -656,6 +659,8 @@ class CORE_EXPORT HTMLMediaElement
   bool processing_preference_change_ : 1;
   bool playing_remotely_ : 1;
 
+  // The following is always false unless viewport intersection monitoring is
+  // turned on via ActivateViewportIntersectionMonitoring().
   bool mostly_filling_viewport_ : 1;
 
   bool was_always_muted_ : 1;
@@ -745,8 +750,6 @@ class CORE_EXPORT HTMLMediaElement
   Member<AutoplayPolicy> autoplay_policy_;
 
   WebRemotePlaybackClient* remote_playback_client_;
-
-  IntRect current_intersect_rect_;
 
   Member<MediaControls> media_controls_;
   Member<HTMLMediaElementControlsList> controls_list_;

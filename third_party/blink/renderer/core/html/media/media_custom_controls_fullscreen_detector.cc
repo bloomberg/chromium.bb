@@ -129,6 +129,8 @@ void MediaCustomControlsFullscreenDetector::ContextDestroyed() {
 void MediaCustomControlsFullscreenDetector::
     OnCheckViewportIntersectionTimerFired(TimerBase*) {
   DCHECK(IsVideoOrParentFullscreen());
+
+  // TODO(crbug.com/906258): This can cause a crash when DCHECKs are enabled!
   IntersectionGeometry geometry(nullptr, VideoElement(), Vector<Length>(),
                                 true);
   geometry.ComputeGeometry();
