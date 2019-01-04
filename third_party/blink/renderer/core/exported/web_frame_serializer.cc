@@ -403,14 +403,10 @@ std::pair<Node*, Element*> MHTMLFrameSerializerDelegate::GetAuxiliaryDOMTree(
 
 bool CacheControlNoStoreHeaderPresent(
     const WebLocalFrameImpl& web_local_frame) {
-  const ResourceResponse& response =
-      web_local_frame.GetDocumentLoader()->GetResponse().ToResourceResponse();
-  if (response.CacheControlContainsNoStore())
-    return true;
-
-  DocumentLoader* document_loader =
-      web_local_frame.GetFrame()->Loader().GetDocumentLoader();
-  return document_loader->CacheControlContainsNoStore();
+  return web_local_frame.GetDocumentLoader()
+      ->GetResponse()
+      .ToResourceResponse()
+      .CacheControlContainsNoStore();
 }
 
 bool FrameShouldBeSerializedAsMHTML(
