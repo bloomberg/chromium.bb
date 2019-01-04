@@ -4,6 +4,7 @@
 
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 
+#include "base/auto_reset.h"
 #include "base/message_loop/message_pump.h"
 #include "base/time/tick_clock.h"
 #include "base/trace_event/trace_event.h"
@@ -121,9 +122,13 @@ void ThreadControllerWithMessagePumpImpl::ScheduleWork() {
   if (RunsTasksInCurrentSequence()) {
     // Don't post a DoWork if there's an immediate DoWork in flight or if we're
     // inside a top level DoWork. We can rely on a continuation being posted as
-    // needed.
-    if (main_thread_only().immediate_do_work_posted || InTopLevelDoWork())
+    // needed. We need to avoid this inside DoDelayedWork, however, because
+    // returning true there doesn't guarantee work to get scheduled.
+    // TODO(skyostil@): Simplify this once DoWork/DoDelayedWork get merged.
+    if (main_thread_only().immediate_do_work_posted ||
+        (InTopLevelDoWork() && !main_thread_only().doing_delayed_work)) {
       return;
+    }
     main_thread_only().immediate_do_work_posted = true;
   }
   pump_->ScheduleWork();
@@ -216,6 +221,7 @@ bool ThreadControllerWithMessagePumpImpl::DoWork() {
 
 bool ThreadControllerWithMessagePumpImpl::DoDelayedWork(
     TimeTicks* next_run_time) {
+  AutoReset<bool> delayed_scope(&main_thread_only().doing_delayed_work, true);
   return DoWorkImpl(next_run_time);
 }
 

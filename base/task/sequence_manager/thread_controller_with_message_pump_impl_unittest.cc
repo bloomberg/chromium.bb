@@ -350,6 +350,25 @@ TEST_F(ThreadControllerWithMessagePumpTest,
   testing::Mock::VerifyAndClearExpectations(message_pump_);
 }
 
+TEST_F(ThreadControllerWithMessagePumpTest, ScheduleWorkFromDelayedTask) {
+  ThreadTaskRunnerHandle handle(MakeRefCounted<FakeTaskRunner>());
+
+  EXPECT_CALL(*message_pump_, Run(_))
+      .WillOnce(Invoke([](MessagePump::Delegate* delegate) {
+        base::TimeTicks run_time;
+        delegate->DoDelayedWork(&run_time);
+      }));
+  EXPECT_CALL(*message_pump_, ScheduleWork());
+
+  task_source_.AddTask(PendingTask(FROM_HERE, base::BindLambdaForTesting([&]() {
+                                     thread_controller_.ScheduleWork();
+                                   }),
+                                   TimeTicks()));
+  RunLoop().Run();
+
+  testing::Mock::VerifyAndClearExpectations(message_pump_);
+}
+
 TEST_F(ThreadControllerWithMessagePumpTest, SetDefaultTaskRunner) {
   scoped_refptr<SingleThreadTaskRunner> task_runner1 =
       MakeRefCounted<FakeTaskRunner>();
