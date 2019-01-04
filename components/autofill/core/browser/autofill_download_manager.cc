@@ -158,9 +158,6 @@ void LogHttpResponseData(AutofillDownloadManager::RequestType request_type,
       break;
     default:
       NOTREACHED();
-      base::UmaHistogramSparse("Autofill.Unknown.HttpResponseOrErrorCode",
-                               response_or_error_code);
-      UMA_HISTOGRAM_TIMES("Autofill.Unknown.RequestDuration", request_duration);
   }
 }
 
@@ -179,8 +176,6 @@ void LogFailingPayloadSize(AutofillDownloadManager::RequestType request_type,
       break;
     default:
       NOTREACHED();
-      UMA_HISTOGRAM_COUNTS_100000("Autofill.Unknown.FailingPayloadSize",
-                                  num_bytes);
   }
 }
 
@@ -197,7 +192,6 @@ void LogExponentialBackoffDelay(
       break;
     default:
       NOTREACHED();
-      UMA_HISTOGRAM_MEDIUM_TIMES("Autofill.Unknown.BackoffDelay", delay);
   }
 }
 
