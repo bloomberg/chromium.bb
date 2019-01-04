@@ -25,6 +25,7 @@ import android.support.annotation.CallSuper;
 import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 import android.util.Pair;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -343,7 +344,17 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // not go through ChromeLauncherActivity that would have normally triggered this.
         mPartnerBrowserRefreshNeeded = !PartnerBrowserCustomizations.isInitialized();
 
-        ApplicationInitialization.enableFullscreenFlags(getResources());
+        CommandLine commandLine = CommandLine.getInstance();
+        if (!commandLine.hasSwitch(ChromeSwitches.DISABLE_FULLSCREEN)) {
+            TypedValue threshold = new TypedValue();
+            getResources().getValue(R.dimen.top_controls_show_threshold, threshold, true);
+            commandLine.appendSwitchWithValue(ContentSwitches.TOP_CONTROLS_SHOW_THRESHOLD,
+                    threshold.coerceToString().toString());
+            getResources().getValue(R.dimen.top_controls_hide_threshold, threshold, true);
+            commandLine.appendSwitchWithValue(ContentSwitches.TOP_CONTROLS_HIDE_THRESHOLD,
+                    threshold.coerceToString().toString());
+        }
+
         getWindow().setBackgroundDrawable(getBackgroundDrawable());
 
         mFullscreenManager = createFullscreenManager();
