@@ -568,7 +568,20 @@ void QuicSession::SendRstStream(QuicStreamId id,
 
   if (connection()->connected()) {
     // Only send a RST_STREAM frame if still connected.
-    control_frame_manager_.WriteOrBufferRstStream(id, error, bytes_written);
+    // Send a RST_STREAM frame. If version 99, will include
+    // an IETF-QUIC STOP_SENDING frame in the packet so that
+    // the peer also shuts down and sends a RST_STREAM back.
+    QuicConnection::ScopedPacketFlusher* flusher =
+        (connection_->transport_version() == QUIC_VERSION_99)
+            ? new QuicConnection::ScopedPacketFlusher(
+                  connection(), QuicConnection::SEND_ACK_IF_QUEUED)
+            : nullptr;
+    control_frame_manager_.WriteOrBufferRstStreamStopSending(id, error,
+                                                             bytes_written);
+    if (flusher) {
+      delete flusher;
+      flusher = nullptr;
+    }
     connection_->OnStreamReset(id, error);
   }
   if (error != QUIC_STREAM_NO_ERROR && QuicContainsKey(zombie_streams_, id)) {

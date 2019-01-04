@@ -342,8 +342,15 @@ class QuicSpdySessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
   }
 
   void CloseStream(QuicStreamId id) {
-    EXPECT_CALL(*connection_, SendControlFrame(_))
-        .WillOnce(Invoke(&session_, &TestSession::ClearControlFrame));
+    if (transport_version() != QUIC_VERSION_99) {
+      EXPECT_CALL(*connection_, SendControlFrame(_))
+          .WillOnce(Invoke(&session_, &TestSession::ClearControlFrame));
+    } else {
+      // V99 has two frames, RST_STREAM and STOP_SENDING
+      EXPECT_CALL(*connection_, SendControlFrame(_))
+          .Times(2)
+          .WillRepeatedly(Invoke(&session_, &TestSession::ClearControlFrame));
+    }
     EXPECT_CALL(*connection_, OnStreamReset(id, _));
     session_.CloseStream(id);
     closed_streams_.insert(id);
@@ -1207,9 +1214,16 @@ TEST_P(QuicSpdySessionTestServer,
   const QuicStreamOffset kByteOffset =
       1 + kInitialSessionFlowControlWindowForTest / 2;
 
-  EXPECT_CALL(*connection_, SendControlFrame(_))
-      .Times(2)
-      .WillRepeatedly(Invoke(&session_, &TestSession::ClearControlFrame));
+  if (transport_version() != QUIC_VERSION_99) {
+    EXPECT_CALL(*connection_, SendControlFrame(_))
+        .Times(2)
+        .WillRepeatedly(Invoke(&session_, &TestSession::ClearControlFrame));
+  } else {
+    // V99 has an additional, STOP_SENDING, frame.
+    EXPECT_CALL(*connection_, SendControlFrame(_))
+        .Times(3)
+        .WillRepeatedly(Invoke(&session_, &TestSession::ClearControlFrame));
+  }
   EXPECT_CALL(*connection_, OnStreamReset(stream->id(), _));
   QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream->id(),
                                QUIC_STREAM_CANCELLED, kByteOffset);
@@ -1415,8 +1429,15 @@ TEST_P(QuicSpdySessionTestServer,
     QuicStreamFrame data1(i, false, 0, QuicStringPiece("HT"));
     session_.OnStreamFrame(data1);
     // EXPECT_EQ(1u, session_.GetNumOpenStreams());
-    EXPECT_CALL(*connection_, SendControlFrame(_))
-        .WillOnce(Invoke(&session_, &TestSession::ClearControlFrame));
+    if (transport_version() != QUIC_VERSION_99) {
+      EXPECT_CALL(*connection_, SendControlFrame(_))
+          .WillOnce(Invoke(&session_, &TestSession::ClearControlFrame));
+    } else {
+      // V99 has two frames, RST_STREAM and STOP_SENDING
+      EXPECT_CALL(*connection_, SendControlFrame(_))
+          .Times(2)
+          .WillRepeatedly(Invoke(&session_, &TestSession::ClearControlFrame));
+    }
     // Close the stream only if not version 99. If we are version 99
     // then closing the stream opens up the available stream id space,
     // so we never bump into the limit.

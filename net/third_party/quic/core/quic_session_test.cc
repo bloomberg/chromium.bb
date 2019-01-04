@@ -341,8 +341,16 @@ class QuicSessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
       EXPECT_CALL(*connection_, SendControlFrame(_)).Times(0);
       EXPECT_CALL(*connection_, OnStreamReset(_, _)).Times(0);
     } else {
-      EXPECT_CALL(*connection_, SendControlFrame(_))
-          .WillOnce(Invoke(&session_, &TestSession::ClearControlFrame));
+      // Verify reset IS sent for BIDIRECTIONAL streams.
+      if (session_.connection()->transport_version() == QUIC_VERSION_99) {
+        // Once for the RST_STREAM, Once for the STOP_SENDING
+        EXPECT_CALL(*connection_, SendControlFrame(_))
+            .Times(2)
+            .WillRepeatedly(Invoke(&session_, &TestSession::ClearControlFrame));
+      } else {
+        EXPECT_CALL(*connection_, SendControlFrame(_))
+            .WillOnce(Invoke(&session_, &TestSession::ClearControlFrame));
+      }
       EXPECT_CALL(*connection_, OnStreamReset(id, _));
     }
     session_.CloseStream(id);
@@ -1282,9 +1290,15 @@ TEST_P(QuicSessionTestServer, ConnectionFlowControlAccountingRstOutOfOrder) {
   const QuicStreamOffset kByteOffset =
       1 + kInitialSessionFlowControlWindowForTest / 2;
 
-  EXPECT_CALL(*connection_, SendControlFrame(_))
-      .Times(2)
-      .WillRepeatedly(Invoke(&session_, &TestSession::ClearControlFrame));
+  if (transport_version() == QUIC_VERSION_99) {
+    EXPECT_CALL(*connection_, SendControlFrame(_))
+        .Times(3)
+        .WillRepeatedly(Invoke(&session_, &TestSession::ClearControlFrame));
+  } else {
+    EXPECT_CALL(*connection_, SendControlFrame(_))
+        .Times(2)
+        .WillRepeatedly(Invoke(&session_, &TestSession::ClearControlFrame));
+  }
   EXPECT_CALL(*connection_, OnStreamReset(stream->id(), _));
   QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream->id(),
                                QUIC_STREAM_CANCELLED, kByteOffset);
@@ -1465,8 +1479,16 @@ TEST_P(QuicSessionTestServer, TooManyUnfinishedStreamsCauseServerRejectStream) {
     QuicStreamFrame data1(i, false, 0, QuicStringPiece("HT"));
     session_.OnStreamFrame(data1);
     // EXPECT_EQ(1u, session_.GetNumOpenStreams());
-    EXPECT_CALL(*connection_, SendControlFrame(_))
-        .WillOnce(Invoke(&session_, &TestSession::ClearControlFrame));
+    if (transport_version() == QUIC_VERSION_99) {
+      // Expect two control frames, RST STREAM and STOP SENDING
+      EXPECT_CALL(*connection_, SendControlFrame(_))
+          .Times(2)
+          .WillRepeatedly(Invoke(&session_, &TestSession::ClearControlFrame));
+    } else {
+      // Expect one control frame, just RST STREAM
+      EXPECT_CALL(*connection_, SendControlFrame(_))
+          .WillOnce(Invoke(&session_, &TestSession::ClearControlFrame));
+    }
     // Close stream. Should not make new streams available since
     // the stream is not finished.
     EXPECT_CALL(*connection_, OnStreamReset(i, _));
@@ -1707,8 +1729,16 @@ TEST_P(QuicSessionTestServer, TestZombieStreams) {
 
   QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream2->id(),
                                QUIC_STREAM_CANCELLED, 1234);
-  EXPECT_CALL(*connection_, SendControlFrame(_))
-      .WillOnce(Invoke(&session_, &TestSession::ClearControlFrame));
+  if (transport_version() == QUIC_VERSION_99) {
+    // Once for the RST_STREAM, once for the STOP_SENDING
+    EXPECT_CALL(*connection_, SendControlFrame(_))
+        .Times(2)
+        .WillRepeatedly(Invoke(&session_, &TestSession::ClearControlFrame));
+  } else {
+    // Just for the RST_STREAM
+    EXPECT_CALL(*connection_, SendControlFrame(_))
+        .WillOnce(Invoke(&session_, &TestSession::ClearControlFrame));
+  }
   EXPECT_CALL(*connection_,
               OnStreamReset(stream2->id(), QUIC_RST_ACKNOWLEDGEMENT));
   stream2->OnStreamReset(rst_frame);
@@ -1717,7 +1747,15 @@ TEST_P(QuicSessionTestServer, TestZombieStreams) {
   EXPECT_EQ(stream2->id(), session_.closed_streams()->front()->id());
 
   TestStream* stream4 = session_.CreateOutgoingBidirectionalStream();
-  EXPECT_CALL(*connection_, SendControlFrame(_)).Times(1);
+  if (transport_version() == QUIC_VERSION_99) {
+    // Once for the RST_STREAM, once for the STOP_SENDING
+    EXPECT_CALL(*connection_, SendControlFrame(_))
+        .Times(2)
+        .WillRepeatedly(Invoke(&session_, &TestSession::ClearControlFrame));
+  } else {
+    // Just for the RST_STREAM
+    EXPECT_CALL(*connection_, SendControlFrame(_)).Times(1);
+  }
   EXPECT_CALL(*connection_,
               OnStreamReset(stream4->id(), QUIC_STREAM_CANCELLED));
   stream4->WriteOrBufferData(body, false, nullptr);
@@ -1881,8 +1919,16 @@ TEST_P(QuicSessionTestServer, RetransmitLostDataCausesConnectionClose) {
   // yet, so an RST is sent.
   EXPECT_CALL(*stream, OnCanWrite())
       .WillOnce(Invoke(stream, &QuicStream::OnClose));
-  EXPECT_CALL(*connection_, SendControlFrame(_))
-      .WillOnce(Invoke(&session_, &TestSession::SaveFrame));
+  if (transport_version() == QUIC_VERSION_99) {
+    // Once for the RST_STREAM, once for the STOP_SENDING
+    EXPECT_CALL(*connection_, SendControlFrame(_))
+        .Times(2)
+        .WillRepeatedly(Invoke(&session_, &TestSession::SaveFrame));
+  } else {
+    // Just for the RST_STREAM
+    EXPECT_CALL(*connection_, SendControlFrame(_))
+        .WillOnce(Invoke(&session_, &TestSession::SaveFrame));
+  }
   EXPECT_CALL(*connection_, OnStreamReset(stream->id(), _));
   session_.OnCanWrite();
 }
