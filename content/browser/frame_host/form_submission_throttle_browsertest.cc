@@ -63,6 +63,7 @@ IN_PROC_BROWSER_TEST_F(FormSubmissionBrowserTest,
                               ->root();
     std::unique_ptr<NavigationHandle> handle = NavigationHandleImpl::Create(
         test.form_page_url,      // url
+        base::nullopt,           // initiator_origin
         std::vector<GURL>(),     // redirect chain
         root,                    // frame_tree_node
         true,                    // is_renderer_initiated
@@ -100,6 +101,7 @@ IN_PROC_BROWSER_TEST_F(FormSubmissionBrowserTest,
                             ->root();
   std::unique_ptr<NavigationHandle> handle = NavigationHandleImpl::Create(
       form_url,                      // url
+      base::nullopt,                 // initiator_origin
       std::vector<GURL>(),           // redirect chain
       root,                          // frame_tree_node
       true,                          // is_renderer_initiated

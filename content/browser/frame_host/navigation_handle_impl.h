@@ -57,6 +57,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // this navigation.
   static std::unique_ptr<NavigationHandleImpl> Create(
       const GURL& url,
+      const base::Optional<url::Origin>& initiator_origin,
       const std::vector<GURL>& redirect_chain,
       FrameTreeNode* frame_tree_node,
       bool is_renderer_initiated,
@@ -169,6 +170,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool WasResponseCached() override;
   const net::ProxyServer& GetProxyServer() override;
   const std::string& GetHrefTranslate() override;
+  const base::Optional<url::Origin>& GetInitiatorOrigin() override;
 
   const std::string& origin_policy() const { return origin_policy_; }
   void set_origin_policy(const std::string& origin_policy) {
@@ -393,6 +395,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   NavigationHandleImpl(
       const GURL& url,
+      const base::Optional<url::Origin>& initiator_origin,
       const std::vector<GURL>& redirect_chain,
       FrameTreeNode* frame_tree_node,
       bool is_renderer_initiated,
@@ -467,6 +470,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // See NavigationHandle for a description of those member variables.
   GURL url_;
   scoped_refptr<SiteInstance> starting_site_instance_;
+  base::Optional<url::Origin> initiator_origin_;
   Referrer sanitized_referrer_;
   bool has_user_gesture_;
   ui::PageTransition transition_;

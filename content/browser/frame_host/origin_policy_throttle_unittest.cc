@@ -48,6 +48,7 @@ class OriginPolicyThrottleTest : public RenderViewHostTestHarness,
     // NavigationHandleImplTest::CreateNavigationHandle.
     nav_handle_ = NavigationHandleImpl::Create(
         url,                  // url, as requested by caller
+        base::nullopt,        // initiator_origin
         std::vector<GURL>(),  // redirect chain
         static_cast<WebContentsImpl*>(web_contents())
             ->GetFrameTree()
