@@ -112,7 +112,7 @@ def DefaultPages(base_name):
       'pixel_canvas2d.html',
       base_name + '_Canvas2DRedBox',
       test_rect=[0, 0, 300, 300],
-      revision=11),
+      revision=12),
 
     PixelTestPage(
       'pixel_canvas2d_untagged.html',
@@ -774,7 +774,7 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_canvas_display_linear-rgb.html',
       base_name + '_CanvasDisplayLinearRGBAccelerated2D',
       test_rect=[0, 0, 140, 140],
-      revision=6,
+      revision=7,
       browser_args=browser_args),
 
     PixelTestPage(
@@ -788,14 +788,14 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_canvas_display_linear-rgb.html',
       base_name + '_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing',
       test_rect=[0, 0, 140, 140],
-      revision=6,
+      revision=7,
       browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
 
     PixelTestPage(
       'pixel_canvas_low_latency_2d.html',
       base_name + '_CanvasLowLatency2D',
       test_rect=[0, 0, 100, 100],
-      revision=4,
+      revision=5,
       browser_args=browser_args),
 
     PixelTestPage(
