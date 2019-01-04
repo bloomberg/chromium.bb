@@ -2,11 +2,6 @@
 # feature X that is already not working), please add it beside the existing
 # failures. Otherwise please reach out to network-service-dev@.
 
-# services/network/url_loader.cc should handle failure in
-# URLLoaderImpl::OnResponseBodyStreamRead(). Note this is flaky, so it will pass
-# sometimes.
--SRC_ClearKey/EncryptedMediaTest.FrameSizeChangeVideo/0
-
 # https://crbug.com/846352: CORB/NetworkService: Remove
 # CrossSiteDocumentResourceHandler while preserving test coverage - the tests
 # below can be probably removed altogether once NetworkService ships and the
