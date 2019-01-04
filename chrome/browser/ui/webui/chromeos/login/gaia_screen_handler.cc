@@ -789,6 +789,9 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
           Profile::FromWebUI(web_ui()));
   content::StoragePartition* partition =
       signin_partition_manager->GetCurrentStoragePartition();
+  if (!partition)
+    return;
+
   net::CookieOptions cookie_options;
   cookie_options.set_include_httponly();
 
