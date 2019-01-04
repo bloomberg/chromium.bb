@@ -375,6 +375,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     return &cors_preflight_controller_;
   }
 
+  // Returns true if reports should unconditionally be sent without first
+  // consulting NetworkContextClient.OnCanSendReportingReports()
+  bool SkipReportingPermissionCheck() const;
+
  private:
   class ContextNetworkDelegate;
 

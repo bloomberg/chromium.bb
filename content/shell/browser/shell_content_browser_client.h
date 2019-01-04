@@ -100,6 +100,11 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   bool PreSpawnRenderer(sandbox::TargetPolicy* policy) override;
 #endif
 
+  network::mojom::NetworkContextPtr CreateNetworkContext(
+      BrowserContext* context,
+      bool in_memory,
+      const base::FilePath& relative_partition_path) override;
+
   ShellBrowserContext* browser_context();
   ShellBrowserContext* off_the_record_browser_context();
   ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate() {
@@ -148,6 +153,10 @@ class ShellContentBrowserClient : public ContentBrowserClient {
 
   ShellBrowserMainParts* shell_browser_main_parts_;
 };
+
+// The delay for sending reports when running with --run-web-tests
+constexpr base::TimeDelta kReportingDeliveryIntervalTimeForWebTests =
+    base::TimeDelta::FromMilliseconds(100);
 
 }  // namespace content
 
