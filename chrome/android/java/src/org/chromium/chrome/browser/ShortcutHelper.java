@@ -80,6 +80,8 @@ public class ShortcutHelper {
             "org.chromium.chrome.browser.webapp_splash_screen_url";
     public static final String EXTRA_IS_ICON_GENERATED =
             "org.chromium.chrome.browser.is_icon_generated";
+    public static final String EXTRA_IS_ICON_ADAPTIVE =
+            "org.chromium.chrome.browser.webapp_icon_adaptive";
     public static final String EXTRA_VERSION =
             "org.chromium.chrome.browser.webapp_shortcut_version";
     public static final String REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB =
@@ -124,13 +126,13 @@ public class ShortcutHelper {
     // We subtract 1 from the scaling factor to give the amount we need to increase by, then divide
     // it by two to get the amount of padding that we will add to both sides.
     private static final float MASKABLE_SAFE_ZONE_RATIO = 4.0f / 5.0f;
-    private static final float ADAPTABLE_SAFE_ZONE_RATIO = 66.0f / 108.0f;
+    private static final float ADAPTIVE_SAFE_ZONE_RATIO = 66.0f / 108.0f;
 
-    private static final float MASKABLE_TO_ADAPTABLE_SCALING_FACTOR =
-            MASKABLE_SAFE_ZONE_RATIO / ADAPTABLE_SAFE_ZONE_RATIO;
+    private static final float MASKABLE_TO_ADAPTIVE_SCALING_FACTOR =
+            MASKABLE_SAFE_ZONE_RATIO / ADAPTIVE_SAFE_ZONE_RATIO;
 
     private static final float MASKABLE_ICON_PADDING_RATIO =
-            (MASKABLE_TO_ADAPTABLE_SCALING_FACTOR - 1.0f) / 2.0f;
+            (MASKABLE_TO_ADAPTIVE_SCALING_FACTOR - 1.0f) / 2.0f;
 
     // True when Android O's ShortcutManager.requestPinShortcut() is supported.
     private static boolean sIsRequestPinShortcutSupported;
@@ -146,13 +148,13 @@ public class ShortcutHelper {
          * Request Android to add a shortcut to the home screen.
          * @param title Title of the shortcut.
          * @param icon Image that represents the shortcut.
-         * @param iconAdaptable Whether to create an Android Adaptable icon.
+         * @param isIconAdaptive Whether to create an Android Adaptive icon.
          * @param shortcutIntent Intent to fire when the shortcut is activated.
          */
         public void addShortcutToHomescreen(
-                String title, Bitmap icon, boolean iconAdaptable, Intent shortcutIntent) {
+                String title, Bitmap icon, boolean isIconAdaptive, Intent shortcutIntent) {
             if (isRequestPinShortcutSupported()) {
-                addShortcutWithShortcutManager(title, icon, iconAdaptable, shortcutIntent);
+                addShortcutWithShortcutManager(title, icon, isIconAdaptive, shortcutIntent);
                 return;
             }
             Intent intent = createAddToHomeIntent(title, icon, shortcutIntent);
@@ -186,7 +188,7 @@ public class ShortcutHelper {
     @CalledByNative
     private static void addWebapp(final String id, final String url, final String scopeUrl,
             final String userTitle, final String name, final String shortName, final String iconUrl,
-            final Bitmap icon, boolean iconAdaptable, @WebDisplayMode final int displayMode,
+            final Bitmap icon, boolean isIconAdaptive, @WebDisplayMode final int displayMode,
             final int orientation, final int source, final long themeColor,
             final long backgroundColor, final String splashScreenUrl, final long callbackPointer) {
         new AsyncTask<Intent>() {
@@ -204,14 +206,14 @@ public class ShortcutHelper {
                 Intent shortcutIntent = createWebappShortcutIntent(id,
                         sDelegate.getFullscreenAction(), url, nonEmptyScopeUrl, name, shortName,
                         encodedIcon, WEBAPP_SHORTCUT_VERSION, displayMode, orientation, themeColor,
-                        backgroundColor, splashScreenUrl, iconUrl.isEmpty());
+                        backgroundColor, splashScreenUrl, iconUrl.isEmpty(), isIconAdaptive);
                 shortcutIntent.putExtra(EXTRA_MAC, getEncodedMac(context, url));
                 shortcutIntent.putExtra(EXTRA_SOURCE, source);
                 return shortcutIntent;
             }
             @Override
             protected void onPostExecute(final Intent resultIntent) {
-                sDelegate.addShortcutToHomescreen(userTitle, icon, iconAdaptable, resultIntent);
+                sDelegate.addShortcutToHomescreen(userTitle, icon, isIconAdaptive, resultIntent);
 
                 // Store the webapp data so that it is accessible without the intent. Once this
                 // process is complete, call back to native code to start the splash image
@@ -235,13 +237,13 @@ public class ShortcutHelper {
     @SuppressWarnings("unused")
     @CalledByNative
     private static void addShortcut(String id, String url, String userTitle, Bitmap icon,
-            boolean iconAdaptable, int source) {
+            boolean isIconAdaptive, int source) {
         Context context = ContextUtils.getApplicationContext();
         final Intent shortcutIntent = createShortcutIntent(url);
         shortcutIntent.putExtra(EXTRA_ID, id);
         shortcutIntent.putExtra(EXTRA_SOURCE, source);
         shortcutIntent.setPackage(context.getPackageName());
-        sDelegate.addShortcutToHomescreen(userTitle, icon, iconAdaptable, shortcutIntent);
+        sDelegate.addShortcutToHomescreen(userTitle, icon, isIconAdaptive, shortcutIntent);
         if (shouldShowToastWhenAddingShortcut()) {
             showAddedToHomescreenToast(userTitle);
         }
@@ -356,13 +358,14 @@ public class ShortcutHelper {
      * @param backgroundColor Background color of the web app.
      * @param splashScreenUrl Url of the HTML splash screen.
      * @param isIconGenerated True if the icon is generated by Chromium.
+     * @param isIconAdaptive  Whether the shortcut icon is Adaptive.
      * @return Intent for onclick action of the shortcut.
      * This method must not be called on the UI thread.
      */
     public static Intent createWebappShortcutIntent(String id, String action, String url,
             String scope, String name, String shortName, String encodedIcon, int version,
             @WebDisplayMode int displayMode, int orientation, long themeColor, long backgroundColor,
-            String splashScreenUrl, boolean isIconGenerated) {
+            String splashScreenUrl, boolean isIconGenerated, boolean isIconAdaptive) {
         // Create an intent as a launcher icon for a full-screen Activity.
         Intent shortcutIntent = new Intent();
         shortcutIntent.setPackage(ContextUtils.getApplicationContext().getPackageName())
@@ -379,7 +382,8 @@ public class ShortcutHelper {
                 .putExtra(EXTRA_THEME_COLOR, themeColor)
                 .putExtra(EXTRA_BACKGROUND_COLOR, backgroundColor)
                 .putExtra(EXTRA_SPLASH_SCREEN_URL, splashScreenUrl)
-                .putExtra(EXTRA_IS_ICON_GENERATED, isIconGenerated);
+                .putExtra(EXTRA_IS_ICON_GENERATED, isIconGenerated)
+                .putExtra(EXTRA_IS_ICON_ADAPTIVE, isIconAdaptive);
         return shortcutIntent;
     }
 
@@ -392,7 +396,7 @@ public class ShortcutHelper {
      */
     public static Intent createWebappShortcutIntentForTesting(String id, String url) {
         return createWebappShortcutIntent(id, null, url, getScopeFromUrl(url), null, null, null,
-                WEBAPP_SHORTCUT_VERSION, WebDisplayMode.STANDALONE, 0, 0, 0, null, false);
+                WEBAPP_SHORTCUT_VERSION, WebDisplayMode.STANDALONE, 0, 0, 0, null, false, false);
     }
 
     /**

@@ -36,7 +36,8 @@ public class WebappInfoTest {
                 WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, SPLASH_SCREEN_URL,
-                false /* isIconGenerated */, false /* forceNavigation */);
+                false /* isIconGenerated */, false /* isIconAdaptive */,
+                false /* forceNavigation */);
         Assert.assertNotNull(info);
     }
 
@@ -51,7 +52,8 @@ public class WebappInfoTest {
                 WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, SPLASH_SCREEN_URL,
-                false /* isIconGenerated */, false /* forceNavigation */);
+                false /* isIconGenerated */, false /* isIconAdaptive */,
+                false /* forceNavigation */);
         Assert.assertNotNull(info);
     }
 
@@ -135,7 +137,8 @@ public class WebappInfoTest {
                 WebDisplayMode.FULLSCREEN, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, SPLASH_SCREEN_URL,
-                false /* isIconGenerated */, false /* forceNavigation */);
+                false /* isIconGenerated */, false /* isIconAdaptive */,
+                false /* forceNavigation */);
         Assert.assertEquals(WebDisplayMode.FULLSCREEN, info.displayMode());
         Assert.assertEquals(ScreenOrientationValues.DEFAULT, info.orientation());
         Assert.assertEquals(ShortcutSource.UNKNOWN, info.source());
@@ -153,7 +156,7 @@ public class WebappInfoTest {
         WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
                 WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 themeColor, backgroundColor, SPLASH_SCREEN_URL, false /* isIconGenerated */,
-                false /* forceNavigation */);
+                false /* isIconAdaptive */, false /* forceNavigation */);
         Assert.assertEquals(themeColor, info.themeColor());
         Assert.assertEquals(backgroundColor, info.backgroundColor());
     }
@@ -169,7 +172,8 @@ public class WebappInfoTest {
                 WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, SPLASH_SCREEN_URL,
-                false /* isIconGenerated */, false /* forceNavigation */);
+                false /* isIconGenerated */, false /* isIconAdaptive */,
+                false /* forceNavigation */);
         Assert.assertEquals(ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.themeColor());
         Assert.assertEquals(
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.backgroundColor());
@@ -291,6 +295,61 @@ public class WebappInfoTest {
             intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_GENERATED, "true");
 
             Assert.assertFalse(name, WebappInfo.create(intent).isIconGenerated());
+        }
+    }
+
+    @Test
+    public void testIntentAdaptiveIcon() {
+        String id = "webapp id";
+        String name = "longName";
+        String shortName = "name";
+        String url = "about:blank";
+
+        // Default value.
+        {
+            Intent intent = new Intent();
+            intent.putExtra(ShortcutHelper.EXTRA_ID, id);
+            intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
+            intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
+            intent.putExtra(ShortcutHelper.EXTRA_URL, url);
+
+            Assert.assertFalse(name, WebappInfo.create(intent).isIconAdaptive());
+        }
+
+        // Set to true.
+        {
+            Intent intent = new Intent();
+            intent.putExtra(ShortcutHelper.EXTRA_ID, id);
+            intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
+            intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
+            intent.putExtra(ShortcutHelper.EXTRA_URL, url);
+            intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_ADAPTIVE, true);
+
+            Assert.assertTrue(name, WebappInfo.create(intent).isIconAdaptive());
+        }
+
+        // Set to false.
+        {
+            Intent intent = new Intent();
+            intent.putExtra(ShortcutHelper.EXTRA_ID, id);
+            intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
+            intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
+            intent.putExtra(ShortcutHelper.EXTRA_URL, url);
+            intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_ADAPTIVE, false);
+
+            Assert.assertFalse(name, WebappInfo.create(intent).isIconAdaptive());
+        }
+
+        // Set to something else than a boolean.
+        {
+            Intent intent = new Intent();
+            intent.putExtra(ShortcutHelper.EXTRA_ID, id);
+            intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
+            intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
+            intent.putExtra(ShortcutHelper.EXTRA_URL, url);
+            intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_ADAPTIVE, "true");
+
+            Assert.assertFalse(name, WebappInfo.create(intent).isIconAdaptive());
         }
     }
 

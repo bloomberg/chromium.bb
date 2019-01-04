@@ -46,8 +46,8 @@ public class SplashActivity extends HostBrowserLauncherActivity {
         setContentView(layout);
 
         int backgroundColor = WebApkUtils.getColor(resources, R.color.background_color);
-        SplashLayout.createLayout(this, layout, icon, iconClassification,
-                resources.getString(R.string.name),
+        SplashLayout.createLayout(this, layout, icon, false /* isIconAdaptive */,
+                iconClassification, resources.getString(R.string.name),
                 WebApkUtils.shouldUseLightForegroundOnBackground(backgroundColor));
 
         int themeColor = (int) WebApkMetaDataUtils.getLongFromMetaData(

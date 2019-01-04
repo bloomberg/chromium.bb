@@ -50,6 +50,7 @@ public class WebappDataStorage {
     static final String KEY_SOURCE = "source";
     static final String KEY_ACTION = "action";
     static final String KEY_IS_ICON_GENERATED = "is_icon_generated";
+    static final String KEY_IS_ICON_ADAPTIVE = "is_icon_adaptive";
     static final String KEY_VERSION = "version";
     static final String KEY_WEBAPK_PACKAGE_NAME = "webapk_package_name";
 
@@ -210,7 +211,8 @@ public class WebappDataStorage {
                 mPreferences.getString(KEY_ACTION, null), mPreferences.getString(KEY_URL, null),
                 mPreferences.getString(KEY_SCOPE, null), mPreferences.getString(KEY_NAME, null),
                 mPreferences.getString(KEY_SHORT_NAME, null),
-                mPreferences.getString(KEY_ICON, null), version,
+                mPreferences.getString(KEY_ICON, null),
+                version,
                 mPreferences.getInt(KEY_DISPLAY_MODE, WebDisplayMode.STANDALONE),
                 mPreferences.getInt(KEY_ORIENTATION, ScreenOrientationValues.DEFAULT),
                 mPreferences.getLong(
@@ -218,7 +220,8 @@ public class WebappDataStorage {
                 mPreferences.getLong(
                         KEY_BACKGROUND_COLOR, ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING),
                 mPreferences.getString(KEY_SPLASH_SCREEN_URL, ""),
-                mPreferences.getBoolean(KEY_IS_ICON_GENERATED, false));
+                mPreferences.getBoolean(KEY_IS_ICON_GENERATED, false),
+                mPreferences.getBoolean(KEY_IS_ICON_ADAPTIVE, false));
     }
 
     /**
@@ -282,6 +285,8 @@ public class WebappDataStorage {
                         ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING));
             editor.putBoolean(KEY_IS_ICON_GENERATED, IntentUtils.safeGetBooleanExtra(
                         shortcutIntent, ShortcutHelper.EXTRA_IS_ICON_GENERATED, false));
+            editor.putBoolean(KEY_IS_ICON_ADAPTIVE, IntentUtils.safeGetBooleanExtra(
+                        shortcutIntent, ShortcutHelper.EXTRA_IS_ICON_ADAPTIVE, false));
             editor.putString(KEY_ACTION, shortcutIntent.getAction());
 
             String webApkPackageName = IntentUtils.safeGetStringExtra(

@@ -357,7 +357,7 @@ public class WebApkInfo extends WebappInfo {
             boolean forceNavigation, boolean useTransparentSplash, ShareData shareData) {
         super(id, url, scope, primaryIcon, name, shortName, displayMode, orientation, source,
                 themeColor, backgroundColor, null /* splash_screen_url */,
-                false /* isIconGenerated */, forceNavigation);
+                false /* isIconGenerated */, false /* isIconAdaptive */, forceNavigation);
         mBadgeIcon = badgeIcon;
         mSplashIcon = splashIcon;
         mApkPackageName = webApkPackageName;
