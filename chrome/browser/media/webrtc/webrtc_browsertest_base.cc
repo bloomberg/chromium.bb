@@ -89,6 +89,10 @@ bool JavascriptErrorDetectingLogHandler(int severity,
   if (file == NULL || std::string("CONSOLE") != file)
     return false;
 
+  // TODO(crbug.com/918871): Fix AppRTC and stop ignoring this error.
+  if (str.find("Synchronous XHR in page dismissal") != std::string::npos)
+    return false;
+
   bool contains_uncaught = str.find("\"Uncaught ") != std::string::npos;
   if (severity == logging::LOG_ERROR ||
       (severity == logging::LOG_INFO && contains_uncaught)) {
