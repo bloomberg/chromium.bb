@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
+#import "ios/chrome/browser/ui/settings/cells/account_sign_in_item.h"
 #import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
 #import "ios/chrome/browser/ui/settings/cells/encryption_item.h"
@@ -58,6 +59,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeEncryption,
   ItemTypeLinkFooter,
   ItemTypeDetailText,
+  ItemTypeAccountSignInItem,
   ItemTypeSettingsSwitch1,
   ItemTypeSettingsSwitch2,
   ItemTypeSyncSwitch,
@@ -179,6 +181,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   settingsDetailItemLong.text = @"Very long text eating the other detail label";
   settingsDetailItemLong.detailText = @"A bit less short";
   [model addItem:settingsDetailItemLong
+      toSectionWithIdentifier:SectionIdentifierSettings];
+
+  AccountSignInItem* accountSignInItem =
+      [[AccountSignInItem alloc] initWithType:ItemTypeAccountSignInItem];
+  accountSignInItem.text = @"Account sign-in cell";
+  accountSignInItem.detailText = @"Get cool stuff on all your devices";
+  [model addItem:accountSignInItem
       toSectionWithIdentifier:SectionIdentifierSettings];
 
   SettingsSwitchItem* settingsSwitchItem =
