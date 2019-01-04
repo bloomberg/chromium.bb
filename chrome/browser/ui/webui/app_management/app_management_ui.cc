@@ -84,6 +84,10 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   source->AddResourcePath("item.js", IDR_APP_MANAGEMENT_ITEM_JS);
   source->AddResourcePath("main_view.html", IDR_APP_MANAGEMENT_MAIN_VIEW_HTML);
   source->AddResourcePath("main_view.js", IDR_APP_MANAGEMENT_MAIN_VIEW_JS);
+  source->AddResourcePath("permission_view_header.html",
+                          IDR_APP_MANAGEMENT_PERMISSION_VIEW_HEADER_HTML);
+  source->AddResourcePath("permission_view_header.js",
+                          IDR_APP_MANAGEMENT_PERMISSION_VIEW_HEADER_JS);
   source->AddResourcePath("metadata_view.html",
                           IDR_APP_MANAGEMENT_METADATA_VIEW_HTML);
   source->AddResourcePath("metadata_view.js",
