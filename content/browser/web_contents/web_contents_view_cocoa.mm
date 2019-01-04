@@ -180,11 +180,16 @@ using content::WebContentsViewMac;
 // NSDraggingDestination methods
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
+  // Fill out a DropData from pasteboard.
+  DropData dropData;
+  content::PopulateDropDataFromPasteboard(&dropData,
+                                          [sender draggingPasteboard]);
+  [dragDest_ setDropData:dropData];
   return [dragDest_ draggingEntered:sender view:self];
 }
 
 - (void)draggingExited:(id<NSDraggingInfo>)sender {
-  [dragDest_ draggingExited:sender];
+  [dragDest_ draggingExited];
 }
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {

@@ -157,7 +157,7 @@ TEST_F(WebDragDestTest, Data) {
   NSString* textString = @"hi there";
   [pboard->get() setString:htmlString forType:NSHTMLPboardType];
   [pboard->get() setString:textString forType:NSStringPboardType];
-  [drag_dest_ populateDropData:&data fromPasteboard:pboard->get()];
+  content::PopulateDropDataFromPasteboard(&data, pboard->get());
   EXPECT_EQ(data.url.spec(), "http://www.google.com/");
   EXPECT_EQ(base::SysNSStringToUTF16(textString), data.text.string());
   EXPECT_EQ(base::SysNSStringToUTF16(htmlString), data.html.string());

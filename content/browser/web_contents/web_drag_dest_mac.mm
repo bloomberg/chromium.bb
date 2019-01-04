@@ -84,7 +84,7 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
 }
 
 - (DropData*)currentDropData {
-  return dropData_.get();
+  return dropDataFiltered_.get();
 }
 
 - (void)setDragDelegate:(content::WebDragDestDelegate*)delegate {
@@ -133,6 +133,10 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
 // Messages to send during the tracking of a drag, usually upon receiving
 // calls from the view system. Communicates the drag messages to WebCore.
 
+- (void)setDropData:(const DropData&)dropData {
+  dropDataUnfiltered_ = std::make_unique<DropData>(dropData);
+}
+
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info
                               view:(NSView*)view {
   // Save off the RVH so we can tell if it changes during a drag. If it does,
@@ -158,15 +162,12 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
   if (![self isValidDragTarget:targetRWH])
     return NSDragOperationNone;
 
+  // Filter |dropDataUnfiltered_| by currentRWHForDrag_ to populate
+  // |dropDataFiltered_|.
+  DCHECK(dropDataUnfiltered_);
+  std::unique_ptr<DropData> dropData =
+      std::make_unique<DropData>(*dropDataUnfiltered_);
   currentRWHForDrag_ = targetRWH->GetWeakPtr();
-
-  // Fill out a DropData from pasteboard.
-  std::unique_ptr<DropData> dropData;
-  dropData.reset(new DropData());
-  [self populateDropData:dropData.get()
-             fromPasteboard:[info draggingPasteboard]];
-  // TODO(paulmeyer): Data may be pulled from the pasteboard multiple times per
-  // drag. Ideally, this should only be done once, and filtered as needed.
   currentRWHForDrag_->FilterDropData(dropData.get());
 
   NSDragOperation mask = [info draggingSourceOperationMask];
@@ -190,10 +191,11 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
     delegate_->OnDragEnter();
   }
 
-  dropData_.swap(dropData);
+  dropDataFiltered_.swap(dropData);
 
   currentRWHForDrag_->DragTargetDragEnter(
-      *dropData_, transformedPt, gfx::PointF(screenPoint.x, screenPoint.y),
+      *dropDataFiltered_, transformedPt,
+      gfx::PointF(screenPoint.x, screenPoint.y),
       static_cast<WebDragOperationsMask>(mask), GetModifierFlags());
 
   // We won't know the true operation (whether the drag is allowed) until we
@@ -202,7 +204,7 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
   return currentOperation_;
 }
 
-- (void)draggingExited:(id<NSDraggingInfo>)info {
+- (void)draggingExited {
   DCHECK(currentRVH_);
   if (currentRVH_ != webContents_->GetRenderViewHost())
     return;
@@ -220,7 +222,8 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
     currentRWHForDrag_->DragTargetDragLeave(gfx::PointF(), gfx::PointF());
     currentRWHForDrag_.reset();
   }
-  dropData_.reset();
+  dropDataUnfiltered_.reset();
+  dropDataFiltered_.reset();
 }
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)info view:(NSView*)view {
@@ -326,11 +329,12 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
 
   currentRVH_ = NULL;
 
-  targetRWH->DragTargetDrop(*dropData_, transformedPt,
+  targetRWH->DragTargetDrop(*dropDataFiltered_, transformedPt,
                             gfx::PointF(screenPoint.x, screenPoint.y),
                             GetModifierFlags());
 
-  dropData_.reset();
+  dropDataUnfiltered_.reset();
+  dropDataFiltered_.reset();
 
   return YES;
 }
@@ -354,11 +358,12 @@ GetRenderWidgetHostAtPoint:(const NSPoint&)viewPoint
              dragStartViewID_;
 }
 
-// Given |data|, which should not be nil, fill it in using the contents of the
-// given pasteboard. The types handled by this method should be kept in sync
-// with [WebContentsViewCocoa registerDragTypes].
-- (void)populateDropData:(DropData*)data
-          fromPasteboard:(NSPasteboard*)pboard {
+@end
+
+namespace content {
+
+void PopulateDropDataFromPasteboard(content::DropData* data,
+                                    NSPasteboard* pboard) {
   DCHECK(data);
   DCHECK(pboard);
   NSArray* types = [pboard types];
@@ -420,4 +425,4 @@ GetRenderWidgetHostAtPoint:(const NSPoint&)viewPoint
   }
 }
 
-@end
+}  // namespace content
