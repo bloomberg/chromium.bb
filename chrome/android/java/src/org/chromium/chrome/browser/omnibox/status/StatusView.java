@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.omnibox.status;
 import static org.chromium.chrome.browser.toolbar.top.ToolbarPhone.URL_FOCUS_CHANGE_ANIMATION_DURATION_MS;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.support.annotation.ColorRes;
@@ -36,6 +34,8 @@ public class StatusView extends LinearLayout {
     private View mLocationBarButtonContainer;
 
     private boolean mAnimationsEnabled;
+    private boolean mAnimatingStatusIconShow;
+    private boolean mAnimatingStatusIconHide;
 
     private @DrawableRes int mIconRes;
     private @ColorRes int mIconTintRes;
@@ -62,38 +62,86 @@ public class StatusView extends LinearLayout {
      */
     private void animateStatusIcon() {
         Drawable targetIcon = null;
-
-        // Ensure no animations are pending.
-        mIconView.animate().cancel();
+        boolean wantIconHidden = false;
 
         if (mIconRes != 0 && mIconTintRes != 0) {
             targetIcon =
                     TintedDrawable.constructTintedDrawable(getContext(), mIconRes, mIconTintRes);
-            mIconView.setVisibility(View.VISIBLE);
         } else if (mIconRes != 0) {
             targetIcon = ApiCompatibilityUtils.getDrawable(getContext().getResources(), mIconRes);
-            mIconView.setVisibility(View.VISIBLE);
         } else {
-            targetIcon = new ColorDrawable(Color.TRANSPARENT);
-            mIconView.animate()
-                    .setStartDelay(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS)
-                    .withEndAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            mIconView.setVisibility(View.GONE);
-                        }
-                    }).start();
+            // Do not specify any icon here and do not replace existing icon, either.
+            // TransitionDrawable uses different timing mechanism than Animations, and that may,
+            // depending on animation scale factor, produce a visible glitch.
+            targetIcon = null;
+            wantIconHidden = true;
         }
 
-        TransitionDrawable newImage =
-                new TransitionDrawable(new Drawable[] {mIconView.getDrawable(), targetIcon});
+        // Ensure proper handling of animations.
+        // Possible variants:
+        // 1. Is: shown,           want: hidden  => animate hiding,
+        // 2. Is: shown,           want: shown   => crossfade w/TransitionDrawable,
+        // 3. Is: animating(show), want: hidden  => cancel animation; animate hiding,
+        // 4. Is: animating(show), want: shown   => crossfade (carry on showing),
+        // 5. Is: animating(hide), want: hidden  => no op,
+        // 6. Is: animating(hide), want: shown   => cancel animation; animate showing; crossfade,
+        // 7. Is: hidden,          want: hidden  => no op,
+        // 8. Is: hidden,          want: shown   => animate showing.
+        //
+        // This gives 3 actions:
+        // - Animate showing, if hidden or previously hiding (6 + 8); cancel previous animation (6)
+        // - Animate hiding, if shown or previously showing (1 + 3); cancel previous animation (3)
+        // - crossfade w/TransitionDrawable, if visible (2, 4, 6), otherwise use image directly.
+        // All other options (5, 7) are no-op.
+        //
+        // Note: this will be compacted once we start using LayoutTransition with StatusView.
 
-        mIconView.setImageDrawable(newImage);
+        boolean isIconHidden = mIconView.getVisibility() == View.GONE;
 
-        // Note: crossfade controls blending, not animation.
-        newImage.setCrossFadeEnabled(true);
-        // TODO(ender): Consider simply leaving animations on. It looks so nice!
-        newImage.startTransition(mAnimationsEnabled ? URL_FOCUS_CHANGE_ANIMATION_DURATION_MS : 0);
+        if (!wantIconHidden && (isIconHidden || mAnimatingStatusIconHide)) {
+            // Action 1: animate showing, if icon was either hidden or hiding.
+            if (mAnimatingStatusIconHide) mIconView.animate().cancel();
+            mAnimatingStatusIconHide = false;
+
+            mAnimatingStatusIconShow = true;
+            mIconView.setVisibility(View.VISIBLE);
+            mIconView.animate()
+                    .alpha(1.0f)
+                    .setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS)
+                    .withEndAction(() -> { mAnimatingStatusIconShow = false; })
+                    .start();
+        } else if (wantIconHidden && (!isIconHidden || mAnimatingStatusIconShow)) {
+            // Action 2: animate hiding, if icon was either shown or showing.
+            if (mAnimatingStatusIconShow) mIconView.animate().cancel();
+            mAnimatingStatusIconShow = false;
+
+            mAnimatingStatusIconHide = true;
+            mIconView.animate()
+                    .setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS)
+                    .alpha(0.0f)
+                    .withEndAction(() -> {
+                        mIconView.setVisibility(View.GONE);
+                        mAnimatingStatusIconHide = false;
+                    })
+                    .start();
+        }
+
+        // Action 3: Specify icon content. Use TransitionDrawable whenever object is visible.
+        if (targetIcon != null) {
+            if (!isIconHidden) {
+                TransitionDrawable newImage = new TransitionDrawable(
+                        new Drawable[] {mIconView.getDrawable(), targetIcon});
+
+                mIconView.setImageDrawable(newImage);
+
+                // Note: crossfade controls blending, not animation.
+                newImage.setCrossFadeEnabled(true);
+                newImage.startTransition(
+                        mAnimationsEnabled ? URL_FOCUS_CHANGE_ANIMATION_DURATION_MS : 0);
+            } else {
+                mIconView.setImageDrawable(targetIcon);
+            }
+        }
     }
 
     /**
