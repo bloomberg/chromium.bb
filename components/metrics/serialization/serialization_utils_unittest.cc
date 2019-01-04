@@ -135,6 +135,50 @@ TEST_F(SerializationUtilsTest, ReadLongMessageTest) {
   EXPECT_TRUE(crash->IsEqual(*samples[0]));
 }
 
+TEST_F(SerializationUtilsTest, NegativeLengthTest) {
+  // This input is specifically constructed to yield a single crash sample when
+  // parsed by a buggy version of the code but fails to parse and doesn't yield
+  // samples when parsed by a correct implementation.
+  constexpr uint8_t kInput[] = {
+      // Length indicating that next length field is the negative one below.
+      // This sample is invalid as it contains more than three null bytes.
+      0x14,
+      0x00,
+      0x00,
+      0x00,
+      // Encoding of a valid crash sample.
+      0x0c,
+      0x00,
+      0x00,
+      0x00,
+      0x63,
+      0x72,
+      0x61,
+      0x73,
+      0x68,
+      0x00,
+      0x61,
+      0x00,
+      // Invalid sample that jumps past the negative length bytes below.
+      0x08,
+      0x00,
+      0x00,
+      0x00,
+      // This is -16 in two's complement interpretation, pointing to the valid
+      // crash sample before.
+      0xf0,
+      0xff,
+      0xff,
+      0xff,
+  };
+  CHECK(base::WriteFile(filepath, reinterpret_cast<const char*>(kInput),
+                        sizeof(kInput)));
+
+  std::vector<std::unique_ptr<MetricSample>> samples;
+  SerializationUtils::ReadAndTruncateMetricsFromFile(filename, &samples);
+  ASSERT_EQ(0U, samples.size());
+}
+
 TEST_F(SerializationUtilsTest, WriteReadTest) {
   std::unique_ptr<MetricSample> hist =
       MetricSample::HistogramSample("myhist", 1, 2, 3, 4);
