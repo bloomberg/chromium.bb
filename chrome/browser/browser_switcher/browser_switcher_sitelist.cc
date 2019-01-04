@@ -95,9 +95,6 @@ bool StringSizeCompare(const base::StringPiece& a, const base::StringPiece& b) {
 
 }  // namespace
 
-BrowserSwitcherSitelistImpl::RuleSet::RuleSet() = default;
-BrowserSwitcherSitelistImpl::RuleSet::~RuleSet() = default;
-
 BrowserSwitcherSitelist::~BrowserSwitcherSitelist() = default;
 
 BrowserSwitcherSitelistImpl::BrowserSwitcherSitelistImpl(PrefService* prefs)
