@@ -11,6 +11,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/sequenced_task_runner.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/clock.h"
@@ -892,6 +893,7 @@ TEST_F(UserActivityManagerTest, ScreenOffStateChanged) {
 }
 
 TEST_F(UserActivityManagerTest, ScreenDimDeferredWithFinalEvent) {
+  base::HistogramTester histogram_tester;
   const std::map<std::string, std::string> params = {
       {"dim_threshold", "0.651"}};
   base::test::ScopedFeatureList scoped_feature_list;
@@ -906,6 +908,9 @@ TEST_F(UserActivityManagerTest, ScreenDimDeferredWithFinalEvent) {
   thread_bundle()->RunUntilIdle();
   ReportUserActivity(nullptr);
   EXPECT_EQ(1, GetNumberOfDeferredDims());
+
+  std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
+  histogram_tester.ExpectTotalCount(histogram, 1);
 
   const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
@@ -928,6 +933,7 @@ TEST_F(UserActivityManagerTest, ScreenDimDeferredWithFinalEvent) {
 }
 
 TEST_F(UserActivityManagerTest, ScreenDimDeferredWithoutFinalEvent) {
+  base::HistogramTester histogram_tester;
   const std::map<std::string, std::string> params = {
       {"dim_threshold", "0.651"}};
   base::test::ScopedFeatureList scoped_feature_list;
@@ -942,11 +948,15 @@ TEST_F(UserActivityManagerTest, ScreenDimDeferredWithoutFinalEvent) {
   thread_bundle()->RunUntilIdle();
   EXPECT_EQ(1, GetNumberOfDeferredDims());
 
+  std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
+  histogram_tester.ExpectTotalCount(histogram, 1);
+
   const std::vector<UserActivityEvent>& events = delegate_.events();
   EXPECT_TRUE(events.empty());
 }
 
 TEST_F(UserActivityManagerTest, ScreenDimNotDeferred) {
+  base::HistogramTester histogram_tester;
   const std::map<std::string, std::string> params = {
       {"dim_threshold", base::NumberToString(0.5)}};
   base::test::ScopedFeatureList scoped_feature_list;
@@ -962,6 +972,9 @@ TEST_F(UserActivityManagerTest, ScreenDimNotDeferred) {
   ReportUserActivity(nullptr);
   EXPECT_EQ(0, GetNumberOfDeferredDims());
 
+  std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
+  histogram_tester.ExpectTotalCount(histogram, 1);
+
   const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
@@ -975,6 +988,7 @@ TEST_F(UserActivityManagerTest, ScreenDimNotDeferred) {
 }
 
 TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithEventInBetween) {
+  base::HistogramTester histogram_tester;
   const std::map<std::string, std::string> params = {
       {"dim_threshold", base::NumberToString(0.5)}};
   base::test::ScopedFeatureList scoped_feature_list;
@@ -998,7 +1012,11 @@ TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithEventInBetween) {
   model_.set_inactivity_score(20);
   thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(10));
   ReportIdleEvent(data);
+  thread_bundle()->RunUntilIdle();
   EXPECT_EQ(1, GetNumberOfDeferredDims());
+
+  std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
+  histogram_tester.ExpectTotalCount(histogram, 2);
 
   // Log when a SuspendImminent is received
   thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(20));
@@ -1045,6 +1063,7 @@ TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithEventInBetween) {
 }
 
 TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithoutEventInBetween) {
+  base::HistogramTester histogram_tester;
   const std::map<std::string, std::string> params = {
       {"dim_threshold", base::NumberToString(0.5)}};
   base::test::ScopedFeatureList scoped_feature_list;
@@ -1065,6 +1084,9 @@ TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithoutEventInBetween) {
   ReportIdleEvent(data);
   thread_bundle()->RunUntilIdle();
   EXPECT_EQ(1, GetNumberOfDeferredDims());
+
+  std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
+  histogram_tester.ExpectTotalCount(histogram, 2);
 
   // Log when a SuspendImminent is received
   thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(20));
@@ -1106,6 +1128,7 @@ TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithoutEventInBetween) {
 }
 
 TEST_F(UserActivityManagerTest, ModelError) {
+  base::HistogramTester histogram_tester;
   const std::map<std::string, std::string> params = {
       {"dim_threshold", "0.651"}};
   base::test::ScopedFeatureList scoped_feature_list;
@@ -1121,6 +1144,9 @@ TEST_F(UserActivityManagerTest, ModelError) {
   thread_bundle()->RunUntilIdle();
   ReportUserActivity(nullptr);
   EXPECT_EQ(0, GetNumberOfDeferredDims());
+
+  std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
+  histogram_tester.ExpectTotalCount(histogram, 1);
 
   const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
