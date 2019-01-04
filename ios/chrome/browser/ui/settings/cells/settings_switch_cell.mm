@@ -243,7 +243,10 @@ const CGFloat kIconImageSize = 28;
 }
 
 - (NSString*)accessibilityLabel {
-  return _textLabel.text;
+  if (!self.detailTextLabel.text)
+    return self.textLabel.text;
+  return [NSString stringWithFormat:@"%@, %@", self.textLabel.text,
+                                    self.detailTextLabel.text];
 }
 
 - (NSString*)accessibilityValue {
