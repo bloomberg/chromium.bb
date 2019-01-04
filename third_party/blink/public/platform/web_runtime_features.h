@@ -82,8 +82,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableAllowActivationDelegationAttr(bool);
   BLINK_PLATFORM_EXPORT static void EnableAudioOutputDevices(bool);
   BLINK_PLATFORM_EXPORT static void EnableBackgroundFetch(bool);
-  BLINK_PLATFORM_EXPORT static void EnableBackgroundFetchAccessActiveFetches(
-      bool);
   BLINK_PLATFORM_EXPORT static void EnableBackgroundFetchUploads(bool);
   BLINK_PLATFORM_EXPORT static void EnableBlinkHeapIncrementalMarking(bool);
   BLINK_PLATFORM_EXPORT static void EnableBlinkHeapUnifiedGarbageCollection(

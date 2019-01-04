@@ -118,10 +118,6 @@
       status: "experimental",
     },
     {
-      name: "BackgroundFetchAccessActiveFetches",
-      status: "experimental",
-    },
-    {
       name: "BackgroundFetchUploads",
       status: "experimental",
     },

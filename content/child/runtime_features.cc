@@ -518,11 +518,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (!base::FeatureList::IsEnabled(features::kBackgroundFetch))
     WebRuntimeFeatures::EnableBackgroundFetch(false);
 
-  WebRuntimeFeatures::EnableBackgroundFetchAccessActiveFetches(
-      base::FeatureList::IsEnabled(
-          features::kBackgroundFetchAccessActiveFetches) ||
-      enable_experimental_web_platform_features);
-
   WebRuntimeFeatures::EnableBackgroundFetchUploads(
       base::FeatureList::IsEnabled(features::kBackgroundFetchUploads) ||
       enable_experimental_web_platform_features);
