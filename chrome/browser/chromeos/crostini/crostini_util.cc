@@ -384,7 +384,7 @@ std::string CryptohomeIdForProfile(Profile* profile) {
   return id.empty() ? "test" : id;
 }
 
-std::string ContainerUserNameForProfile(Profile* profile) {
+std::string DefaultContainerUserNameForProfile(Profile* profile) {
   // Get rid of the @domain.name in the profile user name (an email address).
   std::string container_username = profile->GetProfileUserName();
   if (container_username.find('@') != std::string::npos) {
@@ -394,10 +394,6 @@ std::string ContainerUserNameForProfile(Profile* profile) {
     return container_username.substr(0, container_username.find('@'));
   }
   return container_username;
-}
-
-base::FilePath ContainerHomeDirectoryForProfile(Profile* profile) {
-  return base::FilePath("/home/" + ContainerUserNameForProfile(profile));
 }
 
 base::FilePath ContainerChromeOSBaseDirectory() {

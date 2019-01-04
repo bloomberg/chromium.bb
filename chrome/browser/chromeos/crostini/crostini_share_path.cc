@@ -48,13 +48,13 @@ void OnVmRestartedForSeneschal(
     vm_tools::seneschal::SharePathRequest request,
     crostini::CrostiniResult result) {
   auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile);
-  base::Optional<vm_tools::concierge::VmInfo> vm_info =
+  base::Optional<crostini::VmInfo> vm_info =
       crostini_manager->GetVmInfo(std::move(vm_name));
-  if (!vm_info) {
+  if (!vm_info || vm_info->state != crostini::VmState::STARTED) {
     std::move(callback).Run(false, "VM could not be started");
     return;
   }
-  request.set_handle(vm_info->seneschal_server_handle());
+  request.set_handle(vm_info->info.seneschal_server_handle());
   chromeos::DBusThreadManager::Get()->GetSeneschalClient()->SharePath(
       request,
       base::BindOnce(&OnSeneschalSharePathResponse, std::move(callback)));
@@ -240,9 +240,9 @@ void CrostiniSharePath::CallSeneschalSharePath(
 
   // Restart VM if not currently running.
   auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
-  base::Optional<vm_tools::concierge::VmInfo> vm_info =
+  base::Optional<crostini::VmInfo> vm_info =
       crostini_manager->GetVmInfo(vm_name);
-  if (!vm_info) {
+  if (!vm_info || vm_info->state != crostini::VmState::STARTED) {
     crostini_manager->RestartCrostini(
         vm_name, crostini::kCrostiniDefaultContainerName,
         base::BindOnce(&OnVmRestartedForSeneschal, profile_, std::move(vm_name),
@@ -251,7 +251,7 @@ void CrostiniSharePath::CallSeneschalSharePath(
     return;
   }
 
-  request.set_handle(vm_info->seneschal_server_handle());
+  request.set_handle(vm_info->info.seneschal_server_handle());
   chromeos::DBusThreadManager::Get()->GetSeneschalClient()->SharePath(
       request,
       base::BindOnce(&OnSeneschalSharePathResponse, std::move(callback)));
@@ -263,9 +263,9 @@ void CrostiniSharePath::CallSeneschalUnsharePath(
     base::OnceCallback<void(bool, std::string)> callback) {
   // Return success if VM is not currently running.
   auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
-  base::Optional<vm_tools::concierge::VmInfo> vm_info =
-      crostini_manager->GetVmInfo(vm_name);
-  if (!vm_info) {
+  base::Optional<crostini::VmInfo> vm_info =
+      crostini_manager->GetVmInfo(std::move(vm_name));
+  if (!vm_info || vm_info->state != crostini::VmState::STARTED) {
     std::move(callback).Run(true, "VM not running");
     return;
   }
@@ -292,7 +292,7 @@ void CrostiniSharePath::CallSeneschalUnsharePath(
   }
 
   vm_tools::seneschal::UnsharePathRequest request;
-  request.set_handle(vm_info->seneschal_server_handle());
+  request.set_handle(vm_info->info.seneschal_server_handle());
   request.set_path(unshare_path.value());
   chromeos::DBusThreadManager::Get()->GetSeneschalClient()->UnsharePath(
       request,

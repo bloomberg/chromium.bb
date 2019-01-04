@@ -14,6 +14,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
@@ -26,6 +28,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
@@ -327,6 +330,15 @@ TEST(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
       AccountId::FromUserEmailGaiaId(profile.GetProfileUserName(), "12345"));
   profile.GetPrefs()->SetString(drive::prefs::kDriveFsProfileSalt, "a");
 
+  // Initialize DBUS and running container.
+  chromeos::DBusThreadManager::Initialize();
+  crostini::CrostiniManager* crostini_manager =
+      crostini::CrostiniManager::GetForProfile(&profile);
+  crostini_manager->AddRunningVmForTesting(crostini::kCrostiniDefaultVmName);
+  crostini_manager->AddRunningContainerForTesting(
+      crostini::kCrostiniDefaultVmName,
+      crostini::ContainerInfo(crostini::kCrostiniDefaultContainerName,
+                              "testuser", "/home/testuser"));
   {
     base::test::ScopedFeatureList features;
     features.InitAndEnableFeature(chromeos::features::kDriveFs);
@@ -362,7 +374,7 @@ TEST(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
             GURL(), "crostini_0123456789abcdef_termina_penguin",
             base::FilePath("path/in/crostini")),
         &inside));
-    EXPECT_EQ("/home/testing_profile/path/in/crostini", inside.value());
+    EXPECT_EQ("/home/testuser/path/in/crostini", inside.value());
 
     EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
         &profile,

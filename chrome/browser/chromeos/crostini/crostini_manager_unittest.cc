@@ -715,6 +715,10 @@ TEST_F(CrostiniManagerRestartTest, MountForTerminaPenguin) {
   EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
   EXPECT_TRUE(fake_concierge_client_->get_container_ssh_keys_called());
+  EXPECT_TRUE(crostini_manager()
+                  ->GetContainerInfo(kCrostiniDefaultVmName,
+                                     kCrostiniDefaultContainerName)
+                  ->sshfs_mounted);
   EXPECT_EQ(1, restart_crostini_callback_count_);
   base::FilePath path;
   EXPECT_TRUE(
@@ -741,7 +745,7 @@ TEST_F(CrostiniManagerRestartTest, IsContainerRunningFalseIfVmNotStarted) {
   EXPECT_EQ(1, restart_crostini_callback_count_);
 
   EXPECT_TRUE(crostini_manager()->IsVmRunning(kVmName));
-  EXPECT_TRUE(crostini_manager()->IsContainerRunning(kVmName, kContainerName));
+  EXPECT_TRUE(crostini_manager()->GetContainerInfo(kVmName, kContainerName));
 
   // Now call StartTerminaVm again. The default response state is "STARTING",
   // so no container should be considered running.
@@ -754,7 +758,7 @@ TEST_F(CrostiniManagerRestartTest, IsContainerRunningFalseIfVmNotStarted) {
                      base::Unretained(this), run_loop2.QuitClosure()));
   run_loop2.Run();
   EXPECT_TRUE(crostini_manager()->IsVmRunning(kVmName));
-  EXPECT_FALSE(crostini_manager()->IsContainerRunning(kVmName, kContainerName));
+  EXPECT_FALSE(crostini_manager()->GetContainerInfo(kVmName, kContainerName));
 }
 
 }  // namespace crostini

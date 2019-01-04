@@ -1252,13 +1252,21 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
     drive_volume_ = drive_volumes_[profile()->GetOriginalProfile()].get();
     test_util::WaitUntilDriveMountPointIsAdded(profile());
 
-    // Init crostini.  Set prefs to enable crostini and register
-    // CustomMountPointCallback. TODO(joelhockey): It would be better if the
-    // crostini interface allowed for testing without such tight coupling.
+    // Init crostini.  Set prefs to enable crostini, set VM and container
+    // running for testing, and register CustomMountPointCallback.
+    // TODO(joelhockey): It would be better if the crostini interface allowed
+    // for testing without such tight coupling.
     crostini_volume_ = std::make_unique<CrostiniTestVolume>();
     profile()->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, true);
-    crostini::CrostiniManager::GetForProfile(profile()->GetOriginalProfile())
-        ->set_skip_restart_for_testing();
+    crostini::CrostiniManager* crostini_manager =
+        crostini::CrostiniManager::GetForProfile(
+            profile()->GetOriginalProfile());
+    crostini_manager->set_skip_restart_for_testing();
+    crostini_manager->AddRunningVmForTesting(crostini::kCrostiniDefaultVmName);
+    crostini_manager->AddRunningContainerForTesting(
+        crostini::kCrostiniDefaultVmName,
+        crostini::ContainerInfo(crostini::kCrostiniDefaultContainerName,
+                                "testuser", "/home/testuser"));
     chromeos::DBusThreadManager* dbus_thread_manager =
         chromeos::DBusThreadManager::Get();
     static_cast<chromeos::FakeCrosDisksClient*>(
@@ -1733,13 +1741,7 @@ base::FilePath FileManagerBrowserTestBase::MaybeMountCrostini(
   if (source_url.scheme() != "sshfs") {
     return {};
   }
-  // Mount crostini volume, and set VM now running for CrostiniManager.
   CHECK(crostini_volume_->Mount(profile()));
-  crostini::CrostiniManager* crostini_manager =
-      crostini::CrostiniManager::GetForProfile(profile()->GetOriginalProfile());
-  vm_tools::concierge::VmInfo vm_info;
-  crostini_manager->AddRunningVmForTesting(crostini::kCrostiniDefaultVmName,
-                                           std::move(vm_info));
   return crostini_volume_->mount_path();
 }
 
