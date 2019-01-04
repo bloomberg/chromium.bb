@@ -495,7 +495,7 @@
           '--remote-ssh-port=9222',
         ],
         'swarming': {
-          'hard_timeout': 1200,
+          'hard_timeout': 2400,
           'idempotent': False,  # https://crbug.com/549140
           'shards': 12,
         },
