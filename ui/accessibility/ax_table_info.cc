@@ -152,14 +152,22 @@ void AXTableInfo::BuildCellDataVectorFromRowAndCellNodes(
   // index in the accessibility tree if legal, but replacing it with
   // valid table coordinates otherwise.
   int32_t cell_index = 0;
-  int32_t current_row_index = 0;
   int32_t current_aria_row_index = 1;
+  int32_t previous_row_index = -1;
   for (size_t i = 0; i < cell_nodes_per_row.size(); i++) {
     auto& cell_nodes_in_this_row = cell_nodes_per_row[i];
     AXNode* row_node = row_nodes[i];
     bool is_first_cell_in_row = true;
     int32_t current_col_index = 0;
     int32_t current_aria_col_index = 1;
+
+    // Make sure the row index is always at least as high as the one reported by
+    // Blink.
+    row_id_to_index[row_node->id()] =
+        std::max(previous_row_index + 1,
+                 row_node->GetIntAttribute(IntAttribute::kTableRowIndex));
+    int32_t* current_row_index = &row_id_to_index[row_node->id()];
+
     for (AXNode* cell : cell_nodes_in_this_row) {
       // Fill in basic info in CellData.
       CellData cell_data;
@@ -194,10 +202,13 @@ void AXTableInfo::BuildCellDataVectorFromRowAndCellNodes(
         is_first_cell_in_row = false;
 
         // If it's the first cell in the row, ensure the row index is
-        // incrementing. The rest of the cells in this row will be force to
-        // have the same row index.
-        cell_data.row_index = std::max(cell_data.row_index, current_row_index);
-        current_row_index = cell_data.row_index;
+        // incrementing. The rest of the cells in this row are forced to have
+        // the same row index.
+        if (cell_data.row_index > *current_row_index) {
+          *current_row_index = cell_data.row_index;
+        } else {
+          cell_data.row_index = *current_row_index;
+        }
 
         // The starting ARIA row and column index might be specified in
         // the row node, we should check there.
@@ -215,7 +226,7 @@ void AXTableInfo::BuildCellDataVectorFromRowAndCellNodes(
       } else {
         // Don't allow the row index to change after the beginning
         // of a row.
-        cell_data.row_index = current_row_index;
+        cell_data.row_index = *current_row_index;
         cell_data.aria_row_index = current_aria_row_index;
       }
 
@@ -244,11 +255,11 @@ void AXTableInfo::BuildCellDataVectorFromRowAndCellNodes(
       cell_data_vector.push_back(cell_data);
     }
 
-    // At the end of each row, increment |current_row_index| to reflect the next
-    // available index after this row. The next row index must be at least this
-    // large. Same for the current ARIA row index.
-    current_row_index++;
+    // At the end of each row, increment |current_aria_row_index| to reflect the
+    // next available index after this row. The next row index must be at least
+    // this large. Also update |previous_row_index|.
     current_aria_row_index++;
+    previous_row_index = *current_row_index;
   }
 }
 
