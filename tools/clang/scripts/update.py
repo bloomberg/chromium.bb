@@ -924,9 +924,6 @@ def main():
   parser = argparse.ArgumentParser(description='Build Clang.')
   parser.add_argument('--bootstrap', action='store_true',
                       help='first build clang with CC, then with itself.')
-  # TODO(phajdan.jr): remove --if-needed after fixing callers. It's no-op.
-  parser.add_argument('--if-needed', action='store_true',
-                      help="run only if the script thinks clang is needed")
   parser.add_argument('--force-local-build', action='store_true',
                       help="don't try to download prebuild binaries")
   parser.add_argument('--gcc-toolchain', help='set the version for which gcc '
