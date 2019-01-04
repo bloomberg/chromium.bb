@@ -14,7 +14,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -63,7 +63,7 @@ TEST_F(MacUtilTest, TestGetAppBundlePath) {
     "/", "/foo", "foo", "/foo/bar.", "foo/bar.", "/foo/bar./bazquux",
     "foo/bar./bazquux", "foo/.app", "//foo",
   };
-  for (size_t i = 0; i < arraysize(invalid_inputs); i++) {
+  for (size_t i = 0; i < base::size(invalid_inputs); i++) {
     out = GetAppBundlePath(FilePath(invalid_inputs[i]));
     EXPECT_TRUE(out.empty()) << "loop: " << i;
   }
@@ -87,7 +87,7 @@ TEST_F(MacUtilTest, TestGetAppBundlePath) {
     { "/Applications/Google Foo.app/bar/Foo Helper.app/quux/Foo Helper",
         "/Applications/Google Foo.app" },
   };
-  for (size_t i = 0; i < arraysize(valid_inputs); i++) {
+  for (size_t i = 0; i < base::size(valid_inputs); i++) {
     out = GetAppBundlePath(FilePath(valid_inputs[i].in));
     EXPECT_FALSE(out.empty()) << "loop: " << i;
     EXPECT_STREQ(valid_inputs[i].expected_out,
@@ -103,8 +103,8 @@ TEST_F(MacUtilTest, DISABLED_TestExcludeFileFromBackups) {
   FilePath dummy_file_path = temp_dir_.GetPath().Append("DummyFile");
   const char dummy_data[] = "All your base are belong to us!";
   // Dump something real into the file.
-  ASSERT_EQ(static_cast<int>(arraysize(dummy_data)),
-            WriteFile(dummy_file_path, dummy_data, arraysize(dummy_data)));
+  ASSERT_EQ(static_cast<int>(base::size(dummy_data)),
+            WriteFile(dummy_file_path, dummy_data, base::size(dummy_data)));
   NSString* fileURLString = base::mac::FilePathToNSString(dummy_file_path);
   NSURL* fileURL = [NSURL URLWithString:fileURLString];
   // Initial state should be non-excluded.

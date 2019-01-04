@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 
 #if defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
@@ -147,7 +147,7 @@ void CPU::Initialize() {
   int num_ids = cpu_info[0];
   std::swap(cpu_info[2], cpu_info[3]);
   static constexpr size_t kVendorNameSize = 3 * sizeof(cpu_info[1]);
-  static_assert(kVendorNameSize < arraysize(cpu_string),
+  static_assert(kVendorNameSize < base::size(cpu_string),
                 "cpu_string too small");
   memcpy(cpu_string, &cpu_info[1], kVendorNameSize);
   cpu_string[kVendorNameSize] = '\0';
@@ -202,7 +202,7 @@ void CPU::Initialize() {
   static constexpr int kParameterStart = 0x80000002;
   static constexpr int kParameterEnd = 0x80000004;
   static constexpr int kParameterSize = kParameterEnd - kParameterStart + 1;
-  static_assert(kParameterSize * sizeof(cpu_info) + 1 == arraysize(cpu_string),
+  static_assert(kParameterSize * sizeof(cpu_info) + 1 == base::size(cpu_string),
                 "cpu_string has wrong size");
 
   if (max_parameter >= kParameterEnd) {

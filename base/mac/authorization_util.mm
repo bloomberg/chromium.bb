@@ -15,8 +15,8 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_authorizationref.h"
-#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 
@@ -62,7 +62,7 @@ AuthorizationRef GetAuthorizationRightsWithPrompt(
     {kAuthorizationEnvironmentPrompt, prompt_length, (void*)prompt_c, 0}
   };
 
-  AuthorizationEnvironment environment = {arraysize(environment_items),
+  AuthorizationEnvironment environment = {base::size(environment_items),
                                           environment_items};
 
   status = AuthorizationCopyRights(authorization,
@@ -87,7 +87,7 @@ AuthorizationRef AuthorizationCreateToRunAsRoot(CFStringRef prompt) {
   AuthorizationItem right_items[] = {
     {kAuthorizationRightExecute, 0, NULL, 0}
   };
-  AuthorizationRights rights = {arraysize(right_items), right_items};
+  AuthorizationRights rights = {base::size(right_items), right_items};
 
   return GetAuthorizationRightsWithPrompt(&rights, prompt, 0);
 }

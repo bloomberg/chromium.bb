@@ -12,7 +12,7 @@
 #include "base/build_time.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time_override.h"
@@ -319,7 +319,7 @@ TEST_F(TimeTest, ParseTimeTest1) {
   char time_buf[64] = {};
 #if defined(OS_WIN)
   localtime_s(&local_time, &current_time);
-  asctime_s(time_buf, arraysize(time_buf), &local_time);
+  asctime_s(time_buf, base::size(time_buf), &local_time);
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   localtime_r(&current_time, &local_time);
   asctime_r(&local_time, time_buf);

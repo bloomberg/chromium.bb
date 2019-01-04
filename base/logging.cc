@@ -7,7 +7,6 @@
 #include <limits.h>
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 
@@ -117,7 +116,7 @@ VlogInfo* g_vlog_info = nullptr;
 VlogInfo* g_vlog_info_prev = nullptr;
 
 const char* const log_severity_names[] = {"INFO", "WARNING", "ERROR", "FATAL"};
-static_assert(LOG_NUM_SEVERITIES == arraysize(log_severity_names),
+static_assert(LOG_NUM_SEVERITIES == base::size(log_severity_names),
               "Incorrect number of log_severity_names");
 
 const char* log_severity_name(int severity) {
@@ -336,9 +335,9 @@ bool InitializeLogFileHandle() {
       // try the current directory
       wchar_t system_buffer[MAX_PATH];
       system_buffer[0] = 0;
-      DWORD len = ::GetCurrentDirectory(arraysize(system_buffer),
-                                        system_buffer);
-      if (len == 0 || len > arraysize(system_buffer))
+      DWORD len =
+          ::GetCurrentDirectory(base::size(system_buffer), system_buffer);
+      if (len == 0 || len > base::size(system_buffer))
         return false;
 
       *g_log_file_name = system_buffer;
@@ -689,7 +688,7 @@ LogMessage::~LogMessage() {
       // By default, messages are only readable by the admin group. Explicitly
       // make them readable by the user generating the messages.
       char euid_string[12];
-      snprintf(euid_string, arraysize(euid_string), "%d", geteuid());
+      snprintf(euid_string, base::size(euid_string), "%d", geteuid());
       asl_set(asl_message.get(), ASL_KEY_READ_UID, euid_string);
 
       // Map Chrome log severities to ASL log levels.
@@ -964,7 +963,7 @@ BASE_EXPORT std::string SystemErrorCodeToString(SystemErrorCode error_code) {
   char msgbuf[kErrorMessageBufferSize];
   DWORD flags = FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
   DWORD len = FormatMessageA(flags, nullptr, error_code, 0, msgbuf,
-                             arraysize(msgbuf), nullptr);
+                             base::size(msgbuf), nullptr);
   if (len) {
     // Messages returned by system end with line breaks.
     return base::CollapseWhitespaceASCII(msgbuf, true) +

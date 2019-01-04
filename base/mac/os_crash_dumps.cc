@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 
 namespace base {
 namespace mac {
@@ -42,7 +42,7 @@ void DisableOSCrashDumps() {
   };
 
   // For all these signals, just wire things up so we exit immediately.
-  for (size_t i = 0; i < arraysize(signals_to_intercept); ++i) {
+  for (size_t i = 0; i < base::size(signals_to_intercept); ++i) {
     struct sigaction act = {};
     act.sa_handler = ExitSignalHandler;
 

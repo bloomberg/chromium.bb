@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/memory/read_only_shared_memory_region.h"
+#include "base/stl_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,7 +40,7 @@ TEST(RefCountedMemoryUnitTest, RefCountedBytes) {
   scoped_refptr<RefCountedMemory> mem2;
   {
     const unsigned char kData[] = {12, 11, 99};
-    mem2 = MakeRefCounted<RefCountedBytes>(kData, arraysize(kData));
+    mem2 = MakeRefCounted<RefCountedBytes>(kData, base::size(kData));
   }
   ASSERT_EQ(3U, mem2->size());
   EXPECT_EQ(12U, mem2->front()[0]);

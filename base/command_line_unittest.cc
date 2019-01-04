@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,7 +47,7 @@ TEST(CommandLineTest, CommandLineConstructor) {
       FILE_PATH_LITERAL("--not-a-switch"),
       FILE_PATH_LITERAL("\"in the time of submarines...\""),
       FILE_PATH_LITERAL("unquoted arg-with-space")};
-  CommandLine cl(arraysize(argv), argv);
+  CommandLine cl(base::size(argv), argv);
 
   EXPECT_FALSE(cl.GetCommandLineString().empty());
   EXPECT_FALSE(cl.HasSwitch("cruller"));
@@ -307,22 +307,22 @@ TEST(CommandLineTest, AppendSwitchesDashDash) {
  const CommandLine::CharType* raw_argv[] = { FILE_PATH_LITERAL("prog"),
                                              FILE_PATH_LITERAL("--"),
                                              FILE_PATH_LITERAL("--arg1") };
-  CommandLine cl(arraysize(raw_argv), raw_argv);
+ CommandLine cl(base::size(raw_argv), raw_argv);
 
-  cl.AppendSwitch("switch1");
-  cl.AppendSwitchASCII("switch2", "foo");
+ cl.AppendSwitch("switch1");
+ cl.AppendSwitchASCII("switch2", "foo");
 
-  cl.AppendArg("--arg2");
+ cl.AppendArg("--arg2");
 
-  EXPECT_EQ(FILE_PATH_LITERAL("prog --switch1 --switch2=foo -- --arg1 --arg2"),
-            cl.GetCommandLineString());
-  CommandLine::StringVector cl_argv = cl.argv();
-  EXPECT_EQ(FILE_PATH_LITERAL("prog"), cl_argv[0]);
-  EXPECT_EQ(FILE_PATH_LITERAL("--switch1"), cl_argv[1]);
-  EXPECT_EQ(FILE_PATH_LITERAL("--switch2=foo"), cl_argv[2]);
-  EXPECT_EQ(FILE_PATH_LITERAL("--"), cl_argv[3]);
-  EXPECT_EQ(FILE_PATH_LITERAL("--arg1"), cl_argv[4]);
-  EXPECT_EQ(FILE_PATH_LITERAL("--arg2"), cl_argv[5]);
+ EXPECT_EQ(FILE_PATH_LITERAL("prog --switch1 --switch2=foo -- --arg1 --arg2"),
+           cl.GetCommandLineString());
+ CommandLine::StringVector cl_argv = cl.argv();
+ EXPECT_EQ(FILE_PATH_LITERAL("prog"), cl_argv[0]);
+ EXPECT_EQ(FILE_PATH_LITERAL("--switch1"), cl_argv[1]);
+ EXPECT_EQ(FILE_PATH_LITERAL("--switch2=foo"), cl_argv[2]);
+ EXPECT_EQ(FILE_PATH_LITERAL("--"), cl_argv[3]);
+ EXPECT_EQ(FILE_PATH_LITERAL("--arg1"), cl_argv[4]);
+ EXPECT_EQ(FILE_PATH_LITERAL("--arg2"), cl_argv[5]);
 }
 
 // Tests that when AppendArguments is called that the program is set correctly

@@ -17,6 +17,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_task_environment.h"
@@ -353,7 +354,7 @@ void RunTest_DelayTimer_Reset(
   ResetHelper reset_helper(&timer, &target);
 
   OneShotTimer timers[20];
-  for (size_t i = 0; i < arraysize(timers); ++i) {
+  for (size_t i = 0; i < base::size(timers); ++i) {
     timers[i].Start(FROM_HERE, TimeDelta::FromMilliseconds(i * 10),
                     &reset_helper, &ResetHelper::Reset);
   }

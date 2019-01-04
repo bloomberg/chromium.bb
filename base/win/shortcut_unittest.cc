@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/test/test_file_util.h"
 #include "base/test/test_shortcut_win.h"
 #include "base/win/scoped_com_initializer.h"
@@ -36,7 +36,7 @@ class ShortcutTest : public testing::Test {
     // Shortcut 1's properties
     {
       const FilePath target_file(temp_dir_.GetPath().Append(L"Target 1.txt"));
-      WriteFile(target_file, kFileContents, arraysize(kFileContents));
+      WriteFile(target_file, kFileContents, base::size(kFileContents));
 
       link_properties_.set_target(target_file);
       link_properties_.set_working_dir(temp_dir_.GetPath());
@@ -58,7 +58,7 @@ class ShortcutTest : public testing::Test {
     // Shortcut 2's properties (all different from properties of shortcut 1).
     {
       const FilePath target_file_2(temp_dir_.GetPath().Append(L"Target 2.txt"));
-      WriteFile(target_file_2, kFileContents2, arraysize(kFileContents2));
+      WriteFile(target_file_2, kFileContents2, base::size(kFileContents2));
 
       FilePath icon_path_2;
       CreateTemporaryFileInDir(temp_dir_.GetPath(), &icon_path_2);
@@ -147,8 +147,8 @@ TEST_F(ShortcutTest, CreateAndResolveShortcut) {
   FilePath resolved_name;
   EXPECT_TRUE(ResolveShortcut(link_file_, &resolved_name, NULL));
 
-  char read_contents[arraysize(kFileContents)];
-  base::ReadFile(resolved_name, read_contents, arraysize(read_contents));
+  char read_contents[base::size(kFileContents)];
+  base::ReadFile(resolved_name, read_contents, base::size(read_contents));
   EXPECT_STREQ(kFileContents, read_contents);
 }
 
@@ -160,8 +160,8 @@ TEST_F(ShortcutTest, ResolveShortcutWithArgs) {
   string16 args;
   EXPECT_TRUE(ResolveShortcut(link_file_, &resolved_name, &args));
 
-  char read_contents[arraysize(kFileContents)];
-  base::ReadFile(resolved_name, read_contents, arraysize(read_contents));
+  char read_contents[base::size(kFileContents)];
+  base::ReadFile(resolved_name, read_contents, base::size(read_contents));
   EXPECT_STREQ(kFileContents, read_contents);
   EXPECT_EQ(link_properties_.arguments, args);
 }
@@ -213,8 +213,8 @@ TEST_F(ShortcutTest, UpdateShortcutUpdateOnlyTargetAndResolve) {
   FilePath resolved_name;
   EXPECT_TRUE(ResolveShortcut(link_file_, &resolved_name, NULL));
 
-  char read_contents[arraysize(kFileContents2)];
-  base::ReadFile(resolved_name, read_contents, arraysize(read_contents));
+  char read_contents[base::size(kFileContents2)];
+  base::ReadFile(resolved_name, read_contents, base::size(read_contents));
   EXPECT_STREQ(kFileContents2, read_contents);
 }
 

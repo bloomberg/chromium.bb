@@ -110,7 +110,7 @@
 
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
@@ -169,7 +169,7 @@ class BASE_EXPORT FilePath {
   // when composing pathnames.
   static const CharType kSeparators[];
 
-  // arraysize(kSeparators).
+  // base::size(kSeparators).
   static const size_t kSeparatorsLength;
 
   // A special path component meaning "this directory."

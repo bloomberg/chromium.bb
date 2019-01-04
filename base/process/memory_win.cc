@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/process/memory.h"
+#include "base/stl_util.h"
 
 #include <windows.h>  // Must be in front of other Windows header files.
 
@@ -49,7 +50,7 @@ NOINLINE int OnNoMemory(size_t size) {
   // Pass the size of the failed request in an exception argument.
   ULONG_PTR exception_args[] = {size};
   ::RaiseException(win::kOomExceptionCode, EXCEPTION_NONCONTINUABLE,
-                   arraysize(exception_args), exception_args);
+                   base::size(exception_args), exception_args);
 
   // Safety check, make sure process exits here.
   _exit(win::kOomExceptionCode);

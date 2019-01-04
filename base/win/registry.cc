@@ -8,7 +8,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/shlwapi.h"
@@ -230,7 +230,7 @@ DWORD RegKey::GetValueCount() const {
 
 LONG RegKey::GetValueNameAt(int index, std::wstring* name) const {
   wchar_t buf[256];
-  DWORD bufsize = arraysize(buf);
+  DWORD bufsize = base::size(buf);
   LONG r = ::RegEnumValue(key_, index, buf, &bufsize, NULL, NULL, NULL, NULL);
   if (r == ERROR_SUCCESS)
     *name = buf;
@@ -641,7 +641,7 @@ void RegistryKeyIterator::operator++() {
 
 bool RegistryKeyIterator::Read() {
   if (Valid()) {
-    DWORD ncount = arraysize(name_);
+    DWORD ncount = base::size(name_);
     FILETIME written;
     LONG r = ::RegEnumKeyEx(key_, index_, name_, &ncount, NULL, NULL,
                             NULL, &written);
