@@ -131,18 +131,7 @@ AlternativeBrowserDriverImpl::~AlternativeBrowserDriverImpl() {}
 
 void AlternativeBrowserDriverImpl::SetBrowserPath(base::StringPiece path) {
   browser_path_ = path.as_string();
-#if defined(OS_MACOSX)
-  // Unlike most POSIX platforms, MacOS always has another browser than Chrome,
-  // so admins don't have to explicitly configure one.
-  if (browser_path_.empty()) {
-    browser_path_ = kSafariExecutableName;
-  }
-#endif
-  for (const auto& mapping : kBrowserVarMappings) {
-    if (!browser_path_.compare(mapping.var_name)) {
-      browser_path_ = mapping.executable_name;
-    }
-  }
+  ExpandPresetBrowsers(&browser_path_);
 }
 
 void AlternativeBrowserDriverImpl::SetBrowserParameters(
@@ -153,6 +142,29 @@ void AlternativeBrowserDriverImpl::SetBrowserParameters(
     DCHECK(param.is_string());
     browser_params_.push_back(param.GetString());
   }
+}
+
+void AlternativeBrowserDriverImpl::ExpandPresetBrowsers(
+    std::string* str) const {
+#if defined(OS_MACOSX)
+  // Unlike most POSIX platforms, MacOS always has another browser than Chrome,
+  // so admins don't have to explicitly configure one.
+  if (str->empty()) {
+    *str = kSafariExecutableName;
+    return;
+  }
+#endif
+  for (const auto& mapping : kBrowserVarMappings) {
+    if (!str->compare(mapping.var_name)) {
+      *str = mapping.executable_name;
+      return;
+    }
+  }
+}
+
+void AlternativeBrowserDriverImpl::ExpandEnvVars(std::string* str) const {
+  ExpandTilde(str);
+  ExpandEnvironmentVariables(str);
 }
 
 bool AlternativeBrowserDriverImpl::TryLaunch(const GURL& url) {

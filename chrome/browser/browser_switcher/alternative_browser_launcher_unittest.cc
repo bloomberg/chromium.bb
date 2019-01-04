@@ -6,6 +6,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
+#include "chrome/browser/browser_switcher/mock_alternative_browser_driver.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
@@ -23,15 +24,6 @@ namespace {
 
 const char kExampleDotCom[] = "http://example.com/";
 
-class MockAlternativeBrowserDriver : public AlternativeBrowserDriver {
- public:
-  MockAlternativeBrowserDriver() = default;
-  ~MockAlternativeBrowserDriver() override = default;
-
-  MOCK_METHOD1(SetBrowserPath, void(base::StringPiece));
-  MOCK_METHOD1(SetBrowserParameters, void(const base::ListValue*));
-  MOCK_METHOD1(TryLaunch, bool(const GURL&));
-};
 
 }  // namespace
 
@@ -40,7 +32,8 @@ class AlternativeBrowserLauncherTest : public testing::Test {
   void SetUp() override {
     prefs_.registry()->RegisterStringPref(prefs::kAlternativeBrowserPath, "");
     prefs_.registry()->RegisterListPref(prefs::kAlternativeBrowserParameters);
-    driver_ = new MockAlternativeBrowserDriver();
+    auto driver = std::make_unique<MockAlternativeBrowserDriver>();
+    driver_ = driver.get();
     EXPECT_CALL(*driver_, SetBrowserPath(_))
         .WillOnce(Invoke([](base::StringPiece path) { EXPECT_EQ("", path); }));
     EXPECT_CALL(*driver_, SetBrowserParameters(_))
@@ -48,7 +41,7 @@ class AlternativeBrowserLauncherTest : public testing::Test {
           EXPECT_TRUE(parameters->GetList().empty());
         }));
     launcher_ = std::make_unique<AlternativeBrowserLauncherImpl>(
-        &prefs_, std::unique_ptr<AlternativeBrowserDriver>(driver_));
+        &prefs_, std::move(driver));
   }
 
   TestingPrefServiceSimple* prefs() { return &prefs_; }

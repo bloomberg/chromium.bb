@@ -4483,7 +4483,10 @@ test("unit_tests") {
       "../browser/browser_switcher/alternative_browser_driver_unittest.cc",
       "../browser/browser_switcher/alternative_browser_launcher_unittest.cc",
       "../browser/browser_switcher/browser_switcher_navigation_throttle_unittest.cc",
+      "../browser/browser_switcher/browser_switcher_prefs_unittest.cc",
       "../browser/browser_switcher/browser_switcher_sitelist_unittest.cc",
+      "../browser/browser_switcher/mock_alternative_browser_driver.cc",
+      "../browser/browser_switcher/mock_alternative_browser_driver.h",
       "../browser/password_manager/password_store_signin_notifier_impl_unittest.cc",
     ]
   }

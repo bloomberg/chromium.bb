@@ -757,7 +757,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  browser_switcher::prefs::RegisterProfilePrefs(registry);
+  browser_switcher::BrowserSwitcherPrefs::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(TOOLKIT_VIEWS)

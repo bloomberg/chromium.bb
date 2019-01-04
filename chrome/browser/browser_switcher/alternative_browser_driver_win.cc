@@ -171,6 +171,27 @@ bool AlternativeBrowserDriverImpl::TryLaunch(const GURL& url) {
   return (TryLaunchWithDde(url) || TryLaunchWithExec(url));
 }
 
+void AlternativeBrowserDriverImpl::ExpandEnvVars(std::string* str) const {
+  std::wstring wide = base::UTF8ToWide(*str);
+  ExpandEnvironmentVariables(&wide);
+  *str = base::WideToUTF8(wide);
+}
+
+void AlternativeBrowserDriverImpl::ExpandPresetBrowsers(
+    std::string* str) const {
+  if (str->empty()) {
+    *str = base::WideToUTF8(GetBrowserLocation(kIExploreKey));
+    return;
+  }
+  std::wstring wide = base::UTF8ToWide(*str);
+  for (const auto& mapping : kBrowserVarMappings) {
+    if (!wide.compare(mapping.var_name)) {
+      *str = base::WideToUTF8(GetBrowserLocation(mapping.registry_key));
+      return;
+    }
+  }
+}
+
 bool AlternativeBrowserDriverImpl::TryLaunchWithDde(const GURL& url) {
   if (dde_host_.empty())
     return false;

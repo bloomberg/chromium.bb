@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_BROWSER_SWITCHER_BROWSER_SWITCHER_SITELIST_H_
 
 #include "base/macros.h"
+#include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "components/prefs/pref_change_registrar.h"
 
 class PrefService;
@@ -56,14 +57,6 @@ class BrowserSwitcherSitelistImpl : public BrowserSwitcherSitelist {
   bool IsActive() const;
 
   bool ShouldSwitchImpl(const GURL& url) const;
-
-  struct RuleSet {
-    RuleSet();
-    ~RuleSet();
-
-    std::vector<std::string> sitelist;
-    std::vector<std::string> greylist;
-  };
 
   RuleSet chrome_policies_;
   RuleSet ieem_sitelist_;
