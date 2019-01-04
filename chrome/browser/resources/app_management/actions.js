@@ -9,12 +9,12 @@
 
 cr.define('app_management.actions', function() {
   /**
-   * @param {Array<App>} apps
+   * @param {App} app
    */
-  function addApps(apps) {
+  function addApp(app) {
     return {
-      name: 'add-apps',
-      apps: apps,
+      name: 'add-app',
+      app: app,
     };
   }
 
@@ -56,7 +56,7 @@ cr.define('app_management.actions', function() {
   }
 
   return {
-    addApps: addApps,
+    addApp: addApp,
     changeApp: changeApp,
     removeApp: removeApp,
     changePage: changePage,

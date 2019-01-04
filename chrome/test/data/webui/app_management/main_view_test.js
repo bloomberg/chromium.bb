@@ -41,9 +41,15 @@ suite('<app-management-main-view>', function() {
     return apps;
   }
 
+  function addApps(apps) {
+    for (const app of apps) {
+      callbackRouterProxy.onAppAdded(app);
+    }
+  }
+
   test('simple app addition', async function() {
     let apps = createTestApps(1);
-    callbackRouterProxy.onAppsAdded(apps);
+    addApps(apps);
     await callbackRouterProxy.flushForTesting();
     let appItems = mainView.root.querySelectorAll('app-management-item');
     expectEquals(1, appItems.length);
@@ -58,14 +64,14 @@ suite('<app-management-main-view>', function() {
     expectTrue(mainView.$['expander-row'].hidden);
 
     // The more apps bar shouldn't appear when there are 4 apps.
-    callbackRouterProxy.onAppsAdded(createTestApps(4));
+    addApps(createTestApps(4));
     await callbackRouterProxy.flushForTesting();
     expectEquals(
         4, mainView.root.querySelectorAll('app-management-item').length);
     expectTrue(mainView.$['expander-row'].hidden);
 
     // The more apps bar appears when there are 5 apps.
-    callbackRouterProxy.onAppsAdded(createTestApps(1));
+    addApps(createTestApps(1));
     await callbackRouterProxy.flushForTesting();
     expectEquals(
         5, mainView.root.querySelectorAll('app-management-item').length);

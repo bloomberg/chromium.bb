@@ -25,20 +25,16 @@ suite('app state', function() {
     ]);
   });
 
-  test('updates when apps are added', function() {
-    appsToAdd = [
-      createApp('3', {type: 1, title: 'a'}),
-      createApp('4'),
-    ];
+  test('updates when an app is added', function() {
+    const newApp = createApp('3', {type: 1, title: 'a'});
 
-    action = app_management.actions.addApps(appsToAdd);
+    action = app_management.actions.addApp(newApp);
     apps = app_management.AppState.updateApps(apps, action);
 
     // Check that apps contains a key for each app id.
     assertTrue(!!apps['1']);
     assertTrue(!!apps['2']);
     assertTrue(!!apps['3']);
-    assertTrue(!!apps['4']);
 
     // Check that id corresponds to the right app.
     const app = apps['3'];
