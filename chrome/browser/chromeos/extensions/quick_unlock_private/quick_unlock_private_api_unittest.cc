@@ -149,6 +149,7 @@ class QuickUnlockPrivateUnitTest
     }
     DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
         std::move(cryptohome_client));
+    SystemSaltGetter::Initialize();
 
     ExtensionApiUnittest::SetUp();
 
@@ -191,6 +192,7 @@ class QuickUnlockPrivateUnitTest
     fake_user_manager_ = nullptr;
 
     ExtensionApiUnittest::TearDown();
+    SystemSaltGetter::Shutdown();
     cryptohome::HomedirMethods::Shutdown();
   }
 

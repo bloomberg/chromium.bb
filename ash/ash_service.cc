@@ -16,7 +16,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/network/network_connect.h"
@@ -81,7 +80,6 @@ AshService::~AshService() {
 
   statistics_provider_.reset();
   // NOTE: PowerStatus is shutdown by Shell.
-  chromeos::SystemSaltGetter::Shutdown();
   chromeos::CrasAudioHandler::Shutdown();
   chromeos::NetworkConnect::Shutdown();
   network_connect_delegate_.reset();
@@ -146,7 +144,6 @@ void AshService::InitForMash() {
   chromeos::NetworkConnect::Initialize(network_connect_delegate_.get());
   // TODO(jamescook): Initialize real audio handler.
   chromeos::CrasAudioHandler::InitializeForTesting();
-  chromeos::SystemSaltGetter::Initialize();
 
   // TODO(jamescook): Refactor StatisticsProvider so we can get just the data
   // we need in ash. Right now StatisticsProviderImpl launches the crossystem
