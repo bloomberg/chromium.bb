@@ -95,6 +95,7 @@ source_set("chromeos") {
     "//chromeos/components/multidevice/logging",
     "//chromeos/components/proximity_auth",
     "//chromeos/components/tether",
+    "//chromeos/cryptohome",
     "//chromeos/login/auth",
     "//chromeos/login/login_state",
     "//chromeos/network",

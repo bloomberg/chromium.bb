@@ -1742,6 +1742,7 @@ jumbo_split_static_library("ui") {
       "//chromeos/components/multidevice/logging",
       "//chromeos/components/proximity_auth",
       "//chromeos/components/tether",
+      "//chromeos/cryptohome",
       "//chromeos/login/auth",
       "//chromeos/login/login_state",
       "//chromeos/resources:resources_grit",
