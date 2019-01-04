@@ -211,9 +211,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   bool application_is_visible_ = true;
 
-  // True if --single-process or --in-process-gpu is passed in.
-  bool in_process_gpu_ = false;
-
   DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImplPrivate);
 };
 
