@@ -696,6 +696,11 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
         form_element);
   }
 
+  void CheckFirstFillingResult(FillingResult result) {
+    histogram_tester_.ExpectUniqueSample(
+        "PasswordManager.FirstRendererFillingResult", result, 1);
+  }
+
   void SubmitForm() {
     FormTracker* tracker = autofill_agent_->form_tracker_for_testing();
     static_cast<content::RenderFrameObserver*>(tracker)->WillSubmitForm(
@@ -767,6 +772,8 @@ TEST_F(PasswordAutofillAgentTest, InitialAutocomplete) {
 
   // The username and password should have been autocompleted.
   CheckTextFieldsSuggestedState(kAliceUsername, true, kAlicePassword, true);
+
+  CheckFirstFillingResult(FillingResult::kSuccess);
 }
 
 // Tests that we correctly fill forms having an empty 'action' attribute.
@@ -804,6 +811,8 @@ TEST_F(PasswordAutofillAgentTest, NoInitialAutocompleteForReadOnlyPassword) {
   SimulateOnFillPasswordForm(fill_data_);
 
   CheckTextFieldsSuggestedState(std::string(), false, std::string(), false);
+
+  CheckFirstFillingResult(FillingResult::kPasswordElementIsNotAutocompleteable);
 }
 
 // Can still fill a password field if the username is set to a value that
@@ -817,6 +826,8 @@ TEST_F(PasswordAutofillAgentTest,
   SimulateOnFillPasswordForm(fill_data_);
   CheckUsernameDOMStatePasswordSuggestedState(UTF16ToUTF8(username3_), false,
                                               UTF16ToUTF8(password3_), true);
+
+  CheckFirstFillingResult(FillingResult::kSuccess);
 }
 
 // Fill username and password fields when username field contains a prefilled
@@ -852,11 +863,13 @@ TEST_F(PasswordAutofillAgentTest, MAYBE_AutocompleteForPrefilledUsernameValue) {
   histogram_tester_.ExpectUniqueSample(
       "PasswordManager.PrefilledUsernameFillOutcome",
       PrefilledUsernameFillOutcome::kPrefilledPlaceholderUsernameOverridden, 1);
+
+  CheckFirstFillingResult(FillingResult::kSuccess);
 }
 
 // Tests that if filling is invoked twice for the same autofill agent the
-// prefilled username metrics are only logged once.
-TEST_F(PasswordAutofillAgentTest, PrefilledUsernameMetricsOnlyLoggedOnce) {
+// prefilled username and first filling metrics are only logged once.
+TEST_F(PasswordAutofillAgentTest, MetricsOnlyLoggedOnce) {
   // Set the username element to a value from the prefilled values list.
   // Comparison should be insensitive to leading and trailing whitespaces.
   username_element_.SetValue(
@@ -870,6 +883,8 @@ TEST_F(PasswordAutofillAgentTest, PrefilledUsernameMetricsOnlyLoggedOnce) {
   histogram_tester_.ExpectUniqueSample(
       "PasswordManager.PrefilledUsernameFillOutcome",
       PrefilledUsernameFillOutcome::kPrefilledPlaceholderUsernameOverridden, 1);
+
+  CheckFirstFillingResult(FillingResult::kSuccess);
 }
 
 // Fill a password field if the stored username is a prefix of username in
@@ -901,6 +916,9 @@ TEST_F(PasswordAutofillAgentTest,
   SimulateOnFillPasswordForm(fill_data_);
   CheckUsernameDOMStatePasswordSuggestedState(UTF16ToUTF8(prefilled_username),
                                               false, std::string(), false);
+
+  CheckFirstFillingResult(
+      FillingResult::kUsernamePrefilledWithIncompatibleValue);
 }
 
 // Do not fill a password field if the field isn't readonly despite the stored
@@ -928,6 +946,8 @@ TEST_F(PasswordAutofillAgentTest,
   SimulateOnFillPasswordForm(fill_data_);
   CheckUsernameDOMStatePasswordSuggestedState(std::string(), false,
                                               std::string(), false);
+
+  CheckFirstFillingResult(FillingResult::kFoundNoPasswordForUsername);
 }
 
 // Tests that having a non-matching username precludes the autocomplete.
@@ -941,6 +961,9 @@ TEST_F(PasswordAutofillAgentTest, NoAutocompleteForFilledFieldUnmatched) {
   // Neither field should be autocompleted.
   CheckUsernameDOMStatePasswordSuggestedState("bogus", false, std::string(),
                                               false);
+
+  CheckFirstFillingResult(
+      FillingResult::kUsernamePrefilledWithIncompatibleValue);
 }
 
 // Don't try to complete a prefilled value that is a partial match
@@ -992,6 +1015,8 @@ TEST_F(PasswordAutofillAgentTest, NoAutocompleteForTextFieldPasswords) {
 
   // Fields should still be empty.
   CheckTextFieldsSuggestedState(std::string(), false, std::string(), false);
+
+  CheckFirstFillingResult(FillingResult::kNoFillableElementsFound);
 }
 
 TEST_F(PasswordAutofillAgentTest, NoAutocompleteForPasswordFieldUsernames) {
@@ -1013,6 +1038,8 @@ TEST_F(PasswordAutofillAgentTest, NoAutocompleteForPasswordFieldUsernames) {
 
   // Fields should still be empty.
   CheckTextFieldsSuggestedState(std::string(), false, std::string(), false);
+
+  CheckFirstFillingResult(FillingResult::kNoFillableElementsFound);
 }
 
 // Tests that having a matching username does not preclude the autocomplete.
@@ -1026,6 +1053,8 @@ TEST_F(PasswordAutofillAgentTest, InitialAutocompleteForMatchingFilledField) {
   // The username and password should have been autocompleted.
   CheckUsernameDOMStatePasswordSuggestedState(kAliceUsername, true,
                                               kAlicePassword, true);
+
+  CheckFirstFillingResult(FillingResult::kSuccess);
 }
 
 TEST_F(PasswordAutofillAgentTest, PasswordNotClearedOnEdit) {
@@ -1057,6 +1086,8 @@ TEST_F(PasswordAutofillAgentTest, WaitUsername) {
   // No autocomplete should happen when text is entered in the username.
   CheckUsernameDOMStatePasswordSuggestedState(kAliceUsername, false,
                                               std::string(), false);
+
+  CheckFirstFillingResult(FillingResult::kWaitForUsername);
 }
 
 TEST_F(PasswordAutofillAgentTest, IsWebElementVisibleTest) {
@@ -1424,6 +1455,8 @@ TEST_F(PasswordAutofillAgentTest, FillSuggestionWithDynamicUsernameField) {
       ASCIIToUTF16(kAlicePassword)));
 
   CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
+
+  CheckFirstFillingResult(FillingResult::kWaitForUsername);
 }
 
 // Tests that |FillSuggestion| doesn't change non-empty non-autofilled username
@@ -2302,6 +2335,38 @@ TEST_F(PasswordAutofillAgentTest,
 
   CheckUsernameDOMStatePasswordSuggestedState(std::string("Carol"), false,
                                               std::string(), false);
+}
+
+// If credentials contain username+password but the form contains only a
+// password field, we don't autofill on page load.
+TEST_F(PasswordAutofillAgentTest, DontFillFormWithNoUsername_WithRendererIds) {
+  // Load a form with no username and update test data.
+  LoadHTML(kVisibleFormWithNoUsernameHTML);
+  UpdateOnlyPasswordElement();
+  UpdateRendererIDs();
+
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // As the credential contains a username, but the form does not, the
+  // credential is not filled.
+  CheckFirstFillingResult(FillingResult::kFoundNoPasswordForUsername);
+}
+
+// If credentials contain username+password but the form contains only a
+// password field, we don't autofill on page load.
+TEST_F(PasswordAutofillAgentTest,
+       DontFillFormWithNoUsername_WithoutRendererIds) {
+  // Load a form with no username and update test data.
+  LoadHTML(kVisibleFormWithNoUsernameHTML);
+  UpdateOnlyPasswordElement();
+  UpdateOriginForHTML(kVisibleFormWithNoUsernameHTML);
+  fill_data_.username_field.name.clear();
+
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // As the credential contains a username, but the form does not, the
+  // credential is not filled.
+  CheckFirstFillingResult(FillingResult::kFoundNoPasswordForUsername);
 }
 
 TEST_F(PasswordAutofillAgentTest, FillOnAccountSelectOnlyNoUsername) {
@@ -3608,6 +3673,8 @@ TEST_F(PasswordAutofillAgentTest, FillOnLoadWithRendererIDs) {
   UpdateRendererIDs();
   SimulateOnFillPasswordForm(fill_data_);
   CheckTextFieldsSuggestedState(kAliceUsername, true, kAlicePassword, true);
+
+  CheckFirstFillingResult(FillingResult::kSuccess);
 }
 
 // Tests that the password form is filled as expected on load even if form/field
