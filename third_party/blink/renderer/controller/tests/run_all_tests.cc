@@ -41,33 +41,43 @@
 
 namespace {
 
-int runHelper(base::TestSuite* testSuite) {
-  content::SetUpBlinkTestEnvironment();
-  blink::SchemeRegistry::Initialize();
+class BlinkUnitTestSuite : public base::TestSuite {
+ public:
+  BlinkUnitTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
 
-  int result = testSuite->Run();
+ private:
+  void Initialize() override {
+    base::TestSuite::Initialize();
 
-  // Tickle EndOfTaskRunner which among other things will flush the queue
-  // of error messages via V8Initializer::reportRejectedPromisesOnMainThread.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::DoNothing());
-  base::RunLoop().RunUntilIdle();
+    content::SetUpBlinkTestEnvironment();
+    blink::SchemeRegistry::Initialize();
+  }
+  void Shutdown() override {
+    // Tickle EndOfTaskRunner which among other things will flush the queue
+    // of error messages via V8Initializer::reportRejectedPromisesOnMainThread.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::DoNothing());
+    base::RunLoop().RunUntilIdle();
 
-  // Collect garbage (including threadspecific persistent handles) in order
-  // to release mock objects referred from v8 or Oilpan heap. Otherwise false
-  // mock leaks will be reported.
-  blink::V8GCController::CollectAllGarbageForTesting(
-      v8::Isolate::GetCurrent(),
-      v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+    // Collect garbage (including threadspecific persistent handles) in order
+    // to release mock objects referred from v8 or Oilpan heap. Otherwise false
+    // mock leaks will be reported.
+    blink::V8GCController::CollectAllGarbageForTesting(
+        v8::Isolate::GetCurrent(),
+        v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
 
-  content::TearDownBlinkTestEnvironment();
+    content::TearDownBlinkTestEnvironment();
 
-  return result;
-}
+    base::TestSuite::Shutdown();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(BlinkUnitTestSuite);
+};
 
 }  // namespace
 
 int main(int argc, char** argv) {
-  base::TestSuite testSuite(argc, argv);
+  BlinkUnitTestSuite test_suite(argc, argv);
   return base::LaunchUnitTests(
-      argc, argv, base::Bind(&runHelper, base::Unretained(&testSuite)));
+      argc, argv,
+      base::BindOnce(&BlinkUnitTestSuite::Run, base::Unretained(&test_suite)));
 }
