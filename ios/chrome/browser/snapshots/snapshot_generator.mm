@@ -178,9 +178,6 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   UIImage* snapshot = [self generateSnapshotForView:view
                                            withRect:frame
                                            overlays:overlays];
-  [self.delegate snapshotGenerator:self
-      didUpdateSnapshotForWebState:self.webState
-                         withImage:snapshot];
   return snapshot;
 }
 
@@ -328,9 +325,6 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
     // Remove any stale snapshot since the snapshot failed.
     [self.snapshotCache removeImageWithSessionID:self.sessionID];
   }
-  [self.delegate snapshotGenerator:self
-      didUpdateSnapshotForWebState:self.webState
-                         withImage:snapshot];
 }
 
 #pragma mark - Properties

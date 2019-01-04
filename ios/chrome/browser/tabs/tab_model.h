@@ -157,10 +157,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // |background| is YES, NO otherwise.
 - (void)notifyNewTabWillOpen:(Tab*)tab inBackground:(BOOL)background;
 
-// Notifies observers that the snapshot for the given |tab| changed was changed
-// to |image|.
-- (void)notifyTabSnapshotChanged:(Tab*)tab withImage:(UIImage*)image;
-
 // Notifies observers that |tab| was deselected.
 - (void)notifyTabWasDeselected:(Tab*)tab;
 

@@ -69,11 +69,6 @@
 // |tab| stopped being the active tab.
 - (void)tabModel:(TabModel*)model didDeselectTab:(Tab*)tab;
 
-// The |tab|'s snapshot was changed to |image|.
-- (void)tabModel:(TabModel*)model
-    didChangeTabSnapshot:(Tab*)tab
-               withImage:image;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_TABS_TAB_MODEL_OBSERVER_H_

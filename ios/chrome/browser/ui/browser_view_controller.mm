@@ -2979,15 +2979,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [tab willUpdateSnapshot];
 }
 
-- (void)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
-    didUpdateSnapshotForWebState:(web::WebState*)webState
-                       withImage:(UIImage*)snapshot {
-  DCHECK(webState);
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-  DCHECK([self.tabModel indexOfTab:tab] != NSNotFound);
-  [self.tabModel notifyTabSnapshotChanged:tab withImage:snapshot];
-}
-
 - (UIView*)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
          baseViewForWebState:(web::WebState*)webState {
   NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
