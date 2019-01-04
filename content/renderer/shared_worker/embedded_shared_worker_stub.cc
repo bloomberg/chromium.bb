@@ -19,7 +19,7 @@
 #include "content/public/common/origin_util.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/renderer/appcache/appcache_dispatcher.h"
+#include "content/renderer/appcache/appcache_frontend_impl.h"
 #include "content/renderer/appcache/web_application_cache_host_impl.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/request_extra_data.h"
@@ -57,10 +57,11 @@ class SharedWorkerWebApplicationCacheHostImpl
   SharedWorkerWebApplicationCacheHostImpl(
       blink::WebApplicationCacheHostClient* client,
       int appcache_host_id)
-      : WebApplicationCacheHostImpl(
-            client,
-            RenderThreadImpl::current()->appcache_dispatcher()->backend_proxy(),
-            appcache_host_id) {}
+      : WebApplicationCacheHostImpl(client,
+                                    RenderThreadImpl::current()
+                                        ->appcache_frontend_impl()
+                                        ->backend_proxy(),
+                                    appcache_host_id) {}
 
   // Main resource loading is different for workers. The main resource is
   // loaded by the worker using WorkerClassicScriptLoader.

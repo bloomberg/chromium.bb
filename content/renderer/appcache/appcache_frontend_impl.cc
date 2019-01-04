@@ -4,7 +4,6 @@
 
 #include "content/renderer/appcache/appcache_frontend_impl.h"
 
-#include "base/logging.h"
 #include "content/renderer/appcache/web_application_cache_host_impl.h"
 #include "third_party/blink/public/web/web_console_message.h"
 
@@ -18,15 +17,22 @@ inline WebApplicationCacheHostImpl* GetHost(int id) {
   return WebApplicationCacheHostImpl::FromId(id);
 }
 
-void AppCacheFrontendImpl::OnCacheSelected(int host_id,
-                                           const AppCacheInfo& info) {
-  WebApplicationCacheHostImpl* host = GetHost(host_id);
-  if (host)
-    host->OnCacheSelected(info);
+AppCacheFrontendImpl::AppCacheFrontendImpl() : binding_(this) {}
+AppCacheFrontendImpl::~AppCacheFrontendImpl() = default;
+
+void AppCacheFrontendImpl::Bind(mojom::AppCacheFrontendRequest request) {
+  binding_.Bind(std::move(request));
 }
 
-void AppCacheFrontendImpl::OnStatusChanged(const std::vector<int>& host_ids,
-                                           AppCacheStatus status) {
+void AppCacheFrontendImpl::CacheSelected(int32_t host_id,
+                                         mojom::AppCacheInfoPtr info) {
+  WebApplicationCacheHostImpl* host = GetHost(host_id);
+  if (host)
+    host->OnCacheSelected(*info);
+}
+
+void AppCacheFrontendImpl::StatusChanged(const std::vector<int32_t>& host_ids,
+                                         AppCacheStatus status) {
   for (auto i = host_ids.begin(); i != host_ids.end(); ++i) {
     WebApplicationCacheHostImpl* host = GetHost(*i);
     if (host)
@@ -34,8 +40,8 @@ void AppCacheFrontendImpl::OnStatusChanged(const std::vector<int>& host_ids,
   }
 }
 
-void AppCacheFrontendImpl::OnEventRaised(const std::vector<int>& host_ids,
-                                         AppCacheEventID event_id) {
+void AppCacheFrontendImpl::EventRaised(const std::vector<int32_t>& host_ids,
+                                       AppCacheEventID event_id) {
   DCHECK_NE(
       event_id,
       AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // See OnProgressEventRaised.
@@ -48,11 +54,11 @@ void AppCacheFrontendImpl::OnEventRaised(const std::vector<int>& host_ids,
   }
 }
 
-void AppCacheFrontendImpl::OnProgressEventRaised(
-    const std::vector<int>& host_ids,
+void AppCacheFrontendImpl::ProgressEventRaised(
+    const std::vector<int32_t>& host_ids,
     const GURL& url,
-    int num_total,
-    int num_complete) {
+    int32_t num_total,
+    int32_t num_complete) {
   for (auto i = host_ids.begin(); i != host_ids.end(); ++i) {
     WebApplicationCacheHostImpl* host = GetHost(*i);
     if (host)
@@ -60,33 +66,33 @@ void AppCacheFrontendImpl::OnProgressEventRaised(
   }
 }
 
-void AppCacheFrontendImpl::OnErrorEventRaised(
-    const std::vector<int>& host_ids,
-    const AppCacheErrorDetails& details) {
+void AppCacheFrontendImpl::ErrorEventRaised(
+    const std::vector<int32_t>& host_ids,
+    mojom::AppCacheErrorDetailsPtr details) {
   for (auto i = host_ids.begin(); i != host_ids.end(); ++i) {
     WebApplicationCacheHostImpl* host = GetHost(*i);
     if (host)
-      host->OnErrorEventRaised(details);
+      host->OnErrorEventRaised(*details);
   }
 }
 
-void AppCacheFrontendImpl::OnLogMessage(int host_id,
-                                        AppCacheLogLevel log_level,
-                                        const std::string& message) {
+void AppCacheFrontendImpl::LogMessage(int32_t host_id,
+                                      int32_t log_level,
+                                      const std::string& message) {
   WebApplicationCacheHostImpl* host = GetHost(host_id);
   if (host)
-    host->OnLogMessage(log_level, message);
+    host->OnLogMessage(static_cast<AppCacheLogLevel>(log_level), message);
 }
 
-void AppCacheFrontendImpl::OnContentBlocked(int host_id,
-                                            const GURL& manifest_url) {
+void AppCacheFrontendImpl::ContentBlocked(int32_t host_id,
+                                          const GURL& manifest_url) {
   WebApplicationCacheHostImpl* host = GetHost(host_id);
   if (host)
     host->OnContentBlocked(manifest_url);
 }
 
-void AppCacheFrontendImpl::OnSetSubresourceFactory(
-    int host_id,
+void AppCacheFrontendImpl::SetSubresourceFactory(
+    int32_t host_id,
     network::mojom::URLLoaderFactoryPtr url_loader_factory) {
   WebApplicationCacheHostImpl* host = GetHost(host_id);
   if (host)
