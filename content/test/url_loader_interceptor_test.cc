@@ -81,6 +81,48 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, InterceptFrame) {
   EXPECT_FALSE(NavigateToURL(shell(), GetPageURL()));
 }
 
+IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest,
+                       AsynchronousInitializationInterceptFrame) {
+  GURL url = GetPageURL();
+  base::RunLoop run_loop;
+  URLLoaderInterceptor interceptor(
+      base::BindLambdaForTesting(
+          [&](URLLoaderInterceptor::RequestParams* params) {
+            EXPECT_EQ(params->url_request.url, url);
+            EXPECT_EQ(params->process_id, 0);
+            network::URLLoaderCompletionStatus status;
+            status.error_code = net::ERR_FAILED;
+            params->client->OnComplete(status);
+            return true;
+          }),
+      run_loop.QuitClosure());
+  run_loop.Run();
+  EXPECT_FALSE(NavigateToURL(shell(), GetPageURL()));
+}
+
+IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest,
+                       AsynchronousDestructionIsAppliedImmediately) {
+  const GURL url = GetPageURL();
+  {
+    base::RunLoop run_loop;
+    URLLoaderInterceptor interceptor(
+        base::BindLambdaForTesting(
+            [&](URLLoaderInterceptor::RequestParams* params) {
+              EXPECT_EQ(params->url_request.url, url);
+              EXPECT_EQ(params->process_id, 0);
+              network::URLLoaderCompletionStatus status;
+              status.error_code = net::ERR_FAILED;
+              params->client->OnComplete(status);
+              return true;
+            }),
+        run_loop.QuitClosure());
+    run_loop.Run();
+
+    ASSERT_FALSE(NavigateToURL(shell(), url));
+  }
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+}
+
 class TestBrowserClientWithHeaderClient
     : public ContentBrowserClient,
       public network::mojom::TrustedURLLoaderHeaderClient {

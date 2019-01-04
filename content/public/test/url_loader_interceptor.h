@@ -11,13 +11,13 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
-class URLLoaderFactoryGetter;
 
 // Helper class to intercept URLLoaderFactory calls for tests.
 // This intercepts:
@@ -78,7 +78,12 @@ class URLLoaderInterceptor {
   // forward the request to the original URLLoaderFactory.
   using InterceptCallback = base::Callback<bool(RequestParams* params)>;
 
-  explicit URLLoaderInterceptor(const InterceptCallback& callback);
+  // Create an interceptor which calls |callback|. If |ready_callback| is not
+  // provided, a nested RunLoop is used to ensure the interceptor is ready
+  // before returning. If |ready_callback| is provided, no RunLoop is called,
+  // and instead |ready_callback| is called after the interceptor is installed.
+  URLLoaderInterceptor(const InterceptCallback& callback,
+                       base::OnceClosure ready_callback = {});
   ~URLLoaderInterceptor();
 
   // Helper methods for use when intercepting.
@@ -112,13 +117,17 @@ class URLLoaderInterceptor {
 
   // Returns an interceptor that (as long as it says alive) will intercept
   // requests to |url| and fail them using the provided |error|.
+  // |ready_callback| is optional and avoids the use of RunLoop, see
+  // the constructor for more detail.
   static std::unique_ptr<URLLoaderInterceptor> SetupRequestFailForURL(
       const GURL& url,
-      net::Error error);
+      net::Error error,
+      base::OnceClosure ready_callback = {});
 
  private:
   class BrowserProcessWrapper;
   class Interceptor;
+  class IOState;
   class SubresourceWrapper;
   class URLLoaderFactoryGetterWrapper;
   class URLLoaderFactoryNavigationWrapper;
@@ -134,11 +143,6 @@ class URLLoaderInterceptor {
   // object that doesn't have a test factory set up.
   network::mojom::URLLoaderFactoryPtr GetURLLoaderFactoryForBrowserProcess(
       network::mojom::URLLoaderFactoryPtr original_factory);
-
-  // Callback on IO thread whenever a URLLoaderFactoryGetter::GetNetworkContext
-  // is called on an object that doesn't have a test factory set up.
-  void GetNetworkFactoryCallback(
-      URLLoaderFactoryGetter* url_loader_factory_getter);
 
   // Callback on UI thread whenever NavigationURLLoaderImpl needs a
   // URLLoaderFactory with a network::mojom::TrustedURLLoaderHeaderClient.
@@ -161,28 +165,17 @@ class URLLoaderInterceptor {
   // intercepted.
   bool Intercept(RequestParams* params);
 
-  // Called when a SubresourceWrapper's binding has an error.
-  void SubresourceWrapperBindingError(SubresourceWrapper* wrapper);
-
   // Called on IO thread at initialization and shutdown.
   void InitializeOnIOThread(base::OnceClosure closure);
-  void ShutdownOnIOThread(base::OnceClosure closure);
 
+  bool use_runloop_;
+  base::OnceClosure ready_callback_;
   InterceptCallback callback_;
-  // For intercepting frame requests with network service. There is one per
-  // StoragePartition. Only accessed on IO thread.
-  std::set<std::unique_ptr<URLLoaderFactoryGetterWrapper>>
-      url_loader_factory_getter_wrappers_;
+  scoped_refptr<IOState> io_thread_;
   // For intecepting non-frame requests from the browser process. There is one
   // per StoragePartition. Only accessed on UI thread.
   std::set<std::unique_ptr<BrowserProcessWrapper>>
       browser_process_interceptors_;
-  // For intercepting subresources without network service in
-  // ResourceMessageFilter.
-  std::unique_ptr<Interceptor> rmf_interceptor_;
-  // For intercepting subresources with network service. There is one per active
-  // render frame commit. Only accessed on IO thread.
-  std::set<std::unique_ptr<SubresourceWrapper>> subresource_wrappers_;
   std::set<std::unique_ptr<URLLoaderFactoryNavigationWrapper>>
       navigation_wrappers_;
 
