@@ -30,8 +30,7 @@ public class AwGLFunctor implements AwFunctor {
     public AwGLFunctor(
             AwContents.NativeDrawFunctorFactory nativeDrawFunctorFactory, ViewGroup containerView) {
         mNativeAwGLFunctor = nativeCreate(this);
-        mNativeDrawGLFunctor = nativeDrawFunctorFactory.createGLFunctor(
-                nativeGetAwDrawGLViewContext(mNativeAwGLFunctor));
+        mNativeDrawGLFunctor = nativeDrawFunctorFactory.createGLFunctor(mNativeAwGLFunctor);
         mContainerView = containerView;
         if (mNativeDrawGLFunctor.supportsDrawGLFunctorReleasedCallback()) {
             mFunctorReleasedCallback = () -> removeReference();
@@ -111,7 +110,6 @@ public class AwGLFunctor implements AwFunctor {
     }
 
     private native void nativeDeleteHardwareRenderer(long nativeAwGLFunctor);
-    private native long nativeGetAwDrawGLViewContext(long nativeAwGLFunctor);
     private native void nativeRemoveFromCompositorFrameProducer(long nativeAwGLFunctor);
     private native long nativeGetCompositorFrameConsumer(long nativeAwGLFunctor);
 

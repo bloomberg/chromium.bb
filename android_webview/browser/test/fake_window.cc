@@ -81,6 +81,7 @@ void FakeWindow::Detach() {
 
 void FakeWindow::RequestInvokeGL(FakeFunctor* functor,
                                  bool wait_for_completion) {
+  CreateRenderThreadIfNeeded();
   CheckCurrentlyOnUIThread();
   base::WaitableEvent completion(
       base::WaitableEvent::ResetPolicy::MANUAL,
@@ -216,7 +217,9 @@ FakeFunctor::FakeFunctor() : window_(nullptr) {}
 FakeFunctor::~FakeFunctor() {
   if (render_thread_manager_) {
     render_thread_manager_->RemoveFromCompositorFrameProducerOnUI();
-    render_thread_manager_->DeleteHardwareRendererOnUI();
+    RenderThreadManager::InsideHardwareReleaseReset release_reset(
+        render_thread_manager_.get());
+    RequestInvokeGL(true);
   }
   render_thread_manager_.reset();
 }
@@ -226,36 +229,29 @@ void FakeFunctor::Init(
     std::unique_ptr<RenderThreadManager> render_thread_manager) {
   window_ = window;
   render_thread_manager_ = std::move(render_thread_manager);
-  callback_ =
-      base::BindRepeating(&RenderThreadManager::DrawGL,
-                          base::Unretained(render_thread_manager_.get()));
 }
 
 void FakeFunctor::Sync(const gfx::Rect& location,
                        WindowHooks* hooks) {
-  DCHECK(!callback_.is_null());
+  DCHECK(render_thread_manager_);
   committed_location_ = location;
-  AwDrawGLInfo sync_info;
-  sync_info.version = kAwDrawGLInfoVersion;
-  sync_info.mode = AwDrawGLInfo::kModeSync;
   hooks->WillSyncOnRT();
-  callback_.Run(&sync_info);
+  render_thread_manager_->CommitFrameOnRT();
   hooks->DidSyncOnRT();
 }
 
 void FakeFunctor::Draw(WindowHooks* hooks) {
-  DCHECK(!callback_.is_null());
-  AwDrawGLInfo draw_info;
-  draw_info.version = kAwDrawGLInfoVersion;
-  draw_info.mode = AwDrawGLInfo::kModeDraw;
-  draw_info.clip_left = committed_location_.x();
-  draw_info.clip_top = committed_location_.y();
-  draw_info.clip_right = committed_location_.x() + committed_location_.width();
-  draw_info.clip_bottom =
-      committed_location_.y() + committed_location_.height();
-  if (!hooks->WillDrawOnRT(&draw_info))
+  DCHECK(render_thread_manager_);
+  HardwareRendererDrawParams params{};
+  params.clip_left = committed_location_.x();
+  params.clip_top = committed_location_.y();
+  params.clip_right = committed_location_.x() + committed_location_.width();
+  params.clip_bottom = committed_location_.y() + committed_location_.height();
+  params.width = committed_location_.width();
+  params.height = committed_location_.height();
+  if (!hooks->WillDrawOnRT(&params))
     return;
-  callback_.Run(&draw_info);
+  render_thread_manager_->DrawOnRT(false /* save_restore */, &params);
   hooks->DidDrawOnRT();
 }
 
@@ -266,16 +262,16 @@ CompositorFrameConsumer* FakeFunctor::GetCompositorFrameConsumer() {
 void FakeFunctor::OnWindowDetached() {
   if (!render_thread_manager_)
     return;
-  render_thread_manager_->DeleteHardwareRendererOnUI();
+  render_thread_manager_->RemoveFromCompositorFrameProducerOnUI();
+  RenderThreadManager::InsideHardwareReleaseReset release_reset(
+      render_thread_manager_.get());
+  RequestInvokeGL(true);
 }
 
 void FakeFunctor::Invoke(WindowHooks* hooks) {
-  DCHECK(!callback_.is_null());
-  AwDrawGLInfo invoke_info;
-  invoke_info.version = kAwDrawGLInfoVersion;
-  invoke_info.mode = AwDrawGLInfo::kModeProcess;
+  DCHECK(render_thread_manager_);
   hooks->WillProcessOnRT();
-  callback_.Run(&invoke_info);
+  render_thread_manager_->DestroyHardwareRendererOnRT(false /* save_restore */);
   hooks->DidProcessOnRT();
 }
 
@@ -284,7 +280,5 @@ bool FakeFunctor::RequestInvokeGL(bool wait_for_completion) {
   window_->RequestInvokeGL(this, wait_for_completion);
   return true;
 }
-
-void FakeFunctor::DetachFunctorFromView() {}
 
 }  // namespace android_webview

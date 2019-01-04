@@ -70,9 +70,8 @@ void RenderingTest::SetUpTestHarness() {
   std::unique_ptr<FakeWindow> window(
       new FakeWindow(browser_view_renderer_.get(), this, gfx::Rect(100, 100)));
   functor_.reset(new FakeFunctor);
-  functor_->Init(window.get(),
-                 std::make_unique<RenderThreadManager>(
-                     functor_.get(), base::ThreadTaskRunnerHandle::Get()));
+  functor_->Init(window.get(), std::make_unique<RenderThreadManager>(
+                                   base::ThreadTaskRunnerHandle::Get()));
   browser_view_renderer_->SetCurrentCompositorFrameConsumer(
       functor_->GetCompositorFrameConsumer());
   window_ = std::move(window);
@@ -137,12 +136,12 @@ void RenderingTest::WillOnDraw() {
   compositor_->SetHardwareFrame(0u, ConstructEmptyFrame());
 }
 
-bool RenderingTest::WillDrawOnRT(AwDrawGLInfo* draw_info) {
-  draw_info->width = window_->surface_size().width();
-  draw_info->height = window_->surface_size().height();
-  draw_info->is_layer = false;
+bool RenderingTest::WillDrawOnRT(HardwareRendererDrawParams* params) {
+  params->width = window_->surface_size().width();
+  params->height = window_->surface_size().height();
+  params->is_layer = false;
   gfx::Transform transform;
-  transform.matrix().asColMajorf(draw_info->transform);
+  transform.matrix().asColMajorf(params->transform);
   return true;
 }
 

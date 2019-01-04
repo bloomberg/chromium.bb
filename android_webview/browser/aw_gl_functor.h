@@ -7,24 +7,20 @@
 
 #include "android_webview/browser/compositor_frame_consumer.h"
 #include "android_webview/browser/render_thread_manager.h"
-#include "android_webview/browser/render_thread_manager_client.h"
 #include "base/android/jni_weak_ref.h"
+
+struct AwDrawGLInfo;
 
 namespace android_webview {
 
-class AwGLFunctor : public RenderThreadManagerClient {
+class AwGLFunctor {
  public:
-  bool RequestInvokeGL(bool wait_for_completion) override;
-  void DetachFunctorFromView() override;
-
   AwGLFunctor(const JavaObjectWeakGlobalRef& java_ref);
-  ~AwGLFunctor() override;
+  ~AwGLFunctor();
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void DeleteHardwareRenderer(JNIEnv* env,
                               const base::android::JavaParamRef<jobject>& obj);
-  jlong GetAwDrawGLViewContext(JNIEnv* env,
-                               const base::android::JavaParamRef<jobject>& obj);
   void RemoveFromCompositorFrameProducer(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
@@ -34,7 +30,11 @@ class AwGLFunctor : public RenderThreadManagerClient {
   jlong GetAwDrawGLFunction(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj);
 
+  void DrawGL(AwDrawGLInfo* draw_info);
+
  private:
+  bool RequestInvokeGL(bool wait_for_completion);
+  void DetachFunctorFromView();
   CompositorFrameConsumer* GetCompositorFrameConsumer() {
     return &render_thread_manager_;
   }
