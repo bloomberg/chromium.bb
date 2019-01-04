@@ -529,6 +529,15 @@ GpuProcessHost* GpuProcessHost::Get(GpuProcessKind kind, bool force_create) {
     return nullptr;
   }
 
+  // Do not launch the unsandboxed GPU process if GPU is disabled
+  if (kind == GPU_PROCESS_KIND_UNSANDBOXED_NO_GL) {
+    auto* command_line = base::CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(switches::kDisableGpu) ||
+        command_line->HasSwitch(switches::kSingleProcess) ||
+        command_line->HasSwitch(switches::kInProcessGPU))
+      return nullptr;
+  }
+
   if (g_gpu_process_hosts[kind] && ValidateHost(g_gpu_process_hosts[kind]))
     return g_gpu_process_hosts[kind];
 

@@ -292,7 +292,6 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
 
   if (command_line->HasSwitch(switches::kSingleProcess) ||
       command_line->HasSwitch(switches::kInProcessGPU)) {
-    in_process_gpu_ = true;
     AppendGpuCommandLine(command_line);
   }
 
@@ -388,10 +387,6 @@ void GpuDataManagerImplPrivate::RequestCompleteGpuInfoIfNeeded() {
     return;
 
 #if defined(OS_WIN)
-  if (!GpuAccessAllowed(nullptr))
-    return;
-  if (in_process_gpu_)
-    return;
   complete_gpu_info_already_requested_ = true;
   GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED_NO_GL,
                            true /* force_create */,
@@ -410,8 +405,6 @@ void GpuDataManagerImplPrivate::RequestCompleteGpuInfoIfNeeded() {
 
 void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion() {
 #if defined(OS_WIN)
-  if (in_process_gpu_)
-    return;
   base::OnceClosure task = base::BindOnce([]() {
     GpuProcessHost* host =
         GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED_NO_GL,
