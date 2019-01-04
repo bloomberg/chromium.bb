@@ -56,7 +56,7 @@ struct ExpectedFrameBytes {
 };
 
 enum class AdType { GOOGLE = 0, SUBRESOURCE_FILTER = 1, ALL = 2 };
-enum class ResourceCached { NOT_CACHED, CACHED };
+enum class ResourceCached { NOT_CACHED = false, CACHED = true };
 enum class FrameType { AD = 0, NON_AD };
 
 const char kAdUrl[] = "https://tpc.googlesyndication.com/safeframe/1";
@@ -97,15 +97,23 @@ class ResourceLoadingCancellingThrottle
     DCHECK(observer);
 
     // Load a resource for the main frame before it commits.
-    observer->OnRequestComplete(
-        GURL(kNonAdUrl), net::HostPortPair(),
-        navigation_handle()->GetRenderFrameHost()->GetFrameTreeNodeId(),
-        navigation_handle()->GetGlobalRequestID(),
-        navigation_handle()->GetRenderFrameHost(),
-        content::RESOURCE_TYPE_MAIN_FRAME, false /* was_cached */,
-        nullptr /* data_reduction_proxy */, 10 * 1024 /* raw_body_bytes */,
-        0 /* original_network_content_length */, base::TimeTicks::Now(), 0,
-        nullptr /* load_timing_info */);
+    std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr> resources;
+    page_load_metrics::mojom::ResourceDataUpdatePtr resource =
+        page_load_metrics::mojom::ResourceDataUpdate::New();
+    resource->received_data_length = 10 * 1024;
+    resource->delta_bytes = 10 * 1024;
+    resource->encoded_body_length = 10 * 1024;
+    resource->was_fetched_via_cache = false;
+    resource->is_complete = true;
+    resource->is_primary_frame_resource = true;
+    resources.push_back(std::move(resource));
+    auto timing = page_load_metrics::mojom::PageLoadTimingPtr(base::in_place);
+    page_load_metrics::InitPageLoadTimingForTest(timing.get());
+    observer->OnTimingUpdated(
+        navigation_handle()->GetRenderFrameHost(), std::move(timing),
+        page_load_metrics::mojom::PageLoadMetadataPtr(base::in_place),
+        page_load_metrics::mojom::PageLoadFeaturesPtr(base::in_place),
+        resources, page_load_metrics::mojom::PageRenderDataPtr(base::in_place));
   }
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadingCancellingThrottle);
@@ -263,31 +271,25 @@ class AdsPageLoadMetricsObserverTest : public SubresourceFilterTestHarness {
     return navigation_simulator->GetFinalRenderFrameHost();
   }
 
-  void LoadResource(RenderFrameHost* frame,
-                    ResourceCached resource_cached,
-                    int resource_size_in_kb) {
-    page_load_metrics::ExtraRequestCompleteInfo request(
-        GURL(kNonAdUrl), net::HostPortPair(), frame->GetFrameTreeNodeId(),
-        resource_cached == ResourceCached::CACHED, resource_size_in_kb * 1024,
-        0,       /* original_network_content_length */
-        nullptr, /* data_reduction_proxy_data */
-        content::RESOURCE_TYPE_SUB_FRAME, 0, nullptr /* load_timing_info */);
-    tester_->SimulateLoadedResource(request);
-  }
-
-  void ResourceDataUpdate(int resource_size_in_kbyte,
-                          std::string mime_type,
-                          bool is_ad_resource) {
+  void ResourceDataUpdate(RenderFrameHost* render_frame_host,
+                          ResourceCached resource_cached,
+                          int resource_size_in_kbyte,
+                          std::string mime_type = "",
+                          bool is_ad_resource = false) {
     std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr> resources;
     page_load_metrics::mojom::ResourceDataUpdatePtr resource =
         page_load_metrics::mojom::ResourceDataUpdate::New();
-    resource->received_data_length = resource_size_in_kbyte;
-    resource->delta_bytes = resource_size_in_kbyte;
+    resource->received_data_length =
+        static_cast<bool>(resource_cached) ? 0 : resource_size_in_kbyte << 10;
+    resource->delta_bytes = resource->received_data_length;
+    resource->encoded_body_length = resource_size_in_kbyte << 10;
     resource->reported_as_ad_resource = is_ad_resource;
     resource->is_complete = true;
+    resource->was_fetched_via_cache = static_cast<bool>(resource_cached);
     resource->mime_type = mime_type;
+    resource->is_primary_frame_resource = true;
     resources.push_back(std::move(resource));
-    tester_->SimulateResourceDataUseUpdate(resources);
+    tester_->SimulateResourceDataUseUpdate(resources, render_frame_host);
   }
 
   void TimingUpdate(const page_load_metrics::mojom::PageLoadTiming& timing) {
@@ -317,9 +319,9 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithNoAds) {
       CreateAndNavigateSubFrame(kNonAdUrl, kNonAdName, main_frame);
   RenderFrameHost* frame2 =
       CreateAndNavigateSubFrame(kNonAdUrl, kNonAdName, main_frame);
-  LoadResource(main_frame, ResourceCached::NOT_CACHED, 10);
-  LoadResource(frame1, ResourceCached::NOT_CACHED, 10);
-  LoadResource(frame2, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(main_frame, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(frame1, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(frame2, ResourceCached::NOT_CACHED, 10);
 
   // Navigate again to trigger histograms.
   NavigateFrame(kNonAdUrl, main_frame);
@@ -336,20 +338,15 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithNoAds) {
 TEST_F(AdsPageLoadMetricsObserverTest, ResourceBeforeAdFrameCommits) {
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
 
-  LoadResource(main_frame, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(main_frame, ResourceCached::NOT_CACHED, 10);
 
-  // Assume that the next frame's id will be the main frame + 1 and load a
-  // resource for that frame. Make sure it gets counted.
-  page_load_metrics::ExtraRequestCompleteInfo request(
-      GURL(kNonAdUrl), net::HostPortPair(),
-      main_frame->GetFrameTreeNodeId() + 1, false /* cached */,
-      10 * 1024 /* size */, 0 /* original_network_content_length */,
-      nullptr
-      /* data_reduction_proxy_data */,
-      content::RESOURCE_TYPE_SUB_FRAME, 0, nullptr /* load_timing_info */);
-  tester()->SimulateLoadedResource(request);
-
-  CreateAndNavigateSubFrame(kNonAdUrl, kAdName, main_frame);
+  // Create subframe and load resource before commit.
+  RenderFrameHost* subframe =
+      RenderFrameHostTester::For(main_frame)->AppendChild(kAdName);
+  auto navigation_simulator =
+      NavigationSimulator::CreateRendererInitiated(GURL(kNonAdUrl), subframe);
+  ResourceDataUpdate(subframe, ResourceCached::NOT_CACHED, 10);
+  navigation_simulator->Commit();
 
   // Navigate again to trigger histograms.
   NavigateFrame(kNonAdUrl, main_frame);
@@ -392,14 +389,14 @@ TEST_F(AdsPageLoadMetricsObserverTest, AllAdTypesInPage) {
 
   // 70KB total in page, 50 from ads, 40 from network, and 30 of those
   // are from ads.
-  LoadResource(main_frame, ResourceCached::NOT_CACHED, 10);
-  LoadResource(non_ad_frame, ResourceCached::CACHED, 10);
-  LoadResource(non_ad_frame2, ResourceCached::CACHED, 10);
-  LoadResource(google_frame1, ResourceCached::CACHED, 10);
-  LoadResource(google_frame2, ResourceCached::NOT_CACHED, 10);
-  LoadResource(srf_frame1, ResourceCached::NOT_CACHED, 10);
-  LoadResource(srf_frame2, ResourceCached::NOT_CACHED, 10);
-  LoadResource(nested_srf_frame3, ResourceCached::CACHED, 10);
+  ResourceDataUpdate(main_frame, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(non_ad_frame, ResourceCached::CACHED, 10);
+  ResourceDataUpdate(non_ad_frame2, ResourceCached::CACHED, 10);
+  ResourceDataUpdate(google_frame1, ResourceCached::CACHED, 10);
+  ResourceDataUpdate(google_frame2, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(srf_frame1, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(srf_frame2, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(nested_srf_frame3, ResourceCached::CACHED, 10);
 
   // Navigate again to trigger histograms.
   NavigateFrame(kNonAdUrl, main_frame);
@@ -430,10 +427,11 @@ TEST_F(AdsPageLoadMetricsObserverTest, AdsOriginStatusMetrics) {
     RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
     RenderFrameHost* ad_sub_frame =
         CreateAndNavigateSubFrame(kAdUrl, kNonAdName, main_frame);
-    LoadResource(main_frame, ResourceCached::NOT_CACHED, 10);
-    LoadResource(ad_sub_frame, ResourceCached::NOT_CACHED, 10);
-    LoadResource(CreateAndNavigateSubFrame(kAdUrl, kNonAdName, ad_sub_frame),
-                 ResourceCached::NOT_CACHED, 10);
+    ResourceDataUpdate(main_frame, ResourceCached::NOT_CACHED, 10);
+    ResourceDataUpdate(ad_sub_frame, ResourceCached::NOT_CACHED, 10);
+    ResourceDataUpdate(
+        CreateAndNavigateSubFrame(kAdUrl, kNonAdName, ad_sub_frame),
+        ResourceCached::NOT_CACHED, 10);
     // Trigger histograms by navigating away, then test them.
     NavigateFrame(kAdUrl, main_frame);
     histograms.ExpectUniqueSample(
@@ -446,11 +444,13 @@ TEST_F(AdsPageLoadMetricsObserverTest, AdsOriginStatusMetrics) {
   {
     base::HistogramTester histograms;
     RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
-    LoadResource(main_frame, ResourceCached::NOT_CACHED, 10);
-    LoadResource(CreateAndNavigateSubFrame(kAdUrl, kNonAdName, main_frame),
-                 ResourceCached::NOT_CACHED, 10);
-    LoadResource(CreateAndNavigateSubFrame(kNonAdUrl, kNonAdName, main_frame),
-                 ResourceCached::NOT_CACHED, 10);
+    ResourceDataUpdate(main_frame, ResourceCached::NOT_CACHED, 10);
+    ResourceDataUpdate(
+        CreateAndNavigateSubFrame(kAdUrl, kNonAdName, main_frame),
+        ResourceCached::NOT_CACHED, 10);
+    ResourceDataUpdate(
+        CreateAndNavigateSubFrame(kNonAdUrl, kNonAdName, main_frame),
+        ResourceCached::NOT_CACHED, 10);
     // Trigger histograms by navigating away, then test them.
     NavigateFrame(kAdUrl, main_frame);
     histograms.ExpectUniqueSample(
@@ -464,9 +464,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, AdsOriginStatusMetrics) {
   {
     base::HistogramTester histograms;
     RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrlSameOrigin);
-    LoadResource(main_frame, ResourceCached::NOT_CACHED, 10);
-    LoadResource(CreateAndNavigateSubFrame(kAdUrl, kNonAdName, main_frame),
-                 ResourceCached::NOT_CACHED, 10);
+    ResourceDataUpdate(main_frame, ResourceCached::NOT_CACHED, 10);
+    ResourceDataUpdate(
+        CreateAndNavigateSubFrame(kAdUrl, kNonAdName, main_frame),
+        ResourceCached::NOT_CACHED, 10);
     // Trigger histograms by navigating away, then test them.
     NavigateFrame(kAdUrl, main_frame);
     histograms.ExpectUniqueSample(
@@ -480,14 +481,14 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithAdFrameThatRenavigates) {
   RenderFrameHost* ad_frame =
       CreateAndNavigateSubFrame(kNonAdUrl, kAdName, main_frame);
 
-  LoadResource(main_frame, ResourceCached::NOT_CACHED, 10);
-  LoadResource(ad_frame, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(main_frame, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED, 10);
 
   // Navigate the ad frame again.
   ad_frame = NavigateFrame(kNonAdUrl, ad_frame);
 
   // In total, 30KB for entire page and 20 in one ad frame.
-  LoadResource(ad_frame, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED, 10);
 
   // Navigate again to trigger histograms.
   NavigateFrame(kNonAdUrl, main_frame);
@@ -508,13 +509,13 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithNonAdFrameThatRenavigatesToAd) {
   RenderFrameHost* sub_frame_child_ad =
       CreateAndNavigateSubFrame(kNonAdUrl2, kAdName, sub_frame);
 
-  LoadResource(main_frame, ResourceCached::NOT_CACHED, 10);
-  LoadResource(sub_frame, ResourceCached::NOT_CACHED, 10);
-  LoadResource(sub_frame_child_ad, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(main_frame, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(sub_frame, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(sub_frame_child_ad, ResourceCached::NOT_CACHED, 10);
 
   // Navigate the subframe again, this time it's an ad.
   sub_frame = NavigateFrame(kAdUrl, sub_frame);
-  LoadResource(sub_frame, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(sub_frame, ResourceCached::NOT_CACHED, 10);
 
   // In total, 40KB was loaded for the entire page and 20KB from ad
   // frames (the original child ad frame and the renavigated frame which
@@ -531,7 +532,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithNonAdFrameThatRenavigatesToAd) {
 TEST_F(AdsPageLoadMetricsObserverTest, CountAbortedNavigation) {
   // If the first navigation in a frame is aborted, keep track of its bytes.
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
-  LoadResource(main_frame, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(main_frame, ResourceCached::NOT_CACHED, 10);
 
   // Create an ad subframe that aborts before committing.
   RenderFrameHost* subframe_ad =
@@ -545,8 +546,8 @@ TEST_F(AdsPageLoadMetricsObserverTest, CountAbortedNavigation) {
   // Load resources for the aborted frame (e.g., simulate the navigation
   // aborting due to a doc.write during provisional navigation). They should
   // be counted.
-  LoadResource(subframe_ad, ResourceCached::NOT_CACHED, 10);
-  LoadResource(subframe_ad, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(subframe_ad, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(subframe_ad, ResourceCached::NOT_CACHED, 10);
 
   // Navigate again to trigger histograms.
   NavigateFrame(kNonAdUrl, main_frame);
@@ -557,12 +558,12 @@ TEST_F(AdsPageLoadMetricsObserverTest, CountAbortedNavigation) {
 
 TEST_F(AdsPageLoadMetricsObserverTest, CountAbortedSecondNavigationForFrame) {
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
-  LoadResource(main_frame, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(main_frame, ResourceCached::NOT_CACHED, 10);
 
   // Sub frame that is not an ad.
   RenderFrameHost* sub_frame =
       CreateAndNavigateSubFrame(kNonAdUrl, kNonAdName, main_frame);
-  LoadResource(sub_frame, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(sub_frame, ResourceCached::NOT_CACHED, 10);
 
   // Now navigate (and abort) the subframe to an ad.
   auto navigation_simulator =
@@ -574,8 +575,8 @@ TEST_F(AdsPageLoadMetricsObserverTest, CountAbortedSecondNavigationForFrame) {
   // Load resources for the aborted frame (e.g., simulate the navigation
   // aborting due to a doc.write during provisional navigation). Since the
   // frame attempted to load an ad, the frame is tagged forever as an ad.
-  LoadResource(sub_frame, ResourceCached::NOT_CACHED, 10);
-  LoadResource(sub_frame, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(sub_frame, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(sub_frame, ResourceCached::NOT_CACHED, 10);
 
   // Navigate again to trigger histograms.
   NavigateFrame(kNonAdUrl, main_frame);
@@ -587,21 +588,15 @@ TEST_F(AdsPageLoadMetricsObserverTest, CountAbortedSecondNavigationForFrame) {
 TEST_F(AdsPageLoadMetricsObserverTest, TwoResourceLoadsBeforeCommit) {
   // Main frame.
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
-  LoadResource(main_frame, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(main_frame, ResourceCached::NOT_CACHED, 10);
 
   // Now open a subframe and have its resource load before notification of
   // navigation finishing.
-  page_load_metrics::ExtraRequestCompleteInfo request(
-      GURL(kNonAdUrl), net::HostPortPair(),
-      main_frame->GetFrameTreeNodeId() + 1, false /* cached */,
-      10 * 1024 /* size */, false /* data_reduction_proxy_used */,
-      0 /* original_network_content_length */, content::RESOURCE_TYPE_SUB_FRAME,
-      0, nullptr /* load_timing_info */);
-  tester()->SimulateLoadedResource(request);
   RenderFrameHost* subframe_ad =
       RenderFrameHostTester::For(main_frame)->AppendChild(kAdName);
   auto navigation_simulator = NavigationSimulator::CreateRendererInitiated(
       GURL(kNonAdUrl), subframe_ad);
+  ResourceDataUpdate(subframe_ad, ResourceCached::NOT_CACHED, 10);
 
   // The sub-frame renavigates before it commits.
   navigation_simulator->Start();
@@ -609,7 +604,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, TwoResourceLoadsBeforeCommit) {
 
   // Renavigate the subframe to a successful commit. But again, the resource
   // loads before the observer sees the finished navigation.
-  tester()->SimulateLoadedResource(request);
+  ResourceDataUpdate(subframe_ad, ResourceCached::NOT_CACHED, 10);
   NavigateFrame(kNonAdUrl, subframe_ad);
 
   // Navigate again to trigger histograms.
@@ -644,7 +639,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, FrameWithNoParent) {
 
   // Test that a resource loaded into an unknown frame doesn't cause any
   // issues.
-  LoadResource(child_of_subframe, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(child_of_subframe, ResourceCached::NOT_CACHED, 10);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, MainFrameResource) {
@@ -652,19 +647,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, MainFrameResource) {
   auto navigation_simulator = NavigationSimulator::CreateRendererInitiated(
       GURL(kNonAdUrl), web_contents()->GetMainFrame());
   navigation_simulator->Start();
-  int frame_tree_node_id =
-      navigation_simulator->GetNavigationHandle()->GetFrameTreeNodeId();
   navigation_simulator->Commit();
 
-  page_load_metrics::ExtraRequestCompleteInfo request(
-      GURL(kNonAdUrl), net::HostPortPair(), frame_tree_node_id,
-      false /* was_cached */, 10 * 1024 /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr /* data_reduction_proxy_data */,
-      content::RESOURCE_TYPE_MAIN_FRAME, 0, nullptr /* load_timing_info */);
-
-  tester()->SimulateLoadedResource(request,
-                                   navigation_simulator->GetGlobalRequestID());
+  ResourceDataUpdate(navigation_simulator->GetFinalRenderFrameHost(),
+                     ResourceCached::NOT_CACHED, 10);
 
   NavigateMainFrame(kNonAdUrl);
 
@@ -710,14 +696,14 @@ TEST_F(AdsPageLoadMetricsObserverTest, FilterAds_DoNotLogMetrics) {
   ConfigureAsSubresourceFilterOnlyURL(GURL(kNonAdUrl));
   NavigateMainFrame(kNonAdUrl);
 
-  LoadResource(main_rfh(), ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(main_rfh(), ResourceCached::NOT_CACHED, 10);
 
   RenderFrameHost* subframe =
       RenderFrameHostTester::For(main_rfh())->AppendChild(kNonAdName);
   std::unique_ptr<NavigationSimulator> simulator =
       NavigationSimulator::CreateRendererInitiated(GURL(kDefaultDisallowedUrl),
                                                    subframe);
-  LoadResource(subframe, ResourceCached::CACHED, 10);
+  ResourceDataUpdate(subframe, ResourceCached::CACHED, 10);
   simulator->Commit();
 
   EXPECT_NE(content::NavigationThrottle::PROCEED,
@@ -741,13 +727,14 @@ TEST_F(AdsPageLoadMetricsObserverTest, AdPageLoadUKM) {
   timing.interactive_timing->interactive = base::TimeDelta::FromSeconds(0);
   PopulateRequiredTimingFields(&timing);
   TimingUpdate(timing);
-  ResourceDataUpdate(10 << 10 /* resource_size_in_kbyte */,
-                     "application/javascript" /* mime_type */,
-                     false /* is_ad_resource */);
-  ResourceDataUpdate(10 << 10 /* resource_size_in_kbyte */,
-                     "application/javascript" /* mime_type */,
-                     true /* is_ad_resource */);
-  ResourceDataUpdate(10 << 10 /* resource_size_in_kbyte */,
+  ResourceDataUpdate(
+      main_rfh(), ResourceCached::NOT_CACHED, 10 /* resource_size_in_kbyte */,
+      "application/javascript" /* mime_type */, false /* is_ad_resource */);
+  ResourceDataUpdate(
+      main_rfh(), ResourceCached::NOT_CACHED, 10 /* resource_size_in_kbyte */,
+      "application/javascript" /* mime_type */, true /* is_ad_resource */);
+  ResourceDataUpdate(main_rfh(), ResourceCached::NOT_CACHED,
+                     10 /* resource_size_in_kbyte */,
                      "video/webm" /* mime_type */, true /* is_ad_resource */);
   NavigateMainFrame(kNonAdUrl);
 

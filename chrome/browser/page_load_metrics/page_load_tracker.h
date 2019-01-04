@@ -182,6 +182,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client {
       content::RenderFrameHost* rfh,
       const mojom::PageLoadFeatures& new_features) override;
   void UpdateResourceDataUse(
+      int frame_tree_node_id,
       const std::vector<mojom::ResourceDataUpdatePtr>& resources) override;
 
   void Redirect(content::NavigationHandle* navigation_handle);

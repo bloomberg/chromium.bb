@@ -199,6 +199,9 @@ struct ResourceDataUpdate {
   // Whether this resource was fetched from the http cache.
   bool was_fetched_via_cache;
 
+  // Whether this resource is the primary resource for a frame.
+  bool is_primary_frame_resource;
+
   // Mime type for the resource found in the network response header.
   string mime_type;
 

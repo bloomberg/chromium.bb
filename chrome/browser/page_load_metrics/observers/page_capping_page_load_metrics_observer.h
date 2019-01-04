@@ -75,6 +75,7 @@ class PageCappingPageLoadMetricsObserver
  private:
   // page_load_metrics::PageLoadMetricsObserver:
   void OnResourceDataUseObserved(
+      FrameTreeNodeId frame_tree_node_id,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources) override;
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,

@@ -9,6 +9,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/page_load_metrics/observers/ads_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_test_waiter.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -90,6 +91,12 @@ class AdTaggingBrowserTest : public SubresourceFilterBrowserTest {
 
   GURL GetURL(const std::string& page) {
     return embedded_test_server()->GetURL("/ad_tagging/" + page);
+  }
+
+  std::unique_ptr<page_load_metrics::PageLoadMetricsTestWaiter>
+  CreatePageLoadMetricsTestWaiter() {
+    return std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
+        GetWebContents());
   }
 
  private:
@@ -241,9 +248,9 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, VerifyCrossOriginWithoutNavigate) {
 
   // Navigate away and ensure we report cross origin.
   ui_test_utils::NavigateToURL(browser(), GetURL(url::kAboutBlankURL));
-  histogram_tester.ExpectUniqueSample(
-      kAllOriginStatusHistogram,
-      AdsPageLoadMetricsObserver::AdOriginStatus::kCross, 1);
+
+  // TODO(johnidel): Check that frame was reported properly. See
+  // crbug.com/914893.
 }
 
 // Ad script creates a frame and navigates it cross origin.
@@ -251,12 +258,19 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
                        VerifyCrossOriginWithImmediateNavigate) {
   base::HistogramTester histogram_tester;
 
+  auto waiter = CreatePageLoadMetricsTestWaiter();
   // Create the main frame and cross origin subframe from an ad script.
   // This triggers both subresource_filter and Google ad detection.
   ui_test_utils::NavigateToURL(browser(), GetURL("frame_factory.html"));
   CreateSrcFrameFromAdScript(GetWebContents(),
                              embedded_test_server()->GetURL(
                                  "b.com", "/ads_observer/same_origin_ad.html"));
+  // Wait for all of the subresources to finish loading (includes favicon).
+  // Waiting for the navigation to finish is not sufficient, as it blocks on the
+  // main resource load finishing, not the iframe resource. Page loads 4
+  // resources, a favicon, and 2 resources for the iframe.
+  waiter->AddMinimumCompleteResourcesExpectation(7);
+  waiter->Wait();
 
   // Navigate away and ensure we report cross origin.
   ui_test_utils::NavigateToURL(browser(), GetURL(url::kAboutBlankURL));
