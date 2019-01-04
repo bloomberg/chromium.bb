@@ -492,12 +492,19 @@ void MediaSessionImpl::Seek(base::TimeDelta seek_time) {
 }
 
 bool MediaSessionImpl::IsControllable() const {
-  // Only media session having focus Gain can be controllable unless it is
-  // inactive. Also, the session will be uncontrollable if it contains one-shot
-  // players.
-  return audio_focus_state_ != State::INACTIVE &&
-         desired_audio_focus_type_ == AudioFocusType::kGain &&
-         one_shot_players_.empty();
+  // If the session does not have audio focus or it has one shot players then it
+  // cannot be controllable.
+  if (audio_focus_state_ == State::INACTIVE || !one_shot_players_.empty())
+    return false;
+
+#if !defined(OS_ANDROID)
+  if (routed_service_ && routed_service_->playback_state() !=
+                             blink::mojom::MediaSessionPlaybackState::NONE) {
+    return true;
+  }
+#endif
+
+  return desired_audio_focus_type_ == AudioFocusType::kGain;
 }
 
 bool MediaSessionImpl::IsActuallyPaused() const {

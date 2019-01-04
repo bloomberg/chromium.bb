@@ -756,6 +756,112 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   EXPECT_TRUE(IsActive());
 }
 
+// This behaviour is specific to desktop.
+#if !defined(OS_ANDROID)
+
+IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
+                       ControlsNoShowForTransientAndRoutedService) {
+  EnsureMediaSessionService();
+  auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>(
+      shell()->web_contents()->GetMainFrame());
+
+  EXPECT_CALL(*mock_media_session_observer(),
+              MediaSessionStateChanged(false, false));
+
+  // Starting a player with a transient type should not show the media controls.
+  StartNewPlayer(player_observer.get(), media::MediaContentType::Transient);
+  ResolveAudioFocusSuccess();
+
+  EXPECT_FALSE(IsControllable());
+  EXPECT_TRUE(IsActive());
+}
+
+IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
+                       ControlsNoShowForTransientAndPlaybackStateNone) {
+  EnsureMediaSessionService();
+  auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>(
+      shell()->web_contents()->GetMainFrame());
+
+  ::testing::Sequence s;
+  EXPECT_CALL(*mock_media_session_observer(),
+              MediaSessionStateChanged(false, false))
+      .InSequence(s);
+  EXPECT_CALL(*mock_media_session_observer(),
+              MediaSessionStateChanged(false, _))
+      .InSequence(s);
+
+  // Starting a player with a transient type should not show the media controls.
+  StartNewPlayer(player_observer.get(), media::MediaContentType::Transient);
+  ResolveAudioFocusSuccess();
+
+  SetPlaybackState(blink::mojom::MediaSessionPlaybackState::NONE);
+
+  EXPECT_FALSE(IsControllable());
+  EXPECT_TRUE(IsActive());
+
+  // Verify before test exists. Otherwise the sequence will expire and cause
+  // weird problems.
+  ::testing::Mock::VerifyAndClear(mock_media_session_observer());
+}
+
+IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
+                       ControlsShowForTransientAndPlaybackStatePaused) {
+  EnsureMediaSessionService();
+  auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>(
+      shell()->web_contents()->GetMainFrame());
+
+  ::testing::Sequence s;
+  EXPECT_CALL(*mock_media_session_observer(),
+              MediaSessionStateChanged(false, false))
+      .InSequence(s);
+  EXPECT_CALL(*mock_media_session_observer(), MediaSessionStateChanged(true, _))
+      .InSequence(s);
+
+  // Starting a player with a transient type should show the media controls if
+  // we have a playback state from the service.
+  StartNewPlayer(player_observer.get(), media::MediaContentType::Transient);
+  ResolveAudioFocusSuccess();
+
+  SetPlaybackState(blink::mojom::MediaSessionPlaybackState::PAUSED);
+
+  EXPECT_TRUE(IsControllable());
+  EXPECT_TRUE(IsActive());
+
+  // Verify before test exists. Otherwise the sequence will expire and cause
+  // weird problems.
+  ::testing::Mock::VerifyAndClear(mock_media_session_observer());
+}
+
+IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
+                       ControlsShowForTransientAndPlaybackStatePlaying) {
+  EnsureMediaSessionService();
+  auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>(
+      shell()->web_contents()->GetMainFrame());
+
+  ::testing::Sequence s;
+  EXPECT_CALL(*mock_media_session_observer(),
+              MediaSessionStateChanged(false, false))
+      .InSequence(s);
+  EXPECT_CALL(*mock_media_session_observer(), MediaSessionStateChanged(true, _))
+      .InSequence(s);
+
+  // Starting a player with a transient type should show the media controls if
+  // we have a playback state from the service.
+  StartNewPlayer(player_observer.get(), media::MediaContentType::Transient);
+  ResolveAudioFocusSuccess();
+
+  SetPlaybackState(blink::mojom::MediaSessionPlaybackState::PLAYING);
+
+  EXPECT_TRUE(IsControllable());
+  EXPECT_TRUE(IsActive());
+
+  // Verify before test exists. Otherwise the sequence will expire and cause
+  // weird problems.
+  ::testing::Mock::VerifyAndClear(mock_media_session_observer());
+}
+
+#endif  // !defined(OS_ANDROID)
+
 IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
                        ControlsHideWhenStopped) {
   Expectation showControls = EXPECT_CALL(*mock_media_session_observer(),
