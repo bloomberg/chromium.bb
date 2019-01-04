@@ -431,6 +431,21 @@ TEST_F(DataReductionProxyChromeSettingsTest, CreateDataCachedResponse) {
   EXPECT_TRUE(data->was_cached_data_reduction_proxy_response());
 }
 
+TEST_F(DataReductionProxyChromeSettingsTest, CreateHTTPSDataCachedResponse) {
+  std::unique_ptr<content::NavigationHandle> handle =
+      content::NavigationHandle::CreateNavigationHandleForTesting(
+          GURL("https://secure.com"), main_rfh());
+  std::string headers = "HTTP/1.0 200 OK\nchrome-proxy: foo\n";
+  handle->CallWillProcessResponseForTesting(
+      main_rfh(),
+      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()), true,
+      net::ProxyServer::Direct());
+  auto data = drp_chrome_settings_->CreateDataFromNavigationHandle(
+      handle.get(), handle->GetResponseHeaders());
+
+  EXPECT_FALSE(data->was_cached_data_reduction_proxy_response());
+}
+
 TEST_F(DataReductionProxyChromeSettingsTest, CreateDataWithLitePage) {
   std::unique_ptr<content::NavigationHandle> handle =
       content::NavigationHandle::CreateNavigationHandleForTesting(GURL(kUrl),
