@@ -303,7 +303,7 @@ DWriteFontProxyImpl::~DWriteFontProxyImpl() = default;
 
 // static
 void DWriteFontProxyImpl::Create(
-    mojom::DWriteFontProxyRequest request,
+    blink::mojom::DWriteFontProxyRequest request,
     const service_manager::BindSourceInfo& source_info) {
   mojo::MakeStrongBinding(std::make_unique<DWriteFontProxyImpl>(),
                           std::move(request));
@@ -342,7 +342,7 @@ void DWriteFontProxyImpl::GetFamilyNames(UINT32 family_index,
   InitializeDirectWrite();
   TRACE_EVENT0("dwrite", "FontProxyHost::OnGetFamilyNames");
   callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-      std::move(callback), std::vector<mojom::DWriteStringPairPtr>());
+      std::move(callback), std::vector<blink::mojom::DWriteStringPairPtr>());
   if (!collection_)
     return;
 
@@ -364,7 +364,7 @@ void DWriteFontProxyImpl::GetFamilyNames(UINT32 family_index,
 
   std::vector<base::char16> locale;
   std::vector<base::char16> name;
-  std::vector<mojom::DWriteStringPairPtr> family_names;
+  std::vector<blink::mojom::DWriteStringPairPtr> family_names;
   for (size_t index = 0; index < string_count; ++index) {
     UINT32 length = 0;
     hr = localized_names->GetLocaleNameLength(index, &length);
@@ -464,20 +464,21 @@ void DWriteFontProxyImpl::GetFontFiles(uint32_t family_index,
   std::move(callback).Run(file_paths, std::move(file_handles));
 }
 
-void DWriteFontProxyImpl::MapCharacters(const base::string16& text,
-                                        mojom::DWriteFontStylePtr font_style,
-                                        const base::string16& locale_name,
-                                        uint32_t reading_direction,
-                                        const base::string16& base_family_name,
-                                        MapCharactersCallback callback) {
+void DWriteFontProxyImpl::MapCharacters(
+    const base::string16& text,
+    blink::mojom::DWriteFontStylePtr font_style,
+    const base::string16& locale_name,
+    uint32_t reading_direction,
+    const base::string16& base_family_name,
+    MapCharactersCallback callback) {
   InitializeDirectWrite();
   callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(callback),
-      mojom::MapCharactersResult::New(
+      blink::mojom::MapCharactersResult::New(
           UINT32_MAX, L"", text.length(), 0.0,
-          mojom::DWriteFontStyle::New(DWRITE_FONT_STYLE_NORMAL,
-                                      DWRITE_FONT_STRETCH_NORMAL,
-                                      DWRITE_FONT_WEIGHT_NORMAL)));
+          blink::mojom::DWriteFontStyle::New(DWRITE_FONT_STYLE_NORMAL,
+                                             DWRITE_FONT_STRETCH_NORMAL,
+                                             DWRITE_FONT_WEIGHT_NORMAL)));
   if (factory2_ == nullptr || collection_ == nullptr)
     return;
   if (font_fallback_ == nullptr) {
@@ -503,11 +504,11 @@ void DWriteFontProxyImpl::MapCharacters(const base::string16& text,
     return;
   }
 
-  auto result = mojom::MapCharactersResult::New(
+  auto result = blink::mojom::MapCharactersResult::New(
       UINT32_MAX, L"", text.length(), 0.0,
-      mojom::DWriteFontStyle::New(DWRITE_FONT_STYLE_NORMAL,
-                                  DWRITE_FONT_STRETCH_NORMAL,
-                                  DWRITE_FONT_WEIGHT_NORMAL));
+      blink::mojom::DWriteFontStyle::New(DWRITE_FONT_STYLE_NORMAL,
+                                         DWRITE_FONT_STRETCH_NORMAL,
+                                         DWRITE_FONT_WEIGHT_NORMAL));
   if (FAILED(font_fallback_->MapCharacters(
           analysis_source.Get(), 0, text.length(), collection_.Get(),
           base_family_name.c_str(),

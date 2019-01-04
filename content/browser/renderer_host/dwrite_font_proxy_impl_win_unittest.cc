@@ -30,12 +30,14 @@ class DWriteFontProxyImplUnitTest : public testing::Test {
   DWriteFontProxyImplUnitTest()
       : binding_(&impl_, mojo::MakeRequest(&dwrite_font_proxy_)) {}
 
-  mojom::DWriteFontProxy& dwrite_font_proxy() { return *dwrite_font_proxy_; }
+  blink::mojom::DWriteFontProxy& dwrite_font_proxy() {
+    return *dwrite_font_proxy_;
+  }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  mojom::DWriteFontProxyPtr dwrite_font_proxy_;
+  blink::mojom::DWriteFontProxyPtr dwrite_font_proxy_;
   DWriteFontProxyImpl impl_;
-  mojo::Binding<mojom::DWriteFontProxy> binding_;
+  mojo::Binding<blink::mojom::DWriteFontProxy> binding_;
 };
 
 TEST_F(DWriteFontProxyImplUnitTest, GetFamilyCount) {
@@ -63,7 +65,7 @@ TEST_F(DWriteFontProxyImplUnitTest, GetFamilyNames) {
   UINT32 arial_index = 0;
   dwrite_font_proxy().FindFamily(L"Arial", &arial_index);
 
-  std::vector<mojom::DWriteStringPairPtr> names;
+  std::vector<blink::mojom::DWriteStringPairPtr> names;
   dwrite_font_proxy().GetFamilyNames(arial_index, &names);
 
   EXPECT_LT(0u, names.size());
@@ -74,7 +76,7 @@ TEST_F(DWriteFontProxyImplUnitTest, GetFamilyNames) {
 }
 
 TEST_F(DWriteFontProxyImplUnitTest, GetFamilyNamesIndexOutOfBounds) {
-  std::vector<mojom::DWriteStringPairPtr> names;
+  std::vector<blink::mojom::DWriteStringPairPtr> names;
   UINT32 invalid_index = 1000000;
   dwrite_font_proxy().GetFamilyNames(invalid_index, &names);
 
@@ -108,12 +110,12 @@ TEST_F(DWriteFontProxyImplUnitTest, MapCharacter) {
   if (!blink::DWriteRasterizerSupport::IsDWriteFactory2Available())
     return;
 
-  mojom::MapCharactersResultPtr result;
+  blink::mojom::MapCharactersResultPtr result;
   dwrite_font_proxy().MapCharacters(
       L"abc",
-      mojom::DWriteFontStyle::New(DWRITE_FONT_WEIGHT_NORMAL,
-                                  DWRITE_FONT_STYLE_NORMAL,
-                                  DWRITE_FONT_STRETCH_NORMAL),
+      blink::mojom::DWriteFontStyle::New(DWRITE_FONT_WEIGHT_NORMAL,
+                                         DWRITE_FONT_STYLE_NORMAL,
+                                         DWRITE_FONT_STRETCH_NORMAL),
       L"", DWRITE_READING_DIRECTION_LEFT_TO_RIGHT, L"", &result);
 
   EXPECT_NE(UINT32_MAX, result->family_index);
@@ -129,12 +131,12 @@ TEST_F(DWriteFontProxyImplUnitTest, MapCharacterInvalidCharacter) {
   if (!blink::DWriteRasterizerSupport::IsDWriteFactory2Available())
     return;
 
-  mojom::MapCharactersResultPtr result;
+  blink::mojom::MapCharactersResultPtr result;
   dwrite_font_proxy().MapCharacters(
       L"\ufffe\uffffabc",
-      mojom::DWriteFontStyle::New(DWRITE_FONT_WEIGHT_NORMAL,
-                                  DWRITE_FONT_STYLE_NORMAL,
-                                  DWRITE_FONT_STRETCH_NORMAL),
+      blink::mojom::DWriteFontStyle::New(DWRITE_FONT_WEIGHT_NORMAL,
+                                         DWRITE_FONT_STYLE_NORMAL,
+                                         DWRITE_FONT_STRETCH_NORMAL),
       L"en-us", DWRITE_READING_DIRECTION_LEFT_TO_RIGHT, L"", &result);
 
   EXPECT_EQ(UINT32_MAX, result->family_index);
@@ -146,12 +148,12 @@ TEST_F(DWriteFontProxyImplUnitTest, MapCharacterInvalidAfterValid) {
   if (!blink::DWriteRasterizerSupport::IsDWriteFactory2Available())
     return;
 
-  mojom::MapCharactersResultPtr result;
+  blink::mojom::MapCharactersResultPtr result;
   dwrite_font_proxy().MapCharacters(
       L"abc\ufffe\uffff",
-      mojom::DWriteFontStyle::New(DWRITE_FONT_WEIGHT_NORMAL,
-                                  DWRITE_FONT_STYLE_NORMAL,
-                                  DWRITE_FONT_STRETCH_NORMAL),
+      blink::mojom::DWriteFontStyle::New(DWRITE_FONT_WEIGHT_NORMAL,
+                                         DWRITE_FONT_STYLE_NORMAL,
+                                         DWRITE_FONT_STRETCH_NORMAL),
       L"en-us", DWRITE_READING_DIRECTION_LEFT_TO_RIGHT, L"", &result);
 
   EXPECT_NE(UINT32_MAX, result->family_index);

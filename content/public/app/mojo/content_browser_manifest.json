@@ -16,7 +16,7 @@
           "memory_instrumentation.mojom.Coordinator"
         ],
         "dwrite_font_proxy": [
-          "content.mojom.DWriteFontProxy"
+          "blink.mojom.DWriteFontProxy"
         ],
         "field_trials": [
           "content.mojom.FieldTrialRecorder"

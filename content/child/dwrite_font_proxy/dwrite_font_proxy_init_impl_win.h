@@ -7,8 +7,8 @@
 
 #include "base/callback.h"
 #include "content/common/content_export.h"
-#include "content/common/dwrite_font_proxy.mojom.h"
 #include "content/public/child/dwrite_font_proxy_init_win.h"
+#include "third_party/blink/public/mojom/dwrite_font_proxy/dwrite_font_proxy.mojom.h"
 
 namespace content {
 
@@ -16,7 +16,7 @@ namespace content {
 // useful in tests which use a fake render thread which is unable to process
 // font IPC messages. This should only be called when running as a test.
 CONTENT_EXPORT void SetDWriteFontProxySenderForTesting(
-    base::RepeatingCallback<mojom::DWriteFontProxyPtrInfo(void)> sender);
+    base::RepeatingCallback<blink::mojom::DWriteFontProxyPtrInfo(void)> sender);
 
 // Cleans up the fake dwrite font proxy connection factory.
 CONTENT_EXPORT void ClearDWriteFontProxySenderForTesting();

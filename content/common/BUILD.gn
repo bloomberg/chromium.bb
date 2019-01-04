@@ -511,10 +511,6 @@ mojom("mojo_bindings") {
     "widget.mojom",
   ]
 
-  if (is_win) {
-    sources += [ "dwrite_font_proxy.mojom" ]
-  }
-
   if (is_mac) {
     sources += [
       "render_widget_host_ns_view.mojom",
