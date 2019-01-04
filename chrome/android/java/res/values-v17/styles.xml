@@ -699,10 +699,6 @@
     </style>
 
     <!-- Download Home -->
-    <style name="TextAppearance.DownloadHomeChip">
-        <item name="android:textColor">@color/chip_text_color</item>
-        <item name="android:textSize">@dimen/text_size_medium</item>
-    </style>
     <style name="DateView">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>

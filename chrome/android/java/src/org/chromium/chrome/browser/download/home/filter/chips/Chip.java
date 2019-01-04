@@ -7,13 +7,15 @@ package org.chromium.chrome.browser.download.home.filter.chips;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.StringRes;
 
+import org.chromium.ui.widget.ChipView;
+
 /**
  * A generic visual representation of a Chip. Most of the visuals are immutable, but the selection
  * and enable states are not.
  */
 public class Chip {
     /** An id to use for {@link #icon} when there is no icon on the chip. */
-    public static final int INVALID_ICON_ID = -1;
+    public static final int INVALID_ICON_ID = ChipView.INVALID_ICON_ID;
 
     /** An id used to identify this chip. */
     public final int id;

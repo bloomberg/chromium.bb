@@ -20,6 +20,15 @@
         <attr name="buttonRaised" format="boolean"/>
     </declare-styleable>
 
+    <declare-styleable name="ChipView">
+        <attr name="chipColor" format="color"/>
+        <attr name="chipStyle" format="reference"/>
+        <attr name="cornerRadius" format="reference|dimension"/>
+        <attr name="iconWidth" format="reference|dimension"/>
+        <attr name="iconHeight" format="reference|dimension"/>
+        <attr name="rippleColor" format="color"/>
+    </declare-styleable>
+
     <declare-styleable name="TextViewWithLeading">
         <attr name="leading" format="reference|dimension"/>
     </declare-styleable>
