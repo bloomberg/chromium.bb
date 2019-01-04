@@ -574,7 +574,6 @@ java_prebuilt("com_google_protobuf_protobuf_lite_java") {
 java_prebuilt("com_squareup_javapoet_java") {
   jar_path = "libs/com_squareup_javapoet/javapoet-1.11.0.jar"
   output_name = "com_squareup_javapoet"
-  supports_android = true
 }
 
 java_prebuilt("javax_inject_javax_inject_java") {
