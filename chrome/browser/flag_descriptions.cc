@@ -2399,12 +2399,6 @@ const char kEnableOskOverscrollDescription[] =
     "Enable OSK overscroll support. With this flag on, the OSK will only "
     "resize the visual viewport.";
 
-const char kEnableSpecialLocaleName[] =
-    "Enable custom logic for special locales.";
-const char kEnableSpecialLocaleDescription[] =
-    "Enable custom logic for special locales. In this mode, Chrome might "
-    "behave differently in some locales.";
-
 const char kEnableWebNfcName[] = "WebNFC";
 const char kEnableWebNfcDescription[] = "Enable WebNFC support.";
 

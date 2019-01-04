@@ -78,7 +78,6 @@ extern const base::Feature kSearchReadyOmniboxFeature;
 extern const base::Feature kServiceManagerForDownload;
 extern const base::Feature kSoleIntegration;
 extern const base::Feature kSpannableInlineAutocomplete;
-extern const base::Feature kSpecialLocaleFeature;
 extern const base::Feature kSpecialLocaleWrapper;
 extern const base::Feature kTabReparenting;
 extern const base::Feature kTabSwitcherOnReturn;
