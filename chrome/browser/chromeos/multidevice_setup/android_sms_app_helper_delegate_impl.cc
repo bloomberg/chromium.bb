@@ -38,11 +38,12 @@ network::mojom::CookieManager* GetCookieManager(Profile* profile) {
 }
 
 void OnAppUninstallResult(const GURL& app_url, bool succeeded) {
+  UMA_HISTOGRAM_BOOLEAN("AndroidSms.PWAUninstallationResult", succeeded);
+
   if (succeeded)
     return;
 
   PA_LOG(ERROR) << "Failed to uninstall messages app; URL: " << app_url;
-  // TODO(khorimoto): Add metrics for failed uninstallations.
 }
 
 }  // namespace

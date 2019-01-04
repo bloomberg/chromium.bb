@@ -248,6 +248,8 @@ TEST_F(AndroidSmsAppHelperDelegateImplTest, TestInstallMessagesApp_NoOldApp) {
 
 TEST_F(AndroidSmsAppHelperDelegateImplTest,
        TestInstallMessagesApp_UninstallsOldApp) {
+  base::HistogramTester histogram_tester;
+
   // Simulate a PWA having already been installed at the old URL.
   test_pwa_fetcher_delegate()->SetHasPwa(
       android_sms::GetAndroidMessagesURLOld(), true /* has_pwa */);
@@ -258,6 +260,8 @@ TEST_F(AndroidSmsAppHelperDelegateImplTest,
   ASSERT_EQ(1u, test_pending_app_manager()->uninstall_requests().size());
   EXPECT_EQ(android_sms::GetAndroidMessagesURLOld(),
             test_pending_app_manager()->uninstall_requests()[0]);
+  histogram_tester.ExpectBucketCount("AndroidSms.PWAUninstallationResult",
+                                     true /* success */, 1);
 
   // The old app's cookie should have been deleted.
   VerifyCookieDeletedForUrl(android_sms::GetAndroidMessagesURLOld());
