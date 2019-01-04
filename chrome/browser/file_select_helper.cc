@@ -254,6 +254,14 @@ void FileSelectHelper::LaunchConfirmationDialog(
 }
 
 void FileSelectHelper::OnListDone(int error) {
+  if (!web_contents_) {
+    // Web contents was destroyed under us (probably by closing the tab). We
+    // must notify |listener_| and release our reference to
+    // ourself. RunFileChooserEnd() performs this.
+    RunFileChooserEnd();
+    return;
+  }
+
   // This entry needs to be cleaned up when this function is done.
   std::unique_ptr<ActiveDirectoryEnumeration> entry =
       std::move(directory_enumeration_);
