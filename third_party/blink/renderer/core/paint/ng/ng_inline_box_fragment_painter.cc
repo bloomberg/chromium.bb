@@ -82,7 +82,12 @@ void NGInlineBoxFragmentPainter::PaintBackgroundBorderShadow(
       inline_box_fragment_.InlineFragmentsFor(
           inline_box_fragment_.GetLayoutObject());
   NGPaintFragment::FragmentRange::iterator iter = fragments.begin();
-  bool object_has_multiple_boxes = ++iter != fragments.end();
+  // TODO(layout-dev): We shouldn't get here if there are no fragments for the
+  // layout object but in some cases that appears to happen. Likely when the
+  // object isn't a LayoutNGInlineFormattingContext.
+  DCHECK(iter != fragments.end());
+  bool object_has_multiple_boxes =
+      iter != fragments.end() && ++iter != fragments.end();
 
   // TODO(eae): Switch to LayoutNG version of BackgroundImageGeometry.
   BackgroundImageGeometry geometry(*static_cast<const LayoutBoxModelObject*>(
