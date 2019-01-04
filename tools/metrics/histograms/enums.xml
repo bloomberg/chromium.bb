@@ -3049,12 +3049,17 @@ uploading your change for review.  These are checked by presubmit scripts.
 <enum name="AutofillLocalCardMigrationDialogOffer">
   <int value="0" label="Shown"/>
   <int value="1" label="Not shown due to legal message being invalid"/>
+  <int value="2" label="Feedback dialog shown"/>
+  <int value="3" label="Feedback server error dialog shown"/>
 </enum>
 
 <enum name="AutofillLocalCardMigrationDialogUserInteraction">
   <int value="0" label="User explicitly accepted dialog"/>
   <int value="1" label="User explicitly denied dialog"/>
   <int value="2" label="User clicked legal message link"/>
+  <int value="3" label="User clicked view card button"/>
+  <int value="4" label="User clicked done button"/>
+  <int value="5" label="User clicked delete card icon"/>
 </enum>
 
 <enum name="AutofillMacAddressBook">

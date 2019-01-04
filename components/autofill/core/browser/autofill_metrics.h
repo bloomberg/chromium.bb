@@ -498,6 +498,10 @@ class AutofillMetrics {
     LOCAL_CARD_MIGRATION_DIALOG_SHOWN = 0,
     // The dialog is not shown due to legal message being invalid.
     LOCAL_CARD_MIGRATION_DIALOG_NOT_SHOWN_INVALID_LEGAL_MESSAGE = 1,
+    // The dialog is shown when migration feedback is available.
+    LOCAL_CARD_MIGRATION_DIALOG_FEEDBACK_SHOWN = 2,
+    // The dialog is shown when migration fails due to server error.
+    LOCAL_CARD_MIGRATION_DIALOG_FEEDBACK_SERVER_ERROR_SHOWN = 3,
     NUM_LOCAL_CARD_MIGRATION_DIALOG_OFFER_METRICS,
   };
 
@@ -509,6 +513,12 @@ class AutofillMetrics {
     LOCAL_CARD_MIGRATION_DIALOG_CLOSED_CANCEL_BUTTON_CLICKED = 1,
     // The user clicks the legal message.
     LOCAL_CARD_MIGRATION_DIALOG_LEGAL_MESSAGE_CLICKED = 2,
+    // The user clicks the view card button after successfully migrated cards.
+    LOCAL_CARD_MIGRATION_DIALOG_CLOSED_VIEW_CARDS_BUTTON_CLICKED = 3,
+    // The user clicks the done button to close dialog after migration.
+    LOCAL_CARD_MIGRATION_DIALOG_CLOSED_DONE_BUTTON_CLICKED = 4,
+    // The user clicks the trash icon to delete invalid card.
+    LOCAL_CARD_MIGRATION_DIALOG_DELETE_CARD_ICON_CLICKED = 5,
     NUM_LOCAL_CARD_MIGRATION_DIALOG_USER_INTERACTION_METRICS,
   };
 
@@ -997,9 +1007,10 @@ class AutofillMetrics {
       LocalCardMigrationDialogOfferMetric metric);
   static void LogLocalCardMigrationDialogUserInteractionMetric(
       const base::TimeDelta& duration,
-      const int selected,
-      const int total,
       LocalCardMigrationDialogUserInteractionMetric metric);
+  static void LogLocalCardMigrationDialogUserSelectionPercentageMetric(
+      int selected,
+      int total);
   static void LogLocalCardMigrationPromptMetric(
       LocalCardMigrationOrigin local_card_migration_origin,
       LocalCardMigrationPromptMetric metric);
