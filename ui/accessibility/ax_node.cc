@@ -344,10 +344,17 @@ bool AXNode::IsTableRow() const {
 }
 
 int32_t AXNode::GetTableRowRowIndex() const {
-  // TODO(dmazzoni): Compute from AXTableInfo. http://crbug.com/832289
-  int32_t row_index = 0;
-  GetIntAttribute(ax::mojom::IntAttribute::kTableRowIndex, &row_index);
-  return row_index;
+  if (!IsTableRow())
+    return 0;
+
+  AXTableInfo* table_info = GetAncestorTableInfo();
+  if (!table_info)
+    return 0;
+
+  const auto& iter = table_info->row_id_to_index.find(id());
+  if (iter != table_info->row_id_to_index.end())
+    return iter->second;
+  return 0;
 }
 
 //

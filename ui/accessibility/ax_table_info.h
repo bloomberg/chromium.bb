@@ -82,6 +82,9 @@ class AX_EXPORT AXTableInfo {
   // Map from each cell's node ID to its index in unique_cell_ids.
   base::hash_map<int32_t, int32_t> cell_id_to_index;
 
+  // Map from each row's node ID to its row index.
+  base::hash_map<int32_t, int32_t> row_id_to_index;
+
   // The ARIA row count and column count, if any ARIA table or grid
   // attributes are used in the table at all.
   int32_t aria_row_count = 0;
