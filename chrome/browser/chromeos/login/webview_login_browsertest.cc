@@ -23,7 +23,8 @@
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
+#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
@@ -166,7 +167,6 @@ class WebviewLoginTest : public OobeBaseTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kOobeSkipPostLogin);
     command_line->AppendSwitch(::switches::kUseFakeDeviceForMediaStream);
-    command_line->AppendSwitch(switches::kStubCrosSettings);
     OobeBaseTest::SetUpCommandLine(command_line);
   }
 
@@ -230,8 +230,7 @@ class WebviewLoginTest : public OobeBaseTest {
   }
 
  protected:
-  ScopedCrosSettingsTestHelper settings_helper_{
-      /* create_settings_service= */ false};
+  chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebviewLoginTest);
@@ -303,8 +302,10 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, AllowNewUser) {
   test::OobeJS().ExpectTrue(frame_url + ".search('flow=nosignup') == -1");
 
   // Disallow new users - we also need to set a whitelist due to weird logic.
-  settings_helper_.Set(kAccountsPrefUsers, base::ListValue());
-  settings_helper_.SetBoolean(kAccountsPrefAllowNewUser, false);
+  scoped_testing_cros_settings_.device_settings()->Set(kAccountsPrefUsers,
+                                                       base::ListValue());
+  scoped_testing_cros_settings_.device_settings()->Set(
+      kAccountsPrefAllowNewUser, base::Value(false));
   WaitForGaiaPageReload();
 
   // flow=nosignup indicates that user creation is not allowed.

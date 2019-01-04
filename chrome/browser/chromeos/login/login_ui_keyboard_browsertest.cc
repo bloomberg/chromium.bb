@@ -14,7 +14,8 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
+#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -184,13 +185,6 @@ class LoginUIKeyboardTestWithUsersAndOwner : public chromeos::LoginManagerTest {
       : LoginManagerTest(false, true /* should_initialize_webui */) {}
   ~LoginUIKeyboardTestWithUsersAndOwner() override {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    LoginManagerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kStubCrosSettings);
-
-    LoginManagerTest::SetUpCommandLine(command_line);
-  }
-
   void SetUpOnMainThread() override {
     user_input_methods.push_back("xkb:fr::fra");
     user_input_methods.push_back("xkb:de::ger");
@@ -199,7 +193,8 @@ class LoginUIKeyboardTestWithUsersAndOwner : public chromeos::LoginManagerTest {
     chromeos::input_method::InputMethodManager::Get()->MigrateInputMethods(
         &user_input_methods);
 
-    settings_helper_.SetString(kDeviceOwner, kTestUser3);
+    scoped_testing_cros_settings_.device_settings()->Set(
+        kDeviceOwner, base::Value(kTestUser3));
 
     LoginManagerTest::SetUpOnMainThread();
   }
@@ -224,8 +219,7 @@ class LoginUIKeyboardTestWithUsersAndOwner : public chromeos::LoginManagerTest {
 
  protected:
   std::vector<std::string> user_input_methods;
-  ScopedCrosSettingsTestHelper settings_helper_{
-      /* create_settings_service= */ false};
+  ScopedTestingCrosSettings scoped_testing_cros_settings_;
 };
 
 void LoginUIKeyboardTestWithUsersAndOwner::CheckGaiaKeyboard() {
