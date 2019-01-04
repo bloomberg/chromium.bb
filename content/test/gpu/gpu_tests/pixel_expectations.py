@@ -46,6 +46,13 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_ScissorTestWithPreserveDrawingBuffer',
         ['android'], bug=521588)
 
+    # TODO(kbr): re-enable after rebaseline to clear up Nexus 5 failures
+    self.Fail('Pixel_Canvas2DRedBox', bug=918952)
+    self.Fail('Pixel_CanvasDisplayLinearRGBAccelerated2D', bug=918952)
+    self.Fail('Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing',
+              bug=918952)
+    self.Fail('Pixel_CanvasLowLatency2D', bug=918952)
+
     # TODO(vmiura) check / generate reference images for Android devices
     self.Fail('Pixel_SolidColorBackground', ['mac', 'android'], bug=624256)
 
