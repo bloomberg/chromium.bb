@@ -114,12 +114,14 @@ component("gvr_shim") {
       "//clank/third_party/gvr_shim",
     ]
   } else {
-    if (use_custom_libcxx) {
-      library = "//third_party/gvr-android-sdk/libgvr_shim_static_custom_libcxx_${current_cpu}.a"
+    if (!use_custom_libcxx) {
+      cxx_abi_version = "ndk1"
+    } else if (is_component_build) {
+      cxx_abi_version = "Cr"
     } else {
-      library =
-          "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a"
+      cxx_abi_version = "1"
     }
+    library = "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}_${cxx_abi_version}.a"
     libs += [ library ]
 
     if (is_component_build) {
