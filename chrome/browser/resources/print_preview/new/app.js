@@ -210,6 +210,10 @@ Polymer({
         print_preview.DestinationStore.EventType
             .SELECTED_DESTINATION_UNSUPPORTED,
         this.onInvalidPrinter_.bind(this));
+    this.tracker_.add(
+        this.destinationStore_,
+        print_preview.DestinationStore.EventType.SELECTED_DESTINATION_INVALID,
+        this.onInvalidPrinter_.bind(this));
     this.nativeLayer_.getInitialSettings().then(
         this.onInitialSettingsSet_.bind(this));
   },
@@ -566,6 +570,11 @@ Polymer({
   onInvalidPrinter_: function() {
     this.previewState_ =
         print_preview_new.PreviewAreaState.UNSUPPORTED_CLOUD_PRINTER;
+  },
+
+  /** @private */
+  onInvalidPrinterCapabilities_: function() {
+    this.previewState_ = print_preview_new.PreviewAreaState.INVALID_SETTINGS;
   },
 
   /** @private */
