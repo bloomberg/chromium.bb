@@ -73,9 +73,10 @@ void LogFontProxyError(FontProxyError error) {
 
 }  // namespace
 
-HRESULT DWriteFontCollectionProxy::Create(DWriteFontCollectionProxy** proxy_out,
-                                          IDWriteFactory* dwrite_factory,
-                                          mojom::DWriteFontProxyPtrInfo proxy) {
+HRESULT DWriteFontCollectionProxy::Create(
+    DWriteFontCollectionProxy** proxy_out,
+    IDWriteFactory* dwrite_factory,
+    blink::mojom::DWriteFontProxyPtrInfo proxy) {
   return Microsoft::WRL::MakeAndInitialize<DWriteFontCollectionProxy>(
       proxy_out, dwrite_factory, std::move(proxy));
 }
@@ -261,7 +262,7 @@ HRESULT DWriteFontCollectionProxy::CreateStreamFromKey(
 
 HRESULT DWriteFontCollectionProxy::RuntimeClassInitialize(
     IDWriteFactory* factory,
-    mojom::DWriteFontProxyPtrInfo proxy) {
+    blink::mojom::DWriteFontProxyPtrInfo proxy) {
   DCHECK(factory);
 
   factory_ = factory;
@@ -318,7 +319,7 @@ bool DWriteFontCollectionProxy::LoadFamilyNames(
     IDWriteLocalizedStrings** localized_strings) {
   TRACE_EVENT0("dwrite", "FontProxy::LoadFamilyNames");
 
-  std::vector<mojom::DWriteStringPairPtr> pairs;
+  std::vector<blink::mojom::DWriteStringPairPtr> pairs;
   if (!GetFontProxy().GetFamilyNames(family_index, &pairs)) {
     return false;
   }
@@ -355,22 +356,23 @@ bool DWriteFontCollectionProxy::CreateFamily(UINT32 family_index) {
   return true;
 }
 
-void DWriteFontCollectionProxy::SetProxy(mojom::DWriteFontProxyPtrInfo proxy) {
-  font_proxy_ = mojom::ThreadSafeDWriteFontProxyPtr::Create(
+void DWriteFontCollectionProxy::SetProxy(
+    blink::mojom::DWriteFontProxyPtrInfo proxy) {
+  font_proxy_ = blink::mojom::ThreadSafeDWriteFontProxyPtr::Create(
       std::move(proxy), base::CreateSequencedTaskRunnerWithTraits(
                             {base::WithBaseSyncPrimitives()}));
 }
 
-mojom::DWriteFontProxy& DWriteFontCollectionProxy::GetFontProxy() {
+blink::mojom::DWriteFontProxy& DWriteFontCollectionProxy::GetFontProxy() {
   if (!font_proxy_) {
-    mojom::DWriteFontProxyPtrInfo dwrite_font_proxy;
+    blink::mojom::DWriteFontProxyPtrInfo dwrite_font_proxy;
     if (main_task_runner_->RunsTasksInCurrentSequence()) {
       ChildThread::Get()->GetConnector()->BindInterface(
           mojom::kBrowserServiceName, mojo::MakeRequest(&dwrite_font_proxy));
     } else {
       main_task_runner_->PostTask(
           FROM_HERE, base::BindOnce(
-                         [](mojom::DWriteFontProxyRequest request) {
+                         [](blink::mojom::DWriteFontProxyRequest request) {
                            ChildThread::Get()->GetConnector()->BindInterface(
                                mojom::kBrowserServiceName, std::move(request));
                          },

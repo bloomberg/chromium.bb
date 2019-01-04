@@ -98,13 +98,14 @@ HRESULT FontFallback::MapCharacters(IDWriteTextAnalysisSource* source,
 
   locale = locale ? locale : L"";
 
-  mojom::MapCharactersResultPtr result;
+  blink::mojom::MapCharactersResultPtr result;
 
-  if (!GetFontProxy().MapCharacters(
-          text_chunk,
-          mojom::DWriteFontStyle::New(base_weight, base_style, base_stretch),
-          locale, source->GetParagraphReadingDirection(), base_family_name,
-          &result)) {
+  if (!GetFontProxy().MapCharacters(text_chunk,
+                                    blink::mojom::DWriteFontStyle::New(
+                                        base_weight, base_style, base_stretch),
+                                    locale,
+                                    source->GetParagraphReadingDirection(),
+                                    base_family_name, &result)) {
     DCHECK(false);
     return E_FAIL;
   }
@@ -222,7 +223,7 @@ void FontFallback::AddCachedFamily(
     family_list.pop_back();
 }
 
-mojom::DWriteFontProxy& FontFallback::GetFontProxy() {
+blink::mojom::DWriteFontProxy& FontFallback::GetFontProxy() {
   return collection_->GetFontProxy();
 }
 

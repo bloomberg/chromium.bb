@@ -30,7 +30,7 @@ namespace {
 DWriteFontCollectionProxy* g_font_collection = nullptr;
 FontFallback* g_font_fallback = nullptr;
 
-base::RepeatingCallback<mojom::DWriteFontProxyPtrInfo(void)>*
+base::RepeatingCallback<blink::mojom::DWriteFontProxyPtrInfo(void)>*
     g_connection_callback_override = nullptr;
 
 // Windows-only DirectWrite support. These warm up the DirectWrite paths
@@ -53,7 +53,7 @@ void InitializeDWriteFontProxy(service_manager::Connector* connector) {
   CreateDirectWriteFactory(&factory);
 
   if (!g_font_collection) {
-    mojom::DWriteFontProxyPtrInfo dwrite_font_proxy;
+    blink::mojom::DWriteFontProxyPtrInfo dwrite_font_proxy;
     if (g_connection_callback_override) {
       dwrite_font_proxy = g_connection_callback_override->Run();
     } else if (connector) {
@@ -99,10 +99,11 @@ void UninitializeDWriteFontProxy() {
 }
 
 void SetDWriteFontProxySenderForTesting(
-    base::RepeatingCallback<mojom::DWriteFontProxyPtrInfo(void)> sender) {
+    base::RepeatingCallback<blink::mojom::DWriteFontProxyPtrInfo(void)>
+        sender) {
   DCHECK(!g_connection_callback_override);
   g_connection_callback_override =
-      new base::RepeatingCallback<mojom::DWriteFontProxyPtrInfo(void)>(
+      new base::RepeatingCallback<blink::mojom::DWriteFontProxyPtrInfo(void)>(
           std::move(sender));
 }
 

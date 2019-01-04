@@ -16,8 +16,8 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "content/common/dwrite_font_proxy.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "third_party/blink/public/mojom/dwrite_font_proxy/dwrite_font_proxy.mojom.h"
 
 namespace content {
 
@@ -25,7 +25,7 @@ class FakeFontCollection;
 
 // Creates a new FakeFontCollection, seeded with some basic data, and returns a
 // Sender that can be used to interact with the collection.
-base::RepeatingCallback<mojom::DWriteFontProxyPtrInfo(void)>
+base::RepeatingCallback<blink::mojom::DWriteFontProxyPtrInfo(void)>
 CreateFakeCollectionSender();
 
 // Helper class for describing a font object. Use FakeFontCollection instead.
@@ -85,7 +85,7 @@ class FakeFont {
 //       internally call ReplySender::On*() and ReplySender::Send()
 //   ReplySender::Send() will save the reply message, to be used later.
 //   FakeSender::Send() will retrieve the reply message and save the output.
-class FakeFontCollection : public mojom::DWriteFontProxy {
+class FakeFontCollection : public blink::mojom::DWriteFontProxy {
  public:
   enum class MessageType {
     kFindFamily,
@@ -102,10 +102,10 @@ class FakeFontCollection : public mojom::DWriteFontProxy {
   size_t MessageCount();
   MessageType GetMessageType(size_t id);
 
-  mojom::DWriteFontProxyPtrInfo CreatePtr();
+  blink::mojom::DWriteFontProxyPtrInfo CreatePtr();
 
  protected:
-  // mojom::DWriteFontProxy:
+  // blink::mojom::DWriteFontProxy:
   void FindFamily(const base::string16& family_name,
                   FindFamilyCallback callback) override;
   void GetFamilyCount(GetFamilyCountCallback callback) override;
@@ -114,7 +114,7 @@ class FakeFontCollection : public mojom::DWriteFontProxy {
   void GetFontFiles(uint32_t family_index,
                     GetFontFilesCallback callback) override;
   void MapCharacters(const base::string16& text,
-                     mojom::DWriteFontStylePtr font_style,
+                     blink::mojom::DWriteFontStylePtr font_style,
                      const base::string16& locale_name,
                      uint32_t reading_direction,
                      const base::string16& base_family_name,
@@ -125,7 +125,7 @@ class FakeFontCollection : public mojom::DWriteFontProxy {
 
   std::vector<MessageType> message_types_;
 
-  mojo::BindingSet<mojom::DWriteFontProxy> bindings_;
+  mojo::BindingSet<blink::mojom::DWriteFontProxy> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeFontCollection);
 };
