@@ -695,10 +695,6 @@
       implied_by: ["LayoutNG"],
     },
     {
-      name: "LayoutViewIsolationNodes",
-      status: "stable",
-    },
-    {
       name: "LazyFrameLoading",
     },
     {
