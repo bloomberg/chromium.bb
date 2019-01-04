@@ -90,6 +90,9 @@ _NEGATIVE_FILTER = [
     'ChromeDriverTest.testHoverOverElement',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=833
     'ChromeDriverTest.testAlertOnNewWindow',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2579
+    'ChromeDriverTest.testTakeElementScreenshot',
+    'ChromeDriverTest.testTakeElementScreenshotInIframe',
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
@@ -242,9 +245,6 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'HeadlessInvalidCertificateTest.*',
         # Tests of the desktop Chrome launch process.
         'LaunchDesktopTest.*',
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2579
-        'ChromeDriverTest.testTakeElementScreenshot',
-        'ChromeDriverTest.testTakeElementScreenshotInIframe',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
