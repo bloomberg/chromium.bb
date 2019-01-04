@@ -402,19 +402,6 @@ class MODULES_EXPORT RTCPeerConnection final
   RTCRtpTransceiver* CreateOrUpdateTransceiver(
       std::unique_ptr<WebRTCRtpTransceiver>);
 
-  // https://w3c.github.io/webrtc-pc/#process-remote-track-addition
-  void ProcessAdditionOfRemoteTrack(
-      RTCRtpTransceiver* transceiver,
-      const WebVector<WebString>& stream_ids,
-      HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>*
-          add_list,
-      HeapVector<Member<RTCRtpTransceiver>>* track_events);
-  // https://w3c.github.io/webrtc-pc/#process-remote-track-removal
-  void ProcessRemovalOfRemoteTrack(
-      RTCRtpTransceiver* transceiver,
-      HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>*
-          remove_list,
-      HeapVector<Member<MediaStreamTrack>>* mute_tracks);
   // Update the |receiver->streams()| to the streams indicated by |stream_ids|,
   // adding to |remove_list| and |add_list| accordingly.
   // https://w3c.github.io/webrtc-pc/#set-associated-remote-streams

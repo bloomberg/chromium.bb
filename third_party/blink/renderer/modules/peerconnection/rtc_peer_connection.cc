@@ -2631,16 +2631,30 @@ void RTCPeerConnection::DidModifyTransceivers(
     RTCRtpTransceiver* transceiver =
         CreateOrUpdateTransceiver(std::move(web_transceiver));
 
-    // The transceiver is now up-to-date. Compare before/after values of
-    // FiredDirectionHasRecv() and process the remote track if it changed.
-    if (is_remote_description && !previously_had_recv &&
-        transceiver->FiredDirectionHasRecv()) {
-      ProcessAdditionOfRemoteTrack(
-          transceiver, transceiver->web_transceiver()->Receiver()->StreamIds(),
-          &add_list, &track_events);
+    size_t add_list_prev_size = add_list.size();
+    // "Set the associated remote streams".
+    // https://w3c.github.io/webrtc-pc/#set-associated-remote-streams
+    SetAssociatedMediaStreams(
+        transceiver->receiver(),
+        transceiver->web_transceiver()->Receiver()->StreamIds(), &remove_list,
+        &add_list);
+    // The transceiver is now up-to-date. Check if the receiver's track is now
+    // considered added or removed (though a receiver's track is never truly
+    // removed). A track event indicates either that the track was "added" in
+    // the sense that FiredDirectionHasRecv() changed, or that a new remote
+    // stream was added containing the receiver's track.
+    if (is_remote_description &&
+        ((!previously_had_recv && transceiver->FiredDirectionHasRecv()) ||
+         add_list_prev_size != add_list.size())) {
+      // "Process the addition of a remote track".
+      // https://w3c.github.io/webrtc-pc/#process-remote-track-addition
+      track_events.push_back(transceiver);
     }
     if (previously_had_recv && !transceiver->FiredDirectionHasRecv()) {
-      ProcessRemovalOfRemoteTrack(transceiver, &remove_list, &mute_tracks);
+      // "Process the removal of a remote track".
+      // https://w3c.github.io/webrtc-pc/#process-remote-track-removal
+      if (!transceiver->receiver()->track()->muted())
+        mute_tracks.push_back(transceiver->receiver()->track());
     }
   }
   MediaStreamVector current_streams = getRemoteStreams();
@@ -2704,29 +2718,6 @@ void RTCPeerConnection::DidModifyTransceivers(
     transceiver->receiver()->track()->Component()->Source()->SetReadyState(
         MediaStreamSource::kReadyStateLive);
   }
-}
-
-void RTCPeerConnection::ProcessAdditionOfRemoteTrack(
-    RTCRtpTransceiver* transceiver,
-    const WebVector<WebString>& stream_ids,
-    HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>*
-        add_list,
-    HeapVector<Member<RTCRtpTransceiver>>* track_events) {
-  SetAssociatedMediaStreams(transceiver->receiver(), stream_ids, nullptr,
-                            add_list);
-  track_events->push_back(transceiver);
-}
-
-void RTCPeerConnection::ProcessRemovalOfRemoteTrack(
-    RTCRtpTransceiver* transceiver,
-    HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>*
-        remove_list,
-    HeapVector<Member<MediaStreamTrack>>* mute_tracks) {
-  WebVector<WebString> stream_ids = {};
-  SetAssociatedMediaStreams(transceiver->receiver(), stream_ids, remove_list,
-                            nullptr);
-  if (!transceiver->receiver()->track()->muted())
-    mute_tracks->push_back(transceiver->receiver()->track());
 }
 
 void RTCPeerConnection::SetAssociatedMediaStreams(
