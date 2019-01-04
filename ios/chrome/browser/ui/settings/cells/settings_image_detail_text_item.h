@@ -24,24 +24,4 @@
 
 @end
 
-// Cell representation for SettingsImageDetailTextItem.
-//  +--------------------------------------------------+
-//  |  +-------+                                       |
-//  |  | image |   Multiline title                     |
-//  |  |       |   Optional multiline detail text      |
-//  |  +-------+                                       |
-//  +--------------------------------------------------+
-@interface SettingsImageDetailTextCell : UITableViewCell
-
-// Cell image.
-@property(nonatomic, readonly, strong) UIImageView* imageView;
-
-// Cell title.
-@property(nonatomic, readonly, strong) UILabel* textLabel;
-
-// Cell subtitle.
-@property(nonatomic, readonly, strong) UILabel* detailTextLabel;
-
-@end
-
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_SETTINGS_IMAGE_DETAIL_TEXT_ITEM_H_
