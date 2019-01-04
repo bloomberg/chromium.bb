@@ -35,7 +35,7 @@
 
 namespace {
 
-const char kExtensionId[] = "abc";
+const char kExtensionId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
 const char* const kUrlApiCalls[] = {
     "HTMLButtonElement.formAction", "HTMLEmbedElement.src",
@@ -85,6 +85,11 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
   static void RetrieveActions_LogAndFetchActions0(
       std::unique_ptr<std::vector<scoped_refptr<Action>>> i) {
     ASSERT_EQ(0, static_cast<int>(i->size()));
+  }
+
+  static void RetrieveActions_LogAndFetchActions1(
+      std::unique_ptr<std::vector<scoped_refptr<Action>>> i) {
+    ASSERT_EQ(1, static_cast<int>(i->size()));
   }
 
   static void RetrieveActions_LogAndFetchActions2(
@@ -200,7 +205,6 @@ TEST_F(ActivityLogTest, Construct) {
 
 TEST_F(ActivityLogTest, LogAndFetchActions) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
-  std::unique_ptr<base::ListValue> args(new base::ListValue());
   ASSERT_TRUE(GetDatabaseEnabled());
 
   // Write some API calls
@@ -267,8 +271,6 @@ TEST_F(ActivityLogTest, LogPrerender) {
 
 TEST_F(ActivityLogTest, ArgUrlExtraction) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
-  std::unique_ptr<base::ListValue> args(new base::ListValue());
-
   base::Time now = base::Time::Now();
 
   // Submit a DOM API call which should have its URL extracted into the arg_url
@@ -338,7 +340,6 @@ TEST_F(ActivityLogTest, UninstalledExtension) {
           .Build();
 
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
-  std::unique_ptr<base::ListValue> args(new base::ListValue());
   ASSERT_TRUE(GetDatabaseEnabled());
 
   // Write some API calls
@@ -362,7 +363,6 @@ TEST_F(ActivityLogTest, UninstalledExtension) {
 
 TEST_F(ActivityLogTest, ArgUrlApiCalls) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
-  std::unique_ptr<base::ListValue> args(new base::ListValue());
   base::Time now = base::Time::Now();
   int api_calls_size = base::size(kUrlApiCalls);
   scoped_refptr<Action> action;
@@ -381,6 +381,32 @@ TEST_F(ActivityLogTest, ArgUrlApiCalls) {
   activity_log->GetFilteredActions(
       kExtensionId, Action::ACTION_ANY, "", "", "", -1,
       base::BindOnce(ActivityLogTest::RetrieveActions_ArgUrlApiCalls));
+}
+
+TEST_F(ActivityLogTest, DeleteActivitiesByExtension) {
+  const std::string kOtherExtensionId = std::string(32, 'c');
+
+  ActivityLog* activity_log = ActivityLog::GetInstance(profile());
+  ASSERT_TRUE(GetDatabaseEnabled());
+
+  scoped_refptr<Action> action =
+      base::MakeRefCounted<Action>(kExtensionId, base::Time::Now(),
+                                   Action::ACTION_API_CALL, "tabs.testMethod");
+  activity_log->LogAction(action);
+
+  action =
+      base::MakeRefCounted<Action>(kOtherExtensionId, base::Time::Now(),
+                                   Action::ACTION_DOM_ACCESS, "document.write");
+  action->set_page_url(GURL("http://www.google.com"));
+  activity_log->LogAction(action);
+
+  activity_log->RemoveExtensionData(kExtensionId);
+  activity_log->GetFilteredActions(
+      kExtensionId, Action::ACTION_ANY, "", "", "", 0,
+      base::BindOnce(ActivityLogTest::RetrieveActions_LogAndFetchActions0));
+  activity_log->GetFilteredActions(
+      kOtherExtensionId, Action::ACTION_ANY, "", "", "", 0,
+      base::BindOnce(ActivityLogTest::RetrieveActions_LogAndFetchActions1));
 }
 
 class ActivityLogTestWithoutSwitch : public ActivityLogTest {

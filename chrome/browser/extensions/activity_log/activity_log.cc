@@ -812,6 +812,12 @@ void ActivityLog::RemoveActions(const std::vector<int64_t>& action_ids) {
   database_policy_->RemoveActions(action_ids);
 }
 
+void ActivityLog::RemoveExtensionData(const std::string& extension_id) {
+  if (!database_policy_)
+    return;
+  database_policy_->RemoveExtensionData(extension_id);
+}
+
 void ActivityLog::RemoveURLs(const std::vector<GURL>& restrict_urls) {
   if (!database_policy_)
     return;

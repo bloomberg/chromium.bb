@@ -93,6 +93,20 @@ class ActivityLogPrivateDeleteActivitiesFunction
   ResponseAction Run() override;
 };
 
+// The implementation of activityLogPrivate.deleteActivitiesByExtension
+class ActivityLogPrivateDeleteActivitiesByExtensionFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("activityLogPrivate.deleteActivitiesByExtension",
+                             ACTIVITYLOGPRIVATE_DELETEACTIVITIESBYEXTENSION)
+
+ protected:
+  ~ActivityLogPrivateDeleteActivitiesByExtensionFunction() override {}
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+};
+
 // The implementation of activityLogPrivate.deleteDatabase
 class ActivityLogPrivateDeleteDatabaseFunction
     : public UIThreadExtensionFunction {

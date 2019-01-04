@@ -109,6 +109,23 @@
         ]
       },
       {
+        "name": "deleteActivitiesByExtension",
+        "type": "function",
+        "description": "Deletes activities in the ActivityLog database specified by the extension ID.",
+        "parameters": [
+          {
+            "name": "extensionId",
+            "type": "string",
+            "description": "The ID of the extension to delete activities for."
+          }, {
+            "type": "function",
+            "name": "callback",
+            "parameters": [],
+            "optional": true
+          }
+        ]
+      },
+      {
         "name": "deleteDatabase",
         "type": "function",
         "description": "Deletes the entire ActivityLog database.",
