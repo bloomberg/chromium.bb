@@ -101,6 +101,10 @@ class SelectionControllerTest : public ::testing::Test {
     return render_text_->GetSubstringBounds(gfx::Range(index, index + 1))[0];
   }
 
+  gfx::Point TranslatePointX(const gfx::Point& point, int delta) {
+    return point + gfx::Vector2d(delta, 0);
+  }
+
  private:
   void PressMouseButton(const gfx::Point& location, int button, bool focused) {
     DCHECK(!(mouse_flags_ & button));
@@ -182,6 +186,32 @@ TEST_F(SelectionControllerTest, RightClickPastEndDoesntSelectLastWord) {
   SetText("abc def");
 
   RightMouseDown(CenterRight(BoundsOfChar(6)), true);
+  EXPECT_EQ("", GetSelectedText());
+}
+
+// Regression test for https://crbug.com/731252
+// This test validates that drags which are:
+//   a) Above or below the text, and
+//   b) Past one end of the text
+// behave properly with regard to RenderText::kDragToEndIfOutsideVerticalBounds.
+// When that option is true, drags outside the text that are horizontally
+// "towards" the text should select all of it; when that option is false, those
+// drags should have no effect.
+TEST_F(SelectionControllerTest, DragPastEndUsesProperOrigin) {
+  SetText("abc def");
+
+  gfx::Point point = BoundsOfChar(6).top_right() + gfx::Vector2d(100, -10);
+
+  LeftMouseDown(point);
+  EXPECT_EQ("", GetSelectedText());
+
+  DragMouse(TranslatePointX(point, -1));
+  if (gfx::RenderText::kDragToEndIfOutsideVerticalBounds)
+    EXPECT_EQ("abc def", GetSelectedText());
+  else
+    EXPECT_EQ("", GetSelectedText());
+
+  DragMouse(TranslatePointX(point, 1));
   EXPECT_EQ("", GetSelectedText());
 }
 

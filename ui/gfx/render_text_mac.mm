@@ -137,7 +137,8 @@ SizeF RenderTextMac::GetStringSizeF() {
   return string_size_;
 }
 
-SelectionModel RenderTextMac::FindCursorPosition(const Point& point) {
+SelectionModel RenderTextMac::FindCursorPosition(const Point& point,
+                                                 const Point& drag_origin) {
   // TODO(asvitkine): Implement this. http://crbug.com/131618
   return SelectionModel();
 }

@@ -626,8 +626,10 @@ bool RenderText::SetSelection(const SelectionModel& model) {
   return changed;
 }
 
-bool RenderText::MoveCursorToPoint(const gfx::Point& point, bool select) {
-  gfx::SelectionModel model = FindCursorPosition(point);
+bool RenderText::MoveCursorToPoint(const gfx::Point& point,
+                                   bool select,
+                                   const gfx::Point& drag_origin) {
+  gfx::SelectionModel model = FindCursorPosition(point, drag_origin);
   if (select)
     model.set_selection_start(selection().start());
   return SetSelection(model);
