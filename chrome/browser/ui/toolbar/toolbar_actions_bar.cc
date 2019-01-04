@@ -166,7 +166,7 @@ gfx::Size ToolbarActionsBar::GetFullSize() const {
     num_rows += (std::max(0, icon_count - 1) / num_icons);
   }
 
-  return gfx::ScaleToFlooredSize(GetViewSize(), num_icons, num_rows);
+  return gfx::Size(IconCountToWidth(num_icons), IconCountToWidth(num_rows));
 }
 
 int ToolbarActionsBar::GetMinimumWidth() const {
@@ -178,12 +178,17 @@ int ToolbarActionsBar::GetMaximumWidth() const {
 }
 
 int ToolbarActionsBar::IconCountToWidth(size_t icons) const {
-  return icons * GetViewSize().width();
+  if (icons == 0)
+    return 0;
+  return icons * GetViewSize().width() +
+         (icons - 1) * GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
 }
 
 size_t ToolbarActionsBar::WidthToIconCount(int pixels) const {
-  return base::ClampToRange(pixels / GetViewSize().width(), 0,
-                            static_cast<int>(toolbar_actions_.size()));
+  const int element_padding = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
+  return base::ClampToRange(
+      (pixels + element_padding) / (GetViewSize().width() + element_padding), 0,
+      static_cast<int>(toolbar_actions_.size()));
 }
 
 size_t ToolbarActionsBar::GetIconCount() const {
@@ -274,8 +279,10 @@ gfx::Rect ToolbarActionsBar::GetFrameForIndex(
                                   : relative_index;
 
   const auto size = GetViewSize();
-  return gfx::Rect(
-      gfx::Point(index_in_row * size.width(), row_index * size.height()), size);
+  const int element_padding = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
+  return gfx::Rect(gfx::Point(index_in_row * (size.width() + element_padding),
+                              row_index * (size.height() + element_padding)),
+                   size);
 }
 
 std::vector<ToolbarActionViewController*>
@@ -372,7 +379,7 @@ bool ToolbarActionsBar::ShowToolbarActionPopup(const std::string& action_id,
 void ToolbarActionsBar::SetOverflowRowWidth(int width) {
   DCHECK(in_overflow_mode());
   platform_settings_.icons_per_overflow_menu_row =
-      std::max(width / GetViewSize().width(), 1);
+      std::max(WidthToIconCount(width), static_cast<size_t>(1));
 }
 
 void ToolbarActionsBar::OnResizeComplete(int width) {

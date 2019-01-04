@@ -267,6 +267,9 @@ class BrowserActionsContainer : public views::View,
   int GetWidthForIconCount(size_t num_icons) const;
   int GetWidthWithAllActionsVisible() const;
 
+  // Get index of the drag-drop position.
+  size_t GetDropPositionIndex() const;
+
   // Returns the preferred width given the limit of |max_width|. (Unlike most
   // views, since we don't want to show part of an icon or a large space after
   // the omnibox, this is probably *not* |max_width|).

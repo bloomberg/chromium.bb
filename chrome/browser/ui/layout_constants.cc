@@ -99,7 +99,7 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
     case TOOLBAR_ACTION_VIEW: {
       // TODO(afakhry): Unify all toolbar button sizes on all platforms.
       // https://crbug.com/822967.
-      return gfx::Insets(touch_ui ? 10 : 2);
+      return gfx::Insets(touch_ui ? 10 : 0);
     }
   }
   NOTREACHED();

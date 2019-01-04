@@ -519,20 +519,18 @@ int BrowserActionsContainer::OnDragUpdated(
     const auto size = toolbar_actions_bar_->GetViewSize();
     const int offset_into_icon_area = GetMirroredXInView(event.x()) -
                                       GetResizeAreaWidth() + (size.width() / 2);
-    const int before_icon_unclamped = offset_into_icon_area / size.width();
-
-    // Next, figure out what row we're on. This only matters for overflow mode,
-    // but the calculation is the same for both.
-    row_index = event.y() / size.height();
-
-    // Sanity check - we should never be on a different row in the main
-    // container.
-    DCHECK(ShownInsideMenu() || row_index == 0);
+    const int before_icon_unclamped =
+        toolbar_actions_bar_->WidthToIconCount(offset_into_icon_area);
 
     // We need to figure out how many icons are visible on the relevant row.
     // In the main container, this will just be the visible actions.
     int visible_icons_on_row = VisibleBrowserActionsAfterAnimation();
     if (ShownInsideMenu()) {
+      // Next, figure out what row we're on.
+      const int element_padding = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
+      row_index =
+          (event.y() + element_padding) / (size.height() + element_padding);
+
       const int icons_per_row = platform_settings().icons_per_overflow_menu_row;
       // If this is the final row of the overflow, then this is the remainder of
       // visible icons. Otherwise, it's a full row (kIconsPerRow).
@@ -575,11 +573,8 @@ int BrowserActionsContainer::OnPerformDrop(
   // Make sure we have the same view as we started with.
   DCHECK_EQ(GetIdAt(data.index()), data.id());
 
-  size_t i = drop_position_->row *
-      platform_settings().icons_per_overflow_menu_row +
-      drop_position_->icon_in_row;
-  if (ShownInsideMenu())
-    i += main_container_->VisibleBrowserActionsAfterAnimation();
+  size_t i = GetDropPositionIndex();
+
   // |i| now points to the item to the right of the drop indicator*, which is
   // correct when dragging an icon to the left. When dragging to the right,
   // however, we want the icon being dragged to get the index of the item to
@@ -712,23 +707,18 @@ void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
     // The two-pixel width drop indicator.
     constexpr int kDropIndicatorWidth = 2;
 
-    // Convert back to a pixel offset into the container.  First find the X
-    // coordinate of the drop icon.
-    const auto size = toolbar_actions_bar_->GetViewSize();
-    // TODO(pbos): The drag/drop separator and view placement should share code
-    // after ToolbarActionsBar and BrowserActionsContainer merge.
-    const int drop_icon_x = GetResizeAreaWidth() +
-                            drop_position_->icon_in_row * size.width() -
-                            (kDropIndicatorWidth / 2);
-
-    // Next, clamp so the indicator doesn't touch the adjoining toolbar items.
-    const int drop_indicator_x =
-        base::ClampToRange(drop_icon_x, 1, width() - kDropIndicatorWidth - 1);
-
-    const int row_height = size.height();
-    const int drop_indicator_y = row_height * drop_position_->row;
-    gfx::Rect indicator_bounds = GetMirroredRect(gfx::Rect(
-        drop_indicator_x, drop_indicator_y, kDropIndicatorWidth, row_height));
+    const size_t i = GetDropPositionIndex();
+    const gfx::Rect frame = toolbar_actions_bar_->GetFrameForIndex(i);
+    gfx::Rect indicator_bounds = GetMirroredRect(
+        gfx::Rect(GetResizeAreaWidth() + frame.x() -
+                      GetLayoutConstant(TOOLBAR_ELEMENT_PADDING) / 2 -
+                      kDropIndicatorWidth / 2,
+                  frame.y(), kDropIndicatorWidth, frame.height()));
+    // Clamp the indicator to the view bounds so that heading / trailing markers
+    // don't paint outside the controller. It's OK if they paint over the resize
+    // area or separator (but the in-menu container has neither).
+    indicator_bounds.set_x(base::ClampToRange(
+        indicator_bounds.x(), 0, width() - indicator_bounds.width()));
 
     // Color of the drop indicator.
     // Always get the theme provider of the browser widget, since if this view
@@ -787,12 +777,21 @@ int BrowserActionsContainer::GetWidthForIconCount(size_t num_icons) const {
   if (num_icons == 0)
     return 0;
   return GetResizeAreaWidth() + GetSeparatorAreaWidth() +
-         num_icons * toolbar_actions_bar_->GetViewSize().width();
+         toolbar_actions_bar_->IconCountToWidth(num_icons);
 }
 
 int BrowserActionsContainer::GetWidthWithAllActionsVisible() const {
   return GetWidthForIconCount(
       toolbar_actions_bar_->toolbar_actions_unordered().size());
+}
+
+size_t BrowserActionsContainer::GetDropPositionIndex() const {
+  size_t i =
+      drop_position_->row * platform_settings().icons_per_overflow_menu_row +
+      drop_position_->icon_in_row;
+  if (ShownInsideMenu())
+    i += main_container_->VisibleBrowserActionsAfterAnimation();
+  return i;
 }
 
 int BrowserActionsContainer::GetResizeAreaWidth() const {
