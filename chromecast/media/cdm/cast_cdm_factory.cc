@@ -43,13 +43,11 @@ void CastCdmFactory::Create(
 
   CastKeySystem cast_key_system(GetKeySystemByName(key_system));
 
-  scoped_refptr<chromecast::media::CastCdm> cast_cdm;
-  if (cast_key_system == chromecast::media::KEY_SYSTEM_CLEAR_KEY) {
-    // TODO(gunsch): handle ClearKey decryption. See crbug.com/441957
-  } else {
-    cast_cdm =
-        CreatePlatformBrowserCdm(cast_key_system, security_origin, cdm_config);
-  }
+  DCHECK((cast_key_system == chromecast::media::KEY_SYSTEM_PLAYREADY) ||
+         (cast_key_system == chromecast::media::KEY_SYSTEM_WIDEVINE));
+
+  scoped_refptr<chromecast::media::CastCdm> cast_cdm =
+      CreatePlatformBrowserCdm(cast_key_system, security_origin, cdm_config);
 
   if (!cast_cdm) {
     LOG(INFO) << "No matching key system found: " << cast_key_system;

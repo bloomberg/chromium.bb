@@ -24,8 +24,8 @@
 
 using ::testing::_;
 using ::testing::HasSubstr;
-using ::testing::IsNull;
 using ::testing::InSequence;
+using ::testing::IsNull;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::StrictMock;

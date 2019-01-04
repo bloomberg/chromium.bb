@@ -13,6 +13,8 @@ source_set("renderers") {
   sources = [
     "audio_renderer_impl.cc",
     "audio_renderer_impl.h",
+    "decrypting_renderer.cc",
+    "decrypting_renderer.h",
     "default_decoder_factory.cc",
     "default_decoder_factory.h",
     "default_renderer_factory.cc",
@@ -64,6 +66,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "audio_renderer_impl_unittest.cc",
+    "decrypting_renderer_unittest.cc",
     "paint_canvas_video_renderer_unittest.cc",
     "renderer_impl_unittest.cc",
     "video_renderer_impl_unittest.cc",

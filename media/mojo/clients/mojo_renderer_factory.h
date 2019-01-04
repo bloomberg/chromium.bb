@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "media/base/media_log.h"
 #include "media/base/renderer_factory.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
@@ -26,7 +27,8 @@ class MojoRendererFactory : public RendererFactory {
   using GetGpuFactoriesCB = base::Callback<GpuVideoAcceleratorFactories*()>;
   using GetTypeSpecificIdCB = base::Callback<std::string()>;
 
-  MojoRendererFactory(mojom::HostedRendererType type,
+  MojoRendererFactory(media::MediaLog* media_log,
+                      mojom::HostedRendererType type,
                       const GetGpuFactoriesCB& get_gpu_factories_cb,
                       media::mojom::InterfaceFactory* interface_factory);
 
@@ -50,6 +52,8 @@ class MojoRendererFactory : public RendererFactory {
 
  private:
   mojom::RendererPtr GetRendererPtr();
+
+  media::MediaLog* const media_log_;
 
   GetGpuFactoriesCB get_gpu_factories_cb_;
   GetTypeSpecificIdCB get_type_specific_id_;

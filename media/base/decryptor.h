@@ -158,6 +158,9 @@ class MEDIA_EXPORT Decryptor {
   // The decoder can be reinitialized after it is uninitialized.
   virtual void DeinitializeDecoder(StreamType stream_type) = 0;
 
+  // Returns whether or not the decryptor implementation supports decrypt-only.
+  virtual bool CanAlwaysDecrypt();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(Decryptor);
 };

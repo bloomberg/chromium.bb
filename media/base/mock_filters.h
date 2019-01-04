@@ -418,6 +418,7 @@ class MockDecryptor : public Decryptor {
                     const VideoDecodeCB& video_decode_cb));
   MOCK_METHOD1(ResetDecoder, void(StreamType stream_type));
   MOCK_METHOD1(DeinitializeDecoder, void(StreamType stream_type));
+  MOCK_METHOD0(CanAlwaysDecrypt, bool());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDecryptor);
