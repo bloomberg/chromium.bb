@@ -206,8 +206,9 @@ TestPasswordManager.prototype = {
   removeSavedPassword: function(id) {
     this.actual_.removed.passwords++;
 
-    if (this.onRemoveSavedPassword)
+    if (this.onRemoveSavedPassword) {
       this.onRemoveSavedPassword(id);
+    }
   },
 
   /** @override */
@@ -231,8 +232,9 @@ TestPasswordManager.prototype = {
   removeException: function(id) {
     this.actual_.removed.exceptions++;
 
-    if (this.onRemoveException)
+    if (this.onRemoveException) {
       this.onRemoveException(id);
+    }
   },
 
   /** @override */

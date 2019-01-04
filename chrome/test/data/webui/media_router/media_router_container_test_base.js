@@ -26,8 +26,9 @@ cr.define('media_router_container_test_base', function() {
      *     should be visible.
      */
     var checkElementsVisibleWithId = function(elementIdList) {
-      for (var id of elementIdList)
+      for (var id of elementIdList) {
         checkElementVisibleWithId(true, id);
+      }
 
       for (id of hiddenCheckElementIdList) {
         if (!elementIdList.includes(id)) {

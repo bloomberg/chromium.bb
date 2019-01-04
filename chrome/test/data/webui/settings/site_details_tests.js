@@ -111,9 +111,10 @@ suite('SiteDetails', function() {
       settings.ContentSettingsTypes.PROTOCOL_HANDLERS,
       settings.ContentSettingsTypes.ZOOM_LEVELS,
     ];
-    if (!cr.isChromeOS)
+    if (!cr.isChromeOS) {
       nonSiteDetailsContentSettingsTypes.push(
           settings.ContentSettingsTypes.PROTECTED_CONTENT);
+    }
 
     // A list of optionally shown content settings mapped to their loadTimeData
     // flag string.
@@ -259,8 +260,9 @@ suite('SiteDetails', function() {
               .forEach((siteDetailsPermission) => {
                 if (!cr.isChromeOS &&
                     siteDetailsPermission.category ==
-                        settings.ContentSettingsTypes.PROTECTED_CONTENT)
+                        settings.ContentSettingsTypes.PROTECTED_CONTENT) {
                   return;
+                }
 
                 // Verify settings match the values specified in |prefs|.
                 let expectedSetting = settings.ContentSetting.ALLOW;

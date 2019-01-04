@@ -75,10 +75,11 @@ Test.disableAnimationsAndTransitions = function() {
 
   var realElementAnimate = Element.prototype.animate;
   Element.prototype.animate = function(keyframes, opt_options) {
-    if (typeof opt_options == 'object')
+    if (typeof opt_options == 'object') {
       opt_options.duration = 0;
-    else
+    } else {
       opt_options = 0;
+    }
     return realElementAnimate.call(this, keyframes, opt_options);
   };
   if (document.timeline && document.timeline.play) {
@@ -353,8 +354,9 @@ Test.prototype = {
   tearDown: function() {
     if (typeof document != 'undefined') {
       var noAnimationStyle = document.getElementById('no-animation');
-      if (noAnimationStyle)
+      if (noAnimationStyle) {
         noAnimationStyle.parentNode.removeChild(noAnimationStyle);
+      }
     }
 
     Mock4JS.verifyAllMocks();
@@ -373,16 +375,18 @@ Test.prototype = {
    * fixture.
    */
   runAccessibilityAudit: function() {
-    if (!this.runAccessibilityChecks || typeof document === 'undefined')
+    if (!this.runAccessibilityChecks || typeof document === 'undefined') {
       return;
+    }
 
     var auditConfig = this.accessibilityAuditConfig;
     if (!runAccessibilityAudit(this.a11yResults_, auditConfig)) {
       var report = accessibilityAuditReport(this.a11yResults_);
-      if (this.accessibilityIssuesAreErrors)
+      if (this.accessibilityIssuesAreErrors) {
         throw new Error(report);
-      else
+      } else {
         console.warn(report);
+      }
     }
   },
 
@@ -400,8 +404,9 @@ Test.prototype = {
     var savedArgs = new SaveMockArguments();
     var completionAction = new CallFunctionAction(
         this, savedArgs, completion, Array.prototype.slice.call(arguments, 2));
-    if (whenTestDone === WhenTestDone.DEFAULT)
+    if (whenTestDone === WhenTestDone.DEFAULT) {
       whenTestDone = WhenTestDone.ASSERT;
+    }
     var runAll = new RunAllAction(true, whenTestDone, [completionAction]);
     return function() {
       savedArgs.arguments = Array.prototype.slice.call(arguments);
@@ -421,8 +426,9 @@ Test.prototype = {
    *     the currentTestCase.
    */
   deferRunTest: function(whenTestDone) {
-    if (whenTestDone === WhenTestDone.DEFAULT)
+    if (whenTestDone === WhenTestDone.DEFAULT) {
       whenTestDone = WhenTestDone.ALWAYS;
+    }
 
     return currentTestCase.deferRunTest.apply(
         currentTestCase,
@@ -475,40 +481,45 @@ TestCase.prototype = {
    * @type {Function}
    */
   preLoad: function(name) {
-    if (this.fixture)
+    if (this.fixture) {
       this.fixture.preLoad();
+    }
   },
 
   /**
    * Called before a test runs.
    */
   setUp: function() {
-    if (this.fixture)
+    if (this.fixture) {
       this.fixture.setUp();
+    }
   },
 
   /**
    * Called before a test is torn down (by testDone()).
    */
   tearDown: function() {
-    if (this.fixture)
+    if (this.fixture) {
       this.fixture.tearDown();
+    }
   },
 
   /**
    * Called to run this test's body.
    */
   runTest: function() {
-    if (this.body && this.fixture)
+    if (this.body && this.fixture) {
       this.fixture.runTest(this.body);
+    }
   },
 
   /**
    * Called after a test is run (in testDone) to test accessibility.
    */
   runAccessibilityAudit: function() {
-    if (this.fixture)
+    if (this.fixture) {
       this.fixture.runAccessibilityAudit();
+    }
   },
 
   /**
@@ -529,8 +540,9 @@ TestCase.prototype = {
       console.error(e.stack || e.toString());
     }
 
-    if (!this.deferred_)
+    if (!this.deferred_) {
       this.runTest();
+    }
 
     // tearDown called by testDone().
   },
@@ -588,8 +600,9 @@ function registerMessageCallback(name, messageHandler, callback) {
  * @see overrideChrome
  */
 function registerMockMessageCallbacks(mockObject, mockClass) {
-  if (!deferGlobalOverrides && !originalChrome)
+  if (!deferGlobalOverrides && !originalChrome) {
     overrideChrome();
+  }
   var mockProxy = mockObject.proxy();
   for (var func in mockClass.prototype) {
     if (typeof mockClass.prototype[func] === 'function') {
@@ -640,8 +653,9 @@ function registerMockGlobal(name, object, callback) {
     callback: callback,
   };
 
-  if (!deferGlobalOverrides)
+  if (!deferGlobalOverrides) {
     overrideGlobal(name);
+  }
 }
 
 /**
@@ -655,8 +669,9 @@ function registerMockApi(name, theFunction) {
   var namespace = this;
   for (var i = 0; i < path.length - 1; i++) {
     var fieldName = path[i];
-    if (!namespace[fieldName])
-    namespace[fieldName] = {};
+    if (!namespace[fieldName]) {
+      namespace[fieldName] = {};
+    }
 
     namespace = namespace[fieldName];
   }
@@ -679,8 +694,9 @@ function emptyFunction() {}
  */
 function makeMockClass(methodNames) {
   function MockConstructor() {}
-  for (var i = 0; i < methodNames.length; i++)
+  for (var i = 0; i < methodNames.length; i++) {
     MockConstructor.prototype[methodNames[i]] = emptyFunction;
+  }
   return MockConstructor;
 }
 
@@ -698,8 +714,9 @@ function makeMockFunctions(functionNames) {
   mockFunctions.functions_ = {};
 
   for (var func in MockClass.prototype) {
-    if (typeof MockClass.prototype[func] === 'function')
+    if (typeof MockClass.prototype[func] === 'function') {
       mockFunctions.functions_[func] = mockProxy[func].bind(mockProxy);
+    }
   }
 
   mockFunctions.functions = function() {
@@ -720,8 +737,9 @@ function makeMockFunctions(functionNames) {
 function registerMockGlobals(mockObject, mockClass) {
   var mockProxy = mockObject.proxy();
   for (var func in mockClass.prototype) {
-    if (typeof mockClass.prototype[func] === 'function')
+    if (typeof mockClass.prototype[func] === 'function') {
       registerMockGlobal(func, mockProxy, mockProxy[func]);
+    }
   }
 }
 
@@ -733,8 +751,9 @@ function registerMockGlobals(mockObject, mockClass) {
 function registerMockApis(mockObject) {
   var functions = mockObject.functions();
   for (var func in functions) {
-    if (typeof functions[func] === 'function')
+    if (typeof functions[func] === 'function') {
       registerMockApi(func, functions[func]);
+    }
   }
 }
 
@@ -745,10 +764,11 @@ function registerMockApis(mockObject) {
  */
 function send(messageName) {
   var callback = sendCallbacks[messageName];
-  if (callback != undefined)
+  if (callback != undefined) {
     callback[1].apply(callback[0], Array.prototype.slice.call(arguments, 1));
-  else
+  } else {
     this.__proto__.send.apply(this.__proto__, arguments);
+  }
 }
 
 /**
@@ -796,13 +816,15 @@ function testDone(result) {
                .call(null) &&
           ok;
 
-      if (!ok && result)
+      if (!ok && result) {
         result = [false, errorsToMessage(errors, result[1])];
+      }
 
       currentTestCase = null;
     }
-    if (!result)
+    if (!result) {
       result = testResult();
+    }
 
     if (hasWindow && window.webUiTest) {
       let testRunner;
@@ -819,10 +841,11 @@ function testDone(result) {
         assertNotReached(
             'Mojo bindings found, but no valid test interface loaded');
       }
-      if (result[0])
+      if (result[0]) {
         testRunner.testComplete();
-      else
+      } else {
         testRunner.testComplete(result[1]);
+      }
     } else if (chrome.send) {
       // For WebUI and v8 unit tests.
       chrome.send('testResult', result);
@@ -848,8 +871,9 @@ function testDone(result) {
  */
 function errorsToMessage(errors, opt_message) {
   var message = '';
-  if (opt_message)
+  if (opt_message) {
     message += opt_message + '\n';
+  }
 
   for (var i = 0; i < errors.length; ++i) {
     var errorMessage = errors[i].stack || errors[i].message;
@@ -866,8 +890,9 @@ function errorsToMessage(errors, opt_message) {
  */
 function testResult(errorsOk) {
   var result = [true, ''];
-  if (errors.length)
+  if (errors.length) {
     result = [!!errorsOk, errorsToMessage(errors)];
+  }
 
   return result;
 }
@@ -1029,8 +1054,9 @@ function accessibilityAuditReport(a11yResults, message) {
 function assertAccessibilityOk(opt_results) {
   var a11yResults = opt_results || [];
   var auditConfig = currentTestCase.fixture.accessibilityAuditConfig;
-  if (!runAccessibilityAudit(a11yResults, auditConfig))
+  if (!runAccessibilityAudit(a11yResults, auditConfig)) {
     throw new Error(accessibilityAuditReport(a11yResults));
+  }
 }
 
 /**
@@ -1085,8 +1111,9 @@ function runTest(isAsync, testFunction, testArguments) {
 
   // Depending on how we were called, |this| might not resolve to the global
   // context.
-  if (testName == 'RUN_TEST_F' && testBody === undefined)
+  if (testName == 'RUN_TEST_F' && testBody === undefined) {
     testBody = RUN_TEST_F;
+  }
 
   if (typeof testBody === 'undefined') {
     testBody = eval(testFunction);
@@ -1098,8 +1125,9 @@ function runTest(isAsync, testFunction, testArguments) {
 
   // Async allow expect errors, but not assert errors.
   var result = runTestFunction(testFunction, testBody, testArguments, isAsync);
-  if (!isAsync || !result[0])
+  if (!isAsync || !result[0]) {
     testDone(result);
+  }
   return true;
 }
 
@@ -1182,14 +1210,16 @@ function preloadJavascriptLibraries(testFixture, testName) {
   // events (and doesn't fire), whereas the window does not. Listening to the
   // capture phase allows this event to fire first.
   window.addEventListener('DOMContentLoaded', function() {
-    if (chrome.send)
+    if (chrome.send) {
       overrideChrome();
+    }
 
     // Override globals at load time so they will be defined.
     assertTrue(deferGlobalOverrides);
     deferGlobalOverrides = false;
-    for (var funcName in globalOverrides)
+    for (var funcName in globalOverrides) {
       overrideGlobal(funcName);
+    }
   }, true);
   currentTestCase = createTestCase(testFixture, testName);
   currentTestCase.preLoad();
@@ -1256,10 +1286,12 @@ function TEST(testCaseName, testName, testBody) {
  */
 function TEST_F(testFixture, testName, testBody) {
   var fixtureConstructor = this[testFixture];
-  if (!fixtureConstructor.prototype.name)
+  if (!fixtureConstructor.prototype.name) {
     fixtureConstructor.prototype.name = testFixture;
-  if (fixtureConstructor['testCaseBodies'] === undefined)
+  }
+  if (fixtureConstructor['testCaseBodies'] === undefined) {
     fixtureConstructor.testCaseBodies = {};
+  }
   fixtureConstructor.testCaseBodies[testName] = testBody;
 }
 
@@ -1274,8 +1306,9 @@ function TEST_F(testFixture, testName, testBody) {
  * @see runTest
  */
 function RUN_TEST_F(testFixture, testName) {
-  if (!currentTestCase)
+  if (!currentTestCase) {
     currentTestCase = createTestCase(testFixture, testName);
+  }
   assertEquals(currentTestCase.name, testName);
   assertEquals(currentTestCase.fixture.name, testFixture);
   console.log('Running TestCase ' + testFixture + '.' + testName);
@@ -1318,8 +1351,9 @@ SaveMockArgumentMatcher.prototype = {
   argumentMatches: function(actualArgument) {
     this.arguments_.push(actualArgument);
     var match = this.realMatcher_.argumentMatches(actualArgument);
-    if (!match)
+    if (!match) {
       this.arguments_.splice(0, this.arguments_.length);
+    }
 
     return match;
   },
@@ -1587,24 +1621,29 @@ RunAllAction.prototype = {
   invoke: function() {
     try {
       var result;
-      for (var i = 0; i < this.actions_.length; ++i)
+      for (var i = 0; i < this.actions_.length; ++i) {
         result = this.actions_[i].invoke();
+      }
 
       if ((this.whenTestDone_ == WhenTestDone.EXPECT && errors.length) ||
-          this.whenTestDone_ == WhenTestDone.ALWAYS)
+          this.whenTestDone_ == WhenTestDone.ALWAYS) {
         testDone();
+      }
 
       return result;
     } catch (e) {
-      if (!(e instanceof Error))
+      if (!(e instanceof Error)) {
         e = new Error(e.toString());
+      }
 
-      if (!this.isAsync_)
+      if (!this.isAsync_) {
         throw e;
+      }
 
       errors.push(e);
-      if (this.whenTestDone_ != WhenTestDone.NEVER)
+      if (this.whenTestDone_ != WhenTestDone.NEVER) {
         testDone();
+      }
     }
   },
 

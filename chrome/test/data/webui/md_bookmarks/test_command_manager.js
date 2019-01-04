@@ -25,8 +25,9 @@ function TestCommandManager() {
    */
   commandManager.assertLastCommand = function(command, ids) {
     assertEquals(command, lastCommand);
-    if (ids)
+    if (ids) {
       assertDeepEquals(ids, normalizeIterable(lastCommandIds));
+    }
     lastCommand = null;
     lastCommandIds = null;
   };

@@ -59,10 +59,11 @@ cr.define('test_util', function() {
    */
   function fakeDataBind(el1, el2, property) {
     const forwardChange = function(el, event) {
-      if (event.detail.hasOwnProperty('path'))
+      if (event.detail.hasOwnProperty('path')) {
         el.notifyPath(event.detail.path, event.detail.value);
-      else
+      } else {
         el.set(property, event.detail.value);
+      }
     };
     // Add the listeners symmetrically. Polymer will prevent recursion.
     el1.addEventListener(property + '-changed', forwardChange.bind(null, el2));
@@ -90,8 +91,9 @@ cr.define('test_util', function() {
    * @return {DefaultContentSetting}
    */
   function createDefaultContentSetting(override) {
-    if (override === undefined)
+    if (override === undefined) {
       override = {};
+    }
     return Object.assign(
         {
           setting: settings.ContentSetting.ASK,
@@ -109,8 +111,9 @@ cr.define('test_util', function() {
    * @return {RawSiteException}
    */
   function createRawSiteException(origin, override) {
-    if (override === undefined)
+    if (override === undefined) {
       override = {};
+    }
     return Object.assign(
         {
           embeddingOrigin: origin,
@@ -201,8 +204,9 @@ cr.define('test_util', function() {
   }
 
   function createOriginInfo(origin, override) {
-    if (override === undefined)
+    if (override === undefined) {
       override = {};
+    }
     return Object.assign(
         {
           origin: origin,

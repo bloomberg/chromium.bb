@@ -144,8 +144,9 @@ cr.define('custom_margins_test', function() {
      * @param {number} end The ending position for the control in pixels.
      */
     function dragControl(control, start, end) {
-      if (window.getComputedStyle(control)['pointer-events'] === 'none')
+      if (window.getComputedStyle(control)['pointer-events'] === 'none') {
         return;
+      }
 
       let xStart = 0;
       let yStart = 0;

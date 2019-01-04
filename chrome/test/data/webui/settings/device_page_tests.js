@@ -97,8 +97,9 @@ cr.define('device_page_tests', function() {
         app.preferred = app.value == appId;
       });
 
-      if (changed)
+      if (changed) {
         this.scheduleLockScreenAppsUpdated_();
+      }
     },
 
     /** @override */

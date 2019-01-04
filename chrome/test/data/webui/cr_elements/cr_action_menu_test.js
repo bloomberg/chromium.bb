@@ -45,8 +45,9 @@ suite('CrActionMenu', function() {
   teardown(function() {
     document.body.style.direction = 'ltr';
 
-    if (dialog.open)
+    if (dialog.open) {
       menu.close();
+    }
   });
 
   function down() {
@@ -126,8 +127,9 @@ suite('CrActionMenu', function() {
   });
 
   test('pressing enter when no focus', function() {
-    if (cr.isWindows || cr.isMac)
+    if (cr.isWindows || cr.isMac) {
       return testFocusAfterClosing('Enter');
+    }
 
     // First item is selected
     menu.showAt(dots);

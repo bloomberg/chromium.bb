@@ -47,8 +47,9 @@ WebUIBrowserAsyncGenTest.prototype = {
 
   /** @inheritDoc */
   preLoad: function() {
-    if (window.preLoadCount === undefined)
+    if (window.preLoadCount === undefined) {
       window.preLoadCount = 0;
+    }
     assertEquals(0, Number(window.preLoadCount++));
   },
 };

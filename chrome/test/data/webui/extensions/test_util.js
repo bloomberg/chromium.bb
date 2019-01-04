@@ -79,8 +79,9 @@ cr.define('extension_test_util', function() {
     verify: function() {
       const missingEvents = [];
       for (const key in this.listeners_) {
-        if (!this.listeners_[key].satisfied)
+        if (!this.listeners_[key].satisfied) {
           missingEvents.push(key);
+        }
       }
       expectEquals(0, missingEvents.length, JSON.stringify(missingEvents));
     },
@@ -261,8 +262,9 @@ cr.define('extension_test_util', function() {
     function doSearch(node) {
       if (node.nodeType == Node.ELEMENT_NODE) {
         const matches = node.querySelectorAll(query);
-        for (let match of matches)
+        for (let match of matches) {
           elements.add(match);
+        }
       }
       let child = node.firstChild;
       while (child !== null) {
@@ -270,8 +272,9 @@ cr.define('extension_test_util', function() {
         child = child.nextSibling;
       }
       const shadowRoot = node.shadowRoot;
-      if (shadowRoot)
+      if (shadowRoot) {
         doSearch(shadowRoot);
+      }
     }
     doSearch(root);
     return Array.from(elements);

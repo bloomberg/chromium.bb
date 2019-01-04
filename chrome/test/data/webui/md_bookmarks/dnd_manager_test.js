@@ -23,8 +23,9 @@ suite('drag and drop', function() {
   function getListItem(id) {
     const items = list.root.querySelectorAll('bookmarks-item');
     for (let i = 0; i < items.length; i++) {
-      if (items[i].itemId == id)
+      if (items[i].itemId == id) {
         return items[i];
+      }
     }
   }
 

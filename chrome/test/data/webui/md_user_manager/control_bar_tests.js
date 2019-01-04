@@ -48,8 +48,9 @@ cr.define('user_manager.control_bar_tests', function() {
         return new Promise(function(resolve, reject) {
           // We expect to go to the 'create-profile' page.
           listenOnce(controlBarElement, 'change-page', function(event) {
-            if (event.detail.page == 'create-user-page')
+            if (event.detail.page == 'create-user-page') {
               resolve();
+            }
           });
 
           // Simulate clicking 'Create Profile'.
@@ -82,8 +83,9 @@ cr.define('user_manager.control_bar_tests', function() {
 
       teardown(function(done) {
         controlBarElement.remove();
-        if (errorDialogElement.$.dialog.open)
+        if (errorDialogElement.$.dialog.open) {
           errorDialogElement.$.dialog.close();
+        }
 
         // Allow asynchronous tasks to finish.
         setTimeout(done);
@@ -121,8 +123,9 @@ cr.define('user_manager.control_bar_tests', function() {
         return new Promise(function(resolve, reject) {
           // We expect to go to the 'create-profile' page.
           listenOnce(controlBarElement, 'change-page', function(event) {
-            if (event.detail.page == 'create-user-page')
+            if (event.detail.page == 'create-user-page') {
               resolve();
+            }
           });
 
           // Simulate clicking 'Create Profile'.

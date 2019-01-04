@@ -63,10 +63,12 @@ suiteSetup(function() {
       /** @override */
       reduce_(action) {
         this.lastAction_ = action;
-        if (this.enableReducers_)
+        if (this.enableReducers_) {
           this.storeImplClass.prototype.reduce_.call(this, action);
-        if (this.resolverMap_.has(action.name))
+        }
+        if (this.resolverMap_.has(action.name)) {
           this.resolverMap_.get(action.name).resolve(action);
+        }
       }
 
       /**

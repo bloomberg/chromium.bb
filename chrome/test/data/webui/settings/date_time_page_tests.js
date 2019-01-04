@@ -238,8 +238,9 @@ suite('settings-date-time-page', function() {
 
     const checkButton = getAutodetectOnButton(dateTime);
     const checkButtonChecked = checkButton ? checkButton.checked : false;
-    if (!managed)
+    if (!managed) {
       assertEquals(autoDetect, checkButtonChecked);
+    }
   }
 
   function verifyTimeZonesPopulated(populated) {
@@ -249,10 +250,11 @@ suite('settings-date-time-page', function() {
 
     const dropdown =
         userTimezoneDropdown ? userTimezoneDropdown : systemTimezoneDropdown;
-    if (populated)
+    if (populated) {
       assertEquals(fakeTimeZones.length, dropdown.menuOptions.length);
-    else
+    } else {
       assertEquals(1, dropdown.menuOptions.length);
+    }
   }
 
   function updatePolicy(dateTime, managed, valueFromPolicy) {

@@ -77,15 +77,17 @@ cr.define('link_container_test', function() {
       };
 
       validateLinkState(systemDialogLink, false);
-      if (cr.isMac)
+      if (cr.isMac) {
         validateLinkState(openInPreviewLink, false);
+      }
 
       // Set disabled to true, indicating that there is a validation error or
       // printer error.
       linkContainer.disabled = true;
       validateLinkState(systemDialogLink, cr.isWindows);
-      if (cr.isMac)
+      if (cr.isMac) {
         validateLinkState(openInPreviewLink, true);
+      }
     });
 
     /**

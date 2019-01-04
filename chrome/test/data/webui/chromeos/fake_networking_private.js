@@ -151,8 +151,9 @@ cr.define('chrome', function() {
       var devices = [];
       Object.keys(this.deviceStates_).forEach(function(type) {
         var state = this.deviceStates_[type];
-        if (state.State != '')
+        if (state.State != '') {
           devices.push(state);
+        }
       }.bind(this));
       callback(devices);
       this.methodCalled('getDeviceStates');

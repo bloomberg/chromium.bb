@@ -127,8 +127,9 @@ cr.define('settings_menu', function() {
       assertFalse(settingsMenu.$$('#advancedButton').hidden);
       assertFalse(settingsMenu.$$('#advancedSubmenu').hidden);
       assertFalse(settingsMenu.$$('#reset').hidden);
-      if (!cr.isChromeOS)
+      if (!cr.isChromeOS) {
         assertFalse(settingsMenu.$$('#defaultBrowser').hidden);
+      }
     });
   });
 });

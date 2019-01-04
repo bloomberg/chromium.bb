@@ -338,8 +338,9 @@ suite('<history-list>', function() {
   // TODO(calamity): Reenable this test after fixing flakiness.
   // See http://crbug.com/640862.
   test.skip('scrolling history list causes toolbar shadow to appear', () => {
-    for (let i = 0; i < 10; i++)
+    for (let i = 0; i < 10; i++) {
       app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
+    }
     return PolymerTest.flushTasks()
         .then(function() {
           assertFalse(app.toolbarShadow_);

@@ -61,8 +61,9 @@ AccessibilityTest.runAudit_ = function(testDef) {
 
   return new Promise((resolve, reject) => {
     axe.run(context, options, (err, results) => {
-      if (err)
+      if (err) {
         reject(err);
+      }
 
       let filteredViolations = AccessibilityTest.filterViolations_(
           results.violations, testDef.violationFilter || {});

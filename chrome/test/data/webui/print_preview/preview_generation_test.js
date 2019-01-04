@@ -65,8 +65,9 @@ cr.define('preview_generation_test', function() {
             nativeLayer.whenCalled('getPrinterCapabilities'),
           ])
           .then(function() {
-            if (!page.documentInfo_.isModifiable)
+            if (!page.documentInfo_.isModifiable) {
               page.documentInfo_.updateFitToPageScaling(98);
+            }
             page.documentInfo_.updatePageCount(3);
             return nativeLayer.whenCalled('getPreview');
           });

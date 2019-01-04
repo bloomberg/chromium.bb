@@ -105,15 +105,17 @@ cr.define('print_preview', function() {
       this.methodCalled(
           'getPreview', {printTicket: printTicket, pageCount: pageCount});
       const printTicketParsed = JSON.parse(printTicket);
-      if (printTicketParsed.deviceName == this.badPrinterId_)
+      if (printTicketParsed.deviceName == this.badPrinterId_) {
         return Promise.reject('SETTINGS_INVALID');
+      }
       const pageRanges = printTicketParsed.pageRange;
       const requestId = printTicketParsed.requestID;
       if (pageRanges.length == 0) {  // assume full length document, 1 page.
         cr.webUIListenerCallback(
             'page-count-ready', this.pageCount_, requestId, 100);
-        for (let i = 0; i < this.pageCount_; i++)
+        for (let i = 0; i < this.pageCount_; i++) {
           cr.webUIListenerCallback('page-preview-ready', i, 0, requestId);
+        }
       } else {
         const pages = pageRanges.reduce(function(soFar, range) {
           for (let page = range.from; page <= range.to; page++) {
@@ -142,8 +144,9 @@ cr.define('print_preview', function() {
       this.methodCalled(
           'getPrinterCapabilities',
           {destinationId: printerId, printerType: type});
-      if (type != print_preview.PrinterType.LOCAL_PRINTER)
+      if (type != print_preview.PrinterType.LOCAL_PRINTER) {
         return Promise.reject();
+      }
       return this.localDestinationCapabilities_.get(printerId) ||
           Promise.reject();
     }

@@ -11,8 +11,9 @@ cr.define('settings', function() {
   class TestLifetimeBrowserProxy extends TestBrowserProxy {
     constructor() {
       const methodNames = ['restart', 'relaunch'];
-      if (cr.isChromeOS)
+      if (cr.isChromeOS) {
         methodNames.push('signOutAndRestart', 'factoryReset');
+      }
 
       super(methodNames);
     }

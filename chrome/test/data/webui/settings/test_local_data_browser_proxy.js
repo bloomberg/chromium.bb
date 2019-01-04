@@ -49,8 +49,9 @@ class TestLocalDataBrowserProxy extends TestBrowserProxy {
 
   /** @override */
   getDisplayList(filter) {
-    if (filter === undefined)
+    if (filter === undefined) {
       filter = '';
+    }
     let output = [];
     for (let i = 0; i < this.cookieList_.length; ++i) {
       if (this.cookieList_[i].site.indexOf(filter) >= 0) {

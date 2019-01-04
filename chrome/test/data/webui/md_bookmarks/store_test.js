@@ -88,8 +88,9 @@ suite('bookmarks.StoreClient', function() {
       },
 
       itemsChanged_: function(newItems, oldItems) {
-        if (oldItems)
+        if (oldItems) {
           this.hasChanged = true;
+        }
       },
     });
   });

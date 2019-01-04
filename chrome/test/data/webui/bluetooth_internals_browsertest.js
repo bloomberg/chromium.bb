@@ -565,10 +565,11 @@ TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
      */
     function whenSnackbarShows(pendingSnackbar) {
       return new Promise(function(resolve) {
-        if (pendingSnackbar.classList.contains('open'))
+        if (pendingSnackbar.classList.contains('open')) {
           resolve();
-        else
+        } else {
           pendingSnackbar.addEventListener('showed', resolve);
+        }
       });
     }
 
@@ -734,8 +735,9 @@ TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
           value = value[part];
         }
 
-        if (propName == 'isGattConnected')
+        if (propName == 'isGattConnected') {
           value = value ? 'Connected' : 'Not Connected';
+        }
 
         if (typeof(value) === 'boolean') {
           expectEquals(value, valueCell.classList.contains('checked'));

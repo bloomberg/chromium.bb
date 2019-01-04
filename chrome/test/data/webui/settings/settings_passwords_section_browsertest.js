@@ -189,8 +189,9 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
    */
   function listContainsUrl(passwordList, url) {
     for (let i = 0; i < passwordList.length; ++i) {
-      if (passwordList[i].loginPair.urls.origin == url)
+      if (passwordList[i].loginPair.urls.origin == url) {
         return true;
+      }
     }
     return false;
   }
@@ -202,8 +203,9 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
    */
   function exceptionsListContainsUrl(exceptionList, url) {
     for (let i = 0; i < exceptionList.length; ++i) {
-      if (exceptionList[i].urls.orginUrl == url)
+      if (exceptionList[i].urls.orginUrl == url) {
         return true;
+      }
     }
     return false;
   }

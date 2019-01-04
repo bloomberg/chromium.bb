@@ -333,8 +333,9 @@ suite('SiteList', function() {
   /** Closes the action menu. */
   function closeActionMenu() {
     const menu = testElement.$$('cr-action-menu');
-    if (menu.open)
+    if (menu.open) {
       menu.close();
+    }
   }
 
   /**
@@ -346,8 +347,9 @@ suite('SiteList', function() {
     assertTrue(!!menu);
     const menuItems = menu.querySelectorAll('button:not([hidden])');
     assertEquals(items.length, menuItems.length);
-    for (let i = 0; i < items.length; i++)
+    for (let i = 0; i < items.length; i++) {
       assertEquals(items[i], menuItems[i].textContent.trim());
+    }
   }
 
   /**

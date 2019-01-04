@@ -81,8 +81,9 @@ MockMethod.prototype = {
    */
   verifyMock: function() {
     var errorMessage = 'Number of method calls did not match expectation.';
-    if (this.functionName)
+    if (this.functionName) {
       errorMessage = 'Error in ' + this.functionName + ':\n' + errorMessage;
+    }
     assertEquals(this.expectations_.length, this.calls_.length, errorMessage);
     for (var i = 0; i < this.expectations_.length; i++) {
       this.validateCall(i, this.expectations_[i], this.calls_[i]);

@@ -65,8 +65,9 @@ suite('cr-toggle', function() {
    *     moveDirection is non-zero.
    */
   function triggerPointerDownMoveUpTapSequence(moveDirection, diff) {
-    if (window.getComputedStyle(toggle)['pointer-events'] === 'none')
+    if (window.getComputedStyle(toggle)['pointer-events'] === 'none') {
       return;
+    }
 
     // Simulate events in the same order they are fired by the browser.
     // Need to provide a valid |pointerId| for setPointerCapture() to not throw

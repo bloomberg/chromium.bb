@@ -125,10 +125,11 @@ cr.define('settings_main_page', function() {
      */
     function assertToggleContainerVisible(expectedVisible) {
       const toggleContainer = getToggleContainer();
-      if (expectedVisible)
+      if (expectedVisible) {
         assertNotEquals('none', toggleContainer.style.display);
-      else
+      } else {
         assertEquals('none', toggleContainer.style.display);
+      }
     }
 
     test('no results page shows and hides', function() {

@@ -42,8 +42,9 @@ CheckQueryResultTask.prototype = {
    */
   onQueryResult_: function(result) {
     // Ignore results after |this| is finished.
-    if (this.isDone())
+    if (this.isDone()) {
       return;
+    }
 
     expectEquals(this.domain_, $(this.inputId_).value);
 

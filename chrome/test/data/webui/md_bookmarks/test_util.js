@@ -39,8 +39,9 @@ function createFolder(id, children, config) {
     title: '',
   };
   if (config) {
-    for (const key in config)
+    for (const key in config) {
       newFolder[key] = config[key];
+    }
   }
   if (children.length) {
     for (let i = 0; i < children.length; i++) {
@@ -59,8 +60,9 @@ function createFolder(id, children, config) {
  */
 function removeChild(tree, index) {
   tree.children.splice(index, 1);
-  for (let i = index; i < tree.children.length; i++)
+  for (let i = index; i < tree.children.length; i++) {
     tree.children[i].index = i;
+  }
 }
 
 /**
@@ -76,8 +78,9 @@ function createItem(id, config) {
     url: 'http://www.google.com/',
   };
   if (config) {
-    for (const key in config)
+    for (const key in config) {
       newItem[key] = config[key];
+    }
   }
   return newItem;
 }
@@ -122,8 +125,9 @@ function customClick(element, config, eventName) {
   };
 
   if (config) {
-    for (const key in config)
+    for (const key in config) {
       props[key] = config[key];
+    }
   }
 
   if (cr.isMac && props.ctrlKey) {
@@ -134,8 +138,9 @@ function customClick(element, config, eventName) {
   element.dispatchEvent(new MouseEvent('mousedown', props));
   element.dispatchEvent(new MouseEvent('mouseup', props));
   element.dispatchEvent(new MouseEvent(eventName, props));
-  if (config && config.detail == 2)
+  if (config && config.detail == 2) {
     element.dispatchEvent(new MouseEvent('dblclick', props));
+  }
 }
 
 /**
@@ -149,8 +154,9 @@ function findFolderNode(rootNode, id) {
   let node;
   while (nodes.length) {
     node = nodes.pop();
-    if (node.itemId == id)
+    if (node.itemId == id) {
       return node;
+    }
 
     node.root.querySelectorAll('bookmarks-folder-node').forEach((x) => {
       nodes.unshift(x);

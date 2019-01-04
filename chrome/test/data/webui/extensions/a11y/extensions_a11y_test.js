@@ -78,8 +78,9 @@ CrExtensionsA11yTest = class extends PolymerTest {
    * @private
    */
   static hasAncestor_(node, type) {
-    if (!node.parentElement)
+    if (!node.parentElement) {
       return false;
+    }
 
     return (node.parentElement.tagName.toLocaleLowerCase() == type) ||
         CrExtensionsA11yTest.hasAncestor_(node.parentElement, type);

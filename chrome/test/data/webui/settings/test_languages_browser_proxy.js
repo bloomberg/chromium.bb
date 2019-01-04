@@ -7,8 +7,9 @@ cr.define('settings', function() {
   class TestLanguagesBrowserProxy extends TestBrowserProxy {
     constructor() {
       const methodNames = [];
-      if (cr.isChromeOS || cr.isWindows)
+      if (cr.isChromeOS || cr.isWindows) {
         methodNames.push('getProspectiveUILanguage');
+      }
 
       super(methodNames);
 
