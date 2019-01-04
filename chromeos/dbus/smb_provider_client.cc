@@ -360,6 +360,25 @@ class SmbProviderClientImpl : public SmbProviderClient {
                &callback);
   }
 
+  void UpdateMountCredentials(int32_t mount_id,
+                              std::string workgroup,
+                              std::string username,
+                              base::ScopedFD password_fd,
+                              StatusCallback callback) override {
+    smbprovider::UpdateMountCredentialsOptionsProto options;
+    options.set_mount_id(mount_id);
+    options.set_workgroup(workgroup);
+    options.set_username(username);
+
+    dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
+                                 smbprovider::kUpdateMountCredentialsMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(options);
+    writer.AppendFileDescriptor(password_fd.get());
+
+    CallDefaultMethod(&method_call, &callback);
+  }
+
  protected:
   // DBusClient override.
   void Init(dbus::Bus* bus) override {

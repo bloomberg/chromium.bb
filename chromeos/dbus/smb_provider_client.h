@@ -231,6 +231,16 @@ class CHROMEOS_EXPORT SmbProviderClient
                                      int32_t read_dir_token,
                                      ReadDirectoryCallback callback) = 0;
 
+  // Calls UpdateMountCredentials. This will update a mount's credentials with
+  // |workgroup|, |username|, and |password_fd|. Returns smbprovider::ERROR_OK
+  // if the mount's credentials successfully updated. Returns
+  // smbprovider::ERROR_NOT_FOUND if the mount's credentials were not updated.
+  virtual void UpdateMountCredentials(int32_t mount_id,
+                                      std::string workgroup,
+                                      std::string username,
+                                      base::ScopedFD password_fd,
+                                      StatusCallback callback) = 0;
+
  protected:
   // Create() should be used instead.
   SmbProviderClient();
