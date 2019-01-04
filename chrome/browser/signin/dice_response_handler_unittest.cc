@@ -80,28 +80,6 @@ class DiceTestSigninClient : public TestSigninClient, public GaiaAuthConsumer {
   DISALLOW_COPY_AND_ASSIGN(DiceTestSigninClient);
 };
 
-// Checks if OnRefreshTokenAvailable() has been called for the specified
-// account.
-class DiceTestTokenServiceObserver : public OAuth2TokenService::Observer {
- public:
-  explicit DiceTestTokenServiceObserver(const std::string& account_id)
-      : account_id_(account_id) {}
-
-  bool token_received() { return token_received_; }
-
- private:
-  // OAuth2TokenServiceObserver:
-  void OnRefreshTokenAvailable(const std::string& account_id) override {
-    if (account_id == account_id_)
-      token_received_ = true;
-  }
-
-  bool token_received_ = false;
-  std::string account_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(DiceTestTokenServiceObserver);
-};
-
 class DiceResponseHandlerTest : public testing::Test,
                                 public AccountReconcilor::Observer {
  public:
