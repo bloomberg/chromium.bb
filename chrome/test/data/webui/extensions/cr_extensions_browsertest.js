@@ -63,7 +63,6 @@ CrExtensionsBrowserTestWithInstalledExtension =
   testGenPreamble() {
     GEN('  InstallGoodExtension();');
     GEN('  SetAutoConfirmUninstall();');
-    GEN('  InstallExtensionWithInPageOptions();');
   }
 };
 
@@ -489,32 +488,6 @@ TEST_F(
     function() {
       this.runMochaTest(
           extension_manager_tests.TestNames.UrlNavigationToActivityLogFail);
-    });
-
-CrExtensionsManagerTestWithOptionsDialog =
-    class extends CrExtensionsBrowserTestWithInstalledExtension {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://extensions/?id=ibbpngabdmdpednkhonkkobdeccpkiff';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'manager_test.js',
-    ]);
-  }
-
-  /** @override */
-  get suiteName() {
-    return extension_manager_tests.suiteName;
-  }
-};
-
-TEST_F(
-    'CrExtensionsManagerTestWithOptionsDialog', 'ShowOptionsDialog',
-    function() {
-      this.runMochaTest(extension_manager_tests.TestNames.ShowOptionsDialog);
     });
 
 CrExtensionsManagerTestWithActivityLogFlag =

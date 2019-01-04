@@ -45,14 +45,6 @@ cr.define('extensions', function() {
     },
 
     /**
-     * Focuses the extensions options button. This should be used after the
-     * dialog closes.
-     */
-    focusOptionsButton: function() {
-      this.$$('#extensions-options').focus();
-    },
-
-    /**
      * Focuses the back button when page is loaded.
      * @private
      */
