@@ -1190,6 +1190,19 @@ void Layer::SetShouldFlattenTransform(bool should_flatten) {
   SetSubtreePropertyChanged();
 }
 
+std::string Layer::ToString() const {
+  return base::StringPrintf(
+      "layer_id: %d\n"
+      "  element_id: %s\n"
+      "  bounds: %s\n"
+      "  position: %s\n"
+      "  scrollable: %d\n"
+      "  property tree indices: transform(%d) clip(%d) effect(%d) scroll(%d)\n",
+      id(), element_id().ToString().c_str(), bounds().ToString().c_str(),
+      position().ToString().c_str(), scrollable(), transform_tree_index(),
+      clip_tree_index(), effect_tree_index(), scroll_tree_index());
+}
+
 void Layer::SetUseParentBackfaceVisibility(bool use) {
   DCHECK(IsPropertyChangeAllowed());
   if (inputs_.use_parent_backface_visibility == use)

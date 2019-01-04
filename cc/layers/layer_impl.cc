@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -376,7 +377,7 @@ void LayerImpl::SetIsResizedByBrowserControls(bool resized) {
   is_resized_by_browser_controls_ = resized;
 }
 
-std::unique_ptr<base::DictionaryValue> LayerImpl::LayerAsJson() {
+std::unique_ptr<base::DictionaryValue> LayerImpl::LayerAsJson() const {
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   result->SetInteger("LayerId", id());
   result->SetString("LayerType", LayerTypeAsString());
@@ -391,7 +392,8 @@ std::unique_ptr<base::DictionaryValue> LayerImpl::LayerAsJson() {
   list->AppendDouble(position_.y());
   result->Set("Position", std::move(list));
 
-  const gfx::Transform& gfx_transform = test_properties()->transform;
+  const gfx::Transform& gfx_transform =
+      const_cast<LayerImpl*>(this)->test_properties()->transform;
   double transform[16];
   gfx_transform.matrix().asColMajord(transform);
   list = std::make_unique<base::ListValue>();
@@ -778,6 +780,16 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
 
   if (debug_info_)
     state->SetValue("debug_info", debug_info_);
+}
+
+std::string LayerImpl::ToString() const {
+  std::string str;
+  base::JSONWriter::WriteWithOptions(
+      *LayerAsJson(),
+      base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION |
+          base::JSONWriter::OPTIONS_PRETTY_PRINT,
+      &str);
+  return str;
 }
 
 size_t LayerImpl::GPUMemoryUsageInBytes() const { return 0; }

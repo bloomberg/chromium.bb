@@ -7,6 +7,7 @@
 #include <set>
 #include <vector>
 
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/checked_math.h"
@@ -1994,6 +1995,16 @@ std::unique_ptr<base::trace_event::TracedValue> PropertyTrees::AsTracedValue()
   value->EndDictionary();
 
   return value;
+}
+
+std::string PropertyTrees::ToString() const {
+  std::string str;
+  base::JSONWriter::WriteWithOptions(
+      *AsTracedValue()->ToBaseValue(),
+      base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION |
+          base::JSONWriter::OPTIONS_PRETTY_PRINT,
+      &str);
+  return str;
 }
 
 CombinedAnimationScale PropertyTrees::GetAnimationScales(

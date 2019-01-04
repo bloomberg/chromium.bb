@@ -52,7 +52,7 @@ class CC_EXPORT UIResourceLayerImpl : public LayerImpl {
   void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
 
-  std::unique_ptr<base::DictionaryValue> LayerAsJson() override;
+  std::unique_ptr<base::DictionaryValue> LayerAsJson() const override;
 
  protected:
   UIResourceLayerImpl(LayerTreeImpl* tree_impl, int id);
