@@ -116,6 +116,10 @@ class ActivityLog : public BrowserContextKeyedAPI,
   // action_ids array.
   void RemoveActions(const std::vector<int64_t>& action_ids);
 
+  // Remove all actions from the activity log database with the specified
+  // extension_id.
+  void RemoveExtensionData(const std::string& extension_id);
+
   // Clean up URLs from the activity log database.
   // If restrict_urls is empty then all URLs in the activity log database are
   // removed, otherwise only those in restrict_urls are removed.

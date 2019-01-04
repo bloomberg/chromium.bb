@@ -115,6 +115,14 @@ chrome.activityLogPrivate.getExtensionActivities = function(filter, callback) {}
 chrome.activityLogPrivate.deleteActivities = function(activityIds) {};
 
 /**
+ * Deletes activities in the ActivityLog database specified by the extension ID.
+ * @param {string} extensionId Erases only the activities from the extension
+ *     specified.
+ * @param {function():void=} callback
+ */
+chrome.activityLogPrivate.deleteActivitiesByExtension = function(extensionId, callback) {};
+
+/**
  * Deletes the entire ActivityLog database.
  */
 chrome.activityLogPrivate.deleteDatabase = function() {};
