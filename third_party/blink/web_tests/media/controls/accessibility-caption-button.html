@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<title>Media Controls: caption button accessibility tests</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../media-controls.js"></script>
+<video controls>
+  <track src='../track/captions-webvtt/captions-fast.vtt' kind='captions'>
+  <track src='../track/captions-webvtt/captions-rtl.vtt' kind='captions'>
+</video>
+<script>
+async_test(t => {
+  var video = document.querySelector('video');
+  video.src = '../content/test.ogv';
+
+video.oncanplaythrough = t.step_func_done(_ => {
+    assert_true(isClosedCaptionsButtonEnabled(video));
+
+    var captions_button = toggleClosedCaptionsButton(video);
+    var captions_overflow_item = captionsOverflowItem(video);
+    assert_not_equals(captions_button, null);
+    assert_not_equals(captions_overflow_item, null);
+
+    assert_equals(captions_button.getAttribute('aria-label'),
+                  'show closed captions');
+
+    assert_equals(captions_overflow_item.getAttribute('aria-label'),
+                  'show closed captions');
+  });
+});
+</script>
